@@ -14,10 +14,17 @@ h2 {
 h3 {
   font-size: 1.3rem;
 }
+
 .App {
   display: flex;
   flex-direction: column;
   height: 100vh;
   width: 100vw;
   overflow: hidden;
+}
+
+.Page {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
 }

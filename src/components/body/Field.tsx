@@ -1,5 +1,5 @@
 import React, { Component, ReactNode } from 'react'
-import FieldConfig from '../datatypes/FieldConfig';
+import FieldConfig from '../../datatypes/FieldConfig';
 const styles = require("./Field.module.css").default;
 
 type Props = {
