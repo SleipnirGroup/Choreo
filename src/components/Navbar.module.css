@@ -1,0 +1,30 @@
+.Container {
+    background-color: #2C2C2C;
+    color: white;
+    border: 1px solid #3F3F3F;
+    padding-left: 20px;
+    padding-right: 20px;
+    flex: 0, 0, 75px;
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    height: 5em;
+}
+
+.Container.h1 {
+    font-size: 2px;
+}
+
+button, select {
+    background-color: #4D4D4D;
+    color: white;
+    font-weight: bold;
+    height: 30px;
+    align-items: center;
+    text-align: center;
+    font-size: 22px;
+    border: 0px;
+    border-radius: 6px;
+    margin: 5px;
+}
