@@ -25,7 +25,7 @@ export default class Field extends Component<Props, State> {
   }
   image: HTMLImageElement;
   topYPerc: number = 0;
-  leftXPerc: number = 0;
+  leftXPerc :number = 0;
   bottomYPerc: number = 0;
   rightXPerc: number = 0;
   aspectRatio: number = 0;
@@ -38,6 +38,7 @@ export default class Field extends Component<Props, State> {
   }
   containerRef: React.RefObject<HTMLDivElement>;
 
+  
   constructor(props : Props) {
     super(props);
     window.addEventListener('resize', ()=>{this.setState({shouldUpdate: true});});
@@ -46,9 +47,11 @@ export default class Field extends Component<Props, State> {
     this.image.src = `/fields/${this.state.fieldConfig["field-image"]}`;
     this.aspectRatio = this.image.naturalWidth / this.image.naturalHeight;
     this.topYPerc = 100 * this.state.fieldConfig['field-corners']['top-left'][1] / this.image.naturalHeight;
-    this.leftXPerc = 100 * this.state.fieldConfig['field-corners']['top-left'][0] / this.image.naturalWidth;
+    this.leftXPerc = 100* this.state.fieldConfig['field-corners']['top-left'][0] / this.image.naturalWidth;
     this.bottomYPerc = 100 - (100 *this.state.fieldConfig['field-corners']['bottom-right'][1] / this.image.naturalHeight);
-    this.rightXPerc = 100 - (100 * this.state.fieldConfig['field-corners']['bottom-right'][0] / this.image.naturalWidth);    
+    this.rightXPerc = 100 -(100 * this.state.fieldConfig['field-corners']['bottom-right'][0] / this.image.naturalWidth);
+
+    
   }
   
   componentDidMount(): void {
@@ -58,11 +61,9 @@ export default class Field extends Component<Props, State> {
   shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
       return nextState.shouldUpdate;
   }
-
   componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any): void {
     this.setState({shouldUpdate: false});
   }
-  
   render() {
     let containerWidth = this.containerRef.current?.getBoundingClientRect().width || this.props.containerWidth;
     let containerHeight = this.containerRef.current?.getBoundingClientRect().height || this.props.containerHeight;

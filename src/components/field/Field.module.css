@@ -4,9 +4,7 @@
     min-width: 0;
     min-height: 0;
     position:relative;
-    
 }
-
 .FieldBackground{
     /* width: max-content; */
     background-position: center;
@@ -15,4 +13,6 @@
     object-fit: contain;
     object-position: center;
     position:relative;
+    width: 100px;
+    height: 100px;
 }

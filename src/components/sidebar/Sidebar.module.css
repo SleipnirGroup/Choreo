@@ -7,6 +7,12 @@
     justify-content: space-between;
     flex: 0 0 250px;
     color: white;
+    box-sizing: border-box;
+}
+.WaypointList{
+    padding: 8px;
+  width: 100%;
+  box-sizing: border-box;
 }
 button, select {
     background-color: #4D4D4D;

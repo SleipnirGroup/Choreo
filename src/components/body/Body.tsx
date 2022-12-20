@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
-import Field from './Field';
+import Sidebar from '../sidebar/Sidebar';
+import Field from '../field/Field';
 const styles = require('./Body.module.css').default;
 
 type Props = {}
