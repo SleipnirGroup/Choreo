@@ -1,0 +1,9 @@
+.Container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    height: 2em;
+}
+button, select {
+    border-radius: 2px;
+}

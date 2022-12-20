@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import style from './FieldBackground'
+const styles = require("./FieldBackground.module.css").default;
 
 type Props = {
   
@@ -15,7 +15,7 @@ export default class FieldBackground extends Component<Props, State> {
 
   render() {
     return (
-      <div><img src={this.state.imgSrc} id="field-background" alt="field background" width='100%'></img></div>
+      <div className={styles.Container}><img src={this.state.imgSrc} id="field-background" alt="field background" width='95%'></img></div>
     )
   }
 }

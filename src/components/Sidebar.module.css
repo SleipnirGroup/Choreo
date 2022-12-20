@@ -1,0 +1,10 @@
+.Sidebar{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-grow: 1;
+    max-width: 30%;
+    min-width: 15%;
+    background-color: var(--dark-background);
+    color: white;
+}

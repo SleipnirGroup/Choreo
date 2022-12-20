@@ -1,3 +1,4 @@
-#field-background{
-    width:100%;
-  }
+.Container{
+    background-color: var(--dark-background);
+    min-width: 50%;
+}

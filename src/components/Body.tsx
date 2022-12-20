@@ -1,20 +1,19 @@
 import React, { Component } from 'react'
+import FieldBackground from './FieldBackground';
 import Navbar from './Navbar'
 import Sidebar from './Sidebar'
-import styled from 'styled-components'
+const styles = require('./Body.module.css').default;
 
 type Props = {}
 
 type State = {}
-const styles = {
-    
-}
 export default class Body extends Component<Props, State> {
   state = {}
   
   render() {
+    console.log(styles);
     return (
-      <div style={styles}><Sidebar></Sidebar><Navbar></Navbar></div>
+      <div className={styles.Container}><Sidebar></Sidebar><FieldBackground></FieldBackground></div>
     )
   }
 }
