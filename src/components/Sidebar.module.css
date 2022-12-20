@@ -5,7 +5,18 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    max-width: 30%;
-    min-width: 15%;
+    width: 20rem;
     color: white;
+}
+button, select {
+    background-color: #4D4D4D;
+    color: white;
+    font-weight: bold;
+    height: 1.5em;
+    align-items: center;
+    text-align: center;
+    font-size: 1rem;
+    border: 0px;
+    border-radius: 6px;
+    margin: 5px;
 }

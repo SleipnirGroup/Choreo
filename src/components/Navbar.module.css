@@ -9,21 +9,24 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    height: 5em;
+    height: 5rem;
 }
 
-.Container.h1 {
-    font-size: 2px;
+@media only screen and (max-width:720px) {
+    h1 {
+        display: none;
+    }
+    
 }
 
 button, select {
     background-color: #4D4D4D;
     color: white;
     font-weight: bold;
-    height: 30px;
+    height: 1.5rem;
     align-items: center;
     text-align: center;
-    font-size: 22px;
+    font-size: 1rem;
     border: 0px;
     border-radius: 6px;
     margin: 5px;

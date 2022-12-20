@@ -10,8 +10,9 @@ export default class Body extends Component<Props, State> {
   state = {}
   
   render() {
+
     return (
-      <div className={styles.Container}><Sidebar></Sidebar><Field></Field></div>
+      <div className={styles.Container}><Sidebar></Sidebar><Field containerHeight={300} containerWidth={300}></Field></div>
     )
   }
 }
