@@ -1,0 +1,8 @@
+.Container {
+    height: 3rem;
+    background-color: darkslategrey;
+    border-radius: 1rem;
+    width: 95%;
+    margin-top: 0.2rem;
+    margin-bottom: 0.2rem;
+}
