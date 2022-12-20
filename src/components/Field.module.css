@@ -1,0 +1,12 @@
+.Container{
+    width: fit-content;
+    height: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+img {
+    width: 1175px;
+}

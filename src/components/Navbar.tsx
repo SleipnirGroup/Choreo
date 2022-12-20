@@ -14,14 +14,13 @@ export default class Navbar extends Component<Props, State> {
         <span>
           <select>
             <option>Four ball auto</option>
-            
           </select>
           <button id="addPath">+</button>
           <button id="deletePath">-</button>
         </span>
-        <span>
+        <h1>
           Untitled Waypoint Editor
-        </span>
+        </h1>
         <span>
           <button id="generatePath">Generate Path</button>
         </span>
