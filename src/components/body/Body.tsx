@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
-import Field from './Field';
-import Sidebar from './Sidebar'
+import Sidebar from '../sidebar/Sidebar';
+import Field from '../field/Field';
 const styles = require('./Body.module.css').default;
 
 type Props = {}
@@ -12,7 +12,7 @@ export default class Body extends Component<Props, State> {
   render() {
 
     return (
-      <div className={styles.Container}><Sidebar></Sidebar><Field containerHeight={300} containerWidth={300}></Field></div>
+      <div className={styles.Container}><Field containerHeight={300} containerWidth={300}></Field></div>
     )
   }
 }

@@ -1,28 +1,24 @@
-.Container {
+.Sidebar{
     background-color: #2C2C2C;
-    color: white;
     border: 1px solid #3F3F3F;
-    padding-left: 20px;
-    padding-right: 20px;
-    flex: 0, 0, 75px;
-    align-items: center;
+    /* align-self: center; */
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: space-between;
-    height: 5rem;
+    flex: 0 0 250px;
+    color: white;
+    box-sizing: border-box;
 }
-@media only screen and (max-width:720px) {
-    h1 {
-        display: none;
-    }
-    
+.WaypointList{
+    padding: 8px;
+  width: 100%;
+  box-sizing: border-box;
 }
-
 button, select {
     background-color: #4D4D4D;
     color: white;
     font-weight: bold;
-    height: 1.5rem;
+    height: 1.5em;
     align-items: center;
     text-align: center;
     font-size: 1rem;

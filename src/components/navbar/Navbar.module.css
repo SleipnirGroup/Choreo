@@ -1,18 +1,28 @@
-.Sidebar{
+.Container {
     background-color: #2C2C2C;
-    border: 1px solid #3F3F3F;
-    /* align-self: center; */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    width: 20rem;
     color: white;
+    border: 1px solid #3F3F3F;
+    padding-left: 20px;
+    padding-right: 20px;
+    flex: 0, 0, 50px;
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    height: 5rem;
 }
+@media only screen and (max-width:720px) {
+    h1 {
+        display: none;
+    }
+    
+}
+
 button, select {
     background-color: #4D4D4D;
     color: white;
     font-weight: bold;
-    height: 1.5em;
+    height: 1.5rem;
     align-items: center;
     text-align: center;
     font-size: 1rem;

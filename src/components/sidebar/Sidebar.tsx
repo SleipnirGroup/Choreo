@@ -13,14 +13,10 @@ const reorder = (list : Array<SidebarWaypoint>, startIndex: number, endIndex: nu
   return result;
 };
 
-const grid = 8;
-
 
 const getListStyle = (isDraggingOver : boolean) => ({
   background: isDraggingOver ? "lightblue" : "transparent",
-  padding: grid,
-  width: '100%',
-  "box-sizing": 'border-box'
+  
 });
 
 type Props = {};
@@ -59,9 +55,7 @@ export default class Sidebar extends Component<Props, State> {
     let newIndex : number = this.state.items.length;
     let newPoint: SidebarWaypoint = new SidebarWaypoint({name:`Waypoint ${newIndex}`, index: newIndex})
     this.state.items.push(newPoint);
-    this.setState({
-      items: this.state.items
-    });
+    this.forceUpdate();
     console.log("adding waypoint")
   }
   // Normally you would want to split things out into separate components.
@@ -76,6 +70,7 @@ export default class Sidebar extends Component<Props, State> {
             <div
               {...provided.droppableProps}
               ref={provided.innerRef}
+              className={styles.WaypointList}
               style={getListStyle(snapshot.isDraggingOver)}
 
             >
@@ -85,10 +80,12 @@ export default class Sidebar extends Component<Props, State> {
                 return item.render();
               })}
               {provided.placeholder}
+              <button onClick={()=>this.newWaypoint()} className={waypointStyles.Container}>Add new...</button>
             </div>
           )}
+          
         </Droppable>
-        <button onClick={()=>this.newWaypoint()} className={waypointStyles.Container}>Add new...</button>
+        
       </DragDropContext>
       
       </div>

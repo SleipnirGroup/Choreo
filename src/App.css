@@ -21,3 +21,9 @@ h3 {
   width: 100vw;
   overflow: hidden;
 }
+
+.Page {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+}

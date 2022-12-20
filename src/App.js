@@ -1,11 +1,16 @@
-import Navbar  from './components/Navbar'
-import Body from './components/Body'
+import Navbar from './components/navbar/Navbar'
+import Sidebar from './components/sidebar/Sidebar'
+import Body from './components/body/Body'
 import './App.css';
 
 function App() {
   return (
     <div className="App">
-      <Navbar></Navbar><Body></Body>
+      <Navbar></Navbar>
+      <div className="Page">
+        <Sidebar></Sidebar>
+        <Body></Body>
+      </div>
     </div>
   );
 }

@@ -13,4 +13,6 @@
     object-fit: contain;
     object-position: center;
     position:relative;
+    width: 100px;
+    height: 100px;
 }
