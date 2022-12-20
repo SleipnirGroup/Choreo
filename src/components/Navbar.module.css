@@ -11,6 +11,7 @@
     justify-content: space-between;
     height: 5rem;
 }
+
 @media only screen and (max-width:720px) {
     h1 {
         display: none;
