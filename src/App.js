@@ -4,6 +4,7 @@ import './App.css';
 import { DocumentManager } from './document/DocumentManager';
 import { createContext } from 'react';
 import Field from './components/field/Field';
+import { observer } from 'mobx-react';
 function App() {
   const DocumentManagerContext = createContext(null)
   const documentManager = new DocumentManager();
@@ -22,4 +23,4 @@ function App() {
   );
 }
 
-export default App;
+export default observer(App);
