@@ -1,0 +1,125 @@
+{
+    "unit_preferences": {
+        "angle_unit": "deg",
+        "acceleration_unit": "m/s²",
+        "torque_unit": "N·m",
+        "moment_of_inertia_unit": "kg·m²",
+        "angular_speed_unit": "rpm",
+        "time_unit": "s",
+        "speed_unit": "ft/s",
+        "length_unit": "ft",
+        "mass_unit": "lb"
+    },
+    "robot_configuration": {
+        "motor_max_torque": 1.9,
+        "motor_max_angular_speed": 70.00000000147021,
+        "mass": 54.4310844,
+        "wheel_vertical_distance": 0.572,
+        "team_number": 2363,
+        "bumper_length": 0.954,
+        "moment_of_inertia": 5.6,
+        "bumper_width": 0.903,
+        "wheel_horizontal_distance": 0.622
+    },
+    "field_image": {
+        "default": "2022: Rapid React"
+    },
+    "paths": [
+        {
+            "obstacles": [],
+            "name": "path",
+            "waypoints": [
+                {
+                    "waypoint_type": "hard",
+                    "heading": 0.0,
+                    "x": 0.0,
+                    "name": "Hard Waypoint 0",
+                    "y": 0.0
+                },
+                {
+                    "waypoint_type": "hard",
+                    "heading": 0.3490658503988659,
+                    "x": 2.0,
+                    "name": "Hard Waypoint 1",
+                    "y": 2.0
+                },
+                {
+                    "waypoint_type": "hard",
+                    "heading": -0.3490658503988659,
+                    "x": 4.0,
+                    "name": "Hard Waypoint 2",
+                    "y": -2.0
+                }
+            ]
+        },
+        {
+            "obstacles": [],
+            "name": "traj",
+            "waypoints": []
+        },
+        {
+            "obstacles": [],
+            "name": "5ball",
+            "waypoints": [
+                {
+                    "waypoint_type": "hard",
+                    "heading": 1.5707963267948966,
+                    "x": 0.6277175837864757,
+                    "name": "Hard Waypoint 0",
+                    "y": 2.285712120503004
+                },
+                {
+                    "waypoint_type": "hard",
+                    "heading": 1.5707963267948966,
+                    "x": 0.6306181529519832,
+                    "name": "Hard Waypoint 1",
+                    "y": 3.1106728905914394
+                },
+                {
+                    "waypoint_type": "hard",
+                    "heading": -0.0,
+                    "x": 2.442797077193063,
+                    "name": "Hard Waypoint 2",
+                    "y": 2.2630408131238373
+                },
+                {
+                    "waypoint_type": "hard",
+                    "heading": 0.29849893158617935,
+                    "x": 6.210816666131493,
+                    "name": "Hard Waypoint 3",
+                    "y": 2.7438814227312545
+                },
+                {
+                    "waypoint_type": "hard",
+                    "heading": 3.0193974828984382,
+                    "x": 6.675398959720178,
+                    "name": "Hard Waypoint 6",
+                    "y": -0.8271471903703149
+                },
+                {
+                    "waypoint_type": "hard",
+                    "heading": 2.9656530281372655,
+                    "x": 6.078675857980816,
+                    "name": "Hard Waypoint 4",
+                    "y": -2.378627254892659
+                },
+                {
+                    "waypoint_type": "hard",
+                    "heading": 2.525295716193722,
+                    "x": 3.8161049909657727,
+                    "name": "Hard Waypoint 5",
+                    "y": -2.477920424505108
+                }
+            ]
+        },
+        {
+            "obstacles": [],
+            "name": "traj1",
+            "waypoints": []
+        }
+    ],
+    "zoom_translate_x": -306.2866489233982,
+    "zoom_scale": 58.65367018300443,
+    "zoom_translate_y": -45.515218496779234,
+    "selected_path_index": 2
+}

@@ -9,10 +9,7 @@
     /* width: max-content; */
     background-position: center;
     background-size: contain;
-    
-    object-fit: contain;
-    object-position: center;
+    background-repeat: no-repeat;
     position:relative;
-    width: 100px;
-    height: 100px;
+    
 }

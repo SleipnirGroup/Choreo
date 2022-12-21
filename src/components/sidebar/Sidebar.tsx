@@ -1,6 +1,9 @@
 import React, { Component} from "react";
 import { DragDropContext, Droppable } from "react-beautiful-dnd";
+import HolonomicWaypoint from "../../datatypes/HolonomicWaypoint";
+import documentManager from "../../document/DocumentManager";
 import SidebarWaypoint from "./SidebarWaypoint";
+import WaypointPanel from "./WaypointPanel";
 const styles = require('./Sidebar.module.css').default;
 const waypointStyles = require('./SidebarWaypoint.module.css').default;
 
@@ -20,20 +23,29 @@ const getListStyle = (isDraggingOver : boolean) => ({
 });
 
 type Props = {};
-type State = {items: Array<SidebarWaypoint>};
+type State = {items: Array<SidebarWaypoint>, selectedIndex:number};
 
 export default class Sidebar extends Component<Props, State> {
+  state = {
+    items: new Array<SidebarWaypoint>(),
+    selectedIndex:1
+  }
   constructor(props: Props) {
     super(props);
-    this.state = {
-      items: [
-        new SidebarWaypoint({name:"test", index:0}),
-        new SidebarWaypoint({name:"tes", index:1})
-      ]
-    };
+
+    
     this.onDragEnd = this.onDragEnd.bind(this);
   }
 
+  onPathChange() {
+    
+    this.setState({
+      items: documentManager.model.getActivePath().waypoints.map(
+        (holonomicWaypoint: HolonomicWaypoint, index: number)=>
+          new SidebarWaypoint({waypoint: holonomicWaypoint, index:index})
+      )
+    })
+  }
   onDragEnd(result: any) {
     // dropped outside the list
     if (!result.destination) {
@@ -52,19 +64,29 @@ export default class Sidebar extends Component<Props, State> {
   }
 
   newWaypoint(): void {
-    let newIndex : number = this.state.items.length;
-    let newPoint: SidebarWaypoint = new SidebarWaypoint({name:`Waypoint ${newIndex}`, index: newIndex})
-    this.state.items.push(newPoint);
-    this.forceUpdate();
+    documentManager.model.getActivePath().addWaypoint();
+    this.onPathChange();
     console.log("adding waypoint")
+    
+  }
+  componentDidMount(): void {
+    documentManager.model.setActivePath("one");
+    this.onPathChange();
   }
   // Normally you would want to split things out into separate components.
   // But in this example everything is just done in one place for simplicity
   render() {
+    this.state.items.forEach((item, index) => {
+      item.index = index;
+      item.state.selected = (index === this.state.selectedIndex);
+    })
+    console.log(this.state.selectedIndex);
     return (
+      <div className={styles.Container}>
       <div className={styles.Sidebar}>
-        <div>
+      <div>
       <DragDropContext onDragEnd={this.onDragEnd}>
+
         <Droppable droppableId="droppable">
           {(provided, snapshot) => (
             <div
@@ -75,20 +97,25 @@ export default class Sidebar extends Component<Props, State> {
 
             >
               {this.state.items.map((item, index) => {
-                item.setState({index: index});
                 item.index = index;
+                console.log(item.index);
                 return item.render();
               })}
               {provided.placeholder}
-              <button onClick={()=>this.newWaypoint()} className={waypointStyles.Container}>Add new...</button>
+              <button onClick={()=>this.newWaypoint()} className={waypointStyles.Container}>+</button>
             </div>
+            
+            
           )}
           
         </Droppable>
         
       </DragDropContext>
+      </div>
+      <a href="https://discord.gg/JTHnsEC6sE">.</a>
       
       </div>
+      <WaypointPanel waypoint={documentManager.model.getActivePath().waypoints[this.state.selectedIndex]}></WaypointPanel>
       </div>
     );
   }
