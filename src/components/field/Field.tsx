@@ -12,7 +12,7 @@ type State = {shouldUpdate: boolean, overlayHeightPx: number, overlayWidthPx: nu
 
 export default class Field extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  context!: React.ContextType<typeof DocumentManagerContext>;
+  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {
     shouldUpdate: false,
     overlayHeightPx: 300,
@@ -39,12 +39,24 @@ export default class Field extends Component<Props, State> {
   constructor(props : Props) {
     super(props);
     console.log(this.context);
-    let fieldConfig = this.context.fieldConfig;
     
     this.containerRef = React.createRef<HTMLDivElement>();
     this.backgroundRef = React.createRef<HTMLDivElement>();
-    this.overlayRef = React.createRef<HTMLDivElement>();
+    this.overlayRef = React.createRef<HTMLDivElement>();    
     this.image = document.createElement("img");
+  }
+  
+  handleResize() {
+    this.setState({
+      overlayWidthPx:this.overlayRef.current?.getBoundingClientRect().width || 100,
+      overlayHeightPx:this.overlayRef.current?.getBoundingClientRect().height || 100,
+      shouldUpdate: true
+    })
+  }
+  componentDidMount(): void {
+    let fieldConfig = this.context.fieldConfig;
+    
+    
     this.image.src = `/fields/${fieldConfig["field-image"]}`;
       this.image.onload= (
         (event : Event)=>{
@@ -58,18 +70,6 @@ export default class Field extends Component<Props, State> {
     this.bottomYPerc = 100 - (100 *fieldConfig['field-corners']['bottom-right'][1] / this.image.naturalHeight);
     this.rightXPerc = 100 - (100 * fieldConfig['field-corners']['bottom-right'][0] / this.image.naturalWidth);
     
-
-    
-  }
-  
-  handleResize() {
-    this.setState({
-      overlayWidthPx:this.overlayRef.current?.getBoundingClientRect().width || 100,
-      overlayHeightPx:this.overlayRef.current?.getBoundingClientRect().height || 100,
-      shouldUpdate: true
-    })
-  }
-  componentDidMount(): void {
     window.addEventListener('resize', ()=>{this.handleResize();});
     this.handleResize();
   }

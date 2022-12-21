@@ -23,14 +23,13 @@ type State = {items: Array<SidebarWaypoint>, selectedIndex:number};
 
 class Sidebar extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  context!: React.ContextType<typeof DocumentManagerContext>;
+  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {
     items: new Array<SidebarWaypoint>(),
     selectedIndex:1
   }
   constructor(props: Props) {
     super(props);
-    console.log(this.context);
     
     this.onDragEnd = this.onDragEnd.bind(this);
   }
@@ -55,6 +54,7 @@ class Sidebar extends Component<Props, State> {
     
   }
   componentDidMount(): void {
+    console.log(this.context);
   }
   // Normally you would want to split things out into separate components.
   // But in this example everything is just done in one place for simplicity

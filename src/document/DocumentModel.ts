@@ -13,15 +13,6 @@ export const WaypointStore = types.model("WaypointStore", {
     controlIntervalCount: 0,
     name: "",
     uuid:types.identifier
-}).views(self=>{
-    return {
-    get x() {return self.x;},
-    get xConstrained() {return self.xConstrained;},
-    get y() {return self.y;},
-    get yConstrained() {return self.yConstrained;},
-    get heading() {return self.heading;},
-    get headingConstrained() {return self.headingConstrained;},
-    }
 }).actions(self=>{
     return {
         setX(x:number) {self.x=x},
@@ -53,6 +44,7 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
     return {
         addWaypoint () {
             self.waypoints.push(HolonomicWaypointStore.create({uuid: uuidv4()}));
+            console.log(self.waypoints);
         },
         reorder(startIndex: number, endIndex: number) {
             //self.waypoints.splice(endIndex, 0, self.waypoints.splice(startIndex, 1)[0]);
@@ -93,7 +85,7 @@ export const PathListStore = types.model("PathListStore", {
         },
         addPath(name:string) :void {
             let newUUID=uuidv4();
-            self.paths.put (HolonomicPathStore.create({uuid: newUUID, name:name}));
+            self.paths.put (HolonomicPathStore.create({uuid: newUUID, name:name, waypoints: []}));
             if (self.paths.size == 1) {
                 self.activePathUUID = newUUID
             }
