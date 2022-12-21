@@ -81,8 +81,8 @@ class Sidebar extends Component<Props, State> {
               style={getListStyle(snapshot.isDraggingOver)}
 
             >
-              {waypoints.map((item) => {
-                return item.render();
+              {waypoints.map((item, index) => {
+                return <div onClick={()=>{this.setState({selectedIndex:index})}}>{item.render()}</div>;
               })}
               {provided.placeholder}
               <button onClick={()=>this.newWaypoint()} className={waypointStyles.Container}>+</button>
