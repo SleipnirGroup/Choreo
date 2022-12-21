@@ -19,14 +19,6 @@ export class DocumentManager {
             "field-unit": "meter"
           }
     }
-
-    saveToJSON() : string {
-        let output : any = {};
-        this.model.getPaths().forEach((path)=>{
-            output[path]= this.model.getPath(path);
-        })
-        return JSON.stringify(output);
-    }
 }
 let documentManager = new DocumentManager();
 export default documentManager; 
