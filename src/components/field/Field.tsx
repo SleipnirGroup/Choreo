@@ -8,13 +8,13 @@ type Props = {
   containerWidth: number;
 }
 
-type State = {shouldUpdate: boolean, containerWidth: number, containerHeight: number}
+type State = {shouldUpdate: boolean, overlayHeightPx: number, overlayWidthPx: number}
 
 export default class Field extends Component<Props, State> {
   state = {
     shouldUpdate: false,
-    containerWidth: 300,
-    containerHeight: 300
+    overlayHeightPx: 300,
+    overlayWidthPx: 300
   }
   image: HTMLImageElement;
   topYPerc: number = 0;
@@ -22,7 +22,6 @@ export default class Field extends Component<Props, State> {
   bottomYPerc: number = 0;
   rightXPerc: number = 0;
   aspectRatio: number = 0;
-  overlayHeightPx: number =0;
   fieldOverlayStyle = {
     position:'relative', 
     top:`${this.topYPerc}%`,
@@ -32,6 +31,7 @@ export default class Field extends Component<Props, State> {
   }
   containerRef: React.RefObject<HTMLDivElement>;
   backgroundRef: React.RefObject<HTMLDivElement>;
+  overlayRef: React.RefObject<HTMLDivElement>;
 
   
   constructor(props : Props) {
@@ -40,34 +40,35 @@ export default class Field extends Component<Props, State> {
     
     this.containerRef = React.createRef<HTMLDivElement>();
     this.backgroundRef = React.createRef<HTMLDivElement>();
+    this.overlayRef = React.createRef<HTMLDivElement>();
     this.image = document.createElement("img");
     this.image.src = `/fields/${fieldConfig["field-image"]}`;
-    this.aspectRatio = this.image.naturalWidth / this.image.naturalHeight;
+      this.image.onload= (
+        (event : Event)=>{
+          this.setState({shouldUpdate:true});
+        }
+      )
+
     this.topYPerc = 100 * fieldConfig['field-corners']['top-left'][1] / this.image.naturalHeight;
     this.leftXPerc = 100* fieldConfig['field-corners']['top-left'][0] / this.image.naturalWidth;
     
-    this.bottomYPerc = (100 *fieldConfig['field-corners']['bottom-right'][1] / this.image.naturalHeight);
-    this.rightXPerc = (100 * fieldConfig['field-corners']['bottom-right'][0] / this.image.naturalWidth);
-    this.overlayHeightPx = this.bottomYPerc - this.topYPerc * this.state.containerHeight;
+    this.bottomYPerc = 100 - (100 *fieldConfig['field-corners']['bottom-right'][1] / this.image.naturalHeight);
+    this.rightXPerc = 100 - (100 * fieldConfig['field-corners']['bottom-right'][0] / this.image.naturalWidth);
+    
 
     
   }
   
   handleResize() {
     this.setState({
-      containerWidth:this.containerRef.current?.getBoundingClientRect().width || this.props.containerWidth,
-      containerHeight:this.containerRef.current?.getBoundingClientRect().height || this.props.containerHeight,
+      overlayWidthPx:this.overlayRef.current?.getBoundingClientRect().width || 100,
+      overlayHeightPx:this.overlayRef.current?.getBoundingClientRect().height || 100,
       shouldUpdate: true
     })
-    console.log("resize");
-    if(this.backgroundRef.current) {
-      this.backgroundRef.current.style.width = `${Math.min(this.state.containerWidth, this.aspectRatio * this.state.containerHeight)}px`;
-      this.backgroundRef.current.style.height = `${Math.min(this.state.containerHeight, this.state.containerWidth / this.aspectRatio)}px`;
-    }
   }
   componentDidMount(): void {
-    // window.addEventListener('resize', ()=>{this.handleResize();});
-    // this.handleResize();
+    window.addEventListener('resize', ()=>{this.handleResize();});
+    this.handleResize();
   }
  
   shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
@@ -78,7 +79,7 @@ export default class Field extends Component<Props, State> {
   }
   render() {
     
-    console.log(this.state.containerHeight, this.state.containerWidth);
+    console.log(`${this.image.naturalWidth} / ${this.image.naturalHeight}`);
     return (
       <div className={styles.Container} ref={this.containerRef}>
         <div className={styles.FieldBackground} ref={this.backgroundRef}
@@ -90,15 +91,15 @@ export default class Field extends Component<Props, State> {
               backgroundImage:`url('/fields/${documentManager.fieldConfig["field-image"]}')`
           }}>
         {/*TODO replace this div with a FieldOverlay component*/}
-        <div style= {{
+        <div ref={this.overlayRef} style= {{
     position:'absolute', 
     top:`${this.topYPerc}%`,
     left:`${this.leftXPerc}%`,
-    bottom:`${this.bottomYPerc}%`,
+    bottom: `${this.bottomYPerc}%`,
     right:`${this.rightXPerc}%`,
-    border:'1px red'
+    background:'red'
   }}>
-    <FieldOverlay></FieldOverlay>
+    <FieldOverlay heightpx={this.state.overlayHeightPx} widthpx={this.state.overlayWidthPx} ></FieldOverlay>
   </div>
           </div>
   </div>
