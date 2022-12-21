@@ -1,5 +1,6 @@
 import { types } from "mobx-state-tree";
 import { Instance } from "mobx-state-tree";
+import { moveItem } from "mobx-utils";
 import { v4 as uuidv4} from 'uuid';
 
 export const WaypointStore = types.model("WaypointStore", {
@@ -36,11 +37,13 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
             self.waypoints.push(HolonomicWaypointStore.create({uuid: uuidv4()}));
         },
         reorder(startIndex: number, endIndex: number) {
-            const result = self.waypoints;
-            const [removed] = result.splice(startIndex, 1);
-            result.splice(endIndex, 0, removed);
-            self.waypoints = result
-            console.log(result);
+            //self.waypoints.splice(endIndex, 0, self.waypoints.splice(startIndex, 1)[0]);
+            moveItem(self.waypoints, startIndex, endIndex);
+            // const result = self.waypoints;
+            // const removed = result.spliceWithArray(startIndex, 1);
+            // result.spliceWithArray(endIndex, 0, removed);
+            // self.waypoints = result
+            // console.log(result);
           }
     }
 })
