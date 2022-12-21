@@ -1,14 +1,16 @@
 import React, { Component } from 'react'
-import documentManager from '../../document/DocumentManager'
+import DocumentManagerContext from '../../document/DocumentManager'
 
 type Props = {heightpx: number, widthpx: number}
 
 type State = {}
 
 export default class FieldOverlay extends Component<Props, State> {
+  static contextType = DocumentManagerContext;
+  context!: React.ContextType<typeof DocumentManagerContext>;
   state = {}
-  canvasHeightMeters = documentManager.fieldConfig['field-size'][1];
-  canvasWidthMeters = documentManager.fieldConfig['field-size'][0];
+  canvasHeightMeters = this.context.fieldConfig['field-size'][1];
+  canvasWidthMeters = this.context.fieldConfig['field-size'][0];
   canvasRef: React.RefObject<HTMLCanvasElement>;
   constructor(props: Props) {
     super(props);

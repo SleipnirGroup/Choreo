@@ -1,7 +1,7 @@
 import React, { Component} from "react";
 import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import HolonomicWaypoint from "../../datatypes/HolonomicWaypoint";
-import documentManager from "../../document/DocumentManager";
+import DocumentManagerContext, { DocumentManager } from "../../document/DocumentManager";
 import { HolonomicWaypointStore, IHolonomicWaypointStore } from "../../document/DocumentModel";
 import {observer} from "mobx-react"
 import SidebarWaypoint from "./SidebarWaypoint";
@@ -9,11 +9,8 @@ import WaypointPanel from "./WaypointPanel";
 const styles = require('./Sidebar.module.css').default;
 const waypointStyles = require('./SidebarWaypoint.module.css').default;
 
-
 // a little function to help us with reordering the result
-const reorder = ( startIndex: number, endIndex: number) => {
-  documentManager.model.pathlist.activePath.reorder(startIndex, endIndex);
-};
+
 
 
 const getListStyle = (isDraggingOver : boolean) => ({
@@ -25,31 +22,35 @@ type Props = {};
 type State = {items: Array<SidebarWaypoint>, selectedIndex:number};
 
 class Sidebar extends Component<Props, State> {
+  static contextType = DocumentManagerContext;
+  context!: React.ContextType<typeof DocumentManagerContext>;
   state = {
     items: new Array<SidebarWaypoint>(),
     selectedIndex:1
   }
   constructor(props: Props) {
     super(props);
-
+    console.log(this.context);
     
     this.onDragEnd = this.onDragEnd.bind(this);
   }
-
+  reorder ( startIndex: number, endIndex: number) {
+    this.context.model.pathlist.activePath.reorder(startIndex, endIndex);
+  };
   onDragEnd(result: any) {
     // dropped outside the list
     if (!result.destination) {
       return;
     }
 
-    reorder(
+    this.reorder(
       result.source.index,
       result.destination.index
     );
   }
 
   newWaypoint(): void {
-    documentManager.model.pathlist.activePath.addWaypoint();
+    this.context.model.pathlist.activePath.addWaypoint();
     console.log("adding waypoint")
     
   }
@@ -58,7 +59,8 @@ class Sidebar extends Component<Props, State> {
   // Normally you would want to split things out into separate components.
   // But in this example everything is just done in one place for simplicity
   render() {
-    let waypoints = documentManager.model.pathlist.activePath.waypoints.map(
+
+    let waypoints = this.context.model.pathlist.activePath.waypoints.map(
       (holonomicWaypoint: IHolonomicWaypointStore, index: number)=>
         new SidebarWaypoint({waypoint: holonomicWaypoint, index:index})
     );
@@ -98,7 +100,7 @@ class Sidebar extends Component<Props, State> {
       <a href="https://discord.gg/JTHnsEC6sE">.</a>
       
       </div>
-      <WaypointPanel waypoint={documentManager.model.pathlist.activePath.waypoints[this.state.selectedIndex]}></WaypointPanel>
+      <WaypointPanel waypoint={this.context.model.pathlist.activePath.waypoints[this.state.selectedIndex]}></WaypointPanel>
       </div>
     );
   }

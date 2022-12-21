@@ -26,6 +26,7 @@ export default class SidebarWaypoint extends Component<Props, State> {
   })};
 
   render() {
+    console.log(this.context);
     console.log(this.state.selected);
     return (
       <Draggable key={this.props.waypoint.uuid} draggableId={this.props.waypoint.uuid} index={this.props.index}>

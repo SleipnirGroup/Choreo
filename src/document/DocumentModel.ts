@@ -1,4 +1,4 @@
-import { types } from "mobx-state-tree";
+import { types, unprotect } from "mobx-state-tree";
 import { Instance } from "mobx-state-tree";
 import { moveItem } from "mobx-utils";
 import { v4 as uuidv4} from 'uuid';
@@ -13,6 +13,24 @@ export const WaypointStore = types.model("WaypointStore", {
     controlIntervalCount: 0,
     name: "",
     uuid:types.identifier
+}).views(self=>{
+    return {
+    get x() {return self.x;},
+    get xConstrained() {return self.xConstrained;},
+    get y() {return self.y;},
+    get yConstrained() {return self.yConstrained;},
+    get heading() {return self.heading;},
+    get headingConstrained() {return self.headingConstrained;},
+    }
+}).actions(self=>{
+    return {
+        setX(x:number) {self.x=x},
+        setXConstrained(xConstrained:boolean) {self.xConstrained=xConstrained},
+        setY(y:number) {self.y=y},
+        setYConstrained(yConstrained:boolean) {self.yConstrained=yConstrained},
+        setHeading(heading:number) {self.heading=heading},
+        setHeadingConstrained(headingConstrained:boolean) {self.headingConstrained=headingConstrained},
+    }
 })
 export interface IWaypointStore extends Instance<typeof WaypointStore> {};
 export const HolonomicWaypointStore= WaypointStore
@@ -44,7 +62,7 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
             // result.spliceWithArray(endIndex, 0, removed);
             // self.waypoints = result
             // console.log(result);
-          }
+        }
     }
 })
 export interface IHolonomicPathStore extends Instance<typeof HolonomicPathStore> {};

@@ -1,5 +1,5 @@
 import React, { Component, ReactNode } from 'react'
-import documentManager from '../../document/DocumentManager';
+import DocumentManagerContext from '../../document/DocumentManager';
 import FieldOverlay from './FieldOverlay';
 const styles = require("./Field.module.css").default;
 
@@ -11,6 +11,8 @@ type Props = {
 type State = {shouldUpdate: boolean, overlayHeightPx: number, overlayWidthPx: number}
 
 export default class Field extends Component<Props, State> {
+  static contextType = DocumentManagerContext;
+  context!: React.ContextType<typeof DocumentManagerContext>;
   state = {
     shouldUpdate: false,
     overlayHeightPx: 300,
@@ -36,7 +38,8 @@ export default class Field extends Component<Props, State> {
   
   constructor(props : Props) {
     super(props);
-    let fieldConfig = documentManager.fieldConfig;
+    console.log(this.context);
+    let fieldConfig = this.context.fieldConfig;
     
     this.containerRef = React.createRef<HTMLDivElement>();
     this.backgroundRef = React.createRef<HTMLDivElement>();
@@ -81,6 +84,7 @@ export default class Field extends Component<Props, State> {
     
     console.log(`${this.image.naturalWidth} / ${this.image.naturalHeight}`);
     return (
+      <div className={styles.FlexContainer}>
       <div className={styles.Container} ref={this.containerRef}>
         <div className={styles.FieldBackground} ref={this.backgroundRef}
           style={
@@ -88,7 +92,7 @@ export default class Field extends Component<Props, State> {
             {aspectRatio: `${this.image.naturalWidth} / ${this.image.naturalHeight}`,
             maxHeight:'100%',
             maxWidth:'100%',
-              backgroundImage:`url('/fields/${documentManager.fieldConfig["field-image"]}')`
+              backgroundImage:`url('/fields/${this.context.fieldConfig["field-image"]}')`
           }}>
         {/*TODO replace this div with a FieldOverlay component*/}
         <div ref={this.overlayRef} style= {{
@@ -102,6 +106,7 @@ export default class Field extends Component<Props, State> {
     <FieldOverlay heightpx={this.state.overlayHeightPx} widthpx={this.state.overlayWidthPx} ></FieldOverlay>
   </div>
           </div>
+  </div>
   </div>
     )
   }
