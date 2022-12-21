@@ -1,3 +1,5 @@
+import { observable } from 'mobx';
+import { observer } from 'mobx-react';
 import { Instance, types } from 'mobx-state-tree';
 import React, { Component } from 'react'
 
@@ -10,20 +12,22 @@ type Props = {
     setEnabled: (arg0:boolean)=>void}
 
 type State = {}
-
-export default class NumberEntry extends Component<Props, State> {
+ class NumberEntry extends Component<Props, State> {
   constructor(props: Props){
     super(props);
     this.setEnabled = this.setEnabled.bind(this);
     console.log(this.props);
   }
   setEnabled(event:React.ChangeEvent<HTMLInputElement>) {
+    console.log(this.props.enabled)
     this.props.setEnabled(event.target.checked);
+    console.log(this.props.enabled)
   }
   render() {
     console.log(this.props.setEnabled);
     return (
-      <span>{this.props.title} <input type='number'></input> <input type='checkbox' checked={this.props.enabled} onChange={this.setEnabled}></input></span>
+      <span>{this.props.title} <input type='number' disabled={!(this.props.enabled)}></input> <input type='checkbox' onChange={this.setEnabled}></input>{`${this.props.enabled.valueOf()}`}</span>
     )
   }
 }
+export default observer(NumberEntry);

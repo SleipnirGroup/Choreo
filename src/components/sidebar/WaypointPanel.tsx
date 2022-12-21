@@ -1,6 +1,8 @@
+import { observer } from 'mobx-react';
 import React, { Component } from 'react'
 import HolonomicWaypoint from '../../datatypes/HolonomicWaypoint';
 import Waypoint from '../../datatypes/Waypoint';
+import DocumentManagerContext from '../../document/DocumentManager';
 import { IHolonomicWaypointStore } from '../../document/DocumentModel';
 import NumberEntry from '../../util/NumberEntry';
 const styles = require('./Sidebar.module.css').default;
@@ -9,7 +11,9 @@ type Props = {waypoint: IHolonomicWaypointStore}
 
 type State = {}
 
-export default class WaypointPanel extends Component<Props, State> {
+class WaypointPanel extends Component<Props, State> {
+  static contextType = DocumentManagerContext;
+  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {}
 
   render() {
@@ -32,3 +36,4 @@ export default class WaypointPanel extends Component<Props, State> {
     )
   }
 }
+export default observer(WaypointPanel);
