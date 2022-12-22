@@ -12,7 +12,8 @@ export const WaypointStore = types.model("WaypointStore", {
     headingConstrained: false,
     controlIntervalCount: 0,
     name: "",
-    uuid:types.identifier
+    uuid:types.identifier,
+    selected: false
 }).actions(self=>{
     return {
         setX(x:number) {self.x=x},
@@ -21,6 +22,7 @@ export const WaypointStore = types.model("WaypointStore", {
         setYConstrained(yConstrained:boolean) {self.yConstrained=yConstrained},
         setHeading(heading:number) {self.heading=heading},
         setHeadingConstrained(headingConstrained:boolean) {self.headingConstrained=headingConstrained},
+        setSelected(selected:boolean) {self.selected = selected}
     }
 })
 export interface IWaypointStore extends Instance<typeof WaypointStore> {};
@@ -40,8 +42,22 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
     name: "",
     uuid: types.identifier,
     waypoints: types.array(HolonomicWaypointStore)
+}).views(self=>{
+    return {
+        lowestSelectedPoint() :IHolonomicWaypointStore | null {
+            for(let point of self.waypoints) {
+                if (point.selected) return point;
+            }
+            return null;
+        }
+    }
 }).actions(self=>{
     return {
+        selectOnly(selectedIndex:number) {
+            self.waypoints.forEach((point, index) => {
+                point.selected = (selectedIndex === index);
+            });
+        },
         addWaypoint () {
             self.waypoints.push(HolonomicWaypointStore.create({uuid: uuidv4()}));
             console.log(self.waypoints);

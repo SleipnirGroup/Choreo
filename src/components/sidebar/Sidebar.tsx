@@ -19,7 +19,7 @@ const getListStyle = (isDraggingOver : boolean) => ({
 });
 
 type Props = {};
-type State = {items: Array<SidebarWaypoint>, selectedIndex:number};
+type State = {items: Array<SidebarWaypoint>};
 
 class Sidebar extends Component<Props, State> {
   static contextType = DocumentManagerContext;
@@ -64,10 +64,6 @@ class Sidebar extends Component<Props, State> {
       (holonomicWaypoint: IHolonomicWaypointStore, index: number)=>
         new SidebarWaypoint({waypoint: holonomicWaypoint, index:index})
     );
-    waypoints.forEach((item, index) => {
-      item.state.selected = (index === this.state.selectedIndex);
-    })
-    console.log(this.state.selectedIndex);
     return (
       <div className={styles.Container}>
       <div className={styles.Sidebar}>
@@ -84,7 +80,7 @@ class Sidebar extends Component<Props, State> {
 
             >
               {waypoints.map((item, index) => {
-                return <div onClick={()=>{this.setState({selectedIndex:index})}}>{item.render()}</div>;
+                return <div onClick={()=>{this.context.model.pathlist.activePath.selectOnly(index);}}>{item.render()}</div>;
               })}
               {provided.placeholder}
               <button onClick={()=>this.newWaypoint()} className={waypointStyles.Container}>+</button>
@@ -100,7 +96,7 @@ class Sidebar extends Component<Props, State> {
       <a href="https://discord.gg/JTHnsEC6sE">.</a>
       
       </div>
-      <WaypointPanel waypoint={this.context.model.pathlist.activePath.waypoints[this.state.selectedIndex]}></WaypointPanel>
+      <WaypointPanel waypoint={this.context.model.pathlist.activePath.lowestSelectedPoint()}></WaypointPanel>
       </div>
     );
   }

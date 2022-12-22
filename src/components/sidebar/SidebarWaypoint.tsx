@@ -27,7 +27,7 @@ export default class SidebarWaypoint extends Component<Props, State> {
 
   render() {
     console.log(this.context);
-    console.log(this.state.selected);
+    console.log(this.props.waypoint.selected);
     return (
       <Draggable key={this.props.waypoint.uuid} draggableId={this.props.waypoint.uuid} index={this.props.index}>
         {(provided, snapshot)=>(
@@ -35,7 +35,7 @@ export default class SidebarWaypoint extends Component<Props, State> {
             ref={provided.innerRef}
             {...provided.draggableProps}
             {...provided.dragHandleProps}
-            className = {styles.Container  + (this.state.selected ? ` ${styles.selected}` : "")}
+            className = {styles.Container  + (this.props.waypoint.selected ? ` ${styles.selected}` : "")}
             
             style={this.getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
         >
