@@ -1,5 +1,6 @@
 import React, { Component, ReactNode } from 'react'
-import FieldConfig from '../../datatypes/FieldConfig';
+import DocumentManagerContext from '../../document/DocumentManager';
+import FieldOverlay from './FieldOverlay';
 const styles = require("./Field.module.css").default;
 
 type Props = {
@@ -7,21 +8,15 @@ type Props = {
   containerWidth: number;
 }
 
-type State = {fieldConfig: FieldConfig, shouldUpdate: boolean}
+type State = {shouldUpdate: boolean, overlayHeightPx: number, overlayWidthPx: number}
 
 export default class Field extends Component<Props, State> {
+  static contextType = DocumentManagerContext;
+  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {
-    fieldConfig: {
-      "game": "Rapid React",
-      "field-image": "2022-field.png",
-      "field-corners": {
-        "top-left": [74, 45],
-        "bottom-right": [1781, 903]
-      },
-      "field-size": [54, 27],
-      "field-unit": "foot"
-    },
-    shouldUpdate: true
+    shouldUpdate: false,
+    overlayHeightPx: 300,
+    overlayWidthPx: 300
   }
   image: HTMLImageElement;
   topYPerc: number = 0;
@@ -37,25 +32,47 @@ export default class Field extends Component<Props, State> {
     right:`${this.rightXPerc}%`,
   }
   containerRef: React.RefObject<HTMLDivElement>;
+  backgroundRef: React.RefObject<HTMLDivElement>;
+  overlayRef: React.RefObject<HTMLDivElement>;
 
   
   constructor(props : Props) {
     super(props);
-    window.addEventListener('resize', ()=>{this.setState({shouldUpdate: true});});
-    this.containerRef = React.createRef<HTMLDivElement>();
-    this.image = document.createElement("img");
-    this.image.src = `/fields/${this.state.fieldConfig["field-image"]}`;
-    this.aspectRatio = this.image.naturalWidth / this.image.naturalHeight;
-    this.topYPerc = 100 * this.state.fieldConfig['field-corners']['top-left'][1] / this.image.naturalHeight;
-    this.leftXPerc = 100* this.state.fieldConfig['field-corners']['top-left'][0] / this.image.naturalWidth;
-    this.bottomYPerc = 100 - (100 *this.state.fieldConfig['field-corners']['bottom-right'][1] / this.image.naturalHeight);
-    this.rightXPerc = 100 -(100 * this.state.fieldConfig['field-corners']['bottom-right'][0] / this.image.naturalWidth);
-
+    console.log(this.context);
     
+    this.containerRef = React.createRef<HTMLDivElement>();
+    this.backgroundRef = React.createRef<HTMLDivElement>();
+    this.overlayRef = React.createRef<HTMLDivElement>();    
+    this.image = document.createElement("img");
   }
   
+  handleResize() {
+    this.setState({
+      overlayWidthPx:this.overlayRef.current?.getBoundingClientRect().width || 100,
+      overlayHeightPx:this.overlayRef.current?.getBoundingClientRect().height || 100,
+      shouldUpdate: true
+    })
+  }
   componentDidMount(): void {
-      this.setState({shouldUpdate: true});
+    let fieldConfig = this.context.fieldConfig;
+    
+    
+    this.image.src = `/fields/${fieldConfig["field-image"]}`;
+      this.image.onload= (
+        (event : Event)=>{
+          this.topYPerc = 100 * fieldConfig['field-corners']['top-left'][1] / this.image.naturalHeight;
+    this.leftXPerc = 100* fieldConfig['field-corners']['top-left'][0] / this.image.naturalWidth;
+    
+    this.bottomYPerc = 100 - (100 *fieldConfig['field-corners']['bottom-right'][1] / this.image.naturalHeight);
+    this.rightXPerc = 100 - (100 * fieldConfig['field-corners']['bottom-right'][0] / this.image.naturalWidth);
+          this.setState({shouldUpdate:true});
+        }
+      )
+
+    
+    
+    window.addEventListener('resize', ()=>{this.handleResize();});
+    this.handleResize();
   }
  
   shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
@@ -65,28 +82,32 @@ export default class Field extends Component<Props, State> {
     this.setState({shouldUpdate: false});
   }
   render() {
-    let containerWidth = this.containerRef.current?.getBoundingClientRect().width || this.props.containerWidth;
-    let containerHeight = this.containerRef.current?.getBoundingClientRect().height || this.props.containerHeight;
-    console.log(containerHeight, containerWidth);
+    
+    console.log(`${this.image.naturalWidth} / ${this.image.naturalHeight}`);
     return (
+      <div className={styles.FlexContainer}>
       <div className={styles.Container} ref={this.containerRef}>
-        <div className={styles.FieldBackground} 
+        <div className={styles.FieldBackground} ref={this.backgroundRef}
           style={
-            {backgroundImage:`url('/fields/${this.state.fieldConfig["field-image"]}')`,
-            width:`min(${containerWidth}px, ${this.aspectRatio * containerHeight}px)`,
-            height:`min(${containerHeight}px, ${containerWidth / this.aspectRatio}px)`
-          }
-          }>
+            
+            {aspectRatio: `${this.image.naturalWidth} / ${this.image.naturalHeight}`,
+            maxHeight:'100%',
+            maxWidth:'100%',
+              backgroundImage:`url('/fields/${this.context.fieldConfig["field-image"]}')`
+          }}>
         {/*TODO replace this div with a FieldOverlay component*/}
-        <div style= {{
+        <div ref={this.overlayRef} style= {{
     position:'absolute', 
     top:`${this.topYPerc}%`,
     left:`${this.leftXPerc}%`,
-    bottom:`${this.bottomYPerc}%`,
+    bottom: `${this.bottomYPerc}%`,
     right:`${this.rightXPerc}%`,
-    border:'1px red'
-  }}></div>
+    background:'red'
+  }}>
+    <FieldOverlay heightpx={this.state.overlayHeightPx} widthpx={this.state.overlayWidthPx} ></FieldOverlay>
+  </div>
           </div>
+  </div>
   </div>
     )
   }

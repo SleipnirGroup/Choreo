@@ -9,4 +9,5 @@ export default class HolonomicWaypoint extends Waypoint {
     velocityMagnitudeConstrained: boolean = false;
     angularVelocityConstrained: boolean = false;
 
+
 }

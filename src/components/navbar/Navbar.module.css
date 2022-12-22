@@ -11,9 +11,12 @@
     justify-content: space-between;
     height: 5rem;
 }
-@media only screen and (max-width:720px) {
+@media only screen and (max-width:1000px) {
     h1 {
         display: none;
+    }
+    .Container {
+        justify-content: end;
     }
     
 }

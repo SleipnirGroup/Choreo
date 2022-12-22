@@ -1,11 +1,22 @@
 .Container {
-    height: 3rem;
-    background-color: #4D4D4D;
-    border-radius: 2rem;
-    width: 95%;
+    height: 48px;
+    background-color: var(--accent-purple);
+    border-radius: 50%;
+    width: 48px;
+    font-size:24px;
+    text-align: center;
+
     margin-top: 0.5rem;
     margin-bottom: 0.5rem;
     margin-left: auto;
     margin-right: auto;
+    padding-top: auto;
+    padding-bottom: auto;
     box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.selected {
+    border: 2px solid #FFC52F;
 }

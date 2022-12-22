@@ -1,3 +1,8 @@
+.Container {
+    display:flex;
+    flex-direction: row;
+    justify-content: flex-start;
+}
 .Sidebar{
     background-color: #2C2C2C;
     border: 1px solid #3F3F3F;
@@ -5,9 +10,19 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    flex: 0 0 250px;
+    width: 60px;
     color: white;
     box-sizing: border-box;
+}
+.WaypointPanel{
+    overflow-x:hidden;
+    overflow-y: scroll;
+    width:500px;
+    background-color: #414141;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 .WaypointList{
     padding: 8px;

@@ -1,41 +1,45 @@
 import React, { Component } from 'react'
 import { Draggable, DraggingStyle, NotDraggingStyle } from 'react-beautiful-dnd';
 import { CSSProperties } from 'styled-components';
+import Waypoint from '../../datatypes/Waypoint';
+import { HolonomicWaypointStore, IHolonomicWaypointStore } from '../../document/DocumentModel';
 const styles = require('./SidebarWaypoint.module.css').default;
 
 type Props = {
-    name: string;
+  waypoint: IHolonomicWaypointStore;
     index: number;
 }
 
-type State = {}
+type State = {selected:boolean;}
 
 export default class SidebarWaypoint extends Component<Props, State> {
     id: number = 0;
-  state = {}
-  index: number = 0;
+  state = {selected: false};
     
     getItemStyle (isDragging: boolean, draggableStyle: DraggingStyle | NotDraggingStyle | undefined) : CSSProperties {return ({
   
     // change background colour if dragging
-    background: isDragging ? "lightgreen" : "grey",
+    //background: isDragging ? "lightgreen" : "revert",
   
     // styles we need to apply on draggables
     ...draggableStyle
   })};
 
   render() {
+    console.log(this.context);
+    console.log(this.props.waypoint.selected);
     return (
-      <Draggable key={this.props.name} draggableId={this.props.name} index={this.index}>
+      <Draggable key={this.props.waypoint.uuid} draggableId={this.props.waypoint.uuid} index={this.props.index}>
         {(provided, snapshot)=>(
         <div
             ref={provided.innerRef}
             {...provided.draggableProps}
             {...provided.dragHandleProps}
-            className = {styles.Container}
+            className = {styles.Container  + (this.props.waypoint.selected ? ` ${styles.selected}` : "")}
+            
             style={this.getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
         >
-                {this.props.name}
+                {this.props.index +1}
         </div>)}
     </Draggable>
     )

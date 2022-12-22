@@ -1,11 +1,17 @@
 import HolonomicWaypoint from "./HolonomicWaypoint";
 
 export default class HolonomicPath {
-    holonomicWaypoints: Array<HolonomicWaypoint>;
+    waypoints: Array<HolonomicWaypoint>;
+
 
     constructor(
         waypoints: Array<HolonomicWaypoint>
     ) {
-        this.holonomicWaypoints = waypoints;
+        this.waypoints = waypoints;
+    }
+
+    addWaypoint() {
+        let name = Math.random().toString();
+        this.waypoints.push(new HolonomicWaypoint(name))
     }
 }

@@ -1,17 +1,16 @@
 import React, { Component} from "react";
 import { DragDropContext, Droppable } from "react-beautiful-dnd";
+import HolonomicWaypoint from "../../datatypes/HolonomicWaypoint";
+import DocumentManagerContext, { DocumentManager } from "../../document/DocumentManager";
+import { HolonomicWaypointStore, IHolonomicWaypointStore } from "../../document/DocumentModel";
+import {observer} from "mobx-react"
 import SidebarWaypoint from "./SidebarWaypoint";
+import WaypointPanel from "./WaypointPanel";
 const styles = require('./Sidebar.module.css').default;
 const waypointStyles = require('./SidebarWaypoint.module.css').default;
 
-
 // a little function to help us with reordering the result
-const reorder = (list : Array<SidebarWaypoint>, startIndex: number, endIndex: number) => {
-  const result = Array.from(list);
-  const [removed] = result.splice(startIndex, 1);
-  result.splice(endIndex, 0, removed);
-  return result;
-};
+
 
 
 const getListStyle = (isDraggingOver : boolean) => ({
@@ -22,49 +21,55 @@ const getListStyle = (isDraggingOver : boolean) => ({
 type Props = {};
 type State = {items: Array<SidebarWaypoint>};
 
-export default class Sidebar extends Component<Props, State> {
+class Sidebar extends Component<Props, State> {
+  static contextType = DocumentManagerContext;
+  declare context: React.ContextType<typeof DocumentManagerContext>;
+  state = {
+    items: new Array<SidebarWaypoint>(),
+    selectedIndex:1
+  }
   constructor(props: Props) {
     super(props);
-    this.state = {
-      items: [
-        new SidebarWaypoint({name:"test", index:0}),
-        new SidebarWaypoint({name:"tes", index:1})
-      ]
-    };
+    
     this.onDragEnd = this.onDragEnd.bind(this);
   }
-
+  reorder ( startIndex: number, endIndex: number) {
+    this.context.model.pathlist.activePath.reorder(startIndex, endIndex);
+  };
   onDragEnd(result: any) {
     // dropped outside the list
     if (!result.destination) {
       return;
     }
 
-    const items = reorder(
-      this.state.items,
+    this.reorder(
       result.source.index,
       result.destination.index
     );
-
-    this.setState({
-      items
-    });
   }
 
   newWaypoint(): void {
-    let newIndex : number = this.state.items.length;
-    let newPoint: SidebarWaypoint = new SidebarWaypoint({name:`Waypoint ${newIndex}`, index: newIndex})
-    this.state.items.push(newPoint);
-    this.forceUpdate();
+    this.context.model.pathlist.activePath.addWaypoint();
     console.log("adding waypoint")
+    
+  }
+  componentDidMount(): void {
+    console.log(this.context);
   }
   // Normally you would want to split things out into separate components.
   // But in this example everything is just done in one place for simplicity
   render() {
+
+    let waypoints = this.context.model.pathlist.activePath.waypoints.map(
+      (holonomicWaypoint: IHolonomicWaypointStore, index: number)=>
+        new SidebarWaypoint({waypoint: holonomicWaypoint, index:index})
+    );
     return (
+      <div className={styles.Container}>
       <div className={styles.Sidebar}>
-        <div>
+      <div>
       <DragDropContext onDragEnd={this.onDragEnd}>
+
         <Droppable droppableId="droppable">
           {(provided, snapshot) => (
             <div
@@ -74,22 +79,26 @@ export default class Sidebar extends Component<Props, State> {
               style={getListStyle(snapshot.isDraggingOver)}
 
             >
-              {this.state.items.map((item, index) => {
-                item.setState({index: index});
-                item.index = index;
-                return item.render();
+              {waypoints.map((item, index) => {
+                return <div onClick={()=>{this.context.model.pathlist.activePath.selectOnly(index);}}>{item.render()}</div>;
               })}
               {provided.placeholder}
-              <button onClick={()=>this.newWaypoint()} className={waypointStyles.Container}>Add new...</button>
+              <button onClick={()=>this.newWaypoint()} className={waypointStyles.Container}>+</button>
             </div>
+            
+            
           )}
           
         </Droppable>
         
       </DragDropContext>
+      </div>
+      <a href="https://discord.gg/JTHnsEC6sE">.</a>
       
       </div>
+      <WaypointPanel waypoint={this.context.model.pathlist.activePath.lowestSelectedPoint()}></WaypointPanel>
       </div>
     );
   }
 }
+export default observer(Sidebar);
