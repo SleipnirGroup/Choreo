@@ -3,22 +3,24 @@
     display: inline-flex;
     flex-direction: row;
     justify-content: space-around;
+    padding-top: 3px;
+    padding-bottom:3px;
 }
 .Title{
     width:20%;
-    border: solid red 1px;
     text-align: center;
 }
 .Number{
     width:30%;
-    border: solid red 1px;
+    background-color: transparent;
+    border:none;
+    color:white;
+    border-bottom: solid white 2px;
 }
 .Suffix{
     width: 20%;
-    border: solid red 1px;
     text-align: center;
 }
 .Checkbox{
     width:10%;
-    border: solid red 1px;
 }

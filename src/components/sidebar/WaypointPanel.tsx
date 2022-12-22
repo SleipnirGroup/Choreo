@@ -44,8 +44,7 @@ class WaypointPanel extends Component<Props, State> {
           setEnabled={enabled=>waypoint!.setHeadingConstrained(enabled)}
           number={waypoint.heading} 
           setNumber={heading=>waypoint!.setHeading(heading)}></NumberEntry>
-        {/* <NumberEntry title="y" suffix="m" defaultEnabled={this.props.waypoint.yConstrained}></NumberEntry>
-        <NumberEntry title="θ" suffix="rad" defaultEnabled={this.props.waypoint.headingConstrained}></NumberEntry>
+        {/*
         <NumberEntry title="vx" suffix="m/s" defaultEnabled={this.props.waypoint.velocityXConstrained}></NumberEntry>
         <NumberEntry title="vy" suffix="m/s" defaultEnabled={this.props.waypoint.velocityYConstrained}></NumberEntry>
         <NumberEntry title="ω" suffix="rad/s" defaultEnabled={this.props.waypoint.angularVelocityConstrained}></NumberEntry>

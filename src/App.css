@@ -1,5 +1,6 @@
 :root {
   --accent-purple: #7D73E7;
+  --select-yellow: #FFC52F;
 }
 html {
   font-size: calc(60% + 0.8vmin);
