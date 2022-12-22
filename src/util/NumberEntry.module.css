@@ -1,0 +1,24 @@
+.Container {
+    background: transparent;
+    display: inline-flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+.Title{
+    width:20%;
+    border: solid red 1px;
+    text-align: center;
+}
+.Number{
+    width:30%;
+    border: solid red 1px;
+}
+.Suffix{
+    width: 20%;
+    border: solid red 1px;
+    text-align: center;
+}
+.Checkbox{
+    width:10%;
+    border: solid red 1px;
+}

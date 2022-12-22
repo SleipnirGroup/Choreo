@@ -17,7 +17,12 @@
 .WaypointPanel{
     overflow-x:hidden;
     overflow-y: scroll;
-    width:200px
+    width:500px;
+    background-color: #414141;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 .WaypointList{
     padding: 8px;

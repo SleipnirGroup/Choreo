@@ -24,8 +24,28 @@ class WaypointPanel extends Component<Props, State> {
     console.log(this.props.waypoint);
     return (
       <div className={styles.WaypointPanel}>
-        <NumberEntry title="x" suffix="m" enabled={this.props.waypoint.xConstrained} setEnabled={(enabled)=>this.props.waypoint.setXConstrained(enabled)}
-           number={waypoint.x} setNumber={x=>waypoint.setX(x)}></NumberEntry>
+        {JSON.stringify(this.props.waypoint, null, 1)}<br></br>
+        <NumberEntry 
+          title="x" 
+          suffix="m" 
+          enabled={this.props.waypoint.xConstrained} 
+          setEnabled={enabled=>this.props.waypoint.setXConstrained(enabled)}
+          number={waypoint.x} 
+          setNumber={x=>waypoint.setX(x)}></NumberEntry>
+        <NumberEntry 
+          title="y" 
+          suffix="m" 
+          enabled={this.props.waypoint.yConstrained} 
+          setEnabled={enabled=>this.props.waypoint.setYConstrained(enabled)}
+          number={waypoint.y} 
+          setNumber={y=>waypoint.setY(y)}></NumberEntry>
+        <NumberEntry 
+          title="θ" 
+          suffix="rad" 
+          enabled={this.props.waypoint.headingConstrained} 
+          setEnabled={enabled=>this.props.waypoint.setHeadingConstrained(enabled)}
+          number={waypoint.heading} 
+          setNumber={heading=>waypoint.setHeading(heading)}></NumberEntry>
         {/* <NumberEntry title="y" suffix="m" defaultEnabled={this.props.waypoint.yConstrained}></NumberEntry>
         <NumberEntry title="θ" suffix="rad" defaultEnabled={this.props.waypoint.headingConstrained}></NumberEntry>
         <NumberEntry title="vx" suffix="m/s" defaultEnabled={this.props.waypoint.velocityXConstrained}></NumberEntry>
