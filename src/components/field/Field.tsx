@@ -60,15 +60,16 @@ export default class Field extends Component<Props, State> {
     this.image.src = `/fields/${fieldConfig["field-image"]}`;
       this.image.onload= (
         (event : Event)=>{
-          this.setState({shouldUpdate:true});
-        }
-      )
-
-    this.topYPerc = 100 * fieldConfig['field-corners']['top-left'][1] / this.image.naturalHeight;
+          this.topYPerc = 100 * fieldConfig['field-corners']['top-left'][1] / this.image.naturalHeight;
     this.leftXPerc = 100* fieldConfig['field-corners']['top-left'][0] / this.image.naturalWidth;
     
     this.bottomYPerc = 100 - (100 *fieldConfig['field-corners']['bottom-right'][1] / this.image.naturalHeight);
     this.rightXPerc = 100 - (100 * fieldConfig['field-corners']['bottom-right'][0] / this.image.naturalWidth);
+          this.setState({shouldUpdate:true});
+        }
+      )
+
+    
     
     window.addEventListener('resize', ()=>{this.handleResize();});
     this.handleResize();
