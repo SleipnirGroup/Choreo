@@ -1,6 +1,4 @@
-import { observable } from 'mobx';
 import { observer } from 'mobx-react';
-import { Instance, types } from 'mobx-state-tree';
 import React, { Component } from 'react'
 const styles = require("./NumberEntry.module.css").default;
 
@@ -14,41 +12,49 @@ type Props = {
 
 type State = {}
  class NumberEntry extends Component<Props, State> {
+  numberRef: React.RefObject<HTMLInputElement>;
   constructor(props: Props){
     super(props);
     this.setEnabled = this.setEnabled.bind(this);
     this.setNumber = this.setNumber.bind(this);
-    console.log(this.props);
+    this.numberRef = React.createRef<HTMLInputElement>();
   }
   setEnabled(event:React.ChangeEvent<HTMLInputElement>) {
-    console.log(this.props.enabled)
     this.props.setEnabled(event.target.checked);
-    console.log(this.props.enabled)
   }
-  setNumber(event:React.FocusEvent<HTMLInputElement>) {
-    let input = Number.parseFloat(event.target.value);
+  setNumber(event:React.ChangeEvent<HTMLInputElement>) {
+    let value = event.target.value;
+    if (value === '+' || value === '-') return;
+    let input = Number.parseFloat(value);
     if (!Number.isNaN(input)){
         this.props.setNumber(input);
-        event.target.value = `${input}`;
-        console.log(input);
-    } else {
-        event.target.value= `${this.props.number}`;
-        return;
     }
   }
-  componentDidMount(): void {
-      
+  correctNumber() {
+    if (this.numberRef.current) {
+      this.numberRef.current.value = `${this.props.number}`;
+    }
+       
   }
+  componentDidMount(): void {
+      this.correctNumber();
+  }
+
   render() {
-    console.log(this.props.setEnabled);
+    this.correctNumber();
     return (
       <div className={styles.Container}>
         <span className={styles.Title}>{this.props.title}</span>
          <input 
-            type="text" inputMode="decimal" pattern="^-[0-9]*"
+            ref = {this.numberRef}
+            type="text" 
             className={styles.Number}
             disabled={!(this.props.enabled)}
-            onBlur={this.setNumber}
+            onChange={this.setNumber}
+            onBlur={(e)=>this.correctNumber()}
+            autoComplete="off"
+            autoCorrect='off'
+            autoCapitalize='off'
             
             ></input>
          <span className={styles.Suffix}>{this.props.suffix}</span>

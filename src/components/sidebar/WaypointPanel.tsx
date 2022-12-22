@@ -1,7 +1,5 @@
 import { observer } from 'mobx-react';
 import React, { Component } from 'react'
-import HolonomicWaypoint from '../../datatypes/HolonomicWaypoint';
-import Waypoint from '../../datatypes/Waypoint';
 import DocumentManagerContext from '../../document/DocumentManager';
 import { IHolonomicWaypointStore } from '../../document/DocumentModel';
 import NumberEntry from '../../util/NumberEntry';
@@ -23,10 +21,8 @@ class WaypointPanel extends Component<Props, State> {
     let {waypoint} = this.props;
     if(this.isWaypointNonNull(waypoint)) {
 
-    console.log(waypoint);
     return (
       <div className={styles.WaypointPanel}>
-        {JSON.stringify(waypoint, null, 1)}<br></br>
         <NumberEntry 
           title="x" 
           suffix="m" 

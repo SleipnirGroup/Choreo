@@ -18,5 +18,5 @@
     justify-content: center;
 }
 .selected {
-    border: 2px solid #FFC52F;
+    border: 2px solid var(--select-yellow);
 }

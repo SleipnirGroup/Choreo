@@ -1,7 +1,5 @@
 import { createContext } from "react";
 import FieldConfig from "../datatypes/FieldConfig";
-import HolonomicPath from "../datatypes/HolonomicPath";
-import HolonomicWaypoint from "../datatypes/HolonomicWaypoint";
 import DocumentModel from "./DocumentModel";
 
 export class DocumentManager {

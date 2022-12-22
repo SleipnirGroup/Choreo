@@ -1,8 +1,7 @@
 import React, { Component } from 'react'
 import { Draggable, DraggingStyle, NotDraggingStyle } from 'react-beautiful-dnd';
 import { CSSProperties } from 'styled-components';
-import Waypoint from '../../datatypes/Waypoint';
-import { HolonomicWaypointStore, IHolonomicWaypointStore } from '../../document/DocumentModel';
+import {IHolonomicWaypointStore } from '../../document/DocumentModel';
 const styles = require('./SidebarWaypoint.module.css').default;
 
 type Props = {
@@ -26,8 +25,6 @@ export default class SidebarWaypoint extends Component<Props, State> {
   })};
 
   render() {
-    console.log(this.context);
-    console.log(this.props.waypoint.selected);
     return (
       <Draggable key={this.props.waypoint.uuid} draggableId={this.props.waypoint.uuid} index={this.props.index}>
         {(provided, snapshot)=>(

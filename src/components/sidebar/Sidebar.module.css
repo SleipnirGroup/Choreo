@@ -17,7 +17,7 @@
 .WaypointPanel{
     overflow-x:hidden;
     overflow-y: scroll;
-    width:500px;
+    width:200px;
     background-color: #414141;
     color: white;
     display: flex;

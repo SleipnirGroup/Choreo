@@ -1,4 +1,4 @@
-import React, { Component, ReactNode } from 'react'
+import React, { Component} from 'react'
 import DocumentManagerContext from '../../document/DocumentManager';
 import FieldOverlay from './FieldOverlay';
 const styles = require("./Field.module.css").default;
@@ -38,7 +38,6 @@ export default class Field extends Component<Props, State> {
   
   constructor(props : Props) {
     super(props);
-    console.log(this.context);
     
     this.containerRef = React.createRef<HTMLDivElement>();
     this.backgroundRef = React.createRef<HTMLDivElement>();
@@ -61,11 +60,15 @@ export default class Field extends Component<Props, State> {
       this.image.onload= (
         (event : Event)=>{
           this.topYPerc = 100 * fieldConfig['field-corners']['top-left'][1] / this.image.naturalHeight;
-    this.leftXPerc = 100* fieldConfig['field-corners']['top-left'][0] / this.image.naturalWidth;
-    
-    this.bottomYPerc = 100 - (100 *fieldConfig['field-corners']['bottom-right'][1] / this.image.naturalHeight);
-    this.rightXPerc = 100 - (100 * fieldConfig['field-corners']['bottom-right'][0] / this.image.naturalWidth);
-          this.setState({shouldUpdate:true});
+          this.leftXPerc = 100* fieldConfig['field-corners']['top-left'][0] / this.image.naturalWidth;
+          
+          this.bottomYPerc = 100 - (100 *fieldConfig['field-corners']['bottom-right'][1] / this.image.naturalHeight);
+          this.rightXPerc = 100 - (100 * fieldConfig['field-corners']['bottom-right'][0] / this.image.naturalWidth);
+          this.setState({
+            overlayWidthPx:this.overlayRef.current?.getBoundingClientRect().width || 100,
+            overlayHeightPx:this.overlayRef.current?.getBoundingClientRect().height || 100,
+            shouldUpdate: true
+          })
         }
       )
 
@@ -82,10 +85,8 @@ export default class Field extends Component<Props, State> {
     this.setState({shouldUpdate: false});
   }
   render() {
-    
-    console.log(`${this.image.naturalWidth} / ${this.image.naturalHeight}`);
     return (
-      <div className={styles.FlexContainer}>
+      <div className={styles.Flex}>
       <div className={styles.Container} ref={this.containerRef}>
         <div className={styles.FieldBackground} ref={this.backgroundRef}
           style={
@@ -101,10 +102,9 @@ export default class Field extends Component<Props, State> {
     top:`${this.topYPerc}%`,
     left:`${this.leftXPerc}%`,
     bottom: `${this.bottomYPerc}%`,
-    right:`${this.rightXPerc}%`,
-    background:'red'
+    right:`${this.rightXPerc}%`
   }}>
-    <FieldOverlay heightpx={this.state.overlayHeightPx} widthpx={this.state.overlayWidthPx} ></FieldOverlay>
+    <FieldOverlay waypoints={this.context.model.pathlist.activePath.waypoints}></FieldOverlay>
   </div>
           </div>
   </div>

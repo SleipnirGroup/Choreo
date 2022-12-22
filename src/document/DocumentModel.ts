@@ -1,4 +1,4 @@
-import { types, unprotect } from "mobx-state-tree";
+import { types } from "mobx-state-tree";
 import { Instance } from "mobx-state-tree";
 import { moveItem } from "mobx-utils";
 import { v4 as uuidv4} from 'uuid';
@@ -7,9 +7,9 @@ export const WaypointStore = types.model("WaypointStore", {
     x: 0,
     y: 0,
     heading: 0,
-    xConstrained: false,
-    yConstrained: false,
-    headingConstrained: false,
+    xConstrained: true,
+    yConstrained: true,
+    headingConstrained: true,
     controlIntervalCount: 0,
     name: "",
     uuid:types.identifier,
@@ -60,16 +60,10 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
         },
         addWaypoint () {
             self.waypoints.push(HolonomicWaypointStore.create({uuid: uuidv4()}));
-            console.log(self.waypoints);
         },
         reorder(startIndex: number, endIndex: number) {
             //self.waypoints.splice(endIndex, 0, self.waypoints.splice(startIndex, 1)[0]);
             moveItem(self.waypoints, startIndex, endIndex);
-            // const result = self.waypoints;
-            // const removed = result.spliceWithArray(startIndex, 1);
-            // result.spliceWithArray(endIndex, 0, removed);
-            // self.waypoints = result
-            // console.log(result);
         }
     }
 })
@@ -100,9 +94,9 @@ export const PathListStore = types.model("PathListStore", {
             }
         },
         addPath(name:string) :void {
-            let newUUID=uuidv4();
+            let newUUID = uuidv4();
             self.paths.put (HolonomicPathStore.create({uuid: newUUID, name:name, waypoints: []}));
-            if (self.paths.size == 1) {
+            if (self.paths.size === 1) {
                 self.activePathUUID = newUUID
             }
         }
