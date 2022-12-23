@@ -3,20 +3,23 @@ import DocumentManagerContext from '../../document/DocumentManager';
 import FieldOverlay from './FieldOverlay';
 const styles = require("./Field.module.css").default;
 
-type Props = {
+type PropsWithContext = {
   containerHeight: number;
   containerWidth: number;
+  context:React.ContextType<typeof DocumentManagerContext>;
 }
+type Props = {
+  containerHeight: number;
+  containerWidth: number;}
 
-type State = {shouldUpdate: boolean, overlayHeightPx: number, overlayWidthPx: number}
+type State = {shouldUpdate: boolean}
 
-export default class Field extends Component<Props, State> {
+export class Field extends Component<PropsWithContext, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
+  mounted: boolean = false;
   state = {
-    shouldUpdate: false,
-    overlayHeightPx: 300,
-    overlayWidthPx: 300
+    shouldUpdate: false
   }
   image: HTMLImageElement;
   topYPerc: number = 0;
@@ -36,54 +39,31 @@ export default class Field extends Component<Props, State> {
   overlayRef: React.RefObject<HTMLDivElement>;
 
   
-  constructor(props : Props) {
+  constructor(props : PropsWithContext) {
     super(props);
-    
+    console.log(this.topYPerc);
     this.containerRef = React.createRef<HTMLDivElement>();
     this.backgroundRef = React.createRef<HTMLDivElement>();
-    this.overlayRef = React.createRef<HTMLDivElement>();    
-    this.image = document.createElement("img");
+    this.overlayRef = React.createRef<HTMLDivElement>();
+    let fieldConfig = this.props.context.fieldConfig;
+      this.topYPerc = 100 * fieldConfig['field-corners']['top-left'][1] / fieldConfig['field-image-size'][1];
+      this.leftXPerc = 100* fieldConfig['field-corners']['top-left'][0] / fieldConfig['field-image-size'][0];
+      
+      this.bottomYPerc = 100 - (100 *fieldConfig['field-corners']['bottom-right'][1] / fieldConfig['field-image-size'][1]);
+      this.rightXPerc = 100 - (100 * fieldConfig['field-corners']['bottom-right'][0] / fieldConfig['field-image-size'][0]);
+      console.log(this.topYPerc);
   }
   
   handleResize() {
-    this.setState({
-      overlayWidthPx:this.overlayRef.current?.getBoundingClientRect().width || 100,
-      overlayHeightPx:this.overlayRef.current?.getBoundingClientRect().height || 100,
-      shouldUpdate: true
-    })
   }
   componentDidMount(): void {
-    let fieldConfig = this.context.fieldConfig;
-    
-    
-    this.image.src = `/fields/${fieldConfig["field-image"]}`;
-      this.image.onload= (
-        (event : Event)=>{
-          this.topYPerc = 100 * fieldConfig['field-corners']['top-left'][1] / this.image.naturalHeight;
-          this.leftXPerc = 100* fieldConfig['field-corners']['top-left'][0] / this.image.naturalWidth;
-          
-          this.bottomYPerc = 100 - (100 *fieldConfig['field-corners']['bottom-right'][1] / this.image.naturalHeight);
-          this.rightXPerc = 100 - (100 * fieldConfig['field-corners']['bottom-right'][0] / this.image.naturalWidth);
-          this.setState({
-            overlayWidthPx:this.overlayRef.current?.getBoundingClientRect().width || 100,
-            overlayHeightPx:this.overlayRef.current?.getBoundingClientRect().height || 100,
-            shouldUpdate: true
-          })
-        }
-      )
-
-    
+    this.mounted = true;
     
     window.addEventListener('resize', ()=>{this.handleResize();});
     this.handleResize();
+    this.forceUpdate();
   }
  
-  shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
-      return nextState.shouldUpdate;
-  }
-  componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any): void {
-    this.setState({shouldUpdate: false});
-  }
   render() {
     return (
       <div className={styles.Flex}>
@@ -91,7 +71,7 @@ export default class Field extends Component<Props, State> {
         <div className={styles.FieldBackground} ref={this.backgroundRef}
           style={
             
-            {aspectRatio: `${this.image.naturalWidth} / ${this.image.naturalHeight}`,
+            {aspectRatio: `${this.context.fieldConfig['field-image-size'][0]} / ${this.context.fieldConfig['field-image-size'][1]}`,
             maxHeight:'100%',
             maxWidth:'100%',
               backgroundImage:`url('/fields/${this.context.fieldConfig["field-image"]}')`
@@ -112,3 +92,8 @@ export default class Field extends Component<Props, State> {
     )
   }
 }
+const FieldWithContext = (props: Props) => {
+  const context = React.useContext(DocumentManagerContext);
+  return <Field {...props} context={context}></Field>
+}
+export default FieldWithContext

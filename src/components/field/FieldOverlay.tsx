@@ -37,14 +37,16 @@ class FieldOverlay extends Component<Props, State> {
   }
   handleResize() {
     let containerRect: DOMRect | undefined = this.containerRef.current?.getBoundingClientRect();
+    console.log(this.containerRef.current?.getBoundingClientRect(), containerRect);
     if (containerRect !== undefined) {
+      console.log("setting heightpx", containerRect.height)
       this.setState({
         updateForcer: Math.random(),
         heightPx: containerRect.height,
         widthPx: containerRect.width
       });
     } else {
-      console.log("container rect undefined", this.containerRef.current);
+      console.log("container rect undefined", containerRect);
     }
   }
   updateField() {
@@ -60,7 +62,7 @@ class FieldOverlay extends Component<Props, State> {
     let pathString="";
     if (this.pathRef !== undefined) {
       this.context.model.pathlist.activePath.waypoints.forEach((point, index)=>{
-
+        console.log(this.state.heightPx, `${this.state.heightPx - this.mToPx(point.y)}`);
           pathString += `${this.mToPx(point.x)}, ${this.state.heightPx - this.mToPx(point.y)} `;
 
       })

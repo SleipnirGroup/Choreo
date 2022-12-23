@@ -10,10 +10,12 @@ export class DocumentManager {
         this.fieldConfig =  {
             "game": "Rapid React",
             "field-image": "2022-field.png",
+            "field-image-size":[1859, 949],
             "field-corners": {
               "top-left": [74, 50],
               "bottom-right": [1775, 901]
             },
+          
             "field-size": [16.4592, 8.2296],
             "field-unit": "meter"
           }
