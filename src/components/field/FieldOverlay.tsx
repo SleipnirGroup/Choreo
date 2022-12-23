@@ -59,27 +59,29 @@ class FieldOverlay extends Component<Props, State> {
     
   }
   render() {
+    
     let pathString="";
-    if (this.pathRef !== undefined) {
       this.context.model.pathlist.activePath.waypoints.forEach((point, index)=>{
-        console.log(this.state.heightPx, `${this.state.heightPx - this.mToPx(point.y)}`);
-          pathString += `${this.mToPx(point.x)}, ${this.state.heightPx - this.mToPx(point.y)} `;
+
+          pathString += `${point.x}, ${this.canvasHeightMeters - point.y} `;
 
       })
-    }
+
+    let generatedPathString = "";
+    this.context.model.pathlist.activePath.generated.forEach(point => {
+      generatedPathString += `${point.x + 1},${this.canvasHeightMeters - point.y} `;
+  })
     return (
       <div style={{position:'relative', height:'100%', width:'100%'}} ref={this.containerRef}>
-        <svg width={this.canvasWidthMeters} height={this.canvasHeightMeters}>
-          <polyline points={pathString} ref={this.pathRef} style={{fill:'none', stroke:'black', strokeWidth:3}}></polyline>
+        <svg viewBox={`0 0 ${this.canvasWidthMeters} ${this.canvasHeightMeters}`}>
+          <polyline points={pathString} style={{fill:'none', stroke:'black', strokeWidth:0.1}}></polyline>
+        </svg>
+        <svg viewBox={`0 0 ${this.canvasWidthMeters} ${this.canvasHeightMeters}`}>
+          <polyline points={generatedPathString} style={{fill:'none', stroke:'blue', strokeWidth:0.1}}></polyline>
         </svg>
         {
         this.context.model.pathlist.activePath.waypoints.map((point, index) => {
             return <OverlayWaypoint mToPx={this.mToPx(1)} waypoint={point} index={index}></OverlayWaypoint>
-            // return <div className={
-            //   styles.Waypoint 
-            //   + (point.selected ? ` ${styles.selected}` : "")
-            //   + (point.headingConstrained ? ` ${styles.heading}` : "")
-            // } style={style} onClick={()=>this.selectWaypoint(index)}></div>
           })
           
        

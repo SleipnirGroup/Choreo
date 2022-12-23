@@ -21,14 +21,14 @@ export default class Navbar extends Component<Props, State> {
                 .map(path=><option value={path?.uuid} key={path?.uuid}>{path?.name}</option>)}
           </select>
           
-          <button id="addPath"onClick={()=>console.log(this.context.model.pathlist)}>+</button>
+          <button id="addPath" >+</button>
         </span>
         <h1>
           Untitled Waypoint Editor
         </h1>
         <span>
         <button id="addPath">Export Path to JSON</button>
-          <button id="generatePath">Generate Path</button>
+          <button id="generatePath" onClick={()=>this.context.model.pathlist.activePath.generatePath()}>Generate Path</button>
         </span>
       </div>
     )

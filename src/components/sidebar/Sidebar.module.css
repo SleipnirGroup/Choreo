@@ -5,14 +5,25 @@
 }
 .Sidebar{
     background-color: #2C2C2C;
-    border: 1px solid #3F3F3F;
+    
     /* align-self: center; */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    width: 60px;
+    align-items: center;
+    width: 100px;
     color: white;
     box-sizing: border-box;
+}
+.WaypointList{
+    outline: 1px solid #3F3F3F;
+    padding-top: 8px;
+    flex-direction: column;
+    align-items: center;
+  width: 100%;
+  height:100%;
+  box-sizing: content-box;
+  overflow-y: scroll;
 }
 .WaypointPanel{
     overflow-x:hidden;
@@ -24,11 +35,7 @@
     flex-direction: column;
     justify-content: flex-start;
 }
-.WaypointList{
-    padding: 8px;
-  width: 100%;
-  box-sizing: border-box;
-}
+
 button, select {
     background-color: #4D4D4D;
     color: white;

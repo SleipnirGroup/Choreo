@@ -5,6 +5,7 @@ import { DocumentManager } from './document/DocumentManager';
 import { createContext } from 'react';
 import Field from './components/field/Field';
 import { observer } from 'mobx-react';
+import { shell } from 'electron';
 function App() {
   const DocumentManagerContext = createContext(null)
   const documentManager = new DocumentManager();

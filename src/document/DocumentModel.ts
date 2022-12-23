@@ -2,7 +2,19 @@ import { types } from "mobx-state-tree";
 import { Instance } from "mobx-state-tree";
 import { moveItem } from "mobx-utils";
 import { v4 as uuidv4} from 'uuid';
-
+export const GeneratedPointStore = types.model("GeneratedPointStore", {
+        "timeInterval": 0,
+        "x": 0,
+        "y": 0,
+        "heading": 0,
+        "velocityX": 0,
+        "velocityY": 0,
+        "angularVelocity": 0
+}).actions(self=>{
+    return {setX(x:number) {self.x=x},
+        setY(y:number) {self.y=y},
+        setHeading(heading:number) {self.heading=heading}}
+})
 export const WaypointStore = types.model("WaypointStore", {
     x: 0,
     y: 0,
@@ -41,7 +53,8 @@ export interface IHolonomicWaypointStore extends Instance<typeof HolonomicWaypoi
 export const HolonomicPathStore = types.model("HolonomicPathStore", {
     name: "",
     uuid: types.identifier,
-    waypoints: types.array(HolonomicWaypointStore)
+    waypoints: types.array(HolonomicWaypointStore),
+    generated: types.array(GeneratedPointStore)
 }).views(self=>{
     return {
         lowestSelectedPoint() :IHolonomicWaypointStore | null {
@@ -64,6 +77,17 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
         reorder(startIndex: number, endIndex: number) {
             //self.waypoints.splice(endIndex, 0, self.waypoints.splice(startIndex, 1)[0]);
             moveItem(self.waypoints, startIndex, endIndex);
+        },
+        generatePath() {
+            self.generated.length = 0;
+            self.waypoints.forEach(point=>{
+                let newPoint = GeneratedPointStore.create();
+                newPoint.setX(point.x);
+                newPoint.setY(point.y);
+                newPoint.setHeading(point.heading);
+                self.generated.push(newPoint);
+            })
+            console.log(self.generated);
         }
     }
 })

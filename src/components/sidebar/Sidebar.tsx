@@ -3,6 +3,7 @@ import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import DocumentManagerContext from "../../document/DocumentManager";
 import {IHolonomicWaypointStore } from "../../document/DocumentModel";
 import {observer} from "mobx-react"
+import {shell} from 'electron';
 import SidebarWaypoint from "./SidebarWaypoint";
 import WaypointPanel from "./WaypointPanel";
 const styles = require('./Sidebar.module.css').default;
@@ -55,12 +56,11 @@ class Sidebar extends Component<Props, State> {
 
     let waypoints = this.context.model.pathlist.activePath.waypoints.map(
       (holonomicWaypoint: IHolonomicWaypointStore, index: number)=>
-        new SidebarWaypoint({waypoint: holonomicWaypoint, index:index})
+        new SidebarWaypoint({waypoint: holonomicWaypoint, index:index, context:this.context})
     );
     return (
       <div className={styles.Container}>
       <div className={styles.Sidebar}>
-      <div>
       <DragDropContext onDragEnd={this.onDragEnd}>
 
         <Droppable droppableId="droppable">
@@ -73,7 +73,7 @@ class Sidebar extends Component<Props, State> {
 
             >
               {waypoints.map((item, index) => {
-                return <div onClick={()=>{this.context.model.pathlist.activePath.selectOnly(index);}}>{item.render()}</div>;
+                return item.render();
               })}
               {provided.placeholder}
               <button onClick={()=>this.newWaypoint()} className={waypointStyles.Container}>+</button>
@@ -85,8 +85,8 @@ class Sidebar extends Component<Props, State> {
         </Droppable>
         
       </DragDropContext>
-      </div>
-      <a href="https://discord.gg/JTHnsEC6sE">.</a>
+
+      <div onClick={()=>{shell.openExternal("https://discord.com")}}>Discord</div>
       
       </div>
       <WaypointPanel waypoint={this.context.model.pathlist.activePath.lowestSelectedPoint()}></WaypointPanel>
