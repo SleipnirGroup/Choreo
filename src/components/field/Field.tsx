@@ -97,7 +97,7 @@ export default class Field extends Component<Props, State> {
               backgroundImage:`url('/fields/${this.context.fieldConfig["field-image"]}')`
           }}>
         {/*TODO replace this div with a FieldOverlay component*/}
-        <div ref={this.overlayRef} style= {{
+        <div ref={this.overlayRef} className={styles.Overlay} style= {{
     position:'absolute', 
     top:`${this.topYPerc}%`,
     left:`${this.leftXPerc}%`,

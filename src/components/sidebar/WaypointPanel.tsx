@@ -23,6 +23,7 @@ class WaypointPanel extends Component<Props, State> {
 
     return (
       <div className={styles.WaypointPanel}>
+        {JSON.stringify(this.props.waypoint, null, 1)}
         <NumberEntry 
           title="x" 
           suffix="m" 

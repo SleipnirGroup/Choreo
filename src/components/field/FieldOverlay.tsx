@@ -3,6 +3,7 @@ import { observer } from 'mobx-react';
 import React, { Component, ReactNode } from 'react'
 import DocumentManagerContext from '../../document/DocumentManager'
 import { IHolonomicWaypointStore } from '../../document/DocumentModel';
+import OverlayWaypoint from './OverlayWaypoint';
 const styles = require('./Field.module.css').default;
 type Props = {waypoints:Array<IHolonomicWaypointStore>}
 
@@ -26,7 +27,7 @@ class FieldOverlay extends Component<Props, State> {
     this.pathRef = React.createRef<SVGPolylineElement>();
   }
   mToPx = (m: number) => m * this.state.widthPx / this.canvasWidthMeters;
-  
+  pxToM = (px: number) => px * this.canvasWidthMeters / this.state.widthPx;
   componentDidMount(): void {
     this.canvasHeightMeters = this.context.fieldConfig['field-size'][1];
     this.canvasWidthMeters = this.context.fieldConfig['field-size'][0];
@@ -71,22 +72,12 @@ class FieldOverlay extends Component<Props, State> {
         </svg>
         {
         this.context.model.pathlist.activePath.waypoints.map((point, index) => {
-          let style = {
-            transform: `translate(-50%, -50%) 
-            translate(0px, ${this.state.heightPx}px)
-              translate(
-                ${this.mToPx(point.x)}px,
-                ${-this.mToPx(point.y)}px)
-                 rotate(${-point.heading}rad)
-                 scale(${this.mToPx(1) / 100})`,
-            color:``
-          }
-            
-            return <div className={
-              styles.Waypoint 
-              + (point.selected ? ` ${styles.selected}` : "")
-              + (point.headingConstrained ? ` ${styles.heading}` : "")
-            } style={style} onClick={()=>this.selectWaypoint(index)}></div>
+            return <OverlayWaypoint mToPx={this.mToPx(1)} waypoint={point} index={index}></OverlayWaypoint>
+            // return <div className={
+            //   styles.Waypoint 
+            //   + (point.selected ? ` ${styles.selected}` : "")
+            //   + (point.headingConstrained ? ` ${styles.heading}` : "")
+            // } style={style} onClick={()=>this.selectWaypoint(index)}></div>
           })
           
        
