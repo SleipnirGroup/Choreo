@@ -18,9 +18,6 @@ The trajectory optimizer depends upon the following user-specificed parameters, 
  - **Max Torque** [N * m]: The maximum torque applied at the wheel
     - Note: A reasonable choice of Max Torque is that corresponding to a current draw of approximately `1.5 * BreakerValue` experienced at the drive motor(s)
  - **Wheelbase** and **Trackwidth** [m]: The largest distances between the robot's wheel centers
-
-### Future
-These additional physical input parameters are planned to support future features:
  - **Length** and **Width** [m]: The overall size of the robot's *bumper*
 
 ### Measuring moment of intertia
