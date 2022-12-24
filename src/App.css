@@ -1,11 +1,25 @@
 :root {
   --accent-purple: #7D73E7;
+  --select-yellow: #FFC52F;
 }
 html {
   font-size: calc(60% + 0.8vmin);
 }
 * {
   font-size: 1rem;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  
+}
+*::-webkit-scrollbar-track{
+  background: transparent;
+  border-radius: 5px;
+}
+*::-webkit-scrollbar-thumb{
+  background: var(--select-yellow);
+  width:6px;
+  border-radius: 4px;
 }
 h1 {
   font-size: 2.2rem;

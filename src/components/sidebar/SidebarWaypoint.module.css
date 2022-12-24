@@ -5,7 +5,7 @@
     width: 48px;
     font-size:24px;
     text-align: center;
-
+    flex-shrink: 0;
     margin-top: 0.5rem;
     margin-bottom: 0.5rem;
     margin-left: auto;
@@ -18,5 +18,5 @@
     justify-content: center;
 }
 .selected {
-    border: 2px solid #FFC52F;
+    border: 2px solid var(--select-yellow);
 }

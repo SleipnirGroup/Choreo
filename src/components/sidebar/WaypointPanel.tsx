@@ -1,7 +1,5 @@
 import { observer } from 'mobx-react';
 import React, { Component } from 'react'
-import HolonomicWaypoint from '../../datatypes/HolonomicWaypoint';
-import Waypoint from '../../datatypes/Waypoint';
 import DocumentManagerContext from '../../document/DocumentManager';
 import { IHolonomicWaypointStore } from '../../document/DocumentModel';
 import NumberEntry from '../../util/NumberEntry';
@@ -23,10 +21,10 @@ class WaypointPanel extends Component<Props, State> {
     let {waypoint} = this.props;
     if(this.isWaypointNonNull(waypoint)) {
 
-    console.log(waypoint);
     return (
       <div className={styles.WaypointPanel}>
-        {JSON.stringify(waypoint, null, 1)}<br></br>
+        <span onClick={()=>this.context.model.pathlist.activePath.deleteWaypointUUID(this.props.waypoint?.uuid || "")}>Delete</span>
+        {JSON.stringify(this.props.waypoint, null, 1)}
         <NumberEntry 
           title="x" 
           suffix="m" 
@@ -48,8 +46,7 @@ class WaypointPanel extends Component<Props, State> {
           setEnabled={enabled=>waypoint!.setHeadingConstrained(enabled)}
           number={waypoint.heading} 
           setNumber={heading=>waypoint!.setHeading(heading)}></NumberEntry>
-        {/* <NumberEntry title="y" suffix="m" defaultEnabled={this.props.waypoint.yConstrained}></NumberEntry>
-        <NumberEntry title="θ" suffix="rad" defaultEnabled={this.props.waypoint.headingConstrained}></NumberEntry>
+        {/*
         <NumberEntry title="vx" suffix="m/s" defaultEnabled={this.props.waypoint.velocityXConstrained}></NumberEntry>
         <NumberEntry title="vy" suffix="m/s" defaultEnabled={this.props.waypoint.velocityYConstrained}></NumberEntry>
         <NumberEntry title="ω" suffix="rad/s" defaultEnabled={this.props.waypoint.angularVelocityConstrained}></NumberEntry>

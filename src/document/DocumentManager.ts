@@ -1,7 +1,5 @@
 import { createContext } from "react";
 import FieldConfig from "../datatypes/FieldConfig";
-import HolonomicPath from "../datatypes/HolonomicPath";
-import HolonomicWaypoint from "../datatypes/HolonomicWaypoint";
 import DocumentModel from "./DocumentModel";
 
 export class DocumentManager {
@@ -12,9 +10,10 @@ export class DocumentManager {
         this.fieldConfig =  {
             "game": "Rapid React",
             "field-image": "2022-field.png",
+            "field-image-size":[1859, 949],
             "field-corners": {
-              "top-left": [74, 45],
-              "bottom-right": [1781, 903]
+              "top-left": [74, 50],
+              "bottom-right": [1775, 901]
             },
             "field-size": [16.4592, 8.2296],
             "field-unit": "meter"
