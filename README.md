@@ -21,7 +21,7 @@ The trajectory optimizer depends upon the following user-specificed parameters, 
  - **Length** and **Width** [m]: The overall size of the robot's *bumper*
 
 ### Measuring moment of intertia
-The robot's rotational intertia has a significant impact on how quickly it can follow complex paths. For the best results, it is recommended to get as accurate an estimate of this parameter as possible. This can be accomplished via:
+The robot's rotational inertia has a significant impact on how quickly it can follow complex paths. For the best results, it is recommended to get as accurate an estimate of this parameter as possible. This can be accomplished via:
  - Faithful CAD loaded with mass properties
  - Physical experimentation
  - System Identification methods
