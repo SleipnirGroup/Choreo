@@ -1,4 +1,4 @@
-import Moveable, { MoveableManagerInterface, OnDrag, Renderer } from "react-moveable";
+import Moveable, { Able, MoveableManagerInterface, OnDrag, Renderer } from "react-moveable";
 import React, { Component} from 'react'
 import { observer } from "mobx-react";
 import { IHolonomicWaypointStore } from "../../document/DocumentModel";
@@ -14,6 +14,7 @@ interface RotatorAbleProps {
     rotatorAble:boolean,
     boxWidthPx:number
 }
+interface RotatorAble extends Able {};
  class OverlayWaypoint extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   context!: React.ContextType<typeof DocumentManagerContext>;
@@ -38,13 +39,13 @@ componentDidMount() {
 
 }
 
-RotatorAble = {
+RotatorAble :RotatorAble= {
     name: "rotatorAble",
     props: {rotatorAble: Boolean, boxWidthPx:Number},
     events: {},
     render(moveable: MoveableManagerInterface<RotatorAbleProps>, React: Renderer) {
       const {
-        rotation,width, height, offsetWidth
+        rotation,width, height, offsetWidth, offsetHeight
       } = moveable.getRect();
       // bounding box corners clockwise from top left
       const {
@@ -58,7 +59,7 @@ RotatorAble = {
           position: "absolute",
           left: `0px`,
           top: `0px`,
-          background: "red",
+          background: "transparent",
           borderRadius: "50%",
           width: `${moveable.props.boxWidthPx}px`,
           height: `${moveable.props.boxWidthPx}px`,
@@ -73,7 +74,24 @@ RotatorAble = {
     
   updateWaypoint() {
     const { x, y, heading} = this.props.waypoint;
+    const {bumperLength, bumperWidth} = this.context.model.robotConfig;
+    // Here we are forcing our child spans to size themselves based on the edge set as 100px below
+    // That edge is the shorter of the two.
+    if(this.dragTargetRef.current !== null) {
+      this.dragTargetRef.current.style.height=( (bumperLength >= bumperWidth) ? "100%" : "unset");
+      this.dragTargetRef.current.style.width=( (bumperLength >= bumperWidth) ? "unset" : "100%");
+    }
+    if (this.rotationTargetRef.current !==null) {
+      this.rotationTargetRef.current.style.height=( (bumperLength >= bumperWidth) ? "100%" : "unset");
+      this.rotationTargetRef.current.style.width=( (bumperLength >= bumperWidth) ? "unset" : "100%");
+    }
     if(this.moveRef.current !== null) {
+      // Set the aspect ratio and force either width or height to 100px, whichever is the shorter edge.
+      this.moveRef.current.style.aspectRatio = `${bumperLength} / ${bumperWidth}`;
+      this.moveRef.current.style.height=( (bumperLength >= bumperWidth) ? "100px" : "unset");
+      this.moveRef.current.style.width=( (bumperLength >= bumperWidth) ? "unset" : "100px");
+
+      // Update position from the waypoint store
         this.moveRef.current.style.transform = `
         translate(-50%, -50%)
         translate(${x * this.props.mToPx}px, ${-y * this.props.mToPx}px)
@@ -95,12 +113,7 @@ RotatorAble = {
             className={styles.Waypoint 
                     + (this.props.waypoint.headingConstrained ? ` ${styles.heading}`: "")
                     + (this.props.waypoint.selected ? ` ${styles.selected}`: "")
-                }
-              style={{
-                aspectRatio : `${bumperLength} / ${bumperWidth}`,
-                height:( (bumperLength >= bumperWidth) ? "100px" : "unset"),
-                width:( (bumperLength >= bumperWidth) ? "unset" : "100px"),
-              }}
+                }  
           ref={this.moveRef}
         >
         <span 
@@ -145,7 +158,8 @@ RotatorAble = {
             }}
             ables={[this.RotatorAble]}
             props={{
-                rotatorAble:true, boxWidthPx:this.context.model.robotConfig.bumperWidth * this.props.mToPx}
+                rotatorAble:true, 
+                boxWidthPx:Math.min(bumperWidth, bumperLength) * this.props.mToPx}
             }        
         />
       </div>
