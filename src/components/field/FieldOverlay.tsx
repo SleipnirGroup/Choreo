@@ -34,6 +34,7 @@ class FieldOverlay extends Component<Props, State> {
     window.addEventListener('resize', ()=>{this.handleResize();});
     this.handleResize();
     this.updaterAutorun = autorun(()=>this.updateField());
+
   }
   handleResize() {
     let containerRect: DOMRect | undefined = this.containerRef.current?.getBoundingClientRect();
@@ -55,9 +56,6 @@ class FieldOverlay extends Component<Props, State> {
   selectWaypoint(index: number) {
     this.context.model.pathlist.activePath.selectOnly(index);
   }
-  createWaypoint(point: IHolonomicWaypointStore, index: number) {
-    
-  }
   render() {
     
     let pathString="";
@@ -72,11 +70,28 @@ class FieldOverlay extends Component<Props, State> {
       generatedPathString += `${point.x + 1},${this.canvasHeightMeters - point.y} `;
   })
     return (
-      <div style={{position:'relative', height:'100%', width:'100%'}} ref={this.containerRef}>
-        <svg viewBox={`0 0 ${this.canvasWidthMeters} ${this.canvasHeightMeters}`}>
+      <div 
+        style={{
+          position:'relative',
+          height:'100%',
+          width:'100%'}} 
+        ref={this.containerRef}
+        onClick={
+          (e)=>{
+            e.stopPropagation();
+            var rect = e.currentTarget.getBoundingClientRect();
+            var x = e.clientX - rect.left; //x position within the element.
+            var y = e.clientY - rect.top;  //y position within the element.
+            console.log("Left? : " + x + " ; Top? : " + y + ".");
+            let point = this.context.model.pathlist.activePath.addWaypoint();
+            point.setX(this.pxToM(x));
+            point.setY(this.canvasHeightMeters - this.pxToM(y));
+
+          }}>
+        <svg viewBox={`0 0 ${this.canvasWidthMeters} ${this.canvasHeightMeters}`} style={{pointerEvents:"none"}}>
           <polyline points={pathString} style={{fill:'none', stroke:'black', strokeWidth:0.1}}></polyline>
         </svg>
-        <svg viewBox={`0 0 ${this.canvasWidthMeters} ${this.canvasHeightMeters}`}>
+        <svg viewBox={`0 0 ${this.canvasWidthMeters} ${this.canvasHeightMeters}`} style={{pointerEvents:"none"}}>
           <polyline points={generatedPathString} style={{fill:'none', stroke:'blue', strokeWidth:0.1}}></polyline>
         </svg>
         {

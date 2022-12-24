@@ -8,7 +8,8 @@ type Props = {
     enabled: boolean,
     number: number,
     setNumber: (arg0: number)=>void,
-    setEnabled: (arg0:boolean)=>void}
+    setEnabled: (arg0:boolean)=>void,
+    showCheckbox?: boolean}
 
 type State = {}
  class NumberEntry extends Component<Props, State> {
@@ -58,7 +59,7 @@ type State = {}
             
             ></input>
          <span className={styles.Suffix}>{this.props.suffix}</span>
-          <input type='checkbox' className={styles.Checkbox} checked={this.props.enabled} onChange={this.setEnabled}></input></div>
+          <input type='checkbox' className={styles.Checkbox} style={{visibility:(this.props.showCheckbox || true) ? "visible": "hidden"}} checked={this.props.enabled} onChange={this.setEnabled}></input></div>
     )
   }
 }

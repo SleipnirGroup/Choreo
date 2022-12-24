@@ -51,10 +51,10 @@ RotatorAble = {
         pos1, pos2, pos3, pos4
       } = moveable.state;
   
-      return React.createElement("div", {
-        className: "moveable-custom-rotation",
-        key: "moveable-custom-rotation",
-        style: {
+      return <div 
+        className="moveable-custom-rotation"
+        key="moveable-custom-rotation"
+        style= {{
           position: "absolute",
           left: `0px`,
           top: `0px`,
@@ -66,8 +66,8 @@ RotatorAble = {
           transform: ` translate(-50%, -50%) translate(${pos2[0]-(pos2[0] - pos4[0])/2}px, ${pos4[1]-(pos4[1] - pos2[1])/2}px) scale(0.35)`,
           cursor: "pointer",
           
-        }
-      }, ``);
+        }}
+    ></div>
     },
   }
     
@@ -102,7 +102,7 @@ RotatorAble = {
         <span 
             className={styles.DragTarget}
             ref={this.dragTargetRef}
-            onClick={()=>this.context.model.pathlist.activePath.selectOnly(this.props.index)}></span>
+            onClick={(e)=>{e.stopPropagation(); this.context.model.pathlist.activePath.selectOnly(this.props.index)}}></span>
         <span className={styles.HeadingTarget} ref={this.rotationTargetRef}></span>
         </div>
         <Moveable

@@ -23,6 +23,7 @@ class WaypointPanel extends Component<Props, State> {
 
     return (
       <div className={styles.WaypointPanel}>
+        <span onClick={()=>this.context.model.pathlist.activePath.deleteWaypointUUID(this.props.waypoint?.uuid || "")}>Delete</span>
         {JSON.stringify(this.props.waypoint, null, 1)}
         <NumberEntry 
           title="x" 

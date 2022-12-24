@@ -71,8 +71,25 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
                 point.selected = (selectedIndex === index);
             });
         },
-        addWaypoint () {
+        addWaypoint () : IHolonomicWaypointStore {
+            
             self.waypoints.push(HolonomicWaypointStore.create({uuid: uuidv4()}));
+            return self.waypoints[self.waypoints.length-1];
+        },
+        deleteWaypoint(index:number) {
+            if (self.waypoints[index-1]) {
+                self.waypoints[index-1].setSelected(true);
+            }
+            self.waypoints.remove(self.waypoints[index]);
+        },
+        deleteWaypointUUID(uuid:string) {
+            let index = self.waypoints.findIndex((point)=>point.uuid ===uuid);
+            if (self.waypoints[index-1]) {
+                self.waypoints[index-1].setSelected(true);
+            } else if(self.waypoints[index+1]) {
+                self.waypoints[index+1].setSelected(true);
+            }
+            self.waypoints.remove(self.waypoints[index]);
         },
         reorder(startIndex: number, endIndex: number) {
             //self.waypoints.splice(endIndex, 0, self.waypoints.splice(startIndex, 1)[0]);
