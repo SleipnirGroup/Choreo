@@ -27,7 +27,7 @@ export default class Navbar extends Component<Props, State> {
           Untitled Waypoint Editor
         </h1>
         <span>
-        <button id="addPath">Export Path to JSON</button>
+        <button id="save" onClick={()=>{this.context.model.saveFile()}}>Save Document JSON</button>
           <button id="generatePath" onClick={()=>this.context.model.pathlist.activePath.generatePath()}>Generate Path</button>
         </span>
       </div>

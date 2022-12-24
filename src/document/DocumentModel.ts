@@ -116,6 +116,13 @@ export const PathListStore = types.model("PathListStore", {
 })
 .views(self=>{
     return {
+        toJSON() : any {
+            let obj :any = {};
+            self.paths.forEach((path)=>{
+                obj[path.name] = path;
+            })
+            return obj;
+        },
         get pathNames() {
             return Array.from(self.paths.values()).map((pathStore)=>pathStore.name);
         },
@@ -145,9 +152,26 @@ export const PathListStore = types.model("PathListStore", {
 });
 export interface IPathListStore extends Instance<typeof PathListStore> {};
 export default class DocumentModel {
+
     pathlist = PathListStore.create();
+     out = this.pathlist.toJSON();
     constructor() {
         this.pathlist.addPath("one");
         this.pathlist.addPath("two");
     }
+
+    saveFile() {
+        const content = JSON.stringify(this.pathlist, undefined, 4);
+        // TODO make document save file here
+        const element = document.createElement("a");
+        const file = new Blob([content], {type: "application/json"});
+        let link = URL.createObjectURL(file);
+        console.log(link);
+        window.open(link, '_blank');
+        //Uncomment to "save as..." the file
+        // element.href = link;
+        // element.download = "file.json";
+        // element.click();
+    }
+    
 }
