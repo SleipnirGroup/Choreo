@@ -1,0 +1,33 @@
+.RobotConfigPanel{
+    position:absolute;
+    transform: translate(-50%,-50%);
+    top:50vh;
+    left:50vw;
+    overflow-x:hidden;
+    overflow-y: scroll;
+    width:500px;
+    height:70vh;
+    background-color: #2F3136;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    border-radius: 5px;
+}
+.Opacity {
+    position:absolute;
+    top:0;
+    left:0;
+    width:100vw;
+    height:100vh;
+    background-color: #00000080;
+}
+.ExitButton {
+    position:absolute;
+    right:20px;
+    top:20px;
+    height:24px;
+    width:24px;
+    
+}

@@ -48,6 +48,17 @@ export const HolonomicWaypointStore= WaypointStore
     velocityYConstrained: false,
     velocityMagnitudeConstrained: false,
     angularVelocityConstrained: false
+}).actions(self=>{
+    return {
+        setVelocityX(vx:number) {self.velocityX=vx},
+        setVelocityXConstrained(velocityXConstrained:boolean) {self.velocityXConstrained=velocityXConstrained},
+        setVelocityY(vy:number) {self.velocityY=vy},
+        setVelocityYConstrained(velocityYConstrained:boolean) {self.velocityYConstrained=velocityYConstrained},
+        setAngularVelocity(omega:number) {self.angularVelocity=omega},
+        setAngularVelocityConstrained(angularVelocityConstrained:boolean) 
+            {self.angularVelocityConstrained=angularVelocityConstrained},
+
+    }
 })
 export interface IHolonomicWaypointStore extends Instance<typeof HolonomicWaypointStore> {};
 export const HolonomicPathStore = types.model("HolonomicPathStore", {
@@ -150,9 +161,33 @@ export const PathListStore = types.model("PathListStore", {
     }
 });
 export interface IPathListStore extends Instance<typeof PathListStore> {};
+export const RobotConfigStore = types.model("WaypointStore", {
+    mass:0,
+    moi:0,
+    maxVelocity: 0,
+    maxTorque:0,
+    bumperWidth:1,
+    bumperLength:3,
+    wheelbase:0.746,
+    trackwidth:0.746
+    
+}).actions(self=>{
+    return {
+        
+        setMass(arg:number) {self.mass=arg},
+        setMoI(arg:number) {self.moi=arg},
+        setMaxTorque(arg:number) {self.maxTorque=arg},
+        setMaxVelocity(arg:number) {self.maxVelocity=arg},
+        setBumperWidth(arg:number) {self.bumperWidth=arg},
+        setBumperLength(arg:number) {self.bumperLength=arg},
+        setWheelbase(arg:number) {self.wheelbase=arg},
+        setTrackwidth(arg:number) {self.trackwidth=arg},
+    }
+})
+export interface IRobotConfigStore extends Instance<typeof RobotConfigStore> {};
 export default class DocumentModel {
     pathlist = PathListStore.create();
-     out = this.pathlist.toJSON();
+    robotConfig = RobotConfigStore.create();
     constructor() {
         this.pathlist.addPath("one");
         this.pathlist.addPath("two");

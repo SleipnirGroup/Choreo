@@ -5,6 +5,7 @@ import { DocumentManager } from './document/DocumentManager';
 import { createContext } from 'react';
 import Field from './components/field/Field';
 import { observer } from 'mobx-react';
+import RobotConfigPanel from './components/config/RobotConfigPanel'
 function App() {
   const DocumentManagerContext = createContext(null)
   const documentManager = new DocumentManager();
@@ -15,10 +16,13 @@ function App() {
       
       
       <div className="Page">
+      
       <Sidebar></Sidebar>
       <Field containerHeight={300} containerWidth={300}></Field>
       </div>
+      
     </div>
+    <RobotConfigPanel style={{display: (documentManager.isRobotConfigOpen? "block": "none")}}></RobotConfigPanel>
     </DocumentManagerContext.Provider>
   );
 }

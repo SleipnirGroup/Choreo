@@ -5,22 +5,29 @@
     justify-content: space-around;
     padding-top: 3px;
     padding-bottom:3px;
+    width: 100%;
 }
 .Title{
-    width:20%;
-    text-align: center;
+    width:30%;
+    text-align: right;
 }
 .Number{
-    width:30%;
+    width:20%;
     background-color: transparent;
     border:none;
     color:white;
     border-bottom: solid white 2px;
 }
+.Number:disabled{
+    color:transparent
+}
 .Suffix{
     width: 20%;
-    text-align: center;
+    text-align: left;
 }
 .Checkbox{
     width:10%;
+}
+.Container.NoCheckbox .Checkbox {
+    display: none;
 }
