@@ -43,7 +43,7 @@ export default class SidebarWaypoint extends Component<Props, State> {
             className = {styles.Container  + (this.props.waypoint.selected ? ` ${styles.selected}` : "")}
             
             style={this.getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
-            onClick={()=>{console.log(this);this.context.model.pathlist.activePath.selectOnly(this.props.index);}}
+            onClick={()=>{this.context.model.pathlist.activePath.selectOnly(this.props.index);}}
         >
                 {this.props.index +1}
         </div>)}

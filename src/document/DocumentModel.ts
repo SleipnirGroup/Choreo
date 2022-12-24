@@ -104,7 +104,6 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
                 newPoint.setHeading(point.heading);
                 self.generated.push(newPoint);
             })
-            console.log(self.generated);
         }
     }
 })

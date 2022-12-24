@@ -38,16 +38,14 @@ class FieldOverlay extends Component<Props, State> {
   }
   handleResize() {
     let containerRect: DOMRect | undefined = this.containerRef.current?.getBoundingClientRect();
-    console.log(this.containerRef.current?.getBoundingClientRect(), containerRect);
     if (containerRect !== undefined) {
-      console.log("setting heightpx", containerRect.height)
       this.setState({
         updateForcer: Math.random(),
         heightPx: containerRect.height,
         widthPx: containerRect.width
       });
     } else {
-      console.log("container rect undefined", containerRect);
+      console.log("container rect undefined");
     }
   }
   updateField() {
@@ -82,7 +80,6 @@ class FieldOverlay extends Component<Props, State> {
             var rect = e.currentTarget.getBoundingClientRect();
             var x = e.clientX - rect.left; //x position within the element.
             var y = e.clientY - rect.top;  //y position within the element.
-            console.log("Left? : " + x + " ; Top? : " + y + ".");
             let point = this.context.model.pathlist.activePath.addWaypoint();
             point.setX(this.pxToM(x));
             point.setY(this.canvasHeightMeters - this.pxToM(y));

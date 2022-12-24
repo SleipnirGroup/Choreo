@@ -72,7 +72,6 @@ RotatorAble = {
   }
     
   updateWaypoint() {
-    //console.log("updating waypoint transform")
     const { x, y, heading} = this.props.waypoint;
     if(this.moveRef.current !== null) {
         this.moveRef.current.style.transform = `
@@ -135,10 +134,6 @@ RotatorAble = {
             }}
             onRotate={e => {
                 this.props.waypoint.setHeading(-e.beforeRotation * Math.PI / 180);
-            }}
-            onRotateEnd={e => {
-                console.log(this.frame.rotate);
-                
             }}
             onRender={e => {
                 this.updateWaypoint();

@@ -41,17 +41,16 @@ export class Field extends Component<PropsWithContext, State> {
   
   constructor(props : PropsWithContext) {
     super(props);
-    console.log(this.topYPerc);
+
     this.containerRef = React.createRef<HTMLDivElement>();
     this.backgroundRef = React.createRef<HTMLDivElement>();
     this.overlayRef = React.createRef<HTMLDivElement>();
     let fieldConfig = this.props.context.fieldConfig;
-      this.topYPerc = 100 * fieldConfig['field-corners']['top-left'][1] / fieldConfig['field-image-size'][1];
-      this.leftXPerc = 100* fieldConfig['field-corners']['top-left'][0] / fieldConfig['field-image-size'][0];
-      
-      this.bottomYPerc = 100 - (100 *fieldConfig['field-corners']['bottom-right'][1] / fieldConfig['field-image-size'][1]);
-      this.rightXPerc = 100 - (100 * fieldConfig['field-corners']['bottom-right'][0] / fieldConfig['field-image-size'][0]);
-      console.log(this.topYPerc);
+    this.topYPerc = 100 * fieldConfig['field-corners']['top-left'][1] / fieldConfig['field-image-size'][1];
+    this.leftXPerc = 100* fieldConfig['field-corners']['top-left'][0] / fieldConfig['field-image-size'][0];
+    
+    this.bottomYPerc = 100 - (100 *fieldConfig['field-corners']['bottom-right'][1] / fieldConfig['field-image-size'][1]);
+    this.rightXPerc = 100 - (100 * fieldConfig['field-corners']['bottom-right'][0] / fieldConfig['field-image-size'][0]);
   }
   
   handleResize() {
