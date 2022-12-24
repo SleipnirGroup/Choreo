@@ -16,12 +16,14 @@ export default class Navbar extends Component<Props, State> {
       <div className={styles.Container}>
               <span>
           <select onChange={(event: React.ChangeEvent<HTMLSelectElement>)=>{this.context.model.pathlist.setActivePathUUID(event.target.value);}}>
+
             {Array.from(this.context.model.pathlist.paths.keys())
             .map(key=>this.context.model.pathlist.paths.get(key))
                 .map(path=><option value={path?.uuid} key={path?.uuid}>{path?.name}</option>)}
           </select>
           
           <button id="addPath" >+</button>
+
         </span>
         <h1>
           Untitled Waypoint Editor

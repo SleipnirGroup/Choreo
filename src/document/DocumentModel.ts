@@ -151,7 +151,6 @@ export const PathListStore = types.model("PathListStore", {
 });
 export interface IPathListStore extends Instance<typeof PathListStore> {};
 export default class DocumentModel {
-
     pathlist = PathListStore.create();
      out = this.pathlist.toJSON();
     constructor() {
@@ -172,5 +171,4 @@ export default class DocumentModel {
         // element.download = "file.json";
         // element.click();
     }
-    
 }

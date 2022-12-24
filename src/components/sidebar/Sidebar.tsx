@@ -45,8 +45,7 @@ class Sidebar extends Component<Props, State> {
   }
 
   newWaypoint(): void {
-    this.context.model.pathlist.activePath.addWaypoint();
-    
+    this.context.model.pathlist.activePath.addWaypoint();   
   }
   componentDidMount(): void {
   }
@@ -73,7 +72,9 @@ class Sidebar extends Component<Props, State> {
 
             >
               {waypoints.map((item, index) => {
+
                 return item.render();
+
               })}
               {provided.placeholder}
               <button onClick={()=>this.newWaypoint()} className={waypointStyles.Container}>+</button>
@@ -85,7 +86,6 @@ class Sidebar extends Component<Props, State> {
         </Droppable>
         
       </DragDropContext>
-
       <div onClick={()=>{shell.openExternal("https://discord.com")}}>Discord</div>
       
       </div>

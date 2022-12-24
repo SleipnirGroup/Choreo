@@ -10,10 +10,21 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+
     align-items: center;
     width: 100px;
     color: white;
     box-sizing: border-box;
+}
+.WaypointPanel{
+    overflow-x:hidden;
+    overflow-y: scroll;
+    width:500px;
+    background-color: #414141;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 .WaypointList{
     outline: 1px solid #3F3F3F;

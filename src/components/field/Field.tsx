@@ -1,4 +1,6 @@
+
 import React, { Component} from 'react'
+
 import DocumentManagerContext from '../../document/DocumentManager';
 import FieldOverlay from './FieldOverlay';
 const styles = require("./Field.module.css").default;
@@ -12,6 +14,7 @@ type Props = {
   containerHeight: number;
   containerWidth: number;}
 
+
 type State = {shouldUpdate: boolean}
 
 export class Field extends Component<PropsWithContext, State> {
@@ -20,6 +23,7 @@ export class Field extends Component<PropsWithContext, State> {
   mounted: boolean = false;
   state = {
     shouldUpdate: false
+
   }
   image: HTMLImageElement;
   topYPerc: number = 0;
@@ -67,6 +71,7 @@ export class Field extends Component<PropsWithContext, State> {
     
     return (
       <div className={styles.Flex}>
+
       <div className={styles.Container} ref={this.containerRef}>
         <div className={styles.FieldBackground} ref={this.backgroundRef}
           style={
@@ -76,15 +81,16 @@ export class Field extends Component<PropsWithContext, State> {
             maxWidth:'100%',
               backgroundImage:`url('/fields/${this.context.fieldConfig["field-image"]}')`
           }}>
-        {/*TODO replace this div with a FieldOverlay component*/}
         <div ref={this.overlayRef} className={styles.Overlay} style= {{
     position:'absolute', 
     top:`${this.topYPerc}%`,
     left:`${this.leftXPerc}%`,
     bottom: `${this.bottomYPerc}%`,
+
     right:`${this.rightXPerc}%`
   }}>
     <FieldOverlay waypoints={this.context.model.pathlist.activePath.waypoints}></FieldOverlay>
+
   </div>
           </div>
   </div>
