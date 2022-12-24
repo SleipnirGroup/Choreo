@@ -162,14 +162,14 @@ export const PathListStore = types.model("PathListStore", {
 });
 export interface IPathListStore extends Instance<typeof PathListStore> {};
 export const RobotConfigStore = types.model("WaypointStore", {
-    mass:0,
-    moi:0,
-    maxVelocity: 0,
-    maxTorque:0,
-    bumperWidth:1,
-    bumperLength:1,
-    wheelbase:0.746,
-    trackwidth:0.746
+    mass:46.7,
+    moi:5.6,
+    maxVelocity: 16,
+    maxTorque:1.9,
+    bumperWidth:0.9,
+    bumperLength:0.9,
+    wheelbase:0.622,
+    trackwidth:0.622
     
 }).actions(self=>{
     return {
