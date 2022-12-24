@@ -39,8 +39,6 @@ A version `v0.0.0` __Document__ must fit this template:
     "robotConfiguration": {
         "mass": <positive-number>,
         "rotationalInertia": <positive-number>,
-        "bumperLength": <positive-number>,
-        "bumperWidth": <positive-number>,
         "wheelbase": <positive-number>,
         "trackWidth": <positive-number>,
         "wheelRadius": <positive-number>,
