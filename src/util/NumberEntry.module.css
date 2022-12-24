@@ -1,14 +1,19 @@
 .Container {
+    
+    position:relative;
     background: transparent;
     display: inline-flex;
     flex-direction: row;
-    justify-content: space-around;
+    justify-content: center;
+    gap:10px;
     padding-top: 3px;
     padding-bottom:3px;
     width: 100%;
 }
 .Title{
-    width:30%;
+    width:10%;
+    flex-grow: 1;
+    max-width: 20%;
     text-align: right;
 }
 .Number{
@@ -16,6 +21,8 @@
     background-color: transparent;
     border:none;
     color:white;
+    align-self: center;
+    flex-grow: 1;
     border-bottom: solid white 2px;
 }
 .Number:disabled{
@@ -26,7 +33,7 @@
     text-align: left;
 }
 .Checkbox{
-    width:10%;
+    margin-left: auto;
 }
 .Container.NoCheckbox .Checkbox {
     display: none;

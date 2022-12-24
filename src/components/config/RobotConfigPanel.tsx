@@ -59,7 +59,7 @@ class RobotConfigPanel extends Component<Props, State> {
           showCheckbox={false}/>
 
         <NumberEntry 
-          title="Width incl. Bumper" 
+          title="Width" 
           suffix="m" 
           enabled={true} 
           setEnabled={a=>null}
@@ -68,7 +68,7 @@ class RobotConfigPanel extends Component<Props, State> {
           showCheckbox={false}/>
 
         <NumberEntry 
-          title="Length incl. Bumper" 
+          title="Length" 
           suffix="m" 
           enabled={true} 
           setEnabled={a=>null}

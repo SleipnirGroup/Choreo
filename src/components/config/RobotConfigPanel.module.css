@@ -6,7 +6,7 @@
     overflow-x:hidden;
     overflow-y: scroll;
     width:500px;
-    height:70vh;
+    height:auto;
     background-color: #2F3136;
     color: white;
     display: flex;
@@ -14,6 +14,9 @@
     justify-content: flex-start;
     align-items: center;
     border-radius: 5px;
+    font-size:1em !important;
+    padding-bottom:10px;
+
 }
 .Opacity {
     position:absolute;

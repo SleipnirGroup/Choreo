@@ -167,7 +167,7 @@ export const RobotConfigStore = types.model("WaypointStore", {
     maxVelocity: 0,
     maxTorque:0,
     bumperWidth:1,
-    bumperLength:3,
+    bumperLength:1,
     wheelbase:0.746,
     trackwidth:0.746
     
