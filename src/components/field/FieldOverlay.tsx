@@ -93,7 +93,7 @@ class FieldOverlay extends Component<Props, State> {
         </svg>
         {
         this.context.model.pathlist.activePath.waypoints.map((point, index) => {
-            return <OverlayWaypoint mToPx={this.mToPx(1)} waypoint={point} index={index}></OverlayWaypoint>
+            return <OverlayWaypoint mToPx={this.mToPx(1)} waypoint={point} index={index} key={point.uuid}></OverlayWaypoint>
           })
           
        

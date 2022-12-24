@@ -58,7 +58,7 @@ RotatorAble = {
           position: "absolute",
           left: `0px`,
           top: `0px`,
-          background: "transparent",
+          background: "red",
           borderRadius: "50%",
           width: `${moveable.props.boxWidthPx}px`,
           height: `${moveable.props.boxWidthPx}px`,
@@ -78,13 +78,13 @@ RotatorAble = {
         translate(-50%, -50%)
         translate(${x * this.props.mToPx}px, ${-y * this.props.mToPx}px)
         rotate(${-heading}rad)
-        scale(${1 * this.props.mToPx / 100})`;
+        scale(${Math.min(this.context.model.robotConfig.bumperWidth, this.context.model.robotConfig.bumperLength) * this.props.mToPx / 100})`;
     }
     this.movableRef.current?.updateTarget();
   }
 
   render() {
-    
+    let {bumperLength, bumperWidth} = this.context.model.robotConfig
     // if (this.moveRef.current){
     // if ((this.moveRef.current.style.transform.length || 0) === 0) {
     //     this.updateWaypoint();
@@ -95,7 +95,12 @@ RotatorAble = {
             className={styles.Waypoint 
                     + (this.props.waypoint.headingConstrained ? ` ${styles.heading}`: "")
                     + (this.props.waypoint.selected ? ` ${styles.selected}`: "")
-                } 
+                }
+              style={{
+                aspectRatio : `${bumperLength} / ${bumperWidth}`,
+                height:( (bumperLength >= bumperWidth) ? "100px" : "unset"),
+                width:( (bumperLength >= bumperWidth) ? "unset" : "100px"),
+              }}
           ref={this.moveRef}
         >
         <span 
@@ -140,7 +145,7 @@ RotatorAble = {
             }}
             ables={[this.RotatorAble]}
             props={{
-                rotatorAble:true,boxWidthPx:1 * this.props.mToPx}
+                rotatorAble:true, boxWidthPx:this.context.model.robotConfig.bumperWidth * this.props.mToPx}
             }        
         />
       </div>
