@@ -73,7 +73,10 @@
     "workbox-webpack-plugin": "^6.4.1"
   },
   "main": "public/electron.js",
+  "homepage": "http://sleipnirgroup.github.io/UntitledWaypointEditor",
   "scripts": {
+    "predeploy" : "npm run build",
+    "deploy" : "gh-pages -d build",
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
     "test": "node scripts/test.js",
@@ -103,6 +106,7 @@
     "concurrently": "^7.6.0",
     "electron": "^22.0.0",
     "electron-is-dev": "^2.0.0",
+    "gh-pages": "^4.0.0",
     "wait-on": "^7.0.1"
   },
   "jest": {
