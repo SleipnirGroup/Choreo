@@ -5,6 +5,8 @@
     display: flex;
     padding-left: 20px;
     padding-right: 20px;
+    font-size: 1rem;
+    border: 0px;
     align-items: center;
     flex-direction: row;
     justify-content: space-between;
@@ -20,6 +22,8 @@
 .PathChooserContainer {
     display:flex;
     align-items: center;
+    font-size: 1rem;
+    border: 0px;
 }
 
 .PathSelect {
@@ -52,13 +56,6 @@
     border-bottom: solid white 2px;
     z-index: top;
 }
-@media only screen and (max-width:1000px) {
-    .Container h1 {
-        display: none;
-    }
-
-    
-}
 
 .Container button, .Container select {
     background-color: var(--accent-purple);
@@ -67,6 +64,8 @@
     align-items: center;
     text-align: center;
     border-radius: 6px;
+    font-size: 1rem;
+    border: 0px;
     margin: 5px;
     min-height: 38px;
 }
