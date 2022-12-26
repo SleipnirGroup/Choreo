@@ -1,4 +1,7 @@
 .Container {
+    color: white;
+    border: 0px;
+
     height: 48px;
     background-color: var(--accent-purple);
     border-radius: 50%;
@@ -13,6 +16,7 @@
     padding-top: auto;
     padding-bottom: auto;
     box-sizing: border-box;
+    color:white;
     display: flex;
     align-items: center;
     justify-content: center;

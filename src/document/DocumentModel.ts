@@ -77,6 +77,7 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
     }
 }).actions(self=>{
     return {
+        setName(name:string) { self.name = name},
         selectOnly(selectedIndex:number) {
             self.waypoints.forEach((point, index) => {
                 point.selected = (selectedIndex === index);
@@ -157,7 +158,10 @@ export const PathListStore = types.model("PathListStore", {
             if (self.paths.size === 1) {
                 self.activePathUUID = newUUID
             }
-        }
+        },
+        deletePath(uuid:string){
+            self.paths.delete(uuid);
+        },
     }
 });
 export interface IPathListStore extends Instance<typeof PathListStore> {};
