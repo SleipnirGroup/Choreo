@@ -11,6 +11,16 @@
     justify-content: space-between;
     height: 5rem;
 }
+
+.PathChooserContainer {
+    display: flex;
+    flex-direction: row;
+}
+
+.PathSelect {
+    color: blue;
+}
+
 @media only screen and (max-width:1000px) {
     h1 {
         display: none;

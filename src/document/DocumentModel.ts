@@ -156,6 +156,7 @@ export default class DocumentModel {
     constructor() {
         this.pathlist.addPath("one");
         this.pathlist.addPath("two");
+        this.pathlist.addPath("three");
     }
 
     saveFile() {
