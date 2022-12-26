@@ -79,7 +79,7 @@ export class Field extends Component<PropsWithContext, State> {
             {aspectRatio: `${this.context.fieldConfig['field-image-size'][0]} / ${this.context.fieldConfig['field-image-size'][1]}`,
             maxHeight:'100%',
             maxWidth:'100%',
-              backgroundImage:`url('/fields/${this.context.fieldConfig["field-image"]}')`
+              backgroundImage:`url('../../../UntitledWaypointEditor/fields/${this.context.fieldConfig["field-image"]}')`
           }}>
         <div ref={this.overlayRef} className={styles.Overlay} style= {{
     position:'absolute', 

@@ -1,6 +1,7 @@
-import path from 'path';
-import { app, BrowserWindow, Menu, MenuItem } from 'electron';
-import isDev from 'electron-is-dev';
+const path = require('path');
+
+const { app, BrowserWindow, Menu, MenuItem } = require('electron');
+const isDev = require('electron-is-dev');
 
 function createWindow() {
   // Create the browser window.
