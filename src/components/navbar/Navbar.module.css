@@ -105,3 +105,7 @@
     padding-bottom: auto;
     box-sizing: border-box;
 }
+
+Button {
+    text-transform: none;
+}

@@ -9,6 +9,7 @@ import {
   faSave,
   faTrash
 } from "@fortawesome/free-solid-svg-icons";
+import Button from "@mui/material/Button"
 import styles from './Navbar.module.css';
 import { IHolonomicPathStore } from '../../document/DocumentModel';
 import PathSelect from './PathSelect';
@@ -28,11 +29,11 @@ export default class Navbar extends Component<Props, State> {
       <div className={styles.Container}>
         <PathSelect></PathSelect>
         <span>
-        <button id="addPath" className={styles.action} onClick={()=>this.context.uiState.setRobotConfigOpen(true)}>
+        <Button id="addPath" className={styles.action} onClick={()=>this.context.uiState.setRobotConfigOpen(true)}>
               <FontAwesomeIcon icon={faGear}></FontAwesomeIcon>
-        </button>
-        <button id="save" className={styles.action} onClick={()=>{this.context.model.saveFile()}}><FontAwesomeIcon icon={faSave}></FontAwesomeIcon></button>
-        <button id="generatePath" className={styles.action} onClick={()=>this.context.model.pathlist.activePath.generatePath()}>Generate Path</button>
+        </Button>
+        <Button id="save" className={styles.action} onClick={()=>{this.context.model.saveFile()}}><FontAwesomeIcon icon={faSave}></FontAwesomeIcon></Button>
+        <Button id="generatePath" className={styles.action} onClick={()=>this.context.model.pathlist.activePath.generatePath()}>Generate Path</Button>
         </span>
       </div>
     )

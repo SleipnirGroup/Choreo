@@ -4,6 +4,8 @@ import { observer } from 'mobx-react';
 import React, { Component } from 'react'
 import DocumentManagerContext from '../../document/DocumentManager';
 import NumberEntry from '../../util/NumberEntry';
+import CloseIcon from '@mui/icons-material/Close';
+import IconButton from "@mui/material/IconButton";
 const styles = require('./RobotConfigPanel.module.css').default;
 
 type Props = {}
@@ -19,7 +21,7 @@ class RobotConfigPanel extends Component<Props, State> {
     return (
     <div className={styles.Opacity}style={{display: (this.context.uiState.isRobotConfigOpen ? "block": "none")}}>
       <div className={styles.RobotConfigPanel}>
-          <FontAwesomeIcon icon={faXmark} className={styles.ExitButton} onClick={()=>this.context.uiState.setRobotConfigOpen(false)}></FontAwesomeIcon>
+          <IconButton className={styles.ExitButton} onClick={()=>this.context.uiState.setRobotConfigOpen(false)}><CloseIcon /></IconButton>
         <h2>Robot Configuration</h2>
 
         <NumberEntry 
