@@ -10,12 +10,15 @@ type PropsWithContext = {
   containerWidth: number;
   context:React.ContextType<typeof DocumentManagerContext>;
 }
+
 type Props = {
   containerHeight: number;
-  containerWidth: number;}
+  containerWidth: number;
+}
 
-
-type State = {shouldUpdate: boolean}
+type State = {
+  shouldUpdate: boolean
+}
 
 export class Field extends Component<PropsWithContext, State> {
   static contextType = DocumentManagerContext;
@@ -42,7 +45,6 @@ export class Field extends Component<PropsWithContext, State> {
   backgroundRef: React.RefObject<HTMLDivElement>;
   overlayRef: React.RefObject<HTMLDivElement>;
 
-  
   constructor(props : PropsWithContext) {
     super(props);
 
@@ -58,7 +60,9 @@ export class Field extends Component<PropsWithContext, State> {
   }
   
   handleResize() {
+
   }
+
   componentDidMount(): void {
     this.mounted = true;
     
@@ -68,38 +72,34 @@ export class Field extends Component<PropsWithContext, State> {
   }
  
   render() {
-    
     return (
-      <div className={styles.Flex}>
-
       <div className={styles.Container} ref={this.containerRef}>
         <div className={styles.FieldBackground} ref={this.backgroundRef}
           style={
-            
-            {aspectRatio: `${this.context.fieldConfig['field-image-size'][0]} / ${this.context.fieldConfig['field-image-size'][1]}`,
-            maxHeight:'100%',
-            maxWidth:'100%',
+            {
+              aspectRatio: `${this.context.fieldConfig['field-image-size'][0]} / ${this.context.fieldConfig['field-image-size'][1]}`,
+              maxHeight:'100%',
+              maxWidth:'100%',
               backgroundImage:`url('../../../UntitledWaypointEditor/fields/${this.context.fieldConfig["field-image"]}')`
-          }}>
-        <div ref={this.overlayRef} className={styles.Overlay} style= {{
-    position:'absolute', 
-    top:`${this.topYPerc}%`,
-    left:`${this.leftXPerc}%`,
-    bottom: `${this.bottomYPerc}%`,
-
-    right:`${this.rightXPerc}%`
-  }}>
-    <FieldOverlay waypoints={this.context.model.pathlist.activePath.waypoints}></FieldOverlay>
-
-  </div>
+            }}>
+            <div ref={this.overlayRef} className={styles.Overlay} style= {{
+                position:'absolute', 
+                top:`${this.topYPerc}%`,
+                left:`${this.leftXPerc}%`,
+                bottom: `${this.bottomYPerc}%`,
+                right:`${this.rightXPerc}%`
+            }}>
+          <FieldOverlay waypoints={this.context.model.pathlist.activePath.waypoints}></FieldOverlay>
           </div>
-  </div>
-  </div>
+        </div>
+      </div>
     )
   }
 }
+
 const FieldWithContext = (props: Props) => {
   const context = React.useContext(DocumentManagerContext);
   return <Field {...props} context={context}></Field>
 }
+
 export default FieldWithContext

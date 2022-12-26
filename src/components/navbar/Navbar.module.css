@@ -1,31 +1,21 @@
 .Container {
-    background-color: #2C2C2C;
+    background-color: #202225;
     color: white;
     border: 1px solid #3F3F3F;
     padding-left: 20px;
     padding-right: 20px;
-    flex: 0, 0, 50px;
     align-items: center;
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    height: 5rem;
-}
-@media only screen and (max-width:1000px) {
-    h1 {
-        display: none;
-    }
-    .Container {
-        justify-content: end;
-    }
-    
+    height: 4rem;
 }
 
-button, select {
-    background-color: #4D4D4D;
+.button {
+    background-color: #7D73E7;
     color: white;
     font-weight: bold;
-    height: 1.5rem;
+    height: 2rem;
     align-items: center;
     text-align: center;
     font-size: 1rem;

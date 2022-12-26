@@ -26,7 +26,7 @@ export default class Navbar extends Component<Props, State> {
 
         </span>
         <h1>
-          Untitled Waypoint Editor
+          uwu
         </h1>
         <span>
         <button id="save" onClick={()=>{this.context.model.saveFile()}}>Save Document JSON</button>
