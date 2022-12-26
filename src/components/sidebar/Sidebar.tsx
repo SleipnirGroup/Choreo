@@ -8,7 +8,7 @@ import WaypointPanel from "./WaypointPanel";
 import styles from './Sidebar.module.css';
 import waypointStyles from './SidebarWaypoint.module.css';
 import {faDiscord, faGithub} from '@fortawesome/free-brands-svg-icons'
-import {faGear} from '@fortawesome/free-solid-svg-icons'
+import {faGear, faPlus} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 const getListStyle = (isDraggingOver : boolean) => ({
@@ -79,7 +79,9 @@ class Sidebar extends Component<Props, State> {
 
               })}
               {provided.placeholder}
-              <button onClick={()=>this.newWaypoint()} className={waypointStyles.Container}>+</button>
+              <button onClick={()=>this.newWaypoint()} className={waypointStyles.Container}>
+              <FontAwesomeIcon icon={faPlus}></FontAwesomeIcon>
+              </button>
             </div>
             
             
@@ -88,9 +90,6 @@ class Sidebar extends Component<Props, State> {
         </Droppable>
         
       </DragDropContext>
-      <FontAwesomeIcon className={styles.Icon} icon={faGithub}></FontAwesomeIcon>
-      <FontAwesomeIcon className={styles.Icon} icon={faDiscord}></FontAwesomeIcon>
-      <FontAwesomeIcon className={styles.Icon} icon={faGear} onClick={()=>{this.context.uiState.setRobotConfigOpen(true)}}></FontAwesomeIcon>
       </div>
       <WaypointPanel waypoint={this.context.model.pathlist.activePath.lowestSelectedPoint()}></WaypointPanel>
       </div>

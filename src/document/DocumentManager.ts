@@ -4,7 +4,7 @@ import FieldConfig from "../datatypes/FieldConfig";
 import DocumentModel from "./DocumentModel";
 
 export const UIStateStore = types.model("UIStateStore", {
-  isRobotConfigOpen: false
+  isRobotConfigOpen: false,
 }).actions(self=>{
   return {
     setRobotConfigOpen(open: boolean) {self.isRobotConfigOpen = open}

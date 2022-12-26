@@ -5,6 +5,8 @@
     display: flex;
     padding-left: 20px;
     padding-right: 20px;
+    font-size: 1rem;
+    border: 0px;
     align-items: center;
     flex-direction: row;
     justify-content: space-between;
@@ -17,23 +19,89 @@
     margin-right: auto;
 }
 
-select {
-    background-color: #7D73E7;
-    height: 2rem;
-    padding: 0.5rem;
+.PathChooserContainer {
+    display:flex;
     align-items: center;
-    text-align: center;
-    justify-items: center;
+    font-size: 1rem;
+    border: 0px;
 }
 
-button {
-    background-color: #7D73E7;
+.PathSelect {
+    color: blue;
+}
+.PathSelectControl {
+    background-color: #7D73E7 !important;
+    border-width: 0 !important;
+    border-radius: 10 !important;
+    width: 200px !important;
+    height: 20px !important;
+}
+.PathOptionContainer {
+    background-color: black !important;
+    color: 'white';
+    margin-left: 4;
+    margin-right: 0;
+    margin-bottom: 4;
+    width: 192;
+    min-height: 20px !important;
+    height:20px !important;
+    border-radius: 6px;
+    cursor: default;
+}
+.PathOptionRenameInput{
+    background-color: transparent;
+    border:none;
+    color:white;
+    align-self: center;
+    border-bottom: solid white 2px;
+    z-index: top;
+}
+
+.Container button, .Container select {
+    background-color: var(--accent-purple);
     color: white;
-    font-weight: bold;
-    height: 2rem;
-    font-size: 1rem;
+    height: 20px;
     align-items: center;
     text-align: center;
     border-radius: 6px;
-    padding: 0.5rem;
+    font-size: 1rem;
+    border: 0px;
+    margin: 5px;
+    min-height: 38px;
+}
+
+.Container button.action{
+    background-color: var(--accent-purple);
+    color: white;
+    height: 20px;
+    align-items: center;
+    text-align: center;
+    font-size: 1rem;
+    border: 0px;
+    border-radius: 6px;
+    margin: 5px;
+    min-height: 38px;
+    padding-inline: 16px;
+}
+
+.Container button.small {
+    min-height: 20px;
+    height: 20px;
+}
+
+.Icon {
+    height: 48px;
+    
+    border-radius: 50%;
+    width: 48px;
+    font-size:24px;
+    text-align: center;
+    flex-shrink: 0;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: auto;
+    padding-bottom: auto;
+    box-sizing: border-box;
 }

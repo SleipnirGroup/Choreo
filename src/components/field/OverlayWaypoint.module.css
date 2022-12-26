@@ -1,11 +1,13 @@
 .Container :global .moveable-rotation {
             height:0 !important;
 }
+
 .Container :global .moveable-rotation-control  {
     border:none !important;
     border-radius: 50% !important;
     width:100%;
 }
+
 .Container {
     position: absolute;
     bottom: 0;
@@ -15,19 +17,19 @@
 
 .Waypoint {
     position:absolute;
-
     height:100px;
-    
     box-sizing: border-box;
     top:0;
     left:0;
     transform-origin: center;
     
 }
+
 .Waypoint.heading {
-    outline: 7px solid blue;
+    outline: 7px solid #7D73E7;
     outline-offset: -7px;
 }
+
 .Waypoint.selected {
     outline-color: var(--select-yellow);
 }
@@ -44,6 +46,7 @@
     transform: translate(-50%,-50%) scale(0.35);
     transform-origin: 50% 50%;
 }
+
 .Waypoint .HeadingTarget{
     content: "";
     border-radius: 50%;
@@ -55,10 +58,11 @@
     left: 100%;
     transform: translate(-50%,-50%) scale(0.35);
 }
+
 .Waypoint.heading .HeadingTarget{
-    background-color: blue;
+    background-color: #7D73E7;
 }
+
 .Waypoint.selected.heading .HeadingTarget{
     background-color: var(--select-yellow);
 }
-
