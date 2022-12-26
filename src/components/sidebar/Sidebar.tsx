@@ -88,8 +88,8 @@ class Sidebar extends Component<Props, State> {
         </Droppable>
         
       </DragDropContext>
-      <FontAwesomeIcon className={styles.Icon} icon={faGithub} }></FontAwesomeIcon>
-      <FontAwesomeIcon className={styles.Icon} icon={faDiscord} }></FontAwesomeIcon>
+      <FontAwesomeIcon className={styles.Icon} icon={faGithub}></FontAwesomeIcon>
+      <FontAwesomeIcon className={styles.Icon} icon={faDiscord}></FontAwesomeIcon>
       <FontAwesomeIcon className={styles.Icon} icon={faGear} onClick={()=>{this.context.uiState.setRobotConfigOpen(true)}}></FontAwesomeIcon>
       </div>
       <WaypointPanel waypoint={this.context.model.pathlist.activePath.lowestSelectedPoint()}></WaypointPanel>
