@@ -1,27 +1,19 @@
-
-.Flex {
-    background-color: #1E1E1E;
-    flex: 1;
-    display: flex;
-    flex-direction: row;
-    min-width: 0;
-    min-height: 0;
-}
 .Container{
+    background-color: #37393E;
     width: 100%;
     height: 100%;
-    min-width: 0;
-    min-height: 0;
-    position:relative;
+    position: relative;
 }
+
 .FieldBackground{
-    /* width: max-content; */
     background-position: center;
     background-size: contain;
     background-repeat: no-repeat;
-    position:relative;
-    
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
 }
+
 .Overlay{
     background-repeat: repeat;
         background-size: calc(100% / 16.4592) calc(100%/8.2296); /* 1 meter in pixels*/
@@ -29,7 +21,6 @@
         background-position-x: calc((0.52) * 100%/16.4592);
         background-image:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoBAMAAAB+0KVeAAAAHlBMVEUAAABkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGRkZGSH0mEbAAAACnRSTlMAzDPDPPPYnGMw2CgMzQAAAChJREFUKM9jgAPOAgZMwGIwKkhXQSUY0BCCMxkEYUAsEM4cjI4fwYIAf2QMNbUsZjcAAAAASUVORK5CYII=');
 }
-
 
 .Container svg {
     position: absolute;
