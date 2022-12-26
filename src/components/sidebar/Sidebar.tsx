@@ -3,11 +3,10 @@ import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import DocumentManagerContext from "../../document/DocumentManager";
 import {IHolonomicWaypointStore } from "../../document/DocumentModel";
 import {observer} from "mobx-react"
-import {shell} from 'electron';
 import SidebarWaypoint from "./SidebarWaypoint";
 import WaypointPanel from "./WaypointPanel";
-const styles = require('./Sidebar.module.css').default;
-const waypointStyles = require('./SidebarWaypoint.module.css').default;
+import styles from './Sidebar.module.css';
+import waypointStyles from './SidebarWaypoint.module.css';
 
 const getListStyle = (isDraggingOver : boolean) => ({
   background: isDraggingOver ? "lightblue" : "transparent",
@@ -86,7 +85,7 @@ class Sidebar extends Component<Props, State> {
         </Droppable>
         
       </DragDropContext>
-      <div onClick={()=>{shell.openExternal("https://discord.com")}}>Discord</div>
+      <div >Discord</div>
       
       </div>
       <WaypointPanel waypoint={this.context.model.pathlist.activePath.lowestSelectedPoint()}></WaypointPanel>

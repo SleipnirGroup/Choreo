@@ -4,7 +4,7 @@ import React, { Component, ReactNode } from 'react'
 import DocumentManagerContext from '../../document/DocumentManager'
 import { IHolonomicWaypointStore } from '../../document/DocumentModel';
 import OverlayWaypoint from './OverlayWaypoint';
-const styles = require('./Field.module.css').default;
+import styles from './Field.module.css';
 type Props = {waypoints:Array<IHolonomicWaypointStore>}
 
 type State = {updateForcer:number, heightPx: number, widthPx:number}

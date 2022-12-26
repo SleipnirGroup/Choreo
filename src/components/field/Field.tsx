@@ -3,7 +3,7 @@ import React, { Component} from 'react'
 
 import DocumentManagerContext from '../../document/DocumentManager';
 import FieldOverlay from './FieldOverlay';
-const styles = require("./Field.module.css").default;
+import styles from './Field.module.css';
 
 type PropsWithContext = {
   containerHeight: number;

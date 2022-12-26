@@ -4,7 +4,7 @@ import { observer } from "mobx-react";
 import { IHolonomicWaypointStore } from "../../document/DocumentModel";
 import { autorun } from "mobx";
 import DocumentManagerContext from "../../document/DocumentManager";
-const styles = require('./OverlayWaypoint.module.css').default;
+import styles from './OverlayWaypoint.module.css';
 
 type Props = {waypoint:IHolonomicWaypointStore, mToPx:number, index:number}
 

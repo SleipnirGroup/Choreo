@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react';
 import React, { Component } from 'react'
-const styles = require("./NumberEntry.module.css").default;
+import styles from './NumberEntry.module.css';
 
 type Props = {
     title:string,
