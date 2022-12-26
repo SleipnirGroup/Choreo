@@ -1,6 +1,6 @@
 import { observer } from 'mobx-react';
 import React, { Component } from 'react'
-const styles = require("./NumberEntry.module.css").default;
+import styles from './NumberEntry.module.css';
 
 type Props = {
     title:string,
@@ -44,7 +44,7 @@ type State = {}
   render() {
     this.correctNumber();
     return (
-      <div className={styles.Container}>
+      <div className={styles.Container + (this.props.showCheckbox ? "" : ` ${styles.NoCheckbox}`)}>
         <span className={styles.Title}>{this.props.title}</span>
          <input 
             ref = {this.numberRef}
@@ -59,7 +59,7 @@ type State = {}
             
             ></input>
          <span className={styles.Suffix}>{this.props.suffix}</span>
-          <input type='checkbox' className={styles.Checkbox} style={{visibility:(this.props.showCheckbox || true) ? "visible": "hidden"}} checked={this.props.enabled} onChange={this.setEnabled}></input></div>
+          <input type='checkbox' className={styles.Checkbox} checked={this.props.enabled} onChange={this.setEnabled}></input></div>
     )
   }
 }

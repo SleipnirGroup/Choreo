@@ -4,7 +4,7 @@ import React, { Component, ReactNode } from 'react'
 import DocumentManagerContext from '../../document/DocumentManager'
 import { IHolonomicWaypointStore } from '../../document/DocumentModel';
 import OverlayWaypoint from './OverlayWaypoint';
-const styles = require('./Field.module.css').default;
+import styles from './Field.module.css';
 type Props = {waypoints:Array<IHolonomicWaypointStore>}
 
 type State = {updateForcer:number, heightPx: number, widthPx:number}
@@ -93,7 +93,7 @@ class FieldOverlay extends Component<Props, State> {
         </svg>
         {
         this.context.model.pathlist.activePath.waypoints.map((point, index) => {
-            return <OverlayWaypoint mToPx={this.mToPx(1)} waypoint={point} index={index}></OverlayWaypoint>
+            return <OverlayWaypoint mToPx={this.mToPx(1)} waypoint={point} index={index} key={point.uuid}></OverlayWaypoint>
           })
           
        

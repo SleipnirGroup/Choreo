@@ -7,7 +7,7 @@ import {
   faEdit,
   faTrash
 } from "@fortawesome/free-solid-svg-icons";
-const styles = require("./Navbar.module.css").default;
+import styles from './Navbar.module.css';
 
 type Props = {};
 

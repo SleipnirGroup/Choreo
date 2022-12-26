@@ -3,11 +3,13 @@ import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import DocumentManagerContext from "../../document/DocumentManager";
 import {IHolonomicWaypointStore } from "../../document/DocumentModel";
 import {observer} from "mobx-react"
-import {shell} from 'electron';
 import SidebarWaypoint from "./SidebarWaypoint";
 import WaypointPanel from "./WaypointPanel";
-const styles = require('./Sidebar.module.css').default;
-const waypointStyles = require('./SidebarWaypoint.module.css').default;
+import styles from './Sidebar.module.css';
+import waypointStyles from './SidebarWaypoint.module.css';
+import {faDiscord, faGithub} from '@fortawesome/free-brands-svg-icons'
+import {faGear} from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 const getListStyle = (isDraggingOver : boolean) => ({
   background: isDraggingOver ? "lightblue" : "transparent",
@@ -86,8 +88,9 @@ class Sidebar extends Component<Props, State> {
         </Droppable>
         
       </DragDropContext>
-      <div onClick={()=>{shell.openExternal("https://discord.com")}}>Discord</div>
-      
+      <FontAwesomeIcon className={styles.Icon} icon={faGithub}></FontAwesomeIcon>
+      <FontAwesomeIcon className={styles.Icon} icon={faDiscord}></FontAwesomeIcon>
+      <FontAwesomeIcon className={styles.Icon} icon={faGear} onClick={()=>{this.context.uiState.setRobotConfigOpen(true)}}></FontAwesomeIcon>
       </div>
       <WaypointPanel waypoint={this.context.model.pathlist.activePath.lowestSelectedPoint()}></WaypointPanel>
       </div>
