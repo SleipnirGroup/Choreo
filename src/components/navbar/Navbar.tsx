@@ -26,10 +26,13 @@ export default class Navbar extends Component<Props, State> {
   render() {
     return (
       <div className={styles.Container}>
-          <PathSelect></PathSelect>
+        <PathSelect></PathSelect>
         <span>
+        <button id="addPath" className={styles.action} onClick={()=>this.context.uiState.setRobotConfigOpen(true)}>
+              <FontAwesomeIcon icon={faGear}></FontAwesomeIcon>
+        </button>
         <button id="save" className={styles.action} onClick={()=>{this.context.model.saveFile()}}><FontAwesomeIcon icon={faSave}></FontAwesomeIcon></button>
-          <button id="generatePath" className={styles.action} onClick={()=>this.context.model.pathlist.activePath.generatePath()}>Generate Path</button>
+        <button id="generatePath" className={styles.action} onClick={()=>this.context.model.pathlist.activePath.generatePath()}>Generate Path</button>
         </span>
       </div>
     )

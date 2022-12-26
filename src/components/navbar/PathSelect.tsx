@@ -39,7 +39,7 @@ class PathOptionInner extends Component<PathOptionProps, PathOptionState>{
       <div className="PathOptionContainer">
         <components.Option {...this.props}>
          {this.props.children}         
-              
+{/*               
             <span><button
                   className="renameButton small"
                   onClick={(event) => {
@@ -61,7 +61,7 @@ class PathOptionInner extends Component<PathOptionProps, PathOptionState>{
                   className="deleteIcon"
                   icon={faTrash}
                 />
-                </button></span>
+                </button></span> */}
           
           
         </components.Option>
@@ -69,41 +69,7 @@ class PathOptionInner extends Component<PathOptionProps, PathOptionState>{
     )}</DocumentManagerContext.Consumer>)
   }
 }
-//  (props: OptionProps<PathOption>) => {
-//   static contextType = DocumentManagerContext;
-//   const context!: React.ContextType<typeof DocumentManagerContext>;
-//   return (
-//     <div className="optionContainer">
-//       <components.Option {...props}>
-//         {props.children}
-//         <button
-//           className="renameButton"
-//           onClick={(event) => {
-//             // let newName = prompt('Enter new name: ');
-//             // if (newName !== null) {
-//               console.log('rename');
-//             // }
-//           }}
-//         >
-//           <FontAwesomeIcon
-//           className="renameIcon"
-//           icon={faEdit}
-//         />
-//         </button>
-//         <button
-//           className="deleteButton"
-//           onClick={(event) => {
-//           }}
-//         >
-//           <FontAwesomeIcon
-//           className="deleteIcon"
-//           icon={faTrash}
-//         />
-//         </button>
-//       </components.Option>
-//     </div>
-//   );
-// };
+
 class PathSelect extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   context!: React.ContextType<typeof DocumentManagerContext>;
@@ -189,9 +155,6 @@ class PathSelect extends Component<Props, State> {
           />
           <button id="addPath" className={styles.action} onClick={()=>this.context.model.pathlist.addPath("NewPath")}>
                         <FontAwesomeIcon icon={faPlus}></FontAwesomeIcon>
-                    </button>
-          <button id="addPath" className={styles.action} onClick={()=>this.context.uiState.setRobotConfigOpen(true)}>
-              <FontAwesomeIcon icon={faGear}></FontAwesomeIcon>
           </button>
         </span>
     )
