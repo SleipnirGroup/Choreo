@@ -6,6 +6,10 @@ import {observer} from "mobx-react"
 import {shell} from 'electron';
 import SidebarWaypoint from "./SidebarWaypoint";
 import WaypointPanel from "./WaypointPanel";
+
+import {faDiscord, faGithub} from '@fortawesome/free-brands-svg-icons'
+import {faGear} from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 const styles = require('./Sidebar.module.css').default;
 const waypointStyles = require('./SidebarWaypoint.module.css').default;
 
@@ -86,8 +90,9 @@ class Sidebar extends Component<Props, State> {
         </Droppable>
         
       </DragDropContext>
-      <div onClick={()=>{shell.openExternal("https://discord.com")}}>Discord</div>
-      
+      <FontAwesomeIcon className={styles.Icon} icon={faGithub} onClick={()=>{shell.openExternal("https://github.com/SleipnirGroup/UntitledWaypointEditor")}}></FontAwesomeIcon>
+      <FontAwesomeIcon className={styles.Icon} icon={faDiscord} onClick={()=>{shell.openExternal("https://discord.com")}}></FontAwesomeIcon>
+      <FontAwesomeIcon className={styles.Icon} icon={faGear} onClick={()=>{this.context.uiState.setRobotConfigOpen(true)}}></FontAwesomeIcon>
       </div>
       <WaypointPanel waypoint={this.context.model.pathlist.activePath.lowestSelectedPoint()}></WaypointPanel>
       </div>

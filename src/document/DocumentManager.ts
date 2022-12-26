@@ -1,11 +1,22 @@
+import { Instance, types } from "mobx-state-tree";
 import { createContext } from "react";
 import FieldConfig from "../datatypes/FieldConfig";
 import DocumentModel from "./DocumentModel";
 
+export const UIStateStore = types.model("UIStateStore", {
+  isRobotConfigOpen: false
+}).actions(self=>{
+  return {
+    setRobotConfigOpen(open: boolean) {self.isRobotConfigOpen = open}
+  }
+})
+export interface IUIStateStore extends Instance<typeof UIStateStore> {};
 export class DocumentManager {
+    uiState : IUIStateStore
     model : DocumentModel;
     fieldConfig : FieldConfig;
     constructor () {
+        this.uiState = UIStateStore.create();
         this.model = new DocumentModel();
         this.fieldConfig =  {
             "game": "Rapid React",

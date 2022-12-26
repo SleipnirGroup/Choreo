@@ -3,7 +3,6 @@
   --select-yellow: #FFC52F;
 }
 html {
-  font-size: calc(60% + 0.8vmin);
 }
 * {
   font-size: 1rem;

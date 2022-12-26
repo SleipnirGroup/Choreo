@@ -15,6 +15,7 @@
     width: 100px;
     color: white;
     box-sizing: border-box;
+    padding-block: 10px;
 }
 .WaypointPanel{
     overflow-x:hidden;
@@ -27,7 +28,6 @@
     justify-content: flex-start;
 }
 .WaypointList{
-    outline: 1px solid #3F3F3F;
     padding-top: 8px;
     padding-left: 10px;
     display: flex;
@@ -48,6 +48,23 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+}
+
+.Icon {
+    height: 48px;
+    
+    border-radius: 50%;
+    width: 48px;
+    font-size:24px;
+    text-align: center;
+    flex-shrink: 0;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: auto;
+    padding-bottom: auto;
+    box-sizing: border-box;
 }
 
 button, select {

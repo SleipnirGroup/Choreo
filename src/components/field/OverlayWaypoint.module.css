@@ -16,8 +16,7 @@
 .Waypoint {
     position:absolute;
 
-    width: 100px;
-    aspect-ratio: 1 / 1;
+    height:100px;
     
     box-sizing: border-box;
     top:0;
@@ -36,21 +35,25 @@
 .DragTarget{
     content: "";
     border-radius: 50%;
-    width:100%;
+    height:100%;
     aspect-ratio: 1 / 1;
     background-color: var(--accent-purple);
     position:absolute;
-    transform: scale(0.35);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%) scale(0.35);
     transform-origin: 50% 50%;
 }
 .Waypoint .HeadingTarget{
     content: "";
     border-radius: 50%;
-    width:100%;
+    height:100%;
     aspect-ratio: 1 / 1;
     background-color: transparent;
     position:absolute;
-    transform: translate(50%,0%) scale(0.35);
+    top: 50%;
+    left: 100%;
+    transform: translate(-50%,-50%) scale(0.35);
 }
 .Waypoint.heading .HeadingTarget{
     background-color: blue;
