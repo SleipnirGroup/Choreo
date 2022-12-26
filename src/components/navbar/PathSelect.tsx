@@ -5,7 +5,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faEdit,
   faTrash,
-  faPlus
+  faPlus,
+  faGear
 } from "@fortawesome/free-solid-svg-icons";
 import styles from './Navbar.module.css';
 import { IHolonomicPathStore } from '../../document/DocumentModel';
@@ -118,7 +119,8 @@ class PathSelect extends Component<Props, State> {
                   styles={{
                     container: (baseStyles, state) => ({
                         ...baseStyles,
-                       margin: '5px'
+                       margin: '5px',
+                       display: 'inline-block'
                       }),
                     control: (baseStyles, state) => ({
                       ...baseStyles,
@@ -185,9 +187,12 @@ class PathSelect extends Component<Props, State> {
                   }}
                   getOptionValue={(option) => option.uuid}
           />
-                    <button id="addPath" className={styles.action} onClick={()=>this.context.model.pathlist.addPath("NewPath")}>
+          <button id="addPath" className={styles.action} onClick={()=>this.context.model.pathlist.addPath("NewPath")}>
                         <FontAwesomeIcon icon={faPlus}></FontAwesomeIcon>
                     </button>
+          <button id="addPath" className={styles.action} onClick={()=>this.context.uiState.setRobotConfigOpen(true)}>
+              <FontAwesomeIcon icon={faGear}></FontAwesomeIcon>
+          </button>
         </span>
     )
   }

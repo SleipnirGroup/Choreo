@@ -4,6 +4,8 @@ import DocumentManagerContext from '../../document/DocumentManager';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faEdit,
+  faGear,
+  faPlus,
   faSave,
   faTrash
 } from "@fortawesome/free-solid-svg-icons";
@@ -25,9 +27,6 @@ export default class Navbar extends Component<Props, State> {
     return (
       <div className={styles.Container}>
           <PathSelect></PathSelect>
-        <h1>
-          Untitled Waypoint Editor
-        </h1>
         <span>
         <button id="save" className={styles.action} onClick={()=>{this.context.model.saveFile()}}><FontAwesomeIcon icon={faSave}></FontAwesomeIcon></button>
           <button id="generatePath" className={styles.action} onClick={()=>this.context.model.pathlist.activePath.generatePath()}>Generate Path</button>
