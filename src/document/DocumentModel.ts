@@ -152,10 +152,10 @@ export const PathListStore = types.model("PathListStore", {
                 self.activePathUUID = uuid;
             }
         },
-        addPath(name:string) :void {
+        addPath(name:string, select:boolean = false) :void {
             let newUUID = uuidv4();
             self.paths.put (HolonomicPathStore.create({uuid: newUUID, name:name, waypoints: []}));
-            if (self.paths.size === 1) {
+            if (self.paths.size === 1 || select) {
                 self.activePathUUID = newUUID
             }
         },

@@ -33,7 +33,6 @@ class PathOptionInner extends Component<PathOptionProps, PathOptionState>{
   state = {};
 
   render() {
-      console.log(this.props)
     return (
         <DocumentManagerContext.Consumer>{(context:DocumentManager) =>(
       <div className="PathOptionContainer">
@@ -74,8 +73,16 @@ class PathSelect extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   context!: React.ContextType<typeof DocumentManagerContext>;
   state = {};
+  constructor(props:Props) {
+    super(props);
+  }
+  
 
   render() {
+    let options = Array.from(this.context.model.pathlist.paths.keys())
+      .map(key => this.context.model.pathlist.paths.get(key))
+      .filter(path => (path != null && path != undefined && path.uuid != null && path.uuid!=undefined))
+      .map((path)=>({uuid: (path?.uuid || '')})); 
     return (
         <span className={styles.PathChooserContainer}>
           <Select<PathOption>
@@ -138,10 +145,7 @@ class PathSelect extends Component<Props, State> {
                     })
                   }}
                   onChange={pathOption => {if (pathOption?.uuid !== null && pathOption?.uuid !== undefined) this.context.model.pathlist.setActivePathUUID(pathOption.uuid);}}
-                  options={Array.from(this.context.model.pathlist.paths.keys())
-                             .map(key => this.context.model.pathlist.paths.get(key))
-                             .filter(path => (path != null && path != undefined && path.uuid != null && path.uuid!=undefined))
-                            .map((path)=>({uuid: (path?.uuid || '')}))}
+                  options={options}
                   // value={{uuid: this.context.model.pathlist.paths.get('one')?.uuid}}
                   getOptionLabel={(option) => {
                     const path = this.context.model.pathlist.paths.get(option.uuid);
@@ -152,8 +156,9 @@ class PathSelect extends Component<Props, State> {
                     }
                   }}
                   getOptionValue={(option) => option.uuid}
+                  value={options.find((pathoption: PathOption)=>pathoption.uuid === this.context.model.pathlist.activePathUUID)}
           />
-          <button id="addPath" className={styles.action} onClick={()=>this.context.model.pathlist.addPath("NewPath")}>
+          <button id="addPath" className={styles.action} onClick={()=>this.context.model.pathlist.addPath("NewPath", true)}>
                         <FontAwesomeIcon icon={faPlus}></FontAwesomeIcon>
           </button>
         </span>
