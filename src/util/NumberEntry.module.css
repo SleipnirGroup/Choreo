@@ -1,26 +1,40 @@
 .Container {
+    
+    position:relative;
     background: transparent;
     display: inline-flex;
     flex-direction: row;
-    justify-content: space-around;
+    justify-content: center;
+    gap:10px;
     padding-top: 3px;
     padding-bottom:3px;
+    width: 100%;
 }
 .Title{
-    width:20%;
-    text-align: center;
+    width:10%;
+    flex-grow: 1;
+    max-width: 20%;
+    text-align: right;
 }
 .Number{
-    width:30%;
+    width:20%;
     background-color: transparent;
     border:none;
     color:white;
+    align-self: center;
+    flex-grow: 1;
     border-bottom: solid white 2px;
+}
+.Number:disabled{
+    color:transparent
 }
 .Suffix{
     width: 20%;
-    text-align: center;
+    text-align: left;
 }
 .Checkbox{
-    width:10%;
+    margin-left: auto;
+}
+.Container.NoCheckbox .Checkbox {
+    display: none;
 }
