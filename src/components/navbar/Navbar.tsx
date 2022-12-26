@@ -24,9 +24,9 @@ export default class Navbar extends Component<Props, State> {
   render() {
     return (
       <div className={styles.Container}>
-          <PathSelect></PathSelect>
+        <PathSelect></PathSelect>
         <h1>
-          Untitled Waypoint Editor
+          uwu
         </h1>
         <span>
         <button id="save" className={styles.action} onClick={()=>{this.context.model.saveFile()}}><FontAwesomeIcon icon={faSave}></FontAwesomeIcon></button>
