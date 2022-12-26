@@ -3,7 +3,7 @@ import { Draggable, DraggingStyle, NotDraggingStyle } from 'react-beautiful-dnd'
 import { CSSProperties } from 'styled-components';
 import DocumentManagerContext from '../../document/DocumentManager';
 import {IHolonomicWaypointStore } from '../../document/DocumentModel';
-const styles = require('./SidebarWaypoint.module.css').default;
+import styles from './SidebarWaypoint.module.css';
 
 type Props = {
   waypoint: IHolonomicWaypointStore;

@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import DocumentManagerContext from '../../document/DocumentManager';
-const styles = require("./Navbar.module.css").default;
+import styles from './Navbar.module.css';
 
 type Props = {}
 

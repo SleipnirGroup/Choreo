@@ -5,7 +5,7 @@ import React, { Component } from 'react'
 import DocumentManagerContext from '../../document/DocumentManager';
 import { IHolonomicWaypointStore } from '../../document/DocumentModel';
 import NumberEntry from '../../util/NumberEntry';
-const styles = require('./Sidebar.module.css').default;
+import styles from './Sidebar.module.css';
 
 type Props = {waypoint: IHolonomicWaypointStore | null}
 
