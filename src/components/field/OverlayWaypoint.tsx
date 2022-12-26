@@ -8,38 +8,43 @@ import styles from './OverlayWaypoint.module.css';
 
 type Props = {waypoint:IHolonomicWaypointStore, mToPx:number, index:number}
 
-
 type State = {}
+
 interface RotatorAbleProps {
-    rotatorAble:boolean,
-    boxWidthPx:number
+    rotatorAble: boolean,
+    boxWidthPx: number
 }
+
 interface RotatorAble extends Able {};
- class OverlayWaypoint extends Component<Props, State> {
+
+class OverlayWaypoint extends Component<Props, State> {  
   static contextType = DocumentManagerContext;
   context!: React.ContextType<typeof DocumentManagerContext>;
   state = {}
   frame = {
     translate: [0,0],
-    rotate: 0}
+    rotate: 0
+  }
   moveRef= React.createRef<HTMLDivElement>();
   movableRef=React.createRef<Moveable>();
   dragTargetRef= React.createRef<HTMLSpanElement>();
   rotationTargetRef= React.createRef<HTMLSpanElement>();
+
   handleResize() {
     this.updateWaypoint();
   }
-componentDidMount() {
-    this.movableRef.current?.render();
-    this.forceUpdate();
-    window.addEventListener('resize', ()=>this.handleResize());
-    autorun(()=>{
-        this.updateWaypoint();
-    })
 
-}
+  componentDidMount() {
+      this.movableRef.current?.render();
+      this.forceUpdate();
+      window.addEventListener('resize', ()=>this.handleResize());
+      autorun(()=>{
+          this.updateWaypoint();
+      })
 
-RotatorAble :RotatorAble= {
+  }
+
+  RotatorAble: RotatorAble= {
     name: "rotatorAble",
     props: {rotatorAble: Boolean, boxWidthPx:Number},
     events: {},
@@ -68,7 +73,7 @@ RotatorAble :RotatorAble= {
           cursor: "pointer",
           
         }}
-    ></div>
+      />
     },
   }
     
@@ -102,25 +107,25 @@ RotatorAble :RotatorAble= {
   }
 
   render() {
-    let {bumperLength, bumperWidth} = this.context.model.robotConfig
-    // if (this.moveRef.current){
-    // if ((this.moveRef.current.style.transform.length || 0) === 0) {
-    //     this.updateWaypoint();
-    // }}
+    let {bumperLength, bumperWidth} = this.context.model.robotConfig;
     return (
       <div className={styles.Container}>
         <div
-            className={styles.Waypoint 
-                    + (this.props.waypoint.headingConstrained ? ` ${styles.heading}`: "")
-                    + (this.props.waypoint.selected ? ` ${styles.selected}`: "")
-                }  
+          className={styles.Waypoint 
+                  + (this.props.waypoint.headingConstrained ? ` ${styles.heading}`: "")
+                  + (this.props.waypoint.selected ? ` ${styles.selected}`: "")
+              }  
           ref={this.moveRef}
         >
         <span 
-            className={styles.DragTarget}
-            ref={this.dragTargetRef}
-            onClick={(e)=>{e.stopPropagation(); this.context.model.pathlist.activePath.selectOnly(this.props.index)}}></span>
-        <span className={styles.HeadingTarget} ref={this.rotationTargetRef}></span>
+          className={styles.DragTarget}
+          ref={this.dragTargetRef}
+          onClick={(e)=>{
+            e.stopPropagation();
+            this.context.model.pathlist.activePath.selectOnly(this.props.index);
+          }}
+        />
+        <span className={styles.HeadingTarget} ref={this.rotationTargetRef} />
         </div>
         <Moveable
             ref={this.movableRef}
@@ -141,7 +146,8 @@ RotatorAble :RotatorAble= {
             throttleRotate={0}
             rotationPosition={"none"}
             onDragStart={e => {
-                e.set([this.props.waypoint.x * this.props.mToPx, -this.props.waypoint.y * this.props.mToPx]);
+              this.context.model.pathlist.activePath.selectOnly(this.props.index);
+              e.set([this.props.waypoint.x * this.props.mToPx, -this.props.waypoint.y * this.props.mToPx]);
             }}
             onDrag={e => {
                this.props.waypoint.setX(e.beforeTranslate[0] / this.props.mToPx);

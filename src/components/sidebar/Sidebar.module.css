@@ -3,30 +3,19 @@
     flex-direction: row;
     justify-content: flex-start;
 }
+
 .Sidebar{
-    background-color: #2C2C2C;
-    
-    /* align-self: center; */
+    background-color: #202225;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-
     align-items: center;
-    width: 100px;
+    width: 5.5rem;
     color: white;
     box-sizing: border-box;
     padding-block: 10px;
 }
-.WaypointPanel{
-    overflow-x:hidden;
-    overflow-y: scroll;
-    width:500px;
-    background-color: #414141;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-}
+
 .WaypointList{
     padding-top: 8px;
     padding-left: 10px;
@@ -38,12 +27,13 @@
     box-sizing: border-box;
     overflow-y: scroll;
 }
+
 .WaypointPanel{
     overflow-x:hidden;
     overflow-y: scroll;
     padding-left: 10px;
     width:200px;
-    background-color: #414141;
+    background-color: #2F3136;
     color: white;
     display: flex;
     flex-direction: column;
