@@ -1,25 +1,39 @@
 .Container {
     background-color: #202225;
-    color: white;
     border: 1px solid #3F3F3F;
+    color: white;
+    display: flex;
     padding-left: 20px;
     padding-right: 20px;
     align-items: center;
-    display: flex;
     flex-direction: row;
     justify-content: space-between;
     height: 4rem;
 }
 
-.button {
+.Title {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+select {
+    background-color: #7D73E7;
+    height: 2rem;
+    padding: 0.5rem;
+    align-items: center;
+    text-align: center;
+    justify-items: center;
+}
+
+button {
     background-color: #7D73E7;
     color: white;
     font-weight: bold;
     height: 2rem;
+    font-size: 1rem;
     align-items: center;
     text-align: center;
-    font-size: 1rem;
-    border: 0px;
     border-radius: 6px;
-    margin: 5px;
+    padding: 0.5rem;
 }
