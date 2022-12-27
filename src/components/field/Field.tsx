@@ -4,6 +4,7 @@ import React, { Component} from 'react'
 import DocumentManagerContext from '../../document/DocumentManager';
 import FieldOverlay from './FieldOverlay';
 import styles from './Field.module.css';
+import FieldOverlayRoot from './svg/FieldOverlayRoot';
 
 type PropsWithContext = {
   containerHeight: number;
@@ -74,24 +75,7 @@ export class Field extends Component<PropsWithContext, State> {
   render() {
     return (
       <div className={styles.Container} ref={this.containerRef}>
-        <div className={styles.FieldBackground} ref={this.backgroundRef}
-          style={
-            {
-              aspectRatio: `${this.context.fieldConfig['field-image-size'][0]} / ${this.context.fieldConfig['field-image-size'][1]}`,
-              maxHeight:'100%',
-              maxWidth:'100%',
-              backgroundImage:`url('../../../UntitledWaypointEditor/fields/${this.context.fieldConfig["field-image"]}')`
-            }}>
-            <div ref={this.overlayRef} className={styles.Overlay} style= {{
-                position:'absolute', 
-                top:`${this.topYPerc}%`,
-                left:`${this.leftXPerc}%`,
-                bottom: `${this.bottomYPerc}%`,
-                right:`${this.rightXPerc}%`
-            }}>
-          <FieldOverlay waypoints={this.context.model.pathlist.activePath.waypoints}></FieldOverlay>
-          </div>
-        </div>
+        <FieldOverlayRoot ></FieldOverlayRoot>
       </div>
     )
   }
