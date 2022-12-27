@@ -1,11 +1,14 @@
 import { autorun, IReactionDisposer } from 'mobx';
 import { observer } from 'mobx-react';
 import React, { Component, LegacyRef, ReactNode } from 'react'
+import Moveable from 'react-moveable';
 import FieldConfig from '../../../datatypes/FieldConfig';
 import DocumentManagerContext from '../../../document/DocumentManager'
 import { IHolonomicWaypointStore } from '../../../document/DocumentModel';
 import styles from './Field.module.css';
 import OverlayWaypoint from './OverlayWaypoint';
+import OverlayWaypointOld from '../OverlayWaypoint';
+import OverlayWaypointMoveable from './OverlayWaypointMoveable';
 type Props = {}
 
 type State = {metersPerPixel: number}
@@ -27,9 +30,13 @@ const FieldBackground = ({fieldConfig} :{fieldConfig:FieldConfig}) => (<g>
 class FieldOverlayRoot extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   context!: React.ContextType<typeof DocumentManagerContext>;
+  state={
+      metersPerPixel: 0.024
+  }
     canvasHeightMeters: number;
     canvasWidthMeters: number;
     svgRef: React.RefObject<SVGSVGElement>;
+    moveables: Array<Moveable> = new Array<Moveable>();
   constructor(props: Props) {
     super(props);
     this.svgRef = React.createRef<SVGSVGElement>();
@@ -60,7 +67,8 @@ class FieldOverlayRoot extends Component<Props, State> {
     let fieldConfig= this.context.fieldConfig;
     this.canvasHeightMeters = fieldConfig.fieldImageSize[1];
     this.canvasWidthMeters = fieldConfig.fieldImageSize[0];
-    return (
+    return (<div>
+        
         <svg ref={this.svgRef} viewBox={`
             ${-fieldConfig.fieldOffset[0]}
             ${fieldConfig.fieldOffset[1]-this.canvasHeightMeters}
@@ -68,9 +76,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             ${this.canvasHeightMeters}
         `}
         xmlns="http://www.w3.org/2000/svg" 
-            style={{
-                pointerEvents:"none",
-                width:'100%',
+            style={{              width:'100%',
                 height:'100%'}}
         >
             <defs>
@@ -80,13 +86,22 @@ class FieldOverlayRoot extends Component<Props, State> {
             </defs>
             <g transform={`matrix(1 0 0 -1 0 0)`}>
             <FieldBackground fieldConfig={fieldConfig}></FieldBackground>
-            {this.context.model.pathlist.activePath.waypoints.map((point)=>(
-                <OverlayWaypoint waypoint={point}></OverlayWaypoint>)
+            {this.context.model.pathlist.activePath.waypoints.map((point, index)=>(
+                <OverlayWaypoint waypoint={point} index={index}></OverlayWaypoint>)
             )}
             
            
             </g>
         </svg>
+        <div>
+        {this.context.model.pathlist.activePath.waypoints.map((point, index)=>(
+            <span>
+                <OverlayWaypointOld mToPx={1/this.state.metersPerPixel} waypoint={point} index={index}></OverlayWaypointOld>
+                <OverlayWaypointMoveable waypoint={point} index={index}></OverlayWaypointMoveable></span>)
+            )}
+       </div>
+    </div>
+       
     )
   }
 }

@@ -1,12 +1,3 @@
-.Container :global .moveable-rotation {
-            height:0 !important;
-}
-
-.Container :global .moveable-rotation-control  {
-    border:none !important;
-    border-radius: 50% !important;
-    width:100%;
-}
 
 .Container {
     position: absolute;

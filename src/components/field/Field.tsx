@@ -5,6 +5,7 @@ import DocumentManagerContext from '../../document/DocumentManager';
 import FieldOverlay from './FieldOverlay';
 import styles from './Field.module.css';
 import FieldOverlayRoot from './svg/FieldOverlayRoot';
+import Moveable from 'react-moveable';
 
 type Props = {
 }
@@ -19,7 +20,9 @@ export class Field extends Component<Props, State> {
  
   render() {
     return (
+
       <div className={styles.Container}>
+        
         <FieldOverlayRoot ></FieldOverlayRoot>
       </div>
     )
