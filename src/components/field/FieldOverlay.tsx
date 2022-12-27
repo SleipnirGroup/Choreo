@@ -29,8 +29,8 @@ class FieldOverlay extends Component<Props, State> {
   mToPx = (m: number) => m * this.state.widthPx / this.canvasWidthMeters;
   pxToM = (px: number) => px * this.canvasWidthMeters / this.state.widthPx;
   componentDidMount(): void {
-    this.canvasHeightMeters = this.context.fieldConfig['field-size'][1];
-    this.canvasWidthMeters = this.context.fieldConfig['field-size'][0];
+    this.canvasHeightMeters = this.context.fieldConfig.fieldSize[1];
+    this.canvasWidthMeters = this.context.fieldConfig.fieldSize[0];
     window.addEventListener('resize', ()=>{this.handleResize();});
     this.handleResize();
     this.updaterAutorun = autorun(()=>this.updateField());

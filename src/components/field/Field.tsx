@@ -6,84 +6,24 @@ import FieldOverlay from './FieldOverlay';
 import styles from './Field.module.css';
 import FieldOverlayRoot from './svg/FieldOverlayRoot';
 
-type PropsWithContext = {
-  containerHeight: number;
-  containerWidth: number;
-  context:React.ContextType<typeof DocumentManagerContext>;
-}
-
 type Props = {
-  containerHeight: number;
-  containerWidth: number;
 }
 
 type State = {
-  shouldUpdate: boolean
 }
 
-export class Field extends Component<PropsWithContext, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
-  mounted: boolean = false;
-  state = {
-    shouldUpdate: false
-
-  }
-  image: HTMLImageElement;
-  topYPerc: number = 0;
-  leftXPerc :number = 0;
-  bottomYPerc: number = 0;
-  rightXPerc: number = 0;
-  aspectRatio: number = 0;
-  fieldOverlayStyle = {
-    position:'relative', 
-    top:`${this.topYPerc}%`,
-    left:`${this.leftXPerc}%`,
-    bottom:`${this.bottomYPerc}%`,
-    right:`${this.rightXPerc}%`,
-  }
-  containerRef: React.RefObject<HTMLDivElement>;
-  backgroundRef: React.RefObject<HTMLDivElement>;
-  overlayRef: React.RefObject<HTMLDivElement>;
-
-  constructor(props : PropsWithContext) {
+export class Field extends Component<Props, State> {
+  constructor(props : Props) {
     super(props);
-
-    this.containerRef = React.createRef<HTMLDivElement>();
-    this.backgroundRef = React.createRef<HTMLDivElement>();
-    this.overlayRef = React.createRef<HTMLDivElement>();
-    let fieldConfig = this.props.context.fieldConfig;
-    this.topYPerc = 100 * fieldConfig['field-corners']['top-left'][1] / fieldConfig['field-image-size'][1];
-    this.leftXPerc = 100* fieldConfig['field-corners']['top-left'][0] / fieldConfig['field-image-size'][0];
-    
-    this.bottomYPerc = 100 - (100 *fieldConfig['field-corners']['bottom-right'][1] / fieldConfig['field-image-size'][1]);
-    this.rightXPerc = 100 - (100 * fieldConfig['field-corners']['bottom-right'][0] / fieldConfig['field-image-size'][0]);
-  }
-  
-  handleResize() {
-
-  }
-
-  componentDidMount(): void {
-    this.mounted = true;
-    
-    window.addEventListener('resize', ()=>{this.handleResize();});
-    this.handleResize();
-    this.forceUpdate();
   }
  
   render() {
     return (
-      <div className={styles.Container} ref={this.containerRef}>
+      <div className={styles.Container}>
         <FieldOverlayRoot ></FieldOverlayRoot>
       </div>
     )
   }
 }
 
-const FieldWithContext = (props: Props) => {
-  const context = React.useContext(DocumentManagerContext);
-  return <Field {...props} context={context}></Field>
-}
-
-export default FieldWithContext
+export default Field

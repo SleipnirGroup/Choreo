@@ -24,22 +24,35 @@ class FieldOverlayRoot extends Component<Props, State> {
     this.forceUpdate();
   }
   render() {
-    this.canvasHeightMeters = this.context.fieldConfig['field-size'][1];
-    this.canvasWidthMeters = this.context.fieldConfig['field-size'][0];
+      let fieldConfig= this.context.fieldConfig;
+    this.canvasHeightMeters = fieldConfig.fieldImageSize[1];
+    this.canvasWidthMeters = fieldConfig.fieldImageSize[0];
     return (
-        <svg viewBox={`0 ${-this.canvasHeightMeters} ${this.canvasWidthMeters} ${this.canvasHeightMeters}`}
+        <svg viewBox={`
+            ${-fieldConfig.fieldOffset[0]}
+            ${fieldConfig.fieldOffset[1]-this.canvasHeightMeters}
+            ${this.canvasWidthMeters}
+            ${this.canvasHeightMeters}
+        `}
         xmlns="http://www.w3.org/2000/svg" 
             style={{
                 pointerEvents:"none",
                 width:'100%',
-                height:'100%',
-                aspectRatio: `${this.canvasWidthMeters} / ${this.canvasHeightMeters}`}}
+                height:'100%'}}
         >
+            <defs>
+                <pattern id="grid" width="1" height="1" patternUnits="userSpaceOnUse">
+                    <path d="M 1 0 L 0 0 0 1" fill="none" stroke="silver" strokeWidth="0.01"/>
+                </pattern>
+            </defs>
             <g transform={`matrix(1 0 0 -1 0 0)`}>
-
-            <rect x="0" y={0} width="100%" height="100%" fill="black" transform='rotate(10)'/>
+            <image href={`../../../../UntitledWaypointEditor/fields/${fieldConfig.fieldImage}`}
+                width={fieldConfig.fieldImageSize[0]} height={fieldConfig.fieldImageSize[1]}
+                x={-fieldConfig.fieldOffset[0]} y={-fieldConfig.fieldOffset[1]}
+                transform={`matrix(1 0 0 -1 0 ${fieldConfig.fieldSize[1]})`}></image>
+            <circle cx={0} cy={0} r={100000} fill='url(#grid)'></circle>
             <circle cx={0} cy={0} r={1} fill='blue'></circle>
-            <circle cx={0} cy={10} r={1} fill='blue'></circle>
+           
             </g>
         </svg>
     )
