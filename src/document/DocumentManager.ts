@@ -5,9 +5,11 @@ import DocumentModel from "./DocumentModel";
 
 export const UIStateStore = types.model("UIStateStore", {
   isRobotConfigOpen: false,
+  fieldScalingFactor:0.02
 }).actions(self=>{
   return {
-    setRobotConfigOpen(open: boolean) {self.isRobotConfigOpen = open}
+    setRobotConfigOpen(open: boolean) {self.isRobotConfigOpen = open},
+    setFieldScalingFactor(metersPerPixel: number) {self.fieldScalingFactor = metersPerPixel}
   }
 })
 export interface IUIStateStore extends Instance<typeof UIStateStore> {};

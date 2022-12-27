@@ -21,9 +21,7 @@ const BumperBox =observer(
 
       <use xlinkHref="#box" clipPath="url(#clip)" stroke={'blue'} 
         strokeWidth={
-            0.2 * Math.min(
-                context.model.robotConfig.bumperLength,
-                context.model.robotConfig.bumperWidth)} fill={'transparent'} />
+            10 * context.uiState.fieldScalingFactor} fill={'transparent'} vectorEffect={'non-scaling-stroke'} />
       </g>
 )
 );

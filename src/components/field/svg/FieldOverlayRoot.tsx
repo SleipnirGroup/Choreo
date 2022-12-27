@@ -1,6 +1,6 @@
 import { autorun, IReactionDisposer } from 'mobx';
 import { observer } from 'mobx-react';
-import React, { Component, ReactNode } from 'react'
+import React, { Component, LegacyRef, ReactNode } from 'react'
 import FieldConfig from '../../../datatypes/FieldConfig';
 import DocumentManagerContext from '../../../document/DocumentManager'
 import { IHolonomicWaypointStore } from '../../../document/DocumentModel';
@@ -8,7 +8,7 @@ import styles from './Field.module.css';
 import OverlayWaypoint from './OverlayWaypoint';
 type Props = {}
 
-type State = {updateForcer:number, heightPx: number, widthPx:number}
+type State = {metersPerPixel: number}
 
 const DRAW_BOUND = 100;
 const GRID_STROKE = 0.01;
@@ -29,21 +29,39 @@ class FieldOverlayRoot extends Component<Props, State> {
   context!: React.ContextType<typeof DocumentManagerContext>;
     canvasHeightMeters: number;
     canvasWidthMeters: number;
+    svgRef: React.RefObject<SVGSVGElement>;
   constructor(props: Props) {
     super(props);
-
+    this.svgRef = React.createRef<SVGSVGElement>();
     
   }
   componentDidMount(): void {
     
-    this.forceUpdate();
+    window.addEventListener('resize', ()=>this.handleResize());
+    this.handleResize();
   }
+  getScalingFactor(current: SVGSVGElement | null) : number {
+      if (current && current !== undefined) {
+        let origin = current.createSVGPoint();
+        origin.x =0; origin.y = 0;
+        let zeroOne = current.createSVGPoint();
+        zeroOne.x =0; zeroOne.y = 1;
+        origin = origin.matrixTransform(current.getScreenCTM()!.inverse());
+        zeroOne = zeroOne.matrixTransform(current.getScreenCTM()!.inverse());
+        return zeroOne.y - origin.y;
+        }
+      return 0;
+    }
+ handleResize() {
+    let factor = this.getScalingFactor(this.svgRef?.current);
+    this.context.uiState.setFieldScalingFactor(factor);
+ }
   render() {
     let fieldConfig= this.context.fieldConfig;
     this.canvasHeightMeters = fieldConfig.fieldImageSize[1];
     this.canvasWidthMeters = fieldConfig.fieldImageSize[0];
     return (
-        <svg viewBox={`
+        <svg ref={this.svgRef} viewBox={`
             ${-fieldConfig.fieldOffset[0]}
             ${fieldConfig.fieldOffset[1]-this.canvasHeightMeters}
             ${this.canvasWidthMeters}
@@ -73,3 +91,5 @@ class FieldOverlayRoot extends Component<Props, State> {
   }
 }
 export default observer(FieldOverlayRoot);
+
+
