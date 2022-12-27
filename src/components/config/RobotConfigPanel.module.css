@@ -1,12 +1,22 @@
-.RobotConfigPanel{
-    position:absolute;
+.Opacity {
+    position: absolute;
+    top: 0;
+    left :0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #00000080;
+}
+
+
+.RobotConfigPanel {
+    position: absolute;
     transform: translate(-50%,-50%);
-    top:50vh;
-    left:50vw;
-    overflow-x:hidden;
+    top: 50vh;
+    left: 50vw;
+    overflow-x: hidden;
     overflow-y: scroll;
-    width:500px;
-    height:auto;
+    width: 35rem;
+    height: 25rem;
     background-color: #2F3136;
     color: white;
     display: flex;
@@ -14,23 +24,25 @@
     justify-content: flex-start;
     align-items: center;
     border-radius: 5px;
-    font-size:1em !important;
-    padding-bottom:10px;
+    font-size: 1em !important;
+    padding: 1rem;
+}
 
+.RobotConfigPanel .NumberEntryList {
+    height: 19rem;
+    width: 35rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
-.Opacity {
-    position:absolute;
-    top:0;
-    left:0;
-    width:100vw;
-    height:100vh;
-    background-color: #00000080;
-}
-.ExitButton {
+
+.RobotConfigPanel .ExitButton {
     color: white;
     position: absolute;
     right: 20px;
     top: 20px;
-    height: 24px;
-    width: 24px;   
+}
+
+.RobotConfigPanel .ExitButton:hover {
+    background-color: #54585f;
 }
