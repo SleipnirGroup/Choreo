@@ -1,15 +1,9 @@
 import React, { Component } from 'react';
 import Select, { OptionProps, components } from 'react-select';
 import DocumentManagerContext, { DocumentManager } from '../../document/DocumentManager';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faEdit,
-  faTrash,
-  faPlus,
-  faGear
-} from "@fortawesome/free-solid-svg-icons";
 import styles from './Navbar.module.css';
-import { IHolonomicPathStore } from '../../document/DocumentModel';
+import AddIcon from '@mui/icons-material/Add';
+import IconButton from "@mui/material/IconButton";
 import { observer } from 'mobx-react';
 
 type Props = {};
@@ -34,38 +28,12 @@ class PathOptionInner extends Component<PathOptionProps, PathOptionState>{
 
   render() {
     return (
-        <DocumentManagerContext.Consumer>{(context:DocumentManager) =>(
-      <div className="PathOptionContainer">
-        <components.Option {...this.props}>
-         {this.props.children}         
-{/*               
-            <span><button
-                  className="renameButton small"
-                  onClick={(event) => {
-                      event.stopPropagation();
-                      context.model.pathlist.paths.get(this.props.data.uuid)?.setName("rename");
-                  }}
-                >
-                  <FontAwesomeIcon
-                  className="renameIcon"
-                  icon={faEdit}
-                />
-                </button>
-                <button
-                  className="deleteButton small"
-                  onClick={(event) => {
-                  }}
-                >
-                  <FontAwesomeIcon
-                  className="deleteIcon"
-                  icon={faTrash}
-                />
-                </button></span> */}
-          
-          
-        </components.Option>
-      </div>
-    )}</DocumentManagerContext.Consumer>)
+      <DocumentManagerContext.Consumer>{(context:DocumentManager) =>(
+        <div className="PathOptionContainer">
+          <components.Option {...this.props}> {this.props.children} </components.Option>
+        </div>
+      )}</DocumentManagerContext.Consumer>
+    )
   }
 }
 
@@ -77,7 +45,6 @@ class PathSelect extends Component<Props, State> {
     super(props);
   }
   
-
   render() {
     let options = Array.from(this.context.model.pathlist.paths.keys())
       .map(key => this.context.model.pathlist.paths.get(key))
@@ -158,9 +125,7 @@ class PathSelect extends Component<Props, State> {
                   getOptionValue={(option) => option.uuid}
                   value={options.find((pathoption: PathOption)=>pathoption.uuid === this.context.model.pathlist.activePathUUID)}
           />
-          <button id="addPath" className={styles.action} onClick={()=>this.context.model.pathlist.addPath("NewPath", true)}>
-                        <FontAwesomeIcon icon={faPlus}></FontAwesomeIcon>
-          </button>
+          <IconButton className={styles.action} onClick={()=>this.context.model.pathlist.addPath("NewPath", true)}><AddIcon /></IconButton>
         </span>
     )
   }

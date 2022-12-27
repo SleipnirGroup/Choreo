@@ -1,16 +1,11 @@
 import React, { Component } from 'react';
-import Select, { OptionProps, components } from 'react-select';
 import DocumentManagerContext from '../../document/DocumentManager';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faEdit,
-  faGear,
-  faPlus,
-  faSave,
-  faTrash
-} from "@fortawesome/free-solid-svg-icons";
+import ShapeLineIcon from '@mui/icons-material/ShapeLine';
+import SettingsIcon from '@mui/icons-material/Settings';
+import SaveIcon from '@mui/icons-material/Save';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import styles from './Navbar.module.css';
-import { IHolonomicPathStore } from '../../document/DocumentModel';
 import PathSelect from './PathSelect';
 
 type Props = {};
@@ -28,11 +23,21 @@ export default class Navbar extends Component<Props, State> {
       <div className={styles.Container}>
         <PathSelect></PathSelect>
         <span>
-        <button id="addPath" className={styles.action} onClick={()=>this.context.uiState.setRobotConfigOpen(true)}>
-              <FontAwesomeIcon icon={faGear}></FontAwesomeIcon>
-        </button>
-        <button id="save" className={styles.action} onClick={()=>{this.context.model.saveFile()}}><FontAwesomeIcon icon={faSave}></FontAwesomeIcon></button>
-        <button id="generatePath" className={styles.action} onClick={()=>this.context.model.pathlist.activePath.generatePath()}>Generate Path</button>
+          <Tooltip title="Settings">
+            <IconButton className={styles.action} onClick={()=>this.context.uiState.setRobotConfigOpen(true)}>
+              <SettingsIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Save">
+            <IconButton className={styles.action} onClick={()=>{this.context.model.saveFile()}}>
+              <SaveIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Generate path">
+            <IconButton className={styles.generate} onClick={()=>this.context.model.pathlist.activePath.generatePath()}>
+              <ShapeLineIcon />
+            </IconButton>
+          </Tooltip>
         </span>
       </div>
     )
