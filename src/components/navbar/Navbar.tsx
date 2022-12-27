@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import DocumentManagerContext from '../../document/DocumentManager';
+import ShapeLineIcon from '@mui/icons-material/ShapeLine';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SaveIcon from '@mui/icons-material/Save';
 import IconButton from '@mui/material/IconButton';
-import Button from '@mui/material/Button';
+import Tooltip from '@mui/material/Tooltip';
 import styles from './Navbar.module.css';
 import PathSelect from './PathSelect';
 
@@ -22,9 +23,21 @@ export default class Navbar extends Component<Props, State> {
       <div className={styles.Container}>
         <PathSelect></PathSelect>
         <span>
-          <IconButton className={styles.action} onClick={()=>this.context.uiState.setRobotConfigOpen(true)}><SettingsIcon /></IconButton>
-          <IconButton className={styles.action} onClick={()=>{this.context.model.saveFile()}}><SaveIcon /></IconButton>
-          <Button variant="contained" className={styles.action} onClick={()=>this.context.model.pathlist.activePath.generatePath()}>Generate Path</Button>
+          <Tooltip title="Settings">
+            <IconButton className={styles.action} onClick={()=>this.context.uiState.setRobotConfigOpen(true)}>
+              <SettingsIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Save">
+            <IconButton className={styles.action} onClick={()=>{this.context.model.saveFile()}}>
+              <SaveIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Generate path">
+            <IconButton className={styles.generate} onClick={()=>this.context.model.pathlist.activePath.generatePath()}>
+              <ShapeLineIcon />
+            </IconButton>
+          </Tooltip>
         </span>
       </div>
     )

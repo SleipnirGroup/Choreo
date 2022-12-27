@@ -63,3 +63,7 @@
 .Container Button:hover {
     background-color: var(--darker-purple);
 }
+
+.Container .generate:hover {
+    outline: 2.5px solid #FFC52F;
+}
