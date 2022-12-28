@@ -9,6 +9,7 @@ import styles from './Field.module.css';
 import OverlayWaypoint from './OverlayWaypoint';
 import OverlayWaypointOld from '../OverlayWaypoint';
 import * as d3 from 'd3'
+import FieldBackgroundImage from './FieldBackgroundImage';
 type Props = {}
 
 type State = {metersPerPixel: number}
@@ -17,13 +18,15 @@ const DRAW_BOUND = 100;
 const GRID_STROKE = 0.01;
 
 const FieldBackground = ({fieldConfig} :{fieldConfig:FieldConfig}) => (<g>
-    <image href={`../../../../UntitledWaypointEditor/fields/${fieldConfig.fieldImage}`}
+    {/* <image href={`../../../../UntitledWaypointEditor/fields/${fieldConfig.fieldImage}`}
                 width={fieldConfig.fieldImageSize[0]}
                 height={fieldConfig.fieldImageSize[1]}
                 x={-fieldConfig.fieldOffset[0]}
                 y={-fieldConfig.fieldOffset[1]}
                 transform={`matrix(1 0 0 -1 0 ${fieldConfig.fieldSize[1]})`} 
-                style={{pointerEvents:'none'}}></image>
+                style={{pointerEvents:'none'}}></image> */}
+
+            <FieldBackgroundImage></FieldBackgroundImage>
             <circle cx={0} cy={0} r={DRAW_BOUND} fill='url(#grid)'style={{pointerEvents:'none'}}></circle>
             <line x1={0} y1={-DRAW_BOUND} x2={0} y2={DRAW_BOUND} stroke='darkgreen' strokeWidth={5 * GRID_STROKE} style={{pointerEvents:'none'}}></line>
             <line y1={0} x1={-DRAW_BOUND} y2={0} x2={DRAW_BOUND} stroke='darkred' strokeWidth={5 * GRID_STROKE} style={{pointerEvents:'none'}}></line>
