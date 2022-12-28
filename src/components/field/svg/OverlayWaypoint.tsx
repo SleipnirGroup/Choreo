@@ -24,7 +24,7 @@ class OverlayWaypoint extends Component<Props, State> {
   rootRef: React.RefObject<SVGGElement> = React.createRef<SVGGElement>();
 
   BumperBox =observer( 
-    ({context} : {context : React.ContextType<typeof DocumentManagerContext>}) => (
+    ({context, strokeColor, strokeWidthPx} : {context : React.ContextType<typeof DocumentManagerContext>, strokeColor:string, strokeWidthPx: number}) => (
         <g>
         <defs>
         <path id={this.appendIndexID('bumpers')} d={context.model.robotConfig.bumperSVGElement()}>
@@ -36,9 +36,9 @@ class OverlayWaypoint extends Component<Props, State> {
         </clipPath>
       </defs>
 
-      <use xlinkHref={`#${this.appendIndexID('bumpers')}`} clipPath={`url(#${this.appendIndexID('clip')})`} stroke={'blue'} 
+      <use xlinkHref={`#${this.appendIndexID('bumpers')}`} clipPath={`url(#${this.appendIndexID('clip')})`} stroke={strokeColor} 
         strokeWidth={
-            10 * context.uiState.fieldScalingFactor} fill={'transparent'} vectorEffect={'non-scaling-stroke'} />
+            strokeWidthPx * context.uiState.fieldScalingFactor} fill={'transparent'} vectorEffect={'non-scaling-stroke'} />
       </g>
 )
 );
@@ -120,13 +120,15 @@ class OverlayWaypoint extends Component<Props, State> {
   }
 
   render() {
+      let px = this.context.uiState.fieldScalingFactor;
       let waypoint = this.props.waypoint;
+      let boxColorStr = this.props.waypoint.selected ? 'var(--select-yellow)':'var(--accent-purple)'
     return (
       <g ref={this.rootRef}>
         <g transform={`translate(${waypoint.x}, ${waypoint.y}) rotate(${waypoint.heading * 180 / Math.PI})`} id={this.appendIndexID("waypointGroup")}>
-            <this.BumperBox context={this.context}></this.BumperBox>
-           <circle cx={1} cy={0} r={0.2} id={this.appendIndexID("rotateTarget")}></circle>
-           <circle cx={0} cy={0} r={0.2} id={this.appendIndexID("dragTarget")}></circle>
+            <this.BumperBox context={this.context} strokeColor={boxColorStr} strokeWidthPx={3}></this.BumperBox>
+           <circle cx={this.context.model.robotConfig.bumperLength / 2} cy={0} r={7 * px} id={this.appendIndexID("rotateTarget")} fill={boxColorStr}></circle>
+           <circle cx={0} cy={0} r={7 * px} id={this.appendIndexID("dragTarget")} fill={boxColorStr}></circle>
             
         </g>
       </g>
