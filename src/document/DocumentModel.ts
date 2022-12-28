@@ -211,13 +211,13 @@ export default class DocumentModel {
 
     saveFile() {
         const content = JSON.stringify(this.pathlist, undefined, 4);
-        // TODO make document save file here
-        const element = document.createElement("a");
+        
         const file = new Blob([content], {type: "application/json"});
         let link = URL.createObjectURL(file);
         console.log(link);
         window.open(link, '_blank');
         //Uncomment to "save as..." the file
+        // const element = document.createElement("a");
         // element.href = link;
         // element.download = "file.json";
         // element.click();
