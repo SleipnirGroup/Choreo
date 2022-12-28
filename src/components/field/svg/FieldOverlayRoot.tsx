@@ -18,12 +18,15 @@ const GRID_STROKE = 0.01;
 
 const FieldBackground = ({fieldConfig} :{fieldConfig:FieldConfig}) => (<g>
     <image href={`../../../../UntitledWaypointEditor/fields/${fieldConfig.fieldImage}`}
-                width={fieldConfig.fieldImageSize[0]} height={fieldConfig.fieldImageSize[1]}
-                x={-fieldConfig.fieldOffset[0]} y={-fieldConfig.fieldOffset[1]}
-                transform={`matrix(1 0 0 -1 0 ${fieldConfig.fieldSize[1]})`}></image>
-            <circle cx={0} cy={0} r={DRAW_BOUND} fill='url(#grid)'></circle>
-            <line x1={0} y1={-DRAW_BOUND} x2={0} y2={DRAW_BOUND} stroke='green' strokeWidth={5 * GRID_STROKE}></line>
-            <line y1={0} x1={-DRAW_BOUND} y2={0} x2={DRAW_BOUND} stroke='red' strokeWidth={5 * GRID_STROKE}></line>
+                width={fieldConfig.fieldImageSize[0]}
+                height={fieldConfig.fieldImageSize[1]}
+                x={-fieldConfig.fieldOffset[0]}
+                y={-fieldConfig.fieldOffset[1]}
+                transform={`matrix(1 0 0 -1 0 ${fieldConfig.fieldSize[1]})`} 
+                style={{pointerEvents:'none'}}></image>
+            <circle cx={0} cy={0} r={DRAW_BOUND} fill='url(#grid)'style={{pointerEvents:'none'}}></circle>
+            <line x1={0} y1={-DRAW_BOUND} x2={0} y2={DRAW_BOUND} stroke='darkgreen' strokeWidth={5 * GRID_STROKE} style={{pointerEvents:'none'}}></line>
+            <line y1={0} x1={-DRAW_BOUND} y2={0} x2={DRAW_BOUND} stroke='darkred' strokeWidth={5 * GRID_STROKE} style={{pointerEvents:'none'}}></line>
             </g>
 )
 
@@ -51,7 +54,15 @@ class FieldOverlayRoot extends Component<Props, State> {
     window.addEventListener('resize', ()=>this.handleResize());
     this.handleResize();
   }
-
+  screenSpaceToFieldSpace(current: SVGSVGElement | null, {x, y}: {x:number, y:number}): {x:number,y:number} {
+    if (current && current !== undefined) {
+      let origin = current.createSVGPoint();
+      origin.x =x; origin.y = y;
+      origin = origin.matrixTransform(current.getScreenCTM()!.inverse());
+      return {x: origin.x, y:-origin.y};
+      }
+    return {x:0, y:0};
+  }
   getScalingFactor(current: SVGSVGElement | null) : number {
       if (current && current !== undefined) {
         let origin = current.createSVGPoint();
@@ -90,10 +101,12 @@ class FieldOverlayRoot extends Component<Props, State> {
             ${fieldConfig.fieldOffset[1]-this.canvasHeightMeters}
             ${this.canvasWidthMeters}
             ${this.canvasHeightMeters}
-        `}
+        `
+      }
         xmlns="http://www.w3.org/2000/svg" 
-            style={{              width:'100%',
+        style={{width:'100%',
                 height:'100%'}}
+                onClick={(e)=>this.createWaypoint(e)}
         >
             <defs>
                 <pattern id="grid" width="1" height="1" patternUnits="userSpaceOnUse">
@@ -102,7 +115,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             </defs>
             <g transform={`matrix(1 0 0 -1 0 0)`} ref={this.frameRef}>
             <FieldBackground fieldConfig={fieldConfig}></FieldBackground>
-            <polyline points={pathString} stroke="black" strokeWidth={0.1} fill='transparent'></polyline>
+            <polyline points={pathString} stroke="grey" strokeWidth={0.05} fill='transparent'></polyline>
             {this.context.model.pathlist.activePath.waypoints.map((point, index)=>(
                 <OverlayWaypoint waypoint={point} index={index}></OverlayWaypoint>)
             )} 
@@ -113,6 +126,15 @@ class FieldOverlayRoot extends Component<Props, State> {
     </div>
        
     )
+  }
+  createWaypoint(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void {
+    if (e.currentTarget === e.target) {
+      var coords = this.screenSpaceToFieldSpace(this.svgRef?.current, {x:e.clientX, y:e.clientY});
+      var newPoint = this.context.model.pathlist.activePath.addWaypoint();
+      newPoint.setX(coords.x);
+      newPoint.setY(coords.y);
+    }
+
   }
 }
 export default observer(FieldOverlayRoot);
