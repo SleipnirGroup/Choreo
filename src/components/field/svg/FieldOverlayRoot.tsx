@@ -72,6 +72,17 @@ class FieldOverlayRoot extends Component<Props, State> {
     let fieldConfig= this.context.fieldConfig;
     this.canvasHeightMeters = fieldConfig.fieldImageSize[1];
     this.canvasWidthMeters = fieldConfig.fieldImageSize[0];
+    let pathString="";
+      this.context.model.pathlist.activePath.waypoints.forEach((point, index)=>{
+
+          pathString += `${point.x}, ${point.y} `;
+
+      })
+
+    let generatedPathString = "";
+    this.context.model.pathlist.activePath.generated.forEach(point => {
+      generatedPathString += `${point.x + 1},${point.y} `;
+  })
     return (<div>
         
         <svg ref={this.svgRef} viewBox={`
@@ -91,6 +102,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             </defs>
             <g transform={`matrix(1 0 0 -1 0 0)`} ref={this.frameRef}>
             <FieldBackground fieldConfig={fieldConfig}></FieldBackground>
+            <polyline points={pathString} stroke="black" strokeWidth={0.1} fill='transparent'></polyline>
             {this.context.model.pathlist.activePath.waypoints.map((point, index)=>(
                 <OverlayWaypoint waypoint={point} index={index}></OverlayWaypoint>)
             )} 
