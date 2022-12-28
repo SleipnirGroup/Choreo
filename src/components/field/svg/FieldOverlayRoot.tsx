@@ -116,6 +116,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             <g transform={`matrix(1 0 0 -1 0 0)`} ref={this.frameRef}>
             <FieldBackground fieldConfig={fieldConfig}></FieldBackground>
             <polyline points={pathString} stroke="grey" strokeWidth={0.05} fill='transparent'></polyline>
+            <polyline points={generatedPathString} stroke="var(--select-yellow)" strokeWidth={0.05} fill='transparent'></polyline>
             {this.context.model.pathlist.activePath.waypoints.map((point, index)=>(
                 <OverlayWaypoint waypoint={point} index={index}></OverlayWaypoint>)
             )} 
