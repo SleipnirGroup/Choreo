@@ -56,6 +56,9 @@ class OverlayWaypoint extends Component<Props, State> {
       y:this.props.waypoint.y
     }
   }
+  startDrag() {
+    this.context.model.pathlist.activePath.selectOnly(this.props.index);
+  }
   dragPointRotate(event : any) {
 
     let pointerPos :Coordinates = {x:0, y:0};
@@ -106,10 +109,15 @@ class OverlayWaypoint extends Component<Props, State> {
   componentDidMount(){
     if (this.rootRef.current) {
       var rotateHandleDrag = d3.drag<SVGCircleElement, undefined>()
-      .on('drag', (event)=>this.dragPointRotate(event)).container(this.rootRef.current);
+        .on('drag', (event)=>this.dragPointRotate(event))
+        .on('start', this.startDrag)
+        .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(`#rotateTarget${this.props.index}`).call(rotateHandleDrag);
+
       var dragHandleDrag = d3.drag<SVGCircleElement, undefined>()
-      .on('drag', (event)=>this.dragPointTranslate(event)).container(this.rootRef.current);
+        .on('drag', (event)=>this.dragPointTranslate(event))
+        .on('start', this.startDrag)
+        .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(`#dragTarget${this.props.index}`).call(dragHandleDrag);
 
     }
