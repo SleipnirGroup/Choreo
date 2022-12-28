@@ -92,7 +92,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             <g transform={`matrix(1 0 0 -1 0 0)`} ref={this.frameRef}>
             <FieldBackground fieldConfig={fieldConfig}></FieldBackground>
             {this.context.model.pathlist.activePath.waypoints.map((point, index)=>(
-                <OverlayWaypoint waypoint={point}></OverlayWaypoint>)
+                <OverlayWaypoint waypoint={point} index={index}></OverlayWaypoint>)
             )} 
             
            
