@@ -8,7 +8,7 @@ import { IHolonomicWaypointStore } from '../../../document/DocumentModel';
 import styles from './Field.module.css';
 import OverlayWaypoint from './OverlayWaypoint';
 import OverlayWaypointOld from '../OverlayWaypoint';
-import OverlayWaypointMoveable from './OverlayWaypointMoveable';
+import * as d3 from 'd3'
 type Props = {}
 
 type State = {metersPerPixel: number}
@@ -36,17 +36,22 @@ class FieldOverlayRoot extends Component<Props, State> {
     canvasHeightMeters: number;
     canvasWidthMeters: number;
     svgRef: React.RefObject<SVGSVGElement>;
+    frameRef: React.RefObject<SVGGElement>;
     moveables: Array<Moveable> = new Array<Moveable>();
   constructor(props: Props) {
     super(props);
     this.svgRef = React.createRef<SVGSVGElement>();
+    this.frameRef = React.createRef<SVGGElement>();
     
   }
   componentDidMount(): void {
     
+
+
     window.addEventListener('resize', ()=>this.handleResize());
     this.handleResize();
   }
+
   getScalingFactor(current: SVGSVGElement | null) : number {
       if (current && current !== undefined) {
         let origin = current.createSVGPoint();
@@ -84,22 +89,15 @@ class FieldOverlayRoot extends Component<Props, State> {
                     <path d="M 1 0 L 0 0 0 1" fill="none" stroke="silver" strokeWidth={GRID_STROKE}/>
                 </pattern>
             </defs>
-            <g transform={`matrix(1 0 0 -1 0 0)`}>
+            <g transform={`matrix(1 0 0 -1 0 0)`} ref={this.frameRef}>
             <FieldBackground fieldConfig={fieldConfig}></FieldBackground>
             {this.context.model.pathlist.activePath.waypoints.map((point, index)=>(
-                <OverlayWaypoint waypoint={point} index={index}></OverlayWaypoint>)
-            )}
+                <OverlayWaypoint waypoint={point}></OverlayWaypoint>)
+            )} 
             
            
             </g>
         </svg>
-        <div>
-        {this.context.model.pathlist.activePath.waypoints.map((point, index)=>(
-            <span>
-                <OverlayWaypointOld mToPx={1/this.state.metersPerPixel} waypoint={point} index={index}></OverlayWaypointOld>
-                <OverlayWaypointMoveable waypoint={point} index={index}></OverlayWaypointMoveable></span>)
-            )}
-       </div>
     </div>
        
     )
