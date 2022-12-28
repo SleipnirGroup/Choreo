@@ -7,13 +7,14 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import styles from './Navbar.module.css';
 import PathSelect from './PathSelect';
+import { observer } from 'mobx-react';
 
 type Props = {};
 
 type State = {};
 
 
-export default class Navbar extends Component<Props, State> {
+class Navbar extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   context!: React.ContextType<typeof DocumentManagerContext>;
   state = {};
@@ -23,6 +24,9 @@ export default class Navbar extends Component<Props, State> {
       <div className={styles.Container}>
         <PathSelect></PathSelect>
         <span>
+
+          Grid
+          <input type='checkbox' checked={this.context.uiState.fieldGridView} onChange={(e)=>this.context.uiState.setFieldGridView(e.target.checked)}></input>
           <Tooltip title="Settings">
             <IconButton className={styles.action} onClick={()=>this.context.uiState.setRobotConfigOpen(true)}>
               <SettingsIcon />
@@ -43,3 +47,4 @@ export default class Navbar extends Component<Props, State> {
     )
   }
 }
+export default observer(Navbar)

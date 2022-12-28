@@ -5,9 +5,13 @@ import DocumentModel from "./DocumentModel";
 
 export const UIStateStore = types.model("UIStateStore", {
   isRobotConfigOpen: false,
+  fieldScalingFactor:0.02,
+  fieldGridView:true
 }).actions(self=>{
   return {
-    setRobotConfigOpen(open: boolean) {self.isRobotConfigOpen = open}
+    setRobotConfigOpen(open: boolean) {self.isRobotConfigOpen = open},
+    setFieldScalingFactor(metersPerPixel: number) {self.fieldScalingFactor = metersPerPixel},
+    setFieldGridView(on:boolean) {self.fieldGridView = on}
   }
 })
 export interface IUIStateStore extends Instance<typeof UIStateStore> {};
@@ -20,15 +24,11 @@ export class DocumentManager {
         this.model = new DocumentModel();
         this.fieldConfig =  {
             "game": "Rapid React",
-            "field-image": "2022-field.png",
-            "field-image-size":[1859, 949],
-            "field-corners": {
-              "top-left": [74, 50],
-              "bottom-right": [1775, 901]
-            },
-            "field-size": [16.4592, 8.2296],
-            "field-unit": "meter"
-          }
+            fieldImage: "2022-field.png",
+            fieldSize: [16.4592, 8.2296],
+            fieldImageSize: [16.4592 * 1859 / (1775-74), 8.2296 * 949 / (901 - 50)],
+            fieldOffset: [16.4592 * 74 / (1775-74), 8.2296 * 50 / (901 - 50)]
+        }
     }
 }
 let DocumentManagerContext = createContext(new DocumentManager());

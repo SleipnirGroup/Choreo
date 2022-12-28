@@ -32,6 +32,8 @@
     "case-sensitive-paths-webpack-plugin": "^2.4.0",
     "css-loader": "^6.7.3",
     "css-minimizer-webpack-plugin": "^3.2.0",
+    "d3": "^7.8.0",
+    "d3-drag": "^3.0.0",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
     "eslint": "^8.3.0",
@@ -111,6 +113,7 @@
     ]
   },
   "devDependencies": {
+    "@types/d3": "^7.4.0",
     "@types/electron-prompt": "^1.6.1",
     "@types/styled-components": "^5.1.26",
     "concurrently": "^7.6.0",

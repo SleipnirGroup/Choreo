@@ -25,7 +25,7 @@ type State = {}
   }
   setNumber(event:React.ChangeEvent<HTMLInputElement>) {
     let value = event.target.value;
-    if (value === '+' || value === '-') return;
+    if (value === '+' || value === '-' || value === '.') return;
     let input = Number.parseFloat(value);
     if (!Number.isNaN(input)){
         this.props.setNumber(input);

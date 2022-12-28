@@ -187,6 +187,17 @@ export const RobotConfigStore = types.model("WaypointStore", {
         setWheelbase(arg:number) {self.wheelbase=arg},
         setTrackwidth(arg:number) {self.trackwidth=arg},
     }
+}).views(self=>{
+    return {
+        bumperSVGElement() {
+            return (`M ${self.bumperLength / 2} ${self.bumperWidth / 2}
+            L ${self.bumperLength / 2} ${-self.bumperWidth / 2}
+            L ${-self.bumperLength / 2} ${-self.bumperWidth / 2}
+            L ${-self.bumperLength / 2} ${self.bumperWidth / 2}
+            L ${self.bumperLength / 2} ${self.bumperWidth / 2}
+            `);
+        }
+    }
 })
 export interface IRobotConfigStore extends Instance<typeof RobotConfigStore> {};
 export default class DocumentModel {
