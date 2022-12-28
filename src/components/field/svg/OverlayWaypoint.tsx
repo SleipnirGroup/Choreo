@@ -140,12 +140,13 @@ class OverlayWaypoint extends Component<Props, State> {
       let px = this.context.uiState.fieldScalingFactor;
       let waypoint = this.props.waypoint;
       let boxColorStr = this.getBoxColor();
+      let robotConfig = this.context.model.robotConfig;
     return (
       <g ref={this.rootRef}>
         <g transform={`translate(${waypoint.x}, ${waypoint.y}) rotate(${waypoint.heading * 180 / Math.PI})`} id={this.appendIndexID("waypointGroup")}>
             <this.BumperBox context={this.context} strokeColor={boxColorStr} strokeWidthPx={3}></this.BumperBox>
-           <circle cx={this.context.model.robotConfig.bumperLength / 2} cy={0} r={7 * px} id={this.appendIndexID("rotateTarget")} fill={boxColorStr}></circle>
-           <circle cx={0} cy={0} r={7 * px} id={this.appendIndexID("dragTarget")} fill={this.getDragTargetColor()}
+           <circle cx={robotConfig.bumperLength / 2} cy={0} r={0.15 * Math.min(robotConfig.bumperLength, robotConfig.bumperWidth)} id={this.appendIndexID("rotateTarget")} fill={boxColorStr}></circle>
+           <circle cx={0} cy={0} r={0.15 * Math.min(robotConfig.bumperLength, robotConfig.bumperWidth)} id={this.appendIndexID("dragTarget")} fill={this.getDragTargetColor()}
            onClick={()=>this.selectWaypoint()} ></circle>
             
         </g>
