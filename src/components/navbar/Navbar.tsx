@@ -12,13 +12,14 @@ import {
 import styles from './Navbar.module.css';
 import { IHolonomicPathStore } from '../../document/DocumentModel';
 import PathSelect from './PathSelect';
+import { observer } from 'mobx-react';
 
 type Props = {};
 
 type State = {};
 
 
-export default class Navbar extends Component<Props, State> {
+class Navbar extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   context!: React.ContextType<typeof DocumentManagerContext>;
   state = {};
@@ -28,6 +29,8 @@ export default class Navbar extends Component<Props, State> {
       <div className={styles.Container}>
         <PathSelect></PathSelect>
         <span>
+          Grid
+          <input type='checkbox' checked={this.context.uiState.fieldGridView} onChange={(e)=>this.context.uiState.setFieldGridView(e.target.checked)}></input>
         <button id="addPath" className={styles.action} onClick={()=>this.context.uiState.setRobotConfigOpen(true)}>
               <FontAwesomeIcon icon={faGear}></FontAwesomeIcon>
         </button>
@@ -38,3 +41,4 @@ export default class Navbar extends Component<Props, State> {
     )
   }
 }
+export default observer(Navbar)

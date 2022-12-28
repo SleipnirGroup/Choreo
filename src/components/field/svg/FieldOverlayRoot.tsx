@@ -26,10 +26,7 @@ const FieldBackground = ({fieldConfig} :{fieldConfig:FieldConfig}) => (<g>
                 transform={`matrix(1 0 0 -1 0 ${fieldConfig.fieldSize[1]})`} 
                 style={{pointerEvents:'none'}}></image> */}
 
-            <FieldBackgroundImage></FieldBackgroundImage>
-            <circle cx={0} cy={0} r={DRAW_BOUND} fill='url(#grid)'style={{pointerEvents:'none'}}></circle>
-            <line x1={0} y1={-DRAW_BOUND} x2={0} y2={DRAW_BOUND} stroke='darkgreen' strokeWidth={5 * GRID_STROKE} style={{pointerEvents:'none'}}></line>
-            <line y1={0} x1={-DRAW_BOUND} y2={0} x2={DRAW_BOUND} stroke='darkred' strokeWidth={5 * GRID_STROKE} style={{pointerEvents:'none'}}></line>
+            
             </g>
 )
 
@@ -117,9 +114,15 @@ class FieldOverlayRoot extends Component<Props, State> {
                 </pattern>
             </defs>
             <g transform={`matrix(1 0 0 -1 0 0)`} ref={this.frameRef}>
-            <FieldBackground fieldConfig={fieldConfig}></FieldBackground>
+              {/* Background */}
+            <FieldBackgroundImage></FieldBackgroundImage>
+            {this.context.uiState.fieldGridView && <circle cx={0} cy={0} r={DRAW_BOUND} fill='url(#grid)'style={{pointerEvents:'none'}}></circle>}
+            <line x1={0} y1={-DRAW_BOUND} x2={0} y2={DRAW_BOUND} stroke='darkgreen' strokeWidth={5 * GRID_STROKE} style={{pointerEvents:'none'}}></line>
+            <line y1={0} x1={-DRAW_BOUND} y2={0} x2={DRAW_BOUND} stroke='darkred' strokeWidth={5 * GRID_STROKE} style={{pointerEvents:'none'}}></line>
+            {/* Line paths */}
             <polyline points={pathString} stroke="grey" strokeWidth={0.05} fill='transparent'></polyline>
             <polyline points={generatedPathString} stroke="var(--select-yellow)" strokeWidth={0.05} fill='transparent'></polyline>
+
             {this.context.model.pathlist.activePath.waypoints.map((point, index)=>(
                 <OverlayWaypoint waypoint={point} index={index}></OverlayWaypoint>)
             )} 
