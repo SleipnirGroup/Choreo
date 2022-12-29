@@ -34,7 +34,7 @@ export class DocumentManager {
     }
 
     loadFile(jsonFilename:string) {
-      fetch(jsonFilename).then((res)=>{console.log(res); return res.json()}).then((data)=>{
+      fetch(jsonFilename, {cache:'no-store', }).then((res)=>{console.log(res); return res.json()}).then((data)=>{
         console.log(data)
         this.model.fromSavedDocument(data)
        })

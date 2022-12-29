@@ -24,7 +24,9 @@ class Navbar extends Component<Props, State> {
       <div className={styles.Container}>
         <PathSelect></PathSelect>
         <span>
-          <button onClick={()=>this.context.loadFile("https://gist.githubusercontent.com/shueja-personal/7c81675d8af9033d2c33eea9431bd22a/raw/dd3c401127d80347098e53c3282e3f6e09a9942e/save_v0.0.1.json")}>Load</button>
+          <button onClick={()=>this.context.loadFile(
+            "https://gist.githubusercontent.com/shueja-personal/7c81675d8af9033d2c33eea9431bd22a/raw/00e528b7348593a0f54a6bc087303152eed264a5/save_v0.0.1.json"
+            )}>Load</button>
 
           Grid
           <input type='checkbox' checked={this.context.uiState.fieldGridView} onChange={(e)=>this.context.uiState.setFieldGridView(e.target.checked)}></input>
