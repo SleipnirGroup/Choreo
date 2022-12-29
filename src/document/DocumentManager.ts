@@ -35,20 +35,11 @@ export class DocumentManager {
 
     loadFile(jsonFilename:string) {
       fetch(jsonFilename).then((res)=>{console.log(res); return res.json()}).then((data)=>{
-        this.parseDocument(data)
+        console.log(data)
+        this.model.fromSavedDocument(data)
        })
     }
 
-    error(message:string) {
-      console.error(`Parsing Error! ${message}`);
-    }
-    parseDocument(data:SavedDocument) {
-      console.log(data)
-      if (data.version !=='v0.0.0') {
-        this.error(`Mismatched version`);
-        return;
-      } 
-    }
 
     saveFile() {
       const content = JSON.stringify(this.model.asSavedDocument(), undefined, 4);

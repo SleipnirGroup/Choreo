@@ -1,19 +1,21 @@
-export const SAVE_FILE_VERSION = "v0.0.0"
+export const SAVE_FILE_VERSION = "v0.0.1"
 export interface SavedWaypoint {
     "x": number,
     "y": number,
     "heading": number,
     "velocityMagnitude": number,
     "velocityAngle": number,
+    "angularVelocity": number,
     "xConstrained": boolean,
     "yConstrained": boolean,
     "headingConstrained": boolean,
     "velocityMagnitudeConstrained": boolean,
     "velocityAngleConstrained": boolean,
+    "angularVelocityConstrained" : boolean,
     "controlIntervalCount": number // positive-integer>
 }
 export interface SavedTrajectorySample {
-    "timeInterval": number, //positive
+    "timestamp": number, //positive
     "x": number,
     "y": number,
     "heading": number,

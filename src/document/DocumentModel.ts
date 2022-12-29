@@ -8,7 +8,7 @@ import { SavedDocument, SavedPath, SavedPathList, SavedRobotConfig, SavedTraject
 
 // State tree data types:
 export const TrajectorySampleStore = types.model("TrajectorySampleStore", {
-        "timeInterval": 0,
+        "timestamp": 0,
         "x": 0,
         "y": 0,
         "heading": 0,
@@ -19,13 +19,22 @@ export const TrajectorySampleStore = types.model("TrajectorySampleStore", {
 .views(self=>{
     return {
         asSavedTrajectorySample() : SavedTrajectorySample {
-            let {timeInterval, x, y, heading, velocityX, velocityY, angularVelocity} = self
-            return {timeInterval, x, y, heading, velocityX, velocityY, angularVelocity};
+            let {timestamp, x, y, heading, velocityX, velocityY, angularVelocity} = self
+            return {timestamp, x, y, heading, velocityX, velocityY, angularVelocity};
         }
     }
 })
 .actions(self=>{
     return {
+        fromSavedTrajectorySample(sample: SavedTrajectorySample) {
+            self.timestamp = sample.timestamp;
+            self.x = sample.x;
+            self.y = sample.y;
+            self.heading = sample.heading;
+            self.velocityX = sample.velocityX;
+            self.velocityY = sample.velocityY;
+            self.angularVelocity = sample.angularVelocity;
+        },
         setX(x:number) {self.x=x},
         setY(y:number) {self.y=y},
         setHeading(heading:number) {self.heading=heading},
@@ -49,20 +58,38 @@ export const HolonomicWaypointStore= types.model("WaypointStore", {
     velocityMagnitudeConstrained: false,
     velocityAngleConstrained:false,
     angularVelocityConstrained: false,
-    name: "",
     uuid:types.identifier,
     selected: false,
 }).views(self=>{
     return {
         asSavedWaypoint(): SavedWaypoint {
             let {x, y, heading, velocityMagnitude, velocityAngle,
-                    xConstrained, yConstrained, headingConstrained, velocityMagnitudeConstrained, velocityAngleConstrained, controlIntervalCount} = self;
+                    xConstrained, yConstrained, headingConstrained, 
+                    velocityMagnitudeConstrained, velocityAngleConstrained,
+                    angularVelocity, angularVelocityConstrained, controlIntervalCount} = self;
             return {x, y, heading, velocityMagnitude, velocityAngle,
-                xConstrained, yConstrained, headingConstrained, velocityMagnitudeConstrained, velocityAngleConstrained, controlIntervalCount}
+                xConstrained, yConstrained, headingConstrained,
+                velocityMagnitudeConstrained, velocityAngleConstrained,
+                angularVelocity, angularVelocityConstrained, controlIntervalCount}
         }
     }
 }).actions(self=>{
     return {
+        fromSavedWaypoint(point: SavedWaypoint) {
+            self.x = point.x;
+            self.y = point.y;
+            self.heading = point.heading;
+            self.velocityMagnitude = point.velocityMagnitude;
+            self.velocityAngle = point.velocityAngle;
+            self.xConstrained = point.xConstrained;
+            self.yConstrained = point.yConstrained;
+            self.headingConstrained = point.headingConstrained;
+            self.velocityMagnitudeConstrained = point.velocityMagnitudeConstrained;
+            self.velocityAngleConstrained = point.velocityAngleConstrained;
+            self.angularVelocity= point.angularVelocity;
+            self.angularVelocityConstrained = point.angularVelocityConstrained;
+        },
+
         setX(x:number) {self.x=x},
         setXConstrained(xConstrained:boolean) {self.xConstrained=xConstrained},
         setY(y:number) {self.y=y},
@@ -102,6 +129,20 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
     }
 }).actions(self=>{
     return {
+        fromSavedPath(path: SavedPath) {
+            self.waypoints.clear();
+            path.waypoints.forEach((point, index) => {
+                let waypoint=this.addWaypoint();
+                waypoint.fromSavedWaypoint(point);
+            })
+            self.generated.clear();
+            path.trajectory.forEach((sample)=>{
+                let point = TrajectorySampleStore.create();
+                point.fromSavedTrajectorySample(sample);
+                self.generated.push(point);
+            })
+
+        },
         setName(name:string) { self.name = name},
         selectOnly(selectedIndex:number) {
             self.waypoints.forEach((point, index) => {
@@ -184,15 +225,37 @@ export const PathListStore = types.model("PathListStore", {
                 self.activePathUUID = uuid;
             }
         },
-        addPath(name:string, select:boolean = false) :void {
+        addPath(name:string, select:boolean = false) :string {
             let newUUID = uuidv4();
             self.paths.put (HolonomicPathStore.create({uuid: newUUID, name:name, waypoints: []}));
             if (self.paths.size === 1 || select) {
                 self.activePathUUID = newUUID
             }
+            return newUUID;
         },
         deletePath(uuid:string){
             self.paths.delete(uuid);
+        },
+        
+    }
+    // The annoying thing we have to do to add the above actions to the object before we use them below
+}).actions(self=>{
+    return {
+        fromSavedPathList(list:SavedPathList) {
+            self.paths.clear();
+            if (list) {
+                console.log(Array.from(Object.keys(list).values()));
+                Array.from(Object.keys(list).values()).forEach((name)=>{
+                    console.log(name)
+
+                    let uuid = self.addPath(name, false);
+                    let path = self.paths.get(uuid);
+                    console.log(path)
+                    path!.fromSavedPath(list[name]);
+                    
+                });
+            }
+
         },
     }
 });
@@ -200,7 +263,7 @@ export const PathListStore = types.model("PathListStore", {
 
 export interface IPathListStore extends Instance<typeof PathListStore> {};
 export const RobotConfigStore = types.model("WaypointStore", {
-    mass:46.7,
+    mass:4,
     rotationalInertia:5.6,
     wheelMaxVelocity: 16,
     wheelMaxTorque:1.9,
@@ -214,9 +277,16 @@ export const RobotConfigStore = types.model("WaypointStore", {
     return {
         fromSavedRobotConfig(config: SavedRobotConfig) {
             let {mass, rotationalInertia, wheelMaxTorque, wheelMaxVelocity,
-                wheelbase, trackWidth: trackwidth, bumperLength, bumperWidth, wheelRadius} = self;
-            return {mass, rotationalInertia, wheelMaxTorque, wheelMaxVelocity,
-                wheelbase, trackWidth: trackwidth, bumperLength, bumperWidth, wheelRadius};
+                wheelbase, trackWidth, bumperLength, bumperWidth, wheelRadius} = config;
+            self.mass=mass;
+            self.rotationalInertia = rotationalInertia;
+            self.wheelMaxTorque = wheelMaxTorque;
+            self.wheelMaxVelocity = wheelMaxVelocity;
+            self.wheelbase = wheelbase;
+            self.trackWidth = trackWidth;
+            self.bumperLength = bumperLength;
+            self.bumperWidth = bumperWidth;
+            self.wheelRadius = wheelRadius;
         },
         setMass(arg:number) {self.mass=arg},
         setRotationalInertia(arg:number) {self.rotationalInertia=arg},
@@ -257,6 +327,11 @@ export default class DocumentModel {
             robotConfiguration:this.robotConfig.asSavedRobotConfig(),
             paths:this.pathlist.asSavedPathList(),
         }
+    }
+    fromSavedDocument(document: SavedDocument) {
+        if (document.version !== SAVE_FILE_VERSION) {console.error("mismatched version")}
+        this.robotConfig.fromSavedRobotConfig(document.robotConfiguration);
+        this.pathlist.fromSavedPathList(document.paths)
     }
     constructor() {
         this.pathlist.addPath("one");
