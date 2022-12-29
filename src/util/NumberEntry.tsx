@@ -33,7 +33,7 @@ type State = {}
   }
   correctNumber() {
     if (this.numberRef.current) {
-      this.numberRef.current.value = `${this.props.number}`;
+      this.numberRef.current.value = `${this.props.number.toFixed(3)}`;
     }
        
   }

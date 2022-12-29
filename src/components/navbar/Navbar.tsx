@@ -33,7 +33,7 @@ class Navbar extends Component<Props, State> {
             </IconButton>
           </Tooltip>
           <Tooltip title="Save">
-            <IconButton className={styles.action} onClick={()=>{this.context.model.saveFile()}}>
+            <IconButton className={styles.action} onClick={()=>{this.context.saveFile()}}>
               <SaveIcon />
             </IconButton>
           </Tooltip>

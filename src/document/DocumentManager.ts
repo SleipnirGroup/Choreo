@@ -1,7 +1,9 @@
 import { Instance, types } from "mobx-state-tree";
 import { createContext } from "react";
+import data from '../../public/scurve.json'
 import FieldConfig from "../datatypes/FieldConfig";
 import DocumentModel from "./DocumentModel";
+import { SavedDocument } from "./DocumentSpecTypes";
 
 export const UIStateStore = types.model("UIStateStore", {
   isRobotConfigOpen: false,
@@ -30,6 +32,37 @@ export class DocumentManager {
             fieldOffset: [16.4592 * 74 / (1775-74), 8.2296 * 50 / (901 - 50)]
         }
     }
+
+    loadFile(jsonFilename:string) {
+      fetch(jsonFilename).then((res)=>{console.log(res); return res.json()}).then((data)=>{
+        this.parseDocument(data)
+       })
+    }
+
+    error(message:string) {
+      console.error(`Parsing Error! ${message}`);
+    }
+    parseDocument(data:SavedDocument) {
+      console.log(data)
+      if (data.version !=='v0.0.0') {
+        this.error(`Mismatched version`);
+        return;
+      } 
+    }
+
+    saveFile() {
+      const content = JSON.stringify(this.model.asSavedDocument(), undefined, 4);
+      // TODO make document save file here
+      const element = document.createElement("a");
+      const file = new Blob([content], {type: "application/json"});
+      let link = URL.createObjectURL(file);
+      console.log(link);
+      window.open(link, '_blank');
+      //Uncomment to "save as..." the file
+      // element.href = link;
+      // element.download = "file.json";
+      // element.click();
+  }
 }
 let DocumentManagerContext = createContext(new DocumentManager());
 export default DocumentManagerContext; 

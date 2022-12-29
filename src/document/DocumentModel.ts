@@ -1,8 +1,13 @@
-import { types } from "mobx-state-tree";
+import { types } from "mobx-state-tree"
 import { Instance } from "mobx-state-tree";
 import { moveItem } from "mobx-utils";
 import { v4 as uuidv4} from 'uuid';
-export const GeneratedPointStore = types.model("GeneratedPointStore", {
+import { SavedDocument, SavedPath, SavedPathList, SavedRobotConfig, SavedTrajectorySample, SavedWaypoint, SAVE_FILE_VERSION } from "./DocumentSpecTypes";
+
+// Save file data types:
+
+// State tree data types:
+export const TrajectorySampleStore = types.model("TrajectorySampleStore", {
         "timeInterval": 0,
         "x": 0,
         "y": 0,
@@ -10,12 +15,27 @@ export const GeneratedPointStore = types.model("GeneratedPointStore", {
         "velocityX": 0,
         "velocityY": 0,
         "angularVelocity": 0
-}).actions(self=>{
-    return {setX(x:number) {self.x=x},
-        setY(y:number) {self.y=y},
-        setHeading(heading:number) {self.heading=heading}}
 })
-export const WaypointStore = types.model("WaypointStore", {
+.views(self=>{
+    return {
+        asSavedTrajectorySample() : SavedTrajectorySample {
+            let {timeInterval, x, y, heading, velocityX, velocityY, angularVelocity} = self
+            return {timeInterval, x, y, heading, velocityX, velocityY, angularVelocity};
+        }
+    }
+})
+.actions(self=>{
+    return {
+        setX(x:number) {self.x=x},
+        setY(y:number) {self.y=y},
+        setHeading(heading:number) {self.heading=heading},
+        setVelocityX(vx:number) {self.velocityX = vx},
+        setVelocityY(vy:number) {self.velocityY = vy},
+        setAngularVelocity(omega: number) {self.angularVelocity=omega}
+    }
+})
+
+export const HolonomicWaypointStore= types.model("WaypointStore", {
     x: 0,
     y: 0,
     heading: 0,
@@ -23,9 +43,24 @@ export const WaypointStore = types.model("WaypointStore", {
     yConstrained: true,
     headingConstrained: true,
     controlIntervalCount: 0,
+    velocityMagnitude:0,
+    velocityAngle: 0,
+    angularVelocity: 0,
+    velocityMagnitudeConstrained: false,
+    velocityAngleConstrained:false,
+    angularVelocityConstrained: false,
     name: "",
     uuid:types.identifier,
-    selected: false
+    selected: false,
+}).views(self=>{
+    return {
+        asSavedWaypoint(): SavedWaypoint {
+            let {x, y, heading, velocityMagnitude, velocityAngle,
+                    xConstrained, yConstrained, headingConstrained, velocityMagnitudeConstrained, velocityAngleConstrained, controlIntervalCount} = self;
+            return {x, y, heading, velocityMagnitude, velocityAngle,
+                xConstrained, yConstrained, headingConstrained, velocityMagnitudeConstrained, velocityAngleConstrained, controlIntervalCount}
+        }
+    }
 }).actions(self=>{
     return {
         setX(x:number) {self.x=x},
@@ -34,26 +69,12 @@ export const WaypointStore = types.model("WaypointStore", {
         setYConstrained(yConstrained:boolean) {self.yConstrained=yConstrained},
         setHeading(heading:number) {self.heading=heading},
         setHeadingConstrained(headingConstrained:boolean) {self.headingConstrained=headingConstrained},
-        setSelected(selected:boolean) {self.selected = selected}
-    }
-})
-export interface IWaypointStore extends Instance<typeof WaypointStore> {};
-export const HolonomicWaypointStore= WaypointStore
-.named("HolonomicWaypointStore")
-.props({
-    velocityX:0,
-    velocityY: 0,
-    angularVelocity: 0,
-    velocityXConstrained: false,
-    velocityYConstrained: false,
-    velocityMagnitudeConstrained: false,
-    angularVelocityConstrained: false
-}).actions(self=>{
-    return {
-        setVelocityX(vx:number) {self.velocityX=vx},
-        setVelocityXConstrained(velocityXConstrained:boolean) {self.velocityXConstrained=velocityXConstrained},
-        setVelocityY(vy:number) {self.velocityY=vy},
-        setVelocityYConstrained(velocityYConstrained:boolean) {self.velocityYConstrained=velocityYConstrained},
+        setSelected(selected:boolean) {self.selected = selected},
+
+        setVelocityAngle(vAngle:number) {self.velocityAngle=vAngle},
+        setVelocityAngleConstrained(velocityAngleConstrained:boolean) {self.velocityAngleConstrained=velocityAngleConstrained},
+        setVelocityMagnitude(vMag:number) {self.velocityMagnitude=vMag},
+        setVelocityMagnitudeConstrained(velocityMagnitudeConstrained:boolean) {self.velocityMagnitudeConstrained=velocityMagnitudeConstrained},
         setAngularVelocity(omega:number) {self.angularVelocity=omega},
         setAngularVelocityConstrained(angularVelocityConstrained:boolean) 
             {self.angularVelocityConstrained=angularVelocityConstrained},
@@ -65,9 +86,13 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
     name: "",
     uuid: types.identifier,
     waypoints: types.array(HolonomicWaypointStore),
-    generated: types.array(GeneratedPointStore)
+    generated: types.array(TrajectorySampleStore)
 }).views(self=>{
     return {
+        asSavedPath(): SavedPath {
+            return {waypoints: self.waypoints.map(point=>point.asSavedWaypoint()),
+                trajectory: self.generated.map(point=>point.asSavedTrajectorySample())}
+        },
         lowestSelectedPoint() :IHolonomicWaypointStore | null {
             for(let point of self.waypoints) {
                 if (point.selected) return point;
@@ -110,7 +135,7 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
         generatePath() {
             self.generated.length = 0;
             self.waypoints.forEach(point=>{
-                let newPoint = GeneratedPointStore.create();
+                let newPoint = TrajectorySampleStore.create();
                 newPoint.setX(point.x);
                 newPoint.setY(point.y);
                 newPoint.setHeading(point.heading);
@@ -127,6 +152,13 @@ export const PathListStore = types.model("PathListStore", {
 })
 .views(self=>{
     return {
+        asSavedPathList():SavedPathList {
+            let obj :any = {};
+            self.paths.forEach((path)=>{
+                obj[path.name] = path.asSavedPath();
+            })
+            return obj;
+        },
         toJSON() : any {
             let obj :any = {};
             self.paths.forEach((path)=>{
@@ -164,31 +196,47 @@ export const PathListStore = types.model("PathListStore", {
         },
     }
 });
+
+
 export interface IPathListStore extends Instance<typeof PathListStore> {};
 export const RobotConfigStore = types.model("WaypointStore", {
     mass:46.7,
-    moi:5.6,
-    maxVelocity: 16,
-    maxTorque:1.9,
+    rotationalInertia:5.6,
+    wheelMaxVelocity: 16,
+    wheelMaxTorque:1.9,
+    wheelRadius:0.0508,
     bumperWidth:0.9,
     bumperLength:0.9,
     wheelbase:0.622,
-    trackwidth:0.622
+    trackWidth:0.622
     
 }).actions(self=>{
     return {
-        
+        fromSavedRobotConfig(config: SavedRobotConfig) {
+            let {mass, rotationalInertia, wheelMaxTorque, wheelMaxVelocity,
+                wheelbase, trackWidth: trackwidth, bumperLength, bumperWidth, wheelRadius} = self;
+            return {mass, rotationalInertia, wheelMaxTorque, wheelMaxVelocity,
+                wheelbase, trackWidth: trackwidth, bumperLength, bumperWidth, wheelRadius};
+        },
         setMass(arg:number) {self.mass=arg},
-        setMoI(arg:number) {self.moi=arg},
-        setMaxTorque(arg:number) {self.maxTorque=arg},
-        setMaxVelocity(arg:number) {self.maxVelocity=arg},
+        setRotationalInertia(arg:number) {self.rotationalInertia=arg},
+        setMaxTorque(arg:number) {self.wheelMaxTorque=arg},
+        setMaxVelocity(arg:number) {self.wheelMaxVelocity=arg},
         setBumperWidth(arg:number) {self.bumperWidth=arg},
         setBumperLength(arg:number) {self.bumperLength=arg},
         setWheelbase(arg:number) {self.wheelbase=arg},
-        setTrackwidth(arg:number) {self.trackwidth=arg},
+        setTrackwidth(arg:number) {self.trackWidth=arg},
+        setWheelRadius(arg:number) {self.wheelRadius=arg}
     }
 }).views(self=>{
     return {
+        asSavedRobotConfig() : SavedRobotConfig {
+            let {mass, rotationalInertia, wheelMaxTorque, wheelMaxVelocity,
+                wheelbase, trackWidth: trackwidth, bumperLength, bumperWidth, wheelRadius} = self;
+            return {mass, rotationalInertia, wheelMaxTorque, wheelMaxVelocity,
+                wheelbase, trackWidth: trackwidth, bumperLength, bumperWidth, wheelRadius};
+
+        },
         bumperSVGElement() {
             return (`M ${self.bumperLength / 2} ${self.bumperWidth / 2}
             L ${self.bumperLength / 2} ${-self.bumperWidth / 2}
@@ -203,23 +251,18 @@ export interface IRobotConfigStore extends Instance<typeof RobotConfigStore> {};
 export default class DocumentModel {
     pathlist = PathListStore.create();
     robotConfig = RobotConfigStore.create();
+    asSavedDocument() : SavedDocument {
+        return {
+            version:SAVE_FILE_VERSION,
+            robotConfiguration:this.robotConfig.asSavedRobotConfig(),
+            paths:this.pathlist.asSavedPathList(),
+        }
+    }
     constructor() {
         this.pathlist.addPath("one");
         this.pathlist.addPath("two");
         this.pathlist.addPath("three");
     }
 
-    saveFile() {
-        const content = JSON.stringify(this.pathlist, undefined, 4);
-        // TODO make document save file here
-        const element = document.createElement("a");
-        const file = new Blob([content], {type: "application/json"});
-        let link = URL.createObjectURL(file);
-        console.log(link);
-        window.open(link, '_blank');
-        //Uncomment to "save as..." the file
-        // element.href = link;
-        // element.download = "file.json";
-        // element.click();
-    }
+
 }

@@ -36,8 +36,8 @@ class RobotConfigPanel extends Component<Props, State> {
               suffix="kg · m²" 
               enabled={true} 
               setEnabled={a=>null}
-              number={config.moi} 
-              setNumber={config!.setMoI}
+              number={config.rotationalInertia} 
+              setNumber={config!.setRotationalInertia}
               showCheckbox={false}/>
 
             <NumberEntry 
@@ -45,7 +45,7 @@ class RobotConfigPanel extends Component<Props, State> {
               suffix="m/s" 
               enabled={true} 
               setEnabled={a=>null}
-              number={config.maxVelocity} 
+              number={config.wheelMaxVelocity} 
               setNumber={config!.setMaxVelocity}
               showCheckbox={false}/>
 
@@ -54,7 +54,7 @@ class RobotConfigPanel extends Component<Props, State> {
               suffix="N · m" 
               enabled={true} 
               setEnabled={a=>null}
-              number={config.maxTorque} 
+              number={config.wheelMaxTorque} 
               setNumber={config!.setMaxTorque}
               showCheckbox={false}/>
 
@@ -90,8 +90,16 @@ class RobotConfigPanel extends Component<Props, State> {
               suffix="m" 
               enabled={true} 
               setEnabled={a=>null}
-              number={config.trackwidth} 
+              number={config.trackWidth} 
               setNumber={config!.setTrackwidth}
+              showCheckbox={false}/>
+            <NumberEntry 
+              title="Wheel Radius" 
+              suffix="m" 
+              enabled={true} 
+              setEnabled={a=>null}
+              number={config.wheelRadius} 
+              setNumber={config!.setWheelRadius}
               showCheckbox={false}/>
           </div>
         </div>
