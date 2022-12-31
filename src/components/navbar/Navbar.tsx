@@ -3,11 +3,14 @@ import DocumentManagerContext from '../../document/DocumentManager';
 import ShapeLineIcon from '@mui/icons-material/ShapeLine';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SaveIcon from '@mui/icons-material/Save';
+import GridOnIcon from '@mui/icons-material/GridOn'
+import GridOffIcon from '@mui/icons-material/GridOff'
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import styles from './Navbar.module.css';
 import PathSelect from './PathSelect';
 import { observer } from 'mobx-react';
+import { Checkbox } from '@mui/material';
 
 type Props = {};
 
@@ -23,11 +26,20 @@ class Navbar extends Component<Props, State> {
     return (
       <div className={styles.Container}>
         <PathSelect></PathSelect>
+        
         <span>
-          <button onClick={()=>this.context.loadFile("https://gist.githubusercontent.com/shueja-personal/7c81675d8af9033d2c33eea9431bd22a/raw/dd3c401127d80347098e53c3282e3f6e09a9942e/save_v0.0.1.json")}>Load</button>
 
-          Grid
-          <input type='checkbox' checked={this.context.uiState.fieldGridView} onChange={(e)=>this.context.uiState.setFieldGridView(e.target.checked)}></input>
+          <button onClick={()=>this.context.loadFile(
+"https://gist.githubusercontent.com/shueja-personal/24f91b89357f1787c11507d7eaf6461b/raw/cfd31c71b560b79b6a0a5911ef5c0f8d19867e0c/saveWithoutGenerated.json"
+)}>Load</button>
+
+          <Tooltip title="Field Grid">
+            <Checkbox className={styles.action + " " +styles.likeButton} checked={this.context.uiState.fieldGridView}
+              onChange={(e)=>this.context.uiState.setFieldGridView(e.target.checked)}
+              icon={<GridOffIcon/>}
+              checkedIcon={<GridOnIcon/>}
+            />
+          </Tooltip>
           <Tooltip title="Settings">
             <IconButton className={styles.action} onClick={()=>this.context.uiState.setRobotConfigOpen(true)}>
               <SettingsIcon />
@@ -39,7 +51,7 @@ class Navbar extends Component<Props, State> {
             </IconButton>
           </Tooltip>
           <Tooltip title="Generate path">
-            <IconButton className={styles.generate} onClick={()=>this.context.model.pathlist.activePath.generatePath()}>
+            <IconButton className={styles.generate} disabled={!this.context.model.pathlist.activePath.canGenerate()} onClick={()=>this.context.model.pathlist.activePath.generatePath()}>
               <ShapeLineIcon />
             </IconButton>
           </Tooltip>
