@@ -116,9 +116,25 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
     generated: types.array(TrajectorySampleStore)
 }).views(self=>{
     return {
+        getSavedTrajectory(): Array<SavedTrajectorySample> | null {
+            let trajectory = null;
+            if(self.generated.length >= 2) {
+                trajectory = self.generated.map(point=>point.asSavedTrajectorySample())
+            }
+            return trajectory;
+        },
+        canGenerate(): boolean {
+            return self.waypoints.length >= 2;
+        },
+        canExport(): boolean{
+            return self.generated.length >=2;
+        },
         asSavedPath(): SavedPath {
-            return {waypoints: self.waypoints.map(point=>point.asSavedWaypoint()),
-                trajectory: self.generated.map(point=>point.asSavedTrajectorySample())}
+            let trajectory = null;
+            if(self.generated.length >= 2) {
+                trajectory = self.generated.map(point=>point.asSavedTrajectorySample())
+            }
+            return {waypoints: self.waypoints.map(point=>point.asSavedWaypoint())}
         },
         lowestSelectedPoint() :IHolonomicWaypointStore | null {
             for(let point of self.waypoints) {
@@ -136,11 +152,6 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
                 waypoint.fromSavedWaypoint(point);
             })
             self.generated.clear();
-            path.trajectory.forEach((sample)=>{
-                let point = TrajectorySampleStore.create();
-                point.fromSavedTrajectorySample(sample);
-                self.generated.push(point);
-            })
 
         },
         setName(name:string) { self.name = name},

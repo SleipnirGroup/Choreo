@@ -26,20 +26,19 @@ class Navbar extends Component<Props, State> {
     return (
       <div className={styles.Container}>
         <PathSelect></PathSelect>
-        
+        <span>          <input type="file" onChange={(e)=>{
+            if (e.target !=null && e.target.files != null && e.target.files.length >= 1) {
+              let fileList = e.target.files;
+              this.context.onFileUpload(
+                fileList[0]
+              )
+            } 
+          } }></input></span>
         <span>
 
           <button onClick={()=>this.context.loadFile(
 "https://gist.githubusercontent.com/shueja-personal/24f91b89357f1787c11507d7eaf6461b/raw/cfd31c71b560b79b6a0a5911ef5c0f8d19867e0c/saveWithoutGenerated.json"
-)}>Load</button>
-
-          <Tooltip title="Field Grid">
-            <Checkbox className={styles.action + " " +styles.likeButton} checked={this.context.uiState.fieldGridView}
-              onChange={(e)=>this.context.uiState.setFieldGridView(e.target.checked)}
-              icon={<GridOffIcon/>}
-              checkedIcon={<GridOnIcon/>}
-            />
-          </Tooltip>
+)}>Demo</button>
           <Tooltip title="Settings">
             <IconButton className={styles.action} onClick={()=>this.context.uiState.setRobotConfigOpen(true)}>
               <SettingsIcon />

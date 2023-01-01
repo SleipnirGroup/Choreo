@@ -1,4 +1,4 @@
-export const SAVE_FILE_VERSION = "v0.0.1"
+export const SAVE_FILE_VERSION = "v0.0.0"
 export interface SavedWaypoint {
     "x": number,
     "y": number,
@@ -24,8 +24,7 @@ export interface SavedTrajectorySample {
     "angularVelocity": number
 }
 export interface SavedPath {
-    waypoints: Array<SavedWaypoint>,
-    trajectory: Array<SavedTrajectorySample>
+    waypoints: Array<SavedWaypoint>
 }
 export interface SavedPathList extends Record<string, SavedPath> {};
 export interface SavedRobotConfig {

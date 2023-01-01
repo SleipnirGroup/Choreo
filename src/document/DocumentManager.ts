@@ -4,11 +4,19 @@ import data from '../../public/scurve.json'
 import FieldConfig from "../datatypes/FieldConfig";
 import DocumentModel from "./DocumentModel";
 import { SavedDocument } from "./DocumentSpecTypes";
+import pako from 'pako'
+import { init, compress, decompress } from '@bokuweb/zstd-wasm';
+import {encode, decode} from '@msgpack/msgpack'
+import { contourDensity } from "d3";
+import {v4} from 'uuid'
+
+
+
 
 export const UIStateStore = types.model("UIStateStore", {
   isRobotConfigOpen: false,
   fieldScalingFactor:0.02,
-  fieldGridView:true
+  fieldGridView:false,
 }).actions(self=>{
   return {
     setRobotConfigOpen(open: boolean) {self.isRobotConfigOpen = open},
@@ -18,6 +26,7 @@ export const UIStateStore = types.model("UIStateStore", {
 })
 export interface IUIStateStore extends Instance<typeof UIStateStore> {};
 export class DocumentManager {
+    simple: any;
     uiState : IUIStateStore
     model : DocumentModel;
     fieldConfig : FieldConfig;
@@ -33,26 +42,49 @@ export class DocumentManager {
         }
     }
 
+    async parseFile(file : Blob | null) : Promise<string> {
+      if (file == null) {
+        return Promise.reject("Tried to upload a null file");
+      }
+      return new Promise((resolve, reject) => {
+        const fileReader = new FileReader()
+        fileReader.onload = event => {
+          let output = event.target!.result;
+          if (typeof output === 'string'){
+
+            resolve(output);
+          }
+          reject("File did not read as string")
+         
+        }
+        fileReader.onerror = error => reject(error)
+        fileReader.readAsText(file)
+      })
+    }
+    async onFileUpload(file:Blob | null) {
+      await this.parseFile(file).then((content) =>this.model.fromSavedDocument(JSON.parse(content)))
+    }
+
     loadFile(jsonFilename:string) {
-      fetch(jsonFilename).then((res)=>{console.log(res); return res.json()}).then((data)=>{
+      fetch(jsonFilename, {cache:'no-store', }).then((res)=>{console.log(res); return res.json()}).then((data)=>{
         console.log(data)
         this.model.fromSavedDocument(data)
        })
     }
 
 
-    saveFile() {
+    async saveFile() {
       const content = JSON.stringify(this.model.asSavedDocument(), undefined, 4);
       // TODO make document save file here
       const element = document.createElement("a");
       const file = new Blob([content], {type: "application/json"});
       let link = URL.createObjectURL(file);
       console.log(link);
-      window.open(link, '_blank');
+      //window.open(link, '_blank');
       //Uncomment to "save as..." the file
-      // element.href = link;
-      // element.download = "file.json";
-      // element.click();
+      element.href = link;
+      element.download = `${v4()}.json`;
+      element.click();
   }
 }
 let DocumentManagerContext = createContext(new DocumentManager());
