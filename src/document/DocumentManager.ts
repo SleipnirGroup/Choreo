@@ -4,10 +4,6 @@ import data from '../../public/scurve.json'
 import FieldConfig from "../datatypes/FieldConfig";
 import DocumentModel from "./DocumentModel";
 import { SavedDocument } from "./DocumentSpecTypes";
-import pako from 'pako'
-import { init, compress, decompress } from '@bokuweb/zstd-wasm';
-import {encode, decode} from '@msgpack/msgpack'
-import { contourDensity } from "d3";
 import {v4} from 'uuid'
 
 
