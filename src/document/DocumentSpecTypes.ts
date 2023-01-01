@@ -24,7 +24,8 @@ export interface SavedTrajectorySample {
     "angularVelocity": number
 }
 export interface SavedPath {
-    waypoints: Array<SavedWaypoint>
+    waypoints: Array<SavedWaypoint>,
+    trajectory: Array<SavedTrajectorySample>
 }
 export interface SavedPathList extends Record<string, SavedPath> {};
 export interface SavedRobotConfig {

@@ -92,7 +92,7 @@ class FieldOverlayRoot extends Component<Props, State> {
 
     let generatedPathString = "";
     this.context.model.pathlist.activePath.generated.forEach(point => {
-      generatedPathString += `${point.x + 1},${point.y} `;
+      generatedPathString += `${point.x},${point.y} `;
   })
     return (<div>
         

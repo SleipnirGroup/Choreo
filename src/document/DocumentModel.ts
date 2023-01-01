@@ -40,7 +40,8 @@ export const TrajectorySampleStore = types.model("TrajectorySampleStore", {
         setHeading(heading:number) {self.heading=heading},
         setVelocityX(vx:number) {self.velocityX = vx},
         setVelocityY(vy:number) {self.velocityY = vy},
-        setAngularVelocity(omega: number) {self.angularVelocity=omega}
+        setAngularVelocity(omega: number) {self.angularVelocity=omega},
+        setTimestamp(timestamp:number) {self.timestamp = timestamp}
     }
 })
 
@@ -130,11 +131,11 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
             return self.generated.length >=2;
         },
         asSavedPath(): SavedPath {
-            let trajectory = null;
+            let trajectory : Array<SavedTrajectorySample> = [];
             if(self.generated.length >= 2) {
                 trajectory = self.generated.map(point=>point.asSavedTrajectorySample())
             }
-            return {waypoints: self.waypoints.map(point=>point.asSavedWaypoint())}
+            return {waypoints: self.waypoints.map(point=>point.asSavedWaypoint()), trajectory:trajectory}
         },
         lowestSelectedPoint() :IHolonomicWaypointStore | null {
             for(let point of self.waypoints) {
@@ -152,6 +153,12 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
                 waypoint.fromSavedWaypoint(point);
             })
             self.generated.clear();
+            path.trajectory.forEach((savedSample, index) => {
+                let sample = TrajectorySampleStore.create();
+                sample.fromSavedTrajectorySample(savedSample);
+                self.generated.push(sample);
+
+            })
 
         },
         setName(name:string) { self.name = name},
@@ -186,11 +193,12 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
         },
         generatePath() {
             self.generated.length = 0;
-            self.waypoints.forEach(point=>{
+            self.waypoints.forEach((point, index)=>{
                 let newPoint = TrajectorySampleStore.create();
                 newPoint.setX(point.x);
                 newPoint.setY(point.y);
                 newPoint.setHeading(point.heading);
+                newPoint.setTimestamp(index)
                 self.generated.push(newPoint);
             })
         }
