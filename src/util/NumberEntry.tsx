@@ -1,9 +1,7 @@
-import { Checkbox } from '@mui/material';
 import { observer } from 'mobx-react';
 import React, { Component } from 'react'
 import styles from './NumberEntry.module.css';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle'
-import CircleIcon from '@mui/icons-material/Circle'
+
 type Props = {
     title:string,
     suffix: string,
@@ -61,11 +59,7 @@ type State = {}
             
             ></input>
          <span className={styles.Suffix}>{this.props.suffix}</span>
-         <Checkbox className={styles.Checkbox} size="small" checked={this.props.enabled} onChange={this.setEnabled}
-          checkedIcon={<CheckCircleIcon></CheckCircleIcon>}
-          icon={<CircleIcon></CircleIcon>}
-         ></Checkbox>
-          </div>
+          <input type='checkbox' className={styles.Checkbox} checked={this.props.enabled} onChange={this.setEnabled}></input></div>
     )
   }
 }
