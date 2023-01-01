@@ -41,14 +41,11 @@ class PathSelect extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   context!: React.ContextType<typeof DocumentManagerContext>;
   state = {};
-  constructor(props:Props) {
-    super(props);
-  }
-  
+
   render() {
     let options = Array.from(this.context.model.pathlist.paths.keys())
       .map(key => this.context.model.pathlist.paths.get(key))
-      .filter(path => (path != null && path != undefined && path.uuid != null && path.uuid!=undefined))
+      .filter(path => (path !== null && path !== undefined && path.uuid !== null && path.uuid!== undefined))
       .map((path)=>({uuid: (path?.uuid || '')})); 
     return (
         <span className={styles.PathChooserContainer}>

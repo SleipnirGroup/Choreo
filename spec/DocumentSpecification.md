@@ -66,7 +66,7 @@ A __Path__ must comply with this template:
 }
 ```
 
-`<waypoint-list>` is an array of __Waypoints__. A __Waypoint__ must comply with this template:
+`<waypoint-list>` is an array containing only __Waypoints__. A __Waypoint__ must comply with this template:
 
 ```json
 {
@@ -84,7 +84,7 @@ A __Path__ must comply with this template:
 }
 ```
 
-`<generated-trajectory>` may either be `null` or a __Trajectory__, which is an array of __Trajectory Samples__. A __Trajectory Sample__ must comply with this template:
+`<generated-trajectory>` may either be `null` or a __Trajectory__, which is an array of at least two items containing only __Trajectory Samples__. A __Trajectory Sample__ must comply with this template:
 
 ```json
 {
