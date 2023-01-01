@@ -357,6 +357,4 @@ export default class DocumentModel {
         this.pathlist.addPath("two");
         this.pathlist.addPath("three");
     }
-
-
 }

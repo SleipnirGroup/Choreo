@@ -3,15 +3,12 @@ import React, { Component } from 'react'
 import DocumentManagerContext from '../../../document/DocumentManager';
 import { IHolonomicWaypointStore } from '../../../document/DocumentModel';
 import * as d3 from 'd3'
-import ReactDOM from 'react-dom';
-import { DragContainerElement } from 'd3';
 
 type Props = {waypoint: IHolonomicWaypointStore, index:number}
 
 type State = {}
 
 
-const ROTATE_HANDLE_DIST = 1;
 type Coordinates = {
   x:number,
   y:number}
@@ -128,8 +125,8 @@ class OverlayWaypoint extends Component<Props, State> {
     let waypoints =this.context.model.pathlist.activePath.waypoints
     let color = 'var(--accent-purple)';
     if (waypoints.length >= 2) {
-      if (this.props.index == 0) {color = 'green'}
-      if (this.props.index == waypoints.length - 1) {color = 'red'}
+      if (this.props.index === 0) {color = 'green'}
+      if (this.props.index === waypoints.length - 1) {color = 'red'}
     }
 
     if (this.props.waypoint.selected) {color = 'var(--select-yellow)'}
@@ -137,7 +134,6 @@ class OverlayWaypoint extends Component<Props, State> {
   }
 
   render() {
-      let px = this.context.uiState.fieldScalingFactor;
       let waypoint = this.props.waypoint;
       let boxColorStr = this.getBoxColor();
       let robotConfig = this.context.model.robotConfig;

@@ -7,8 +7,7 @@ import SidebarWaypoint from "./SidebarWaypoint";
 import WaypointPanel from "./WaypointPanel";
 import styles from './Sidebar.module.css';
 import waypointStyles from './SidebarWaypoint.module.css';
-import {faDiscord, faGithub} from '@fortawesome/free-brands-svg-icons'
-import {faGear, faPlus} from '@fortawesome/free-solid-svg-icons'
+import {faPlus} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 const getListStyle = (isDraggingOver : boolean) => ({
