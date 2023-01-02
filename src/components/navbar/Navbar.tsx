@@ -37,6 +37,7 @@ class Navbar extends Component<Props, State> {
               this.context.onFileUpload(
                 fileList[0]
               )
+              e.target.value = '';
               
             } 
           } }
