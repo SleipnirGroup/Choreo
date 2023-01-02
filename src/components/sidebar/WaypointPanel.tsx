@@ -49,19 +49,19 @@ class WaypointPanel extends Component<Props, State> {
           number={waypoint.heading} 
           setNumber={heading=>waypoint!.setHeading(heading)} showCheckbox></NumberEntry>
         <NumberEntry 
-          title="vx" 
-          suffix="m/s" 
-          enabled={waypoint.velocityXConstrained} 
-          setEnabled={waypoint!.setVelocityXConstrained}
-          number={waypoint.velocityX} 
-          setNumber={waypoint!.setVelocityX} showCheckbox></NumberEntry>
+          title="dir(v)" 
+          suffix="rad" 
+          enabled={waypoint.velocityAngleConstrained} 
+          setEnabled={waypoint!.setVelocityAngleConstrained}
+          number={waypoint.velocityAngle} 
+          setNumber={waypoint!.setVelocityAngle} showCheckbox></NumberEntry>
         <NumberEntry 
-          title="vy" 
+          title="|v|" 
           suffix="m/s" 
-          enabled={waypoint.velocityYConstrained} 
-          setEnabled={waypoint!.setVelocityYConstrained}
-          number={waypoint.velocityY} 
-          setNumber={waypoint!.setVelocityY} showCheckbox></NumberEntry>
+          enabled={waypoint.velocityMagnitudeConstrained} 
+          setEnabled={waypoint!.setVelocityMagnitudeConstrained}
+          number={waypoint.velocityMagnitude} 
+          setNumber={waypoint!.setVelocityMagnitude} showCheckbox></NumberEntry>
         <NumberEntry 
           title="ω" 
           suffix="rad/s" 

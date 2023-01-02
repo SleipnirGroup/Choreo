@@ -50,7 +50,7 @@
     z-index: top;
 }
 
-.Container Button {
+/* .Container Button, .Container .likeButton {
     background-color: var(--accent-purple);
     color: white;
     height: 2.5rem;
@@ -60,10 +60,24 @@
     font-size: 1rem;
 }
 
+.Container Checkbox {
+    background-color: var(--accent-purple);
+    color: white;
+    height: 2.5rem;
+    text-transform: none;
+    margin: 0.3rem;
+    border-radius: 10px;
+    font-size: 1rem;
+}
+
+
 .Container Button:hover {
     background-color: var(--darker-purple);
+}
+.Container Button :disabled {
+    background-color: #3F3F3F3f;
 }
 
 .Container .generate:hover {
     outline: 2.5px solid #FFC52F;
-}
+} */
