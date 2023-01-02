@@ -13,6 +13,7 @@ import { observer } from 'mobx-react';
 import { Checkbox } from '@mui/material';
 import Button from '@mui/material/Button'
 import ButtonGroup from '@mui/material/ButtonGroup'
+import FileSelect from './FileSelect'
 
 type Props = {};
 
@@ -28,34 +29,7 @@ class Navbar extends Component<Props, State> {
     return (
       <div className={styles.Container}>
         <PathSelect></PathSelect>
-        <span>
-          <ButtonGroup>
-          <input type="file" id='file-upload-input' style={{display:'none'}} onChange={(e)=>{
-            console.log(e)
-            if (e.target !=null && e.target.files != null && e.target.files.length >= 1) {
-              let fileList = e.target.files;
-              this.context.onFileUpload(
-                fileList[0]
-              )
-              e.target.value = '';
-              
-            } 
-          } }
-
-          ></input>
-          <label htmlFor="file-upload-input">
-          <Button component='span'>
-            Upload
-          </Button>
-
-        </label>
-        <Tooltip title="Save">
-            <IconButton  className={styles.action} onClick={()=>{this.context.saveFile()}}>
-              <SaveIcon />
-            </IconButton>
-          </Tooltip>
-          </ButtonGroup>
-        </span>
+        <FileSelect></FileSelect>
 
         <span>
 
