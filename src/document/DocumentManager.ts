@@ -10,13 +10,13 @@ import {v4} from 'uuid'
 
 
 export const UIStateStore = types.model("UIStateStore", {
-  isRobotConfigOpen: false,
+  appPage:1,
   fieldScalingFactor:0.02,
   fieldGridView:false,
   saveFileName:"save"
 }).actions(self=>{
   return {
-    setRobotConfigOpen(open: boolean) {self.isRobotConfigOpen = open},
+    setPageNumber(page: number) {self.appPage = page},
     setFieldScalingFactor(metersPerPixel: number) {self.fieldScalingFactor = metersPerPixel},
     setFieldGridView(on:boolean) {self.fieldGridView = on},
     setSaveFileName(name:string) {self.saveFileName = name}

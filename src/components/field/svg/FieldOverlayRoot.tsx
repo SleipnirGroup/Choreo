@@ -4,24 +4,28 @@ import Moveable from 'react-moveable';
 import DocumentManagerContext from '../../../document/DocumentManager'
 import OverlayWaypoint from './OverlayWaypoint';
 import FieldBackgroundImage from './FieldBackgroundImage';
+import {zoom} from 'd3-zoom';
+import * as d3 from 'd3'
+import FieldGrid from './FieldGrid';
+import FieldPathLines from './FieldPathLines';
 type Props = {}
 
-type State = {metersPerPixel: number}
+type State = {xPan:number, yPan:number, zoom:number}
 
-const DRAW_BOUND = 100;
-const GRID_STROKE = 0.01;
+
 
 class FieldOverlayRoot extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   context!: React.ContextType<typeof DocumentManagerContext>;
   state={
-      metersPerPixel: 0.024
+    xPan:0,
+    yPan:0,
+    zoom:1
   }
     canvasHeightMeters: number;
     canvasWidthMeters: number;
     svgRef: React.RefObject<SVGSVGElement>;
     frameRef: React.RefObject<SVGGElement>;
-    moveables: Array<Moveable> = new Array<Moveable>();
   constructor(props: Props) {
     super(props);
     this.svgRef = React.createRef<SVGSVGElement>();
@@ -29,11 +33,17 @@ class FieldOverlayRoot extends Component<Props, State> {
     
   }
   componentDidMount(): void {
-    
-
-
     window.addEventListener('resize', ()=>this.handleResize());
     this.handleResize();
+    /* Semantic zoom için zoom değişkeni oluşturuldu */
+    let zoomBehavior = d3.zoom<SVGGElement, undefined>()
+        .on("zoom", (e)=>this.zoomed(e));
+    
+    d3.select<SVGGElement, undefined>(this.svgRef.current!).call(zoomBehavior);
+  }
+  zoomed(e:any) {
+    this.handleResize();
+    this.setState({xPan:e.transform.x, yPan:e.transform.y, zoom:e.transform.k})
   }
   screenSpaceToFieldSpace(current: SVGSVGElement | null, {x, y}: {x:number, y:number}): {x:number,y:number} {
     if (current && current !== undefined) {
@@ -64,17 +74,8 @@ class FieldOverlayRoot extends Component<Props, State> {
     let fieldConfig= this.context.fieldConfig;
     this.canvasHeightMeters = fieldConfig.fieldImageSize[1];
     this.canvasWidthMeters = fieldConfig.fieldImageSize[0];
-    let pathString="";
-      this.context.model.pathlist.activePath.waypoints.forEach((point, index)=>{
+    
 
-          pathString += `${point.x}, ${point.y} `;
-
-      })
-
-    let generatedPathString = "";
-    this.context.model.pathlist.activePath.generated.forEach(point => {
-      generatedPathString += `${point.x},${point.y} `;
-  })
     return (<div>
         
         <svg ref={this.svgRef} viewBox={`
@@ -87,22 +88,16 @@ class FieldOverlayRoot extends Component<Props, State> {
         xmlns="http://www.w3.org/2000/svg" 
         style={{width:'100%',
                 height:'100%'}}
-                onClick={(e)=>this.createWaypoint(e)}
+                //onClick={(e)=>this.createWaypoint(e)}
         >
-            <defs>
-                <pattern id="grid" width="1" height="1" patternUnits="userSpaceOnUse">
-                    <path d="M 1 0 L 0 0 0 1" fill="none" stroke="silver" strokeWidth={GRID_STROKE}/>
-                </pattern>
-            </defs>
-            <g transform={`matrix(1 0 0 -1 0 0)`} ref={this.frameRef}>
+
+            <g transform={`
+              matrix(${this.state.zoom} 0  0 ${-this.state.zoom} ${this.state.xPan} ${this.state.yPan})`} ref={this.frameRef} id='rootFrame'>
               {/* Background */}
             <FieldBackgroundImage></FieldBackgroundImage>
-            {this.context.uiState.fieldGridView && <circle cx={0} cy={0} r={DRAW_BOUND} fill='url(#grid)'style={{pointerEvents:'none'}}></circle>}
-            <line x1={0} y1={-DRAW_BOUND} x2={0} y2={DRAW_BOUND} stroke='darkgreen' strokeWidth={5 * GRID_STROKE} style={{pointerEvents:'none'}}></line>
-            <line y1={0} x1={-DRAW_BOUND} y2={0} x2={DRAW_BOUND} stroke='darkred' strokeWidth={5 * GRID_STROKE} style={{pointerEvents:'none'}}></line>
+            <FieldGrid></FieldGrid>
             {/* Line paths */}
-            <polyline points={pathString} stroke="grey" strokeWidth={0.05} fill='transparent' style={{pointerEvents:'none'}}></polyline>
-            <polyline points={generatedPathString} stroke="var(--select-yellow)" strokeWidth={0.05} fill='transparent' style={{pointerEvents:'none'}}></polyline>
+            <FieldPathLines></FieldPathLines>
 
             {this.context.model.pathlist.activePath.waypoints.map((point, index)=>(
                 <OverlayWaypoint waypoint={point} index={index}></OverlayWaypoint>)

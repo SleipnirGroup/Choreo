@@ -9,6 +9,7 @@ import styles from './Sidebar.module.css';
 import waypointStyles from './SidebarWaypoint.module.css';
 import {faPlus} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import PathSelect from "../navbar/PathSelect";
 
 const getListStyle = (isDraggingOver : boolean) => ({
   background: isDraggingOver ? "lightblue" : "transparent",

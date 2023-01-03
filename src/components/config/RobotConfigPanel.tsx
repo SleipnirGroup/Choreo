@@ -17,10 +17,10 @@ class RobotConfigPanel extends Component<Props, State> {
   render() {
     let config = this.context.model.robotConfig;
     return (
-      <div className={styles.Opacity}style={{display: (this.context.uiState.isRobotConfigOpen ? "block": "none")}}>
+      <div className={styles.Opacity}>
         <div className={styles.RobotConfigPanel}>
           <h2>Robot Configuration</h2>
-          <IconButton className={styles.ExitButton} onClick={()=>this.context.uiState.setRobotConfigOpen(false)}><CloseIcon /></IconButton>
+          {/* <IconButton className={styles.ExitButton} onClick={()=>this.context.uiState.setRobotConfigOpen(false)}><CloseIcon /></IconButton> */}
           <div className={styles.NumberEntryList}>
             <NumberEntry 
               title="Mass" 

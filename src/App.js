@@ -1,12 +1,9 @@
-import Navbar from './components/navbar/Navbar'
-import Sidebar from './components/sidebar/Sidebar'
 import './App.css';
 import { DocumentManager } from './document/DocumentManager';
 import { createContext } from 'react';
-import Field from './components/field/Field';
 import { observer } from 'mobx-react';
-import RobotConfigPanel from './components/config/RobotConfigPanel'
 import {ThemeProvider, createTheme} from '@mui/material/styles'
+import Body from './Body'
 function App() {
   const DocumentManagerContext = createContext(null)
   const documentManager = new DocumentManager();
@@ -32,7 +29,9 @@ function App() {
   }
   // theming for mui components
   const themeOptions = {
-
+    palette: {
+      mode: 'dark',
+    },
     components: {
       // Name of the component
       MuiButton: {styleOverrides: buttonOverrides},
@@ -43,18 +42,8 @@ function App() {
   return (
     <ThemeProvider theme={createTheme(themeOptions)}>
     <DocumentManagerContext.Provider value={documentManager}>
-    <div className="App">
-      <Navbar></Navbar>
-      
-      
-      <div className="Page">
-      
-      <Sidebar></Sidebar>
-      <Field containerHeight={300} containerWidth={300}></Field>
-      </div>
-      
-    </div>
-    <RobotConfigPanel style={{display: (documentManager.isRobotConfigOpen? "block": "none")}}></RobotConfigPanel>
+    <Body></Body>
+    
     </DocumentManagerContext.Provider>
     </ThemeProvider>
   );

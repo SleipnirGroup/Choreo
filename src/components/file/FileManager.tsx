@@ -13,16 +13,15 @@ type Props = {};
 type State = {};
 
 
-class FileSelect extends Component<Props, State> {
+class FileManager extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   context!: React.ContextType<typeof DocumentManagerContext>;
   state = {};
 
   render() {
     return (
-      <div>
+      <div style={{backgroundColor:'#2F3136', color:'white'}}>
         <span>
-          <ButtonGroup variant='contained'>
 
           <Button component='span'>
           <input type="file" id='file-upload-input' style={{display:'none'}} onChange={(e)=>{
@@ -43,10 +42,9 @@ class FileSelect extends Component<Props, State> {
             <IconButton  onClick={()=>{this.context.saveFile()}}>
               <SaveIcon />
             </IconButton>
-          </ButtonGroup>
         </span>
       </div>
     )
   }
 }
-export default observer(FileSelect)
+export default observer(FileManager)
