@@ -144,12 +144,12 @@ class OverlayWaypoint extends Component<Props, State> {
             
             {this.props.waypoint.headingConstrained  && (
               <circle cx={robotConfig.bumperLength / 2} cy={0}
-                r={0.15 * Math.min(robotConfig.bumperLength, robotConfig.bumperWidth)}
+                r={0.20 * Math.min(robotConfig.bumperLength, robotConfig.bumperWidth)}
                 id={this.appendIndexID("rotateTarget")}
                 fill={boxColorStr}
                 ></circle>)}
            <circle cx={0} cy={0}
-            r={0.15 * Math.min(robotConfig.bumperLength, robotConfig.bumperWidth)}
+            r={0.20 * Math.min(robotConfig.bumperLength, robotConfig.bumperWidth)}
             id={this.appendIndexID("dragTarget")}
             fill={this.getDragTargetColor()}
            onClick={()=>this.selectWaypoint()}
