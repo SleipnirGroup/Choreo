@@ -13,6 +13,7 @@ export const UIStateStore = types.model("UIStateStore", {
   appPage:1,
   fieldScalingFactor:0.02,
   fieldGridView:false,
+  fieldAddMode:false,
   saveFileName:"save",
   waypointPanelOpen:false
 }).actions(self=>{
@@ -21,7 +22,8 @@ export const UIStateStore = types.model("UIStateStore", {
     setFieldScalingFactor(metersPerPixel: number) {self.fieldScalingFactor = metersPerPixel},
     setFieldGridView(on:boolean) {self.fieldGridView = on},
     setSaveFileName(name:string) {self.saveFileName = name},
-    setWaypointPanelOpen(open:boolean) {self.waypointPanelOpen = open}
+    setWaypointPanelOpen(open:boolean) {self.waypointPanelOpen = open},
+    setFieldAddMode(on:boolean) {self.fieldAddMode = on}
   }
 })
 export interface IUIStateStore extends Instance<typeof UIStateStore> {};

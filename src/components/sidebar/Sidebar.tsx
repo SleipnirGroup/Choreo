@@ -11,6 +11,8 @@ import {faPlus} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import PathSelect from "../navbar/PathSelect";
 import Drawer from '@mui/material/Drawer'
+import IconButton from "@mui/material/IconButton";
+import PlusIcon from "@mui/icons-material/Add"
 
 const getListStyle = (isDraggingOver : boolean) => ({
   background: isDraggingOver ? "lightblue" : "transparent",
@@ -73,9 +75,9 @@ class Sidebar extends Component<Props, State> {
             >
               {waypoints}
               {provided.placeholder}
-              <button onClick={()=>this.newWaypoint()} className={waypointStyles.Container}>
-              <FontAwesomeIcon icon={faPlus}></FontAwesomeIcon>
-              </button>
+              <IconButton onClick={()=>{this.context.uiState.setFieldAddMode(!this.context.uiState.fieldAddMode); console.log(this.context.uiState.fieldAddMode)}} className={waypointStyles.Container}>
+                <PlusIcon></PlusIcon>
+              </IconButton>
             </div>
             
             

@@ -4,7 +4,7 @@
 
     height: 48px;
     background-color: var(--accent-purple);
-    border-radius: 50%;
+    border-radius: 50% !important;
     width: 48px;
     font-size:24px;
     text-align: center;

@@ -8,9 +8,10 @@ import {zoom} from 'd3-zoom';
 import * as d3 from 'd3'
 import FieldGrid from './FieldGrid';
 import FieldPathLines from './FieldPathLines';
+import FieldAddOverlay from '../FieldAddOverlay';
 type Props = {}
 
-type State = {xPan:number, yPan:number, zoom:number}
+type State = {xPan:number, yPan:number, zoom:number, mouseX:number, mouseY:number}
 
 
 
@@ -20,7 +21,9 @@ class FieldOverlayRoot extends Component<Props, State> {
   state={
     xPan:0,
     yPan:0,
-    zoom:1
+    zoom:1,
+    mouseX:0,
+    mouseY:0
   }
     canvasHeightMeters: number;
     canvasWidthMeters: number;
@@ -70,6 +73,11 @@ class FieldOverlayRoot extends Component<Props, State> {
     this.context.uiState.setFieldScalingFactor(factor);
     console.log("setting field scaling to", factor)
  }
+ getMouseCoordinates(e:any) {
+   let coords = d3.pointer(e, this.frameRef?.current);
+   this.setState({mouseX: coords[0], mouseY: coords[1]});
+   return d3.pointer(e);
+ }
   render() {
     let fieldConfig= this.context.fieldConfig;
     this.canvasHeightMeters = fieldConfig.fieldImageSize[1];
@@ -84,6 +92,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             ${this.canvasHeightMeters}
         `
       }
+        onMouseMove={(e)=>this.getMouseCoordinates(e)}
         xmlns="http://www.w3.org/2000/svg" 
         style={{width:'100%',
                 height:'100%', position:'absolute', top:0, left:0}}
@@ -102,7 +111,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             {this.context.model.pathlist.activePath.waypoints.map((point, index)=>(
                 <OverlayWaypoint waypoint={point} index={index}></OverlayWaypoint>)
             )} 
-            
+            <FieldAddOverlay mouseX={this.state.mouseX} mouseY={this.state.mouseY}></FieldAddOverlay>
            
             </g>
         </svg>
