@@ -18,15 +18,12 @@ const getListStyle = (isDraggingOver : boolean) => ({
 });
 
 type Props = {};
-type State = {items: Array<SidebarWaypoint>};
+type State = {};
 
 class Sidebar extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
-  state = {
-    items: new Array<SidebarWaypoint>(),
-    selectedIndex:1
-  }
+  state = {}
   constructor(props: Props) {
     super(props);
     
@@ -58,7 +55,7 @@ class Sidebar extends Component<Props, State> {
 
     let waypoints = this.context.model.pathlist.activePath.waypoints.map(
       (holonomicWaypoint: IHolonomicWaypointStore, index: number)=>
-        new SidebarWaypoint({waypoint: holonomicWaypoint, index:index, context:this.context})
+        <SidebarWaypoint waypoint={holonomicWaypoint} index={index} context={this.context}></SidebarWaypoint>
     );
     return (
       <div className={styles.Container}>
@@ -74,11 +71,7 @@ class Sidebar extends Component<Props, State> {
               style={getListStyle(snapshot.isDraggingOver)}
 
             >
-              {waypoints.map((item, index) => {
-
-                return item.render();
-
-              })}
+              {waypoints}
               {provided.placeholder}
               <button onClick={()=>this.newWaypoint()} className={waypointStyles.Container}>
               <FontAwesomeIcon icon={faPlus}></FontAwesomeIcon>
