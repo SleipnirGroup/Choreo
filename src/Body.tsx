@@ -12,6 +12,7 @@ import Navbar from './components/navbar/Navbar';
 import Field from './components/field/Field';
 import RobotConfigPanel from './components/config/RobotConfigPanel';
 import FileManager from './components/file/FileManager'
+import Sidebar from './components/sidebar/Sidebar';
 
 type Props = {};
 
@@ -29,15 +30,20 @@ class Body extends Component<Props, State> {
         <div className="App">
       
       
-      <div className="Page" style={{display:`${(this.context.uiState.appPage === 0) ? "block": "none"}`}}>
+
+      <div className="Page">
+        <Navbar></Navbar>
+        <span style={{display:'flex', flexDirection:'row', flexGrow:1, height:0}}>
+          <Sidebar></Sidebar>
+          <Field></Field>
+        </span>
+
+      </div>
+      
+      <div className="Panel" style={{display:`${(this.context.uiState.appPage === 0) ? "flex": "none"}`}}>
         <FileManager></FileManager>
       </div>
-      <div className="Page" style={{display:`${(this.context.uiState.appPage === 1) ? "flex": "none"}`, flexDirection:'column'}}>
-        <Navbar></Navbar>
-        {/* <Sidebar></Sidebar> */}
-        <Field></Field>
-      </div>
-      <div className="Page" style={{display:`${(this.context.uiState.appPage === 2) ? "block": "none"}`}}>
+      <div className="Panel" style={{display:`${(this.context.uiState.appPage === 2) ? "flex": "none"}`}}>
         <RobotConfigPanel></RobotConfigPanel>
       </div>
       <BottomNavbar></BottomNavbar>

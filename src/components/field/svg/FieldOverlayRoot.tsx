@@ -69,13 +69,13 @@ class FieldOverlayRoot extends Component<Props, State> {
  handleResize() {
     let factor = this.getScalingFactor(this.svgRef?.current);
     this.context.uiState.setFieldScalingFactor(factor);
+    console.log("setting field scaling to", factor)
  }
   render() {
     let fieldConfig= this.context.fieldConfig;
     this.canvasHeightMeters = fieldConfig.fieldImageSize[1];
     this.canvasWidthMeters = fieldConfig.fieldImageSize[0];
-    
-
+  
     return (<div>
         
         <svg ref={this.svgRef} viewBox={`

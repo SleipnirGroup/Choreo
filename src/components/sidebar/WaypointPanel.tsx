@@ -26,6 +26,7 @@ class WaypointPanel extends Component<Props, State> {
     return (
       <div className={styles.WaypointPanel}>
         <FontAwesomeIcon icon={faTrashCan} onClick={()=>this.context.model.pathlist.activePath.deleteWaypointUUID(this.props.waypoint?.uuid || "")}></FontAwesomeIcon>
+        <span>
         <NumberEntry 
           title="x" 
           suffix="m" 
@@ -48,6 +49,8 @@ class WaypointPanel extends Component<Props, State> {
           setEnabled={enabled=>waypoint!.setHeadingConstrained(enabled)}
           number={waypoint.heading} 
           setNumber={heading=>waypoint!.setHeading(heading)} showCheckbox></NumberEntry>
+        </span>
+        <span>
         <NumberEntry 
           title="dir(v)" 
           suffix="rad" 
@@ -69,6 +72,7 @@ class WaypointPanel extends Component<Props, State> {
           setEnabled={waypoint!.setAngularVelocityConstrained}
           number={waypoint.angularVelocity} 
           setNumber={waypoint!.setAngularVelocity} showCheckbox></NumberEntry>
+        </span>
         {/*
         <NumberEntry title="vx" suffix="m/s" defaultEnabled={this.props.waypoint.velocityXConstrained}></NumberEntry>
         <NumberEntry title="vy" suffix="m/s" defaultEnabled={this.props.waypoint.velocityYConstrained}></NumberEntry>
@@ -77,7 +81,7 @@ class WaypointPanel extends Component<Props, State> {
       </div>
     )}
     else {
-      return <div className={styles.WaypointPanel}>No Waypoint Selected</div>
+      return <></>
   }
   }
 }

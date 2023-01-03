@@ -9,14 +9,11 @@
 
 
 .RobotConfigPanel {
-    position: absolute;
-    transform: translate(-50%,-50%);
-    top: 50vh;
-    left: 50vw;
     overflow-x: hidden;
     overflow-y: scroll;
-    width: 35rem;
-    height: 25rem;
+    width: 100%;
+    height:0;
+    flex-grow: 1;
     background-color: #2F3136;
     color: white;
     display: flex;
@@ -29,8 +26,9 @@
 }
 
 .RobotConfigPanel .NumberEntryList {
-    height: 19rem;
-    width: 35rem;
+    width:50%;
+    min-width: 25rem;
+    max-width: 35rem;
     display: flex;
     flex-direction: column;
     justify-content: space-between;

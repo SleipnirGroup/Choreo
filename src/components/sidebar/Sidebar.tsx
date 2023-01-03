@@ -10,6 +10,7 @@ import waypointStyles from './SidebarWaypoint.module.css';
 import {faPlus} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import PathSelect from "../navbar/PathSelect";
+import Drawer from '@mui/material/Drawer'
 
 const getListStyle = (isDraggingOver : boolean) => ({
   background: isDraggingOver ? "lightblue" : "transparent",
@@ -91,7 +92,7 @@ class Sidebar extends Component<Props, State> {
         
       </DragDropContext>
       </div>
-      <WaypointPanel waypoint={this.context.model.pathlist.activePath.lowestSelectedPoint()}></WaypointPanel>
+      {/* <WaypointPanel waypoint={this.context.model.pathlist.activePath.lowestSelectedPoint()}></WaypointPanel> */}
       </div>
     );
   }

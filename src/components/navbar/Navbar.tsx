@@ -27,9 +27,7 @@ class Navbar extends Component<Props, State> {
 
         <span>
 
-          <Button onClick={()=>this.context.loadFile(
-"https://gist.githubusercontent.com/shueja-personal/24f91b89357f1787c11507d7eaf6461b/raw/cfd31c71b560b79b6a0a5911ef5c0f8d19867e0c/saveWithoutGenerated.json"
-)}>Demo</Button>
+          
           <Tooltip title="Generate path">
             <span>
             <IconButton className={styles.generate} disabled={!this.context.model.pathlist.activePath.canGenerate()} onClick={()=>this.context.model.pathlist.activePath.generatePath()}>

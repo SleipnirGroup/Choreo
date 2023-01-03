@@ -2,6 +2,7 @@
   --accent-purple: #7D73E7;
   --darker-purple: #5F55CD;
   --select-yellow: #FFC52F;
+  --bottom-nav-height: 56px
 }
 html {
 }
@@ -47,10 +48,22 @@ h3 {
   width:100%;
   flex-grow: 1;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   flex: 1;
   min-height: 0;
   min-width: 0;
 }
 
+.Panel {
+  position:absolute;
+  background: #2F3136;
+  width:100%;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  height: calc(100vh - var(--bottom-nav-height))
+}
 

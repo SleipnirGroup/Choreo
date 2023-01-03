@@ -28,12 +28,15 @@ class BottomNavbar extends Component<Props, State> {
   }
   render() {
     return (
-      <BottomNavigation className={styles.Container} sx={{position:'relative'}} showLabels value={`${this.context.uiState.appPage}`} onChange={(e, newValue)=>this.onChange(e, newValue)}>
+    <>
+    <div style={{height:'56px', width:'100%', position:'relative'}}></div>
+      <BottomNavigation className={styles.Container} sx={{position:'absolute', bottom:0, width:'100%'}} showLabels value={`${this.context.uiState.appPage}`} onChange={(e, newValue)=>this.onChange(e, newValue)}>
           <BottomNavigationAction label="File" value='0' icon={<FileIcon></FileIcon>}>
           </BottomNavigationAction>
           <BottomNavigationAction label="Path" value='1' icon={<EditIcon></EditIcon>}></BottomNavigationAction>
           <BottomNavigationAction label="Settings" value='2' icon={<SettingsIcon></SettingsIcon>}></BottomNavigationAction>
       </BottomNavigation>
+      </>
     )
   }
 }

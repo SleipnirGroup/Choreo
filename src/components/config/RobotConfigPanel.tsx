@@ -17,7 +17,6 @@ class RobotConfigPanel extends Component<Props, State> {
   render() {
     let config = this.context.model.robotConfig;
     return (
-      <div className={styles.Opacity}>
         <div className={styles.RobotConfigPanel}>
           <h2>Robot Configuration</h2>
           {/* <IconButton className={styles.ExitButton} onClick={()=>this.context.uiState.setRobotConfigOpen(false)}><CloseIcon /></IconButton> */}
@@ -103,7 +102,6 @@ class RobotConfigPanel extends Component<Props, State> {
               showCheckbox={false}/>
           </div>
         </div>
-      </div>
     )
   }
 }
