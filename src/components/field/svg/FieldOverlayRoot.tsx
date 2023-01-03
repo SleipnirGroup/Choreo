@@ -35,7 +35,6 @@ class FieldOverlayRoot extends Component<Props, State> {
   componentDidMount(): void {
     window.addEventListener('resize', ()=>this.handleResize());
     this.handleResize();
-    /* Semantic zoom için zoom değişkeni oluşturuldu */
     let zoomBehavior = d3.zoom<SVGGElement, undefined>()
         .on("zoom", (e)=>this.zoomed(e));
     
@@ -76,7 +75,7 @@ class FieldOverlayRoot extends Component<Props, State> {
     this.canvasHeightMeters = fieldConfig.fieldImageSize[1];
     this.canvasWidthMeters = fieldConfig.fieldImageSize[0];
   
-    return (<div>
+    return (
         
         <svg ref={this.svgRef} viewBox={`
             ${-fieldConfig.fieldOffset[0]}
@@ -87,8 +86,9 @@ class FieldOverlayRoot extends Component<Props, State> {
       }
         xmlns="http://www.w3.org/2000/svg" 
         style={{width:'100%',
-                height:'100%'}}
+                height:'100%', position:'absolute', top:0, left:0}}
                 //onClick={(e)=>this.createWaypoint(e)}
+          id='field-svg-container'
         >
 
             <g transform={`
@@ -106,8 +106,6 @@ class FieldOverlayRoot extends Component<Props, State> {
            
             </g>
         </svg>
-    </div>
-       
     )
   }
   createWaypoint(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void {

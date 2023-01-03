@@ -1,5 +1,6 @@
-import { faTrashCan } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import EditIcon from '@mui/icons-material/Edit'
+import DeleteIcon from '@mui/icons-material/Delete'
+import IconButton from '@mui/material/IconButton';
 import { observer } from 'mobx-react';
 import React, { Component } from 'react'
 import DocumentManagerContext from '../../document/DocumentManager';
@@ -24,8 +25,13 @@ class WaypointPanel extends Component<Props, State> {
     if(this.isWaypointNonNull(waypoint)) {
 
     return (
-      <div className={styles.WaypointPanel}>
-        <FontAwesomeIcon icon={faTrashCan} onClick={()=>this.context.model.pathlist.activePath.deleteWaypointUUID(this.props.waypoint?.uuid || "")}></FontAwesomeIcon>
+      <div className={styles.WaypointPanel} style={{width:(this.context.uiState.waypointPanelOpen ? "": "auto")}}>
+        <span style={{display:'flex', flexDirection:'row', justifyContent:'flex-start'}}>
+        <IconButton onClick={()=>this.context.uiState.setWaypointPanelOpen(!this.context.uiState.waypointPanelOpen)}><EditIcon></EditIcon></IconButton>
+        <IconButton><DeleteIcon onClick={()=>this.context.model.pathlist.activePath.deleteWaypointUUID(waypoint?.uuid || "")}></DeleteIcon></IconButton>
+        </span>
+        {this.context.uiState.waypointPanelOpen && (<>
+
         <span>
         <NumberEntry 
           title="x" 
@@ -72,12 +78,8 @@ class WaypointPanel extends Component<Props, State> {
           setEnabled={waypoint!.setAngularVelocityConstrained}
           number={waypoint.angularVelocity} 
           setNumber={waypoint!.setAngularVelocity} showCheckbox></NumberEntry>
-        </span>
-        {/*
-        <NumberEntry title="vx" suffix="m/s" defaultEnabled={this.props.waypoint.velocityXConstrained}></NumberEntry>
-        <NumberEntry title="vy" suffix="m/s" defaultEnabled={this.props.waypoint.velocityYConstrained}></NumberEntry>
-        <NumberEntry title="ω" suffix="rad/s" defaultEnabled={this.props.waypoint.angularVelocityConstrained}></NumberEntry>
-        <NumberEntry title="|v|" suffix="m/s" defaultEnabled={this.props.waypoint.velocityMagnitudeConstrained}></NumberEntry> */}
+        </span></>)}
+
       </div>
     )}
     else {

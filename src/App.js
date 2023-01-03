@@ -15,8 +15,9 @@ function App() {
       fontSize: '1rem',
       backgroundColor: 'var(--accent-purple)',
       color:'white',
-      borderRadius: '10px',
-      marginInline: '0.3rem'
+      borderRadius: '20%',
+      marginInline: '0.3rem',
+      boxSizing:'border-box'
     },
   }
   const checkboxOverrides = {
