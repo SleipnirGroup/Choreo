@@ -21,6 +21,9 @@
     align-items: center;
     justify-content: center;
 }
+.Container:hover{
+    background-color: var(--darker-purple);
+}
 .selected {
     border: 2px solid var(--select-yellow);
 }

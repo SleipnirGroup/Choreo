@@ -6,7 +6,7 @@
 }
 
 .Sidebar{
-    background-color: #202225;
+    background-color: var(--background-dark-gray);
     display: flex;
     flex-direction: column;
     justify-content: space-between;

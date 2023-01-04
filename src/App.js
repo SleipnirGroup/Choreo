@@ -15,9 +15,12 @@ function App() {
       fontSize: '1rem',
       backgroundColor: 'var(--accent-purple)',
       color:'white',
-      borderRadius: '20%',
+      borderRadius: '10px',
       marginInline: '0.3rem',
-      boxSizing:'border-box'
+      boxSizing:'border-box',
+      '&:hover': {
+        backgroundColor: "var(--darker-purple)"
+      }
     },
   }
   const checkboxOverrides = {
@@ -32,13 +35,16 @@ function App() {
   const themeOptions = {
     palette: {
       mode: 'dark',
+      
+        primary: {main:'rgb(125, 115, 231)'},
+        secondary:{main: 'rgb(95, 85, 205)'}
     },
     components: {
       // Name of the component
       MuiButton: {styleOverrides: buttonOverrides},
       MuiIconButton: {styleOverrides : buttonOverrides},
       MuiCheckbox: {styleOverrides: checkboxOverrides}
-    },
+    }
   };
   return (
     <ThemeProvider theme={createTheme(themeOptions)}>

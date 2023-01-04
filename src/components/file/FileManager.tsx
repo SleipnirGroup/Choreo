@@ -20,7 +20,7 @@ class FileManager extends Component<Props, State> {
 
   render() {
     return (
-      <div style={{backgroundColor:'#2F3136', color:'white'}}>
+      <div style={{backgroundColor:'var(--backgroud-dark-blue)', color:'white'}}>
         <span>
 
           <Button component='span'>
@@ -43,7 +43,7 @@ class FileManager extends Component<Props, State> {
               <SaveIcon />
             </IconButton>
             <Button onClick={()=>this.context.loadFile(
-            "https://gist.githubusercontent.com/shueja-personal/24f91b89357f1787c11507d7eaf6461b/raw/cfd31c71b560b79b6a0a5911ef5c0f8d19867e0c/saveWithoutGenerated.json"
+            "https://gist.githubusercontent.com/shueja-personal/24f91b89357f1787c11507d7eaf6461b/raw/e0875293fa731bc5a7a5a168f5ac2b402ed291dd/saveWithoutGenerated.json"
             )}>Demo</Button>
         </span>
       </div>

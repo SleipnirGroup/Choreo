@@ -29,12 +29,33 @@ class BottomNavbar extends Component<Props, State> {
   render() {
     return (
     <>
-    <div style={{height:'56px', width:'100%', position:'relative'}}></div>
-      <BottomNavigation className={styles.Container} sx={{position:'absolute', bottom:0, width:'100%'}} showLabels value={`${this.context.uiState.appPage}`} onChange={(e, newValue)=>this.onChange(e, newValue)}>
-          <BottomNavigationAction label="File" value='0' icon={<FileIcon></FileIcon>}>
+    <div style={{height:'56px', width:'100%', position:'relative', backgroundColor:'red'}}></div>
+      <BottomNavigation className={styles.Container} sx={{
+        position:'absolute',
+        bottom:0,
+        width:'100%',
+        paddingLeft:0,
+        paddingRight:0,
+        backgroundColor:'var(--background-dark-gray)',
+          " .MuiBottomNavigationAction-root, .Mui-selected, svg": {
+            
+            color: "white",
+
+
+          },
+          ".MuiBottomNavigationAction-root": {
+            height:'var(--bottom-nav-height)',
+            borderRadius:'0px 0px 10px 10px'
+          },
+          " .Mui-selected": {
+            backgroundColor: 'var(--background-dark-blue)'
+          }
+        }}
+      showLabels value={`${this.context.uiState.appPage}`} onChange={(e, newValue)=>this.onChange(e, newValue)}>
+          <BottomNavigationAction  disableRipple value='0' icon={<FileIcon></FileIcon>}>
           </BottomNavigationAction>
-          <BottomNavigationAction label="Path" value='1' icon={<EditIcon></EditIcon>}></BottomNavigationAction>
-          <BottomNavigationAction label="Settings" value='2' icon={<SettingsIcon></SettingsIcon>}></BottomNavigationAction>
+          <BottomNavigationAction disableRipple value='1' icon={<EditIcon></EditIcon>}></BottomNavigationAction>
+          <BottomNavigationAction disableRipple value='2' icon={<SettingsIcon></SettingsIcon>}></BottomNavigationAction>
       </BottomNavigation>
       </>
     )

@@ -75,9 +75,7 @@ class Sidebar extends Component<Props, State> {
             >
               {waypoints}
               {provided.placeholder}
-              <IconButton onClick={()=>{this.context.uiState.setFieldAddMode(!this.context.uiState.fieldAddMode); console.log(this.context.uiState.fieldAddMode)}} className={waypointStyles.Container}>
-                <PlusIcon></PlusIcon>
-              </IconButton>
+
             </div>
             
             

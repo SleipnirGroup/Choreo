@@ -1,5 +1,5 @@
 .Container {
-    background-color: #202225;
+    background-color: var(--background-dark-gray);
     border: 1px solid #3F3F3F;
     color: white;
     display: flex;

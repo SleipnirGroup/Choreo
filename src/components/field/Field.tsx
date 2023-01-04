@@ -6,6 +6,9 @@ import WaypointPanel from '../sidebar/WaypointPanel';
 
 import styles from './Field.module.css';
 import FieldOverlayRoot from './svg/FieldOverlayRoot';
+import AddIcon from '@mui/icons-material/Add';
+import XIcon from '@mui/icons-material/Close';
+import Fab from '@mui/material/Fab'
 
 type Props = {
 }
@@ -23,6 +26,10 @@ export class Field extends Component<Props, State> {
         
         <FieldOverlayRoot ></FieldOverlayRoot>
         <WaypointPanel waypoint={this.context.model.pathlist.activePath.lowestSelectedPoint()}></WaypointPanel>
+        <Fab color="primary" aria-label="add" sx={{position:'absolute',bottom:10, right:10}}
+        onClick={()=>{this.context.uiState.setFieldAddMode(!this.context.uiState.fieldAddMode)}}>
+        {this.context.uiState.fieldAddMode ? (<XIcon/>) : (<AddIcon/>)}
+        </Fab>
       </div>
     )
   }

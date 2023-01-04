@@ -68,6 +68,7 @@ export class DocumentManager {
     async onFileUpload(file:File | null) {
       await this.parseFile(file)
         .then((content) =>this.model.fromSavedDocument(JSON.parse(content)))
+        .then(()=>this.uiState.setPageNumber(1))
         .catch(err=>console.log(err))
     }
 
@@ -75,13 +76,13 @@ export class DocumentManager {
 
     }
 
-    loadFile(jsonFilename:string) {
-      fetch(jsonFilename, {cache:'no-store', }).then((res)=>{console.log(res); return res.json()}).then((data)=>{
+    async loadFile(jsonFilename:string) {
+      await fetch(jsonFilename, {cache:'no-store', }).then((res)=>{console.log(res); return res.json()}).then((data)=>{
         console.log(data)
         this.model.fromSavedDocument(data)
-       })
+       }).then(()=>this.uiState.setPageNumber(1))
+       .catch(err=>console.log(err))
     }
-
 
     async saveFile() {
       const content = JSON.stringify(this.model.asSavedDocument(), undefined, 4);
