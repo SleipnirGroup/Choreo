@@ -44,7 +44,7 @@ export const TrajectorySampleStore = types.model("TrajectorySampleStore", {
         setTimestamp(timestamp:number) {self.timestamp = timestamp}
     }
 })
-
+export interface ITrajectorySampleStore extends Instance<typeof TrajectorySampleStore> {};
 export const HolonomicWaypointStore= types.model("WaypointStore", {
     x: 0,
     y: 0,
@@ -117,6 +117,12 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
     generated: types.array(TrajectorySampleStore)
 }).views(self=>{
     return {
+        getTotalTimeSeconds(): number {
+            if (self.generated.length === 0) {
+                return 0;
+            }
+            return self.generated[self.generated.length - 1].timestamp;
+        },
         getSavedTrajectory(): Array<SavedTrajectorySample> | null {
             let trajectory = null;
             if(self.generated.length >= 2) {
@@ -180,6 +186,9 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
                 self.waypoints[index-1].setSelected(true);
             }
             self.waypoints.remove(self.waypoints[index]);
+            if(self.waypoints.length === 1) {
+                self.generated.length = 0;
+            }
         },
         deleteWaypointUUID(uuid:string) {
             let index = self.waypoints.findIndex((point)=>point.uuid ===uuid);
@@ -189,13 +198,20 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
                 self.waypoints[index+1].setSelected(true);
             }
             self.waypoints.remove(self.waypoints[index]);
+            if(self.waypoints.length === 1) {
+                self.generated.length = 0;
+            }
         },
         reorder(startIndex: number, endIndex: number) {
             //self.waypoints.splice(endIndex, 0, self.waypoints.splice(startIndex, 1)[0]);
             moveItem(self.waypoints, startIndex, endIndex);
         },
         generatePath() {
+
             self.generated.length = 0;
+            if(self.waypoints.length < 2) {
+                return;
+            }
             self.waypoints.forEach((point, index)=>{
                 let newPoint = TrajectorySampleStore.create();
                 newPoint.setX(point.x);

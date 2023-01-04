@@ -39,7 +39,6 @@ class OverlayWaypoint extends Component<Props, State> {
       </g>
 )
 );
-
   // gets the angle in degrees between two points
   calcAngleRad(p1:Coordinates, p2:Coordinates) {
     var p1x = p1.x;

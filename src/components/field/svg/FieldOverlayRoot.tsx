@@ -8,6 +8,7 @@ import {zoom} from 'd3-zoom';
 import * as d3 from 'd3'
 import FieldGrid from './FieldGrid';
 import FieldPathLines from './FieldPathLines';
+import InterpolatedRobot from './InterpolatedRobot';
 type Props = {}
 
 type State = {xPan:number, yPan:number, zoom:number, mouseX:number, mouseY:number}
@@ -110,7 +111,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             {this.context.model.pathlist.activePath.waypoints.map((point, index)=>(
                 <OverlayWaypoint waypoint={point} index={index}></OverlayWaypoint>)
             )} 
-            
+            <InterpolatedRobot timestamp={this.context.uiState.pathAnimationTimestamp}></InterpolatedRobot>
            
             </g>
         </svg>

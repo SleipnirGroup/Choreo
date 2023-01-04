@@ -14,7 +14,8 @@ export const UIStateStore = types.model("UIStateStore", {
   fieldScalingFactor:0.02,
   fieldGridView:false,
   saveFileName:"save",
-  waypointPanelOpen:false
+  waypointPanelOpen:false,
+  pathAnimationTimestamp:0
 }).actions(self=>{
   return {
     setPageNumber(page: number) {self.appPage = page},
@@ -22,6 +23,7 @@ export const UIStateStore = types.model("UIStateStore", {
     setFieldGridView(on:boolean) {self.fieldGridView = on},
     setSaveFileName(name:string) {self.saveFileName = name},
     setWaypointPanelOpen(open:boolean) {self.waypointPanelOpen = open},
+    setPathAnimationTimestamp(time:number) {self.pathAnimationTimestamp = time; console.log(time)}
   }
 })
 export interface IUIStateStore extends Instance<typeof UIStateStore> {};
