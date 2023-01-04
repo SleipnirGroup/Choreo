@@ -21,10 +21,19 @@ class InterpolatedRobot extends Component<Props, State> {
     return {x:store.x, y:store.y, rot:store.heading};
 }
   interpolate (p1: Pose, p2: Pose, frac:number) {
+    let rot1 = p1.rot;
+    let rot2 = p2.rot;
+
+    var shortest_angle=(
+      (
+        (
+          (rot2 - rot1) % (Math.PI * 2)
+        ) + (Math.PI * 3)
+      ) % (Math.PI * 2) - Math.PI);
     return {
         x: p1.x + (frac * (p2.x -p1.x)),
         y: p1.y + (frac * (p2.y -p1.y)),
-        rot: p1.rot + (frac * (p2.rot -p1.rot)), 
+        rot: p1.rot + (frac * (shortest_angle)), 
     }
   }
 
@@ -98,10 +107,10 @@ class InterpolatedRobot extends Component<Props, State> {
         </clipPath>
       </defs>
 
-      <use xlinkHref={`#robot-bumpers`} clipPath={`url(#robot-clip)`} stroke={'blue'} 
+      <use xlinkHref={`#robot-bumpers`} clipPath={`url(#robot-clip)`} stroke={'white'} 
         strokeWidth={
             5 * this.context.uiState.fieldScalingFactor} fill={'transparent'} vectorEffect={'non-scaling-stroke'} style={{pointerEvents:'none'}}/>
-        <circle cx={this.context.model.robotConfig.bumperLength / 2} cy={0} r={0.1} fill='blue'></circle>
+        <circle cx={this.context.model.robotConfig.bumperLength / 2} cy={0} r={0.1} fill='white'></circle>
         </g>
     )
   }

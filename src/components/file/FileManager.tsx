@@ -23,7 +23,7 @@ class FileManager extends Component<Props, State> {
       <div style={{backgroundColor:'var(--backgroud-dark-blue)', color:'white'}}>
         <span>
 
-          <Button component='span'>
+          <Button color='primary' component='span'>
           <input type="file" id='file-upload-input' style={{display:'none'}} onChange={(e)=>{
             console.log(e)
             if (e.target !=null && e.target.files != null && e.target.files.length >= 1) {
@@ -39,10 +39,10 @@ class FileManager extends Component<Props, State> {
           ></input>
             Upload
           </Button>
-            <IconButton  onClick={()=>{this.context.saveFile()}}>
+            <IconButton color='primary' onClick={()=>{this.context.saveFile()}}>
               <SaveIcon />
             </IconButton>
-            <Button onClick={()=>this.context.loadFile(
+            <Button color='primary' onClick={()=>this.context.loadFile(
             "https://gist.githubusercontent.com/shueja-personal/24f91b89357f1787c11507d7eaf6461b/raw/e0875293fa731bc5a7a5a168f5ac2b402ed291dd/saveWithoutGenerated.json"
             )}>Demo</Button>
         </span>

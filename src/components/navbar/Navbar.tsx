@@ -30,7 +30,7 @@ class Navbar extends Component<Props, State> {
           
           <Tooltip title="Generate path">
             <span>
-            <IconButton className={styles.generate} disabled={!this.context.model.pathlist.activePath.canGenerate()} onClick={()=>this.context.model.pathlist.activePath.generatePath()}>
+            <IconButton color='primary' className={styles.generate} disabled={!this.context.model.pathlist.activePath.canGenerate()} onClick={()=>this.context.model.pathlist.activePath.generatePath()}>
               <ShapeLineIcon />
             </IconButton>
             </span>

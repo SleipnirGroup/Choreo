@@ -22,9 +22,8 @@ class FileSelect extends Component<Props, State> {
     return (
       <div>
         <span>
-          <ButtonGroup variant='contained'>
 
-          <Button component='span'>
+          <Button color='primary' component='span'>
           <input type="file" id='file-upload-input' style={{display:'none'}} onChange={(e)=>{
             console.log(e)
             if (e.target !=null && e.target.files != null && e.target.files.length >= 1) {
@@ -40,10 +39,9 @@ class FileSelect extends Component<Props, State> {
           ></input>
             Upload
           </Button>
-            <IconButton  onClick={()=>{this.context.saveFile()}}>
+            <IconButton color='primary' onClick={()=>{this.context.saveFile()}}>
               <SaveIcon />
             </IconButton>
-          </ButtonGroup>
         </span>
       </div>
     )

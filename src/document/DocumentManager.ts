@@ -23,7 +23,7 @@ export const UIStateStore = types.model("UIStateStore", {
     setFieldGridView(on:boolean) {self.fieldGridView = on},
     setSaveFileName(name:string) {self.saveFileName = name},
     setWaypointPanelOpen(open:boolean) {self.waypointPanelOpen = open},
-    setPathAnimationTimestamp(time:number) {self.pathAnimationTimestamp = time; console.log(time)}
+    setPathAnimationTimestamp(time:number) {self.pathAnimationTimestamp = time;}
   }
 })
 export interface IUIStateStore extends Instance<typeof UIStateStore> {};

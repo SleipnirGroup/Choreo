@@ -10,19 +10,25 @@ function App() {
   
   const buttonOverrides = {
     // Name of the slot
-    root: {
+    root: ({ownerState, theme}) => ({
+      
+
       // Some CSS
       fontSize: '1rem',
-      backgroundColor: 'var(--accent-purple)',
+
       color:'white',
       borderRadius: '10px',
       marginInline: '0.3rem',
       boxSizing:'border-box',
-      '&:hover': {
-        backgroundColor: "var(--darker-purple)"
-      }
-    },
-  }
+      backgroundColor: 
+      (ownerState.color === 'primary' && theme.palette.primary.main),
+
+        '&:hover': {
+          backgroundColor: (ownerState.color === 'primary' && theme.palette.secondary.main)
+        },
+      }),
+
+    }
   const checkboxOverrides = {
     root: {
       // Some CSS
