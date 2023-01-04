@@ -26,10 +26,10 @@ export class Field extends Component<Props, State> {
         
         <FieldOverlayRoot ></FieldOverlayRoot>
         <WaypointPanel waypoint={this.context.model.pathlist.activePath.lowestSelectedPoint()}></WaypointPanel>
-        <Fab color="primary" aria-label="add" sx={{position:'absolute',bottom:10, right:10}}
+        {/* <Fab color="primary" aria-label="add" sx={{position:'absolute',bottom:10, right:10}}
         onClick={()=>{this.context.uiState.setFieldAddMode(!this.context.uiState.fieldAddMode)}}>
         {this.context.uiState.fieldAddMode ? (<XIcon/>) : (<AddIcon/>)}
-        </Fab>
+        </Fab> */}
       </div>
     )
   }

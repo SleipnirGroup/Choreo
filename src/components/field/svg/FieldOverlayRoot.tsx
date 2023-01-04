@@ -8,7 +8,6 @@ import {zoom} from 'd3-zoom';
 import * as d3 from 'd3'
 import FieldGrid from './FieldGrid';
 import FieldPathLines from './FieldPathLines';
-import FieldAddOverlay from '../FieldAddOverlay';
 type Props = {}
 
 type State = {xPan:number, yPan:number, zoom:number, mouseX:number, mouseY:number}
@@ -41,7 +40,7 @@ class FieldOverlayRoot extends Component<Props, State> {
     let zoomBehavior = d3.zoom<SVGGElement, undefined>()
         .on("zoom", (e)=>this.zoomed(e));
     
-    d3.select<SVGGElement, undefined>(this.svgRef.current!).call(zoomBehavior);
+    d3.select<SVGGElement, undefined>(this.svgRef.current!).call(zoomBehavior).on("dblclick.zoom", null);
   }
   zoomed(e:any) {
     this.handleResize();
@@ -51,8 +50,8 @@ class FieldOverlayRoot extends Component<Props, State> {
     if (current && current !== undefined) {
       let origin = current.createSVGPoint();
       origin.x =x; origin.y = y;
-      origin = origin.matrixTransform(current.getScreenCTM()!.inverse());
-      return {x: origin.x, y:-origin.y};
+      origin = origin.matrixTransform(this.frameRef.current!.getScreenCTM()!.inverse());
+      return {x: origin.x, y:origin.y};
       }
     return {x:0, y:0};
   }
@@ -62,9 +61,9 @@ class FieldOverlayRoot extends Component<Props, State> {
         origin.x =0; origin.y = 0;
         let zeroOne = current.createSVGPoint();
         zeroOne.x =0; zeroOne.y = 1;
-        origin = origin.matrixTransform(current.getScreenCTM()!.inverse());
-        zeroOne = zeroOne.matrixTransform(current.getScreenCTM()!.inverse());
-        return zeroOne.y - origin.y;
+        origin = origin.matrixTransform(this.frameRef.current!.getScreenCTM()!.inverse());
+        zeroOne = zeroOne.matrixTransform(this.frameRef.current!.getScreenCTM()!.inverse());
+        return -(zeroOne.y - origin.y);
         }
       return 0;
     }
@@ -96,7 +95,7 @@ class FieldOverlayRoot extends Component<Props, State> {
         xmlns="http://www.w3.org/2000/svg" 
         style={{width:'100%',
                 height:'100%', position:'absolute', top:0, left:0}}
-                //onClick={(e)=>this.createWaypoint(e)}
+                //
           id='field-svg-container'
         >
 
@@ -107,17 +106,17 @@ class FieldOverlayRoot extends Component<Props, State> {
             <FieldGrid></FieldGrid>
             {/* Line paths */}
             <FieldPathLines></FieldPathLines>
-
+            <circle cx={0} cy={0} r={10000} style={{fill:'transparent'}} onClick={(e)=>this.createWaypoint(e)}></circle>
             {this.context.model.pathlist.activePath.waypoints.map((point, index)=>(
                 <OverlayWaypoint waypoint={point} index={index}></OverlayWaypoint>)
             )} 
-            <FieldAddOverlay mouseX={this.state.mouseX} mouseY={this.state.mouseY}></FieldAddOverlay>
+            
            
             </g>
         </svg>
     )
   }
-  createWaypoint(e: React.MouseEvent<SVGSVGElement, MouseEvent>): void {
+  createWaypoint(e: React.MouseEvent<SVGCircleElement, MouseEvent>): void {
     if (e.currentTarget === e.target) {
       var coords = this.screenSpaceToFieldSpace(this.svgRef?.current, {x:e.clientX, y:e.clientY});
       var newPoint = this.context.model.pathlist.activePath.addWaypoint();
