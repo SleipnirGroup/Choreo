@@ -99,12 +99,7 @@ class PathSelector extends Component<Props, State> {
         <div style={{
             position:'absolute', bottom:0, left:0, width:'100%',
         pointerEvents:"all",
-        
-
         color:'white',zIndex:2000}}>
-        <div style={{display:'flex', justifyContent:'end'}}>
-            
-            </div>
     <div style={{background:'var(--background-light-gray)',
         padding:'20px 10px', paddingTop:'10px', maxHeight:'100%', overflowY:'scroll'}}>
       <RadioGroup 
@@ -121,6 +116,7 @@ class PathSelector extends Component<Props, State> {
         }
       }} value={this.context.model.pathlist.activePathUUID} onChange={(event: SelectChangeEvent<string>) => {
         this.context.model.pathlist.setActivePathUUID(event.target.value);
+        this.context.uiState.setPageNumber(1);
 
       }}>
         <IconButton color='default' style={{backgroundColor:'var(--background-light-gray)', position:'relative', right:0}}
