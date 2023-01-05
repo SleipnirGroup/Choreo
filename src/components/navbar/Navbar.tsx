@@ -69,7 +69,7 @@ class Navbar extends Component<Props, State> {
             <span>
             <IconButton color='primary' className={styles.generate}  onClick={()=>this.context.uiState.setFieldGridView(!this.context.uiState.fieldGridView)}>
               {this.context.uiState.fieldGridView ? 
-              <GridOffIcon />: <GridIcon />
+              <GridIcon />: <GridOffIcon />
               } 
             </IconButton>
             </span>
