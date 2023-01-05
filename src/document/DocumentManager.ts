@@ -78,7 +78,6 @@ export class DocumentManager {
 
     async loadFile(jsonFilename:string) {
       await fetch(jsonFilename, {cache:'no-store', }).then((res)=>{console.log(res); return res.json()}).then((data)=>{
-        console.log(data)
         this.model.fromSavedDocument(data)
        }).then(()=>this.uiState.setPageNumber(1))
        .catch(err=>console.log(err))

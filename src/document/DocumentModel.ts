@@ -264,8 +264,14 @@ export const PathListStore = types.model("PathListStore", {
             }
         },
         addPath(name:string, select:boolean = false) :string {
+            let usedName = name;
+            let disambig = 1;
+            while (self.pathNames.includes(usedName)) {
+                usedName = `${name} (${disambig.toFixed(0)})`;
+                disambig++; 
+            }
             let newUUID = uuidv4();
-            self.paths.put (HolonomicPathStore.create({uuid: newUUID, name:name, waypoints: []}));
+            self.paths.put (HolonomicPathStore.create({uuid: newUUID, name:usedName, waypoints: []}));
             if (self.paths.size === 1 || select) {
                 self.activePathUUID = newUUID
             }
@@ -287,13 +293,9 @@ export const PathListStore = types.model("PathListStore", {
         fromSavedPathList(list:SavedPathList) {
             self.paths.clear();
             if (list) {
-                console.log(Array.from(Object.keys(list).values()));
                 Array.from(Object.keys(list).values()).forEach((name)=>{
-                    console.log(name)
-
                     let uuid = self.addPath(name, false);
                     let path = self.paths.get(uuid);
-                    console.log(path)
                     path!.fromSavedPath(list[name]);
                     
                 });

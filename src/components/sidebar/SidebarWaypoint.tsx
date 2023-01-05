@@ -31,7 +31,6 @@ class SidebarWaypoint extends Component<Props, State> {
 
   render() {
     let waypoint =this.props.waypoint
-    console.log(waypoint)
     // apparently we have to dereference this here instead of inline in the class name
     // Otherwise the component won't rerender when it changes
     let selected = waypoint.selected;

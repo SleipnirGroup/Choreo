@@ -24,7 +24,6 @@ class BottomNavbar extends Component<Props, State> {
       else if (newValue === '2') {newPage=2}
       else {return;}
       this.context.uiState.setPageNumber(newPage);
-      console.log(e);
   }
   render() {
     return (

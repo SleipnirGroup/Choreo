@@ -71,7 +71,6 @@ class FieldOverlayRoot extends Component<Props, State> {
  handleResize() {
     let factor = this.getScalingFactor(this.svgRef?.current);
     this.context.uiState.setFieldScalingFactor(factor);
-    console.log("setting field scaling to", factor)
  }
  getMouseCoordinates(e:any) {
    let coords = d3.pointer(e, this.frameRef?.current);
