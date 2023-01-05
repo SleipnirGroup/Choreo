@@ -21,10 +21,15 @@ class PathAnimationSlider extends Component<Props, State> {
 
   onStart(){
     this.setState({running:true})
+    if (Math.abs(this.context.model.pathlist.activePath.getTotalTimeSeconds()
+      - this.context.uiState.pathAnimationTimestamp) < 0.1
+      ) {
+        this.context.uiState.setPathAnimationTimestamp(0);
+      }
       this.timerId = 
         window.setInterval(() => {
           if(this.context.uiState.pathAnimationTimestamp > this.context.model.pathlist.activePath.getTotalTimeSeconds()) {
-            this.context.uiState.setPathAnimationTimestamp(0);
+            this.onStop();
             return;
           }
           this.context.uiState.setPathAnimationTimestamp(this.context.uiState.pathAnimationTimestamp+0.05);
