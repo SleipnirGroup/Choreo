@@ -4,6 +4,8 @@ import DocumentManagerContext from '../../document/DocumentManager'
 import Slider from '@mui/material/Slider'
 import IconButton from '@mui/material/IconButton'
 import PlayIcon from '@mui/icons-material/PlayArrow'
+import StopIcon from '@mui/icons-material/Stop'
+import { autorun } from 'mobx'
 
 type Props = {}
 
@@ -29,7 +31,7 @@ class PathAnimationSlider extends Component<Props, State> {
       this.timerId = 
         window.setInterval(() => {
           if(this.context.uiState.pathAnimationTimestamp > this.context.model.pathlist.activePath.getTotalTimeSeconds()) {
-            this.onStop();
+            this.context.uiState.setPathAnimationTimestamp(0);
             return;
           }
           this.context.uiState.setPathAnimationTimestamp(this.context.uiState.pathAnimationTimestamp+0.05);
@@ -40,6 +42,13 @@ class PathAnimationSlider extends Component<Props, State> {
       this.setState({running:false})
       window.clearInterval(this.timerId);
     };
+    componentDidMount(): void {
+      autorun(()=>{
+        let activePath = this.context.model.pathlist.activePathUUID;
+        this.onStop();
+
+      })
+    }
   render() {
     return (
       <div style={{
@@ -62,7 +71,7 @@ class PathAnimationSlider extends Component<Props, State> {
               this.onStart();
             }
           }}>
-            <PlayIcon></PlayIcon>
+            {this.state.running ? <StopIcon></StopIcon> : <PlayIcon></PlayIcon>}
           </IconButton>
           <Slider defaultValue={0} step={0.01}
         min={0} max={this.context.model.pathlist.activePath.getTotalTimeSeconds()}
