@@ -288,6 +288,8 @@ export const PathListStore = types.model("PathListStore", {
             self.paths.delete(uuid);
             if (self.paths.size == 0) {
                 self.addPath("New Path", true)
+            } else if (self.activePathUUID === uuid) {
+                self.setActivePathUUID(self.pathUUIDs[0]);
             }
         },
         fromSavedPathList(list:SavedPathList) {
