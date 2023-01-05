@@ -8,7 +8,7 @@ import styles from './Field.module.css';
 import FieldOverlayRoot from './svg/FieldOverlayRoot';
 import AddIcon from '@mui/icons-material/Add';
 import XIcon from '@mui/icons-material/Close';
-import Fab from '@mui/material/Fab'
+import IconButton from '@mui/material/IconButton'
 import PathAnimationSlider from './PathAnimationSlider';
 import ShapeLineIcon from '@mui/icons-material/ShapeLine';
 import PathSelector from './PathSelector';
@@ -30,10 +30,10 @@ export class Field extends Component<Props, State> {
         <FieldOverlayRoot ></FieldOverlayRoot>
         <WaypointPanel waypoint={this.context.model.pathlist.activePath.lowestSelectedPoint()}></WaypointPanel>
         
-        <Fab color="primary" aria-label="add" size="medium" sx={{position:'absolute',bottom:10, right:10}}
+        <IconButton color="primary" aria-label="add" size="medium" sx={{pointerEvents:'all', position:'absolute',bottom:10, right:10, borderRadius:'50%',boxShadow:'3px'}}
         onClick={()=>{this.context.model.pathlist.activePath.generatePath()}} disabled={!this.context.model.pathlist.activePath.canGenerate()}>
         <ShapeLineIcon></ShapeLineIcon>
-        </Fab>
+        </IconButton>
       </div>
     )
   }

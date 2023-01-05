@@ -93,13 +93,13 @@ class PathSelector extends Component<Props, State> {
     declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {}
 
-  Option = observer(PathSelectorOption);
+  Option = PathSelectorOption;
   render() {
     return (
         <div style={{
             position:'absolute', bottom:0, left:0, width:'100%',
         pointerEvents:"all",
-        color:'white',zIndex:2000}}>
+        color:'white'}}>
     <div style={{background:'var(--background-light-gray)',
         padding:'20px 10px', paddingTop:'10px', maxHeight:'100%', overflowY:'scroll'}}>
       <RadioGroup 
