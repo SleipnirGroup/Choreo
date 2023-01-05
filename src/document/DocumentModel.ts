@@ -179,6 +179,9 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
         addWaypoint () : IHolonomicWaypointStore {
             
             self.waypoints.push(HolonomicWaypointStore.create({uuid: uuidv4()}));
+            if (self.waypoints.length == 1) {
+                self.waypoints[0].setSelected(true);
+            }
             return self.waypoints[self.waypoints.length-1];
         },
         deleteWaypoint(index:number) {
