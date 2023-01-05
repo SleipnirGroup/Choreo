@@ -384,8 +384,6 @@ export default class DocumentModel {
         this.pathlist.fromSavedPathList(document.paths)
     }
     constructor() {
-        this.pathlist.addPath("one");
-        this.pathlist.addPath("two");
-        this.pathlist.addPath("three");
+        this.pathlist.addPath("New Path");
     }
 }
