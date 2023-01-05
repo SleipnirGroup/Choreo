@@ -68,7 +68,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
                 </span>
                 <TextField variant="filled" inputRef={this.nameInputRef}
                 error={this.state.renameError}
-                style={{display:(this.state.renaming ? "block": 'none'), maxWidth:'100%', height:'1.2rem', verticalAlign:'middle'}}
+                style={{display:(this.state.renaming ? "block": 'none'), maxWidth:'100%', height:'1.2rem', flexGrow: '1', verticalAlign:'middle'}}
                 onChange={()=>this.checkName()}
                 onKeyPress={(event) => {
                     if (event.key === 'Enter'){
@@ -77,6 +77,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
                 sx={{
                     ".MuiInputBase-root":{
                         height:'2rem',
+                        width:'100%'
 
                     }
                 }}
