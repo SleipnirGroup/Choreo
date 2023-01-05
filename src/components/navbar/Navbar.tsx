@@ -12,7 +12,6 @@ import { observer } from 'mobx-react';
 import GridIcon from '@mui/icons-material/GridOn'
 import GridOffIcon from '@mui/icons-material/GridOff'
 import Button from '@mui/material/Button'
-import FileSelect from './FileSelect'
 import Divider from '@mui/material/Divider'
 import ArrowDownIcon from '@mui/icons-material/ArrowDropDown'
 
@@ -30,6 +29,7 @@ class Navbar extends Component<Props, State> {
     return (
       <div className={styles.Container}>
         <span style={{flexShrink:0}}>
+          <Tooltip title="Open File">
           <IconButton color='primary' component='span'>
           <input type="file" id='file-upload-input' style={{display:'none'}} onChange={(e)=>{
             if (e.target !=null && e.target.files != null && e.target.files.length >= 1) {
@@ -45,9 +45,12 @@ class Navbar extends Component<Props, State> {
           ></input>
             <UploadIcon></UploadIcon>
           </IconButton>
+          </Tooltip>
+          <Tooltip title="Save File">
             <IconButton color='primary' onClick={()=>{this.context.saveFile()}}>
               <SaveIcon />
             </IconButton>
+          </Tooltip>
             {/* <Button color='primary' onClick={()=>this.context.loadFile(
             "https://gist.githubusercontent.com/shueja-personal/24f91b89357f1787c11507d7eaf6461b/raw/e0875293fa731bc5a7a5a168f5ac2b402ed291dd/saveWithoutGenerated.json"
             )}>Demo</Button> */}
@@ -58,9 +61,11 @@ class Navbar extends Component<Props, State> {
       <span style={{display:'inline-block', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', flexGrow:1, minWidth:0, margin:'auto'}}>
       {this.context.model.pathlist.activePath.name}
       </span>
+      <Tooltip title="Open Path Dialog">
       <IconButton color='default' className={styles.generate}  onClick={()=>this.context.uiState.setPageNumber(0)}>
               <ArrowDownIcon />
             </IconButton>
+            </Tooltip>
             </span>
       <Divider orientation="vertical" flexItem />
 

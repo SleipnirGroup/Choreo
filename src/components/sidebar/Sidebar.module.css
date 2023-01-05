@@ -35,7 +35,7 @@
     position:absolute;
     top:0;
     padding: 10px;
-    width:200px;
+    width:300px;
     background-color: var(--background-light-gray);
     color: white;
     display: flex;

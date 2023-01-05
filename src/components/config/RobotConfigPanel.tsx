@@ -21,7 +21,8 @@ class RobotConfigPanel extends Component<Props, State> {
           <h2>Robot Configuration</h2>
           <IconButton className={styles.ExitButton} onClick={()=>this.context.uiState.setPageNumber(1)}><CloseIcon /></IconButton>
           <div className={styles.NumberEntryList}>
-            <NumberEntry 
+            <NumberEntry
+            longestTitle="Wheel Radius"
               title="Mass" 
               suffix="kg" 
               enabled={true} 
@@ -30,7 +31,8 @@ class RobotConfigPanel extends Component<Props, State> {
               setNumber={config!.setMass}
               showCheckbox={false}/>
 
-            <NumberEntry 
+            <NumberEntry
+            longestTitle="Wheel Radius"
               title="MoI" 
               suffix="kg · m²" 
               enabled={true} 
@@ -39,7 +41,8 @@ class RobotConfigPanel extends Component<Props, State> {
               setNumber={config!.setRotationalInertia}
               showCheckbox={false}/>
 
-            <NumberEntry 
+            <NumberEntry
+            longestTitle="Wheel Radius"
               title="Max Velocity" 
               suffix="m/s" 
               enabled={true} 
@@ -48,7 +51,8 @@ class RobotConfigPanel extends Component<Props, State> {
               setNumber={config!.setMaxVelocity}
               showCheckbox={false}/>
 
-            <NumberEntry 
+            <NumberEntry
+            longestTitle="Wheel Radius"
               title="Max Torque" 
               suffix="N · m" 
               enabled={true} 
@@ -57,7 +61,8 @@ class RobotConfigPanel extends Component<Props, State> {
               setNumber={config!.setMaxTorque}
               showCheckbox={false}/>
 
-            <NumberEntry 
+            <NumberEntry
+            longestTitle="Wheel Radius" 
               title="Width" 
               suffix="m" 
               enabled={true} 
@@ -67,6 +72,7 @@ class RobotConfigPanel extends Component<Props, State> {
               showCheckbox={false}/>
 
             <NumberEntry 
+            longestTitle="Wheel Radius"
               title="Length" 
               suffix="m" 
               enabled={true} 
@@ -75,7 +81,8 @@ class RobotConfigPanel extends Component<Props, State> {
               setNumber={config!.setBumperLength}
               showCheckbox={false}/>
 
-            <NumberEntry 
+            <NumberEntry
+            longestTitle="Wheel Radius" 
               title="Wheelbase" 
               suffix="m" 
               enabled={true} 
@@ -85,6 +92,7 @@ class RobotConfigPanel extends Component<Props, State> {
               showCheckbox={false}/>
 
             <NumberEntry 
+            longestTitle="Wheel Radius"
               title="Trackwidth" 
               suffix="m" 
               enabled={true} 
@@ -93,6 +101,7 @@ class RobotConfigPanel extends Component<Props, State> {
               setNumber={config!.setTrackwidth}
               showCheckbox={false}/>
             <NumberEntry 
+            longestTitle="Wheel Radius"
               title="Wheel Radius" 
               suffix="m" 
               enabled={true} 

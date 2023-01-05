@@ -4,8 +4,9 @@ import DocumentManagerContext from '../../document/DocumentManager'
 import Slider from '@mui/material/Slider'
 import IconButton from '@mui/material/IconButton'
 import PlayIcon from '@mui/icons-material/PlayArrow'
-import StopIcon from '@mui/icons-material/Stop'
+import PauseIcon from '@mui/icons-material/Pause'
 import { autorun } from 'mobx'
+import { Tooltip } from '@mui/material'
 
 type Props = {}
 
@@ -63,6 +64,7 @@ class PathAnimationSlider extends Component<Props, State> {
             <span style={{
               display:(this.context.model.pathlist.activePath.generated.length >= 2 ? "flex" : "none"),
               flexDirection: 'row', width:'100%', height:'100%', gap:'10px'}}>
+          <Tooltip title={this.state.running ? "Pause Path Animation": "Play Path Animation"}>
           <IconButton color='default' onClick={()=>{
             if(this.state.running) {
               this.onStop();
@@ -71,8 +73,9 @@ class PathAnimationSlider extends Component<Props, State> {
               this.onStart();
             }
           }}>
-            {this.state.running ? <StopIcon></StopIcon> : <PlayIcon></PlayIcon>}
+            {this.state.running ? <PauseIcon></PauseIcon> : <PlayIcon></PlayIcon>}
           </IconButton>
+          </Tooltip>
           <Slider defaultValue={0} step={0.01}
         min={0} max={this.context.model.pathlist.activePath.getTotalTimeSeconds()}
         aria-label="Default" valueLabelDisplay="auto" value={this.context.uiState.pathAnimationTimestamp}

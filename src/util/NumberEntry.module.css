@@ -12,11 +12,7 @@
     max-width: 100%;
 }
 .Title{
-    width:10%;
-    flex-grow: 1;
-    flex-shrink:0;
-    max-width: 20%;
-    min-width: 7rem;
+    
     text-align: right;
 }
 .Number{
@@ -39,8 +35,9 @@
     flex-shrink:0;
 }
 .Checkbox{
+    min-width: 10%;
     margin-left: auto;
 }
 .Container.NoCheckbox .Checkbox {
-    display: none;
+    visibility: hidden;
 }

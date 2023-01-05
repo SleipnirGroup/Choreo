@@ -26,7 +26,7 @@
 }
 
 .RobotConfigPanel .NumberEntryList {
-    width:50%;
+    width:90%;
     min-width: 15rem;
     max-width: 35rem;
     display: flex;

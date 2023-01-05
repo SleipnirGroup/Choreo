@@ -5,6 +5,7 @@ import DocumentManagerContext from '../../document/DocumentManager';
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
+import { Tooltip } from '@mui/material'
 
 type Props = {}
 
@@ -56,8 +57,14 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
 
         return (<span style={{display:'flex', justifyContent:'space-between'}}>
                             <span style={{minWidth:'calc(96px + 0.3rem)'}}>
+                <Tooltip title="Delete Path">
+                <IconButton onClick={(e)=>{
+                    e.stopPropagation();
+                    if(window.confirm(`Delete "${this.getPath().name}"?`)) {this.context.model.pathlist.deletePath(this.props.uuid);}}}><DeleteIcon></DeleteIcon></IconButton>
+                </Tooltip>
+                <Tooltip title="Rename Path">
                 <IconButton onClick={(e)=>{e.stopPropagation(); this.startRename();}}><EditIcon></EditIcon></IconButton>
-                <IconButton onClick={(e)=>{e.stopPropagation(); this.context.model.pathlist.deletePath(this.props.uuid);}}><DeleteIcon></DeleteIcon></IconButton>
+                </Tooltip>
                 </span>
                 <TextField variant="filled" inputRef={this.nameInputRef}
                 error={this.state.renameError}
@@ -119,9 +126,11 @@ class PathSelector extends Component<Props, State> {
         this.context.uiState.setPageNumber(1);
 
       }}>
+        <Tooltip title="Add Path">
         <IconButton color='default' style={{backgroundColor:'var(--background-light-gray)', position:'relative', right:0}}
         onClick={()=>this.context.model.pathlist.addPath("New Path", true)}
         ><AddIcon></AddIcon></IconButton>
+        </Tooltip>
         {Array.from(this.context.model.pathlist.paths.keys()).map((uuid)=>(
             <FormControlLabel value={uuid} control={<Radio/>} label={<this.Option uuid={uuid}></this.Option>}></FormControlLabel>
         ))}
