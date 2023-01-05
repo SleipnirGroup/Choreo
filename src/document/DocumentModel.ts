@@ -271,14 +271,19 @@ export const PathListStore = types.model("PathListStore", {
             }
             return newUUID;
         },
-        deletePath(uuid:string){
-            self.paths.delete(uuid);
-        },
+        
         
     }
     // The annoying thing we have to do to add the above actions to the object before we use them below
-}).actions(self=>{
+})
+.actions(self=>{
     return {
+        deletePath(uuid:string){
+            self.paths.delete(uuid);
+            if (self.paths.size == 0) {
+                self.addPath("New Path", true)
+            }
+        },
         fromSavedPathList(list:SavedPathList) {
             self.paths.clear();
             if (list) {

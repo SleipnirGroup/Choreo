@@ -3,6 +3,7 @@ import { DocumentManager } from './document/DocumentManager';
 import { createContext } from 'react';
 import { observer } from 'mobx-react';
 import {ThemeProvider, createTheme} from '@mui/material/styles'
+import CssBaseline from '@mui/material/CssBaseline'
 import Body from './Body'
 function App() {
   const DocumentManagerContext = createContext(null)
@@ -53,12 +54,14 @@ function App() {
     }
   };
   return (
+    <CssBaseline>
     <ThemeProvider theme={createTheme(themeOptions)}>
     <DocumentManagerContext.Provider value={documentManager}>
     <Body></Body>
     
     </DocumentManagerContext.Provider>
     </ThemeProvider>
+    </CssBaseline>
   );
 }
 

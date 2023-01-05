@@ -11,8 +11,10 @@ import BottomNavbar from './components/navbar/BottomNavbar';
 import Navbar from './components/navbar/Navbar';
 import Field from './components/field/Field';
 import RobotConfigPanel from './components/config/RobotConfigPanel';
-import FileManager from './components/file/FileManager'
 import Sidebar from './components/sidebar/Sidebar';
+import PathAnimationSlider from './components/field/PathAnimationSlider';
+import PathSelect from './components/navbar/PathSelect';
+import PathSelector from './components/field/PathSelector';
 
 type Props = {};
 
@@ -36,17 +38,21 @@ class Body extends Component<Props, State> {
         <span style={{display:'flex', flexDirection:'row', flexGrow:1, height:0}}>
           <Sidebar></Sidebar>
           <Field></Field>
+          
         </span>
+        <PathAnimationSlider></PathAnimationSlider>
 
       </div>
       
-      <div className="Panel" style={{display:`${(this.context.uiState.appPage === 0) ? "flex": "none"}`}}>
-        <FileManager></FileManager>
-      </div>
       <div className="Panel" style={{display:`${(this.context.uiState.appPage === 2) ? "flex": "none"}`}}>
         <RobotConfigPanel></RobotConfigPanel>
       </div>
-      <BottomNavbar></BottomNavbar>
+      <div className="Panel" style={{backgroundColor:'transparent', display:`${(this.context.uiState.appPage === 0) ? "block": "none"}`}}
+      >
+        <div style={{width:'100%', height:'100%',backgroundColor:'#0011',}} onClick={()=>{this.context.uiState.setPageNumber(1)}}></div>
+        <PathSelector></PathSelector>
+      </div>
+      
     </div>
       </>
     )

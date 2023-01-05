@@ -18,6 +18,8 @@
     align-items: center;
     font-size: 1rem;
     border: 0px;
+    background:'var(--background-dark-gray)';
+    border-radius:0px 10px 0px 0px;
 }
 
 .PathSelectControl {

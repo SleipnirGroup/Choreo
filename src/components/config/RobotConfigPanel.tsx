@@ -19,7 +19,7 @@ class RobotConfigPanel extends Component<Props, State> {
     return (
         <div className={styles.RobotConfigPanel}>
           <h2>Robot Configuration</h2>
-          {/* <IconButton className={styles.ExitButton} onClick={()=>this.context.uiState.setRobotConfigOpen(false)}><CloseIcon /></IconButton> */}
+          <IconButton className={styles.ExitButton} onClick={()=>this.context.uiState.setPageNumber(1)}><CloseIcon /></IconButton>
           <div className={styles.NumberEntryList}>
             <NumberEntry 
               title="Mass" 

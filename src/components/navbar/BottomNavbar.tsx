@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import DocumentManagerContext from '../../document/DocumentManager';
 import { observer } from 'mobx-react';
-import { BottomNavigation, BottomNavigationAction, Checkbox, Paper } from '@mui/material';
+import { BottomNavigation, BottomNavigationAction, Button, Checkbox, Menu, MenuItem, Paper } from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
 import FileIcon from '@mui/icons-material/FileOpen'
 import EditIcon from '@mui/icons-material/Edit'
@@ -34,6 +34,7 @@ class BottomNavbar extends Component<Props, State> {
         position:'absolute',
         bottom:0,
         width:'100%',
+        height:56,
         paddingLeft:0,
         paddingRight:0,
         backgroundColor:'var(--background-dark-gray)',
@@ -53,6 +54,7 @@ class BottomNavbar extends Component<Props, State> {
         }}
       showLabels value={`${this.context.uiState.appPage}`} onChange={(e, newValue)=>this.onChange(e, newValue)}>
           <BottomNavigationAction  disableRipple value='0' icon={<FileIcon></FileIcon>}>
+          
           </BottomNavigationAction>
           <BottomNavigationAction disableRipple value='1' icon={<EditIcon></EditIcon>}></BottomNavigationAction>
           <BottomNavigationAction disableRipple value='2' icon={<SettingsIcon></SettingsIcon>}></BottomNavigationAction>

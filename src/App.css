@@ -4,6 +4,7 @@
   --select-yellow: #FFC52F;
   --background-dark-blue:#15171b;
   --background-dark-gray:#212326;
+  --background-light-gray:#2F3136;
   --bottom-nav-height: 56px;
 }
 html {
@@ -67,6 +68,6 @@ h3 {
   flex: 1;
   min-height: 0;
   min-width: 0;
-  height: calc(100vh - var(--bottom-nav-height))
+  height: calc(100vh)
 }
 

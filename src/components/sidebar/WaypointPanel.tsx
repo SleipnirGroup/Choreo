@@ -28,7 +28,7 @@ class WaypointPanel extends Component<Props, State> {
       <div className={styles.WaypointPanel} style={{width:(this.context.uiState.waypointPanelOpen ? "": "auto")}}>
         <span style={{display:'flex', flexDirection:'row', justifyContent:'flex-start'}}>
         <IconButton onClick={()=>this.context.uiState.setWaypointPanelOpen(!this.context.uiState.waypointPanelOpen)}><EditIcon></EditIcon></IconButton>
-        <IconButton><DeleteIcon onClick={()=>this.context.model.pathlist.activePath.deleteWaypointUUID(waypoint?.uuid || "")}></DeleteIcon></IconButton>
+        <IconButton onClick={()=>this.context.model.pathlist.activePath.deleteWaypointUUID(waypoint?.uuid || "")}><DeleteIcon ></DeleteIcon></IconButton>
         </span>
         {this.context.uiState.waypointPanelOpen && (<>
 
