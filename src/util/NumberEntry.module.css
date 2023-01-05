@@ -9,20 +9,24 @@
     padding-top: 3px;
     padding-bottom:3px;
     width: 100%;
+    max-width: 100%;
 }
 .Title{
     width:10%;
     flex-grow: 1;
+    flex-shrink:0;
     max-width: 20%;
+    min-width: 7rem;
     text-align: right;
 }
 .Number{
-    width:20%;
+    width:3rem;
     background-color: transparent;
     border:none;
     color:white;
     align-self: center;
     flex-grow: 1;
+    flex-shrink: 1;
     border-bottom: solid white 2px;
 }
 .Number:disabled{
@@ -30,7 +34,9 @@
 }
 .Suffix{
     width: 20%;
+    min-width: 4rem;
     text-align: left;
+    flex-shrink:0;
 }
 .Checkbox{
     margin-left: auto;
