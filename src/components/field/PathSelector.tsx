@@ -1,4 +1,4 @@
-import { Divider, FormControlLabel, IconButton, MenuItem, Radio, RadioGroup, Select, SelectChangeEvent, TextField } from '@mui/material'
+import { Divider, FormControlLabel, IconButton, Radio, RadioGroup, SelectChangeEvent, TextField } from '@mui/material'
 import { observer } from 'mobx-react';
 import React, { Component } from 'react'
 import DocumentManagerContext from '../../document/DocumentManager';
@@ -44,7 +44,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     searchForName(name:string) : boolean {
         let didFind = (
         Array.from(this.context.model.pathlist.paths.keys())
-        .filter((uuid)=>uuid!=this.props.uuid)
+        .filter((uuid)=>uuid!==this.props.uuid)
         .map((uuid)=>this.context.model.pathlist.paths.get(uuid)!.name)
         .find((existingName)=>existingName === name) !== undefined
         );

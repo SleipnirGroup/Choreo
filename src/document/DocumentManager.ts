@@ -1,10 +1,7 @@
 import { Instance, types } from "mobx-state-tree";
 import { createContext } from "react";
-import data from '../../public/scurve.json'
 import FieldConfig from "../datatypes/FieldConfig";
 import DocumentModel from "./DocumentModel";
-import { SavedDocument } from "./DocumentSpecTypes";
-import {v4} from 'uuid'
 
 
 
