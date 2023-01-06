@@ -44,7 +44,8 @@ class Body extends Component<Props, State> {
 
       </div>
       
-      <div className="Panel" style={{display:`${(this.context.uiState.appPage === 2) ? "flex": "none"}`}}>
+      <div className="Panel" style={{backgroundColor:'transparent',display:`${(this.context.uiState.appPage === 2) ? "block": "none"}`}}>
+      <div style={{width:'100%', height:'100%',backgroundColor:'#0013',}} onClick={()=>{this.context.uiState.setPageNumber(1)}}></div>
         <RobotConfigPanel></RobotConfigPanel>
       </div>
       <div className="Panel" style={{backgroundColor:'transparent', display:`${(this.context.uiState.appPage === 0) ? "block": "none"}`}}

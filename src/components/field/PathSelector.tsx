@@ -1,4 +1,4 @@
-import { FormControlLabel, IconButton, MenuItem, Radio, RadioGroup, Select, SelectChangeEvent, TextField } from '@mui/material'
+import { Divider, FormControlLabel, IconButton, MenuItem, Radio, RadioGroup, Select, SelectChangeEvent, TextField } from '@mui/material'
 import { observer } from 'mobx-react';
 import React, { Component } from 'react'
 import DocumentManagerContext from '../../document/DocumentManager';
@@ -105,11 +105,23 @@ class PathSelector extends Component<Props, State> {
   render() {
     return (
         <div style={{
-            position:'absolute', bottom:0, left:0, width:'100%',
-        pointerEvents:"all",
+            position:'absolute', top:0, left:0, width:'100%',
+        pointerEvents:"all",background:'var(--background-light-gray)',
+        padding:'20px 10px', paddingTop:'10px',
         color:'white'}}>
-    <div style={{background:'var(--background-light-gray)',
-        padding:'20px 10px', paddingTop:'10px', maxHeight:'100%', overflowY:'scroll'}}>
+            <Tooltip title="Add Path">
+            <IconButton color='default'
+                style={{
+                    display:'block',
+                backgroundColor:'var(--background-light-gray)',
+                position:'relative', marginLeft:'auto', marginRight:'auto', right:0}}
+                onClick={()=>this.context.model.pathlist.addPath("New Path", true)}
+            ><AddIcon></AddIcon></IconButton>
+            </Tooltip>
+    <Divider orientation='horizontal'></Divider>
+    <div style={{
+         maxHeight:'70vh', overflowY:'scroll'}}>
+
       <RadioGroup 
       sx={{
         marginLeft:'auto',
@@ -127,11 +139,7 @@ class PathSelector extends Component<Props, State> {
         this.context.uiState.setPageNumber(1);
 
       }}>
-        <Tooltip title="Add Path">
-        <IconButton color='default' style={{backgroundColor:'var(--background-light-gray)', position:'relative', right:0}}
-        onClick={()=>this.context.model.pathlist.addPath("New Path", true)}
-        ><AddIcon></AddIcon></IconButton>
-        </Tooltip>
+
         {Array.from(this.context.model.pathlist.paths.keys()).map((uuid)=>(
             <FormControlLabel value={uuid} control={<Radio/>} label={<this.Option uuid={uuid}></this.Option>}></FormControlLabel>
         ))}

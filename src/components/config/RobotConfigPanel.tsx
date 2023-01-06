@@ -18,8 +18,8 @@ class RobotConfigPanel extends Component<Props, State> {
     let config = this.context.model.robotConfig;
     return (
         <div className={styles.RobotConfigPanel}>
-          <h2>Robot Configuration</h2>
-          <IconButton className={styles.ExitButton} onClick={()=>this.context.uiState.setPageNumber(1)}><CloseIcon /></IconButton>
+          <span style={{fontWeight:'bold', fontSize:'1.2rem'}}>Robot Configuration</span>
+          {/* <IconButton className={styles.ExitButton} onClick={()=>this.context.uiState.setPageNumber(1)}><CloseIcon /></IconButton> */}
           <div className={styles.NumberEntryList}>
             <NumberEntry
             longestTitle="Wheel Radius"
