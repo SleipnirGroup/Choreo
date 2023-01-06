@@ -2,13 +2,12 @@ import React, { Component } from "react";
 import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import DocumentManagerContext from "../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../document/DocumentModel";
-import { observer } from "mobx-react"
+import { observer } from "mobx-react";
 import SidebarWaypoint from "./SidebarWaypoint";
-import styles from './Sidebar.module.css';
+import styles from "./Sidebar.module.css";
 
 const getListStyle = (isDraggingOver: boolean) => ({
   background: isDraggingOver ? "lightblue" : "transparent",
-
 });
 
 type Props = {};
@@ -17,7 +16,7 @@ type State = {};
 class Sidebar extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
-  state = {}
+  state = {};
   constructor(props: Props) {
     super(props);
 
@@ -26,17 +25,14 @@ class Sidebar extends Component<Props, State> {
 
   reorder(startIndex: number, endIndex: number) {
     this.context.model.pathlist.activePath.reorder(startIndex, endIndex);
-  };
+  }
 
   onDragEnd(result: any) {
     // dropped outside the list
     if (!result.destination) {
       return;
     }
-    this.reorder(
-      result.source.index,
-      result.destination.index
-    );
+    this.reorder(result.source.index, result.destination.index);
   }
 
   newWaypoint(): void {
@@ -46,8 +42,13 @@ class Sidebar extends Component<Props, State> {
   // But in this example everything is just done in one place for simplicity
   render() {
     let waypoints = this.context.model.pathlist.activePath.waypoints.map(
-      (holonomicWaypoint: IHolonomicWaypointStore, index: number) =>
-        <SidebarWaypoint waypoint={holonomicWaypoint} index={index} context={this.context}></SidebarWaypoint>
+      (holonomicWaypoint: IHolonomicWaypointStore, index: number) => (
+        <SidebarWaypoint
+          waypoint={holonomicWaypoint}
+          index={index}
+          context={this.context}
+        ></SidebarWaypoint>
+      )
     );
     return (
       <div className={styles.Container}>

@@ -1,21 +1,20 @@
-import { observer } from 'mobx-react';
-import React, { Component } from 'react'
-import DocumentManagerContext from '../../../document/DocumentManager';
-import { ITrajectorySampleStore } from '../../../document/DocumentModel';
+import { observer } from "mobx-react";
+import React, { Component } from "react";
+import DocumentManagerContext from "../../../document/DocumentManager";
+import { ITrajectorySampleStore } from "../../../document/DocumentModel";
 
 type Props = {
   timestamp: number;
-}
+};
 
-type State = {}
+type State = {};
 
-type Pose = { x: number; y: number; rot: number; }
-
+type Pose = { x: number; y: number; rot: number };
 
 class InterpolatedRobot extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   context!: React.ContextType<typeof DocumentManagerContext>;
-  state = {}
+  state = {};
 
   storeToPose(store: ITrajectorySampleStore) {
     return { x: store.x, y: store.y, rot: store.heading };
@@ -24,19 +23,15 @@ class InterpolatedRobot extends Component<Props, State> {
     let rot1 = p1.rot;
     let rot2 = p2.rot;
 
-    var shortest_angle = (
-      (
-        (
-          (rot2 - rot1) % (Math.PI * 2)
-        ) + (Math.PI * 3)
-      ) % (Math.PI * 2) - Math.PI);
+    var shortest_angle =
+      ((((rot2 - rot1) % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2)) -
+      Math.PI;
     return {
-      x: p1.x + (frac * (p2.x - p1.x)),
-      y: p1.y + (frac * (p2.y - p1.y)),
-      rot: p1.rot + (frac * (shortest_angle)),
-    }
+      x: p1.x + frac * (p2.x - p1.x),
+      y: p1.y + frac * (p2.y - p1.y),
+      rot: p1.rot + frac * shortest_angle,
+    };
   }
-
 
   // This came from WPILib Java's Trajectory sample() method
 
@@ -80,40 +75,60 @@ class InterpolatedRobot extends Component<Props, State> {
     let prevSample = m_states[low - 1];
 
     // If the difference in states is negligible, then we are spot on!
-    if (Math.abs(sample.timestamp - prevSample.timestamp) < 1E-9) {
+    if (Math.abs(sample.timestamp - prevSample.timestamp) < 1e-9) {
       return this.storeToPose(sample);
     }
     // Interpolate between the two states for the state that we want.
     return this.interpolate(
-      this.storeToPose(prevSample), this.storeToPose(sample),
-      (timeSeconds - prevSample.timestamp) / (sample.timestamp - prevSample.timestamp));
+      this.storeToPose(prevSample),
+      this.storeToPose(sample),
+      (timeSeconds - prevSample.timestamp) /
+        (sample.timestamp - prevSample.timestamp)
+    );
   }
 
   render() {
     if (this.context.model.pathlist.activePath.generated.length < 2) {
-      return <></>
+      return <></>;
     }
-    let pose1 = this.sample(this.props.timestamp, this.context.model.pathlist.activePath.generated);
+    let pose1 = this.sample(
+      this.props.timestamp,
+      this.context.model.pathlist.activePath.generated
+    );
     return (
-      <g transform={`translate(${pose1.x}, ${pose1.y}) rotate(${pose1.rot * 180 / Math.PI})`}>
-
+      <g
+        transform={`translate(${pose1.x}, ${pose1.y}) rotate(${
+          (pose1.rot * 180) / Math.PI
+        })`}
+      >
         <defs>
-          <path id={'robot-bumpers'} d={this.context.model.robotConfig.bumperSVGElement()}>
-
-          </path>
-          <clipPath id={'robot-clip'}>
-
+          <path
+            id={"robot-bumpers"}
+            d={this.context.model.robotConfig.bumperSVGElement()}
+          ></path>
+          <clipPath id={"robot-clip"}>
             <use xlinkHref={`#robot-bumpers`} />
           </clipPath>
         </defs>
 
-        <use xlinkHref={`#robot-bumpers`} clipPath={`url(#robot-clip)`} stroke={'white'}
-          strokeWidth={
-            5 * this.context.uiState.fieldScalingFactor} fill={'transparent'} vectorEffect={'non-scaling-stroke'} style={{ pointerEvents: 'none' }} />
-        <circle cx={this.context.model.robotConfig.bumperLength / 2} cy={0} r={0.1} fill='white'></circle>
+        <use
+          xlinkHref={`#robot-bumpers`}
+          clipPath={`url(#robot-clip)`}
+          stroke={"white"}
+          strokeWidth={5 * this.context.uiState.fieldScalingFactor}
+          fill={"transparent"}
+          vectorEffect={"non-scaling-stroke"}
+          style={{ pointerEvents: "none" }}
+        />
+        <circle
+          cx={this.context.model.robotConfig.bumperLength / 2}
+          cy={0}
+          r={0.1}
+          fill="white"
+        ></circle>
       </g>
-    )
+    );
   }
 }
 
-export default observer(InterpolatedRobot)
+export default observer(InterpolatedRobot);

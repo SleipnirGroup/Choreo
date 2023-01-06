@@ -1,3 +1,3 @@
 import Drivetrain from "./Drivetrain";
 
-export default class HolonomicDrivetrain extends Drivetrain { }
+export default class HolonomicDrivetrain extends Drivetrain {}

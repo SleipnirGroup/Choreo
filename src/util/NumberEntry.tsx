@@ -1,19 +1,19 @@
-import { observer } from 'mobx-react';
-import React, { Component } from 'react'
-import styles from './NumberEntry.module.css';
+import { observer } from "mobx-react";
+import React, { Component } from "react";
+import styles from "./NumberEntry.module.css";
 
 type Props = {
-  longestTitle: string,
-  title: string,
-  suffix: string,
-  enabled: boolean,
-  number: number,
-  setNumber: (arg0: number) => void,
-  setEnabled: (arg0: boolean) => void,
-  showCheckbox?: boolean
-}
+  longestTitle: string;
+  title: string;
+  suffix: string;
+  enabled: boolean;
+  number: number;
+  setNumber: (arg0: number) => void;
+  setEnabled: (arg0: boolean) => void;
+  showCheckbox?: boolean;
+};
 
-type State = {}
+type State = {};
 class NumberEntry extends Component<Props, State> {
   numberRef: React.RefObject<HTMLInputElement>;
   constructor(props: Props) {
@@ -27,7 +27,7 @@ class NumberEntry extends Component<Props, State> {
   }
   setNumber(event: React.ChangeEvent<HTMLInputElement>) {
     let value = event.target.value;
-    if (value === '+' || value === '-' || value === '.') return;
+    if (value === "+" || value === "-" || value === ".") return;
     let input = Number.parseFloat(value);
     if (!Number.isNaN(input)) {
       this.props.setNumber(input);
@@ -37,7 +37,6 @@ class NumberEntry extends Component<Props, State> {
     if (this.numberRef.current) {
       this.numberRef.current.value = `${this.props.number}`;
     }
-
   }
   componentDidMount(): void {
     this.correctNumber();
@@ -46,23 +45,40 @@ class NumberEntry extends Component<Props, State> {
   render() {
     this.correctNumber();
     return (
-      <div className={styles.Container + (this.props.showCheckbox ? "" : ` ${styles.NoCheckbox}`)}>
-        <span className={styles.Title} style={{ width: `${this.props.longestTitle.length}ch` }}>{this.props.title}</span>
+      <div
+        className={
+          styles.Container +
+          (this.props.showCheckbox ? "" : ` ${styles.NoCheckbox}`)
+        }
+      >
+        <span
+          className={styles.Title}
+          style={{ width: `${this.props.longestTitle.length}ch` }}
+        >
+          {this.props.title}
+        </span>
         <input
           ref={this.numberRef}
           type="text"
           className={styles.Number}
-          disabled={!(this.props.enabled)}
+          disabled={!this.props.enabled}
           onChange={this.setNumber}
           onBlur={(e) => this.correctNumber()}
           autoComplete="off"
-          autoCorrect='off'
-          autoCapitalize='off'
-
+          autoCorrect="off"
+          autoCapitalize="off"
         ></input>
         <span className={styles.Suffix}>{this.props.suffix}</span>
-        {this.props.showCheckbox && <input type='checkbox' className={styles.Checkbox} checked={this.props.enabled} onChange={this.setEnabled}></input>}</div>
-    )
+        {this.props.showCheckbox && (
+          <input
+            type="checkbox"
+            className={styles.Checkbox}
+            checked={this.props.enabled}
+            onChange={this.setEnabled}
+          ></input>
+        )}
+      </div>
+    );
   }
 }
 export default observer(NumberEntry);
