@@ -2,8 +2,6 @@ import { observer } from 'mobx-react';
 import React, { Component } from 'react'
 import DocumentManagerContext from '../../document/DocumentManager';
 import NumberEntry from '../../util/NumberEntry';
-import CloseIcon from '@mui/icons-material/Close';
-import IconButton from '@mui/material/IconButton';
 import styles from './RobotConfigPanel.module.css';
 
 type Props = {}

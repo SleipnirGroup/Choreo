@@ -45,6 +45,7 @@ class PathAnimationSlider extends Component<Props, State> {
     };
     componentDidMount(): void {
       autorun(()=>{
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         let activePath = this.context.model.pathlist.activePathUUID;
         this.onStop();
 

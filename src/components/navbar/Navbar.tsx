@@ -1,17 +1,14 @@
 import React, { Component } from 'react';
 import DocumentManagerContext from '../../document/DocumentManager';
-import ShapeLineIcon from '@mui/icons-material/ShapeLine';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SaveIcon from '@mui/icons-material/Save';
 import UploadIcon from '@mui/icons-material/UploadFile';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import styles from './Navbar.module.css';
-import PathSelect from './PathSelect';
 import { observer } from 'mobx-react';
 import GridIcon from '@mui/icons-material/GridOn'
 import GridOffIcon from '@mui/icons-material/GridOff'
-import Button from '@mui/material/Button'
 import Divider from '@mui/material/Divider'
 import ArrowDownIcon from '@mui/icons-material/ArrowDropDown'
 
