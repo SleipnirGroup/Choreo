@@ -3,16 +3,17 @@ import DocumentManagerContext from '../../document/DocumentManager';
 import ShapeLineIcon from '@mui/icons-material/ShapeLine';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SaveIcon from '@mui/icons-material/Save';
-import GridOnIcon from '@mui/icons-material/GridOn'
-import GridOffIcon from '@mui/icons-material/GridOff'
+import UploadIcon from '@mui/icons-material/UploadFile';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import styles from './Navbar.module.css';
 import PathSelect from './PathSelect';
 import { observer } from 'mobx-react';
-import { Checkbox } from '@mui/material';
+import GridIcon from '@mui/icons-material/GridOn'
+import GridOffIcon from '@mui/icons-material/GridOff'
 import Button from '@mui/material/Button'
-import ButtonGroup from '@mui/material/ButtonGroup'
+import Divider from '@mui/material/Divider'
+import ArrowDownIcon from '@mui/icons-material/ArrowDropDown'
 
 type Props = {};
 
@@ -27,54 +28,66 @@ class Navbar extends Component<Props, State> {
   render() {
     return (
       <div className={styles.Container}>
-        <PathSelect></PathSelect>
-        <span>
-          <ButtonGroup>
+        <span style={{flexShrink:0}}>
+          <Tooltip title="Open File">
+          <IconButton color='primary' component='span'>
           <input type="file" id='file-upload-input' style={{display:'none'}} onChange={(e)=>{
-            console.log(e)
             if (e.target !=null && e.target.files != null && e.target.files.length >= 1) {
               let fileList = e.target.files;
               this.context.onFileUpload(
                 fileList[0]
               )
+              e.target.value = '';
               
             } 
           } }
 
           ></input>
-          <label htmlFor="file-upload-input">
-          <Button component='span'>
-            Upload
-          </Button>
-
-        </label>
-        <Tooltip title="Save">
-            <IconButton  className={styles.action} onClick={()=>{this.context.saveFile()}}>
+            <UploadIcon></UploadIcon>
+          </IconButton>
+          </Tooltip>
+          <Tooltip title="Save File">
+            <IconButton color='primary' onClick={()=>{this.context.saveFile()}}>
               <SaveIcon />
             </IconButton>
           </Tooltip>
-          </ButtonGroup>
-        </span>
-
-        <span>
-
-          <Button onClick={()=>this.context.loadFile(
-"https://gist.githubusercontent.com/shueja-personal/24f91b89357f1787c11507d7eaf6461b/raw/cfd31c71b560b79b6a0a5911ef5c0f8d19867e0c/saveWithoutGenerated.json"
-)}>Demo</Button>
-          <Tooltip title="Settings">
-            <IconButton className={styles.action} onClick={()=>this.context.uiState.setRobotConfigOpen(true)}>
-              <SettingsIcon />
+            {/* <Button color='primary' onClick={()=>this.context.loadFile(
+            "https://gist.githubusercontent.com/shueja-personal/24f91b89357f1787c11507d7eaf6461b/raw/e0875293fa731bc5a7a5a168f5ac2b402ed291dd/saveWithoutGenerated.json"
+            )}>Demo</Button> */}
+          
+      </span>
+      <Divider orientation="vertical" flexItem />
+      <span style={{flexShrink:1, flexGrow:0, minWidth:0, display:'flex', justifyContent:'space-between', paddingInline:'10px'}}>
+      <span style={{display:'inline-block', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', flexGrow:1, minWidth:0, margin:'auto'}}>
+      {this.context.model.pathlist.activePath.name}
+      </span>
+      <Tooltip title="Open Path Dialog">
+      <IconButton color='default' className={styles.generate}  onClick={()=>this.context.uiState.setPageNumber(0)}>
+              <ArrowDownIcon />
             </IconButton>
-          </Tooltip>
+            </Tooltip>
+            </span>
+      <Divider orientation="vertical" flexItem />
 
-
-          <Tooltip title="Generate path">
+      <span style={{flexShrink:0}}>
+        <Tooltip title="Field Grid">
             <span>
-            <IconButton className={styles.generate} disabled={!this.context.model.pathlist.activePath.canGenerate()} onClick={()=>this.context.model.pathlist.activePath.generatePath()}>
-              <ShapeLineIcon />
+            <IconButton color='primary' className={styles.generate}  onClick={()=>this.context.uiState.setFieldGridView(!this.context.uiState.fieldGridView)}>
+              {this.context.uiState.fieldGridView ? 
+              <GridIcon />: <GridOffIcon />
+              } 
             </IconButton>
             </span>
           </Tooltip>
+        <Tooltip title="Settings">
+            <span>
+            <IconButton color='primary' onClick={()=>this.context.uiState.setPageNumber(2)}>
+              <SettingsIcon />
+            </IconButton>
+            </span>
+          </Tooltip>
+          
+
         </span>
       </div>
     )

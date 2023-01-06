@@ -44,7 +44,7 @@ export const TrajectorySampleStore = types.model("TrajectorySampleStore", {
         setTimestamp(timestamp:number) {self.timestamp = timestamp}
     }
 })
-
+export interface ITrajectorySampleStore extends Instance<typeof TrajectorySampleStore> {};
 export const HolonomicWaypointStore= types.model("WaypointStore", {
     x: 0,
     y: 0,
@@ -117,6 +117,12 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
     generated: types.array(TrajectorySampleStore)
 }).views(self=>{
     return {
+        getTotalTimeSeconds(): number {
+            if (self.generated.length === 0) {
+                return 0;
+            }
+            return self.generated[self.generated.length - 1].timestamp;
+        },
         getSavedTrajectory(): Array<SavedTrajectorySample> | null {
             let trajectory = null;
             if(self.generated.length >= 2) {
@@ -131,7 +137,7 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
             return self.generated.length >=2;
         },
         asSavedPath(): SavedPath {
-            let trajectory : Array<SavedTrajectorySample> = [];
+            let trajectory : (Array<SavedTrajectorySample> | null) = null;
             if(self.generated.length >= 2) {
                 trajectory = self.generated.map(point=>point.asSavedTrajectorySample())
             }
@@ -153,12 +159,15 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
                 waypoint.fromSavedWaypoint(point);
             })
             self.generated.clear();
-            path.trajectory.forEach((savedSample, index) => {
-                let sample = TrajectorySampleStore.create();
-                sample.fromSavedTrajectorySample(savedSample);
-                self.generated.push(sample);
+            if(path.trajectory !== undefined && path.trajectory !== null) {
+                path.trajectory.forEach((savedSample, index) => {
+                    let sample = TrajectorySampleStore.create();
+                    sample.fromSavedTrajectorySample(savedSample);
+                    self.generated.push(sample);
+    
+                })
+            }
 
-            })
 
         },
         setName(name:string) { self.name = name},
@@ -170,6 +179,9 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
         addWaypoint () : IHolonomicWaypointStore {
             
             self.waypoints.push(HolonomicWaypointStore.create({uuid: uuidv4()}));
+            if (self.waypoints.length == 1) {
+                self.waypoints[0].setSelected(true);
+            }
             return self.waypoints[self.waypoints.length-1];
         },
         deleteWaypoint(index:number) {
@@ -177,6 +189,9 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
                 self.waypoints[index-1].setSelected(true);
             }
             self.waypoints.remove(self.waypoints[index]);
+            if(self.waypoints.length === 1) {
+                self.generated.length = 0;
+            }
         },
         deleteWaypointUUID(uuid:string) {
             let index = self.waypoints.findIndex((point)=>point.uuid ===uuid);
@@ -186,13 +201,20 @@ export const HolonomicPathStore = types.model("HolonomicPathStore", {
                 self.waypoints[index+1].setSelected(true);
             }
             self.waypoints.remove(self.waypoints[index]);
+            if(self.waypoints.length === 1) {
+                self.generated.length = 0;
+            }
         },
         reorder(startIndex: number, endIndex: number) {
             //self.waypoints.splice(endIndex, 0, self.waypoints.splice(startIndex, 1)[0]);
             moveItem(self.waypoints, startIndex, endIndex);
         },
         generatePath() {
+
             self.generated.length = 0;
+            if(self.waypoints.length < 2) {
+                return;
+            }
             self.waypoints.forEach((point, index)=>{
                 let newPoint = TrajectorySampleStore.create();
                 newPoint.setX(point.x);
@@ -245,31 +267,40 @@ export const PathListStore = types.model("PathListStore", {
             }
         },
         addPath(name:string, select:boolean = false) :string {
+            let usedName = name;
+            let disambig = 1;
+            while (self.pathNames.includes(usedName)) {
+                usedName = `${name} (${disambig.toFixed(0)})`;
+                disambig++; 
+            }
             let newUUID = uuidv4();
-            self.paths.put (HolonomicPathStore.create({uuid: newUUID, name:name, waypoints: []}));
+            self.paths.put (HolonomicPathStore.create({uuid: newUUID, name:usedName, waypoints: []}));
             if (self.paths.size === 1 || select) {
                 self.activePathUUID = newUUID
             }
             return newUUID;
         },
-        deletePath(uuid:string){
-            self.paths.delete(uuid);
-        },
+        
         
     }
     // The annoying thing we have to do to add the above actions to the object before we use them below
-}).actions(self=>{
+})
+.actions(self=>{
     return {
+        deletePath(uuid:string){
+            self.paths.delete(uuid);
+            if (self.paths.size == 0) {
+                self.addPath("New Path", true)
+            } else if (self.activePathUUID === uuid) {
+                self.setActivePathUUID(self.pathUUIDs[0]);
+            }
+        },
         fromSavedPathList(list:SavedPathList) {
             self.paths.clear();
             if (list) {
-                console.log(Array.from(Object.keys(list).values()));
                 Array.from(Object.keys(list).values()).forEach((name)=>{
-                    console.log(name)
-
                     let uuid = self.addPath(name, false);
                     let path = self.paths.get(uuid);
-                    console.log(path)
                     path!.fromSavedPath(list[name]);
                     
                 });
@@ -353,8 +384,6 @@ export default class DocumentModel {
         this.pathlist.fromSavedPathList(document.paths)
     }
     constructor() {
-        this.pathlist.addPath("one");
-        this.pathlist.addPath("two");
-        this.pathlist.addPath("three");
+        this.pathlist.addPath("New Path");
     }
 }

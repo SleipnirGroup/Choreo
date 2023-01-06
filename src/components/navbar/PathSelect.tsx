@@ -48,7 +48,7 @@ class PathSelect extends Component<Props, State> {
       .filter(path => (path !== null && path !== undefined && path.uuid !== null && path.uuid!== undefined))
       .map((path)=>({uuid: (path?.uuid || '')})); 
     return (
-        <span className={styles.PathChooserContainer}>
+        <span className={styles.PathChooserContainer} style={{position:'absolute', top:0, right:0}}>
           <Select<PathOption>
                   closeMenuOnSelect={false}
                   isSearchable={false}
@@ -64,7 +64,7 @@ class PathSelect extends Component<Props, State> {
                       backgroundColor: '#7D73E7',
                       borderWidth: 0,
                       borderRadius: 6,
-                      width: 200,
+                      width: 100,
                       height: 20
                     }),
                     option: (styles, { data, isDisabled, isFocused, isSelected }) => {
@@ -101,6 +101,7 @@ class PathSelect extends Component<Props, State> {
                     singleValue: (styles, { data }) => ({ ...styles, color: 'white' }),
                     menu: base => ({
                       ...base,
+                      width:'200px',
                       backgroundColor: 'var(--accent-purple)'
                     }),
                     placeholder: base => ({
@@ -122,7 +123,7 @@ class PathSelect extends Component<Props, State> {
                   getOptionValue={(option) => option.uuid}
                   value={options.find((pathoption: PathOption)=>pathoption.uuid === this.context.model.pathlist.activePathUUID)}
           />
-          <IconButton className={styles.action} onClick={()=>this.context.model.pathlist.addPath("NewPath", true)}><AddIcon /></IconButton>
+          {/* <IconButton className={styles.action} onClick={()=>this.context.model.pathlist.addPath("NewPath", true)}><AddIcon /></IconButton> */}
         </span>
     )
   }

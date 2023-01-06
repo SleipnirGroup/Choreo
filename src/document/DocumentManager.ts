@@ -10,16 +10,20 @@ import {v4} from 'uuid'
 
 
 export const UIStateStore = types.model("UIStateStore", {
-  isRobotConfigOpen: false,
+  appPage:1,
   fieldScalingFactor:0.02,
   fieldGridView:false,
-  saveFileName:"save"
+  saveFileName:"save",
+  waypointPanelOpen:false,
+  pathAnimationTimestamp:0
 }).actions(self=>{
   return {
-    setRobotConfigOpen(open: boolean) {self.isRobotConfigOpen = open},
+    setPageNumber(page: number) {self.appPage = page},
     setFieldScalingFactor(metersPerPixel: number) {self.fieldScalingFactor = metersPerPixel},
     setFieldGridView(on:boolean) {self.fieldGridView = on},
-    setSaveFileName(name:string) {self.saveFileName = name}
+    setSaveFileName(name:string) {self.saveFileName = name},
+    setWaypointPanelOpen(open:boolean) {self.waypointPanelOpen = open},
+    setPathAnimationTimestamp(time:number) {self.pathAnimationTimestamp = time;}
   }
 })
 export interface IUIStateStore extends Instance<typeof UIStateStore> {};
@@ -64,6 +68,7 @@ export class DocumentManager {
     async onFileUpload(file:File | null) {
       await this.parseFile(file)
         .then((content) =>this.model.fromSavedDocument(JSON.parse(content)))
+        .then(()=>this.uiState.setPageNumber(1))
         .catch(err=>console.log(err))
     }
 
@@ -71,13 +76,12 @@ export class DocumentManager {
 
     }
 
-    loadFile(jsonFilename:string) {
-      fetch(jsonFilename, {cache:'no-store', }).then((res)=>{console.log(res); return res.json()}).then((data)=>{
-        console.log(data)
+    async loadFile(jsonFilename:string) {
+      await fetch(jsonFilename, {cache:'no-store', }).then((res)=>{console.log(res); return res.json()}).then((data)=>{
         this.model.fromSavedDocument(data)
-       })
+       }).then(()=>this.uiState.setPageNumber(1))
+       .catch(err=>console.log(err))
     }
-
 
     async saveFile() {
       const content = JSON.stringify(this.model.asSavedDocument(), undefined, 4);

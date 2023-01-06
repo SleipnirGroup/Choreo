@@ -3,6 +3,7 @@ import React, { Component } from 'react'
 import styles from './NumberEntry.module.css';
 
 type Props = {
+    longestTitle:string,
     title:string,
     suffix: string,
     enabled: boolean,
@@ -45,7 +46,7 @@ type State = {}
     this.correctNumber();
     return (
       <div className={styles.Container + (this.props.showCheckbox ? "" : ` ${styles.NoCheckbox}`)}>
-        <span className={styles.Title}>{this.props.title}</span>
+        <span className={styles.Title} style={{width:`${this.props.longestTitle.length}rem`}}>{this.props.title}</span>
          <input 
             ref = {this.numberRef}
             type="text" 

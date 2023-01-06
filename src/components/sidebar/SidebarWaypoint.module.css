@@ -4,7 +4,7 @@
 
     height: 48px;
     background-color: var(--accent-purple);
-    border-radius: 50%;
+    border-radius: 50% !important;
     width: 48px;
     font-size:24px;
     text-align: center;
@@ -20,6 +20,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
+}
+.Container:hover{
+    background-color: var(--darker-purple);
 }
 .selected {
     border: 2px solid var(--select-yellow);

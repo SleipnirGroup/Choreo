@@ -1,5 +1,5 @@
 .Container {
-    background-color: #202225;
+    background-color: var(--background-dark-gray);
     border: 1px solid #3F3F3F;
     color: white;
     display: flex;
@@ -18,6 +18,8 @@
     align-items: center;
     font-size: 1rem;
     border: 0px;
+    background:'var(--background-dark-gray)';
+    border-radius:0px 10px 0px 0px;
 }
 
 .PathSelectControl {
@@ -49,35 +51,3 @@
     border-bottom: solid white 2px;
     z-index: top;
 }
-
-/* .Container Button, .Container .likeButton {
-    background-color: var(--accent-purple);
-    color: white;
-    height: 2.5rem;
-    text-transform: none;
-    margin: 0.3rem;
-    border-radius: 10px;
-    font-size: 1rem;
-}
-
-.Container Checkbox {
-    background-color: var(--accent-purple);
-    color: white;
-    height: 2.5rem;
-    text-transform: none;
-    margin: 0.3rem;
-    border-radius: 10px;
-    font-size: 1rem;
-}
-
-
-.Container Button:hover {
-    background-color: var(--darker-purple);
-}
-.Container Button :disabled {
-    background-color: #3F3F3F3f;
-}
-
-.Container .generate:hover {
-    outline: 2.5px solid #FFC52F;
-} */

@@ -1,9 +1,14 @@
 :root {
-  --accent-purple: #7D73E7;
-  --darker-purple: #5F55CD;
+  --accent-purple: rgb(125, 115, 231);
+  --darker-purple: rgb(95, 85, 205);
   --select-yellow: #FFC52F;
+  --background-dark-blue:#15171b;
+  --background-dark-gray:#212326;
+  --background-light-gray:#2F3136;
+  --bottom-nav-height: 56px;
 }
 html {
+  touch-action: manipulation;
 }
 * {
   font-size: 1rem;
@@ -39,14 +44,30 @@ h3 {
   overflow: hidden;
   min-width: 0;
   min-height: 0;
+  position:fixed;
 }
 
 .Page {
+  background: var(--background-dark-blue);
+  width:100%;
+  flex-grow: 1;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   flex: 1;
   min-height: 0;
   min-width: 0;
 }
 
+.Panel {
+  position:absolute;
+  background: var(--background-dark-blue);
+  width:100%;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  height: calc(100vh)
+}
 

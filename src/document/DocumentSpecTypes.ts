@@ -1,3 +1,5 @@
+import { types } from "mobx-state-tree"
+
 export const SAVE_FILE_VERSION = "v0.0.0"
 export interface SavedWaypoint {
     "x": number,
@@ -25,7 +27,7 @@ export interface SavedTrajectorySample {
 }
 export interface SavedPath {
     waypoints: Array<SavedWaypoint>,
-    trajectory: Array<SavedTrajectorySample>
+    trajectory: Array<SavedTrajectorySample> | null
 }
 export interface SavedPathList extends Record<string, SavedPath> {};
 export interface SavedRobotConfig {
