@@ -46,7 +46,7 @@ type State = {}
     this.correctNumber();
     return (
       <div className={styles.Container + (this.props.showCheckbox ? "" : ` ${styles.NoCheckbox}`)}>
-        <span className={styles.Title} style={{width:`${this.props.longestTitle.length}rem`}}>{this.props.title}</span>
+        <span className={styles.Title} style={{width:`${this.props.longestTitle.length}ch`}}>{this.props.title}</span>
          <input 
             ref = {this.numberRef}
             type="text" 
@@ -60,7 +60,7 @@ type State = {}
             
             ></input>
          <span className={styles.Suffix}>{this.props.suffix}</span>
-          <input type='checkbox' className={styles.Checkbox} checked={this.props.enabled} onChange={this.setEnabled}></input></div>
+          {this.props.showCheckbox && <input type='checkbox' className={styles.Checkbox} checked={this.props.enabled} onChange={this.setEnabled}></input>}</div>
     )
   }
 }

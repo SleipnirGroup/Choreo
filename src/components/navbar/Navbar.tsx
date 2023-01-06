@@ -29,8 +29,8 @@ class Navbar extends Component<Props, State> {
     return (
       <div className={styles.Container}>
         <span style={{flexShrink:0}}>
-          <Tooltip title="Open File">
-          <IconButton color='primary' component='span'>
+          
+          
           <input type="file" id='file-upload-input' style={{display:'none'}} onChange={(e)=>{
             if (e.target !=null && e.target.files != null && e.target.files.length >= 1) {
               let fileList = e.target.files;
@@ -43,9 +43,15 @@ class Navbar extends Component<Props, State> {
           } }
 
           ></input>
+          <label htmlFor='file-upload-input'>
+            <Tooltip title="Open File">
+            <IconButton color='primary' component='span'>
             <UploadIcon></UploadIcon>
-          </IconButton>
-          </Tooltip>
+
+            </IconButton>
+            </Tooltip>
+          </label>
+
           <Tooltip title="Save File">
             <IconButton color='primary' onClick={()=>{this.context.saveFile()}}>
               <SaveIcon />
@@ -57,12 +63,12 @@ class Navbar extends Component<Props, State> {
           
       </span>
       <Divider orientation="vertical" flexItem />
-      <span style={{flexShrink:1, flexGrow:0, minWidth:0, display:'flex', justifyContent:'space-between', paddingInline:'10px'}}>
+      <span style={{flexShrink:1, flexGrow:0, minWidth:0, display:'flex', justifyContent:'space-between', paddingInline:'10px'}} onClick={()=>this.context.uiState.setPageNumber(0)}>
       <span style={{display:'inline-block', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', flexGrow:1, minWidth:0, margin:'auto'}}>
       {this.context.model.pathlist.activePath.name}
       </span>
       <Tooltip title="Open Path Dialog">
-      <IconButton color='default' className={styles.generate}  onClick={()=>this.context.uiState.setPageNumber(0)}>
+      <IconButton color='default' className={styles.generate}  >
               <ArrowDownIcon />
             </IconButton>
             </Tooltip>
