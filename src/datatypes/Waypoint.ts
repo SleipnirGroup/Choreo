@@ -10,7 +10,7 @@ export default class Waypoint {
     controlIntervalCount: number = 0;
     name: string = "";
     uuid: string;
-    constructor(name:string) {
+    constructor(name: string) {
         this.name = name;
         this.uuid = uuidv4();
     }

@@ -22,31 +22,31 @@ class Body extends Component<Props, State> {
     return (
       <>
         <div className="App">
-      
-      
 
-      <div className="Page">
-        <Navbar></Navbar>
-        <span style={{display:'flex', flexDirection:'row', flexGrow:1, height:0}}>
-          <Sidebar></Sidebar>
-          <Field></Field>
-          
-        </span>
-        <PathAnimationSlider></PathAnimationSlider>
 
-      </div>
-      
-      <div className="Panel" style={{backgroundColor:'transparent',display:`${(this.context.uiState.appPage === 2) ? "block": "none"}`}}>
-      <div style={{width:'100%', height:'100%',backgroundColor:'#0013',}} onClick={()=>{this.context.uiState.setPageNumber(1)}}></div>
-        <RobotConfigPanel></RobotConfigPanel>
-      </div>
-      <div className="Panel" style={{backgroundColor:'transparent', display:`${(this.context.uiState.appPage === 0) ? "block": "none"}`}}
-      >
-        <div style={{width:'100%', height:'100%',backgroundColor:'#0013',}} onClick={()=>{this.context.uiState.setPageNumber(1)}}></div>
-        <PathSelector></PathSelector>
-      </div>
-      
-    </div>
+
+          <div className="Page">
+            <Navbar></Navbar>
+            <span style={{ display: 'flex', flexDirection: 'row', flexGrow: 1, height: 0 }}>
+              <Sidebar></Sidebar>
+              <Field></Field>
+
+            </span>
+            <PathAnimationSlider></PathAnimationSlider>
+
+          </div>
+
+          <div className="Panel" style={{ backgroundColor: 'transparent', display: `${(this.context.uiState.appPage === 2) ? "block" : "none"}` }}>
+            <div style={{ width: '100%', height: '100%', backgroundColor: '#0013', }} onClick={() => { this.context.uiState.setPageNumber(1) }}></div>
+            <RobotConfigPanel></RobotConfigPanel>
+          </div>
+          <div className="Panel" style={{ backgroundColor: 'transparent', display: `${(this.context.uiState.appPage === 0) ? "block" : "none"}` }}
+          >
+            <div style={{ width: '100%', height: '100%', backgroundColor: '#0013', }} onClick={() => { this.context.uiState.setPageNumber(1) }}></div>
+            <PathSelector></PathSelector>
+          </div>
+
+        </div>
       </>
     )
   }

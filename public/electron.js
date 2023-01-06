@@ -10,25 +10,25 @@ function createWindow() {
     height: 600,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation:false
+      contextIsolation: false
     },
   });
-var hasConfirmedClose = false;
-win.on('close', (e) => {
+  var hasConfirmedClose = false;
+  win.on('close', (e) => {
     if (!hasConfirmedClose) {
-        e.preventDefault(); // Prevent default no matter what.
-        var choice = dialog.showMessageBox(win, {
-            type:    'question',
-            buttons: ['Yes', 'No'],
-            title:   'Confirm',
-            message: 'Are you sure you want to quit?'
-        });
-        if (choice == 1) {
-            hasConfirmedClose = true;
-            win.close();
-        }
+      e.preventDefault(); // Prevent default no matter what.
+      var choice = dialog.showMessageBox(win, {
+        type: 'question',
+        buttons: ['Yes', 'No'],
+        title: 'Confirm',
+        message: 'Are you sure you want to quit?'
+      });
+      if (choice == 1) {
+        hasConfirmedClose = true;
+        win.close();
+      }
     }
-});
+  });
   // and load the index.html of the app.
   // win.loadFile("index.html");
   win.loadURL(
@@ -43,15 +43,15 @@ win.on('close', (e) => {
 }
 
 const template = [{
-    label: 'File',
-    submenu: [
-       {
-         label: 'Open Document',
-          role: 'open'
-       },
-       {role: 'close'}
-    ]
- }];
+  label: 'File',
+  submenu: [
+    {
+      label: 'Open Document',
+      role: 'open'
+    },
+    { role: 'close' }
+  ]
+}];
 const menu = Menu.buildFromTemplate(template)
 Menu.setApplicationMenu(menu)
 // This method will be called when Electron has finished

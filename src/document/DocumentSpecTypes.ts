@@ -1,5 +1,3 @@
-import { types } from "mobx-state-tree"
-
 export const SAVE_FILE_VERSION = "v0.0.0"
 export interface SavedWaypoint {
     "x": number,
@@ -13,7 +11,7 @@ export interface SavedWaypoint {
     "headingConstrained": boolean,
     "velocityMagnitudeConstrained": boolean,
     "velocityAngleConstrained": boolean,
-    "angularVelocityConstrained" : boolean,
+    "angularVelocityConstrained": boolean,
     "controlIntervalCount": number // positive-integer>
 }
 export interface SavedTrajectorySample {
@@ -29,20 +27,20 @@ export interface SavedPath {
     waypoints: Array<SavedWaypoint>,
     trajectory: Array<SavedTrajectorySample> | null
 }
-export interface SavedPathList extends Record<string, SavedPath> {};
+export interface SavedPathList extends Record<string, SavedPath> { };
 export interface SavedRobotConfig {
-    "mass":number,
+    "mass": number,
     "rotationalInertia": number,
     "wheelbase": number,
     "trackWidth": number,
     "wheelRadius": number,
     "wheelMaxVelocity": number,
     "wheelMaxTorque": number,
-    "bumperLength" : number,
-    "bumperWidth" : number
+    "bumperLength": number,
+    "bumperWidth": number
 }
 export interface SavedDocument {
     version: string,
     robotConfiguration: SavedRobotConfig,
-    paths:SavedPathList
+    paths: SavedPathList
 }

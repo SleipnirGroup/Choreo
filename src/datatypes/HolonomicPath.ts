@@ -4,9 +4,7 @@ export default class HolonomicPath {
     waypoints: Array<HolonomicWaypoint>;
 
 
-    constructor(
-        waypoints: Array<HolonomicWaypoint>
-    ) {
+    constructor(waypoints: Array<HolonomicWaypoint>) {
         this.waypoints = waypoints;
     }
 
