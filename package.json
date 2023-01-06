@@ -87,7 +87,7 @@
   "main": "public/electron.js",
   "homepage": "http://sleipnirgroup.github.io/UntitledWaypointEditor",
   "scripts": {
-    "format": "prettier --write .",
+    "format": "prettier --check .",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "start": "node scripts/start.js",
