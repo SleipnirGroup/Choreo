@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@babel/core": "^7.16.0",
     "@emotion/styled": "^11.10.5",
     "@fortawesome/fontawesome-svg-core": "^6.2.1",
     "@fortawesome/free-brands-svg-icons": "^6.2.1",
@@ -52,6 +51,7 @@
     "mobx-react": "^7.6.0",
     "mobx-state-tree": "^5.1.7",
     "mobx-utils": "^6.0.5",
+    "node": "^19.3.0",
     "postcss": "^8.4.4",
     "postcss-flexbugs-fixes": "^5.0.2",
     "postcss-loader": "^6.2.1",
@@ -87,6 +87,8 @@
   "main": "public/electron.js",
   "homepage": "http://sleipnirgroup.github.io/UntitledWaypointEditor",
   "scripts": {
+    "format": "prettier --check .",
+    "formatfix": "prettier --write .",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "start": "node scripts/start.js",
@@ -114,6 +116,9 @@
     ]
   },
   "devDependencies": {
+    "@babel/core": "^7.20.12",
+    "@babel/preset-env": "^7.20.2",
+    "@babel/preset-react": "^7.18.6",
     "@types/d3": "^7.4.0",
     "@types/electron-prompt": "^1.6.1",
     "@types/styled-components": "^5.1.26",
@@ -121,6 +126,7 @@
     "electron": "^22.0.0",
     "electron-is-dev": "^2.0.0",
     "gh-pages": "^4.0.0",
+    "prettier": "^2.8.1",
     "wait-on": "^7.0.1"
   },
   "jest": {

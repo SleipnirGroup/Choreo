@@ -1,29 +1,28 @@
 .Container {
-    color: white;
-    border: 0px;
-
-    height: 48px;
-    background-color: var(--accent-purple);
-    border-radius: 50% !important;
-    width: 48px;
-    font-size:24px;
-    text-align: center;
-    flex-shrink: 0;
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
-    margin-left: auto;
-    margin-right: auto;
-    padding-top: auto;
-    padding-bottom: auto;
-    box-sizing: border-box;
-    color:white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  color: white;
+  border: 0px;
+  height: 48px;
+  background-color: var(--accent-purple);
+  border-radius: 50% !important;
+  width: 48px;
+  font-size: 24px;
+  text-align: center;
+  flex-shrink: 0;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: auto;
+  padding-bottom: auto;
+  box-sizing: border-box;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.Container:hover{
-    background-color: var(--darker-purple);
+.Container:hover {
+  background-color: var(--darker-purple);
 }
 .selected {
-    border: 2px solid var(--select-yellow);
+  border: 2px solid var(--select-yellow);
 }
