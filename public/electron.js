@@ -13,22 +13,6 @@ function createWindow() {
       contextIsolation: false
     },
   });
-  var hasConfirmedClose = false;
-  win.on('close', (e) => {
-    if (!hasConfirmedClose) {
-      e.preventDefault(); // Prevent default no matter what.
-      var choice = dialog.showMessageBox(win, {
-        type: 'question',
-        buttons: ['Yes', 'No'],
-        title: 'Confirm',
-        message: 'Are you sure you want to quit?'
-      });
-      if (choice == 1) {
-        hasConfirmedClose = true;
-        win.close();
-      }
-    }
-  });
   // and load the index.html of the app.
   // win.loadFile("index.html");
   win.loadURL(

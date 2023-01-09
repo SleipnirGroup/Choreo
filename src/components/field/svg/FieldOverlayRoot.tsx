@@ -2,7 +2,7 @@ import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../../document/DocumentManager";
 import OverlayWaypoint from "./OverlayWaypoint";
-import FieldBackgroundImage from "./FieldBackgroundImage";
+import FieldImage23 from "./fields/FieldImage23";
 import * as d3 from "d3";
 import FieldGrid from "./FieldGrid";
 import FieldPathLines from "./FieldPathLines";
@@ -98,20 +98,16 @@ class FieldOverlayRoot extends Component<Props, State> {
     return d3.pointer(e);
   }
   render() {
-    let fieldConfig = this.context.fieldConfig;
-    this.canvasHeightMeters = fieldConfig.fieldImageSize[1];
-    this.canvasWidthMeters = fieldConfig.fieldImageSize[0];
+    this.canvasHeightMeters = FieldImage23.WIDTH_M + 1;
+    this.canvasWidthMeters = FieldImage23.LENGTH_M + 1;
 
     return (
       <svg
         ref={this.svgRef}
-        viewBox={`
-            ${-fieldConfig.fieldOffset[0]}
-            ${fieldConfig.fieldOffset[1] - this.canvasHeightMeters}
-            ${this.canvasWidthMeters}
-            ${this.canvasHeightMeters}
-        `}
-        onMouseMove={(e) => this.getMouseCoordinates(e)}
+        viewBox={`${-0.5} ${0.5 - this.canvasHeightMeters} ${
+          this.canvasWidthMeters
+        } ${this.canvasHeightMeters}`}
+        onMouseMove={(e: any) => this.getMouseCoordinates(e)}
         xmlns="http://www.w3.org/2000/svg"
         style={{
           width: "100%",
@@ -132,7 +128,7 @@ class FieldOverlayRoot extends Component<Props, State> {
           id="rootFrame"
         >
           {/* Background */}
-          <FieldBackgroundImage></FieldBackgroundImage>
+          <FieldImage23 blue={false}></FieldImage23>
           <FieldGrid></FieldGrid>
           {/* Line paths */}
           <FieldPathLines></FieldPathLines>

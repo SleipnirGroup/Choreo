@@ -14,14 +14,12 @@ function App() {
     root: ({ ownerState, theme }) => ({
       // Some CSS
       fontSize: "1rem",
-
       color: "white",
       borderRadius: "10px",
       marginInline: "0.3rem",
       boxSizing: "border-box",
       backgroundColor:
         ownerState.color === "primary" && theme.palette.primary.main,
-
       "&:hover": {
         backgroundColor:
           ownerState.color === "primary" && theme.palette.secondary.main,
