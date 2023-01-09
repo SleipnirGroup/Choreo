@@ -3,7 +3,6 @@ import React, { Component } from "react";
 import DocumentManagerContext from "../../../document/DocumentManager";
 import OverlayWaypoint from "./OverlayWaypoint";
 import FieldImage23 from "./fields/FieldImage23";
-import FieldBackgroundImage from "./FieldBackgroundImage";
 import * as d3 from "d3";
 import FieldGrid from "./FieldGrid";
 import FieldPathLines from "./FieldPathLines";

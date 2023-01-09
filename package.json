@@ -51,6 +51,7 @@
     "mobx-react": "^7.6.0",
     "mobx-state-tree": "^5.1.7",
     "mobx-utils": "^6.0.5",
+    "node": "^19.3.0",
     "postcss": "^8.4.4",
     "postcss-flexbugs-fixes": "^5.0.2",
     "postcss-loader": "^6.2.1",

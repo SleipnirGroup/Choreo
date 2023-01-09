@@ -2,8 +2,6 @@ import "./App.css";
 import { DocumentManager } from "./document/DocumentManager";
 import { createContext } from "react";
 import { observer } from "mobx-react";
-
-import icons from "@mui/icons-material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Body from "./Body";
@@ -16,14 +14,12 @@ function App() {
     root: ({ ownerState, theme }) => ({
       // Some CSS
       fontSize: "1rem",
-
       color: "white",
       borderRadius: "10px",
       marginInline: "0.3rem",
       boxSizing: "border-box",
       backgroundColor:
         ownerState.color === "primary" && theme.palette.primary.main,
-
       "&:hover": {
         backgroundColor:
           ownerState.color === "primary" && theme.palette.secondary.main,
