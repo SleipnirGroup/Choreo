@@ -104,8 +104,10 @@ class FieldOverlayRoot extends Component<Props, State> {
     return (
       <svg
         ref={this.svgRef}
-        viewBox={`${-0.5} ${0.5 - this.canvasHeightMeters} ${this.canvasWidthMeters} ${this.canvasHeightMeters}`}
-        onMouseMove={(e : any) => this.getMouseCoordinates(e)}
+        viewBox={`${-0.5} ${0.5 - this.canvasHeightMeters} ${
+          this.canvasWidthMeters
+        } ${this.canvasHeightMeters}`}
+        onMouseMove={(e: any) => this.getMouseCoordinates(e)}
         xmlns="http://www.w3.org/2000/svg"
         style={{
           width: "100%",

@@ -11,7 +11,7 @@ export const UIStateStore = types
     waypointPanelOpen: false,
     pathAnimationTimestamp: 0,
   })
-  .actions((self : any) => {
+  .actions((self: any) => {
     return {
       setPageNumber(page: number) {
         self.appPage = page;
@@ -41,7 +41,7 @@ export class DocumentManager {
   constructor() {
     this.uiState = UIStateStore.create();
     this.model = new DocumentModel();
-    }
+  }
 
   async parseFile(file: File | null): Promise<string> {
     if (file == null) {
