@@ -2,6 +2,8 @@ import "./App.css";
 import { DocumentManager } from "./document/DocumentManager";
 import { createContext } from "react";
 import { observer } from "mobx-react";
+
+import icons from "@mui/icons-material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Body from "./Body";

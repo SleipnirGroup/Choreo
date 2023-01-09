@@ -1,6 +1,5 @@
 import { Instance, types } from "mobx-state-tree";
 import { createContext } from "react";
-import FieldConfig from "../datatypes/FieldConfig";
 import DocumentModel from "./DocumentModel";
 
 export const UIStateStore = types
@@ -12,7 +11,7 @@ export const UIStateStore = types
     waypointPanelOpen: false,
     pathAnimationTimestamp: 0,
   })
-  .actions((self) => {
+  .actions((self : any) => {
     return {
       setPageNumber(page: number) {
         self.appPage = page;
@@ -39,21 +38,10 @@ export class DocumentManager {
   simple: any;
   uiState: IUIStateStore;
   model: DocumentModel;
-  fieldConfig: FieldConfig;
   constructor() {
     this.uiState = UIStateStore.create();
     this.model = new DocumentModel();
-    this.fieldConfig = {
-      game: "Rapid React",
-      fieldImage: "2022-field.png",
-      fieldSize: [16.4592, 8.2296],
-      fieldImageSize: [
-        (16.4592 * 1859) / (1775 - 74),
-        (8.2296 * 949) / (901 - 50),
-      ],
-      fieldOffset: [(16.4592 * 74) / (1775 - 74), (8.2296 * 50) / (901 - 50)],
-    };
-  }
+    }
 
   async parseFile(file: File | null): Promise<string> {
     if (file == null) {
