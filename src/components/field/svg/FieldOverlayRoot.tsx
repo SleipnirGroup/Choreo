@@ -128,7 +128,7 @@ class FieldOverlayRoot extends Component<Props, State> {
           id="rootFrame"
         >
           {/* Background */}
-          <FieldImage23 blue={false}></FieldImage23>
+          <FieldImage23 blue={true}></FieldImage23>
           <FieldGrid></FieldGrid>
           {/* Line paths */}
           <FieldPathLines></FieldPathLines>
