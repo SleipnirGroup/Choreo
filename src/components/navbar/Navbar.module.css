@@ -1,0 +1,53 @@
+.Container {
+  background-color: var(--background-dark-gray);
+  border: 1px solid #3f3f3f;
+  color: white;
+  display: flex;
+  padding-left: 20px;
+  padding-right: 20px;
+  font-size: 1rem;
+  border: 0px;
+  align-items: center;
+  flex-direction: row;
+  justify-content: space-between;
+  height: 4rem;
+}
+
+.PathChooserContainer {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  border: 0px;
+  background: "var(--background-dark-gray)";
+  border-radius: 0px 10px 0px 0px;
+}
+
+.PathSelectControl {
+  background-color: #7d73e7 !important;
+  border-width: 0 !important;
+  border-radius: 10 !important;
+  width: 200px !important;
+  height: 20px !important;
+}
+
+.PathOptionContainer {
+  background-color: black !important;
+  color: "white";
+  margin-left: 4;
+  margin-right: 0;
+  margin-bottom: 4;
+  width: 192;
+  min-height: 20px !important;
+  height: 20px !important;
+  border-radius: 6px;
+  cursor: default;
+}
+
+.PathOptionRenameInput {
+  background-color: transparent;
+  border: none;
+  color: white;
+  align-self: center;
+  border-bottom: solid white 2px;
+  z-index: top;
+}
