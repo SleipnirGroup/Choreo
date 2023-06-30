@@ -7,6 +7,8 @@ import * as d3 from "d3";
 import FieldGrid from "./FieldGrid";
 import FieldPathLines from "./FieldPathLines";
 import InterpolatedRobot from "./InterpolatedRobot";
+import { v4 as uuidv4 } from "uuid"
+
 type Props = {};
 
 type State = {
@@ -141,7 +143,7 @@ class FieldOverlayRoot extends Component<Props, State> {
           ></circle>
           {this.context.model.pathlist.activePath.waypoints.map(
             (point, index) => (
-              <OverlayWaypoint waypoint={point} index={index}></OverlayWaypoint>
+              <OverlayWaypoint waypoint={point} index={index} key={uuidv4()}></OverlayWaypoint>
             )
           )}
           <InterpolatedRobot
