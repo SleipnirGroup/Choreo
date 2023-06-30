@@ -197,6 +197,7 @@ class PathSelector extends Component<Props, State> {
                   value={uuid}
                   control={<Radio />}
                   label={<this.Option uuid={uuid}></this.Option>}
+                  key={uuid}
                 ></FormControlLabel>
               )
             )}
