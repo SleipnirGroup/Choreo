@@ -47,6 +47,7 @@ class Sidebar extends Component<Props, State> {
           waypoint={holonomicWaypoint}
           index={index}
           context={this.context}
+          key={holonomicWaypoint.uuid}
         ></SidebarWaypoint>
       )
     );

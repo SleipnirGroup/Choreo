@@ -3,3 +3,4 @@ public/*
 spec/*
 .github/*
 .node_modules/*
+src-tauri/
