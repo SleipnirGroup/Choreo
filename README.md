@@ -6,9 +6,13 @@ UntitledWaypointEditor is a graphical tool for planning time-optimized trajector
 
 ## To run in Electron
 
-- Have Node.js and npm installed.
+- Have Node.js, npm, and rust installed.
 - Navigate to the root directory of the project.
-- `npm install` and `npm run dev`
+- `npm install` and `npm run tauri dev`
+
+## To build an executable
+
+- Coming soon...
 
 ## Physical input parameters
 
