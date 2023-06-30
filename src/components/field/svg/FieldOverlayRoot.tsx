@@ -143,7 +143,11 @@ class FieldOverlayRoot extends Component<Props, State> {
           ></circle>
           {this.context.model.pathlist.activePath.waypoints.map(
             (point, index) => (
-              <OverlayWaypoint waypoint={point} index={index} key={uuidv4()}></OverlayWaypoint>
+              <OverlayWaypoint
+                waypoint={point}
+                index={index}
+                key={uuidv4()}
+              ></OverlayWaypoint>
             )
           )}
           <InterpolatedRobot
