@@ -146,7 +146,7 @@ class FieldOverlayRoot extends Component<Props, State> {
               <OverlayWaypoint
                 waypoint={point}
                 index={index}
-                key={uuidv4()}
+                key={point.uuid}
               ></OverlayWaypoint>
             )
           )}
