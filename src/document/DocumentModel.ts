@@ -12,7 +12,7 @@ import {
   SAVE_FILE_VERSION,
 } from "./DocumentSpecTypes";
 
-import { invoke } from "@tauri-apps/api/tauri"
+import { invoke } from "@tauri-apps/api/tauri";
 
 // Save file data types:
 
@@ -324,21 +324,23 @@ export const HolonomicPathStore = types
           return;
         }
         this.setGenerating(true);
-        invoke('generate_trajectory', { path: self.waypoints }).then((rust_traj) => {
-          let newTraj: Array<SavedTrajectorySample> = [];
-          // @ts-ignore
-          rust_traj.samples.forEach(samp => {
-            let newPoint = TrajectorySampleStore.create();
-            newPoint.setX(samp.x);
-            newPoint.setY(samp.y);
-            newPoint.setHeading(samp.heading);
-            newPoint.setTimestamp(samp.timestamp);
-            newTraj.push(newPoint)
+        invoke("generate_trajectory", { path: self.waypoints })
+          .then((rust_traj) => {
+            let newTraj: Array<SavedTrajectorySample> = [];
+            // @ts-ignore
+            rust_traj.samples.forEach((samp) => {
+              let newPoint = TrajectorySampleStore.create();
+              newPoint.setX(samp.x);
+              newPoint.setY(samp.y);
+              newPoint.setHeading(samp.heading);
+              newPoint.setTimestamp(samp.timestamp);
+              newTraj.push(newPoint);
+            });
+            this.setTrajectory(newTraj);
+          })
+          .finally(() => {
+            this.setGenerating(false);
           });
-          this.setTrajectory(newTraj);
-        }).finally(() => {
-          this.setGenerating(false);
-        });
       },
     };
   });
