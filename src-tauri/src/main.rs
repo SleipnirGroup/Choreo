@@ -9,11 +9,6 @@ fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
-/*
-[{"x":6.540647506713867,"y":4.353531837463379,"heading":0,"xConstrained":true,"yConstrained":true,"headingConstrained":true,"controlIntervalCount":0,"velocityMagnitude":0,"velocityAngle":0,"angularVelocity":0,"velocityMagnitudeConstrained":false,"velocityAngleConstrained":false,"angularVelocityConstrained":false,"uuid":"d078e8cb-6d5a-483f-8dec-d00d056e9ea5","selected":true},{"x":11.047496795654297,"y":2.6201279163360596,"heading":0,"xConstrained":true,"yConstrained":true,"headingConstrained":true,"controlIntervalCount":0,"velocityMagnitude":0,"velocityAngle":0,"angularVelocity":0,"velocityMagnitudeConstrained":false,"velocityAngleConstrained":false,"angularVelocityConstrained":false,"uuid":"02c8258a-b7f8-44ce-899c-ac14dadcf403","selected":false}]
-
- */
-
 #[allow(non_snake_case)]
 #[derive(serde::Serialize, serde::Deserialize)]
 struct UWEWaypoint {
