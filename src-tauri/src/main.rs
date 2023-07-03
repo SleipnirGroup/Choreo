@@ -21,12 +21,6 @@ struct UWEWaypoint {
     controlIntervalCount: u64
 }
 
-// #[derive(serde::Serialize, serde::Deserialize)]
-// struct UWEPath {
-//     waypoints: Vec<UWEWaypoint>
-// }
-
-
 #[tauri::command]
 async fn generate_trajectory(path: Vec<UWEWaypoint>) -> Result<HolonomicTrajectory, String> {
     let mut path_builder = SwervePathBuilder::new();
