@@ -208,6 +208,7 @@ export const HolonomicPathStore = types
     uuid: types.identifier,
     waypoints: types.array(HolonomicWaypointStore),
     generated: types.array(TrajectorySampleStore),
+    generating: false,
   })
   .views((self) => {
     return {
@@ -227,7 +228,7 @@ export const HolonomicPathStore = types
         return trajectory;
       },
       canGenerate(): boolean {
-        return self.waypoints.length >= 2;
+        return self.waypoints.length >= 2 && !self.generating;
       },
       canExport(): boolean {
         return self.generated.length >= 2;
@@ -312,12 +313,17 @@ export const HolonomicPathStore = types
       setTrajectory(trajectory: Array<SavedTrajectorySample>) {
         // @ts-ignore
         self.generated = trajectory;
+        self.generating = false;
+      },
+      setGenerating(generating: boolean) {
+        self.generating = generating;
       },
       generatePath() {
         self.generated.length = 0;
         if (self.waypoints.length < 2) {
           return;
         }
+        this.setGenerating(true);
         invoke('generate_trajectory', { path: self.waypoints }).then((rust_traj) => {
           let newTraj: Array<SavedTrajectorySample> = [];
           // @ts-ignore
@@ -330,6 +336,8 @@ export const HolonomicPathStore = types
             newTraj.push(newPoint)
           });
           this.setTrajectory(newTraj);
+        }).finally(() => {
+          this.setGenerating(false);
         });
       },
     };
