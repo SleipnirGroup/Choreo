@@ -12,6 +12,8 @@ import {
   SAVE_FILE_VERSION,
 } from "./DocumentSpecTypes";
 
+import { invoke } from "@tauri-apps/api/tauri";
+
 // Save file data types:
 
 // State tree data types:
@@ -206,6 +208,7 @@ export const HolonomicPathStore = types
     uuid: types.identifier,
     waypoints: types.array(HolonomicWaypointStore),
     generated: types.array(TrajectorySampleStore),
+    generating: false,
   })
   .views((self) => {
     return {
@@ -225,7 +228,7 @@ export const HolonomicPathStore = types
         return trajectory;
       },
       canGenerate(): boolean {
-        return self.waypoints.length >= 2;
+        return self.waypoints.length >= 2 && !self.generating;
       },
       canExport(): boolean {
         return self.generated.length >= 2;
@@ -307,19 +310,37 @@ export const HolonomicPathStore = types
         //self.waypoints.splice(endIndex, 0, self.waypoints.splice(startIndex, 1)[0]);
         moveItem(self.waypoints, startIndex, endIndex);
       },
+      setTrajectory(trajectory: Array<SavedTrajectorySample>) {
+        // @ts-ignore
+        self.generated = trajectory;
+        self.generating = false;
+      },
+      setGenerating(generating: boolean) {
+        self.generating = generating;
+      },
       generatePath() {
         self.generated.length = 0;
         if (self.waypoints.length < 2) {
           return;
         }
-        self.waypoints.forEach((point, index) => {
-          let newPoint = TrajectorySampleStore.create();
-          newPoint.setX(point.x);
-          newPoint.setY(point.y);
-          newPoint.setHeading(point.heading);
-          newPoint.setTimestamp(index);
-          self.generated.push(newPoint);
-        });
+        this.setGenerating(true);
+        invoke("generate_trajectory", { path: self.waypoints })
+          .then((rust_traj) => {
+            let newTraj: Array<SavedTrajectorySample> = [];
+            // @ts-ignore
+            rust_traj.samples.forEach((samp) => {
+              let newPoint = TrajectorySampleStore.create();
+              newPoint.setX(samp.x);
+              newPoint.setY(samp.y);
+              newPoint.setHeading(samp.heading);
+              newPoint.setTimestamp(samp.timestamp);
+              newTraj.push(newPoint);
+            });
+            this.setTrajectory(newTraj);
+          })
+          .finally(() => {
+            this.setGenerating(false);
+          });
       },
     };
   });
