@@ -28,6 +28,10 @@ async fn generate_trajectory(path: Vec<UWEWaypoint>) -> Result<HolonomicTrajecto
         let wpt = &path[i];
         path_builder.pose_wpt(i, wpt.x, wpt.y, wpt.heading);
     }
+    path_builder.wpt_zero_velocity(0);
+    path_builder.wpt_zero_angular_velocity(0);
+    path_builder.wpt_zero_velocity(path.len() - 1);
+    path_builder.wpt_zero_angular_velocity(path.len() - 1);
     let drivetrain = SwerveDrivetrain {
         mass: 45.0,
         moi: 6.0,
