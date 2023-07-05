@@ -41,9 +41,9 @@ class PathAnimationSlider extends Component<Props, State> {
         return;
       }
       this.context.uiState.setPathAnimationTimestamp(
-        this.context.uiState.pathAnimationTimestamp + 0.05
+        this.context.uiState.pathAnimationTimestamp + 0.01
       );
-    }, 50);
+    }, 10);
   }
 
   onStop() {
