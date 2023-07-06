@@ -29,8 +29,8 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "externalBin": [
-        "target/release/bin/*"
+      "resources": [
+        "trajoptlib/*"
       ]
     },
     "security": {
