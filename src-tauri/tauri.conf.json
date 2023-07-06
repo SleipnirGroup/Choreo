@@ -20,7 +20,11 @@
     },
     "bundle": {
       "active": true,
-      "targets": ["deb", "msi", "dmg"],
+      "targets": [
+        "deb",
+        "msi",
+        "dmg"
+      ],
       "identifier": "org.sleipnirgroup",
       "icon": [
         "icons/32x32.png",
@@ -30,7 +34,7 @@
         "icons/icon.ico"
       ],
       "resources": [
-        "trajoptlib/*"
+        "*.dylib"
       ]
     },
     "security": {

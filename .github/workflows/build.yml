@@ -15,18 +15,22 @@ jobs:
           - artifact-name: Windows x86_64
             os: windows-2022
             rust-target: x86_64-pc-windows-gnu
+            dylib-ext: '*.dll'
 
           - artifact-name: macOS x86_64
             os: macOS-12
             rust-target: x86_64-apple-darwin
+            dylib-ext: '*.dylib'
 
           - artifact-name: macOS arm64
             os: macOS-12
             rust-target: aarch64-apple-darwin
+            dylib-ext: '*.dylib'
 
           - artifact-name: Linux x86_64
             os: ubuntu-latest
             rust-target: x86_64-unknown-linux-gnu
+            dylib-ext: '*.so'
 
     name: "${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}

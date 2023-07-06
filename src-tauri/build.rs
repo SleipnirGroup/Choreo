@@ -12,12 +12,12 @@ fn main() {
   const LIB_PATTERN: &str = "bin/*.dll";
   
   #[cfg(target_os = "macos")]
-  println!("cargo:rustc-link-arg=-Wl,-rpath,@loader_path/ -Wl,-rpath,@loader_path/../Resources/trajoptlib/");
+  println!("cargo:rustc-link-arg=-Wl,-rpath,@loader_path/ -Wl,-rpath,@loader_path/../Resources/");
   
   #[cfg(target_os = "linux")]
   println!("cargo:rustc-link-arg=-Wl,-rpath,$ORIGIN/");
 
-  const NATIVE_LIB_OUT_DIR: &str = "trajoptlib";
+  const NATIVE_LIB_OUT_DIR: &str = "./";
 
   let native_lib_search_dir = format!("target/release/build/trajoptlib-*/out/{}", LIB_PATTERN);
 

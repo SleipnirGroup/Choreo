@@ -6,9 +6,10 @@
   "scripts": {
     "format": "prettier --check .",
     "dev": "vite",
-    "build": "vite build",
+    "build": "change_dylib_ext && vite build",
     "preview": "vite preview",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "change_dylib_ext": "node change_dylib_ext.cjs"
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",
@@ -34,6 +35,7 @@
     "@types/react-dom": "^18.0.6",
     "@types/uuid": "^9.0.2",
     "@vitejs/plugin-react": "^3.0.0",
+    "fs": "^0.0.1-security",
     "prettier": "^2.8.8",
     "typescript": "^4.9.5",
     "vite": "^4.2.1"
