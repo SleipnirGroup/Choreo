@@ -6,7 +6,7 @@
   "scripts": {
     "format": "prettier --check .",
     "dev": "vite",
-    "build": "change_dylib_ext && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "tauri": "tauri",
     "change_dylib_ext": "node change_dylib_ext.cjs"

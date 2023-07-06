@@ -77,6 +77,9 @@ jobs:
       - name: Set up npm dependencies
         run: npm install
 
+      - name: Change Dylib Extension
+        run: npm run change_dylib_ext -- "${{ matrix.dylib-ext }}"
+
       - name: Build Rust
         working-directory: src-tauri
         run: cargo build --release
