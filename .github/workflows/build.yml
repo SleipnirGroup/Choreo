@@ -56,6 +56,9 @@ jobs:
           version: latest
           platform: x64
 
+      - name: Set up npm dependencies
+        run: npm install
+
       - name: Build Rust
         working-directory: src-tauri
         run: cargo build --release
@@ -68,4 +71,4 @@ jobs:
         uses: actions/upload-artifact@v3.1.1
         with:
           name: ${{ matrix.artifact-name }}
-          path: src-tauri/target/release
+          path: src-tauri/target/release/bundle
