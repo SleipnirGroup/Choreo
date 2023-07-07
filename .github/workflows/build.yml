@@ -84,10 +84,14 @@ jobs:
         working-directory: src-tauri
         run: cargo build --release
         continue-on-error: true
-
+      
       - name: Show file tree src-tauri
         working-directory: src-tauri
         run: ls
+
+      - name: Build Rust (again)
+        working-directory: src-tauri
+        run: cargo build --release
 
       - name: Build Package
         run: npm run tauri build
