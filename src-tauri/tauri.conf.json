@@ -21,7 +21,7 @@
     "bundle": {
       "active": true,
       "targets": [
-        "deb",
+        "appimage",
         "msi",
         "dmg"
       ],
