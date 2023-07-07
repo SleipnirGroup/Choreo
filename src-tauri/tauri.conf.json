@@ -35,7 +35,12 @@
       ],
       "resources": [
         "*.dylib"
-      ]
+      ],
+      "deb":{
+        "files": {
+          "/usr/lib/*": "./lib*.so"
+        }
+      }
     },
     "security": {
       "csp": null
