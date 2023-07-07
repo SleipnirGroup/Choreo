@@ -21,7 +21,7 @@
     "bundle": {
       "active": true,
       "targets": [
-        "appimage",
+        "deb",
         "msi",
         "dmg"
       ],
@@ -38,7 +38,15 @@
       ],
       "deb":{
         "files": {
-          "/usr/lib/*": "./lib*.so"
+          "/usr/local/lib/libTrajoptLib.so": "./libTrajoptLib.so",
+          "/usr/local/lib/libcasadi.so.3.7": "./libcasadi.so.3.7",
+          "/usr/local/lib/libcasadi_nlpsol_ipopt.so": "./libcasadi_nlpsol_ipopt.so",
+          "/usr/local/lib/libipopt.so.3": "./libipopt.so.3",
+          "/usr/local/lib/libcoinmumps.so.3": "./libcoinmumps.so.3",
+          "/usr/local/lib/libcoinmetis.so.2": "./libcoinmetis.so.2",
+          "/usr/local/lib/libgfortran-040039e1.so.5.0.0": "./libgfortran-040039e1.so.5.0.0",
+          "/usr/local/lib/libquadmath-96973f99.so.0.0.0": "./libquadmath-96973f99.so.0.0.0",
+          "/usr/local/lib/libcasadi-tp-openblas.so.0": "./libcasadi-tp-openblas.so.0"
         }
       }
     },
