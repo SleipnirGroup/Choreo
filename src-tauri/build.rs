@@ -15,7 +15,9 @@ fn main() {
   println!("cargo:rustc-link-arg=-Wl,-rpath,@loader_path/ -Wl,-rpath,@loader_path/../Resources/");
   
   #[cfg(target_os = "linux")]
-  println!("cargo:rustc-link-arg=-Wl,-rpath,$ORIGIN/ -Wl,-rpath,/usr/local/lib -Wl,-rpath,/usr/lib");
+  println!("cargo:rustc-link-arg=-Wl,-rpath,$ORIGIN/");
+  println!("cargo:rustc-link-arg=-Wl,-rpath,/usr/local/lib");
+  println!("cargo:rustc-link-arg=-Wl,-rpath,/usr/lib");
 
   const NATIVE_LIB_OUT_DIR: &str = ".";
 
