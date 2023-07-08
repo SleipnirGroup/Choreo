@@ -30,7 +30,7 @@ jobs:
           - artifact-name: Linux x86_64
             os: ubuntu-latest
             rust-target: x86_64-unknown-linux-gnu
-            dylib-ext: '*.so'
+            dylib-ext: 'lib*.so*'
 
     name: "${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
