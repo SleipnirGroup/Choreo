@@ -84,6 +84,11 @@ jobs:
         working-directory: src-tauri
         run: cargo build --release
         continue-on-error: true
+
+      - name: Build Rust (again)
+        working-directory: src-tauri
+        run: cargo build --release
+        continue-on-error: true
       
       - name: Show file tree src-tauri
         working-directory: src-tauri
