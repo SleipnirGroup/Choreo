@@ -94,6 +94,10 @@ jobs:
         working-directory: src-tauri
         run: ls
 
+      - name: Clean Rust (windows issue fix)
+        if: matrix.os == 'windows-2022'
+        run: rmdir /s /q src-tauri/target
+
       - name: Clean Rust
         working-directory: src-tauri
         run: cargo clean
