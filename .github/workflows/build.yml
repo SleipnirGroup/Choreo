@@ -89,13 +89,9 @@ jobs:
         working-directory: src-tauri
         run: ls
 
-      - name: Build Rust (again)
+      - name: Clean Rust
         working-directory: src-tauri
-        run: cargo build --release
-
-      - name: Show file tree src-tauri (again)
-        working-directory: src-tauri
-        run: ls
+        run: cargo clean
 
       - name: Build Package
         run: npm run tauri build
