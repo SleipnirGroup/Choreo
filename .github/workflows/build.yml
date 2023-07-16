@@ -95,8 +95,9 @@ jobs:
         run: ls
 
       - name: Clean Rust (windows issue fix)
+        working-directory: src-tauri
         if: matrix.os == 'windows-2022'
-        run: rmdir /s /q src-tauri/target
+        run: Remove-Item target -Recurse -Force
 
       - name: Clean Rust
         working-directory: src-tauri
