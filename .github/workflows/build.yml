@@ -44,10 +44,10 @@ jobs:
       #   with:
       #     platform: x64
 
-      - name: Set up Rust
-        uses: hecrj/setup-rust-action@v1
-        with:
-          targets: ${{matrix.rust-target}}
+      # - name: Set up Rust
+      #   uses: hecrj/setup-rust-action@v1
+      #   with:
+      #     targets: ${{matrix.rust-target}}
 
       - name: Set to Windows GNU Rust Toolchain
         if: matrix.os == 'windows-2022'
