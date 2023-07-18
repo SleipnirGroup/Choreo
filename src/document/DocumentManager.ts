@@ -1,6 +1,7 @@
 import { Instance, types } from "mobx-state-tree";
 import { createContext } from "react";
 import DocumentModel from "./DocumentModel";
+import { dialog, fs } from "@tauri-apps/api";
 
 export const UIStateStore = types
   .model("UIStateStore", {
@@ -86,8 +87,16 @@ export class DocumentManager {
 
   async saveFile() {
     const content = JSON.stringify(this.model.asSavedDocument(), undefined, 4);
-    // TODO make document save file here
-    this.downloadJSONString(content, this.uiState.saveFileName);
+    const filePath = await dialog.save({
+      title: "Save Document",
+      filters: [{
+        name: "Trajopt Document",
+        extensions: ["json"]
+      }]
+    });
+    if (filePath) {
+      await fs.writeTextFile(filePath, content);
+    }
   }
 
   async downloadJSONString(content: string, name: string) {
