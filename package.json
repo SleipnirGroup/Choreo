@@ -7,7 +7,7 @@
     "checkFormat": "prettier --check .",
     "fixFormat": "prettier --write .",
     "generateTauriConf": "node scripts/generate_tauri_conf.cjs",
-    "preinstall": "generate_tauri_conf",
+    "preinstall": "npm run generateTauriConf",
     "dev": "tauri dev",
     "build": "tauri build"
   },
