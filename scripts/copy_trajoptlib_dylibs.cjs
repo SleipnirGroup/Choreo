@@ -36,7 +36,10 @@ fs.rmSync(bu.getDummyResourcePath());
 
 if (process.platform === "win32") {
   console.log("Copying WebView2Loader.dll");
-  fs.copyFileSync(bu.getSrcTauriPath() + "/target/release/WebView2Loader.dll", bu.getSrcTauriPath() + "/WebView2Loader.dll");
+  fs.copyFileSync(
+    bu.getSrcTauriPath() + "/target/release/WebView2Loader.dll",
+    bu.getSrcTauriPath() + "/WebView2Loader.dll"
+  );
 }
 
 console.log("Cargo clean");
