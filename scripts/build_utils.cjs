@@ -4,7 +4,7 @@ function getSrcTauriPath() {
 
 function getDylibPattern() {
   let dylibPattern = "*";
-  
+
   switch (process.platform) {
     case "win32":
       dylibPattern = "*.dll";
