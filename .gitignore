@@ -28,3 +28,8 @@ src-tauri/target
 
 # Modified tauri config file
 src-tauri/tauri.conf.json
+
+# Built trajoptlib dylibs
+src-tauri/*.dll
+src-tauri/lib*.dylib
+src-tauri/lib*.so
