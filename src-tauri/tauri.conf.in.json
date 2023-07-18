@@ -33,9 +33,6 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "resources": [
-        "*.dylib"
-      ],
       "deb":{
         "files": {
           "/usr/local/lib/libTrajoptLib.so": "./libTrajoptLib.so",
