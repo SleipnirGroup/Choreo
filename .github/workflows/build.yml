@@ -67,10 +67,6 @@ jobs:
         working-directory: src-tauri
         run: ls
 
-      - name: Copy WebView2Loader.dll
-        if: matrix.os == 'windows-2022'
-        run: Copy-Item "src-tauri/target/release/WebView2Loader.dll" -Destination "src-tauri/"
-
       - name: Build Package
         run: npm run tauri build
 
