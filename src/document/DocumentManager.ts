@@ -89,10 +89,12 @@ export class DocumentManager {
     const content = JSON.stringify(this.model.asSavedDocument(), undefined, 4);
     const filePath = await dialog.save({
       title: "Save Document",
-      filters: [{
-        name: "Trajopt Document",
-        extensions: ["json"]
-      }]
+      filters: [
+        {
+          name: "Trajopt Document",
+          extensions: ["json"],
+        },
+      ],
     });
     if (filePath) {
       await fs.writeTextFile(filePath, content);
