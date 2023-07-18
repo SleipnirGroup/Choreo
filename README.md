@@ -23,7 +23,6 @@ UntitledWaypointEditor is a graphical tool for planning time-optimized trajector
 - 🦀 [Rust](https://www.rust-lang.org/): Backend code
 - ⚡️ [Vite](https://vitejs.dev/)
 
-
 ## Physical input parameters
 
 The trajectory optimizer depends upon the following user-specificed parameters, which are entered in the Robot Configuration panel.
