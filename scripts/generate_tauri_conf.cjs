@@ -13,7 +13,7 @@ fs.writeFileSync(bu.getDummyResourcePath(), "dummy file (see \"scripts/build_uti
 let tauriConfJsonRaw = fs.readFileSync(bu.getSrcTauriPath() + "/tauri.conf.in.json");
 let tauriConfJson = JSON.parse(tauriConfJsonRaw);
 
-tauriConfJson.tauri.bundle.resources = [dylibPattern];
+tauriConfJson.tauri.bundle.resources = [bu.getDylibPattern()];
 
 const modifiedTauriConf = JSON.stringify(tauriConfJson, null, 2) + "\n";
 
