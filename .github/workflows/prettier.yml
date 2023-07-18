@@ -11,9 +11,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
     - uses: actions/checkout@v3
@@ -22,6 +20,6 @@ jobs:
       with:
         node-version: 18.x
         cache: 'npm'
+
     - run: npm -v
-    - run: npm ci
-    - run: npm run format
+    - run: npm run checkFormat
