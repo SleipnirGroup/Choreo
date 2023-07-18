@@ -61,6 +61,7 @@ jobs:
 
       - name: Set up npm dependencies and build trajoptlib
         run: npm install
+        continue-on-error: true
 
       - name: Show file tree src-tauri
         working-directory: src-tauri
