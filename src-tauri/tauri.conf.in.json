@@ -16,6 +16,13 @@
       "shell": {
         "all": false,
         "open": true
+      },
+      "fs": {
+        "all": true
+      },
+      "dialog": {
+        "open": true,
+        "save": true
       }
     },
     "bundle": {
