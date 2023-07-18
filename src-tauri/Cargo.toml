@@ -11,7 +11,6 @@ edition = "2021"
 
 [build-dependencies]
 tauri-build = { version = "1.4", features = [] }
-glob = "0.3.1"
 
 [dependencies]
 tauri = { version = "1.4", features = ["shell-open"] }
