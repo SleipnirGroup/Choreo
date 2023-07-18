@@ -4,10 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "format": "prettier --check .",
+    "checkFormat": "prettier --check .",
+    "fixFormat": "prettier --write .",
+    "preinstall": "node scripts/generate_tauri_conf.cjs",
+    "postinstall": "node scripts/copy_trajoptlib_dylibs.cjs",
     "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
+    "build": "vite build",
     "tauri": "tauri"
   },
   "dependencies": {
@@ -34,6 +36,8 @@
     "@types/react-dom": "^18.0.6",
     "@types/uuid": "^9.0.2",
     "@vitejs/plugin-react": "^3.0.0",
+    "fs": "^0.0.1-security",
+    "glob": "^10.3.3",
     "prettier": "^2.8.8",
     "typescript": "^4.9.5",
     "vite": "^4.2.1"

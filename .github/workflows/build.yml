@@ -1,0 +1,77 @@
+name: Build
+
+on: [pull_request, push]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - artifact-name: Windows x86_64
+            os: windows-2022
+            bundle-pattern: 'nsis/*.exe'
+
+          - artifact-name: macOS x86_64
+            os: macOS-12
+            bundle-pattern: 'dmg/*.dmg'
+
+          - artifact-name: macOS arm64
+            os: macOS-12
+            bundle-pattern: 'dmg/*.dmg'
+
+          - artifact-name: Linux x86_64
+            os: ubuntu-latest
+            bundle-pattern: 'deb/*.deb'
+
+    name: "${{ matrix.artifact-name }}"
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set to Windows GNU Rust Toolchain
+        if: matrix.os == 'windows-2022'
+        run: rustup default stable-gnu
+
+      - name: Set up Clang
+        if: matrix.os != 'macOS-12'
+        uses: egor-tensin/setup-clang@v1
+        with:
+          version: latest
+          platform: x64
+
+      - name: Linux deps
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt update
+          sudo apt install libwebkit2gtk-4.0-dev \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libssl-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev
+
+      - name: Set up npm dependencies and build trajoptlib
+        run: npm install
+        continue-on-error: true
+
+      - name: Show file tree src-tauri
+        working-directory: src-tauri
+        run: ls
+
+      - name: Build Package
+        run: npm run tauri build
+
+      - name: Upload Bundle
+        uses: actions/upload-artifact@v3.1.1
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: src-tauri/target/release/bundle/${{ matrix.bundle-pattern }}
