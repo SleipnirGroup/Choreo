@@ -14,6 +14,16 @@ UntitledWaypointEditor is a graphical tool for planning time-optimized trajector
 
 - Coming soon...
 
+## Tech stack
+
+- 📈 [CasADi](https://github.com/casadi/casadi): Numerical optimizer
+- 🖥️ [Tauri](https://tauri.app/): Desktop applications
+- ⚛️ [React](https://react.dev/): JS Framework
+- 🚗 [TrajoptLib](https://github.com/SleipnirGroup/TrajoptLib): Uses CasADi to generate paths
+- 🦀 [Rust](https://www.rust-lang.org/): Backend code
+- ⚡️ [Vite](https://vitejs.dev/)
+
+
 ## Physical input parameters
 
 The trajectory optimizer depends upon the following user-specificed parameters, which are entered in the Robot Configuration panel.
