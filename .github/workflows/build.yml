@@ -15,22 +15,18 @@ jobs:
           - artifact-name: Windows x86_64
             os: windows-2022
             rust-target: x86_64-pc-windows-gnu
-            dylib-ext: '*.dll'
 
           - artifact-name: macOS x86_64
             os: macOS-12
             rust-target: x86_64-apple-darwin
-            dylib-ext: '*.dylib'
 
           - artifact-name: macOS arm64
             os: macOS-12
             rust-target: aarch64-apple-darwin
-            dylib-ext: '*.dylib'
 
           - artifact-name: Linux x86_64
             os: ubuntu-latest
             rust-target: x86_64-unknown-linux-gnu
-            dylib-ext: 'lib*.so*'
 
     name: "${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
@@ -74,22 +70,9 @@ jobs:
             libayatana-appindicator3-dev \
             librsvg2-dev
 
-      - name: Set up npm dependencies
+      - name: Set up npm dependencies and build trajoptlib
         run: npm install
 
-      - name: Change Dylib Extension
-        run: npm run change_dylib_ext -- "${{ matrix.dylib-ext }}"
-
-      - name: Build Rust
-        working-directory: src-tauri
-        run: cargo build --release
-        continue-on-error: true
-
-      - name: Build Rust (again)
-        working-directory: src-tauri
-        run: cargo build --release
-        continue-on-error: true
-      
       - name: Show file tree src-tauri
         working-directory: src-tauri
         run: ls
@@ -97,15 +80,6 @@ jobs:
       - name: Copy WebView2Loader.dll
         if: matrix.os == 'windows-2022'
         run: Copy-Item "src-tauri/target/release/WebView2Loader.dll" -Destination "src-tauri/"
-
-      - name: Clean Rust (windows issue fix)
-        working-directory: src-tauri
-        if: matrix.os == 'windows-2022'
-        run: Remove-Item target -Recurse -Force
-
-      - name: Clean Rust
-        working-directory: src-tauri
-        run: cargo clean
 
       - name: Build Package
         run: npm run tauri build
