@@ -79,7 +79,3 @@ jobs:
         with:
           name: ${{ matrix.artifact-name }}
           path: src-tauri/target/release/bundle/${{ matrix.bundle-pattern }}
-
-      - name: Show file tree bundle
-        working-directory: src-tauri/target/release/bundle
-        run: tree
