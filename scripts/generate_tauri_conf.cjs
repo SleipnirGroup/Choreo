@@ -18,7 +18,9 @@ let tauriConfJsonRaw = fs.readFileSync(
 );
 let tauriConfJson = JSON.parse(tauriConfJsonRaw);
 
-tauriConfJson.tauri.bundle.resources = [bu.getDylibPattern()];
+if (process.platform !== "linux") {
+  tauriConfJson.tauri.bundle.resources = [bu.getDylibPattern()];
+}
 
 const modifiedTauriConf = JSON.stringify(tauriConfJson, null, 2) + "\n";
 
