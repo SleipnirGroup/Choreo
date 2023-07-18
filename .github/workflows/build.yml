@@ -14,36 +14,21 @@ jobs:
         include:
           - artifact-name: Windows x86_64
             os: windows-2022
-            rust-target: x86_64-pc-windows-gnu
 
           - artifact-name: macOS x86_64
             os: macOS-12
-            rust-target: x86_64-apple-darwin
 
           - artifact-name: macOS arm64
             os: macOS-12
-            rust-target: aarch64-apple-darwin
 
           - artifact-name: Linux x86_64
             os: ubuntu-latest
-            rust-target: x86_64-unknown-linux-gnu
 
     name: "${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v3
-
-      # - name: Set up MinGW
-      #   if: matrix.os == 'windows-2022'
-      #   uses: egor-tensin/setup-mingw@v2
-      #   with:
-      #     platform: x64
-
-      # - name: Set up Rust
-      #   uses: hecrj/setup-rust-action@v1
-      #   with:
-      #     targets: ${{matrix.rust-target}}
 
       - name: Set to Windows GNU Rust Toolchain
         if: matrix.os == 'windows-2022'
