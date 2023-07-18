@@ -1,15 +1,9 @@
-// const util = require('util');
-// const exec = util.promisify(require('child_process').exec);
 const {execSync} = require('child_process')
 const fs = require("fs");
 const glob = require("glob");
 const path = require("path");
 
-const {getDylibPattern} = require("./build_utils.cjs");
-
-const srcTauriPath = __dirname + "/../src-tauri";
-
-const dylibPattern = getDylibPattern();
+const bu = require("./build_utils.cjs");
 
 function copyDylibs() {
 
@@ -19,15 +13,21 @@ function copyDylibs() {
     dylibDirPrefix = "bin";
   }
 
-  const dylibs = glob.sync(srcTauriPath + "/target/debug/build/trajoptlib-*/out/" + dylibDirPrefix + "/" + dylibPattern);
+  const dylibs = glob.sync(bu.getSrcTauriPath()
+      + "/target/debug/build/trajoptlib-*/out/" + dylibDirPrefix
+      + "/" + bu.getDylibPattern());
 
   dylibs.forEach(dylib => {
-    fs.copyFileSync(dylib, srcTauriPath + "/" + path.basename(dylib));
+    fs.copyFileSync(dylib, bu.getSrcTauriPath() + "/" + path.basename(dylib));
   });
 }
 
 try {
-  execSync("cd " + srcTauriPath + " && cargo build");
+  console.log("Building trajoptlib dylibs")
+  execSync("cd " + bu.getSrcTauriPath() + " && cargo build");
 } finally {
+  console.log("Copying trajoptlib dylibs to src-tauri/");
   copyDylibs();
+  console.log("Deleting dummy file: " + bu.getDummyResourcePath());
+  fs.rmSync(bu.getDummyResourcePath());
 }
