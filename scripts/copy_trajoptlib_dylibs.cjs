@@ -14,7 +14,7 @@ function copyDylibs() {
 
   const dylibs = glob.sync(
     bu.getSrcTauriPath() +
-      "/target/release/build/trajoptlib-*/out/" +
+      "/target/**/release/build/trajoptlib-*/out/" +
       dylibDirPrefix +
       "/" +
       bu.getDylibPattern()
