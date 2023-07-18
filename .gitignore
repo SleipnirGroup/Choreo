@@ -25,3 +25,6 @@ dist-ssr
 
 # Rust target
 src-tauri/target
+
+# Modified tauri config file
+src-tauri/tauri.conf.json
