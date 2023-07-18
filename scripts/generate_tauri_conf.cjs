@@ -9,6 +9,7 @@ switch (process.platform) {
     break;
   case "darwin":
     dylibPattern = "lib*.dylib";
+    break;
   case "linux":
     dylibPattern = "lib*.so";
     break;
@@ -20,12 +21,11 @@ console.log("Using dylib pattern: \"" + dylibPattern + "\"");
 // tauri allows this kind of resource pattern: "*.{dll,dylib,so}".
 
 let tauriConfJsonRaw = fs.readFileSync('src-tauri/tauri.conf.in.json');
-let tauriConfJson = JSON.parse(rawdata);
+let tauriConfJson = JSON.parse(tauriConfJsonRaw);
 
-jsonData.tauri.bundle.resources = [dylibPattern];
+tauriConfJson.tauri.bundle.resources = [dylibPattern];
 
-const modifiedTauriConf = JSON.stringify(jsonData, null, 2) + "\n";
+const modifiedTauriConf = JSON.stringify(tauriConfJson, null, 2) + "\n";
 
 // Write the modified tauri configuration
-fs.writeFileSync('src-tauri/tauri.conf.json', modifiedData);
-
+fs.writeFileSync('src-tauri/tauri.conf.json', modifiedTauriConf);
