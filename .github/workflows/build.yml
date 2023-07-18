@@ -14,15 +14,19 @@ jobs:
         include:
           - artifact-name: Windows x86_64
             os: windows-2022
+            bundle-pattern: 'nsis/*.exe'
 
           - artifact-name: macOS x86_64
             os: macOS-12
+            bundle-pattern: 'dmg/*.dmg'
 
           - artifact-name: macOS arm64
             os: macOS-12
+            bundle-pattern: 'dmg/*.dmg'
 
           - artifact-name: Linux x86_64
             os: ubuntu-latest
+            bundle-pattern: 'deb/*.deb'
 
     name: "${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
@@ -73,4 +77,8 @@ jobs:
         uses: actions/upload-artifact@v3.1.1
         with:
           name: ${{ matrix.artifact-name }}
-          path: src-tauri/target/release/bundle
+          path: src-tauri/target/release/bundle/${{ matrix.bundle-pattern }}
+
+      - name: Show file tree bundle
+        working-directory: src-tauri/target/release/bundle
+        run: tree
