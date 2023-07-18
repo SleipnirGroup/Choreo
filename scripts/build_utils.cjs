@@ -13,7 +13,7 @@ function getDylibPattern() {
       dylibPattern = "lib*.dylib";
       break;
     case "linux":
-      dylibPattern = "lib*.so";
+      dylibPattern = "lib*.so*";
       break;
   }
 
