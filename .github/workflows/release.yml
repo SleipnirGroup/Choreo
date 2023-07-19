@@ -17,7 +17,7 @@ jobs:
           workflow: build.yml
           workflow_conclusion: success
           path: pkg
-          run_number: 98
+          commit: ${{ github.sha }}
 
       - name: Display structure of downloaded files
         run: ls -R
