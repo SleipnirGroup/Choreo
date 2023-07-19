@@ -1,6 +1,9 @@
 name: Release
 
-on: push
+on:
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   release:
@@ -8,8 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download artifact
-        id: download-artifact
+      - name: Download prebuilt binaries
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: build.yml
@@ -18,3 +20,17 @@ jobs:
 
       - name: Display structure of downloaded files
         run: cd pkg;tree
+
+      - name: Print ref name
+        run: echo "${{ github.ref_name }}"
+
+      - name: Rename macOS file
+        run: mv pkg/macOS\ arm64/aarch64-apple-darwin/release/bundle/dmg/untitled-waypoint-editor_0.0.0_x64.dmg pkg/macOS\ arm64/aarch64-apple-darwin/release/bundle/dmg/untitled-waypoint-editor_0.0.0_arm64.dmg
+
+      - uses: ncipollo/release-action@v1
+        with:
+          name: Untitled Waypoint Editor v${{ github.ref_name }}
+          tag: ${{ github.ref_name }}
+          artifacts: "pkg/**/*"
+          draft: true
+          prerelease: true
