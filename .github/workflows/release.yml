@@ -1,13 +1,13 @@
 name: Release
 
-on: push
-  # push:
-    # tags:
-    #   - 'v*'
+on:
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   release:
-    name: Draft Release
+    name: Create Draft Release
     runs-on: ubuntu-latest
 
     steps:
@@ -24,7 +24,7 @@ jobs:
 
       - name: Rename Windows-x86_64 bundle
         working-directory: pkg/Windows-x86_64/release/bundle/nsis
-        run: mv *.exe uwe-0.0.0-Windows-x86_64.exe
+        run: mv *.exe uwe-${{ github.ref_name }}-Windows-x86_64.exe
 
       - name: Rename macOS x86_64 bundle
         working-directory: pkg/macOS-x86_64/release/bundle/dmg
@@ -41,10 +41,10 @@ jobs:
       - name: Display structure of renamed files
         run: ls -R
 
-      # - uses: ncipollo/release-action@v1
-      #   with:
-      #     name: Untitled Waypoint Editor v${{ github.ref_name }}
-      #     tag: ${{ github.ref_name }}
-      #     artifacts: "pkg/**/*.exe,pkg/**/*.dmg,pkg/**/*.deb"
-      #     draft: true
-      #     prerelease: true
+      - uses: ncipollo/release-action@v1
+        with:
+          name: Untitled Waypoint Editor v${{ github.ref_name }}
+          tag: ${{ github.ref_name }}
+          artifacts: "pkg/**/*.exe,pkg/**/*.dmg,pkg/**/*.deb"
+          draft: true
+          prerelease: true
