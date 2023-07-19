@@ -1,8 +1,12 @@
-# UntitledWaypointEditor
+# Choreo
 
 [![Discord](https://img.shields.io/discord/975739302933856277?color=%23738ADB&label=Join%20our%20Discord&logo=discord&logoColor=white)](https://discord.gg/ad2EEZZwsS)
 
-UntitledWaypointEditor is a graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics Competition.
+Choreo (_Constraint-Honoring Omnidirectional Route Editor and Optimizer_) is a graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics Competition.
+
+## Download
+
+Grab the latest release for your platform on the [releases](https://github.com/SleipnirGroup/Choreo/releases) page.
 
 ## To run in Electron
 
