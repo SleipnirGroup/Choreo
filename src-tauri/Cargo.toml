@@ -10,7 +10,6 @@ readme = "../README.md"
 homepage = "https://github.com/SleipnirGroup/UntitledWaypointEditor"
 repository = "https://github.com/SleipnirGroup/UntitledWaypointEditor.git"
 license = "BSD-3-Clause"
-license-file = "../LICENSE"
 
 [build-dependencies]
 tauri-build = { version = "1.4", features = [] }

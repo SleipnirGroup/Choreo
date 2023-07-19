@@ -24,26 +24,26 @@ jobs:
 
       - name: Rename Windows-x86_64 bundle
         working-directory: pkg/Windows-x86_64/release/bundle/nsis
-        run: mv *.exe uwe-${{ github.ref_name }}-Windows-x86_64.exe
+        run: mv *.exe Choreo-${{ github.ref_name }}-Windows-x86_64.exe
 
       - name: Rename macOS x86_64 bundle
         working-directory: pkg/macOS-x86_64/release/bundle/dmg
-        run: mv *.dmg uwe-${{ github.ref_name }}-macOS-x86_64.dmg
+        run: mv *.dmg Choreo-${{ github.ref_name }}-macOS-x86_64.dmg
       
       - name: Rename macOS arm64 bundle
         working-directory: pkg/macOS-arm64/aarch64-apple-darwin/release/bundle/dmg
-        run: mv *.dmg uwe-${{ github.ref_name }}-macOS-arm64.dmg
+        run: mv *.dmg Choreo-${{ github.ref_name }}-macOS-arm64.dmg
 
       - name: Rename Linux x86_64 file
         working-directory: pkg/Linux-x86_64/release/bundle/deb
-        run: mv *.deb uwe-${{ github.ref_name }}-Linux-x86_64.deb
+        run: mv *.deb Choreo-${{ github.ref_name }}-Linux-x86_64.deb
 
       - name: Display structure of renamed files
         run: ls -R
 
       - uses: ncipollo/release-action@v1
         with:
-          name: Untitled Waypoint Editor v${{ github.ref_name }}
+          name: Choreo ${{ github.ref_name }}
           tag: ${{ github.ref_name }}
           artifacts: "pkg/**/*.exe,pkg/**/*.dmg,pkg/**/*.deb"
           draft: true
