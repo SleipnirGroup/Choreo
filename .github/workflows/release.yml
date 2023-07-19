@@ -5,6 +5,10 @@ on: push
     # tags:
     #   - 'v*'
 
+defaults:
+  run:
+    shell: zsh
+
 jobs:
   release:
     name: Draft Release
