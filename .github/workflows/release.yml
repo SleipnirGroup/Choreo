@@ -25,7 +25,7 @@ jobs:
         run: mv pkg/Windows\ x86_64/release/bundle/nsis/*.exe uwe-0.0.0-Windows-x86_64.exe
 
       - name: Rename macOS x86_64 bundle
-        run: cd pkg/macOS\ x86_64 && mv **/*.dmg uwe-${{ github.ref_name }}-macOS-x86_64.dmg
+        run: cd pkg/macOS\ x86_64 && mv ./**/*.dmg uwe-${{ github.ref_name }}-macOS-x86_64.dmg
       
       - name: Rename macOS arm64 bundle
         run: cd pkg/macOS\ arm64;mv **/*.dmg uwe-${{ github.ref_name }}-macOS-arm64.dmg
