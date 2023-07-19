@@ -12,20 +12,20 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - artifact-name: Windows x86_64
+          - artifact-name: Windows-x86_64
             os: windows-2022
             bundle-pattern: 'nsis/*.exe'
 
-          - artifact-name: macOS x86_64
+          - artifact-name: macOS-x86_64
             os: macOS-12
             bundle-pattern: 'dmg/*.dmg'
 
-          - artifact-name: macOS arm64
+          - artifact-name: macOS-arm64
             os: macOS-12
             arm64: true
             bundle-pattern: 'dmg/*.dmg'
 
-          - artifact-name: Linux x86_64
+          - artifact-name: Linux-x86_64
             os: ubuntu-latest
             bundle-pattern: 'deb/*.deb'
 
