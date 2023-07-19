@@ -21,16 +21,25 @@ jobs:
       - name: Display structure of downloaded files
         run: cd pkg;tree
 
-      - name: Print ref name
-        run: echo "${{ github.ref_name }}"
+      - name: Rename Windows x86_64 bundle
+        run: cd pkg/Windows\ x86_64;mv **/* uwe-${{ github.ref_name }}-Windows-x86_64.exe
 
-      - name: Rename macOS file
-        run: mv pkg/macOS\ arm64/aarch64-apple-darwin/release/bundle/dmg/untitled-waypoint-editor_0.0.0_x64.dmg pkg/macOS\ arm64/aarch64-apple-darwin/release/bundle/dmg/untitled-waypoint-editor_0.0.0_arm64.dmg
+      - name: Rename macOS x86_64 bundle
+        run: cd pkg/macOS\ x86_64;mv **/* uwe-${{ github.ref_name }}-macOS-x86_64.dmg
+      
+      - name: Rename macOS arm64 bundle
+        run: cd pkg/macOS\ arm64;mv **/* uwe-${{ github.ref_name }}-macOS-arm64.dmg
+
+      - name: Rename Linux x86_64 file
+        run: cd pkg/Linux\ x86_64;mv **/* uwe-${{ github.ref_name }}-Linux-x86_64.deb
+
+      - name: Display structure of renamed files
+        run: tree
 
       - uses: ncipollo/release-action@v1
         with:
           name: Untitled Waypoint Editor v${{ github.ref_name }}
           tag: ${{ github.ref_name }}
-          artifacts: "pkg/**/*"
+          artifacts: "pkg/**/*.exe,pkg/**/*.dmg,pkg/**/*.deb"
           draft: true
           prerelease: true
