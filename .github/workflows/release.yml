@@ -5,14 +5,10 @@ on: push
     # tags:
     #   - 'v*'
 
-defaults:
-  run:
-    shell: zsh
-
 jobs:
   release:
     name: Draft Release
-    runs-on: macOS-12
+    runs-on: ubuntu-latest
 
     steps:
       - name: Download prebuilt binaries
@@ -27,21 +23,23 @@ jobs:
         run: ls -R
 
       - name: Rename Windows-x86_64 bundle
-        working-directory: pkg/Windows-x86_64
-        run: ls -R;mv **/*.exe uwe-0.0.0-Windows-x86_64.exe
+        working-directory: pkg/Windows-x86_64/release/bundle/nsis
+        run: mv *.exe uwe-0.0.0-Windows-x86_64.exe
 
       - name: Rename macOS x86_64 bundle
-        working-directory: pkg/macOS-x86_64
-        run: mv **/*.dmg uwe-${{ github.ref_name }}-macOS-x86_64.dmg
+        working-directory: pkg/macOS-x86_64/release/bundle/dmg
+        run: mv *.dmg uwe-${{ github.ref_name }}-macOS-x86_64.dmg
       
       - name: Rename macOS arm64 bundle
-        run: cd pkg/macOS\ arm64;mv **/*.dmg uwe-${{ github.ref_name }}-macOS-arm64.dmg
+        working-directory: pkg/macOS-arm64/aarch64-apple-darwin/release/bundle/dmg
+        run: mv *.dmg uwe-${{ github.ref_name }}-macOS-arm64.dmg
 
       - name: Rename Linux x86_64 file
-        run: cd pkg/Linux\ x86_64;mv **/*.deb uwe-${{ github.ref_name }}-Linux-x86_64.deb
+        working-directory: pkg/Linux-x86_64/release/bundle/deb
+        run: mv *.deb uwe-${{ github.ref_name }}-Linux-x86_64.deb
 
       - name: Display structure of renamed files
-        run: tree
+        run: ls -R
 
       # - uses: ncipollo/release-action@v1
       #   with:
