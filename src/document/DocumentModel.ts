@@ -333,6 +333,9 @@ export const HolonomicPathStore = types
               newPoint.setX(samp.x);
               newPoint.setY(samp.y);
               newPoint.setHeading(samp.heading);
+              newPoint.setAngularVelocity(samp.angular_velocity);
+              newPoint.setVelocityX(samp.velocity_x)
+              newPoint.setVelocityY(samp.velocity_y)
               newPoint.setTimestamp(samp.timestamp);
               newTraj.push(newPoint);
             });
