@@ -1,0 +1,20 @@
+name: Release
+
+on: push
+
+jobs:
+  release:
+    name: Draft Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download artifact
+        id: download-artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build.yml
+          workflow_conclusion: success
+          path: pkg
+
+      - name: Display structure of downloaded files
+        run: cd pkg;tree
