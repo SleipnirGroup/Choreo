@@ -22,7 +22,7 @@ jobs:
         run: cd pkg;tree
 
       - name: Rename Windows x86_64 bundle
-        run: cd pkg/Windows\ x86_64;mv release/bundle/nsis/*.exe uwe-${{ github.ref_name }}-Windows-x86_64.exe
+        run: mv pkg/Windows\ x86_64/release/bundle/nsis/*.exe uwe-0.0.0-Windows-x86_64.exe
 
       - name: Rename macOS x86_64 bundle
         run: cd pkg/macOS\ x86_64;mv **/*.dmg uwe-${{ github.ref_name }}-macOS-x86_64.dmg
