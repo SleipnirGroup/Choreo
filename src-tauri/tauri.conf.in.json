@@ -7,7 +7,7 @@
     "withGlobalTauri": false
   },
   "package": {
-    "productName": "untitled-waypoint-editor",
+    "productName": "choreo",
     "version": "0.0.0"
   },
   "tauri": {
@@ -61,7 +61,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "untitled-waypoint-editor",
+        "title": "Choreo",
         "width": 800,
         "height": 600
       }
