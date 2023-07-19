@@ -22,16 +22,16 @@ jobs:
         run: cd pkg;tree
 
       - name: Rename Windows x86_64 bundle
-        run: cd pkg/Windows\ x86_64;mv **/* uwe-${{ github.ref_name }}-Windows-x86_64.exe
+        run: cd pkg/Windows\ x86_64;mv **/*.exe uwe-${{ github.ref_name }}-Windows-x86_64.exe
 
       - name: Rename macOS x86_64 bundle
-        run: cd pkg/macOS\ x86_64;mv **/* uwe-${{ github.ref_name }}-macOS-x86_64.dmg
+        run: cd pkg/macOS\ x86_64;mv **/*.dmg uwe-${{ github.ref_name }}-macOS-x86_64.dmg
       
       - name: Rename macOS arm64 bundle
-        run: cd pkg/macOS\ arm64;mv **/* uwe-${{ github.ref_name }}-macOS-arm64.dmg
+        run: cd pkg/macOS\ arm64;mv **/*.dmg uwe-${{ github.ref_name }}-macOS-arm64.dmg
 
       - name: Rename Linux x86_64 file
-        run: cd pkg/Linux\ x86_64;mv **/* uwe-${{ github.ref_name }}-Linux-x86_64.deb
+        run: cd pkg/Linux\ x86_64;mv **/*.deb uwe-${{ github.ref_name }}-Linux-x86_64.deb
 
       - name: Display structure of renamed files
         run: tree
