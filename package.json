@@ -1,7 +1,17 @@
 {
-  "name": "untitled-waypoint-editor",
-  "private": true,
+  "name": "choreo",
   "version": "0.0.0",
+  "description": "A graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics Competition.",
+  "homepage": "https://github.com/SleipnirGroup/UntitledWaypointEditor",
+  "bugs": {
+    "url": "https://github.com/SleipnirGroup/UntitledWaypointEditor/issues"
+  },
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SleipnirGroup/UntitledWaypointEditor.git"
+  },
+  "private": true,
   "type": "module",
   "scripts": {
     "checkFormat": "prettier --check .",
