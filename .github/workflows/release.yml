@@ -1,9 +1,9 @@
 name: Release
 
-on:
-  push:
-    tags:
-      - 'v*'
+on: push
+  # push:
+    # tags:
+    #   - 'v*'
 
 jobs:
   release:
@@ -36,10 +36,10 @@ jobs:
       - name: Display structure of renamed files
         run: tree
 
-      - uses: ncipollo/release-action@v1
-        with:
-          name: Untitled Waypoint Editor v${{ github.ref_name }}
-          tag: ${{ github.ref_name }}
-          artifacts: "pkg/**/*.exe,pkg/**/*.dmg,pkg/**/*.deb"
-          draft: true
-          prerelease: true
+      # - uses: ncipollo/release-action@v1
+      #   with:
+      #     name: Untitled Waypoint Editor v${{ github.ref_name }}
+      #     tag: ${{ github.ref_name }}
+      #     artifacts: "pkg/**/*.exe,pkg/**/*.dmg,pkg/**/*.deb"
+      #     draft: true
+      #     prerelease: true
