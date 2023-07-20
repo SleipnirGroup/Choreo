@@ -2,14 +2,14 @@
   "name": "choreo",
   "version": "0.0.0",
   "description": "A graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics Competition.",
-  "homepage": "https://github.com/SleipnirGroup/UntitledWaypointEditor",
+  "homepage": "https://github.com/SleipnirGroup/Choreo",
   "bugs": {
-    "url": "https://github.com/SleipnirGroup/UntitledWaypointEditor/issues"
+    "url": "https://github.com/SleipnirGroup/Choreo/issues"
   },
   "license": "BSD-3-Clause",
   "repository": {
     "type": "git",
-    "url": "https://github.com/SleipnirGroup/UntitledWaypointEditor.git"
+    "url": "https://github.com/SleipnirGroup/Choreo.git"
   },
   "private": true,
   "type": "module",
