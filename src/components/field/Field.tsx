@@ -7,7 +7,8 @@ import styles from "./Field.module.css";
 import FieldOverlayRoot from "./svg/FieldOverlayRoot";
 import IconButton from "@mui/material/IconButton";
 import ShapeLineIcon from "@mui/icons-material/ShapeLine";
-import { Tooltip } from "@mui/material";
+import { CircularProgress, Tooltip } from "@mui/material";
+import Box from "@mui/material/Box/Box";
 
 type Props = {};
 
@@ -26,33 +27,58 @@ export class Field extends Component<Props, State> {
         <Tooltip
           placement="top-start"
           title={
-            this.context.model.pathlist.activePath.canGenerate()
+            this.context.model.pathlist.activePath.canGenerate() ||
+            this.context.model.pathlist.activePath.generating
               ? "Generate Path"
               : "Generate Path (needs 2 waypoints)"
           }
         >
-          <IconButton
-            color="primary"
-            aria-label="add"
-            size="large"
-            style={{ pointerEvents: "all" }}
+          <Box
             sx={{
               position: "absolute",
-              bottom: 10,
-              right: 10,
-              transformOrigin: "100% 100%",
-              transform: "scale(1.3)",
-              borderRadius: "50%",
-              boxShadow: "3px",
+              bottom: 16,
+              right: 16,
+              width: 48,
+              height: 48,
             }}
-            onClick={() => {
-              this.context.model.pathlist.activePath.generatePath();
-            }}
-            disabled={!this.context.model.pathlist.activePath.canGenerate()}
           >
-            <ShapeLineIcon></ShapeLineIcon>
-          </IconButton>
+            <IconButton
+              color="primary"
+              aria-label="add"
+              size="large"
+              style={{ pointerEvents: "all" }}
+              sx={{
+                position: "absolute",
+                bottom: 0,
+                right: 0,
+                width: "100%",
+                height: "100%",
+                transformOrigin: "100% 100%",
+                transform: "scale(1.3)",
+                borderRadius: "50%",
+                boxShadow: "3px",
+                marginInline: 0,
+              }}
+              onClick={() => {
+                this.context.model.pathlist.activePath.generatePath();
+              }}
+              disabled={!this.context.model.pathlist.activePath.canGenerate()}
+            >
+              <ShapeLineIcon></ShapeLineIcon>
+            </IconButton>
+          </Box>
         </Tooltip>
+        {this.context.model.pathlist.activePath.generating && (
+          <CircularProgress
+            size={48 * 1.3}
+            sx={{
+              color: "var(--select-yellow)",
+              position: "absolute",
+              bottom: 16,
+              right: 16,
+            }}
+          />
+        )}
       </div>
     );
   }
