@@ -70,7 +70,35 @@ export class DocumentManager {
       .catch((err) => console.log(err));
   }
 
-  async exportTrajectory(uuid: string) {}
+  async exportTrajectory(uuid: string) {
+    const path = this.model.pathlist.paths.get(uuid);
+    if (path === undefined) {
+      console.error("Tried to export trajectory with unknown uuid: ", uuid);
+     return;
+    }
+    const trajectory = path.getSavedTrajectory();
+    if (trajectory === null) {
+      console.error("Tried to export ungenerated trajectory: ", uuid);
+      return;
+    }
+    const content = JSON.stringify(trajectory, undefined, 4);
+    const filePath = await dialog.save({
+      title: "Save Trajectory",
+      defaultPath: `${path.name}.json`,
+      filters: [
+        { 
+          name: "Trajopt Trajectory",
+          extensions: ["json"],
+        },
+      ],
+    });
+    if (filePath) {
+      await fs.writeTextFile(filePath, content);
+    }
+  }
+  async exportActiveTrajectory() {
+    return await this.exportTrajectory(this.model.pathlist.activePathUUID);
+  }
 
   async loadFile(jsonFilename: string) {
     await fetch(jsonFilename, { cache: "no-store" })
