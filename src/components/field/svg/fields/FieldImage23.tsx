@@ -16,11 +16,11 @@ export default class FieldImage23 extends Component<Props, State> {
     return (
       <g
         id="layer1"
-        transform={`scale(1, -1) translate(${LENGTH_M / 2}, ${-WIDTH_M / 2}) scale(0.001 0.001)
+        transform={`scale(1, -1) translate(${LENGTH_M / 2}, ${
+          -WIDTH_M / 2
+        }) scale(0.001 0.001)
         ${
-          this.props.blue
-            ? ""
-            : "rotate(180) translate(50, -50)"
+          this.props.blue ? "" : "rotate(180) translate(50, -50)"
         } translate(-90, -50)`}
       >
         <g id="g1737">
