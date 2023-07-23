@@ -562,7 +562,7 @@ export default class DocumentModel {
     this.pathlist.fromSavedPathList(document.paths);
   }
 
-  generatePath(uuid:string) {
+  generatePath(uuid: string) {
     const pathStore = this.pathlist.paths.get(uuid);
     if (pathStore === undefined) {
       return;
@@ -572,7 +572,10 @@ export default class DocumentModel {
       return;
     }
     pathStore.setGenerating(true);
-    invoke("generate_trajectory", { path: pathStore.waypoints, config: this.robotConfig })
+    invoke("generate_trajectory", {
+      path: pathStore.waypoints,
+      config: this.robotConfig,
+    })
       .then((rust_traj) => {
         let newTraj: Array<SavedTrajectorySample> = [];
         // @ts-ignore
