@@ -2,9 +2,10 @@
   background-color: var(--background-dark-gray);
   border: 1px solid #3f3f3f;
   color: white;
-  display: flex;
-  padding-left: 20px;
-  padding-right: 20px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  padding-left: 0px;
+  padding-right: 0px;
   font-size: 1rem;
   border: 0px;
   align-items: center;

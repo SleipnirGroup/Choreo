@@ -4,6 +4,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import SaveIcon from "@mui/icons-material/Save";
 import UploadIcon from "@mui/icons-material/UploadFile";
 import IconButton from "@mui/material/IconButton";
+import FileDownload from "@mui/icons-material/FileDownload";
 import Tooltip from "@mui/material/Tooltip";
 import styles from "./Navbar.module.css";
 import { observer } from "mobx-react";
@@ -24,7 +25,11 @@ class Navbar extends Component<Props, State> {
   render() {
     return (
       <div className={styles.Container}>
-        <span style={{ flexShrink: 0 }}>
+        <span
+          style={{
+            paddingLeft: "16px",
+          }}
+        >
           <input
             type="file"
             id="file-upload-input"
@@ -59,41 +64,56 @@ class Navbar extends Component<Props, State> {
               <SaveIcon />
             </IconButton>
           </Tooltip>
-        </span>
-        <Divider orientation="vertical" flexItem />
-        <span
-          style={{
-            flexShrink: 1,
-            flexGrow: 0,
-            minWidth: 0,
-            display: "flex",
-            justifyContent: "space-between",
-            paddingInline: "10px",
-          }}
-          onClick={() => this.context.uiState.setPageNumber(0)}
-        >
-          <span
-            style={{
-              display: "inline-block",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              flexGrow: 1,
-              minWidth: 0,
-              margin: "auto",
-            }}
-          >
-            {this.context.model.pathlist.activePath.name}
-          </span>
-          <Tooltip title="Open Path Dialog">
-            <IconButton color="default" className={styles.generate}>
-              <ArrowDownIcon />
+          <Tooltip title="Export Trajectory">
+            <IconButton
+              color="primary"
+              onClick={() => {
+                this.context.exportActiveTrajectory();
+              }}
+            >
+              <FileDownload />
             </IconButton>
           </Tooltip>
         </span>
-        <Divider orientation="vertical" flexItem />
-
-        <span style={{ flexShrink: 0 }}>
+        <span
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            paddingInline: "16px",
+          }}
+        >
+          <Divider orientation="vertical" flexItem />
+          <span
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              paddingLeft: "16px",
+            }}
+            onClick={() => this.context.uiState.setPageNumber(0)}
+          >
+            <span
+              style={{
+                minWidth: "20rem",
+                display: "inline-block",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                flexGrow: 1,
+                margin: "auto",
+                flexBasis: 0,
+              }}
+            >
+              {this.context.model.pathlist.activePath.name}
+            </span>
+            <Tooltip title="Open Path Dialog">
+              <IconButton color="default" className={styles.generate}>
+                <ArrowDownIcon />
+              </IconButton>
+            </Tooltip>
+          </span>
+          <Divider orientation="vertical" flexItem />
+        </span>
+        <span style={{ textAlign: "right", paddingRight: "16px" }}>
           <Tooltip title="Field Grid">
             <span>
               <IconButton
