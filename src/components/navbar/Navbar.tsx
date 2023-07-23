@@ -25,9 +25,11 @@ class Navbar extends Component<Props, State> {
   render() {
     return (
       <div className={styles.Container}>
-        <span style={{
-          paddingLeft: "16px"
-        }}>
+        <span
+          style={{
+            paddingLeft: "16px",
+          }}
+        >
           <input
             type="file"
             id="file-upload-input"
@@ -61,8 +63,8 @@ class Navbar extends Component<Props, State> {
             >
               <SaveIcon />
             </IconButton>
-            </Tooltip>
-            <Tooltip title="Export Trajectory">
+          </Tooltip>
+          <Tooltip title="Export Trajectory">
             <IconButton
               color="primary"
               onClick={() => {
@@ -73,41 +75,43 @@ class Navbar extends Component<Props, State> {
             </IconButton>
           </Tooltip>
         </span>
-        <span style={{
-            display: "flex",
-            justifyContent: "space-between",
-            paddingInline: "16px",
-          }}>
-        <Divider orientation="vertical" flexItem />
         <span
           style={{
             display: "flex",
             justifyContent: "space-between",
-            paddingLeft: "16px",
+            paddingInline: "16px",
           }}
-          onClick={() => this.context.uiState.setPageNumber(0)}
         >
+          <Divider orientation="vertical" flexItem />
           <span
             style={{
-              minWidth: "20rem",
-              display: "inline-block",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              flexGrow: 1,
-              margin: "auto",
-              flexBasis: 0
+              display: "flex",
+              justifyContent: "space-between",
+              paddingLeft: "16px",
             }}
+            onClick={() => this.context.uiState.setPageNumber(0)}
           >
-            {this.context.model.pathlist.activePath.name}
+            <span
+              style={{
+                minWidth: "20rem",
+                display: "inline-block",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                flexGrow: 1,
+                margin: "auto",
+                flexBasis: 0,
+              }}
+            >
+              {this.context.model.pathlist.activePath.name}
+            </span>
+            <Tooltip title="Open Path Dialog">
+              <IconButton color="default" className={styles.generate}>
+                <ArrowDownIcon />
+              </IconButton>
+            </Tooltip>
           </span>
-          <Tooltip title="Open Path Dialog">
-            <IconButton color="default" className={styles.generate}>
-              <ArrowDownIcon />
-            </IconButton>
-          </Tooltip>
-        </span>
-        <Divider orientation="vertical" flexItem/>
+          <Divider orientation="vertical" flexItem />
         </span>
         <span style={{ textAlign: "right", paddingRight: "16px" }}>
           <Tooltip title="Field Grid">

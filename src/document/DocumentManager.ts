@@ -74,7 +74,7 @@ export class DocumentManager {
     const path = this.model.pathlist.paths.get(uuid);
     if (path === undefined) {
       console.error("Tried to export trajectory with unknown uuid: ", uuid);
-     return;
+      return;
     }
     const trajectory = path.getSavedTrajectory();
     if (trajectory === null) {
@@ -86,7 +86,7 @@ export class DocumentManager {
       title: "Save Trajectory",
       defaultPath: `${path.name}.json`,
       filters: [
-        { 
+        {
           name: "Trajopt Trajectory",
           extensions: ["json"],
         },
