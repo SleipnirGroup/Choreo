@@ -126,6 +126,31 @@ class InterpolatedRobot extends Component<Props, State> {
           r={0.1}
           fill="white"
         ></circle>
+        {/* Wheel locations */}
+        <circle
+          cx={this.context.model.robotConfig.wheelbase / 2}
+          cy={this.context.model.robotConfig.trackWidth / 2}
+          r={this.context.model.robotConfig.wheelRadius}
+          fill="white"
+        ></circle>
+        <circle
+          cx={this.context.model.robotConfig.wheelbase / 2}
+          cy={-this.context.model.robotConfig.trackWidth / 2}
+          r={this.context.model.robotConfig.wheelRadius}
+          fill="white"
+        ></circle>
+        <circle
+          cx={-this.context.model.robotConfig.wheelbase / 2}
+          cy={-this.context.model.robotConfig.trackWidth / 2}
+          r={this.context.model.robotConfig.wheelRadius}
+          fill="white"
+        ></circle>
+        <circle
+          cx={-this.context.model.robotConfig.wheelbase / 2}
+          cy={this.context.model.robotConfig.trackWidth / 2}
+          r={this.context.model.robotConfig.wheelRadius}
+          fill="white"
+        ></circle>
       </g>
     );
   }

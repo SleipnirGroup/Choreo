@@ -444,11 +444,11 @@ export const PathListStore = types
 export interface IPathListStore extends Instance<typeof PathListStore> {}
 export const RobotConfigStore = types
   .model("WaypointStore", {
-    mass: 4,
-    rotationalInertia: 5.6,
-    wheelMaxVelocity: 16,
-    wheelMaxTorque: 1.9,
-    wheelRadius: 0.0508,
+    mass: 45,
+    rotationalInertia: 6,
+    wheelMaxVelocity: 70, // 15 fps
+    wheelMaxTorque: 2.0,
+    wheelRadius: 0.0508, // 2 in
     bumperWidth: 0.9,
     bumperLength: 0.9,
     wheelbase: 0.622,
@@ -560,6 +560,38 @@ export default class DocumentModel {
     }
     this.robotConfig.fromSavedRobotConfig(document.robotConfiguration);
     this.pathlist.fromSavedPathList(document.paths);
+  }
+
+  generatePath(uuid:string) {
+    const pathStore = this.pathlist.paths.get(uuid);
+    if (pathStore === undefined) {
+      return;
+    }
+    pathStore.setTrajectory([]);
+    if (pathStore.waypoints.length < 2) {
+      return;
+    }
+    pathStore.setGenerating(true);
+    invoke("generate_trajectory", { path: pathStore.waypoints, config: this.robotConfig })
+      .then((rust_traj) => {
+        let newTraj: Array<SavedTrajectorySample> = [];
+        // @ts-ignore
+        rust_traj.samples.forEach((samp) => {
+          let newPoint = TrajectorySampleStore.create();
+          newPoint.setX(samp.x);
+          newPoint.setY(samp.y);
+          newPoint.setHeading(samp.heading);
+          newPoint.setAngularVelocity(samp.angular_velocity);
+          newPoint.setVelocityX(samp.velocity_x);
+          newPoint.setVelocityY(samp.velocity_y);
+          newPoint.setTimestamp(samp.timestamp);
+          newTraj.push(newPoint);
+        });
+        pathStore.setTrajectory(newTraj);
+      })
+      .finally(() => {
+        pathStore.setGenerating(false);
+      });
   }
   constructor() {
     this.pathlist.addPath("New Path");

@@ -21,8 +21,22 @@ struct UWEWaypoint {
     controlIntervalCount: u64
 }
 
+#[allow(non_snake_case)]
+#[derive(serde::Serialize, serde::Deserialize)]
+struct ChoreoRobotConfig {
+  mass: f64,
+  rotationalInertia: f64,
+  wheelMaxVelocity: f64,
+  wheelMaxTorque: f64,
+  wheelRadius: f64,
+  bumperWidth: f64,
+  bumperLength: f64,
+  wheelbase: f64,
+  trackWidth: f64
+}
+
 #[tauri::command]
-async fn generate_trajectory(path: Vec<UWEWaypoint>) -> Result<HolonomicTrajectory, String> {
+async fn generate_trajectory(path: Vec<UWEWaypoint>, config: ChoreoRobotConfig) -> Result<HolonomicTrajectory, String> {
     let mut path_builder = SwervePathBuilder::new();
     for i in 0..path.len() {
         let wpt = &path[i];
@@ -32,37 +46,39 @@ async fn generate_trajectory(path: Vec<UWEWaypoint>) -> Result<HolonomicTrajecto
     path_builder.wpt_zero_angular_velocity(0);
     path_builder.wpt_zero_velocity(path.len() - 1);
     path_builder.wpt_zero_angular_velocity(path.len() - 1);
+    let half_wheel_base = config.wheelbase / 2.0;
+    let half_track_width = config.trackWidth / 2.0;
     let drivetrain = SwerveDrivetrain {
-        mass: 45.0,
-        moi: 6.0,
+        mass: config.mass,
+        moi: config.rotationalInertia,
         modules: vec![
           SwerveModule {
-            x: 0.6,
-            y: 0.6,
-            wheel_radius: 0.04,
-            wheel_max_angular_velocity: 70.0,
-            wheel_max_torque: 2.0
+            x: half_wheel_base,
+            y: half_track_width,
+            wheel_radius: config.wheelRadius,
+            wheel_max_angular_velocity: config.wheelMaxVelocity,
+            wheel_max_torque: config.wheelMaxTorque
           },
           SwerveModule {
-            x: 0.6,
-            y: -0.6,
-            wheel_radius: 0.04,
-            wheel_max_angular_velocity: 70.0,
-            wheel_max_torque: 2.0
+            x: half_wheel_base,
+            y: -half_track_width,
+            wheel_radius: config.wheelRadius,
+            wheel_max_angular_velocity: config.wheelMaxVelocity,
+            wheel_max_torque: config.wheelMaxTorque
           },
           SwerveModule {
-            x: -0.6,
-            y: 0.6,
-            wheel_radius: 0.04,
-            wheel_max_angular_velocity: 70.0,
-            wheel_max_torque: 2.0
+            x: -half_wheel_base,
+            y: half_track_width,
+            wheel_radius: config.wheelRadius,
+            wheel_max_angular_velocity: config.wheelMaxVelocity,
+            wheel_max_torque: config.wheelMaxTorque
           },
           SwerveModule {
-            x: -0.6,
-            y: -0.6,
-            wheel_radius: 0.04,
-            wheel_max_angular_velocity: 70.0,
-            wheel_max_torque: 2.0
+            x: -half_wheel_base,
+            y: -half_track_width,
+            wheel_radius: config.wheelRadius,
+            wheel_max_angular_velocity: config.wheelMaxVelocity,
+            wheel_max_torque: config.wheelMaxTorque
           }
         ]
       };
