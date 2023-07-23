@@ -48,6 +48,10 @@ The robot's rotational inertia has a significant impact on how quickly it can fo
 - Physical experimentation
 - System Identification methods
 
+### Pronounciation: Khoreúō /  khor - eh - vo
+
+Derived from Greek word χορεύω, which means to dance.
+
 If none of these techniques are possible, a reasonable estimate of MoI would be `mass * length * width / 6` based on the assumption of a rectangle of uniformly-distributed mass.
 
 ## Tauri Recommended IDE Setup
