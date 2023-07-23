@@ -36,8 +36,8 @@ export class Field extends Component<Props, State> {
           <Box
             sx={{
               position: "absolute",
-              bottom: 10,
-              right: 10,
+              bottom: 16,
+              right: 16,
               width: 48,
               height: 48,
             }}
@@ -57,6 +57,7 @@ export class Field extends Component<Props, State> {
                 transform: "scale(1.3)",
                 borderRadius: "50%",
                 boxShadow: "3px",
+                marginInline: 0,
               }}
               onClick={() => {
                 this.context.model.pathlist.activePath.generatePath();
@@ -73,8 +74,8 @@ export class Field extends Component<Props, State> {
             sx={{
               color: "var(--select-yellow)",
               position: "absolute",
-              bottom: 10,
-              right: 10 + 4,
+              bottom: 16,
+              right: 16,
             }}
           />
         )}
