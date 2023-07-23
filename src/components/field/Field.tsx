@@ -32,37 +32,39 @@ export class Field extends Component<Props, State> {
               ? "Generate Path"
               : "Generate Path (needs 2 waypoints)"
           }
-        > 
-          <Box sx={{
-            position: "absolute",
-            bottom: 10,
-            right: 10,
-            width: 48,
-            height: 48
-          }}>
-          <IconButton
-            color="primary"
-            aria-label="add"
-            size="large"
-            style={{ pointerEvents: "all" }}
+        >
+          <Box
             sx={{
               position: "absolute",
-              bottom: 0,
-              right: 0,
-              width:"100%",
-              height:"100%",
-              transformOrigin: "100% 100%",
-              transform: "scale(1.3)",
-              borderRadius: "50%",
-              boxShadow: "3px",
+              bottom: 10,
+              right: 10,
+              width: 48,
+              height: 48,
             }}
-            onClick={() => {
-              this.context.model.pathlist.activePath.generatePath();
-            }}
-            disabled={!this.context.model.pathlist.activePath.canGenerate()}
           >
-            <ShapeLineIcon></ShapeLineIcon>
-          </IconButton>
+            <IconButton
+              color="primary"
+              aria-label="add"
+              size="large"
+              style={{ pointerEvents: "all" }}
+              sx={{
+                position: "absolute",
+                bottom: 0,
+                right: 0,
+                width: "100%",
+                height: "100%",
+                transformOrigin: "100% 100%",
+                transform: "scale(1.3)",
+                borderRadius: "50%",
+                boxShadow: "3px",
+              }}
+              onClick={() => {
+                this.context.model.pathlist.activePath.generatePath();
+              }}
+              disabled={!this.context.model.pathlist.activePath.canGenerate()}
+            >
+              <ShapeLineIcon></ShapeLineIcon>
+            </IconButton>
           </Box>
         </Tooltip>
         {this.context.model.pathlist.activePath.generating && (
@@ -72,10 +74,10 @@ export class Field extends Component<Props, State> {
               color: "var(--select-yellow)",
               position: "absolute",
               bottom: 10,
-              right: 10 + 4
+              right: 10 + 4,
             }}
-          />)}
-          
+          />
+        )}
       </div>
     );
   }
