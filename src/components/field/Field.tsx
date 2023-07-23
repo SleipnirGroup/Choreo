@@ -7,7 +7,8 @@ import styles from "./Field.module.css";
 import FieldOverlayRoot from "./svg/FieldOverlayRoot";
 import IconButton from "@mui/material/IconButton";
 import ShapeLineIcon from "@mui/icons-material/ShapeLine";
-import { Tooltip } from "@mui/material";
+import { CircularProgress, Tooltip } from "@mui/material";
+import Box from "@mui/material/Box/Box";
 
 type Props = {};
 
@@ -26,11 +27,19 @@ export class Field extends Component<Props, State> {
         <Tooltip
           placement="top-start"
           title={
-            this.context.model.pathlist.activePath.canGenerate()
+            this.context.model.pathlist.activePath.canGenerate() ||
+            this.context.model.pathlist.activePath.generating
               ? "Generate Path"
               : "Generate Path (needs 2 waypoints)"
           }
-        >
+        > 
+          <Box sx={{
+            position: "absolute",
+            bottom: 10,
+            right: 10,
+            width: 48,
+            height: 48
+          }}>
           <IconButton
             color="primary"
             aria-label="add"
@@ -38,8 +47,10 @@ export class Field extends Component<Props, State> {
             style={{ pointerEvents: "all" }}
             sx={{
               position: "absolute",
-              bottom: 10,
-              right: 10,
+              bottom: 0,
+              right: 0,
+              width:"100%",
+              height:"100%",
               transformOrigin: "100% 100%",
               transform: "scale(1.3)",
               borderRadius: "50%",
@@ -52,7 +63,19 @@ export class Field extends Component<Props, State> {
           >
             <ShapeLineIcon></ShapeLineIcon>
           </IconButton>
+          </Box>
         </Tooltip>
+        {this.context.model.pathlist.activePath.generating && (
+          <CircularProgress
+            size={48 * 1.3}
+            sx={{
+              color: "var(--select-yellow)",
+              position: "absolute",
+              bottom: 10,
+              right: 10 + 4
+            }}
+          />)}
+          
       </div>
     );
   }
