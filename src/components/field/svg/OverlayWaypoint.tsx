@@ -198,8 +198,6 @@ class OverlayWaypoint extends Component<Props, State> {
           )}
 
           {/* Velocity direction line */}
-          {this.props.waypoint.velocityAngleConstrained && (
-            <>
               <line
                 x1={
                   -1 *
@@ -231,6 +229,7 @@ class OverlayWaypoint extends Component<Props, State> {
                 }
                 stroke={"gray"}
                 strokeWidth={3 * this.context.uiState.fieldScalingFactor}
+                visibility={this.props.waypoint.velocityAngleConstrained ? "visible" : "hidden"}
               ></line>
               <polygon
                 points={`
@@ -243,13 +242,11 @@ class OverlayWaypoint extends Component<Props, State> {
                   Math.PI
                 }) translate(1, 0)`}
                 fill={"white"}
+                visibility={this.props.waypoint.velocityAngleConstrained ? "visible" : "hidden"}
                 onClick={() => this.selectWaypoint()}
                 id={this.appendIndexID("velocityRotateTarget")}
               ></polygon>
-            </>
-          )}
           {/* Heading drag point */}
-          {this.props.waypoint.headingConstrained && (
             <circle
               cx={robotConfig.bumperLength / 2}
               cy={0}
@@ -259,8 +256,8 @@ class OverlayWaypoint extends Component<Props, State> {
               }
               id={this.appendIndexID("rotateTarget")}
               fill={boxColorStr}
+              visibility={this.props.waypoint.headingConstrained ? "visible" : "hidden"}
             ></circle>
-          )}
 
           {/* Center Drag Target */}
           <circle
