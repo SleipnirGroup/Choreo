@@ -83,6 +83,24 @@ class OverlayWaypoint extends Component<Props, State> {
     //d3.select(`#group`).attr('transform', `rotate(${ this.r.angle })`)
   }
 
+  dragPointVelocityRotate(event: any) {
+    let pointerPos: Coordinates = { x: 0, y: 0 };
+    pointerPos.x = event.x;
+    pointerPos.y = event.y;
+
+    const waypointCoordinates = this.coordsFromWaypoint();
+    // calculates the difference between the current mouse position and the center line
+    var angleFinal = this.calcAngleRad(waypointCoordinates, pointerPos);
+    // gets the difference of the angles to get to the final angle
+    // converts the values to stay inside the 360 positive
+
+    // creates the new rotate position array
+
+    this.props.waypoint.setVelocityAngle(angleFinal);
+
+    //d3.select(`#group`).attr('transform', `rotate(${ this.r.angle })`)
+  }
+
   dragPointTranslate(event: any) {
     let pointerPos: Coordinates = { x: 0, y: 0 };
     pointerPos.x = event.x;
@@ -111,6 +129,15 @@ class OverlayWaypoint extends Component<Props, State> {
       d3.select<SVGCircleElement, undefined>(
         `#rotateTarget${this.props.index}`
       ).call(rotateHandleDrag);
+
+      var velocityRotateHandleDrag = d3
+      .drag<SVGCircleElement, undefined>()
+      .on("drag", (event) => this.dragPointVelocityRotate(event))
+      .on("start", () => this.selectWaypoint())
+      .container(this.rootRef.current);
+      d3.select<SVGCircleElement, undefined>(
+        `#velocityRotateTarget${this.props.index}`
+      ).call(velocityRotateHandleDrag);
 
       var dragHandleDrag = d3
         .drag<SVGCircleElement, undefined>()
@@ -170,6 +197,38 @@ class OverlayWaypoint extends Component<Props, State> {
             ></this.BumperBox>
           )}
 
+          {/* Velocity direction line */}
+          {this.props.waypoint.velocityAngleConstrained && (
+            <>
+            <line
+            x1={-1* Math.cos(
+              this.props.waypoint.velocityAngle - this.props.waypoint.heading
+            )}
+            y1={-1* Math.sin(
+              this.props.waypoint.velocityAngle - this.props.waypoint.heading
+            )}
+            x2={1* Math.cos(
+              this.props.waypoint.velocityAngle - this.props.waypoint.heading
+            )}
+            y2={1* Math.sin(
+              this.props.waypoint.velocityAngle - this.props.waypoint.heading
+            )}
+            stroke={"gray"}
+            strokeWidth={3 * this.context.uiState.fieldScalingFactor}
+
+            ></line>
+            <polygon points={`
+            -0.25,0.2 0.25,0 -0.25,-0.2 -0.125,0
+          `}
+          transform={`rotate(${(this.props.waypoint.velocityAngle - this.props.waypoint.heading) * 180.0 / Math.PI}) translate(1, 0)`}
+              
+              fill={"white"}
+              onClick={() => this.selectWaypoint()}
+              style={{cursor:"move"}}
+              id={this.appendIndexID("velocityRotateTarget")}
+            ></polygon></>
+          )}
+          {/* Heading drag point */}
           {this.props.waypoint.headingConstrained && (
             <circle
               cx={robotConfig.bumperLength / 2}
@@ -182,6 +241,8 @@ class OverlayWaypoint extends Component<Props, State> {
               fill={boxColorStr}
             ></circle>
           )}
+
+          {/* Center Drag Target */}
           <circle
             cx={0}
             cy={0}
