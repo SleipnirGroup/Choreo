@@ -131,10 +131,10 @@ class OverlayWaypoint extends Component<Props, State> {
       ).call(rotateHandleDrag);
 
       var velocityRotateHandleDrag = d3
-      .drag<SVGCircleElement, undefined>()
-      .on("drag", (event) => this.dragPointVelocityRotate(event))
-      .on("start", () => this.selectWaypoint())
-      .container(this.rootRef.current);
+        .drag<SVGCircleElement, undefined>()
+        .on("drag", (event) => this.dragPointVelocityRotate(event))
+        .on("start", () => this.selectWaypoint())
+        .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
         `#velocityRotateTarget${this.props.index}`
       ).call(velocityRotateHandleDrag);
@@ -200,33 +200,53 @@ class OverlayWaypoint extends Component<Props, State> {
           {/* Velocity direction line */}
           {this.props.waypoint.velocityAngleConstrained && (
             <>
-            <line
-            x1={-1* Math.cos(
-              this.props.waypoint.velocityAngle - this.props.waypoint.heading
-            )}
-            y1={-1* Math.sin(
-              this.props.waypoint.velocityAngle - this.props.waypoint.heading
-            )}
-            x2={1* Math.cos(
-              this.props.waypoint.velocityAngle - this.props.waypoint.heading
-            )}
-            y2={1* Math.sin(
-              this.props.waypoint.velocityAngle - this.props.waypoint.heading
-            )}
-            stroke={"gray"}
-            strokeWidth={3 * this.context.uiState.fieldScalingFactor}
-
-            ></line>
-            <polygon points={`
+              <line
+                x1={
+                  -1 *
+                  Math.cos(
+                    this.props.waypoint.velocityAngle -
+                      this.props.waypoint.heading
+                  )
+                }
+                y1={
+                  -1 *
+                  Math.sin(
+                    this.props.waypoint.velocityAngle -
+                      this.props.waypoint.heading
+                  )
+                }
+                x2={
+                  1 *
+                  Math.cos(
+                    this.props.waypoint.velocityAngle -
+                      this.props.waypoint.heading
+                  )
+                }
+                y2={
+                  1 *
+                  Math.sin(
+                    this.props.waypoint.velocityAngle -
+                      this.props.waypoint.heading
+                  )
+                }
+                stroke={"gray"}
+                strokeWidth={3 * this.context.uiState.fieldScalingFactor}
+              ></line>
+              <polygon
+                points={`
             -0.25,0.2 0.25,0 -0.25,-0.2 -0.125,0
           `}
-          transform={`rotate(${(this.props.waypoint.velocityAngle - this.props.waypoint.heading) * 180.0 / Math.PI}) translate(1, 0)`}
-              
-              fill={"white"}
-              onClick={() => this.selectWaypoint()}
-              style={{cursor:"move"}}
-              id={this.appendIndexID("velocityRotateTarget")}
-            ></polygon></>
+                transform={`rotate(${
+                  ((this.props.waypoint.velocityAngle -
+                    this.props.waypoint.heading) *
+                    180.0) /
+                  Math.PI
+                }) translate(1, 0)`}
+                fill={"white"}
+                onClick={() => this.selectWaypoint()}
+                id={this.appendIndexID("velocityRotateTarget")}
+              ></polygon>
+            </>
           )}
           {/* Heading drag point */}
           {this.props.waypoint.headingConstrained && (
