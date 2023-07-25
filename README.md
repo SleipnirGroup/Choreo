@@ -8,7 +8,7 @@ Choreo (_Constraint-Honoring Omnidirectional Route Editor and Optimizer_, pronou
 
 Grab the latest release for your platform on the [releases](https://github.com/SleipnirGroup/Choreo/releases) page.
 
-## To run in Electron
+## To run in Tauri
 
 - Have Node.js, npm, and rust installed.
 - Navigate to the root directory of the project.
