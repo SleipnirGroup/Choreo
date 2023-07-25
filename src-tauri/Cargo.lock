@@ -3266,7 +3266,7 @@ dependencies = [
 [[package]]
 name = "trajoptlib"
 version = "0.1.0"
-source = "git+https://github.com/SleipnirGroup/TrajoptLib.git?branch=feature/rust-velocity-constraint-bindings#6130b765292a3c9a1f9f4d56bf19b2d2792bbb18"
+source = "git+https://github.com/SleipnirGroup/TrajoptLib.git?rev=9df909cbbec0d2098899c2e7c8f90578e4896183#9df909cbbec0d2098899c2e7c8f90578e4896183"
 dependencies = [
  "cmake",
  "cxx",
