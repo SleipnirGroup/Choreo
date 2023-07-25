@@ -317,34 +317,7 @@ export const HolonomicPathStore = types
       },
       setGenerating(generating: boolean) {
         self.generating = generating;
-      },
-      generatePath() {
-        self.generated.length = 0;
-        if (self.waypoints.length < 2) {
-          return;
-        }
-        this.setGenerating(true);
-        invoke("generate_trajectory", { path: self.waypoints })
-          .then((rust_traj) => {
-            let newTraj: Array<SavedTrajectorySample> = [];
-            // @ts-ignore
-            rust_traj.samples.forEach((samp) => {
-              let newPoint = TrajectorySampleStore.create();
-              newPoint.setX(samp.x);
-              newPoint.setY(samp.y);
-              newPoint.setHeading(samp.heading);
-              newPoint.setAngularVelocity(samp.angular_velocity);
-              newPoint.setVelocityX(samp.velocity_x);
-              newPoint.setVelocityY(samp.velocity_y);
-              newPoint.setTimestamp(samp.timestamp);
-              newTraj.push(newPoint);
-            });
-            this.setTrajectory(newTraj);
-          })
-          .finally(() => {
-            this.setGenerating(false);
-          });
-      },
+      }
     };
   });
 export interface IHolonomicPathStore
