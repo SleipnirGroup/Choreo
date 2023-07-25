@@ -198,66 +198,71 @@ class OverlayWaypoint extends Component<Props, State> {
           )}
 
           {/* Velocity direction line */}
-              <line
-                x1={
-                  -1 *
-                  Math.cos(
-                    this.props.waypoint.velocityAngle -
-                      this.props.waypoint.heading
-                  )
-                }
-                y1={
-                  -1 *
-                  Math.sin(
-                    this.props.waypoint.velocityAngle -
-                      this.props.waypoint.heading
-                  )
-                }
-                x2={
-                  1 *
-                  Math.cos(
-                    this.props.waypoint.velocityAngle -
-                      this.props.waypoint.heading
-                  )
-                }
-                y2={
-                  1 *
-                  Math.sin(
-                    this.props.waypoint.velocityAngle -
-                      this.props.waypoint.heading
-                  )
-                }
-                stroke={"gray"}
-                strokeWidth={3 * this.context.uiState.fieldScalingFactor}
-                visibility={this.props.waypoint.velocityAngleConstrained ? "visible" : "hidden"}
-              ></line>
-              <polygon
-                points={`
+          <line
+            x1={
+              -1 *
+              Math.cos(
+                this.props.waypoint.velocityAngle - this.props.waypoint.heading
+              )
+            }
+            y1={
+              -1 *
+              Math.sin(
+                this.props.waypoint.velocityAngle - this.props.waypoint.heading
+              )
+            }
+            x2={
+              1 *
+              Math.cos(
+                this.props.waypoint.velocityAngle - this.props.waypoint.heading
+              )
+            }
+            y2={
+              1 *
+              Math.sin(
+                this.props.waypoint.velocityAngle - this.props.waypoint.heading
+              )
+            }
+            stroke={"gray"}
+            strokeWidth={3 * this.context.uiState.fieldScalingFactor}
+            visibility={
+              this.props.waypoint.velocityAngleConstrained
+                ? "visible"
+                : "hidden"
+            }
+          ></line>
+          <polygon
+            points={`
             -0.25,0.2 0.25,0 -0.25,-0.2 -0.125,0
           `}
-                transform={`rotate(${
-                  ((this.props.waypoint.velocityAngle -
-                    this.props.waypoint.heading) *
-                    180.0) /
-                  Math.PI
-                }) translate(1, 0)`}
-                fill={"white"}
-                visibility={this.props.waypoint.velocityAngleConstrained ? "visible" : "hidden"}
-                onClick={() => this.selectWaypoint()}
-                id={this.appendIndexID("velocityRotateTarget")}
-              ></polygon>
+            transform={`rotate(${
+              ((this.props.waypoint.velocityAngle -
+                this.props.waypoint.heading) *
+                180.0) /
+              Math.PI
+            }) translate(1, 0)`}
+            fill={"white"}
+            visibility={
+              this.props.waypoint.velocityAngleConstrained
+                ? "visible"
+                : "hidden"
+            }
+            onClick={() => this.selectWaypoint()}
+            id={this.appendIndexID("velocityRotateTarget")}
+          ></polygon>
           {/* Heading drag point */}
-            <circle
-              cx={robotConfig.bumperLength / 2}
-              cy={0}
-              r={
-                0.2 *
-                Math.min(robotConfig.bumperLength, robotConfig.bumperWidth)
-              }
-              id={this.appendIndexID("rotateTarget")}
-              fill={boxColorStr}
-              visibility={this.props.waypoint.headingConstrained ? "visible" : "hidden"}
-            ></circle>
+          <circle
+            cx={robotConfig.bumperLength / 2}
+            cy={0}
+            r={
+              0.2 * Math.min(robotConfig.bumperLength, robotConfig.bumperWidth)
+            }
+            id={this.appendIndexID("rotateTarget")}
+            fill={boxColorStr}
+            visibility={
+              this.props.waypoint.headingConstrained ? "visible" : "hidden"
+            }
+          ></circle>
 
           {/* Center Drag Target */}
           <circle
