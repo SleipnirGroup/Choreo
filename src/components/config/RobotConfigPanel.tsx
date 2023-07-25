@@ -46,7 +46,7 @@ class RobotConfigPanel extends Component<Props, State> {
           <NumberEntry
             longestTitle="Wheel Radius"
             title="Max Velocity"
-            suffix="m/s"
+            suffix="rad/s"
             enabled={true}
             setEnabled={(a) => null}
             number={config.wheelMaxVelocity}

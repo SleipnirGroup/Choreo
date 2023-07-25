@@ -60,7 +60,9 @@ export class Field extends Component<Props, State> {
                 marginInline: 0,
               }}
               onClick={() => {
-                this.context.model.pathlist.activePath.generatePath();
+                this.context.model.generatePath(
+                  this.context.model.pathlist.activePathUUID
+                );
               }}
               disabled={!this.context.model.pathlist.activePath.canGenerate()}
             >
