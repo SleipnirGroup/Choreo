@@ -15,10 +15,15 @@ struct UWEWaypoint {
     x: f64,
     y: f64,
     heading: f64,
+    velocityMagnitude: f64,
+    velocityAngle: f64,
+    angularVelocity: f64,
     xConstrained: bool,
     yConstrained: bool,
     headingConstrained: bool,
-    controlIntervalCount: u64
+    velocityMagnitudeConstrained: bool,
+    velocityAngleConstrained: bool,
+    angularVelocityConstrained: bool
 }
 
 #[allow(non_snake_case)]
@@ -40,7 +45,23 @@ async fn generate_trajectory(path: Vec<UWEWaypoint>, config: ChoreoRobotConfig) 
     let mut path_builder = SwervePathBuilder::new();
     for i in 0..path.len() {
         let wpt = &path[i];
-        path_builder.pose_wpt(i, wpt.x, wpt.y, wpt.heading);
+        if wpt.headingConstrained {
+            path_builder.pose_wpt(i, wpt.x, wpt.y, wpt.heading);
+        } else {
+            path_builder.translation_wpt(i, wpt.x, wpt.y, wpt.heading);
+        }
+
+        if wpt.velocityAngleConstrained && wpt.velocityMagnitudeConstrained {
+            path_builder.wpt_velocity_polar(i, wpt.velocityMagnitude, wpt.velocityAngle);
+        } else if wpt.velocityAngleConstrained {
+            path_builder.wpt_velocity_direction(i, wpt.velocityAngle);
+        } else if wpt.velocityMagnitudeConstrained {
+            path_builder.wpt_velocity_magnitude(i, wpt.velocityMagnitude);
+        }
+
+        if wpt.angularVelocityConstrained {
+            path_builder.wpt_angular_velocity(i, wpt.angularVelocity);
+        }
     }
     path_builder.wpt_zero_velocity(0);
     path_builder.wpt_zero_angular_velocity(0);

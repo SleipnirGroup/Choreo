@@ -18,7 +18,7 @@ tauri-build = { version = "1.4", features = [] }
 tauri = { version = "1.4", features = [ "dialog-save", "dialog-open", "fs-all", "shell-open"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-trajoptlib = { git = "https://github.com/SleipnirGroup/TrajoptLib.git", rev = "285d0131756dcfe36a5fd0c2a5cb5a73564943cb" }
+trajoptlib = { git = "https://github.com/SleipnirGroup/TrajoptLib.git", rev = "9df909cbbec0d2098899c2e7c8f90578e4896183" }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
