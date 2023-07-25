@@ -43,6 +43,7 @@ class FieldOverlayRoot extends Component<Props, State> {
     this.handleResize();
     let zoomBehavior = d3
       .zoom<SVGGElement, undefined>()
+      .scaleExtent([1, 3])
       .on("zoom", (e) => this.zoomed(e));
 
     d3.select<SVGGElement, undefined>(this.svgRef.current!)
