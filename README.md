@@ -4,9 +4,78 @@
 
 Choreo (_Constraint-Honoring Omnidirectional Route Editor and Optimizer_, pronounced like choreography) is a graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics Competition.
 
-## Download
+## Download and Install
 
 Grab the latest release for your platform on the [releases](https://github.com/SleipnirGroup/Choreo/releases) page.
+
+### Development System Dependencies
+
+Requirements for __all__ platforms:
+
+- [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
+- [Rust](https://www.rust-lang.org/tools/install)
+- [CMake](https://cmake.org/download)
+
+### Windows
+
+Choreo can be built and run on Windows, but it requires a few extra steps because CasADi requires the MinGW toolchain.
+
+#### Windows Environment
+
+Buliding on Windows requires [MinGW](https://github.com/niXman/mingw-builds-binaries/releases/). On the release page, download the x86_64, posix, and msvcrt version. Extract the mingw64 folder to C:\mingw64. Add an entry to the user or system PATH that points to C:\mingw64\bin.
+
+After installing MinGW, run `rustup default stable-gnu` to switch to the GNU toolchain that uses MinGW.
+
+#### Windows Dev Server
+
+Run `npm install` to build Node.js dependencies and TrajoptLib. Once it is finished, the
+libraries will be copied into `src-tauri/*.dll`.
+
+Run `npm run tauri dev -- --release` to start the dev server.
+
+The `--release` avoids issue #84.
+
+If you're having a permissions error with CMake, try first building using the `cargo` command directly:
+
+```console
+cd src-tauri
+cargo build
+```
+
+Then try `npm run tauri dev -- --release` again.
+
+### macOS
+
+The following steps can be used to build for arm64 or x86_64 architectures.
+
+#### macOS Environment
+
+Make sure Xcode command line tools are installed:
+
+```console
+xcode-select --install
+```
+
+#### macOS Cross-Compilation
+
+An arm64 or x86_64 Mac can be used to build for arm64 or x86_64 targets. The target architecture will be the currently selected Rust target triple.
+
+You can create a `config.toml` file in `src-tauri/.cargo` containing the following definition to change the target:
+
+```toml
+[build]
+target = "aarch64-apple-darwin" # arm64 (Apple Silicon) target
+```
+
+or,
+
+```toml
+[build]
+target = "x86_64-apple-darwin" # x86_64 (Intel) target
+```
+
+You can install those targets using `rustup target install <target>`.
+
 
 ## To run in Tauri
 
