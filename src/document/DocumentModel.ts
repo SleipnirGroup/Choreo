@@ -317,7 +317,7 @@ export const HolonomicPathStore = types
       },
       setGenerating(generating: boolean) {
         self.generating = generating;
-      }
+      },
     };
   });
 export interface IHolonomicPathStore
