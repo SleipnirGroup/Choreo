@@ -61,12 +61,12 @@ class SidebarWaypoint extends Component<Props, State> {
               provided.draggableProps.style
             )}
             onClick={() => {
-              this.context.model.pathlist.activePath.selectOnly(
-                this.props.index
-              );
+              this.context.model.uiState.setSelectedSidebarItem(
+                this.context.model.pathlist.activePath.waypoints[this.props.index].uuid
+              )
             }}
           >
-            {this.props.index + 1}
+            Waypoint {this.props.index + 1} 
           </div>
         )}
       </Draggable>

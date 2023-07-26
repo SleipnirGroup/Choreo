@@ -5,9 +5,10 @@ import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../document/DocumentModel";
-import NumberEntry from "../../util/NumberEntry";
+import Input from "../input/Input";
 import styles from "./Sidebar.module.css";
 import { Tooltip } from "@mui/material";
+import InputList from "../input/InputList";
 
 type Props = { waypoint: IHolonomicWaypointStore | null };
 
@@ -30,7 +31,7 @@ class WaypointPanel extends Component<Props, State> {
         <div
           className={styles.WaypointPanel}
           style={{
-            width: this.context.uiState.waypointPanelOpen ? "" : "auto",
+            width: this.context.model.uiState.waypointPanelOpen ? "" : "auto",
           }}
         >
           <span
@@ -54,8 +55,8 @@ class WaypointPanel extends Component<Props, State> {
             <Tooltip title="Edit Waypoint">
               <IconButton
                 onClick={() =>
-                  this.context.uiState.setWaypointPanelOpen(
-                    !this.context.uiState.waypointPanelOpen
+                  this.context.model.uiState.setWaypointPanelOpen(
+                    !this.context.model.uiState.waypointPanelOpen
                   )
                 }
               >
@@ -63,11 +64,10 @@ class WaypointPanel extends Component<Props, State> {
               </IconButton>
             </Tooltip>
           </span>
-          {this.context.uiState.waypointPanelOpen && (
+          {this.context.model.uiState.waypointPanelOpen && (
             <>
-              <span>
-                <NumberEntry
-                  longestTitle="dir(v)"
+              <InputList>
+                <Input
                   title="x"
                   suffix="m"
                   enabled={waypoint.xConstrained}
@@ -75,9 +75,8 @@ class WaypointPanel extends Component<Props, State> {
                   number={waypoint.x}
                   setNumber={(x) => waypoint!.setX(x)}
                   showCheckbox
-                ></NumberEntry>
-                <NumberEntry
-                  longestTitle="dir(v)"
+                ></Input>
+                <Input
                   title="y"
                   suffix="m"
                   enabled={waypoint.yConstrained}
@@ -85,9 +84,8 @@ class WaypointPanel extends Component<Props, State> {
                   number={waypoint.y}
                   setNumber={(y) => waypoint!.setY(y)}
                   showCheckbox
-                ></NumberEntry>
-                <NumberEntry
-                  longestTitle="dir(v)"
+                ></Input>
+                <Input
                   title="θ"
                   suffix="rad"
                   enabled={waypoint.headingConstrained}
@@ -97,11 +95,8 @@ class WaypointPanel extends Component<Props, State> {
                   number={waypoint.heading}
                   setNumber={(heading) => waypoint!.setHeading(heading)}
                   showCheckbox
-                ></NumberEntry>
-              </span>
-              <span>
-                <NumberEntry
-                  longestTitle="dir(v)"
+                ></Input>
+                <Input
                   title="dir(v)"
                   suffix="rad"
                   enabled={waypoint.velocityAngleConstrained}
@@ -109,9 +104,8 @@ class WaypointPanel extends Component<Props, State> {
                   number={waypoint.velocityAngle}
                   setNumber={waypoint!.setVelocityAngle}
                   showCheckbox
-                ></NumberEntry>
-                <NumberEntry
-                  longestTitle="dir(v)"
+                ></Input>
+                <Input
                   title="|v|"
                   suffix="m/s"
                   enabled={waypoint.velocityMagnitudeConstrained}
@@ -119,9 +113,8 @@ class WaypointPanel extends Component<Props, State> {
                   number={waypoint.velocityMagnitude}
                   setNumber={waypoint!.setVelocityMagnitude}
                   showCheckbox
-                ></NumberEntry>
-                <NumberEntry
-                  longestTitle="dir(v)"
+                ></Input>
+                <Input
                   title="ω"
                   suffix="rad/s"
                   enabled={waypoint.angularVelocityConstrained}
@@ -129,8 +122,8 @@ class WaypointPanel extends Component<Props, State> {
                   number={waypoint.angularVelocity}
                   setNumber={waypoint!.setAngularVelocity}
                   showCheckbox
-                ></NumberEntry>
-              </span>
+                ></Input>
+              </InputList>
             </>
           )}
         </div>

@@ -89,7 +89,7 @@ class Navbar extends Component<Props, State> {
               justifyContent: "space-between",
               paddingLeft: "16px",
             }}
-            onClick={() => this.context.uiState.setPageNumber(0)}
+            onClick={() => this.context.model.uiState.setPageNumber(0)}
           >
             <span
               style={{
@@ -120,26 +120,16 @@ class Navbar extends Component<Props, State> {
                 color="primary"
                 className={styles.generate}
                 onClick={() =>
-                  this.context.uiState.setFieldGridView(
-                    !this.context.uiState.fieldGridView
+                  this.context.model.uiState.setFieldGridView(
+                    !this.context.model.uiState.fieldGridView
                   )
                 }
               >
-                {this.context.uiState.fieldGridView ? (
+                {this.context.model.uiState.fieldGridView ? (
                   <GridIcon />
                 ) : (
                   <GridOffIcon />
                 )}
-              </IconButton>
-            </span>
-          </Tooltip>
-          <Tooltip title="Settings">
-            <span>
-              <IconButton
-                color="primary"
-                onClick={() => this.context.uiState.setPageNumber(2)}
-              >
-                <SettingsIcon />
               </IconButton>
             </span>
           </Tooltip>

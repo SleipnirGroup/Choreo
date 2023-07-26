@@ -43,6 +43,7 @@ class FieldOverlayRoot extends Component<Props, State> {
     this.handleResize();
     let zoomBehavior = d3
       .zoom<SVGGElement, undefined>()
+      .scaleExtent([0.3, 12])
       .on("zoom", (e) => this.zoomed(e));
 
     d3.select<SVGGElement, undefined>(this.svgRef.current!)
@@ -92,7 +93,7 @@ class FieldOverlayRoot extends Component<Props, State> {
   }
   handleResize() {
     let factor = this.getScalingFactor(this.svgRef?.current);
-    this.context.uiState.setFieldScalingFactor(factor);
+    this.context.model.uiState.setFieldScalingFactor(factor);
   }
   getMouseCoordinates(e: any) {
     let coords = d3.pointer(e, this.frameRef?.current);
@@ -151,7 +152,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             )
           )}
           <InterpolatedRobot
-            timestamp={this.context.uiState.pathAnimationTimestamp}
+            timestamp={this.context.model.uiState.pathAnimationTimestamp}
           ></InterpolatedRobot>
         </g>
       </svg>

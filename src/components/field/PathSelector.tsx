@@ -188,7 +188,7 @@ class PathSelector extends Component<Props, State> {
             value={this.context.model.pathlist.activePathUUID}
             onChange={(event: SelectChangeEvent<string>) => {
               this.context.model.pathlist.setActivePathUUID(event.target.value);
-              this.context.uiState.setPageNumber(1);
+              this.context.model.uiState.setPageNumber(1);
             }}
           >
             {Array.from(this.context.model.pathlist.paths.keys()).map(

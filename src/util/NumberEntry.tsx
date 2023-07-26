@@ -45,12 +45,7 @@ class NumberEntry extends Component<Props, State> {
   render() {
     this.correctNumber();
     return (
-      <div
-        className={
-          styles.Container +
-          (this.props.showCheckbox ? "" : ` ${styles.NoCheckbox}`)
-        }
-      >
+      <>
         <span
           className={styles.Title}
           style={{ width: `${this.props.longestTitle.length}ch` }}
@@ -69,15 +64,15 @@ class NumberEntry extends Component<Props, State> {
           autoCapitalize="off"
         ></input>
         <span className={styles.Suffix}>{this.props.suffix}</span>
-        {this.props.showCheckbox && (
+        {this.props.showCheckbox ? (
           <input
             type="checkbox"
             className={styles.Checkbox}
             checked={this.props.enabled}
             onChange={this.setEnabled}
           ></input>
-        )}
-      </div>
+        ) : <span></span>}
+      </>
     );
   }
 }

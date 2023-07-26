@@ -13,6 +13,7 @@ import {
 } from "./DocumentSpecTypes";
 
 import { invoke } from "@tauri-apps/api/tauri";
+import { s } from "@tauri-apps/api/app-5190a154";
 
 // Save file data types:
 
@@ -426,6 +427,7 @@ export const RobotConfigStore = types
     bumperLength: 0.9,
     wheelbase: 0.622,
     trackWidth: 0.622,
+    identifier: "robotConfig"
   })
   .actions((self) => {
     return {
@@ -517,59 +519,116 @@ export const RobotConfigStore = types
     };
   });
 export interface IRobotConfigStore extends Instance<typeof RobotConfigStore> {}
-export default class DocumentModel {
-  pathlist = PathListStore.create();
-  robotConfig = RobotConfigStore.create();
-  asSavedDocument(): SavedDocument {
+const SelectableItem = types.union(
+  {dispatcher :
+  (snapshot) =>{
+    if (snapshot.mass) return RobotConfigStore
+    return HolonomicWaypointStore
+  }} ,
+  RobotConfigStore,
+  HolonomicWaypointStore
+)
+export const UIStateStore = types
+  .model("UIStateStore", {
+    appPage: 1,
+    fieldScalingFactor: 0.02,
+    fieldGridView: false,
+    saveFileName: "save",
+    waypointPanelOpen: false,
+    pathAnimationTimestamp: 0,
+    selectedSidebarItem: types.union(
+      types.reference(SelectableItem)
+      , types.literal(undefined))
+  })
+  .actions((self: any) => {
     return {
-      version: SAVE_FILE_VERSION,
-      robotConfiguration: this.robotConfig.asSavedRobotConfig(),
-      paths: this.pathlist.asSavedPathList(),
+      setPageNumber(page: number) {
+        self.appPage = page;
+      },
+      setFieldScalingFactor(metersPerPixel: number) {
+        self.fieldScalingFactor = metersPerPixel;
+      },
+      setFieldGridView(on: boolean) {
+        self.fieldGridView = on;
+      },
+      setSaveFileName(name: string) {
+        self.saveFileName = name;
+      },
+      setWaypointPanelOpen(open: boolean) {
+        self.waypointPanelOpen = open;
+      },
+      setPathAnimationTimestamp(time: number) {
+        self.pathAnimationTimestamp = time;
+      },
+      setSelectedSidebarItem(identifier: string) {
+        if (self.selectedSidebarItem?.setSelected) {
+          self.selectedSidebarItem.setSelected(false)
+        }
+        self.selectedSidebarItem = identifier;
+        if (self.selectedSidebarItem.setSelected) {
+          self.selectedSidebarItem.setSelected(true)
+        }
+      }
     };
-  }
-  fromSavedDocument(document: SavedDocument) {
-    if (document.version !== SAVE_FILE_VERSION) {
-      console.error("mismatched version");
-    }
-    this.robotConfig.fromSavedRobotConfig(document.robotConfiguration);
-    this.pathlist.fromSavedPathList(document.paths);
-  }
+  });
+export interface IUIStateStore extends Instance<typeof UIStateStore> {}
 
-  generatePath(uuid: string) {
-    const pathStore = this.pathlist.paths.get(uuid);
-    if (pathStore === undefined) {
-      return;
-    }
-    pathStore.setTrajectory([]);
-    if (pathStore.waypoints.length < 2) {
-      return;
-    }
-    pathStore.setGenerating(true);
-    invoke("generate_trajectory", {
-      path: pathStore.waypoints,
-      config: this.robotConfig,
-    })
-      .then((rust_traj) => {
-        let newTraj: Array<SavedTrajectorySample> = [];
-        // @ts-ignore
-        rust_traj.samples.forEach((samp) => {
-          let newPoint = TrajectorySampleStore.create();
-          newPoint.setX(samp.x);
-          newPoint.setY(samp.y);
-          newPoint.setHeading(samp.heading);
-          newPoint.setAngularVelocity(samp.angular_velocity);
-          newPoint.setVelocityX(samp.velocity_x);
-          newPoint.setVelocityY(samp.velocity_y);
-          newPoint.setTimestamp(samp.timestamp);
-          newTraj.push(newPoint);
-        });
-        pathStore.setTrajectory(newTraj);
+
+const DocumentModelStore = types.model("DocumentModelStore",{
+  uiState: UIStateStore,
+  pathlist: PathListStore,
+  robotConfig: RobotConfigStore
+}).views((self)=>({
+    asSavedDocument(): SavedDocument {
+      return {
+        version: SAVE_FILE_VERSION,
+        robotConfiguration: self.robotConfig.asSavedRobotConfig(),
+        paths: self.pathlist.asSavedPathList(),
+      };
+    },
+    fromSavedDocument(document: SavedDocument) {
+      if (document.version !== SAVE_FILE_VERSION) {
+        console.error("mismatched version");
+      }
+      self.robotConfig.fromSavedRobotConfig(document.robotConfiguration);
+      self.pathlist.fromSavedPathList(document.paths);
+    },
+    generatePath(uuid: string) {
+      const pathStore = self.pathlist.paths.get(uuid);
+      if (pathStore === undefined) {
+        return;
+      }
+      pathStore.setTrajectory([]);
+      if (pathStore.waypoints.length < 2) {
+        return;
+      }
+      pathStore.setGenerating(true);
+      invoke("generate_trajectory", {
+        path: pathStore.waypoints,
+        config: self.robotConfig,
       })
-      .finally(() => {
-        pathStore.setGenerating(false);
-      });
-  }
-  constructor() {
-    this.pathlist.addPath("New Path");
-  }
-}
+        .then((rust_traj) => {
+          let newTraj: Array<SavedTrajectorySample> = [];
+          // @ts-ignore
+          rust_traj.samples.forEach((samp) => {
+            let newPoint = TrajectorySampleStore.create();
+            newPoint.setX(samp.x);
+            newPoint.setY(samp.y);
+            newPoint.setHeading(samp.heading);
+            newPoint.setAngularVelocity(samp.angular_velocity);
+            newPoint.setVelocityX(samp.velocity_x);
+            newPoint.setVelocityY(samp.velocity_y);
+            newPoint.setTimestamp(samp.timestamp);
+            newTraj.push(newPoint);
+          });
+          pathStore.setTrajectory(newTraj);
+        })
+        .finally(() => {
+          pathStore.setGenerating(false);
+        })
+      }
+  }))
+ 
+  export default DocumentModelStore;
+  export interface IDocumentModelStore extends Instance<typeof DocumentModelStore> {}
+

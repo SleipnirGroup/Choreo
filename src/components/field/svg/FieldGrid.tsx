@@ -31,7 +31,7 @@ class FieldGrid extends Component<Props, State> {
           cy={0}
           r={DRAW_BOUND}
           fill={
-            this.context.uiState.fieldGridView ? "url(#grid)" : "transparent"
+            this.context.model.uiState.fieldGridView ? "url(#grid)" : "transparent"
           }
           style={{ pointerEvents: "none" }}
         ></circle>

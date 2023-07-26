@@ -9,6 +9,7 @@ import IconButton from "@mui/material/IconButton";
 import ShapeLineIcon from "@mui/icons-material/ShapeLine";
 import { CircularProgress, Tooltip } from "@mui/material";
 import Box from "@mui/material/Box/Box";
+import RobotConfigPanel from "../config/RobotConfigPanel";
 
 type Props = {};
 
@@ -24,6 +25,15 @@ export class Field extends Component<Props, State> {
         <WaypointPanel
           waypoint={this.context.model.pathlist.activePath.lowestSelectedPoint()}
         ></WaypointPanel>
+        {/* <div
+          className={styles.WaypointPanel}
+          style={{
+            width: this.context.model.uiState.appPage == 2 ? "" : "auto",
+          }}
+        >
+                  <RobotConfigPanel></RobotConfigPanel>
+        </div> */}
+
         <Tooltip
           placement="top-start"
           title={

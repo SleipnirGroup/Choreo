@@ -27,21 +27,21 @@ class PathAnimationSlider extends Component<Props, State> {
     if (
       Math.abs(
         this.context.model.pathlist.activePath.getTotalTimeSeconds() -
-          this.context.uiState.pathAnimationTimestamp
+          this.context.model.uiState.pathAnimationTimestamp
       ) < 0.1
     ) {
-      this.context.uiState.setPathAnimationTimestamp(0);
+      this.context.model.uiState.setPathAnimationTimestamp(0);
     }
     this.timerId = window.setInterval(() => {
       if (
-        this.context.uiState.pathAnimationTimestamp >
+        this.context.model.uiState.pathAnimationTimestamp >
         this.context.model.pathlist.activePath.getTotalTimeSeconds()
       ) {
-        this.context.uiState.setPathAnimationTimestamp(0);
+        this.context.model.uiState.setPathAnimationTimestamp(0);
         return;
       }
-      this.context.uiState.setPathAnimationTimestamp(
-        this.context.uiState.pathAnimationTimestamp + 0.01
+      this.context.model.uiState.setPathAnimationTimestamp(
+        this.context.model.uiState.pathAnimationTimestamp + 0.01
       );
     }, 10);
   }
@@ -115,9 +115,9 @@ class PathAnimationSlider extends Component<Props, State> {
             max={this.context.model.pathlist.activePath.getTotalTimeSeconds()}
             aria-label="Default"
             valueLabelDisplay="auto"
-            value={this.context.uiState.pathAnimationTimestamp}
+            value={this.context.model.uiState.pathAnimationTimestamp}
             onChange={(e, newVal) =>
-              this.context.uiState.setPathAnimationTimestamp(newVal as number)
+              this.context.model.uiState.setPathAnimationTimestamp(newVal as number)
             }
             sx={{
               flexGrow: "1",
@@ -131,7 +131,7 @@ class PathAnimationSlider extends Component<Props, State> {
           />
           <span
             style={{ minWidth: "2.5rem" }}
-          >{`${this.context.uiState.pathAnimationTimestamp.toFixed(
+          >{`${this.context.model.uiState.pathAnimationTimestamp.toFixed(
             1
           )} s`}</span>
         </span>

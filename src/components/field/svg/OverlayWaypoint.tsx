@@ -44,7 +44,7 @@ class OverlayWaypoint extends Component<Props, State> {
           xlinkHref={`#${this.appendIndexID("bumpers")}`}
           clipPath={`url(#${this.appendIndexID("clip")})`}
           stroke={strokeColor}
-          strokeWidth={strokeWidthPx * context.uiState.fieldScalingFactor}
+          strokeWidth={strokeWidthPx * context.model.uiState.fieldScalingFactor}
           fill={"transparent"}
           vectorEffect={"non-scaling-stroke"}
           style={{ pointerEvents: "none" }}
@@ -224,7 +224,7 @@ class OverlayWaypoint extends Component<Props, State> {
               )
             }
             stroke={"gray"}
-            strokeWidth={3 * this.context.uiState.fieldScalingFactor}
+            strokeWidth={3 * this.context.model.uiState.fieldScalingFactor}
             visibility={
               this.props.waypoint.velocityAngleConstrained
                 ? "visible"

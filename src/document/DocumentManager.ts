@@ -1,54 +1,27 @@
 import { Instance, types } from "mobx-state-tree";
 import { createContext } from "react";
-import DocumentModel from "./DocumentModel";
+import DocumentModel, { HolonomicWaypointStore, IDocumentModelStore, IRobotConfigStore, PathListStore, RobotConfigStore, UIStateStore } from "./DocumentModel";
 import { dialog, fs } from "@tauri-apps/api";
+import DocumentModelStore, { IHolonomicWaypointStore } from "./DocumentModel";
 
-export const UIStateStore = types
-  .model("UIStateStore", {
-    appPage: 1,
-    fieldScalingFactor: 0.02,
-    fieldGridView: false,
-    saveFileName: "save",
-    waypointPanelOpen: false,
-    pathAnimationTimestamp: 0,
-  })
-  .actions((self: any) => {
-    return {
-      setPageNumber(page: number) {
-        self.appPage = page;
-      },
-      setFieldScalingFactor(metersPerPixel: number) {
-        self.fieldScalingFactor = metersPerPixel;
-      },
-      setFieldGridView(on: boolean) {
-        self.fieldGridView = on;
-      },
-      setSaveFileName(name: string) {
-        self.saveFileName = name;
-      },
-      setWaypointPanelOpen(open: boolean) {
-        self.waypointPanelOpen = open;
-      },
-      setPathAnimationTimestamp(time: number) {
-        self.pathAnimationTimestamp = time;
-      },
-    };
-  });
-export interface IUIStateStore extends Instance<typeof UIStateStore> {}
+
 export class DocumentManager {
   simple: any;
-  uiState: IUIStateStore;
-  model: DocumentModel;
+  model: IDocumentModelStore;
   constructor() {
-    this.uiState = UIStateStore.create();
-    this.model = new DocumentModel();
+    this.model = DocumentModelStore.create(
+      {uiState: UIStateStore.create(),
+      robotConfig: RobotConfigStore.create(),
+    pathlist: PathListStore.create()}
+    );
+    this.model.pathlist.addPath("NewPath")
   }
 
   async parseFile(file: File | null): Promise<string> {
     if (file == null) {
       return Promise.reject("Tried to upload a null file");
     }
-    this.uiState.setSaveFileName(file.name);
+    this.model.uiState.setSaveFileName(file.name);
     console.log(file.name);
     return new Promise((resolve, reject) => {
       const fileReader = new FileReader();
@@ -66,7 +39,7 @@ export class DocumentManager {
   async onFileUpload(file: File | null) {
     await this.parseFile(file)
       .then((content) => this.model.fromSavedDocument(JSON.parse(content)))
-      .then(() => this.uiState.setPageNumber(1))
+      .then(() => this.model.uiState.setPageNumber(1))
       .catch((err) => console.log(err));
   }
 
@@ -109,7 +82,7 @@ export class DocumentManager {
       .then((data) => {
         this.model.fromSavedDocument(data);
       })
-      .then(() => this.uiState.setPageNumber(1))
+      .then(() => this.model.uiState.setPageNumber(1))
       .catch((err) => console.log(err));
   }
 

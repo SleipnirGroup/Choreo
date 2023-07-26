@@ -115,7 +115,7 @@ class InterpolatedRobot extends Component<Props, State> {
           xlinkHref={`#robot-bumpers`}
           clipPath={`url(#robot-clip)`}
           stroke={"white"}
-          strokeWidth={5 * this.context.uiState.fieldScalingFactor}
+          strokeWidth={5 * this.context.model.uiState.fieldScalingFactor}
           fill={"transparent"}
           vectorEffect={"non-scaling-stroke"}
           style={{ pointerEvents: "none" }}

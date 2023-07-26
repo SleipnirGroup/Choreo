@@ -5,6 +5,8 @@ import { IHolonomicWaypointStore } from "../../document/DocumentModel";
 import { observer } from "mobx-react";
 import SidebarWaypoint from "./SidebarWaypoint";
 import styles from "./Sidebar.module.css";
+import SidebarRobotConfig from "./SidebarRobotConfig";
+import { Divider } from "@mui/material";
 
 const getListStyle = (isDraggingOver: boolean) => ({
   background: isDraggingOver ? "lightblue" : "transparent",
@@ -54,6 +56,8 @@ class Sidebar extends Component<Props, State> {
     return (
       <div className={styles.Container}>
         <div className={styles.Sidebar}>
+        <SidebarRobotConfig context={this.context}></SidebarRobotConfig>
+        <Divider flexItem></Divider>
           <DragDropContext onDragEnd={this.onDragEnd}>
             <Droppable droppableId="droppable">
               {(provided, snapshot) => (
@@ -69,6 +73,7 @@ class Sidebar extends Component<Props, State> {
               )}
             </Droppable>
           </DragDropContext>
+          <Divider flexItem></Divider>
         </div>
       </div>
     );

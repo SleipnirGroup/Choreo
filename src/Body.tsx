@@ -37,33 +37,33 @@ class Body extends Component<Props, State> {
             <PathAnimationSlider></PathAnimationSlider>
           </div>
 
-          <div
+          {/* <div
             className="Panel"
             style={{
               backgroundColor: "transparent",
               display: `${
-                this.context.uiState.appPage === 2 ? "block" : "none"
+                this.context.model.uiState.appPage === 2 ? "block" : "none"
               }`,
             }}
           >
-            <div
+            {/* <div
               style={{
                 width: "100%",
                 height: "100%",
                 backgroundColor: "#0013",
               }}
               onClick={() => {
-                this.context.uiState.setPageNumber(1);
+                this.context.model.uiState.setPageNumber(1);
               }}
             ></div>
-            <RobotConfigPanel></RobotConfigPanel>
-          </div>
+
+          </div> */}
           <div
             className="Panel"
             style={{
               backgroundColor: "transparent",
               display: `${
-                this.context.uiState.appPage === 0 ? "block" : "none"
+                this.context.model.uiState.appPage === 0 ? "block" : "none"
               }`,
             }}
           >
@@ -74,7 +74,7 @@ class Body extends Component<Props, State> {
                 backgroundColor: "#0013",
               }}
               onClick={() => {
-                this.context.uiState.setPageNumber(1);
+                this.context.model.uiState.setPageNumber(1);
               }}
             ></div>
             <PathSelector></PathSelector>

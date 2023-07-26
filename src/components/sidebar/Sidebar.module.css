@@ -9,9 +9,9 @@
   background-color: var(--background-dark-gray);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
-  width: 5.5rem;
+  width: 200px;
   color: white;
   box-sizing: border-box;
   padding-block: 10px;
