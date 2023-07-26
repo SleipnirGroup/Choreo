@@ -102,9 +102,9 @@ Run `npm install` to build Node.js dependencies and TrajoptLib. Once it is finis
 
 #### Linux Dev Server
 
-Run `npm run tauri dev` to start the dev server.
+Due to issue [#89](https://github.com/SleipnirGroup/Choreo/issues/89), you must manually copy all files matching `src-tauri/lib*.so*` into `src-tauri/target/debug/` to ensure they can be found for the next step.
 
-If there is an issue locating shared libraries, copy all files matching `src-tauri/lib*.so*` into `src-tauri/target/debug/` to ensure they can be found. If you do have to do this step, please report this as an issue on [our GitHub issues tracker](https://github.com/SleipnirGroup/Choreo/issues).
+Run `npm run tauri dev` to start the dev server.
 
 #### Linux Bundle
 
