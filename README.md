@@ -62,7 +62,7 @@ xcode-select --install
 
 Run `npm install` to build Node.js dependencies and TrajoptLib. Once it is finished, the libraries will be copied into `src-tauri/lib*.dylib`. You will need to redo this step if Choreo begins using a different version of TrajoptLib.
 
-#### macOS Cross-Compilation
+#### macOS Cross Compilation
 
 An `arm64` or `x86_64` Mac can be used to build for `arm64` or `x86_64` targets. The target architecture will be the currently selected Rust target triple.
 
