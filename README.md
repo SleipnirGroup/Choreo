@@ -10,7 +10,7 @@ Grab the latest release for your platform on the [releases](https://github.com/S
 
 ### Development System Dependencies
 
-Requirements for __all__ platforms:
+Requirements for **all** platforms:
 
 - [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 - [Rust](https://www.rust-lang.org/tools/install)
