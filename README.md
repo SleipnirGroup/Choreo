@@ -39,7 +39,7 @@ If you're having a permissions error with CMake, try first building using the `c
 
 ```console
 cd src-tauri
-cargo build
+cargo build --release
 ```
 
 Then try `npm run tauri dev -- --release` again.
