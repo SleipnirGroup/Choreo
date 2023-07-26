@@ -92,7 +92,7 @@ To create a `.dmg` macOS bundle, run `npm run tauri build`. It will report the l
 
 ### Linux
 
-The following steps can be used to build for arm64 or x86_64 architectures.
+The following steps can be used for Ubuntu Linux; others may require additional configuration. If you find any additional required steps for your distro, please create a PR or issue to add documentation for it.
 
 #### Linux Environment
 
