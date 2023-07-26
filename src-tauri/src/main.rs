@@ -63,10 +63,6 @@ async fn generate_trajectory(path: Vec<UWEWaypoint>, config: ChoreoRobotConfig) 
             path_builder.wpt_angular_velocity(i, wpt.angularVelocity);
         }
     }
-    path_builder.wpt_zero_velocity(0);
-    path_builder.wpt_zero_angular_velocity(0);
-    path_builder.wpt_zero_velocity(path.len() - 1);
-    path_builder.wpt_zero_angular_velocity(path.len() - 1);
     let half_wheel_base = config.wheelbase / 2.0;
     let half_track_width = config.trackWidth / 2.0;
     let drivetrain = SwerveDrivetrain {
