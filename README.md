@@ -15,6 +15,7 @@ Requirements for __all__ platforms:
 - [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 - [Rust](https://www.rust-lang.org/tools/install)
 - [CMake](https://cmake.org/download)
+- [clang](https://releases.llvm.org/download.html)
 
 ### Windows
 
@@ -22,14 +23,13 @@ Choreo can be built and run on Windows, but it requires a few extra steps becaus
 
 #### Windows Environment
 
-Buliding on Windows requires [MinGW](https://github.com/niXman/mingw-builds-binaries/releases/). On the release page, download the x86_64, posix, and msvcrt version. Extract the mingw64 folder to C:\mingw64. Add an entry to the user or system PATH that points to C:\mingw64\bin.
+Buliding on Windows requires [MinGW](https://github.com/niXman/mingw-builds-binaries/releases/). On the release page, download the binary labeled `x86_64`, `posix`, and `msvcrt`. Extract the `mingw64` folder to `C:\mingw64`. Add an entry to the user or system `PATH` environment variable that points to `C:\mingw64\bin`.
 
-After installing MinGW, run `rustup default stable-gnu` to switch to the GNU toolchain that uses MinGW.
+After installing MinGW, run `rustup default stable-gnu` to switch to the GNU toolchain that uses MinGW. This can be reverted using `rustup default stable-msvc` when returning to other rust projects.
+
+Run `npm install` to build Node.js dependencies and TrajoptLib. Once it is finished, the libraries will be copied into `src-tauri/*.dll`. You will need to redo this step if Choreo begins using a different version of TrajoptLib.
 
 #### Windows Dev Server
-
-Run `npm install` to build Node.js dependencies and TrajoptLib. Once it is finished, the
-libraries will be copied into `src-tauri/*.dll`.
 
 Run `npm run tauri dev -- --release` to start the dev server.
 
@@ -44,6 +44,10 @@ cargo build
 
 Then try `npm run tauri dev -- --release` again.
 
+#### Windows Bundle
+
+To create an NSIS `.exe` installer bundle, run `npm run tauri build`. It will report the location of the bundle upon completion.
+
 ### macOS
 
 The following steps can be used to build for arm64 or x86_64 architectures.
@@ -56,11 +60,13 @@ Make sure Xcode command line tools are installed:
 xcode-select --install
 ```
 
+Run `npm install` to build Node.js dependencies and TrajoptLib. Once it is finished, the libraries will be copied into `src-tauri/lib*.dylib`. You will need to redo this step if Choreo begins using a different version of TrajoptLib.
+
 #### macOS Cross-Compilation
 
-An arm64 or x86_64 Mac can be used to build for arm64 or x86_64 targets. The target architecture will be the currently selected Rust target triple.
+An `arm64` or `x86_64` Mac can be used to build for `arm64` or `x86_64` targets. The target architecture will be the currently selected Rust target triple.
 
-You can create a `config.toml` file in `src-tauri/.cargo` containing the following definition to change the target:
+You can create a `config.toml` file in `src-tauri/.cargo` containing the following definition to change the target from the native architecture to the other:
 
 ```toml
 [build]
@@ -74,18 +80,35 @@ or,
 target = "x86_64-apple-darwin" # x86_64 (Intel) target
 ```
 
-You can install those targets using `rustup target install <target>`.
+You must first install the Rust targets using `rustup target install <target>`.
 
+#### macOS Dev Server
 
-## To run in Tauri
+Run `npm run tauri dev` to start the dev server.
 
-- Have Node.js, npm, and rust installed.
-- Navigate to the root directory of the project.
-- `npm install` and `npm run tauri dev`
+#### macOS Bundle
 
-## To build an executable
+To create a `.dmg` macOS bundle, run `npm run tauri build`. It will report the location of the bundle upon completion.
 
-- Coming soon...
+### Linux
+
+The following steps can be used to build for arm64 or x86_64 architectures.
+
+#### Linux Environment
+
+Tauri requires some libraries to function, follow their [instructions](https://tauri.app/v1/guides/getting-started/prerequisites/#setting-up-linux).
+
+Run `npm install` to build Node.js dependencies and TrajoptLib. Once it is finished, the libraries will be copied into `src-tauri/lib*.so*`. You will need to redo this step if Choreo begins using a different version of TrajoptLib.
+
+#### Linux Dev Server
+
+Run `npm run tauri dev` to start the dev server.
+
+If there is an issue locating shared libraries, copy all files matching `src-tauri/lib*.so*` into `src-tauri/target/debug/` to ensure they can be found. If you do have to do this step, please report this as an issue on [our GitHub issues tracker](https://github.com/SleipnirGroup/Choreo/issues).
+
+#### Linux Bundle
+
+To create a `.deb` Debian/Ubuntu bundle, run `npm run tauri build`. It will report the location of the bundle upon completion.
 
 ## Tech stack
 
