@@ -51,7 +51,9 @@ async fn generate_trajectory(path: Vec<UWEWaypoint>, config: ChoreoRobotConfig) 
             path_builder.translation_wpt(i, wpt.x, wpt.y, wpt.heading);
         }
 
-        if wpt.velocityAngleConstrained && wpt.velocityMagnitudeConstrained {
+        if wpt.velocityMagnitudeConstrained && wpt.velocityMagnitude == 0.0 {
+            path_builder.wpt_velocity_polar(i, 0.0, 0.0);
+        } else if wpt.velocityAngleConstrained && wpt.velocityMagnitudeConstrained {
             path_builder.wpt_velocity_polar(i, wpt.velocityMagnitude, wpt.velocityAngle);
         } else if wpt.velocityAngleConstrained {
             path_builder.wpt_velocity_direction(i, wpt.velocityAngle);
