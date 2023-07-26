@@ -33,7 +33,7 @@ Run `npm install` to build Node.js dependencies and TrajoptLib. Once it is finis
 
 Run `npm run tauri dev -- --release` to start the dev server.
 
-The `--release` avoids issue #84.
+The `--release` avoids issue [#84](#84).
 
 If you're having a permissions error with CMake, try first building using the `cargo` command directly:
 
