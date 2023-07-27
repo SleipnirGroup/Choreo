@@ -1,0 +1,15 @@
+
+.WaypointPanel {
+    overflow-x: hidden;
+    overflow-y: scroll;
+    position: absolute;
+    top: 0;
+    padding: 10px;
+    width: 300px;
+    background-color: var(--background-light-gray);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    border-radius: 0px 0px 10px 0px;
+  }

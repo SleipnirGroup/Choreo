@@ -7,9 +7,12 @@ import {
 } from "react-beautiful-dnd";
 import { CSSProperties } from "styled-components";
 import DocumentManagerContext from "../../document/DocumentManager";
-import { IHolonomicWaypointStore } from "../../document/DocumentModel";
-import styles from "./SidebarWaypoint.module.css";
+import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
+import styles from "./Sidebar.module.css";
 import Circle from "@mui/icons-material/Circle";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { IconButton, Tooltip } from "@mui/material";
+import { isAlive } from "mobx-state-tree";
 
 type Props = {
   waypoint: IHolonomicWaypointStore;
@@ -59,6 +62,7 @@ class SidebarWaypoint extends Component<Props, State> {
     // apparently we have to dereference this here instead of inline in the class name
     // Otherwise the component won't rerender when it changes
     let selected = waypoint.selected;
+    if (!isAlive(waypoint)) return (<></>)
     return (
       <Draggable
         key={waypoint.uuid}
@@ -71,17 +75,16 @@ class SidebarWaypoint extends Component<Props, State> {
             {...provided.draggableProps}
             {...provided.dragHandleProps}
             className={
-              styles.Container + (selected ? ` ${styles.selected}` : "")
+              styles.SidebarItem + (selected ? ` ${styles.selected}` : "")
             }
             style={this.getItemStyle(
               snapshot.isDragging,
               provided.draggableProps.style
             )}
             onClick={() => {
+              console.log("click on waypoint")
               this.context.model.uiState.setSelectedSidebarItem(
-                this.context.model.pathlist.activePath.waypoints[
-                  this.props.index
-                ]
+                waypoint
               );
             }}
           >
@@ -89,7 +92,21 @@ class SidebarWaypoint extends Component<Props, State> {
               htmlColor={this.getIconColor(pathLength)}
               className={styles.SidebarIcon}
             ></Circle>
-            Waypoint {this.props.index + 1}
+            <span className={styles.SidebarLabel}>Waypoint {this.props.index + 1}</span>
+            <Tooltip title="Delete Waypoint" >
+              <IconButton className={styles.SidebarRightIcon}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log("click on delete")
+                  this.context.model.pathlist.activePath.deleteWaypointUUID(
+                    waypoint?.uuid || ""
+                  )
+                }
+
+                }>
+                <DeleteIcon/>
+                </IconButton>
+            </Tooltip>
           </div>
         )}
       </Draggable>

@@ -1,15 +1,11 @@
 import { Instance, types } from "mobx-state-tree";
 import { createContext } from "react";
-import DocumentModel, {
-  HolonomicWaypointStore,
-  IDocumentModelStore,
-  IRobotConfigStore,
-  PathListStore,
-  RobotConfigStore,
-  UIStateStore,
-} from "./DocumentModel";
+import DocumentModelStore, {IDocumentModelStore} from "./DocumentModel";
+import { HolonomicWaypointStore, IHolonomicWaypointStore } from "./HolonomicWaypointStore";
+import { RobotConfigStore, IRobotConfigStore } from "./RobotConfigStore";
+import { PathListStore } from "./PathListStore";
+import { UIStateStore } from "./UIStateStore";
 import { dialog, fs } from "@tauri-apps/api";
-import DocumentModelStore, { IHolonomicWaypointStore } from "./DocumentModel";
 import { v4 as uuidv4 } from "uuid";
 
 export class DocumentManager {
@@ -17,7 +13,7 @@ export class DocumentManager {
   model: IDocumentModelStore;
   constructor() {
     this.model = DocumentModelStore.create({
-      uiState: UIStateStore.create(),
+      uiState: UIStateStore.create({selectedSidebarItem: undefined}),
       robotConfig: RobotConfigStore.create({ identifier: uuidv4() }),
       pathlist: PathListStore.create(),
     });

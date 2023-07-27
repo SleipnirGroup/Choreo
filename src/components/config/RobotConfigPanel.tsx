@@ -1,9 +1,7 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
-import NumberEntry from "../../util/NumberEntry";
-import styles from "./RobotConfigPanel.module.css";
-import waypointPanelStyles from "../sidebar/Sidebar.module.css";
+import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../input/InputList";
 import Input from "../input/Input";
 
@@ -18,7 +16,7 @@ class RobotConfigPanel extends Component<Props, State> {
   render() {
     let config = this.context.model.robotConfig;
     return (
-      <div className={waypointPanelStyles.WaypointPanel}>
+      <div className={styles.WaypointPanel}>
         {/* <IconButton className={styles.ExitButton} onClick={()=>this.context.model.uiState.setPageNumber(1)}><CloseIcon /></IconButton> */}
         <InputList>
           <Input

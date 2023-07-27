@@ -5,11 +5,17 @@
   width: 100%;
   height: 100%;
   color: white;
+  --text-color: white;
+  --disabled-color: gray;
 }
 
 .Title {
   text-align: right;
   min-width: max-content;
+}
+.Title.Disabled {
+    font-style: italic;
+    color: var(--disabled-color)
 }
 .Number {
   width: auto;
@@ -23,13 +29,19 @@
   border-bottom: solid 2px;
 }
 .Number:disabled {
-  color: transparent;
+    border-bottom: 2px solid var(--disabled-color);
+    color: transparent;
+
 }
 .Suffix {
   width: 20%;
   min-width: max-content;
   text-align: left;
   flex-shrink: 0;
+}
+.Suffix.Disabled {
+    font-style: italic;
+    color: var(--disabled-color)
 }
 .Checkbox {
   min-width: 10%;

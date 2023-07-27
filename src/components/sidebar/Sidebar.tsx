@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import DocumentManagerContext from "../../document/DocumentManager";
-import { IHolonomicWaypointStore } from "../../document/DocumentModel";
+import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import { observer } from "mobx-react";
 import SidebarWaypoint from "./SidebarWaypoint";
 import styles from "./Sidebar.module.css";
@@ -44,6 +44,7 @@ class Sidebar extends Component<Props, State> {
   // But in this example everything is just done in one place for simplicity
   render() {
     let waypoints = this.context.model.pathlist.activePath.waypoints;
+    let waypointsLength = this.context.model.pathlist.activePath.waypoints.length;
     let waypointElements = waypoints.map(
       (holonomicWaypoint: IHolonomicWaypointStore, index: number) => (
         <SidebarWaypoint

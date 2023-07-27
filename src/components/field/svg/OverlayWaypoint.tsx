@@ -1,7 +1,7 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../../document/DocumentManager";
-import { IHolonomicWaypointStore } from "../../../document/DocumentModel";
+import { IHolonomicWaypointStore } from "../../../document/HolonomicWaypointStore";
 import * as d3 from "d3";
 
 type Props = { waypoint: IHolonomicWaypointStore; index: number };

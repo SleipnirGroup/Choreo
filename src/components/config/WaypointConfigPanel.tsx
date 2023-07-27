@@ -4,10 +4,9 @@ import IconButton from "@mui/material/IconButton";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
-import { IHolonomicWaypointStore } from "../../document/DocumentModel";
+import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import Input from "../input/Input";
-import styles from "./Sidebar.module.css";
-import { Tooltip } from "@mui/material";
+import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../input/InputList";
 
 type Props = { waypoint: IHolonomicWaypointStore | null };
@@ -30,42 +29,7 @@ class WaypointPanel extends Component<Props, State> {
       return (
         <div
           className={styles.WaypointPanel}
-          style={{
-            width: this.context.model.uiState.waypointPanelOpen ? "" : "auto",
-          }}
         >
-          <span
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "flex-start",
-            }}
-          >
-            <Tooltip title="Delete Waypoint">
-              <IconButton
-                onClick={() =>
-                  this.context.model.pathlist.activePath.deleteWaypointUUID(
-                    waypoint?.uuid || ""
-                  )
-                }
-              >
-                <DeleteIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Edit Waypoint">
-              <IconButton
-                onClick={() =>
-                  this.context.model.uiState.setWaypointPanelOpen(
-                    !this.context.model.uiState.waypointPanelOpen
-                  )
-                }
-              >
-                <EditIcon />
-              </IconButton>
-            </Tooltip>
-          </span>
-          {this.context.model.uiState.waypointPanelOpen && (
-            <>
               <InputList>
                 <Input
                   title="x"
@@ -124,13 +88,8 @@ class WaypointPanel extends Component<Props, State> {
                   showCheckbox
                 ></Input>
               </InputList>
-            </>
+          </div>
           )}
-        </div>
-      );
-    } else {
-      return <></>;
-    }
   }
 }
 export default observer(WaypointPanel);

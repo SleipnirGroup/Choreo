@@ -1,7 +1,7 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
-import WaypointPanel from "../sidebar/WaypointPanel";
+import WaypointPanel from "../config/WaypointConfigPanel";
 
 import styles from "./Field.module.css";
 import FieldOverlayRoot from "./svg/FieldOverlayRoot";
@@ -10,27 +10,28 @@ import ShapeLineIcon from "@mui/icons-material/ShapeLine";
 import { CircularProgress, Tooltip } from "@mui/material";
 import Box from "@mui/material/Box/Box";
 import RobotConfigPanel from "../config/RobotConfigPanel";
-import { IHolonomicWaypointStore } from "../../document/DocumentModel";
+import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 
 type Props = {};
 
 type State = {};
 
 export class Field extends Component<Props, State> {
+
   static contextType = DocumentManagerContext;
   context!: React.ContextType<typeof DocumentManagerContext>;
   render() {
     let robotConfigOpen = this.context.model.robotConfig.selected;
+    let selectedSidebar = this.context.model.uiState.selectedSidebarItem;
     console.log("config", robotConfigOpen);
     return (
       <div className={styles.Container}>
         <FieldOverlayRoot></FieldOverlayRoot>
-        {this.context.model.uiState.selectedSidebarItem !== undefined &&
-          "heading" in this.context.model.uiState.selectedSidebarItem && (
+        {selectedSidebar !== undefined &&
+          "heading" in selectedSidebar && (
             <WaypointPanel
               waypoint={
-                this.context.model.uiState
-                  .selectedSidebarItem as IHolonomicWaypointStore
+                selectedSidebar as IHolonomicWaypointStore
               }
             ></WaypointPanel>
           )}
