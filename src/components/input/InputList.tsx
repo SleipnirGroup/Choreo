@@ -14,11 +14,7 @@ class InputList extends Component<Props, State> {
   state = {};
   render() {
     let config = this.context.model.robotConfig;
-    return (
-        <div className={styles.InputList}>
-          {this.props.children}
-        </div>
-    );
+    return <div className={styles.InputList}>{this.props.children}</div>;
   }
 }
 export default observer(InputList);

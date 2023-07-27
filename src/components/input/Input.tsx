@@ -45,11 +45,7 @@ class Input extends Component<Props, State> {
     this.correctNumber();
     return (
       <>
-        <span
-          className={styles.Title}
-        >
-          {this.props.title}
-        </span>
+        <span className={styles.Title}>{this.props.title}</span>
         <input
           ref={this.numberRef}
           type="text"
@@ -62,15 +58,16 @@ class Input extends Component<Props, State> {
           autoCapitalize="off"
         ></input>
         <span className={styles.Suffix}>{this.props.suffix}</span>
-        {(this.props.showCheckbox ? (
-                <input
-                type="checkbox"
-                className={styles.Checkbox}
-                checked={this.props.enabled}
-                onChange={this.setEnabled}
-            ></input>
-        ): <span></span>)}
-
+        {this.props.showCheckbox ? (
+          <input
+            type="checkbox"
+            className={styles.Checkbox}
+            checked={this.props.enabled}
+            onChange={this.setEnabled}
+          ></input>
+        ) : (
+          <span></span>
+        )}
       </>
     );
   }

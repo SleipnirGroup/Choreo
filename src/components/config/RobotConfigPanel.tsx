@@ -3,7 +3,7 @@ import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
 import NumberEntry from "../../util/NumberEntry";
 import styles from "./RobotConfigPanel.module.css";
-import waypointPanelStyles from "../sidebar/Sidebar.module.css"
+import waypointPanelStyles from "../sidebar/Sidebar.module.css";
 import InputList from "../input/InputList";
 import Input from "../input/Input";
 
@@ -21,7 +21,7 @@ class RobotConfigPanel extends Component<Props, State> {
       <div className={waypointPanelStyles.WaypointPanel}>
         {/* <IconButton className={styles.ExitButton} onClick={()=>this.context.model.uiState.setPageNumber(1)}><CloseIcon /></IconButton> */}
         <InputList>
-        <Input
+          <Input
             title="Mass"
             suffix="kg"
             enabled={true}
@@ -109,7 +109,7 @@ class RobotConfigPanel extends Component<Props, State> {
             setNumber={config!.setWheelRadius}
             showCheckbox={false}
           />
-      </InputList>
+        </InputList>
       </div>
     );
   }

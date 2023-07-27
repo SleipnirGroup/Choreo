@@ -167,6 +167,7 @@ class FieldOverlayRoot extends Component<Props, State> {
       var newPoint = this.context.model.pathlist.activePath.addWaypoint();
       newPoint.setX(coords.x);
       newPoint.setY(coords.y);
+      newPoint.setSelected(true);
     }
   }
 }

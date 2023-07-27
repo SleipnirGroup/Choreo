@@ -71,7 +71,9 @@ class NumberEntry extends Component<Props, State> {
             checked={this.props.enabled}
             onChange={this.setEnabled}
           ></input>
-        ) : <span></span>}
+        ) : (
+          <span></span>
+        )}
       </>
     );
   }

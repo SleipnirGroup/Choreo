@@ -1,12 +1,11 @@
 .Container {
   color: white;
-  border: 0px;
+  border: 2px solid transparent;
   height: 1.5em;
   /* background-color: var(--accent-purple); */
   /* border-radius: 50% !important; */
   width: 100%;
   font-size: 18px;
-  text-align: center;
   flex-shrink: 0;
   margin-top: 0.25rem;
   margin-bottom: 0.25rem;
@@ -19,11 +18,22 @@
   text-align: left;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: left;
+  gap: 8px;
+  user-select: none;
 }
 .Container:hover {
   background-color: var(--darker-purple);
 }
 .selected {
   border: 2px solid var(--select-yellow);
+}
+.Container .SidebarIcon {
+  height: 1em;
+}
+.Container .SidebarLabel {
+  color: white;
+}
+.Container .SidebarRightIcon {
+  height: 1em;
 }

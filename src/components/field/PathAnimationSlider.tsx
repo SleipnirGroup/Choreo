@@ -117,7 +117,9 @@ class PathAnimationSlider extends Component<Props, State> {
             valueLabelDisplay="auto"
             value={this.context.model.uiState.pathAnimationTimestamp}
             onChange={(e, newVal) =>
-              this.context.model.uiState.setPathAnimationTimestamp(newVal as number)
+              this.context.model.uiState.setPathAnimationTimestamp(
+                newVal as number
+              )
             }
             sx={{
               flexGrow: "1",

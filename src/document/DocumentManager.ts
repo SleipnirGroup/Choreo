@@ -1,22 +1,28 @@
 import { Instance, types } from "mobx-state-tree";
 import { createContext } from "react";
-import DocumentModel, { HolonomicWaypointStore, IDocumentModelStore, IRobotConfigStore, PathListStore, RobotConfigStore, UIStateStore } from "./DocumentModel";
+import DocumentModel, {
+  HolonomicWaypointStore,
+  IDocumentModelStore,
+  IRobotConfigStore,
+  PathListStore,
+  RobotConfigStore,
+  UIStateStore,
+} from "./DocumentModel";
 import { dialog, fs } from "@tauri-apps/api";
 import DocumentModelStore, { IHolonomicWaypointStore } from "./DocumentModel";
-
+import { v4 as uuidv4 } from "uuid";
 
 export class DocumentManager {
   simple: any;
   model: IDocumentModelStore;
   constructor() {
-    this.model = DocumentModelStore.create(
-      {uiState: UIStateStore.create(),
-      robotConfig: RobotConfigStore.create(),
-    pathlist: PathListStore.create()}
-    );
-    this.model.pathlist.addPath("NewPath")
+    this.model = DocumentModelStore.create({
+      uiState: UIStateStore.create(),
+      robotConfig: RobotConfigStore.create({ identifier: uuidv4() }),
+      pathlist: PathListStore.create(),
+    });
+    this.model.pathlist.addPath("NewPath");
   }
-
   async parseFile(file: File | null): Promise<string> {
     if (file == null) {
       return Promise.reject("Tried to upload a null file");

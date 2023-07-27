@@ -7,6 +7,8 @@
 
 .Sidebar {
   background-color: var(--background-dark-gray);
+  padding-left: 8px;
+  /* padding-right: 8px; */
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -15,18 +17,17 @@
   color: white;
   box-sizing: border-box;
   padding-block: 10px;
+  overflow-y: scroll;
 }
 
 .WaypointList {
   padding-top: 8px;
-  padding-left: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-
+  overflow: hidden;
   box-sizing: border-box;
-  overflow-y: scroll;
 }
 
 .WaypointPanel {
@@ -44,7 +45,7 @@
   border-radius: 0px 0px 10px 0px;
 }
 
-.Icon {
+/* .Icon {
   height: 48px;
 
   border-radius: 50%;
@@ -59,4 +60,4 @@
   padding-top: auto;
   padding-bottom: auto;
   box-sizing: border-box;
-}
+} */

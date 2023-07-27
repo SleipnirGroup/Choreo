@@ -9,10 +9,12 @@ import { CSSProperties } from "styled-components";
 import DocumentManagerContext from "../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../document/DocumentModel";
 import styles from "./SidebarWaypoint.module.css";
+import Circle from "@mui/icons-material/Circle";
 
 type Props = {
   waypoint: IHolonomicWaypointStore;
   index: number;
+  pathLength: number;
   context: React.ContextType<typeof DocumentManagerContext>;
 };
 
@@ -37,8 +39,23 @@ class SidebarWaypoint extends Component<Props, State> {
     };
   }
 
+  getIconColor(pathLength: number) {
+    console.log(pathLength);
+    if (this.props.waypoint.selected) {
+      return "var(--select-yellow)";
+    }
+    if (this.props.index == 0) {
+      return "green";
+    }
+    if (this.props.index == pathLength - 1) {
+      return "red";
+    }
+    return "var(--accent-purple)";
+  }
+
   render() {
     let waypoint = this.props.waypoint;
+    let pathLength = this.props.pathLength;
     // apparently we have to dereference this here instead of inline in the class name
     // Otherwise the component won't rerender when it changes
     let selected = waypoint.selected;
@@ -62,11 +79,17 @@ class SidebarWaypoint extends Component<Props, State> {
             )}
             onClick={() => {
               this.context.model.uiState.setSelectedSidebarItem(
-                this.context.model.pathlist.activePath.waypoints[this.props.index].uuid
-              )
+                this.context.model.pathlist.activePath.waypoints[
+                  this.props.index
+                ]
+              );
             }}
           >
-            Waypoint {this.props.index + 1} 
+            <Circle
+              htmlColor={this.getIconColor(pathLength)}
+              className={styles.SidebarIcon}
+            ></Circle>
+            Waypoint {this.props.index + 1}
           </div>
         )}
       </Draggable>

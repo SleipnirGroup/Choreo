@@ -10,6 +10,7 @@ import ShapeLineIcon from "@mui/icons-material/ShapeLine";
 import { CircularProgress, Tooltip } from "@mui/material";
 import Box from "@mui/material/Box/Box";
 import RobotConfigPanel from "../config/RobotConfigPanel";
+import { IHolonomicWaypointStore } from "../../document/DocumentModel";
 
 type Props = {};
 
@@ -19,21 +20,25 @@ export class Field extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   context!: React.ContextType<typeof DocumentManagerContext>;
   render() {
+    let robotConfigOpen = this.context.model.robotConfig.selected;
+    console.log("config", robotConfigOpen);
     return (
       <div className={styles.Container}>
         <FieldOverlayRoot></FieldOverlayRoot>
-        <WaypointPanel
-          waypoint={this.context.model.pathlist.activePath.lowestSelectedPoint()}
-        ></WaypointPanel>
-        {/* <div
-          className={styles.WaypointPanel}
-          style={{
-            width: this.context.model.uiState.appPage == 2 ? "" : "auto",
-          }}
-        >
-                  <RobotConfigPanel></RobotConfigPanel>
-        </div> */}
-
+        {this.context.model.uiState.selectedSidebarItem !== undefined &&
+          "heading" in this.context.model.uiState.selectedSidebarItem && (
+            <WaypointPanel
+              waypoint={
+                this.context.model.uiState
+                  .selectedSidebarItem as IHolonomicWaypointStore
+              }
+            ></WaypointPanel>
+          )}
+        {robotConfigOpen && (
+          <div className={styles.WaypointPanel}>
+            <RobotConfigPanel></RobotConfigPanel>
+          </div>
+        )}
         <Tooltip
           placement="top-start"
           title={

@@ -1,5 +1,10 @@
-import { types } from "mobx-state-tree";
-import { Instance } from "mobx-state-tree";
+import {
+  getRoot,
+  Instance,
+  resolveIdentifier,
+  types,
+  getIdentifier,
+} from "mobx-state-tree";
 import { moveItem } from "mobx-utils";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -104,10 +109,19 @@ export const HolonomicWaypointStore = types
     velocityAngleConstrained: false,
     angularVelocityConstrained: false,
     uuid: types.identifier,
-    selected: false,
+    pathuuid: types.string,
   })
   .views((self) => {
     return {
+      get selected(): boolean {
+        //console.log(JSON.stringify(getRoot<IDocumentModelStore>(self).uiState.selectedSidebarItem))
+        return (
+          self.uuid ==
+          getIdentifier(
+            getRoot<IDocumentModelStore>(self).uiState.selectedSidebarItem
+          )
+        );
+      },
       asSavedWaypoint(): SavedWaypoint {
         let {
           x,
@@ -178,7 +192,14 @@ export const HolonomicWaypointStore = types
         self.headingConstrained = headingConstrained;
       },
       setSelected(selected: boolean) {
-        self.selected = selected;
+        if (selected) {
+          const root = getRoot<IDocumentModelStore>(self);
+          root.select(
+            root.pathlist.paths
+              .get(self.pathuuid)
+              ?.waypoints.find((point) => self.uuid == point.uuid)
+          );
+        }
       },
 
       setVelocityAngle(vAngle: number) {
@@ -276,11 +297,13 @@ export const HolonomicPathStore = types
       },
       selectOnly(selectedIndex: number) {
         self.waypoints.forEach((point, index) => {
-          point.selected = selectedIndex === index;
+          point.setSelected(selectedIndex == index);
         });
       },
       addWaypoint(): IHolonomicWaypointStore {
-        self.waypoints.push(HolonomicWaypointStore.create({ uuid: uuidv4() }));
+        self.waypoints.push(
+          HolonomicWaypointStore.create({ uuid: uuidv4(), pathuuid: self.uuid })
+        );
         if (self.waypoints.length === 1) {
           self.waypoints[0].setSelected(true);
         }
@@ -417,7 +440,7 @@ export const PathListStore = types
 
 export interface IPathListStore extends Instance<typeof PathListStore> {}
 export const RobotConfigStore = types
-  .model("WaypointStore", {
+  .model("RobotConfigStore", {
     mass: 45,
     rotationalInertia: 6,
     wheelMaxVelocity: 70, // 15 fps
@@ -427,7 +450,7 @@ export const RobotConfigStore = types
     bumperLength: 0.9,
     wheelbase: 0.622,
     trackWidth: 0.622,
-    identifier: "robotConfig"
+    identifier: types.identifier,
   })
   .actions((self) => {
     return {
@@ -484,6 +507,14 @@ export const RobotConfigStore = types
   })
   .views((self) => {
     return {
+      get selected(): boolean {
+        //console.log(JSON.stringify(getRoot<IDocumentModelStore>(self).uiState.selectedSidebarItem))
+        const root = getRoot<IDocumentModelStore>(self);
+        return (
+          root.uiState.selectedSidebarItem !== undefined &&
+          self.identifier == getIdentifier(root.uiState.selectedSidebarItem)
+        );
+      },
       asSavedRobotConfig(): SavedRobotConfig {
         let {
           mass,
@@ -520,14 +551,20 @@ export const RobotConfigStore = types
   });
 export interface IRobotConfigStore extends Instance<typeof RobotConfigStore> {}
 const SelectableItem = types.union(
-  {dispatcher :
-  (snapshot) =>{
-    if (snapshot.mass) return RobotConfigStore
-    return HolonomicWaypointStore
-  }} ,
+  {
+    dispatcher: (snapshot) => {
+      if (snapshot.mass) return RobotConfigStore;
+      return HolonomicWaypointStore;
+    },
+  },
   RobotConfigStore,
   HolonomicWaypointStore
-)
+);
+type SelectableItemTypes =
+  | IRobotConfigStore
+  | IHolonomicWaypointStore
+  | undefined;
+
 export const UIStateStore = types
   .model("UIStateStore", {
     appPage: 1,
@@ -536,9 +573,7 @@ export const UIStateStore = types
     saveFileName: "save",
     waypointPanelOpen: false,
     pathAnimationTimestamp: 0,
-    selectedSidebarItem: types.union(
-      types.reference(SelectableItem)
-      , types.literal(undefined))
+    selectedSidebarItem: types.maybe(types.reference(SelectableItem)),
   })
   .actions((self: any) => {
     return {
@@ -560,25 +595,22 @@ export const UIStateStore = types
       setPathAnimationTimestamp(time: number) {
         self.pathAnimationTimestamp = time;
       },
-      setSelectedSidebarItem(identifier: string) {
-        if (self.selectedSidebarItem?.setSelected) {
-          self.selectedSidebarItem.setSelected(false)
-        }
-        self.selectedSidebarItem = identifier;
-        if (self.selectedSidebarItem.setSelected) {
-          self.selectedSidebarItem.setSelected(true)
-        }
-      }
+      setSelectedSidebarItem(item: SelectableItemTypes) {
+        console.log("from", Object.keys(self.selectedSidebarItem ?? {}));
+        self.selectedSidebarItem = item;
+        console.log("to", Object.keys(self.selectedSidebarItem ?? {}));
+      },
     };
   });
 export interface IUIStateStore extends Instance<typeof UIStateStore> {}
 
-
-const DocumentModelStore = types.model("DocumentModelStore",{
-  uiState: UIStateStore,
-  pathlist: PathListStore,
-  robotConfig: RobotConfigStore
-}).views((self)=>({
+const DocumentModelStore = types
+  .model("DocumentModelStore", {
+    uiState: UIStateStore,
+    pathlist: PathListStore,
+    robotConfig: RobotConfigStore,
+  })
+  .views((self) => ({
     asSavedDocument(): SavedDocument {
       return {
         version: SAVE_FILE_VERSION,
@@ -586,12 +618,17 @@ const DocumentModelStore = types.model("DocumentModelStore",{
         paths: self.pathlist.asSavedPathList(),
       };
     },
+  }))
+  .actions((self) => ({
     fromSavedDocument(document: SavedDocument) {
       if (document.version !== SAVE_FILE_VERSION) {
         console.error("mismatched version");
       }
       self.robotConfig.fromSavedRobotConfig(document.robotConfiguration);
       self.pathlist.fromSavedPathList(document.paths);
+    },
+    select(item: SelectableItemTypes) {
+      self.uiState.setSelectedSidebarItem(item);
     },
     generatePath(uuid: string) {
       const pathStore = self.pathlist.paths.get(uuid);
@@ -625,10 +662,10 @@ const DocumentModelStore = types.model("DocumentModelStore",{
         })
         .finally(() => {
           pathStore.setGenerating(false);
-        })
-      }
-  }))
- 
-  export default DocumentModelStore;
-  export interface IDocumentModelStore extends Instance<typeof DocumentModelStore> {}
+        });
+    },
+  }));
 
+export default DocumentModelStore;
+export interface IDocumentModelStore
+  extends Instance<typeof DocumentModelStore> {}

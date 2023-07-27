@@ -9,7 +9,7 @@ import SidebarRobotConfig from "./SidebarRobotConfig";
 import { Divider } from "@mui/material";
 
 const getListStyle = (isDraggingOver: boolean) => ({
-  background: isDraggingOver ? "lightblue" : "transparent",
+  outline: isDraggingOver ? `2px solid var(--darker-purple)` : "transparent",
 });
 
 type Props = {};
@@ -43,11 +43,13 @@ class Sidebar extends Component<Props, State> {
   // Normally you would want to split things out into separate components.
   // But in this example everything is just done in one place for simplicity
   render() {
-    let waypoints = this.context.model.pathlist.activePath.waypoints.map(
+    let waypoints = this.context.model.pathlist.activePath.waypoints;
+    let waypointElements = waypoints.map(
       (holonomicWaypoint: IHolonomicWaypointStore, index: number) => (
         <SidebarWaypoint
           waypoint={holonomicWaypoint}
           index={index}
+          pathLength={waypoints.length}
           context={this.context}
           key={holonomicWaypoint.uuid}
         ></SidebarWaypoint>
@@ -56,8 +58,8 @@ class Sidebar extends Component<Props, State> {
     return (
       <div className={styles.Container}>
         <div className={styles.Sidebar}>
-        <SidebarRobotConfig context={this.context}></SidebarRobotConfig>
-        <Divider flexItem></Divider>
+          <SidebarRobotConfig context={this.context}></SidebarRobotConfig>
+          <Divider flexItem></Divider>
           <DragDropContext onDragEnd={this.onDragEnd}>
             <Droppable droppableId="droppable">
               {(provided, snapshot) => (
@@ -67,7 +69,7 @@ class Sidebar extends Component<Props, State> {
                   className={styles.WaypointList}
                   style={getListStyle(snapshot.isDraggingOver)}
                 >
-                  {waypoints}
+                  {waypointElements}
                   {provided.placeholder}
                 </div>
               )}

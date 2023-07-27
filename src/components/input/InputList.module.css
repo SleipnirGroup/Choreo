@@ -1,41 +1,40 @@
 .InputList {
-    display: grid;
-    column-gap: 1ch;
-    grid-template-columns: auto 1fr auto 24px;
-    width: 100%;
-    height:100%;
-    color:white;
+  display: grid;
+  column-gap: 1ch;
+  grid-template-columns: auto 1fr auto 24px;
+  width: 100%;
+  height: 100%;
+  color: white;
 }
 
-  .Title {
-    text-align: right;
-    min-width: max-content;
-  }
-  .Number {
-    width: auto;
-    background-color: transparent;
-    border: none;
-    align-self: center;
-    flex-grow: 1;
-    color:inherit;
-    flex-shrink: 1;
-    min-width: 5.5ch;
-    border-bottom: solid 2px;
-  }
-  .Number:disabled {
-    color: transparent;
-  }
-  .Suffix {
-    width: 20%;
-    min-width: 4rem;
-    text-align: left;
-    flex-shrink: 0;
-  }
-  .Checkbox {
-    min-width: 10%;
-    margin-left: 0;
-  }
-  .Container.NoCheckbox .Checkbox {
-    visibility: hidden;
-  }
-  
+.Title {
+  text-align: right;
+  min-width: max-content;
+}
+.Number {
+  width: auto;
+  background-color: transparent;
+  border: none;
+  align-self: center;
+  flex-grow: 1;
+  color: inherit;
+  flex-shrink: 1;
+  min-width: 5.5ch;
+  border-bottom: solid 2px;
+}
+.Number:disabled {
+  color: transparent;
+}
+.Suffix {
+  width: 20%;
+  min-width: max-content;
+  text-align: left;
+  flex-shrink: 0;
+}
+.Checkbox {
+  min-width: 10%;
+  margin-left: 0;
+}
+.Container.NoCheckbox .Checkbox {
+  visibility: hidden;
+}
