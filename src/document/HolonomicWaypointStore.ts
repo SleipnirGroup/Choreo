@@ -2,7 +2,6 @@ import { types, getRoot, Instance, getParent, getParentOfType, isAlive } from "m
 import { safeGetIdentifier } from "../util/mobxutils";
 import { IDocumentModelStore } from "./DocumentModel";
 import { SavedWaypoint } from "./DocumentSpecTypes";
-import { IHolonomicPathStore } from "./HolonomicPathStore";
 
 export const HolonomicWaypointStore = types
   .model("WaypointStore", {

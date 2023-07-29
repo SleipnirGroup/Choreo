@@ -63,7 +63,7 @@ class SidebarWaypoint extends Component<Props, State> {
     let pathLength = this.props.pathLength;
     // apparently we have to dereference this here instead of inline in the class name
     // Otherwise the component won't rerender when it changes
-    let { selected, translationConstrained, yConstrained, headingConstrained } =
+    let { selected, translationConstrained, headingConstrained } =
       waypoint;
     if (!isAlive(waypoint)) return <></>;
     return (

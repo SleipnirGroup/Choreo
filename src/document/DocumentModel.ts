@@ -14,14 +14,6 @@ import { SelectableItemTypes, UIStateStore } from "./UIStateStore";
 import { PathListStore } from "./PathListStore";
 import { TrajectorySampleStore } from "./TrajectorySampleStore";
 
-// Save file data types:
-
-// State tree data types:
-
-
-
-
-
 const DocumentModelStore = types
   .model("DocumentModelStore", {
     uiState: UIStateStore,

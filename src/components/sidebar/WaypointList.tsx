@@ -5,8 +5,6 @@ import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import { observer } from "mobx-react";
 import SidebarWaypoint from "./SidebarWaypoint";
 import styles from "./Sidebar.module.css";
-import SidebarRobotConfig from "./SidebarRobotConfig";
-import { Divider } from "@mui/material";
 
 const getListStyle = (isDraggingOver: boolean) => ({
   outline: isDraggingOver ? `2px solid var(--darker-purple)` : "transparent",

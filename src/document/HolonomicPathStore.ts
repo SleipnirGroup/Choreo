@@ -1,4 +1,4 @@
-import { Instance, types, getRoot, detach, destroy } from "mobx-state-tree";
+import { Instance, types, getRoot, destroy } from "mobx-state-tree";
 import {
   SavedPath,
   SavedTrajectorySample,

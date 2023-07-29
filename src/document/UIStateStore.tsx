@@ -1,5 +1,4 @@
 import { Circle, Grid4x4, Route, Square, SquareOutlined } from "@mui/icons-material";
-import { SvgIconProps } from "@mui/material";
 import { Instance, types } from "mobx-state-tree";
 import Waypoint from "../assets/Waypoint";
 import {
@@ -101,7 +100,6 @@ export const ViewItemData = (() => {
 export type ViewLayerType = typeof ViewLayers;
 export const UIStateStore = types
   .model("UIStateStore", {
-    appPage: 1,
     fieldScalingFactor: 0.02,
     saveFileName: "save",
     waypointPanelOpen: false,
@@ -109,7 +107,7 @@ export const UIStateStore = types
     pathAnimationTimestamp: 0,
     layers: types.array(types.boolean),
     selectedSidebarItem: types.maybe(types.safeReference(SelectableItem)),
-    selectedNavbarItem: -1
+    selectedNavbarItem: NavbarLabels.FullWaypoint
   })
   .views((self:any)=> {
     return {
@@ -129,9 +127,6 @@ export const UIStateStore = types
   })
   .actions((self: any) => {
     return {
-      setPageNumber(page: number) {
-        self.appPage = page;
-      },
       setFieldScalingFactor(metersPerPixel: number) {
         self.fieldScalingFactor = metersPerPixel;
       },

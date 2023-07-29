@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import DocumentManagerContext from "../../../document/DocumentManager";
 import { observer } from "mobx-react";
-import { ViewLayers } from "../../../document/UIStateStore";
 
 type Props = {};
 

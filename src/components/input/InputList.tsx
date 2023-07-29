@@ -1,7 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
-import Input from "./Input";
 import styles from "./InputList.module.css";
 
 type Props = {noCheckbox?: boolean};

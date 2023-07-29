@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import DocumentManagerContext from "../../../document/DocumentManager";
 import { observer } from "mobx-react";
-import { ViewLayers } from "../../../document/UIStateStore";
 
 type Props = {};
 
@@ -31,11 +30,7 @@ class FieldGrid extends Component<Props, State> {
           cx={0}
           cy={0}
           r={DRAW_BOUND}
-          fill={
-            this.context.model.uiState.layers[ViewLayers.Grid]
-              ? "url(#grid)"
-              : "transparent"
-          }
+          fill="url(#grid)"
           style={{ pointerEvents: "none" }}
         ></circle>
       </>

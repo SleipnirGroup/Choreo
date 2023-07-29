@@ -1,15 +1,11 @@
 import React, { Component } from "react";
-import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import DocumentManagerContext from "../../document/DocumentManager";
-import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import { observer } from "mobx-react";
-import SidebarWaypoint from "./SidebarWaypoint";
 import styles from "./Sidebar.module.css";
 import SidebarRobotConfig from "./SidebarRobotConfig";
 import { Divider } from "@mui/material";
 import WaypointList from "./WaypointList";
 import PathSelector from "./PathSelector";
-import Add from "@mui/icons-material/Add";
 
 type Props = {};
 type State = {};

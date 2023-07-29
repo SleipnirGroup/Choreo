@@ -1,16 +1,10 @@
 import {
-  Divider,
-  FormControlLabel,
   IconButton,
-  Radio,
-  RadioGroup,
-  SelectChangeEvent,
   TextField,
 } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
-import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import styles from "./Sidebar.module.css";

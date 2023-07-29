@@ -1,11 +1,6 @@
-import { Instance, types } from "mobx-state-tree";
 import { createContext } from "react";
 import DocumentModelStore, { IDocumentModelStore } from "./DocumentModel";
-import {
-  HolonomicWaypointStore,
-  IHolonomicWaypointStore,
-} from "./HolonomicWaypointStore";
-import { RobotConfigStore, IRobotConfigStore } from "./RobotConfigStore";
+import { RobotConfigStore } from "./RobotConfigStore";
 import { PathListStore } from "./PathListStore";
 import { UIStateStore } from "./UIStateStore";
 import { dialog, fs } from "@tauri-apps/api";

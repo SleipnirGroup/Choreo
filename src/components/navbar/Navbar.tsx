@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
-import SettingsIcon from "@mui/icons-material/Settings";
 import SaveIcon from "@mui/icons-material/Save";
 import UploadIcon from "@mui/icons-material/UploadFile";
 import IconButton from "@mui/material/IconButton";
@@ -8,19 +7,12 @@ import FileDownload from "@mui/icons-material/FileDownload";
 import Tooltip from "@mui/material/Tooltip";
 import styles from "./Navbar.module.css";
 import { observer } from "mobx-react";
-import GridIcon from "@mui/icons-material/GridOn";
-import GridOffIcon from "@mui/icons-material/GridOff";
 import Divider from "@mui/material/Divider";
-import ArrowDownIcon from "@mui/icons-material/ArrowDropDown";
 import {
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  Popover,
   ToggleButton,
   ToggleButtonGroup,
 } from "@mui/material";
-import { NavbarItemData, ViewLabels } from "../../document/UIStateStore";
+import { NavbarItemData } from "../../document/UIStateStore";
 
 type Props = {};
 

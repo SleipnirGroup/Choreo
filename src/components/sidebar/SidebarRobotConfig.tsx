@@ -1,6 +1,6 @@
 import Settings from "@mui/icons-material/Settings";
 import { observer } from "mobx-react";
-import { safeGetIdentifier } from "../../util/mobxutils";
+
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
 import styles from "./Sidebar.module.css";
@@ -30,7 +30,7 @@ class SidebarWaypoint extends Component<Props, State> {
           );
         }}
       >
-        <Settings className={styles.SidebarIcon}></Settings>
+        <Settings className={styles.SidebarIcon} htmlColor= {selected? "var(--select-yellow)" : "var(--accent-purple)"}></Settings>
         <span className={styles.SidebarLabel}>Robot Config</span>
       </div>
     );
