@@ -2,15 +2,13 @@
   background-color: var(--background-dark-gray);
   border: 1px solid #3f3f3f;
   color: white;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  padding-left: 0px;
+  display: flex; 
   padding-right: 0px;
   font-size: 1rem;
   border: 0px;
   align-items: center;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: flex-start;
   height: 4rem;
 }
 
@@ -51,4 +49,8 @@
   align-self: center;
   border-bottom: solid white 2px;
   z-index: top;
+}
+
+.ToggleGroup {
+  margin-inline: 0.3rem
 }

@@ -15,6 +15,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import styles from "./Sidebar.module.css";
 import { Tooltip } from "@mui/material";
+import { Route } from "@mui/icons-material";
 
 type Props = {};
 
@@ -78,7 +79,9 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
           this.context.model.pathlist.setActivePathUUID(this.props.uuid)
         }
       >
-        <span></span>
+        <Route className={styles.SidebarIcon}
+            htmlColor= {selected? "var(--select-yellow)" : "var(--accent-purple)"}
+        />
         <TextField
           className={styles.SidebarLabel}
           variant="standard"

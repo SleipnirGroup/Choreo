@@ -17,8 +17,10 @@ import {
   FormControl,
   FormControlLabel,
   Popover,
+  ToggleButton,
+  ToggleButtonGroup,
 } from "@mui/material";
-import { ViewLabels } from "../../document/UIStateStore";
+import { NavbarItemData, ViewLabels } from "../../document/UIStateStore";
 
 type Props = {};
 
@@ -30,13 +32,15 @@ class Navbar extends Component<Props, State> {
   state = {};
 
   render() {
+    let {selectedNavbarItem, setSelectedNavbarItem} = this.context.model.uiState;
     return (
       <div className={styles.Container}>
-        <span
+        {/* <span
           style={{
             paddingLeft: "16px",
+            alignItems: "center"
           }}
-        >
+        > */}
           <input
             type="file"
             id="file-upload-input"
@@ -81,7 +85,31 @@ class Navbar extends Component<Props, State> {
               <FileDownload />
             </IconButton>
           </Tooltip>
-        </span>
+          <Divider orientation="vertical" flexItem></Divider>
+          <ToggleButtonGroup 
+            className={styles.ToggleGroup}
+            exclusive
+            value = {`${selectedNavbarItem}`}
+            onChange={(e, newSelection)=>{
+              console.log(newSelection)
+              setSelectedNavbarItem(Number.parseInt(newSelection) ?? -1)}}>
+            {(
+              NavbarItemData.map((item, index)=>(
+                <Tooltip value={`${index}`} title={item.name}>
+                <ToggleButton value={`${index}`} sx={{
+                  color:"var(--accent-purple)",
+                  "&.Mui-selected": {
+                    color: "var(--select-yellow)"
+                  }
+        }}>
+                    {(item.icon)}
+                  </ToggleButton>
+                  </Tooltip>
+
+              ))
+            )}
+          </ToggleButtonGroup>
+        {/* </span> */}
       </div>
     );
   }

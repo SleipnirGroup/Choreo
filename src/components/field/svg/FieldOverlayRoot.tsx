@@ -8,7 +8,9 @@ import FieldGrid from "./FieldGrid";
 import FieldPathLines from "./FieldPathLines";
 import InterpolatedRobot from "./InterpolatedRobot";
 import { v4 as uuidv4 } from "uuid";
-import { ViewLayers } from "../../../document/UIStateStore";
+import { NavbarLabels, ViewLayers } from "../../../document/UIStateStore";
+import FieldGeneratedLines from "./FieldGeneratedLines";
+import FieldAxisLines from "./FieldAxisLines";
 
 type Props = {};
 
@@ -136,9 +138,12 @@ class FieldOverlayRoot extends Component<Props, State> {
             <FieldImage23 blue={true}></FieldImage23>
           )}
           {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
+          <FieldAxisLines></FieldAxisLines>
           {/* Line paths */}
-          {layers[ViewLayers.Trajectory] && <FieldPathLines></FieldPathLines>}
-          {layers[ViewLayers.Waypoints] && (
+          {layers[ViewLayers.Waypoints] && <FieldPathLines></FieldPathLines>}
+          {layers[ViewLayers.Trajectory] && <FieldGeneratedLines></FieldGeneratedLines>}
+          {layers[ViewLayers.Waypoints] &&
+            this.context.model.uiState.isNavbarWaypointSelected() && (
             <circle
               cx={0}
               cy={0}
@@ -176,6 +181,9 @@ class FieldOverlayRoot extends Component<Props, State> {
       newPoint.setX(coords.x);
       newPoint.setY(coords.y);
       newPoint.setSelected(true);
+      if (this.context.model.uiState.selectedNavbarItem == NavbarLabels.TranslationWaypoint) {
+        newPoint.setHeadingConstrained(false);
+      }
     }
   }
 }

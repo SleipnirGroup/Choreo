@@ -20,7 +20,7 @@ const Waypoint: React.FunctionComponent<SvgIconProps> = (props) => {
   return (
     <SvgIcon {...props}>
       <circle cx={12} cy={12} r={2} fill="currentColor"></circle>
-      <circle cx={12} cy={4} r={2} fill="currentColor"></circle>
+      <circle cx={20} cy={12} r={2} fill="currentColor"></circle>
       <rect x={4} y={4} width={16} height={16}></rect>
       {/* <path d="M15,19.16V15.07a4.27,4.27,0,0,0,6,0h0a4.27,4.27,0,0,0,0-6h0a4.27,4.27,0,0,0-6,0l-3,3-3,3a4.27,4.27,0,0,1-6,0h0a4.27,4.27,0,0,1,0-6h0A4.27,4.27,0,0,1,9,9" /> */}
     </SvgIcon>

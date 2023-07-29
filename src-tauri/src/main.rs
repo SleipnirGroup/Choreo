@@ -19,7 +19,6 @@ struct UWEWaypoint {
     velocityAngle: f64,
     angularVelocity: f64,
     translationConstrained: bool,
-    yConstrained: bool,
     headingConstrained: bool,
     velocityMagnitudeConstrained: bool,
     velocityAngleConstrained: bool,

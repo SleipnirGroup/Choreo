@@ -23,11 +23,14 @@ export class Field extends Component<Props, State> {
   render() {
     let robotConfigOpen = this.context.model.robotConfig.selected;
     let selectedSidebar = this.context.model.uiState.selectedSidebarItem;
+    let activePath = this.context.model.pathlist.activePath;
     console.log("config", robotConfigOpen);
     return (
       <div className={styles.Container}>
         <FieldOverlayRoot></FieldOverlayRoot>
-        {selectedSidebar !== undefined && "heading" in selectedSidebar && (
+        {selectedSidebar !== undefined && "heading" in selectedSidebar 
+        && activePath.waypoints.find((point)=>point.uuid == (selectedSidebar as IHolonomicWaypointStore)!.uuid) 
+        && (
           <WaypointPanel
             waypoint={selectedSidebar as IHolonomicWaypointStore}
           ></WaypointPanel>
@@ -41,8 +44,8 @@ export class Field extends Component<Props, State> {
         <Tooltip
           placement="top-start"
           title={
-            this.context.model.pathlist.activePath.canGenerate() ||
-            this.context.model.pathlist.activePath.generating
+            activePath.canGenerate() ||
+            activePath.generating
               ? "Generate Path"
               : "Generate Path (needs 2 waypoints)"
           }
@@ -75,16 +78,16 @@ export class Field extends Component<Props, State> {
               }}
               onClick={() => {
                 this.context.model.generatePath(
-                  this.context.model.pathlist.activePathUUID
+                  activePathUUID
                 );
               }}
-              disabled={!this.context.model.pathlist.activePath.canGenerate()}
+              disabled={!activePath.canGenerate()}
             >
               <ShapeLineIcon></ShapeLineIcon>
             </IconButton>
           </Box>
         </Tooltip>
-        {this.context.model.pathlist.activePath.generating && (
+        {activePath.generating && (
           <CircularProgress
             size={48 * 1.3}
             sx={{

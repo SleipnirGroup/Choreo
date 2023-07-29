@@ -9,6 +9,7 @@
 }
 html {
   touch-action: manipulation;
+  overflow: hidden;
 }
 * {
   font-size: 1rem;
