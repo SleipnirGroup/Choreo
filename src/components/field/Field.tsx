@@ -11,13 +11,13 @@ import { CircularProgress, Tooltip } from "@mui/material";
 import Box from "@mui/material/Box/Box";
 import RobotConfigPanel from "../config/RobotConfigPanel";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
+import VisibilityPanel from "../config/VisibilityPanel";
 
 type Props = {};
 
 type State = {};
 
 export class Field extends Component<Props, State> {
-
   static contextType = DocumentManagerContext;
   context!: React.ContextType<typeof DocumentManagerContext>;
   render() {
@@ -27,19 +27,17 @@ export class Field extends Component<Props, State> {
     return (
       <div className={styles.Container}>
         <FieldOverlayRoot></FieldOverlayRoot>
-        {selectedSidebar !== undefined &&
-          "heading" in selectedSidebar && (
-            <WaypointPanel
-              waypoint={
-                selectedSidebar as IHolonomicWaypointStore
-              }
-            ></WaypointPanel>
-          )}
+        {selectedSidebar !== undefined && "heading" in selectedSidebar && (
+          <WaypointPanel
+            waypoint={selectedSidebar as IHolonomicWaypointStore}
+          ></WaypointPanel>
+        )}
         {robotConfigOpen && (
           <div className={styles.WaypointPanel}>
             <RobotConfigPanel></RobotConfigPanel>
           </div>
         )}
+        <VisibilityPanel></VisibilityPanel>
         <Tooltip
           placement="top-start"
           title={

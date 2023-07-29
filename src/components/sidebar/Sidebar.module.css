@@ -1,38 +1,42 @@
 .Container {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: flex-start;
   height: 100%;
+  color: white;
+  background-color: var(--background-dark-gray);
+  padding-left: 8px;
 }
 
 .Sidebar {
-  background-color: var(--background-dark-gray);
-  padding-left: 8px;
   /* padding-right: 8px; */
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  align-items: center;
+  align-items: left;
   min-width: 200px;
-  color: white;
+
   box-sizing: border-box;
   padding-block: 10px;
   overflow-y: scroll;
 }
 
+.SidebarDivider span {
+  color: gray;
+  font-size: 14px;
+}
+
 .WaypointList {
-  padding-top: 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  overflow: hidden;
   box-sizing: border-box;
 }
 
 .SidebarItem {
   color: white;
-  border: 2px solid transparent;
+  border-left: 4px solid var(--background-light-gray);
   height: 1.5em;
   /* background-color: var(--accent-purple); */
   /* border-radius: 50% !important; */
@@ -43,6 +47,7 @@
   margin-bottom: 0.25rem;
   margin-left: auto;
   margin-right: auto;
+  padding-left: 8px;
   padding-top: auto;
   padding-bottom: auto;
   box-sizing: border-box;
@@ -55,11 +60,17 @@
   padding-right: 8px;
   user-select: none;
 }
+
 .SidebarItem:hover {
   background-color: var(--darker-purple);
 }
-.selected {
-  border: 2px solid var(--select-yellow);
+.SidebarItem.Noninteractible {
+  border-left: 4px solid transparent;
+  background-color: transparent;
+}
+.Selected {
+  border-width: 0;
+  border-left: 4px solid var(--select-yellow);
 }
 .SidebarItem .SidebarIcon {
   height: 1em;
@@ -71,5 +82,3 @@
   height: 1em;
   padding-right: 8px;
 }
-
-

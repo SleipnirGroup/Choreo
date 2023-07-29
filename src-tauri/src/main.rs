@@ -1,5 +1,5 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+//#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use trajoptlib::{SwervePathBuilder, HolonomicTrajectory, SwerveDrivetrain, SwerveModule};
 
@@ -18,7 +18,7 @@ struct UWEWaypoint {
     velocityMagnitude: f64,
     velocityAngle: f64,
     angularVelocity: f64,
-    xConstrained: bool,
+    translationConstrained: bool,
     yConstrained: bool,
     headingConstrained: bool,
     velocityMagnitudeConstrained: bool,

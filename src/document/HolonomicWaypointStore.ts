@@ -9,8 +9,7 @@ export const HolonomicWaypointStore = types
     x: 0,
     y: 0,
     heading: 0,
-    xConstrained: true,
-    yConstrained: true,
+    translationConstrained: true,
     headingConstrained: true,
     controlIntervalCount: 0,
     velocityMagnitude: 0,
@@ -42,8 +41,7 @@ export const HolonomicWaypointStore = types
           heading,
           velocityMagnitude,
           velocityAngle,
-          xConstrained,
-          yConstrained,
+          translationConstrained,
           headingConstrained,
           velocityMagnitudeConstrained,
           velocityAngleConstrained,
@@ -57,8 +55,7 @@ export const HolonomicWaypointStore = types
           heading,
           velocityMagnitude,
           velocityAngle,
-          xConstrained,
-          yConstrained,
+          translationConstrained,
           headingConstrained,
           velocityMagnitudeConstrained,
           velocityAngleConstrained,
@@ -77,8 +74,7 @@ export const HolonomicWaypointStore = types
         self.heading = point.heading;
         self.velocityMagnitude = point.velocityMagnitude;
         self.velocityAngle = point.velocityAngle;
-        self.xConstrained = point.xConstrained;
-        self.yConstrained = point.yConstrained;
+        self.translationConstrained = point.translationConstrained;
         self.headingConstrained = point.headingConstrained;
         self.velocityMagnitudeConstrained = point.velocityMagnitudeConstrained;
         self.velocityAngleConstrained = point.velocityAngleConstrained;
@@ -89,14 +85,11 @@ export const HolonomicWaypointStore = types
       setX(x: number) {
         self.x = x;
       },
-      setXConstrained(xConstrained: boolean) {
-        self.xConstrained = xConstrained;
+      setTranslationConstrained(translationConstrained: boolean) {
+        self.translationConstrained = translationConstrained;
       },
       setY(y: number) {
         self.y = y;
-      },
-      setYConstrained(yConstrained: boolean) {
-        self.yConstrained = yConstrained;
       },
       setHeading(heading: number) {
         self.heading = heading;

@@ -23,7 +23,7 @@ class SidebarWaypoint extends Component<Props, State> {
     let selected = this.context.model.robotConfig.selected;
     return (
       <div
-        className={styles.SidebarItem + (selected ? ` ${styles.selected}` : "")}
+        className={styles.SidebarItem + (selected ? ` ${styles.Selected}` : "")}
         onClick={() => {
           this.context.model.uiState.setSelectedSidebarItem(
             this.context.model.robotConfig

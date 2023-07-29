@@ -8,6 +8,7 @@ import FieldGrid from "./FieldGrid";
 import FieldPathLines from "./FieldPathLines";
 import InterpolatedRobot from "./InterpolatedRobot";
 import { v4 as uuidv4 } from "uuid";
+import { ViewLayers } from "../../../document/UIStateStore";
 
 type Props = {};
 
@@ -103,7 +104,7 @@ class FieldOverlayRoot extends Component<Props, State> {
   render() {
     this.canvasHeightMeters = FieldImage23.WIDTH_M + 1;
     this.canvasWidthMeters = FieldImage23.LENGTH_M + 1;
-
+    let layers = this.context.model.uiState.layers;
     return (
       <svg
         ref={this.svgRef}
@@ -131,29 +132,36 @@ class FieldOverlayRoot extends Component<Props, State> {
           id="rootFrame"
         >
           {/* Background */}
-          <FieldImage23 blue={true}></FieldImage23>
-          <FieldGrid></FieldGrid>
-          {/* Line paths */}
-          <FieldPathLines></FieldPathLines>
-          <circle
-            cx={0}
-            cy={0}
-            r={10000}
-            style={{ fill: "transparent" }}
-            onClick={(e) => this.createWaypoint(e)}
-          ></circle>
-          {this.context.model.pathlist.activePath.waypoints.map(
-            (point, index) => (
-              <OverlayWaypoint
-                waypoint={point}
-                index={index}
-                key={point.uuid}
-              ></OverlayWaypoint>
-            )
+          {layers[ViewLayers.Field] && (
+            <FieldImage23 blue={true}></FieldImage23>
           )}
-          <InterpolatedRobot
-            timestamp={this.context.model.uiState.pathAnimationTimestamp}
-          ></InterpolatedRobot>
+          {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
+          {/* Line paths */}
+          {layers[ViewLayers.Trajectory] && <FieldPathLines></FieldPathLines>}
+          {layers[ViewLayers.Waypoints] && (
+            <circle
+              cx={0}
+              cy={0}
+              r={10000}
+              style={{ fill: "transparent" }}
+              onClick={(e) => this.createWaypoint(e)}
+            ></circle>
+          )}
+          {layers[ViewLayers.Waypoints] &&
+            this.context.model.pathlist.activePath.waypoints.map(
+              (point, index) => (
+                <OverlayWaypoint
+                  waypoint={point}
+                  index={index}
+                  key={point.uuid}
+                ></OverlayWaypoint>
+              )
+            )}
+          {layers[ViewLayers.Trajectory] && (
+            <InterpolatedRobot
+              timestamp={this.context.model.uiState.pathAnimationTimestamp}
+            ></InterpolatedRobot>
+          )}
         </g>
       </svg>
     );

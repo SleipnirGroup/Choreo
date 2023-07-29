@@ -1,6 +1,13 @@
 import { Instance, types, getRoot, detach, destroy } from "mobx-state-tree";
-import { SavedPath, SavedTrajectorySample, SavedWaypoint } from "./DocumentSpecTypes";
-import { HolonomicWaypointStore, IHolonomicWaypointStore } from "./HolonomicWaypointStore";
+import {
+  SavedPath,
+  SavedTrajectorySample,
+  SavedWaypoint,
+} from "./DocumentSpecTypes";
+import {
+  HolonomicWaypointStore,
+  IHolonomicWaypointStore,
+} from "./HolonomicWaypointStore";
 import { TrajectorySampleStore } from "./TrajectorySampleStore";
 import { moveItem } from "mobx-utils";
 import { v4 as uuidv4 } from "uuid";
@@ -61,7 +68,7 @@ export const HolonomicPathStore = types
     return {
       fromSavedPath(path: SavedPath) {
         self.waypoints.clear();
-        path.waypoints.forEach((point : SavedWaypoint, index: number): void => {
+        path.waypoints.forEach((point: SavedWaypoint, index: number): void => {
           let waypoint = this.addWaypoint();
           waypoint.fromSavedWaypoint(point);
         });
@@ -83,43 +90,40 @@ export const HolonomicPathStore = types
         });
       },
       addWaypoint(): IHolonomicWaypointStore {
-        self.waypoints.push(
-          HolonomicWaypointStore.create({ uuid: uuidv4() })
-        );
+        self.waypoints.push(HolonomicWaypointStore.create({ uuid: uuidv4() }));
         if (self.waypoints.length === 1) {
-          const root = getRoot<IDocumentModelStore>(self)
-          root.select(self.waypoints[0])
+          const root = getRoot<IDocumentModelStore>(self);
+          root.select(self.waypoints[0]);
         }
         return self.waypoints[self.waypoints.length - 1];
       },
       deleteWaypoint(index: number) {
-            // const root = getRoot<IDocumentModelStore>(self);
-            // root.select(undefined);
-        destroy(self.waypoints[index])
+        // const root = getRoot<IDocumentModelStore>(self);
+        // root.select(undefined);
+        destroy(self.waypoints[index]);
         if (self.waypoints.length === 0) {
-            self.generated.length = 0;
-            return;
+          self.generated.length = 0;
+          return;
         } else if (self.waypoints[index - 1]) {
-            self.waypoints[index - 1].setSelected(true);
-            } else if (self.waypoints[index + 1]) {
-            self.waypoints[index + 1].setSelected(true);
-            }
+          self.waypoints[index - 1].setSelected(true);
+        } else if (self.waypoints[index + 1]) {
+          self.waypoints[index + 1].setSelected(true);
+        }
       },
       deleteWaypointUUID(uuid: string) {
         let index = self.waypoints.findIndex((point) => point.uuid === uuid);
         if (index == -1) return;
         const root = getRoot<IDocumentModelStore>(self);
-        root.select(undefined)
+        root.select(undefined);
 
         if (self.waypoints.length === 1) {
           self.generated.length = 0;
         } else if (self.waypoints[index - 1]) {
-            self.waypoints[index - 1].setSelected(true);
-          } else if (self.waypoints[index + 1]) {
-            self.waypoints[index + 1].setSelected(true);
-          }
-        destroy(self.waypoints[index])
-
+          self.waypoints[index - 1].setSelected(true);
+        } else if (self.waypoints[index + 1]) {
+          self.waypoints[index + 1].setSelected(true);
+        }
+        destroy(self.waypoints[index]);
       },
       reorder(startIndex: number, endIndex: number) {
         //self.waypoints.splice(endIndex, 0, self.waypoints.splice(startIndex, 1)[0]);

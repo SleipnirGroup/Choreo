@@ -1,7 +1,10 @@
 import { Instance, types } from "mobx-state-tree";
 import { createContext } from "react";
-import DocumentModelStore, {IDocumentModelStore} from "./DocumentModel";
-import { HolonomicWaypointStore, IHolonomicWaypointStore } from "./HolonomicWaypointStore";
+import DocumentModelStore, { IDocumentModelStore } from "./DocumentModel";
+import {
+  HolonomicWaypointStore,
+  IHolonomicWaypointStore,
+} from "./HolonomicWaypointStore";
 import { RobotConfigStore, IRobotConfigStore } from "./RobotConfigStore";
 import { PathListStore } from "./PathListStore";
 import { UIStateStore } from "./UIStateStore";
@@ -13,7 +16,10 @@ export class DocumentManager {
   model: IDocumentModelStore;
   constructor() {
     this.model = DocumentModelStore.create({
-      uiState: UIStateStore.create({selectedSidebarItem: undefined}),
+      uiState: UIStateStore.create({
+        selectedSidebarItem: undefined,
+        layers: [true, false, true, true],
+      }),
       robotConfig: RobotConfigStore.create({ identifier: uuidv4() }),
       pathlist: PathListStore.create(),
     });

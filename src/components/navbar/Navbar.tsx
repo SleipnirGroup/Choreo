@@ -12,6 +12,13 @@ import GridIcon from "@mui/icons-material/GridOn";
 import GridOffIcon from "@mui/icons-material/GridOff";
 import Divider from "@mui/material/Divider";
 import ArrowDownIcon from "@mui/icons-material/ArrowDropDown";
+import {
+  Checkbox,
+  FormControl,
+  FormControlLabel,
+  Popover,
+} from "@mui/material";
+import { ViewLabels } from "../../document/UIStateStore";
 
 type Props = {};
 
@@ -73,65 +80,6 @@ class Navbar extends Component<Props, State> {
             >
               <FileDownload />
             </IconButton>
-          </Tooltip>
-        </span>
-        <span
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            paddingInline: "16px",
-          }}
-        >
-          <Divider orientation="vertical" flexItem />
-          <span
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              paddingLeft: "16px",
-            }}
-            onClick={() => this.context.model.uiState.setPageNumber(0)}
-          >
-            <span
-              style={{
-                minWidth: "20rem",
-                display: "inline-block",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                flexGrow: 1,
-                margin: "auto",
-                flexBasis: 0,
-              }}
-            >
-              {this.context.model.pathlist.activePath.name}
-            </span>
-            <Tooltip title="Open Path Dialog">
-              <IconButton color="default" className={styles.generate}>
-                <ArrowDownIcon />
-              </IconButton>
-            </Tooltip>
-          </span>
-          <Divider orientation="vertical" flexItem />
-        </span>
-        <span style={{ textAlign: "right", paddingRight: "16px" }}>
-          <Tooltip title="Field Grid">
-            <span>
-              <IconButton
-                color="primary"
-                className={styles.generate}
-                onClick={() =>
-                  this.context.model.uiState.setFieldGridView(
-                    !this.context.model.uiState.fieldGridView
-                  )
-                }
-              >
-                {this.context.model.uiState.fieldGridView ? (
-                  <GridIcon />
-                ) : (
-                  <GridOffIcon />
-                )}
-              </IconButton>
-            </span>
           </Tooltip>
         </span>
       </div>

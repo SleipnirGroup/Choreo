@@ -6,8 +6,7 @@ export interface SavedWaypoint {
   velocityMagnitude: number;
   velocityAngle: number;
   angularVelocity: number;
-  xConstrained: boolean;
-  yConstrained: boolean;
+  translationConstrained: boolean;
   headingConstrained: boolean;
   velocityMagnitudeConstrained: boolean;
   velocityAngleConstrained: boolean;
