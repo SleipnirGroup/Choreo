@@ -1,4 +1,11 @@
-import { types, getRoot, Instance, getParent, getParentOfType, isAlive } from "mobx-state-tree";
+import {
+  types,
+  getRoot,
+  Instance,
+  getParent,
+  getParentOfType,
+  isAlive,
+} from "mobx-state-tree";
 import { safeGetIdentifier } from "../util/mobxutils";
 import { IDocumentModelStore } from "./DocumentModel";
 import { SavedWaypoint } from "./DocumentSpecTypes";
@@ -100,8 +107,9 @@ export const HolonomicWaypointStore = types
         if (selected && !self.selected) {
           const root = getRoot<IDocumentModelStore>(self);
           root.select(
-            getParent<IHolonomicWaypointStore[]>(self)
-              ?.find((point) => self.uuid == point.uuid)
+            getParent<IHolonomicWaypointStore[]>(self)?.find(
+              (point) => self.uuid == point.uuid
+            )
           );
         }
       },

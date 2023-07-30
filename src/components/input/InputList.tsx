@@ -3,7 +3,7 @@ import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
 import styles from "./InputList.module.css";
 
-type Props = {noCheckbox?: boolean};
+type Props = { noCheckbox?: boolean };
 
 type State = {};
 
@@ -12,7 +12,10 @@ class InputList extends Component<Props, State> {
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
   render() {
-    let className = styles.InputList + " " + ((this.props.noCheckbox ?? false) ? styles.NoCheckbox : "");
+    let className =
+      styles.InputList +
+      " " +
+      (this.props.noCheckbox ?? false ? styles.NoCheckbox : "");
     return <div className={className}>{this.props.children}</div>;
   }
 }

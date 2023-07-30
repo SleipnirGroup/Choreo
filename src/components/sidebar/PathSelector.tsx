@@ -1,7 +1,4 @@
-import {
-  IconButton,
-  TextField,
-} from "@mui/material";
+import { IconButton, TextField } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
@@ -73,8 +70,9 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
           this.context.model.pathlist.setActivePathUUID(this.props.uuid)
         }
       >
-        <Route className={styles.SidebarIcon}
-            htmlColor= {selected? "var(--select-yellow)" : "var(--accent-purple)"}
+        <Route
+          className={styles.SidebarIcon}
+          htmlColor={selected ? "var(--select-yellow)" : "var(--accent-purple)"}
         />
         <TextField
           className={styles.SidebarLabel}

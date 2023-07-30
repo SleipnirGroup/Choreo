@@ -70,6 +70,7 @@ class PathAnimationSlider extends Component<Props, State> {
           paddingRight: "10px",
           boxSizing: "border-box",
           display: "block",
+          borderTop: "thin solid var(--divider-gray)",
         }}
       >
         <span

@@ -1,4 +1,10 @@
-import { Circle, Grid4x4, Route, Square, SquareOutlined } from "@mui/icons-material";
+import {
+  Circle,
+  Grid4x4,
+  Route,
+  Square,
+  SquareOutlined,
+} from "@mui/icons-material";
 import { Instance, types } from "mobx-state-tree";
 import Waypoint from "../assets/Waypoint";
 import {
@@ -18,84 +24,82 @@ export const SelectableItem = types.union(
   HolonomicWaypointStore
 );
 
-
 /* Navbar stuff */
 const NavbarData = {
   FullWaypoint: {
     index: 0,
     name: "Full Waypoint",
-    icon: (<Waypoint/>)
+    icon: <Waypoint />,
   },
   TranslationWaypoint: {
     index: 1,
     name: "Translation Waypoint",
-    icon: (<Circle/>)
-  }
-}
+    icon: <Circle />,
+  },
+};
 
 export const NavbarLabels = (() => {
   let x: { [key: string]: number } = {};
-  Object.entries(NavbarData).forEach(([key,data], index) => {
+  Object.entries(NavbarData).forEach(([key, data], index) => {
     x[key] = index;
   });
   return x;
 })();
 
 export const NavbarItemData = (() => {
-  let x :Array<{name:string, icon: any}>= [];
-  Object.entries(NavbarData).forEach(([key,data], index) => {
-    x[data.index] = {name: data.name, icon:data.icon};
+  let x: Array<{ name: string; icon: any }> = [];
+  Object.entries(NavbarData).forEach(([key, data], index) => {
+    x[data.index] = { name: data.name, icon: data.icon };
   });
   return x;
 })();
-
 
 export type SelectableItemTypes =
   | IRobotConfigStore
   | IHolonomicWaypointStore
   | undefined;
 
-
 /* Visibility stuff */
 const ViewData = {
   Field: {
     index: 0,
     name: "Field",
-    icon: (<SquareOutlined style={{transform:"scale(1.2, 0.6)"}}></SquareOutlined>)
+    icon: (
+      <SquareOutlined style={{ transform: "scale(1.2, 0.6)" }}></SquareOutlined>
+    ),
   },
   Grid: {
     index: 1,
     name: "Grid",
-    icon: (<Grid4x4/>)
+    icon: <Grid4x4 />,
   },
   Trajectory: {
     index: 2,
     name: "Trajectory",
-    icon: (<Route/>)
+    icon: <Route />,
   },
   Waypoints: {
     index: 3,
     name: "Waypoints",
-    icon: (<Waypoint/>)
-  }
-}
+    icon: <Waypoint />,
+  },
+};
 
 export const ViewLayers = (() => {
   let x: { [key: string]: number } = {};
-  Object.entries(ViewData).forEach(([key,data], index) => {
+  Object.entries(ViewData).forEach(([key, data], index) => {
     x[key] = index;
   });
   return x;
 })();
 
 export const ViewItemData = (() => {
-  let x :Array<{name:string, icon: any}>= [];
-  Object.entries(ViewData).forEach(([key,data], index) => {
-    x[data.index] = {name: data.name, icon:data.icon};
+  let x: Array<{ name: string; icon: any }> = [];
+  Object.entries(ViewData).forEach(([key, data], index) => {
+    x[data.index] = { name: data.name, icon: data.icon };
   });
   return x;
 })();
-
 
 export type ViewLayerType = typeof ViewLayers;
 export const UIStateStore = types
@@ -107,23 +111,25 @@ export const UIStateStore = types
     pathAnimationTimestamp: 0,
     layers: types.array(types.boolean),
     selectedSidebarItem: types.maybe(types.safeReference(SelectableItem)),
-    selectedNavbarItem: NavbarLabels.FullWaypoint
+    selectedNavbarItem: NavbarLabels.FullWaypoint,
   })
-  .views((self:any)=> {
+  .views((self: any) => {
     return {
       isNavbarWaypointSelected() {
-        return self.selectedNavbarItem == NavbarLabels.FullWaypoint ||
-        self.selectedNavbarItem == NavbarLabels.TranslationWaypoint
+        return (
+          self.selectedNavbarItem == NavbarLabels.FullWaypoint ||
+          self.selectedNavbarItem == NavbarLabels.TranslationWaypoint
+        );
       },
       visibleLayersOnly() {
-        return self.layers.flatMap((visible:boolean, index:number)=>{
+        return self.layers.flatMap((visible: boolean, index: number) => {
           if (visible) {
             return [index];
           }
           return [];
-        })
-      }
-    }
+        });
+      },
+    };
   })
   .actions((self: any) => {
     return {
@@ -156,11 +162,11 @@ export const UIStateStore = types
         visibleLayers.forEach((layer) => {
           self.layers.length = Math.max(layer + 1, self.layers.length);
           self.layers[layer] = true;
-        })
+        });
       },
       setSelectedNavbarItem(item: number) {
         self.selectedNavbarItem = item;
-      }
+      },
     };
   });
 export interface IUIStateStore extends Instance<typeof UIStateStore> {}

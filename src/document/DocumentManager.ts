@@ -5,6 +5,7 @@ import { PathListStore } from "./PathListStore";
 import { UIStateStore } from "./UIStateStore";
 import { dialog, fs } from "@tauri-apps/api";
 import { v4 as uuidv4 } from "uuid";
+import { applySnapshot } from "mobx-state-tree";
 
 export class DocumentManager {
   simple: any;
@@ -17,6 +18,17 @@ export class DocumentManager {
       }),
       robotConfig: RobotConfigStore.create({ identifier: uuidv4() }),
       pathlist: PathListStore.create(),
+    });
+    this.model.pathlist.addPath("NewPath");
+  }
+  newFile(): void {
+    applySnapshot(this.model, {
+      uiState: {
+        selectedSidebarItem: undefined,
+        layers: [true, false, true, true],
+      },
+      robotConfig: { identifier: uuidv4() },
+      pathlist: {},
     });
     this.model.pathlist.addPath("NewPath");
   }

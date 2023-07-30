@@ -140,17 +140,19 @@ class FieldOverlayRoot extends Component<Props, State> {
           <FieldAxisLines></FieldAxisLines>
           {/* Line paths */}
           {layers[ViewLayers.Waypoints] && <FieldPathLines></FieldPathLines>}
-          {layers[ViewLayers.Trajectory] && <FieldGeneratedLines></FieldGeneratedLines>}
+          {layers[ViewLayers.Trajectory] && (
+            <FieldGeneratedLines></FieldGeneratedLines>
+          )}
           {layers[ViewLayers.Waypoints] &&
             this.context.model.uiState.isNavbarWaypointSelected() && (
-            <circle
-              cx={0}
-              cy={0}
-              r={10000}
-              style={{ fill: "transparent" }}
-              onClick={(e) => this.createWaypoint(e)}
-            ></circle>
-          )}
+              <circle
+                cx={0}
+                cy={0}
+                r={10000}
+                style={{ fill: "transparent" }}
+                onClick={(e) => this.createWaypoint(e)}
+              ></circle>
+            )}
           {layers[ViewLayers.Waypoints] &&
             this.context.model.pathlist.activePath.waypoints.map(
               (point, index) => (
@@ -180,7 +182,10 @@ class FieldOverlayRoot extends Component<Props, State> {
       newPoint.setX(coords.x);
       newPoint.setY(coords.y);
       newPoint.setSelected(true);
-      if (this.context.model.uiState.selectedNavbarItem == NavbarLabels.TranslationWaypoint) {
+      if (
+        this.context.model.uiState.selectedNavbarItem ==
+        NavbarLabels.TranslationWaypoint
+      ) {
         newPoint.setHeadingConstrained(false);
       }
     }

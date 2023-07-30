@@ -5,6 +5,9 @@
   height: 100%;
   color: white;
   background-color: var(--background-dark-gray);
+  border-right: thin solid var(--divider-gray);
+}
+.Container > :not(hr, .Sidebar) {
   padding-left: 8px;
 }
 
@@ -14,11 +17,14 @@
   flex-direction: column;
   justify-content: flex-start;
   align-items: left;
-  min-width: 200px;
+  min-width: var(--sidebar-width);
 
   box-sizing: border-box;
   padding-block: 10px;
   overflow-y: scroll;
+}
+.Sidebar > :not(hr, :global(.MuiDivider-root)) {
+  padding-left: 8px;
 }
 
 .SidebarDivider span {

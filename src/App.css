@@ -5,7 +5,8 @@
   --background-dark-blue: #15171b;
   --background-dark-gray: #212326;
   --background-light-gray: #2f3136;
-  --bottom-nav-height: 56px;
+  --top-nav-height: 64px;
+  --divider-gray: rgba(255, 255, 255, 0.12);
 }
 html {
   touch-action: manipulation;

@@ -1,11 +1,9 @@
-import {
-  Instance,
-  types,
-} from "mobx-state-tree";
+import { Instance, types } from "mobx-state-tree";
 import {
   SavedDocument,
   SavedTrajectorySample,
   SAVE_FILE_VERSION,
+  updateToCurrent,
 } from "./DocumentSpecTypes";
 
 import { invoke } from "@tauri-apps/api/tauri";
@@ -30,10 +28,8 @@ const DocumentModelStore = types
     },
   }))
   .actions((self) => ({
-    fromSavedDocument(document: SavedDocument) {
-      if (document.version !== SAVE_FILE_VERSION) {
-        console.error("mismatched version");
-      }
+    fromSavedDocument(document: any) {
+      document = updateToCurrent(document);
       self.robotConfig.fromSavedRobotConfig(document.robotConfiguration);
       self.pathlist.fromSavedPathList(document.paths);
     },

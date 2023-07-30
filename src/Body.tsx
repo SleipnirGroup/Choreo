@@ -5,6 +5,7 @@ import Navbar from "./components/navbar/Navbar";
 import Field from "./components/field/Field";
 import Sidebar from "./components/sidebar/Sidebar";
 import PathAnimationSlider from "./components/field/PathAnimationSlider";
+import { height } from "@mui/system";
 
 type Props = {};
 
@@ -20,7 +21,6 @@ class Body extends Component<Props, State> {
       <>
         <div className="App">
           <div className="Page">
-            <Navbar></Navbar>
             <span
               style={{
                 display: "flex",
@@ -30,7 +30,16 @@ class Body extends Component<Props, State> {
               }}
             >
               <Sidebar></Sidebar>
-              <Field></Field>
+              <span
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  flexGrow: 1,
+                }}
+              >
+                <Navbar></Navbar>
+                <Field></Field>
+              </span>
             </span>
             <PathAnimationSlider></PathAnimationSlider>
           </div>

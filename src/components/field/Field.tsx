@@ -29,13 +29,16 @@ export class Field extends Component<Props, State> {
     return (
       <div className={styles.Container}>
         <FieldOverlayRoot></FieldOverlayRoot>
-        {selectedSidebar !== undefined && "heading" in selectedSidebar 
-        && activePath.waypoints.find((point)=>point.uuid == (selectedSidebar as IHolonomicWaypointStore)!.uuid) 
-        && (
-          <WaypointPanel
-            waypoint={selectedSidebar as IHolonomicWaypointStore}
-          ></WaypointPanel>
-        )}
+        {selectedSidebar !== undefined &&
+          "heading" in selectedSidebar &&
+          activePath.waypoints.find(
+            (point) =>
+              point.uuid == (selectedSidebar as IHolonomicWaypointStore)!.uuid
+          ) && (
+            <WaypointPanel
+              waypoint={selectedSidebar as IHolonomicWaypointStore}
+            ></WaypointPanel>
+          )}
         {robotConfigOpen && (
           <div className={styles.WaypointPanel}>
             <RobotConfigPanel></RobotConfigPanel>
@@ -45,8 +48,7 @@ export class Field extends Component<Props, State> {
         <Tooltip
           placement="top-start"
           title={
-            activePath.canGenerate() ||
-            activePath.generating
+            activePath.canGenerate() || activePath.generating
               ? "Generate Path"
               : "Generate Path (needs 2 waypoints)"
           }
@@ -78,9 +80,7 @@ export class Field extends Component<Props, State> {
                 marginInline: 0,
               }}
               onClick={() => {
-                this.context.model.generatePath(
-                  activePathUUID
-                );
+                this.context.model.generatePath(activePathUUID);
               }}
               disabled={!activePath.canGenerate()}
             >

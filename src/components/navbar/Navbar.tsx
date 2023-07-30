@@ -8,11 +8,9 @@ import Tooltip from "@mui/material/Tooltip";
 import styles from "./Navbar.module.css";
 import { observer } from "mobx-react";
 import Divider from "@mui/material/Divider";
-import {
-  ToggleButton,
-  ToggleButtonGroup,
-} from "@mui/material";
+import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { NavbarItemData } from "../../document/UIStateStore";
+import { NoteAddOutlined } from "@mui/icons-material";
 
 type Props = {};
 
@@ -24,15 +22,16 @@ class Navbar extends Component<Props, State> {
   state = {};
 
   render() {
-    let {selectedNavbarItem, setSelectedNavbarItem} = this.context.model.uiState;
+    let { selectedNavbarItem, setSelectedNavbarItem } =
+      this.context.model.uiState;
     return (
       <div className={styles.Container}>
-        {/* <span
+        <div
           style={{
-            paddingLeft: "16px",
-            alignItems: "center"
+            width: "var(--sidebar-width)",
+            display: "none",
           }}
-        > */}
+        >
           <input
             type="file"
             id="file-upload-input"
@@ -77,30 +76,43 @@ class Navbar extends Component<Props, State> {
               <FileDownload />
             </IconButton>
           </Tooltip>
+          <Tooltip title="New File">
+            <IconButton
+              color="primary"
+              onClick={() => {
+                this.context.newFile();
+              }}
+            >
+              <NoteAddOutlined></NoteAddOutlined>
+            </IconButton>
+          </Tooltip>
           <Divider orientation="vertical" flexItem></Divider>
-          <ToggleButtonGroup 
-            className={styles.ToggleGroup}
-            exclusive
-            value = {`${selectedNavbarItem}`}
-            onChange={(e, newSelection)=>{
-              console.log(newSelection)
-              setSelectedNavbarItem(Number.parseInt(newSelection) ?? -1)}}>
-            {(
-              NavbarItemData.map((item, index)=>(
-                <Tooltip value={`${index}`} title={item.name}>
-                <ToggleButton value={`${index}`} sx={{
-                  color:"var(--accent-purple)",
+        </div>
+        <ToggleButtonGroup
+          className={styles.ToggleGroup}
+          exclusive
+          value={`${selectedNavbarItem}`}
+          onChange={(e, newSelection) => {
+            console.log(newSelection);
+            setSelectedNavbarItem(Number.parseInt(newSelection) ?? -1);
+          }}
+        >
+          {NavbarItemData.map((item, index) => (
+            <Tooltip value={`${index}`} title={item.name}>
+              <ToggleButton
+                value={`${index}`}
+                sx={{
+                  color: "var(--accent-purple)",
                   "&.Mui-selected": {
-                    color: "var(--select-yellow)"
-                  }
-        }}>
-                    {(item.icon)}
-                  </ToggleButton>
-                  </Tooltip>
-
-              ))
-            )}
-          </ToggleButtonGroup>
+                    color: "var(--select-yellow)",
+                  },
+                }}
+              >
+                {item.icon}
+              </ToggleButton>
+            </Tooltip>
+          ))}
+        </ToggleButtonGroup>
         {/* </span> */}
       </div>
     );

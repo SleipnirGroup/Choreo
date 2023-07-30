@@ -2,14 +2,16 @@
   background-color: var(--background-dark-gray);
   border: 1px solid #3f3f3f;
   color: white;
-  display: flex; 
+  display: flex;
   padding-right: 0px;
   font-size: 1rem;
   border: 0px;
   align-items: center;
   flex-direction: row;
   justify-content: flex-start;
-  height: 4rem;
+  min-height: var(--top-nav-height);
+  height: var(--top-nav-height);
+  border-bottom: thin solid var(--divider-gray);
 }
 
 .PathChooserContainer {
@@ -52,5 +54,5 @@
 }
 
 .ToggleGroup {
-  margin-inline: 0.3rem
+  margin-inline: 0.3rem;
 }

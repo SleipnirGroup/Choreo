@@ -4,7 +4,14 @@ import DocumentManagerContext from "../../document/DocumentManager";
 import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../input/InputList";
 import Input from "../input/Input";
-import { Checkbox, FormControlLabel, IconButton, ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
+import {
+  Checkbox,
+  FormControlLabel,
+  IconButton,
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
+} from "@mui/material";
 import { ViewItemData, ViewLabels } from "../../document/UIStateStore";
 import { Visibility } from "@mui/icons-material";
 import { Close } from "@mui/icons-material";
@@ -33,34 +40,41 @@ class RobotConfigPanel extends Component<Props, State> {
             style={{
               display: "flex",
               flexDirection: "column",
-              paddingTop: "8px"
+              paddingTop: "8px",
             }}
           >
-          <ToggleButtonGroup 
-            orientation="vertical"
-            className={styles.ToggleGroup}
-            value = {uiState.visibleLayersOnly().map((i:number)=>`${i}`)}
-            onChange={(e, newSelection)=>{
-              console.log(newSelection)
-              uiState.setVisibleLayers(
-                newSelection.map((i:string)=>(Number.parseInt(i) ?? -1)))}}>
-            {(
-              ViewItemData.map((item, index)=>(
-                <Tooltip value={`${index}`} title={item.name} placement="left" key={index}>
-                <ToggleButton value={`${index}`} sx={{
-                  color:"var(--accent-purple)",
-                  "&.Mui-selected": {
-                    color: "var(--select-yellow)"
-                  }
-        }}>
-                    {(item.icon)}
+            <ToggleButtonGroup
+              orientation="vertical"
+              className={styles.ToggleGroup}
+              value={uiState.visibleLayersOnly().map((i: number) => `${i}`)}
+              onChange={(e, newSelection) => {
+                console.log(newSelection);
+                uiState.setVisibleLayers(
+                  newSelection.map((i: string) => Number.parseInt(i) ?? -1)
+                );
+              }}
+            >
+              {ViewItemData.map((item, index) => (
+                <Tooltip
+                  value={`${index}`}
+                  title={item.name}
+                  placement="left"
+                  key={index}
+                >
+                  <ToggleButton
+                    value={`${index}`}
+                    sx={{
+                      color: "var(--accent-purple)",
+                      "&.Mui-selected": {
+                        color: "var(--select-yellow)",
+                      },
+                    }}
+                  >
+                    {item.icon}
                   </ToggleButton>
-                  </Tooltip>
-
-              ))
-            )}
-          </ToggleButtonGroup>
-
+                </Tooltip>
+              ))}
+            </ToggleButtonGroup>
           </div>
         )}
       </div>

@@ -30,7 +30,10 @@ class SidebarWaypoint extends Component<Props, State> {
           );
         }}
       >
-        <Settings className={styles.SidebarIcon} htmlColor= {selected? "var(--select-yellow)" : "var(--accent-purple)"}></Settings>
+        <Settings
+          className={styles.SidebarIcon}
+          htmlColor={selected ? "var(--select-yellow)" : "var(--accent-purple)"}
+        ></Settings>
         <span className={styles.SidebarLabel}>Robot Config</span>
       </div>
     );
