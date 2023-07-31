@@ -72,7 +72,6 @@ export const RobotConfigStore = types
   .views((self) => {
     return {
       get selected(): boolean {
-        //console.log(JSON.stringify(getRoot<IDocumentModelStore>(self).uiState.selectedSidebarItem))
         const root = getRoot<IDocumentModelStore>(self);
         return (
           root.uiState.selectedSidebarItem !== undefined &&

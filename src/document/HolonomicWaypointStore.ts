@@ -1,11 +1,4 @@
-import {
-  types,
-  getRoot,
-  Instance,
-  getParent,
-  getParentOfType,
-  isAlive,
-} from "mobx-state-tree";
+import { types, getRoot, Instance, getParent, isAlive } from "mobx-state-tree";
 import { safeGetIdentifier } from "../util/mobxutils";
 import { IDocumentModelStore } from "./DocumentModel";
 import { SavedWaypoint } from "./DocumentSpecTypes";
@@ -29,7 +22,6 @@ export const HolonomicWaypointStore = types
   .views((self) => {
     return {
       get selected(): boolean {
-        //console.log(JSON.stringify(getRoot<IDocumentModelStore>(self).uiState.selectedSidebarItem))
         if (!isAlive(self)) {
           return false;
         }

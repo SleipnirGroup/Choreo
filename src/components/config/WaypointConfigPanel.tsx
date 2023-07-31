@@ -25,11 +25,6 @@ class WaypointPanel extends Component<Props, State> {
     if (this.isWaypointNonNull(waypoint)) {
       return (
         <div className={styles.WaypointPanel}>
-          {/* <ToggleButtonGroup>
-            <ToggleButton value={"full"}><Waypoint></Waypoint></ToggleButton>
-            <ToggleButton value={"translation"}><Circle></Circle></ToggleButton>
-            <ToggleButton value={"empty"}><CircleOutlined></CircleOutlined></ToggleButton>
-          </ToggleButtonGroup> */}
           <InputList>
             <Input
               title="x"

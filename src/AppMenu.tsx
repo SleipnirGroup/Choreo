@@ -74,11 +74,6 @@ class AppMenu extends Component<Props, State> {
                 </ListItemIcon>
                 <ListItemText primary="Open File"></ListItemText>
               </ListItemButton>
-              {/* <Tooltip title="Open File">
-              <IconButton color="primary" component="span">
-                <UploadIcon />
-              </IconButton>
-            </Tooltip> */}
             </label>
             <ListItemButton
               onClick={() => {

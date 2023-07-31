@@ -98,8 +98,6 @@ export const HolonomicPathStore = types
         return self.waypoints[self.waypoints.length - 1];
       },
       deleteWaypoint(index: number) {
-        // const root = getRoot<IDocumentModelStore>(self);
-        // root.select(undefined);
         destroy(self.waypoints[index]);
         if (self.waypoints.length === 0) {
           self.generated.length = 0;
@@ -126,7 +124,6 @@ export const HolonomicPathStore = types
         destroy(self.waypoints[index]);
       },
       reorder(startIndex: number, endIndex: number) {
-        //self.waypoints.splice(endIndex, 0, self.waypoints.splice(startIndex, 1)[0]);
         moveItem(self.waypoints, startIndex, endIndex);
       },
       setTrajectory(trajectory: Array<SavedTrajectorySample>) {
