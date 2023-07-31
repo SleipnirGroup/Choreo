@@ -102,4 +102,4 @@ Within a __Trajectory__, `<timestamp>` is a positive number that must be `0` for
 
 ### v0.0.1
 
-See v0.0.0. In __Waypoint__, `xConstrained` and `yConstrained` have been replaced with a combined `translationConstrained`
+See v0.0.0. In __Waypoint__, `xConstrained` and `yConstrained` have been replaced with a combined `translationConstrained : <boolean>`.
