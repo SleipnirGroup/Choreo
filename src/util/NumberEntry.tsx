@@ -35,7 +35,13 @@ class NumberEntry extends Component<Props, State> {
   }
   correctNumber() {
     if (this.numberRef.current) {
-      this.numberRef.current.value = `${this.props.number}`;
+      // splits the number at the first decimal point, and removes anything beyond 3 digits after the decimal point
+      // to change this, modify the el.substring(0, x) x being the desired number of digits after the decimal point
+      this.numberRef.current.value = `${this.props.number
+        .toString()
+        .split(".")
+        .map((el, i) => (i !== 0 ? el.substring(0, 3) : el))
+        .join(".")}`;
     }
   }
   componentDidMount(): void {

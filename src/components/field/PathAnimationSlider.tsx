@@ -19,7 +19,9 @@ class PathAnimationSlider extends Component<Props, State> {
     running: false,
   };
   static contextType = DocumentManagerContext;
+  // @ts-ignore
   context!: React.ContextType<typeof DocumentManagerContext>;
+  // @ts-ignore
   timerId: number;
 
   onStart() {
@@ -115,7 +117,8 @@ class PathAnimationSlider extends Component<Props, State> {
             max={this.context.model.pathlist.activePath.getTotalTimeSeconds()}
             aria-label="Default"
             valueLabelDisplay="auto"
-            value={this.context.uiState.pathAnimationTimestamp}
+            // @ts-ignore
+            value={this.context.uiState.pathAnimationTimestamp.toFixed(2)}
             onChange={(e, newVal) =>
               this.context.uiState.setPathAnimationTimestamp(newVal as number)
             }
