@@ -108,6 +108,7 @@ export const UIStateStore = types
     saveFileName: "save",
     waypointPanelOpen: false,
     visibilityPanelOpen: false,
+    mainMenuOpen:false,
     pathAnimationTimestamp: 0,
     layers: types.array(types.boolean),
     selectedSidebarItem: types.maybe(types.safeReference(SelectableItem)),
@@ -133,6 +134,12 @@ export const UIStateStore = types
   })
   .actions((self: any) => {
     return {
+      setMainMenuOpen(open: boolean) {
+        self.mainMenuOpen = open;
+      },
+      toggleMainMenu() {
+        self.mainMenuOpen = !self.mainMenuOpen;
+      },
       setFieldScalingFactor(metersPerPixel: number) {
         self.fieldScalingFactor = metersPerPixel;
       },

@@ -6,10 +6,12 @@ import SidebarRobotConfig from "./SidebarRobotConfig";
 import { Divider, IconButton, Tooltip } from "@mui/material";
 import WaypointList from "./WaypointList";
 import PathSelector from "./PathSelector";
+import MenuIcon from "@mui/icons-material/Menu";
 import SaveIcon from "@mui/icons-material/Save";
 import UploadIcon from "@mui/icons-material/UploadFile";
 import FileDownload from "@mui/icons-material/FileDownload";
 import { NoteAddOutlined } from "@mui/icons-material";
+import Add from "@mui/icons-material/Add";
 
 type Props = {};
 type State = {};
@@ -23,6 +25,7 @@ class Sidebar extends Component<Props, State> {
   }
 
   render() {
+    let {toggleMainMenu} = this.context.model.uiState;
     return (
       <div className={styles.Container}>
         <div
@@ -32,66 +35,36 @@ class Sidebar extends Component<Props, State> {
             borderBottom: "thin solid var(--divider-gray)",
             display: "flex",
             flexDirection: "row",
-            justifyContent: "space-around",
+            justifyContent: "flex-start",
             alignItems: "center",
+            paddingLeft: 0,
+            zIndex: 1000
           }}
         >
-          <input
-            type="file"
-            id="file-upload-input"
-            style={{ display: "none" }}
-            onChange={(e) => {
-              if (
-                e.target != null &&
-                e.target.files != null &&
-                e.target.files.length >= 1
-              ) {
-                let fileList = e.target.files;
-                this.context.onFileUpload(fileList[0]);
-                e.target.value = "";
-              }
-            }}
-          ></input>
-          <label htmlFor="file-upload-input">
-            <Tooltip title="Open File">
-              <IconButton color="primary" component="span">
-                <UploadIcon />
-              </IconButton>
-            </Tooltip>
-          </label>
+          <Tooltip title="Main Menu">
+            <IconButton
+            onClick={()=>{toggleMainMenu()}}>
+              <MenuIcon></MenuIcon>
+            </IconButton>
 
-          <Tooltip title="Save File">
-            <IconButton
-              color="primary"
-              onClick={() => {
-                this.context.saveFile();
-              }}
-            >
-              <SaveIcon />
-            </IconButton>
           </Tooltip>
-          <Tooltip title="Export Trajectory">
-            <IconButton
-              color="primary"
-              onClick={() => {
-                this.context.exportActiveTrajectory();
-              }}
-            >
-              <FileDownload />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="New File">
-            <IconButton
-              color="primary"
-              onClick={() => {
-                this.context.newFile();
-              }}
-            >
-              <NoteAddOutlined></NoteAddOutlined>
-            </IconButton>
-          </Tooltip>
+          Choreo
         </div>
-        <div>PATHS</div>
+        <div className={styles.SidebarHeading}>
+          PATHS
+          <Tooltip title="Add Path">
+                  <IconButton
+            size="small"
+            color="default"
+            style={{
+              float: "right",
+            }}
+            onClick={() =>
+              this.context.model.pathlist.addPath("New Path", true)
+            }
+          >
+            <Add fontSize="small"></Add>
+          </IconButton></Tooltip></div>
         <Divider></Divider>
         <div
           className={styles.Sidebar}
@@ -103,7 +76,7 @@ class Sidebar extends Component<Props, State> {
 
         {/* <Divider className={styles.SidebarDivider} textAlign="left" flexItem>CONSTRAINTS</Divider> 
           // shhh.. to come later*/}
-        <div>SETTINGS</div>
+        <div className={styles.SidebarHeading}>SETTINGS</div>
         <Divider flexItem></Divider>
         <div className={styles.Sidebar}>
           <div>
@@ -117,8 +90,9 @@ class Sidebar extends Component<Props, State> {
           </Divider>
 
           <WaypointList></WaypointList>
-          <Divider></Divider>
+
         </div>
+        <Divider></Divider>
       </div>
     );
   }

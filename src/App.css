@@ -6,6 +6,7 @@
   --background-dark-gray: #212326;
   --background-light-gray: #2f3136;
   --top-nav-height: 64px;
+  --sidebar-width: 300px;
   --divider-gray: rgba(255, 255, 255, 0.12);
 }
 html {
@@ -16,15 +17,15 @@ html {
   font-size: 1rem;
 }
 *::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 *::-webkit-scrollbar-track {
   background: transparent;
-  border-radius: 5px;
+  border-radius: 4px;
 }
 *::-webkit-scrollbar-thumb {
   background: var(--select-yellow);
-  width: 6px;
+  width: 8px;
   border-radius: 4px;
 }
 h1 {

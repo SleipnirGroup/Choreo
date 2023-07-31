@@ -76,7 +76,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
         />
         <TextField
           className={styles.SidebarLabel}
-          variant="standard"
+          variant={this.state.renaming ? "outlined": "standard"}
           inputRef={this.nameInputRef}
           error={this.state.renameError}
           style={{
@@ -118,10 +118,13 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
               borderBottom: "2px solid white",
             },
             borderBottom: "2px solid transparent",
+            marginLeft: "-4px",
             ".MuiInputBase-root": {
               width: "100%",
               height: "1.5em",
               userSelect: "none",
+              padding:"4px"
+              
             },
           }}
         ></TextField>
@@ -172,18 +175,6 @@ class PathSelector extends Component<Props, State> {
           {Array.from(this.context.model.pathlist.paths.keys()).map((uuid) => (
             <this.Option uuid={uuid} key={uuid}></this.Option>
           ))}
-          <IconButton
-            size="small"
-            color="default"
-            style={{
-              float: "right",
-            }}
-            onClick={() =>
-              this.context.model.pathlist.addPath("New Path", true)
-            }
-          >
-            <AddIcon fontSize="small"></AddIcon>
-          </IconButton>
         </div>
       </div>
     );

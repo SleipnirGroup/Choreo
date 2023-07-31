@@ -6,6 +6,8 @@ import Field from "./components/field/Field";
 import Sidebar from "./components/sidebar/Sidebar";
 import PathAnimationSlider from "./components/field/PathAnimationSlider";
 import { height } from "@mui/system";
+import { Drawer } from "@mui/material";
+import AppMenu from "./AppMenu";
 
 type Props = {};
 
@@ -21,6 +23,7 @@ class Body extends Component<Props, State> {
       <>
         <div className="App">
           <div className="Page">
+            <AppMenu></AppMenu>
             <span
               style={{
                 display: "flex",

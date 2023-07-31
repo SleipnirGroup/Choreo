@@ -3,6 +3,7 @@
   flex-direction: column;
   justify-content: flex-start;
   height: 100%;
+  width: var(--sidebar-width);
   color: white;
   background-color: var(--background-dark-gray);
   border-right: thin solid var(--divider-gray);
@@ -12,7 +13,6 @@
 }
 
 .Sidebar {
-  /* padding-right: 8px; */
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -20,9 +20,18 @@
   min-width: var(--sidebar-width);
 
   box-sizing: border-box;
-  padding-block: 10px;
+  padding-block: 8px;
   overflow-y: scroll;
 }
+
+.SidebarHeading {
+  display: grid;
+  grid-template-columns: auto 33.6px;
+  height:fit-content;
+  align-items: center;
+  min-height: 30px;
+}
+
 .Sidebar > :not(hr, :global(.MuiDivider-root)) {
   padding-left: 8px;
 }
@@ -60,15 +69,15 @@
   color: white;
   text-align: left;
   display: grid;
-  grid-template-columns: 1em auto 1em;
+  grid-template-columns: 24px auto calc(24px + 4.8px + 4.8px);
   align-items: center;
-  gap: 16px;
+  gap: 8px;
   padding-right: 8px;
   user-select: none;
 }
 
-.SidebarItem:hover {
-  background-color: var(--darker-purple);
+.SidebarItem:hover:not(.Selected) {
+  border-left: 4px solid var(--darker-purple);
 }
 .SidebarItem.Noninteractible {
   border-left: 4px solid transparent;
@@ -79,12 +88,14 @@
   border-left: 4px solid var(--select-yellow);
 }
 .SidebarItem .SidebarIcon {
-  height: 1em;
+  height: 24px;
+  width:24px;
 }
 .SidebarItem .SidebarLabel {
   color: white;
 }
 .SidebarItem .SidebarRightIcon {
-  height: 1em;
+  height: 24px;
+  width:24px;
   padding-right: 8px;
 }

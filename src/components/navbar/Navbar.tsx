@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
 import SaveIcon from "@mui/icons-material/Save";
 import UploadIcon from "@mui/icons-material/UploadFile";
+import MenuIcon from "@mui/icons-material/Menu";
 import IconButton from "@mui/material/IconButton";
 import FileDownload from "@mui/icons-material/FileDownload";
 import Tooltip from "@mui/material/Tooltip";
@@ -22,72 +23,10 @@ class Navbar extends Component<Props, State> {
   state = {};
 
   render() {
-    let { selectedNavbarItem, setSelectedNavbarItem } =
+    let { selectedNavbarItem, setSelectedNavbarItem} =
       this.context.model.uiState;
     return (
       <div className={styles.Container}>
-        <div
-          style={{
-            width: "var(--sidebar-width)",
-            display: "none",
-          }}
-        >
-          <input
-            type="file"
-            id="file-upload-input"
-            style={{ display: "none" }}
-            onChange={(e) => {
-              if (
-                e.target != null &&
-                e.target.files != null &&
-                e.target.files.length >= 1
-              ) {
-                let fileList = e.target.files;
-                this.context.onFileUpload(fileList[0]);
-                e.target.value = "";
-              }
-            }}
-          ></input>
-          <label htmlFor="file-upload-input">
-            <Tooltip title="Open File">
-              <IconButton color="primary" component="span">
-                <UploadIcon />
-              </IconButton>
-            </Tooltip>
-          </label>
-
-          <Tooltip title="Save File">
-            <IconButton
-              color="primary"
-              onClick={() => {
-                this.context.saveFile();
-              }}
-            >
-              <SaveIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Export Trajectory">
-            <IconButton
-              color="primary"
-              onClick={() => {
-                this.context.exportActiveTrajectory();
-              }}
-            >
-              <FileDownload />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="New File">
-            <IconButton
-              color="primary"
-              onClick={() => {
-                this.context.newFile();
-              }}
-            >
-              <NoteAddOutlined></NoteAddOutlined>
-            </IconButton>
-          </Tooltip>
-          <Divider orientation="vertical" flexItem></Divider>
-        </div>
         <ToggleButtonGroup
           className={styles.ToggleGroup}
           exclusive

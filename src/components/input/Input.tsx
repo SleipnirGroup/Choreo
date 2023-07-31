@@ -7,6 +7,7 @@ type Props = {
   suffix: string;
   enabled: boolean;
   number: number;
+  roundingPrecision?: number;
   setNumber: (arg0: number) => void;
   setEnabled: (arg0: boolean) => void;
   showCheckbox?: boolean;
@@ -27,14 +28,26 @@ class Input extends Component<Props, State> {
   setNumber(event: React.ChangeEvent<HTMLInputElement>) {
     let value = event.target.value;
     if (value === "+" || value === "-" || value === ".") return;
+    let displayedDecimals = value.split(".")?.[1].length ?? 0;
+    if (displayedDecimals > (this.props.roundingPrecision ?? 3)) {
+      value = event.target.value;
+    }
     let input = Number.parseFloat(value);
     if (!Number.isNaN(input)) {
       this.props.setNumber(input);
     }
   }
   correctNumber() {
+    console.log("correct", this.props.title)
+    const precision = this.props.roundingPrecision ?? 3;
     if (this.numberRef.current) {
-      this.numberRef.current.value = `${this.props.number}`;
+      // splits the number at the first decimal point, and removes anything beyond 3 digits after the decimal point
+      // to change this, modify the el.substring(0, x) x being the desired number of digits after the decimal point
+      this.numberRef.current.value = this.props.number
+          .toString()
+          .split(".")
+          .map((el, i) => ((i==0) ? el : el.substring(0, precision)))
+          .join(".");
     }
   }
   componentDidMount(): void {
@@ -43,6 +56,7 @@ class Input extends Component<Props, State> {
 
   render() {
     this.correctNumber();
+    console.log("render", this.props.title)
     return (
       <>
         <span
@@ -59,6 +73,11 @@ class Input extends Component<Props, State> {
           disabled={!this.props.enabled}
           onChange={this.setNumber}
           onBlur={(e) => this.correctNumber()}
+          onFocus={(e)=> {
+            if (this.numberRef.current) {
+            this.numberRef.current!.value = this.props.number.toString();
+            this.numberRef.current!.select()}
+          }}
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="off"
