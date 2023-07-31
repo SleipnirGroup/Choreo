@@ -116,7 +116,7 @@ class PathAnimationSlider extends Component<Props, State> {
             max={this.context.model.pathlist.activePath.getTotalTimeSeconds()}
             aria-label="Default"
             valueLabelDisplay="auto"
-            valueLabelFormat={(x:number)=>x.toFixed(2)}
+            valueLabelFormat={(x: number) => x.toFixed(2)}
             value={this.context.model.uiState.pathAnimationTimestamp}
             onChange={(e, newVal) =>
               this.context.model.uiState.setPathAnimationTimestamp(

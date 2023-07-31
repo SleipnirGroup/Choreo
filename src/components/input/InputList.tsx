@@ -12,7 +12,7 @@ class InputList extends Component<Props, State> {
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
   render() {
-    console.log("list")
+    console.log("list");
     let className =
       styles.InputList +
       " " +

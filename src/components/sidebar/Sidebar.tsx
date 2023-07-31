@@ -25,7 +25,7 @@ class Sidebar extends Component<Props, State> {
   }
 
   render() {
-    let {toggleMainMenu} = this.context.model.uiState;
+    let { toggleMainMenu } = this.context.model.uiState;
     return (
       <div className={styles.Container}>
         <div
@@ -38,33 +38,37 @@ class Sidebar extends Component<Props, State> {
             justifyContent: "flex-start",
             alignItems: "center",
             paddingLeft: 0,
-            zIndex: 1000
+            zIndex: 1000,
           }}
         >
           <Tooltip title="Main Menu">
             <IconButton
-            onClick={()=>{toggleMainMenu()}}>
+              onClick={() => {
+                toggleMainMenu();
+              }}
+            >
               <MenuIcon></MenuIcon>
             </IconButton>
-
           </Tooltip>
           Choreo
         </div>
         <div className={styles.SidebarHeading}>
           PATHS
           <Tooltip title="Add Path">
-                  <IconButton
-            size="small"
-            color="default"
-            style={{
-              float: "right",
-            }}
-            onClick={() =>
-              this.context.model.pathlist.addPath("New Path", true)
-            }
-          >
-            <Add fontSize="small"></Add>
-          </IconButton></Tooltip></div>
+            <IconButton
+              size="small"
+              color="default"
+              style={{
+                float: "right",
+              }}
+              onClick={() =>
+                this.context.model.pathlist.addPath("New Path", true)
+              }
+            >
+              <Add fontSize="small"></Add>
+            </IconButton>
+          </Tooltip>
+        </div>
         <Divider></Divider>
         <div
           className={styles.Sidebar}
@@ -90,7 +94,6 @@ class Sidebar extends Component<Props, State> {
           </Divider>
 
           <WaypointList></WaypointList>
-
         </div>
         <Divider></Divider>
       </div>

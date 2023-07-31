@@ -23,7 +23,7 @@ class Navbar extends Component<Props, State> {
   state = {};
 
   render() {
-    let { selectedNavbarItem, setSelectedNavbarItem} =
+    let { selectedNavbarItem, setSelectedNavbarItem } =
       this.context.model.uiState;
     return (
       <div className={styles.Container}>

@@ -27,7 +27,7 @@
 .SidebarHeading {
   display: grid;
   grid-template-columns: auto 33.6px;
-  height:fit-content;
+  height: fit-content;
   align-items: center;
   min-height: 30px;
 }
@@ -89,13 +89,13 @@
 }
 .SidebarItem .SidebarIcon {
   height: 24px;
-  width:24px;
+  width: 24px;
 }
 .SidebarItem .SidebarLabel {
   color: white;
 }
 .SidebarItem .SidebarRightIcon {
   height: 24px;
-  width:24px;
+  width: 24px;
   padding-right: 8px;
 }

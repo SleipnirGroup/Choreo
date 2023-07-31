@@ -108,7 +108,7 @@ export const UIStateStore = types
     saveFileName: "save",
     waypointPanelOpen: false,
     visibilityPanelOpen: false,
-    mainMenuOpen:false,
+    mainMenuOpen: false,
     pathAnimationTimestamp: 0,
     layers: types.array(types.boolean),
     selectedSidebarItem: types.maybe(types.safeReference(SelectableItem)),

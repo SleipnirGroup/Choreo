@@ -76,7 +76,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
         />
         <TextField
           className={styles.SidebarLabel}
-          variant={this.state.renaming ? "outlined": "standard"}
+          variant={this.state.renaming ? "outlined" : "standard"}
           inputRef={this.nameInputRef}
           error={this.state.renameError}
           style={{
@@ -123,8 +123,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
               width: "100%",
               height: "1.5em",
               userSelect: "none",
-              padding:"4px"
-              
+              padding: "4px",
             },
           }}
         ></TextField>
