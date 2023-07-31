@@ -44,7 +44,6 @@ class RobotConfigPanel extends Component<Props, State> {
               className={styles.ToggleGroup}
               value={uiState.visibleLayersOnly().map((i: number) => `${i}`)}
               onChange={(e, newSelection) => {
-                console.log(newSelection);
                 uiState.setVisibleLayers(
                   newSelection.map((i: string) => Number.parseInt(i) ?? -1)
                 );

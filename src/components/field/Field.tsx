@@ -26,7 +26,6 @@ export class Field extends Component<Props, State> {
     let selectedSidebar = this.context.model.uiState.selectedSidebarItem;
     let activePath = this.context.model.pathlist.activePath;
     let activePathUUID = this.context.model.pathlist.activePathUUID;
-    console.log("config", robotConfigOpen);
     return (
       <div className={styles.Container}>
         <FieldOverlayRoot></FieldOverlayRoot>

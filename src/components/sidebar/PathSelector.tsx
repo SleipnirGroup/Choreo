@@ -61,7 +61,6 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     this.searchForName("");
     let selected =
       this.props.uuid == this.context.model.pathlist.activePathUUID;
-    console.log(this.getPath().name);
     return (
       <span
         className={styles.SidebarItem + " " + (selected ? styles.Selected : "")}

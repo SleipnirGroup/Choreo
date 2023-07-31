@@ -156,9 +156,7 @@ export const UIStateStore = types
         self.pathAnimationTimestamp = time;
       },
       setSelectedSidebarItem(item: SelectableItemTypes) {
-        console.error("from", Object.keys(self.selectedSidebarItem ?? {}));
         self.selectedSidebarItem = item;
-        console.log("to", Object.keys(self.selectedSidebarItem ?? {}));
       },
       setLayerVisible(layer: number, visible: boolean) {
         self.layers.length = Math.max(layer + 1, self.layers.length);

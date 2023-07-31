@@ -26,7 +26,6 @@ class Navbar extends Component<Props, State> {
           exclusive
           value={`${selectedNavbarItem}`}
           onChange={(e, newSelection) => {
-            console.log(newSelection);
             setSelectedNavbarItem(Number.parseInt(newSelection) ?? -1);
           }}
         >
