@@ -3,15 +3,9 @@
 
 use trajoptlib::{SwervePathBuilder, HolonomicTrajectory, SwerveDrivetrain, SwerveModule};
 
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
 #[allow(non_snake_case)]
 #[derive(serde::Serialize, serde::Deserialize)]
-struct UWEWaypoint {
+struct ChoreoWaypoint {
     x: f64,
     y: f64,
     heading: f64,
@@ -41,10 +35,10 @@ struct ChoreoRobotConfig {
 }
 
 #[tauri::command]
-async fn generate_trajectory(path: Vec<UWEWaypoint>, config: ChoreoRobotConfig) -> Result<HolonomicTrajectory, String> {
+async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfig) -> Result<HolonomicTrajectory, String> {
     let mut path_builder = SwervePathBuilder::new();
     for i in 0..path.len() {
-        let wpt = &path[i];
+        let wpt: &ChoreoWaypoint = &path[i];
         if wpt.headingConstrained {
             path_builder.pose_wpt(i, wpt.x, wpt.y, wpt.heading);
         } else {
@@ -107,7 +101,6 @@ async fn generate_trajectory(path: Vec<UWEWaypoint>, config: ChoreoRobotConfig) 
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet])
         .invoke_handler(tauri::generate_handler![generate_trajectory])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
