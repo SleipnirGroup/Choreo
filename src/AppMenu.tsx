@@ -14,7 +14,6 @@ import UploadIcon from "@mui/icons-material/UploadFile";
 import IconButton from "@mui/material/IconButton";
 import FileDownload from "@mui/icons-material/FileDownload";
 import Tooltip from "@mui/material/Tooltip";
-import Divider from "@mui/material/Divider";
 import { NoteAddOutlined } from "@mui/icons-material";
 
 type Props = {};
@@ -23,12 +22,12 @@ type State = {};
 
 class AppMenu extends Component<Props, State> {
   static contextType = DocumentManagerContext;
+  // @ts-ignore
   context!: React.ContextType<typeof DocumentManagerContext>;
   state = {};
 
   render() {
-    let { setMainMenuOpen, mainMenuOpen, toggleMainMenu } =
-      this.context.model.uiState;
+    let { mainMenuOpen, toggleMainMenu } = this.context.model.uiState;
     return (
       <Drawer
         ModalProps={{ onBackdropClick: toggleMainMenu }}

@@ -1,11 +1,10 @@
 .Container {
   background-color: var(--background-dark-gray);
-  border: 1px solid #3f3f3f;
   color: white;
   display: flex;
-  padding-right: 0px;
+  padding-right: 0;
   font-size: 1rem;
-  border: 0px;
+  border: 0;
   align-items: center;
   flex-direction: row;
   justify-content: flex-start;
@@ -18,9 +17,9 @@
   display: flex;
   align-items: center;
   font-size: 1rem;
-  border: 0px;
+  border: 0;
   background: "var(--background-dark-gray)";
-  border-radius: 0px 10px 0px 0px;
+  border-radius: 0 10px 0 0;
 }
 
 .PathSelectControl {

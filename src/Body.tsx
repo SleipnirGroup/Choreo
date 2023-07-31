@@ -5,8 +5,6 @@ import Navbar from "./components/navbar/Navbar";
 import Field from "./components/field/Field";
 import Sidebar from "./components/sidebar/Sidebar";
 import PathAnimationSlider from "./components/field/PathAnimationSlider";
-import { height } from "@mui/system";
-import { Drawer } from "@mui/material";
 import AppMenu from "./AppMenu";
 
 type Props = {};
@@ -15,6 +13,7 @@ type State = {};
 
 class Body extends Component<Props, State> {
   static contextType = DocumentManagerContext;
+  // @ts-ignore
   context!: React.ContextType<typeof DocumentManagerContext>;
   state = {};
 

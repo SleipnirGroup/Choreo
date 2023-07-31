@@ -7,7 +7,7 @@
 
 - Copy-paste the import block for the previous version as described in the comments of that file.
 - Edit the version number within the import block to create a new set of imports referencing the document types for the new version.
-- Add an entry to VERSIONS. The key is the SAVE_FILE_VERSION of the previous (_not new_) version, and the value is an object containing the upgrade function from the previous version's document type to the new version's document type. For example, t:
+- Add an entry to VERSIONS. The key is the SAVE*FILE_VERSION of the previous (\_not new*) version, and the value is an object containing the upgrade function from the previous version's document type to the new version's document type. For example, t:
 
 ```ts
 export let VERSIONS = {

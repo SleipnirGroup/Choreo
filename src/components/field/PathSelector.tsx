@@ -6,6 +6,7 @@ import {
   RadioGroup,
   SelectChangeEvent,
   TextField,
+  Tooltip,
 } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
@@ -13,7 +14,6 @@ import DocumentManagerContext from "../../document/DocumentManager";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
-import { Tooltip } from "@mui/material";
 
 type Props = {};
 
@@ -46,12 +46,12 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     return error;
   }
   searchForName(name: string): boolean {
-    let didFind =
+    return (
       Array.from(this.context.model.pathlist.paths.keys())
         .filter((uuid) => uuid !== this.props.uuid)
         .map((uuid) => this.context.model.pathlist.paths.get(uuid)!.name)
-        .find((existingName) => existingName === name) !== undefined;
-    return didFind;
+        .find((existingName) => existingName === name) !== undefined
+    );
   }
   render() {
     // this is here to use the data we care about during actual rendering
@@ -186,9 +186,9 @@ class PathSelector extends Component<Props, State> {
               },
             }}
             value={this.context.model.pathlist.activePathUUID}
-            onChange={(event: SelectChangeEvent<string>) => {
+            onChange={(event: SelectChangeEvent) => {
               this.context.model.pathlist.setActivePathUUID(event.target.value);
-              this.context.model.uiState.setPageNumber(1);
+              this.context.model.uiState.setPageNumber(1); // does not exist?
             }}
           >
             {Array.from(this.context.model.pathlist.paths.keys()).map(

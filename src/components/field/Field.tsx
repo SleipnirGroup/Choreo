@@ -19,6 +19,7 @@ type State = {};
 
 export class Field extends Component<Props, State> {
   static contextType = DocumentManagerContext;
+  // @ts-ignore
   context!: React.ContextType<typeof DocumentManagerContext>;
   render() {
     let robotConfigOpen = this.context.model.robotConfig.selected;

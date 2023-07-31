@@ -1,6 +1,3 @@
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import IconButton from "@mui/material/IconButton";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
@@ -8,9 +5,6 @@ import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import Input from "../input/Input";
 import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../input/InputList";
-import { Circle, CircleOutlined } from "@mui/icons-material";
-import { ToggleButton, ToggleButtonGroup } from "@mui/material";
-import Waypoint from "../../assets/Waypoint";
 
 type Props = { waypoint: IHolonomicWaypointStore | null };
 

@@ -2,17 +2,13 @@ import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
 import styles from "./WaypointConfigPanel.module.css";
-import InputList from "../input/InputList";
-import Input from "../input/Input";
 import {
-  Checkbox,
-  FormControlLabel,
   IconButton,
   ToggleButton,
   ToggleButtonGroup,
   Tooltip,
 } from "@mui/material";
-import { ViewItemData, ViewLabels } from "../../document/UIStateStore";
+import { ViewItemData } from "../../document/UIStateStore";
 import { Visibility } from "@mui/icons-material";
 import { Close } from "@mui/icons-material";
 
@@ -55,12 +51,7 @@ class RobotConfigPanel extends Component<Props, State> {
               }}
             >
               {ViewItemData.map((item, index) => (
-                <Tooltip
-                  value={`${index}`}
-                  title={item.name}
-                  placement="left"
-                  key={index}
-                >
+                <Tooltip title={item.name} placement="left" key={index}>
                   <ToggleButton
                     value={`${index}`}
                     sx={{
