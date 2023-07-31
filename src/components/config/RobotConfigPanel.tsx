@@ -17,7 +17,6 @@ class RobotConfigPanel extends Component<Props, State> {
     let config = this.context.model.robotConfig;
     return (
       <div className={styles.WaypointPanel}>
-        {/* <IconButton className={styles.ExitButton} onClick={()=>this.context.model.uiState.setPageNumber(1)}><CloseIcon /></IconButton> */}
         <InputList noCheckbox>
           <Input
             title="Mass"
