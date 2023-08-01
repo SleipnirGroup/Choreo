@@ -87,6 +87,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             flexGrow: "1",
             verticalAlign: "middle",
             userSelect: "none",
+            height: "24px",
           }}
           spellCheck={false}
           onChange={() => this.checkName()}
