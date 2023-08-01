@@ -30,7 +30,8 @@ class Navbar extends Component<Props, State> {
           }}
         >
           {NavbarItemData.map((item, index) => (
-            <Tooltip title={item.name}>
+            // @ts-ignore
+            <Tooltip value={`${index}`} title={item.name} key={index}>
               <ToggleButton
                 value={`${index}`}
                 sx={{

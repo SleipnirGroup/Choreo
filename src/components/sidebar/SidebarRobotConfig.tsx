@@ -11,7 +11,7 @@ type Props = {
 
 type State = {};
 
-class SidebarWaypoint extends Component<Props, State> {
+class SidebarRobotConfig extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
   id: number = 0;
@@ -39,4 +39,4 @@ class SidebarWaypoint extends Component<Props, State> {
     );
   }
 }
-export default observer(SidebarWaypoint);
+export default observer(SidebarRobotConfig);

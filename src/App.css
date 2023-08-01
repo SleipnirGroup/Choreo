@@ -8,6 +8,10 @@
   --top-nav-height: 64px;
   --sidebar-width: 300px;
   --divider-gray: rgba(255, 255, 255, 0.12);
+  user-select: none;
+}
+input[type="text"] {
+  user-select: text;
 }
 html {
   touch-action: manipulation;
