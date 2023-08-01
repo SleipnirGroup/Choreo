@@ -50,7 +50,8 @@ class RobotConfigPanel extends Component<Props, State> {
               }}
             >
               {ViewItemData.map((item, index) => (
-                <Tooltip title={item.name} placement="left" key={index}>
+                // @ts-ignore
+                <Tooltip title={item.name} placement="left" key={index} value={`${index}`}>
                   <ToggleButton
                     value={`${index}`}
                     sx={{

@@ -84,7 +84,6 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             flexGrow: "1",
             verticalAlign: "middle",
             userSelect: "none",
-            textDecoration: "underline",
           }}
           onChange={() => this.checkName()}
           value={this.state.name}
