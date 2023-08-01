@@ -9,6 +9,8 @@
   --sidebar-width: 300px;
   --divider-gray: rgba(255, 255, 255, 0.12);
   user-select: none;
+  -webkit-user-select: none;
+  cursor: default
 }
 input[type="text"] {
   user-select: text;

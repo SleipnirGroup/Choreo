@@ -30,10 +30,13 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     this.setState({ renaming: true });
     this.nameInputRef.current!.value = this.getPath().name;
   }
-  stopRename() {
+  completeRename() {
     if (!this.checkName()) {
       this.getPath().setName(this.nameInputRef.current!.value);
     }
+    this.escapeRename();
+  }
+  escapeRename() {
     this.setState({
       renaming: false,
       renameError: false,
@@ -85,11 +88,16 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             verticalAlign: "middle",
             userSelect: "none",
           }}
+          spellCheck={false}
           onChange={() => this.checkName()}
           value={this.state.name}
-          onKeyPress={(event) => {
+          onKeyDown={(event) => {
             if (event.key == "Enter") {
+              this.completeRename();
               this.nameInputRef.current!.blur();
+            }
+            if (event.key == "Escape") {
+              this.escapeRename();
             }
           }}
           inputProps={{
@@ -106,10 +114,11 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             this.startRename();
             this.nameInputRef.current!.focus();
           }}
-          onBlur={() => this.stopRename()}
+          onBlur={() => this.escapeRename()}
           onDoubleClickCapture={(e) => {
             e.stopPropagation();
             this.startRename();
+            setTimeout(() => this.nameInputRef.current!.select(), 0.001);
           }}
           sx={{
             // ".MuiInputBase-root-MuiInput-root:before": {
