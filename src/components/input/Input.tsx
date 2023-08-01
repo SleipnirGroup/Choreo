@@ -70,12 +70,12 @@ class Input extends Component<Props, State> {
           disabled={!this.props.enabled}
           onChange={this.setNumber}
           onBlur={(e) => this.correctNumber()}
-          onFocus={(e)=>{
-              if (this.numberRef.current) {
-                this.numberRef.current!.value = this.props.number.toString();
-                setTimeout(()=>this.numberRef.current!.select(), 0.001);
-              }
-            }}
+          onFocus={(e) => {
+            if (this.numberRef.current) {
+              this.numberRef.current!.value = this.props.number.toString();
+              setTimeout(() => this.numberRef.current!.select(), 0.001);
+            }
+          }}
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="off"
