@@ -96,7 +96,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             readOnly: !this.state.renaming,
             style: { userSelect: "none" },
           }}
-          InputProps={{ disableUnderline: true }}
+          InputProps={{ disableUnderline: false }}
           onFocus={(e) => {
             e.preventDefault();
           }}
@@ -112,12 +112,17 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             this.startRename();
           }}
           sx={{
-            "&:hover": {
-              borderBottom: "2px solid white",
-            },
-            borderBottom: "2px solid transparent",
+            // ".MuiInputBase-root-MuiInput-root:before": {
+            //   borderBottom: "2px solid transparent",
+            // "&:hover": {
+            //   borderBottom: "2px solid white",
+            // },
+            // },           
             marginLeft: "-4px",
             ".MuiInputBase-root": {
+              "&:before": {
+                borderBottom: "2px solid transparent",
+              },
               width: "100%",
               height: "1.5em",
               userSelect: "none",
