@@ -45,7 +45,6 @@ class SidebarWaypoint extends Component<Props, State> {
   }
 
   getIconColor(pathLength: number) {
-    console.log(pathLength);
     if (this.props.waypoint.selected) {
       return "var(--select-yellow)";
     }
@@ -84,7 +83,6 @@ class SidebarWaypoint extends Component<Props, State> {
               provided.draggableProps.style
             )}
             onClick={() => {
-              console.log("click on waypoint");
               this.context.model.uiState.setSelectedSidebarItem(waypoint);
             }}
           >
@@ -114,7 +112,6 @@ class SidebarWaypoint extends Component<Props, State> {
                 className={styles.SidebarRightIcon}
                 onClick={(e) => {
                   e.stopPropagation();
-                  console.log("click on delete");
                   this.context.model.pathlist.activePath.deleteWaypointUUID(
                     waypoint?.uuid || ""
                   );

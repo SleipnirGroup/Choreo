@@ -9,7 +9,7 @@
   --disabled-color: gray;
 }
 .InputList.NoCheckbox {
-  grid-template-columns: auto 1fr auto 0px;
+  grid-template-columns: auto 1fr auto 0;
 }
 
 .Title {

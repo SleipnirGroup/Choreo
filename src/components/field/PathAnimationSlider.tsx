@@ -19,8 +19,9 @@ class PathAnimationSlider extends Component<Props, State> {
     running: false,
   };
   static contextType = DocumentManagerContext;
+  // @ts-ignore
   context!: React.ContextType<typeof DocumentManagerContext>;
-  timerId: number;
+  timerId: number | undefined;
 
   onStart() {
     this.setState({ running: true });

@@ -28,7 +28,7 @@ class Input extends Component<Props, State> {
   setNumber(event: React.ChangeEvent<HTMLInputElement>) {
     let value = event.target.value;
     if (value === "+" || value === "-" || value === ".") return;
-    let displayedDecimals = value.split(".")?.[1].length ?? 0;
+    let displayedDecimals = value.split(".")[1]?.length ?? 0;
     if (displayedDecimals > (this.props.roundingPrecision ?? 3)) {
       value = event.target.value;
     }
@@ -38,7 +38,6 @@ class Input extends Component<Props, State> {
     }
   }
   correctNumber() {
-    console.log("correct", this.props.title);
     const precision = this.props.roundingPrecision ?? 3;
     if (this.numberRef.current) {
       // splits the number at the first decimal point, and removes anything beyond 3 digits after the decimal point
@@ -56,7 +55,6 @@ class Input extends Component<Props, State> {
 
   render() {
     this.correctNumber();
-    console.log("render", this.props.title);
     return (
       <>
         <span

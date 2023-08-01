@@ -5,7 +5,6 @@ import { observer } from "mobx-react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Body from "./Body";
-import InputList from "./components/input/InputList";
 function App() {
   const DocumentManagerContext = createContext(null);
   const documentManager = new DocumentManager();

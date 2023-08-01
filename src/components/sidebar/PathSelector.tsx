@@ -61,7 +61,6 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     this.searchForName("");
     let selected =
       this.props.uuid == this.context.model.pathlist.activePathUUID;
-    console.log(this.getPath().name);
     return (
       <span
         className={styles.SidebarItem + " " + (selected ? styles.Selected : "")}
@@ -127,22 +126,6 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             },
           }}
         ></TextField>
-
-        {/* <span
-            className={styles.SidebarLabel}
-            style={{
-              display: this.state.renaming ? "none" : "inline-block",
-              flexGrow: 1,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              marginTop: "auto",
-              marginBottom: "auto",
-            }}
-
-          >
-            {this.getPath().name}
-          </span> */}
         <Tooltip title="Delete Path">
           <IconButton
             className={styles.SidebarRightIcon}
