@@ -54,6 +54,10 @@ class Input extends Component<Props, State> {
   }
 
   render() {
+    // If the element is not focused, it means the number changed from outside. Update the truncated display.
+    if (document.activeElement !== this.numberRef.current) {
+      this.correctNumber();
+    }
     return (
       <>
         <span
