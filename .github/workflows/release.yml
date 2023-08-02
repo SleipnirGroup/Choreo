@@ -8,6 +8,7 @@ on:
 jobs:
   release:
     name: Create Draft Release
+    needs: [build]
     runs-on: ubuntu-latest
 
     steps:
