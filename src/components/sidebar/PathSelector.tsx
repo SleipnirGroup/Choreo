@@ -127,7 +127,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             // "&:hover": {
             //   borderBottom: "2px solid white",
             // },
-            // },           
+            // },
             marginLeft: "-4px",
             ".MuiInputBase-root": {
               "&:before": {
