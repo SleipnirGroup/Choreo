@@ -1,7 +1,7 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
-import WaypointPanel from "../sidebar/WaypointPanel";
+import WaypointPanel from "../config/WaypointConfigPanel";
 
 import styles from "./Field.module.css";
 import FieldOverlayRoot from "./svg/FieldOverlayRoot";
@@ -9,6 +9,9 @@ import IconButton from "@mui/material/IconButton";
 import ShapeLineIcon from "@mui/icons-material/ShapeLine";
 import { CircularProgress, Tooltip } from "@mui/material";
 import Box from "@mui/material/Box/Box";
+import RobotConfigPanel from "../config/RobotConfigPanel";
+import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
+import VisibilityPanel from "../config/VisibilityPanel";
 
 type Props = {};
 
@@ -16,19 +19,36 @@ type State = {};
 
 export class Field extends Component<Props, State> {
   static contextType = DocumentManagerContext;
+  // @ts-ignore
   context!: React.ContextType<typeof DocumentManagerContext>;
   render() {
+    let robotConfigOpen = this.context.model.robotConfig.selected;
+    let selectedSidebar = this.context.model.uiState.selectedSidebarItem;
+    let activePath = this.context.model.pathlist.activePath;
+    let activePathUUID = this.context.model.pathlist.activePathUUID;
     return (
       <div className={styles.Container}>
         <FieldOverlayRoot></FieldOverlayRoot>
-        <WaypointPanel
-          waypoint={this.context.model.pathlist.activePath.lowestSelectedPoint()}
-        ></WaypointPanel>
+        {selectedSidebar !== undefined &&
+          "heading" in selectedSidebar &&
+          activePath.waypoints.find(
+            (point) =>
+              point.uuid == (selectedSidebar as IHolonomicWaypointStore)!.uuid
+          ) && (
+            <WaypointPanel
+              waypoint={selectedSidebar as IHolonomicWaypointStore}
+            ></WaypointPanel>
+          )}
+        {robotConfigOpen && (
+          <div className={styles.WaypointPanel}>
+            <RobotConfigPanel></RobotConfigPanel>
+          </div>
+        )}
+        <VisibilityPanel></VisibilityPanel>
         <Tooltip
           placement="top-start"
           title={
-            this.context.model.pathlist.activePath.canGenerate() ||
-            this.context.model.pathlist.activePath.generating
+            activePath.canGenerate() || activePath.generating
               ? "Generate Path"
               : "Generate Path (needs 2 waypoints)"
           }
@@ -60,17 +80,15 @@ export class Field extends Component<Props, State> {
                 marginInline: 0,
               }}
               onClick={() => {
-                this.context.model.generatePath(
-                  this.context.model.pathlist.activePathUUID
-                );
+                this.context.model.generatePath(activePathUUID);
               }}
-              disabled={!this.context.model.pathlist.activePath.canGenerate()}
+              disabled={!activePath.canGenerate()}
             >
               <ShapeLineIcon></ShapeLineIcon>
             </IconButton>
           </Box>
         </Tooltip>
-        {this.context.model.pathlist.activePath.generating && (
+        {activePath.generating && (
           <CircularProgress
             size={48 * 1.3}
             sx={{

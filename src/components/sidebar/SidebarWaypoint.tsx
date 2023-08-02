@@ -7,12 +7,19 @@ import {
 } from "react-beautiful-dnd";
 import { CSSProperties } from "styled-components";
 import DocumentManagerContext from "../../document/DocumentManager";
-import { IHolonomicWaypointStore } from "../../document/DocumentModel";
-import styles from "./SidebarWaypoint.module.css";
+import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
+import styles from "./Sidebar.module.css";
+import Circle from "@mui/icons-material/Circle";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { IconButton, Tooltip } from "@mui/material";
+import { isAlive } from "mobx-state-tree";
+import Waypoint from "../../assets/Waypoint";
+import { CircleOutlined } from "@mui/icons-material";
 
 type Props = {
   waypoint: IHolonomicWaypointStore;
   index: number;
+  pathLength: number;
   context: React.ContextType<typeof DocumentManagerContext>;
 };
 
@@ -37,11 +44,26 @@ class SidebarWaypoint extends Component<Props, State> {
     };
   }
 
+  getIconColor(pathLength: number) {
+    if (this.props.waypoint.selected) {
+      return "var(--select-yellow)";
+    }
+    if (this.props.index == 0) {
+      return "green";
+    }
+    if (this.props.index == pathLength - 1) {
+      return "red";
+    }
+    return "var(--accent-purple)";
+  }
+
   render() {
     let waypoint = this.props.waypoint;
+    let pathLength = this.props.pathLength;
     // apparently we have to dereference this here instead of inline in the class name
     // Otherwise the component won't rerender when it changes
-    let selected = waypoint.selected;
+    let { selected, translationConstrained, headingConstrained } = waypoint;
+    if (!isAlive(waypoint)) return <></>;
     return (
       <Draggable
         key={waypoint.uuid}
@@ -54,19 +76,50 @@ class SidebarWaypoint extends Component<Props, State> {
             {...provided.draggableProps}
             {...provided.dragHandleProps}
             className={
-              styles.Container + (selected ? ` ${styles.selected}` : "")
+              styles.SidebarItem + (selected ? ` ${styles.Selected}` : "")
             }
             style={this.getItemStyle(
               snapshot.isDragging,
               provided.draggableProps.style
             )}
             onClick={() => {
-              this.context.model.pathlist.activePath.selectOnly(
-                this.props.index
-              );
+              this.context.model.uiState.setSelectedSidebarItem(waypoint);
             }}
           >
-            {this.props.index + 1}
+            {translationConstrained && headingConstrained && (
+              <Waypoint
+                htmlColor={this.getIconColor(pathLength)}
+                className={styles.SidebarIcon}
+              ></Waypoint>
+            )}
+            {translationConstrained && !headingConstrained && (
+              <Circle
+                htmlColor={this.getIconColor(pathLength)}
+                className={styles.SidebarIcon}
+              ></Circle>
+            )}
+            {!translationConstrained && (
+              <CircleOutlined
+                htmlColor={this.getIconColor(pathLength)}
+                className={styles.SidebarIcon}
+              ></CircleOutlined>
+            )}
+            <span className={styles.SidebarLabel}>
+              Waypoint {this.props.index + 1}
+            </span>
+            <Tooltip title="Delete Waypoint">
+              <IconButton
+                className={styles.SidebarRightIcon}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  this.context.model.pathlist.activePath.deleteWaypointUUID(
+                    waypoint?.uuid || ""
+                  );
+                }}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
           </div>
         )}
       </Draggable>

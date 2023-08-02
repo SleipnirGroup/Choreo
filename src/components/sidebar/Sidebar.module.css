@@ -1,62 +1,101 @@
 .Container {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: flex-start;
   height: 100%;
+  width: var(--sidebar-width);
+  color: white;
+  background-color: var(--background-dark-gray);
+  border-right: thin solid var(--divider-gray);
+}
+.Container > :not(hr, .Sidebar) {
+  padding-left: 8px;
 }
 
 .Sidebar {
-  background-color: var(--background-dark-gray);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  width: 5.5rem;
-  color: white;
+  justify-content: flex-start;
+  align-items: left;
+  min-width: var(--sidebar-width);
+
   box-sizing: border-box;
-  padding-block: 10px;
+  padding-block: 8px;
+  overflow-y: scroll;
+}
+
+.SidebarHeading {
+  display: grid;
+  grid-template-columns: auto 33.6px;
+  height: fit-content;
+  align-items: center;
+  min-height: 30px;
+}
+
+.Sidebar > :not(hr, :global(.MuiDivider-root)) {
+  padding-left: 8px;
+}
+
+.SidebarDivider span {
+  color: gray;
+  font-size: 14px;
 }
 
 .WaypointList {
-  padding-top: 8px;
-  padding-left: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-
   box-sizing: border-box;
-  overflow-y: scroll;
 }
 
-.WaypointPanel {
-  overflow-x: hidden;
-  overflow-y: scroll;
-  position: absolute;
-  top: 0;
-  padding: 10px;
-  width: 300px;
-  background-color: var(--background-light-gray);
+.SidebarItem {
   color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  border-radius: 0px 0px 10px 0px;
-}
-
-.Icon {
-  height: 48px;
-
-  border-radius: 50%;
-  width: 48px;
-  font-size: 24px;
-  text-align: center;
+  border-left: 4px solid var(--background-light-gray);
+  height: 1.5em;
+  /* background-color: var(--accent-purple); */
+  /* border-radius: 50% !important; */
+  width: 100%;
+  font-size: 18px;
   flex-shrink: 0;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
   margin-left: auto;
   margin-right: auto;
+  padding-left: 8px;
   padding-top: auto;
   padding-bottom: auto;
   box-sizing: border-box;
+  color: white;
+  text-align: left;
+  display: grid;
+  grid-template-columns: 24px auto calc(24px + 4.8px + 4.8px);
+  align-items: center;
+  gap: 8px;
+  padding-right: 8px;
+  user-select: none;
+}
+
+.SidebarItem:hover:not(.Selected) {
+  border-left: 4px solid var(--darker-purple);
+}
+.SidebarItem.Noninteractible {
+  border-left: 4px solid transparent;
+  background-color: transparent;
+}
+.Selected {
+  border-width: 0;
+  border-left: 4px solid var(--select-yellow);
+}
+.SidebarItem .SidebarIcon {
+  height: 24px;
+  width: 24px;
+}
+.SidebarItem .SidebarLabel {
+  color: white;
+}
+.SidebarItem .SidebarRightIcon {
+  height: 24px;
+  width: 24px;
+  padding-right: 8px;
 }

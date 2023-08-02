@@ -1,8 +1,9 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
-import NumberEntry from "../../util/NumberEntry";
-import styles from "./RobotConfigPanel.module.css";
+import styles from "./WaypointConfigPanel.module.css";
+import InputList from "../input/InputList";
+import Input from "../input/Input";
 
 type Props = {};
 
@@ -15,14 +16,9 @@ class RobotConfigPanel extends Component<Props, State> {
   render() {
     let config = this.context.model.robotConfig;
     return (
-      <div className={styles.RobotConfigPanel}>
-        <span style={{ fontWeight: "bold", fontSize: "1.2rem" }}>
-          Robot Configuration
-        </span>
-        {/* <IconButton className={styles.ExitButton} onClick={()=>this.context.uiState.setPageNumber(1)}><CloseIcon /></IconButton> */}
-        <div className={styles.NumberEntryList}>
-          <NumberEntry
-            longestTitle="Wheel Radius"
+      <div className={styles.WaypointPanel}>
+        <InputList noCheckbox>
+          <Input
             title="Mass"
             suffix="kg"
             enabled={true}
@@ -32,8 +28,7 @@ class RobotConfigPanel extends Component<Props, State> {
             showCheckbox={false}
           />
 
-          <NumberEntry
-            longestTitle="Wheel Radius"
+          <Input
             title="MoI"
             suffix="kg · m²"
             enabled={true}
@@ -43,8 +38,7 @@ class RobotConfigPanel extends Component<Props, State> {
             showCheckbox={false}
           />
 
-          <NumberEntry
-            longestTitle="Wheel Radius"
+          <Input
             title="Max Velocity"
             suffix="rad/s"
             enabled={true}
@@ -54,8 +48,7 @@ class RobotConfigPanel extends Component<Props, State> {
             showCheckbox={false}
           />
 
-          <NumberEntry
-            longestTitle="Wheel Radius"
+          <Input
             title="Max Torque"
             suffix="N · m"
             enabled={true}
@@ -65,8 +58,7 @@ class RobotConfigPanel extends Component<Props, State> {
             showCheckbox={false}
           />
 
-          <NumberEntry
-            longestTitle="Wheel Radius"
+          <Input
             title="Width"
             suffix="m"
             enabled={true}
@@ -76,8 +68,7 @@ class RobotConfigPanel extends Component<Props, State> {
             showCheckbox={false}
           />
 
-          <NumberEntry
-            longestTitle="Wheel Radius"
+          <Input
             title="Length"
             suffix="m"
             enabled={true}
@@ -87,8 +78,7 @@ class RobotConfigPanel extends Component<Props, State> {
             showCheckbox={false}
           />
 
-          <NumberEntry
-            longestTitle="Wheel Radius"
+          <Input
             title="Wheelbase"
             suffix="m"
             enabled={true}
@@ -98,8 +88,7 @@ class RobotConfigPanel extends Component<Props, State> {
             showCheckbox={false}
           />
 
-          <NumberEntry
-            longestTitle="Wheel Radius"
+          <Input
             title="Trackwidth"
             suffix="m"
             enabled={true}
@@ -108,8 +97,7 @@ class RobotConfigPanel extends Component<Props, State> {
             setNumber={config!.setTrackwidth}
             showCheckbox={false}
           />
-          <NumberEntry
-            longestTitle="Wheel Radius"
+          <Input
             title="Wheel Radius"
             suffix="m"
             enabled={true}
@@ -118,7 +106,7 @@ class RobotConfigPanel extends Component<Props, State> {
             setNumber={config!.setWheelRadius}
             showCheckbox={false}
           />
-        </div>
+        </InputList>
       </div>
     );
   }

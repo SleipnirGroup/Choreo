@@ -99,3 +99,7 @@ A __Path__ must comply with this template:
 ```
 
 Within a __Trajectory__, `<timestamp>` is a positive number that must be `0` for the first __Trajectory Sample__ and greater than the previous sample for the remaining samples.
+
+### v0.0.1
+
+See v0.0.0. In __Waypoint__, `xConstrained` and `yConstrained` have been replaced with a combined `translationConstrained : <boolean>`.

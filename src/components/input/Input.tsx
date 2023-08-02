@@ -1,20 +1,20 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import styles from "./NumberEntry.module.css";
+import styles from "./InputList.module.css";
 
 type Props = {
-  longestTitle: string;
   title: string;
   suffix: string;
   enabled: boolean;
   number: number;
+  roundingPrecision?: number;
   setNumber: (arg0: number) => void;
   setEnabled: (arg0: boolean) => void;
   showCheckbox?: boolean;
 };
 
 type State = {};
-class NumberEntry extends Component<Props, State> {
+class Input extends Component<Props, State> {
   numberRef: React.RefObject<HTMLInputElement>;
   constructor(props: Props) {
     super(props);
@@ -28,14 +28,25 @@ class NumberEntry extends Component<Props, State> {
   setNumber(event: React.ChangeEvent<HTMLInputElement>) {
     let value = event.target.value;
     if (value === "+" || value === "-" || value === ".") return;
+    let displayedDecimals = value.split(".")[1]?.length ?? 0;
+    if (displayedDecimals > (this.props.roundingPrecision ?? 3)) {
+      value = event.target.value;
+    }
     let input = Number.parseFloat(value);
     if (!Number.isNaN(input)) {
       this.props.setNumber(input);
     }
   }
   correctNumber() {
+    const precision = this.props.roundingPrecision ?? 3;
     if (this.numberRef.current) {
-      this.numberRef.current.value = `${this.props.number}`;
+      // splits the number at the first decimal point, and removes anything beyond 3 digits after the decimal point
+      // to change this, modify the el.substring(0, x) x being the desired number of digits after the decimal point
+      this.numberRef.current.value = this.props.number
+        .toString()
+        .split(".")
+        .map((el, i) => (i == 0 ? el : el.substring(0, precision)))
+        .join(".");
     }
   }
   componentDidMount(): void {
@@ -43,17 +54,12 @@ class NumberEntry extends Component<Props, State> {
   }
 
   render() {
-    this.correctNumber();
     return (
-      <div
-        className={
-          styles.Container +
-          (this.props.showCheckbox ? "" : ` ${styles.NoCheckbox}`)
-        }
-      >
+      <>
         <span
-          className={styles.Title}
-          style={{ width: `${this.props.longestTitle.length}ch` }}
+          className={
+            styles.Title + " " + (this.props.enabled ? "" : styles.Disabled)
+          }
         >
           {this.props.title}
         </span>
@@ -64,21 +70,35 @@ class NumberEntry extends Component<Props, State> {
           disabled={!this.props.enabled}
           onChange={this.setNumber}
           onBlur={(e) => this.correctNumber()}
+          onFocus={(e) => {
+            if (this.numberRef.current) {
+              this.numberRef.current!.value = this.props.number.toString();
+              setTimeout(() => this.numberRef.current!.select(), 0.001);
+            }
+          }}
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="off"
         ></input>
-        <span className={styles.Suffix}>{this.props.suffix}</span>
-        {this.props.showCheckbox && (
+        <span
+          className={
+            styles.Suffix + " " + (this.props.enabled ? "" : styles.Disabled)
+          }
+        >
+          {this.props.suffix}
+        </span>
+        {this.props.showCheckbox ? (
           <input
             type="checkbox"
             className={styles.Checkbox}
             checked={this.props.enabled}
             onChange={this.setEnabled}
           ></input>
+        ) : (
+          <span></span>
         )}
-      </div>
+      </>
     );
   }
 }
-export default observer(NumberEntry);
+export default observer(Input);

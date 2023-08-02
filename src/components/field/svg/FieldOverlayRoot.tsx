@@ -7,7 +7,9 @@ import * as d3 from "d3";
 import FieldGrid from "./FieldGrid";
 import FieldPathLines from "./FieldPathLines";
 import InterpolatedRobot from "./InterpolatedRobot";
-import { v4 as uuidv4 } from "uuid";
+import { NavbarLabels, ViewLayers } from "../../../document/UIStateStore";
+import FieldGeneratedLines from "./FieldGeneratedLines";
+import FieldAxisLines from "./FieldAxisLines";
 
 type Props = {};
 
@@ -93,7 +95,7 @@ class FieldOverlayRoot extends Component<Props, State> {
   }
   handleResize() {
     let factor = this.getScalingFactor(this.svgRef?.current);
-    this.context.uiState.setFieldScalingFactor(factor);
+    this.context.model.uiState.setFieldScalingFactor(factor);
   }
   getMouseCoordinates(e: any) {
     let coords = d3.pointer(e, this.frameRef?.current);
@@ -103,7 +105,7 @@ class FieldOverlayRoot extends Component<Props, State> {
   render() {
     this.canvasHeightMeters = FieldImage23.WIDTH_M + 1;
     this.canvasWidthMeters = FieldImage23.LENGTH_M + 1;
-
+    let layers = this.context.model.uiState.layers;
     return (
       <svg
         ref={this.svgRef}
@@ -131,29 +133,41 @@ class FieldOverlayRoot extends Component<Props, State> {
           id="rootFrame"
         >
           {/* Background */}
-          <FieldImage23 blue={true}></FieldImage23>
-          <FieldGrid></FieldGrid>
-          {/* Line paths */}
-          <FieldPathLines></FieldPathLines>
-          <circle
-            cx={0}
-            cy={0}
-            r={10000}
-            style={{ fill: "transparent" }}
-            onClick={(e) => this.createWaypoint(e)}
-          ></circle>
-          {this.context.model.pathlist.activePath.waypoints.map(
-            (point, index) => (
-              <OverlayWaypoint
-                waypoint={point}
-                index={index}
-                key={point.uuid}
-              ></OverlayWaypoint>
-            )
+          {layers[ViewLayers.Field] && (
+            <FieldImage23 blue={true}></FieldImage23>
           )}
-          <InterpolatedRobot
-            timestamp={this.context.uiState.pathAnimationTimestamp}
-          ></InterpolatedRobot>
+          {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
+          <FieldAxisLines></FieldAxisLines>
+          {/* Line paths */}
+          {layers[ViewLayers.Waypoints] && <FieldPathLines></FieldPathLines>}
+          {layers[ViewLayers.Trajectory] && (
+            <FieldGeneratedLines></FieldGeneratedLines>
+          )}
+          {layers[ViewLayers.Waypoints] &&
+            this.context.model.uiState.isNavbarWaypointSelected() && (
+              <circle
+                cx={0}
+                cy={0}
+                r={10000}
+                style={{ fill: "transparent" }}
+                onClick={(e) => this.createWaypoint(e)}
+              ></circle>
+            )}
+          {layers[ViewLayers.Waypoints] &&
+            this.context.model.pathlist.activePath.waypoints.map(
+              (point, index) => (
+                <OverlayWaypoint
+                  waypoint={point}
+                  index={index}
+                  key={point.uuid}
+                ></OverlayWaypoint>
+              )
+            )}
+          {layers[ViewLayers.Trajectory] && (
+            <InterpolatedRobot
+              timestamp={this.context.model.uiState.pathAnimationTimestamp}
+            ></InterpolatedRobot>
+          )}
         </g>
       </svg>
     );
@@ -167,6 +181,13 @@ class FieldOverlayRoot extends Component<Props, State> {
       var newPoint = this.context.model.pathlist.activePath.addWaypoint();
       newPoint.setX(coords.x);
       newPoint.setY(coords.y);
+      newPoint.setSelected(true);
+      if (
+        this.context.model.uiState.selectedNavbarItem ==
+        NavbarLabels.TranslationWaypoint
+      ) {
+        newPoint.setHeadingConstrained(false);
+      }
     }
   }
 }

@@ -3,10 +3,9 @@ import DocumentManagerContext from "./document/DocumentManager";
 import { observer } from "mobx-react";
 import Navbar from "./components/navbar/Navbar";
 import Field from "./components/field/Field";
-import RobotConfigPanel from "./components/config/RobotConfigPanel";
 import Sidebar from "./components/sidebar/Sidebar";
 import PathAnimationSlider from "./components/field/PathAnimationSlider";
-import PathSelector from "./components/field/PathSelector";
+import AppMenu from "./AppMenu";
 
 type Props = {};
 
@@ -14,6 +13,7 @@ type State = {};
 
 class Body extends Component<Props, State> {
   static contextType = DocumentManagerContext;
+  // @ts-ignore
   context!: React.ContextType<typeof DocumentManagerContext>;
   state = {};
 
@@ -22,7 +22,7 @@ class Body extends Component<Props, State> {
       <>
         <div className="App">
           <div className="Page">
-            <Navbar></Navbar>
+            <AppMenu></AppMenu>
             <span
               style={{
                 display: "flex",
@@ -32,52 +32,18 @@ class Body extends Component<Props, State> {
               }}
             >
               <Sidebar></Sidebar>
-              <Field></Field>
+              <span
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  flexGrow: 1,
+                }}
+              >
+                <Navbar></Navbar>
+                <Field></Field>
+              </span>
             </span>
             <PathAnimationSlider></PathAnimationSlider>
-          </div>
-
-          <div
-            className="Panel"
-            style={{
-              backgroundColor: "transparent",
-              display: `${
-                this.context.uiState.appPage === 2 ? "block" : "none"
-              }`,
-            }}
-          >
-            <div
-              style={{
-                width: "100%",
-                height: "100%",
-                backgroundColor: "#0013",
-              }}
-              onClick={() => {
-                this.context.uiState.setPageNumber(1);
-              }}
-            ></div>
-            <RobotConfigPanel></RobotConfigPanel>
-          </div>
-          <div
-            className="Panel"
-            style={{
-              backgroundColor: "transparent",
-              display: `${
-                this.context.uiState.appPage === 0 ? "block" : "none"
-              }`,
-            }}
-          >
-            <div
-              style={{
-                width: "100%",
-                height: "100%",
-                backgroundColor: "#0013",
-              }}
-              onClick={() => {
-                this.context.uiState.setPageNumber(1);
-              }}
-            ></div>
-            <PathSelector></PathSelector>
           </div>
         </div>
       </>
