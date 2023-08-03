@@ -26,26 +26,26 @@ class Input extends Component<Props, State> {
     this.state = {
       focused: false,
       editing: false,
-      editedValue: ""
-    }
+      editedValue: "",
+    };
     this.inputElemRef = React.createRef<HTMLInputElement>();
   }
   setEnabled = (event: React.ChangeEvent<HTMLInputElement>) => {
     this.props.setEnabled(event.target.checked);
-  }
+  };
 
   unfocusedMode() {
     this.setState({
       focused: false,
-      editing: false
-    })
+      editing: false,
+    });
   }
 
   focusedMode() {
     this.setState({
       focused: true,
-      editing: false
-    })
+      editing: false,
+    });
     this.inputElemRef.current!.value = this.props.number.toString();
     this.inputElemRef.current!.select();
   }
@@ -53,8 +53,8 @@ class Input extends Component<Props, State> {
   editingMode() {
     this.setState({
       focused: true,
-      editing: true
-    })
+      editing: true,
+    });
   }
 
   getDisplayStr(): string {
@@ -68,8 +68,12 @@ class Input extends Component<Props, State> {
       }
     }
   }
-  
-  componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any): void {
+
+  componentDidUpdate(
+    prevProps: Readonly<Props>,
+    prevState: Readonly<State>,
+    snapshot?: any
+  ): void {
     if (prevProps.number !== this.props.number) {
       // if the value has changed from the outside, make sure it is no longer
       // focused so concise precision is shown.
@@ -103,22 +107,20 @@ class Input extends Component<Props, State> {
               this.editingMode();
             }
             this.setState({
-              editedValue: e.target.value
+              editedValue: e.target.value,
             });
             e.preventDefault();
           }}
           onKeyDown={(e) => {
             if (e.key == "Enter") {
-              let newNumber = parseFloat(this.state.editedValue)
+              let newNumber = parseFloat(this.state.editedValue);
               if (!Number.isNaN(newNumber)) {
                 this.props.setNumber(newNumber);
               }
               this.focusedMode();
             }
           }}
-
           value={this.getDisplayStr()}
-          
           onMouseDown={(e) => {
             if (!this.state.focused) {
               this.focusedMode();
