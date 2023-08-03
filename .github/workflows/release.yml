@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   release:
@@ -30,7 +30,7 @@ jobs:
       - name: Rename macOS x86_64 bundle
         working-directory: pkg/macOS-x86_64/release/bundle/dmg
         run: mv *.dmg Choreo-${{ github.ref_name }}-macOS-x86_64.dmg
-      
+
       - name: Rename macOS arm64 bundle
         working-directory: pkg/macOS-arm64/aarch64-apple-darwin/release/bundle/dmg
         run: mv *.dmg Choreo-${{ github.ref_name }}-macOS-arm64.dmg

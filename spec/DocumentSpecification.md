@@ -2,25 +2,25 @@
 
 ## File Format
 
-A __Document__ is text in the [JSON](https://www.ecma-international.org/publications-and-standards/standards/ecma-404/) format complying with a version of this specification.
+A **Document** is text in the [JSON](https://www.ecma-international.org/publications-and-standards/standards/ecma-404/) format complying with a version of this specification.
 
 ## JSON
 
 The document is a JSON object. The document may contain additional data outside of the specification.
 
-This specification uses templates to express the necessary parts of the __Document__. `<>` may be used to indicate a part of the JSON that has not yet been specified or contains user-defined data.
+This specification uses templates to express the necessary parts of the **Document**. `<>` may be used to indicate a part of the JSON that has not yet been specified or contains user-defined data.
 
 Here are the user-defined data expressions:
 
-* `<number>` indicates an arbitrary number.
-* `<positive-number>` indicates an arbitrary number greater than or equal to `0`.
-* `<boolean>` indicates an arbitrary boolean.
-* `<integer>` indicates as an integer number.
-* `<positive-integer>` indicates as an integer number greater than or equal to `0`.
+- `<number>` indicates an arbitrary number.
+- `<positive-number>` indicates an arbitrary number greater than or equal to `0`.
+- `<boolean>` indicates an arbitrary boolean.
+- `<integer>` indicates as an integer number.
+- `<positive-integer>` indicates as an integer number greater than or equal to `0`.
 
 ## Version
 
-There are multiple versions of this specification, each of which has a unique identifying string, such as `v0.0.0`. A __Document__ must contain a string field named `version`, containing this unique version. Each version of the specification will be amended to this document as necessary.
+There are multiple versions of this specification, each of which has a unique identifying string, such as `v0.0.0`. A **Document** must contain a string field named `version`, containing this unique version. Each version of the specification will be amended to this document as necessary.
 
 ### Names
 
@@ -30,7 +30,7 @@ All names are strings that must have no beginning or trailing whitespace and be 
 
 ### v0.0.0
 
-A version `v0.0.0` __Document__ must fit this template:
+A version `v0.0.0` **Document** must fit this template:
 
 ```json
 {
@@ -48,7 +48,7 @@ A version `v0.0.0` __Document__ must fit this template:
 }
 ```
 
-`<paths>` is an object containing at least one arbitrarily named field. Each field's name is the name of the __Path__, and its value is the __Path__. For example, if a document contains two paths named `path1` and `path2`, `<paths>` would follow this template:
+`<paths>` is an object containing at least one arbitrarily named field. Each field's name is the name of the **Path**, and its value is the **Path**. For example, if a document contains two paths named `path1` and `path2`, `<paths>` would follow this template:
 
 ```json
 {
@@ -57,7 +57,7 @@ A version `v0.0.0` __Document__ must fit this template:
 }
 ```
 
-A __Path__ must comply with this template:
+A **Path** must comply with this template:
 
 ```json
 {
@@ -66,7 +66,7 @@ A __Path__ must comply with this template:
 }
 ```
 
-`<waypoint-list>` is an array containing only __Waypoints__. A __Waypoint__ must comply with this template:
+`<waypoint-list>` is an array containing only **Waypoints**. A **Waypoint** must comply with this template:
 
 ```json
 {
@@ -84,7 +84,7 @@ A __Path__ must comply with this template:
 }
 ```
 
-`<generated-trajectory>` may either be `null` or a __Trajectory__, which is an array of at least two items containing only __Trajectory Samples__. A __Trajectory Sample__ must comply with this template:
+`<generated-trajectory>` may either be `null` or a **Trajectory**, which is an array of at least two items containing only **Trajectory Samples**. A **Trajectory Sample** must comply with this template:
 
 ```json
 {
@@ -98,8 +98,8 @@ A __Path__ must comply with this template:
 }
 ```
 
-Within a __Trajectory__, `<timestamp>` is a positive number that must be `0` for the first __Trajectory Sample__ and greater than the previous sample for the remaining samples.
+Within a **Trajectory**, `<timestamp>` is a positive number that must be `0` for the first **Trajectory Sample** and greater than the previous sample for the remaining samples.
 
 ### v0.0.1
 
-See v0.0.0. In __Waypoint__, `xConstrained` and `yConstrained` have been replaced with a combined `translationConstrained : <boolean>`.
+See v0.0.0. In **Waypoint**, `xConstrained` and `yConstrained` have been replaced with a combined `translationConstrained : <boolean>`.
