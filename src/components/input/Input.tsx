@@ -8,56 +8,76 @@ type Props = {
   enabled: boolean;
   number: number;
   roundingPrecision?: number;
-  setNumber: (arg0: number) => void;
-  setEnabled: (arg0: boolean) => void;
+  setNumber: (newNumber: number) => void;
+  setEnabled: (value: boolean) => void;
   showCheckbox?: boolean;
 };
 
-type State = {};
+type State = {
+  focused: boolean;
+  editing: boolean;
+  editedValue: string;
+};
+
 class Input extends Component<Props, State> {
-  numberRef: React.RefObject<HTMLInputElement>;
+  inputElemRef: React.RefObject<HTMLInputElement>;
   constructor(props: Props) {
     super(props);
-    this.setEnabled = this.setEnabled.bind(this);
-    this.setNumber = this.setNumber.bind(this);
-    this.numberRef = React.createRef<HTMLInputElement>();
+    this.state = {
+      focused: false,
+      editing: false,
+      editedValue: ""
+    }
+    this.inputElemRef = React.createRef<HTMLInputElement>();
   }
-  setEnabled(event: React.ChangeEvent<HTMLInputElement>) {
+  setEnabled = (event: React.ChangeEvent<HTMLInputElement>) => {
     this.props.setEnabled(event.target.checked);
   }
-  setNumber(event: React.ChangeEvent<HTMLInputElement>) {
-    let value = event.target.value;
-    if (value === "+" || value === "-" || value === ".") return;
-    let displayedDecimals = value.split(".")[1]?.length ?? 0;
-    if (displayedDecimals > (this.props.roundingPrecision ?? 3)) {
-      value = event.target.value;
-    }
-    let input = Number.parseFloat(value);
-    if (!Number.isNaN(input)) {
-      this.props.setNumber(input);
+
+  unfocusedMode() {
+    this.setState({
+      focused: false,
+      editing: false
+    })
+  }
+
+  focusedMode() {
+    this.setState({
+      focused: true,
+      editing: false
+    })
+    this.inputElemRef.current!.value = this.props.number.toString();
+    this.inputElemRef.current!.select();
+  }
+
+  editingMode() {
+    this.setState({
+      focused: true,
+      editing: true
+    })
+  }
+
+  getDisplayStr(): string {
+    if (this.state.editing) {
+      return this.state.editedValue;
+    } else {
+      if (this.state.focused) {
+        return this.props.number.toString();
+      } else {
+        return this.props.number.toPrecision(4);
+      }
     }
   }
-  correctNumber() {
-    const precision = this.props.roundingPrecision ?? 3;
-    if (this.numberRef.current) {
-      // splits the number at the first decimal point, and removes anything beyond 3 digits after the decimal point
-      // to change this, modify the el.substring(0, x) x being the desired number of digits after the decimal point
-      this.numberRef.current.value = this.props.number
-        .toString()
-        .split(".")
-        .map((el, i) => (i == 0 ? el : el.substring(0, precision)))
-        .join(".");
+  
+  componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any): void {
+    if (prevProps.number !== this.props.number) {
+      // if the value has changed from the outside, make sure it is no longer
+      // focused so concise precision is shown.
+      this.unfocusedMode();
     }
-  }
-  componentDidMount(): void {
-    this.correctNumber();
   }
 
   render() {
-    // If the element is not focused, it means the number changed from outside. Update the truncated display.
-    if (document.activeElement !== this.numberRef.current) {
-      this.correctNumber();
-    }
     return (
       <>
         <span
@@ -68,16 +88,41 @@ class Input extends Component<Props, State> {
           {this.props.title}
         </span>
         <input
-          ref={this.numberRef}
+          ref={this.inputElemRef}
           type="text"
           className={styles.Number}
           disabled={!this.props.enabled}
-          onChange={this.setNumber}
-          onBlur={(e) => this.correctNumber()}
           onFocus={(e) => {
-            if (this.numberRef.current) {
-              this.numberRef.current!.value = this.props.number.toString();
-              setTimeout(() => this.numberRef.current!.select(), 0.001);
+            this.focusedMode();
+          }}
+          onBlur={(e) => {
+            this.unfocusedMode();
+          }}
+          onChange={(e) => {
+            if (!this.state.editing) {
+              this.editingMode();
+            }
+            this.setState({
+              editedValue: e.target.value
+            });
+            e.preventDefault();
+          }}
+          onKeyDown={(e) => {
+            if (e.key == "Enter") {
+              let newNumber = parseFloat(this.state.editedValue)
+              if (!Number.isNaN(newNumber)) {
+                this.props.setNumber(newNumber);
+              }
+              this.focusedMode();
+            }
+          }}
+
+          value={this.getDisplayStr()}
+          
+          onMouseDown={(e) => {
+            if (!this.state.focused) {
+              this.focusedMode();
+              e.preventDefault();
             }
           }}
           autoComplete="off"
