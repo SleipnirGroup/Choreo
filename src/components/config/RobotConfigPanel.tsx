@@ -14,7 +14,7 @@ class RobotConfigPanel extends Component<Props, State> {
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
   render() {
-    let config = this.context.model.robotConfig;
+    let config = this.context.model.document.robotConfig;
     return (
       <div className={styles.WaypointPanel}>
         <InputList noCheckbox>

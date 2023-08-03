@@ -33,7 +33,7 @@ class OverlayWaypoint extends Component<Props, State> {
         <defs>
           <path
             id={this.appendIndexID("bumpers")}
-            d={context.model.robotConfig.bumperSVGElement()}
+            d={context.model.document.robotConfig.bumperSVGElement()}
           ></path>
           <clipPath id={this.appendIndexID("clip")}>
             <use xlinkHref={`#${this.appendIndexID("bumpers")}`} />
@@ -77,9 +77,7 @@ class OverlayWaypoint extends Component<Props, State> {
     // converts the values to stay inside the 360 positive
 
     // creates the new rotate position array
-
     this.props.waypoint.setHeading(angleFinal);
-
     //d3.select(`#group`).attr('transform', `rotate(${ this.r.angle })`)
   }
 
@@ -95,9 +93,7 @@ class OverlayWaypoint extends Component<Props, State> {
     // converts the values to stay inside the 360 positive
 
     // creates the new rotate position array
-
     this.props.waypoint.setVelocityAngle(angleFinal);
-
     //d3.select(`#group`).attr('transform', `rotate(${ this.r.angle })`)
   }
 
@@ -110,21 +106,26 @@ class OverlayWaypoint extends Component<Props, State> {
     // converts the values to stay inside the 360 positive
 
     // creates the new rotate position array
-
     this.props.waypoint.setX(pointerPos.x);
     this.props.waypoint.setY(pointerPos.y);
 
     //d3.select(`#group`).attr('transform', `rotate(${ this.r.angle })`)
   }
   selectWaypoint() {
-    this.context.model.pathlist.activePath.selectOnly(this.props.index);
+    this.context.model.document.pathlist.activePath.selectOnly(
+      this.props.index
+    );
   }
   componentDidMount() {
     if (this.rootRef.current) {
       var rotateHandleDrag = d3
         .drag<SVGCircleElement, undefined>()
         .on("drag", (event) => this.dragPointRotate(event))
-        .on("start", () => this.selectWaypoint())
+        .on("start", () => {
+          this.selectWaypoint();
+          this.context.history.startGroup(() => {});
+        })
+        .on("end", (event) => this.context.history.stopGroup())
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
         `#rotateTarget${this.props.index}`
@@ -133,7 +134,11 @@ class OverlayWaypoint extends Component<Props, State> {
       var velocityRotateHandleDrag = d3
         .drag<SVGCircleElement, undefined>()
         .on("drag", (event) => this.dragPointVelocityRotate(event))
-        .on("start", () => this.selectWaypoint())
+        .on("end", (event) => this.context.history.stopGroup())
+        .on("start", () => {
+          this.selectWaypoint();
+          this.context.history.startGroup(() => {});
+        })
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
         `#velocityRotateTarget${this.props.index}`
@@ -142,7 +147,11 @@ class OverlayWaypoint extends Component<Props, State> {
       var dragHandleDrag = d3
         .drag<SVGCircleElement, undefined>()
         .on("drag", (event) => this.dragPointTranslate(event))
-        .on("start", () => this.selectWaypoint())
+        .on("start", () => {
+          this.selectWaypoint();
+          this.context.history.startGroup(() => {});
+        })
+        .on("end", (event) => this.context.history.stopGroup())
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
         `#dragTarget${this.props.index}`
@@ -160,7 +169,7 @@ class OverlayWaypoint extends Component<Props, State> {
       : "var(--accent-purple)";
   }
   getDragTargetColor(): string {
-    let waypoints = this.context.model.pathlist.activePath.waypoints;
+    let waypoints = this.context.model.document.pathlist.activePath.waypoints;
     let color = "var(--accent-purple)";
     if (waypoints.length >= 2) {
       if (this.props.index === 0) {
@@ -180,7 +189,7 @@ class OverlayWaypoint extends Component<Props, State> {
   render() {
     let waypoint = this.props.waypoint;
     let boxColorStr = this.getBoxColor();
-    let robotConfig = this.context.model.robotConfig;
+    let robotConfig = this.context.model.document.robotConfig;
     return (
       <g ref={this.rootRef}>
         <g

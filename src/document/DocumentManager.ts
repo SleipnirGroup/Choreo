@@ -1,25 +1,34 @@
 import { createContext } from "react";
-import DocumentModelStore, { IDocumentModelStore } from "./DocumentModel";
-import { RobotConfigStore } from "./RobotConfigStore";
-import { PathListStore } from "./PathListStore";
-import { UIStateStore } from "./UIStateStore";
+import StateStore, { IStateStore } from "./DocumentModel";
 import { dialog, fs } from "@tauri-apps/api";
 import { v4 as uuidv4 } from "uuid";
 import { applySnapshot } from "mobx-state-tree";
 
 export class DocumentManager {
   simple: any;
-  model: IDocumentModelStore;
+  undo() {
+    this.model.document.history.canUndo && this.model.document.history.undo();
+  }
+  redo() {
+    this.model.document.history.canRedo && this.model.document.history.redo();
+  }
+  get history() {
+    return this.model.document.history;
+  }
+  model: IStateStore;
   constructor() {
-    this.model = DocumentModelStore.create({
-      uiState: UIStateStore.create({
+    this.model = StateStore.create({
+      uiState: {
         selectedSidebarItem: undefined,
         layers: [true, false, true, true],
-      }),
-      robotConfig: RobotConfigStore.create({ identifier: uuidv4() }),
-      pathlist: PathListStore.create(),
+      },
+      document: {
+        robotConfig: { identifier: uuidv4() },
+        pathlist: {},
+      },
     });
-    this.model.pathlist.addPath("NewPath");
+    this.model.document.pathlist.addPath("NewPath");
+    this.model.document.history.clear();
   }
   newFile(): void {
     applySnapshot(this.model, {
@@ -27,10 +36,14 @@ export class DocumentManager {
         selectedSidebarItem: undefined,
         layers: [true, false, true, true],
       },
-      robotConfig: { identifier: uuidv4() },
-      pathlist: {},
+      document: {
+        robotConfig: { identifier: uuidv4() },
+        pathlist: {},
+      },
     });
-    this.model.pathlist.addPath("NewPath");
+
+    this.model.document.pathlist.addPath("NewPath");
+    this.model.document.history.clear();
   }
   async parseFile(file: File | null): Promise<string> {
     if (file == null) {
@@ -54,12 +67,11 @@ export class DocumentManager {
   async onFileUpload(file: File | null) {
     await this.parseFile(file)
       .then((content) => this.model.fromSavedDocument(JSON.parse(content)))
-      .then(() => this.model.uiState.setPageNumber(1))
       .catch((err) => console.log(err));
   }
 
   async exportTrajectory(uuid: string) {
-    const path = this.model.pathlist.paths.get(uuid);
+    const path = this.model.document.pathlist.paths.get(uuid);
     if (path === undefined) {
       console.error("Tried to export trajectory with unknown uuid: ", uuid);
       return;
@@ -85,7 +97,9 @@ export class DocumentManager {
     }
   }
   async exportActiveTrajectory() {
-    return await this.exportTrajectory(this.model.pathlist.activePathUUID);
+    return await this.exportTrajectory(
+      this.model.document.pathlist.activePathUUID
+    );
   }
 
   async loadFile(jsonFilename: string) {
@@ -97,7 +111,6 @@ export class DocumentManager {
       .then((data) => {
         this.model.fromSavedDocument(data);
       })
-      .then(() => this.model.uiState.setPageNumber(1))
       .catch((err) => console.log(err));
   }
 

@@ -1,4 +1,4 @@
-import { Instance, types, getRoot, destroy } from "mobx-state-tree";
+import { Instance, types, getRoot, destroy, getParent } from "mobx-state-tree";
 import {
   SavedPath,
   SavedTrajectorySample,
@@ -11,7 +11,7 @@ import {
 import { TrajectorySampleStore } from "./TrajectorySampleStore";
 import { moveItem } from "mobx-utils";
 import { v4 as uuidv4 } from "uuid";
-import { IDocumentModelStore } from "./DocumentModel";
+import { IStateStore } from "./DocumentModel";
 
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
@@ -92,7 +92,7 @@ export const HolonomicPathStore = types
       addWaypoint(): IHolonomicWaypointStore {
         self.waypoints.push(HolonomicWaypointStore.create({ uuid: uuidv4() }));
         if (self.waypoints.length === 1) {
-          const root = getRoot<IDocumentModelStore>(self);
+          const root = getRoot<IStateStore>(self);
           root.select(self.waypoints[0]);
         }
         return self.waypoints[self.waypoints.length - 1];
@@ -111,7 +111,7 @@ export const HolonomicPathStore = types
       deleteWaypointUUID(uuid: string) {
         let index = self.waypoints.findIndex((point) => point.uuid === uuid);
         if (index == -1) return;
-        const root = getRoot<IDocumentModelStore>(self);
+        const root = getRoot<IStateStore>(self);
         root.select(undefined);
 
         if (self.waypoints.length === 1) {
@@ -129,10 +129,16 @@ export const HolonomicPathStore = types
       setTrajectory(trajectory: Array<SavedTrajectorySample>) {
         // @ts-ignore
         self.generated = trajectory;
-        self.generating = false;
+        const history = getRoot<IStateStore>(self).document.history;
+        history.withoutUndo(() => {
+          self.generating = false;
+        });
       },
       setGenerating(generating: boolean) {
-        self.generating = generating;
+        const history = getRoot<IStateStore>(self).document.history;
+        history.withoutUndo(() => {
+          self.generating = generating;
+        });
       },
     };
   });

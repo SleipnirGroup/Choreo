@@ -27,6 +27,7 @@ export type {
   SavedPath,
   SavedPathList,
   SavedRobotConfig,
+  SavedWaypoint,
 } from "./previousSpecs/v0_0_1";
 export { SAVE_FILE_VERSION } from "./previousSpecs/v0_0_1";
 import { SAVE_FILE_VERSION } from "./previousSpecs/v0_0_1";

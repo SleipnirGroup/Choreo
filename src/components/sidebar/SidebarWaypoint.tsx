@@ -112,7 +112,7 @@ class SidebarWaypoint extends Component<Props, State> {
                 className={styles.SidebarRightIcon}
                 onClick={(e) => {
                   e.stopPropagation();
-                  this.context.model.pathlist.activePath.deleteWaypointUUID(
+                  this.context.model.document.pathlist.activePath.deleteWaypointUUID(
                     waypoint?.uuid || ""
                   );
                 }}
