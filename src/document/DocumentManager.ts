@@ -30,6 +30,7 @@ export class DocumentManager {
 
     });
     this.model.document.pathlist.addPath("NewPath");
+    this.model.document.history.clear()
   }
   newFile(): void {
     applySnapshot(this.model, {
@@ -43,8 +44,9 @@ export class DocumentManager {
       },
 
     });
-    this.model.document.history.clear()
+    
     this.model.document.pathlist.addPath("NewPath");
+    this.model.document.history.clear()
   }
   async parseFile(file: File | null): Promise<string> {
     if (file == null) {
