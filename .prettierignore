@@ -1,6 +1,4 @@
-build/*
-public/*
-spec/*
-.github/*
-.node_modules/*
-src-tauri/
+.vscode/
+dist/
+public/
+src-tauri/target/

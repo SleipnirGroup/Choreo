@@ -27,11 +27,7 @@
     },
     "bundle": {
       "active": true,
-      "targets": [
-        "deb",
-        "nsis",
-        "dmg"
-      ],
+      "targets": ["deb", "nsis", "dmg"],
       "identifier": "org.sleipnirgroup",
       "icon": [
         "icons/32x32.png",
@@ -40,7 +36,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "deb":{
+      "deb": {
         "files": {
           "/opt/trajopt/lib/libTrajoptLib.so": "./libTrajoptLib.so",
           "/opt/trajopt/lib/libcasadi.so.3.7": "./libcasadi.so.3.7",
