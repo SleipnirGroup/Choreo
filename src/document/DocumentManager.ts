@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import StateStore, {IStateStore } from "./DocumentModel";
+import StateStore, { IStateStore } from "./DocumentModel";
 import { dialog, fs } from "@tauri-apps/api";
 import { v4 as uuidv4 } from "uuid";
 import { applySnapshot } from "mobx-state-tree";
