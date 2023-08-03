@@ -11,33 +11,49 @@ import { RobotConfigStore } from "./RobotConfigStore";
 import { SelectableItemTypes, UIStateStore } from "./UIStateStore";
 import { PathListStore } from "./PathListStore";
 import { TrajectorySampleStore } from "./TrajectorySampleStore";
+import { UndoManager } from "mst-middlewares";
 
-const DocumentModelStore = types
-  .model("DocumentModelStore", {
+export const DocumentStore =  types.model("DocumentStore", {
+  pathlist: PathListStore,
+  robotConfig: RobotConfigStore,
+})
+.volatile((self) => ({
+  history: UndoManager.create({}, { targetStore: self })
+}))
+
+export interface IDocumentStore
+  extends Instance<typeof DocumentStore> {}
+
+const StateStore = types
+  .model("StateStore", {
     uiState: UIStateStore,
-    pathlist: PathListStore,
-    robotConfig: RobotConfigStore,
+    document: DocumentStore
   })
   .views((self) => ({
     asSavedDocument(): SavedDocument {
       return {
         version: SAVE_FILE_VERSION,
-        robotConfiguration: self.robotConfig.asSavedRobotConfig(),
-        paths: self.pathlist.asSavedPathList(),
+        robotConfiguration: self.document.robotConfig.asSavedRobotConfig(),
+        paths: self.document.pathlist.asSavedPathList(),
       };
     },
   }))
-  .actions((self) => ({
+  .actions((self) => {
+    
+    return {
+    afterCreate() {
+      self.document.history = UndoManager.create({}, {targetStore: self.document})
+    },
     fromSavedDocument(document: any) {
       document = updateToCurrent(document);
-      self.robotConfig.fromSavedRobotConfig(document.robotConfiguration);
-      self.pathlist.fromSavedPathList(document.paths);
+      self.document.robotConfig.fromSavedRobotConfig(document.robotConfiguration);
+      self.document.pathlist.fromSavedPathList(document.paths);
     },
     select(item: SelectableItemTypes) {
       self.uiState.setSelectedSidebarItem(item);
     },
     generatePath(uuid: string) {
-      const pathStore = self.pathlist.paths.get(uuid);
+      const pathStore = self.document.pathlist.paths.get(uuid);
       if (pathStore === undefined) {
         return;
       }
@@ -48,7 +64,7 @@ const DocumentModelStore = types
       pathStore.setGenerating(true);
       invoke("generate_trajectory", {
         path: pathStore.waypoints,
-        config: self.robotConfig,
+        config: self.document.robotConfig,
       })
         .then((rust_traj) => {
           let newTraj: Array<SavedTrajectorySample> = [];
@@ -70,8 +86,9 @@ const DocumentModelStore = types
           pathStore.setGenerating(false);
         });
     },
-  }));
+  }
+});
 
-export default DocumentModelStore;
-export interface IDocumentModelStore
-  extends Instance<typeof DocumentModelStore> {}
+export default StateStore;
+export interface IStateStore
+  extends Instance<typeof StateStore> {}

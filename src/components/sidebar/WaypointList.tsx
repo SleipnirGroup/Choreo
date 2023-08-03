@@ -24,7 +24,7 @@ class WaypointList extends Component<Props, State> {
   }
 
   reorder(startIndex: number, endIndex: number) {
-    this.context.model.pathlist.activePath.reorder(startIndex, endIndex);
+    this.context.model.document.pathlist.activePath.reorder(startIndex, endIndex);
   }
 
   onDragEnd(result: any) {
@@ -36,14 +36,14 @@ class WaypointList extends Component<Props, State> {
   }
 
   newWaypoint(): void {
-    this.context.model.pathlist.activePath.addWaypoint();
+    this.context.model.document.pathlist.activePath.addWaypoint();
   }
   // Normally you would want to split things out into separate components.
   // But in this example everything is just done in one place for simplicity
   render() {
-    let waypoints = this.context.model.pathlist.activePath.waypoints;
+    let waypoints = this.context.model.document.pathlist.activePath.waypoints;
     let waypointsLength =
-      this.context.model.pathlist.activePath.waypoints.length;
+      this.context.model.document.pathlist.activePath.waypoints.length;
     if (waypointsLength == 0) {
       return (
         <div className={styles.SidebarItem + " " + styles.Noninteractible}>

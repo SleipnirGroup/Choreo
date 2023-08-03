@@ -27,7 +27,7 @@ class PathAnimationSlider extends Component<Props, State> {
     this.setState({ running: true });
     if (
       Math.abs(
-        this.context.model.pathlist.activePath.getTotalTimeSeconds() -
+        this.context.model.document.pathlist.activePath.getTotalTimeSeconds() -
           this.context.model.uiState.pathAnimationTimestamp
       ) < 0.1
     ) {
@@ -36,7 +36,7 @@ class PathAnimationSlider extends Component<Props, State> {
     this.timerId = window.setInterval(() => {
       if (
         this.context.model.uiState.pathAnimationTimestamp >
-        this.context.model.pathlist.activePath.getTotalTimeSeconds()
+        this.context.model.document.pathlist.activePath.getTotalTimeSeconds()
       ) {
         this.context.model.uiState.setPathAnimationTimestamp(0);
         return;
@@ -54,7 +54,7 @@ class PathAnimationSlider extends Component<Props, State> {
   componentDidMount(): void {
     autorun(() => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      let activePath = this.context.model.pathlist.activePathUUID;
+      let activePath = this.context.model.document.pathlist.activePathUUID;
       this.onStop();
     });
   }
@@ -77,7 +77,7 @@ class PathAnimationSlider extends Component<Props, State> {
         <span
           style={{
             display:
-              this.context.model.pathlist.activePath.generated.length >= 2
+              this.context.model.document.pathlist.activePath.generated.length >= 2
                 ? "flex"
                 : "none",
             flexDirection: "row",
@@ -114,7 +114,7 @@ class PathAnimationSlider extends Component<Props, State> {
             defaultValue={0}
             step={0.01}
             min={0}
-            max={this.context.model.pathlist.activePath.getTotalTimeSeconds()}
+            max={this.context.model.document.pathlist.activePath.getTotalTimeSeconds()}
             aria-label="Default"
             valueLabelDisplay="auto"
             valueLabelFormat={(x: number) => x.toFixed(2)}

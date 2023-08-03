@@ -22,10 +22,10 @@ export class Field extends Component<Props, State> {
   // @ts-ignore
   context!: React.ContextType<typeof DocumentManagerContext>;
   render() {
-    let robotConfigOpen = this.context.model.robotConfig.selected;
+    let robotConfigOpen = this.context.model.document.robotConfig.selected;
     let selectedSidebar = this.context.model.uiState.selectedSidebarItem;
-    let activePath = this.context.model.pathlist.activePath;
-    let activePathUUID = this.context.model.pathlist.activePathUUID;
+    let activePath = this.context.model.document.pathlist.activePath;
+    let activePathUUID = this.context.model.document.pathlist.activePathUUID;
     return (
       <div className={styles.Container}>
         <FieldOverlayRoot></FieldOverlayRoot>

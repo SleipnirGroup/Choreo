@@ -20,13 +20,13 @@ class SidebarRobotConfig extends Component<Props, State> {
   render() {
     // apparently we have to dereference this here instead of inline in the class name
     // Otherwise the component won't rerender when it changes
-    let selected = this.context.model.robotConfig.selected;
+    let selected = this.context.model.document.robotConfig.selected;
     return (
       <div
         className={styles.SidebarItem + (selected ? ` ${styles.Selected}` : "")}
         onClick={() => {
           this.context.model.uiState.setSelectedSidebarItem(
-            this.context.model.robotConfig
+            this.context.model.document.robotConfig
           );
         }}
       >

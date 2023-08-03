@@ -5,8 +5,9 @@ import {
   Square,
   SquareOutlined,
 } from "@mui/icons-material";
-import { Instance, types } from "mobx-state-tree";
+import { getRoot, Instance, types } from "mobx-state-tree";
 import Waypoint from "../assets/Waypoint";
+import { IStateStore } from "./DocumentModel";
 import {
   HolonomicWaypointStore,
   IHolonomicWaypointStore,
@@ -115,6 +116,7 @@ export const UIStateStore = types
     selectedNavbarItem: NavbarLabels.FullWaypoint,
   })
   .views((self: any) => {
+
     return {
       isNavbarWaypointSelected() {
         return (
@@ -133,9 +135,9 @@ export const UIStateStore = types
     };
   })
   .actions((self: any) => {
-    return {
+    let actions = {
       setMainMenuOpen(open: boolean) {
-        self.mainMenuOpen = open;
+          self.mainMenuOpen = open;
       },
       toggleMainMenu() {
         self.mainMenuOpen = !self.mainMenuOpen;
@@ -173,5 +175,7 @@ export const UIStateStore = types
         self.selectedNavbarItem = item;
       },
     };
+    return actions;
+
   });
 export interface IUIStateStore extends Instance<typeof UIStateStore> {}

@@ -10,7 +10,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import SaveIcon from "@mui/icons-material/Save";
 import UploadIcon from "@mui/icons-material/UploadFile";
 import FileDownload from "@mui/icons-material/FileDownload";
-import { NoteAddOutlined } from "@mui/icons-material";
+import { NoteAddOutlined, Redo, Undo } from "@mui/icons-material";
 import Add from "@mui/icons-material/Add";
 
 type Props = {};
@@ -35,12 +35,13 @@ class Sidebar extends Component<Props, State> {
             borderBottom: "thin solid var(--divider-gray)",
             display: "flex",
             flexDirection: "row",
-            justifyContent: "flex-start",
+            justifyContent: "space-between",
             alignItems: "center",
             paddingLeft: 0,
             zIndex: 1000,
           }}
-        >
+        > 
+        <span>
           <Tooltip title="Main Menu">
             <IconButton
               onClick={() => {
@@ -51,6 +52,27 @@ class Sidebar extends Component<Props, State> {
             </IconButton>
           </Tooltip>
           Choreo
+          </span>
+          <span>
+          <Tooltip title="Undo">
+            <IconButton
+              onClick={() => {
+                this.context.undo();
+              }}
+            >
+              <Undo></Undo>
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Main Menu">
+            <IconButton
+              onClick={() => {
+                this.context.redo();
+              }}
+            >
+              <Redo></Redo>
+            </IconButton>
+          </Tooltip>
+          </span>
         </div>
         <div className={styles.SidebarHeading}>
           PATHS
@@ -62,7 +84,7 @@ class Sidebar extends Component<Props, State> {
                 float: "right",
               }}
               onClick={() =>
-                this.context.model.pathlist.addPath("New Path", true)
+                this.context.model.document.pathlist.addPath("New Path", true)
               }
             >
               <Add fontSize="small"></Add>

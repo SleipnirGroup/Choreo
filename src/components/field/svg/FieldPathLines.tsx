@@ -14,7 +14,7 @@ class FieldPathLines extends Component<Props, State> {
 
   render() {
     let pathString = "";
-    this.context.model.pathlist.activePath.waypoints.forEach((point, index) => {
+    this.context.model.document.pathlist.activePath.waypoints.forEach((point, index) => {
       pathString += `${point.x}, ${point.y} `;
     });
     return (

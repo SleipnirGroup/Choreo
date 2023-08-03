@@ -154,7 +154,7 @@ class FieldOverlayRoot extends Component<Props, State> {
               ></circle>
             )}
           {layers[ViewLayers.Waypoints] &&
-            this.context.model.pathlist.activePath.waypoints.map(
+            this.context.model.document.pathlist.activePath.waypoints.map(
               (point, index) => (
                 <OverlayWaypoint
                   waypoint={point}
@@ -178,16 +178,19 @@ class FieldOverlayRoot extends Component<Props, State> {
         x: e.clientX,
         y: e.clientY,
       });
-      var newPoint = this.context.model.pathlist.activePath.addWaypoint();
-      newPoint.setX(coords.x);
-      newPoint.setY(coords.y);
-      newPoint.setSelected(true);
-      if (
-        this.context.model.uiState.selectedNavbarItem ==
-        NavbarLabels.TranslationWaypoint
-      ) {
-        newPoint.setHeadingConstrained(false);
-      }
+      this.context.history.startGroup(()=>{
+        var newPoint = this.context.model.document.pathlist.activePath.addWaypoint();
+        newPoint.setX(coords.x);
+        newPoint.setY(coords.y);
+        newPoint.setSelected(true);
+        if (
+          this.context.model.uiState.selectedNavbarItem ==
+          NavbarLabels.TranslationWaypoint
+        ) {
+          newPoint.setHeadingConstrained(false);
+        }
+      });
+      this.context.history.stopGroup();
     }
   }
 }

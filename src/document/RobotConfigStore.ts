@@ -1,6 +1,6 @@
 import { getRoot, Instance, types } from "mobx-state-tree";
 import { safeGetIdentifier } from "../util/mobxutils";
-import { IDocumentModelStore } from "./DocumentModel";
+import { IStateStore } from "./DocumentModel";
 import { SavedRobotConfig } from "./DocumentSpecTypes";
 
 export const RobotConfigStore = types
@@ -72,7 +72,7 @@ export const RobotConfigStore = types
   .views((self) => {
     return {
       get selected(): boolean {
-        const root = getRoot<IDocumentModelStore>(self);
+        const root = getRoot<IStateStore>(self);
         return (
           root.uiState.selectedSidebarItem !== undefined &&
           self.identifier == safeGetIdentifier(root.uiState.selectedSidebarItem)

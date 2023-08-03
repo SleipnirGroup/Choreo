@@ -88,12 +88,12 @@ class InterpolatedRobot extends Component<Props, State> {
   }
 
   render() {
-    if (this.context.model.pathlist.activePath.generated.length < 2) {
+    if (this.context.model.document.pathlist.activePath.generated.length < 2) {
       return <></>;
     }
     let pose1 = this.sample(
       this.props.timestamp,
-      this.context.model.pathlist.activePath.generated
+      this.context.model.document.pathlist.activePath.generated
     );
     return (
       <g
@@ -104,7 +104,7 @@ class InterpolatedRobot extends Component<Props, State> {
         <defs>
           <path
             id={"robot-bumpers"}
-            d={this.context.model.robotConfig.bumperSVGElement()}
+            d={this.context.model.document.robotConfig.bumperSVGElement()}
           ></path>
           <clipPath id={"robot-clip"}>
             <use xlinkHref={`#robot-bumpers`} />
@@ -121,34 +121,34 @@ class InterpolatedRobot extends Component<Props, State> {
           style={{ pointerEvents: "none" }}
         />
         <circle
-          cx={this.context.model.robotConfig.bumperLength / 2}
+          cx={this.context.model.document.robotConfig.bumperLength / 2}
           cy={0}
           r={0.1}
           fill="white"
         ></circle>
         {/* Wheel locations */}
         <circle
-          cx={this.context.model.robotConfig.wheelbase / 2}
-          cy={this.context.model.robotConfig.trackWidth / 2}
-          r={this.context.model.robotConfig.wheelRadius}
+          cx={this.context.model.document.robotConfig.wheelbase / 2}
+          cy={this.context.model.document.robotConfig.trackWidth / 2}
+          r={this.context.model.document.robotConfig.wheelRadius}
           fill="white"
         ></circle>
         <circle
-          cx={this.context.model.robotConfig.wheelbase / 2}
-          cy={-this.context.model.robotConfig.trackWidth / 2}
-          r={this.context.model.robotConfig.wheelRadius}
+          cx={this.context.model.document.robotConfig.wheelbase / 2}
+          cy={-this.context.model.document.robotConfig.trackWidth / 2}
+          r={this.context.model.document.robotConfig.wheelRadius}
           fill="white"
         ></circle>
         <circle
-          cx={-this.context.model.robotConfig.wheelbase / 2}
-          cy={-this.context.model.robotConfig.trackWidth / 2}
-          r={this.context.model.robotConfig.wheelRadius}
+          cx={-this.context.model.document.robotConfig.wheelbase / 2}
+          cy={-this.context.model.document.robotConfig.trackWidth / 2}
+          r={this.context.model.document.robotConfig.wheelRadius}
           fill="white"
         ></circle>
         <circle
-          cx={-this.context.model.robotConfig.wheelbase / 2}
-          cy={this.context.model.robotConfig.trackWidth / 2}
-          r={this.context.model.robotConfig.wheelRadius}
+          cx={-this.context.model.document.robotConfig.wheelbase / 2}
+          cy={this.context.model.document.robotConfig.trackWidth / 2}
+          r={this.context.model.document.robotConfig.wheelRadius}
           fill="white"
         ></circle>
       </g>
