@@ -65,8 +65,6 @@ export const HolonomicPathStore = types
     };
   })
   .actions((self) => {
-    
-
     return {
       fromSavedPath(path: SavedPath) {
         self.waypoints.clear();
@@ -131,17 +129,16 @@ export const HolonomicPathStore = types
       setTrajectory(trajectory: Array<SavedTrajectorySample>) {
         // @ts-ignore
         self.generated = trajectory;
-        const history = getRoot<IStateStore>(self).document.history
-        history.withoutUndo(()=>{
+        const history = getRoot<IStateStore>(self).document.history;
+        history.withoutUndo(() => {
           self.generating = false;
-        })
+        });
       },
       setGenerating(generating: boolean) {
-        const history = getRoot<IStateStore>(self).document.history
-        history.withoutUndo(()=>{
+        const history = getRoot<IStateStore>(self).document.history;
+        history.withoutUndo(() => {
           self.generating = generating;
-        })
-
+        });
       },
     };
   });

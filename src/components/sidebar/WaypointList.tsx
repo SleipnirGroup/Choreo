@@ -24,7 +24,10 @@ class WaypointList extends Component<Props, State> {
   }
 
   reorder(startIndex: number, endIndex: number) {
-    this.context.model.document.pathlist.activePath.reorder(startIndex, endIndex);
+    this.context.model.document.pathlist.activePath.reorder(
+      startIndex,
+      endIndex
+    );
   }
 
   onDragEnd(result: any) {

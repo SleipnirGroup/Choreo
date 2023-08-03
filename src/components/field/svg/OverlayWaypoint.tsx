@@ -106,14 +106,15 @@ class OverlayWaypoint extends Component<Props, State> {
     // converts the values to stay inside the 360 positive
 
     // creates the new rotate position array
-      this.props.waypoint.setX(pointerPos.x);
-      this.props.waypoint.setY(pointerPos.y);
-
+    this.props.waypoint.setX(pointerPos.x);
+    this.props.waypoint.setY(pointerPos.y);
 
     //d3.select(`#group`).attr('transform', `rotate(${ this.r.angle })`)
   }
   selectWaypoint() {
-    this.context.model.document.pathlist.activePath.selectOnly(this.props.index);
+    this.context.model.document.pathlist.activePath.selectOnly(
+      this.props.index
+    );
   }
   componentDidMount() {
     if (this.rootRef.current) {
@@ -122,9 +123,9 @@ class OverlayWaypoint extends Component<Props, State> {
         .on("drag", (event) => this.dragPointRotate(event))
         .on("start", () => {
           this.selectWaypoint();
-          this.context.history.startGroup(()=>{});
+          this.context.history.startGroup(() => {});
         })
-        .on("end", (event)=>this.context.history.stopGroup())
+        .on("end", (event) => this.context.history.stopGroup())
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
         `#rotateTarget${this.props.index}`
@@ -133,10 +134,10 @@ class OverlayWaypoint extends Component<Props, State> {
       var velocityRotateHandleDrag = d3
         .drag<SVGCircleElement, undefined>()
         .on("drag", (event) => this.dragPointVelocityRotate(event))
-        .on("end", (event)=>this.context.history.stopGroup())
+        .on("end", (event) => this.context.history.stopGroup())
         .on("start", () => {
           this.selectWaypoint();
-          this.context.history.startGroup(()=>{});
+          this.context.history.startGroup(() => {});
         })
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
@@ -148,9 +149,9 @@ class OverlayWaypoint extends Component<Props, State> {
         .on("drag", (event) => this.dragPointTranslate(event))
         .on("start", () => {
           this.selectWaypoint();
-          this.context.history.startGroup(()=>{});
+          this.context.history.startGroup(() => {});
         })
-        .on("end", (event)=>this.context.history.stopGroup())
+        .on("end", (event) => this.context.history.stopGroup())
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
         `#dragTarget${this.props.index}`

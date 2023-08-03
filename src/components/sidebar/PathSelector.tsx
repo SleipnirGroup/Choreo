@@ -21,7 +21,9 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
   state = { renaming: false, renameError: false, name: this.getPath().name };
   nameInputRef = React.createRef<HTMLInputElement>();
   getSelected() {
-    return this.props.uuid == this.context.model.document.pathlist.activePathUUID;
+    return (
+      this.props.uuid == this.context.model.document.pathlist.activePathUUID
+    );
   }
   getPath() {
     return this.context.model.document.pathlist.paths.get(this.props.uuid)!;
@@ -54,7 +56,9 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     let didFind =
       Array.from(this.context.model.document.pathlist.paths.keys())
         .filter((uuid) => uuid !== this.props.uuid)
-        .map((uuid) => this.context.model.document.pathlist.paths.get(uuid)!.name)
+        .map(
+          (uuid) => this.context.model.document.pathlist.paths.get(uuid)!.name
+        )
         .find((existingName) => existingName === name) !== undefined;
     return didFind;
   }
@@ -69,7 +73,9 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
         className={styles.SidebarItem + " " + (selected ? styles.Selected : "")}
         style={{ borderWidth: 0, borderLeftWidth: 4 }}
         onClick={() =>
-          this.context.model.document.pathlist.setActivePathUUID(this.props.uuid)
+          this.context.model.document.pathlist.setActivePathUUID(
+            this.props.uuid
+          )
         }
       >
         <Route
@@ -146,7 +152,9 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             onClick={(e) => {
               e.stopPropagation();
               if (window.confirm(`Delete "${this.getPath().name}"?`)) {
-                this.context.model.document.pathlist.deletePath(this.props.uuid);
+                this.context.model.document.pathlist.deletePath(
+                  this.props.uuid
+                );
               }
             }}
           >
@@ -168,9 +176,11 @@ class PathSelector extends Component<Props, State> {
     return (
       <div>
         <div className={styles.WaypointList}>
-          {Array.from(this.context.model.document.pathlist.paths.keys()).map((uuid) => (
-            <this.Option uuid={uuid} key={uuid}></this.Option>
-          ))}
+          {Array.from(this.context.model.document.pathlist.paths.keys()).map(
+            (uuid) => (
+              <this.Option uuid={uuid} key={uuid}></this.Option>
+            )
+          )}
         </div>
       </div>
     );

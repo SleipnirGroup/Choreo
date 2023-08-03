@@ -1,17 +1,17 @@
 import { createContext } from "react";
-import StateStore, { DocumentStore, IStateStore } from "./DocumentModel";
-import { RobotConfigStore } from "./RobotConfigStore";
-import { PathListStore } from "./PathListStore";
-import { UIStateStore } from "./UIStateStore";
+import StateStore, {IStateStore } from "./DocumentModel";
 import { dialog, fs } from "@tauri-apps/api";
 import { v4 as uuidv4 } from "uuid";
-import { applySnapshot, Instance } from "mobx-state-tree";
-import UndoManager from "../util/undo-manager";
+import { applySnapshot } from "mobx-state-tree";
 
 export class DocumentManager {
   simple: any;
-  undo() {this.model.document.history.canUndo && this.model.document.history.undo()}
-  redo() {this.model.document.history.canRedo && this.model.document.history.redo()}
+  undo() {
+    this.model.document.history.canUndo && this.model.document.history.undo();
+  }
+  redo() {
+    this.model.document.history.canRedo && this.model.document.history.redo();
+  }
   get history() {
     return this.model.document.history;
   }
@@ -24,13 +24,11 @@ export class DocumentManager {
       },
       document: {
         robotConfig: { identifier: uuidv4() },
-        pathlist: {}
+        pathlist: {},
       },
-
-
     });
     this.model.document.pathlist.addPath("NewPath");
-    this.model.document.history.clear()
+    this.model.document.history.clear();
   }
   newFile(): void {
     applySnapshot(this.model, {
@@ -40,13 +38,12 @@ export class DocumentManager {
       },
       document: {
         robotConfig: { identifier: uuidv4() },
-        pathlist: {}
+        pathlist: {},
       },
-
     });
-    
+
     this.model.document.pathlist.addPath("NewPath");
-    this.model.document.history.clear()
+    this.model.document.history.clear();
   }
   async parseFile(file: File | null): Promise<string> {
     if (file == null) {
@@ -100,7 +97,9 @@ export class DocumentManager {
     }
   }
   async exportActiveTrajectory() {
-    return await this.exportTrajectory(this.model.document.pathlist.activePathUUID);
+    return await this.exportTrajectory(
+      this.model.document.pathlist.activePathUUID
+    );
   }
 
   async loadFile(jsonFilename: string) {

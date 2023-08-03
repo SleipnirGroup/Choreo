@@ -40,40 +40,40 @@ class Sidebar extends Component<Props, State> {
             paddingLeft: 0,
             zIndex: 1000,
           }}
-        > 
-        <span>
-          <Tooltip title="Main Menu">
-            <IconButton
-              onClick={() => {
-                toggleMainMenu();
-              }}
-            >
-              <MenuIcon></MenuIcon>
-            </IconButton>
-          </Tooltip>
-          Choreo
+        >
+          <span>
+            <Tooltip title="Main Menu">
+              <IconButton
+                onClick={() => {
+                  toggleMainMenu();
+                }}
+              >
+                <MenuIcon></MenuIcon>
+              </IconButton>
+            </Tooltip>
+            Choreo
           </span>
           <span>
-          <Tooltip title="Undo">
-            <IconButton
-              disabled={!this.context.history.canUndo}
-              onClick={() => {
-                this.context.undo();
-              }}
-            >
-              <Undo></Undo>
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Redo">
-            <IconButton
-            disabled={!this.context.history.canRedo}
-              onClick={() => {
-                this.context.redo();
-              }}
-            >
-              <Redo></Redo>
-            </IconButton>
-          </Tooltip>
+            <Tooltip title="Undo">
+              <IconButton
+                disabled={!this.context.history.canUndo}
+                onClick={() => {
+                  this.context.undo();
+                }}
+              >
+                <Undo></Undo>
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Redo">
+              <IconButton
+                disabled={!this.context.history.canRedo}
+                onClick={() => {
+                  this.context.redo();
+                }}
+              >
+                <Redo></Redo>
+              </IconButton>
+            </Tooltip>
           </span>
         </div>
         <div className={styles.SidebarHeading}>

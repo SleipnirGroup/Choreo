@@ -116,7 +116,6 @@ export const UIStateStore = types
     selectedNavbarItem: NavbarLabels.FullWaypoint,
   })
   .views((self: any) => {
-
     return {
       isNavbarWaypointSelected() {
         return (
@@ -137,7 +136,7 @@ export const UIStateStore = types
   .actions((self: any) => {
     let actions = {
       setMainMenuOpen(open: boolean) {
-          self.mainMenuOpen = open;
+        self.mainMenuOpen = open;
       },
       toggleMainMenu() {
         self.mainMenuOpen = !self.mainMenuOpen;
@@ -176,6 +175,5 @@ export const UIStateStore = types
       },
     };
     return actions;
-
   });
 export interface IUIStateStore extends Instance<typeof UIStateStore> {}

@@ -77,7 +77,8 @@ class PathAnimationSlider extends Component<Props, State> {
         <span
           style={{
             display:
-              this.context.model.document.pathlist.activePath.generated.length >= 2
+              this.context.model.document.pathlist.activePath.generated
+                .length >= 2
                 ? "flex"
                 : "none",
             flexDirection: "row",
