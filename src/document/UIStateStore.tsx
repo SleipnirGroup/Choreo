@@ -5,9 +5,8 @@ import {
   Square,
   SquareOutlined,
 } from "@mui/icons-material";
-import { getRoot, Instance, types } from "mobx-state-tree";
+import { Instance, types } from "mobx-state-tree";
 import Waypoint from "../assets/Waypoint";
-import { IStateStore } from "./DocumentModel";
 import {
   HolonomicWaypointStore,
   IHolonomicWaypointStore,
@@ -133,47 +132,44 @@ export const UIStateStore = types
       },
     };
   })
-  .actions((self: any) => {
-    let actions = {
-      setMainMenuOpen(open: boolean) {
-        self.mainMenuOpen = open;
-      },
-      toggleMainMenu() {
-        self.mainMenuOpen = !self.mainMenuOpen;
-      },
-      setFieldScalingFactor(metersPerPixel: number) {
-        self.fieldScalingFactor = metersPerPixel;
-      },
-      setSaveFileName(name: string) {
-        self.saveFileName = name;
-      },
-      setWaypointPanelOpen(open: boolean) {
-        self.waypointPanelOpen = open;
-      },
-      setVisibilityPanelOpen(open: boolean) {
-        self.visibilityPanelOpen = open;
-      },
-      setPathAnimationTimestamp(time: number) {
-        self.pathAnimationTimestamp = time;
-      },
-      setSelectedSidebarItem(item: SelectableItemTypes) {
-        self.selectedSidebarItem = item;
-      },
-      setLayerVisible(layer: number, visible: boolean) {
+  .actions((self: any) => ({
+    setMainMenuOpen(open: boolean) {
+      self.mainMenuOpen = open;
+    },
+    toggleMainMenu() {
+      self.mainMenuOpen = !self.mainMenuOpen;
+    },
+    setFieldScalingFactor(metersPerPixel: number) {
+      self.fieldScalingFactor = metersPerPixel;
+    },
+    setSaveFileName(name: string) {
+      self.saveFileName = name;
+    },
+    setWaypointPanelOpen(open: boolean) {
+      self.waypointPanelOpen = open;
+    },
+    setVisibilityPanelOpen(open: boolean) {
+      self.visibilityPanelOpen = open;
+    },
+    setPathAnimationTimestamp(time: number) {
+      self.pathAnimationTimestamp = time;
+    },
+    setSelectedSidebarItem(item: SelectableItemTypes) {
+      self.selectedSidebarItem = item;
+    },
+    setLayerVisible(layer: number, visible: boolean) {
+      self.layers.length = Math.max(layer + 1, self.layers.length);
+      self.layers[layer] = visible;
+    },
+    setVisibleLayers(visibleLayers: number[]) {
+      self.layers.fill(false);
+      visibleLayers.forEach((layer) => {
         self.layers.length = Math.max(layer + 1, self.layers.length);
-        self.layers[layer] = visible;
-      },
-      setVisibleLayers(visibleLayers: number[]) {
-        self.layers.fill(false);
-        visibleLayers.forEach((layer) => {
-          self.layers.length = Math.max(layer + 1, self.layers.length);
-          self.layers[layer] = true;
-        });
-      },
-      setSelectedNavbarItem(item: number) {
-        self.selectedNavbarItem = item;
-      },
-    };
-    return actions;
-  });
+        self.layers[layer] = true;
+      });
+    },
+    setSelectedNavbarItem(item: number) {
+      self.selectedNavbarItem = item;
+    },
+  }));
 export interface IUIStateStore extends Instance<typeof UIStateStore> {}
