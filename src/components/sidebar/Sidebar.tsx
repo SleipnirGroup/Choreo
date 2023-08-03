@@ -56,6 +56,7 @@ class Sidebar extends Component<Props, State> {
           <span>
           <Tooltip title="Undo">
             <IconButton
+              disabled={!this.context.history.canUndo}
               onClick={() => {
                 this.context.undo();
               }}
@@ -63,8 +64,9 @@ class Sidebar extends Component<Props, State> {
               <Undo></Undo>
             </IconButton>
           </Tooltip>
-          <Tooltip title="Main Menu">
+          <Tooltip title="Redo">
             <IconButton
+            disabled={!this.context.history.canRedo}
               onClick={() => {
                 this.context.redo();
               }}
