@@ -1,4 +1,4 @@
-import { IconButton, TextField } from "@mui/material";
+import { CircularProgress, IconButton, TextField } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
@@ -72,10 +72,24 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
           this.context.model.pathlist.setActivePathUUID(this.props.uuid)
         }
       >
-        <Route
-          className={styles.SidebarIcon}
-          htmlColor={selected ? "var(--select-yellow)" : "var(--accent-purple)"}
-        />
+        {this.getPath().generating ? (
+          <CircularProgress
+            size={20}
+            sx={{
+              color: selected ? "var(--select-yellow)" : "var(--accent-purple)",
+              marginInline: "2px",
+            }}
+            variant="indeterminate"
+          ></CircularProgress>
+        ) : (
+          <Route
+            className={styles.SidebarIcon}
+            htmlColor={
+              selected ? "var(--select-yellow)" : "var(--accent-purple)"
+            }
+          />
+        )}
+
         <TextField
           className={styles.SidebarLabel}
           variant={this.state.renaming ? "outlined" : "standard"}
