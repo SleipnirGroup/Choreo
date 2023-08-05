@@ -185,7 +185,7 @@ class PathSelector extends Component<Props, State> {
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
 
-  Option = observer(PathSelectorOption);
+  Option = PathSelectorOption;
   render() {
     return (
       <div>

@@ -1,12 +1,13 @@
 import "./App.css";
-import { DocumentManager } from "./document/DocumentManager";
+import DocumentManagerContext, { DocumentManager } from "./document/DocumentManager";
 import { createContext } from "react";
 import { observer } from "mobx-react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Body from "./Body";
+
 function App() {
-  const DocumentManagerContext = createContext(null);
+  
   const documentManager = new DocumentManager();
 
   const buttonOverrides = {
@@ -59,5 +60,4 @@ function App() {
     </CssBaseline>
   );
 }
-
 export default observer(App);

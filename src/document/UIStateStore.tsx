@@ -5,8 +5,11 @@ import {
   Square,
   SquareOutlined,
 } from "@mui/icons-material";
-import { Instance, types } from "mobx-state-tree";
+import { getRoot, Instance, types } from "mobx-state-tree";
+import { ReactElement } from "react";
 import Waypoint from "../assets/Waypoint";
+import { constraints } from "./ConstraintStore";
+import { IStateStore } from "./DocumentModel";
 import {
   HolonomicWaypointStore,
   IHolonomicWaypointStore,
@@ -25,7 +28,11 @@ export const SelectableItem = types.union(
 );
 
 /* Navbar stuff */
-const NavbarData = {
+let NavbarData : {[key:string]: {
+  index: number,
+  name: string,
+  icon: ReactElement
+}} = {
   FullWaypoint: {
     index: 0,
     name: "Full Waypoint",
@@ -37,6 +44,16 @@ const NavbarData = {
     icon: <Circle />,
   },
 };
+let constraintsIndices :number[] = [];
+{
+  let constraintsOffset = Object.keys(NavbarData).length;
+  Object.entries(constraints).forEach(([key, data], index) => {
+    NavbarData[key] = {index: constraintsOffset, name: data.name, icon: data.icon}
+    constraintsIndices.push(constraintsOffset)
+    constraintsOffset++;
+  })
+}
+
 
 export const NavbarLabels = (() => {
   let x: { [key: string]: number } = {};
@@ -46,13 +63,19 @@ export const NavbarLabels = (() => {
   return x;
 })();
 
+
 export const NavbarItemData = (() => {
   let x: Array<{ name: string; icon: any }> = [];
+  let constraintsOffset = 0;
   Object.entries(NavbarData).forEach(([key, data], index) => {
     x[data.index] = { name: data.name, icon: data.icon };
+    constraintsOffset++;
   });
   return x;
 })();
+console.log(NavbarItemData)
+
+export const NavbarItemSectionLengths = [1, 3]
 
 export type SelectableItemTypes =
   | IRobotConfigStore
@@ -121,6 +144,12 @@ export const UIStateStore = types
           self.selectedNavbarItem == NavbarLabels.FullWaypoint ||
           self.selectedNavbarItem == NavbarLabels.TranslationWaypoint
         );
+      },
+      isConstraintSelected() {
+        return (
+          (self.selectedNavbarItem > NavbarItemSectionLengths[0]) &&
+          (self.selectedNavbarItem <= NavbarItemSectionLengths[1])
+        )
       },
       visibleLayersOnly() {
         return self.layers.flatMap((visible: boolean, index: number) => {

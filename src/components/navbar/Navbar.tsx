@@ -3,8 +3,8 @@ import DocumentManagerContext from "../../document/DocumentManager";
 import Tooltip from "@mui/material/Tooltip";
 import styles from "./Navbar.module.css";
 import { observer } from "mobx-react";
-import { ToggleButton, ToggleButtonGroup } from "@mui/material";
-import { NavbarItemData } from "../../document/UIStateStore";
+import { Divider, ToggleButton, ToggleButtonGroup } from "@mui/material";
+import { NavbarItemData, NavbarItemSectionLengths, NavbarItemSplitPoints } from "../../document/UIStateStore";
 
 type Props = {};
 
@@ -21,17 +21,20 @@ class Navbar extends Component<Props, State> {
       this.context.model.uiState;
     return (
       <div className={styles.Container}>
-        <ToggleButtonGroup
-          className={styles.ToggleGroup}
-          exclusive
-          value={`${selectedNavbarItem}`}
-          onChange={(e, newSelection) => {
-            setSelectedNavbarItem(Number.parseInt(newSelection) ?? -1);
-          }}
-        >
-          {NavbarItemData.map((item, index) => (
-            // @ts-ignore
-            <Tooltip value={`${index}`} title={item.name} key={index}>
+        {NavbarItemSectionLengths.map((endSplit, sectionIdx) => (
+          
+            <ToggleButtonGroup
+            className={styles.ToggleGroup}
+            exclusive
+            value={`${selectedNavbarItem}`}
+            onChange={(e, newSelection) => {
+              setSelectedNavbarItem(Number.parseInt(newSelection) ?? -1);
+            }}
+            key={sectionIdx}
+          >
+          {NavbarItemData.map((item, index) => (index <= endSplit && index > (NavbarItemSectionLengths[sectionIdx-1] ?? -1)) && (
+            //@ts-ignore
+            <Tooltip value={`${index}`} title={item.name} key={`${sectionIdx}_${index}`}>
               <ToggleButton
                 value={`${index}`}
                 sx={{
@@ -46,6 +49,9 @@ class Navbar extends Component<Props, State> {
             </Tooltip>
           ))}
         </ToggleButtonGroup>
+        ))}
+
+
         {/* </span> */}
       </div>
     );

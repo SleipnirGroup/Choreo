@@ -142,5 +142,5 @@ export class DocumentManager {
     element.click();
   }
 }
-let DocumentManagerContext = createContext(new DocumentManager());
+let DocumentManagerContext = createContext(null);
 export default DocumentManagerContext;

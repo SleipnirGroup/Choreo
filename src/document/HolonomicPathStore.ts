@@ -1,5 +1,6 @@
 import { Instance, types, getRoot, destroy, getParent } from "mobx-state-tree";
 import {
+  SavedConstraint,
   SavedPath,
   SavedTrajectorySample,
   SavedWaypoint,
@@ -12,14 +13,23 @@ import { TrajectorySampleStore } from "./TrajectorySampleStore";
 import { moveItem } from "mobx-utils";
 import { v4 as uuidv4 } from "uuid";
 import { IStateStore } from "./DocumentModel";
+import { constraints, ConstraintStore, ConstraintStores} from "./ConstraintStore";
 
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
     name: "",
     uuid: types.identifier,
     waypoints: types.array(HolonomicWaypointStore),
+    constraints: types.array(types.union(...Object.values(ConstraintStores))),
     generated: types.array(TrajectorySampleStore),
     generating: false,
+  })
+  .views((self) => {
+    return {
+      findUUIDIndex(uuid: string) {
+        return self.waypoints.findIndex((wpt)=>wpt.uuid === uuid);
+      }
+    }
   })
   .views((self) => {
     return {
@@ -54,6 +64,38 @@ export const HolonomicPathStore = types
         return {
           waypoints: self.waypoints.map((point) => point.asSavedWaypoint()),
           trajectory: trajectory,
+          constraints: self.constraints.flatMap((constraint)=>{
+            let saved : Partial<SavedConstraint> = {};
+            let con = constraint;
+            if (typeof con.scope === "string") { 
+              let scopeIndex = self.findUUIDIndex(con.scope);
+              if (scopeIndex == -1) {
+                return []; // don't try to save this constraint
+              }
+              saved["scope"] = scopeIndex;
+            }
+            else if (typeof con.scope?.start === "string") { 
+              let startScopeIndex = self.findUUIDIndex(con.scope.start);
+              if (startScopeIndex == -1) {
+                return []; // don't try to save this constraint
+              }
+              let endScopeIndex = self.findUUIDIndex(con.scope.end);
+              if (endScopeIndex == -1) {
+                return []; // don't try to save this constraint
+              }
+              saved["scope"] = {start: startScopeIndex, end: endScopeIndex};
+            }
+            else {
+              saved["scope"] = undefined
+            }
+
+            return {
+              
+              ...constraint,
+              type: constraint.type,
+              scope: saved["scope"] ?? null,
+            }
+          })
         };
       },
       lowestSelectedPoint(): IHolonomicWaypointStore | null {
@@ -66,12 +108,39 @@ export const HolonomicPathStore = types
   })
   .actions((self) => {
     return {
+      addConstraint(store: typeof ConstraintStore) {
+        self.constraints.push(store.create({}));
+        return self.constraints[self.constraints.length - 1];
+      }
+    }
+  })
+  .actions((self) => {
+    return {
       fromSavedPath(path: SavedPath) {
         self.waypoints.clear();
         path.waypoints.forEach((point: SavedWaypoint, index: number): void => {
           let waypoint = this.addWaypoint();
           waypoint.fromSavedWaypoint(point);
         });
+        path.constraints.forEach((saved: SavedConstraint) => {
+            let constraintStore = ConstraintStores[saved.type];
+            if (constraintStore !== undefined) {
+              let constraint = self.addConstraint(constraintStore);
+              if (typeof saved.scope === "number") { 
+                let scopeIndex = saved.scope;
+                constraint.setScope(path.constraints[scopeIndex].uuid);
+              }
+              else if (typeof saved.scope?.start === "number") { 
+                constraint.setScope({
+                  start: path.constraints[saved.scope.start].uuid,
+                  end: path.constraints[saved.scope.start].uuid
+                });
+              }
+              else if (saved.scope == null) {
+                // do nothing
+              }
+            }
+        })
         self.generated.clear();
         if (path.trajectory !== undefined && path.trajectory !== null) {
           path.trajectory.forEach((savedSample, index) => {
