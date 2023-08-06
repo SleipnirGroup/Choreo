@@ -83,6 +83,7 @@ class SidebarWaypoint extends Component<Props, State> {
               provided.draggableProps.style
             )}
             onClick={() => {
+
               this.context.model.uiState.setSelectedSidebarItem(waypoint);
             }}
           >

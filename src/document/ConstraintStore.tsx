@@ -1,9 +1,13 @@
-import { Stop } from "@mui/icons-material"
+import { PriorityHigh, Stop } from "@mui/icons-material"
 import { getDebugName } from "mobx"
-import { types } from "mobx-state-tree"
-import { IOptionalIType, ISimpleType, ModelActions, string } from "mobx-state-tree/dist/internal"
+import { getParent, types } from "mobx-state-tree"
+import { getRoot, Instance, IOptionalIType, isAlive, ISimpleType, ModelActions } from "mobx-state-tree"
 import { type } from "os"
 import React, { ReactElement } from "react"
+import { safeGetIdentifier } from "../util/mobxutils"
+import { IStateStore } from "./DocumentModel"
+import {v4 as uuidv4} from "uuid"
+import { I } from "@tauri-apps/api/path-c062430b"
 
 /**
  * PoseWpt (idx, x, y, heading)
@@ -33,10 +37,11 @@ export type ConstraintPropertyDefinition = {
 }
 export type ConstraintDefinition = {
     name: string,
-    icon: React.Component | ReactElement,
+    icon:  ReactElement<any, string | JSXElementConstructor<any>>,
     description: string,
     wptScope: boolean,
     sgmtScope: boolean,
+    fullPathScope: boolean,
     properties: {
         [key:string]: ConstraintPropertyDefinition
     }
@@ -49,7 +54,8 @@ export const constraints = {
         icon: (<Stop></Stop>),
         properties: {},
         wptScope: false,
-        sgmtScope:false
+        sgmtScope:false,
+        fullPathScope: true
     },
     WptVelocityDirection: {
         name: "Zero Velocity",
@@ -63,17 +69,90 @@ export const constraints = {
             }
         },
         wptScope: true,
-        sgmtScope: false
+        sgmtScope: false,
+        fullPathScope: false
+    },
+    SgmtVelocityDirection: {
+        name: "Zero Velocity",
+        description: "Zero velocity in scope",
+        icon: (<Stop></Stop>),
+        properties: {
+            direction: {
+                name: "Direction",
+                description: "The direction of velocity",
+                units: "rad"
+            }
+        },
+        wptScope: true,
+        sgmtScope: true,
+        fullPathScope: false
     }
 }
 export const SegmentScope = types.model("SegmentScope", {
     start: types.string,
     end:types.string
 });
+export interface IConstraintStore extends Instance<typeof ConstraintStore>{}
+
 export const ConstraintStore = types.model("ConstraintStore", {
     scope: types.maybeNull(types.union(types.string, SegmentScope)),
-    type: types.optional(types.string, "")
+    type: types.optional(types.string, ""),
+    uuid: types.identifier
 })
+.views((self)=>({
+    getType() {
+        return "";
+    },
+    get wptScope() {
+        return false;
+    },
+    get sgmtScope() {
+        return false;
+    },
+    get fullPathScope () {
+        return false;
+    },
+    get definition() : ConstraintDefinition {
+        return {
+            name: "Default",
+            description: "",
+            sgmtScope: false,
+            wptScope: false,
+            fullPathScope: false,
+            icon: <PriorityHigh></PriorityHigh>,
+            properties: {}
+        }
+    },
+    get selected() :boolean {
+        if (!isAlive(self)) {
+            return false;
+          }
+          return (
+            self.uuid ==
+            safeGetIdentifier(
+              getRoot<IStateStore>(self).uiState.selectedSidebarItem
+            )
+          );
+    }
+}))
+.actions((self)=>({
+    afterCreate() {
+    },
+    setScope(scope:string | {start:string, end:string}) {
+        self.scope = scope;
+    },
+    setSelected(selected: boolean) {
+        if (selected && !self.selected) {
+          const root = getRoot<IStateStore>(self);
+          root.select(
+            getParent<IConstraintStore[]>(self)?.find(
+              (point) => self.uuid == point.uuid
+            )
+          );
+        }
+      },
+}));
+
 
 
 
@@ -83,37 +162,20 @@ const defineConstraintStore = (key:string, definition: ConstraintDefinition) => 
     .views((self)=>({
         getType() {
             return key
+        },
+        get wptScope() {
+            return definition.wptScope;
+        },
+        get sgmtScope() {
+            return definition.sgmtScope;
+        },
+        get fullPathScope() {
+            return definition.fullPathScope;
+        },
+        get definition() {
+            return definition;
         }
     }))
-    // Create the setter for scope
-    .actions((self)=>{
-        let setScope;
-        if (definition.wptScope && definition.sgmtScope) {
-            setScope = (scope: string | {start:string, end:string}) => {
-            self.scope = scope;
-            }
-        }
-        else if (definition.wptScope) {
-            setScope = (scope: string) => {
-                self.scope = scope;
-            }
-        }
-        else if (definition.sgmtScope) {
-            setScope = (scope: {start:string, end:string}) => {
-                self.scope = scope;
-            }
-        } else {
-            setScope = (scope: string | {start:string, end:string}) => {
-                console.error("Tried to set scope on an unscoped constraint", getDebugName(self))
-            }
-        }
-        return {
-            setScope,
-            afterCreate(){
-                self.type = key;
-            }
-        }
-    })
     // Define each property onto the model
     .props(
         (()=>{
@@ -125,6 +187,10 @@ const defineConstraintStore = (key:string, definition: ConstraintDefinition) => 
             )
             return x;
         })()
+    ).props(
+        {
+            type: key
+        }
     )
     // Defined setters for each property
     .actions((self)=>{
@@ -136,7 +202,7 @@ const defineConstraintStore = (key:string, definition: ConstraintDefinition) => 
                 }
             )
             return x;
-    })
+    });
 }
 
 let constraintsStores: {[key:string]: typeof ConstraintStore} = {}

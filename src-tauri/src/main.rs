@@ -1,7 +1,22 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+// #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use trajoptlib::{SwervePathBuilder, HolonomicTrajectory, SwerveDrivetrain, SwerveModule};
+// A way to make properties that exist on all enum variants accessible from the generic variant
+// I have no idea how it works but it came from
+// https://users.rust-lang.org/t/generic-referencing-enum-inner-data/66342/9
+macro_rules! define_enum_macro {
+  ($Type:ident, $($variant:ident),+ $(,)?) => {
+      define_enum_macro!{#internal, [$], $Type, $($variant),+}
+  };
+  (#internal, [$dollar:tt], $Type:ident, $($variant:ident),+) => {
+      macro_rules! $Type {
+          ($dollar($field:ident $dollar(: $p:pat)?,)* ..) => {
+              $($Type::$variant { $dollar($field $dollar(: $p)?,)* .. } )|+
+          }
+      }
+  };
+}
 
 #[allow(non_snake_case)]
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -33,8 +48,31 @@ struct ChoreoRobotConfig {
   trackWidth: f64
 }
 
+#[allow(non_snake_case)]
+#[derive(serde::Serialize, serde::Deserialize)]
+struct ChoreoSegmentScope {
+  start: usize, end:usize
+}
+
+#[allow(non_snake_case)]
+#[derive(serde::Serialize, serde::Deserialize)]
+#[serde(untagged)]
+enum ChoreoConstraintScope {
+  Full(String),
+  Segment(ChoreoSegmentScope),
+  Waypoint(usize)
+}
+
+#[derive(serde::Serialize, serde::Deserialize)]
+#[serde(tag="type")]
+enum Constraints {
+  BoundsZeroVelocity{scope: ChoreoConstraintScope}
+}
+define_enum_macro!(Constraints, BoundsZeroVelocity);
+
 #[tauri::command]
-async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfig) -> Result<HolonomicTrajectory, String> {
+async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfig, constraints: Vec<Constraints>) -> Result<HolonomicTrajectory, String> {
+
     let mut path_builder = SwervePathBuilder::new();
     for i in 0..path.len() {
         let wpt: &ChoreoWaypoint = &path[i];
@@ -43,20 +81,27 @@ async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfi
         } else {
             path_builder.translation_wpt(i, wpt.x, wpt.y, wpt.heading);
         }
-
-        if wpt.velocityMagnitudeConstrained && wpt.velocityMagnitude == 0.0 {
-            path_builder.wpt_velocity_polar(i, 0.0, 0.0);
-        } else if wpt.velocityAngleConstrained && wpt.velocityMagnitudeConstrained {
-            path_builder.wpt_velocity_polar(i, wpt.velocityMagnitude, wpt.velocityAngle);
-        } else if wpt.velocityAngleConstrained {
-            path_builder.wpt_velocity_direction(i, wpt.velocityAngle);
-        } else if wpt.velocityMagnitudeConstrained {
-            path_builder.wpt_velocity_magnitude(i, wpt.velocityMagnitude);
+    }
+    for c in 0..constraints.len() {
+      let constraint: &Constraints = &constraints[c];
+      let Constraints!(scope, ..) = constraint;
+      match constraint {
+        Constraints::BoundsZeroVelocity { scope }  => {
+          path_builder.wpt_zero_velocity(0);
+          path_builder.wpt_zero_velocity(path.len()-1);
         }
-
-        if wpt.angularVelocityConstrained {
-            path_builder.wpt_angular_velocity(i, wpt.angularVelocity);
-        }
+        // add more cases here to impl each constraint.
+      }
+      // The below might be helpful
+      // match scope {
+      //   ChoreoConstraintScope::Full(_) => 
+      //     println!("Full Path")
+      //   ,
+      //   ChoreoConstraintScope::Segment(range) => 
+      //     println!("From {} to {}", range.start, range.end),
+      //   ChoreoConstraintScope::Waypoint(idx) =>
+      //     println!("At {}", idx)
+      // }
     }
     let half_wheel_base = config.wheelbase / 2.0;
     let half_track_width = config.trackWidth / 2.0;

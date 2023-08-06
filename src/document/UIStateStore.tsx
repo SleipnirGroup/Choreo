@@ -8,7 +8,7 @@ import {
 import { getRoot, Instance, types } from "mobx-state-tree";
 import { ReactElement } from "react";
 import Waypoint from "../assets/Waypoint";
-import { constraints } from "./ConstraintStore";
+import { ConstraintDefinition, constraints, ConstraintStore, ConstraintStores, IConstraintStore } from "./ConstraintStore";
 import { IStateStore } from "./DocumentModel";
 import {
   HolonomicWaypointStore,
@@ -20,11 +20,15 @@ export const SelectableItem = types.union(
   {
     dispatcher: (snapshot) => {
       if (snapshot.mass) return RobotConfigStore;
+      if (snapshot.type) {
+        return ConstraintStores[snapshot.type];
+      }
       return HolonomicWaypointStore;
     },
   },
   RobotConfigStore,
-  HolonomicWaypointStore
+  HolonomicWaypointStore,
+  ...Object.values(ConstraintStores),
 );
 
 /* Navbar stuff */
@@ -44,15 +48,26 @@ let NavbarData : {[key:string]: {
     icon: <Circle />,
   },
 };
+const waypointNavbarCount = Object.keys(NavbarData).length;
 let constraintsIndices :number[] = [];
+let navbarIndexToConstraint : {[key: number]: typeof ConstraintStore} = {
+
+}
+let navbarIndexToConstraintDefinition : {[key: number]: ConstraintDefinition} = {
+
+}
 {
   let constraintsOffset = Object.keys(NavbarData).length;
   Object.entries(constraints).forEach(([key, data], index) => {
     NavbarData[key] = {index: constraintsOffset, name: data.name, icon: data.icon}
+    navbarIndexToConstraint[constraintsOffset] = ConstraintStores[key];
+    navbarIndexToConstraintDefinition[constraintsOffset] = data;
     constraintsIndices.push(constraintsOffset)
     constraintsOffset++;
   })
 }
+const constraintNavbarCount = Object.keys(constraints).length;
+console.log(navbarIndexToConstraint)
 
 
 export const NavbarLabels = (() => {
@@ -62,6 +77,7 @@ export const NavbarLabels = (() => {
   });
   return x;
 })();
+console.log(NavbarLabels)
 
 
 export const NavbarItemData = (() => {
@@ -75,11 +91,12 @@ export const NavbarItemData = (() => {
 })();
 console.log(NavbarItemData)
 
-export const NavbarItemSectionLengths = [1, 3]
+export const NavbarItemSectionLengths = [waypointNavbarCount - 1, waypointNavbarCount + constraintNavbarCount - 1]
 
 export type SelectableItemTypes =
   | IRobotConfigStore
   | IHolonomicWaypointStore
+  | IConstraintStore
   | undefined;
 
 /* Visibility stuff */
@@ -139,6 +156,12 @@ export const UIStateStore = types
   })
   .views((self: any) => {
     return {
+      getSelectedConstraint() {
+        return navbarIndexToConstraint[self.selectedNavbarItem] ?? undefined;
+      },
+      getSelectedConstraintDefinition() {
+        return navbarIndexToConstraintDefinition[self.selectedNavbarItem] ?? undefined;
+      },
       isNavbarWaypointSelected() {
         return (
           self.selectedNavbarItem == NavbarLabels.FullWaypoint ||
@@ -147,8 +170,7 @@ export const UIStateStore = types
       },
       isConstraintSelected() {
         return (
-          (self.selectedNavbarItem > NavbarItemSectionLengths[0]) &&
-          (self.selectedNavbarItem <= NavbarItemSectionLengths[1])
+          (self.selectedNavbarItem > NavbarItemSectionLengths[0])
         )
       },
       visibleLayersOnly() {

@@ -2,7 +2,8 @@ import { createContext } from "react";
 import StateStore, { IStateStore } from "./DocumentModel";
 import { dialog, fs } from "@tauri-apps/api";
 import { v4 as uuidv4 } from "uuid";
-import { applySnapshot } from "mobx-state-tree";
+import { applySnapshot, getRoot, onPatch } from "mobx-state-tree";
+import { toJS } from "mobx";
 
 export class DocumentManager {
   simple: any;
@@ -13,6 +14,8 @@ export class DocumentManager {
     this.model.document.history.canRedo && this.model.document.history.redo();
   }
   get history() {
+    //console.log(toJS(this.model.document.history.history))
+    //console.log(toJS(this.model.document.pathlist.activePath.constraints))
     return this.model.document.history;
   }
   model: IStateStore;
@@ -27,6 +30,7 @@ export class DocumentManager {
         pathlist: {},
       },
     });
+    //onPatch(this.model.document, (patch)=>console.log(patch))
     this.model.document.pathlist.addPath("NewPath");
     this.model.document.history.clear();
   }
@@ -142,5 +146,5 @@ export class DocumentManager {
     element.click();
   }
 }
-let DocumentManagerContext = createContext(null);
+let DocumentManagerContext = createContext(new DocumentManager());
 export default DocumentManagerContext;

@@ -49,7 +49,7 @@ export interface SavedDocument {
   paths: SavedPathList;
 }
 export interface SavedConstraint {
-  scope: number | {start: number, end: number} | null;
+  scope: number | {start: number, end: number} | null | string;
   type:string;
   [key:string]: unknown;
 }

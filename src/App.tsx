@@ -7,8 +7,6 @@ import CssBaseline from "@mui/material/CssBaseline";
 import Body from "./Body";
 
 function App() {
-  
-  const documentManager = new DocumentManager();
 
   const buttonOverrides = {
     // Name of the slot
@@ -53,9 +51,7 @@ function App() {
   return (
     <CssBaseline>
       <ThemeProvider theme={createTheme(themeOptions)}>
-        <DocumentManagerContext.Provider value={documentManager}>
           <Body></Body>
-        </DocumentManagerContext.Provider>
       </ThemeProvider>
     </CssBaseline>
   );

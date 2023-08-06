@@ -10,6 +10,7 @@ import InterpolatedRobot from "./InterpolatedRobot";
 import { NavbarLabels, ViewLayers } from "../../../document/UIStateStore";
 import FieldGeneratedLines from "./FieldGeneratedLines";
 import FieldAxisLines from "./FieldAxisLines";
+import FieldConstraintsAddLayer from "./FieldConstraintsAddLayer";
 
 type Props = {};
 
@@ -28,8 +29,6 @@ class FieldOverlayRoot extends Component<Props, State> {
     xPan: 0,
     yPan: 0,
     zoom: 1,
-    mouseX: 0,
-    mouseY: 0,
   };
   canvasHeightMeters: number;
   canvasWidthMeters: number;
@@ -97,22 +96,17 @@ class FieldOverlayRoot extends Component<Props, State> {
     let factor = this.getScalingFactor(this.svgRef?.current);
     this.context.model.uiState.setFieldScalingFactor(factor);
   }
-  getMouseCoordinates(e: any) {
-    let coords = d3.pointer(e, this.frameRef?.current);
-    this.setState({ mouseX: coords[0], mouseY: coords[1] });
-    return d3.pointer(e);
-  }
   render() {
     this.canvasHeightMeters = FieldImage23.WIDTH_M + 1;
     this.canvasWidthMeters = FieldImage23.LENGTH_M + 1;
     let layers = this.context.model.uiState.layers;
+    let constraintSelected = this.context.model.uiState.isConstraintSelected()
     return (
       <svg
         ref={this.svgRef}
         viewBox={`${-0.5} ${0.5 - this.canvasHeightMeters} ${
           this.canvasWidthMeters
         } ${this.canvasHeightMeters}`}
-        onMouseMove={(e: any) => this.getMouseCoordinates(e)}
         xmlns="http://www.w3.org/2000/svg"
         style={{
           width: "100%",
@@ -163,6 +157,9 @@ class FieldOverlayRoot extends Component<Props, State> {
                 ></OverlayWaypoint>
               )
             )}
+          {constraintSelected && (
+            <FieldConstraintsAddLayer></FieldConstraintsAddLayer>
+          )}
           {layers[ViewLayers.Trajectory] && (
             <InterpolatedRobot
               timestamp={this.context.model.uiState.pathAnimationTimestamp}

@@ -66,9 +66,11 @@ const StateStore = types
           return;
         }
         pathStore.setGenerating(true);
+        console.log(pathStore.asSavedPath())
         invoke("generate_trajectory", {
           path: pathStore.waypoints,
           config: self.document.robotConfig,
+          constraints: pathStore.asSavedPath().constraints
         })
           .then((rust_traj) => {
             let newTraj: Array<SavedTrajectorySample> = [];
