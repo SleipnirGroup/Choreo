@@ -1,4 +1,4 @@
-import { PriorityHigh, Stop } from "@mui/icons-material"
+import { ArrowRight, ArrowRightAlt, ArrowUpward, PriorityHigh, Stop } from "@mui/icons-material"
 import { getDebugName } from "mobx"
 import { getParent, types } from "mobx-state-tree"
 import { getRoot, Instance, IOptionalIType, isAlive, ISimpleType, ModelActions } from "mobx-state-tree"
@@ -58,9 +58,9 @@ export const constraints = {
         fullPathScope: true
     },
     WptVelocityDirection: {
-        name: "Zero Velocity",
-        description: "Zero velocity in scope",
-        icon: (<Stop></Stop>),
+        name: "Waypoint Velocity Direction",
+        description: "Direction of travel through waypoint",
+        icon: (<ArrowRightAlt/>),
         properties: {
             direction: {
                 name: "Direction",
@@ -72,19 +72,13 @@ export const constraints = {
         sgmtScope: false,
         fullPathScope: false
     },
-    SgmtVelocityDirection: {
-        name: "Zero Velocity",
-        description: "Zero velocity in scope",
+    WptZeroVelocity: {
+        name: "Waypoint Zero Velocity",
+        description: "Zero velocity at waypoint",
         icon: (<Stop></Stop>),
-        properties: {
-            direction: {
-                name: "Direction",
-                description: "The direction of velocity",
-                units: "rad"
-            }
-        },
+        properties: {},
         wptScope: true,
-        sgmtScope: true,
+        sgmtScope: false,
         fullPathScope: false
     }
 }

@@ -18,7 +18,7 @@ class RobotConfigPanel extends Component<Props, State> {
     let constraint = this.props.constraint;
     let definition = constraint.definition;
     return (
-      <div className={styles.WaypointPanel}>
+      <div className={styles.WaypointPanel} style={{display: (Object.entries(definition.properties).length == 0) ? "none" : "unset"}}>
         <InputList noCheckbox>
             {(Object.entries(definition.properties).map((entry)=>{
                 let [key, propdef] = entry;

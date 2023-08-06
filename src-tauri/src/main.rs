@@ -65,10 +65,14 @@ enum ChoreoConstraintScope {
 
 #[derive(serde::Serialize, serde::Deserialize)]
 #[serde(tag="type")]
+// Add constraint type, scope, and properties
 enum Constraints {
-  BoundsZeroVelocity{scope: ChoreoConstraintScope}
+  BoundsZeroVelocity{scope: ChoreoConstraintScope},
+  WptVelocityDirection{scope: ChoreoConstraintScope, direction:f64},
+  WptZeroVelocity{scope: ChoreoConstraintScope}
 }
-define_enum_macro!(Constraints, BoundsZeroVelocity);
+// Also add the constraint type here
+define_enum_macro!(Constraints, BoundsZeroVelocity, WptVelocityDirection, WptZeroVelocity);
 
 #[tauri::command]
 async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfig, constraints: Vec<Constraints>) -> Result<HolonomicTrajectory, String> {
@@ -84,15 +88,37 @@ async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfi
     }
     for c in 0..constraints.len() {
       let constraint: &Constraints = &constraints[c];
-      let Constraints!(scope, ..) = constraint;
+
       match constraint {
-        Constraints::BoundsZeroVelocity { scope }  => {
+        Constraints::BoundsZeroVelocity { .. }  => {
           path_builder.wpt_zero_velocity(0);
           path_builder.wpt_zero_velocity(path.len()-1);
-        }
+        },
+        Constraints::WptVelocityDirection { scope, direction } => {
+          // maybe make a macro or find a way to specify some constraints have a specific scope
+          match scope {
+            ChoreoConstraintScope::Waypoint(idx) => {
+              println!("WptVelocityDirection {} {}", *idx, *direction);
+              path_builder.wpt_velocity_direction(*idx, *direction);
+            },
+            ChoreoConstraintScope::Full(_) => {},
+            ChoreoConstraintScope::Segment(_) => {}
+          }
+        },
+        Constraints::WptZeroVelocity { scope } => {
+          match scope {
+            ChoreoConstraintScope::Waypoint(idx) => {
+              println!("WptZeroVelocity {}", *idx);
+              path_builder.wpt_zero_velocity(*idx);
+            },
+            ChoreoConstraintScope::Full(_) => {},
+            ChoreoConstraintScope::Segment(_) => {}
+          }
+        },
         // add more cases here to impl each constraint.
       }
       // The below might be helpful
+      // let Constraints!(scope, ..) = constraint;
       // match scope {
       //   ChoreoConstraintScope::Full(_) => 
       //     println!("Full Path")
