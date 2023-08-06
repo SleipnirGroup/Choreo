@@ -1,9 +1,7 @@
 {
   "tauri": {
     "bundle": {
-      "resources": [
-        "*.dll"
-      ]
+      "resources": ["*.dll"]
     }
   }
 }
