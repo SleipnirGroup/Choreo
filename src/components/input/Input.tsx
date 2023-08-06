@@ -2,6 +2,8 @@ import { observer } from "mobx-react";
 import React, { Component } from "react";
 import styles from "./InputList.module.css";
 
+import { parse } from "mathjs";
+
 type Props = {
   title: string;
   suffix: string;
@@ -113,7 +115,7 @@ class Input extends Component<Props, State> {
           }}
           onKeyDown={(e) => {
             if (e.key == "Enter") {
-              let newNumber = parseFloat(this.state.editedValue);
+              let newNumber = parseFloat(parse(this.state.editedValue).evaluate().toString());
               if (!Number.isNaN(newNumber)) {
                 this.props.setNumber(newNumber);
               }
