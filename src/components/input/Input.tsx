@@ -149,7 +149,7 @@ class Input extends Component<Props, State> {
             if (!Number.isNaN(newNumber)) {
               this.props.setNumber(newNumber);
             }
-            this.focusedMode();
+            // this.focusedMode();
             this.unfocusedMode();
           }}
           onChange={(e) => {
