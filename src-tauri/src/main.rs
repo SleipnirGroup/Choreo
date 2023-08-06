@@ -96,24 +96,22 @@ async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfi
         },
         Constraints::WptVelocityDirection { scope, direction } => {
           // maybe make a macro or find a way to specify some constraints have a specific scope
-          match scope {
-            ChoreoConstraintScope::Waypoint(idx) => {
+          /*
+          ifWaypoint((idx)=>{
               println!("WptVelocityDirection {} {}", *idx, *direction);
               path_builder.wpt_velocity_direction(*idx, *direction);
-            },
-            ChoreoConstraintScope::Full(_) => {},
-            ChoreoConstraintScope::Segment(_) => {}
-          }
+          })
+          */
+          match scope { ChoreoConstraintScope::Waypoint(idx) => {
+              println!("WptVelocityDirection {} {}", *idx, *direction);
+              path_builder.wpt_velocity_direction(*idx, *direction);
+            },_ => {}}
         },
         Constraints::WptZeroVelocity { scope } => {
-          match scope {
-            ChoreoConstraintScope::Waypoint(idx) => {
+          match scope { ChoreoConstraintScope::Waypoint(idx) => {
               println!("WptZeroVelocity {}", *idx);
               path_builder.wpt_zero_velocity(*idx);
-            },
-            ChoreoConstraintScope::Full(_) => {},
-            ChoreoConstraintScope::Segment(_) => {}
-          }
+            },_=>{}}
         },
         // add more cases here to impl each constraint.
       }
