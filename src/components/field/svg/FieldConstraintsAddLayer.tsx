@@ -93,7 +93,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
         )
       }
 
-      { selectedConstraintDefinition!.fullPathScope &&
+      { selectedConstraintDefinition!.fullPathScope && activePath.waypoints.length >= 2 &&
              <>
              <line
               x1 = {activePath.waypoints[0].x}
