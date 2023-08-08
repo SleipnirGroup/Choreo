@@ -67,9 +67,9 @@ enum ChoreoConstraintScope {
 #[serde(tag="type")]
 // Add constraint type, scope, and properties
 enum Constraints {
-  BoundsZeroVelocity{scope: ChoreoConstraintScope},
   WptVelocityDirection{scope: ChoreoConstraintScope, direction:f64},
-  WptZeroVelocity{scope: ChoreoConstraintScope}
+  WptZeroVelocity{scope: ChoreoConstraintScope},
+  MaxVelocity{scope: ChoreoConstraintScope, velocity:f64}
 }
 // Also add the constraint type here
 define_enum_macro!(Constraints, BoundsZeroVelocity, WptVelocityDirection, WptZeroVelocity);
@@ -90,10 +90,6 @@ async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfi
       let constraint: &Constraints = &constraints[c];
 
       match constraint {
-        Constraints::BoundsZeroVelocity { .. }  => {
-          path_builder.wpt_zero_velocity(0);
-          path_builder.wpt_zero_velocity(path.len()-1);
-        },
         Constraints::WptVelocityDirection { scope, direction } => {
           // maybe make a macro or find a way to specify some constraints have a specific scope
           /*
@@ -104,14 +100,24 @@ async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfi
           */
           match scope { ChoreoConstraintScope::Waypoint(idx) => {
               println!("WptVelocityDirection {} {}", *idx, *direction);
-              path_builder.wpt_velocity_direction(*idx, *direction);
+              path_builder.wpt_linear_velocity_direction(*idx, *direction);
             },_ => {}}
         },
         Constraints::WptZeroVelocity { scope } => {
           match scope { ChoreoConstraintScope::Waypoint(idx) => {
               println!("WptZeroVelocity {}", *idx);
-              path_builder.wpt_zero_velocity(*idx);
+              path_builder.wpt_linear_velocity_max_magnitude(*idx, 0.0);
             },_=>{}}
+        },
+        Constraints::MaxVelocity { scope , velocity} => {
+          match scope { ChoreoConstraintScope::Waypoint(idx) => {
+              println!("WptZeroVelocity {}", *idx);
+              path_builder.wpt_linear_velocity_max_magnitude(*idx, *velocity)
+            },
+            ChoreoConstraintScope::Segment(range) => {
+              println!("From {} to {}", range.start, range.end);
+              path_builder.sgmt_linear_velocity_max_magnitude(range.start, range.end, *velocity)
+            }}
         },
         // add more cases here to impl each constraint.
       }

@@ -80,7 +80,7 @@ export const HolonomicPathStore = types
           constraints: self.constraints.flatMap((constraint)=>{
             let waypointIdToSavedWaypointId = (waypointId: "first"|"last"|{uuid:string}) : "first"|"last"|number|undefined => {
               if (typeof waypointId !== "string") {
-                let scopeIndex = self.findUUIDIndex(con.scope);
+                let scopeIndex = self.findUUIDIndex(waypointId.uuid);
                 if (scopeIndex == -1) {
                   return undefined; // don't try to save this constraint
                 }

@@ -37,6 +37,7 @@ export type ConstraintPropertyDefinition = {
 }
 export type ConstraintDefinition = {
     name: string,
+    shortName: string,
     icon:  ReactElement<any, string | JSXElementConstructor<any>>,
     description: string,
     wptScope: boolean,
@@ -50,17 +51,9 @@ export type ConstraintDefinition = {
 export type WaypointID = "first" | "last" | {uuid:string};
 
 export const constraints = {
-    BoundsZeroVelocity: {
-        name: "Bounds Zero Velocity",
-        description: "Zero velocity at first and last waypoint",
-        icon: (<Stop></Stop>),
-        properties: {},
-        wptScope: false,
-        sgmtScope:false,
-        fullPathScope: true
-    },
     WptVelocityDirection: {
         name: "Waypoint Velocity Direction",
+        shortName: "Wpt Velo Dir",
         description: "Direction of travel through waypoint",
         icon: (<ArrowRightAlt/>),
         properties: {
@@ -76,11 +69,28 @@ export const constraints = {
     },
     WptZeroVelocity: {
         name: "Waypoint Zero Velocity",
+        shortName: "Wpt 0 Velo",
         description: "Zero velocity at waypoint",
         icon: (<Stop></Stop>),
         properties: {},
         wptScope: true,
         sgmtScope: false,
+        fullPathScope: false
+    },
+    MaxVelocity: {
+        name: "Segment Max Velocity",
+        shortName: "Sgmt Max Velo",
+        description: "Maximum Velocity",
+        icon: (<Stop></Stop>),
+        properties: {
+            velocity: {
+                name: "Max Velocity",
+                description: "Maximum Velocity of robot chassis",
+                units: "m/s"
+            }
+        },
+        wptScope: true,
+        sgmtScope: true,
         fullPathScope: false
     }
 }
@@ -92,7 +102,7 @@ export type IWaypointScope = IWaypointUUIDScope | "first" | "last";
 interface IWaypointUUIDScope extends Instance<typeof WaypointUUIDScope>{}
 export const SegmentScope = types.model("SegmentScope", {
     start: WaypointScope,
-    end:WaypointScope
+    end: WaypointScope
 });
 export interface ISegmentScope extends Instance<typeof SegmentScope>{}
 
@@ -119,6 +129,7 @@ export const ConstraintStore = types.model("ConstraintStore", {
     get definition() : ConstraintDefinition {
         return {
             name: "Default",
+            shortName: "Default",
             description: "",
             sgmtScope: false,
             wptScope: false,

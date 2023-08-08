@@ -123,7 +123,10 @@ class Sidebar extends Component<Props, State> {
           </Divider>
 
           <WaypointList></WaypointList>
-          <Divider flexItem><span>CONSTRAINTS</span></Divider>
+          <Divider className={styles.SidebarDivider} textAlign="left" flexItem>
+            <span>CONSTRAINTS</span>
+          </Divider>
+          <div className={styles.WaypointList}>
             {this.context.model.document.pathlist.activePath.constraints.map((constraint)=>{
               return (
                 <SidebarConstraint
@@ -131,6 +134,7 @@ class Sidebar extends Component<Props, State> {
                   constraint={constraint}></SidebarConstraint>
               )
             })}
+          </div>
         </div>
         <Divider></Divider>
         

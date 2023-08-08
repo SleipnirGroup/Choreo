@@ -66,7 +66,7 @@ const StateStore = types
           return;
         }
         pathStore.setGenerating(true);
-        console.log(pathStore.asSavedPath())
+        console.log(pathStore.asSolverPath())
         invoke("generate_trajectory", {
           path: pathStore.waypoints,
           config: self.document.robotConfig,
