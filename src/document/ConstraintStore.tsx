@@ -47,6 +47,8 @@ export type ConstraintDefinition = {
     }
 }
 
+export type WaypointID = "first" | "last" | {uuid:string};
+
 export const constraints = {
     BoundsZeroVelocity: {
         name: "Bounds Zero Velocity",

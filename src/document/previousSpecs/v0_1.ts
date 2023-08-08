@@ -48,8 +48,9 @@ export interface SavedDocument {
   robotConfiguration: SavedRobotConfig;
   paths: SavedPathList;
 }
+export type SavedWaypointId = "first" | "last" | number 
 export interface SavedConstraint {
-  scope: number | {start: number, end: number} | null | string;
+  scope: SavedWaypointId | {start: SavedWaypointId, end: SavedWaypointId};
   type:string;
   [key:string]: unknown;
 }

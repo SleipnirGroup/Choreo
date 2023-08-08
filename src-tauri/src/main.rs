@@ -58,7 +58,7 @@ struct ChoreoSegmentScope {
 #[derive(serde::Serialize, serde::Deserialize)]
 #[serde(untagged)]
 enum ChoreoConstraintScope {
-  Full(String),
+  
   Segment(ChoreoSegmentScope),
   Waypoint(usize)
 }

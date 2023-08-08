@@ -70,7 +70,7 @@ const StateStore = types
         invoke("generate_trajectory", {
           path: pathStore.waypoints,
           config: self.document.robotConfig,
-          constraints: pathStore.asSavedPath().constraints
+          constraints: pathStore.asSolverPath().constraints
         })
           .then((rust_traj) => {
             let newTraj: Array<SavedTrajectorySample> = [];
