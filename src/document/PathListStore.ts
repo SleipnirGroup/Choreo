@@ -62,7 +62,7 @@ export const PathListStore = types
           name: usedName,
           waypoints: [],
         });
-        path.addConstraint(ConstraintStores.BoundsZeroVelocity)?.setScope("full")
+        path.addConstraint(ConstraintStores.BoundsZeroVelocity)?.setScope({start:"first", end:"last"})
         console.log(JSON.stringify(path.asSavedPath()))
         self.paths.put(
           path

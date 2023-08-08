@@ -3,7 +3,7 @@ import { getDebugName } from "mobx"
 import { getParent, types } from "mobx-state-tree"
 import { getRoot, Instance, IOptionalIType, isAlive, ISimpleType, ModelActions } from "mobx-state-tree"
 import { type } from "os"
-import React, { ReactElement } from "react"
+import React, { JSXElementConstructor, ReactElement } from "react"
 import { safeGetIdentifier } from "../util/mobxutils"
 import { IStateStore } from "./DocumentModel"
 import {v4 as uuidv4} from "uuid"
@@ -82,14 +82,22 @@ export const constraints = {
         fullPathScope: false
     }
 }
-export const SegmentScope = types.model("SegmentScope", {
-    start: types.string,
-    end:types.string
+const WaypointUUIDScope = types.model("WaypointScope", {
+    uuid: types.string
 });
+export const WaypointScope = types.union(types.literal("first"), types.literal("last"), WaypointUUIDScope);
+export type IWaypointScope = IWaypointUUIDScope | "first" | "last";
+interface IWaypointUUIDScope extends Instance<typeof WaypointUUIDScope>{}
+export const SegmentScope = types.model("SegmentScope", {
+    start: WaypointScope,
+    end:WaypointScope
+});
+export interface ISegmentScope extends Instance<typeof SegmentScope>{}
+
 export interface IConstraintStore extends Instance<typeof ConstraintStore>{}
 
 export const ConstraintStore = types.model("ConstraintStore", {
-    scope: types.maybeNull(types.union(types.string, SegmentScope)),
+    scope: types.maybeNull(types.union(WaypointScope, SegmentScope)),
     type: types.optional(types.string, ""),
     uuid: types.identifier
 })
@@ -132,7 +140,7 @@ export const ConstraintStore = types.model("ConstraintStore", {
 .actions((self)=>({
     afterCreate() {
     },
-    setScope(scope:string | {start:string, end:string}) {
+    setScope(scope:IWaypointScope | ISegmentScope) {
         self.scope = scope;
     },
     setSelected(selected: boolean) {

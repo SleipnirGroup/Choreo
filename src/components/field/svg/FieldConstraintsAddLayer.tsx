@@ -43,7 +43,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                   if (newConstraint !== undefined) {
                     console.log(newConstraint.wptScope)
                     if (newConstraint.wptScope) {
-                      newConstraint.setScope(point.uuid)
+                      newConstraint.setScope({uuid:point.uuid})
                     }
                   }
                   console.log(JSON.stringify(newConstraint))
@@ -80,7 +80,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                   if (newConstraint !== undefined) {
                     console.log(newConstraint.wptScope)
                     if (newConstraint.wptScope) {
-                      newConstraint.setScope({start: point1.uuid, end: point2.uuid})
+                      newConstraint.setScope({start: {uuid: point1.uuid}, end: {uuid: point2.uuid}})
                     }
                   }
                   console.log(JSON.stringify(newConstraint))
@@ -123,7 +123,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                   if (newConstraint !== undefined) {
                     console.log(newConstraint.definition.fullPathScope)
                     if (newConstraint.definition.fullPathScope) {
-                      newConstraint.setScope("full")
+                      newConstraint.setScope({start: "first", end:"last"})
                     }
                   }
                   console.log(JSON.stringify(newConstraint))

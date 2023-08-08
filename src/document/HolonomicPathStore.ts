@@ -68,7 +68,7 @@ export const HolonomicPathStore = types
             let saved : Partial<SavedConstraint> = {};
             let con = constraint;
             if (typeof con.scope === "string") { 
-              if (con.scope === "full") {
+              if (con.scope === "first") {
                 saved["scope"] = "full"
               } else {
                 let scopeIndex = self.findUUIDIndex(con.scope);
@@ -116,6 +116,7 @@ export const HolonomicPathStore = types
       addConstraint(store: (typeof ConstraintStore) | undefined) : Instance<typeof ConstraintStore> | undefined {
         if (store === undefined) {return;}
         self.constraints.push(store.create({uuid: uuidv4()}));
+        console.log(self.constraints)
         console.log(self.asSavedPath());
         return self.constraints[self.constraints.length - 1];
         
@@ -136,7 +137,7 @@ export const HolonomicPathStore = types
               let constraint = self.addConstraint(constraintStore) as Instance<typeof ConstraintStore>;
               if (typeof saved.scope === "number") { 
                 let scopeIndex = saved.scope;
-                constraint.setScope(path.constraints[scopeIndex].uuid as string);
+                constraint.setScope({uuid:path.constraints[scopeIndex].uuid as string});
               }
               else if (typeof saved.scope?.start === "number") { 
                 constraint.setScope({
