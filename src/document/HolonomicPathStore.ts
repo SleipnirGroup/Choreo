@@ -254,6 +254,7 @@ export const HolonomicPathStore = types
         let waypoint = self.addWaypoint();
         waypoint.fromSavedWaypoint(point);
       });
+      self.constraints.clear();
       savedPath.constraints.forEach((saved: SavedConstraint) => {
           let constraintStore = ConstraintStores[saved.type];
           if (constraintStore !== undefined) {

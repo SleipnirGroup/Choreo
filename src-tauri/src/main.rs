@@ -69,7 +69,8 @@ enum ChoreoConstraintScope {
 enum Constraints {
   WptVelocityDirection{scope: ChoreoConstraintScope, direction:f64},
   WptZeroVelocity{scope: ChoreoConstraintScope},
-  MaxVelocity{scope: ChoreoConstraintScope, velocity:f64}
+  MaxVelocity{scope: ChoreoConstraintScope, velocity:f64},
+  ZeroAngularVelocity{scope: ChoreoConstraintScope}
 }
 // Also add the constraint type here
 define_enum_macro!(Constraints, BoundsZeroVelocity, WptVelocityDirection, WptZeroVelocity);
@@ -106,17 +107,27 @@ async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfi
         Constraints::WptZeroVelocity { scope } => {
           match scope { ChoreoConstraintScope::Waypoint(idx) => {
               println!("WptZeroVelocity {}", *idx);
-              path_builder.wpt_linear_velocity_max_magnitude(*idx, 0.0);
+              path_builder.wpt_linear_velocity_max_magnitude(*idx, 0.0f64);
             },_=>{}}
         },
         Constraints::MaxVelocity { scope , velocity} => {
           match scope { ChoreoConstraintScope::Waypoint(idx) => {
-              println!("WptZeroVelocity {}", *idx);
+              println!("WptMaxVelocity {}", *idx);
               path_builder.wpt_linear_velocity_max_magnitude(*idx, *velocity)
             },
             ChoreoConstraintScope::Segment(range) => {
               println!("From {} to {}", range.start, range.end);
               path_builder.sgmt_linear_velocity_max_magnitude(range.start, range.end, *velocity)
+            }}
+        },
+        Constraints::ZeroAngularVelocity { scope } => {
+          match scope { ChoreoConstraintScope::Waypoint(idx) => {
+              println!("WptMaxVelocity {}", *idx);
+              path_builder.wpt_angular_velocity(*idx, 0.0)
+            },
+            ChoreoConstraintScope::Segment(range) => {
+              println!("From {} to {}", range.start, range.end);
+              path_builder.sgmt_angular_velocity(range.start, range.end, 0.0)
             }}
         },
         // add more cases here to impl each constraint.

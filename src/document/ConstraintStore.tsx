@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowRightAlt, ArrowUpward, PriorityHigh, Stop } from "@mui/icons-material"
+import { ArrowRight, ArrowRightAlt, ArrowUpward, Dangerous, Explore, KeyboardDoubleArrowRight, PriorityHigh, Stop, SyncDisabledOutlined } from "@mui/icons-material"
 import { getDebugName } from "mobx"
 import { getParent, types } from "mobx-state-tree"
 import { getRoot, Instance, IOptionalIType, isAlive, ISimpleType, ModelActions } from "mobx-state-tree"
@@ -55,7 +55,7 @@ export const constraints = {
         name: "Waypoint Velocity Direction",
         shortName: "Wpt Velo Dir",
         description: "Direction of travel through waypoint",
-        icon: (<ArrowRightAlt/>),
+        icon: (<Explore/>),
         properties: {
             direction: {
                 name: "Direction",
@@ -71,23 +71,34 @@ export const constraints = {
         name: "Waypoint Zero Velocity",
         shortName: "Wpt 0 Velo",
         description: "Zero velocity at waypoint",
-        icon: (<Stop></Stop>),
+        icon: (<Dangerous></Dangerous>),
         properties: {},
         wptScope: true,
         sgmtScope: false,
         fullPathScope: false
     },
     MaxVelocity: {
-        name: "Segment Max Velocity",
-        shortName: "Sgmt Max Velo",
+        name: "Max Velocity",
+        shortName: "Max Velo",
         description: "Maximum Velocity",
-        icon: (<Stop></Stop>),
+        icon: (<KeyboardDoubleArrowRight/>),
         properties: {
             velocity: {
                 name: "Max Velocity",
                 description: "Maximum Velocity of robot chassis",
                 units: "m/s"
             }
+        },
+        wptScope: true,
+        sgmtScope: true,
+        fullPathScope: false
+    },
+    ZeroAngularVelocity: {
+        name: "Zero Angular Velocity",
+        shortName: "0 Ang Velo",
+        description: "Zero angular velocity throughout scope",
+        icon: (<SyncDisabledOutlined></SyncDisabledOutlined>),
+        properties: {
         },
         wptScope: true,
         sgmtScope: true,
