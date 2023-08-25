@@ -17,10 +17,12 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
     let activePath = this.context.model.document.pathlist.activePath
     let selectedConstraint = this.context.model.uiState.getSelectedConstraint()
     let selectedConstraintDefinition = this.context.model.uiState.getSelectedConstraintDefinition();
+    let waypoints = activePath.waypoints;
     return (
       <>
+      {/* Draw circles on each waypoint */}
       { selectedConstraintDefinition!.wptScope &&
-        activePath.waypoints.map(
+        waypoints.filter((waypoint)=>waypoint.translationConstrained).map(
           (point, index) => {
             return (
               
@@ -45,6 +47,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                     if (newConstraint.wptScope) {
                       newConstraint.setScope({uuid:point.uuid})
                     }
+                    this.context.model.uiState.setSelectedSidebarItem(newConstraint);
                   }
                   console.log(JSON.stringify(newConstraint))
                   console.log(activePath.asSavedPath())
@@ -82,7 +85,9 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                     if (newConstraint.wptScope) {
                       newConstraint.setScope({start: {uuid: point1.uuid}, end: {uuid: point2.uuid}})
                     }
+                    this.context.model.uiState.setSelectedSidebarItem(newConstraint);
                   }
+                  
                   console.log(JSON.stringify(newConstraint))
                   console.log(activePath.asSavedPath())
                 }}
@@ -119,6 +124,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                        if (newConstraint.definition.sgmtScope) {
                          newConstraint.setScope({start: "first", end:"last"})
                        }
+                       this.context.model.uiState.setSelectedSidebarItem(newConstraint);
                      }
                      console.log(JSON.stringify(newConstraint))
                      console.log(activePath.asSavedPath())

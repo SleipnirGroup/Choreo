@@ -180,6 +180,8 @@ async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfi
           }
         ]
       };
+    //path_builder.set_bumpers(config.bumperLength, config.bumperWidth);
+    path_builder.sgmt_circle_obstacle(0, path.len()-1, 3.0, 3.0, 1.0);
     path_builder.set_drivetrain(&drivetrain);
     path_builder.generate()
 }

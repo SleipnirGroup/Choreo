@@ -21,6 +21,7 @@ class SidebarConstraint extends Component<Props, State> {
   declare context: React.ContextType<typeof DocumentManagerContext>;
   id: number = 0;
   state = {};
+
   getScopeText() {
     let waypointIDToText = (id: WaypointID) =>{
       if (id == "first") return "Start";
@@ -46,7 +47,6 @@ class SidebarConstraint extends Component<Props, State> {
     // apparently we have to dereference this here instead of inline in the class name
     // Otherwise the component won't rerender when it changes
     let selected = this.props.constraint.selected;
-    let Icon = this.props.constraint.definition.icon;
     return (
       <div
         className={styles.SidebarItem + (selected ? ` ${styles.Selected}` : "")}

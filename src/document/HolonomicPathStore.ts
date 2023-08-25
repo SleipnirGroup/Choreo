@@ -13,7 +13,7 @@ import { TrajectorySampleStore } from "./TrajectorySampleStore";
 import { moveItem } from "mobx-utils";
 import { v4 as uuidv4 } from "uuid";
 import { IStateStore } from "./DocumentModel";
-import { constraints, ConstraintStore, ConstraintStores, WaypointID} from "./ConstraintStore";
+import { constraints, ConstraintStore, ConstraintStores, IWaypointScope, WaypointID} from "./ConstraintStore";
 import { SavedWaypointId } from "./previousSpecs/v0_1";
 
 export const HolonomicPathStore = types
@@ -55,7 +55,7 @@ export const HolonomicPathStore = types
       canExport(): boolean {
         return self.generated.length >= 2;
       },
-      getByWaypointID(id: WaypointID){
+      getByWaypointID(id: WaypointID | IWaypointScope){
         if (id === "first") {
           return self.waypoints[0];
         }
@@ -63,7 +63,7 @@ export const HolonomicPathStore = types
           return self.waypoints[self.waypoints.length-1];
         }
         if (typeof id.uuid === "string") {
-          return self.findUUIDIndex(id.uuid);
+          return self.waypoints[self.findUUIDIndex(id.uuid)];
         }
       },
       asSavedPath(): SavedPath {

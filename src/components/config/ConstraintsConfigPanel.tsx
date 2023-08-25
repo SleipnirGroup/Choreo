@@ -4,6 +4,7 @@ import DocumentManagerContext from "../../document/DocumentManager";
 import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../input/InputList";
 import Input from "../input/Input";
+import inputStyles from "../input/InputList.module.css";
 import { IConstraintStore } from "../../document/ConstraintStore";
 
 type Props = {constraint: IConstraintStore};
@@ -17,9 +18,17 @@ class RobotConfigPanel extends Component<Props, State> {
   render() {
     let constraint = this.props.constraint;
     let definition = constraint.definition;
+    let isSegmentConstraint = typeof constraint.scope !== "string" && Object.hasOwn(constraint.scope, "start");
     return (
       <div className={styles.WaypointPanel} style={{display: (Object.entries(definition.properties).length == 0) ? "none" : "unset"}}>
+
+
         <InputList noCheckbox>
+          {isSegmentConstraint && <>
+            <span className={inputStyles.Title}>From</span>
+            <input className={inputStyles.Input} value={(constraint.getStartWaypointIndex() || -1) + 1}></input>
+            <span></span><span></span></>
+            }
             {(Object.entries(definition.properties).map((entry)=>{
                 let [key, propdef] = entry;
                 let setterName = "set" + key.charAt(0).toUpperCase() + key.slice(1);

@@ -8,6 +8,8 @@ import { safeGetIdentifier } from "../util/mobxutils"
 import { IStateStore } from "./DocumentModel"
 import {v4 as uuidv4} from "uuid"
 import { I } from "@tauri-apps/api/path-c062430b"
+import { IHolonomicWaypointStore } from "./HolonomicWaypointStore"
+import { IHolonomicPathStore } from "./HolonomicPathStore"
 
 /**
  * PoseWpt (idx, x, y, heading)
@@ -122,6 +124,7 @@ export interface IConstraintStore extends Instance<typeof ConstraintStore>{}
 export const ConstraintStore = types.model("ConstraintStore", {
     scope: types.maybeNull(types.union(WaypointScope, SegmentScope)),
     type: types.optional(types.string, ""),
+    issue: types.array(types.string),
     uuid: types.identifier
 })
 .views((self)=>({
@@ -159,6 +162,27 @@ export const ConstraintStore = types.model("ConstraintStore", {
               getRoot<IStateStore>(self).uiState.selectedSidebarItem
             )
           );
+    },
+    getStartWaypoint() : IHolonomicWaypointStore | undefined {
+        const path : IHolonomicPathStore  = getParent<IHolonomicPathStore>(getParent<IConstraintStore[]>(self));
+        if (self.scope === null) return undefined;
+        if (self.scope === "first" || self.scope === "last" || Object.hasOwn(self.scope, "uuid")) {
+            return path.getByWaypointID(self.scope as IWaypointScope);
+        }
+        return path.getByWaypointID((self.scope as ISegmentScope).start as IWaypointScope);
+    },
+
+}))
+.views((self)=>({
+    getStartWaypointIndex() : number | undefined {
+        const path : IHolonomicPathStore = getParent<IHolonomicPathStore>(getParent<IConstraintStore[]>(self));
+        const waypoint = self.getStartWaypoint();
+        if (waypoint === undefined) return undefined;
+        return path.findUUIDIndex(waypoint.uuid);
+    },
+    getPath() : IHolonomicPathStore {
+        const path : IHolonomicPathStore = getParent<IHolonomicPathStore>(getParent<IConstraintStore[]>(self));
+        return path;
     }
 }))
 .actions((self)=>({
@@ -177,6 +201,9 @@ export const ConstraintStore = types.model("ConstraintStore", {
           );
         }
       },
+    setIssue(issue: string) {
+        self.issue[0] = issue;
+    }
 }));
 
 
