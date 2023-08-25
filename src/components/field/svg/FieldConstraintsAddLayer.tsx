@@ -22,7 +22,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
       <>
       {/* Draw circles on each waypoint */}
       { selectedConstraintDefinition!.wptScope &&
-        waypoints.filter((waypoint)=>waypoint.translationConstrained).map(
+        waypoints.filter((waypoint)=>!waypoint.isInitialGuess).map(
           (point, index) => {
             return (
               
@@ -45,7 +45,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                   if (newConstraint !== undefined) {
                     console.log(newConstraint.wptScope)
                     if (newConstraint.wptScope) {
-                      newConstraint.setScope({uuid:point.uuid})
+                      newConstraint.setScope([{uuid:point.uuid}])
                     }
                     this.context.model.uiState.setSelectedSidebarItem(newConstraint);
                   }
@@ -59,11 +59,20 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
         )
       }
       { selectedConstraintDefinition!.sgmtScope &&
-        activePath.waypoints.slice(0, activePath.waypoints.length-1).map(
+        activePath.nonGuessPoints.slice(0, activePath.nonGuessPoints.length -1).map(
           (point1, index) => {
-            let point2 = activePath.waypoints[index + 1];
+            let point2 = activePath.nonGuessPoints[(index + 1)];
             return (
               <>
+              <line
+                 x1 = {point1.x}
+                 x2 = {point2.x}
+                 y1 = {point1.y}
+                 y2 = {point2.y}
+                 strokeDasharray={0.2}
+                 stroke = "white"
+                 strokeWidth={0.05}
+                ></line>
               <circle
                 key={`${index}-${index+1}`}
                 cx={(point1.x + point2.x)/2}
@@ -83,7 +92,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                   if (newConstraint !== undefined) {
                     console.log(newConstraint.wptScope)
                     if (newConstraint.wptScope) {
-                      newConstraint.setScope({start: {uuid: point1.uuid}, end: {uuid: point2.uuid}})
+                      newConstraint.setScope([{uuid: point1.uuid},{uuid: point2.uuid}])
                     }
                     this.context.model.uiState.setSelectedSidebarItem(newConstraint);
                   }
@@ -92,17 +101,9 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                   console.log(activePath.asSavedPath())
                 }}
               ></circle>
-              { activePath.waypoints.length >= 2 &&
+              { activePath.waypoints.length >= 2 && false &&
                 <>
-                <line
-                 x1 = {activePath.waypoints[0].x}
-                 x2 = {activePath.waypoints[activePath.waypoints.length-1].x}
-                 y1 = {activePath.waypoints[0].y}
-                 y2 = {activePath.waypoints[activePath.waypoints.length-1].y}
-                 strokeDasharray={0.2}
-                 stroke = "white"
-                 strokeWidth={0.05}
-                ></line>
+
                  <circle
                    key={`full`}
                    cx={(activePath.waypoints[0].x + activePath.waypoints[activePath.waypoints.length-1].x)/2}
@@ -122,7 +123,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                      if (newConstraint !== undefined) {
                        console.log(newConstraint.definition.sgmtScope)
                        if (newConstraint.definition.sgmtScope) {
-                         newConstraint.setScope({start: "first", end:"last"})
+                         newConstraint.setScope(["first", "last"])
                        }
                        this.context.model.uiState.setSelectedSidebarItem(newConstraint);
                      }

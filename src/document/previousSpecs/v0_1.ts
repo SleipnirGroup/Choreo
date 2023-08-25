@@ -7,14 +7,9 @@ export interface SavedWaypoint {
   x: number;
   y: number;
   heading: number;
-  velocityMagnitude: number;
-  velocityAngle: number;
-  angularVelocity: number;
+  isInitialGuess: boolean;
   translationConstrained: boolean;
   headingConstrained: boolean;
-  velocityMagnitudeConstrained: boolean;
-  velocityAngleConstrained: boolean;
-  angularVelocityConstrained: boolean;
   controlIntervalCount: number; // positive-integer>
 }
 export interface SavedTrajectorySample {
@@ -50,7 +45,7 @@ export interface SavedDocument {
 }
 export type SavedWaypointId = "first" | "last" | number 
 export interface SavedConstraint {
-  scope: SavedWaypointId | {start: SavedWaypointId, end: SavedWaypointId};
+  scope: Array<SavedWaypointId>;
   type:string;
   [key:string]: unknown;
 }

@@ -1,7 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 // #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use trajoptlib::{SwervePathBuilder, HolonomicTrajectory, SwerveDrivetrain, SwerveModule};
+use trajoptlib::{SwervePathBuilder, HolonomicTrajectory, SwerveDrivetrain, SwerveModule, InitialGuessPoint};
 // A way to make properties that exist on all enum variants accessible from the generic variant
 // I have no idea how it works but it came from
 // https://users.rust-lang.org/t/generic-referencing-enum-inner-data/66342/9
@@ -24,14 +24,9 @@ struct ChoreoWaypoint {
     x: f64,
     y: f64,
     heading: f64,
-    velocityMagnitude: f64,
-    velocityAngle: f64,
-    angularVelocity: f64,
+    isInitialGuess: bool,
     translationConstrained: bool,
     headingConstrained: bool,
-    velocityMagnitudeConstrained: bool,
-    velocityAngleConstrained: bool,
-    angularVelocityConstrained: bool
 }
 
 #[allow(non_snake_case)]
@@ -59,8 +54,8 @@ struct ChoreoSegmentScope {
 #[serde(untagged)]
 enum ChoreoConstraintScope {
   
-  Segment(ChoreoSegmentScope),
-  Waypoint(usize)
+  Segment([usize;2]),
+  Waypoint([usize;1])
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -79,12 +74,20 @@ define_enum_macro!(Constraints, BoundsZeroVelocity, WptVelocityDirection, WptZer
 async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfig, constraints: Vec<Constraints>) -> Result<HolonomicTrajectory, String> {
 
     let mut path_builder = SwervePathBuilder::new();
+    let mut wpt_cnt : usize = 0;
     for i in 0..path.len() {
         let wpt: &ChoreoWaypoint = &path[i];
-        if wpt.headingConstrained {
-            path_builder.pose_wpt(i, wpt.x, wpt.y, wpt.heading);
+        if wpt.isInitialGuess {
+            let guess_point: InitialGuessPoint = InitialGuessPoint {x: wpt.x, y: wpt.y, heading: wpt.heading};
+            path_builder.sgmt_initial_guess_points(wpt_cnt, &vec![guess_point]);
+        } else if wpt.headingConstrained && wpt.translationConstrained {
+            path_builder.pose_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
+            wpt_cnt+=1;
+        } else if wpt.translationConstrained {
+            path_builder.translation_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
+            wpt_cnt+=1;
         } else {
-            path_builder.translation_wpt(i, wpt.x, wpt.y, wpt.heading);
+          wpt_cnt+=1;
         }
     }
     for c in 0..constraints.len() {
@@ -100,34 +103,34 @@ async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfi
           })
           */
           match scope { ChoreoConstraintScope::Waypoint(idx) => {
-              println!("WptVelocityDirection {} {}", *idx, *direction);
-              path_builder.wpt_linear_velocity_direction(*idx, *direction);
+              println!("WptVelocityDirection {} {}", idx[0], *direction);
+              path_builder.wpt_linear_velocity_direction(idx[0], *direction);
             },_ => {}}
         },
         Constraints::WptZeroVelocity { scope } => {
           match scope { ChoreoConstraintScope::Waypoint(idx) => {
-              println!("WptZeroVelocity {}", *idx);
-              path_builder.wpt_linear_velocity_max_magnitude(*idx, 0.0f64);
+              println!("WptZeroVelocity {}", idx[0]);
+              path_builder.wpt_linear_velocity_max_magnitude(idx[0], 0.0f64);
             },_=>{}}
         },
         Constraints::MaxVelocity { scope , velocity} => {
           match scope { ChoreoConstraintScope::Waypoint(idx) => {
-              println!("WptMaxVelocity {}", *idx);
-              path_builder.wpt_linear_velocity_max_magnitude(*idx, *velocity)
+              println!("WptMaxVelocity {}", idx[0]);
+              path_builder.wpt_linear_velocity_max_magnitude(idx[0], *velocity)
             },
-            ChoreoConstraintScope::Segment(range) => {
-              println!("From {} to {}", range.start, range.end);
-              path_builder.sgmt_linear_velocity_max_magnitude(range.start, range.end, *velocity)
+            ChoreoConstraintScope::Segment(idx) => {
+              println!("From {} to {}", idx[0] , idx[1]);
+              path_builder.sgmt_linear_velocity_max_magnitude(idx[0], idx[1], *velocity)
             }}
         },
         Constraints::ZeroAngularVelocity { scope } => {
           match scope { ChoreoConstraintScope::Waypoint(idx) => {
-              println!("WptMaxVelocity {}", *idx);
-              path_builder.wpt_angular_velocity(*idx, 0.0)
+              println!("WptMaxVelocity {}", idx[0]);
+              path_builder.wpt_angular_velocity(idx[0], 0.0)
             },
-            ChoreoConstraintScope::Segment(range) => {
-              println!("From {} to {}", range.start, range.end);
-              path_builder.sgmt_angular_velocity(range.start, range.end, 0.0)
+            ChoreoConstraintScope::Segment(idx) => {
+              println!("From {} to {}", idx[0], idx[1]);
+              path_builder.sgmt_angular_velocity(idx[0], idx[1], 0.0)
             }}
         },
         // add more cases here to impl each constraint.

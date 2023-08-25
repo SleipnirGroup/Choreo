@@ -15,6 +15,7 @@ import { IconButton, Tooltip } from "@mui/material";
 import { isAlive } from "mobx-state-tree";
 import Waypoint from "../../assets/Waypoint";
 import { CircleOutlined } from "@mui/icons-material";
+import { NavbarItemData } from "../../document/UIStateStore";
 
 type Props = {
   waypoint: IHolonomicWaypointStore;
@@ -60,6 +61,7 @@ class SidebarWaypoint extends Component<Props, State> {
   render() {
     let waypoint = this.props.waypoint;
     let pathLength = this.props.pathLength;
+    let type = waypoint.type;
     // apparently we have to dereference this here instead of inline in the class name
     // Otherwise the component won't rerender when it changes
     let { selected, translationConstrained, headingConstrained } = waypoint;
@@ -87,7 +89,12 @@ class SidebarWaypoint extends Component<Props, State> {
               this.context.model.uiState.setSelectedSidebarItem(waypoint);
             }}
           >
-            {translationConstrained && headingConstrained && (
+          {React.cloneElement(
+            NavbarItemData[type].icon, {
+              className:styles.SidebarIcon,
+              htmlColor: selected ? "var(--select-yellow)" : "var(--accent-purple)"
+            })}
+            {/* {translationConstrained && headingConstrained && (
               <Waypoint
                 htmlColor={this.getIconColor(pathLength)}
                 className={styles.SidebarIcon}
@@ -104,7 +111,7 @@ class SidebarWaypoint extends Component<Props, State> {
                 htmlColor={this.getIconColor(pathLength)}
                 className={styles.SidebarIcon}
               ></CircleOutlined>
-            )}
+            )} */}
             <span className={styles.SidebarLabel}>
               Waypoint {this.props.index + 1}
             </span>

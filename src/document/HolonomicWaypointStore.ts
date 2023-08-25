@@ -11,16 +11,22 @@ export const HolonomicWaypointStore = types
     translationConstrained: true,
     headingConstrained: true,
     controlIntervalCount: 0,
-    velocityMagnitude: 0,
-    velocityAngle: 0,
-    angularVelocity: 0,
-    velocityMagnitudeConstrained: false,
-    velocityAngleConstrained: false,
-    angularVelocityConstrained: false,
+    isInitialGuess: false,
     uuid: types.identifier,
   })
   .views((self) => {
     return {
+      get type(): number {
+        if (self.isInitialGuess) {
+          return 3; // Guess
+        } else if (self.headingConstrained) {
+          return 0; // Full
+        } else  if (self.translationConstrained) {
+          return 1; // Translation
+        } else {
+          return 2; // Empty
+        }
+      },
       get selected(): boolean {
         if (!isAlive(self)) {
           return false;
@@ -36,29 +42,19 @@ export const HolonomicWaypointStore = types
         let {
           x,
           y,
+          isInitialGuess,
           heading,
-          velocityMagnitude,
-          velocityAngle,
           translationConstrained,
           headingConstrained,
-          velocityMagnitudeConstrained,
-          velocityAngleConstrained,
-          angularVelocity,
-          angularVelocityConstrained,
           controlIntervalCount,
         } = self;
         return {
           x,
           y,
           heading,
-          velocityMagnitude,
-          velocityAngle,
+          isInitialGuess,
           translationConstrained,
           headingConstrained,
-          velocityMagnitudeConstrained,
-          velocityAngleConstrained,
-          angularVelocity,
-          angularVelocityConstrained,
           controlIntervalCount,
         };
       },
@@ -70,14 +66,9 @@ export const HolonomicWaypointStore = types
         self.x = point.x;
         self.y = point.y;
         self.heading = point.heading;
-        self.velocityMagnitude = point.velocityMagnitude;
-        self.velocityAngle = point.velocityAngle;
+        self.isInitialGuess = point.isInitialGuess;
         self.translationConstrained = point.translationConstrained;
         self.headingConstrained = point.headingConstrained;
-        self.velocityMagnitudeConstrained = point.velocityMagnitudeConstrained;
-        self.velocityAngleConstrained = point.velocityAngleConstrained;
-        self.angularVelocity = point.angularVelocity;
-        self.angularVelocityConstrained = point.angularVelocityConstrained;
       },
 
       setX(x: number) {
@@ -105,25 +96,9 @@ export const HolonomicWaypointStore = types
           );
         }
       },
-
-      setVelocityAngle(vAngle: number) {
-        self.velocityAngle = vAngle;
-      },
-      setVelocityAngleConstrained(velocityAngleConstrained: boolean) {
-        self.velocityAngleConstrained = velocityAngleConstrained;
-      },
-      setVelocityMagnitude(vMag: number) {
-        self.velocityMagnitude = vMag;
-      },
-      setVelocityMagnitudeConstrained(velocityMagnitudeConstrained: boolean) {
-        self.velocityMagnitudeConstrained = velocityMagnitudeConstrained;
-      },
-      setAngularVelocity(omega: number) {
-        self.angularVelocity = omega;
-      },
-      setAngularVelocityConstrained(angularVelocityConstrained: boolean) {
-        self.angularVelocityConstrained = angularVelocityConstrained;
-      },
+      setInitialGuess(initialGuess: boolean) {
+        self.isInitialGuess = initialGuess;
+      }
     };
   });
 export interface IHolonomicWaypointStore

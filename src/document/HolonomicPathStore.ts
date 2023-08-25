@@ -34,6 +34,9 @@ export const HolonomicPathStore = types
   })
   .views((self) => {
     return {
+      get nonGuessPoints() {
+        return self.waypoints.filter(waypoint=>!waypoint.isInitialGuess);
+      },
       getTotalTimeSeconds(): number {
         if (self.generated.length === 0) {
           return 0;
@@ -78,7 +81,7 @@ export const HolonomicPathStore = types
           waypoints: self.waypoints.map((point) => point.asSavedWaypoint()),
           trajectory: trajectory,
           constraints: self.constraints.flatMap((constraint)=>{
-            let waypointIdToSavedWaypointId = (waypointId: "first"|"last"|{uuid:string}) : "first"|"last"|number|undefined => {
+            let waypointIdToSavedWaypointId = (waypointId: IWaypointScope) : "first"|"last"|number|undefined => {
               if (typeof waypointId !== "string") {
                 let scopeIndex = self.findUUIDIndex(waypointId.uuid);
                 if (scopeIndex == -1) {
@@ -91,25 +94,8 @@ export const HolonomicPathStore = types
             }
             let saved : Partial<SavedConstraint> = {};
             let con = constraint;
-            if (con.scope === "first" || con.scope === "last" || typeof con.scope?.uuid === "string") { 
-              let scope = waypointIdToSavedWaypointId(con.scope);
-              if (scope === undefined){ return []; }
-              saved.scope = scope;
-            }
-            else if (
-              (con.scope.start === "first" || con.scope.start === "last" || typeof con.scope.start?.uuid === "string") &&
-              (con.scope.end === "first" || con.scope.end === "last" || typeof con.scope.end?.uuid === "string")
-            ) { 
-              let startScopeIndex = waypointIdToSavedWaypointId(con.scope.start);
-              if (startScopeIndex === undefined) {
-                return []; // don't try to save this constraint
-              }
-              let endScopeIndex = waypointIdToSavedWaypointId(con.scope.end);
-              if (endScopeIndex === undefined) {
-                return []; // don't try to save this constraint
-              }
-              saved["scope"] = {start: startScopeIndex, end: endScopeIndex};
-            }
+            saved.scope = con.scope.map((id: IWaypointScope)=>waypointIdToSavedWaypointId(id));
+            if (saved.scope?.includes(-1)) return [];
             return {
               ...constraint,
               type: constraint.type,
@@ -130,17 +116,26 @@ export const HolonomicPathStore = types
     return {
     asSolverPath() {
       let savedPath = self.asSavedPath();
-      savedPath.constraints.forEach((constraint)=>{
-        if (typeof constraint.scope === "number") {/* pass through, this if is for type narrowing*/}
-        else if (constraint.scope === "first") {constraint.scope = 0;}
-        else if (constraint.scope === "last") {constraint.scope = savedPath.waypoints.length -1}
-        else {
-          if (constraint.scope?.start === "first") {constraint.scope.start = 0;}
-          else if (constraint.scope?.start === "last") {constraint.scope.start = savedPath.waypoints.length -1};
-          if (constraint.scope?.end === "first") {constraint.scope.end = 0;}
-          else if (constraint.scope?.end === "last") {constraint.scope.end = savedPath.waypoints.length -1};
+      let originalGuessIndices : number[] = [];
+      savedPath.waypoints.forEach((wpt, idx)=>{
+        if (wpt.isInitialGuess) {
+          if (idx == 0){
+            throw new Error("Cannot start a path with an initial guess point.");
+          } else if (idx == savedPath.waypoints.length-1) {
+            throw new Error("Cannot end a path with an initial guess point.");
+          }
         }
       })
+      savedPath.constraints.forEach((constraint)=>{
+        constraint.scope = constraint.scope.map((id)=>{
+          if (typeof id === "number") {/* pass through, this if is for type narrowing*/}
+          else if (id === "first") {id = 0;}
+          else if (id === "last") {id = savedPath.waypoints.length -1}
+          return id;
+        })
+        constraint.scope = constraint.scope.sort((a, b)=>(a as number)-(b as number));
+      })
+      console.log(savedPath)
       return savedPath;
     }
   }
@@ -266,15 +261,8 @@ export const HolonomicPathStore = types
                 return {uuid:self.waypoints[savedId].uuid as string};
               }
             }
-            // waypoint first/last
-            if ( saved.scope === "first" || saved.scope === "last" || typeof saved.scope === "number") {
-              constraint.setScope(savedWaypointIdToWaypointId(saved.scope))
-            } else {
-              constraint.setScope({
-                start: savedWaypointIdToWaypointId(saved.scope.start),
-                end: savedWaypointIdToWaypointId(saved.scope.end)})
+            constraint.setScope(saved.scope.map((id)=>savedWaypointIdToWaypointId(id)));
             }
-          }
       })
       self.generated.clear();
       if (savedPath.trajectory !== undefined && savedPath.trajectory !== null) {

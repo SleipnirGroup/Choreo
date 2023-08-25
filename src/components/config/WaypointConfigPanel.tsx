@@ -8,7 +8,7 @@ import InputList from "../input/InputList";
 import { RadioGroup, ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
 import { NavbarItemData } from "../../document/UIStateStore";
 import Waypoint from "../../assets/Waypoint";
-import { Circle, CircleOutlined } from "@mui/icons-material";
+import { Circle, CircleOutlined, Help } from "@mui/icons-material";
 import inputStyles from "../input/InputList.module.css";
 
 type Props = { waypoint: IHolonomicWaypointStore | null };
@@ -27,23 +27,12 @@ class WaypointPanel extends Component<Props, State> {
   }
   render() {
     let { waypoint } = this.props;
-    let waypointType = 1;
-    if (waypoint?.headingConstrained) {
-      waypointType = 0;
-    } else  if (waypoint?.translationConstrained) {
-      waypointType = 1;
-    } else {
-      waypointType = 2;
-    }
+    let waypointType = this.props.waypoint?.type;
     if (this.isWaypointNonNull(waypoint)) {
       return (
         <div className={styles.WaypointPanel}>
 
           <InputList noCheckbox>
-          {/* <span className={inputStyles.Title}></span>
-
-          <span></span>
-          <span></span> */}
             <Input
               title="x"
               suffix="m"
@@ -83,20 +72,29 @@ class WaypointPanel extends Component<Props, State> {
               case 0:
                 waypoint?.setHeadingConstrained(true);
                 waypoint?.setTranslationConstrained(true);
+                waypoint?.setInitialGuess(false);
                 break;
               case 1: 
                 waypoint?.setHeadingConstrained(false);
                 waypoint?.setTranslationConstrained(true);
+                waypoint?.setInitialGuess(false);
                 break;
               case 2: 
                 waypoint?.setTranslationConstrained(false);
                 waypoint?.setHeadingConstrained(false);
+                waypoint?.setInitialGuess(false);
+                break;
+              case 3: 
+                waypoint?.setTranslationConstrained(true);
+                waypoint?.setHeadingConstrained(true);
+                waypoint?.setInitialGuess(true);
+                break;
               default:
                 break;
             }
           }}>
             
-            <Tooltip value={0} title="Full Waypoint">
+            <Tooltip disableInteractive value={0} title="Full Waypoint">
               <ToggleButton value={0} sx={{
                   color: "var(--accent-purple)",
                   "&.Mui-selected": {
@@ -116,7 +114,7 @@ class WaypointPanel extends Component<Props, State> {
                 <Circle/>
               </ToggleButton>
             </Tooltip>
-            <Tooltip value={2} title="Initial Guess Waypoint">
+            <Tooltip value={2} title="Empty Waypoint">
               <ToggleButton value={2} sx={{
                   color: "var(--accent-purple)",
                   "&.Mui-selected": {
@@ -124,6 +122,16 @@ class WaypointPanel extends Component<Props, State> {
                   },
                 }}>
                 <CircleOutlined/>
+              </ToggleButton> 
+            </Tooltip>
+            <Tooltip value={3} title="Initial Guess Waypoint">
+              <ToggleButton value={3} sx={{
+                  color: "var(--accent-purple)",
+                  "&.Mui-selected": {
+                    color: "var(--select-yellow)",
+                  },
+                }}>
+                <Help/>
               </ToggleButton> 
             </Tooltip>
           </ToggleButtonGroup>

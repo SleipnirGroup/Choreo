@@ -18,8 +18,6 @@ type State = {
   xPan: number;
   yPan: number;
   zoom: number;
-  mouseX: number;
-  mouseY: number;
 };
 
 class FieldOverlayRoot extends Component<Props, State> {
@@ -181,11 +179,18 @@ class FieldOverlayRoot extends Component<Props, State> {
         newPoint.setX(coords.x);
         newPoint.setY(coords.y);
         newPoint.setSelected(true);
+        const selectedItem = this.context.model.uiState.selectedNavbarItem
         if (
-          this.context.model.uiState.selectedNavbarItem ==
-          NavbarLabels.TranslationWaypoint
+          selectedItem ==
+          NavbarLabels.TranslationWaypoint || selectedItem == NavbarLabels.EmptyWaypoint
         ) {
           newPoint.setHeadingConstrained(false);
+        }
+        if (selectedItem == NavbarLabels.EmptyWaypoint) {
+          newPoint.setTranslationConstrained(false);
+        }
+        if (selectedItem == NavbarLabels.InitialGuessPoint) {
+          newPoint.setInitialGuess(true);
         }
       });
       this.context.history.stopGroup();

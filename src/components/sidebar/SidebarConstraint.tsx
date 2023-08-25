@@ -3,12 +3,13 @@ import { IconButton, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 
 import React, { Component } from "react";
-import { constraints, IConstraintStore, ISegmentScope, WaypointID } from "../../document/ConstraintStore";
+import { constraints, IConstraintStore, WaypointID } from "../../document/ConstraintStore";
 import DocumentManagerContext from "../../document/DocumentManager";
 import styles from "./Sidebar.module.css";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { getParent } from "mobx-state-tree";
 import { IHolonomicPathStore } from "../../document/HolonomicPathStore";
+import { PriorityHigh } from "@mui/icons-material";
 
 type Props = {
   constraint: IConstraintStore;
@@ -28,16 +29,11 @@ class SidebarConstraint extends Component<Props, State> {
       if (id == "last") return "End";
       return getParent<IHolonomicPathStore>(getParent<IConstraintStore[]>(this.props.constraint)).findUUIDIndex(id.uuid) + 1
     }
-    let scope = this.props.constraint.scope;
-    if (scope === null) return "!";
-    else if (scope == "first") return "Start";
-    else if (scope == "last") return "End";
-    else if ("uuid" in scope && typeof scope.uuid == "string") {
-      return getParent<IHolonomicPathStore>(getParent<IConstraintStore[]>(this.props.constraint)).findUUIDIndex(scope.uuid) + 1
-    }
+    let scope = this.props.constraint.getSortedScope();
+    if (scope.length == 0) return "!";
+    else if (scope.length == 1) return waypointIDToText(scope[0])
     else {
-      let sgmtScope = scope as ISegmentScope;
-      return `${waypointIDToText(sgmtScope.start)}-${waypointIDToText(sgmtScope.end)}`
+      return `${waypointIDToText(scope[0])}-${waypointIDToText(scope[1])}`
     }
     
 
@@ -47,6 +43,8 @@ class SidebarConstraint extends Component<Props, State> {
     // apparently we have to dereference this here instead of inline in the class name
     // Otherwise the component won't rerender when it changes
     let selected = this.props.constraint.selected;
+    let issues = this.props.constraint.issues;
+    
     return (
       <div
         className={styles.SidebarItem + (selected ? ` ${styles.Selected}` : "")}
@@ -64,9 +62,16 @@ class SidebarConstraint extends Component<Props, State> {
           {/* className={styles.SidebarIcon}
           htmlColor={selected ? "var(--select-yellow)" : "var(--accent-purple)"}
         ></Icon> */}
-        <span className={styles.SidebarLabel} style={{display:"flex", justifyContent:"space-between"}}>
+        <span className={styles.SidebarLabel} style={{display:"grid", gridTemplateColumns:"1fr auto auto"}}>
           <span>{this.props.constraint.definition.shortName}</span>
-          <span>{`(${this.getScopeText()})`}</span>
+          {issues.length !== 0 ? (
+              <Tooltip disableInteractive title={issues.join(", ")}>
+                <PriorityHigh className={styles.SidebarIcon}></PriorityHigh>
+              </Tooltip>) : (<span></span>
+            )}
+          
+
+            {this.getScopeText()}
         </span>
         <Tooltip title="Delete Constraint">
               <IconButton

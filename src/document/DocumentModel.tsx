@@ -12,6 +12,7 @@ import { SelectableItemTypes, UIStateStore } from "./UIStateStore";
 import { PathListStore } from "./PathListStore";
 import { TrajectorySampleStore } from "./TrajectorySampleStore";
 import { UndoManager } from "mst-middlewares";
+import { IHolonomicPathStore } from "./HolonomicPathStore";
 
 export const DocumentStore = types
   .model("DocumentStore", {
@@ -61,17 +62,21 @@ const StateStore = types
         if (pathStore === undefined) {
           return;
         }
-        pathStore.setTrajectory([]);
-        if (pathStore.waypoints.length < 2) {
-          return;
-        }
-        pathStore.setGenerating(true);
-        console.log(pathStore.asSolverPath())
+        new Promise((resolve, reject)=>{
+          pathStore.setTrajectory([]);
+          if (pathStore.waypoints.length < 2) {
+            return;
+          }
+          pathStore.setGenerating(true);
+          console.log(pathStore.asSolverPath())
+          resolve(pathStore);
+        })
+        .then(()=>
         invoke("generate_trajectory", {
           path: pathStore.waypoints,
           config: self.document.robotConfig,
           constraints: pathStore.asSolverPath().constraints
-        })
+        }))
           .then((rust_traj) => {
             let newTraj: Array<SavedTrajectorySample> = [];
             // @ts-ignore

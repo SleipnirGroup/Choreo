@@ -18,7 +18,7 @@ class RobotConfigPanel extends Component<Props, State> {
   render() {
     let constraint = this.props.constraint;
     let definition = constraint.definition;
-    let isSegmentConstraint = typeof constraint.scope !== "string" && Object.hasOwn(constraint.scope, "start");
+    let isSegmentConstraint = constraint.scope.length == 2
     return (
       <div className={styles.WaypointPanel} style={{display: (Object.entries(definition.properties).length == 0) ? "none" : "unset"}}>
 
@@ -26,7 +26,7 @@ class RobotConfigPanel extends Component<Props, State> {
         <InputList noCheckbox>
           {isSegmentConstraint && <>
             <span className={inputStyles.Title}>From</span>
-            <input className={inputStyles.Input} value={(constraint.getStartWaypointIndex() || -1) + 1}></input>
+            <input className={inputStyles.Number} value={(constraint.getStartWaypointIndex() ?? -1) + 1}></input>
             <span></span><span></span></>
             }
             {(Object.entries(definition.properties).map((entry)=>{

@@ -113,16 +113,11 @@ const WaypointUUIDScope = types.model("WaypointScope", {
 export const WaypointScope = types.union(types.literal("first"), types.literal("last"), WaypointUUIDScope);
 export type IWaypointScope = IWaypointUUIDScope | "first" | "last";
 interface IWaypointUUIDScope extends Instance<typeof WaypointUUIDScope>{}
-export const SegmentScope = types.model("SegmentScope", {
-    start: WaypointScope,
-    end: WaypointScope
-});
-export interface ISegmentScope extends Instance<typeof SegmentScope>{}
 
 export interface IConstraintStore extends Instance<typeof ConstraintStore>{}
 
 export const ConstraintStore = types.model("ConstraintStore", {
-    scope: types.maybeNull(types.union(WaypointScope, SegmentScope)),
+    scope: types.array(WaypointScope),
     type: types.optional(types.string, ""),
     issue: types.array(types.string),
     uuid: types.identifier
@@ -163,13 +158,36 @@ export const ConstraintStore = types.model("ConstraintStore", {
             )
           );
     },
+    getSortedScope(): Array<IWaypointScope> {
+        return self.scope.slice().sort((a, b)=>{
+            if (a==="first") return -1;
+            if (b==="first") return 1;
+            if (a==="last") return 1;
+            if (b==="last") return -1;
+            const path : IHolonomicPathStore  = getParent<IHolonomicPathStore>(getParent<IConstraintStore[]>(self));
+            const aIdx = path.findUUIDIndex(a.uuid) || 0;
+            const bIdx = path.findUUIDIndex(b.uuid) || 1;
+            return aIdx-bIdx;
+        })
+    }
+}))
+.views((self)=>({
     getStartWaypoint() : IHolonomicWaypointStore | undefined {
-        const path : IHolonomicPathStore  = getParent<IHolonomicPathStore>(getParent<IConstraintStore[]>(self));
-        if (self.scope === null) return undefined;
-        if (self.scope === "first" || self.scope === "last" || Object.hasOwn(self.scope, "uuid")) {
-            return path.getByWaypointID(self.scope as IWaypointScope);
+        const startScope = self.getSortedScope()[0];
+        if (startScope === undefined) {
+            return undefined;
         }
-        return path.getByWaypointID((self.scope as ISegmentScope).start as IWaypointScope);
+        const path : IHolonomicPathStore  = getParent<IHolonomicPathStore>(getParent<IConstraintStore[]>(self));
+        return path.getByWaypointID(startScope);
+    },
+    getEndWaypoint() : IHolonomicWaypointStore | undefined {
+        const scope = self.getSortedScope();
+        const endScope = scope[scope.length-1];
+        if (endScope === undefined) {
+            return undefined;
+        }
+        const path : IHolonomicPathStore  = getParent<IHolonomicPathStore>(getParent<IConstraintStore[]>(self));
+        return path.getByWaypointID(endScope);
     },
 
 }))
@@ -183,13 +201,44 @@ export const ConstraintStore = types.model("ConstraintStore", {
     getPath() : IHolonomicPathStore {
         const path : IHolonomicPathStore = getParent<IHolonomicPathStore>(getParent<IConstraintStore[]>(self));
         return path;
+    },
+    get issues() {
+        let startWaypoint = self.getStartWaypoint();
+        let endWaypoint = self.getEndWaypoint();
+        let scope = self.scope;
+        let issue = false;
+        let issueText = [];
+        
+        if (scope.length == 2) {
+            if (startWaypoint === undefined || endWaypoint === undefined) {
+                issueText.push("Constraint refers to missing waypoint(s)")
+            } else {
+                if (startWaypoint!.isInitialGuess || endWaypoint!.isInitialGuess) {
+                    issueText.push("Cannot have initial guess point as endpoint");
+                }
+            }
+        } else if (scope.length == 1) {
+            if (startWaypoint === undefined) {
+                issueText.push("Constraint refers to missing waypoint");
+            } else {
+                
+                if (startWaypoint!.isInitialGuess) {
+                    issueText.push("Cannot constrain initial guess point");
+                }
+            }
+
+        } else if (scope.length == 0) {
+        issueText.push("Scope not set");
+        }
+        return issueText;
     }
 }))
 .actions((self)=>({
     afterCreate() {
     },
-    setScope(scope:IWaypointScope | ISegmentScope) {
-        self.scope = scope;
+    setScope(scope:Array< Instance<typeof WaypointScope>>) {
+        self.scope.length = 0;
+        self.scope.push(...scope)
     },
     setSelected(selected: boolean) {
         if (selected && !self.selected) {

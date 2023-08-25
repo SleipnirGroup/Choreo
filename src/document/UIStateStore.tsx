@@ -1,9 +1,11 @@
 import {
   Circle,
+  CircleOutlined,
   Grid4x4,
   Route,
   Square,
   SquareOutlined,
+  Help
 } from "@mui/icons-material";
 import { getRoot, Instance, types } from "mobx-state-tree";
 import { ReactElement } from "react";
@@ -47,6 +49,16 @@ let NavbarData : {[key:string]: {
     name: "Translation Waypoint",
     icon: <Circle />,
   },
+  EmptyWaypoint: {
+    index: 2,
+    name: "Empty Waypoint",
+    icon: <CircleOutlined />,
+  },
+  InitialGuessPoint: {
+    index: 3,
+    name: "Initial Guess Point",
+    icon: <Help/>
+  }
 };
 const waypointNavbarCount = Object.keys(NavbarData).length;
 let constraintsIndices :number[] = [];
@@ -165,7 +177,9 @@ export const UIStateStore = types
       isNavbarWaypointSelected() {
         return (
           self.selectedNavbarItem == NavbarLabels.FullWaypoint ||
-          self.selectedNavbarItem == NavbarLabels.TranslationWaypoint
+          self.selectedNavbarItem == NavbarLabels.TranslationWaypoint ||
+          self.selectedNavbarItem == NavbarLabels.EmptyWaypoint ||
+          self.selectedNavbarItem == NavbarLabels.InitialGuessPoint
         );
       },
       isConstraintSelected() {
