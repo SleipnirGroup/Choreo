@@ -45,7 +45,12 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                     if (newConstraint !== undefined) {
                       console.log(newConstraint.wptScope);
                       if (newConstraint.wptScope) {
-                        newConstraint.setScope([{ uuid: point.uuid }]);
+                        if (newConstraint.sgmtScope) {
+                          newConstraint.setScope([{ uuid: point.uuid }, { uuid: point.uuid }]);
+                        } else {
+                          newConstraint.setScope([{ uuid: point.uuid }]);
+                        }
+                        
                       }
                       this.context.model.uiState.setSelectedSidebarItem(
                         newConstraint

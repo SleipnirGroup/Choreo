@@ -55,7 +55,7 @@ class RobotConfigPanel extends Component<Props, State> {
       endIndex
     );
     const sliderMarks = [
-      { value: 0, label: "start" },
+      { value: 0, label: "Start" },
       ...points.flatMap((point, idx) => {
         if (point.isInitialGuess) {
           return [];
@@ -63,16 +63,17 @@ class RobotConfigPanel extends Component<Props, State> {
           return { value: idx + 1, label: idx + 1 };
         }
       }),
-      { value: pointcount + 1, label: "end" },
+      { value: pointcount + 1, label: "End" },
     ];
     return (
       <div className={styles.WaypointPanel}>
-        <Slider
+        <div style={{marginInline: "24px"}}>        <Slider
           step={null}
           min={0}
           max={pointcount + 1}
           value={isSegmentConstraint ? [startIndex, endIndex] : startIndex}
           marks={sliderMarks}
+          track={isSegmentConstraint ? "normal" : false}
           onChange={(e, value: number | number[]) => {
             let selection = [];
             if (typeof value === "number") {
@@ -93,7 +94,8 @@ class RobotConfigPanel extends Component<Props, State> {
               })
             );
           }}
-        ></Slider>
+        ></Slider></div>
+
         <InputList>
           {/* {isSegmentConstraint && <>
             <span className={inputStyles.Title}>From</span>
