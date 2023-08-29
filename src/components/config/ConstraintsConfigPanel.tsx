@@ -67,34 +67,37 @@ class RobotConfigPanel extends Component<Props, State> {
     ];
     return (
       <div className={styles.WaypointPanel}>
-        <div style={{marginInline: "24px"}}>        <Slider
-          step={null}
-          min={0}
-          max={pointcount + 1}
-          value={isSegmentConstraint ? [startIndex, endIndex] : startIndex}
-          marks={sliderMarks}
-          track={isSegmentConstraint ? "normal" : false}
-          onChange={(e, value: number | number[]) => {
-            let selection = [];
-            if (typeof value === "number") {
-              selection = [value];
-            } else {
-              selection = value;
-            }
-            const lastIdx = pointcount + 1;
-            this.props.constraint.setScope(
-              selection.map((idx) => {
-                if (idx == 0) {
-                  return "first";
-                } else if (idx == lastIdx) {
-                  return "last";
-                } else {
-                  return { uuid: points[idx - 1]?.uuid ?? "" };
-                }
-              })
-            );
-          }}
-        ></Slider></div>
+        <div style={{ marginInline: "24px" }}>
+          {" "}
+          <Slider
+            step={null}
+            min={0}
+            max={pointcount + 1}
+            value={isSegmentConstraint ? [startIndex, endIndex] : startIndex}
+            marks={sliderMarks}
+            track={isSegmentConstraint ? "normal" : false}
+            onChange={(e, value: number | number[]) => {
+              let selection = [];
+              if (typeof value === "number") {
+                selection = [value];
+              } else {
+                selection = value;
+              }
+              const lastIdx = pointcount + 1;
+              this.props.constraint.setScope(
+                selection.map((idx) => {
+                  if (idx == 0) {
+                    return "first";
+                  } else if (idx == lastIdx) {
+                    return "last";
+                  } else {
+                    return { uuid: points[idx - 1]?.uuid ?? "" };
+                  }
+                })
+              );
+            }}
+          ></Slider>
+        </div>
 
         <InputList>
           {/* {isSegmentConstraint && <>
