@@ -87,6 +87,7 @@ class SidebarWaypoint extends Component<Props, State> {
             onClick={() => {
 
               this.context.model.uiState.setSelectedSidebarItem(waypoint);
+              this.context.model.uiState.setSelectedNavbarItem(waypoint.type);
             }}
           >
           {React.cloneElement(

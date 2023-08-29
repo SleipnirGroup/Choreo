@@ -13,6 +13,8 @@ type Coordinates = {
   x: number;
   y: number;
 };
+const targetRadius = 0.1;
+const outlineWidth = 0.03;
 class OverlayWaypoint extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   context!: React.ContextType<typeof DocumentManagerContext>;
@@ -25,16 +27,21 @@ class OverlayWaypoint extends Component<Props, State> {
       context,
       strokeColor,
       strokeWidthPx,
+      dashed
     }: {
       context: React.ContextType<typeof DocumentManagerContext>;
       strokeColor: string;
       strokeWidthPx: number;
+      dashed: boolean;
     }) => (
       <g>
         <defs>
           <path
             id={this.appendIndexID("bumpers")}
-            d={context.model.document.robotConfig.bumperSVGElement()}
+            d={dashed ? 
+              context.model.document.robotConfig.dashedBumperSVGElement() :
+              context.model.document.robotConfig.bumperSVGElement()
+            }
           ></path>
           <clipPath id={this.appendIndexID("clip")}>
             <use xlinkHref={`#${this.appendIndexID("bumpers")}`} />
@@ -199,104 +206,52 @@ class OverlayWaypoint extends Component<Props, State> {
           })`}
           id={this.appendIndexID("waypointGroup")}
         >
-          {(this.props.waypoint.headingConstrained || this.props.waypoint.isInitialGuess) && (
+          {(
             <this.BumperBox
               context={this.context}
               strokeColor={boxColorStr}
-              strokeWidthPx={3}
+              strokeWidthPx={6}
+              dashed={this.props.waypoint.type !== 0}
             ></this.BumperBox>
           )}
-
-          {/* Velocity direction line */}
-          {/* <line
-            x1={
-              -1 *
-              Math.cos(
-                this.props.waypoint.velocityAngle - this.props.waypoint.heading
-              )
-            }
-            y1={
-              -1 *
-              Math.sin(
-                this.props.waypoint.velocityAngle - this.props.waypoint.heading
-              )
-            }
-            x2={
-              1 *
-              Math.cos(
-                this.props.waypoint.velocityAngle - this.props.waypoint.heading
-              )
-            }
-            y2={
-              1 *
-              Math.sin(
-                this.props.waypoint.velocityAngle - this.props.waypoint.heading
-              )
-            }
-            stroke={"gray"}
-            strokeWidth={3 * this.context.model.uiState.fieldScalingFactor}
-            visibility={
-              this.props.waypoint.velocityAngleConstrained
-                ? "visible"
-                : "hidden"
-            }
-          ></line>
-          <polygon
-            points={`
-            -0.25,0.2 0.25,0 -0.25,-0.2 -0.125,0
-          `}
-            transform={`rotate(${
-              ((this.props.waypoint.velocityAngle -
-                this.props.waypoint.heading) *
-                180.0) /
-              Math.PI
-            }) translate(1, 0)`}
-            fill={"white"}
-            visibility={
-              this.props.waypoint.velocityAngleConstrained
-                ? "visible"
-                : "hidden"
-            }
-            onClick={() => this.selectWaypoint()}
-            id={this.appendIndexID("velocityRotateTarget")}
-          ></polygon> */}
           {/* Heading drag point */}
           <circle
             cx={robotConfig.bumperLength / 2}
             cy={0}
             r={
-              0.2 * Math.min(robotConfig.bumperLength, robotConfig.bumperWidth)
+              targetRadius * Math.min(robotConfig.bumperLength, robotConfig.bumperWidth)
             }
             id={this.appendIndexID("rotateTarget")}
             fill={boxColorStr}
-            visibility={
-              this.props.waypoint.headingConstrained ? "visible" : "hidden"
-            }
+            strokeWidth={outlineWidth}
+            stroke="black"
           ></circle>
 
           {/* Center Drag Target */}
           {(()=>{
             const type = this.props.waypoint.type;
             switch (type) {
-              case 0:
-              case 1:
-              case 2:
+              case 0: // Full
+              case 1: // Translation
+              case 2: // Empty
+              case 3: // Guess
                 return (
                   <circle
                     cx={0}
                     cy={0}
                     r={
-                      0.2 * Math.min(robotConfig.bumperLength, robotConfig.bumperWidth)
+                      targetRadius * 1.5 * Math.min(robotConfig.bumperLength, robotConfig.bumperWidth)
                     }
                     id={this.appendIndexID("dragTarget")}
-                    fill={type == 2 ? "transparent": this.getDragTargetColor()}
-                    stroke={type == 2 ? this.getDragTargetColor() : "transparent"}
-                    strokeWidth={0.05}
+                    fill={(type == 2 || type == 3) ? "transparent": this.getDragTargetColor()}
+                    stroke={(type == 2 || type == 3) ? this.getDragTargetColor() : "black"}
+                    strokeDasharray={(type == 3) ? targetRadius : 0}
+                    strokeWidth={outlineWidth}
                     onClick={() => this.selectWaypoint()}
                   ></circle>
                 );
                 break;
-              case 3:
+              case 4:
                 // Question mark icon's raw svg
                 const boxSize= 0.4 * 24/20 * Math.min(robotConfig.bumperLength, robotConfig.bumperWidth)
                 const sx = 1;

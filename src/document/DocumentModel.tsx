@@ -13,6 +13,7 @@ import { PathListStore } from "./PathListStore";
 import { TrajectorySampleStore } from "./TrajectorySampleStore";
 import { UndoManager } from "mst-middlewares";
 import { IHolonomicPathStore } from "./HolonomicPathStore";
+import { toJS } from "mobx";
 
 export const DocumentStore = types
   .model("DocumentStore", {
@@ -67,8 +68,15 @@ const StateStore = types
           if (pathStore.waypoints.length < 2) {
             return;
           }
+          console.log(toJS(pathStore.constraints));
+          pathStore.constraints.forEach((constraint)=>{
+            if (constraint.issues.length > 0) {
+              throw new Error(constraint.issues.join(", "))
+            }
+          })
           pathStore.setGenerating(true);
           console.log(pathStore.asSolverPath())
+
           resolve(pathStore);
         })
         .then(()=>

@@ -127,6 +127,7 @@ export const HolonomicPathStore = types
         }
       })
       savedPath.constraints.forEach((constraint)=>{
+        
         constraint.scope = constraint.scope.map((id)=>{
           if (typeof id === "number") {/* pass through, this if is for type narrowing*/}
           else if (id === "first") {id = 0;}
@@ -134,6 +135,10 @@ export const HolonomicPathStore = types
           return id;
         })
         constraint.scope = constraint.scope.sort((a, b)=>(a as number)-(b as number));
+        // avoid zero-length segments by converting them to waypoint constraints.
+        if (constraint.scope.length == 2 && constraint.scope[0] == constraint.scope[1]) {
+          constraint.scope.length = 1;
+        }
       })
       console.log(savedPath)
       return savedPath;

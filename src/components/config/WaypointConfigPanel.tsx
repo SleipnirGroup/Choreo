@@ -1,12 +1,12 @@
 import { observer } from "mobx-react";
-import React, { Component } from "react";
+import React, { Component, ReactElement } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import Input from "../input/Input";
 import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../input/InputList";
 import { RadioGroup, ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
-import { NavbarItemData } from "../../document/UIStateStore";
+import { WaypointData } from "../../document/UIStateStore";
 import Waypoint from "../../assets/Waypoint";
 import { Circle, CircleOutlined, Help } from "@mui/icons-material";
 import inputStyles from "../input/InputList.module.css";
@@ -68,72 +68,30 @@ class WaypointPanel extends Component<Props, State> {
           exclusive
           value={waypointType}
           onChange={(e, newSelection) => {
-            switch (newSelection) {
-              case 0:
-                waypoint?.setHeadingConstrained(true);
-                waypoint?.setTranslationConstrained(true);
-                waypoint?.setInitialGuess(false);
-                break;
-              case 1: 
-                waypoint?.setHeadingConstrained(false);
-                waypoint?.setTranslationConstrained(true);
-                waypoint?.setInitialGuess(false);
-                break;
-              case 2: 
-                waypoint?.setTranslationConstrained(false);
-                waypoint?.setHeadingConstrained(false);
-                waypoint?.setInitialGuess(false);
-                break;
-              case 3: 
-                waypoint?.setTranslationConstrained(true);
-                waypoint?.setHeadingConstrained(true);
-                waypoint?.setInitialGuess(true);
-                break;
-              default:
-                break;
+            waypoint?.setType(newSelection);
             }
-          }}>
-            
-            <Tooltip disableInteractive value={0} title="Full Waypoint">
-              <ToggleButton value={0} sx={{
+          }>
+            {Object.entries(WaypointData).map((entry)=>{
+              let waypoint: {
+                index: number,
+                name: string,
+                icon: ReactElement
+              } = entry[1]
+              console.log("waypoint")
+              return (
+              <Tooltip disableInteractive key={waypoint.index} value={waypoint.index} title={waypoint.name}>
+              <ToggleButton value={waypoint.index} sx={{
                   color: "var(--accent-purple)",
                   "&.Mui-selected": {
                     color: "var(--select-yellow)",
                   },
                 }}>
-                <Waypoint/>
+                {(waypoint.icon)}
               </ToggleButton>
             </Tooltip>
-            <Tooltip value={1} title="Translation Waypoint">
-              <ToggleButton value={1} sx={{
-                  color: "var(--accent-purple)",
-                  "&.Mui-selected": {
-                    color: "var(--select-yellow)",
-                  },
-                }}>
-                <Circle/>
-              </ToggleButton>
-            </Tooltip>
-            <Tooltip value={2} title="Empty Waypoint">
-              <ToggleButton value={2} sx={{
-                  color: "var(--accent-purple)",
-                  "&.Mui-selected": {
-                    color: "var(--select-yellow)",
-                  },
-                }}>
-                <CircleOutlined/>
-              </ToggleButton> 
-            </Tooltip>
-            <Tooltip value={3} title="Initial Guess Waypoint">
-              <ToggleButton value={3} sx={{
-                  color: "var(--accent-purple)",
-                  "&.Mui-selected": {
-                    color: "var(--select-yellow)",
-                  },
-                }}>
-                <Help/>
-              </ToggleButton> 
-            </Tooltip>
+            );}
+            )}
+
           </ToggleButtonGroup>
         </div>
       );

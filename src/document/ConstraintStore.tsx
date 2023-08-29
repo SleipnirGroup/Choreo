@@ -1,5 +1,5 @@
-import { ArrowRight, ArrowRightAlt, ArrowUpward, Dangerous, Explore, KeyboardDoubleArrowRight, PriorityHigh, Stop, SyncDisabledOutlined } from "@mui/icons-material"
-import { getDebugName } from "mobx"
+import { ArrowRight, ArrowRightAlt, ArrowUpward, Dangerous, Explore, KeyboardDoubleArrowRight, PriorityHigh, Stop, SyncDisabledOutlined, Timeline } from "@mui/icons-material"
+import { getDebugName, toJS} from "mobx"
 import { getParent, types } from "mobx-state-tree"
 import { getRoot, Instance, IOptionalIType, isAlive, ISimpleType, ModelActions } from "mobx-state-tree"
 import { type } from "os"
@@ -105,6 +105,17 @@ export const constraints = {
         wptScope: true,
         sgmtScope: true,
         fullPathScope: false
+    },
+    StraightLine: {
+        name: "Straight Line",
+        shortName: "Straight Line",
+        description: "Follow straight lines between waypoints",
+        icon: (<Timeline></Timeline>),
+        properties: {
+        },
+        wptScope: false,
+        sgmtScope: true,
+        fullPathScope: false
     }
 }
 const WaypointUUIDScope = types.model("WaypointScope", {
@@ -119,7 +130,6 @@ export interface IConstraintStore extends Instance<typeof ConstraintStore>{}
 export const ConstraintStore = types.model("ConstraintStore", {
     scope: types.array(WaypointScope),
     type: types.optional(types.string, ""),
-    issue: types.array(types.string),
     uuid: types.identifier
 })
 .views((self)=>({
@@ -159,7 +169,7 @@ export const ConstraintStore = types.model("ConstraintStore", {
           );
     },
     getSortedScope(): Array<IWaypointScope> {
-        return self.scope.slice().sort((a, b)=>{
+        return toJS(self.scope).slice().sort((a, b)=>{
             if (a==="first") return -1;
             if (b==="first") return 1;
             if (a==="last") return 1;
@@ -186,6 +196,7 @@ export const ConstraintStore = types.model("ConstraintStore", {
         if (endScope === undefined) {
             return undefined;
         }
+        console.log(toJS(endScope))
         const path : IHolonomicPathStore  = getParent<IHolonomicPathStore>(getParent<IConstraintStore[]>(self));
         return path.getByWaypointID(endScope);
     },
@@ -195,6 +206,12 @@ export const ConstraintStore = types.model("ConstraintStore", {
     getStartWaypointIndex() : number | undefined {
         const path : IHolonomicPathStore = getParent<IHolonomicPathStore>(getParent<IConstraintStore[]>(self));
         const waypoint = self.getStartWaypoint();
+        if (waypoint === undefined) return undefined;
+        return path.findUUIDIndex(waypoint.uuid);
+    },
+    getEndWaypointIndex() : number | undefined {
+        const path : IHolonomicPathStore = getParent<IHolonomicPathStore>(getParent<IConstraintStore[]>(self));
+        const waypoint = self.getEndWaypoint();
         if (waypoint === undefined) return undefined;
         return path.findUUIDIndex(waypoint.uuid);
     },
@@ -249,10 +266,7 @@ export const ConstraintStore = types.model("ConstraintStore", {
             )
           );
         }
-      },
-    setIssue(issue: string) {
-        self.issue[0] = issue;
-    }
+      }
 }));
 
 

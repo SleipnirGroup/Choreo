@@ -9,6 +9,7 @@ import {
 } from "@mui/icons-material";
 import { getRoot, Instance, types } from "mobx-state-tree";
 import { ReactElement } from "react";
+import InitialGuessPoint from "../assets/InitialGuessPoint";
 import Waypoint from "../assets/Waypoint";
 import { ConstraintDefinition, constraints, ConstraintStore, ConstraintStores, IConstraintStore } from "./ConstraintStore";
 import { IStateStore } from "./DocumentModel";
@@ -34,7 +35,7 @@ export const SelectableItem = types.union(
 );
 
 /* Navbar stuff */
-let NavbarData : {[key:string]: {
+export let WaypointData : {[key:string]: {
   index: number,
   name: string,
   icon: ReactElement
@@ -57,9 +58,14 @@ let NavbarData : {[key:string]: {
   InitialGuessPoint: {
     index: 3,
     name: "Initial Guess Point",
-    icon: <Help/>
+    icon: <InitialGuessPoint/>
   }
 };
+let NavbarData : {[key:string]: {
+  index: number,
+  name: string,
+  icon: ReactElement
+}} = Object.assign({}, WaypointData)
 const waypointNavbarCount = Object.keys(NavbarData).length;
 let constraintsIndices :number[] = [];
 let navbarIndexToConstraint : {[key: number]: typeof ConstraintStore} = {

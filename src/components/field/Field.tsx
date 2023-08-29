@@ -44,8 +44,8 @@ export class Field extends Component<Props, State> {
         {selectedSidebar !== undefined &&
           "type" in selectedSidebar &&
           activePath.constraints.find(
-            (point) =>
-              point.uuid == (selectedSidebar as IConstraintStore)!.uuid
+            (constraint) =>
+              constraint.uuid == (selectedSidebar as IConstraintStore)!.uuid
           ) && (
             <ConstraintsConfigPanel
               constraint={selectedSidebar as IConstraintStore}

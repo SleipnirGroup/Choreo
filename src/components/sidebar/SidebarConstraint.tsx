@@ -31,7 +31,11 @@ class SidebarConstraint extends Component<Props, State> {
     }
     let scope = this.props.constraint.getSortedScope();
     if (scope.length == 0) return "!";
-    else if (scope.length == 1) return waypointIDToText(scope[0])
+
+    else if (scope.length == 1 ||
+      (scope[0] === scope[1]) ||
+      (Object.hasOwn(scope[0], "uuid") && Object.hasOwn(scope[1], "uuid") && scope[0]!.uuid == scope[1]!.uuid)
+    ) return waypointIDToText(scope[0])
     else {
       return `${waypointIDToText(scope[0])}-${waypointIDToText(scope[1])}`
     }
