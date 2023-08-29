@@ -68,15 +68,12 @@ const StateStore = types
           if (pathStore.waypoints.length < 2) {
             return;
           }
-          console.log(toJS(pathStore.constraints));
           pathStore.constraints.forEach((constraint) => {
             if (constraint.issues.length > 0) {
               throw new Error(constraint.issues.join(", "));
             }
           });
           pathStore.setGenerating(true);
-          console.log(pathStore.asSolverPath());
-
           resolve(pathStore);
         })
           .then(() =>

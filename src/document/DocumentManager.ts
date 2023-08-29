@@ -14,8 +14,6 @@ export class DocumentManager {
     this.model.document.history.canRedo && this.model.document.history.redo();
   }
   get history() {
-    //console.log(toJS(this.model.document.history.history))
-    //console.log(toJS(this.model.document.pathlist.activePath.constraints))
     return this.model.document.history;
   }
   model: IStateStore;
@@ -30,7 +28,6 @@ export class DocumentManager {
         pathlist: {},
       },
     });
-    //onPatch(this.model.document, (patch)=>console.log(patch))
     this.model.document.pathlist.addPath("NewPath");
     this.model.document.history.clear();
   }
@@ -54,7 +51,6 @@ export class DocumentManager {
       return Promise.reject("Tried to upload a null file");
     }
     this.model.uiState.setSaveFileName(file.name);
-    console.log(file.name);
     return new Promise((resolve, reject) => {
       const fileReader = new FileReader();
       fileReader.onload = (event) => {
@@ -109,7 +105,6 @@ export class DocumentManager {
   async loadFile(jsonFilename: string) {
     await fetch(jsonFilename, { cache: "no-store" })
       .then((res) => {
-        console.log(res);
         return res.json();
       })
       .then((data) => {
@@ -138,7 +133,6 @@ export class DocumentManager {
     const element = document.createElement("a");
     const file = new Blob([content], { type: "application/json" });
     let link = URL.createObjectURL(file);
-    console.log(link);
     //window.open(link, '_blank');
     //Uncomment to "save as..." the file
     element.href = link;

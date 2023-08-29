@@ -223,7 +223,6 @@ export const ConstraintStore = types
       if (endScope === undefined) {
         return undefined;
       }
-      console.log(toJS(endScope));
       const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
         getParent<IConstraintStore[]>(self)
       );

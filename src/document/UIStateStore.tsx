@@ -94,8 +94,8 @@ let navbarIndexToConstraintDefinition: { [key: number]: ConstraintDefinition } =
   });
 }
 const constraintNavbarCount = Object.keys(constraints).length;
-console.log(navbarIndexToConstraint);
 
+/** An map of  */
 export const NavbarLabels = (() => {
   let x: { [key: string]: number } = {};
   Object.entries(NavbarData).forEach(([key, data], index) => {
@@ -103,8 +103,8 @@ export const NavbarLabels = (() => {
   });
   return x;
 })();
-console.log(NavbarLabels);
 
+/** An array of name-and-icon objects for the navbar */
 export const NavbarItemData = (() => {
   let x: Array<{ name: string; icon: any }> = [];
   let constraintsOffset = 0;
@@ -114,7 +114,6 @@ export const NavbarItemData = (() => {
   });
   return x;
 })();
-console.log(NavbarItemData);
 
 export const NavbarItemSectionLengths = [
   waypointNavbarCount - 1,

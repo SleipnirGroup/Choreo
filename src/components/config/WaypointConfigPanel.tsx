@@ -80,7 +80,6 @@ class WaypointPanel extends Component<Props, State> {
                 name: string;
                 icon: ReactElement;
               } = entry[1];
-              console.log("waypoint");
               return (
                 <Tooltip
                   disableInteractive

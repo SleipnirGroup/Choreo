@@ -40,10 +40,8 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                     let constraintToAdd = selectedConstraint;
                     let newConstraint =
                       activePath.addConstraint(constraintToAdd);
-                    console.log(JSON.stringify(newConstraint));
 
                     if (newConstraint !== undefined) {
-                      console.log(newConstraint.wptScope);
                       if (newConstraint.wptScope) {
                         if (newConstraint.sgmtScope) {
                           newConstraint.setScope([
@@ -58,8 +56,6 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                         newConstraint
                       );
                     }
-                    console.log(JSON.stringify(newConstraint));
-                    console.log(activePath.asSavedPath());
                   }}
                 ></circle>
               );
@@ -94,7 +90,6 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                         this.context.model.uiState.getSelectedConstraint();
                       let newConstraint =
                         activePath.addConstraint(constraintToAdd);
-                      console.log(JSON.stringify(newConstraint));
 
                       if (newConstraint !== undefined) {
                         if (newConstraint.sgmtScope) {
@@ -107,9 +102,6 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                           newConstraint
                         );
                       }
-
-                      console.log(JSON.stringify(newConstraint));
-                      console.log(activePath.asSavedPath());
                     }}
                   ></circle>
                   {activePath.waypoints.length >= 2 && false && (
@@ -140,10 +132,8 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                             this.context.model.uiState.getSelectedConstraint();
                           let newConstraint =
                             activePath.addConstraint(constraintToAdd);
-                          console.log(JSON.stringify(newConstraint));
 
                           if (newConstraint !== undefined) {
-                            console.log(newConstraint.definition.sgmtScope);
                             if (newConstraint.definition.sgmtScope) {
                               newConstraint.setScope(["first", "last"]);
                             }
@@ -151,8 +141,6 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                               newConstraint
                             );
                           }
-                          console.log(JSON.stringify(newConstraint));
-                          console.log(activePath.asSavedPath());
                         }}
                       ></circle>
                     </>

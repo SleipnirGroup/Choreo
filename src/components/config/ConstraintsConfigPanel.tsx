@@ -49,11 +49,6 @@ class RobotConfigPanel extends Component<Props, State> {
       endIndex = 0;
     }
 
-    console.log(
-      toJS(this.props.constraint.getSortedScope()),
-      startIndex,
-      endIndex
-    );
     const sliderMarks = [
       { value: 0, label: "Start" },
       ...points.flatMap((point, idx) => {

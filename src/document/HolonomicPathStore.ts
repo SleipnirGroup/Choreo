@@ -160,7 +160,6 @@ export const HolonomicPathStore = types
             constraint.scope.length = 1;
           }
         });
-        console.log(savedPath);
         return savedPath;
       },
     };
@@ -174,8 +173,6 @@ export const HolonomicPathStore = types
           return;
         }
         self.constraints.push(store.create({ uuid: uuidv4() }));
-        console.log(self.constraints);
-        //console.log(self.asSavedPath());
         return self.constraints[self.constraints.length - 1];
       },
     };
