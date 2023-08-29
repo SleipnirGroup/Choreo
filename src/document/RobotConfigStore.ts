@@ -111,7 +111,6 @@ export const RobotConfigStore = types
             `;
       },
       dashedBumperSVGElement() {
-
         return `M ${self.bumperLength / 2} ${self.bumperWidth / 4}
             L ${self.bumperLength / 2} ${self.bumperWidth / 2}
             L ${self.bumperLength / 4} ${self.bumperWidth / 2}

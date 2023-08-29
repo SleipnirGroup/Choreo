@@ -98,7 +98,7 @@ class FieldOverlayRoot extends Component<Props, State> {
     this.canvasHeightMeters = FieldImage23.WIDTH_M + 1;
     this.canvasWidthMeters = FieldImage23.LENGTH_M + 1;
     let layers = this.context.model.uiState.layers;
-    let constraintSelected = this.context.model.uiState.isConstraintSelected()
+    let constraintSelected = this.context.model.uiState.isConstraintSelected();
     return (
       <svg
         ref={this.svgRef}
@@ -179,10 +179,10 @@ class FieldOverlayRoot extends Component<Props, State> {
         newPoint.setX(coords.x);
         newPoint.setY(coords.y);
         newPoint.setSelected(true);
-        const selectedItem = this.context.model.uiState.selectedNavbarItem
+        const selectedItem = this.context.model.uiState.selectedNavbarItem;
         if (
-          selectedItem ==
-          NavbarLabels.TranslationWaypoint || selectedItem == NavbarLabels.EmptyWaypoint
+          selectedItem == NavbarLabels.TranslationWaypoint ||
+          selectedItem == NavbarLabels.EmptyWaypoint
         ) {
           newPoint.setHeadingConstrained(false);
         }

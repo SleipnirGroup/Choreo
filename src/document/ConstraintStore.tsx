@@ -1,15 +1,33 @@
-import { ArrowRight, ArrowRightAlt, ArrowUpward, Dangerous, Explore, KeyboardDoubleArrowRight, PriorityHigh, Stop, SyncDisabledOutlined, Timeline } from "@mui/icons-material"
-import { getDebugName, toJS} from "mobx"
-import { getParent, types } from "mobx-state-tree"
-import { getRoot, Instance, IOptionalIType, isAlive, ISimpleType, ModelActions } from "mobx-state-tree"
-import { type } from "os"
-import React, { JSXElementConstructor, ReactElement } from "react"
-import { safeGetIdentifier } from "../util/mobxutils"
-import { IStateStore } from "./DocumentModel"
-import {v4 as uuidv4} from "uuid"
-import { I } from "@tauri-apps/api/path-c062430b"
-import { IHolonomicWaypointStore } from "./HolonomicWaypointStore"
-import { IHolonomicPathStore } from "./HolonomicPathStore"
+import {
+  ArrowRight,
+  ArrowRightAlt,
+  ArrowUpward,
+  Dangerous,
+  Explore,
+  KeyboardDoubleArrowRight,
+  PriorityHigh,
+  Stop,
+  SyncDisabledOutlined,
+  Timeline,
+} from "@mui/icons-material";
+import { getDebugName, toJS } from "mobx";
+import { getParent, types } from "mobx-state-tree";
+import {
+  getRoot,
+  Instance,
+  IOptionalIType,
+  isAlive,
+  ISimpleType,
+  ModelActions,
+} from "mobx-state-tree";
+import { type } from "os";
+import React, { JSXElementConstructor, ReactElement } from "react";
+import { safeGetIdentifier } from "../util/mobxutils";
+import { IStateStore } from "./DocumentModel";
+import { v4 as uuidv4 } from "uuid";
+import { I } from "@tauri-apps/api/path-c062430b";
+import { IHolonomicWaypointStore } from "./HolonomicWaypointStore";
+import { IHolonomicPathStore } from "./HolonomicPathStore";
 
 /**
  * PoseWpt (idx, x, y, heading)
@@ -32,298 +50,315 @@ import { IHolonomicPathStore } from "./HolonomicPathStore"
                                bool includeWpts = true);
  */
 export type ConstraintPropertyDefinition = {
-    name: string,
-    description: string,
-    units: string,
-    default?: number
-}
+  name: string;
+  description: string;
+  units: string;
+  default?: number;
+};
 export type ConstraintDefinition = {
-    name: string,
-    shortName: string,
-    icon:  ReactElement<any, string | JSXElementConstructor<any>>,
-    description: string,
-    wptScope: boolean,
-    sgmtScope: boolean,
-    fullPathScope: boolean,
-    properties: {
-        [key:string]: ConstraintPropertyDefinition
-    }
-}
+  name: string;
+  shortName: string;
+  icon: ReactElement<any, string | JSXElementConstructor<any>>;
+  description: string;
+  wptScope: boolean;
+  sgmtScope: boolean;
+  fullPathScope: boolean;
+  properties: {
+    [key: string]: ConstraintPropertyDefinition;
+  };
+};
 
-export type WaypointID = "first" | "last" | {uuid:string};
+export type WaypointID = "first" | "last" | { uuid: string };
 
 export const constraints = {
-    WptVelocityDirection: {
-        name: "Waypoint Velocity Direction",
-        shortName: "Wpt Velo Dir",
-        description: "Direction of travel through waypoint",
-        icon: (<Explore/>),
-        properties: {
-            direction: {
-                name: "Direction",
-                description: "The direction of velocity",
-                units: "rad"
-            }
-        },
-        wptScope: true,
-        sgmtScope: false,
-        fullPathScope: false
+  WptVelocityDirection: {
+    name: "Waypoint Velocity Direction",
+    shortName: "Wpt Velo Dir",
+    description: "Direction of travel through waypoint",
+    icon: <Explore />,
+    properties: {
+      direction: {
+        name: "Direction",
+        description: "The direction of velocity",
+        units: "rad",
+      },
     },
-    WptZeroVelocity: {
-        name: "Waypoint Zero Velocity",
-        shortName: "Wpt 0 Velo",
-        description: "Zero velocity at waypoint",
-        icon: (<Dangerous></Dangerous>),
-        properties: {},
-        wptScope: true,
-        sgmtScope: false,
-        fullPathScope: false
-    },
-    MaxVelocity: {
+    wptScope: true,
+    sgmtScope: false,
+    fullPathScope: false,
+  },
+  WptZeroVelocity: {
+    name: "Waypoint Zero Velocity",
+    shortName: "Wpt 0 Velo",
+    description: "Zero velocity at waypoint",
+    icon: <Dangerous></Dangerous>,
+    properties: {},
+    wptScope: true,
+    sgmtScope: false,
+    fullPathScope: false,
+  },
+  MaxVelocity: {
+    name: "Max Velocity",
+    shortName: "Max Velo",
+    description: "Maximum Velocity",
+    icon: <KeyboardDoubleArrowRight />,
+    properties: {
+      velocity: {
         name: "Max Velocity",
-        shortName: "Max Velo",
-        description: "Maximum Velocity",
-        icon: (<KeyboardDoubleArrowRight/>),
-        properties: {
-            velocity: {
-                name: "Max Velocity",
-                description: "Maximum Velocity of robot chassis",
-                units: "m/s"
-            }
-        },
-        wptScope: true,
-        sgmtScope: true,
-        fullPathScope: false
+        description: "Maximum Velocity of robot chassis",
+        units: "m/s",
+      },
     },
-    ZeroAngularVelocity: {
-        name: "Zero Angular Velocity",
-        shortName: "0 Ang Velo",
-        description: "Zero angular velocity throughout scope",
-        icon: (<SyncDisabledOutlined></SyncDisabledOutlined>),
-        properties: {
-        },
-        wptScope: true,
-        sgmtScope: true,
-        fullPathScope: false
-    },
-    StraightLine: {
-        name: "Straight Line",
-        shortName: "Straight Line",
-        description: "Follow straight lines between waypoints",
-        icon: (<Timeline></Timeline>),
-        properties: {
-        },
-        wptScope: false,
-        sgmtScope: true,
-        fullPathScope: false
-    }
-}
+    wptScope: true,
+    sgmtScope: true,
+    fullPathScope: false,
+  },
+  ZeroAngularVelocity: {
+    name: "Zero Angular Velocity",
+    shortName: "0 Ang Velo",
+    description: "Zero angular velocity throughout scope",
+    icon: <SyncDisabledOutlined></SyncDisabledOutlined>,
+    properties: {},
+    wptScope: true,
+    sgmtScope: true,
+    fullPathScope: false,
+  },
+  StraightLine: {
+    name: "Straight Line",
+    shortName: "Straight Line",
+    description: "Follow straight lines between waypoints",
+    icon: <Timeline></Timeline>,
+    properties: {},
+    wptScope: false,
+    sgmtScope: true,
+    fullPathScope: false,
+  },
+};
 const WaypointUUIDScope = types.model("WaypointScope", {
-    uuid: types.string
+  uuid: types.string,
 });
-export const WaypointScope = types.union(types.literal("first"), types.literal("last"), WaypointUUIDScope);
+export const WaypointScope = types.union(
+  types.literal("first"),
+  types.literal("last"),
+  WaypointUUIDScope
+);
 export type IWaypointScope = IWaypointUUIDScope | "first" | "last";
-interface IWaypointUUIDScope extends Instance<typeof WaypointUUIDScope>{}
+interface IWaypointUUIDScope extends Instance<typeof WaypointUUIDScope> {}
 
-export interface IConstraintStore extends Instance<typeof ConstraintStore>{}
+export interface IConstraintStore extends Instance<typeof ConstraintStore> {}
 
-export const ConstraintStore = types.model("ConstraintStore", {
+export const ConstraintStore = types
+  .model("ConstraintStore", {
     scope: types.array(WaypointScope),
     type: types.optional(types.string, ""),
-    uuid: types.identifier
-})
-.views((self)=>({
+    uuid: types.identifier,
+  })
+  .views((self) => ({
     getType() {
-        return "";
+      return "";
     },
     get wptScope() {
-        return false;
+      return false;
     },
     get sgmtScope() {
+      return false;
+    },
+    get fullPathScope() {
+      return false;
+    },
+    get definition(): ConstraintDefinition {
+      return {
+        name: "Default",
+        shortName: "Default",
+        description: "",
+        sgmtScope: false,
+        wptScope: false,
+        fullPathScope: false,
+        icon: <PriorityHigh></PriorityHigh>,
+        properties: {},
+      };
+    },
+    get selected(): boolean {
+      if (!isAlive(self)) {
         return false;
-    },
-    get fullPathScope () {
-        return false;
-    },
-    get definition() : ConstraintDefinition {
-        return {
-            name: "Default",
-            shortName: "Default",
-            description: "",
-            sgmtScope: false,
-            wptScope: false,
-            fullPathScope: false,
-            icon: <PriorityHigh></PriorityHigh>,
-            properties: {}
-        }
-    },
-    get selected() :boolean {
-        if (!isAlive(self)) {
-            return false;
-          }
-          return (
-            self.uuid ==
-            safeGetIdentifier(
-              getRoot<IStateStore>(self).uiState.selectedSidebarItem
-            )
-          );
+      }
+      return (
+        self.uuid ==
+        safeGetIdentifier(
+          getRoot<IStateStore>(self).uiState.selectedSidebarItem
+        )
+      );
     },
     getSortedScope(): Array<IWaypointScope> {
-        return toJS(self.scope).slice().sort((a, b)=>{
-            if (a==="first") return -1;
-            if (b==="first") return 1;
-            if (a==="last") return 1;
-            if (b==="last") return -1;
-            const path : IHolonomicPathStore  = getParent<IHolonomicPathStore>(getParent<IConstraintStore[]>(self));
-            const aIdx = path.findUUIDIndex(a.uuid) || 0;
-            const bIdx = path.findUUIDIndex(b.uuid) || 1;
-            return aIdx-bIdx;
-        })
-    }
-}))
-.views((self)=>({
-    getStartWaypoint() : IHolonomicWaypointStore | undefined {
-        const startScope = self.getSortedScope()[0];
-        if (startScope === undefined) {
-            return undefined;
-        }
-        const path : IHolonomicPathStore  = getParent<IHolonomicPathStore>(getParent<IConstraintStore[]>(self));
-        return path.getByWaypointID(startScope);
+      return toJS(self.scope)
+        .slice()
+        .sort((a, b) => {
+          if (a === "first") return -1;
+          if (b === "first") return 1;
+          if (a === "last") return 1;
+          if (b === "last") return -1;
+          const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
+            getParent<IConstraintStore[]>(self)
+          );
+          const aIdx = path.findUUIDIndex(a.uuid) || 0;
+          const bIdx = path.findUUIDIndex(b.uuid) || 1;
+          return aIdx - bIdx;
+        });
     },
-    getEndWaypoint() : IHolonomicWaypointStore | undefined {
-        const scope = self.getSortedScope();
-        const endScope = scope[scope.length-1];
-        if (endScope === undefined) {
-            return undefined;
-        }
-        console.log(toJS(endScope))
-        const path : IHolonomicPathStore  = getParent<IHolonomicPathStore>(getParent<IConstraintStore[]>(self));
-        return path.getByWaypointID(endScope);
+  }))
+  .views((self) => ({
+    getStartWaypoint(): IHolonomicWaypointStore | undefined {
+      const startScope = self.getSortedScope()[0];
+      if (startScope === undefined) {
+        return undefined;
+      }
+      const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
+        getParent<IConstraintStore[]>(self)
+      );
+      return path.getByWaypointID(startScope);
     },
-
-}))
-.views((self)=>({
-    getStartWaypointIndex() : number | undefined {
-        const path : IHolonomicPathStore = getParent<IHolonomicPathStore>(getParent<IConstraintStore[]>(self));
-        const waypoint = self.getStartWaypoint();
-        if (waypoint === undefined) return undefined;
-        return path.findUUIDIndex(waypoint.uuid);
+    getEndWaypoint(): IHolonomicWaypointStore | undefined {
+      const scope = self.getSortedScope();
+      const endScope = scope[scope.length - 1];
+      if (endScope === undefined) {
+        return undefined;
+      }
+      console.log(toJS(endScope));
+      const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
+        getParent<IConstraintStore[]>(self)
+      );
+      return path.getByWaypointID(endScope);
     },
-    getEndWaypointIndex() : number | undefined {
-        const path : IHolonomicPathStore = getParent<IHolonomicPathStore>(getParent<IConstraintStore[]>(self));
-        const waypoint = self.getEndWaypoint();
-        if (waypoint === undefined) return undefined;
-        return path.findUUIDIndex(waypoint.uuid);
+  }))
+  .views((self) => ({
+    getStartWaypointIndex(): number | undefined {
+      const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
+        getParent<IConstraintStore[]>(self)
+      );
+      const waypoint = self.getStartWaypoint();
+      if (waypoint === undefined) return undefined;
+      return path.findUUIDIndex(waypoint.uuid);
     },
-    getPath() : IHolonomicPathStore {
-        const path : IHolonomicPathStore = getParent<IHolonomicPathStore>(getParent<IConstraintStore[]>(self));
-        return path;
+    getEndWaypointIndex(): number | undefined {
+      const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
+        getParent<IConstraintStore[]>(self)
+      );
+      const waypoint = self.getEndWaypoint();
+      if (waypoint === undefined) return undefined;
+      return path.findUUIDIndex(waypoint.uuid);
+    },
+    getPath(): IHolonomicPathStore {
+      const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
+        getParent<IConstraintStore[]>(self)
+      );
+      return path;
     },
     get issues() {
-        let startWaypoint = self.getStartWaypoint();
-        let endWaypoint = self.getEndWaypoint();
-        let scope = self.scope;
-        let issue = false;
-        let issueText = [];
-        
-        if (scope.length == 2) {
-            if (startWaypoint === undefined || endWaypoint === undefined) {
-                issueText.push("Constraint refers to missing waypoint(s)")
-            } else {
-                if (startWaypoint!.isInitialGuess || endWaypoint!.isInitialGuess) {
-                    issueText.push("Cannot have initial guess point as endpoint");
-                }
-            }
-        } else if (scope.length == 1) {
-            if (startWaypoint === undefined) {
-                issueText.push("Constraint refers to missing waypoint");
-            } else {
-                
-                if (startWaypoint!.isInitialGuess) {
-                    issueText.push("Cannot constrain initial guess point");
-                }
-            }
+      let startWaypoint = self.getStartWaypoint();
+      let endWaypoint = self.getEndWaypoint();
+      let scope = self.scope;
+      let issue = false;
+      let issueText = [];
 
-        } else if (scope.length == 0) {
-        issueText.push("Scope not set");
+      if (scope.length == 2) {
+        if (startWaypoint === undefined || endWaypoint === undefined) {
+          issueText.push("Constraint refers to missing waypoint(s)");
+        } else {
+          if (startWaypoint!.isInitialGuess || endWaypoint!.isInitialGuess) {
+            issueText.push("Cannot have initial guess point as endpoint");
+          }
         }
-        return issueText;
-    }
-}))
-.actions((self)=>({
-    afterCreate() {
+      } else if (scope.length == 1) {
+        if (startWaypoint === undefined) {
+          issueText.push("Constraint refers to missing waypoint");
+        } else {
+          if (startWaypoint!.isInitialGuess) {
+            issueText.push("Cannot constrain initial guess point");
+          }
+        }
+      } else if (scope.length == 0) {
+        issueText.push("Scope not set");
+      }
+      return issueText;
     },
-    setScope(scope:Array< Instance<typeof WaypointScope>>) {
-        self.scope.length = 0;
-        self.scope.push(...scope)
+  }))
+  .actions((self) => ({
+    afterCreate() {},
+    setScope(scope: Array<Instance<typeof WaypointScope>>) {
+      self.scope.length = 0;
+      self.scope.push(...scope);
     },
     setSelected(selected: boolean) {
-        if (selected && !self.selected) {
-          const root = getRoot<IStateStore>(self);
-          root.select(
-            getParent<IConstraintStore[]>(self)?.find(
-              (point) => self.uuid == point.uuid
-            )
-          );
-        }
+      if (selected && !self.selected) {
+        const root = getRoot<IStateStore>(self);
+        root.select(
+          getParent<IConstraintStore[]>(self)?.find(
+            (point) => self.uuid == point.uuid
+          )
+        );
       }
-}));
+    },
+  }));
 
-
-
-
-const defineConstraintStore = (key:string, definition: ConstraintDefinition) => {
-    return ConstraintStore
-    .named(`${key}Store`)
-    .views((self)=>({
+const defineConstraintStore = (
+  key: string,
+  definition: ConstraintDefinition
+) => {
+  return (
+    ConstraintStore.named(`${key}Store`)
+      .views((self) => ({
         getType() {
-            return key
+          return key;
         },
         get wptScope() {
-            return definition.wptScope;
+          return definition.wptScope;
         },
         get sgmtScope() {
-            return definition.sgmtScope;
+          return definition.sgmtScope;
         },
         get fullPathScope() {
-            return definition.fullPathScope;
+          return definition.fullPathScope;
         },
         get definition() {
-            return definition;
-        }
-    }))
-    // Define each property onto the model
-    .props(
-        (()=>{
-            let x : {[key:string]: IOptionalIType<ISimpleType<number>, [number]>}  = {};
-            Object.keys(definition.properties).forEach(
-                (key) =>{
-                    x[key] = types.optional(types.number, definition.properties[key]?.default ?? 0)
-                }
-            )
-            return x;
+          return definition;
+        },
+      }))
+      // Define each property onto the model
+      .props(
+        (() => {
+          let x: {
+            [key: string]: IOptionalIType<ISimpleType<number>, [number]>;
+          } = {};
+          Object.keys(definition.properties).forEach((key) => {
+            x[key] = types.optional(
+              types.number,
+              definition.properties[key]?.default ?? 0
+            );
+          });
+          return x;
         })()
-    ).props(
-        {
-            type: key
-        }
-    )
-    // Defined setters for each property
-    .actions((self)=>{
-            let x : ModelActions  = {};
-            Object.keys(definition.properties).forEach(
-                (key) =>{
-                    let upperCaseName = key[0].toUpperCase() + key.slice(1)
-                    x[`set${upperCaseName}`] = (arg0: number)=>{self[key] = arg0}
-                }
-            )
-            return x;
-    });
-}
+      )
+      .props({
+        type: key,
+      })
+      // Defined setters for each property
+      .actions((self) => {
+        let x: ModelActions = {};
+        Object.keys(definition.properties).forEach((key) => {
+          let upperCaseName = key[0].toUpperCase() + key.slice(1);
+          x[`set${upperCaseName}`] = (arg0: number) => {
+            self[key] = arg0;
+          };
+        });
+        return x;
+      })
+  );
+};
 
-let constraintsStores: {[key:string]: typeof ConstraintStore} = {}
-Object.entries(constraints).forEach(entry=>{
-    constraintsStores[entry[0]] = defineConstraintStore(entry[0], entry[1])
-})
+let constraintsStores: { [key: string]: typeof ConstraintStore } = {};
+Object.entries(constraints).forEach((entry) => {
+  constraintsStores[entry[0]] = defineConstraintStore(entry[0], entry[1]);
+});
 // Export constraint stores down here
-export const ConstraintStores : {[key:string]: typeof ConstraintStore}= constraintsStores;
+export const ConstraintStores: { [key: string]: typeof ConstraintStore } =
+  constraintsStores;

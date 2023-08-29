@@ -3,15 +3,19 @@ import {
   CircleOutlined,
   Grid4x4,
   Route,
-  Square,
   SquareOutlined,
-  Help
 } from "@mui/icons-material";
 import { getRoot, Instance, types } from "mobx-state-tree";
 import { ReactElement } from "react";
 import InitialGuessPoint from "../assets/InitialGuessPoint";
 import Waypoint from "../assets/Waypoint";
-import { ConstraintDefinition, constraints, ConstraintStore, ConstraintStores, IConstraintStore } from "./ConstraintStore";
+import {
+  ConstraintDefinition,
+  constraints,
+  ConstraintStore,
+  ConstraintStores,
+  IConstraintStore,
+} from "./ConstraintStore";
 import { IStateStore } from "./DocumentModel";
 import {
   HolonomicWaypointStore,
@@ -31,15 +35,17 @@ export const SelectableItem = types.union(
   },
   RobotConfigStore,
   HolonomicWaypointStore,
-  ...Object.values(ConstraintStores),
+  ...Object.values(ConstraintStores)
 );
 
 /* Navbar stuff */
-export let WaypointData : {[key:string]: {
-  index: number,
-  name: string,
-  icon: ReactElement
-}} = {
+export let WaypointData: {
+  [key: string]: {
+    index: number;
+    name: string;
+    icon: ReactElement;
+  };
+} = {
   FullWaypoint: {
     index: 0,
     name: "Full Waypoint",
@@ -58,35 +64,37 @@ export let WaypointData : {[key:string]: {
   InitialGuessPoint: {
     index: 3,
     name: "Initial Guess Point",
-    icon: <InitialGuessPoint/>
-  }
+    icon: <InitialGuessPoint />,
+  },
 };
-let NavbarData : {[key:string]: {
-  index: number,
-  name: string,
-  icon: ReactElement
-}} = Object.assign({}, WaypointData)
+let NavbarData: {
+  [key: string]: {
+    index: number;
+    name: string;
+    icon: ReactElement;
+  };
+} = Object.assign({}, WaypointData);
 const waypointNavbarCount = Object.keys(NavbarData).length;
-let constraintsIndices :number[] = [];
-let navbarIndexToConstraint : {[key: number]: typeof ConstraintStore} = {
-
-}
-let navbarIndexToConstraintDefinition : {[key: number]: ConstraintDefinition} = {
-
-}
+let constraintsIndices: number[] = [];
+let navbarIndexToConstraint: { [key: number]: typeof ConstraintStore } = {};
+let navbarIndexToConstraintDefinition: { [key: number]: ConstraintDefinition } =
+  {};
 {
   let constraintsOffset = Object.keys(NavbarData).length;
   Object.entries(constraints).forEach(([key, data], index) => {
-    NavbarData[key] = {index: constraintsOffset, name: data.name, icon: data.icon}
+    NavbarData[key] = {
+      index: constraintsOffset,
+      name: data.name,
+      icon: data.icon,
+    };
     navbarIndexToConstraint[constraintsOffset] = ConstraintStores[key];
     navbarIndexToConstraintDefinition[constraintsOffset] = data;
-    constraintsIndices.push(constraintsOffset)
+    constraintsIndices.push(constraintsOffset);
     constraintsOffset++;
-  })
+  });
 }
 const constraintNavbarCount = Object.keys(constraints).length;
-console.log(navbarIndexToConstraint)
-
+console.log(navbarIndexToConstraint);
 
 export const NavbarLabels = (() => {
   let x: { [key: string]: number } = {};
@@ -95,8 +103,7 @@ export const NavbarLabels = (() => {
   });
   return x;
 })();
-console.log(NavbarLabels)
-
+console.log(NavbarLabels);
 
 export const NavbarItemData = (() => {
   let x: Array<{ name: string; icon: any }> = [];
@@ -107,9 +114,12 @@ export const NavbarItemData = (() => {
   });
   return x;
 })();
-console.log(NavbarItemData)
+console.log(NavbarItemData);
 
-export const NavbarItemSectionLengths = [waypointNavbarCount - 1, waypointNavbarCount + constraintNavbarCount - 1]
+export const NavbarItemSectionLengths = [
+  waypointNavbarCount - 1,
+  waypointNavbarCount + constraintNavbarCount - 1,
+];
 
 export type SelectableItemTypes =
   | IRobotConfigStore
@@ -178,7 +188,10 @@ export const UIStateStore = types
         return navbarIndexToConstraint[self.selectedNavbarItem] ?? undefined;
       },
       getSelectedConstraintDefinition() {
-        return navbarIndexToConstraintDefinition[self.selectedNavbarItem] ?? undefined;
+        return (
+          navbarIndexToConstraintDefinition[self.selectedNavbarItem] ??
+          undefined
+        );
       },
       isNavbarWaypointSelected() {
         return (
@@ -189,9 +202,7 @@ export const UIStateStore = types
         );
       },
       isConstraintSelected() {
-        return (
-          (self.selectedNavbarItem > NavbarItemSectionLengths[0])
-        )
+        return self.selectedNavbarItem > NavbarItemSectionLengths[0];
       },
       visibleLayersOnly() {
         return self.layers.flatMap((visible: boolean, index: number) => {

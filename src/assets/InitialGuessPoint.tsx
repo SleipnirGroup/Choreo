@@ -19,7 +19,13 @@ SvgIcon.defaultProps = {
 const Waypoint: React.FunctionComponent<SvgIconProps> = (props) => {
   return (
     <SvgIcon {...props}>
-      <circle cx={12} cy={12} r={8} stroke="currentColor" strokeDasharray={8}></circle>
+      <circle
+        cx={12}
+        cy={12}
+        r={8}
+        stroke="currentColor"
+        strokeDasharray={8}
+      ></circle>
     </SvgIcon>
   );
 };

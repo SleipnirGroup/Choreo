@@ -1,5 +1,7 @@
 import "./App.css";
-import DocumentManagerContext, { DocumentManager } from "./document/DocumentManager";
+import DocumentManagerContext, {
+  DocumentManager,
+} from "./document/DocumentManager";
 import { createContext } from "react";
 import { observer } from "mobx-react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
@@ -7,7 +9,6 @@ import CssBaseline from "@mui/material/CssBaseline";
 import Body from "./Body";
 
 function App() {
-
   const buttonOverrides = {
     // Name of the slot
     root: ({ ownerState, theme }) => ({
@@ -51,7 +52,7 @@ function App() {
   return (
     <CssBaseline>
       <ThemeProvider theme={createTheme(themeOptions)}>
-          <Body></Body>
+        <Body></Body>
       </ThemeProvider>
     </CssBaseline>
   );

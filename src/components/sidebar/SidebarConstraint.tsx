@@ -3,7 +3,11 @@ import { IconButton, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 
 import React, { Component } from "react";
-import { constraints, IConstraintStore, WaypointID } from "../../document/ConstraintStore";
+import {
+  constraints,
+  IConstraintStore,
+  WaypointID,
+} from "../../document/ConstraintStore";
 import DocumentManagerContext from "../../document/DocumentManager";
 import styles from "./Sidebar.module.css";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -24,31 +28,35 @@ class SidebarConstraint extends Component<Props, State> {
   state = {};
 
   getScopeText() {
-    let waypointIDToText = (id: WaypointID) =>{
+    let waypointIDToText = (id: WaypointID) => {
       if (id == "first") return "Start";
       if (id == "last") return "End";
-      return getParent<IHolonomicPathStore>(getParent<IConstraintStore[]>(this.props.constraint)).findUUIDIndex(id.uuid) + 1
-    }
+      return (
+        getParent<IHolonomicPathStore>(
+          getParent<IConstraintStore[]>(this.props.constraint)
+        ).findUUIDIndex(id.uuid) + 1
+      );
+    };
     let scope = this.props.constraint.getSortedScope();
     if (scope.length == 0) return "!";
-
-    else if (scope.length == 1 ||
-      (scope[0] === scope[1]) ||
-      (Object.hasOwn(scope[0], "uuid") && Object.hasOwn(scope[1], "uuid") && scope[0]!.uuid == scope[1]!.uuid)
-    ) return waypointIDToText(scope[0])
+    else if (
+      scope.length == 1 ||
+      scope[0] === scope[1] ||
+      (Object.hasOwn(scope[0], "uuid") &&
+        Object.hasOwn(scope[1], "uuid") &&
+        scope[0]!.uuid == scope[1]!.uuid)
+    )
+      return waypointIDToText(scope[0]);
     else {
-      return `${waypointIDToText(scope[0])}-${waypointIDToText(scope[1])}`
+      return `${waypointIDToText(scope[0])}-${waypointIDToText(scope[1])}`;
     }
-    
-
-    
   }
   render() {
     // apparently we have to dereference this here instead of inline in the class name
     // Otherwise the component won't rerender when it changes
     let selected = this.props.constraint.selected;
     let issues = this.props.constraint.issues;
-    
+
     return (
       <div
         className={styles.SidebarItem + (selected ? ` ${styles.Selected}` : "")}
@@ -58,38 +66,41 @@ class SidebarConstraint extends Component<Props, State> {
           );
         }}
       >
-        {React.cloneElement(
-        this.props.constraint.definition.icon, {
-          className:styles.SidebarIcon,
-          htmlColor: selected ? "var(--select-yellow)" : "var(--accent-purple)"
+        {React.cloneElement(this.props.constraint.definition.icon, {
+          className: styles.SidebarIcon,
+          htmlColor: selected ? "var(--select-yellow)" : "var(--accent-purple)",
         })}
-          {/* className={styles.SidebarIcon}
+        {/* className={styles.SidebarIcon}
           htmlColor={selected ? "var(--select-yellow)" : "var(--accent-purple)"}
         ></Icon> */}
-        <span className={styles.SidebarLabel} style={{display:"grid", gridTemplateColumns:"1fr auto auto"}}>
+        <span
+          className={styles.SidebarLabel}
+          style={{ display: "grid", gridTemplateColumns: "1fr auto auto" }}
+        >
           <span>{this.props.constraint.definition.shortName}</span>
           {issues.length !== 0 ? (
-              <Tooltip disableInteractive title={issues.join(", ")}>
-                <PriorityHigh className={styles.SidebarIcon}></PriorityHigh>
-              </Tooltip>) : (<span></span>
-            )}
-          
+            <Tooltip disableInteractive title={issues.join(", ")}>
+              <PriorityHigh className={styles.SidebarIcon}></PriorityHigh>
+            </Tooltip>
+          ) : (
+            <span></span>
+          )}
 
-            {this.getScopeText()}
+          {this.getScopeText()}
         </span>
         <Tooltip title="Delete Constraint">
-              <IconButton
-                className={styles.SidebarRightIcon}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  this.context.model.document.pathlist.activePath.deleteConstraintUUID(
-                    this.props.constraint?.uuid || ""
-                  );
-                }}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </Tooltip>
+          <IconButton
+            className={styles.SidebarRightIcon}
+            onClick={(e) => {
+              e.stopPropagation();
+              this.context.model.document.pathlist.activePath.deleteConstraintUUID(
+                this.props.constraint?.uuid || ""
+              );
+            }}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </Tooltip>
       </div>
     );
   }

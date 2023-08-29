@@ -5,7 +5,12 @@ import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import Input from "../input/Input";
 import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../input/InputList";
-import { RadioGroup, ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
+import {
+  RadioGroup,
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
+} from "@mui/material";
 import { WaypointData } from "../../document/UIStateStore";
 import Waypoint from "../../assets/Waypoint";
 import { Circle, CircleOutlined, Help } from "@mui/icons-material";
@@ -31,7 +36,6 @@ class WaypointPanel extends Component<Props, State> {
     if (this.isWaypointNonNull(waypoint)) {
       return (
         <div className={styles.WaypointPanel}>
-
           <InputList noCheckbox>
             <Input
               title="x"
@@ -60,38 +64,44 @@ class WaypointPanel extends Component<Props, State> {
               number={waypoint.heading}
               setNumber={(heading) => waypoint!.setHeading(heading)}
             ></Input>
-
           </InputList>
           <ToggleButtonGroup
-          sx={{marginInline:"auto",paddingTop:"8px"}}
-          size="small"
-          exclusive
-          value={waypointType}
-          onChange={(e, newSelection) => {
-            waypoint?.setType(newSelection);
-            }
-          }>
-            {Object.entries(WaypointData).map((entry)=>{
+            sx={{ marginInline: "auto", paddingTop: "8px" }}
+            size="small"
+            exclusive
+            value={waypointType}
+            onChange={(e, newSelection) => {
+              waypoint?.setType(newSelection);
+            }}
+          >
+            {Object.entries(WaypointData).map((entry) => {
               let waypoint: {
-                index: number,
-                name: string,
-                icon: ReactElement
-              } = entry[1]
-              console.log("waypoint")
+                index: number;
+                name: string;
+                icon: ReactElement;
+              } = entry[1];
+              console.log("waypoint");
               return (
-              <Tooltip disableInteractive key={waypoint.index} value={waypoint.index} title={waypoint.name}>
-              <ToggleButton value={waypoint.index} sx={{
-                  color: "var(--accent-purple)",
-                  "&.Mui-selected": {
-                    color: "var(--select-yellow)",
-                  },
-                }}>
-                {(waypoint.icon)}
-              </ToggleButton>
-            </Tooltip>
-            );}
-            )}
-
+                <Tooltip
+                  disableInteractive
+                  key={waypoint.index}
+                  value={waypoint.index}
+                  title={waypoint.name}
+                >
+                  <ToggleButton
+                    value={waypoint.index}
+                    sx={{
+                      color: "var(--accent-purple)",
+                      "&.Mui-selected": {
+                        color: "var(--select-yellow)",
+                      },
+                    }}
+                  >
+                    {waypoint.icon}
+                  </ToggleButton>
+                </Tooltip>
+              );
+            })}
           </ToggleButtonGroup>
         </div>
       );

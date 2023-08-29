@@ -57,26 +57,26 @@ class Sidebar extends Component<Props, State> {
           <span>
             <Tooltip title="Undo">
               <span>
-              <IconButton
-                disabled={!this.context.history.canUndo}
-                onClick={() => {
-                  this.context.undo();
-                }}
-              >
-                <Undo></Undo>
-              </IconButton>
+                <IconButton
+                  disabled={!this.context.history.canUndo}
+                  onClick={() => {
+                    this.context.undo();
+                  }}
+                >
+                  <Undo></Undo>
+                </IconButton>
               </span>
             </Tooltip>
             <Tooltip title="Redo">
               <span>
-              <IconButton
-                disabled={!this.context.history.canRedo}
-                onClick={() => {
-                  this.context.redo();
-                }}
-              >
-                <Redo></Redo>
-              </IconButton>
+                <IconButton
+                  disabled={!this.context.history.canRedo}
+                  onClick={() => {
+                    this.context.redo();
+                  }}
+                >
+                  <Redo></Redo>
+                </IconButton>
               </span>
             </Tooltip>
           </span>
@@ -127,17 +127,19 @@ class Sidebar extends Component<Props, State> {
             <span>CONSTRAINTS</span>
           </Divider>
           <div className={styles.WaypointList}>
-            {this.context.model.document.pathlist.activePath.constraints.map((constraint)=>{
-              return (
-                <SidebarConstraint
-                  key={constraint.uuid}
-                  constraint={constraint}></SidebarConstraint>
-              )
-            })}
+            {this.context.model.document.pathlist.activePath.constraints.map(
+              (constraint) => {
+                return (
+                  <SidebarConstraint
+                    key={constraint.uuid}
+                    constraint={constraint}
+                  ></SidebarConstraint>
+                );
+              }
+            )}
           </div>
         </div>
         <Divider></Divider>
-        
       </div>
     );
   }

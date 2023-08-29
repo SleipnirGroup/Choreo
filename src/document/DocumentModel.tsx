@@ -63,28 +63,29 @@ const StateStore = types
         if (pathStore === undefined) {
           return;
         }
-        new Promise((resolve, reject)=>{
+        new Promise((resolve, reject) => {
           pathStore.setTrajectory([]);
           if (pathStore.waypoints.length < 2) {
             return;
           }
           console.log(toJS(pathStore.constraints));
-          pathStore.constraints.forEach((constraint)=>{
+          pathStore.constraints.forEach((constraint) => {
             if (constraint.issues.length > 0) {
-              throw new Error(constraint.issues.join(", "))
+              throw new Error(constraint.issues.join(", "));
             }
-          })
+          });
           pathStore.setGenerating(true);
-          console.log(pathStore.asSolverPath())
+          console.log(pathStore.asSolverPath());
 
           resolve(pathStore);
         })
-        .then(()=>
-        invoke("generate_trajectory", {
-          path: pathStore.waypoints,
-          config: self.document.robotConfig,
-          constraints: pathStore.asSolverPath().constraints
-        }))
+          .then(() =>
+            invoke("generate_trajectory", {
+              path: pathStore.waypoints,
+              config: self.document.robotConfig,
+              constraints: pathStore.asSolverPath().constraints,
+            })
+          )
           .then((rust_traj) => {
             let newTraj: Array<SavedTrajectorySample> = [];
             // @ts-ignore

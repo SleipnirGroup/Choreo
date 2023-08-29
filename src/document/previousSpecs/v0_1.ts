@@ -24,7 +24,7 @@ export interface SavedTrajectorySample {
 export interface SavedPath {
   waypoints: Array<SavedWaypoint>;
   trajectory: Array<SavedTrajectorySample> | null;
-  constraints: Array<SavedConstraint>
+  constraints: Array<SavedConstraint>;
 }
 export interface SavedPathList extends Record<string, SavedPath> {}
 export interface SavedRobotConfig {
@@ -43,9 +43,9 @@ export interface SavedDocument {
   robotConfiguration: SavedRobotConfig;
   paths: SavedPathList;
 }
-export type SavedWaypointId = "first" | "last" | number 
+export type SavedWaypointId = "first" | "last" | number;
 export interface SavedConstraint {
   scope: Array<SavedWaypointId>;
-  type:string;
-  [key:string]: unknown;
+  type: string;
+  [key: string]: unknown;
 }

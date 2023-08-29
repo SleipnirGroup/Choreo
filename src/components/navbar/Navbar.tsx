@@ -4,7 +4,11 @@ import Tooltip from "@mui/material/Tooltip";
 import styles from "./Navbar.module.css";
 import { observer } from "mobx-react";
 import { Divider, ToggleButton, ToggleButtonGroup } from "@mui/material";
-import { NavbarItemData, NavbarItemSectionLengths, NavbarItemSplitPoints } from "../../document/UIStateStore";
+import {
+  NavbarItemData,
+  NavbarItemSectionLengths,
+  NavbarItemSplitPoints,
+} from "../../document/UIStateStore";
 
 type Props = {};
 
@@ -22,8 +26,7 @@ class Navbar extends Component<Props, State> {
     return (
       <div className={styles.Container}>
         {NavbarItemSectionLengths.map((endSplit, sectionIdx) => (
-          
-            <ToggleButtonGroup
+          <ToggleButtonGroup
             className={styles.ToggleGroup}
             exclusive
             value={`${selectedNavbarItem}`}
@@ -32,25 +35,32 @@ class Navbar extends Component<Props, State> {
             }}
             key={sectionIdx}
           >
-          {NavbarItemData.map((item, index) => (index <= endSplit && index > (NavbarItemSectionLengths[sectionIdx-1] ?? -1)) && (
-            //@ts-ignore
-            <Tooltip value={`${index}`} title={item.name} key={`${sectionIdx}_${index}`}>
-              <ToggleButton
-                value={`${index}`}
-                sx={{
-                  color: "var(--accent-purple)",
-                  "&.Mui-selected": {
-                    color: "var(--select-yellow)",
-                  },
-                }}
-              >
-                {item.icon}
-              </ToggleButton>
-            </Tooltip>
-          ))}
-        </ToggleButtonGroup>
+            {NavbarItemData.map(
+              (item, index) =>
+                index <= endSplit &&
+                index > (NavbarItemSectionLengths[sectionIdx - 1] ?? -1) && (
+                  //@ts-ignore
+                  <Tooltip
+                    value={`${index}`}
+                    title={item.name}
+                    key={`${sectionIdx}_${index}`}
+                  >
+                    <ToggleButton
+                      value={`${index}`}
+                      sx={{
+                        color: "var(--accent-purple)",
+                        "&.Mui-selected": {
+                          color: "var(--select-yellow)",
+                        },
+                      }}
+                    >
+                      {item.icon}
+                    </ToggleButton>
+                  </Tooltip>
+                )
+            )}
+          </ToggleButtonGroup>
         ))}
-
 
         {/* </span> */}
       </div>

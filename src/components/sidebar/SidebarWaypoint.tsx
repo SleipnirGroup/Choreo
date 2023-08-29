@@ -85,15 +85,15 @@ class SidebarWaypoint extends Component<Props, State> {
               provided.draggableProps.style
             )}
             onClick={() => {
-
               this.context.model.uiState.setSelectedSidebarItem(waypoint);
               this.context.model.uiState.setSelectedNavbarItem(waypoint.type);
             }}
           >
-          {React.cloneElement(
-            NavbarItemData[type].icon, {
-              className:styles.SidebarIcon,
-              htmlColor: selected ? "var(--select-yellow)" : "var(--accent-purple)"
+            {React.cloneElement(NavbarItemData[type].icon, {
+              className: styles.SidebarIcon,
+              htmlColor: selected
+                ? "var(--select-yellow)"
+                : "var(--accent-purple)",
             })}
             {/* {translationConstrained && headingConstrained && (
               <Waypoint

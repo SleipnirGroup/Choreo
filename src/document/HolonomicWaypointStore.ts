@@ -21,7 +21,7 @@ export const HolonomicWaypointStore = types
           return 3; // Guess
         } else if (self.headingConstrained) {
           return 0; // Full
-        } else  if (self.translationConstrained) {
+        } else if (self.translationConstrained) {
           return 1; // Translation
         } else {
           return 2; // Empty
@@ -100,33 +100,34 @@ export const HolonomicWaypointStore = types
         self.isInitialGuess = initialGuess;
       },
     };
-  }).actions(self=>({
-      setType(type:number) {
-        switch (type) {
-          case 0:
-            self.setHeadingConstrained(true);
-            self.setTranslationConstrained(true);
-            self.setInitialGuess(false);
-            break;
-          case 1: 
-            self.setHeadingConstrained(false);
-            self.setTranslationConstrained(true);
-            self.setInitialGuess(false);
-            break;
-          case 2: 
-            self.setTranslationConstrained(false);
-            self.setHeadingConstrained(false);
-            self.setInitialGuess(false);
-            break;
-          case 3: 
-            self.setTranslationConstrained(true);
-            self.setHeadingConstrained(true);
-            self.setInitialGuess(true);
-            break;
-          default:
-            break;
-        }
+  })
+  .actions((self) => ({
+    setType(type: number) {
+      switch (type) {
+        case 0:
+          self.setHeadingConstrained(true);
+          self.setTranslationConstrained(true);
+          self.setInitialGuess(false);
+          break;
+        case 1:
+          self.setHeadingConstrained(false);
+          self.setTranslationConstrained(true);
+          self.setInitialGuess(false);
+          break;
+        case 2:
+          self.setTranslationConstrained(false);
+          self.setHeadingConstrained(false);
+          self.setInitialGuess(false);
+          break;
+        case 3:
+          self.setTranslationConstrained(true);
+          self.setHeadingConstrained(true);
+          self.setInitialGuess(true);
+          break;
+        default:
+          break;
       }
+    },
   }));
 export interface IHolonomicWaypointStore
   extends Instance<typeof HolonomicWaypointStore> {}

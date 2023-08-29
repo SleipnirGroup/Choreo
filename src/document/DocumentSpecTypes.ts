@@ -38,7 +38,7 @@ export type {
   SavedPathList,
   SavedRobotConfig,
   SavedWaypoint,
-  SavedConstraint
+  SavedConstraint,
 } from "./previousSpecs/v0_1";
 export { SAVE_FILE_VERSION } from "./previousSpecs/v0_1";
 import { SAVE_FILE_VERSION } from "./previousSpecs/v0_1";
@@ -77,7 +77,11 @@ export let VERSIONS = {
       };
       for (let entry of Object.keys(document.paths)) {
         let path = document.paths[entry];
-        updated.paths[entry] = { waypoints: [], trajectory: [], constraints:[] };
+        updated.paths[entry] = {
+          waypoints: [],
+          trajectory: [],
+          constraints: [],
+        };
         path.waypoints.forEach((waypoint, index) => {
           let updatedWaypoint: v0_0_1_Waypoint = {
             ...waypoint,
