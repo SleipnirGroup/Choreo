@@ -1,3 +1,1 @@
-[toolchain]
-channel = "1.70.0"
-targets = ["x86_64-pc-windows-gnu"]
+
