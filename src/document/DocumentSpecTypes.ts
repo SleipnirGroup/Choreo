@@ -59,12 +59,8 @@ export let VERSIONS = {
       return updated;
     },
     validate: (document: v0_0_0): boolean => {
-      const ajv = new Ajv();
-      const isValid = ajv.validate(v0_0_0_Schema, document);
-      // if (ajv.errors != null) {
-        console.error(ajv.errors?.map((e) => e.message));
-      // }
-      return isValid;
+      const ajv = new Ajv();      
+      return ajv.validate(v0_0_0_Schema, document);
     },
   },
   "v0.0.1": {
@@ -73,11 +69,7 @@ export let VERSIONS = {
     },
     validate: (document: v0_0_1): boolean => {
       const ajv = new Ajv();
-      const isValid = ajv.validate(v0_0_1_Schema, document);
-      // if (ajv.errors != null) {
-        console.error(ajv.errors?.map((e) => e.message));
-      // }
-      return isValid;
+      return ajv.validate(v0_0_1_Schema, document);
     },
   },
 };
