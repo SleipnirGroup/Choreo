@@ -58,18 +58,18 @@ export let VERSIONS = {
       }
       return updated;
     },
-    validate: (document: any): boolean => {
+    validate: (document: v0_0_0): boolean => {
       const ajv = new Ajv();
-      return ajv.validate(v0_0_0_Schema, document.model.asSavedDocument());
+      return ajv.validate(v0_0_0_Schema, document);
     },
   },
   "v0.0.1": {
     up: (document: any): v0_0_1 => {
       return document as v0_0_1;
     },
-    validate: (document: any): boolean => {
+    validate: (document: v0_0_1): boolean => {
       const ajv = new Ajv();
-      return ajv.validate(v0_0_1_Schema, document.model.asSavedDocument());
+      return ajv.validate(v0_0_1_Schema, document);
     },
   },
 };
