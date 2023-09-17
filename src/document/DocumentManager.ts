@@ -3,8 +3,8 @@ import StateStore, { IStateStore } from "./DocumentModel";
 import { dialog, fs } from "@tauri-apps/api";
 import { v4 as uuidv4 } from "uuid";
 import { applySnapshot } from "mobx-state-tree";
-import Ajv from "ajv";
 import documentSchema from "./previousSpecs/v0.0.1.json";
+import { VERSIONS } from "./DocumentSpecTypes";
  
 
 export class DocumentManager {
@@ -118,10 +118,9 @@ export class DocumentManager {
   }
 
   async saveFile() {
-    const ajv = new Ajv();
     const content = JSON.stringify(this.model.asSavedDocument(), undefined, 4);
-    if (!ajv.validate(documentSchema, JSON.parse(content))) {
-      console.error("Invalid Doc JSON: " + ajv.errors?.map((e) => e.message + "\n" + JSON.stringify(documentSchema) + "\n" + content));
+    if (!VERSIONS["v0.0.1"].validate(this.model.asSavedDocument())) {
+      console.error("Invalid Doc JSON: " + "\n" + JSON.stringify(documentSchema) + "\n" + content);
       return;
     }
     const filePath = await dialog.save({
