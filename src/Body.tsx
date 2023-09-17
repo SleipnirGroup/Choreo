@@ -6,6 +6,7 @@ import Field from "./components/field/Field";
 import Sidebar from "./components/sidebar/Sidebar";
 import PathAnimationSlider from "./components/field/PathAnimationSlider";
 import AppMenu from "./AppMenu";
+import PathAnimationPanel from "./components/field/PathAnimationPanel";
 
 type Props = {};
 
@@ -29,6 +30,7 @@ class Body extends Component<Props, State> {
                 flexDirection: "row",
                 flexGrow: 1,
                 height: 0,
+                width:"100%"
               }}
             >
               <Sidebar></Sidebar>
@@ -37,13 +39,14 @@ class Body extends Component<Props, State> {
                   display: "flex",
                   flexDirection: "column",
                   flexGrow: 1,
+                  width:0
                 }}
               >
                 <Navbar></Navbar>
                 <Field></Field>
               </span>
             </span>
-            <PathAnimationSlider></PathAnimationSlider>
+            <PathAnimationPanel></PathAnimationPanel>
           </div>
         </div>
       </>

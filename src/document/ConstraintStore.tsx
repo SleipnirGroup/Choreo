@@ -62,7 +62,6 @@ export type ConstraintDefinition = {
   description: string;
   wptScope: boolean;
   sgmtScope: boolean;
-  fullPathScope: boolean;
   properties: {
     [key: string]: ConstraintPropertyDefinition;
   };
@@ -84,8 +83,7 @@ export const constraints = {
       },
     },
     wptScope: true,
-    sgmtScope: false,
-    fullPathScope: false,
+    sgmtScope: false
   },
   WptZeroVelocity: {
     name: "Waypoint Zero Velocity",
@@ -94,8 +92,7 @@ export const constraints = {
     icon: <Dangerous></Dangerous>,
     properties: {},
     wptScope: true,
-    sgmtScope: false,
-    fullPathScope: false,
+    sgmtScope: false
   },
   MaxVelocity: {
     name: "Max Velocity",
@@ -110,8 +107,7 @@ export const constraints = {
       },
     },
     wptScope: true,
-    sgmtScope: true,
-    fullPathScope: false,
+    sgmtScope: true
   },
   ZeroAngularVelocity: {
     name: "Zero Angular Velocity",
@@ -120,8 +116,7 @@ export const constraints = {
     icon: <SyncDisabledOutlined></SyncDisabledOutlined>,
     properties: {},
     wptScope: true,
-    sgmtScope: true,
-    fullPathScope: false,
+    sgmtScope: true
   },
   StraightLine: {
     name: "Straight Line",
@@ -130,8 +125,7 @@ export const constraints = {
     icon: <Timeline></Timeline>,
     properties: {},
     wptScope: false,
-    sgmtScope: true,
-    fullPathScope: false,
+    sgmtScope: true
   },
 };
 const WaypointUUIDScope = types.model("WaypointScope", {
@@ -151,33 +145,32 @@ export const ConstraintStore = types
   .model("ConstraintStore", {
     scope: types.array(WaypointScope),
     type: types.optional(types.string, ""),
-    uuid: types.identifier,
-  })
-  .views((self) => ({
-    getType() {
-      return "";
-    },
-    get wptScope() {
-      return false;
-    },
-    get sgmtScope() {
-      return false;
-    },
-    get fullPathScope() {
-      return false;
-    },
-    get definition(): ConstraintDefinition {
-      return {
+    definition: types.frozen<ConstraintDefinition>(
+      {
         name: "Default",
         shortName: "Default",
         description: "",
         sgmtScope: false,
         wptScope: false,
-        fullPathScope: false,
         icon: <PriorityHigh></PriorityHigh>,
         properties: {},
-      };
+      }
+    ),
+    uuid: types.identifier,
+  })
+  .views((self) => ({
+    getType() {
+      return self.type ?? "";
     },
+    get wptScope() {
+      return self.definition.wptScope;
+    },
+    get sgmtScope() {
+      return self.definition.sgmtScope;
+    },
+    // get definition(): ConstraintDefinition {
+    //   return self.definition;
+    // },
     get selected(): boolean {
       if (!isAlive(self)) {
         return false;
@@ -305,23 +298,6 @@ const defineConstraintStore = (
 ) => {
   return (
     ConstraintStore.named(`${key}Store`)
-      .views((self) => ({
-        getType() {
-          return key;
-        },
-        get wptScope() {
-          return definition.wptScope;
-        },
-        get sgmtScope() {
-          return definition.sgmtScope;
-        },
-        get fullPathScope() {
-          return definition.fullPathScope;
-        },
-        get definition() {
-          return definition;
-        },
-      }))
       // Define each property onto the model
       .props(
         (() => {
@@ -339,6 +315,7 @@ const defineConstraintStore = (
       )
       .props({
         type: key,
+        definition: types.frozen(definition)
       })
       // Defined setters for each property
       .actions((self) => {

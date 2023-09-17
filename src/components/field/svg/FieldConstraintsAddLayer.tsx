@@ -89,15 +89,12 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                       let constraintToAdd =
                         this.context.model.uiState.getSelectedConstraint();
                       let newConstraint =
-                        activePath.addConstraint(constraintToAdd);
+                        activePath.addConstraint(constraintToAdd, [
+                          { uuid: point1.uuid },
+                          { uuid: point2.uuid },
+                        ]);
 
                       if (newConstraint !== undefined) {
-                        if (newConstraint.sgmtScope) {
-                          newConstraint.setScope([
-                            { uuid: point1.uuid },
-                            { uuid: point2.uuid },
-                          ]);
-                        }
                         this.context.model.uiState.setSelectedSidebarItem(
                           newConstraint
                         );

@@ -143,11 +143,22 @@ async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfi
           match scope {
             ChoreoConstraintScope::Waypoint(idx) => {},
             ChoreoConstraintScope::Segment(idx) => {
-              let x1 = path[idx[0]].x;
-              let x2 = path[idx[1]].x;
-              let y1 = path[idx[0]].y;
-              let y2 = path[idx[1]].y;
-              path_builder.sgmt_linear_velocity_direction(fix_scope(idx[0], &rm) , fix_scope(idx[1], &rm), (y2-y1).atan2(x2-x1))
+              println!("Scope {} {}", idx[0], idx[1]);
+              for point in idx[0]..idx[1] {
+                let this_pt = fix_scope(point, &rm);
+                let next_pt = fix_scope(point+1, &rm);
+                println!("{} {}", this_pt, next_pt);
+                if (this_pt != fix_scope(idx[0], &rm)) {
+                  // points in between straight-line segments are automatically zero-velocity points
+                  path_builder.wpt_linear_velocity_max_magnitude(this_pt, 0.0f64);
+                }
+                let x1 = path[this_pt].x;
+                let x2 = path[next_pt].x;
+                let y1 = path[this_pt].y;
+                let y2 = path[next_pt].y;
+                path_builder.sgmt_linear_velocity_direction(this_pt , next_pt, (y2-y1).atan2(x2-x1))
+              }
+
             }}
         },
         // add more cases here to impl each constraint.

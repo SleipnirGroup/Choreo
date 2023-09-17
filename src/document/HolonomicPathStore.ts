@@ -19,6 +19,7 @@ import {
   ConstraintStores,
   IWaypointScope,
   WaypointID,
+  WaypointScope,
 } from "./ConstraintStore";
 import { SavedWaypointId } from "./previousSpecs/v0_1";
 
@@ -124,6 +125,15 @@ export const HolonomicPathStore = types
   })
   .views((self) => {
     return {
+      waypointTimestamps(): number[] {
+        let wptTimes: number[] = [];
+        if (self.generated.length >= 40) {
+          for (let i = 0; i < self.generated.length / 40; i++) {
+            wptTimes.push(self.generated[i * 40].timestamp);
+          }
+        }
+        return wptTimes;
+      },
       asSolverPath() {
         let savedPath = self.asSavedPath();
         let originalGuessIndices: number[] = [];
@@ -167,12 +177,17 @@ export const HolonomicPathStore = types
   .actions((self) => {
     return {
       addConstraint(
-        store: typeof ConstraintStore | undefined
+        store: typeof ConstraintStore | undefined,
+        scope?: Array<Instance<typeof WaypointScope>>
       ): Instance<typeof ConstraintStore> | undefined {
         if (store === undefined) {
           return;
         }
-        self.constraints.push(store.create({ uuid: uuidv4() }));
+        if (scope === undefined) {
+          self.constraints.push(store.create({ uuid: uuidv4() }));
+        } else {
+          self.constraints.push(store.create({ uuid: uuidv4(), scope }));
+        }
         return self.constraints[self.constraints.length - 1];
       },
     };
@@ -280,9 +295,6 @@ export const HolonomicPathStore = types
         savedPath.constraints.forEach((saved: SavedConstraint) => {
           let constraintStore = ConstraintStores[saved.type];
           if (constraintStore !== undefined) {
-            let constraint = self.addConstraint(constraintStore) as Instance<
-              typeof ConstraintStore
-            >;
             let savedWaypointIdToWaypointId = (savedId: SavedWaypointId) => {
               if (savedId === "first") {
                 return "first";
@@ -292,7 +304,7 @@ export const HolonomicPathStore = types
                 return { uuid: self.waypoints[savedId].uuid as string };
               }
             };
-            constraint.setScope(
+            self.addConstraint(constraintStore, 
               saved.scope.map((id) => savedWaypointIdToWaypointId(id))
             );
           }
