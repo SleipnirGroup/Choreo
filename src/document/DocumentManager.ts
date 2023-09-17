@@ -70,10 +70,10 @@ export class DocumentManager {
   async onFileUpload(file: File | null) {
     await this.parseFile(file)
       .then((content) => {
-        if (validate(JSON.parse(content))) {
+        if (VERSIONS["v0.0.1"].validate(JSON.parse(content))) {
           this.model.fromSavedDocument(JSON.parse(content));
         } else {
-          console.error("Invalid Document JSON:\n" + content);
+          console.error("Invalid Document JSON:");
         }
       })
       .catch((err) => console.log(err));
