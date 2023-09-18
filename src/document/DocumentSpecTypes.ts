@@ -85,7 +85,7 @@ export let VERSIONS = {
         path.waypoints.forEach((waypoint, index) => {
           let updatedWaypoint: v0_1_Waypoint = {
             ...waypoint,
-            isInitialGuess: false
+            isInitialGuess: false,
           };
           updated.paths[entry].waypoints[index] = updatedWaypoint;
         });
