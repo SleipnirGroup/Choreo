@@ -304,7 +304,8 @@ export const HolonomicPathStore = types
                 return { uuid: self.waypoints[savedId].uuid as string };
               }
             };
-            self.addConstraint(constraintStore, 
+            self.addConstraint(
+              constraintStore,
               saved.scope.map((id) => savedWaypointIdToWaypointId(id))
             );
           }

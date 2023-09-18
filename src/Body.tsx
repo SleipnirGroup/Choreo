@@ -30,7 +30,7 @@ class Body extends Component<Props, State> {
                 flexDirection: "row",
                 flexGrow: 1,
                 height: 0,
-                width:"100%"
+                width: "100%",
               }}
             >
               <Sidebar></Sidebar>
@@ -39,7 +39,7 @@ class Body extends Component<Props, State> {
                   display: "flex",
                   flexDirection: "column",
                   flexGrow: 1,
-                  width:0
+                  width: 0,
                 }}
               >
                 <Navbar></Navbar>

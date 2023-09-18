@@ -83,7 +83,7 @@ export const constraints = {
       },
     },
     wptScope: true,
-    sgmtScope: false
+    sgmtScope: false,
   },
   WptZeroVelocity: {
     name: "Waypoint Zero Velocity",
@@ -92,7 +92,7 @@ export const constraints = {
     icon: <Dangerous></Dangerous>,
     properties: {},
     wptScope: true,
-    sgmtScope: false
+    sgmtScope: false,
   },
   MaxVelocity: {
     name: "Max Velocity",
@@ -107,7 +107,7 @@ export const constraints = {
       },
     },
     wptScope: true,
-    sgmtScope: true
+    sgmtScope: true,
   },
   ZeroAngularVelocity: {
     name: "Zero Angular Velocity",
@@ -116,7 +116,7 @@ export const constraints = {
     icon: <SyncDisabledOutlined></SyncDisabledOutlined>,
     properties: {},
     wptScope: true,
-    sgmtScope: true
+    sgmtScope: true,
   },
   StraightLine: {
     name: "Straight Line",
@@ -125,7 +125,7 @@ export const constraints = {
     icon: <Timeline></Timeline>,
     properties: {},
     wptScope: false,
-    sgmtScope: true
+    sgmtScope: true,
   },
 };
 const WaypointUUIDScope = types.model("WaypointScope", {
@@ -145,17 +145,15 @@ export const ConstraintStore = types
   .model("ConstraintStore", {
     scope: types.array(WaypointScope),
     type: types.optional(types.string, ""),
-    definition: types.frozen<ConstraintDefinition>(
-      {
-        name: "Default",
-        shortName: "Default",
-        description: "",
-        sgmtScope: false,
-        wptScope: false,
-        icon: <PriorityHigh></PriorityHigh>,
-        properties: {},
-      }
-    ),
+    definition: types.frozen<ConstraintDefinition>({
+      name: "Default",
+      shortName: "Default",
+      description: "",
+      sgmtScope: false,
+      wptScope: false,
+      icon: <PriorityHigh></PriorityHigh>,
+      properties: {},
+    }),
     uuid: types.identifier,
   })
   .views((self) => ({
@@ -315,7 +313,7 @@ const defineConstraintStore = (
       )
       .props({
         type: key,
-        definition: types.frozen(definition)
+        definition: types.frozen(definition),
       })
       // Defined setters for each property
       .actions((self) => {

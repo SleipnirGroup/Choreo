@@ -14,7 +14,7 @@ export class DocumentManager {
     this.model.document.history.canRedo && this.model.document.history.redo();
   }
   get history() {
-    console.log(toJS(this.model.document.history.history))
+    console.log(toJS(this.model.document.history.history));
     return this.model.document.history;
   }
   model: IStateStore;
