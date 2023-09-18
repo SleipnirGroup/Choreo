@@ -5,18 +5,18 @@ use trajoptlib::{SwervePathBuilder, HolonomicTrajectory, SwerveDrivetrain, Swerv
 // A way to make properties that exist on all enum variants accessible from the generic variant
 // I have no idea how it works but it came from
 // https://users.rust-lang.org/t/generic-referencing-enum-inner-data/66342/9
-macro_rules! define_enum_macro {
-  ($Type:ident, $($variant:ident),+ $(,)?) => {
-      define_enum_macro!{#internal, [$], $Type, $($variant),+}
-  };
-  (#internal, [$dollar:tt], $Type:ident, $($variant:ident),+) => {
-      macro_rules! $Type {
-          ($dollar($field:ident $dollar(: $p:pat)?,)* ..) => {
-              $($Type::$variant { $dollar($field $dollar(: $p)?,)* .. } )|+
-          }
-      }
-  };
-}
+// macro_rules! define_enum_macro {
+//   ($Type:ident, $($variant:ident),+ $(,)?) => {
+//       define_enum_macro!{#internal, [$], $Type, $($variant),+}
+//   };
+//   (#internal, [$dollar:tt], $Type:ident, $($variant:ident),+) => {
+//       macro_rules! $Type {
+//           ($dollar($field:ident $dollar(: $p:pat)?,)* ..) => {
+//               $($Type::$variant { $dollar($field $dollar(: $p)?,)* .. } )|+
+//           }
+//       }
+//   };
+// }
 
 #[allow(non_snake_case)]
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -69,11 +69,11 @@ enum Constraints {
   StraightLine{scope:ChoreoConstraintScope}
 }
 // Also add the constraint type here
-define_enum_macro!(Constraints, BoundsZeroVelocity, WptVelocityDirection, WptZeroVelocity);
+//define_enum_macro!(BoundsZeroVelocity, WptVelocityDirection, WptZeroVelocity);
 
-fn fix_scope(idx: usize, removedIdxs: &Vec<usize>) -> usize {
+fn fix_scope(idx: usize, removed_idxs: &Vec<usize>) -> usize {
   let mut to_subtract: usize = 0;
-  for removed in removedIdxs {
+  for removed in removed_idxs {
       if *removed < idx {
         to_subtract += 1;
       }
@@ -141,14 +141,13 @@ async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfi
         },
         Constraints::StraightLine { scope } => {
           match scope {
-            ChoreoConstraintScope::Waypoint(idx) => {},
             ChoreoConstraintScope::Segment(idx) => {
               println!("Scope {} {}", idx[0], idx[1]);
               for point in idx[0]..idx[1] {
                 let this_pt = fix_scope(point, &rm);
                 let next_pt = fix_scope(point+1, &rm);
                 println!("{} {}", this_pt, next_pt);
-                if (this_pt != fix_scope(idx[0], &rm)) {
+                if this_pt != fix_scope(idx[0], &rm) {
                   // points in between straight-line segments are automatically zero-velocity points
                   path_builder.wpt_linear_velocity_max_magnitude(this_pt, 0.0f64);
                 }
@@ -159,7 +158,7 @@ async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfi
                 path_builder.sgmt_linear_velocity_direction(this_pt , next_pt, (y2-y1).atan2(x2-x1))
               }
 
-            }}
+            }, _=>{}}
         },
         // add more cases here to impl each constraint.
       }
