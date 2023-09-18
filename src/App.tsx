@@ -1,14 +1,14 @@
 import "./App.css";
-import { DocumentManager } from "./document/DocumentManager";
+import DocumentManagerContext, {
+  DocumentManager,
+} from "./document/DocumentManager";
 import { createContext } from "react";
 import { observer } from "mobx-react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Body from "./Body";
-function App() {
-  const DocumentManagerContext = createContext(null);
-  const documentManager = new DocumentManager();
 
+function App() {
   const buttonOverrides = {
     // Name of the slot
     root: ({ ownerState, theme }) => ({
@@ -52,12 +52,9 @@ function App() {
   return (
     <CssBaseline>
       <ThemeProvider theme={createTheme(themeOptions)}>
-        <DocumentManagerContext.Provider value={documentManager}>
-          <Body></Body>
-        </DocumentManagerContext.Provider>
+        <Body></Body>
       </ThemeProvider>
     </CssBaseline>
   );
 }
-
 export default observer(App);

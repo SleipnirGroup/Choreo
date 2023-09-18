@@ -2,6 +2,7 @@ import { Instance, types } from "mobx-state-tree";
 import { SavedPathList } from "./DocumentSpecTypes";
 import { HolonomicPathStore } from "./HolonomicPathStore";
 import { v4 as uuidv4 } from "uuid";
+import { ConstraintStores } from "./ConstraintStore";
 
 export const PathListStore = types
   .model("PathListStore", {
@@ -56,16 +57,22 @@ export const PathListStore = types
           disambig++;
         }
         let newUUID = uuidv4();
-        self.paths.put(
-          HolonomicPathStore.create({
-            uuid: newUUID,
-            name: usedName,
-            waypoints: [],
-          })
-        );
+        let path = HolonomicPathStore.create({
+          uuid: newUUID,
+          name: usedName,
+          waypoints: [],
+        });
+        path
+          .addConstraint(ConstraintStores.WptZeroVelocity)
+          ?.setScope(["first"]);
+        path
+          .addConstraint(ConstraintStores.WptZeroVelocity)
+          ?.setScope(["last"]);
+        self.paths.put(path);
         if (self.paths.size === 1 || select) {
           self.activePathUUID = newUUID;
         }
+
         return newUUID;
       },
     };

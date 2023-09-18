@@ -1,12 +1,22 @@
 import {
   Circle,
+  CircleOutlined,
   Grid4x4,
   Route,
-  Square,
   SquareOutlined,
 } from "@mui/icons-material";
-import { Instance, types } from "mobx-state-tree";
+import { getRoot, Instance, types } from "mobx-state-tree";
+import { ReactElement } from "react";
+import InitialGuessPoint from "../assets/InitialGuessPoint";
 import Waypoint from "../assets/Waypoint";
+import {
+  ConstraintDefinition,
+  constraints,
+  ConstraintStore,
+  ConstraintStores,
+  IConstraintStore,
+} from "./ConstraintStore";
+import { IStateStore } from "./DocumentModel";
 import {
   HolonomicWaypointStore,
   IHolonomicWaypointStore,
@@ -17,18 +27,28 @@ export const SelectableItem = types.union(
   {
     dispatcher: (snapshot) => {
       if (snapshot.mass) return RobotConfigStore;
+      if (snapshot.type) {
+        return ConstraintStores[snapshot.type];
+      }
       return HolonomicWaypointStore;
     },
   },
   RobotConfigStore,
-  HolonomicWaypointStore
+  HolonomicWaypointStore,
+  ...Object.values(ConstraintStores)
 );
 
 /* Navbar stuff */
-const NavbarData = {
+export let WaypointData: {
+  [key: string]: {
+    index: number;
+    name: string;
+    icon: ReactElement;
+  };
+} = {
   FullWaypoint: {
     index: 0,
-    name: "Full Waypoint",
+    name: "Pose Waypoint",
     icon: <Waypoint />,
   },
   TranslationWaypoint: {
@@ -36,8 +56,46 @@ const NavbarData = {
     name: "Translation Waypoint",
     icon: <Circle />,
   },
+  EmptyWaypoint: {
+    index: 2,
+    name: "Empty Waypoint",
+    icon: <CircleOutlined />,
+  },
+  InitialGuessPoint: {
+    index: 3,
+    name: "Initial Guess Point",
+    icon: <InitialGuessPoint />,
+  },
 };
+let NavbarData: {
+  [key: string]: {
+    index: number;
+    name: string;
+    icon: ReactElement;
+  };
+} = Object.assign({}, WaypointData);
+const waypointNavbarCount = Object.keys(NavbarData).length;
+let constraintsIndices: number[] = [];
+let navbarIndexToConstraint: { [key: number]: typeof ConstraintStore } = {};
+let navbarIndexToConstraintDefinition: { [key: number]: ConstraintDefinition } =
+  {};
+{
+  let constraintsOffset = Object.keys(NavbarData).length;
+  Object.entries(constraints).forEach(([key, data], index) => {
+    NavbarData[key] = {
+      index: constraintsOffset,
+      name: data.name,
+      icon: data.icon,
+    };
+    navbarIndexToConstraint[constraintsOffset] = ConstraintStores[key];
+    navbarIndexToConstraintDefinition[constraintsOffset] = data;
+    constraintsIndices.push(constraintsOffset);
+    constraintsOffset++;
+  });
+}
+const constraintNavbarCount = Object.keys(constraints).length;
 
+/** An map of  */
 export const NavbarLabels = (() => {
   let x: { [key: string]: number } = {};
   Object.entries(NavbarData).forEach(([key, data], index) => {
@@ -46,17 +104,26 @@ export const NavbarLabels = (() => {
   return x;
 })();
 
+/** An array of name-and-icon objects for the navbar */
 export const NavbarItemData = (() => {
   let x: Array<{ name: string; icon: any }> = [];
+  let constraintsOffset = 0;
   Object.entries(NavbarData).forEach(([key, data], index) => {
     x[data.index] = { name: data.name, icon: data.icon };
+    constraintsOffset++;
   });
   return x;
 })();
 
+export const NavbarItemSectionLengths = [
+  waypointNavbarCount - 1,
+  waypointNavbarCount + constraintNavbarCount - 1,
+];
+
 export type SelectableItemTypes =
   | IRobotConfigStore
   | IHolonomicWaypointStore
+  | IConstraintStore
   | undefined;
 
 /* Visibility stuff */
@@ -116,11 +183,25 @@ export const UIStateStore = types
   })
   .views((self: any) => {
     return {
+      getSelectedConstraint() {
+        return navbarIndexToConstraint[self.selectedNavbarItem] ?? undefined;
+      },
+      getSelectedConstraintDefinition() {
+        return (
+          navbarIndexToConstraintDefinition[self.selectedNavbarItem] ??
+          undefined
+        );
+      },
       isNavbarWaypointSelected() {
         return (
           self.selectedNavbarItem == NavbarLabels.FullWaypoint ||
-          self.selectedNavbarItem == NavbarLabels.TranslationWaypoint
+          self.selectedNavbarItem == NavbarLabels.TranslationWaypoint ||
+          self.selectedNavbarItem == NavbarLabels.EmptyWaypoint ||
+          self.selectedNavbarItem == NavbarLabels.InitialGuessPoint
         );
+      },
+      isConstraintSelected() {
+        return self.selectedNavbarItem > NavbarItemSectionLengths[0];
       },
       visibleLayersOnly() {
         return self.layers.flatMap((visible: boolean, index: number) => {

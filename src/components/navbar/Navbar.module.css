@@ -4,6 +4,7 @@
   display: flex;
   padding-right: 0;
   font-size: 1rem;
+  width: 100%;
   border: 0;
   align-items: center;
   flex-direction: row;
@@ -11,6 +12,8 @@
   min-height: var(--top-nav-height);
   height: var(--top-nav-height);
   border-bottom: thin solid var(--divider-gray);
+  overflow-x: scroll;
+  overflow-y: hidden;
 }
 
 .PathChooserContainer {

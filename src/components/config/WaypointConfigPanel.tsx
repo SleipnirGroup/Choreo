@@ -1,10 +1,20 @@
 import { observer } from "mobx-react";
-import React, { Component } from "react";
+import React, { Component, ReactElement } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import Input from "../input/Input";
 import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../input/InputList";
+import {
+  RadioGroup,
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
+} from "@mui/material";
+import { WaypointData } from "../../document/UIStateStore";
+import Waypoint from "../../assets/Waypoint";
+import { Circle, CircleOutlined, Help } from "@mui/icons-material";
+import inputStyles from "../input/InputList.module.css";
 
 type Props = { waypoint: IHolonomicWaypointStore | null };
 
@@ -22,67 +32,76 @@ class WaypointPanel extends Component<Props, State> {
   }
   render() {
     let { waypoint } = this.props;
+    let waypointType = this.props.waypoint?.type;
     if (this.isWaypointNonNull(waypoint)) {
       return (
         <div className={styles.WaypointPanel}>
-          <InputList>
+          <InputList noCheckbox>
             <Input
               title="x"
               suffix="m"
-              enabled={waypoint.translationConstrained}
-              setEnabled={(enabled) =>
-                waypoint!.setTranslationConstrained(enabled)
-              }
+              showCheckbox={false}
+              enabled={true}
+              setEnabled={(_) => {}}
               number={waypoint.x}
               setNumber={(x) => waypoint!.setX(x)}
             ></Input>
             <Input
               title="y"
               suffix="m"
-              enabled={waypoint.translationConstrained}
-              setEnabled={(enabled) =>
-                waypoint!.setTranslationConstrained(enabled)
-              }
+              showCheckbox={false}
+              enabled={true}
+              setEnabled={(_) => {}}
               number={waypoint.y}
               setNumber={(y) => waypoint!.setY(y)}
             ></Input>
             <Input
               title="θ"
               suffix="rad"
+              showCheckbox={false}
               enabled={waypoint.headingConstrained}
-              setEnabled={(enabled) => waypoint!.setHeadingConstrained(enabled)}
+              setEnabled={(_) => {}}
               number={waypoint.heading}
               setNumber={(heading) => waypoint!.setHeading(heading)}
-              showCheckbox
-            ></Input>
-            <Input
-              title="dir(v)"
-              suffix="rad"
-              enabled={waypoint.velocityAngleConstrained}
-              setEnabled={waypoint!.setVelocityAngleConstrained}
-              number={waypoint.velocityAngle}
-              setNumber={waypoint!.setVelocityAngle}
-              showCheckbox
-            ></Input>
-            <Input
-              title="|v|"
-              suffix="m/s"
-              enabled={waypoint.velocityMagnitudeConstrained}
-              setEnabled={waypoint!.setVelocityMagnitudeConstrained}
-              number={waypoint.velocityMagnitude}
-              setNumber={waypoint!.setVelocityMagnitude}
-              showCheckbox
-            ></Input>
-            <Input
-              title="ω"
-              suffix="rad/s"
-              enabled={waypoint.angularVelocityConstrained}
-              setEnabled={waypoint!.setAngularVelocityConstrained}
-              number={waypoint.angularVelocity}
-              setNumber={waypoint!.setAngularVelocity}
-              showCheckbox
             ></Input>
           </InputList>
+          <ToggleButtonGroup
+            sx={{ marginInline: "auto", paddingTop: "8px" }}
+            size="small"
+            exclusive
+            value={waypointType}
+            onChange={(e, newSelection) => {
+              waypoint?.setType(newSelection);
+            }}
+          >
+            {Object.entries(WaypointData).map((entry) => {
+              let waypoint: {
+                index: number;
+                name: string;
+                icon: ReactElement;
+              } = entry[1];
+              return (
+                <Tooltip
+                  disableInteractive
+                  key={waypoint.index}
+                  value={waypoint.index}
+                  title={waypoint.name}
+                >
+                  <ToggleButton
+                    value={waypoint.index}
+                    sx={{
+                      color: "var(--accent-purple)",
+                      "&.Mui-selected": {
+                        color: "var(--select-yellow)",
+                      },
+                    }}
+                  >
+                    {waypoint.icon}
+                  </ToggleButton>
+                </Tooltip>
+              );
+            })}
+          </ToggleButtonGroup>
         </div>
       );
     }
