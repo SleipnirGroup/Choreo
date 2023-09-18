@@ -37,7 +37,7 @@ jobs:
 
       - name: Set to Windows GNU Rust Toolchain
         if: matrix.os == 'windows-2022'
-        run: "rustup install 1.70-gnu && rustup default 1.70-gnu"
+        run: "rustup install 1.69-gnu && rustup default 1.69-gnu"
 
       - name: Set to macOS arm64 Rust Toolchain
         if: matrix.os == 'macOS-12' && matrix.arm64 == true

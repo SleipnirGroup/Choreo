@@ -12,6 +12,7 @@ import UploadIcon from "@mui/icons-material/UploadFile";
 import FileDownload from "@mui/icons-material/FileDownload";
 import { NoteAddOutlined, Redo, Undo } from "@mui/icons-material";
 import Add from "@mui/icons-material/Add";
+import SidebarConstraint from "./SidebarConstraint";
 
 type Props = {};
 type State = {};
@@ -55,24 +56,28 @@ class Sidebar extends Component<Props, State> {
           </span>
           <span>
             <Tooltip title="Undo">
-              <IconButton
-                disabled={!this.context.history.canUndo}
-                onClick={() => {
-                  this.context.undo();
-                }}
-              >
-                <Undo></Undo>
-              </IconButton>
+              <span>
+                <IconButton
+                  disabled={!this.context.history.canUndo}
+                  onClick={() => {
+                    this.context.undo();
+                  }}
+                >
+                  <Undo></Undo>
+                </IconButton>
+              </span>
             </Tooltip>
             <Tooltip title="Redo">
-              <IconButton
-                disabled={!this.context.history.canRedo}
-                onClick={() => {
-                  this.context.redo();
-                }}
-              >
-                <Redo></Redo>
-              </IconButton>
+              <span>
+                <IconButton
+                  disabled={!this.context.history.canRedo}
+                  onClick={() => {
+                    this.context.redo();
+                  }}
+                >
+                  <Redo></Redo>
+                </IconButton>
+              </span>
             </Tooltip>
           </span>
         </div>
@@ -118,6 +123,21 @@ class Sidebar extends Component<Props, State> {
           </Divider>
 
           <WaypointList></WaypointList>
+          <Divider className={styles.SidebarDivider} textAlign="left" flexItem>
+            <span>CONSTRAINTS</span>
+          </Divider>
+          <div className={styles.WaypointList}>
+            {this.context.model.document.pathlist.activePath.constraints.map(
+              (constraint) => {
+                return (
+                  <SidebarConstraint
+                    key={constraint.uuid}
+                    constraint={constraint}
+                  ></SidebarConstraint>
+                );
+              }
+            )}
+          </div>
         </div>
         <Divider></Divider>
       </div>

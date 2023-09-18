@@ -2,146 +2,88 @@ import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
 import Slider from "@mui/material/Slider";
-import IconButton from "@mui/material/IconButton";
-import PlayIcon from "@mui/icons-material/PlayArrow";
-import PauseIcon from "@mui/icons-material/Pause";
-import { autorun } from "mobx";
 import { Tooltip } from "@mui/material";
+import { NavbarItemData } from "../../document/UIStateStore";
 
 type Props = {};
 
-type State = {
-  running: boolean;
-};
+type State = {};
 
 class PathAnimationSlider extends Component<Props, State> {
-  state = {
-    running: false,
-  };
   static contextType = DocumentManagerContext;
   // @ts-ignore
   context!: React.ContextType<typeof DocumentManagerContext>;
-  timerId: number | undefined;
-
-  onStart() {
-    this.setState({ running: true });
-    if (
-      Math.abs(
-        this.context.model.document.pathlist.activePath.getTotalTimeSeconds() -
-          this.context.model.uiState.pathAnimationTimestamp
-      ) < 0.1
-    ) {
-      this.context.model.uiState.setPathAnimationTimestamp(0);
-    }
-    this.timerId = window.setInterval(() => {
-      if (
-        this.context.model.uiState.pathAnimationTimestamp >
-        this.context.model.document.pathlist.activePath.getTotalTimeSeconds()
-      ) {
-        this.context.model.uiState.setPathAnimationTimestamp(0);
-        return;
-      }
-      this.context.model.uiState.setPathAnimationTimestamp(
-        this.context.model.uiState.pathAnimationTimestamp + 0.01
-      );
-    }, 10);
-  }
-
-  onStop() {
-    this.setState({ running: false });
-    window.clearInterval(this.timerId);
-  }
-  componentDidMount(): void {
-    autorun(() => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      let activePath = this.context.model.document.pathlist.activePathUUID;
-      this.onStop();
-    });
-  }
+  totalTime = 0;
   render() {
+    let activePath = this.context.model.document.pathlist.activePath;
+    this.totalTime = activePath.getTotalTimeSeconds();
     return (
-      <div
-        style={{
-          color: "white",
-          gap: "1rem",
-          width: "100%",
-          height: "2rem",
-          backgroundColor: "var(--background-dark-gray)",
-          paddingLeft: "10px",
-          paddingRight: "10px",
-          boxSizing: "border-box",
-          display: "block",
-          borderTop: "thin solid var(--divider-gray)",
-        }}
-      >
-        <span
-          style={{
-            display:
-              this.context.model.document.pathlist.activePath.generated
-                .length >= 2
-                ? "flex"
-                : "none",
-            flexDirection: "row",
-            width: "100%",
-            height: "100%",
-            gap: "10px",
-          }}
-        >
-          <Tooltip
-            title={
-              this.state.running
-                ? "Pause Path Animation"
-                : "Play Path Animation"
-            }
-          >
-            <IconButton
-              color="default"
-              onClick={() => {
-                if (this.state.running) {
-                  this.onStop();
-                } else {
-                  this.onStart();
-                }
-              }}
-            >
-              {this.state.running ? (
-                <PauseIcon></PauseIcon>
-              ) : (
-                <PlayIcon></PlayIcon>
-              )}
-            </IconButton>
-          </Tooltip>
-          <Slider
-            defaultValue={0}
-            step={0.01}
-            min={0}
-            max={this.context.model.document.pathlist.activePath.getTotalTimeSeconds()}
-            aria-label="Default"
-            valueLabelDisplay="auto"
-            valueLabelFormat={(x: number) => x.toFixed(2)}
-            value={this.context.model.uiState.pathAnimationTimestamp}
-            onChange={(e, newVal) =>
-              this.context.model.uiState.setPathAnimationTimestamp(
-                newVal as number
-              )
-            }
-            sx={{
-              flexGrow: "1",
-              width: "2",
-
-              ".MuiSlider-track, .MuiSlider-thumb": {
-                transition: "unset",
-                WebkitTransition: "unset",
+      <>
+        <Slider
+          defaultValue={0}
+          step={0.01}
+          min={0}
+          max={this.totalTime}
+          marks={
+            activePath.generated.length > 0
+              ? activePath.nonGuessPoints.map((point, idx) => ({
+                  value: activePath.waypointTimestamps()[idx],
+                  label: (
+                    <Tooltip title={idx + 1} key={idx + 1}>
+                      <span>
+                        {React.cloneElement(NavbarItemData[point.type].icon, {
+                          htmlColor: point.selected
+                            ? "var(--select-yellow)"
+                            : "white",
+                        })}
+                      </span>
+                    </Tooltip>
+                  ),
+                }))
+              : false
+          }
+          aria-label="Default"
+          valueLabelDisplay="auto"
+          valueLabelFormat={(x: number) => x.toFixed(2)}
+          value={this.context.model.uiState.pathAnimationTimestamp}
+          onChange={(e, newVal) =>
+            this.context.model.uiState.setPathAnimationTimestamp(
+              newVal as number
+            )
+          }
+          sx={{
+            flexGrow: "1",
+            width: "2",
+            marginInline: "10px",
+            ".MuiSlider-track, .MuiSlider-thumb": {
+              transition: "unset",
+              WebkitTransition: "unset",
+            },
+            ".MuiSlider-thumb": {
+              width: "24px",
+              height: "24px",
+              zIndex: 2,
+              ":hover,:active": {
+                width: "24px",
+                height: "24px",
               },
-            }}
-          />
-          <span
-            style={{ minWidth: "2.5rem" }}
-          >{`${this.context.model.uiState.pathAnimationTimestamp.toFixed(
-            1
-          )} s`}</span>
-        </span>
-      </div>
+            },
+            ".MuiSlider-mark": {
+              display: "none",
+            },
+            ".MuiSlider-markLabel": {
+              top: "unset",
+              transform: "translateX(-50%) translateY(-10px)",
+              zIndex: 1,
+            },
+          }}
+        />
+        <span
+          style={{ width: "min-content", whiteSpace: "nowrap" }}
+        >{`${this.context.model.uiState.pathAnimationTimestamp.toFixed(
+          1
+        )} s / ${this.totalTime.toFixed(1)} s`}</span>
+      </>
     );
   }
 }

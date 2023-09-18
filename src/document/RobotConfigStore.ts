@@ -110,6 +110,24 @@ export const RobotConfigStore = types
             L ${self.bumperLength / 2} ${self.bumperWidth / 2}
             `;
       },
+      dashedBumperSVGElement() {
+        return `M ${self.bumperLength / 2} ${self.bumperWidth / 4}
+            L ${self.bumperLength / 2} ${self.bumperWidth / 2}
+            L ${self.bumperLength / 4} ${self.bumperWidth / 2}
+
+            M ${-self.bumperLength / 4} ${self.bumperWidth / 2}
+            L ${-self.bumperLength / 2} ${self.bumperWidth / 2}
+            L ${-self.bumperLength / 2} ${self.bumperWidth / 4}
+
+            M ${-self.bumperLength / 2} ${-self.bumperWidth / 4}
+            L ${-self.bumperLength / 2} ${-self.bumperWidth / 2}
+            L ${-self.bumperLength / 4} ${-self.bumperWidth / 2}
+
+            M ${self.bumperLength / 4} ${-self.bumperWidth / 2}
+            L ${self.bumperLength / 2} ${-self.bumperWidth / 2}
+            L ${self.bumperLength / 2} ${-self.bumperWidth / 4}
+            `;
+      },
     };
   });
 export interface IRobotConfigStore extends Instance<typeof RobotConfigStore> {}

@@ -12,6 +12,8 @@ import { SelectableItemTypes, UIStateStore } from "./UIStateStore";
 import { PathListStore } from "./PathListStore";
 import { TrajectorySampleStore } from "./TrajectorySampleStore";
 import { UndoManager } from "mst-middlewares";
+import { IHolonomicPathStore } from "./HolonomicPathStore";
+import { toJS } from "mobx";
 
 export const DocumentStore = types
   .model("DocumentStore", {
@@ -61,15 +63,50 @@ const StateStore = types
         if (pathStore === undefined) {
           return;
         }
-        pathStore.setTrajectory([]);
-        if (pathStore.waypoints.length < 2) {
-          return;
-        }
-        pathStore.setGenerating(true);
-        invoke("generate_trajectory", {
-          path: pathStore.waypoints,
-          config: self.document.robotConfig,
+        new Promise((resolve, reject) => {
+          pathStore.setTrajectory([]);
+          if (pathStore.waypoints.length < 2) {
+            return;
+          }
+          pathStore.constraints.forEach((constraint) => {
+            if (constraint.issues.length > 0) {
+              throw new Error(constraint.issues.join(", "));
+            }
+          });
+          pathStore.waypoints.forEach((wpt, idx) => {
+            if (wpt.isInitialGuess) {
+              if (idx == 0) {
+                throw new Error(
+                  "Cannot start a path with an initial guess point."
+                );
+              } else if (idx == pathStore.waypoints.length - 1) {
+                throw new Error(
+                  "Cannot end a path with an initial guess point."
+                );
+              }
+            }
+            if (wpt.isInitialGuess) {
+              if (idx == 0) {
+                throw new Error(
+                  "Cannot start a path with an initial guess point."
+                );
+              } else if (idx == pathStore.waypoints.length - 1) {
+                throw new Error(
+                  "Cannot end a path with an initial guess point."
+                );
+              }
+            }
+          });
+          pathStore.setGenerating(true);
+          resolve(pathStore);
         })
+          .then(() =>
+            invoke("generate_trajectory", {
+              path: pathStore.waypoints,
+              config: self.document.robotConfig,
+              constraints: pathStore.asSolverPath().constraints,
+            })
+          )
           .then((rust_traj) => {
             let newTraj: Array<SavedTrajectorySample> = [];
             // @ts-ignore
@@ -88,6 +125,7 @@ const StateStore = types
           })
           .finally(() => {
             pathStore.setGenerating(false);
+            self.uiState.setPathAnimationTimestamp(0);
           });
       },
     };

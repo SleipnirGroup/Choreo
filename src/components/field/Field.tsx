@@ -12,6 +12,8 @@ import Box from "@mui/material/Box/Box";
 import RobotConfigPanel from "../config/RobotConfigPanel";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import VisibilityPanel from "../config/VisibilityPanel";
+import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel";
+import { IConstraintStore } from "../../document/ConstraintStore";
 
 type Props = {};
 
@@ -38,6 +40,16 @@ export class Field extends Component<Props, State> {
             <WaypointPanel
               waypoint={selectedSidebar as IHolonomicWaypointStore}
             ></WaypointPanel>
+          )}
+        {selectedSidebar !== undefined &&
+          "type" in selectedSidebar &&
+          activePath.constraints.find(
+            (constraint) =>
+              constraint.uuid == (selectedSidebar as IConstraintStore)!.uuid
+          ) && (
+            <ConstraintsConfigPanel
+              constraint={selectedSidebar as IConstraintStore}
+            ></ConstraintsConfigPanel>
           )}
         {robotConfigOpen && (
           <div className={styles.WaypointPanel}>
