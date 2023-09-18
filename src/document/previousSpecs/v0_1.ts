@@ -1,5 +1,13 @@
-/** CHANGES from v0.0.0:
- * Removed xConstrained, yConstrained, replaced with a combined translationConstrained
+/** CHANGES from v0.0.1:
+ * Removed velocityMagnitude, velocityAngle, angularVelocity, 
+ * velocityMagnitudeConstrained, velocityAngleConstrained, angularVelocityConstrained
+ * from SavedWaypoint.
+ * 
+ * Added isInitialGuess to SavedWaypoint.
+ * 
+ * Added constraints to SavedPath.
+ * 
+ * Added SavedWaypointID, SavedConstraint.
  */
 
 export const SAVE_FILE_VERSION = "v0.1";

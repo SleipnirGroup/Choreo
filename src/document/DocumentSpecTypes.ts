@@ -30,6 +30,7 @@ import {
   SavedConstraint as v0_1_Constraint,
   SAVE_FILE_VERSION as v0_1_Version,
 } from "./previousSpecs/v0_1";
+import v0_1_Schema from "./previousSpecs/v0.1.json"
 
 // Paste new version import blocks above this line.
 // Update the import path in the below to point to a particular version as current
@@ -99,14 +100,18 @@ export let VERSIONS = {
       }
       return updated;
     },
+    validate: (document: v0_0_1): boolean => {
+      const ajv = new Ajv();
+      return ajv.validate(v0_0_1_Schema, document);
+    },
   },
   "v0.1": {
     up: (document: any): v0_1 => {
       return document as v0_1;
     },
-    validate: (document: v0_0_1): boolean => {
+    validate: (document: v0_1): boolean => {
       const ajv = new Ajv();
-      return ajv.validate(v0_0_1_Schema, document);
+      return ajv.validate(v0_1_Schema, document);
     },
   },
 };
