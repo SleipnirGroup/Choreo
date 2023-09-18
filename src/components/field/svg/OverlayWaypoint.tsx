@@ -54,6 +54,7 @@ class OverlayWaypoint extends Component<Props, State> {
           clipPath={`url(#${this.appendIndexID("clip")})`}
           stroke={strokeColor}
           strokeWidth={strokeWidthPx * context.model.uiState.fieldScalingFactor}
+          strokeLinecap="square"
           fill={"transparent"}
           vectorEffect={"non-scaling-stroke"}
           style={{ pointerEvents: "none" }}
