@@ -83,8 +83,9 @@ export let VERSIONS = {
           constraints: [],
         };
         path.waypoints.forEach((waypoint, index) => {
-          let updatedWaypoint: v0_0_1_Waypoint = {
+          let updatedWaypoint: v0_1_Waypoint = {
             ...waypoint,
+            isInitialGuess: false
           };
           updated.paths[entry].waypoints[index] = updatedWaypoint;
         });
