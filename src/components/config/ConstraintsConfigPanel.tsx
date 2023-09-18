@@ -61,18 +61,23 @@ class RobotConfigPanel extends Component<Props, State> {
       { value: pointcount + 1, label: "End" },
     ];
     return (
-      <div className={styles.WaypointPanel} style={{width:`min(80%, max(300px, calc(${pointcount} * 3ch + 8ch)))`}}>
+      <div
+        className={styles.WaypointPanel}
+        style={{
+          width: `min(80%, max(300px, calc(${pointcount} * 3ch + 8ch)))`,
+        }}
+      >
         <div style={{ marginInline: "4ch" }}>
           {" "}
           <Slider
             sx={{
               '& .MuiSlider-markLabel[data-index="0"]': {
-                transform: "translateX(-3.5ch)"
+                transform: "translateX(-3.5ch)",
               },
-              [`& .MuiSlider-markLabel[data-index="${pointcount+1}"]`]: {
-                transform: "translateX(0ch)"
-              }}
-            }
+              [`& .MuiSlider-markLabel[data-index="${pointcount + 1}"]`]: {
+                transform: "translateX(0ch)",
+              },
+            }}
             step={null}
             min={0}
             max={pointcount + 1}

@@ -48,7 +48,7 @@ export let WaypointData: {
 } = {
   FullWaypoint: {
     index: 0,
-    name: "Full Waypoint",
+    name: "Pose Waypoint",
     icon: <Waypoint />,
   },
   TranslationWaypoint: {

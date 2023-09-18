@@ -137,17 +137,6 @@ export const HolonomicPathStore = types
       asSolverPath() {
         let savedPath = self.asSavedPath();
         let originalGuessIndices: number[] = [];
-        savedPath.waypoints.forEach((wpt, idx) => {
-          if (wpt.isInitialGuess) {
-            if (idx == 0) {
-              throw new Error(
-                "Cannot start a path with an initial guess point."
-              );
-            } else if (idx == savedPath.waypoints.length - 1) {
-              throw new Error("Cannot end a path with an initial guess point.");
-            }
-          }
-        });
         savedPath.constraints.forEach((constraint) => {
           constraint.scope = constraint.scope.map((id) => {
             if (typeof id === "number") {

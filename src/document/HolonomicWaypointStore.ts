@@ -2,6 +2,7 @@ import { types, getRoot, Instance, getParent, isAlive } from "mobx-state-tree";
 import { safeGetIdentifier } from "../util/mobxutils";
 import { IStateStore } from "./DocumentModel";
 import { SavedWaypoint } from "./DocumentSpecTypes";
+import { NavbarItemData } from "./UIStateStore";
 
 export const HolonomicWaypointStore = types
   .model("WaypointStore", {
@@ -60,6 +61,11 @@ export const HolonomicWaypointStore = types
       },
     };
   })
+  .views((self) => ({
+    get typeName() {
+      return NavbarItemData[self.type].name;
+    },
+  }))
   .actions((self) => {
     return {
       fromSavedWaypoint(point: SavedWaypoint) {

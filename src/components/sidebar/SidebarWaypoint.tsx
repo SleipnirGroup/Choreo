@@ -14,7 +14,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { IconButton, Tooltip } from "@mui/material";
 import { isAlive } from "mobx-state-tree";
 import Waypoint from "../../assets/Waypoint";
-import { CircleOutlined } from "@mui/icons-material";
+import { CircleOutlined, PriorityHigh } from "@mui/icons-material";
 import { NavbarItemData } from "../../document/UIStateStore";
 
 type Props = {
@@ -22,6 +22,7 @@ type Props = {
   index: number;
   pathLength: number;
   context: React.ContextType<typeof DocumentManagerContext>;
+  issue: string | undefined;
 };
 
 type State = { selected: boolean };
@@ -91,9 +92,7 @@ class SidebarWaypoint extends Component<Props, State> {
           >
             {React.cloneElement(NavbarItemData[type].icon, {
               className: styles.SidebarIcon,
-              htmlColor: selected
-                ? "var(--select-yellow)"
-                : "var(--accent-purple)",
+              htmlColor: this.getIconColor(pathLength),
             })}
             {/* {translationConstrained && headingConstrained && (
               <Waypoint
@@ -113,8 +112,20 @@ class SidebarWaypoint extends Component<Props, State> {
                 className={styles.SidebarIcon}
               ></CircleOutlined>
             )} */}
-            <span className={styles.SidebarLabel}>
-              Waypoint {this.props.index + 1}
+            <span
+              className={styles.SidebarLabel}
+              style={{ display: "grid", gridTemplateColumns: "1fr auto auto" }}
+            >
+              {this.props.waypoint.typeName}
+              {this.props.issue !== undefined &&
+              this.props.issue.length! > 0 ? (
+                <Tooltip disableInteractive title={this.props.issue}>
+                  <PriorityHigh className={styles.SidebarIcon}></PriorityHigh>
+                </Tooltip>
+              ) : (
+                <span></span>
+              )}
+              <span>{this.props.index + 1}</span>
             </span>
             <Tooltip title="Delete Waypoint">
               <IconButton

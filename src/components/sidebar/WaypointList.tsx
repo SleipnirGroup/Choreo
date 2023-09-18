@@ -57,16 +57,36 @@ class WaypointList extends Component<Props, State> {
         </div>
       );
     }
+    let waypointsCount = 1;
+    let igPointCount = 1;
     let waypointElements = waypoints.map(
-      (holonomicWaypoint: IHolonomicWaypointStore, index: number) => (
-        <SidebarWaypoint
-          waypoint={holonomicWaypoint}
-          index={index}
-          pathLength={waypoints.length}
-          context={this.context}
-          key={holonomicWaypoint.uuid}
-        ></SidebarWaypoint>
-      )
+      (holonomicWaypoint: IHolonomicWaypointStore, index: number) => {
+        let issue = "";
+        if (holonomicWaypoint.isInitialGuess) {
+          if (index == 0) {
+            issue = "Cannot start with an initial guess point.";
+          } else if (index == waypoints.length - 1) {
+            issue = "Cannot end with an initial guess point.";
+          }
+        }
+        if (holonomicWaypoint.type == 2) {
+          if (index == 0) {
+            issue = "Cannot start with an empty waypoint.";
+          } else if (index == waypoints.length - 1) {
+            issue = "Cannot end with an empty waypoint.";
+          }
+        }
+        return (
+          <SidebarWaypoint
+            waypoint={holonomicWaypoint}
+            index={index}
+            issue={issue}
+            pathLength={waypoints.length}
+            context={this.context}
+            key={holonomicWaypoint.uuid}
+          ></SidebarWaypoint>
+        );
+      }
     );
 
     return (

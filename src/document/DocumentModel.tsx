@@ -73,6 +73,30 @@ const StateStore = types
               throw new Error(constraint.issues.join(", "));
             }
           });
+          pathStore.waypoints.forEach((wpt, idx) => {
+            if (wpt.isInitialGuess) {
+              if (idx == 0) {
+                throw new Error(
+                  "Cannot start a path with an initial guess point."
+                );
+              } else if (idx == pathStore.waypoints.length - 1) {
+                throw new Error(
+                  "Cannot end a path with an initial guess point."
+                );
+              }
+            }
+            if (wpt.isInitialGuess) {
+              if (idx == 0) {
+                throw new Error(
+                  "Cannot start a path with an initial guess point."
+                );
+              } else if (idx == pathStore.waypoints.length - 1) {
+                throw new Error(
+                  "Cannot end a path with an initial guess point."
+                );
+              }
+            }
+          });
           pathStore.setGenerating(true);
           resolve(pathStore);
         })
