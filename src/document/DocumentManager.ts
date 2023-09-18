@@ -2,10 +2,10 @@ import { createContext } from "react";
 import StateStore, { IStateStore } from "./DocumentModel";
 import { dialog, fs } from "@tauri-apps/api";
 import { v4 as uuidv4, validate } from "uuid";
-import { applySnapshot } from "mobx-state-tree";
 import documentSchema from "./previousSpecs/v0.0.1.json";
 import { VERSIONS } from "./DocumentSpecTypes";
- 
+ import { applySnapshot, getRoot, onPatch } from "mobx-state-tree";
+import { toJS } from "mobx";
 
 export class DocumentManager {
   simple: any;
@@ -16,6 +16,7 @@ export class DocumentManager {
     this.model.document.history.canRedo && this.model.document.history.redo();
   }
   get history() {
+    console.log(toJS(this.model.document.history.history));
     return this.model.document.history;
   }
   model: IStateStore;
@@ -53,7 +54,6 @@ export class DocumentManager {
       return Promise.reject("Tried to upload a null file");
     }
     this.model.uiState.setSaveFileName(file.name);
-    console.log(file.name);
     return new Promise((resolve, reject) => {
       const fileReader = new FileReader();
       fileReader.onload = (event) => {
@@ -114,7 +114,6 @@ export class DocumentManager {
   async loadFile(jsonFilename: string) {
     await fetch(jsonFilename, { cache: "no-store" })
       .then((res) => {
-        console.log(res);
         return res.json();
       })
       .then((data) => {
@@ -147,7 +146,6 @@ export class DocumentManager {
     const element = document.createElement("a");
     const file = new Blob([content], { type: "application/json" });
     let link = URL.createObjectURL(file);
-    console.log(link);
     //window.open(link, '_blank');
     //Uncomment to "save as..." the file
     element.href = link;

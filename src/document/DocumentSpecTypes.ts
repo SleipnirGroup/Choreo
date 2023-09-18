@@ -20,6 +20,16 @@ import {
   SAVE_FILE_VERSION as v0_0_1_Version,
 } from "./previousSpecs/v0_0_1";
 import v0_0_1_Schema from "./previousSpecs/v0.0.1.json";
+import {
+  SavedDocument as v0_1,
+  SavedPath as v0_1_Path,
+  SavedWaypoint as v0_1_Waypoint,
+  SavedTrajectorySample as v0_1_Sample,
+  SavedPathList as v0_1_Pathlist,
+  SavedRobotConfig as v0_1_Config,
+  SavedConstraint as v0_1_Constraint,
+  SAVE_FILE_VERSION as v0_1_Version,
+} from "./previousSpecs/v0_1";
 
 // Paste new version import blocks above this line.
 // Update the import path in the below to point to a particular version as current
@@ -30,9 +40,10 @@ export type {
   SavedPathList,
   SavedRobotConfig,
   SavedWaypoint,
-} from "./previousSpecs/v0_0_1";
-export { SAVE_FILE_VERSION } from "./previousSpecs/v0_0_1";
-import { SAVE_FILE_VERSION } from "./previousSpecs/v0_0_1";
+  SavedConstraint,
+} from "./previousSpecs/v0_1";
+export { SAVE_FILE_VERSION } from "./previousSpecs/v0_1";
+import { SAVE_FILE_VERSION } from "./previousSpecs/v0_1";
 import Ajv from "ajv";
 
 export let VERSIONS = {
@@ -64,8 +75,34 @@ export let VERSIONS = {
     },
   },
   "v0.0.1": {
-    up: (document: any): v0_0_1 => {
-      return document as v0_0_1;
+    up: (document: any): v0_1 => {
+      document = document as v0_0_1;
+      let updated: v0_1 = {
+        paths: {},
+        version: v0_1_Version,
+        robotConfiguration: document.robotConfiguration,
+      };
+      for (let entry of Object.keys(document.paths)) {
+        let path = document.paths[entry];
+        updated.paths[entry] = {
+          waypoints: [],
+          trajectory: [],
+          constraints: [],
+        };
+        path.waypoints.forEach((waypoint, index) => {
+          let updatedWaypoint: v0_1_Waypoint = {
+            ...waypoint,
+            isInitialGuess: false,
+          };
+          updated.paths[entry].waypoints[index] = updatedWaypoint;
+        });
+      }
+      return updated;
+    },
+  },
+  "v0.1": {
+    up: (document: any): v0_1 => {
+      return document as v0_1;
     },
     validate: (document: v0_0_1): boolean => {
       const ajv = new Ajv();

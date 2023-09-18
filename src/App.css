@@ -24,6 +24,7 @@ html {
 }
 *::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 *::-webkit-scrollbar-track {
   background: transparent;
@@ -32,6 +33,7 @@ html {
 *::-webkit-scrollbar-thumb {
   background: var(--select-yellow);
   width: 8px;
+  height: 8px;
   border-radius: 4px;
 }
 h1 {
