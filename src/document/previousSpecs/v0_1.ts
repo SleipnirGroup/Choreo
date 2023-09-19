@@ -1,12 +1,12 @@
 /** CHANGES from v0.0.1:
- * Removed velocityMagnitude, velocityAngle, angularVelocity, 
+ * Removed velocityMagnitude, velocityAngle, angularVelocity,
  * velocityMagnitudeConstrained, velocityAngleConstrained, angularVelocityConstrained
  * from SavedWaypoint.
- * 
+ *
  * Added isInitialGuess to SavedWaypoint.
- * 
+ *
  * Added constraints to SavedPath.
- * 
+ *
  * Added SavedWaypointID, SavedConstraint.
  */
 

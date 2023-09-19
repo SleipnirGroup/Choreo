@@ -3,7 +3,7 @@ import StateStore, { IStateStore } from "./DocumentModel";
 import { dialog, fs } from "@tauri-apps/api";
 import { v4 as uuidv4 } from "uuid";
 import { VERSIONS, validate } from "./DocumentSpecTypes";
- import { applySnapshot, getRoot, onPatch } from "mobx-state-tree";
+import { applySnapshot, getRoot, onPatch } from "mobx-state-tree";
 import { toJS } from "mobx";
 
 export class DocumentManager {
