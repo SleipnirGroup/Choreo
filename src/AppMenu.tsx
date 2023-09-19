@@ -88,7 +88,12 @@ class AppMenu extends Component<Props, State> {
             </ListItemButton>
             <ListItemButton
               onClick={async () => {
-                if (await dialog.confirm("You may lose unsaved changes. Continue?", {title:"Choreo", type:"warning"})) {
+                if (
+                  await dialog.confirm(
+                    "You may lose unsaved changes. Continue?",
+                    { title: "Choreo", type: "warning" }
+                  )
+                ) {
                   this.context.newFile();
                 }
               }}

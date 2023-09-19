@@ -166,7 +166,12 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             className={styles.SidebarRightIcon}
             onClick={async (e) => {
               e.stopPropagation();
-              if (await dialog.confirm(`Delete "${this.getPath().name}"?`, {type:"warning", title:"Choreo"})) {
+              if (
+                await dialog.confirm(`Delete "${this.getPath().name}"?`, {
+                  type: "warning",
+                  title: "Choreo",
+                })
+              ) {
                 this.context.model.document.pathlist.deletePath(
                   this.props.uuid
                 );
