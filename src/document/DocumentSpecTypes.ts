@@ -9,6 +9,7 @@ import type {
   SAVE_FILE_VERSION as v0_0_0_Version,
   SavedDocument,
 } from "./previousSpecs/v0_0_0";
+import v0_0_0_Schema from "./previousSpecs/v0.0.0.json";
 import {
   SavedDocument as v0_0_1,
   SavedPath as v0_0_1_Path,
@@ -18,6 +19,7 @@ import {
   SavedRobotConfig as v0_0_1_Config,
   SAVE_FILE_VERSION as v0_0_1_Version,
 } from "./previousSpecs/v0_0_1";
+import v0_0_1_Schema from "./previousSpecs/v0.0.1.json";
 import {
   SavedDocument as v0_1,
   SavedPath as v0_1_Path,
@@ -28,6 +30,7 @@ import {
   SavedConstraint as v0_1_Constraint,
   SAVE_FILE_VERSION as v0_1_Version,
 } from "./previousSpecs/v0_1";
+import v0_1_Schema from "./previousSpecs/v0.1.json";
 
 // Paste new version import blocks above this line.
 // Update the import path in the below to point to a particular version as current
@@ -42,6 +45,7 @@ export type {
 } from "./previousSpecs/v0_1";
 export { SAVE_FILE_VERSION } from "./previousSpecs/v0_1";
 import { SAVE_FILE_VERSION } from "./previousSpecs/v0_1";
+import Ajv from "ajv";
 
 export let VERSIONS = {
   "v0.0.0": {
@@ -65,6 +69,10 @@ export let VERSIONS = {
         });
       }
       return updated;
+    },
+    validate: (document: v0_0_0): boolean => {
+      const ajv = new Ajv();
+      return ajv.validate(v0_0_0_Schema, document);
     },
   },
   "v0.0.1": {
@@ -92,10 +100,18 @@ export let VERSIONS = {
       }
       return updated;
     },
+    validate: (document: v0_0_1): boolean => {
+      const ajv = new Ajv();
+      return ajv.validate(v0_0_1_Schema, document);
+    },
   },
   "v0.1": {
     up: (document: any): v0_1 => {
       return document as v0_1;
+    },
+    validate: (document: v0_1): boolean => {
+      const ajv = new Ajv();
+      return ajv.validate(v0_1_Schema, document);
     },
   },
 };
@@ -117,4 +133,12 @@ export let updateToCurrent = (document: { version: string }): SavedDocument => {
   }
   console.log(document);
   return document as SavedDocument;
+};
+
+export let validate = (document: { version: string }): boolean => {
+  if (document.version in VERSIONS) {
+    return VERSIONS[document.version].validate(document);
+  } else {
+    return false;
+  }
 };

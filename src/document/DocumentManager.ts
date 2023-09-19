@@ -2,6 +2,7 @@ import { createContext } from "react";
 import StateStore, { IStateStore } from "./DocumentModel";
 import { dialog, fs } from "@tauri-apps/api";
 import { v4 as uuidv4 } from "uuid";
+import { VERSIONS, validate } from "./DocumentSpecTypes";
 import { applySnapshot, getRoot, onPatch } from "mobx-state-tree";
 import { toJS } from "mobx";
 
@@ -67,7 +68,14 @@ export class DocumentManager {
   }
   async onFileUpload(file: File | null) {
     await this.parseFile(file)
-      .then((content) => this.model.fromSavedDocument(JSON.parse(content)))
+      .then((content) => {
+        const parsed = JSON.parse(content);
+        if (validate(parsed)) {
+          this.model.fromSavedDocument(parsed);
+        } else {
+          console.error("Invalid Document JSON");
+        }
+      })
       .catch((err) => console.log(err));
   }
 
@@ -116,6 +124,10 @@ export class DocumentManager {
 
   async saveFile() {
     const content = JSON.stringify(this.model.asSavedDocument(), undefined, 4);
+    if (!VERSIONS["v0.1"].validate(this.model.asSavedDocument())) {
+      console.warn("Invalid Doc JSON:\n" + "\n" + content);
+      return;
+    }
     const filePath = await dialog.save({
       title: "Save Document",
       filters: [
