@@ -100,6 +100,7 @@ class PathAnimationPanel extends Component<Props, State> {
           }}
         >
           <Tooltip
+            disableInteractive
             title={
               this.state.running
                 ? "Pause Path Animation"

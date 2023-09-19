@@ -7,6 +7,7 @@ import AddIcon from "@mui/icons-material/Add";
 import styles from "./Sidebar.module.css";
 import { Tooltip } from "@mui/material";
 import { Route } from "@mui/icons-material";
+import { dialog } from "@tauri-apps/api";
 
 type Props = {};
 
@@ -160,12 +161,12 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             },
           }}
         ></TextField>
-        <Tooltip title="Delete Path">
+        <Tooltip disableInteractive title="Delete Path">
           <IconButton
             className={styles.SidebarRightIcon}
-            onClick={(e) => {
+            onClick={async (e) => {
               e.stopPropagation();
-              if (window.confirm(`Delete "${this.getPath().name}"?`)) {
+              if (await dialog.confirm(`Delete "${this.getPath().name}"?`, {type:"warning", title:"Choreo"})) {
                 this.context.model.document.pathlist.deletePath(
                   this.props.uuid
                 );
