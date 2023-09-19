@@ -134,3 +134,11 @@ export let updateToCurrent = (document: { version: string }): SavedDocument => {
   console.log(document);
   return document as SavedDocument;
 };
+
+export let validate = (document: { version: string }): boolean => {
+  if (document.version in VERSIONS) {
+    return VERSIONS[document.version].validate(document);
+  } else {
+    return false;
+  }
+}

@@ -1,8 +1,8 @@
 import { createContext } from "react";
 import StateStore, { IStateStore } from "./DocumentModel";
 import { dialog, fs } from "@tauri-apps/api";
-import { v4 as uuidv4, validate } from "uuid";
-import { VERSIONS } from "./DocumentSpecTypes";
+import { v4 as uuidv4 } from "uuid";
+import { VERSIONS, validate } from "./DocumentSpecTypes";
  import { applySnapshot, getRoot, onPatch } from "mobx-state-tree";
 import { toJS } from "mobx";
 
@@ -69,10 +69,11 @@ export class DocumentManager {
   async onFileUpload(file: File | null) {
     await this.parseFile(file)
       .then((content) => {
-        if (VERSIONS["v0.1"].validate(JSON.parse(content))) {
-          this.model.fromSavedDocument(JSON.parse(content));
+        const parsed = JSON.parse(content);
+        if (validate(parsed)) {
+          this.model.fromSavedDocument(parsed);
         } else {
-          console.error("Invalid Document JSON:");
+          console.error("Invalid Document JSON");
         }
       })
       .catch((err) => console.log(err));
