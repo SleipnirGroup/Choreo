@@ -15,6 +15,7 @@ import IconButton from "@mui/material/IconButton";
 import FileDownload from "@mui/icons-material/FileDownload";
 import Tooltip from "@mui/material/Tooltip";
 import { NoteAddOutlined } from "@mui/icons-material";
+import { Popup } from "./components/alert/Popup";
 
 type Props = {};
 
@@ -117,7 +118,9 @@ class AppMenu extends Component<Props, State> {
                 e.target.files.length >= 1
               ) {
                 let fileList = e.target.files;
-                this.context.onFileUpload(fileList[0]);
+                this.context.onFileUpload(fileList[0]).catch((r) => {
+                  <Popup></Popup>
+                });
                 e.target.value = "";
               }
             }}
