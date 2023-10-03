@@ -38,3 +38,9 @@ The robot's rotational inertia has a significant impact on how quickly it can fo
 - System Identification methods
 
 If none of these techniques are possible, a reasonable estimate of MoI would be `mass * length * width / 6` based on the assumption of a rectangle of uniformly-distributed mass.
+
+## Authors
+
+<a href="https://github.com/SleipnirGroup/Choreo/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=SleipnirGroup/Choreo" />
+</a>
