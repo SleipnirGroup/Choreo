@@ -10,6 +10,10 @@ Grab the latest release for your platform on the [releases](https://github.com/S
 
 To run development versions of Choreo check [the wiki](https://github.com/SleipnirGroup/Choreo/wiki/Building-Choreo)
 
+## Robot code integration
+
+An example project using Choreo is available [here](https://github.com/SleipnirGroup/ChoreoSwerveBot).
+
 ## Physical input parameters
 
 The trajectory optimizer depends upon the following user-specificed parameters, which are entered in the Robot Configuration panel.
