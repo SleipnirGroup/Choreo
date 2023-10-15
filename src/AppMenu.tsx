@@ -107,7 +107,16 @@ class AppMenu extends Component<Props, State> {
               <ListItemText primary="Export Trajectory"></ListItemText>
             </ListItemButton>
           </List>
-          <ToastContainer></ToastContainer>
+          <ToastContainer
+            position="top-right"
+            autoClose={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            theme="dark"
+            ></ToastContainer>
           <input
             type="file"
             id="file-upload-input"

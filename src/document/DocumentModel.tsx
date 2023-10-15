@@ -14,6 +14,9 @@ import { TrajectorySampleStore } from "./TrajectorySampleStore";
 import { UndoManager } from "mst-middlewares";
 import { IHolonomicPathStore } from "./HolonomicPathStore";
 import { toJS } from "mobx";
+import { toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.min.css';
+import { Box } from "@mui/material";
 
 export const DocumentStore = types
   .model("DocumentStore", {
@@ -58,40 +61,40 @@ const StateStore = types
       select(item: SelectableItemTypes) {
         self.uiState.setSelectedSidebarItem(item);
       },
-      generatePath(uuid: string) {
+      async generatePath(uuid: string) {
         const pathStore = self.document.pathlist.paths.get(uuid);
         if (pathStore === undefined) {
-          return;
+          return new Promise((resolve, reject) => reject("Path store is undefined"));
         }
-        new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
           pathStore.setTrajectory([]);
           if (pathStore.waypoints.length < 2) {
             return;
           }
           pathStore.constraints.forEach((constraint) => {
             if (constraint.issues.length > 0) {
-              throw new Error(constraint.issues.join(", "));
+              reject(constraint.issues.join(", "));
             }
           });
           pathStore.waypoints.forEach((wpt, idx) => {
             if (wpt.isInitialGuess) {
               if (idx == 0) {
-                throw new Error(
+                reject(
                   "Cannot start a path with an initial guess point."
-                );
+                  );
               } else if (idx == pathStore.waypoints.length - 1) {
-                throw new Error(
+                reject(
                   "Cannot end a path with an initial guess point."
                 );
               }
             }
             if (wpt.isInitialGuess) {
               if (idx == 0) {
-                throw new Error(
+                reject(
                   "Cannot start a path with an initial guess point."
                 );
               } else if (idx == pathStore.waypoints.length - 1) {
-                throw new Error(
+                reject(
                   "Cannot end a path with an initial guess point."
                 );
               }
@@ -105,7 +108,8 @@ const StateStore = types
               path: pathStore.waypoints,
               config: self.document.robotConfig,
               constraints: pathStore.asSolverPath().constraints,
-            })
+            }),
+            (e) => e
           )
           .then((rust_traj) => {
             let newTraj: Array<SavedTrajectorySample> = [];
@@ -122,11 +126,22 @@ const StateStore = types
               newTraj.push(newPoint);
             });
             pathStore.setTrajectory(newTraj);
+            if (newTraj.length == 0) throw ("No traj");
+          },
+          (e) => {
+            console.error(e);
+            if ((e as string).includes('Infeasible_Problem_Detected')) {
+              throw 'Infeasible Problem Detected';
+            }
+            if ((e as string).includes('Maximum_Iterations_Exceeded')) {
+              throw 'Maximum Iterations Exceeded';
+            }
+            throw e;
           })
           .finally(() => {
             pathStore.setGenerating(false);
             self.uiState.setPathAnimationTimestamp(0);
-          });
+          });          
       },
     };
   });

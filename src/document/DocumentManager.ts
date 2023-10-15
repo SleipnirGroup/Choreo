@@ -76,30 +76,12 @@ export class DocumentManager {
           this.model.fromSavedDocument(parsed);
         } else {
           console.error("Invalid Document JSON");
-          toast.error('Could not parse selected document (Is it a choreo document?)', {
-            position: "top-right",
-            autoClose: false,
-            hideProgressBar: true,
-            closeOnClick: true,
-            pauseOnHover: false,
-            draggable: true,
-            progress: undefined,
-            theme: "dark",
-            });
+          toast.error('Could not parse selected document (Is it a choreo document?)');
           }
         })
       .catch((err) => {
         console.log(err);
-        toast.error('File load error: ' + err, {
-          position: "top-right",
-          autoClose: false,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: true,
-          progress: undefined,
-          theme: "dark",
-          });
+        toast.error('File load error: ' + err);
         });
   }
 
@@ -108,14 +90,8 @@ export class DocumentManager {
     if (path === undefined) {
       console.error("Tried to export trajectory with unknown uuid: ", uuid);
       toast.error('Tried to export trajectory with unknown uuid', {
-        position: "top-right",
         autoClose: 5000,
         hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: true,
-        progress: undefined,
-        theme: "dark",
         });
       return;
     }
@@ -123,14 +99,8 @@ export class DocumentManager {
     if (trajectory === null) {
       console.error("Tried to export ungenerated trajectory: ", uuid);
       toast.error('Cannot export ungenerated trajectory', {
-        position: "top-right",
         autoClose: 5000,
         hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: true,
-        progress: undefined,
-        theme: "dark",
         });
       return;
     }
