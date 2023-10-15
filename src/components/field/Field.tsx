@@ -40,6 +40,8 @@ export class Field extends Component<Props, State> {
           rtl={false}
           draggable
           theme="dark"
+          enableMultiContainer
+          containerId={"FIELD"}
         ></ToastContainer>
         <FieldOverlayRoot></FieldOverlayRoot>
         {selectedSidebar !== undefined &&
@@ -104,15 +106,21 @@ export class Field extends Component<Props, State> {
               }}
               onClick={() => {
                 toast.dismiss();
-                toast.promise(this.context.model.generatePath(activePathUUID), {
-                  success: "Generated path",
-                  error: {
-                    render({ data }) {
-                      console.log(data);
-                      return "Problem generating path: " + new String(data);
+                toast.promise(
+                  this.context.model.generatePath(activePathUUID),
+                  {
+                    success: "Generated path",
+                    error: {
+                      render({ data }) {
+                        console.log(data);
+                        return "Problem generating path: " + new String(data);
+                      },
                     },
                   },
-                });
+                  {
+                    containerId: "FIELD",
+                  }
+                );
               }}
               disabled={!activePath.canGenerate()}
             >

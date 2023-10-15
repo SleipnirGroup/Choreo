@@ -116,6 +116,8 @@ class AppMenu extends Component<Props, State> {
             pauseOnFocusLoss
             draggable
             theme="dark"
+            enableMultiContainer
+            containerId={"MENU"}
           ></ToastContainer>
           <input
             type="file"

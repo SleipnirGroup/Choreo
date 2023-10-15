@@ -77,13 +77,18 @@ export class DocumentManager {
         } else {
           console.error("Invalid Document JSON");
           toast.error(
-            "Could not parse selected document (Is it a choreo document?)"
+            "Could not parse selected document (Is it a choreo document?)",
+            {
+              containerId: "MENU",
+            }
           );
         }
       })
       .catch((err) => {
         console.log(err);
-        toast.error("File load error: " + err);
+        toast.error("File load error: " + err, {
+          containerId: "MENU",
+        });
       });
   }
 
@@ -94,6 +99,7 @@ export class DocumentManager {
       toast.error("Tried to export trajectory with unknown uuid", {
         autoClose: 5000,
         hideProgressBar: false,
+        containerId: "MENU",
       });
       return;
     }
@@ -103,6 +109,7 @@ export class DocumentManager {
       toast.error("Cannot export ungenerated trajectory", {
         autoClose: 5000,
         hideProgressBar: false,
+        containerId: "MENU",
       });
       return;
     }
