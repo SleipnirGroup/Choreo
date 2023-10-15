@@ -76,7 +76,7 @@ export class DocumentManager {
           this.model.fromSavedDocument(parsed);
         } else {
           console.error("Invalid Document JSON");
-          toast('Could not parse selected document (Is it a choreo document?)', {
+          toast.error('Could not parse selected document (Is it a choreo document?)', {
             position: "top-right",
             autoClose: false,
             hideProgressBar: true,
@@ -90,7 +90,7 @@ export class DocumentManager {
         })
       .catch((err) => {
         console.log(err);
-        toast('File load error: ' + err, {
+        toast.error('File load error: ' + err, {
           position: "top-right",
           autoClose: false,
           hideProgressBar: true,
@@ -99,7 +99,7 @@ export class DocumentManager {
           draggable: true,
           progress: undefined,
           theme: "dark",
-          })
+          });
         });
   }
 
@@ -107,11 +107,31 @@ export class DocumentManager {
     const path = this.model.document.pathlist.paths.get(uuid);
     if (path === undefined) {
       console.error("Tried to export trajectory with unknown uuid: ", uuid);
+      toast.error('Tried to export trajectory with unknown uuid', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+        });
       return;
     }
     const trajectory = path.getSavedTrajectory();
     if (trajectory === null) {
       console.error("Tried to export ungenerated trajectory: ", uuid);
+      toast.error('Cannot export ungenerated trajectory', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: true,
+        progress: undefined,
+        theme: "dark",
+        });
       return;
     }
     const content = JSON.stringify(trajectory, undefined, 4);
