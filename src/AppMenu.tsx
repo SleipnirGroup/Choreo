@@ -41,7 +41,7 @@ class AppMenu extends Component<Props, State> {
             backgroundColor: "var(--background-dark-gray)",
             height: "100%",
           }}
-          >
+        >
           <div
             style={{
               flexShrink: 0,
@@ -116,7 +116,7 @@ class AppMenu extends Component<Props, State> {
             pauseOnFocusLoss
             draggable
             theme="dark"
-            ></ToastContainer>
+          ></ToastContainer>
           <input
             type="file"
             id="file-upload-input"

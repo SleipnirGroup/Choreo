@@ -14,7 +14,7 @@ import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import VisibilityPanel from "../config/VisibilityPanel";
 import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel";
 import { IConstraintStore } from "../../document/ConstraintStore";
-import 'react-toastify/dist/ReactToastify.min.css';
+import "react-toastify/dist/ReactToastify.min.css";
 import { ToastContainer, toast } from "react-toastify";
 
 type Props = {};
@@ -33,14 +33,14 @@ export class Field extends Component<Props, State> {
     return (
       <div className={styles.Container}>
         <ToastContainer
-            position="top-right"
-            autoClose={5000}
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            draggable
-            theme="dark"
-            ></ToastContainer>
+          position="top-right"
+          autoClose={5000}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          draggable
+          theme="dark"
+        ></ToastContainer>
         <FieldOverlayRoot></FieldOverlayRoot>
         {selectedSidebar !== undefined &&
           "heading" in selectedSidebar &&
@@ -104,15 +104,13 @@ export class Field extends Component<Props, State> {
               }}
               onClick={() => {
                 toast.dismiss();
-                toast.promise(
-                  this.context.model.generatePath(activePathUUID),
-                  {
+                toast.promise(this.context.model.generatePath(activePathUUID), {
                   success: "Generated path",
                   error: {
-                    render({data}) {
+                    render({ data }) {
                       console.log(data);
                       return "Problem generating path: " + new String(data);
-                    }
+                    },
                   },
                 });
               }}
