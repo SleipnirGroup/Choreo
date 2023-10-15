@@ -5,6 +5,8 @@ import { v4 as uuidv4 } from "uuid";
 import { VERSIONS, validate } from "./DocumentSpecTypes";
 import { applySnapshot, getRoot, onPatch } from "mobx-state-tree";
 import { toJS } from "mobx";
+import { toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.min.css';
 
 export class DocumentManager {
   simple: any;
@@ -74,9 +76,31 @@ export class DocumentManager {
           this.model.fromSavedDocument(parsed);
         } else {
           console.error("Invalid Document JSON");
-        }
-      })
-      .catch((err) => console.log(err));
+          toast('Could not parse selected document (Is it a choreo document?)', {
+            position: "top-right",
+            autoClose: false,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: false,
+            draggable: true,
+            progress: undefined,
+            theme: "dark",
+            });
+          }
+        })
+      .catch((err) => {
+        console.log(err);
+        toast('File load error: ' + err, {
+          position: "top-right",
+          autoClose: false,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: true,
+          progress: undefined,
+          theme: "dark",
+          })
+        });
   }
 
   async exportTrajectory(uuid: string) {

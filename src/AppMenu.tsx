@@ -15,7 +15,7 @@ import IconButton from "@mui/material/IconButton";
 import FileDownload from "@mui/icons-material/FileDownload";
 import Tooltip from "@mui/material/Tooltip";
 import { NoteAddOutlined } from "@mui/icons-material";
-import { Popup } from "./components/alert/Popup";
+import { ToastContainer, toast } from "react-toastify";
 
 type Props = {};
 
@@ -41,7 +41,7 @@ class AppMenu extends Component<Props, State> {
             backgroundColor: "var(--background-dark-gray)",
             height: "100%",
           }}
-        >
+          >
           <div
             style={{
               flexShrink: 0,
@@ -107,6 +107,7 @@ class AppMenu extends Component<Props, State> {
               <ListItemText primary="Export Trajectory"></ListItemText>
             </ListItemButton>
           </List>
+          <ToastContainer></ToastContainer>
           <input
             type="file"
             id="file-upload-input"
@@ -118,9 +119,7 @@ class AppMenu extends Component<Props, State> {
                 e.target.files.length >= 1
               ) {
                 let fileList = e.target.files;
-                this.context.onFileUpload(fileList[0]).catch((r) => {
-                  <Popup></Popup>
-                });
+                this.context.onFileUpload(fileList[0]);
                 e.target.value = "";
               }
             }}
