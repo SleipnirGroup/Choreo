@@ -103,7 +103,7 @@ export class Field extends Component<Props, State> {
                 marginInline: 0,
               }}
               onClick={() => {
-                
+                toast.dismiss();
                 toast.promise(
                   this.context.model.generatePath(activePathUUID),
                   {
