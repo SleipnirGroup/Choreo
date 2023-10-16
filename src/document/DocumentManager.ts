@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import { VERSIONS, validate } from "./DocumentSpecTypes";
 import { applySnapshot, getRoot, onPatch } from "mobx-state-tree";
 import { toJS } from "mobx";
+import hotkeys from "hotkeys-js";
 
 export class DocumentManager {
   simple: any;
@@ -32,6 +33,15 @@ export class DocumentManager {
     });
     this.model.document.pathlist.addPath("NewPath");
     this.model.document.history.clear();
+    hotkeys('g', () => {
+      this.model.generatePath(this.model.document.pathlist.activePathUUID);
+    });
+    hotkeys('ctrl+z', () => {
+      this.undo();
+    });
+    hotkeys('ctrl+shift+z', () => {
+      this.redo();
+    });
   }
   newFile(): void {
     applySnapshot(this.model, {
