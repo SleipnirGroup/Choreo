@@ -5,6 +5,8 @@ import { v4 as uuidv4 } from "uuid";
 import { VERSIONS, validate } from "./DocumentSpecTypes";
 import { applySnapshot, getRoot, onPatch } from "mobx-state-tree";
 import { toJS } from "mobx";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.min.css";
 
 export class DocumentManager {
   simple: any;
@@ -74,20 +76,41 @@ export class DocumentManager {
           this.model.fromSavedDocument(parsed);
         } else {
           console.error("Invalid Document JSON");
+          toast.error(
+            "Could not parse selected document (Is it a choreo document?)",
+            {
+              containerId: "MENU",
+            }
+          );
         }
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.log(err);
+        toast.error("File load error: " + err, {
+          containerId: "MENU",
+        });
+      });
   }
 
   async exportTrajectory(uuid: string) {
     const path = this.model.document.pathlist.paths.get(uuid);
     if (path === undefined) {
       console.error("Tried to export trajectory with unknown uuid: ", uuid);
+      toast.error("Tried to export trajectory with unknown uuid", {
+        autoClose: 5000,
+        hideProgressBar: false,
+        containerId: "MENU",
+      });
       return;
     }
     const trajectory = path.getSavedTrajectory();
     if (trajectory === null) {
       console.error("Tried to export ungenerated trajectory: ", uuid);
+      toast.error("Cannot export ungenerated trajectory", {
+        autoClose: 5000,
+        hideProgressBar: false,
+        containerId: "MENU",
+      });
       return;
     }
     const content = JSON.stringify(trajectory, undefined, 4);
