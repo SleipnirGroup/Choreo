@@ -34,7 +34,7 @@ export class DocumentManager {
     });
     this.model.document.pathlist.addPath("NewPath");
     this.model.document.history.clear();
-    hotkeys('ctrl+g', () => {
+    hotkeys('ctrl+g,g', () => {
       this.model.generatePath(this.model.document.pathlist.activePathUUID);
     });
     hotkeys('ctrl+z', () => {
@@ -90,7 +90,73 @@ export class DocumentManager {
       if (i <= 0) { i = 0 }
       this.model.select(waypoints[i]);
     });
+    // navbar keys
+    for (let i = 0; i < 9; i ++) {
+      hotkeys((i + 1).toString(), () => {
+        this.model.uiState.setSelectedNavbarItem(i); 
+      });
+    }
+    // set current waypoint type
+    for (let i = 0; i < 4; i ++) {
+      hotkeys('shift+' + (i + 1), () => {
+        const selected = this.getSelectedWaypoint();
+        selected?.setType(i);
+      });
+    }
+    // nudge selected waypoint
+    hotkeys('d,shift+d', () => {
+      const selected = this.getSelectedWaypoint();
+      if (selected !== undefined) {
+        const delta = hotkeys.shift ? 0.5 : 0.1;
+        selected.setX(selected.x + delta);
+      }
+    });
+    hotkeys('a,shift+a', () => {
+      const selected = this.getSelectedWaypoint();
+      if (selected !== undefined) {
+        const delta = hotkeys.shift ? 0.5 : 0.1;
+        selected.setX(selected.x - delta);
+      }
+    });
+    hotkeys('w,shift+w', () => {
+      const selected = this.getSelectedWaypoint();
+      if (selected !== undefined) {
+        const delta = hotkeys.shift ? 0.5 : 0.1;
+        selected.setY(selected.y + delta);
+      }
+    });
+    hotkeys('s,shift+s', () => {
+      const selected = this.getSelectedWaypoint();
+      if (selected !== undefined) {
+        const delta = hotkeys.shift ? 0.5 : 0.1;
+        selected.setY(selected.y - delta);
+      }
+    });
+    hotkeys('q,shift+q', () => {
+      const selected = this.getSelectedWaypoint();
+      if (selected !== undefined) {
+        const delta = hotkeys.shift ? Math.PI / 4 : Math.PI / 16;
+        let newHeading = (selected.heading + delta);
+        if (newHeading > Math.PI) { newHeading = -Math.PI + newHeading % Math.PI }
+        selected.setHeading(newHeading);
+      }
+    });
+    hotkeys('e,shift+e', () => {
+      const selected = this.getSelectedWaypoint();
+      if (selected !== undefined) {
+        const delta = hotkeys.shift ? Math.PI / 4 : Math.PI / 16;
+        let newHeading = (selected.heading - delta);
+        if (newHeading < -Math.PI) { newHeading = Math.PI - newHeading % Math.PI }
+        selected.setHeading(newHeading);
+      }
+    });
+  }
 
+  private getSelectedWaypoint() {
+    const waypoints = this.model.document.pathlist.activePath.waypoints;
+    return waypoints.find((w) => {
+      return w.selected;
+    });
   }
   newFile(): void {
     applySnapshot(this.model, {
