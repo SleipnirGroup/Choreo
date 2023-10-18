@@ -14,6 +14,7 @@ import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import VisibilityPanel from "../config/VisibilityPanel";
 import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel";
 import { IConstraintStore } from "../../document/ConstraintStore";
+import hotkeys from "hotkeys-js";
 
 type Props = {};
 

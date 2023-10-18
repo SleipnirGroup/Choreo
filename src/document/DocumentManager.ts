@@ -9,6 +9,7 @@ import hotkeys from "hotkeys-js";
 
 export class DocumentManager {
   simple: any;
+  hasOpened = false;
   undo() {
     this.model.document.history.canUndo && this.model.document.history.undo();
   }
@@ -33,15 +34,63 @@ export class DocumentManager {
     });
     this.model.document.pathlist.addPath("NewPath");
     this.model.document.history.clear();
-    hotkeys('g', () => {
+    hotkeys('ctrl+g', () => {
       this.model.generatePath(this.model.document.pathlist.activePathUUID);
     });
     hotkeys('ctrl+z', () => {
       this.undo();
     });
-    hotkeys('ctrl+shift+z', () => {
+    hotkeys('ctrl+shift+z,ctrl+y', () => {
       this.redo();
     });
+    hotkeys('ctrl+n', {keydown: true}, () => {this.newFile();});
+    hotkeys('ctrl+s', {keydown: true}, () => {this.saveFile();});
+    // Broken rn
+    hotkeys('ctrl+o', {keydown: true}, (event) => {
+      console.log(event);
+      if (!this.hasOpened) {
+        this.hasOpened = true;
+        console.log("doc open hotkey");
+        dialog.open({
+          title: "Open Document",
+          filters: [
+            {
+              name: "Trajopt Document",
+              extensions: ["json"],
+            },
+          ],
+        }).then(async (name) => {
+          console.log(name);
+          if (name){
+            console.log(await fs.readTextFile(name));
+            const file = new File([], name);
+            console.log(file.toString);
+            await this.onFileUpload(file);
+          }
+        }).finally(() => {this.hasOpened = false});
+      }
+    });
+    hotkeys('right,x', () => { // surely theres a better way to do this
+      const waypoints = this.model.document.pathlist.activePath.waypoints;
+      const selected = waypoints.find((w) => {
+        return w.selected;
+      });
+      let i = waypoints.indexOf(selected??waypoints[0]);
+      i++;
+      if (i >= waypoints.length) { i = waypoints.length - 1 }
+      this.model.select(waypoints[i]);
+    });
+    hotkeys('left,z', () => { // surely theres a better way to do this
+      const waypoints = this.model.document.pathlist.activePath.waypoints;
+      const selected = waypoints.find((w) => {
+        return w.selected;
+      });
+      let i = waypoints.indexOf(selected??waypoints[0]);
+      i--;
+      if (i <= 0) { i = 0 }
+      this.model.select(waypoints[i]);
+    });
+
   }
   newFile(): void {
     applySnapshot(this.model, {
