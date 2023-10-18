@@ -150,6 +150,15 @@ export class DocumentManager {
         selected.setHeading(newHeading);
       }
     });
+    hotkeys('f', () => {
+      const selected = this.getSelectedWaypoint();
+      if (selected) {
+        const newWaypoint = this.model.document.pathlist.activePath.addWaypoint();
+        newWaypoint.setX(selected.x);
+        newWaypoint.setY(selected.y);
+        newWaypoint.setHeading(selected.heading);
+      }
+    })
   }
 
   private getSelectedWaypoint() {
