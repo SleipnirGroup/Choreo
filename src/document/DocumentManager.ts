@@ -44,31 +44,6 @@ export class DocumentManager {
       this.redo();
     });
     hotkeys('ctrl+n', {keydown: true}, () => {this.newFile();});
-    hotkeys('ctrl+s', {keydown: true}, () => {this.saveFile();});
-    // Broken rn
-    hotkeys('ctrl+o', {keydown: true}, () => {
-      this.hasOpenDialog = true;
-      console.log(this.hasOpenDialog);
-      if (!this.hasOpenDialog) {
-        console.log("doc open hotkey");
-        dialog.open({
-          title: "Open Document",
-          filters: [
-            {
-              name: "Trajopt Document",
-              extensions: ["json"],
-            },
-          ],
-        }).then(async (name) => {
-          console.log(name);
-          if (name){
-            const file = new File([], name);
-            console.log(file);
-            await this.onFileUpload(file);
-          }
-        }).finally(() => {this.hasOpenDialog = false});
-      }
-    });
     hotkeys('right,x', () => { // surely theres a better way to do this
       const waypoints = this.model.document.pathlist.activePath.waypoints;
       const selected = waypoints.find((w) => {
