@@ -9,7 +9,7 @@ import hotkeys from "hotkeys-js";
 
 export class DocumentManager {
   simple: any;
-  hasOpened = false;
+  hasOpenDialog = false;
   undo() {
     this.model.document.history.canUndo && this.model.document.history.undo();
   }
@@ -46,10 +46,10 @@ export class DocumentManager {
     hotkeys('ctrl+n', {keydown: true}, () => {this.newFile();});
     hotkeys('ctrl+s', {keydown: true}, () => {this.saveFile();});
     // Broken rn
-    hotkeys('ctrl+o', {keydown: true}, (event) => {
-      console.log(event);
-      if (!this.hasOpened) {
-        this.hasOpened = true;
+    hotkeys('ctrl+o', {keydown: true}, () => {
+      this.hasOpenDialog = true;
+      console.log(this.hasOpenDialog);
+      if (!this.hasOpenDialog) {
         console.log("doc open hotkey");
         dialog.open({
           title: "Open Document",
@@ -62,12 +62,11 @@ export class DocumentManager {
         }).then(async (name) => {
           console.log(name);
           if (name){
-            console.log(await fs.readTextFile(name));
             const file = new File([], name);
-            console.log(file.toString);
+            console.log(file);
             await this.onFileUpload(file);
           }
-        }).finally(() => {this.hasOpened = false});
+        }).finally(() => {this.hasOpenDialog = false});
       }
     });
     hotkeys('right,x', () => { // surely theres a better way to do this
@@ -157,6 +156,13 @@ export class DocumentManager {
         newWaypoint.setX(selected.x);
         newWaypoint.setY(selected.y);
         newWaypoint.setHeading(selected.heading);
+        this.model.select(newWaypoint);
+      }
+    });
+    hotkeys('del,delete,backspace,clear', () => {
+      const selected = this.getSelectedWaypoint();
+      if (selected) {
+        this.model.document.pathlist.activePath.deleteWaypointUUID(selected.uuid);
       }
     })
   }
@@ -203,6 +209,7 @@ export class DocumentManager {
   async onFileUpload(file: File | null) {
     await this.parseFile(file)
       .then((content) => {
+        console.log(content);
         const parsed = JSON.parse(content);
         if (validate(parsed)) {
           this.model.fromSavedDocument(parsed);
@@ -262,6 +269,7 @@ export class DocumentManager {
       console.warn("Invalid Doc JSON:\n" + "\n" + content);
       return;
     }
+    this.hasOpenDialog = true;
     const filePath = await dialog.save({
       title: "Save Document",
       filters: [
@@ -274,6 +282,7 @@ export class DocumentManager {
     if (filePath) {
       await fs.writeTextFile(filePath, content);
     }
+    this.hasOpenDialog = false;
   }
 
   async downloadJSONString(content: string, name: string) {
