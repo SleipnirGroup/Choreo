@@ -36,16 +36,16 @@ export class DocumentManager {
     });
     this.model.document.pathlist.addPath("NewPath");
     this.model.document.history.clear();
-    hotkeys("ctrl+g,g", () => {
+    hotkeys("command+g,ctrl+g,g", () => {
       this.model.generatePath(this.model.document.pathlist.activePathUUID);
     });
-    hotkeys("ctrl+z", () => {
+    hotkeys("command+z,ctrl+z", () => {
       this.undo();
     });
-    hotkeys("ctrl+shift+z,ctrl+y", () => {
+    hotkeys("command+shift+z,ctrl+shift+z,ctrl+y", () => {
       this.redo();
     });
-    hotkeys("ctrl+n", { keydown: true }, () => {
+    hotkeys("command+n,ctrl+n", { keydown: true }, () => {
       this.newFile();
     });
     hotkeys("right,x", () => {
