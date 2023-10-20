@@ -121,20 +121,14 @@ export class DocumentManager {
       if (selected !== undefined) {
         const delta = hotkeys.shift ? Math.PI / 4 : Math.PI / 16;
         let newHeading = selected.heading + delta;
-        if (newHeading > Math.PI) {
-          newHeading = -Math.PI + (newHeading % Math.PI);
-        }
         selected.setHeading(newHeading);
       }
     });
     hotkeys("e,shift+e", () => {
       const selected = this.getSelectedWaypoint();
       if (selected !== undefined) {
-        const delta = hotkeys.shift ? Math.PI / 4 : Math.PI / 16;
-        let newHeading = selected.heading - delta;
-        if (newHeading < -Math.PI) {
-          newHeading = Math.PI - (newHeading % Math.PI);
-        }
+        const delta = hotkeys.shift ? -Math.PI / 4 : -Math.PI / 16;
+        let newHeading = selected.heading + delta;
         selected.setHeading(newHeading);
       }
     });
@@ -146,6 +140,13 @@ export class DocumentManager {
         newWaypoint.setX(selected.x);
         newWaypoint.setY(selected.y);
         newWaypoint.setHeading(selected.heading);
+        this.model.select(newWaypoint);
+      } else {
+        const newWaypoint =
+          this.model.document.pathlist.activePath.addWaypoint();
+        newWaypoint.setX(5);
+        newWaypoint.setY(5);
+        newWaypoint.setHeading(0);
         this.model.select(newWaypoint);
       }
     });
