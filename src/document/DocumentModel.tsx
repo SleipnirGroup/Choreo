@@ -66,9 +66,10 @@ const StateStore = types
         if (pathStore === undefined) {
           return new Promise((resolve, reject) =>
             reject("Path store is undefined")
-          );
-        }
-        return new Promise((resolve, reject) => {
+            );
+          }
+          return new Promise((resolve, reject) => {
+          pathStore.optimizeControlIntervalCounts();
           pathStore.setTrajectory([]);
           if (pathStore.waypoints.length < 2) {
             return;
@@ -98,7 +99,7 @@ const StateStore = types
           resolve(pathStore);
         })
           .then(
-            () =>
+            () => 
               invoke("generate_trajectory", {
                 path: pathStore.waypoints,
                 config: self.document.robotConfig,

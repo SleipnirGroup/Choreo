@@ -105,6 +105,9 @@ export const HolonomicWaypointStore = types
       setInitialGuess(initialGuess: boolean) {
         self.isInitialGuess = initialGuess;
       },
+      setControlIntervalCount(count: number) {
+        self.controlIntervalCount = count;
+      }
     };
   })
   .actions((self) => ({

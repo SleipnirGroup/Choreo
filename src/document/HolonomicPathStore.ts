@@ -22,6 +22,7 @@ import {
   WaypointScope,
 } from "./ConstraintStore";
 import { SavedWaypointId } from "./previousSpecs/v0_1";
+import { timeStamp } from "console";
 
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
@@ -311,6 +312,30 @@ export const HolonomicPathStore = types
           });
         }
       },
+      optimizeControlIntervalCounts() {
+        console.log(self.generated.toJSON());
+        if (self.generated !== undefined && self.generated.length > 0) {
+          let newCounts = [];
+          let generatedIndex = 1;
+          for (let wpt = 0; wpt < self.waypoints.length - 1; wpt ++) {
+            let wptCount = self.waypoints.at(wpt)!.controlIntervalCount;
+            let newCount = 0;
+            for (let interval = generatedIndex; interval < generatedIndex + wptCount; interval++) {
+              if (self.generated.at(interval) !== undefined && self.generated.at(interval - 1) !== undefined) {
+                if (self.generated.at(interval).timestamp - self.generated.at(interval - 1).timestamp > 0.001) {
+                  newCount++;
+                }
+              } else {
+                newCount++;
+              }
+            }
+            newCounts.push(newCount);
+            generatedIndex += wptCount;
+            self.waypoints.at(wpt)?.setControlIntervalCount(newCount);
+          }
+          console.log(newCounts);
+        }
+      }
     };
   });
 export interface IHolonomicPathStore
