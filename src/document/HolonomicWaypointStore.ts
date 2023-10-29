@@ -11,7 +11,7 @@ export const HolonomicWaypointStore = types
     heading: 0,
     translationConstrained: true,
     headingConstrained: true,
-    controlIntervalCount: 0,
+    controlIntervalCount: 40,
     isInitialGuess: false,
     uuid: types.identifier,
   })
