@@ -71,7 +71,7 @@ class WaypointPanel extends Component<Props, State> {
               enabled={true}
               setEnabled={(_) => {}}
               number={waypoint.controlIntervalCount}
-              setNumber={(count) => waypoint!.setControlIntervalCount(count)}
+              setNumber={(_) => {}}
             ></Input>
           </InputList>
           <ToggleButtonGroup

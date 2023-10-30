@@ -26,7 +26,7 @@ class PathAnimationSlider extends Component<Props, State> {
           max={this.totalTime}
           marks={
             activePath.generated.length > 0
-              ? activePath.nonGuessPoints.map((point, idx) => ({
+              ? activePath.nonGuessOrEmptyPoints.map((point, idx) => ({
                   value: activePath.waypointTimestamps()[idx],
                   label: (
                     <Tooltip title={idx + 1} key={idx + 1}>

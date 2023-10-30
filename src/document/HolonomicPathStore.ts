@@ -46,6 +46,9 @@ export const HolonomicPathStore = types
       get nonGuessPoints() {
         return self.waypoints.filter((waypoint) => !waypoint.isInitialGuess);
       },
+      get nonGuessOrEmptyPoints() {
+        return self.waypoints.filter((waypoint) => !waypoint.isInitialGuess && !(waypoint.type == 2));
+      },
       getTotalTimeSeconds(): number {
         if (self.generated.length === 0) {
           return 0;
@@ -129,10 +132,15 @@ export const HolonomicPathStore = types
     return {
       waypointTimestamps(): number[] {
         let wptTimes: number[] = [];
-        if (self.generated.length >= 40) {
-          for (let i = 0; i < self.generated.length / 40; i++) {
-            wptTimes.push(self.generated[i * 40].timestamp);
-          }
+        if (self.generated.length > 0) {
+          self.generated.forEach((cInt) => {
+            if (self.waypoints.find((wpt) => {
+              return Math.abs(wpt.x - cInt.x) < 10e-10 // floating point error :heart-eyes:
+                && Math.abs(wpt.y - cInt.y) < 10e-10
+                && (Math.abs(wpt.heading - cInt.heading) < 10e-10 || !wpt.headingConstrained)})) {
+                  wptTimes.push(cInt.timestamp);
+            }
+          });
         }
         return wptTimes;
       },
@@ -326,13 +334,17 @@ export const HolonomicPathStore = types
                 if (self.generated.at(interval).timestamp - self.generated.at(interval - 1).timestamp > 0.001) {
                   newCount++;
                 }
-              } else {
-                newCount++;
               }
             }
-            newCounts.push(newCount);
-            generatedIndex += wptCount;
-            self.waypoints.at(wpt)?.setControlIntervalCount(newCount);
+            if (newCount === 0) {
+              // If we haven't generated this segment yet, guess
+              this.guessControlIntervalCount(wpt, robotConfig);
+            } else {
+              newCount += 5; // Prevent growing too small
+              newCounts.push(newCount);
+              generatedIndex += wptCount;
+              self.waypoints.at(wpt)?.setControlIntervalCount(newCount);
+            }
           }
           console.log(newCounts);
         } else {
@@ -349,25 +361,28 @@ export const HolonomicPathStore = types
         } else if (robotConfig.wheelRadius == 0) {
           return "Wheel radius may not be 0";
         }
-        for (let i = 1; i < self.waypoints.length; i ++) {
-          let dx = self.waypoints.at(i)!.x - self.waypoints.at(i - 1)!.x;
-          let dy = self.waypoints.at(i)!.y - self.waypoints.at(i - 1)!.y;
-          let distance = Math.sqrt(dx * dx + dy * dy);
-          let maxForce = robotConfig.wheelMaxTorque / robotConfig.wheelRadius;
-          let maxAccel = (maxForce * 4) / robotConfig.mass; // time 4 for 4 modules
-          let maxVel = robotConfig.wheelMaxVelocity * robotConfig.wheelRadius;
-          let distanceAtCruise = distance - (maxVel * maxVel) / maxAccel;
-          if (distanceAtCruise < 0) {
-            // triangle
-            let totalTime = 2 * (Math.sqrt(distance * maxAccel) / maxAccel);
-            self.waypoints.at(i - 1)?.setControlIntervalCount(Math.ceil(totalTime / 0.05));
-          } else {
-            // trapezoid
-            let totalTime = (distance / maxVel) + (maxVel / maxAccel);
-            self.waypoints.at(i - 1)?.setControlIntervalCount(Math.ceil(totalTime / 0.05));
-          }
-          console.log(self.waypoints.at(i - 1)?.controlIntervalCount);
+        for (let i = 0; i < self.waypoints.length - 1; i ++) {
+          this.guessControlIntervalCount(i, robotConfig);
         }
+      },
+      guessControlIntervalCount(i: number, robotConfig: IRobotConfigStore) {        
+        let dx = self.waypoints.at(i + 1)!.x - self.waypoints.at(i)!.x;
+        let dy = self.waypoints.at(i + 1)!.y - self.waypoints.at(i)!.y;
+        let distance = Math.sqrt(dx * dx + dy * dy);
+        let maxForce = robotConfig.wheelMaxTorque / robotConfig.wheelRadius;
+        let maxAccel = (maxForce * 4) / robotConfig.mass; // time 4 for 4 modules
+        let maxVel = robotConfig.wheelMaxVelocity * robotConfig.wheelRadius;
+        let distanceAtCruise = distance - (maxVel * maxVel) / maxAccel;
+        if (distanceAtCruise < 0) {
+          // triangle
+          let totalTime = 2 * (Math.sqrt(distance * maxAccel) / maxAccel);
+          self.waypoints.at(i)?.setControlIntervalCount(Math.ceil(totalTime / 0.05));
+        } else {
+          // trapezoid
+          let totalTime = (distance / maxVel) + (maxVel / maxAccel);
+          self.waypoints.at(i)?.setControlIntervalCount(Math.ceil(totalTime / 0.05));
+        }
+        console.log(self.waypoints.at(i)?.controlIntervalCount);
       }
     };
   });
