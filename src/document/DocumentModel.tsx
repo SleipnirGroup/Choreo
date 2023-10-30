@@ -69,7 +69,12 @@ const StateStore = types
             );
           }
           return new Promise((resolve, reject) => {
-          pathStore.optimizeControlIntervalCounts();
+          const controlIntervalOptResult = pathStore.optimizeControlIntervalCounts(self.document.robotConfig);
+          if (controlIntervalOptResult !== undefined) {
+            return new Promise((resolve, reject) =>
+              reject(controlIntervalOptResult)
+            );
+          }
           pathStore.setTrajectory([]);
           if (pathStore.waypoints.length < 2) {
             return;
