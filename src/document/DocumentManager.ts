@@ -11,7 +11,6 @@ import hotkeys from "hotkeys-js";
 
 export class DocumentManager {
   simple: any;
-  hasOpenDialog = false;
   undo() {
     this.model.document.history.canUndo && this.model.document.history.undo();
   }
@@ -49,7 +48,6 @@ export class DocumentManager {
       this.newFile();
     });
     hotkeys("right,x", () => {
-      // surely theres a better way to do this
       const waypoints = this.model.document.pathlist.activePath.waypoints;
       const selected = waypoints.find((w) => {
         return w.selected;
@@ -62,7 +60,6 @@ export class DocumentManager {
       this.model.select(waypoints[i]);
     });
     hotkeys("left,z", () => {
-      // surely theres a better way to do this
       const waypoints = this.model.document.pathlist.activePath.waypoints;
       const selected = waypoints.find((w) => {
         return w.selected;
@@ -202,7 +199,6 @@ export class DocumentManager {
   async onFileUpload(file: File | null) {
     await this.parseFile(file)
       .then((content) => {
-        console.log(content);
         const parsed = JSON.parse(content);
         if (validate(parsed)) {
           this.model.fromSavedDocument(parsed);
@@ -283,7 +279,6 @@ export class DocumentManager {
       console.warn("Invalid Doc JSON:\n" + "\n" + content);
       return;
     }
-    this.hasOpenDialog = true;
     const filePath = await dialog.save({
       title: "Save Document",
       filters: [
@@ -296,7 +291,6 @@ export class DocumentManager {
     if (filePath) {
       await fs.writeTextFile(filePath, content);
     }
-    this.hasOpenDialog = false;
   }
 
   async downloadJSONString(content: string, name: string) {

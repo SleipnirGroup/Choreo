@@ -88,8 +88,6 @@ class SidebarWaypoint extends Component<Props, State> {
             onClick={() => {
               this.context.model.uiState.setSelectedSidebarItem(waypoint);
               this.context.model.uiState.setSelectedNavbarItem(waypoint.type);
-              console.log(waypoint.uuid);
-              console.log(this.props.index);
             }}
           >
             {React.cloneElement(NavbarItemData[type].icon, {

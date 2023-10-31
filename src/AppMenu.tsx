@@ -129,7 +129,6 @@ class AppMenu extends Component<Props, State> {
                 e.target.files != null &&
                 e.target.files.length >= 1
               ) {
-                console.log(e.target.files[0]);
                 let fileList = e.target.files;
                 this.context.onFileUpload(fileList[0]);
                 e.target.value = "";

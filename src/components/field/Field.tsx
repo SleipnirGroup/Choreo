@@ -16,7 +16,6 @@ import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel";
 import { IConstraintStore } from "../../document/ConstraintStore";
 import "react-toastify/dist/ReactToastify.min.css";
 import { ToastContainer, toast } from "react-toastify";
-import hotkeys from "hotkeys-js";
 
 type Props = {};
 
