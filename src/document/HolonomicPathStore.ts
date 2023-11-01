@@ -33,6 +33,9 @@ export const HolonomicPathStore = types
     constraints: types.array(types.union(...Object.values(ConstraintStores))),
     generated: types.array(TrajectorySampleStore),
     generating: false,
+    usesControlIntervalCulling: true,
+    usesControlIntervalGuessing: true,
+    defaultControlIntervalCount: 40,
   })
   .views((self) => {
     return {
@@ -193,6 +196,15 @@ export const HolonomicPathStore = types
   })
   .actions((self) => {
     return {
+      setControlIntervalCulling(value: boolean) {
+        self.usesControlIntervalCulling = value;
+      },
+      setControlIntervalGuessing(value: boolean) {
+        self.usesControlIntervalGuessing = value;
+      },
+      setDefaultControlIntervalCounts(counts: number) {
+        self.defaultControlIntervalCount = counts;
+      },
       setName(name: string) {
         self.name = name;
       },
@@ -323,7 +335,7 @@ export const HolonomicPathStore = types
       },
       optimizeControlIntervalCounts(robotConfig: IRobotConfigStore) {
         console.log(self.generated.toJSON());
-        if (self.generated !== undefined && self.generated.length > 0) {
+        if (self.generated !== undefined && self.generated.length > 0 && self.usesControlIntervalCulling) {
           let newCounts = [];
           let generatedIndex = 1;
           for (let wpt = 0; wpt < self.waypoints.length - 1; wpt ++) {
@@ -361,8 +373,14 @@ export const HolonomicPathStore = types
         } else if (robotConfig.wheelRadius == 0) {
           return "Wheel radius may not be 0";
         }
-        for (let i = 0; i < self.waypoints.length - 1; i ++) {
-          this.guessControlIntervalCount(i, robotConfig);
+        if (self.usesControlIntervalGuessing) {
+          for (let i = 0; i < self.waypoints.length - 1; i ++) {
+            this.guessControlIntervalCount(i, robotConfig);
+          }
+        } else {
+          for (let i = 0; i < self.waypoints.length; i ++) {
+            self.waypoints.at(i)?.setControlIntervalCount(self.defaultControlIntervalCount);
+          }
         }
       },
       guessControlIntervalCount(i: number, robotConfig: IRobotConfigStore) {        

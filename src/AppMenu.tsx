@@ -2,11 +2,14 @@ import React, { Component } from "react";
 import DocumentManagerContext from "./document/DocumentManager";
 import { observer } from "mobx-react";
 import {
+  Dialog,
+  DialogTitle,
   Drawer,
   List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Switch,
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -14,18 +17,20 @@ import UploadIcon from "@mui/icons-material/UploadFile";
 import IconButton from "@mui/material/IconButton";
 import FileDownload from "@mui/icons-material/FileDownload";
 import Tooltip from "@mui/material/Tooltip";
-import { NoteAddOutlined } from "@mui/icons-material";
-import { ToastContainer, toast } from "react-toastify";
+import { NoteAddOutlined, Settings } from "@mui/icons-material";
+import { ToastContainer } from "react-toastify";
 
 type Props = {};
 
-type State = {};
+type State = { settingsOpen: boolean };
 
 class AppMenu extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   // @ts-ignore
   context!: React.ContextType<typeof DocumentManagerContext>;
-  state = {};
+  state = {
+    settingsOpen: false
+  };
 
   render() {
     let { mainMenuOpen, toggleMainMenu } = this.context.model.uiState;
@@ -34,7 +39,19 @@ class AppMenu extends Component<Props, State> {
         ModalProps={{ onBackdropClick: toggleMainMenu }}
         anchor="left"
         open={mainMenuOpen}
+        onClose={(_) => {this.setState({settingsOpen: false})}}
       >
+      <Dialog
+        open={this.state.settingsOpen}
+        onClose={(_) => {this.setState({settingsOpen: false})}}
+      >
+        <DialogTitle>Settings</DialogTitle>
+        <List>
+          <Switch
+            onChange={(e) => {}}
+          ></Switch>
+        </List>
+      </Dialog>
         <div
           style={{
             width: "var(--sidebar-width)",
@@ -105,6 +122,17 @@ class AppMenu extends Component<Props, State> {
                 <FileDownload />
               </ListItemIcon>
               <ListItemText primary="Export Trajectory"></ListItemText>
+            </ListItemButton>
+            <ListItemButton
+              onClick={() => {
+                this.setState({settingsOpen: true})
+                console.log("click!  " + this.state.settingsOpen);
+              }}
+            >
+              <ListItemIcon>
+                <Settings />
+              </ListItemIcon>
+              <ListItemText primary="Open Settings"></ListItemText>
             </ListItemButton>
           </List>
           <ToastContainer

@@ -1,4 +1,4 @@
-import { CircularProgress, IconButton, TextField } from "@mui/material";
+import { CircularProgress, Dialog, DialogTitle, Divider, FormControlLabel, FormGroup, IconButton, List, Switch, TextField } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
@@ -6,19 +6,20 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import styles from "./Sidebar.module.css";
 import { Tooltip } from "@mui/material";
-import { Route } from "@mui/icons-material";
+import { Route, Settings } from "@mui/icons-material";
+import Input from "../input/Input";
 
 type Props = {};
 
 type State = {};
 
 type OptionProps = { uuid: string };
-type OptionState = { renaming: boolean; renameError: boolean; name: string };
+type OptionState = { renaming: boolean; renameError: boolean; name: string; settingsOpen: boolean };
 
 class PathSelectorOption extends Component<OptionProps, OptionState> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
-  state = { renaming: false, renameError: false, name: this.getPath().name };
+  state = { renaming: false, renameError: false, name: this.getPath().name, settingsOpen: false };
   nameInputRef = React.createRef<HTMLInputElement>();
   getSelected() {
     return (
@@ -160,21 +161,75 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             },
           }}
         ></TextField>
-        <Tooltip title="Delete Path">
-          <IconButton
-            className={styles.SidebarRightIcon}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (window.confirm(`Delete "${this.getPath().name}"?`)) {
-                this.context.model.document.pathlist.deletePath(
-                  this.props.uuid
-                );
-              }
-            }}
-          >
-            <DeleteIcon></DeleteIcon>
-          </IconButton>
-        </Tooltip>
+        <div>
+          <Tooltip title="Path Config">
+            <IconButton
+              className={styles.SidebarRightIcon}
+              onClick={(e) => {
+                this.setState({settingsOpen: true});
+              }}
+            >
+              <Settings></Settings>
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Delete Path">
+            <IconButton
+              className={styles.SidebarRightIcon}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.confirm(`Delete "${this.getPath().name}"?`)) {
+                  this.context.model.document.pathlist.deletePath(
+                    this.props.uuid
+                  );
+                }
+              }}
+            >
+              <DeleteIcon></DeleteIcon>
+            </IconButton>
+          </Tooltip>
+        </div>
+        <Dialog
+          open={this.state.settingsOpen}
+          onClose={(_) => {this.setState({settingsOpen: false})}}
+        >
+          <DialogTitle>Path Settings</DialogTitle>
+            <FormGroup
+              style={{
+                padding:"8px",
+                paddingBottom:"16px",
+              }}
+            >
+              <FormControlLabel
+                label="Control Interval Culling"
+                title="Remove unnecessary control intervals (resolution) between generations (default true)"
+                control={<Switch
+                  checked={this.getPath().usesControlIntervalCulling}
+                  onChange={(e) => {this.getPath().setControlIntervalCulling(e.target.checked)}}/>}
+              >
+              </FormControlLabel>
+              <FormControlLabel
+                label="Control Interval Guessing"
+                title="Estimate how many control intervals (resolution) is needed between waypoints based on distance (default true)"
+                control={<Switch
+                  checked={this.getPath().usesControlIntervalGuessing}
+                  onChange={(e) => {this.getPath().setControlIntervalGuessing(e.target.checked)}}/>}
+              >
+              </FormControlLabel>
+              </FormGroup>
+              <div
+              style={{
+                padding:"16px"
+              }}>
+                <TextField
+                    label="Default Control Interval Count"
+                    title="When not guessing or culling, how many control intervals to use? (default 40)"
+                    defaultValue={this.getPath().defaultControlIntervalCount}
+                    inputMode="numeric"
+                    onChange={(e) => {this.getPath().setDefaultControlIntervalCounts(parseInt(e.target.value))}}
+                    fullWidth
+                  ></TextField>
+                </div>
+        </Dialog>
       </span>
     );
   }
