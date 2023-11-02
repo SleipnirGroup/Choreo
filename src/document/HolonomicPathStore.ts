@@ -121,6 +121,9 @@ export const HolonomicPathStore = types
               scope: saved["scope"],
             };
           }),
+          usesControlIntervalCulling: self.usesControlIntervalCulling,
+          usesControlIntervalGuessing: self.usesControlIntervalGuessing,
+          defaultControlIntervalCount: self.defaultControlIntervalCount,
         };
       },
       lowestSelectedPoint(): IHolonomicWaypointStore | null {
@@ -332,6 +335,9 @@ export const HolonomicPathStore = types
             self.generated.push(sample);
           });
         }
+        self.usesControlIntervalCulling = savedPath.usesControlIntervalCulling;
+        self.usesControlIntervalGuessing = savedPath.usesControlIntervalGuessing;
+        self.defaultControlIntervalCount = savedPath.defaultControlIntervalCount;
       },
       optimizeControlIntervalCounts(robotConfig: IRobotConfigStore) {
         console.log(self.generated.toJSON());

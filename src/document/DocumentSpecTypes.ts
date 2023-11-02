@@ -31,6 +31,16 @@ import {
   SAVE_FILE_VERSION as v0_1_Version,
 } from "./previousSpecs/v0_1";
 import v0_1_Schema from "./previousSpecs/v0.1.json";
+import {
+  SavedDocument as v0_1_1,
+  SavedPath as v0_1_1_Path,
+  SavedWaypoint as v0_1_1_Waypoint,
+  SavedTrajectorySample as v0_1_1_Sample,
+  SavedPathList as v0_1_1_Pathlist,
+  SavedRobotConfig as v0_1_1_Config,
+  SAVE_FILE_VERSION as v0_1_1_Version,
+} from "./previousSpecs/v0_1_1";
+import v0_1_1_Schema from "./previousSpecs/v0.1.1.json";
 
 // Paste new version import blocks above this line.
 // Update the import path in the below to point to a particular version as current
@@ -42,9 +52,9 @@ export type {
   SavedRobotConfig,
   SavedWaypoint,
   SavedConstraint,
-} from "./previousSpecs/v0_1";
-export { SAVE_FILE_VERSION } from "./previousSpecs/v0_1";
-import { SAVE_FILE_VERSION } from "./previousSpecs/v0_1";
+} from "./previousSpecs/v0_1_1";
+export { SAVE_FILE_VERSION } from "./previousSpecs/v0_1_1";
+import { SAVE_FILE_VERSION } from "./previousSpecs/v0_1_1";
 import Ajv from "ajv";
 
 export let VERSIONS = {
@@ -114,6 +124,32 @@ export let VERSIONS = {
       return ajv.validate(v0_1_Schema, document);
     },
   },
+  "v0.1.1": {
+    up: (document: any): v0_1_1 => {
+      document = document as v0_1;
+      let updated: v0_1_1 = {
+        paths: {},
+        version: v0_1_1_Version,
+        robotConfiguration: document.robotConfiguration,
+      };
+      for (let entry of Object.keys(document.paths)) {
+        let path = document.paths[entry];
+        updated.paths[entry] = {
+          waypoints: path.waypoints,
+          trajectory: path.trajectory,
+          constraints: path.constraints,
+          usesControlIntervalCulling: true,
+          usesControlIntervalGuessing: true,
+          defaultControlIntervalCount: 40,
+        };
+      }
+      return updated;
+    },
+    validate: (document: v0_1_1): boolean => {
+      const ajv = new Ajv();
+      return ajv.validate(v0_1_1_Schema, document);
+    }
+  }
 };
 
 export let updateToCurrent = (document: { version: string }): SavedDocument => {

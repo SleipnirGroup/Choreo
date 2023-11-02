@@ -41,17 +41,6 @@ class AppMenu extends Component<Props, State> {
         open={mainMenuOpen}
         onClose={(_) => {this.setState({settingsOpen: false})}}
       >
-      <Dialog
-        open={this.state.settingsOpen}
-        onClose={(_) => {this.setState({settingsOpen: false})}}
-      >
-        <DialogTitle>Settings</DialogTitle>
-        <List>
-          <Switch
-            onChange={(e) => {}}
-          ></Switch>
-        </List>
-      </Dialog>
         <div
           style={{
             width: "var(--sidebar-width)",
