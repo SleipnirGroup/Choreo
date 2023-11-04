@@ -71,6 +71,7 @@ export class Field extends Component<Props, State> {
         )}
         <VisibilityPanel></VisibilityPanel>
         <Tooltip
+          disableInteractive
           placement="top-start"
           title={
             activePath.canGenerate() || activePath.generating
