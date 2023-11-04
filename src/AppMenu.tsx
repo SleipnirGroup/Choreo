@@ -15,6 +15,7 @@ import IconButton from "@mui/material/IconButton";
 import FileDownload from "@mui/icons-material/FileDownload";
 import Tooltip from "@mui/material/Tooltip";
 import { NoteAddOutlined } from "@mui/icons-material";
+import { ToastContainer, toast } from "react-toastify";
 import { dialog } from "@tauri-apps/api";
 
 type Props = {};
@@ -114,6 +115,18 @@ class AppMenu extends Component<Props, State> {
               <ListItemText primary="Export Trajectory"></ListItemText>
             </ListItemButton>
           </List>
+          <ToastContainer
+            position="top-right"
+            autoClose={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            theme="dark"
+            enableMultiContainer
+            containerId={"MENU"}
+          ></ToastContainer>
           <input
             type="file"
             id="file-upload-input"
