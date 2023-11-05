@@ -112,17 +112,6 @@ class AppMenu extends Component<Props, State> {
               </ListItemIcon>
               <ListItemText primary="Export Trajectory"></ListItemText>
             </ListItemButton>
-            <ListItemButton
-              onClick={() => {
-                this.setState({settingsOpen: true})
-                console.log("click!  " + this.state.settingsOpen);
-              }}
-            >
-              <ListItemIcon>
-                <Settings />
-              </ListItemIcon>
-              <ListItemText primary="Open Settings"></ListItemText>
-            </ListItemButton>
           </List>
           <ToastContainer
             position="top-right"
