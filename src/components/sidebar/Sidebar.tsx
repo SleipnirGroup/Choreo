@@ -139,6 +139,19 @@ class Sidebar extends Component<Props, State> {
             )}
           </div>
         </div>
+        <Divider className={styles.SidebarDivider} textAlign="left" flexItem>
+          <span>OBSTACLES</span>
+        </Divider>
+          <div className={styles.WaypointList}>
+            {this.context.model.document.pathlist.activePath.obstacles.map(
+              (obstacle) => {
+                let str = obstacle.x + ", " + obstacle.y + ", " + obstacle.radius;
+                return (
+                  str
+                );
+              }
+            )}
+          </div>
         <Divider></Divider>
       </div>
     );

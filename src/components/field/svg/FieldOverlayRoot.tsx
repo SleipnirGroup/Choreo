@@ -11,6 +11,9 @@ import { NavbarLabels, ViewLayers } from "../../../document/UIStateStore";
 import FieldGeneratedLines from "./FieldGeneratedLines";
 import FieldAxisLines from "./FieldAxisLines";
 import FieldConstraintsAddLayer from "./FieldConstraintsAddLayer";
+import FieldObstacle from "./FieldObstacles";
+import { Box } from "@mui/material";
+import { Circle } from "@mui/icons-material";
 
 type Props = {};
 
@@ -134,6 +137,9 @@ class FieldOverlayRoot extends Component<Props, State> {
           {layers[ViewLayers.Waypoints] && <FieldPathLines></FieldPathLines>}
           {layers[ViewLayers.Trajectory] && (
             <FieldGeneratedLines></FieldGeneratedLines>
+          )}
+          {layers[ViewLayers.Obstacles] && (
+            <FieldObstacle></FieldObstacle>
           )}
           {layers[ViewLayers.Waypoints] &&
             this.context.model.uiState.isNavbarWaypointSelected() && (

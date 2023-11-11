@@ -1,6 +1,7 @@
 import {
   Circle,
   CircleOutlined,
+  DoNotDisturb,
   Grid4x4,
   Route,
   SquareOutlined,
@@ -150,6 +151,11 @@ const ViewData = {
     name: "Waypoints",
     icon: <Waypoint />,
   },
+  Obstacles: {
+    index: 4,
+    name: "Obstacles",
+    icon: <DoNotDisturb />,
+  }
 };
 
 export const ViewLayers = (() => {

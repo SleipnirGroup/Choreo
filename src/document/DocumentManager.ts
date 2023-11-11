@@ -25,7 +25,7 @@ export class DocumentManager {
     this.model = StateStore.create({
       uiState: {
         selectedSidebarItem: undefined,
-        layers: [true, false, true, true],
+        layers: [true, false, true, true, true],
       },
       document: {
         robotConfig: { identifier: uuidv4() },
@@ -147,7 +147,7 @@ export class DocumentManager {
 
   async saveFile() {
     const content = JSON.stringify(this.model.asSavedDocument(), undefined, 4);
-    if (!VERSIONS["v0.1.1"].validate(this.model.asSavedDocument())) {
+    if (!VERSIONS["v0.1.2"].validate(this.model.asSavedDocument())) {
       console.warn("Invalid Doc JSON:\n" + "\n" + content);
       return;
     }

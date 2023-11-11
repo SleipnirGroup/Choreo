@@ -21,9 +21,10 @@ import {
   WaypointID,
   WaypointScope,
 } from "./ConstraintStore";
-import { SavedWaypointId } from "./previousSpecs/v0_1";
+import { SavedWaypointId } from "./previousSpecs/v0_1_2";
 import { timeStamp } from "console";
 import { IRobotConfigStore } from "./RobotConfigStore";
+import { ObstacleStore } from "./ObstacleStore";
 
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
@@ -31,6 +32,7 @@ export const HolonomicPathStore = types
     uuid: types.identifier,
     waypoints: types.array(HolonomicWaypointStore),
     constraints: types.array(types.union(...Object.values(ConstraintStores))),
+    obstacles: types.array(ObstacleStore),
     generated: types.array(TrajectorySampleStore),
     generating: false,
     usesControlIntervalCulling: true,
@@ -124,6 +126,7 @@ export const HolonomicPathStore = types
           usesControlIntervalCulling: self.usesControlIntervalCulling,
           usesControlIntervalGuessing: self.usesControlIntervalGuessing,
           defaultControlIntervalCount: self.defaultControlIntervalCount,
+          obstacles: self.obstacles,
         };
       },
       lowestSelectedPoint(): IHolonomicWaypointStore | null {
@@ -278,6 +281,9 @@ export const HolonomicPathStore = types
 
       reorder(startIndex: number, endIndex: number) {
         moveItem(self.waypoints, startIndex, endIndex);
+      },
+      addObstacle(store: typeof ObstacleStore) {
+        self.obstacles.push(store);
       },
       setTrajectory(trajectory: Array<SavedTrajectorySample>) {
         // @ts-ignore

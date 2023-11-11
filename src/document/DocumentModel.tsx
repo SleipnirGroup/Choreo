@@ -109,6 +109,7 @@ const StateStore = types
                 path: pathStore.waypoints,
                 config: self.document.robotConfig,
                 constraints: pathStore.asSolverPath().constraints,
+                obstacles: pathStore.obstacles
               }),
             (e) => e
           )
