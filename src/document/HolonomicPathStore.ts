@@ -397,17 +397,17 @@ export const HolonomicPathStore = types
         let dy = self.nonGuessPoints.at(i + 1)!.y - self.nonGuessPoints.at(i)!.y;
         let distance = Math.sqrt(dx * dx + dy * dy);
         let maxForce = robotConfig.wheelMaxTorque / robotConfig.wheelRadius;
-        let maxAccel = (maxForce * 4) / robotConfig.mass; // time 4 for 4 modules
+        let maxAccel = (maxForce * 4) / robotConfig.mass; // times 4 for 4 modules
         let maxVel = robotConfig.wheelMaxVelocity * robotConfig.wheelRadius;
         let distanceAtCruise = distance - (maxVel * maxVel) / maxAccel;
         if (distanceAtCruise < 0) {
           // triangle
           let totalTime = 2 * (Math.sqrt(distance * maxAccel) / maxAccel);
-          self.nonGuessPoints.at(i)?.setControlIntervalCount(Math.ceil(totalTime / 0.05));
+          self.nonGuessPoints.at(i)?.setControlIntervalCount(Math.ceil(totalTime / 0.1));
         } else {
           // trapezoid
           let totalTime = (distance / maxVel) + (maxVel / maxAccel);
-          self.nonGuessPoints.at(i)?.setControlIntervalCount(Math.ceil(totalTime / 0.05));
+          self.nonGuessPoints.at(i)?.setControlIntervalCount(Math.ceil(totalTime / 0.1));
         }
         console.log(self.nonGuessPoints.at(i)?.controlIntervalCount);
       }
