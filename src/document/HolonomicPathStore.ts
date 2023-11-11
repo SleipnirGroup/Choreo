@@ -359,7 +359,8 @@ export const HolonomicPathStore = types
               this.guessControlIntervalCount(wpt, robotConfig);
             } else {
               newCount *= 1.25; // Prevent growing too small
-              newCount = Math.ceil(newCount) // me when no integer type
+              newCount = Math.ceil(newCount);
+              newCount = Math.max(newCount, 15);
               newCounts.push(newCount);
               generatedIndex += wptCount;
               self.nonGuessPoints.at(wpt)?.setControlIntervalCount(newCount);
