@@ -48,7 +48,6 @@ import {
   SavedTrajectorySample as v0_1_2_Sample,
   SavedPathList as v0_1_2_Pathlist,
   SavedRobotConfig as v0_1_2_Config,
-  SavedObstacle as v0_1_2_Obstacle,
   SAVE_FILE_VERSION as v0_1_2_Version,
 } from "./previousSpecs/v0_1_2";
 import v0_1_2_Schema from "./previousSpecs/v0.1.2.json";
@@ -63,7 +62,6 @@ export type {
   SavedRobotConfig,
   SavedWaypoint,
   SavedConstraint,
-  SavedObstacle,
 } from "./previousSpecs/v0_1_2";
 export { SAVE_FILE_VERSION } from "./previousSpecs/v0_1_2";
 import { SAVE_FILE_VERSION } from "./previousSpecs/v0_1_2";
@@ -179,7 +177,7 @@ export let VERSIONS = {
           usesControlIntervalCulling: path.usesControlIntervalCulling,
           usesControlIntervalGuessing: path.usesControlIntervalGuessing,
           defaultControlIntervalCount: path.defaultControlIntervalCount,
-          obstacles: []
+          usesDefaultFieldObstacles: true
         };
       }
       return updated;

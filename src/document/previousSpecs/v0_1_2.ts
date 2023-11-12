@@ -25,7 +25,7 @@ export interface SavedPath {
   waypoints: Array<SavedWaypoint>;
   trajectory: Array<SavedTrajectorySample> | null;
   constraints: Array<SavedConstraint>;
-  obstacles: Array<SavedObstacle>;
+  usesDefaultFieldObstacles: boolean;
   usesControlIntervalCulling: boolean;
   usesControlIntervalGuessing: boolean;
   defaultControlIntervalCount: number;
@@ -52,12 +52,4 @@ export interface SavedConstraint {
   scope: Array<SavedWaypointId>;
   type: string;
   [key: string]: unknown;
-}
-export interface CircleObstacle {
-  x: number;
-  y: number;
-  radius: number; // positive
-}
-export interface SavedObstacle {
-  obstacle: CircleObstacle
 }

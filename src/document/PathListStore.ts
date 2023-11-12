@@ -3,7 +3,7 @@ import { SavedPathList } from "./DocumentSpecTypes";
 import { HolonomicPathStore } from "./HolonomicPathStore";
 import { v4 as uuidv4 } from "uuid";
 import { ConstraintStores } from "./ConstraintStore";
-import { ObstacleStore } from "./ObstacleStore";
+import { CircularObstacleStore } from "./CircularObstacleStore";
 
 export const PathListStore = types
   .model("PathListStore", {
@@ -69,7 +69,6 @@ export const PathListStore = types
         path
           .addConstraint(ConstraintStores.WptZeroVelocity)
           ?.setScope(["last"]);
-        path.addObstacle({x: 3, y: 3, radius: 1});
         self.paths.put(path);
         if (self.paths.size === 1 || select) {
           self.activePathUUID = newUUID;

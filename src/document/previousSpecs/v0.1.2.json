@@ -113,22 +113,8 @@
                 }
               }
             },
-            "obstacles": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "x": {
-                    "type": "number"
-                  },
-                  "y": {
-                    "type": "number"
-                  },
-                  "radius": {
-                    "type": "number"
-                  }
-                }
-              }
+            "usesDefaultFieldObstacles": {
+              "type": "boolean"
             },
             "usesControlIntervalCulling": {
               "type": "boolean"
@@ -140,7 +126,7 @@
               "type": "integer"
             }
           },
-          "required": ["waypoints", "generatedTrajectory", "constraints", "usesControlIntervalCulling", "usesControlIntervalGuessing", "defaultControlIntervalCount"]
+          "required": ["waypoints", "generatedTrajectory", "constraints", "usesControlIntervalCulling", "usesControlIntervalGuessing", "defaultControlIntervalCount", "circleObstacles", "polygonObstacles"]
         }
       }
     },

@@ -73,8 +73,21 @@ enum Constraints {
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[allow(non_snake_case)]
-struct Obstacle {
+struct CircleObstacle {
   x: f64, y: f64, radius: f64
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[allow(non_snake_case)]
+struct PolygonObstacle {
+  x: Vec<f64>, y: Vec<f64>, radius: f64
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[allow(non_snake_case)]
+enum Obstacle {
+  Circle(CircleObstacle),
+  Polygon(PolygonObstacle)
 }
 
 fn fix_scope(idx: usize, removed_idxs: &Vec<usize>) -> usize {
@@ -91,7 +104,8 @@ async fn generate_trajectory(
     path: Vec<ChoreoWaypoint>, 
     config: ChoreoRobotConfig, 
     constraints: Vec<Constraints>, 
-    obstacles: Vec<Obstacle>
+    circleObstacles: Vec<CircleObstacle>,
+    polygonObstacles: Vec<PolygonObstacle>
   ) -> Result<HolonomicTrajectory, String> {
 
     let mut path_builder = SwervePathBuilder::new();
@@ -232,9 +246,13 @@ async fn generate_trajectory(
 
     path_builder.set_bumpers(config.bumperLength, config.bumperWidth);
 
-    for obstacle in obstacles {
-      println!("{:?}", obstacle);
-      path_builder.sgmt_circle_obstacle(0, wpt_cnt - 1, obstacle.x, obstacle.y, obstacle.radius);
+    for o in circleObstacles {
+      println!("{:?}", o);
+      path_builder.sgmt_circle_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
+    }
+
+    for o in polygonObstacles {
+      path_builder.sgmt_polygon_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
     }
     path_builder.set_drivetrain(&drivetrain);
     path_builder.generate()
