@@ -293,10 +293,18 @@ export const HolonomicPathStore = types
                 return { uuid: self.waypoints[savedId].uuid as string };
               }
             };
-            self.addConstraint(
+            let constraint = self.addConstraint(
               constraintStore,
               saved.scope.map((id) => savedWaypointIdToWaypointId(id))
             );
+
+            Object.keys(constraint?.definition.properties ?? {}).forEach((key) => {
+              if (Object.hasOwn(saved, key)) {
+                let upperCaseName = key[0].toUpperCase() + key.slice(1);
+                //@ts-ignore
+                constraint[`set${upperCaseName}`](saved[key]);
+              }
+            })
           }
         });
         self.generated.clear();
