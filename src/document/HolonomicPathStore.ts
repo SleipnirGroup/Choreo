@@ -298,13 +298,19 @@ export const HolonomicPathStore = types
               saved.scope.map((id) => savedWaypointIdToWaypointId(id))
             );
 
-            Object.keys(constraint?.definition.properties ?? {}).forEach((key) => {
-              if (Object.hasOwn(saved, key) && typeof saved[key] === "number" && key.length >= 1) {
-                let upperCaseName = key[0].toUpperCase() + key.slice(1);
-                //@ts-ignore
-                constraint[`set${upperCaseName}`](saved[key]);
+            Object.keys(constraint?.definition.properties ?? {}).forEach(
+              (key) => {
+                if (
+                  Object.hasOwn(saved, key) &&
+                  typeof saved[key] === "number" &&
+                  key.length >= 1
+                ) {
+                  let upperCaseName = key[0].toUpperCase() + key.slice(1);
+                  //@ts-ignore
+                  constraint[`set${upperCaseName}`](saved[key]);
+                }
               }
-            })
+            );
           }
         });
         self.generated.clear();
