@@ -84,6 +84,8 @@ fn fix_scope(idx: usize, removed_idxs: &Vec<usize>) -> usize {
 async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfig, constraints: Vec<Constraints>) -> Result<HolonomicTrajectory, String> {
 
     let mut path_builder = SwervePathBuilder::new();
+
+
     let mut wpt_cnt : usize = 0;
     let mut rm : Vec<usize> = Vec::new();
     for i in 0..path.len() {
