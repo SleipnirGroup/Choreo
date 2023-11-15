@@ -16,7 +16,7 @@ import FileDownload from "@mui/icons-material/FileDownload";
 import Tooltip from "@mui/material/Tooltip";
 import { NoteAddOutlined } from "@mui/icons-material";
 import { ToastContainer, toast } from "react-toastify";
-import { dialog, invoke } from "@tauri-apps/api";
+import { dialog } from "@tauri-apps/api";
 
 type Props = {};
 
