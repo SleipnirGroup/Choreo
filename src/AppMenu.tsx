@@ -114,17 +114,6 @@ class AppMenu extends Component<Props, State> {
               </ListItemIcon>
               <ListItemText primary="Export Trajectory"></ListItemText>
             </ListItemButton>
-
-            <ListItemButton
-              onClick={() => {
-                invoke("cancel");
-              }}
-            >
-              <ListItemIcon>
-                <FileDownload />
-              </ListItemIcon>
-              <ListItemText primary="cancel"></ListItemText>
-            </ListItemButton>
           </List>
           <ToastContainer
             position="top-right"

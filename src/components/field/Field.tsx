@@ -16,6 +16,8 @@ import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel";
 import { IConstraintStore } from "../../document/ConstraintStore";
 import "react-toastify/dist/ReactToastify.min.css";
 import { ToastContainer, toast } from "react-toastify";
+import { invoke } from "@tauri-apps/api";
+import { Close } from "@mui/icons-material";
 
 type Props = {};
 
@@ -74,9 +76,11 @@ export class Field extends Component<Props, State> {
           disableInteractive
           placement="top-start"
           title={
-            activePath.canGenerate() || activePath.generating
+            activePath.generating ? "Cancel All (Ctrl-click)" : (
+            activePath.canGenerate()
               ? "Generate Path"
               : "Generate Path (needs 2 waypoints)"
+            )
           }
         >
           <Box
@@ -88,6 +92,38 @@ export class Field extends Component<Props, State> {
               height: 48,
             }}
           >
+                    {/* cancel button */}
+        <IconButton
+              aria-label="add"
+              size="large"
+              style={{ pointerEvents: "all" }}
+              sx={{
+                position: "absolute",
+                bottom: 0,
+                right: 0,
+                width: "100%",
+                height: "100%",
+                transformOrigin: "100% 100%",
+                transform: "scale(1.3)",
+                borderRadius: "50%",
+                boxShadow: "3px",
+                marginInline: 0,
+                zIndex: activePath.generating? 10: -1,
+                backgroundColor:"red",
+                "&:hover": {
+                  backgroundColor:"darkred"
+                }
+                
+              }}
+              onClick={(event) => {
+                if (event.ctrlKey) {
+                  invoke("cancel");
+                }
+              }}
+              disabled={activePath.canGenerate()}
+            >
+              <Close> </Close>
+            </IconButton>
             <IconButton
               color="primary"
               aria-label="add"
@@ -104,17 +140,22 @@ export class Field extends Component<Props, State> {
                 borderRadius: "50%",
                 boxShadow: "3px",
                 marginInline: 0,
+                visibility:activePath.canGenerate() ? "visible" : "hidden"
               }}
               onClick={() => {
+                let pathName = activePath.name;
                 toast.dismiss();
                 toast.promise(
                   this.context.model.generatePath(activePathUUID),
                   {
-                    success: "Generated path",
+                    success: `Generated \"${pathName}\"`,
                     error: {
                       render({ data }) {
                         console.log(data);
-                        return "Problem generating path: " + new String(data);
+                        if ((data as string).includes("User_Requested_Stop")) {
+                          return `Cancelled \"${pathName}\"`;
+                        }
+                        return `Can't generate \"${pathName}\": ` + (data as string);
                       },
                     },
                   },
@@ -129,6 +170,7 @@ export class Field extends Component<Props, State> {
             </IconButton>
           </Box>
         </Tooltip>
+
         {activePath.generating && (
           <CircularProgress
             size={48 * 1.3}
