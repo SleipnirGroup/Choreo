@@ -76,11 +76,11 @@ export class Field extends Component<Props, State> {
           disableInteractive
           placement="top-start"
           title={
-            activePath.generating ? "Cancel All (Ctrl-click)" : (
-            activePath.canGenerate()
+            activePath.generating
+              ? "Cancel All (Ctrl-click)"
+              : activePath.canGenerate()
               ? "Generate Path"
               : "Generate Path (needs 2 waypoints)"
-            )
           }
         >
           <Box
@@ -92,8 +92,8 @@ export class Field extends Component<Props, State> {
               height: 48,
             }}
           >
-                    {/* cancel button */}
-        <IconButton
+            {/* cancel button */}
+            <IconButton
               aria-label="add"
               size="large"
               style={{ pointerEvents: "all" }}
@@ -108,12 +108,11 @@ export class Field extends Component<Props, State> {
                 borderRadius: "50%",
                 boxShadow: "3px",
                 marginInline: 0,
-                zIndex: activePath.generating? 10: -1,
-                backgroundColor:"red",
+                zIndex: activePath.generating ? 10 : -1,
+                backgroundColor: "red",
                 "&:hover": {
-                  backgroundColor:"darkred"
-                }
-                
+                  backgroundColor: "darkred",
+                },
               }}
               onClick={(event) => {
                 if (event.ctrlKey) {
@@ -140,7 +139,7 @@ export class Field extends Component<Props, State> {
                 borderRadius: "50%",
                 boxShadow: "3px",
                 marginInline: 0,
-                visibility:activePath.canGenerate() ? "visible" : "hidden"
+                visibility: activePath.canGenerate() ? "visible" : "hidden",
               }}
               onClick={() => {
                 let pathName = activePath.name;
@@ -155,7 +154,9 @@ export class Field extends Component<Props, State> {
                         if ((data as string).includes("User_Requested_Stop")) {
                           return `Cancelled \"${pathName}\"`;
                         }
-                        return `Can't generate \"${pathName}\": ` + (data as string);
+                        return (
+                          `Can't generate \"${pathName}\": ` + (data as string)
+                        );
                       },
                     },
                   },
