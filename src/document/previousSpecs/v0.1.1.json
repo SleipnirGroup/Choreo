@@ -113,9 +113,6 @@
                 }
               }
             },
-            "usesControlIntervalCulling": {
-              "type": "boolean"
-            },
             "usesControlIntervalGuessing":{
               "type": "boolean"
             },
@@ -123,7 +120,7 @@
               "type": "integer"
             }
           },
-          "required": ["waypoints", "generatedTrajectory", "constraints", "usesControlIntervalCulling", "usesControlIntervalGuessing", "defaultControlIntervalCount"]
+          "required": ["waypoints", "generatedTrajectory", "constraints", "usesControlIntervalGuessing", "defaultControlIntervalCount"]
         }
       }
     },

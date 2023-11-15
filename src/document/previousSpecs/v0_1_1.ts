@@ -1,5 +1,5 @@
 /** CHANGES from v0.1:
- * Added usesControlIntervalCulling, usesControlIntervalGuessing, defaultControlIntervalCount to path
+ * Added usesControlIntervalGuessing, defaultControlIntervalCount to path
  */
 
 export const SAVE_FILE_VERSION = "v0.1.1";
@@ -25,7 +25,6 @@ export interface SavedPath {
   waypoints: Array<SavedWaypoint>;
   trajectory: Array<SavedTrajectorySample> | null;
   constraints: Array<SavedConstraint>;
-  usesControlIntervalCulling: boolean;
   usesControlIntervalGuessing: boolean;
   defaultControlIntervalCount: number;
 }

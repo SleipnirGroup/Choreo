@@ -200,14 +200,6 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
               }}
             >
               <FormControlLabel
-                label="Control Interval Culling"
-                title="Remove unnecessary control intervals (resolution) between generations, may lead to instability (default false)"
-                control={<Switch
-                  checked={this.getPath().usesControlIntervalCulling}
-                  onChange={(e) => {this.getPath().setControlIntervalCulling(e.target.checked)}}/>}
-              >
-              </FormControlLabel>
-              <FormControlLabel
                 label="Control Interval Guessing"
                 title="Estimate how many control intervals (resolution) is needed between waypoints based on distance (default true)"
                 control={<Switch
@@ -222,7 +214,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
               }}>
                 <TextField
                     label="Default Control Interval Count"
-                    title="When not guessing or culling, how many control intervals to use? (default 40)"
+                    title="When not guessing, how many control intervals to use? (default 40)"
                     defaultValue={this.getPath().defaultControlIntervalCount}
                     inputMode="numeric"
                     onChange={(e) => {this.getPath().setDefaultControlIntervalCounts(parseInt(e.target.value))}}

@@ -33,7 +33,6 @@ export const HolonomicPathStore = types
     constraints: types.array(types.union(...Object.values(ConstraintStores))),
     generated: types.array(TrajectorySampleStore),
     generating: false,
-    usesControlIntervalCulling: false,
     usesControlIntervalGuessing: true,
     defaultControlIntervalCount: 40,
   })
@@ -121,7 +120,6 @@ export const HolonomicPathStore = types
               scope: saved["scope"],
             };
           }),
-          usesControlIntervalCulling: self.usesControlIntervalCulling,
           usesControlIntervalGuessing: self.usesControlIntervalGuessing,
           defaultControlIntervalCount: self.defaultControlIntervalCount,
         };
@@ -199,9 +197,6 @@ export const HolonomicPathStore = types
   })
   .actions((self) => {
     return {
-      setControlIntervalCulling(value: boolean) {
-        self.usesControlIntervalCulling = value;
-      },
       setControlIntervalGuessing(value: boolean) {
         self.usesControlIntervalGuessing = value;
       },
@@ -335,41 +330,21 @@ export const HolonomicPathStore = types
             self.generated.push(sample);
           });
         }
-        self.usesControlIntervalCulling = savedPath.usesControlIntervalCulling;
         self.usesControlIntervalGuessing = savedPath.usesControlIntervalGuessing;
         self.defaultControlIntervalCount = savedPath.defaultControlIntervalCount;
       },
-      optimizeControlIntervalCounts(robotConfig: IRobotConfigStore) {
-        console.log(self.generated.toJSON());
-        if (self.generated !== undefined && self.generated.length > 0 && self.usesControlIntervalCulling) {
-          let newCounts = [];
-          let generatedIndex = 1;
-          for (let wpt = 0; wpt < self.nonGuessPoints.length - 1; wpt ++) {
-            let wptCount = self.nonGuessPoints.at(wpt)!.controlIntervalCount;
-            let newCount = 0;
-            for (let interval = generatedIndex; interval < generatedIndex + wptCount; interval++) {
-              if (self.generated.at(interval) !== undefined && self.generated.at(interval - 1) !== undefined) {
-                if (self.generated.at(interval).timestamp - self.generated.at(interval - 1).timestamp > 0.001) {
-                  newCount++;
-                }
-              }
-            }
-            if (newCount === 0) {
-              // If we haven't generated this segment yet, guess
-              this.guessControlIntervalCount(wpt, robotConfig);
-            } else {
-              newCount *= 1.25; // Prevent growing too small
-              newCount = Math.ceil(newCount);
-              newCount = Math.max(newCount, 15);
-              newCounts.push(newCount);
-              generatedIndex += wptCount;
-              self.nonGuessPoints.at(wpt)?.setControlIntervalCount(newCount);
-            }
-          }
-          console.log(newCounts);
+      optimizeControlIntervalCounts(robotConfig: IRobotConfigStore): string | undefined {
+        if (self.usesControlIntervalGuessing) {
+          return this.guessControlIntervalCounts(robotConfig);
         } else {
-          this.guessControlIntervalCounts(robotConfig);
+          return this.defaultControlIntervalCounts(robotConfig);
         }
+      },
+      defaultControlIntervalCounts(robotConfig: IRobotConfigStore): string | undefined {
+        for (let i = 0; i < self.nonGuessPoints.length; i ++) {
+          self.nonGuessPoints.at(i)?.setControlIntervalCount(self.defaultControlIntervalCount);
+        }
+        return;
       },
       guessControlIntervalCounts(robotConfig: IRobotConfigStore): string | undefined {
         if (robotConfig.wheelMaxTorque == 0) {
@@ -381,16 +356,10 @@ export const HolonomicPathStore = types
         } else if (robotConfig.wheelRadius == 0) {
           return "Wheel radius may not be 0";
         }
-        if (self.usesControlIntervalGuessing) {
-          for (let i = 0; i < self.nonGuessPoints.length - 1; i ++) {
-            this.guessControlIntervalCount(i, robotConfig);
-          }
-          self.nonGuessPoints.at(self.nonGuessPoints.length - 1)?.setControlIntervalCount(self.defaultControlIntervalCount);
-        } else {
-          for (let i = 0; i < self.nonGuessPoints.length; i ++) {
-            self.nonGuessPoints.at(i)?.setControlIntervalCount(self.defaultControlIntervalCount);
-          }
+        for (let i = 0; i < self.nonGuessPoints.length - 1; i ++) {
+          this.guessControlIntervalCount(i, robotConfig);
         }
+        self.nonGuessPoints.at(self.nonGuessPoints.length - 1)?.setControlIntervalCount(self.defaultControlIntervalCount);
       },
       guessControlIntervalCount(i: number, robotConfig: IRobotConfigStore) {        
         let dx = self.nonGuessPoints.at(i + 1)!.x - self.nonGuessPoints.at(i)!.x;
