@@ -16,7 +16,7 @@ import FileDownload from "@mui/icons-material/FileDownload";
 import Tooltip from "@mui/material/Tooltip";
 import { NoteAddOutlined } from "@mui/icons-material";
 import { ToastContainer, toast } from "react-toastify";
-import { dialog } from "@tauri-apps/api";
+import { dialog, invoke } from "@tauri-apps/api";
 
 type Props = {};
 
@@ -113,6 +113,17 @@ class AppMenu extends Component<Props, State> {
                 <FileDownload />
               </ListItemIcon>
               <ListItemText primary="Export Trajectory"></ListItemText>
+            </ListItemButton>
+
+            <ListItemButton
+              onClick={() => {
+                invoke("cancel");
+              }}
+            >
+              <ListItemIcon>
+                <FileDownload />
+              </ListItemIcon>
+              <ListItemText primary="cancel"></ListItemText>
             </ListItemButton>
           </List>
           <ToastContainer
