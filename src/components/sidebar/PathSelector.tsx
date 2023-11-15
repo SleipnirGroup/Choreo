@@ -201,7 +201,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             >
               <FormControlLabel
                 label="Control Interval Culling"
-                title="Remove unnecessary control intervals (resolution) between generations (default true)"
+                title="Remove unnecessary control intervals (resolution) between generations, may lead to instability (default false)"
                 control={<Switch
                   checked={this.getPath().usesControlIntervalCulling}
                   onChange={(e) => {this.getPath().setControlIntervalCulling(e.target.checked)}}/>}

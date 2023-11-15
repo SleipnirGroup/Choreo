@@ -138,7 +138,7 @@ export let VERSIONS = {
           waypoints: path.waypoints,
           trajectory: path.trajectory,
           constraints: path.constraints,
-          usesControlIntervalCulling: true,
+          usesControlIntervalCulling: false,
           usesControlIntervalGuessing: true,
           defaultControlIntervalCount: 40,
         };

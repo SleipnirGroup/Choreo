@@ -33,7 +33,7 @@ export const HolonomicPathStore = types
     constraints: types.array(types.union(...Object.values(ConstraintStores))),
     generated: types.array(TrajectorySampleStore),
     generating: false,
-    usesControlIntervalCulling: true,
+    usesControlIntervalCulling: false,
     usesControlIntervalGuessing: true,
     defaultControlIntervalCount: 40,
   })
