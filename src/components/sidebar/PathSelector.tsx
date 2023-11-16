@@ -1,4 +1,4 @@
-import { CircularProgress, Dialog, DialogTitle, Divider, FormControlLabel, FormGroup, IconButton, List, Switch, TextField } from "@mui/material";
+import { Checkbox, CircularProgress, Dialog, DialogTitle, Divider, FormControlLabel, FormGroup, IconButton, List, Switch, TextField } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
@@ -6,8 +6,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import styles from "./Sidebar.module.css";
 import { Tooltip } from "@mui/material";
-import { Route, Settings } from "@mui/icons-material";
+import { KeyboardArrowDown, Route, Settings } from "@mui/icons-material";
 import Input from "../input/Input";
+import InputList from "../input/InputList";
 
 type Props = {};
 
@@ -72,7 +73,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     return (
       <span
         className={styles.SidebarItem + " " + (selected ? styles.Selected : "")}
-        style={{ borderWidth: 0, borderLeftWidth: 4 }}
+        style={{ borderWidth: 0, borderLeftWidth: 4, height: "auto" }}
         onClick={() =>
           this.context.model.document.pathlist.setActivePathUUID(
             this.props.uuid
@@ -166,10 +167,11 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             <IconButton
               className={styles.SidebarRightIcon}
               onClick={(e) => {
-                this.setState({settingsOpen: true});
+                e.stopPropagation();
+                this.setState({settingsOpen: !this.state.settingsOpen});
               }}
             >
-              <Settings></Settings>
+              {this.state.settingsOpen ? <KeyboardArrowDown></KeyboardArrowDown>: <Settings></Settings>}
             </IconButton>
           </Tooltip>
           <Tooltip title="Delete Path">
@@ -188,27 +190,41 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             </IconButton>
           </Tooltip>
         </div>
-        <Dialog
-          open={this.state.settingsOpen}
-          onClose={(_) => {this.setState({settingsOpen: false})}}
-        >
-          <DialogTitle>Path Settings</DialogTitle>
-            <FormGroup
-              style={{
-                padding:"8px",
-                paddingBottom:"16px",
-              }}
-            >
+        {/* Settings part */}
+        {this.state.settingsOpen && (<>
+
+          <span className={styles.SidebarVerticalLine}></span>
+          <Tooltip title="Estimate needed resolution (# of samples) based on distance between waypoints">
               <FormControlLabel
-                label="Control Interval Guessing"
-                title="Estimate how many control intervals (resolution) is needed between waypoints based on distance (default true)"
-                control={<Switch
+                sx = {{
+                  "marginLeft": "0px",
+                  "gridColumnStart": 2, "gridColumnEnd": 4
+                }}
+                label="Guess Path Detail"
+                control={<Checkbox
                   checked={this.getPath().usesControlIntervalGuessing}
                   onChange={(e) => {this.getPath().setControlIntervalGuessing(e.target.checked)}}/>}
-              >
-              </FormControlLabel>
-              </FormGroup>
-              <div
+              />
+          </Tooltip>
+              <span style={{"borderLeft": "solid gray 1px", "transform": "translate(12px, -4px)", "height": "calc(100% + 8px)"}}></span>
+              <span style={{"gridColumnStart": 2, "gridColumnEnd": 4}}>
+          
+              <InputList noCheckbox>
+              <Input
+              title="Default"
+              suffix="per segment"
+              showCheckbox={false}
+              enabled={!this.getPath().usesControlIntervalGuessing}
+              setEnabled={(_) => {}}
+              number={this.getPath().defaultControlIntervalCount}
+              setNumber={(count) => {this.getPath().setDefaultControlIntervalCounts(count)}}
+              
+            ></Input>
+            {/**tooltip: When not guessing, how many control intervals to use? (default 40) */}
+            </InputList>
+              </span>
+              {/* </FormGroup> */}
+              {/* <div
               style={{
                 padding:"16px"
               }}>
@@ -220,9 +236,9 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
                     onChange={(e) => {this.getPath().setDefaultControlIntervalCounts(parseInt(e.target.value))}}
                     fullWidth
                   ></TextField>
-                </div>
-        </Dialog>
-      </span>
+                </div></> */}
+                </>
+        )}</span>
     );
   }
 }
