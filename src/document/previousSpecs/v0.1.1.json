@@ -113,14 +113,20 @@
                 }
               }
             },
-            "usesControlIntervalGuessing":{
+            "usesControlIntervalGuessing": {
               "type": "boolean"
             },
-            "defaultControlIntervalCount":{
+            "defaultControlIntervalCount": {
               "type": "integer"
             }
           },
-          "required": ["waypoints", "generatedTrajectory", "constraints", "usesControlIntervalGuessing", "defaultControlIntervalCount"]
+          "required": [
+            "waypoints",
+            "generatedTrajectory",
+            "constraints",
+            "usesControlIntervalGuessing",
+            "defaultControlIntervalCount"
+          ]
         }
       }
     },

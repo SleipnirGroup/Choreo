@@ -147,8 +147,8 @@ export let VERSIONS = {
     validate: (document: v0_1_1): boolean => {
       const ajv = new Ajv();
       return ajv.validate(v0_1_1_Schema, document);
-    }
-  }
+    },
+  },
 };
 
 export let updateToCurrent = (document: { version: string }): SavedDocument => {

@@ -107,7 +107,7 @@ export const HolonomicWaypointStore = types
       },
       setControlIntervalCount(count: number) {
         self.controlIntervalCount = count;
-      }
+      },
     };
   })
   .actions((self) => ({

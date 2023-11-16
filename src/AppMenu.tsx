@@ -29,7 +29,7 @@ class AppMenu extends Component<Props, State> {
   // @ts-ignore
   context!: React.ContextType<typeof DocumentManagerContext>;
   state = {
-    settingsOpen: false
+    settingsOpen: false,
   };
 
   render() {
@@ -39,7 +39,9 @@ class AppMenu extends Component<Props, State> {
         ModalProps={{ onBackdropClick: toggleMainMenu }}
         anchor="left"
         open={mainMenuOpen}
-        onClose={(_) => {this.setState({settingsOpen: false})}}
+        onClose={(_) => {
+          this.setState({ settingsOpen: false });
+        }}
       >
         <div
           style={{

@@ -92,14 +92,15 @@
   border-width: 0;
   border-left: 4px solid var(--select-yellow);
 }
-.SidebarItem .SidebarIcon, .SidebarItem .SidebarRightIcon {
+.SidebarItem .SidebarIcon,
+.SidebarItem .SidebarRightIcon {
   height: var(--icon-size);
   width: var(--icon-size);
 }
 .SidebarItem .SidebarVerticalLine {
   border-left: solid gray 1px;
   height: calc(100% + var(--grid-gap));
-  transform: translate(calc(var(--icon-size) / 2), calc(var(--grid-gap) / -2))
+  transform: translate(calc(var(--icon-size) / 2), calc(var(--grid-gap) / -2));
 }
 .SidebarItem .SidebarLabel {
   color: white;

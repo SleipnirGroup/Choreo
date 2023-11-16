@@ -1,4 +1,16 @@
-import { Checkbox, CircularProgress, Dialog, DialogTitle, Divider, FormControlLabel, FormGroup, IconButton, List, Switch, TextField } from "@mui/material";
+import {
+  Checkbox,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  Divider,
+  FormControlLabel,
+  FormGroup,
+  IconButton,
+  List,
+  Switch,
+  TextField,
+} from "@mui/material";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
@@ -15,12 +27,22 @@ type Props = {};
 type State = {};
 
 type OptionProps = { uuid: string };
-type OptionState = { renaming: boolean; renameError: boolean; name: string; settingsOpen: boolean };
+type OptionState = {
+  renaming: boolean;
+  renameError: boolean;
+  name: string;
+  settingsOpen: boolean;
+};
 
 class PathSelectorOption extends Component<OptionProps, OptionState> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
-  state = { renaming: false, renameError: false, name: this.getPath().name, settingsOpen: false };
+  state = {
+    renaming: false,
+    renameError: false,
+    name: this.getPath().name,
+    settingsOpen: false,
+  };
   nameInputRef = React.createRef<HTMLInputElement>();
   getSelected() {
     return (
@@ -168,10 +190,14 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
               className={styles.SidebarRightIcon}
               onClick={(e) => {
                 e.stopPropagation();
-                this.setState({settingsOpen: !this.state.settingsOpen});
+                this.setState({ settingsOpen: !this.state.settingsOpen });
               }}
             >
-              {this.state.settingsOpen ? <KeyboardArrowDown></KeyboardArrowDown>: <Settings></Settings>}
+              {this.state.settingsOpen ? (
+                <KeyboardArrowDown></KeyboardArrowDown>
+              ) : (
+                <Settings></Settings>
+              )}
             </IconButton>
           </Tooltip>
           <Tooltip title="Delete Path">
@@ -191,40 +217,54 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
           </Tooltip>
         </div>
         {/* Settings part */}
-        {this.state.settingsOpen && (<>
-
-          <span className={styles.SidebarVerticalLine}></span>
-          <Tooltip title="Estimate needed resolution (# of samples) based on distance between waypoints">
+        {this.state.settingsOpen && (
+          <>
+            <span className={styles.SidebarVerticalLine}></span>
+            <Tooltip title="Estimate needed resolution (# of samples) based on distance between waypoints">
               <FormControlLabel
-                sx = {{
-                  "marginLeft": "0px",
-                  "gridColumnStart": 2, "gridColumnEnd": 4
+                sx={{
+                  marginLeft: "0px",
+                  gridColumnStart: 2,
+                  gridColumnEnd: 4,
                 }}
                 label="Guess Path Detail"
-                control={<Checkbox
-                  checked={this.getPath().usesControlIntervalGuessing}
-                  onChange={(e) => {this.getPath().setControlIntervalGuessing(e.target.checked)}}/>}
+                control={
+                  <Checkbox
+                    checked={this.getPath().usesControlIntervalGuessing}
+                    onChange={(e) => {
+                      this.getPath().setControlIntervalGuessing(
+                        e.target.checked
+                      );
+                    }}
+                  />
+                }
               />
-          </Tooltip>
-              <span style={{"borderLeft": "solid gray 1px", "transform": "translate(12px, -4px)", "height": "calc(100% + 8px)"}}></span>
-              <span style={{"gridColumnStart": 2, "gridColumnEnd": 4}}>
-          
+            </Tooltip>
+            <span
+              style={{
+                borderLeft: "solid gray 1px",
+                transform: "translate(12px, -4px)",
+                height: "calc(100% + 8px)",
+              }}
+            ></span>
+            <span style={{ gridColumnStart: 2, gridColumnEnd: 4 }}>
               <InputList noCheckbox>
-              <Input
-              title="Default"
-              suffix="per segment"
-              showCheckbox={false}
-              enabled={!this.getPath().usesControlIntervalGuessing}
-              setEnabled={(_) => {}}
-              number={this.getPath().defaultControlIntervalCount}
-              setNumber={(count) => {this.getPath().setDefaultControlIntervalCounts(count)}}
-              
-            ></Input>
-            {/**tooltip: When not guessing, how many control intervals to use? (default 40) */}
-            </InputList>
-              </span>
-              {/* </FormGroup> */}
-              {/* <div
+                <Input
+                  title="Default"
+                  suffix="per segment"
+                  showCheckbox={false}
+                  enabled={!this.getPath().usesControlIntervalGuessing}
+                  setEnabled={(_) => {}}
+                  number={this.getPath().defaultControlIntervalCount}
+                  setNumber={(count) => {
+                    this.getPath().setDefaultControlIntervalCounts(count);
+                  }}
+                ></Input>
+                {/**tooltip: When not guessing, how many control intervals to use? (default 40) */}
+              </InputList>
+            </span>
+            {/* </FormGroup> */}
+            {/* <div
               style={{
                 padding:"16px"
               }}>
@@ -237,8 +277,9 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
                     fullWidth
                   ></TextField>
                 </div></> */}
-                </>
-        )}</span>
+          </>
+        )}
+      </span>
     );
   }
 }
