@@ -18,7 +18,8 @@ import IconButton from "@mui/material/IconButton";
 import FileDownload from "@mui/icons-material/FileDownload";
 import Tooltip from "@mui/material/Tooltip";
 import { NoteAddOutlined, Settings } from "@mui/icons-material";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
+import { dialog } from "@tauri-apps/api";
 
 type Props = {};
 
@@ -64,7 +65,7 @@ class AppMenu extends Component<Props, State> {
               zIndex: 1000,
             }}
           >
-            <Tooltip title="Main Menu">
+            <Tooltip disableInteractive title="Main Menu">
               <IconButton
                 onClick={() => {
                   toggleMainMenu();
@@ -95,8 +96,15 @@ class AppMenu extends Component<Props, State> {
               <ListItemText primary="Save File"></ListItemText>
             </ListItemButton>
             <ListItemButton
-              onClick={() => {
-                this.context.newFile();
+              onClick={async () => {
+                if (
+                  await dialog.confirm(
+                    "You may lose unsaved changes. Continue?",
+                    { title: "Choreo", type: "warning" }
+                  )
+                ) {
+                  this.context.newFile();
+                }
               }}
             >
               <ListItemIcon>

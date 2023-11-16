@@ -1,3 +1,4 @@
+import { Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import styles from "./InputList.module.css";
@@ -11,6 +12,7 @@ type Props = {
   setNumber: (newNumber: number) => void;
   setEnabled: (value: boolean) => void;
   showCheckbox?: boolean;
+  titleTooltip?: string;
 };
 
 type State = {
@@ -84,13 +86,24 @@ class Input extends Component<Props, State> {
   render() {
     return (
       <>
-        <span
-          className={
-            styles.Title + " " + (this.props.enabled ? "" : styles.Disabled)
-          }
-        >
-          {this.props.title}
-        </span>
+        <Tooltip disableInteractive title={this.props.titleTooltip ?? ""}>
+          <span
+            className={
+              styles.Title + " " + (this.props.enabled ? "" : styles.Disabled)
+            }
+            style={
+              (this.props.titleTooltip ?? "") == ""
+                ? {}
+                : {
+                    textDecorationLine: "underline",
+                    textDecorationStyle: "dotted",
+                    textUnderlineOffset: "2px",
+                  }
+            }
+          >
+            {this.props.title}
+          </span>
+        </Tooltip>
         <input
           ref={this.inputElemRef}
           type="text"
