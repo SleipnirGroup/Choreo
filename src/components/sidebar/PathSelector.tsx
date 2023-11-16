@@ -210,11 +210,13 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
               className={styles.SidebarRightIcon}
               onClick={(e) => {
                 e.stopPropagation();
-                if (window.confirm(`Delete "${this.getPath().name}"?`)) {
-                  this.context.model.document.pathlist.deletePath(
-                    this.props.uuid
-                  );
-                }
+                dialog.confirm(`Delete "${this.getPath().name}"?`).then((result) => {
+                  if (result) {
+                    this.context.model.document.pathlist.deletePath(
+                      this.props.uuid
+                    );
+                  }
+                });
               }}
             >
               <DeleteIcon></DeleteIcon>
