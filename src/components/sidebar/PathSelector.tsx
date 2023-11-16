@@ -190,7 +190,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
           }}
         ></TextField>
         <div>
-          <Tooltip title="Path Config">
+          <Tooltip disableInteractive title="Path Config">
             <IconButton
               className={styles.SidebarRightIcon}
               onClick={(e) => {
@@ -205,7 +205,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
               )}
             </IconButton>
           </Tooltip>
-          <Tooltip title="Delete Path">
+          <Tooltip disableInteractive title="Delete Path">
             <IconButton
               className={styles.SidebarRightIcon}
               onClick={(e) => {
@@ -225,7 +225,10 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
         {this.state.settingsOpen && (
           <>
             <span className={styles.SidebarVerticalLine}></span>
-            <Tooltip title="Estimate needed resolution (# of samples) based on distance between waypoints">
+            <Tooltip
+              disableInteractive
+              title="Estimate needed resolution (# of samples) based on distance between waypoints"
+            >
               <FormControlLabel
                 sx={{
                   marginLeft: "0px",
@@ -264,6 +267,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
                   setNumber={(count) => {
                     this.getPath().setDefaultControlIntervalCounts(count);
                   }}
+                  titleTooltip="When not guessing, how many control intervals to use?"
                 ></Input>
                 {/**tooltip: When not guessing, how many control intervals to use? (default 40) */}
               </InputList>
