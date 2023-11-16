@@ -88,7 +88,7 @@ class SidebarConstraint extends Component<Props, State> {
 
           {this.getScopeText()}
         </span>
-        <Tooltip title="Delete Constraint">
+        <Tooltip disableInteractive title="Delete Constraint">
           <IconButton
             className={styles.SidebarRightIcon}
             onClick={(e) => {

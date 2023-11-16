@@ -26,16 +26,18 @@ class RobotConfigPanel extends Component<Props, State> {
             number={config.mass}
             setNumber={config!.setMass}
             showCheckbox={false}
+            titleTooltip={"Total robot mass"}
           />
 
           <Input
-            title="MoI"
+            title="Moment of Inertia"
             suffix="kg · m²"
             enabled={true}
             setEnabled={(a) => null}
             number={config.rotationalInertia}
             setNumber={config!.setRotationalInertia}
             showCheckbox={false}
+            titleTooltip={"Robot moment of inertia around center vertical axis"}
           />
 
           <Input
@@ -46,6 +48,7 @@ class RobotConfigPanel extends Component<Props, State> {
             number={config.wheelMaxVelocity}
             setNumber={config!.setMaxVelocity}
             showCheckbox={false}
+            titleTooltip="Wheel free speed"
           />
 
           <Input
@@ -56,6 +59,7 @@ class RobotConfigPanel extends Component<Props, State> {
             number={config.wheelMaxTorque}
             setNumber={config!.setMaxTorque}
             showCheckbox={false}
+            titleTooltip="Max wheel torque at contact with ground"
           />
 
           <Input
@@ -66,6 +70,7 @@ class RobotConfigPanel extends Component<Props, State> {
             number={config.bumperWidth}
             setNumber={config!.setBumperWidth}
             showCheckbox={false}
+            titleTooltip="Width of robot with bumpers on"
           />
 
           <Input
@@ -76,6 +81,7 @@ class RobotConfigPanel extends Component<Props, State> {
             number={config.bumperLength}
             setNumber={config!.setBumperLength}
             showCheckbox={false}
+            titleTooltip="Length of robot with bumpers on"
           />
 
           <Input
@@ -86,6 +92,7 @@ class RobotConfigPanel extends Component<Props, State> {
             number={config.wheelbase}
             setNumber={config!.setWheelbase}
             showCheckbox={false}
+            titleTooltip="Front-back distance between wheel centers"
           />
 
           <Input
@@ -96,6 +103,7 @@ class RobotConfigPanel extends Component<Props, State> {
             number={config.trackWidth}
             setNumber={config!.setTrackwidth}
             showCheckbox={false}
+            titleTooltip="Left-right distance between wheel centers"
           />
           <Input
             title="Wheel Radius"
@@ -105,6 +113,7 @@ class RobotConfigPanel extends Component<Props, State> {
             number={config.wheelRadius}
             setNumber={config!.setWheelRadius}
             showCheckbox={false}
+            titleTooltip="Radius of swerve wheels"
           />
         </InputList>
       </div>

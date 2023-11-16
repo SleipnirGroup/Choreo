@@ -131,6 +131,7 @@ class RobotConfigPanel extends Component<Props, State> {
                 //@ts-ignore
                 setNumber={constraint[setterName]}
                 showCheckbox={false}
+                titleTooltip={propdef.description}
               />
             );
           })}
