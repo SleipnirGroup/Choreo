@@ -81,6 +81,13 @@ fn fix_scope(idx: usize, removed_idxs: &Vec<usize>) -> usize {
   }
   return idx-to_subtract;
 }
+
+#[tauri::command]
+async fn cancel() {
+  let mut builder = SwervePathBuilder::new();
+  builder.cancel_all();
+}
+
 #[tauri::command]
 async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfig, constraints: Vec<Constraints>) -> Result<HolonomicTrajectory, String> {
 
@@ -227,7 +234,7 @@ async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfi
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![generate_trajectory])
+        .invoke_handler(tauri::generate_handler![generate_trajectory, cancel])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
