@@ -22,6 +22,8 @@ import {
   WaypointScope,
 } from "./ConstraintStore";
 import { SavedWaypointId } from "./previousSpecs/v0_1";
+import { timeStamp } from "console";
+import { IRobotConfigStore } from "./RobotConfigStore";
 
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
@@ -31,6 +33,8 @@ export const HolonomicPathStore = types
     constraints: types.array(types.union(...Object.values(ConstraintStores))),
     generated: types.array(TrajectorySampleStore),
     generating: false,
+    usesControlIntervalGuessing: true,
+    defaultControlIntervalCount: 40,
   })
   .views((self) => {
     return {
@@ -43,6 +47,11 @@ export const HolonomicPathStore = types
     return {
       get nonGuessPoints() {
         return self.waypoints.filter((waypoint) => !waypoint.isInitialGuess);
+      },
+      get nonGuessOrEmptyPoints() {
+        return self.waypoints.filter(
+          (waypoint) => !waypoint.isInitialGuess && !(waypoint.type == 2)
+        );
       },
       getTotalTimeSeconds(): number {
         if (self.generated.length === 0) {
@@ -113,6 +122,8 @@ export const HolonomicPathStore = types
               scope: saved["scope"],
             };
           }),
+          usesControlIntervalGuessing: self.usesControlIntervalGuessing,
+          defaultControlIntervalCount: self.defaultControlIntervalCount,
         };
       },
       lowestSelectedPoint(): IHolonomicWaypointStore | null {
@@ -127,10 +138,21 @@ export const HolonomicPathStore = types
     return {
       waypointTimestamps(): number[] {
         let wptTimes: number[] = [];
-        if (self.generated.length >= 40) {
-          for (let i = 0; i < self.generated.length / 40; i++) {
-            wptTimes.push(self.generated[i * 40].timestamp);
-          }
+        if (self.generated.length > 0) {
+          self.generated.forEach((cInt) => {
+            if (
+              self.waypoints.find((wpt) => {
+                return (
+                  Math.abs(wpt.x - cInt.x) < 10e-10 && // floating point error :heart-eyes:
+                  Math.abs(wpt.y - cInt.y) < 10e-10 &&
+                  (Math.abs(wpt.heading - cInt.heading) < 10e-10 ||
+                    !wpt.headingConstrained)
+                );
+              })
+            ) {
+              wptTimes.push(cInt.timestamp);
+            }
+          });
         }
         return wptTimes;
       },
@@ -183,6 +205,12 @@ export const HolonomicPathStore = types
   })
   .actions((self) => {
     return {
+      setControlIntervalGuessing(value: boolean) {
+        self.usesControlIntervalGuessing = value;
+      },
+      setDefaultControlIntervalCounts(counts: number) {
+        self.defaultControlIntervalCount = counts;
+      },
       setName(name: string) {
         self.name = name;
       },
@@ -324,6 +352,73 @@ export const HolonomicPathStore = types
             self.generated.push(sample);
           });
         }
+        self.usesControlIntervalGuessing =
+          savedPath.usesControlIntervalGuessing;
+        self.defaultControlIntervalCount =
+          savedPath.defaultControlIntervalCount;
+      },
+      optimizeControlIntervalCounts(
+        robotConfig: IRobotConfigStore
+      ): string | undefined {
+        if (self.usesControlIntervalGuessing) {
+          return this.guessControlIntervalCounts(robotConfig);
+        } else {
+          return this.defaultControlIntervalCounts(robotConfig);
+        }
+      },
+      defaultControlIntervalCounts(
+        robotConfig: IRobotConfigStore
+      ): string | undefined {
+        for (let i = 0; i < self.nonGuessPoints.length; i++) {
+          self.nonGuessPoints
+            .at(i)
+            ?.setControlIntervalCount(self.defaultControlIntervalCount);
+        }
+        return;
+      },
+      guessControlIntervalCounts(
+        robotConfig: IRobotConfigStore
+      ): string | undefined {
+        if (robotConfig.wheelMaxTorque == 0) {
+          return "Wheel max torque may not be 0";
+        } else if (robotConfig.wheelMaxVelocity == 0) {
+          return "Wheel max velocity may not be 0";
+        } else if (robotConfig.mass == 0) {
+          return "Robot mass may not be 0";
+        } else if (robotConfig.wheelRadius == 0) {
+          return "Wheel radius may not be 0";
+        }
+        for (let i = 0; i < self.nonGuessPoints.length - 1; i++) {
+          this.guessControlIntervalCount(i, robotConfig);
+        }
+        self.nonGuessPoints
+          .at(self.nonGuessPoints.length - 1)
+          ?.setControlIntervalCount(self.defaultControlIntervalCount);
+      },
+      guessControlIntervalCount(i: number, robotConfig: IRobotConfigStore) {
+        let dx =
+          self.nonGuessPoints.at(i + 1)!.x - self.nonGuessPoints.at(i)!.x;
+        let dy =
+          self.nonGuessPoints.at(i + 1)!.y - self.nonGuessPoints.at(i)!.y;
+        let distance = Math.sqrt(dx * dx + dy * dy);
+        let maxForce = robotConfig.wheelMaxTorque / robotConfig.wheelRadius;
+        let maxAccel = (maxForce * 4) / robotConfig.mass; // times 4 for 4 modules
+        let maxVel = robotConfig.wheelMaxVelocity * robotConfig.wheelRadius;
+        let distanceAtCruise = distance - (maxVel * maxVel) / maxAccel;
+        if (distanceAtCruise < 0) {
+          // triangle
+          let totalTime = 2 * (Math.sqrt(distance * maxAccel) / maxAccel);
+          self.nonGuessPoints
+            .at(i)
+            ?.setControlIntervalCount(Math.ceil(totalTime / 0.1));
+        } else {
+          // trapezoid
+          let totalTime = distance / maxVel + maxVel / maxAccel;
+          self.nonGuessPoints
+            .at(i)
+            ?.setControlIntervalCount(Math.ceil(totalTime / 0.1));
+        }
+        console.log(self.nonGuessPoints.at(i)?.controlIntervalCount);
       },
     };
   });

@@ -101,7 +101,7 @@ class Sidebar extends Component<Props, State> {
         <Divider></Divider>
         <div
           className={styles.Sidebar}
-          style={{ maxHeight: "135px", minHeight: "50px" }}
+          style={{ maxHeight: "300px", minHeight: "50px" }}
         >
           <PathSelector></PathSelector>
         </div>

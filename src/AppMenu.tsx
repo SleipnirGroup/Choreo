@@ -2,11 +2,14 @@ import React, { Component } from "react";
 import DocumentManagerContext from "./document/DocumentManager";
 import { observer } from "mobx-react";
 import {
+  Dialog,
+  DialogTitle,
   Drawer,
   List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Switch,
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -14,19 +17,21 @@ import UploadIcon from "@mui/icons-material/UploadFile";
 import IconButton from "@mui/material/IconButton";
 import FileDownload from "@mui/icons-material/FileDownload";
 import Tooltip from "@mui/material/Tooltip";
-import { NoteAddOutlined } from "@mui/icons-material";
+import { NoteAddOutlined, Settings } from "@mui/icons-material";
 import { ToastContainer, toast } from "react-toastify";
 import { dialog } from "@tauri-apps/api";
 
 type Props = {};
 
-type State = {};
+type State = { settingsOpen: boolean };
 
 class AppMenu extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   // @ts-ignore
   context!: React.ContextType<typeof DocumentManagerContext>;
-  state = {};
+  state = {
+    settingsOpen: false,
+  };
 
   render() {
     let { mainMenuOpen, toggleMainMenu } = this.context.model.uiState;
@@ -35,6 +40,9 @@ class AppMenu extends Component<Props, State> {
         ModalProps={{ onBackdropClick: toggleMainMenu }}
         anchor="left"
         open={mainMenuOpen}
+        onClose={(_) => {
+          this.setState({ settingsOpen: false });
+        }}
       >
         <div
           style={{
