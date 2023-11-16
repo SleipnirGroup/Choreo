@@ -171,7 +171,6 @@ export class Field extends Component<Props, State> {
             </IconButton>
           </Box>
         </Tooltip>
-
         {activePath.generating && (
           <CircularProgress
             size={48 * 1.3}
