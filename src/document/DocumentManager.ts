@@ -147,7 +147,7 @@ export class DocumentManager {
         this.model.select(newWaypoint);
       }
     });
-    hotkeys("del,delete,backspace,clear", () => {
+    hotkeys("delete,backspace,clear", () => {
       const selected = this.getSelectedWaypoint();
       if (selected) {
         this.model.document.pathlist.activePath.deleteWaypointUUID(
