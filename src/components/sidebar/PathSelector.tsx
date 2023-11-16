@@ -164,7 +164,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             this.startRename();
             this.nameInputRef.current!.focus();
           }}
-          onBlur={() => this.escapeRename()}
+          onBlur={() => this.completeRename()}
           onDoubleClickCapture={(e) => {
             e.stopPropagation();
             this.startRename();
