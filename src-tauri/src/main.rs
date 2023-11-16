@@ -27,6 +27,7 @@ struct ChoreoWaypoint {
     isInitialGuess: bool,
     translationConstrained: bool,
     headingConstrained: bool,
+    controlIntervalCount: usize,
 }
 
 #[allow(non_snake_case)]
@@ -86,6 +87,7 @@ async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfi
     let mut path_builder = SwervePathBuilder::new();
     let mut wpt_cnt : usize = 0;
     let mut rm : Vec<usize> = Vec::new();
+    let mut control_interval_counts: Vec<usize> = Vec::new();
     for i in 0..path.len() {
         let wpt: &ChoreoWaypoint = &path[i];
         if wpt.isInitialGuess {
@@ -102,7 +104,14 @@ async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfi
           path_builder.empty_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
           wpt_cnt+=1;
         }
+
+        if i != path.len() - 1 {
+          control_interval_counts.push(wpt.controlIntervalCount);
+        }
     }
+
+    path_builder.set_control_interval_counts(control_interval_counts);
+
     for c in 0..constraints.len() {
       let constraint: &Constraints = &constraints[c];
       match constraint {

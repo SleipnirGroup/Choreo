@@ -64,6 +64,15 @@ class WaypointPanel extends Component<Props, State> {
               number={waypoint.heading}
               setNumber={(heading) => waypoint!.setHeading(heading)}
             ></Input>
+            <Input
+              title="n"
+              suffix="intervals"
+              showCheckbox={false}
+              enabled={true}
+              setEnabled={(_) => {}}
+              number={waypoint.controlIntervalCount}
+              setNumber={(_) => {}}
+            ></Input>
           </InputList>
           <ToggleButtonGroup
             sx={{ marginInline: "auto", paddingTop: "8px" }}
