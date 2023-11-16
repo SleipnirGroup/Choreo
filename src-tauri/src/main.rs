@@ -80,6 +80,7 @@ fn fix_scope(idx: usize, removed_idxs: &Vec<usize>) -> usize {
   }
   return idx-to_subtract;
 }
+
 #[tauri::command]
 async fn cancel() {
   let mut builder = SwervePathBuilder::new();
