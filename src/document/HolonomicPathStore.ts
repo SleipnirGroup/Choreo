@@ -401,7 +401,8 @@ export const HolonomicPathStore = types
         let dy =
           self.nonGuessPoints.at(i + 1)!.y - self.nonGuessPoints.at(i)!.y;
         let dtheta =
-          self.nonGuessPoints.at(i + 1)!.heading - self.nonGuessPoints.at(i)!.heading;
+          self.nonGuessPoints.at(i + 1)!.heading -
+          self.nonGuessPoints.at(i)!.heading;
         const headingWeight = 0.5; // arbitrary
         let distance = Math.sqrt(dx * dx + dy * dy);
         let maxForce = robotConfig.wheelMaxTorque / robotConfig.wheelRadius;
