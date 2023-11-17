@@ -141,8 +141,10 @@ export const HolonomicPathStore = types
         if (self.generated.length > 0) {
           let currentInterval = 0;
           self.waypoints.forEach((w) => {
-            wptTimes.push(self.generated.at(currentInterval)?.timestamp ?? 0);
-            currentInterval += w.controlIntervalCount;
+            if (self.generated.at(currentInterval)?.timestamp !== undefined) {
+              wptTimes.push(self.generated.at(currentInterval)!.timestamp);
+              currentInterval += w.controlIntervalCount;
+            }
           });
         }
         return wptTimes;
