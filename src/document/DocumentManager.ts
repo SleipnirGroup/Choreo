@@ -35,6 +35,13 @@ export class DocumentManager {
     });
     this.model.document.pathlist.addPath("NewPath");
     this.model.document.history.clear();
+    hotkeys.unbind();
+    window.addEventListener("contextmenu", (e)=>e.preventDefault());
+    window.addEventListener("unload", ()=>hotkeys.unbind());
+    hotkeys('f5,ctrl+shift+r,ctrl+r', function(event, handler){
+      event.preventDefault()
+      console.log('you pressed F5!')
+    });
     hotkeys("command+g,ctrl+g,g", () => {
       this.model.generatePath(this.model.document.pathlist.activePathUUID);
     });
