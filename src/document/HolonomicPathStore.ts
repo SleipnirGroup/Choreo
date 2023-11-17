@@ -139,18 +139,11 @@ export const HolonomicPathStore = types
       waypointTimestamps(): number[] {
         let wptTimes: number[] = [];
         if (self.generated.length > 0) {
-          self.generated.forEach((cInt) => {
-            if (
-              self.waypoints.find((wpt) => {
-                return (
-                  Math.abs(wpt.x - cInt.x) < 10e-10 && // floating point error :heart-eyes:
-                  Math.abs(wpt.y - cInt.y) < 10e-10 &&
-                  (Math.abs(wpt.heading - cInt.heading) < 10e-10 ||
-                    !wpt.headingConstrained)
-                );
-              })
-            ) {
-              wptTimes.push(cInt.timestamp);
+          let currentInterval = 0;
+          self.waypoints.forEach((w) => {
+            if (self.generated.at(currentInterval)?.timestamp !== undefined) {
+              wptTimes.push(self.generated.at(currentInterval)!.timestamp);
+              currentInterval += w.controlIntervalCount;
             }
           });
         }
