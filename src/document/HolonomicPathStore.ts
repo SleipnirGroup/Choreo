@@ -412,14 +412,14 @@ export const HolonomicPathStore = types
         if (distanceAtCruise < 0) {
           // triangle
           let totalTime = 2 * (Math.sqrt(distance * maxAccel) / maxAccel);
-          totalTime += headingWeight * dtheta;
+          totalTime += headingWeight * Math.abs(dtheta);
           self.nonGuessPoints
             .at(i)
             ?.setControlIntervalCount(Math.ceil(totalTime / 0.1));
         } else {
           // trapezoid
           let totalTime = distance / maxVel + maxVel / maxAccel;
-          totalTime += headingWeight * dtheta;
+          totalTime += headingWeight * Math.abs(dtheta);
           self.nonGuessPoints
             .at(i)
             ?.setControlIntervalCount(Math.ceil(totalTime / 0.1));
