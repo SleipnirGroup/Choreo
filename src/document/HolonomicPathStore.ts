@@ -400,6 +400,9 @@ export const HolonomicPathStore = types
           self.nonGuessPoints.at(i + 1)!.x - self.nonGuessPoints.at(i)!.x;
         let dy =
           self.nonGuessPoints.at(i + 1)!.y - self.nonGuessPoints.at(i)!.y;
+        let dtheta =
+          self.nonGuessPoints.at(i + 1)!.heading - self.nonGuessPoints.at(i)!.heading;
+        const headingWeight = 0.5; // arbitrary
         let distance = Math.sqrt(dx * dx + dy * dy);
         let maxForce = robotConfig.wheelMaxTorque / robotConfig.wheelRadius;
         let maxAccel = (maxForce * 4) / robotConfig.mass; // times 4 for 4 modules
@@ -408,12 +411,14 @@ export const HolonomicPathStore = types
         if (distanceAtCruise < 0) {
           // triangle
           let totalTime = 2 * (Math.sqrt(distance * maxAccel) / maxAccel);
+          totalTime += headingWeight * dtheta;
           self.nonGuessPoints
             .at(i)
             ?.setControlIntervalCount(Math.ceil(totalTime / 0.1));
         } else {
           // trapezoid
           let totalTime = distance / maxVel + maxVel / maxAccel;
+          totalTime += headingWeight * dtheta;
           self.nonGuessPoints
             .at(i)
             ?.setControlIntervalCount(Math.ceil(totalTime / 0.1));
