@@ -152,6 +152,7 @@ export class Field extends Component<Props, State> {
                       render({ data }) {
                         console.log(data);
                         if ((data as string).includes("User_Requested_Stop")) {
+                          toastProps.style = { visibility: "hidden" };
                           return `Cancelled \"${pathName}\"`;
                         }
                         return (
