@@ -306,17 +306,34 @@ export const HolonomicPathStore = types
           let constraintStore = ConstraintStores[saved.type];
           if (constraintStore !== undefined) {
             let savedWaypointIdToWaypointId = (savedId: SavedWaypointId) => {
+              if (savedId === null || savedId === undefined) {
+                return undefined;
+              }
+
               if (savedId === "first") {
                 return "first";
-              } else if (savedId === "last") {
+              }
+              if (savedId === "last") {
                 return "last";
+              }
+              if (savedId < 0 || savedId >= self.waypoints.length) {
+                return undefined;
+              }
+              if (!Number.isInteger(savedId)) {
+                return undefined;
               } else {
-                return { uuid: self.waypoints[savedId].uuid as string };
+                return { uuid: self.waypoints[savedId]?.uuid as string };
               }
             };
+            let scope = saved.scope.map((id) =>
+              savedWaypointIdToWaypointId(id)
+            );
+            if (scope.includes(undefined)) {
+              return; // don't attempt to load
+            }
             let constraint = self.addConstraint(
               constraintStore,
-              saved.scope.map((id) => savedWaypointIdToWaypointId(id))
+              scope as WaypointID[]
             );
 
             Object.keys(constraint?.definition.properties ?? {}).forEach(
