@@ -26,10 +26,10 @@ export default defineConfig(async () => ({
     rollupOptions: {
       onwarn(warning, defaultHandler) {
         if (
-          warning.code === 'MODULE_LEVEL_DIRECTIVE' &&
-          warning.message.includes('use client')
+          warning.code === "MODULE_LEVEL_DIRECTIVE" &&
+          warning.message.includes("use client")
         ) {
-          return
+          return;
         }
       },
     },
