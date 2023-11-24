@@ -223,7 +223,29 @@ export const HolonomicPathStore = types
         return self.waypoints[self.waypoints.length - 1];
       },
       deleteWaypoint(index: number) {
+        if (self.waypoints[index] === undefined) {
+          return;
+        }
+        let uuid = self.waypoints[index]?.uuid;
+        console.log(uuid);
+        const root = getRoot<IStateStore>(self);
+        root.select(undefined);
         destroy(self.waypoints[index]);
+        // clean up 
+        self.constraints = self.constraints.flatMap((constraint) => {
+          // delete waypoint-scope referencing deleted point directly.
+          if (constraint.scope.length == 1 && Object.hasOwn(constraint.scope[0],"uuid") && constraint.scope[0].uuid === uuid) {
+            return [];
+          }
+          // delete zero-segment-scope referencing deleted point directly.
+          if (constraint.scope.length == 2 && 
+            Object.hasOwn(constraint.scope[0],"uuid") && constraint.scope[0].uuid === uuid &&
+            Object.hasOwn(constraint.scope[1],"uuid") && constraint.scope[1].uuid === uuid
+            ) {
+            return [];
+          }
+          return constraint;
+        }) as typeof self.constraints;
         if (self.waypoints.length === 0) {
           self.generated.length = 0;
           return;
@@ -233,22 +255,6 @@ export const HolonomicPathStore = types
           self.waypoints[index + 1].setSelected(true);
         }
       },
-      deleteWaypointUUID(uuid: string) {
-        let index = self.waypoints.findIndex((point) => point.uuid === uuid);
-        if (index == -1) return;
-        const root = getRoot<IStateStore>(self);
-        root.select(undefined);
-
-        if (self.waypoints.length === 1) {
-          self.generated.length = 0;
-        } else if (self.waypoints[index - 1]) {
-          self.waypoints[index - 1].setSelected(true);
-        } else if (self.waypoints[index + 1]) {
-          self.waypoints[index + 1].setSelected(true);
-        }
-        destroy(self.waypoints[index]);
-      },
-
       deleteConstraint(index: number) {
         destroy(self.constraints[index]);
         if (self.constraints.length === 0) {
@@ -295,6 +301,11 @@ export const HolonomicPathStore = types
   })
   .actions((self) => {
     return {
+      deleteWaypointUUID(uuid: string) {
+        let index = self.waypoints.findIndex((point) => point.uuid === uuid);
+        if (index == -1) return;
+        self.deleteWaypoint(index);
+      },
       fromSavedPath(savedPath: SavedPath) {
         self.waypoints.clear();
         savedPath.waypoints.forEach(
