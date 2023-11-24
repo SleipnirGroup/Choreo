@@ -110,17 +110,19 @@ export const HolonomicPathStore = types
                 return waypointId;
               }
             };
-            let saved: Partial<SavedConstraint> = {};
             let con = constraint;
-            saved.scope = con.scope.map((id: IWaypointScope) =>
+            let scope = con.scope.map((id: IWaypointScope) =>
               waypointIdToSavedWaypointId(id)
             );
-            if (saved.scope?.includes(-1)) return [];
-            return {
+            if (scope?.includes(undefined)) return [];
+            let toReturn = {
               ...constraint,
               type: constraint.type,
-              scope: saved["scope"],
+              scope,
             };
+            delete toReturn.icon;
+            delete toReturn.definition;
+            return toReturn;
           }),
           usesControlIntervalGuessing: self.usesControlIntervalGuessing,
           defaultControlIntervalCount: self.defaultControlIntervalCount,
