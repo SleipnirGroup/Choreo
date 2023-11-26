@@ -233,50 +233,39 @@ export const HolonomicPathStore = types
 
         // clean up constraints
         self.constraints = self.constraints.flatMap((constraint) => {
+          let scope = constraint.getSortedScope();
           // delete waypoint-scope referencing deleted point directly.
           if (
-            constraint.scope.length == 1 &&
-            Object.hasOwn(constraint.scope[0], "uuid") &&
-            constraint.scope[0].uuid === uuid
+            scope.length == 1 &&
+            Object.hasOwn(scope[0], "uuid") &&
+            scope[0].uuid === uuid
           ) {
             return [];
           }
           // delete zero-segment-scope referencing deleted point directly.
           if (
-            constraint.scope.length == 2 &&
-            Object.hasOwn(constraint.scope[0], "uuid") &&
-            Object.hasOwn(constraint.scope[1], "uuid")
+            scope.length == 2
           ) {
             let deletedIndex = index;
-            let startIndex = self.findUUIDIndex(constraint.scope[0].uuid);
-            let endIndex = self.findUUIDIndex(constraint.scope[1].uuid);
-            // swap so start <= end
-            if (startIndex > endIndex) {
-              let tmp = startIndex;
-              startIndex = endIndex;
-              endIndex = tmp;
-            }
-            // zero-length segments
-            if (startIndex == deletedIndex && endIndex == deletedIndex) {
-              return [];
-            }
-            //1-segment scope with endpoint being deleted
-            if (
-              endIndex - startIndex == 1 &&
-              (startIndex == deletedIndex || endIndex == deletedIndex)
-            ) {
+            let firstIsUUID = Object.hasOwn(scope[0], "uuid");
+            let secondIsUUID = Object.hasOwn(scope[1], "uuid");
+            let startIndex = constraint.getStartWaypointIndex();
+            let endIndex = constraint.getEndWaypointIndex();
+            // Delete zero-length segments that refer directly and only to the waypoint
+            if (startIndex == deletedIndex && endIndex == deletedIndex
+              && (firstIsUUID || secondIsUUID)) {
               return [];
             }
             // deleted start? move new start forward till first constrainable waypoint
-            if (deletedIndex == startIndex) {
+            if (deletedIndex == startIndex && firstIsUUID) {
               while (startIndex < endIndex) {
                 startIndex++;
                 if (self.waypoints[startIndex].isConstrainable()) {
                   break;
                 }
               }
-            } else if (deletedIndex == endIndex) {
-              // deleted end? move new start forward till first constrainable waypoint
+            } else if (deletedIndex == endIndex && secondIsUUID) {
+              // deleted end? move new end backward till first constrainable waypoint
               while (startIndex < endIndex) {
                 endIndex--;
                 if (self.waypoints[endIndex].isConstrainable()) {
@@ -285,21 +274,21 @@ export const HolonomicPathStore = types
               }
             }
             // if we shrunk to a single point, delete constraint
-            if (endIndex == startIndex) {
+            if (endIndex == startIndex && firstIsUUID && secondIsUUID) {
               return [];
             } else {
               // update
               constraint.scope = [
-                { uuid: self.waypoints[startIndex].uuid },
-                { uuid: self.waypoints[endIndex].uuid },
+                firstIsUUID ? { uuid: self.waypoints[startIndex].uuid} : scope[0],
+                secondIsUUID ? { uuid: self.waypoints[endIndex].uuid } : scope[1],
               ];
               return constraint;
             }
           }
-
-          // delete
           return constraint;
         }) as typeof self.constraints;
+
+
         destroy(self.waypoints[index]);
         if (self.waypoints.length === 0) {
           self.generated.length = 0;
