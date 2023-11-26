@@ -95,17 +95,19 @@ export const HolonomicPathStore = types
                 return waypointId;
               }
             };
-            let saved: Partial<SavedConstraint> = {};
             let con = constraint;
-            saved.scope = con.scope.map((id: IWaypointScope) =>
+            let scope = con.scope.map((id: IWaypointScope) =>
               waypointIdToSavedWaypointId(id)
             );
-            if (saved.scope?.includes(-1)) return [];
-            return {
+            if (scope?.includes(undefined)) return [];
+            let toReturn = {
               ...constraint,
               type: constraint.type,
-              scope: saved["scope"],
+              scope,
             };
+            delete toReturn.icon;
+            delete toReturn.definition;
+            return toReturn;
           }),
           usesControlIntervalGuessing: self.usesControlIntervalGuessing,
           defaultControlIntervalCount: self.defaultControlIntervalCount,
@@ -206,6 +208,76 @@ export const HolonomicPathStore = types
         return self.waypoints[self.waypoints.length - 1];
       },
       deleteWaypoint(index: number) {
+        if (self.waypoints[index] === undefined) {
+          return;
+        }
+        let uuid = self.waypoints[index]?.uuid;
+        console.log(uuid);
+        const root = getRoot<IStateStore>(self);
+        root.select(undefined);
+
+        // clean up constraints
+        self.constraints = self.constraints.flatMap((constraint) => {
+          let scope = constraint.getSortedScope();
+          // delete waypoint-scope referencing deleted point directly.
+          if (
+            scope.length == 1 &&
+            Object.hasOwn(scope[0], "uuid") &&
+            scope[0].uuid === uuid
+          ) {
+            return [];
+          }
+          // delete zero-segment-scope referencing deleted point directly.
+          if (scope.length == 2) {
+            let deletedIndex = index;
+            let firstIsUUID = Object.hasOwn(scope[0], "uuid");
+            let secondIsUUID = Object.hasOwn(scope[1], "uuid");
+            let startIndex = constraint.getStartWaypointIndex();
+            let endIndex = constraint.getEndWaypointIndex();
+            // Delete zero-length segments that refer directly and only to the waypoint
+            if (
+              startIndex == deletedIndex &&
+              endIndex == deletedIndex &&
+              (firstIsUUID || secondIsUUID)
+            ) {
+              return [];
+            }
+            // deleted start? move new start forward till first constrainable waypoint
+            if (deletedIndex == startIndex && firstIsUUID) {
+              while (startIndex < endIndex) {
+                startIndex++;
+                if (self.waypoints[startIndex].isConstrainable()) {
+                  break;
+                }
+              }
+            } else if (deletedIndex == endIndex && secondIsUUID) {
+              // deleted end? move new end backward till first constrainable waypoint
+              while (startIndex < endIndex) {
+                endIndex--;
+                if (self.waypoints[endIndex].isConstrainable()) {
+                  break;
+                }
+              }
+            }
+            // if we shrunk to a single point, delete constraint
+            if (endIndex == startIndex && firstIsUUID && secondIsUUID) {
+              return [];
+            } else {
+              // update
+              constraint.scope = [
+                firstIsUUID
+                  ? { uuid: self.waypoints[startIndex].uuid }
+                  : scope[0],
+                secondIsUUID
+                  ? { uuid: self.waypoints[endIndex].uuid }
+                  : scope[1],
+              ];
+              return constraint;
+            }
+          }
+          return constraint;
+        }) as typeof self.constraints;
+
         destroy(self.waypoints[index]);
         if (self.waypoints.length === 0) {
           self.generated.length = 0;
@@ -216,22 +288,6 @@ export const HolonomicPathStore = types
           self.waypoints[index + 1].setSelected(true);
         }
       },
-      deleteWaypointUUID(uuid: string) {
-        let index = self.waypoints.findIndex((point) => point.uuid === uuid);
-        if (index == -1) return;
-        const root = getRoot<IStateStore>(self);
-        root.select(undefined);
-
-        if (self.waypoints.length === 1) {
-          self.generated.length = 0;
-        } else if (self.waypoints[index - 1]) {
-          self.waypoints[index - 1].setSelected(true);
-        } else if (self.waypoints[index + 1]) {
-          self.waypoints[index + 1].setSelected(true);
-        }
-        destroy(self.waypoints[index]);
-      },
-
       deleteConstraint(index: number) {
         destroy(self.constraints[index]);
         if (self.constraints.length === 0) {
@@ -278,6 +334,11 @@ export const HolonomicPathStore = types
   })
   .actions((self) => {
     return {
+      deleteWaypointUUID(uuid: string) {
+        let index = self.waypoints.findIndex((point) => point.uuid === uuid);
+        if (index == -1) return;
+        self.deleteWaypoint(index);
+      },
       fromSavedPath(savedPath: SavedPath) {
         self.waypoints.clear();
         savedPath.waypoints.forEach(
@@ -291,17 +352,34 @@ export const HolonomicPathStore = types
           let constraintStore = ConstraintStores[saved.type];
           if (constraintStore !== undefined) {
             let savedWaypointIdToWaypointId = (savedId: SavedWaypointId) => {
+              if (savedId === null || savedId === undefined) {
+                return undefined;
+              }
+
               if (savedId === "first") {
                 return "first";
-              } else if (savedId === "last") {
+              }
+              if (savedId === "last") {
                 return "last";
+              }
+              if (savedId < 0 || savedId >= self.waypoints.length) {
+                return undefined;
+              }
+              if (!Number.isInteger(savedId)) {
+                return undefined;
               } else {
-                return { uuid: self.waypoints[savedId].uuid as string };
+                return { uuid: self.waypoints[savedId]?.uuid as string };
               }
             };
+            let scope = saved.scope.map((id) =>
+              savedWaypointIdToWaypointId(id)
+            );
+            if (scope.includes(undefined)) {
+              return; // don't attempt to load
+            }
             let constraint = self.addConstraint(
               constraintStore,
-              saved.scope.map((id) => savedWaypointIdToWaypointId(id))
+              scope as WaypointID[]
             );
 
             Object.keys(constraint?.definition.properties ?? {}).forEach(
