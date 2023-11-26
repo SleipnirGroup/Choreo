@@ -17,6 +17,9 @@ export const HolonomicWaypointStore = types
   })
   .views((self) => {
     return {
+      isConstrainable() {
+        return !self.isInitialGuess;
+      },
       get type(): number {
         if (self.isInitialGuess) {
           return 3; // Guess
