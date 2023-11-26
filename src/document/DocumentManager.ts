@@ -237,8 +237,8 @@ export class DocumentManager {
       });
       return;
     }
-    const trajectory = path.getSavedTrajectory();
-    if (trajectory === null) {
+    const trajectory = path.generated;
+    if (trajectory.length < 2) {
       console.error("Tried to export ungenerated trajectory: ", uuid);
       toast.error("Cannot export ungenerated trajectory", {
         autoClose: 5000,

@@ -9,7 +9,6 @@ import {
   HolonomicWaypointStore,
   IHolonomicWaypointStore,
 } from "./HolonomicWaypointStore";
-import { TrajectorySampleStore } from "./TrajectorySampleStore";
 import { moveItem } from "mobx-utils";
 import { v4 as uuidv4 } from "uuid";
 import { IStateStore } from "./DocumentModel";
@@ -31,7 +30,7 @@ export const HolonomicPathStore = types
     uuid: types.identifier,
     waypoints: types.array(HolonomicWaypointStore),
     constraints: types.array(types.union(...Object.values(ConstraintStores))),
-    generated: types.array(TrajectorySampleStore),
+    generated: types.frozen<Array<SavedTrajectorySample>>([]),
     generating: false,
     usesControlIntervalGuessing: true,
     defaultControlIntervalCount: 40,
@@ -59,15 +58,6 @@ export const HolonomicPathStore = types
         }
         return self.generated[self.generated.length - 1].timestamp;
       },
-      getSavedTrajectory(): Array<SavedTrajectorySample> | null {
-        let trajectory = null;
-        if (self.generated.length >= 2) {
-          trajectory = self.generated.map((point) =>
-            point.asSavedTrajectorySample()
-          );
-        }
-        return trajectory;
-      },
       canGenerate(): boolean {
         return self.waypoints.length >= 2 && !self.generating;
       },
@@ -86,12 +76,7 @@ export const HolonomicPathStore = types
         }
       },
       asSavedPath(): SavedPath {
-        let trajectory: Array<SavedTrajectorySample> | null = null;
-        if (self.generated.length >= 2) {
-          trajectory = self.generated.map((point) =>
-            point.asSavedTrajectorySample()
-          );
-        }
+        let trajectory: Array<SavedTrajectorySample> = self.generated;
         // constraints are converted here because of the need to search the path for uuids
         return {
           waypoints: self.waypoints.map((point) => point.asSavedWaypoint()),
@@ -334,16 +319,11 @@ export const HolonomicPathStore = types
             );
           }
         });
-        self.generated.clear();
         if (
           savedPath.trajectory !== undefined &&
           savedPath.trajectory !== null
         ) {
-          savedPath.trajectory.forEach((savedSample, index) => {
-            let sample = TrajectorySampleStore.create();
-            sample.fromSavedTrajectorySample(savedSample);
-            self.generated.push(sample);
-          });
+          self.generated = savedPath.trajectory;
         }
         self.usesControlIntervalGuessing =
           savedPath.usesControlIntervalGuessing;
