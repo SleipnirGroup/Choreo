@@ -247,7 +247,7 @@ export class DocumentManager {
       });
       return;
     }
-    const content = JSON.stringify(trajectory, undefined, 4);
+    const content = JSON.stringify({ samples: trajectory }, undefined, 4);
     const filePath = await dialog.save({
       title: "Export Trajectory",
       defaultPath: `${path.name}.json`,
