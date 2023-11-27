@@ -31,23 +31,19 @@ public class ChoreoCommands {
     boolean useAllianceColor,
     Subsystem... requirements
   ) {
-    ChoreoControlFunction controller = (pose, referenceState) -> {
-      double xFF = referenceState.velocityX;
-      double yFF = referenceState.velocityY;
-      double rotationFF = referenceState.angularVelocity;
+    return choreoSwerveCommand(trajectory, poseSupplier, 
+    choreoSwerveController(xController, yController, rotationController),
+     outputChassisSpeeds, useAllianceColor, requirements);
+  }
 
-      double xFeedback = xController.calculate(pose.getX(), referenceState.x);
-      double yFeedback = yController.calculate(pose.getY(), referenceState.y);
-      double rotationFeedback =
-          rotationController.calculate(
-              pose.getRotation().getRadians(), referenceState.heading);
-
-      return ChassisSpeeds.fromFieldRelativeSpeeds(
-          xFF + xFeedback,
-          yFF + yFeedback,
-          rotationFF + rotationFeedback,
-          pose.getRotation());
-    };
+  public static Command choreoSwerveCommand(
+    ChoreoTrajectory trajectory,
+    Supplier<Pose2d> poseSupplier,
+    ChoreoControlFunction controller,
+    Consumer<ChassisSpeeds> outputChassisSpeeds,
+    boolean useAllianceColor,
+    Subsystem... requirements
+  ) {
     var timer = new Timer();
     return new FunctionalCommand(
       timer::restart,
@@ -66,5 +62,29 @@ public class ChoreoCommands {
         }
       },
       ()->timer.hasElapsed(trajectory.getTotalTime()), requirements);
+  }
+
+  public static ChoreoControlFunction choreoSwerveController(
+    PIDController xController,
+    PIDController yController,
+    PIDController rotationController
+  ) {
+    return (pose, referenceState) -> {
+      double xFF = referenceState.velocityX;
+      double yFF = referenceState.velocityY;
+      double rotationFF = referenceState.angularVelocity;
+
+      double xFeedback = xController.calculate(pose.getX(), referenceState.x);
+      double yFeedback = yController.calculate(pose.getY(), referenceState.y);
+      double rotationFeedback =
+          rotationController.calculate(
+              pose.getRotation().getRadians(), referenceState.heading);
+
+      return ChassisSpeeds.fromFieldRelativeSpeeds(
+          xFF + xFeedback,
+          yFF + yFeedback,
+          rotationFF + rotationFeedback,
+          pose.getRotation());
+    };
   }
 }
