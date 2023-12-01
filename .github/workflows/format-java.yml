@@ -1,0 +1,11 @@
+name: Format Java
+
+on: [pull_request, push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - run: cd choreolib
+      - run: ./gradlew spotlessCheck

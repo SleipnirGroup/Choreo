@@ -9,9 +9,7 @@ import lombok.AllArgsConstructor;
 public class ChoreoTrajectory {
   private final List<ChoreoTrajectoryState> samples;
 
-  /**
-   * Create an empty ChoreoTrajectory.
-   */
+  /** Create an empty ChoreoTrajectory. */
   public ChoreoTrajectory() {
     samples = List.of();
   }
@@ -52,6 +50,7 @@ public class ChoreoTrajectory {
 
   /**
    * Return an interpolated, non-mirrored sample of the trajectory at the given timestamp.
+   *
    * @param timestamp The timestamp of this sample relative to the beginning of the trajectory.
    * @return The ChoreoTrajectoryState at the given time.
    */
@@ -61,6 +60,7 @@ public class ChoreoTrajectory {
 
   /**
    * Return an interpolated sample of the trajectory at the given timestamp.
+   *
    * @param timestamp The timestamp of this sample relative to the beginning of the trajectory.
    * @param whether or not to return the sample as mirrored across the field midline (as in 2023).
    * @return The ChoreoTrajectoryState at the given time.
