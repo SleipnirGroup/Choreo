@@ -20,10 +20,9 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
   public final double velocityY;
   public final double angularVelocity;
 
-  public double getTimestamp() {
-    return timestamp;
-  }
-
+  /**
+   * @return the pose at this state.
+   */
   public Pose2d getPose() {
     return new Pose2d(x, y, Rotation2d.fromRadians(heading));
   }
@@ -34,7 +33,7 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
 
   @Override
   public ChoreoTrajectoryState interpolate(ChoreoTrajectoryState endValue, double t) {
-    double scale = (getTimestamp() - t) / (endValue.getTimestamp() - t);
+    double scale = (this.timestamp - t) / (endValue.timestamp - t);
     var interp_pose = getPose().interpolate(endValue.getPose(), scale);
 
     return ChoreoTrajectoryState.builder()
