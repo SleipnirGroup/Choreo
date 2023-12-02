@@ -26,7 +26,9 @@ function copyDylibs() {
 }
 
 console.log("Building trajoptlib dylibs");
-execSync("cd " + bu.getSrcTauriPath() + " && cargo build --release");
+execSync(
+  "cd " + bu.getSrcTauriPath() + " && rm -rf target && cargo build --release"
+);
 
 console.log("Copying trajoptlib dylibs to src-tauri/");
 copyDylibs();
@@ -42,5 +44,5 @@ if (process.platform === "win32") {
   );
 }
 
-// console.log("Cargo clean");
-// execSync("cd " + bu.getSrcTauriPath() + " && cargo clean");
+console.log("Cargo clean");
+execSync("cd " + bu.getSrcTauriPath() + " && cargo clean");
