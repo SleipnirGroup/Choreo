@@ -7,6 +7,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - run: ls
+      - name: Check out repository code
+      uses: actions/checkout@v2
       - run: cd ./choreolib
       - run: ./gradlew spotlessCheck
+      working-directory: ./choreolib
