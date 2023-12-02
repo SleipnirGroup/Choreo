@@ -60,7 +60,7 @@ dependencies {
 // Set up exports properly
 // nativeUtils {
 //     exportsConfigs {
-//         PathplannerLib {
+//         ChoreoLib {
 //             x86ExcludeSymbols = [
 //                 '_CT??_R0?AV_System_error',
 //                 '_CT??_R0?AVexception',
@@ -93,7 +93,7 @@ dependencies {
 
 // model {
 //     components {
-//         PathplannerLib(NativeLibrarySpec) {
+//         ChoreoLib(NativeLibrarySpec) {
 //             sources {
 //                 cpp {
 //                     source {
@@ -109,7 +109,7 @@ dependencies {
 //         }
 //     }
 //     testSuites {
-//         PathplannerLibTest {
+//         ChoreoLibTest {
 //             sources.cpp {
 //                 source {
 //                     srcDir 'src/test/native/cpp'
