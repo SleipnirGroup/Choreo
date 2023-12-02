@@ -55,6 +55,8 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.10.1'
 }
 
+
+// C++ configuration for the future.
 // Set up exports properly
 // nativeUtils {
 //     exportsConfigs {

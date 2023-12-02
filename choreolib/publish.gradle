@@ -47,6 +47,7 @@ def baseArtifactId = 'ChoreoLib'
 def zipBaseName = "_GROUP_com_choreo_lib_choreolib_ID_${baseArtifactId}-cpp_CLS"
 def javaBaseName = "_GROUP_com_choreo_lib_choreolib_ID_${baseArtifactId}-java_CLS"
 
+// C++ configuration for the future.
 // task cppHeadersZip(type: Zip) {
 //     destinationDirectory = outputsFolder
 //     archiveBaseName = zipBaseName
@@ -150,6 +151,7 @@ model {
         def taskList = createComponentZipTasks($.components, ['ChoreoLib'], zipBaseName, Zip, project, includeStandardZipFormat)
 
         publications {
+            // C++ configuration for the future.
             // cpp(MavenPublication) {
             //     taskList.each {
             //         artifact it
