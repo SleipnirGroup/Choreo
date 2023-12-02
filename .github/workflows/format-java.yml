@@ -7,5 +7,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - run: cd choreolib
+      - run: ls
+      - run: cd ./choreolib
       - run: ./gradlew spotlessCheck
