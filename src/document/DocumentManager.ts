@@ -2,7 +2,7 @@ import { createContext } from "react";
 import StateStore, { IStateStore } from "./DocumentModel";
 import { dialog, fs } from "@tauri-apps/api";
 import { v4 as uuidv4 } from "uuid";
-import { VERSIONS, validate } from "./DocumentSpecTypes";
+import { VERSIONS, validate, SAVE_FILE_VERSION } from "./DocumentSpecTypes";
 import { applySnapshot, getRoot, onPatch } from "mobx-state-tree";
 import { toJS } from "mobx";
 import { toast } from "react-toastify";
@@ -250,11 +250,11 @@ export class DocumentManager {
     const content = JSON.stringify({ samples: trajectory }, undefined, 4);
     const filePath = await dialog.save({
       title: "Export Trajectory",
-      defaultPath: `${path.name}.json`,
+      defaultPath: `${path.name}.traj`,
       filters: [
         {
           name: "Trajopt Trajectory",
-          extensions: ["json"],
+          extensions: ["traj"],
         },
       ],
     });
@@ -281,7 +281,7 @@ export class DocumentManager {
 
   async saveFile() {
     const content = JSON.stringify(this.model.asSavedDocument(), undefined, 4);
-    if (!VERSIONS["v0.1.1"].validate(this.model.asSavedDocument())) {
+    if (!VERSIONS[SAVE_FILE_VERSION].validate(this.model.asSavedDocument())) {
       console.warn("Invalid Doc JSON:\n" + "\n" + content);
       return;
     }
@@ -290,7 +290,7 @@ export class DocumentManager {
       filters: [
         {
           name: "Trajopt Document",
-          extensions: ["json"],
+          extensions: ["chor"],
         },
       ],
     });
