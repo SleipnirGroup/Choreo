@@ -9,6 +9,4 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
-      - run: cd ./choreolib
-      - run: ./gradlew spotlessCheck
-        working-directory: ./choreolib
+      - run: cd ./choreolib; ./gradlew spotlessCheck
