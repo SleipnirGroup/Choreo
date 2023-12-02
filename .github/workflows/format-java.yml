@@ -9,7 +9,7 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
-       - run: |
+      - run: |
           cd ./choreolib
           chmod +x gradlew
           ./gradlew spotlessCheck
