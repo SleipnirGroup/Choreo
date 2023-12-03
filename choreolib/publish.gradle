@@ -2,7 +2,7 @@ apply plugin: 'maven-publish'
 
 ext.licenseFile = files("$rootDir/LICENSE.txt")
 
-def pubVersion = '0.0.0'
+def pubVersion = '2024.0.4'
 
 def outputsFolder = file("$buildDir/outputs")
 
@@ -42,7 +42,7 @@ ext.addTaskToCopyAllOutputs = { task ->
     copyAllOutputs.from task.archiveFile
 }
 
-def artifactGroupId = 'com.choreo.lib.ChoreoLib'
+def artifactGroupId = 'com.choreo.lib'
 def baseArtifactId = 'ChoreoLib'
 def zipBaseName = "_GROUP_com_choreo_lib_choreolib_ID_${baseArtifactId}-cpp_CLS"
 def javaBaseName = "_GROUP_com_choreo_lib_choreolib_ID_${baseArtifactId}-java_CLS"
