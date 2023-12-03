@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 
+/** A trajectory loaded from Choreo. */
 @AllArgsConstructor
 public class ChoreoTrajectory {
   private final List<ChoreoTrajectoryState> samples;
@@ -62,7 +63,8 @@ public class ChoreoTrajectory {
    * Return an interpolated sample of the trajectory at the given timestamp.
    *
    * @param timestamp The timestamp of this sample relative to the beginning of the trajectory.
-   * @param whether or not to return the sample as mirrored across the field midline (as in 2023).
+   * @param mirrorForRedAlliance whether or not to return the sample as mirrored across the field
+   *     midline (as in 2023).
    * @return The ChoreoTrajectoryState at the given time.
    */
   public ChoreoTrajectoryState sample(double timestamp, boolean mirrorForRedAlliance) {
