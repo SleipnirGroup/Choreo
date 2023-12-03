@@ -56,7 +56,7 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
    */
   @Override
   public ChoreoTrajectoryState interpolate(ChoreoTrajectoryState endValue, double t) {
-    double scale = (t-this.timestamp) / (endValue.timestamp - this.timestamp);
+    double scale = (t - this.timestamp) / (endValue.timestamp - this.timestamp);
     var interp_pose = getPose().interpolate(endValue.getPose(), scale);
 
     return ChoreoTrajectoryState.builder()
