@@ -18,12 +18,13 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+/** Utilities to load and follow ChoreoTrajectories */
 public class Choreo {
   private static final Gson gson = new Gson();
 
   /**
    * Load a trajectory from the deploy directory. Choreolib expects .traj files to be placed in
-   * src/main/deploy/choreo/<trajName>.traj .
+   * src/main/deploy/choreo/[trajName].traj .
    *
    * @param trajName the path name in Choreo, which matches the file name in the deploy directory.
    *     Do not include ".traj" here.
