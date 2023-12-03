@@ -18,9 +18,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-/**
- * Utilities to load and follow ChoreoTrajectories
- */
+/** Utilities to load and follow ChoreoTrajectories */
 public class Choreo {
   private static final Gson gson = new Gson();
 
