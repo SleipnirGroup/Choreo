@@ -32,7 +32,7 @@ public class Choreo {
    */
   public static ChoreoTrajectory getTrajectory(String trajName) {
     var traj_dir = new File(Filesystem.getDeployDirectory(), "choreo");
-    var traj_file = new File(traj_dir, trajName);
+    var traj_file = new File(traj_dir, trajName + ".traj");
 
     return loadFile(traj_file);
   }
