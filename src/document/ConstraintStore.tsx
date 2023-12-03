@@ -7,6 +7,7 @@ import {
   KeyboardDoubleArrowRight,
   PriorityHigh,
   Stop,
+  StopCircleOutlined,
   SyncDisabledOutlined,
   Timeline,
 } from "@mui/icons-material";
@@ -90,6 +91,15 @@ export const constraints = {
     shortName: "Wpt 0 Velo",
     description: "Zero velocity at waypoint",
     icon: <Dangerous></Dangerous>,
+    properties: {},
+    wptScope: true,
+    sgmtScope: false,
+  },
+  StopPoint: {
+    name: "Stop Point",
+    shortName: "Stop Point",
+    description: "Zero linear and angular velocity at waypoint",
+    icon: <StopCircleOutlined></StopCircleOutlined>,
     properties: {},
     wptScope: true,
     sgmtScope: false,
