@@ -42,7 +42,9 @@ export class DocumentManager {
       console.log("you pressed F5!");
     });
     hotkeys("command+g,ctrl+g,g", () => {
-      this.model.generatePath(this.model.document.pathlist.activePathUUID);
+      this.model.generatePathWithToasts(
+        this.model.document.pathlist.activePathUUID
+      );
     });
     hotkeys("command+z,ctrl+z", () => {
       this.undo();

@@ -148,6 +148,42 @@ const StateStore = types
           });
       },
     };
+  })
+  .actions((self) => {
+    return {
+      generatePathWithToasts(activePathUUID: string) {
+        toast.dismiss();
+        var pathName = self.document.pathlist.paths.get(activePathUUID)!.name;
+        if (pathName === undefined) {
+          toast.error("Tried to generate unknown path.");
+        }
+        toast.promise(
+          self.generatePath(activePathUUID),
+          {
+            success: {
+              render({ data, toastProps }) {
+                console.log("success");
+                return `Generated \"${pathName}\"`;
+              },
+            },
+
+            error: {
+              render({ data, toastProps }) {
+                console.log(data);
+                if ((data as string).includes("User_Requested_Stop")) {
+                  toastProps.style = { visibility: "hidden" };
+                  return `Cancelled \"${pathName}\"`;
+                }
+                return `Can't generate \"${pathName}\": ` + (data as string);
+              },
+            },
+          },
+          {
+            containerId: "FIELD",
+          }
+        );
+      },
+    };
   });
 
 export default StateStore;
