@@ -62,12 +62,8 @@ export const PathListStore = types
           name: usedName,
           waypoints: [],
         });
-        path
-          .addConstraint(ConstraintStores.StopPoint)
-          ?.setScope(["first"]);
-        path
-          .addConstraint(ConstraintStores.StopPoint)
-          ?.setScope(["last"]);
+        path.addConstraint(ConstraintStores.StopPoint)?.setScope(["first"]);
+        path.addConstraint(ConstraintStores.StopPoint)?.setScope(["last"]);
         self.paths.put(path);
         if (self.paths.size === 1 || select) {
           self.activePathUUID = newUUID;
