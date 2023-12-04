@@ -65,6 +65,7 @@ enum ChoreoConstraintScope {
 enum Constraints {
   WptVelocityDirection{scope: ChoreoConstraintScope, direction:f64},
   WptZeroVelocity{scope: ChoreoConstraintScope},
+  StopPoint{scope: ChoreoConstraintScope},
   MaxVelocity{scope: ChoreoConstraintScope, velocity:f64},
   ZeroAngularVelocity{scope: ChoreoConstraintScope},
   StraightLine{scope:ChoreoConstraintScope}
@@ -137,6 +138,12 @@ async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfi
         Constraints::WptZeroVelocity { scope } => {
           match scope { ChoreoConstraintScope::Waypoint(idx) => {
               path_builder.wpt_linear_velocity_max_magnitude(fix_scope(idx[0], &rm), 0.0f64);
+            },_=>{}}
+        },
+        Constraints::StopPoint { scope } => {
+          match scope { ChoreoConstraintScope::Waypoint(idx) => {
+              path_builder.wpt_linear_velocity_max_magnitude(fix_scope(idx[0], &rm), 0.0f64);
+              path_builder.wpt_angular_velocity(fix_scope(idx[0], &rm), 0.0);
             },_=>{}}
         },
         Constraints::MaxVelocity { scope , velocity} => {
