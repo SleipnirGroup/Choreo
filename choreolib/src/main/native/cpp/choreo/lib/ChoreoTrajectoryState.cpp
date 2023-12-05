@@ -2,6 +2,7 @@
 
 #include <frc/geometry/Twist2d.h>
 #include <numbers>
+#include <wpi/json.h>
 
 using namespace choreolib;
 
@@ -63,4 +64,29 @@ ChoreoTrajectoryState ChoreoTrajectoryState::Flipped() const {
 	return ChoreoTrajectoryState { timestamp, fieldWidth - x, y,
 			units::radian_t { std::numbers::pi } - heading, velocityX * -1,
 			velocityY, angularVelocity * -1 };
+}
+
+void choreolib::to_json(wpi::json &json,
+		const ChoreoTrajectoryState &trajState) {
+	json = wpi::json { { "timestamp", trajState.timestamp.value() }, { "x",
+			trajState.x.value() }, { "y", trajState.y.value() }, { "heading",
+			trajState.heading.value() }, { "velocityX",
+			trajState.velocityX.value() }, { "velocityY",
+			trajState.velocityY.value() }, { "angularVelocity",
+			trajState.angularVelocity.value() } };
+}
+
+void choreolib::from_json(const wpi::json &json,
+		ChoreoTrajectoryState &trajState) {
+	trajState.timestamp =
+			units::second_t { json.at("timestamp").get<double>() };
+	trajState.x = units::meter_t { json.at("x").get<double>() };
+	trajState.y = units::meter_t { json.at("y").get<double>() };
+	trajState.heading = units::radian_t { json.at("heading").get<double>() };
+	trajState.velocityX = units::meters_per_second_t { json.at("velocityX").get<
+			double>() };
+	trajState.velocityY = units::meters_per_second_t { json.at("velocityY").get<
+			double>() };
+	trajState.angularVelocity = units::radians_per_second_t { json.at(
+			"angularVelocity").get<double>() };
 }

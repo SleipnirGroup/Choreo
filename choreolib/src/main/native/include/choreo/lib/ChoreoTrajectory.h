@@ -15,9 +15,13 @@ public:
 	units::second_t GetTotalTime() const;
 	std::vector<frc::Pose2d> GetPoses() const;
 	ChoreoTrajectory Flipped() const;
-
+	std::vector<ChoreoTrajectoryState> GetSamples() const;
+	void SetSamples(const std::vector<ChoreoTrajectoryState> &newSamples);
 private:
 	ChoreoTrajectoryState SampleInternal(units::second_t timestamp);
 	std::vector<ChoreoTrajectoryState> samples { };
 };
+
+void to_json(wpi::json &json, const ChoreoTrajectory &traj);
+void from_json(const wpi::json &json, ChoreoTrajectory &traj);
 }

@@ -1,5 +1,7 @@
 #include "choreo/lib/ChoreoTrajectory.h"
 
+#include <wpi/json.h>
+
 using namespace choreolib;
 
 ChoreoTrajectory::ChoreoTrajectory(
@@ -80,4 +82,22 @@ ChoreoTrajectory ChoreoTrajectory::Flipped() const {
 		flippedStates.emplace_back(state.Flipped());
 	}
 	return ChoreoTrajectory(flippedStates);
+}
+
+std::vector<ChoreoTrajectoryState> ChoreoTrajectory::GetSamples() const {
+	return samples;
+}
+
+void ChoreoTrajectory::SetSamples(
+		const std::vector<ChoreoTrajectoryState> &newSamples) {
+	samples = newSamples;
+}
+
+void choreolib::to_json(wpi::json &json, const ChoreoTrajectory &traj) {
+	json = wpi::json { { "samples", traj.GetSamples() } };
+}
+
+void choreolib::from_json(const wpi::json &json, ChoreoTrajectory &traj) {
+	traj.SetSamples(
+			json.at("samples").get<std::vector<ChoreoTrajectoryState>>());
 }
