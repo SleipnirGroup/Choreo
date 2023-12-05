@@ -97,8 +97,8 @@ public class Choreo {
    *     ChoreoCommands.choreoSwerveController(PIDController xController, PIDController yController,
    *     PIDController rotationController) to create one using PID controllers for each degree of
    *     freedom. You can also pass in a function with the signature (Pose2d currentPose,
-   *     ChoreoTrajectoryState referenceState) -> ChassisSpeeds to implement a custom follower (i.e.
-   *     for logging).
+   *     ChoreoTrajectoryState referenceState) -&gt; ChassisSpeeds to implement a custom follower
+   *     (i.e. for logging).
    * @param outputChassisSpeeds A function that consumes the target robot-relative chassis speeds
    *     and commands them to the robot.
    * @param useAllianceColor Whether or not to mirror the path based on alliance (this assumes the
