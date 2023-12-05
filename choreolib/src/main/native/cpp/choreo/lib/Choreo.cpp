@@ -10,7 +10,7 @@
 using namespace choreolib;
 
 ChoreoTrajectory Choreo::GetTrajectory(std::string trajName) {
-	std::string trajDir = frc::filesystem::GetDeployDirectory() + "choreo";
+	std::string trajDir = frc::filesystem::GetDeployDirectory() + "/choreo/";
 	std::string trajFileName = trajDir + trajName + ".traj";
 
 	std::error_code ec;
