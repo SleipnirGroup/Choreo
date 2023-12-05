@@ -5,6 +5,7 @@
 #include <frc2/command/FunctionalCommand.h>
 #include <frc/Timer.h>
 #include <frc/DriverStation.h>
+#include <numbers>
 
 using namespace choreolib;
 
@@ -27,7 +28,7 @@ ChoreoTrajectory Choreo::GetTrajectory(std::string trajName) {
 	return traj;
 }
 
-frc2::CommandPtr Choreo::ChoreoSwerveCommand(const ChoreoTrajectory &trajectory,
+frc2::CommandPtr Choreo::ChoreoSwerveCommand(ChoreoTrajectory trajectory,
 		std::function<frc::Pose2d()> poseSupplier,
 		frc::PIDController xController, frc::PIDController yController,
 		frc::PIDController rotationController,
@@ -39,18 +40,18 @@ frc2::CommandPtr Choreo::ChoreoSwerveCommand(const ChoreoTrajectory &trajectory,
 			requirements);
 }
 
-frc2::CommandPtr Choreo::ChoreoSwerveCommand(const ChoreoTrajectory &trajectory,
+frc2::CommandPtr Choreo::ChoreoSwerveCommand(ChoreoTrajectory trajectory,
 		std::function<frc::Pose2d()> poseSupplier,
 		ChoreoControllerFunction controller,
 		std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds,
 		bool useAllianceColor, frc2::Requirements requirements) {
 	frc::Timer timer;
-	return frc2::FunctionalCommand([timer] {
+	return frc2::FunctionalCommand([timer]() mutable {
 		timer.Restart();
 	}
 			,
 			[timer, trajectory, poseSupplier, controller, useAllianceColor,
-					outputChassisSpeeds] {
+					outputChassisSpeeds]() mutable {
 				bool mirror = false;
 				if (useAllianceColor) {
 					std::optional < frc::DriverStation::Alliance > alliance =
@@ -63,13 +64,13 @@ frc2::CommandPtr Choreo::ChoreoSwerveCommand(const ChoreoTrajectory &trajectory,
 						controller(poseSupplier(),
 								trajectory.Sample(timer.Get(), mirror)));
 			},
-			[timer, outputChassisSpeeds](bool interrupted) {
+			[timer, outputChassisSpeeds](bool interrupted) mutable {
 				timer.Stop();
 				if (interrupted) {
 					outputChassisSpeeds(frc::ChassisSpeeds { });
 				}
 			},
-			[timer, trajectory] {
+			[timer, trajectory]() mutable {
 				return timer.HasElapsed(trajectory.GetTotalTime());
 			},
 			requirements).ToPtr();
@@ -80,8 +81,8 @@ ChoreoControllerFunction Choreo::ChoreoSwerveController(
 		frc::PIDController rotationController) {
 	rotationController.EnableContinuousInput(-std::numbers::pi,
 			std::numbers::pi);
-	return [xController, yController, rotationController](
-			const frc::Pose2d &pose, ChoreoTrajectoryState &referenceState) {
+	return [xController, yController, rotationController](frc::Pose2d pose,
+			ChoreoTrajectoryState referenceState) mutable {
 		units::meters_per_second_t xFF = referenceState.velocityX;
 		units::meters_per_second_t yFF = referenceState.velocityY;
 		units::radians_per_second_t rotationFF = referenceState.angularVelocity;
