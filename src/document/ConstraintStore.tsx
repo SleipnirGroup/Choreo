@@ -319,6 +319,9 @@ const defineConstraintStore = (
       .actions((self) => {
         let x: ModelActions = {};
         Object.keys(definition.properties).forEach((key) => {
+          if (key.length == 0) {
+            return;
+          }
           let upperCaseName = key[0].toUpperCase() + key.slice(1);
           x[`set${upperCaseName}`] = (arg0: number) => {
             self[key] = arg0;

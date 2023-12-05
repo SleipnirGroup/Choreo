@@ -52,6 +52,7 @@ class RobotConfigPanel extends Component<Props, State> {
               {ViewItemData.map((item, index) => (
                 // @ts-ignore
                 <Tooltip
+                  disableInteractive
                   title={item.name}
                   placement="left"
                   key={index}

@@ -53,7 +53,7 @@ class InterpolatedRobot extends Component<Props, State> {
     let high = m_states.length - 1;
 
     while (low !== high) {
-      let mid = (low + high) / 2;
+      let mid = Math.floor((low + high) / 2);
       if (m_states[mid].timestamp < timeSeconds) {
         // This index and everything under it are less than the requested
         // timestamp. Therefore, we can discard them.

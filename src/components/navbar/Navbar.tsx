@@ -41,6 +41,7 @@ class Navbar extends Component<Props, State> {
                 index > (NavbarItemSectionLengths[sectionIdx - 1] ?? -1) && (
                   //@ts-ignore
                   <Tooltip
+                    disableInteractive
                     value={`${index}`}
                     title={item.name}
                     key={`${sectionIdx}_${index}`}

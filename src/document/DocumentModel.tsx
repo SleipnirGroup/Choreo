@@ -66,10 +66,11 @@ const StateStore = types
         if (pathStore === undefined) {
           return new Promise((resolve, reject) =>
             reject("Path store is undefined")
-            );
-          }
-          return new Promise((resolve, reject) => {
-          const controlIntervalOptResult = pathStore.optimizeControlIntervalCounts(self.document.robotConfig);
+          );
+        }
+        return new Promise((resolve, reject) => {
+          const controlIntervalOptResult =
+            pathStore.optimizeControlIntervalCounts(self.document.robotConfig);
           if (controlIntervalOptResult !== undefined) {
             return new Promise((resolve, reject) =>
               reject(controlIntervalOptResult)

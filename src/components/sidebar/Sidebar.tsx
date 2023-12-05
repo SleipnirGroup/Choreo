@@ -43,7 +43,7 @@ class Sidebar extends Component<Props, State> {
           }}
         >
           <span>
-            <Tooltip title="Main Menu">
+            <Tooltip disableInteractive title="Main Menu">
               <IconButton
                 onClick={() => {
                   toggleMainMenu();
@@ -55,7 +55,7 @@ class Sidebar extends Component<Props, State> {
             Choreo
           </span>
           <span>
-            <Tooltip title="Undo">
+            <Tooltip disableInteractive title="Undo">
               <span>
                 <IconButton
                   disabled={!this.context.history.canUndo}
@@ -67,7 +67,7 @@ class Sidebar extends Component<Props, State> {
                 </IconButton>
               </span>
             </Tooltip>
-            <Tooltip title="Redo">
+            <Tooltip disableInteractive title="Redo">
               <span>
                 <IconButton
                   disabled={!this.context.history.canRedo}
@@ -83,7 +83,7 @@ class Sidebar extends Component<Props, State> {
         </div>
         <div className={styles.SidebarHeading}>
           PATHS
-          <Tooltip title="Add Path">
+          <Tooltip disableInteractive title="Add Path">
             <IconButton
               size="small"
               color="default"
@@ -101,7 +101,7 @@ class Sidebar extends Component<Props, State> {
         <Divider></Divider>
         <div
           className={styles.Sidebar}
-          style={{ maxHeight: "135px", minHeight: "50px" }}
+          style={{ maxHeight: "300px", minHeight: "50px" }}
         >
           <PathSelector></PathSelector>
         </div>

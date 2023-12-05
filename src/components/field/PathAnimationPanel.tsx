@@ -7,6 +7,7 @@ import PlayIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import { autorun } from "mobx";
 import { Tooltip } from "@mui/material";
+import hotkeys from "hotkeys-js";
 
 type Props = {};
 
@@ -26,6 +27,7 @@ class PathAnimationPanel extends Component<Props, State> {
   i = 0;
   then = Date.now();
   step = (dt: number) => this.incrementTimer(dt);
+
   onStart() {
     this.then = Date.now();
     this.setState({ running: true });
@@ -65,6 +67,13 @@ class PathAnimationPanel extends Component<Props, State> {
     }
   }
   componentDidMount(): void {
+    hotkeys("space", "all", () => {
+      if (this.state.running) {
+        this.onStop();
+      } else {
+        this.onStart();
+      }
+    });
     autorun(() => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       let activePath = this.context.model.document.pathlist.activePathUUID;
@@ -100,6 +109,7 @@ class PathAnimationPanel extends Component<Props, State> {
           }}
         >
           <Tooltip
+            disableInteractive
             title={
               this.state.running
                 ? "Pause Path Animation"

@@ -127,7 +127,7 @@ class SidebarWaypoint extends Component<Props, State> {
               )}
               <span>{this.props.index + 1}</span>
             </span>
-            <Tooltip title="Delete Waypoint">
+            <Tooltip disableInteractive title="Delete Waypoint">
               <IconButton
                 className={styles.SidebarRightIcon}
                 onClick={(e) => {

@@ -26,7 +26,6 @@ export interface SavedPath {
   trajectory: Array<SavedTrajectorySample> | null;
   constraints: Array<SavedConstraint>;
   usesDefaultFieldObstacles: boolean;
-  usesControlIntervalCulling: boolean;
   usesControlIntervalGuessing: boolean;
   defaultControlIntervalCount: number;
 }

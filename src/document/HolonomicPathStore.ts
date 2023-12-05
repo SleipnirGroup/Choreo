@@ -9,7 +9,6 @@ import {
   HolonomicWaypointStore,
   IHolonomicWaypointStore,
 } from "./HolonomicWaypointStore";
-import { TrajectorySampleStore } from "./TrajectorySampleStore";
 import { moveItem } from "mobx-utils";
 import { v4 as uuidv4 } from "uuid";
 import { IStateStore } from "./DocumentModel";
@@ -33,9 +32,8 @@ export const HolonomicPathStore = types
     uuid: types.identifier,
     waypoints: types.array(HolonomicWaypointStore),
     constraints: types.array(types.union(...Object.values(ConstraintStores))),
-    generated: types.array(TrajectorySampleStore),
+    generated: types.frozen<Array<SavedTrajectorySample>>([]),
     generating: false,
-    usesControlIntervalCulling: true,
     usesControlIntervalGuessing: true,
     defaultControlIntervalCount: 40,
     usesDefaultObstacles: true,
@@ -53,22 +51,15 @@ export const HolonomicPathStore = types
         return self.waypoints.filter((waypoint) => !waypoint.isInitialGuess);
       },
       get nonGuessOrEmptyPoints() {
-        return self.waypoints.filter((waypoint) => !waypoint.isInitialGuess && !(waypoint.type == 2));
+        return self.waypoints.filter(
+          (waypoint) => !waypoint.isInitialGuess && !(waypoint.type == 2)
+        );
       },
       getTotalTimeSeconds(): number {
         if (self.generated.length === 0) {
           return 0;
         }
         return self.generated[self.generated.length - 1].timestamp;
-      },
-      getSavedTrajectory(): Array<SavedTrajectorySample> | null {
-        let trajectory = null;
-        if (self.generated.length >= 2) {
-          trajectory = self.generated.map((point) =>
-            point.asSavedTrajectorySample()
-          );
-        }
-        return trajectory;
       },
       canGenerate(): boolean {
         return self.waypoints.length >= 2 && !self.generating;
@@ -88,12 +79,7 @@ export const HolonomicPathStore = types
         }
       },
       asSavedPath(): SavedPath {
-        let trajectory: Array<SavedTrajectorySample> | null = null;
-        if (self.generated.length >= 2) {
-          trajectory = self.generated.map((point) =>
-            point.asSavedTrajectorySample()
-          );
-        }
+        let trajectory: Array<SavedTrajectorySample> = self.generated;
         // constraints are converted here because of the need to search the path for uuids
         return {
           waypoints: self.waypoints.map((point) => point.asSavedWaypoint()),
@@ -112,21 +98,23 @@ export const HolonomicPathStore = types
                 return waypointId;
               }
             };
-            let saved: Partial<SavedConstraint> = {};
             let con = constraint;
-            saved.scope = con.scope.map((id: IWaypointScope) =>
+            let scope = con.scope.map((id: IWaypointScope) =>
               waypointIdToSavedWaypointId(id)
             );
-            if (saved.scope?.includes(-1)) return [];
-            return {
+            if (scope?.includes(undefined)) return [];
+            let toReturn = {
               ...constraint,
               type: constraint.type,
-              scope: saved["scope"],
+              scope,
             };
+            delete toReturn.icon;
+            delete toReturn.definition;
+            return toReturn;
           }),
-          usesControlIntervalCulling: self.usesControlIntervalCulling,
           usesControlIntervalGuessing: self.usesControlIntervalGuessing,
           defaultControlIntervalCount: self.defaultControlIntervalCount,
+          usesDefaultFieldObstacles: true,
         };
       },
       lowestSelectedPoint(): IHolonomicWaypointStore | null {
@@ -142,12 +130,11 @@ export const HolonomicPathStore = types
       waypointTimestamps(): number[] {
         let wptTimes: number[] = [];
         if (self.generated.length > 0) {
-          self.generated.forEach((cInt) => {
-            if (self.waypoints.find((wpt) => {
-              return Math.abs(wpt.x - cInt.x) < 10e-10 // floating point error :heart-eyes:
-                && Math.abs(wpt.y - cInt.y) < 10e-10
-                && (Math.abs(wpt.heading - cInt.heading) < 10e-10 || !wpt.headingConstrained)})) {
-                  wptTimes.push(cInt.timestamp);
+          let currentInterval = 0;
+          self.waypoints.forEach((w) => {
+            if (self.generated.at(currentInterval)?.timestamp !== undefined) {
+              wptTimes.push(self.generated.at(currentInterval)!.timestamp);
+              currentInterval += w.controlIntervalCount;
             }
           });
         }
@@ -202,9 +189,6 @@ export const HolonomicPathStore = types
   })
   .actions((self) => {
     return {
-      setControlIntervalCulling(value: boolean) {
-        self.usesControlIntervalCulling = value;
-      },
       setControlIntervalGuessing(value: boolean) {
         self.usesControlIntervalGuessing = value;
       },
@@ -228,6 +212,76 @@ export const HolonomicPathStore = types
         return self.waypoints[self.waypoints.length - 1];
       },
       deleteWaypoint(index: number) {
+        if (self.waypoints[index] === undefined) {
+          return;
+        }
+        let uuid = self.waypoints[index]?.uuid;
+        console.log(uuid);
+        const root = getRoot<IStateStore>(self);
+        root.select(undefined);
+
+        // clean up constraints
+        self.constraints = self.constraints.flatMap((constraint) => {
+          let scope = constraint.getSortedScope();
+          // delete waypoint-scope referencing deleted point directly.
+          if (
+            scope.length == 1 &&
+            Object.hasOwn(scope[0], "uuid") &&
+            scope[0].uuid === uuid
+          ) {
+            return [];
+          }
+          // delete zero-segment-scope referencing deleted point directly.
+          if (scope.length == 2) {
+            let deletedIndex = index;
+            let firstIsUUID = Object.hasOwn(scope[0], "uuid");
+            let secondIsUUID = Object.hasOwn(scope[1], "uuid");
+            let startIndex = constraint.getStartWaypointIndex();
+            let endIndex = constraint.getEndWaypointIndex();
+            // Delete zero-length segments that refer directly and only to the waypoint
+            if (
+              startIndex == deletedIndex &&
+              endIndex == deletedIndex &&
+              (firstIsUUID || secondIsUUID)
+            ) {
+              return [];
+            }
+            // deleted start? move new start forward till first constrainable waypoint
+            if (deletedIndex == startIndex && firstIsUUID) {
+              while (startIndex < endIndex) {
+                startIndex++;
+                if (self.waypoints[startIndex].isConstrainable()) {
+                  break;
+                }
+              }
+            } else if (deletedIndex == endIndex && secondIsUUID) {
+              // deleted end? move new end backward till first constrainable waypoint
+              while (startIndex < endIndex) {
+                endIndex--;
+                if (self.waypoints[endIndex].isConstrainable()) {
+                  break;
+                }
+              }
+            }
+            // if we shrunk to a single point, delete constraint
+            if (endIndex == startIndex && firstIsUUID && secondIsUUID) {
+              return [];
+            } else {
+              // update
+              constraint.scope = [
+                firstIsUUID
+                  ? { uuid: self.waypoints[startIndex].uuid }
+                  : scope[0],
+                secondIsUUID
+                  ? { uuid: self.waypoints[endIndex].uuid }
+                  : scope[1],
+              ];
+              return constraint;
+            }
+          }
+          return constraint;
+        }) as typeof self.constraints;
+
         destroy(self.waypoints[index]);
         if (self.waypoints.length === 0) {
           self.generated.length = 0;
@@ -238,22 +292,6 @@ export const HolonomicPathStore = types
           self.waypoints[index + 1].setSelected(true);
         }
       },
-      deleteWaypointUUID(uuid: string) {
-        let index = self.waypoints.findIndex((point) => point.uuid === uuid);
-        if (index == -1) return;
-        const root = getRoot<IStateStore>(self);
-        root.select(undefined);
-
-        if (self.waypoints.length === 1) {
-          self.generated.length = 0;
-        } else if (self.waypoints[index - 1]) {
-          self.waypoints[index - 1].setSelected(true);
-        } else if (self.waypoints[index + 1]) {
-          self.waypoints[index + 1].setSelected(true);
-        }
-        destroy(self.waypoints[index]);
-      },
-
       deleteConstraint(index: number) {
         destroy(self.constraints[index]);
         if (self.constraints.length === 0) {
@@ -300,6 +338,11 @@ export const HolonomicPathStore = types
   })
   .actions((self) => {
     return {
+      deleteWaypointUUID(uuid: string) {
+        let index = self.waypoints.findIndex((point) => point.uuid === uuid);
+        if (index == -1) return;
+        self.deleteWaypoint(index);
+      },
       fromSavedPath(savedPath: SavedPath) {
         self.waypoints.clear();
         savedPath.waypoints.forEach(
@@ -313,67 +356,84 @@ export const HolonomicPathStore = types
           let constraintStore = ConstraintStores[saved.type];
           if (constraintStore !== undefined) {
             let savedWaypointIdToWaypointId = (savedId: SavedWaypointId) => {
+              if (savedId === null || savedId === undefined) {
+                return undefined;
+              }
+
               if (savedId === "first") {
                 return "first";
-              } else if (savedId === "last") {
+              }
+              if (savedId === "last") {
                 return "last";
+              }
+              if (savedId < 0 || savedId >= self.waypoints.length) {
+                return undefined;
+              }
+              if (!Number.isInteger(savedId)) {
+                return undefined;
               } else {
-                return { uuid: self.waypoints[savedId].uuid as string };
+                return { uuid: self.waypoints[savedId]?.uuid as string };
               }
             };
-            self.addConstraint(
+            let scope = saved.scope.map((id) =>
+              savedWaypointIdToWaypointId(id)
+            );
+            if (scope.includes(undefined)) {
+              return; // don't attempt to load
+            }
+            let constraint = self.addConstraint(
               constraintStore,
-              saved.scope.map((id) => savedWaypointIdToWaypointId(id))
+              scope as WaypointID[]
+            );
+
+            Object.keys(constraint?.definition.properties ?? {}).forEach(
+              (key) => {
+                if (
+                  Object.hasOwn(saved, key) &&
+                  typeof saved[key] === "number" &&
+                  key.length >= 1
+                ) {
+                  let upperCaseName = key[0].toUpperCase() + key.slice(1);
+                  //@ts-ignore
+                  constraint[`set${upperCaseName}`](saved[key]);
+                }
+              }
             );
           }
         });
-        self.generated.clear();
         if (
           savedPath.trajectory !== undefined &&
           savedPath.trajectory !== null
         ) {
-          savedPath.trajectory.forEach((savedSample, index) => {
-            let sample = TrajectorySampleStore.create();
-            sample.fromSavedTrajectorySample(savedSample);
-            self.generated.push(sample);
-          });
+          self.generated = savedPath.trajectory;
         }
-        self.usesControlIntervalCulling = savedPath.usesControlIntervalCulling;
-        self.usesControlIntervalGuessing = savedPath.usesControlIntervalGuessing;
-        self.defaultControlIntervalCount = savedPath.defaultControlIntervalCount;
+        self.usesControlIntervalGuessing =
+          savedPath.usesControlIntervalGuessing;
+        self.defaultControlIntervalCount =
+          savedPath.defaultControlIntervalCount;
       },
-      optimizeControlIntervalCounts(robotConfig: IRobotConfigStore) {
-        console.log(self.generated.toJSON());
-        if (self.generated !== undefined && self.generated.length > 0 && self.usesControlIntervalCulling) {
-          let newCounts = [];
-          let generatedIndex = 1;
-          for (let wpt = 0; wpt < self.nonGuessPoints.length - 1; wpt ++) {
-            let wptCount = self.nonGuessPoints.at(wpt)!.controlIntervalCount;
-            let newCount = 0;
-            for (let interval = generatedIndex; interval < generatedIndex + wptCount; interval++) {
-              if (self.generated.at(interval) !== undefined && self.generated.at(interval - 1) !== undefined) {
-                if (self.generated.at(interval).timestamp - self.generated.at(interval - 1).timestamp > 0.001) {
-                  newCount++;
-                }
-              }
-            }
-            if (newCount === 0) {
-              // If we haven't generated this segment yet, guess
-              this.guessControlIntervalCount(wpt, robotConfig);
-            } else {
-              newCount *= 1.25; // Prevent growing too small
-              newCount = Math.ceil(newCount) // me when no integer type
-              newCounts.push(newCount);
-              generatedIndex += wptCount;
-              self.nonGuessPoints.at(wpt)?.setControlIntervalCount(newCount);
-            }
-          }
-          console.log(newCounts);
+      optimizeControlIntervalCounts(
+        robotConfig: IRobotConfigStore
+      ): string | undefined {
+        if (self.usesControlIntervalGuessing) {
+          return this.guessControlIntervalCounts(robotConfig);
         } else {
-          this.guessControlIntervalCounts(robotConfig);
+          return this.defaultControlIntervalCounts(robotConfig);
         }
       },
-      guessControlIntervalCounts(robotConfig: IRobotConfigStore): string | undefined {
+      defaultControlIntervalCounts(
+        robotConfig: IRobotConfigStore
+      ): string | undefined {
+        for (let i = 0; i < self.nonGuessPoints.length; i++) {
+          self.nonGuessPoints
+            .at(i)
+            ?.setControlIntervalCount(self.defaultControlIntervalCount);
+        }
+        return;
+      },
+      guessControlIntervalCounts(
+        robotConfig: IRobotConfigStore
+      ): string | undefined {
         if (robotConfig.wheelMaxTorque == 0) {
           return "Wheel max torque may not be 0";
         } else if (robotConfig.wheelMaxVelocity == 0) {
@@ -383,36 +443,44 @@ export const HolonomicPathStore = types
         } else if (robotConfig.wheelRadius == 0) {
           return "Wheel radius may not be 0";
         }
-        if (self.usesControlIntervalGuessing) {
-          for (let i = 0; i < self.nonGuessPoints.length - 1; i ++) {
-            this.guessControlIntervalCount(i, robotConfig);
-          }
-          self.nonGuessPoints.at(self.nonGuessPoints.length - 1)?.setControlIntervalCount(self.defaultControlIntervalCount);
-        } else {
-          for (let i = 0; i < self.nonGuessPoints.length; i ++) {
-            self.nonGuessPoints.at(i)?.setControlIntervalCount(self.defaultControlIntervalCount);
-          }
+        for (let i = 0; i < self.nonGuessPoints.length - 1; i++) {
+          this.guessControlIntervalCount(i, robotConfig);
         }
+        self.nonGuessPoints
+          .at(self.nonGuessPoints.length - 1)
+          ?.setControlIntervalCount(self.defaultControlIntervalCount);
       },
-      guessControlIntervalCount(i: number, robotConfig: IRobotConfigStore) {        
-        let dx = self.nonGuessPoints.at(i + 1)!.x - self.nonGuessPoints.at(i)!.x;
-        let dy = self.nonGuessPoints.at(i + 1)!.y - self.nonGuessPoints.at(i)!.y;
+      guessControlIntervalCount(i: number, robotConfig: IRobotConfigStore) {
+        let dx =
+          self.nonGuessPoints.at(i + 1)!.x - self.nonGuessPoints.at(i)!.x;
+        let dy =
+          self.nonGuessPoints.at(i + 1)!.y - self.nonGuessPoints.at(i)!.y;
+        let dtheta =
+          self.nonGuessPoints.at(i + 1)!.heading -
+          self.nonGuessPoints.at(i)!.heading;
+        const headingWeight = 0.5; // arbitrary
         let distance = Math.sqrt(dx * dx + dy * dy);
         let maxForce = robotConfig.wheelMaxTorque / robotConfig.wheelRadius;
-        let maxAccel = (maxForce * 4) / robotConfig.mass; // time 4 for 4 modules
+        let maxAccel = (maxForce * 4) / robotConfig.mass; // times 4 for 4 modules
         let maxVel = robotConfig.wheelMaxVelocity * robotConfig.wheelRadius;
         let distanceAtCruise = distance - (maxVel * maxVel) / maxAccel;
         if (distanceAtCruise < 0) {
           // triangle
           let totalTime = 2 * (Math.sqrt(distance * maxAccel) / maxAccel);
-          self.nonGuessPoints.at(i)?.setControlIntervalCount(Math.ceil(totalTime / 0.05));
+          totalTime += headingWeight * Math.abs(dtheta);
+          self.nonGuessPoints
+            .at(i)
+            ?.setControlIntervalCount(Math.ceil(totalTime / 0.1));
         } else {
           // trapezoid
-          let totalTime = (distance / maxVel) + (maxVel / maxAccel);
-          self.nonGuessPoints.at(i)?.setControlIntervalCount(Math.ceil(totalTime / 0.05));
+          let totalTime = distance / maxVel + maxVel / maxAccel;
+          totalTime += headingWeight * Math.abs(dtheta);
+          self.nonGuessPoints
+            .at(i)
+            ?.setControlIntervalCount(Math.ceil(totalTime / 0.1));
         }
         console.log(self.nonGuessPoints.at(i)?.controlIntervalCount);
-      }
+      },
     };
   });
 export interface IHolonomicPathStore

@@ -148,7 +148,6 @@ export let VERSIONS = {
           waypoints: path.waypoints,
           trajectory: path.trajectory,
           constraints: path.constraints,
-          usesControlIntervalCulling: true,
           usesControlIntervalGuessing: true,
           defaultControlIntervalCount: 40,
         };
@@ -174,7 +173,6 @@ export let VERSIONS = {
           waypoints: path.waypoints,
           trajectory: path.trajectory,
           constraints: path.constraints,
-          usesControlIntervalCulling: path.usesControlIntervalCulling,
           usesControlIntervalGuessing: path.usesControlIntervalGuessing,
           defaultControlIntervalCount: path.defaultControlIntervalCount,
           usesDefaultFieldObstacles: true
