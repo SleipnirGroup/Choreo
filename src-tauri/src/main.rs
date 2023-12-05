@@ -99,6 +99,8 @@ fn fix_scope(idx: usize, removed_idxs: &Vec<usize>) -> usize {
   }
   return idx-to_subtract;
 }
+
+#[allow(non_snake_case)]
 #[tauri::command]
 async fn generate_trajectory(
     path: Vec<ChoreoWaypoint>, 
