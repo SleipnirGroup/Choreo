@@ -66,11 +66,7 @@ export class Field extends Component<Props, State> {
               constraint={selectedSidebar as IConstraintStore}
             ></ConstraintsConfigPanel>
           )}
-        {robotConfigOpen && (
-          <div className={styles.WaypointPanel}>
-            <RobotConfigPanel></RobotConfigPanel>
-          </div>
-        )}
+
         <VisibilityPanel></VisibilityPanel>
         <Tooltip
           disableInteractive
@@ -160,6 +156,11 @@ export class Field extends Component<Props, State> {
               right: 16,
             }}
           />
+        )}
+        {robotConfigOpen && (
+          <div className={styles.WaypointPanel}>
+            <RobotConfigPanel></RobotConfigPanel>
+          </div>
         )}
       </div>
     );

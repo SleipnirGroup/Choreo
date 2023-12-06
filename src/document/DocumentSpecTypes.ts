@@ -41,6 +41,16 @@ import {
   SAVE_FILE_VERSION as v0_1_1_Version,
 } from "./previousSpecs/v0_1_1";
 import v0_1_1_Schema from "./previousSpecs/v0.1.1.json";
+import {
+  SavedDocument as v0_2,
+  SavedPath as v0_2_Path,
+  SavedWaypoint as v0_2_Waypoint,
+  SavedTrajectorySample as v0_2_Sample,
+  SavedPathList as v0_2_Pathlist,
+  SavedRobotConfig as v0_2_Config,
+  SAVE_FILE_VERSION as v0_2_Version,
+} from "./previousSpecs/v0_2";
+import v0_2_Schema from "./previousSpecs/v0.2.json";
 
 // Paste new version import blocks above this line.
 // Update the import path in the below to point to a particular version as current
@@ -52,9 +62,9 @@ export type {
   SavedRobotConfig,
   SavedWaypoint,
   SavedConstraint,
-} from "./previousSpecs/v0_1_1";
-export { SAVE_FILE_VERSION } from "./previousSpecs/v0_1_1";
-import { SAVE_FILE_VERSION } from "./previousSpecs/v0_1_1";
+} from "./previousSpecs/v0_2";
+export { SAVE_FILE_VERSION } from "./previousSpecs/v0_2";
+import { SAVE_FILE_VERSION } from "./previousSpecs/v0_2";
 import Ajv from "ajv";
 
 export let VERSIONS = {
@@ -147,6 +157,28 @@ export let VERSIONS = {
     validate: (document: v0_1_1): boolean => {
       const ajv = new Ajv();
       return ajv.validate(v0_1_1_Schema, document);
+    },
+  },
+  "v0.2": {
+    up: (document: any): v0_2 => {
+      document = document as v0_1_1;
+      let robotConfiguration: v0_2_Config = {
+        motorMaxTorque: 1,
+        motorMaxVelocity: 6000, // kraken max speed in rpm
+        gearing: 6.75, // SDS mk4i L2
+        efficiency: 80,
+        ...document.robotConfiguration,
+      };
+      let updated: v0_2 = {
+        paths: document.paths,
+        version: v0_2_Version,
+        robotConfiguration,
+      };
+      return updated;
+    },
+    validate: (document: v0_2): boolean => {
+      const ajv = new Ajv();
+      return ajv.validate(v0_2_Schema, document);
     },
   },
 };

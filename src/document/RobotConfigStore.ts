@@ -1,4 +1,4 @@
-import { getRoot, Instance, types } from "mobx-state-tree";
+import { applySnapshot, getRoot, Instance, types } from "mobx-state-tree";
 import { safeGetIdentifier } from "../util/mobxutils";
 import { IStateStore } from "./DocumentModel";
 import { SavedRobotConfig } from "./DocumentSpecTypes";
@@ -7,8 +7,9 @@ export const RobotConfigStore = types
   .model("RobotConfigStore", {
     mass: 45,
     rotationalInertia: 6,
-    wheelMaxVelocity: 70, // 15 fps
-    wheelMaxTorque: 2.0,
+    motorMaxVelocity: 6000, // kraken max speed in rpm
+    motorMaxTorque: 1,
+    gearing: 6.75,
     wheelRadius: 0.0508, // 2 in
     bumperWidth: 0.9,
     bumperLength: 0.9,
@@ -16,29 +17,20 @@ export const RobotConfigStore = types
     trackWidth: 0.622,
     identifier: types.identifier,
   })
+  .views((self) => {
+    return {
+      get wheelMaxVelocity() {
+        return (self.motorMaxVelocity * (Math.PI * 2)) / 60 / self.gearing;
+      },
+      get wheelMaxTorque() {
+        return self.motorMaxTorque * self.gearing;
+      },
+    };
+  })
   .actions((self) => {
     return {
       fromSavedRobotConfig(config: SavedRobotConfig) {
-        let {
-          mass,
-          rotationalInertia,
-          wheelMaxTorque,
-          wheelMaxVelocity,
-          wheelbase,
-          trackWidth,
-          bumperLength,
-          bumperWidth,
-          wheelRadius,
-        } = config;
-        self.mass = mass;
-        self.rotationalInertia = rotationalInertia;
-        self.wheelMaxTorque = wheelMaxTorque;
-        self.wheelMaxVelocity = wheelMaxVelocity;
-        self.wheelbase = wheelbase;
-        self.trackWidth = trackWidth;
-        self.bumperLength = bumperLength;
-        self.bumperWidth = bumperWidth;
-        self.wheelRadius = wheelRadius;
+        applySnapshot(self, { identifier: self.identifier, ...config });
       },
       setMass(arg: number) {
         self.mass = arg;
@@ -47,10 +39,13 @@ export const RobotConfigStore = types
         self.rotationalInertia = arg;
       },
       setMaxTorque(arg: number) {
-        self.wheelMaxTorque = arg;
+        self.motorMaxTorque = arg;
       },
       setMaxVelocity(arg: number) {
-        self.wheelMaxVelocity = arg;
+        self.motorMaxVelocity = arg;
+      },
+      setGearing(arg: number) {
+        self.gearing = arg;
       },
       setBumperWidth(arg: number) {
         self.bumperWidth = arg;
@@ -82,8 +77,9 @@ export const RobotConfigStore = types
         let {
           mass,
           rotationalInertia,
-          wheelMaxTorque,
-          wheelMaxVelocity,
+          motorMaxTorque,
+          motorMaxVelocity,
+          gearing,
           wheelbase,
           trackWidth: trackwidth,
           bumperLength,
@@ -93,13 +89,47 @@ export const RobotConfigStore = types
         return {
           mass,
           rotationalInertia,
-          wheelMaxTorque,
-          wheelMaxVelocity,
+          motorMaxTorque,
+          motorMaxVelocity,
+          gearing,
           wheelbase,
           trackWidth: trackwidth,
           bumperLength,
           bumperWidth,
           wheelRadius,
+        };
+      },
+      asSolverRobotConfig(): SavedRobotConfig & {
+        wheelMaxTorque: number;
+        wheelMaxVelocity: number;
+      } {
+        let {
+          mass,
+          rotationalInertia,
+          motorMaxTorque,
+          motorMaxVelocity,
+          gearing,
+          wheelbase,
+          trackWidth: trackwidth,
+          bumperLength,
+          bumperWidth,
+          wheelRadius,
+        } = self;
+        let wheelMaxTorque = self.wheelMaxTorque;
+        let wheelMaxVelocity = self.wheelMaxVelocity;
+        return {
+          mass,
+          rotationalInertia,
+          motorMaxTorque,
+          motorMaxVelocity,
+          gearing,
+          wheelbase,
+          trackWidth: trackwidth,
+          bumperLength,
+          bumperWidth,
+          wheelRadius,
+          wheelMaxTorque,
+          wheelMaxVelocity,
         };
       },
       bumperSVGElement() {

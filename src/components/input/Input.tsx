@@ -1,6 +1,6 @@
 import { Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
-import React, { Component } from "react";
+import React, { Component, ReactElement } from "react";
 import styles from "./InputList.module.css";
 
 type Props = {
@@ -12,7 +12,9 @@ type Props = {
   setNumber: (newNumber: number) => void;
   setEnabled: (value: boolean) => void;
   showCheckbox?: boolean;
+  showNumberWhenDisabled?: boolean;
   titleTooltip?: string;
+  prefix?: ReactElement;
 };
 
 type State = {
@@ -84,6 +86,7 @@ class Input extends Component<Props, State> {
   }
 
   render() {
+    let showNumberWhenDisabled = this.props.showNumberWhenDisabled ?? true;
     return (
       <>
         <Tooltip disableInteractive title={this.props.titleTooltip ?? ""}>
@@ -101,13 +104,17 @@ class Input extends Component<Props, State> {
                   }
             }
           >
+            {this.props.prefix}
             {this.props.title}
           </span>
         </Tooltip>
         <input
           ref={this.inputElemRef}
           type="text"
-          className={styles.Number}
+          className={
+            styles.Number +
+            (showNumberWhenDisabled ? " " + styles.ShowWhenDisabled : "")
+          }
           disabled={!this.props.enabled}
           onFocus={(e) => {
             this.focusedMode();
