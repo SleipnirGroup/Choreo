@@ -447,13 +447,10 @@ export const HolonomicPathStore = types
           ?.setControlIntervalCount(self.defaultControlIntervalCount);
       },
       guessControlIntervalCount(i: number, robotConfig: IRobotConfigStore) {
-        let dx =
-          self.waypoints.at(i + 1)!.x - self.waypoints.at(i)!.x;
-        let dy =
-          self.waypoints.at(i + 1)!.y - self.waypoints.at(i)!.y;
+        let dx = self.waypoints.at(i + 1)!.x - self.waypoints.at(i)!.x;
+        let dy = self.waypoints.at(i + 1)!.y - self.waypoints.at(i)!.y;
         let dtheta =
-          self.waypoints.at(i + 1)!.heading -
-          self.waypoints.at(i)!.heading;
+          self.waypoints.at(i + 1)!.heading - self.waypoints.at(i)!.heading;
         const headingWeight = 0.5; // arbitrary
         let distance = Math.sqrt(dx * dx + dy * dy);
         let maxForce = robotConfig.wheelMaxTorque / robotConfig.wheelRadius;
