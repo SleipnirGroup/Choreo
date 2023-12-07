@@ -110,8 +110,7 @@ const StateStore = types
                 path: pathStore.waypoints,
                 config: self.document.robotConfig,
                 constraints: pathStore.asSolverPath().constraints,
-              }),
-            (e) => e
+              })
           )
           .then(
             (rust_traj) => {
