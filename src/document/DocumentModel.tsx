@@ -118,13 +118,13 @@ const StateStore = types
               // @ts-ignore
               rust_traj.samples.forEach((samp) => {
                 newTraj.push({
-                  x:samp.x, 
-                  y:samp.y,
-                  heading:samp.heading,
-                  angularVelocity:samp.angular_velocity,
-                  velocityX:samp.velocity_x,
-                  velocityY:samp.velocity_y,
-                  timestamp:samp.timestamp
+                  x: samp.x,
+                  y: samp.y,
+                  heading: samp.heading,
+                  angularVelocity: samp.angular_velocity,
+                  velocityX: samp.velocity_x,
+                  velocityY: samp.velocity_y,
+                  timestamp: samp.timestamp,
                 });
               });
               pathStore.setTrajectory(newTraj);
