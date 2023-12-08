@@ -130,11 +130,12 @@ class Input extends Component<Props, State> {
           }}
           onKeyDown={(e) => {
             if (e.key == "Enter") {
-              let newNumber = parseFloat(this.state.editedValue);
-              if (!Number.isNaN(newNumber)) {
-                this.props.setNumber(newNumber);
-              }
-              this.focusedMode();
+              this.inputElemRef.current?.blur();
+              // let newNumber = parseFloat(this.state.editedValue);
+              // if (!Number.isNaN(newNumber)) {
+              //   this.props.setNumber(newNumber);
+              // }
+              // this.unfocusedMode();
             }
           }}
           value={this.getDisplayStr()}
