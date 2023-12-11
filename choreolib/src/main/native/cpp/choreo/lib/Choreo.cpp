@@ -1,4 +1,5 @@
 #include "choreo/lib/Choreo.h"
+#include "choreo/lib/ChoreoSwerveCommand.h"
 #include <frc/Filesystem.h>
 #include <wpi/MemoryBuffer.h>
 #include <wpi/json.h>
@@ -28,7 +29,7 @@ ChoreoTrajectory Choreo::GetTrajectory(std::string trajName) {
 	return traj;
 }
 
-frc2::CommandPtr Choreo::ChoreoSwerveCommand(ChoreoTrajectory trajectory,
+frc2::CommandPtr Choreo::ChoreoSwerveCommandFactory(ChoreoTrajectory trajectory,
 		std::function<frc::Pose2d()> poseSupplier,
 		frc::PIDController xController, frc::PIDController yController,
 		frc::PIDController rotationController,
@@ -37,43 +38,16 @@ frc2::CommandPtr Choreo::ChoreoSwerveCommand(ChoreoTrajectory trajectory,
 	return ChoreoSwerveCommand(trajectory, poseSupplier,
 			ChoreoSwerveController(xController, yController,
 					rotationController), outputChassisSpeeds, useAllianceColor,
-			requirements);
+			requirements).ToPtr();
 }
 
-frc2::CommandPtr Choreo::ChoreoSwerveCommand(ChoreoTrajectory trajectory,
+frc2::CommandPtr Choreo::ChoreoSwerveCommandFactory(ChoreoTrajectory trajectory,
 		std::function<frc::Pose2d()> poseSupplier,
 		ChoreoControllerFunction controller,
 		std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds,
 		bool useAllianceColor, frc2::Requirements requirements) {
-	frc::Timer timer;
-	return frc2::FunctionalCommand([timer]() mutable {
-		timer.Restart();
-	}
-			,
-			[timer, trajectory, poseSupplier, controller, useAllianceColor,
-					outputChassisSpeeds]() mutable {
-				bool mirror = false;
-				if (useAllianceColor) {
-					std::optional < frc::DriverStation::Alliance > alliance =
-							frc::DriverStation::GetAlliance();
-					mirror = alliance.has_value()
-							&& alliance.value()
-									== frc::DriverStation::Alliance::kRed;
-				}
-				outputChassisSpeeds(
-						controller(poseSupplier(),
-								trajectory.Sample(timer.Get(), mirror)));
-			},
-			[timer, outputChassisSpeeds](bool interrupted) mutable {
-				timer.Stop();
-				if (interrupted) {
-					outputChassisSpeeds(frc::ChassisSpeeds { });
-				}
-			},
-			[timer, trajectory]() mutable {
-				return timer.HasElapsed(trajectory.GetTotalTime());
-			},
-			requirements).ToPtr();
+	return ChoreoSwerveCommand(trajectory, poseSupplier, controller,
+			outputChassisSpeeds, useAllianceColor, requirements).ToPtr();
 }
 
 ChoreoControllerFunction Choreo::ChoreoSwerveController(
