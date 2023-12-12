@@ -138,9 +138,9 @@ class FieldOverlayRoot extends Component<Props, State> {
           {layers[ViewLayers.Trajectory] && (
             <FieldGeneratedLines></FieldGeneratedLines>
           )}
-          {/* {layers[ViewLayers.Obstacles] && (
+          {layers[ViewLayers.Obstacles] && (
             <FieldObstacle></FieldObstacle>
-          )} */}
+          )}
           {layers[ViewLayers.Waypoints] &&
             this.context.model.uiState.isNavbarWaypointSelected() && (
               <circle

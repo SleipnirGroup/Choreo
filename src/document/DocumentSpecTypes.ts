@@ -62,6 +62,7 @@ export type {
   SavedRobotConfig,
   SavedWaypoint,
   SavedConstraint,
+  SavedCircleObstacle
 } from "./previousSpecs/v0_1_2";
 export { SAVE_FILE_VERSION } from "./previousSpecs/v0_1_2";
 import { SAVE_FILE_VERSION } from "./previousSpecs/v0_1_2";
@@ -175,7 +176,8 @@ export let VERSIONS = {
           constraints: path.constraints,
           usesControlIntervalGuessing: path.usesControlIntervalGuessing,
           defaultControlIntervalCount: path.defaultControlIntervalCount,
-          usesDefaultFieldObstacles: true
+          usesDefaultFieldObstacles: true,
+          obstacles: []
         };
       }
       return updated;

@@ -124,9 +124,26 @@
             },
             "defaultControlIntervalCount":{
               "type": "integer"
+            },
+            "obstacles": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  },
+                  "radius": {
+                    "type": "number"
+                  }
+                }
+              }
             }
           },
-          "required": ["waypoints", "generatedTrajectory", "constraints", "usesControlIntervalCulling", "usesControlIntervalGuessing", "defaultControlIntervalCount", "circleObstacles", "polygonObstacles"]
+          "required": ["waypoints", "generatedTrajectory", "constraints", "usesControlIntervalCulling", "usesControlIntervalGuessing", "defaultControlIntervalCount", "obstacles"]
         }
       }
     },

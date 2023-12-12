@@ -37,6 +37,7 @@ export const HolonomicPathStore = types
     usesControlIntervalGuessing: true,
     defaultControlIntervalCount: 40,
     usesDefaultObstacles: true,
+    obstacles: types.array(CircularObstacleStore),
   })
   .views((self) => {
     return {
@@ -80,6 +81,7 @@ export const HolonomicPathStore = types
       },
       asSavedPath(): SavedPath {
         let trajectory: Array<SavedTrajectorySample> = self.generated;
+        console.log(self.obstacles.map((obstacle) => obstacle.asSavedCircleObstacle()));
         // constraints are converted here because of the need to search the path for uuids
         return {
           waypoints: self.waypoints.map((point) => point.asSavedWaypoint()),
@@ -115,6 +117,7 @@ export const HolonomicPathStore = types
           usesControlIntervalGuessing: self.usesControlIntervalGuessing,
           defaultControlIntervalCount: self.defaultControlIntervalCount,
           usesDefaultFieldObstacles: true,
+          obstacles: self.obstacles.map((obstacle) => obstacle.asSavedCircleObstacle()),
         };
       },
       lowestSelectedPoint(): IHolonomicWaypointStore | null {
@@ -411,6 +414,11 @@ export const HolonomicPathStore = types
           savedPath.usesControlIntervalGuessing;
         self.defaultControlIntervalCount =
           savedPath.defaultControlIntervalCount;
+      },
+      addObstacle(
+        obstacle: ICircularObstacleStore
+      ) {
+        self.obstacles.push(obstacle);
       },
       optimizeControlIntervalCounts(
         robotConfig: IRobotConfigStore
