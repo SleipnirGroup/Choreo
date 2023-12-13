@@ -1,6 +1,8 @@
 import {
   Circle,
+  CircleNotificationsOutlined,
   CircleOutlined,
+  CircleSharp,
   DoNotDisturb,
   Grid4x4,
   Route,
@@ -23,6 +25,7 @@ import {
   IHolonomicWaypointStore,
 } from "./HolonomicWaypointStore";
 import { IRobotConfigStore, RobotConfigStore } from "./RobotConfigStore";
+import { ICircularObstacleStore } from "./CircularObstacleStore";
 
 export const SelectableItem = types.union(
   {
@@ -95,6 +98,27 @@ let navbarIndexToConstraintDefinition: { [key: number]: ConstraintDefinition } =
   });
 }
 const constraintNavbarCount = Object.keys(constraints).length;
+export let ObstacleData: {
+[key: string]: {
+  index: number;
+  name: string;
+  icon: ReactElement;
+};} = {
+  CircleObstacle: {
+    index: Object.keys(NavbarData).length,
+    name: "Circular Obstacle",
+    icon: <CircleSharp />,
+  },
+};
+const obstacleNavbarCount = Object.keys(ObstacleData).length;
+Object.entries(ObstacleData).forEach(([name, data]) => {
+  let obstaclesOffset = Object.keys(NavbarData).length;
+  NavbarData[name] = {
+    index: obstaclesOffset,
+    name: data.name,
+    icon: data.icon,
+  }
+})
 
 /** An map of  */
 export const NavbarLabels = (() => {
@@ -119,12 +143,14 @@ export const NavbarItemData = (() => {
 export const NavbarItemSectionLengths = [
   waypointNavbarCount - 1,
   waypointNavbarCount + constraintNavbarCount - 1,
+  waypointNavbarCount + constraintNavbarCount + obstacleNavbarCount - 1
 ];
 
 export type SelectableItemTypes =
   | IRobotConfigStore
   | IHolonomicWaypointStore
   | IConstraintStore
+  | ICircularObstacleStore
   | undefined;
 
 /* Visibility stuff */
@@ -207,7 +233,11 @@ export const UIStateStore = types
         );
       },
       isConstraintSelected() {
-        return self.selectedNavbarItem > NavbarItemSectionLengths[0];
+        return self.selectedNavbarItem > NavbarItemSectionLengths[0]
+          && self.selectedNavbarItem < NavbarItemSectionLengths[1];
+      },
+      isNavbarObstacleSelected() {
+        return self.selectedNavbarItem > NavbarItemSectionLengths[1];
       },
       visibleLayersOnly() {
         return self.layers.flatMap((visible: boolean, index: number) => {

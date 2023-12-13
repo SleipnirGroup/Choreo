@@ -14,6 +14,7 @@ import FieldConstraintsAddLayer from "./FieldConstraintsAddLayer";
 import FieldObstacle from "./FieldObstacles";
 import { Box } from "@mui/material";
 import { Circle } from "@mui/icons-material";
+import { CircularObstacleStore } from "../../../document/CircularObstacleStore";
 
 type Props = {};
 
@@ -151,6 +152,16 @@ class FieldOverlayRoot extends Component<Props, State> {
                 onClick={(e) => this.createWaypoint(e)}
               ></circle>
             )}
+          {layers[ViewLayers.Obstacles] &&
+            this.context.model.uiState.isNavbarObstacleSelected() && (
+              <circle
+                cx={0}
+                cy={0}
+                r={10000}
+                style={{ fill: "transparent" }}
+                onClick={(e) => this.createObstacle(e)}
+              ></circle>
+            )}
           {layers[ViewLayers.Waypoints] &&
             this.context.model.document.pathlist.activePath.waypoints.map(
               (point, index) => (
@@ -198,6 +209,21 @@ class FieldOverlayRoot extends Component<Props, State> {
         if (selectedItem == NavbarLabels.InitialGuessPoint) {
           newPoint.setInitialGuess(true);
         }
+      });
+      this.context.history.stopGroup();
+    }
+  }
+  createObstacle(e: React.MouseEvent<SVGCircleElement, MouseEvent>): void {
+    if (e.currentTarget === e.target) {
+      var coords = this.screenSpaceToFieldSpace(this.svgRef?.current, {
+        x: e.clientX,
+        y: e.clientY,
+      });
+      this.context.history.startGroup(() => {
+        var newPoint =
+          this.context.model.document.pathlist.activePath.addObstacle(CircularObstacleStore.create({ x: coords.x, y: coords.y, radius: 0.5}));
+        const selectedItem = this.context.model.uiState.selectedNavbarItem;
+        
       });
       this.context.history.stopGroup();
     }
