@@ -1,0 +1,36 @@
+cppHeaderFileInclude {
+  \.h$
+  \.hpp$
+  \.inc$
+  \.inl$
+}
+
+cppSrcFileInclude {
+  \.cpp$
+}
+
+modifiableFileExclude {
+  \.jpg$
+  \.jpeg$
+  \.png$
+  \.gif$
+  \.svg$
+  \.so$
+  \.dll$
+  \.webp$
+  \.ico$
+  \.icns$
+  \.traj$
+  gradlew
+}
+
+includeProject {
+  ^choreolib/
+}
+
+includeOtherLibs {
+  ^frc/
+  ^networktables/
+  ^units/
+  ^wpi/
+}
