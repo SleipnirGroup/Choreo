@@ -3,3 +3,4 @@ dist/
 build/
 .eggs/
 __pycache__
+choreolib/version.py
