@@ -18,7 +18,6 @@ export class DocumentManager {
     this.model.document.history.canRedo && this.model.document.history.redo();
   }
   get history() {
-    console.log(toJS(this.model.document.history.history));
     return this.model.document.history;
   }
   model: IStateStore;
@@ -39,7 +38,6 @@ export class DocumentManager {
     window.addEventListener("unload", () => hotkeys.unbind());
     hotkeys("f5,ctrl+shift+r,ctrl+r", function (event, handler) {
       event.preventDefault();
-      console.log("you pressed F5!");
     });
     hotkeys("command+g,ctrl+g,g", () => {
       this.model.generatePathWithToasts(
