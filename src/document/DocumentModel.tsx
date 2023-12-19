@@ -166,8 +166,7 @@ const StateStore = types
           {
             success: {
               render({ data, toastProps }) {
-                console.log("success");
-                return `Generated \"${path.name}\"`;
+                return `Generated \"${pathName}\"`;
               },
             },
 
