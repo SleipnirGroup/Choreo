@@ -152,18 +152,22 @@ const StateStore = types
   .actions((self) => {
     return {
       generatePathWithToasts(activePathUUID: string) {
+        var path = self.document.pathlist.paths.get(activePathUUID)!;
+        if (path.generating) {return Promise.resolve()}
         toast.dismiss();
-        var pathName = self.document.pathlist.paths.get(activePathUUID)!.name;
+        
+        
+        var pathName = path.name;
         if (pathName === undefined) {
           toast.error("Tried to generate unknown path.");
         }
-        toast.promise(
+        return toast.promise(
           self.generatePath(activePathUUID),
           {
             success: {
               render({ data, toastProps }) {
                 console.log("success");
-                return `Generated \"${pathName}\"`;
+                return `Generated \"${path.name}\"`;
               },
             },
 

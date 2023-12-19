@@ -19,7 +19,7 @@ import FileDownload from "@mui/icons-material/FileDownload";
 import Tooltip from "@mui/material/Tooltip";
 import { NoteAddOutlined, Settings } from "@mui/icons-material";
 import { ToastContainer, toast } from "react-toastify";
-import { dialog } from "@tauri-apps/api";
+import { dialog, invoke } from "@tauri-apps/api";
 
 type Props = {};
 
@@ -78,7 +78,11 @@ class AppMenu extends Component<Props, State> {
           </div>
           <List>
             <label htmlFor="file-upload-input">
-              <ListItemButton>
+              <ListItemButton
+                onClick={() => {
+                  invoke("openFileDialog");
+                }}
+              >
                 <ListItemIcon>
                   <UploadIcon />
                 </ListItemIcon>
@@ -122,6 +126,17 @@ class AppMenu extends Component<Props, State> {
               </ListItemIcon>
               <ListItemText primary="Export Trajectory"></ListItemText>
             </ListItemButton>
+
+            <ListItemButton
+              onClick={() => {
+                this.context.exportAllTrajectories();
+              }}
+            >
+              <ListItemIcon>
+                <FileDownload />
+              </ListItemIcon>
+              <ListItemText primary="Export All Trajectories"></ListItemText>
+            </ListItemButton>
           </List>
           <ToastContainer
             position="top-right"
@@ -135,7 +150,7 @@ class AppMenu extends Component<Props, State> {
             enableMultiContainer
             containerId={"MENU"}
           ></ToastContainer>
-          <input
+          {/* <input
             type="file"
             id="file-upload-input"
             style={{ display: "none" }}
@@ -150,7 +165,7 @@ class AppMenu extends Component<Props, State> {
                 e.target.value = "";
               }
             }}
-          ></input>
+          ></input> */}
         </div>
       </Drawer>
     );

@@ -1,7 +1,10 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+//#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use serde::ser::Error;
 use trajoptlib::{SwervePathBuilder, HolonomicTrajectory, SwerveDrivetrain, SwerveModule, InitialGuessPoint};
+use tauri::{api::{dialog::blocking::FileDialogBuilder, path, file}, Manager};
+use std::{fs::{ReadDir, self}, ffi::OsStr, path::Path};
 // A way to make properties that exist on all enum variants accessible from the generic variant
 // I have no idea how it works but it came from
 // https://users.rust-lang.org/t/generic-referencing-enum-inner-data/66342/9
@@ -17,6 +20,77 @@ use trajoptlib::{SwervePathBuilder, HolonomicTrajectory, SwerveDrivetrain, Swerv
 //       }
 //   };
 // }
+
+#[tauri::command]
+async fn write_file(file_path: String, contents: String) {
+  let file_path = Path::new(file_path.as_str());
+  if file_path.parent().is_some() {
+    fs::create_dir_all(file_path.parent().unwrap());
+  }
+  fs::write(file_path, contents);
+  
+}
+
+#[derive(Clone, serde::Serialize, Debug)]
+struct OpenFileEventPayload<'a> {
+  dir: Option<&'a str>,
+  name: Option<&'a str>,
+  contents: Option<&'a str>,
+  adjacent_gradle: bool
+}
+
+#[tauri::command]
+async fn contains_build_gradle(dir: Option<&Path>) -> Result<bool, &'static str> {
+  dir.map_or_else(|| Err("Directory does not exist"), 
+    |dir_path| {
+      let mut found_build_gradle = false;
+      for entry in dir_path.read_dir().expect("read_dir call failed") {
+        if let Ok(other_file) = entry {
+          found_build_gradle |= other_file.file_name().eq("build.gradle")
+        }
+      }
+    Ok(found_build_gradle)}
+  )
+}
+#[tauri::command]
+async fn openFileDialog(app_handle: tauri::AppHandle){
+  let file_path = FileDialogBuilder::new()
+  .set_title("Open a .chor file")
+  .add_filter("Choreo Save File", &["chor"]).pick_file();
+  match file_path{
+    Some(path)=>{
+      let dir = path.parent();
+      let name = path.file_name();
+      let adjacent_gradle = contains_build_gradle(dir).await;
+      if dir.is_some() && name.is_some() && adjacent_gradle.is_ok() {
+        app_handle.emit_all("open-file", 
+          OpenFileEventPayload {
+            dir: dir.unwrap().as_os_str().to_str(),
+            name: name.unwrap().to_str(),
+            contents: file::read_string(path.clone()).ok().as_deref(),
+            adjacent_gradle: adjacent_gradle.unwrap_or(false)});
+    
+    }
+
+    },
+    None=>{}
+  }
+}
+
+#[tauri::command]
+async fn save_file(dir: String, name: String, contents: String) -> Result<(), &'static str> {
+  let dir_path = Path::new(&dir);
+  let name_path = Path::join(dir_path, name);
+  if (name_path.is_relative()) {
+    return Err("Dir needs to be absolute");
+  }
+  fs::create_dir_all(dir_path);
+  println!("{:?}" , name_path);
+  if fs::write(name_path, contents).is_err() {
+    return Err("Failed file writing");
+  }
+  Ok(())
+}
 
 #[allow(non_snake_case)]
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -241,7 +315,8 @@ async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfi
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![generate_trajectory, cancel])
+        .invoke_handler(tauri::generate_handler![
+          generate_trajectory, cancel, openFileDialog, save_file, contains_build_gradle])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

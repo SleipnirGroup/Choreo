@@ -142,7 +142,7 @@ export class Field extends Component<Props, State> {
                 visibility: activePath.canGenerate() ? "visible" : "hidden",
               }}
               onClick={() => {
-                this.context.model.generatePathWithToasts(activePathUUID);
+                this.context.generateWithToastsAndExport(activePathUUID);
               }}
               disabled={!activePath.canGenerate()}
             >

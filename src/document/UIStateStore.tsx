@@ -5,6 +5,7 @@ import {
   Route,
   SquareOutlined,
 } from "@mui/icons-material";
+import { path } from "@tauri-apps/api";
 import { getRoot, Instance, types } from "mobx-state-tree";
 import { ReactElement } from "react";
 import InitialGuessPoint from "../assets/InitialGuessPoint";
@@ -172,7 +173,9 @@ export type ViewLayerType = typeof ViewLayers;
 export const UIStateStore = types
   .model("UIStateStore", {
     fieldScalingFactor: 0.02,
-    saveFileName: "save",
+    saveFileName: types.maybe(types.string),
+    saveFileDir: types.maybe(types.string),
+    isGradleProject: types.maybe(types.boolean),
     waypointPanelOpen: false,
     visibilityPanelOpen: false,
     mainMenuOpen: false,
@@ -183,6 +186,11 @@ export const UIStateStore = types
   })
   .views((self: any) => {
     return {
+      get chorRelativeTrajDir() {
+        return (
+          self.isGradleProject ? "src/main/deploy/choreo" : "deploy/choreo"
+        ).replace("/", path.sep);
+      },
       getSelectedConstraint() {
         return navbarIndexToConstraint[self.selectedNavbarItem] ?? undefined;
       },
@@ -225,6 +233,12 @@ export const UIStateStore = types
     },
     setSaveFileName(name: string) {
       self.saveFileName = name;
+    },
+    setSaveFileDir(dir: string) {
+      self.saveFileDir = dir;
+    },
+    setIsGradleProject(isGradleProject: boolean) {
+      self.isGradleProject = isGradleProject;
     },
     setWaypointPanelOpen(open: boolean) {
       self.waypointPanelOpen = open;
