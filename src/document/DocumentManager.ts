@@ -297,35 +297,6 @@ export class DocumentManager {
     this.model.document.pathlist.addPath("NewPath");
     this.model.document.history.clear();
   }
-  async parseFile(file: File | null): Promise<string> {
-    if (file == null) {
-      return Promise.reject("Tried to upload a null file");
-    }
-    this.model.uiState.setSaveFileName(file.name);
-    return new Promise((resolve, reject) => {
-      const fileReader = new FileReader();
-      fileReader.onload = (event) => {
-        let output = event.target!.result;
-        if (typeof output === "string") {
-          resolve(output);
-        }
-        reject("File did not read as string");
-      };
-      fileReader.onerror = (error) => reject(error);
-      fileReader.readAsText(file);
-    });
-  }
-
-  async onFileUpload(file: File | null) {
-    await this.parseFile(file)
-      .then((c) => this.openFromContents(c))
-      .catch((err) => {
-        console.log(err);
-        toast.error("File load error: " + err, {
-          containerId: "MENU",
-        });
-      });
-  }
 
   async openFromContents(chorContents: string) {
     const parsed = JSON.parse(chorContents);
@@ -493,7 +464,8 @@ export class DocumentManager {
   async saveFileAs(dir: string, name: string): Promise<boolean | undefined> {
     const contents = JSON.stringify(this.model.asSavedDocument(), undefined, 4);
     try {
-      invoke("save_file", { dir, name, contents }); // if we get past this line,
+      invoke("save_file", { dir, name, contents }); 
+      // if we get past the above line, the dir and name were valid for saving.
       let adjacent_build_gradle = invoke<boolean>("contains_build_gradle", {
         dir,
         name,
