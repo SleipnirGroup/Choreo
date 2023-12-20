@@ -10,7 +10,6 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { RobotConfigStore } from "./RobotConfigStore";
 import { SelectableItemTypes, UIStateStore } from "./UIStateStore";
 import { PathListStore } from "./PathListStore";
-import { TrajectorySampleStore } from "./TrajectorySampleStore";
 import { UndoManager } from "mst-middlewares";
 import { IHolonomicPathStore } from "./HolonomicPathStore";
 import { toJS } from "mobx";
@@ -118,15 +117,15 @@ const StateStore = types
               let newTraj: Array<SavedTrajectorySample> = [];
               // @ts-ignore
               rust_traj.samples.forEach((samp) => {
-                let newPoint = TrajectorySampleStore.create();
-                newPoint.setX(samp.x);
-                newPoint.setY(samp.y);
-                newPoint.setHeading(samp.heading);
-                newPoint.setAngularVelocity(samp.angular_velocity);
-                newPoint.setVelocityX(samp.velocity_x);
-                newPoint.setVelocityY(samp.velocity_y);
-                newPoint.setTimestamp(samp.timestamp);
-                newTraj.push(newPoint);
+                newTraj.push({
+                  x: samp.x,
+                  y: samp.y,
+                  heading: samp.heading,
+                  angularVelocity: samp.angular_velocity,
+                  velocityX: samp.velocity_x,
+                  velocityY: samp.velocity_y,
+                  timestamp: samp.timestamp,
+                });
               });
               pathStore.setTrajectory(newTraj);
               if (newTraj.length == 0) throw "No traj";
