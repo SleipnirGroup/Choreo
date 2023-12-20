@@ -78,6 +78,13 @@ async fn openFileDialog(app_handle: tauri::AppHandle){
 }
 
 #[tauri::command]
+async fn delete_file(dir: String, name: String) {
+  let dir_path = Path::new(&dir);
+  let name_path = Path::join(dir_path, name);
+  fs::remove_file(name_path);
+}
+
+#[tauri::command]
 async fn save_file(dir: String, name: String, contents: String) -> Result<(), &'static str> {
   let dir_path = Path::new(&dir);
   let name_path = Path::join(dir_path, name);
@@ -316,7 +323,7 @@ async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfi
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-          generate_trajectory, cancel, openFileDialog, save_file, contains_build_gradle])
+          generate_trajectory, cancel, openFileDialog, save_file, contains_build_gradle, delete_file])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

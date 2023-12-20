@@ -59,7 +59,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
   }
   completeRename() {
     if (!this.checkName()) {
-      this.getPath().setName(this.nameInputRef.current!.value);
+      this.context.renamePath(this.props.uuid, this.nameInputRef.current!.value);
     }
     this.escapeRename();
   }
@@ -73,7 +73,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
   checkName(): boolean {
     let inputName = this.nameInputRef.current!.value;
     let error = this.searchForName(this.nameInputRef.current!.value);
-    error = error || inputName.length == 0;
+    error = error || inputName.length == 0 || inputName.includes("/") || inputName.includes("\\");
     this.setState({ renameError: error, name: inputName });
     return error;
   }
@@ -214,7 +214,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
                   .confirm(`Delete "${this.getPath().name}"?`)
                   .then((result) => {
                     if (result) {
-                      this.context.model.document.pathlist.deletePath(
+                      this.context.deletePath(
                         this.props.uuid
                       );
                     }

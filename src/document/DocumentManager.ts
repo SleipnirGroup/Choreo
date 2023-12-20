@@ -344,6 +344,24 @@ export class DocumentManager {
     }
   }
 
+  async renamePath(uuid: string, newName: string) {
+    let oldPath = await this.getTrajFilePath(uuid);
+    this.model.document.pathlist.paths.get(uuid)?.setName(newName);
+    let newPath = await this.getTrajFilePath(uuid);
+    if (oldPath !== null) {
+      invoke("delete_file", {dir: oldPath[0], name: oldPath[1]});
+      this.writeTrajectory(()=>newPath, uuid);
+    }
+  }
+  
+  async deletePath(uuid:string) {
+    let newPath = await this.getTrajFilePath(uuid);
+    this.model.document.pathlist.deletePath(uuid);
+    if (newPath !== null) {
+      invoke("delete_file", {dir: newPath[0], name: newPath[1]});
+      this.writeTrajectory(()=>newPath, uuid);
+    }
+  }
   /**
    * Save the specified trajectory to the file path supplied by the given async function
    * @param filePath An (optionally async) function returning a 2-string array of [dir, name], or null
