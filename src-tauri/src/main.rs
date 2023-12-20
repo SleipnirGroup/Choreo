@@ -53,7 +53,7 @@ async fn contains_build_gradle(dir: Option<&Path>) -> Result<bool, &'static str>
   )
 }
 #[tauri::command]
-async fn openFileDialog(app_handle: tauri::AppHandle){
+async fn open_file_dialog(app_handle: tauri::AppHandle){
   let file_path = FileDialogBuilder::new()
   .set_title("Open a .chor file")
   .add_filter("Choreo Save File", &["chor"]).pick_file();
@@ -323,7 +323,7 @@ async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfi
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-          generate_trajectory, cancel, openFileDialog, save_file, contains_build_gradle, delete_file])
+          generate_trajectory, cancel, open_file_dialog, save_file, contains_build_gradle, delete_file])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

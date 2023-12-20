@@ -80,7 +80,7 @@ class AppMenu extends Component<Props, State> {
             <label htmlFor="file-upload-input">
               <ListItemButton
                 onClick={() => {
-                  invoke("openFileDialog");
+                  invoke("open_file_dialog");
                 }}
               >
                 <ListItemIcon>
