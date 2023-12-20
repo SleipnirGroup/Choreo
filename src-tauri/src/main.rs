@@ -20,15 +20,6 @@ use std::{fs, path::Path};
 //   };
 // }
 
-#[tauri::command]
-async fn write_file(file_path: String, contents: String) {
-  let file_path = Path::new(file_path.as_str());
-  if file_path.parent().is_some() {
-    fs::create_dir_all(file_path.parent().unwrap());
-  }
-  fs::write(file_path, contents);
-  
-}
 
 #[derive(Clone, serde::Serialize, Debug)]
 struct OpenFileEventPayload<'a> {
