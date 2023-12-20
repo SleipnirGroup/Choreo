@@ -103,14 +103,12 @@ const StateStore = types
           pathStore.setGenerating(true);
           resolve(pathStore);
         })
-          .then(
-            () =>
-              invoke("generate_trajectory", {
-                path: pathStore.waypoints,
-                config: self.document.robotConfig,
-                constraints: pathStore.asSolverPath().constraints,
-              }),
-            (e) => e
+          .then(() =>
+            invoke("generate_trajectory", {
+              path: pathStore.waypoints,
+              config: self.document.robotConfig,
+              constraints: pathStore.asSolverPath().constraints,
+            })
           )
           .then(
             (rust_traj) => {
