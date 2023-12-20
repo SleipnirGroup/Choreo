@@ -54,7 +54,6 @@ export class DocumentManager {
   }
 
   async handleOpenFileEvent(event: Event<unknown>) {
-    console.log(event.payload);
     let payload = event.payload as OpenFileEventPayload;
     if (payload.dir === undefined || payload.name === undefined) {
       toast.error("File load error: non-UTF-8 characters in file path", {
@@ -107,9 +106,7 @@ export class DocumentManager {
       () => this.model.document.history.undoIdx,
       () => {
         if (this.model.uiState.saveFileName !== undefined) {
-          console.log(window.performance.now());
-          this.saveFile().then(() => console.log(window.performance.now()));
-          console.log("saved");
+          this.saveFile();
         }
       }
     );
@@ -130,7 +127,6 @@ export class DocumentManager {
       event.preventDefault();
     });
     hotkeys("command+g,ctrl+g,g", () => {
-      console.log("g");
       if (!this.model.document.pathlist.activePath.generating) {
         this.generateWithToastsAndExport(
           this.model.document.pathlist.activePathUUID
@@ -270,7 +266,6 @@ export class DocumentManager {
 
           error: {
             render({ data, toastProps }) {
-              console.log(data);
               return `Couldn't export trajectory: ` + (data as string);
             },
           },
