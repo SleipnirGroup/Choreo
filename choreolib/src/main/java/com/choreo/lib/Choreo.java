@@ -15,6 +15,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -47,6 +48,45 @@ public class Choreo {
       DriverStation.reportError(ex.getMessage(), ex.getStackTrace());
     }
     return null;
+  }
+
+  /**
+   * Create a command to follow a Choreo path.
+   *
+   * @param trajectory The trajectory to follow. Use Choreo.getTrajectory(String trajName) to load
+   *     this from the deploy directory.
+   * @param poseSupplier A function that returns the current field-relative pose of the robot.
+   * @param xController A generic controller for field-relative X translation, where the first
+   *     argument is the measured X position in meters, the second argument is the X setpoint in
+   *     meters, and the output is X velocity in m/s.
+   * @param yController A generic controller for field-relative Y translation, where the first
+   *     argument is the measured Y position in meters, the second argument is the Y setpoint in
+   *     meters, and the output is Y velocity in m/s.
+   * @param rotationController A generic controller for robot angle, where the first argument is the
+   *     measured angle in radians, the second argument is the angle setpoint i
+   * @param outputChassisSpeeds A function that consumes the target robot-relative chassis speeds
+   *     and commands them to the robot.
+   * @param useAllianceColor Whether or not to mirror the path based on alliance (this assumes the
+   *     path is created for the blue alliance)
+   * @param requirements The subsystem(s) to require, typically your drive subsystem only.
+   * @return A command that follows a Choreo path.
+   */
+  public static Command choreoSwerveCommand(
+      ChoreoTrajectory trajectory,
+      Supplier<Pose2d> poseSupplier,
+      BiFunction<Double, Double, Double> xController,
+      BiFunction<Double, Double, Double> yController,
+      BiFunction<Double, Double, Double> rotationController,
+      Consumer<ChassisSpeeds> outputChassisSpeeds,
+      boolean useAllianceColor,
+      Subsystem... requirements) {
+    return choreoSwerveCommand(
+        trajectory,
+        poseSupplier,
+        choreoSwerveController(xController, yController, rotationController),
+        outputChassisSpeeds,
+        useAllianceColor,
+        requirements);
   }
 
   /**
@@ -138,6 +178,40 @@ public class Choreo {
   /**
    * Creates a control function for following a ChoreoTrajectoryState.
    *
+   * @param xController A generic controller for field-relative X translation, where the first
+   *     argument is the measured X position in meters, the second argument is the X setpoint in
+   *     meters, and the output is X velocity in m/s.
+   * @param yController A generic controller for field-relative Y translation, where the first
+   *     argument is the measured Y position in meters, the second argument is the Y setpoint in
+   *     meters, and the output is Y velocity in m/s.
+   * @param rotationController A generic controller for robot angle, where the first argument is the
+   *     measured angle in radians, the second argument is the angle setpoint in radians, and the
+   *     output is angular velocity in rad/s. Keep in mind angular wrapping!
+   * @return A ChoreoControlFunction to track ChoreoTrajectoryStates. This function returns
+   *     robot-relative ChassisSpeeds.
+   */
+  public static ChoreoControlFunction choreoSwerveController(
+      BiFunction<Double, Double, Double> xController,
+      BiFunction<Double, Double, Double> yController,
+      BiFunction<Double, Double, Double> rotationController) {
+    return (pose, referenceState) -> {
+      double xFF = referenceState.velocityX;
+      double yFF = referenceState.velocityY;
+      double rotationFF = referenceState.angularVelocity;
+
+      double xFeedback = xController.apply(pose.getX(), referenceState.x);
+      double yFeedback = yController.apply(pose.getY(), referenceState.y);
+      double rotationFeedback =
+          rotationController.apply(pose.getRotation().getRadians(), referenceState.heading);
+
+      return ChassisSpeeds.fromFieldRelativeSpeeds(
+          xFF + xFeedback, yFF + yFeedback, rotationFF + rotationFeedback, pose.getRotation());
+    };
+  }
+
+  /**
+   * Creates a control function for following a ChoreoTrajectoryState.
+   *
    * @param xController A PIDController for field-relative X translation (input: X error in meters,
    *     output: m/s).
    * @param yController A PIDController for field-relative Y translation (input: Y error in meters,
@@ -151,18 +225,8 @@ public class Choreo {
   public static ChoreoControlFunction choreoSwerveController(
       PIDController xController, PIDController yController, PIDController rotationController) {
     rotationController.enableContinuousInput(-Math.PI, Math.PI);
-    return (pose, referenceState) -> {
-      double xFF = referenceState.velocityX;
-      double yFF = referenceState.velocityY;
-      double rotationFF = referenceState.angularVelocity;
 
-      double xFeedback = xController.calculate(pose.getX(), referenceState.x);
-      double yFeedback = yController.calculate(pose.getY(), referenceState.y);
-      double rotationFeedback =
-          rotationController.calculate(pose.getRotation().getRadians(), referenceState.heading);
-
-      return ChassisSpeeds.fromFieldRelativeSpeeds(
-          xFF + xFeedback, yFF + yFeedback, rotationFF + rotationFeedback, pose.getRotation());
-    };
+    return choreoSwerveController(
+        xController::calculate, yController::calculate, rotationController::calculate);
   }
 }
