@@ -1,10 +1,9 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
-//#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use serde::ser::Error;
 use trajoptlib::{SwervePathBuilder, HolonomicTrajectory, SwerveDrivetrain, SwerveModule, InitialGuessPoint};
-use tauri::{api::{dialog::blocking::FileDialogBuilder, path, file}, Manager};
-use std::{fs::{ReadDir, self}, ffi::OsStr, path::Path};
+use tauri::{api::{dialog::blocking::FileDialogBuilder, file}, Manager};
+use std::{fs, path::Path};
 // A way to make properties that exist on all enum variants accessible from the generic variant
 // I have no idea how it works but it came from
 // https://users.rust-lang.org/t/generic-referencing-enum-inner-data/66342/9
@@ -92,7 +91,6 @@ async fn save_file(dir: String, name: String, contents: String) -> Result<(), &'
     return Err("Dir needs to be absolute");
   }
   fs::create_dir_all(dir_path);
-  println!("{:?}" , name_path);
   if fs::write(name_path, contents).is_err() {
     return Err("Failed file writing");
   }
