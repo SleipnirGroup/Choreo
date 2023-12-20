@@ -29,7 +29,7 @@
         "save": true
       },
       "window": {
-        "setTitle" :true
+        "setTitle": true
       }
     },
     "bundle": {

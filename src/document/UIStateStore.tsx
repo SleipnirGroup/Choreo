@@ -7,7 +7,13 @@ import {
 } from "@mui/icons-material";
 import { path, tauri, window as tauriWindow } from "@tauri-apps/api";
 import { getVersion } from "@tauri-apps/api/app";
-import { cast, castToReferenceSnapshot, getRoot, Instance, types } from "mobx-state-tree";
+import {
+  cast,
+  castToReferenceSnapshot,
+  getRoot,
+  Instance,
+  types,
+} from "mobx-state-tree";
 import { ReactElement } from "react";
 import InitialGuessPoint from "../assets/InitialGuessPoint";
 import Waypoint from "../assets/Waypoint";
@@ -221,10 +227,13 @@ export const UIStateStore = types
         });
       },
       async updateWindowTitle() {
-        await tauriWindow.getCurrent().setTitle(
-          `Choreo ${await getVersion()} - ${self.saveFileName ?? "Untitled"}`
-        ).catch(console.error);
-      }
+        await tauriWindow
+          .getCurrent()
+          .setTitle(
+            `Choreo ${await getVersion()} - ${self.saveFileName ?? "Untitled"}`
+          )
+          .catch(console.error);
+      },
     };
   })
   .actions((self: any) => ({

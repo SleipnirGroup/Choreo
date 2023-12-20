@@ -36,7 +36,6 @@ export class DocumentManager {
   }
   model: IStateStore;
   constructor() {
-    
     this.model = StateStore.create({
       uiState: {
         selectedSidebarItem: undefined,
@@ -54,28 +53,30 @@ export class DocumentManager {
     this.model.uiState.updateWindowTitle();
   }
 
-  async handleOpenFileEvent(event : Event<unknown>) {
+  async handleOpenFileEvent(event: Event<unknown>) {
     console.log(event.payload);
-      let payload = event.payload as OpenFileEventPayload;
-      if (payload.dir === undefined || payload.name === undefined) {
-        toast.error("File load error: non-UTF-8 characters in file path", {
+    let payload = event.payload as OpenFileEventPayload;
+    if (payload.dir === undefined || payload.name === undefined) {
+      toast.error("File load error: non-UTF-8 characters in file path", {
+        containerId: "MENU",
+      });
+    } else {
+      this.model.uiState.setSaveFileName(payload.name);
+      this.model.uiState.setSaveFileDir(payload.dir);
+      this.model.uiState.setIsGradleProject(payload.adjacent_gradle);
+      await this.openFromContents(payload.contents).catch((err) => {
+        console.log(err);
+        toast.error("File load error: " + err, {
           containerId: "MENU",
         });
-      } else {
-        this.model.uiState.setSaveFileName(payload.name);
-        this.model.uiState.setSaveFileDir(payload.dir);
-        this.model.uiState.setIsGradleProject(payload.adjacent_gradle);
-        await this.openFromContents(payload.contents).catch((err) => {
-          console.log(err);
-          toast.error("File load error: " + err, {
-            containerId: "MENU",
-          });
-          throw err;
-        });
-      }
+        throw err;
+      });
+    }
   }
   async setupEventListeners() {
-    const openFileUnlisten = await listen("open-file", async (event) => this.handleOpenFileEvent(event))
+    const openFileUnlisten = await listen("open-file", async (event) =>
+      this.handleOpenFileEvent(event)
+    );
 
     window.addEventListener("contextmenu", (e) => e.preventDefault());
 
@@ -113,7 +114,7 @@ export class DocumentManager {
     const updateTitleUnlisten = reaction(
       () => this.model.uiState.saveFileName,
       () => {
-        this.model.uiState.updateWindowTitle()
+        this.model.uiState.updateWindowTitle();
       }
     );
     window.addEventListener("unload", () => {
@@ -133,7 +134,6 @@ export class DocumentManager {
           this.model.document.pathlist.activePathUUID
         );
       }
- 
     });
     hotkeys("command+z,ctrl+z", () => {
       this.undo();
@@ -255,28 +255,29 @@ export class DocumentManager {
   }
 
   async generateWithToastsAndExport(uuid: string) {
-    this.model!.generatePathWithToasts(uuid).then(()=>
-    toast.promise(
-      this.writeTrajectory(() => this.getTrajFilePath(uuid), uuid),
-      {
-        success: {
-          render({ data, toastProps }) {
-            toastProps.style = { visibility: "hidden" };
-            return ``;
+    this.model!.generatePathWithToasts(uuid).then(() =>
+      toast.promise(
+        this.writeTrajectory(() => this.getTrajFilePath(uuid), uuid),
+        {
+          success: {
+            render({ data, toastProps }) {
+              toastProps.style = { visibility: "hidden" };
+              return ``;
+            },
           },
-        },
 
-        error: {
-          render({ data, toastProps }) {
-            console.log(data);
-            return `Couldn't export trajectory: ` + (data as string);
+          error: {
+            render({ data, toastProps }) {
+              console.log(data);
+              return `Couldn't export trajectory: ` + (data as string);
+            },
           },
         },
-      },
-      {
-        containerId: "FIELD",
-      }
-    ));
+        {
+          containerId: "FIELD",
+        }
+      )
+    );
   }
   private getSelectedWaypoint() {
     const waypoints = this.model.document.pathlist.activePath.waypoints;
@@ -349,17 +350,17 @@ export class DocumentManager {
     this.model.document.pathlist.paths.get(uuid)?.setName(newName);
     let newPath = await this.getTrajFilePath(uuid);
     if (oldPath !== null) {
-      invoke("delete_file", {dir: oldPath[0], name: oldPath[1]});
-      this.writeTrajectory(()=>newPath, uuid);
+      invoke("delete_file", { dir: oldPath[0], name: oldPath[1] });
+      this.writeTrajectory(() => newPath, uuid);
     }
   }
-  
-  async deletePath(uuid:string) {
+
+  async deletePath(uuid: string) {
     let newPath = await this.getTrajFilePath(uuid);
     this.model.document.pathlist.deletePath(uuid);
     if (newPath !== null) {
-      invoke("delete_file", {dir: newPath[0], name: newPath[1]});
-      this.writeTrajectory(()=>newPath, uuid);
+      invoke("delete_file", { dir: newPath[0], name: newPath[1] });
+      this.writeTrajectory(() => newPath, uuid);
     }
   }
   /**

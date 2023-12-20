@@ -150,10 +150,11 @@ const StateStore = types
     return {
       generatePathWithToasts(activePathUUID: string) {
         var path = self.document.pathlist.paths.get(activePathUUID)!;
-        if (path.generating) {return Promise.resolve()}
+        if (path.generating) {
+          return Promise.resolve();
+        }
         toast.dismiss();
-        
-        
+
         var pathName = path.name;
         if (pathName === undefined) {
           toast.error("Tried to generate unknown path.");
