@@ -464,7 +464,7 @@ export class DocumentManager {
   async saveFileAs(dir: string, name: string): Promise<boolean | undefined> {
     const contents = JSON.stringify(this.model.asSavedDocument(), undefined, 4);
     try {
-      invoke("save_file", { dir, name, contents }); 
+      invoke("save_file", { dir, name, contents });
       // if we get past the above line, the dir and name were valid for saving.
       let adjacent_build_gradle = invoke<boolean>("contains_build_gradle", {
         dir,
