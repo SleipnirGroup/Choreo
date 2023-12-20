@@ -27,6 +27,9 @@
         "confirm": true,
         "open": true,
         "save": true
+      },
+      "window": {
+        "setTitle" :true
       }
     },
     "bundle": {

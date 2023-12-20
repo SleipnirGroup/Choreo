@@ -7,7 +7,7 @@ import {
   path,
   window as tauriWindow,
 } from "@tauri-apps/api";
-import { listen, TauriEvent } from "@tauri-apps/api/event";
+import { listen, TauriEvent, Event } from "@tauri-apps/api/event";
 import { v4 as uuidv4 } from "uuid";
 import { VERSIONS, validate, SAVE_FILE_VERSION } from "./DocumentSpecTypes";
 import { applySnapshot, getRoot, onPatch } from "mobx-state-tree";
@@ -36,6 +36,7 @@ export class DocumentManager {
   }
   model: IStateStore;
   constructor() {
+    
     this.model = StateStore.create({
       uiState: {
         selectedSidebarItem: undefined,
@@ -49,11 +50,12 @@ export class DocumentManager {
     this.model.document.pathlist.addPath("NewPath");
     this.model.document.history.clear();
     this.setupEventListeners();
+    this.newFile();
+    this.model.uiState.updateWindowTitle();
   }
 
-  async setupEventListeners() {
-    const openFileUnlisten = await listen("open-file", async (event) => {
-      console.log(event.payload);
+  async handleOpenFileEvent(event : Event<unknown>) {
+    console.log(event.payload);
       let payload = event.payload as OpenFileEventPayload;
       if (payload.dir === undefined || payload.name === undefined) {
         toast.error("File load error: non-UTF-8 characters in file path", {
@@ -68,9 +70,13 @@ export class DocumentManager {
           toast.error("File load error: " + err, {
             containerId: "MENU",
           });
+          throw err;
         });
       }
-    });
+  }
+  async setupEventListeners() {
+    const openFileUnlisten = await listen("open-file", async (event) => this.handleOpenFileEvent(event))
+
     window.addEventListener("contextmenu", (e) => e.preventDefault());
 
     // Save files on closing
@@ -104,10 +110,17 @@ export class DocumentManager {
         }
       }
     );
+    const updateTitleUnlisten = reaction(
+      () => this.model.uiState.saveFileName,
+      () => {
+        this.model.uiState.updateWindowTitle()
+      }
+    );
     window.addEventListener("unload", () => {
       hotkeys.unbind();
       openFileUnlisten();
       autoSaveUnlisten();
+      updateTitleUnlisten();
     });
     hotkeys.unbind();
     hotkeys("f5,ctrl+shift+r,ctrl+r", function (event, handler) {
@@ -435,6 +448,8 @@ export class DocumentManager {
     let dir = await path.dirname(filePath);
     let name = await path.basename(filePath);
     let newIsGradleProject = await this.saveFileAs(dir, name);
+    this.model.uiState.setSaveFileDir(dir);
+    this.model.uiState.setSaveFileName(name);
     this.handleChangeIsGradleProject(newIsGradleProject);
     return newIsGradleProject;
   }
