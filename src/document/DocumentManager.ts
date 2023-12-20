@@ -64,13 +64,15 @@ export class DocumentManager {
       this.model.uiState.setSaveFileName(payload.name);
       this.model.uiState.setSaveFileDir(payload.dir);
       this.model.uiState.setIsGradleProject(payload.adjacent_gradle);
-      await this.openFromContents(payload.contents).catch((err) => {
-        console.log(err);
-        toast.error("File load error: " + err, {
-          containerId: "MENU",
+      if (payload.contents !== undefined) {
+        await this.openFromContents(payload.contents).catch((err) => {
+          console.log(err);
+          toast.error("File load error: " + err, {
+            containerId: "MENU",
+          });
+          throw err;
         });
-        throw err;
-      });
+      }
     }
   }
   async setupEventListeners() {
