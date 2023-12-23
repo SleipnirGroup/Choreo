@@ -107,7 +107,7 @@ export let ObstacleData: {
   CircleObstacle: {
     index: Object.keys(NavbarData).length,
     name: "Circular Obstacle",
-    icon: <CircleSharp />,
+    icon: <Circle />,
   },
 };
 const obstacleNavbarCount = Object.keys(ObstacleData).length;

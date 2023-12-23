@@ -13,6 +13,8 @@ import FileDownload from "@mui/icons-material/FileDownload";
 import { NoteAddOutlined, Redo, Undo } from "@mui/icons-material";
 import Add from "@mui/icons-material/Add";
 import SidebarConstraint from "./SidebarConstraint";
+import SidebarObstacle from "./SidebarObstacle";
+import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
 
 type Props = {};
 type State = {};
@@ -138,21 +140,24 @@ class Sidebar extends Component<Props, State> {
               }
             )}
           </div>
-        </div>
-        {/* <Divider className={styles.SidebarDivider} textAlign="left" flexItem>
+        <Divider className={styles.SidebarDivider} textAlign="left" flexItem>
           <span>OBSTACLES</span>
         </Divider>
           <div className={styles.WaypointList}>
-            {this.context.model.document.pathlist.activePath.asSavedPath().polygonObstacles.map(
-              (obstacle) => {
-                let str = obstacle.x + ", " + obstacle.y + ", " + obstacle.radius;
+          {this.context.model.document.pathlist.activePath.obstacles.map(
+              (obstacle: ICircularObstacleStore, index: number) => {
                 return (
-                  str
+                  <SidebarObstacle
+                    obstacle={obstacle}
+                    index={index}
+                    context={this.context}
+                  ></SidebarObstacle>
                 );
               }
             )}
-          </div> */}
+          </div>
         <Divider></Divider>
+        </div>
       </div>
     );
   }
