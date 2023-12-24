@@ -219,7 +219,6 @@ export const HolonomicPathStore = types
           return;
         }
         let uuid = self.waypoints[index]?.uuid;
-        console.log(uuid);
         const root = getRoot<IStateStore>(self);
         root.select(undefined);
 
@@ -514,7 +513,6 @@ export const HolonomicPathStore = types
             .at(i)
             ?.setControlIntervalCount(Math.ceil(totalTime / 0.1));
         }
-        console.log(self.nonGuessPoints.at(i)?.controlIntervalCount);
       },
     };
   });

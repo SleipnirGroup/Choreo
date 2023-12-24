@@ -156,29 +156,7 @@ export class Field extends Component<Props, State> {
                 visibility: activePath.canGenerate() ? "visible" : "hidden",
               }}
               onClick={() => {
-                let pathName = activePath.name;
-                toast.dismiss();
-                toast.promise(
-                  this.context.model.generatePath(activePathUUID),
-                  {
-                    success: `Generated \"${pathName}\"`,
-                    error: {
-                      render({ data }) {
-                        console.log(data);
-                        if ((data as string).includes("User_Requested_Stop")) {
-                          toastProps.style = { visibility: "hidden" };
-                          return `Cancelled \"${pathName}\"`;
-                        }
-                        return (
-                          `Can't generate \"${pathName}\": ` + (data as string)
-                        );
-                      },
-                    },
-                  },
-                  {
-                    containerId: "FIELD",
-                  }
-                );
+                this.context.model.generatePathWithToasts(activePathUUID);
               }}
               disabled={!activePath.canGenerate()}
             >

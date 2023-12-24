@@ -2,7 +2,7 @@ import { createContext } from "react";
 import StateStore, { IStateStore } from "./DocumentModel";
 import { dialog, fs } from "@tauri-apps/api";
 import { v4 as uuidv4 } from "uuid";
-import { VERSIONS, validate } from "./DocumentSpecTypes";
+import { VERSIONS, validate, SAVE_FILE_VERSION } from "./DocumentSpecTypes";
 import { applySnapshot, getRoot, onPatch } from "mobx-state-tree";
 import { toJS } from "mobx";
 import { toast } from "react-toastify";
@@ -18,7 +18,6 @@ export class DocumentManager {
     this.model.document.history.canRedo && this.model.document.history.redo();
   }
   get history() {
-    console.log(toJS(this.model.document.history.history));
     return this.model.document.history;
   }
   model: IStateStore;
@@ -39,10 +38,11 @@ export class DocumentManager {
     window.addEventListener("unload", () => hotkeys.unbind());
     hotkeys("f5,ctrl+shift+r,ctrl+r", function (event, handler) {
       event.preventDefault();
-      console.log("you pressed F5!");
     });
     hotkeys("command+g,ctrl+g,g", () => {
-      this.model.generatePath(this.model.document.pathlist.activePathUUID);
+      this.model.generatePathWithToasts(
+        this.model.document.pathlist.activePathUUID
+      );
     });
     hotkeys("command+z,ctrl+z", () => {
       this.undo();
@@ -250,11 +250,11 @@ export class DocumentManager {
     const content = JSON.stringify({ samples: trajectory }, undefined, 4);
     const filePath = await dialog.save({
       title: "Export Trajectory",
-      defaultPath: `${path.name}.json`,
+      defaultPath: `${path.name}.traj`,
       filters: [
         {
           name: "Trajopt Trajectory",
-          extensions: ["json"],
+          extensions: ["traj"],
         },
       ],
     });
@@ -281,7 +281,7 @@ export class DocumentManager {
 
   async saveFile() {
     const content = JSON.stringify(this.model.asSavedDocument(), undefined, 4);
-    if (!VERSIONS["v0.1.2"].validate(this.model.asSavedDocument())) {
+    if (!VERSIONS[SAVE_FILE_VERSION].validate(this.model.asSavedDocument())) {
       console.warn("Invalid Doc JSON:\n" + "\n" + content);
       return;
     }
@@ -290,7 +290,7 @@ export class DocumentManager {
       filters: [
         {
           name: "Trajopt Document",
-          extensions: ["json"],
+          extensions: ["chor"],
         },
       ],
     });
