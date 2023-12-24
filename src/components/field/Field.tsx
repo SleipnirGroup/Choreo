@@ -76,10 +76,8 @@ export class Field extends Component<Props, State> {
           ) && (
             <CircularObstacleConfigPanel
               obstacle={selectedSidebar as ICircularObstacleStore}
-            >
-            </CircularObstacleConfigPanel>
-          )
-        }
+            ></CircularObstacleConfigPanel>
+          )}
         {robotConfigOpen && (
           <div className={styles.WaypointPanel}>
             <RobotConfigPanel></RobotConfigPanel>

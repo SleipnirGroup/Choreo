@@ -62,7 +62,7 @@ export type {
   SavedRobotConfig,
   SavedWaypoint,
   SavedConstraint,
-  SavedCircleObstacle
+  SavedCircleObstacle,
 } from "./previousSpecs/v0_1_2";
 export { SAVE_FILE_VERSION } from "./previousSpecs/v0_1_2";
 import { SAVE_FILE_VERSION } from "./previousSpecs/v0_1_2";
@@ -158,7 +158,7 @@ export let VERSIONS = {
     validate: (document: v0_1_1): boolean => {
       const ajv = new Ajv();
       return ajv.validate(v0_1_1_Schema, document);
-    }
+    },
   },
   "v0.1.2": {
     up: (document: any): v0_1_2 => {
@@ -167,7 +167,7 @@ export let VERSIONS = {
         paths: {},
         version: v0_1_2_Version,
         robotConfiguration: document.robotConfiguration,
-      }
+      };
       for (let entry of Object.keys(document.paths)) {
         let path = document.paths[entry];
         updated.paths[entry] = {
@@ -177,7 +177,7 @@ export let VERSIONS = {
           usesControlIntervalGuessing: path.usesControlIntervalGuessing,
           defaultControlIntervalCount: path.defaultControlIntervalCount,
           usesDefaultFieldObstacles: true,
-          obstacles: []
+          obstacles: [],
         };
       }
       return updated;
@@ -185,8 +185,8 @@ export let VERSIONS = {
     validate: (document: v0_1_2): boolean => {
       const ajv = new Ajv();
       return ajv.validate(v0_1_2_Schema, document);
-    }
-  }
+    },
+  },
 };
 
 export let updateToCurrent = (document: { version: string }): SavedDocument => {

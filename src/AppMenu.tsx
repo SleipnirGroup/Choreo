@@ -30,7 +30,7 @@ class AppMenu extends Component<Props, State> {
   // @ts-ignore
   context!: React.ContextType<typeof DocumentManagerContext>;
   state = {
-    settingsOpen: false
+    settingsOpen: false,
   };
 
   render() {

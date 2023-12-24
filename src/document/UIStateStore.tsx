@@ -25,7 +25,10 @@ import {
   IHolonomicWaypointStore,
 } from "./HolonomicWaypointStore";
 import { IRobotConfigStore, RobotConfigStore } from "./RobotConfigStore";
-import { CircularObstacleStore, ICircularObstacleStore } from "./CircularObstacleStore";
+import {
+  CircularObstacleStore,
+  ICircularObstacleStore,
+} from "./CircularObstacleStore";
 
 export const SelectableItem = types.union(
   {
@@ -103,11 +106,12 @@ let navbarIndexToConstraintDefinition: { [key: number]: ConstraintDefinition } =
 }
 const constraintNavbarCount = Object.keys(constraints).length;
 export let ObstacleData: {
-[key: string]: {
-  index: number;
-  name: string;
-  icon: ReactElement;
-};} = {
+  [key: string]: {
+    index: number;
+    name: string;
+    icon: ReactElement;
+  };
+} = {
   CircleObstacle: {
     index: Object.keys(NavbarData).length,
     name: "Circular Obstacle",
@@ -121,8 +125,8 @@ Object.entries(ObstacleData).forEach(([name, data]) => {
     index: obstaclesOffset,
     name: data.name,
     icon: data.icon,
-  }
-})
+  };
+});
 
 /** An map of  */
 export const NavbarLabels = (() => {
@@ -147,7 +151,7 @@ export const NavbarItemData = (() => {
 export const NavbarItemSectionLengths = [
   waypointNavbarCount - 1,
   waypointNavbarCount + constraintNavbarCount - 1,
-  waypointNavbarCount + constraintNavbarCount + obstacleNavbarCount - 1
+  waypointNavbarCount + constraintNavbarCount + obstacleNavbarCount - 1,
 ];
 
 export type SelectableItemTypes =
@@ -185,7 +189,7 @@ const ViewData = {
     index: 4,
     name: "Obstacles",
     icon: <DoNotDisturb />,
-  }
+  },
 };
 
 export const ViewLayers = (() => {
@@ -237,8 +241,10 @@ export const UIStateStore = types
         );
       },
       isConstraintSelected() {
-        return self.selectedNavbarItem > NavbarItemSectionLengths[0]
-          && self.selectedNavbarItem < NavbarItemSectionLengths[1];
+        return (
+          self.selectedNavbarItem > NavbarItemSectionLengths[0] &&
+          self.selectedNavbarItem < NavbarItemSectionLengths[1]
+        );
       },
       isNavbarObstacleSelected() {
         return self.selectedNavbarItem > NavbarItemSectionLengths[1];

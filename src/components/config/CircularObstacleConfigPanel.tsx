@@ -52,11 +52,10 @@ class CircularObstacleConfigPanel extends Component<Props, State> {
               showCheckbox={false}
               titleTooltip={"Obstacle Radius"}
             />
-  
           </InputList>
         </div>
       );
     }
-    }
+  }
 }
 export default observer(CircularObstacleConfigPanel);

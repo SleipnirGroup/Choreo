@@ -119,10 +119,10 @@
             "usesControlIntervalCulling": {
               "type": "boolean"
             },
-            "usesControlIntervalGuessing":{
+            "usesControlIntervalGuessing": {
               "type": "boolean"
             },
-            "defaultControlIntervalCount":{
+            "defaultControlIntervalCount": {
               "type": "integer"
             },
             "obstacles": {
@@ -143,7 +143,15 @@
               }
             }
           },
-          "required": ["waypoints", "generatedTrajectory", "constraints", "usesControlIntervalCulling", "usesControlIntervalGuessing", "defaultControlIntervalCount", "obstacles"]
+          "required": [
+            "waypoints",
+            "generatedTrajectory",
+            "constraints",
+            "usesControlIntervalCulling",
+            "usesControlIntervalGuessing",
+            "defaultControlIntervalCount",
+            "obstacles"
+          ]
         }
       }
     },

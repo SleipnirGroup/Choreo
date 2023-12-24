@@ -140,11 +140,11 @@ class Sidebar extends Component<Props, State> {
               }
             )}
           </div>
-        <Divider className={styles.SidebarDivider} textAlign="left" flexItem>
-          <span>OBSTACLES</span>
-        </Divider>
+          <Divider className={styles.SidebarDivider} textAlign="left" flexItem>
+            <span>OBSTACLES</span>
+          </Divider>
           <div className={styles.WaypointList}>
-          {this.context.model.document.pathlist.activePath.obstacles.map(
+            {this.context.model.document.pathlist.activePath.obstacles.map(
               (obstacle: ICircularObstacleStore, index: number) => {
                 return (
                   <SidebarObstacle
@@ -156,7 +156,7 @@ class Sidebar extends Component<Props, State> {
               }
             )}
           </div>
-        <Divider></Divider>
+          <Divider></Divider>
         </div>
       </div>
     );

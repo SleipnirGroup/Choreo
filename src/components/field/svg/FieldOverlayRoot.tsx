@@ -148,19 +148,19 @@ class FieldOverlayRoot extends Component<Props, State> {
                 r={10000}
                 style={{ fill: "transparent" }}
                 onClick={(e) => this.createWaypoint(e)}
-                ></circle>
-                )}
+              ></circle>
+            )}
           {layers[ViewLayers.Obstacles] &&
             this.context.model.uiState.isNavbarObstacleSelected() && (
               <circle
-              cx={0}
-              cy={0}
-              r={10000}
-              style={{ fill: "transparent" }}
-              onClick={(e) => this.createObstacle(e)}
+                cx={0}
+                cy={0}
+                r={10000}
+                style={{ fill: "transparent" }}
+                onClick={(e) => this.createObstacle(e)}
               ></circle>
-              )}
-          {layers[ViewLayers.Obstacles] && (
+            )}
+          {layers[ViewLayers.Obstacles] &&
             this.context.model.document.pathlist.activePath.obstacles.map(
               (obstacle, index) => (
                 <FieldObstacle
@@ -168,8 +168,7 @@ class FieldOverlayRoot extends Component<Props, State> {
                   index={index}
                 ></FieldObstacle>
               )
-            )
-          )}
+            )}
           {layers[ViewLayers.Waypoints] &&
             this.context.model.document.pathlist.activePath.waypoints.map(
               (point, index) => (
@@ -179,7 +178,7 @@ class FieldOverlayRoot extends Component<Props, State> {
                   key={point.uuid}
                 ></OverlayWaypoint>
               )
-          )}
+            )}
           {constraintSelected && (
             <FieldConstraintsAddLayer></FieldConstraintsAddLayer>
           )}
@@ -229,9 +228,15 @@ class FieldOverlayRoot extends Component<Props, State> {
       });
       this.context.history.startGroup(() => {
         var newObstacle =
-          this.context.model.document.pathlist.activePath.addObstacle(CircularObstacleStore.create({ x: coords.x, y: coords.y, radius: 0.5, uuid: uuidv4() }));
+          this.context.model.document.pathlist.activePath.addObstacle(
+            CircularObstacleStore.create({
+              x: coords.x,
+              y: coords.y,
+              radius: 0.5,
+              uuid: uuidv4(),
+            })
+          );
         // const selectedItem = this.context.model.uiState.selectedNavbarItem;
-        
       });
       this.context.history.stopGroup();
     }
