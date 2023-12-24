@@ -25,7 +25,7 @@ import {
   IHolonomicWaypointStore,
 } from "./HolonomicWaypointStore";
 import { IRobotConfigStore, RobotConfigStore } from "./RobotConfigStore";
-import { ICircularObstacleStore } from "./CircularObstacleStore";
+import { CircularObstacleStore, ICircularObstacleStore } from "./CircularObstacleStore";
 
 export const SelectableItem = types.union(
   {
@@ -34,11 +34,15 @@ export const SelectableItem = types.union(
       if (snapshot.type) {
         return ConstraintStores[snapshot.type];
       }
+      if (snapshot.radius) {
+        return CircularObstacleStore;
+      }
       return HolonomicWaypointStore;
     },
   },
   RobotConfigStore,
   HolonomicWaypointStore,
+  CircularObstacleStore,
   ...Object.values(ConstraintStores)
 );
 
@@ -107,7 +111,7 @@ export let ObstacleData: {
   CircleObstacle: {
     index: Object.keys(NavbarData).length,
     name: "Circular Obstacle",
-    icon: <Circle />,
+    icon: <DoNotDisturb />,
   },
 };
 const obstacleNavbarCount = Object.keys(ObstacleData).length;

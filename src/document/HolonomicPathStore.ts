@@ -319,7 +319,30 @@ export const HolonomicPathStore = types
         }
         destroy(self.constraints[index]);
       },
+      deleteObstacle(index: number) {
+        destroy(self.obstacles[index]);
+        if (self.obstacles.length === 0) {
+          return;
+        } else if (self.obstacles[index - 1]) {
+          self.obstacles[index - 1].setSelected(true);
+        } else if (self.obstacles[index + 1]) {
+          self.obstacles[index + 1].setSelected(true);
+        }
+      },
+      deleteObstacleUUID(uuid: string) {
+        let index = self.obstacles.findIndex((obstacle) => obstacle.uuid === uuid);
+        if (index == -1) return;
+        const root = getRoot<IStateStore>(self);
+        root.select(undefined);
 
+        if (self.obstacles.length === 1) {
+        } else if (self.obstacles[index - 1]) {
+          self.obstacles[index - 1].setSelected(true);
+        } else if (self.obstacles[index + 1]) {
+          self.obstacles[index + 1].setSelected(true);
+        }
+        destroy(self.obstacles[index]);
+      },
       reorder(startIndex: number, endIndex: number) {
         moveItem(self.waypoints, startIndex, endIndex);
       },

@@ -11,7 +11,9 @@ import {
 import { observer } from "mobx-react";
 import { NavbarItemData } from "../../document/UIStateStore";
 import { red } from "@mui/material/colors";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { Circle } from "@mui/icons-material";
+import { Tooltip, IconButton } from "@mui/material";
 
 type Props = {
     obstacle: ICircularObstacleStore;
@@ -29,9 +31,10 @@ type Props = {
 
     render() {
         let obstacle = this.props.obstacle;
+        let selected = this.props.obstacle.selected;
         return (
             <div
-                className={styles.SidebarItem + (this.state.selected ? ` ${styles.Selected}` : "")}
+                className={styles.SidebarItem + (selected ? ` ${styles.Selected}` : "")}
                 onClick={() => {
                     this.context.model.uiState.setSelectedSidebarItem(obstacle);
                     this.context.model.uiState.setSelectedNavbarItem(9);
@@ -47,6 +50,19 @@ type Props = {
                 >
                     {"Obstacle x: " + this.props.obstacle.x.toFixed(2) + ", y: " + this.props.obstacle.y.toFixed(2)}
                 </span>
+                <Tooltip disableInteractive title="Delete Waypoint">
+                    <IconButton
+                        className={styles.SidebarRightIcon}
+                        onClick={(e) => {
+                        e.stopPropagation();
+                        this.context.model.document.pathlist.activePath.deleteObstacleUUID(
+                            obstacle?.uuid || ""
+                        );
+                        }}
+                    >
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
             </div>
         )
     }

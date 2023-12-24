@@ -14,6 +14,7 @@ import FieldConstraintsAddLayer from "./FieldConstraintsAddLayer";
 import FieldObstacle from "./FieldObstacles";
 import { Box } from "@mui/material";
 import { Circle } from "@mui/icons-material";
+import { v4 as uuidv4 } from "uuid";
 import { CircularObstacleStore } from "../../../document/CircularObstacleStore";
 
 type Props = {};
@@ -139,9 +140,6 @@ class FieldOverlayRoot extends Component<Props, State> {
           {layers[ViewLayers.Trajectory] && (
             <FieldGeneratedLines></FieldGeneratedLines>
           )}
-          {layers[ViewLayers.Obstacles] && (
-            <FieldObstacle></FieldObstacle>
-          )}
           {layers[ViewLayers.Waypoints] &&
             this.context.model.uiState.isNavbarWaypointSelected() && (
               <circle
@@ -150,18 +148,28 @@ class FieldOverlayRoot extends Component<Props, State> {
                 r={10000}
                 style={{ fill: "transparent" }}
                 onClick={(e) => this.createWaypoint(e)}
-              ></circle>
-            )}
+                ></circle>
+                )}
           {layers[ViewLayers.Obstacles] &&
             this.context.model.uiState.isNavbarObstacleSelected() && (
               <circle
-                cx={0}
-                cy={0}
-                r={10000}
-                style={{ fill: "transparent" }}
-                onClick={(e) => this.createObstacle(e)}
+              cx={0}
+              cy={0}
+              r={10000}
+              style={{ fill: "transparent" }}
+              onClick={(e) => this.createObstacle(e)}
               ></circle>
-            )}
+              )}
+          {layers[ViewLayers.Obstacles] && (
+            this.context.model.document.pathlist.activePath.obstacles.map(
+              (obstacle, index) => (
+                <FieldObstacle
+                  obstacle={obstacle}
+                  index={index}
+                ></FieldObstacle>
+              )
+            )
+          )}
           {layers[ViewLayers.Waypoints] &&
             this.context.model.document.pathlist.activePath.waypoints.map(
               (point, index) => (
@@ -171,7 +179,7 @@ class FieldOverlayRoot extends Component<Props, State> {
                   key={point.uuid}
                 ></OverlayWaypoint>
               )
-            )}
+          )}
           {constraintSelected && (
             <FieldConstraintsAddLayer></FieldConstraintsAddLayer>
           )}
@@ -220,9 +228,9 @@ class FieldOverlayRoot extends Component<Props, State> {
         y: e.clientY,
       });
       this.context.history.startGroup(() => {
-        var newPoint =
-          this.context.model.document.pathlist.activePath.addObstacle(CircularObstacleStore.create({ x: coords.x, y: coords.y, radius: 0.5}));
-        const selectedItem = this.context.model.uiState.selectedNavbarItem;
+        var newObstacle =
+          this.context.model.document.pathlist.activePath.addObstacle(CircularObstacleStore.create({ x: coords.x, y: coords.y, radius: 0.5, uuid: uuidv4() }));
+        // const selectedItem = this.context.model.uiState.selectedNavbarItem;
         
       });
       this.context.history.stopGroup();
