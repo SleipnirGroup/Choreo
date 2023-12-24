@@ -10,7 +10,7 @@ import {
   IHolonomicWaypointStore,
 } from "./HolonomicWaypointStore";
 import { moveItem } from "mobx-utils";
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4, v4 } from "uuid";
 import { IStateStore } from "./DocumentModel";
 import {
   constraints,
@@ -427,6 +427,10 @@ export const HolonomicPathStore = types
             );
           }
         });
+        self.obstacles.clear();
+        savedPath.obstacles.forEach((o) => {
+          this.addObstacle(CircularObstacleStore.create({ x: o.x, y: o.y, radius: o.radius, uuid: v4() }));
+        })
         if (
           savedPath.trajectory !== undefined &&
           savedPath.trajectory !== null
