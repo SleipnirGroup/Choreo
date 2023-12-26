@@ -42,6 +42,7 @@ class Input extends Component<Props, State> {
     this.setState({
       focused: false,
       editing: false,
+      editedValue: this.props.number.toString(),
     });
   }
 
@@ -49,6 +50,7 @@ class Input extends Component<Props, State> {
     this.setState({
       focused: true,
       editing: false,
+      editedValue: this.props.number.toString(),
     });
     this.inputElemRef.current!.value = this.props.number.toString();
     this.inputElemRef.current!.select();
