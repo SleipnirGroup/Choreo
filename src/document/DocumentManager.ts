@@ -59,19 +59,22 @@ export class DocumentManager {
       toast.error("File load error: non-UTF-8 characters in file path", {
         containerId: "MENU",
       });
-    } else {
+    } else if (payload.contents === undefined) {
+      toast.error("File load error: Unable to read file", {
+        containerId: "MENU",
+      });
+    } else
+    {
       this.model.uiState.setSaveFileName(payload.name);
       this.model.uiState.setSaveFileDir(payload.dir);
       this.model.uiState.setIsGradleProject(payload.adjacent_gradle);
-      if (payload.contents !== undefined) {
-        await this.openFromContents(payload.contents).catch((err) => {
-          console.log(err);
-          toast.error("File load error: " + err, {
-            containerId: "MENU",
-          });
-          throw err;
+      await this.openFromContents(payload.contents).catch((err) => {
+        console.log(err);
+        toast.error("File load error: " + err, {
+          containerId: "MENU",
         });
-      }
+        throw err;
+      });
     }
   }
   async setupEventListeners() {
