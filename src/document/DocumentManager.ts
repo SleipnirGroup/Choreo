@@ -63,8 +63,7 @@ export class DocumentManager {
       toast.error("File load error: Unable to read file", {
         containerId: "MENU",
       });
-    } else
-    {
+    } else {
       this.model.uiState.setSaveFileName(payload.name);
       this.model.uiState.setSaveFileDir(payload.dir);
       this.model.uiState.setIsGradleProject(payload.adjacent_gradle);
@@ -95,7 +94,7 @@ export class DocumentManager {
               type: "warning",
             })
           ) {
-            if (! await this.saveFileDialog()) {
+            if (!(await this.saveFileDialog())) {
               return;
             }
           }
