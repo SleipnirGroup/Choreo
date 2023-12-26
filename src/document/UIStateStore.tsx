@@ -198,6 +198,11 @@ export const UIStateStore = types
           self.isGradleProject ? "src/main/deploy/choreo" : "deploy/choreo"
         ).replace("/", path.sep);
       },
+      get hasSaveLocation() {
+        return (
+          self.saveFileName !== undefined && self.saveFileDir !== undefined
+        );
+      },
       getSelectedConstraint() {
         return navbarIndexToConstraint[self.selectedNavbarItem] ?? undefined;
       },

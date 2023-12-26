@@ -6,6 +6,7 @@ import {
   DialogTitle,
   Drawer,
   List,
+  ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
@@ -19,7 +20,7 @@ import FileDownload from "@mui/icons-material/FileDownload";
 import Tooltip from "@mui/material/Tooltip";
 import { NoteAddOutlined, Settings } from "@mui/icons-material";
 import { ToastContainer, toast } from "react-toastify";
-import { dialog, invoke } from "@tauri-apps/api";
+import { dialog, invoke, path } from "@tauri-apps/api";
 
 type Props = {};
 
@@ -91,13 +92,19 @@ class AppMenu extends Component<Props, State> {
             </label>
             <ListItemButton
               onClick={() => {
-                this.context.saveFile();
+                this.context.saveFileDialog();
               }}
             >
               <ListItemIcon>
                 <SaveIcon />
               </ListItemIcon>
-              <ListItemText primary="Save File"></ListItemText>
+              <ListItemText
+                primary={
+                  this.context.model.uiState.hasSaveLocation
+                    ? "Save File As"
+                    : "Save File"
+                }
+              ></ListItemText>
             </ListItemButton>
             <ListItemButton
               onClick={async () => {
@@ -128,15 +135,70 @@ class AppMenu extends Component<Props, State> {
             </ListItemButton>
 
             <ListItemButton
-              onClick={() => {
+              onClick={async () => {
+                if (!this.context.model.uiState.hasSaveLocation) {
+                  if (
+                    await dialog.ask(
+                      "Saving trajectories to the deploy directory requires saving the project. Save it now?",
+                      {
+                        title: "Choreo",
+                        type: "warning",
+                      }
+                    )
+                  ) {
+                    if (!(await this.context.saveFileDialog())) {
+                      return;
+                    }
+                  } else {
+                    return;
+                  }
+                }
                 this.context.exportAllTrajectories();
               }}
             >
               <ListItemIcon>
-                <FileDownload />
+                <SaveIcon />
               </ListItemIcon>
-              <ListItemText primary="Export All Trajectories"></ListItemText>
+              <ListItemText primary="Save All Trajectories"></ListItemText>
             </ListItemButton>
+            <ListItem>
+              <div style={{ fontFamily: "monospace", fontSize: "0.75em" }}>
+                {this.context.model.uiState.hasSaveLocation ? (
+                  <>
+                    Project saved at<br></br>
+                    {this.context.model.uiState.saveFileDir}
+                    {path.sep}
+                    {this.context.model.uiState.saveFileName}
+                    <br></br>
+                    <br></br>
+                    {this.context.model.uiState.isGradleProject
+                      ? "Gradle (Java/C++) project detected."
+                      : "Python project or no robot project detected."}
+                    <br></br>
+                    <br></br>
+                    {this.context.model.uiState.hasSaveLocation ? (
+                      <>
+                        Trajectories saved in<br></br>
+                        {this.context.model.uiState.saveFileDir}
+                        {path.sep}
+                        {this.context.model.uiState.chorRelativeTrajDir}
+                      </>
+                    ) : (
+                      <>
+                        <br />
+                        <br />
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    Project not saved.
+                    <br />
+                    Click "Save File" above to save.
+                  </>
+                )}
+              </div>
+            </ListItem>
           </List>
           <ToastContainer
             position="top-right"

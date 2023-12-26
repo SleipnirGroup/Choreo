@@ -88,7 +88,7 @@ export class DocumentManager {
     tauriWindow
       .getCurrent()
       .listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
-        if (this.model.uiState.saveFileName === undefined) {
+        if (!this.model.uiState.hasSaveLocation) {
           if (
             await dialog.ask("Save project?", {
               title: "Choreo",
@@ -110,7 +110,7 @@ export class DocumentManager {
     const autoSaveUnlisten = reaction(
       () => this.model.document.history.undoIdx,
       () => {
-        if (this.model.uiState.saveFileName !== undefined) {
+        if (this.model.uiState.hasSaveLocation) {
           this.saveFile();
         }
       }
@@ -325,15 +325,16 @@ export class DocumentManager {
     this.model.document.pathlist.paths.get(uuid)?.setName(newName);
     let newPath = await this.getTrajFilePath(uuid);
     if (oldPath !== null) {
-      invoke("delete_file", { dir: oldPath[0], name: oldPath[1] });
-      this.writeTrajectory(() => newPath, uuid);
+      invoke("delete_file", { dir: oldPath[0], name: oldPath[1] })
+        .then(() => this.writeTrajectory(() => newPath, uuid))
+        .catch((e) => {});
     }
   }
 
   async deletePath(uuid: string) {
-    let newPath = await this.getTrajFilePath(uuid);
+    let newPath = await this.getTrajFilePath(uuid).catch(() => null);
     this.model.document.pathlist.deletePath(uuid);
-    if (newPath !== null) {
+    if (newPath !== null && this.model.uiState.hasSaveLocation) {
       invoke("delete_file", { dir: newPath[0], name: newPath[1] });
       this.writeTrajectory(() => newPath, uuid);
     }
@@ -354,7 +355,7 @@ export class DocumentManager {
     }
     const trajectory = path.generated;
     if (trajectory.length < 2) {
-      return;
+      throw `Path is not generated`;
     }
 
     const content = JSON.stringify({ samples: trajectory }, undefined, 4);
@@ -373,8 +374,8 @@ export class DocumentManager {
     if (choreoPath === undefined) {
       throw `Trajectory has unknown uuid ${uuid}`;
     }
-    const { saveFileDir, chorRelativeTrajDir } = this.model.uiState;
-    if (saveFileDir === undefined || chorRelativeTrajDir === undefined) {
+    const { hasSaveLocation, chorRelativeTrajDir } = this.model.uiState;
+    if (!hasSaveLocation || chorRelativeTrajDir === undefined) {
       throw `Project has not been saved yet`;
     }
     const dir =
@@ -423,6 +424,8 @@ export class DocumentManager {
   async saveFile() {
     let dir = this.model.uiState.saveFileDir;
     let name = this.model.uiState.saveFileName;
+    // we could use hasSaveLocation but TS wouldn't know
+    // that dir and name aren't undefined below
     if (dir === undefined || name === undefined) {
       return await this.saveFileDialog();
     } else {
@@ -430,7 +433,7 @@ export class DocumentManager {
     }
     return true;
   }
-  
+
   async saveFileDialog() {
     const filePath = await dialog.save({
       title: "Save Document",
@@ -450,6 +453,9 @@ export class DocumentManager {
     this.model.uiState.setSaveFileDir(dir);
     this.model.uiState.setSaveFileName(name);
     this.handleChangeIsGradleProject(newIsGradleProject);
+    toast.success(`Saved ${name}. Future changes will now be auto-saved.`, {
+      containerId: "MENU",
+    });
     return true;
   }
 
@@ -493,17 +499,32 @@ export class DocumentManager {
    * Export all trajectories to the deploy directory, as determined by uiState.isGradleProject
    */
   async exportAllTrajectories() {
-    var promises = this.model.document.pathlist.pathUUIDs.map((uuid) =>
-      this.writeTrajectory(() => this.getTrajFilePath(uuid), uuid)
-    );
-    var pathNames = this.model.document.pathlist.pathNames;
-    Promise.allSettled(promises).then((results) => {
-      results.map((result, i) => {
-        if (result.status === "rejected") {
-          console.error(pathNames[i], ":", result.reason);
-        }
-      });
-    });
+    if (this.model.uiState.hasSaveLocation) {
+      var promises = this.model.document.pathlist.pathUUIDs.map((uuid) =>
+        this.writeTrajectory(() => this.getTrajFilePath(uuid), uuid)
+      );
+      var pathNames = this.model.document.pathlist.pathNames;
+      Promise.allSettled(promises)
+        .then((results) => {
+          results.map((result, i) => {
+            if (result.status === "rejected") {
+              console.error(pathNames[i], ":", result.reason);
+              toast.error(
+                `Couldn't save "${pathNames[i]}": ${result.reason}.`,
+                {
+                  containerId: "MENU",
+                }
+              );
+            }
+          });
+        })
+        .then(() =>
+          toast.success(
+            `Saved all  trajectories to ${this.model.uiState.chorRelativeTrajDir}.`,
+            { containerId: "MENU" }
+          )
+        );
+    }
   }
 }
 let DocumentManagerContext = createContext(new DocumentManager());
