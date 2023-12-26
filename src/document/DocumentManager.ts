@@ -95,14 +95,16 @@ export class DocumentManager {
               type: "warning",
             })
           ) {
-            await this.saveFile();
+            if (! await this.saveFileDialog()) {
+              return;
+            }
           }
         }
         await tauriWindow.getCurrent().close();
       })
       .then((unlisten) => {
         window.addEventListener("unload", () => {
-          unlisten;
+          unlisten();
         });
       });
     const autoSaveUnlisten = reaction(
@@ -417,10 +419,11 @@ export class DocumentManager {
     let dir = this.model.uiState.saveFileDir;
     let name = this.model.uiState.saveFileName;
     if (dir === undefined || name === undefined) {
-      await this.saveFileDialog();
+      return await this.saveFileDialog();
     } else {
       this.handleChangeIsGradleProject(await this.saveFileAs(dir, name));
     }
+    return true;
   }
   async saveFileDialog() {
     const filePath = await dialog.save({
@@ -441,7 +444,7 @@ export class DocumentManager {
     this.model.uiState.setSaveFileDir(dir);
     this.model.uiState.setSaveFileName(name);
     this.handleChangeIsGradleProject(newIsGradleProject);
-    return newIsGradleProject;
+    return true;
   }
 
   private async handleChangeIsGradleProject(

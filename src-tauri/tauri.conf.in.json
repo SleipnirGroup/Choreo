@@ -26,10 +26,12 @@
       "dialog": {
         "confirm": true,
         "open": true,
-        "save": true
+        "save": true,
+        "ask": true
       },
       "window": {
-        "setTitle": true
+        "setTitle": true,
+        "close": true
       }
     },
     "bundle": {
