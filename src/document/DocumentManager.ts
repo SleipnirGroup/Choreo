@@ -76,6 +76,7 @@ export class DocumentManager {
       });
     }
   }
+
   async setupEventListeners() {
     const openFileUnlisten = await listen("open-file", async (event) =>
       this.handleOpenFileEvent(event)
@@ -280,12 +281,14 @@ export class DocumentManager {
       )
     );
   }
+
   private getSelectedWaypoint() {
     const waypoints = this.model.document.pathlist.activePath.waypoints;
     return waypoints.find((w) => {
       return w.selected;
     });
   }
+
   newFile(): void {
     applySnapshot(this.model, {
       uiState: {
@@ -335,6 +338,7 @@ export class DocumentManager {
       this.writeTrajectory(() => newPath, uuid);
     }
   }
+
   /**
    * Save the specified trajectory to the file path supplied by the given async function
    * @param filePath An (optionally async) function returning a 2-string array of [dir, name], or null
@@ -363,6 +367,7 @@ export class DocumentManager {
       });
     }
   }
+
   async getTrajFilePath(uuid: string): Promise<[string, string]> {
     const choreoPath = this.model.document.pathlist.paths.get(uuid);
     if (choreoPath === undefined) {
@@ -414,6 +419,7 @@ export class DocumentManager {
       this.model.document.pathlist.activePathUUID
     );
   }
+
   async saveFile() {
     let dir = this.model.uiState.saveFileDir;
     let name = this.model.uiState.saveFileName;
@@ -424,6 +430,7 @@ export class DocumentManager {
     }
     return true;
   }
+  
   async saveFileDialog() {
     const filePath = await dialog.save({
       title: "Save Document",
