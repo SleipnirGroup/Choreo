@@ -50,7 +50,7 @@ class SidebarObstacle extends Component<Props, State> {
           className={styles.SidebarLabel}
           style={{ display: "grid", gridTemplateColumns: "1fr auto auto" }}
         >
-          {"Obstacle " + this.props.index}
+          {"Obstacle " + (this.props.index + 1)}
         </span>
         <Tooltip disableInteractive title="Delete Obstacle">
           <IconButton
