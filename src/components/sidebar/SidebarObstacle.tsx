@@ -12,7 +12,7 @@ import { observer } from "mobx-react";
 import { NavbarItemData } from "../../document/UIStateStore";
 import { red } from "@mui/material/colors";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Circle } from "@mui/icons-material";
+import { DoNotDisturb } from "@mui/icons-material";
 import { Tooltip, IconButton } from "@mui/material";
 
 type Props = {
@@ -40,7 +40,7 @@ class SidebarObstacle extends Component<Props, State> {
           this.context.model.uiState.setSelectedNavbarItem(9);
         }}
       >
-        {React.cloneElement(<Circle></Circle>, {
+        {React.cloneElement(<DoNotDisturb></DoNotDisturb>, {
           className: styles.SidebarIcon,
           htmlColor: this.state.selected
             ? "var(--select-yellow)"
@@ -50,12 +50,9 @@ class SidebarObstacle extends Component<Props, State> {
           className={styles.SidebarLabel}
           style={{ display: "grid", gridTemplateColumns: "1fr auto auto" }}
         >
-          {"Obstacle x: " +
-            this.props.obstacle.x.toFixed(2) +
-            ", y: " +
-            this.props.obstacle.y.toFixed(2)}
+          {"Obstacle " + this.props.index}
         </span>
-        <Tooltip disableInteractive title="Delete Waypoint">
+        <Tooltip disableInteractive title="Delete Obstacle">
           <IconButton
             className={styles.SidebarRightIcon}
             onClick={(e) => {

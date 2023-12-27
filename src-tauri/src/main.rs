@@ -262,7 +262,6 @@ async fn generate_trajectory(
     path_builder.set_bumpers(config.bumperLength, config.bumperWidth);
 
     for o in circleObstacles {
-      println!("{:?}", o);
       path_builder.sgmt_circle_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
     }
 

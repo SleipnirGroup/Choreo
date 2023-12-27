@@ -177,7 +177,7 @@ export let VERSIONS = {
           usesControlIntervalGuessing: path.usesControlIntervalGuessing,
           defaultControlIntervalCount: path.defaultControlIntervalCount,
           usesDefaultFieldObstacles: true,
-          obstacles: [],
+          circleObstacles: [],
         };
       }
       return updated;

@@ -28,7 +28,7 @@ export interface SavedPath {
   usesDefaultFieldObstacles: boolean;
   usesControlIntervalGuessing: boolean;
   defaultControlIntervalCount: number;
-  obstacles: Array<SavedCircleObstacle>;
+  circleObstacles: Array<SavedCircleObstacle>;
 }
 export interface SavedPathList extends Record<string, SavedPath> {}
 export interface SavedRobotConfig {

@@ -49,6 +49,9 @@ export const CircularObstacleStore = types
     setSelected(selected: boolean) {
       if (selected && !self.selected) {
         const root = getRoot<IStateStore>(self);
+        if (root === undefined) {
+          return;
+        }
         root.select(
           getParent<ICircularObstacleStore[]>(self)?.find(
             (obstacle) => self.uuid == obstacle.uuid

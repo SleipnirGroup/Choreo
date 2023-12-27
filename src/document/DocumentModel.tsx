@@ -109,7 +109,7 @@ const StateStore = types
                 path: pathStore.waypoints,
                 config: self.document.robotConfig,
                 constraints: pathStore.asSolverPath().constraints,
-                circleObstacles: pathStore.asSolverPath().obstacles,
+                circleObstacles: pathStore.asSolverPath().circleObstacles,
                 polygonObstacles: [],
               }),
             (e) => e

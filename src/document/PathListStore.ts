@@ -3,7 +3,6 @@ import { SavedPathList } from "./DocumentSpecTypes";
 import { HolonomicPathStore } from "./HolonomicPathStore";
 import { v4 as uuidv4 } from "uuid";
 import { ConstraintStores } from "./ConstraintStore";
-import { CircularObstacleStore } from "./CircularObstacleStore";
 
 export const PathListStore = types
   .model("PathListStore", {

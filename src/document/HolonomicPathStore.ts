@@ -84,9 +84,6 @@ export const HolonomicPathStore = types
       },
       asSavedPath(): SavedPath {
         let trajectory: Array<SavedTrajectorySample> = self.generated;
-        console.log(
-          self.obstacles.map((obstacle) => obstacle.asSavedCircleObstacle())
-        );
         // constraints are converted here because of the need to search the path for uuids
         return {
           waypoints: self.waypoints.map((point) => point.asSavedWaypoint()),
@@ -122,7 +119,7 @@ export const HolonomicPathStore = types
           usesControlIntervalGuessing: self.usesControlIntervalGuessing,
           defaultControlIntervalCount: self.defaultControlIntervalCount,
           usesDefaultFieldObstacles: true,
-          obstacles: self.obstacles.map((obstacle) =>
+          circleObstacles: self.obstacles.map((obstacle) =>
             obstacle.asSavedCircleObstacle()
           ),
         };
@@ -436,7 +433,7 @@ export const HolonomicPathStore = types
           }
         });
         self.obstacles.clear();
-        savedPath.obstacles.forEach((o) => {
+        savedPath.circleObstacles.forEach((o) => {
           this.addObstacle(
             CircularObstacleStore.create({
               x: o.x,

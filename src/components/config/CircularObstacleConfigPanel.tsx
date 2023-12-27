@@ -43,7 +43,7 @@ class CircularObstacleConfigPanel extends Component<Props, State> {
             />
 
             <Input
-              title="radius"
+              title="r"
               suffix="m"
               enabled={true}
               setEnabled={(a) => null}
