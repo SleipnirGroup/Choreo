@@ -23,12 +23,8 @@ class FieldGrid extends Component<Props, State> {
   }
 
   dragPointTranslate(event: any) {
-    let pointerPos = { x: 0, y: 0 };
-    pointerPos.x = event.x;
-    pointerPos.y = event.y;
-
-    this.props.obstacle.setX(pointerPos.x);
-    this.props.obstacle.setY(pointerPos.y);
+    this.props.obstacle.setX(this.props.obstacle.x + event.dx);
+    this.props.obstacle.setY(this.props.obstacle.y + event.dy);
   }
 
   dragPointRadius(event: any) {
