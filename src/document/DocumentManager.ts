@@ -467,8 +467,9 @@ export class DocumentManager {
     if (newIsGradleProject !== undefined) {
       if (newIsGradleProject !== prevIsGradleProject) {
         this.model.uiState.setIsGradleProject(newIsGradleProject);
-        this.exportAllTrajectories();
+        
       }
+      this.exportAllTrajectories();
     }
   }
 

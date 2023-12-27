@@ -4,6 +4,7 @@ import { observer } from "mobx-react";
 import {
   Dialog,
   DialogTitle,
+  Divider,
   Drawer,
   List,
   ListItem,
@@ -125,7 +126,7 @@ class AppMenu extends Component<Props, State> {
             </ListItemButton>
             <ListItemButton
               onClick={() => {
-                this.context.exportActiveTrajectory();
+                this.context.exportActiveTrajectory().catch(err=>toast.error(err, {containerId:"MENU"}));
               }}
             >
               <ListItemIcon>
@@ -161,8 +162,9 @@ class AppMenu extends Component<Props, State> {
               </ListItemIcon>
               <ListItemText primary="Save All Trajectories"></ListItemText>
             </ListItemButton>
+            <Divider orientation="horizontal"></Divider>
             <ListItem>
-              <div style={{ fontFamily: "monospace", fontSize: "0.75em" }}>
+              <div style={{ wordWrap:"normal", fontSize: "0.75em" }}>
                 {this.context.model.uiState.hasSaveLocation ? (
                   <>
                     Project saved at<br></br>
