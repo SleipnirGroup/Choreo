@@ -135,21 +135,6 @@ class FieldOverlayRoot extends Component<Props, State> {
           )}
           {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
           <FieldAxisLines></FieldAxisLines>
-          {/* Line paths */}
-          {layers[ViewLayers.Waypoints] && <FieldPathLines></FieldPathLines>}
-          {layers[ViewLayers.Trajectory] && (
-            <FieldGeneratedLines></FieldGeneratedLines>
-          )}
-          {layers[ViewLayers.Waypoints] &&
-            this.context.model.uiState.isNavbarWaypointSelected() && (
-              <circle
-                cx={0}
-                cy={0}
-                r={10000}
-                style={{ fill: "transparent" }}
-                onClick={(e) => this.createWaypoint(e)}
-              ></circle>
-            )}
           {layers[ViewLayers.Obstacles] &&
             this.context.model.uiState.isNavbarObstacleSelected() && (
               <circle
@@ -168,6 +153,21 @@ class FieldOverlayRoot extends Component<Props, State> {
                   index={index}
                 ></FieldObstacle>
               )
+          )}
+          {/* Line paths */}
+          {layers[ViewLayers.Waypoints] && <FieldPathLines></FieldPathLines>}
+          {layers[ViewLayers.Trajectory] && (
+            <FieldGeneratedLines></FieldGeneratedLines>
+          )}
+          {layers[ViewLayers.Waypoints] &&
+            this.context.model.uiState.isNavbarWaypointSelected() && (
+              <circle
+                cx={0}
+                cy={0}
+                r={10000}
+                style={{ fill: "transparent" }}
+                onClick={(e) => this.createWaypoint(e)}
+              ></circle>
             )}
           {layers[ViewLayers.Waypoints] &&
             this.context.model.document.pathlist.activePath.waypoints.map(

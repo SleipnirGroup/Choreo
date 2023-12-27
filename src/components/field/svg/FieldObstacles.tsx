@@ -81,11 +81,8 @@ class FieldGrid extends Component<Props, State> {
           cx={o.x}
           cy={o.y}
           r={o.radius - STROKE / 2}
-          fill={o.selected ? "green" : "red"}
-          fillOpacity={o.selected ? 0.8 : 0.5}
-          stroke={o.selected ? "green" : "red"}
-          strokeWidth={STROKE}
-          strokeOpacity={o.selected ? 1.0 : 0.8}
+          fill={"red"}
+          fillOpacity={0.1}
           onClick={() => this.context.model.select(o)}
           id={this.appendIndexID("oDragTarget")}
         ></circle>
@@ -94,18 +91,21 @@ class FieldGrid extends Component<Props, State> {
           cx={o.x}
           cy={o.y}
           r={o.radius < DOT * 2 ? 0.0 : DOT}
-          fill={o.selected ? "green" : "red"}
+          fill={o.selected ? "var(--select-yellow)" : "red"}
           fillOpacity={o.selected ? 1.0 : 0.8}
           onClick={() => this.context.model.select(o)}
           id={this.appendIndexID("oCenterDragTarget")}
         ></circle>
         {/* Radius Handle */}
         <circle
-          cx={o.x + o.radius}
+          cx={o.x}
           cy={o.y}
-          r={DOT}
-          fill={o.selected ? "green" : "red"}
-          fillOpacity={o.selected ? 1.0 : 0.8}
+          r={o.radius - STROKE / 2}
+          fill={"transparent"}
+          pointerEvents={"visibleStroke"}
+          stroke={o.selected ? "var(--select-yellow)" : "red"}
+          strokeWidth={STROKE}
+          strokeOpacity={o.selected ? 1.0 : 0.8}
           onClick={() => this.context.model.select(o)}
           id={this.appendIndexID("oRadiusDragTarget")}
         ></circle>
