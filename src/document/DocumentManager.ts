@@ -268,8 +268,8 @@ export class DocumentManager {
           },
 
           error: {
-            render({ data, toastProps }) {
-              return `Couldn't export trajectory: ${data as string}`;
+            render(toastInfo) {
+              return `Couldn't export trajectory: ${toastInfo.data}`;
             },
           },
         }
@@ -434,7 +434,20 @@ export class DocumentManager {
     let newIsGradleProject = await this.saveFileAs(dir, name);
     this.model.uiState.setSaveFileDir(dir);
     this.model.uiState.setSaveFileName(name);
-    this.handleChangeIsGradleProject(newIsGradleProject);
+    
+    toast.promise(
+      this.handleChangeIsGradleProject(newIsGradleProject),
+      {
+        success: `Saved all trajectories to ${this.model.uiState.chorRelativeTrajDir}.`,
+        error: {
+          render(toastProps) {
+            console.error(toastProps.data);
+            return toastProps.data as string;
+          },
+        },
+      }
+    );
+
     toast.success(`Saved ${name}. Future changes will now be auto-saved.`);
     return true;
   }
@@ -442,13 +455,13 @@ export class DocumentManager {
   private async handleChangeIsGradleProject(
     newIsGradleProject: boolean | undefined
   ) {
-    let prevChorRelativeTrajDir = this.model.uiState.chorRelativeTrajDir;
     let prevIsGradleProject = this.model.uiState.isGradleProject;
     if (newIsGradleProject !== undefined) {
       if (newIsGradleProject !== prevIsGradleProject) {
         this.model.uiState.setIsGradleProject(newIsGradleProject);
       }
-      this.exportAllTrajectories();
+
+      await this.exportAllTrajectories();
     }
   }
 
@@ -489,15 +502,12 @@ export class DocumentManager {
           results.map((result, i) => {
             if (result.status === "rejected") {
               console.error(pathNames[i], ":", result.reason);
-              toast.error(`Couldn't save "${pathNames[i]}": ${result.reason}.`);
+              return new Promise((resolve, reject) =>
+                reject(`Couldn't save "${pathNames[i]}": ${result.reason}`)
+              );
             }
           });
-        })
-        .then(() =>
-          toast.success(
-            `Saved all trajectories to ${this.model.uiState.chorRelativeTrajDir}.`
-          )
-        );
+        });
     }
   }
 }
