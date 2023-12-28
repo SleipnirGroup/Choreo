@@ -45,16 +45,18 @@ class AppMenu extends Component<Props, State> {
     );
   }
 
-  CopyToClipboardButton({ data }: { data: any }) {
+  CopyToClipboardButton({ data, tooltip }: { data: any; tooltip: string }) {
     let handleCopyToClipboard = async function () {
       await navigator.clipboard.writeText(data);
       toast.success("Copied to clipboard");
     };
 
     return (
-      <IconButton size="small" onClick={handleCopyToClipboard}>
-        <CopyAll fontSize="small"></CopyAll>
-      </IconButton>
+      <Tooltip disableInteractive title={tooltip}>
+        <IconButton size="small" onClick={handleCopyToClipboard}>
+          <CopyAll fontSize="small"></CopyAll>
+        </IconButton>
+      </Tooltip>
     );
   }
 
@@ -224,11 +226,10 @@ class AppMenu extends Component<Props, State> {
                     Project saved at<br></br>
                     <div style={{ fontSize: "0.9em", color: "#D3D3D3" }}>
                       {this.projectLocation(true)}
-                      <Tooltip title="Copy full path to clipboard">
-                        <this.CopyToClipboardButton
-                          data={this.projectLocation(false)}
-                        ></this.CopyToClipboardButton>
-                      </Tooltip>
+                      <this.CopyToClipboardButton
+                        data={this.projectLocation(false)}
+                        tooltip="Copy full path to clipbpard"
+                      ></this.CopyToClipboardButton>
                     </div>
                     <br></br>
                     {this.context.model.uiState.isGradleProject
@@ -242,14 +243,10 @@ class AppMenu extends Component<Props, State> {
                         Trajectories saved in<br></br>
                         <div style={{ fontSize: "0.9em", color: "#D3D3D3" }}>
                           {this.trajectoriesLocation(true)}
-                          <Tooltip
-                            disableInteractive
-                            title="Copy full path to clipboard"
-                          >
-                            <this.CopyToClipboardButton
-                              data={this.trajectoriesLocation(false)}
-                            ></this.CopyToClipboardButton>
-                          </Tooltip>
+                          <this.CopyToClipboardButton
+                            data={this.trajectoriesLocation(false)}
+                            tooltip="Copy full path to clipbpard"
+                          ></this.CopyToClipboardButton>
                         </div>
                       </>
                     ) : (
