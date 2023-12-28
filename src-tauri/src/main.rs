@@ -88,6 +88,11 @@ async fn save_file(dir: String, name: String, contents: String) -> Result<(), &'
   Ok(())
 }
 
+#[tauri::command]
+async fn open_file_app(dir: String) {
+  open::that(dir);
+}
+
 #[allow(non_snake_case)]
 #[derive(serde::Serialize, serde::Deserialize)]
 struct ChoreoWaypoint {
@@ -312,7 +317,7 @@ async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfi
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-          generate_trajectory, cancel, open_file_dialog, save_file, contains_build_gradle, delete_file])
+          generate_trajectory, cancel, open_file_dialog, save_file, contains_build_gradle, delete_file, open_file_app])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

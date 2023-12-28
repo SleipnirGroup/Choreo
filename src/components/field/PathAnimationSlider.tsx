@@ -17,9 +17,6 @@ class PathAnimationSlider extends Component<Props, State> {
   render() {
     let activePath = this.context.model.document.pathlist.activePath;
     this.totalTime = activePath.getTotalTimeSeconds();
-    activePath.nonGuessOrEmptyPoints.map((point, idx) =>
-      console.log(activePath.waypointTimestamps()[idx])
-    );
     return (
       <>
         <Slider

@@ -20,7 +20,7 @@ import IconButton from "@mui/material/IconButton";
 import FileDownload from "@mui/icons-material/FileDownload";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
 import Tooltip from "@mui/material/Tooltip";
-import { CopyAll, NoteAddOutlined, Settings } from "@mui/icons-material";
+import { CopyAll, NoteAddOutlined, OpenInNew, Settings } from "@mui/icons-material";
 import { ToastContainer, toast } from "react-toastify";
 import { dialog, invoke, path } from "@tauri-apps/api";
 
@@ -48,15 +48,29 @@ class AppMenu extends Component<Props, State> {
   }
 
   CopyToClipboardButton({ data, tooltip }: { data: any; tooltip: string }) {
-    let handleCopyToClipboard = async function () {
+    let handleAction = async function () {
       await navigator.clipboard.writeText(data);
       toast.success("Copied to clipboard");
     };
 
     return (
       <Tooltip disableInteractive title={tooltip}>
-        <IconButton size="small" onClick={handleCopyToClipboard}>
+        <IconButton size="small" onClick={handleAction}>
           <CopyAll fontSize="small"></CopyAll>
+        </IconButton>
+      </Tooltip>
+    );
+  }
+
+  OpenInFilesApp({ dir }: { dir: string }) {
+    let handleAction = async function () {
+      invoke("open_file_app", {dir});
+    };
+
+    return (
+      <Tooltip disableInteractive title="Reveal in Files App">
+        <IconButton size="small" onClick={handleAction}>
+          <OpenInNew fontSize="small"></OpenInNew>
         </IconButton>
       </Tooltip>
     );
@@ -232,6 +246,7 @@ class AppMenu extends Component<Props, State> {
                         data={this.projectLocation(false)}
                         tooltip="Copy full path to clipboard"
                       ></this.CopyToClipboardButton>
+                      <this.OpenInFilesApp dir={this.projectLocation(false)}></this.OpenInFilesApp>
                     </div>
                     <br></br>
                     {this.context.model.uiState.isGradleProject
@@ -249,6 +264,7 @@ class AppMenu extends Component<Props, State> {
                             data={this.trajectoriesLocation(false)}
                             tooltip="Copy full path to clipboard"
                           ></this.CopyToClipboardButton>
+                          <this.OpenInFilesApp dir={this.trajectoriesLocation(false)}></this.OpenInFilesApp>
                         </div>
                       </>
                     ) : (
