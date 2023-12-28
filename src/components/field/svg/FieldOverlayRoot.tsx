@@ -153,7 +153,7 @@ class FieldOverlayRoot extends Component<Props, State> {
                   index={index}
                 ></FieldObstacle>
               )
-          )}
+            )}
           {/* Line paths */}
           {layers[ViewLayers.Waypoints] && <FieldPathLines></FieldPathLines>}
           {layers[ViewLayers.Trajectory] && (
