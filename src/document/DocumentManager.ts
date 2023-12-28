@@ -379,36 +379,9 @@ export class DocumentManager {
     return [dir, `${choreoPath.name}.traj`];
   }
 
-  // async exportTrajectory(uuid: string) {
-  //   await this.writeTrajectory(async () => {
-  //     const filepath = await this.getTrajFilePath(uuid);
-
-  //     console.log("got file path..");
-
-  //     var file = await dialog.save({
-  //       title: "Export Trajectory",
-  //       defaultPath: filepath.join(path.sep),
-  //       filters: [
-  //         {
-  //           name: "Trajopt Trajectory",
-  //           extensions: ["traj"],
-  //         },
-  //       ],
-  //     });
-
-  //     if (file == null) {
-  //       throw "No file selected or user cancelled";
-  //     }
-
-  //     return [await path.dirname(file), await path.basename(file)];
-  //   }, uuid);
-  // }
-
   async exportTrajectory(uuid: string) {
     return await this.writeTrajectory(() => {
-      console.log("ONE");
       return this.getTrajFilePath(uuid).then(async (filepath) => {
-        console.log("TWO");
         var file = await dialog.save({
           title: "Export Trajectory",
           defaultPath: filepath.join(path.sep),
