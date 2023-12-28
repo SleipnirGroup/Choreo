@@ -40,7 +40,7 @@ class AppMenu extends Component<Props, State> {
 
   private convertToRelative(filePath: string): string {
     return filePath.replace(
-      RegExp(`^(?:C:)?\\${path.sep}Users\\${path.sep}[a-zA-Z]+\\${path.sep}`),
+      RegExp(`^(?:C:)?\\${path.sep}(Users|home)\\${path.sep}[a-zA-Z]+\\${path.sep}`),
       "~/"
     );
   }
