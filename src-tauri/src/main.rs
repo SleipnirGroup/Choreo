@@ -53,7 +53,7 @@ async fn open_file_dialog(app_handle: tauri::AppHandle){
       let name = path.file_name();
       let adjacent_gradle = contains_build_gradle(dir).await;
       if dir.is_some() && name.is_some() && adjacent_gradle.is_ok() {
-        app_handle.emit_all("open-file", 
+        let _ = app_handle.emit_all("open-file", 
           OpenFileEventPayload {
             dir: dir.unwrap().as_os_str().to_str(),
             name: name.unwrap().to_str(),
@@ -71,17 +71,17 @@ async fn open_file_dialog(app_handle: tauri::AppHandle){
 async fn delete_file(dir: String, name: String) {
   let dir_path = Path::new(&dir);
   let name_path = Path::join(dir_path, name);
-  fs::remove_file(name_path);
+  let _ = fs::remove_file(name_path);
 }
 
 #[tauri::command]
 async fn save_file(dir: String, name: String, contents: String) -> Result<(), &'static str> {
   let dir_path = Path::new(&dir);
   let name_path = Path::join(dir_path, name);
-  if (name_path.is_relative()) {
+  if name_path.is_relative() {
     return Err("Dir needs to be absolute");
   }
-  fs::create_dir_all(dir_path);
+  let _ = fs::create_dir_all(dir_path);
   if fs::write(name_path, contents).is_err() {
     return Err("Failed file writing");
   }
@@ -90,7 +90,7 @@ async fn save_file(dir: String, name: String, contents: String) -> Result<(), &'
 
 #[tauri::command]
 async fn open_file_app(dir: String) {
-  open::that(dir);
+  let _ = open::that(dir);
 }
 
 #[allow(non_snake_case)]
