@@ -228,7 +228,7 @@ class AppMenu extends Component<Props, State> {
                       {this.projectLocation(true)}
                       <this.CopyToClipboardButton
                         data={this.projectLocation(false)}
-                        tooltip="Copy full path to clipbpard"
+                        tooltip="Copy full path to clipboard"
                       ></this.CopyToClipboardButton>
                     </div>
                     <br></br>
@@ -245,7 +245,7 @@ class AppMenu extends Component<Props, State> {
                           {this.trajectoriesLocation(true)}
                           <this.CopyToClipboardButton
                             data={this.trajectoriesLocation(false)}
-                            tooltip="Copy full path to clipbpard"
+                            tooltip="Copy full path to clipboard"
                           ></this.CopyToClipboardButton>
                         </div>
                       </>
