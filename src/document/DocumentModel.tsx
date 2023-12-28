@@ -63,10 +63,9 @@ const StateStore = types
       async generatePath(uuid: string) {
         const pathStore = self.document.pathlist.paths.get(uuid);
         if (pathStore === undefined) {
-          return new Promise((resolve, reject) =>
-            reject("Path store is undefined")
-          );
+          throw "Path store is undefined";
         }
+
         return new Promise((resolve, reject) => {
           const controlIntervalOptResult =
             pathStore.optimizeControlIntervalCounts(self.document.robotConfig);
@@ -159,30 +158,24 @@ const StateStore = types
         if (pathName === undefined) {
           toast.error("Tried to generate unknown path.");
         }
-        return toast.promise(
-          self.generatePath(activePathUUID),
-          {
-            success: {
-              render({ data, toastProps }) {
-                return `Generated \"${pathName}\"`;
-              },
-            },
-
-            error: {
-              render({ data, toastProps }) {
-                console.log(data);
-                if ((data as string).includes("User_Requested_Stop")) {
-                  toastProps.style = { visibility: "hidden" };
-                  return `Cancelled \"${pathName}\"`;
-                }
-                return `Can't generate \"${pathName}\": ` + (data as string);
-              },
+        return toast.promise(self.generatePath(activePathUUID), {
+          success: {
+            render({ data, toastProps }) {
+              return `Generated \"${pathName}\"`;
             },
           },
-          {
-            containerId: "GLOBAL",
-          }
-        );
+
+          error: {
+            render({ data, toastProps }) {
+              console.log(data);
+              if ((data as string).includes("User_Requested_Stop")) {
+                toastProps.style = { visibility: "hidden" };
+                return `Cancelled \"${pathName}\"`;
+              }
+              return `Can't generate \"${pathName}\": ` + (data as string);
+            },
+          },
+        });
       },
     };
   });

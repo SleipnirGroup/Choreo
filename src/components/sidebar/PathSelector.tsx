@@ -22,6 +22,7 @@ import { KeyboardArrowDown, Route, Settings } from "@mui/icons-material";
 import Input from "../input/Input";
 import InputList from "../input/InputList";
 import { dialog } from "@tauri-apps/api";
+import { toast } from "react-toastify";
 
 type Props = {};
 
@@ -107,11 +108,13 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
       <span
         className={styles.SidebarItem + " " + (selected ? styles.Selected : "")}
         style={{ borderWidth: 0, borderLeftWidth: 4, height: "auto" }}
-        onClick={() =>
+        onClick={() => {
+          toast.dismiss(); // remove toasts that showed from last path, which is irrelevant for the new path
+
           this.context.model.document.pathlist.setActivePathUUID(
             this.props.uuid
-          )
-        }
+          );
+        }}
       >
         {this.getPath().generating ? (
           <CircularProgress

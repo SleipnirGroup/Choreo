@@ -70,11 +70,9 @@ export class DocumentManager {
 
   async setupEventListeners() {
     const openFileUnlisten = await listen("open-file", async (event) =>
-      this.handleOpenFileEvent(event).catch((err) => {
-        toast.error("Opening file error: " + err, {
-          containerId: "GLOBAL",
-        });
-      })
+      this.handleOpenFileEvent(event).catch((err) =>
+        toast.error("Opening file error: " + err)
+      )
     );
 
     window.addEventListener("contextmenu", (e) => e.preventDefault());
@@ -252,6 +250,11 @@ export class DocumentManager {
     });
   }
 
+  async generateAndExport(uuid: string) {
+    await this.model!.generatePath(uuid);
+    await this.exportTrajectory(uuid);
+  }
+
   async generateWithToastsAndExport(uuid: string) {
     this.model!.generatePathWithToasts(uuid).then(() =>
       toast.promise(
@@ -266,12 +269,9 @@ export class DocumentManager {
 
           error: {
             render({ data, toastProps }) {
-              return `Couldn't export trajectory: ` + (data as string);
+              return `Couldn't export trajectory: ${data as string}`;
             },
           },
-        },
-        {
-          containerId: "GLOBAL",
         }
       )
     );
@@ -307,10 +307,7 @@ export class DocumentManager {
     } else {
       console.error("Invalid Document JSON");
       toast.error(
-        "Could not parse selected document (Is it a choreo document?)",
-        {
-          containerId: "GLOBAL",
-        }
+        "Could not parse selected document (Is it a choreo document?)"
       );
     }
   }
@@ -438,9 +435,7 @@ export class DocumentManager {
     this.model.uiState.setSaveFileDir(dir);
     this.model.uiState.setSaveFileName(name);
     this.handleChangeIsGradleProject(newIsGradleProject);
-    toast.success(`Saved ${name}. Future changes will now be auto-saved.`, {
-      containerId: "GLOBAL",
-    });
+    toast.success(`Saved ${name}. Future changes will now be auto-saved.`);
     return true;
   }
 
@@ -494,19 +489,13 @@ export class DocumentManager {
           results.map((result, i) => {
             if (result.status === "rejected") {
               console.error(pathNames[i], ":", result.reason);
-              toast.error(
-                `Couldn't save "${pathNames[i]}": ${result.reason}.`,
-                {
-                  containerId: "GLOBAL",
-                }
-              );
+              toast.error(`Couldn't save "${pathNames[i]}": ${result.reason}.`);
             }
           });
         })
         .then(() =>
           toast.success(
-            `Saved all trajectories to ${this.model.uiState.chorRelativeTrajDir}.`,
-            { containerId: "GLOBAL" }
+            `Saved all trajectories to ${this.model.uiState.chorRelativeTrajDir}.`
           )
         );
     }
