@@ -127,19 +127,16 @@ class AppMenu extends Component<Props, State> {
             <ListItemButton
               onClick={() => {
                 var alreadyShowedFailed = false;
-                toast.promise(
-                  this.context.exportActiveTrajectory(),
-                  {
-                    pending: "Exporting trajectory...",
-                    success: "Trajectory exported",
-                    error: {
-                      render(toastProps) {
-                        console.error(toastProps.data);
-                        return `Error exporting trajectory: ${toastProps.data}`;
-                      }
+                toast.promise(this.context.exportActiveTrajectory(), {
+                  pending: "Exporting trajectory...",
+                  success: "Trajectory exported",
+                  error: {
+                    render(toastProps) {
+                      console.error(toastProps.data);
+                      return `Error exporting trajectory: ${toastProps.data}`;
                     },
                   },
-                )
+                });
               }}
             >
               <ListItemIcon>

@@ -58,7 +58,7 @@ export class DocumentManager {
     if (payload.dir === undefined || payload.name === undefined) {
       throw "Non-UTF-8 characters in file path";
     } else if (payload.contents === undefined) {
-      throw "Unable to read file"
+      throw "Unable to read file";
     } else {
       this.model.uiState.setSaveFileName(payload.name);
       this.model.uiState.setSaveFileDir(payload.dir);
@@ -479,7 +479,6 @@ export class DocumentManager {
     if (newIsGradleProject !== undefined) {
       if (newIsGradleProject !== prevIsGradleProject) {
         this.model.uiState.setIsGradleProject(newIsGradleProject);
-        
       }
       this.exportAllTrajectories();
     }
