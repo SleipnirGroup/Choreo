@@ -23,6 +23,8 @@ import { NoteAddOutlined, Settings } from "@mui/icons-material";
 import { ToastContainer, toast } from "react-toastify";
 import { dialog, invoke, path } from "@tauri-apps/api";
 
+import * as nodePath from "path";
+
 type Props = {};
 
 type State = { settingsOpen: boolean };
@@ -34,6 +36,10 @@ class AppMenu extends Component<Props, State> {
   state = {
     settingsOpen: false,
   };
+
+  convertToRelative(filePath: string): string {
+    return filePath.replace(RegExp(`^\\${path.sep}Users\\${path.sep}[a-zA-Z]+\\${path.sep}`), "~/");
+  }
 
   render() {
     let { mainMenuOpen, toggleMainMenu } = this.context.model.uiState;
@@ -78,10 +84,10 @@ class AppMenu extends Component<Props, State> {
             </Tooltip>
             Choreo
           </div>
-          <List>
+          <List style={{ paddingBottom: '50px' }}>
             <label htmlFor="file-upload-input">
               <ListItemButton
-                onClick={ async () => {
+                onClick={async () => {
                   if (
                     await dialog.confirm(
                       "You may lose unsaved changes. Continue?",
@@ -99,7 +105,7 @@ class AppMenu extends Component<Props, State> {
               </ListItemButton>
             </label>
             <ListItemButton
-              onClick={ async () => {
+              onClick={async () => {
                 this.context.saveFileDialog();
               }}
             >
@@ -192,33 +198,34 @@ class AppMenu extends Component<Props, State> {
             </ListItemButton>
             <Divider orientation="horizontal"></Divider>
             <ListItem>
-              <div style={{ wordWrap: "normal", fontSize: "0.75em" }}>
+              <div style={{ overflowWrap: "break-word", fontSize: "0.75em", width: "100%" }}>
                 {this.context.model.uiState.hasSaveLocation ? (
                   <>
                     Project saved at<br></br>
-                    {this.context.model.uiState.saveFileDir}
-                    {path.sep}
-                    {this.context.model.uiState.saveFileName}
+                    { this.convertToRelative(this.context.model.uiState.saveFileDir as string) }
+                    { path.sep }
+                    { this.context.model.uiState.saveFileName }
                     <br></br>
                     <br></br>
-                    {this.context.model.uiState.isGradleProject
+                    { this.context.model.uiState.isGradleProject
                       ? "Gradle (Java/C++) project detected."
-                      : "Python project or no robot project detected."}
+                      : "Python project or no robot project detected."
+                    }
                     <br></br>
                     <br></br>
-                    {this.context.model.uiState.hasSaveLocation ? (
+                    { this.context.model.uiState.hasSaveLocation ? (
                       <>
                         Trajectories saved in<br></br>
-                        {this.context.model.uiState.saveFileDir}
+                        { this.convertToRelative(this.context.model.uiState.saveFileDir as string) }
                         {path.sep}
-                        {this.context.model.uiState.chorRelativeTrajDir}
+                        { this.context.model.uiState.chorRelativeTrajDir }
                       </>
                     ) : (
                       <>
                         <br />
                         <br />
                       </>
-                    )}
+                    ) }
                   </>
                 ) : (
                   <>
