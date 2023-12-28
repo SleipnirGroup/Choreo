@@ -20,12 +20,7 @@ import IconButton from "@mui/material/IconButton";
 import FileDownload from "@mui/icons-material/FileDownload";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
 import Tooltip from "@mui/material/Tooltip";
-import {
-  CopyAll,
-  CopyAllTwoTone,
-  NoteAddOutlined,
-  Settings,
-} from "@mui/icons-material";
+import { CopyAll, NoteAddOutlined, Settings } from "@mui/icons-material";
 import { ToastContainer, toast } from "react-toastify";
 import { dialog, invoke, path } from "@tauri-apps/api";
 
@@ -43,9 +38,9 @@ class AppMenu extends Component<Props, State> {
     settingsOpen: false,
   };
 
-  convertToRelative(filePath: string): string {
+  private convertToRelative(filePath: string): string {
     return filePath.replace(
-      RegExp(`^\\${path.sep}Users\\${path.sep}[a-zA-Z]+\\${path.sep}`),
+      RegExp(`^(?:C:)?\\${path.sep}Users\\${path.sep}[a-zA-Z]+\\${path.sep}`),
       "~/"
     );
   }
@@ -57,21 +52,9 @@ class AppMenu extends Component<Props, State> {
     };
 
     return (
-      <button
-        onClick={handleCopyToClipboard}
-        style={{
-          backgroundColor: "transparent",
-          backgroundRepeat: "no-repeat",
-          border: "none",
-          cursor: "pointer",
-          overflow: "hidden",
-          outline: "none",
-        }}
-      >
-        <IconButton size="small">
-          <CopyAllTwoTone fontSize="small"></CopyAllTwoTone>
-        </IconButton>
-      </button>
+      <IconButton size="small" onClick={handleCopyToClipboard}>
+        <CopyAll fontSize="small"></CopyAll>
+      </IconButton>
     );
   }
 
@@ -241,9 +224,11 @@ class AppMenu extends Component<Props, State> {
                     Project saved at<br></br>
                     <div style={{ fontSize: "0.9em", color: "#D3D3D3" }}>
                       {this.projectLocation(true)}
-                      <this.CopyToClipboardButton
-                        data={this.projectLocation(false)}
-                      ></this.CopyToClipboardButton>
+                      <Tooltip title="Copy full path to clipboard">
+                        <this.CopyToClipboardButton
+                          data={this.projectLocation(false)}
+                        ></this.CopyToClipboardButton>
+                      </Tooltip>
                     </div>
                     <br></br>
                     {this.context.model.uiState.isGradleProject
@@ -257,9 +242,14 @@ class AppMenu extends Component<Props, State> {
                         Trajectories saved in<br></br>
                         <div style={{ fontSize: "0.9em", color: "#D3D3D3" }}>
                           {this.trajectoriesLocation(true)}
-                          <this.CopyToClipboardButton
-                            data={this.trajectoriesLocation(false)}
-                          ></this.CopyToClipboardButton>
+                          <Tooltip
+                            disableInteractive
+                            title="Copy full path to clipboard"
+                          >
+                            <this.CopyToClipboardButton
+                              data={this.trajectoriesLocation(false)}
+                            ></this.CopyToClipboardButton>
+                          </Tooltip>
                         </div>
                       </>
                     ) : (
