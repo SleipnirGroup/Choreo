@@ -419,8 +419,8 @@ export const HolonomicPathStore = types
       defaultControlIntervalCounts(
         robotConfig: IRobotConfigStore
       ): string | undefined {
-        for (let i = 0; i < self.nonGuessPoints.length; i++) {
-          self.nonGuessPoints
+        for (let i = 0; i < self.waypoints.length; i++) {
+          self.waypoints
             .at(i)
             ?.setControlIntervalCount(self.defaultControlIntervalCount);
         }
@@ -438,21 +438,18 @@ export const HolonomicPathStore = types
         } else if (robotConfig.wheelRadius == 0) {
           return "Wheel radius may not be 0";
         }
-        for (let i = 0; i < self.nonGuessPoints.length - 1; i++) {
+        for (let i = 0; i < self.waypoints.length - 1; i++) {
           this.guessControlIntervalCount(i, robotConfig);
         }
-        self.nonGuessPoints
-          .at(self.nonGuessPoints.length - 1)
+        self.waypoints
+          .at(self.waypoints.length - 1)
           ?.setControlIntervalCount(self.defaultControlIntervalCount);
       },
       guessControlIntervalCount(i: number, robotConfig: IRobotConfigStore) {
-        let dx =
-          self.nonGuessPoints.at(i + 1)!.x - self.nonGuessPoints.at(i)!.x;
-        let dy =
-          self.nonGuessPoints.at(i + 1)!.y - self.nonGuessPoints.at(i)!.y;
+        let dx = self.waypoints.at(i + 1)!.x - self.waypoints.at(i)!.x;
+        let dy = self.waypoints.at(i + 1)!.y - self.waypoints.at(i)!.y;
         let dtheta =
-          self.nonGuessPoints.at(i + 1)!.heading -
-          self.nonGuessPoints.at(i)!.heading;
+          self.waypoints.at(i + 1)!.heading - self.waypoints.at(i)!.heading;
         const headingWeight = 0.5; // arbitrary
         let distance = Math.sqrt(dx * dx + dy * dy);
         let maxForce = robotConfig.wheelMaxTorque / robotConfig.wheelRadius;
@@ -463,14 +460,14 @@ export const HolonomicPathStore = types
           // triangle
           let totalTime = 2 * (Math.sqrt(distance * maxAccel) / maxAccel);
           totalTime += headingWeight * Math.abs(dtheta);
-          self.nonGuessPoints
+          self.waypoints
             .at(i)
             ?.setControlIntervalCount(Math.ceil(totalTime / 0.1));
         } else {
           // trapezoid
           let totalTime = distance / maxVel + maxVel / maxAccel;
           totalTime += headingWeight * Math.abs(dtheta);
-          self.nonGuessPoints
+          self.waypoints
             .at(i)
             ?.setControlIntervalCount(Math.ceil(totalTime / 0.1));
         }
