@@ -18,8 +18,14 @@ import MenuIcon from "@mui/icons-material/Menu";
 import UploadIcon from "@mui/icons-material/UploadFile";
 import IconButton from "@mui/material/IconButton";
 import FileDownload from "@mui/icons-material/FileDownload";
+import FileCopyIcon from "@mui/icons-material/FileCopy";
 import Tooltip from "@mui/material/Tooltip";
-import { NoteAddOutlined, Settings } from "@mui/icons-material";
+import {
+  CopyAll,
+  CopyAllTwoTone,
+  NoteAddOutlined,
+  Settings,
+} from "@mui/icons-material";
 import { ToastContainer, toast } from "react-toastify";
 import { dialog, invoke, path } from "@tauri-apps/api";
 
@@ -38,7 +44,35 @@ class AppMenu extends Component<Props, State> {
   };
 
   convertToRelative(filePath: string): string {
-    return filePath.replace(RegExp(`^\\${path.sep}Users\\${path.sep}[a-zA-Z]+\\${path.sep}`), "~/");
+    return filePath.replace(
+      RegExp(`^\\${path.sep}Users\\${path.sep}[a-zA-Z]+\\${path.sep}`),
+      "~/"
+    );
+  }
+
+  CopyToClipboardButton({ data }: { data: any }) {
+    let handleCopyToClipboard = async function () {
+      await navigator.clipboard.writeText(data);
+      toast.success("Copied to clipboard");
+    };
+
+    return (
+      <button
+        onClick={handleCopyToClipboard}
+        style={{
+          backgroundColor: "transparent",
+          backgroundRepeat: "no-repeat",
+          border: "none",
+          cursor: "pointer",
+          overflow: "hidden",
+          outline: "none",
+        }}
+      >
+        <IconButton size="small">
+          <CopyAllTwoTone fontSize="small"></CopyAllTwoTone>
+        </IconButton>
+      </button>
+    );
   }
 
   render() {
@@ -84,7 +118,7 @@ class AppMenu extends Component<Props, State> {
             </Tooltip>
             Choreo
           </div>
-          <List style={{ paddingBottom: '50px' }}>
+          <List style={{ paddingBottom: "50px" }}>
             <label htmlFor="file-upload-input">
               <ListItemButton
                 onClick={async () => {
@@ -177,18 +211,15 @@ class AppMenu extends Component<Props, State> {
                   }
                 }
 
-                toast.promise(
-                  this.context.exportAllTrajectories(),
-                  {
-                    success: `Saved all trajectories to ${this.context.model.uiState.chorRelativeTrajDir}.`,
-                    error: {
-                      render(toastProps) {
-                        console.error(toastProps.data);
-                        return (toastProps.data as string[]).join("\n");
-                      },
+                toast.promise(this.context.exportAllTrajectories(), {
+                  success: `Saved all trajectories to ${this.context.model.uiState.chorRelativeTrajDir}.`,
+                  error: {
+                    render(toastProps) {
+                      console.error(toastProps.data);
+                      return (toastProps.data as string[]).join("\n");
                     },
-                  }
-                );
+                  },
+                });
               }}
             >
               <ListItemIcon>
@@ -198,34 +229,45 @@ class AppMenu extends Component<Props, State> {
             </ListItemButton>
             <Divider orientation="horizontal"></Divider>
             <ListItem>
-              <div style={{ overflowWrap: "break-word", fontSize: "0.75em", width: "100%" }}>
+              <div
+                style={{
+                  overflowWrap: "break-word",
+                  fontSize: "1.0em",
+                  width: "100%",
+                }}
+              >
                 {this.context.model.uiState.hasSaveLocation ? (
                   <>
                     Project saved at<br></br>
-                    { this.convertToRelative(this.context.model.uiState.saveFileDir as string) }
-                    { path.sep }
-                    { this.context.model.uiState.saveFileName }
+                    <div style={{ fontSize: "0.9em", color: "#D3D3D3" }}>
+                      {this.projectLocation(true)}
+                      <this.CopyToClipboardButton
+                        data={this.projectLocation(false)}
+                      ></this.CopyToClipboardButton>
+                    </div>
                     <br></br>
-                    <br></br>
-                    { this.context.model.uiState.isGradleProject
+                    {this.context.model.uiState.isGradleProject
                       ? "Gradle (Java/C++) project detected."
-                      : "Python project or no robot project detected."
-                    }
+                      : "Python project or no robot project detected."}
                     <br></br>
                     <br></br>
-                    { this.context.model.uiState.hasSaveLocation ? (
+                    <div></div>
+                    {this.context.model.uiState.hasSaveLocation ? (
                       <>
                         Trajectories saved in<br></br>
-                        { this.convertToRelative(this.context.model.uiState.saveFileDir as string) }
-                        {path.sep}
-                        { this.context.model.uiState.chorRelativeTrajDir }
+                        <div style={{ fontSize: "0.9em", color: "#D3D3D3" }}>
+                          {this.trajectoriesLocation(true)}
+                          <this.CopyToClipboardButton
+                            data={this.trajectoriesLocation(false)}
+                          ></this.CopyToClipboardButton>
+                        </div>
                       </>
                     ) : (
                       <>
                         <br />
                         <br />
                       </>
-                    ) }
+                    )}
                   </>
                 ) : (
                   <>
@@ -239,6 +281,24 @@ class AppMenu extends Component<Props, State> {
           </List>
         </div>
       </Drawer>
+    );
+  }
+
+  private projectLocation(relativeFormat: boolean): string {
+    return (
+      (relativeFormat
+        ? this.convertToRelative(
+            this.context.model.uiState.saveFileDir as string
+          )
+        : this.context.model.uiState.saveFileDir) + path.sep
+    );
+  }
+
+  private trajectoriesLocation(relativeFormat: boolean): string {
+    return (
+      this.projectLocation(relativeFormat) +
+      this.context.model.uiState.chorRelativeTrajDir +
+      path.sep
     );
   }
 }

@@ -314,7 +314,7 @@ export class DocumentManager {
     if (oldPath !== null) {
       invoke("delete_file", { dir: oldPath[0], name: oldPath[1] })
         .then(() => this.writeTrajectory(() => newPath, uuid))
-        .catch((e) => { });
+        .catch((e) => {});
     }
   }
 
@@ -430,18 +430,15 @@ export class DocumentManager {
     this.model.uiState.setSaveFileDir(dir);
     this.model.uiState.setSaveFileName(name);
 
-    toast.promise(
-      this.handleChangeIsGradleProject(newIsGradleProject),
-      {
-        success: `Saved all trajectories to ${this.model.uiState.chorRelativeTrajDir}.`,
-        error: {
-          render(toastProps) {
-            console.error(toastProps.data);
-            return (toastProps.data as string[]).join("\n");
-          },
+    toast.promise(this.handleChangeIsGradleProject(newIsGradleProject), {
+      success: `Saved all trajectories to ${this.model.uiState.chorRelativeTrajDir}.`,
+      error: {
+        render(toastProps) {
+          console.error(toastProps.data);
+          return (toastProps.data as string[]).join("\n");
         },
-      }
-    );
+      },
+    });
 
     toast.success(`Saved ${name}. Future changes will now be auto-saved.`);
     return true;
@@ -492,21 +489,20 @@ export class DocumentManager {
         this.writeTrajectory(() => this.getTrajFilePath(uuid), uuid)
       );
       var pathNames = this.model.document.pathlist.pathNames;
-      Promise.allSettled(promises)
-        .then((results) => {
-          var errors: string[] = [];
+      Promise.allSettled(promises).then((results) => {
+        var errors: string[] = [];
 
-          results.map((result, i) => {
-            if (result.status === "rejected") {
-              console.error(pathNames[i], ":", result.reason);
-              errors.push(`Couldn't save "${pathNames[i]}": ${result.reason}`);
-            }
-          });
-
-          if (errors.length != 0) {
-            throw errors;
+        results.map((result, i) => {
+          if (result.status === "rejected") {
+            console.error(pathNames[i], ":", result.reason);
+            errors.push(`Couldn't save "${pathNames[i]}": ${result.reason}`);
           }
         });
+
+        if (errors.length != 0) {
+          throw errors;
+        }
+      });
     }
   }
 }
