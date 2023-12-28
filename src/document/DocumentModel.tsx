@@ -74,7 +74,6 @@ const StateStore = types
               reject(controlIntervalOptResult)
             );
           }
-          pathStore.setTrajectory([]);
           if (pathStore.waypoints.length < 2) {
             return;
           }
