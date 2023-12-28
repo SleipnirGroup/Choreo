@@ -20,7 +20,12 @@ import IconButton from "@mui/material/IconButton";
 import FileDownload from "@mui/icons-material/FileDownload";
 import FileCopyIcon from "@mui/icons-material/FileCopy";
 import Tooltip from "@mui/material/Tooltip";
-import { CopyAll, NoteAddOutlined, OpenInNew, Settings } from "@mui/icons-material";
+import {
+  CopyAll,
+  NoteAddOutlined,
+  OpenInNew,
+  Settings,
+} from "@mui/icons-material";
 import { ToastContainer, toast } from "react-toastify";
 import { dialog, invoke, path } from "@tauri-apps/api";
 
@@ -64,7 +69,7 @@ class AppMenu extends Component<Props, State> {
 
   OpenInFilesApp({ dir }: { dir: string }) {
     let handleAction = async function () {
-      invoke("open_file_app", {dir});
+      invoke("open_file_app", { dir });
     };
 
     return (
@@ -246,7 +251,9 @@ class AppMenu extends Component<Props, State> {
                         data={this.projectLocation(false)}
                         tooltip="Copy full path to clipboard"
                       ></this.CopyToClipboardButton>
-                      <this.OpenInFilesApp dir={this.projectLocation(false)}></this.OpenInFilesApp>
+                      <this.OpenInFilesApp
+                        dir={this.projectLocation(false)}
+                      ></this.OpenInFilesApp>
                     </div>
                     <br></br>
                     {this.context.model.uiState.isGradleProject
@@ -264,7 +271,9 @@ class AppMenu extends Component<Props, State> {
                             data={this.trajectoriesLocation(false)}
                             tooltip="Copy full path to clipboard"
                           ></this.CopyToClipboardButton>
-                          <this.OpenInFilesApp dir={this.trajectoriesLocation(false)}></this.OpenInFilesApp>
+                          <this.OpenInFilesApp
+                            dir={this.trajectoriesLocation(false)}
+                          ></this.OpenInFilesApp>
                         </div>
                       </>
                     ) : (
