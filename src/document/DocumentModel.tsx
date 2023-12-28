@@ -180,7 +180,7 @@ const StateStore = types
             },
           },
           {
-            containerId: "FIELD",
+            containerId: "GLOBAL",
           }
         );
       },

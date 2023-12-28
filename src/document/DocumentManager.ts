@@ -56,30 +56,25 @@ export class DocumentManager {
   async handleOpenFileEvent(event: Event<unknown>) {
     let payload = event.payload as OpenFileEventPayload;
     if (payload.dir === undefined || payload.name === undefined) {
-      toast.error("File load error: non-UTF-8 characters in file path", {
-        containerId: "MENU",
-      });
+      throw "Non-UTF-8 characters in file path";
     } else if (payload.contents === undefined) {
-      toast.error("File load error: Unable to read file", {
-        containerId: "MENU",
-      });
+      throw "Unable to read file"
     } else {
       this.model.uiState.setSaveFileName(payload.name);
       this.model.uiState.setSaveFileDir(payload.dir);
       this.model.uiState.setIsGradleProject(payload.adjacent_gradle);
-      await this.openFromContents(payload.contents).catch((err) => {
-        console.log(err);
-        toast.error("File load error: " + err, {
-          containerId: "MENU",
-        });
-        throw err;
-      });
+
+      await this.openFromContents(payload.contents);
     }
   }
 
   async setupEventListeners() {
     const openFileUnlisten = await listen("open-file", async (event) =>
-      this.handleOpenFileEvent(event)
+      this.handleOpenFileEvent(event).catch((err) => {
+        toast.error("Opening file error: " + err, {
+          containerId: "GLOBAL",
+        });
+      })
     );
 
     window.addEventListener("contextmenu", (e) => e.preventDefault());
@@ -276,7 +271,7 @@ export class DocumentManager {
           },
         },
         {
-          containerId: "FIELD",
+          containerId: "GLOBAL",
         }
       )
     );
@@ -314,7 +309,7 @@ export class DocumentManager {
       toast.error(
         "Could not parse selected document (Is it a choreo document?)",
         {
-          containerId: "MENU",
+          containerId: "GLOBAL",
         }
       );
     }
@@ -357,7 +352,6 @@ export class DocumentManager {
     if (trajectory.length < 2) {
       throw `Path is not generated`;
     }
-
     const content = JSON.stringify({ samples: trajectory }, undefined, 4);
     var file = await filePath();
     if (file) {
@@ -385,9 +379,36 @@ export class DocumentManager {
     return [dir, `${choreoPath.name}.traj`];
   }
 
+  // async exportTrajectory(uuid: string) {
+  //   await this.writeTrajectory(async () => {
+  //     const filepath = await this.getTrajFilePath(uuid);
+
+  //     console.log("got file path..");
+
+  //     var file = await dialog.save({
+  //       title: "Export Trajectory",
+  //       defaultPath: filepath.join(path.sep),
+  //       filters: [
+  //         {
+  //           name: "Trajopt Trajectory",
+  //           extensions: ["traj"],
+  //         },
+  //       ],
+  //     });
+
+  //     if (file == null) {
+  //       throw "No file selected or user cancelled";
+  //     }
+
+  //     return [await path.dirname(file), await path.basename(file)];
+  //   }, uuid);
+  // }
+
   async exportTrajectory(uuid: string) {
-    this.writeTrajectory(() => {
+    return await this.writeTrajectory(() => {
+      console.log("ONE");
       return this.getTrajFilePath(uuid).then(async (filepath) => {
+        console.log("TWO");
         var file = await dialog.save({
           title: "Export Trajectory",
           defaultPath: filepath.join(path.sep),
@@ -399,20 +420,11 @@ export class DocumentManager {
           ],
         });
         if (file == null) {
-          return null;
+          throw "No file selected or user cancelled";
         }
         return [await path.dirname(file), await path.basename(file)];
       });
-    }, uuid).catch((err) => {
-      console.error(err);
-      if (err !== "Cancelled") {
-        toast.error(err, {
-          autoClose: 5000,
-          hideProgressBar: false,
-          containerId: "MENU",
-        });
-      }
-    });
+    }, uuid);
   }
 
   async exportActiveTrajectory() {
@@ -454,7 +466,7 @@ export class DocumentManager {
     this.model.uiState.setSaveFileName(name);
     this.handleChangeIsGradleProject(newIsGradleProject);
     toast.success(`Saved ${name}. Future changes will now be auto-saved.`, {
-      containerId: "MENU",
+      containerId: "GLOBAL",
     });
     return true;
   }
@@ -513,7 +525,7 @@ export class DocumentManager {
               toast.error(
                 `Couldn't save "${pathNames[i]}": ${result.reason}.`,
                 {
-                  containerId: "MENU",
+                  containerId: "GLOBAL",
                 }
               );
             }
@@ -521,8 +533,8 @@ export class DocumentManager {
         })
         .then(() =>
           toast.success(
-            `Saved all  trajectories to ${this.model.uiState.chorRelativeTrajDir}.`,
-            { containerId: "MENU" }
+            `Saved all trajectories to ${this.model.uiState.chorRelativeTrajDir}.`,
+            { containerId: "GLOBAL" }
           )
         );
     }

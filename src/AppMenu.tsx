@@ -126,7 +126,20 @@ class AppMenu extends Component<Props, State> {
             </ListItemButton>
             <ListItemButton
               onClick={() => {
-                this.context.exportActiveTrajectory().catch(err=>toast.error(err, {containerId:"MENU"}));
+                var alreadyShowedFailed = false;
+                toast.promise(
+                  this.context.exportActiveTrajectory(),
+                  {
+                    pending: "Exporting trajectory...",
+                    success: "Trajectory exported",
+                    error: {
+                      render(toastProps) {
+                        console.error(toastProps.data);
+                        return `Error exporting trajectory: ${toastProps.data}`;
+                      }
+                    },
+                  },
+                )
               }}
             >
               <ListItemIcon>
@@ -164,7 +177,7 @@ class AppMenu extends Component<Props, State> {
             </ListItemButton>
             <Divider orientation="horizontal"></Divider>
             <ListItem>
-              <div style={{ wordWrap:"normal", fontSize: "0.75em" }}>
+              <div style={{ wordWrap: "normal", fontSize: "0.75em" }}>
                 {this.context.model.uiState.hasSaveLocation ? (
                   <>
                     Project saved at<br></br>
@@ -202,18 +215,6 @@ class AppMenu extends Component<Props, State> {
               </div>
             </ListItem>
           </List>
-          <ToastContainer
-            position="top-right"
-            autoClose={false}
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            theme="dark"
-            enableMultiContainer
-            containerId={"MENU"}
-          ></ToastContainer>
         </div>
       </Drawer>
     );
