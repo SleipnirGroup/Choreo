@@ -43,7 +43,7 @@ class AppMenu extends Component<Props, State> {
       RegExp(
         `^(?:C:)?\\${path.sep}(Users|home)\\${path.sep}[a-zA-Z]+\\${path.sep}`
       ),
-      "~/"
+      "~" + path.sep
     );
   }
 
