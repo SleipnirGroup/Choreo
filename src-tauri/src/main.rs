@@ -126,21 +126,27 @@ async fn generate_trajectory(
         if wpt.isInitialGuess {
             let guess_point: InitialGuessPoint = InitialGuessPoint {x: wpt.x, y: wpt.y, heading: wpt.heading};
             path_builder.sgmt_initial_guess_points(wpt_cnt, &vec![guess_point]);
-            rm.push(i)
-        } else if wpt.headingConstrained && wpt.translationConstrained {
-            path_builder.pose_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
+            rm.push(i);
+            if let Some(last) = control_interval_counts.last_mut() {
+              *last += wpt.controlIntervalCount;
+            }
+        } else{
+          if wpt.headingConstrained && wpt.translationConstrained {
+              path_builder.pose_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
+              wpt_cnt+=1;
+          } else if wpt.translationConstrained {
+              path_builder.translation_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
+              wpt_cnt+=1;
+          } else {
+            path_builder.empty_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
             wpt_cnt+=1;
-        } else if wpt.translationConstrained {
-            path_builder.translation_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
-            wpt_cnt+=1;
-        } else {
-          path_builder.empty_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
-          wpt_cnt+=1;
+          }
+          if i != path.len() - 1 {
+            control_interval_counts.push(wpt.controlIntervalCount);
+          }
         }
 
-        if i != path.len() - 1 {
-          control_interval_counts.push(wpt.controlIntervalCount);
-        }
+
     }
 
     path_builder.set_control_interval_counts(control_interval_counts);
