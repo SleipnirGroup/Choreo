@@ -81,8 +81,15 @@ class AppMenu extends Component<Props, State> {
           <List>
             <label htmlFor="file-upload-input">
               <ListItemButton
-                onClick={() => {
-                  invoke("open_file_dialog");
+                onClick={ async () => {
+                  if (
+                    await dialog.confirm(
+                      "You may lose unsaved changes. Continue?",
+                      { title: "Choreo", type: "warning" }
+                    )
+                  ) {
+                    invoke("open_file_dialog");
+                  }
                 }}
               >
                 <ListItemIcon>
@@ -93,14 +100,7 @@ class AppMenu extends Component<Props, State> {
             </label>
             <ListItemButton
               onClick={ async () => {
-                if (
-                  await dialog.confirm(
-                    "You may lose unsaved changes. Continue?",
-                    { title: "Choreo", type: "warning" }
-                  )
-                ) {
-                  this.context.saveFileDialog();
-                }
+                this.context.saveFileDialog();
               }}
             >
               <ListItemIcon>
@@ -133,7 +133,6 @@ class AppMenu extends Component<Props, State> {
             </ListItemButton>
             <ListItemButton
               onClick={() => {
-                var alreadyShowedFailed = false;
                 toast.promise(this.context.exportActiveTrajectory(), {
                   pending: "Exporting trajectory...",
                   success: "Trajectory exported",
@@ -171,7 +170,19 @@ class AppMenu extends Component<Props, State> {
                     return;
                   }
                 }
-                this.context.exportAllTrajectories();
+
+                toast.promise(
+                  this.context.exportAllTrajectories(),
+                  {
+                    success: `Saved all trajectories to ${this.context.model.uiState.chorRelativeTrajDir}.`,
+                    error: {
+                      render(toastProps) {
+                        console.error(toastProps.data);
+                        return (toastProps.data as string[]).join("\n");
+                      },
+                    },
+                  }
+                );
               }}
             >
               <ListItemIcon>

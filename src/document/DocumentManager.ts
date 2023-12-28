@@ -260,16 +260,11 @@ export class DocumentManager {
       toast.promise(
         this.writeTrajectory(() => this.getTrajFilePath(uuid), uuid),
         {
-          success: {
-            render({ data, toastProps }) {
-              toastProps.style = { visibility: "hidden" };
-              return ``;
-            },
-          },
-
+          success: `Saved all trajectories to ${this.model.uiState.chorRelativeTrajDir}.`,
           error: {
-            render(toastInfo) {
-              return `Couldn't export trajectory: ${toastInfo.data}`;
+            render(toastProps) {
+              console.error(toastProps.data);
+              return (toastProps.data as string[]).join("\n");
             },
           },
         }
@@ -319,7 +314,7 @@ export class DocumentManager {
     if (oldPath !== null) {
       invoke("delete_file", { dir: oldPath[0], name: oldPath[1] })
         .then(() => this.writeTrajectory(() => newPath, uuid))
-        .catch((e) => {});
+        .catch((e) => { });
     }
   }
 
@@ -434,7 +429,7 @@ export class DocumentManager {
     let newIsGradleProject = await this.saveFileAs(dir, name);
     this.model.uiState.setSaveFileDir(dir);
     this.model.uiState.setSaveFileName(name);
-    
+
     toast.promise(
       this.handleChangeIsGradleProject(newIsGradleProject),
       {
@@ -442,7 +437,7 @@ export class DocumentManager {
         error: {
           render(toastProps) {
             console.error(toastProps.data);
-            return toastProps.data as string;
+            return (toastProps.data as string[]).join("\n");
           },
         },
       }
@@ -499,14 +494,18 @@ export class DocumentManager {
       var pathNames = this.model.document.pathlist.pathNames;
       Promise.allSettled(promises)
         .then((results) => {
+          var errors: string[] = [];
+
           results.map((result, i) => {
             if (result.status === "rejected") {
               console.error(pathNames[i], ":", result.reason);
-              return new Promise((resolve, reject) =>
-                reject(`Couldn't save "${pathNames[i]}": ${result.reason}`)
-              );
+              errors.push(`Couldn't save "${pathNames[i]}": ${result.reason}`);
             }
           });
+
+          if (errors.length != 0) {
+            throw errors;
+          }
         });
     }
   }
