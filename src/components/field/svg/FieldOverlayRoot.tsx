@@ -21,6 +21,7 @@ type State = {
 };
 
 class FieldOverlayRoot extends Component<Props, State> {
+  private static instance: FieldOverlayRoot | null = null;
   static contextType = DocumentManagerContext;
   context!: React.ContextType<typeof DocumentManagerContext>;
   state = {
@@ -36,19 +37,46 @@ class FieldOverlayRoot extends Component<Props, State> {
     super(props);
     this.svgRef = React.createRef<SVGSVGElement>();
     this.frameRef = React.createRef<SVGGElement>();
-  }
-  componentDidMount(): void {
-    window.addEventListener("resize", () => this.handleResize());
-    this.handleResize();
-    let zoomBehavior = d3
+
+    this.zoomBehavior = d3
       .zoom<SVGGElement, undefined>()
       .scaleExtent([0.3, 12])
       .on("zoom", (e) => this.zoomed(e));
+  }
+
+  zoomBehavior: d3.ZoomBehavior<SVGGElement, undefined>;
+
+  // x, y, k are the center coordinates (x, y) and scale factor (k)
+  center(x: number, y: number, k: number) {
+
+    // d3 Transition
+
+    const transition = d3.transition()
+      .duration(750)
+      .ease(d3.easeCubicOut); 
+
+    // panning to x, y
 
     d3.select<SVGGElement, undefined>(this.svgRef.current!)
-      .call(zoomBehavior)
+      .transition(transition)
+      .call(this.zoomBehavior.translateTo, x, -y);
+  }
+
+  componentDidMount(): void {
+    window.addEventListener("resize", () => this.handleResize());
+
+    window.addEventListener("center", (e) => {
+      console.log(`Centering on ${e}`);
+      this.center((e as CustomEvent).detail.x, (e as CustomEvent).detail.y, (e as CustomEvent).detail.k);
+    });
+
+    this.handleResize();
+
+    d3.select<SVGGElement, undefined>(this.svgRef.current!)
+      .call(this.zoomBehavior)
       .on("dblclick.zoom", null);
   }
+
   zoomed(e: any) {
     this.handleResize();
     this.setState({
@@ -102,9 +130,8 @@ class FieldOverlayRoot extends Component<Props, State> {
     return (
       <svg
         ref={this.svgRef}
-        viewBox={`${-0.5} ${0.5 - this.canvasHeightMeters} ${
-          this.canvasWidthMeters
-        } ${this.canvasHeightMeters}`}
+        viewBox={`${-0.5} ${0.5 - this.canvasHeightMeters} ${this.canvasWidthMeters
+          } ${this.canvasHeightMeters}`}
         xmlns="http://www.w3.org/2000/svg"
         style={{
           width: "100%",
@@ -118,9 +145,8 @@ class FieldOverlayRoot extends Component<Props, State> {
       >
         <g
           transform={`
-              matrix(${this.state.zoom} 0  0 ${-this.state.zoom} ${
-            this.state.xPan
-          } ${this.state.yPan})`}
+              matrix(${this.state.zoom} 0  0 ${-this.state.zoom} ${this.state.xPan
+            } ${this.state.yPan})`}
           ref={this.frameRef}
           id="rootFrame"
         >
@@ -197,4 +223,5 @@ class FieldOverlayRoot extends Component<Props, State> {
     }
   }
 }
+
 export default observer(FieldOverlayRoot);
