@@ -5,7 +5,7 @@ site_description: A graphical tool for planning time-optimized trajectories for 
 
 # Repository
 repo_name: Choreo
-repo_url: https://github.com/sleipnirgroup/Choreo/
+repo_url: https://github.com/SleipnirGroup/Choreo/
 
 # Configuration
 theme:
