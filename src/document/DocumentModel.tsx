@@ -166,7 +166,7 @@ const StateStore = types
 
           error: {
             render({ data, toastProps }) {
-              console.log(data);
+              console.error(data);
               if ((data as string).includes("User_Requested_Stop")) {
                 toastProps.style = { visibility: "hidden" };
                 return `Cancelled \"${pathName}\"`;
