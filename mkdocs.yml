@@ -1,1 +1,49 @@
-site_name: My Docs
+# Project information
+site_name: Choreo Docs
+site_url: https://awesomeplayer165.github.io/Choreo/
+site_description: A graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics Competition. 
+
+# Repository
+repo_name: Choreo
+repo_url: https://github.com/Awesomeplayer165/Choreo/
+
+# Configuration
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/link
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch-off
+        name: Switch to system preference
+  font:
+    text: Roboto
+    code: Roboto Mono
+  favicon: assets/favicon.png
+  icon:
+    logo: logo
+
+# Page tree
+nav:
+  - Home: index.md
+  - Getting Started
+    - Robot Config: robot-config.md
+  - Usage
+    - Editing Paths: editing-paths.md
+    - Controls & Shortcuts: controls-shortcuts.md
+  - ChoreoLib
+    - Installation: choreolib-installation.md
+    - Usage: choreolib-usage.md
