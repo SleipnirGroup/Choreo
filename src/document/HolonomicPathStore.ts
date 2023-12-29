@@ -28,6 +28,7 @@ import {
   ICircularObstacleStore,
 } from "./CircularObstacleStore";
 import { PolygonObstacleStore } from "./PolygonObstacleStore";
+import { angleModulus } from "../util/MathUtil";
 
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
@@ -363,6 +364,33 @@ export const HolonomicPathStore = types
         const history = getRoot<IStateStore>(self).document.history;
         history.withoutUndo(() => {
           self.generating = generating;
+        });
+      },
+      fixWaypointHeadings() {
+        let fullRots = 0;
+        let prevHeading = 0;
+        self.waypoints.forEach((point, i, pts) => {
+          if (i == 0) {
+            prevHeading = point.heading;
+          } else {
+            if (point.headingConstrained) {
+              let prevHeadingMod = angleModulus(prevHeading);
+              let heading = pts[i].heading;
+              let headingMod = angleModulus(heading);
+              if (prevHeadingMod < 0 && headingMod > prevHeadingMod + Math.PI) {
+                // negative rollunder
+                fullRots--;
+              } else if (
+                prevHeadingMod > 0 &&
+                headingMod < prevHeadingMod - Math.PI
+              ) {
+                // positive rollover
+                fullRots++;
+              }
+              point.heading = fullRots * 2 * Math.PI + headingMod;
+              prevHeading = point.heading;
+            }
+          }
         });
       },
     };
