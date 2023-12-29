@@ -222,7 +222,9 @@ class AppMenu extends Component<Props, State> {
                   error: {
                     render(toastProps) {
                       console.error(toastProps.data);
-                      return `Couldn't export trajectories: ${(toastProps.data as string[])}`;
+                      return `Couldn't export trajectories: ${
+                        toastProps.data as string[]
+                      }`;
                     },
                   },
                 });
