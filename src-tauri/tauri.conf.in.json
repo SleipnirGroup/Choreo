@@ -24,6 +24,12 @@
         "confirm": true,
         "open": true,
         "save": true
+      },
+      "window": {
+        "setTitle": true
+      },
+      "path": {
+        "all": true
       }
     },
     "bundle": {
