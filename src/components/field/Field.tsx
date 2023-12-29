@@ -130,9 +130,7 @@ export class Field extends Component<Props, State> {
                 marginInline: 0,
                 visibility: activePath.canGenerate() ? "visible" : "hidden",
               }}
-              onClick={() => {
-                this.context.generateWithToastsAndExport(activePathUUID);
-              }}
+              onClick={() => this.context.generateWithToastsAndExport(activePathUUID)}
               disabled={!activePath.canGenerate()}
             >
               <ShapeLineIcon></ShapeLineIcon>

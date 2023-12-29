@@ -256,7 +256,7 @@ export class DocumentManager {
   }
 
   async generateWithToastsAndExport(uuid: string) {
-    this.model!.generatePathWithToasts(uuid).then(() =>
+    this.model!.generatePathWithToasts(uuid).then(() => 
       toast.promise(
         this.writeTrajectory(() => this.getTrajFilePath(uuid), uuid),
         {
@@ -264,7 +264,7 @@ export class DocumentManager {
           error: {
             render(toastProps) {
               console.error(toastProps.data);
-              return (toastProps.data as string[]).join("\n");
+              return `Couldn't export trajectories: ${(toastProps.data as string[])}`;
             },
           },
         }
@@ -314,7 +314,7 @@ export class DocumentManager {
     if (oldPath !== null) {
       invoke("delete_file", { dir: oldPath[0], name: oldPath[1] })
         .then(() => this.writeTrajectory(() => newPath, uuid))
-        .catch((e) => {});
+        .catch((e) => { });
     }
   }
 
@@ -435,7 +435,7 @@ export class DocumentManager {
       error: {
         render(toastProps) {
           console.error(toastProps.data);
-          return (toastProps.data as string[]).join("\n");
+          return `Couldn't export trajectories: ${(toastProps.data as string[])}`;
         },
       },
     });

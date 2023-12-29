@@ -128,11 +128,10 @@ export const HolonomicPathStore = types
         if (self.generated.length > 0) {
           let currentInterval = 0;
           self.waypoints.forEach((w) => {
-            console.log(
-              `generated timestamp: ${
-                self.generated.at(currentInterval)?.timestamp
-              } waypoint: ${w}`
-            );
+            console.log(`generated timestamp: ${self.generated.at(currentInterval)?.timestamp}
+                         waypoint: ${w}
+                         controlIntervalCount: ${w.controlIntervalCount}
+                      `);
             if (self.generated.at(currentInterval)?.timestamp !== undefined) {
               wptTimes.push(self.generated.at(currentInterval)!.timestamp);
               currentInterval += w.controlIntervalCount;
@@ -401,14 +400,16 @@ export const HolonomicPathStore = types
             );
           }
         });
+
         if (
           savedPath.trajectory !== undefined &&
           savedPath.trajectory !== null
         ) {
           self.generated = savedPath.trajectory;
         }
+
         self.usesControlIntervalGuessing =
-          savedPath.usesControlIntervalGuessing;
+           savedPath.usesControlIntervalGuessing;
         self.defaultControlIntervalCount =
           savedPath.defaultControlIntervalCount;
       },
@@ -483,4 +484,4 @@ export const HolonomicPathStore = types
     };
   });
 export interface IHolonomicPathStore
-  extends Instance<typeof HolonomicPathStore> {}
+  extends Instance<typeof HolonomicPathStore> { }
