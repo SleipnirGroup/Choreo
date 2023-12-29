@@ -1,11 +1,11 @@
 # Project information
 site_name: Choreo Docs
-site_url: https://awesomeplayer165.github.io/Choreo/
+site_url: https://sleipnirgroup.github.io/Choreo/
 site_description: A graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics Competition. 
 
 # Repository
 repo_name: Choreo
-repo_url: https://github.com/Awesomeplayer165/Choreo/
+repo_url: https://github.com/sleipnirgroup/Choreo/
 
 # Configuration
 theme:
@@ -32,18 +32,14 @@ theme:
   font:
     text: Roboto
     code: Roboto Mono
-  favicon: assets/favicon.png
-  icon:
-    logo: logo
 
 # Page tree
 nav:
   - Home: index.md
-  - Getting Started:
-    - Robot Config: robot-config.md
+  - Robot Config: robot-config.md
   - Usage:
     - Editing Paths: editing-paths.md
     - Controls & Shortcuts: controls-shortcuts.md
   - ChoreoLib:
-    - Installation: choreolib-installation.md
-    - Usage: choreolib-usage.md
+    - Installation: choreolib/installation.md
+    - Usage: choreolib/usage.md
