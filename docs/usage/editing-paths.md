@@ -6,11 +6,11 @@ Waypoints are an ordered position that you'd like to hit on your path. There are
 
 To add a waypoint, select the type of waypoint from the waypoints navbar on the top to get started, then click on the field where you want it. Your waypoints will show up on the sidebar. A yellow dot represents the currently selected waypoint, green for the starting waypoint, and red for the ending waypoint.
 
-<img alt="image" src="../media/waypoints+navbar.png">
+![waypoints navbar](../media/waypoints+navbar.png)
 
 ### Pose Waypoints
 
-<img width="600" align="right" alt="image" src="../media/pose_waypoint.png">
+![pose waypoint](../media/pose_waypoint.png)
 
 <br>
 
@@ -22,7 +22,7 @@ Pose Waypoint is the first button on the waypoints navbar and consists of a tran
 
 ### Translation Waypoints
 
-<img width="600" align="right" alt="image" src="../media/translation_waypoint.png">
+![translation waypoint](../media/translation_waypoint.png)
 
 Translation Waypoint is the second button on the waypoints navbar and consists of a translation but not a rotation. The UI still includes the yellow circle, but isn't only stored to be able to convert later into a Pose Waypoint. However, rotation is still used as part of the initial guess.
 - **X and Y**: position in meters from the bottom left (origin)
@@ -31,7 +31,7 @@ Translation Waypoint is the second button on the waypoints navbar and consists o
 
 ### Empty Waypoint
 
-<img width="600" align="right" alt="image" src="../media/empty_waypoint.png">
+![empty waypoint](../media/empty_waypoint.png)
 
 The Empty Waypoint allows you to apply a constraint somewhere along a segment without putting a position or heading constraint at that waypoint. (similar to constraints).
 
