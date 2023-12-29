@@ -83,7 +83,9 @@ export class DocumentManager {
         this.model.uiState.setSelectedNavbarItem(i);
       });
     }
-    hotkeys("0", () => {this.model.uiState.setSelectedNavbarItem(9)});
+    hotkeys("0", () => {
+      this.model.uiState.setSelectedNavbarItem(9);
+    });
     hotkeys("-", () => this.model.uiState.setSelectedNavbarItem(10));
     // set current waypoint type
     for (let i = 0; i < 4; i++) {

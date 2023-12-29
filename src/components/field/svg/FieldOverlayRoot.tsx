@@ -135,7 +135,7 @@ class FieldOverlayRoot extends Component<Props, State> {
           )}
           {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
           <FieldAxisLines></FieldAxisLines>
-          {/* Obstacle and waypoint mouse capture*/ }
+          {/* Obstacle and waypoint mouse capture*/}
           {layers[ViewLayers.Waypoints] &&
             this.context.model.uiState.isNavbarWaypointSelected() && (
               <circle
