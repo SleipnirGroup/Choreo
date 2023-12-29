@@ -345,7 +345,8 @@ export const HolonomicPathStore = types
                 // negative rollunder
                 fullRots--;
               } else if (
-                prevHeadingMod > 0 && headingMod < prevHeadingMod - Math.PI
+                prevHeadingMod > 0 &&
+                headingMod < prevHeadingMod - Math.PI
               ) {
                 // positive rollover
                 fullRots++;
