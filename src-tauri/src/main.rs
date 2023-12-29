@@ -54,7 +54,6 @@ struct ChoreoSegmentScope {
 #[derive(serde::Serialize, serde::Deserialize)]
 #[serde(untagged)]
 enum ChoreoConstraintScope {
-  
   Segment([usize;2]),
   Waypoint([usize;1])
 }
@@ -73,6 +72,25 @@ enum Constraints {
 // Also add the constraint type here
 //define_enum_macro!(BoundsZeroVelocity, WptVelocityDirection, WptZeroVelocity);
 
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[allow(non_snake_case)]
+struct CircleObstacle {
+  x: f64, y: f64, radius: f64
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[allow(non_snake_case)]
+struct PolygonObstacle {
+  x: Vec<f64>, y: Vec<f64>, radius: f64
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[allow(non_snake_case)]
+enum Obstacle {
+  Circle(CircleObstacle),
+  Polygon(PolygonObstacle)
+}
+
 fn fix_scope(idx: usize, removed_idxs: &Vec<usize>) -> usize {
   let mut to_subtract: usize = 0;
   for removed in removed_idxs {
@@ -89,8 +107,15 @@ async fn cancel() {
   builder.cancel_all();
 }
 
+#[allow(non_snake_case)]
 #[tauri::command]
-async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfig, constraints: Vec<Constraints>) -> Result<HolonomicTrajectory, String> {
+async fn generate_trajectory(
+    path: Vec<ChoreoWaypoint>, 
+    config: ChoreoRobotConfig, 
+    constraints: Vec<Constraints>, 
+    circleObstacles: Vec<CircleObstacle>,
+    polygonObstacles: Vec<PolygonObstacle>
+  ) -> Result<HolonomicTrajectory, String> {
 
     let mut path_builder = SwervePathBuilder::new();
     let mut wpt_cnt : usize = 0;
@@ -239,8 +264,16 @@ async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfi
           }
         ]
       };
-    //path_builder.set_bumpers(config.bumperLength, config.bumperWidth);
-    path_builder.sgmt_circle_obstacle(0, path.len()-1, 3.0, 3.0, 1.0);
+
+    path_builder.set_bumpers(config.bumperLength, config.bumperWidth);
+
+    for o in circleObstacles {
+      path_builder.sgmt_circle_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
+    }
+
+    for o in polygonObstacles {
+      path_builder.sgmt_polygon_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
+    }
     path_builder.set_drivetrain(&drivetrain);
     path_builder.generate()
 }

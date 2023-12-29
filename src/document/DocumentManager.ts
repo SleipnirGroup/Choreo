@@ -25,7 +25,7 @@ export class DocumentManager {
     this.model = StateStore.create({
       uiState: {
         selectedSidebarItem: undefined,
-        layers: [true, false, true, true],
+        layers: [true, false, true, true, true],
       },
       document: {
         robotConfig: { identifier: uuidv4() },
@@ -83,6 +83,10 @@ export class DocumentManager {
         this.model.uiState.setSelectedNavbarItem(i);
       });
     }
+    hotkeys("0", () => {
+      this.model.uiState.setSelectedNavbarItem(9);
+    });
+    hotkeys("-", () => this.model.uiState.setSelectedNavbarItem(10));
     // set current waypoint type
     for (let i = 0; i < 4; i++) {
       hotkeys("shift+" + (i + 1), () => {
@@ -154,10 +158,22 @@ export class DocumentManager {
       }
     });
     hotkeys("delete,backspace,clear", () => {
-      const selected = this.getSelectedWaypoint();
-      if (selected) {
+      const selectedWaypoint = this.getSelectedWaypoint();
+      if (selectedWaypoint) {
         this.model.document.pathlist.activePath.deleteWaypointUUID(
-          selected.uuid
+          selectedWaypoint.uuid
+        );
+      }
+      const selectedConstraint = this.getSelecteConstraint();
+      if (selectedConstraint) {
+        this.model.document.pathlist.activePath.deleteConstraintUUID(
+          selectedConstraint.uuid
+        );
+      }
+      const selectedObstacle = this.getSelectedObstacle();
+      if (selectedObstacle) {
+        this.model.document.pathlist.activePath.deleteObstacleUUID(
+          selectedObstacle.uuid
         );
       }
     });
@@ -167,6 +183,18 @@ export class DocumentManager {
     const waypoints = this.model.document.pathlist.activePath.waypoints;
     return waypoints.find((w) => {
       return w.selected;
+    });
+  }
+  private getSelecteConstraint() {
+    const constraints = this.model.document.pathlist.activePath.constraints;
+    return constraints.find((c) => {
+      return c.selected;
+    });
+  }
+  private getSelectedObstacle() {
+    const obstacles = this.model.document.pathlist.activePath.obstacles;
+    return obstacles.find((o) => {
+      return o.selected;
     });
   }
   newFile(): void {
