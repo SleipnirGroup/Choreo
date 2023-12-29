@@ -32,6 +32,7 @@ theme:
   font:
     text: Roboto
     code: Roboto Mono
+  icon: icon/icon1024x1024.png
 
 # Page tree
 nav:
