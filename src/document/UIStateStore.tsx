@@ -1,6 +1,9 @@
 import {
   Circle,
+  CircleNotificationsOutlined,
   CircleOutlined,
+  CircleSharp,
+  DoNotDisturb,
   Grid4x4,
   Route,
   SquareOutlined,
@@ -22,6 +25,10 @@ import {
   IHolonomicWaypointStore,
 } from "./HolonomicWaypointStore";
 import { IRobotConfigStore, RobotConfigStore } from "./RobotConfigStore";
+import {
+  CircularObstacleStore,
+  ICircularObstacleStore,
+} from "./CircularObstacleStore";
 
 export const SelectableItem = types.union(
   {
@@ -30,11 +37,15 @@ export const SelectableItem = types.union(
       if (snapshot.type) {
         return ConstraintStores[snapshot.type];
       }
+      if (snapshot.radius) {
+        return CircularObstacleStore;
+      }
       return HolonomicWaypointStore;
     },
   },
   RobotConfigStore,
   HolonomicWaypointStore,
+  CircularObstacleStore,
   ...Object.values(ConstraintStores)
 );
 
@@ -94,6 +105,28 @@ let navbarIndexToConstraintDefinition: { [key: number]: ConstraintDefinition } =
   });
 }
 const constraintNavbarCount = Object.keys(constraints).length;
+export let ObstacleData: {
+  [key: string]: {
+    index: number;
+    name: string;
+    icon: ReactElement;
+  };
+} = {
+  CircleObstacle: {
+    index: Object.keys(NavbarData).length,
+    name: "Circular Obstacle",
+    icon: <DoNotDisturb />,
+  },
+};
+const obstacleNavbarCount = Object.keys(ObstacleData).length;
+Object.entries(ObstacleData).forEach(([name, data]) => {
+  let obstaclesOffset = Object.keys(NavbarData).length;
+  NavbarData[name] = {
+    index: obstaclesOffset,
+    name: data.name,
+    icon: data.icon,
+  };
+});
 
 /** An map of  */
 export const NavbarLabels = (() => {
@@ -118,12 +151,14 @@ export const NavbarItemData = (() => {
 export const NavbarItemSectionLengths = [
   waypointNavbarCount - 1,
   waypointNavbarCount + constraintNavbarCount - 1,
+  waypointNavbarCount + constraintNavbarCount + obstacleNavbarCount - 1,
 ];
 
 export type SelectableItemTypes =
   | IRobotConfigStore
   | IHolonomicWaypointStore
   | IConstraintStore
+  | ICircularObstacleStore
   | undefined;
 
 /* Visibility stuff */
@@ -149,6 +184,11 @@ const ViewData = {
     index: 3,
     name: "Waypoints",
     icon: <Waypoint />,
+  },
+  Obstacles: {
+    index: 4,
+    name: "Obstacles",
+    icon: <DoNotDisturb />,
   },
 };
 
@@ -201,7 +241,13 @@ export const UIStateStore = types
         );
       },
       isConstraintSelected() {
-        return self.selectedNavbarItem > NavbarItemSectionLengths[0];
+        return (
+          self.selectedNavbarItem > NavbarItemSectionLengths[0] &&
+          self.selectedNavbarItem < NavbarItemSectionLengths[1]
+        );
+      },
+      isNavbarObstacleSelected() {
+        return self.selectedNavbarItem > NavbarItemSectionLengths[1];
       },
       visibleLayersOnly() {
         return self.layers.flatMap((visible: boolean, index: number) => {
