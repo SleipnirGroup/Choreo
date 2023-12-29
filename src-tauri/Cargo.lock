@@ -3231,7 +3231,7 @@ dependencies = [
 [[package]]
 name = "trajoptlib"
 version = "0.1.0"
-source = "git+https://github.com/Lewis-Seiden/TrajoptLib.git?rev=97afd485ea4fea877881c5ae2c148509a1f298c9#97afd485ea4fea877881c5ae2c148509a1f298c9"
+source = "git+https://github.com/SleipnirGroup/TrajoptLib.git?rev=c9f8140e92dff07b2edb9c7034fea4d18dc46c9a#c9f8140e92dff07b2edb9c7034fea4d18dc46c9a"
 dependencies = [
  "cmake",
  "cxx",
