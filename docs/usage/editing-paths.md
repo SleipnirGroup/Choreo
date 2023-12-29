@@ -6,11 +6,11 @@ Waypoints are an ordered position that you'd like to hit on your path. There are
 
 To add a waypoint, select the type of waypoint from the waypoints navbar on the top to get started, then click on the field where you want it. Your waypoints will show up on the sidebar. A yellow dot represents the currently selected waypoint, green for the starting waypoint, and red for the ending waypoint.
 
-<img alt="image" src="media/waypoints+navbar.png">
+<img alt="image" src="../media/waypoints+navbar.png">
 
 ### Pose Waypoints
 
-<img width="600" align="right" alt="image" src="media/pose_waypoint.png">
+<img width="600" align="right" alt="image" src="../media/pose_waypoint.png">
 
 <br>
 
@@ -22,7 +22,7 @@ Pose Waypoint is the first button on the waypoints navbar and consists of a tran
 
 ### Translation Waypoints
 
-<img width="600" align="right" alt="image" src="media/translation_waypoint.png">
+<img width="600" align="right" alt="image" src="../media/translation_waypoint.png">
 
 Translation Waypoint is the second button on the waypoints navbar and consists of a translation but not a rotation. The UI still includes the yellow circle, but isn't only stored to be able to convert later into a Pose Waypoint. However, rotation is still used as part of the initial guess.
 - **X and Y**: position in meters from the bottom left (origin)
@@ -31,7 +31,7 @@ Translation Waypoint is the second button on the waypoints navbar and consists o
 
 ### Empty Waypoint
 
-<img width="600" align="right" alt="image" src="media/empty_waypoint.png">
+<img width="600" align="right" alt="image" src="../media/empty_waypoint.png">
 
 The Empty Waypoint allows you to apply a constraint somewhere along a segment without putting a position or heading constraint at that waypoint. (similar to constraints).
 
@@ -58,14 +58,14 @@ Like a segment scope, but including segments (intuitive example: think of zero a
 |-----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------|---------------|
 | Waypoint Velocity Direction | Constrains the robot's direction of travel at a waypoint.                                                                                                                                                                                                                                                    | Yes            | No            |
 | Waypoint Zero Velocity      | Stop at a certain point                                                                                                                                                                                                                                                               | Yes            | No            |
-| Max Velocity                | Constrains the max velocity to a specific value throughout multiple waypoints/segments This generally refers to the Maximum Velocity of robot chassis in m/s. A default value can be defined in Robot Config ([[Getting Started]]) | Yes            | Yes           |
+| Max Velocity                | Constrains the max velocity to a specific value throughout multiple waypoints/segments This generally refers to the Maximum Velocity of robot chassis in m/s. A default value can be defined in Robot Config ([Getting Started](../robot-config.md)) | Yes            | Yes           |
 | Zero Angular Velocity       | Ensures zero angular velocity through the waypoint and/or segment scope.                                                                                                                                                                                                                       | Yes            | Yes           |
 | Straight Line               | Tells the solver to draw a straight line as the path between two immediate waypoints.                                                                                                                                                                                                          | No             | Yes           |
 
 ## Generating
 
-You can create paths by chaining waypoints together. Check out [[Controls & Shortcuts]] for advanced controls. Once you have at least two waypoints, then you can generate a path. You can cancel the path generation by clicking the red X once it has started.
+You can create paths by chaining waypoints together. Check out [Controls & Shortcuts](./controls-shortcuts.md) for advanced controls. Once you have at least two waypoints, then you can generate a path. You can cancel the path generation by clicking the red X once it has started.
 
 If there is an error generating a path, check to make sure your waypoints can physically work.
 
-![Generating Path Gif](media/generating_path.gif)
+![Generating Path Gif](../media/generating_path.gif)

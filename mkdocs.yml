@@ -36,10 +36,10 @@ theme:
 # Page tree
 nav:
   - Home: index.md
-  - Robot Config: robot-config.md
+  - Getting Started: robot-config.md
   - Usage:
-    - Editing Paths: editing-paths.md
-    - Controls & Shortcuts: controls-shortcuts.md
+    - Editing Paths: usage/editing-paths.md
+    - Controls & Shortcuts: usage/controls-shortcuts.md
   - ChoreoLib:
     - Installation: choreolib/installation.md
     - Usage: choreolib/usage.md

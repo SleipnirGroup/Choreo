@@ -1,4 +1,4 @@
-<img width="1324" alt="image" src="https://github.com/SleipnirGroup/Choreo/assets/70717139/b29b7d0b-f169-482a-b322-85feec494bfe">
+<img width="1324" alt="image" src="./media/sidebar.png">
 
 To access the sidebar, click the hamburger icon (top left of window).
 
