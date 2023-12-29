@@ -1,21 +1,21 @@
-# Welcome to MkDocs
+![Readme Screenshot of Example Choreo Setup](media/readmeScreenshot.png)
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+Choreo (Constraint-Honoring Omnidirectional Route Editor and Optimizer, pronounced like choreography) is a graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics 
+Competition.
 
-## Commands
+Main features of Choreo:
+- Each path is created by trajectory optimization instead of Bézier curves, allowing for more precise movements
+- Easy to use Graphical Interface allowing real time playback
+- Different types of waypoints and constraints along the path
+- Robot-side vendor library installation
+- Holonomic mode allows robots to move freely from its rotation
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+# **[[Getting Started]]**
 
-## Project layout
+## Choreo GUI
+- [[Editing Paths]]
+- [[Controls & Shortcuts]]
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
-
-
-
-
+## ChoreoLib
+- [[ChoreoLib Installation]]
+- [[ChoreoLib Java Usage]]
