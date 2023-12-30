@@ -22,10 +22,7 @@ class RobotConfigPanel extends Component<Props, State> {
   state = {};
 
   centerOnWaypoint(waypoint: IHolonomicWaypointStore) {
-    let x = waypoint.x;
-    let y = waypoint.y;
-    console.log(`Centering on ${x}, ${y}`);
-    window.dispatchEvent(new CustomEvent("center", { detail: { x, y } }));
+    this.callCenter(waypoint.x, waypoint.y, 1);
   }
 
   // x, y, k are the center coordinates (x, y) and scale factor (k)
@@ -44,25 +41,23 @@ class RobotConfigPanel extends Component<Props, State> {
       let xMax = -Infinity;
       let yMin = Infinity;
       let yMax = -Infinity;
+
       for (let waypoint of waypoints) {
         xMin = Math.min(xMin, waypoint.x);
         xMax = Math.max(xMax, waypoint.x);
         yMin = Math.min(yMin, waypoint.y);
         yMax = Math.max(yMax, waypoint.y);
       }
+
       let x = (xMin + xMax) / 2;
       let y = (yMin + yMax) / 2;
-      let k = Math.min(
-        1 / ((xMax - xMin) / 2),
-        1 / ((yMax - yMin) / 2),
-        1 / 2
-      );
+      let k = 10 / (xMax - xMin) + 0.1;
+      if (k > 1.7) {
+        k = 1.7;
+      }
+
       this.callCenter(x, y, k);
     }
-    // let x = trajectory.x;
-    // let y = trajectory.y;
-    // console.log(`Centering on ${x}, ${y}`);
-    // window.dispatchEvent(new CustomEvent("center", { detail: { x, y } }));
   }
 
   render() {
