@@ -227,7 +227,10 @@ export const UIStateStore = types
     visibilityPanelOpen: false,
     mainMenuOpen: false,
     pathAnimationTimestamp: 0,
-    layers: types.refinement(types.array(types.boolean), arr=>arr?.length == ViewItemData.length),
+    layers: types.refinement(
+      types.array(types.boolean),
+      (arr) => arr?.length == ViewItemData.length
+    ),
     selectedSidebarItem: types.maybe(types.safeReference(SelectableItem)),
     selectedNavbarItem: NavbarLabels.FullWaypoint,
   })

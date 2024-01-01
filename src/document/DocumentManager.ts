@@ -302,7 +302,7 @@ export class DocumentManager {
       return c.selected;
     });
   }
-  
+
   private getSelectedObstacle() {
     const obstacles = this.model.document.pathlist.activePath.obstacles;
     return obstacles.find((o) => {
