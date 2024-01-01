@@ -67,6 +67,7 @@ const StateStore = types
         }
 
         return new Promise((resolve, reject) => {
+          pathStore.fixWaypointHeadings();
           const controlIntervalOptResult =
             pathStore.optimizeControlIntervalCounts(self.document.robotConfig);
           if (controlIntervalOptResult !== undefined) {
@@ -101,12 +102,16 @@ const StateStore = types
           pathStore.setGenerating(true);
           resolve(pathStore);
         })
-          .then(() =>
-            invoke("generate_trajectory", {
-              path: pathStore.waypoints,
-              config: self.document.robotConfig,
-              constraints: pathStore.asSolverPath().constraints,
-            })
+          .then(
+            () =>
+              invoke("generate_trajectory", {
+                path: pathStore.waypoints,
+                config: self.document.robotConfig,
+                constraints: pathStore.asSolverPath().constraints,
+                circleObstacles: pathStore.asSolverPath().circleObstacles,
+                polygonObstacles: [],
+              }),
+            (e) => e
           )
           .then(
             (rust_traj) => {

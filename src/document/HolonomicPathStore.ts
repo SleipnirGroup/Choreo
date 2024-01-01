@@ -10,7 +10,7 @@ import {
   IHolonomicWaypointStore,
 } from "./HolonomicWaypointStore";
 import { moveItem } from "mobx-utils";
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4, v4 } from "uuid";
 import { IStateStore } from "./DocumentModel";
 import {
   constraints,
@@ -20,9 +20,15 @@ import {
   WaypointID,
   WaypointScope,
 } from "./ConstraintStore";
-import { SavedWaypointId } from "./previousSpecs/v0_1";
+import { SavedWaypointId } from "./previousSpecs/v0_1_2";
 import { timeStamp } from "console";
 import { IRobotConfigStore } from "./RobotConfigStore";
+import {
+  CircularObstacleStore,
+  ICircularObstacleStore,
+} from "./CircularObstacleStore";
+import { PolygonObstacleStore } from "./PolygonObstacleStore";
+import { angleModulus } from "../util/MathUtil";
 
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
@@ -34,6 +40,8 @@ export const HolonomicPathStore = types
     generating: false,
     usesControlIntervalGuessing: true,
     defaultControlIntervalCount: 40,
+    usesDefaultObstacles: true,
+    obstacles: types.array(CircularObstacleStore),
   })
   .views((self) => {
     return {
@@ -111,6 +119,10 @@ export const HolonomicPathStore = types
           }),
           usesControlIntervalGuessing: self.usesControlIntervalGuessing,
           defaultControlIntervalCount: self.defaultControlIntervalCount,
+          usesDefaultFieldObstacles: true,
+          circleObstacles: self.obstacles.map((obstacle) =>
+            obstacle.asSavedCircleObstacle()
+          ),
         };
       },
       lowestSelectedPoint(): IHolonomicWaypointStore | null {
@@ -311,7 +323,32 @@ export const HolonomicPathStore = types
         }
         destroy(self.constraints[index]);
       },
+      deleteObstacle(index: number) {
+        destroy(self.obstacles[index]);
+        if (self.obstacles.length === 0) {
+          return;
+        } else if (self.obstacles[index - 1]) {
+          self.obstacles[index - 1].setSelected(true);
+        } else if (self.obstacles[index + 1]) {
+          self.obstacles[index + 1].setSelected(true);
+        }
+      },
+      deleteObstacleUUID(uuid: string) {
+        let index = self.obstacles.findIndex(
+          (obstacle) => obstacle.uuid === uuid
+        );
+        if (index == -1) return;
+        const root = getRoot<IStateStore>(self);
+        root.select(undefined);
 
+        if (self.obstacles.length === 1) {
+        } else if (self.obstacles[index - 1]) {
+          self.obstacles[index - 1].setSelected(true);
+        } else if (self.obstacles[index + 1]) {
+          self.obstacles[index + 1].setSelected(true);
+        }
+        destroy(self.obstacles[index]);
+      },
       reorder(startIndex: number, endIndex: number) {
         moveItem(self.waypoints, startIndex, endIndex);
       },
@@ -327,6 +364,33 @@ export const HolonomicPathStore = types
         const history = getRoot<IStateStore>(self).document.history;
         history.withoutUndo(() => {
           self.generating = generating;
+        });
+      },
+      fixWaypointHeadings() {
+        let fullRots = 0;
+        let prevHeading = 0;
+        self.waypoints.forEach((point, i, pts) => {
+          if (i == 0) {
+            prevHeading = point.heading;
+          } else {
+            if (point.headingConstrained) {
+              let prevHeadingMod = angleModulus(prevHeading);
+              let heading = pts[i].heading;
+              let headingMod = angleModulus(heading);
+              if (prevHeadingMod < 0 && headingMod > prevHeadingMod + Math.PI) {
+                // negative rollunder
+                fullRots--;
+              } else if (
+                prevHeadingMod > 0 &&
+                headingMod < prevHeadingMod - Math.PI
+              ) {
+                // positive rollover
+                fullRots++;
+              }
+              point.heading = fullRots * 2 * Math.PI + headingMod;
+              prevHeading = point.heading;
+            }
+          }
         });
       },
     };
@@ -397,6 +461,18 @@ export const HolonomicPathStore = types
           }
         });
 
+        self.obstacles.clear();
+        savedPath.circleObstacles.forEach((o) => {
+          this.addObstacle(
+            CircularObstacleStore.create({
+              x: o.x,
+              y: o.y,
+              radius: o.radius,
+              uuid: v4(),
+            })
+          );
+        });
+        
         if (
           savedPath.trajectory !== undefined &&
           savedPath.trajectory !== null
@@ -408,6 +484,9 @@ export const HolonomicPathStore = types
           savedPath.usesControlIntervalGuessing;
         self.defaultControlIntervalCount =
           savedPath.defaultControlIntervalCount;
+      },
+      addObstacle(obstacle: ICircularObstacleStore) {
+        self.obstacles.push(obstacle);
       },
       optimizeControlIntervalCounts(
         robotConfig: IRobotConfigStore
