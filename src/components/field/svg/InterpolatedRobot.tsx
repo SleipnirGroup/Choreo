@@ -100,7 +100,7 @@ class InterpolatedRobot extends Component<Props, State> {
         transform={`translate(${pose1.x}, ${pose1.y}) rotate(${
           (pose1.rot * 180) / Math.PI
         })`}
-        style={{pointerEvents:"none"}}
+        style={{ pointerEvents: "none" }}
       >
         <defs>
           <path
