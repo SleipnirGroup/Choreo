@@ -15,6 +15,7 @@ import { WaypointData } from "../../document/UIStateStore";
 import Waypoint from "../../assets/Waypoint";
 import { Circle, CircleOutlined, Help } from "@mui/icons-material";
 import inputStyles from "../input/InputList.module.css";
+import { angleModulus } from "../../util/MathUtil";
 
 type Props = { waypoint: IHolonomicWaypointStore | null };
 
@@ -61,7 +62,7 @@ class WaypointPanel extends Component<Props, State> {
               showCheckbox={false}
               enabled={waypoint.headingConstrained}
               setEnabled={(_) => {}}
-              number={waypoint.heading}
+              number={angleModulus(waypoint.heading)}
               setNumber={(heading) => waypoint!.setHeading(heading)}
             ></Input>
             <Input

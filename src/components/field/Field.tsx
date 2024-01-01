@@ -18,6 +18,8 @@ import "react-toastify/dist/ReactToastify.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import { invoke } from "@tauri-apps/api";
 import { Close } from "@mui/icons-material";
+import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
+import CircularObstacleConfigPanel from "../config/CircularObstacleConfigPanel";
 
 type Props = {};
 
@@ -54,6 +56,16 @@ export class Field extends Component<Props, State> {
             <ConstraintsConfigPanel
               constraint={selectedSidebar as IConstraintStore}
             ></ConstraintsConfigPanel>
+          )}
+        {selectedSidebar !== undefined &&
+          "radius" in selectedSidebar &&
+          activePath.obstacles.find(
+            (obstacle) =>
+              obstacle.uuid == (selectedSidebar as ICircularObstacleStore)!.uuid
+          ) && (
+            <CircularObstacleConfigPanel
+              obstacle={selectedSidebar as ICircularObstacleStore}
+            ></CircularObstacleConfigPanel>
           )}
         {robotConfigOpen && (
           <div className={styles.WaypointPanel}>
