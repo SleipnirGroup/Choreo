@@ -477,6 +477,7 @@ export const HolonomicPathStore = types
         ) {
           self.generated = savedPath.trajectory;
         }
+
         self.usesControlIntervalGuessing =
           savedPath.usesControlIntervalGuessing;
         self.defaultControlIntervalCount =
