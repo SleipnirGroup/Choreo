@@ -8,7 +8,15 @@ import {
   Route,
   SquareOutlined,
 } from "@mui/icons-material";
-import { getRoot, Instance, types } from "mobx-state-tree";
+import { path, tauri, window as tauriWindow } from "@tauri-apps/api";
+import { getVersion } from "@tauri-apps/api/app";
+import {
+  cast,
+  castToReferenceSnapshot,
+  getRoot,
+  Instance,
+  types,
+} from "mobx-state-tree";
 import { ReactElement } from "react";
 import InitialGuessPoint from "../assets/InitialGuessPoint";
 import Waypoint from "../assets/Waypoint";
@@ -212,17 +220,32 @@ export type ViewLayerType = typeof ViewLayers;
 export const UIStateStore = types
   .model("UIStateStore", {
     fieldScalingFactor: 0.02,
-    saveFileName: "save",
+    saveFileName: types.maybe(types.string),
+    saveFileDir: types.maybe(types.string),
+    isGradleProject: types.maybe(types.boolean),
     waypointPanelOpen: false,
     visibilityPanelOpen: false,
     mainMenuOpen: false,
     pathAnimationTimestamp: 0,
-    layers: types.array(types.boolean),
+    layers: types.refinement(
+      types.array(types.boolean),
+      (arr) => arr?.length == ViewItemData.length
+    ),
     selectedSidebarItem: types.maybe(types.safeReference(SelectableItem)),
     selectedNavbarItem: NavbarLabels.FullWaypoint,
   })
   .views((self: any) => {
     return {
+      get chorRelativeTrajDir() {
+        return (
+          self.isGradleProject ? "src/main/deploy/choreo" : "deploy/choreo"
+        ).replaceAll("/", path.sep);
+      },
+      get hasSaveLocation() {
+        return (
+          self.saveFileName !== undefined && self.saveFileDir !== undefined
+        );
+      },
       getSelectedConstraint() {
         return navbarIndexToConstraint[self.selectedNavbarItem] ?? undefined;
       },
@@ -257,6 +280,14 @@ export const UIStateStore = types
           return [];
         });
       },
+      async updateWindowTitle() {
+        await tauriWindow
+          .getCurrent()
+          .setTitle(
+            `Choreo ${await getVersion()} - ${self.saveFileName ?? "Untitled"}`
+          )
+          .catch(console.error);
+      },
     };
   })
   .actions((self: any) => ({
@@ -271,6 +302,13 @@ export const UIStateStore = types
     },
     setSaveFileName(name: string) {
       self.saveFileName = name;
+      self.updateWindowTitle();
+    },
+    setSaveFileDir(dir: string) {
+      self.saveFileDir = dir;
+    },
+    setIsGradleProject(isGradleProject: boolean) {
+      self.isGradleProject = isGradleProject;
     },
     setWaypointPanelOpen(open: boolean) {
       self.waypointPanelOpen = open;
@@ -289,6 +327,7 @@ export const UIStateStore = types
       self.layers[layer] = visible;
     },
     setVisibleLayers(visibleLayers: number[]) {
+      console.log(self.layers, visibleLayers);
       self.layers.fill(false);
       visibleLayers.forEach((layer) => {
         self.layers.length = Math.max(layer + 1, self.layers.length);

@@ -17,19 +17,21 @@
         "all": false,
         "open": true
       },
+      "path": {
+        "all": true
+      },
       "fs": {
         "all": true
       },
       "dialog": {
         "confirm": true,
         "open": true,
-        "save": true
+        "save": true,
+        "ask": true
       },
       "window": {
-        "setTitle": true
-      },
-      "path": {
-        "all": true
+        "setTitle": true,
+        "close": true
       }
     },
     "bundle": {

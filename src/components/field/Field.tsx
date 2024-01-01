@@ -36,17 +36,6 @@ export class Field extends Component<Props, State> {
     let activePathUUID = this.context.model.document.pathlist.activePathUUID;
     return (
       <div className={styles.Container}>
-        <ToastContainer
-          position="top-right"
-          autoClose={5000}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          draggable
-          theme="dark"
-          enableMultiContainer
-          containerId={"FIELD"}
-        ></ToastContainer>
         <FieldOverlayRoot></FieldOverlayRoot>
         {selectedSidebar !== undefined &&
           "heading" in selectedSidebar &&
@@ -153,9 +142,9 @@ export class Field extends Component<Props, State> {
                 marginInline: 0,
                 visibility: activePath.canGenerate() ? "visible" : "hidden",
               }}
-              onClick={() => {
-                this.context.model.generatePathWithToasts(activePathUUID);
-              }}
+              onClick={() =>
+                this.context.generateWithToastsAndExport(activePathUUID)
+              }
               disabled={!activePath.canGenerate()}
             >
               <ShapeLineIcon></ShapeLineIcon>

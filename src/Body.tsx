@@ -7,7 +7,6 @@ import Sidebar from "./components/sidebar/Sidebar";
 import PathAnimationSlider from "./components/field/PathAnimationSlider";
 import AppMenu from "./AppMenu";
 import PathAnimationPanel from "./components/field/PathAnimationPanel";
-import { ToastContainer } from "react-toastify";
 
 type Props = {};
 
