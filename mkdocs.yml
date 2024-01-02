@@ -35,6 +35,9 @@ theme:
   icon: icon/icon1024x1024.png
   favicon: icon/icon1024x1024.png
 
+markdown_extensions:
+  - def_list
+
 # Page tree
 nav:
   - Home: index.md
