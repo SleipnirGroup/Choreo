@@ -3,4 +3,4 @@ dist/
 public/
 choreolib/
 src-tauri/target/
-docs/
+*.md
