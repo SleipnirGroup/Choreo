@@ -32,8 +32,8 @@ theme:
   font:
     text: Roboto
     code: Roboto Mono
-  icon: icon/icon1024x1024.png
-  favicon: icon/icon1024x1024.png
+  icon: media/icon1024x1024.png
+  favicon: media/icon1024x1024.png
 
 markdown_extensions:
   - def_list
