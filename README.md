@@ -12,7 +12,7 @@ Grab the latest release for your platform on the [releases](https://github.com/S
 
 ## Usage and Documentation
 
-Check out the [Wiki](https://github.com/SleipnirGroup/Choreo/wiki), which covers installation, usage, building, and ChoreoLib.
+Check out the [Wiki](https://sleipnirgroup.github.com/Choreo), which covers installation, usage, building, and ChoreoLib.
 
 ## Robot code integration
 
