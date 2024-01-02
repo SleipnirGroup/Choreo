@@ -71,7 +71,7 @@ Then, select anywhere on the field to add an obstacle. You can click on the ends
 
 ## Generating
 
-You can create paths by chaining waypoints together. Check out [Controls & Shortcuts](./controls-shortcuts.md) for advanced controls. Once you have at least two waypoints, then you can generate a path. You can cancel the path generation by clicking the red X once it has started.
+You can create paths by chaining waypoints together. Check out [Controls & Shortcuts](./controls-shortcuts.md) for advanced controls. Once you have at least two waypoints, then you can generate a path. You can cancel the path generation by pressing control + clicking the red X once it has started.
 
 If there is an error generating a path, check to make sure your waypoints can physically work.
 

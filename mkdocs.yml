@@ -79,7 +79,7 @@ nav:
   - Usage:
       - Editing Paths: usage/editing-paths.md
       - Controls & Shortcuts: usage/controls-shortcuts.md
-      - Sidebar: usage/sidebar.md
+      - Saving: usage/saving.md
   - ChoreoLib:
       - Installation: choreolib/installation.md
       - Usage: choreolib/usage.md
