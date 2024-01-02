@@ -37,6 +37,7 @@ theme:
 
 markdown_extensions:
   - def_list
+  - md_in_html
 
 # Page tree
 nav:
