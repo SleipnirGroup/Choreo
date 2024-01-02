@@ -1,7 +1,7 @@
 # Project information
 site_name: Choreo Docs
 site_url: https://sleipnirgroup.github.io/Choreo/
-site_description: A graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics Competition. 
+site_description: A graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics Competition.
 
 # Repository
 repo_name: Choreo
@@ -40,8 +40,8 @@ nav:
   - Home: index.md
   - Getting Started: robot-config.md
   - Usage:
-    - Editing Paths: usage/editing-paths.md
-    - Controls & Shortcuts: usage/controls-shortcuts.md
+      - Editing Paths: usage/editing-paths.md
+      - Controls & Shortcuts: usage/controls-shortcuts.md
   - ChoreoLib:
-    - Installation: choreolib/installation.md
-    - Usage: choreolib/usage.md
+      - Installation: choreolib/installation.md
+      - Usage: choreolib/usage.md

@@ -15,6 +15,7 @@ To add a waypoint, select the type of waypoint from the waypoints navbar on the 
 <br>
 
 Pose Waypoint is the first button on the waypoints navbar and consists of a translation and a rotation. Drag the little yellow circle (outlined in black) to change the heading.
+
 - **X and Y**: position in meters from the bottom left (origin)
 - **θ**: Angular offset in radians -pi to pi, 0 to right
 
@@ -25,6 +26,7 @@ Pose Waypoint is the first button on the waypoints navbar and consists of a tran
 ![translation waypoint](../media/translation_waypoint.png)
 
 Translation Waypoint is the second button on the waypoints navbar and consists of a translation but not a rotation. The UI still includes the yellow circle, but isn't only stored to be able to convert later into a Pose Waypoint. However, rotation is still used as part of the initial guess.
+
 - **X and Y**: position in meters from the bottom left (origin)
 
 <br><br><br><br><br><br><br><br>
@@ -52,15 +54,16 @@ Applies this constraint between at that specific waypoint.
 Applies this constraint between waypoints (intuitive example: think constraining your trajectory as a straight line between two waypoints)
 
 ### Waypoint + Segment Scope
+
 Like a segment scope, but including segments (intuitive example: think of zero angular velocity)
 
-| Name                        | Description                                                                                                                                                                                                                                                                                    | Waypoint Scope | Segment Scope |
-|-----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------|---------------|
-| Waypoint Velocity Direction | Constrains the robot's direction of travel at a waypoint.                                                                                                                                                                                                                                                    | Yes            | No            |
-| Waypoint Zero Velocity      | Stop at a certain point                                                                                                                                                                                                                                                               | Yes            | No            |
+| Name                        | Description                                                                                                                                                                                                                                          | Waypoint Scope | Segment Scope |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------- |
+| Waypoint Velocity Direction | Constrains the robot's direction of travel at a waypoint.                                                                                                                                                                                            | Yes            | No            |
+| Waypoint Zero Velocity      | Stop at a certain point                                                                                                                                                                                                                              | Yes            | No            |
 | Max Velocity                | Constrains the max velocity to a specific value throughout multiple waypoints/segments This generally refers to the Maximum Velocity of robot chassis in m/s. A default value can be defined in Robot Config ([Getting Started](../robot-config.md)) | Yes            | Yes           |
-| Zero Angular Velocity       | Ensures zero angular velocity through the waypoint and/or segment scope.                                                                                                                                                                                                                       | Yes            | Yes           |
-| Straight Line               | Tells the solver to draw a straight line as the path between two immediate waypoints.                                                                                                                                                                                                          | No             | Yes           |
+| Zero Angular Velocity       | Ensures zero angular velocity through the waypoint and/or segment scope.                                                                                                                                                                             | Yes            | Yes           |
+| Straight Line               | Tells the solver to draw a straight line as the path between two immediate waypoints.                                                                                                                                                                | No             | Yes           |
 
 ## Generating
 
