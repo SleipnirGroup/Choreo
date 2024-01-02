@@ -22,6 +22,7 @@ import { KeyboardArrowDown, Route, Settings } from "@mui/icons-material";
 import Input from "../input/Input";
 import InputList from "../input/InputList";
 import { dialog } from "@tauri-apps/api";
+import { toast } from "react-toastify";
 
 type Props = {};
 
@@ -59,7 +60,10 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
   }
   completeRename() {
     if (!this.checkName()) {
-      this.getPath().setName(this.nameInputRef.current!.value);
+      this.context.renamePath(
+        this.props.uuid,
+        this.nameInputRef.current!.value
+      );
     }
     this.escapeRename();
   }
@@ -72,8 +76,11 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
   }
   checkName(): boolean {
     let inputName = this.nameInputRef.current!.value;
-    let error = this.searchForName(this.nameInputRef.current!.value);
-    error = error || inputName.length == 0;
+    let error =
+      inputName.length == 0 ||
+      inputName.includes("/") ||
+      inputName.includes("\\") ||
+      this.searchForName(this.nameInputRef.current!.value);
     this.setState({ renameError: error, name: inputName });
     return error;
   }
@@ -94,18 +101,20 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     let selected =
       this.props.uuid == this.context.model.document.pathlist.activePathUUID;
     let name = this.getPath().name;
-    if (name != this.state.name) {
-      this.setState({ name });
+    if (name != this.state.name && !this.state.renaming) {
+      this.state.name = name;
     }
     return (
       <span
         className={styles.SidebarItem + " " + (selected ? styles.Selected : "")}
         style={{ borderWidth: 0, borderLeftWidth: 4, height: "auto" }}
-        onClick={() =>
+        onClick={() => {
+          toast.dismiss(); // remove toasts that showed from last path, which is irrelevant for the new path
+
           this.context.model.document.pathlist.setActivePathUUID(
             this.props.uuid
-          )
-        }
+          );
+        }}
       >
         {this.getPath().generating ? (
           <CircularProgress
@@ -214,9 +223,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
                   .confirm(`Delete "${this.getPath().name}"?`)
                   .then((result) => {
                     if (result) {
-                      this.context.model.document.pathlist.deletePath(
-                        this.props.uuid
-                      );
+                      this.context.deletePath(this.props.uuid);
                     }
                   });
               }}

@@ -11,6 +11,11 @@ import { NavbarLabels, ViewLayers } from "../../../document/UIStateStore";
 import FieldGeneratedLines from "./FieldGeneratedLines";
 import FieldAxisLines from "./FieldAxisLines";
 import FieldConstraintsAddLayer from "./FieldConstraintsAddLayer";
+import FieldObstacle from "./FieldObstacles";
+import { Box } from "@mui/material";
+import { Circle } from "@mui/icons-material";
+import { v4 as uuidv4 } from "uuid";
+import { CircularObstacleStore } from "../../../document/CircularObstacleStore";
 
 type Props = {};
 
@@ -130,11 +135,7 @@ class FieldOverlayRoot extends Component<Props, State> {
           )}
           {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
           <FieldAxisLines></FieldAxisLines>
-          {/* Line paths */}
-          {layers[ViewLayers.Waypoints] && <FieldPathLines></FieldPathLines>}
-          {layers[ViewLayers.Trajectory] && (
-            <FieldGeneratedLines></FieldGeneratedLines>
-          )}
+          {/* Obstacle and waypoint mouse capture*/}
           {layers[ViewLayers.Waypoints] &&
             this.context.model.uiState.isNavbarWaypointSelected() && (
               <circle
@@ -145,6 +146,30 @@ class FieldOverlayRoot extends Component<Props, State> {
                 onClick={(e) => this.createWaypoint(e)}
               ></circle>
             )}
+          {layers[ViewLayers.Obstacles] &&
+            this.context.model.uiState.isNavbarObstacleSelected() && (
+              <circle
+                cx={0}
+                cy={0}
+                r={10000}
+                style={{ fill: "transparent" }}
+                onClick={(e) => this.createObstacle(e)}
+              ></circle>
+            )}
+          {layers[ViewLayers.Obstacles] &&
+            this.context.model.document.pathlist.activePath.obstacles.map(
+              (obstacle, index) => (
+                <FieldObstacle
+                  obstacle={obstacle}
+                  index={index}
+                ></FieldObstacle>
+              )
+            )}
+          {/* Line paths */}
+          {layers[ViewLayers.Waypoints] && <FieldPathLines></FieldPathLines>}
+          {layers[ViewLayers.Trajectory] && (
+            <FieldGeneratedLines></FieldGeneratedLines>
+          )}
           {layers[ViewLayers.Waypoints] &&
             this.context.model.document.pathlist.activePath.waypoints.map(
               (point, index) => (
@@ -192,6 +217,27 @@ class FieldOverlayRoot extends Component<Props, State> {
         if (selectedItem == NavbarLabels.InitialGuessPoint) {
           newPoint.setInitialGuess(true);
         }
+      });
+      this.context.history.stopGroup();
+    }
+  }
+  createObstacle(e: React.MouseEvent<SVGCircleElement, MouseEvent>): void {
+    if (e.currentTarget === e.target) {
+      var coords = this.screenSpaceToFieldSpace(this.svgRef?.current, {
+        x: e.clientX,
+        y: e.clientY,
+      });
+      this.context.history.startGroup(() => {
+        var newObstacle =
+          this.context.model.document.pathlist.activePath.addObstacle(
+            CircularObstacleStore.create({
+              x: coords.x,
+              y: coords.y,
+              radius: 0.5,
+              uuid: uuidv4(),
+            })
+          );
+        // const selectedItem = this.context.model.uiState.selectedNavbarItem;
       });
       this.context.history.stopGroup();
     }

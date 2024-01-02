@@ -1,8 +1,8 @@
-/** CHANGES from v0.1.1:
- * Replaced wheelMaxVelocity and wheelMaxTorque with wheelGearing, motorMaxVelocity, motorMaxTorque, currentLimit, efficiency.
+/** CHANGES from v0.1:
+ * Added obstacles
  */
 
-export const SAVE_FILE_VERSION = "v0.2";
+export const SAVE_FILE_VERSION = "v0.1.2";
 export interface SavedWaypoint {
   x: number;
   y: number;
@@ -25,8 +25,10 @@ export interface SavedPath {
   waypoints: Array<SavedWaypoint>;
   trajectory: Array<SavedTrajectorySample> | null;
   constraints: Array<SavedConstraint>;
+  usesDefaultFieldObstacles: boolean;
   usesControlIntervalGuessing: boolean;
   defaultControlIntervalCount: number;
+  circleObstacles: Array<SavedCircleObstacle>;
 }
 export interface SavedPathList extends Record<string, SavedPath> {}
 export interface SavedRobotConfig {
@@ -35,9 +37,8 @@ export interface SavedRobotConfig {
   wheelbase: number;
   trackWidth: number;
   wheelRadius: number;
-  motorMaxVelocity: number;
-  motorMaxTorque: number;
-  gearing: number;
+  wheelMaxVelocity: number;
+  wheelMaxTorque: number;
   bumperLength: number;
   bumperWidth: number;
 }
@@ -57,4 +58,3 @@ export interface SavedCircleObstacle {
   y: number;
   radius: number;
 }
-

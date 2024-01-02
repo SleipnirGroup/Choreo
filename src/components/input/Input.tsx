@@ -42,6 +42,7 @@ class Input extends Component<Props, State> {
     this.setState({
       focused: false,
       editing: false,
+      editedValue: this.props.number.toString(),
     });
   }
 
@@ -49,6 +50,7 @@ class Input extends Component<Props, State> {
     this.setState({
       focused: true,
       editing: false,
+      editedValue: this.props.number.toString(),
     });
     this.inputElemRef.current!.value = this.props.number.toString();
     this.inputElemRef.current!.select();
@@ -137,11 +139,12 @@ class Input extends Component<Props, State> {
           }}
           onKeyDown={(e) => {
             if (e.key == "Enter") {
-              let newNumber = parseFloat(this.state.editedValue);
-              if (!Number.isNaN(newNumber)) {
-                this.props.setNumber(newNumber);
-              }
-              this.focusedMode();
+              this.inputElemRef.current?.blur();
+              // let newNumber = parseFloat(this.state.editedValue);
+              // if (!Number.isNaN(newNumber)) {
+              //   this.props.setNumber(newNumber);
+              // }
+              // this.unfocusedMode();
             }
           }}
           value={this.getDisplayStr()}

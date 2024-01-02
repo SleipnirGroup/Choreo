@@ -1,11 +1,22 @@
 import {
   Circle,
+  CircleNotificationsOutlined,
   CircleOutlined,
+  CircleSharp,
+  DoNotDisturb,
   Grid4x4,
   Route,
   SquareOutlined,
 } from "@mui/icons-material";
-import { getRoot, Instance, types } from "mobx-state-tree";
+import { path, tauri, window as tauriWindow } from "@tauri-apps/api";
+import { getVersion } from "@tauri-apps/api/app";
+import {
+  cast,
+  castToReferenceSnapshot,
+  getRoot,
+  Instance,
+  types,
+} from "mobx-state-tree";
 import { ReactElement } from "react";
 import InitialGuessPoint from "../assets/InitialGuessPoint";
 import Waypoint from "../assets/Waypoint";
@@ -22,6 +33,10 @@ import {
   IHolonomicWaypointStore,
 } from "./HolonomicWaypointStore";
 import { IRobotConfigStore, RobotConfigStore } from "./RobotConfigStore";
+import {
+  CircularObstacleStore,
+  ICircularObstacleStore,
+} from "./CircularObstacleStore";
 
 export const SelectableItem = types.union(
   {
@@ -30,11 +45,15 @@ export const SelectableItem = types.union(
       if (snapshot.type) {
         return ConstraintStores[snapshot.type];
       }
+      if (snapshot.radius) {
+        return CircularObstacleStore;
+      }
       return HolonomicWaypointStore;
     },
   },
   RobotConfigStore,
   HolonomicWaypointStore,
+  CircularObstacleStore,
   ...Object.values(ConstraintStores)
 );
 
@@ -94,6 +113,28 @@ let navbarIndexToConstraintDefinition: { [key: number]: ConstraintDefinition } =
   });
 }
 const constraintNavbarCount = Object.keys(constraints).length;
+export let ObstacleData: {
+  [key: string]: {
+    index: number;
+    name: string;
+    icon: ReactElement;
+  };
+} = {
+  CircleObstacle: {
+    index: Object.keys(NavbarData).length,
+    name: "Circular Obstacle",
+    icon: <DoNotDisturb />,
+  },
+};
+const obstacleNavbarCount = Object.keys(ObstacleData).length;
+Object.entries(ObstacleData).forEach(([name, data]) => {
+  let obstaclesOffset = Object.keys(NavbarData).length;
+  NavbarData[name] = {
+    index: obstaclesOffset,
+    name: data.name,
+    icon: data.icon,
+  };
+});
 
 /** An map of  */
 export const NavbarLabels = (() => {
@@ -118,12 +159,14 @@ export const NavbarItemData = (() => {
 export const NavbarItemSectionLengths = [
   waypointNavbarCount - 1,
   waypointNavbarCount + constraintNavbarCount - 1,
+  waypointNavbarCount + constraintNavbarCount + obstacleNavbarCount - 1,
 ];
 
 export type SelectableItemTypes =
   | IRobotConfigStore
   | IHolonomicWaypointStore
   | IConstraintStore
+  | ICircularObstacleStore
   | undefined;
 
 /* Visibility stuff */
@@ -150,6 +193,11 @@ const ViewData = {
     name: "Waypoints",
     icon: <Waypoint />,
   },
+  Obstacles: {
+    index: 4,
+    name: "Obstacles",
+    icon: <DoNotDisturb />,
+  },
 };
 
 export const ViewLayers = (() => {
@@ -172,17 +220,32 @@ export type ViewLayerType = typeof ViewLayers;
 export const UIStateStore = types
   .model("UIStateStore", {
     fieldScalingFactor: 0.02,
-    saveFileName: "save",
+    saveFileName: types.maybe(types.string),
+    saveFileDir: types.maybe(types.string),
+    isGradleProject: types.maybe(types.boolean),
     waypointPanelOpen: false,
     visibilityPanelOpen: false,
     mainMenuOpen: false,
     pathAnimationTimestamp: 0,
-    layers: types.array(types.boolean),
+    layers: types.refinement(
+      types.array(types.boolean),
+      (arr) => arr?.length == ViewItemData.length
+    ),
     selectedSidebarItem: types.maybe(types.safeReference(SelectableItem)),
     selectedNavbarItem: NavbarLabels.FullWaypoint,
   })
   .views((self: any) => {
     return {
+      get chorRelativeTrajDir() {
+        return (
+          self.isGradleProject ? "src/main/deploy/choreo" : "deploy/choreo"
+        ).replaceAll("/", path.sep);
+      },
+      get hasSaveLocation() {
+        return (
+          self.saveFileName !== undefined && self.saveFileDir !== undefined
+        );
+      },
       getSelectedConstraint() {
         return navbarIndexToConstraint[self.selectedNavbarItem] ?? undefined;
       },
@@ -201,7 +264,13 @@ export const UIStateStore = types
         );
       },
       isConstraintSelected() {
-        return self.selectedNavbarItem > NavbarItemSectionLengths[0];
+        return (
+          self.selectedNavbarItem > NavbarItemSectionLengths[0] &&
+          self.selectedNavbarItem < NavbarItemSectionLengths[1]
+        );
+      },
+      isNavbarObstacleSelected() {
+        return self.selectedNavbarItem > NavbarItemSectionLengths[1];
       },
       visibleLayersOnly() {
         return self.layers.flatMap((visible: boolean, index: number) => {
@@ -210,6 +279,14 @@ export const UIStateStore = types
           }
           return [];
         });
+      },
+      async updateWindowTitle() {
+        await tauriWindow
+          .getCurrent()
+          .setTitle(
+            `Choreo ${await getVersion()} - ${self.saveFileName ?? "Untitled"}`
+          )
+          .catch(console.error);
       },
     };
   })
@@ -225,6 +302,13 @@ export const UIStateStore = types
     },
     setSaveFileName(name: string) {
       self.saveFileName = name;
+      self.updateWindowTitle();
+    },
+    setSaveFileDir(dir: string) {
+      self.saveFileDir = dir;
+    },
+    setIsGradleProject(isGradleProject: boolean) {
+      self.isGradleProject = isGradleProject;
     },
     setWaypointPanelOpen(open: boolean) {
       self.waypointPanelOpen = open;
@@ -243,6 +327,7 @@ export const UIStateStore = types
       self.layers[layer] = visible;
     },
     setVisibleLayers(visibleLayers: number[]) {
+      console.log(self.layers, visibleLayers);
       self.layers.fill(false);
       visibleLayers.forEach((layer) => {
         self.layers.length = Math.max(layer + 1, self.layers.length);

@@ -4,8 +4,10 @@ import { observer } from "mobx-react";
 import {
   Dialog,
   DialogTitle,
+  Divider,
   Drawer,
   List,
+  ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
@@ -16,10 +18,18 @@ import MenuIcon from "@mui/icons-material/Menu";
 import UploadIcon from "@mui/icons-material/UploadFile";
 import IconButton from "@mui/material/IconButton";
 import FileDownload from "@mui/icons-material/FileDownload";
+import FileCopyIcon from "@mui/icons-material/FileCopy";
 import Tooltip from "@mui/material/Tooltip";
-import { NoteAddOutlined, Settings } from "@mui/icons-material";
+import {
+  CopyAll,
+  NoteAddOutlined,
+  OpenInNew,
+  Settings,
+} from "@mui/icons-material";
 import { ToastContainer, toast } from "react-toastify";
-import { dialog } from "@tauri-apps/api";
+import { dialog, invoke, path } from "@tauri-apps/api";
+
+import * as nodePath from "path";
 
 type Props = {};
 
@@ -32,6 +42,44 @@ class AppMenu extends Component<Props, State> {
   state = {
     settingsOpen: false,
   };
+
+  private convertToRelative(filePath: string): string {
+    return filePath.replace(
+      RegExp(
+        `^(?:C:)?\\${path.sep}(Users|home)\\${path.sep}[a-zA-Z]+\\${path.sep}`
+      ),
+      "~" + path.sep
+    );
+  }
+
+  CopyToClipboardButton({ data, tooltip }: { data: any; tooltip: string }) {
+    let handleAction = async function () {
+      await navigator.clipboard.writeText(data);
+      toast.success("Copied to clipboard");
+    };
+
+    return (
+      <Tooltip disableInteractive title={tooltip}>
+        <IconButton size="small" onClick={handleAction}>
+          <CopyAll fontSize="small"></CopyAll>
+        </IconButton>
+      </Tooltip>
+    );
+  }
+
+  OpenInFilesApp({ dir }: { dir: string }) {
+    let handleAction = async function () {
+      invoke("open_file_app", { dir });
+    };
+
+    return (
+      <Tooltip disableInteractive title="Reveal in Files App">
+        <IconButton size="small" onClick={handleAction}>
+          <OpenInNew fontSize="small"></OpenInNew>
+        </IconButton>
+      </Tooltip>
+    );
+  }
 
   render() {
     let { mainMenuOpen, toggleMainMenu } = this.context.model.uiState;
@@ -76,9 +124,20 @@ class AppMenu extends Component<Props, State> {
             </Tooltip>
             Choreo
           </div>
-          <List>
+          <List style={{ paddingBottom: "50px" }}>
             <label htmlFor="file-upload-input">
-              <ListItemButton>
+              <ListItemButton
+                onClick={async () => {
+                  if (
+                    await dialog.confirm(
+                      "You may lose unsaved changes. Continue?",
+                      { title: "Choreo", type: "warning" }
+                    )
+                  ) {
+                    invoke("open_file_dialog");
+                  }
+                }}
+              >
                 <ListItemIcon>
                   <UploadIcon />
                 </ListItemIcon>
@@ -86,14 +145,20 @@ class AppMenu extends Component<Props, State> {
               </ListItemButton>
             </label>
             <ListItemButton
-              onClick={() => {
-                this.context.saveFile();
+              onClick={async () => {
+                this.context.saveFileDialog();
               }}
             >
               <ListItemIcon>
                 <SaveIcon />
               </ListItemIcon>
-              <ListItemText primary="Save File"></ListItemText>
+              <ListItemText
+                primary={
+                  this.context.model.uiState.hasSaveLocation
+                    ? "Save File As"
+                    : "Save File"
+                }
+              ></ListItemText>
             </ListItemButton>
             <ListItemButton
               onClick={async () => {
@@ -114,7 +179,16 @@ class AppMenu extends Component<Props, State> {
             </ListItemButton>
             <ListItemButton
               onClick={() => {
-                this.context.exportActiveTrajectory();
+                toast.promise(this.context.exportActiveTrajectory(), {
+                  pending: "Exporting trajectory...",
+                  success: "Trajectory exported",
+                  error: {
+                    render(toastProps) {
+                      console.error(toastProps.data);
+                      return `Error exporting trajectory: ${toastProps.data}`;
+                    },
+                  },
+                });
               }}
             >
               <ListItemIcon>
@@ -122,37 +196,125 @@ class AppMenu extends Component<Props, State> {
               </ListItemIcon>
               <ListItemText primary="Export Trajectory"></ListItemText>
             </ListItemButton>
+
+            <ListItemButton
+              onClick={async () => {
+                if (!this.context.model.uiState.hasSaveLocation) {
+                  if (
+                    await dialog.ask(
+                      "Saving trajectories to the deploy directory requires saving the project. Save it now?",
+                      {
+                        title: "Choreo",
+                        type: "warning",
+                      }
+                    )
+                  ) {
+                    if (!(await this.context.saveFileDialog())) {
+                      return;
+                    }
+                  } else {
+                    return;
+                  }
+                }
+
+                toast.promise(this.context.exportAllTrajectories(), {
+                  success: `Saved all trajectories to ${this.context.model.uiState.chorRelativeTrajDir}.`,
+                  error: {
+                    render(toastProps) {
+                      console.error(toastProps.data);
+                      return `Couldn't export trajectories: ${
+                        toastProps.data as string[]
+                      }`;
+                    },
+                  },
+                });
+              }}
+            >
+              <ListItemIcon>
+                <SaveIcon />
+              </ListItemIcon>
+              <ListItemText primary="Save All Trajectories"></ListItemText>
+            </ListItemButton>
+            <Divider orientation="horizontal"></Divider>
+            <ListItem>
+              <div
+                style={{
+                  overflowWrap: "break-word",
+                  fontSize: "1.0em",
+                  width: "100%",
+                }}
+              >
+                {this.context.model.uiState.hasSaveLocation ? (
+                  <>
+                    Project saved at<br></br>
+                    <div style={{ fontSize: "0.9em", color: "#D3D3D3" }}>
+                      {this.projectLocation(true)}
+                      <this.CopyToClipboardButton
+                        data={this.projectLocation(false)}
+                        tooltip="Copy full path to clipboard"
+                      ></this.CopyToClipboardButton>
+                      <this.OpenInFilesApp
+                        dir={this.projectLocation(false)}
+                      ></this.OpenInFilesApp>
+                    </div>
+                    <br></br>
+                    {this.context.model.uiState.isGradleProject
+                      ? "Gradle (Java/C++) project detected."
+                      : "Python project or no robot project detected."}
+                    <br></br>
+                    <br></br>
+                    <div></div>
+                    {this.context.model.uiState.hasSaveLocation ? (
+                      <>
+                        Trajectories saved in<br></br>
+                        <div style={{ fontSize: "0.9em", color: "#D3D3D3" }}>
+                          {this.trajectoriesLocation(true)}
+                          <this.CopyToClipboardButton
+                            data={this.trajectoriesLocation(false)}
+                            tooltip="Copy full path to clipboard"
+                          ></this.CopyToClipboardButton>
+                          <this.OpenInFilesApp
+                            dir={this.trajectoriesLocation(false)}
+                          ></this.OpenInFilesApp>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <br />
+                        <br />
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    Project not saved.
+                    <br />
+                    Click "Save File" above to save.
+                  </>
+                )}
+              </div>
+            </ListItem>
           </List>
-          <ToastContainer
-            position="top-right"
-            autoClose={false}
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            theme="dark"
-            enableMultiContainer
-            containerId={"MENU"}
-          ></ToastContainer>
-          <input
-            type="file"
-            id="file-upload-input"
-            style={{ display: "none" }}
-            onChange={(e) => {
-              if (
-                e.target != null &&
-                e.target.files != null &&
-                e.target.files.length >= 1
-              ) {
-                let fileList = e.target.files;
-                this.context.onFileUpload(fileList[0]);
-                e.target.value = "";
-              }
-            }}
-          ></input>
         </div>
       </Drawer>
+    );
+  }
+
+  private projectLocation(relativeFormat: boolean): string {
+    return (
+      (relativeFormat
+        ? this.convertToRelative(
+            this.context.model.uiState.saveFileDir as string
+          )
+        : this.context.model.uiState.saveFileDir) + path.sep
+    );
+  }
+
+  private trajectoriesLocation(relativeFormat: boolean): string {
+    return (
+      this.projectLocation(relativeFormat) +
+      this.context.model.uiState.chorRelativeTrajDir +
+      path.sep
     );
   }
 }

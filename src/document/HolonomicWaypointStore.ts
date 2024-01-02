@@ -78,6 +78,7 @@ export const HolonomicWaypointStore = types
         self.isInitialGuess = point.isInitialGuess;
         self.translationConstrained = point.translationConstrained;
         self.headingConstrained = point.headingConstrained;
+        self.controlIntervalCount = point.controlIntervalCount;
       },
 
       setX(x: number) {

@@ -1,10 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "v0.1.1 Choreo Document",
+  "title": "v0.1.2 Choreo Document",
   "type": "object",
   "properties": {
     "version": {
-      "const": "v0.1.1"
+      "const": "v0.1.2"
     },
     "paths": {
       "type": "object",
@@ -113,6 +113,12 @@
                 }
               }
             },
+            "usesDefaultFieldObstacles": {
+              "type": "boolean"
+            },
+            "usesControlIntervalCulling": {
+              "type": "boolean"
+            },
             "usesControlIntervalGuessing": {
               "type": "boolean"
             },
@@ -141,6 +147,7 @@
             "waypoints",
             "generatedTrajectory",
             "constraints",
+            "usesControlIntervalCulling",
             "usesControlIntervalGuessing",
             "defaultControlIntervalCount",
             "circleObstacles"
@@ -171,15 +178,11 @@
           "type": "number",
           "minimum": 0.0
         },
-        "motorMaxVelocity": {
+        "wheelMaxVelocity": {
           "type": "number",
           "minimum": 0.0
         },
-        "motorMaxTorque": {
-          "type": "number",
-          "minimum": 0.0
-        },
-        "gearing": {
+        "wheelMaxTorque": {
           "type": "number",
           "minimum": 0.0
         }

@@ -10,7 +10,6 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { RobotConfigStore } from "./RobotConfigStore";
 import { SelectableItemTypes, UIStateStore } from "./UIStateStore";
 import { PathListStore } from "./PathListStore";
-import { TrajectorySampleStore } from "./TrajectorySampleStore";
 import { UndoManager } from "mst-middlewares";
 import { IHolonomicPathStore } from "./HolonomicPathStore";
 import { toJS } from "mobx";
@@ -64,11 +63,11 @@ const StateStore = types
       async generatePath(uuid: string) {
         const pathStore = self.document.pathlist.paths.get(uuid);
         if (pathStore === undefined) {
-          return new Promise((resolve, reject) =>
-            reject("Path store is undefined")
-          );
+          throw "Path store is undefined";
         }
+
         return new Promise((resolve, reject) => {
+          pathStore.fixWaypointHeadings();
           const controlIntervalOptResult =
             pathStore.optimizeControlIntervalCounts(self.document.robotConfig);
           if (controlIntervalOptResult !== undefined) {
@@ -76,7 +75,6 @@ const StateStore = types
               reject(controlIntervalOptResult)
             );
           }
-          pathStore.setTrajectory([]);
           if (pathStore.waypoints.length < 2) {
             return;
           }
@@ -110,6 +108,8 @@ const StateStore = types
                 path: pathStore.waypoints,
                 config: self.document.robotConfig.asSolverRobotConfig(),
                 constraints: pathStore.asSolverPath().constraints,
+                circleObstacles: pathStore.asSolverPath().circleObstacles,
+                polygonObstacles: [],
               }),
             (e) => e
           )
@@ -118,15 +118,15 @@ const StateStore = types
               let newTraj: Array<SavedTrajectorySample> = [];
               // @ts-ignore
               rust_traj.samples.forEach((samp) => {
-                let newPoint = TrajectorySampleStore.create();
-                newPoint.setX(samp.x);
-                newPoint.setY(samp.y);
-                newPoint.setHeading(samp.heading);
-                newPoint.setAngularVelocity(samp.angular_velocity);
-                newPoint.setVelocityX(samp.velocity_x);
-                newPoint.setVelocityY(samp.velocity_y);
-                newPoint.setTimestamp(samp.timestamp);
-                newTraj.push(newPoint);
+                newTraj.push({
+                  x: samp.x,
+                  y: samp.y,
+                  heading: samp.heading,
+                  angularVelocity: samp.angular_velocity,
+                  velocityX: samp.velocity_x,
+                  velocityY: samp.velocity_y,
+                  timestamp: samp.timestamp,
+                });
               });
               pathStore.setTrajectory(newTraj);
               if (newTraj.length == 0) throw "No traj";
@@ -152,36 +152,34 @@ const StateStore = types
   .actions((self) => {
     return {
       generatePathWithToasts(activePathUUID: string) {
+        var path = self.document.pathlist.paths.get(activePathUUID)!;
+        if (path.generating) {
+          return Promise.resolve();
+        }
         toast.dismiss();
-        var pathName = self.document.pathlist.paths.get(activePathUUID)!.name;
+
+        var pathName = path.name;
         if (pathName === undefined) {
           toast.error("Tried to generate unknown path.");
         }
-        toast.promise(
-          self.generatePath(activePathUUID),
-          {
-            success: {
-              render({ data, toastProps }) {
-                console.log("success");
-                return `Generated \"${pathName}\"`;
-              },
-            },
-
-            error: {
-              render({ data, toastProps }) {
-                console.log(data);
-                if ((data as string).includes("User_Requested_Stop")) {
-                  toastProps.style = { visibility: "hidden" };
-                  return `Cancelled \"${pathName}\"`;
-                }
-                return `Can't generate \"${pathName}\": ` + (data as string);
-              },
+        return toast.promise(self.generatePath(activePathUUID), {
+          success: {
+            render({ data, toastProps }) {
+              return `Generated \"${pathName}\"`;
             },
           },
-          {
-            containerId: "FIELD",
-          }
-        );
+
+          error: {
+            render({ data, toastProps }) {
+              console.error(data);
+              if ((data as string).includes("User_Requested_Stop")) {
+                toastProps.style = { visibility: "hidden" };
+                return `Cancelled \"${pathName}\"`;
+              }
+              return `Can't generate \"${pathName}\": ` + (data as string);
+            },
+          },
+        });
       },
     };
   });
