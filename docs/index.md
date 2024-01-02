@@ -65,7 +65,7 @@ Choreo (Constraint-Honoring Omnidirectional Route Editor and Optimizer, pronounc
 
     ---
 
-    Textual is licensed under MIT.
+    Choreo is licensed under BSD-3-Clause.
 
 
 </div>
