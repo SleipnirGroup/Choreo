@@ -1,4 +1,4 @@
-Unlike traditional path planners that rely on user-defined splines, Choreo uses trajectory optimization to mathematically draw out the most optimal route through paths. Additionally, Choreo allows fine-grained customization while still maintaining concrete stability. This allows for smoother paths and better odometry.
+Choreo uses trajectory optimization find the optimal route through waypoints. Additionally, Choreo allows fine-grained customization while still maintaining concrete stability. This allows for smoother paths and better odometry.
 
 ## Waypoints
 
