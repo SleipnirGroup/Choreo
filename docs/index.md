@@ -34,7 +34,7 @@ Choreo (Constraint-Honoring Omnidirectional Route Editor and Optimizer, pronounc
 
     ---
 
-    Easy to use Graphical Interface allowing real time playback
+    Easy to use Graphical Interface allowing real time playback.
 
 
 
@@ -50,14 +50,14 @@ Choreo (Constraint-Honoring Omnidirectional Route Editor and Optimizer, pronounc
 
     ---
 
-    Different types of **waypoints**, **constraints**, and **obstacles** along the path
+    Different types of **waypoints**, **constraints**, and **obstacles** along the path.
 
 
 -   :material-library-shelves:{ .lg .middle } __Vendor Installation__
 
     ---
 
-    Robot-side vendor library installation
+    Robot-side vendor library installation.
 
 
 
