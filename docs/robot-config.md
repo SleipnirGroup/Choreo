@@ -7,9 +7,9 @@ The trajectory optimizer depends upon the following user-specified parameters, w
 - **Mass** [kg]: The mass of the robot with battery and bumpers
 - **MoI** [kg * m<sup>2</sup>]: The resistance to change in rotational velocity in response to a torque applied to the robot about the vertical axis
 - **Max Velocity** [m/s]: The maximum tangential speed of the wheel
-  * Note: A reasonable choice of Max Velocity is that corresponding to ~80% of free speed experienced at the drive motor(s)
+  - Note: A reasonable choice of Max Velocity is that corresponding to ~80% of free speed experienced at the drive motor(s)
 - **Max Torque** [N * m]: The maximum torque applied at the wheel
-  * Note: A reasonable choice of Max Torque is that corresponding to a current draw of approximately `1.5 * BreakerValue` experienced at the drive motor(s)
+  - Note: A reasonable choice of Max Torque is that corresponding to a current draw of approximately `1.5 * BreakerValue` experienced at the drive motor(s)
 - **Wheelbase and Trackwidth** [m]: The largest distances between the robot's wheel centers
 - **Length and Width** [m]: The overall size of the robot's _bumper_.
 
