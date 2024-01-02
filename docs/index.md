@@ -27,7 +27,7 @@ Choreo (Constraint-Honoring Omnidirectional Route Editor and Optimizer, pronounc
 
     ---
 
-    Each path is created by trajectory optimization instead of Bézier curves, allowing for more precise Holonomic movements.
+    Each trajectory takes full advantage of the drivetrain's performance, while obeying its dynamics constraints.
 
 
 -   :octicons-sparkle-fill-16:{ .lg .middle } __Easy UI__
