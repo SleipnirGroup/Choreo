@@ -12,8 +12,6 @@ If you attempt to work with this project in VSCode with WPILib plugins, it will 
 
 The maven artifacts can be built using `./gradlew publish` or `./gradlew publishToMavenLocal` for local library access.
 
-note: if you run `gradlew` on a unix system and end up with `permission denied`, then run `sudo chmod +x choreolib/gradlew` or the `gradlew` location given.
-
 The built library will be located in the respective operating system's m2 folder. By default, Maven local repository is defaulted to ${user.home}/.m2/repository folder:
 
 - Unix/Mac OS X - `~/.m2/repository`
