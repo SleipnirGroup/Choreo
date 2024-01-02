@@ -1,4 +1,4 @@
-<img width="1324" alt="image" src="./media/sidebar.png">
+![Sidebar image](../media/sidebar.png)
 
 To access the sidebar, click the hamburger icon (top left of window).
 

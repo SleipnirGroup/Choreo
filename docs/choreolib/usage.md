@@ -1,4 +1,4 @@
-```java
+``` java
 import com.choreo.lib.*;
 
 // do not include .traj extension when referencing the file name

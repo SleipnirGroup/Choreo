@@ -34,18 +34,32 @@ theme:
     code: Roboto Mono
   icon: media/icon1024x1024.png
   favicon: media/icon1024x1024.png
+  features:
+    - content.code.copy
+    - content.code.select
+    - content.code.annotate
+    - navigation.top
 
+# Extensions
 markdown_extensions:
   - def_list
   - md_in_html
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
 
 # Page tree
 nav:
   - Home: index.md
   - Getting Started: robot-config.md
   - Usage:
-      - Editing Paths: usage/editing-paths.md
-      - Controls & Shortcuts: usage/controls-shortcuts.md
+    - Editing Paths: usage/editing-paths.md
+    - Controls & Shortcuts: usage/controls-shortcuts.md
+    - Sidebar: usage/sidebar.md
   - ChoreoLib:
-      - Installation: choreolib/installation.md
-      - Usage: choreolib/usage.md
+    - Installation: choreolib/installation.md
+    - Usage: choreolib/usage.md
