@@ -1,6 +1,8 @@
-![Sidebar image](../media/sidebar.png)
+# Saving
 
 To access the sidebar, click the hamburger icon (top left of window).
+
+![Sidebar image](../media/sidebar.png)
 
 General Info:
 
@@ -28,6 +30,27 @@ Exports the trajectory as a file individually as the path selected in the UI. Th
 
 This saves all the trajectories into the folder structure described below.
 
-# Folder Structure
+## Project Details
 
-Example: …
+If you have saved your choreo file, correctly, you should see the below:
+
+![Project Info](../media/project_info.png)
+
+Project saved at shows the relative path where the `.chor` file lives in. You copy or open the full path in the default files app.
+
+Gradle project detected looks for a .gradle file as well as `/src/main/deploy/`, so it can put the trajectories in.
+
+Trajectories saved in shows relative path where trajectories are saved in. [ChoreoLib](../choreolib/installation.md) looks inside the `{deployDirectory}/choreo` for a matching trajectory.
+<br><br><br>
+If you get the below:
+
+![Project not saved](../media/project_not_saved.png)
+
+Then it means you have not saved the file yet.
+
+<br>
+# Folder Structure
+Example:
+
+- Choreo file lives in: `~/Development/FRC/Roboto/Choreo.chor`
+- Trajectories live in: `~/Development/FRC/Roboto/src/main/deploy/choreo/...`
