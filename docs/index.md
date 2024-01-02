@@ -67,6 +67,13 @@ Choreo (Constraint-Honoring Omnidirectional Route Editor and Optimizer, pronounc
 
     Choreo is licensed under BSD-3-Clause.
 
+<!-- -   :material-connection:{ .lg .middle } __PathPlanner Integration__
+
+    ---
+
+    Integration with PathPlanner allows you to generate paths while still working with a familiar toolset. -->
+
+
 
 </div>
 
