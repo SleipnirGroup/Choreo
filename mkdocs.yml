@@ -1,5 +1,5 @@
 # Project information
-site_name: Choreo Docs
+site_name: Choreo Docuentation
 site_url: https://sleipnirgroup.github.io/Choreo/
 site_description: A graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics Competition.
 
@@ -17,7 +17,7 @@ theme:
         name: Switch to light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: indigo
+      primary: deep purple
       accent: indigo
       toggle:
         icon: material/toggle-switch
@@ -38,7 +38,17 @@ theme:
     - content.code.copy
     - content.code.select
     - content.code.annotate
+    - content.code.select.title
+    - toc.follow
+    - content.tabs.link
+    - search.share
+    - search.highlight
+    - search.suggest
+    - announce.dismiss
+    - navigation.tabs
     - navigation.top
+    - navigation.instant
+    - navigation.indexes
 
 # Extensions
 markdown_extensions:
@@ -54,8 +64,9 @@ markdown_extensions:
 
 # Page tree
 nav:
-  - Home: index.md
-  - Getting Started: robot-config.md
+  - Home:
+    - Home: index.md
+    - Getting Started: robot-config.md
   - Usage:
     - Editing Paths: usage/editing-paths.md
     - Controls & Shortcuts: usage/controls-shortcuts.md
@@ -63,3 +74,6 @@ nav:
   - ChoreoLib:
     - Installation: choreolib/installation.md
     - Usage: choreolib/usage.md
+
+plugins:
+  - search:
