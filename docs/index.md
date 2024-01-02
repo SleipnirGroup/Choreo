@@ -13,14 +13,4 @@ Main features of Choreo:
 - Robot-side vendor library installation
 - Holonomic mode allows robots to move freely from its rotation
 
-# **[Getting Started](./robot-config.md)**
-
-## Choreo GUI
-
-- [Editing Paths](./usage/editing-paths.md)
-- [Controls & Shortcuts](./usage/controls-shortcuts.md)
-
-## ChoreoLib
-
-- [Installation](./choreolib/installation.md)
-- [Java Usage](./choreolib/usage.md)
+# **[Getting Started](./installation.md)**
