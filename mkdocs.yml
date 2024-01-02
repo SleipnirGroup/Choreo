@@ -84,5 +84,5 @@ nav:
       - Installation: choreolib/installation.md
       - Usage: choreolib/usage.md
   - Contributing:
-      - Building: building-choreo.md
-      - Contributing Guide: contributing-guide.md
+      - Building: contributing/building-choreo.md
+      - Contributing Guide: contributing/contributing-guide.md
