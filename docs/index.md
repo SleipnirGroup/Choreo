@@ -16,57 +16,47 @@ Welcome to the [Choreo](https://github.com/SleipnirGroup/Choreo) documentation.
 
 [Get started](./installation.md){ .md-button .md-button--primary }
 
-
 ## What is Choreo?
 
 Choreo (Constraint-Honoring Omnidirectional Route Editor and Optimizer, pronounced like choreography) is a graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics Competition.
 
 <div class="grid cards" markdown>
 
--   :material-clock-fast:{ .lg .middle } __Accuracy__
+- :material-clock-fast:{ .lg .middle } **Accuracy**
 
-    ---
+  ***
 
-    Each path is created by trajectory optimization instead of Bézier curves, allowing for more precise Holonomic movements.
+  Each path is created by trajectory optimization instead of Bézier curves, allowing for more precise Holonomic movements.
 
+- :octicons-sparkle-fill-16:{ .lg .middle } **Easy UI**
 
--   :octicons-sparkle-fill-16:{ .lg .middle } __Easy UI__
+  ***
 
-    ---
+  Easy to use Graphical Interface allowing real time playback
 
-    Easy to use Graphical Interface allowing real time playback
+- :material-microsoft-windows:{ .lg .middle } :material-apple:{ .lg .middle } :fontawesome-brands-linux:{ .lg .middle } **Cross Platform**
 
+  ***
 
+  Choreo runs just about everywhere.
 
--   :material-microsoft-windows:{ .lg .middle } :material-apple:{ .lg .middle } :fontawesome-brands-linux:{ .lg .middle } __Cross Platform__
+- :material-tune:{ .lg .middle } **Customization**
 
-    ---
+  ***
 
-    Choreo runs just about everywhere.
+  Different types of **waypoints**, **constraints**, and **obstacles** along the path
 
+- :material-library-shelves:{ .lg .middle } **Vendor Installation**
 
+  ***
 
--   :material-tune:{ .lg .middle } __Customization__
+  Robot-side vendor library installation
 
-    ---
+- :material-scale-balance:{ .lg .middle } **Open Source**
 
-    Different types of **waypoints**, **constraints**, and **obstacles** along the path
+  ***
 
-
--   :material-library-shelves:{ .lg .middle } __Vendor Installation__
-
-    ---
-
-    Robot-side vendor library installation
-
-
-
--   :material-scale-balance:{ .lg .middle } __Open Source__
-
-    ---
-
-    Choreo is licensed under BSD-3-Clause.
-
+  Choreo is licensed under BSD-3-Clause.
 
 </div>
 
