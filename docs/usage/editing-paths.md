@@ -59,6 +59,16 @@ Like a segment scope, but including segments (intuitive example: think of zero a
 | Zero Angular Velocity       | Ensures zero angular velocity through the waypoint and/or segment scope.                                                                                                                                                                             | Yes            | Yes           |
 | Straight Line               | Tells the solver to draw a straight line as the path between two immediate waypoints.                                                                                                                                                                | No             | Yes           |
 
+## Obstacles
+
+Obstacles allow the robot to avoid a certain area of the field throughout the path. For example, you might want to avoid crashing into the charge field. Obstacles makes it to define where you want the robot to start and end without unnecessary intermediary waypoints.
+
+To start, select the circle obstacle from the navbar (looks like a circle with a slash through it).
+
+Then, select anywhere on the field to add an obstacle. You can click on the ends of the circle to resize them.
+
+![Obstacles](../media/obstacles.png)
+
 ## Generating
 
 You can create paths by chaining waypoints together. Check out [Controls & Shortcuts](./controls-shortcuts.md) for advanced controls. Once you have at least two waypoints, then you can generate a path. You can cancel the path generation by clicking the red X once it has started.
