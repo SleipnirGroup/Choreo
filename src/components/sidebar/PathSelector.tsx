@@ -274,6 +274,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
                   showCheckbox={false}
                   enabled={!this.getPath().usesControlIntervalGuessing}
                   setEnabled={(_) => {}}
+                  roundingPrecision={0}
                   number={this.getPath().defaultControlIntervalCount}
                   setNumber={(count) => {
                     this.getPath().setDefaultControlIntervalCounts(count);
