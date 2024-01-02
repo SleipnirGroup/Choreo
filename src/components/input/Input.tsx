@@ -9,6 +9,7 @@ type Props = {
   enabled: boolean;
   number: number;
   roundingPrecision?: number;
+  showSigFigs?: boolean;
   setNumber: (newNumber: number) => void;
   setEnabled: (value: boolean) => void;
   showCheckbox?: boolean;
@@ -70,9 +71,20 @@ class Input extends Component<Props, State> {
       if (this.state.focused) {
         return this.props.number.toString();
       } else {
-        return this.props.number.toPrecision(4);
+        return this.getRoundedStr();
       }
     }
+  }
+
+  getRoundedStr(): string {
+    let precision = this.props.roundingPrecision ?? 3;
+    if (this.props.showSigFigs) {
+      return this.props.number.toPrecision(precision);
+    }
+    return (
+      Math.round(this.props.number * 10 ** precision) /
+      10 ** precision
+    ).toFixed(precision);
   }
 
   componentDidUpdate(
@@ -117,6 +129,7 @@ class Input extends Component<Props, State> {
             styles.Number +
             (showNumberWhenDisabled ? " " + styles.ShowWhenDisabled : "")
           }
+          style={{ minWidth: `${this.getRoundedStr().length + 3}ch` }}
           disabled={!this.props.enabled}
           onFocus={(e) => {
             this.focusedMode();

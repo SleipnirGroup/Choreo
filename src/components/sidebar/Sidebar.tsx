@@ -114,12 +114,6 @@ class Sidebar extends Component<Props, State> {
         <div className={styles.SidebarHeading}>SETTINGS</div>
         <Divider flexItem></Divider>
         <div className={styles.Sidebar}>
-          <div>
-            {" "}
-            {/*Extra div to put the padding outside the SidebarRobotConfig component*/}
-            <SidebarRobotConfig context={this.context}></SidebarRobotConfig>
-          </div>
-
           <Divider className={styles.SidebarDivider} textAlign="left" flexItem>
             <span>WAYPOINTS</span>
           </Divider>

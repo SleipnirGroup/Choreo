@@ -25,8 +25,10 @@ export interface SavedPath {
   waypoints: Array<SavedWaypoint>;
   trajectory: Array<SavedTrajectorySample> | null;
   constraints: Array<SavedConstraint>;
+  usesDefaultFieldObstacles: boolean;
   usesControlIntervalGuessing: boolean;
   defaultControlIntervalCount: number;
+  circleObstacles: Array<SavedCircleObstacle>;
 }
 export interface SavedPathList extends Record<string, SavedPath> {}
 export interface SavedRobotConfig {
@@ -57,4 +59,3 @@ export interface SavedCircleObstacle {
   y: number;
   radius: number;
 }
-

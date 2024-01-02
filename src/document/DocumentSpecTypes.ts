@@ -62,7 +62,6 @@ import {
 } from "./previousSpecs/v0_2";
 import v0_2_Schema from "./previousSpecs/v0.2.json";
 
-
 // Paste new version import blocks above this line.
 // Update the import path in the below to point to a particular version as current
 export type {
@@ -218,7 +217,7 @@ export let VERSIONS = {
     validate: (document: v0_2): boolean => {
       const ajv = new Ajv();
       return ajv.validate(v0_2_Schema, document);
-    }
+    },
   },
 };
 

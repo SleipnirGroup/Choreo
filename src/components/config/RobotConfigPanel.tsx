@@ -5,7 +5,7 @@ import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../input/InputList";
 import Input from "../input/Input";
 import GearboxConfigPanel from "./GearboxConfigPanel";
-import { Modal } from "@mui/material";
+import { Divider, Modal } from "@mui/material";
 
 type Props = {};
 
@@ -17,16 +17,12 @@ class RobotConfigPanel extends Component<Props, State> {
   state = {};
   render() {
     let config = this.context.model.document.robotConfig;
+    let uiState = this.context.model.uiState;
     return (
       <div
         style={{
-          position: "absolute",
-          background: "var(--background-light-gray)",
-          color: "white",
           display: "grid",
-          width: "100%",
-          padding: "8px",
-          gridTemplateColumns: "1fr 1fr",
+          gridTemplateColumns: "min-content min-content",
           gridGap: "8px",
         }}
       >
@@ -61,6 +57,7 @@ class RobotConfigPanel extends Component<Props, State> {
               suffix="m"
               enabled={true}
               setEnabled={(a) => null}
+              roundingPrecision={3}
               number={config.bumperWidth}
               setNumber={config!.setBumperWidth}
               showCheckbox={false}
@@ -72,6 +69,7 @@ class RobotConfigPanel extends Component<Props, State> {
               suffix="m"
               enabled={true}
               setEnabled={(a) => null}
+              roundingPrecision={3}
               number={config.bumperLength}
               setNumber={config!.setBumperLength}
               showCheckbox={false}
@@ -83,6 +81,7 @@ class RobotConfigPanel extends Component<Props, State> {
               suffix="m"
               enabled={true}
               setEnabled={(a) => null}
+              roundingPrecision={3}
               number={config.wheelbase}
               setNumber={config!.setWheelbase}
               showCheckbox={false}
@@ -94,6 +93,7 @@ class RobotConfigPanel extends Component<Props, State> {
               suffix="m"
               enabled={true}
               setEnabled={(a) => null}
+              roundingPrecision={3}
               number={config.trackWidth}
               setNumber={config!.setTrackwidth}
               showCheckbox={false}
@@ -108,6 +108,7 @@ class RobotConfigPanel extends Component<Props, State> {
               suffix="RPM"
               enabled={true}
               setEnabled={(a) => null}
+              roundingPrecision={0}
               number={config.motorMaxVelocity}
               setNumber={config!.setMaxVelocity}
               showCheckbox={false}
@@ -119,6 +120,7 @@ class RobotConfigPanel extends Component<Props, State> {
               suffix="N · m"
               enabled={true}
               setEnabled={(a) => null}
+              roundingPrecision={3}
               number={config.motorMaxTorque}
               setNumber={config!.setMaxTorque}
               showCheckbox={false}
@@ -130,6 +132,7 @@ class RobotConfigPanel extends Component<Props, State> {
               suffix=":1"
               enabled={true}
               setEnabled={(a) => null}
+              roundingPrecision={2}
               number={config.gearing}
               setNumber={config!.setGearing}
               showCheckbox={false}
@@ -140,6 +143,7 @@ class RobotConfigPanel extends Component<Props, State> {
               suffix="m"
               enabled={true}
               setEnabled={(a) => null}
+              roundingPrecision={3}
               number={config.wheelRadius}
               setNumber={config!.setWheelRadius}
               showCheckbox={false}
@@ -150,6 +154,7 @@ class RobotConfigPanel extends Component<Props, State> {
               suffix="m/s"
               enabled={false}
               setEnabled={(a) => null}
+              roundingPrecision={3}
               number={config.wheelMaxVelocity * config.wheelRadius}
               setNumber={() => null}
               showCheckbox={false}
@@ -160,6 +165,7 @@ class RobotConfigPanel extends Component<Props, State> {
               suffix="m/s²"
               enabled={false}
               setEnabled={(a) => null}
+              roundingPrecision={3}
               number={
                 config.wheelMaxTorque / // N*m = (kg)(m^2)/(s^2)
                 config.mass /
@@ -171,7 +177,13 @@ class RobotConfigPanel extends Component<Props, State> {
             />
           </InputList>
         </div>
+        <Divider style={{ gridRow: 2, gridColumn: "1/3" }}></Divider>
+        <div style={{ gridColumn: 2, gridRow:3 }}>
           <GearboxConfigPanel></GearboxConfigPanel>
+        </div>
+        <div style={{ gridColumn: 1, gridRow:3, width:"90%" }}>
+          Use the presets on the right to calculate the maximum velocity and torque for your motor under a current limit.
+        </div>
       </div>
     );
   }

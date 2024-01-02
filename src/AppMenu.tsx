@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import DocumentManagerContext from "./document/DocumentManager";
 import { observer } from "mobx-react";
 import {
+  Button,
   Dialog,
   DialogTitle,
   Divider,
@@ -30,6 +31,8 @@ import { ToastContainer, toast } from "react-toastify";
 import { dialog, invoke, path } from "@tauri-apps/api";
 
 import * as nodePath from "path";
+import RobotConfigPanel from "./components/config/RobotConfigPanel";
+import SettingsModal from "./components/config/SettingsModal";
 
 type Props = {};
 
@@ -295,6 +298,12 @@ class AppMenu extends Component<Props, State> {
               </div>
             </ListItem>
           </List>
+          <Button
+            onClick={() => this.context.model.uiState.setRobotConfigOpen(true)}
+          >
+            SETTINGS
+          </Button>
+          <SettingsModal></SettingsModal>
         </div>
       </Drawer>
     );

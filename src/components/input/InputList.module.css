@@ -1,7 +1,7 @@
 .InputList {
   display: grid;
   column-gap: 1ch;
-  grid-template-columns: auto 1fr auto 24px;
+  grid-template-columns: max-content auto max-content 24px;
   grid-auto-rows: max(min-content, 48px);
   width: auto;
   height: auto;
@@ -10,7 +10,7 @@
   --disabled-color: gray;
 }
 .InputList.NoCheckbox {
-  grid-template-columns: auto 1fr auto 0;
+  grid-template-columns: max-content auto max-content 0;
 }
 
 .Title {
@@ -22,6 +22,7 @@
   color: var(--disabled-color);
 }
 .Number {
+  font-family: "Courier New", Courier, monospace;
   width: auto;
   background-color: transparent;
   border: none;
@@ -31,6 +32,7 @@
   flex-shrink: 1;
   min-width: 5.5ch;
   border-bottom: solid 2px;
+  text-align: right;
 }
 .Number:disabled {
   border-bottom: 2px solid var(--disabled-color);

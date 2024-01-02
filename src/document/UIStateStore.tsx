@@ -37,6 +37,7 @@ import {
   CircularObstacleStore,
   ICircularObstacleStore,
 } from "./CircularObstacleStore";
+import RobotConfigPanel from "../components/config/RobotConfigPanel";
 
 export const SelectableItem = types.union(
   {
@@ -217,6 +218,7 @@ export const ViewItemData = (() => {
 })();
 
 export type ViewLayerType = typeof ViewLayers;
+export const NUM_SETTINGS_TABS = 1;
 export const UIStateStore = types
   .model("UIStateStore", {
     fieldScalingFactor: 0.02,
@@ -225,7 +227,12 @@ export const UIStateStore = types
     isGradleProject: types.maybe(types.boolean),
     waypointPanelOpen: false,
     visibilityPanelOpen: false,
+    robotConfigOpen: false,
     mainMenuOpen: false,
+    settingsTab: types.refinement(
+      types.integer,
+      (i) => i >= 0 && i < NUM_SETTINGS_TABS
+    ),
     pathAnimationTimestamp: 0,
     layers: types.refinement(
       types.array(types.boolean),
@@ -293,6 +300,14 @@ export const UIStateStore = types
   .actions((self: any) => ({
     setMainMenuOpen(open: boolean) {
       self.mainMenuOpen = open;
+    },
+    setRobotConfigOpen(open: boolean) {
+      self.robotConfigOpen = open;
+    },
+    setSettingsTab(tab: number) {
+      if (tab >= 0 && tab < NUM_SETTINGS_TABS) {
+        self.settingsTab = tab;
+      }
     },
     toggleMainMenu() {
       self.mainMenuOpen = !self.mainMenuOpen;
