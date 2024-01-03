@@ -54,7 +54,7 @@ jobs:
           fetch-depth: 0
       - name: Fetch all history and metadata
         run: |
-          git config --global --add safe.directory /__w/Choreo/choreolib
+          git config --global --add safe.directory /__w/Choreo/Choreo
           git checkout -b pr
           git branch -f main origin/main
       - name: Set up Python 3.8
@@ -70,7 +70,8 @@ jobs:
       - name: Install wpiformat
         run: pip3 install wpiformat
       - name: Create compile_commands.json
-        run: ./choreolib/gradlew generateCompileCommands
+        working-directory: choreolib
+        run: ./gradlew generateCompileCommands
       - name: List changed files
         run: wpiformat -list-changed-files -f ./choreolib -
       - name: Run clang-tidy
