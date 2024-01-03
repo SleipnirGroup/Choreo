@@ -1,14 +1,21 @@
+// Copyright (c) Choreo contributors
+
 #pragma once
 
-#include "ChoreoTrajectory.h"
-#include <frc2/command/CommandPtr.h>
-#include <frc/kinematics/ChassisSpeeds.h>
 #include <frc/controller/PIDController.h>
+#include <frc/kinematics/ChassisSpeeds.h>
+#include <frc2/command/CommandPtr.h>
 #include <frc2/command/Requirements.h>
+
+#include <functional>
+#include <string>
+
+#include "ChoreoTrajectory.h"
 
 namespace choreolib {
 
-using ChoreoControllerFunction = std::function<frc::ChassisSpeeds(frc::Pose2d, ChoreoTrajectoryState)>;
+using ChoreoControllerFunction =
+std::function<frc::ChassisSpeeds(frc::Pose2d, ChoreoTrajectoryState)>;
 
 class Choreo {
 public:
@@ -32,4 +39,4 @@ public:
 
 private:
 };
-}
+}  // namespace choreolib

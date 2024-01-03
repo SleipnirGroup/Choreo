@@ -1,12 +1,17 @@
+// Copyright (c) Choreo contributors
+
 #include "choreo/lib/Choreo.h"
-#include "choreo/lib/ChoreoSwerveCommand.h"
+
+#include <frc/DriverStation.h>
 #include <frc/Filesystem.h>
+#include <frc/Timer.h>
+#include <frc2/command/FunctionalCommand.h>
 #include <wpi/MemoryBuffer.h>
 #include <wpi/json.h>
-#include <frc2/command/FunctionalCommand.h>
-#include <frc/Timer.h>
-#include <frc/DriverStation.h>
+
 #include <numbers>
+
+#include "choreo/lib/ChoreoSwerveCommand.h"
 
 using namespace choreolib;
 

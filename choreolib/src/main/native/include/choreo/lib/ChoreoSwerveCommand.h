@@ -1,15 +1,19 @@
+// Copyright (c) Choreo contributors
+
 #pragma once
 
 #include <frc/Timer.h>
 #include <frc2/command/Command.h>
 #include <frc2/command/CommandHelper.h>
 
+#include <functional>
+
 #include "choreo/lib/ChoreoTrajectory.h"
 
 namespace choreolib {
 
-using ChoreoControllerFunction
-= std::function<frc::ChassisSpeeds(frc::Pose2d, ChoreoTrajectoryState)>;
+using ChoreoControllerFunction =
+std::function<frc::ChassisSpeeds(frc::Pose2d, ChoreoTrajectoryState)>;
 
 class ChoreoSwerveCommand: public frc2::CommandHelper<frc2::Command,
 		ChoreoSwerveCommand> {
@@ -36,4 +40,4 @@ private:
 	std::function<void(frc::ChassisSpeeds)> m_outputChassisSpeeds;
 	bool m_useAlliance;
 };
-} // namespace choreolib
+}  // namespace choreolib

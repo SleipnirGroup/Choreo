@@ -1,8 +1,11 @@
+// Copyright (c) Choreo contributors
+
 #include "choreo/lib/ChoreoTrajectoryState.h"
 
 #include <frc/geometry/Twist2d.h>
-#include <numbers>
 #include <wpi/json.h>
+
+#include <numbers>
 
 using namespace choreolib;
 
@@ -19,7 +22,7 @@ static constexpr frc::Pose2d Interpolate(const frc::Pose2d &startValue,
 		return startValue.Exp(scaledTwist);
 	}
 }
-} // namespace frc
+}  // namespace frc
 
 ChoreoTrajectoryState::ChoreoTrajectoryState() : timestamp(0_s), x(0_m), y(0_m), heading(
 		0_rad), velocityX(0_mps), velocityY(0_mps), angularVelocity(0_rad_per_s) {

@@ -1,0 +1,77 @@
+name: Lint and Format
+
+on: [pull_request, push]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  wpiformat:
+    name: "wpiformat"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch all history and metadata
+        run: |
+          git checkout -b pr
+          git branch -f main origin/main
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+      - name: Install wpiformat
+        run: pip3 install wpiformat
+      - name: Run
+        run: wpiformat -f ./choreolib
+      - name: Check output
+        run: git --no-pager diff --exit-code HEAD
+      - name: Generate diff
+        run: git diff HEAD > wpiformat-fixes.patch
+        if: ${{ failure() }}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: wpiformat fixes
+          path: wpiformat-fixes.patch
+        if: ${{ failure() }}
+      - name: Write to job summary
+        run: |
+          echo '```diff' >> $GITHUB_STEP_SUMMARY
+          cat wpiformat-fixes.patch >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+        if: ${{ failure() }}
+
+  tidy:
+    name: "clang-tidy"
+    runs-on: ubuntu-latest
+    container: wpilib/roborio-cross-ubuntu:2023-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch all history and metadata
+        run: |
+          git config --global --add safe.directory /__w/Choreo/Choreo
+          git checkout -b pr
+          git branch -f main origin/main
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+      - name: Install clang-tidy
+        run: |
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          sudo sh -c "echo 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-15 main' >> /etc/apt/sources.list.d/proposed-repositories.list"
+          sudo apt-get update -q
+          sudo apt-get install -y clang-tidy-15
+      - name: Install wpiformat
+        run: pip3 install wpiformat
+      - name: Create compile_commands.json
+        run: ./choreolib/gradlew generateCompileCommands
+      - name: List changed files
+        run: wpiformat -list-changed-files -f ./choreolib -
+      - name: Run clang-tidy
+        run: wpiformat -f ./choreolib -no-format -tidy-all -compile-commands=choreolib/build/TargetedCompileCommands/linuxx86-64debug -tidy-extra-args std=c++20 -vv

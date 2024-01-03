@@ -1,3 +1,5 @@
+// Copyright (c) Choreo contributors
+
 #include "choreo/lib/ChoreoSwerveCommand.h"
 
 #include <frc/DriverStation.h>

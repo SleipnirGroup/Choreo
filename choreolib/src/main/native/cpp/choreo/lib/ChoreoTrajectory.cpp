@@ -1,3 +1,5 @@
+// Copyright (c) Choreo contributors
+
 #include "choreo/lib/ChoreoTrajectory.h"
 
 #include <wpi/json.h>
@@ -17,11 +19,11 @@ ChoreoTrajectoryState ChoreoTrajectory::SampleInternal(
 		return samples[samples.size() - 1];
 	}
 
-	std::size_t low = 0;
-	std::size_t high = samples.size() - 1;
+	size_t low = 0;
+	size_t high = samples.size() - 1;
 
 	while (low != high) {
-		std::size_t mid = (low + high) / 2;
+		size_t mid = (low + high) / 2;
 		if (samples[mid].timestamp < timestamp) {
 			low = mid + 1;
 		} else {

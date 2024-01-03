@@ -1,3 +1,5 @@
+// Copyright (c) Choreo contributors
+
 #pragma once
 
 #include <frc/geometry/Pose2d.h>
@@ -27,10 +29,11 @@ public:
 	units::meters_per_second_t velocityX;
 	units::meters_per_second_t velocityY;
 	units::radians_per_second_t angularVelocity;
+
 private:
 	static constexpr units::meter_t fieldWidth { 16.55445 };
 };
 
 void to_json(wpi::json &json, const ChoreoTrajectoryState &trajState);
 void from_json(const wpi::json &json, ChoreoTrajectoryState &trajState);
-} // namespace choreolib
+}  // namespace choreolib
