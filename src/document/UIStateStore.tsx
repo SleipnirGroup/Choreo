@@ -266,7 +266,7 @@ export const UIStateStore = types
       isConstraintSelected() {
         return (
           self.selectedNavbarItem > NavbarItemSectionLengths[0] &&
-          self.selectedNavbarItem < NavbarItemSectionLengths[1]
+          self.selectedNavbarItem <= NavbarItemSectionLengths[1]
         );
       },
       isNavbarObstacleSelected() {
