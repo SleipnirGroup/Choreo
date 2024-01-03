@@ -25,7 +25,7 @@ Creates a new file in memory, essentially clearing all trajectories. If you have
 
 ## Export Trajectory
 
-Exports the trajectory as a file individually as the path selected in the UI. This is not tied with the robot project structure, rather for you to get the trajectory file.
+Exports the trajectory as a file individually to the path you select in the UI. This is not tied with the robot project structure, so you can place the trajectory file anywhere you like.
 
 ## Save All Trajectories
 
