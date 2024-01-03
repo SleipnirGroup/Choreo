@@ -61,12 +61,6 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: 3.8
-      - name: Install clang-tidy
-        run: |
-          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-          sudo sh -c "echo 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-15 main' >> /etc/apt/sources.list.d/proposed-repositories.list"
-          sudo apt-get update -q
-          sudo apt-get install -y clang-tidy-15
       - name: Install wpiformat
         run: pip3 install wpiformat
       - name: Create compile_commands.json
@@ -76,8 +70,11 @@ jobs:
           ../.github/workflows/fix_compile_commands.py build/TargetedCompileCommands/linuxx86-64release/compile_commands.json
           ../.github/workflows/fix_compile_commands.py build/TargetedCompileCommands/linuxx86-64debug/compile_commands.json
       - name: List changed files
-        run: wpiformat -f ./choreolib -list-changed-files
+        working-directory: choreolib
+        run: wpiformat -list-changed-files
       - name: Run clang-tidy debug
-        run: wpiformat -f ./choreolib -no-format -tidy-all -compile-commands=choreolib/build/TargetedCompileCommands/linuxx86-64debug -tidy-extra-args std=c++20 -vv
+        working-directory: choreolib
+        run: wpiformat -no-format -tidy-changed -compile-commands=choreolib/build/TargetedCompileCommands/linuxx86-64debug --vv
       - name: Run clang-tidy release
-        run: wpiformat -f ./choreolib -no-format -tidy-all -compile-commands=choreolib/build/TargetedCompileCommands/linuxx86-64release -tidy-extra-args std=c++20 -vv
+        working-directory: choreolib
+        run: wpiformat -f ./choreolib -no-format -tidy-changed -compile-commands=choreolib/build/TargetedCompileCommands/linuxx86-64release -vv
