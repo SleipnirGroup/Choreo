@@ -71,8 +71,13 @@ jobs:
         run: pip3 install wpiformat
       - name: Create compile_commands.json
         working-directory: choreolib
-        run: ./gradlew generateCompileCommands
+        run: | 
+          ./gradlew generateCompileCommands -Ptoolchain-optional-roboRio
+          ../.github/workflows/fix_compile_commands.py build/TargetedCompileCommands/linuxx86-64release/compile_commands.json
+          ../.github/workflows/fix_compile_commands.py build/TargetedCompileCommands/linuxx86-64debug/compile_commands.json
       - name: List changed files
         run: wpiformat -f ./choreolib -list-changed-files
-      - name: Run clang-tidy
+      - name: Run clang-tidy debug
         run: wpiformat -f ./choreolib -no-format -tidy-all -compile-commands=choreolib/build/TargetedCompileCommands/linuxx86-64debug -tidy-extra-args std=c++20 -vv
+      - name: Run clang-tidy release
+        run: wpiformat -f ./choreolib -no-format -tidy-all -compile-commands=choreolib/build/TargetedCompileCommands/linuxx86-64release -tidy-extra-args std=c++20 -vv
