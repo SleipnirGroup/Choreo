@@ -128,6 +128,20 @@ class AppMenu extends Component<Props, State> {
             Choreo
           </div>
           <List style={{ paddingBottom: "50px" }}>
+            {/* Document Settings (open the robot config, etc modal) */}
+            <Tooltip disableInteractive title="Robot configuration and other settings">
+            <ListItemButton
+              onClick={() => this.context.model.uiState.setRobotConfigOpen(true)}
+            >
+              <ListItemIcon>
+                <Settings/>
+              </ListItemIcon>
+              <ListItemText
+                primary="Document Settings"
+              ></ListItemText>
+            </ListItemButton>
+            </Tooltip>
+            {/* Open File */}
             <label htmlFor="file-upload-input">
               <ListItemButton
                 onClick={async () => {
@@ -147,6 +161,7 @@ class AppMenu extends Component<Props, State> {
                 <ListItemText primary="Open File"></ListItemText>
               </ListItemButton>
             </label>
+            {/* Save File */}
             <ListItemButton
               onClick={async () => {
                 this.context.saveFileDialog();
@@ -163,6 +178,7 @@ class AppMenu extends Component<Props, State> {
                 }
               ></ListItemText>
             </ListItemButton>
+            {/* New File */}
             <ListItemButton
               onClick={async () => {
                 if (
@@ -180,6 +196,7 @@ class AppMenu extends Component<Props, State> {
               </ListItemIcon>
               <ListItemText primary="New File"></ListItemText>
             </ListItemButton>
+            {/* Export Active Trajectory */}
             <ListItemButton
               onClick={() => {
                 toast.promise(this.context.exportActiveTrajectory(), {
@@ -199,7 +216,7 @@ class AppMenu extends Component<Props, State> {
               </ListItemIcon>
               <ListItemText primary="Export Trajectory"></ListItemText>
             </ListItemButton>
-
+            {/* Export All to Deploy */}
             <ListItemButton
               onClick={async () => {
                 if (!this.context.model.uiState.hasSaveLocation) {
@@ -239,6 +256,7 @@ class AppMenu extends Component<Props, State> {
               <ListItemText primary="Save All Trajectories"></ListItemText>
             </ListItemButton>
             <Divider orientation="horizontal"></Divider>
+            {/* Info about save locations */}
             <ListItem>
               <div
                 style={{
@@ -298,11 +316,6 @@ class AppMenu extends Component<Props, State> {
               </div>
             </ListItem>
           </List>
-          <Button
-            onClick={() => this.context.model.uiState.setRobotConfigOpen(true)}
-          >
-            SETTINGS
-          </Button>
           <SettingsModal></SettingsModal>
         </div>
       </Drawer>

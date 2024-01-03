@@ -18,11 +18,10 @@
   min-width: max-content;
 }
 .Title.Disabled {
-  font-style: italic;
   color: var(--disabled-color);
 }
 .Number {
-  font-family: "Courier New", Courier, monospace;
+  font-family: "Roboto Mono";
   width: auto;
   background-color: transparent;
   border: none;
@@ -37,6 +36,7 @@
 .Number:disabled {
   border-bottom: 2px solid var(--disabled-color);
   color: transparent;
+  font-style: italic;
 }
 .Number:disabled.ShowWhenDisabled {
   color: var(--disabled-color);
@@ -47,7 +47,6 @@
   flex-shrink: 0;
 }
 .Suffix.Disabled {
-  font-style: italic;
   color: var(--disabled-color);
 }
 .Checkbox {

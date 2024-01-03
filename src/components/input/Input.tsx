@@ -16,6 +16,7 @@ type Props = {
   showNumberWhenDisabled?: boolean;
   titleTooltip?: string;
   prefix?: ReactElement;
+  maxCharacters?:number;
 };
 
 type State = {
@@ -101,6 +102,10 @@ class Input extends Component<Props, State> {
 
   render() {
     let showNumberWhenDisabled = this.props.showNumberWhenDisabled ?? true;
+    let characters = this.getRoundedStr().length + 3;
+    if (this.props.maxCharacters !== undefined) {
+      characters = Math.min(characters, this.props.maxCharacters);
+    }
     return (
       <>
         <Tooltip disableInteractive title={this.props.titleTooltip ?? ""}>
@@ -129,7 +134,7 @@ class Input extends Component<Props, State> {
             styles.Number +
             (showNumberWhenDisabled ? " " + styles.ShowWhenDisabled : "")
           }
-          style={{ minWidth: `${this.getRoundedStr().length + 3}ch` }}
+          style={{ minWidth: `${characters}ch` }}
           disabled={!this.props.enabled}
           onFocus={(e) => {
             this.focusedMode();

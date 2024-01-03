@@ -5,7 +5,7 @@ import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../input/InputList";
 import Input from "../input/Input";
 import { Button, Divider, FormControl, MenuItem, Select } from "@mui/material";
-import { MotorCurve, MotorCurves, SwerveModules } from "./MotorCurves";
+import { maxTorqueCurrentLimited, MotorCurve, MotorCurves, SwerveModules } from "./MotorCurves";
 
 type Props = {};
 
@@ -26,7 +26,7 @@ class RobotConfigPanel extends Component<Props, State> {
           size="small"
           sx={{
             flexDirection: "row",
-            gap: "8px",
+            
             alignItems: "left",
             width: "100%",
           }}
@@ -44,23 +44,22 @@ class RobotConfigPanel extends Component<Props, State> {
               </MenuItem>
             ))}
           </Select>
-          <Button
-            onClick={() => {
-              config.setMaxVelocity(
-                MotorCurves[this.state.selectedMotor].motorMaxVelocity
-              );
-            }}
-          >
-            Apply
-          </Button>
+
         </FormControl>
-        <div style={{ flexGrow: 1 }}>
+        <div style={{
+          display:"flex",
+          gap: "8px",
+          flexDirection:"row",
+          justifyContent:"flex-end",
+          width:"fit-content"
+        }}>
           <InputList noCheckbox>
             <Input
-              title="at"
-              suffix="Amps limit"
+              title=""
+              suffix="A"
               enabled={true}
               setEnabled={(a) => null}
+              roundingPrecision={0}
               number={this.state.currentLimit}
               setNumber={(currentLimit) => this.setState({ currentLimit })}
               showCheckbox={false}
@@ -70,6 +69,7 @@ class RobotConfigPanel extends Component<Props, State> {
               suffix="RPM"
               enabled={false}
               setEnabled={(a) => null}
+              roundingPrecision={0}
               number={MotorCurves[this.state.selectedMotor].motorMaxVelocity}
               showNumberWhenDisabled={
                 MotorCurves[this.state.selectedMotor] !== undefined
@@ -83,11 +83,30 @@ class RobotConfigPanel extends Component<Props, State> {
               suffix="N · m"
               enabled={false}
               setEnabled={(a) => null}
-              number={config.motorMaxTorque}
-              setNumber={config!.setMaxTorque}
+              roundingPrecision={3}
+              number={maxTorqueCurrentLimited(MotorCurves[this.state.selectedMotor].kt, this.state.currentLimit)}
+              setNumber={()=>null}
               showCheckbox={false}
             />
           </InputList>
+          <Button
+            onClick={() => {
+              this.context.history.startGroup(()=>{
+                config.setMaxVelocity(
+                  MotorCurves[this.state.selectedMotor].motorMaxVelocity
+                );
+                config.setMaxTorque(
+                  maxTorqueCurrentLimited(MotorCurves[this.state.selectedMotor].kt, this.state.currentLimit)
+                )
+              });
+              this.context.history.stopGroup();
+            }}
+            sx={{
+              marginBlock:"8px"
+            }}
+          >
+            Apply
+          </Button>
         </div>
       </>
     );

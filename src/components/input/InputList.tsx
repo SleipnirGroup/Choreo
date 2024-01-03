@@ -3,7 +3,7 @@ import React, { Component, PropsWithChildren } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
 import styles from "./InputList.module.css";
 
-type Props = { noCheckbox?: boolean };
+type Props = { noCheckbox?: boolean, maxNumberWidth?: string };
 
 type State = {};
 

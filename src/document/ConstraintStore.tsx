@@ -345,6 +345,7 @@ const defineConstraintStore = (
 let constraintsStores: { [key: string]: typeof ConstraintStore } = {};
 Object.entries(constraints).forEach((entry) => {
   constraintsStores[entry[0]] = defineConstraintStore(entry[0], entry[1]);
+  
 });
 // Export constraint stores down here
 export const ConstraintStores: { [key: string]: typeof ConstraintStore } =
