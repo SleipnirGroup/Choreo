@@ -1,4 +1,4 @@
-Choreo uses trajectory optimization find the optimal route through waypoints. Additionally, Choreo allows fine-grained customization while still maintaining concrete stability. This allows for smoother paths and better odometry.
+Choreo finds the [mathematically optimal](https://en.wikipedia.org/wiki/Mathematical_optimization) trajectory that passes through your waypoints, subject to your drivetrain's constraints. It also allows fine-grained customization while still maintaining concrete stability. This allows for smoother paths and better odometry.
 
 ## Waypoints
 
