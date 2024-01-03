@@ -29,7 +29,7 @@ Translation Waypoint is the second button on the waypoints navbar and consists o
 
 ![empty waypoint](../media/empty_waypoint.png)
 
-The Empty Waypoint allows you to apply a constraint somewhere along a segment without putting a position or heading constraint at that waypoint. (similar to constraints).
+Empty Waypoint allows you to apply a constraint somewhere along a segment without putting a position or heading constraint at that waypoint. (similar to constraints).
 
 ## Initial Guess Point
 
