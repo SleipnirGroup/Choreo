@@ -61,7 +61,7 @@ Like a segment scope, but including segments (intuitive example: think of zero a
 
 ## Obstacles
 
-Obstacles allow the robot to avoid a certain area of the field throughout the path. For example, in the 2023 Charged Up game, you might want to avoid crashing into the charge station. Obstacles makes it to define where you want the robot to start and end without unnecessary intermediary waypoints.
+Obstacles force the robot to avoid a certain area of the field throughout the path. For example, in the 2023 Charged Up game, you might want to avoid crashing into the charge station. Obstacles makes it easy to define where you want the robot to start and end without unnecessary (and performance-impacting) intermediary waypoints.
 
 To start, select the circle obstacle from the navbar (looks like a circle with a slash through it).
 
