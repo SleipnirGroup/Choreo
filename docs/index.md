@@ -37,7 +37,6 @@ Choreo (Constraint-Honoring Omnidirectional Route Editor and Optimizer, pronounc
     Easy to use graphical interface allowing real time playback.
 
 
-
 -   :material-microsoft-windows:{ .lg .middle } :material-apple:{ .lg .middle } :fontawesome-brands-linux:{ .lg .middle } [__Cross Platform__](./installation.md)
 
     ---
@@ -65,7 +64,7 @@ Choreo (Constraint-Honoring Omnidirectional Route Editor and Optimizer, pronounc
 
     ---
 
-    Choreo is licensed under BSD-3-Clause.
+    Choreo is licensed under BSD-3-Clause, just like WPILib.
 
 <!-- -   :material-connection:{ .lg .middle } __PathPlanner Integration__
 

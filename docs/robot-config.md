@@ -13,6 +13,9 @@ The trajectory optimizer depends upon the following user-specified parameters, w
 - **Wheelbase and Trackwidth** [m]: The largest distances between the robot's wheel centers
 - **Length and Width** [m]: The overall size of the robot's _bumper_.
 
+!!! tip
+    Saving a copy of the robotConfig somewhere safe, like the root of a robot project, is highly recommended. This is so you can correlate that robot project to your robot's specifications, and thus your paths.
+
 ### Measuring Moment of Inertia (MoI)
 
 The robot's rotational inertia has a significant impact on how quickly it can follow complex paths. For the best results, it is recommended to get as accurate an estimate of this parameter as possible. This can be accomplished via:
@@ -23,8 +26,6 @@ The robot's rotational inertia has a significant impact on how quickly it can fo
 
 If none of these techniques are possible, a reasonable estimate of MoI would be mass _ length _ width / 6 based on the assumption of a rectangle of uniformly-distributed mass.
 
-### Recommendations
+!!! tip
 
-> Of course, more precision is always better. But after 2 decimals, you will most likely get diminishing returns.
-
-> Saving a copy of the robotConfig somewhere safe, like the root of a robot project, is highly recommended. This is so you can correlate that robot project to your robot's specifications, and thus your paths.
+    Of course, more precision is always better. But after ~3 decimals, you will most likely get diminishing returns.
