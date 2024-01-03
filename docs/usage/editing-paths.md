@@ -45,7 +45,7 @@ Applies this constraint between at that specific waypoint.
 
 ### Segment Scope
 
-Applies this constraint between waypoints (intuitive example: think constraining your trajectory as a straight line between two waypoints)
+Applies this constraint between waypoints. Intuitively, this constrains your trajectory to be a straight line between two waypoints.
 
 ### Waypoint + Segment Scope
 
