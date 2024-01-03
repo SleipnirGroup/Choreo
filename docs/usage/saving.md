@@ -37,11 +37,12 @@ If you have saved your choreo file correctly, you should see the following:
 
 ![Project Info](../media/project_info.png)
 
-Project saved at shows the relative path where the `.chor` file lives in. You copy or open the full path in the default files app.
+Below "Project saved at", you can see the directory in which the saved `.chor` file lives. You can also copy this path or open it in your system's file explorer.
 
-Gradle project detected looks for a .gradle file as well as `/src/main/deploy/`, so it can put the trajectories in.
+If you see "Gradle project detected," then there is a `.gradle` file as well as a `src/main/deploy` directory in which to save trajectories.
 
-Trajectories saved in shows relative path where trajectories are saved in. [ChoreoLib](../choreolib/installation.md) looks inside the `{deployDirectory}/choreo` for a matching trajectory.
+Below "Trajectories saved in," you can see the path in which trajectories are saved.
+Trajectories saved in shows relative path where trajectories are saved in. [ChoreoLib](../choreolib/installation.md) looks for trajectories in `{deployDirectory}/choreo`.
 <br><br><br>
 If you get the below:
 
