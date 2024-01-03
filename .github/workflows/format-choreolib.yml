@@ -54,7 +54,7 @@ jobs:
           fetch-depth: 0
       - name: Fetch all history and metadata
         run: |
-          git config --global --add safe.directory /__w/Choreo/Choreo
+          git config --global --add safe.directory /__w/Choreo/choreolib
           git checkout -b pr
           git branch -f main origin/main
       - name: Set up Python 3.8
