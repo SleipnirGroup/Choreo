@@ -34,7 +34,7 @@ Choreo (Constraint-Honoring Omnidirectional Route Editor and Optimizer, pronounc
 
     ---
 
-    Easy to use Graphical Interface allowing real time playback.
+    Easy to use graphical interface allowing real time playback.
 
 
 
