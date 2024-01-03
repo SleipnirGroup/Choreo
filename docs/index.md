@@ -38,7 +38,7 @@ Choreo (Constraint-Honoring Omnidirectional Route Editor and Optimizer, pronounc
 
 
 
--   :material-microsoft-windows:{ .lg .middle } :material-apple:{ .lg .middle } :fontawesome-brands-linux:{ .lg .middle } __Cross Platform__
+-   :material-microsoft-windows:{ .lg .middle } :material-apple:{ .lg .middle } :fontawesome-brands-linux:{ .lg .middle } [__Cross Platform__](./installation.md)
 
     ---
 
@@ -46,14 +46,14 @@ Choreo (Constraint-Honoring Omnidirectional Route Editor and Optimizer, pronounc
 
 
 
--   :material-tune:{ .lg .middle } __Customization__
+-   :material-tune:{ .lg .middle } [__Customization__](./usage/editing-paths.md)
 
     ---
 
     Different types of **waypoints**, **constraints**, and **obstacles** along the path.
 
 
--   :material-library-shelves:{ .lg .middle } __Vendor Installation__
+-   :material-library-shelves:{ .lg .middle } [__Vendor Installation__](./choreolib/installation.md)
 
     ---
 
@@ -61,7 +61,7 @@ Choreo (Constraint-Honoring Omnidirectional Route Editor and Optimizer, pronounc
 
 
 
--   :material-scale-balance:{ .lg .middle } __Open Source__
+-   :material-scale-balance:{ .lg .middle } [__Open Source__](./contributing/contributing-guide.md)
 
     ---
 
