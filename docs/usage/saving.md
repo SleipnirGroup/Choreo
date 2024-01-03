@@ -8,7 +8,8 @@ General Info:
 
 - Choreo’s file saving mechanism ties into a WPILib robot root directory, wherein a single `.chor` file lives in the project’s root folder.
 
-There are 5 options as well as a description below those pertaining to saving info.
+In the sidebar, there are five actions related to saving your project, along with your project's current save location.
+
 
 ## Open File
 
