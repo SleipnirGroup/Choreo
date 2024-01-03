@@ -27,4 +27,4 @@ If none of these techniques are possible, a reasonable estimate of MoI would be 
 
 > Of course, more precision is always better. But after 2 decimals, you will most likely get diminishing returns.
 
-> Saving this file somewhere safe, like the root of a robot project, is highly recommended. This is so you can correlate that robot project to your robot's specifications, and thus your paths.
+> Saving a copy of the robotConfig somewhere safe, like the root of a robot project, is highly recommended. This is so you can correlate that robot project to your robot's specifications, and thus your paths.
