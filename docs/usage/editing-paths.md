@@ -12,7 +12,7 @@ To add a waypoint, select the type of waypoint from the waypoints navbar on the 
 
 ![pose waypoint](../media/pose_waypoint.png)
 
-Pose Waypoint is the first button on the waypoints navbar and consists of a translation and a rotation. Drag the little yellow circle (outlined in black) to change the heading.
+Pose Waypoint is the first button on the waypoints navbar and consists of a translation **and** a rotation. Drag the little yellow circle (outlined in black) to change the heading.
 
 - **X and Y**: position in meters from the bottom left (origin)
 - **θ**: Angular offset in radians -π to π, 0 to right
