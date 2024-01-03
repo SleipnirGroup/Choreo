@@ -1,6 +1,6 @@
 # Saving
 
-To access the sidebar, click the hamburger icon (top left of window).
+To access the sidebar, click the hamburger icon in the upper left corner.
 
 ![Sidebar image](../media/sidebar.png)
 
