@@ -33,7 +33,7 @@ This saves all the trajectories into the folder structure described below.
 
 ## Project Details
 
-If you have saved your choreo file, correctly, you should see the below:
+If you have saved your choreo file correctly, you should see the following:
 
 ![Project Info](../media/project_info.png)
 
