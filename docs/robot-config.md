@@ -13,7 +13,7 @@ The trajectory optimizer depends upon the following user-specified parameters, w
 - **Wheelbase and Trackwidth** [m]: The largest distances between the robot's wheel centers
 - **Length and Width** [m]: The overall size of the robot's _bumper_.
 
-### Measuring moment of Inertia (MoI)
+### Measuring Moment of Inertia (MoI)
 
 The robot's rotational inertia has a significant impact on how quickly it can follow complex paths. For the best results, it is recommended to get as accurate an estimate of this parameter as possible. This can be accomplished via:
 
