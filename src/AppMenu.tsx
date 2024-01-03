@@ -129,17 +129,20 @@ class AppMenu extends Component<Props, State> {
           </div>
           <List style={{ paddingBottom: "50px" }}>
             {/* Document Settings (open the robot config, etc modal) */}
-            <Tooltip disableInteractive title="Robot configuration and other settings">
-            <ListItemButton
-              onClick={() => this.context.model.uiState.setRobotConfigOpen(true)}
+            <Tooltip
+              disableInteractive
+              title="Robot configuration and other settings"
             >
-              <ListItemIcon>
-                <Settings/>
-              </ListItemIcon>
-              <ListItemText
-                primary="Document Settings"
-              ></ListItemText>
-            </ListItemButton>
+              <ListItemButton
+                onClick={() =>
+                  this.context.model.uiState.setRobotConfigOpen(true)
+                }
+              >
+                <ListItemIcon>
+                  <Settings />
+                </ListItemIcon>
+                <ListItemText primary="Document Settings"></ListItemText>
+              </ListItemButton>
             </Tooltip>
             {/* Open File */}
             <label htmlFor="file-upload-input">

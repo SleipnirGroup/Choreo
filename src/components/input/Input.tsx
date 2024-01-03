@@ -16,7 +16,7 @@ type Props = {
   showNumberWhenDisabled?: boolean;
   titleTooltip?: string;
   prefix?: ReactElement;
-  maxCharacters?:number;
+  maxCharacters?: number;
 };
 
 type State = {

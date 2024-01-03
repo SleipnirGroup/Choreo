@@ -1,20 +1,25 @@
 import { applySnapshot, getRoot, Instance, types } from "mobx-state-tree";
+import {
+  maxTorqueCurrentLimited,
+  MotorCurves,
+} from "../components/config/MotorCurves";
 import { safeGetIdentifier } from "../util/mobxutils";
+import { InToM, LbsToKg } from "../util/UnitConversions";
 import { IStateStore } from "./DocumentModel";
 import { SavedRobotConfig } from "./DocumentSpecTypes";
 
 export const RobotConfigStore = types
   .model("RobotConfigStore", {
-    mass: 45,
+    mass: LbsToKg(150),
     rotationalInertia: 6,
-    motorMaxVelocity: 6000, // kraken max speed in rpm
-    motorMaxTorque: 1,
-    gearing: 6.75,
-    wheelRadius: 0.0508, // 2 in
-    bumperWidth: 0.9,
-    bumperLength: 0.9,
-    wheelbase: 0.622,
-    trackWidth: 0.622,
+    motorMaxVelocity: MotorCurves["Kraken X60"].motorMaxVelocity,
+    motorMaxTorque: maxTorqueCurrentLimited(MotorCurves["Kraken X60"].kt, 60),
+    gearing: 6.75, // SDS L2 mk4/mk4i
+    wheelRadius: InToM(2),
+    bumperWidth: InToM(28 + 2.75 + 2.75), // 28x28 bot with 2.75" bumpers
+    bumperLength: InToM(28 + 2.75 + 2.75),
+    wheelbase: InToM(28 - 2.625 - 2.625), //SDS Mk4i contact patch is 2.625 in from frame edge
+    trackWidth: InToM(28 - 2.625 - 2.625),
     identifier: types.identifier,
   })
   .views((self) => {

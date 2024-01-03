@@ -4,10 +4,10 @@ import DocumentManagerContext from "../../document/DocumentManager";
 import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../input/InputList";
 import Input from "../input/Input";
-import GearboxConfigPanel from "./GearboxConfigPanel";
+import GearboxConfigPanel from "./robotconfig/MotorCalculatorPanel";
 import { Divider, IconButton, Modal, Tab, Tabs } from "@mui/material";
 import { NUM_SETTINGS_TABS } from "../../document/UIStateStore";
-import RobotConfigPanel from "./RobotConfigPanel";
+import RobotConfigPanel from "./robotconfig/RobotConfigPanel";
 import { Close } from "@mui/icons-material";
 
 type Props = {};
@@ -38,29 +38,41 @@ class SettingsModal extends Component<Props, State> {
             padding: "8px",
 
             borderRadius: "10px",
+            maxHeight: "90vh",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
-        <div style={{width:"100%", display:"flex", flexDirection:"row", justifyContent:"space-between"}}>
-          <Tabs
-            value={uiState.settingsTab}
-            onChange={(e, newValue) => uiState.setSettingsTab(newValue)}
-            centered
-            textColor="inherit"
-            sx={{
-              ".MuiTabs-indicator": {
-                "background-color": "var(--select-yellow)",
-              },
-              ".Mui-selected": {
-                color: "white",
-              },
-              justifySelf:"center"
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
             }}
           >
-            <Tab label="Robot Config"/>           
-          </Tabs>
-          <IconButton onClick={() => uiState.setRobotConfigOpen(false)}><Close></Close></IconButton>
+            <Tabs
+              value={uiState.settingsTab}
+              onChange={(e, newValue) => uiState.setSettingsTab(newValue)}
+              centered
+              textColor="inherit"
+              sx={{
+                ".MuiTabs-indicator": {
+                  "background-color": "var(--select-yellow)",
+                },
+                ".Mui-selected": {
+                  color: "white",
+                },
+                justifySelf: "center",
+              }}
+            >
+              <Tab label="Robot Config" />
+            </Tabs>
+            <IconButton onClick={() => uiState.setRobotConfigOpen(false)}>
+              <Close></Close>
+            </IconButton>
           </div>
-          <div style={{ paddingTop: 8 }}>
+          <div style={{ paddingTop: 8, flexGrow: 1, overflowY: "scroll" }}>
             {uiState.settingsTab == 0 && <RobotConfigPanel></RobotConfigPanel>}
           </div>
         </div>

@@ -1,13 +1,27 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import DocumentManagerContext from "../../document/DocumentManager";
+import DocumentManagerContext from "../../../document/DocumentManager";
 import styles from "./WaypointConfigPanel.module.css";
-import InputList from "../input/InputList";
-import Input from "../input/Input";
-import { Button, Divider, FormControl, MenuItem, Select } from "@mui/material";
-import { maxTorqueCurrentLimited, MotorCurve, MotorCurves, SwerveModules } from "./MotorCurves";
+import InputList from "../../input/InputList";
+import Input from "../../input/Input";
+import {
+  Button,
+  Divider,
+  FormControl,
+  FormControlLabel,
+  FormHelperText,
+  FormLabel,
+  MenuItem,
+  Select,
+} from "@mui/material";
+import {
+  maxTorqueCurrentLimited,
+  MotorCurve,
+  MotorCurves,
+  SwerveModules,
+} from "../MotorCurves";
 
-type Props = {};
+type Props = { rowGap: number };
 
 type State = {
   selectedMotor: keyof typeof MotorCurves;
@@ -26,7 +40,8 @@ class RobotConfigPanel extends Component<Props, State> {
           size="small"
           sx={{
             flexDirection: "row",
-            
+            height: "40px",
+            marginBlock: `${0.5 * this.props.rowGap}px`,
             alignItems: "left",
             width: "100%",
           }}
@@ -44,18 +59,38 @@ class RobotConfigPanel extends Component<Props, State> {
               </MenuItem>
             ))}
           </Select>
-
+          <Button
+            variant="outlined"
+            onClick={() => {
+              this.context.history.startGroup(() => {
+                config.setMaxVelocity(
+                  MotorCurves[this.state.selectedMotor].motorMaxVelocity
+                );
+                config.setMaxTorque(
+                  maxTorqueCurrentLimited(
+                    MotorCurves[this.state.selectedMotor].kt,
+                    this.state.currentLimit
+                  )
+                );
+              });
+              this.context.history.stopGroup();
+            }}
+          >
+            Apply
+          </Button>
         </FormControl>
-        <div style={{
-          display:"flex",
-          gap: "8px",
-          flexDirection:"row",
-          justifyContent:"flex-end",
-          width:"fit-content"
-        }}>
-          <InputList noCheckbox>
+        <div
+          style={{
+            display: "flex",
+            gap: `${this.props.rowGap}px`,
+            flexDirection: "row",
+            justifyContent: "flex-end",
+            width: "fit-content",
+          }}
+        >
+          <InputList noCheckbox rowGap={this.props.rowGap}>
             <Input
-              title=""
+              title="Current Limit"
               suffix="A"
               enabled={true}
               setEnabled={(a) => null}
@@ -65,7 +100,7 @@ class RobotConfigPanel extends Component<Props, State> {
               showCheckbox={false}
             />
             <Input
-              title=""
+              title="Preview Free Speed"
               suffix="RPM"
               enabled={false}
               setEnabled={(a) => null}
@@ -79,34 +114,19 @@ class RobotConfigPanel extends Component<Props, State> {
             />
 
             <Input
-              title=""
+              title="Preview Max Torque"
               suffix="N · m"
               enabled={false}
               setEnabled={(a) => null}
               roundingPrecision={3}
-              number={maxTorqueCurrentLimited(MotorCurves[this.state.selectedMotor].kt, this.state.currentLimit)}
-              setNumber={()=>null}
+              number={maxTorqueCurrentLimited(
+                MotorCurves[this.state.selectedMotor].kt,
+                this.state.currentLimit
+              )}
+              setNumber={() => null}
               showCheckbox={false}
             />
           </InputList>
-          <Button
-            onClick={() => {
-              this.context.history.startGroup(()=>{
-                config.setMaxVelocity(
-                  MotorCurves[this.state.selectedMotor].motorMaxVelocity
-                );
-                config.setMaxTorque(
-                  maxTorqueCurrentLimited(MotorCurves[this.state.selectedMotor].kt, this.state.currentLimit)
-                )
-              });
-              this.context.history.stopGroup();
-            }}
-            sx={{
-              marginBlock:"8px"
-            }}
-          >
-            Apply
-          </Button>
         </div>
       </>
     );

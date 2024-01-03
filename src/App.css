@@ -11,7 +11,7 @@
   user-select: none;
   -webkit-user-select: none;
   cursor: default;
-  font:"Roboto";
+  font: "Roboto";
 }
 input[type="text"] {
   user-select: text;

@@ -259,13 +259,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
                 }
               />
             </Tooltip>
-            <span
-              style={{
-                borderLeft: "solid gray 1px",
-                transform: "translate(12px, -4px)",
-                height: "calc(100% + 8px)",
-              }}
-            ></span>
+            <span className={styles.SidebarVerticalLine}></span>
             <span style={{ gridColumnStart: 2, gridColumnEnd: 4 }}>
               <InputList noCheckbox>
                 <Input

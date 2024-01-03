@@ -2,7 +2,6 @@
   display: grid;
   column-gap: 1ch;
   grid-template-columns: max-content auto max-content 24px;
-  grid-auto-rows: max(min-content, 48px);
   width: auto;
   height: auto;
   color: white;
@@ -23,6 +22,7 @@
 .Number {
   font-family: "Roboto Mono";
   width: auto;
+  height: 24px;
   background-color: transparent;
   border: none;
   align-self: center;
@@ -30,11 +30,11 @@
   color: inherit;
   flex-shrink: 1;
   min-width: 5.5ch;
-  border-bottom: solid 2px;
+  border-bottom: solid 1px;
   text-align: right;
 }
 .Number:disabled {
-  border-bottom: 2px solid var(--disabled-color);
+  border-bottom: 1px solid var(--disabled-color);
   color: transparent;
   font-style: italic;
 }
