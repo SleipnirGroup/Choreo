@@ -2,6 +2,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use trajoptlib::{SwervePathBuilder, HolonomicTrajectory, SwerveDrivetrain, SwerveModule, InitialGuessPoint};
+use tauri::{api::{dialog::blocking::FileDialogBuilder, file}, Manager};
+use std::{fs, path::Path};
 // A way to make properties that exist on all enum variants accessible from the generic variant
 // I have no idea how it works but it came from
 // https://users.rust-lang.org/t/generic-referencing-enum-inner-data/66342/9
@@ -17,6 +19,79 @@ use trajoptlib::{SwervePathBuilder, HolonomicTrajectory, SwerveDrivetrain, Swerv
 //       }
 //   };
 // }
+
+
+#[derive(Clone, serde::Serialize, Debug)]
+struct OpenFileEventPayload<'a> {
+  dir: Option<&'a str>,
+  name: Option<&'a str>,
+  contents: Option<&'a str>,
+  adjacent_gradle: bool
+}
+
+#[tauri::command]
+async fn contains_build_gradle(dir: Option<&Path>) -> Result<bool, &'static str> {
+  dir.map_or_else(|| Err("Directory does not exist"), 
+    |dir_path| {
+      let mut found_build_gradle = false;
+      for entry in dir_path.read_dir().expect("read_dir call failed") {
+        if let Ok(other_file) = entry {
+          found_build_gradle |= other_file.file_name().eq("build.gradle")
+        }
+      }
+    Ok(found_build_gradle)}
+  )
+}
+#[tauri::command]
+async fn open_file_dialog(app_handle: tauri::AppHandle){
+  let file_path = FileDialogBuilder::new()
+  .set_title("Open a .chor file")
+  .add_filter("Choreo Save File", &["chor"]).pick_file();
+  match file_path{
+    Some(path)=>{
+      let dir = path.parent();
+      let name = path.file_name();
+      let adjacent_gradle = contains_build_gradle(dir).await;
+      if dir.is_some() && name.is_some() && adjacent_gradle.is_ok() {
+        let _ = app_handle.emit_all("open-file", 
+          OpenFileEventPayload {
+            dir: dir.unwrap().as_os_str().to_str(),
+            name: name.unwrap().to_str(),
+            contents: file::read_string(path.clone()).ok().as_deref(),
+            adjacent_gradle: adjacent_gradle.unwrap_or(false)});
+    
+    }
+
+    },
+    None=>{}
+  }
+}
+
+#[tauri::command]
+async fn delete_file(dir: String, name: String) {
+  let dir_path = Path::new(&dir);
+  let name_path = Path::join(dir_path, name);
+  let _ = fs::remove_file(name_path);
+}
+
+#[tauri::command]
+async fn save_file(dir: String, name: String, contents: String) -> Result<(), &'static str> {
+  let dir_path = Path::new(&dir);
+  let name_path = Path::join(dir_path, name);
+  if name_path.is_relative() {
+    return Err("Dir needs to be absolute");
+  }
+  let _ = fs::create_dir_all(dir_path);
+  if fs::write(name_path, contents).is_err() {
+    return Err("Failed file writing");
+  }
+  Ok(())
+}
+
+#[tauri::command]
+async fn open_file_app(dir: String) {
+  let _ = open::that(dir);
+}
 
 #[allow(non_snake_case)]
 #[derive(serde::Serialize, serde::Deserialize)]
@@ -54,7 +129,6 @@ struct ChoreoSegmentScope {
 #[derive(serde::Serialize, serde::Deserialize)]
 #[serde(untagged)]
 enum ChoreoConstraintScope {
-  
   Segment([usize;2]),
   Waypoint([usize;1])
 }
@@ -73,6 +147,25 @@ enum Constraints {
 // Also add the constraint type here
 //define_enum_macro!(BoundsZeroVelocity, WptVelocityDirection, WptZeroVelocity);
 
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[allow(non_snake_case)]
+struct CircleObstacle {
+  x: f64, y: f64, radius: f64
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[allow(non_snake_case)]
+struct PolygonObstacle {
+  x: Vec<f64>, y: Vec<f64>, radius: f64
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[allow(non_snake_case)]
+enum Obstacle {
+  Circle(CircleObstacle),
+  Polygon(PolygonObstacle)
+}
+
 fn fix_scope(idx: usize, removed_idxs: &Vec<usize>) -> usize {
   let mut to_subtract: usize = 0;
   for removed in removed_idxs {
@@ -89,8 +182,15 @@ async fn cancel() {
   builder.cancel_all();
 }
 
+#[allow(non_snake_case)]
 #[tauri::command]
-async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfig, constraints: Vec<Constraints>) -> Result<HolonomicTrajectory, String> {
+async fn generate_trajectory(
+    path: Vec<ChoreoWaypoint>, 
+    config: ChoreoRobotConfig, 
+    constraints: Vec<Constraints>, 
+    circleObstacles: Vec<CircleObstacle>,
+    polygonObstacles: Vec<PolygonObstacle>
+  ) -> Result<HolonomicTrajectory, String> {
 
     let mut path_builder = SwervePathBuilder::new();
     let mut wpt_cnt : usize = 0;
@@ -239,15 +339,24 @@ async fn generate_trajectory(path: Vec<ChoreoWaypoint>, config: ChoreoRobotConfi
           }
         ]
       };
-    //path_builder.set_bumpers(config.bumperLength, config.bumperWidth);
-    path_builder.sgmt_circle_obstacle(0, path.len()-1, 3.0, 3.0, 1.0);
+
+    path_builder.set_bumpers(config.bumperLength, config.bumperWidth);
+
+    for o in circleObstacles {
+      path_builder.sgmt_circle_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
+    }
+
+    for o in polygonObstacles {
+      path_builder.sgmt_polygon_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
+    }
     path_builder.set_drivetrain(&drivetrain);
     path_builder.generate()
 }
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![generate_trajectory, cancel])
+        .invoke_handler(tauri::generate_handler![
+          generate_trajectory, cancel, open_file_dialog, save_file, contains_build_gradle, delete_file, open_file_app])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

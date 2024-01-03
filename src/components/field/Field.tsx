@@ -18,6 +18,8 @@ import "react-toastify/dist/ReactToastify.min.css";
 import { ToastContainer, toast } from "react-toastify";
 import { invoke } from "@tauri-apps/api";
 import { Close } from "@mui/icons-material";
+import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
+import CircularObstacleConfigPanel from "../config/CircularObstacleConfigPanel";
 
 type Props = {};
 
@@ -34,17 +36,6 @@ export class Field extends Component<Props, State> {
     let activePathUUID = this.context.model.document.pathlist.activePathUUID;
     return (
       <div className={styles.Container}>
-        <ToastContainer
-          position="top-right"
-          autoClose={5000}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          draggable
-          theme="dark"
-          enableMultiContainer
-          containerId={"FIELD"}
-        ></ToastContainer>
         <FieldOverlayRoot></FieldOverlayRoot>
         {selectedSidebar !== undefined &&
           "heading" in selectedSidebar &&
@@ -65,6 +56,16 @@ export class Field extends Component<Props, State> {
             <ConstraintsConfigPanel
               constraint={selectedSidebar as IConstraintStore}
             ></ConstraintsConfigPanel>
+          )}
+        {selectedSidebar !== undefined &&
+          "radius" in selectedSidebar &&
+          activePath.obstacles.find(
+            (obstacle) =>
+              obstacle.uuid == (selectedSidebar as ICircularObstacleStore)!.uuid
+          ) && (
+            <CircularObstacleConfigPanel
+              obstacle={selectedSidebar as ICircularObstacleStore}
+            ></CircularObstacleConfigPanel>
           )}
         {robotConfigOpen && (
           <div className={styles.WaypointPanel}>
@@ -141,9 +142,9 @@ export class Field extends Component<Props, State> {
                 marginInline: 0,
                 visibility: activePath.canGenerate() ? "visible" : "hidden",
               }}
-              onClick={() => {
-                this.context.model.generatePathWithToasts(activePathUUID);
-              }}
+              onClick={() =>
+                this.context.generateWithToastsAndExport(activePathUUID)
+              }
               disabled={!activePath.canGenerate()}
             >
               <ShapeLineIcon></ShapeLineIcon>

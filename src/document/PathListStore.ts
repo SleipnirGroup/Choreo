@@ -93,6 +93,9 @@ export const PathListStore = types
             path!.fromSavedPath(list[name]);
           });
         }
+        if (self.paths.size == 0) {
+          self.addPath("New Path", true);
+        }
       },
     };
   });
