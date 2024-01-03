@@ -19,7 +19,7 @@ The robot's rotational inertia has a significant impact on how quickly it can fo
 
 - Faithful CAD loaded with mass properties
 - Physical experimentation
-- System Identification methods
+- Other System Identification methods
 
 If none of these techniques are possible, a reasonable estimate of MoI would be mass _ length _ width / 6 based on the assumption of a rectangle of uniformly-distributed mass.
 
