@@ -21,7 +21,7 @@ Pose Waypoint is the first button on the waypoints navbar and consists of a tran
 
 ![translation waypoint](../media/translation_waypoint.png)
 
-Translation Waypoint is the second button on the waypoints navbar and consists of a translation but not a rotation. The UI still includes the yellow circle, but isn't only stored to be able to convert later into a Pose Waypoint. However, rotation is still used as part of the initial guess.
+Translation Waypoint is the second button on the waypoints navbar and consists of a translation but not a rotation. The UI still includes the yellow circle, but is only stored to be able to convert later into a Pose Waypoint. However, rotation is still used as part of the initial guess.
 
 - **X and Y**: position in meters from the bottom left (origin)
 
