@@ -63,9 +63,10 @@ Like a segment scope, but including segments (intuitive example: think of zero a
 
 Obstacles force the robot to avoid a certain area of the field throughout the path. For example, in the 2023 Charged Up game, you might want to avoid crashing into the charge station. Obstacles makes it easy to define where you want the robot to start and end without unnecessary (and performance-impacting) intermediary waypoints.
 
-To start, select the circle obstacle from the navbar (looks like a circle with a slash through it).
+To add a circle obstacle:
 
-Then, select anywhere on the field to add an obstacle. You can click on the ends of the circle to resize them.
+1. Select the circle obstacle from the navbar (looks like a circle with a slash through it).
+2. Select anywhere on the field to add an obstacle. You can click on the ends of the circle to resize them. You can also use the info panel on top left of the field to edit the center x, center y, and circle radius.
 
 ![Obstacles](../media/obstacles.png)
 
