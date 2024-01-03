@@ -5,22 +5,6 @@ import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../../input/InputList";
 import Input from "../../input/Input";
 import {
-  Button,
-  Divider,
-  FormControl,
-  FormControlLabel,
-  FormHelperText,
-  FormLabel,
-  MenuItem,
-  Select,
-} from "@mui/material";
-import {
-  maxTorqueCurrentLimited,
-  MotorCurve,
-  MotorCurves,
-  SwerveModules,
-} from "../MotorCurves";
-import {
   InToM,
   KgToLbs,
   KG_TO_LBS,

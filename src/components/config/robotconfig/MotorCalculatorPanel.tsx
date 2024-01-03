@@ -16,10 +16,8 @@ import {
 } from "@mui/material";
 import {
   maxTorqueCurrentLimited,
-  MotorCurve,
   MotorCurves,
-  SwerveModules,
-} from "../MotorCurves";
+} from "./MotorCurves";
 
 type Props = { rowGap: number };
 

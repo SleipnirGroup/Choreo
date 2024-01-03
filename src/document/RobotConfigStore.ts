@@ -2,7 +2,7 @@ import { applySnapshot, getRoot, Instance, types } from "mobx-state-tree";
 import {
   maxTorqueCurrentLimited,
   MotorCurves,
-} from "../components/config/MotorCurves";
+} from "../components/config/robotconfig/MotorCurves";
 import { safeGetIdentifier } from "../util/mobxutils";
 import { InToM, LbsToKg } from "../util/UnitConversions";
 import { IStateStore } from "./DocumentModel";

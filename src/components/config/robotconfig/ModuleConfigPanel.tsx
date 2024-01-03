@@ -15,12 +15,6 @@ import {
   Select,
 } from "@mui/material";
 import {
-  maxTorqueCurrentLimited,
-  MotorCurve,
-  MotorCurves,
-  SwerveModules,
-} from "../MotorCurves";
-import {
   InToM,
   KgToLbs,
   KG_TO_LBS,
