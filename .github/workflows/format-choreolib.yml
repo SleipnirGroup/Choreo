@@ -73,6 +73,6 @@ jobs:
         working-directory: choreolib
         run: ./gradlew generateCompileCommands
       - name: List changed files
-        run: wpiformat -list-changed-files -f ./choreolib -
+        run: wpiformat -f ./choreolib -list-changed-files
       - name: Run clang-tidy
         run: wpiformat -f ./choreolib -no-format -tidy-all -compile-commands=choreolib/build/TargetedCompileCommands/linuxx86-64debug -tidy-extra-args std=c++20 -vv
