@@ -65,7 +65,7 @@ jobs:
         run: pip3 install wpiformat
       - name: Create compile_commands.json
         working-directory: choreolib
-        run: | 
+        run: |
           ./gradlew generateCompileCommands -Ptoolchain-optional-roboRio
           ../.github/workflows/fix_compile_commands.py build/TargetedCompileCommands/linuxx86-64release/compile_commands.json
           ../.github/workflows/fix_compile_commands.py build/TargetedCompileCommands/linuxx86-64debug/compile_commands.json
