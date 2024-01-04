@@ -1,66 +1,31 @@
 /* DO NOT CHANGE the following import block! It should remain as a copy-paste example */
-import type {
-  SavedDocument as v0_0_0,
-  SavedPath as v0_0_0_Path,
-  SavedWaypoint as v0_0_0_Waypoint,
-  SavedTrajectorySample as v0_0_0_Sample,
-  SavedPathList as v0_0_0_Pathlist,
-  SavedRobotConfig as v0_0_0_Config,
-  SAVE_FILE_VERSION as v0_0_0_Version,
-  SavedDocument,
-} from "./previousSpecs/v0_0_0";
+import type { SavedDocument as v0_0_0, SavedDocument } from "./previousSpecs/v0_0_0";
 import v0_0_0_Schema from "./previousSpecs/v0.0.0.json";
 import {
   SavedDocument as v0_0_1,
-  SavedPath as v0_0_1_Path,
   SavedWaypoint as v0_0_1_Waypoint,
-  SavedTrajectorySample as v0_0_1_Sample,
-  SavedPathList as v0_0_1_Pathlist,
-  SavedRobotConfig as v0_0_1_Config,
   SAVE_FILE_VERSION as v0_0_1_Version,
 } from "./previousSpecs/v0_0_1";
 import v0_0_1_Schema from "./previousSpecs/v0.0.1.json";
 import {
   SavedDocument as v0_1,
-  SavedPath as v0_1_Path,
   SavedWaypoint as v0_1_Waypoint,
-  SavedTrajectorySample as v0_1_Sample,
-  SavedPathList as v0_1_Pathlist,
-  SavedRobotConfig as v0_1_Config,
-  SavedConstraint as v0_1_Constraint,
   SAVE_FILE_VERSION as v0_1_Version,
 } from "./previousSpecs/v0_1";
 import v0_1_Schema from "./previousSpecs/v0.1.json";
-import {
-  SavedDocument as v0_1_1,
-  SavedPath as v0_1_1_Path,
-  SavedWaypoint as v0_1_1_Waypoint,
-  SavedTrajectorySample as v0_1_1_Sample,
-  SavedPathList as v0_1_1_Pathlist,
-  SavedRobotConfig as v0_1_1_Config,
-  SAVE_FILE_VERSION as v0_1_1_Version,
-} from "./previousSpecs/v0_1_1";
+import { SavedDocument as v0_1_1, SAVE_FILE_VERSION as v0_1_1_Version } from "./previousSpecs/v0_1_1";
 import v0_1_1_Schema from "./previousSpecs/v0.1.1.json";
-import {
-  SavedDocument as v0_1_2,
-  SavedPath as v0_1_2_Path,
-  SavedWaypoint as v0_1_2_Waypoint,
-  SavedTrajectorySample as v0_1_2_Sample,
-  SavedPathList as v0_1_2_Pathlist,
-  SavedRobotConfig as v0_1_2_Config,
-  SAVE_FILE_VERSION as v0_1_2_Version,
-} from "./previousSpecs/v0_1_2";
+import { SavedDocument as v0_1_2, SAVE_FILE_VERSION as v0_1_2_Version } from "./previousSpecs/v0_1_2";
 import v0_1_2_Schema from "./previousSpecs/v0.1.2.json";
 import {
   SavedDocument as v0_2,
-  SavedPath as v0_2_Path,
-  SavedWaypoint as v0_2_Waypoint,
-  SavedTrajectorySample as v0_2_Sample,
-  SavedPathList as v0_2_Pathlist,
   SavedRobotConfig as v0_2_Config,
   SAVE_FILE_VERSION as v0_2_Version,
 } from "./previousSpecs/v0_2";
 import v0_2_Schema from "./previousSpecs/v0.2.json";
+import { SAVE_FILE_VERSION } from "./previousSpecs/v0_2";
+import Ajv from "ajv";
+import { maxTorqueCurrentLimited, MotorCurves } from "../components/config/robotconfig/MotorCurves";
 
 // Paste new version import blocks above this line.
 // Update the import path in the below to point to a particular version as current
@@ -75,8 +40,6 @@ export type {
   SavedCircleObstacle,
 } from "./previousSpecs/v0_2";
 export { SAVE_FILE_VERSION } from "./previousSpecs/v0_2";
-import { SAVE_FILE_VERSION } from "./previousSpecs/v0_2";
-import Ajv from "ajv";
 
 export let VERSIONS = {
   "v0.0.0": {
@@ -201,10 +164,9 @@ export let VERSIONS = {
     up: (document: any): v0_2 => {
       document = document as v0_1_2;
       let robotConfiguration: v0_2_Config = {
-        motorMaxTorque: 1,
-        motorMaxVelocity: 6000, // kraken max speed in rpm
+        motorMaxTorque: maxTorqueCurrentLimited(MotorCurves["Kraken X60"].kt, 60),
+        motorMaxVelocity: MotorCurves["Kraken X60"].motorMaxVelocity, // kraken max speed in rpm
         gearing: 6.75, // SDS mk4i L2
-        efficiency: 80,
         ...document.robotConfiguration,
       };
       let updated: v0_2 = {
