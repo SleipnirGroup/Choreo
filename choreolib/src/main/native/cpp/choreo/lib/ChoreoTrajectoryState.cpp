@@ -70,9 +70,9 @@ ChoreoTrajectoryState ChoreoTrajectoryState::Flipped() const {
                                fieldWidth - x,
                                y,
                                units::radian_t{std::numbers::pi} - heading,
-                               velocityX * -1,
+                               -velocityX,
                                velocityY,
-                               angularVelocity * -1};
+                               -angularVelocity};
 }
 
 void choreolib::to_json(wpi::json& json,
