@@ -5,7 +5,7 @@ plugins {
     id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2020.2'
     id 'edu.wpi.first.NativeUtils' version '2024.3.1'
     id 'edu.wpi.first.GradleJni' version '1.0.0'
-    id 'edu.wpi.first.GradleVsCode' version '2.0.0'
+    id 'edu.wpi.first.GradleVsCode' version '2.1.0'
     id 'com.diffplug.spotless' version '6.11.0'
     id 'jacoco'
 }
