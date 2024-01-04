@@ -19,8 +19,8 @@ function App() {
       borderRadius: "10px",
       marginInline: "0.3rem",
       boxSizing: "border-box",
-      // backgroundColor:
-      //   ownerState.color === "primary" && theme.palette.primary.main,
+      backgroundColor:
+        ownerState.color === "primary" && theme.palette.primary.main,
       "&:hover": {
         backgroundColor:
           ownerState.color === "primary" && theme.palette.secondary.main,
