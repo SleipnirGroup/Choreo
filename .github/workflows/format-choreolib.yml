@@ -77,4 +77,4 @@ jobs:
         run: wpiformat -no-format -tidy-changed -compile-commands=build/TargetedCompileCommands/linuxx86-64debug -vv
       - name: Run clang-tidy release
         working-directory: choreolib
-        run: wpiformat -f ./choreolib -no-format -tidy-changed -compile-commands=build/TargetedCompileCommands/linuxx86-64release -vv
+        run: wpiformat -no-format -tidy-changed -compile-commands=build/TargetedCompileCommands/linuxx86-64release -vv
