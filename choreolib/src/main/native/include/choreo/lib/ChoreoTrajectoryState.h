@@ -7,7 +7,7 @@
 #include <wpi/json_fwd.h>
 
 namespace choreolib {
-// A single state in a ChoreoTrajectory
+/// A single state in a ChoreoTrajectory
 class ChoreoTrajectoryState {
  public:
   ChoreoTrajectoryState() = default;
@@ -22,7 +22,6 @@ class ChoreoTrajectoryState {
    * @param xVel The x velocity of the robot at this state
    * @param yVel The x velocity of the robot at this state
    * @param angularVel The angular velocity of the robot at this state
-   *
    */
   ChoreoTrajectoryState(units::second_t t, units::meter_t x, units::meter_t y,
                         units::radian_t heading,
@@ -50,7 +49,6 @@ class ChoreoTrajectoryState {
    * @param endValue The next state. It should have a timestamp after this
    * state.
    * @param i how far between the two trajectories we should be in range (0,1)
-   *
    * @return this state as an array of doubles
    */
   ChoreoTrajectoryState Interpolate(const ChoreoTrajectoryState& endValue,
@@ -68,30 +66,30 @@ class ChoreoTrajectoryState {
    * field
    *
    * @return a new instance of this state mirrored across the midline of the
-   field
+   *  field
    */
   ChoreoTrajectoryState Flipped() const;
 
-  // The time elapsed since the beginning of the trajectory
+  /// The time elapsed since the beginning of the trajectory
   units::second_t timestamp{0_s};
 
-  // The x position at that point in the trajectory
-  units::meter_t x{0_m};
+  /// The x position at that point in the trajectory
+  units::meter_t x = 0_m;
 
-  // The y position at that point in the trajectory
-  units::meter_t y{0_m};
+  /// The y position at that point in the trajectory
+  units::meter_t y = 0_m;
 
-  // The heading at that point in the trajectory
-  units::radian_t heading{0_rad};
+  /// The heading at that point in the trajectory
+  units::radian_t heading = 0_rad;
 
-  // The x component of the velocity at that point in the trajectory
-  units::meters_per_second_t velocityX{0_mps};
+  /// The x component of the velocity at that point in the trajectory
+  units::meters_per_second_t velocityX = 0_mps;
 
-  // The y component of the velocity at that point in the trajectory
-  units::meters_per_second_t velocityY{0_mps};
+  /// The y component of the velocity at that point in the trajectory
+  units::meters_per_second_t velocityY = 0_mps;
 
-  // The angular component of the velocity at that point in the trajectory
-  units::radians_per_second_t angularVelocity{0_rad_per_s};
+  /// The angular component of the velocity at that point in the trajectory
+  units::radians_per_second_t angularVelocity = 0_rad_per_s;
 
  private:
   static constexpr units::meter_t fieldWidth = 16.55445_m;

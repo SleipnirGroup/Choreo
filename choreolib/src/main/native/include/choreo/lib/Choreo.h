@@ -14,45 +14,45 @@
 
 namespace choreolib {
 
-// A type alias to constrain the controller function
+/// A type alias to constrain the controller function
 using ChoreoControllerFunction =
     std::function<frc::ChassisSpeeds(frc::Pose2d, ChoreoTrajectoryState)>;
 
-// A class that handles loading choreo trajectories and creating command
-// factories for following trajectories
+/// A class that handles loading choreo trajectories and creating command
+/// factories for following trajectories
 class Choreo {
  public:
   /**
    * Load a trajectory from the deploy directory. Choreolib expects .traj files
-   * to be placed in src/main/deploy/choreo/[trajName].traj .
+   *  to be placed in src/main/deploy/choreo/[trajName].traj .
    *
    * @param trajName the path name in Choreo, which matches the file name in the
-   * deploy directory. Do not include ".traj" here.
+   *  deploy directory. Do not include ".traj" here.
    * @return the loaded trajectory, will throw runtime error if the file doesn't
-   * exist
+   *  exist
    */
   static ChoreoTrajectory GetTrajectory(std::string trajName);
 
   /**
    * Creates a CommandPtr that commands your drivebase to follow a Choreo
-   trajectory
+   *  trajectory
    *
    * @param trajectory a ChoreoTrajectory to follow
    * @param poseSupplier a function that returns a Pose2d of the robots current
-   * position
+   *  position
    * @param xController a PIDController that controls the feedback on the global
-   * x position of the robot
+   *  x position of the robot
    * @param yController a PIDController that controls the feedback on the global
-   * y position of the robot
+   *  y position of the robot
    * @param rotationController a PIDController that controls the feedback on the
-   * global heading of the robot
+   *  global heading of the robot
    * @param outputChassisSpeeds a function that consuming the calculated robot
-   * relative ChassisSpeeds
+   *  relative ChassisSpeeds
    * @param useAllianceColor if true, mirror the trajectory along the midline of
-   * the field
+   *  the field
    * @param requirements the frc2::Requirements of the command
    * @return an frc2::CommandPtr containing the command that will command your
-   * drivebase to follow a trajectory
+   *  drivebase to follow a trajectory
    */
   static frc2::CommandPtr ChoreoSwerveCommandFactory(
       ChoreoTrajectory trajectory, std::function<frc::Pose2d()> poseSupplier,
@@ -63,20 +63,20 @@ class Choreo {
 
   /**
    * Creates a CommandPtr that commands your drivebase to follow a Choreo
-   trajectory
+   *  trajectory
    *
    * @param trajectory a ChoreoTrajectory to follow
    * @param poseSupplier a function that returns a Pose2d of the robots current
-   * position
+   *  position
    * @param controller a ChoreoControllerFunction that handles the feedback of
-   * the robots position
+   *  the robots position
    * @param outputChassisSpeeds a function that consuming the calculated robot
-   * relative ChassisSpeeds
+   *  relative ChassisSpeeds
    * @param useAllianceColor if true, mirror the trajectory along the midline of
-   * the field
+   *  the field
    * @param requirements the frc2::Requirements of the command
    * @return an frc2::CommandPtr containing the command that will command your
-   * drivebase to follow a trajectory
+   *  drivebase to follow a trajectory
    */
   static frc2::CommandPtr ChoreoSwerveCommandFactory(
       ChoreoTrajectory trajectory, std::function<frc::Pose2d()> poseSupplier,
@@ -86,21 +86,18 @@ class Choreo {
 
   /**
    * Creates a ChoreoControllerFunction handles the feedback of the drivebase
-   * position
+   *  position
    * @param xController a PIDController that controls the feedback on the global
-   * x position of the robot
+   *  x position of the robot
    * @param yController a PIDController that controls the feedback on the global
-   * y position of the robot
+   *  y position of the robot
    * @param rotationController a PIDController that controls the feedback on the
-   * global heading of the robot
-   *
+   *  global heading of the robot
    * @return a ChoreoControllerFunction that handles the feedback of the
-   * drivebase position
+   *  drivebase position
    */
   static ChoreoControllerFunction ChoreoSwerveController(
       frc::PIDController xController, frc::PIDController yController,
       frc::PIDController rotationController);
-
- private:
 };
 }  // namespace choreolib
