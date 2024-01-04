@@ -15,9 +15,9 @@
 
 using namespace choreolib;
 
-ChoreoTrajectory Choreo::GetTrajectory(std::string trajName) {
-  std::string trajDir = frc::filesystem::GetDeployDirectory() + "/choreo/";
-  std::string trajFileName = trajDir + trajName + ".traj";
+ChoreoTrajectory Choreo::GetTrajectory(std::string_view trajName) {
+  std::string trajFileName = fmt::format(
+      "{}/choreo/{}.traj", frc::filesystem::GetDeployDirectory(), trajName);
 
   std::error_code ec;
   std::unique_ptr<wpi::MemoryBuffer> fileBuffer =

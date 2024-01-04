@@ -9,6 +9,7 @@
 
 #include <functional>
 #include <string>
+#include <string_view>
 
 #include "ChoreoTrajectory.h"
 
@@ -31,7 +32,7 @@ class Choreo {
    * @return the loaded trajectory, will throw runtime error if the file doesn't
    *  exist
    */
-  static ChoreoTrajectory GetTrajectory(std::string trajName);
+  static ChoreoTrajectory GetTrajectory(std::string_view trajName);
 
   /**
    * Creates a CommandPtr that commands your drivebase to follow a Choreo
