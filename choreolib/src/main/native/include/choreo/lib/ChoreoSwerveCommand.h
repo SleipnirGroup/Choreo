@@ -12,24 +12,46 @@
 
 namespace choreolib {
 
+// A type alias to constrain the controller function
 using ChoreoControllerFunction =
     std::function<frc::ChassisSpeeds(frc::Pose2d, ChoreoTrajectoryState)>;
 
+/**
+ * A frc2::Command that controls a swerve drivetrain using ChoreoTrajectories
+ *
+ **/
 class ChoreoSwerveCommand
     : public frc2::CommandHelper<frc2::Command, ChoreoSwerveCommand> {
  public:
+  /**
+   * Creates a new ChoreoSwerveCommand that controls a swerve drivetrain
+   *
+   * @param trajectory the ChoreoTrajectory to follow
+   * @param poseSupplier a function that supplies the current pose of the robot
+   * @param controller a function that consumes a pose and the current
+   *trajectory state, and supplies back robot relative ChassisSpeeds
+   * @param outputChassisSpeeds a function that consumes robot relative
+   *ChassisSpeeds
+   * @param useAllianceColor if true, mirrors  the trajectory if the robot is on
+   *the red alliance
+   * @param requirements subsystem requirements
+   **/
   ChoreoSwerveCommand(
       ChoreoTrajectory trajectory, std::function<frc::Pose2d()> poseSupplier,
       ChoreoControllerFunction controller,
       std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds,
       bool useAllianceColor, frc2::Requirements requirements = {});
 
+  // Runs once before the first call to Execute()
   void Initialize() override;
 
+  // Runs every robot periodic loop while the command is running.
   void Execute() override;
 
+  // Runs once after IsFinished() returns true
   void End(bool interrupted) override;
 
+  // Command will end once this returns true
   bool IsFinished() override;
 
  private:

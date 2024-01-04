@@ -2,6 +2,7 @@
 
 #include "choreo/lib/ChoreoTrajectory.h"
 
+#include <units/math.h>
 #include <wpi/json.h>
 
 using namespace choreolib;
@@ -12,41 +13,40 @@ ChoreoTrajectory::ChoreoTrajectory(
 
 ChoreoTrajectoryState ChoreoTrajectory::SampleInternal(
     units::second_t timestamp) {
-  if (timestamp < samples[0].timestamp) {
-    return samples[0];
-  }
-  if (timestamp > GetTotalTime()) {
-    return samples[samples.size() - 1];
+  if (samples.empty()) {
+    throw std::runtime_error(
+        "Trajectory cannot be sampled if it has no states.");
   }
 
-  size_t low = 0;
-  size_t high = samples.size() - 1;
-
-  while (low != high) {
-    size_t mid = (low + high) / 2;
-    if (samples[mid].timestamp < timestamp) {
-      low = mid + 1;
-    } else {
-      high = mid;
-    }
+  if (timestamp <= samples.front().timestamp) {
+    return samples.front();
+  }
+  if (timestamp >= GetTotalTime()) {
+    return samples.back();
   }
 
-  if (low == 0) {
-    return samples[low];
+  // Use binary search to get the element with a timestamp no less than the
+  // requested timestamp. This starts at 1 because we use the previous state
+  // later on for interpolation.
+  auto sample = std::lower_bound(
+      samples.cbegin() + 1, samples.cend(), timestamp,
+      [](const auto& a, const auto& b) { return a.timestamp < b; });
+
+  auto prevSample = sample - 1;
+
+  // The sample's timestamp is now greater than or equal to the requested
+  // timestamp. If it is greater, we need to interpolate between the
+  // previous state and the current state to get the exact state that we
+  // want.
+
+  // If the difference in states is negligible, then we are spot on!
+  if (units::math::abs(sample->timestamp - prevSample->timestamp) < 1E-9_s) {
+    return *sample;
   }
-
-  ChoreoTrajectoryState behindState = samples[low - 1];
-  ChoreoTrajectoryState aheadState = samples[low];
-
-  if ((aheadState.timestamp - behindState.timestamp) < units::second_t{1e-6}) {
-    return aheadState;
-  }
-
-  return behindState.Interpolate(aheadState, timestamp);
-}
-
-ChoreoTrajectoryState ChoreoTrajectory::Sample(units::second_t timestamp) {
-  return Sample(timestamp, false);
+  // Interpolate between the two states for the state that we want.
+  return prevSample->Interpolate(
+      *sample, (timestamp - prevSample->timestamp) /
+                   (sample->timestamp - prevSample->timestamp));
 }
 
 ChoreoTrajectoryState ChoreoTrajectory::Sample(units::second_t timestamp,
@@ -56,15 +56,15 @@ ChoreoTrajectoryState ChoreoTrajectory::Sample(units::second_t timestamp,
 }
 
 frc::Pose2d ChoreoTrajectory::GetInitialPose() const {
-  return samples[0].GetPose();
+  return samples.front().GetPose();
 }
 
 frc::Pose2d ChoreoTrajectory::GetFinalPose() const {
-  return samples[samples.size() - 1].GetPose();
+  return samples.back().GetPose();
 }
 
 units::second_t ChoreoTrajectory::GetTotalTime() const {
-  return samples[samples.size() - 1].timestamp;
+  return samples.back().timestamp;
 }
 
 std::vector<frc::Pose2d> ChoreoTrajectory::GetPoses() const {

@@ -28,10 +28,11 @@ void ChoreoSwerveCommand::Initialize() {
 void ChoreoSwerveCommand::Execute() {
   bool mirror = false;
   if (m_useAlliance) {
-    std::optional<frc::DriverStation::Alliance> alliance =
-        frc::DriverStation::GetAlliance();
-    mirror = alliance.has_value() &&
-             alliance.value() == frc::DriverStation::Alliance::kRed;
+    if (auto ally = frc::DriverStation::GetAlliance()) {
+      if (ally.value() == frc::DriverStation::Alliance::kRed) {
+        mirror = true;
+      }
+    }
   }
   units::second_t currentTrajTime = m_timer.Get();
   m_outputChassisSpeeds(
@@ -45,6 +46,5 @@ void ChoreoSwerveCommand::End(bool interrupted) {
 
 // Returns true when the command should end.
 bool ChoreoSwerveCommand::IsFinished() {
-  bool isDone = m_timer.HasElapsed(m_traj.GetTotalTime());
-  return isDone;
+  return m_timer.HasElapsed(m_traj.GetTotalTime());
 }

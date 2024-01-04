@@ -3,6 +3,7 @@
 #include "choreo/lib/ChoreoTrajectoryState.h"
 
 #include <frc/geometry/Twist2d.h>
+#include <wpi/MathExtras.h>
 #include <wpi/json.h>
 
 #include <numbers>
@@ -25,15 +26,6 @@ static constexpr frc::Pose2d Interpolate(const frc::Pose2d& startValue,
 }
 }  // namespace frc
 
-ChoreoTrajectoryState::ChoreoTrajectoryState()
-    : timestamp(0_s),
-      x(0_m),
-      y(0_m),
-      heading(0_rad),
-      velocityX(0_mps),
-      velocityY(0_mps),
-      angularVelocity(0_rad_per_s) {}
-
 ChoreoTrajectoryState::ChoreoTrajectoryState(
     units::second_t t, units::meter_t x, units::meter_t y,
     units::radian_t heading, units::meters_per_second_t xVel,
@@ -55,21 +47,16 @@ frc::ChassisSpeeds ChoreoTrajectoryState::GetChassisSpeeds() const {
 }
 
 ChoreoTrajectoryState ChoreoTrajectoryState::Interpolate(
-    const ChoreoTrajectoryState& endValue, units::second_t t) const {
-  units::scalar_t scale = (t - timestamp) / (endValue.timestamp - timestamp);
-  frc::Pose2d interpPose =
-      frc::Interpolate(GetPose(), endValue.GetPose(), scale);
+    const ChoreoTrajectoryState& endValue, double i) const {
+  frc::Pose2d interpPose = frc::Interpolate(GetPose(), endValue.GetPose(), i);
   return ChoreoTrajectoryState{
       0_s,
       interpPose.X(),
       interpPose.Y(),
       interpPose.Rotation().Radians(),
-      units::meters_per_second_t{
-          std::lerp(velocityX.value(), endValue.velocityY.value(), scale)},
-      units::meters_per_second_t{
-          std::lerp(velocityY.value(), endValue.velocityY.value(), scale)},
-      units::radians_per_second_t{std::lerp(
-          angularVelocity.value(), endValue.angularVelocity.value(), scale)}};
+      wpi::Lerp(velocityX, endValue.velocityX, i),
+      wpi::Lerp(velocityY, endValue.velocityY, i),
+      wpi::Lerp(angularVelocity, endValue.angularVelocity, i)};
 }
 
 std::array<double, 7> ChoreoTrajectoryState::AsArray() const {
