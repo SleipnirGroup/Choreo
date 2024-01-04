@@ -1,13 +1,11 @@
+import '@fontsource/roboto-mono';
+import '@fontsource/roboto';
 import "./App.css";
-import DocumentManagerContext, {
-  DocumentManager,
-} from "./document/DocumentManager";
-import { createContext } from "react";
 import { observer } from "mobx-react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Body from "./Body";
-import { ToastContainer } from "react-toastify";
+
 
 function App() {
   const buttonOverrides = {

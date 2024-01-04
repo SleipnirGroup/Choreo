@@ -1,12 +1,7 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
-import styles from "./WaypointConfigPanel.module.css";
-import InputList from "../input/InputList";
-import Input from "../input/Input";
-import GearboxConfigPanel from "./robotconfig/MotorCalculatorPanel";
-import { Divider, IconButton, Modal, Tab, Tabs } from "@mui/material";
-import { NUM_SETTINGS_TABS } from "../../document/UIStateStore";
+import { IconButton, Modal, Tab, Tabs } from "@mui/material";
 import RobotConfigPanel from "./robotconfig/RobotConfigPanel";
 import { Close } from "@mui/icons-material";
 

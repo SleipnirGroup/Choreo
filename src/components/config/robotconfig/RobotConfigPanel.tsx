@@ -1,39 +1,10 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../../document/DocumentManager";
-import InputList from "../../input/InputList";
-import Input from "../../input/Input";
 import MotorCalculatorPanel from "./MotorCalculatorPanel";
 import inputStyles from "../../input/InputList.module.css";
-import {
-  Button,
-  Card,
-  Divider,
-  FormControl,
-  FormControlLabel,
-  FormHelperText,
-  IconButton,
-  Switch,
-} from "@mui/material";
-import {
-  InToM,
-  KgToLbs,
-  KG_TO_LBS,
-  LbsToKg,
-  MassUnit,
-  MetersOrFeet,
-  MetersOrInches,
-  MToFt,
-  MToIn,
-  M_TO_FT,
-} from "../../../util/UnitConversions";
-import {
-  ArrowDropDown,
-  ArrowDropUp,
-  BarChart,
-  Calculate,
-  Height,
-} from "@mui/icons-material";
+import { Divider, FormHelperText, IconButton, Switch } from "@mui/material";
+import { ArrowDropDown, ArrowDropUp } from "@mui/icons-material";
 import DimensionsConfigPanel from "./DimensionsConfigPanel";
 import TheoreticalPanel from "./TheoreticalPanel";
 import ModuleConfigPanel from "./ModuleConfigPanel";

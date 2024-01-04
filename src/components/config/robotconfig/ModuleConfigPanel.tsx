@@ -1,31 +1,9 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../../document/DocumentManager";
-import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../../input/InputList";
 import Input from "../../input/Input";
-import {
-  Button,
-  Divider,
-  FormControl,
-  FormControlLabel,
-  FormHelperText,
-  FormLabel,
-  MenuItem,
-  Select,
-} from "@mui/material";
-import {
-  InToM,
-  KgToLbs,
-  KG_TO_LBS,
-  LbsToKg,
-  MassUnit,
-  MetersOrFeet,
-  MetersOrInches,
-  MToFt,
-  MToIn,
-  M_TO_FT,
-} from "../../../util/UnitConversions";
+import { InToM, MetersOrInches, MToIn } from "../../../util/UnitConversions";
 
 type Props = { rowGap: number; imperial: boolean };
 
