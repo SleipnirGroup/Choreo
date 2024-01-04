@@ -17,7 +17,7 @@ class RobotConfigPanel extends Component<Props, State> {
   render() {
     let config = this.context.model.document.robotConfig;
     let floorSpeed = config.wheelMaxVelocity * config.wheelRadius;
-    let floorLinearForce = config.wheelMaxTorque / config.wheelRadius; // N
+    let floorLinearForce = 4 * config.wheelMaxTorque / config.wheelRadius; // N
     let floorLinearAccel = floorLinearForce / config.mass;
     let driveRadius = Math.hypot(config.wheelbase / 2, config.trackWidth / 2);
     let chassisTorque = floorLinearForce * driveRadius; // N*m

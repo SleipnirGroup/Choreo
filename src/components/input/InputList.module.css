@@ -20,7 +20,7 @@
   color: var(--disabled-color);
 }
 .Number {
-  font-family: "Roboto Mono";
+  font-family: "Roboto Mono Variable";
   width: auto;
   height: 24px;
   background-color: transparent;

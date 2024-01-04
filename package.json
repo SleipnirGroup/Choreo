@@ -25,8 +25,8 @@
   "dependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
+    "@fontsource-variable/roboto-mono": "^5.0.17",
     "@fontsource/roboto": "^5.0.8",
-    "@fontsource/roboto-mono": "^5.0.16",
     "@mui/icons-material": "^5.11.16",
     "@mui/material": "^5.13.6",
     "@tauri-apps/api": "^1.4.0",

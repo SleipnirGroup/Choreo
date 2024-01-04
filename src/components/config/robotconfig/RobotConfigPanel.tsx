@@ -22,15 +22,6 @@ class RobotConfigPanel extends Component<Props, State> {
     let config = this.context.model.document.robotConfig;
     let uiState = this.context.model.uiState;
     let imp = this.state.imperial;
-    let floorSpeed = config.wheelMaxVelocity * config.wheelRadius;
-    let floorLinearForce = config.wheelMaxTorque / config.wheelRadius; // N
-    let floorLinearAccel = floorLinearForce / config.mass;
-    let driveRadius = Math.hypot(config.wheelbase / 2, config.trackWidth / 2);
-    let chassisTorque = floorLinearForce * driveRadius; // N*m
-    //N*m/(kg*m*m) = N/(kg*m) = (kg*m/s^2)/(kg*m)=1/s^2= rad/s^2
-    let chassisAngularAccel = chassisTorque / config.rotationalInertia; //N*m/(kg*m*m) = N/(kg*m)
-    let floorAngularVelocity =
-      (config.wheelMaxVelocity * config.wheelRadius) / driveRadius;
     return (
       <div
         style={{
@@ -153,6 +144,7 @@ class RobotConfigPanel extends Component<Props, State> {
         >
           <MotorCalculatorPanel rowGap={this.rowGap}></MotorCalculatorPanel>
         </div>
+        <div style={{gridRow:3, gridColumn:1, pointerEvents:"none", display: this.state.bottomHalf ? "block" : "none", transform:`translate(${this.rowGap}px)`}}><Divider orientation="vertical"></Divider></div>
         {/* Theoreticals */}
         <div
           style={{

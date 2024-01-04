@@ -1,4 +1,5 @@
-import '@fontsource/roboto-mono';
+import '@fontsource-variable/roboto-mono/wght-italic.css';
+import '@fontsource-variable/roboto-mono';
 import '@fontsource/roboto';
 import "./App.css";
 import { observer } from "mobx-react";

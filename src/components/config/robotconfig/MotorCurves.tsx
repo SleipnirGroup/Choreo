@@ -10,7 +10,7 @@ export const MotorCurves: Record<string, MotorCurve> = {
     kt: 4.69 / 257.0,
   },
   "Falcon FOC": {
-    name: "Falcon FOC",
+    name: "Falcon with FOC",
     motorMaxVelocity: 6080,
     kt: 5.84 / 304,
   },
@@ -30,7 +30,7 @@ export const MotorCurves: Record<string, MotorCurve> = {
     kt: 7.09 / 366,
   },
   "Kraken FOC": {
-    name: "Kraken FOC",
+    name: "Kraken with FOC",
     motorMaxVelocity: 5800,
     kt: 9.37 / 483,
   },
