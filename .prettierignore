@@ -3,3 +3,5 @@ dist/
 public/
 choreolib/
 src-tauri/target/
+.clang-format
+.clang-tidy
