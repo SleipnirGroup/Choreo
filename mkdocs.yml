@@ -75,7 +75,7 @@ nav:
   - Home:
       - Home: index.md
       - Installation: installation.md
-      - Robot Config: robot-config.md
+      - Document Settings: document-settings.md
   - Usage:
       - Editing Paths: usage/editing-paths.md
       - Controls & Shortcuts: usage/controls-shortcuts.md

@@ -4,6 +4,10 @@
 
 The trajectory optimizer depends upon the following user-specified parameters, which are entered in the Robot Configuration panel. This helps the optimizer understand the robot's projected path very accurately.
 
+Access the robot-config by accessing the drawer via hamburger icon on top left of screen, then clicking "Document Settings"
+
+![Document Settings](./media/document-settings.png)
+
 - **Mass** [kg]: The mass of the robot with battery and bumpers
 - **MoI** [kg * m<sup>2</sup>]: The resistance to change in rotational velocity in response to a torque applied to the robot about the vertical axis
 - **Max Velocity** [m/s]: The maximum tangential speed of the wheel
