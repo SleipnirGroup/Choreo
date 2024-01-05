@@ -11,7 +11,7 @@ import { SavedRobotConfig } from "./DocumentSpecTypes";
 export const ROBOT_CONFIG_DEFAULTS = {
   mass: LbsToKg(150),
   rotationalInertia: 6,
-  motorMaxVelocity: MotorCurves.KrakenX60.motorMaxVelocity,
+  motorMaxVelocity: MotorCurves.KrakenX60.motorMaxVelocity * 0.8,
   motorMaxTorque: maxTorqueCurrentLimited(MotorCurves.KrakenX60.kt, 60),
   gearing: 6.75, // SDS L2 mk4/mk4i
   wheelRadius: InToM(2),

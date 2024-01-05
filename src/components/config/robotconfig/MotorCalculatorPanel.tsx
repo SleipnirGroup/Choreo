@@ -17,8 +17,8 @@ class RobotConfigPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {
-    selectedMotor: "NEO" as keyof typeof MotorCurves,
-    currentLimit: 40,
+    selectedMotor: "KrakenX60" as keyof typeof MotorCurves,
+    currentLimit: 60,
   };
   render() {
     let config = this.context.model.document.robotConfig;
