@@ -4,14 +4,14 @@ import DocumentManagerContext from "../../../document/DocumentManager";
 import InputList from "../../input/InputList";
 import Input from "../../input/Input";
 import {
-  InToM,
-  KgToLbs,
-  KG_TO_LBS,
-  LbsToKg,
-  MassUnit,
-  MetersOrInches,
-  MToIn,
-  M_TO_FT,
+    InToM,
+    KgToLbs,
+    KG_TO_LBS,
+    LbsToKg,
+    MassUnit,
+    MetersOrInches,
+    MToIn,
+    M_TO_FT,
 } from "../../../util/UnitConversions";
 
 type Props = { rowGap: number; imperial: boolean };
@@ -34,7 +34,7 @@ class RobotConfigPanel extends Component<Props, State> {
           setEnabled={(a) => null}
           number={imp ? KgToLbs(config.mass) : config.mass}
           setNumber={(mass) => config!.setMass(imp ? LbsToKg(mass) : mass)}
-          maxCharacters={8}
+          maxWidthCharacters={8}
           showCheckbox={false}
           titleTooltip={"Total robot mass"}
         />
@@ -54,7 +54,7 @@ class RobotConfigPanel extends Component<Props, State> {
               imp ? moi / (KG_TO_LBS * M_TO_FT * M_TO_FT) : moi
             )
           }
-          maxCharacters={8}
+          maxWidthCharacters={8}
           showCheckbox={false}
           titleTooltip={"Robot moment of inertia around center vertical axis"}
         />
@@ -69,7 +69,7 @@ class RobotConfigPanel extends Component<Props, State> {
           setNumber={(width) =>
             config!.setBumperWidth(imp ? InToM(width) : width)
           }
-          maxCharacters={8}
+          maxWidthCharacters={8}
           showCheckbox={false}
           titleTooltip="Width of robot with bumpers on"
         />
@@ -84,7 +84,7 @@ class RobotConfigPanel extends Component<Props, State> {
           setNumber={(length) =>
             config!.setBumperLength(imp ? InToM(length) : length)
           }
-          maxCharacters={8}
+          maxWidthCharacters={8}
           showCheckbox={false}
           titleTooltip="Length of robot with bumpers on"
         />
@@ -99,7 +99,7 @@ class RobotConfigPanel extends Component<Props, State> {
           setNumber={(wheelbase) =>
             config!.setWheelbase(imp ? InToM(wheelbase) : wheelbase)
           }
-          maxCharacters={8}
+          maxWidthCharacters={8}
           showCheckbox={false}
           titleTooltip="Front-back distance between wheel centers"
         />
@@ -114,7 +114,7 @@ class RobotConfigPanel extends Component<Props, State> {
           setNumber={(trackwidth) =>
             config!.setTrackwidth(imp ? InToM(trackwidth) : trackwidth)
           }
-          maxCharacters={8}
+          maxWidthCharacters={8}
           showCheckbox={false}
           titleTooltip="Left-right distance between wheel centers"
         />

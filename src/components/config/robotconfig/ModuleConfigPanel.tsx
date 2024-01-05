@@ -28,7 +28,7 @@ class RobotConfigPanel extends Component<Props, State> {
           setNumber={(length) =>
             config!.setWheelRadius(imp ? InToM(length) : length)
           }
-          maxCharacters={8}
+          maxWidthCharacters={8}
           showCheckbox={false}
           titleTooltip="Radius of swerve wheels"
         />
@@ -40,7 +40,7 @@ class RobotConfigPanel extends Component<Props, State> {
           roundingPrecision={3}
           number={config.gearing}
           setNumber={config!.setGearing}
-          maxCharacters={8}
+          maxWidthCharacters={8}
           showCheckbox={false}
           titleTooltip="Gearing between motor shaft and wheel axle (>1)"
         />
@@ -52,7 +52,7 @@ class RobotConfigPanel extends Component<Props, State> {
           roundingPrecision={0}
           number={config.motorMaxVelocity}
           setNumber={config!.setMaxVelocity}
-          maxCharacters={8}
+          maxWidthCharacters={8}
           showCheckbox={false}
           titleTooltip="Actual motor speed at 12V"
         />
@@ -65,7 +65,7 @@ class RobotConfigPanel extends Component<Props, State> {
           roundingPrecision={3}
           number={config.motorMaxTorque}
           setNumber={config!.setMaxTorque}
-          maxCharacters={8}
+          maxWidthCharacters={8}
           showCheckbox={false}
           titleTooltip="Motor torque as current-limited"
         />

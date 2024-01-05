@@ -40,7 +40,7 @@ class RobotConfigPanel extends Component<Props, State> {
           roundingPrecision={3}
           number={imp ? MToFt(floorSpeed) : floorSpeed}
           setNumber={() => null}
-          maxCharacters={8}
+          maxWidthCharacters={8}
           showCheckbox={false}
           titleTooltip="Linear maximum speed when not rotating"
         />
@@ -52,7 +52,7 @@ class RobotConfigPanel extends Component<Props, State> {
           roundingPrecision={3}
           number={imp ? MToFt(floorLinearAccel) : floorLinearAccel}
           setNumber={() => null}
-          maxCharacters={8}
+          maxWidthCharacters={8}
           showCheckbox={false}
           titleTooltip="Linear maximum acceleration when not rotating"
         />
@@ -64,7 +64,7 @@ class RobotConfigPanel extends Component<Props, State> {
           roundingPrecision={3}
           number={floorAngularVelocity}
           setNumber={() => null}
-          maxCharacters={8}
+          maxWidthCharacters={8}
           showCheckbox={false}
           titleTooltip="Maximum angular speed when spinning in place"
         />
@@ -77,7 +77,7 @@ class RobotConfigPanel extends Component<Props, State> {
           roundingPrecision={3}
           number={chassisAngularAccel}
           setNumber={() => null}
-          maxCharacters={8}
+          maxWidthCharacters={8}
           showCheckbox={false}
           titleTooltip="Maximum angular acceleration when spinning in place"
         />

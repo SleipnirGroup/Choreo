@@ -23,7 +23,7 @@ type Props = {
   /** The tooltip for the title */
   titleTooltip?: string;
   /** Maximum width of the number input, in monospace characters */
-  maxCharacters?: number;
+  maxWidthCharacters?: number;
 };
 
 type State = {
@@ -107,8 +107,8 @@ class Input extends Component<Props, State> {
   render() {
     let showNumberWhenDisabled = this.props.showNumberWhenDisabled ?? true;
     let characters = this.getRoundedStr().length + 3;
-    if (this.props.maxCharacters !== undefined) {
-      characters = Math.min(characters, this.props.maxCharacters);
+    if (this.props.maxWidthCharacters !== undefined) {
+      characters = Math.min(characters, this.props.maxWidthCharacters);
     }
     return (
       <>
