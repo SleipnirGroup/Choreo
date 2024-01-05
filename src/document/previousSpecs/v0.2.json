@@ -1,0 +1,202 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "v0.2 Choreo Document",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": "v0.2"
+    },
+    "paths": {
+      "type": "object",
+      "properties": {
+        ".": {
+          "type": "object",
+          "properties": {
+            "waypoints": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  },
+                  "heading": {
+                    "type": "number"
+                  },
+                  "isInitialGuess": {
+                    "type": "boolean"
+                  },
+                  "translationConstrained": {
+                    "type": "boolean"
+                  },
+                  "headingConstrained": {
+                    "type": "boolean"
+                  },
+                  "controlIntervalCount": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": [
+                  "x",
+                  "y",
+                  "heading",
+                  "isInitialGuess",
+                  "translationConstrained",
+                  "headingConstrained",
+                  "controlIntervalCount"
+                ]
+              }
+            },
+            "generatedTrajectory": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "timestamp": {
+                    "type": "number",
+                    "minimum": 0.0
+                  },
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  },
+                  "heading": {
+                    "type": "number"
+                  },
+                  "velocityX": {
+                    "type": "number"
+                  },
+                  "velocityY": {
+                    "type": "number"
+                  },
+                  "angularVelocity": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "timestamp",
+                  "x",
+                  "y",
+                  "heading",
+                  "velocityX",
+                  "velocityY",
+                  "angularVelocity"
+                ]
+              }
+            },
+            "constraints": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "scope": {
+                    "type": "array",
+                    "items": {
+                      "oneOf": [
+                        { "const": "first" },
+                        { "const": "last" },
+                        { "type": "number" }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "usesDefaultFieldObstacles": {
+              "type": "boolean"
+            },
+            "usesControlIntervalCulling": {
+              "type": "boolean"
+            },
+            "usesControlIntervalGuessing": {
+              "type": "boolean"
+            },
+            "defaultControlIntervalCount": {
+              "type": "integer"
+            },
+            "circleObstacles": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  },
+                  "radius": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          },
+          "required": [
+            "waypoints",
+            "generatedTrajectory",
+            "constraints",
+            "usesControlIntervalCulling",
+            "usesControlIntervalGuessing",
+            "defaultControlIntervalCount",
+            "circleObstacles"
+          ]
+        }
+      }
+    },
+    "robotConfiguration": {
+      "type": "object",
+      "properties": {
+        "mass": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "rotationalInertia": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "wheelbase": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "trackWidth": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "wheelRadius": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "motorMaxVelocity": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "motorMaxTorque": {
+          "type": "number",
+          "minimum": 0.0
+        },
+        "gearing": {
+          "type": "number",
+          "minimum": 0.0
+        }
+      },
+      "required": [
+        "mass",
+        "rotationalInertia",
+        "wheelbase",
+        "trackWidth",
+        "wheelRadius",
+        "motorMaxVelocity",
+        "motorMaxTorque",
+        "gearing"
+      ]
+    }
+  },
+  "required": ["version", "paths", "robotConfiguration"]
+}

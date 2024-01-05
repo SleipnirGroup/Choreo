@@ -38,6 +38,7 @@ export class DocumentManager {
   constructor() {
     this.model = StateStore.create({
       uiState: {
+        settingsTab: 0,
         selectedSidebarItem: undefined,
         layers: [true, false, true, true, true],
       },
@@ -312,6 +313,7 @@ export class DocumentManager {
   newFile(): void {
     applySnapshot(this.model, {
       uiState: {
+        settingsTab: 0,
         selectedSidebarItem: undefined,
         layers: [true, false, true, true, true],
       },

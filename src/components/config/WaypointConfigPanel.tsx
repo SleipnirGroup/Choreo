@@ -5,16 +5,8 @@ import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import Input from "../input/Input";
 import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../input/InputList";
-import {
-  RadioGroup,
-  ToggleButton,
-  ToggleButtonGroup,
-  Tooltip,
-} from "@mui/material";
+import { ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
 import { WaypointData } from "../../document/UIStateStore";
-import Waypoint from "../../assets/Waypoint";
-import { Circle, CircleOutlined, Help } from "@mui/icons-material";
-import inputStyles from "../input/InputList.module.css";
 import { angleModulus } from "../../util/MathUtil";
 
 type Props = { waypoint: IHolonomicWaypointStore | null };
@@ -44,6 +36,7 @@ class WaypointPanel extends Component<Props, State> {
               showCheckbox={false}
               enabled={true}
               setEnabled={(_) => {}}
+              maxWidthCharacters={8}
               number={waypoint.x}
               setNumber={(x) => waypoint!.setX(x)}
             ></Input>
@@ -53,6 +46,7 @@ class WaypointPanel extends Component<Props, State> {
               showCheckbox={false}
               enabled={true}
               setEnabled={(_) => {}}
+              maxWidthCharacters={8}
               number={waypoint.y}
               setNumber={(y) => waypoint!.setY(y)}
             ></Input>
@@ -62,16 +56,19 @@ class WaypointPanel extends Component<Props, State> {
               showCheckbox={false}
               enabled={waypoint.headingConstrained}
               setEnabled={(_) => {}}
+              maxWidthCharacters={8}
               number={angleModulus(waypoint.heading)}
               setNumber={(heading) => waypoint!.setHeading(heading)}
             ></Input>
             <Input
-              title="n"
-              suffix="intervals"
+              title=""
+              suffix="steps"
               showCheckbox={false}
               enabled={true}
               setEnabled={(_) => {}}
+              maxWidthCharacters={8}
               number={waypoint.controlIntervalCount}
+              roundingPrecision={0}
               setNumber={(_) => {}}
             ></Input>
           </InputList>
