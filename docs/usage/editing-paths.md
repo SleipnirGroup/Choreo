@@ -72,7 +72,10 @@ To add a circle obstacle:
 
 ## Generating
 
-You can create paths by chaining waypoints together. Check out [Controls & Shortcuts](./controls-shortcuts.md) for advanced controls. Once you have at least two waypoints, then you can generate a path. You can cancel the path generation by pressing control and clicking the red "X" once it has started.
+You can create paths by chaining waypoints together. Check out [Controls & Shortcuts](./controls-shortcuts.md) for advanced controls. Once you have at least two waypoints, then you can generate a path.
+
+!!! tip
+    You can cancel the path generation by pressing control and clicking the red "X" once it has started.
 
 !!! tip
     If there is an error generating a path, check to make sure your waypoints can physically work.

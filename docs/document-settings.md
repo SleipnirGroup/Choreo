@@ -87,3 +87,5 @@ Motors Supported:
 !!! warning
 
     Make sure to press the APPLY button, or else your values will not save. Don't worry, you can always hit undo at any time to revert.
+
+Free Speed and Torque are from [reca.lc/motors](https://reca.lc/motors)
