@@ -1,5 +1,8 @@
 /* DO NOT CHANGE the following import block! It should remain as a copy-paste example */
-import type { SavedDocument as v0_0_0, SavedDocument } from "./previousSpecs/v0_0_0";
+import type {
+  SavedDocument as v0_0_0,
+  SavedDocument,
+} from "./previousSpecs/v0_0_0";
 import v0_0_0_Schema from "./previousSpecs/v0.0.0.json";
 import {
   SavedDocument as v0_0_1,
@@ -13,9 +16,15 @@ import {
   SAVE_FILE_VERSION as v0_1_Version,
 } from "./previousSpecs/v0_1";
 import v0_1_Schema from "./previousSpecs/v0.1.json";
-import { SavedDocument as v0_1_1, SAVE_FILE_VERSION as v0_1_1_Version } from "./previousSpecs/v0_1_1";
+import {
+  SavedDocument as v0_1_1,
+  SAVE_FILE_VERSION as v0_1_1_Version,
+} from "./previousSpecs/v0_1_1";
 import v0_1_1_Schema from "./previousSpecs/v0.1.1.json";
-import { SavedDocument as v0_1_2, SAVE_FILE_VERSION as v0_1_2_Version } from "./previousSpecs/v0_1_2";
+import {
+  SavedDocument as v0_1_2,
+  SAVE_FILE_VERSION as v0_1_2_Version,
+} from "./previousSpecs/v0_1_2";
 import v0_1_2_Schema from "./previousSpecs/v0.1.2.json";
 import {
   SavedDocument as v0_2,
@@ -25,7 +34,7 @@ import {
 import v0_2_Schema from "./previousSpecs/v0.2.json";
 import { SAVE_FILE_VERSION } from "./previousSpecs/v0_2";
 import Ajv from "ajv";
-import { maxTorqueCurrentLimited, MotorCurves } from "../components/config/robotconfig/MotorCurves";
+import { ROBOT_CONFIG_DEFAULTS } from "./RobotConfigStore";
 
 // Paste new version import blocks above this line.
 // Update the import path in the below to point to a particular version as current
@@ -164,9 +173,9 @@ export let VERSIONS = {
     up: (document: any): v0_2 => {
       document = document as v0_1_2;
       let robotConfiguration: v0_2_Config = {
-        motorMaxTorque: maxTorqueCurrentLimited(MotorCurves["Kraken X60"].kt, 60),
-        motorMaxVelocity: MotorCurves["Kraken X60"].motorMaxVelocity, // kraken max speed in rpm
-        gearing: 6.75, // SDS mk4i L2
+        motorMaxTorque: ROBOT_CONFIG_DEFAULTS.motorMaxTorque,
+        motorMaxVelocity: ROBOT_CONFIG_DEFAULTS.motorMaxVelocity,
+        gearing: ROBOT_CONFIG_DEFAULTS.gearing,
         ...document.robotConfiguration,
       };
       let updated: v0_2 = {

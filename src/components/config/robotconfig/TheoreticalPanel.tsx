@@ -17,7 +17,7 @@ class RobotConfigPanel extends Component<Props, State> {
   render() {
     let config = this.context.model.document.robotConfig;
     let floorSpeed = config.wheelMaxVelocity * config.wheelRadius;
-    let floorLinearForce = 4 * config.wheelMaxTorque / config.wheelRadius; // N
+    let floorLinearForce = (4 * config.wheelMaxTorque) / config.wheelRadius; // N
     let floorLinearAccel = floorLinearForce / config.mass;
     let driveRadius = Math.hypot(config.wheelbase / 2, config.trackWidth / 2);
     let chassisTorque = floorLinearForce * driveRadius; // N*m
@@ -81,25 +81,6 @@ class RobotConfigPanel extends Component<Props, State> {
           showCheckbox={false}
           titleTooltip="Maximum angular acceleration when spinning in place"
         />
-        {/* <Input
-        title="Est. MOI"
-        suffix={imp ? "lb · ft²" : "kg · m²"}
-        enabled={false}
-        setEnabled={(a) => null}
-        number={
-          ((imp ? KG_TO_LBS * M_TO_FT * M_TO_FT : 1) *
-            (Math.pow(config.bumperLength - InToM(7), 2) +
-              Math.pow(config.bumperWidth - InToM(7), 2)) *
-            config.mass) /
-          12
-        }
-        setNumber={() => {}}
-        maxCharacters={8}
-        showCheckbox={false}
-        titleTooltip={
-          "Rough MOI estimate based on mass and dimensions. For reference only"
-        }
-      /> */}
       </InputList>
     );
   }

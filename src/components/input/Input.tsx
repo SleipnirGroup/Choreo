@@ -1,21 +1,28 @@
 import { Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
-import React, { Component, ReactElement } from "react";
+import React, { Component } from "react";
 import styles from "./InputList.module.css";
 
 type Props = {
+  /** The text to show before the number */
   title: string;
+  /** The text to show before the number */
   suffix: string;
+  /** Whether the input should be editable, or else italic and grayed out */
   enabled: boolean;
+  /** The value of the input */
   number: number;
+  /** The number of decimal places to show when not editing. */
   roundingPrecision?: number;
-  showSigFigs?: boolean;
   setNumber: (newNumber: number) => void;
   setEnabled: (value: boolean) => void;
+  /** Show a checkbox after the suffix that controls the enabled state of the input */
   showCheckbox?: boolean;
+  /** Whether or not to show the number when the input is disabled */
   showNumberWhenDisabled?: boolean;
+  /** The tooltip for the title */
   titleTooltip?: string;
-  prefix?: ReactElement;
+  /** Maximum width of the number input, in monospace characters */
   maxCharacters?: number;
 };
 
@@ -79,9 +86,6 @@ class Input extends Component<Props, State> {
 
   getRoundedStr(): string {
     let precision = this.props.roundingPrecision ?? 3;
-    if (this.props.showSigFigs) {
-      return this.props.number.toPrecision(precision);
-    }
     return (
       Math.round(this.props.number * 10 ** precision) /
       10 ** precision
@@ -123,7 +127,6 @@ class Input extends Component<Props, State> {
                   }
             }
           >
-            {this.props.prefix}
             {this.props.title}
           </span>
         </Tooltip>

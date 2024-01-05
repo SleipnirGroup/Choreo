@@ -2,9 +2,6 @@ import React, { Component } from "react";
 import DocumentManagerContext from "./document/DocumentManager";
 import { observer } from "mobx-react";
 import {
-  Button,
-  Dialog,
-  DialogTitle,
   Divider,
   Drawer,
   List,
@@ -12,14 +9,12 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Switch,
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import MenuIcon from "@mui/icons-material/Menu";
 import UploadIcon from "@mui/icons-material/UploadFile";
 import IconButton from "@mui/material/IconButton";
 import FileDownload from "@mui/icons-material/FileDownload";
-import FileCopyIcon from "@mui/icons-material/FileCopy";
 import Tooltip from "@mui/material/Tooltip";
 import {
   CopyAll,
@@ -27,11 +22,9 @@ import {
   OpenInNew,
   Settings,
 } from "@mui/icons-material";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import { dialog, invoke, path } from "@tauri-apps/api";
 
-import * as nodePath from "path";
-import RobotConfigPanel from "./components/config/RobotConfigPanel";
 import SettingsModal from "./components/config/SettingsModal";
 
 type Props = {};
@@ -127,7 +120,7 @@ class AppMenu extends Component<Props, State> {
             </Tooltip>
             Choreo
           </div>
-          <List style={{ paddingBottom: "50px" }}>
+          <List style={{ paddingBottom: "50px", paddingTop: "0px" }}>
             {/* Document Settings (open the robot config, etc modal) */}
             <Tooltip
               disableInteractive
@@ -144,26 +137,25 @@ class AppMenu extends Component<Props, State> {
                 <ListItemText primary="Document Settings"></ListItemText>
               </ListItemButton>
             </Tooltip>
+            <Divider></Divider>
             {/* Open File */}
-            <label htmlFor="file-upload-input">
-              <ListItemButton
-                onClick={async () => {
-                  if (
-                    await dialog.confirm(
-                      "You may lose unsaved changes. Continue?",
-                      { title: "Choreo", type: "warning" }
-                    )
-                  ) {
-                    invoke("open_file_dialog");
-                  }
-                }}
-              >
-                <ListItemIcon>
-                  <UploadIcon />
-                </ListItemIcon>
-                <ListItemText primary="Open File"></ListItemText>
-              </ListItemButton>
-            </label>
+            <ListItemButton
+              onClick={async () => {
+                if (
+                  await dialog.confirm(
+                    "You may lose unsaved changes. Continue?",
+                    { title: "Choreo", type: "warning" }
+                  )
+                ) {
+                  invoke("open_file_dialog");
+                }
+              }}
+            >
+              <ListItemIcon>
+                <UploadIcon />
+              </ListItemIcon>
+              <ListItemText primary="Open File"></ListItemText>
+            </ListItemButton>
             {/* Save File */}
             <ListItemButton
               onClick={async () => {

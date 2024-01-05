@@ -2,15 +2,11 @@ import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
 import { observer } from "mobx-react";
 import styles from "./Sidebar.module.css";
-import SidebarRobotConfig from "./SidebarRobotConfig";
 import { Divider, IconButton, Tooltip } from "@mui/material";
 import WaypointList from "./WaypointList";
 import PathSelector from "./PathSelector";
 import MenuIcon from "@mui/icons-material/Menu";
-import SaveIcon from "@mui/icons-material/Save";
-import UploadIcon from "@mui/icons-material/UploadFile";
-import FileDownload from "@mui/icons-material/FileDownload";
-import { NoteAddOutlined, Redo, Undo } from "@mui/icons-material";
+import { Redo, Undo } from "@mui/icons-material";
 import Add from "@mui/icons-material/Add";
 import SidebarConstraint from "./SidebarConstraint";
 import SidebarObstacle from "./SidebarObstacle";
@@ -111,7 +107,7 @@ class Sidebar extends Component<Props, State> {
 
         {/* <Divider className={styles.SidebarDivider} textAlign="left" flexItem>CONSTRAINTS</Divider> 
           // shhh.. to come later*/}
-        <div className={styles.SidebarHeading}>SETTINGS</div>
+        <div className={styles.SidebarHeading}>FEATURES</div>
         <Divider flexItem></Divider>
         <div className={styles.Sidebar}>
           <Divider className={styles.SidebarDivider} textAlign="left" flexItem>

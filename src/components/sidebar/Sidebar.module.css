@@ -25,7 +25,7 @@
   overflow-y: scroll;
   --grid-gap: 8px;
   --line-height: 32px;
-  --icon-size: 32px;
+  --icon-size: 24px;
 }
 
 .SidebarHeading {

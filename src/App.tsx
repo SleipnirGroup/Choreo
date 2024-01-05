@@ -1,12 +1,11 @@
-import '@fontsource-variable/roboto-mono/wght-italic.css';
-import '@fontsource-variable/roboto-mono';
-import '@fontsource/roboto';
+import "@fontsource-variable/roboto-mono/wght-italic.css";
+import "@fontsource-variable/roboto-mono";
+import "@fontsource/roboto";
 import "./App.css";
 import { observer } from "mobx-react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Body from "./Body";
-
 
 function App() {
   const buttonOverrides = {

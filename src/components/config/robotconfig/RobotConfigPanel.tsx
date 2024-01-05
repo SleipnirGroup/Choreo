@@ -121,15 +121,17 @@ class RobotConfigPanel extends Component<Props, State> {
         >
           <span style={{ height: "48px" }}>
             <IconButton
-              sx={{ transform: "translate(0%, calc(-50% + 12px))" }}
+              sx={{
+                transform: "translate(0%, calc(-50% + 12px))",
+              }}
               onClick={() =>
                 this.setState({ bottomHalf: !this.state.bottomHalf })
               }
             >
               {this.state.bottomHalf ? (
-                <ArrowDropUp fontSize="large"></ArrowDropUp>
+                <ArrowDropUp sx={{ fontSize: "3rem" }}></ArrowDropUp>
               ) : (
-                <ArrowDropDown fontSize="large"></ArrowDropDown>
+                <ArrowDropDown sx={{ fontSize: "3rem" }}></ArrowDropDown>
               )}
             </IconButton>
           </span>
@@ -144,7 +146,17 @@ class RobotConfigPanel extends Component<Props, State> {
         >
           <MotorCalculatorPanel rowGap={this.rowGap}></MotorCalculatorPanel>
         </div>
-        <div style={{gridRow:3, gridColumn:1, pointerEvents:"none", display: this.state.bottomHalf ? "block" : "none", transform:`translate(${this.rowGap}px)`}}><Divider orientation="vertical"></Divider></div>
+        <div
+          style={{
+            gridRow: 3,
+            gridColumn: 1,
+            pointerEvents: "none",
+            display: this.state.bottomHalf ? "block" : "none",
+            transform: `translate(${this.rowGap}px)`,
+          }}
+        >
+          <Divider orientation="vertical"></Divider>
+        </div>
         {/* Theoreticals */}
         <div
           style={{

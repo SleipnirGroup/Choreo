@@ -4,10 +4,7 @@ import DocumentManagerContext from "../../../document/DocumentManager";
 import InputList from "../../input/InputList";
 import Input from "../../input/Input";
 import { Button, FormControl, MenuItem, Select } from "@mui/material";
-import {
-  maxTorqueCurrentLimited,
-  MotorCurves,
-} from "./MotorCurves";
+import { maxTorqueCurrentLimited, MotorCurves } from "./MotorCurves";
 
 type Props = { rowGap: number };
 
@@ -93,7 +90,9 @@ class RobotConfigPanel extends Component<Props, State> {
               enabled={false}
               setEnabled={(a) => null}
               roundingPrecision={0}
-              number={MotorCurves[this.state.selectedMotor].motorMaxVelocity * 0.8}
+              number={
+                MotorCurves[this.state.selectedMotor].motorMaxVelocity * 0.8
+              }
               showNumberWhenDisabled={
                 MotorCurves[this.state.selectedMotor] !== undefined
               }

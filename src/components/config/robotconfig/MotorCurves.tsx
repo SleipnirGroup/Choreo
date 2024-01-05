@@ -44,16 +44,3 @@ export const MotorCurves: Record<string, MotorCurve> = {
 export function maxTorqueCurrentLimited(kt: number, limitAmps: number) {
   return kt * limitAmps;
 }
-export const SwerveModules = {
-  SDS: {
-    L1: 8.14,
-    L2: 6.75,
-    L3: 6.12,
-    L4: 5.14,
-  },
-  MaxSwerve: {
-    "12T": 5.5,
-    "13T": 5.08,
-    "14T": 4.71,
-  },
-};
