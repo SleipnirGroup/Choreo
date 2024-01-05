@@ -16,7 +16,10 @@ type State = {
 class RobotConfigPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
-  state = { selectedMotor: "NEO", currentLimit: 40 };
+  state = {
+    selectedMotor: "NEO" as keyof typeof MotorCurves,
+    currentLimit: 40,
+  };
   render() {
     let config = this.context.model.document.robotConfig;
     return (
@@ -34,8 +37,11 @@ class RobotConfigPanel extends Component<Props, State> {
           <Select
             sx={{ flexGrow: 1 }}
             value={this.state.selectedMotor}
-            onChange={(key) => {
-              this.setState({ selectedMotor: key.target.value });
+            onChange={(event) => {
+              let key = event.target.value as keyof typeof MotorCurves;
+              if (MotorCurves[key] !== undefined) {
+              }
+              this.setState({ selectedMotor: key });
             }}
           >
             {Object.keys(MotorCurves).map((key) => (

@@ -11,8 +11,8 @@ import { SavedRobotConfig } from "./DocumentSpecTypes";
 export const ROBOT_CONFIG_DEFAULTS = {
   mass: LbsToKg(150),
   rotationalInertia: 6,
-  motorMaxVelocity: MotorCurves["Kraken X60"].motorMaxVelocity,
-  motorMaxTorque: maxTorqueCurrentLimited(MotorCurves["Kraken X60"].kt, 60),
+  motorMaxVelocity: MotorCurves.KrakenX60.motorMaxVelocity,
+  motorMaxTorque: maxTorqueCurrentLimited(MotorCurves.KrakenX60.kt, 60),
   gearing: 6.75, // SDS L2 mk4/mk4i
   wheelRadius: InToM(2),
   bumperWidth: InToM(28 + 2.75 + 2.75), // 28x28 bot with 2.75" bumpers
@@ -107,32 +107,30 @@ export const RobotConfigStore = types
           wheelRadius,
         };
       },
-      asSolverRobotConfig(): SavedRobotConfig & {
+      asSolverRobotConfig(): Omit<
+        SavedRobotConfig,
+        "motorMaxTorque" | "motorMaxVelocity" | "gearing"
+      > & {
         wheelMaxTorque: number;
         wheelMaxVelocity: number;
       } {
+        // JavaScript, please have better syntax for what we're trying to do here.
         let {
           mass,
           rotationalInertia,
-          motorMaxTorque,
-          motorMaxVelocity,
-          gearing,
           wheelbase,
-          trackWidth: trackwidth,
+          trackWidth,
           bumperLength,
           bumperWidth,
           wheelRadius,
+          wheelMaxTorque,
+          wheelMaxVelocity,
         } = self;
-        let wheelMaxTorque = self.wheelMaxTorque;
-        let wheelMaxVelocity = self.wheelMaxVelocity;
         return {
           mass,
           rotationalInertia,
-          motorMaxTorque,
-          motorMaxVelocity,
-          gearing,
           wheelbase,
-          trackWidth: trackwidth,
+          trackWidth,
           bumperLength,
           bumperWidth,
           wheelRadius,
