@@ -24,7 +24,7 @@
   overflow-x: auto;
   overflow-y: scroll;
   --grid-gap: 8px;
-  --line-height: 1.5em;
+  --line-height: 32px;
   --icon-size: 24px;
 }
 

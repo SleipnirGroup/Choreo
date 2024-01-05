@@ -2,8 +2,6 @@ import React, { Component } from "react";
 import DocumentManagerContext from "./document/DocumentManager";
 import { observer } from "mobx-react";
 import {
-  Dialog,
-  DialogTitle,
   Divider,
   Drawer,
   List,
@@ -11,14 +9,12 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Switch,
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import MenuIcon from "@mui/icons-material/Menu";
 import UploadIcon from "@mui/icons-material/UploadFile";
 import IconButton from "@mui/material/IconButton";
 import FileDownload from "@mui/icons-material/FileDownload";
-import FileCopyIcon from "@mui/icons-material/FileCopy";
 import Tooltip from "@mui/material/Tooltip";
 import {
   CopyAll,
@@ -26,10 +22,10 @@ import {
   OpenInNew,
   Settings,
 } from "@mui/icons-material";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import { dialog, invoke, path } from "@tauri-apps/api";
 
-import * as nodePath from "path";
+import SettingsModal from "./components/config/SettingsModal";
 
 type Props = {};
 
@@ -124,26 +120,43 @@ class AppMenu extends Component<Props, State> {
             </Tooltip>
             Choreo
           </div>
-          <List style={{ paddingBottom: "50px" }}>
-            <label htmlFor="file-upload-input">
+          <List style={{ paddingBottom: "50px", paddingTop: "0px" }}>
+            {/* Document Settings (open the robot config, etc modal) */}
+            <Tooltip
+              disableInteractive
+              title="Robot configuration and other settings"
+            >
               <ListItemButton
-                onClick={async () => {
-                  if (
-                    await dialog.confirm(
-                      "You may lose unsaved changes. Continue?",
-                      { title: "Choreo", type: "warning" }
-                    )
-                  ) {
-                    invoke("open_file_dialog");
-                  }
-                }}
+                onClick={() =>
+                  this.context.model.uiState.setRobotConfigOpen(true)
+                }
               >
                 <ListItemIcon>
-                  <UploadIcon />
+                  <Settings />
                 </ListItemIcon>
-                <ListItemText primary="Open File"></ListItemText>
+                <ListItemText primary="Document Settings"></ListItemText>
               </ListItemButton>
-            </label>
+            </Tooltip>
+            <Divider></Divider>
+            {/* Open File */}
+            <ListItemButton
+              onClick={async () => {
+                if (
+                  await dialog.confirm(
+                    "You may lose unsaved changes. Continue?",
+                    { title: "Choreo", type: "warning" }
+                  )
+                ) {
+                  invoke("open_file_dialog");
+                }
+              }}
+            >
+              <ListItemIcon>
+                <UploadIcon />
+              </ListItemIcon>
+              <ListItemText primary="Open File"></ListItemText>
+            </ListItemButton>
+            {/* Save File */}
             <ListItemButton
               onClick={async () => {
                 this.context.saveFileDialog();
@@ -160,6 +173,7 @@ class AppMenu extends Component<Props, State> {
                 }
               ></ListItemText>
             </ListItemButton>
+            {/* New File */}
             <ListItemButton
               onClick={async () => {
                 if (
@@ -177,6 +191,7 @@ class AppMenu extends Component<Props, State> {
               </ListItemIcon>
               <ListItemText primary="New File"></ListItemText>
             </ListItemButton>
+            {/* Export Active Trajectory */}
             <ListItemButton
               onClick={() => {
                 toast.promise(this.context.exportActiveTrajectory(), {
@@ -196,7 +211,7 @@ class AppMenu extends Component<Props, State> {
               </ListItemIcon>
               <ListItemText primary="Export Trajectory"></ListItemText>
             </ListItemButton>
-
+            {/* Export All to Deploy */}
             <ListItemButton
               onClick={async () => {
                 if (!this.context.model.uiState.hasSaveLocation) {
@@ -236,6 +251,7 @@ class AppMenu extends Component<Props, State> {
               <ListItemText primary="Save All Trajectories"></ListItemText>
             </ListItemButton>
             <Divider orientation="horizontal"></Divider>
+            {/* Info about save locations */}
             <ListItem>
               <div
                 style={{
@@ -295,6 +311,7 @@ class AppMenu extends Component<Props, State> {
               </div>
             </ListItem>
           </List>
+          <SettingsModal></SettingsModal>
         </div>
       </Drawer>
     );

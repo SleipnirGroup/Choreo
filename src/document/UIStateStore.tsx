@@ -1,22 +1,14 @@
 import {
   Circle,
-  CircleNotificationsOutlined,
   CircleOutlined,
-  CircleSharp,
   DoNotDisturb,
   Grid4x4,
   Route,
   SquareOutlined,
 } from "@mui/icons-material";
-import { path, tauri, window as tauriWindow } from "@tauri-apps/api";
+import { path, window as tauriWindow } from "@tauri-apps/api";
 import { getVersion } from "@tauri-apps/api/app";
-import {
-  cast,
-  castToReferenceSnapshot,
-  getRoot,
-  Instance,
-  types,
-} from "mobx-state-tree";
+import { Instance, types } from "mobx-state-tree";
 import { ReactElement } from "react";
 import InitialGuessPoint from "../assets/InitialGuessPoint";
 import Waypoint from "../assets/Waypoint";
@@ -27,7 +19,6 @@ import {
   ConstraintStores,
   IConstraintStore,
 } from "./ConstraintStore";
-import { IStateStore } from "./DocumentModel";
 import {
   HolonomicWaypointStore,
   IHolonomicWaypointStore,
@@ -217,6 +208,7 @@ export const ViewItemData = (() => {
 })();
 
 export type ViewLayerType = typeof ViewLayers;
+export const NUM_SETTINGS_TABS = 1;
 export const UIStateStore = types
   .model("UIStateStore", {
     fieldScalingFactor: 0.02,
@@ -225,7 +217,12 @@ export const UIStateStore = types
     isGradleProject: types.maybe(types.boolean),
     waypointPanelOpen: false,
     visibilityPanelOpen: false,
+    robotConfigOpen: false,
     mainMenuOpen: false,
+    settingsTab: types.refinement(
+      types.integer,
+      (i) => i >= 0 && i < NUM_SETTINGS_TABS
+    ),
     pathAnimationTimestamp: 0,
     layers: types.refinement(
       types.array(types.boolean),
@@ -293,6 +290,14 @@ export const UIStateStore = types
   .actions((self: any) => ({
     setMainMenuOpen(open: boolean) {
       self.mainMenuOpen = open;
+    },
+    setRobotConfigOpen(open: boolean) {
+      self.robotConfigOpen = open;
+    },
+    setSettingsTab(tab: number) {
+      if (tab >= 0 && tab < NUM_SETTINGS_TABS) {
+        self.settingsTab = tab;
+      }
     },
     toggleMainMenu() {
       self.mainMenuOpen = !self.mainMenuOpen;

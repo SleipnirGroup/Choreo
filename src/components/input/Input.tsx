@@ -6,15 +6,26 @@ import styles from "./InputList.module.css";
 import { parse } from "mathjs";
 
 type Props = {
+  /** The text to show before the number */
   title: string;
+  /** The text to show before the number */
   suffix: string;
+  /** Whether the input should be editable, or else italic and grayed out */
   enabled: boolean;
+  /** The value of the input */
   number: number;
+  /** The number of decimal places to show when not editing. */
   roundingPrecision?: number;
   setNumber: (newNumber: number) => void;
   setEnabled: (value: boolean) => void;
+  /** Show a checkbox after the suffix that controls the enabled state of the input */
   showCheckbox?: boolean;
+  /** Whether or not to show the number when the input is disabled */
+  showNumberWhenDisabled?: boolean;
+  /** The tooltip for the title */
   titleTooltip?: string;
+  /** Maximum width of the number input, in monospace characters */
+  maxWidthCharacters?: number;
 };
 
 type State = {
@@ -70,9 +81,17 @@ class Input extends Component<Props, State> {
       if (this.state.focused) {
         return this.props.number.toString();
       } else {
-        return this.props.number.toPrecision(4);
+        return this.getRoundedStr();
       }
     }
+  }
+
+  getRoundedStr(): string {
+    let precision = this.props.roundingPrecision ?? 3;
+    return (
+      Math.round(this.props.number * 10 ** precision) /
+      10 ** precision
+    ).toFixed(precision);
   }
 
   componentDidUpdate(
@@ -88,6 +107,11 @@ class Input extends Component<Props, State> {
   }
 
   render() {
+    let showNumberWhenDisabled = this.props.showNumberWhenDisabled ?? true;
+    let characters = this.getRoundedStr().length + 3;
+    if (this.props.maxWidthCharacters !== undefined) {
+      characters = Math.min(characters, this.props.maxWidthCharacters);
+    }
     return (
       <>
         <Tooltip disableInteractive title={this.props.titleTooltip ?? ""}>
@@ -111,7 +135,11 @@ class Input extends Component<Props, State> {
         <input
           ref={this.inputElemRef}
           type="text"
-          className={styles.Number}
+          className={
+            styles.Number +
+            (showNumberWhenDisabled ? " " + styles.ShowWhenDisabled : "")
+          }
+          style={{ minWidth: `${characters}ch` }}
           disabled={!this.props.enabled}
           onFocus={(e) => {
             this.focusedMode();
