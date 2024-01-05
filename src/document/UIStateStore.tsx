@@ -1,15 +1,14 @@
 import {
-  Circle, CircleOutlined, DoNotDisturb,
+  Circle,
+  CircleOutlined,
+  DoNotDisturb,
   Grid4x4,
   Route,
-  SquareOutlined
+  SquareOutlined,
 } from "@mui/icons-material";
 import { path, window as tauriWindow } from "@tauri-apps/api";
 import { getVersion } from "@tauri-apps/api/app";
-import {
-  Instance,
-  types
-} from "mobx-state-tree";
+import { Instance, types } from "mobx-state-tree";
 import { ReactElement } from "react";
 import InitialGuessPoint from "../assets/InitialGuessPoint";
 import Waypoint from "../assets/Waypoint";
