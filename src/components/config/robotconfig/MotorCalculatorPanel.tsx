@@ -52,7 +52,7 @@ class RobotConfigPanel extends Component<Props, State> {
             onClick={() => {
               this.context.history.startGroup(() => {
                 config.setMaxVelocity(
-                  MotorCurves[this.state.selectedMotor].motorMaxVelocity
+                  MotorCurves[this.state.selectedMotor].motorMaxVelocity * 0.8
                 );
                 config.setMaxTorque(
                   maxTorqueCurrentLimited(
@@ -88,17 +88,18 @@ class RobotConfigPanel extends Component<Props, State> {
               showCheckbox={false}
             />
             <Input
-              title="Preview Free Speed"
+              title="Preview Max Speed"
               suffix="RPM"
               enabled={false}
               setEnabled={(a) => null}
               roundingPrecision={0}
-              number={MotorCurves[this.state.selectedMotor].motorMaxVelocity}
+              number={MotorCurves[this.state.selectedMotor].motorMaxVelocity * 0.8}
               showNumberWhenDisabled={
                 MotorCurves[this.state.selectedMotor] !== undefined
               }
               setNumber={() => null}
               showCheckbox={false}
+              titleTooltip="Estimated speed under load (80% of free speed)"
             />
 
             <Input
@@ -113,6 +114,7 @@ class RobotConfigPanel extends Component<Props, State> {
               )}
               setNumber={() => null}
               showCheckbox={false}
+              titleTooltip="Motor torque at the given current limit"
             />
           </InputList>
         </div>

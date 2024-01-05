@@ -45,7 +45,7 @@ class RobotConfigPanel extends Component<Props, State> {
           titleTooltip="Gearing between motor shaft and wheel axle (>1)"
         />
         <Input
-          title="Motor Free Speed"
+          title="Motor Max Speed"
           suffix="RPM"
           enabled={true}
           setEnabled={(a) => null}
@@ -54,7 +54,7 @@ class RobotConfigPanel extends Component<Props, State> {
           setNumber={config!.setMaxVelocity}
           maxCharacters={8}
           showCheckbox={false}
-          titleTooltip="Motor speed with no load"
+          titleTooltip="Actual motor speed at 12V"
         />
 
         <Input

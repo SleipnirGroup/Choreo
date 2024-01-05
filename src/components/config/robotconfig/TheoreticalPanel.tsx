@@ -66,7 +66,7 @@ class RobotConfigPanel extends Component<Props, State> {
           setNumber={() => null}
           maxCharacters={8}
           showCheckbox={false}
-          titleTooltip="Maximum angular velocity when spinning in place"
+          titleTooltip="Maximum angular speed when spinning in place"
         />
 
         <Input
