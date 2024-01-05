@@ -1,21 +1,14 @@
 import {
-  Circle,
-  CircleNotificationsOutlined,
-  CircleOutlined,
-  CircleSharp,
-  DoNotDisturb,
+  Circle, CircleOutlined, DoNotDisturb,
   Grid4x4,
   Route,
-  SquareOutlined,
+  SquareOutlined
 } from "@mui/icons-material";
-import { path, tauri, window as tauriWindow } from "@tauri-apps/api";
+import { path, window as tauriWindow } from "@tauri-apps/api";
 import { getVersion } from "@tauri-apps/api/app";
 import {
-  cast,
-  castToReferenceSnapshot,
-  getRoot,
   Instance,
-  types,
+  types
 } from "mobx-state-tree";
 import { ReactElement } from "react";
 import InitialGuessPoint from "../assets/InitialGuessPoint";
@@ -27,7 +20,6 @@ import {
   ConstraintStores,
   IConstraintStore,
 } from "./ConstraintStore";
-import { IStateStore } from "./DocumentModel";
 import {
   HolonomicWaypointStore,
   IHolonomicWaypointStore,
@@ -37,7 +29,6 @@ import {
   CircularObstacleStore,
   ICircularObstacleStore,
 } from "./CircularObstacleStore";
-import RobotConfigPanel from "../components/config/RobotConfigPanel";
 
 export const SelectableItem = types.union(
   {
