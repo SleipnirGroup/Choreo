@@ -108,4 +108,3 @@ jobs:
         with:
           name: Maven
           path: ~/releases
-    working-directory: choreolib
