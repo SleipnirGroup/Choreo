@@ -61,7 +61,7 @@ export class DocumentManager {
       await this.openFromContents(payload.contents)
         .catch((err) => {
           applySnapshot(this.model.document, oldDocument);
-          throw `Unable to open file: ${err}`;
+          throw `Internal parsing error: ${err}`;
         })
         .then(() => {
           this.model.uiState.setSaveFileName(saveName);
