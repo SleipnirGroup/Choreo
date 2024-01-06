@@ -53,6 +53,8 @@ export type {
 } from "./previousSpecs/v0_2";
 export { SAVE_FILE_VERSION } from "./previousSpecs/v0_2";
 
+const ajv = new Ajv();
+
 export let VERSIONS = {
   "v0.0.0": {
     up: (document: any): v0_0_1 => {
@@ -76,10 +78,7 @@ export let VERSIONS = {
       }
       return updated;
     },
-    validate: (document: v0_0_0): boolean => {
-      const ajv = new Ajv();
-      return ajv.validate(v0_0_0_Schema, document);
-    },
+    schema: v0_0_0_Schema,
   },
   "v0.0.1": {
     up: (document: any): v0_1 => {
@@ -106,10 +105,7 @@ export let VERSIONS = {
       }
       return updated;
     },
-    validate: (document: v0_0_1): boolean => {
-      const ajv = new Ajv();
-      return ajv.validate(v0_0_1_Schema, document);
-    },
+    schema: v0_0_1_Schema,
   },
   "v0.1": {
     up: (document: any): v0_1_1 => {
@@ -131,10 +127,7 @@ export let VERSIONS = {
       }
       return updated;
     },
-    validate: (document: v0_1): boolean => {
-      const ajv = new Ajv();
-      return ajv.validate(v0_1_Schema, document);
-    },
+    schema: v0_1_Schema,
   },
   "v0.1.1": {
     up: (document: any): v0_1_2 => {
@@ -158,10 +151,7 @@ export let VERSIONS = {
       }
       return updated;
     },
-    validate: (document: v0_1_1): boolean => {
-      const ajv = new Ajv();
-      return ajv.validate(v0_1_1_Schema, document);
-    },
+    schema: v0_1_1_Schema,
   },
   "v0.1.2": {
     up: (document: any): v0_2 => {
@@ -179,30 +169,24 @@ export let VERSIONS = {
       };
       return updated;
     },
-    validate: (document: v0_1_2): boolean => {
-      const ajv = new Ajv();
-      return ajv.validate(v0_1_2_Schema, document);
-    },
+    schema: v0_1_2_Schema,
   },
   "v0.2": {
-    up: (document:any): v0_2 => document,
-    validate: (document: v0_2): boolean => {
-      const ajv = new Ajv();
-      return ajv.validate(v0_2_Schema, document);
-    },
+    up: (document: any): v0_2 => document,
+    schema: v0_2_Schema,
   },
   /**
    * For developers adding new document versions-Keep this comment at the end of the list.
-   * 
+   *
    * CURRENT_VERSION refers to the version before the one being added.
-   * 
+   *
    * Step 1: Write the upgrader function from CURRENT_VERSION to ADDED_VERSION.
    * Step 2: Replace VERSIONS[CURRENT_VERSION].up with your upgrader function.
    * To reiterate, each version's upgrader function upgrades a document of that version to the next version,
    * except for the latest version's upgrader, which returns the document unchanged.
-   * Step 3: write a "no-op" upgrader function for ADDED_VERSION.
-   * Step 4: Write the validation function for ADDED_VERSION using the new schema imported above.
-   * Each version's validation function returns whether that version complies with its schema.
+   * Step 3: write a "no-op" upgrader function for ADDED_VERSION. This function should never actually run,
+   * so this is mostly a matter of matching the type signature without modifying the document
+   * Step 4: set the `schema` property for your new version to the imported schema from above.
    */
 };
 
@@ -227,7 +211,7 @@ export let updateToCurrent = (document: { version: string }): SavedDocument => {
 
 export let validate = (document: { version: string }): boolean => {
   if (document.version in VERSIONS) {
-    return VERSIONS[document.version].validate(document);
+    return ajv.validate(VERSIONS[document.version].schema, document);
   } else {
     return false;
   }

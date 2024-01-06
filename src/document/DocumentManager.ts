@@ -60,11 +60,10 @@ export class DocumentManager {
       let adjacent_gradle = payload.adjacent_gradle;
       await this.openFromContents(payload.contents)
         .catch((err) => {
-          applySnapshot(this.model.document, oldDocument); 
-          throw `Unable to open file: ${err}`
+          applySnapshot(this.model.document, oldDocument);
+          throw `Unable to open file: ${err}`;
         })
         .then(() => {
-          console.log("setting file paths")
           this.model.uiState.setSaveFileName(saveName);
           this.model.uiState.setSaveFileDir(saveDir);
           this.model.uiState.setIsGradleProject(adjacent_gradle);
