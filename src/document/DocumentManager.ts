@@ -1,21 +1,14 @@
 import { createContext } from "react";
 import StateStore, { IStateStore } from "./DocumentModel";
-import {
-  dialog,
-  fs,
-  invoke,
-  path,
-  window as tauriWindow,
-} from "@tauri-apps/api";
+import { dialog, invoke, path, window as tauriWindow } from "@tauri-apps/api";
 import { listen, TauriEvent, Event } from "@tauri-apps/api/event";
 import { v4 as uuidv4 } from "uuid";
-import { VERSIONS, validate, SAVE_FILE_VERSION } from "./DocumentSpecTypes";
-import { applySnapshot, getRoot, onPatch } from "mobx-state-tree";
-import { autorun, reaction, toJS } from "mobx";
+import { validate } from "./DocumentSpecTypes";
+import { applySnapshot, getSnapshot } from "mobx-state-tree";
+import { reaction } from "mobx";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import hotkeys from "hotkeys-js";
-import { resourceLimits } from "worker_threads";
 
 type OpenFileEventPayload = {
   adjacent_gradle: boolean;
@@ -61,11 +54,20 @@ export class DocumentManager {
     } else if (payload.contents === undefined) {
       throw "Unable to read file";
     } else {
-      this.model.uiState.setSaveFileName(payload.name);
-      this.model.uiState.setSaveFileDir(payload.dir);
-      this.model.uiState.setIsGradleProject(payload.adjacent_gradle);
-
-      await this.openFromContents(payload.contents);
+      let oldDocument = getSnapshot(this.model.document);
+      let saveName = payload.name;
+      let saveDir = payload.dir;
+      let adjacent_gradle = payload.adjacent_gradle;
+      await this.openFromContents(payload.contents)
+        .catch((err) => {
+          applySnapshot(this.model.document, oldDocument);
+          throw `Internal parsing error: ${err}`;
+        })
+        .then(() => {
+          this.model.uiState.setSaveFileName(saveName);
+          this.model.uiState.setSaveFileDir(saveDir);
+          this.model.uiState.setIsGradleProject(adjacent_gradle);
+        });
     }
   }
 
