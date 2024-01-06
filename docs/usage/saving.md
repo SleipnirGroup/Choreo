@@ -6,10 +6,10 @@ To access the sidebar, click the hamburger icon in the upper left corner.
 
 General Info:
 
-- Choreo’s file saving mechanism ties into a WPILib robot root directory, wherein a single `.chor` file lives in the project’s root folder.
+!!! note
+    Choreo’s file saving mechanism ties into a WPILib robot root directory, wherein a single `.chor` file lives in the project’s root folder.
 
 In the sidebar, there are five actions related to saving your project, along with your project's current save location.
-
 
 ## Open File
 
@@ -41,18 +41,13 @@ Below "Project saved at", you can see the directory in which the saved `.chor` f
 
 If you see "Gradle project detected," then there is a `.gradle` file as well as a `src/main/deploy` directory in which to save trajectories.
 
-Below "Trajectories saved in," you can see the path in which trajectories are saved.
-Trajectories saved in shows relative path where trajectories are saved in. [ChoreoLib](../choreolib/installation.md) looks for trajectories in `{deployDirectory}/choreo`.
-<br><br><br>
-If you get the below:
+!!! warning
 
-![Project not saved](../media/project_not_saved.png)
+    If you get the below, it means you have not saved the file yet
 
-Then it means you have not saved the file yet.
+     ![Project not saved](../media/project_not_saved.png){: style="height:60px;"}
 
-<br>
-# Folder Structure
-Example:
+# Folder Structure Example
 
-- Choreo file lives in: `~/Development/FRC/Roboto/Choreo.chor`
-- Trajectories live in: `~/Development/FRC/Roboto/src/main/deploy/choreo/...`
+- Choreo file lives at: `~/Development/FRC/Roboto/Choreo.chor`
+- Trajectories (`.traj`) live in: `~/Development/FRC/Roboto/src/main/deploy/choreo/...`

@@ -80,5 +80,4 @@ You can create paths by chaining waypoints together. Check out [Controls & Short
 !!! tip
     If there is an error generating a path, check to make sure your waypoints can physically work.
 
-
 ![Generating Path Gif](../media/generating_path.gif)
