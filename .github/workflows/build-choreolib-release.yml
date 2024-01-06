@@ -39,7 +39,7 @@ jobs:
       
       - name: Set version
         run: sed -i "s/0.0.0/${{ github.event.inputs.version }}/g" publish.gradle
-    pathplannerlib    working-directory: ./choreolib
+        working-directory: ./choreolib
       
       - name: Ensure spotless is applied
         run: ./gradlew spotlessApply
