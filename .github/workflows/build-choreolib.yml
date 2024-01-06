@@ -37,7 +37,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.artifact-name }}
-          path: build/allOutputs
+          path: choreolib/build/allOutputs
 
   build-host:
     env: 
@@ -71,7 +71,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.artifact-name }}
-          path: build/allOutputs
+          path: choreolib/build/allOutputs
 
   combine:
     name: Combine
