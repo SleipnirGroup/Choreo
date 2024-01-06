@@ -33,11 +33,11 @@ jobs:
           git config --global --add safe.directory /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
       - name: Build with Gradle
         run: ./gradlew build --max-workers 1 ${{ matrix.build-options }}
-        working-directory: choreolib
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.artifact-name }}
           path: build/allOutputs
+    working-directory: choreolib
 
   build-host:
     env: 
@@ -67,11 +67,11 @@ jobs:
           architecture: ${{ matrix.architecture }}
       - name: Build with Gradle
         run: ./gradlew build -Pbuildalldesktop
-        working-directory: choreolib
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.artifact-name }}
           path: build/allOutputs
+    working-directory: choreolib
 
   combine:
     name: Combine
@@ -110,3 +110,4 @@ jobs:
         with:
           name: Maven
           path: ~/releases
+    working-directory: choreolib
