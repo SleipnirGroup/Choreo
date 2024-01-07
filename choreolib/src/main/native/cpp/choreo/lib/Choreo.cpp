@@ -38,11 +38,12 @@ frc2::CommandPtr Choreo::ChoreoSwerveCommandFactory(
     frc::PIDController xController, frc::PIDController yController,
     frc::PIDController rotationController,
     std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds,
-    bool useAllianceColor, frc2::Requirements requirements) {
+    std::function<bool(void)> mirrorTrajectory,
+    frc2::Requirements requirements) {
   return ChoreoSwerveCommand(trajectory, poseSupplier,
                              ChoreoSwerveController(xController, yController,
                                                     rotationController),
-                             outputChassisSpeeds, useAllianceColor,
+                             outputChassisSpeeds, mirrorTrajectory,
                              requirements)
       .ToPtr();
 }
@@ -51,9 +52,10 @@ frc2::CommandPtr Choreo::ChoreoSwerveCommandFactory(
     ChoreoTrajectory trajectory, std::function<frc::Pose2d()> poseSupplier,
     ChoreoControllerFunction controller,
     std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds,
-    bool useAllianceColor, frc2::Requirements requirements) {
+    std::function<bool(void)> mirrorTrajectory,
+    frc2::Requirements requirements) {
   return ChoreoSwerveCommand(trajectory, poseSupplier, controller,
-                             outputChassisSpeeds, useAllianceColor,
+                             outputChassisSpeeds, mirrorTrajectory,
                              requirements)
       .ToPtr();
 }

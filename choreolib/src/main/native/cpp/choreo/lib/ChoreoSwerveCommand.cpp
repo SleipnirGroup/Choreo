@@ -10,12 +10,12 @@ ChoreoSwerveCommand::ChoreoSwerveCommand(
     ChoreoTrajectory trajectory, std::function<frc::Pose2d()> poseSupplier,
     ChoreoControllerFunction controller,
     std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds,
-    bool useAllianceColor, frc2::Requirements requirements)
+    std::function<bool(void)> mirrorTrajectory, frc2::Requirements requirements)
     : m_traj(trajectory),
       m_pose(poseSupplier),
       m_controller(controller),
       m_outputChassisSpeeds(outputChassisSpeeds),
-      m_useAlliance(useAllianceColor) {
+      m_mirrorTrajectory(mirrorTrajectory) {
   AddRequirements(requirements);
 }
 
@@ -26,15 +26,8 @@ void ChoreoSwerveCommand::Initialize() {
 
 // Called repeatedly when this Command is scheduled to run
 void ChoreoSwerveCommand::Execute() {
-  bool mirror = false;
-  if (m_useAlliance) {
-    if (auto ally = frc::DriverStation::GetAlliance()) {
-      if (ally.value() == frc::DriverStation::Alliance::kRed) {
-        mirror = true;
-      }
-    }
-  }
   units::second_t currentTrajTime = m_timer.Get();
+  bool mirror = mirrorTrajectory();
   m_outputChassisSpeeds(
       m_controller(m_pose(), m_traj.Sample(currentTrajTime, mirror)));
 }

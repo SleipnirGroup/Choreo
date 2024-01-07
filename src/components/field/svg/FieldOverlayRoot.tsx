@@ -12,10 +12,9 @@ import FieldGeneratedLines from "./FieldGeneratedLines";
 import FieldAxisLines from "./FieldAxisLines";
 import FieldConstraintsAddLayer from "./FieldConstraintsAddLayer";
 import FieldObstacle from "./FieldObstacles";
-import { Box } from "@mui/material";
-import { Circle } from "@mui/icons-material";
 import { v4 as uuidv4 } from "uuid";
 import { CircularObstacleStore } from "../../../document/CircularObstacleStore";
+import FieldImage24 from "./fields/FieldImage24";
 
 type Props = {};
 
@@ -131,7 +130,7 @@ class FieldOverlayRoot extends Component<Props, State> {
         >
           {/* Background */}
           {layers[ViewLayers.Field] && (
-            <FieldImage23 blue={true}></FieldImage23>
+            <FieldImage24 blue={true}></FieldImage24>
           )}
           {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
           <FieldAxisLines></FieldAxisLines>
