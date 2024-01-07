@@ -67,7 +67,7 @@ public class Choreo {
    *     ChoreoLib.
    * @param outputChassisSpeeds A function that consumes the target robot-relative chassis speeds
    *     and commands them to the robot.
-   * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side, while keeping 
+   * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side, while keeping
    *     the same coordinate system origin. This will be called every loop during the command.
    * @param requirements The subsystem(s) to require, typically your drive subsystem only.
    * @return A command that follows a Choreo path.
@@ -104,7 +104,7 @@ public class Choreo {
    *     (i.e. for logging).
    * @param outputChassisSpeeds A function that consumes the target robot-relative chassis speeds
    *     and commands them to the robot.
-   * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side, while keeping 
+   * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side, while keeping
    *     the same coordinate system origin. This will be called every loop during the command.
    * @param requirements The subsystem(s) to require, typically your drive subsystem only.
    * @return A command that follows a Choreo path.

@@ -31,15 +31,17 @@ class ChoreoSwerveCommand
    *  trajectory state, and supplies back robot relative ChassisSpeeds
    * @param outputChassisSpeeds a function that consumes robot relative
    *  ChassisSpeeds
-   * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side, while keeping 
-   *     the same coordinate system origin. This will be called every loop during the command.
+   * @param mirrorTrajectory If this returns true, the path will be mirrored to
+   * the opposite side, while keeping the same coordinate system origin. This
+   * will be called every loop during the command.
    * @param requirements subsystem requirements
    */
   ChoreoSwerveCommand(
       ChoreoTrajectory trajectory, std::function<frc::Pose2d()> poseSupplier,
       ChoreoControllerFunction controller,
       std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds,
-      std::function<bool(void)> mirrorTrajectory, frc2::Requirements requirements = {});
+      std::function<bool(void)> mirrorTrajectory,
+      frc2::Requirements requirements = {});
 
   /// Runs once before the first call to Execute()
   void Initialize() override;
