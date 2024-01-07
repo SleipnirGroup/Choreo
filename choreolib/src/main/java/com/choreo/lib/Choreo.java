@@ -7,7 +7,6 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -16,7 +15,6 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -67,8 +65,9 @@ public class Choreo {
    *     ChoreoLib.
    * @param outputChassisSpeeds A function that consumes the target robot-relative chassis speeds
    *     and commands them to the robot.
-   * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side, while keeping
-   *     the same coordinate system origin. This will be called every loop during the command.
+   * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
+   *     while keeping the same coordinate system origin. This will be called every loop during the
+   *     command.
    * @param requirements The subsystem(s) to require, typically your drive subsystem only.
    * @return A command that follows a Choreo path.
    */
@@ -104,8 +103,9 @@ public class Choreo {
    *     (i.e. for logging).
    * @param outputChassisSpeeds A function that consumes the target robot-relative chassis speeds
    *     and commands them to the robot.
-   * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side, while keeping
-   *     the same coordinate system origin. This will be called every loop during the command.
+   * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
+   *     while keeping the same coordinate system origin. This will be called every loop during the
+   *     command.
    * @param requirements The subsystem(s) to require, typically your drive subsystem only.
    * @return A command that follows a Choreo path.
    */
@@ -119,9 +119,12 @@ public class Choreo {
     var timer = new Timer();
     return new FunctionalCommand(
         timer::restart,
-        () -> {;
+        () -> {
+          ;
           outputChassisSpeeds.accept(
-              controller.apply(poseSupplier.get(), trajectory.sample(timer.get(), mirrorTrajectory.getAsBoolean())));
+              controller.apply(
+                  poseSupplier.get(),
+                  trajectory.sample(timer.get(), mirrorTrajectory.getAsBoolean())));
         },
         (interrupted) -> {
           timer.stop();
