@@ -130,14 +130,15 @@ class Sidebar extends Component<Props, State> {
               }
             )}
           </div>
-          {this.context.model.document.pathlist.activePath.constraints.length == 0 && (
-                      <div className={styles.SidebarItem + " " + styles.Noninteractible}>
-                      <span></span>
-                      <span style={{ color: "gray", fontStyle: "italic" }}>
-                        No Constraints
-                      </span>
-                    </div>
-            )}
+          {this.context.model.document.pathlist.activePath.constraints.length ==
+            0 && (
+            <div className={styles.SidebarItem + " " + styles.Noninteractible}>
+              <span></span>
+              <span style={{ color: "gray", fontStyle: "italic" }}>
+                No Constraints
+              </span>
+            </div>
+          )}
           <Divider className={styles.SidebarDivider} textAlign="left" flexItem>
             <span>OBSTACLES</span>
           </Divider>
@@ -153,16 +154,16 @@ class Sidebar extends Component<Props, State> {
                 );
               }
             )}
-
           </div>
-          {this.context.model.document.pathlist.activePath.obstacles.length == 0 && (
-                      <div className={styles.SidebarItem + " " + styles.Noninteractible}>
-                      <span></span>
-                      <span style={{ color: "gray", fontStyle: "italic" }}>
-                        No Obstacles
-                      </span>
-                    </div>
-            )}
+          {this.context.model.document.pathlist.activePath.obstacles.length ==
+            0 && (
+            <div className={styles.SidebarItem + " " + styles.Noninteractible}>
+              <span></span>
+              <span style={{ color: "gray", fontStyle: "italic" }}>
+                No Obstacles
+              </span>
+            </div>
+          )}
           <Divider></Divider>
         </div>
       </div>

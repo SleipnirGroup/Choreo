@@ -321,8 +321,8 @@
      id="path42" />
   <path
      d="M5 6V244V417.5L117 482H840L952 417.5V6H5Z"
-     stroke="#424242"
-     stroke-width="4"
+     stroke="#FFFFFF"
+     stroke-width="6"
      stroke-linejoin="round"
      id="path43" />
 </svg>

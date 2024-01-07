@@ -129,8 +129,8 @@ class FieldOverlayRoot extends Component<Props, State> {
           id="rootFrame"
         >
           {/* Background */}
-          {layers[ViewLayers.Field] && (<>
-            <FieldImage24 blue={true}></FieldImage24></>
+          {layers[ViewLayers.Field] && (
+            <FieldImage24 blue={true}></FieldImage24>
           )}
           {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
           <FieldAxisLines></FieldAxisLines>
