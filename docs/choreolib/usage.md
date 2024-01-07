@@ -12,7 +12,10 @@ Choreo.choreoSwerveCommand(
     new PIDController(Constants.AutoConstants.kPThetaController, 0.0, 0.0), // (7)
     (ChassisSpeeds speeds) -> // (8)
         this.drive(new Translation2d(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond), ...),
-    true, // (9)
+    () -> {
+        Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();
+            mirror = alliance.isPresent() && alliance.get() == Alliance.Red;
+    }, // (9)
     this, // (10)
 );
 ```
@@ -25,5 +28,5 @@ Choreo.choreoSwerveCommand(
 6. PIDController for field-relative Y translation (input: Y error in meters, output: m/s).
 7. PID constants to correct for rotation error.
 8. A function that consumes the target robot-relative chassis speeds and commands them to the robot.
-9. Whether or not to mirror the path based on alliance (this assumes the path is created for the blue alliance).
+9. If this returns true, the path will be mirrored based on alliance (this assumes the path is created for the blue alliance).
 10. The subsystem(s) to require, typically your drive subsystem (this).
