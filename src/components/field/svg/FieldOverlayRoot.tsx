@@ -169,6 +169,11 @@ class FieldOverlayRoot extends Component<Props, State> {
           {layers[ViewLayers.Trajectory] && (
             <FieldGeneratedLines></FieldGeneratedLines>
           )}
+          {layers[ViewLayers.Samples] && (
+                    this.context.model.document.pathlist.activePath.generated.map((point)=>(
+          <circle cx={point.x} cy={point.y} r={0.02} fill="black"></circle>
+        ))
+          )}
           {layers[ViewLayers.Waypoints] &&
             this.context.model.document.pathlist.activePath.waypoints.map(
               (point, index) => (

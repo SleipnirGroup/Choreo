@@ -1,21 +1,11 @@
 import {
   Checkbox,
-  CircularProgress,
-  Dialog,
-  DialogTitle,
-  Divider,
-  FormControlLabel,
-  FormGroup,
-  IconButton,
-  List,
-  Switch,
-  TextField,
+  CircularProgress, FormControlLabel, IconButton, TextField
 } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
 import DeleteIcon from "@mui/icons-material/Delete";
-import AddIcon from "@mui/icons-material/Add";
 import styles from "./Sidebar.module.css";
 import { Tooltip } from "@mui/material";
 import { KeyboardArrowDown, Route, Settings } from "@mui/icons-material";
@@ -273,9 +263,8 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
                   setNumber={(count) => {
                     this.getPath().setDefaultControlIntervalCounts(count);
                   }}
-                  titleTooltip="When not guessing, how many control intervals to use?"
+                  titleTooltip="When not guessing, how many samples to use?"
                 ></Input>
-                {/**tooltip: When not guessing, how many control intervals to use? (default 40) */}
               </InputList>
             </span>
             {/* </FormGroup> */}
