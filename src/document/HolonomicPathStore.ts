@@ -1,4 +1,4 @@
-import { Instance, types, getRoot, destroy, getParent } from "mobx-state-tree";
+import { Instance, types, getRoot, destroy } from "mobx-state-tree";
 import {
   SavedConstraint,
   SavedPath,
@@ -13,7 +13,6 @@ import { moveItem } from "mobx-utils";
 import { v4 as uuidv4, v4 } from "uuid";
 import { IStateStore } from "./DocumentModel";
 import {
-  constraints,
   ConstraintStore,
   ConstraintStores,
   IWaypointScope,
@@ -21,13 +20,11 @@ import {
   WaypointScope,
 } from "./ConstraintStore";
 import { SavedWaypointId } from "./previousSpecs/v0_1_2";
-import { timeStamp } from "console";
 import { IRobotConfigStore } from "./RobotConfigStore";
 import {
   CircularObstacleStore,
   ICircularObstacleStore,
 } from "./CircularObstacleStore";
-import { PolygonObstacleStore } from "./PolygonObstacleStore";
 import { angleModulus } from "../util/MathUtil";
 
 export const HolonomicPathStore = types
@@ -373,7 +370,7 @@ export const HolonomicPathStore = types
           if (i == 0) {
             prevHeading = point.heading;
           } else {
-            if (point.headingConstrained) {
+            if (point.headingConstrained && !point.isInitialGuess) {
               let prevHeadingMod = angleModulus(prevHeading);
               let heading = pts[i].heading;
               let headingMod = angleModulus(heading);
