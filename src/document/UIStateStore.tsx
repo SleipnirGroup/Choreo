@@ -48,6 +48,8 @@ export const SelectableItem = types.union(
   ...Object.values(ConstraintStores)
 );
 
+export const ObstaclesEnabled = false;
+
 /* Navbar stuff */
 export let WaypointData: {
   [key: string]: {
