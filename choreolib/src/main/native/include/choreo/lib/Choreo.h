@@ -49,8 +49,9 @@ class Choreo {
    *  global heading of the robot
    * @param outputChassisSpeeds a function that consuming the calculated robot
    *  relative ChassisSpeeds
-   * @param useAllianceColor if true, mirror the trajectory along the midline of
-   *  the field
+   * @param mirrorTrajectory If this returns true, the path will be mirrored to
+   * the opposite side, while keeping the same coordinate system origin. This
+   * will be called every loop during the command.
    * @param requirements the frc2::Requirements of the command
    * @return an frc2::CommandPtr containing the command that will command your
    *  drivebase to follow a trajectory
@@ -60,7 +61,7 @@ class Choreo {
       frc::PIDController xController, frc::PIDController yController,
       frc::PIDController rotationController,
       std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds,
-      bool useAllianceColor, frc2::Requirements requirements = {});
+      std::function<bool(void)> mirrorTrajectory, frc2::Requirements requirements = {});
 
   /**
    * Creates a CommandPtr that commands your drivebase to follow a Choreo
@@ -73,8 +74,9 @@ class Choreo {
    *  the robots position
    * @param outputChassisSpeeds a function that consuming the calculated robot
    *  relative ChassisSpeeds
-   * @param useAllianceColor if true, mirror the trajectory along the midline of
-   *  the field
+   * @param mirrorTrajectory If this returns true, the path will be mirrored to
+   * the opposite side, while keeping the same coordinate system origin. This
+   * will be called every loop during the command.
    * @param requirements the frc2::Requirements of the command
    * @return an frc2::CommandPtr containing the command that will command your
    *  drivebase to follow a trajectory
@@ -83,7 +85,7 @@ class Choreo {
       ChoreoTrajectory trajectory, std::function<frc::Pose2d()> poseSupplier,
       ChoreoControllerFunction controller,
       std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds,
-      bool useAllianceColor, frc2::Requirements requirements = {});
+      std::function<bool(void)> mirrorTrajectory, frc2::Requirements requirements = {});
 
   /**
    * Creates a ChoreoControllerFunction handles the feedback of the drivebase
