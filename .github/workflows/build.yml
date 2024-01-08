@@ -36,18 +36,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set to Windows GNU Rust Toolchain
-        if: matrix.os == 'windows-2022'
-        run: |
-          rustup install 1.69-gnu
-          rustup default 1.69-gnu
-
-      - name: Set up MinGW
-        if: matrix.os == 'windows-2022'
-        run: |
-          choco upgrade mingw --version=11.2.0 -y --no-progress --allow-downgrade
-          echo C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin >> $env:GITHUB_PATH
-
       - name: Linux deps
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -65,10 +53,6 @@ jobs:
       - name: Set up npm dependencies and build trajoptlib
         run: npm install
         continue-on-error: true
-
-      - name: Show file tree src-tauri
-        working-directory: src-tauri
-        run: ls
 
       - name: Build Package
         run: npm run tauri build
