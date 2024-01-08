@@ -32,29 +32,29 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-      
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         working-directory: ./choreolib
-      
+
       - name: Set version
         run: sed -i "s/0.0.0/${{ github.event.inputs.version }}/g" publish.gradle
         working-directory: ./choreolib
-      
+
       - name: Ensure spotless is applied
         run: ./gradlew spotlessApply
         working-directory: ./choreolib
-      
+
       - name: Build
         run: ./gradlew build -PreleaseMode ${{ matrix.build-options }}
         working-directory: ./choreolib
-      
+
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.artifact-name }}
           path: choreolib/build/allOutputs
-  
+
   build-host:
     strategy:
       fail-fast: false
@@ -69,31 +69,31 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-      
+
       - name: Setup java
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
-          distribution: 'zulu'
-      
+          java-version: "17"
+          distribution: "zulu"
+
       - name: Set version
         run: sed -i '' "s/0.0.0/${{ github.event.inputs.version }}/g" publish.gradle
         working-directory: ./choreolib
-      
+
       - name: Ensure spotless is applied
         run: ./gradlew spotlessApply
         working-directory: ./choreolib
-      
+
       - name: Build
         run: ./gradlew build -Pbuildalldesktop -PreleaseMode
         working-directory: ./choreolib
-      
+
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.artifact-name }}
           path: choreolib/build/allOutputs
-  
+
   combine:
     name: "[ChoreoLib] Combine"
     needs: [build-docker, build-host]
@@ -103,25 +103,25 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: wpilibsuite/build-tools
-      
+
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
           path: combiner/products/build/allOutputs
-      
+
       - name: Flatten Artifacts
         run: rsync -a --delete combiner/products/build/allOutputs/*/* combiner/products/build/allOutputs/
-      
+
       - name: Setup java
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
-          distribution: 'zulu'
-      
+          java-version: "17"
+          distribution: "zulu"
+
       - name: Combine
         run: ./gradlew publish -Pthirdparty
         working-directory: combiner
-      
+
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
