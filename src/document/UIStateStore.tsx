@@ -169,40 +169,39 @@ const ViewData = {
     icon: (
       <SquareOutlined style={{ transform: "scale(1.2, 0.6)" }}></SquareOutlined>
     ),
-    default: true
+    default: true,
   },
   Grid: {
     index: 1,
     name: "Grid",
     icon: <Grid4x4 />,
-    default: false
+    default: false,
   },
   Trajectory: {
     index: 2,
     name: "Trajectory",
     icon: <Route />,
-    default: true
+    default: true,
   },
   Samples: {
     index: 3,
     name: "Samples",
     icon: <ScatterPlot />,
-    default: false
+    default: false,
   },
   Waypoints: {
     index: 4,
     name: "Waypoints",
     icon: <Waypoint />,
-    default: true
+    default: true,
   },
   Obstacles: {
     index: 5,
     name: "Obstacles",
     icon: <DoNotDisturb />,
-    default: true
+    default: true,
   },
 };
-
 
 export const ViewLayers = (() => {
   let x: { [key: string]: number } = {};
@@ -213,13 +212,13 @@ export const ViewLayers = (() => {
 })();
 
 export const ViewItemData = (() => {
-  let x: Array<{ name: string; icon: any, default: boolean }> = [];
+  let x: Array<{ name: string; icon: any; default: boolean }> = [];
   Object.entries(ViewData).forEach(([key, data], index) => {
     x[data.index] = { name: data.name, icon: data.icon, default: data.default };
   });
   return x;
 })();
-export const ViewLayerDefaults = ViewItemData.map((layer)=>layer.default);
+export const ViewLayerDefaults = ViewItemData.map((layer) => layer.default);
 export type ViewLayerType = typeof ViewLayers;
 export const NUM_SETTINGS_TABS = 1;
 export const UIStateStore = types
