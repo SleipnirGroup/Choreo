@@ -8,6 +8,10 @@ import { InToM, LbsToKg } from "../util/UnitConversions";
 import { IStateStore } from "./DocumentModel";
 import { SavedRobotConfig } from "./DocumentSpecTypes";
 
+const DEFAULT_FRAME_SIZE = InToM(28);
+const DEFAULT_BUMPER = DEFAULT_FRAME_SIZE + 2 * InToM(2.5 + 0.75); // 28x28 bot with 2.5" noodle and 0.75" backing
+const DEFAULT_WHEELBASE = DEFAULT_FRAME_SIZE - 2 * InToM(2.625); //SDS Mk4i contact patch is 2.625 in from frame edge
+
 export const ROBOT_CONFIG_DEFAULTS = {
   mass: LbsToKg(150),
   rotationalInertia: 6,
@@ -15,10 +19,10 @@ export const ROBOT_CONFIG_DEFAULTS = {
   motorMaxTorque: maxTorqueCurrentLimited(MotorCurves.KrakenX60.kt, 60),
   gearing: 6.75, // SDS L2 mk4/mk4i
   wheelRadius: InToM(2),
-  bumperWidth: InToM(28 + 2.75 + 2.75), // 28x28 bot with 2.75" bumpers
-  bumperLength: InToM(28 + 2.75 + 2.75),
-  wheelbase: InToM(28 - 2.625 - 2.625), //SDS Mk4i contact patch is 2.625 in from frame edge
-  trackWidth: InToM(28 - 2.625 - 2.625),
+  bumperWidth: DEFAULT_BUMPER,
+  bumperLength: DEFAULT_BUMPER,
+  wheelbase: DEFAULT_WHEELBASE,
+  trackWidth: DEFAULT_WHEELBASE,
 };
 export const RobotConfigStore = types
   .model("RobotConfigStore", {
