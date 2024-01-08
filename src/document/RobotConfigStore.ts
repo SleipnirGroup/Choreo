@@ -10,7 +10,7 @@ import { SavedRobotConfig } from "./DocumentSpecTypes";
 
 const DEFAULT_FRAME_SIZE = InToM(28);
 const DEFAULT_BUMPER = DEFAULT_FRAME_SIZE + 2 * InToM(2.5 + 0.75); // 28x28 bot with 2.5" noodle and 0.75" backing
-const DEFAULT_WHEELBASE = DEFAULT_FRAME_SIZE -  2 * InToM(2.625); //SDS Mk4i contact patch is 2.625 in from frame edge
+const DEFAULT_WHEELBASE = DEFAULT_FRAME_SIZE - 2 * InToM(2.625); //SDS Mk4i contact patch is 2.625 in from frame edge
 
 export const ROBOT_CONFIG_DEFAULTS = {
   mass: LbsToKg(150),
