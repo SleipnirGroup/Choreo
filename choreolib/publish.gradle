@@ -151,7 +151,6 @@ model {
         def taskList = createComponentZipTasks($.components, ['ChoreoLib'], zipBaseName, Zip, project, includeStandardZipFormat)
 
         publications {
-            // C++ configuration for the future.
             cpp(MavenPublication) {
                 taskList.each {
                     artifact it
@@ -169,8 +168,7 @@ model {
                 artifact sourcesJar
                 artifact javadocJar
 
-                // artifactId = "${baseArtifactId}-java"
-                artifactId = baseArtifactId
+                artifactId = "${baseArtifactId}-java"
                 groupId artifactGroupId
                 version pubVersion
             }
