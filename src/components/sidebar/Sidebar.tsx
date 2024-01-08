@@ -139,8 +139,9 @@ class Sidebar extends Component<Props, State> {
               </span>
             </div>
           )}
-          {// removed as part of kickoff obstacle triage
-          /* <Divider className={styles.SidebarDivider} textAlign="left" flexItem>
+          {
+            // removed as part of kickoff obstacle triage
+            /* <Divider className={styles.SidebarDivider} textAlign="left" flexItem>
             <span>OBSTACLES</span>
           </Divider>
           <div className={styles.WaypointList}>
@@ -165,7 +166,8 @@ class Sidebar extends Component<Props, State> {
               </span>
             </div>
           )}
-          <Divider></Divider> */}
+          <Divider></Divider> */
+          }
         </div>
       </div>
     );
