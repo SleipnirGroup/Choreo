@@ -62,7 +62,7 @@ class WaypointPanel extends Component<Props, State> {
             ></Input>
             <Input
               title=""
-              suffix="steps"
+              suffix="samples"
               showCheckbox={false}
               enabled={true}
               setEnabled={(_) => {}}
