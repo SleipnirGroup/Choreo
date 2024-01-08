@@ -67,7 +67,8 @@ class PathAnimationPanel extends Component<Props, State> {
     }
   }
   componentDidMount(): void {
-    hotkeys("space", "all", () => {
+    hotkeys("space", "all", (e) => {
+      e.preventDefault();
       if (this.state.running) {
         this.onStop();
       } else {
