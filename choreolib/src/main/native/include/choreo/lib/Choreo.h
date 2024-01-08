@@ -61,7 +61,8 @@ class Choreo {
       frc::PIDController xController, frc::PIDController yController,
       frc::PIDController rotationController,
       std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds,
-      std::function<bool(void)> mirrorTrajectory, frc2::Requirements requirements = {});
+      std::function<bool(void)> mirrorTrajectory,
+      frc2::Requirements requirements = {});
 
   /**
    * Creates a CommandPtr that commands your drivebase to follow a Choreo
@@ -85,7 +86,8 @@ class Choreo {
       ChoreoTrajectory trajectory, std::function<frc::Pose2d()> poseSupplier,
       ChoreoControllerFunction controller,
       std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds,
-      std::function<bool(void)> mirrorTrajectory, frc2::Requirements requirements = {});
+      std::function<bool(void)> mirrorTrajectory,
+      frc2::Requirements requirements = {});
 
   /**
    * Creates a ChoreoControllerFunction handles the feedback of the drivebase
