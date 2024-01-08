@@ -27,7 +27,7 @@ void ChoreoSwerveCommand::Initialize() {
 // Called repeatedly when this Command is scheduled to run
 void ChoreoSwerveCommand::Execute() {
   units::second_t currentTrajTime = m_timer.Get();
-  bool mirror = mirrorTrajectory();
+  bool mirror = m_mirrorTrajectory();
   m_outputChassisSpeeds(
       m_controller(m_pose(), m_traj.Sample(currentTrajTime, mirror)));
 }

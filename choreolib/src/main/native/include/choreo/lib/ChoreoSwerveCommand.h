@@ -61,6 +61,6 @@ class ChoreoSwerveCommand
   std::function<frc::Pose2d()> m_pose;
   ChoreoControllerFunction m_controller;
   std::function<void(frc::ChassisSpeeds)> m_outputChassisSpeeds;
-  std::function<bool(void)> mirrorTrajectory;
+  std::function<bool(void)> m_mirrorTrajectory;
 };
 }  // namespace choreolib
