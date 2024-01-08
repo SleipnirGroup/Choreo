@@ -9,6 +9,7 @@ import { reaction } from "mobx";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import hotkeys from "hotkeys-js";
+import { ViewLayerDefaults } from "./UIStateStore";
 
 type OpenFileEventPayload = {
   adjacent_gradle: boolean;
@@ -33,7 +34,7 @@ export class DocumentManager {
       uiState: {
         settingsTab: 0,
         selectedSidebarItem: undefined,
-        layers: [true, false, true, true, true],
+        layers: ViewLayerDefaults,
       },
       document: {
         robotConfig: { identifier: uuidv4() },
@@ -317,7 +318,7 @@ export class DocumentManager {
       uiState: {
         settingsTab: 0,
         selectedSidebarItem: undefined,
-        layers: [true, false, true, true, true],
+        layers: ViewLayerDefaults,
       },
       document: {
         robotConfig: { identifier: uuidv4() },

@@ -31,15 +31,17 @@ class ChoreoSwerveCommand
    *  trajectory state, and supplies back robot relative ChassisSpeeds
    * @param outputChassisSpeeds a function that consumes robot relative
    *  ChassisSpeeds
-   * @param useAllianceColor if true, mirrors  the trajectory if the robot is on
-   *  the red alliance
+   * @param mirrorTrajectory If this returns true, the path will be mirrored to
+   * the opposite side, while keeping the same coordinate system origin. This
+   * will be called every loop during the command.
    * @param requirements subsystem requirements
    */
   ChoreoSwerveCommand(
       ChoreoTrajectory trajectory, std::function<frc::Pose2d()> poseSupplier,
       ChoreoControllerFunction controller,
       std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds,
-      bool useAllianceColor, frc2::Requirements requirements = {});
+      std::function<bool(void)> mirrorTrajectory,
+      frc2::Requirements requirements = {});
 
   /// Runs once before the first call to Execute()
   void Initialize() override;
@@ -59,6 +61,6 @@ class ChoreoSwerveCommand
   std::function<frc::Pose2d()> m_pose;
   ChoreoControllerFunction m_controller;
   std::function<void(frc::ChassisSpeeds)> m_outputChassisSpeeds;
-  bool m_useAlliance;
+  std::function<bool(void)> mirrorTrajectory;
 };
 }  // namespace choreolib

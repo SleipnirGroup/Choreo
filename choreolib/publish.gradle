@@ -2,8 +2,7 @@ apply plugin: 'maven-publish'
 
 ext.licenseFile = files("$rootDir/LICENSE.txt")
 
-// This gets overwritten during CI
-def pubVersion = '0.0.0'
+def pubVersion = '2024.1.0'
 
 def outputsFolder = file("$buildDir/outputs")
 
