@@ -343,11 +343,13 @@ async fn generate_trajectory(
     path_builder.set_bumpers(config.bumperLength, config.bumperWidth);
 
     for o in circleObstacles {
-      path_builder.sgmt_circle_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
+      // Skip obstacles for now while we figure out whats wrong with them
+      // path_builder.sgmt_circle_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
     }
 
     for o in polygonObstacles {
-      path_builder.sgmt_polygon_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
+      // Skip obstacles for now while we figure out whats wrong with them
+      // path_builder.sgmt_polygon_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
     }
     path_builder.set_drivetrain(&drivetrain);
     path_builder.generate()
