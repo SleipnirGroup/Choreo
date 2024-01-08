@@ -17,7 +17,7 @@ import {
   ConstraintStores,
   IWaypointScope,
   WaypointID,
-  WaypointScope
+  WaypointScope,
 } from "./ConstraintStore";
 import { SavedWaypointId } from "./previousSpecs/v0_1_2";
 import { IRobotConfigStore } from "./RobotConfigStore";
