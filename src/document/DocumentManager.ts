@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import hotkeys from "hotkeys-js";
 import { ViewLayerDefaults } from "./UIStateStore";
+import { IConstraintStore } from "./ConstraintStore";
 
 type OpenFileEventPayload = {
   adjacent_gradle: boolean;
@@ -379,14 +380,43 @@ export class DocumentManager {
     if (trajectory.length < 2) {
       throw `Path is not generated`;
     }
-    const content = JSON.stringify({ samples: trajectory }, undefined, 4);
-    var file = await filePath();
-    if (file) {
-      await invoke("save_file", {
-        dir: file[0],
-        name: file[1],
-        contents: content,
-      });
+    const stopPoints = path.constraints
+      .filter((c) => c.type === "StopPoint");
+    const split = (this.model.uiState.exportStopPointSplit && stopPoints.length > 1) ? stopPoints
+      .flatMap((c: IConstraintStore) => {
+        const scope = c.scope.at(0);
+        if (scope === undefined) {
+          return 0;
+        } else if (scope === "first") {
+          return 0;
+        } else if (scope === "last") {
+          return path.waypoints.length - 1;
+        } else {
+          return path.findUUIDIndex(scope.uuid);
+        }
+      })
+      .flatMap((w) =>
+        path.waypoints
+          .slice(0, w)
+          .flatMap((w) => w.controlIntervalCount)
+          .reduce((sum, num) => sum + num, 0)
+      )
+      .sort() : [0, undefined];
+    console.log(split);
+    for (let i = 1; i < split.length; i++) {
+      const prev = split[i - 1];
+      const cur = split[i];
+      
+      const content = JSON.stringify({ samples: trajectory.slice(prev, cur) }, undefined, 4);
+      var file = await filePath();
+      if (file) {
+        const name = cur === undefined ? file[1] : file[1].replace(".", " sgmt " + i.toString() + ".");
+        await invoke("save_file", {
+          dir: file[0],
+          name: name,
+          contents: content,
+        });
+      }
     }
   }
 

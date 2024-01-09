@@ -229,6 +229,7 @@ export const UIStateStore = types
     saveFileName: types.maybe(types.string),
     saveFileDir: types.maybe(types.string),
     isGradleProject: types.maybe(types.boolean),
+    exportStopPointSplit: false,
     waypointPanelOpen: false,
     visibilityPanelOpen: false,
     robotConfigOpen: false,
