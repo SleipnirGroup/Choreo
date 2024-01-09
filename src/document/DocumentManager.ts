@@ -68,7 +68,7 @@ export class DocumentManager {
           this.model.uiState.setSaveFileName(saveName);
           this.model.uiState.setSaveFileDir(saveDir);
           this.model.uiState.setIsGradleProject(adjacent_gradle);
-        });
+        }).then(()=>this.exportAllTrajectories());
     }
   }
 
@@ -486,9 +486,8 @@ export class DocumentManager {
     if (newIsGradleProject !== undefined) {
       if (newIsGradleProject !== prevIsGradleProject) {
         this.model.uiState.setIsGradleProject(newIsGradleProject);
+        await this.exportAllTrajectories();
       }
-
-      await this.exportAllTrajectories();
     }
   }
 
