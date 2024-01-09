@@ -36,7 +36,9 @@ class ExportConfigPanel extends Component<Props, State> {
           size="small"
           sx={{ gridColumn: 2 }}
           checked={this.context.model.uiState.exportStopPointSplit}
-          onChange={(e, checked) => this.context.model.uiState.setExportSplitTrajs(checked)}
+          onChange={(e, checked) =>
+            this.context.model.uiState.setExportSplitTrajs(checked)
+          }
         ></Switch>
       </div>
     );

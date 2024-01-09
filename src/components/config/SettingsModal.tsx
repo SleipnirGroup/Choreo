@@ -71,7 +71,9 @@ class SettingsModal extends Component<Props, State> {
           </div>
           <div style={{ paddingTop: 8, flexGrow: 1, overflowY: "scroll" }}>
             {uiState.settingsTab == 0 && <RobotConfigPanel></RobotConfigPanel>}
-            {uiState.settingsTab == 1 && <ExportConfigPanel></ExportConfigPanel>}
+            {uiState.settingsTab == 1 && (
+              <ExportConfigPanel></ExportConfigPanel>
+            )}
           </div>
         </div>
       </Modal>
