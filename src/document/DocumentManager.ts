@@ -68,7 +68,8 @@ export class DocumentManager {
           this.model.uiState.setSaveFileName(saveName);
           this.model.uiState.setSaveFileDir(saveDir);
           this.model.uiState.setIsGradleProject(adjacent_gradle);
-        }).then(()=>this.exportAllTrajectories());
+        })
+        .then(() => this.exportAllTrajectories());
     }
   }
 
