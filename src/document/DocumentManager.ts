@@ -410,7 +410,7 @@ export class DocumentManager {
       const content = JSON.stringify({ samples: trajectory.slice(prev, cur) }, undefined, 4);
       var file = await filePath();
       if (file) {
-        const name = cur === undefined ? file[1] : file[1].replace(".", " sgmt " + i.toString() + ".");
+        const name = split.length <= 2 ? file[1] : file[1].replace(".", " sgmt " + i.toString() + ".");
         await invoke("save_file", {
           dir: file[0],
           name: name,
