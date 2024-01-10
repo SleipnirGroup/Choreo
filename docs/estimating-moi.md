@@ -35,5 +35,5 @@ However, this would likely be an underestimate because most FRC robots tend to h
 
 A better estimate could by found by summing each subsystem's contributions to the robot's overall MoI, based on its mass and average distance from the axis of rotation:
 
-$$ I = \sum_{i=1}^{n} \text{mass}_\text{subsystem i} * \text{radius}_\text{subsystem i}^2 $$
+$$ I = \sum_{i=1}^n \text{mass}\_\text{subsystem i} * \text{radius}\_\text{subsystem i}^2 $$
 
