@@ -26,6 +26,7 @@ import { toast } from "react-toastify";
 import { dialog, invoke, path } from "@tauri-apps/api";
 
 import SettingsModal from "./components/config/SettingsModal";
+import { version } from "./version";
 
 type Props = {};
 
@@ -49,7 +50,7 @@ class AppMenu extends Component<Props, State> {
   }
 
   CopyToClipboardButton({ data, tooltip }: { data: any; tooltip: string }) {
-    let handleAction = async function () {
+    let handleAction = async function() {
       await navigator.clipboard.writeText(data);
       toast.success("Copied to clipboard");
     };
@@ -64,7 +65,7 @@ class AppMenu extends Component<Props, State> {
   }
 
   OpenInFilesApp({ dir }: { dir: string }) {
-    let handleAction = async function () {
+    let handleAction = async function() {
       invoke("open_file_app", { dir });
     };
 
@@ -118,7 +119,7 @@ class AppMenu extends Component<Props, State> {
                 <MenuIcon></MenuIcon>
               </IconButton>
             </Tooltip>
-            Choreo
+            Choreo {version}
           </div>
           <List style={{ paddingBottom: "50px", paddingTop: "0px" }}>
             {/* Document Settings (open the robot config, etc modal) */}
@@ -237,9 +238,8 @@ class AppMenu extends Component<Props, State> {
                   error: {
                     render(toastProps) {
                       console.error(toastProps.data);
-                      return `Couldn't export trajectories: ${
-                        toastProps.data as string[]
-                      }`;
+                      return `Couldn't export trajectories: ${toastProps.data as string[]
+                        }`;
                     },
                   },
                 });
@@ -321,8 +321,8 @@ class AppMenu extends Component<Props, State> {
     return (
       (relativeFormat
         ? this.convertToRelative(
-            this.context.model.uiState.saveFileDir as string
-          )
+          this.context.model.uiState.saveFileDir as string
+        )
         : this.context.model.uiState.saveFileDir) + path.sep
     );
   }
