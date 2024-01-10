@@ -1,3 +1,5 @@
+// Copyright (c) Choreo contributors
+
 package com.choreo.lib;
 
 import edu.wpi.first.math.MathUtil;

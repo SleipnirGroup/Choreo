@@ -2,7 +2,7 @@ apply plugin: 'maven-publish'
 
 ext.licenseFile = files("$rootDir/LICENSE.txt")
 
-def pubVersion = '2024.0.4'
+def pubVersion = '2024.1.0'
 
 def outputsFolder = file("$buildDir/outputs")
 
@@ -44,42 +44,42 @@ ext.addTaskToCopyAllOutputs = { task ->
 
 def artifactGroupId = 'com.choreo.lib'
 def baseArtifactId = 'ChoreoLib'
-def zipBaseName = "_GROUP_com_choreo_lib_choreolib_ID_${baseArtifactId}-cpp_CLS"
-def javaBaseName = "_GROUP_com_choreo_lib_choreolib_ID_${baseArtifactId}-java_CLS"
+def zipBaseName = "_GROUP_com_choreo_lib_ID_${baseArtifactId}-cpp_CLS"
+def javaBaseName = "_GROUP_com_choreo_lib_ID_${baseArtifactId}-java_CLS"
 
 // C++ configuration for the future.
-// task cppHeadersZip(type: Zip) {
-//     destinationDirectory = outputsFolder
-//     archiveBaseName = zipBaseName
-//     archiveClassifier = "headers"
+task cppHeadersZip(type: Zip) {
+    destinationDirectory = outputsFolder
+    archiveBaseName = zipBaseName
+    archiveClassifier = "headers"
 
-//     from(licenseFile) {
-//         into '/'
-//     }
+    from(licenseFile) {
+        into '/'
+    }
 
-//     from('src/main/native/include') {
-//         into '/'
-//     }
-// }
+    from('src/main/native/include') {
+        into '/'
+    }
+}
 
-// task cppSourceZip(type: Zip) {
-//     destinationDirectory = outputsFolder
-//     archiveBaseName = zipBaseName
-//     archiveClassifier = "source"
+task cppSourceZip(type: Zip) {
+    destinationDirectory = outputsFolder
+    archiveBaseName = zipBaseName
+    archiveClassifier = "source"
 
-//     from(licenseFile) {
-//         into '/'
-//     }
+    from(licenseFile) {
+        into '/'
+    }
 
-//     from('src/main/native/cpp') {
-//         into '/'
-//     }
-// }
+    from('src/main/native/cpp') {
+        into '/'
+    }
+}
 
-// build.dependsOn cppHeadersZip
-// addTaskToCopyAllOutputs(cppHeadersZip)
-// build.dependsOn cppSourceZip
-// addTaskToCopyAllOutputs(cppSourceZip)
+build.dependsOn cppHeadersZip
+addTaskToCopyAllOutputs(cppHeadersZip)
+build.dependsOn cppSourceZip
+addTaskToCopyAllOutputs(cppSourceZip)
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     archiveClassifier = 'sources'
@@ -151,26 +151,24 @@ model {
         def taskList = createComponentZipTasks($.components, ['ChoreoLib'], zipBaseName, Zip, project, includeStandardZipFormat)
 
         publications {
-            // C++ configuration for the future.
-            // cpp(MavenPublication) {
-            //     taskList.each {
-            //         artifact it
-            //     }
-            //     artifact cppHeadersZip
-            //     artifact cppSourceZip
+            cpp(MavenPublication) {
+                taskList.each {
+                    artifact it
+                }
+                artifact cppHeadersZip
+                artifact cppSourceZip
 
-            //     artifactId = "${baseArtifactId}-cpp"
-            //     groupId artifactGroupId
-            //     version pubVersion
-            // }
+                artifactId = "${baseArtifactId}-cpp"
+                groupId artifactGroupId
+                version pubVersion
+            }
 
             java(MavenPublication) {
                 artifact jar
                 artifact sourcesJar
                 artifact javadocJar
 
-                // artifactId = "${baseArtifactId}-java"
-                artifactId = baseArtifactId
+                artifactId = "${baseArtifactId}-java"
                 groupId artifactGroupId
                 version pubVersion
             }

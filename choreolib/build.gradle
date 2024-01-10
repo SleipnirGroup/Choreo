@@ -5,7 +5,7 @@ plugins {
     id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2020.2'
     id 'edu.wpi.first.NativeUtils' version '2024.3.1'
     id 'edu.wpi.first.GradleJni' version '1.0.0'
-    id 'edu.wpi.first.GradleVsCode' version '1.3.0'
+    id 'edu.wpi.first.GradleVsCode' version '2.1.0'
     id 'com.diffplug.spotless' version '6.11.0'
     id 'jacoco'
 }
@@ -27,15 +27,15 @@ apply from: 'config.gradle'
 
 // Apply Java configuration
 dependencies {
-    implementation 'edu.wpi.first.cscore:cscore-java:2024.+'
-    implementation 'edu.wpi.first.cameraserver:cameraserver-java:2024.+'
-    implementation 'edu.wpi.first.ntcore:ntcore-java:2024.+'
-    implementation 'edu.wpi.first.wpilibj:wpilibj-java:2024.+'
-    implementation 'edu.wpi.first.wpiutil:wpiutil-java:2024.+'
-    implementation 'edu.wpi.first.wpimath:wpimath-java:2024.+'
-    implementation 'edu.wpi.first.wpilibNewCommands:wpilibNewCommands-java:2024.+'
-    implementation 'edu.wpi.first.wpiunits:wpiunits-java:2024.+'
-    implementation 'edu.wpi.first.hal:hal-java:2024.+'
+    implementation 'edu.wpi.first.cscore:cscore-java:2024.1.1'
+    implementation 'edu.wpi.first.cameraserver:cameraserver-java:2024.1.1'
+    implementation 'edu.wpi.first.ntcore:ntcore-java:2024.1.1'
+    implementation 'edu.wpi.first.wpilibj:wpilibj-java:2024.1.1'
+    implementation 'edu.wpi.first.wpiutil:wpiutil-java:2024.1.1'
+    implementation 'edu.wpi.first.wpimath:wpimath-java:2024.1.1'
+    implementation 'edu.wpi.first.wpilibNewCommands:wpilibNewCommands-java:2024.1.1'
+    implementation 'edu.wpi.first.wpiunits:wpiunits-java:2024.1.1'
+    implementation 'edu.wpi.first.hal:hal-java:2024.1.1'
     implementation "org.ejml:ejml-simple:0.42"
     implementation "com.fasterxml.jackson.core:jackson-annotations:2.12.4"
     implementation "com.fasterxml.jackson.core:jackson-core:2.12.4"
@@ -58,69 +58,69 @@ dependencies {
 
 // C++ configuration for the future.
 // Set up exports properly
-// nativeUtils {
-//     exportsConfigs {
-//         ChoreoLib {
-//             x86ExcludeSymbols = [
-//                 '_CT??_R0?AV_System_error',
-//                 '_CT??_R0?AVexception',
-//                 '_CT??_R0?AVfailure',
-//                 '_CT??_R0?AVruntime_error',
-//                 '_CT??_R0?AVsystem_error',
-//                 '_CTA5?AVfailure',
-//                 '_TI5?AVfailure',
-//                 '_CT??_R0?AVout_of_range',
-//                 '_CTA3?AVout_of_range',
-//                 '_TI3?AVout_of_range',
-//                 '_CT??_R0?AVbad_cast'
-//             ]
-//             x64ExcludeSymbols = [
-//                 '_CT??_R0?AV_System_error',
-//                 '_CT??_R0?AVexception',
-//                 '_CT??_R0?AVfailure',
-//                 '_CT??_R0?AVruntime_error',
-//                 '_CT??_R0?AVsystem_error',
-//                 '_CTA5?AVfailure',
-//                 '_TI5?AVfailure',
-//                 '_CT??_R0?AVout_of_range',
-//                 '_CTA3?AVout_of_range',
-//                 '_TI3?AVout_of_range',
-//                 '_CT??_R0?AVbad_cast'
-//             ]
-//         }
-//     }
-// }
+nativeUtils {
+    exportsConfigs {
+        ChoreoLib {
+            x86ExcludeSymbols = [
+                '_CT??_R0?AV_System_error',
+                '_CT??_R0?AVexception',
+                '_CT??_R0?AVfailure',
+                '_CT??_R0?AVruntime_error',
+                '_CT??_R0?AVsystem_error',
+                '_CTA5?AVfailure',
+                '_TI5?AVfailure',
+                '_CT??_R0?AVout_of_range',
+                '_CTA3?AVout_of_range',
+                '_TI3?AVout_of_range',
+                '_CT??_R0?AVbad_cast'
+            ]
+            x64ExcludeSymbols = [
+                '_CT??_R0?AV_System_error',
+                '_CT??_R0?AVexception',
+                '_CT??_R0?AVfailure',
+                '_CT??_R0?AVruntime_error',
+                '_CT??_R0?AVsystem_error',
+                '_CTA5?AVfailure',
+                '_TI5?AVfailure',
+                '_CT??_R0?AVout_of_range',
+                '_CTA3?AVout_of_range',
+                '_TI3?AVout_of_range',
+                '_CT??_R0?AVbad_cast'
+            ]
+        }
+    }
+}
 
-// model {
-//     components {
-//         ChoreoLib(NativeLibrarySpec) {
-//             sources {
-//                 cpp {
-//                     source {
-//                         srcDirs 'src/main/native/cpp'
-//                         include '**/*.cpp'
-//                     }
-//                     exportedHeaders {
-//                         srcDirs 'src/main/native/include'
-//                     }
-//                 }
-//             }
-//             nativeUtils.useRequiredLibrary(it, 'wpilib_shared')
-//         }
-//     }
-//     testSuites {
-//         ChoreoLibTest {
-//             sources.cpp {
-//                 source {
-//                     srcDir 'src/test/native/cpp'
-//                     include '**/*.cpp'
-//                 }
-//             }
+model {
+    components {
+        ChoreoLib(NativeLibrarySpec) {
+            sources {
+                cpp {
+                    source {
+                        srcDirs 'src/main/native/cpp'
+                        include '**/*.cpp'
+                    }
+                    exportedHeaders {
+                        srcDirs 'src/main/native/include'
+                    }
+                }
+            }
+            nativeUtils.useRequiredLibrary(it, 'wpilib_shared')
+        }
+    }
+    testSuites {
+        ChoreoLibTest {
+            sources.cpp {
+                source {
+                    srcDir 'src/test/native/cpp'
+                    include '**/*.cpp'
+                }
+            }
 
-//             nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared", "googletest_static")
-//         }
-//     }
-// }
+            nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared", "googletest_static")
+        }
+    }
+}
 
 spotless {
     java {
@@ -133,13 +133,6 @@ spotless {
         removeUnusedImports()
         trimTrailingWhitespace()
         endWithNewline()
-    }
-    cpp {
-        target fileTree('.') {
-            include '**/*.cpp', '**/*.h'
-            exclude '**/build/**', '**/build-*/**'
-        }
-        eclipseCdt()
     }
     groovyGradle {
         target fileTree('.') {

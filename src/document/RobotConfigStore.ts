@@ -1,44 +1,48 @@
-import { getRoot, Instance, types } from "mobx-state-tree";
+import { applySnapshot, getRoot, Instance, types } from "mobx-state-tree";
+import {
+  maxTorqueCurrentLimited,
+  MotorCurves,
+} from "../components/config/robotconfig/MotorCurves";
 import { safeGetIdentifier } from "../util/mobxutils";
+import { InToM, LbsToKg } from "../util/UnitConversions";
 import { IStateStore } from "./DocumentModel";
 import { SavedRobotConfig } from "./DocumentSpecTypes";
 
+const DEFAULT_FRAME_SIZE = InToM(28);
+const DEFAULT_BUMPER = DEFAULT_FRAME_SIZE + 2 * InToM(2.5 + 0.75); // 28x28 bot with 2.5" noodle and 0.75" backing
+const DEFAULT_WHEELBASE = DEFAULT_FRAME_SIZE - 2 * InToM(2.625); //SDS Mk4i contact patch is 2.625 in from frame edge
+
+export const ROBOT_CONFIG_DEFAULTS = {
+  mass: LbsToKg(150),
+  rotationalInertia: 6,
+  motorMaxVelocity: MotorCurves.KrakenX60.motorMaxVelocity * 0.8,
+  motorMaxTorque: maxTorqueCurrentLimited(MotorCurves.KrakenX60.kt, 60),
+  gearing: 6.75, // SDS L2 mk4/mk4i
+  wheelRadius: InToM(2),
+  bumperWidth: DEFAULT_BUMPER,
+  bumperLength: DEFAULT_BUMPER,
+  wheelbase: DEFAULT_WHEELBASE,
+  trackWidth: DEFAULT_WHEELBASE,
+};
 export const RobotConfigStore = types
   .model("RobotConfigStore", {
-    mass: 45,
-    rotationalInertia: 6,
-    wheelMaxVelocity: 70, // 15 fps
-    wheelMaxTorque: 2.0,
-    wheelRadius: 0.0508, // 2 in
-    bumperWidth: 0.9,
-    bumperLength: 0.9,
-    wheelbase: 0.622,
-    trackWidth: 0.622,
+    ...ROBOT_CONFIG_DEFAULTS,
     identifier: types.identifier,
+  })
+  .views((self) => {
+    return {
+      get wheelMaxVelocity() {
+        return (self.motorMaxVelocity * (Math.PI * 2)) / 60 / self.gearing;
+      },
+      get wheelMaxTorque() {
+        return self.motorMaxTorque * self.gearing;
+      },
+    };
   })
   .actions((self) => {
     return {
       fromSavedRobotConfig(config: SavedRobotConfig) {
-        let {
-          mass,
-          rotationalInertia,
-          wheelMaxTorque,
-          wheelMaxVelocity,
-          wheelbase,
-          trackWidth,
-          bumperLength,
-          bumperWidth,
-          wheelRadius,
-        } = config;
-        self.mass = mass;
-        self.rotationalInertia = rotationalInertia;
-        self.wheelMaxTorque = wheelMaxTorque;
-        self.wheelMaxVelocity = wheelMaxVelocity;
-        self.wheelbase = wheelbase;
-        self.trackWidth = trackWidth;
-        self.bumperLength = bumperLength;
-        self.bumperWidth = bumperWidth;
-        self.wheelRadius = wheelRadius;
+        applySnapshot(self, { identifier: self.identifier, ...config });
       },
       setMass(arg: number) {
         self.mass = arg;
@@ -47,10 +51,13 @@ export const RobotConfigStore = types
         self.rotationalInertia = arg;
       },
       setMaxTorque(arg: number) {
-        self.wheelMaxTorque = arg;
+        self.motorMaxTorque = arg;
       },
       setMaxVelocity(arg: number) {
-        self.wheelMaxVelocity = arg;
+        self.motorMaxVelocity = arg;
+      },
+      setGearing(arg: number) {
+        self.gearing = arg;
       },
       setBumperWidth(arg: number) {
         self.bumperWidth = arg;
@@ -82,8 +89,9 @@ export const RobotConfigStore = types
         let {
           mass,
           rotationalInertia,
-          wheelMaxTorque,
-          wheelMaxVelocity,
+          motorMaxTorque,
+          motorMaxVelocity,
+          gearing,
           wheelbase,
           trackWidth: trackwidth,
           bumperLength,
@@ -93,13 +101,45 @@ export const RobotConfigStore = types
         return {
           mass,
           rotationalInertia,
-          wheelMaxTorque,
-          wheelMaxVelocity,
+          motorMaxTorque,
+          motorMaxVelocity,
+          gearing,
           wheelbase,
           trackWidth: trackwidth,
           bumperLength,
           bumperWidth,
           wheelRadius,
+        };
+      },
+      asSolverRobotConfig(): Omit<
+        SavedRobotConfig,
+        "motorMaxTorque" | "motorMaxVelocity" | "gearing"
+      > & {
+        wheelMaxTorque: number;
+        wheelMaxVelocity: number;
+      } {
+        // JavaScript, please have better syntax for what we're trying to do here.
+        let {
+          mass,
+          rotationalInertia,
+          wheelbase,
+          trackWidth,
+          bumperLength,
+          bumperWidth,
+          wheelRadius,
+          wheelMaxTorque,
+          wheelMaxVelocity,
+        } = self;
+        return {
+          mass,
+          rotationalInertia,
+          wheelbase,
+          trackWidth,
+          bumperLength,
+          bumperWidth,
+          wheelRadius,
+          wheelMaxTorque,
+          wheelMaxVelocity,
         };
       },
       bumperSVGElement() {

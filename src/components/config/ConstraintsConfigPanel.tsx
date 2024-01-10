@@ -4,21 +4,8 @@ import DocumentManagerContext from "../../document/DocumentManager";
 import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../input/InputList";
 import Input from "../input/Input";
-import inputStyles from "../input/InputList.module.css";
 import { IConstraintStore } from "../../document/ConstraintStore";
-import {
-  Box,
-  Button,
-  ButtonGroup,
-  IconButton,
-  InputAdornment,
-  Slider,
-  TextField,
-  ToggleButton,
-  ToggleButtonGroup,
-} from "@mui/material";
-import { AlignHorizontalLeft } from "@mui/icons-material";
-import { toJS } from "mobx";
+import { Slider } from "@mui/material";
 
 type Props = { constraint: IConstraintStore };
 

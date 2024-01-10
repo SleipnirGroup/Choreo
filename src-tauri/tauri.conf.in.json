@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "Choreo",
-    "version": "2024.0.4"
+    "version": "2024.1.0"
   },
   "tauri": {
     "allowlist": {
@@ -17,13 +17,21 @@
         "all": false,
         "open": true
       },
+      "path": {
+        "all": true
+      },
       "fs": {
         "all": true
       },
       "dialog": {
         "confirm": true,
         "open": true,
-        "save": true
+        "save": true,
+        "ask": true
+      },
+      "window": {
+        "setTitle": true,
+        "close": true
       }
     },
     "bundle": {
@@ -58,7 +66,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "Choreo 2024.0.4",
+        "title": "Choreo 2024.1.0",
         "width": 1200,
         "height": 800
       }
