@@ -1,4 +1,5 @@
-import React, { Component } from "react";
+import { Component } from "react";
+import Field23 from "./Field2023.svg?react";
 
 type Props = { blue: boolean };
 
@@ -15,13 +16,7 @@ export default class FieldImage23 extends Component<Props, State> {
   render() {
     return (
       <g id="layer1" transform={`scale(1, -1)`}>
-        <image
-          x={0}
-          y={-WIDTH_M}
-          width={LENGTH_M}
-          height={WIDTH_M}
-          xlinkHref="/fields/field23.svg"
-        />
+        <Field23 x={0} y={-WIDTH_M} width={LENGTH_M} height={WIDTH_M} />
       </g>
     );
   }

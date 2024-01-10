@@ -99,16 +99,15 @@ class FieldOverlayRoot extends Component<Props, State> {
     this.context.model.uiState.setFieldScalingFactor(factor);
   }
   render() {
-    this.canvasHeightMeters = FieldImage23.WIDTH_M + 1;
-    this.canvasWidthMeters = FieldImage23.LENGTH_M + 1;
+    this.canvasHeightMeters = FieldImage24.WIDTH_M + 1;
+    this.canvasWidthMeters = FieldImage24.LENGTH_M + 1;
     let layers = this.context.model.uiState.layers;
     let constraintSelected = this.context.model.uiState.isConstraintSelected();
     return (
       <svg
         ref={this.svgRef}
-        viewBox={`${-0.5} ${0.5 - this.canvasHeightMeters} ${
-          this.canvasWidthMeters
-        } ${this.canvasHeightMeters}`}
+        viewBox={`${-0.5} ${0.5 - this.canvasHeightMeters} ${this.canvasWidthMeters
+          } ${this.canvasHeightMeters}`}
         xmlns="http://www.w3.org/2000/svg"
         style={{
           width: "100%",
@@ -122,18 +121,17 @@ class FieldOverlayRoot extends Component<Props, State> {
       >
         <g
           transform={`
-              matrix(${this.state.zoom} 0  0 ${-this.state.zoom} ${
-            this.state.xPan
-          } ${this.state.yPan})`}
+              matrix(${this.state.zoom} 0  0 ${-this.state.zoom} ${this.state.xPan
+            } ${this.state.yPan})`}
           ref={this.frameRef}
           id="rootFrame"
         >
+          <FieldAxisLines></FieldAxisLines>
           {/* Background */}
           {layers[ViewLayers.Field] && (
             <FieldImage24 blue={true}></FieldImage24>
           )}
           {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
-          <FieldAxisLines></FieldAxisLines>
           {/* Obstacle and waypoint mouse capture*/}
           {layers[ViewLayers.Waypoints] &&
             this.context.model.uiState.isNavbarWaypointSelected() && (
