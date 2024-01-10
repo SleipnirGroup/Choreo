@@ -26,7 +26,6 @@ import { toast } from "react-toastify";
 import { dialog, invoke, path } from "@tauri-apps/api";
 
 import SettingsModal from "./components/config/SettingsModal";
-import { version } from "./version";
 
 type Props = {};
 
@@ -119,7 +118,7 @@ class AppMenu extends Component<Props, State> {
                 <MenuIcon></MenuIcon>
               </IconButton>
             </Tooltip>
-            Choreo {version}
+            Choreo
           </div>
           <List style={{ paddingBottom: "50px", paddingTop: "0px" }}>
             {/* Document Settings (open the robot config, etc modal) */}
