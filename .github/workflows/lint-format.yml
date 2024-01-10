@@ -1,4 +1,4 @@
-name: C++ Lint and Format
+name: Lint and Format
 
 on: [pull_request, push]
 
@@ -7,6 +7,42 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  format-java:
+    name: "Format Java"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - run: |
+          cd ./choreolib
+          chmod +x gradlew
+          ./gradlew spotlessCheck
+
+  format-js:
+    name: "Format JS"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: "npm"
+
+      - run: |
+          npm install prettier
+          npm -v
+          npm run checkFormat
+
+  format-rust:
+    name: "Format Rust"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run rustfmt
+        working-directory: src-tauri
+        run: cargo fmt --check
+
   wpiformat:
     name: "wpiformat"
     runs-on: ubuntu-latest
