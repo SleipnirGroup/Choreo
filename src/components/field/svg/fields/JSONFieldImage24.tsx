@@ -1,6 +1,6 @@
 import { Component } from "react";
 import { FtToM, InToM } from "../../../../util/UnitConversions";
-import defaultFieldJSON from "../../../../../public/fields/2024-field.json";
+import defaultFieldJSON from "./Field2024.json";
 
 type Props = {
   opacity: number;
@@ -16,7 +16,6 @@ export const LENGTH_M = 16.54175;
 export type FieldJSON = {
   game: string;
   "field-image": string;
-  "image-size": [number, number];
   "field-corners": {
     "top-left": [number, number];
     "bottom-right": [number, number];

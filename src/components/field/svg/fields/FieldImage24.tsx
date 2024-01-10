@@ -1,6 +1,6 @@
 import { Component } from "react";
 
-type Props = { blue: boolean };
+type Props = {};
 
 type State = {};
 
