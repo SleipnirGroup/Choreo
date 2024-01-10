@@ -21,17 +21,19 @@ The MoI of irregular objects can be determined experimentally using a compound-p
 
 If thorough System Identification has been performed, the system's MoI can be calculated from:
 
-$$I = \text{mass} * \dfrac{trackwidth}{2} * \dfrac{kA_\text{angular}}{kA_\text{linear}}$$
+$$ I = \text{mass} * \dfrac{trackwidth}{2} * \dfrac{kA_\text{angular}}{kA_\text{linear}} $$
 
 where $kA_\text{angular}$ is the angular acceleration feedforward constant of the drivetrain and $kA_\text{linear}$ is the linear acceleration feedforward constant.
 
 ## Assuming a simplified mass distribution
 
 If the robot is considered a solid rectangular plate of uniformly-distributed mass, its MoI would be:
-$$I = \dfrac{1}{12} * \text{mass} * (\text{length}^2 + \text{width}^2)$$
+
+$$ I = \dfrac{1}{12} * \text{mass} * (\text{length}^2 + \text{width}^2) $$
 
 However, this would likely be an underestimate because most FRC robots tend to have mass concentrations (e.g. swerve modules) located along the frame perimeter, and are otherwise relatively hollow.
 
 A better estimate could by found by summing each subsystem's contributions to the robot's overall MoI, based on its mass and average distance from the axis of rotation:
-$$I = \sum_{i=1}^{n} \text{mass}_\text{subsystem i} * \text{radius}_\text{subsystem i}^2$$
+
+$$ I = \sum_{i=1}^{n} \text{mass}_\text{subsystem i} * \text{radius}_\text{subsystem i}^2 $$
 
