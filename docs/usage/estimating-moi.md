@@ -8,14 +8,14 @@ In this section, we present various approaches to determine a resonably accurate
 
 Most popular CAD tools can calculate the mass properties of solid modeled objects. However, a disciplined approach to CAD work is required for these values to be accurate. 
 
-![REV-2024-starterBot-massProps](./media/REV-2024-starterBot-massProps.png)
+![REV-2024-starterBot-massProps](../media/REV-2024-starterBot-massProps.png)
 Pictured: [2024 REV ION FRC Starter Bot](https://www.revrobotics.com/ion/frc-starter-bot-24/)
 
 ## Physical experimentation
 
 The MoI of irregular objects can be determined experimentally using a compound-pendulum method as described in [The Experimental Determination of the Moments of Inertia of Airplanes by a Simplified Compound-Pendulum Method](https://ntrs.nasa.gov/citations/19930082299), NACA Technical Note No. 1629.
 
-![NACA-TN-1629-figure3](./media/NACA-TN-1629-figure3.png)
+![NACA-TN-1629-figure3](../media/NACA-TN-1629-figure3.png)
 
 ## System Identification methods
 
