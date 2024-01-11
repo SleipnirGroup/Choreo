@@ -87,6 +87,7 @@ nav:
       - Editing Paths: usage/editing-paths.md
       - Controls & Shortcuts: usage/controls-shortcuts.md
       - Saving: usage/saving.md
+      - Estimating Moment of Inertia: usage/estimating-moi.md
   - ChoreoLib:
       - Installation: choreolib/installation.md
       - Usage: choreolib/usage.md
