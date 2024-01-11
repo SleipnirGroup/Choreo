@@ -408,9 +408,15 @@ export class DocumentManager {
     for (let i = 1; i < split.length; i++) {
       const prev = split[i - 1];
       const cur = split[i];
+      let traj = trajectory.slice(prev, cur);
+      const start = traj[0].timestamp;
+      for (let i = 0; i < traj.length; i++) {
+        const e = traj[i];
+        e.timestamp -= start;
+      }
 
       const content = JSON.stringify(
-        { samples: trajectory.slice(prev, cur) },
+        { samples: traj },
         undefined,
         4
       );
