@@ -40,6 +40,7 @@ export class DocumentManager {
       document: {
         robotConfig: { identifier: uuidv4() },
         pathlist: {},
+        splitTrajectoriesAtStopPoints: false
       },
     });
     this.model.document.pathlist.addPath("NewPath");
@@ -324,6 +325,7 @@ export class DocumentManager {
       document: {
         robotConfig: { identifier: uuidv4() },
         pathlist: {},
+        splitTrajectoriesAtStopPoints: false,
       },
     });
 
@@ -382,7 +384,7 @@ export class DocumentManager {
     }
     const stopPoints = path.constraints.filter((c) => c.type === "StopPoint");
     const split =
-      this.model.uiState.exportStopPointSplit && stopPoints.length > 1
+      this.model.document.splitTrajectoriesAtStopPoints && stopPoints.length > 1
         ? stopPoints
             .flatMap((c: IConstraintStore) => {
               const scope = c.scope.at(0);

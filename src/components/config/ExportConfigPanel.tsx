@@ -35,9 +35,9 @@ class ExportConfigPanel extends Component<Props, State> {
         <Switch
           size="small"
           sx={{ gridColumn: 2 }}
-          checked={this.context.model.uiState.exportStopPointSplit}
+          checked={this.context.model.document.splitTrajectoriesAtStopPoints}
           onChange={(e, checked) =>
-            this.context.model.uiState.setExportSplitTrajs(checked)
+            this.context.model.setSplitTrajectoriesAtStopPoints(checked)
           }
         ></Switch>
       </div>
