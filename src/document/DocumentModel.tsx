@@ -40,7 +40,8 @@ const StateStore = types
         version: SAVE_FILE_VERSION,
         robotConfiguration: self.document.robotConfig.asSavedRobotConfig(),
         paths: self.document.pathlist.asSavedPathList(),
-        splitTrajectoriesAtStopPoints: self.document.splitTrajectoriesAtStopPoints,
+        splitTrajectoriesAtStopPoints:
+          self.document.splitTrajectoriesAtStopPoints,
       };
     },
   }))
@@ -58,7 +59,8 @@ const StateStore = types
           document.robotConfiguration
         );
         self.document.pathlist.fromSavedPathList(document.paths);
-        self.document.splitTrajectoriesAtStopPoints = document.splitTrajectoriesAtStopPoints;
+        self.document.splitTrajectoriesAtStopPoints =
+          document.splitTrajectoriesAtStopPoints;
       },
       select(item: SelectableItemTypes) {
         self.uiState.setSelectedSidebarItem(item);
@@ -185,12 +187,13 @@ const StateStore = types
         });
       },
     };
-  }).actions((self) => {
+  })
+  .actions((self) => {
     return {
       setSplitTrajectoriesAtStopPoints(split: boolean) {
         self.document.splitTrajectoriesAtStopPoints = split;
-      }
-    }
+      },
+    };
   });
 
 export default StateStore;

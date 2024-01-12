@@ -40,7 +40,7 @@ export class DocumentManager {
       document: {
         robotConfig: { identifier: uuidv4() },
         pathlist: {},
-        splitTrajectoriesAtStopPoints: false
+        splitTrajectoriesAtStopPoints: false,
       },
     });
     this.model.document.pathlist.addPath("NewPath");
@@ -417,11 +417,7 @@ export class DocumentManager {
         e.timestamp -= start;
       }
 
-      const content = JSON.stringify(
-        { samples: traj },
-        undefined,
-        4
-      );
+      const content = JSON.stringify({ samples: traj }, undefined, 4);
       var file = await filePath();
       if (file) {
         const name =

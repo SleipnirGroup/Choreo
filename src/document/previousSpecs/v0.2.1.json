@@ -201,5 +201,10 @@
       "type": "boolean"
     }
   },
-  "required": ["version", "paths", "robotConfiguration", "splitTrajectoriesAtStopPoints"]
+  "required": [
+    "version",
+    "paths",
+    "robotConfiguration",
+    "splitTrajectoriesAtStopPoints"
+  ]
 }
