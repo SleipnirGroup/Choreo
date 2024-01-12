@@ -395,8 +395,13 @@ export class DocumentManager {
       });
     }
 
-    if (this.model.document.splitTrajectoriesAtStopPoints && file !== null && chorPath.stopPointIndices().length >= 2) {
-      const subdir = file[0] + path.sep + file[1].replace(".traj", "") + path.sep;
+    if (
+      this.model.document.splitTrajectoriesAtStopPoints &&
+      file !== null &&
+      chorPath.stopPointIndices().length >= 2
+    ) {
+      const subdir =
+        file[0] + path.sep + file[1].replace(".traj", "") + path.sep;
       const split = chorPath.stopPointIndices();
       for (let i = 1; i < split.length; i++) {
         const prev = split[i - 1];
@@ -407,7 +412,7 @@ export class DocumentManager {
           const e = traj[i];
           e.timestamp -= start;
         }
-  
+
         const content = JSON.stringify({ samples: traj }, undefined, 4);
         const name = file[1].replace(".", " sgmt " + i.toString() + ".");
         await invoke("save_file", {
