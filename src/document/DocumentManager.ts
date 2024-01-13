@@ -356,7 +356,6 @@ export class DocumentManager {
     } else {
       this.model.document.pathlist.paths.get(uuid)?.setName(newName);
     }
-
   }
 
   async deletePath(uuid: string) {
