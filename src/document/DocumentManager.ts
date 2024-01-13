@@ -462,6 +462,9 @@ export class DocumentManager {
     }
     let dir = await path.dirname(filePath);
     let name = await path.basename(filePath);
+    if (!name.endsWith(".chor")) {
+      name = name + ".chor";
+    }
     let newIsGradleProject = await this.saveFileAs(dir, name);
     this.model.uiState.setSaveFileDir(dir);
     this.model.uiState.setSaveFileName(name);
