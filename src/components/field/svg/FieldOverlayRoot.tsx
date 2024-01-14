@@ -2,7 +2,6 @@ import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../../document/DocumentManager";
 import OverlayWaypoint from "./OverlayWaypoint";
-import FieldImage23 from "./fields/FieldImage23";
 import * as d3 from "d3";
 import FieldGrid from "./FieldGrid";
 import FieldPathLines from "./FieldPathLines";
@@ -99,8 +98,8 @@ class FieldOverlayRoot extends Component<Props, State> {
     this.context.model.uiState.setFieldScalingFactor(factor);
   }
   render() {
-    this.canvasHeightMeters = FieldImage23.WIDTH_M + 1;
-    this.canvasWidthMeters = FieldImage23.LENGTH_M + 1;
+    this.canvasHeightMeters = FieldImage24.WIDTH_M + 1;
+    this.canvasWidthMeters = FieldImage24.LENGTH_M + 1;
     let layers = this.context.model.uiState.layers;
     let constraintSelected = this.context.model.uiState.isConstraintSelected();
     return (
@@ -128,12 +127,15 @@ class FieldOverlayRoot extends Component<Props, State> {
           ref={this.frameRef}
           id="rootFrame"
         >
+          <FieldAxisLines></FieldAxisLines>
           {/* Background */}
           {layers[ViewLayers.Field] && (
-            <FieldImage24 blue={true}></FieldImage24>
+            <>
+              {/* <JSONFieldImage24 opacity={10} imageHeightPx={550} imageWidthPx={1220}></JSONFieldImage24> */}
+              <FieldImage24></FieldImage24>
+            </>
           )}
           {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
-          <FieldAxisLines></FieldAxisLines>
           {/* Obstacle and waypoint mouse capture*/}
           {layers[ViewLayers.Waypoints] &&
             this.context.model.uiState.isNavbarWaypointSelected() && (
