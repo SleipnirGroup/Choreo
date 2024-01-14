@@ -130,6 +130,8 @@ public class Choreo {
           timer.stop();
           if (interrupted) {
             outputChassisSpeeds.accept(new ChassisSpeeds());
+          } else {
+            outputChassisSpeeds.accept(trajectory.getFinalState().getChassisSpeeds());
           }
         },
         () -> timer.hasElapsed(trajectory.getTotalTime()),
