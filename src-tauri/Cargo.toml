@@ -18,7 +18,7 @@ tauri-build = { version = "1.4", features = [] }
 tauri = { version = "1.4", features = [ "window-close", "window-set-title", "path-all", "dialog", "dialog-confirm", "dialog-save", "dialog-open", "dialog-ask", "fs-all", "shell-open", "devtools"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-trajoptlib = { git = "https://github.com/SleipnirGroup/TrajoptLib.git", rev = "c9f8140e92dff07b2edb9c7034fea4d18dc46c9a" }
+trajoptlib = { git = "https://github.com/Lewis-Seiden/TrajoptLib.git", rev = "ad3a413a2fa75fe038f7c6360bf7d99d7e22a0a2" }
 open = "3"
 
 [features]
