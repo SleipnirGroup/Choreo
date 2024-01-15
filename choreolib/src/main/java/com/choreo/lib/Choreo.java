@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -36,6 +37,17 @@ public class Choreo {
     var traj_file = new File(traj_dir, trajName + ".traj");
 
     return loadFile(traj_file);
+  }
+
+  public static ArrayList<ChoreoTrajectory> getTrajectoryGroup(String trajName) {
+    var traj_dir = new File(Filesystem.getDeployDirectory(), "choreo");
+    var files = traj_dir.listFiles((file) -> file.getName().matches(trajName + "\\.\\d+\\.traj"));
+    var trajs = new ArrayList<ChoreoTrajectory>();
+    for (var traj : files) {
+      trajs.add(loadFile(traj));
+    }
+
+    return trajs;
   }
 
   private static ChoreoTrajectory loadFile(File path) {
