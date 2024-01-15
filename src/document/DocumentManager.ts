@@ -393,6 +393,17 @@ export class DocumentManager {
         name: file[1],
         contents: content,
       });
+      // "Split" naming scheme for consistency when path splitting is turned on/off
+      if (
+        !this.model.document.splitTrajectoriesAtStopPoints ||
+        chorPath.stopPointIndices().length >= 2
+      ) {
+        await invoke("save_file", {
+          dir: file[0],
+          name: file[1].replace(".", ".1."),
+          contents: content,
+        });
+      }
     }
 
     if (
