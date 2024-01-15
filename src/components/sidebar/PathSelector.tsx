@@ -73,6 +73,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
       inputName.length == 0 ||
       inputName.includes("/") ||
       inputName.includes("\\") ||
+      inputName.includes(".") ||
       this.searchForName(this.nameInputRef.current!.value);
     this.setState({ renameError: error, name: inputName });
     return error;

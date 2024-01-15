@@ -400,8 +400,6 @@ export class DocumentManager {
       file !== null &&
       chorPath.stopPointIndices().length >= 2
     ) {
-      const subdir =
-        file[0] + path.sep + file[1].replace(".traj", "") + path.sep;
       const split = chorPath.stopPointIndices();
       for (let i = 1; i < split.length; i++) {
         const prev = split[i - 1];
@@ -414,9 +412,9 @@ export class DocumentManager {
         }
 
         const content = JSON.stringify({ samples: traj }, undefined, 4);
-        const name = file[1].replace(".", " sgmt " + i.toString() + ".");
+        const name = file[1].replace(".", "." + i.toString() + ".");
         await invoke("save_file", {
-          dir: subdir,
+          dir: file[0],
           name: name,
           contents: content,
         });
