@@ -40,12 +40,13 @@ public class Choreo {
   }
 
   /**
-   * <p>Loads the split parts of the specified trajectory. Fails and returns null if any of the parts
-   * could not be loaded.</p>
-   * <p>This method determines the number of parts to load by counting the files that match the pattern
-   * "trajName.X.traj", where X is a string of digits. Let this count be N. It then attempts to load
-   * "trajName.1.traj" through "trajName.N.traj", consecutively counting up. If any of these files
-   * cannot be loaded, the method returns null.</p>
+   * Loads the split parts of the specified trajectory. Fails and returns null if any of the parts
+   * could not be loaded.
+   *
+   * <p>This method determines the number of parts to load by counting the files that match the
+   * pattern "trajName.X.traj", where X is a string of digits. Let this count be N. It then attempts
+   * to load "trajName.1.traj" through "trajName.N.traj", consecutively counting up. If any of these
+   * files cannot be loaded, the method returns null.
    *
    * @param trajName The path name in Choreo for this trajectory.
    * @return The ArrayList of segments, in order, or null.
