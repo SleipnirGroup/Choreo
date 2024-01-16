@@ -11,6 +11,7 @@
 
 #include <filesystem>
 #include <numbers>
+#include <vector>
 
 #include "choreo/lib/ChoreoSwerveCommand.h"
 
@@ -34,7 +35,7 @@ ChoreoTrajectory Choreo::GetTrajectory(std::string_view trajName) {
   return traj;
 }
 
-ChoreoTrajectory[] Choreo::GetTrajectoryGroup(std::string_view trajName) {
+std::vector<ChoreoTrajectory> Choreo::GetTrajectoryGroup(std::string_view trajName) {
   const std::filesystem::path trajDir{
       fmt::format("{}/choreo", frc::filesystem::GetDeployDirectory())};
   int segmentCount = 0;
@@ -45,10 +46,11 @@ ChoreoTrajectory[] Choreo::GetTrajectoryGroup(std::string_view trajName) {
       ++segmentCount;
     }
   }
-  ChoreoTrajectory group[] = ChoreoTrajectory[segmentCount];
+  std::vector<ChoreoTrajectory> group;
+  group.reserve(segmentCount);
   for (int i = 1; i <= segmentCount; ++i) {
     try {
-      group[i] = Choreo::GetTrajectory(fmt::format("{}.{}", trajName, i));
+      group.push_back(Choreo::GetTrajectory(fmt::format("{}.{}", trajName, i)));
     } catch {
       throw std::runtime_error(
           fmt::format("Cannot open file: {}.{}.traj", trajName, i));
