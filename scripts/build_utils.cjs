@@ -25,7 +25,10 @@ function getDylibPattern() {
 // This file only exists during the trajoptlib dylib build stage. Once
 // that is completed, the file is deleted.
 function getDummyResourcePath() {
-  return getSrcTauriPath() + "/" + getDylibPattern().replace("*", "dummy");
+  const initReplaced = getDylibPattern().replace("*", "dummy");
+  const dummyDylibName = process.platform === "linux"
+      ? initReplaced.replace("*", "") : initReplaced;
+  return getSrcTauriPath() + "/" + dummyDylibName;
 }
 
 exports.getSrcTauriPath = getSrcTauriPath;
