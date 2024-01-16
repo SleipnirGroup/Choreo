@@ -47,7 +47,7 @@ class Choreo {
    * @return The array of segments, in order. Will throw runtime error if any
    * segment does not exist.
    */
-  static ChoreoTrajectory[] Choreo::GetTrajectoryGroup(
+  static ChoreoTrajectory[] GetTrajectoryGroup(
       std::string_view trajName);
 
   /**
