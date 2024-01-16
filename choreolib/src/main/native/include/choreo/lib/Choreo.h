@@ -24,7 +24,7 @@ using ChoreoControllerFunction =
 class Choreo {
  public:
   /**
-   * Load a trajectory from the deploy directory. Choreolib expects .traj files
+   * Load a trajectory from the deploy directory. ChoreoLib expects .traj files
    *  to be placed in src/main/deploy/choreo/[trajName].traj .
    *
    * @param trajName the path name in Choreo, which matches the file name in the
@@ -33,6 +33,19 @@ class Choreo {
    *  exist
    */
   static ChoreoTrajectory GetTrajectory(std::string_view trajName);
+
+  /**
+   * Loads the split parts of the specified trajectory. ChoreoLib expects split .traj files
+   *  to be placed in src/main/deploy/choreo/[trajName].[segmentNumber].traj .
+   * <br/>
+   * This method determines the number of parts to load by counting the files that match the pattern "trajName.X.traj",
+   * where X is a string of digits. Let this count be N. 
+   * It then attempts to load "trajName.1.traj" through "trajName.N.traj", consecutively counting up. If any of these files
+   * cannot be loaded, the method throws a runtime error. 
+   * @param trajName the path name in Choreo. Do not include ".traj" here. 
+   * @return The array of segments, in order. Will throw runtime error if any segment does not exist.
+   */
+  static ChoreoTrajectory[] Choreo::GetTrajectoryGroup(std::string_view trajName);
 
   /**
    * Creates a CommandPtr that commands your drivebase to follow a Choreo

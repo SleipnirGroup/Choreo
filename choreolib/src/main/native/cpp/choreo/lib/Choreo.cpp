@@ -46,7 +46,15 @@ ChoreoTrajectory[] Choreo::GetTrajectoryGroup(std::string_view trajName) {
           segmentCount = 0;
         }
   }
-  return {}; 
+  ChoreoTrajectory group[] = ChoreoTrajectory[segmentCount];
+  for (int i = 1; i <= segmentCount; i++) {
+    try {
+      group[i] = Choreo::GetTrajectory(fmt::format("{}.{}", trajName, i));
+    } catch {
+      throw std::runtime_error(fmt::format("Cannot open file: {}.{}.traj", trajName, i));
+    }
+  }
+  return group; 
 }
 
 
