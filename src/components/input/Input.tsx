@@ -144,7 +144,9 @@ class Input extends Component<Props, State> {
             this.focusedMode();
           }}
           onBlur={(e) => {
-            let newNumber = parseFloat(parse(this.state.editedValue).evaluate().toString());            
+            let newNumber = parseFloat(
+              parse(this.state.editedValue).evaluate().toString()
+            );
             if (!Number.isNaN(newNumber)) {
               this.props.setNumber(newNumber);
             }
