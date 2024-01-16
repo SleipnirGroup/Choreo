@@ -42,11 +42,11 @@ ChoreoTrajectory[] Choreo::GetTrajectoryGroup(std::string_view trajName) {
     if (dir_entry.is_regular_file() &&
         std::regex::regex_match(dir_entry.path().stem().string(),
                                 trajName + "\\.\\d+\\.traj")) {
-      segmentCount = 0;
+      segmentCount++;
     }
   }
   ChoreoTrajectory group[] = ChoreoTrajectory[segmentCount];
-  for (int i = 1; i <= segmentCount; i++) {
+  for (int i = 1; i <= segmentCount; ++i) {
     try {
       group[i] = Choreo::GetTrajectory(fmt::format("{}.{}", trajName, i));
     } catch {
