@@ -9,8 +9,8 @@
 #include <wpi/MemoryBuffer.h>
 #include <wpi/json.h>
 
-#include <numbers>
 #include <filesystem>
+#include <numbers>
 
 #include "choreo/lib/ChoreoSwerveCommand.h"
 
@@ -35,29 +35,27 @@ ChoreoTrajectory Choreo::GetTrajectory(std::string_view trajName) {
 }
 
 ChoreoTrajectory[] Choreo::GetTrajectoryGroup(std::string_view trajName) {
-  const std::filesystem::path trajDir{fmt::format(
-      "{}/choreo", frc::filesystem::GetDeployDirectory())};
+  const std::filesystem::path trajDir{
+      fmt::format("{}/choreo", frc::filesystem::GetDeployDirectory())};
   int segmentCount = 0;
   for (auto const& dir_entry : std::filesystem::directory_iterator{sandbox}) {
-    if (dir_entry.is_regular_file() 
-      && std::regex::regex_match(
-        dir_entry.path().stem().string(),
-        trajName + "\\.\\d+\\.traj")) {
-          segmentCount = 0;
-        }
+    if (dir_entry.is_regular_file() &&
+        std::regex::regex_match(dir_entry.path().stem().string(),
+                                trajName + "\\.\\d+\\.traj")) {
+      segmentCount = 0;
+    }
   }
   ChoreoTrajectory group[] = ChoreoTrajectory[segmentCount];
   for (int i = 1; i <= segmentCount; i++) {
     try {
       group[i] = Choreo::GetTrajectory(fmt::format("{}.{}", trajName, i));
     } catch {
-      throw std::runtime_error(fmt::format("Cannot open file: {}.{}.traj", trajName, i));
+      throw std::runtime_error(
+          fmt::format("Cannot open file: {}.{}.traj", trajName, i));
     }
   }
-  return group; 
+  return group;
 }
-
-
 
 frc2::CommandPtr Choreo::ChoreoSwerveCommandFactory(
     ChoreoTrajectory trajectory, std::function<frc::Pose2d()> poseSupplier,
