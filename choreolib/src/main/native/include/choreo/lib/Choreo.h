@@ -10,6 +10,7 @@
 #include <functional>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include "ChoreoTrajectory.h"
 
@@ -49,7 +50,7 @@ class Choreo {
    * @return The array of segments, in order.
    * @throws std::runtime_error If any files cannot be loaded.
    */
-  static ChoreoTrajectory[] GetTrajectoryGroup(std::string_view trajName);
+  static std::vector<ChoreoTrajectory> GetTrajectoryGroup(std::string_view trajName);
 
   /**
    * Creates a CommandPtr that commands your drivebase to follow a Choreo
