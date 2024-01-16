@@ -201,7 +201,7 @@ const ViewData = {
     index: 5,
     name: "Obstacles",
     icon: <DoNotDisturb />,
-    default: true,
+    default: false,
   },
 };
 
