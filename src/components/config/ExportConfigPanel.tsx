@@ -40,8 +40,7 @@ class ExportConfigPanel extends Component<Props, State> {
             this.context.model.setSplitTrajectoriesAtStopPoints(checked);
             this.context.clearAllTrajectories();
             this.context.exportAllTrajectories();
-          }
-          }
+          }}
         ></Switch>
       </div>
     );
