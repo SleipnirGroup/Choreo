@@ -189,7 +189,7 @@ export let VERSIONS = {
     schema: v0_2_Schema,
   },
   "v0.2.1": {
-    up: (document: any): v0_2 => document,
+    up: (document: any): v0_2_1 => document,
     schema: v0_2_1_Schema,
   },
   /**

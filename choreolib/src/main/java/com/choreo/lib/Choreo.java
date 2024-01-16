@@ -16,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -39,12 +40,29 @@ public class Choreo {
     return loadFile(traj_file);
   }
 
+  /**
+   * Loads the split parts of the specified trajectory. Fails and returns null if any of the parts could not be loaded.
+   * <br/>
+   * This method determines the number of parts to load by counting the files that match the pattern "trajName.X.traj",
+   * where X is a string of digits. Let this count be N. 
+   * It then attempts to load "trajName.1.traj" through "trajName.N.traj", consecutively counting up. If any of these files
+   * cannot be loaded, the method returns null. 
+   * @param trajName The path name in Choreo for this trajectory. 
+   * @return The ArrayList of segments, in order, or null.
+   */
   public static ArrayList<ChoreoTrajectory> getTrajectoryGroup(String trajName) {
     var traj_dir = new File(Filesystem.getDeployDirectory(), "choreo");
-    var files = traj_dir.listFiles((file) -> file.getName().matches(trajName + "\\.\\d+\\.traj"));
+    File[] files = traj_dir.listFiles((file) -> file.getName().matches(trajName + "\\.\\d+\\.traj"));
+    int segmentCount = files.length;
     var trajs = new ArrayList<ChoreoTrajectory>();
-    for (var traj : files) {
-      trajs.add(loadFile(traj));
+    for (int i = 1; i <= segmentCount; i++) {
+      File traj = new File(traj_dir, String.format("%s.%d.traj", trajName, i));
+      ChoreoTrajectory trajectory = loadFile(traj);
+      if (trajectory == null) {
+        DriverStation.reportError("ChoreoLib: Missing segments for path group " + trajName, false);
+        return null;
+      }
+      trajs.add(trajectory);
     }
 
     return trajs;
