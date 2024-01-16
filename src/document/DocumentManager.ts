@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import hotkeys from "hotkeys-js";
 import { ViewLayerDefaults } from "./UIStateStore";
+import { IConstraintStore } from "./ConstraintStore";
 
 type OpenFileEventPayload = {
   adjacent_gradle: boolean;
@@ -39,6 +40,7 @@ export class DocumentManager {
       document: {
         robotConfig: { identifier: uuidv4() },
         pathlist: {},
+        splitTrajectoriesAtStopPoints: false,
       },
     });
     this.model.document.pathlist.addPath("NewPath");
@@ -324,6 +326,7 @@ export class DocumentManager {
       document: {
         robotConfig: { identifier: uuidv4() },
         pathlist: {},
+        splitTrajectoriesAtStopPoints: false,
       },
     });
 
@@ -376,22 +379,62 @@ export class DocumentManager {
     filePath: () => Promise<[string, string] | null> | [string, string] | null,
     uuid: string
   ) {
-    const path = this.model.document.pathlist.paths.get(uuid);
-    if (path === undefined) {
+    // Avoid conflicts with tauri path namespace
+    const chorPath = this.model.document.pathlist.paths.get(uuid);
+    if (chorPath === undefined) {
       throw `Tried to export trajectory with unknown uuid ${uuid}`;
     }
-    const trajectory = path.generated;
+    const trajectory = chorPath.generated;
     if (trajectory.length < 2) {
       throw `Path is not generated`;
     }
-    const content = JSON.stringify({ samples: trajectory }, undefined, 4);
     var file = await filePath();
+    console.log("file: " + file);
+
+    const content = JSON.stringify({ samples: trajectory }, undefined, 4);
     if (file) {
       await invoke("save_file", {
         dir: file[0],
         name: file[1],
         contents: content,
       });
+      // "Split" naming scheme for consistency when path splitting is turned on/off
+      if (
+        !this.model.document.splitTrajectoriesAtStopPoints ||
+        chorPath.stopPointIndices().length >= 2
+      ) {
+        await invoke("save_file", {
+          dir: file[0],
+          name: file[1].replace(".", ".1."),
+          contents: content,
+        });
+      }
+    }
+
+    if (
+      this.model.document.splitTrajectoriesAtStopPoints &&
+      file !== null &&
+      chorPath.stopPointIndices().length >= 2
+    ) {
+      const split = chorPath.stopPointIndices();
+      for (let i = 1; i < split.length; i++) {
+        const prev = split[i - 1];
+        const cur = split[i];
+        let traj = trajectory.slice(prev, cur);
+        const start = traj[0].timestamp;
+        for (let i = 0; i < traj.length; i++) {
+          const e = traj[i];
+          e.timestamp -= start;
+        }
+
+        const content = JSON.stringify({ samples: traj }, undefined, 4);
+        const name = file[1].replace(".", "." + i.toString() + ".");
+        await invoke("save_file", {
+          dir: file[0],
+          name: name,
+          contents: content,
+        });
+      }
     }
   }
 
@@ -547,6 +590,21 @@ export class DocumentManager {
       });
     }
   }
+
+  async clearAllTrajectories() {
+    if (
+      this.model.uiState.hasSaveLocation &&
+      this.model.uiState.chorRelativeTrajDir !== undefined
+    ) {
+      invoke("delete_dir", {
+        dir:
+          this.model.uiState.saveFileDir +
+          path.sep +
+          this.model.uiState.chorRelativeTrajDir,
+      });
+    }
+  }
 }
+
 let DocumentManagerContext = createContext(new DocumentManager());
 export default DocumentManagerContext;

@@ -105,9 +105,6 @@ class Sidebar extends Component<Props, State> {
           <PathSelector></PathSelector>
         </div>
         <Divider></Divider>
-
-        {/* <Divider className={styles.SidebarDivider} textAlign="left" flexItem>CONSTRAINTS</Divider> 
-          // shhh.. to come later*/}
         <div className={styles.SidebarHeading}>FEATURES</div>
         <Divider flexItem></Divider>
         <div className={styles.Sidebar}>

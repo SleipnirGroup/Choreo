@@ -83,6 +83,13 @@ async fn delete_file(dir: String, name: String) {
 }
 
 #[tauri::command]
+async fn delete_dir(dir: String) {
+    let dir_path = Path::new(&dir);
+    let res = fs::remove_dir_all(dir_path);
+    println!("{:?}", res);
+}
+
+#[tauri::command]
 async fn save_file(dir: String, name: String, contents: String) -> Result<(), &'static str> {
     let dir_path = Path::new(&dir);
     let name_path = Path::join(dir_path, name);
@@ -406,6 +413,7 @@ fn main() {
             save_file,
             contains_build_gradle,
             delete_file,
+            delete_dir,
             open_file_app
         ])
         .run(tauri::generate_context!())
