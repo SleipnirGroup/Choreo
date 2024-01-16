@@ -26,8 +26,8 @@ function getDylibPattern() {
 // that is completed, the file is deleted.
 function getDummyResourcePath() {
   const initReplaced = getDylibPattern().replace("*", "dummy");
-  const dummyDylibName = process.platform === "linux"
-      ? initReplaced.replace("*", "") : initReplaced;
+  const dummyDylibName =
+    process.platform === "linux" ? initReplaced.replace("*", "") : initReplaced;
   return getSrcTauriPath() + "/" + dummyDylibName;
 }
 

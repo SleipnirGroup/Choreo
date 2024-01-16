@@ -36,11 +36,7 @@
     },
     "bundle": {
       "active": true,
-      "targets": [
-        "deb",
-        "nsis",
-        "dmg"
-      ],
+      "targets": ["deb", "nsis", "dmg"],
       "identifier": "org.sleipnirgroup",
       "icon": [
         "icons/32x32.png",
@@ -62,9 +58,7 @@
           "/opt/trajopt/lib/libcasadi-tp-openblas.so.0": "./libcasadi-tp-openblas.so.0"
         }
       },
-      "resources": [
-        "lib*.dylib"
-      ]
+      "resources": ["lib*.dylib"]
     },
     "security": {
       "csp": null
