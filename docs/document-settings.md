@@ -1,31 +1,14 @@
-## Start by downloading Choreo from **[Releases](https://github.com/SleipnirGroup/Choreo/releases)**
+# Robot Configuration
 
-## Robot Config
+The trajectory optimizer depends upon the following user-specified parameters, which are entered in the Robot Configuration panel. The more accurately you enter these paramters, the more confident you can be that your robot will follow the time-optimized trajectory on the first attempt.
 
-The trajectory optimizer depends upon the following user-specified parameters, which are entered in the Robot Configuration panel. This helps the optimizer understand the robot's projected path very accurately.
+!!! tip
+
+    While more precision is always better, you'll most likely get diminishing returns after 3-4 significant figures.
 
 Access the robot-config by accessing the drawer via hamburger icon on top left of screen, then clicking "Document Settings"
 
 ![Document Settings](./media/document-settings.png)
-
-### Dimensions
-
-- **Mass** [kg]: The mass of the robot with battery and bumpers
-- **MoI** [kg * m<sup>2</sup>]: The resistance to change in rotational velocity in response to a torque applied to the robot about the vertical axis
-- **Max Velocity** [m/s]: The maximum tangential speed of the wheel
-
-!!! tip "How to measure Max Velocity"
-
-    A reasonable choice of Max Velocity is that corresponding to ~80% of free speed experienced at the drive motor(s).
-
-- **Max Torque** [N * m]: The maximum torque applied at the wheel
-
-!!! tip "How to measure Max Torque"
-
-    A reasonable choice of Max Torque is that corresponding to a current draw of approximately `1.5 * BreakerValue` experienced at the drive motor(s).
-
-- **Wheelbase and Trackwidth** [m]: The largest distances between the robot's wheel centers
-- **Length and Width** [m]: The overall size of the robot's _bumper_.
 
 !!! tip "Saving Robot Config"
     Saving a copy of the robotConfig somewhere safe, like the root of a robot project, is highly recommended. This is so you can correlate that robot project to your robot's specifications, and thus your paths.
@@ -33,59 +16,76 @@ Access the robot-config by accessing the drawer via hamburger icon on top left o
 !!! tip "Undo + Redo"
     Undo and Redo shortcuts work for all of these values.
 
-### Measuring Moment of Inertia (MoI)
+## Dimensions
 
-The robot's rotational inertia has a significant impact on how quickly it can follow complex paths. For the best results, it is recommended to get as accurate an estimate of this parameter as possible. This can be accomplished via:
+In this panel, enter some basic properties of your robot chassis.
 
-- Faithful CAD loaded with mass properties
-- Physical experimentation
-- Other System Identification methods
+- **Mass** $[kg]$: The mass of the robot with battery and bumpers
+- **MoI** $[kg * m^2]$: The robot's moment of inertia, a measure of resistance to change in rotational velocity in response to a torque applied about the vertical axis
+- **Bumper Width** and **Bumper Length** $[m]$: The overall size of the robot's bumper.
+- **Wheelbase and Trackwidth** $[m]$: The largest distances between the robot's wheel centers
 
-If none of these techniques are possible, a reasonable estimate of MoI would be mass _ length _ width / 6 based on the assumption of a rectangle of uniformly-distributed mass.
+## Drive Motor
 
-!!! tip
+This panel asks for details about the drive motors used to propel the robot around the playing field.
 
-    Of course, more precision is always better. But after ~3 decimals, you will most likely get diminishing returns.
+### Geometric properties
 
-### Drive Motor
+- Wheel Radius $[m]$: The radius of the drive wheel
+- Gearing (unitless): The ratio of $(\text{Drive motor rotations} / \text{Wheel rotations})$
 
-For presets to these values, jump to [Motor Calculator](#motor-calculator)
+### Motor performance properties
 
+These values can be pre-filled using the [Motor Calculator](#motor-calculator) panel:
 
-### Theoretical
+- **Motor Max Speed** $[\text{RPM}]$: The maximum speed of each drive motor
 
-Calculated robot metrics for reference and validation.
+!!! tip "Choosing a Motor Max Speed"
+
+    A reasonable choice of Motor Max Speed is ~80% of the free speed of the drive motor(s). Although your motors have more speed available, this headroom helps ensure that your robot is able to close any errors and return to the planned trajectory. Use the [Motor Calculator](#motor-calculator) to help select an appropriate value.
+
+- **Motor Max Torque** $[N * m]$: The maximum torque applied by each drive motor
+
+!!! tip "Choosing a Max Torque"
+
+    A reasonable choice of Max Torque is that corresponding to a current draw of approximately `1.5 * BreakerValue` experienced at the drive motor(s). Although your motors have more torque available, this headroom helps ensure that your robot is able to close any errors and return to the planned trajectory. Use the [Motor Calculator](#motor-calculator) to help select an appropriate value.
+
+## Theoretical
+
+This panel displays calculated metrics about your robot, for reference and validation.
 
 ![robot-config-theoretical.png](./media/robot-config-theoretical.png)
 
-- **Floor Speed** [m/s]: Linear Maximum speed when not rotating
-- **Floor Accel** [m/s<sup>2</sup>]: Linear Maximum acceleration when not rotating
-- **Ang Speed** [rad/s]: Maximum angular speed when spinning in place
-- **Ang Accel** [rad/s<sup>2</sup>]: Maximum angular acceleration when spinning in place
+- **Floor Speed** $[m/s]$: The maximum speed reached by the robot when driving in a straight line and not rotating
+- **Floor Accel** $[m/s^2]$: The maximum acceleration reached by the robot when driving in a straight line and not rotating
+- **Ang Speed** $[rad/s]$: The robot's maximum angular speed when spinning in place
+- **Ang Accel** $[rad/s^2]$: The robot's maximum angular acceleration when spinning in place
 
-### Motor Calculator
+## Motor Calculator
+
+This panel helps you select appropriate drive motor parameters, using motor performance data from [reca.lc/motors](https://reca.lc/motors).
 
 ![robot-config-motor-calculator](./media/robot-config-motor-calculator.png)
 
-Choose from the following motor presets and a current limit in Amps.
+Choose a motor, then enter a current limit in Amps. The calculator displays the following preview values:
 
-In addition to modifying the above [Drive Motor](#drive-motor) values, it shows:
+- **Preview Max Speed** $[\text{RPM}]$: Estimated speed under load (~80% of free speed)
+- **Preview Max Torque** $[N * m]$: Motor torque at the given current limit
 
-- **Preview Max Speed** [RPM]: Estimated speed under load (~80% of free speed)
-- **Preview Max Torque** [N • m]: Motor torque at the given current limit
-
-Motors Supported:
-
-- Falcon 500
-- Falcon with FOC
-- NEO
-- NEO Vortex
-- Kraken X60
-- Kraken with FOC
-- CIM
+Pressing APPLY will apply these preview values to the [Drive Motor](#drive-motor) panel above.
 
 !!! warning
 
     Make sure to press the APPLY button, or else your values will not save. Don't worry, you can always hit undo at any time to revert.
 
-Free Speed and Torque are from [reca.lc/motors](https://reca.lc/motors)
+### Supported motors
+
+The following motors are supported by the calculator:
+
+- Falcon 500
+- Falcon 500 with FOC
+- NEO
+- NEO Vortex
+- Kraken X60
+- Kraken X60 with FOC
+- CIM

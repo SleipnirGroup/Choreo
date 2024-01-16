@@ -17,11 +17,25 @@ public class ChoreoTrajectory {
     samples = List.of();
   }
 
+  /**
+   * @return The first ChoreoTrajectoryState in the trajectory.
+   */
+  public ChoreoTrajectoryState getInitialState() {
+    return samples.get(0);
+  }
+
+  /**
+   * @return The last ChoreoTrajectoryState in the trajectory.
+   */
+  public ChoreoTrajectoryState getFinalState() {
+    return samples.get(samples.size() - 1);
+  }
+
   private ChoreoTrajectoryState sampleInternal(double timestamp) {
     if (timestamp < samples.get(0).timestamp) {
       return samples.get(0);
     }
-    if (timestamp > getTotalTime()) {
+    if (timestamp >= getTotalTime()) {
       return samples.get(samples.size() - 1);
     }
 

@@ -70,7 +70,8 @@ export class DocumentManager {
           this.model.uiState.setSaveFileName(saveName);
           this.model.uiState.setSaveFileDir(saveDir);
           this.model.uiState.setIsGradleProject(adjacent_gradle);
-        });
+        })
+        .then(() => this.exportAllTrajectories());
     }
   }
 
@@ -346,13 +347,17 @@ export class DocumentManager {
   }
 
   async renamePath(uuid: string, newName: string) {
-    let oldPath = await this.getTrajFilePath(uuid);
-    this.model.document.pathlist.paths.get(uuid)?.setName(newName);
-    let newPath = await this.getTrajFilePath(uuid);
-    if (oldPath !== null) {
-      invoke("delete_file", { dir: oldPath[0], name: oldPath[1] })
-        .then(() => this.writeTrajectory(() => newPath, uuid))
-        .catch((e) => {});
+    if (this.model.uiState.hasSaveLocation) {
+      let oldPath = await this.getTrajFilePath(uuid);
+      this.model.document.pathlist.paths.get(uuid)?.setName(newName);
+      let newPath = await this.getTrajFilePath(uuid);
+      if (oldPath !== null) {
+        invoke("delete_file", { dir: oldPath[0], name: oldPath[1] })
+          .then(() => this.writeTrajectory(() => newPath, uuid))
+          .catch((e) => {});
+      }
+    } else {
+      this.model.document.pathlist.paths.get(uuid)?.setName(newName);
     }
   }
 
@@ -504,6 +509,9 @@ export class DocumentManager {
     }
     let dir = await path.dirname(filePath);
     let name = await path.basename(filePath);
+    if (!name.endsWith(".chor")) {
+      name = name + ".chor";
+    }
     let newIsGradleProject = await this.saveFileAs(dir, name);
     this.model.uiState.setSaveFileDir(dir);
     this.model.uiState.setSaveFileName(name);
@@ -529,9 +537,8 @@ export class DocumentManager {
     if (newIsGradleProject !== undefined) {
       if (newIsGradleProject !== prevIsGradleProject) {
         this.model.uiState.setIsGradleProject(newIsGradleProject);
+        await this.exportAllTrajectories();
       }
-
-      await this.exportAllTrajectories();
     }
   }
 

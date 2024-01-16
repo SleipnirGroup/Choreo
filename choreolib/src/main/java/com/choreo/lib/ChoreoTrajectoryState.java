@@ -93,6 +93,7 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
         .velocityX(this.velocityX * -1)
         .velocityY(this.velocityY)
         .angularVelocity(this.angularVelocity * -1)
+        .timestamp(this.timestamp)
         .build();
   }
 }
