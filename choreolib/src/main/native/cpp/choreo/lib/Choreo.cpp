@@ -38,7 +38,7 @@ ChoreoTrajectory[] Choreo::GetTrajectoryGroup(std::string_view trajName) {
   const std::filesystem::path trajDir{
       fmt::format("{}/choreo", frc::filesystem::GetDeployDirectory())};
   int segmentCount = 0;
-  for (auto const& dir_entry : std::filesystem::directory_iterator{sandbox}) {
+  for (const auto& dir_entry : std::filesystem::directory_iterator{sandbox}) {
     if (dir_entry.is_regular_file() &&
         std::regex::regex_match(dir_entry.path().stem().string(),
                                 trajName + "\\.\\d+\\.traj")) {
