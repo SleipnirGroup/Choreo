@@ -583,6 +583,13 @@ export class DocumentManager {
       });
     }
   }
+  
+  async clearAllTrajectories() {
+    if (this.model.uiState.hasSaveLocation && this.model.uiState.chorRelativeTrajDir !== undefined) {
+      invoke("delete_dir", { dir: this.model.uiState.saveFileDir + path.sep + this.model.uiState.chorRelativeTrajDir });
+    }
+  }
 }
+
 let DocumentManagerContext = createContext(new DocumentManager());
 export default DocumentManagerContext;

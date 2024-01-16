@@ -38,6 +38,7 @@ class ExportConfigPanel extends Component<Props, State> {
           checked={this.context.model.document.splitTrajectoriesAtStopPoints}
           onChange={(e, checked) => {
             this.context.model.setSplitTrajectoriesAtStopPoints(checked);
+            this.context.clearAllTrajectories();
             this.context.exportAllTrajectories();
           }
           }

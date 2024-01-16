@@ -75,6 +75,13 @@ async fn delete_file(dir: String, name: String) {
 }
 
 #[tauri::command]
+async fn delete_dir(dir: String) {
+    let dir_path = Path::new(&dir);
+    let res = fs::remove_dir_all(dir_path);
+    println!("{:?}", res);
+}
+
+#[tauri::command]
 async fn save_file(dir: String, name: String, contents: String) -> Result<(), &'static str> {
   let dir_path = Path::new(&dir);
   let name_path = Path::join(dir_path, name);
@@ -358,7 +365,7 @@ async fn generate_trajectory(
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
-          generate_trajectory, cancel, open_file_dialog, save_file, contains_build_gradle, delete_file, open_file_app])
+          generate_trajectory, cancel, open_file_dialog, save_file, contains_build_gradle, delete_file, delete_dir, open_file_app])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
