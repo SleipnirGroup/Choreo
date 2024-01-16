@@ -57,8 +57,7 @@
           "/opt/trajopt/lib/libquadmath-96973f99.so.0.0.0": "./libquadmath-96973f99.so.0.0.0",
           "/opt/trajopt/lib/libcasadi-tp-openblas.so.0": "./libcasadi-tp-openblas.so.0"
         }
-      },
-      "resources": ["lib*.dylib"]
+      }
     },
     "security": {
       "csp": null
