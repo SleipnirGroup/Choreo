@@ -11,8 +11,8 @@
 
 #include <filesystem>
 #include <numbers>
-#include <vector>
 #include <regex>
+#include <vector>
 
 #include "choreo/lib/ChoreoSwerveCommand.h"
 
@@ -36,14 +36,16 @@ ChoreoTrajectory Choreo::GetTrajectory(std::string_view trajName) {
   return traj;
 }
 
-std::vector<ChoreoTrajectory> Choreo::GetTrajectoryGroup(std::string_view trajName) {
+std::vector<ChoreoTrajectory> Choreo::GetTrajectoryGroup(
+    std::string_view trajName) {
   const std::filesystem::path trajDir{
       fmt::format("{}/choreo", frc::filesystem::GetDeployDirectory())};
   int segmentCount = 0;
   for (const auto& dir_entry : std::filesystem::directory_iterator{trajDir}) {
     if (dir_entry.is_regular_file() &&
-        std::regex_match(dir_entry.path().stem().string(),
-                                std::regex(fmt::format("{}\\.\\d+\\.traj", trajName)))) {
+        std::regex_match(
+            dir_entry.path().stem().string(),
+            std::regex(fmt::format("{}\\.\\d+\\.traj", trajName)))) {
       ++segmentCount;
     }
   }
