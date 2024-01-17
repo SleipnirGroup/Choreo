@@ -9,6 +9,7 @@ use tauri::{
 use trajoptlib::{
     HolonomicTrajectory, InitialGuessPoint, SwerveDrivetrain, SwerveModule, SwervePathBuilder,
 };
+use tauri::regex::{Regex, escape};
 // A way to make properties that exist on all enum variants accessible from the generic variant
 // I have no idea how it works but it came from
 // https://users.rust-lang.org/t/generic-referencing-enum-inner-data/66342/9
@@ -80,6 +81,50 @@ async fn delete_file(dir: String, name: String) {
     let dir_path = Path::new(&dir);
     let name_path = Path::join(dir_path, name);
     let _ = fs::remove_file(name_path);
+}
+
+
+#[tauri::command]
+async fn delete_traj_segments(dir: String, traj_name: String) -> Result<(), String> {
+    println!("{}", traj_name);
+    let dir_path = Path::new(&dir);
+    if dir_path.is_dir() {
+        let traj_segment_regex = 
+            Regex::new(format!(r"{}\.\d+\.traj", escape(traj_name.as_str())).as_str()).ok();
+        if traj_segment_regex.is_none() {
+            return Err(format!("{} was an invalid trajectory name", traj_name));
+        } else {
+            let re = traj_segment_regex.unwrap();
+            let entries = fs::read_dir(dir);
+            if entries.is_err() {
+                return Err(entries.expect_err("").to_string());
+            }
+            let entries = entries.unwrap();
+            for entry in entries {
+                if entry.is_err() {
+                    return Err(entry.expect_err("").to_string());
+                }
+                let path = entry.unwrap().path();
+                if path.is_file() { 
+                    let matches = path.file_name().map_or(false, |file_name| {
+                        let file_str = file_name.to_str();
+                        return file_str.map_or(false, |file_str| re.is_match(file_str));
+                    });
+                    if matches {
+                        println!("{:?}", path);
+                        let _ = fs::remove_file(path);
+                    }
+                    else {continue;}
+                }
+                else {
+                    continue;
+                }
+            }
+        }
+        Ok(())
+    } else {
+        Err(format!("{} was not a directory", dir).to_string())
+    }
 }
 
 #[tauri::command]
@@ -414,6 +459,7 @@ fn main() {
             contains_build_gradle,
             delete_file,
             delete_dir,
+            delete_traj_segments,
             open_file_app
         ])
         .run(tauri::generate_context!())
