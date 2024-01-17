@@ -10,7 +10,6 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import hotkeys from "hotkeys-js";
 import { ViewLayerDefaults } from "./UIStateStore";
-import { IConstraintStore } from "./ConstraintStore";
 
 type OpenFileEventPayload = {
   adjacent_gradle: boolean;
@@ -349,12 +348,21 @@ export class DocumentManager {
   async renamePath(uuid: string, newName: string) {
     if (this.model.uiState.hasSaveLocation) {
       let oldPath = await this.getTrajFilePath(uuid);
+      let oldName = this.model.document.pathlist.paths.get(uuid)?.name;
       this.model.document.pathlist.paths.get(uuid)?.setName(newName);
       let newPath = await this.getTrajFilePath(uuid);
       if (oldPath !== null) {
-        invoke("delete_file", { dir: oldPath[0], name: oldPath[1] })
+        Promise.all([
+          invoke("delete_file", { dir: oldPath[0], name: oldPath[1] }),
+          invoke("delete_traj_segments", {
+            dir: oldPath[0],
+            trajName: oldName,
+          }),
+        ])
           .then(() => this.writeTrajectory(() => newPath, uuid))
-          .catch((e) => {});
+          .catch((e) => {
+            console.error(e);
+          });
       }
     } else {
       this.model.document.pathlist.paths.get(uuid)?.setName(newName);
