@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::{fs, path::Path};
+use tauri::regex::{escape, Regex};
 use tauri::{
     api::{dialog::blocking::FileDialogBuilder, file},
     Manager,
@@ -9,7 +10,6 @@ use tauri::{
 use trajoptlib::{
     HolonomicTrajectory, InitialGuessPoint, SwerveDrivetrain, SwerveModule, SwervePathBuilder,
 };
-use tauri::regex::{Regex, escape};
 // A way to make properties that exist on all enum variants accessible from the generic variant
 // I have no idea how it works but it came from
 // https://users.rust-lang.org/t/generic-referencing-enum-inner-data/66342/9
@@ -83,13 +83,12 @@ async fn delete_file(dir: String, name: String) {
     let _ = fs::remove_file(name_path);
 }
 
-
 #[tauri::command]
 async fn delete_traj_segments(dir: String, traj_name: String) -> Result<(), String> {
     println!("{}", traj_name);
     let dir_path = Path::new(&dir);
     if dir_path.is_dir() {
-        let traj_segment_regex = 
+        let traj_segment_regex =
             Regex::new(format!(r"{}\.\d+\.traj", escape(traj_name.as_str())).as_str()).ok();
         if traj_segment_regex.is_none() {
             return Err(format!("{} was an invalid trajectory name", traj_name));
@@ -105,7 +104,7 @@ async fn delete_traj_segments(dir: String, traj_name: String) -> Result<(), Stri
                     return Err(entry.expect_err("").to_string());
                 }
                 let path = entry.unwrap().path();
-                if path.is_file() { 
+                if path.is_file() {
                     let matches = path.file_name().map_or(false, |file_name| {
                         let file_str = file_name.to_str();
                         return file_str.map_or(false, |file_str| re.is_match(file_str));
@@ -113,10 +112,10 @@ async fn delete_traj_segments(dir: String, traj_name: String) -> Result<(), Stri
                     if matches {
                         println!("{:?}", path);
                         let _ = fs::remove_file(path);
+                    } else {
+                        continue;
                     }
-                    else {continue;}
-                }
-                else {
+                } else {
                     continue;
                 }
             }
