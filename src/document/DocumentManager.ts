@@ -354,8 +354,11 @@ export class DocumentManager {
       if (oldPath !== null) {
         Promise.all([
           invoke("delete_file", { dir: oldPath[0], name: oldPath[1] }),
-          invoke("delete_traj_segments", {dir: oldPath[0], trajName: oldName})]
-        )
+          invoke("delete_traj_segments", {
+            dir: oldPath[0],
+            trajName: oldName,
+          }),
+        ])
           .then(() => this.writeTrajectory(() => newPath, uuid))
           .catch((e) => {
             console.error(e);
