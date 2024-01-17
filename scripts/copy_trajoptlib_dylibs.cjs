@@ -11,7 +11,7 @@ function deleteTargetDir() {
     console.log("Removing Rust target directory");
     fs.rmSync(targetDir, {
       recursive: true,
-      force: true
+      force: true,
     });
   }
 }
