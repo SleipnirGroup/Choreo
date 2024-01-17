@@ -50,7 +50,7 @@ ChoreoTrajectoryState ChoreoTrajectoryState::Interpolate(
     const ChoreoTrajectoryState& endValue, double i) const {
   frc::Pose2d interpPose = frc::Interpolate(GetPose(), endValue.GetPose(), i);
   return ChoreoTrajectoryState{
-      0_s,
+      wpi::Lerp(timestamp, endValue.timestamp, i),
       interpPose.X(),
       interpPose.Y(),
       interpPose.Rotation().Radians(),

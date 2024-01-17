@@ -24,6 +24,9 @@ import java.util.function.Supplier;
 public class Choreo {
   private static final Gson gson = new Gson();
 
+  /** Default constructor. */
+  public Choreo() {}
+
   /**
    * Load a trajectory from the deploy directory. Choreolib expects .traj files to be placed in
    * src/main/deploy/choreo/[trajName].traj .
