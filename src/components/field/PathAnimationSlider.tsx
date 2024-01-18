@@ -4,6 +4,7 @@ import DocumentManagerContext from "../../document/DocumentManager";
 import Slider from "@mui/material/Slider";
 import { Tooltip } from "@mui/material";
 import { NavbarItemData } from "../../document/UIStateStore";
+import { Room } from "@mui/icons-material";
 
 type Props = {};
 
@@ -40,6 +41,28 @@ class PathAnimationSlider extends Component<Props, State> {
                     </Tooltip>
                   ),
                 }))
+                .concat(
+                  activePath.eventMarkers.flatMap((marker) => {
+                    let idx = marker.getTargetIndex();
+                    if (idx === undefined) return [];
+                    return (
+                      {
+                        value: activePath.waypointTimestamps()[idx] + marker.offset,
+                        label: (
+                        
+                            <span>
+                              <Room htmlColor={marker.selected
+                                  ? "var(--select-yellow)"
+                                  : "white"} stroke="black" strokeWidth="0.5" fontSize="large" style={{
+                                    transform:"translateY(calc(-3px - 50%))"
+                                  }}></Room>
+
+                            </span>
+                        ),
+                      }
+                    )
+                  })
+                )
               : false
           }
           aria-label="Default"

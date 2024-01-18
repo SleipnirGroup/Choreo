@@ -28,17 +28,6 @@ class ConstraintsConfigPanel extends Component<Props, State> {
       startIndex = pointcount + 1;
     }
 
-    const sliderMarks = [
-      { value: 0, label: "Start" },
-      ...points.flatMap((point, idx) => {
-        if (point.isInitialGuess) {
-          return [];
-        } else {
-          return { value: idx + 1, label: idx + 1 };
-        }
-      }),
-      { value: pointcount + 1, label: "End" },
-    ];
     return (
       <div
         className={styles.WaypointPanel}
