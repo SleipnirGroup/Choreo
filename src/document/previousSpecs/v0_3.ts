@@ -62,28 +62,30 @@ export interface SavedCircleObstacle {
   radius: number;
 }
 export type SavedGroupCommand = {
-  type: "deadline" | "parallel" | "race" | "sequential"
+  type: "deadline" | "parallel" | "race" | "sequential";
   data: {
-    "commands" : SavedCommand[]
-  }
-}
+    commands: SavedCommand[];
+  };
+};
 export type SavedWaitCommand = {
   type: "wait";
   data: {
     time: number;
-  }
-}
+  };
+};
 export type SavedNamedCommand = {
-    type: "named";
-    data: {
-      name: string | null
-    }
-  }
-export type SavedCommand = SavedWaitCommand | SavedGroupCommand | SavedNamedCommand;
+  type: "named";
+  data: {
+    name: string | null;
+  };
+};
+export type SavedCommand =
+  | SavedWaitCommand
+  | SavedGroupCommand
+  | SavedNamedCommand;
 export interface SavedEventMarker {
   name: string;
   target: SavedWaypointId;
   offset: number;
   command: SavedCommand;
 }
-

@@ -14,6 +14,7 @@ import FieldObstacle from "./FieldObstacles";
 import { v4 as uuidv4 } from "uuid";
 import { CircularObstacleStore } from "../../../document/CircularObstacleStore";
 import FieldImage24 from "./fields/FieldImage24";
+import FieldEventMarkers from "./FieldEventMarkers";
 
 type Props = {};
 
@@ -182,6 +183,7 @@ class FieldOverlayRoot extends Component<Props, State> {
                 ></circle>
               )
             )}
+          <FieldEventMarkers></FieldEventMarkers>
           {layers[ViewLayers.Waypoints] &&
             this.context.model.document.pathlist.activePath.waypoints.map(
               (point, index) => (

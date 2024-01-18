@@ -27,42 +27,48 @@ class PathAnimationSlider extends Component<Props, State> {
           max={this.totalTime}
           marks={
             activePath.generated.length > 0
-              ? activePath.nonGuessOrEmptyPoints.map((point, idx) => ({
-                  value: activePath.waypointTimestamps()[idx],
-                  label: (
-                    <Tooltip disableInteractive title={idx + 1} key={idx + 1}>
-                      <span>
-                        {React.cloneElement(NavbarItemData[point.type].icon, {
-                          htmlColor: point.selected
-                            ? "var(--select-yellow)"
-                            : "white",
-                        })}
-                      </span>
-                    </Tooltip>
-                  ),
-                }))
-                .concat(
-                  activePath.eventMarkers.flatMap((marker) => {
-                    let idx = marker.getTargetIndex();
-                    if (idx === undefined) return [];
-                    return (
-                      {
-                        value: activePath.waypointTimestamps()[idx] + marker.offset,
+              ? activePath.nonGuessOrEmptyPoints
+                  .map((point, idx) => ({
+                    value: activePath.waypointTimestamps()[idx],
+                    label: (
+                      <Tooltip disableInteractive title={idx + 1} key={idx + 1}>
+                        <span>
+                          {React.cloneElement(NavbarItemData[point.type].icon, {
+                            htmlColor: point.selected
+                              ? "var(--select-yellow)"
+                              : "white",
+                          })}
+                        </span>
+                      </Tooltip>
+                    ),
+                  }))
+                  .concat(
+                    activePath.eventMarkers.flatMap((marker) => {
+                      let idx = marker.getTargetIndex();
+                      if (idx === undefined) return [];
+                      return {
+                        value:
+                          activePath.waypointTimestamps()[idx] + marker.offset,
                         label: (
-                        
-                            <span>
-                              <Room htmlColor={marker.selected
+                          <span>
+                            <Room
+                              htmlColor={
+                                marker.selected
                                   ? "var(--select-yellow)"
-                                  : "white"} stroke="black" strokeWidth="0.5" fontSize="large" style={{
-                                    transform:"translateY(calc(-3px - 50%))"
-                                  }}></Room>
-
-                            </span>
+                                  : "white"
+                              }
+                              stroke="black"
+                              strokeWidth="0.5"
+                              fontSize="large"
+                              style={{
+                                transform: "translateY(calc(-3px - 50%))",
+                              }}
+                            ></Room>
+                          </span>
                         ),
-                      }
-                    )
-                  })
-                )
+                      };
+                    })
+                  )
               : false
           }
           aria-label="Default"

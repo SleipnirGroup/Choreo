@@ -38,7 +38,7 @@ import {
 import v0_2_1_Schema from "./previousSpecs/v0.2.1.json";
 import {
   SavedDocument as v0_3,
-  SAVE_FILE_VERSION as v0_3_Version
+  SAVE_FILE_VERSION as v0_3_Version,
 } from "./previousSpecs/v0_3";
 import v0_3_Schema from "./previousSpecs/v0.3.json";
 // Paste new version import blocks above this line.
@@ -63,7 +63,7 @@ export type {
   SavedCommand,
   SavedGroupCommand,
   SavedNamedCommand,
-  SavedWaitCommand
+  SavedWaitCommand,
 } from "./previousSpecs/v0_3";
 export { SAVE_FILE_VERSION } from "./previousSpecs/v0_3";
 
@@ -210,8 +210,8 @@ export let VERSIONS = {
   },
   "v0.3": {
     up: (document: any): v0_3 => document,
-    schema: v0_3_Schema
-  }
+    schema: v0_3_Schema,
+  },
   /**
    * For developers adding new document versions-Keep this comment at the end of the list.
    *

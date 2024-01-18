@@ -42,16 +42,18 @@ export const HolonomicPathStore = types
     defaultControlIntervalCount: 40,
     usesDefaultObstacles: true,
     obstacles: types.array(CircularObstacleStore),
-    eventMarkers: types.array(EventMarkerStore)
+    eventMarkers: types.array(EventMarkerStore),
   })
   .views((self) => {
     return {
       findUUIDIndex(uuid: string) {
         return self.waypoints.findIndex((wpt) => wpt.uuid === uuid);
-      }}})
-    .views((self) => {
-      return {
-      waypointIdToSavedWaypointId (
+      },
+    };
+  })
+  .views((self) => {
+    return {
+      waypointIdToSavedWaypointId(
         waypointId: IWaypointScope
       ): "first" | "last" | number | undefined {
         if (typeof waypointId !== "string") {
@@ -64,7 +66,7 @@ export const HolonomicPathStore = types
           return waypointId;
         }
       },
-      savedWaypointIdToWaypointId (savedId: SavedWaypointId)  {
+      savedWaypointIdToWaypointId(savedId: SavedWaypointId) {
         if (savedId === null || savedId === undefined) {
           return undefined;
         }
@@ -83,7 +85,7 @@ export const HolonomicPathStore = types
         } else {
           return { uuid: self.waypoints[savedId]?.uuid as string };
         }
-      }
+      },
     };
   })
   .views((self) => {
@@ -146,18 +148,18 @@ export const HolonomicPathStore = types
           circleObstacles: self.obstacles.map((obstacle) =>
             obstacle.asSavedCircleObstacle()
           ),
-          eventMarkers: self.eventMarkers.flatMap((marker)=>{
-            let target = self.waypointIdToSavedWaypointId(marker.target); 
+          eventMarkers: self.eventMarkers.flatMap((marker) => {
+            let target = self.waypointIdToSavedWaypointId(marker.target);
             if (target === undefined) return [];
-            let saved : SavedEventMarker = {
+            let saved: SavedEventMarker = {
               name: marker.name,
               target,
               offset: marker.offset,
-              command: marker.command.asSavedCommand()
-              }
-            
+              command: marker.command.asSavedCommand(),
+            };
+
             return [saved];
-          })
+          }),
         };
       },
       lowestSelectedPoint(): IHolonomicWaypointStore | null {
@@ -525,28 +527,34 @@ export const HolonomicPathStore = types
         self.defaultControlIntervalCount =
           savedPath.defaultControlIntervalCount;
         self.eventMarkers.clear();
-        savedPath.eventMarkers.push({target:0, name:"Marker", offset:0, command: {
-          type:"named", data: {"name": "Hello"}}});
-        savedPath.eventMarkers.forEach(saved=>{
+        savedPath.eventMarkers.push({
+          target: 0,
+          name: "Marker",
+          offset: 0,
+          command: {
+            type: "named",
+            data: { name: "Hello" },
+          },
+        });
+        savedPath.eventMarkers.forEach((saved) => {
           let rootCommandType = saved.command.type;
           let target = self.savedWaypointIdToWaypointId(saved.target);
           if (target === undefined) return;
           let marker = EventMarkerStore.create({
             name: saved.name,
-            target: (target as WaypointID),
+            target: target as WaypointID,
             offset: saved.offset,
             command: CommandStore.create({
               type: rootCommandType,
               name: "",
               commands: [],
-              time: 0
+              time: 0,
             }),
-            uuid: uuidv4()
-  
+            uuid: uuidv4(),
           });
           marker.command.fromSavedCommand(saved.command);
           self.eventMarkers.push(marker);
-        })
+        });
       },
       addObstacle(obstacle: ICircularObstacleStore) {
         self.obstacles.push(obstacle);

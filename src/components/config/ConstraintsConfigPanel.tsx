@@ -58,21 +58,22 @@ class ConstraintsConfigPanel extends Component<Props, State> {
           isRange={isSegmentConstraint}
           startIndex={startIndex}
           endIndex={endIndex}
-          setRange={selection=>{
+          setRange={(selection) => {
             const lastIdx = pointcount + 1;
-              this.props.constraint.setScope(
-                selection.map((idx) => {
-                  if (idx == 0) {
-                    return "first";
-                  } else if (idx == lastIdx) {
-                    return "last";
-                  } else {
-                    return { uuid: points[idx - 1]?.uuid ?? "" };
-                  }
-                })
-              );
+            this.props.constraint.setScope(
+              selection.map((idx) => {
+                if (idx == 0) {
+                  return "first";
+                } else if (idx == lastIdx) {
+                  return "last";
+                } else {
+                  return { uuid: points[idx - 1]?.uuid ?? "" };
+                }
+              })
+            );
           }}
-          points={points}></ScopeSlider>
+          points={points}
+        ></ScopeSlider>
 
         <InputList>
           {/* {isSegmentConstraint && <>

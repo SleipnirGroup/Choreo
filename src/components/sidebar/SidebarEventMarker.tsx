@@ -4,7 +4,7 @@ import DocumentManagerContext from "../../document/DocumentManager";
 import styles from "./Sidebar.module.css";
 import { observer } from "mobx-react";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { DoNotDisturb } from "@mui/icons-material";
+import { Room } from "@mui/icons-material";
 import { Tooltip, IconButton } from "@mui/material";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
 import { getParent } from "mobx-state-tree";
@@ -25,7 +25,7 @@ class SidebarMarker extends Component<Props, State> {
   id: number = 0;
   state = { selected: false };
 
-  waypointIDToText (id: WaypointID) {
+  waypointIDToText(id: WaypointID) {
     if (id == "first") return "Start";
     if (id == "last") return "End";
     return (
@@ -33,7 +33,7 @@ class SidebarMarker extends Component<Props, State> {
         getParent<IEventMarkerStore[]>(this.props.marker)
       ).findUUIDIndex(id.uuid) + 1
     );
-  };
+  }
 
   render() {
     let marker = this.props.marker;
@@ -45,9 +45,9 @@ class SidebarMarker extends Component<Props, State> {
           this.context.model.uiState.setSelectedSidebarItem(marker);
         }}
       >
-        {React.cloneElement(<DoNotDisturb></DoNotDisturb>, {
+        {React.cloneElement(<Room></Room>, {
           className: styles.SidebarIcon,
-          htmlColor: this.state.selected
+          htmlColor: selected
             ? "var(--select-yellow)"
             : "var(--accent-purple)",
         })}
@@ -55,16 +55,18 @@ class SidebarMarker extends Component<Props, State> {
           className={styles.SidebarLabel}
           style={{ display: "grid", gridTemplateColumns: "1fr auto auto" }}
         >
-          {this.waypointIDToText(this.props.marker.target) + "+" + this.props.marker.offset.toFixed(2)}
+          {this.waypointIDToText(this.props.marker.target) +
+            "+" +
+            this.props.marker.offset.toFixed(2)}
         </span>
         <Tooltip disableInteractive title="Delete Obstacle">
           <IconButton
             className={styles.SidebarRightIcon}
             onClick={(e) => {
               e.stopPropagation();
-            //   this.context.model.document.pathlist.activePath.deleteMarkerUUID(
-            //     marker?.uuid || ""
-            //   );
+              //   this.context.model.document.pathlist.activePath.deleteMarkerUUID(
+              //     marker?.uuid || ""
+              //   );
             }}
           >
             <DeleteIcon />

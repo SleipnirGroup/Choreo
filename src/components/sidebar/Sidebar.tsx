@@ -175,38 +175,33 @@ class Sidebar extends Component<Props, State> {
               <Divider></Divider>
             </>
           )}
-          <Divider
-                className={styles.SidebarDivider}
-                textAlign="left"
-                flexItem
-              >
-                <span>MARKERS</span>
-              </Divider>
-              <div className={styles.WaypointList}>
-                {this.context.model.document.pathlist.activePath.eventMarkers.map(
-                  (marker: IEventMarkerStore, index: number) => {
-                    return (
-                      <SidebarEventMarker
-                        marker={marker}
-                        index={index}
-                        context={this.context}
-                      ></SidebarEventMarker>
-                    );
-                  }
-                )}
-              </div>
-              {this.context.model.document.pathlist.activePath.eventMarkers
-                .length == 0 && (
-                <div
-                  className={styles.SidebarItem + " " + styles.Noninteractible}
-                >
-                  <span></span>
-                  <span style={{ color: "gray", fontStyle: "italic" }}>
-                    No Event Markers
-                  </span>
-                </div>
-              )}
-              <Divider></Divider>
+          <Divider className={styles.SidebarDivider} textAlign="left" flexItem>
+            <span>MARKERS</span>
+          </Divider>
+          <div className={styles.WaypointList}>
+            {this.context.model.document.pathlist.activePath.eventMarkers.map(
+              (marker: IEventMarkerStore, index: number) => {
+                return (
+                  <SidebarEventMarker
+                    marker={marker}
+                    index={index}
+                    context={this.context}
+                    key={marker.uuid}
+                  ></SidebarEventMarker>
+                );
+              }
+            )}
+          </div>
+          {this.context.model.document.pathlist.activePath.eventMarkers
+            .length == 0 && (
+            <div className={styles.SidebarItem + " " + styles.Noninteractible}>
+              <span></span>
+              <span style={{ color: "gray", fontStyle: "italic" }}>
+                No Event Markers
+              </span>
+            </div>
+          )}
+          <Divider></Divider>
         </div>
       </div>
     );
