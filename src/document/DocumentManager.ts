@@ -425,7 +425,6 @@ export class DocumentManager {
       chorPath.stopPointIndices().length >= 2
     ) {
       const split = chorPath.stopPointIndices();
-      console.log(split)
       for (let i = 1; i < split.length; i++) {
         const prev = split[i - 1];
         const cur = split[i];
