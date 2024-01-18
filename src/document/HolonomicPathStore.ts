@@ -28,7 +28,7 @@ import {
   ICircularObstacleStore,
 } from "./CircularObstacleStore";
 import { angleModulus } from "../util/MathUtil";
-import { CommandStore, EventMarkerStore } from "./EventMarkerStore";
+import { CommandStore, EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
 
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
@@ -527,15 +527,6 @@ export const HolonomicPathStore = types
         self.defaultControlIntervalCount =
           savedPath.defaultControlIntervalCount;
         self.eventMarkers.clear();
-        savedPath.eventMarkers.push({
-          target: 0,
-          name: "Marker",
-          offset: 0,
-          command: {
-            type: "named",
-            data: { name: "Hello" },
-          },
-        });
         savedPath.eventMarkers.forEach((saved) => {
           let rootCommandType = saved.command.type;
           let target = self.savedWaypointIdToWaypointId(saved.target);
@@ -553,11 +544,28 @@ export const HolonomicPathStore = types
             uuid: uuidv4(),
           });
           marker.command.fromSavedCommand(saved.command);
-          self.eventMarkers.push(marker);
+          this.addEventMarker(marker);
         });
       },
       addObstacle(obstacle: ICircularObstacleStore) {
         self.obstacles.push(obstacle);
+      },
+      addEventMarker(marker?: IEventMarkerStore) {
+        if (marker === undefined) {
+          marker = EventMarkerStore.create({
+            name: "Marker",
+            target: "first",
+            offset: 0,
+            command: CommandStore.create({
+              type: "wait",
+              name: "",
+              commands: [],
+              time: 0,
+            }),
+            uuid: uuidv4(),
+          });
+        }
+        self.eventMarkers.push(marker);
       },
       optimizeControlIntervalCounts(
         robotConfig: IRobotConfigStore
