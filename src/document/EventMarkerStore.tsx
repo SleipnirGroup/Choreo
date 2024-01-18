@@ -75,6 +75,7 @@ export const EventMarkerStore = types
   .model("EventMarker", {
     name: types.string,
     target: WaypointScope,
+    trajTargetIndex: types.number,
     offset: types.number,
     command: CommandStore,
     uuid: types.identifier,
@@ -91,6 +92,16 @@ export const EventMarkerStore = types
         )
       );
     },
+    setSelected(selected: boolean) {
+        if (selected && !this.selected) {
+          const root = getRoot<IStateStore>(self);
+          root.select(
+            getParent<IEventMarkerStore[]>(self)?.find(
+              (point) => self.uuid == point.uuid
+            )
+          );
+        }
+      },
     getPath(): IHolonomicPathStore {
       const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
         getParent<IEventMarkerStore[]>(self)
@@ -114,15 +125,31 @@ export const EventMarkerStore = types
     },
   }))
   .views((self) => ({
+    get trajTimestamp(): number | undefined {
+      let path = self.getPath();
+      if (path === undefined) {
+        return undefined;
+      }
+      return (path as IHolonomicPathStore).generatedWaypoints[
+        self.trajTargetIndex
+      ]?.timestamp;
+    },
     get timestamp(): number | undefined {
-      let targetIdx = self.getTargetIndex();
-      if (targetIdx === undefined) return undefined;
-      return (
-        self.getPath().waypointTimestamps()[targetIdx as number] + self.offset
-      );
+      if (this.trajTimestamp === undefined) {
+        return undefined;
+      }
+      return this.trajTimestamp + self.offset;
     },
   }))
   .actions((self) => ({
+    setTrajTargetIndex(index: number | undefined) {
+      if (index !== undefined) {
+        self.trajTargetIndex = index;
+      }
+    },
+    updateTargetIndex() {
+      this.setTrajTargetIndex(self.getTargetIndex());
+    },
     setTarget(target: WaypointID) {
       self.target = target;
     },

@@ -399,7 +399,18 @@ export class DocumentManager {
     var file = await filePath();
     console.log("file: " + file);
 
-    const content = JSON.stringify({ samples: trajectory }, undefined, 4);
+    const exportedEventMarkers = chorPath.eventMarkers.map((m) => {
+      return {
+        name: m.name,
+        timestamp: m.timestamp,
+        command: m.command.asSavedCommand(),
+      };
+    });
+    const content = JSON.stringify(
+      { samples: trajectory, eventMarkers: exportedEventMarkers },
+      undefined,
+      4
+    );
     if (file) {
       await invoke("save_file", {
         dir: file[0],
@@ -425,6 +436,7 @@ export class DocumentManager {
       chorPath.stopPointIndices().length >= 2
     ) {
       const split = chorPath.stopPointIndices();
+      const markers = exportedEventMarkers;
       for (let i = 1; i < split.length; i++) {
         const prev = split[i - 1];
         const cur = split[i];

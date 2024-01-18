@@ -15,6 +15,9 @@ import { v4 as uuidv4 } from "uuid";
 import { CircularObstacleStore } from "../../../document/CircularObstacleStore";
 import FieldImage24 from "./fields/FieldImage24";
 import FieldEventMarkers from "./FieldEventMarkers";
+import FieldSamples from "./FieldSamples";
+import FieldGeneratedWaypoints from "./FieldGeneratedWaypoints";
+import FieldEventMarkerAddLayer from "./FieldEventMarkerAddLayer";
 
 type Props = {};
 
@@ -103,6 +106,7 @@ class FieldOverlayRoot extends Component<Props, State> {
     this.canvasWidthMeters = FieldImage24.LENGTH_M + 1;
     let layers = this.context.model.uiState.layers;
     let constraintSelected = this.context.model.uiState.isConstraintSelected();
+    let eventMarkerSelected = this.context.model.uiState.isEventMarkerSelected();
     return (
       <svg
         ref={this.svgRef}
@@ -172,17 +176,12 @@ class FieldOverlayRoot extends Component<Props, State> {
           {layers[ViewLayers.Trajectory] && (
             <FieldGeneratedLines></FieldGeneratedLines>
           )}
-          {layers[ViewLayers.Samples] &&
-            this.context.model.document.pathlist.activePath.generated.map(
-              (point) => (
-                <circle
-                  cx={point.x}
-                  cy={point.y}
-                  r={0.02}
-                  fill="black"
-                ></circle>
-              )
-            )}
+          {layers[ViewLayers.Samples] && layers[ViewLayers.Trajectory] && (
+            <FieldSamples></FieldSamples>
+          )}
+          {layers[ViewLayers.Samples] && layers[ViewLayers.Trajectory] && (
+            <FieldGeneratedWaypoints></FieldGeneratedWaypoints>
+          )}
           <FieldEventMarkers></FieldEventMarkers>
           {layers[ViewLayers.Waypoints] &&
             this.context.model.document.pathlist.activePath.waypoints.map(
@@ -196,6 +195,9 @@ class FieldOverlayRoot extends Component<Props, State> {
             )}
           {constraintSelected && (
             <FieldConstraintsAddLayer></FieldConstraintsAddLayer>
+          )}
+          {eventMarkerSelected && (
+            <FieldEventMarkerAddLayer></FieldEventMarkerAddLayer>
           )}
           {layers[ViewLayers.Trajectory] && (
             <InterpolatedRobot

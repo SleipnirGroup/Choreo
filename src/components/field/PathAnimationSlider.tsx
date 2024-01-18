@@ -5,6 +5,7 @@ import Slider from "@mui/material/Slider";
 import { Tooltip } from "@mui/material";
 import { NavbarItemData } from "../../document/UIStateStore";
 import { Room } from "@mui/icons-material";
+import { IEventMarkerStore } from "../../document/EventMarkerStore";
 
 type Props = {};
 
@@ -27,47 +28,68 @@ class PathAnimationSlider extends Component<Props, State> {
           max={this.totalTime}
           marks={
             activePath.generated.length > 0
-              ? activePath.nonGuessOrEmptyPoints
-                  .map((point, idx) => ({
-                    value: activePath.waypointTimestamps()[idx],
-                    label: (
-                      <Tooltip disableInteractive title={idx + 1} key={idx + 1}>
-                        <span>
-                          {React.cloneElement(NavbarItemData[point.type].icon, {
-                            htmlColor: point.selected
-                              ? "var(--select-yellow)"
-                              : "white",
-                          })}
-                        </span>
-                      </Tooltip>
-                    ),
-                  }))
-                  .concat(
-                    activePath.eventMarkers.flatMap((marker) => {
-                      let idx = marker.getTargetIndex();
-                      if (idx === undefined) return [];
-                      return {
-                        value:
-                          activePath.waypointTimestamps()[idx] + marker.offset,
+              ? activePath.generatedWaypoints
+                  .flatMap((point, idx) => {
+                    let type = 0;
+                    if (point.isInitialGuess) {
+                      type = 3; // Guess
+                    } else if (point.headingConstrained) {
+                      type = 0; // Full
+                    } else if (point.translationConstrained) {
+                      type = 1; // Translation
+                    } else {
+                      type = 2; // Empty
+                    }
+                    if (type == 3 || type == 2) {
+                      return [];
+                    }
+                    return [
+                      {
+                        value: point.timestamp,
                         label: (
-                          <span>
-                            <Room
-                              htmlColor={
-                                marker.selected
-                                  ? "var(--select-yellow)"
-                                  : "white"
-                              }
-                              stroke="black"
-                              strokeWidth="0.5"
-                              fontSize="large"
-                              style={{
-                                transform: "translateY(calc(-3px - 50%))",
-                              }}
-                            ></Room>
-                          </span>
+                          <Tooltip
+                            disableInteractive
+                            title={idx + 1}
+                            key={idx + 1}
+                          >
+                            <span>
+                              {React.cloneElement(NavbarItemData[type].icon, {
+                                htmlColor: "white",
+                              })}
+                            </span>
+                          </Tooltip>
                         ),
-                      };
-                    })
+                      },
+                    ];
+                  })
+                  .concat(
+                    activePath.eventMarkers.flatMap(
+                      (marker: IEventMarkerStore) => {
+                        if (marker.timestamp === undefined) {
+                          return [];
+                        }
+                        return {
+                          value: marker.timestamp,
+                          label: (
+                            <span>
+                              <Room
+                                htmlColor={
+                                  marker.selected
+                                    ? "var(--select-yellow)"
+                                    : "white"
+                                }
+                                stroke="black"
+                                strokeWidth="0.5"
+                                fontSize="large"
+                                style={{
+                                  transform: "translateY(calc(-3px - 50%))",
+                                }}
+                              ></Room>
+                            </span>
+                          ),
+                        };
+                      }
+                    )
                   )
               : false
           }

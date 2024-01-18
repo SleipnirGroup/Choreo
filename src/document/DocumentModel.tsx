@@ -1,6 +1,7 @@
 import { Instance, types } from "mobx-state-tree";
 import {
   SavedDocument,
+  SavedGeneratedWaypoint,
   SavedTrajectorySample,
   SAVE_FILE_VERSION,
   updateToCurrent,
@@ -11,11 +12,8 @@ import { RobotConfigStore } from "./RobotConfigStore";
 import { SelectableItemTypes, UIStateStore } from "./UIStateStore";
 import { PathListStore } from "./PathListStore";
 import { UndoManager } from "mst-middlewares";
-import { IHolonomicPathStore } from "./HolonomicPathStore";
-import { toJS } from "mobx";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
-import { Box } from "@mui/material";
 
 export const DocumentStore = types
   .model("DocumentStore", {
@@ -70,7 +68,7 @@ const StateStore = types
         if (pathStore === undefined) {
           throw "Path store is undefined";
         }
-
+        let generatedWaypoints: SavedGeneratedWaypoint[] = [];
         return new Promise((resolve, reject) => {
           pathStore.fixWaypointHeadings();
           const controlIntervalOptResult =
@@ -105,6 +103,14 @@ const StateStore = types
             }
           });
           pathStore.setGenerating(true);
+          // Capture the timestamps of the waypoints that were actually sent to the solver
+          let waypointTimestamps = pathStore.waypointTimestamps();
+          console.log(waypointTimestamps);
+          generatedWaypoints = pathStore.waypoints.map((point, idx) => ({
+            timestamp: 0,
+            ...point.asSavedWaypoint(),
+          }));
+          pathStore.eventMarkers.forEach((m) => m.updateTargetIndex);
           resolve(pathStore);
         })
           .then(
@@ -133,8 +139,21 @@ const StateStore = types
                   timestamp: samp.timestamp,
                 });
               });
-              pathStore.setTrajectory(newTraj);
               if (newTraj.length == 0) throw "No traj";
+              pathStore.setTrajectory(newTraj);
+              if (newTraj.length > 0) {
+                let currentInterval = 0;
+                generatedWaypoints.forEach((w) => {
+                  if (newTraj.at(currentInterval)?.timestamp !== undefined) {
+                    w.timestamp = newTraj.at(currentInterval)!.timestamp;
+                    currentInterval += w.controlIntervalCount;
+                  }
+                });
+                pathStore.eventMarkers.forEach((m) => {
+                  m.updateTargetIndex();
+                });
+              }
+              pathStore.setGeneratedWaypoints(generatedWaypoints);
             },
             (e) => {
               console.error(e);

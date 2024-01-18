@@ -12,6 +12,7 @@ export interface SavedWaypoint {
   headingConstrained: boolean;
   controlIntervalCount: number; // positive-integer>
 }
+export type SavedGeneratedWaypoint = SavedWaypoint & { timestamp: number };
 export interface SavedTrajectorySample {
   timestamp: number; //positive
   x: number;
@@ -24,6 +25,7 @@ export interface SavedTrajectorySample {
 export interface SavedPath {
   waypoints: Array<SavedWaypoint>;
   trajectory: Array<SavedTrajectorySample> | null;
+  trajectoryWaypoints: Array<SavedWaypoint & { timestamp: number }>;
   constraints: Array<SavedConstraint>;
   usesDefaultFieldObstacles: boolean;
   usesControlIntervalGuessing: boolean;
@@ -87,5 +89,9 @@ export interface SavedEventMarker {
   name: string;
   target: SavedWaypointId;
   offset: number;
+  /**
+   * The timestamp along the trajectory of the waypoint this marker targeted on the last generation.
+   */
+  targetTimestamp: number;
   command: SavedCommand;
 }

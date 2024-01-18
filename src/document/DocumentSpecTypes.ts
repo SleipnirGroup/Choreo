@@ -64,6 +64,7 @@ export type {
   SavedGroupCommand,
   SavedNamedCommand,
   SavedWaitCommand,
+  SavedGeneratedWaypoint,
 } from "./previousSpecs/v0_3";
 export { SAVE_FILE_VERSION } from "./previousSpecs/v0_3";
 
@@ -203,6 +204,7 @@ export let VERSIONS = {
       updated.version = v0_3_Version;
       for (let entry of Object.keys(updated.paths)) {
         updated.paths[entry].eventMarkers = [];
+        updated.paths[entry].trajectoryWaypoints = [];
       }
       return updated;
     },

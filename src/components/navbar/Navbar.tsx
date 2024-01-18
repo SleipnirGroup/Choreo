@@ -3,12 +3,10 @@ import DocumentManagerContext from "../../document/DocumentManager";
 import Tooltip from "@mui/material/Tooltip";
 import styles from "./Navbar.module.css";
 import { observer } from "mobx-react";
-import { Divider, ToggleButton, ToggleButtonGroup } from "@mui/material";
+import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import {
   NavbarItemData,
-  NavbarItemSectionLengths,
-  NavbarItemSplitPoints,
-  ObstaclesEnabled,
+  NavbarItemSectionLengths
 } from "../../document/UIStateStore";
 
 type Props = {};
@@ -26,11 +24,7 @@ class Navbar extends Component<Props, State> {
       this.context.model.uiState;
     return (
       <div className={styles.Container}>
-        {NavbarItemSectionLengths.filter(
-          (endSplit, sectionIdx) =>
-            sectionIdx != NavbarItemSectionLengths.length - 1 ||
-            ObstaclesEnabled
-        ).map((endSplit, sectionIdx) => (
+        {NavbarItemSectionLengths.map((endSplit, sectionIdx) => (
           <ToggleButtonGroup
             className={styles.ToggleGroup}
             exclusive

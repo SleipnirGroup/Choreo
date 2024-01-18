@@ -3,6 +3,7 @@ import {
   CircleOutlined,
   DoNotDisturb,
   Grid4x4,
+  Room,
   Route,
   ScatterPlot,
   SquareOutlined,
@@ -123,15 +124,25 @@ export let ObstacleData: {
     icon: <DoNotDisturb />,
   },
 };
-const obstacleNavbarCount = Object.keys(ObstacleData).length;
-Object.entries(ObstacleData).forEach(([name, data]) => {
-  let obstaclesOffset = Object.keys(NavbarData).length;
-  NavbarData[name] = {
-    index: obstaclesOffset,
-    name: data.name,
-    icon: data.icon,
-  };
-});
+let obstacleNavbarCount = 0;
+if (ObstaclesEnabled) {
+  obstacleNavbarCount = Object.keys(ObstacleData).length;
+  Object.entries(ObstacleData).forEach(([name, data]) => {
+    let obstaclesOffset = Object.keys(NavbarData).length;
+    NavbarData[name] = {
+      index: obstaclesOffset,
+      name: data.name,
+      icon: data.icon,
+    };
+  });
+}
+
+const eventMarkerCount = 1;
+NavbarData.EventMarker = {
+  index : Object.keys(NavbarData).length,
+  name: "Event Marker",
+  icon: <Room></Room>
+}
 
 /** An map of  */
 export const NavbarLabels = (() => {
@@ -153,11 +164,17 @@ export const NavbarItemData = (() => {
   return x;
 })();
 
-export const NavbarItemSectionLengths = [
-  waypointNavbarCount - 1,
-  waypointNavbarCount + constraintNavbarCount - 1,
-  waypointNavbarCount + constraintNavbarCount + obstacleNavbarCount - 1,
-];
+let NavbarItemSections = [
+  waypointNavbarCount, constraintNavbarCount
+]
+if(ObstaclesEnabled) {
+  NavbarItemSections.push(obstacleNavbarCount);
+}
+NavbarItemSections.push(eventMarkerCount);
+
+export const NavbarItemSectionLengths = NavbarItemSections.map(
+  (s, idx)=>NavbarItemSections.slice(0, idx+1).reduce((prev, cur)=>prev+cur, -1));
+console.log (NavbarItemSectionLengths);
 
 export type SelectableItemTypes =
   | IRobotConfigStore
@@ -282,6 +299,11 @@ export const UIStateStore = types
         return (
           self.selectedNavbarItem > NavbarItemSectionLengths[0] &&
           self.selectedNavbarItem <= NavbarItemSectionLengths[1]
+        );
+      },
+      isEventMarkerSelected() {
+        return (
+          self.selectedNavbarItem == NavbarData.EventMarker.index
         );
       },
       isNavbarObstacleSelected() {

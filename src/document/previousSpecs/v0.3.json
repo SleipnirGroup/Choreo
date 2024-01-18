@@ -56,6 +56,82 @@
           }
         }
       ]
+    },
+    "waypoint": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "heading": {
+          "type": "number"
+        },
+        "isInitialGuess": {
+          "type": "boolean"
+        },
+        "translationConstrained": {
+          "type": "boolean"
+        },
+        "headingConstrained": {
+          "type": "boolean"
+        },
+        "controlIntervalCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "heading",
+        "isInitialGuess",
+        "translationConstrained",
+        "headingConstrained",
+        "controlIntervalCount"
+      ]
+    },
+    "generatedWaypoint": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "heading": {
+          "type": "number"
+        },
+        "isInitialGuess": {
+          "type": "boolean"
+        },
+        "translationConstrained": {
+          "type": "boolean"
+        },
+        "headingConstrained": {
+          "type": "boolean"
+        },
+        "controlIntervalCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "timestamp": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "heading",
+        "isInitialGuess",
+        "translationConstrained",
+        "headingConstrained",
+        "controlIntervalCount",
+        "timestamp"
+      ]
     }
   },
   "properties": {
@@ -71,79 +147,13 @@
             "waypoints": {
               "type": "array",
               "items": {
-                "type": "object",
-                "properties": {
-                  "x": {
-                    "type": "number"
-                  },
-                  "y": {
-                    "type": "number"
-                  },
-                  "heading": {
-                    "type": "number"
-                  },
-                  "isInitialGuess": {
-                    "type": "boolean"
-                  },
-                  "translationConstrained": {
-                    "type": "boolean"
-                  },
-                  "headingConstrained": {
-                    "type": "boolean"
-                  },
-                  "controlIntervalCount": {
-                    "type": "integer",
-                    "minimum": 0
-                  }
-                },
-                "required": [
-                  "x",
-                  "y",
-                  "heading",
-                  "isInitialGuess",
-                  "translationConstrained",
-                  "headingConstrained",
-                  "controlIntervalCount"
-                ]
+                "$ref": "#/definitions/waypoint"
               }
             },
-            "generatedTrajectory": {
+            "trajectoryWaypoints": {
               "type": "array",
               "items": {
-                "type": "object",
-                "properties": {
-                  "timestamp": {
-                    "type": "number",
-                    "minimum": 0.0
-                  },
-                  "x": {
-                    "type": "number"
-                  },
-                  "y": {
-                    "type": "number"
-                  },
-                  "heading": {
-                    "type": "number"
-                  },
-                  "velocityX": {
-                    "type": "number"
-                  },
-                  "velocityY": {
-                    "type": "number"
-                  },
-                  "angularVelocity": {
-                    "type": "number"
-                  }
-                },
-                "required": [
-                  "timestamp",
-                  "x",
-                  "y",
-                  "heading",
-                  "velocityX",
-                  "velocityY",
-                  "angularVelocity"
-                ]
+                "$ref": "#/definitions/generatedWaypoint"
               }
             },
             "constraints": {
@@ -210,6 +220,9 @@
                   },
                   "name": {
                     "type": "string"
+                  },
+                  "targetTimestamp": {
+                    "type": "number"
                   },
                   "command": { "$ref": "#/definitions/command" }
                 }

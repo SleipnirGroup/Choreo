@@ -47,26 +47,25 @@ class SidebarMarker extends Component<Props, State> {
       >
         {React.cloneElement(<Room></Room>, {
           className: styles.SidebarIcon,
-          htmlColor: selected
-            ? "var(--select-yellow)"
-            : "var(--accent-purple)",
+          htmlColor: selected ? "var(--select-yellow)" : "var(--accent-purple)",
         })}
         <span
           className={styles.SidebarLabel}
           style={{ display: "grid", gridTemplateColumns: "1fr auto auto" }}
         >
+        <span>{this.props.marker.name}</span>
           {this.waypointIDToText(this.props.marker.target) +
             "+" +
             this.props.marker.offset.toFixed(2)}
         </span>
-        <Tooltip disableInteractive title="Delete Obstacle">
+        <Tooltip disableInteractive title="Delete Marker">
           <IconButton
             className={styles.SidebarRightIcon}
             onClick={(e) => {
               e.stopPropagation();
-              //   this.context.model.document.pathlist.activePath.deleteMarkerUUID(
-              //     marker?.uuid || ""
-              //   );
+                this.context.model.document.pathlist.activePath.deleteMarkerUUID(
+                  marker?.uuid || ""
+                );
             }}
           >
             <DeleteIcon />

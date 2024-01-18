@@ -2,6 +2,7 @@ import { Instance, types, getRoot, destroy } from "mobx-state-tree";
 import {
   SavedConstraint,
   SavedEventMarker,
+  SavedGeneratedWaypoint,
   SavedPath,
   SavedTrajectorySample,
   SavedWaypoint,
@@ -28,7 +29,11 @@ import {
   ICircularObstacleStore,
 } from "./CircularObstacleStore";
 import { angleModulus } from "../util/MathUtil";
-import { CommandStore, EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
+import {
+  CommandStore,
+  EventMarkerStore,
+  IEventMarkerStore,
+} from "./EventMarkerStore";
 
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
@@ -37,6 +42,7 @@ export const HolonomicPathStore = types
     waypoints: types.array(HolonomicWaypointStore),
     constraints: types.array(types.union(...Object.values(ConstraintStores))),
     generated: types.frozen<Array<SavedTrajectorySample>>([]),
+    generatedWaypoints: types.frozen<Array<SavedGeneratedWaypoint>>([]),
     generating: false,
     usesControlIntervalGuessing: true,
     defaultControlIntervalCount: 40,
@@ -127,6 +133,7 @@ export const HolonomicPathStore = types
         return {
           waypoints: self.waypoints.map((point) => point.asSavedWaypoint()),
           trajectory: trajectory,
+          trajectoryWaypoints: self.generatedWaypoints,
           constraints: self.constraints.flatMap((constraint) => {
             let con = constraint;
             let scope = con.scope.map((id: IWaypointScope) =>
@@ -154,6 +161,7 @@ export const HolonomicPathStore = types
             let saved: SavedEventMarker = {
               name: marker.name,
               target,
+              targetTimestamp: marker.trajTimestamp,
               offset: marker.offset,
               command: marker.command.asSavedCommand(),
             };
@@ -162,6 +170,7 @@ export const HolonomicPathStore = types
           }),
         };
       },
+
       lowestSelectedPoint(): IHolonomicWaypointStore | null {
         for (let point of self.waypoints) {
           if (point.selected) return point;
@@ -261,6 +270,9 @@ export const HolonomicPathStore = types
   })
   .actions((self) => {
     return {
+      setGeneratedWaypoints(waypoints: Array<SavedGeneratedWaypoint>) {
+        self.generatedWaypoints = waypoints;
+      },
       setControlIntervalGuessing(value: boolean) {
         self.usesControlIntervalGuessing = value;
       },
@@ -361,6 +373,19 @@ export const HolonomicPathStore = types
           self.waypoints[index - 1].setSelected(true);
         } else if (self.waypoints[index + 1]) {
           self.waypoints[index + 1].setSelected(true);
+        }
+      },
+      deleteMarkerUUID(uuid:string){
+        let index = self.eventMarkers.findIndex(m=>m.uuid === uuid);
+        if (index>=0 && index < self.eventMarkers.length) {
+          destroy(self.eventMarkers[index]);
+          if (self.eventMarkers.length === 0) {
+            return;
+          } else if (self.eventMarkers[index - 1]) {
+            self.eventMarkers[index - 1].setSelected(true);
+          } else if (self.eventMarkers[index + 1]) {
+            self.eventMarkers[index + 1].setSelected(true);
+          }
         }
       },
       deleteConstraint(index: number) {
@@ -521,6 +546,12 @@ export const HolonomicPathStore = types
         ) {
           self.generated = savedPath.trajectory;
         }
+        if (
+          savedPath.trajectoryWaypoints !== undefined &&
+          savedPath.trajectoryWaypoints !== null
+        ) {
+          self.generatedWaypoints = savedPath.trajectoryWaypoints;
+        }
 
         self.usesControlIntervalGuessing =
           savedPath.usesControlIntervalGuessing;
@@ -530,11 +561,20 @@ export const HolonomicPathStore = types
         savedPath.eventMarkers.forEach((saved) => {
           let rootCommandType = saved.command.type;
           let target = self.savedWaypointIdToWaypointId(saved.target);
+          let targetIndex = 0;
+          if (saved.target === "last") {
+            targetIndex = self.waypoints.length;
+          } else if (saved.target === "first") {
+            targetIndex = 0;
+          } else {
+            targetIndex = saved.target;
+          }
           if (target === undefined) return;
           let marker = EventMarkerStore.create({
             name: saved.name,
             target: target as WaypointID,
             offset: saved.offset,
+            trajTargetIndex: targetIndex,
             command: CommandStore.create({
               type: rootCommandType,
               name: "",
@@ -555,6 +595,7 @@ export const HolonomicPathStore = types
           marker = EventMarkerStore.create({
             name: "Marker",
             target: "first",
+            trajTargetIndex: 0,
             offset: 0,
             command: CommandStore.create({
               type: "wait",
@@ -566,6 +607,7 @@ export const HolonomicPathStore = types
           });
         }
         self.eventMarkers.push(marker);
+        return marker;
       },
       optimizeControlIntervalCounts(
         robotConfig: IRobotConfigStore
