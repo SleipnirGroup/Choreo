@@ -197,7 +197,7 @@ export const HolonomicPathStore = types
                   .flatMap((w) => w.controlIntervalCount)
                   .reduce((sum, num) => sum + num, 0)
               )
-              .sort()
+              .sort((a,b)=>a-b)
           : [0, undefined];
       },
     };

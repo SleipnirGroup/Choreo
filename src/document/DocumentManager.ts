@@ -429,6 +429,9 @@ export class DocumentManager {
         const prev = split[i - 1];
         const cur = split[i];
         let traj = trajectory.slice(prev, cur);
+        if (traj === undefined) {
+          throw `Could not split segment from ${prev} to ${cur} given ${trajectory.length} samples`;
+        }
         const start = traj[0].timestamp;
         for (let i = 0; i < traj.length; i++) {
           const e = traj[i];
