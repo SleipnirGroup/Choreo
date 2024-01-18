@@ -198,6 +198,8 @@ export const HolonomicPathStore = types
                   .reduce((sum, num) => sum + num, 0)
               )
               .sort((a,b)=>a-b)
+              // remove duplicates
+              .filter((item, pos, ary) => !pos || item != ary[pos - 1])
           : [0, undefined];
       },
     };
