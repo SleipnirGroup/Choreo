@@ -1,6 +1,7 @@
 import { Instance, types, getRoot, destroy } from "mobx-state-tree";
 import {
   SavedConstraint,
+  SavedEventMarker,
   SavedPath,
   SavedTrajectorySample,
   SavedWaypoint,
@@ -27,6 +28,7 @@ import {
   ICircularObstacleStore,
 } from "./CircularObstacleStore";
 import { angleModulus } from "../util/MathUtil";
+import { CommandStore, EventMarkerStore } from "./EventMarkerStore";
 
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
@@ -40,12 +42,48 @@ export const HolonomicPathStore = types
     defaultControlIntervalCount: 40,
     usesDefaultObstacles: true,
     obstacles: types.array(CircularObstacleStore),
+    eventMarkers: types.array(EventMarkerStore)
   })
   .views((self) => {
     return {
       findUUIDIndex(uuid: string) {
         return self.waypoints.findIndex((wpt) => wpt.uuid === uuid);
+      }}})
+    .views((self) => {
+      return {
+      waypointIdToSavedWaypointId (
+        waypointId: IWaypointScope
+      ): "first" | "last" | number | undefined {
+        if (typeof waypointId !== "string") {
+          let scopeIndex = self.findUUIDIndex(waypointId.uuid);
+          if (scopeIndex == -1) {
+            return undefined; // don't try to save this constraint
+          }
+          return scopeIndex;
+        } else {
+          return waypointId;
+        }
       },
+      savedWaypointIdToWaypointId (savedId: SavedWaypointId)  {
+        if (savedId === null || savedId === undefined) {
+          return undefined;
+        }
+
+        if (savedId === "first") {
+          return "first";
+        }
+        if (savedId === "last") {
+          return "last";
+        }
+        if (savedId < 0 || savedId >= self.waypoints.length) {
+          return undefined;
+        }
+        if (!Number.isInteger(savedId)) {
+          return undefined;
+        } else {
+          return { uuid: self.waypoints[savedId]?.uuid as string };
+        }
+      }
     };
   })
   .views((self) => {
@@ -88,22 +126,9 @@ export const HolonomicPathStore = types
           waypoints: self.waypoints.map((point) => point.asSavedWaypoint()),
           trajectory: trajectory,
           constraints: self.constraints.flatMap((constraint) => {
-            let waypointIdToSavedWaypointId = (
-              waypointId: IWaypointScope
-            ): "first" | "last" | number | undefined => {
-              if (typeof waypointId !== "string") {
-                let scopeIndex = self.findUUIDIndex(waypointId.uuid);
-                if (scopeIndex == -1) {
-                  return undefined; // don't try to save this constraint
-                }
-                return scopeIndex;
-              } else {
-                return waypointId;
-              }
-            };
             let con = constraint;
             let scope = con.scope.map((id: IWaypointScope) =>
-              waypointIdToSavedWaypointId(id)
+              self.waypointIdToSavedWaypointId(id)
             );
             if (scope?.includes(undefined)) return [];
             let toReturn = {
@@ -121,6 +146,18 @@ export const HolonomicPathStore = types
           circleObstacles: self.obstacles.map((obstacle) =>
             obstacle.asSavedCircleObstacle()
           ),
+          eventMarkers: self.eventMarkers.flatMap((marker)=>{
+            let target = self.waypointIdToSavedWaypointId(marker.target); 
+            if (target === undefined) return [];
+            let saved : SavedEventMarker = {
+              name: marker.name,
+              target,
+              offset: marker.offset,
+              command: marker.command.asSavedCommand()
+              }
+            
+            return [saved];
+          })
         };
       },
       lowestSelectedPoint(): IHolonomicWaypointStore | null {
@@ -439,28 +476,8 @@ export const HolonomicPathStore = types
         savedPath.constraints.forEach((saved: SavedConstraint) => {
           let constraintStore = ConstraintStores[saved.type];
           if (constraintStore !== undefined) {
-            let savedWaypointIdToWaypointId = (savedId: SavedWaypointId) => {
-              if (savedId === null || savedId === undefined) {
-                return undefined;
-              }
-
-              if (savedId === "first") {
-                return "first";
-              }
-              if (savedId === "last") {
-                return "last";
-              }
-              if (savedId < 0 || savedId >= self.waypoints.length) {
-                return undefined;
-              }
-              if (!Number.isInteger(savedId)) {
-                return undefined;
-              } else {
-                return { uuid: self.waypoints[savedId]?.uuid as string };
-              }
-            };
             let scope = saved.scope.map((id) =>
-              savedWaypointIdToWaypointId(id)
+              self.savedWaypointIdToWaypointId(id)
             );
             if (scope.includes(undefined)) {
               return; // don't attempt to load
@@ -507,6 +524,29 @@ export const HolonomicPathStore = types
           savedPath.usesControlIntervalGuessing;
         self.defaultControlIntervalCount =
           savedPath.defaultControlIntervalCount;
+        self.eventMarkers.clear();
+        savedPath.eventMarkers.push({target:0, name:"Marker", offset:0, command: {
+          type:"named", data: {"name": "Hello"}}});
+        savedPath.eventMarkers.forEach(saved=>{
+          let rootCommandType = saved.command.type;
+          let target = self.savedWaypointIdToWaypointId(saved.target);
+          if (target === undefined) return;
+          let marker = EventMarkerStore.create({
+            name: saved.name,
+            target: (target as WaypointID),
+            offset: saved.offset,
+            command: CommandStore.create({
+              type: rootCommandType,
+              name: "",
+              commands: [],
+              time: 0
+            }),
+            uuid: uuidv4()
+  
+          });
+          marker.command.fromSavedCommand(saved.command);
+          self.eventMarkers.push(marker);
+        })
       },
       addObstacle(obstacle: ICircularObstacleStore) {
         self.obstacles.push(obstacle);

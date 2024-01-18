@@ -29,11 +29,13 @@ import {
   CircularObstacleStore,
   ICircularObstacleStore,
 } from "./CircularObstacleStore";
+import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
 
 export const SelectableItem = types.union(
   {
     dispatcher: (snapshot) => {
       if (snapshot.mass) return RobotConfigStore;
+      if (snapshot.target) return EventMarkerStore;
       if (snapshot.type) {
         return ConstraintStores[snapshot.type];
       }
@@ -46,6 +48,7 @@ export const SelectableItem = types.union(
   RobotConfigStore,
   HolonomicWaypointStore,
   CircularObstacleStore,
+  EventMarkerStore,
   ...Object.values(ConstraintStores)
 );
 
@@ -161,6 +164,7 @@ export type SelectableItemTypes =
   | IHolonomicWaypointStore
   | IConstraintStore
   | ICircularObstacleStore
+  | IEventMarkerStore
   | undefined;
 
 /* Visibility stuff */

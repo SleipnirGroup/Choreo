@@ -5,13 +5,13 @@ import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../input/InputList";
 import Input from "../input/Input";
 import { IConstraintStore } from "../../document/ConstraintStore";
-import { Slider } from "@mui/material";
+import ScopeSlider from "./ScopeSlider";
 
 type Props = { constraint: IConstraintStore };
 
 type State = {};
 
-class RobotConfigPanel extends Component<Props, State> {
+class ConstraintsConfigPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
@@ -54,31 +54,12 @@ class RobotConfigPanel extends Component<Props, State> {
           width: `min(80%, max(300px, calc(${pointcount} * 3ch + 8ch)))`,
         }}
       >
-        <div style={{ marginInline: "4ch" }}>
-          {" "}
-          <Slider
-            sx={{
-              '& .MuiSlider-markLabel[data-index="0"]': {
-                transform: "translateX(-3.5ch)",
-              },
-              [`& .MuiSlider-markLabel[data-index="${pointcount + 1}"]`]: {
-                transform: "translateX(0ch)",
-              },
-            }}
-            step={null}
-            min={0}
-            max={pointcount + 1}
-            value={isSegmentConstraint ? [startIndex, endIndex] : startIndex}
-            marks={sliderMarks}
-            track={isSegmentConstraint ? "normal" : false}
-            onChange={(e, value: number | number[]) => {
-              let selection = [];
-              if (typeof value === "number") {
-                selection = [value];
-              } else {
-                selection = value;
-              }
-              const lastIdx = pointcount + 1;
+        <ScopeSlider
+          isRange={isSegmentConstraint}
+          startIndex={startIndex}
+          endIndex={endIndex}
+          setRange={selection=>{
+            const lastIdx = pointcount + 1;
               this.props.constraint.setScope(
                 selection.map((idx) => {
                   if (idx == 0) {
@@ -90,9 +71,8 @@ class RobotConfigPanel extends Component<Props, State> {
                   }
                 })
               );
-            }}
-          ></Slider>
-        </div>
+          }}
+          points={points}></ScopeSlider>
 
         <InputList>
           {/* {isSegmentConstraint && <>
@@ -127,4 +107,4 @@ class RobotConfigPanel extends Component<Props, State> {
     );
   }
 }
-export default observer(RobotConfigPanel);
+export default observer(ConstraintsConfigPanel);

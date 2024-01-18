@@ -11,7 +11,9 @@ import Add from "@mui/icons-material/Add";
 import SidebarConstraint from "./SidebarConstraint";
 import SidebarObstacle from "./SidebarObstacle";
 import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
-import { ObstaclesEnabled, UIStateStore } from "../../document/UIStateStore";
+import { ObstaclesEnabled } from "../../document/UIStateStore";
+import SidebarEventMarker from "./SidebarEventMarker";
+import { IEventMarkerStore } from "../../document/EventMarkerStore";
 
 type Props = {};
 type State = {};
@@ -173,6 +175,38 @@ class Sidebar extends Component<Props, State> {
               <Divider></Divider>
             </>
           )}
+          <Divider
+                className={styles.SidebarDivider}
+                textAlign="left"
+                flexItem
+              >
+                <span>MARKERS</span>
+              </Divider>
+              <div className={styles.WaypointList}>
+                {this.context.model.document.pathlist.activePath.eventMarkers.map(
+                  (marker: IEventMarkerStore, index: number) => {
+                    return (
+                      <SidebarEventMarker
+                        marker={marker}
+                        index={index}
+                        context={this.context}
+                      ></SidebarEventMarker>
+                    );
+                  }
+                )}
+              </div>
+              {this.context.model.document.pathlist.activePath.eventMarkers
+                .length == 0 && (
+                <div
+                  className={styles.SidebarItem + " " + styles.Noninteractible}
+                >
+                  <span></span>
+                  <span style={{ color: "gray", fontStyle: "italic" }}>
+                    No Event Markers
+                  </span>
+                </div>
+              )}
+              <Divider></Divider>
         </div>
       </div>
     );
