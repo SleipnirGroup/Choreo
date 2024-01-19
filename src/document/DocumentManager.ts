@@ -57,12 +57,17 @@ export class DocumentManager {
       throw "Unable to read file";
     } else {
       let oldDocument = getSnapshot(this.model.document);
+      let oldUIState = getSnapshot(this.model.uiState);
       let saveName = payload.name;
       let saveDir = payload.dir;
       let adjacent_gradle = payload.adjacent_gradle;
+      this.model.uiState.setSaveFileName(undefined);
+      this.model.uiState.setSaveFileDir(undefined);
+      this.model.uiState.setIsGradleProject(undefined);
       await this.openFromContents(payload.contents)
         .catch((err) => {
           applySnapshot(this.model.document, oldDocument);
+          applySnapshot(this.model.uiState, oldUIState);
           throw `Internal parsing error: ${err}`;
         })
         .then(() => {
@@ -110,6 +115,7 @@ export class DocumentManager {
       () => this.model.document.history.undoIdx,
       () => {
         if (this.model.uiState.hasSaveLocation) {
+          console.log("autosave");
           this.saveFile();
         }
       }
@@ -278,15 +284,16 @@ export class DocumentManager {
   }
 
   async generateWithToastsAndExport(uuid: string) {
+    let pathName = this.model.document.pathlist.paths.get(uuid)?.name;
     this.model!.generatePathWithToasts(uuid).then(() =>
       toast.promise(
         this.writeTrajectory(() => this.getTrajFilePath(uuid), uuid),
         {
-          success: `Saved all trajectories to ${this.model.uiState.chorRelativeTrajDir}.`,
+          success: `Saved "${pathName}" to ${this.model.uiState.chorRelativeTrajDir}.`,
           error: {
             render(toastProps) {
               console.error(toastProps.data);
-              return `Couldn't export trajectories: ${
+              return `Couldn't export trajectory: ${
                 toastProps.data as string[]
               }`;
             },
@@ -328,7 +335,6 @@ export class DocumentManager {
         splitTrajectoriesAtStopPoints: false,
       },
     });
-
     this.model.document.pathlist.addPath("NewPath");
     this.model.document.history.clear();
   }
@@ -432,7 +438,9 @@ export class DocumentManager {
         if (cur !== undefined) {
           cur += 1;
         }
-        let traj = trajectory.slice(prev, cur);
+        let traj = trajectory.slice(prev, cur).map((s) => {
+          return { ...s };
+        });
         if (traj === undefined) {
           throw `Could not split segment from ${prev} to ${cur} given ${trajectory.length} samples`;
         }
