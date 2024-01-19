@@ -278,15 +278,16 @@ export class DocumentManager {
   }
 
   async generateWithToastsAndExport(uuid: string) {
+    let pathName = this.model.document.pathlist.paths.get(uuid)?.name;
     this.model!.generatePathWithToasts(uuid).then(() =>
       toast.promise(
         this.writeTrajectory(() => this.getTrajFilePath(uuid), uuid),
         {
-          success: `Saved all trajectories to ${this.model.uiState.chorRelativeTrajDir}.`,
+          success: `Saved "${pathName}" to ${this.model.uiState.chorRelativeTrajDir}.`,
           error: {
             render(toastProps) {
               console.error(toastProps.data);
-              return `Couldn't export trajectories: ${
+              return `Couldn't export trajectory: ${
                 toastProps.data as string[]
               }`;
             },
