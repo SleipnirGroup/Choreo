@@ -181,7 +181,7 @@ export let VERSIONS = {
       let updated: v0_2_1 = {
         paths: document.paths,
         version: v0_2_1_Version,
-        robotConfiguration: document.robotConfig,
+        robotConfiguration: document.robotConfiguration,
         splitTrajectoriesAtStopPoints: false,
       };
       return updated;
