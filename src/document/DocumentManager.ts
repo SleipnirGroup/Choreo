@@ -428,7 +428,10 @@ export class DocumentManager {
       for (let i = 1; i < split.length; i++) {
         const prev = split[i - 1];
         const cur = split[i];
-        let traj = trajectory.slice(prev, cur);
+        // clone the slice so we don't edit timestamps on the actual generated set
+        let traj = trajectory.slice(prev, cur).map((s) => {
+          return { ...s };
+        });
         if (traj === undefined) {
           throw `Could not split segment from ${prev} to ${cur} given ${trajectory.length} samples`;
         }
