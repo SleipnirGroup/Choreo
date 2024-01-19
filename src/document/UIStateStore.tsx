@@ -319,14 +319,14 @@ export const UIStateStore = types
     setFieldScalingFactor(metersPerPixel: number) {
       self.fieldScalingFactor = metersPerPixel;
     },
-    setSaveFileName(name: string) {
+    setSaveFileName(name: string | undefined) {
       self.saveFileName = name;
       self.updateWindowTitle();
     },
-    setSaveFileDir(dir: string) {
+    setSaveFileDir(dir: string | undefined) {
       self.saveFileDir = dir;
     },
-    setIsGradleProject(isGradleProject: boolean) {
+    setIsGradleProject(isGradleProject: boolean | undefined) {
       self.isGradleProject = isGradleProject;
     },
     setWaypointPanelOpen(open: boolean) {
