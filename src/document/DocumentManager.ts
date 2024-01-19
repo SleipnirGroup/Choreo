@@ -335,13 +335,11 @@ export class DocumentManager {
 
   async openFromContents(chorContents: string) {
     const parsed = JSON.parse(chorContents);
-    if (validate(parsed)) {
+    let validationError = validate(parsed)
+    if (validationError.length == 0) {
       this.model.fromSavedDocument(parsed);
     } else {
-      console.error("Invalid Document JSON");
-      toast.error(
-        "Could not parse selected document (Is it a choreo document?)"
-      );
+      throw `Invalid Document JSON: ${validationError}`;
     }
   }
 

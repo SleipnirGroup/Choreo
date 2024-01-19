@@ -226,10 +226,19 @@ export let updateToCurrent = (document: { version: string }): SavedDocument => {
   return document as SavedDocument;
 };
 
-export let validate = (document: { version: string }): boolean => {
+export let validate = (document: { version: string }): string => {
   if (document.version in VERSIONS) {
-    return ajv.validate(VERSIONS[document.version].schema, document);
+    if (!ajv.validate(VERSIONS[document.version].schema, document)){
+      return ajv.errorsText(ajv.errors);
+    }
+    else {
+      return "";
+    }
   } else {
-    return false;
+    return `Invalid document version: ${document.version}`;
   }
 };
+
+export let validationErrors = ()=>{
+  return 
+}
