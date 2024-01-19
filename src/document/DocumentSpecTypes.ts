@@ -228,10 +228,9 @@ export let updateToCurrent = (document: { version: string }): SavedDocument => {
 
 export let validate = (document: { version: string }): string => {
   if (document.version in VERSIONS) {
-    if (!ajv.validate(VERSIONS[document.version].schema, document)){
+    if (!ajv.validate(VERSIONS[document.version].schema, document)) {
       return ajv.errorsText(ajv.errors);
-    }
-    else {
+    } else {
       return "";
     }
   } else {
@@ -239,6 +238,6 @@ export let validate = (document: { version: string }): string => {
   }
 };
 
-export let validationErrors = ()=>{
-  return 
-}
+export let validationErrors = () => {
+  return;
+};

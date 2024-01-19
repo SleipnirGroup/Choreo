@@ -335,7 +335,7 @@ export class DocumentManager {
 
   async openFromContents(chorContents: string) {
     const parsed = JSON.parse(chorContents);
-    let validationError = validate(parsed)
+    let validationError = validate(parsed);
     if (validationError.length == 0) {
       this.model.fromSavedDocument(parsed);
     } else {
