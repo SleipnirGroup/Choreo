@@ -106,7 +106,8 @@ class FieldOverlayRoot extends Component<Props, State> {
     this.canvasWidthMeters = FieldImage24.LENGTH_M + 1;
     let layers = this.context.model.uiState.layers;
     let constraintSelected = this.context.model.uiState.isConstraintSelected();
-    let eventMarkerSelected = this.context.model.uiState.isEventMarkerSelected();
+    let eventMarkerSelected =
+      this.context.model.uiState.isEventMarkerSelected();
     return (
       <svg
         ref={this.svgRef}

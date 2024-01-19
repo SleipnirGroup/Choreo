@@ -53,7 +53,7 @@ class SidebarMarker extends Component<Props, State> {
           className={styles.SidebarLabel}
           style={{ display: "grid", gridTemplateColumns: "1fr auto auto" }}
         >
-        <span>{this.props.marker.name}</span>
+          <span>{this.props.marker.name}</span>
           {this.waypointIDToText(this.props.marker.target) +
             "+" +
             this.props.marker.offset.toFixed(2)}
@@ -63,9 +63,9 @@ class SidebarMarker extends Component<Props, State> {
             className={styles.SidebarRightIcon}
             onClick={(e) => {
               e.stopPropagation();
-                this.context.model.document.pathlist.activePath.deleteMarkerUUID(
-                  marker?.uuid || ""
-                );
+              this.context.model.document.pathlist.activePath.deleteMarkerUUID(
+                marker?.uuid || ""
+              );
             }}
           >
             <DeleteIcon />

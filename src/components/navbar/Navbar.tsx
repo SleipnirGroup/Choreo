@@ -6,7 +6,7 @@ import { observer } from "mobx-react";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import {
   NavbarItemData,
-  NavbarItemSectionLengths
+  NavbarItemSectionLengths,
 } from "../../document/UIStateStore";
 
 type Props = {};

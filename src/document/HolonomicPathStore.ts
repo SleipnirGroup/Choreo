@@ -375,9 +375,9 @@ export const HolonomicPathStore = types
           self.waypoints[index + 1].setSelected(true);
         }
       },
-      deleteMarkerUUID(uuid:string){
-        let index = self.eventMarkers.findIndex(m=>m.uuid === uuid);
-        if (index>=0 && index < self.eventMarkers.length) {
+      deleteMarkerUUID(uuid: string) {
+        let index = self.eventMarkers.findIndex((m) => m.uuid === uuid);
+        if (index >= 0 && index < self.eventMarkers.length) {
           destroy(self.eventMarkers[index]);
           if (self.eventMarkers.length === 0) {
             return;
@@ -580,6 +580,7 @@ export const HolonomicPathStore = types
               name: "",
               commands: [],
               time: 0,
+              uuid: uuidv4(),
             }),
             uuid: uuidv4(),
           });
@@ -598,10 +599,28 @@ export const HolonomicPathStore = types
             trajTargetIndex: 0,
             offset: 0,
             command: CommandStore.create({
-              type: "wait",
+              type: "parallel",
               name: "",
-              commands: [],
+              commands: [
+                CommandStore.create({
+                  type: "sequential",
+                  name: "",
+                  commands: [
+                    CommandStore.create({
+                      type: "race",
+                      name: "",
+                      commands: [],
+                      time: 0,
+                      uuid: uuidv4(),
+                    }),
+                  ],
+                  time: 0,
+                  uuid: uuidv4(),
+                }),
+
+              ],
               time: 0,
+              uuid: uuidv4(),
             }),
             uuid: uuidv4(),
           });

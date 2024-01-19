@@ -25,8 +25,17 @@ export const CommandStore = types
     commands: types.array(types.late((): IAnyType => CommandStore)),
     time: types.number,
     name: types.maybeNull(types.string),
+    uuid: types.identifier,
   })
   .views((self) => ({
+    isGroup(): boolean {
+      return (
+        self.type === "deadline" ||
+        self.type === "race" ||
+        self.type === "parallel" ||
+        self.type === "sequential"
+      );
+    },
     asSavedCommand(): SavedCommand {
       if (self.type === "named") {
         return {
@@ -71,6 +80,8 @@ export const CommandStore = types
       }
     },
   }));
+
+export interface ICommandStore extends Instance<typeof CommandStore> {}
 export const EventMarkerStore = types
   .model("EventMarker", {
     name: types.string,
@@ -93,15 +104,15 @@ export const EventMarkerStore = types
       );
     },
     setSelected(selected: boolean) {
-        if (selected && !this.selected) {
-          const root = getRoot<IStateStore>(self);
-          root.select(
-            getParent<IEventMarkerStore[]>(self)?.find(
-              (point) => self.uuid == point.uuid
-            )
-          );
-        }
-      },
+      if (selected && !this.selected) {
+        const root = getRoot<IStateStore>(self);
+        root.select(
+          getParent<IEventMarkerStore[]>(self)?.find(
+            (point) => self.uuid == point.uuid
+          )
+        );
+      }
+    },
     getPath(): IHolonomicPathStore {
       const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
         getParent<IEventMarkerStore[]>(self)

@@ -1,11 +1,14 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import DocumentManagerContext from "../../document/DocumentManager";
-import styles from "./WaypointConfigPanel.module.css";
-import InputList from "../input/InputList";
-import Input from "../input/Input";
-import ScopeSlider from "./ScopeSlider";
-import { IEventMarkerStore } from "../../document/EventMarkerStore";
+import { DragDropContext } from "react-beautiful-dnd";
+import DocumentManagerContext from "../../../document/DocumentManager";
+import styles from "../WaypointConfigPanel.module.css";
+import InputList from "../../input/InputList";
+import Input from "../../input/Input";
+import ScopeSlider from "../ScopeSlider";
+import { IEventMarkerStore } from "../../../document/EventMarkerStore";
+import { toJS } from "mobx";
+import CommandDraggable from "./CommandDraggable";
 
 type Props = { marker: IEventMarkerStore };
 
@@ -15,16 +18,24 @@ class ConstraintsConfigPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
+
+    onDragEnd(result: any) {
+      // dropped outside the list
+      if (!result.destination) {
+        return;
+      }
+      //this.reorder(result.source.index, result.destination.index);
+    }
   render() {
     let marker = this.props.marker;
 
-    let startIndex = (this.props.marker.getTargetIndex() ?? 0) + 1;
-    let points = this.props.marker.getPath().waypoints;
+    let startIndex = (marker.getTargetIndex() ?? 0) + 1;
+    let points = marker.getPath().waypoints;
     let pointcount = points.length;
-    if (this.props.marker.target === "first") {
+    if (marker.target === "first") {
       startIndex = 0;
     }
-    if (this.props.marker.target === "last") {
+    if (marker.target === "last") {
       startIndex = pointcount + 1;
     }
 
@@ -43,11 +54,11 @@ class ConstraintsConfigPanel extends Component<Props, State> {
             const lastIdx = pointcount + 1;
             let idx = selection[0];
             if (idx == 0) {
-              this.props.marker.setTarget("first");
+              marker.setTarget("first");
             } else if (idx == lastIdx) {
-              this.props.marker.setTarget("last");
+              marker.setTarget("last");
             } else {
-              this.props.marker.setTarget({
+              marker.setTarget({
                 uuid: points[idx - 1]?.uuid ?? "",
               });
             }
@@ -72,6 +83,15 @@ class ConstraintsConfigPanel extends Component<Props, State> {
             }
           />
         </InputList>
+        <DragDropContext onDragEnd={(result)=>this.onDragEnd(result)}>
+          <CommandDraggable
+            command={marker.command}
+            index={0}
+            context={this.context}
+            isDraggable={false}
+          ></CommandDraggable>
+        </DragDropContext>
+        {JSON.stringify(toJS(marker))}
       </div>
     );
   }

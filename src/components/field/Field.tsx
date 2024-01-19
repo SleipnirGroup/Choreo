@@ -18,7 +18,7 @@ import { invoke } from "@tauri-apps/api";
 import { Close } from "@mui/icons-material";
 import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
 import CircularObstacleConfigPanel from "../config/CircularObstacleConfigPanel";
-import EventMarkerConfigPanel from "../config/EventMarkerConfigPanel";
+import EventMarkerConfigPanel from "../config/eventmarker/EventMarkerConfigPanel";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
 
 type Props = {};

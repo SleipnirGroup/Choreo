@@ -139,10 +139,10 @@ if (ObstaclesEnabled) {
 
 const eventMarkerCount = 1;
 NavbarData.EventMarker = {
-  index : Object.keys(NavbarData).length,
+  index: Object.keys(NavbarData).length,
   name: "Event Marker",
-  icon: <Room></Room>
-}
+  icon: <Room></Room>,
+};
 
 /** An map of  */
 export const NavbarLabels = (() => {
@@ -164,17 +164,16 @@ export const NavbarItemData = (() => {
   return x;
 })();
 
-let NavbarItemSections = [
-  waypointNavbarCount, constraintNavbarCount
-]
-if(ObstaclesEnabled) {
+let NavbarItemSections = [waypointNavbarCount, constraintNavbarCount];
+if (ObstaclesEnabled) {
   NavbarItemSections.push(obstacleNavbarCount);
 }
 NavbarItemSections.push(eventMarkerCount);
 
-export const NavbarItemSectionLengths = NavbarItemSections.map(
-  (s, idx)=>NavbarItemSections.slice(0, idx+1).reduce((prev, cur)=>prev+cur, -1));
-console.log (NavbarItemSectionLengths);
+export const NavbarItemSectionLengths = NavbarItemSections.map((s, idx) =>
+  NavbarItemSections.slice(0, idx + 1).reduce((prev, cur) => prev + cur, -1)
+);
+console.log(NavbarItemSectionLengths);
 
 export type SelectableItemTypes =
   | IRobotConfigStore
@@ -302,12 +301,14 @@ export const UIStateStore = types
         );
       },
       isEventMarkerSelected() {
-        return (
-          self.selectedNavbarItem == NavbarData.EventMarker.index
-        );
+        return self.selectedNavbarItem == NavbarData.EventMarker.index;
       },
       isNavbarObstacleSelected() {
-        return self.selectedNavbarItem > NavbarItemSectionLengths[1];
+        return (
+          ObstaclesEnabled &&
+          self.selectedNavbarItem > NavbarItemSectionLengths[1] &&
+          self.selectedNavbarItem <= NavbarItemSectionLengths[2]
+        );
       },
       visibleLayersOnly() {
         return self.layers.flatMap((visible: boolean, index: number) => {
