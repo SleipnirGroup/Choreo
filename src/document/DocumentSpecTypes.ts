@@ -237,7 +237,3 @@ export let validate = (document: { version: string }): string => {
     return `Invalid document version: ${document.version}`;
   }
 };
-
-export let validationErrors = () => {
-  return;
-};
