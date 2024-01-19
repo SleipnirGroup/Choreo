@@ -427,7 +427,11 @@ export class DocumentManager {
       const split = chorPath.stopPointIndices();
       for (let i = 1; i < split.length; i++) {
         const prev = split[i - 1];
-        const cur = split[i];
+        let cur = split[i];
+        // If we don't go to the end of trajectory, add 1 to include the end stop point
+        if (cur !== undefined) {
+          cur += 1;
+        }
         let traj = trajectory.slice(prev, cur);
         if (traj === undefined) {
           throw `Could not split segment from ${prev} to ${cur} given ${trajectory.length} samples`;
