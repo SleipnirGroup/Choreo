@@ -2,7 +2,7 @@ apply plugin: 'maven-publish'
 
 ext.licenseFile = files("$rootDir/LICENSE.txt")
 
-def pubVersion = '2024.1.0'
+def pubVersion = '2024.1.2'
 
 def outputsFolder = file("$buildDir/outputs")
 
@@ -47,7 +47,6 @@ def baseArtifactId = 'ChoreoLib'
 def zipBaseName = "_GROUP_com_choreo_lib_ID_${baseArtifactId}-cpp_CLS"
 def javaBaseName = "_GROUP_com_choreo_lib_ID_${baseArtifactId}-java_CLS"
 
-// C++ configuration for the future.
 task cppHeadersZip(type: Zip) {
     destinationDirectory = outputsFolder
     archiveBaseName = zipBaseName
@@ -65,7 +64,7 @@ task cppHeadersZip(type: Zip) {
 task cppSourceZip(type: Zip) {
     destinationDirectory = outputsFolder
     archiveBaseName = zipBaseName
-    archiveClassifier = "source"
+    archiveClassifier = "sources"
 
     from(licenseFile) {
         into '/'

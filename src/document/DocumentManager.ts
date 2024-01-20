@@ -39,6 +39,7 @@ export class DocumentManager {
       document: {
         robotConfig: { identifier: uuidv4() },
         pathlist: {},
+        splitTrajectoriesAtStopPoints: false,
       },
     });
     this.model.document.pathlist.addPath("NewPath");
@@ -56,12 +57,17 @@ export class DocumentManager {
       throw "Unable to read file";
     } else {
       let oldDocument = getSnapshot(this.model.document);
+      let oldUIState = getSnapshot(this.model.uiState);
       let saveName = payload.name;
       let saveDir = payload.dir;
       let adjacent_gradle = payload.adjacent_gradle;
+      this.model.uiState.setSaveFileName(undefined);
+      this.model.uiState.setSaveFileDir(undefined);
+      this.model.uiState.setIsGradleProject(undefined);
       await this.openFromContents(payload.contents)
         .catch((err) => {
           applySnapshot(this.model.document, oldDocument);
+          applySnapshot(this.model.uiState, oldUIState);
           throw `Internal parsing error: ${err}`;
         })
         .then(() => {
@@ -109,6 +115,7 @@ export class DocumentManager {
       () => this.model.document.history.undoIdx,
       () => {
         if (this.model.uiState.hasSaveLocation) {
+          console.log("autosave");
           this.saveFile();
         }
       }
@@ -277,15 +284,16 @@ export class DocumentManager {
   }
 
   async generateWithToastsAndExport(uuid: string) {
+    let pathName = this.model.document.pathlist.paths.get(uuid)?.name;
     this.model!.generatePathWithToasts(uuid).then(() =>
       toast.promise(
         this.writeTrajectory(() => this.getTrajFilePath(uuid), uuid),
         {
-          success: `Saved all trajectories to ${this.model.uiState.chorRelativeTrajDir}.`,
+          success: `Saved "${pathName}" to ${this.model.uiState.chorRelativeTrajDir}.`,
           error: {
             render(toastProps) {
               console.error(toastProps.data);
-              return `Couldn't export trajectories: ${
+              return `Couldn't export trajectory: ${
                 toastProps.data as string[]
               }`;
             },
@@ -324,9 +332,9 @@ export class DocumentManager {
       document: {
         robotConfig: { identifier: uuidv4() },
         pathlist: {},
+        splitTrajectoriesAtStopPoints: false,
       },
     });
-
     this.model.document.pathlist.addPath("NewPath");
     this.model.document.history.clear();
   }
@@ -344,13 +352,26 @@ export class DocumentManager {
   }
 
   async renamePath(uuid: string, newName: string) {
-    let oldPath = await this.getTrajFilePath(uuid);
-    this.model.document.pathlist.paths.get(uuid)?.setName(newName);
-    let newPath = await this.getTrajFilePath(uuid);
-    if (oldPath !== null) {
-      invoke("delete_file", { dir: oldPath[0], name: oldPath[1] })
-        .then(() => this.writeTrajectory(() => newPath, uuid))
-        .catch((e) => {});
+    if (this.model.uiState.hasSaveLocation) {
+      let oldPath = await this.getTrajFilePath(uuid);
+      let oldName = this.model.document.pathlist.paths.get(uuid)?.name;
+      this.model.document.pathlist.paths.get(uuid)?.setName(newName);
+      let newPath = await this.getTrajFilePath(uuid);
+      if (oldPath !== null) {
+        Promise.all([
+          invoke("delete_file", { dir: oldPath[0], name: oldPath[1] }),
+          invoke("delete_traj_segments", {
+            dir: oldPath[0],
+            trajName: oldName,
+          }),
+        ])
+          .then(() => this.writeTrajectory(() => newPath, uuid))
+          .catch((e) => {
+            console.error(e);
+          });
+      }
+    } else {
+      this.model.document.pathlist.paths.get(uuid)?.setName(newName);
     }
   }
 
@@ -372,22 +393,71 @@ export class DocumentManager {
     filePath: () => Promise<[string, string] | null> | [string, string] | null,
     uuid: string
   ) {
-    const path = this.model.document.pathlist.paths.get(uuid);
-    if (path === undefined) {
+    // Avoid conflicts with tauri path namespace
+    const chorPath = this.model.document.pathlist.paths.get(uuid);
+    if (chorPath === undefined) {
       throw `Tried to export trajectory with unknown uuid ${uuid}`;
     }
-    const trajectory = path.generated;
+    const trajectory = chorPath.generated;
     if (trajectory.length < 2) {
       throw `Path is not generated`;
     }
-    const content = JSON.stringify({ samples: trajectory }, undefined, 4);
     var file = await filePath();
+    console.log("file: " + file);
+
+    const content = JSON.stringify({ samples: trajectory }, undefined, 4);
     if (file) {
       await invoke("save_file", {
         dir: file[0],
         name: file[1],
         contents: content,
       });
+      // "Split" naming scheme for consistency when path splitting is turned on/off
+      if (
+        !this.model.document.splitTrajectoriesAtStopPoints ||
+        chorPath.stopPointIndices().length >= 2
+      ) {
+        await invoke("save_file", {
+          dir: file[0],
+          name: file[1].replace(".", ".1."),
+          contents: content,
+        });
+      }
+    }
+
+    if (
+      this.model.document.splitTrajectoriesAtStopPoints &&
+      file !== null &&
+      chorPath.stopPointIndices().length >= 2
+    ) {
+      const split = chorPath.stopPointIndices();
+      for (let i = 1; i < split.length; i++) {
+        const prev = split[i - 1];
+        const cur = split[i];
+        // clone the slice so we don't edit timestamps on the actual generated set
+        let traj = trajectory.slice(prev, cur).map((s) => {
+          return { ...s };
+        });
+        if (traj === undefined) {
+          throw `Could not split segment from ${prev} to ${cur} given ${trajectory.length} samples`;
+        }
+        if (traj.length === 0) {
+          continue;
+        }
+        const start = traj[0].timestamp;
+        for (let i = 0; i < traj.length; i++) {
+          const e = traj[i];
+          e.timestamp -= start;
+        }
+
+        const content = JSON.stringify({ samples: traj }, undefined, 4);
+        const name = file[1].replace(".", "." + i.toString() + ".");
+        await invoke("save_file", {
+          dir: file[0],
+          name: name,
+          contents: content,
+        });
+      }
     }
   }
 
@@ -543,6 +613,21 @@ export class DocumentManager {
       });
     }
   }
+
+  async clearAllTrajectories() {
+    if (
+      this.model.uiState.hasSaveLocation &&
+      this.model.uiState.chorRelativeTrajDir !== undefined
+    ) {
+      invoke("delete_dir", {
+        dir:
+          this.model.uiState.saveFileDir +
+          path.sep +
+          this.model.uiState.chorRelativeTrajDir,
+      });
+    }
+  }
 }
+
 let DocumentManagerContext = createContext(new DocumentManager());
 export default DocumentManagerContext;

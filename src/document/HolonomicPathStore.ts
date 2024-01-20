@@ -15,6 +15,7 @@ import { IStateStore } from "./DocumentModel";
 import {
   ConstraintStore,
   ConstraintStores,
+  IConstraintStore,
   IWaypointScope,
   WaypointID,
   WaypointScope,
@@ -171,6 +172,35 @@ export const HolonomicPathStore = types
           }
         });
         return savedPath;
+      },
+      stopPointIndices() {
+        const stopPoints = self.constraints.filter(
+          (c) => c.type === "StopPoint"
+        );
+        return stopPoints.length > 1
+          ? stopPoints
+              .flatMap((c: IConstraintStore) => {
+                const scope = c.scope.at(0);
+                if (scope === undefined) {
+                  return 0;
+                } else if (scope === "first") {
+                  return 0;
+                } else if (scope === "last") {
+                  return self.waypoints.length - 1;
+                } else {
+                  return self.findUUIDIndex(scope.uuid);
+                }
+              })
+              .flatMap((w) =>
+                self.waypoints
+                  .slice(0, w)
+                  .flatMap((w) => w.controlIntervalCount)
+                  .reduce((sum, num) => sum + num, 0)
+              )
+              .sort((a, b) => a - b)
+              // remove duplicates
+              .filter((item, pos, ary) => !pos || item != ary[pos - 1])
+          : [0, undefined];
       },
     };
   })

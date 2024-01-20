@@ -9,7 +9,10 @@
 #include <wpi/MemoryBuffer.h>
 #include <wpi/json.h>
 
+#include <filesystem>
 #include <numbers>
+#include <regex>
+#include <vector>
 
 #include "choreo/lib/ChoreoSwerveCommand.h"
 
@@ -31,6 +34,32 @@ ChoreoTrajectory Choreo::GetTrajectory(std::string_view trajName) {
   ChoreoTrajectory traj;
   choreolib::from_json(json, traj);
   return traj;
+}
+
+std::vector<ChoreoTrajectory> Choreo::GetTrajectoryGroup(
+    std::string_view trajName) {
+  const std::filesystem::path trajDir{
+      fmt::format("{}/choreo", frc::filesystem::GetDeployDirectory())};
+  int segmentCount = 0;
+  for (const auto& dir_entry : std::filesystem::directory_iterator{trajDir}) {
+    if (dir_entry.is_regular_file() &&
+        std::regex_match(
+            dir_entry.path().stem().string(),
+            std::regex(fmt::format("{}\\.\\d+\\.traj", trajName)))) {
+      ++segmentCount;
+    }
+  }
+  std::vector<ChoreoTrajectory> group;
+  group.reserve(segmentCount);
+  for (int i = 1; i <= segmentCount; ++i) {
+    try {
+      group.push_back(Choreo::GetTrajectory(fmt::format("{}.{}", trajName, i)));
+    } catch (const std::exception&) {
+      throw std::runtime_error(
+          fmt::format("Cannot open file: {}.{}.traj", trajName, i));
+    }
+  }
+  return group;
 }
 
 frc2::CommandPtr Choreo::ChoreoSwerveCommandFactory(

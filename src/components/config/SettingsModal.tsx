@@ -4,6 +4,7 @@ import DocumentManagerContext from "../../document/DocumentManager";
 import { IconButton, Modal, Tab, Tabs } from "@mui/material";
 import RobotConfigPanel from "./robotconfig/RobotConfigPanel";
 import { Close } from "@mui/icons-material";
+import ExportConfigPanel from "./ExportConfigPanel";
 
 type Props = {};
 
@@ -62,6 +63,7 @@ class SettingsModal extends Component<Props, State> {
               }}
             >
               <Tab label="Robot Config" />
+              <Tab label="Export Config" />
             </Tabs>
             <IconButton onClick={() => uiState.setRobotConfigOpen(false)}>
               <Close></Close>
@@ -69,6 +71,9 @@ class SettingsModal extends Component<Props, State> {
           </div>
           <div style={{ paddingTop: 8, flexGrow: 1, overflowY: "scroll" }}>
             {uiState.settingsTab == 0 && <RobotConfigPanel></RobotConfigPanel>}
+            {uiState.settingsTab == 1 && (
+              <ExportConfigPanel></ExportConfigPanel>
+            )}
           </div>
         </div>
       </Modal>

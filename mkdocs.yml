@@ -82,7 +82,10 @@ nav:
   - Home:
       - Home: index.md
       - Installation: installation.md
-      - Document Settings: document-settings.md
+      - Document Settings:
+          - Document Settings Panel: document-settings.md
+          - Robot Configuration: document-settings/robot-configuration.md
+          - File Export Settings: document-settings/file-export-settings.md
   - Usage:
       - Editing Paths: usage/editing-paths.md
       - Controls & Shortcuts: usage/controls-shortcuts.md
@@ -91,6 +94,8 @@ nav:
   - ChoreoLib:
       - Installation: choreolib/installation.md
       - Usage: choreolib/usage.md
+      - Java API: api/java/index.html
+      - C++ API: api/cpp/index.html
   - Contributing:
       - Building: contributing/building-choreo.md
       - Contributing Guide: contributing/contributing-guide.md

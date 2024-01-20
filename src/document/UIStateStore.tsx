@@ -222,7 +222,7 @@ export const ViewItemData = (() => {
 })();
 export const ViewLayerDefaults = ViewItemData.map((layer) => layer.default);
 export type ViewLayerType = typeof ViewLayers;
-export const NUM_SETTINGS_TABS = 1;
+export const NUM_SETTINGS_TABS = 2;
 export const UIStateStore = types
   .model("UIStateStore", {
     fieldScalingFactor: 0.02,
@@ -319,14 +319,14 @@ export const UIStateStore = types
     setFieldScalingFactor(metersPerPixel: number) {
       self.fieldScalingFactor = metersPerPixel;
     },
-    setSaveFileName(name: string) {
+    setSaveFileName(name: string | undefined) {
       self.saveFileName = name;
       self.updateWindowTitle();
     },
-    setSaveFileDir(dir: string) {
+    setSaveFileDir(dir: string | undefined) {
       self.saveFileDir = dir;
     },
-    setIsGradleProject(isGradleProject: boolean) {
+    setIsGradleProject(isGradleProject: boolean | undefined) {
       self.isGradleProject = isGradleProject;
     },
     setWaypointPanelOpen(open: boolean) {
