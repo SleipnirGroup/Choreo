@@ -431,8 +431,11 @@ export class DocumentManager {
       const split = chorPath.stopPointIndices();
       for (let i = 1; i < split.length; i++) {
         const prev = split[i - 1];
-        const cur = split[i];
-        // clone the slice so we don't edit timestamps on the actual generated set
+        let cur = split[i];
+        // If we don't go to the end of trajectory, add 1 to include the end stop point
+        if (cur !== undefined) {
+          cur += 1;
+        }
         let traj = trajectory.slice(prev, cur).map((s) => {
           return { ...s };
         });
