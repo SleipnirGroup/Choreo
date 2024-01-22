@@ -21,7 +21,7 @@ export default class FieldImage23 extends Component<Props, State> {
           opacity={"100%"}
         >
           <rect
-            x="476.5"
+            x="477"
             y="6.5"
             width="3"
             height="474"
@@ -32,7 +32,7 @@ export default class FieldImage23 extends Component<Props, State> {
             id="rect1"
           />
           <circle
-            cx="479"
+            cx="478.5"
             cy="52"
             r="8.5"
             fill="none"
@@ -42,7 +42,7 @@ export default class FieldImage23 extends Component<Props, State> {
             id="circle1"
           />
           <circle
-            cx="479"
+            cx="478.5"
             cy="148"
             r="8.5"
             fill="none"
@@ -52,7 +52,7 @@ export default class FieldImage23 extends Component<Props, State> {
             id="circle2"
           />
           <circle
-            cx="479"
+            cx="478.5"
             cy="244"
             r="8.5"
             fill="none"
@@ -62,7 +62,7 @@ export default class FieldImage23 extends Component<Props, State> {
             id="circle3"
           />
           <circle
-            cx="479"
+            cx="478.5"
             cy="340"
             r="8.5"
             fill="none"
@@ -72,7 +72,7 @@ export default class FieldImage23 extends Component<Props, State> {
             id="circle4"
           />
           <circle
-            cx="479"
+            cx="478.5"
             cy="436"
             r="8.5"
             fill="none"
