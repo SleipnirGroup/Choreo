@@ -9,7 +9,6 @@ import IconButton from "@mui/material/IconButton";
 import ShapeLineIcon from "@mui/icons-material/ShapeLine";
 import { CircularProgress, Tooltip } from "@mui/material";
 import Box from "@mui/material/Box/Box";
-import RobotConfigPanel from "../config/RobotConfigPanel";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import VisibilityPanel from "../config/VisibilityPanel";
 import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel";
@@ -20,6 +19,9 @@ import { invoke } from "@tauri-apps/api";
 import { Close } from "@mui/icons-material";
 import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
 import CircularObstacleConfigPanel from "../config/CircularObstacleConfigPanel";
+import WaypointVisibilityPanel from "../config/WaypointVisibilityPanel";
+import { IHolonomicPathStore } from "../../document/HolonomicPathStore";
+import { active } from "d3";
 
 type Props = {};
 
@@ -67,6 +69,7 @@ export class Field extends Component<Props, State> {
             ></CircularObstacleConfigPanel>
           )}
         <VisibilityPanel></VisibilityPanel>
+        <WaypointVisibilityPanel></WaypointVisibilityPanel>
         <Tooltip
           disableInteractive
           placement="top-start"

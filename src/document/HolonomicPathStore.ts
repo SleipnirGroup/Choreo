@@ -33,6 +33,7 @@ export const HolonomicPathStore = types
     name: "",
     uuid: types.identifier,
     waypoints: types.array(HolonomicWaypointStore),
+    visibleWaypointsRange: types.array(types.number),
     constraints: types.array(types.union(...Object.values(ConstraintStores))),
     generated: types.frozen<Array<SavedTrajectorySample>>([]),
     generating: false,
@@ -56,6 +57,12 @@ export const HolonomicPathStore = types
       get nonGuessOrEmptyPoints() {
         return self.waypoints.filter(
           (waypoint) => !waypoint.isInitialGuess && !(waypoint.type == 2)
+        );
+      },
+      get visibleWaypoints() {
+        return self.waypoints.slice(
+          self.visibleWaypointsRange[0],
+          self.visibleWaypointsRange[1] + 1
         );
       },
       getTotalTimeSeconds(): number {
@@ -224,6 +231,10 @@ export const HolonomicPathStore = types
   })
   .actions((self) => {
     return {
+      setVisibleWaypoints(start: number | number[]) {
+        self.visibleWaypointsRange[0] = (start as number[])[0];
+        self.visibleWaypointsRange[1] = (start as number[])[1];
+      },
       setControlIntervalGuessing(value: boolean) {
         self.usesControlIntervalGuessing = value;
       },
@@ -244,6 +255,18 @@ export const HolonomicPathStore = types
           const root = getRoot<IStateStore>(self);
           root.select(self.waypoints[0]);
         }
+
+        if (self.visibleWaypoints.length == 0) {
+          this.setVisibleWaypoints([0, self.waypoints.length - 1]);
+        } else {
+          if (self.visibleWaypointsRange[1] == self.waypoints.length - 2) {
+            this.setVisibleWaypoints([
+              self.visibleWaypointsRange[0],
+              self.waypoints.length - 1,
+            ]);
+          }
+        }
+
         return self.waypoints[self.waypoints.length - 1];
       },
       deleteWaypoint(index: number) {

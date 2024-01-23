@@ -183,7 +183,7 @@ class FieldOverlayRoot extends Component<Props, State> {
               )
             )}
           {layers[ViewLayers.Waypoints] &&
-            this.context.model.document.pathlist.activePath.waypoints.map(
+            this.context.model.document.pathlist.activePath.visibleWaypoints.map(
               (point, index) => (
                 <OverlayWaypoint
                   waypoint={point}
