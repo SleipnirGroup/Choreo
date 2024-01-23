@@ -87,6 +87,58 @@ export class DocumentManager {
     );
 
     window.addEventListener("contextmenu", (e) => e.preventDefault());
+    window.addEventListener("copy", (e) => {
+      const selection = document.getSelection();
+      // Sometimes clicking away from a text input with selection retains that input element as
+      // document.getSelection()'s focusNode, but sets the actual selection range to ''
+      if (selection?.focusNode === null || selection?.toString() === "") {
+        if (this.model.uiState.isSidebarWaypointSelected) {
+          this.model.uiState.selectedSidebarItem.copyToClipboard(e);
+        }
+        e.preventDefault();
+      }
+    });
+
+    window.addEventListener("paste", (e) => {
+      const evt = e as ClipboardEvent;
+      const content = evt.clipboardData?.getData("text/plain");
+      if (content === undefined) {
+        return;
+      }
+      let activePath = this.model.document.pathlist.activePath;
+      let pathSnapshot = getSnapshot(activePath);
+      try {
+        let savedObject = JSON.parse(content);
+        if (!Object.hasOwn(savedObject, "dataType")) return;
+        if (savedObject.dataType === "choreo/waypoint") {
+          let currentSelectedWaypointIdx = -1;
+          if (this.model.uiState.isSidebarWaypointSelected) {
+            let idx = activePath.findUUIDIndex(
+              this.model.uiState.selectedSidebarItem.uuid
+            );
+            if (idx != -1) {
+              currentSelectedWaypointIdx = idx;
+            }
+          }
+          this.model.document.history.startGroup(() => {
+            let newWaypoint =
+              this.model.document.pathlist.activePath.addWaypoint();
+            newWaypoint.fromSavedWaypoint(savedObject);
+            if (currentSelectedWaypointIdx != -1) {
+              activePath.reorder(
+                activePath.waypoints.length - 1,
+                currentSelectedWaypointIdx + 1
+              );
+            }
+
+            this.model.document.history.stopGroup();
+          });
+        }
+      } catch (err) {
+        console.error("Error when pasting:", err);
+        applySnapshot(activePath, pathSnapshot);
+      }
+    });
 
     // Save files on closing
     tauriWindow

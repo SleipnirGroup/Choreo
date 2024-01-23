@@ -34,7 +34,7 @@ export const SelectableItem = types.union(
   {
     dispatcher: (snapshot) => {
       if (snapshot.mass) return RobotConfigStore;
-      if (snapshot.type) {
+      if (snapshot.scope) {
         return ConstraintStores[snapshot.type];
       }
       if (snapshot.radius) {
@@ -255,6 +255,25 @@ export const UIStateStore = types
       get hasSaveLocation() {
         return (
           self.saveFileName !== undefined && self.saveFileDir !== undefined
+        );
+      },
+      get isSidebarConstraintSelected() {
+        return (
+          self.selectedSidebarItem !== undefined &&
+          self.selectedSidebarItem.scope !== undefined
+        );
+      },
+      get isSidebarCircularObstacleSelected() {
+        return (
+          self.selectedSidebarItem !== undefined &&
+          self.selectedSidebarItem.radius !== undefined
+        );
+      },
+      get isSidebarWaypointSelected() {
+        return (
+          self.selectedSidebarItem !== undefined &&
+          !this.isSidebarConstraintSelected &&
+          !this.isSidebarCircularObstacleSelected
         );
       },
       getSelectedConstraint() {
