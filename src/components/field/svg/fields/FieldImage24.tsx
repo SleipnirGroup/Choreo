@@ -182,12 +182,20 @@ export default class FieldImage23 extends Component<Props, State> {
             y="8"
             width="67"
             height="2"
-            fill = "#0047A6"
+            fill="#0047A6"
             stroke="none"
             id="blue-amp-plate"
           ></rect>
-          <path d="M57 132L6 155V168L58 191V132Z" fill="#292929" id="blue-sub-center" />
-          <path d="M6 168V221L58 191L6 168Z" fill="#0047A6" id="blue-sub-bottom" />
+          <path
+            d="M57 132L6 155V168L58 191V132Z"
+            fill="#292929"
+            id="blue-sub-center"
+          />
+          <path
+            d="M6 168V221L58 191L6 168Z"
+            fill="#0047A6"
+            id="blue-sub-bottom"
+          />
           <path d="M6 102V155L58 132L6 102Z" fill="#0047A6" id="blue-sub-top" />
           <path
             d="M6 127H31C32.1046 127 33 127.895 33 129V194C33 195.105 32.1046 196 31 196H6V127Z"
@@ -299,8 +307,16 @@ export default class FieldImage23 extends Component<Props, State> {
             fill="#292929"
             id="red-sub-center"
           />
-          <path d="M951 168V221L899 191L951 168Z" fill="#A1000F" id="red-sub-bottom" />
-          <path d="M951 102V155L899 132L951 102Z" fill="#A1000F" id="red-sub-top" />
+          <path
+            d="M951 168V221L899 191L951 168Z"
+            fill="#A1000F"
+            id="red-sub-bottom"
+          />
+          <path
+            d="M951 102V155L899 132L951 102Z"
+            fill="#A1000F"
+            id="red-sub-top"
+          />
           <path
             d="M951 127H926C924.896 127 924 127.895 924 129V194C924 195.105 924.896 196 926 196H951V127Z"
             fill="#585858"
@@ -329,14 +345,6 @@ export default class FieldImage23 extends Component<Props, State> {
             id="border"
           />
         </g>
-        {/* <rect 
-          x={0}
-          y={-WIDTH_M}
-          width={LENGTH_M}
-          height={WIDTH_M}
-          fill="none"
-          stroke="#000000"
-          strokeWidth={0.05}/> */}
       </g>
     );
   }
