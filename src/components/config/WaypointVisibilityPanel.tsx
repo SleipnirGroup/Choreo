@@ -2,10 +2,7 @@ import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
 import styles from "./WaypointConfigPanel.module.css";
-import { IHolonomicPathStore } from "../../document/HolonomicPathStore";
-import { Hidden, Slider } from "@mui/material";
-import { active } from "d3";
-import { ViewItemData, ViewLayers } from "../../document/UIStateStore";
+import { Slider } from "@mui/material";
 
 type Props = {};
 
@@ -16,7 +13,6 @@ class WaypointVisibilityPanel extends Component<Props, State> {
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
   render() {
-    let layers = this.context.model.uiState.layers;
     let startIndex =
       this.context.model.document.pathlist.activePath
         .visibleWaypointsRange[0] ?? 0;
@@ -75,6 +71,3 @@ class WaypointVisibilityPanel extends Component<Props, State> {
   }
 }
 export default observer(WaypointVisibilityPanel);
-
-// <WaypointVisibilityPanel pathStore={this.context.model.document.pathlist.activePath}></WaypointVisibilityPanel>
-//  style={{ marginInline: "4ch" }}

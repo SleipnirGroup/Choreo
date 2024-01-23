@@ -256,15 +256,13 @@ export const HolonomicPathStore = types
           root.select(self.waypoints[0]);
         }
 
-        if (self.visibleWaypoints.length == 0) {
+        if (self.visibleWaypointsRange.length == 0) {
           this.setVisibleWaypoints([0, self.waypoints.length - 1]);
-        } else {
-          if (self.visibleWaypointsRange[1] == self.waypoints.length - 2) {
-            this.setVisibleWaypoints([
-              self.visibleWaypointsRange[0],
-              self.waypoints.length - 1,
-            ]);
-          }
+        } else if (self.visibleWaypointsRange[1] == self.waypoints.length - 2) {
+          this.setVisibleWaypoints([
+            self.visibleWaypointsRange[0],
+            self.waypoints.length - 1,
+          ]);
         }
 
         return self.waypoints[self.waypoints.length - 1];
