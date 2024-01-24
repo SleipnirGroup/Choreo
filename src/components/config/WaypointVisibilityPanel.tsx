@@ -35,39 +35,41 @@ class WaypointVisibilityPanel extends Component<Props, State> {
         }
       }),
     ];
-    return (
-      <div
-        className={styles.WaypointVisibilityPanel}
-        style={{
-          width: `min(80%, max(300px, calc(${pointcount} * 3ch + 8ch)))`,
-        }}
-      >
-        <div style={{ marginInline: "4ch" }}>
-          {" "}
-          <Slider
-            sx={{
-              '& .MuiSlider-markLabel[data-index="0"]': {
-                transform: "translateX(-3.5ch)",
-              },
-              [`& .MuiSlider-markLabel[data-index="${pointcount + 1}"]`]: {
-                transform: "translateX(0ch)",
-              },
-            }}
-            step={null}
-            min={0}
-            max={pointcount - 1}
-            value={[startIndex, endIndex]}
-            marks={sliderMarks}
-            track={"normal"}
-            onChange={(e, value: number | number[], activeThumb: number) => {
-              this.context.model.document.pathlist.activePath.setVisibleWaypoints(
-                value as number[]
-              );
-            }}
-          ></Slider>
+    if (this.context.model.document.pathlist.activePath.waypoints.length >= 2) {
+      return (
+        <div
+          className={styles.WaypointVisibilityPanel}
+          style={{
+            width: `min(80%, max(300px, calc(${pointcount} * 3ch + 8ch)))`,
+          }}
+        >
+          <div style={{ marginInline: "4ch" }}>
+            {" "}
+            <Slider
+              sx={{
+                '& .MuiSlider-markLabel[data-index="0"]': {
+                  transform: "translateX(-3.5ch)",
+                },
+                [`& .MuiSlider-markLabel[data-index="${pointcount + 1}"]`]: {
+                  transform: "translateX(0ch)",
+                },
+              }}
+              step={null}
+              min={0}
+              max={pointcount - 1}
+              value={[startIndex, endIndex]}
+              marks={sliderMarks}
+              track={"normal"}
+              onChange={(e, value: number | number[], activeThumb: number) => {
+                this.context.model.document.pathlist.activePath.setVisibleWaypoints(
+                  value as number[]
+                );
+              }}
+            ></Slider>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
   }
 }
 export default observer(WaypointVisibilityPanel);
