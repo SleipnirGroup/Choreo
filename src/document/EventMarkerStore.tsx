@@ -5,12 +5,33 @@ import {
   getRoot,
   isAlive,
   getParent,
+  destroy,
+  detach,
 } from "mobx-state-tree";
+import { moveItem } from "mobx-utils";
 import { safeGetIdentifier } from "../util/mobxutils";
 import { WaypointID, WaypointScope } from "./ConstraintStore";
 import { IStateStore } from "./DocumentModel";
 import { SavedCommand } from "./DocumentSpecTypes";
 import { IHolonomicPathStore } from "./HolonomicPathStore";
+import { v4 as uuidv4 } from "uuid";
+
+export type CommandType =
+  | "sequential"
+  | "parallel"
+  | "deadline"
+  | "race"
+  | "wait"
+  | "named";
+export const CommandTypeNames = {
+  sequential: { id: "sequential", name: "Sequence" },
+  parallel: { id: "parallel", name: "Parallel" },
+  deadline: { id: "deadline", name: "Deadline" },
+  race: { id: "race", name: "Race" },
+  wait: { id: "wait", name: "Wait" },
+  named: { id: "named", name: "Named" },
+};
+export const CommandUIData = Object.values(CommandTypeNames);
 
 export const CommandStore = types
   .model("CommandStore", {
@@ -73,10 +94,44 @@ export const CommandStore = types
         self.time = saved.data.time;
       } else {
         saved.data.commands.forEach((s) => {
-          let command = CommandStore.create();
+          let command = CommandStore.create({
+            type: "wait",
+            time: 0,
+            uuid: uuidv4(),
+          });
           command.fromSavedCommand(s);
           self.commands.push(command);
         });
+      }
+    },
+    reorder(startIndex: number, endIndex: number) {
+      moveItem(self.commands, startIndex, endIndex);
+    },
+    setType(type: CommandType) {
+      self.type = type;
+    },
+    setName(name: string) {
+      self.name = name;
+    },
+    addSubCommand() {
+      let newCommand = CommandStore.create({
+        type: "named",
+        uuid: uuidv4(),
+        time: 0,
+      });
+      self.commands.push(newCommand);
+      return newCommand;
+    },
+    pushCommand(subcommand: ICommandStore) {
+      self.commands.push(subcommand);
+    },
+    detachCommand(index:number) {
+      return detach(self.commands[index]);
+    },
+    deleteSubCommand(uuid: string) {
+      let toDelete = self.commands.find((c) => c.uuid === uuid);
+      if (toDelete !== undefined) {
+        destroy(toDelete);
       }
     },
   }));

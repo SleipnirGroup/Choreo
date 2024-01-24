@@ -6,26 +6,61 @@ import styles from "../WaypointConfigPanel.module.css";
 import InputList from "../../input/InputList";
 import Input from "../../input/Input";
 import ScopeSlider from "../ScopeSlider";
-import { IEventMarkerStore } from "../../../document/EventMarkerStore";
+import {
+  CommandStore,
+  IEventMarkerStore,
+} from "../../../document/EventMarkerStore";
 import { toJS } from "mobx";
 import CommandDraggable from "./CommandDraggable";
+import { resolveIdentifier } from "mobx-state-tree";
 
 type Props = { marker: IEventMarkerStore };
 
 type State = {};
 
-class ConstraintsConfigPanel extends Component<Props, State> {
+class EventMarkerConfigPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
 
-    onDragEnd(result: any) {
-      // dropped outside the list
-      if (!result.destination) {
+  onDragEnd(result: any) {
+    // dropped outside the list
+    if (!result.destination) {
+      return;
+    }
+    let sourceCommandList = result.source?.droppableId;
+    let targetCommandList = result.destination?.droppableId;
+    if (targetCommandList === null) return;
+    let targetCommand = resolveIdentifier(
+      CommandStore,
+      this.props.marker,
+      targetCommandList
+    );
+    if (targetCommand === undefined) {
+      return;
+    }
+    console.log(targetCommand);
+    console.log(toJS(this.props.marker));
+    if (targetCommand === undefined) {
+      return;
+    }
+    if (sourceCommandList === targetCommandList) {
+      
+      targetCommand.reorder(result.source.index, result.destination.index);
+    } else {
+      let sourceCommand = resolveIdentifier(
+        CommandStore,
+        this.props.marker,
+        sourceCommandList
+      );
+      if (sourceCommand === undefined) {
         return;
       }
-      //this.reorder(result.source.index, result.destination.index);
+      let subcommand = sourceCommand.commands[result.source.index];
+      targetCommand.pushCommand(sourceCommand.detachCommand(result.source.index));
+      targetCommand.reorder(targetCommand.commands.length - 1, result.destination.index);
     }
+  }
   render() {
     let marker = this.props.marker;
 
@@ -43,7 +78,7 @@ class ConstraintsConfigPanel extends Component<Props, State> {
       <div
         className={styles.WaypointPanel}
         style={{
-          width: `min(80%, max(300px, calc(${pointcount} * 3ch + 8ch)))`,
+          width: `min(80%, max(400px, calc(${pointcount} * 3ch + 8ch)))`,
         }}
       >
         <ScopeSlider
@@ -83,7 +118,7 @@ class ConstraintsConfigPanel extends Component<Props, State> {
             }
           />
         </InputList>
-        <DragDropContext onDragEnd={(result)=>this.onDragEnd(result)}>
+        <DragDropContext onDragEnd={(result) => this.onDragEnd(result)}>
           <CommandDraggable
             command={marker.command}
             index={0}
@@ -91,9 +126,8 @@ class ConstraintsConfigPanel extends Component<Props, State> {
             isDraggable={false}
           ></CommandDraggable>
         </DragDropContext>
-        {JSON.stringify(toJS(marker))}
       </div>
     );
   }
 }
-export default observer(ConstraintsConfigPanel);
+export default observer(EventMarkerConfigPanel);

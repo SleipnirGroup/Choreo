@@ -617,7 +617,21 @@ export const HolonomicPathStore = types
                   time: 0,
                   uuid: uuidv4(),
                 }),
-
+                CommandStore.create({
+                  type: "sequential",
+                  name: "",
+                  commands: [
+                    CommandStore.create({
+                      type: "race",
+                      name: "",
+                      commands: [],
+                      time: 0,
+                      uuid: uuidv4(),
+                    }),
+                  ],
+                  time: 0,
+                  uuid: uuidv4(),
+                }),
               ],
               time: 0,
               uuid: uuidv4(),
