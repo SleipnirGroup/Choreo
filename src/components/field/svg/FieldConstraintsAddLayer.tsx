@@ -24,6 +24,10 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
         {/* Draw circles on each waypoint */}
         {selectedConstraintDefinition!.wptScope &&
           waypoints
+            .slice(
+              activePath.visibleWaypointsRange[0],
+              activePath.visibleWaypointsRange[1] + 1
+            )
             .filter((waypoint) => !waypoint.isInitialGuess)
             .map((point, index) => {
               return (
@@ -72,6 +76,12 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                     x2={point2.x}
                     y1={point1.y}
                     y2={point2.y}
+                    display={
+                      index >= activePath.visibleWaypointsRange[0] &&
+                      index < activePath.visibleWaypointsRange[1]
+                        ? "block"
+                        : "none"
+                    }
                     strokeDasharray={0.2}
                     stroke="white"
                     strokeWidth={0.05}
@@ -85,6 +95,12 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                     fillOpacity={0.2}
                     stroke="white"
                     strokeWidth={0.05}
+                    display={
+                      index >= activePath.visibleWaypointsRange[0] &&
+                      index < activePath.visibleWaypointsRange[1]
+                        ? "block"
+                        : "none"
+                    }
                     onClick={() => {
                       let constraintToAdd =
                         this.context.model.uiState.getSelectedConstraint();

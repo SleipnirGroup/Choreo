@@ -31,7 +31,7 @@ class WaypointVisibilityPanel extends Component<Props, State> {
           if (idx == pointcount - 2) {
             return { value: idx + 1, label: "End" };
           }
-          return { value: idx + 1, label: idx + 1 };
+          return { value: idx + 1, label: idx + 2 };
         }
       }),
     ];
