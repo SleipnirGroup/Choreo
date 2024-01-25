@@ -1,7 +1,9 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+//#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::path::PathBuf;
 use std::{fs, path::Path};
+use serde_json::Value;
 use tauri::regex::{escape, Regex};
 use tauri::{
     api::{dialog::blocking::FileDialogBuilder, file},
@@ -57,22 +59,25 @@ async fn open_file_dialog(app_handle: tauri::AppHandle) {
         .pick_file();
     match file_path {
         Some(path) => {
-            let dir = path.parent();
-            let name = path.file_name();
-            let adjacent_gradle = contains_build_gradle(dir).await;
-            if dir.is_some() && name.is_some() && adjacent_gradle.is_ok() {
-                let _ = app_handle.emit_all(
-                    "open-file",
-                    OpenFileEventPayload {
-                        dir: dir.unwrap().as_os_str().to_str(),
-                        name: name.unwrap().to_str(),
-                        contents: file::read_string(path.clone()).ok().as_deref(),
-                        adjacent_gradle: adjacent_gradle.unwrap_or(false),
-                    },
-                );
-            }
+            open_file(app_handle, path).await;
         }
         None => {}
+    }
+}
+async fn open_file(app_handle: tauri::AppHandle, path: PathBuf) {
+    let dir = path.parent();
+    let name = path.file_name();
+    let adjacent_gradle = contains_build_gradle(dir).await;
+    if dir.is_some() && name.is_some() && adjacent_gradle.is_ok() {
+        let _ = app_handle.emit_all(
+            "open-file",
+            OpenFileEventPayload {
+                dir: dir.unwrap().as_os_str().to_str(),
+                name: name.unwrap().to_str(),
+                contents: file::read_string(path.clone()).ok().as_deref(),
+                adjacent_gradle: adjacent_gradle.unwrap_or(false),
+            },
+        );
     }
 }
 
@@ -449,6 +454,7 @@ async fn generate_trajectory(
 }
 
 fn main() {
+
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             generate_trajectory,
@@ -461,6 +467,53 @@ fn main() {
             delete_traj_segments,
             open_file_app
         ])
+        .setup(|app: &mut tauri::App| {
+            
+            let matches = app.get_cli_matches();
+            match matches {
+                // `matches` here is a Struct with { args, subcommand }.
+                // `args` is `HashMap<String, ArgData>` where `ArgData` is a struct with { value, occurrences }.
+                // `subcommand` is `Option<Box<SubcommandMatches>>` where `SubcommandMatches` is a struct with { name, matches }.
+                Ok(matches) => {
+                  // Set up listener for opening a file
+                  match matches.args.get("chor") {
+                    Some(chorPath) => {
+                        match &chorPath.value {
+                            Value::String(chor) => {
+                                println!("{:?}", chor);
+                                let pathbuf = Path::new(&chor).to_path_buf();
+                                let handle = app.app_handle();
+                                app.once_global("frontend-ready", move |event| {
+                                    tauri::async_runtime::spawn(open_file(handle, pathbuf));
+                                });
+                            },
+                            _ => {}
+                        }                  
+                    },
+                    None => {}
+                  }
+                  match matches.args.get("generate-all") {
+                    Some(arg) => {
+                        match &arg.value {
+                            Value::Bool(gen_all) => {
+                                if *gen_all {
+                                    let handle = app.app_handle();
+                                    app.once_global("file-ready", move|event| {
+                                        handle.emit_all("generate-all", ());
+                                    });
+                                }
+                            },
+                            _ => {}
+                        }                  
+                    },
+                    None => {}
+                  }
+                  
+                }
+                Err(_) => {}
+              }
+        Ok(())
+    })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

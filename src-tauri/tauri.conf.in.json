@@ -70,6 +70,24 @@
         "width": 1200,
         "height": 800
       }
-    ]
+    ],
+    "cli": {
+      "description": "",
+      "longDescription": "",
+      "beforeHelp": "", 
+      "afterHelp": "",
+      "args": [
+        {
+        "name": "chor",
+        "index": 1,
+        "takesValue": true
+        },
+        {
+          "name": "generate-all",
+          "short": "a",
+          "multipleOccurrences": false
+        }
+      ]
+    }
   }
 }

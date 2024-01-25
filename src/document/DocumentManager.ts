@@ -47,10 +47,11 @@ export class DocumentManager {
     this.setupEventListeners();
     this.newFile();
     this.model.uiState.updateWindowTitle();
+    tauriWindow.appWindow.emit("frontend-ready");
   }
 
-  async handleOpenFileEvent(event: Event<unknown>) {
-    let payload = event.payload as OpenFileEventPayload;
+  async handleOpenFileEvent(event: Event<OpenFileEventPayload>) {
+    let payload = event.payload;
     if (payload.dir === undefined || payload.name === undefined) {
       throw "Non-UTF-8 characters in file path";
     } else if (payload.contents === undefined) {
@@ -77,14 +78,27 @@ export class DocumentManager {
         })
         .then(() => this.exportAllTrajectories());
     }
+    tauriWindow.appWindow.emit("file-ready");
+  }
+
+  async generateAll() {
+    let results = await Promise.all(
+      this.model.document.pathlist.pathUUIDs.map((uuid)=>this.model!.generatePath(uuid))
+    ).then(()=>this.exportAllTrajectories());
   }
 
   async setupEventListeners() {
-    const openFileUnlisten = await listen("open-file", async (event) =>
+    const openFileUnlisten = await listen<OpenFileEventPayload>("open-file", async (event) => {
+            console.log(event);
       this.handleOpenFileEvent(event).catch((err) =>
         toast.error("Opening file error: " + err)
       )
+    }
     );
+
+    const generateAllUnlisten = await listen("generate-all", async (event) => {
+      await this.generateAll();
+    })
 
     window.addEventListener("contextmenu", (e) => e.preventDefault());
 
@@ -131,6 +145,7 @@ export class DocumentManager {
       openFileUnlisten();
       autoSaveUnlisten();
       updateTitleUnlisten();
+      generateAllUnlisten();
     });
     hotkeys.unbind();
     hotkeys("f5,ctrl+shift+r,ctrl+r", function (event, handler) {
