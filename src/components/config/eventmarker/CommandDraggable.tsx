@@ -125,7 +125,7 @@ class CommandDraggable extends Component<Props, State> {
           </IconButton>
         </span>
         {command.isGroup() && (
-          <Droppable droppableId={command.uuid}>
+          <Droppable type={command.uuid} droppableId={command.uuid}>
             {(provided, snapshot) => (
               <div
                 ref={provided.innerRef}
