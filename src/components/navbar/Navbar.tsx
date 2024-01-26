@@ -8,7 +8,6 @@ import {
   NavbarItemData,
   NavbarItemSectionLengths,
   NavbarItemSplitPoints,
-  ObstaclesEnabled,
 } from "../../document/UIStateStore";
 
 type Props = {};
@@ -29,7 +28,7 @@ class Navbar extends Component<Props, State> {
         {NavbarItemSectionLengths.filter(
           (endSplit, sectionIdx) =>
             sectionIdx != NavbarItemSectionLengths.length - 1 ||
-            ObstaclesEnabled
+            this.context.model.document.usesObstacles
         ).map((endSplit, sectionIdx) => (
           <ToggleButtonGroup
             className={styles.ToggleGroup}

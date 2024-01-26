@@ -40,6 +40,7 @@ export class DocumentManager {
         robotConfig: { identifier: uuidv4() },
         pathlist: {},
         splitTrajectoriesAtStopPoints: false,
+        usesObstacles: false,
       },
     });
     this.model.document.pathlist.addPath("NewPath");
@@ -333,6 +334,7 @@ export class DocumentManager {
         robotConfig: { identifier: uuidv4() },
         pathlist: {},
         splitTrajectoriesAtStopPoints: false,
+        usesObstacles: false,
       },
     });
     this.model.document.pathlist.addPath("NewPath");

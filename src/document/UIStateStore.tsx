@@ -49,8 +49,6 @@ export const SelectableItem = types.union(
   ...Object.values(ConstraintStores)
 );
 
-export const ObstaclesEnabled = false;
-
 /* Navbar stuff */
 export let WaypointData: {
   [key: string]: {
@@ -222,7 +220,7 @@ export const ViewItemData = (() => {
 })();
 export const ViewLayerDefaults = ViewItemData.map((layer) => layer.default);
 export type ViewLayerType = typeof ViewLayers;
-export const NUM_SETTINGS_TABS = 2;
+export const NUM_SETTINGS_TABS = 3;
 export const UIStateStore = types
   .model("UIStateStore", {
     fieldScalingFactor: 0.02,
