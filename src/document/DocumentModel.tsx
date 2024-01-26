@@ -22,7 +22,7 @@ export const DocumentStore = types
     pathlist: PathListStore,
     robotConfig: RobotConfigStore,
     splitTrajectoriesAtStopPoints: types.boolean,
-    usesObstacles: types.boolean
+    usesObstacles: types.boolean,
   })
   .volatile((self) => ({
     history: UndoManager.create({}, { targetStore: self }),

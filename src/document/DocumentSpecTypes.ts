@@ -200,7 +200,7 @@ export let VERSIONS = {
         version: v0_2_2_Version,
         robotConfiguration: document.robotConfiguration,
         splitTrajectoriesAtStopPoints: document.splitTrajectoriesAtStopPoints,
-        usesObstacles: false
+        usesObstacles: false,
       };
     },
     schema: v0_2_1_Schema,
@@ -208,7 +208,7 @@ export let VERSIONS = {
   "v0.2.2": {
     up: (document: any): v0_2_2 => document,
     schema: v0_2_2_Schema,
-  }
+  },
   /**
    * For developers adding new document versions-Keep this comment at the end of the list.
    *

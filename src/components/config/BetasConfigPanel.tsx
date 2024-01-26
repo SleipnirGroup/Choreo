@@ -3,7 +3,13 @@ import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
 import MotorCalculatorPanel from "./robotconfig/MotorCalculatorPanel";
 import inputStyles from "../input/InputList.module.css";
-import { Divider, FormHelperText, IconButton, Switch, Tooltip } from "@mui/material";
+import {
+  Divider,
+  FormHelperText,
+  IconButton,
+  Switch,
+  Tooltip,
+} from "@mui/material";
 import { ArrowDropDown, ArrowDropUp, Warning } from "@mui/icons-material";
 import DimensionsConfigPanel from "./robotconfig/DimensionsConfigPanel";
 import TheoreticalPanel from "./robotconfig/TheoreticalPanel";
@@ -33,7 +39,9 @@ class BetasConfigPanel extends Component<Props, State> {
           Enable obstacles in the UI
         </span>
         <Tooltip
-          title={"Warning: obstacles are still under development and may be unstable."}
+          title={
+            "Warning: obstacles are still under development and may be unstable."
+          }
         >
           <Switch
             size="small"

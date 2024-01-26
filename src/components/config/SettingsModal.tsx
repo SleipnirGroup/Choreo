@@ -76,9 +76,7 @@ class SettingsModal extends Component<Props, State> {
             {uiState.settingsTab == 1 && (
               <ExportConfigPanel></ExportConfigPanel>
             )}
-            {uiState.settingsTab == 2 && (
-              <BetasConfigPanel></BetasConfigPanel>
-            )}
+            {uiState.settingsTab == 2 && <BetasConfigPanel></BetasConfigPanel>}
           </div>
         </div>
       </Modal>
