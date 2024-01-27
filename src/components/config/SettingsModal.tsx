@@ -32,7 +32,7 @@ class SettingsModal extends Component<Props, State> {
             background: "var(--background-light-gray)",
             color: "white",
             width: "min-content",
-            padding: "8px",
+            // padding: "8px",
 
             borderRadius: "10px",
             maxHeight: "90vh",
@@ -61,6 +61,9 @@ class SettingsModal extends Component<Props, State> {
                   color: "white",
                 },
                 justifySelf: "center",
+                marginTop: "8px",
+                marginRight: "8px",
+                marginLeft: "8px",
               }}
             >
               <Tab label="Robot Config" />

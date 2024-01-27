@@ -27,31 +27,56 @@ class BetasConfigPanel extends Component<Props, State> {
     return (
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2, minmax(300px, 1fr))",
-          gridGap: `${2 * this.rowGap}px`,
-          rowGap: `${0 * this.rowGap}px`,
+          minWidth: `600px`,
           fontSize: "2rem",
-          margin: `${1 * this.rowGap}px`,
+          marginTop: `${1 * this.rowGap}px`,
+          marginBottom: `${1 * this.rowGap}px`,
+          marginRight: 0,
         }}
       >
-        <span className={inputStyles.Title} style={{ gridColumn: "1" }}>
-          Enable obstacles in the UI
-        </span>
-        <Tooltip
-          title={
-            "Warning: obstacles are still under development and may be unstable."
-          }
+        <div
+          style={{
+            marginLeft: `${1 * this.rowGap}px`,
+            marginRight: `${1 * this.rowGap}px`,
+          }}
         >
-          <Switch
-            size="small"
-            sx={{ gridColumn: 2 }}
-            checked={this.context.model.document.usesObstacles}
-            onChange={(e, checked) => {
-              this.context.model.setUsesObstacles(checked);
-            }}
-          ></Switch>
-        </Tooltip>
+          <span
+            className={inputStyles.Title}
+            style={{ display: "flex", gap: "4px" }}
+          >
+            <Warning></Warning>
+            Warning: these features are still under development and may be
+            unstable
+          </span>
+        </div>
+        <Divider style={{ margin: `${1 * this.rowGap}px` }}></Divider>
+        <div
+          style={{
+            marginLeft: `${1 * this.rowGap}px`,
+            marginRight: `${1 * this.rowGap}px`,
+          }}
+        >
+          <span
+            className={inputStyles.Title}
+            style={{ verticalAlign: "middle" }}
+          >
+            Enable obstacles in the UI
+          </span>
+          <Tooltip
+            title={
+              "Warning: obstacles are still under development and may be unstable."
+            }
+          >
+            <Switch
+              size="small"
+              sx={{ gridColumn: 2 }}
+              checked={this.context.model.document.usesObstacles}
+              onChange={(e, checked) => {
+                this.context.model.setUsesObstacles(checked);
+              }}
+            ></Switch>
+          </Tooltip>
+        </div>
       </div>
     );
   }
