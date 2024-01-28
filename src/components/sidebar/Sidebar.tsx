@@ -140,47 +140,45 @@ class Sidebar extends Component<Props, State> {
               </span>
             </div>
           )}
-          {this.context.model.document.usesObstacles ||
-            (this.context.model.document.pathlist.activePath.obstacles.includes(
+          {(this.context.model.document.usesObstacles ||
+            this.context.model.document.pathlist.activePath.obstacles.includes(
               this.context.model.uiState.selectedSidebarItem
-            ) && (
-              <>
-                <Divider
-                  className={styles.SidebarDivider}
-                  textAlign="left"
-                  flexItem
-                >
-                  <span>OBSTACLES</span>
-                </Divider>
-                <div className={styles.WaypointList}>
-                  {this.context.model.document.pathlist.activePath.obstacles.map(
-                    (obstacle: ICircularObstacleStore, index: number) => {
-                      return (
-                        <SidebarObstacle
-                          obstacle={obstacle}
-                          index={index}
-                          context={this.context}
-                        ></SidebarObstacle>
-                      );
-                    }
-                  )}
-                </div>
-                {this.context.model.document.pathlist.activePath.obstacles
-                  .length == 0 && (
-                  <div
-                    className={
-                      styles.SidebarItem + " " + styles.Noninteractible
-                    }
-                  >
-                    <span></span>
-                    <span style={{ color: "gray", fontStyle: "italic" }}>
-                      No Obstacles
-                    </span>
-                  </div>
+            )) && (
+            <>
+              <Divider
+                className={styles.SidebarDivider}
+                textAlign="left"
+                flexItem
+              >
+                <span>OBSTACLES</span>
+              </Divider>
+              <div className={styles.WaypointList}>
+                {this.context.model.document.pathlist.activePath.obstacles.map(
+                  (obstacle: ICircularObstacleStore, index: number) => {
+                    return (
+                      <SidebarObstacle
+                        obstacle={obstacle}
+                        index={index}
+                        context={this.context}
+                      ></SidebarObstacle>
+                    );
+                  }
                 )}
-                <Divider></Divider>
-              </>
-            ))}
+              </div>
+              {this.context.model.document.pathlist.activePath.obstacles
+                .length == 0 && (
+                <div
+                  className={styles.SidebarItem + " " + styles.Noninteractible}
+                >
+                  <span></span>
+                  <span style={{ color: "gray", fontStyle: "italic" }}>
+                    No Obstacles
+                  </span>
+                </div>
+              )}
+              <Divider></Divider>
+            </>
+          )}
         </div>
       </div>
     );
