@@ -5,6 +5,7 @@ import { IconButton, Modal, Tab, Tabs } from "@mui/material";
 import RobotConfigPanel from "./robotconfig/RobotConfigPanel";
 import { Close } from "@mui/icons-material";
 import ExportConfigPanel from "./ExportConfigPanel";
+import BetasConfigPanel from "./BetasConfigPanel";
 
 type Props = {};
 
@@ -31,7 +32,7 @@ class SettingsModal extends Component<Props, State> {
             background: "var(--background-light-gray)",
             color: "white",
             width: "min-content",
-            padding: "8px",
+            // padding: "8px",
 
             borderRadius: "10px",
             maxHeight: "90vh",
@@ -60,10 +61,14 @@ class SettingsModal extends Component<Props, State> {
                   color: "white",
                 },
                 justifySelf: "center",
+                marginTop: "8px",
+                marginRight: "8px",
+                marginLeft: "8px",
               }}
             >
               <Tab label="Robot Config" />
               <Tab label="Export Config" />
+              <Tab label="Betas" />
             </Tabs>
             <IconButton onClick={() => uiState.setRobotConfigOpen(false)}>
               <Close></Close>
@@ -74,6 +79,7 @@ class SettingsModal extends Component<Props, State> {
             {uiState.settingsTab == 1 && (
               <ExportConfigPanel></ExportConfigPanel>
             )}
+            {uiState.settingsTab == 2 && <BetasConfigPanel></BetasConfigPanel>}
           </div>
         </div>
       </Modal>

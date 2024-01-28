@@ -10,8 +10,11 @@ import { Redo, Undo } from "@mui/icons-material";
 import Add from "@mui/icons-material/Add";
 import SidebarConstraint from "./SidebarConstraint";
 import SidebarObstacle from "./SidebarObstacle";
-import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
-import { ObstaclesEnabled, UIStateStore } from "../../document/UIStateStore";
+import {
+  CircularObstacleStore,
+  ICircularObstacleStore,
+} from "../../document/CircularObstacleStore";
+import { UIStateStore } from "../../document/UIStateStore";
 
 type Props = {};
 type State = {};
@@ -137,7 +140,10 @@ class Sidebar extends Component<Props, State> {
               </span>
             </div>
           )}
-          {ObstaclesEnabled && (
+          {(this.context.model.document.usesObstacles ||
+            this.context.model.document.pathlist.activePath.obstacles.includes(
+              this.context.model.uiState.selectedSidebarItem
+            )) && (
             <>
               <Divider
                 className={styles.SidebarDivider}
