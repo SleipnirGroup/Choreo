@@ -1,3 +1,15 @@
+---
+hide:
+  - toc
+  - navigation
+---
+
+!!! tip inline end
+
+    See the navigation links in the header or side-bar.
+
+    Click :octicons-three-bars-16: (top left) on mobile.
+
 # Welcome
 
 Welcome to the [Choreo](https://github.com/SleipnirGroup/Choreo) documentation.
