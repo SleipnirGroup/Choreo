@@ -21,9 +21,7 @@ class ExportConfigPanel extends Component<Props, State> {
     return (
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2, minmax(300px, 1fr))",
-          gridGap: `${2 * this.rowGap}px`,
+          minWidth: `600px`,
           rowGap: `${0 * this.rowGap}px`,
           fontSize: "2rem",
           margin: `${1 * this.rowGap}px`,

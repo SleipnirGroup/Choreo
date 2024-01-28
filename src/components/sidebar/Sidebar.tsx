@@ -12,6 +12,7 @@ import SidebarConstraint from "./SidebarConstraint";
 import SidebarObstacle from "./SidebarObstacle";
 import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
 import { ObstaclesEnabled } from "../../document/UIStateStore";
+import { UIStateStore } from "../../document/UIStateStore";
 
 type Props = {};
 type State = {};
@@ -160,7 +161,10 @@ class Sidebar extends Component<Props, State> {
               </span>
             </div>
           )}
-          {ObstaclesEnabled && (
+          {(this.context.model.document.usesObstacles ||
+            this.context.model.document.pathlist.activePath.obstacles.includes(
+              this.context.model.uiState.selectedSidebarItem
+            )) && (
             <>
               <Divider
                 className={styles.SidebarDivider}

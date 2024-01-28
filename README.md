@@ -23,3 +23,5 @@ An example project using Choreo is available [here](https://github.com/SleipnirG
 <a href="https://github.com/SleipnirGroup/Choreo/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=SleipnirGroup/Choreo" />
 </a>
+
+The 2024 field background was traced from the field renders provided by [MikLast](https://www.chiefdelphi.com/t/2024-crescendo-top-down-field-renders/447764).

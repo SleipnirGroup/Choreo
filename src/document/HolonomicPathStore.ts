@@ -113,6 +113,7 @@ export const HolonomicPathStore = types
             };
             delete toReturn.icon;
             delete toReturn.definition;
+            delete toReturn.uuid;
             return toReturn;
           }),
           usesControlIntervalGuessing: self.usesControlIntervalGuessing,
