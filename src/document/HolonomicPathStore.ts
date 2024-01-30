@@ -147,6 +147,7 @@ export const HolonomicPathStore = types
             };
             delete toReturn.icon;
             delete toReturn.definition;
+            delete toReturn.uuid;
             return toReturn;
           }),
           usesControlIntervalGuessing: self.usesControlIntervalGuessing,
@@ -221,12 +222,11 @@ export const HolonomicPathStore = types
         });
         return savedPath;
       },
-      stopPointIndices() {
+      stopPoints() {
         const stopPoints = self.constraints.filter(
           (c) => c.type === "StopPoint"
         );
-        return stopPoints.length > 1
-          ? stopPoints
+        const wptIndices = stopPoints
               .flatMap((c: IConstraintStore) => {
                 const scope = c.scope.at(0);
                 if (scope === undefined) {
@@ -239,13 +239,25 @@ export const HolonomicPathStore = types
                   return self.findUUIDIndex(scope.uuid);
                 }
               })
+              .filter((item, pos, ary) => !pos || item != ary[pos - 1])
+              .sort((a, b) => a - b);
+        console.log(wptIndices);
+        return wptIndices;
+              // remove duplicates
+              
+      },
+      stopPointIndices() {
+        const stopPoints =this.stopPoints();
+        return stopPoints.length > 1 ? stopPoints
               .flatMap((w) =>
                 self.waypoints
                   .slice(0, w)
                   .flatMap((w) => w.controlIntervalCount)
                   .reduce((sum, num) => sum + num, 0)
               )
-              .sort()
+              .sort((a, b) => a - b)
+              // remove duplicates
+              .filter((item, pos, ary) => !pos || item != ary[pos - 1])
           : [0, undefined];
       },
     };

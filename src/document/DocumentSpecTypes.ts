@@ -37,10 +37,15 @@ import {
 } from "./previousSpecs/v0_2_1";
 import v0_2_1_Schema from "./previousSpecs/v0.2.1.json";
 import {
+  SavedDocument as v0_2_2,
+  SAVE_FILE_VERSION as v0_2_2_Version,
+} from "./previousSpecs/v0_2_2";
+import {
   SavedDocument as v0_3,
   SAVE_FILE_VERSION as v0_3_Version,
 } from "./previousSpecs/v0_3";
 import v0_3_Schema from "./previousSpecs/v0.3.json";
+
 // Paste new version import blocks above this line.
 // Import SAVE_FILE_VERSION, SavedDocument and only the other types needed for the upgrader functions.
 // Also import the new schema.
@@ -50,6 +55,7 @@ import Ajv from "ajv";
 import { ROBOT_CONFIG_DEFAULTS } from "./RobotConfigStore";
 // Update the import path in the below to point to a particular version as current
 import { SAVE_FILE_VERSION } from "./previousSpecs/v0_3";
+
 export type {
   SavedDocument,
   SavedTrajectorySample,
@@ -191,7 +197,7 @@ export let VERSIONS = {
       let updated: v0_2_1 = {
         paths: document.paths,
         version: v0_2_1_Version,
-        robotConfiguration: document.robotConfig,
+        robotConfiguration: document.robotConfiguration,
         splitTrajectoriesAtStopPoints: false,
       };
       return updated;
@@ -199,6 +205,18 @@ export let VERSIONS = {
     schema: v0_2_Schema,
   },
   "v0.2.1": {
+    up: (document: any): v0_2_2 => {
+      return {
+        paths: document.paths,
+        version: v0_2_2_Version,
+        robotConfiguration: document.robotConfiguration,
+        splitTrajectoriesAtStopPoints: document.splitTrajectoriesAtStopPoints,
+        usesObstacles: false,
+      };
+    },
+    schema: v0_2_1_Schema,
+  },
+  "v0.2.2": {
     up: (document: any): v0_3 => {
       let updated: v0_3 = document;
       updated.version = v0_3_Version;
@@ -248,10 +266,14 @@ export let updateToCurrent = (document: { version: string }): SavedDocument => {
   return document as SavedDocument;
 };
 
-export let validate = (document: { version: string }): boolean => {
+export let validate = (document: { version: string }): string => {
   if (document.version in VERSIONS) {
-    return ajv.validate(VERSIONS[document.version].schema, document);
+    if (!ajv.validate(VERSIONS[document.version].schema, document)) {
+      return ajv.errorsText(ajv.errors);
+    } else {
+      return "";
+    }
   } else {
-    return false;
+    return `Invalid document version: ${document.version}`;
   }
 };

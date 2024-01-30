@@ -6,12 +6,11 @@ import { Divider, IconButton, Tooltip } from "@mui/material";
 import WaypointList from "./WaypointList";
 import PathSelector from "./PathSelector";
 import MenuIcon from "@mui/icons-material/Menu";
-import { Redo, Undo } from "@mui/icons-material";
+import { ContentCopy, Redo, Undo } from "@mui/icons-material";
 import Add from "@mui/icons-material/Add";
 import SidebarConstraint from "./SidebarConstraint";
 import SidebarObstacle from "./SidebarObstacle";
 import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
-import { ObstaclesEnabled } from "../../document/UIStateStore";
 import SidebarEventMarker from "./SidebarEventMarker";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
 
@@ -82,8 +81,31 @@ class Sidebar extends Component<Props, State> {
             </Tooltip>
           </span>
         </div>
-        <div className={styles.SidebarHeading}>
+        <div
+          className={styles.SidebarHeading}
+          style={{ gridTemplateColumns: "auto 33.6px 33.6px" }}
+        >
           PATHS
+          <Tooltip disableInteractive title="Duplicate Path">
+            <IconButton
+              size="small"
+              color="default"
+              style={{
+                float: "right",
+              }}
+              disabled={
+                Object.keys(this.context.model.document.pathlist.paths)
+                  .length == 0
+              }
+              onClick={() =>
+                this.context.model.document.pathlist.duplicatePath(
+                  this.context.model.document.pathlist.activePathUUID
+                )
+              }
+            >
+              <ContentCopy fontSize="small"></ContentCopy>
+            </IconButton>
+          </Tooltip>
           <Tooltip disableInteractive title="Add Path">
             <IconButton
               size="small"
@@ -139,7 +161,10 @@ class Sidebar extends Component<Props, State> {
               </span>
             </div>
           )}
-          {ObstaclesEnabled && (
+          {(this.context.model.document.usesObstacles ||
+            this.context.model.document.pathlist.activePath.obstacles.includes(
+              this.context.model.uiState.selectedSidebarItem
+            )) && (
             <>
               <Divider
                 className={styles.SidebarDivider}

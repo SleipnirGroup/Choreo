@@ -7,6 +7,10 @@ import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import {
   NavbarItemData,
   NavbarItemSectionLengths,
+
+
+
+
 } from "../../document/UIStateStore";
 
 type Props = {};
@@ -25,6 +29,8 @@ class Navbar extends Component<Props, State> {
     return (
       <div className={styles.Container}>
         {NavbarItemSectionLengths.map((endSplit, sectionIdx) => (
+          (sectionIdx != 2 ||
+          this.context.model.document.usesObstacles) ? (
           <ToggleButtonGroup
             className={styles.ToggleGroup}
             exclusive
@@ -36,30 +42,30 @@ class Navbar extends Component<Props, State> {
           >
             {NavbarItemData.map(
               (item, index) =>
-                index <= endSplit &&
-                index > (NavbarItemSectionLengths[sectionIdx - 1] ?? -1) && (
-                  //@ts-ignore
-                  <Tooltip
-                    disableInteractive
+              index <= endSplit &&
+              index > (NavbarItemSectionLengths[sectionIdx - 1] ?? -1) && (
+                //@ts-ignore
+                <Tooltip
+                  disableInteractive
+                  value={`${index}`}
+                  title={item.name}
+                  key={`${sectionIdx}_${index}`}
+                >
+                  <ToggleButton
                     value={`${index}`}
-                    title={item.name}
-                    key={`${sectionIdx}_${index}`}
+                    sx={{
+                      color: "var(--accent-purple)",
+                      "&.Mui-selected": {
+                        color: "var(--select-yellow)",
+                      },
+                    }}
                   >
-                    <ToggleButton
-                      value={`${index}`}
-                      sx={{
-                        color: "var(--accent-purple)",
-                        "&.Mui-selected": {
-                          color: "var(--select-yellow)",
-                        },
-                      }}
-                    >
-                      {item.icon}
-                    </ToggleButton>
-                  </Tooltip>
-                )
-            )}
-          </ToggleButtonGroup>
+                    {item.icon}
+                  </ToggleButton>
+                </Tooltip>
+              )
+          )}
+          </ToggleButtonGroup>) : (<></>)
         ))}
 
         {/* </span> */}
