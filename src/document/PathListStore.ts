@@ -98,8 +98,12 @@ export const PathListStore = types
           let newName = self.disambiguateName(oldPath.name);
           let newuuid = self.addPath(newName, false);
           let path = self.paths.get(newuuid);
-          path!.fromSavedPath(oldPath.asSavedPath());
+          let oldSaved = oldPath.asSavedPath();
+          console.log(oldSaved);
+          path!.fromSavedPath(oldSaved);
+          return newuuid;
         }
+        return undefined;
       },
       fromSavedPathList(list: SavedPathList) {
         self.paths.clear();

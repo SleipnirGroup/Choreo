@@ -11,8 +11,6 @@ import Add from "@mui/icons-material/Add";
 import SidebarConstraint from "./SidebarConstraint";
 import SidebarObstacle from "./SidebarObstacle";
 import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
-import { ObstaclesEnabled } from "../../document/UIStateStore";
-import { UIStateStore } from "../../document/UIStateStore";
 
 type Props = {};
 type State = {};
@@ -97,11 +95,17 @@ class Sidebar extends Component<Props, State> {
                 Object.keys(this.context.model.document.pathlist.paths)
                   .length == 0
               }
-              onClick={() =>
-                this.context.model.document.pathlist.duplicatePath(
-                  this.context.model.document.pathlist.activePathUUID
-                )
-              }
+              onClick={() => {
+                var newuuid =
+                  this.context.model.document.pathlist.duplicatePath(
+                    this.context.model.document.pathlist.activePathUUID
+                  );
+                if (newuuid !== undefined) {
+                  this.context.model.document.pathlist.setActivePathUUID(
+                    newuuid
+                  );
+                }
+              }}
             >
               <ContentCopy fontSize="small"></ContentCopy>
             </IconButton>
