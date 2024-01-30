@@ -11,8 +11,6 @@ import Add from "@mui/icons-material/Add";
 import SidebarConstraint from "./SidebarConstraint";
 import SidebarObstacle from "./SidebarObstacle";
 import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
-import { ObstaclesEnabled } from "../../document/UIStateStore";
-import { UIStateStore } from "../../document/UIStateStore";
 
 type Props = {};
 type State = {};
