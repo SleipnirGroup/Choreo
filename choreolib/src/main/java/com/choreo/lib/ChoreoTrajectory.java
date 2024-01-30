@@ -98,6 +98,15 @@ public class ChoreoTrajectory {
     var state = sampleInternal(timestamp);
     return mirrorForRedAlliance ? state.flipped() : state;
   }
+  
+  /**
+   * Returns the list of states for this trajectory.
+   *
+   * @return this trajectory's states.
+   */
+  public List<ChoreoTrajectoryState> getSamples() {
+    return samples;
+  }
 
   /**
    * Returns the initial, non-mirrored pose of the trajectory.
