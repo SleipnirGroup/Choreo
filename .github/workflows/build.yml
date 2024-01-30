@@ -74,7 +74,7 @@ jobs:
         run: ls
 
       - name: Build Package
-        run: npm run tauri build
+        run: npm run tauri build --verbose
 
       - name: Upload Bundle
         uses: actions/upload-artifact@v3.1.1
