@@ -95,17 +95,11 @@ class Sidebar extends Component<Props, State> {
                 Object.keys(this.context.model.document.pathlist.paths)
                   .length == 0
               }
-              onClick={() => {
-                var newuuid =
-                  this.context.model.document.pathlist.duplicatePath(
-                    this.context.model.document.pathlist.activePathUUID
-                  );
-                if (newuuid !== undefined) {
-                  this.context.model.document.pathlist.setActivePathUUID(
-                    newuuid
-                  );
-                }
-              }}
+              onClick={() =>
+                this.context.model.document.pathlist.duplicatePath(
+                  this.context.model.document.pathlist.activePathUUID
+                )
+              }
             >
               <ContentCopy fontSize="small"></ContentCopy>
             </IconButton>
