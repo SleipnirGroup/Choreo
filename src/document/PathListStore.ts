@@ -96,7 +96,7 @@ export const PathListStore = types
             return;
           }
           let newName = self.disambiguateName(oldPath.name);
-          let newuuid = self.addPath(newName, true);
+          let newuuid = self.addPath(newName, false);
           let path = self.paths.get(newuuid);
           path!.fromSavedPath(oldPath.asSavedPath());
         }
