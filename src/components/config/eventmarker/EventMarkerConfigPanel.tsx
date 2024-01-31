@@ -13,6 +13,8 @@ import {
 import { toJS } from "mobx";
 import CommandDraggable from "./CommandDraggable";
 import { resolveIdentifier } from "mobx-state-tree";
+import { TextField, Tooltip } from "@mui/material";
+import InputStyles from "../../input/InputList.module.css";
 
 type Props = { marker: IEventMarkerStore };
 
@@ -21,6 +23,8 @@ type State = {};
 class EventMarkerConfigPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
+  nameInputRef: React.RefObject<HTMLInputElement> =
+    React.createRef<HTMLInputElement>();
   state = {};
 
   onDragEnd(result: any) {
@@ -45,9 +49,10 @@ class EventMarkerConfigPanel extends Component<Props, State> {
       return;
     }
     if (sourceCommandList === targetCommandList) {
-      
       targetCommand.reorder(result.source.index, result.destination.index);
     } else {
+      // This section is dead code until we have a DnD library that allows dragging
+      // between layers of nested drop areas
       let sourceCommand = resolveIdentifier(
         CommandStore,
         this.props.marker,
@@ -57,8 +62,13 @@ class EventMarkerConfigPanel extends Component<Props, State> {
         return;
       }
       let subcommand = sourceCommand.commands[result.source.index];
-      targetCommand.pushCommand(sourceCommand.detachCommand(result.source.index));
-      targetCommand.reorder(targetCommand.commands.length - 1, result.destination.index);
+      targetCommand.pushCommand(
+        sourceCommand.detachCommand(result.source.index)
+      );
+      targetCommand.reorder(
+        targetCommand.commands.length - 1,
+        result.destination.index
+      );
     }
   }
   render() {
@@ -79,6 +89,8 @@ class EventMarkerConfigPanel extends Component<Props, State> {
         className={styles.WaypointPanel}
         style={{
           width: `min(80%, max(400px, calc(${pointcount} * 3ch + 8ch)))`,
+          display: "flex",
+          gap: "4px",
         }}
       >
         <ScopeSlider
@@ -100,8 +112,36 @@ class EventMarkerConfigPanel extends Component<Props, State> {
           }}
           points={points}
         ></ScopeSlider>
+        <InputList noCheckbox>
+          <Tooltip
+            disableInteractive
+            title="Name of the marker (not the command)"
+          >
+            <span className={InputStyles.Title + " " + InputStyles.Tooltip}>
+              Name
+            </span>
+          </Tooltip>
 
-        <InputList>
+          <TextField
+            inputRef={this.nameInputRef}
+            value={marker.name}
+            onChange={(e) => marker.setName(e.target.value)}
+            variant="standard"
+            size="small"
+            placeholder="Marker Name"
+            sx={{
+              ".MuiInput-input": {
+                paddingBottom: "0px",
+              },
+            }}
+            onKeyDown={(e) => {
+              if (e.key == "Enter") {
+                this.nameInputRef.current?.blur();
+              }
+            }}
+          ></TextField>
+          <span></span>
+          <span></span>
           <Input
             key={"offset"}
             title={"Offset"}
@@ -124,6 +164,7 @@ class EventMarkerConfigPanel extends Component<Props, State> {
             index={0}
             context={this.context}
             isDraggable={false}
+            isRoot
           ></CommandDraggable>
         </DragDropContext>
       </div>

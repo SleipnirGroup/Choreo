@@ -12,7 +12,10 @@ export interface SavedWaypoint {
   headingConstrained: boolean;
   controlIntervalCount: number; // positive-integer>
 }
-export type SavedGeneratedWaypoint = SavedWaypoint & { timestamp: number };
+export type SavedGeneratedWaypoint = SavedWaypoint & {
+  timestamp: number;
+  isStopPoint: boolean;
+};
 export interface SavedTrajectorySample {
   timestamp: number; //positive
   x: number;
@@ -25,7 +28,7 @@ export interface SavedTrajectorySample {
 export interface SavedPath {
   waypoints: Array<SavedWaypoint>;
   trajectory: Array<SavedTrajectorySample> | null;
-  trajectoryWaypoints: Array<SavedWaypoint & { timestamp: number }>;
+  trajectoryWaypoints: Array<SavedGeneratedWaypoint>;
   constraints: Array<SavedConstraint>;
   usesDefaultFieldObstacles: boolean;
   usesControlIntervalGuessing: boolean;
@@ -51,6 +54,7 @@ export interface SavedDocument {
   robotConfiguration: SavedRobotConfig;
   paths: SavedPathList;
   splitTrajectoriesAtStopPoints: boolean;
+  usesObstacles: boolean;
 }
 export type SavedWaypointId = "first" | "last" | number;
 export interface SavedConstraint {

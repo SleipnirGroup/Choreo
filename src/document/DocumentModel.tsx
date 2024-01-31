@@ -109,8 +109,10 @@ const StateStore = types
           // Capture the timestamps of the waypoints that were actually sent to the solver
           let waypointTimestamps = pathStore.waypointTimestamps();
           console.log(waypointTimestamps);
+          const stopPoints = pathStore.stopPoints();
           generatedWaypoints = pathStore.waypoints.map((point, idx) => ({
             timestamp: 0,
+            isStopPoint: stopPoints.includes(idx),
             ...point.asSavedWaypoint(),
           }));
           pathStore.eventMarkers.forEach((m) => m.updateTargetIndex);
@@ -125,7 +127,7 @@ const StateStore = types
                 circleObstacles: pathStore.asSolverPath().circleObstacles,
                 polygonObstacles: [],
               }),
-            (e) => e
+            (e) => {throw e;}
           )
           .then(
             (rust_traj) => {

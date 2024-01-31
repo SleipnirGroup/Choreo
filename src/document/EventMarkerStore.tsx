@@ -113,11 +113,16 @@ export const CommandStore = types
     setName(name: string) {
       self.name = name;
     },
+    setTime(waitTime: number) {
+      self.time = Math.max(0, waitTime);
+    },
     addSubCommand() {
       let newCommand = CommandStore.create({
         type: "named",
         uuid: uuidv4(),
         time: 0,
+        name: "",
+        commands: [],
       });
       self.commands.push(newCommand);
       return newCommand;
@@ -125,7 +130,7 @@ export const CommandStore = types
     pushCommand(subcommand: ICommandStore) {
       self.commands.push(subcommand);
     },
-    detachCommand(index:number) {
+    detachCommand(index: number) {
       return detach(self.commands[index]);
     },
     deleteSubCommand(uuid: string) {
@@ -191,20 +196,17 @@ export const EventMarkerStore = types
     },
   }))
   .views((self) => ({
-    get trajTimestamp(): number | undefined {
+    get targetTimestamp(): number | undefined {
       let path = self.getPath();
-      if (path === undefined) {
-        return undefined;
-      }
       return (path as IHolonomicPathStore).generatedWaypoints[
         self.trajTargetIndex
       ]?.timestamp;
     },
     get timestamp(): number | undefined {
-      if (this.trajTimestamp === undefined) {
+      if (this.targetTimestamp === undefined) {
         return undefined;
       }
-      return this.trajTimestamp + self.offset;
+      return this.targetTimestamp + self.offset;
     },
   }))
   .actions((self) => ({
@@ -221,6 +223,37 @@ export const EventMarkerStore = types
     },
     setOffset(offset: number) {
       self.offset = offset;
+    },
+    setName(name: string) {
+      self.name = name;
+    },
+  }))
+  .views((self) => ({
+    isInSameSegment(): boolean | undefined {
+      const path = self.getPath();
+      let retVal: boolean | undefined = true;
+      const targetTimestamp = self.targetTimestamp;
+      const timestamp = self.timestamp;
+      if (targetTimestamp === undefined || timestamp === undefined) {
+        retVal = undefined;
+        return undefined;
+      } else if (self.offset == 0) {
+        return true;
+      } else {
+        path.generatedWaypoints.forEach((pt) => {
+          if (pt.isStopPoint && retVal) {
+            const stopTimestamp = pt.timestamp;
+            console.log(pt);
+            if (
+              (targetTimestamp < stopTimestamp && timestamp > stopTimestamp) ||
+              (targetTimestamp > stopTimestamp && timestamp < stopTimestamp)
+            ) {
+              retVal = false;
+            }
+          }
+        });
+      }
+      return retVal;
     },
   }));
 

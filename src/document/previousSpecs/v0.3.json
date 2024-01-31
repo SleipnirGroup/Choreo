@@ -120,6 +120,9 @@
         },
         "timestamp": {
           "type": "number"
+        },
+        "isStopPoint": {
+          "type": "boolean"
         }
       },
       "required": [
@@ -291,12 +294,16 @@
     },
     "splitTrajectoriesAtStopPoints": {
       "type": "boolean"
+    },
+    "usesObstacles": {
+      "type": "boolean"
     }
   },
   "required": [
     "version",
     "paths",
     "robotConfiguration",
-    "splitTrajectoriesAtStopPoints"
+    "splitTrajectoriesAtStopPoints",
+    "usesObstacles"
   ]
 }

@@ -6,17 +6,17 @@ import {
   NotDraggingStyle,
   Droppable,
 } from "react-beautiful-dnd";
-import { CSSProperties } from "styled-components";
 import DocumentManagerContext from "../../../document/DocumentManager";
 import { isAlive } from "mobx-state-tree";
 import {
   CommandType,
-  CommandTypeNames,
   CommandUIData,
   ICommandStore,
 } from "../../../document/EventMarkerStore";
 import { IconButton, MenuItem, Select, TextField } from "@mui/material";
 import { Add, Delete, DragHandle } from "@mui/icons-material";
+import InputList from "../../input/InputList";
+import Input from "../../input/Input";
 
 type Props = {
   command: ICommandStore;
@@ -24,6 +24,7 @@ type Props = {
   parent?: ICommandStore;
   context: React.ContextType<typeof DocumentManagerContext>;
   isDraggable: boolean;
+  isRoot?: boolean;
 };
 
 type State = { selected: boolean };
@@ -33,6 +34,8 @@ class CommandDraggable extends Component<Props, State> {
   declare context: React.ContextType<typeof DocumentManagerContext>;
   id: number = 0;
   state = { selected: false };
+  nameInputRef: React.RefObject<HTMLInputElement> =
+    React.createRef<HTMLInputElement>();
 
   getItemStyle(
     isDragging: boolean,
@@ -41,7 +44,7 @@ class CommandDraggable extends Component<Props, State> {
     return {
       // change background colour if dragging
       //background: isDragging ? "lightgreen" : "revert",
-
+      margin: "4px",
       // styles we need to apply on draggables
       ...draggableStyle,
     };
@@ -50,60 +53,84 @@ class CommandDraggable extends Component<Props, State> {
   render() {
     let command = this.props.command;
     let commandsLength = this.props.command?.commands.length;
+    let isRoot = this.props.isRoot ?? false;
     // apparently we have to dereference this here instead of inline in the class name
     // Otherwise the component won't rerender when it changes
     if (!isAlive(command)) return <></>;
     return (
       <div
         style={{
-          backgroundColor: "var(--background-light-gray)",
+          backgroundColor: isRoot
+            ? "var(--background-dark-gray)"
+            : "var(--background-light-gray)",
           borderRadius: "8px",
           padding: "8px",
           display: "flex",
           flexDirection: "column",
-          gap: "4px",
-          boxShadow: "2px 2px 1px black",
+          gap: "8px",
+          boxShadow: isRoot ? "none" : "2px 2px 1px black",
         }}
       >
         <span
           style={{
-            display: "grid",
-            gridTemplateColumns:
-              "min-content auto min-content auto min-content min-content",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "4px",
           }}
         >
-          <DragHandle></DragHandle>
-          {command.type === "named" && (
-            <TextField
-              label="Name"
-              value={command.name}
-              size="small"
-              onChange={(e) => command.setName(e.target.value)}
-            ></TextField>
-          )}
-          {command.type === "wait" && (
-            <TextField
-              label="Wait Time (s)"
-              value={command.name}
-              size="small"
-              onChange={(e) => command.setName(e.target.value)}
-            ></TextField>
-          )}
-          {command.isGroup() && CommandTypeNames[command.type].name}
+          {!isRoot && <DragHandle></DragHandle>}
           <Select
+            sx={{
+              ".MuiInput-input": {
+                paddingBottom: "0px",
+              },
+            }}
             size="small"
             variant="standard"
             value={command.type}
+            onClick={(e) => e.stopPropagation()}
             onChange={(e) => command.setType(e.target.value as CommandType)}
-            renderValue={(selected) => {
-              return <></>;
-            }}
           >
             {CommandUIData.map((data) => (
               <MenuItem value={data.id}>{data.name}</MenuItem>
             ))}
           </Select>
-          <span></span>
+          {command.type === "named" && (
+            <TextField
+              inputRef={this.nameInputRef}
+              sx={{
+                marginLeft: "1ch",
+                ".MuiInput-input": {
+                  paddingBottom: "0px",
+                },
+              }}
+              variant="standard"
+              placeholder="Name"
+              value={command.name ?? ""}
+              size="small"
+              onClick={(e) => e.stopPropagation()}
+              onChange={(e) => command.setName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key == "Enter") {
+                  this.nameInputRef.current?.blur();
+                }
+              }}
+            ></TextField>
+          )}
+          {command.type === "wait" && (
+            <InputList noCheckbox>
+              <Input
+                title={""}
+                suffix={"s"}
+                enabled={true}
+                number={command.time}
+                setNumber={command.setTime}
+                setEnabled={() => {}}
+              ></Input>
+            </InputList>
+          )}
+          <span style={{ flexGrow: 1 }}></span>
           {command.isGroup() ? (
             <IconButton
               onClick={() => this.props.command.addSubCommand()}
@@ -114,15 +141,16 @@ class CommandDraggable extends Component<Props, State> {
           ) : (
             <span></span>
           )}
-
-          <IconButton
-            size="small"
-            onClick={() => {
-              this.props.parent?.deleteSubCommand(command.uuid);
-            }}
-          >
-            <Delete fontSize="small"></Delete>
-          </IconButton>
+          {!isRoot && (
+            <IconButton
+              size="small"
+              onClick={() => {
+                this.props.parent?.deleteSubCommand(command.uuid);
+              }}
+            >
+              <Delete fontSize="small"></Delete>
+            </IconButton>
+          )}
         </span>
         {command.isGroup() && (
           <Droppable type={command.uuid} droppableId={command.uuid}>
@@ -131,15 +159,13 @@ class CommandDraggable extends Component<Props, State> {
                 ref={provided.innerRef}
                 style={{
                   backgroundColor: snapshot.isDraggingOver
-                    ? "blue"
-                    : "var(--background-dark-gray)",
+                    ? "var(--darker-purple)"
+                    : "var(--background-dark-blue)",
                   borderRadius: "8px",
-                  paddingLeft: "8px",
-                  padding: "8px",
+                  padding: "4px",
                   minHeight: "32px",
                   display: "flex",
                   flexDirection: "column",
-                  gap: "8px",
                 }}
                 {...provided.droppableProps}
               >
@@ -150,6 +176,12 @@ class CommandDraggable extends Component<Props, State> {
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
+                        onClick={(e) => {
+                          if (!e?.defaultPrevented) {
+                            e.currentTarget?.focus();
+                            e.stopPropagation();
+                          }
+                        }}
                         style={this.getItemStyle(
                           snapshot.isDragging,
                           provided.draggableProps.style

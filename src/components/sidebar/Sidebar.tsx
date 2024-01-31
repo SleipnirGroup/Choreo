@@ -197,7 +197,6 @@ class Sidebar extends Component<Props, State> {
                   </span>
                 </div>
               )}
-              <Divider></Divider>
             </>
           )}
           <Divider className={styles.SidebarDivider} textAlign="left" flexItem>

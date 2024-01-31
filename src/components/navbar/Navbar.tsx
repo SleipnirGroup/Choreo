@@ -7,10 +7,6 @@ import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import {
   NavbarItemData,
   NavbarItemSectionLengths,
-
-
-
-
 } from "../../document/UIStateStore";
 
 type Props = {};
@@ -28,47 +24,47 @@ class Navbar extends Component<Props, State> {
       this.context.model.uiState;
     return (
       <div className={styles.Container}>
-        {NavbarItemSectionLengths.map((endSplit, sectionIdx) => (
-          (sectionIdx != 2 ||
-          this.context.model.document.usesObstacles) ? (
-          <ToggleButtonGroup
-            className={styles.ToggleGroup}
-            exclusive
-            value={`${selectedNavbarItem}`}
-            onChange={(e, newSelection) => {
-              setSelectedNavbarItem(Number.parseInt(newSelection) ?? -1);
-            }}
-            key={sectionIdx}
-          >
-            {NavbarItemData.map(
-              (item, index) =>
-              index <= endSplit &&
-              index > (NavbarItemSectionLengths[sectionIdx - 1] ?? -1) && (
-                //@ts-ignore
-                <Tooltip
-                  disableInteractive
-                  value={`${index}`}
-                  title={item.name}
-                  key={`${sectionIdx}_${index}`}
-                >
-                  <ToggleButton
-                    value={`${index}`}
-                    sx={{
-                      color: "var(--accent-purple)",
-                      "&.Mui-selected": {
-                        color: "var(--select-yellow)",
-                      },
-                    }}
-                  >
-                    {item.icon}
-                  </ToggleButton>
-                </Tooltip>
-              )
-          )}
-          </ToggleButtonGroup>) : (<></>)
-        ))}
-
-        {/* </span> */}
+        {NavbarItemSectionLengths.map((endSplit, sectionIdx) =>
+          sectionIdx != 2 || this.context.model.document.usesObstacles ? (
+            <ToggleButtonGroup
+              className={styles.ToggleGroup}
+              exclusive
+              value={`${selectedNavbarItem}`}
+              onChange={(e, newSelection) => {
+                setSelectedNavbarItem(Number.parseInt(newSelection) ?? -1);
+              }}
+              key={sectionIdx}
+            >
+              {NavbarItemData.map(
+                (item, index) =>
+                  index <= endSplit &&
+                  index > (NavbarItemSectionLengths[sectionIdx - 1] ?? -1) && (
+                    //@ts-ignore
+                    <Tooltip
+                      disableInteractive
+                      value={`${index}`}
+                      title={item.name}
+                      key={`${sectionIdx}_${index}`}
+                    >
+                      <ToggleButton
+                        value={`${index}`}
+                        sx={{
+                          color: "var(--accent-purple)",
+                          "&.Mui-selected": {
+                            color: "var(--select-yellow)",
+                          },
+                        }}
+                      >
+                        {item.icon}
+                      </ToggleButton>
+                    </Tooltip>
+                  )
+              )}
+            </ToggleButtonGroup>
+          ) : (
+            <></>
+          )
+        )}
       </div>
     );
   }

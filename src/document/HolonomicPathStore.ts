@@ -162,7 +162,7 @@ export const HolonomicPathStore = types
             let saved: SavedEventMarker = {
               name: marker.name,
               target,
-              targetTimestamp: marker.trajTimestamp,
+              targetTimestamp: marker.targetTimestamp,
               offset: marker.offset,
               command: marker.command.asSavedCommand(),
             };
@@ -227,28 +227,28 @@ export const HolonomicPathStore = types
           (c) => c.type === "StopPoint"
         );
         const wptIndices = stopPoints
-              .flatMap((c: IConstraintStore) => {
-                const scope = c.scope.at(0);
-                if (scope === undefined) {
-                  return 0;
-                } else if (scope === "first") {
-                  return 0;
-                } else if (scope === "last") {
-                  return self.waypoints.length - 1;
-                } else {
-                  return self.findUUIDIndex(scope.uuid);
-                }
-              })
-              .filter((item, pos, ary) => !pos || item != ary[pos - 1])
-              .sort((a, b) => a - b);
+          .flatMap((c: IConstraintStore) => {
+            const scope = c.scope.at(0);
+            if (scope === undefined) {
+              return 0;
+            } else if (scope === "first") {
+              return 0;
+            } else if (scope === "last") {
+              return self.waypoints.length - 1;
+            } else {
+              return self.findUUIDIndex(scope.uuid);
+            }
+          })
+          .filter((item, pos, ary) => !pos || item != ary[pos - 1])
+          .sort((a, b) => a - b);
         console.log(wptIndices);
         return wptIndices;
-              // remove duplicates
-              
+        // remove duplicates
       },
       stopPointIndices() {
-        const stopPoints =this.stopPoints();
-        return stopPoints.length > 1 ? stopPoints
+        const stopPoints = this.stopPoints();
+        return stopPoints.length > 1
+          ? stopPoints
               .flatMap((w) =>
                 self.waypoints
                   .slice(0, w)
@@ -259,6 +259,50 @@ export const HolonomicPathStore = types
               // remove duplicates
               .filter((item, pos, ary) => !pos || item != ary[pos - 1])
           : [0, undefined];
+      },
+      splitTrajectories() {
+        let trajectories = [];
+        const split = this.stopPointIndices();
+        for (let i = 1; i < split.length; i++) {
+          const prev = split[i - 1];
+          let cur = split[i];
+          // If we don't go to the end of trajectory, add 1 to include the end stop point
+          if (cur !== undefined) {
+            cur += 1;
+          }
+          let traj = self.generated.slice(prev, cur).map((s) => {
+            return { ...s };
+          });
+          if (traj === undefined) {
+            throw `Could not split segment from ${prev} to ${cur} given ${self.generated.length} samples`;
+          }
+          if (traj.length === 0) {
+            continue;
+          }
+          const startTime = traj[0].timestamp;
+          const endTime = traj[traj.length - 1].timestamp;
+          for (let i = 0; i < traj.length; i++) {
+            const e = traj[i];
+            e.timestamp -= startTime;
+          }
+          let splitEventMarkers = self.eventMarkers
+            .filter(
+              (m) =>
+                m.targetTimestamp !== undefined &&
+                m.targetTimestamp >= startTime &&
+                m.targetTimestamp <= endTime &&
+                m.timestamp !== undefined &&
+                m.timestamp >= startTime &&
+                m.timestamp <= endTime
+            )
+            .map((m) => ({
+              name: m.name,
+              timestamp: m.timestamp! - startTime,
+              command: m.command.asSavedCommand(),
+            }));
+          trajectories.push({ samples: traj, eventMarkers: splitEventMarkers });
+        }
+        return trajectories;
       },
     };
   })
@@ -611,40 +655,9 @@ export const HolonomicPathStore = types
             trajTargetIndex: 0,
             offset: 0,
             command: CommandStore.create({
-              type: "parallel",
+              type: "named",
               name: "",
-              commands: [
-                CommandStore.create({
-                  type: "sequential",
-                  name: "",
-                  commands: [
-                    CommandStore.create({
-                      type: "race",
-                      name: "",
-                      commands: [],
-                      time: 0,
-                      uuid: uuidv4(),
-                    }),
-                  ],
-                  time: 0,
-                  uuid: uuidv4(),
-                }),
-                CommandStore.create({
-                  type: "sequential",
-                  name: "",
-                  commands: [
-                    CommandStore.create({
-                      type: "race",
-                      name: "",
-                      commands: [],
-                      time: 0,
-                      uuid: uuidv4(),
-                    }),
-                  ],
-                  time: 0,
-                  uuid: uuidv4(),
-                }),
-              ],
+              commands: [],
               time: 0,
               uuid: uuidv4(),
             }),

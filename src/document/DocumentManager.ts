@@ -467,7 +467,7 @@ export class DocumentManager {
     const content = JSON.stringify(
       { samples: trajectory, eventMarkers: exportedEventMarkers },
       undefined,
-      4
+      2
     );
     if (file) {
       await invoke("save_file", {
@@ -493,36 +493,14 @@ export class DocumentManager {
       file !== null &&
       chorPath.stopPointIndices().length >= 2
     ) {
-      const split = chorPath.stopPointIndices();
-      const markers = exportedEventMarkers;
-      for (let i = 1; i < split.length; i++) {
-        const prev = split[i - 1];
-        let cur = split[i];
-        // If we don't go to the end of trajectory, add 1 to include the end stop point
-        if (cur !== undefined) {
-          cur += 1;
-        }
-        let traj = trajectory.slice(prev, cur).map((s) => {
-          return { ...s };
-        });
-        if (traj === undefined) {
-          throw `Could not split segment from ${prev} to ${cur} given ${trajectory.length} samples`;
-        }
-        if (traj.length === 0) {
-          continue;
-        }
-        const start = traj[0].timestamp;
-        for (let i = 0; i < traj.length; i++) {
-          const e = traj[i];
-          e.timestamp -= start;
-        }
+      let splits = chorPath.splitTrajectories();
+      for (let i = 0; i < splits.length; i++) {
+        const name = file[1].replace(".", "." + (i + 1).toString() + ".");
 
-        const content = JSON.stringify({ samples: traj }, undefined, 4);
-        const name = file[1].replace(".", "." + i.toString() + ".");
         await invoke("save_file", {
           dir: file[0],
           name: name,
-          contents: content,
+          contents: JSON.stringify(splits[i], undefined, 2),
         });
       }
     }
