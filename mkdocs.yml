@@ -40,6 +40,7 @@ theme:
     - content.code.annotate
     - content.code.select.title
     - toc.follow
+    - toc.integrate
     - content.tabs.link
     - search.share
     - search.highlight
