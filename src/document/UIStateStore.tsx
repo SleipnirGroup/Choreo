@@ -6,6 +6,7 @@ import {
   Route,
   ScatterPlot,
   SquareOutlined,
+  CropFree,
 } from "@mui/icons-material";
 import { path, window as tauriWindow } from "@tauri-apps/api";
 import { getVersion } from "@tauri-apps/api/app";
@@ -202,6 +203,12 @@ const ViewData = {
     name: "Obstacles",
     icon: <DoNotDisturb />,
     default: true,
+  },
+  Focus: {
+    index: 6,
+    name: "Focus",
+    icon: <CropFree />,
+    default: false,
   },
 };
 

@@ -183,14 +183,26 @@ class FieldOverlayRoot extends Component<Props, State> {
               )
             )}
           {layers[ViewLayers.Waypoints] &&
-            this.context.model.document.pathlist.activePath.visibleWaypoints.map(
-              (point, index) => (
-                <OverlayWaypoint
-                  waypoint={point}
-                  index={index}
-                  key={point.uuid}
-                ></OverlayWaypoint>
-              )
+            this.context.model.document.pathlist.activePath.waypoints.map(
+              (point, index) => {
+                let activePath =
+                  this.context.model.document.pathlist.activePath;
+                if (
+                  (activePath.visibleWaypointsStart <= index &&
+                    activePath.visibleWaypointsEnd >= index) ||
+                  !layers[ViewLayers.Focus]
+                ) {
+                  return (
+                    <OverlayWaypoint
+                      waypoint={point}
+                      index={index}
+                      key={point.uuid}
+                    ></OverlayWaypoint>
+                  );
+                } else {
+                  return <></>;
+                }
+              }
             )}
           {constraintSelected && (
             <FieldConstraintsAddLayer></FieldConstraintsAddLayer>
