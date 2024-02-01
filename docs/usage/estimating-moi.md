@@ -24,7 +24,7 @@ However, this would likely be an underestimate because most FRC robots tend to h
 
 A better estimate could by found by summing each subsystem's contributions to the robot's overall MoI, based on its mass and average distance from the axis of rotation:
 
-$$ I = \sum_{i=1}^n \text{mass}_\text{subsystem i} * \text{radius}_\text{subsystem i}^2 $$
+$$ I = \sum_{i=1}^n \text{mass}\_\text{subsystem i} * \text{radius}\_\text{subsystem i}^2 $$
 
 ## Faithful CAD loaded with mass properties
 
@@ -32,7 +32,7 @@ Most popular CAD tools can calculate the mass properties of solid modeled object
 
 <img src="../media/REV-2024-starterBot-massProps.png" alt="REV-2024-starterBot-massProps" width="600"/>
 
-[Pictured: [2024 REV ION FRC Starter Bot](https://www.revrobotics.com/ion/frc-starter-bot-24/)]
+[[2024 REV ION FRC Starter Bot](https://www.revrobotics.com/ion/frc-starter-bot-24/)]
 
 ## Physical experimentation
 
@@ -56,5 +56,4 @@ A detailed experimental procedure is given in [The Experimental Determination of
 
 <img src="../media/NACA-TN-1629-figure3.png" alt="NACA-TN-1629-figure3" width="400"/>
 
-[NACA Technical Note No. 1629, p.26]
-
+[[NACA Technical Note No. 1629](https://ntrs.nasa.gov/citations/19930082299), p.26]
