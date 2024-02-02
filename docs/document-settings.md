@@ -7,6 +7,6 @@ by clicking "Document Settings" in Choreo's main menu.
 
 See the pages below for explanations of each tab in the Document Settings panel.
 
-[Robot Configuration](./document-settings/robot-configuration/)
+[Robot Configuration](./document-settings/robot-configuration.md)
 
-[File Export Settings](./document-settings/file-export-settings)
+[File Export Settings](./document-settings/file-export-settings.md)
