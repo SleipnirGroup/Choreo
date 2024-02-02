@@ -228,10 +228,14 @@ export const HolonomicPathStore = types
   .actions((self) => {
     return {
       setVisibleWaypointsStart(start: number) {
-        self.visibleWaypointsStart = start;
+        if (start <= self.visibleWaypointsEnd) {
+          self.visibleWaypointsStart = start;
+        }
       },
       setVisibleWaypointsEnd(end: number) {
-        self.visibleWaypointsEnd = end;
+        if (end >= self.visibleWaypointsStart) {
+          self.visibleWaypointsEnd = end;
+        }
       },
       setControlIntervalGuessing(value: boolean) {
         self.usesControlIntervalGuessing = value;
