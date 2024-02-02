@@ -78,6 +78,10 @@ When using Choreo, operators should consider the following best practices to max
 - In a voice loud enough to hear, announce to bystanders your intent to enable the robot. Never enable the robot when people are in the test area, even if you think they are clear of the robot's expected path.
 - Continue to control access to the testing area. When additional people arrive to the workspace, tell them about the hazards present.
 
+!!! tip
+
+    Be humble. Start small by planning a simple but meaningful trajectory, and convince yourself that the robot behaves as expected before attempting a more complex path.
+
 As stated in our BSD 3-clause [License](https://github.com/SleipnirGroup/Choreo/blob/main/LICENSE), Choreo is provided "as-is" with no warranty intended or implied. By using this software, you:
 
 - Acknowledge an understanding of the risks involved with controlling experimental, high-powered autonomous robots with experimental, high-powered software.
