@@ -56,6 +56,7 @@ jobs:
         with:
           platform: x64
           version: 13.2.0
+          static: 0
       - name: Linux deps
         if: matrix.os == 'ubuntu-latest'
         run: |
