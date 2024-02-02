@@ -65,3 +65,20 @@ Choreo (Constraint-Honoring Omnidirectional Route Editor and Optimizer, pronounc
 </div>
 
 ![Readme Screenshot of Example Choreo Setup](media/readmeScreenshot.png)
+
+## Safety
+
+FRC robots are inherently dangerous, especially when operated at high speeds. Choreo is designed to enable users to operate their FRC robot at the very limits of its physical capabilities.
+
+When using Choreo, operators should consider the following best practices to maximize their safety and the safety of their teammates. See the [FIRST Safety Manual](https://www.firstinspires.org/robotics/frc/safety) for additional guidance.
+
+- Test in an area free of safety hazards, and surrounded by physical barriers. Control the entry of people into the barricaded test area.
+- Use a well-functioning Driver Station and be ready to disable the robot at all times when testing.
+- Ensure an Robot Signal Light is installed on your robot. Teach all teammates how to determine the robot's enabled state based on the RSL.
+- In a voice loud enough to hear, announce to bystanders your intent to enable the robot. Never enable the robot when people are in the test area, even if you think they are clear of the robot's expected path.
+
+As stated in our BSD 3-clause [License](https://github.com/SleipnirGroup/Choreo/blob/main/LICENSE), Choreo is provided "as-is" with no warranty intended or implied. By using this software, you:
+
+- Acknowledge an understanding of the risks involved with controlling experimental, high-powered autonomous robots with experimental, high-powered software.
+- Accept the responsibility for ensuring your safety and the safety of others around you.
+- Agree to hold us harmless and not liable for any damage or loss.
