@@ -163,6 +163,7 @@ class FieldOverlayRoot extends Component<Props, State> {
                 <FieldObstacle
                   obstacle={obstacle}
                   index={index}
+                  key={obstacle.uuid}
                 ></FieldObstacle>
               )
             )}
@@ -199,8 +200,6 @@ class FieldOverlayRoot extends Component<Props, State> {
                       key={point.uuid}
                     ></OverlayWaypoint>
                   );
-                } else {
-                  return <></>;
                 }
               }
             )}

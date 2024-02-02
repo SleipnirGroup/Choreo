@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, Fragment } from "react";
 import DocumentManagerContext from "../../../document/DocumentManager";
 
 import { observer } from "mobx-react";
@@ -66,8 +66,6 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                     }}
                   ></circle>
                 );
-              } else {
-                return <></>;
               }
             })}
         {selectedConstraintDefinition!.sgmtScope &&
@@ -81,8 +79,11 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                 !layers[ViewLayers.Focus]
               ) {
                 return (
-                  <>
+                  <Fragment 
+                    key={`frag-${index}-${index + 1}`}
+                  >
                     <line
+                      key={`line-${index}-${index + 1}`}
                       x1={point1.x}
                       x2={point2.x}
                       y1={point1.y}
@@ -115,51 +116,9 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                         }
                       }}
                     ></circle>
-                    {activePath.waypoints.length >= 2 && false && (
-                      <>
-                        <circle
-                          key={`full`}
-                          cx={
-                            (activePath.waypoints[0].x +
-                              activePath.waypoints[
-                                activePath.waypoints.length - 1
-                              ].x) /
-                            2
-                          }
-                          cy={
-                            (activePath.waypoints[0].y +
-                              activePath.waypoints[
-                                activePath.waypoints.length - 1
-                              ].y) /
-                            2
-                          }
-                          r={0.2}
-                          fill={"black"}
-                          fillOpacity={0.2}
-                          stroke="white"
-                          strokeWidth={0.05}
-                          onClick={() => {
-                            let constraintToAdd =
-                              this.context.model.uiState.getSelectedConstraint();
-                            let newConstraint =
-                              activePath.addConstraint(constraintToAdd);
-
-                            if (newConstraint !== undefined) {
-                              if (newConstraint.definition.sgmtScope) {
-                                newConstraint.setScope(["first", "last"]);
-                              }
-                              this.context.model.uiState.setSelectedSidebarItem(
-                                newConstraint
-                              );
-                            }
-                          }}
-                        ></circle>
-                      </>
-                    )}
-                  </>
+                    
+                  </Fragment>
                 );
-              } else {
-                return <></>;
               }
             })}
       </>
