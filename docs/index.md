@@ -72,7 +72,7 @@ FRC robots are inherently dangerous, especially when operated at high speeds. Ch
 
 When using Choreo, operators should consider the following best practices to maximize their safety and the safety of their teammates. See the [FIRST Safety Manual](https://www.firstinspires.org/robotics/frc/safety) for additional guidance.
 
-- Test in an area free of safety hazards, and surrounded by physical barriers. Control the entry of people into the barricaded test area.
+- Test in an area free of safety hazards and surrounded by physical barriers. Control the entry of people into the barricaded test area.
 - Use a well-functioning Driver Station and be ready to disable the robot at all times when testing.
 - Ensure an Robot Signal Light is installed on your robot. Teach all teammates how to determine the robot's enabled state based on the RSL.
 - In a voice loud enough to hear, announce to bystanders your intent to enable the robot. Never enable the robot when people are in the test area, even if you think they are clear of the robot's expected path.
