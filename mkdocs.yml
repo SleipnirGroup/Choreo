@@ -47,6 +47,7 @@ theme:
     - search.suggest
     - announce.dismiss
     - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.top
     - navigation.instant
 
