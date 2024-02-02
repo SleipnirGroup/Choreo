@@ -55,7 +55,7 @@ jobs:
         uses: egor-tensin/setup-mingw@v2
         with:
           platform: x64
-          version: 12.3.0
+          version: 13.1.0
       - name: Linux deps
         if: matrix.os == 'ubuntu-latest'
         run: |
