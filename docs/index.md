@@ -1,8 +1,3 @@
----
-hide:
-  - toc
----
-
 # Welcome
 
 Welcome to the [Choreo](https://github.com/SleipnirGroup/Choreo) documentation.
