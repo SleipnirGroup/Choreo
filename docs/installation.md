@@ -16,4 +16,4 @@ Start by downloading Choreo from **[Releases](https://github.com/SleipnirGroup/C
 
 Checkout [Building Choreo](./contributing/building-choreo.md) for instruction on how to build Choreo as well as the tech stack.
 
-## Once installed, head to [Robot Config](./document-settings/robot-configuration.md) to configure Choreo for your robot.
+Once installed, head to [Robot Config](./document-settings/robot-configuration.md) to configure Choreo for your robot.
