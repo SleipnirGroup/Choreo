@@ -258,11 +258,13 @@ export const HolonomicPathStore = types
           root.select(self.waypoints[0]);
         }
 
+        // Initialize waypoints
         if (typeof self.visibleWaypointsStart === "undefined") {
           this.setVisibleWaypointsStart(0);
           this.setVisibleWaypointsEnd(0);
         }
 
+        // Make the new waypoint visible by default if the (now) penultimate waypoint is already visible
         if (self.visibleWaypointsEnd === self.waypoints.length - 2) {
           this.setVisibleWaypointsEnd(self.waypoints.length - 1);
         }
