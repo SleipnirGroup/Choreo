@@ -80,7 +80,7 @@ jobs:
         if: matrix.os == 'windows-2022'
         run: sed -i "s/0.0.0/${{ github.event.inputs.version }}/g" publish.gradle
         working-directory: ./choreolib
-      - name: Set version (Windows)
+      - name: Set version (Mac)
         if: matrix.os == 'macos-13'
         run: sed -i '' "s/0.0.0/${{ github.event.inputs.version }}/g" publish.gradle
         working-directory: ./choreolib
