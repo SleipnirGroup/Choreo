@@ -5,7 +5,7 @@ on:
     inputs:
       version:
         type: string
-        description: The full version string, i.e. 2024.0.0-alpha-1 or 2024.1.1
+        description: The full version string, i.e. 2024.0.0-alpha-1 or 2024.1.1 with no leading "v"
         required: true
 
 jobs:
@@ -76,7 +76,12 @@ jobs:
           java-version: "17"
           distribution: "zulu"
 
-      - name: Set version
+      - name: Set version (Windows)
+        if: matrix.os == 'windows-2022'
+        run: sed -i "s/0.0.0/${{ github.event.inputs.version }}/g" publish.gradle
+        working-directory: ./choreolib
+      - name: Set version (Mac)
+        if: matrix.os == 'macos-13'
         run: sed -i '' "s/0.0.0/${{ github.event.inputs.version }}/g" publish.gradle
         working-directory: ./choreolib
 
