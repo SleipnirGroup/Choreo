@@ -40,6 +40,7 @@ import {
   SavedDocument as v0_2_2,
   SAVE_FILE_VERSION as v0_2_2_Version,
 } from "./previousSpecs/v0_2_2";
+import v0_2_2_Schema from "./previousSpecs/v0.2.2.json";
 import {
   SavedDocument as v0_3,
   SAVE_FILE_VERSION as v0_3_Version,
@@ -226,7 +227,7 @@ export let VERSIONS = {
       }
       return updated;
     },
-    schema: v0_2_1_Schema,
+    schema: v0_2_2_Schema,
   },
   "v0.3": {
     up: (document: any): v0_3 => document,
