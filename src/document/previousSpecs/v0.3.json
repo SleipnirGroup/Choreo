@@ -48,7 +48,7 @@
             "data": {
               "type": "object",
               "properties": {
-                "time": {
+                "waitTime": {
                   "type": "number"
                 }
               }

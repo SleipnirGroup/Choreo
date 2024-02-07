@@ -76,7 +76,7 @@ export type SavedGroupCommand = {
 export type SavedWaitCommand = {
   type: "wait";
   data: {
-    time: number;
+    waitTime: number;
   };
 };
 export type SavedNamedCommand = {

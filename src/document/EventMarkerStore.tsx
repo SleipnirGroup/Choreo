@@ -69,7 +69,7 @@ export const CommandStore = types
         return {
           type: "wait",
           data: {
-            time: self.time,
+            waitTime: self.time,
           },
         };
       } else {
@@ -91,7 +91,7 @@ export const CommandStore = types
       if (saved.type === "named") {
         self.name = saved.data.name;
       } else if (saved.type === "wait") {
-        self.time = saved.data.time;
+        self.time = saved.data.waitTime;
       } else {
         saved.data.commands.forEach((s) => {
           let command = CommandStore.create({
