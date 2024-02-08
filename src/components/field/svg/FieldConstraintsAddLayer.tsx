@@ -79,9 +79,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                 !layers[ViewLayers.Focus]
               ) {
                 return (
-                  <Fragment 
-                    key={`frag-${index}-${index + 1}`}
-                  >
+                  <Fragment key={`frag-${index}-${index + 1}`}>
                     <line
                       key={`line-${index}-${index + 1}`}
                       x1={point1.x}
@@ -116,7 +114,6 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                         }
                       }}
                     ></circle>
-                    
                   </Fragment>
                 );
               }
