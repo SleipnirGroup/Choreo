@@ -34,6 +34,7 @@ import {
   EventMarkerStore,
   IEventMarkerStore,
 } from "./EventMarkerStore";
+import { autorun, toJS } from "mobx";
 
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
@@ -44,6 +45,7 @@ export const HolonomicPathStore = types
     generated: types.frozen<Array<SavedTrajectorySample>>([]),
     generatedWaypoints: types.frozen<Array<SavedGeneratedWaypoint>>([]),
     generating: false,
+    isTrajectoryStale: true,
     usesControlIntervalGuessing: true,
     defaultControlIntervalCount: 40,
     usesDefaultObstacles: true,
@@ -169,6 +171,7 @@ export const HolonomicPathStore = types
 
             return [saved];
           }),
+          isTrajectoryStale: self.isTrajectoryStale
         };
       },
 
@@ -326,6 +329,9 @@ export const HolonomicPathStore = types
   })
   .actions((self) => {
     return {
+      setIsTrajectoryStale(isTrajectoryStale: boolean) {
+        self.isTrajectoryStale = isTrajectoryStale;
+      },
       setGeneratedWaypoints(waypoints: Array<SavedGeneratedWaypoint>) {
         self.generatedWaypoints = waypoints;
       },
@@ -608,7 +614,7 @@ export const HolonomicPathStore = types
         ) {
           self.generatedWaypoints = savedPath.trajectoryWaypoints;
         }
-
+        self.isTrajectoryStale = savedPath.isTrajectoryStale ?? false;
         self.usesControlIntervalGuessing =
           savedPath.usesControlIntervalGuessing;
         self.defaultControlIntervalCount =
@@ -733,6 +739,19 @@ export const HolonomicPathStore = types
         }
       },
     };
-  });
+  })
+  .actions(self=>({
+    afterCreate() {
+      // Anything accessed in here will cause the trajectory to be marked stale
+      autorun(()=>{
+        console.log(toJS(self.waypoints));
+        console.log(toJS(self.constraints));
+        // does not need toJS to do a deep check on this, since it's just a boolean
+        console.log(self.usesControlIntervalGuessing);
+        console.log(toJS(self.obstacles));
+        self.setIsTrajectoryStale(true);
+    })
+    }
+  }));
 export interface IHolonomicPathStore
   extends Instance<typeof HolonomicPathStore> {}

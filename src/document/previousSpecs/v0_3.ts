@@ -35,6 +35,7 @@ export interface SavedPath {
   defaultControlIntervalCount: number;
   circleObstacles: Array<SavedCircleObstacle>;
   eventMarkers: Array<SavedEventMarker>;
+  isTrajectoryStale: boolean;
 }
 export interface SavedPathList extends Record<string, SavedPath> {}
 export interface SavedRobotConfig {

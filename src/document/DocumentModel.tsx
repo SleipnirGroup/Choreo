@@ -174,6 +174,7 @@ const StateStore = types
           .finally(() => {
             pathStore.setGenerating(false);
             self.uiState.setPathAnimationTimestamp(0);
+            pathStore.setIsTrajectoryStale(false)
           });
       },
     };

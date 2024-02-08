@@ -230,6 +230,9 @@
                   "command": { "$ref": "#/definitions/command" }
                 }
               }
+            },
+            "isTrajectoryStale": {
+              "type": "boolean"
             }
           },
           "required": [

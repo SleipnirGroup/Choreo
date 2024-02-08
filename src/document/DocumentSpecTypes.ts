@@ -224,6 +224,7 @@ export let VERSIONS = {
       for (let entry of Object.keys(updated.paths)) {
         updated.paths[entry].eventMarkers = [];
         updated.paths[entry].trajectoryWaypoints = [];
+        updated.paths[entry].isTrajectoryStale = false;
       }
       return updated;
     },

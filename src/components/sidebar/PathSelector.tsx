@@ -11,7 +11,7 @@ import DocumentManagerContext from "../../document/DocumentManager";
 import DeleteIcon from "@mui/icons-material/Delete";
 import styles from "./Sidebar.module.css";
 import { Tooltip } from "@mui/material";
-import { KeyboardArrowDown, Route, Settings } from "@mui/icons-material";
+import { KeyboardArrowDown, PriorityHigh, Route, Settings } from "@mui/icons-material";
 import Input from "../input/Input";
 import InputList from "../input/InputList";
 import { dialog } from "@tauri-apps/api";
@@ -110,6 +110,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
           );
         }}
       >
+
         {this.getPath().generating ? (
           <CircularProgress
             size={20}
@@ -120,12 +121,24 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             variant="indeterminate"
           ></CircularProgress>
         ) : (
-          <Route
-            className={styles.SidebarIcon}
-            htmlColor={
-              selected ? "var(--select-yellow)" : "var(--accent-purple)"
-            }
-          />
+          this.getPath().isTrajectoryStale ?
+            <Tooltip disableInteractive title="Path features no longer match trajectory. Regenerate to be up-to-date.">
+                <PriorityHigh
+                              className={styles.SidebarIcon}
+                              htmlColor={
+                                selected ? "var(--select-yellow)" : "var(--accent-purple)"
+                              }
+                ></PriorityHigh>
+              </Tooltip>
+              :
+              <Route
+              className={styles.SidebarIcon}
+              htmlColor={
+                selected ? "var(--select-yellow)" : "var(--accent-purple)"
+              }
+            />
+      
+
         )}
 
         <TextField
