@@ -44,7 +44,7 @@ std::vector<ChoreoTrajectory> Choreo::GetTrajectoryGroup(
   for (const auto& dir_entry : std::filesystem::directory_iterator{trajDir}) {
     if (dir_entry.is_regular_file() &&
         std::regex_match(
-            dir_entry.path().stem().string(),
+            dir_entry.path().filename().string(),
             std::regex(fmt::format("{}\\.\\d+\\.traj", trajName)))) {
       ++segmentCount;
     }
