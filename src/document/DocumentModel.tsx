@@ -127,7 +127,9 @@ const StateStore = types
                 circleObstacles: pathStore.asSolverPath().circleObstacles,
                 polygonObstacles: [],
               }),
-            (e) => {throw e;}
+            (e) => {
+              throw e;
+            }
           )
           .then(
             (rust_traj) => {
@@ -174,7 +176,7 @@ const StateStore = types
           .finally(() => {
             pathStore.setGenerating(false);
             self.uiState.setPathAnimationTimestamp(0);
-            pathStore.setIsTrajectoryStale(false)
+            pathStore.setIsTrajectoryStale(false);
           });
       },
     };

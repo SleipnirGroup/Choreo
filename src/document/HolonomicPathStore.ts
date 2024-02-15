@@ -160,18 +160,17 @@ export const HolonomicPathStore = types
           ),
           eventMarkers: self.eventMarkers.flatMap((marker) => {
             let target = self.waypointIdToSavedWaypointId(marker.target);
-            if (target === undefined) return [];
             let saved: SavedEventMarker = {
               name: marker.name,
-              target,
-              targetTimestamp: marker.targetTimestamp,
+              target: target ?? null,
+              targetTimestamp: marker.targetTimestamp ?? null,
               offset: marker.offset,
               command: marker.command.asSavedCommand(),
             };
 
             return [saved];
           }),
-          isTrajectoryStale: self.isTrajectoryStale
+          isTrajectoryStale: self.isTrajectoryStale,
         };
       },
 
@@ -622,16 +621,20 @@ export const HolonomicPathStore = types
         self.eventMarkers.clear();
         savedPath.eventMarkers.forEach((saved) => {
           let rootCommandType = saved.command.type;
-          let target = self.savedWaypointIdToWaypointId(saved.target);
+          let target: WaypointID | undefined;
           let targetIndex = 0;
-          if (saved.target === "last") {
-            targetIndex = self.waypoints.length;
-          } else if (saved.target === "first") {
-            targetIndex = 0;
-          } else {
-            targetIndex = saved.target;
+          if (saved.target !== null) {
+            target = self.savedWaypointIdToWaypointId(saved.target);
+            if (saved.target === "last") {
+              targetIndex = self.waypoints.length;
+            } else if (saved.target === "first") {
+              targetIndex = 0;
+            } else {
+              targetIndex = saved.target;
+            }
           }
-          if (target === undefined) return;
+
+          //if (target === undefined) return;
           let marker = EventMarkerStore.create({
             name: saved.name,
             target: target as WaypointID,
@@ -740,18 +743,18 @@ export const HolonomicPathStore = types
       },
     };
   })
-  .actions(self=>({
+  .actions((self) => ({
     afterCreate() {
       // Anything accessed in here will cause the trajectory to be marked stale
-      autorun(()=>{
+      autorun(() => {
         console.log(toJS(self.waypoints));
         console.log(toJS(self.constraints));
         // does not need toJS to do a deep check on this, since it's just a boolean
         console.log(self.usesControlIntervalGuessing);
         console.log(toJS(self.obstacles));
         self.setIsTrajectoryStale(true);
-    })
-    }
+      });
+    },
   }));
 export interface IHolonomicPathStore
   extends Instance<typeof HolonomicPathStore> {}

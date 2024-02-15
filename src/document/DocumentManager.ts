@@ -524,6 +524,24 @@ export class DocumentManager {
 
   async exportTrajectory(uuid: string) {
     return await this.writeTrajectory(() => {
+      const { hasSaveLocation, chorRelativeTrajDir } = this.model.uiState;
+      if (!hasSaveLocation || chorRelativeTrajDir === undefined) {
+        return (async () => {
+          var file = await dialog.save({
+            title: "Export Trajectory",
+            filters: [
+              {
+                name: "Trajopt Trajectory",
+                extensions: ["traj"],
+              },
+            ],
+          });
+          if (file == null) {
+            throw "No file selected or user cancelled";
+          }
+          return [await path.dirname(file), await path.basename(file)];
+        })();
+      }
       return this.getTrajFilePath(uuid).then(async (filepath) => {
         var file = await dialog.save({
           title: "Export Trajectory",

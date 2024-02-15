@@ -105,6 +105,7 @@ class CommandDraggable extends Component<Props, State> {
                   paddingBottom: "0px",
                 },
               }}
+              fullWidth
               variant="standard"
               placeholder="Name"
               value={command.name ?? ""}
@@ -119,7 +120,7 @@ class CommandDraggable extends Component<Props, State> {
             ></TextField>
           )}
           {command.type === "wait" && (
-            <InputList noCheckbox>
+            <InputList noCheckbox style={{ flexGrow: 1 }}>
               <Input
                 title={""}
                 suffix={"s"}
@@ -130,7 +131,9 @@ class CommandDraggable extends Component<Props, State> {
               ></Input>
             </InputList>
           )}
-          <span style={{ flexGrow: 1 }}></span>
+          {(command.isGroup() || !isRoot) && (
+            <span style={{ flexGrow: 1 }}></span>
+          )}
           {command.isGroup() ? (
             <IconButton
               onClick={() => this.props.command.addSubCommand()}

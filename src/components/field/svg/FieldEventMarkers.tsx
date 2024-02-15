@@ -43,7 +43,7 @@ class FieldEventMarker extends Component<MarkerProps, MarkerState> {
   }
 }
 
-class FieldPathLines extends Component<Props, State> {
+class FieldEventMarkers extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   context!: React.ContextType<typeof DocumentManagerContext>;
   state = {};
@@ -68,4 +68,4 @@ class FieldPathLines extends Component<Props, State> {
     });
   }
 }
-export default observer(FieldPathLines);
+export default observer(FieldEventMarkers);

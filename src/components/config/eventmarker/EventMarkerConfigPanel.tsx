@@ -74,7 +74,7 @@ class EventMarkerConfigPanel extends Component<Props, State> {
   render() {
     let marker = this.props.marker;
 
-    let startIndex = (marker.getTargetIndex() ?? 0) + 1;
+    let startIndex = (marker.getTargetIndex() ?? -0.5) + 1;
     let points = marker.getPath().waypoints;
     let pointcount = points.length;
     if (marker.target === "first") {
@@ -110,8 +110,15 @@ class EventMarkerConfigPanel extends Component<Props, State> {
               });
             }
           }}
+          sliderProps={{
+            //@ts-expect-error
+            color: marker.getTargetIndex() === undefined ? "error" : "primary",
+          }}
           points={points}
         ></ScopeSlider>
+        <span style={{ width: "100%", fontSize: "0.8em", opacity: 0.8 }}>
+          Changes to waypoint target will not take effect until regeneration.
+        </span>
         <InputList noCheckbox>
           <Tooltip
             disableInteractive

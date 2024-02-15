@@ -146,7 +146,7 @@ export const EventMarkerStore = types
   .model("EventMarker", {
     name: types.string,
     target: WaypointScope,
-    trajTargetIndex: types.number,
+    trajTargetIndex: types.maybe(types.number),
     offset: types.number,
     command: CommandStore,
     uuid: types.identifier,
@@ -198,6 +198,7 @@ export const EventMarkerStore = types
   .views((self) => ({
     get targetTimestamp(): number | undefined {
       let path = self.getPath();
+      if (self.trajTargetIndex === undefined) return undefined;
       return (path as IHolonomicPathStore).generatedWaypoints[
         self.trajTargetIndex
       ]?.timestamp;
@@ -229,6 +230,11 @@ export const EventMarkerStore = types
     },
   }))
   .views((self) => ({
+    /**
+     *
+     * @returns Returns undefined if the marker does not have both a timestamp and a target timestamp.
+     * Otherwise, returns whether the target waypoint and the marker timestamp are on the same split part.
+     */
     isInSameSegment(): boolean | undefined {
       const path = self.getPath();
       let retVal: boolean | undefined = true;
@@ -243,7 +249,6 @@ export const EventMarkerStore = types
         path.generatedWaypoints.forEach((pt) => {
           if (pt.isStopPoint && retVal) {
             const stopTimestamp = pt.timestamp;
-            console.log(pt);
             if (
               (targetTimestamp < stopTimestamp && timestamp > stopTimestamp) ||
               (targetTimestamp > stopTimestamp && timestamp < stopTimestamp)

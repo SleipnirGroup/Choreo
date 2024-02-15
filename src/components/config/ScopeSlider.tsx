@@ -1,7 +1,7 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
-import { Slider } from "@mui/material";
+import { Slider, SliderProps } from "@mui/material";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 
 type Props = {
@@ -10,6 +10,7 @@ type Props = {
   startIndex: number;
   endIndex: number;
   setRange: (arg1: [number] | [number, number]) => void;
+  sliderProps?: SliderProps;
 };
 
 type State = {};
@@ -63,6 +64,7 @@ class ScopeSlider extends Component<Props, State> {
             }
             this.props.setRange(selection);
           }}
+          {...this.props.sliderProps}
         ></Slider>
       </div>
     );

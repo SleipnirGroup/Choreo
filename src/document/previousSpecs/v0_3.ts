@@ -92,11 +92,11 @@ export type SavedCommand =
   | SavedNamedCommand;
 export interface SavedEventMarker {
   name: string;
-  target: SavedWaypointId;
+  target: SavedWaypointId | null;
   offset: number;
   /**
    * The timestamp along the trajectory of the waypoint this marker targeted on the last generation.
    */
-  targetTimestamp: number;
+  targetTimestamp: number | null;
   command: SavedCommand;
 }

@@ -2,10 +2,7 @@ import { IconButton, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 
 import React, { Component } from "react";
-import {
-  IConstraintStore,
-  WaypointID
-} from "../../document/ConstraintStore";
+import { IConstraintStore, WaypointID } from "../../document/ConstraintStore";
 import DocumentManagerContext from "../../document/DocumentManager";
 import styles from "./Sidebar.module.css";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -78,7 +75,10 @@ class SidebarConstraint extends Component<Props, State> {
           <span>{this.props.constraint.definition.shortName}</span>
           {issues.length !== 0 ? (
             <Tooltip disableInteractive title={issues.join(", ")}>
-              <PriorityHigh className={styles.SidebarIcon} style={{color: "red"}}></PriorityHigh>
+              <PriorityHigh
+                className={styles.SidebarIcon}
+                style={{ color: "red" }}
+              ></PriorityHigh>
             </Tooltip>
           ) : (
             <span></span>
