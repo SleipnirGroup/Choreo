@@ -71,7 +71,7 @@ class SidebarMarker extends Component<Props, State> {
               {this.props.marker.name}
             </span>
           </Tooltip>
-          {isInSameSegment == false || marker.getTargetIndex() === undefined ? (
+          {!isInSameSegment || marker.getTargetIndex() === undefined ? (
             <Tooltip disableInteractive title={issueTitle}>
               <PriorityHigh
                 className={styles.SidebarIcon}
