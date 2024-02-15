@@ -43,6 +43,12 @@ class PathAnimationSlider extends Component<Props, State> {
                     if (type == 3 || type == 2) {
                       return [];
                     }
+                    var color = "white";
+                    if (idx === 0) {
+                      color = "green";
+                    } else if (idx === activePath.generatedWaypoints.length -1) {
+                      color = "red";
+                    }
                     return [
                       {
                         value: point.timestamp,
@@ -54,7 +60,7 @@ class PathAnimationSlider extends Component<Props, State> {
                           >
                             <span>
                               {React.cloneElement(NavbarItemData[type].icon, {
-                                htmlColor: "white",
+                                htmlColor: color,
                               })}
                             </span>
                           </Tooltip>

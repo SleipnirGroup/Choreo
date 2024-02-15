@@ -16,7 +16,13 @@ class FieldSamples extends Component<Props, State> {
     let path = this.context.model.document.pathlist.activePath;
     return (
       <>
-        {path.generatedWaypoints.map((point) => {
+        {path.generatedWaypoints.map((point, idx) => {
+          var color = "white";
+          if (idx === 0) {
+            color = "green";
+          } else if (idx === path.generatedWaypoints.length -1) {
+            color = "red";
+          }
           if (point.isInitialGuess) {
             return <></>; // Guess
           } else if (point.headingConstrained) {
@@ -26,14 +32,14 @@ class FieldSamples extends Component<Props, State> {
                   (point.heading * 180) / Math.PI
                 })`}
               >
-                <circle cx={0} cy={0} r={0.04} fill="white"></circle>
-                <circle cx={0.1} cy={0} r={0.04} fill="white"></circle>
+                <circle cx={0} cy={0} r={0.04} fill={color}></circle>
+                <circle cx={0.1} cy={0} r={0.04} fill={color}></circle>
                 <rect
                   x={-0.1}
                   y={-0.1}
                   width={0.2}
                   height={0.2}
-                  stroke="white"
+                  stroke={color}
                   strokeWidth={0.04}
                   fill="none"
                 ></rect>
@@ -41,7 +47,7 @@ class FieldSamples extends Component<Props, State> {
             );
           } else if (point.translationConstrained) {
             return (
-              <circle cx={point.x} cy={point.y} r={0.08} fill="white"></circle>
+              <circle cx={point.x} cy={point.y} r={0.08} fill={color}></circle>
             );
             // Translation
           } else {
