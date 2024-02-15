@@ -428,7 +428,6 @@ export const HolonomicPathStore = types
 
         destroy(self.waypoints[index]);
         if (self.waypoints.length === 0) {
-          self.generated = [];
           return;
         } else if (self.waypoints[index - 1]) {
           self.waypoints[index - 1].setSelected(true);
