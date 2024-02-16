@@ -11,11 +11,8 @@ import { RobotConfigStore } from "./RobotConfigStore";
 import { SelectableItemTypes, UIStateStore } from "./UIStateStore";
 import { PathListStore } from "./PathListStore";
 import { UndoManager } from "mst-middlewares";
-import { IHolonomicPathStore } from "./HolonomicPathStore";
-import { toJS } from "mobx";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
-import { Box } from "@mui/material";
 
 export const DocumentStore = types
   .model("DocumentStore", {
@@ -112,20 +109,21 @@ const StateStore = types
         })
           .then(
             () =>
+            Promise.any([
               invoke("generate_trajectory", {
                 path: pathStore.waypoints,
                 config: self.document.robotConfig.asSolverRobotConfig(),
                 constraints: pathStore.asSolverPath().constraints,
                 circleObstacles: pathStore.asSolverPath().circleObstacles,
                 polygonObstacles: [],
-              }),
+              })]),
             (e) => e
           )
           .then(
             (rust_traj) => {
               let newTraj: Array<SavedTrajectorySample> = [];
               // @ts-ignore
-              rust_traj.samples.forEach((samp) => {
+              rust_traj?.samples.forEach((samp) => {
                 newTraj.push({
                   x: samp.x,
                   y: samp.y,
