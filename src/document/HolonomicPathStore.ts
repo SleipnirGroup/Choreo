@@ -33,6 +33,8 @@ export const HolonomicPathStore = types
     name: "",
     uuid: types.identifier,
     waypoints: types.array(HolonomicWaypointStore),
+    visibleWaypointsStart: types.number,
+    visibleWaypointsEnd: types.number,
     constraints: types.array(types.union(...Object.values(ConstraintStores))),
     generated: types.frozen<Array<SavedTrajectorySample>>([]),
     generating: false,
@@ -113,6 +115,7 @@ export const HolonomicPathStore = types
             };
             delete toReturn.icon;
             delete toReturn.definition;
+            delete toReturn.uuid;
             return toReturn;
           }),
           usesControlIntervalGuessing: self.usesControlIntervalGuessing,
@@ -197,7 +200,9 @@ export const HolonomicPathStore = types
                   .flatMap((w) => w.controlIntervalCount)
                   .reduce((sum, num) => sum + num, 0)
               )
-              .sort()
+              .sort((a, b) => a - b)
+              // remove duplicates
+              .filter((item, pos, ary) => !pos || item != ary[pos - 1])
           : [0, undefined];
       },
     };
@@ -222,6 +227,16 @@ export const HolonomicPathStore = types
   })
   .actions((self) => {
     return {
+      setVisibleWaypointsStart(start: number) {
+        if (start <= self.visibleWaypointsEnd) {
+          self.visibleWaypointsStart = start;
+        }
+      },
+      setVisibleWaypointsEnd(end: number) {
+        if (end >= self.visibleWaypointsStart) {
+          self.visibleWaypointsEnd = end;
+        }
+      },
       setControlIntervalGuessing(value: boolean) {
         self.usesControlIntervalGuessing = value;
       },
@@ -242,6 +257,18 @@ export const HolonomicPathStore = types
           const root = getRoot<IStateStore>(self);
           root.select(self.waypoints[0]);
         }
+
+        // Initialize waypoints
+        if (typeof self.visibleWaypointsStart === "undefined") {
+          this.setVisibleWaypointsStart(0);
+          this.setVisibleWaypointsEnd(0);
+        }
+
+        // Make the new waypoint visible by default if the (now) penultimate waypoint is already visible
+        if (self.visibleWaypointsEnd === self.waypoints.length - 2) {
+          this.setVisibleWaypointsEnd(self.waypoints.length - 1);
+        }
+
         return self.waypoints[self.waypoints.length - 1];
       },
       deleteWaypoint(index: number) {

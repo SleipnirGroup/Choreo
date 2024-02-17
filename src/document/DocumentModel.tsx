@@ -22,6 +22,7 @@ export const DocumentStore = types
     pathlist: PathListStore,
     robotConfig: RobotConfigStore,
     splitTrajectoriesAtStopPoints: types.boolean,
+    usesObstacles: types.boolean,
   })
   .volatile((self) => ({
     history: UndoManager.create({}, { targetStore: self }),
@@ -42,6 +43,7 @@ const StateStore = types
         paths: self.document.pathlist.asSavedPathList(),
         splitTrajectoriesAtStopPoints:
           self.document.splitTrajectoriesAtStopPoints,
+        usesObstacles: self.document.usesObstacles,
       };
     },
   }))
@@ -61,6 +63,7 @@ const StateStore = types
         self.document.pathlist.fromSavedPathList(document.paths);
         self.document.splitTrajectoriesAtStopPoints =
           document.splitTrajectoriesAtStopPoints;
+        self.document.usesObstacles = document.usesObstacles;
       },
       select(item: SelectableItemTypes) {
         self.uiState.setSelectedSidebarItem(item);
@@ -192,6 +195,9 @@ const StateStore = types
     return {
       setSplitTrajectoriesAtStopPoints(split: boolean) {
         self.document.splitTrajectoriesAtStopPoints = split;
+      },
+      setUsesObstacles(usesObstacles: boolean) {
+        self.document.usesObstacles = usesObstacles;
       },
     };
   });
