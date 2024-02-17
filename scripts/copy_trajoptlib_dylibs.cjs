@@ -5,6 +5,17 @@ const path = require("path");
 
 const bu = require("./build_utils.cjs");
 
+function deleteTargetDir() {
+  const targetDir = bu.getSrcTauriPath() + "/target";
+  if (fs.existsSync(targetDir)) {
+    console.log("Removing Rust target directory");
+    fs.rmSync(targetDir, {
+      recursive: true,
+      force: true,
+    });
+  }
+}
+
 function copyDylibs() {
   let dylibDirPrefix = "lib";
 
@@ -25,10 +36,10 @@ function copyDylibs() {
   });
 }
 
+deleteTargetDir();
+
 console.log("Building trajoptlib dylibs");
-execSync(
-  "cd " + bu.getSrcTauriPath() + " && rm -rf target && cargo build --release"
-);
+execSync("cd src-tauri && cargo build --release");
 
 console.log("Copying trajoptlib dylibs to src-tauri/");
 copyDylibs();
@@ -44,5 +55,5 @@ if (process.platform === "win32") {
   );
 }
 
-console.log("Cargo clean");
-execSync("cd " + bu.getSrcTauriPath() + " && cargo clean");
+console.log("Deleting target dir again");
+deleteTargetDir();
