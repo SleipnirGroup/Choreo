@@ -33,6 +33,7 @@ src-tauri/tauri.conf.json
 src-tauri/*.dll
 src-tauri/lib*.dylib
 src-tauri/lib*.so
+src-tauri/lib*.so.*
 
 # clangd
 .cache
