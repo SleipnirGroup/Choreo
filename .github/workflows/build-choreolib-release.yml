@@ -5,7 +5,7 @@ on:
     inputs:
       version:
         type: string
-        description: The full version string, i.e. 2024.0.0-alpha-1 or 2024.1.1
+        description: The full version string, i.e. 2024.0.0-alpha-1 or 2024.1.1 with no leading "v"
         required: true
 
 jobs:
@@ -50,12 +50,14 @@ jobs:
         working-directory: ./choreolib
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}
           path: choreolib/build/allOutputs
 
   build-host:
+    env:
+      MACOSX_DEPLOYMENT_TARGET: 12
     strategy:
       fail-fast: false
       matrix:
@@ -76,7 +78,12 @@ jobs:
           java-version: "17"
           distribution: "zulu"
 
-      - name: Set version
+      - name: Set version (Windows)
+        if: matrix.os == 'windows-2022'
+        run: sed -i "s/0.0.0/${{ github.event.inputs.version }}/g" publish.gradle
+        working-directory: ./choreolib
+      - name: Set version (Mac)
+        if: matrix.os == 'macos-13'
         run: sed -i '' "s/0.0.0/${{ github.event.inputs.version }}/g" publish.gradle
         working-directory: ./choreolib
 
@@ -89,7 +96,7 @@ jobs:
         working-directory: ./choreolib
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}
           path: choreolib/build/allOutputs
@@ -105,7 +112,7 @@ jobs:
           repository: wpilibsuite/build-tools
 
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: combiner/products/build/allOutputs
 
@@ -123,7 +130,7 @@ jobs:
         working-directory: combiner
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ChoreoLib-Maven-v${{ github.event.inputs.version }}
           path: ~/releases

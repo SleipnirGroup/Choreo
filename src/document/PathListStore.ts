@@ -37,7 +37,12 @@ export const PathListStore = types
       get activePath() {
         return (
           self.paths.get(self.activePathUUID) ||
-          HolonomicPathStore.create({ name: "New Path", uuid: uuidv4() })
+          HolonomicPathStore.create({
+            name: "New Path",
+            visibleWaypointsStart: 0,
+            visibleWaypointsEnd: 0,
+            uuid: uuidv4(),
+          })
         );
       },
     };
@@ -63,6 +68,8 @@ export const PathListStore = types
         let newUUID = uuidv4();
         let path = HolonomicPathStore.create({
           uuid: newUUID,
+          visibleWaypointsStart: 0,
+          visibleWaypointsEnd: 0,
           name: usedName,
           waypoints: [],
         });
@@ -96,7 +103,7 @@ export const PathListStore = types
             return;
           }
           let newName = self.disambiguateName(oldPath.name);
-          let newuuid = self.addPath(newName, true);
+          let newuuid = self.addPath(newName, false);
           let path = self.paths.get(newuuid);
           path!.fromSavedPath(oldPath.asSavedPath());
         }
