@@ -98,7 +98,7 @@ public class ChoreoTrajectory {
     var state = sampleInternal(timestamp);
     return mirrorForRedAlliance ? state.flipped() : state;
   }
-  
+
   /**
    * Returns the list of states for this trajectory.
    *
