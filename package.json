@@ -1,6 +1,6 @@
 {
   "name": "choreo",
-  "version": "2024.1.3-pre1",
+  "version": "2024.1.3",
   "description": "A graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics Competition.",
   "homepage": "https://github.com/SleipnirGroup/Choreo",
   "bugs": {
@@ -16,7 +16,7 @@
   "scripts": {
     "checkFormat": "prettier --check .",
     "fixFormat": "prettier --write .",
-    "preinstall": "node scripts/generate_tauri_conf.cjs",
+    "preinstall": "node scripts/generate_dummy_dylib.cjs",
     "postinstall": "node scripts/copy_trajoptlib_dylibs.cjs",
     "dev": "vite",
     "build": "vite build",
