@@ -34,7 +34,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set to Windows GNU Rust Toolchain
         if: matrix.os == 'windows-2022'
@@ -42,19 +42,12 @@ jobs:
           rustup install 1.69-gnu
           rustup default 1.69-gnu
 
-      - name: Set up Clang
-        if: ${{ !startsWith(matrix.os, 'macOS') }}
-        uses: egor-tensin/setup-clang@v1
-        with:
-          version: latest
-          platform: x64
       - name: Set up MinGW
         if: matrix.os == 'windows-2022'
-        uses: egor-tensin/setup-mingw@v2
-        with:
-          platform: x64
-          version: 11.2.0
-          static: 0
+        run: |
+          choco upgrade mingw --version=11.2.0 -y --no-progress --allow-downgrade
+          echo C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin >> $env:GITHUB_PATH
+
       - name: Linux deps
         if: matrix.os == 'ubuntu-latest'
         run: |
