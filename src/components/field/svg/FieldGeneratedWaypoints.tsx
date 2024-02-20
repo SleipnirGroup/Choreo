@@ -20,7 +20,7 @@ class FieldSamples extends Component<Props, State> {
           var color = "white";
           if (idx === 0) {
             color = "green";
-          } else if (idx === path.generatedWaypoints.length -1) {
+          } else if (idx === path.generatedWaypoints.length - 1) {
             color = "red";
           }
           if (point.isInitialGuess) {
