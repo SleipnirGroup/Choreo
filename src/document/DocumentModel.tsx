@@ -122,7 +122,7 @@ const StateStore = types
             (rust_traj) => {
               let newTraj: Array<SavedTrajectorySample> = [];
               // @ts-ignore
-              rust_traj?.samples.forEach((samp) => {
+              rust_traj.samples.forEach((samp) => {
                 newTraj.push({
                   x: samp.x,
                   y: samp.y,
