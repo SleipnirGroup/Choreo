@@ -280,66 +280,83 @@ export const HolonomicPathStore = types
         root.select(undefined);
 
         // clean up constraints
-        self.constraints = self.constraints.flatMap((constraint) => {
-          let scope = constraint.getSortedScope();
-          // delete waypoint-scope referencing deleted point directly.
-          if (
-            scope.length == 1 &&
-            Object.hasOwn(scope[0], "uuid") &&
-            scope[0].uuid === uuid
-          ) {
-            return [];
-          }
-          // delete zero-segment-scope referencing deleted point directly.
-          if (scope.length == 2) {
-            let deletedIndex = index;
-            let firstIsUUID = Object.hasOwn(scope[0], "uuid");
-            let secondIsUUID = Object.hasOwn(scope[1], "uuid");
-            let startIndex = constraint.getStartWaypointIndex();
-            let endIndex = constraint.getEndWaypointIndex();
-            // Delete zero-length segments that refer directly and only to the waypoint
+        self.constraints = self.constraints.flatMap(
+          (constraint: IConstraintStore) => {
+            let scope = constraint.getSortedScope();
+            // delete waypoint-scope referencing deleted point directly.
             if (
-              startIndex == deletedIndex &&
-              endIndex == deletedIndex &&
-              (firstIsUUID || secondIsUUID)
+              scope.length == 1 &&
+              scope[0] instanceof Object &&
+              Object.hasOwn(scope[0], "uuid") &&
+              scope[0].uuid === uuid
             ) {
               return [];
             }
-            // deleted start? move new start forward till first constrainable waypoint
-            if (deletedIndex == startIndex && firstIsUUID) {
-              while (startIndex < endIndex) {
-                startIndex++;
-                if (self.waypoints[startIndex].isConstrainable()) {
-                  break;
+            // delete zero-segment-scope referencing deleted point directly.
+            if (scope.length == 2) {
+              let deletedIndex = index;
+              let firstIsUUID =
+                scope[0] instanceof Object && Object.hasOwn(scope[0], "uuid");
+              let secondIsUUID =
+                scope[1] instanceof Object && Object.hasOwn(scope[1], "uuid");
+              let startIndex = constraint.getStartWaypointIndex();
+              let endIndex = constraint.getEndWaypointIndex();
+              // start/end index being undefined, given that scope is length2, means that
+              // the constraint refers to an already-missing waypoint. Skip these and let the user
+              // retarget them.
+
+              if (startIndex === undefined || endIndex === undefined) {
+                return constraint;
+              }
+              // Delete zero-length segments that refer directly and only to the waypoint
+              if (
+                startIndex == deletedIndex &&
+                endIndex == deletedIndex &&
+                (firstIsUUID || secondIsUUID)
+              ) {
+                return [];
+              }
+              // deleted start? move new start forward till first constrainable waypoint
+              if (deletedIndex == startIndex && firstIsUUID) {
+                while (startIndex < endIndex) {
+                  startIndex++;
+                  if (self.waypoints[startIndex].isConstrainable()) {
+                    break;
+                  }
+                }
+              } else if (deletedIndex == endIndex && secondIsUUID) {
+                // deleted end? move new end backward till first constrainable waypoint
+                while (startIndex < endIndex) {
+                  endIndex--;
+                  if (self.waypoints[endIndex].isConstrainable()) {
+                    break;
+                  }
                 }
               }
-            } else if (deletedIndex == endIndex && secondIsUUID) {
-              // deleted end? move new end backward till first constrainable waypoint
-              while (startIndex < endIndex) {
-                endIndex--;
-                if (self.waypoints[endIndex].isConstrainable()) {
-                  break;
-                }
-              }
-            }
-            // if we shrunk to a single point, delete constraint
-            if (endIndex == startIndex && firstIsUUID && secondIsUUID) {
-              return [];
-            } else {
-              // update
-              constraint.scope = [
-                firstIsUUID
-                  ? { uuid: self.waypoints[startIndex].uuid }
-                  : scope[0],
+              // if we shrunk to a single point and the constraint can't be wpt scope, delete constraint
+              if (
+                !constraint.definition.wptScope &&
+                endIndex == startIndex &&
+                firstIsUUID &&
                 secondIsUUID
-                  ? { uuid: self.waypoints[endIndex].uuid }
-                  : scope[1],
-              ];
-              return constraint;
+              ) {
+                return [];
+              } else {
+                // update
+                constraint.setScope([
+                  firstIsUUID
+                    ? { uuid: self.waypoints[startIndex].uuid }
+                    : scope[0],
+                  secondIsUUID
+                    ? { uuid: self.waypoints[endIndex].uuid }
+                    : scope[1],
+                ]);
+                return constraint;
+              }
             }
+            return constraint;
           }
-          return constraint;
-        }) as typeof self.constraints;
+        ) as typeof self.constraints;
 
         destroy(self.waypoints[index]);
         if (self.waypoints.length === 0) {
