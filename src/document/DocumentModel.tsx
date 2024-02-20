@@ -109,7 +109,6 @@ const StateStore = types
         })
           .then(
             () =>
-            
               invoke("generate_trajectory", {
                 path: pathStore.waypoints,
                 config: self.document.robotConfig.asSolverRobotConfig(),
