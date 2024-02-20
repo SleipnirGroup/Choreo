@@ -260,9 +260,15 @@ async fn cancel() {
     builder.cancel_all();
 }
 
+#[tauri::command]
+fn emit_solver_status(traj: HolonomicTrajectory){
+    println!("{:?}", traj);
+    //solver_app_handle.emit_all("solver-status", traj);
+}
 #[allow(non_snake_case)]
 #[tauri::command]
 async fn generate_trajectory(
+    app_handle: tauri::AppHandle,
     path: Vec<ChoreoWaypoint>,
     config: ChoreoRobotConfig,
     constraints: Vec<Constraints>,
@@ -270,6 +276,7 @@ async fn generate_trajectory(
     polygonObstacles: Vec<PolygonObstacle>,
 ) -> Result<HolonomicTrajectory, String> {
     let mut path_builder = SwervePathBuilder::new();
+    path_builder.enable_state_feedback(emit_solver_status);
     let mut wpt_cnt: usize = 0;
     let mut rm: Vec<usize> = Vec::new();
     let mut control_interval_counts: Vec<usize> = Vec::new();
@@ -456,6 +463,10 @@ async fn generate_trajectory(
 
 fn main() {
     tauri::Builder::default()
+        // .setup(|app|{
+        //     solver_app_handle = app.handle().clone();
+        //     Ok()
+        // })
         .invoke_handler(tauri::generate_handler![
             generate_trajectory,
             cancel,

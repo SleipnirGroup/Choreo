@@ -86,6 +86,9 @@ export class DocumentManager {
         toast.error("Opening file error: " + err)
       )
     );
+    await listen("solver-status", async (event) =>
+      console.log(event.payload)
+    );
 
     window.addEventListener("contextmenu", (e) => e.preventDefault());
     window.addEventListener("copy", (e) => {
