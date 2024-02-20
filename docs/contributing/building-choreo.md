@@ -8,7 +8,7 @@
 ### Requirements for macOS
 
 - [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm), [Rust](https://www.rust-lang.org/tools/install), [CMake](https://cmake.org/download)
-- Xcode commandline tools via `xcode-select --install`
+- Xcode command-line tools via `xcode-select --install`
 
 ### Requirements for Linux
 
