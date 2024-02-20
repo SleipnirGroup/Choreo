@@ -16,8 +16,6 @@
   "scripts": {
     "checkFormat": "prettier --check .",
     "fixFormat": "prettier --write .",
-    "preinstall": "node scripts/generate_dummy_dylib.cjs",
-    "postinstall": "node scripts/copy_trajoptlib_dylibs.cjs",
     "dev": "vite",
     "build": "vite build",
     "tauri": "tauri"

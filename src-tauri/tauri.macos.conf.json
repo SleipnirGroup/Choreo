@@ -1,7 +1,0 @@
-{
-  "tauri": {
-    "bundle": {
-      "resources": ["lib*.dylib"]
-    }
-  }
-}
