@@ -84,22 +84,26 @@ export class DocumentManager {
 
   async generateAll() {
     let results = await Promise.all(
-      this.model.document.pathlist.pathUUIDs.map((uuid)=>this.model!.generatePath(uuid))
-    ).then(()=>this.exportAllTrajectories());
+      this.model.document.pathlist.pathUUIDs.map((uuid) =>
+        this.model!.generatePath(uuid)
+      )
+    ).then(() => this.exportAllTrajectories());
   }
 
   async setupEventListeners() {
-    const openFileUnlisten = await listen<OpenFileEventPayload>("open-file", async (event) => {
-            console.log(event);
-      this.handleOpenFileEvent(event).catch((err) =>
-        toast.error("Opening file error: " + err)
-      )
-    }
+    const openFileUnlisten = await listen<OpenFileEventPayload>(
+      "open-file",
+      async (event) => {
+        console.log(event);
+        this.handleOpenFileEvent(event).catch((err) =>
+          toast.error("Opening file error: " + err)
+        );
+      }
     );
 
     const generateAllUnlisten = await listen("generate-all", async (event) => {
       await this.generateAll();
-    })
+    });
 
     window.addEventListener("contextmenu", (e) => e.preventDefault());
     window.addEventListener("copy", (e) => {

@@ -61,13 +61,13 @@
     "cli": {
       "description": "",
       "longDescription": "",
-      "beforeHelp": "", 
+      "beforeHelp": "",
       "afterHelp": "",
       "args": [
         {
-        "name": "chor",
-        "index": 1,
-        "takesValue": true
+          "name": "chor",
+          "index": 1,
+          "takesValue": true
         },
         {
           "name": "generate-all",

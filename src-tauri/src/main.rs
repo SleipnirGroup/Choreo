@@ -1,9 +1,9 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 //#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use serde_json::Value;
 use std::path::PathBuf;
 use std::{fs, path::Path};
-use serde_json::Value;
 use tauri::regex::{escape, Regex};
 use tauri::{
     api::{dialog::blocking::FileDialogBuilder, file},
@@ -454,7 +454,6 @@ async fn generate_trajectory(
 }
 
 fn main() {
-
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             generate_trajectory,
@@ -468,17 +467,15 @@ fn main() {
             open_file_app
         ])
         .setup(|app: &mut tauri::App| {
-            
             let matches = app.get_cli_matches();
             match matches {
                 // `matches` here is a Struct with { args, subcommand }.
                 // `args` is `HashMap<String, ArgData>` where `ArgData` is a struct with { value, occurrences }.
                 // `subcommand` is `Option<Box<SubcommandMatches>>` where `SubcommandMatches` is a struct with { name, matches }.
                 Ok(matches) => {
-                  // Set up listener for opening a file
-                  match matches.args.get("chor") {
-                    Some(chorPath) => {
-                        match &chorPath.value {
+                    // Set up listener for opening a file
+                    match matches.args.get("chor") {
+                        Some(chorPath) => match &chorPath.value {
                             Value::String(chor) => {
                                 println!("{:?}", chor);
                                 let pathbuf = Path::new(&chor).to_path_buf();
@@ -486,34 +483,30 @@ fn main() {
                                 app.once_global("frontend-ready", move |event| {
                                     tauri::async_runtime::spawn(open_file(handle, pathbuf));
                                 });
-                            },
+                            }
                             _ => {}
-                        }                  
-                    },
-                    None => {}
-                  }
-                  match matches.args.get("generate-all") {
-                    Some(arg) => {
-                        match &arg.value {
+                        },
+                        None => {}
+                    }
+                    match matches.args.get("generate-all") {
+                        Some(arg) => match &arg.value {
                             Value::Bool(gen_all) => {
                                 if *gen_all {
                                     let handle = app.app_handle();
-                                    app.once_global("file-ready", move|event| {
+                                    app.once_global("file-ready", move |event| {
                                         handle.emit_all("generate-all", ());
                                     });
                                 }
-                            },
+                            }
                             _ => {}
-                        }                  
-                    },
-                    None => {}
-                  }
-                  
+                        },
+                        None => {}
+                    }
                 }
                 Err(_) => {}
-              }
-        Ok(())
-    })
+            }
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
