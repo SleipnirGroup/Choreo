@@ -289,7 +289,7 @@ async fn generate_trajectory(
             }
         } else {
             if (wpt_cnt > 0) {
-                path_builder.sgmt_initial_guess_points(wpt_cnt-1, &guess_points_after_waypoint);
+                path_builder.sgmt_initial_guess_points(wpt_cnt - 1, &guess_points_after_waypoint);
             }
 
             guess_points_after_waypoint.clear();
