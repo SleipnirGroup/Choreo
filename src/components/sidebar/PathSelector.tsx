@@ -1,27 +1,21 @@
 import {
   Checkbox,
   CircularProgress,
-  Dialog,
-  DialogTitle,
-  Divider,
   FormControlLabel,
-  FormGroup,
   IconButton,
-  List,
-  Switch,
   TextField,
 } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
 import DeleteIcon from "@mui/icons-material/Delete";
-import AddIcon from "@mui/icons-material/Add";
 import styles from "./Sidebar.module.css";
 import { Tooltip } from "@mui/material";
 import { KeyboardArrowDown, Route, Settings } from "@mui/icons-material";
 import Input from "../input/Input";
 import InputList from "../input/InputList";
 import { dialog } from "@tauri-apps/api";
+import { toast } from "react-toastify";
 
 type Props = {};
 
@@ -59,7 +53,10 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
   }
   completeRename() {
     if (!this.checkName()) {
-      this.getPath().setName(this.nameInputRef.current!.value);
+      this.context.renamePath(
+        this.props.uuid,
+        this.nameInputRef.current!.value
+      );
     }
     this.escapeRename();
   }
@@ -72,8 +69,12 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
   }
   checkName(): boolean {
     let inputName = this.nameInputRef.current!.value;
-    let error = this.searchForName(this.nameInputRef.current!.value);
-    error = error || inputName.length == 0;
+    let error =
+      inputName.length == 0 ||
+      inputName.includes("/") ||
+      inputName.includes("\\") ||
+      inputName.includes(".") ||
+      this.searchForName(this.nameInputRef.current!.value);
     this.setState({ renameError: error, name: inputName });
     return error;
   }
@@ -101,11 +102,13 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
       <span
         className={styles.SidebarItem + " " + (selected ? styles.Selected : "")}
         style={{ borderWidth: 0, borderLeftWidth: 4, height: "auto" }}
-        onClick={() =>
+        onClick={() => {
+          toast.dismiss(); // remove toasts that showed from last path, which is irrelevant for the new path
+
           this.context.model.document.pathlist.setActivePathUUID(
             this.props.uuid
-          )
-        }
+          );
+        }}
       >
         {this.getPath().generating ? (
           <CircularProgress
@@ -214,9 +217,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
                   .confirm(`Delete "${this.getPath().name}"?`)
                   .then((result) => {
                     if (result) {
-                      this.context.model.document.pathlist.deletePath(
-                        this.props.uuid
-                      );
+                      this.context.deletePath(this.props.uuid);
                     }
                   });
               }}
@@ -252,13 +253,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
                 }
               />
             </Tooltip>
-            <span
-              style={{
-                borderLeft: "solid gray 1px",
-                transform: "translate(12px, -4px)",
-                height: "calc(100% + 8px)",
-              }}
-            ></span>
+            <span className={styles.SidebarVerticalLine}></span>
             <span style={{ gridColumnStart: 2, gridColumnEnd: 4 }}>
               <InputList noCheckbox>
                 <Input
@@ -267,13 +262,13 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
                   showCheckbox={false}
                   enabled={!this.getPath().usesControlIntervalGuessing}
                   setEnabled={(_) => {}}
+                  roundingPrecision={0}
                   number={this.getPath().defaultControlIntervalCount}
                   setNumber={(count) => {
                     this.getPath().setDefaultControlIntervalCounts(count);
                   }}
-                  titleTooltip="When not guessing, how many control intervals to use?"
+                  titleTooltip="When not guessing, how many samples to use?"
                 ></Input>
-                {/**tooltip: When not guessing, how many control intervals to use? (default 40) */}
               </InputList>
             </span>
             {/* </FormGroup> */}

@@ -78,6 +78,7 @@ export const HolonomicWaypointStore = types
         self.isInitialGuess = point.isInitialGuess;
         self.translationConstrained = point.translationConstrained;
         self.headingConstrained = point.headingConstrained;
+        self.controlIntervalCount = point.controlIntervalCount;
       },
 
       setX(x: number) {
@@ -139,6 +140,17 @@ export const HolonomicWaypointStore = types
         default:
           break;
       }
+    },
+  }))
+  .views((self) => ({
+    copyToClipboard(evt: ClipboardEvent) {
+      console.log("copying waypoint to", evt.clipboardData);
+      const content = JSON.stringify({
+        dataType: "choreo/waypoint",
+        ...self.asSavedWaypoint(),
+      });
+      evt.clipboardData?.setData("text/plain", content);
+      console.log(evt.clipboardData);
     },
   }));
 export interface IHolonomicWaypointStore

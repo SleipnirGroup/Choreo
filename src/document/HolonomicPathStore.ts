@@ -1,4 +1,4 @@
-import { Instance, types, getRoot, destroy, getParent } from "mobx-state-tree";
+import { Instance, types, getRoot, destroy } from "mobx-state-tree";
 import {
   SavedConstraint,
   SavedPath,
@@ -10,30 +10,38 @@ import {
   IHolonomicWaypointStore,
 } from "./HolonomicWaypointStore";
 import { moveItem } from "mobx-utils";
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4, v4 } from "uuid";
 import { IStateStore } from "./DocumentModel";
 import {
-  constraints,
   ConstraintStore,
   ConstraintStores,
+  IConstraintStore,
   IWaypointScope,
   WaypointID,
   WaypointScope,
 } from "./ConstraintStore";
-import { SavedWaypointId } from "./previousSpecs/v0_1";
-import { timeStamp } from "console";
+import { SavedWaypointId } from "./previousSpecs/v0_1_2";
 import { IRobotConfigStore } from "./RobotConfigStore";
+import {
+  CircularObstacleStore,
+  ICircularObstacleStore,
+} from "./CircularObstacleStore";
+import { angleModulus } from "../util/MathUtil";
 
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
     name: "",
     uuid: types.identifier,
     waypoints: types.array(HolonomicWaypointStore),
+    visibleWaypointsStart: types.number,
+    visibleWaypointsEnd: types.number,
     constraints: types.array(types.union(...Object.values(ConstraintStores))),
     generated: types.frozen<Array<SavedTrajectorySample>>([]),
     generating: false,
     usesControlIntervalGuessing: true,
     defaultControlIntervalCount: 40,
+    usesDefaultObstacles: true,
+    obstacles: types.array(CircularObstacleStore),
   })
   .views((self) => {
     return {
@@ -107,10 +115,15 @@ export const HolonomicPathStore = types
             };
             delete toReturn.icon;
             delete toReturn.definition;
+            delete toReturn.uuid;
             return toReturn;
           }),
           usesControlIntervalGuessing: self.usesControlIntervalGuessing,
           defaultControlIntervalCount: self.defaultControlIntervalCount,
+          usesDefaultFieldObstacles: true,
+          circleObstacles: self.obstacles.map((obstacle) =>
+            obstacle.asSavedCircleObstacle()
+          ),
         };
       },
       lowestSelectedPoint(): IHolonomicWaypointStore | null {
@@ -163,6 +176,35 @@ export const HolonomicPathStore = types
         });
         return savedPath;
       },
+      stopPointIndices() {
+        const stopPoints = self.constraints.filter(
+          (c) => c.type === "StopPoint"
+        );
+        return stopPoints.length > 1
+          ? stopPoints
+              .flatMap((c: IConstraintStore) => {
+                const scope = c.scope.at(0);
+                if (scope === undefined) {
+                  return 0;
+                } else if (scope === "first") {
+                  return 0;
+                } else if (scope === "last") {
+                  return self.waypoints.length - 1;
+                } else {
+                  return self.findUUIDIndex(scope.uuid);
+                }
+              })
+              .flatMap((w) =>
+                self.waypoints
+                  .slice(0, w)
+                  .flatMap((w) => w.controlIntervalCount)
+                  .reduce((sum, num) => sum + num, 0)
+              )
+              .sort((a, b) => a - b)
+              // remove duplicates
+              .filter((item, pos, ary) => !pos || item != ary[pos - 1])
+          : [0, undefined];
+      },
     };
   })
   .actions((self) => {
@@ -185,6 +227,16 @@ export const HolonomicPathStore = types
   })
   .actions((self) => {
     return {
+      setVisibleWaypointsStart(start: number) {
+        if (start <= self.visibleWaypointsEnd) {
+          self.visibleWaypointsStart = start;
+        }
+      },
+      setVisibleWaypointsEnd(end: number) {
+        if (end >= self.visibleWaypointsStart) {
+          self.visibleWaypointsEnd = end;
+        }
+      },
       setControlIntervalGuessing(value: boolean) {
         self.usesControlIntervalGuessing = value;
       },
@@ -205,6 +257,18 @@ export const HolonomicPathStore = types
           const root = getRoot<IStateStore>(self);
           root.select(self.waypoints[0]);
         }
+
+        // Initialize waypoints
+        if (typeof self.visibleWaypointsStart === "undefined") {
+          this.setVisibleWaypointsStart(0);
+          this.setVisibleWaypointsEnd(0);
+        }
+
+        // Make the new waypoint visible by default if the (now) penultimate waypoint is already visible
+        if (self.visibleWaypointsEnd === self.waypoints.length - 2) {
+          this.setVisibleWaypointsEnd(self.waypoints.length - 1);
+        }
+
         return self.waypoints[self.waypoints.length - 1];
       },
       deleteWaypoint(index: number) {
@@ -279,7 +343,7 @@ export const HolonomicPathStore = types
 
         destroy(self.waypoints[index]);
         if (self.waypoints.length === 0) {
-          self.generated.length = 0;
+          self.generated = [];
           return;
         } else if (self.waypoints[index - 1]) {
           self.waypoints[index - 1].setSelected(true);
@@ -311,7 +375,32 @@ export const HolonomicPathStore = types
         }
         destroy(self.constraints[index]);
       },
+      deleteObstacle(index: number) {
+        destroy(self.obstacles[index]);
+        if (self.obstacles.length === 0) {
+          return;
+        } else if (self.obstacles[index - 1]) {
+          self.obstacles[index - 1].setSelected(true);
+        } else if (self.obstacles[index + 1]) {
+          self.obstacles[index + 1].setSelected(true);
+        }
+      },
+      deleteObstacleUUID(uuid: string) {
+        let index = self.obstacles.findIndex(
+          (obstacle) => obstacle.uuid === uuid
+        );
+        if (index == -1) return;
+        const root = getRoot<IStateStore>(self);
+        root.select(undefined);
 
+        if (self.obstacles.length === 1) {
+        } else if (self.obstacles[index - 1]) {
+          self.obstacles[index - 1].setSelected(true);
+        } else if (self.obstacles[index + 1]) {
+          self.obstacles[index + 1].setSelected(true);
+        }
+        destroy(self.obstacles[index]);
+      },
       reorder(startIndex: number, endIndex: number) {
         moveItem(self.waypoints, startIndex, endIndex);
       },
@@ -327,6 +416,33 @@ export const HolonomicPathStore = types
         const history = getRoot<IStateStore>(self).document.history;
         history.withoutUndo(() => {
           self.generating = generating;
+        });
+      },
+      fixWaypointHeadings() {
+        let fullRots = 0;
+        let prevHeading = 0;
+        self.waypoints.forEach((point, i, pts) => {
+          if (i == 0) {
+            prevHeading = point.heading;
+          } else {
+            if (point.headingConstrained && !point.isInitialGuess) {
+              let prevHeadingMod = angleModulus(prevHeading);
+              let heading = pts[i].heading;
+              let headingMod = angleModulus(heading);
+              if (prevHeadingMod < 0 && headingMod > prevHeadingMod + Math.PI) {
+                // negative rollunder
+                fullRots--;
+              } else if (
+                prevHeadingMod > 0 &&
+                headingMod < prevHeadingMod - Math.PI
+              ) {
+                // positive rollover
+                fullRots++;
+              }
+              point.heading = fullRots * 2 * Math.PI + headingMod;
+              prevHeading = point.heading;
+            }
+          }
         });
       },
     };
@@ -396,16 +512,31 @@ export const HolonomicPathStore = types
             );
           }
         });
+        self.obstacles.clear();
+        savedPath.circleObstacles.forEach((o) => {
+          this.addObstacle(
+            CircularObstacleStore.create({
+              x: o.x,
+              y: o.y,
+              radius: o.radius,
+              uuid: v4(),
+            })
+          );
+        });
         if (
           savedPath.trajectory !== undefined &&
           savedPath.trajectory !== null
         ) {
           self.generated = savedPath.trajectory;
         }
+
         self.usesControlIntervalGuessing =
           savedPath.usesControlIntervalGuessing;
         self.defaultControlIntervalCount =
           savedPath.defaultControlIntervalCount;
+      },
+      addObstacle(obstacle: ICircularObstacleStore) {
+        self.obstacles.push(obstacle);
       },
       optimizeControlIntervalCounts(
         robotConfig: IRobotConfigStore

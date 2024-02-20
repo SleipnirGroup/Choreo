@@ -21,6 +21,8 @@ export const DocumentStore = types
   .model("DocumentStore", {
     pathlist: PathListStore,
     robotConfig: RobotConfigStore,
+    splitTrajectoriesAtStopPoints: types.boolean,
+    usesObstacles: types.boolean,
   })
   .volatile((self) => ({
     history: UndoManager.create({}, { targetStore: self }),
@@ -39,6 +41,9 @@ const StateStore = types
         version: SAVE_FILE_VERSION,
         robotConfiguration: self.document.robotConfig.asSavedRobotConfig(),
         paths: self.document.pathlist.asSavedPathList(),
+        splitTrajectoriesAtStopPoints:
+          self.document.splitTrajectoriesAtStopPoints,
+        usesObstacles: self.document.usesObstacles,
       };
     },
   }))
@@ -56,6 +61,9 @@ const StateStore = types
           document.robotConfiguration
         );
         self.document.pathlist.fromSavedPathList(document.paths);
+        self.document.splitTrajectoriesAtStopPoints =
+          document.splitTrajectoriesAtStopPoints;
+        self.document.usesObstacles = document.usesObstacles;
       },
       select(item: SelectableItemTypes) {
         self.uiState.setSelectedSidebarItem(item);
@@ -63,11 +71,11 @@ const StateStore = types
       async generatePath(uuid: string) {
         const pathStore = self.document.pathlist.paths.get(uuid);
         if (pathStore === undefined) {
-          return new Promise((resolve, reject) =>
-            reject("Path store is undefined")
-          );
+          throw "Path store is undefined";
         }
+
         return new Promise((resolve, reject) => {
+          pathStore.fixWaypointHeadings();
           const controlIntervalOptResult =
             pathStore.optimizeControlIntervalCounts(self.document.robotConfig);
           if (controlIntervalOptResult !== undefined) {
@@ -75,7 +83,6 @@ const StateStore = types
               reject(controlIntervalOptResult)
             );
           }
-          pathStore.setTrajectory([]);
           if (pathStore.waypoints.length < 2) {
             return;
           }
@@ -103,12 +110,16 @@ const StateStore = types
           pathStore.setGenerating(true);
           resolve(pathStore);
         })
-          .then(() =>
-            invoke("generate_trajectory", {
-              path: pathStore.waypoints,
-              config: self.document.robotConfig,
-              constraints: pathStore.asSolverPath().constraints,
-            })
+          .then(
+            () =>
+              invoke("generate_trajectory", {
+                path: pathStore.waypoints,
+                config: self.document.robotConfig.asSolverRobotConfig(),
+                constraints: pathStore.asSolverPath().constraints,
+                circleObstacles: pathStore.asSolverPath().circleObstacles,
+                polygonObstacles: [],
+              }),
+            (e) => e
           )
           .then(
             (rust_traj) => {
@@ -149,35 +160,44 @@ const StateStore = types
   .actions((self) => {
     return {
       generatePathWithToasts(activePathUUID: string) {
+        var path = self.document.pathlist.paths.get(activePathUUID)!;
+        if (path.generating) {
+          return Promise.resolve();
+        }
         toast.dismiss();
-        var pathName = self.document.pathlist.paths.get(activePathUUID)!.name;
+
+        var pathName = path.name;
         if (pathName === undefined) {
           toast.error("Tried to generate unknown path.");
         }
-        toast.promise(
-          self.generatePath(activePathUUID),
-          {
-            success: {
-              render({ data, toastProps }) {
-                return `Generated \"${pathName}\"`;
-              },
-            },
-
-            error: {
-              render({ data, toastProps }) {
-                console.log(data);
-                if ((data as string).includes("User_Requested_Stop")) {
-                  toastProps.style = { visibility: "hidden" };
-                  return `Cancelled \"${pathName}\"`;
-                }
-                return `Can't generate \"${pathName}\": ` + (data as string);
-              },
+        return toast.promise(self.generatePath(activePathUUID), {
+          success: {
+            render({ data, toastProps }) {
+              return `Generated \"${pathName}\"`;
             },
           },
-          {
-            containerId: "FIELD",
-          }
-        );
+
+          error: {
+            render({ data, toastProps }) {
+              console.error(data);
+              if ((data as string).includes("User_Requested_Stop")) {
+                toastProps.style = { visibility: "hidden" };
+                return `Cancelled \"${pathName}\"`;
+              }
+              return `Can't generate \"${pathName}\": ` + (data as string);
+            },
+          },
+        });
+      },
+    };
+  })
+  .actions((self) => {
+    return {
+      setSplitTrajectoriesAtStopPoints(split: boolean) {
+        self.document.splitTrajectoriesAtStopPoints = split;
+      },
+      setUsesObstacles(usesObstacles: boolean) {
+        self.document.usesObstacles = usesObstacles;
       },
     };
   });

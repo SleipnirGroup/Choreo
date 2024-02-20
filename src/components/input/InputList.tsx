@@ -3,7 +3,7 @@ import React, { Component, PropsWithChildren } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
 import styles from "./InputList.module.css";
 
-type Props = { noCheckbox?: boolean };
+type Props = { noCheckbox?: boolean; rowGap?: number };
 
 type State = {};
 
@@ -16,7 +16,12 @@ class InputList extends Component<PropsWithChildren<Props>, State> {
       styles.InputList +
       " " +
       (this.props.noCheckbox ?? false ? styles.NoCheckbox : "");
-    return <div className={className}>{this.props.children}</div>;
+    let rowGap = this.props.rowGap ?? 0;
+    return (
+      <div className={className} style={{ rowGap }}>
+        {this.props.children}
+      </div>
+    );
   }
 }
 export default observer(InputList);

@@ -8,6 +8,8 @@ concurrency:
 
 jobs:
   build:
+    env:
+      MACOSX_DEPLOYMENT_TARGET: 12
     strategy:
       fail-fast: false
       matrix:
@@ -17,12 +19,11 @@ jobs:
             bundle-pattern: "nsis/*.exe"
 
           - artifact-name: macOS-x86_64
-            os: macOS-12
+            os: macOS-13
             bundle-pattern: "dmg/*.dmg"
 
           - artifact-name: macOS-arm64
-            os: macOS-12
-            arm64: true
+            os: macOS-14
             bundle-pattern: "dmg/*.dmg"
 
           - artifact-name: Linux-x86_64
@@ -33,23 +34,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Set to Windows GNU Rust Toolchain
-        if: matrix.os == 'windows-2022'
-        run: "rustup install 1.69-gnu && rustup default 1.69-gnu"
-
-      - name: Set to macOS arm64 Rust Toolchain
-        if: matrix.os == 'macOS-12' && matrix.arm64 == true
-        working-directory: src-tauri
-        run: "rustup target install aarch64-apple-darwin;mkdir -p .cargo;touch .cargo/config.toml;echo \"[build]\ntarget = \\\"aarch64-apple-darwin\\\"\" > .cargo/config.toml"
-
-      - name: Set up Clang
-        if: matrix.os != 'macOS-12'
-        uses: egor-tensin/setup-clang@v1
-        with:
-          version: latest
-          platform: x64
+      - uses: actions/checkout@v4
 
       - name: Linux deps
         if: matrix.os == 'ubuntu-latest'
@@ -69,15 +54,58 @@ jobs:
         run: npm install
         continue-on-error: true
 
-      - name: Show file tree src-tauri
-        working-directory: src-tauri
-        run: ls
-
       - name: Build Package
         run: npm run tauri build
 
       - name: Upload Bundle
-        uses: actions/upload-artifact@v3.1.1
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}
           path: src-tauri/target/**/release/bundle/${{ matrix.bundle-pattern }}
+
+  release:
+    name: Create Draft Release
+    needs: [build]
+    runs-on: ubuntu-latest
+    if: |
+      github.repository_owner == 'SleipnirGroup' &&
+      startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Download prebuilt binaries
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build.yml
+          workflow_conclusion: success
+          path: pkg
+          commit: ${{ github.sha }}
+
+      - name: Display structure of downloaded files
+        run: ls -R
+
+      - name: Rename Windows-x86_64 bundle
+        working-directory: pkg/Windows-x86_64/release/bundle/nsis
+        run: mv *.exe Choreo-${{ github.ref_name }}-Windows-x86_64.exe
+
+      - name: Rename macOS x86_64 bundle
+        working-directory: pkg/macOS-x86_64/release/bundle/dmg
+        run: mv *.dmg Choreo-${{ github.ref_name }}-macOS-x86_64.dmg
+
+      - name: Rename macOS arm64 bundle
+        working-directory: pkg/macOS-arm64/aarch64-apple-darwin/release/bundle/dmg
+        run: mv *.dmg Choreo-${{ github.ref_name }}-macOS-arm64.dmg
+
+      - name: Rename Linux x86_64 file
+        working-directory: pkg/Linux-x86_64/release/bundle/deb
+        run: mv *.deb Choreo-${{ github.ref_name }}-Linux-x86_64.deb
+
+      - name: Display structure of renamed files
+        run: ls -R
+
+      - uses: ncipollo/release-action@v1
+        with:
+          name: Choreo ${{ github.ref_name }}
+          tag: ${{ github.ref_name }}
+          artifacts: "pkg/**/*.exe,pkg/**/*.dmg,pkg/**/*.deb"
+          draft: true
+          prerelease: true

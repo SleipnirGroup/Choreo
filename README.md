@@ -12,7 +12,7 @@ Grab the latest release for your platform on the [releases](https://github.com/S
 
 ## Usage and Documentation
 
-Check out the [Wiki](https://github.com/SleipnirGroup/Choreo/wiki), which covers installation, usage, building, and ChoreoLib.
+Check out the [Docs](https://sleipnirgroup.github.io/Choreo), which covers installation, usage, building, and ChoreoLib.
 
 ## Robot code integration
 
@@ -23,3 +23,5 @@ An example project using Choreo is available [here](https://github.com/SleipnirG
 <a href="https://github.com/SleipnirGroup/Choreo/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=SleipnirGroup/Choreo" />
 </a>
+
+The 2024 field background was traced from the field renders provided by [MikLast](https://www.chiefdelphi.com/t/2024-crescendo-top-down-field-renders/447764).

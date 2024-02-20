@@ -2,7 +2,6 @@ import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../../document/DocumentManager";
 import OverlayWaypoint from "./OverlayWaypoint";
-import FieldImage23 from "./fields/FieldImage23";
 import * as d3 from "d3";
 import FieldGrid from "./FieldGrid";
 import FieldPathLines from "./FieldPathLines";
@@ -11,6 +10,10 @@ import { NavbarLabels, ViewLayers } from "../../../document/UIStateStore";
 import FieldGeneratedLines from "./FieldGeneratedLines";
 import FieldAxisLines from "./FieldAxisLines";
 import FieldConstraintsAddLayer from "./FieldConstraintsAddLayer";
+import FieldObstacle from "./FieldObstacles";
+import { v4 as uuidv4 } from "uuid";
+import { CircularObstacleStore } from "../../../document/CircularObstacleStore";
+import FieldImage24 from "./fields/FieldImage24";
 
 type Props = {};
 
@@ -129,8 +132,8 @@ class FieldOverlayRoot extends Component<Props, State> {
     this.context.model.uiState.setFieldScalingFactor(factor);
   }
   render() {
-    this.canvasHeightMeters = FieldImage23.WIDTH_M + 1;
-    this.canvasWidthMeters = FieldImage23.LENGTH_M + 1;
+    this.canvasHeightMeters = FieldImage24.WIDTH_M + 1;
+    this.canvasWidthMeters = FieldImage24.LENGTH_M + 1;
     let layers = this.context.model.uiState.layers;
     let constraintSelected = this.context.model.uiState.isConstraintSelected();
     return (
@@ -158,17 +161,16 @@ class FieldOverlayRoot extends Component<Props, State> {
           ref={this.frameRef}
           id="rootFrame"
         >
+          <FieldAxisLines></FieldAxisLines>
           {/* Background */}
           {layers[ViewLayers.Field] && (
-            <FieldImage23 blue={true}></FieldImage23>
+            <>
+              {/* <JSONFieldImage24 opacity={10} imageHeightPx={1556} imageWidthPx={3112}></JSONFieldImage24> */}
+              <FieldImage24></FieldImage24>
+            </>
           )}
           {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
-          <FieldAxisLines></FieldAxisLines>
-          {/* Line paths */}
-          {layers[ViewLayers.Waypoints] && <FieldPathLines></FieldPathLines>}
-          {layers[ViewLayers.Trajectory] && (
-            <FieldGeneratedLines></FieldGeneratedLines>
-          )}
+          {/* Obstacle and waypoint mouse capture*/}
           {layers[ViewLayers.Waypoints] &&
             this.context.model.uiState.isNavbarWaypointSelected() && (
               <circle
@@ -179,15 +181,61 @@ class FieldOverlayRoot extends Component<Props, State> {
                 onClick={(e) => this.createWaypoint(e)}
               ></circle>
             )}
+          {layers[ViewLayers.Obstacles] &&
+            this.context.model.uiState.isNavbarObstacleSelected() && (
+              <circle
+                cx={0}
+                cy={0}
+                r={10000}
+                style={{ fill: "transparent" }}
+                onClick={(e) => this.createObstacle(e)}
+              ></circle>
+            )}
+          {layers[ViewLayers.Obstacles] &&
+            this.context.model.document.pathlist.activePath.obstacles.map(
+              (obstacle, index) => (
+                <FieldObstacle
+                  obstacle={obstacle}
+                  index={index}
+                  key={obstacle.uuid}
+                ></FieldObstacle>
+              )
+            )}
+          {/* Line paths */}
+          {layers[ViewLayers.Waypoints] && <FieldPathLines></FieldPathLines>}
+          {layers[ViewLayers.Trajectory] && (
+            <FieldGeneratedLines></FieldGeneratedLines>
+          )}
+          {layers[ViewLayers.Samples] &&
+            this.context.model.document.pathlist.activePath.generated.map(
+              (point) => (
+                <circle
+                  cx={point.x}
+                  cy={point.y}
+                  r={0.02}
+                  fill="black"
+                ></circle>
+              )
+            )}
           {layers[ViewLayers.Waypoints] &&
             this.context.model.document.pathlist.activePath.waypoints.map(
-              (point, index) => (
-                <OverlayWaypoint
-                  waypoint={point}
-                  index={index}
-                  key={point.uuid}
-                ></OverlayWaypoint>
-              )
+              (point, index) => {
+                let activePath =
+                  this.context.model.document.pathlist.activePath;
+                if (
+                  (activePath.visibleWaypointsStart <= index &&
+                    activePath.visibleWaypointsEnd >= index) ||
+                  !layers[ViewLayers.Focus]
+                ) {
+                  return (
+                    <OverlayWaypoint
+                      waypoint={point}
+                      index={index}
+                      key={point.uuid}
+                    ></OverlayWaypoint>
+                  );
+                }
+              }
             )}
           {constraintSelected && (
             <FieldConstraintsAddLayer></FieldConstraintsAddLayer>
@@ -226,6 +274,27 @@ class FieldOverlayRoot extends Component<Props, State> {
         if (selectedItem == NavbarLabels.InitialGuessPoint) {
           newPoint.setInitialGuess(true);
         }
+      });
+      this.context.history.stopGroup();
+    }
+  }
+  createObstacle(e: React.MouseEvent<SVGCircleElement, MouseEvent>): void {
+    if (e.currentTarget === e.target) {
+      var coords = this.screenSpaceToFieldSpace(this.svgRef?.current, {
+        x: e.clientX,
+        y: e.clientY,
+      });
+      this.context.history.startGroup(() => {
+        var newObstacle =
+          this.context.model.document.pathlist.activePath.addObstacle(
+            CircularObstacleStore.create({
+              x: coords.x,
+              y: coords.y,
+              radius: 0.5,
+              uuid: uuidv4(),
+            })
+          );
+        // const selectedItem = this.context.model.uiState.selectedNavbarItem;
       });
       this.context.history.stopGroup();
     }

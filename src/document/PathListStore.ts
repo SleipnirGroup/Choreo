@@ -37,28 +37,39 @@ export const PathListStore = types
       get activePath() {
         return (
           self.paths.get(self.activePathUUID) ||
-          HolonomicPathStore.create({ name: "New Path", uuid: uuidv4() })
+          HolonomicPathStore.create({
+            name: "New Path",
+            visibleWaypointsStart: 0,
+            visibleWaypointsEnd: 0,
+            uuid: uuidv4(),
+          })
         );
       },
     };
   })
   .actions((self) => {
     return {
-      setActivePathUUID(uuid: string) {
-        if (self.pathUUIDs.includes(uuid)) {
-          self.activePathUUID = uuid;
-        }
-      },
-      addPath(name: string, select: boolean = false): string {
+      disambiguateName(name: string) {
         let usedName = name;
         let disambig = 1;
         while (self.pathNames.includes(usedName)) {
           usedName = `${name} (${disambig.toFixed(0)})`;
           disambig++;
         }
+        return usedName;
+      },
+      setActivePathUUID(uuid: string) {
+        if (self.pathUUIDs.includes(uuid)) {
+          self.activePathUUID = uuid;
+        }
+      },
+      addPath(name: string, select: boolean = false): string {
+        let usedName = this.disambiguateName(name);
         let newUUID = uuidv4();
         let path = HolonomicPathStore.create({
           uuid: newUUID,
+          visibleWaypointsStart: 0,
+          visibleWaypointsEnd: 0,
           name: usedName,
           waypoints: [],
         });
@@ -84,6 +95,19 @@ export const PathListStore = types
           self.setActivePathUUID(self.pathUUIDs[0]);
         }
       },
+      duplicatePath(uuid: string) {
+        if (self.pathUUIDs.includes(uuid)) {
+          let oldPath = self.paths.get(uuid);
+          // shouldn't hit this ever since we checked if the path exists
+          if (oldPath === undefined) {
+            return;
+          }
+          let newName = self.disambiguateName(oldPath.name);
+          let newuuid = self.addPath(newName, false);
+          let path = self.paths.get(newuuid);
+          path!.fromSavedPath(oldPath.asSavedPath());
+        }
+      },
       fromSavedPathList(list: SavedPathList) {
         self.paths.clear();
         if (list) {
@@ -92,6 +116,9 @@ export const PathListStore = types
             let path = self.paths.get(uuid);
             path!.fromSavedPath(list[name]);
           });
+        }
+        if (self.paths.size == 0) {
+          self.addPath("New Path", true);
         }
       },
     };

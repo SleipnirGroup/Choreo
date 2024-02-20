@@ -2,17 +2,15 @@ import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
 import { observer } from "mobx-react";
 import styles from "./Sidebar.module.css";
-import SidebarRobotConfig from "./SidebarRobotConfig";
 import { Divider, IconButton, Tooltip } from "@mui/material";
 import WaypointList from "./WaypointList";
 import PathSelector from "./PathSelector";
 import MenuIcon from "@mui/icons-material/Menu";
-import SaveIcon from "@mui/icons-material/Save";
-import UploadIcon from "@mui/icons-material/UploadFile";
-import FileDownload from "@mui/icons-material/FileDownload";
-import { NoteAddOutlined, Redo, Undo } from "@mui/icons-material";
+import { ContentCopy, Redo, Undo } from "@mui/icons-material";
 import Add from "@mui/icons-material/Add";
 import SidebarConstraint from "./SidebarConstraint";
+import SidebarObstacle from "./SidebarObstacle";
+import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
 
 type Props = {};
 type State = {};
@@ -81,8 +79,31 @@ class Sidebar extends Component<Props, State> {
             </Tooltip>
           </span>
         </div>
-        <div className={styles.SidebarHeading}>
+        <div
+          className={styles.SidebarHeading}
+          style={{ gridTemplateColumns: "auto 33.6px 33.6px" }}
+        >
           PATHS
+          <Tooltip disableInteractive title="Duplicate Path">
+            <IconButton
+              size="small"
+              color="default"
+              style={{
+                float: "right",
+              }}
+              disabled={
+                Object.keys(this.context.model.document.pathlist.paths)
+                  .length == 0
+              }
+              onClick={() =>
+                this.context.model.document.pathlist.duplicatePath(
+                  this.context.model.document.pathlist.activePathUUID
+                )
+              }
+            >
+              <ContentCopy fontSize="small"></ContentCopy>
+            </IconButton>
+          </Tooltip>
           <Tooltip disableInteractive title="Add Path">
             <IconButton
               size="small"
@@ -106,18 +127,9 @@ class Sidebar extends Component<Props, State> {
           <PathSelector></PathSelector>
         </div>
         <Divider></Divider>
-
-        {/* <Divider className={styles.SidebarDivider} textAlign="left" flexItem>CONSTRAINTS</Divider> 
-          // shhh.. to come later*/}
-        <div className={styles.SidebarHeading}>SETTINGS</div>
+        <div className={styles.SidebarHeading}>FEATURES</div>
         <Divider flexItem></Divider>
         <div className={styles.Sidebar}>
-          <div>
-            {" "}
-            {/*Extra div to put the padding outside the SidebarRobotConfig component*/}
-            <SidebarRobotConfig context={this.context}></SidebarRobotConfig>
-          </div>
-
           <Divider className={styles.SidebarDivider} textAlign="left" flexItem>
             <span>WAYPOINTS</span>
           </Divider>
@@ -138,8 +150,55 @@ class Sidebar extends Component<Props, State> {
               }
             )}
           </div>
+          {this.context.model.document.pathlist.activePath.constraints.length ==
+            0 && (
+            <div className={styles.SidebarItem + " " + styles.Noninteractible}>
+              <span></span>
+              <span style={{ color: "gray", fontStyle: "italic" }}>
+                No Constraints
+              </span>
+            </div>
+          )}
+          {(this.context.model.document.usesObstacles ||
+            this.context.model.document.pathlist.activePath.obstacles.includes(
+              this.context.model.uiState.selectedSidebarItem
+            )) && (
+            <>
+              <Divider
+                className={styles.SidebarDivider}
+                textAlign="left"
+                flexItem
+              >
+                <span>OBSTACLES</span>
+              </Divider>
+              <div className={styles.WaypointList}>
+                {this.context.model.document.pathlist.activePath.obstacles.map(
+                  (obstacle: ICircularObstacleStore, index: number) => {
+                    return (
+                      <SidebarObstacle
+                        obstacle={obstacle}
+                        index={index}
+                        context={this.context}
+                      ></SidebarObstacle>
+                    );
+                  }
+                )}
+              </div>
+              {this.context.model.document.pathlist.activePath.obstacles
+                .length == 0 && (
+                <div
+                  className={styles.SidebarItem + " " + styles.Noninteractible}
+                >
+                  <span></span>
+                  <span style={{ color: "gray", fontStyle: "italic" }}>
+                    No Obstacles
+                  </span>
+                </div>
+              )}
+              <Divider></Divider>
+            </>
+          )}
         </div>
-        <Divider></Divider>
       </div>
     );
   }
