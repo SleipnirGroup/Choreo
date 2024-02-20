@@ -273,6 +273,7 @@ async fn generate_trajectory(
     let mut wpt_cnt: usize = 0;
     let mut rm: Vec<usize> = Vec::new();
     let mut control_interval_counts: Vec<usize> = Vec::new();
+    let mut guess_points_after_waypoint: Vec<InitialGuessPoint> = Vec::new();
     for i in 0..path.len() {
         let wpt: &ChoreoWaypoint = &path[i];
         if wpt.isInitialGuess {
@@ -281,12 +282,17 @@ async fn generate_trajectory(
                 y: wpt.y,
                 heading: wpt.heading,
             };
-            path_builder.sgmt_initial_guess_points(wpt_cnt, &vec![guess_point]);
+            guess_points_after_waypoint.push(guess_point);
             rm.push(i);
             if let Some(last) = control_interval_counts.last_mut() {
                 *last += wpt.controlIntervalCount;
             }
         } else {
+            if wpt_cnt > 0 {
+                path_builder.sgmt_initial_guess_points(wpt_cnt - 1, &guess_points_after_waypoint);
+            }
+
+            guess_points_after_waypoint.clear();
             if wpt.headingConstrained && wpt.translationConstrained {
                 path_builder.pose_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
                 wpt_cnt += 1;
