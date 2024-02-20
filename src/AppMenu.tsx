@@ -28,13 +28,12 @@ import { dialog, invoke, path } from "@tauri-apps/api";
 import SettingsModal from "./components/config/SettingsModal";
 import { version } from "./util/version";
 
-type Props = {};
+type Props = object;
 
 type State = { settingsOpen: boolean };
 
 class AppMenu extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  // @ts-ignore
   context!: React.ContextType<typeof DocumentManagerContext>;
   state = {
     settingsOpen: false,
@@ -50,7 +49,7 @@ class AppMenu extends Component<Props, State> {
   }
 
   CopyToClipboardButton({ data, tooltip }: { data: any; tooltip: string }) {
-    let handleAction = async function () {
+    const handleAction = async function () {
       await navigator.clipboard.writeText(data);
       toast.success("Copied to clipboard");
     };
@@ -65,7 +64,7 @@ class AppMenu extends Component<Props, State> {
   }
 
   OpenInFilesApp({ dir }: { dir: string }) {
-    let handleAction = async function () {
+    const handleAction = async function () {
       invoke("open_file_app", { dir });
     };
 
@@ -79,7 +78,7 @@ class AppMenu extends Component<Props, State> {
   }
 
   render() {
-    let { mainMenuOpen, toggleMainMenu } = this.context.model.uiState;
+    const { mainMenuOpen, toggleMainMenu } = this.context.model.uiState;
     return (
       <Drawer
         ModalProps={{ onBackdropClick: toggleMainMenu }}

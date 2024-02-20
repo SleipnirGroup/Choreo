@@ -16,15 +16,15 @@ import {
 
 type Props = { rowGap: number; imperial: boolean };
 
-type State = {};
+type State = object;
 
 class RobotConfigPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = { selectedMotor: "NEO", currentLimit: 40 };
   render() {
-    let config = this.context.model.document.robotConfig;
-    let imp = this.props.imperial;
+    const config = this.context.model.document.robotConfig;
+    const imp = this.props.imperial;
     return (
       <InputList noCheckbox rowGap={this.props.rowGap}>
         <Input

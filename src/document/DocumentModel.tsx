@@ -11,11 +11,8 @@ import { RobotConfigStore } from "./RobotConfigStore";
 import { SelectableItemTypes, UIStateStore } from "./UIStateStore";
 import { PathListStore } from "./PathListStore";
 import { UndoManager } from "mst-middlewares";
-import { IHolonomicPathStore } from "./HolonomicPathStore";
-import { toJS } from "mobx";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
-import { Box } from "@mui/material";
 
 export const DocumentStore = types
   .model("DocumentStore", {
@@ -123,8 +120,7 @@ const StateStore = types
           )
           .then(
             (rust_traj) => {
-              let newTraj: Array<SavedTrajectorySample> = [];
-              // @ts-ignore
+              const newTraj: Array<SavedTrajectorySample> = [];
               rust_traj.samples.forEach((samp) => {
                 newTraj.push({
                   x: samp.x,
@@ -160,20 +156,20 @@ const StateStore = types
   .actions((self) => {
     return {
       generatePathWithToasts(activePathUUID: string) {
-        var path = self.document.pathlist.paths.get(activePathUUID)!;
+        const path = self.document.pathlist.paths.get(activePathUUID)!;
         if (path.generating) {
           return Promise.resolve();
         }
         toast.dismiss();
 
-        var pathName = path.name;
+        const pathName = path.name;
         if (pathName === undefined) {
           toast.error("Tried to generate unknown path.");
         }
         return toast.promise(self.generatePath(activePathUUID), {
           success: {
             render({ data, toastProps }) {
-              return `Generated \"${pathName}\"`;
+              return `Generated "${pathName}"`;
             },
           },
 
@@ -182,9 +178,9 @@ const StateStore = types
               console.error(data);
               if ((data as string).includes("User_Requested_Stop")) {
                 toastProps.style = { visibility: "hidden" };
-                return `Cancelled \"${pathName}\"`;
+                return `Cancelled "${pathName}"`;
               }
-              return `Can't generate \"${pathName}\": ` + (data as string);
+              return `Can't generate "${pathName}": ` + (data as string);
             },
           },
         });
