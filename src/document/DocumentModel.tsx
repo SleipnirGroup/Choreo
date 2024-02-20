@@ -14,8 +14,8 @@ import { UndoManager } from "mst-middlewares";
 import { IHolonomicPathStore } from "./HolonomicPathStore";
 import { toJS } from "mobx";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.min.css"
-import { Box } from "@mui/material";;
+import "react-toastify/dist/ReactToastify.min.css";
+import { Box } from "@mui/material";
 
 export const DocumentStore = types
   .model("DocumentStore", {
