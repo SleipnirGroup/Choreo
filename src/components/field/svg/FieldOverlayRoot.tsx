@@ -169,6 +169,7 @@ class FieldOverlayRoot extends Component<Props, State> {
                 <FieldObstacle
                   obstacle={obstacle}
                   index={index}
+                  key={obstacle.uuid}
                 ></FieldObstacle>
               )
             )}
@@ -186,13 +187,23 @@ class FieldOverlayRoot extends Component<Props, State> {
           <FieldEventMarkers></FieldEventMarkers>
           {layers[ViewLayers.Waypoints] &&
             this.context.model.document.pathlist.activePath.waypoints.map(
-              (point, index) => (
-                <OverlayWaypoint
-                  waypoint={point}
-                  index={index}
-                  key={point.uuid}
-                ></OverlayWaypoint>
-              )
+              (point, index) => {
+                let activePath =
+                  this.context.model.document.pathlist.activePath;
+                if (
+                  (activePath.visibleWaypointsStart <= index &&
+                    activePath.visibleWaypointsEnd >= index) ||
+                  !layers[ViewLayers.Focus]
+                ) {
+                  return (
+                    <OverlayWaypoint
+                      waypoint={point}
+                      index={index}
+                      key={point.uuid}
+                    ></OverlayWaypoint>
+                  );
+                }
+              }
             )}
           {constraintSelected && (
             <FieldConstraintsAddLayer></FieldConstraintsAddLayer>

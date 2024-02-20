@@ -19,7 +19,10 @@ import { Close } from "@mui/icons-material";
 import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
 import CircularObstacleConfigPanel from "../config/CircularObstacleConfigPanel";
 import EventMarkerConfigPanel from "../config/eventmarker/EventMarkerConfigPanel";
+import WaypointVisibilityPanel from "../config/WaypointVisibilityPanel";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
+import { IHolonomicPathStore } from "../../document/HolonomicPathStore";
+import { active } from "d3";
 
 type Props = {};
 
@@ -77,6 +80,7 @@ export class Field extends Component<Props, State> {
             ></EventMarkerConfigPanel>
           )}
         <VisibilityPanel></VisibilityPanel>
+        <WaypointVisibilityPanel></WaypointVisibilityPanel>
         <Tooltip
           disableInteractive
           placement="top-start"

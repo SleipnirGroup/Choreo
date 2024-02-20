@@ -7,6 +7,7 @@ import {
   Route,
   ScatterPlot,
   SquareOutlined,
+  CropFree,
 } from "@mui/icons-material";
 import { path, window as tauriWindow } from "@tauri-apps/api";
 import { getVersion } from "@tauri-apps/api/app";
@@ -217,6 +218,12 @@ const ViewData = {
     icon: <DoNotDisturb />,
     default: true,
   },
+  Focus: {
+    index: 6,
+    name: "Focus",
+    icon: <CropFree />,
+    default: false,
+  },
 };
 
 export const ViewLayers = (() => {
@@ -385,7 +392,6 @@ export const UIStateStore = types
       self.layers[layer] = visible;
     },
     setVisibleLayers(visibleLayers: number[]) {
-      console.log(self.layers, visibleLayers);
       self.layers.fill(false);
       visibleLayers.forEach((layer) => {
         self.layers.length = Math.max(layer + 1, self.layers.length);
