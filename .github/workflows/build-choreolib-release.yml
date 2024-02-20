@@ -50,12 +50,14 @@ jobs:
         working-directory: ./choreolib
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}
           path: choreolib/build/allOutputs
 
   build-host:
+    env:
+      MACOSX_DEPLOYMENT_TARGET: 12
     strategy:
       fail-fast: false
       matrix:
@@ -94,7 +96,7 @@ jobs:
         working-directory: ./choreolib
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}
           path: choreolib/build/allOutputs
@@ -110,7 +112,7 @@ jobs:
           repository: wpilibsuite/build-tools
 
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: combiner/products/build/allOutputs
 
@@ -128,7 +130,7 @@ jobs:
         working-directory: combiner
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ChoreoLib-Maven-v${{ github.event.inputs.version }}
           path: ~/releases
