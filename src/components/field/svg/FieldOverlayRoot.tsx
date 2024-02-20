@@ -131,7 +131,7 @@ class FieldOverlayRoot extends Component<Props, State> {
           {/* Background */}
           {layers[ViewLayers.Field] && (
             <>
-              {/* <JSONFieldImage24 opacity={10} imageHeightPx={550} imageWidthPx={1220}></JSONFieldImage24> */}
+              {/* <JSONFieldImage24 opacity={10} imageHeightPx={1556} imageWidthPx={3112}></JSONFieldImage24> */}
               <FieldImage24></FieldImage24>
             </>
           )}
@@ -163,6 +163,7 @@ class FieldOverlayRoot extends Component<Props, State> {
                 <FieldObstacle
                   obstacle={obstacle}
                   index={index}
+                  key={obstacle.uuid}
                 ></FieldObstacle>
               )
             )}
@@ -184,13 +185,23 @@ class FieldOverlayRoot extends Component<Props, State> {
             )}
           {layers[ViewLayers.Waypoints] &&
             this.context.model.document.pathlist.activePath.waypoints.map(
-              (point, index) => (
-                <OverlayWaypoint
-                  waypoint={point}
-                  index={index}
-                  key={point.uuid}
-                ></OverlayWaypoint>
-              )
+              (point, index) => {
+                let activePath =
+                  this.context.model.document.pathlist.activePath;
+                if (
+                  (activePath.visibleWaypointsStart <= index &&
+                    activePath.visibleWaypointsEnd >= index) ||
+                  !layers[ViewLayers.Focus]
+                ) {
+                  return (
+                    <OverlayWaypoint
+                      waypoint={point}
+                      index={index}
+                      key={point.uuid}
+                    ></OverlayWaypoint>
+                  );
+                }
+              }
             )}
           {constraintSelected && (
             <FieldConstraintsAddLayer></FieldConstraintsAddLayer>

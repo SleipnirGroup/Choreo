@@ -308,7 +308,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "choreo"
-version = "2024.1.1"
+version = "2024.1.3"
 dependencies = [
  "open",
  "serde",
@@ -3289,7 +3289,7 @@ dependencies = [
 [[package]]
 name = "trajoptlib"
 version = "0.1.0"
-source = "git+https://github.com/SleipnirGroup/TrajoptLib.git?rev=c9f8140e92dff07b2edb9c7034fea4d18dc46c9a#c9f8140e92dff07b2edb9c7034fea4d18dc46c9a"
+source = "git+https://github.com/SleipnirGroup/TrajoptLib.git?rev=85c0aadf226cc65e6f3ebd78fea6f8f94fa5403b#85c0aadf226cc65e6f3ebd78fea6f8f94fa5403b"
 dependencies = [
  "cmake",
  "cxx",

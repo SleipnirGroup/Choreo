@@ -6,6 +6,7 @@ import {
   Route,
   ScatterPlot,
   SquareOutlined,
+  CropFree,
 } from "@mui/icons-material";
 import { path, window as tauriWindow } from "@tauri-apps/api";
 import { getVersion } from "@tauri-apps/api/app";
@@ -34,7 +35,7 @@ export const SelectableItem = types.union(
   {
     dispatcher: (snapshot) => {
       if (snapshot.mass) return RobotConfigStore;
-      if (snapshot.type) {
+      if (snapshot.scope) {
         return ConstraintStores[snapshot.type];
       }
       if (snapshot.radius) {
@@ -48,8 +49,6 @@ export const SelectableItem = types.union(
   CircularObstacleStore,
   ...Object.values(ConstraintStores)
 );
-
-export const ObstaclesEnabled = false;
 
 /* Navbar stuff */
 export let WaypointData: {
@@ -203,6 +202,12 @@ const ViewData = {
     icon: <DoNotDisturb />,
     default: true,
   },
+  Focus: {
+    index: 6,
+    name: "Focus",
+    icon: <CropFree />,
+    default: false,
+  },
 };
 
 export const ViewLayers = (() => {
@@ -222,7 +227,7 @@ export const ViewItemData = (() => {
 })();
 export const ViewLayerDefaults = ViewItemData.map((layer) => layer.default);
 export type ViewLayerType = typeof ViewLayers;
-export const NUM_SETTINGS_TABS = 2;
+export const NUM_SETTINGS_TABS = 3;
 export const UIStateStore = types
   .model("UIStateStore", {
     fieldScalingFactor: 0.02,
@@ -255,6 +260,25 @@ export const UIStateStore = types
       get hasSaveLocation() {
         return (
           self.saveFileName !== undefined && self.saveFileDir !== undefined
+        );
+      },
+      get isSidebarConstraintSelected() {
+        return (
+          self.selectedSidebarItem !== undefined &&
+          self.selectedSidebarItem.scope !== undefined
+        );
+      },
+      get isSidebarCircularObstacleSelected() {
+        return (
+          self.selectedSidebarItem !== undefined &&
+          self.selectedSidebarItem.radius !== undefined
+        );
+      },
+      get isSidebarWaypointSelected() {
+        return (
+          self.selectedSidebarItem !== undefined &&
+          !this.isSidebarConstraintSelected &&
+          !this.isSidebarCircularObstacleSelected
         );
       },
       getSelectedConstraint() {
@@ -346,7 +370,6 @@ export const UIStateStore = types
       self.layers[layer] = visible;
     },
     setVisibleLayers(visibleLayers: number[]) {
-      console.log(self.layers, visibleLayers);
       self.layers.fill(false);
       visibleLayers.forEach((layer) => {
         self.layers.length = Math.max(layer + 1, self.layers.length);

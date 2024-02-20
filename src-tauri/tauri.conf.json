@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "Choreo",
-    "version": "2024.1.2"
+    "version": "2024.1.3"
   },
   "tauri": {
     "allowlist": {
@@ -44,20 +44,7 @@
         "icons/128x128@2x.png",
         "icons/icon.icns",
         "icons/icon.ico"
-      ],
-      "deb": {
-        "files": {
-          "/opt/trajopt/lib/libTrajoptLib.so": "./libTrajoptLib.so",
-          "/opt/trajopt/lib/libcasadi.so.3.7": "./libcasadi.so.3.7",
-          "/opt/trajopt/lib/libcasadi_nlpsol_ipopt.so": "./libcasadi_nlpsol_ipopt.so",
-          "/opt/trajopt/lib/libipopt.so.3": "./libipopt.so.3",
-          "/opt/trajopt/lib/libcoinmumps.so.3": "./libcoinmumps.so.3",
-          "/opt/trajopt/lib/libcoinmetis.so.2": "./libcoinmetis.so.2",
-          "/opt/trajopt/lib/libgfortran-040039e1.so.5.0.0": "./libgfortran-040039e1.so.5.0.0",
-          "/opt/trajopt/lib/libquadmath-96973f99.so.0.0.0": "./libquadmath-96973f99.so.0.0.0",
-          "/opt/trajopt/lib/libcasadi-tp-openblas.so.0": "./libcasadi-tp-openblas.so.0"
-        }
-      }
+      ]
     },
     "security": {
       "csp": null
@@ -66,7 +53,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "Choreo v2024.1.2",
+        "title": "Choreo v2024.1.3",
         "width": 1200,
         "height": 800
       }

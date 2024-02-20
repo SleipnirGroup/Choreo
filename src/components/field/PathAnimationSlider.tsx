@@ -26,20 +26,33 @@ class PathAnimationSlider extends Component<Props, State> {
           max={this.totalTime}
           marks={
             activePath.generated.length > 0
-              ? activePath.nonGuessOrEmptyPoints.map((point, idx) => ({
-                  value: activePath.waypointTimestamps()[idx],
-                  label: (
-                    <Tooltip disableInteractive title={idx + 1} key={idx + 1}>
-                      <span>
-                        {React.cloneElement(NavbarItemData[point.type].icon, {
-                          htmlColor: point.selected
-                            ? "var(--select-yellow)"
-                            : "white",
-                        })}
-                      </span>
-                    </Tooltip>
-                  ),
-                }))
+              ? activePath.waypoints.flatMap((point, idx) =>
+                  point.isInitialGuess || point.type == 2
+                    ? []
+                    : [
+                        {
+                          value: activePath.waypointTimestamps()[idx],
+                          label: (
+                            <Tooltip
+                              disableInteractive
+                              title={idx + 1}
+                              key={idx + 1}
+                            >
+                              <span>
+                                {React.cloneElement(
+                                  NavbarItemData[point.type].icon,
+                                  {
+                                    htmlColor: point.selected
+                                      ? "var(--select-yellow)"
+                                      : "white",
+                                  }
+                                )}
+                              </span>
+                            </Tooltip>
+                          ),
+                        },
+                      ]
+                )
               : false
           }
           aria-label="Default"
