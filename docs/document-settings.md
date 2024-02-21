@@ -1,7 +1,7 @@
 # Document Settings
 
 The Document Settings panel allows you to configure several document-wide settings. Access the Document Settings panel
-by clicking "Document Settings" in Choreo's main menu. 
+by clicking "Document Settings" in Choreo's main menu.
 
 ![Document Settings option in the main menu](./media/document-settings-menu.png)
 
