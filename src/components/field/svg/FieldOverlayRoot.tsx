@@ -49,17 +49,13 @@ class FieldOverlayRoot extends Component<Props, State> {
 
   zoomBehavior: d3.ZoomBehavior<SVGGElement, undefined>;
 
-  // x, y, k are the center coordinates (x, y) and scale factor (k)
+  // x, y, k are the center coordinates (x, y) and scale factor (k = {0.3, 12})
   center(x: number, y: number, k: number) {
     // d3 Transition
 
     const transition = d3.transition()
       .duration(750)
       .ease(d3.easeCubicOut)
-
-    const svgNode = d3.select(this.frameRef.current).node();
-    const centerX = (x - this.state.xPan) / this.state.zoom;
-    const centerY = (y - this.state.yPan) / this.state.zoom;
 
     d3.select<SVGGElement, undefined>(this.svgRef.current!)
       .call(this.zoomBehavior.scaleTo, k);
