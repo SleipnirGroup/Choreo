@@ -7,17 +7,16 @@ import { Close } from "@mui/icons-material";
 import ExportConfigPanel from "./ExportConfigPanel";
 import BetasConfigPanel from "./BetasConfigPanel";
 
-type Props = {};
+type Props = object;
 
-type State = {};
+type State = object;
 
 class SettingsModal extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
   render() {
-    let config = this.context.model.document.robotConfig;
-    let uiState = this.context.model.uiState;
+    const uiState = this.context.model.uiState;
     return (
       <Modal
         open={uiState.robotConfigOpen}

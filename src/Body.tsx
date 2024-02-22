@@ -4,17 +4,15 @@ import { observer } from "mobx-react";
 import Navbar from "./components/navbar/Navbar";
 import Field from "./components/field/Field";
 import Sidebar from "./components/sidebar/Sidebar";
-import PathAnimationSlider from "./components/field/PathAnimationSlider";
 import AppMenu from "./AppMenu";
 import PathAnimationPanel from "./components/field/PathAnimationPanel";
 
-type Props = {};
+type Props = object;
 
-type State = {};
+type State = object;
 
 class Body extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  // @ts-ignore
   context!: React.ContextType<typeof DocumentManagerContext>;
   state = {};
 

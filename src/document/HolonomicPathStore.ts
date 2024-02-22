@@ -84,17 +84,17 @@ export const HolonomicPathStore = types
         }
       },
       asSavedPath(): SavedPath {
-        let trajectory: Array<SavedTrajectorySample> = self.generated;
+        const trajectory: Array<SavedTrajectorySample> = self.generated;
         // constraints are converted here because of the need to search the path for uuids
         return {
           waypoints: self.waypoints.map((point) => point.asSavedWaypoint()),
           trajectory: trajectory,
           constraints: self.constraints.flatMap((constraint) => {
-            let waypointIdToSavedWaypointId = (
+            const waypointIdToSavedWaypointId = (
               waypointId: IWaypointScope
             ): "first" | "last" | number | undefined => {
               if (typeof waypointId !== "string") {
-                let scopeIndex = self.findUUIDIndex(waypointId.uuid);
+                const scopeIndex = self.findUUIDIndex(waypointId.uuid);
                 if (scopeIndex == -1) {
                   return undefined; // don't try to save this constraint
                 }
@@ -103,12 +103,12 @@ export const HolonomicPathStore = types
                 return waypointId;
               }
             };
-            let con = constraint;
-            let scope = con.scope.map((id: IWaypointScope) =>
+            const con = constraint;
+            const scope = con.scope.map((id: IWaypointScope) =>
               waypointIdToSavedWaypointId(id)
             );
             if (scope?.includes(undefined)) return [];
-            let toReturn = {
+            const toReturn = {
               ...constraint,
               type: constraint.type,
               scope,
@@ -127,7 +127,7 @@ export const HolonomicPathStore = types
         };
       },
       lowestSelectedPoint(): IHolonomicWaypointStore | null {
-        for (let point of self.waypoints) {
+        for (const point of self.waypoints) {
           if (point.selected) return point;
         }
         return null;
@@ -137,7 +137,7 @@ export const HolonomicPathStore = types
   .views((self) => {
     return {
       waypointTimestamps(): number[] {
-        let wptTimes: number[] = [];
+        const wptTimes: number[] = [];
         if (self.generated.length > 0) {
           let currentInterval = 0;
           self.waypoints.forEach((w) => {
@@ -150,8 +150,7 @@ export const HolonomicPathStore = types
         return wptTimes;
       },
       asSolverPath() {
-        let savedPath = self.asSavedPath();
-        let originalGuessIndices: number[] = [];
+        const savedPath = self.asSavedPath();
         savedPath.constraints.forEach((constraint) => {
           constraint.scope = constraint.scope.map((id) => {
             if (typeof id === "number") {
@@ -275,71 +274,88 @@ export const HolonomicPathStore = types
         if (self.waypoints[index] === undefined) {
           return;
         }
-        let uuid = self.waypoints[index]?.uuid;
+        const uuid = self.waypoints[index]?.uuid;
         const root = getRoot<IStateStore>(self);
         root.select(undefined);
 
         // clean up constraints
-        self.constraints = self.constraints.flatMap((constraint) => {
-          let scope = constraint.getSortedScope();
-          // delete waypoint-scope referencing deleted point directly.
-          if (
-            scope.length == 1 &&
-            Object.hasOwn(scope[0], "uuid") &&
-            scope[0].uuid === uuid
-          ) {
-            return [];
-          }
-          // delete zero-segment-scope referencing deleted point directly.
-          if (scope.length == 2) {
-            let deletedIndex = index;
-            let firstIsUUID = Object.hasOwn(scope[0], "uuid");
-            let secondIsUUID = Object.hasOwn(scope[1], "uuid");
-            let startIndex = constraint.getStartWaypointIndex();
-            let endIndex = constraint.getEndWaypointIndex();
-            // Delete zero-length segments that refer directly and only to the waypoint
+        self.constraints = self.constraints.flatMap(
+          (constraint: IConstraintStore) => {
+            const scope = constraint.getSortedScope();
+            // delete waypoint-scope referencing deleted point directly.
             if (
-              startIndex == deletedIndex &&
-              endIndex == deletedIndex &&
-              (firstIsUUID || secondIsUUID)
+              scope.length == 1 &&
+              scope[0] instanceof Object &&
+              Object.hasOwn(scope[0], "uuid") &&
+              scope[0].uuid === uuid
             ) {
               return [];
             }
-            // deleted start? move new start forward till first constrainable waypoint
-            if (deletedIndex == startIndex && firstIsUUID) {
-              while (startIndex < endIndex) {
-                startIndex++;
-                if (self.waypoints[startIndex].isConstrainable()) {
-                  break;
+            // delete zero-segment-scope referencing deleted point directly.
+            if (scope.length == 2) {
+              const deletedIndex = index;
+              const firstIsUUID =
+                scope[0] instanceof Object && Object.hasOwn(scope[0], "uuid");
+              const secondIsUUID =
+                scope[1] instanceof Object && Object.hasOwn(scope[1], "uuid");
+              let startIndex = constraint.getStartWaypointIndex();
+              let endIndex = constraint.getEndWaypointIndex();
+              // start/end index being undefined, given that scope is length2, means that
+              // the constraint refers to an already-missing waypoint. Skip these and let the user
+              // retarget them.
+
+              if (startIndex === undefined || endIndex === undefined) {
+                return constraint;
+              }
+              // Delete zero-length segments that refer directly and only to the waypoint
+              if (
+                startIndex == deletedIndex &&
+                endIndex == deletedIndex &&
+                (firstIsUUID || secondIsUUID)
+              ) {
+                return [];
+              }
+              // deleted start? move new start forward till first constrainable waypoint
+              if (deletedIndex == startIndex && firstIsUUID) {
+                while (startIndex < endIndex) {
+                  startIndex++;
+                  if (self.waypoints[startIndex].isConstrainable()) {
+                    break;
+                  }
+                }
+              } else if (deletedIndex == endIndex && secondIsUUID) {
+                // deleted end? move new end backward till first constrainable waypoint
+                while (startIndex < endIndex) {
+                  endIndex--;
+                  if (self.waypoints[endIndex].isConstrainable()) {
+                    break;
+                  }
                 }
               }
-            } else if (deletedIndex == endIndex && secondIsUUID) {
-              // deleted end? move new end backward till first constrainable waypoint
-              while (startIndex < endIndex) {
-                endIndex--;
-                if (self.waypoints[endIndex].isConstrainable()) {
-                  break;
-                }
-              }
-            }
-            // if we shrunk to a single point, delete constraint
-            if (endIndex == startIndex && firstIsUUID && secondIsUUID) {
-              return [];
-            } else {
-              // update
-              constraint.scope = [
-                firstIsUUID
-                  ? { uuid: self.waypoints[startIndex].uuid }
-                  : scope[0],
+              // if we shrunk to a single point and the constraint can't be wpt scope, delete constraint
+              if (
+                !constraint.definition.wptScope &&
+                endIndex == startIndex &&
+                firstIsUUID &&
                 secondIsUUID
-                  ? { uuid: self.waypoints[endIndex].uuid }
-                  : scope[1],
-              ];
-              return constraint;
+              ) {
+                return [];
+              } else {
+                // update
+                constraint.setScope([
+                  firstIsUUID
+                    ? { uuid: self.waypoints[startIndex].uuid }
+                    : scope[0],
+                  secondIsUUID
+                    ? { uuid: self.waypoints[endIndex].uuid }
+                    : scope[1],
+                ]);
+                return constraint;
+              }
             }
+            return constraint;
           }
-          return constraint;
-        }) as typeof self.constraints;
+        ) as typeof self.constraints;
 
         destroy(self.waypoints[index]);
         if (self.waypoints.length === 0) {
@@ -362,12 +378,15 @@ export const HolonomicPathStore = types
         }
       },
       deleteConstraintUUID(uuid: string) {
-        let index = self.constraints.findIndex((point) => point.uuid === uuid);
+        const index = self.constraints.findIndex(
+          (point) => point.uuid === uuid
+        );
         if (index == -1) return;
         const root = getRoot<IStateStore>(self);
         root.select(undefined);
 
         if (self.constraints.length === 1) {
+          // no-op
         } else if (self.constraints[index - 1]) {
           self.constraints[index - 1].setSelected(true);
         } else if (self.constraints[index + 1]) {
@@ -386,7 +405,7 @@ export const HolonomicPathStore = types
         }
       },
       deleteObstacleUUID(uuid: string) {
-        let index = self.obstacles.findIndex(
+        const index = self.obstacles.findIndex(
           (obstacle) => obstacle.uuid === uuid
         );
         if (index == -1) return;
@@ -394,6 +413,7 @@ export const HolonomicPathStore = types
         root.select(undefined);
 
         if (self.obstacles.length === 1) {
+          // no-op
         } else if (self.obstacles[index - 1]) {
           self.obstacles[index - 1].setSelected(true);
         } else if (self.obstacles[index + 1]) {
@@ -405,7 +425,6 @@ export const HolonomicPathStore = types
         moveItem(self.waypoints, startIndex, endIndex);
       },
       setTrajectory(trajectory: Array<SavedTrajectorySample>) {
-        // @ts-ignore
         self.generated = trajectory;
         const history = getRoot<IStateStore>(self).document.history;
         history.withoutUndo(() => {
@@ -426,9 +445,9 @@ export const HolonomicPathStore = types
             prevHeading = point.heading;
           } else {
             if (point.headingConstrained && !point.isInitialGuess) {
-              let prevHeadingMod = angleModulus(prevHeading);
-              let heading = pts[i].heading;
-              let headingMod = angleModulus(heading);
+              const prevHeadingMod = angleModulus(prevHeading);
+              const heading = pts[i].heading;
+              const headingMod = angleModulus(heading);
               if (prevHeadingMod < 0 && headingMod > prevHeadingMod + Math.PI) {
                 // negative rollunder
                 fullRots--;
@@ -450,7 +469,7 @@ export const HolonomicPathStore = types
   .actions((self) => {
     return {
       deleteWaypointUUID(uuid: string) {
-        let index = self.waypoints.findIndex((point) => point.uuid === uuid);
+        const index = self.waypoints.findIndex((point) => point.uuid === uuid);
         if (index == -1) return;
         self.deleteWaypoint(index);
       },
@@ -458,15 +477,15 @@ export const HolonomicPathStore = types
         self.waypoints.clear();
         savedPath.waypoints.forEach(
           (point: SavedWaypoint, index: number): void => {
-            let waypoint = self.addWaypoint();
+            const waypoint = self.addWaypoint();
             waypoint.fromSavedWaypoint(point);
           }
         );
         self.constraints.clear();
         savedPath.constraints.forEach((saved: SavedConstraint) => {
-          let constraintStore = ConstraintStores[saved.type];
+          const constraintStore = ConstraintStores[saved.type];
           if (constraintStore !== undefined) {
-            let savedWaypointIdToWaypointId = (savedId: SavedWaypointId) => {
+            const savedWaypointIdToWaypointId = (savedId: SavedWaypointId) => {
               if (savedId === null || savedId === undefined) {
                 return undefined;
               }
@@ -486,13 +505,13 @@ export const HolonomicPathStore = types
                 return { uuid: self.waypoints[savedId]?.uuid as string };
               }
             };
-            let scope = saved.scope.map((id) =>
+            const scope = saved.scope.map((id) =>
               savedWaypointIdToWaypointId(id)
             );
             if (scope.includes(undefined)) {
               return; // don't attempt to load
             }
-            let constraint = self.addConstraint(
+            const constraint = self.addConstraint(
               constraintStore,
               scope as WaypointID[]
             );
@@ -504,8 +523,7 @@ export const HolonomicPathStore = types
                   typeof saved[key] === "number" &&
                   key.length >= 1
                 ) {
-                  let upperCaseName = key[0].toUpperCase() + key.slice(1);
-                  //@ts-ignore
+                  const upperCaseName = key[0].toUpperCase() + key.slice(1);
                   constraint[`set${upperCaseName}`](saved[key]);
                 }
               }
@@ -577,16 +595,16 @@ export const HolonomicPathStore = types
           ?.setControlIntervalCount(self.defaultControlIntervalCount);
       },
       guessControlIntervalCount(i: number, robotConfig: IRobotConfigStore) {
-        let dx = self.waypoints.at(i + 1)!.x - self.waypoints.at(i)!.x;
-        let dy = self.waypoints.at(i + 1)!.y - self.waypoints.at(i)!.y;
-        let dtheta =
+        const dx = self.waypoints.at(i + 1)!.x - self.waypoints.at(i)!.x;
+        const dy = self.waypoints.at(i + 1)!.y - self.waypoints.at(i)!.y;
+        const dtheta =
           self.waypoints.at(i + 1)!.heading - self.waypoints.at(i)!.heading;
         const headingWeight = 0.5; // arbitrary
-        let distance = Math.sqrt(dx * dx + dy * dy);
-        let maxForce = robotConfig.wheelMaxTorque / robotConfig.wheelRadius;
-        let maxAccel = (maxForce * 4) / robotConfig.mass; // times 4 for 4 modules
-        let maxVel = robotConfig.wheelMaxVelocity * robotConfig.wheelRadius;
-        let distanceAtCruise = distance - (maxVel * maxVel) / maxAccel;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const maxForce = robotConfig.wheelMaxTorque / robotConfig.wheelRadius;
+        const maxAccel = (maxForce * 4) / robotConfig.mass; // times 4 for 4 modules
+        const maxVel = robotConfig.wheelMaxVelocity * robotConfig.wheelRadius;
+        const distanceAtCruise = distance - (maxVel * maxVel) / maxAccel;
         if (distanceAtCruise < 0) {
           // triangle
           let totalTime = 2 * (Math.sqrt(distance * maxAccel) / maxAccel);

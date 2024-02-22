@@ -9,7 +9,7 @@ type Props = {
   context: React.ContextType<typeof DocumentManagerContext>;
 };
 
-type State = {};
+type State = object;
 
 class SidebarRobotConfig extends Component<Props, State> {
   static contextType = DocumentManagerContext;
@@ -20,7 +20,7 @@ class SidebarRobotConfig extends Component<Props, State> {
   render() {
     // apparently we have to dereference this here instead of inline in the class name
     // Otherwise the component won't rerender when it changes
-    let selected = this.context.model.document.robotConfig.selected;
+    const selected = this.context.model.document.robotConfig.selected;
     return (
       <div
         className={styles.SidebarItem + (selected ? ` ${styles.Selected}` : "")}

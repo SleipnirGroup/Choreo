@@ -12,8 +12,9 @@ import SidebarConstraint from "./SidebarConstraint";
 import SidebarObstacle from "./SidebarObstacle";
 import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
 
-type Props = {};
-type State = {};
+type Props = object;
+
+type State = object;
 
 class Sidebar extends Component<Props, State> {
   static contextType = DocumentManagerContext;
@@ -24,7 +25,7 @@ class Sidebar extends Component<Props, State> {
   }
 
   render() {
-    let { toggleMainMenu } = this.context.model.uiState;
+    const { toggleMainMenu } = this.context.model.uiState;
     return (
       <div className={styles.Container}>
         <div

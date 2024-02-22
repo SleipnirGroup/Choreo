@@ -2,7 +2,7 @@ import React, { Component } from "react";
 
 type Props = { blue: boolean };
 
-type State = {};
+type State = object;
 
 export const WIDTH_M = 8.0137;
 export const LENGTH_M = 16.5481;
@@ -14,7 +14,7 @@ export default class FieldImage23 extends Component<Props, State> {
 
   render() {
     return (
-      <g id="layer1" transform={`scale(1, -1)`}>
+      <g id="layer1" transform={"scale(1, -1)"}>
         <image
           x={0}
           y={-WIDTH_M}

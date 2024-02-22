@@ -12,7 +12,7 @@ export const CircularObstacleStore = types
   })
   .views((self) => ({
     asSavedCircleObstacle(): SavedCircleObstacle {
-      let { x, y, radius } = self;
+      const { x, y, radius } = self;
       return {
         x,
         y,
