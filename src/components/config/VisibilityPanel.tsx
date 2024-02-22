@@ -11,7 +11,6 @@ import {
 import { ViewItemData } from "../../document/UIStateStore";
 import { AspectRatio, Visibility } from "@mui/icons-material";
 import { Close } from "@mui/icons-material";
-import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 
 type Props = object;
 

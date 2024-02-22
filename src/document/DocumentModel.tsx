@@ -203,8 +203,8 @@ const StateStore = types
           yMax = Math.max(yMax, waypoint.y);
         }
 
-        let x = (xMin + xMax) / 2;
-        let y = (yMin + yMax) / 2;
+        const x = (xMin + xMax) / 2;
+        const y = (yMin + yMax) / 2;
         let k = 10 / (xMax - xMin) + 0.01;
 
         // x-scaling desmos graph: https://www.desmos.com/calculator/5ie360vse3

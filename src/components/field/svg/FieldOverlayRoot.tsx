@@ -126,7 +126,7 @@ class FieldOverlayRoot extends Component<Props, State> {
   }
   handleResize() {
     console.log(`current zoom level: ${this.state.zoom}`);
-    
+
     const factor = this.getScalingFactor(this.svgRef?.current);
     this.context.model.uiState.setFieldScalingFactor(factor);
   }
