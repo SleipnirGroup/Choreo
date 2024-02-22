@@ -8,24 +8,24 @@ import { MetersOrFeet, MToFt } from "../../../util/UnitConversions";
 
 type Props = { rowGap: number; imperial: boolean };
 
-type State = {};
+type State = object;
 
 class RobotConfigPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = { selectedMotor: "NEO", currentLimit: 40 };
   render() {
-    let config = this.context.model.document.robotConfig;
-    let floorSpeed = config.wheelMaxVelocity * config.wheelRadius;
-    let floorLinearForce = (4 * config.wheelMaxTorque) / config.wheelRadius; // N
-    let floorLinearAccel = floorLinearForce / config.mass;
-    let driveRadius = Math.hypot(config.wheelbase / 2, config.trackWidth / 2);
-    let chassisTorque = floorLinearForce * driveRadius; // N*m
+    const config = this.context.model.document.robotConfig;
+    const floorSpeed = config.wheelMaxVelocity * config.wheelRadius;
+    const floorLinearForce = (4 * config.wheelMaxTorque) / config.wheelRadius; // N
+    const floorLinearAccel = floorLinearForce / config.mass;
+    const driveRadius = Math.hypot(config.wheelbase / 2, config.trackWidth / 2);
+    const chassisTorque = floorLinearForce * driveRadius; // N*m
     //N*m/(kg*m*m) = N/(kg*m) = (kg*m/s^2)/(kg*m)=1/s^2= rad/s^2
-    let chassisAngularAccel = chassisTorque / config.rotationalInertia; //N*m/(kg*m*m) = N/(kg*m)
-    let floorAngularVelocity =
+    const chassisAngularAccel = chassisTorque / config.rotationalInertia; //N*m/(kg*m*m) = N/(kg*m)
+    const floorAngularVelocity =
       (config.wheelMaxVelocity * config.wheelRadius) / driveRadius;
-    let imp = this.props.imperial;
+    const imp = this.props.imperial;
     return (
       <InputList noCheckbox rowGap={this.props.rowGap}>
         <span style={{ color: "transparent", height: 0 }}>Floor Speed</span>
@@ -58,7 +58,7 @@ class RobotConfigPanel extends Component<Props, State> {
         />
         <Input
           title="Ang Speed"
-          suffix={`rad/s`}
+          suffix={"rad/s"}
           enabled={false}
           setEnabled={(a) => null}
           roundingPrecision={3}
@@ -71,7 +71,7 @@ class RobotConfigPanel extends Component<Props, State> {
 
         <Input
           title="Ang Accel"
-          suffix={`rad/s²`}
+          suffix={"rad/s²"}
           enabled={false}
           setEnabled={(a) => null}
           roundingPrecision={3}

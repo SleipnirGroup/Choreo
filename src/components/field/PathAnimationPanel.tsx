@@ -9,7 +9,7 @@ import { autorun } from "mobx";
 import { Tooltip } from "@mui/material";
 import hotkeys from "hotkeys-js";
 
-type Props = {};
+type Props = object;
 
 type State = {
   running: boolean;
@@ -20,7 +20,6 @@ class PathAnimationPanel extends Component<Props, State> {
     running: false,
   };
   static contextType = DocumentManagerContext;
-  // @ts-ignore
   context!: React.ContextType<typeof DocumentManagerContext>;
   timerId = 0;
   totalTime = 0;
@@ -43,10 +42,10 @@ class PathAnimationPanel extends Component<Props, State> {
   }
 
   incrementTimer(_: number) {
-    let dt = Date.now() - this.then;
+    const dt = Date.now() - this.then;
     this.then = Date.now();
     if (this.state.running) {
-      let pathAnimationTimestamp =
+      const pathAnimationTimestamp =
         this.context.model.uiState.pathAnimationTimestamp;
       if (pathAnimationTimestamp > this.totalTime) {
         this.context.model.uiState.setPathAnimationTimestamp(0);
@@ -77,12 +76,12 @@ class PathAnimationPanel extends Component<Props, State> {
     });
     autorun(() => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      let activePath = this.context.model.document.pathlist.activePathUUID;
+      const activePath = this.context.model.document.pathlist.activePathUUID;
       this.onStop();
     });
   }
   render() {
-    var activePath = this.context.model.document.pathlist.activePath;
+    const activePath = this.context.model.document.pathlist.activePath;
     this.totalTime =
       this.context.model.document.pathlist.activePath.getTotalTimeSeconds();
     return (

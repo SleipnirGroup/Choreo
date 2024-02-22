@@ -5,17 +5,16 @@ import Slider from "@mui/material/Slider";
 import { Tooltip } from "@mui/material";
 import { NavbarItemData } from "../../document/UIStateStore";
 
-type Props = {};
+type Props = object;
 
-type State = {};
+type State = object;
 
 class PathAnimationSlider extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  // @ts-ignore
   context!: React.ContextType<typeof DocumentManagerContext>;
   totalTime = 0;
   render() {
-    let activePath = this.context.model.document.pathlist.activePath;
+    const activePath = this.context.model.document.pathlist.activePath;
     this.totalTime = activePath.getTotalTimeSeconds();
     return (
       <>

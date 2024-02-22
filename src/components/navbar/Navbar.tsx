@@ -3,25 +3,23 @@ import DocumentManagerContext from "../../document/DocumentManager";
 import Tooltip from "@mui/material/Tooltip";
 import styles from "./Navbar.module.css";
 import { observer } from "mobx-react";
-import { Divider, ToggleButton, ToggleButtonGroup } from "@mui/material";
+import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import {
   NavbarItemData,
   NavbarItemSectionLengths,
-  NavbarItemSplitPoints,
 } from "../../document/UIStateStore";
 
-type Props = {};
+type Props = object;
 
-type State = {};
+type State = object;
 
 class Navbar extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  // @ts-ignore
   context!: React.ContextType<typeof DocumentManagerContext>;
   state = {};
 
   render() {
-    let { selectedNavbarItem, setSelectedNavbarItem } =
+    const { selectedNavbarItem, setSelectedNavbarItem } =
       this.context.model.uiState;
     return (
       <div className={styles.Container}>
@@ -43,7 +41,6 @@ class Navbar extends Component<Props, State> {
               (item, index) =>
                 index <= endSplit &&
                 index > (NavbarItemSectionLengths[sectionIdx - 1] ?? -1) && (
-                  //@ts-ignore
                   <Tooltip
                     disableInteractive
                     value={`${index}`}

@@ -12,16 +12,16 @@ import { ViewItemData } from "../../document/UIStateStore";
 import { Visibility } from "@mui/icons-material";
 import { Close } from "@mui/icons-material";
 
-type Props = {};
+type Props = object;
 
-type State = {};
+type State = object;
 
 class RobotConfigPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
   render() {
-    let uiState = this.context.model.uiState;
+    const uiState = this.context.model.uiState;
     return (
       <div className={styles.VisibilityPanel}>
         <IconButton
@@ -50,7 +50,6 @@ class RobotConfigPanel extends Component<Props, State> {
               }}
             >
               {ViewItemData.map((item, index) => (
-                // @ts-ignore
                 <Tooltip
                   disableInteractive
                   title={item.name}

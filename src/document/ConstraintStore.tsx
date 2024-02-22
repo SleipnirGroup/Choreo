@@ -1,17 +1,13 @@
 import {
-  ArrowRight,
-  ArrowRightAlt,
-  ArrowUpward,
   Dangerous,
   Explore,
   KeyboardDoubleArrowRight,
   PriorityHigh,
-  Stop,
   StopCircleOutlined,
   SyncDisabledOutlined,
   Timeline,
 } from "@mui/icons-material";
-import { getDebugName, toJS } from "mobx";
+import { toJS } from "mobx";
 import { getParent, types } from "mobx-state-tree";
 import {
   getRoot,
@@ -21,12 +17,9 @@ import {
   ISimpleType,
   ModelActions,
 } from "mobx-state-tree";
-import { type } from "os";
-import React, { JSXElementConstructor, ReactElement } from "react";
+import { JSXElementConstructor, ReactElement } from "react";
 import { safeGetIdentifier } from "../util/mobxutils";
 import { IStateStore } from "./DocumentModel";
-import { v4 as uuidv4 } from "uuid";
-import { I } from "@tauri-apps/api/path-c062430b";
 import { IHolonomicWaypointStore } from "./HolonomicWaypointStore";
 import { IHolonomicPathStore } from "./HolonomicPathStore";
 
@@ -254,11 +247,10 @@ export const ConstraintStore = types
       return path;
     },
     get issues() {
-      let startWaypoint = self.getStartWaypoint();
-      let endWaypoint = self.getEndWaypoint();
-      let scope = self.scope;
-      let issue = false;
-      let issueText = [];
+      const startWaypoint = self.getStartWaypoint();
+      const endWaypoint = self.getEndWaypoint();
+      const scope = self.scope;
+      const issueText = [];
 
       if (scope.length == 2) {
         if (startWaypoint === undefined || endWaypoint === undefined) {
@@ -309,7 +301,7 @@ const defineConstraintStore = (
       // Define each property onto the model
       .props(
         (() => {
-          let x: {
+          const x: {
             [key: string]: IOptionalIType<ISimpleType<number>, [number]>;
           } = {};
           Object.keys(definition.properties).forEach((key) => {
@@ -327,12 +319,12 @@ const defineConstraintStore = (
       })
       // Defined setters for each property
       .actions((self) => {
-        let x: ModelActions = {};
+        const x: ModelActions = {};
         Object.keys(definition.properties).forEach((key) => {
           if (key.length == 0) {
             return;
           }
-          let upperCaseName = key[0].toUpperCase() + key.slice(1);
+          const upperCaseName = key[0].toUpperCase() + key.slice(1);
           x[`set${upperCaseName}`] = (arg0: number) => {
             self[key] = arg0;
           };
@@ -342,7 +334,7 @@ const defineConstraintStore = (
   );
 };
 
-let constraintsStores: { [key: string]: typeof ConstraintStore } = {};
+const constraintsStores: { [key: string]: typeof ConstraintStore } = {};
 Object.entries(constraints).forEach((entry) => {
   constraintsStores[entry[0]] = defineConstraintStore(entry[0], entry[1]);
 });

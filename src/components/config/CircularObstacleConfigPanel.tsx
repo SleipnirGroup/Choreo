@@ -8,14 +8,14 @@ import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
 
 type Props = { obstacle: ICircularObstacleStore | null };
 
-type State = {};
+type State = object;
 
 class CircularObstacleConfigPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
   render() {
-    let { obstacle } = this.props;
+    const { obstacle } = this.props;
     if (obstacle !== null) {
       return (
         <div className={styles.WaypointPanel}>

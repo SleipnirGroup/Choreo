@@ -43,7 +43,7 @@ export const HolonomicWaypointStore = types
         );
       },
       asSavedWaypoint(): SavedWaypoint {
-        let {
+        const {
           x,
           y,
           isInitialGuess,
