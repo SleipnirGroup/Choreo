@@ -51,12 +51,12 @@ class FieldOverlayRoot extends Component<Props, State> {
 
   // x, y, k are the center coordinates (x, y) and scale factor (k = {0.3, 12})
   private center(x: number, y: number, k: number) {
-    const transition = d3.transition()
-      .duration(750)
-      .ease(d3.easeCubicOut)
+    const transition = d3.transition().duration(750).ease(d3.easeCubicOut);
 
-    d3.select<SVGGElement, undefined>(this.svgRef.current!)
-      .call(this.zoomBehavior.scaleTo, k);
+    d3.select<SVGGElement, undefined>(this.svgRef.current!).call(
+      this.zoomBehavior.scaleTo,
+      k
+    );
 
     d3.select<SVGGElement, undefined>(this.svgRef.current!)
       .transition(transition)
