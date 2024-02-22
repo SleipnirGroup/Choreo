@@ -189,7 +189,7 @@ const StateStore = types
           },
         });
       },
-      zoomToFitTrajectory() {
+      zoomToFitWaypoints() {
         const waypoints = self.document.pathlist.activePath.waypoints;
         if (waypoints.length <= 0) {
           return;

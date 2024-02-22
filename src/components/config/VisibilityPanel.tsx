@@ -26,7 +26,7 @@ class RobotConfigPanel extends Component<Props, State> {
     return (
       <div className={styles.VisibilityPanel}>
         <Tooltip disableInteractive title="Zoom to fit trajectory">
-          <IconButton onClick={() => this.context.model.zoomToFitTrajectory()}>
+          <IconButton onClick={() => this.context.model.zoomToFitWaypoints()}>
             <AspectRatio></AspectRatio>
           </IconButton>
         </Tooltip>

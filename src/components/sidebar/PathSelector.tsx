@@ -95,7 +95,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     let selected =
       this.props.uuid == this.context.model.document.pathlist.activePathUUID;
     let name = this.getPath().name;
-    this.context.model.zoomToFitTrajectory();
+    this.context.model.zoomToFitWaypoints();
     if (name != this.state.name && !this.state.renaming) {
       this.state.name = name;
     }
