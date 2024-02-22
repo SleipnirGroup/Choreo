@@ -13,8 +13,9 @@ import { AspectRatio, Visibility } from "@mui/icons-material";
 import { Close } from "@mui/icons-material";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 
-type Props = {};
-type State = {};
+type Props = object;
+
+type State = object;
 
 class RobotConfigPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
@@ -22,7 +23,7 @@ class RobotConfigPanel extends Component<Props, State> {
   state = {};
 
   render() {
-    let uiState = this.context.model.uiState;
+    const uiState = this.context.model.uiState;
     return (
       <div className={styles.VisibilityPanel}>
         <Tooltip disableInteractive title="Zoom to fit trajectory">
@@ -56,7 +57,6 @@ class RobotConfigPanel extends Component<Props, State> {
               }}
             >
               {ViewItemData.map((item, index) => (
-                // @ts-ignore
                 <Tooltip
                   disableInteractive
                   title={item.name}

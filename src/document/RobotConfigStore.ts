@@ -86,7 +86,7 @@ export const RobotConfigStore = types
         );
       },
       asSavedRobotConfig(): SavedRobotConfig {
-        let {
+        const {
           mass,
           rotationalInertia,
           motorMaxTorque,
@@ -119,7 +119,7 @@ export const RobotConfigStore = types
         wheelMaxVelocity: number;
       } {
         // JavaScript, please have better syntax for what we're trying to do here.
-        let {
+        const {
           mass,
           rotationalInertia,
           wheelbase,

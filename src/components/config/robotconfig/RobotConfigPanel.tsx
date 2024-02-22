@@ -9,7 +9,7 @@ import DimensionsConfigPanel from "./DimensionsConfigPanel";
 import TheoreticalPanel from "./TheoreticalPanel";
 import ModuleConfigPanel from "./ModuleConfigPanel";
 
-type Props = {};
+type Props = object;
 
 type State = { imperial: boolean; bottomHalf: boolean };
 
@@ -19,9 +19,7 @@ class RobotConfigPanel extends Component<Props, State> {
   state = { imperial: false, bottomHalf: false };
   rowGap = 16;
   render() {
-    let config = this.context.model.document.robotConfig;
-    let uiState = this.context.model.uiState;
-    let imp = this.state.imperial;
+    const imp = this.state.imperial;
     return (
       <div
         style={{

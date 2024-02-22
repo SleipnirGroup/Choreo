@@ -21,7 +21,7 @@ class RobotConfigPanel extends Component<Props, State> {
     currentLimit: 60,
   };
   render() {
-    let config = this.context.model.document.robotConfig;
+    const config = this.context.model.document.robotConfig;
     return (
       <>
         <FormControl
@@ -38,9 +38,7 @@ class RobotConfigPanel extends Component<Props, State> {
             sx={{ flexGrow: 1 }}
             value={this.state.selectedMotor}
             onChange={(event) => {
-              let key = event.target.value as keyof typeof MotorCurves;
-              if (MotorCurves[key] !== undefined) {
-              }
+              const key = event.target.value as keyof typeof MotorCurves;
               this.setState({ selectedMotor: key });
             }}
           >

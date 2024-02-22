@@ -9,12 +9,10 @@ import { CSSProperties } from "styled-components";
 import DocumentManagerContext from "../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import styles from "./Sidebar.module.css";
-import Circle from "@mui/icons-material/Circle";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { IconButton, Tooltip } from "@mui/material";
 import { isAlive } from "mobx-state-tree";
-import Waypoint from "../../assets/Waypoint";
-import { CircleOutlined, PriorityHigh } from "@mui/icons-material";
+import { PriorityHigh } from "@mui/icons-material";
 import { NavbarItemData } from "../../document/UIStateStore";
 
 type Props = {
@@ -60,12 +58,12 @@ class SidebarWaypoint extends Component<Props, State> {
   }
 
   render() {
-    let waypoint = this.props.waypoint;
-    let pathLength = this.props.pathLength;
-    let type = waypoint.type;
+    const waypoint = this.props.waypoint;
+    const pathLength = this.props.pathLength;
+    const type = waypoint.type;
     // apparently we have to dereference this here instead of inline in the class name
     // Otherwise the component won't rerender when it changes
-    let { selected, translationConstrained, headingConstrained } = waypoint;
+    const { selected, _translationConstrained, _headingConstrained } = waypoint;
     if (!isAlive(waypoint)) return <></>;
     return (
       <Draggable

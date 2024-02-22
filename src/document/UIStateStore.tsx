@@ -51,7 +51,7 @@ export const SelectableItem = types.union(
 );
 
 /* Navbar stuff */
-export let WaypointData: {
+export const WaypointData: {
   [key: string]: {
     index: number;
     name: string;
@@ -79,7 +79,7 @@ export let WaypointData: {
     icon: <InitialGuessPoint />,
   },
 };
-let NavbarData: {
+const NavbarData: {
   [key: string]: {
     index: number;
     name: string;
@@ -87,10 +87,11 @@ let NavbarData: {
   };
 } = Object.assign({}, WaypointData);
 const waypointNavbarCount = Object.keys(NavbarData).length;
-let constraintsIndices: number[] = [];
-let navbarIndexToConstraint: { [key: number]: typeof ConstraintStore } = {};
-let navbarIndexToConstraintDefinition: { [key: number]: ConstraintDefinition } =
-  {};
+const constraintsIndices: number[] = [];
+const navbarIndexToConstraint: { [key: number]: typeof ConstraintStore } = {};
+const navbarIndexToConstraintDefinition: {
+  [key: number]: ConstraintDefinition;
+} = {};
 {
   let constraintsOffset = Object.keys(NavbarData).length;
   Object.entries(constraints).forEach(([key, data], index) => {
@@ -106,7 +107,7 @@ let navbarIndexToConstraintDefinition: { [key: number]: ConstraintDefinition } =
   });
 }
 const constraintNavbarCount = Object.keys(constraints).length;
-export let ObstacleData: {
+export const ObstacleData: {
   [key: string]: {
     index: number;
     name: string;
@@ -121,7 +122,7 @@ export let ObstacleData: {
 };
 const obstacleNavbarCount = Object.keys(ObstacleData).length;
 Object.entries(ObstacleData).forEach(([name, data]) => {
-  let obstaclesOffset = Object.keys(NavbarData).length;
+  const obstaclesOffset = Object.keys(NavbarData).length;
   NavbarData[name] = {
     index: obstaclesOffset,
     name: data.name,
@@ -131,7 +132,7 @@ Object.entries(ObstacleData).forEach(([name, data]) => {
 
 /** An map of  */
 export const NavbarLabels = (() => {
-  let x: { [key: string]: number } = {};
+  const x: { [key: string]: number } = {};
   Object.entries(NavbarData).forEach(([key, data], index) => {
     x[key] = index;
   });
@@ -140,11 +141,9 @@ export const NavbarLabels = (() => {
 
 /** An array of name-and-icon objects for the navbar */
 export const NavbarItemData = (() => {
-  let x: Array<{ name: string; icon: any }> = [];
-  let constraintsOffset = 0;
+  const x: Array<{ name: string; icon: any }> = [];
   Object.entries(NavbarData).forEach(([key, data], index) => {
     x[data.index] = { name: data.name, icon: data.icon };
-    constraintsOffset++;
   });
   return x;
 })();
@@ -211,7 +210,7 @@ const ViewData = {
 };
 
 export const ViewLayers = (() => {
-  let x: { [key: string]: number } = {};
+  const x: { [key: string]: number } = {};
   Object.entries(ViewData).forEach(([key, data], index) => {
     x[key] = index;
   });
@@ -219,7 +218,7 @@ export const ViewLayers = (() => {
 })();
 
 export const ViewItemData = (() => {
-  let x: Array<{ name: string; icon: any; default: boolean }> = [];
+  const x: Array<{ name: string; icon: any; default: boolean }> = [];
   Object.entries(ViewData).forEach(([key, data], index) => {
     x[data.index] = { name: data.name, icon: data.icon, default: data.default };
   });

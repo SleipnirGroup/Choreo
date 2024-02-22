@@ -14,27 +14,23 @@ import VisibilityPanel from "../config/VisibilityPanel";
 import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel";
 import { IConstraintStore } from "../../document/ConstraintStore";
 import "react-toastify/dist/ReactToastify.min.css";
-import { ToastContainer, toast } from "react-toastify";
 import { invoke } from "@tauri-apps/api";
 import { Close } from "@mui/icons-material";
 import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
 import CircularObstacleConfigPanel from "../config/CircularObstacleConfigPanel";
 import WaypointVisibilityPanel from "../config/WaypointVisibilityPanel";
-import { IHolonomicPathStore } from "../../document/HolonomicPathStore";
-import { active } from "d3";
 
-type Props = {};
+type Props = object;
 
-type State = {};
+type State = object;
 
 export class Field extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  // @ts-ignore
   context!: React.ContextType<typeof DocumentManagerContext>;
   render() {
-    let selectedSidebar = this.context.model.uiState.selectedSidebarItem;
-    let activePath = this.context.model.document.pathlist.activePath;
-    let activePathUUID = this.context.model.document.pathlist.activePathUUID;
+    const selectedSidebar = this.context.model.uiState.selectedSidebarItem;
+    const activePath = this.context.model.document.pathlist.activePath;
+    const activePathUUID = this.context.model.document.pathlist.activePathUUID;
     return (
       <div className={styles.Container}>
         <FieldOverlayRoot></FieldOverlayRoot>

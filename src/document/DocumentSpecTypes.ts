@@ -65,21 +65,21 @@ export { SAVE_FILE_VERSION } from "./previousSpecs/v0_2_2";
 
 const ajv = new Ajv();
 
-export let VERSIONS = {
+export const VERSIONS = {
   "v0.0.0": {
     up: (document: any): v0_0_1 => {
       document = document as v0_0_0;
-      let updated: v0_0_1 = {
+      const updated: v0_0_1 = {
         paths: {},
         version: v0_0_1_Version,
         robotConfiguration: document.robotConfiguration,
       };
-      for (let entry of Object.keys(document.paths)) {
-        let path = document.paths[entry];
+      for (const entry of Object.keys(document.paths)) {
+        const path = document.paths[entry];
         updated.paths[entry] = { waypoints: [], trajectory: [] };
         path.waypoints.forEach((waypoint, index) => {
-          let { xConstrained, yConstrained } = waypoint;
-          let updatedWaypoint: v0_0_1_Waypoint = {
+          const { xConstrained, yConstrained } = waypoint;
+          const updatedWaypoint: v0_0_1_Waypoint = {
             translationConstrained: !(!xConstrained && !yConstrained),
             ...waypoint,
           };
@@ -93,20 +93,20 @@ export let VERSIONS = {
   "v0.0.1": {
     up: (document: any): v0_1 => {
       document = document as v0_0_1;
-      let updated: v0_1 = {
+      const updated: v0_1 = {
         paths: {},
         version: v0_1_Version,
         robotConfiguration: document.robotConfiguration,
       };
-      for (let entry of Object.keys(document.paths)) {
-        let path = document.paths[entry];
+      for (const entry of Object.keys(document.paths)) {
+        const path = document.paths[entry];
         updated.paths[entry] = {
           waypoints: [],
           trajectory: [],
           constraints: [],
         };
         path.waypoints.forEach((waypoint, index) => {
-          let updatedWaypoint: v0_1_Waypoint = {
+          const updatedWaypoint: v0_1_Waypoint = {
             ...waypoint,
             isInitialGuess: false,
           };
@@ -120,13 +120,13 @@ export let VERSIONS = {
   "v0.1": {
     up: (document: any): v0_1_1 => {
       document = document as v0_1;
-      let updated: v0_1_1 = {
+      const updated: v0_1_1 = {
         paths: {},
         version: v0_1_1_Version,
         robotConfiguration: document.robotConfiguration,
       };
-      for (let entry of Object.keys(document.paths)) {
-        let path = document.paths[entry];
+      for (const entry of Object.keys(document.paths)) {
+        const path = document.paths[entry];
         updated.paths[entry] = {
           waypoints: path.waypoints,
           trajectory: path.trajectory,
@@ -142,13 +142,13 @@ export let VERSIONS = {
   "v0.1.1": {
     up: (document: any): v0_1_2 => {
       document = document as v0_1_1;
-      let updated: v0_1_2 = {
+      const updated: v0_1_2 = {
         paths: {},
         version: v0_1_2_Version,
         robotConfiguration: document.robotConfiguration,
       };
-      for (let entry of Object.keys(document.paths)) {
-        let path = document.paths[entry];
+      for (const entry of Object.keys(document.paths)) {
+        const path = document.paths[entry];
         updated.paths[entry] = {
           waypoints: path.waypoints,
           trajectory: path.trajectory,
@@ -166,13 +166,13 @@ export let VERSIONS = {
   "v0.1.2": {
     up: (document: any): v0_2 => {
       document = document as v0_1_2;
-      let robotConfiguration: v0_2_Config = {
+      const robotConfiguration: v0_2_Config = {
         motorMaxTorque: ROBOT_CONFIG_DEFAULTS.motorMaxTorque,
         motorMaxVelocity: ROBOT_CONFIG_DEFAULTS.motorMaxVelocity,
         gearing: ROBOT_CONFIG_DEFAULTS.gearing,
         ...document.robotConfiguration,
       };
-      let updated: v0_2 = {
+      const updated: v0_2 = {
         paths: document.paths,
         version: v0_2_Version,
         robotConfiguration,
@@ -183,7 +183,7 @@ export let VERSIONS = {
   },
   "v0.2": {
     up: (document: any): v0_2_1 => {
-      let updated: v0_2_1 = {
+      const updated: v0_2_1 = {
         paths: document.paths,
         version: v0_2_1_Version,
         robotConfiguration: document.robotConfiguration,
@@ -224,7 +224,9 @@ export let VERSIONS = {
    */
 };
 
-export let updateToCurrent = (document: { version: string }): SavedDocument => {
+export const updateToCurrent = (document: {
+  version: string;
+}): SavedDocument => {
   let version = document.version;
   // We make sure this doesn't infinite loop by limiting the number of version jumps
   for (
@@ -243,7 +245,7 @@ export let updateToCurrent = (document: { version: string }): SavedDocument => {
   return document as SavedDocument;
 };
 
-export let validate = (document: { version: string }): string => {
+export const validate = (document: { version: string }): string => {
   if (document.version in VERSIONS) {
     if (!ajv.validate(VERSIONS[document.version].schema, document)) {
       return ajv.errorsText(ajv.errors);

@@ -5,24 +5,24 @@ import styles from "./WaypointConfigPanel.module.css";
 import { Slider } from "@mui/material";
 import { ViewLayers } from "../../document/UIStateStore";
 
-type Props = {};
+type Props = object;
 
-type State = {};
+type State = object;
 
 class WaypointVisibilityPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
   render() {
-    let layers = this.context.model.uiState.layers;
+    const layers = this.context.model.uiState.layers;
 
-    let startIndex =
+    const startIndex =
       this.context.model.document.pathlist.activePath.visibleWaypointsStart ??
       0;
-    let endIndex =
+    const endIndex =
       this.context.model.document.pathlist.activePath.visibleWaypointsEnd ?? 0;
-    let points = this.context.model.document.pathlist.activePath.waypoints;
-    let pointcount = points.length;
+    const points = this.context.model.document.pathlist.activePath.waypoints;
+    const pointcount = points.length;
 
     const sliderMarks = points.map((point, idx) => ({
       value: idx,

@@ -1,8 +1,8 @@
 import { Component } from "react";
 
-type Props = {};
+type Props = object;
 
-type State = {};
+type State = object;
 
 export const WIDTH_M = 8.21055;
 export const LENGTH_M = 16.54175;
@@ -14,7 +14,7 @@ export default class FieldImage23 extends Component<Props, State> {
 
   render() {
     return (
-      <g id="layer1" transform={`scale(1, -1)`}>
+      <g id="layer1" transform={"scale(1, -1)"}>
         <g
           id="img"
           transform={`translate(0, ${-WIDTH_M}) scale(${0.01751}) translate(-6, -9.7)`}

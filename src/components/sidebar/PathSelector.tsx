@@ -17,9 +17,9 @@ import InputList from "../input/InputList";
 import { dialog } from "@tauri-apps/api";
 import { toast } from "react-toastify";
 
-type Props = {};
+type Props = object;
 
-type State = {};
+type State = object;
 
 type OptionProps = { uuid: string };
 type OptionState = {
@@ -68,8 +68,8 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     });
   }
   checkName(): boolean {
-    let inputName = this.nameInputRef.current!.value;
-    let error =
+    const inputName = this.nameInputRef.current!.value;
+    const error =
       inputName.length == 0 ||
       inputName.includes("/") ||
       inputName.includes("\\") ||
@@ -79,7 +79,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     return error;
   }
   searchForName(name: string): boolean {
-    let didFind =
+    const didFind =
       Array.from(this.context.model.document.pathlist.paths.keys())
         .filter((uuid) => uuid !== this.props.uuid)
         .map(
@@ -92,9 +92,9 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     // this is here to use the data we care about during actual rendering
     // so mobx knows to rerender this component when it changes
     this.searchForName("");
-    let selected =
+    const selected =
       this.props.uuid == this.context.model.document.pathlist.activePathUUID;
-    let name = this.getPath().name;
+    const name = this.getPath().name;
     this.context.model.zoomToFitWaypoints();
     if (name != this.state.name && !this.state.renaming) {
       this.state.name = name;

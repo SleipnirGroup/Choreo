@@ -15,7 +15,7 @@ import { v4 as uuidv4 } from "uuid";
 import { CircularObstacleStore } from "../../../document/CircularObstacleStore";
 import FieldImage24 from "./fields/FieldImage24";
 
-type Props = {};
+type Props = object;
 
 type State = {
   xPan: number;
@@ -126,14 +126,16 @@ class FieldOverlayRoot extends Component<Props, State> {
   }
   handleResize() {
     console.log(`current zoom level: ${this.state.zoom}`);
-    let factor = this.getScalingFactor(this.svgRef?.current);
+    
+    const factor = this.getScalingFactor(this.svgRef?.current);
     this.context.model.uiState.setFieldScalingFactor(factor);
   }
   render() {
     this.canvasHeightMeters = FieldImage24.WIDTH_M + 1;
     this.canvasWidthMeters = FieldImage24.LENGTH_M + 1;
-    let layers = this.context.model.uiState.layers;
-    let constraintSelected = this.context.model.uiState.isConstraintSelected();
+    const layers = this.context.model.uiState.layers;
+    const constraintSelected =
+      this.context.model.uiState.isConstraintSelected();
     return (
       <svg
         ref={this.svgRef}
@@ -218,7 +220,7 @@ class FieldOverlayRoot extends Component<Props, State> {
           {layers[ViewLayers.Waypoints] &&
             this.context.model.document.pathlist.activePath.waypoints.map(
               (point, index) => {
-                let activePath =
+                const activePath =
                   this.context.model.document.pathlist.activePath;
                 if (
                   (activePath.visibleWaypointsStart <= index &&
@@ -254,7 +256,7 @@ class FieldOverlayRoot extends Component<Props, State> {
         y: e.clientY,
       });
       this.context.history.startGroup(() => {
-        var newPoint =
+        const newPoint =
           this.context.model.document.pathlist.activePath.addWaypoint();
         newPoint.setX(coords.x);
         newPoint.setY(coords.y);
@@ -283,16 +285,14 @@ class FieldOverlayRoot extends Component<Props, State> {
         y: e.clientY,
       });
       this.context.history.startGroup(() => {
-        var newObstacle =
-          this.context.model.document.pathlist.activePath.addObstacle(
-            CircularObstacleStore.create({
-              x: coords.x,
-              y: coords.y,
-              radius: 0.5,
-              uuid: uuidv4(),
-            })
-          );
-        // const selectedItem = this.context.model.uiState.selectedNavbarItem;
+        this.context.model.document.pathlist.activePath.addObstacle(
+          CircularObstacleStore.create({
+            x: coords.x,
+            y: coords.y,
+            radius: 0.5,
+            uuid: uuidv4(),
+          })
+        );
       });
       this.context.history.stopGroup();
     }
