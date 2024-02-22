@@ -21,51 +21,12 @@ class RobotConfigPanel extends Component<Props, State> {
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
 
-  centerOnWaypoint(waypoint: IHolonomicWaypointStore) {
-    this.callCenter(waypoint.x, waypoint.y, 1);
-  }
-
-  // x, y, k are the center coordinates (x, y) and scale factor (k)
-  callCenter(x: number, y: number, k: number) {
-    window.dispatchEvent(new CustomEvent("center", { detail: { x, y, k } }));
-  }
-
-  centerOnTrajectory() {
-    let waypoints = this.context.model.document.pathlist.activePath.waypoints;
-    if (waypoints.length <= 0) {
-      return;
-    } else if (waypoints.length === 1) {
-      this.callCenter(waypoints[0].x, waypoints[0].y, 1);
-    } else {
-      let xMin = Infinity;
-      let xMax = -Infinity;
-      let yMin = Infinity;
-      let yMax = -Infinity;
-
-      for (let waypoint of waypoints) {
-        xMin = Math.min(xMin, waypoint.x);
-        xMax = Math.max(xMax, waypoint.x);
-        yMin = Math.min(yMin, waypoint.y);
-        yMax = Math.max(yMax, waypoint.y);
-      }
-
-      let x = (xMin + xMax) / 2;
-      let y = (yMin + yMax) / 2;
-      let k = 10 / (xMax - xMin) + 0.1;
-      if (k > 1.7) {
-        k = 1.7;
-      }
-
-      this.callCenter(x, y, k);
-    }
-  }
-
   render() {
     let uiState = this.context.model.uiState;
     return (
       <div className={styles.VisibilityPanel}>
         <Tooltip disableInteractive title="Zoom to fit trajectory">
-          <IconButton onClick={() => this.centerOnTrajectory()}>
+          <IconButton onClick={() => this.context.model.zoomToFitTrajectory()}>
             <AspectRatio></AspectRatio>
           </IconButton>
         </Tooltip>

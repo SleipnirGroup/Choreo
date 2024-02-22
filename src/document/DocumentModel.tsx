@@ -189,6 +189,41 @@ const StateStore = types
           },
         });
       },
+      zoomToFitTrajectory() {
+        const waypoints = self.document.pathlist.activePath.waypoints;
+        if (waypoints.length <= 0) {
+          return;
+        }
+    
+        let xMin = Infinity;
+        let xMax = -Infinity;
+        let yMin = Infinity;
+        let yMax = -Infinity;
+    
+        for (const waypoint of waypoints) {
+          xMin = Math.min(xMin, waypoint.x);
+          xMax = Math.max(xMax, waypoint.x);
+          yMin = Math.min(yMin, waypoint.y);
+          yMax = Math.max(yMax, waypoint.y);
+        }
+    
+        let x = (xMin + xMax) / 2;
+        let y = (yMin + yMax) / 2;
+        let k = 10 / (xMax - xMin) + 0.01;
+    
+        // x-scaling desmos graph: https://www.desmos.com/calculator/5ie360vse3
+    
+        if (k > 1.7) {
+          k = 1.7;
+        }
+    
+        this.callCenter(x, y, k);
+      },
+    
+      // x, y, k are the center coordinates (x, y) and scale factor (k)
+      callCenter(x: number, y: number, k: number) {
+        window.dispatchEvent(new CustomEvent("center", { detail: { x, y, k } }));
+      }
     };
   })
   .actions((self) => {

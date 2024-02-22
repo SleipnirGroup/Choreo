@@ -26,7 +26,7 @@ type State = {
 class FieldOverlayRoot extends Component<Props, State> {
   private static instance: FieldOverlayRoot | null = null;
   static contextType = DocumentManagerContext;
-  context!: React.ContextType<typeof DocumentManagerContext>;
+  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {
     xPan: 0,
     yPan: 0,
@@ -50,9 +50,7 @@ class FieldOverlayRoot extends Component<Props, State> {
   zoomBehavior: d3.ZoomBehavior<SVGGElement, undefined>;
 
   // x, y, k are the center coordinates (x, y) and scale factor (k = {0.3, 12})
-  center(x: number, y: number, k: number) {
-    // d3 Transition
-
+  private center(x: number, y: number, k: number) {
     const transition = d3.transition()
       .duration(750)
       .ease(d3.easeCubicOut)
@@ -63,15 +61,6 @@ class FieldOverlayRoot extends Component<Props, State> {
     d3.select<SVGGElement, undefined>(this.svgRef.current!)
       .transition(transition)
       .call(this.zoomBehavior.translateTo, x, -y);
-      
-
-    // d3.select<SVGGElement, undefined>(this.svgRef.current!)
-    //   .transition(transition)
-    //   .call(this.zoomBehavior.transform, d3.zoomIdentity.translate(0, 0));
-
-    // d3.select<SVGGElement, undefined>(this.svgRef.current!)
-    //   .transition(transition)
-    //   .call(this.zoomBehavior.transform, d3.zoomIdentity.applyX(x));
   }
 
   componentDidMount(): void {
@@ -260,7 +249,7 @@ class FieldOverlayRoot extends Component<Props, State> {
   }
   createWaypoint(e: React.MouseEvent<SVGCircleElement, MouseEvent>): void {
     if (e.currentTarget === e.target) {
-      var coords = this.screenSpaceToFieldSpace(this.svgRef?.current, {
+      const coords = this.screenSpaceToFieldSpace(this.svgRef?.current, {
         x: e.clientX,
         y: e.clientY,
       });
@@ -289,7 +278,7 @@ class FieldOverlayRoot extends Component<Props, State> {
   }
   createObstacle(e: React.MouseEvent<SVGCircleElement, MouseEvent>): void {
     if (e.currentTarget === e.target) {
-      var coords = this.screenSpaceToFieldSpace(this.svgRef?.current, {
+      const coords = this.screenSpaceToFieldSpace(this.svgRef?.current, {
         x: e.clientX,
         y: e.clientY,
       });

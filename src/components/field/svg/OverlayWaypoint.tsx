@@ -22,6 +22,9 @@ class OverlayWaypoint extends Component<Props, State> {
   bumperRef: any;
   rootRef: React.RefObject<SVGGElement> = React.createRef<SVGGElement>();
 
+  // Used to determine if the context has changed. User switching from another path or creating a new path.
+  private isNewContext = true;
+
   BumperBox = observer(
     ({
       context,
