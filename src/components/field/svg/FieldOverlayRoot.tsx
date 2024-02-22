@@ -53,16 +53,29 @@ class FieldOverlayRoot extends Component<Props, State> {
   center(x: number, y: number, k: number) {
     // d3 Transition
 
-    const transition = d3.transition().duration(750).ease(d3.easeCubicOut);
+    const transition = d3.transition()
+      .duration(750)
+      .ease(d3.easeCubicOut)
+
+    const svgNode = d3.select(this.frameRef.current).node();
+    const centerX = (x - this.state.xPan) / this.state.zoom;
+    const centerY = (y - this.state.yPan) / this.state.zoom;
 
     d3.select<SVGGElement, undefined>(this.svgRef.current!)
-      // .transition(transition)
-      .call(this.zoomBehavior.scaleTo, k)
+      .call(this.zoomBehavior.scaleTo, k);
+
+    d3.select<SVGGElement, undefined>(this.svgRef.current!)
+      .transition(transition)
       .call(this.zoomBehavior.translateTo, x, -y);
+      
 
     // d3.select<SVGGElement, undefined>(this.svgRef.current!)
     //   .transition(transition)
-    //   .call(this.zoomBehavior.transform, d3.zoomIdentity.translate(x, y).scale(k));
+    //   .call(this.zoomBehavior.transform, d3.zoomIdentity.translate(0, 0));
+
+    // d3.select<SVGGElement, undefined>(this.svgRef.current!)
+    //   .transition(transition)
+    //   .call(this.zoomBehavior.transform, d3.zoomIdentity.applyX(x));
   }
 
   componentDidMount(): void {
