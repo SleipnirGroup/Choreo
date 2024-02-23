@@ -24,8 +24,9 @@ type State = {
 };
 
 class FieldOverlayRoot extends Component<Props, State> {
+  private static instance: FieldOverlayRoot | null = null;
   static contextType = DocumentManagerContext;
-  context!: React.ContextType<typeof DocumentManagerContext>;
+  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {
     xPan: 0,
     yPan: 0,
@@ -39,19 +40,49 @@ class FieldOverlayRoot extends Component<Props, State> {
     super(props);
     this.svgRef = React.createRef<SVGSVGElement>();
     this.frameRef = React.createRef<SVGGElement>();
-  }
-  componentDidMount(): void {
-    window.addEventListener("resize", () => this.handleResize());
-    this.handleResize();
-    const zoomBehavior = d3
+
+    this.zoomBehavior = d3
       .zoom<SVGGElement, undefined>()
       .scaleExtent([0.3, 12])
       .on("zoom", (e) => this.zoomed(e));
+  }
+
+  zoomBehavior: d3.ZoomBehavior<SVGGElement, undefined>;
+
+  // x, y, k are the center coordinates (x, y) and scale factor (k = {0.3, 12})
+  private center(x: number, y: number, k: number) {
+    const transition = d3.transition().duration(750).ease(d3.easeCubicOut);
+
+    d3.select<SVGGElement, undefined>(this.svgRef.current!).call(
+      this.zoomBehavior.scaleTo,
+      k
+    );
 
     d3.select<SVGGElement, undefined>(this.svgRef.current!)
-      .call(zoomBehavior)
+      .transition(transition)
+      .call(this.zoomBehavior.translateTo, x, -y);
+  }
+
+  componentDidMount(): void {
+    window.addEventListener("resize", () => this.handleResize());
+
+    window.addEventListener("center", (e) => {
+      console.log(`Centering on ${e}`);
+      console.log(`current zoom level: ${this.state.zoom}`);
+      this.center(
+        (e as CustomEvent).detail.x,
+        (e as CustomEvent).detail.y,
+        (e as CustomEvent).detail.k
+      );
+    });
+
+    this.handleResize();
+
+    d3.select<SVGGElement, undefined>(this.svgRef.current!)
+      .call(this.zoomBehavior)
       .on("dblclick.zoom", null);
   }
+
   zoomed(e: any) {
     this.handleResize();
     this.setState({
@@ -94,6 +125,8 @@ class FieldOverlayRoot extends Component<Props, State> {
     return 0;
   }
   handleResize() {
+    console.log(`current zoom level: ${this.state.zoom}`);
+
     const factor = this.getScalingFactor(this.svgRef?.current);
     this.context.model.uiState.setFieldScalingFactor(factor);
   }
@@ -265,4 +298,5 @@ class FieldOverlayRoot extends Component<Props, State> {
     }
   }
 }
+
 export default observer(FieldOverlayRoot);

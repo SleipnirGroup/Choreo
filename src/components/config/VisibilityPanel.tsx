@@ -9,7 +9,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import { ViewItemData } from "../../document/UIStateStore";
-import { Visibility } from "@mui/icons-material";
+import { AspectRatio, Visibility } from "@mui/icons-material";
 import { Close } from "@mui/icons-material";
 
 type Props = object;
@@ -20,10 +20,23 @@ class RobotConfigPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
+
   render() {
     const uiState = this.context.model.uiState;
     return (
       <div className={styles.VisibilityPanel}>
+        <Tooltip disableInteractive title="Zoom to fit trajectory">
+          {/* If there's no waypoints, then don't allow user to zoom to fit Waypoints */}
+          <IconButton
+            disabled={
+              this.context.model.document.pathlist.activePath.waypoints
+                .length == 0
+            }
+            onClick={() => this.context.model.zoomToFitWaypoints()}
+          >
+            <AspectRatio></AspectRatio>
+          </IconButton>
+        </Tooltip>
         <IconButton
           onClick={() => {
             uiState.setVisibilityPanelOpen(!uiState.visibilityPanelOpen);
