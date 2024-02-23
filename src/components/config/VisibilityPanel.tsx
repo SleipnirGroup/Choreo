@@ -26,7 +26,14 @@ class RobotConfigPanel extends Component<Props, State> {
     return (
       <div className={styles.VisibilityPanel}>
         <Tooltip disableInteractive title="Zoom to fit trajectory">
-          <IconButton onClick={() => this.context.model.zoomToFitWaypoints()}>
+          {/* If there's no waypoints, then don't allow user to zoom to fit Waypoints */}
+          <IconButton
+            disabled={
+              this.context.model.document.pathlist.activePath.waypoints
+                .length == 0
+            }
+            onClick={() => this.context.model.zoomToFitWaypoints()}
+          >
             <AspectRatio></AspectRatio>
           </IconButton>
         </Tooltip>
