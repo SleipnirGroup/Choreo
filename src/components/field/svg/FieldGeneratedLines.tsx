@@ -3,13 +3,13 @@ import DocumentManagerContext from "../../../document/DocumentManager";
 
 import { observer } from "mobx-react";
 
-type Props = {};
+type Props = object;
 
-type State = {};
+type State = object;
 
 class FieldPathLines extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  context!: React.ContextType<typeof DocumentManagerContext>;
+  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
 
   render() {

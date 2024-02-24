@@ -7,19 +7,19 @@ import { ConstraintStores } from "./ConstraintStore";
 export const PathListStore = types
   .model("PathListStore", {
     paths: types.map(HolonomicPathStore),
-    activePathUUID: "",
+    activePathUUID: ""
   })
   .views((self) => {
     return {
       asSavedPathList(): SavedPathList {
-        let obj: any = {};
+        const obj: any = {};
         self.paths.forEach((path) => {
           obj[path.name] = path.asSavedPath();
         });
         return obj;
       },
       toJSON(): any {
-        let obj: any = {};
+        const obj: any = {};
         self.paths.forEach((path) => {
           obj[path.name] = path;
         });
@@ -37,30 +37,41 @@ export const PathListStore = types
       get activePath() {
         return (
           self.paths.get(self.activePathUUID) ||
-          HolonomicPathStore.create({ name: "New Path", uuid: uuidv4() })
+          HolonomicPathStore.create({
+            name: "New Path",
+            visibleWaypointsStart: 0,
+            visibleWaypointsEnd: 0,
+            uuid: uuidv4()
+          })
         );
-      },
+      }
     };
   })
   .actions((self) => {
     return {
-      setActivePathUUID(uuid: string) {
-        if (self.pathUUIDs.includes(uuid)) {
-          self.activePathUUID = uuid;
-        }
-      },
-      addPath(name: string, select: boolean = false): string {
+      disambiguateName(name: string) {
         let usedName = name;
         let disambig = 1;
         while (self.pathNames.includes(usedName)) {
           usedName = `${name} (${disambig.toFixed(0)})`;
           disambig++;
         }
-        let newUUID = uuidv4();
-        let path = HolonomicPathStore.create({
+        return usedName;
+      },
+      setActivePathUUID(uuid: string) {
+        if (self.pathUUIDs.includes(uuid)) {
+          self.activePathUUID = uuid;
+        }
+      },
+      addPath(name: string, select: boolean = false): string {
+        const usedName = this.disambiguateName(name);
+        const newUUID = uuidv4();
+        const path = HolonomicPathStore.create({
           uuid: newUUID,
+          visibleWaypointsStart: 0,
+          visibleWaypointsEnd: 0,
           name: usedName,
-          waypoints: [],
+          waypoints: []
         });
         path.addConstraint(ConstraintStores.StopPoint)?.setScope(["first"]);
         path.addConstraint(ConstraintStores.StopPoint)?.setScope(["last"]);
@@ -70,7 +81,7 @@ export const PathListStore = types
         }
 
         return newUUID;
-      },
+      }
     };
     // The annoying thing we have to do to add the above actions to the object before we use them below
   })
@@ -84,16 +95,32 @@ export const PathListStore = types
           self.setActivePathUUID(self.pathUUIDs[0]);
         }
       },
+      duplicatePath(uuid: string) {
+        if (self.pathUUIDs.includes(uuid)) {
+          const oldPath = self.paths.get(uuid);
+          // shouldn't hit this ever since we checked if the path exists
+          if (oldPath === undefined) {
+            return;
+          }
+          const newName = self.disambiguateName(oldPath.name);
+          const newuuid = self.addPath(newName, false);
+          const path = self.paths.get(newuuid);
+          path!.fromSavedPath(oldPath.asSavedPath());
+        }
+      },
       fromSavedPathList(list: SavedPathList) {
         self.paths.clear();
         if (list) {
           Array.from(Object.keys(list).values()).forEach((name) => {
-            let uuid = self.addPath(name, false);
-            let path = self.paths.get(uuid);
+            const uuid = self.addPath(name, false);
+            const path = self.paths.get(uuid);
             path!.fromSavedPath(list[name]);
           });
         }
-      },
+        if (self.paths.size == 0) {
+          self.addPath("New Path", true);
+        }
+      }
     };
   });
 

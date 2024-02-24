@@ -1,3 +1,5 @@
+// Copyright (c) Choreo contributors
+
 package com.choreo.lib;
 
 import com.google.gson.Gson;
@@ -5,7 +7,6 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -14,13 +15,17 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /** Utilities to load and follow ChoreoTrajectories */
 public class Choreo {
   private static final Gson gson = new Gson();
+
+  /** Default constructor. */
+  public Choreo() {}
 
   /**
    * Load a trajectory from the deploy directory. Choreolib expects .traj files to be placed in
@@ -35,6 +40,39 @@ public class Choreo {
     var traj_file = new File(traj_dir, trajName + ".traj");
 
     return loadFile(traj_file);
+  }
+
+  /**
+   * Loads the split parts of the specified trajectory. Fails and returns null if any of the parts
+   * could not be loaded.
+   *
+   * <p>This method determines the number of parts to load by counting the files that match the
+   * pattern "trajName.X.traj", where X is a string of digits. Let this count be N. It then attempts
+   * to load "trajName.1.traj" through "trajName.N.traj", consecutively counting up. If any of these
+   * files cannot be loaded, the method returns null.
+   *
+   * @param trajName The path name in Choreo for this trajectory.
+   * @return The ArrayList of segments, in order, or null.
+   */
+  public static ArrayList<ChoreoTrajectory> getTrajectoryGroup(String trajName) {
+    // Count files matching the pattern for split parts.
+    var traj_dir = new File(Filesystem.getDeployDirectory(), "choreo");
+    File[] files =
+        traj_dir.listFiles((file) -> file.getName().matches(trajName + "\\.\\d+\\.traj"));
+    int segmentCount = files.length;
+    // Try to load the segments.
+    var trajs = new ArrayList<ChoreoTrajectory>();
+    for (int i = 1; i <= segmentCount; ++i) {
+      File traj = new File(traj_dir, String.format("%s.%d.traj", trajName, i));
+      ChoreoTrajectory trajectory = loadFile(traj);
+      if (trajectory == null) {
+        DriverStation.reportError("ChoreoLib: Missing segments for path group " + trajName, false);
+        return null;
+      }
+      trajs.add(trajectory);
+    }
+
+    return trajs;
   }
 
   private static ChoreoTrajectory loadFile(File path) {
@@ -64,8 +102,9 @@ public class Choreo {
    *     ChoreoLib.
    * @param outputChassisSpeeds A function that consumes the target robot-relative chassis speeds
    *     and commands them to the robot.
-   * @param useAllianceColor Whether or not to mirror the path based on alliance (this assumes the
-   *     path is created for the blue alliance)
+   * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
+   *     while keeping the same coordinate system origin. This will be called every loop during the
+   *     command.
    * @param requirements The subsystem(s) to require, typically your drive subsystem only.
    * @return A command that follows a Choreo path.
    */
@@ -76,14 +115,14 @@ public class Choreo {
       PIDController yController,
       PIDController rotationController,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
-      boolean useAllianceColor,
+      BooleanSupplier mirrorTrajectory,
       Subsystem... requirements) {
     return choreoSwerveCommand(
         trajectory,
         poseSupplier,
         choreoSwerveController(xController, yController, rotationController),
         outputChassisSpeeds,
-        useAllianceColor,
+        mirrorTrajectory,
         requirements);
   }
 
@@ -97,12 +136,13 @@ public class Choreo {
    *     ChoreoCommands.choreoSwerveController(PIDController xController, PIDController yController,
    *     PIDController rotationController) to create one using PID controllers for each degree of
    *     freedom. You can also pass in a function with the signature (Pose2d currentPose,
-   *     ChoreoTrajectoryState referenceState) -> ChassisSpeeds to implement a custom follower (i.e.
-   *     for logging).
+   *     ChoreoTrajectoryState referenceState) -&gt; ChassisSpeeds to implement a custom follower
+   *     (i.e. for logging).
    * @param outputChassisSpeeds A function that consumes the target robot-relative chassis speeds
    *     and commands them to the robot.
-   * @param useAllianceColor Whether or not to mirror the path based on alliance (this assumes the
-   *     path is created for the blue alliance)
+   * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
+   *     while keeping the same coordinate system origin. This will be called every loop during the
+   *     command.
    * @param requirements The subsystem(s) to require, typically your drive subsystem only.
    * @return A command that follows a Choreo path.
    */
@@ -111,24 +151,24 @@ public class Choreo {
       Supplier<Pose2d> poseSupplier,
       ChoreoControlFunction controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
-      boolean useAllianceColor,
+      BooleanSupplier mirrorTrajectory,
       Subsystem... requirements) {
     var timer = new Timer();
     return new FunctionalCommand(
         timer::restart,
         () -> {
-          boolean mirror = false;
-          if (useAllianceColor) {
-            Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();
-            mirror = alliance.isPresent() && alliance.get() == Alliance.Red;
-          }
+          ;
           outputChassisSpeeds.accept(
-              controller.apply(poseSupplier.get(), trajectory.sample(timer.get(), mirror)));
+              controller.apply(
+                  poseSupplier.get(),
+                  trajectory.sample(timer.get(), mirrorTrajectory.getAsBoolean())));
         },
         (interrupted) -> {
           timer.stop();
           if (interrupted) {
             outputChassisSpeeds.accept(new ChassisSpeeds());
+          } else {
+            outputChassisSpeeds.accept(trajectory.getFinalState().getChassisSpeeds());
           }
         },
         () -> timer.hasElapsed(trajectory.getTotalTime()),

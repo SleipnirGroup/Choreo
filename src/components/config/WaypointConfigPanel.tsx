@@ -5,20 +5,13 @@ import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import Input from "../input/Input";
 import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../input/InputList";
-import {
-  RadioGroup,
-  ToggleButton,
-  ToggleButtonGroup,
-  Tooltip,
-} from "@mui/material";
+import { ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
 import { WaypointData } from "../../document/UIStateStore";
-import Waypoint from "../../assets/Waypoint";
-import { Circle, CircleOutlined, Help } from "@mui/icons-material";
-import inputStyles from "../input/InputList.module.css";
+import { angleModulus } from "../../util/MathUtil";
 
 type Props = { waypoint: IHolonomicWaypointStore | null };
 
-type State = {};
+type State = object;
 
 class WaypointPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
@@ -31,8 +24,8 @@ class WaypointPanel extends Component<Props, State> {
     return (point as IHolonomicWaypointStore) !== null;
   }
   render() {
-    let { waypoint } = this.props;
-    let waypointType = this.props.waypoint?.type;
+    const { waypoint } = this.props;
+    const waypointType = this.props.waypoint?.type;
     if (this.isWaypointNonNull(waypoint)) {
       return (
         <div className={styles.WaypointPanel}>
@@ -43,6 +36,7 @@ class WaypointPanel extends Component<Props, State> {
               showCheckbox={false}
               enabled={true}
               setEnabled={(_) => {}}
+              maxWidthCharacters={8}
               number={waypoint.x}
               setNumber={(x) => waypoint!.setX(x)}
             ></Input>
@@ -52,6 +46,7 @@ class WaypointPanel extends Component<Props, State> {
               showCheckbox={false}
               enabled={true}
               setEnabled={(_) => {}}
+              maxWidthCharacters={8}
               number={waypoint.y}
               setNumber={(y) => waypoint!.setY(y)}
             ></Input>
@@ -61,16 +56,19 @@ class WaypointPanel extends Component<Props, State> {
               showCheckbox={false}
               enabled={waypoint.headingConstrained}
               setEnabled={(_) => {}}
-              number={waypoint.heading}
+              maxWidthCharacters={8}
+              number={angleModulus(waypoint.heading)}
               setNumber={(heading) => waypoint!.setHeading(heading)}
             ></Input>
             <Input
-              title="n"
-              suffix="intervals"
+              title=""
+              suffix="samples"
               showCheckbox={false}
               enabled={true}
               setEnabled={(_) => {}}
+              maxWidthCharacters={8}
               number={waypoint.controlIntervalCount}
+              roundingPrecision={0}
               setNumber={(_) => {}}
             ></Input>
           </InputList>
@@ -84,7 +82,7 @@ class WaypointPanel extends Component<Props, State> {
             }}
           >
             {Object.entries(WaypointData).map((entry) => {
-              let waypoint: {
+              const waypoint: {
                 index: number;
                 name: string;
                 icon: ReactElement;
@@ -101,8 +99,8 @@ class WaypointPanel extends Component<Props, State> {
                     sx={{
                       color: "var(--accent-purple)",
                       "&.Mui-selected": {
-                        color: "var(--select-yellow)",
-                      },
+                        color: "var(--select-yellow)"
+                      }
                     }}
                   >
                     {waypoint.icon}

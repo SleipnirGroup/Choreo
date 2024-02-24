@@ -1,3 +1,5 @@
+// Copyright (c) Choreo contributors
+
 package com.choreo.lib;
 
 import edu.wpi.first.math.MathUtil;
@@ -5,12 +7,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.interpolation.Interpolatable;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import lombok.Builder;
 
 /** A single robot state in a ChoreoTrajectory. */
-@Builder
 public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectoryState> {
-  private static final double FIELD_WIDTH_METERS = 16.55445;
+  private static final double FIELD_WIDTH_METERS = 16.5410515;
 
   /** The timestamp of this state, relative to the beginning of the trajectory. */
   public final double timestamp;
@@ -34,6 +34,36 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
   public final double angularVelocity;
 
   /**
+   * Constructs a ChoreoTrajectoryState with the specified parameters.
+   *
+   * @param timestamp The timestamp of this state, relative to the beginning of the trajectory.
+   * @param x The X position of the state in meters.
+   * @param y The Y position of the state in meters.
+   * @param heading The heading of the state in radians, with 0 being in the +X direction.
+   * @param velocityX The velocity of the state in the X direction in m/s.
+   * @param velocityY The velocity of the state in the X direction in m/s.
+   * @param angularVelocity The angular velocity of the state in rad/s.
+   */
+  public ChoreoTrajectoryState(
+      double timestamp,
+      double x,
+      double y,
+      double heading,
+      double velocityX,
+      double velocityY,
+      double angularVelocity) {
+    this.timestamp = timestamp;
+    this.x = x;
+    this.y = y;
+    this.heading = heading;
+    this.velocityX = velocityX;
+    this.velocityY = velocityY;
+    this.angularVelocity = angularVelocity;
+  }
+
+  /**
+   * Returns the pose at this state.
+   *
    * @return the pose at this state.
    */
   public Pose2d getPose() {
@@ -41,6 +71,8 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
   }
 
   /**
+   * Returns the field-relative chassis speeds of this state.
+   *
    * @return the field-relative chassis speeds of this state.
    */
   public ChassisSpeeds getChassisSpeeds() {
@@ -59,20 +91,22 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
     double scale = (t - this.timestamp) / (endValue.timestamp - this.timestamp);
     var interp_pose = getPose().interpolate(endValue.getPose(), scale);
 
-    return ChoreoTrajectoryState.builder()
-        .x(interp_pose.getX())
-        .y(interp_pose.getY())
-        .heading(interp_pose.getRotation().getRadians())
-        .velocityX(MathUtil.interpolate(this.velocityX, endValue.velocityX, scale))
-        .velocityY(MathUtil.interpolate(this.velocityY, endValue.velocityY, scale))
-        .angularVelocity(
-            MathUtil.interpolate(this.angularVelocity, endValue.angularVelocity, scale))
-        .build();
+    return new ChoreoTrajectoryState(
+        MathUtil.interpolate(this.timestamp, endValue.timestamp, scale),
+        interp_pose.getX(),
+        interp_pose.getY(),
+        interp_pose.getRotation().getRadians(),
+        MathUtil.interpolate(this.velocityX, endValue.velocityX, scale),
+        MathUtil.interpolate(this.velocityY, endValue.velocityY, scale),
+        MathUtil.interpolate(this.angularVelocity, endValue.angularVelocity, scale));
   }
 
   /**
-   * @return this state as a double array: {timestamp, x, y, heading, velocityX, velocityY,
-   *     angularVelocity}
+   * Returns this state as a double array: {timestamp, x, y, heading, velocityX, velocityY,
+   * angularVelocity}.
+   *
+   * @return This state as a double array: {timestamp, x, y, heading, velocityX, velocityY,
+   *     angularVelocity}.
    */
   public double[] asArray() {
     return new double[] {
@@ -81,16 +115,18 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
   }
 
   /**
+   * Returns this state, mirrored across the field midline.
+   *
    * @return this state, mirrored across the field midline.
    */
   public ChoreoTrajectoryState flipped() {
-    return ChoreoTrajectoryState.builder()
-        .x(FIELD_WIDTH_METERS - this.x)
-        .y(this.y)
-        .heading(Math.PI - this.heading)
-        .velocityX(this.velocityX * -1)
-        .velocityY(this.velocityY)
-        .angularVelocity(this.angularVelocity * -1)
-        .build();
+    return new ChoreoTrajectoryState(
+        this.timestamp,
+        FIELD_WIDTH_METERS - this.x,
+        this.y,
+        Math.PI - this.heading,
+        -this.velocityX,
+        this.velocityY,
+        -this.angularVelocity);
   }
 }

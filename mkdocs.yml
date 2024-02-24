@@ -1,0 +1,101 @@
+# Project information
+site_name: Choreo Documentation
+site_url: https://sleipnirgroup.github.io/Choreo/
+site_description: A graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics Competition.
+
+# Repository
+repo_name: SleipnirGroup/Choreo
+repo_url: https://github.com/SleipnirGroup/Choreo/
+
+# Configuration
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/link
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch-off
+        name: Switch to system preference
+  font:
+    text: Roboto
+    code: Roboto Mono
+  icon: media/icon1024x1024.png
+  favicon: media/icon1024x1024.png
+  features:
+    - content.code.copy
+    - content.code.select
+    - content.code.annotate
+    - content.code.select.title
+    - toc.follow
+    - toc.integrate
+    - content.tabs.link
+    - search.share
+    - search.highlight
+    - search.suggest
+    - announce.dismiss
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - navigation.instant
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - md_in_html
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator:
+        !!python/name:material.extensions.emoji.to_svg # Page tree
+
+
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+
+extra_javascript:
+  - js/mathjax.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+nav:
+  - Home:
+      - Home: index.md
+      - Installation: installation.md
+      - Document Settings Panel: document-settings.md
+      - Robot Configuration: document-settings/robot-configuration.md
+      - File Export Settings: document-settings/file-export-settings.md
+  - Usage:
+      - Editing Paths: usage/editing-paths.md
+      - Controls & Shortcuts: usage/controls-shortcuts.md
+      - Saving: usage/saving.md
+      - Estimating Moment of Inertia: usage/estimating-moi.md
+  - ChoreoLib:
+      - Installation: choreolib/installation.md
+      - Usage: choreolib/usage.md
+      - Java API: api/java/index.html
+      - C++ API: api/cpp/index.html
+  - Contributing:
+      - Building: contributing/building-choreo.md
+      - Contributing Guide: contributing/contributing-guide.md

@@ -1,5 +1,10 @@
 .vscode/
+*.md
 dist/
 public/
 choreolib/
 src-tauri/target/
+docs/
+
+.clang-format
+.clang-tidy

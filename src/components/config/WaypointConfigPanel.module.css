@@ -3,7 +3,7 @@
   position: absolute;
   top: 0;
   padding: 8px;
-  width: 300px;
+  width: min-content;
   background-color: var(--background-light-gray);
   color: white;
   display: flex;
@@ -25,4 +25,17 @@
   justify-content: flex-start;
   align-items: flex-end;
   border-radius: 0 0 0 10px;
+}
+.WaypointVisibilityPanel {
+  overflow-x: hidden;
+  position: absolute;
+  bottom: 0;
+  padding: 8px;
+  width: min-content;
+  background-color: var(--background-light-gray);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  border-radius: 0px 10px 0px 0;
 }

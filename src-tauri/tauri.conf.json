@@ -1,0 +1,62 @@
+{
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devPath": "http://localhost:1420",
+    "distDir": "../dist",
+    "withGlobalTauri": false
+  },
+  "package": {
+    "productName": "Choreo",
+    "version": "2024.1.3"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false,
+      "shell": {
+        "all": false,
+        "open": true
+      },
+      "path": {
+        "all": true
+      },
+      "fs": {
+        "all": true
+      },
+      "dialog": {
+        "confirm": true,
+        "open": true,
+        "save": true,
+        "ask": true
+      },
+      "window": {
+        "setTitle": true,
+        "close": true
+      }
+    },
+    "bundle": {
+      "active": true,
+      "targets": ["deb", "nsis", "dmg"],
+      "identifier": "org.sleipnirgroup",
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ]
+    },
+    "security": {
+      "csp": null
+    },
+    "windows": [
+      {
+        "fullscreen": false,
+        "resizable": true,
+        "title": "Choreo v2024.1.3",
+        "width": 1200,
+        "height": 800
+      }
+    ]
+  }
+}

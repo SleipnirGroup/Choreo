@@ -1,0 +1,108 @@
+name: Build Choreolib
+
+on: [push, pull_request]
+
+jobs:
+  build-docker:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - container: wpilib/roborio-cross-ubuntu:2024-22.04
+            artifact-name: Athena
+            build-options: "-Ponlylinuxathena"
+          # - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04
+          #   artifact-name: Arm32
+          #   build-options: "-Ponlylinuxarm32"
+          # - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04
+          #   artifact-name: Arm64
+          #   build-options: "-Ponlylinuxarm64"
+          - container: wpilib/ubuntu-base:22.04
+            artifact-name: Linux
+            build-options: ""
+    name: "Build - ${{ matrix.artifact-name }}"
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+      - name: Fetch all history and metadata
+        run: |
+          git config --global --add safe.directory /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
+      - name: Build with Gradle
+        run: ./gradlew build --max-workers 1 ${{ matrix.build-options }}
+        working-directory: choreolib
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: choreolib/build/allOutputs
+
+  build-host:
+    env:
+      MACOSX_DEPLOYMENT_TARGET: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            artifact-name: Win64
+            architecture: x64
+          - os: macos-12
+            artifact-name: macOS
+            architecture: x64
+    name: "Build - ${{ matrix.artifact-name }}"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Fetch all history and metadata
+        run: git fetch --prune --unshallow
+      - uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: 17
+          architecture: ${{ matrix.architecture }}
+      - name: Build with Gradle
+        run: ./gradlew build -Pbuildalldesktop
+        working-directory: choreolib
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: choreolib/build/allOutputs
+
+  combine:
+    name: Combine
+    needs: [build-docker, build-host]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: wpilibsuite/build-tools
+      - uses: actions/download-artifact@v4
+        with:
+          path: combiner/products/build/allOutputs
+      - name: Flatten Artifacts
+        run: rsync -a --delete combiner/products/build/allOutputs/*/* combiner/products/build/allOutputs/
+      - uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: 17
+      - name: Combine
+        if: |
+          !startsWith(github.ref, 'refs/tags/v')
+        run: ./gradlew publish -Pthirdparty
+        working-directory: combiner
+      - name: Combine (Release)
+        if: |
+          github.repository_owner == 'wpilibsuite' &&
+          startsWith(github.ref, 'refs/tags/v')
+        run: |
+          ./gradlew publish -Pthirdparty
+        working-directory: combiner
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Maven
+          path: ~/releases

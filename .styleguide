@@ -2,7 +2,6 @@ cppHeaderFileInclude {
   \.h$
   \.hpp$
   \.inc$
-  \.inl$
 }
 
 cppSrcFileInclude {
@@ -10,27 +9,16 @@ cppSrcFileInclude {
 }
 
 modifiableFileExclude {
-  \.jpg$
-  \.jpeg$
-  \.png$
   \.gif$
-  \.svg$
-  \.so$
-  \.dll$
-  \.webp$
-  \.ico$
   \.icns$
-  \.traj$
-  gradlew
-}
-
-includeProject {
-  ^choreolib/
+  \.ico$
+  \.png$
 }
 
 includeOtherLibs {
-  ^frc/
-  ^networktables/
-  ^units/
-  ^wpi/
+  ^Eigen/
+  ^fmt/
+  ^casadi/
+  ^sleipnir/
+  ^gtest/
 }

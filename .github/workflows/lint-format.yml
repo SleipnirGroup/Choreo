@@ -1,0 +1,98 @@
+name: Lint and Format
+
+on: [pull_request, push]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format:
+    name: "Format"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch all history and metadata
+        run: |
+          git checkout -b pr
+          git branch -f main origin/main
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: "npm"
+
+      - run: npm install prettier
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+
+      - run: pip3 install wpiformat
+
+      - run: npm run fmt
+
+      - name: Check output
+        run: git --no-pager diff --exit-code HEAD
+
+      - name: Generate diff
+        run: git diff HEAD > wpiformat-fixes.patch
+        if: ${{ failure() }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wpiformat fixes
+          path: wpiformat-fixes.patch
+        if: ${{ failure() }}
+
+      - name: Write to job summary
+        run: |
+          echo '```diff' >> $GITHUB_STEP_SUMMARY
+          cat wpiformat-fixes.patch >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+        if: ${{ failure() }}
+
+  tidy:
+    name: "clang-tidy"
+    runs-on: ubuntu-latest
+    container: wpilib/roborio-cross-ubuntu:2023-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch all history and metadata
+        run: |
+          git config --global --add safe.directory /__w/Choreo/Choreo
+          git checkout -b pr
+          git branch -f main origin/main
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+
+      - name: Install wpiformat
+        run: pip3 install wpiformat
+
+      - name: Create compile_commands.json
+        working-directory: choreolib
+        run: |
+          ./gradlew generateCompileCommands -Ptoolchain-optional-roboRio
+          ../.github/workflows/fix_compile_commands.py build/TargetedCompileCommands/linuxx86-64release/compile_commands.json
+          ../.github/workflows/fix_compile_commands.py build/TargetedCompileCommands/linuxx86-64debug/compile_commands.json
+
+      - name: List changed files
+        working-directory: choreolib
+        run: wpiformat -list-changed-files
+
+      - name: Run clang-tidy debug
+        working-directory: choreolib
+        run: wpiformat -no-format -tidy-all -compile-commands=build/TargetedCompileCommands/linuxx86-64debug -vv
+
+      - name: Run clang-tidy release
+        working-directory: choreolib
+        run: wpiformat -no-format -tidy-all -compile-commands=build/TargetedCompileCommands/linuxx86-64release -vv
