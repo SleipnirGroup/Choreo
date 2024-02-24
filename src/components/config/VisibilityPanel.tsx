@@ -6,7 +6,7 @@ import {
   IconButton,
   ToggleButton,
   ToggleButtonGroup,
-  Tooltip,
+  Tooltip
 } from "@mui/material";
 import { ViewItemData } from "../../document/UIStateStore";
 import { AspectRatio, Visibility } from "@mui/icons-material";
@@ -49,7 +49,7 @@ class RobotConfigPanel extends Component<Props, State> {
             style={{
               display: "flex",
               flexDirection: "column",
-              paddingTop: "8px",
+              paddingTop: "8px"
             }}
           >
             <ToggleButtonGroup
@@ -75,8 +75,8 @@ class RobotConfigPanel extends Component<Props, State> {
                     sx={{
                       color: "var(--accent-purple)",
                       "&.Mui-selected": {
-                        color: "var(--select-yellow)",
-                      },
+                        color: "var(--select-yellow)"
+                      }
                     }}
                   >
                     {item.icon}

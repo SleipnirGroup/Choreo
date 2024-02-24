@@ -11,7 +11,7 @@ import {
   MassUnit,
   MetersOrInches,
   MToIn,
-  M_TO_FT,
+  M_TO_FT
 } from "../../../util/UnitConversions";
 
 type Props = { rowGap: number; imperial: boolean };

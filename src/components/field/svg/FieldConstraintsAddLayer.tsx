@@ -55,7 +55,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                           if (newConstraint.sgmtScope) {
                             newConstraint.setScope([
                               { uuid: point.uuid },
-                              { uuid: point.uuid },
+                              { uuid: point.uuid }
                             ]);
                           } else {
                             newConstraint.setScope([{ uuid: point.uuid }]);

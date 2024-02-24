@@ -7,7 +7,7 @@ import SidebarWaypoint from "./SidebarWaypoint";
 import styles from "./Sidebar.module.css";
 
 const getListStyle = (isDraggingOver: boolean) => ({
-  outline: isDraggingOver ? "2px solid var(--darker-purple)" : "transparent",
+  outline: isDraggingOver ? "2px solid var(--darker-purple)" : "transparent"
 });
 
 type Props = object;

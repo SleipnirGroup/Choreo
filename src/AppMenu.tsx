@@ -8,7 +8,7 @@ import {
   ListItem,
   ListItemButton,
   ListItemIcon,
-  ListItemText,
+  ListItemText
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -20,7 +20,7 @@ import {
   CopyAll,
   NoteAddOutlined,
   OpenInNew,
-  Settings,
+  Settings
 } from "@mui/icons-material";
 import { toast } from "react-toastify";
 import { dialog, invoke, path } from "@tauri-apps/api";
@@ -36,7 +36,7 @@ class AppMenu extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   context!: React.ContextType<typeof DocumentManagerContext>;
   state = {
-    settingsOpen: false,
+    settingsOpen: false
   };
 
   private convertToRelative(filePath: string): string {
@@ -92,7 +92,7 @@ class AppMenu extends Component<Props, State> {
           style={{
             width: "var(--sidebar-width)",
             backgroundColor: "var(--background-dark-gray)",
-            height: "100%",
+            height: "100%"
           }}
         >
           <div
@@ -106,7 +106,7 @@ class AppMenu extends Component<Props, State> {
               justifyContent: "flex-start",
               alignItems: "center",
               paddingLeft: 0,
-              zIndex: 1000,
+              zIndex: 1000
             }}
           >
             <Tooltip disableInteractive title="Main Menu">
@@ -201,8 +201,8 @@ class AppMenu extends Component<Props, State> {
                     render(toastProps) {
                       console.error(toastProps.data);
                       return `Error exporting trajectory: ${toastProps.data}`;
-                    },
-                  },
+                    }
+                  }
                 });
               }}
             >
@@ -220,7 +220,7 @@ class AppMenu extends Component<Props, State> {
                       "Saving trajectories to the deploy directory requires saving the project. Save it now?",
                       {
                         title: "Choreo",
-                        type: "warning",
+                        type: "warning"
                       }
                     )
                   ) {
@@ -240,8 +240,8 @@ class AppMenu extends Component<Props, State> {
                       return `Couldn't export trajectories: ${
                         toastProps.data as string[]
                       }`;
-                    },
-                  },
+                    }
+                  }
                 });
               }}
             >
@@ -257,7 +257,7 @@ class AppMenu extends Component<Props, State> {
                 style={{
                   overflowWrap: "break-word",
                   fontSize: "1.0em",
-                  width: "100%",
+                  width: "100%"
                 }}
               >
                 {this.context.model.uiState.hasSaveLocation ? (

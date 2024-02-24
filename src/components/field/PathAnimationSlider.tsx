@@ -43,13 +43,13 @@ class PathAnimationSlider extends Component<Props, State> {
                                   {
                                     htmlColor: point.selected
                                       ? "var(--select-yellow)"
-                                      : "white",
+                                      : "white"
                                   }
                                 )}
                               </span>
                             </Tooltip>
-                          ),
-                        },
+                          )
+                        }
                       ]
                 )
               : false
@@ -69,7 +69,7 @@ class PathAnimationSlider extends Component<Props, State> {
             marginInline: "10px",
             ".MuiSlider-track, .MuiSlider-thumb": {
               transition: "unset",
-              WebkitTransition: "unset",
+              WebkitTransition: "unset"
             },
             ".MuiSlider-thumb": {
               width: "24px",
@@ -77,17 +77,17 @@ class PathAnimationSlider extends Component<Props, State> {
               zIndex: 2,
               ":hover,:active": {
                 width: "24px",
-                height: "24px",
-              },
+                height: "24px"
+              }
             },
             ".MuiSlider-mark": {
-              display: "none",
+              display: "none"
             },
             ".MuiSlider-markLabel": {
               top: "unset",
               transform: "translateX(-50%) translateY(-10px)",
-              zIndex: 1,
-            },
+              zIndex: 1
+            }
           }}
         />
         <span

@@ -5,7 +5,7 @@ import {
   PriorityHigh,
   StopCircleOutlined,
   SyncDisabledOutlined,
-  Timeline,
+  Timeline
 } from "@mui/icons-material";
 import { toJS } from "mobx";
 import { getParent, types } from "mobx-state-tree";
@@ -15,7 +15,7 @@ import {
   IOptionalIType,
   isAlive,
   ISimpleType,
-  ModelActions,
+  ModelActions
 } from "mobx-state-tree";
 import { JSXElementConstructor, ReactElement } from "react";
 import { safeGetIdentifier } from "../util/mobxutils";
@@ -73,11 +73,11 @@ export const constraints = {
       direction: {
         name: "Direction",
         description: "The direction of velocity",
-        units: "rad",
-      },
+        units: "rad"
+      }
     },
     wptScope: true,
-    sgmtScope: false,
+    sgmtScope: false
   },
   WptZeroVelocity: {
     name: "Waypoint Zero Velocity",
@@ -86,7 +86,7 @@ export const constraints = {
     icon: <Dangerous></Dangerous>,
     properties: {},
     wptScope: true,
-    sgmtScope: false,
+    sgmtScope: false
   },
   StopPoint: {
     name: "Stop Point",
@@ -95,7 +95,7 @@ export const constraints = {
     icon: <StopCircleOutlined></StopCircleOutlined>,
     properties: {},
     wptScope: true,
-    sgmtScope: false,
+    sgmtScope: false
   },
   MaxVelocity: {
     name: "Max Velocity",
@@ -106,11 +106,11 @@ export const constraints = {
       velocity: {
         name: "Max Velocity",
         description: "Maximum Velocity of robot chassis",
-        units: "m/s",
-      },
+        units: "m/s"
+      }
     },
     wptScope: true,
-    sgmtScope: true,
+    sgmtScope: true
   },
   ZeroAngularVelocity: {
     name: "Zero Angular Velocity",
@@ -119,7 +119,7 @@ export const constraints = {
     icon: <SyncDisabledOutlined></SyncDisabledOutlined>,
     properties: {},
     wptScope: true,
-    sgmtScope: true,
+    sgmtScope: true
   },
   StraightLine: {
     name: "Straight Line",
@@ -128,11 +128,11 @@ export const constraints = {
     icon: <Timeline></Timeline>,
     properties: {},
     wptScope: false,
-    sgmtScope: true,
-  },
+    sgmtScope: true
+  }
 };
 const WaypointUUIDScope = types.model("WaypointScope", {
-  uuid: types.string,
+  uuid: types.string
 });
 export const WaypointScope = types.union(
   types.literal("first"),
@@ -155,9 +155,9 @@ export const ConstraintStore = types
       sgmtScope: false,
       wptScope: false,
       icon: <PriorityHigh></PriorityHigh>,
-      properties: {},
+      properties: {}
     }),
-    uuid: types.identifier,
+    uuid: types.identifier
   })
   .views((self) => ({
     getType() {
@@ -198,7 +198,7 @@ export const ConstraintStore = types
           const bIdx = path.findUUIDIndex(b.uuid) || 1;
           return aIdx - bIdx;
         });
-    },
+    }
   }))
   .views((self) => ({
     getStartWaypoint(): IHolonomicWaypointStore | undefined {
@@ -221,7 +221,7 @@ export const ConstraintStore = types
         getParent<IConstraintStore[]>(self)
       );
       return path.getByWaypointID(endScope);
-    },
+    }
   }))
   .views((self) => ({
     getStartWaypointIndex(): number | undefined {
@@ -272,7 +272,7 @@ export const ConstraintStore = types
         issueText.push("Scope not set");
       }
       return issueText;
-    },
+    }
   }))
   .actions((self) => ({
     afterCreate() {},
@@ -289,7 +289,7 @@ export const ConstraintStore = types
           )
         );
       }
-    },
+    }
   }));
 
 const defineConstraintStore = (
@@ -315,7 +315,7 @@ const defineConstraintStore = (
       )
       .props({
         type: key,
-        definition: types.frozen(definition),
+        definition: types.frozen(definition)
       })
       // Defined setters for each property
       .actions((self) => {

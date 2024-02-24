@@ -29,7 +29,7 @@ class InterpolatedRobot extends Component<Props, State> {
     return {
       x: p1.x + frac * (p2.x - p1.x),
       y: p1.y + frac * (p2.y - p1.y),
-      rot: p1.rot + frac * shortest_angle,
+      rot: p1.rot + frac * shortest_angle
     };
   }
 

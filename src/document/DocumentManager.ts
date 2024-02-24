@@ -34,14 +34,14 @@ export class DocumentManager {
       uiState: {
         settingsTab: 0,
         selectedSidebarItem: undefined,
-        layers: ViewLayerDefaults,
+        layers: ViewLayerDefaults
       },
       document: {
         robotConfig: { identifier: uuidv4() },
         pathlist: {},
         splitTrajectoriesAtStopPoints: false,
-        usesObstacles: false,
-      },
+        usesObstacles: false
+      }
     });
     this.model.document.pathlist.addPath("NewPath");
     this.model.document.history.clear();
@@ -149,7 +149,7 @@ export class DocumentManager {
           if (
             await dialog.ask("Save project?", {
               title: "Choreo",
-              type: "warning",
+              type: "warning"
             })
           ) {
             if (!(await this.saveFileDialog())) {
@@ -349,8 +349,8 @@ export class DocumentManager {
               return `Couldn't export trajectory: ${
                 toastProps.data as string[]
               }`;
-            },
-          },
+            }
+          }
         }
       )
     );
@@ -380,14 +380,14 @@ export class DocumentManager {
       uiState: {
         settingsTab: 0,
         selectedSidebarItem: undefined,
-        layers: ViewLayerDefaults,
+        layers: ViewLayerDefaults
       },
       document: {
         robotConfig: { identifier: uuidv4() },
         pathlist: {},
         splitTrajectoriesAtStopPoints: false,
-        usesObstacles: false,
-      },
+        usesObstacles: false
+      }
     });
     this.model.document.pathlist.addPath("NewPath");
     this.model.document.history.clear();
@@ -414,8 +414,8 @@ export class DocumentManager {
           invoke("delete_file", { dir: oldPath[0], name: oldPath[1] }),
           invoke("delete_traj_segments", {
             dir: oldPath[0],
-            trajName: oldName,
-          }),
+            trajName: oldName
+          })
         ])
           .then(() => this.writeTrajectory(() => newPath, uuid))
           .catch((e) => {
@@ -462,7 +462,7 @@ export class DocumentManager {
       await invoke("save_file", {
         dir: file[0],
         name: file[1],
-        contents: content,
+        contents: content
       });
       // "Split" naming scheme for consistency when path splitting is turned on/off
       if (
@@ -472,7 +472,7 @@ export class DocumentManager {
         await invoke("save_file", {
           dir: file[0],
           name: file[1].replace(".", ".1."),
-          contents: content,
+          contents: content
         });
       }
     }
@@ -510,7 +510,7 @@ export class DocumentManager {
         await invoke("save_file", {
           dir: file[0],
           name: name,
-          contents: content,
+          contents: content
         });
       }
     }
@@ -541,9 +541,9 @@ export class DocumentManager {
           filters: [
             {
               name: "Trajopt Trajectory",
-              extensions: ["traj"],
-            },
-          ],
+              extensions: ["traj"]
+            }
+          ]
         });
         if (file == null) {
           throw "No file selected or user cancelled";
@@ -578,9 +578,9 @@ export class DocumentManager {
       filters: [
         {
           name: "Choreo Document",
-          extensions: ["chor"],
-        },
-      ],
+          extensions: ["chor"]
+        }
+      ]
     });
     if (filePath === null) {
       return false;
@@ -600,8 +600,8 @@ export class DocumentManager {
         render(toastProps) {
           console.error(toastProps.data);
           return `Couldn't export trajectories: ${toastProps.data as string[]}`;
-        },
-      },
+        }
+      }
     });
 
     toast.success(`Saved ${name}. Future changes will now be auto-saved.`);
@@ -634,7 +634,7 @@ export class DocumentManager {
       // if we get past the above line, the dir and name were valid for saving.
       const adjacent_build_gradle = invoke<boolean>("contains_build_gradle", {
         dir,
-        name,
+        name
       });
       return adjacent_build_gradle;
     } catch (err) {
@@ -678,7 +678,7 @@ export class DocumentManager {
         dir:
           this.model.uiState.saveFileDir +
           path.sep +
-          this.model.uiState.chorRelativeTrajDir,
+          this.model.uiState.chorRelativeTrajDir
       });
     }
   }

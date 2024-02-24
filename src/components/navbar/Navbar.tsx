@@ -6,7 +6,7 @@ import { observer } from "mobx-react";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import {
   NavbarItemData,
-  NavbarItemSectionLengths,
+  NavbarItemSectionLengths
 } from "../../document/UIStateStore";
 
 type Props = object;
@@ -52,8 +52,8 @@ class Navbar extends Component<Props, State> {
                       sx={{
                         color: "var(--accent-purple)",
                         "&.Mui-selected": {
-                          color: "var(--select-yellow)",
-                        },
+                          color: "var(--select-yellow)"
+                        }
                       }}
                     >
                       {item.icon}

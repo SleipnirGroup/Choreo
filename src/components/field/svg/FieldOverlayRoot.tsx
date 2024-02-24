@@ -30,7 +30,7 @@ class FieldOverlayRoot extends Component<Props, State> {
   state = {
     xPan: 0,
     yPan: 0,
-    zoom: 1,
+    zoom: 1
   };
   canvasHeightMeters: number;
   canvasWidthMeters: number;
@@ -88,7 +88,7 @@ class FieldOverlayRoot extends Component<Props, State> {
     this.setState({
       xPan: e.transform.x,
       yPan: e.transform.y,
-      zoom: e.transform.k,
+      zoom: e.transform.k
     });
   }
   screenSpaceToFieldSpace(
@@ -148,7 +148,7 @@ class FieldOverlayRoot extends Component<Props, State> {
           height: "100%",
           position: "absolute",
           top: 0,
-          left: 0,
+          left: 0
         }}
         //
         id="field-svg-container"
@@ -156,8 +156,8 @@ class FieldOverlayRoot extends Component<Props, State> {
         <g
           transform={`
               matrix(${this.state.zoom} 0  0 ${-this.state.zoom} ${
-            this.state.xPan
-          } ${this.state.yPan})`}
+                this.state.xPan
+              } ${this.state.yPan})`}
           ref={this.frameRef}
           id="rootFrame"
         >
@@ -253,7 +253,7 @@ class FieldOverlayRoot extends Component<Props, State> {
     if (e.currentTarget === e.target) {
       const coords = this.screenSpaceToFieldSpace(this.svgRef?.current, {
         x: e.clientX,
-        y: e.clientY,
+        y: e.clientY
       });
       this.context.history.startGroup(() => {
         const newPoint =
@@ -282,7 +282,7 @@ class FieldOverlayRoot extends Component<Props, State> {
     if (e.currentTarget === e.target) {
       const coords = this.screenSpaceToFieldSpace(this.svgRef?.current, {
         x: e.clientX,
-        y: e.clientY,
+        y: e.clientY
       });
       this.context.history.startGroup(() => {
         this.context.model.document.pathlist.activePath.addObstacle(
@@ -290,7 +290,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             x: coords.x,
             y: coords.y,
             radius: 0.5,
-            uuid: uuidv4(),
+            uuid: uuidv4()
           })
         );
       });

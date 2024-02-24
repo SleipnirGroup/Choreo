@@ -37,7 +37,7 @@ class SidebarObstacle extends Component<Props, State> {
           className: styles.SidebarIcon,
           htmlColor: this.state.selected
             ? "var(--select-yellow)"
-            : "var(--accent-purple)",
+            : "var(--accent-purple)"
         })}
         <span
           className={styles.SidebarLabel}

@@ -17,7 +17,7 @@ type State = {
 
 class PathAnimationPanel extends Component<Props, State> {
   state = {
-    running: false,
+    running: false
   };
   static contextType = DocumentManagerContext;
   context!: React.ContextType<typeof DocumentManagerContext>;
@@ -96,7 +96,7 @@ class PathAnimationPanel extends Component<Props, State> {
           paddingRight: "10px",
           boxSizing: "border-box",
           display: "block",
-          borderTop: "thin solid var(--divider-gray)",
+          borderTop: "thin solid var(--divider-gray)"
         }}
       >
         <span
@@ -105,7 +105,7 @@ class PathAnimationPanel extends Component<Props, State> {
             flexDirection: "row",
             width: "100%",
             height: "100%",
-            gap: "10px",
+            gap: "10px"
           }}
         >
           <Tooltip

@@ -49,7 +49,7 @@ export default class CustomFieldImage extends Component<Props, State> {
     const [leftM, bottomM] = [leftPx, bottomPx].map(mToPx);
     const [fullLengthM, fullWidthM] = [
       this.props.imageWidthPx,
-      this.props.imageHeightPx,
+      this.props.imageHeightPx
     ].map(mToPx);
 
     return (
