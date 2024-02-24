@@ -19,7 +19,7 @@ class ExportConfigPanel extends Component<Props, State> {
           minWidth: "600px",
           rowGap: `${0 * this.rowGap}px`,
           fontSize: "2rem",
-          margin: `${1 * this.rowGap}px`,
+          margin: `${1 * this.rowGap}px`
         }}
       >
         <span className={inputStyles.Title} style={{ gridColumn: "1" }}>

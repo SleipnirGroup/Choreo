@@ -63,7 +63,7 @@ class SidebarConstraint extends Component<Props, State> {
       >
         {React.cloneElement(this.props.constraint.definition.icon, {
           className: styles.SidebarIcon,
-          htmlColor: selected ? "var(--select-yellow)" : "var(--accent-purple)",
+          htmlColor: selected ? "var(--select-yellow)" : "var(--accent-purple)"
         })}
         {/* className={styles.SidebarIcon}
           htmlColor={selected ? "var(--select-yellow)" : "var(--accent-purple)"}

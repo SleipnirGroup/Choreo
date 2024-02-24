@@ -29,7 +29,7 @@ class OverlayWaypoint extends Component<Props, State> {
       context,
       strokeColor,
       strokeWidthPx,
-      dashed,
+      dashed
     }: {
       context: React.ContextType<typeof DocumentManagerContext>;
       strokeColor: string;
@@ -74,7 +74,7 @@ class OverlayWaypoint extends Component<Props, State> {
   coordsFromWaypoint(): Coordinates {
     return {
       x: this.props.waypoint.x,
-      y: this.props.waypoint.y,
+      y: this.props.waypoint.y
     };
   }
   dragPointRotate(event: any) {

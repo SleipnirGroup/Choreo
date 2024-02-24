@@ -26,7 +26,7 @@ class WaypointVisibilityPanel extends Component<Props, State> {
 
     const sliderMarks = points.map((point, idx) => ({
       value: idx,
-      label: idx + 1,
+      label: idx + 1
     }));
 
     if (this.context.model.document.pathlist.activePath.waypoints.length >= 2) {
@@ -35,7 +35,7 @@ class WaypointVisibilityPanel extends Component<Props, State> {
           <div
             className={styles.WaypointVisibilityPanel}
             style={{
-              width: `min(80%, max(300px, calc(${pointcount} * 3ch + 8ch)))`,
+              width: `min(80%, max(300px, calc(${pointcount} * 3ch + 8ch)))`
             }}
           >
             <div style={{ marginInline: "4ch" }}>

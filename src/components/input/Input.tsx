@@ -39,7 +39,7 @@ class Input extends Component<Props, State> {
     this.state = {
       focused: false,
       editing: false,
-      editedValue: "",
+      editedValue: ""
     };
     this.inputElemRef = React.createRef<HTMLInputElement>();
   }
@@ -51,7 +51,7 @@ class Input extends Component<Props, State> {
     this.setState({
       focused: false,
       editing: false,
-      editedValue: this.props.number.toString(),
+      editedValue: this.props.number.toString()
     });
   }
 
@@ -59,7 +59,7 @@ class Input extends Component<Props, State> {
     this.setState({
       focused: true,
       editing: false,
-      editedValue: this.props.number.toString(),
+      editedValue: this.props.number.toString()
     });
     this.inputElemRef.current!.value = this.props.number.toString();
     this.inputElemRef.current!.select();
@@ -68,7 +68,7 @@ class Input extends Component<Props, State> {
   editingMode() {
     this.setState({
       focused: true,
-      editing: true,
+      editing: true
     });
   }
 
@@ -123,7 +123,7 @@ class Input extends Component<Props, State> {
                 : {
                     textDecorationLine: "underline",
                     textDecorationStyle: "dotted",
-                    textUnderlineOffset: "2px",
+                    textUnderlineOffset: "2px"
                   }
             }
           >
@@ -154,7 +154,7 @@ class Input extends Component<Props, State> {
               this.editingMode();
             }
             this.setState({
-              editedValue: e.target.value,
+              editedValue: e.target.value
             });
             e.preventDefault();
           }}

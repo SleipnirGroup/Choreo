@@ -21,13 +21,13 @@ class BetasConfigPanel extends Component<Props, State> {
           fontSize: "2rem",
           marginTop: `${1 * this.rowGap}px`,
           marginBottom: `${1 * this.rowGap}px`,
-          marginRight: 0,
+          marginRight: 0
         }}
       >
         <div
           style={{
             marginLeft: `${1 * this.rowGap}px`,
-            marginRight: `${1 * this.rowGap}px`,
+            marginRight: `${1 * this.rowGap}px`
           }}
         >
           <span
@@ -43,7 +43,7 @@ class BetasConfigPanel extends Component<Props, State> {
         <div
           style={{
             marginLeft: `${1 * this.rowGap}px`,
-            marginRight: `${1 * this.rowGap}px`,
+            marginRight: `${1 * this.rowGap}px`
           }}
         >
           <span

@@ -28,7 +28,7 @@ class RobotConfigPanel extends Component<Props, State> {
           gridGap: `${2 * this.rowGap}px`,
           rowGap: `${0 * this.rowGap}px`,
           fontSize: "2rem",
-          margin: `${1 * this.rowGap}px`,
+          margin: `${1 * this.rowGap}px`
         }}
       >
         <div style={{ gridRow: 1, gridColumn: 1 }}>
@@ -49,7 +49,7 @@ class RobotConfigPanel extends Component<Props, State> {
               height: 24,
               display: "flex",
               flexDirection: "row",
-              justifyContent: "space-around",
+              justifyContent: "space-around"
             }}
           >
             <span className={inputStyles.Title} style={{ gridColumn: "1" }}>
@@ -76,14 +76,14 @@ class RobotConfigPanel extends Component<Props, State> {
           style={{
             gridColumn: 1,
             gridRow: 2,
-            display: this.state.bottomHalf ? "block" : "block",
+            display: this.state.bottomHalf ? "block" : "block"
           }}
         >
           <Divider sx={{ color: "gray" }}>THEORETICAL</Divider>
           <FormHelperText
             sx={{
               textAlign: "center",
-              display: this.state.bottomHalf ? "block" : "none",
+              display: this.state.bottomHalf ? "block" : "none"
             }}
           >
             Calculated robot metrics, for reference and validation.
@@ -94,14 +94,14 @@ class RobotConfigPanel extends Component<Props, State> {
           style={{
             gridColumn: 2,
             gridRow: 2,
-            display: this.state.bottomHalf ? "block" : "block",
+            display: this.state.bottomHalf ? "block" : "block"
           }}
         >
           <Divider sx={{ color: "gray" }}>MOTOR CALCULATOR</Divider>
           <FormHelperText
             sx={{
               textAlign: "center",
-              display: this.state.bottomHalf ? "block" : "none",
+              display: this.state.bottomHalf ? "block" : "none"
             }}
           >
             Select motor and current limit, then apply calculated motor
@@ -114,13 +114,13 @@ class RobotConfigPanel extends Component<Props, State> {
             gridColumn: "1/3",
             gridRow: 2,
             display: this.state.bottomHalf ? "flex" : "flex",
-            justifyContent: "center",
+            justifyContent: "center"
           }}
         >
           <span style={{ height: "48px" }}>
             <IconButton
               sx={{
-                transform: "translate(0%, calc(-50% + 12px))",
+                transform: "translate(0%, calc(-50% + 12px))"
               }}
               onClick={() =>
                 this.setState({ bottomHalf: !this.state.bottomHalf })
@@ -139,7 +139,7 @@ class RobotConfigPanel extends Component<Props, State> {
           style={{
             gridColumn: 2,
             gridRow: 3,
-            display: this.state.bottomHalf ? "block" : "none",
+            display: this.state.bottomHalf ? "block" : "none"
           }}
         >
           <MotorCalculatorPanel rowGap={this.rowGap}></MotorCalculatorPanel>
@@ -150,7 +150,7 @@ class RobotConfigPanel extends Component<Props, State> {
             gridColumn: 1,
             pointerEvents: "none",
             display: this.state.bottomHalf ? "block" : "none",
-            transform: `translate(${this.rowGap}px)`,
+            transform: `translate(${this.rowGap}px)`
           }}
         >
           <Divider orientation="vertical"></Divider>
@@ -160,7 +160,7 @@ class RobotConfigPanel extends Component<Props, State> {
           style={{
             gridColumn: 1,
             gridRow: 3,
-            display: this.state.bottomHalf ? "block" : "none",
+            display: this.state.bottomHalf ? "block" : "none"
           }}
         >
           <TheoreticalPanel

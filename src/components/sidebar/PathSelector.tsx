@@ -3,7 +3,7 @@ import {
   CircularProgress,
   FormControlLabel,
   IconButton,
-  TextField,
+  TextField
 } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
@@ -36,7 +36,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     renaming: false,
     renameError: false,
     name: this.getPath().name,
-    settingsOpen: false,
+    settingsOpen: false
   };
   nameInputRef = React.createRef<HTMLInputElement>();
   getSelected() {
@@ -64,7 +64,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     this.setState({
       renaming: false,
       renameError: false,
-      name: this.getPath().name,
+      name: this.getPath().name
     });
   }
   checkName(): boolean {
@@ -116,7 +116,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             size={20}
             sx={{
               color: selected ? "var(--select-yellow)" : "var(--accent-purple)",
-              marginInline: "2px",
+              marginInline: "2px"
             }}
             variant="indeterminate"
           ></CircularProgress>
@@ -140,7 +140,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             flexGrow: "1",
             verticalAlign: "middle",
             userSelect: "none",
-            height: "24px",
+            height: "24px"
           }}
           spellCheck={false}
           onChange={() => this.checkName()}
@@ -156,7 +156,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
           }}
           inputProps={{
             readOnly: !this.state.renaming,
-            style: { userSelect: "none" },
+            style: { userSelect: "none" }
           }}
           InputProps={{ disableUnderline: false }}
           onFocus={(e) => {
@@ -184,13 +184,13 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             marginLeft: "-4px",
             ".MuiInputBase-root": {
               "&:before": {
-                borderBottom: "2px solid transparent",
+                borderBottom: "2px solid transparent"
               },
               width: "100%",
               height: "1.5em",
               userSelect: "none",
-              padding: "4px",
-            },
+              padding: "4px"
+            }
           }}
         ></TextField>
         <div>
@@ -239,7 +239,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
                 sx={{
                   marginLeft: "0px",
                   gridColumnStart: 2,
-                  gridColumnEnd: 4,
+                  gridColumnEnd: 4
                 }}
                 label="Guess Path Detail"
                 control={

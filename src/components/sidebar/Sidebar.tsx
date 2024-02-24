@@ -38,7 +38,7 @@ class Sidebar extends Component<Props, State> {
             justifyContent: "space-between",
             alignItems: "center",
             paddingLeft: 0,
-            zIndex: 1000,
+            zIndex: 1000
           }}
         >
           <span>
@@ -90,7 +90,7 @@ class Sidebar extends Component<Props, State> {
               size="small"
               color="default"
               style={{
-                float: "right",
+                float: "right"
               }}
               disabled={
                 Object.keys(this.context.model.document.pathlist.paths)
@@ -110,7 +110,7 @@ class Sidebar extends Component<Props, State> {
               size="small"
               color="default"
               style={{
-                float: "right",
+                float: "right"
               }}
               onClick={() =>
                 this.context.model.document.pathlist.addPath("New Path", true)

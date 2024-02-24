@@ -3,7 +3,7 @@ import {
   SavedDocument,
   SavedTrajectorySample,
   SAVE_FILE_VERSION,
-  updateToCurrent,
+  updateToCurrent
 } from "./DocumentSpecTypes";
 
 import { invoke } from "@tauri-apps/api/tauri";
@@ -19,10 +19,10 @@ export const DocumentStore = types
     pathlist: PathListStore,
     robotConfig: RobotConfigStore,
     splitTrajectoriesAtStopPoints: types.boolean,
-    usesObstacles: types.boolean,
+    usesObstacles: types.boolean
   })
   .volatile((self) => ({
-    history: UndoManager.create({}, { targetStore: self }),
+    history: UndoManager.create({}, { targetStore: self })
   }));
 
 export interface IDocumentStore extends Instance<typeof DocumentStore> {}
@@ -30,7 +30,7 @@ export interface IDocumentStore extends Instance<typeof DocumentStore> {}
 const StateStore = types
   .model("StateStore", {
     uiState: UIStateStore,
-    document: DocumentStore,
+    document: DocumentStore
   })
   .views((self) => ({
     asSavedDocument(): SavedDocument {
@@ -40,9 +40,9 @@ const StateStore = types
         paths: self.document.pathlist.asSavedPathList(),
         splitTrajectoriesAtStopPoints:
           self.document.splitTrajectoriesAtStopPoints,
-        usesObstacles: self.document.usesObstacles,
+        usesObstacles: self.document.usesObstacles
       };
-    },
+    }
   }))
   .actions((self) => {
     return {
@@ -114,7 +114,7 @@ const StateStore = types
                 config: self.document.robotConfig.asSolverRobotConfig(),
                 constraints: pathStore.asSolverPath().constraints,
                 circleObstacles: pathStore.asSolverPath().circleObstacles,
-                polygonObstacles: [],
+                polygonObstacles: []
               }),
             (e) => e
           )
@@ -129,7 +129,7 @@ const StateStore = types
                   angularVelocity: samp.angular_velocity,
                   velocityX: samp.velocity_x,
                   velocityY: samp.velocity_y,
-                  timestamp: samp.timestamp,
+                  timestamp: samp.timestamp
                 });
               });
               pathStore.setTrajectory(newTraj);
@@ -150,7 +150,7 @@ const StateStore = types
             pathStore.setGenerating(false);
             self.uiState.setPathAnimationTimestamp(0);
           });
-      },
+      }
     };
   })
   .actions((self) => {
@@ -170,7 +170,7 @@ const StateStore = types
           success: {
             render({ data, toastProps }) {
               return `Generated "${pathName}"`;
-            },
+            }
           },
 
           error: {
@@ -181,8 +181,8 @@ const StateStore = types
                 return `Cancelled "${pathName}"`;
               }
               return `Can't generate "${pathName}": ` + (data as string);
-            },
-          },
+            }
+          }
         });
       },
       zoomToFitWaypoints() {
@@ -221,7 +221,7 @@ const StateStore = types
         window.dispatchEvent(
           new CustomEvent("center", { detail: { x, y, k } })
         );
-      },
+      }
     };
   })
   .actions((self) => {
@@ -231,7 +231,7 @@ const StateStore = types
       },
       setUsesObstacles(usesObstacles: boolean) {
         self.document.usesObstacles = usesObstacles;
-      },
+      }
     };
   });
 
