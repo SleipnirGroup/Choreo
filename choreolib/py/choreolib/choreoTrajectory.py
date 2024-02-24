@@ -4,6 +4,7 @@ import math
 from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.kinematics import ChassisSpeeds
 
+
 # Doesn't appear to be pulled into python from Interpolatable
 def _floatInterp(start, end, frac) -> float:
     return start + (end - start) * frac

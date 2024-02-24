@@ -1,15 +1,15 @@
 name: Build and Distribute Python choreolib
 
 permissions:
-  id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+  id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
     tags:
-      - 'v*'
+      - "v*"
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   buildAndDeploy:
@@ -41,9 +41,8 @@ jobs:
       - name: Run Unit Tests
         working-directory: ./choreolib/py
         run: |
-            pip install --no-cache-dir dist/*.whl
-            pytest
-
+          pip install --no-cache-dir dist/*.whl
+          pytest
 
       - name: Upload artifacts
         uses: actions/upload-artifact@master
@@ -59,4 +58,4 @@ jobs:
           packages_dir: ./choreolib/py/dist/
 
     permissions:
-      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
