@@ -4,18 +4,19 @@ import DocumentManagerContext from "../../document/DocumentManager";
 import { IconButton, Modal, Tab, Tabs } from "@mui/material";
 import RobotConfigPanel from "./robotconfig/RobotConfigPanel";
 import { Close } from "@mui/icons-material";
+import ExportConfigPanel from "./ExportConfigPanel";
+import BetasConfigPanel from "./BetasConfigPanel";
 
-type Props = {};
+type Props = object;
 
-type State = {};
+type State = object;
 
 class SettingsModal extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
   render() {
-    let config = this.context.model.document.robotConfig;
-    let uiState = this.context.model.uiState;
+    const uiState = this.context.model.uiState;
     return (
       <Modal
         open={uiState.robotConfigOpen}
@@ -30,12 +31,12 @@ class SettingsModal extends Component<Props, State> {
             background: "var(--background-light-gray)",
             color: "white",
             width: "min-content",
-            padding: "8px",
+            // padding: "8px",
 
             borderRadius: "10px",
             maxHeight: "90vh",
             display: "flex",
-            flexDirection: "column",
+            flexDirection: "column"
           }}
         >
           <div
@@ -43,7 +44,7 @@ class SettingsModal extends Component<Props, State> {
               width: "100%",
               display: "flex",
               flexDirection: "row",
-              justifyContent: "space-between",
+              justifyContent: "space-between"
             }}
           >
             <Tabs
@@ -53,15 +54,20 @@ class SettingsModal extends Component<Props, State> {
               textColor="inherit"
               sx={{
                 ".MuiTabs-indicator": {
-                  "background-color": "var(--select-yellow)",
+                  "background-color": "var(--select-yellow)"
                 },
                 ".Mui-selected": {
-                  color: "white",
+                  color: "white"
                 },
                 justifySelf: "center",
+                marginTop: "8px",
+                marginRight: "8px",
+                marginLeft: "8px"
               }}
             >
               <Tab label="Robot Config" />
+              <Tab label="Export Config" />
+              <Tab label="Betas" />
             </Tabs>
             <IconButton onClick={() => uiState.setRobotConfigOpen(false)}>
               <Close></Close>
@@ -69,6 +75,10 @@ class SettingsModal extends Component<Props, State> {
           </div>
           <div style={{ paddingTop: 8, flexGrow: 1, overflowY: "scroll" }}>
             {uiState.settingsTab == 0 && <RobotConfigPanel></RobotConfigPanel>}
+            {uiState.settingsTab == 1 && (
+              <ExportConfigPanel></ExportConfigPanel>
+            )}
+            {uiState.settingsTab == 2 && <BetasConfigPanel></BetasConfigPanel>}
           </div>
         </div>
       </Modal>

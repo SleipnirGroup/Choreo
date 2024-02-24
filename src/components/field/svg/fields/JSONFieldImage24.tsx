@@ -9,7 +9,8 @@ type Props = {
   fieldJSON?: FieldJSON;
 };
 
-type State = {};
+type State = object;
+
 export const WIDTH_M = 8.21055;
 export const LENGTH_M = 16.54175;
 
@@ -34,25 +35,25 @@ export default class CustomFieldImage extends Component<Props, State> {
   state = {};
 
   render() {
-    let fieldJSON = this.props.fieldJSON || defaultFieldJSON;
-    let conversion = converter(
+    const fieldJSON = this.props.fieldJSON || defaultFieldJSON;
+    const conversion = converter(
       fieldJSON["field-unit"] as "meter" | "foot" | "inch"
     );
-    let [fieldLengthM, fieldWidthM] = fieldJSON["field-size"].map(conversion);
-    let [leftPx, topPx] = fieldJSON["field-corners"]["top-left"];
-    let [rightPx, bottomPx] = fieldJSON["field-corners"]["bottom-right"];
-    let fieldLengthPx = rightPx - leftPx;
-    let fieldWidthPx = bottomPx - topPx;
-    let mToPx = (px: number) => (px * fieldLengthM) / fieldLengthPx;
+    const [fieldLengthM, fieldWidthM] = fieldJSON["field-size"].map(conversion);
+    const [leftPx, topPx] = fieldJSON["field-corners"]["top-left"];
+    const [rightPx, bottomPx] = fieldJSON["field-corners"]["bottom-right"];
+    const fieldLengthPx = rightPx - leftPx;
+    const fieldWidthPx = bottomPx - topPx;
+    const mToPx = (px: number) => (px * fieldLengthM) / fieldLengthPx;
     console.log(mToPx, fieldWidthM / fieldWidthPx);
-    let [leftM, bottomM] = [leftPx, bottomPx].map(mToPx);
-    let [fullLengthM, fullWidthM] = [
+    const [leftM, bottomM] = [leftPx, bottomPx].map(mToPx);
+    const [fullLengthM, fullWidthM] = [
       this.props.imageWidthPx,
-      this.props.imageHeightPx,
+      this.props.imageHeightPx
     ].map(mToPx);
 
     return (
-      <g id="layer1" transform={`scale(1, -1)`}>
+      <g id="layer1" transform={"scale(1, -1)"}>
         <image
           x={-leftM}
           y={-bottomM}

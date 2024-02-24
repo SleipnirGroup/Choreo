@@ -8,15 +8,15 @@ export const CircularObstacleStore = types
     x: 0,
     y: 0,
     radius: 0,
-    uuid: types.identifier,
+    uuid: types.identifier
   })
   .views((self) => ({
     asSavedCircleObstacle(): SavedCircleObstacle {
-      let { x, y, radius } = self;
+      const { x, y, radius } = self;
       return {
         x,
         y,
-        radius,
+        radius
       };
     },
     get selected(): boolean {
@@ -29,7 +29,7 @@ export const CircularObstacleStore = types
           getRoot<IStateStore>(self).uiState.selectedSidebarItem
         )
       );
-    },
+    }
   }))
   .actions((self) => ({
     fromSavedCircleObstacle(obstacle: SavedCircleObstacle) {
@@ -58,7 +58,7 @@ export const CircularObstacleStore = types
           )
         );
       }
-    },
+    }
   }));
 
 export interface ICircularObstacleStore

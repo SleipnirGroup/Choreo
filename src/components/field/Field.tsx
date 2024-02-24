@@ -9,30 +9,28 @@ import IconButton from "@mui/material/IconButton";
 import ShapeLineIcon from "@mui/icons-material/ShapeLine";
 import { CircularProgress, Tooltip } from "@mui/material";
 import Box from "@mui/material/Box/Box";
-import RobotConfigPanel from "../config/RobotConfigPanel";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import VisibilityPanel from "../config/VisibilityPanel";
 import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel";
 import { IConstraintStore } from "../../document/ConstraintStore";
 import "react-toastify/dist/ReactToastify.min.css";
-import { ToastContainer, toast } from "react-toastify";
 import { invoke } from "@tauri-apps/api";
 import { Close } from "@mui/icons-material";
 import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
 import CircularObstacleConfigPanel from "../config/CircularObstacleConfigPanel";
+import WaypointVisibilityPanel from "../config/WaypointVisibilityPanel";
 
-type Props = {};
+type Props = object;
 
-type State = {};
+type State = object;
 
 export class Field extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  // @ts-ignore
   context!: React.ContextType<typeof DocumentManagerContext>;
   render() {
-    let selectedSidebar = this.context.model.uiState.selectedSidebarItem;
-    let activePath = this.context.model.document.pathlist.activePath;
-    let activePathUUID = this.context.model.document.pathlist.activePathUUID;
+    const selectedSidebar = this.context.model.uiState.selectedSidebarItem;
+    const activePath = this.context.model.document.pathlist.activePath;
+    const activePathUUID = this.context.model.document.pathlist.activePathUUID;
     return (
       <div className={styles.Container}>
         <FieldOverlayRoot></FieldOverlayRoot>
@@ -67,6 +65,7 @@ export class Field extends Component<Props, State> {
             ></CircularObstacleConfigPanel>
           )}
         <VisibilityPanel></VisibilityPanel>
+        <WaypointVisibilityPanel></WaypointVisibilityPanel>
         <Tooltip
           disableInteractive
           placement="top-start"
@@ -74,8 +73,8 @@ export class Field extends Component<Props, State> {
             activePath.generating
               ? "Cancel All (Ctrl-click)"
               : activePath.canGenerate()
-              ? "Generate Path"
-              : "Generate Path (needs 2 waypoints)"
+                ? "Generate Path"
+                : "Generate Path (needs 2 waypoints)"
           }
         >
           <Box
@@ -84,7 +83,7 @@ export class Field extends Component<Props, State> {
               bottom: 16,
               right: 16,
               width: 48,
-              height: 48,
+              height: 48
             }}
           >
             {/* cancel button */}
@@ -106,8 +105,8 @@ export class Field extends Component<Props, State> {
                 zIndex: activePath.generating ? 10 : -1,
                 backgroundColor: "red",
                 "&:hover": {
-                  backgroundColor: "darkred",
-                },
+                  backgroundColor: "darkred"
+                }
               }}
               onClick={(event) => {
                 if (event.ctrlKey) {
@@ -134,7 +133,7 @@ export class Field extends Component<Props, State> {
                 borderRadius: "50%",
                 boxShadow: "3px",
                 marginInline: 0,
-                visibility: activePath.canGenerate() ? "visible" : "hidden",
+                visibility: activePath.canGenerate() ? "visible" : "hidden"
               }}
               onClick={() =>
                 this.context.generateWithToastsAndExport(activePathUUID)
@@ -152,7 +151,7 @@ export class Field extends Component<Props, State> {
               color: "var(--select-yellow)",
               position: "absolute",
               bottom: 16,
-              right: 16,
+              right: 16
             }}
           />
         )}

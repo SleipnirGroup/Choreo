@@ -6,6 +6,7 @@ import {
   Route,
   ScatterPlot,
   SquareOutlined,
+  CropFree
 } from "@mui/icons-material";
 import { path, window as tauriWindow } from "@tauri-apps/api";
 import { getVersion } from "@tauri-apps/api/app";
@@ -18,30 +19,30 @@ import {
   constraints,
   ConstraintStore,
   ConstraintStores,
-  IConstraintStore,
+  IConstraintStore
 } from "./ConstraintStore";
 import {
   HolonomicWaypointStore,
-  IHolonomicWaypointStore,
+  IHolonomicWaypointStore
 } from "./HolonomicWaypointStore";
 import { IRobotConfigStore, RobotConfigStore } from "./RobotConfigStore";
 import {
   CircularObstacleStore,
-  ICircularObstacleStore,
+  ICircularObstacleStore
 } from "./CircularObstacleStore";
 
 export const SelectableItem = types.union(
   {
     dispatcher: (snapshot) => {
       if (snapshot.mass) return RobotConfigStore;
-      if (snapshot.type) {
+      if (snapshot.scope) {
         return ConstraintStores[snapshot.type];
       }
       if (snapshot.radius) {
         return CircularObstacleStore;
       }
       return HolonomicWaypointStore;
-    },
+    }
   },
   RobotConfigStore,
   HolonomicWaypointStore,
@@ -49,10 +50,8 @@ export const SelectableItem = types.union(
   ...Object.values(ConstraintStores)
 );
 
-export const ObstaclesEnabled = false;
-
 /* Navbar stuff */
-export let WaypointData: {
+export const WaypointData: {
   [key: string]: {
     index: number;
     name: string;
@@ -62,25 +61,25 @@ export let WaypointData: {
   FullWaypoint: {
     index: 0,
     name: "Pose Waypoint",
-    icon: <Waypoint />,
+    icon: <Waypoint />
   },
   TranslationWaypoint: {
     index: 1,
     name: "Translation Waypoint",
-    icon: <Circle />,
+    icon: <Circle />
   },
   EmptyWaypoint: {
     index: 2,
     name: "Empty Waypoint",
-    icon: <CircleOutlined />,
+    icon: <CircleOutlined />
   },
   InitialGuessPoint: {
     index: 3,
     name: "Initial Guess Point",
-    icon: <InitialGuessPoint />,
-  },
+    icon: <InitialGuessPoint />
+  }
 };
-let NavbarData: {
+const NavbarData: {
   [key: string]: {
     index: number;
     name: string;
@@ -88,17 +87,18 @@ let NavbarData: {
   };
 } = Object.assign({}, WaypointData);
 const waypointNavbarCount = Object.keys(NavbarData).length;
-let constraintsIndices: number[] = [];
-let navbarIndexToConstraint: { [key: number]: typeof ConstraintStore } = {};
-let navbarIndexToConstraintDefinition: { [key: number]: ConstraintDefinition } =
-  {};
+const constraintsIndices: number[] = [];
+const navbarIndexToConstraint: { [key: number]: typeof ConstraintStore } = {};
+const navbarIndexToConstraintDefinition: {
+  [key: number]: ConstraintDefinition;
+} = {};
 {
   let constraintsOffset = Object.keys(NavbarData).length;
   Object.entries(constraints).forEach(([key, data], index) => {
     NavbarData[key] = {
       index: constraintsOffset,
       name: data.name,
-      icon: data.icon,
+      icon: data.icon
     };
     navbarIndexToConstraint[constraintsOffset] = ConstraintStores[key];
     navbarIndexToConstraintDefinition[constraintsOffset] = data;
@@ -107,7 +107,7 @@ let navbarIndexToConstraintDefinition: { [key: number]: ConstraintDefinition } =
   });
 }
 const constraintNavbarCount = Object.keys(constraints).length;
-export let ObstacleData: {
+export const ObstacleData: {
   [key: string]: {
     index: number;
     name: string;
@@ -117,22 +117,22 @@ export let ObstacleData: {
   CircleObstacle: {
     index: Object.keys(NavbarData).length,
     name: "Circular Obstacle",
-    icon: <DoNotDisturb />,
-  },
+    icon: <DoNotDisturb />
+  }
 };
 const obstacleNavbarCount = Object.keys(ObstacleData).length;
 Object.entries(ObstacleData).forEach(([name, data]) => {
-  let obstaclesOffset = Object.keys(NavbarData).length;
+  const obstaclesOffset = Object.keys(NavbarData).length;
   NavbarData[name] = {
     index: obstaclesOffset,
     name: data.name,
-    icon: data.icon,
+    icon: data.icon
   };
 });
 
 /** An map of  */
 export const NavbarLabels = (() => {
-  let x: { [key: string]: number } = {};
+  const x: { [key: string]: number } = {};
   Object.entries(NavbarData).forEach(([key, data], index) => {
     x[key] = index;
   });
@@ -141,11 +141,9 @@ export const NavbarLabels = (() => {
 
 /** An array of name-and-icon objects for the navbar */
 export const NavbarItemData = (() => {
-  let x: Array<{ name: string; icon: any }> = [];
-  let constraintsOffset = 0;
+  const x: Array<{ name: string; icon: any }> = [];
   Object.entries(NavbarData).forEach(([key, data], index) => {
     x[data.index] = { name: data.name, icon: data.icon };
-    constraintsOffset++;
   });
   return x;
 })();
@@ -153,7 +151,7 @@ export const NavbarItemData = (() => {
 export const NavbarItemSectionLengths = [
   waypointNavbarCount - 1,
   waypointNavbarCount + constraintNavbarCount - 1,
-  waypointNavbarCount + constraintNavbarCount + obstacleNavbarCount - 1,
+  waypointNavbarCount + constraintNavbarCount + obstacleNavbarCount - 1
 ];
 
 export type SelectableItemTypes =
@@ -171,42 +169,48 @@ const ViewData = {
     icon: (
       <SquareOutlined style={{ transform: "scale(1.2, 0.6)" }}></SquareOutlined>
     ),
-    default: true,
+    default: true
   },
   Grid: {
     index: 1,
     name: "Grid",
     icon: <Grid4x4 />,
-    default: false,
+    default: false
   },
   Trajectory: {
     index: 2,
     name: "Trajectory",
     icon: <Route />,
-    default: true,
+    default: true
   },
   Samples: {
     index: 3,
     name: "Samples",
     icon: <ScatterPlot />,
-    default: false,
+    default: false
   },
   Waypoints: {
     index: 4,
     name: "Waypoints",
     icon: <Waypoint />,
-    default: true,
+    default: true
   },
   Obstacles: {
     index: 5,
     name: "Obstacles",
     icon: <DoNotDisturb />,
-    default: true,
+    default: true
   },
+  Focus: {
+    index: 6,
+    name: "Focus",
+    icon: <CropFree />,
+    default: false
+  }
 };
 
 export const ViewLayers = (() => {
-  let x: { [key: string]: number } = {};
+  const x: { [key: string]: number } = {};
   Object.entries(ViewData).forEach(([key, data], index) => {
     x[key] = index;
   });
@@ -214,7 +218,7 @@ export const ViewLayers = (() => {
 })();
 
 export const ViewItemData = (() => {
-  let x: Array<{ name: string; icon: any; default: boolean }> = [];
+  const x: Array<{ name: string; icon: any; default: boolean }> = [];
   Object.entries(ViewData).forEach(([key, data], index) => {
     x[data.index] = { name: data.name, icon: data.icon, default: data.default };
   });
@@ -222,7 +226,7 @@ export const ViewItemData = (() => {
 })();
 export const ViewLayerDefaults = ViewItemData.map((layer) => layer.default);
 export type ViewLayerType = typeof ViewLayers;
-export const NUM_SETTINGS_TABS = 1;
+export const NUM_SETTINGS_TABS = 3;
 export const UIStateStore = types
   .model("UIStateStore", {
     fieldScalingFactor: 0.02,
@@ -243,7 +247,7 @@ export const UIStateStore = types
       (arr) => arr?.length == ViewItemData.length
     ),
     selectedSidebarItem: types.maybe(types.safeReference(SelectableItem)),
-    selectedNavbarItem: NavbarLabels.FullWaypoint,
+    selectedNavbarItem: NavbarLabels.FullWaypoint
   })
   .views((self: any) => {
     return {
@@ -255,6 +259,25 @@ export const UIStateStore = types
       get hasSaveLocation() {
         return (
           self.saveFileName !== undefined && self.saveFileDir !== undefined
+        );
+      },
+      get isSidebarConstraintSelected() {
+        return (
+          self.selectedSidebarItem !== undefined &&
+          self.selectedSidebarItem.scope !== undefined
+        );
+      },
+      get isSidebarCircularObstacleSelected() {
+        return (
+          self.selectedSidebarItem !== undefined &&
+          self.selectedSidebarItem.radius !== undefined
+        );
+      },
+      get isSidebarWaypointSelected() {
+        return (
+          self.selectedSidebarItem !== undefined &&
+          !this.isSidebarConstraintSelected &&
+          !this.isSidebarCircularObstacleSelected
         );
       },
       getSelectedConstraint() {
@@ -298,7 +321,7 @@ export const UIStateStore = types
             `Choreo ${await getVersion()} - ${self.saveFileName ?? "Untitled"}`
           )
           .catch(console.error);
-      },
+      }
     };
   })
   .actions((self: any) => ({
@@ -319,14 +342,14 @@ export const UIStateStore = types
     setFieldScalingFactor(metersPerPixel: number) {
       self.fieldScalingFactor = metersPerPixel;
     },
-    setSaveFileName(name: string) {
+    setSaveFileName(name: string | undefined) {
       self.saveFileName = name;
       self.updateWindowTitle();
     },
-    setSaveFileDir(dir: string) {
+    setSaveFileDir(dir: string | undefined) {
       self.saveFileDir = dir;
     },
-    setIsGradleProject(isGradleProject: boolean) {
+    setIsGradleProject(isGradleProject: boolean | undefined) {
       self.isGradleProject = isGradleProject;
     },
     setWaypointPanelOpen(open: boolean) {
@@ -346,7 +369,6 @@ export const UIStateStore = types
       self.layers[layer] = visible;
     },
     setVisibleLayers(visibleLayers: number[]) {
-      console.log(self.layers, visibleLayers);
       self.layers.fill(false);
       visibleLayers.forEach((layer) => {
         self.layers.length = Math.max(layer + 1, self.layers.length);
@@ -355,6 +377,6 @@ export const UIStateStore = types
     },
     setSelectedNavbarItem(item: number) {
       self.selectedNavbarItem = item;
-    },
+    }
   }));
 export interface IUIStateStore extends Instance<typeof UIStateStore> {}

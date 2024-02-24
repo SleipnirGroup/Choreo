@@ -40,15 +40,16 @@ theme:
     - content.code.annotate
     - content.code.select.title
     - toc.follow
+    - toc.integrate
     - content.tabs.link
     - search.share
     - search.highlight
     - search.suggest
     - announce.dismiss
     - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.top
     - navigation.instant
-    - navigation.indexes
 
 # Extensions
 markdown_extensions:
@@ -74,7 +75,7 @@ markdown_extensions:
   - pymdownx.superfences
 
 extra_javascript:
-  - javascripts/mathjax.js
+  - js/mathjax.js
   - https://polyfill.io/v3/polyfill.min.js?features=es6
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 
@@ -82,7 +83,9 @@ nav:
   - Home:
       - Home: index.md
       - Installation: installation.md
-      - Document Settings: document-settings.md
+      - Document Settings Panel: document-settings.md
+      - Robot Configuration: document-settings/robot-configuration.md
+      - File Export Settings: document-settings/file-export-settings.md
   - Usage:
       - Editing Paths: usage/editing-paths.md
       - Controls & Shortcuts: usage/controls-shortcuts.md
@@ -91,6 +94,8 @@ nav:
   - ChoreoLib:
       - Installation: choreolib/installation.md
       - Usage: choreolib/usage.md
+      - Java API: api/java/index.html
+      - C++ API: api/cpp/index.html
   - Contributing:
       - Building: contributing/building-choreo.md
       - Contributing Guide: contributing/contributing-guide.md

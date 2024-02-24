@@ -2,13 +2,6 @@
 
 Thank you for your interest in contributing to this project! We appreciate your help in making it better.
 
-## Table of Contents
-- [Introduction](#introduction)
-- [Submitting Issues](#submitting-issues)
-- [Pull Requests](#pull-requests)
-- [Code Style](#code-style)
-- [License](#license)
-
 ## Introduction
 
 This document outlines the guidelines for contributing to this project. It covers submitting issues, creating pull requests, and maintaining code quality.
@@ -44,7 +37,7 @@ To maintain a consistent codebase, we follow a set of code style guidelines. Ple
 - Follow the project's indentation and formatting conventions.
 - Keep lines of code within a reasonable length.
 - Remove any unnecessary code or comments.
-- Make sure to run `npm run fixFormat` before comitting!
+- Make sure to run `npm run fmt` before comitting!
 
 ## License
 

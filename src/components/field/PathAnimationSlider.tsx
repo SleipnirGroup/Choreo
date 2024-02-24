@@ -5,17 +5,16 @@ import Slider from "@mui/material/Slider";
 import { Tooltip } from "@mui/material";
 import { NavbarItemData } from "../../document/UIStateStore";
 
-type Props = {};
+type Props = object;
 
-type State = {};
+type State = object;
 
 class PathAnimationSlider extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  // @ts-ignore
   context!: React.ContextType<typeof DocumentManagerContext>;
   totalTime = 0;
   render() {
-    let activePath = this.context.model.document.pathlist.activePath;
+    const activePath = this.context.model.document.pathlist.activePath;
     this.totalTime = activePath.getTotalTimeSeconds();
     return (
       <>
@@ -26,20 +25,33 @@ class PathAnimationSlider extends Component<Props, State> {
           max={this.totalTime}
           marks={
             activePath.generated.length > 0
-              ? activePath.nonGuessOrEmptyPoints.map((point, idx) => ({
-                  value: activePath.waypointTimestamps()[idx],
-                  label: (
-                    <Tooltip disableInteractive title={idx + 1} key={idx + 1}>
-                      <span>
-                        {React.cloneElement(NavbarItemData[point.type].icon, {
-                          htmlColor: point.selected
-                            ? "var(--select-yellow)"
-                            : "white",
-                        })}
-                      </span>
-                    </Tooltip>
-                  ),
-                }))
+              ? activePath.waypoints.flatMap((point, idx) =>
+                  point.isInitialGuess || point.type == 2
+                    ? []
+                    : [
+                        {
+                          value: activePath.waypointTimestamps()[idx],
+                          label: (
+                            <Tooltip
+                              disableInteractive
+                              title={idx + 1}
+                              key={idx + 1}
+                            >
+                              <span>
+                                {React.cloneElement(
+                                  NavbarItemData[point.type].icon,
+                                  {
+                                    htmlColor: point.selected
+                                      ? "var(--select-yellow)"
+                                      : "white"
+                                  }
+                                )}
+                              </span>
+                            </Tooltip>
+                          )
+                        }
+                      ]
+                )
               : false
           }
           aria-label="Default"
@@ -57,7 +69,7 @@ class PathAnimationSlider extends Component<Props, State> {
             marginInline: "10px",
             ".MuiSlider-track, .MuiSlider-thumb": {
               transition: "unset",
-              WebkitTransition: "unset",
+              WebkitTransition: "unset"
             },
             ".MuiSlider-thumb": {
               width: "24px",
@@ -65,17 +77,17 @@ class PathAnimationSlider extends Component<Props, State> {
               zIndex: 2,
               ":hover,:active": {
                 width: "24px",
-                height: "24px",
-              },
+                height: "24px"
+              }
             },
             ".MuiSlider-mark": {
-              display: "none",
+              display: "none"
             },
             ".MuiSlider-markLabel": {
               top: "unset",
               transform: "translateX(-50%) translateY(-10px)",
-              zIndex: 1,
-            },
+              zIndex: 1
+            }
           }}
         />
         <span

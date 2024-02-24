@@ -6,15 +6,15 @@ import { Divider, IconButton, Tooltip } from "@mui/material";
 import WaypointList from "./WaypointList";
 import PathSelector from "./PathSelector";
 import MenuIcon from "@mui/icons-material/Menu";
-import { Redo, Undo } from "@mui/icons-material";
+import { ContentCopy, Redo, Undo } from "@mui/icons-material";
 import Add from "@mui/icons-material/Add";
 import SidebarConstraint from "./SidebarConstraint";
 import SidebarObstacle from "./SidebarObstacle";
 import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
-import { ObstaclesEnabled, UIStateStore } from "../../document/UIStateStore";
 
-type Props = {};
-type State = {};
+type Props = object;
+
+type State = object;
 
 class Sidebar extends Component<Props, State> {
   static contextType = DocumentManagerContext;
@@ -25,7 +25,7 @@ class Sidebar extends Component<Props, State> {
   }
 
   render() {
-    let { toggleMainMenu } = this.context.model.uiState;
+    const { toggleMainMenu } = this.context.model.uiState;
     return (
       <div className={styles.Container}>
         <div
@@ -38,7 +38,7 @@ class Sidebar extends Component<Props, State> {
             justifyContent: "space-between",
             alignItems: "center",
             paddingLeft: 0,
-            zIndex: 1000,
+            zIndex: 1000
           }}
         >
           <span>
@@ -80,14 +80,37 @@ class Sidebar extends Component<Props, State> {
             </Tooltip>
           </span>
         </div>
-        <div className={styles.SidebarHeading}>
+        <div
+          className={styles.SidebarHeading}
+          style={{ gridTemplateColumns: "auto 33.6px 33.6px" }}
+        >
           PATHS
+          <Tooltip disableInteractive title="Duplicate Path">
+            <IconButton
+              size="small"
+              color="default"
+              style={{
+                float: "right"
+              }}
+              disabled={
+                Object.keys(this.context.model.document.pathlist.paths)
+                  .length == 0
+              }
+              onClick={() =>
+                this.context.model.document.pathlist.duplicatePath(
+                  this.context.model.document.pathlist.activePathUUID
+                )
+              }
+            >
+              <ContentCopy fontSize="small"></ContentCopy>
+            </IconButton>
+          </Tooltip>
           <Tooltip disableInteractive title="Add Path">
             <IconButton
               size="small"
               color="default"
               style={{
-                float: "right",
+                float: "right"
               }}
               onClick={() =>
                 this.context.model.document.pathlist.addPath("New Path", true)
@@ -105,9 +128,6 @@ class Sidebar extends Component<Props, State> {
           <PathSelector></PathSelector>
         </div>
         <Divider></Divider>
-
-        {/* <Divider className={styles.SidebarDivider} textAlign="left" flexItem>CONSTRAINTS</Divider> 
-          // shhh.. to come later*/}
         <div className={styles.SidebarHeading}>FEATURES</div>
         <Divider flexItem></Divider>
         <div className={styles.Sidebar}>
@@ -140,7 +160,10 @@ class Sidebar extends Component<Props, State> {
               </span>
             </div>
           )}
-          {ObstaclesEnabled && (
+          {(this.context.model.document.usesObstacles ||
+            this.context.model.document.pathlist.activePath.obstacles.includes(
+              this.context.model.uiState.selectedSidebarItem
+            )) && (
             <>
               <Divider
                 className={styles.SidebarDivider}

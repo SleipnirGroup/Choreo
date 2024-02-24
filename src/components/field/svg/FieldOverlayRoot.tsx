@@ -15,7 +15,7 @@ import { v4 as uuidv4 } from "uuid";
 import { CircularObstacleStore } from "../../../document/CircularObstacleStore";
 import FieldImage24 from "./fields/FieldImage24";
 
-type Props = {};
+type Props = object;
 
 type State = {
   xPan: number;
@@ -24,12 +24,13 @@ type State = {
 };
 
 class FieldOverlayRoot extends Component<Props, State> {
+  private static instance: FieldOverlayRoot | null = null;
   static contextType = DocumentManagerContext;
-  context!: React.ContextType<typeof DocumentManagerContext>;
+  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {
     xPan: 0,
     yPan: 0,
-    zoom: 1,
+    zoom: 1
   };
   canvasHeightMeters: number;
   canvasWidthMeters: number;
@@ -39,25 +40,55 @@ class FieldOverlayRoot extends Component<Props, State> {
     super(props);
     this.svgRef = React.createRef<SVGSVGElement>();
     this.frameRef = React.createRef<SVGGElement>();
-  }
-  componentDidMount(): void {
-    window.addEventListener("resize", () => this.handleResize());
-    this.handleResize();
-    let zoomBehavior = d3
+
+    this.zoomBehavior = d3
       .zoom<SVGGElement, undefined>()
       .scaleExtent([0.3, 12])
       .on("zoom", (e) => this.zoomed(e));
+  }
+
+  zoomBehavior: d3.ZoomBehavior<SVGGElement, undefined>;
+
+  // x, y, k are the center coordinates (x, y) and scale factor (k = {0.3, 12})
+  private center(x: number, y: number, k: number) {
+    const transition = d3.transition().duration(750).ease(d3.easeCubicOut);
+
+    d3.select<SVGGElement, undefined>(this.svgRef.current!).call(
+      this.zoomBehavior.scaleTo,
+      k
+    );
 
     d3.select<SVGGElement, undefined>(this.svgRef.current!)
-      .call(zoomBehavior)
+      .transition(transition)
+      .call(this.zoomBehavior.translateTo, x, -y);
+  }
+
+  componentDidMount(): void {
+    window.addEventListener("resize", () => this.handleResize());
+
+    window.addEventListener("center", (e) => {
+      console.log(`Centering on ${e}`);
+      console.log(`current zoom level: ${this.state.zoom}`);
+      this.center(
+        (e as CustomEvent).detail.x,
+        (e as CustomEvent).detail.y,
+        (e as CustomEvent).detail.k
+      );
+    });
+
+    this.handleResize();
+
+    d3.select<SVGGElement, undefined>(this.svgRef.current!)
+      .call(this.zoomBehavior)
       .on("dblclick.zoom", null);
   }
+
   zoomed(e: any) {
     this.handleResize();
     this.setState({
       xPan: e.transform.x,
       yPan: e.transform.y,
-      zoom: e.transform.k,
+      zoom: e.transform.k
     });
   }
   screenSpaceToFieldSpace(
@@ -94,14 +125,17 @@ class FieldOverlayRoot extends Component<Props, State> {
     return 0;
   }
   handleResize() {
-    let factor = this.getScalingFactor(this.svgRef?.current);
+    console.log(`current zoom level: ${this.state.zoom}`);
+
+    const factor = this.getScalingFactor(this.svgRef?.current);
     this.context.model.uiState.setFieldScalingFactor(factor);
   }
   render() {
     this.canvasHeightMeters = FieldImage24.WIDTH_M + 1;
     this.canvasWidthMeters = FieldImage24.LENGTH_M + 1;
-    let layers = this.context.model.uiState.layers;
-    let constraintSelected = this.context.model.uiState.isConstraintSelected();
+    const layers = this.context.model.uiState.layers;
+    const constraintSelected =
+      this.context.model.uiState.isConstraintSelected();
     return (
       <svg
         ref={this.svgRef}
@@ -114,7 +148,7 @@ class FieldOverlayRoot extends Component<Props, State> {
           height: "100%",
           position: "absolute",
           top: 0,
-          left: 0,
+          left: 0
         }}
         //
         id="field-svg-container"
@@ -122,8 +156,8 @@ class FieldOverlayRoot extends Component<Props, State> {
         <g
           transform={`
               matrix(${this.state.zoom} 0  0 ${-this.state.zoom} ${
-            this.state.xPan
-          } ${this.state.yPan})`}
+                this.state.xPan
+              } ${this.state.yPan})`}
           ref={this.frameRef}
           id="rootFrame"
         >
@@ -131,7 +165,7 @@ class FieldOverlayRoot extends Component<Props, State> {
           {/* Background */}
           {layers[ViewLayers.Field] && (
             <>
-              {/* <JSONFieldImage24 opacity={10} imageHeightPx={550} imageWidthPx={1220}></JSONFieldImage24> */}
+              {/* <JSONFieldImage24 opacity={10} imageHeightPx={1556} imageWidthPx={3112}></JSONFieldImage24> */}
               <FieldImage24></FieldImage24>
             </>
           )}
@@ -163,6 +197,7 @@ class FieldOverlayRoot extends Component<Props, State> {
                 <FieldObstacle
                   obstacle={obstacle}
                   index={index}
+                  key={obstacle.uuid}
                 ></FieldObstacle>
               )
             )}
@@ -184,13 +219,23 @@ class FieldOverlayRoot extends Component<Props, State> {
             )}
           {layers[ViewLayers.Waypoints] &&
             this.context.model.document.pathlist.activePath.waypoints.map(
-              (point, index) => (
-                <OverlayWaypoint
-                  waypoint={point}
-                  index={index}
-                  key={point.uuid}
-                ></OverlayWaypoint>
-              )
+              (point, index) => {
+                const activePath =
+                  this.context.model.document.pathlist.activePath;
+                if (
+                  (activePath.visibleWaypointsStart <= index &&
+                    activePath.visibleWaypointsEnd >= index) ||
+                  !layers[ViewLayers.Focus]
+                ) {
+                  return (
+                    <OverlayWaypoint
+                      waypoint={point}
+                      index={index}
+                      key={point.uuid}
+                    ></OverlayWaypoint>
+                  );
+                }
+              }
             )}
           {constraintSelected && (
             <FieldConstraintsAddLayer></FieldConstraintsAddLayer>
@@ -206,12 +251,12 @@ class FieldOverlayRoot extends Component<Props, State> {
   }
   createWaypoint(e: React.MouseEvent<SVGCircleElement, MouseEvent>): void {
     if (e.currentTarget === e.target) {
-      var coords = this.screenSpaceToFieldSpace(this.svgRef?.current, {
+      const coords = this.screenSpaceToFieldSpace(this.svgRef?.current, {
         x: e.clientX,
-        y: e.clientY,
+        y: e.clientY
       });
       this.context.history.startGroup(() => {
-        var newPoint =
+        const newPoint =
           this.context.model.document.pathlist.activePath.addWaypoint();
         newPoint.setX(coords.x);
         newPoint.setY(coords.y);
@@ -235,24 +280,23 @@ class FieldOverlayRoot extends Component<Props, State> {
   }
   createObstacle(e: React.MouseEvent<SVGCircleElement, MouseEvent>): void {
     if (e.currentTarget === e.target) {
-      var coords = this.screenSpaceToFieldSpace(this.svgRef?.current, {
+      const coords = this.screenSpaceToFieldSpace(this.svgRef?.current, {
         x: e.clientX,
-        y: e.clientY,
+        y: e.clientY
       });
       this.context.history.startGroup(() => {
-        var newObstacle =
-          this.context.model.document.pathlist.activePath.addObstacle(
-            CircularObstacleStore.create({
-              x: coords.x,
-              y: coords.y,
-              radius: 0.5,
-              uuid: uuidv4(),
-            })
-          );
-        // const selectedItem = this.context.model.uiState.selectedNavbarItem;
+        this.context.model.document.pathlist.activePath.addObstacle(
+          CircularObstacleStore.create({
+            x: coords.x,
+            y: coords.y,
+            radius: 0.5,
+            uuid: uuidv4()
+          })
+        );
       });
       this.context.history.stopGroup();
     }
   }
 }
+
 export default observer(FieldOverlayRoot);

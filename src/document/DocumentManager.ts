@@ -34,12 +34,14 @@ export class DocumentManager {
       uiState: {
         settingsTab: 0,
         selectedSidebarItem: undefined,
-        layers: ViewLayerDefaults,
+        layers: ViewLayerDefaults
       },
       document: {
         robotConfig: { identifier: uuidv4() },
         pathlist: {},
-      },
+        splitTrajectoriesAtStopPoints: false,
+        usesObstacles: false
+      }
     });
     this.model.document.pathlist.addPath("NewPath");
     this.model.document.history.clear();
@@ -49,19 +51,24 @@ export class DocumentManager {
   }
 
   async handleOpenFileEvent(event: Event<unknown>) {
-    let payload = event.payload as OpenFileEventPayload;
+    const payload = event.payload as OpenFileEventPayload;
     if (payload.dir === undefined || payload.name === undefined) {
       throw "Non-UTF-8 characters in file path";
     } else if (payload.contents === undefined) {
       throw "Unable to read file";
     } else {
-      let oldDocument = getSnapshot(this.model.document);
-      let saveName = payload.name;
-      let saveDir = payload.dir;
-      let adjacent_gradle = payload.adjacent_gradle;
+      const oldDocument = getSnapshot(this.model.document);
+      const oldUIState = getSnapshot(this.model.uiState);
+      const saveName = payload.name;
+      const saveDir = payload.dir;
+      const adjacent_gradle = payload.adjacent_gradle;
+      this.model.uiState.setSaveFileName(undefined);
+      this.model.uiState.setSaveFileDir(undefined);
+      this.model.uiState.setIsGradleProject(undefined);
       await this.openFromContents(payload.contents)
         .catch((err) => {
           applySnapshot(this.model.document, oldDocument);
+          applySnapshot(this.model.uiState, oldUIState);
           throw `Internal parsing error: ${err}`;
         })
         .then(() => {
@@ -81,6 +88,58 @@ export class DocumentManager {
     );
 
     window.addEventListener("contextmenu", (e) => e.preventDefault());
+    window.addEventListener("copy", (e) => {
+      const selection = document.getSelection();
+      // Sometimes clicking away from a text input with selection retains that input element as
+      // document.getSelection()'s focusNode, but sets the actual selection range to ''
+      if (selection?.focusNode === null || selection?.toString() === "") {
+        if (this.model.uiState.isSidebarWaypointSelected) {
+          this.model.uiState.selectedSidebarItem.copyToClipboard(e);
+        }
+        e.preventDefault();
+      }
+    });
+
+    window.addEventListener("paste", (e) => {
+      const evt = e as ClipboardEvent;
+      const content = evt.clipboardData?.getData("text/plain");
+      if (content === undefined) {
+        return;
+      }
+      const activePath = this.model.document.pathlist.activePath;
+      const pathSnapshot = getSnapshot(activePath);
+      try {
+        const savedObject = JSON.parse(content);
+        if (!Object.hasOwn(savedObject, "dataType")) return;
+        if (savedObject.dataType === "choreo/waypoint") {
+          let currentSelectedWaypointIdx = -1;
+          if (this.model.uiState.isSidebarWaypointSelected) {
+            const idx = activePath.findUUIDIndex(
+              this.model.uiState.selectedSidebarItem.uuid
+            );
+            if (idx != -1) {
+              currentSelectedWaypointIdx = idx;
+            }
+          }
+          this.model.document.history.startGroup(() => {
+            const newWaypoint =
+              this.model.document.pathlist.activePath.addWaypoint();
+            newWaypoint.fromSavedWaypoint(savedObject);
+            if (currentSelectedWaypointIdx != -1) {
+              activePath.reorder(
+                activePath.waypoints.length - 1,
+                currentSelectedWaypointIdx + 1
+              );
+            }
+
+            this.model.document.history.stopGroup();
+          });
+        }
+      } catch (err) {
+        console.error("Error when pasting:", err);
+        applySnapshot(activePath, pathSnapshot);
+      }
+    });
 
     // Save files on closing
     tauriWindow
@@ -90,7 +149,7 @@ export class DocumentManager {
           if (
             await dialog.ask("Save project?", {
               title: "Choreo",
-              type: "warning",
+              type: "warning"
             })
           ) {
             if (!(await this.saveFileDialog())) {
@@ -109,6 +168,7 @@ export class DocumentManager {
       () => this.model.document.history.undoIdx,
       () => {
         if (this.model.uiState.hasSaveLocation) {
+          console.log("autosave");
           this.saveFile();
         }
       }
@@ -219,7 +279,7 @@ export class DocumentManager {
       const selected = this.getSelectedWaypoint();
       if (selected !== undefined) {
         const delta = hotkeys.shift ? Math.PI / 4 : Math.PI / 16;
-        let newHeading = selected.heading + delta;
+        const newHeading = selected.heading + delta;
         selected.setHeading(newHeading);
       }
     });
@@ -227,7 +287,7 @@ export class DocumentManager {
       const selected = this.getSelectedWaypoint();
       if (selected !== undefined) {
         const delta = hotkeys.shift ? -Math.PI / 4 : -Math.PI / 16;
-        let newHeading = selected.heading + delta;
+        const newHeading = selected.heading + delta;
         selected.setHeading(newHeading);
       }
     });
@@ -277,19 +337,20 @@ export class DocumentManager {
   }
 
   async generateWithToastsAndExport(uuid: string) {
+    const pathName = this.model.document.pathlist.paths.get(uuid)?.name;
     this.model!.generatePathWithToasts(uuid).then(() =>
       toast.promise(
         this.writeTrajectory(() => this.getTrajFilePath(uuid), uuid),
         {
-          success: `Saved all trajectories to ${this.model.uiState.chorRelativeTrajDir}.`,
+          success: `Saved "${pathName}" to ${this.model.uiState.chorRelativeTrajDir}.`,
           error: {
             render(toastProps) {
               console.error(toastProps.data);
-              return `Couldn't export trajectories: ${
+              return `Couldn't export trajectory: ${
                 toastProps.data as string[]
               }`;
-            },
-          },
+            }
+          }
         }
       )
     );
@@ -319,39 +380,47 @@ export class DocumentManager {
       uiState: {
         settingsTab: 0,
         selectedSidebarItem: undefined,
-        layers: ViewLayerDefaults,
+        layers: ViewLayerDefaults
       },
       document: {
         robotConfig: { identifier: uuidv4() },
         pathlist: {},
-      },
+        splitTrajectoriesAtStopPoints: false,
+        usesObstacles: false
+      }
     });
-
     this.model.document.pathlist.addPath("NewPath");
     this.model.document.history.clear();
   }
 
   async openFromContents(chorContents: string) {
     const parsed = JSON.parse(chorContents);
-    if (validate(parsed)) {
+    const validationError = validate(parsed);
+    if (validationError.length == 0) {
       this.model.fromSavedDocument(parsed);
     } else {
-      console.error("Invalid Document JSON");
-      toast.error(
-        "Could not parse selected document (Is it a choreo document?)"
-      );
+      throw `Invalid Document JSON: ${validationError}`;
     }
   }
 
   async renamePath(uuid: string, newName: string) {
     if (this.model.uiState.hasSaveLocation) {
-      let oldPath = await this.getTrajFilePath(uuid);
+      const oldPath = await this.getTrajFilePath(uuid);
+      const oldName = this.model.document.pathlist.paths.get(uuid)?.name;
       this.model.document.pathlist.paths.get(uuid)?.setName(newName);
-      let newPath = await this.getTrajFilePath(uuid);
+      const newPath = await this.getTrajFilePath(uuid);
       if (oldPath !== null) {
-        invoke("delete_file", { dir: oldPath[0], name: oldPath[1] })
+        Promise.all([
+          invoke("delete_file", { dir: oldPath[0], name: oldPath[1] }),
+          invoke("delete_traj_segments", {
+            dir: oldPath[0],
+            trajName: oldName
+          })
+        ])
           .then(() => this.writeTrajectory(() => newPath, uuid))
-          .catch((e) => {});
+          .catch((e) => {
+            console.error(e);
+          });
       }
     } else {
       this.model.document.pathlist.paths.get(uuid)?.setName(newName);
@@ -359,7 +428,7 @@ export class DocumentManager {
   }
 
   async deletePath(uuid: string) {
-    let newPath = await this.getTrajFilePath(uuid).catch(() => null);
+    const newPath = await this.getTrajFilePath(uuid).catch(() => null);
     this.model.document.pathlist.deletePath(uuid);
     if (newPath !== null && this.model.uiState.hasSaveLocation) {
       invoke("delete_file", { dir: newPath[0], name: newPath[1] });
@@ -376,22 +445,74 @@ export class DocumentManager {
     filePath: () => Promise<[string, string] | null> | [string, string] | null,
     uuid: string
   ) {
-    const path = this.model.document.pathlist.paths.get(uuid);
-    if (path === undefined) {
+    // Avoid conflicts with tauri path namespace
+    const chorPath = this.model.document.pathlist.paths.get(uuid);
+    if (chorPath === undefined) {
       throw `Tried to export trajectory with unknown uuid ${uuid}`;
     }
-    const trajectory = path.generated;
+    const trajectory = chorPath.generated;
     if (trajectory.length < 2) {
-      throw `Path is not generated`;
+      throw "Path is not generated";
     }
+    const file = await filePath();
+    console.log("file: " + file);
+
     const content = JSON.stringify({ samples: trajectory }, undefined, 4);
-    var file = await filePath();
     if (file) {
       await invoke("save_file", {
         dir: file[0],
         name: file[1],
-        contents: content,
+        contents: content
       });
+      // "Split" naming scheme for consistency when path splitting is turned on/off
+      if (
+        !this.model.document.splitTrajectoriesAtStopPoints ||
+        chorPath.stopPointIndices().length >= 2
+      ) {
+        await invoke("save_file", {
+          dir: file[0],
+          name: file[1].replace(".", ".1."),
+          contents: content
+        });
+      }
+    }
+
+    if (
+      this.model.document.splitTrajectoriesAtStopPoints &&
+      file !== null &&
+      chorPath.stopPointIndices().length >= 2
+    ) {
+      const split = chorPath.stopPointIndices();
+      for (let i = 1; i < split.length; i++) {
+        const prev = split[i - 1];
+        let cur = split[i];
+        // If we don't go to the end of trajectory, add 1 to include the end stop point
+        if (cur !== undefined) {
+          cur += 1;
+        }
+        const traj = trajectory.slice(prev, cur).map((s) => {
+          return { ...s };
+        });
+        if (traj === undefined) {
+          throw `Could not split segment from ${prev} to ${cur} given ${trajectory.length} samples`;
+        }
+        if (traj.length === 0) {
+          continue;
+        }
+        const start = traj[0].timestamp;
+        for (let i = 0; i < traj.length; i++) {
+          const e = traj[i];
+          e.timestamp -= start;
+        }
+
+        const content = JSON.stringify({ samples: traj }, undefined, 4);
+        const name = file[1].replace(".", "." + i.toString() + ".");
+        await invoke("save_file", {
+          dir: file[0],
+          name: name,
+          contents: content
+        });
+      }
     }
   }
 
@@ -402,7 +523,7 @@ export class DocumentManager {
     }
     const { hasSaveLocation, chorRelativeTrajDir } = this.model.uiState;
     if (!hasSaveLocation || chorRelativeTrajDir === undefined) {
-      throw `Project has not been saved yet`;
+      throw "Project has not been saved yet";
     }
     const dir =
       this.model.uiState.saveFileDir +
@@ -414,15 +535,15 @@ export class DocumentManager {
   async exportTrajectory(uuid: string) {
     return await this.writeTrajectory(() => {
       return this.getTrajFilePath(uuid).then(async (filepath) => {
-        var file = await dialog.save({
+        const file = await dialog.save({
           title: "Export Trajectory",
           defaultPath: filepath.join(path.sep),
           filters: [
             {
               name: "Trajopt Trajectory",
-              extensions: ["traj"],
-            },
-          ],
+              extensions: ["traj"]
+            }
+          ]
         });
         if (file == null) {
           throw "No file selected or user cancelled";
@@ -439,8 +560,8 @@ export class DocumentManager {
   }
 
   async saveFile() {
-    let dir = this.model.uiState.saveFileDir;
-    let name = this.model.uiState.saveFileName;
+    const dir = this.model.uiState.saveFileDir;
+    const name = this.model.uiState.saveFileName;
     // we could use hasSaveLocation but TS wouldn't know
     // that dir and name aren't undefined below
     if (dir === undefined || name === undefined) {
@@ -457,19 +578,19 @@ export class DocumentManager {
       filters: [
         {
           name: "Choreo Document",
-          extensions: ["chor"],
-        },
-      ],
+          extensions: ["chor"]
+        }
+      ]
     });
     if (filePath === null) {
       return false;
     }
-    let dir = await path.dirname(filePath);
+    const dir = await path.dirname(filePath);
     let name = await path.basename(filePath);
     if (!name.endsWith(".chor")) {
       name = name + ".chor";
     }
-    let newIsGradleProject = await this.saveFileAs(dir, name);
+    const newIsGradleProject = await this.saveFileAs(dir, name);
     this.model.uiState.setSaveFileDir(dir);
     this.model.uiState.setSaveFileName(name);
 
@@ -479,8 +600,8 @@ export class DocumentManager {
         render(toastProps) {
           console.error(toastProps.data);
           return `Couldn't export trajectories: ${toastProps.data as string[]}`;
-        },
-      },
+        }
+      }
     });
 
     toast.success(`Saved ${name}. Future changes will now be auto-saved.`);
@@ -490,7 +611,7 @@ export class DocumentManager {
   private async handleChangeIsGradleProject(
     newIsGradleProject: boolean | undefined
   ) {
-    let prevIsGradleProject = this.model.uiState.isGradleProject;
+    const prevIsGradleProject = this.model.uiState.isGradleProject;
     if (newIsGradleProject !== undefined) {
       if (newIsGradleProject !== prevIsGradleProject) {
         this.model.uiState.setIsGradleProject(newIsGradleProject);
@@ -511,9 +632,9 @@ export class DocumentManager {
     try {
       invoke("save_file", { dir, name, contents });
       // if we get past the above line, the dir and name were valid for saving.
-      let adjacent_build_gradle = invoke<boolean>("contains_build_gradle", {
+      const adjacent_build_gradle = invoke<boolean>("contains_build_gradle", {
         dir,
-        name,
+        name
       });
       return adjacent_build_gradle;
     } catch (err) {
@@ -527,12 +648,12 @@ export class DocumentManager {
    */
   async exportAllTrajectories() {
     if (this.model.uiState.hasSaveLocation) {
-      var promises = this.model.document.pathlist.pathUUIDs.map((uuid) =>
+      const promises = this.model.document.pathlist.pathUUIDs.map((uuid) =>
         this.writeTrajectory(() => this.getTrajFilePath(uuid), uuid)
       );
-      var pathNames = this.model.document.pathlist.pathNames;
+      const pathNames = this.model.document.pathlist.pathNames;
       Promise.allSettled(promises).then((results) => {
-        var errors: string[] = [];
+        const errors: string[] = [];
 
         results.map((result, i) => {
           if (result.status === "rejected") {
@@ -547,6 +668,21 @@ export class DocumentManager {
       });
     }
   }
+
+  async clearAllTrajectories() {
+    if (
+      this.model.uiState.hasSaveLocation &&
+      this.model.uiState.chorRelativeTrajDir !== undefined
+    ) {
+      invoke("delete_dir", {
+        dir:
+          this.model.uiState.saveFileDir +
+          path.sep +
+          this.model.uiState.chorRelativeTrajDir
+      });
+    }
+  }
 }
-let DocumentManagerContext = createContext(new DocumentManager());
+
+const DocumentManagerContext = createContext(new DocumentManager());
 export default DocumentManagerContext;

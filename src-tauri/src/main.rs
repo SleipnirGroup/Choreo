@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::{fs, path::Path};
+use tauri::regex::{escape, Regex};
 use tauri::{
     api::{dialog::blocking::FileDialogBuilder, file},
     Manager,
@@ -80,6 +81,56 @@ async fn delete_file(dir: String, name: String) {
     let dir_path = Path::new(&dir);
     let name_path = Path::join(dir_path, name);
     let _ = fs::remove_file(name_path);
+}
+
+#[tauri::command]
+async fn delete_traj_segments(dir: String, traj_name: String) -> Result<(), String> {
+    println!("{}", traj_name);
+    let dir_path = Path::new(&dir);
+    if dir_path.is_dir() {
+        let traj_segment_regex =
+            Regex::new(format!(r"{}\.\d+\.traj", escape(traj_name.as_str())).as_str()).ok();
+        if traj_segment_regex.is_none() {
+            return Err(format!("{} was an invalid trajectory name", traj_name));
+        } else {
+            let re = traj_segment_regex.unwrap();
+            let entries = fs::read_dir(dir);
+            if entries.is_err() {
+                return Err(entries.expect_err("").to_string());
+            }
+            let entries = entries.unwrap();
+            for entry in entries {
+                if entry.is_err() {
+                    return Err(entry.expect_err("").to_string());
+                }
+                let path = entry.unwrap().path();
+                if path.is_file() {
+                    let matches = path.file_name().map_or(false, |file_name| {
+                        let file_str = file_name.to_str();
+                        return file_str.map_or(false, |file_str| re.is_match(file_str));
+                    });
+                    if matches {
+                        println!("{:?}", path);
+                        let _ = fs::remove_file(path);
+                    } else {
+                        continue;
+                    }
+                } else {
+                    continue;
+                }
+            }
+        }
+        Ok(())
+    } else {
+        Err(format!("{} was not a directory", dir).to_string())
+    }
+}
+
+#[tauri::command]
+async fn delete_dir(dir: String) {
+    let dir_path = Path::new(&dir);
+    let res = fs::remove_dir_all(dir_path);
+    println!("{:?}", res);
 }
 
 #[tauri::command]
@@ -222,6 +273,7 @@ async fn generate_trajectory(
     let mut wpt_cnt: usize = 0;
     let mut rm: Vec<usize> = Vec::new();
     let mut control_interval_counts: Vec<usize> = Vec::new();
+    let mut guess_points_after_waypoint: Vec<InitialGuessPoint> = Vec::new();
     for i in 0..path.len() {
         let wpt: &ChoreoWaypoint = &path[i];
         if wpt.isInitialGuess {
@@ -230,12 +282,17 @@ async fn generate_trajectory(
                 y: wpt.y,
                 heading: wpt.heading,
             };
-            path_builder.sgmt_initial_guess_points(wpt_cnt, &vec![guess_point]);
+            guess_points_after_waypoint.push(guess_point);
             rm.push(i);
             if let Some(last) = control_interval_counts.last_mut() {
                 *last += wpt.controlIntervalCount;
             }
         } else {
+            if wpt_cnt > 0 {
+                path_builder.sgmt_initial_guess_points(wpt_cnt - 1, &guess_points_after_waypoint);
+            }
+
+            guess_points_after_waypoint.clear();
             if wpt.headingConstrained && wpt.translationConstrained {
                 path_builder.pose_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
                 wpt_cnt += 1;
@@ -385,14 +442,14 @@ async fn generate_trajectory(
     path_builder.set_bumpers(config.bumperLength, config.bumperWidth);
 
     // Skip obstacles for now while we figure out whats wrong with them
-    // for o in circleObstacles {
-    //   path_builder.sgmt_circle_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
-    // }
+    for o in circleObstacles {
+        path_builder.sgmt_circle_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
+    }
 
     // Skip obstacles for now while we figure out whats wrong with them
-    // for o in polygonObstacles {
-    //   path_builder.sgmt_polygon_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
-    // }
+    for o in polygonObstacles {
+        path_builder.sgmt_polygon_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
+    }
     path_builder.set_drivetrain(&drivetrain);
     path_builder.generate()
 }
@@ -406,6 +463,8 @@ fn main() {
             save_file,
             contains_build_gradle,
             delete_file,
+            delete_dir,
+            delete_traj_segments,
             open_file_app
         ])
         .run(tauri::generate_context!())

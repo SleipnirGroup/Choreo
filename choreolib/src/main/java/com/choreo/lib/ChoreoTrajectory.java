@@ -5,10 +5,8 @@ package com.choreo.lib;
 import edu.wpi.first.math.geometry.Pose2d;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.AllArgsConstructor;
 
 /** A trajectory loaded from Choreo. */
-@AllArgsConstructor
 public class ChoreoTrajectory {
   private final List<ChoreoTrajectoryState> samples;
 
@@ -17,11 +15,38 @@ public class ChoreoTrajectory {
     samples = List.of();
   }
 
+  /**
+   * Constructs a new trajectory from a list of trajectory states
+   *
+   * @param samples a vector containing a list of ChoreoTrajectoryStates
+   */
+  public ChoreoTrajectory(List<ChoreoTrajectoryState> samples) {
+    this.samples = samples;
+  }
+
+  /**
+   * Returns the first ChoreoTrajectoryState in the trajectory.
+   *
+   * @return The first ChoreoTrajectoryState in the trajectory.
+   */
+  public ChoreoTrajectoryState getInitialState() {
+    return samples.get(0);
+  }
+
+  /**
+   * Returns the last ChoreoTrajectoryState in the trajectory.
+   *
+   * @return The last ChoreoTrajectoryState in the trajectory.
+   */
+  public ChoreoTrajectoryState getFinalState() {
+    return samples.get(samples.size() - 1);
+  }
+
   private ChoreoTrajectoryState sampleInternal(double timestamp) {
     if (timestamp < samples.get(0).timestamp) {
       return samples.get(0);
     }
-    if (timestamp > getTotalTime()) {
+    if (timestamp >= getTotalTime()) {
       return samples.get(samples.size() - 1);
     }
 
@@ -75,6 +100,17 @@ public class ChoreoTrajectory {
   }
 
   /**
+   * Returns the list of states for this trajectory.
+   *
+   * @return this trajectory's states.
+   */
+  public List<ChoreoTrajectoryState> getSamples() {
+    return samples;
+  }
+
+  /**
+   * Returns the initial, non-mirrored pose of the trajectory.
+   *
    * @return the initial, non-mirrored pose of the trajectory.
    */
   public Pose2d getInitialPose() {
@@ -82,6 +118,8 @@ public class ChoreoTrajectory {
   }
 
   /**
+   * Returns the final, non-mirrored pose of the trajectory.
+   *
    * @return the final, non-mirrored pose of the trajectory.
    */
   public Pose2d getFinalPose() {
@@ -89,6 +127,8 @@ public class ChoreoTrajectory {
   }
 
   /**
+   * Returns the total time of the trajectory (the timestamp of the last sample)
+   *
    * @return the total time of the trajectory (the timestamp of the last sample)
    */
   public double getTotalTime() {
@@ -96,6 +136,8 @@ public class ChoreoTrajectory {
   }
 
   /**
+   * Returns the array of poses corresponding to the trajectory.
+   *
    * @return the array of poses corresponding to the trajectory.
    */
   public Pose2d[] getPoses() {
@@ -103,6 +145,8 @@ public class ChoreoTrajectory {
   }
 
   /**
+   * Returns this trajectory, mirrored across the field midline.
+   *
    * @return this trajectory, mirrored across the field midline.
    */
   public ChoreoTrajectory flipped() {
