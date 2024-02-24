@@ -99,8 +99,8 @@ class WaypointPanel extends Component<Props, State> {
                     sx={{
                       color: "var(--accent-purple)",
                       "&.Mui-selected": {
-                        color: "var(--select-yellow)",
-                      },
+                        color: "var(--select-yellow)"
+                      }
                     }}
                   >
                     {waypoint.icon}

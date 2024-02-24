@@ -6,7 +6,7 @@ import {
   Route,
   ScatterPlot,
   SquareOutlined,
-  CropFree,
+  CropFree
 } from "@mui/icons-material";
 import { path, window as tauriWindow } from "@tauri-apps/api";
 import { getVersion } from "@tauri-apps/api/app";
@@ -19,16 +19,16 @@ import {
   constraints,
   ConstraintStore,
   ConstraintStores,
-  IConstraintStore,
+  IConstraintStore
 } from "./ConstraintStore";
 import {
   HolonomicWaypointStore,
-  IHolonomicWaypointStore,
+  IHolonomicWaypointStore
 } from "./HolonomicWaypointStore";
 import { IRobotConfigStore, RobotConfigStore } from "./RobotConfigStore";
 import {
   CircularObstacleStore,
-  ICircularObstacleStore,
+  ICircularObstacleStore
 } from "./CircularObstacleStore";
 
 export const SelectableItem = types.union(
@@ -42,7 +42,7 @@ export const SelectableItem = types.union(
         return CircularObstacleStore;
       }
       return HolonomicWaypointStore;
-    },
+    }
   },
   RobotConfigStore,
   HolonomicWaypointStore,
@@ -61,23 +61,23 @@ export const WaypointData: {
   FullWaypoint: {
     index: 0,
     name: "Pose Waypoint",
-    icon: <Waypoint />,
+    icon: <Waypoint />
   },
   TranslationWaypoint: {
     index: 1,
     name: "Translation Waypoint",
-    icon: <Circle />,
+    icon: <Circle />
   },
   EmptyWaypoint: {
     index: 2,
     name: "Empty Waypoint",
-    icon: <CircleOutlined />,
+    icon: <CircleOutlined />
   },
   InitialGuessPoint: {
     index: 3,
     name: "Initial Guess Point",
-    icon: <InitialGuessPoint />,
-  },
+    icon: <InitialGuessPoint />
+  }
 };
 const NavbarData: {
   [key: string]: {
@@ -98,7 +98,7 @@ const navbarIndexToConstraintDefinition: {
     NavbarData[key] = {
       index: constraintsOffset,
       name: data.name,
-      icon: data.icon,
+      icon: data.icon
     };
     navbarIndexToConstraint[constraintsOffset] = ConstraintStores[key];
     navbarIndexToConstraintDefinition[constraintsOffset] = data;
@@ -117,8 +117,8 @@ export const ObstacleData: {
   CircleObstacle: {
     index: Object.keys(NavbarData).length,
     name: "Circular Obstacle",
-    icon: <DoNotDisturb />,
-  },
+    icon: <DoNotDisturb />
+  }
 };
 const obstacleNavbarCount = Object.keys(ObstacleData).length;
 Object.entries(ObstacleData).forEach(([name, data]) => {
@@ -126,7 +126,7 @@ Object.entries(ObstacleData).forEach(([name, data]) => {
   NavbarData[name] = {
     index: obstaclesOffset,
     name: data.name,
-    icon: data.icon,
+    icon: data.icon
   };
 });
 
@@ -151,7 +151,7 @@ export const NavbarItemData = (() => {
 export const NavbarItemSectionLengths = [
   waypointNavbarCount - 1,
   waypointNavbarCount + constraintNavbarCount - 1,
-  waypointNavbarCount + constraintNavbarCount + obstacleNavbarCount - 1,
+  waypointNavbarCount + constraintNavbarCount + obstacleNavbarCount - 1
 ];
 
 export type SelectableItemTypes =
@@ -169,44 +169,44 @@ const ViewData = {
     icon: (
       <SquareOutlined style={{ transform: "scale(1.2, 0.6)" }}></SquareOutlined>
     ),
-    default: true,
+    default: true
   },
   Grid: {
     index: 1,
     name: "Grid",
     icon: <Grid4x4 />,
-    default: false,
+    default: false
   },
   Trajectory: {
     index: 2,
     name: "Trajectory",
     icon: <Route />,
-    default: true,
+    default: true
   },
   Samples: {
     index: 3,
     name: "Samples",
     icon: <ScatterPlot />,
-    default: false,
+    default: false
   },
   Waypoints: {
     index: 4,
     name: "Waypoints",
     icon: <Waypoint />,
-    default: true,
+    default: true
   },
   Obstacles: {
     index: 5,
     name: "Obstacles",
     icon: <DoNotDisturb />,
-    default: true,
+    default: true
   },
   Focus: {
     index: 6,
     name: "Focus",
     icon: <CropFree />,
-    default: false,
-  },
+    default: false
+  }
 };
 
 export const ViewLayers = (() => {
@@ -247,7 +247,7 @@ export const UIStateStore = types
       (arr) => arr?.length == ViewItemData.length
     ),
     selectedSidebarItem: types.maybe(types.safeReference(SelectableItem)),
-    selectedNavbarItem: NavbarLabels.FullWaypoint,
+    selectedNavbarItem: NavbarLabels.FullWaypoint
   })
   .views((self: any) => {
     return {
@@ -321,7 +321,7 @@ export const UIStateStore = types
             `Choreo ${await getVersion()} - ${self.saveFileName ?? "Untitled"}`
           )
           .catch(console.error);
-      },
+      }
     };
   })
   .actions((self: any) => ({
@@ -377,6 +377,6 @@ export const UIStateStore = types
     },
     setSelectedNavbarItem(item: number) {
       self.selectedNavbarItem = item;
-    },
+    }
   }));
 export interface IUIStateStore extends Instance<typeof UIStateStore> {}

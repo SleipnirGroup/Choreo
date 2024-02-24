@@ -36,7 +36,7 @@ class SettingsModal extends Component<Props, State> {
             borderRadius: "10px",
             maxHeight: "90vh",
             display: "flex",
-            flexDirection: "column",
+            flexDirection: "column"
           }}
         >
           <div
@@ -44,7 +44,7 @@ class SettingsModal extends Component<Props, State> {
               width: "100%",
               display: "flex",
               flexDirection: "row",
-              justifyContent: "space-between",
+              justifyContent: "space-between"
             }}
           >
             <Tabs
@@ -54,15 +54,15 @@ class SettingsModal extends Component<Props, State> {
               textColor="inherit"
               sx={{
                 ".MuiTabs-indicator": {
-                  "background-color": "var(--select-yellow)",
+                  "background-color": "var(--select-yellow)"
                 },
                 ".Mui-selected": {
-                  color: "white",
+                  color: "white"
                 },
                 justifySelf: "center",
                 marginTop: "8px",
                 marginRight: "8px",
-                marginLeft: "8px",
+                marginLeft: "8px"
               }}
             >
               <Tab label="Robot Config" />

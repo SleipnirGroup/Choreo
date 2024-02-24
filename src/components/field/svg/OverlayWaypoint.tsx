@@ -21,12 +21,15 @@ class OverlayWaypoint extends Component<Props, State> {
   bumperRef: any;
   rootRef: React.RefObject<SVGGElement> = React.createRef<SVGGElement>();
 
+  // Used to determine if the context has changed. User switching from another path or creating a new path.
+  private isNewContext = true;
+
   BumperBox = observer(
     ({
       context,
       strokeColor,
       strokeWidthPx,
-      dashed,
+      dashed
     }: {
       context: React.ContextType<typeof DocumentManagerContext>;
       strokeColor: string;
@@ -71,7 +74,7 @@ class OverlayWaypoint extends Component<Props, State> {
   coordsFromWaypoint(): Coordinates {
     return {
       x: this.props.waypoint.x,
-      y: this.props.waypoint.y,
+      y: this.props.waypoint.y
     };
   }
   dragPointRotate(event: any) {

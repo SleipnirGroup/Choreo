@@ -3,7 +3,7 @@ import React, { Component } from "react";
 import {
   Draggable,
   DraggingStyle,
-  NotDraggingStyle,
+  NotDraggingStyle
 } from "react-beautiful-dnd";
 import { CSSProperties } from "styled-components";
 import DocumentManagerContext from "../../document/DocumentManager";
@@ -40,7 +40,7 @@ class SidebarWaypoint extends Component<Props, State> {
       //background: isDragging ? "lightgreen" : "revert",
 
       // styles we need to apply on draggables
-      ...draggableStyle,
+      ...draggableStyle
     };
   }
 
@@ -90,7 +90,7 @@ class SidebarWaypoint extends Component<Props, State> {
           >
             {React.cloneElement(NavbarItemData[type].icon, {
               className: styles.SidebarIcon,
-              htmlColor: this.getIconColor(pathLength),
+              htmlColor: this.getIconColor(pathLength)
             })}
             {/* {translationConstrained && headingConstrained && (
               <Waypoint

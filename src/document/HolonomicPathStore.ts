@@ -3,11 +3,11 @@ import {
   SavedConstraint,
   SavedPath,
   SavedTrajectorySample,
-  SavedWaypoint,
+  SavedWaypoint
 } from "./DocumentSpecTypes";
 import {
   HolonomicWaypointStore,
-  IHolonomicWaypointStore,
+  IHolonomicWaypointStore
 } from "./HolonomicWaypointStore";
 import { moveItem } from "mobx-utils";
 import { v4 as uuidv4, v4 } from "uuid";
@@ -18,13 +18,13 @@ import {
   IConstraintStore,
   IWaypointScope,
   WaypointID,
-  WaypointScope,
+  WaypointScope
 } from "./ConstraintStore";
 import { SavedWaypointId } from "./previousSpecs/v0_1_2";
 import { IRobotConfigStore } from "./RobotConfigStore";
 import {
   CircularObstacleStore,
-  ICircularObstacleStore,
+  ICircularObstacleStore
 } from "./CircularObstacleStore";
 import { angleModulus } from "../util/MathUtil";
 
@@ -41,13 +41,13 @@ export const HolonomicPathStore = types
     usesControlIntervalGuessing: true,
     defaultControlIntervalCount: 40,
     usesDefaultObstacles: true,
-    obstacles: types.array(CircularObstacleStore),
+    obstacles: types.array(CircularObstacleStore)
   })
   .views((self) => {
     return {
       findUUIDIndex(uuid: string) {
         return self.waypoints.findIndex((wpt) => wpt.uuid === uuid);
-      },
+      }
     };
   })
   .views((self) => {
@@ -111,7 +111,7 @@ export const HolonomicPathStore = types
             const toReturn = {
               ...constraint,
               type: constraint.type,
-              scope,
+              scope
             };
             delete toReturn.icon;
             delete toReturn.definition;
@@ -123,7 +123,7 @@ export const HolonomicPathStore = types
           usesDefaultFieldObstacles: true,
           circleObstacles: self.obstacles.map((obstacle) =>
             obstacle.asSavedCircleObstacle()
-          ),
+          )
         };
       },
       lowestSelectedPoint(): IHolonomicWaypointStore | null {
@@ -131,7 +131,7 @@ export const HolonomicPathStore = types
           if (point.selected) return point;
         }
         return null;
-      },
+      }
     };
   })
   .views((self) => {
@@ -203,7 +203,7 @@ export const HolonomicPathStore = types
               // remove duplicates
               .filter((item, pos, ary) => !pos || item != ary[pos - 1])
           : [0, undefined];
-      },
+      }
     };
   })
   .actions((self) => {
@@ -221,7 +221,7 @@ export const HolonomicPathStore = types
           self.constraints.push(store.create({ uuid: uuidv4(), scope }));
         }
         return self.constraints[self.constraints.length - 1];
-      },
+      }
     };
   })
   .actions((self) => {
@@ -348,7 +348,7 @@ export const HolonomicPathStore = types
                     : scope[0],
                   secondIsUUID
                     ? { uuid: self.waypoints[endIndex].uuid }
-                    : scope[1],
+                    : scope[1]
                 ]);
                 return constraint;
               }
@@ -463,7 +463,7 @@ export const HolonomicPathStore = types
             }
           }
         });
-      },
+      }
     };
   })
   .actions((self) => {
@@ -537,7 +537,7 @@ export const HolonomicPathStore = types
               x: o.x,
               y: o.y,
               radius: o.radius,
-              uuid: v4(),
+              uuid: v4()
             })
           );
         });
@@ -620,7 +620,7 @@ export const HolonomicPathStore = types
             .at(i)
             ?.setControlIntervalCount(Math.ceil(totalTime / 0.1));
         }
-      },
+      }
     };
   });
 export interface IHolonomicPathStore

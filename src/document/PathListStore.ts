@@ -7,7 +7,7 @@ import { ConstraintStores } from "./ConstraintStore";
 export const PathListStore = types
   .model("PathListStore", {
     paths: types.map(HolonomicPathStore),
-    activePathUUID: "",
+    activePathUUID: ""
   })
   .views((self) => {
     return {
@@ -41,10 +41,10 @@ export const PathListStore = types
             name: "New Path",
             visibleWaypointsStart: 0,
             visibleWaypointsEnd: 0,
-            uuid: uuidv4(),
+            uuid: uuidv4()
           })
         );
-      },
+      }
     };
   })
   .actions((self) => {
@@ -71,7 +71,7 @@ export const PathListStore = types
           visibleWaypointsStart: 0,
           visibleWaypointsEnd: 0,
           name: usedName,
-          waypoints: [],
+          waypoints: []
         });
         path.addConstraint(ConstraintStores.StopPoint)?.setScope(["first"]);
         path.addConstraint(ConstraintStores.StopPoint)?.setScope(["last"]);
@@ -81,7 +81,7 @@ export const PathListStore = types
         }
 
         return newUUID;
-      },
+      }
     };
     // The annoying thing we have to do to add the above actions to the object before we use them below
   })
@@ -120,7 +120,7 @@ export const PathListStore = types
         if (self.paths.size == 0) {
           self.addPath("New Path", true);
         }
-      },
+      }
     };
   });
 

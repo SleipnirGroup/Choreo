@@ -1,44 +1,44 @@
 import type {
   SavedDocument as v0_0_0,
-  SavedDocument,
+  SavedDocument
 } from "./previousSpecs/v0_0_0";
 import v0_0_0_Schema from "./previousSpecs/v0.0.0.json";
 import {
   SavedDocument as v0_0_1,
   SavedWaypoint as v0_0_1_Waypoint,
-  SAVE_FILE_VERSION as v0_0_1_Version,
+  SAVE_FILE_VERSION as v0_0_1_Version
 } from "./previousSpecs/v0_0_1";
 import v0_0_1_Schema from "./previousSpecs/v0.0.1.json";
 import {
   SavedDocument as v0_1,
   SavedWaypoint as v0_1_Waypoint,
-  SAVE_FILE_VERSION as v0_1_Version,
+  SAVE_FILE_VERSION as v0_1_Version
 } from "./previousSpecs/v0_1";
 import v0_1_Schema from "./previousSpecs/v0.1.json";
 import {
   SavedDocument as v0_1_1,
-  SAVE_FILE_VERSION as v0_1_1_Version,
+  SAVE_FILE_VERSION as v0_1_1_Version
 } from "./previousSpecs/v0_1_1";
 import v0_1_1_Schema from "./previousSpecs/v0.1.1.json";
 import {
   SavedDocument as v0_1_2,
-  SAVE_FILE_VERSION as v0_1_2_Version,
+  SAVE_FILE_VERSION as v0_1_2_Version
 } from "./previousSpecs/v0_1_2";
 import v0_1_2_Schema from "./previousSpecs/v0.1.2.json";
 import {
   SavedDocument as v0_2,
   SavedRobotConfig as v0_2_Config,
-  SAVE_FILE_VERSION as v0_2_Version,
+  SAVE_FILE_VERSION as v0_2_Version
 } from "./previousSpecs/v0_2";
 import v0_2_Schema from "./previousSpecs/v0.2.json";
 import {
   SavedDocument as v0_2_1,
-  SAVE_FILE_VERSION as v0_2_1_Version,
+  SAVE_FILE_VERSION as v0_2_1_Version
 } from "./previousSpecs/v0_2_1";
 import v0_2_1_Schema from "./previousSpecs/v0.2.1.json";
 import {
   SavedDocument as v0_2_2,
-  SAVE_FILE_VERSION as v0_2_2_Version,
+  SAVE_FILE_VERSION as v0_2_2_Version
 } from "./previousSpecs/v0_2_2";
 import v0_2_2_Schema from "./previousSpecs/v0.2.2.json";
 
@@ -59,7 +59,7 @@ export type {
   SavedRobotConfig,
   SavedWaypoint,
   SavedConstraint,
-  SavedCircleObstacle,
+  SavedCircleObstacle
 } from "./previousSpecs/v0_2_2";
 export { SAVE_FILE_VERSION } from "./previousSpecs/v0_2_2";
 
@@ -72,7 +72,7 @@ export const VERSIONS = {
       const updated: v0_0_1 = {
         paths: {},
         version: v0_0_1_Version,
-        robotConfiguration: document.robotConfiguration,
+        robotConfiguration: document.robotConfiguration
       };
       for (const entry of Object.keys(document.paths)) {
         const path = document.paths[entry];
@@ -81,14 +81,14 @@ export const VERSIONS = {
           const { xConstrained, yConstrained } = waypoint;
           const updatedWaypoint: v0_0_1_Waypoint = {
             translationConstrained: !(!xConstrained && !yConstrained),
-            ...waypoint,
+            ...waypoint
           };
           updated.paths[entry].waypoints[index] = updatedWaypoint;
         });
       }
       return updated;
     },
-    schema: v0_0_0_Schema,
+    schema: v0_0_0_Schema
   },
   "v0.0.1": {
     up: (document: any): v0_1 => {
@@ -96,26 +96,26 @@ export const VERSIONS = {
       const updated: v0_1 = {
         paths: {},
         version: v0_1_Version,
-        robotConfiguration: document.robotConfiguration,
+        robotConfiguration: document.robotConfiguration
       };
       for (const entry of Object.keys(document.paths)) {
         const path = document.paths[entry];
         updated.paths[entry] = {
           waypoints: [],
           trajectory: [],
-          constraints: [],
+          constraints: []
         };
         path.waypoints.forEach((waypoint, index) => {
           const updatedWaypoint: v0_1_Waypoint = {
             ...waypoint,
-            isInitialGuess: false,
+            isInitialGuess: false
           };
           updated.paths[entry].waypoints[index] = updatedWaypoint;
         });
       }
       return updated;
     },
-    schema: v0_0_1_Schema,
+    schema: v0_0_1_Schema
   },
   "v0.1": {
     up: (document: any): v0_1_1 => {
@@ -123,7 +123,7 @@ export const VERSIONS = {
       const updated: v0_1_1 = {
         paths: {},
         version: v0_1_1_Version,
-        robotConfiguration: document.robotConfiguration,
+        robotConfiguration: document.robotConfiguration
       };
       for (const entry of Object.keys(document.paths)) {
         const path = document.paths[entry];
@@ -132,12 +132,12 @@ export const VERSIONS = {
           trajectory: path.trajectory,
           constraints: path.constraints,
           usesControlIntervalGuessing: true,
-          defaultControlIntervalCount: 40,
+          defaultControlIntervalCount: 40
         };
       }
       return updated;
     },
-    schema: v0_1_Schema,
+    schema: v0_1_Schema
   },
   "v0.1.1": {
     up: (document: any): v0_1_2 => {
@@ -145,7 +145,7 @@ export const VERSIONS = {
       const updated: v0_1_2 = {
         paths: {},
         version: v0_1_2_Version,
-        robotConfiguration: document.robotConfiguration,
+        robotConfiguration: document.robotConfiguration
       };
       for (const entry of Object.keys(document.paths)) {
         const path = document.paths[entry];
@@ -156,12 +156,12 @@ export const VERSIONS = {
           usesControlIntervalGuessing: path.usesControlIntervalGuessing,
           defaultControlIntervalCount: path.defaultControlIntervalCount,
           usesDefaultFieldObstacles: true,
-          circleObstacles: [],
+          circleObstacles: []
         };
       }
       return updated;
     },
-    schema: v0_1_1_Schema,
+    schema: v0_1_1_Schema
   },
   "v0.1.2": {
     up: (document: any): v0_2 => {
@@ -170,16 +170,16 @@ export const VERSIONS = {
         motorMaxTorque: ROBOT_CONFIG_DEFAULTS.motorMaxTorque,
         motorMaxVelocity: ROBOT_CONFIG_DEFAULTS.motorMaxVelocity,
         gearing: ROBOT_CONFIG_DEFAULTS.gearing,
-        ...document.robotConfiguration,
+        ...document.robotConfiguration
       };
       const updated: v0_2 = {
         paths: document.paths,
         version: v0_2_Version,
-        robotConfiguration,
+        robotConfiguration
       };
       return updated;
     },
-    schema: v0_1_2_Schema,
+    schema: v0_1_2_Schema
   },
   "v0.2": {
     up: (document: any): v0_2_1 => {
@@ -187,11 +187,11 @@ export const VERSIONS = {
         paths: document.paths,
         version: v0_2_1_Version,
         robotConfiguration: document.robotConfiguration,
-        splitTrajectoriesAtStopPoints: false,
+        splitTrajectoriesAtStopPoints: false
       };
       return updated;
     },
-    schema: v0_2_Schema,
+    schema: v0_2_Schema
   },
   "v0.2.1": {
     up: (document: any): v0_2_2 => {
@@ -200,15 +200,15 @@ export const VERSIONS = {
         version: v0_2_2_Version,
         robotConfiguration: document.robotConfiguration,
         splitTrajectoriesAtStopPoints: document.splitTrajectoriesAtStopPoints,
-        usesObstacles: false,
+        usesObstacles: false
       };
     },
-    schema: v0_2_1_Schema,
+    schema: v0_2_1_Schema
   },
   "v0.2.2": {
     up: (document: any): v0_2_2 => document,
-    schema: v0_2_2_Schema,
-  },
+    schema: v0_2_2_Schema
+  }
   /**
    * For developers adding new document versions-Keep this comment at the end of the list.
    *

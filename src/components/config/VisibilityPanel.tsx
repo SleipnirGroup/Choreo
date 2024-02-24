@@ -6,10 +6,10 @@ import {
   IconButton,
   ToggleButton,
   ToggleButtonGroup,
-  Tooltip,
+  Tooltip
 } from "@mui/material";
 import { ViewItemData } from "../../document/UIStateStore";
-import { Visibility } from "@mui/icons-material";
+import { AspectRatio, Visibility } from "@mui/icons-material";
 import { Close } from "@mui/icons-material";
 
 type Props = object;
@@ -20,10 +20,23 @@ class RobotConfigPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
+
   render() {
     const uiState = this.context.model.uiState;
     return (
       <div className={styles.VisibilityPanel}>
+        <Tooltip disableInteractive title="Zoom to fit trajectory">
+          {/* If there's no waypoints, then don't allow user to zoom to fit Waypoints */}
+          <IconButton
+            disabled={
+              this.context.model.document.pathlist.activePath.waypoints
+                .length == 0
+            }
+            onClick={() => this.context.model.zoomToFitWaypoints()}
+          >
+            <AspectRatio></AspectRatio>
+          </IconButton>
+        </Tooltip>
         <IconButton
           onClick={() => {
             uiState.setVisibilityPanelOpen(!uiState.visibilityPanelOpen);
@@ -36,7 +49,7 @@ class RobotConfigPanel extends Component<Props, State> {
             style={{
               display: "flex",
               flexDirection: "column",
-              paddingTop: "8px",
+              paddingTop: "8px"
             }}
           >
             <ToggleButtonGroup
@@ -62,8 +75,8 @@ class RobotConfigPanel extends Component<Props, State> {
                     sx={{
                       color: "var(--accent-purple)",
                       "&.Mui-selected": {
-                        color: "var(--select-yellow)",
-                      },
+                        color: "var(--select-yellow)"
+                      }
                     }}
                   >
                     {item.icon}
