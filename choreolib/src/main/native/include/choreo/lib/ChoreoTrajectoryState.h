@@ -92,7 +92,7 @@ class ChoreoTrajectoryState {
   units::radians_per_second_t angularVelocity = 0_rad_per_s;
 
  private:
-  static constexpr units::meter_t fieldWidth = 16.5410515_m;
+  static constexpr units::meter_t fieldLength = 16.5410515_m;
 };
 
 void to_json(wpi::json& json, const ChoreoTrajectoryState& trajState);
