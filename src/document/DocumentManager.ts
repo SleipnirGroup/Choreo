@@ -43,7 +43,14 @@ export class DocumentManager {
         usesObstacles: false,
       },
     });
-    this.model.document.pathlist.addPath("NewPath");
+    this.model.document.pathlist.setExporter((uuid)=>{
+      try {
+        this.writeTrajectory(()=>this.getTrajFilePath(uuid), uuid)
+      } catch (e) {
+        console.error(e);
+      }
+      }
+      );
     this.model.document.history.clear();
     this.setupEventListeners();
     this.newFile();
@@ -457,9 +464,9 @@ export class DocumentManager {
     var file = await filePath();
     console.log("file: " + file);
 
-    const exportedEventMarkers = chorPath.eventMarkers.map((m) => {
+    const exportedEventMarkers = chorPath.eventMarkers.flatMap((m) => {
+      if (m.timestamp === undefined) return [];
       return {
-        name: m.name,
         timestamp: m.timestamp,
         command: m.command.asSavedCommand(),
       };

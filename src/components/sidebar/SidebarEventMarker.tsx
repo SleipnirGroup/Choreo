@@ -39,13 +39,14 @@ class SidebarMarker extends Component<Props, State> {
     let marker = this.props.marker;
     let selected = this.props.marker.selected;
     let isInSameSegment = marker.isInSameSegment();
+    let isBoundToTrajectory = marker.trajTargetIndex !== undefined;
     let targetMissing = marker.getTargetIndex() === undefined;
     let issueTitle: string;
     if (targetMissing) {
       issueTitle = "Marker targets missing waypoint! Select a new target.";
     } else {
       if (isInSameSegment === undefined) {
-        issueTitle = "Path not generated yet. Marker will not show.";
+          issueTitle = "Marker added since last generation. Marker will not show or export.";
       } else {
         issueTitle =
           "Stop point between targeted waypoint and actual time! Marker will not export.";
@@ -82,7 +83,7 @@ class SidebarMarker extends Component<Props, State> {
             <span></span>
           )}
           <span>
-            <span>{this.waypointIDToText(this.props.marker.target)} </span>
+            <span>{targetMissing ? "?" : this.waypointIDToText(this.props.marker.target)} </span>
             <span style={{}}>
               (
               {(this.props.marker.offset < 0 ? "" : "+") +

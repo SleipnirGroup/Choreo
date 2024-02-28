@@ -1,4 +1,4 @@
-import { Instance, types, getRoot, destroy } from "mobx-state-tree";
+import { Instance, types, getRoot, destroy, addDisposer } from "mobx-state-tree";
 import {
   SavedConstraint,
   SavedEventMarker,
@@ -34,7 +34,7 @@ import {
   EventMarkerStore,
   IEventMarkerStore,
 } from "./EventMarkerStore";
-import { autorun, toJS } from "mobx";
+import { autorun, IReactionDisposer, reaction, toJS } from "mobx";
 
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
@@ -52,7 +52,7 @@ export const HolonomicPathStore = types
     defaultControlIntervalCount: 40,
     usesDefaultObstacles: true,
     obstacles: types.array(CircularObstacleStore),
-    eventMarkers: types.array(EventMarkerStore),
+    eventMarkers: types.array(EventMarkerStore)
   })
   .views((self) => {
     return {
@@ -245,7 +245,6 @@ export const HolonomicPathStore = types
           })
           .filter((item, pos, ary) => !pos || item != ary[pos - 1])
           .sort((a, b) => a - b);
-        console.log(wptIndices);
         return wptIndices;
         // remove duplicates
       },
@@ -266,7 +265,20 @@ export const HolonomicPathStore = types
       },
       splitTrajectories() {
         let trajectories = [];
-        const split = this.stopPointIndices();
+        
+        let split: number[] = [];
+        {
+          let stopPointIndex = 0;
+          self.generatedWaypoints.forEach((point, i)=>{
+            
+            // start and end points are always bounds for split parts
+            if (point.isStopPoint || i == 0 || i == self.generatedWaypoints.length - 1) {
+              split.push(stopPointIndex);
+            }
+            stopPointIndex += point.controlIntervalCount;
+          })
+        }
+        //const split = this.stopPointIndices();
         for (let i = 1; i < split.length; i++) {
           const prev = split[i - 1];
           let cur = split[i];
@@ -300,7 +312,6 @@ export const HolonomicPathStore = types
                 m.timestamp <= endTime
             )
             .map((m) => ({
-              name: m.name,
               timestamp: m.timestamp! - startTime,
               command: m.command.asSavedCommand(),
             }));
@@ -662,7 +673,7 @@ export const HolonomicPathStore = types
             name: saved.name,
             target: target as WaypointID,
             offset: saved.offset,
-            trajTargetIndex: targetIndex,
+            trajTargetIndex: self.isTrajectoryStale ? undefined : targetIndex,
             command: CommandStore.create({
               type: rootCommandType,
               name: "",
@@ -684,7 +695,7 @@ export const HolonomicPathStore = types
           marker = EventMarkerStore.create({
             name: "Marker",
             target: "first",
-            trajTargetIndex: 0,
+            trajTargetIndex: undefined,
             offset: 0,
             command: CommandStore.create({
               type: "named",
@@ -766,18 +777,49 @@ export const HolonomicPathStore = types
       },
     };
   })
-  .actions((self) => ({
-    afterCreate() {
+  .actions((self) => {
+    let staleDisposer : IReactionDisposer;
+    let autosaveDisposer : IReactionDisposer;
+    let exporter : (uuid:string)=>void;
+    let afterCreate = () => {
       // Anything accessed in here will cause the trajectory to be marked stale
-      autorun(() => {
-        console.log(toJS(self.waypoints));
-        console.log(toJS(self.constraints));
+      staleDisposer = autorun(() => {
+        toJS(self.waypoints);
+        toJS(self.constraints);
         // does not need toJS to do a deep check on this, since it's just a boolean
-        console.log(self.usesControlIntervalGuessing);
-        console.log(toJS(self.obstacles));
+        self.usesControlIntervalGuessing;
+        toJS(self.obstacles);
         self.setIsTrajectoryStale(true);
       });
-    },
-  }));
+      autosaveDisposer = reaction(
+        ()=>{
+          if (self.generated.length == 0) {
+            return [];
+          }
+          //toJS(self.splitTrajectories());
+          return self.splitTrajectories()},
+        (value)=>{
+          if (value.length > 0) {
+            exporter(self.uuid);
+          }
+        }
+      )
+
+    }
+    let setExporter = (exportFunction: (uuid:string)=>void) =>{
+      exporter = exportFunction;
+    }
+    let beforeDestroy = ()=>{
+      staleDisposer();
+      autosaveDisposer();
+      console.log("Deleted ", self.uuid);
+    }
+    return {
+      afterCreate, setExporter, beforeDestroy
+    }
+
+
+    
+  });
 export interface IHolonomicPathStore
   extends Instance<typeof HolonomicPathStore> {}

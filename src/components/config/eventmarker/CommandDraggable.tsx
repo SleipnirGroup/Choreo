@@ -93,7 +93,7 @@ class CommandDraggable extends Component<Props, State> {
             onChange={(e) => command.setType(e.target.value as CommandType)}
           >
             {CommandUIData.map((data) => (
-              <MenuItem value={data.id}>{data.name}</MenuItem>
+              <MenuItem key={data.id} value={data.id}>{data.name}</MenuItem>
             ))}
           </Select>
           {command.type === "named" && (
