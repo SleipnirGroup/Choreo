@@ -205,6 +205,9 @@ export class DocumentManager {
     hotkeys("command+n,ctrl+n", { keydown: true }, () => {
       this.newFile();
     });
+    hotkeys('command+-,ctrl+-', () => {
+      this.model.zoomOut();
+    });
     hotkeys("right,x", () => {
       const waypoints = this.model.document.pathlist.activePath.waypoints;
       const selected = waypoints.find((w) => {

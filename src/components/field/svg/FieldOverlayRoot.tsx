@@ -76,6 +76,22 @@ class FieldOverlayRoot extends Component<Props, State> {
       );
     });
 
+    window.addEventListener("zoomIn", () => {
+      const transition = d3.transition().duration(750).ease(d3.easeCubicOut);
+
+      d3.select<SVGGElement, undefined>(this.svgRef.current!)
+        .transition(transition)
+        .call(this.zoomBehavior.scaleBy, 2);
+    });
+
+    window.addEventListener("zoomOut", () => {
+      const transition = d3.transition().duration(750).ease(d3.easeCubicOut);
+
+      d3.select<SVGGElement, undefined>(this.svgRef.current!)
+        .transition(transition)
+        .call(this.zoomBehavior.scaleBy, 0.6);
+    });
+
     this.handleResize();
 
     d3.select<SVGGElement, undefined>(this.svgRef.current!)
