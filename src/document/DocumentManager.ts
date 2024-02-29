@@ -205,7 +205,7 @@ export class DocumentManager {
     hotkeys("command+n,ctrl+n", { keydown: true }, () => {
       this.newFile();
     });
-    hotkeys("command+f,ctrl+f", () => {
+    hotkeys("command+0,ctrl+0", () => {
       if (this.model.document.pathlist.activePath.waypoints.length == 0) {
         toast.error("No waypoints to zoom to");
       } else {
