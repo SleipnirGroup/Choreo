@@ -7,11 +7,12 @@ import SidebarWaypoint from "./SidebarWaypoint";
 import styles from "./Sidebar.module.css";
 
 const getListStyle = (isDraggingOver: boolean) => ({
-  outline: isDraggingOver ? `2px solid var(--darker-purple)` : "transparent",
+  outline: isDraggingOver ? "2px solid var(--darker-purple)" : "transparent"
 });
 
-type Props = {};
-type State = {};
+type Props = object;
+
+type State = object;
 
 class WaypointList extends Component<Props, State> {
   static contextType = DocumentManagerContext;
@@ -44,8 +45,8 @@ class WaypointList extends Component<Props, State> {
   // Normally you would want to split things out into separate components.
   // But in this example everything is just done in one place for simplicity
   render() {
-    let waypoints = this.context.model.document.pathlist.activePath.waypoints;
-    let waypointsLength =
+    const waypoints = this.context.model.document.pathlist.activePath.waypoints;
+    const waypointsLength =
       this.context.model.document.pathlist.activePath.waypoints.length;
     if (waypointsLength == 0) {
       return (
@@ -57,9 +58,7 @@ class WaypointList extends Component<Props, State> {
         </div>
       );
     }
-    let waypointsCount = 1;
-    let igPointCount = 1;
-    let waypointElements = waypoints.map(
+    const waypointElements = waypoints.map(
       (holonomicWaypoint: IHolonomicWaypointStore, index: number) => {
         let issue = "";
         if (holonomicWaypoint.isInitialGuess) {

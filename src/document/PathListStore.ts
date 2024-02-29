@@ -7,7 +7,7 @@ import { ConstraintStores } from "./ConstraintStore";
 export const PathListStore = types
   .model("PathListStore", {
     paths: types.map(HolonomicPathStore),
-    activePathUUID: "",
+    activePathUUID: ""
   })
   .actions((self)=>{
     let pathExporter: (uuid: string) =>void = (uuid)=>{};
@@ -24,14 +24,14 @@ export const PathListStore = types
   .views((self) => {
     return {
       asSavedPathList(): SavedPathList {
-        let obj: any = {};
+        const obj: any = {};
         self.paths.forEach((path) => {
           obj[path.name] = path.asSavedPath();
         });
         return obj;
       },
       toJSON(): any {
-        let obj: any = {};
+        const obj: any = {};
         self.paths.forEach((path) => {
           obj[path.name] = path;
         });
@@ -53,10 +53,10 @@ export const PathListStore = types
             name: "New Path",
             visibleWaypointsStart: 0,
             visibleWaypointsEnd: 0,
-            uuid: uuidv4(),
+            uuid: uuidv4()
           })
         );
-      },
+      }
     };
   })
   .actions((self) => {
@@ -76,14 +76,14 @@ export const PathListStore = types
         }
       },
       addPath(name: string, select: boolean = false): string {
-        let usedName = this.disambiguateName(name);
-        let newUUID = uuidv4();
-        let path = HolonomicPathStore.create({
+        const usedName = this.disambiguateName(name);
+        const newUUID = uuidv4();
+        const path = HolonomicPathStore.create({
           uuid: newUUID,
           visibleWaypointsStart: 0,
           visibleWaypointsEnd: 0,
           name: usedName,
-          waypoints: [],
+          waypoints: []
         });
         path.setExporter(self.getExporter());
         path.addConstraint(ConstraintStores.StopPoint)?.setScope(["first"]);
@@ -94,7 +94,7 @@ export const PathListStore = types
         }
 
         return newUUID;
-      },
+      }
     };
     // The annoying thing we have to do to add the above actions to the object before we use them below
   })
@@ -110,14 +110,14 @@ export const PathListStore = types
       },
       duplicatePath(uuid: string) {
         if (self.pathUUIDs.includes(uuid)) {
-          let oldPath = self.paths.get(uuid);
+          const oldPath = self.paths.get(uuid);
           // shouldn't hit this ever since we checked if the path exists
           if (oldPath === undefined) {
             return;
           }
-          let newName = self.disambiguateName(oldPath.name);
-          let newuuid = self.addPath(newName, false);
-          let path = self.paths.get(newuuid);
+          const newName = self.disambiguateName(oldPath.name);
+          const newuuid = self.addPath(newName, false);
+          const path = self.paths.get(newuuid);
           path!.fromSavedPath(oldPath.asSavedPath());
         }
       },
@@ -125,15 +125,15 @@ export const PathListStore = types
         self.paths.clear();
         if (list) {
           Array.from(Object.keys(list).values()).forEach((name) => {
-            let uuid = self.addPath(name, false);
-            let path = self.paths.get(uuid);
+            const uuid = self.addPath(name, false);
+            const path = self.paths.get(uuid);
             path!.fromSavedPath(list[name]);
           });
         }
         if (self.paths.size == 0) {
           self.addPath("New Path", true);
         }
-      },
+      }
     };
   });
 

@@ -9,19 +9,18 @@ type Props = {
   style?: React.CSSProperties;
 };
 
-type State = {};
+type State = object;
 
 class InputList extends Component<PropsWithChildren<Props>, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
   render() {
-    let className =
+    const className =
       styles.InputList +
       " " +
       (this.props.noCheckbox ?? false ? styles.NoCheckbox : "");
-    let rowGap = this.props.rowGap ?? 0;
-
+    const rowGap = this.props.rowGap ?? 0;
     return (
       <div className={className} style={{ rowGap, ...this.props.style }}>
         {this.props.children}

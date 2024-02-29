@@ -7,17 +7,16 @@ import { NavbarItemData } from "../../document/UIStateStore";
 import { Room } from "@mui/icons-material";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
 
-type Props = {};
+type Props = object;
 
-type State = {};
+type State = object;
 
 class PathAnimationSlider extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  // @ts-ignore
   context!: React.ContextType<typeof DocumentManagerContext>;
   totalTime = 0;
   render() {
-    let activePath = this.context.model.document.pathlist.activePath;
+    const activePath = this.context.model.document.pathlist.activePath;
     this.totalTime = activePath.getTotalTimeSeconds();
     return (
       <>
@@ -117,7 +116,7 @@ class PathAnimationSlider extends Component<Props, State> {
             marginInline: "10px",
             ".MuiSlider-track, .MuiSlider-thumb": {
               transition: "unset",
-              WebkitTransition: "unset",
+              WebkitTransition: "unset"
             },
             ".MuiSlider-thumb": {
               width: "24px",
@@ -125,17 +124,17 @@ class PathAnimationSlider extends Component<Props, State> {
               zIndex: 2,
               ":hover,:active": {
                 width: "24px",
-                height: "24px",
-              },
+                height: "24px"
+              }
             },
             ".MuiSlider-mark": {
-              display: "none",
+              display: "none"
             },
             ".MuiSlider-markLabel": {
               top: "unset",
               transform: "translateX(-50%) translateY(-10px)",
-              zIndex: 1,
-            },
+              zIndex: 1
+            }
           }}
         />
         <span

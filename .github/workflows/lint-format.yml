@@ -7,71 +7,47 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  format-java:
-    name: "Format Java"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v4
-      - run: |
-          cd ./choreolib
-          chmod +x gradlew
-          ./gradlew spotlessCheck
-
-  format-js:
-    name: "Format JS"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.x
-          cache: "npm"
-
-      - run: |
-          npm install prettier
-          npm -v
-          npm run checkFormat
-
-  format-rust:
-    name: "Format Rust"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run rustfmt
-        working-directory: src-tauri
-        run: cargo fmt --check
-
-  wpiformat:
-    name: "wpiformat"
+  format:
+    name: "Format"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Fetch all history and metadata
         run: |
           git checkout -b pr
           git branch -f main origin/main
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v4
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+          cache: "npm"
+
+      - run: npm install prettier
+
+      - uses: actions/setup-python@v5
         with:
           python-version: 3.8
-      - name: Install wpiformat
-        run: pip3 install wpiformat
-      - name: Run
-        run: wpiformat -f ./choreolib
+
+      - run: pip3 install wpiformat
+
+      - run: npm run fmt
+
       - name: Check output
         run: git --no-pager diff --exit-code HEAD
+
       - name: Generate diff
         run: git diff HEAD > wpiformat-fixes.patch
         if: ${{ failure() }}
+
       - uses: actions/upload-artifact@v4
         with:
           name: wpiformat fixes
           path: wpiformat-fixes.patch
         if: ${{ failure() }}
+
       - name: Write to job summary
         run: |
           echo '```diff' >> $GITHUB_STEP_SUMMARY
@@ -88,29 +64,35 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Fetch all history and metadata
         run: |
           git config --global --add safe.directory /__w/Choreo/Choreo
           git checkout -b pr
           git branch -f main origin/main
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v4
+
+      - uses: actions/setup-python@v5
         with:
           python-version: 3.8
+
       - name: Install wpiformat
         run: pip3 install wpiformat
+
       - name: Create compile_commands.json
         working-directory: choreolib
         run: |
           ./gradlew generateCompileCommands -Ptoolchain-optional-roboRio
           ../.github/workflows/fix_compile_commands.py build/TargetedCompileCommands/linuxx86-64release/compile_commands.json
           ../.github/workflows/fix_compile_commands.py build/TargetedCompileCommands/linuxx86-64debug/compile_commands.json
+
       - name: List changed files
         working-directory: choreolib
         run: wpiformat -list-changed-files
+
       - name: Run clang-tidy debug
         working-directory: choreolib
         run: wpiformat -no-format -tidy-all -compile-commands=build/TargetedCompileCommands/linuxx86-64debug -vv
+
       - name: Run clang-tidy release
         working-directory: choreolib
         run: wpiformat -no-format -tidy-all -compile-commands=build/TargetedCompileCommands/linuxx86-64release -vv

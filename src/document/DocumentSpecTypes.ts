@@ -1,44 +1,44 @@
 import type {
   SavedDocument as v0_0_0,
-  SavedDocument,
+  SavedDocument
 } from "./previousSpecs/v0_0_0";
 import v0_0_0_Schema from "./previousSpecs/v0.0.0.json";
 import {
   SavedDocument as v0_0_1,
   SavedWaypoint as v0_0_1_Waypoint,
-  SAVE_FILE_VERSION as v0_0_1_Version,
+  SAVE_FILE_VERSION as v0_0_1_Version
 } from "./previousSpecs/v0_0_1";
 import v0_0_1_Schema from "./previousSpecs/v0.0.1.json";
 import {
   SavedDocument as v0_1,
   SavedWaypoint as v0_1_Waypoint,
-  SAVE_FILE_VERSION as v0_1_Version,
+  SAVE_FILE_VERSION as v0_1_Version
 } from "./previousSpecs/v0_1";
 import v0_1_Schema from "./previousSpecs/v0.1.json";
 import {
   SavedDocument as v0_1_1,
-  SAVE_FILE_VERSION as v0_1_1_Version,
+  SAVE_FILE_VERSION as v0_1_1_Version
 } from "./previousSpecs/v0_1_1";
 import v0_1_1_Schema from "./previousSpecs/v0.1.1.json";
 import {
   SavedDocument as v0_1_2,
-  SAVE_FILE_VERSION as v0_1_2_Version,
+  SAVE_FILE_VERSION as v0_1_2_Version
 } from "./previousSpecs/v0_1_2";
 import v0_1_2_Schema from "./previousSpecs/v0.1.2.json";
 import {
   SavedDocument as v0_2,
   SavedRobotConfig as v0_2_Config,
-  SAVE_FILE_VERSION as v0_2_Version,
+  SAVE_FILE_VERSION as v0_2_Version
 } from "./previousSpecs/v0_2";
 import v0_2_Schema from "./previousSpecs/v0.2.json";
 import {
   SavedDocument as v0_2_1,
-  SAVE_FILE_VERSION as v0_2_1_Version,
+  SAVE_FILE_VERSION as v0_2_1_Version
 } from "./previousSpecs/v0_2_1";
 import v0_2_1_Schema from "./previousSpecs/v0.2.1.json";
 import {
   SavedDocument as v0_2_2,
-  SAVE_FILE_VERSION as v0_2_2_Version,
+  SAVE_FILE_VERSION as v0_2_2_Version
 } from "./previousSpecs/v0_2_2";
 import v0_2_2_Schema from "./previousSpecs/v0.2.2.json";
 import {
@@ -77,90 +77,90 @@ export { SAVE_FILE_VERSION } from "./previousSpecs/v0_3";
 
 const ajv = new Ajv();
 
-export let VERSIONS = {
+export const VERSIONS = {
   "v0.0.0": {
     up: (document: any): v0_0_1 => {
       document = document as v0_0_0;
-      let updated: v0_0_1 = {
+      const updated: v0_0_1 = {
         paths: {},
         version: v0_0_1_Version,
-        robotConfiguration: document.robotConfiguration,
+        robotConfiguration: document.robotConfiguration
       };
-      for (let entry of Object.keys(document.paths)) {
-        let path = document.paths[entry];
+      for (const entry of Object.keys(document.paths)) {
+        const path = document.paths[entry];
         updated.paths[entry] = { waypoints: [], trajectory: [] };
         path.waypoints.forEach((waypoint, index) => {
-          let { xConstrained, yConstrained } = waypoint;
-          let updatedWaypoint: v0_0_1_Waypoint = {
+          const { xConstrained, yConstrained } = waypoint;
+          const updatedWaypoint: v0_0_1_Waypoint = {
             translationConstrained: !(!xConstrained && !yConstrained),
-            ...waypoint,
+            ...waypoint
           };
           updated.paths[entry].waypoints[index] = updatedWaypoint;
         });
       }
       return updated;
     },
-    schema: v0_0_0_Schema,
+    schema: v0_0_0_Schema
   },
   "v0.0.1": {
     up: (document: any): v0_1 => {
       document = document as v0_0_1;
-      let updated: v0_1 = {
+      const updated: v0_1 = {
         paths: {},
         version: v0_1_Version,
-        robotConfiguration: document.robotConfiguration,
+        robotConfiguration: document.robotConfiguration
       };
-      for (let entry of Object.keys(document.paths)) {
-        let path = document.paths[entry];
+      for (const entry of Object.keys(document.paths)) {
+        const path = document.paths[entry];
         updated.paths[entry] = {
           waypoints: [],
           trajectory: [],
-          constraints: [],
+          constraints: []
         };
         path.waypoints.forEach((waypoint, index) => {
-          let updatedWaypoint: v0_1_Waypoint = {
+          const updatedWaypoint: v0_1_Waypoint = {
             ...waypoint,
-            isInitialGuess: false,
+            isInitialGuess: false
           };
           updated.paths[entry].waypoints[index] = updatedWaypoint;
         });
       }
       return updated;
     },
-    schema: v0_0_1_Schema,
+    schema: v0_0_1_Schema
   },
   "v0.1": {
     up: (document: any): v0_1_1 => {
       document = document as v0_1;
-      let updated: v0_1_1 = {
+      const updated: v0_1_1 = {
         paths: {},
         version: v0_1_1_Version,
-        robotConfiguration: document.robotConfiguration,
+        robotConfiguration: document.robotConfiguration
       };
-      for (let entry of Object.keys(document.paths)) {
-        let path = document.paths[entry];
+      for (const entry of Object.keys(document.paths)) {
+        const path = document.paths[entry];
         updated.paths[entry] = {
           waypoints: path.waypoints,
           trajectory: path.trajectory,
           constraints: path.constraints,
           usesControlIntervalGuessing: true,
-          defaultControlIntervalCount: 40,
+          defaultControlIntervalCount: 40
         };
       }
       return updated;
     },
-    schema: v0_1_Schema,
+    schema: v0_1_Schema
   },
   "v0.1.1": {
     up: (document: any): v0_1_2 => {
       document = document as v0_1_1;
-      let updated: v0_1_2 = {
+      const updated: v0_1_2 = {
         paths: {},
         version: v0_1_2_Version,
-        robotConfiguration: document.robotConfiguration,
+        robotConfiguration: document.robotConfiguration
       };
-      for (let entry of Object.keys(document.paths)) {
-        let path = document.paths[entry];
+      for (const entry of Object.keys(document.paths)) {
+        const path = document.paths[entry];
         updated.paths[entry] = {
           waypoints: path.waypoints,
           trajectory: path.trajectory,
@@ -168,42 +168,42 @@ export let VERSIONS = {
           usesControlIntervalGuessing: path.usesControlIntervalGuessing,
           defaultControlIntervalCount: path.defaultControlIntervalCount,
           usesDefaultFieldObstacles: true,
-          circleObstacles: [],
+          circleObstacles: []
         };
       }
       return updated;
     },
-    schema: v0_1_1_Schema,
+    schema: v0_1_1_Schema
   },
   "v0.1.2": {
     up: (document: any): v0_2 => {
       document = document as v0_1_2;
-      let robotConfiguration: v0_2_Config = {
+      const robotConfiguration: v0_2_Config = {
         motorMaxTorque: ROBOT_CONFIG_DEFAULTS.motorMaxTorque,
         motorMaxVelocity: ROBOT_CONFIG_DEFAULTS.motorMaxVelocity,
         gearing: ROBOT_CONFIG_DEFAULTS.gearing,
-        ...document.robotConfiguration,
+        ...document.robotConfiguration
       };
-      let updated: v0_2 = {
+      const updated: v0_2 = {
         paths: document.paths,
         version: v0_2_Version,
-        robotConfiguration,
+        robotConfiguration
       };
       return updated;
     },
-    schema: v0_1_2_Schema,
+    schema: v0_1_2_Schema
   },
   "v0.2": {
     up: (document: any): v0_2_1 => {
-      let updated: v0_2_1 = {
+      const updated: v0_2_1 = {
         paths: document.paths,
         version: v0_2_1_Version,
         robotConfiguration: document.robotConfiguration,
-        splitTrajectoriesAtStopPoints: false,
+        splitTrajectoriesAtStopPoints: false
       };
       return updated;
     },
-    schema: v0_2_Schema,
+    schema: v0_2_Schema
   },
   "v0.2.1": {
     up: (document: any): v0_2_2 => {
@@ -212,10 +212,10 @@ export let VERSIONS = {
         version: v0_2_2_Version,
         robotConfiguration: document.robotConfiguration,
         splitTrajectoriesAtStopPoints: document.splitTrajectoriesAtStopPoints,
-        usesObstacles: false,
+        usesObstacles: false
       };
     },
-    schema: v0_2_1_Schema,
+    schema: v0_2_1_Schema
   },
   "v0.2.2": {
     up: (document: any): v0_3 => {
@@ -249,7 +249,9 @@ export let VERSIONS = {
    */
 };
 
-export let updateToCurrent = (document: { version: string }): SavedDocument => {
+export const updateToCurrent = (document: {
+  version: string;
+}): SavedDocument => {
   let version = document.version;
   // We make sure this doesn't infinite loop by limiting the number of version jumps
   for (
@@ -268,7 +270,7 @@ export let updateToCurrent = (document: { version: string }): SavedDocument => {
   return document as SavedDocument;
 };
 
-export let validate = (document: { version: string }): string => {
+export const validate = (document: { version: string }): string => {
   if (document.version in VERSIONS) {
     if (!ajv.validate(VERSIONS[document.version].schema, document)) {
       return ajv.errorsText(ajv.errors);

@@ -67,7 +67,7 @@ std::array<double, 7> ChoreoTrajectoryState::AsArray() const {
 
 ChoreoTrajectoryState ChoreoTrajectoryState::Flipped() const {
   return ChoreoTrajectoryState{timestamp,
-                               fieldWidth - x,
+                               fieldLength - x,
                                y,
                                units::radian_t{std::numbers::pi} - heading,
                                -velocityX,

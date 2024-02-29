@@ -14,8 +14,9 @@ import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
 import SidebarEventMarker from "./SidebarEventMarker";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
 
-type Props = {};
-type State = {};
+type Props = object;
+
+type State = object;
 
 class Sidebar extends Component<Props, State> {
   static contextType = DocumentManagerContext;
@@ -26,7 +27,7 @@ class Sidebar extends Component<Props, State> {
   }
 
   render() {
-    let { toggleMainMenu } = this.context.model.uiState;
+    const { toggleMainMenu } = this.context.model.uiState;
     return (
       <div className={styles.Container}>
         <div
@@ -39,7 +40,7 @@ class Sidebar extends Component<Props, State> {
             justifyContent: "space-between",
             alignItems: "center",
             paddingLeft: 0,
-            zIndex: 1000,
+            zIndex: 1000
           }}
         >
           <span>
@@ -91,7 +92,7 @@ class Sidebar extends Component<Props, State> {
               size="small"
               color="default"
               style={{
-                float: "right",
+                float: "right"
               }}
               disabled={
                 Object.keys(this.context.model.document.pathlist.paths)
@@ -111,7 +112,7 @@ class Sidebar extends Component<Props, State> {
               size="small"
               color="default"
               style={{
-                float: "right",
+                float: "right"
               }}
               onClick={() =>
                 this.context.model.document.pathlist.addPath("New Path", true)

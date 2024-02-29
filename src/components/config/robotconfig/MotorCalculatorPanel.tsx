@@ -18,10 +18,10 @@ class RobotConfigPanel extends Component<Props, State> {
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {
     selectedMotor: "KrakenX60" as keyof typeof MotorCurves,
-    currentLimit: 60,
+    currentLimit: 60
   };
   render() {
-    let config = this.context.model.document.robotConfig;
+    const config = this.context.model.document.robotConfig;
     return (
       <>
         <FormControl
@@ -31,16 +31,14 @@ class RobotConfigPanel extends Component<Props, State> {
             height: "40px",
             marginBlock: `${0.5 * this.props.rowGap}px`,
             alignItems: "left",
-            width: "100%",
+            width: "100%"
           }}
         >
           <Select
             sx={{ flexGrow: 1 }}
             value={this.state.selectedMotor}
             onChange={(event) => {
-              let key = event.target.value as keyof typeof MotorCurves;
-              if (MotorCurves[key] !== undefined) {
-              }
+              const key = event.target.value as keyof typeof MotorCurves;
               this.setState({ selectedMotor: key });
             }}
           >
@@ -76,7 +74,7 @@ class RobotConfigPanel extends Component<Props, State> {
             gap: `${this.props.rowGap}px`,
             flexDirection: "row",
             justifyContent: "flex-end",
-            width: "fit-content",
+            width: "fit-content"
           }}
         >
           <InputList noCheckbox rowGap={this.props.rowGap}>

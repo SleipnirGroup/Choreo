@@ -9,20 +9,20 @@ import ScopeSlider from "./ScopeSlider";
 
 type Props = { constraint: IConstraintStore };
 
-type State = {};
+type State = object;
 
 class ConstraintsConfigPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
   render() {
-    let constraint = this.props.constraint;
-    let definition = constraint.definition;
-    let isSegmentConstraint = definition.sgmtScope;
+    const constraint = this.props.constraint;
+    const definition = constraint.definition;
+    const isSegmentConstraint = definition.sgmtScope;
     let startIndex = (this.props.constraint.getStartWaypointIndex() ?? 0) + 1;
     let endIndex = (this.props.constraint.getEndWaypointIndex() ?? 0) + 1;
-    let points = this.props.constraint.getPath().waypoints;
-    let pointcount = points.length;
+    const points = this.props.constraint.getPath().waypoints;
+    const pointcount = points.length;
     if (this.props.constraint.getSortedScope()[0] === "first") {
       startIndex = 0;
     }
@@ -45,13 +45,13 @@ class ConstraintsConfigPanel extends Component<Props, State> {
           return { value: idx + 1, label: idx + 1 };
         }
       }),
-      { value: pointcount + 1, label: "End" },
+      { value: pointcount + 1, label: "End" }
     ];
     return (
       <div
         className={styles.WaypointPanel}
         style={{
-          width: `min(80%, max(300px, calc(${pointcount} * 3ch + 8ch)))`,
+          width: `min(80%, max(300px, calc(${pointcount} * 3ch + 8ch)))`
         }}
       >
         <ScopeSlider
@@ -85,8 +85,9 @@ class ConstraintsConfigPanel extends Component<Props, State> {
             <span></span><span></span></>
           } */}
           {Object.entries(definition.properties).map((entry) => {
-            let [key, propdef] = entry;
-            let setterName = "set" + key.charAt(0).toUpperCase() + key.slice(1);
+            const [key, propdef] = entry;
+            const setterName =
+              "set" + key.charAt(0).toUpperCase() + key.slice(1);
             return (
               <Input
                 key={key}
@@ -94,9 +95,7 @@ class ConstraintsConfigPanel extends Component<Props, State> {
                 suffix={propdef.units}
                 enabled={true}
                 setEnabled={(a) => null}
-                //@ts-ignore
                 number={constraint[key]}
-                //@ts-ignore
                 setNumber={constraint[setterName]}
                 showCheckbox={false}
                 titleTooltip={propdef.description}

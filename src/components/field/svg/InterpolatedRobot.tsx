@@ -7,20 +7,18 @@ type Props = {
   timestamp: number;
 };
 
-type State = {};
+type State = object;
 
 class InterpolatedRobot extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   context!: React.ContextType<typeof DocumentManagerContext>;
   state = {};
 
-  // This came from WPILib Java's Trajectory sample() method
-
   render() {
     if (this.context.model.document.pathlist.activePath.generated.length < 2) {
       return <></>;
     }
-    let pose1 = sample(
+    const pose1 = sample(
       this.props.timestamp,
       this.context.model.document.pathlist.activePath.generated
     );
@@ -37,13 +35,13 @@ class InterpolatedRobot extends Component<Props, State> {
             d={this.context.model.document.robotConfig.bumperSVGElement()}
           ></path>
           <clipPath id={"robot-clip"}>
-            <use xlinkHref={`#robot-bumpers`} />
+            <use xlinkHref={"#robot-bumpers"} />
           </clipPath>
         </defs>
 
         <use
-          xlinkHref={`#robot-bumpers`}
-          clipPath={`url(#robot-clip)`}
+          xlinkHref={"#robot-bumpers"}
+          clipPath={"url(#robot-clip)"}
           stroke={"white"}
           strokeWidth={5 * this.context.model.uiState.fieldScalingFactor}
           fill={"transparent"}

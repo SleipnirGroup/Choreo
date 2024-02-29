@@ -36,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Linux deps
+      - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt update
@@ -50,21 +50,21 @@ jobs:
             libayatana-appindicator3-dev \
             librsvg2-dev
 
-      - name: Set up npm dependencies and build trajoptlib
+      - name: Install Node.js dependencies
         run: npm install
         continue-on-error: true
 
-      - name: Build Package
+      - name: Build package
         run: npm run tauri build
 
-      - name: Upload Bundle
+      - name: Upload bundle
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}
           path: src-tauri/target/**/release/bundle/${{ matrix.bundle-pattern }}
 
   release:
-    name: Create Draft Release
+    name: Create draft release
     needs: [build]
     runs-on: ubuntu-latest
     if: |

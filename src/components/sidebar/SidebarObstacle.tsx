@@ -1,16 +1,9 @@
-import { Component, CSSProperties } from "react";
+import { Component } from "react";
 import React from "react";
 import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
 import DocumentManagerContext from "../../document/DocumentManager";
 import styles from "./Sidebar.module.css";
-import {
-  Draggable,
-  DraggingStyle,
-  NotDraggingStyle,
-} from "react-beautiful-dnd";
 import { observer } from "mobx-react";
-import { NavbarItemData } from "../../document/UIStateStore";
-import { red } from "@mui/material/colors";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { DoNotDisturb } from "@mui/icons-material";
 import { Tooltip, IconButton } from "@mui/material";
@@ -30,8 +23,8 @@ class SidebarObstacle extends Component<Props, State> {
   state = { selected: false };
 
   render() {
-    let obstacle = this.props.obstacle;
-    let selected = this.props.obstacle.selected;
+    const obstacle = this.props.obstacle;
+    const selected = this.props.obstacle.selected;
     return (
       <div
         className={styles.SidebarItem + (selected ? ` ${styles.Selected}` : "")}
@@ -44,7 +37,7 @@ class SidebarObstacle extends Component<Props, State> {
           className: styles.SidebarIcon,
           htmlColor: this.state.selected
             ? "var(--select-yellow)"
-            : "var(--accent-purple)",
+            : "var(--accent-purple)"
         })}
         <span
           className={styles.SidebarLabel}

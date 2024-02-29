@@ -9,17 +9,10 @@ cppSrcFileInclude {
 }
 
 modifiableFileExclude {
-  jni/jni\.h$
-  jni/darwin/jni_md\.h$
-  jni/linux/jni_md\.h$
-  jni/win32/jni_md\.h$
-  \.jar$
-}
-
-licenseUpdateExclude {
-  java/src/main/java/org/team2363/util/DependencyExtractor\.java$
-  java/src/main/java/org/team2363/util/RuntimeDetector\.java$
-  java/src/main/java/org/team2363/util/RuntimeLoader\.java$
+  \.gif$
+  \.icns$
+  \.ico$
+  \.png$
 }
 
 includeOtherLibs {

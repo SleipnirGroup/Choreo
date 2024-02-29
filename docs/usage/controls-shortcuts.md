@@ -4,7 +4,7 @@
 | ------------------------------ | ------------------------------------------------------------------------------------------ |
 | Left Mouse Click               | Add selected waypoint from navbar at click position                                        |
 | Left Mouse Drag                | Pan around the map                                                                     |
-| Scroll Wheel, Trackpad G thesture | Zoom in or out of the map                                                                  |
+| Scroll Wheel, Trackpad Gesture | Zoom in or out of the map                                                                  |
 | Delete/Backspace               | Delete highlighted waypoint                                                                |
 | Ctrl/⌘ + Z                     | Undo                                                                                       |
 | Ctrl/⌘ + Shift + Z, Ctrl/⌘ + Y | Redo                                                                                       |

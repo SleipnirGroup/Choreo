@@ -6,25 +6,24 @@ import { observer } from "mobx-react";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import {
   NavbarItemData,
-  NavbarItemSectionLengths,
+  NavbarItemSectionEnds
 } from "../../document/UIStateStore";
 
-type Props = {};
+type Props = object;
 
-type State = {};
+type State = object;
 
 class Navbar extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  // @ts-ignore
   context!: React.ContextType<typeof DocumentManagerContext>;
   state = {};
 
   render() {
-    let { selectedNavbarItem, setSelectedNavbarItem } =
+    const { selectedNavbarItem, setSelectedNavbarItem } =
       this.context.model.uiState;
     return (
       <div className={styles.Container}>
-        {NavbarItemSectionLengths.map((endSplit, sectionIdx) =>
+        {NavbarItemSectionEnds.map((endSplit, sectionIdx) =>
           sectionIdx != 2 || this.context.model.document.usesObstacles ? (
             <ToggleButtonGroup
               className={styles.ToggleGroup}
@@ -38,7 +37,7 @@ class Navbar extends Component<Props, State> {
               {NavbarItemData.map(
                 (item, index) =>
                   index <= endSplit &&
-                  index > (NavbarItemSectionLengths[sectionIdx - 1] ?? -1) && (
+                  index > (NavbarItemSectionEnds[sectionIdx - 1] ?? -1) && (
                     //@ts-ignore
                     <Tooltip
                       disableInteractive

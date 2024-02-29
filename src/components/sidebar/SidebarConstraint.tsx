@@ -14,7 +14,7 @@ type Props = {
   constraint: IConstraintStore;
 };
 
-type State = {};
+type State = object;
 
 class SidebarConstraint extends Component<Props, State> {
   static contextType = DocumentManagerContext;
@@ -23,7 +23,7 @@ class SidebarConstraint extends Component<Props, State> {
   state = {};
 
   getScopeText() {
-    let waypointIDToText = (id: WaypointID) => {
+    const waypointIDToText = (id: WaypointID) => {
       if (id == "first") return "Start";
       if (id == "last") return "End";
       return (
@@ -32,7 +32,7 @@ class SidebarConstraint extends Component<Props, State> {
         ).findUUIDIndex(id.uuid) + 1
       );
     };
-    let scope = this.props.constraint.getSortedScope();
+    const scope = this.props.constraint.getSortedScope();
     if (scope.length == 0) return "!";
     else if (
       scope.length == 1 ||
@@ -49,8 +49,8 @@ class SidebarConstraint extends Component<Props, State> {
   render() {
     // apparently we have to dereference this here instead of inline in the class name
     // Otherwise the component won't rerender when it changes
-    let selected = this.props.constraint.selected;
-    let issues = this.props.constraint.issues;
+    const selected = this.props.constraint.selected;
+    const issues = this.props.constraint.issues;
 
     return (
       <div
@@ -63,7 +63,7 @@ class SidebarConstraint extends Component<Props, State> {
       >
         {React.cloneElement(this.props.constraint.definition.icon, {
           className: styles.SidebarIcon,
-          htmlColor: selected ? "var(--select-yellow)" : "var(--accent-purple)",
+          htmlColor: selected ? "var(--select-yellow)" : "var(--accent-purple)"
         })}
         {/* className={styles.SidebarIcon}
           htmlColor={selected ? "var(--select-yellow)" : "var(--accent-purple)"}

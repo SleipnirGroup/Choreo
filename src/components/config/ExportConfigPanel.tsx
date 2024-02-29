@@ -1,17 +1,12 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
-import MotorCalculatorPanel from "./robotconfig/MotorCalculatorPanel";
 import inputStyles from "../input/InputList.module.css";
-import { Divider, FormHelperText, IconButton, Switch } from "@mui/material";
-import { ArrowDropDown, ArrowDropUp } from "@mui/icons-material";
-import DimensionsConfigPanel from "./robotconfig/DimensionsConfigPanel";
-import TheoreticalPanel from "./robotconfig/TheoreticalPanel";
-import ModuleConfigPanel from "./robotconfig/ModuleConfigPanel";
+import { Switch } from "@mui/material";
 
-type Props = {};
+type Props = object;
 
-type State = {};
+type State = object;
 
 class ExportConfigPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
@@ -21,10 +16,10 @@ class ExportConfigPanel extends Component<Props, State> {
     return (
       <div
         style={{
-          minWidth: `600px`,
+          minWidth: "600px",
           rowGap: `${0 * this.rowGap}px`,
           fontSize: "2rem",
-          margin: `${1 * this.rowGap}px`,
+          margin: `${1 * this.rowGap}px`
         }}
       >
         <span className={inputStyles.Title} style={{ gridColumn: "1" }}>

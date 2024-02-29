@@ -1,6 +1,6 @@
 import { getIdentifier, IAnyStateTreeNode } from "mobx-state-tree";
 
-export let safeGetIdentifier = (target: IAnyStateTreeNode | undefined) => {
+export const safeGetIdentifier = (target: IAnyStateTreeNode | undefined) => {
   if (target === undefined) {
     return undefined;
   } else {
