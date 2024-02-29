@@ -67,8 +67,6 @@ class FieldOverlayRoot extends Component<Props, State> {
     window.addEventListener("resize", () => this.handleResize());
 
     window.addEventListener("center", (e) => {
-      console.log(`Centering on ${e}`);
-      console.log(`current zoom level: ${this.state.zoom}`);
       this.center(
         (e as CustomEvent).detail.x,
         (e as CustomEvent).detail.y,
@@ -125,8 +123,6 @@ class FieldOverlayRoot extends Component<Props, State> {
     return 0;
   }
   handleResize() {
-    console.log(`current zoom level: ${this.state.zoom}`);
-
     const factor = this.getScalingFactor(this.svgRef?.current);
     this.context.model.uiState.setFieldScalingFactor(factor);
   }
