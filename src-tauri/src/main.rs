@@ -451,7 +451,7 @@ async fn generate_trajectory(
         path_builder.sgmt_polygon_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
     }
     path_builder.set_drivetrain(&drivetrain);
-    path_builder.generate()
+    path_builder.generate(true)
 }
 
 fn main() {
