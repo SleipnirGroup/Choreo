@@ -4,14 +4,14 @@ import {
   Draggable,
   DraggingStyle,
   NotDraggingStyle,
-  Droppable,
+  Droppable
 } from "react-beautiful-dnd";
 import DocumentManagerContext from "../../../document/DocumentManager";
 import { isAlive } from "mobx-state-tree";
 import {
   CommandType,
   CommandUIData,
-  ICommandStore,
+  ICommandStore
 } from "../../../document/EventMarkerStore";
 import { IconButton, MenuItem, Select, TextField } from "@mui/material";
 import { Add, Delete, DragHandle } from "@mui/icons-material";
@@ -46,16 +46,17 @@ class CommandDraggable extends Component<Props, State> {
       //background: isDragging ? "lightgreen" : "revert",
       margin: "4px",
       // styles we need to apply on draggables
-      ...draggableStyle,
+      ...draggableStyle
     };
   }
 
   render() {
-    let command = this.props.command;
-    let commandsLength = this.props.command?.commands.length;
-    let isRoot = this.props.isRoot ?? false;
-    // apparently we have to dereference this here instead of inline in the class name
-    // Otherwise the component won't rerender when it changes
+    const command = this.props.command;
+    // commandsLength is dereferenced so that this rerenders when the length
+    // of its subcommands array changes
+    //eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const commandsLength = this.props.command?.commands.length;
+    const isRoot = this.props.isRoot ?? false;
     if (!isAlive(command)) return <></>;
     return (
       <div
@@ -68,7 +69,7 @@ class CommandDraggable extends Component<Props, State> {
           display: "flex",
           flexDirection: "column",
           gap: "8px",
-          boxShadow: isRoot ? "none" : "2px 2px 1px black",
+          boxShadow: isRoot ? "none" : "2px 2px 1px black"
         }}
       >
         <span
@@ -76,15 +77,15 @@ class CommandDraggable extends Component<Props, State> {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            gap: "4px",
+            gap: "4px"
           }}
         >
           {!isRoot && <DragHandle></DragHandle>}
           <Select
             sx={{
               ".MuiInput-input": {
-                paddingBottom: "0px",
-              },
+                paddingBottom: "0px"
+              }
             }}
             size="small"
             variant="standard"
@@ -93,7 +94,9 @@ class CommandDraggable extends Component<Props, State> {
             onChange={(e) => command.setType(e.target.value as CommandType)}
           >
             {CommandUIData.map((data) => (
-              <MenuItem key={data.id} value={data.id}>{data.name}</MenuItem>
+              <MenuItem key={data.id} value={data.id}>
+                {data.name}
+              </MenuItem>
             ))}
           </Select>
           {command.type === "named" && (
@@ -102,8 +105,8 @@ class CommandDraggable extends Component<Props, State> {
               sx={{
                 marginLeft: "1ch",
                 ".MuiInput-input": {
-                  paddingBottom: "0px",
-                },
+                  paddingBottom: "0px"
+                }
               }}
               fullWidth
               variant="standard"
@@ -168,7 +171,7 @@ class CommandDraggable extends Component<Props, State> {
                   padding: "4px",
                   minHeight: "32px",
                   display: "flex",
-                  flexDirection: "column",
+                  flexDirection: "column"
                 }}
                 {...provided.droppableProps}
               >

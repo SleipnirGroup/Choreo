@@ -43,7 +43,7 @@ import {
 import v0_2_2_Schema from "./previousSpecs/v0.2.2.json";
 import {
   SavedDocument as v0_3,
-  SAVE_FILE_VERSION as v0_3_Version,
+  SAVE_FILE_VERSION as v0_3_Version
 } from "./previousSpecs/v0_3";
 import v0_3_Schema from "./previousSpecs/v0.3.json";
 
@@ -71,7 +71,7 @@ export type {
   SavedGroupCommand,
   SavedNamedCommand,
   SavedWaitCommand,
-  SavedGeneratedWaypoint,
+  SavedGeneratedWaypoint
 } from "./previousSpecs/v0_3";
 export { SAVE_FILE_VERSION } from "./previousSpecs/v0_3";
 
@@ -219,21 +219,21 @@ export const VERSIONS = {
   },
   "v0.2.2": {
     up: (document: any): v0_3 => {
-      let updated: v0_3 = document;
+      const updated: v0_3 = document;
       updated.version = v0_3_Version;
-      for (let entry of Object.keys(updated.paths)) {
+      for (const entry of Object.keys(updated.paths)) {
         updated.paths[entry].eventMarkers = [];
         updated.paths[entry].trajectoryWaypoints = [];
         updated.paths[entry].isTrajectoryStale = false;
       }
       return updated;
     },
-    schema: v0_2_2_Schema,
+    schema: v0_2_2_Schema
   },
   "v0.3": {
     up: (document: any): v0_3 => document,
-    schema: v0_3_Schema,
-  },
+    schema: v0_3_Schema
+  }
   /**
    * For developers adding new document versions-Keep this comment at the end of the list.
    *

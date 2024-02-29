@@ -43,14 +43,13 @@ export class DocumentManager {
         usesObstacles: false
       }
     });
-    this.model.document.pathlist.setExporter((uuid)=>{
+    this.model.document.pathlist.setExporter((uuid) => {
       try {
-        this.writeTrajectory(()=>this.getTrajFilePath(uuid), uuid)
+        this.writeTrajectory(() => this.getTrajFilePath(uuid), uuid);
       } catch (e) {
         console.error(e);
       }
-      }
-      );
+    });
     this.model.document.history.clear();
     this.setupEventListeners();
     this.newFile();
@@ -475,7 +474,7 @@ export class DocumentManager {
       if (m.timestamp === undefined) return [];
       return {
         timestamp: m.timestamp,
-        command: m.command.asSavedCommand(),
+        command: m.command.asSavedCommand()
       };
     });
     const content = JSON.stringify(
@@ -507,14 +506,14 @@ export class DocumentManager {
       file !== null &&
       chorPath.stopPointIndices().length >= 2
     ) {
-      let splits = chorPath.splitTrajectories();
+      const splits = chorPath.splitTrajectories();
       for (let i = 0; i < splits.length; i++) {
         const name = file[1].replace(".", "." + (i + 1).toString() + ".");
 
         await invoke("save_file", {
           dir: file[0],
           name: name,
-          contents: JSON.stringify(splits[i], undefined, 2),
+          contents: JSON.stringify(splits[i], undefined, 2)
         });
       }
     }
@@ -541,14 +540,14 @@ export class DocumentManager {
       const { hasSaveLocation, chorRelativeTrajDir } = this.model.uiState;
       if (!hasSaveLocation || chorRelativeTrajDir === undefined) {
         return (async () => {
-          var file = await dialog.save({
+          const file = await dialog.save({
             title: "Export Trajectory",
             filters: [
               {
                 name: "Trajopt Trajectory",
-                extensions: ["traj"],
-              },
-            ],
+                extensions: ["traj"]
+              }
+            ]
           });
           if (file == null) {
             throw "No file selected or user cancelled";

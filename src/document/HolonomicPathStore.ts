@@ -1,4 +1,4 @@
-import { Instance, types, getRoot, destroy, addDisposer } from "mobx-state-tree";
+import { Instance, types, getRoot, destroy } from "mobx-state-tree";
 import {
   SavedConstraint,
   SavedEventMarker,
@@ -32,7 +32,7 @@ import { angleModulus } from "../util/MathUtil";
 import {
   CommandStore,
   EventMarkerStore,
-  IEventMarkerStore,
+  IEventMarkerStore
 } from "./EventMarkerStore";
 import { autorun, IReactionDisposer, reaction, toJS } from "mobx";
 
@@ -67,7 +67,7 @@ export const HolonomicPathStore = types
         waypointId: IWaypointScope
       ): "first" | "last" | number | undefined {
         if (typeof waypointId !== "string") {
-          let scopeIndex = self.findUUIDIndex(waypointId.uuid);
+          const scopeIndex = self.findUUIDIndex(waypointId.uuid);
           if (scopeIndex == -1) {
             return undefined; // don't try to save this constraint
           }
@@ -95,7 +95,7 @@ export const HolonomicPathStore = types
         } else {
           return { uuid: self.waypoints[savedId]?.uuid as string };
         }
-      },
+      }
     };
   })
   .views((self) => {
@@ -139,8 +139,8 @@ export const HolonomicPathStore = types
           trajectory: trajectory,
           trajectoryWaypoints: self.generatedWaypoints,
           constraints: self.constraints.flatMap((constraint) => {
-            let con = constraint;
-            let scope = con.scope.map((id: IWaypointScope) =>
+            const con = constraint;
+            const scope = con.scope.map((id: IWaypointScope) =>
               self.waypointIdToSavedWaypointId(id)
             );
             if (scope?.includes(undefined)) return [];
@@ -161,18 +161,18 @@ export const HolonomicPathStore = types
             obstacle.asSavedCircleObstacle()
           ),
           eventMarkers: self.eventMarkers.flatMap((marker) => {
-            let target = self.waypointIdToSavedWaypointId(marker.target);
-            let saved: SavedEventMarker = {
+            const target = self.waypointIdToSavedWaypointId(marker.target);
+            const saved: SavedEventMarker = {
               name: marker.name,
               target: target ?? null,
               targetTimestamp: marker.targetTimestamp ?? null,
               offset: marker.offset,
-              command: marker.command.asSavedCommand(),
+              command: marker.command.asSavedCommand()
             };
 
             return [saved];
           }),
-          isTrajectoryStale: self.isTrajectoryStale,
+          isTrajectoryStale: self.isTrajectoryStale
         };
       },
 
@@ -263,19 +263,22 @@ export const HolonomicPathStore = types
           : [0, undefined];
       },
       splitTrajectories() {
-        let trajectories = [];
-        
-        let split: number[] = [];
+        const trajectories = [];
+
+        const split: number[] = [];
         {
           let stopPointIndex = 0;
-          self.generatedWaypoints.forEach((point, i)=>{
-            
+          self.generatedWaypoints.forEach((point, i) => {
             // start and end points are always bounds for split parts
-            if (point.isStopPoint || i == 0 || i == self.generatedWaypoints.length - 1) {
+            if (
+              point.isStopPoint ||
+              i == 0 ||
+              i == self.generatedWaypoints.length - 1
+            ) {
               split.push(stopPointIndex);
             }
             stopPointIndex += point.controlIntervalCount;
-          })
+          });
         }
         //const split = this.stopPointIndices();
         for (let i = 1; i < split.length; i++) {
@@ -285,7 +288,7 @@ export const HolonomicPathStore = types
           if (cur !== undefined) {
             cur += 1;
           }
-          let traj = self.generated.slice(prev, cur).map((s) => {
+          const traj = self.generated.slice(prev, cur).map((s) => {
             return { ...s };
           });
           if (traj === undefined) {
@@ -300,7 +303,7 @@ export const HolonomicPathStore = types
             const e = traj[i];
             e.timestamp -= startTime;
           }
-          let splitEventMarkers = self.eventMarkers
+          const splitEventMarkers = self.eventMarkers
             .filter(
               (m) =>
                 m.targetTimestamp !== undefined &&
@@ -312,12 +315,12 @@ export const HolonomicPathStore = types
             )
             .map((m) => ({
               timestamp: m.timestamp! - startTime,
-              command: m.command.asSavedCommand(),
+              command: m.command.asSavedCommand()
             }));
           trajectories.push({ samples: traj, eventMarkers: splitEventMarkers });
         }
         return trajectories;
-      },
+      }
     };
   })
   .actions((self) => {
@@ -487,7 +490,7 @@ export const HolonomicPathStore = types
         }
       },
       deleteMarkerUUID(uuid: string) {
-        let index = self.eventMarkers.findIndex((m) => m.uuid === uuid);
+        const index = self.eventMarkers.findIndex((m) => m.uuid === uuid);
         if (index >= 0 && index < self.eventMarkers.length) {
           destroy(self.eventMarkers[index]);
           if (self.eventMarkers.length === 0) {
@@ -617,7 +620,7 @@ export const HolonomicPathStore = types
         savedPath.constraints.forEach((saved: SavedConstraint) => {
           const constraintStore = ConstraintStores[saved.type];
           if (constraintStore !== undefined) {
-            let scope = saved.scope.map((id) =>
+            const scope = saved.scope.map((id) =>
               self.savedWaypointIdToWaypointId(id)
             );
             if (scope.includes(undefined)) {
@@ -672,7 +675,7 @@ export const HolonomicPathStore = types
           savedPath.defaultControlIntervalCount;
         self.eventMarkers.clear();
         savedPath.eventMarkers.forEach((saved) => {
-          let rootCommandType = saved.command.type;
+          const rootCommandType = saved.command.type;
           let target: WaypointID | undefined;
           let targetIndex = 0;
           if (saved.target !== null) {
@@ -687,7 +690,7 @@ export const HolonomicPathStore = types
           }
 
           //if (target === undefined) return;
-          let marker = EventMarkerStore.create({
+          const marker = EventMarkerStore.create({
             name: saved.name,
             target: target as WaypointID,
             offset: saved.offset,
@@ -697,9 +700,9 @@ export const HolonomicPathStore = types
               name: "",
               commands: [],
               time: 0,
-              uuid: uuidv4(),
+              uuid: uuidv4()
             }),
-            uuid: uuidv4(),
+            uuid: uuidv4()
           });
           marker.command.fromSavedCommand(saved.command);
           this.addEventMarker(marker);
@@ -720,9 +723,9 @@ export const HolonomicPathStore = types
               name: "",
               commands: [],
               time: 0,
-              uuid: uuidv4(),
+              uuid: uuidv4()
             }),
-            uuid: uuidv4(),
+            uuid: uuidv4()
           });
         }
         self.eventMarkers.push(marker);
@@ -796,10 +799,10 @@ export const HolonomicPathStore = types
     };
   })
   .actions((self) => {
-    let staleDisposer : IReactionDisposer;
-    let autosaveDisposer : IReactionDisposer;
-    let exporter : (uuid:string)=>void;
-    let afterCreate = () => {
+    let staleDisposer: IReactionDisposer;
+    let autosaveDisposer: IReactionDisposer;
+    let exporter: (uuid: string) => void;
+    const afterCreate = () => {
       // Anything accessed in here will cause the trajectory to be marked stale
       staleDisposer = autorun(() => {
         toJS(self.waypoints);
@@ -810,34 +813,33 @@ export const HolonomicPathStore = types
         self.setIsTrajectoryStale(true);
       });
       autosaveDisposer = reaction(
-        ()=>{
+        () => {
           if (self.generated.length == 0) {
             return [];
           }
           //toJS(self.splitTrajectories());
-          return self.splitTrajectories()},
-        (value)=>{
+          return self.splitTrajectories();
+        },
+        (value) => {
           if (value.length > 0) {
             exporter(self.uuid);
           }
         }
-      )
-
-    }
-    let setExporter = (exportFunction: (uuid:string)=>void) =>{
+      );
+    };
+    const setExporter = (exportFunction: (uuid: string) => void) => {
       exporter = exportFunction;
-    }
-    let beforeDestroy = ()=>{
+    };
+    const beforeDestroy = () => {
       staleDisposer();
       autosaveDisposer();
       console.log("Deleted ", self.uuid);
-    }
+    };
     return {
-      afterCreate, setExporter, beforeDestroy
-    }
-
-
-    
+      afterCreate,
+      setExporter,
+      beforeDestroy
+    };
   });
 export interface IHolonomicPathStore
   extends Instance<typeof HolonomicPathStore> {}

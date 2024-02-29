@@ -36,17 +36,17 @@ class SidebarMarker extends Component<Props, State> {
   }
 
   render() {
-    let marker = this.props.marker;
-    let selected = this.props.marker.selected;
-    let isInSameSegment = marker.isInSameSegment();
-    let isBoundToTrajectory = marker.trajTargetIndex !== undefined;
-    let targetMissing = marker.getTargetIndex() === undefined;
+    const marker = this.props.marker;
+    const selected = this.props.marker.selected;
+    const isInSameSegment = marker.isInSameSegment();
+    const targetMissing = marker.getTargetIndex() === undefined;
     let issueTitle: string;
     if (targetMissing) {
       issueTitle = "Marker targets missing waypoint! Select a new target.";
     } else {
       if (isInSameSegment === undefined) {
-          issueTitle = "Marker added since last generation. Marker will not show or export.";
+        issueTitle =
+          "Marker added since last generation. Marker will not show or export.";
       } else {
         issueTitle =
           "Stop point between targeted waypoint and actual time! Marker will not export.";
@@ -61,7 +61,7 @@ class SidebarMarker extends Component<Props, State> {
       >
         {React.cloneElement(<Room></Room>, {
           className: styles.SidebarIcon,
-          htmlColor: selected ? "var(--select-yellow)" : "var(--accent-purple)",
+          htmlColor: selected ? "var(--select-yellow)" : "var(--accent-purple)"
         })}
         <span
           className={styles.SidebarLabel}
@@ -83,7 +83,11 @@ class SidebarMarker extends Component<Props, State> {
             <span></span>
           )}
           <span>
-            <span>{targetMissing ? "?" : this.waypointIDToText(this.props.marker.target)} </span>
+            <span>
+              {targetMissing
+                ? "?"
+                : this.waypointIDToText(this.props.marker.target)}{" "}
+            </span>
             <span style={{}}>
               (
               {(this.props.marker.offset < 0 ? "" : "+") +

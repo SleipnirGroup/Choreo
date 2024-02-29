@@ -6,7 +6,7 @@ import {
   isAlive,
   getParent,
   destroy,
-  detach,
+  detach
 } from "mobx-state-tree";
 import { moveItem } from "mobx-utils";
 import { safeGetIdentifier } from "../util/mobxutils";
@@ -29,7 +29,7 @@ export const CommandTypeNames = {
   deadline: { id: "deadline", name: "Deadline" },
   race: { id: "race", name: "Race" },
   wait: { id: "wait", name: "Wait" },
-  named: { id: "named", name: "Named" },
+  named: { id: "named", name: "Named" }
 };
 export const CommandUIData = Object.values(CommandTypeNames);
 
@@ -46,7 +46,7 @@ export const CommandStore = types
     commands: types.array(types.late((): IAnyType => CommandStore)),
     time: types.number,
     name: types.maybeNull(types.string),
-    uuid: types.identifier,
+    uuid: types.identifier
   })
   .views((self) => ({
     isGroup(): boolean {
@@ -62,25 +62,25 @@ export const CommandStore = types
         return {
           type: "named",
           data: {
-            name: self.name,
-          },
+            name: self.name
+          }
         };
       } else if (self.type === "wait") {
         return {
           type: "wait",
           data: {
-            waitTime: self.time,
-          },
+            waitTime: self.time
+          }
         };
       } else {
         return {
           type: self.type,
           data: {
-            commands: self.commands.map((c) => c.asSavedCommand()),
-          },
+            commands: self.commands.map((c) => c.asSavedCommand())
+          }
         };
       }
-    },
+    }
   }))
   .actions((self) => ({
     fromSavedCommand(saved: SavedCommand) {
@@ -94,10 +94,10 @@ export const CommandStore = types
         self.time = saved.data.waitTime;
       } else {
         saved.data.commands.forEach((s) => {
-          let command = CommandStore.create({
+          const command = CommandStore.create({
             type: "wait",
             time: 0,
-            uuid: uuidv4(),
+            uuid: uuidv4()
           });
           command.fromSavedCommand(s);
           self.commands.push(command);
@@ -117,12 +117,12 @@ export const CommandStore = types
       self.time = Math.max(0, waitTime);
     },
     addSubCommand() {
-      let newCommand = CommandStore.create({
+      const newCommand = CommandStore.create({
         type: "named",
         uuid: uuidv4(),
         time: 0,
         name: "",
-        commands: [],
+        commands: []
       });
       self.commands.push(newCommand);
       return newCommand;
@@ -134,11 +134,11 @@ export const CommandStore = types
       return detach(self.commands[index]);
     },
     deleteSubCommand(uuid: string) {
-      let toDelete = self.commands.find((c) => c.uuid === uuid);
+      const toDelete = self.commands.find((c) => c.uuid === uuid);
       if (toDelete !== undefined) {
         destroy(toDelete);
       }
-    },
+    }
   }));
 
 export interface ICommandStore extends Instance<typeof CommandStore> {}
@@ -149,7 +149,7 @@ export const EventMarkerStore = types
     trajTargetIndex: types.maybe(types.number),
     offset: types.number,
     command: CommandStore,
-    uuid: types.identifier,
+    uuid: types.identifier
   })
   .views((self) => ({
     get selected(): boolean {
@@ -193,11 +193,11 @@ export const EventMarkerStore = types
       const waypoint = path.getByWaypointID(startScope);
       if (waypoint === undefined) return undefined;
       return path.findUUIDIndex(waypoint.uuid);
-    },
+    }
   }))
   .views((self) => ({
     get targetTimestamp(): number | undefined {
-      let path = self.getPath();
+      const path = self.getPath();
       if (self.trajTargetIndex === undefined) return undefined;
       return (path as IHolonomicPathStore).generatedWaypoints[
         self.trajTargetIndex
@@ -208,7 +208,7 @@ export const EventMarkerStore = types
         return undefined;
       }
       return this.targetTimestamp + self.offset;
-    },
+    }
   }))
   .actions((self) => ({
     setTrajTargetIndex(index: number | undefined) {
@@ -227,7 +227,7 @@ export const EventMarkerStore = types
     },
     setName(name: string) {
       self.name = name;
-    },
+    }
   }))
   .views((self) => ({
     /**
@@ -259,7 +259,7 @@ export const EventMarkerStore = types
         });
       }
       return retVal;
-    },
+    }
   }));
 
 export interface IEventMarkerStore extends Instance<typeof EventMarkerStore> {}

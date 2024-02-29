@@ -139,7 +139,7 @@ const eventMarkerCount = 1;
 NavbarData.EventMarker = {
   index: Object.keys(NavbarData).length,
   name: "Event Marker",
-  icon: <Room></Room>,
+  icon: <Room></Room>
 };
 
 /** An map of  */
@@ -160,7 +160,7 @@ export const NavbarItemData = (() => {
   return x;
 })();
 
-let NavbarItemSections = [waypointNavbarCount, constraintNavbarCount];
+const NavbarItemSections = [waypointNavbarCount, constraintNavbarCount];
 NavbarItemSections.push(obstacleNavbarCount);
 NavbarItemSections.push(eventMarkerCount);
 

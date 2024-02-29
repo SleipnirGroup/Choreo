@@ -9,17 +9,17 @@ export const PathListStore = types
     paths: types.map(HolonomicPathStore),
     activePathUUID: ""
   })
-  .actions((self)=>{
-    let pathExporter: (uuid: string) =>void = (uuid)=>{};
+  .actions((self) => {
+    let pathExporter: (uuid: string) => void = (uuid) => {};
     return {
-      setExporter(exportFunction: (uuid:string)=>void) {
+      setExporter(exportFunction: (uuid: string) => void) {
         pathExporter = exportFunction;
-        self.paths.forEach((p)=>p.setExporter(pathExporter));
+        self.paths.forEach((p) => p.setExporter(pathExporter));
       },
-      getExporter() : (uuid:string) => void {
+      getExporter(): (uuid: string) => void {
         return pathExporter;
       }
-    }
+    };
   })
   .views((self) => {
     return {

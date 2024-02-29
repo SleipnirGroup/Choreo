@@ -42,7 +42,7 @@ class PathAnimationSlider extends Component<Props, State> {
                     if (type == 3 || type == 2) {
                       return [];
                     }
-                    var color = "white";
+                    let color = "white";
                     if (idx === 0) {
                       color = "green";
                     } else if (
@@ -62,12 +62,12 @@ class PathAnimationSlider extends Component<Props, State> {
                           >
                             <span>
                               {React.cloneElement(NavbarItemData[type].icon, {
-                                htmlColor: color,
+                                htmlColor: color
                               })}
                             </span>
                           </Tooltip>
-                        ),
-                      },
+                        )
+                      }
                     ];
                   })
                   .concat(
@@ -90,11 +90,11 @@ class PathAnimationSlider extends Component<Props, State> {
                                 strokeWidth="0.5"
                                 fontSize="large"
                                 style={{
-                                  transform: "translateY(calc(-3px - 50%))",
+                                  transform: "translateY(calc(-3px - 50%))"
                                 }}
                               ></Room>
                             </span>
-                          ),
+                          )
                         };
                       }
                     )

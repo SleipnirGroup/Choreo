@@ -107,13 +107,13 @@ const StateStore = types
           });
           pathStore.setGenerating(true);
           // Capture the timestamps of the waypoints that were actually sent to the solver
-          let waypointTimestamps = pathStore.waypointTimestamps();
+          const waypointTimestamps = pathStore.waypointTimestamps();
           console.log(waypointTimestamps);
           const stopPoints = pathStore.stopPoints();
           generatedWaypoints = pathStore.waypoints.map((point, idx) => ({
             timestamp: 0,
             isStopPoint: stopPoints.includes(idx),
-            ...point.asSavedWaypoint(),
+            ...point.asSavedWaypoint()
           }));
           pathStore.eventMarkers.forEach((m) => m.updateTargetIndex);
           resolve(pathStore);

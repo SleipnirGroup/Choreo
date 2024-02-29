@@ -15,7 +15,7 @@ import {
   KeyboardArrowDown,
   PriorityHigh,
   Route,
-  Settings,
+  Settings
 } from "@mui/icons-material";
 import Input from "../input/Input";
 import InputList from "../input/InputList";

@@ -8,7 +8,7 @@ import Input from "../../input/Input";
 import ScopeSlider from "../ScopeSlider";
 import {
   CommandStore,
-  IEventMarkerStore,
+  IEventMarkerStore
 } from "../../../document/EventMarkerStore";
 import { toJS } from "mobx";
 import CommandDraggable from "./CommandDraggable";
@@ -18,7 +18,7 @@ import InputStyles from "../../input/InputList.module.css";
 
 type Props = { marker: IEventMarkerStore };
 
-type State = {};
+type State = object;
 
 class EventMarkerConfigPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
@@ -32,10 +32,10 @@ class EventMarkerConfigPanel extends Component<Props, State> {
     if (!result.destination) {
       return;
     }
-    let sourceCommandList = result.source?.droppableId;
-    let targetCommandList = result.destination?.droppableId;
+    const sourceCommandList = result.source?.droppableId;
+    const targetCommandList = result.destination?.droppableId;
     if (targetCommandList === null) return;
-    let targetCommand = resolveIdentifier(
+    const targetCommand = resolveIdentifier(
       CommandStore,
       this.props.marker,
       targetCommandList
@@ -53,7 +53,7 @@ class EventMarkerConfigPanel extends Component<Props, State> {
     } else {
       // This section is dead code until we have a DnD library that allows dragging
       // between layers of nested drop areas
-      let sourceCommand = resolveIdentifier(
+      const sourceCommand = resolveIdentifier(
         CommandStore,
         this.props.marker,
         sourceCommandList
@@ -61,7 +61,6 @@ class EventMarkerConfigPanel extends Component<Props, State> {
       if (sourceCommand === undefined) {
         return;
       }
-      let subcommand = sourceCommand.commands[result.source.index];
       targetCommand.pushCommand(
         sourceCommand.detachCommand(result.source.index)
       );
@@ -72,11 +71,11 @@ class EventMarkerConfigPanel extends Component<Props, State> {
     }
   }
   render() {
-    let marker = this.props.marker;
+    const marker = this.props.marker;
 
     let startIndex = (marker.getTargetIndex() ?? -0.5) + 1;
-    let points = marker.getPath().waypoints;
-    let pointcount = points.length;
+    const points = marker.getPath().waypoints;
+    const pointcount = points.length;
     if (marker.target === "first") {
       startIndex = 0;
     }
@@ -90,7 +89,7 @@ class EventMarkerConfigPanel extends Component<Props, State> {
         style={{
           width: `min(80%, max(400px, calc(${pointcount} * 3ch + 8ch)))`,
           display: "flex",
-          gap: "4px",
+          gap: "4px"
         }}
       >
         <ScopeSlider
@@ -99,20 +98,19 @@ class EventMarkerConfigPanel extends Component<Props, State> {
           endIndex={startIndex}
           setRange={(selection) => {
             const lastIdx = pointcount + 1;
-            let idx = selection[0];
+            const idx = selection[0];
             if (idx == 0) {
               marker.setTarget("first");
             } else if (idx == lastIdx) {
               marker.setTarget("last");
             } else {
               marker.setTarget({
-                uuid: points[idx - 1]?.uuid ?? "",
+                uuid: points[idx - 1]?.uuid ?? ""
               });
             }
           }}
           sliderProps={{
-            //@ts-expect-error
-            color: marker.getTargetIndex() === undefined ? "error" : "primary",
+            color: marker.getTargetIndex() === undefined ? "error" : "primary"
           }}
           points={points}
         ></ScopeSlider>
@@ -138,8 +136,8 @@ class EventMarkerConfigPanel extends Component<Props, State> {
             placeholder="Marker Name"
             sx={{
               ".MuiInput-input": {
-                paddingBottom: "0px",
-              },
+                paddingBottom: "0px"
+              }
             }}
             onKeyDown={(e) => {
               if (e.key == "Enter") {
@@ -155,9 +153,7 @@ class EventMarkerConfigPanel extends Component<Props, State> {
             suffix={"s"}
             enabled={true}
             setEnabled={(a) => null}
-            //@ts-ignore
             number={this.props.marker.offset}
-            //@ts-ignore
             setNumber={(offset) => this.props.marker.setOffset(offset)}
             showCheckbox={false}
             titleTooltip={

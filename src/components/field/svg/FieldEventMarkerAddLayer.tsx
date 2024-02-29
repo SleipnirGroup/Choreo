@@ -3,9 +3,9 @@ import DocumentManagerContext from "../../../document/DocumentManager";
 
 import { observer } from "mobx-react";
 
-type Props = {};
+type Props = object;
 
-type State = {};
+type State = object;
 
 class FieldConstraintsAddLayer extends Component<Props, State> {
   static contextType = DocumentManagerContext;
@@ -13,8 +13,8 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
   state = {};
 
   render() {
-    let activePath = this.context.model.document.pathlist.activePath;
-    let waypoints = activePath.waypoints;
+    const activePath = this.context.model.document.pathlist.activePath;
+    const waypoints = activePath.waypoints;
     return (
       <>
         {/* Draw circles on each waypoint */}
@@ -32,7 +32,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                 stroke="white"
                 strokeWidth={0.05}
                 onClick={() => {
-                  let newMarker = activePath.addEventMarker();
+                  const newMarker = activePath.addEventMarker();
 
                   newMarker.setTarget({ uuid: point.uuid });
                   if (!activePath.isTrajectoryStale) {

@@ -38,9 +38,9 @@ class Navbar extends Component<Props, State> {
                 (item, index) =>
                   index <= endSplit &&
                   index > (NavbarItemSectionEnds[sectionIdx - 1] ?? -1) && (
-                    //@ts-ignore
                     <Tooltip
                       disableInteractive
+                      //@ts-expect-error needs a value prop for ToggleButtonGroup
                       value={`${index}`}
                       title={item.name}
                       key={`${sectionIdx}_${index}`}
@@ -50,8 +50,8 @@ class Navbar extends Component<Props, State> {
                         sx={{
                           color: "var(--accent-purple)",
                           "&.Mui-selected": {
-                            color: "var(--select-yellow)",
-                          },
+                            color: "var(--select-yellow)"
+                          }
                         }}
                       >
                         {item.icon}

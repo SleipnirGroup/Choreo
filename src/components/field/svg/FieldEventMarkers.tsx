@@ -11,10 +11,10 @@ type MarkerProps = {
   onSelect: () => void;
 };
 
-type MarkerState = {};
+type MarkerState = object;
 
-type Props = {};
-type State = {};
+type Props = object;
+type State = object;
 class FieldEventMarker extends Component<MarkerProps, MarkerState> {
   render() {
     return (
@@ -49,12 +49,12 @@ class FieldEventMarkers extends Component<Props, State> {
   state = {};
 
   render() {
-    let path = this.context.model.document.pathlist.activePath;
+    const path = this.context.model.document.pathlist.activePath;
     return path.eventMarkers.flatMap((marker) => {
       if (marker.timestamp === undefined) {
         return [];
       }
-      let marked = sample(marker.timestamp, path.generated);
+      const marked = sample(marker.timestamp, path.generated);
       return (
         <FieldEventMarker
           x={marked.x}

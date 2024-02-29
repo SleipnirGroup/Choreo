@@ -3,9 +3,9 @@ import DocumentManagerContext from "../../../document/DocumentManager";
 
 import { observer } from "mobx-react";
 
-type Props = {};
+type Props = object;
 
-type State = {};
+type State = object;
 
 class FieldSamples extends Component<Props, State> {
   static contextType = DocumentManagerContext;
@@ -13,11 +13,11 @@ class FieldSamples extends Component<Props, State> {
   state = {};
 
   render() {
-    let path = this.context.model.document.pathlist.activePath;
+    const path = this.context.model.document.pathlist.activePath;
     return (
       <>
         {path.generatedWaypoints.map((point, idx) => {
-          var color = "white";
+          let color = "white";
           if (idx === 0) {
             color = "green";
           } else if (idx === path.generatedWaypoints.length - 1) {

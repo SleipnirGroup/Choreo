@@ -13,18 +13,18 @@ type Props = {
   sliderProps?: SliderProps;
 };
 
-type State = {};
+type State = object;
 
 class ScopeSlider extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
   render() {
-    let isRange = this.props.isRange;
-    let startIndex = this.props.startIndex;
-    let endIndex = this.props.endIndex;
-    let points = this.props.points;
-    let pointcount = points.length;
+    const isRange = this.props.isRange;
+    const startIndex = this.props.startIndex;
+    const endIndex = this.props.endIndex;
+    const points = this.props.points;
+    const pointcount = points.length;
 
     const sliderMarks = [
       { value: 0, label: "Start" },
@@ -35,7 +35,7 @@ class ScopeSlider extends Component<Props, State> {
           return { value: idx + 1, label: idx + 1 };
         }
       }),
-      { value: pointcount + 1, label: "End" },
+      { value: pointcount + 1, label: "End" }
     ];
     return (
       <div style={{ marginInline: "4ch" }}>
@@ -43,11 +43,11 @@ class ScopeSlider extends Component<Props, State> {
         <Slider
           sx={{
             '& .MuiSlider-markLabel[data-index="0"]': {
-              transform: "translateX(-3.5ch)",
+              transform: "translateX(-3.5ch)"
             },
             [`& .MuiSlider-markLabel[data-index="${pointcount + 1}"]`]: {
-              transform: "translateX(0ch)",
-            },
+              transform: "translateX(0ch)"
+            }
           }}
           step={null}
           min={0}
