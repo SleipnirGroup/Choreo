@@ -53,11 +53,10 @@ class FieldOverlayRoot extends Component<Props, State> {
   private center(x: number, y: number, k: number) {
     const transition = d3.transition().duration(750).ease(d3.easeCubicOut);
 
-    d3.select<SVGGElement, undefined>(this.svgRef.current!)
-      .call(
-        this.zoomBehavior.scaleTo,
-        k
-      );
+    d3.select<SVGGElement, undefined>(this.svgRef.current!).call(
+      this.zoomBehavior.scaleTo,
+      k
+    );
 
     d3.select<SVGGElement, undefined>(this.svgRef.current!)
       .transition(transition)
@@ -75,16 +74,17 @@ class FieldOverlayRoot extends Component<Props, State> {
       );
     });
 
-    const transition = d3.transition().duration(750).ease(d3.easeCubicOut);
-
-
     window.addEventListener("zoomIn", () => {
+      const transition = d3.transition().duration(750).ease(d3.easeCubicOut);
+
       d3.select<SVGGElement, undefined>(this.svgRef.current!)
         .transition(transition)
         .call(this.zoomBehavior.scaleBy, 2);
     });
 
     window.addEventListener("zoomOut", () => {
+      const transition = d3.transition().duration(750).ease(d3.easeCubicOut);
+
       d3.select<SVGGElement, undefined>(this.svgRef.current!)
         .transition(transition)
         .call(this.zoomBehavior.scaleBy, 0.6);
@@ -151,8 +151,9 @@ class FieldOverlayRoot extends Component<Props, State> {
     return (
       <svg
         ref={this.svgRef}
-        viewBox={`${-0.5} ${0.5 - this.canvasHeightMeters} ${this.canvasWidthMeters
-          } ${this.canvasHeightMeters}`}
+        viewBox={`${-0.5} ${0.5 - this.canvasHeightMeters} ${
+          this.canvasWidthMeters
+        } ${this.canvasHeightMeters}`}
         xmlns="http://www.w3.org/2000/svg"
         style={{
           width: "100%",
@@ -166,8 +167,9 @@ class FieldOverlayRoot extends Component<Props, State> {
       >
         <g
           transform={`
-              matrix(${this.state.zoom} 0  0 ${-this.state.zoom} ${this.state.xPan
-            } ${this.state.yPan})`}
+              matrix(${this.state.zoom} 0  0 ${-this.state.zoom} ${
+                this.state.xPan
+              } ${this.state.yPan})`}
           ref={this.frameRef}
           id="rootFrame"
         >
