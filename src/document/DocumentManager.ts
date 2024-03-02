@@ -205,10 +205,10 @@ export class DocumentManager {
     hotkeys("command+n,ctrl+n", { keydown: true }, () => {
       this.newFile();
     });
-    hotkeys('command+=,ctrl+=', () => {
+    hotkeys("command+=,ctrl+=", () => {
       this.model.zoomIn();
     });
-    hotkeys('command+-,ctrl+-', () => {
+    hotkeys("command+-,ctrl+-", () => {
       this.model.zoomOut();
     });
     hotkeys("right,x", () => {
