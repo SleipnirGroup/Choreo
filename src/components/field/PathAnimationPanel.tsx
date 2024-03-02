@@ -20,7 +20,7 @@ class PathAnimationPanel extends Component<Props, State> {
     running: false
   };
   static contextType = DocumentManagerContext;
-  context!: React.ContextType<typeof DocumentManagerContext>;
+  declare context: React.ContextType<typeof DocumentManagerContext>;
   timerId = 0;
   totalTime = 0;
   i = 0;

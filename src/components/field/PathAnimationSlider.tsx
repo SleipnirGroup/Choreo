@@ -13,7 +13,7 @@ type State = object;
 
 class PathAnimationSlider extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  context!: React.ContextType<typeof DocumentManagerContext>;
+  declare context: React.ContextType<typeof DocumentManagerContext>;
   totalTime = 0;
   render() {
     const activePath = this.context.model.document.pathlist.activePath;

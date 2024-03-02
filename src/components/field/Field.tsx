@@ -28,7 +28,7 @@ type State = object;
 
 export class Field extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  context!: React.ContextType<typeof DocumentManagerContext>;
+  declare context: React.ContextType<typeof DocumentManagerContext>;
   render() {
     const selectedSidebar = this.context.model.uiState.selectedSidebarItem;
     const activePath = this.context.model.document.pathlist.activePath;
