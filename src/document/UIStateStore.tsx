@@ -3,6 +3,7 @@ import {
   CircleOutlined,
   DoNotDisturb,
   Grid4x4,
+  Room,
   Route,
   ScatterPlot,
   SquareOutlined,
@@ -30,11 +31,13 @@ import {
   CircularObstacleStore,
   ICircularObstacleStore
 } from "./CircularObstacleStore";
+import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
 
 export const SelectableItem = types.union(
   {
     dispatcher: (snapshot) => {
       if (snapshot.mass) return RobotConfigStore;
+      if (snapshot.target) return EventMarkerStore;
       if (snapshot.scope) {
         return ConstraintStores[snapshot.type];
       }
@@ -47,6 +50,7 @@ export const SelectableItem = types.union(
   RobotConfigStore,
   HolonomicWaypointStore,
   CircularObstacleStore,
+  EventMarkerStore,
   ...Object.values(ConstraintStores)
 );
 
@@ -120,7 +124,8 @@ export const ObstacleData: {
     icon: <DoNotDisturb />
   }
 };
-const obstacleNavbarCount = Object.keys(ObstacleData).length;
+let obstacleNavbarCount = 0;
+obstacleNavbarCount = Object.keys(ObstacleData).length;
 Object.entries(ObstacleData).forEach(([name, data]) => {
   const obstaclesOffset = Object.keys(NavbarData).length;
   NavbarData[name] = {
@@ -129,6 +134,13 @@ Object.entries(ObstacleData).forEach(([name, data]) => {
     icon: data.icon
   };
 });
+
+const eventMarkerCount = 1;
+NavbarData.EventMarker = {
+  index: Object.keys(NavbarData).length,
+  name: "Event Marker",
+  icon: <Room></Room>
+};
 
 /** An map of  */
 export const NavbarLabels = (() => {
@@ -148,17 +160,21 @@ export const NavbarItemData = (() => {
   return x;
 })();
 
-export const NavbarItemSectionLengths = [
-  waypointNavbarCount - 1,
-  waypointNavbarCount + constraintNavbarCount - 1,
-  waypointNavbarCount + constraintNavbarCount + obstacleNavbarCount - 1
-];
+const NavbarItemSections = [waypointNavbarCount, constraintNavbarCount];
+NavbarItemSections.push(obstacleNavbarCount);
+NavbarItemSections.push(eventMarkerCount);
+
+export const NavbarItemSectionEnds = NavbarItemSections.map((s, idx) =>
+  NavbarItemSections.slice(0, idx + 1).reduce((prev, cur) => prev + cur, -1)
+);
+console.log(NavbarItemSectionEnds);
 
 export type SelectableItemTypes =
   | IRobotConfigStore
   | IHolonomicWaypointStore
   | IConstraintStore
   | ICircularObstacleStore
+  | IEventMarkerStore
   | undefined;
 
 /* Visibility stuff */
@@ -299,12 +315,18 @@ export const UIStateStore = types
       },
       isConstraintSelected() {
         return (
-          self.selectedNavbarItem > NavbarItemSectionLengths[0] &&
-          self.selectedNavbarItem <= NavbarItemSectionLengths[1]
+          self.selectedNavbarItem > NavbarItemSectionEnds[0] &&
+          self.selectedNavbarItem <= NavbarItemSectionEnds[1]
         );
       },
+      isEventMarkerSelected() {
+        return self.selectedNavbarItem == NavbarData.EventMarker.index;
+      },
       isNavbarObstacleSelected() {
-        return self.selectedNavbarItem > NavbarItemSectionLengths[1];
+        return (
+          self.selectedNavbarItem > NavbarItemSectionEnds[1] &&
+          self.selectedNavbarItem <= NavbarItemSectionEnds[2]
+        );
       },
       visibleLayersOnly() {
         return self.layers.flatMap((visible: boolean, index: number) => {

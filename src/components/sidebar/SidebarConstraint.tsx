@@ -75,7 +75,10 @@ class SidebarConstraint extends Component<Props, State> {
           <span>{this.props.constraint.definition.shortName}</span>
           {issues.length !== 0 ? (
             <Tooltip disableInteractive title={issues.join(", ")}>
-              <PriorityHigh className={styles.SidebarIcon}></PriorityHigh>
+              <PriorityHigh
+                className={styles.SidebarIcon}
+                style={{ color: "red" }}
+              ></PriorityHigh>
             </Tooltip>
           ) : (
             <span></span>

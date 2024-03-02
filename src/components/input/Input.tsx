@@ -115,16 +115,11 @@ class Input extends Component<Props, State> {
         <Tooltip disableInteractive title={this.props.titleTooltip ?? ""}>
           <span
             className={
-              styles.Title + " " + (this.props.enabled ? "" : styles.Disabled)
-            }
-            style={
-              (this.props.titleTooltip ?? "") == ""
-                ? {}
-                : {
-                    textDecorationLine: "underline",
-                    textDecorationStyle: "dotted",
-                    textUnderlineOffset: "2px"
-                  }
+              styles.Title +
+              " " +
+              (this.props.enabled ? "" : styles.Disabled) +
+              " " +
+              (this.props.titleTooltip === undefined ? "" : styles.Tooltip)
             }
           >
             {this.props.title}
@@ -139,6 +134,8 @@ class Input extends Component<Props, State> {
           }
           style={{ minWidth: `${characters}ch` }}
           disabled={!this.props.enabled}
+          // The below is needed to make inputs on CommandDraggables work
+          onClick={(e) => e.stopPropagation()}
           onFocus={(e) => {
             this.focusedMode();
           }}

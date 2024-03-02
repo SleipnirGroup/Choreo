@@ -18,7 +18,9 @@ import { invoke } from "@tauri-apps/api";
 import { Close } from "@mui/icons-material";
 import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
 import CircularObstacleConfigPanel from "../config/CircularObstacleConfigPanel";
+import EventMarkerConfigPanel from "../config/eventmarker/EventMarkerConfigPanel";
 import WaypointVisibilityPanel from "../config/WaypointVisibilityPanel";
+import { IEventMarkerStore } from "../../document/EventMarkerStore";
 
 type Props = object;
 
@@ -63,6 +65,16 @@ export class Field extends Component<Props, State> {
             <CircularObstacleConfigPanel
               obstacle={selectedSidebar as ICircularObstacleStore}
             ></CircularObstacleConfigPanel>
+          )}
+        {selectedSidebar !== undefined &&
+          "offset" in selectedSidebar &&
+          activePath.eventMarkers.find(
+            (marker) =>
+              marker.uuid == (selectedSidebar as IEventMarkerStore)!.uuid
+          ) && (
+            <EventMarkerConfigPanel
+              marker={selectedSidebar as IEventMarkerStore}
+            ></EventMarkerConfigPanel>
           )}
         <VisibilityPanel></VisibilityPanel>
         <WaypointVisibilityPanel></WaypointVisibilityPanel>
