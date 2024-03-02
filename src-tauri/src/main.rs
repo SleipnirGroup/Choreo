@@ -10,21 +10,6 @@ use tauri::{
 use trajoptlib::{
     HolonomicTrajectory, InitialGuessPoint, SwerveDrivetrain, SwerveModule, SwervePathBuilder,
 };
-// A way to make properties that exist on all enum variants accessible from the generic variant
-// I have no idea how it works but it came from
-// https://users.rust-lang.org/t/generic-referencing-enum-inner-data/66342/9
-// macro_rules! define_enum_macro {
-//   ($Type:ident, $($variant:ident),+ $(,)?) => {
-//       define_enum_macro!{#internal, [$], $Type, $($variant),+}
-//   };
-//   (#internal, [$dollar:tt], $Type:ident, $($variant:ident),+) => {
-//       macro_rules! $Type {
-//           ($dollar($field:ident $dollar(: $p:pat)?,)* ..) => {
-//               $($Type::$variant { $dollar($field $dollar(: $p)?,)* .. } )|+
-//           }
-//       }
-//   };
-// }
 
 #[derive(Clone, serde::Serialize, Debug)]
 struct OpenFileEventPayload<'a> {
@@ -85,7 +70,6 @@ async fn delete_file(dir: String, name: String) {
 
 #[tauri::command]
 async fn delete_traj_segments(dir: String, traj_name: String) -> Result<(), String> {
-    println!("{}", traj_name);
     let dir_path = Path::new(&dir);
     if dir_path.is_dir() {
         let traj_segment_regex =
@@ -110,7 +94,6 @@ async fn delete_traj_segments(dir: String, traj_name: String) -> Result<(), Stri
                         return file_str.map_or(false, |file_str| re.is_match(file_str));
                     });
                     if matches {
-                        println!("{:?}", path);
                         let _ = fs::remove_file(path);
                     } else {
                         continue;
@@ -129,8 +112,7 @@ async fn delete_traj_segments(dir: String, traj_name: String) -> Result<(), Stri
 #[tauri::command]
 async fn delete_dir(dir: String) {
     let dir_path = Path::new(&dir);
-    let res = fs::remove_dir_all(dir_path);
-    println!("{:?}", res);
+    let _ = fs::remove_dir_all(dir_path);
 }
 
 #[tauri::command]
@@ -218,8 +200,6 @@ enum Constraints {
         scope: ChoreoConstraintScope,
     },
 }
-// Also add the constraint type here
-//define_enum_macro!(BoundsZeroVelocity, WptVelocityDirection, WptZeroVelocity);
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[allow(non_snake_case)]
@@ -314,22 +294,12 @@ async fn generate_trajectory(
     for c in 0..constraints.len() {
         let constraint: &Constraints = &constraints[c];
         match constraint {
-            Constraints::WptVelocityDirection { scope, direction } => {
-                // maybe make a macro or find a way to specify some constraints have a specific scope
-                /*
-                ifWaypoint((idx)=>{
-                    println!("WptVelocityDirection {} {}", *idx, *direction);
-                    path_builder.wpt_velocity_direction(*idx, *direction);
-                })
-                */
-                match scope {
-                    ChoreoConstraintScope::Waypoint(idx) => {
-                        path_builder
-                            .wpt_linear_velocity_direction(fix_scope(idx[0], &rm), *direction);
-                    }
-                    _ => {}
+            Constraints::WptVelocityDirection { scope, direction } => match scope {
+                ChoreoConstraintScope::Waypoint(idx) => {
+                    path_builder.wpt_linear_velocity_direction(fix_scope(idx[0], &rm), *direction);
                 }
-            }
+                _ => {}
+            },
             Constraints::WptZeroVelocity { scope } => match scope {
                 ChoreoConstraintScope::Waypoint(idx) => {
                     path_builder.wpt_linear_velocity_max_magnitude(fix_scope(idx[0], &rm), 0.0f64);
@@ -366,11 +336,9 @@ async fn generate_trajectory(
             Constraints::StraightLine { scope } => {
                 match scope {
                     ChoreoConstraintScope::Segment(idx) => {
-                        println!("Scope {} {}", idx[0], idx[1]);
                         for point in idx[0]..idx[1] {
                             let this_pt = fix_scope(point, &rm);
                             let next_pt = fix_scope(point + 1, &rm);
-                            println!("{} {}", this_pt, next_pt);
                             if this_pt != fix_scope(idx[0], &rm) {
                                 // points in between straight-line segments are automatically zero-velocity points
                                 path_builder.wpt_linear_velocity_max_magnitude(this_pt, 0.0f64);
@@ -390,17 +358,6 @@ async fn generate_trajectory(
                 }
             } // add more cases here to impl each constraint.
         }
-        // The below might be helpful
-        // let Constraints!(scope, ..) = constraint;
-        // match scope {
-        //   ChoreoConstraintScope::Full(_) =>
-        //     println!("Full Path")
-        //   ,
-        //   ChoreoConstraintScope::Segment(range) =>
-        //     println!("From {} to {}", range.start, range.end),
-        //   ChoreoConstraintScope::Waypoint(idx) =>
-        //     println!("At {}", idx)
-        // }
     }
     let half_wheel_base = config.wheelbase / 2.0;
     let half_track_width = config.trackWidth / 2.0;
@@ -451,7 +408,7 @@ async fn generate_trajectory(
         path_builder.sgmt_polygon_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
     }
     path_builder.set_drivetrain(&drivetrain);
-    path_builder.generate()
+    path_builder.generate(true)
 }
 
 fn main() {

@@ -211,6 +211,13 @@ export class DocumentManager {
     hotkeys("command+-,ctrl+-", () => {
       this.model.zoomOut();
     });
+    hotkeys("command+0,ctrl+0", () => {
+      if (this.model.document.pathlist.activePath.waypoints.length == 0) {
+        toast.error("No waypoints to zoom to");
+      } else {
+        this.model.zoomToFitWaypoints();
+      }
+    });
     hotkeys("right,x", () => {
       const waypoints = this.model.document.pathlist.activePath.waypoints;
       const selected = waypoints.find((w) => {
