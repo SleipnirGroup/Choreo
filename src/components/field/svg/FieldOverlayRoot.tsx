@@ -14,6 +14,10 @@ import FieldObstacle from "./FieldObstacles";
 import { v4 as uuidv4 } from "uuid";
 import { CircularObstacleStore } from "../../../document/CircularObstacleStore";
 import FieldImage24 from "./fields/FieldImage24";
+import FieldEventMarkers from "./FieldEventMarkers";
+import FieldSamples from "./FieldSamples";
+import FieldGeneratedWaypoints from "./FieldGeneratedWaypoints";
+import FieldEventMarkerAddLayer from "./FieldEventMarkerAddLayer";
 
 type Props = object;
 
@@ -32,8 +36,8 @@ class FieldOverlayRoot extends Component<Props, State> {
     yPan: 0,
     zoom: 1
   };
-  canvasHeightMeters: number;
-  canvasWidthMeters: number;
+  canvasHeightMeters!: number;
+  canvasWidthMeters!: number;
   svgRef: React.RefObject<SVGSVGElement>;
   frameRef: React.RefObject<SVGGElement>;
   constructor(props: Props) {
@@ -47,28 +51,30 @@ class FieldOverlayRoot extends Component<Props, State> {
       .on("zoom", (e) => this.zoomed(e));
   }
 
-  zoomBehavior: d3.ZoomBehavior<SVGGElement, undefined>;
+  private zoomBehavior: d3.ZoomBehavior<SVGGElement, undefined>;
+
+  private transition = () => {
+    return d3.transition().duration(750).ease(d3.easeCubicOut);
+  };
+
+  private fieldSelection = () => {
+    return d3.select<SVGGElement, undefined>(this.svgRef.current!);
+  };
 
   // x, y, k are the center coordinates (x, y) and scale factor (k = {0.3, 12})
   private center(x: number, y: number, k: number) {
-    const transition = d3.transition().duration(750).ease(d3.easeCubicOut);
+    this.fieldSelection().call(this.zoomBehavior.scaleTo, k);
 
-    d3.select<SVGGElement, undefined>(this.svgRef.current!).call(
-      this.zoomBehavior.scaleTo,
-      k
-    );
-
-    d3.select<SVGGElement, undefined>(this.svgRef.current!)
-      .transition(transition)
+    this.fieldSelection()
+      .transition(this.transition())
       .call(this.zoomBehavior.translateTo, x, -y);
   }
 
   componentDidMount(): void {
+    // add event listeners for external events
     window.addEventListener("resize", () => this.handleResize());
 
     window.addEventListener("center", (e) => {
-      console.log(`Centering on ${e}`);
-      console.log(`current zoom level: ${this.state.zoom}`);
       this.center(
         (e as CustomEvent).detail.x,
         (e as CustomEvent).detail.y,
@@ -76,14 +82,26 @@ class FieldOverlayRoot extends Component<Props, State> {
       );
     });
 
+    window.addEventListener("zoomIn", () => {
+      this.fieldSelection()
+        .transition(this.transition())
+        .call(this.zoomBehavior.scaleBy, 2);
+    });
+
+    window.addEventListener("zoomOut", () => {
+      this.fieldSelection()
+        .transition(this.transition())
+        .call(this.zoomBehavior.scaleBy, 0.5);
+    });
+
+    // handle initial resizing and setup
+
     this.handleResize();
 
-    d3.select<SVGGElement, undefined>(this.svgRef.current!)
-      .call(this.zoomBehavior)
-      .on("dblclick.zoom", null);
+    this.fieldSelection().call(this.zoomBehavior).on("dblclick.zoom", null);
   }
 
-  zoomed(e: any) {
+  private zoomed(e: any) {
     this.handleResize();
     this.setState({
       xPan: e.transform.x,
@@ -91,7 +109,7 @@ class FieldOverlayRoot extends Component<Props, State> {
       zoom: e.transform.k
     });
   }
-  screenSpaceToFieldSpace(
+  private screenSpaceToFieldSpace(
     current: SVGSVGElement | null,
     { x, y }: { x: number; y: number }
   ): { x: number; y: number } {
@@ -106,7 +124,7 @@ class FieldOverlayRoot extends Component<Props, State> {
     }
     return { x: 0, y: 0 };
   }
-  getScalingFactor(current: SVGSVGElement | null): number {
+  private getScalingFactor(current: SVGSVGElement | null): number {
     if (current && current !== undefined) {
       let origin = current.createSVGPoint();
       origin.x = 0;
@@ -124,9 +142,7 @@ class FieldOverlayRoot extends Component<Props, State> {
     }
     return 0;
   }
-  handleResize() {
-    console.log(`current zoom level: ${this.state.zoom}`);
-
+  private handleResize() {
     const factor = this.getScalingFactor(this.svgRef?.current);
     this.context.model.uiState.setFieldScalingFactor(factor);
   }
@@ -136,6 +152,8 @@ class FieldOverlayRoot extends Component<Props, State> {
     const layers = this.context.model.uiState.layers;
     const constraintSelected =
       this.context.model.uiState.isConstraintSelected();
+    const eventMarkerSelected =
+      this.context.model.uiState.isEventMarkerSelected();
     return (
       <svg
         ref={this.svgRef}
@@ -206,17 +224,13 @@ class FieldOverlayRoot extends Component<Props, State> {
           {layers[ViewLayers.Trajectory] && (
             <FieldGeneratedLines></FieldGeneratedLines>
           )}
-          {layers[ViewLayers.Samples] &&
-            this.context.model.document.pathlist.activePath.generated.map(
-              (point) => (
-                <circle
-                  cx={point.x}
-                  cy={point.y}
-                  r={0.02}
-                  fill="black"
-                ></circle>
-              )
-            )}
+          {layers[ViewLayers.Samples] && layers[ViewLayers.Trajectory] && (
+            <FieldSamples></FieldSamples>
+          )}
+          {layers[ViewLayers.Samples] && layers[ViewLayers.Trajectory] && (
+            <FieldGeneratedWaypoints></FieldGeneratedWaypoints>
+          )}
+          <FieldEventMarkers></FieldEventMarkers>
           {layers[ViewLayers.Waypoints] &&
             this.context.model.document.pathlist.activePath.waypoints.map(
               (point, index) => {
@@ -239,6 +253,9 @@ class FieldOverlayRoot extends Component<Props, State> {
             )}
           {constraintSelected && (
             <FieldConstraintsAddLayer></FieldConstraintsAddLayer>
+          )}
+          {eventMarkerSelected && (
+            <FieldEventMarkerAddLayer></FieldEventMarkerAddLayer>
           )}
           {layers[ViewLayers.Trajectory] && (
             <InterpolatedRobot

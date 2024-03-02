@@ -6,7 +6,7 @@ import { observer } from "mobx-react";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import {
   NavbarItemData,
-  NavbarItemSectionLengths
+  NavbarItemSectionEnds
 } from "../../document/UIStateStore";
 
 type Props = object;
@@ -23,48 +23,47 @@ class Navbar extends Component<Props, State> {
       this.context.model.uiState;
     return (
       <div className={styles.Container}>
-        {NavbarItemSectionLengths.filter(
-          (endSplit, sectionIdx) =>
-            sectionIdx != NavbarItemSectionLengths.length - 1 ||
-            this.context.model.document.usesObstacles
-        ).map((endSplit, sectionIdx) => (
-          <ToggleButtonGroup
-            className={styles.ToggleGroup}
-            exclusive
-            value={`${selectedNavbarItem}`}
-            onChange={(e, newSelection) => {
-              setSelectedNavbarItem(Number.parseInt(newSelection) ?? -1);
-            }}
-            key={sectionIdx}
-          >
-            {NavbarItemData.map(
-              (item, index) =>
-                index <= endSplit &&
-                index > (NavbarItemSectionLengths[sectionIdx - 1] ?? -1) && (
-                  <Tooltip
-                    disableInteractive
-                    value={`${index}`}
-                    title={item.name}
-                    key={`${sectionIdx}_${index}`}
-                  >
-                    <ToggleButton
+        {NavbarItemSectionEnds.map((endSplit, sectionIdx) =>
+          sectionIdx != 2 || this.context.model.document.usesObstacles ? (
+            <ToggleButtonGroup
+              className={styles.ToggleGroup}
+              exclusive
+              value={`${selectedNavbarItem}`}
+              onChange={(e, newSelection) => {
+                setSelectedNavbarItem(Number.parseInt(newSelection) ?? -1);
+              }}
+              key={sectionIdx}
+            >
+              {NavbarItemData.map(
+                (item, index) =>
+                  index <= endSplit &&
+                  index > (NavbarItemSectionEnds[sectionIdx - 1] ?? -1) && (
+                    <Tooltip
+                      disableInteractive
+                      //@ts-expect-error needs a value prop for ToggleButtonGroup
                       value={`${index}`}
-                      sx={{
-                        color: "var(--accent-purple)",
-                        "&.Mui-selected": {
-                          color: "var(--select-yellow)"
-                        }
-                      }}
+                      title={item.name}
+                      key={`${sectionIdx}_${index}`}
                     >
-                      {item.icon}
-                    </ToggleButton>
-                  </Tooltip>
-                )
-            )}
-          </ToggleButtonGroup>
-        ))}
-
-        {/* </span> */}
+                      <ToggleButton
+                        value={`${index}`}
+                        sx={{
+                          color: "var(--accent-purple)",
+                          "&.Mui-selected": {
+                            color: "var(--select-yellow)"
+                          }
+                        }}
+                      >
+                        {item.icon}
+                      </ToggleButton>
+                    </Tooltip>
+                  )
+              )}
+            </ToggleButtonGroup>
+          ) : (
+            <></>
+          )
+        )}
       </div>
     );
   }

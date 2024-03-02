@@ -4,6 +4,8 @@ import DocumentManagerContext from "../../document/DocumentManager";
 import Slider from "@mui/material/Slider";
 import { Tooltip } from "@mui/material";
 import { NavbarItemData } from "../../document/UIStateStore";
+import { Room } from "@mui/icons-material";
+import { IEventMarkerStore } from "../../document/EventMarkerStore";
 
 type Props = object;
 
@@ -25,33 +27,78 @@ class PathAnimationSlider extends Component<Props, State> {
           max={this.totalTime}
           marks={
             activePath.generated.length > 0
-              ? activePath.waypoints.flatMap((point, idx) =>
-                  point.isInitialGuess || point.type == 2
-                    ? []
-                    : [
-                        {
-                          value: activePath.waypointTimestamps()[idx],
-                          label: (
-                            <Tooltip
-                              disableInteractive
-                              title={idx + 1}
-                              key={idx + 1}
-                            >
-                              <span>
-                                {React.cloneElement(
-                                  NavbarItemData[point.type].icon,
-                                  {
-                                    htmlColor: point.selected
-                                      ? "var(--select-yellow)"
-                                      : "white"
-                                  }
-                                )}
-                              </span>
-                            </Tooltip>
-                          )
+              ? activePath.generatedWaypoints
+                  .flatMap((point, idx) => {
+                    let type = 0;
+                    if (point.isInitialGuess) {
+                      type = 3; // Guess
+                    } else if (point.headingConstrained) {
+                      type = 0; // Full
+                    } else if (point.translationConstrained) {
+                      type = 1; // Translation
+                    } else {
+                      type = 2; // Empty
+                    }
+                    if (type == 3 || type == 2) {
+                      return [];
+                    }
+                    let color = "white";
+                    if (idx === 0) {
+                      color = "green";
+                    } else if (
+                      idx ===
+                      activePath.generatedWaypoints.length - 1
+                    ) {
+                      color = "red";
+                    }
+                    return [
+                      {
+                        value: point.timestamp,
+                        label: (
+                          <Tooltip
+                            disableInteractive
+                            title={idx + 1}
+                            key={idx + 1}
+                          >
+                            <span>
+                              {React.cloneElement(NavbarItemData[type].icon, {
+                                htmlColor: color
+                              })}
+                            </span>
+                          </Tooltip>
+                        )
+                      }
+                    ];
+                  })
+                  .concat(
+                    activePath.eventMarkers.flatMap(
+                      (marker: IEventMarkerStore) => {
+                        if (marker.timestamp === undefined) {
+                          return [];
                         }
-                      ]
-                )
+                        return {
+                          value: marker.timestamp,
+                          label: (
+                            <span>
+                              <Room
+                                htmlColor={
+                                  marker.selected
+                                    ? "var(--select-yellow)"
+                                    : "white"
+                                }
+                                stroke="black"
+                                strokeWidth="0.5"
+                                fontSize="large"
+                                style={{
+                                  transform: "translateY(calc(-3px - 50%))"
+                                }}
+                              ></Room>
+                            </span>
+                          )
+                        };
+                      }
+                    )
+                  )
               : false
           }
           aria-label="Default"

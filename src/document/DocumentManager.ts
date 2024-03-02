@@ -43,7 +43,13 @@ export class DocumentManager {
         usesObstacles: false
       }
     });
-    this.model.document.pathlist.addPath("NewPath");
+    this.model.document.pathlist.setExporter((uuid) => {
+      try {
+        this.writeTrajectory(() => this.getTrajFilePath(uuid), uuid);
+      } catch (e) {
+        console.error(e);
+      }
+    });
     this.model.document.history.clear();
     this.setupEventListeners();
     this.newFile();
@@ -223,6 +229,19 @@ export class DocumentManager {
     });
     hotkeys("command+n,ctrl+n", { keydown: true }, () => {
       this.newFile();
+    });
+    hotkeys("command+=,ctrl+=", () => {
+      this.model.zoomIn();
+    });
+    hotkeys("command+-,ctrl+-", () => {
+      this.model.zoomOut();
+    });
+    hotkeys("command+0,ctrl+0", () => {
+      if (this.model.document.pathlist.activePath.waypoints.length == 0) {
+        toast.error("No waypoints to zoom to");
+      } else {
+        this.model.zoomToFitWaypoints();
+      }
     });
     hotkeys("right,x", () => {
       const waypoints = this.model.document.pathlist.activePath.waypoints;
@@ -476,7 +495,18 @@ export class DocumentManager {
     const file = await filePath();
     console.log("file: " + file);
 
-    const content = JSON.stringify({ samples: trajectory }, undefined, 4);
+    const exportedEventMarkers = chorPath.eventMarkers.flatMap((m) => {
+      if (m.timestamp === undefined) return [];
+      return {
+        timestamp: m.timestamp,
+        command: m.command.asSavedCommand()
+      };
+    });
+    const content = JSON.stringify(
+      { samples: trajectory, eventMarkers: exportedEventMarkers },
+      undefined,
+      2
+    );
     if (file) {
       await invoke("save_file", {
         dir: file[0],
@@ -501,35 +531,14 @@ export class DocumentManager {
       file !== null &&
       chorPath.stopPointIndices().length >= 2
     ) {
-      const split = chorPath.stopPointIndices();
-      for (let i = 1; i < split.length; i++) {
-        const prev = split[i - 1];
-        let cur = split[i];
-        // If we don't go to the end of trajectory, add 1 to include the end stop point
-        if (cur !== undefined) {
-          cur += 1;
-        }
-        const traj = trajectory.slice(prev, cur).map((s) => {
-          return { ...s };
-        });
-        if (traj === undefined) {
-          throw `Could not split segment from ${prev} to ${cur} given ${trajectory.length} samples`;
-        }
-        if (traj.length === 0) {
-          continue;
-        }
-        const start = traj[0].timestamp;
-        for (let i = 0; i < traj.length; i++) {
-          const e = traj[i];
-          e.timestamp -= start;
-        }
+      const splits = chorPath.splitTrajectories();
+      for (let i = 0; i < splits.length; i++) {
+        const name = file[1].replace(".", "." + (i + 1).toString() + ".");
 
-        const content = JSON.stringify({ samples: traj }, undefined, 4);
-        const name = file[1].replace(".", "." + i.toString() + ".");
         await invoke("save_file", {
           dir: file[0],
           name: name,
-          contents: content
+          contents: JSON.stringify(splits[i], undefined, 2)
         });
       }
     }
@@ -553,6 +562,24 @@ export class DocumentManager {
 
   async exportTrajectory(uuid: string) {
     return await this.writeTrajectory(() => {
+      const { hasSaveLocation, chorRelativeTrajDir } = this.model.uiState;
+      if (!hasSaveLocation || chorRelativeTrajDir === undefined) {
+        return (async () => {
+          const file = await dialog.save({
+            title: "Export Trajectory",
+            filters: [
+              {
+                name: "Trajopt Trajectory",
+                extensions: ["traj"]
+              }
+            ]
+          });
+          if (file == null) {
+            throw "No file selected or user cancelled";
+          }
+          return [await path.dirname(file), await path.basename(file)];
+        })();
+      }
       return this.getTrajFilePath(uuid).then(async (filepath) => {
         const file = await dialog.save({
           title: "Export Trajectory",
