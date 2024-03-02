@@ -47,11 +47,13 @@ class FieldOverlayRoot extends Component<Props, State> {
       .on("zoom", (e) => this.zoomed(e));
   }
 
-  zoomBehavior: d3.ZoomBehavior<SVGGElement, undefined>;
-  transition = () => {
+  private zoomBehavior: d3.ZoomBehavior<SVGGElement, undefined>;
+  
+  private transition = () => {
     return d3.transition().duration(750).ease(d3.easeCubicOut);
   };
-  fieldSelection = () => {
+
+  private fieldSelection = () => {
     return d3.select<SVGGElement, undefined>(this.svgRef.current!);
   }
 
@@ -88,7 +90,7 @@ class FieldOverlayRoot extends Component<Props, State> {
     window.addEventListener("zoomOut", () => {
       this.fieldSelection()
         .transition(this.transition())
-        .call(this.zoomBehavior.scaleBy, 0.6);
+        .call(this.zoomBehavior.scaleBy, 0.5);
     });
 
     this.handleResize();
