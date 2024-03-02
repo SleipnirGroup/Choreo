@@ -45,7 +45,7 @@ class FieldEventMarker extends Component<MarkerProps, MarkerState> {
 
 class FieldEventMarkers extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  context!: React.ContextType<typeof DocumentManagerContext>;
+  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
 
   render() {

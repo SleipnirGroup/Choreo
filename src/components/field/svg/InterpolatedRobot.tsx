@@ -11,7 +11,7 @@ type State = object;
 
 class InterpolatedRobot extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  context!: React.ContextType<typeof DocumentManagerContext>;
+  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
 
   render() {

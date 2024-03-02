@@ -34,7 +34,7 @@ type State = { settingsOpen: boolean };
 
 class AppMenu extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  context!: React.ContextType<typeof DocumentManagerContext>;
+  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {
     settingsOpen: false
   };
