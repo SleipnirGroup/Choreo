@@ -168,8 +168,8 @@ class FieldOverlayRoot extends Component<Props, State> {
         <g
           transform={`
               matrix(${this.state.zoom} 0  0 ${-this.state.zoom} ${
-            this.state.xPan
-          } ${this.state.yPan})`}
+                this.state.xPan
+              } ${this.state.yPan})`}
           ref={this.frameRef}
           id="rootFrame"
         >
