@@ -83,7 +83,7 @@ export class Field extends Component<Props, State> {
           placement="top-start"
           title={
             activePath.generating
-              ? "Cancel All (Ctrl-click)"
+              ? "Cancel All"
               : activePath.canGenerate()
                 ? "Generate Path"
                 : "Generate Path (needs 2 waypoints)"
@@ -121,9 +121,7 @@ export class Field extends Component<Props, State> {
                 }
               }}
               onClick={(event) => {
-                if (event.ctrlKey) {
-                  invoke("cancel");
-                }
+                invoke("cancel");
               }}
               disabled={activePath.canGenerate()}
             >
