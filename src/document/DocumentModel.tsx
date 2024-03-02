@@ -215,6 +215,12 @@ const StateStore = types
 
         this.callCenter(x, y, k);
       },
+      zoomIn() {
+        window.dispatchEvent(new CustomEvent("zoomIn"));
+      },
+      zoomOut() {
+        window.dispatchEvent(new CustomEvent("zoomOut"));
+      },
 
       // x, y, k are the center coordinates (x, y) and scale factor (k)
       callCenter(x: number, y: number, k: number) {
