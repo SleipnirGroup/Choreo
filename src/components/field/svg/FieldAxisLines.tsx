@@ -11,7 +11,7 @@ const GRID_STROKE = 0.01;
 
 class FieldGrid extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  context!: React.ContextType<typeof DocumentManagerContext>;
+  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
 
   render() {
