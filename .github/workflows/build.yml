@@ -16,19 +16,15 @@ jobs:
         include:
           - artifact-name: Windows-x86_64
             os: windows-2022
-            bundle-pattern: "nsis/*.exe"
 
           - artifact-name: macOS-x86_64
             os: macOS-13
-            bundle-pattern: "dmg/*.dmg"
 
           - artifact-name: macOS-arm64
             os: macOS-14
-            bundle-pattern: "dmg/*.dmg"
 
           - artifact-name: Linux-x86_64
             os: ubuntu-latest
-            bundle-pattern: "deb/*.deb"
 
     name: "${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
@@ -57,11 +53,33 @@ jobs:
       - name: Build package
         run: npm run tauri build
 
-      - name: Upload bundle
+      - name: Upload bundle (Windows)
+        if: startsWith(matrix.os, 'windows')
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}
-          path: src-tauri/target/**/release/bundle/${{ matrix.bundle-pattern }}
+          path: src-tauri/target/**/release/bundle/nsis/*.exe
+
+      - name: Upload bundle (macOS)
+        if: startsWith(matrix.os, 'macOS')
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: src-tauri/target/**/release/bundle/dmg/*.dmg
+
+      - name: Upload bundle (Linux .AppImage)
+        if: startsWith(matrix.os, 'ubuntu')
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}-AppImage
+          path: src-tauri/target/**/release/bundle/appimage/*.AppImage
+
+      - name: Upload bundle (Linux .deb)
+        if: startsWith(matrix.os, 'ubuntu')
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}-deb
+          path: src-tauri/target/**/release/bundle/deb/*.deb
 
   release:
     name: Create draft release
@@ -95,7 +113,11 @@ jobs:
         working-directory: pkg/macOS-arm64/aarch64-apple-darwin/release/bundle/dmg
         run: mv *.dmg Choreo-${{ github.ref_name }}-macOS-arm64.dmg
 
-      - name: Rename Linux x86_64 file
+      - name: Rename Linux x86_64 file (.AppImage)
+        working-directory: pkg/Linux-x86_64/release/bundle/deb
+        run: mv *.AppImage Choreo-${{ github.ref_name }}-Linux-x86_64.AppImage
+
+      - name: Rename Linux x86_64 file (.deb)
         working-directory: pkg/Linux-x86_64/release/bundle/deb
         run: mv *.deb Choreo-${{ github.ref_name }}-Linux-x86_64.deb
 
@@ -106,6 +128,6 @@ jobs:
         with:
           name: Choreo ${{ github.ref_name }}
           tag: ${{ github.ref_name }}
-          artifacts: "pkg/**/*.exe,pkg/**/*.dmg,pkg/**/*.deb"
+          artifacts: "pkg/**/*.AppImage,pkg/**/*.exe,pkg/**/*.deb,pkg/**/*.dmg"
           draft: true
           prerelease: true
