@@ -114,7 +114,7 @@ jobs:
         run: mv *.dmg Choreo-${{ github.ref_name }}-macOS-arm64.dmg
 
       - name: Rename Linux x86_64 file (.AppImage)
-        working-directory: pkg/Linux-x86_64/release/bundle/deb
+        working-directory: pkg/Linux-x86_64/release/bundle/appimage
         run: mv *.AppImage Choreo-${{ github.ref_name }}-Linux-x86_64.AppImage
 
       - name: Rename Linux x86_64 file (.deb)
