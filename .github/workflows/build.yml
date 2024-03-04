@@ -67,19 +67,14 @@ jobs:
           name: ${{ matrix.artifact-name }}
           path: src-tauri/target/**/release/bundle/dmg/*.dmg
 
-      - name: Upload bundle (Linux .AppImage)
+      - name: Upload bundle (Linux)
         if: startsWith(matrix.os, 'ubuntu')
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact-name }}-AppImage
-          path: src-tauri/target/**/release/bundle/appimage/*.AppImage
-
-      - name: Upload bundle (Linux .deb)
-        if: startsWith(matrix.os, 'ubuntu')
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact-name }}-deb
-          path: src-tauri/target/**/release/bundle/deb/*.deb
+          name: ${{ matrix.artifact-name }}
+          path: |
+            src-tauri/target/**/release/bundle/appimage/*.AppImage
+            src-tauri/target/**/release/bundle/deb/*.deb
 
   release:
     name: Create draft release
