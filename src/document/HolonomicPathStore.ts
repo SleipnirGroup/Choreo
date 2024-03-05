@@ -807,19 +807,21 @@ export const HolonomicPathStore = types
       // Anything accessed in here will cause the trajectory to be marked stale
       // this is a reaction, not an autorun so that the effect does not happen
       // when mobx first runs it to determine dependencies.
-      staleDisposer = reaction(() => {
-        toJS(self.waypoints);
-        toJS(self.constraints);
-        // does not need toJS to do a deep check on this, since it's just a boolean
-        self.usesControlIntervalGuessing;
-        toJS(self.obstacles);
-        return true;
-      },
-      (value) => {
-        if (value) {
-          self.setIsTrajectoryStale(true);
+      staleDisposer = reaction(
+        () => {
+          toJS(self.waypoints);
+          toJS(self.constraints);
+          // does not need toJS to do a deep check on this, since it's just a boolean
+          self.usesControlIntervalGuessing;
+          toJS(self.obstacles);
+          return true;
+        },
+        (value) => {
+          if (value) {
+            self.setIsTrajectoryStale(true);
+          }
         }
-      });
+      );
       autosaveDisposer = reaction(
         () => {
           if (self.generated.length == 0) {
