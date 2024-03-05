@@ -706,8 +706,8 @@ export const HolonomicPathStore = types
           marker.command.fromSavedCommand(saved.command);
           this.addEventMarker(marker);
         });
-        self.setIsTrajectoryStale(savedPath.isTrajectoryStale ?? false);
         // this needs to be last or populating other parts of the path will set it to false
+        self.setIsTrajectoryStale(savedPath.isTrajectoryStale ?? false);
       },
       addObstacle(obstacle: ICircularObstacleStore) {
         self.obstacles.push(obstacle);
