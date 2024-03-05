@@ -74,8 +74,18 @@ target = "<target>"
 
 ## Tech Stack
 
-- ⚛️ [React](https://react.dev/): Frontend framework (JS)
-- ⚡️ [Vite](https://vitejs.dev/): Frontend framework (JS)
+### Application
+
+- ⚛️ [React](https://react.dev/): Frontend UI framework (TypeScript)
+- ⚡️ [Vite](https://vitejs.dev/): Frontend build system (TypeScript)
 - 🖥️ [Tauri](https://tauri.app/): Desktop application framework and backend (Rust)
 - 🚗 [TrajoptLib](https://github.com/SleipnirGroup/TrajoptLib): Generates trajectories with Sleipnir (C++, Rust)
 - 📈 [Sleipnir](https://github.com/SleipnirGroup/Sleipnir): Numerical optimizer (C++)
+
+### Formatters/linters
+
+- [wpiformat](https://pypi.org/project/wpiformat/): C++ formatter
+- [spotless](https://github.com/diffplug/spotless): Java formatter
+- [prettier](https://prettier.io/): JavaScript/TypeScript formatter
+- [rustfmt](https://github.com/rust-lang/rustfmt): Rust formatter
+- [eslint](https://eslint.org/): JavaScript/TypeScript linter
