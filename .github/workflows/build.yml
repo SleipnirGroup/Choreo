@@ -16,15 +16,23 @@ jobs:
         include:
           - artifact-name: Windows-x86_64
             os: windows-2022
+            tauri-build-flags:
+
+          - artifact-name: Windows-aarch64
+            os: windows-2022
+            tauri-build-flags: -- --target aarch64-pc-windows-msvc
 
           - artifact-name: macOS-x86_64
             os: macOS-13
+            tauri-build-flags:
 
           - artifact-name: macOS-arm64
             os: macOS-14
+            tauri-build-flags:
 
           - artifact-name: Linux-x86_64
             os: ubuntu-latest
+            tauri-build-flags:
 
     name: "${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
@@ -50,8 +58,12 @@ jobs:
         run: npm install
         continue-on-error: true
 
+      - name: Set up Windows aarch64 Rust compiler
+        if: matrix.artifact-name == 'Windows-aarch64'
+        run: rustup target install aarch64-pc-windows-msvc
+
       - name: Build package
-        run: npm run tauri build
+        run: npm run tauri build ${{ matrix.tauri-build-flags }}
 
       - name: Upload bundle (Windows)
         if: startsWith(matrix.os, 'windows')
@@ -96,9 +108,13 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
 
-      - name: Rename Windows-x86_64 bundle
+      - name: Rename Windows x86_64 bundle
         working-directory: pkg/Windows-x86_64/release/bundle/nsis
         run: mv *.exe Choreo-${{ github.ref_name }}-Windows-x86_64.exe
+
+      - name: Rename Windows aarch64 bundle
+        working-directory: pkg/Windows-aarch64/release/bundle/nsis
+        run: mv *.exe Choreo-${{ github.ref_name }}-Windows-aarch64.exe
 
       - name: Rename macOS x86_64 bundle
         working-directory: pkg/macOS-x86_64/release/bundle/dmg
