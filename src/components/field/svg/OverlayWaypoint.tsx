@@ -3,11 +3,10 @@ import React, { Component } from "react";
 import DocumentManagerContext from "../../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../../document/HolonomicWaypointStore";
 import * as d3 from "d3";
-import { Help } from "@mui/icons-material";
 
 type Props = { waypoint: IHolonomicWaypointStore; index: number };
 
-type State = {};
+type State = object;
 
 type Coordinates = {
   x: number;
@@ -17,17 +16,20 @@ const targetRadius = 0.1;
 const outlineWidth = 0.03;
 class OverlayWaypoint extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  context!: React.ContextType<typeof DocumentManagerContext>;
+  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
   bumperRef: any;
   rootRef: React.RefObject<SVGGElement> = React.createRef<SVGGElement>();
+
+  // Used to determine if the context has changed. User switching from another path or creating a new path.
+  private isNewContext = true;
 
   BumperBox = observer(
     ({
       context,
       strokeColor,
       strokeWidthPx,
-      dashed,
+      dashed
     }: {
       context: React.ContextType<typeof DocumentManagerContext>;
       strokeColor: string;
@@ -64,25 +66,25 @@ class OverlayWaypoint extends Component<Props, State> {
   );
   // gets the angle in degrees between two points
   calcAngleRad(p1: Coordinates, p2: Coordinates) {
-    var p1x = p1.x;
-    var p1y = p1.y;
+    const p1x = p1.x;
+    const p1y = p1.y;
     return Math.atan2(p2.y - p1y, p2.x - p1x);
   }
 
   coordsFromWaypoint(): Coordinates {
     return {
       x: this.props.waypoint.x,
-      y: this.props.waypoint.y,
+      y: this.props.waypoint.y
     };
   }
   dragPointRotate(event: any) {
-    let pointerPos: Coordinates = { x: 0, y: 0 };
+    const pointerPos: Coordinates = { x: 0, y: 0 };
     pointerPos.x = event.x;
     pointerPos.y = event.y;
 
     const waypointCoordinates = this.coordsFromWaypoint();
     // calculates the difference between the current mouse position and the center line
-    var angleFinal = this.calcAngleRad(waypointCoordinates, pointerPos);
+    const angleFinal = this.calcAngleRad(waypointCoordinates, pointerPos);
     // gets the difference of the angles to get to the final angle
     // converts the values to stay inside the 360 positive
 
@@ -108,7 +110,7 @@ class OverlayWaypoint extends Component<Props, State> {
   // }
 
   dragPointTranslate(event: any) {
-    let pointerPos: Coordinates = { x: 0, y: 0 };
+    const pointerPos: Coordinates = { x: 0, y: 0 };
     pointerPos.x = event.x;
     pointerPos.y = event.y;
 
@@ -128,7 +130,7 @@ class OverlayWaypoint extends Component<Props, State> {
   }
   componentDidMount() {
     if (this.rootRef.current) {
-      var rotateHandleDrag = d3
+      const rotateHandleDrag = d3
         .drag<SVGCircleElement, undefined>()
         .on("drag", (event) => this.dragPointRotate(event))
         .on("start", () => {
@@ -154,7 +156,7 @@ class OverlayWaypoint extends Component<Props, State> {
       //   `#velocityRotateTarget${this.props.index}`
       // ).call(velocityRotateHandleDrag);
 
-      var dragHandleDrag = d3
+      const dragHandleDrag = d3
         .drag<SVGCircleElement, undefined>()
         .on("drag", (event) => this.dragPointTranslate(event))
         .on("start", () => {
@@ -179,7 +181,7 @@ class OverlayWaypoint extends Component<Props, State> {
       : "var(--accent-purple)";
   }
   getDragTargetColor(): string {
-    let waypoints = this.context.model.document.pathlist.activePath.waypoints;
+    const waypoints = this.context.model.document.pathlist.activePath.waypoints;
     let color = "var(--accent-purple)";
     if (waypoints.length >= 2) {
       if (this.props.index === 0) {
@@ -197,9 +199,9 @@ class OverlayWaypoint extends Component<Props, State> {
   }
 
   render() {
-    let waypoint = this.props.waypoint;
-    let boxColorStr = this.getBoxColor();
-    let robotConfig = this.context.model.document.robotConfig;
+    const waypoint = this.props.waypoint;
+    const boxColorStr = this.getBoxColor();
+    const robotConfig = this.context.model.document.robotConfig;
     return (
       <g ref={this.rootRef}>
         <g
@@ -267,7 +269,7 @@ class OverlayWaypoint extends Component<Props, State> {
                   ></circle>
                 );
                 break;
-              case 4:
+              case 4: {
                 // Question mark icon's raw svg
                 const boxSize =
                   ((0.4 * 24) / 20) *
@@ -303,6 +305,7 @@ class OverlayWaypoint extends Component<Props, State> {
                     />
                   </svg>
                 );
+              }
             }
           })()}
           {/* <circle

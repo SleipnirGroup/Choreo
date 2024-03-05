@@ -1,7 +1,7 @@
 import { applySnapshot, getRoot, Instance, types } from "mobx-state-tree";
 import {
   maxTorqueCurrentLimited,
-  MotorCurves,
+  MotorCurves
 } from "../components/config/robotconfig/MotorCurves";
 import { safeGetIdentifier } from "../util/mobxutils";
 import { InToM, LbsToKg } from "../util/UnitConversions";
@@ -22,12 +22,12 @@ export const ROBOT_CONFIG_DEFAULTS = {
   bumperWidth: DEFAULT_BUMPER,
   bumperLength: DEFAULT_BUMPER,
   wheelbase: DEFAULT_WHEELBASE,
-  trackWidth: DEFAULT_WHEELBASE,
+  trackWidth: DEFAULT_WHEELBASE
 };
 export const RobotConfigStore = types
   .model("RobotConfigStore", {
     ...ROBOT_CONFIG_DEFAULTS,
-    identifier: types.identifier,
+    identifier: types.identifier
   })
   .views((self) => {
     return {
@@ -36,7 +36,7 @@ export const RobotConfigStore = types
       },
       get wheelMaxTorque() {
         return self.motorMaxTorque * self.gearing;
-      },
+      }
     };
   })
   .actions((self) => {
@@ -73,7 +73,7 @@ export const RobotConfigStore = types
       },
       setWheelRadius(arg: number) {
         self.wheelRadius = arg;
-      },
+      }
     };
   })
   .views((self) => {
@@ -86,7 +86,7 @@ export const RobotConfigStore = types
         );
       },
       asSavedRobotConfig(): SavedRobotConfig {
-        let {
+        const {
           mass,
           rotationalInertia,
           motorMaxTorque,
@@ -96,7 +96,7 @@ export const RobotConfigStore = types
           trackWidth: trackwidth,
           bumperLength,
           bumperWidth,
-          wheelRadius,
+          wheelRadius
         } = self;
         return {
           mass,
@@ -108,7 +108,7 @@ export const RobotConfigStore = types
           trackWidth: trackwidth,
           bumperLength,
           bumperWidth,
-          wheelRadius,
+          wheelRadius
         };
       },
       asSolverRobotConfig(): Omit<
@@ -119,7 +119,7 @@ export const RobotConfigStore = types
         wheelMaxVelocity: number;
       } {
         // JavaScript, please have better syntax for what we're trying to do here.
-        let {
+        const {
           mass,
           rotationalInertia,
           wheelbase,
@@ -128,7 +128,7 @@ export const RobotConfigStore = types
           bumperWidth,
           wheelRadius,
           wheelMaxTorque,
-          wheelMaxVelocity,
+          wheelMaxVelocity
         } = self;
         return {
           mass,
@@ -139,7 +139,7 @@ export const RobotConfigStore = types
           bumperWidth,
           wheelRadius,
           wheelMaxTorque,
-          wheelMaxVelocity,
+          wheelMaxVelocity
         };
       },
       bumperSVGElement() {
@@ -167,7 +167,7 @@ export const RobotConfigStore = types
             L ${self.bumperLength / 2} ${-self.bumperWidth / 2}
             L ${self.bumperLength / 2} ${-self.bumperWidth / 4}
             `;
-      },
+      }
     };
   });
 export interface IRobotConfigStore extends Instance<typeof RobotConfigStore> {}

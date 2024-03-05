@@ -4,18 +4,16 @@ import { observer } from "mobx-react";
 import Navbar from "./components/navbar/Navbar";
 import Field from "./components/field/Field";
 import Sidebar from "./components/sidebar/Sidebar";
-import PathAnimationSlider from "./components/field/PathAnimationSlider";
 import AppMenu from "./AppMenu";
 import PathAnimationPanel from "./components/field/PathAnimationPanel";
 
-type Props = {};
+type Props = object;
 
-type State = {};
+type State = object;
 
 class Body extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  // @ts-ignore
-  context!: React.ContextType<typeof DocumentManagerContext>;
+  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
 
   render() {
@@ -30,7 +28,7 @@ class Body extends Component<Props, State> {
                 flexDirection: "row",
                 flexGrow: 1,
                 height: 0,
-                width: "100%",
+                width: "100%"
               }}
             >
               <Sidebar></Sidebar>
@@ -39,7 +37,7 @@ class Body extends Component<Props, State> {
                   display: "flex",
                   flexDirection: "column",
                   flexGrow: 1,
-                  width: 0,
+                  width: 0
                 }}
               >
                 <Navbar></Navbar>

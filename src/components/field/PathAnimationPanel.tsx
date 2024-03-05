@@ -9,7 +9,7 @@ import { autorun } from "mobx";
 import { Tooltip } from "@mui/material";
 import hotkeys from "hotkeys-js";
 
-type Props = {};
+type Props = object;
 
 type State = {
   running: boolean;
@@ -17,11 +17,10 @@ type State = {
 
 class PathAnimationPanel extends Component<Props, State> {
   state = {
-    running: false,
+    running: false
   };
   static contextType = DocumentManagerContext;
-  // @ts-ignore
-  context!: React.ContextType<typeof DocumentManagerContext>;
+  declare context: React.ContextType<typeof DocumentManagerContext>;
   timerId = 0;
   totalTime = 0;
   i = 0;
@@ -43,10 +42,10 @@ class PathAnimationPanel extends Component<Props, State> {
   }
 
   incrementTimer(_: number) {
-    let dt = Date.now() - this.then;
+    const dt = Date.now() - this.then;
     this.then = Date.now();
     if (this.state.running) {
-      let pathAnimationTimestamp =
+      const pathAnimationTimestamp =
         this.context.model.uiState.pathAnimationTimestamp;
       if (pathAnimationTimestamp > this.totalTime) {
         this.context.model.uiState.setPathAnimationTimestamp(0);
@@ -77,12 +76,12 @@ class PathAnimationPanel extends Component<Props, State> {
     });
     autorun(() => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      let activePath = this.context.model.document.pathlist.activePathUUID;
+      const activePath = this.context.model.document.pathlist.activePathUUID;
       this.onStop();
     });
   }
   render() {
-    var activePath = this.context.model.document.pathlist.activePath;
+    const activePath = this.context.model.document.pathlist.activePath;
     this.totalTime =
       this.context.model.document.pathlist.activePath.getTotalTimeSeconds();
     return (
@@ -97,7 +96,7 @@ class PathAnimationPanel extends Component<Props, State> {
           paddingRight: "10px",
           boxSizing: "border-box",
           display: "block",
-          borderTop: "thin solid var(--divider-gray)",
+          borderTop: "thin solid var(--divider-gray)"
         }}
       >
         <span
@@ -106,7 +105,7 @@ class PathAnimationPanel extends Component<Props, State> {
             flexDirection: "row",
             width: "100%",
             height: "100%",
-            gap: "10px",
+            gap: "10px"
           }}
         >
           <Tooltip

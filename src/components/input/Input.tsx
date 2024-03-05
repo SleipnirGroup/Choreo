@@ -39,7 +39,7 @@ class Input extends Component<Props, State> {
     this.state = {
       focused: false,
       editing: false,
-      editedValue: "",
+      editedValue: ""
     };
     this.inputElemRef = React.createRef<HTMLInputElement>();
   }
@@ -51,7 +51,7 @@ class Input extends Component<Props, State> {
     this.setState({
       focused: false,
       editing: false,
-      editedValue: this.props.number.toString(),
+      editedValue: this.props.number.toString()
     });
   }
 
@@ -59,7 +59,7 @@ class Input extends Component<Props, State> {
     this.setState({
       focused: true,
       editing: false,
-      editedValue: this.props.number.toString(),
+      editedValue: this.props.number.toString()
     });
     this.inputElemRef.current!.value = this.props.number.toString();
     this.inputElemRef.current!.select();
@@ -68,7 +68,7 @@ class Input extends Component<Props, State> {
   editingMode() {
     this.setState({
       focused: true,
-      editing: true,
+      editing: true
     });
   }
 
@@ -85,7 +85,7 @@ class Input extends Component<Props, State> {
   }
 
   getRoundedStr(): string {
-    let precision = this.props.roundingPrecision ?? 3;
+    const precision = this.props.roundingPrecision ?? 3;
     return (
       Math.round(this.props.number * 10 ** precision) /
       10 ** precision
@@ -105,7 +105,7 @@ class Input extends Component<Props, State> {
   }
 
   render() {
-    let showNumberWhenDisabled = this.props.showNumberWhenDisabled ?? true;
+    const showNumberWhenDisabled = this.props.showNumberWhenDisabled ?? true;
     let characters = this.getRoundedStr().length + 3;
     if (this.props.maxWidthCharacters !== undefined) {
       characters = Math.min(characters, this.props.maxWidthCharacters);
@@ -115,16 +115,11 @@ class Input extends Component<Props, State> {
         <Tooltip disableInteractive title={this.props.titleTooltip ?? ""}>
           <span
             className={
-              styles.Title + " " + (this.props.enabled ? "" : styles.Disabled)
-            }
-            style={
-              (this.props.titleTooltip ?? "") == ""
-                ? {}
-                : {
-                    textDecorationLine: "underline",
-                    textDecorationStyle: "dotted",
-                    textUnderlineOffset: "2px",
-                  }
+              styles.Title +
+              " " +
+              (this.props.enabled ? "" : styles.Disabled) +
+              " " +
+              (this.props.titleTooltip === undefined ? "" : styles.Tooltip)
             }
           >
             {this.props.title}
@@ -139,11 +134,13 @@ class Input extends Component<Props, State> {
           }
           style={{ minWidth: `${characters}ch` }}
           disabled={!this.props.enabled}
+          // The below is needed to make inputs on CommandDraggables work
+          onClick={(e) => e.stopPropagation()}
           onFocus={(e) => {
             this.focusedMode();
           }}
           onBlur={(e) => {
-            let newNumber = parseFloat(this.state.editedValue);
+            const newNumber = parseFloat(this.state.editedValue);
             if (!Number.isNaN(newNumber)) {
               this.props.setNumber(newNumber);
             }
@@ -154,7 +151,7 @@ class Input extends Component<Props, State> {
               this.editingMode();
             }
             this.setState({
-              editedValue: e.target.value,
+              editedValue: e.target.value
             });
             e.preventDefault();
           }}

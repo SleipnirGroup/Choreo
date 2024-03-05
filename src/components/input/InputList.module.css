@@ -19,6 +19,11 @@
 .Title.Disabled {
   color: var(--disabled-color);
 }
+.Title.Tooltip {
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+}
 .Number {
   font-family: "Roboto Mono Variable";
   width: auto;

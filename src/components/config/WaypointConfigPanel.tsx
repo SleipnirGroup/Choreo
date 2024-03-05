@@ -11,7 +11,7 @@ import { angleModulus } from "../../util/MathUtil";
 
 type Props = { waypoint: IHolonomicWaypointStore | null };
 
-type State = {};
+type State = object;
 
 class WaypointPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
@@ -24,8 +24,8 @@ class WaypointPanel extends Component<Props, State> {
     return (point as IHolonomicWaypointStore) !== null;
   }
   render() {
-    let { waypoint } = this.props;
-    let waypointType = this.props.waypoint?.type;
+    const { waypoint } = this.props;
+    const waypointType = this.props.waypoint?.type;
     if (this.isWaypointNonNull(waypoint)) {
       return (
         <div className={styles.WaypointPanel}>
@@ -82,7 +82,7 @@ class WaypointPanel extends Component<Props, State> {
             }}
           >
             {Object.entries(WaypointData).map((entry) => {
-              let waypoint: {
+              const waypoint: {
                 index: number;
                 name: string;
                 icon: ReactElement;
@@ -99,8 +99,8 @@ class WaypointPanel extends Component<Props, State> {
                     sx={{
                       color: "var(--accent-purple)",
                       "&.Mui-selected": {
-                        color: "var(--select-yellow)",
-                      },
+                        color: "var(--select-yellow)"
+                      }
                     }}
                   >
                     {waypoint.icon}

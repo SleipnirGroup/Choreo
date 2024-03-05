@@ -1,20 +1,19 @@
 import React, { Component } from "react";
 import DocumentManagerContext from "../../../document/DocumentManager";
 import { observer } from "mobx-react";
-import { Circle } from "@mui/icons-material";
-import { Box } from "@mui/material";
 import * as d3 from "d3";
 import { ICircularObstacleStore } from "../../../document/CircularObstacleStore";
 
 type Props = { obstacle: ICircularObstacleStore; index: number };
 
-type State = {};
+type State = object;
+
 const STROKE = 0.1;
 const DOT = 0.1;
 
 class FieldGrid extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  context!: React.ContextType<typeof DocumentManagerContext>;
+  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
   rootRef: React.RefObject<SVGElement> = React.createRef<SVGElement>();
 
@@ -28,16 +27,16 @@ class FieldGrid extends Component<Props, State> {
   }
 
   dragPointRadius(event: any) {
-    let dx = event.x - this.props.obstacle.x;
-    let dy = event.y - this.props.obstacle.y;
-    let r = Math.sqrt(dx * dx + dy * dy);
+    const dx = event.x - this.props.obstacle.x;
+    const dy = event.y - this.props.obstacle.y;
+    const r = Math.sqrt(dx * dx + dy * dy);
 
     this.props.obstacle.setRadius(r);
   }
 
   componentDidMount(): void {
     if (this.rootRef.current) {
-      var dragHandleDrag = d3
+      const dragHandleDrag = d3
         .drag<SVGCircleElement, undefined>()
         .on("drag", (event) => this.dragPointTranslate(event))
         .on("start", () => {
@@ -53,7 +52,7 @@ class FieldGrid extends Component<Props, State> {
         `#oCenterDragTarget${this.props.index}`
       ).call(dragHandleDrag);
 
-      var radiusHandleDrag = d3
+      const radiusHandleDrag = d3
         .drag<SVGCircleElement, undefined>()
         .on("drag", (event) => this.dragPointRadius(event))
         .on("start", () => {
@@ -69,7 +68,7 @@ class FieldGrid extends Component<Props, State> {
   }
 
   render() {
-    let o = this.props.obstacle;
+    const o = this.props.obstacle;
     return (
       <g ref={this.rootRef}>
         {/* Main Circle */}

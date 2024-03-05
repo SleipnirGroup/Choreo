@@ -11,9 +11,12 @@ import Add from "@mui/icons-material/Add";
 import SidebarConstraint from "./SidebarConstraint";
 import SidebarObstacle from "./SidebarObstacle";
 import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
+import SidebarEventMarker from "./SidebarEventMarker";
+import { IEventMarkerStore } from "../../document/EventMarkerStore";
 
-type Props = {};
-type State = {};
+type Props = object;
+
+type State = object;
 
 class Sidebar extends Component<Props, State> {
   static contextType = DocumentManagerContext;
@@ -24,7 +27,7 @@ class Sidebar extends Component<Props, State> {
   }
 
   render() {
-    let { toggleMainMenu } = this.context.model.uiState;
+    const { toggleMainMenu } = this.context.model.uiState;
     return (
       <div className={styles.Container}>
         <div
@@ -37,7 +40,7 @@ class Sidebar extends Component<Props, State> {
             justifyContent: "space-between",
             alignItems: "center",
             paddingLeft: 0,
-            zIndex: 1000,
+            zIndex: 1000
           }}
         >
           <span>
@@ -89,7 +92,7 @@ class Sidebar extends Component<Props, State> {
               size="small"
               color="default"
               style={{
-                float: "right",
+                float: "right"
               }}
               disabled={
                 Object.keys(this.context.model.document.pathlist.paths)
@@ -109,7 +112,7 @@ class Sidebar extends Component<Props, State> {
               size="small"
               color="default"
               style={{
-                float: "right",
+                float: "right"
               }}
               onClick={() =>
                 this.context.model.document.pathlist.addPath("New Path", true)
@@ -195,9 +198,35 @@ class Sidebar extends Component<Props, State> {
                   </span>
                 </div>
               )}
-              <Divider></Divider>
             </>
           )}
+          <Divider className={styles.SidebarDivider} textAlign="left" flexItem>
+            <span>MARKERS</span>
+          </Divider>
+          <div className={styles.WaypointList}>
+            {this.context.model.document.pathlist.activePath.eventMarkers.map(
+              (marker: IEventMarkerStore, index: number) => {
+                return (
+                  <SidebarEventMarker
+                    marker={marker}
+                    index={index}
+                    context={this.context}
+                    key={marker.uuid}
+                  ></SidebarEventMarker>
+                );
+              }
+            )}
+          </div>
+          {this.context.model.document.pathlist.activePath.eventMarkers
+            .length == 0 && (
+            <div className={styles.SidebarItem + " " + styles.Noninteractible}>
+              <span></span>
+              <span style={{ color: "gray", fontStyle: "italic" }}>
+                No Event Markers
+              </span>
+            </div>
+          )}
+          <Divider></Divider>
         </div>
       </div>
     );

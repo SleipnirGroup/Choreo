@@ -13,7 +13,7 @@ export const HolonomicWaypointStore = types
     headingConstrained: true,
     controlIntervalCount: 40,
     isInitialGuess: false,
-    uuid: types.identifier,
+    uuid: types.identifier
   })
   .views((self) => {
     return {
@@ -43,14 +43,14 @@ export const HolonomicWaypointStore = types
         );
       },
       asSavedWaypoint(): SavedWaypoint {
-        let {
+        const {
           x,
           y,
           isInitialGuess,
           heading,
           translationConstrained,
           headingConstrained,
-          controlIntervalCount,
+          controlIntervalCount
         } = self;
         return {
           x,
@@ -59,15 +59,15 @@ export const HolonomicWaypointStore = types
           isInitialGuess,
           translationConstrained,
           headingConstrained,
-          controlIntervalCount,
+          controlIntervalCount
         };
-      },
+      }
     };
   })
   .views((self) => ({
     get typeName() {
       return NavbarItemData[self.type].name;
-    },
+    }
   }))
   .actions((self) => {
     return {
@@ -111,7 +111,7 @@ export const HolonomicWaypointStore = types
       },
       setControlIntervalCount(count: number) {
         self.controlIntervalCount = count;
-      },
+      }
     };
   })
   .actions((self) => ({
@@ -140,18 +140,18 @@ export const HolonomicWaypointStore = types
         default:
           break;
       }
-    },
+    }
   }))
   .views((self) => ({
     copyToClipboard(evt: ClipboardEvent) {
       console.log("copying waypoint to", evt.clipboardData);
       const content = JSON.stringify({
         dataType: "choreo/waypoint",
-        ...self.asSavedWaypoint(),
+        ...self.asSavedWaypoint()
       });
       evt.clipboardData?.setData("text/plain", content);
       console.log(evt.clipboardData);
-    },
+    }
   }));
 export interface IHolonomicWaypointStore
   extends Instance<typeof HolonomicWaypointStore> {}

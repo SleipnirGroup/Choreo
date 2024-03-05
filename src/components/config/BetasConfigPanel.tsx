@@ -1,23 +1,13 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
-import MotorCalculatorPanel from "./robotconfig/MotorCalculatorPanel";
 import inputStyles from "../input/InputList.module.css";
-import {
-  Divider,
-  FormHelperText,
-  IconButton,
-  Switch,
-  Tooltip,
-} from "@mui/material";
-import { ArrowDropDown, ArrowDropUp, Warning } from "@mui/icons-material";
-import DimensionsConfigPanel from "./robotconfig/DimensionsConfigPanel";
-import TheoreticalPanel from "./robotconfig/TheoreticalPanel";
-import ModuleConfigPanel from "./robotconfig/ModuleConfigPanel";
+import { Divider, Switch, Tooltip } from "@mui/material";
+import { Warning } from "@mui/icons-material";
 
-type Props = {};
+type Props = object;
 
-type State = {};
+type State = object;
 
 class BetasConfigPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
@@ -27,17 +17,17 @@ class BetasConfigPanel extends Component<Props, State> {
     return (
       <div
         style={{
-          minWidth: `600px`,
+          minWidth: "600px",
           fontSize: "2rem",
           marginTop: `${1 * this.rowGap}px`,
           marginBottom: `${1 * this.rowGap}px`,
-          marginRight: 0,
+          marginRight: 0
         }}
       >
         <div
           style={{
             marginLeft: `${1 * this.rowGap}px`,
-            marginRight: `${1 * this.rowGap}px`,
+            marginRight: `${1 * this.rowGap}px`
           }}
         >
           <span
@@ -53,7 +43,7 @@ class BetasConfigPanel extends Component<Props, State> {
         <div
           style={{
             marginLeft: `${1 * this.rowGap}px`,
-            marginRight: `${1 * this.rowGap}px`,
+            marginRight: `${1 * this.rowGap}px`
           }}
         >
           <span

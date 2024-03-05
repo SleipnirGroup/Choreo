@@ -1,9 +1,10 @@
 import { Instance, types } from "mobx-state-tree";
 import {
   SavedDocument,
+  SavedGeneratedWaypoint,
   SavedTrajectorySample,
   SAVE_FILE_VERSION,
-  updateToCurrent,
+  updateToCurrent
 } from "./DocumentSpecTypes";
 
 import { invoke } from "@tauri-apps/api/tauri";
@@ -19,10 +20,10 @@ export const DocumentStore = types
     pathlist: PathListStore,
     robotConfig: RobotConfigStore,
     splitTrajectoriesAtStopPoints: types.boolean,
-    usesObstacles: types.boolean,
+    usesObstacles: types.boolean
   })
   .volatile((self) => ({
-    history: UndoManager.create({}, { targetStore: self }),
+    history: UndoManager.create({}, { targetStore: self })
   }));
 
 export interface IDocumentStore extends Instance<typeof DocumentStore> {}
@@ -30,7 +31,7 @@ export interface IDocumentStore extends Instance<typeof DocumentStore> {}
 const StateStore = types
   .model("StateStore", {
     uiState: UIStateStore,
-    document: DocumentStore,
+    document: DocumentStore
   })
   .views((self) => ({
     asSavedDocument(): SavedDocument {
@@ -40,9 +41,9 @@ const StateStore = types
         paths: self.document.pathlist.asSavedPathList(),
         splitTrajectoriesAtStopPoints:
           self.document.splitTrajectoriesAtStopPoints,
-        usesObstacles: self.document.usesObstacles,
+        usesObstacles: self.document.usesObstacles
       };
-    },
+    }
   }))
   .actions((self) => {
     return {
@@ -70,7 +71,7 @@ const StateStore = types
         if (pathStore === undefined) {
           throw "Path store is undefined";
         }
-
+        let generatedWaypoints: SavedGeneratedWaypoint[] = [];
         return new Promise((resolve, reject) => {
           pathStore.fixWaypointHeadings();
           const controlIntervalOptResult =
@@ -105,6 +106,16 @@ const StateStore = types
             }
           });
           pathStore.setGenerating(true);
+          // Capture the timestamps of the waypoints that were actually sent to the solver
+          const waypointTimestamps = pathStore.waypointTimestamps();
+          console.log(waypointTimestamps);
+          const stopPoints = pathStore.stopPoints();
+          generatedWaypoints = pathStore.waypoints.map((point, idx) => ({
+            timestamp: 0,
+            isStopPoint: stopPoints.includes(idx),
+            ...point.asSavedWaypoint()
+          }));
+          pathStore.eventMarkers.forEach((m) => m.updateTargetIndex);
           resolve(pathStore);
         })
           .then(
@@ -115,15 +126,16 @@ const StateStore = types
                 config: self.document.robotConfig.asSolverRobotConfig(),
                 constraints: pathStore.asSolverPath().constraints,
                 circleObstacles: pathStore.asSolverPath().circleObstacles,
-                polygonObstacles: [],
+                polygonObstacles: []
               }),
-            (e) => e
+            (e) => {
+              throw e;
+            }
           )
           .then(
             (rust_traj) => {
-              let newTraj: Array<SavedTrajectorySample> = [];
-              // @ts-ignore
-              rust_traj?.samples.forEach((samp) => {
+              const newTraj: Array<SavedTrajectorySample> = [];
+              rust_traj.samples.forEach((samp) => {
                 newTraj.push({
                   x: samp.x,
                   y: samp.y,
@@ -131,18 +143,31 @@ const StateStore = types
                   angularVelocity: samp.angular_velocity,
                   velocityX: samp.velocity_x,
                   velocityY: samp.velocity_y,
-                  timestamp: samp.timestamp,
+                  timestamp: samp.timestamp
                 });
               });
-              pathStore.setTrajectory(newTraj);
               if (newTraj.length == 0) throw "No traj";
+              pathStore.setTrajectory(newTraj);
+              if (newTraj.length > 0) {
+                let currentInterval = 0;
+                generatedWaypoints.forEach((w) => {
+                  if (newTraj.at(currentInterval)?.timestamp !== undefined) {
+                    w.timestamp = newTraj.at(currentInterval)!.timestamp;
+                    currentInterval += w.controlIntervalCount;
+                  }
+                });
+                pathStore.eventMarkers.forEach((m) => {
+                  m.updateTargetIndex();
+                });
+              }
+              pathStore.setGeneratedWaypoints(generatedWaypoints);
             },
             (e) => {
               console.error(e);
-              if ((e as string).includes("Infeasible_Problem_Detected")) {
+              if ((e as string).includes("infeasible")) {
                 throw "Infeasible Problem Detected";
               }
-              if ((e as string).includes("Maximum_Iterations_Exceeded")) {
+              if ((e as string).includes("maximum iterations exceeded")) {
                 throw "Maximum Iterations Exceeded";
               }
               throw e;
@@ -151,42 +176,86 @@ const StateStore = types
           .finally(() => {
             pathStore.setGenerating(false);
             self.uiState.setPathAnimationTimestamp(0);
+            pathStore.setIsTrajectoryStale(false);
           });
-      },
+      }
     };
   })
   .actions((self) => {
     return {
       generatePathWithToasts(activePathUUID: string) {
-        var path = self.document.pathlist.paths.get(activePathUUID)!;
+        const path = self.document.pathlist.paths.get(activePathUUID)!;
         if (path.generating) {
           return Promise.resolve();
         }
         toast.dismiss();
 
-        var pathName = path.name;
+        const pathName = path.name;
         if (pathName === undefined) {
           toast.error("Tried to generate unknown path.");
         }
         return toast.promise(self.generatePath(activePathUUID), {
           success: {
             render({ data, toastProps }) {
-              return `Generated \"${pathName}\"`;
-            },
+              return `Generated "${pathName}"`;
+            }
           },
 
           error: {
             render({ data, toastProps }) {
               console.error(data);
-              if ((data as string).includes("User_Requested_Stop")) {
+              if ((data as string).includes("callback requested stop")) {
                 toastProps.style = { visibility: "hidden" };
-                return `Cancelled \"${pathName}\"`;
+                return `Cancelled "${pathName}"`;
               }
-              return `Can't generate \"${pathName}\": ` + (data as string);
-            },
-          },
+              return `Can't generate "${pathName}": ` + (data as string);
+            }
+          }
         });
       },
+      zoomToFitWaypoints() {
+        const waypoints = self.document.pathlist.activePath.waypoints;
+        if (waypoints.length <= 0) {
+          return;
+        }
+
+        let xMin = Infinity;
+        let xMax = -Infinity;
+        let yMin = Infinity;
+        let yMax = -Infinity;
+
+        for (const waypoint of waypoints) {
+          xMin = Math.min(xMin, waypoint.x);
+          xMax = Math.max(xMax, waypoint.x);
+          yMin = Math.min(yMin, waypoint.y);
+          yMax = Math.max(yMax, waypoint.y);
+        }
+
+        const x = (xMin + xMax) / 2;
+        const y = (yMin + yMax) / 2;
+        let k = 10 / (xMax - xMin) + 0.01;
+
+        // x-scaling desmos graph: https://www.desmos.com/calculator/5ie360vse3
+
+        if (k > 1.7) {
+          k = 1.7;
+        }
+
+        this.callCenter(x, y, k);
+      },
+      zoomIn() {
+        window.dispatchEvent(new CustomEvent("zoomIn"));
+      },
+      zoomOut() {
+        window.dispatchEvent(new CustomEvent("zoomOut"));
+      },
+
+      // x, y, k are the center coordinates (x, y) and scale factor (k)
+      callCenter(x: number, y: number, k: number) {
+        window.dispatchEvent(
+          new CustomEvent("center", { detail: { x, y, k } })
+        );
+      }
     };
   })
   .actions((self) => {
@@ -196,7 +265,7 @@ const StateStore = types
       },
       setUsesObstacles(usesObstacles: boolean) {
         self.document.usesObstacles = usesObstacles;
-      },
+      }
     };
   });
 

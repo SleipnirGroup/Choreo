@@ -16,38 +16,38 @@ export const MotorCurves: Record<
   Falcon500: {
     name: "Falcon 500",
     motorMaxVelocity: 6380,
-    kt: 4.69 / 257.0,
+    kt: 4.69 / 257.0
   },
   FalconFOC: {
     name: "Falcon with FOC",
     motorMaxVelocity: 6080,
-    kt: 5.84 / 304,
+    kt: 5.84 / 304
   },
   NEO: {
     name: "NEO",
     motorMaxVelocity: 5880,
-    kt: 3.28 / 181,
+    kt: 3.28 / 181
   },
   NEOVortex: {
     name: "NEO Vortex",
     motorMaxVelocity: 6784,
-    kt: 3.6 / 211,
+    kt: 3.6 / 211
   },
   KrakenX60: {
     name: "Kraken X60",
     motorMaxVelocity: 6000,
-    kt: 7.09 / 366,
+    kt: 7.09 / 366
   },
   KrakenFOC: {
     name: "Kraken with FOC",
     motorMaxVelocity: 5800,
-    kt: 9.37 / 483,
+    kt: 9.37 / 483
   },
   CIM: {
     name: "CIM",
     motorMaxVelocity: 5330,
-    kt: 2.41 / 131,
-  },
+    kt: 2.41 / 131
+  }
 };
 
 export function maxTorqueCurrentLimited(kt: number, limitAmps: number) {

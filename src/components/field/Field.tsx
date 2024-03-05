@@ -14,27 +14,25 @@ import VisibilityPanel from "../config/VisibilityPanel";
 import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel";
 import { IConstraintStore } from "../../document/ConstraintStore";
 import "react-toastify/dist/ReactToastify.min.css";
-import { ToastContainer, toast } from "react-toastify";
 import { invoke } from "@tauri-apps/api";
 import { Close } from "@mui/icons-material";
 import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
 import CircularObstacleConfigPanel from "../config/CircularObstacleConfigPanel";
+import EventMarkerConfigPanel from "../config/eventmarker/EventMarkerConfigPanel";
 import WaypointVisibilityPanel from "../config/WaypointVisibilityPanel";
-import { IHolonomicPathStore } from "../../document/HolonomicPathStore";
-import { active } from "d3";
+import { IEventMarkerStore } from "../../document/EventMarkerStore";
 
-type Props = {};
+type Props = object;
 
-type State = {};
+type State = object;
 
 export class Field extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  // @ts-ignore
-  context!: React.ContextType<typeof DocumentManagerContext>;
+  declare context: React.ContextType<typeof DocumentManagerContext>;
   render() {
-    let selectedSidebar = this.context.model.uiState.selectedSidebarItem;
-    let activePath = this.context.model.document.pathlist.activePath;
-    let activePathUUID = this.context.model.document.pathlist.activePathUUID;
+    const selectedSidebar = this.context.model.uiState.selectedSidebarItem;
+    const activePath = this.context.model.document.pathlist.activePath;
+    const activePathUUID = this.context.model.document.pathlist.activePathUUID;
     return (
       <div className={styles.Container}>
         <FieldOverlayRoot></FieldOverlayRoot>
@@ -68,6 +66,16 @@ export class Field extends Component<Props, State> {
               obstacle={selectedSidebar as ICircularObstacleStore}
             ></CircularObstacleConfigPanel>
           )}
+        {selectedSidebar !== undefined &&
+          "offset" in selectedSidebar &&
+          activePath.eventMarkers.find(
+            (marker) =>
+              marker.uuid == (selectedSidebar as IEventMarkerStore)!.uuid
+          ) && (
+            <EventMarkerConfigPanel
+              marker={selectedSidebar as IEventMarkerStore}
+            ></EventMarkerConfigPanel>
+          )}
         <VisibilityPanel></VisibilityPanel>
         <WaypointVisibilityPanel></WaypointVisibilityPanel>
         <Tooltip
@@ -75,10 +83,10 @@ export class Field extends Component<Props, State> {
           placement="top-start"
           title={
             activePath.generating
-              ? "Cancel All (Ctrl-click)"
+              ? "Cancel All"
               : activePath.canGenerate()
-              ? "Generate Path"
-              : "Generate Path (needs 2 waypoints)"
+                ? "Generate Path"
+                : "Generate Path (needs 2 waypoints)"
           }
         >
           <Box
@@ -87,7 +95,7 @@ export class Field extends Component<Props, State> {
               bottom: 16,
               right: 16,
               width: 48,
-              height: 48,
+              height: 48
             }}
           >
             {/* cancel button */}
@@ -109,13 +117,11 @@ export class Field extends Component<Props, State> {
                 zIndex: activePath.generating ? 10 : -1,
                 backgroundColor: "red",
                 "&:hover": {
-                  backgroundColor: "darkred",
-                },
+                  backgroundColor: "darkred"
+                }
               }}
               onClick={(event) => {
-                if (event.ctrlKey) {
-                  invoke("cancel");
-                }
+                invoke("cancel");
               }}
               disabled={activePath.canGenerate()}
             >
@@ -137,7 +143,7 @@ export class Field extends Component<Props, State> {
                 borderRadius: "50%",
                 boxShadow: "3px",
                 marginInline: 0,
-                visibility: activePath.canGenerate() ? "visible" : "hidden",
+                visibility: activePath.canGenerate() ? "visible" : "hidden"
               }}
               onClick={() =>
                 this.context.generateWithToastsAndExport(activePathUUID)
@@ -155,7 +161,7 @@ export class Field extends Component<Props, State> {
               color: "var(--select-yellow)",
               position: "absolute",
               bottom: 16,
-              right: 16,
+              right: 16
             }}
           />
         )}

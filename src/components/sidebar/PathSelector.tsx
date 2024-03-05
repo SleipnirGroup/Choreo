@@ -3,7 +3,7 @@ import {
   CircularProgress,
   FormControlLabel,
   IconButton,
-  TextField,
+  TextField
 } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
@@ -11,15 +11,20 @@ import DocumentManagerContext from "../../document/DocumentManager";
 import DeleteIcon from "@mui/icons-material/Delete";
 import styles from "./Sidebar.module.css";
 import { Tooltip } from "@mui/material";
-import { KeyboardArrowDown, Route, Settings } from "@mui/icons-material";
+import {
+  KeyboardArrowDown,
+  PriorityHigh,
+  Route,
+  Settings
+} from "@mui/icons-material";
 import Input from "../input/Input";
 import InputList from "../input/InputList";
 import { dialog } from "@tauri-apps/api";
 import { toast } from "react-toastify";
 
-type Props = {};
+type Props = object;
 
-type State = {};
+type State = object;
 
 type OptionProps = { uuid: string };
 type OptionState = {
@@ -36,7 +41,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     renaming: false,
     renameError: false,
     name: this.getPath().name,
-    settingsOpen: false,
+    settingsOpen: false
   };
   nameInputRef = React.createRef<HTMLInputElement>();
   getSelected() {
@@ -64,12 +69,12 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     this.setState({
       renaming: false,
       renameError: false,
-      name: this.getPath().name,
+      name: this.getPath().name
     });
   }
   checkName(): boolean {
-    let inputName = this.nameInputRef.current!.value;
-    let error =
+    const inputName = this.nameInputRef.current!.value;
+    const error =
       inputName.length == 0 ||
       inputName.includes("/") ||
       inputName.includes("\\") ||
@@ -79,7 +84,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     return error;
   }
   searchForName(name: string): boolean {
-    let didFind =
+    const didFind =
       Array.from(this.context.model.document.pathlist.paths.keys())
         .filter((uuid) => uuid !== this.props.uuid)
         .map(
@@ -92,9 +97,9 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     // this is here to use the data we care about during actual rendering
     // so mobx knows to rerender this component when it changes
     this.searchForName("");
-    let selected =
+    const selected =
       this.props.uuid == this.context.model.document.pathlist.activePathUUID;
-    let name = this.getPath().name;
+    const name = this.getPath().name;
     if (name != this.state.name && !this.state.renaming) {
       this.state.name = name;
     }
@@ -115,10 +120,22 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             size={20}
             sx={{
               color: selected ? "var(--select-yellow)" : "var(--accent-purple)",
-              marginInline: "2px",
+              marginInline: "2px"
             }}
             variant="indeterminate"
           ></CircularProgress>
+        ) : this.getPath().isTrajectoryStale ? (
+          <Tooltip
+            disableInteractive
+            title="Path features no longer match trajectory. Regenerate to be up-to-date."
+          >
+            <PriorityHigh
+              className={styles.SidebarIcon}
+              htmlColor={
+                selected ? "var(--select-yellow)" : "var(--accent-purple)"
+              }
+            ></PriorityHigh>
+          </Tooltip>
         ) : (
           <Route
             className={styles.SidebarIcon}
@@ -139,7 +156,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             flexGrow: "1",
             verticalAlign: "middle",
             userSelect: "none",
-            height: "24px",
+            height: "24px"
           }}
           spellCheck={false}
           onChange={() => this.checkName()}
@@ -155,7 +172,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
           }}
           inputProps={{
             readOnly: !this.state.renaming,
-            style: { userSelect: "none" },
+            style: { userSelect: "none" }
           }}
           InputProps={{ disableUnderline: false }}
           onFocus={(e) => {
@@ -183,13 +200,13 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             marginLeft: "-4px",
             ".MuiInputBase-root": {
               "&:before": {
-                borderBottom: "2px solid transparent",
+                borderBottom: "2px solid transparent"
               },
               width: "100%",
               height: "1.5em",
               userSelect: "none",
-              padding: "4px",
-            },
+              padding: "4px"
+            }
           }}
         ></TextField>
         <div>
@@ -238,7 +255,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
                 sx={{
                   marginLeft: "0px",
                   gridColumnStart: 2,
-                  gridColumnEnd: 4,
+                  gridColumnEnd: 4
                 }}
                 label="Guess Path Detail"
                 control={

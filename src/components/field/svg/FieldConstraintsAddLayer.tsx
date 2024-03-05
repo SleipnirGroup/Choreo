@@ -4,9 +4,9 @@ import DocumentManagerContext from "../../../document/DocumentManager";
 import { observer } from "mobx-react";
 import { ViewLayers } from "../../../document/UIStateStore";
 
-type Props = {};
+type Props = object;
 
-type State = {};
+type State = object;
 
 class FieldConstraintsAddLayer extends Component<Props, State> {
   static contextType = DocumentManagerContext;
@@ -14,12 +14,13 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
   state = {};
 
   render() {
-    let layers = this.context.model.uiState.layers;
-    let activePath = this.context.model.document.pathlist.activePath;
-    let selectedConstraint = this.context.model.uiState.getSelectedConstraint();
-    let selectedConstraintDefinition =
+    const layers = this.context.model.uiState.layers;
+    const activePath = this.context.model.document.pathlist.activePath;
+    const selectedConstraint =
+      this.context.model.uiState.getSelectedConstraint();
+    const selectedConstraintDefinition =
       this.context.model.uiState.getSelectedConstraintDefinition();
-    let waypoints = activePath.waypoints;
+    const waypoints = activePath.waypoints;
     return (
       <>
         {/* Draw circles on each waypoint */}
@@ -27,7 +28,8 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
           waypoints
             .filter((waypoint) => !waypoint.isInitialGuess)
             .map((point, index) => {
-              let activePath = this.context.model.document.pathlist.activePath;
+              const activePath =
+                this.context.model.document.pathlist.activePath;
               if (
                 (activePath.visibleWaypointsStart <= index &&
                   activePath.visibleWaypointsEnd >= index) ||
@@ -44,8 +46,8 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                     stroke="white"
                     strokeWidth={0.05}
                     onClick={() => {
-                      let constraintToAdd = selectedConstraint;
-                      let newConstraint =
+                      const constraintToAdd = selectedConstraint;
+                      const newConstraint =
                         activePath.addConstraint(constraintToAdd);
 
                       if (newConstraint !== undefined) {
@@ -53,7 +55,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                           if (newConstraint.sgmtScope) {
                             newConstraint.setScope([
                               { uuid: point.uuid },
-                              { uuid: point.uuid },
+                              { uuid: point.uuid }
                             ]);
                           } else {
                             newConstraint.setScope([{ uuid: point.uuid }]);
@@ -72,7 +74,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
           activePath.nonGuessPoints
             .slice(0, activePath.nonGuessPoints.length - 1)
             .map((point1, index) => {
-              let point2 = activePath.nonGuessPoints[index + 1];
+              const point2 = activePath.nonGuessPoints[index + 1];
               if (
                 (activePath.visibleWaypointsStart <= index &&
                   activePath.visibleWaypointsEnd >= index + 1) ||
@@ -100,9 +102,9 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                       stroke="white"
                       strokeWidth={0.05}
                       onClick={() => {
-                        let constraintToAdd =
+                        const constraintToAdd =
                           this.context.model.uiState.getSelectedConstraint();
-                        let newConstraint = activePath.addConstraint(
+                        const newConstraint = activePath.addConstraint(
                           constraintToAdd,
                           [{ uuid: point1.uuid }, { uuid: point2.uuid }]
                         );
