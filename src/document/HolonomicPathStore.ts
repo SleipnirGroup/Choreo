@@ -668,7 +668,6 @@ export const HolonomicPathStore = types
         ) {
           self.generatedWaypoints = savedPath.trajectoryWaypoints;
         }
-        self.isTrajectoryStale = savedPath.isTrajectoryStale ?? false;
         self.usesControlIntervalGuessing =
           savedPath.usesControlIntervalGuessing;
         self.defaultControlIntervalCount =
@@ -707,6 +706,8 @@ export const HolonomicPathStore = types
           marker.command.fromSavedCommand(saved.command);
           this.addEventMarker(marker);
         });
+        self.setIsTrajectoryStale(savedPath.isTrajectoryStale ?? false);
+        // this needs to be last or populating other parts of the path will set it to false
       },
       addObstacle(obstacle: ICircularObstacleStore) {
         self.obstacles.push(obstacle);
@@ -804,13 +805,20 @@ export const HolonomicPathStore = types
     let exporter: (uuid: string) => void;
     const afterCreate = () => {
       // Anything accessed in here will cause the trajectory to be marked stale
-      staleDisposer = autorun(() => {
+      // this is a reaction, not an autorun so that the effect does not happen
+      // when mobx first runs it to determine dependencies.
+      staleDisposer = reaction(() => {
         toJS(self.waypoints);
         toJS(self.constraints);
         // does not need toJS to do a deep check on this, since it's just a boolean
         self.usesControlIntervalGuessing;
         toJS(self.obstacles);
-        self.setIsTrajectoryStale(true);
+        return true;
+      },
+      (value) => {
+        if (value) {
+          self.setIsTrajectoryStale(true);
+        }
       });
       autosaveDisposer = reaction(
         () => {
