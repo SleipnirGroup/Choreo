@@ -34,7 +34,7 @@ import {
   EventMarkerStore,
   IEventMarkerStore
 } from "./EventMarkerStore";
-import { autorun, IReactionDisposer, reaction, toJS } from "mobx";
+import { IReactionDisposer, reaction, toJS } from "mobx";
 
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
