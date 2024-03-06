@@ -80,17 +80,17 @@ Event markers in Choreo are placed based on time offset before/after a specified
 
 When the trajectory is (re)generated, the marker will appear at the proper timestamp and be exported to the .traj file.
 
-Changes to the time offset will reflect in the .traj file immediately, relative to the timestamp of the targeted waypoint as of the last generation. 
+Changes to the time offset will reflect in the .traj file immediately, relative to the timestamp of the targeted waypoint as of the last generation.
 !!!tip You can see the waypoints as they were in the last generation by turning on the "Samples" view layer. You can then turn off "Waypoints" if the current waypoints obstruct the small waypoints from the "Samples" layer.
 ![Samples view layer showing ](../media/samples-layer-wpts.png)
 
-Changes to the targeted waypoint will not reflect until trajectory regeneration. 
+Changes to the targeted waypoint will not reflect until trajectory regeneration.
 
 Changes to the marker name are not part of the trajectory, so will not trigger updates to the .traj file.
 
 The options for binding commands to markers mirror PathPlanner's functionality. Named commands use the same registry of names that PathPlanner markers use. However, there is currently no autofill menu with the existing command names. Changes to the command reflect immediately in the .traj.
 
-There are a few reasons why event markers might not export. These will be shown with a **!** next to the marker in the sidebar. 
+There are a few reasons why event markers might not export. These will be shown with a **!** next to the marker in the sidebar.
 
 ![Event Marker sidebar showing error](../media/event-marker-error.png)
 
