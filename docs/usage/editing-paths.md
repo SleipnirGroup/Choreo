@@ -70,6 +70,34 @@ To add a circle obstacle:
 
 ![Obstacles](../media/obstacles.png)
 
+## Event Markers
+
+For teams that use the PathPlannerLib interoperability to follow Choreo paths, Choreo offers event marker support to trigger commands during the path.
+
+![Event Markers and Command Bindings](../media/event-markers.png)
+
+Event markers in Choreo are placed based on time offset before/after a specified waypoint. Add a marker by selecting the event marker on the navbar and clicking on the targeted waypoint. The target can be changed similarly to a constraint.
+
+When the trajectory is (re)generated, the marker will appear at the proper timestamp and be exported to the .traj file.
+
+Changes to the time offset will reflect in the .traj file immediately, relative to the timestamp of the targeted waypoint as of the last generation.
+!!!tip You can see the waypoints as they were in the last generation by turning on the "Samples" view layer. You can then turn off "Waypoints" if the current waypoints obstruct the small waypoints from the "Samples" layer.
+![Samples view layer showing ](../media/samples-layer-wpts.png)
+
+Changes to the targeted waypoint will not reflect until trajectory regeneration.
+
+Changes to the marker name are not part of the trajectory, so will not trigger updates to the .traj file.
+
+The options for binding commands to markers mirror PathPlanner's functionality. Named commands use the same registry of names that PathPlanner markers use. However, there is currently no autofill menu with the existing command names. Changes to the command reflect immediately in the .traj.
+
+There are a few reasons why event markers might not export. These will be shown with a **!** next to the marker in the sidebar.
+
+![Event Marker sidebar showing error](../media/event-marker-error.png)
+
+1. There is a stop point (including the path endpoints) between the targeted waypoint and the marker's actual timestamp.
+2. The marker targets a waypoint that has been deleted. You need to select another waypoint in the marker config panel.
+3. The path had been modified between the last generation and adding the marker, so Choreo can't give the marker a proper timestamp. Regenerate the path.
+
 ## Generating
 
 You can create paths by chaining waypoints together. Check out [Controls & Shortcuts](./controls-shortcuts.md) for advanced controls. Once you have at least two waypoints, then you can generate a path.
