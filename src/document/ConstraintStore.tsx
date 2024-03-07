@@ -255,18 +255,17 @@ export const ConstraintStore = types
       if (scope.length == 2) {
         if (startWaypoint === undefined || endWaypoint === undefined) {
           issueText.push("Constraint refers to missing waypoint(s)");
-        } else {
-          if (startWaypoint!.isInitialGuess || endWaypoint!.isInitialGuess) {
-            issueText.push("Cannot have initial guess point as endpoint");
-          }
+        } else if (
+          startWaypoint!.isInitialGuess ||
+          endWaypoint!.isInitialGuess
+        ) {
+          issueText.push("Cannot have initial guess point as endpoint");
         }
       } else if (scope.length == 1) {
         if (startWaypoint === undefined) {
           issueText.push("Constraint refers to missing waypoint");
-        } else {
-          if (startWaypoint!.isInitialGuess) {
-            issueText.push("Cannot constrain initial guess point");
-          }
+        } else if (startWaypoint!.isInitialGuess) {
+          issueText.push("Cannot constrain initial guess point");
         }
       } else if (scope.length == 0) {
         issueText.push("Scope not set");
