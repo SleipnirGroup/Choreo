@@ -34,7 +34,7 @@ import {
   EventMarkerStore,
   IEventMarkerStore
 } from "./EventMarkerStore";
-import { autorun, IReactionDisposer, reaction, toJS } from "mobx";
+import { IReactionDisposer, reaction, toJS } from "mobx";
 
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
@@ -578,24 +578,22 @@ export const HolonomicPathStore = types
         self.waypoints.forEach((point, i, pts) => {
           if (i == 0) {
             prevHeading = point.heading;
-          } else {
-            if (point.headingConstrained && !point.isInitialGuess) {
-              const prevHeadingMod = angleModulus(prevHeading);
-              const heading = pts[i].heading;
-              const headingMod = angleModulus(heading);
-              if (prevHeadingMod < 0 && headingMod > prevHeadingMod + Math.PI) {
-                // negative rollunder
-                fullRots--;
-              } else if (
-                prevHeadingMod > 0 &&
-                headingMod < prevHeadingMod - Math.PI
-              ) {
-                // positive rollover
-                fullRots++;
-              }
-              point.heading = fullRots * 2 * Math.PI + headingMod;
-              prevHeading = point.heading;
+          } else if (point.headingConstrained && !point.isInitialGuess) {
+            const prevHeadingMod = angleModulus(prevHeading);
+            const heading = pts[i].heading;
+            const headingMod = angleModulus(heading);
+            if (prevHeadingMod < 0 && headingMod > prevHeadingMod + Math.PI) {
+              // negative rollunder
+              fullRots--;
+            } else if (
+              prevHeadingMod > 0 &&
+              headingMod < prevHeadingMod - Math.PI
+            ) {
+              // positive rollover
+              fullRots++;
             }
+            point.heading = fullRots * 2 * Math.PI + headingMod;
+            prevHeading = point.heading;
           }
         });
       }
@@ -668,7 +666,6 @@ export const HolonomicPathStore = types
         ) {
           self.generatedWaypoints = savedPath.trajectoryWaypoints;
         }
-        self.isTrajectoryStale = savedPath.isTrajectoryStale ?? false;
         self.usesControlIntervalGuessing =
           savedPath.usesControlIntervalGuessing;
         self.defaultControlIntervalCount =
@@ -707,6 +704,8 @@ export const HolonomicPathStore = types
           marker.command.fromSavedCommand(saved.command);
           this.addEventMarker(marker);
         });
+        // this needs to be last or populating other parts of the path will set it to false
+        self.setIsTrajectoryStale(savedPath.isTrajectoryStale ?? false);
       },
       addObstacle(obstacle: ICircularObstacleStore) {
         self.obstacles.push(obstacle);
@@ -804,14 +803,23 @@ export const HolonomicPathStore = types
     let exporter: (uuid: string) => void;
     const afterCreate = () => {
       // Anything accessed in here will cause the trajectory to be marked stale
-      staleDisposer = autorun(() => {
-        toJS(self.waypoints);
-        toJS(self.constraints);
-        // does not need toJS to do a deep check on this, since it's just a boolean
-        self.usesControlIntervalGuessing;
-        toJS(self.obstacles);
-        self.setIsTrajectoryStale(true);
-      });
+      // this is a reaction, not an autorun so that the effect does not happen
+      // when mobx first runs it to determine dependencies.
+      staleDisposer = reaction(
+        () => {
+          toJS(self.waypoints);
+          toJS(self.constraints);
+          // does not need toJS to do a deep check on this, since it's just a boolean
+          self.usesControlIntervalGuessing;
+          toJS(self.obstacles);
+          return true;
+        },
+        (value) => {
+          if (value) {
+            self.setIsTrajectoryStale(true);
+          }
+        }
+      );
       autosaveDisposer = reaction(
         () => {
           if (self.generated.length == 0) {
