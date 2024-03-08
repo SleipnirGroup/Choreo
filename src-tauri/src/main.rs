@@ -432,9 +432,6 @@ fn main() {
         .setup(|app: &mut tauri::App| {
             let matches = app.get_cli_matches();
             match matches {
-                // `matches` here is a Struct with { args, subcommand }.
-                // `args` is `HashMap<String, ArgData>` where `ArgData` is a struct with { value, occurrences }.
-                // `subcommand` is `Option<Box<SubcommandMatches>>` where `SubcommandMatches` is a struct with { name, matches }.
                 Ok(matches) => {
                     // Set up listener for opening a file
                     match matches.args.get("chor") {
