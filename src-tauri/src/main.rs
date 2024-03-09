@@ -1,5 +1,5 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
-//#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use serde_json::Value;
 use std::path::PathBuf;
@@ -430,40 +430,40 @@ fn main() {
             open_file_app
         ])
         .setup(|app: &mut tauri::App| {
-            let matches = app.get_cli_matches();
-            match matches {
-                Ok(matches) => {
-                    // Set up listener for opening a file
-                    match matches.args.get("chor") {
-                        Some(chorPath) => match &chorPath.value {
-                            Value::String(chor) => {
-                                println!("{:?}", chor);
-                                let pathbuf = Path::new(&chor).to_path_buf();
-                                let handle = app.app_handle();
-                                app.once_global("frontend-ready", move |event| {
-                                    tauri::async_runtime::spawn(open_file(handle, pathbuf));
-                                });
-                            }
-                            _ => {}
-                        },
-                        None => {}
-                    }
-                    match matches.args.get("generate-all") {
-                        Some(arg) => match &arg.value {
-                            Value::Bool(gen_all) => {
-                                if *gen_all {
+            let matches = app.get_cli_matches()?;
+            // Set up listener for opening a file
+            match matches.args.get("chor") {
+                Some(chor_path) => match &chor_path.value {
+                    Value::String(chor) => {
+                        match Path::new(chor).canonicalize() {
+                            Ok(pathbuffer) => { 
+                                if pathbuffer.is_file() {
                                     let handle = app.app_handle();
-                                    app.once_global("file-ready", move |event| {
-                                        handle.emit_all("generate-all", ());
+                                    app.once_global("frontend-ready", move |_event| {
+                                        tauri::async_runtime::spawn(open_file(handle, pathbuffer));
                                     });
                                 }
                             }
-                            _ => {}
-                        },
-                        None => {}
+                            Err(_) => {}
+                        }
                     }
-                }
-                Err(_) => {}
+                    _ => {}
+                },
+                None => {}
+            }
+            match matches.args.get("generate-all") {
+                Some(arg) => match &arg.value {
+                    Value::Bool(gen_all) => {
+                        if *gen_all {
+                            let handle = app.app_handle();
+                            app.once_global("file-ready", move |_event| {
+                                let _ = handle.emit_all("generate-all", ());
+                            });
+                        }
+                    }
+                    _ => {}
+                },
+                None => {}
             }
             Ok(())
         })

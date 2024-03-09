@@ -89,22 +89,20 @@ export class DocumentManager {
   }
 
   async generateAll() {
-    await Promise.all(
-      this.model.document.pathlist.pathUUIDs.map((uuid) =>
-        this.model!.generatePath(uuid)
-      )
-    ).then(() => this.exportAllTrajectories());
+    for (var path of this.model.document.pathlist.paths) {
+      toast.info("AutoGen " + path[1].name);
+      await this.model.generatePath(path[1].uuid);
+    }
+    this.exportAllTrajectories();
   }
 
   async setupEventListeners() {
     const openFileUnlisten = await listen<OpenFileEventPayload>(
       "open-file",
-      async (event) => {
-        console.log(event);
+      async (event) => 
         this.handleOpenFileEvent(event).catch((err) =>
           toast.error("Opening file error: " + err)
-        );
-      }
+        )
     );
 
     const generateAllUnlisten = await listen("generate-all", async (event) => {
