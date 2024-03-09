@@ -90,7 +90,7 @@ export class DocumentManager {
   }
 
   async generateAll() {
-    for (var path of this.model.document.pathlist.paths) {
+    for (const path of this.model.document.pathlist.paths) {
       // Autogenerate notification with path name
       toast.info("AutoGen " + path[1].name);
       // We need to do this sequentially - trajoptlib will segfault
