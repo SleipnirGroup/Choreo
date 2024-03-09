@@ -85,14 +85,20 @@ export class DocumentManager {
         })
         .then(() => this.exportAllTrajectories());
     }
+    // Document has been loaded
     tauriWindow.appWindow.emit("file-ready");
   }
 
   async generateAll() {
     for (var path of this.model.document.pathlist.paths) {
+      // Autogenerate notification with path name
       toast.info("AutoGen " + path[1].name);
+      // We need to do this sequentially - trajoptlib will segfault
+      // if we attempt to generate multiple paths in parallel
+      // might be something to fix in the future
       await this.model.generatePath(path[1].uuid);
     }
+    // Export
     this.exportAllTrajectories();
   }
 

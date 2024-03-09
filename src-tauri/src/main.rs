@@ -432,25 +432,27 @@ fn main() {
         .setup(|app: &mut tauri::App| {
             let matches = app.get_cli_matches()?;
             // Set up listener for opening a file
-            match matches.args.get("chor") {
+            match matches.args.get("chor-file") {
                 Some(chor_path) => match &chor_path.value {
                     Value::String(chor) => {
+                        // Get the os-canonical path of the file,
+                        // allows for the user to simply enter the file name in the CLI
                         match Path::new(chor).canonicalize() {
                             Ok(pathbuffer) => { 
-                                if pathbuffer.is_file() {
-                                    let handle = app.app_handle();
-                                    app.once_global("frontend-ready", move |_event| {
-                                        tauri::async_runtime::spawn(open_file(handle, pathbuffer));
-                                    });
-                                }
+                                let handle = app.app_handle();
+                                app.once_global("frontend-ready", move |_event| {
+                                    tauri::async_runtime::spawn(open_file(handle, pathbuffer));
+                                });
                             }
                             Err(_) => {}
                         }
                     }
+                    // Ignore other value types
                     _ => {}
                 },
                 None => {}
             }
+            // Set up listener for once the document has loaded project information
             match matches.args.get("generate-all") {
                 Some(arg) => match &arg.value {
                     Value::Bool(gen_all) => {

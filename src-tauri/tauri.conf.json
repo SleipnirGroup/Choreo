@@ -68,12 +68,15 @@
       "afterHelp": "",
       "args": [
         {
-          "name": "chor",
+          "name": "chor-file",
+          "description": "Supply a Choreo (.chor) project file",
+          "longDescription": "The name or path of a Choreo (.chor) project file",
           "index": 1,
           "takesValue": true
         },
         {
           "name": "generate-all",
+          "description": "Generate all trajectories on Choreo startup",
           "short": "a",
           "multipleOccurrences": false
         }
