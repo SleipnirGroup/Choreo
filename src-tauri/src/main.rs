@@ -438,7 +438,7 @@ fn main() {
                         // Get the os-canonical path of the file,
                         // allows for the user to simply enter the file name in the CLI
                         match Path::new(chor).canonicalize() {
-                            Ok(pathbuffer) => { 
+                            Ok(pathbuffer) => {
                                 let handle = app.app_handle();
                                 app.once_global("frontend-ready", move |_event| {
                                     tauri::async_runtime::spawn(open_file(handle, pathbuffer));
