@@ -105,7 +105,7 @@ export class DocumentManager {
   async setupEventListeners() {
     const openFileUnlisten = await listen<OpenFileEventPayload>(
       "open-file",
-      async (event) => 
+      async (event) =>
         this.handleOpenFileEvent(event).catch((err) =>
           toast.error("Opening file error: " + err)
         )

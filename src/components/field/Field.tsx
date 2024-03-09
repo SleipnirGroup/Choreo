@@ -85,8 +85,8 @@ export class Field extends Component<Props, State> {
             activePath.generating
               ? "Cancel All"
               : activePath.canGenerate()
-                ? "Generate Path"
-                : "Generate Path (needs 2 waypoints)"
+              ? "Generate Path"
+              : "Generate Path (needs 2 waypoints)"
           }
         >
           <Box
