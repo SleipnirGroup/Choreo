@@ -75,7 +75,9 @@ export class DocumentManager {
         name: fileDirectory.name,
         path: filePath
       }).catch((err) => {
-        console.error(`Failed to open last Choreo file '${fileDirectory.name}': ${err}`);
+        console.error(
+          `Failed to open last Choreo file '${fileDirectory.name}': ${err}`
+        );
         toast.error(
           `Failed to open last Choreo file '${fileDirectory.name}': ${err}`
         );
