@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::{fs, path::Path};
+use serde_json::map;
 use tauri::regex::{escape, Regex};
 use tauri::{
     api::{dialog::blocking::FileDialogBuilder, file},
@@ -59,6 +60,33 @@ async fn open_file_dialog(app_handle: tauri::AppHandle) {
         }
         None => {}
     }
+}
+
+// parameters:
+// - dir: the directory of the file
+// - path: the path of the file with .chor extension
+#[tauri::command]
+async fn file_event_payload_from_dir(
+    app_handle: tauri::AppHandle,
+    dir: String,
+    path: String,
+    name: String,
+) -> Result<(), String> {
+    let dir = Path::new(&dir);
+    let adjacent_gradle = contains_build_gradle(Some(dir)).await?;
+    let contents = file::read_string(path.clone())
+        .map_err(|err| err.to_string())?;
+    let payload = OpenFileEventPayload {
+        dir: dir.as_os_str().to_str(),
+        name: Some(&name),
+        contents: Some(&contents.as_str()),
+        adjacent_gradle,
+    };
+    app_handle
+        .emit_all("file_event_payload_from_dir", payload)
+        .map_err(|err| err.to_string())?;
+
+    Ok(())
 }
 
 #[tauri::command]
@@ -417,6 +445,7 @@ fn main() {
             generate_trajectory,
             cancel,
             open_file_dialog,
+            file_event_payload_from_dir,
             save_file,
             contains_build_gradle,
             delete_file,

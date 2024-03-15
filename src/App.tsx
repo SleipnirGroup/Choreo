@@ -6,6 +6,7 @@ import { observer } from "mobx-react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Body from "./Body";
+import LocalStorageKeys from "./util/LocalStorageKeys";
 
 function App() {
   const buttonOverrides = {
