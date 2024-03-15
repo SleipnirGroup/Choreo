@@ -1,8 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{fs, path::Path};
 use serde_json::map;
+use std::{fs, path::Path};
 use tauri::regex::{escape, Regex};
 use tauri::{
     api::{dialog::blocking::FileDialogBuilder, file},
@@ -74,8 +74,7 @@ async fn file_event_payload_from_dir(
 ) -> Result<(), String> {
     let dir = Path::new(&dir);
     let adjacent_gradle = contains_build_gradle(Some(dir)).await?;
-    let contents = file::read_string(path.clone())
-        .map_err(|err| err.to_string())?;
+    let contents = file::read_string(path.clone()).map_err(|err| err.to_string())?;
     let payload = OpenFileEventPayload {
         dir: dir.as_os_str().to_str(),
         name: Some(&name),

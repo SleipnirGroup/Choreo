@@ -55,15 +55,30 @@ export class DocumentManager {
     this.setupEventListeners();
     this.newFile();
     this.model.uiState.updateWindowTitle();
-    
-    const lastOpenedFileEventPayload = localStorage.getItem(LocalStorageKeys.LAST_OPENED_FILE_LOCATION);
+
+    this.openLastFile();
+  }
+
+  // opens the last Choreo file saved in LocalStorage, if it exists
+  openLastFile() {
+    const lastOpenedFileEventPayload = localStorage.getItem(
+      LocalStorageKeys.LAST_OPENED_FILE_LOCATION
+    );
     if (lastOpenedFileEventPayload) {
-      const fileDirectory: OpenFileEventPayload = JSON.parse(lastOpenedFileEventPayload);
+      const fileDirectory: OpenFileEventPayload = JSON.parse(
+        lastOpenedFileEventPayload
+      );
       const filePath = fileDirectory.dir + path.sep + fileDirectory.name;
       console.log(`Attempting to open: ${filePath}`);
-      invoke("file_event_payload_from_dir", { dir: fileDirectory.dir, name: fileDirectory.name, path: filePath }).catch((err) => {
+      invoke("file_event_payload_from_dir", {
+        dir: fileDirectory.dir,
+        name: fileDirectory.name,
+        path: filePath
+      }).catch((err) => {
         console.error("Failed to open last Choreo file: ", err);
-        toast.error(`Failed to open last Choreo file '${fileDirectory.name}': ${err}`);
+        toast.error(
+          `Failed to open last Choreo file '${fileDirectory.name}': ${err}`
+        );
       });
     }
   }
@@ -93,7 +108,10 @@ export class DocumentManager {
           this.model.uiState.setSaveFileName(saveName);
           this.model.uiState.setSaveFileDir(saveDir);
           this.model.uiState.setIsGradleProject(adjacent_gradle);
-          localStorage.setItem(LocalStorageKeys.LAST_OPENED_FILE_LOCATION, JSON.stringify(payload));
+          localStorage.setItem(
+            LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
+            JSON.stringify(payload)
+          );
         })
         .then(() => this.exportAllTrajectories());
     }
@@ -106,15 +124,22 @@ export class DocumentManager {
       )
     );
 
-    const fileOpenFromDirUnlisten = await listen("file_event_payload_from_dir", async (event) => {
-      console.log("Received file event from dir: ");
-      console.log(event.payload);
-      this.handleOpenFileEvent(event).catch((err) =>
-        toast.error(`Failed to open last Choreo file: ${err}`)
-      ).then(() => {
-        toast.success(`Opened last Choreo file: ${(event.payload as OpenFileEventPayload).name}`)
-      });
-    }).catch((err) => {
+    const fileOpenFromDirUnlisten = await listen(
+      "file_event_payload_from_dir",
+      async (event) => {
+        console.log("Received file event from dir: ");
+        console.log(event.payload);
+        this.handleOpenFileEvent(event)
+          .catch((err) =>
+            toast.error(`Failed to open last Choreo file: ${err}`)
+          )
+          .then(() => {
+            toast.success(
+              `Opened last Choreo file: ${(event.payload as OpenFileEventPayload).name}`
+            );
+          });
+      }
+    ).catch((err) => {
       console.error("Failed to listen for file event from dir: ", err);
     });
 
