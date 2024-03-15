@@ -54,10 +54,11 @@ export class DocumentManager {
     this.setupEventListeners();
     this.newFile();
     this.model.uiState.updateWindowTitle();
+    tauriWindow.appWindow.emit("frontend-ready");
   }
 
-  async handleOpenFileEvent(event: Event<unknown>) {
-    const payload = event.payload as OpenFileEventPayload;
+  async handleOpenFileEvent(event: Event<OpenFileEventPayload>) {
+    const payload = event.payload;
     if (payload.dir === undefined || payload.name === undefined) {
       throw "Non-UTF-8 characters in file path";
     } else if (payload.contents === undefined) {
@@ -84,14 +85,35 @@ export class DocumentManager {
         })
         .then(() => this.exportAllTrajectories());
     }
+    // Document has been loaded
+    tauriWindow.appWindow.emit("file-ready");
+  }
+
+  async generateAll() {
+    for (const path of this.model.document.pathlist.paths) {
+      // Autogenerate notification with path name
+      toast.info("AutoGen " + path[1].name);
+      // We need to do this sequentially - trajoptlib will segfault
+      // if we attempt to generate multiple paths in parallel
+      // might be something to fix in the future
+      await this.model.generatePath(path[1].uuid);
+    }
+    // Export
+    this.exportAllTrajectories();
   }
 
   async setupEventListeners() {
-    const openFileUnlisten = await listen("open-file", async (event) =>
-      this.handleOpenFileEvent(event).catch((err) =>
-        toast.error("Opening file error: " + err)
-      )
+    const openFileUnlisten = await listen<OpenFileEventPayload>(
+      "open-file",
+      async (event) =>
+        this.handleOpenFileEvent(event).catch((err) =>
+          toast.error("Opening file error: " + err)
+        )
     );
+
+    const generateAllUnlisten = await listen("generate-all", async (event) => {
+      await this.generateAll();
+    });
 
     window.addEventListener("contextmenu", (e) => e.preventDefault());
     window.addEventListener("copy", (e) => {
@@ -190,6 +212,7 @@ export class DocumentManager {
       openFileUnlisten();
       autoSaveUnlisten();
       updateTitleUnlisten();
+      generateAllUnlisten();
     });
     hotkeys.unbind();
     hotkeys("f5,ctrl+shift+r,ctrl+r", function (event, handler) {

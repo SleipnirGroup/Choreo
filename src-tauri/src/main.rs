@@ -1,6 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use serde_json::Value;
+use std::path::PathBuf;
 use std::{fs, path::Path};
 use tauri::regex::{escape, Regex};
 use tauri::{
@@ -42,22 +44,25 @@ async fn open_file_dialog(app_handle: tauri::AppHandle) {
         .pick_file();
     match file_path {
         Some(path) => {
-            let dir = path.parent();
-            let name = path.file_name();
-            let adjacent_gradle = contains_build_gradle(dir).await;
-            if dir.is_some() && name.is_some() && adjacent_gradle.is_ok() {
-                let _ = app_handle.emit_all(
-                    "open-file",
-                    OpenFileEventPayload {
-                        dir: dir.unwrap().as_os_str().to_str(),
-                        name: name.unwrap().to_str(),
-                        contents: file::read_string(path.clone()).ok().as_deref(),
-                        adjacent_gradle: adjacent_gradle.unwrap_or(false),
-                    },
-                );
-            }
+            open_file(app_handle, path).await;
         }
         None => {}
+    }
+}
+async fn open_file(app_handle: tauri::AppHandle, path: PathBuf) {
+    let dir = path.parent();
+    let name = path.file_name();
+    let adjacent_gradle = contains_build_gradle(dir).await;
+    if dir.is_some() && name.is_some() && adjacent_gradle.is_ok() {
+        let _ = app_handle.emit_all(
+            "open-file",
+            OpenFileEventPayload {
+                dir: dir.unwrap().as_os_str().to_str(),
+                name: name.unwrap().to_str(),
+                contents: file::read_string(path.clone()).ok().as_deref(),
+                adjacent_gradle: adjacent_gradle.unwrap_or(false),
+            },
+        );
     }
 }
 
@@ -424,6 +429,46 @@ fn main() {
             delete_traj_segments,
             open_file_app
         ])
+        .setup(|app: &mut tauri::App| {
+            let matches = app.get_cli_matches()?;
+            // Set up listener for opening a file
+            match matches.args.get("chor-file") {
+                Some(chor_path) => match &chor_path.value {
+                    Value::String(chor) => {
+                        // Get the os-canonical path of the file,
+                        // allows for the user to simply enter the file name in the CLI
+                        match Path::new(chor).canonicalize() {
+                            Ok(pathbuffer) => {
+                                let handle = app.app_handle();
+                                app.once_global("frontend-ready", move |_event| {
+                                    tauri::async_runtime::spawn(open_file(handle, pathbuffer));
+                                });
+                            }
+                            Err(_) => {}
+                        }
+                    }
+                    // Ignore other value types
+                    _ => {}
+                },
+                None => {}
+            }
+            // Set up listener for once the document has loaded project information
+            match matches.args.get("generate-all") {
+                Some(arg) => match &arg.value {
+                    Value::Bool(gen_all) => {
+                        if *gen_all {
+                            let handle = app.app_handle();
+                            app.once_global("file-ready", move |_event| {
+                                let _ = handle.emit_all("generate-all", ());
+                            });
+                        }
+                    }
+                    _ => {}
+                },
+                None => {}
+            }
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
