@@ -75,7 +75,7 @@ export class DocumentManager {
         name: fileDirectory.name,
         path: filePath
       }).catch((err) => {
-        console.error("Failed to open last Choreo file: ", err);
+        console.error(`Failed to open last Choreo file '${fileDirectory.name}': ${err}`);
         toast.error(
           `Failed to open last Choreo file '${fileDirectory.name}': ${err}`
         );
@@ -135,13 +135,11 @@ export class DocumentManager {
           )
           .then(() => {
             toast.success(
-              `Opened last Choreo file: ${(event.payload as OpenFileEventPayload).name}`
+              `Opened last Choreo file '${(event.payload as OpenFileEventPayload).name}'`
             );
           });
       }
-    ).catch((err) => {
-      console.error("Failed to listen for file event from dir: ", err);
-    });
+    );
 
     window.addEventListener("contextmenu", (e) => e.preventDefault());
     window.addEventListener("copy", (e) => {
