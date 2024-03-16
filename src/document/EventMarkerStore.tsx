@@ -145,7 +145,7 @@ export interface ICommandStore extends Instance<typeof CommandStore> {}
 export const EventMarkerStore = types
   .model("EventMarker", {
     name: types.string,
-    target: WaypointScope,
+    target: types.maybe(WaypointScope),
     trajTargetIndex: types.maybe(types.number),
     offset: types.number,
     command: CommandStore,
