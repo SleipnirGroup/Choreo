@@ -650,7 +650,7 @@ export const HolonomicPathStore = types
               x: o.x,
               y: o.y,
               radius: o.radius,
-              uuid: uuidv4(),
+              uuid: uuidv4()
             })
           );
         });
