@@ -12,7 +12,7 @@ import {
   IHolonomicWaypointStore
 } from "./HolonomicWaypointStore";
 import { moveItem } from "mobx-utils";
-import { v4 as uuidv4, v4 } from "uuid";
+import { v4 as uuidv4 } from "uuid";
 import { IStateStore } from "./DocumentModel";
 import {
   ConstraintStore,
@@ -650,7 +650,7 @@ export const HolonomicPathStore = types
               x: o.x,
               y: o.y,
               radius: o.radius,
-              uuid: v4()
+              uuid: uuidv4()
             })
           );
         });
