@@ -31,7 +31,7 @@ jobs:
         with:
           python-version: 3.8
 
-      - run: pip3 install wpiformat
+      - run: pip3 install wpiformat==2024.33
 
       - run: npm run fmt
 
