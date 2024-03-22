@@ -52,14 +52,10 @@ export class DocumentManager {
       }
     });
     this.model.document.history.clear();
-    this.setupEventListeners().then(
-      ()=>this.newFile()
-    ).then(
-      ()=>this.model.uiState.updateWindowTitle()
-    ).then(
-      ()=>this.openLastFile()
-    );
-
+    this.setupEventListeners()
+      .then(() => this.newFile())
+      .then(() => this.model.uiState.updateWindowTitle())
+      .then(() => this.openLastFile());
   }
 
   // opens the last Choreo file saved in LocalStorage, if it exists
