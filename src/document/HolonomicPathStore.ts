@@ -674,24 +674,15 @@ export const HolonomicPathStore = types
         savedPath.eventMarkers.forEach((saved) => {
           const rootCommandType = saved.command.type;
           let target: WaypointID | undefined;
-          let targetIndex = 0;
           if (saved.target !== null) {
             target = self.savedWaypointIdToWaypointId(saved.target);
-            if (saved.target === "last") {
-              targetIndex = self.waypoints.length;
-            } else if (saved.target === "first") {
-              targetIndex = 0;
-            } else {
-              targetIndex = saved.target;
-            }
           }
 
-          //if (target === undefined) return;
           const marker = EventMarkerStore.create({
             name: saved.name,
-            target: target as WaypointID,
+            target: target as WaypointID | undefined,
             offset: saved.offset,
-            trajTargetIndex: self.isTrajectoryStale ? undefined : targetIndex,
+            trajTargetIndex: saved.trajTargetIndex ?? undefined,
             command: CommandStore.create({
               type: rootCommandType,
               name: "",
@@ -807,17 +798,17 @@ export const HolonomicPathStore = types
       // when mobx first runs it to determine dependencies.
       staleDisposer = reaction(
         () => {
-          toJS(self.waypoints);
-          toJS(self.constraints);
+          // Reaction needs the return value to change,
+          // so we can't just access the values and do nothing with them
           // does not need toJS to do a deep check on this, since it's just a boolean
-          self.usesControlIntervalGuessing;
-          toJS(self.obstacles);
-          return true;
+          return {waypoints: toJS(self.waypoints),
+          constraints: toJS(self.constraints),
+        guessing: self.usesControlIntervalGuessing,
+        obstacles: toJS(self.obstacles)
+      };
         },
         (value) => {
-          if (value) {
             self.setIsTrajectoryStale(true);
-          }
         }
       );
       autosaveDisposer = reaction(
