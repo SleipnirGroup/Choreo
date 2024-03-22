@@ -801,7 +801,7 @@ export const HolonomicPathStore = types
         () => {
           // Reaction needs the return value to change,
           // so we can't just access the values and do nothing with them
-          
+
           return {
             waypoints: toJS(self.waypoints),
             constraints: toJS(self.constraints),
