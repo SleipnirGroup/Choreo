@@ -800,15 +800,17 @@ export const HolonomicPathStore = types
         () => {
           // Reaction needs the return value to change,
           // so we can't just access the values and do nothing with them
-          // does not need toJS to do a deep check on this, since it's just a boolean
-          return {waypoints: toJS(self.waypoints),
-          constraints: toJS(self.constraints),
-        guessing: self.usesControlIntervalGuessing,
-        obstacles: toJS(self.obstacles)
-      };
+          
+          return {
+            waypoints: toJS(self.waypoints),
+            constraints: toJS(self.constraints),
+            // does not need toJS to do a deep check on this, since it's just a boolean
+            guessing: self.usesControlIntervalGuessing,
+            obstacles: toJS(self.obstacles)
+          };
         },
         (value) => {
-            self.setIsTrajectoryStale(true);
+          self.setIsTrajectoryStale(true);
         }
       );
       autosaveDisposer = reaction(

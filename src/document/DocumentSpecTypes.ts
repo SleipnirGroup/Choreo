@@ -240,22 +240,25 @@ export const VERSIONS = {
       const updated: v0_3_1 = document;
       updated.version = v0_3_1_Version;
       for (const entry of Object.keys(updated.paths)) {
-        var path = updated.paths[entry];
+        const path = updated.paths[entry];
         for (const marker of path.eventMarkers) {
-            marker.trajTargetIndex = null;
-
-            /**check if the saved targetTimestamp
+          marker.trajTargetIndex = null;
+          /**check if the saved targetTimestamp
              matches the targeted waypoint in generatedWaypoint.
              If it doesn't match any, something desynced that shouldn't have, and we can't recover its location
              If it does, we know which waypoint it targeted.
             */
           if (marker.targetTimestamp !== null) {
-           for ( let i = 0; i < path.trajectoryWaypoints.length; i++) {
-            if (Math.abs(path.trajectoryWaypoints[i].timestamp - marker.targetTimestamp) < 0.01) {
-              marker.trajTargetIndex = i;
-              break;
+            for (let i = 0; i < path.trajectoryWaypoints.length; i++) {
+              if (
+                Math.abs(
+                  path.trajectoryWaypoints[i].timestamp - marker.targetTimestamp
+                ) < 0.01
+              ) {
+                marker.trajTargetIndex = i;
+                break;
+              }
             }
-           }
           }
         }
       }

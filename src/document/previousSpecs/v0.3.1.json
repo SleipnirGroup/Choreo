@@ -219,10 +219,7 @@
                     ]
                   },
                   "trajTargetIndex": {
-                    "oneOf": [
-                      {"type": "number"},
-                      {"type": "null"}
-                    ]
+                    "oneOf": [{ "type": "number" }, { "type": "null" }]
                   },
                   "offset": {
                     "type": "number"
