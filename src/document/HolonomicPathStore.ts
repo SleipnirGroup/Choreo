@@ -165,6 +165,7 @@ export const HolonomicPathStore = types
             const saved: SavedEventMarker = {
               name: marker.name,
               target: target ?? null,
+              trajTargetIndex: marker.trajTargetIndex ?? null,
               targetTimestamp: marker.targetTimestamp ?? null,
               offset: marker.offset,
               command: marker.command.asSavedCommand()
