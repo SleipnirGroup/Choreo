@@ -10,7 +10,7 @@ export interface SavedWaypoint {
   isInitialGuess: boolean;
   translationConstrained: boolean;
   headingConstrained: boolean;
-  controlIntervalCount: number; // positive-integer>
+  controlIntervalCount: number; // positive-integer
 }
 export type SavedGeneratedWaypoint = SavedWaypoint & {
   timestamp: number;
