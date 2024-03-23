@@ -17,7 +17,7 @@ export type SavedGeneratedWaypoint = SavedWaypoint & {
   isStopPoint: boolean;
 };
 export interface SavedTrajectorySample {
-  timestamp: number; //positive
+  timestamp: number; // positive
   x: number;
   y: number;
   heading: number;
