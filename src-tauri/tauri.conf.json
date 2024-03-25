@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "Choreo",
-    "version": "2024.2.0"
+    "version": "2024.2.2"
   },
   "tauri": {
     "allowlist": {
@@ -56,7 +56,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "Choreo v2024.2.0",
+        "title": "Choreo v2024.2.2",
         "width": 1200,
         "height": 800
       }
