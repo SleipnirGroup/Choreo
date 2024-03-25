@@ -25,10 +25,8 @@ async fn contains_build_gradle(dir: Option<&Path>) -> Result<bool, &'static str>
         || Err("Directory does not exist"),
         |dir_path| {
             let mut found_build_gradle = false;
-            for entry in dir_path.read_dir().expect("read_dir call failed") {
-                if let Ok(other_file) = entry {
-                    found_build_gradle |= other_file.file_name().eq("build.gradle")
-                }
+            for entry in dir_path.read_dir().expect("read_dir call failed").flatten() {
+                found_build_gradle |= entry.file_name().eq("build.gradle")
             }
             Ok(found_build_gradle)
         },
@@ -40,24 +38,23 @@ async fn open_file_dialog(app_handle: tauri::AppHandle) {
         .set_title("Open a .chor file")
         .add_filter("Choreo Save File", &["chor"])
         .pick_file();
-    match file_path {
-        Some(path) => {
-            let dir = path.parent();
-            let name = path.file_name();
-            let adjacent_gradle = contains_build_gradle(dir).await;
-            if dir.is_some() && name.is_some() && adjacent_gradle.is_ok() {
-                let _ = app_handle.emit_all(
-                    "open-file",
-                    OpenFileEventPayload {
-                        dir: dir.unwrap().as_os_str().to_str(),
-                        name: name.unwrap().to_str(),
-                        contents: file::read_string(path.clone()).ok().as_deref(),
-                        adjacent_gradle: adjacent_gradle.unwrap_or(false),
-                    },
-                );
+    // TODO: Replace with if-let chains (https://github.com/rust-lang/rfcs/pull/2497)
+    if let Some(path) = file_path {
+        if let Some(dir) = path.parent() {
+            if let Some(name) = path.file_name() {
+                if let Ok(adjacent_gradle) = contains_build_gradle(Some(dir)).await {
+                    let _ = app_handle.emit_all(
+                        "open-file",
+                        OpenFileEventPayload {
+                            dir: dir.as_os_str().to_str(),
+                            name: name.to_str(),
+                            contents: file::read_string(path.clone()).ok().as_deref(),
+                            adjacent_gradle,
+                        },
+                    );
+                }
             }
         }
-        None => {}
     }
 }
 
@@ -77,7 +74,7 @@ async fn file_event_payload_from_dir(
     let payload = OpenFileEventPayload {
         dir: dir.as_os_str().to_str(),
         name: Some(&name),
-        contents: Some(&contents.as_str()),
+        contents: Some(contents.as_str()),
         adjacent_gradle,
     };
     app_handle
@@ -117,7 +114,7 @@ async fn delete_traj_segments(dir: String, traj_name: String) -> Result<(), Stri
                 if path.is_file() {
                     let matches = path.file_name().map_or(false, |file_name| {
                         let file_str = file_name.to_str();
-                        return file_str.map_or(false, |file_str| re.is_match(file_str));
+                        file_str.map_or(false, |file_str| re.is_match(file_str))
                     });
                     if matches {
                         let _ = fs::remove_file(path);
@@ -257,7 +254,7 @@ fn fix_scope(idx: usize, removed_idxs: &Vec<usize>) -> usize {
             to_subtract += 1;
         }
     }
-    return idx - to_subtract;
+    idx - to_subtract
 }
 
 #[tauri::command]
@@ -317,28 +314,24 @@ async fn generate_trajectory(
 
     path_builder.set_control_interval_counts(control_interval_counts);
 
-    for c in 0..constraints.len() {
-        let constraint: &Constraints = &constraints[c];
+    for constraint in &constraints {
         match constraint {
-            Constraints::WptVelocityDirection { scope, direction } => match scope {
-                ChoreoConstraintScope::Waypoint(idx) => {
+            Constraints::WptVelocityDirection { scope, direction } => {
+                if let ChoreoConstraintScope::Waypoint(idx) = scope {
                     path_builder.wpt_linear_velocity_direction(fix_scope(idx[0], &rm), *direction);
                 }
-                _ => {}
-            },
-            Constraints::WptZeroVelocity { scope } => match scope {
-                ChoreoConstraintScope::Waypoint(idx) => {
+            }
+            Constraints::WptZeroVelocity { scope } => {
+                if let ChoreoConstraintScope::Waypoint(idx) = scope {
                     path_builder.wpt_linear_velocity_max_magnitude(fix_scope(idx[0], &rm), 0.0f64);
                 }
-                _ => {}
-            },
-            Constraints::StopPoint { scope } => match scope {
-                ChoreoConstraintScope::Waypoint(idx) => {
+            }
+            Constraints::StopPoint { scope } => {
+                if let ChoreoConstraintScope::Waypoint(idx) = scope {
                     path_builder.wpt_linear_velocity_max_magnitude(fix_scope(idx[0], &rm), 0.0f64);
                     path_builder.wpt_angular_velocity(fix_scope(idx[0], &rm), 0.0);
                 }
-                _ => {}
-            },
+            }
             Constraints::MaxVelocity { scope, velocity } => match scope {
                 ChoreoConstraintScope::Waypoint(idx) => path_builder
                     .wpt_linear_velocity_max_magnitude(fix_scope(idx[0], &rm), *velocity),
@@ -360,27 +353,24 @@ async fn generate_trajectory(
                 ),
             },
             Constraints::StraightLine { scope } => {
-                match scope {
-                    ChoreoConstraintScope::Segment(idx) => {
-                        for point in idx[0]..idx[1] {
-                            let this_pt = fix_scope(point, &rm);
-                            let next_pt = fix_scope(point + 1, &rm);
-                            if this_pt != fix_scope(idx[0], &rm) {
-                                // points in between straight-line segments are automatically zero-velocity points
-                                path_builder.wpt_linear_velocity_max_magnitude(this_pt, 0.0f64);
-                            }
-                            let x1 = path[this_pt].x;
-                            let x2 = path[next_pt].x;
-                            let y1 = path[this_pt].y;
-                            let y2 = path[next_pt].y;
-                            path_builder.sgmt_linear_velocity_direction(
-                                this_pt,
-                                next_pt,
-                                (y2 - y1).atan2(x2 - x1),
-                            )
+                if let ChoreoConstraintScope::Segment(idx) = scope {
+                    for point in idx[0]..idx[1] {
+                        let this_pt = fix_scope(point, &rm);
+                        let next_pt = fix_scope(point + 1, &rm);
+                        if this_pt != fix_scope(idx[0], &rm) {
+                            // points in between straight-line segments are automatically zero-velocity points
+                            path_builder.wpt_linear_velocity_max_magnitude(this_pt, 0.0f64);
                         }
+                        let x1 = path[this_pt].x;
+                        let x2 = path[next_pt].x;
+                        let y1 = path[this_pt].y;
+                        let y2 = path[next_pt].y;
+                        path_builder.sgmt_linear_velocity_direction(
+                            this_pt,
+                            next_pt,
+                            (y2 - y1).atan2(x2 - x1),
+                        )
                     }
-                    _ => {}
                 }
             } // add more cases here to impl each constraint.
         }
