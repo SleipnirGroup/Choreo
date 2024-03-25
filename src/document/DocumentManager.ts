@@ -113,8 +113,7 @@ export class DocumentManager {
             LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
             JSON.stringify(payload)
           );
-        })
-        .then(() => this.exportAllTrajectories());
+        });
     }
   }
 
