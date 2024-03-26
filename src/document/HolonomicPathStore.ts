@@ -345,7 +345,10 @@ export const HolonomicPathStore = types
   .actions((self) => {
     return {
       setIsTrajectoryStale(isTrajectoryStale: boolean) {
-        self.isTrajectoryStale = isTrajectoryStale;
+        const history = getRoot<IStateStore>(self).document.history;
+        history.withoutUndo(() => {
+          self.isTrajectoryStale = isTrajectoryStale;
+        });
       },
       setGeneratedWaypoints(waypoints: Array<SavedGeneratedWaypoint>) {
         self.generatedWaypoints = waypoints;

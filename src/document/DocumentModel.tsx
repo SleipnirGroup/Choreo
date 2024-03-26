@@ -146,20 +146,25 @@ const StateStore = types
                 });
               });
               if (newTraj.length == 0) throw "No traj";
-              pathStore.setTrajectory(newTraj);
-              if (newTraj.length > 0) {
-                let currentInterval = 0;
-                generatedWaypoints.forEach((w) => {
-                  if (newTraj.at(currentInterval)?.timestamp !== undefined) {
-                    w.timestamp = newTraj.at(currentInterval)!.timestamp;
-                    currentInterval += w.controlIntervalCount;
-                  }
-                });
-                pathStore.eventMarkers.forEach((m) => {
-                  m.updateTargetIndex();
-                });
-              }
-              pathStore.setGeneratedWaypoints(generatedWaypoints);
+              self.document.history.startGroup(()=>{
+                pathStore.setTrajectory(newTraj);
+                if (newTraj.length > 0) {
+                  let currentInterval = 0;
+                  generatedWaypoints.forEach((w) => {
+                    if (newTraj.at(currentInterval)?.timestamp !== undefined) {
+                      w.timestamp = newTraj.at(currentInterval)!.timestamp;
+                      currentInterval += w.controlIntervalCount;
+                    }
+                  });
+                  pathStore.eventMarkers.forEach((m) => {
+                    m.updateTargetIndex();
+                  });
+                }
+                pathStore.setGeneratedWaypoints(generatedWaypoints);
+                // set this within the group so it gets picked up in the autosave
+                pathStore.setIsTrajectoryStale(false);
+                self.document.history.stopGroup();
+              });
             },
             (e) => {
               console.error(e);
@@ -173,6 +178,7 @@ const StateStore = types
             }
           )
           .finally(() => {
+            // none of the below should trigger autosave
             pathStore.setGenerating(false);
             self.uiState.setPathAnimationTimestamp(0);
             pathStore.setIsTrajectoryStale(false);
