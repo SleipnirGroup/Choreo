@@ -130,14 +130,14 @@ export class DocumentManager {
         console.log("Received file event from dir: ");
         console.log(event.payload);
         this.handleOpenFileEvent(event)
-          .catch((err) =>
-            toast.error(`Failed to open last Choreo file: ${err}`)
-          )
           .then(() => {
             toast.success(
               `Opened last Choreo file '${(event.payload as OpenFileEventPayload).name}'`
             );
-          });
+          })
+          .catch((err) =>
+            toast.error(`Failed to open last Choreo file: ${err}`)
+          );
       }
     );
 
