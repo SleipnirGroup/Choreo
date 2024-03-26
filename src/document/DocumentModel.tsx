@@ -146,7 +146,7 @@ const StateStore = types
                 });
               });
               if (newTraj.length == 0) throw "No traj";
-              self.document.history.startGroup(()=>{
+              self.document.history.startGroup(() => {
                 pathStore.setTrajectory(newTraj);
                 if (newTraj.length > 0) {
                   let currentInterval = 0;
