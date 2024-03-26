@@ -4,15 +4,14 @@ Start by downloading Choreo from **[Releases](https://github.com/SleipnirGroup/C
 
 ## Supported Systems
 
-| Operating System                     | Choreo UI                    | Building |
-| ------------------------------------ | ---------------------------- | -------- |
-| macOS x86 64-bit (Intel)             | ✅                           | ✅       |
-| macOS ARM64 (M-series)               | ✅                           | ✅       |
-| macOS Rosetta 2                      | ✅                           | ✅       |
-| Linux x86 64-bit                     | ✅                           | ✅       |
-| Linux ARM (aarch64, ARMv8, or arm64) | ❌                           | ❌       |
-| Windows x86 64-bit                   | ✅                           | ✅       |
-| Windows ARM64                        | (runs, can't generate paths) | ❓       |
+| Operating System                     | Supported? |
+| ------------------------------------ | ---------- |
+| Windows x86\_64                      | ✅         |
+| Windows aarch64                      | ✅         |
+| macOS x86\_64                        | ✅         |
+| macOS arm64                          | ✅         |
+| Linux x86\_64                        | ✅         |
+| Linux aarch64                        | ❌         |
 
 Checkout [Building Choreo](./contributing/building-choreo.md) for instruction on how to build Choreo as well as the tech stack.
 
