@@ -12,7 +12,7 @@ Start by downloading Choreo from **[Releases](https://github.com/SleipnirGroup/C
 | Linux x86 64-bit                     | ✅                           | ✅       |
 | Linux ARM (aarch64, ARMv8, or arm64) | ❌                           | ❌       |
 | Windows x86 64-bit                   | ✅                           | ✅       |
-| Windows ARM64                        | (runs, can't generate paths) | ❓       |
+| Windows ARM64                        | ✅                           | ❓       |
 
 Checkout [Building Choreo](./contributing/building-choreo.md) for instruction on how to build Choreo as well as the tech stack.
 
