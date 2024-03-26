@@ -113,7 +113,7 @@ jobs:
         run: mv *.exe Choreo-${{ github.ref_name }}-Windows-x86_64.exe
 
       - name: Rename Windows aarch64 bundle
-        working-directory: pkg/Windows-aarch64/release/bundle/nsis
+        working-directory: pkg/Windows-aarch64/aarch64-pc-windows-msvc/release/bundle/nsis
         run: mv *.exe Choreo-${{ github.ref_name }}-Windows-aarch64.exe
 
       - name: Rename macOS x86_64 bundle
