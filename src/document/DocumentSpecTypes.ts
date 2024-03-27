@@ -46,6 +46,11 @@ import {
   SAVE_FILE_VERSION as v0_3_Version
 } from "./previousSpecs/v0_3";
 import v0_3_Schema from "./previousSpecs/v0.3.json";
+import {
+  SavedDocument as v0_3_1,
+  SAVE_FILE_VERSION as v0_3_1_Version
+} from "./previousSpecs/v0_3_1";
+import v0_3_1_Schema from "./previousSpecs/v0.3.1.json";
 
 // Paste new version import blocks above this line.
 // Import SAVE_FILE_VERSION, SavedDocument and only the other types needed for the upgrader functions.
@@ -55,7 +60,7 @@ import v0_3_Schema from "./previousSpecs/v0.3.json";
 import Ajv from "ajv";
 import { ROBOT_CONFIG_DEFAULTS } from "./RobotConfigStore";
 // Update the import path in the below to point to a particular version as current
-import { SAVE_FILE_VERSION } from "./previousSpecs/v0_3";
+import { SAVE_FILE_VERSION } from "./previousSpecs/v0_3_1";
 
 export type {
   SavedDocument,
@@ -72,8 +77,8 @@ export type {
   SavedNamedCommand,
   SavedWaitCommand,
   SavedGeneratedWaypoint
-} from "./previousSpecs/v0_3";
-export { SAVE_FILE_VERSION } from "./previousSpecs/v0_3";
+} from "./previousSpecs/v0_3_1";
+export { SAVE_FILE_VERSION } from "./previousSpecs/v0_3_1";
 
 const ajv = new Ajv();
 
@@ -231,8 +236,39 @@ export const VERSIONS = {
     schema: v0_2_2_Schema
   },
   "v0.3": {
-    up: (document: any): v0_3 => document,
+    up: (document: any): v0_3_1 => {
+      const updated: v0_3_1 = document;
+      updated.version = v0_3_1_Version;
+      for (const entry of Object.keys(updated.paths)) {
+        const path = updated.paths[entry];
+        for (const marker of path.eventMarkers) {
+          marker.trajTargetIndex = null;
+          /**check if the saved targetTimestamp
+             matches the targeted waypoint in generatedWaypoint.
+             If it doesn't match any, something desynced that shouldn't have, and we can't recover its location
+             If it does, we know which waypoint it targeted.
+            */
+          if (marker.targetTimestamp !== null) {
+            for (let i = 0; i < path.trajectoryWaypoints.length; i++) {
+              if (
+                Math.abs(
+                  path.trajectoryWaypoints[i].timestamp - marker.targetTimestamp
+                ) < 0.01
+              ) {
+                marker.trajTargetIndex = i;
+                break;
+              }
+            }
+          }
+        }
+      }
+      return updated;
+    },
     schema: v0_3_Schema
+  },
+  "v0.3.1": {
+    up: (document: any): v0_3 => document,
+    schema: v0_3_1_Schema
   }
   /**
    * For developers adding new document versions-Keep this comment at the end of the list.

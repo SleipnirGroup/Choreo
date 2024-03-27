@@ -115,7 +115,7 @@ const StateStore = types
             isStopPoint: stopPoints.includes(idx),
             ...point.asSavedWaypoint()
           }));
-          pathStore.eventMarkers.forEach((m) => m.updateTargetIndex);
+          pathStore.eventMarkers.forEach((m) => m.updateTargetIndex());
           resolve(pathStore);
         })
           .then(
