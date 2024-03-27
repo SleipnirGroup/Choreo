@@ -27,7 +27,8 @@ class BetasConfigPanel extends Component<Props, State> {
       LocalStorageKeys.PATH_GRADIENT
     );
     if (pathGradientLocalStorage) {
-      this.state.selectedPathGradient = pathGradientLocalStorage as keyof typeof PathGradients;
+      this.state.selectedPathGradient =
+        pathGradientLocalStorage as keyof typeof PathGradients;
     }
 
     return (
@@ -95,11 +96,11 @@ class BetasConfigPanel extends Component<Props, State> {
         >
           <span
             className={inputStyles.Title}
-            style={{ verticalAlign: "middle", marginRight: "10px"}}
+            style={{ verticalAlign: "middle", marginRight: "10px" }}
           >
             Path Gradient
           </span>
-          <Select 
+          <Select
             defaultValue={PathGradients.Velocity.name}
             value={this.state.selectedPathGradient}
             onChange={(event) => {
@@ -108,13 +109,11 @@ class BetasConfigPanel extends Component<Props, State> {
               localStorage.setItem(LocalStorageKeys.PATH_GRADIENT, key);
             }}
           >
-            {
-              Object.keys(PathGradients).map((key) => (
-                <MenuItem value={key}>
-                  {PathGradients[key as keyof typeof PathGradients].name}
-                </MenuItem>
-              ))
-            }
+            {Object.keys(PathGradients).map((key) => (
+              <MenuItem value={key}>
+                {PathGradients[key as keyof typeof PathGradients].name}
+              </MenuItem>
+            ))}
           </Select>
         </div>
       </div>
