@@ -43,7 +43,7 @@ class FieldPathLines extends Component<Props, State> {
           style={{ pointerEvents: "none" }}
         ></polyline>}
         <g>
-          {generated.map(
+          {this.state.selectedPathGradient != PathGradients.None && generated.length > 1 && (generated.map(
             (point, i, arr) => {
               if (i == arr.length - 1) { return (<></>) }
               var point2 = arr[i + 1];
@@ -52,7 +52,7 @@ class FieldPathLines extends Component<Props, State> {
                 <line x1={point.x} y1={point.y} x2={point2.x} y2={point2.y}
                   strokeWidth={0.05} stroke={this.state.selectedPathGradient.function(point, i, arr)}></line>
               )
-            })}
+            }))}
         </g>
       </>
     );
