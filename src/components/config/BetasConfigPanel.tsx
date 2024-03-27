@@ -2,18 +2,34 @@ import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
 import inputStyles from "../input/InputList.module.css";
-import { Divider, Switch, Tooltip } from "@mui/material";
+import { Divider, MenuItem, Select, Switch, Tooltip } from "@mui/material";
 import { Warning } from "@mui/icons-material";
+import { PathGradients } from "./robotconfig/PathGradient";
+import LocalStorageKeys from "../../util/LocalStorageKeys";
 
 type Props = object;
 
-type State = object;
+type State = {
+  selectedPathGradient: keyof typeof PathGradients;
+};
 
 class BetasConfigPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
   rowGap = 16;
+
+  state = {
+    selectedPathGradient: "Velocity" as keyof typeof PathGradients
+  };
+
   render() {
+    const pathGradientLocalStorage = localStorage.getItem(
+      LocalStorageKeys.PATH_GRADIENT
+    );
+    if (pathGradientLocalStorage) {
+      this.state.selectedPathGradient = pathGradientLocalStorage as keyof typeof PathGradients;
+    }
+
     return (
       <div
         style={{
@@ -27,7 +43,9 @@ class BetasConfigPanel extends Component<Props, State> {
         <div
           style={{
             marginLeft: `${1 * this.rowGap}px`,
-            marginRight: `${1 * this.rowGap}px`
+            marginRight: `${1 * this.rowGap}px`,
+            marginTop: `${1 * this.rowGap}px`,
+            marginBottom: `${1 * this.rowGap}px`
           }}
         >
           <span
@@ -66,6 +84,38 @@ class BetasConfigPanel extends Component<Props, State> {
               }}
             ></Switch>
           </Tooltip>
+        </div>
+        <div
+          style={{
+            marginLeft: `${1 * this.rowGap}px`,
+            marginRight: `${1 * this.rowGap}px`,
+            marginTop: `${1 * this.rowGap}px`,
+            marginBottom: `${1 * this.rowGap}px`
+          }}
+        >
+          <span
+            className={inputStyles.Title}
+            style={{ verticalAlign: "middle", marginRight: "10px"}}
+          >
+            Path Gradient
+          </span>
+          <Select 
+            defaultValue={PathGradients.Velocity.name}
+            value={this.state.selectedPathGradient}
+            onChange={(event) => {
+              const key = event.target.value as keyof typeof PathGradients;
+              this.setState({ selectedPathGradient: key });
+              localStorage.setItem(LocalStorageKeys.PATH_GRADIENT, key);
+            }}
+          >
+            {
+              Object.keys(PathGradients).map((key) => (
+                <MenuItem value={key}>
+                  {PathGradients[key as keyof typeof PathGradients].name}
+                </MenuItem>
+              ))
+            }
+          </Select>
         </div>
       </div>
     );
