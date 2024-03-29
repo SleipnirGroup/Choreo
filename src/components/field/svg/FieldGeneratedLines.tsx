@@ -20,6 +20,8 @@ class FieldPathLines extends Component<Props, State> {
         generatedPathString += `${point.x},${point.y} `;
       }
     );
+    const key = this.context.model.uiState.selectedPathGradient as keyof typeof PathGradients;
+    const pathGradient = PathGradients[key];
     this.context.model.uiState.loadPathGradientFromLocalStorage();
 
     return (
@@ -45,10 +47,6 @@ class FieldPathLines extends Component<Props, State> {
               }
               const point2 = arr[i + 1];
 
-              const key = this.context.model.uiState
-                .selectedPathGradient as keyof typeof PathGradients;
-              const pathGradient = PathGradients[key];
-              console.log(key + " " + pathGradient);
               if (!pathGradient) {
                 return <></>;
               }

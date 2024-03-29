@@ -59,7 +59,6 @@ class PathGradientFunctions {
       const vel = Math.hypot(point.velocityX, point.velocityY);
 
       t = (vel * vel) / circumradius;
-      console.log(t, circumradius, area);
       t /= 10;
     }
     //compute circumradius
@@ -79,7 +78,6 @@ class PathGradientFunctions {
       const B = arr[i + 1];
       let t = Math.hypot(B.velocityX - A.velocityX, B.velocityY - A.velocityY);
       const dt = B.timestamp - A.timestamp;
-      console.log(t / dt);
       t /= dt;
       t /= 10;
     }
@@ -100,7 +98,6 @@ class PathGradientFunctions {
       const B = arr[i + 1];
       const dt = B.timestamp - A.timestamp;
       t = 0.5 + 10 * (0.1 - dt);
-      console.log(dt, t);
     }
     //compute circumradius
     return `hsl(${100 * t}, 100%, 50%)`;
