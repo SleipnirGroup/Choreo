@@ -2,11 +2,7 @@ import React, { Component } from "react";
 import DocumentManagerContext from "../../../document/DocumentManager";
 
 import { observer } from "mobx-react";
-import {
-  PathGradient,
-  PathGradients
-} from "../../config/robotconfig/PathGradient";
-import LocalStorageKeys from "../../../util/LocalStorageKeys";
+import { PathGradients } from "../../config/robotconfig/PathGradient";
 
 type Props = object;
 
@@ -25,11 +21,11 @@ class FieldPathLines extends Component<Props, State> {
       }
     );
     this.context.model.uiState.loadPathGradientFromLocalStorage();
-    const key = this.context.model.uiState.selectedPathGradient as keyof typeof PathGradients;
 
     return (
       <>
-        {this.context.model.uiState.selectedPathGradient == PathGradients.None.name && (
+        {this.context.model.uiState.selectedPathGradient ==
+          PathGradients.None.name && (
           <polyline
             points={generatedPathString}
             stroke="var(--select-yellow)"
@@ -38,8 +34,10 @@ class FieldPathLines extends Component<Props, State> {
             style={{ pointerEvents: "none" }}
           ></polyline>
         )}
-        <g>/
-          {this.context.model.uiState.selectedPathGradient != PathGradients.None.name &&
+        <g>
+          /
+          {this.context.model.uiState.selectedPathGradient !=
+            PathGradients.None.name &&
             generated.length > 1 &&
             generated.map((point, i, arr) => {
               if (i == arr.length - 1) {
@@ -47,10 +45,13 @@ class FieldPathLines extends Component<Props, State> {
               }
               const point2 = arr[i + 1];
 
-              const key = this.context.model.uiState.selectedPathGradient as keyof typeof PathGradients;
+              const key = this.context.model.uiState
+                .selectedPathGradient as keyof typeof PathGradients;
               const pathGradient = PathGradients[key];
               console.log(key + " " + pathGradient);
-              if (!pathGradient) { return <></>; }
+              if (!pathGradient) {
+                return <></>;
+              }
 
               // 0 t = red, 1 t = green
               return (
@@ -60,13 +61,7 @@ class FieldPathLines extends Component<Props, State> {
                   x2={point2.x}
                   y2={point2.y}
                   strokeWidth={0.05}
-                  stroke={
-                    pathGradient.function(
-                      point,
-                      i,
-                      arr
-                    )
-                  }
+                  stroke={pathGradient.function(point, i, arr)}
                 ></line>
               );
             })}

@@ -7,8 +7,7 @@ import {
   Route,
   ScatterPlot,
   SquareOutlined,
-  CropFree,
-  TypeSpecimenRounded
+  CropFree
 } from "@mui/icons-material";
 import { path, window as tauriWindow } from "@tauri-apps/api";
 import { getVersion } from "@tauri-apps/api/app";
@@ -33,7 +32,10 @@ import {
   ICircularObstacleStore
 } from "./CircularObstacleStore";
 import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
-import { PathGradient, PathGradients } from "../components/config/robotconfig/PathGradient";
+import {
+  PathGradient,
+  PathGradients
+} from "../components/config/robotconfig/PathGradient";
 import LocalStorageKeys from "../util/LocalStorageKeys";
 
 export const SelectableItem = types.union(
@@ -63,7 +65,7 @@ export const PathGradientItem = types.union(
   types.literal(PathGradients.Progress.name),
   types.literal(PathGradients.Centripetal.name),
   types.literal(PathGradients.Acceleration.name),
-  types.literal(PathGradients.Dt.name),
+  types.literal(PathGradients.Dt.name)
 );
 
 /* Navbar stuff */
@@ -418,10 +420,15 @@ export const UIStateStore = types
       this._saveSelectedPathGradientToLocalStorage();
     },
     _saveSelectedPathGradientToLocalStorage() {
-      localStorage.setItem(LocalStorageKeys.PATH_GRADIENT, self.selectedPathGradient);
+      localStorage.setItem(
+        LocalStorageKeys.PATH_GRADIENT,
+        self.selectedPathGradient
+      );
     },
     loadPathGradientFromLocalStorage() {
-      self.selectedPathGradient = localStorage.getItem(LocalStorageKeys.PATH_GRADIENT);
+      self.selectedPathGradient = localStorage.getItem(
+        LocalStorageKeys.PATH_GRADIENT
+      );
     }
   }));
 export interface IUIStateStore extends Instance<typeof UIStateStore> {}

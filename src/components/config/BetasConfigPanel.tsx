@@ -5,7 +5,6 @@ import inputStyles from "../input/InputList.module.css";
 import { Divider, MenuItem, Select, Switch, Tooltip } from "@mui/material";
 import { Warning } from "@mui/icons-material";
 import { PathGradients } from "./robotconfig/PathGradient";
-import LocalStorageKeys from "../../util/LocalStorageKeys";
 
 type Props = object;
 
@@ -91,7 +90,9 @@ class BetasConfigPanel extends Component<Props, State> {
             value={this.context.model.uiState.selectedPathGradient}
             onChange={(event) => {
               const key = event.target.value as keyof typeof PathGradients;
-              this.context.model.uiState.setSelectedPathGradient(PathGradients[key]);
+              this.context.model.uiState.setSelectedPathGradient(
+                PathGradients[key]
+              );
             }}
           >
             {Object.keys(PathGradients).map((key) => (
