@@ -1,4 +1,5 @@
 import { SavedTrajectorySample } from "../../../document/DocumentSpecTypes";
+import { types } from "mobx-state-tree";
 
 export type PathGradient = {
   name: string;

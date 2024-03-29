@@ -9,28 +9,14 @@ import LocalStorageKeys from "../../util/LocalStorageKeys";
 
 type Props = object;
 
-type State = {
-  selectedPathGradient: keyof typeof PathGradients;
-};
+type State = object;
 
 class BetasConfigPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
   rowGap = 16;
 
-  state = {
-    selectedPathGradient: "Velocity" as keyof typeof PathGradients
-  };
-
   render() {
-    const pathGradientLocalStorage = localStorage.getItem(
-      LocalStorageKeys.PATH_GRADIENT
-    );
-    if (pathGradientLocalStorage) {
-      this.state.selectedPathGradient =
-        pathGradientLocalStorage as keyof typeof PathGradients;
-    }
-
     return (
       <div
         style={{
@@ -102,11 +88,10 @@ class BetasConfigPanel extends Component<Props, State> {
           </span>
           <Select
             defaultValue={PathGradients.Velocity.name}
-            value={this.state.selectedPathGradient}
+            value={this.context.model.uiState.selectedPathGradient}
             onChange={(event) => {
               const key = event.target.value as keyof typeof PathGradients;
-              this.setState({ selectedPathGradient: key });
-              localStorage.setItem(LocalStorageKeys.PATH_GRADIENT, key);
+              this.context.model.uiState.setSelectedPathGradient(PathGradients[key]);
             }}
           >
             {Object.keys(PathGradients).map((key) => (

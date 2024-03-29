@@ -7,7 +7,8 @@ import {
   Route,
   ScatterPlot,
   SquareOutlined,
-  CropFree
+  CropFree,
+  TypeSpecimenRounded
 } from "@mui/icons-material";
 import { path, window as tauriWindow } from "@tauri-apps/api";
 import { getVersion } from "@tauri-apps/api/app";
@@ -32,6 +33,8 @@ import {
   ICircularObstacleStore
 } from "./CircularObstacleStore";
 import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
+import { PathGradient, PathGradients } from "../components/config/robotconfig/PathGradient";
+import LocalStorageKeys from "../util/LocalStorageKeys";
 
 export const SelectableItem = types.union(
   {
@@ -52,6 +55,15 @@ export const SelectableItem = types.union(
   CircularObstacleStore,
   EventMarkerStore,
   ...Object.values(ConstraintStores)
+);
+
+export const PathGradientItem = types.union(
+  types.literal(PathGradients.None.name),
+  types.literal(PathGradients.Velocity.name),
+  types.literal(PathGradients.Progress.name),
+  types.literal(PathGradients.Centripetal.name),
+  types.literal(PathGradients.Acceleration.name),
+  types.literal(PathGradients.Dt.name),
 );
 
 /* Navbar stuff */
@@ -263,7 +275,8 @@ export const UIStateStore = types
       (arr) => arr?.length == ViewItemData.length
     ),
     selectedSidebarItem: types.maybe(types.safeReference(SelectableItem)),
-    selectedNavbarItem: NavbarLabels.FullWaypoint
+    selectedNavbarItem: NavbarLabels.FullWaypoint,
+    selectedPathGradient: types.maybe(PathGradientItem)
   })
   .views((self: any) => {
     return {
@@ -399,6 +412,16 @@ export const UIStateStore = types
     },
     setSelectedNavbarItem(item: number) {
       self.selectedNavbarItem = item;
+    },
+    setSelectedPathGradient(pathGradient: PathGradient) {
+      self.selectedPathGradient = pathGradient.name;
+      this._saveSelectedPathGradientToLocalStorage();
+    },
+    _saveSelectedPathGradientToLocalStorage() {
+      localStorage.setItem(LocalStorageKeys.PATH_GRADIENT, self.selectedPathGradient);
+    },
+    loadPathGradientFromLocalStorage() {
+      self.selectedPathGradient = localStorage.getItem(LocalStorageKeys.PATH_GRADIENT);
     }
   }));
 export interface IUIStateStore extends Instance<typeof UIStateStore> {}
