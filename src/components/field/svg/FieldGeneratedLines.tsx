@@ -20,7 +20,8 @@ class FieldPathLines extends Component<Props, State> {
         generatedPathString += `${point.x},${point.y} `;
       }
     );
-    const key = this.context.model.uiState.selectedPathGradient as keyof typeof PathGradients;
+    const key = this.context.model.uiState
+      .selectedPathGradient as keyof typeof PathGradients;
     const pathGradient = PathGradients[key];
     this.context.model.uiState.loadPathGradientFromLocalStorage();
 

@@ -65,24 +65,21 @@ class PathGradientFunctions {
     return `hsl(${100 * (1 - t)}, 100%, 50%)`;
   }
 
-  static accel(
-    point: SavedTrajectorySample,
-    i: number,
-    arr: SavedTrajectorySample[]
-  ) {
-    let t = 0;
-    if (i == 0 || i == arr.length - 1) {
+  static accel(point: SavedTrajectorySample, i:number, arr: SavedTrajectorySample[]) {
+    var t = 0;
+    if (i == 0 || i == arr.length-1) {
       t = 0;
     } else {
-      const A = arr[i];
-      const B = arr[i + 1];
-      let t = Math.hypot(B.velocityX - A.velocityX, B.velocityY - A.velocityY);
-      const dt = B.timestamp - A.timestamp;
+      var A = arr[i];
+      var B = arr[i+1];
+      var t = Math.hypot(B.velocityX-A.velocityX, B.velocityY-A.velocityY);
+      var dt = B.timestamp - A.timestamp;
+      console.log(t / dt);
       t /= dt;
       t /= 10;
     }
     //compute circumradius
-    return `hsl(${100 * (1 - t)}, 100%, 50%)`;
+    return `hsl(${100 * (1-t)}, 100%, 50%)`;
   }
 
   static dt(

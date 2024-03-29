@@ -426,9 +426,9 @@ export const UIStateStore = types
       );
     },
     loadPathGradientFromLocalStorage() {
-      self.selectedPathGradient = localStorage.getItem(
-        LocalStorageKeys.PATH_GRADIENT
-      );
+      self.selectedPathGradient =
+        localStorage.getItem(LocalStorageKeys.PATH_GRADIENT) ??
+        PathGradients.Velocity.name;
     }
   }));
 export interface IUIStateStore extends Instance<typeof UIStateStore> {}
