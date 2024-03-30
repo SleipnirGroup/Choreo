@@ -2,9 +2,8 @@ import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
 import inputStyles from "../input/InputList.module.css";
-import { Divider, MenuItem, Select, Switch, Tooltip } from "@mui/material";
+import { Divider, Switch, Tooltip } from "@mui/material";
 import { Warning } from "@mui/icons-material";
-import { PathGradients } from "./robotconfig/PathGradient";
 
 type Props = object;
 
