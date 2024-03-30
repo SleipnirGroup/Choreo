@@ -7,8 +7,7 @@ import {
   Route,
   ScatterPlot,
   SquareOutlined,
-  CropFree,
-  Gradient
+  CropFree
 } from "@mui/icons-material";
 import { path, window as tauriWindow } from "@tauri-apps/api";
 import { getVersion } from "@tauri-apps/api/app";
