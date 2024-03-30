@@ -78,7 +78,6 @@ class PathGradientFunctions {
       const B = arr[i + 1];
       let t = Math.hypot(B.velocityX - A.velocityX, B.velocityY - A.velocityY);
       const dt = B.timestamp - A.timestamp;
-      console.log(t / dt);
       t /= dt;
       t /= 10;
       return `hsl(${100 * (1 - t)}, 100%, 50%)`;
