@@ -2,6 +2,7 @@ import { SavedTrajectorySample } from "../../../document/DocumentSpecTypes";
 
 export type PathGradient = {
   name: string;
+  description: string
   function: (
     point: SavedTrajectorySample,
     i: number,
@@ -34,35 +35,6 @@ class PathGradientFunctions {
   ) {
     const t = Math.hypot(point.velocityX, point.velocityY) / 5.0;
     return `hsl(${100 * t}, 100%, 50%)`;
-  }
-
-  static centripetal(
-    point: SavedTrajectorySample,
-    i: number,
-    arr: SavedTrajectorySample[]
-  ) {
-    let t = 0;
-    if (i == 0 || i == arr.length - 1) {
-      t = 0;
-    } else {
-      const A = arr[i - 1];
-      const B = arr[i];
-      const C = arr[i + 1];
-      const ab = Math.hypot(A.x - B.x, A.y - B.y);
-      const bc = Math.hypot(B.x - C.x, B.y - C.y);
-      const ca = Math.hypot(C.x - A.x, C.y - A.y);
-      // area using Heron's formula
-      const s = (ab + bc + ca) / 2;
-      const area = Math.sqrt(s * (s - ab) * (s - bc) * (s - ca));
-      const circumradius = (ab * bc * ca) / area / 4;
-
-      const vel = Math.hypot(point.velocityX, point.velocityY);
-
-      t = (vel * vel) / circumradius;
-      t /= 10;
-    }
-    //compute circumradius
-    return `hsl(${100 * (1 - t)}, 100%, 50%)`;
   }
 
   static accel(
@@ -103,32 +75,30 @@ class PathGradientFunctions {
   }
 }
 
-export const PathGradients: Record<
-  "None" | "Velocity" | "Progress" | "Centripetal" | "Acceleration" | "Dt",
-  PathGradient
-> = {
+export const PathGradients = {
   None: {
     name: "None",
+    description: "No path gradient applied.",
     function: PathGradientFunctions.none
   },
   Velocity: {
     name: "Velocity",
+    description: "Faster robot velocity is expressed as green.",
     function: PathGradientFunctions.velocity
   },
   Progress: {
     name: "Progress",
+    description: "Further progress through the path is expressed as red.",
     function: PathGradientFunctions.progress
-  },
-  Centripetal: {
-    name: "Centripetal",
-    function: PathGradientFunctions.centripetal
   },
   Acceleration: {
     name: "Acceleration",
+    description: "Faster robot acceleration is expressed as green.",
     function: PathGradientFunctions.accel
   },
   Dt: {
     name: "Dt",
+    description: "Distance between intervals. Shorter is more green.",
     function: PathGradientFunctions.dt
   }
 };

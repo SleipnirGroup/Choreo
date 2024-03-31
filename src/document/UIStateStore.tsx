@@ -63,7 +63,6 @@ export const PathGradientItem = types.union(
   types.literal(PathGradients.None.name),
   types.literal(PathGradients.Velocity.name),
   types.literal(PathGradients.Progress.name),
-  types.literal(PathGradients.Centripetal.name),
   types.literal(PathGradients.Acceleration.name),
   types.literal(PathGradients.Dt.name)
 );
