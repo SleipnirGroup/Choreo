@@ -297,6 +297,11 @@ export class DocumentManager {
       }
       this.model.select(waypoints[i]);
     });
+    // command comma and ctrl comma
+    hotkeys("command+,", () => {
+      this.model.uiState.setRobotConfigOpen(true);
+    });
+    
     // navbar keys
     for (let i = 0; i < 9; i++) {
       hotkeys((i + 1).toString(), () => {

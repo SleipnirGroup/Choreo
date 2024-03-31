@@ -29,6 +29,7 @@ class WaypointPanel extends Component<Props, State> {
     if (this.isWaypointNonNull(waypoint)) {
       return (
         <div className={styles.WaypointPanel}>
+          <strong>{`Waypoint ${this.context.model.document.pathlist.activePath.waypoints.indexOf(waypoint) + 1}`}</strong>
           <InputList noCheckbox>
             <Input
               title="x"
