@@ -98,7 +98,7 @@ export const PathGradients = {
   },
   IntervalDt: {
     name: "IntervalDt",
-    description: "Distance between intervals. Shorter is more green.",
+    description: "Distance between intervals. Shorter is expressed as green.",
     function: PathGradientFunctions.intervalDt
   }
 };
