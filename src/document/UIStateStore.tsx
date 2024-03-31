@@ -64,7 +64,7 @@ export const PathGradientItem = types.union(
   types.literal(PathGradients.Velocity.name),
   types.literal(PathGradients.Progress.name),
   types.literal(PathGradients.Acceleration.name),
-  types.literal(PathGradients.Dt.name)
+  types.literal(PathGradients.IntervalDt.name)
 );
 
 /* Navbar stuff */

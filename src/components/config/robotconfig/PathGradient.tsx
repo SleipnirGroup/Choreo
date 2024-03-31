@@ -96,8 +96,8 @@ export const PathGradients = {
     description: "Faster robot acceleration is expressed as green.",
     function: PathGradientFunctions.acceleration
   },
-  Dt: {
-    name: "Interval Dt",
+  IntervalDt: {
+    name: "IntervalDt",
     description: "Distance between intervals. Shorter is more green.",
     function: PathGradientFunctions.intervalDt
   }
