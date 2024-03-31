@@ -2,7 +2,7 @@ import { SavedTrajectorySample } from "../../../document/DocumentSpecTypes";
 
 export type PathGradient = {
   name: string;
-  description: string
+  description: string;
   function: (
     point: SavedTrajectorySample,
     i: number,

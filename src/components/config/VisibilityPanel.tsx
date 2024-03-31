@@ -93,11 +93,15 @@ class RobotConfigPanel extends Component<Props, State> {
                     }
                   >
                     <div>
-                      <strong>{PathGradients[key as keyof typeof PathGradients].name}</strong>
+                      <strong>
+                        {PathGradients[key as keyof typeof PathGradients].name}
+                      </strong>
                       <br />
-                      {PathGradients[key as keyof typeof PathGradients].description}
+                      {
+                        PathGradients[key as keyof typeof PathGradients]
+                          .description
+                      }
                     </div>
-                    
                   </MenuItem>
                 ))}
               </Menu>
