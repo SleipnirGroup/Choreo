@@ -37,7 +37,7 @@ class PathGradientFunctions {
     return `hsl(${100 * t}, 100%, 50%)`;
   }
 
-  static accel(
+  static acceleration(
     point: SavedTrajectorySample,
     i: number,
     arr: SavedTrajectorySample[]
@@ -56,7 +56,7 @@ class PathGradientFunctions {
     }
   }
 
-  static dt(
+  static intervalDt(
     point: SavedTrajectorySample,
     i: number,
     arr: SavedTrajectorySample[]
@@ -94,11 +94,11 @@ export const PathGradients = {
   Acceleration: {
     name: "Acceleration",
     description: "Faster robot acceleration is expressed as green.",
-    function: PathGradientFunctions.accel
+    function: PathGradientFunctions.acceleration
   },
   Dt: {
-    name: "Dt",
+    name: "Interval Dt",
     description: "Distance between intervals. Shorter is more green.",
-    function: PathGradientFunctions.dt
+    function: PathGradientFunctions.intervalDt
   }
 };
