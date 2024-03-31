@@ -33,7 +33,6 @@ class RobotConfigPanel extends Component<Props, State> {
   handleOpenPathGradientMenu(
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ) {
-    console.log("Opening Path Gradient Menu");
     this.setState({
       isOpen: !this.state.isOpen,
       selectedElement: event.currentTarget
@@ -45,10 +44,6 @@ class RobotConfigPanel extends Component<Props, State> {
     event: React.MouseEvent<HTMLLIElement, MouseEvent>
   ) {
     event.stopPropagation();
-    console.log(
-      "closing Path Gradient: Selected Path Gradient: ",
-      selectedPathGradient
-    );
     this.context.model.uiState.setSelectedPathGradient(
       PathGradients[selectedPathGradient as keyof typeof PathGradients]
     );
