@@ -60,7 +60,7 @@ class FieldPathLines extends Component<Props, State> {
                   x2={point2.x}
                   y2={point2.y}
                   strokeWidth={0.05}
-                  stroke={pathGradient.function(point, i, arr)}
+                  stroke={pathGradient.function(point, i, arr, this.context.model)}
                 ></line>
               );
             })}

@@ -58,9 +58,6 @@ export const SelectableItem = types.union(
   EventMarkerStore,
   ...Object.values(ConstraintStores)
 );
-export const PathGradientItem = types.union(
-  ...Object.keys(PathGradients).map((key) => types.literal(key))
-);
 
 /* Navbar stuff */
 export const WaypointData: {
@@ -272,7 +269,9 @@ export const UIStateStore = types
     ),
     selectedSidebarItem: types.maybe(types.safeReference(SelectableItem)),
     selectedNavbarItem: NavbarLabels.FullWaypoint,
-    selectedPathGradient: types.maybe(PathGradientItem)
+    selectedPathGradient: types.maybe(types.union(
+      ...Object.keys(PathGradients).map((key) => types.literal(key))
+    ))
   })
   .views((self: any) => {
     return {

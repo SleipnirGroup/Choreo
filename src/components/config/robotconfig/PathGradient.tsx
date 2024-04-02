@@ -1,5 +1,6 @@
-import { Segment } from "@mui/icons-material";
-import { SavedTrajectorySample } from "../../../document/DocumentSpecTypes";
+import DocumentManager from "../../../document/DocumentManager";
+import { IStateStore } from "../../../document/DocumentModel";
+import { SavedGeneratedWaypoint, SavedTrajectorySample } from "../../../document/DocumentSpecTypes";
 
 export type PathGradient = {
   name: string;
@@ -15,7 +16,8 @@ class PathGradientFunctions {
   static none(
     point: SavedTrajectorySample,
     i: number,
-    arr: SavedTrajectorySample[]
+    arr: SavedTrajectorySample[],
+    documentModel: IStateStore,
   ) {
     return "yellow";
   }
@@ -23,7 +25,8 @@ class PathGradientFunctions {
   static progress(
     point: SavedTrajectorySample,
     i: number,
-    arr: SavedTrajectorySample[]
+    arr: SavedTrajectorySample[],
+    documentModel: IStateStore,
   ) {
     const t = 1 - i / arr.length;
     return `hsl(${100 * t}, 100%, 50%)`;
@@ -32,7 +35,8 @@ class PathGradientFunctions {
   static velocity(
     point: SavedTrajectorySample,
     i: number,
-    arr: SavedTrajectorySample[]
+    arr: SavedTrajectorySample[],
+    documentModel: IStateStore,
   ) {
     const t = Math.hypot(point.velocityX, point.velocityY) / 5.0;
     return `hsl(${100 * t}, 100%, 50%)`;
@@ -41,7 +45,8 @@ class PathGradientFunctions {
   static acceleration(
     point: SavedTrajectorySample,
     i: number,
-    arr: SavedTrajectorySample[]
+    arr: SavedTrajectorySample[],
+    documentModel: IStateStore,
   ) {
     if (i == 0 || i == arr.length - 1) {
       const t = 0;
@@ -60,7 +65,8 @@ class PathGradientFunctions {
   static intervalDt(
     point: SavedTrajectorySample,
     i: number,
-    arr: SavedTrajectorySample[]
+    arr: SavedTrajectorySample[],
+    documentModel: IStateStore,
   ) {
     let t = 0;
     if (i == 0 || i == arr.length - 1) {
@@ -75,12 +81,22 @@ class PathGradientFunctions {
     return `hsl(${100 * t}, 100%, 50%)`;
   }
 
-  static segment(
+  static splitTrajectories(
     point: SavedTrajectorySample,
     i: number,
-    arr: SavedTrajectorySample[]
+    arr: SavedTrajectorySample[],
+    documentModel: IStateStore,
   ) {
-    
+    const stopPoints = documentModel.document.pathlist.activePath.stopPoints();
+    const generated = documentModel.document.pathlist.activePath.generated;
+    const generatedWaypoints = documentModel.document.pathlist.activePath.generatedWaypoints;
+    const stopPointGeneratedWaypoints = generatedWaypoints.filter((wp) => wp.isStopPoint);
+
+    for (let i = 0; i < stopPointGeneratedWaypoints.length - 1; i++) {
+      if (stopPointGeneratedWaypoints[i].timestamp <= point.timestamp && point.timestamp <= stopPointGeneratedWaypoints[i + 1].timestamp) {
+        return `hsl(${100 * i / stopPointGeneratedWaypoints.length}, 100%, 50%)`;
+      }
+    }
   }
 }
 
@@ -110,9 +126,9 @@ export const PathGradients = {
     description: "Shorter time difference between intervals is shown as green",
     function: PathGradientFunctions.intervalDt
   },
-  Segment: {
-    name: "Segment",
-    description: "Longer segments are shown as green.",
-    function: PathGradientFunctions.segment
+  SplitTrajectories: {
+    name: "SplitTrajectories",
+    description: "Split trajectories on stop points are shown in different colors.",
+    function: PathGradientFunctions.splitTrajectories
   },
 };
