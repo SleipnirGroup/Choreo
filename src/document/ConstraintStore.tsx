@@ -131,21 +131,6 @@ export const constraints = {
     wptScope: false,
     sgmtScope: true
   },
-  Heading: {
-    name: "Heading",
-    shortName: "Heading",
-    description: "Constrain Heading",
-    icon: <NearMe />,
-    properties: {
-      heading: {
-        name: "Heading",
-        description: "The direction the robot is facing",
-        units: "rad"
-      }
-    },
-    wptScope: true,
-    sgmtScope: true
-  },
   PointAt: {
     name: "Point At",
     shortName: "Point At",
