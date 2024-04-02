@@ -2,6 +2,7 @@ import {
   Dangerous,
   Explore,
   KeyboardDoubleArrowRight,
+  NearMe,
   PriorityHigh,
   StopCircleOutlined,
   SyncDisabledOutlined,
@@ -128,6 +129,21 @@ export const constraints = {
     icon: <Timeline></Timeline>,
     properties: {},
     wptScope: false,
+    sgmtScope: true
+  },
+  Heading: {
+    name: "Heading",
+    shortName: "Heading",
+    description: "Constrain Heading",
+    icon: <NearMe />,
+    properties: {
+      heading: {
+        name: "Heading",
+        description: "The direction the robot is facing",
+        units: "rad"
+      }
+    },
+    wptScope: true,
     sgmtScope: true
   }
 };
