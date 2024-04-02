@@ -222,10 +222,6 @@ enum Constraints {
     StraightLine {
         scope: ChoreoConstraintScope,
     },
-    Heading {
-        scope: ChoreoConstraintScope,
-        heading: f64,
-    },
     PointAt {
         scope: ChoreoConstraintScope,
         x: f64,
@@ -382,17 +378,7 @@ async fn generate_trajectory(
                         )
                     }
                 }
-            }
-            Constraints::Heading { scope, heading } => match scope {
-                ChoreoConstraintScope::Waypoint(idx) => {
-                    path_builder.wpt_heading(fix_scope(idx[0], &rm), *heading)
-                }
-                ChoreoConstraintScope::Segment(idx) => path_builder.sgmt_heading(
-                    fix_scope(idx[0], &rm),
-                    fix_scope(idx[1], &rm),
-                    *heading,
-                ),
-            }
+            },
             Constraints::PointAt { scope, x, y, tolerance } => match scope {
                 ChoreoConstraintScope::Waypoint(idx) => {
                     path_builder.wpt_point_at(fix_scope(idx[0], &rm), *x, *y, *tolerance)
