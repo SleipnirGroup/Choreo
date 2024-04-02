@@ -83,22 +83,22 @@ export const PathGradients = {
   },
   Velocity: {
     name: "Velocity",
-    description: "Faster robot velocity is expressed as green.",
+    description: "Faster robot velocity is shown as green.",
     function: PathGradientFunctions.velocity
   },
   Progress: {
     name: "Progress",
-    description: "Further progress through the path is expressed as red.",
+    description: "Further progress through the path is shown as red.",
     function: PathGradientFunctions.progress
   },
   Acceleration: {
     name: "Acceleration",
-    description: "Faster robot acceleration is expressed as green.",
+    description: "Faster robot acceleration is shown as green.",
     function: PathGradientFunctions.acceleration
   },
   IntervalDt: {
     name: "IntervalDt",
-    description: "Distance between intervals. Shorter is expressed as green.",
+    description: "Shorter time difference between intervals is shown as green",
     function: PathGradientFunctions.intervalDt
   }
 };
