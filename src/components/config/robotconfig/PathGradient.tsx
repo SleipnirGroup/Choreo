@@ -1,3 +1,4 @@
+import { Segment } from "@mui/icons-material";
 import { SavedTrajectorySample } from "../../../document/DocumentSpecTypes";
 
 export type PathGradient = {
@@ -73,6 +74,21 @@ class PathGradientFunctions {
     //compute circumradius
     return `hsl(${100 * t}, 100%, 50%)`;
   }
+
+  static segment(
+    point: SavedTrajectorySample,
+    i: number,
+    arr: SavedTrajectorySample[]
+  ) {
+    if (i == 0 || i == arr.length - 1) {
+      return "yellow";
+    } else {
+      const A = arr[i];
+      const B = arr[i + 1];
+      const t = Math.hypot(B.x - A.x, B.y - A.y);
+      return `hsl(${100 * t}, 100%, 50%)`;
+    }
+  }
 }
 
 export const PathGradients = {
@@ -100,5 +116,10 @@ export const PathGradients = {
     name: "IntervalDt",
     description: "Shorter time difference between intervals is shown as green",
     function: PathGradientFunctions.intervalDt
-  }
+  },
+  Segment: {
+    name: "Segment",
+    description: "Longer segments are shown as green.",
+    function: PathGradientFunctions.segment
+  },
 };

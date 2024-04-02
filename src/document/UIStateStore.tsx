@@ -58,13 +58,8 @@ export const SelectableItem = types.union(
   EventMarkerStore,
   ...Object.values(ConstraintStores)
 );
-
 export const PathGradientItem = types.union(
-  types.literal(PathGradients.None.name),
-  types.literal(PathGradients.Velocity.name),
-  types.literal(PathGradients.Progress.name),
-  types.literal(PathGradients.Acceleration.name),
-  types.literal(PathGradients.IntervalDt.name)
+  ...Object.keys(PathGradients).map((key) => types.literal(key))
 );
 
 /* Navbar stuff */
