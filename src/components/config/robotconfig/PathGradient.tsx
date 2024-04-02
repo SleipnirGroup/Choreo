@@ -1,6 +1,5 @@
-import DocumentManager from "../../../document/DocumentManager";
 import { IStateStore } from "../../../document/DocumentModel";
-import { SavedGeneratedWaypoint, SavedTrajectorySample } from "../../../document/DocumentSpecTypes";
+import { SavedTrajectorySample } from "../../../document/DocumentSpecTypes";
 
 export type PathGradient = {
   name: string;
@@ -17,7 +16,7 @@ class PathGradientFunctions {
     point: SavedTrajectorySample,
     i: number,
     arr: SavedTrajectorySample[],
-    documentModel: IStateStore,
+    documentModel: IStateStore
   ) {
     return "yellow";
   }
@@ -26,7 +25,7 @@ class PathGradientFunctions {
     point: SavedTrajectorySample,
     i: number,
     arr: SavedTrajectorySample[],
-    documentModel: IStateStore,
+    documentModel: IStateStore
   ) {
     const t = 1 - i / arr.length;
     return `hsl(${100 * t}, 100%, 50%)`;
@@ -36,7 +35,7 @@ class PathGradientFunctions {
     point: SavedTrajectorySample,
     i: number,
     arr: SavedTrajectorySample[],
-    documentModel: IStateStore,
+    documentModel: IStateStore
   ) {
     const t = Math.hypot(point.velocityX, point.velocityY) / 5.0;
     return `hsl(${100 * t}, 100%, 50%)`;
@@ -46,7 +45,7 @@ class PathGradientFunctions {
     point: SavedTrajectorySample,
     i: number,
     arr: SavedTrajectorySample[],
-    documentModel: IStateStore,
+    documentModel: IStateStore
   ) {
     if (i == 0 || i == arr.length - 1) {
       const t = 0;
@@ -66,7 +65,7 @@ class PathGradientFunctions {
     point: SavedTrajectorySample,
     i: number,
     arr: SavedTrajectorySample[],
-    documentModel: IStateStore,
+    documentModel: IStateStore
   ) {
     let t = 0;
     if (i == 0 || i == arr.length - 1) {
@@ -85,15 +84,18 @@ class PathGradientFunctions {
     point: SavedTrajectorySample,
     i: number,
     arr: SavedTrajectorySample[],
-    documentModel: IStateStore,
+    documentModel: IStateStore
   ) {
-    const stopPoints = documentModel.document.pathlist.activePath.stopPoints();
-    const generated = documentModel.document.pathlist.activePath.generated;
-    const generatedWaypoints = documentModel.document.pathlist.activePath.generatedWaypoints;
-    const stopPointGeneratedWaypoints = generatedWaypoints.filter((wp) => wp.isStopPoint);
+    const stopPointGeneratedWaypoints =
+      documentModel.document.pathlist.activePath.generatedWaypoints.filter(
+        (wp) => wp.isStopPoint
+      );
 
     for (let i = 0; i < stopPointGeneratedWaypoints.length - 1; i++) {
-      if (stopPointGeneratedWaypoints[i].timestamp <= point.timestamp && point.timestamp <= stopPointGeneratedWaypoints[i + 1].timestamp) {
+      if (
+        stopPointGeneratedWaypoints[i].timestamp <= point.timestamp &&
+        point.timestamp <= stopPointGeneratedWaypoints[i + 1].timestamp
+      ) {
         return `hsl(${Math.abs(Math.sin(i) * 360)}, 100%, 50%)`;
       }
     }
@@ -134,7 +136,8 @@ export const PathGradients = {
   SplitTrajectories: {
     name: "SplitTrajectories",
     localizedDescription: "Split Trajectories",
-    description: "Split trajectories on stop points are shown in different colors.",
+    description:
+      "Split trajectories on stop points are shown in different colors.",
     function: PathGradientFunctions.splitTrajectories
-  },
+  }
 };

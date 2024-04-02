@@ -269,9 +269,11 @@ export const UIStateStore = types
     ),
     selectedSidebarItem: types.maybe(types.safeReference(SelectableItem)),
     selectedNavbarItem: NavbarLabels.FullWaypoint,
-    selectedPathGradient: types.maybe(types.union(
-      ...Object.keys(PathGradients).map((key) => types.literal(key))
-    ))
+    selectedPathGradient: types.maybe(
+      types.union(
+        ...Object.keys(PathGradients).map((key) => types.literal(key))
+      )
+    )
   })
   .views((self: any) => {
     return {
