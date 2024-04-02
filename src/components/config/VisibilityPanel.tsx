@@ -68,7 +68,7 @@ class RobotConfigPanel extends Component<Props, State> {
           </IconButton>
         </Tooltip>
         <div>
-          <Tooltip disableInteractive title="Path Gradients">
+          <Tooltip disableInteractive disableHoverListener={this.state.isOpen} title="Path Gradients">
             <IconButton onClick={this.handleOpenPathGradientMenu.bind(this)}>
               <Gradient />
               <Menu
@@ -80,24 +80,18 @@ class RobotConfigPanel extends Component<Props, State> {
                 }}
               >
                 {Object.keys(PathGradients).map((key) => (
-                  <MenuItem
+                  <Tooltip disableInteractive title={PathGradients[key as keyof typeof PathGradients]
+                          .description}>
+                      <MenuItem
                     value={key}
                     selected={uiState.selectedPathGradient === key}
                     onClick={(event) =>
                       this.handleClosePathGradientMenu(key, event)
                     }
                   >
-                    <div>
-                      <strong>
-                        {PathGradients[key as keyof typeof PathGradients].name}
-                      </strong>
-                      <br />
-                      {
-                        PathGradients[key as keyof typeof PathGradients]
-                          .description
-                      }
-                    </div>
+                    {PathGradients[key as keyof typeof PathGradients].name}
                   </MenuItem>
+                    </Tooltip>
                 ))}
               </Menu>
             </IconButton>
