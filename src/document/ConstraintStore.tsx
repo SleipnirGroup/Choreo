@@ -139,12 +139,12 @@ export const constraints = {
     properties: {
       x: {
         name: "X",
-        description: "The x coordinate of the point the robot is facing",
+        description: "The x coordinate of the point the robot should face",
         units: "m"
       },
       y: {
         name: "Y",
-        description: "The y coordinate of the point the robot is facing",
+        description: "The y coordinate of the point the robot should face",
         units: "m"
       },
       tolerance: {
