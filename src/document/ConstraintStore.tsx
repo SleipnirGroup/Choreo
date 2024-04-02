@@ -145,6 +145,31 @@ export const constraints = {
     },
     wptScope: true,
     sgmtScope: true
+  },
+  PointAt: {
+    name: "Point At",
+    shortName: "Point At",
+    description: "Face a specified point",
+    icon: <NearMe />,
+    properties: {
+      x: {
+        name: "X",
+        description: "The x coordinate of the point the robot is facing",
+        units: "m"
+      },
+      y: {
+        name: "Y",
+        description: "The y coordinate of the point the robot is facing",
+        units: "m"
+      },
+      tolerance: {
+        name: "Heading Tolerance",
+        description: "The allowable heading range relative to the direction to the point. Keep less than Pi.",
+        units: "rad"
+      }
+    },
+    wptScope: true,
+    sgmtScope: true
   }
 };
 const WaypointUUIDScope = types.model("WaypointScope", {

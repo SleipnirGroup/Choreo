@@ -225,7 +225,13 @@ enum Constraints {
     Heading {
         scope: ChoreoConstraintScope,
         heading: f64,
-    }
+    },
+    PointAt {
+        scope: ChoreoConstraintScope,
+        x: f64,
+        y: f64,
+        tolerance: f64,
+    },
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
@@ -376,16 +382,26 @@ async fn generate_trajectory(
                         )
                     }
                 }
-            },
+            }
             Constraints::Heading { scope, heading } => match scope {
-                ChoreoConstraintScope::Waypoint(idx) => path_builder
-                    .wpt_heading(fix_scope(idx[0], &rm), *heading),
-                ChoreoConstraintScope::Segment(idx) => path_builder
-                    .sgmt_heading(
-                        fix_scope(idx[0], &rm),
-                        fix_scope(idx[1], &rm),
-                        *heading,
-                    ),
+                ChoreoConstraintScope::Waypoint(idx) => {
+                    path_builder.wpt_heading(fix_scope(idx[0], &rm), *heading)
+                }
+                ChoreoConstraintScope::Segment(idx) => path_builder.sgmt_heading(
+                    fix_scope(idx[0], &rm),
+                    fix_scope(idx[1], &rm),
+                    *heading,
+                ),
+            }
+            Constraints::PointAt { scope, x, y, tolerance } => match scope {
+                ChoreoConstraintScope::Waypoint(idx) => {
+                    path_builder.wpt_point_at(fix_scope(idx[0], &rm), *x, *y, *tolerance)
+                }
+                ChoreoConstraintScope::Segment(idx) => path_builder.sgmt_point_at(
+                    fix_scope(idx[0], &rm),
+                    fix_scope(idx[1], &rm),
+                    *x, *y, *tolerance
+                ),
             }, // add more cases here to impl each constraint.
         }
     }
