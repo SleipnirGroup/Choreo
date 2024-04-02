@@ -94,7 +94,7 @@ class PathGradientFunctions {
 
     for (let i = 0; i < stopPointGeneratedWaypoints.length - 1; i++) {
       if (stopPointGeneratedWaypoints[i].timestamp <= point.timestamp && point.timestamp <= stopPointGeneratedWaypoints[i + 1].timestamp) {
-        return `hsl(${100 * i / stopPointGeneratedWaypoints.length}, 100%, 50%)`;
+        return `hsl(${Math.abs(Math.sin(i) * 360)}, 100%, 50%)`;
       }
     }
   }
@@ -103,31 +103,37 @@ class PathGradientFunctions {
 export const PathGradients = {
   None: {
     name: "None",
+    localizedDescription: "None",
     description: "No path gradient applied.",
     function: PathGradientFunctions.none
   },
   Velocity: {
     name: "Velocity",
+    localizedDescription: "Velocity",
     description: "Faster robot velocity is shown as green.",
     function: PathGradientFunctions.velocity
   },
   Progress: {
     name: "Progress",
+    localizedDescription: "Progress",
     description: "Further progress through the path is shown as red.",
     function: PathGradientFunctions.progress
   },
   Acceleration: {
     name: "Acceleration",
+    localizedDescription: "Acceleration",
     description: "Faster robot acceleration is shown as green.",
     function: PathGradientFunctions.acceleration
   },
   IntervalDt: {
     name: "IntervalDt",
+    localizedDescription: "Interval Δt",
     description: "Shorter time difference between intervals is shown as green",
     function: PathGradientFunctions.intervalDt
   },
   SplitTrajectories: {
     name: "SplitTrajectories",
+    localizedDescription: "Split Trajectories",
     description: "Split trajectories on stop points are shown in different colors.",
     function: PathGradientFunctions.splitTrajectories
   },

@@ -98,7 +98,7 @@ class RobotConfigPanel extends Component<Props, State> {
                         this.handleClosePathGradientMenu(key, event)
                       }
                     >
-                      {PathGradients[key as keyof typeof PathGradients].name}
+                      {PathGradients[key as keyof typeof PathGradients].localizedDescription}
                     </MenuItem>
                   </Tooltip>
                 ))}
