@@ -2,13 +2,14 @@
 //#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::{fs, path::Path};
+use tauri::AppHandle;
 use tauri::regex::{escape, Regex};
 use tauri::{
     api::{dialog::blocking::FileDialogBuilder, file},
     Manager,
 };
 use trajoptlib::{
-    HolonomicTrajectory, InitialGuessPoint, SwerveDrivetrain, SwerveModule, SwervePathBuilder,
+    HolonomicTrajectory, InitialGuessPoint, SwerveDrivetrain, SwerveModule, SwervePathBuilder, set_progress_callback,
 };
 
 #[derive(Clone, serde::Serialize, Debug)]
@@ -240,10 +241,14 @@ async fn cancel() {
     builder.cancel_all();
 }
 
+//static mut solver_app_handle:tauri::AppHandle = ;
 #[tauri::command]
-fn emit_solver_status(traj: HolonomicTrajectory){
+fn emit_solver_status(traj: HolonomicTrajectory, handle: u32){
     println!("{:?}", traj);
-    //solver_app_handle.emit_all("solver-status", traj);
+    // unsafe {
+    
+    //         solver_app_handle.emit_all("solver-status", traj);
+    //     }
 }
 #[allow(non_snake_case)]
 #[tauri::command]
@@ -256,7 +261,7 @@ async fn generate_trajectory(
     polygonObstacles: Vec<PolygonObstacle>,
 ) -> Result<HolonomicTrajectory, String> {
     let mut path_builder = SwervePathBuilder::new();
-    path_builder.enable_state_feedback(emit_solver_status);
+    set_progress_callback(emit_solver_status);
     let mut wpt_cnt: usize = 0;
     let mut rm: Vec<usize> = Vec::new();
     let mut control_interval_counts: Vec<usize> = Vec::new();
@@ -415,15 +420,16 @@ async fn generate_trajectory(
         path_builder.sgmt_polygon_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
     }
     path_builder.set_drivetrain(&drivetrain);
-    path_builder.generate(true)
+    path_builder.generate(45)
 }
-
 fn main() {
     tauri::Builder::default()
-        // .setup(|app|{
-        //     solver_app_handle = app.handle().clone();
-        //     Ok()
-        // })
+        .setup(|app|{
+            unsafe {
+                //solver_app_handle = app.handle().clone();
+            }
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             generate_trajectory,
             cancel,
