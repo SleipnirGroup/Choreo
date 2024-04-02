@@ -80,14 +80,7 @@ class PathGradientFunctions {
     i: number,
     arr: SavedTrajectorySample[]
   ) {
-    if (i == 0 || i == arr.length - 1) {
-      return "yellow";
-    } else {
-      const A = arr[i];
-      const B = arr[i + 1];
-      const t = Math.hypot(B.x - A.x, B.y - A.y);
-      return `hsl(${100 * t}, 100%, 50%)`;
-    }
+    
   }
 }
 

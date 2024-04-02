@@ -13,7 +13,6 @@ class BetasConfigPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
   rowGap = 16;
-
   render() {
     return (
       <div
@@ -28,9 +27,7 @@ class BetasConfigPanel extends Component<Props, State> {
         <div
           style={{
             marginLeft: `${1 * this.rowGap}px`,
-            marginRight: `${1 * this.rowGap}px`,
-            marginTop: `${1 * this.rowGap}px`,
-            marginBottom: `${1 * this.rowGap}px`
+            marginRight: `${1 * this.rowGap}px`
           }}
         >
           <span
