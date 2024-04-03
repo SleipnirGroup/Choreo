@@ -149,7 +149,8 @@ export const constraints = {
       },
       tolerance: {
         name: "Heading Tolerance",
-        description: "The allowable heading range relative to the direction to the point. Keep less than Pi.",
+        description: 
+          "The allowable heading range relative to the direction to the point. Keep less than Pi.",
         units: "rad"
       }
     },

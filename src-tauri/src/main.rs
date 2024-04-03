@@ -379,14 +379,21 @@ async fn generate_trajectory(
                     }
                 }
             },
-            Constraints::PointAt { scope, x, y, tolerance } => match scope {
+            Constraints::PointAt { 
+                scope, 
+                x, 
+                y, 
+                tolerance 
+            } => match scope {
                 ChoreoConstraintScope::Waypoint(idx) => {
                     path_builder.wpt_point_at(fix_scope(idx[0], &rm), *x, *y, *tolerance)
                 }
                 ChoreoConstraintScope::Segment(idx) => path_builder.sgmt_point_at(
                     fix_scope(idx[0], &rm),
                     fix_scope(idx[1], &rm),
-                    *x, *y, *tolerance
+                    *x, 
+                    *y, 
+                    *tolerance
                 ),
             }, // add more cases here to impl each constraint.
         }
