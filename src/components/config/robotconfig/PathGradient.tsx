@@ -87,8 +87,7 @@ class PathGradientFunctions {
     arr: SavedTrajectorySample[],
     documentModel: IStateStore
   ) {
-    const normalizedAngularVelocity = (Math.abs(point.angularVelocity) * 100) / 2;
-    return `hsl(${normalizedAngularVelocity}, 100%, 50%)`;
+    return `hsl(${Math.abs(point.angularVelocity * 100) / 2}, 100%, 50%)`;
   }
 
   static splitTrajectories(
