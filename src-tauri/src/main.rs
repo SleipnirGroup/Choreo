@@ -222,6 +222,12 @@ enum Constraints {
     StraightLine {
         scope: ChoreoConstraintScope,
     },
+    PointAt {
+        scope: ChoreoConstraintScope,
+        x: f64,
+        y: f64,
+        tolerance: f64,
+    },
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
@@ -372,7 +378,24 @@ async fn generate_trajectory(
                         )
                     }
                 }
-            } // add more cases here to impl each constraint.
+            }
+            Constraints::PointAt {
+                scope,
+                x,
+                y,
+                tolerance,
+            } => match scope {
+                ChoreoConstraintScope::Waypoint(idx) => {
+                    path_builder.wpt_point_at(fix_scope(idx[0], &rm), *x, *y, *tolerance)
+                }
+                ChoreoConstraintScope::Segment(idx) => path_builder.sgmt_point_at(
+                    fix_scope(idx[0], &rm),
+                    fix_scope(idx[1], &rm),
+                    *x,
+                    *y,
+                    *tolerance,
+                ),
+            }, // add more cases here to impl each constraint.
         }
     }
     let half_wheel_base = config.wheelbase / 2.0;

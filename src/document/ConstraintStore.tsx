@@ -2,6 +2,7 @@ import {
   Dangerous,
   Explore,
   KeyboardDoubleArrowRight,
+  NearMe,
   PriorityHigh,
   StopCircleOutlined,
   SyncDisabledOutlined,
@@ -128,6 +129,32 @@ export const constraints = {
     icon: <Timeline></Timeline>,
     properties: {},
     wptScope: false,
+    sgmtScope: true
+  },
+  PointAt: {
+    name: "Point At",
+    shortName: "Point At",
+    description: "Face a specified point",
+    icon: <NearMe />,
+    properties: {
+      x: {
+        name: "X",
+        description: "The x coordinate of the point the robot should face",
+        units: "m"
+      },
+      y: {
+        name: "Y",
+        description: "The y coordinate of the point the robot should face",
+        units: "m"
+      },
+      tolerance: {
+        name: "Heading Tolerance",
+        description:
+          "The allowable heading range relative to the direction to the point. Keep less than Pi.",
+        units: "rad"
+      }
+    },
+    wptScope: true,
     sgmtScope: true
   }
 };
