@@ -7,7 +7,8 @@ export type PathGradient = {
   function: (
     point: SavedTrajectorySample,
     i: number,
-    arr: SavedTrajectorySample[]
+    arr: SavedTrajectorySample[],
+    documentModel: IStateStore
   ) => string;
 };
 
@@ -80,6 +81,16 @@ class PathGradientFunctions {
     return `hsl(${100 * t}, 100%, 50%)`;
   }
 
+  static angularVelocity(
+    point: SavedTrajectorySample,
+    i: number,
+    arr: SavedTrajectorySample[],
+    documentModel: IStateStore
+  ) {
+    const colorValue = Math.abs(Math.sin(point.angularVelocity / 0.00000000001) * 40);
+    return `hsl(${colorValue}, 100%, 50%)`;
+  }
+
   static splitTrajectories(
     point: SavedTrajectorySample,
     i: number,
@@ -132,6 +143,12 @@ export const PathGradients = {
     localizedDescription: "Interval Δt",
     description: "Shorter time difference between intervals is shown as green",
     function: PathGradientFunctions.intervalDt
+  },
+  AngularVelocity: {
+    name: "AngularVelocity",
+    localizedDescription: "Angular Velocity",
+    description: "Faster robot angular velocity is shown as green.",
+    function: PathGradientFunctions.angularVelocity
   },
   SplitTrajectories: {
     name: "SplitTrajectories",
