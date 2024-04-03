@@ -29,7 +29,7 @@ Choreo (Constraint-Honoring Omnidirectional Route Editor and Optimizer, pronounc
 
     ---
 
-    Choreo runs on Windows, macOS, and Linux.
+    Choreo runs on Windows x86_64/aarch64, macOS x86_64/arm64, and Linux x86_64.
 
 
 

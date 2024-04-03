@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "Choreo",
-    "version": "2024.2.0"
+    "version": "2024.2.2"
   },
   "tauri": {
     "allowlist": {
@@ -38,6 +38,7 @@
       "active": true,
       "targets": ["appimage", "deb", "nsis", "dmg"],
       "identifier": "org.sleipnirgroup",
+      "shortDescription": "Choreo",
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
@@ -56,7 +57,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "Choreo v2024.2.0",
+        "title": "Choreo v2024.2.2",
         "width": 1200,
         "height": 800
       }

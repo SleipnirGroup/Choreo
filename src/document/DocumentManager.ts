@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import hotkeys from "hotkeys-js";
 import { ViewLayerDefaults } from "./UIStateStore";
+import LocalStorageKeys from "../util/LocalStorageKeys";
 
 type OpenFileEventPayload = {
   adjacent_gradle: boolean;
@@ -51,9 +52,36 @@ export class DocumentManager {
       }
     });
     this.model.document.history.clear();
-    this.setupEventListeners();
-    this.newFile();
-    this.model.uiState.updateWindowTitle();
+    this.setupEventListeners()
+      .then(() => this.newFile())
+      .then(() => this.model.uiState.updateWindowTitle())
+      .then(() => this.openLastFile());
+  }
+
+  // opens the last Choreo file saved in LocalStorage, if it exists
+  openLastFile() {
+    const lastOpenedFileEventPayload = localStorage.getItem(
+      LocalStorageKeys.LAST_OPENED_FILE_LOCATION
+    );
+    if (lastOpenedFileEventPayload) {
+      const fileDirectory: OpenFileEventPayload = JSON.parse(
+        lastOpenedFileEventPayload
+      );
+      const filePath = fileDirectory.dir + path.sep + fileDirectory.name;
+      console.log(`Attempting to open: ${filePath}`);
+      invoke("file_event_payload_from_dir", {
+        dir: fileDirectory.dir,
+        name: fileDirectory.name,
+        path: filePath
+      }).catch((err) => {
+        console.error(
+          `Failed to open last Choreo file '${fileDirectory.name}': ${err}`
+        );
+        toast.error(
+          `Failed to open last Choreo file '${fileDirectory.name}': ${err}`
+        );
+      });
+    }
   }
 
   async handleOpenFileEvent(event: Event<unknown>) {
@@ -81,8 +109,11 @@ export class DocumentManager {
           this.model.uiState.setSaveFileName(saveName);
           this.model.uiState.setSaveFileDir(saveDir);
           this.model.uiState.setIsGradleProject(adjacent_gradle);
-        })
-        .then(() => this.exportAllTrajectories());
+          localStorage.setItem(
+            LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
+            JSON.stringify(payload)
+          );
+        });
     }
   }
 
@@ -95,6 +126,23 @@ export class DocumentManager {
     // await listen("solver-status", async (event) =>
     //   console.log(event.payload)
     // );
+
+    const fileOpenFromDirUnlisten = await listen(
+      "file_event_payload_from_dir",
+      async (event) => {
+        console.log("Received file event from dir: ");
+        console.log(event.payload);
+        this.handleOpenFileEvent(event)
+          .then(() => {
+            toast.success(
+              `Opened last Choreo file '${(event.payload as OpenFileEventPayload).name}'`
+            );
+          })
+          .catch((err) =>
+            toast.error(`Failed to open last Choreo file: ${err}`)
+          );
+      }
+    );
 
     window.addEventListener("contextmenu", (e) => e.preventDefault());
     window.addEventListener("copy", (e) => {
@@ -191,10 +239,15 @@ export class DocumentManager {
     window.addEventListener("unload", () => {
       hotkeys.unbind();
       openFileUnlisten();
+      fileOpenFromDirUnlisten();
       autoSaveUnlisten();
       updateTitleUnlisten();
     });
     hotkeys.unbind();
+    hotkeys("escape", () => {
+      this.model.uiState.setSelectedSidebarItem(undefined);
+      this.model.uiState.setSelectedNavbarItem(-1);
+    });
     hotkeys("f5,ctrl+shift+r,ctrl+r", function (event, handler) {
       event.preventDefault();
     });

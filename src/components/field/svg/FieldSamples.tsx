@@ -14,9 +14,10 @@ class FieldSamples extends Component<Props, State> {
 
   render() {
     const path = this.context.model.document.pathlist.activePath;
+    const trajectory = path.generating ? path.generationProgress : path.generated;
     return (
       <>
-        {path.generated.map((point) => (
+        {trajectory.map((point) => (
           <circle cx={point.x} cy={point.y} r={0.02} fill="black"></circle>
         ))}
       </>
