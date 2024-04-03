@@ -296,6 +296,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 name = "choreo"
 version = "2024.2.0"
 dependencies = [
+ "lazy_static",
  "open",
  "serde",
  "serde_json",
@@ -3290,7 +3291,7 @@ dependencies = [
 [[package]]
 name = "trajoptlib"
 version = "0.1.0"
-source = "git+c:/Users/jashu/git/TrajoptLib?branch=solver-status-feedback#d2ecea212da855a16013a90615c107b5054e3987"
+source = "git+c:/Users/jashu/git/TrajoptLib?branch=solver-status-feedback#c42681d8d982a679866eb634bb900ded803fa96c"
 dependencies = [
  "cmake",
  "cxx",

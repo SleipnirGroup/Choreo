@@ -13,8 +13,9 @@ class FieldPathLines extends Component<Props, State> {
   state = {};
 
   render() {
+    let path = this.context.model.document.pathlist.activePath;
     let generatedPathString = "";
-    this.context.model.document.pathlist.activePath.generated.forEach(
+    (path.generating ? path.generationProgress : path.generated).forEach(
       (point) => {
         generatedPathString += `${point.x},${point.y} `;
       }
@@ -23,7 +24,7 @@ class FieldPathLines extends Component<Props, State> {
       <>
         <polyline
           points={generatedPathString}
-          stroke="var(--select-yellow)"
+          stroke={path.generating ? "red" : "var(--select-yellow)"}
           strokeWidth={0.05}
           fill="transparent"
           style={{ pointerEvents: "none" }}

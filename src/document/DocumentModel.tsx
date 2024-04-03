@@ -14,6 +14,7 @@ import { PathListStore } from "./PathListStore";
 import { UndoManager } from "mst-middlewares";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
+import { listen, UnlistenFn } from "@tauri-apps/api/event";
 
 export const DocumentStore = types
   .model("DocumentStore", {
@@ -119,15 +120,46 @@ const StateStore = types
           resolve(pathStore);
         })
           .then(
-            () =>
-            
-              invoke("generate_trajectory", {
-                path: pathStore.waypoints,
-                config: self.document.robotConfig.asSolverRobotConfig(),
-                constraints: pathStore.asSolverPath().constraints,
-                circleObstacles: pathStore.asSolverPath().circleObstacles,
-                polygonObstacles: []
-              }),
+            () =>{
+              const handle = pathStore.uuid.split('').reduce((a,b) => (((a << 5) - a) + b.charCodeAt(0))|0, 0);
+              let unlisten: UnlistenFn;
+              return listen("solver-status", async (event) => {
+                if (event.payload!.handle == handle) {
+                  const newTraj: Array<SavedTrajectorySample> = [];
+                  event.payload.traj.samples.forEach((samp) => {
+                    newTraj.push({
+                      x: samp.x,
+                      y: samp.y,
+                      heading: samp.heading,
+                      angularVelocity: samp.angular_velocity,
+                      velocityX: samp.velocity_x,
+                      velocityY: samp.velocity_y,
+                      timestamp: samp.timestamp
+                    });
+                  });
+                  
+                  pathStore.setInProgressTrajectory(newTraj);
+                }
+              }
+              ).then(
+                (unlistener) => {
+                  unlisten = unlistener;
+                  return invoke("generate_trajectory", {
+                    path: pathStore.waypoints,
+                    config: self.document.robotConfig.asSolverRobotConfig(),
+                    constraints: pathStore.asSolverPath().constraints,
+                    circleObstacles: pathStore.asSolverPath().circleObstacles,
+                    polygonObstacles: [],
+                    handle: handle
+                  })
+                }
+              ).then((result)=>{
+                unlisten();
+                return result;
+              })
+
+            },
+
             (e) => {
               throw e;
             }

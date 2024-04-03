@@ -1,7 +1,12 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 //#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::mem::MaybeUninit;
+use std::ptr::addr_of_mut;
+use std::sync::mpsc::{Sender, channel};
+use std::thread;
 use std::{fs, path::Path};
+use serde::{Serialize, Deserialize};
 use tauri::AppHandle;
 use tauri::regex::{escape, Regex};
 use tauri::{
@@ -241,15 +246,12 @@ async fn cancel() {
     builder.cancel_all();
 }
 
-//static mut solver_app_handle:tauri::AppHandle = ;
-#[tauri::command]
-fn emit_solver_status(traj: HolonomicTrajectory, handle: u32){
-    println!("{:?}", traj);
-    // unsafe {
-    
-    //         solver_app_handle.emit_all("solver-status", traj);
-    //     }
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+struct ProgressUpdate {
+    traj: HolonomicTrajectory,
+    handle: i64
 }
+
 #[allow(non_snake_case)]
 #[tauri::command]
 async fn generate_trajectory(
@@ -259,9 +261,9 @@ async fn generate_trajectory(
     constraints: Vec<Constraints>,
     circleObstacles: Vec<CircleObstacle>,
     polygonObstacles: Vec<PolygonObstacle>,
+    handle: i64
 ) -> Result<HolonomicTrajectory, String> {
     let mut path_builder = SwervePathBuilder::new();
-    set_progress_callback(emit_solver_status);
     let mut wpt_cnt: usize = 0;
     let mut rm: Vec<usize> = Vec::new();
     let mut control_interval_counts: Vec<usize> = Vec::new();
@@ -420,14 +422,35 @@ async fn generate_trajectory(
         path_builder.sgmt_polygon_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
     }
     path_builder.set_drivetrain(&drivetrain);
-    path_builder.generate(45)
+    path_builder.generate(handle)
+}
+struct GlobalState {
+    prog_tx: MaybeUninit<Sender<ProgressUpdate>>
+}
+static mut globalState: GlobalState = GlobalState {prog_tx: MaybeUninit::uninit()};
+fn solver_status_callback(traj: HolonomicTrajectory, handle: i64){
+    unsafe {
+        let ptr = globalState.prog_tx.as_ptr();
+        (&*ptr).send(ProgressUpdate { traj:traj, handle: handle });
+    }
+    
 }
 fn main() {
+    let (tx, rx) = channel::<ProgressUpdate>();
+    unsafe {
+        globalState.prog_tx.write(tx);
+    }
+
     tauri::Builder::default()
         .setup(|app|{
-            unsafe {
-                //solver_app_handle = app.handle().clone();
-            }
+            let progress_emitter = app.handle().clone();
+            thread::spawn(move || {
+                for received in rx {
+                    progress_emitter.emit_all("solver-status", received);
+                }
+            });
+
+            set_progress_callback(solver_status_callback);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
