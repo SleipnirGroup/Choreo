@@ -32,6 +32,11 @@ import {
   ICircularObstacleStore
 } from "./CircularObstacleStore";
 import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
+import {
+  PathGradient,
+  PathGradients
+} from "../components/config/robotconfig/PathGradient";
+import LocalStorageKeys from "../util/LocalStorageKeys";
 
 export const SelectableItem = types.union(
   {
@@ -263,7 +268,12 @@ export const UIStateStore = types
       (arr) => arr?.length == ViewItemData.length
     ),
     selectedSidebarItem: types.maybe(types.safeReference(SelectableItem)),
-    selectedNavbarItem: NavbarLabels.FullWaypoint
+    selectedNavbarItem: NavbarLabels.FullWaypoint,
+    selectedPathGradient: types.maybe(
+      types.union(
+        ...Object.keys(PathGradients).map((key) => types.literal(key))
+      )
+    )
   })
   .views((self: any) => {
     return {
@@ -399,6 +409,21 @@ export const UIStateStore = types
     },
     setSelectedNavbarItem(item: number) {
       self.selectedNavbarItem = item;
+    },
+    setSelectedPathGradient(pathGradient: PathGradient) {
+      self.selectedPathGradient = pathGradient.name;
+      this._saveSelectedPathGradientToLocalStorage();
+    },
+    _saveSelectedPathGradientToLocalStorage() {
+      localStorage.setItem(
+        LocalStorageKeys.PATH_GRADIENT,
+        self.selectedPathGradient
+      );
+    },
+    loadPathGradientFromLocalStorage() {
+      self.selectedPathGradient =
+        localStorage.getItem(LocalStorageKeys.PATH_GRADIENT) ??
+        PathGradients.Velocity.name;
     }
   }));
 export interface IUIStateStore extends Instance<typeof UIStateStore> {}

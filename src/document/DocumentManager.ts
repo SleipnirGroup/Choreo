@@ -241,6 +241,10 @@ export class DocumentManager {
       updateTitleUnlisten();
     });
     hotkeys.unbind();
+    hotkeys("escape", () => {
+      this.model.uiState.setSelectedSidebarItem(undefined);
+      this.model.uiState.setSelectedNavbarItem(-1);
+    });
     hotkeys("f5,ctrl+shift+r,ctrl+r", function (event, handler) {
       event.preventDefault();
     });
