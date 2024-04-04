@@ -1,9 +1,29 @@
 import { IStateStore } from "../../../document/DocumentModel";
 import { SavedTrajectorySample } from "../../../document/DocumentSpecTypes";
 
+/**
+ * Represents a path gradient.
+ */
 export type PathGradient = {
+  /**
+   * The name/key of the path gradient.
+   * Do not include spaces and match the key in the PathGradients object.
+   */
   name: string;
+
+  /**
+   * The localized/user-facing description of the path gradient.
+   */
   description: string;
+  /**
+   * A function that calculates the gradient value for a given point in a saved trajectory sample.
+   * 
+   * @param point - The saved trajectory sample point.
+   * @param i - The index of the point in the array.
+   * @param arr - The array of saved trajectory samples.
+   * @param documentModel - The document model.
+   * @returns The gradient value as a string.
+   */
   function: (
     point: SavedTrajectorySample,
     i: number,
