@@ -12,7 +12,22 @@ export type PathGradient = {
   ) => string;
 };
 
+/**
+ * Represents a collection of static functions for calculating path gradient colors.
+ */
 class PathGradientFunctions {
+
+  /**
+   * Returns the color "yellow" for the given point in the trajectory.
+   * This is the default color used when no gradient is applied.
+   * NOTE: This function is not used and is included only for completeness.
+   *
+   * @param point - The current point in the trajectory.
+   * @param i - The index of the current point in the trajectory.
+   * @param arr - The array of all points in the trajectory.
+   * @param documentModel - The document model object.
+   * @returns The color "yellow".
+   */
   static none(
     point: SavedTrajectorySample,
     i: number,
@@ -22,16 +37,16 @@ class PathGradientFunctions {
     return "yellow";
   }
 
-  static progress(
-    point: SavedTrajectorySample,
-    i: number,
-    arr: SavedTrajectorySample[],
-    documentModel: IStateStore
-  ) {
-    const t = 1 - i / arr.length;
-    return `hsl(${100 * t}, 100%, 50%)`;
-  }
-
+  /**
+   * Calculates the color gradient for a given point on a saved trajectory based on its velocity.
+   * Faster robot velocity is shown as green.
+   * 
+   * @param point - The point on the saved trajectory.
+   * @param i - The index of the point in the array.
+   * @param arr - The array of saved trajectory samples.
+   * @param documentModel - The document model.
+   * @returns The color gradient in HSL format.
+   */
   static velocity(
     point: SavedTrajectorySample,
     i: number,
@@ -42,6 +57,37 @@ class PathGradientFunctions {
     return `hsl(${100 * t}, 100%, 50%)`;
   }
 
+  /**
+   * Calculates the progress color for a given point in a trajectory.
+   * The color is determined based on the index of the point in the trajectory array.
+   * Faster robot velocity is shown as green.
+   *
+   * @param point - The current point in the trajectory.
+   * @param i - The index of the current point in the array.
+   * @param arr - The array of trajectory points.
+   * @param documentModel - The document model.
+   * @returns The progress color in HSL format.
+   */
+  static progress(
+    point: SavedTrajectorySample,
+    i: number,
+    arr: SavedTrajectorySample[],
+    documentModel: IStateStore
+  ) {
+    const t = 1 - i / arr.length;
+    return `hsl(${100 * t}, 100%, 50%)`;
+  }
+
+  /**
+   * Calculates the color gradient for the acceleration of a trajectory point.
+   * Faster robot acceleration is shown as green.
+   * 
+   * @param point - The trajectory point.
+   * @param i - The index of the trajectory point in the array.
+   * @param arr - The array of trajectory points.
+   * @param documentModel - The document model.
+   * @returns The color gradient for the acceleration.
+   */
   static acceleration(
     point: SavedTrajectorySample,
     i: number,
@@ -62,6 +108,16 @@ class PathGradientFunctions {
     }
   }
 
+  /**
+   * Computes the intervalDt value for a given point in a trajectory.
+   * Shorter time difference between intervals is shown as green.
+   * 
+   * @param point - The current point in the trajectory.
+   * @param i - The index of the current point in the array.
+   * @param arr - The array of trajectory points.
+   * @param documentModel - The document model.
+   * @returns The computed intervalDt value.
+   */
   static intervalDt(
     point: SavedTrajectorySample,
     i: number,
@@ -81,6 +137,16 @@ class PathGradientFunctions {
     return `hsl(${100 * t}, 100%, 50%)`;
   }
 
+  /**
+   * Calculates the color value for the angular velocity of a trajectory point.
+   * Faster robot angular velocity is shown as green.
+   *
+   * @param point - The trajectory point.
+   * @param i - The index of the trajectory point in the array.
+   * @param arr - The array of trajectory points.
+   * @param documentModel - The document model.
+   * @returns The color value in HSL format.
+   */
   static angularVelocity(
     point: SavedTrajectorySample,
     i: number,
@@ -93,6 +159,15 @@ class PathGradientFunctions {
     return `hsl(${colorValue}, 100%, 50%)`;
   }
 
+  /**
+   * Returns a different HSL color for each split trajectory by stop point
+   * 
+   * @param point - Each point.
+   * @param i - The index of the point in the array.
+   * @param arr - The array of saved trajectory samples.
+   * @param documentModel - The document model.
+   * @returns The color gradient in HSL format.
+   */
   static splitTrajectories(
     point: SavedTrajectorySample,
     i: number,
@@ -115,6 +190,10 @@ class PathGradientFunctions {
   }
 }
 
+/**
+ * Represents the available path gradients.
+ * This links a gradient's user-facing description to its corresponding function.'
+ */
 export const PathGradients = {
   None: {
     name: "None",
