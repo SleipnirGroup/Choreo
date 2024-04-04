@@ -10,7 +10,7 @@ import ShapeLineIcon from "@mui/icons-material/ShapeLine";
 import { CircularProgress, Tooltip } from "@mui/material";
 import Box from "@mui/material/Box/Box";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
-import VisibilityPanel from "../config/VisibilityPanel";
+import ViewOptionsPanel from "../config/ViewOptionsPanel";
 import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel";
 import { IConstraintStore } from "../../document/ConstraintStore";
 import "react-toastify/dist/ReactToastify.min.css";
@@ -76,8 +76,8 @@ export class Field extends Component<Props, State> {
               marker={selectedSidebar as IEventMarkerStore}
             ></EventMarkerConfigPanel>
           )}
-        <VisibilityPanel></VisibilityPanel>
-        <WaypointVisibilityPanel></WaypointVisibilityPanel>
+        <ViewOptionsPanel />
+        <WaypointVisibilityPanel />
         <Tooltip
           disableInteractive
           placement="top-start"
