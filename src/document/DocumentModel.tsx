@@ -182,7 +182,10 @@ const StateStore = types
               ).then((result)=>{
                 unlisten();
                 return result;
-              })
+              }, (e => {
+                unlisten();
+                throw e;
+              }))
 
             },
 
