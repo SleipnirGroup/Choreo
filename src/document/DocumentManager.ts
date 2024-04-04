@@ -245,6 +245,9 @@ export class DocumentManager {
       this.model.uiState.setSelectedSidebarItem(undefined);
       this.model.uiState.setSelectedNavbarItem(-1);
     });
+    hotkeys("ctrl+o,command+o", () => {
+      this.saveFileDialog();
+    });
     hotkeys("f5,ctrl+shift+r,ctrl+r", function (event, handler) {
       event.preventDefault();
     });
