@@ -152,6 +152,12 @@ export const constraints = {
         description:
           "The allowable heading range relative to the direction to the point. Keep less than Pi.",
         units: "rad"
+      },
+      offset: {
+        name: "Heading Offset",
+        description:
+          "An offset heading which, when added to the robot's heading, results in facing the point. Keep less than Pi.",
+        units: "rad"
       }
     },
     wptScope: true,
