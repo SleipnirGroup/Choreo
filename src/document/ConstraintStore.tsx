@@ -138,12 +138,12 @@ export const constraints = {
     icon: <NearMe />,
     properties: {
       x: {
-        name: "X",
+        name: "Target X",
         description: "The x coordinate of the point the robot should face",
         units: "m"
       },
       y: {
-        name: "Y",
+        name: "Target Y",
         description: "The y coordinate of the point the robot should face",
         units: "m"
       },
