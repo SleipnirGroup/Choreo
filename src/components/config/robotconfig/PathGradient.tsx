@@ -17,7 +17,7 @@ export type PathGradient = {
   description: string;
   /**
    * A function that calculates the gradient value for a given point in a saved trajectory sample.
-   * 
+   *
    * @param point - The saved trajectory sample point.
    * @param i - The index of the point in the array.
    * @param arr - The array of saved trajectory samples.
