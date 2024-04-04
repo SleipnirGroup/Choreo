@@ -153,6 +153,8 @@ class PathGradientFunctions {
     arr: SavedTrajectorySample[],
     documentModel: IStateStore
   ) {
+    // the color value is normalized from red (0) to green (100)
+    // based on an artificial angular velocity max of 2 r/s
     const colorValue = Math.abs(
       Math.sin(point.angularVelocity / 0.00000000001) * 40
     );
