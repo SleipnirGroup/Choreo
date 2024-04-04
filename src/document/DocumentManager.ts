@@ -245,6 +245,16 @@ export class DocumentManager {
       this.model.uiState.setSelectedSidebarItem(undefined);
       this.model.uiState.setSelectedNavbarItem(-1);
     });
+    hotkeys("ctrl+o,command+o", () => {
+      dialog
+        .confirm("You may lose unsaved or not generated changes. Continue?", {
+          title: "Choreo",
+          type: "warning"
+        })
+        .then((proceed) => {
+          proceed && invoke("open_file_dialog");
+        });
+    });
     hotkeys("f5,ctrl+shift+r,ctrl+r", function (event, handler) {
       event.preventDefault();
     });
