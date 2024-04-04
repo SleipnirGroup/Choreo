@@ -242,7 +242,6 @@ export class DocumentManager {
     });
     hotkeys.unbind();
     hotkeys("escape", () => {
-      this.model;
       this.model.uiState.setSelectedSidebarItem(undefined);
       this.model.uiState.setSelectedNavbarItem(-1);
     });
