@@ -11,10 +11,12 @@ class FieldSamples extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
-
+  LINE_LENGTH  = 0.15;
   render() {
     const path = this.context.model.document.pathlist.activePath;
     const trajectory = path.generating ? path.generationProgress : path.generated;
+    // preserve this so that it updates when mutating the in-progress trajectory in place
+    let iteration = path.generationIterationNumber;
     return (
       <>
         {trajectory.map((point) => (

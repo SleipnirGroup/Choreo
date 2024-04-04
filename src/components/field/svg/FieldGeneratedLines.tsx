@@ -16,6 +16,8 @@ class FieldPathLines extends Component<Props, State> {
     let path = this.context.model.document.pathlist.activePath;
     let generatedPathString = "";
     const trajectory = path.generating ? path.generationProgress : path.generated;
+    // preserve this so that it updates when mutating the in-progress trajectory in place
+    let iteration = path.generationIterationNumber;
     trajectory.forEach(
       (point) => {
         generatedPathString += `${point.x},${point.y} `;

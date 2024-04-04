@@ -5,12 +5,13 @@ import { listen, TauriEvent, Event } from "@tauri-apps/api/event";
 import { v4 as uuidv4 } from "uuid";
 import { validate } from "./DocumentSpecTypes";
 import { applySnapshot, getSnapshot } from "mobx-state-tree";
-import { reaction } from "mobx";
+import { reaction, toJS } from "mobx";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import hotkeys from "hotkeys-js";
 import { ViewLayerDefaults } from "./UIStateStore";
 import LocalStorageKeys from "../util/LocalStorageKeys";
+import sizeof from "object-sizeof"
 
 type OpenFileEventPayload = {
   adjacent_gradle: boolean;
@@ -27,6 +28,8 @@ export class DocumentManager {
     this.model.document.history.canRedo && this.model.document.history.redo();
   }
   get history() {
+    console.log(toJS(this.model.document.history));
+    console.log(sizeof(this.model.document.history));
     return this.model.document.history;
   }
   model: IStateStore;

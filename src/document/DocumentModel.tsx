@@ -123,11 +123,24 @@ const StateStore = types
             () =>{
               const handle = pathStore.uuid.split('').reduce((a,b) => (((a << 5) - a) + b.charCodeAt(0))|0, 0);
               let unlisten: UnlistenFn;
+              let controlIntervalCount = 0;
+              for (let waypoint of generatedWaypoints) {
+                controlIntervalCount += waypoint.controlIntervalCount;
+              }
+              // last waypoint doesn't count, except as its own interval.
+              controlIntervalCount-= (generatedWaypoints[generatedWaypoints.length-1].controlIntervalCount);
+              controlIntervalCount += 1;
+              pathStore.setIterationNumber(0);
+              // todo: figure out how many control intervals should be coming back in the solver status callback
               return listen("solver-status", async (event) => {
                 if (event.payload!.handle == handle) {
-                  const newTraj: Array<SavedTrajectorySample> = [];
-                  event.payload.traj.samples.forEach((samp) => {
-                    newTraj.push({
+                  const samples = event.payload.traj.samples;
+                  const progress = pathStore.generationProgress;
+                  if (progress.length != controlIntervalCount) {
+                    console.log("resize", controlIntervalCount, samples.length);
+                    pathStore.setInProgressTrajectory(
+                    samples.map((samp) => (
+                    {
                       x: samp.x,
                       y: samp.y,
                       heading: samp.heading,
@@ -135,10 +148,23 @@ const StateStore = types
                       velocityX: samp.velocity_x,
                       velocityY: samp.velocity_y,
                       timestamp: samp.timestamp
-                    });
-                  });
-                  
-                  pathStore.setInProgressTrajectory(newTraj);
+                    })));
+                    
+                  } else {
+                    for (let i = 0; i < controlIntervalCount; i++) {
+                      const samp = samples[i];
+                      const prog = progress[i];
+                      prog.x = samp.x;
+                      prog.y = samp.y;
+                      prog.heading = samp.heading;
+                      prog.angularVelocity = samp.angular_velocity;
+                      prog.velocityX = samp.velocity_x;
+                      prog.velocityY = samp.velocity_y;
+                      prog.timestamp = samp.timestamp;
+  
+                    }
+                  }
+                  pathStore.setIterationNumber(pathStore.generationIterationNumber+1);
                 }
               }
               ).then(
