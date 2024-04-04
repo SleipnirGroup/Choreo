@@ -184,6 +184,8 @@ class PathGradientFunctions {
         stopPointGeneratedWaypoints[i].timestamp <= point.timestamp &&
         point.timestamp <= stopPointGeneratedWaypoints[i + 1].timestamp
       ) {
+        // an absolute value sine function is used to generate a distinct color between [0, 1]
+        // then a scalar is used to scale the color between the full color range [0, 360]
         return `hsl(${Math.abs(Math.sin(i) * 360)}, 100%, 50%)`;
       }
     }
