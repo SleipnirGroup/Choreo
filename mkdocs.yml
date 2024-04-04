@@ -90,6 +90,7 @@ nav:
       - Editing Paths: usage/editing-paths.md
       - Controls & Shortcuts: usage/controls-shortcuts.md
       - Saving: usage/saving.md
+      - View Options Panel: usage/view-options-panel.md
       - Estimating Moment of Inertia: usage/estimating-moi.md
   - ChoreoLib:
       - Installation: choreolib/installation.md
