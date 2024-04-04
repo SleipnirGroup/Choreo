@@ -8,7 +8,7 @@
 This zooms to fit the trajectory of the focused path. You can also access this option through the shortcut `Control + 0` or `Command + 0`
 
 ## Path Gradients
-Path Gradients are colors performed between intervals or between waypoints, depending on the specified behavior. This can be helpful for those trying to debug information quickly, or verify a constraint's effects.
+Path Gradients are colors displayed between intervals or between waypoints, depending on the specified behavior. This can be helpful for those trying to debug information quickly, or verify a constraint's effects.
 
 ### None
 No path gradient applied. The gradient shows a solid yellow line throughout the path.
