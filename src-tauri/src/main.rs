@@ -3,6 +3,7 @@
 
 use std::mem::MaybeUninit;
 use std::ptr::addr_of_mut;
+use std::sync::OnceLock;
 use std::sync::mpsc::{Sender, channel};
 use std::thread;
 use std::{fs, path::Path};
@@ -463,22 +464,20 @@ async fn generate_trajectory(
     path_builder.set_drivetrain(&drivetrain);
     path_builder.generate(true, handle)
 }
-struct GlobalState {
-    prog_tx: MaybeUninit<Sender<ProgressUpdate>>
-}
-static mut globalState: GlobalState = GlobalState {prog_tx: MaybeUninit::uninit()};
+
+/**
+ * A OnceLock is a synchronization primitive that can be written to once. Used here to 
+ */
+static prog_tx_cell : OnceLock<Sender<ProgressUpdate>> = OnceLock::new();
 fn solver_status_callback(traj: HolonomicTrajectory, handle: i64){
-    unsafe {
-        let ptr = globalState.prog_tx.as_ptr();
-        (&*ptr).send(ProgressUpdate { traj:traj, handle: handle });
+    let tx_opt = prog_tx_cell.get();
+    if let tx = tx_opt.unwrap() {
+      tx.send(ProgressUpdate { traj:traj, handle: handle });
     }
-    
 }
 fn main() {
     let (tx, rx) = channel::<ProgressUpdate>();
-    unsafe {
-        globalState.prog_tx.write(tx);
-    }
+    prog_tx_cell.get_or_init(move || tx);
 
     tauri::Builder::default()
         .setup(|app|{
