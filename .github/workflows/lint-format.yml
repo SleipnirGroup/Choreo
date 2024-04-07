@@ -42,7 +42,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: 3.12
 
       - run: pip3 install wpiformat==2024.33
 
@@ -89,10 +89,9 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: 3.12
 
-      - name: Install wpiformat
-        run: pip3 install wpiformat
+      - run: pip3 install wpiformat
 
       - name: Create compile_commands.json
         working-directory: choreolib
