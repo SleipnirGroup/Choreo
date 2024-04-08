@@ -22,7 +22,7 @@ type State = {
   isOpen: boolean;
 };
 
-class RobotConfigPanel extends Component<Props, State> {
+class ViewOptionsPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {
@@ -54,7 +54,7 @@ class RobotConfigPanel extends Component<Props, State> {
     const uiState = this.context.model.uiState;
 
     return (
-      <div className={styles.VisibilityPanel}>
+      <div className={styles.ViewOptionsPanel}>
         <Tooltip disableInteractive title="Zoom to fit trajectory">
           {/* If there's no waypoints, then don't allow user to zoom to fit Waypoints */}
           <IconButton
@@ -111,12 +111,12 @@ class RobotConfigPanel extends Component<Props, State> {
         </div>
         <IconButton
           onClick={() => {
-            uiState.setVisibilityPanelOpen(!uiState.visibilityPanelOpen);
+            uiState.setViewOptionsPanelOpen(!uiState.isViewOptionsPanelOpen);
           }}
         >
-          {uiState.visibilityPanelOpen ? <Close /> : <Visibility />}
+          {uiState.isViewOptionsPanelOpen ? <Close /> : <Visibility />}
         </IconButton>
-        {uiState.visibilityPanelOpen && (
+        {uiState.isViewOptionsPanelOpen && (
           <div
             style={{
               display: "flex",
@@ -162,4 +162,4 @@ class RobotConfigPanel extends Component<Props, State> {
     );
   }
 }
-export default observer(RobotConfigPanel);
+export default observer(ViewOptionsPanel);
