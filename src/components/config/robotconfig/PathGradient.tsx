@@ -87,10 +87,7 @@ class PathGradientFunctions {
     arr: SavedTrajectorySample[],
     documentModel: IStateStore
   ) {
-    const colorValue = Math.abs(
-      Math.sin(point.angularVelocity / 0.00000000001) * 40
-    );
-    return `hsl(${colorValue}, 100%, 50%)`;
+    return `hsl(${Math.abs(point.angularVelocity * 100) / 2}, 100%, 50%)`;
   }
 
   static splitTrajectories(
