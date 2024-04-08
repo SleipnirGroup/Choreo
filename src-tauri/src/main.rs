@@ -1,9 +1,6 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-
-
-
 use std::sync::mpsc::{channel, Sender};
 use std::sync::OnceLock;
 use std::thread;
@@ -471,14 +468,8 @@ async fn generate_trajectory(
 static PROGRESS_SENDER_LOCK: OnceLock<Sender<ProgressUpdate>> = OnceLock::new();
 fn solver_status_callback(traj: HolonomicTrajectory, handle: i64) {
     let tx_opt = PROGRESS_SENDER_LOCK.get();
-    let _ = match tx_opt {
-        Some(tx) => {
-            let _ = tx.send(ProgressUpdate {
-                traj,
-                handle,
-            });
-        },
-        None=>()
+    if let Some(tx) = tx_opt {
+        let _ = tx.send(ProgressUpdate { traj, handle });
     };
 }
 fn main() {
