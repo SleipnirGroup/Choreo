@@ -18,9 +18,9 @@ class FieldPathLines extends Component<Props, State> {
     const trajectory = path.generating
       ? path.generationProgress
       : path.generated;
-    // preserve this so that it updates when mutating the in-progress trajectory in place
+    // preserve this to trigger rerenders when mutating the in-progress trajectory in place
     //eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const iteration = path.generationIterationNumber;
+    const _ = path.generationIterationNumber;
     trajectory.forEach((point) => {
       generatedPathString += `${point.x},${point.y} `;
     });
@@ -47,14 +47,15 @@ class FieldPathLines extends Component<Props, State> {
             PathGradients.None.name &&
             trajectory.length > 1 &&
             trajectory.map((point, i, arr) => {
+              if (!pathGradient) {
+                return <></>;
+              }
               if (i == arr.length - 1) {
                 return <></>;
               }
               const point2 = arr[i + 1];
 
-              if (!pathGradient) {
-                return <></>;
-              }
+
 
               // 0 t = red, 1 t = green
               return (

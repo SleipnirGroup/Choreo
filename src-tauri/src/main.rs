@@ -288,6 +288,7 @@ async fn generate_trajectory(
     constraints: Vec<Constraints>,
     circleObstacles: Vec<CircleObstacle>,
     polygonObstacles: Vec<PolygonObstacle>,
+    // The handle referring to this path for the solver state callback
     handle: i64,
 ) -> Result<HolonomicTrajectory, String> {
     let mut path_builder = SwervePathBuilder::new();
@@ -464,6 +465,8 @@ async fn generate_trajectory(
 
 /**
  * A OnceLock is a synchronization primitive that can be written to once. Used here to
+ * create a read-only static reference to the sender, even though the sender can't be
+ * constructed in a static context.
  */
 static PROGRESS_SENDER_LOCK: OnceLock<Sender<ProgressUpdate>> = OnceLock::new();
 fn solver_status_callback(traj: HolonomicTrajectory, handle: i64) {
