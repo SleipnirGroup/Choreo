@@ -134,12 +134,15 @@ const StateStore = types
                 generatedWaypoints[generatedWaypoints.length - 1]
                   .controlIntervalCount;
               controlIntervalCount += 1;
+
               pathStore.setIterationNumber(0);
-              // todo: figure out how many control intervals should be coming back in the solver status callback
+
               return listen("solver-status", async (event) => {
                 if (event.payload!.handle == handle) {
                   const samples = event.payload.traj.samples;
                   const progress = pathStore.generationProgress;
+                  // mutate in-progress trajectory in place if it's already the right size
+                  // should avoid allocations on every progress update
                   if (progress.length != controlIntervalCount) {
                     console.log("resize", controlIntervalCount, samples.length);
                     pathStore.setInProgressTrajectory(
@@ -166,6 +169,8 @@ const StateStore = types
                       prog.timestamp = samp.timestamp;
                     }
                   }
+                  // todo: get this from the progress update, so it actually means something
+                  // beyond just triggering UI updates
                   pathStore.setIterationNumber(
                     pathStore.generationIterationNumber + 1
                   );

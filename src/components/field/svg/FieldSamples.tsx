@@ -18,7 +18,7 @@ class FieldSamples extends Component<Props, State> {
       ? path.generationProgress
       : path.generated;
     // preserve this so that it updates when mutating the in-progress trajectory in place
-     //eslint-disable-next-line @typescript-eslint/no-unused-vars
+    //eslint-disable-next-line @typescript-eslint/no-unused-vars
     const iteration = path.generationIterationNumber;
     return (
       <>
