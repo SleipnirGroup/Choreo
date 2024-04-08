@@ -11,7 +11,7 @@
   justify-content: flex-start;
   border-radius: 0 0 10px 0;
 }
-.VisibilityPanel {
+.ViewOptionsPanel {
   overflow-x: hidden;
   position: absolute;
   top: 0;
