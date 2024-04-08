@@ -55,8 +55,6 @@ class FieldPathLines extends Component<Props, State> {
               }
               const point2 = arr[i + 1];
 
-
-
               // 0 t = red, 1 t = green
               return (
                 <line
