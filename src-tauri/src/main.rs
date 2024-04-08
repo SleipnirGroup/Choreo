@@ -1,21 +1,21 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 //#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use serde::{Deserialize, Serialize};
 use std::mem::MaybeUninit;
 use std::ptr::addr_of_mut;
+use std::sync::mpsc::{channel, Sender};
 use std::sync::OnceLock;
-use std::sync::mpsc::{Sender, channel};
 use std::thread;
 use std::{fs, path::Path};
-use serde::{Serialize, Deserialize};
-use tauri::AppHandle;
 use tauri::regex::{escape, Regex};
+use tauri::AppHandle;
 use tauri::{
     api::{dialog::blocking::FileDialogBuilder, file},
     Manager,
 };
 use trajoptlib::{
-    HolonomicTrajectory, InitialGuessPoint, SwerveDrivetrain, SwerveModule, SwervePathBuilder
+    HolonomicTrajectory, InitialGuessPoint, SwerveDrivetrain, SwerveModule, SwervePathBuilder,
 };
 
 #[derive(Clone, serde::Serialize, Debug)]
@@ -279,7 +279,7 @@ async fn cancel() {
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 struct ProgressUpdate {
     traj: HolonomicTrajectory,
-    handle: i64
+    handle: i64,
 }
 
 #[allow(non_snake_case)]
@@ -291,7 +291,7 @@ async fn generate_trajectory(
     constraints: Vec<Constraints>,
     circleObstacles: Vec<CircleObstacle>,
     polygonObstacles: Vec<PolygonObstacle>,
-    handle: i64
+    handle: i64,
 ) -> Result<HolonomicTrajectory, String> {
     let mut path_builder = SwervePathBuilder::new();
     let mut wpt_cnt: usize = 0;
@@ -466,13 +466,16 @@ async fn generate_trajectory(
 }
 
 /**
- * A OnceLock is a synchronization primitive that can be written to once. Used here to 
+ * A OnceLock is a synchronization primitive that can be written to once. Used here to
  */
-static prog_tx_cell : OnceLock<Sender<ProgressUpdate>> = OnceLock::new();
-fn solver_status_callback(traj: HolonomicTrajectory, handle: i64){
+static prog_tx_cell: OnceLock<Sender<ProgressUpdate>> = OnceLock::new();
+fn solver_status_callback(traj: HolonomicTrajectory, handle: i64) {
     let tx_opt = prog_tx_cell.get();
     if let tx = tx_opt.unwrap() {
-      tx.send(ProgressUpdate { traj:traj, handle: handle });
+        tx.send(ProgressUpdate {
+            traj: traj,
+            handle: handle,
+        });
     }
 }
 fn main() {
@@ -480,7 +483,7 @@ fn main() {
     prog_tx_cell.get_or_init(move || tx);
 
     tauri::Builder::default()
-        .setup(|app|{
+        .setup(|app| {
             let progress_emitter = app.handle().clone();
             thread::spawn(move || {
                 for received in rx {

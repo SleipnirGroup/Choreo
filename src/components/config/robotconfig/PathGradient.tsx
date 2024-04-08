@@ -99,11 +99,13 @@ class PathGradientFunctions {
     arr: SavedTrajectorySample[],
     documentModel: IStateStore
   ) {
-    const stopPointControlIntervals = documentModel.document.pathlist.activePath.stopPointIndices();
+    const stopPointControlIntervals =
+      documentModel.document.pathlist.activePath.stopPointIndices();
 
     for (let split = 0; split < stopPointControlIntervals.length - 1; split++) {
       if (
-        i > stopPointControlIntervals[split] && i < stopPointControlIntervals[split+1]
+        i > stopPointControlIntervals[split] &&
+        i < stopPointControlIntervals[split + 1]
       ) {
         return `hsl(${Math.abs(Math.sin(split) * 360)}, 100%, 50%)`;
       }

@@ -120,15 +120,19 @@ const StateStore = types
           resolve(pathStore);
         })
           .then(
-            () =>{
-              const handle = pathStore.uuid.split('').reduce((a,b) => (((a << 5) - a) + b.charCodeAt(0))|0, 0);
+            () => {
+              const handle = pathStore.uuid
+                .split("")
+                .reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) | 0, 0);
               let unlisten: UnlistenFn;
               let controlIntervalCount = 0;
-              for (let waypoint of generatedWaypoints) {
+              for (const waypoint of generatedWaypoints) {
                 controlIntervalCount += waypoint.controlIntervalCount;
               }
               // last waypoint doesn't count, except as its own interval.
-              controlIntervalCount-= (generatedWaypoints[generatedWaypoints.length-1].controlIntervalCount);
+              controlIntervalCount -=
+                generatedWaypoints[generatedWaypoints.length - 1]
+                  .controlIntervalCount;
               controlIntervalCount += 1;
               pathStore.setIterationNumber(0);
               // todo: figure out how many control intervals should be coming back in the solver status callback
@@ -139,17 +143,16 @@ const StateStore = types
                   if (progress.length != controlIntervalCount) {
                     console.log("resize", controlIntervalCount, samples.length);
                     pathStore.setInProgressTrajectory(
-                    samples.map((samp) => (
-                    {
-                      x: samp.x,
-                      y: samp.y,
-                      heading: samp.heading,
-                      angularVelocity: samp.angular_velocity,
-                      velocityX: samp.velocity_x,
-                      velocityY: samp.velocity_y,
-                      timestamp: samp.timestamp
-                    })));
-                    
+                      samples.map((samp) => ({
+                        x: samp.x,
+                        y: samp.y,
+                        heading: samp.heading,
+                        angularVelocity: samp.angular_velocity,
+                        velocityX: samp.velocity_x,
+                        velocityY: samp.velocity_y,
+                        timestamp: samp.timestamp
+                      }))
+                    );
                   } else {
                     for (let i = 0; i < controlIntervalCount; i++) {
                       const samp = samples[i];
@@ -161,14 +164,14 @@ const StateStore = types
                       prog.velocityX = samp.velocity_x;
                       prog.velocityY = samp.velocity_y;
                       prog.timestamp = samp.timestamp;
-  
                     }
                   }
-                  pathStore.setIterationNumber(pathStore.generationIterationNumber+1);
+                  pathStore.setIterationNumber(
+                    pathStore.generationIterationNumber + 1
+                  );
                 }
-              }
-              ).then(
-                (unlistener) => {
+              })
+                .then((unlistener) => {
                   unlisten = unlistener;
                   return invoke("generate_trajectory", {
                     path: pathStore.waypoints,
@@ -177,16 +180,18 @@ const StateStore = types
                     circleObstacles: pathStore.asSolverPath().circleObstacles,
                     polygonObstacles: [],
                     handle: handle
-                  })
-                }
-              ).then((result)=>{
-                unlisten();
-                return result;
-              }, (e => {
-                unlisten();
-                throw e;
-              }))
-
+                  });
+                })
+                .then(
+                  (result) => {
+                    unlisten();
+                    return result;
+                  },
+                  (e) => {
+                    unlisten();
+                    throw e;
+                  }
+                );
             },
 
             (e) => {

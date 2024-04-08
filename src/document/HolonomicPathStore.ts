@@ -250,7 +250,7 @@ export const HolonomicPathStore = types
         return wptIndices;
         // remove duplicates
       },
-      stopPointIndices() : Array<number | undefined> {
+      stopPointIndices(): Array<number | undefined> {
         const stopPoints = this.stopPoints();
         return stopPoints.length > 1
           ? stopPoints

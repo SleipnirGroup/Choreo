@@ -11,7 +11,7 @@ import "react-toastify/dist/ReactToastify.min.css";
 import hotkeys from "hotkeys-js";
 import { ViewLayerDefaults } from "./UIStateStore";
 import LocalStorageKeys from "../util/LocalStorageKeys";
-import sizeof from "object-sizeof"
+import sizeof from "object-sizeof";
 
 type OpenFileEventPayload = {
   adjacent_gradle: boolean;

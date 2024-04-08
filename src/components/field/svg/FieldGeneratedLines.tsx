@@ -13,16 +13,17 @@ class FieldPathLines extends Component<Props, State> {
   declare context: React.ContextType<typeof DocumentManagerContext>;
 
   render() {
-    let path = this.context.model.document.pathlist.activePath;
+    const path = this.context.model.document.pathlist.activePath;
     let generatedPathString = "";
-    const trajectory = path.generating ? path.generationProgress : path.generated;
+    const trajectory = path.generating
+      ? path.generationProgress
+      : path.generated;
     // preserve this so that it updates when mutating the in-progress trajectory in place
-    let iteration = path.generationIterationNumber;
-    trajectory.forEach(
-      (point) => {
-        generatedPathString += `${point.x},${point.y} `;
-      }
-    );
+    //eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const iteration = path.generationIterationNumber;
+    trajectory.forEach((point) => {
+      generatedPathString += `${point.x},${point.y} `;
+    });
     const key = this.context.model.uiState
       .selectedPathGradient as keyof typeof PathGradients;
     const pathGradient = PathGradients[key];
