@@ -15,7 +15,7 @@ use tauri::{
     Manager,
 };
 use trajoptlib::{
-    HolonomicTrajectory, InitialGuessPoint, SwerveDrivetrain, SwerveModule, SwervePathBuilder, set_progress_callback,
+    HolonomicTrajectory, InitialGuessPoint, SwerveDrivetrain, SwerveModule, SwervePathBuilder
 };
 
 #[derive(Clone, serde::Serialize, Debug)]
@@ -451,7 +451,7 @@ async fn generate_trajectory(
     };
 
     path_builder.set_bumpers(config.bumperLength, config.bumperWidth);
-
+    path_builder.add_progress_callback(solver_status_callback);
     // Skip obstacles for now while we figure out whats wrong with them
     for o in circleObstacles {
         path_builder.sgmt_circle_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
@@ -487,8 +487,6 @@ fn main() {
                     progress_emitter.emit_all("solver-status", received);
                 }
             });
-
-            set_progress_callback(solver_status_callback);
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
