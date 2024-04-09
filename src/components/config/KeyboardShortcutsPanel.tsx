@@ -1,11 +1,9 @@
 import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
-import Divider from "@mui/material/Divider";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer/TableContainer";
-import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow/TableRow";
 import { type } from "@tauri-apps/api/os";
 import { Component } from "react";
@@ -15,7 +13,12 @@ type Props = object;
 
 type State = object;
 
-let isMac = (await type()) == "Darwin";
+let isMac = false;
+// We don't want to block during the imports stage, especially
+// if type() somehow fails.
+type().then(type=>{
+    isMac = (type == "Darwin");
+})
 // These default to the Mac ⌘ key because it's easier to replace with Ctrl than vice versa
 let shortcuts = {
   Path: {
@@ -78,7 +81,6 @@ class KeyboardShortcutsPanel extends Component<Props, State> {
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 {entry[0].toUpperCase()}
               </AccordionSummary>
-              {/* <Divider sx={{paddingBlock: "4px"}}></Divider> */}
               <AccordionDetails>
                 <TableContainer
                   component={Paper}
