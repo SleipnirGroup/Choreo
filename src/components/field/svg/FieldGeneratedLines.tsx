@@ -28,28 +28,25 @@ class FieldPathLines extends Component<Props, State> {
       .selectedPathGradient as keyof typeof PathGradients;
     const pathGradient = PathGradients[key];
     this.context.model.uiState.loadPathGradientFromLocalStorage();
-
+    if (pathGradient === undefined || 
+      this.context.model.uiState.selectedPathGradient ==
+          PathGradients.None.name) {
+      return (
+        <polyline
+          points={generatedPathString}
+          stroke="var(--select-yellow)"
+          strokeWidth={0.05}
+          fill="transparent"
+          style={{ pointerEvents: "none" }}
+        ></polyline>
+      );
+    }
     return (
       <>
-        {this.context.model.uiState.selectedPathGradient ==
-          PathGradients.None.name && (
-          <polyline
-            points={generatedPathString}
-            stroke="var(--select-yellow)"
-            strokeWidth={0.05}
-            fill="transparent"
-            style={{ pointerEvents: "none" }}
-          ></polyline>
-        )}
         <g>
-          /
-          {this.context.model.uiState.selectedPathGradient !=
-            PathGradients.None.name &&
+          {
             trajectory.length > 1 &&
             trajectory.map((point, i, arr) => {
-              if (!pathGradient) {
-                return <></>;
-              }
               if (i == arr.length - 1) {
                 return <></>;
               }
