@@ -258,7 +258,8 @@ class FieldOverlayRoot extends Component<Props, State> {
               .sort((_, pt2) => {
                 if (pt2?.[1]) {
                   return -1;
-                } return 0;
+                }
+                return 0;
               })
               .map((pt) => pt?.[0])}
 
