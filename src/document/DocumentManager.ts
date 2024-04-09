@@ -44,6 +44,7 @@ export class DocumentManager {
         usesObstacles: false
       }
     });
+    this.model.uiState.loadPathGradientFromLocalStorage();
     this.model.document.pathlist.setExporter((uuid) => {
       try {
         this.writeTrajectory(() => this.getTrajFilePath(uuid), uuid);

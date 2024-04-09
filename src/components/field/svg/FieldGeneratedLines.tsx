@@ -27,7 +27,6 @@ class FieldPathLines extends Component<Props, State> {
     const key = this.context.model.uiState
       .selectedPathGradient as keyof typeof PathGradients;
     const pathGradient = PathGradients[key];
-    this.context.model.uiState.loadPathGradientFromLocalStorage();
     if (pathGradient === undefined || 
       this.context.model.uiState.selectedPathGradient ==
           PathGradients.None.name) {
