@@ -6,6 +6,7 @@ import RobotConfigPanel from "./robotconfig/RobotConfigPanel";
 import { Close } from "@mui/icons-material";
 import ExportConfigPanel from "./ExportConfigPanel";
 import BetasConfigPanel from "./BetasConfigPanel";
+import KeyboardShortcutsPanel from "./KeyboardShortcutsPanel";
 
 type Props = object;
 
@@ -30,7 +31,7 @@ class SettingsModal extends Component<Props, State> {
             transform: "translate(-50%, -50%)",
             background: "var(--background-light-gray)",
             color: "white",
-            width: "min-content",
+            width: "max-content",
             // padding: "8px",
 
             borderRadius: "10px",
@@ -68,17 +69,19 @@ class SettingsModal extends Component<Props, State> {
               <Tab label="Robot Config" />
               <Tab label="Export Config" />
               <Tab label="Betas" />
+              <Tab label="Controls"/>
             </Tabs>
             <IconButton onClick={() => uiState.setRobotConfigOpen(false)}>
               <Close></Close>
             </IconButton>
           </div>
-          <div style={{ paddingTop: 8, flexGrow: 1, overflowY: "scroll" }}>
+          <div style={{ paddingTop: 8, paddingLeft: 8, flexGrow: 1, overflowY: "scroll" }}>
             {uiState.settingsTab == 0 && <RobotConfigPanel></RobotConfigPanel>}
             {uiState.settingsTab == 1 && (
               <ExportConfigPanel></ExportConfigPanel>
             )}
             {uiState.settingsTab == 2 && <BetasConfigPanel></BetasConfigPanel>}
+            {uiState.settingsTab == 3 && <KeyboardShortcutsPanel></KeyboardShortcutsPanel>}
           </div>
         </div>
       </Modal>
