@@ -69,19 +69,28 @@ class SettingsModal extends Component<Props, State> {
               <Tab label="Robot Config" />
               <Tab label="Export Config" />
               <Tab label="Betas" />
-              <Tab label="Controls"/>
+              <Tab label="Controls" />
             </Tabs>
             <IconButton onClick={() => uiState.setRobotConfigOpen(false)}>
               <Close></Close>
             </IconButton>
           </div>
-          <div style={{ paddingTop: 8, paddingLeft: 8, flexGrow: 1, overflowY: "scroll" }}>
+          <div
+            style={{
+              paddingTop: 8,
+              paddingLeft: 8,
+              flexGrow: 1,
+              overflowY: "scroll"
+            }}
+          >
             {uiState.settingsTab == 0 && <RobotConfigPanel></RobotConfigPanel>}
             {uiState.settingsTab == 1 && (
               <ExportConfigPanel></ExportConfigPanel>
             )}
             {uiState.settingsTab == 2 && <BetasConfigPanel></BetasConfigPanel>}
-            {uiState.settingsTab == 3 && <KeyboardShortcutsPanel></KeyboardShortcutsPanel>}
+            {uiState.settingsTab == 3 && (
+              <KeyboardShortcutsPanel></KeyboardShortcutsPanel>
+            )}
           </div>
         </div>
       </Modal>

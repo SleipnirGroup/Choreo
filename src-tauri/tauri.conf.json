@@ -34,7 +34,7 @@
         "close": true
       },
       "os": {
-        "all":true
+        "all": true
       }
     },
     "bundle": {
