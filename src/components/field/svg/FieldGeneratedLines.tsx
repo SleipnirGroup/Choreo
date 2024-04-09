@@ -18,7 +18,7 @@ class FieldPathLines extends Component<Props, State> {
     const trajectory = path.generating
       ? path.generationProgress
       : path.generated;
-    // preserve the acccess of generationIterationNumber 
+    // preserve the acccess of generationIterationNumber
     // to trigger rerenders when mutating the in-progress trajectory in place
     //eslint-disable-next-line @typescript-eslint/no-unused-vars
     const _ = path.generationIterationNumber;
@@ -28,9 +28,10 @@ class FieldPathLines extends Component<Props, State> {
     const key = this.context.model.uiState
       .selectedPathGradient as keyof typeof PathGradients;
     const pathGradient = PathGradients[key];
-    if (pathGradient === undefined || 
-      this.context.model.uiState.selectedPathGradient ==
-          PathGradients.None.name) {
+    if (
+      pathGradient === undefined ||
+      this.context.model.uiState.selectedPathGradient == PathGradients.None.name
+    ) {
       return (
         <polyline
           points={generatedPathString}
@@ -44,8 +45,7 @@ class FieldPathLines extends Component<Props, State> {
     return (
       <>
         <g>
-          {
-            trajectory.length > 1 &&
+          {trajectory.length > 1 &&
             trajectory.map((point, i, arr) => {
               if (i == arr.length - 1) {
                 return <></>;
