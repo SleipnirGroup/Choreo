@@ -232,8 +232,8 @@ class FieldOverlayRoot extends Component<Props, State> {
           )}
           <FieldEventMarkers></FieldEventMarkers>
           {layers[ViewLayers.Waypoints] &&
-            this.context.model.document.pathlist.activePath.waypoints.map(
-              (point, index) => {
+            this.context.model.document.pathlist.activePath.waypoints
+              .map((point, index) => {
                 const activePath =
                   this.context.model.document.pathlist.activePath;
                 if (
@@ -241,16 +241,28 @@ class FieldOverlayRoot extends Component<Props, State> {
                     activePath.visibleWaypointsEnd >= index) ||
                   !layers[ViewLayers.Focus]
                 ) {
-                  return (
+                  return [
                     <OverlayWaypoint
                       waypoint={point}
                       index={index}
                       key={point.uuid}
-                    ></OverlayWaypoint>
-                  );
+                    ></OverlayWaypoint>,
+                    point.selected
+                  ];
                 }
-              }
-            )}
+              })
+              // sort, such that selected waypoint ends up last,
+              // and thus above all the rest.
+              // We sort the elements, not the waypoints, so that
+              // each element still corresponds to the right waypoint index
+              .sort((_, pt2) => {
+                if (pt2?.[1]) {
+                  return -1;
+                }
+                return 0;
+              })
+              .map((pt) => pt?.[0])}
+
           {constraintSelected && (
             <FieldConstraintsAddLayer></FieldConstraintsAddLayer>
           )}
