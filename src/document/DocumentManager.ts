@@ -248,7 +248,7 @@ export class DocumentManager {
     hotkeys("ctrl+o,command+o", () => {
       dialog
         .confirm("You may lose unsaved or not generated changes. Continue?", {
-          title: "Open File",
+          title: "Choreo",
           type: "warning"
         })
         .then((proceed) => {
