@@ -9,7 +9,7 @@ import { ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
 import { WaypointData } from "../../document/UIStateStore";
 import { angleModulus } from "../../util/MathUtil";
 
-type Props = { waypoint: IHolonomicWaypointStore | null, index: number };
+type Props = { waypoint: IHolonomicWaypointStore | null; index: number };
 
 type State = object;
 
@@ -29,15 +29,19 @@ class WaypointPanel extends Component<Props, State> {
     if (this.isWaypointNonNull(waypoint)) {
       return (
         <div className={styles.WaypointPanel}>
-          <span style={{
-            position: "absolute",
-            right: 0,
-            top:0,
-            paddingTop:"inherit",
-            paddingRight: "inherit",
-            fontWeight: "bolder",
-            fontSize: "1.5em"
-          }}>{index+1}</span>
+          <span
+            style={{
+              position: "absolute",
+              right: 0,
+              top: 0,
+              paddingTop: "inherit",
+              paddingRight: "inherit",
+              fontWeight: "bolder",
+              fontSize: "1.5em"
+            }}
+          >
+            {index + 1}
+          </span>
           <InputList noCheckbox>
             <Input
               title="x"

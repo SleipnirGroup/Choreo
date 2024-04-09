@@ -42,8 +42,7 @@ export class Field extends Component<Props, State> {
         <FieldOverlayRoot></FieldOverlayRoot>
         {selectedSidebar !== undefined &&
           "heading" in selectedSidebar &&
-          indexIfWaypoint !== -1
-           && (
+          indexIfWaypoint !== -1 && (
             <WaypointPanel
               waypoint={selectedSidebar as IHolonomicWaypointStore}
               index={indexIfWaypoint}
