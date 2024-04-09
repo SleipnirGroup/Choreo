@@ -68,7 +68,8 @@ class KeyboardShortcutsPanel extends Component<Props, State> {
           fontSize: "2rem",
           marginTop: `${1 * this.rowGap}px`,
           marginBottom: `${1 * this.rowGap}px`,
-          marginInline: "auto"
+          marginInline: "auto",
+          width:"max-content"
         }}
       >
         {Object.entries(shortcuts).map((entry) => (

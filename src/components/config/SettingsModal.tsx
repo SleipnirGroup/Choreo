@@ -31,7 +31,7 @@ class SettingsModal extends Component<Props, State> {
             transform: "translate(-50%, -50%)",
             background: "var(--background-light-gray)",
             color: "white",
-            width: "max-content",
+            width: "min-content",
             // padding: "8px",
 
             borderRadius: "10px",
