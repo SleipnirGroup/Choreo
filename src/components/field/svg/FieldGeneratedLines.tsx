@@ -20,7 +20,6 @@ class FieldPathLines extends Component<Props, State> {
       : path.generated;
     // preserve the acccess of generationIterationNumber
     // to trigger rerenders when mutating the in-progress trajectory in place
-    //eslint-disable-next-line @typescript-eslint/no-unused-vars
     const _ = path.generationIterationNumber;
     trajectory.forEach((point) => {
       generatedPathString += `${point.x},${point.y} `;
