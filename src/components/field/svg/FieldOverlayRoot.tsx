@@ -117,7 +117,7 @@ class FieldOverlayRoot extends Component<Props, State> {
   }
 
   private handleContextMenu(e: MouseEvent) {
-    this.setState({mouseSelection: e });
+    this.setState({ mouseSelection: e });
   }
 
   private zoomed(e: any) {
@@ -242,7 +242,10 @@ class FieldOverlayRoot extends Component<Props, State> {
                             value={`${index}`}
                             onClick={() => {
                               if (this.state.mouseSelection !== undefined) {
-                                this.createWaypoint(this.state.mouseSelection, index);
+                                this.createWaypoint(
+                                  this.state.mouseSelection,
+                                  index
+                                );
                                 this.setState({ mouseSelection: undefined });
                               }
                             }}
@@ -368,7 +371,9 @@ class FieldOverlayRoot extends Component<Props, State> {
     this.context.history.stopGroup();
   }
 
-  createWaypointOnClick(e: React.MouseEvent<SVGCircleElement, MouseEvent>): void {
+  createWaypointOnClick(
+    e: React.MouseEvent<SVGCircleElement, MouseEvent>
+  ): void {
     if (e.currentTarget === e.target) {
       this.createWaypoint(e, this.context.model.uiState.selectedNavbarItem);
     }
