@@ -41,7 +41,7 @@ let shortcuts = {
   },
   Waypoints: {
     "1 through 4": "Select waypoint type in navbar",
-    "Shift-1 through Shift-4": "Change type of selected waypoint",
+    "Shift+1 through Shift+4": "Change type of selected waypoint",
     "Left Mouse Click":
       "Add waypoint type selected in navbar at click position",
     "Left Arrow, X": "Select previous waypoint in path",
