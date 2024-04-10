@@ -23,24 +23,24 @@ class SettingsModal extends Component<Props, State> {
         onClose={() => uiState.setRobotConfigOpen(false)}
         closeAfterTransition
       >
-      <Fade in={uiState.robotConfigOpen}>
-        <div
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            background: "var(--background-light-gray)",
-            color: "white",
-            width: "min-content",
-            // padding: "8px",
+        <Fade in={uiState.robotConfigOpen}>
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              background: "var(--background-light-gray)",
+              color: "white",
+              width: "min-content",
+              // padding: "8px",
 
-            borderRadius: "10px",
-            maxHeight: "90vh",
-            display: "flex",
-            flexDirection: "column"
-          }}
-        >
+              borderRadius: "10px",
+              maxHeight: "90vh",
+              display: "flex",
+              flexDirection: "column"
+            }}
+          >
             <div
               style={{
                 width: "100%",
