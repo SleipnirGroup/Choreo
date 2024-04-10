@@ -471,6 +471,7 @@ export class DocumentManager {
         usesObstacles: false
       }
     });
+    this.model.uiState.loadPathGradientFromLocalStorage();
     this.model.document.pathlist.addPath("NewPath");
     this.model.document.history.clear();
   }

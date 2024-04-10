@@ -182,7 +182,7 @@ export type SelectableItemTypes =
   | IEventMarkerStore
   | undefined;
 
-/* Visibility stuff */
+/* ViewOptionsPanel items */
 const ViewData = {
   Field: {
     index: 0,
@@ -255,7 +255,7 @@ export const UIStateStore = types
     saveFileDir: types.maybe(types.string),
     isGradleProject: types.maybe(types.boolean),
     waypointPanelOpen: false,
-    visibilityPanelOpen: false,
+    isViewOptionsPanelOpen: false,
     robotConfigOpen: false,
     mainMenuOpen: false,
     settingsTab: types.refinement(
@@ -387,8 +387,8 @@ export const UIStateStore = types
     setWaypointPanelOpen(open: boolean) {
       self.waypointPanelOpen = open;
     },
-    setVisibilityPanelOpen(open: boolean) {
-      self.visibilityPanelOpen = open;
+    setViewOptionsPanelOpen(open: boolean) {
+      self.isViewOptionsPanelOpen = open;
     },
     setPathAnimationTimestamp(time: number) {
       self.pathAnimationTimestamp = time;
