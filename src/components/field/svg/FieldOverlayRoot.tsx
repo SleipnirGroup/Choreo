@@ -375,7 +375,7 @@ class FieldOverlayRoot extends Component<Props, State> {
     e: React.MouseEvent<SVGCircleElement, MouseEvent>
   ): void {
     if (e.currentTarget === e.target) {
-      this.createWaypoint(e, this.context.model.uiState.selectedNavbarItem);
+      this.createWaypoint(e as unknown as MouseEvent, this.context.model.uiState.selectedNavbarItem);
     }
   }
   createObstacle(e: React.MouseEvent<SVGCircleElement, MouseEvent>): void {
