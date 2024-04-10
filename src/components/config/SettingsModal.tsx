@@ -68,8 +68,8 @@ class SettingsModal extends Component<Props, State> {
             >
               <Tab label="Robot Config" />
               <Tab label="Export Config" />
-              <Tab label="Betas" />
               <Tab label="Controls" />
+              <Tab label="Betas" />
             </Tabs>
             <IconButton onClick={() => uiState.setRobotConfigOpen(false)}>
               <Close></Close>
@@ -87,10 +87,10 @@ class SettingsModal extends Component<Props, State> {
             {uiState.settingsTab == 1 && (
               <ExportConfigPanel></ExportConfigPanel>
             )}
-            {uiState.settingsTab == 2 && <BetasConfigPanel></BetasConfigPanel>}
-            {uiState.settingsTab == 3 && (
+            {uiState.settingsTab == 2 && (
               <KeyboardShortcutsPanel></KeyboardShortcutsPanel>
             )}
+            {uiState.settingsTab == 3 && <BetasConfigPanel></BetasConfigPanel>}
           </div>
         </div>
       </Modal>

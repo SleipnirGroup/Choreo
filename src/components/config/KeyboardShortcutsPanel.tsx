@@ -16,11 +16,11 @@ type State = object;
 let isMac = false;
 // We don't want to block during the imports stage, especially
 // if type() somehow fails.
-type().then(type=>{
-    isMac = (type == "Darwin");
-})
+type().then((type) => {
+  isMac = type == "Darwin";
+});
 // These default to the Mac ⌘ key because it's easier to replace with Ctrl than vice versa
-let shortcuts = {
+const shortcuts = {
   Path: {
     "G, ⌘ + G": "Generate current path",
     Space: "Start/stop path playback",
@@ -41,7 +41,7 @@ let shortcuts = {
   },
   Waypoints: {
     "1 through 4": "Select waypoint type in navbar",
-    "Shift+1 through Shift+4": "Change type of selected waypoint",
+    "Shift + 1 through Shift + 4": "Change type of selected waypoint",
     "Left Mouse Click":
       "Add waypoint type selected in navbar at click position",
     "Left Arrow, X": "Select previous waypoint in path",
@@ -72,12 +72,12 @@ class KeyboardShortcutsPanel extends Component<Props, State> {
           marginTop: `${1 * this.rowGap}px`,
           marginBottom: `${1 * this.rowGap}px`,
           marginInline: "auto",
-          width:"max-content"
+          width: "max-content"
         }}
       >
         {Object.entries(shortcuts).map((entry) => (
           <>
-            <Accordion>
+            <Accordion disableGutters>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 {entry[0].toUpperCase()}
               </AccordionSummary>
@@ -95,12 +95,12 @@ class KeyboardShortcutsPanel extends Component<Props, State> {
                             "&:last-child td, &:last-child th": { border: 0 }
                           }}
                         >
-                          <TableCell component="th" scope="row">
+                          <TableCell>{entry[1]}</TableCell>
+                          <TableCell component="th" scope="row" align="right">
                             {isMac
                               ? entry[0]
                               : entry[0].replaceAll("⌘", "Ctrl")}
                           </TableCell>
-                          <TableCell align="right">{entry[1]}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
