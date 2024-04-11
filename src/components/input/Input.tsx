@@ -2,6 +2,7 @@ import { Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import styles from "./InputList.module.css";
+import { parse } from "mathjs";
 
 type Props = {
   /** The text to show before the number */
@@ -140,7 +141,9 @@ class Input extends Component<Props, State> {
             this.focusedMode();
           }}
           onBlur={(e) => {
-            const newNumber = parseFloat(this.state.editedValue);
+            const newNumber = parseFloat(
+              parse(this.state.editedValue).evaluate().toString()
+            );
             if (!Number.isNaN(newNumber)) {
               this.props.setNumber(newNumber);
             }
