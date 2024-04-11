@@ -223,6 +223,6 @@ public class Choreo {
    * @return A Trigger which activates if the robot is on the trajectory trajName.
    */
   public static Trigger event(String trajName) {
-    return new Trigger(() -> currTraj == getTrajectory(trajName))
+    return new Trigger(() -> currTraj == getTrajectory(trajName));
   }
 }
