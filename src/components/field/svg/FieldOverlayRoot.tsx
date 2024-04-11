@@ -139,9 +139,7 @@ class FieldOverlayRoot extends Component<Props, State> {
     }
 
     // User selects a waypoint
-    else if (
-      this.context.model.uiState.contextMenuSelectedWaypoint !== undefined
-    ) {
+    else {
       const waypoint =
         this.context.model.document.pathlist.activePath.waypoints[
           this.context.model.uiState.contextMenuSelectedWaypoint
