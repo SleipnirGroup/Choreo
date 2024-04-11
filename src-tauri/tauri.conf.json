@@ -32,6 +32,9 @@
       "window": {
         "setTitle": true,
         "close": true
+      },
+      "os": {
+        "all": true
       }
     },
     "bundle": {
