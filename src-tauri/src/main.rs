@@ -1,8 +1,12 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::sync::mpsc::{channel, Sender};
+use std::sync::OnceLock;
+use std::thread;
 use std::{fs, path::Path};
 use tauri::regex::{escape, Regex};
+
 use tauri::{
     api::{dialog::blocking::FileDialogBuilder, file},
     Manager,
@@ -269,14 +273,23 @@ async fn cancel() {
     builder.cancel_all();
 }
 
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+struct ProgressUpdate {
+    traj: HolonomicTrajectory,
+    handle: i64,
+}
+
 #[allow(non_snake_case)]
 #[tauri::command]
 async fn generate_trajectory(
+    _app_handle: tauri::AppHandle,
     path: Vec<ChoreoWaypoint>,
     config: ChoreoRobotConfig,
     constraints: Vec<Constraints>,
     circleObstacles: Vec<CircleObstacle>,
     polygonObstacles: Vec<PolygonObstacle>,
+    // The handle referring to this path for the solver state callback
+    handle: i64,
 ) -> Result<HolonomicTrajectory, String> {
     let mut path_builder = SwervePathBuilder::new();
     let mut wpt_cnt: usize = 0;
@@ -436,7 +449,7 @@ async fn generate_trajectory(
     };
 
     path_builder.set_bumpers(config.bumperLength, config.bumperWidth);
-
+    path_builder.add_progress_callback(solver_status_callback);
     // Skip obstacles for now while we figure out whats wrong with them
     for o in circleObstacles {
         path_builder.sgmt_circle_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
@@ -447,11 +460,35 @@ async fn generate_trajectory(
         path_builder.sgmt_polygon_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
     }
     path_builder.set_drivetrain(&drivetrain);
-    path_builder.generate(true)
+    path_builder.generate(true, handle)
 }
 
+/**
+ * A OnceLock is a synchronization primitive that can be written to once. Used here to
+ * create a read-only static reference to the sender, even though the sender can't be
+ * constructed in a static context.
+ */
+static PROGRESS_SENDER_LOCK: OnceLock<Sender<ProgressUpdate>> = OnceLock::new();
+fn solver_status_callback(traj: HolonomicTrajectory, handle: i64) {
+    let tx_opt = PROGRESS_SENDER_LOCK.get();
+    if let Some(tx) = tx_opt {
+        let _ = tx.send(ProgressUpdate { traj, handle });
+    };
+}
 fn main() {
+    let (tx, rx) = channel::<ProgressUpdate>();
+    PROGRESS_SENDER_LOCK.get_or_init(move || tx);
+
     tauri::Builder::default()
+        .setup(|app| {
+            let progress_emitter = app.handle().clone();
+            thread::spawn(move || {
+                for received in rx {
+                    let _ = progress_emitter.emit_all("solver-status", received);
+                }
+            });
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             generate_trajectory,
             cancel,

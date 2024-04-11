@@ -45,6 +45,8 @@ export const HolonomicPathStore = types
     visibleWaypointsEnd: types.number,
     constraints: types.array(types.union(...Object.values(ConstraintStores))),
     generated: types.frozen<Array<SavedTrajectorySample>>([]),
+    generationProgress: types.frozen<Array<SavedTrajectorySample>>([]),
+    generationIterationNumber: 0,
     generatedWaypoints: types.frozen<Array<SavedGeneratedWaypoint>>([]),
     generating: false,
     isTrajectoryStale: true,
@@ -248,7 +250,7 @@ export const HolonomicPathStore = types
         return wptIndices;
         // remove duplicates
       },
-      stopPointIndices() {
+      stopPointIndices(): Array<number | undefined> {
         const stopPoints = this.stopPoints();
         return stopPoints.length > 1
           ? stopPoints
@@ -568,6 +570,18 @@ export const HolonomicPathStore = types
         const history = getRoot<IStateStore>(self).document.history;
         history.withoutUndo(() => {
           self.generating = false;
+        });
+      },
+      setIterationNumber(it: number) {
+        const history = getRoot<IStateStore>(self).document.history;
+        history.withoutUndo(() => {
+          self.generationIterationNumber = it;
+        });
+      },
+      setInProgressTrajectory(trajectory: Array<SavedTrajectorySample>) {
+        const history = getRoot<IStateStore>(self).document.history;
+        history.withoutUndo(() => {
+          self.generationProgress = trajectory;
         });
       },
       setGenerating(generating: boolean) {
