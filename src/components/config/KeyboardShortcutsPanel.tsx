@@ -20,6 +20,7 @@ type().then((type) => {
   isMac = type == "Darwin";
 });
 // These default to the Mac ⌘ key because it's easier to replace with Ctrl than vice versa
+// All descriptions should be like "Rotate" or "Select", not "Selects"
 const shortcuts = {
   Path: {
     "G, ⌘ + G": "Generate current path",
@@ -51,8 +52,8 @@ const shortcuts = {
   "Selected Waypoint Movement": {
     "Left Mouse Drag on Center": "Move Waypoint",
     "Left Mouse Drag on Edge": "Rotate Waypoint",
-    E: "Rotates 1/32 turn clockwise",
-    Q: "Rotates 1/32 turn counterclockwise",
+    Q: "Rotate 1/32 turn counterclockwise",
+    E: "Rotate 1/32 turn clockwise",
     "Shift + Rotation Key": "Rotate by 1/8 turn instead of 1/32 turn",
     W: "Translate 0.1 m up (+Y)",
     A: "Translate 0.1 m left (-X)",
@@ -71,7 +72,8 @@ class KeyboardShortcutsPanel extends Component<Props, State> {
           fontSize: "2rem",
           marginTop: `${1 * this.rowGap}px`,
           marginBottom: `${1 * this.rowGap}px`,
-          marginInline: "auto",
+          marginLeft: "8px",
+          
           width: "max-content"
         }}
       >
