@@ -436,7 +436,9 @@ export const UIStateStore = types
       self.contextMenuWaypointType = waypointType;
     },
     setContextMenuMouseSelection(mouseSelection: MouseEvent | undefined) {
-      self.contextMenuMouseSelection = mouseSelection ? [mouseSelection.clientX, mouseSelection.clientY] : undefined;
+      self.contextMenuMouseSelection = mouseSelection
+        ? [mouseSelection.clientX, mouseSelection.clientY]
+        : undefined;
     }
   }));
 export interface IUIStateStore extends Instance<typeof UIStateStore> {}

@@ -44,7 +44,7 @@ class FieldOverlayRoot extends Component<Props, State> {
   state = {
     xPan: 0,
     yPan: 0,
-    zoom: 1,
+    zoom: 1
   };
   canvasHeightMeters!: number;
   canvasWidthMeters!: number;
@@ -113,17 +113,6 @@ class FieldOverlayRoot extends Component<Props, State> {
     this.fieldSelection().on("contextmenu", (e) => {
       this.context.model.uiState.setContextMenuMouseSelection(e);
     });
-
-    for (let i = 0; i < this.context.model.document.pathlist.activePath.waypoints.length; i++) {
-      d3.select<SVGCircleElement, undefined>(`#waypointGroup${i}`).on("contextmenu", (e) => {
-        console.log("selecting waypoint: " + i);
-        this.context.model.document.pathlist.activePath.selectOnly(i);
-        this.context.model.uiState.setContextMenuMouseSelection(e);
-        this.context.model.uiState.setContextMenuSelectedWaypoint(i);
-        this.context.model.uiState.setContextMenuWaypointType(this.context.model.document.pathlist.activePath.waypoints[i].type);
-      });
-    }
-
   }
 
   private handleCloseContextMenu() {
@@ -133,18 +122,31 @@ class FieldOverlayRoot extends Component<Props, State> {
   }
 
   private handleContextMenuSelection(contextMenuWaypointType: number) {
-    // 1. User selects field without selecting a waypoint
-
-    if (this.context.model.uiState.contextMenuMouseSelection === undefined) { return; }
+    
+    // User selects field without selecting a waypoint
+    if (this.context.model.uiState.contextMenuMouseSelection === undefined) {
+      return;
+    }
 
     if (this.context.model.uiState.contextMenuSelectedWaypoint === undefined) {
-      this.createWaypoint(new MouseEvent("contextmenu", { clientX: this.context.model.uiState.contextMenuMouseSelection[0], clientY: this.context.model.uiState.contextMenuMouseSelection[1] }), contextMenuWaypointType);
+      this.createWaypoint(
+        new MouseEvent("contextmenu", {
+          clientX: this.context.model.uiState.contextMenuMouseSelection[0],
+          clientY: this.context.model.uiState.contextMenuMouseSelection[1]
+        }),
+        contextMenuWaypointType
+      );
       this.context.model.uiState.setContextMenuMouseSelection(undefined);
     }
 
-    // 2. User selects a waypoint
-    else if (this.context.model.uiState.contextMenuSelectedWaypoint !== undefined) {
-      const waypoint = this.context.model.document.pathlist.activePath.waypoints[this.context.model.uiState.contextMenuSelectedWaypoint];
+    // User selects a waypoint
+    else if (
+      this.context.model.uiState.contextMenuSelectedWaypoint !== undefined
+    ) {
+      const waypoint =
+        this.context.model.document.pathlist.activePath.waypoints[
+          this.context.model.uiState.contextMenuSelectedWaypoint
+        ];
       waypoint.setType(contextMenuWaypointType);
       this.context.model.uiState.setContextMenuMouseSelection(undefined);
       this.context.model.uiState.setContextMenuSelectedWaypoint(undefined);
@@ -242,11 +244,11 @@ class FieldOverlayRoot extends Component<Props, State> {
           {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
           {/* Obstacle and waypoint mouse capture*/}
 
-          <Popover
+          {this.context.model.uiState.contextMenuMouseSelection && <Popover
             anchorReference="anchorPosition"
             anchorPosition={{
-              left: this.context.model.uiState.contextMenuMouseSelection ? this.context.model.uiState.contextMenuMouseSelection[0] : 0,
-              top: this.context.model.uiState.contextMenuMouseSelection ? this.context.model.uiState.contextMenuMouseSelection[1] : 0
+              left: this.context.model.uiState.contextMenuMouseSelection[0],
+              top: this.context.model.uiState.contextMenuMouseSelection[1],
             }}
             anchorOrigin={{
               vertical: "top",
@@ -256,7 +258,9 @@ class FieldOverlayRoot extends Component<Props, State> {
               vertical: "top",
               horizontal: "left"
             }}
-            open={this.context.model.uiState.contextMenuMouseSelection != undefined}
+            open={
+              this.context.model.uiState.contextMenuMouseSelection !== undefined
+            }
             onClose={this.handleCloseContextMenu.bind(this)}
           >
             <div
@@ -273,8 +277,13 @@ class FieldOverlayRoot extends Component<Props, State> {
                         <Tooltip disableInteractive title={item.name}>
                           <ToggleButton
                             value={`${index}`}
-                            selected={this.context.model.uiState.contextMenuWaypointType == index}
-                            onClick={() => {this.handleContextMenuSelection(index)}}
+                            selected={
+                              this.context.model.uiState
+                                .contextMenuWaypointType == index
+                            }
+                            onClick={() => {
+                              this.handleContextMenuSelection(index);
+                            }}
                             sx={{
                               color: "var(--accent-purple)",
                               "&.Mui-selected": {
@@ -290,7 +299,7 @@ class FieldOverlayRoot extends Component<Props, State> {
                 )}
               </ToggleButtonGroup>
             </div>
-          </Popover>
+          </Popover>}
 
           {layers[ViewLayers.Waypoints] &&
             this.context.model.uiState.isNavbarWaypointSelected() && (
