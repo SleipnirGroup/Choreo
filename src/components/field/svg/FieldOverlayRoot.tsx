@@ -122,7 +122,6 @@ class FieldOverlayRoot extends Component<Props, State> {
   }
 
   private handleContextMenuSelection(contextMenuWaypointType: number) {
-    
     // User selects field without selecting a waypoint
     if (this.context.model.uiState.contextMenuMouseSelection === undefined) {
       return;
@@ -244,62 +243,65 @@ class FieldOverlayRoot extends Component<Props, State> {
           {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
           {/* Obstacle and waypoint mouse capture*/}
 
-          {this.context.model.uiState.contextMenuMouseSelection && <Popover
-            anchorReference="anchorPosition"
-            anchorPosition={{
-              left: this.context.model.uiState.contextMenuMouseSelection[0],
-              top: this.context.model.uiState.contextMenuMouseSelection[1],
-            }}
-            anchorOrigin={{
-              vertical: "top",
-              horizontal: "left"
-            }}
-            transformOrigin={{
-              vertical: "top",
-              horizontal: "left"
-            }}
-            open={
-              this.context.model.uiState.contextMenuMouseSelection !== undefined
-            }
-            onClose={this.handleCloseContextMenu.bind(this)}
-          >
-            <div
-              style={{
-                margin: `${2}px`,
-                padding: `${2}px`
+          {this.context.model.uiState.contextMenuMouseSelection && (
+            <Popover
+              anchorReference="anchorPosition"
+              anchorPosition={{
+                left: this.context.model.uiState.contextMenuMouseSelection[0],
+                top: this.context.model.uiState.contextMenuMouseSelection[1]
               }}
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "left"
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "left"
+              }}
+              open={
+                this.context.model.uiState.contextMenuMouseSelection !==
+                undefined
+              }
+              onClose={this.handleCloseContextMenu.bind(this)}
             >
-              <ToggleButtonGroup>
-                {NavbarItemData.map(
-                  (item, index) =>
-                    index <= 3 && (
-                      <>
-                        <Tooltip disableInteractive title={item.name}>
-                          <ToggleButton
-                            value={`${index}`}
-                            selected={
-                              this.context.model.uiState
-                                .contextMenuWaypointType == index
-                            }
-                            onClick={() => {
-                              this.handleContextMenuSelection(index);
-                            }}
-                            sx={{
-                              color: "var(--accent-purple)",
-                              "&.Mui-selected": {
-                                color: "var(--select-yellow)"
+              <div
+                style={{
+                  margin: `${2}px`,
+                  padding: `${2}px`
+                }}
+              >
+                <ToggleButtonGroup>
+                  {NavbarItemData.map(
+                    (item, index) =>
+                      index <= 3 && (
+                        <>
+                          <Tooltip disableInteractive title={item.name}>
+                            <ToggleButton
+                              value={`${index}`}
+                              selected={
+                                this.context.model.uiState
+                                  .contextMenuWaypointType == index
                               }
-                            }}
-                          >
-                            {item.icon}
-                          </ToggleButton>
-                        </Tooltip>
-                      </>
-                    )
-                )}
-              </ToggleButtonGroup>
-            </div>
-          </Popover>}
+                              onClick={() => {
+                                this.handleContextMenuSelection(index);
+                              }}
+                              sx={{
+                                color: "var(--accent-purple)",
+                                "&.Mui-selected": {
+                                  color: "var(--select-yellow)"
+                                }
+                              }}
+                            >
+                              {item.icon}
+                            </ToggleButton>
+                          </Tooltip>
+                        </>
+                      )
+                  )}
+                </ToggleButtonGroup>
+              </div>
+            </Popover>
+          )}
 
           {layers[ViewLayers.Waypoints] &&
             this.context.model.uiState.isNavbarWaypointSelected() && (
