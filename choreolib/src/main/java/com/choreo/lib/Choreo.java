@@ -227,4 +227,26 @@ public class Choreo {
   public static Trigger event(String trajName) {
     return new Trigger(() -> currentTraj == getTrajectory(trajName));
   }
+
+  /**
+   * Returns a Trigger which returns if the robot is currently on a given
+   * ChoreoTrajectory.
+   * 
+   * @param trajName The file name (without the .traj) of the given trajectory.
+   * @param offset The time between when the inputted trajectory is started and when the event
+   * trigger should fire.
+   * @return A Trigger which activates if the robot is on the trajectory trajName.
+   */
+  public static Trigger event(String trajName, double offset) {
+    boolean started = false;
+    var timer = new Timer();
+    return new Trigger(() -> {
+      if (currentTraj == getTrajectory(trajName) && !started) {
+        started = true;
+        timer.restart();
+      }
+      return started && timer.hasElapsed(offset);
+    });
+  }
+
 }
