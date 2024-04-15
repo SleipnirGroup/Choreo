@@ -218,6 +218,10 @@ public class Choreo {
     };
   }
 
+  private static boolean onTrajectory(String trajName) {
+    return currentTraj == getTrajectory(trajName);
+  }
+
   /**
    * Returns a Trigger which fires if the robot is currently on a given ChoreoTrajectory.
    * 
@@ -225,10 +229,10 @@ public class Choreo {
    * @return A Trigger which activates if the robot is on the trajectory trajName.
    */
   public static Trigger event(String trajName) {
-    return new Trigger(() -> currentTraj == getTrajectory(trajName));
+    return new Trigger(Choreo::onTrajectory);
   }
 
-  // NOTE: the following Triggers will stop firing once the robot starts on another ChoreoTrajectory.
+  // NOTE: the following Triggers will not stop firing even when the robot starts on another ChoreoTrajectory.
 
   /**
    * Returns a Trigger which fires when the robot hits an event marker.
@@ -242,7 +246,7 @@ public class Choreo {
     boolean started = false;
     var timer = new Timer();
     return new Trigger(() -> {
-      if (currentTraj == getTrajectory(trajName) && !started) {
+      if (onTrajectory(trajName) && !started) {
         started = true;
         timer.restart();
       }
@@ -262,11 +266,11 @@ public class Choreo {
    * fallingEdge should be a greater number than risingEdge, or the Trigger will not fire.
    * @return A Trigger which activates if the robot is on the trajectory trajName.
    */
-  public static Trigger event(String trajName, double risingEdge, double fallingEdge) {
+  public static Trigger eventEdge(String trajName, double risingEdge, double fallingEdge) {
     boolean started = false;
     var timer = new Timer();
     return new Trigger(() -> {
-      if (currentTraj == getTrajectory(trajName) && !started) {
+      if (onTrajectory(trajName) && !started) {
         started = true;
         timer.restart();
       }
@@ -284,7 +288,7 @@ public class Choreo {
    * @param length The duration of the trigger in seconds, from start to finish.
    * @return A Trigger which activates if the robot is on the trajectory trajName.
    */
-  public static Trigger event(String trajName, double offset, double length) {
+  public static Trigger eventDuration(String trajName, double offset, double length) {
     return event(trajname, offset, length + offset);
   }
 
