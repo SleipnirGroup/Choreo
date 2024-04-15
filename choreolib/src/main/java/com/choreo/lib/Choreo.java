@@ -219,7 +219,7 @@ public class Choreo {
   }
 
   /**
-   * Returns a Trigger which returns if the robot is currently on a given ChoreoTrajectory.
+   * Returns a Trigger which fires if the robot is currently on a given ChoreoTrajectory.
    * 
    * @param trajName The file name (without the .traj) of the given trajectory.
    * @return A Trigger which activates if the robot is on the trajectory trajName.
@@ -228,14 +228,15 @@ public class Choreo {
     return new Trigger(() -> currentTraj == getTrajectory(trajName));
   }
 
+  // NOTE: the following Triggers will stop firing once the robot starts on another ChoreoTrajectory.
+
   /**
-   * Returns a Trigger which returns if the robot is currently on a given
-   * ChoreoTrajectory.
+   * Returns a Trigger which fires when the robot hits an event marker.
    * 
    * @param trajName The file name (without the .traj) of the given trajectory.
    * @param offset The time between when the inputted trajectory is started and when the event
    * trigger should fire.
-   * @return A Trigger which activates if the robot is on the trajectory trajName.
+   * @return A Trigger which activates when the robot hits an event marker.
    */
   public static Trigger event(String trajName, double offset) {
     boolean started = false;
@@ -248,5 +249,44 @@ public class Choreo {
       return started && timer.hasElapsed(offset);
     });
   }
+
+  /**
+   * Returns a Trigger which activates at a certain time since starting on a 
+   * ChoreoTrajectory, then deactivates at a point in time after that.
+   * 
+   * @param trajName The file name (without the .traj) of the given trajectory.
+   * @param risingEdge The time since the robot has started on the trajectory
+   * trajName, in seconds, that the trigger should begin to fire.
+   * @param fallingEdge The time since the robot has started on the trajectory
+   * trajName, in seconds, that the trigger should stop firing.
+   * fallingEdge should be a greater number than risingEdge, or the Trigger will not fire.
+   * @return A Trigger which activates if the robot is on the trajectory trajName.
+   */
+  public static Trigger event(String trajName, double risingEdge, double fallingEdge) {
+    boolean started = false;
+    var timer = new Timer();
+    return new Trigger(() -> {
+      if (currentTraj == getTrajectory(trajName) && !started) {
+        started = true;
+        timer.restart();
+      }
+      return started && timer.hasElapsed(risingEdge) && !timer.hasElapsed(fallingEdge);
+    });
+  }
+
+  /**
+   * Returns a Trigger which activates for a certain period of time after the robot
+   * hits an event marker.
+   * 
+   * @param trajName The file name (without the .traj) of the given trajectory.
+   * @param offset The time in seconds between when the inputted trajectory is 
+   * started and when the event trigger should fire.
+   * @param length The duration of the trigger in seconds, from start to finish.
+   * @return A Trigger which activates if the robot is on the trajectory trajName.
+   */
+  public static Trigger event(String trajName, double offset, double length) {
+    return event(trajname, offset, length + offset);
+  }
+
 
 }
