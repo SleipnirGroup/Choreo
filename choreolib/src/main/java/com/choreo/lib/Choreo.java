@@ -232,10 +232,9 @@ public class Choreo {
     return new Trigger(Choreo::onTrajectory);
   }
 
-  // NOTE: the following Triggers will not stop firing even when the robot starts on another ChoreoTrajectory.
-
   /**
-   * Returns a Trigger which fires when the robot hits an event marker.
+   * Returns a Trigger which fires when the robot hits an event marker, 
+   * then stops when the robot starts on a different trajectory.
    * 
    * @param trajName The file name (without the .traj) of the given trajectory.
    * @param offset The time between when the inputted trajectory is started and when the event
@@ -250,9 +249,11 @@ public class Choreo {
         started = true;
         timer.restart();
       }
-      return started && timer.hasElapsed(offset);
+      return started && timer.hasElapsed(offset) && onTrajectory(trajName);
     });
   }
+
+// NOTE: the following Triggers will not stop firing even when the robot starts on another ChoreoTrajectory.
 
   /**
    * Returns a Trigger which activates at a certain time since starting on a 
