@@ -66,8 +66,11 @@ export const HolonomicPathStore = types
   .views((self) => {
     return {
       waypointIdToSavedWaypointId(
-        waypointId: IWaypointScope
+        waypointId: IWaypointScope | undefined
       ): "first" | "last" | number | undefined {
+        if (waypointId === null || waypointId === undefined) {
+          return undefined;
+        }
         if (typeof waypointId !== "string") {
           const scopeIndex = self.findUUIDIndex(waypointId.uuid);
           if (scopeIndex == -1) {
