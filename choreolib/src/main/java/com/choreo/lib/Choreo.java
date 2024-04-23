@@ -29,6 +29,8 @@ public class Choreo {
   private static ChoreoTrajectory emptyTraj = new ChoreoTrajectory();
   private static ChoreoTrajectory currentTraj = emptyTraj;
 
+  private var trajTimer = new Timer();
+
   /** Default constructor. */
   public Choreo() {}
 
@@ -47,15 +49,13 @@ public class Choreo {
     return loadFile(traj_file);
   }
 
-
-
   /**
    * Loads the split parts of the specified trajectory. Fails and returns null if any of the parts
    * could not be loaded.
    *
    * <p>This method determines the number of parts to load by counting the files that match the
    * pattern "trajName.X.traj", where X is a string of digits. Let this count be N. It then attempts
-  //  * to load "trajName.1.traj" through "trajName.N.traj", consecutively counting up. If any of these
+   * to load "trajName.1.traj" through "trajName.N.traj", consecutively counting up. If any of these
    * files cannot be loaded, the method returns null.
    *
    * @param trajName The path name in Choreo for this trajectory.
@@ -229,7 +229,7 @@ public class Choreo {
    * @return A Trigger which activates if the robot is on the trajectory trajName.
    */
   public static Trigger trajTrigger(String trajName) {
-    return new Trigger(Choreo::onTrajectory);
+    return new Trigger(() -> onTrajectory(trajName));
   }
 
   /**
@@ -243,11 +243,10 @@ public class Choreo {
    */
   public static Trigger pointTrigger(String trajName, double offset) {
     boolean started = false;
-    var timer = new Timer();
     return new Trigger(() -> {
       if (onTrajectory(trajName) && !started) {
         started = true;
-        timer.restart();
+        trajTimer.restart();
       }
       return started && timer.hasElapsed(offset) && onTrajectory(trajName);
     });
@@ -269,11 +268,10 @@ public class Choreo {
    */
   public static Trigger spanTrigger(String trajName, double risingEdge, double fallingEdge) {
     boolean started = false;
-    var timer = new Timer();
     return new Trigger(() -> {
       if (onTrajectory(trajName) && !started) {
         started = true;
-        timer.restart();
+        trajTimer.restart();
       }
       return started && timer.hasElapsed(risingEdge) && !timer.hasElapsed(fallingEdge);
     });
@@ -290,6 +288,6 @@ public class Choreo {
    * @return A Trigger which activates if the robot is on the trajectory trajName.
    */
   public static Trigger spotTrigger(String trajName, double offset, double length) {
-    return event(trajname, offset, length + offset);
+    return event(trajName, offset, length + offset);
   }
 }
