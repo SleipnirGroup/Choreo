@@ -29,10 +29,10 @@ public class Choreo {
   private static ChoreoTrajectory emptyTraj = new ChoreoTrajectory();
   private static ChoreoTrajectory currentTraj = emptyTraj;
 
-  private var trajTimer = new Timer();
+  private Timer trajTimer = new Timer();
 
   /** Default constructor. */
-  public Choreo() {}
+  public Choreo() {}`
 
   /**
    * Load a trajectory from the deploy directory. Choreolib expects .traj files to be placed in
