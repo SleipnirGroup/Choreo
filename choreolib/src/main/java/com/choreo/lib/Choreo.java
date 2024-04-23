@@ -32,7 +32,7 @@ public class Choreo {
   private Timer trajTimer = new Timer();
 
   /** Default constructor. */
-  public Choreo() {}`
+  public Choreo() {}
 
   /**
    * Load a trajectory from the deploy directory. Choreolib expects .traj files to be placed in
