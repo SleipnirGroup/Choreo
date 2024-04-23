@@ -4,6 +4,8 @@
 
 #include <frc/DriverStation.h>
 
+#include <utility>
+
 using namespace choreolib;
 
 ChoreoSwerveCommand::ChoreoSwerveCommand(
@@ -11,11 +13,11 @@ ChoreoSwerveCommand::ChoreoSwerveCommand(
     ChoreoControllerFunction controller,
     std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds,
     std::function<bool(void)> mirrorTrajectory, frc2::Requirements requirements)
-    : m_traj(trajectory),
-      m_pose(poseSupplier),
-      m_controller(controller),
-      m_outputChassisSpeeds(outputChassisSpeeds),
-      m_mirrorTrajectory(mirrorTrajectory) {
+    : m_traj(std::move(trajectory)),
+      m_pose(std::move(poseSupplier)),
+      m_controller(std::move(controller)),
+      m_outputChassisSpeeds(std::move(outputChassisSpeeds)),
+      m_mirrorTrajectory(std::move(mirrorTrajectory)) {
   AddRequirements(requirements);
 }
 
