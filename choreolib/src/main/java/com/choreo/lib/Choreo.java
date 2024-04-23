@@ -228,7 +228,7 @@ public class Choreo {
    * @param trajName The file name (without the .traj) of the given trajectory.
    * @return A Trigger which activates if the robot is on the trajectory trajName.
    */
-  public static Trigger event(String trajName) {
+  public static Trigger trajTrigger(String trajName) {
     return new Trigger(Choreo::onTrajectory);
   }
 
@@ -241,7 +241,7 @@ public class Choreo {
    * trigger should fire.
    * @return A Trigger which activates when the robot hits an event marker.
    */
-  public static Trigger event(String trajName, double offset) {
+  public static Trigger pointTrigger(String trajName, double offset) {
     boolean started = false;
     var timer = new Timer();
     return new Trigger(() -> {
@@ -267,7 +267,7 @@ public class Choreo {
    * fallingEdge should be a greater number than risingEdge, or the Trigger will not fire.
    * @return A Trigger which activates if the robot is on the trajectory trajName.
    */
-  public static Trigger eventEdge(String trajName, double risingEdge, double fallingEdge) {
+  public static Trigger spanTrigger(String trajName, double risingEdge, double fallingEdge) {
     boolean started = false;
     var timer = new Timer();
     return new Trigger(() -> {
@@ -289,9 +289,7 @@ public class Choreo {
    * @param length The duration of the trigger in seconds, from start to finish.
    * @return A Trigger which activates if the robot is on the trajectory trajName.
    */
-  public static Trigger eventDuration(String trajName, double offset, double length) {
+  public static Trigger spotTrigger(String trajName, double offset, double length) {
     return event(trajname, offset, length + offset);
   }
-
-
 }
