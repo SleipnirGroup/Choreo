@@ -481,6 +481,8 @@ export class DocumentManager {
     const validationError = validate(parsed);
     if (validationError.length == 0) {
       this.model.fromSavedDocument(parsed);
+      // if we got this far, clear the undo history
+      this.model.document.history.clear();
     } else {
       throw `Invalid Document JSON: ${validationError}`;
     }
