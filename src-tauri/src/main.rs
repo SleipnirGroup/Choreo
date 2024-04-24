@@ -365,7 +365,10 @@ async fn generate_trajectory(
                         *velocity,
                     ),
             },
-            Constraints::MaxAngularVelocity { scope, angular_velocity } => match scope {
+            Constraints::MaxAngularVelocity {
+                scope,
+                angular_velocity,
+            } => match scope {
                 ChoreoConstraintScope::Waypoint(idx) => path_builder
                     .wpt_angular_velocity_max_magnitude(fix_scope(idx[0], &rm), *angular_velocity),
                 ChoreoConstraintScope::Segment(idx) => path_builder
