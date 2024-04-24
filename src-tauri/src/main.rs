@@ -220,6 +220,10 @@ enum Constraints {
         scope: ChoreoConstraintScope,
         velocity: f64,
     },
+    MaxAngularVelocity {
+        scope: ChoreoConstraintScope,
+        angular_velocity: f64,
+    },
     ZeroAngularVelocity {
         scope: ChoreoConstraintScope,
     },
@@ -359,6 +363,16 @@ async fn generate_trajectory(
                         fix_scope(idx[0], &rm),
                         fix_scope(idx[1], &rm),
                         *velocity,
+                    ),
+            },
+            Constraints::MaxAngularVelocity { scope, angular_velocity } => match scope {
+                ChoreoConstraintScope::Waypoint(idx) => path_builder
+                    .wpt_angular_velocity_max_magnitude(fix_scope(idx[0], &rm), *angular_velocity),
+                ChoreoConstraintScope::Segment(idx) => path_builder
+                    .sgmt_angular_velocity_max_magnitude(
+                        fix_scope(idx[0], &rm),
+                        fix_scope(idx[1], &rm),
+                        *angular_velocity,
                     ),
             },
             Constraints::ZeroAngularVelocity { scope } => match scope {
