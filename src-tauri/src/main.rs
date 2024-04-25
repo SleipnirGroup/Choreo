@@ -210,9 +210,6 @@ enum Constraints {
         scope: ChoreoConstraintScope,
         direction: f64,
     },
-    WptZeroVelocity {
-        scope: ChoreoConstraintScope,
-    },
     StopPoint {
         scope: ChoreoConstraintScope,
     },
@@ -339,11 +336,6 @@ async fn generate_trajectory(
             Constraints::WptVelocityDirection { scope, direction } => {
                 if let ChoreoConstraintScope::Waypoint(idx) = scope {
                     path_builder.wpt_linear_velocity_direction(fix_scope(idx[0], &rm), *direction);
-                }
-            }
-            Constraints::WptZeroVelocity { scope } => {
-                if let ChoreoConstraintScope::Waypoint(idx) = scope {
-                    path_builder.wpt_linear_velocity_max_magnitude(fix_scope(idx[0], &rm), 0.0f64);
                 }
             }
             Constraints::StopPoint { scope } => {

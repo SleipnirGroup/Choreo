@@ -1,5 +1,4 @@
 import {
-  Dangerous,
   Explore,
   KeyboardDoubleArrowRight,
   NearMe,
@@ -33,7 +32,6 @@ import { IHolonomicPathStore } from "./HolonomicPathStore";
       size_t fromIdx, const std::vector<InitialGuessPoint>& sgmtPoseGuess);
     void WptVelocityDirection(size_t idx, double angle);
     void WptVelocityMagnitude(size_t idx, double v);
-    void WptZeroVelocity(size_t idx);
     void WptVelocityPolar(size_t idx, double vr, double vtheta);
     void SgmtVelocityDirection(size_t fromIdx, size_t toIdx, double angle,
                              bool includeWpts = true)
@@ -74,15 +72,6 @@ export const constraints = {
         units: "rad"
       }
     },
-    wptScope: true,
-    sgmtScope: false
-  },
-  WptZeroVelocity: {
-    name: "Waypoint Zero Velocity",
-    shortName: "Wpt 0 Velo",
-    description: "Zero velocity at waypoint",
-    icon: <Dangerous></Dangerous>,
-    properties: {},
     wptScope: true,
     sgmtScope: false
   },
