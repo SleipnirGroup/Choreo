@@ -786,7 +786,7 @@ export const HolonomicPathStore = types
         const dtheta = angleModulus(
           self.waypoints.at(i + 1)!.heading - self.waypoints.at(i)!.heading
         );
-        const headingWeight = 0.5 // arbitrary
+        const headingWeight = 0.5; // arbitrary
         const distance = Math.sqrt(dx * dx + dy * dy);
         const maxForce = robotConfig.wheelMaxTorque / robotConfig.wheelRadius;
         const maxAccel = (maxForce * 4) / robotConfig.mass; // times 4 for 4 modules
