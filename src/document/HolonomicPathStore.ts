@@ -801,7 +801,7 @@ export const HolonomicPathStore = types
 
             // Check if current waypoint "i" is within the scope of this constraint
             if (startIdx !== undefined && endIdx !== undefined) {
-              if (i >= startIdx && i <= endIdx) {
+              if (i >= startIdx && i < endIdx) {
                 if (constraint.velocity !== undefined) {
                   maxVel = Math.min(maxVel, constraint.velocity);
                 }
