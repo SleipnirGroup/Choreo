@@ -15,8 +15,9 @@ Choreo.choreoSwerveCommand(
     () -> {
         Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();
         mirror = alliance.isPresent() && alliance.get() == Alliance.Red;
-    }, // (9)
-    this // (10)
+    }, // (9),
+    5.2 (10),
+    this // (11)
 );
 ```
 
@@ -29,4 +30,5 @@ Choreo.choreoSwerveCommand(
 7. PID constants to correct for rotation error.
 8. A function that consumes the target robot-relative chassis speeds and commands them to the robot.
 9. If this returns true, the path will be mirrored based on alliance (this assumes the path is created for the blue alliance).
-10. The subsystem(s) to require, typically your drive subsystem (this).
+10. The time in the trajectory file at which to start following the path (optional).
+11. The subsystem(s) to require, typically your drive subsystem (this).
