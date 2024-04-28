@@ -2,6 +2,10 @@
 
 package com.choreo.lib;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -128,5 +132,46 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
         -this.velocityX,
         this.velocityY,
         -this.angularVelocity);
+  }
+
+  /**
+   * Returns the nearest ChoreoTrajectoryState, by position, from a list of ChoreoTrajectoryStates. If two or more ChoreoTrajectoryStates in the list have the same
+   * distance from this ChoreoTrajectoryState, return the one with the closest rotation component.
+   *
+   * @param trajectoryStates The list of trajectoryStates to find the nearest.
+   * @return The nearest ChoreoTrajectoryState from the list.
+   */
+  public ChoreoTrajectoryState nearest(List<ChoreoTrajectoryState> trajectoryStates) {
+    // Use only the position to get the closest ChoreoTrajectoryState in the list
+    return nearest(trajectoryStates, 1.0, 0.0, 0.0, 0.0, 0.0);
+  }
+
+
+  /**
+   * Returns the nearest ChoreoTrajectoryState from a list of ChoreoTrajectoryStates.
+   * Different parameters of the ChoreoTrajectoryState, like position and speed, are compared with weighted values.
+   * If two or more ChoreoTrajectoryStates in the list have the same distance 
+   * from this ChoreoTrajectoryState, return the one with the closest rotation component.
+   *
+   * @param trajectoryStates       The list of trajectoryStates to find the nearest.
+   * @param poseWeight             Determines how much the position error affects the output.
+   * @param headingWeight          Determines how much the heading error affects the output.
+   * @param velocityXWeight        Determines how much the velocity in the X direction affects the output.
+   * @param velocityYWeight        Determines how much the velocity in the Y direction affects the output.
+   * @param angularVelocityWeight Determines how much the angular velocity affects the output.
+   * @return The nearest ChoreoTrajectoryState from the list.
+   */
+  public ChoreoTrajectoryState nearest(List<ChoreoTrajectoryState> trajectoryStates, double poseWeight, double headingWeight, double velocityXWeight, double velocityYWeight, double angularVelocityWeight) {
+    return Collections.min(
+        trajectoryStates,
+        Comparator.comparing(
+                (ChoreoTrajectoryState other) -> (this.getPose().getTranslation().getDistance(other.getPose().getTranslation()) * poseWeight) + 
+                  (Math.abs(this.getPose().getRotation().minus(other.getPose().getRotation()).getRadians()) * headingWeight) +
+                  (Math.abs(this.getChassisSpeeds().minus(other.getChassisSpeeds()).vxMetersPerSecond) * velocityXWeight) +
+                  (Math.abs(this.getChassisSpeeds().minus(other.getChassisSpeeds()).vyMetersPerSecond) * velocityYWeight) +
+                  (Math.abs(this.getChassisSpeeds().minus(other.getChassisSpeeds()).omegaRadiansPerSecond) * angularVelocityWeight))
+            .thenComparing(
+              (ChoreoTrajectoryState other) ->
+                  Math.abs(this.getPose().getRotation().minus(other.getPose().getRotation()).getRadians())));
   }
 }
