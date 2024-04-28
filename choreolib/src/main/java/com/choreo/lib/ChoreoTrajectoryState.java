@@ -45,7 +45,7 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
    * @param y The Y position of the state in meters.
    * @param heading The heading of the state in radians, with 0 being in the +X direction.
    * @param velocityX The velocity of the state in the X direction in m/s.
-   * @param velocityY The velocity of the state in the X direction in m/s.
+   * @param velocityY The velocity of the state in the Y direction in m/s.
    * @param angularVelocity The angular velocity of the state in rad/s.
    */
   public ChoreoTrajectoryState(
