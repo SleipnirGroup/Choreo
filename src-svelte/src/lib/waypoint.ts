@@ -1,33 +1,32 @@
 // place files you want to import through the `$lib` alias in this folder.
-import { invoke } from "@tauri-apps/api";
-import { listen, TauriEvent } from "@tauri-apps/api/event";
-import type { Event } from "@tauri-apps/api/event";
 import { writable, get as getStore, derived } from "svelte/store";
-import type { Writable, Subscriber } from "svelte/store";
+import type { Writable, Subscriber, Readable } from "svelte/store";
 import { NavbarItemData } from "./uistate.js";
+import Commands from "./commands.js"
+import { EV_UPDATE_WAYPOINT } from "./events.js";
 
 export function deletePathWaypoint(pathId: number, wptId: number) {
-    invoke("delete_path_waypoint", {pathId, wptId});
+    Commands.CMD_DELETE_PATH_WAYPOINT(pathId, wptId);
 }
 
 export let WaypointSubscribers: Record<number, WaypointStore> = {}
 
-export type RemoteValue<T> = Writable<T> & {
-    get: () => T,
+export type RemoteReadable<T> = Readable<T> & {
+    get: () => T
+}
+export type RemoteValue<T> = RemoteReadable<T> & Writable<T> & {
+    
     setNoPush: (arg: T) => void,
     push: () => void
 }
 
-type UpdateWaypointPayload = {
-    id: number;
-    update: Partial<Waypoint>
-}
+
 
 function handleUpdate<K extends keyof WaypointNoID>(id: number, key: K, val: WaypointNoID[K]) {
     const pt = WaypointSubscribers[id];
     // this one is typed according to the key
     if (pt === undefined) {
-        invoke("get_waypoint", { id }).then((pt: Waypoint) => {
+        Commands.CMD_GET_WAYPOINT(id).then((pt: Waypoint) => {
             WaypointSubscribers[id] = WaypointStore(pt)
         })
     } else {
@@ -37,7 +36,7 @@ function handleUpdate<K extends keyof WaypointNoID>(id: number, key: K, val: Way
     }
 }
 // Set up a listener to update waypoint value stores, and create new ones if necessary
-listen<UpdateWaypointPayload>("update_waypoint", (e: Event<UpdateWaypointPayload>) => {
+EV_UPDATE_WAYPOINT(e => {
     const id = e.payload.id;
     for (let key in Object.keys(e.payload.update)) {
         if (key != "id") {
@@ -47,7 +46,7 @@ listen<UpdateWaypointPayload>("update_waypoint", (e: Event<UpdateWaypointPayload
         }
     }
 });
-type WaypointNoID = Omit<Waypoint, "id">
+export type WaypointNoID = Omit<Waypoint, "id">
 export function WaypointValue<K extends keyof WaypointNoID>(id: number, key: K, init: WaypointNoID[K]): RemoteValue<WaypointNoID[K]> {
     type T = WaypointNoID[K];
     const preExisting = WaypointSubscribers[id]?.[key]
@@ -64,11 +63,8 @@ export function WaypointValue<K extends keyof WaypointNoID>(id: number, key: K, 
         internal.set(v);
     }
     const push = () => {
-        let payload = {
-            id,
-            update: { [key]: _val }
-        }
-        invoke("update_waypoint", payload).catch(e => console.error(id, key, e))
+        let update = { [key]: _val };
+        Commands.CMD_UPDATE_WAYPOINT(id, update).catch(e => console.error(id, key, e))
     }
 
     const subscribe = internal.subscribe;
@@ -163,16 +159,13 @@ export function typeName(point: Waypoint) {
 }
 
 export async function add_path_waypoint(path_id: number, update: Partial<Waypoint>) {
-    let newWpt = await invoke("add_path_waypoint", { id: path_id, update });
+    let newWpt = await Commands.CMD_ADD_PATH_WAYPOINT(path_id, update);
     // start the observers instead of waiting for more queries
     WaypointStore(newWpt);
     return newWpt.id;
 }
 
-export async function get_path_waypoints(path_id: number) {
-    return await invoke("get_path_waypoints", { id: path_id });
-}
-export async function update_waypoint(id: number, update: Partial<Waypoint>) {
-    invoke("update_waypoint", { id, update });
-}
+export let get_path_waypoints = Commands.CMD_GET_PATH_WAYPOINTS;
+
+export let update_waypoint = Commands.CMD_UPDATE_WAYPOINT;
 

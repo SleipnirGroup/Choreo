@@ -8,12 +8,9 @@ use partially::Partial;
 use super::{
     constraint::{
         get_path_constraints, ConstraintData,
-    },
-    robotconfig::{get_robot_config_impl},
-    utils::sqlx_stringify,
-    waypoint::{
-        get_waypoint_impl, scope_to_position, PartialWaypoint, Waypoint, WaypointID, KEYS, add_waypoint_impl,
-    },
+    }, robotconfig::get_robot_config_impl, trajectory::insert_trajectory, utils::sqlx_stringify, waypoint::{
+        add_waypoint_impl, get_waypoint_impl, scope_to_position, PartialWaypoint, Waypoint, WaypointID, KEYS
+    }
 };
 
 pub async fn generate_trajectory(
@@ -37,6 +34,7 @@ pub async fn generate_trajectory(
 
     for (idx, id) in waypoint_ids.iter().enumerate() {
         let wpt: &Waypoint = &waypoints[idx];
+        println!("{:?}", wpt);
         if wpt.is_initial_guess {
             let guess_point: InitialGuessPoint = InitialGuessPoint {
                 x: wpt.x,
@@ -187,7 +185,8 @@ pub async fn generate_trajectory(
     //     path_builder.sgmt_polygon_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
     // }
     path_builder.set_drivetrain(&config.as_drivetrain());
-    path_builder.generate(true, path_id.clone())
+    let traj = path_builder.generate(true, path_id.clone())?;
+    return Ok(traj);
 }
 
 pub async fn create_path_tables(
@@ -218,42 +217,6 @@ pub async fn create_path_tables(
     )
     .execute(pool)
     .await
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct UpdatePathWaypointsPayload {
-    id: i64,
-    order: Vec<Waypoint>
-}
-pub async fn broadcast_path_update(handle: &tauri::AppHandle, path_id: i64) -> Result<(), String> {
-    let pool = handle.state::<Pool<Sqlite>>();
-    let ids = get_path_waypoints_impl(&pool, &path_id).await.map_err(sqlx_stringify)?;
-    handle.emit_all("update_path_waypoints", UpdatePathWaypointsPayload{id: path_id, order: ids});
-    Ok(())
-}
-
-#[tauri::command]
-pub async fn get_path_waypoints(
-    handle: tauri::AppHandle, id: i64
-) -> Result<Vec<Waypoint>, String> {
-    let pool = handle.state::<Pool<Sqlite>>();
-    let pts = get_path_waypoints_impl(&pool, &id).await.map_err(sqlx_stringify)?;
-    Ok(pts)
-}
-
-#[tauri::command]
-pub async fn add_path_waypoint(
-    handle: tauri::AppHandle,
-    id: i64,
-    update: PartialWaypoint
-) -> Result<Waypoint, String> {
-    let pool = handle.state::<Pool<Sqlite>>();
-    let mut waypoint = Waypoint::new();
-    waypoint.apply_some(update);
-    let wpt_id = add_waypoint_impl(&pool, &waypoint).await.map_err(sqlx_stringify)?;
-    add_path_waypoint_impl(&pool, &id, &wpt_id).await.map_err(sqlx_stringify)?;
-    broadcast_path_update(&handle, id).await?;
-    Ok(waypoint)
 }
 
 pub async fn add_path_waypoint_impl(
@@ -293,15 +256,7 @@ pub async fn add_path_waypoint_impl(
     Ok(())
 }
 
-#[tauri::command]
-pub async fn delete_path_waypoint(
-    handle: tauri::AppHandle, path_id: i64, wpt_id: i64
-)  -> Result<(), String> {
-    let pool = handle.state::<Pool<Sqlite>>();
-    delete_path_waypoint_impl(&pool, &path_id, &wpt_id).await.map_err(sqlx_stringify)?;
-    broadcast_path_update(&handle, path_id).await;
-    Ok(())
-}
+
 pub async fn delete_path_waypoint_impl(
     pool: &Pool<Sqlite>,
     path_id: &i64,

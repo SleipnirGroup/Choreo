@@ -6,8 +6,11 @@
 import * as d3 from "d3";
 import { onMount } from 'svelte';
 import {get} from 'svelte/store';
-import { add_path_waypoint, get_path_waypoints, PathOrder, update_waypoint} from '$lib/index.ts';
-import { fieldScalingFactor } from "$lib/uistate";
+import {PathOrder} from '$lib/path.ts';
+import {update_waypoint,  add_path_waypoint, get_path_waypoints } from '$lib/waypoint.ts';
+import {Trajectory} from '$lib/trajectory.ts';
+import { fieldScalingFactor , playbackTime} from "$lib/uistate";
+import FieldGeneratedLines from "./FieldGeneratedLines.svelte";
 // import FieldGrid from "./FieldGrid";
 // import FieldPathLines from "./FieldPathLines";
 // import InterpolatedRobot from "./InterpolatedRobot";
@@ -20,13 +23,14 @@ import { fieldScalingFactor } from "$lib/uistate";
 // import { CircularObstacleStore } from "../../../document/CircularObstacleStore";
 import FieldImage24 from "./fields/FieldImage24.svelte";
     import OverlayWaypoint from "./OverlayWaypoint.svelte";
+    import InterpolatedRobot from "./InterpolatedRobot.svelte";
 // import FieldEventMarkers from "./FieldEventMarkers";
 // import FieldSamples from "./FieldSamples";
 // import FieldGeneratedWaypoints from "./FieldGeneratedWaypoints";
 // import FieldEventMarkerAddLayer from "./FieldEventMarkerAddLayer";
-export let pathId;
+export let pathId: number;
 $: waypoints = PathOrder(pathId);
-$: console.log("field wpts", $waypoints);
+$: trajectory = Trajectory(pathId);
 let xPan = 0;
 let yPan = 0;
 let zoom = 1;
@@ -141,7 +145,7 @@ let zoomed = (e: any) => {
         x: e.clientX,
         y: e.clientY
       });
-      add_path_waypoint(pathId, {x: coords.x, y: coords.y, translation_constrained: true, heading_constrained: false});
+      add_path_waypoint(pathId, {x: coords.x, y: coords.y, translation_constrained: true, heading_constrained: true});
       
     //   this.context.history.startGroup(() => {
     //     const newPoint =
@@ -206,6 +210,16 @@ let zoomed = (e: any) => {
           id="rootFrame"
         >
         <FieldImage24></FieldImage24>
+        <FieldGeneratedLines trajectory={$trajectory}></FieldGeneratedLines>
+        <InterpolatedRobot
+          timestamp={$playbackTime}
+          bumperLength={0.9}
+          bumperWidth={0.9}
+          wheelbase={0.7}
+          trackWidth={0.7}
+          trajectory={$trajectory}
+          wheelRadius={0.05}
+        ></InterpolatedRobot>
         {#if true}
               <circle
                 cx={0}

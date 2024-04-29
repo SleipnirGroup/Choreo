@@ -5,8 +5,8 @@
     export let bumperWidth: number;
     export let strokeColor: string;
     export let strokeWidthPx: number;
-    export let dashed: boolean;
-    export let index: number;
+    export let dashed: boolean = false;
+    export let index: number|string;
     $: bumperSVGElement = `M ${bumperLength / 2} ${bumperWidth / 2}
             L ${bumperLength / 2} ${-bumperWidth / 2}
             L ${-bumperLength / 2} ${-bumperWidth / 2}

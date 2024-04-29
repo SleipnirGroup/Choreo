@@ -8,7 +8,6 @@
   export let pathId;
   $: active = PathOrder(pathId);
   $: waypoints = $active;
-  $: console.log("sidebar", waypoints);
   let constraints:any[] = [];
   let obstacles:any[] = [];
   let markers:any[] = [];

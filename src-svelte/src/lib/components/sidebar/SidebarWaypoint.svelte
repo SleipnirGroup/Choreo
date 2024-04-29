@@ -8,7 +8,6 @@
   export let pathLength: number;
   export let issue: string | undefined;
   export let handleDelete: (id: number)=>void;
-  $: console.log(type(waypoint), waypoint);
   let selected = false;
   function getIconColor (pathLength: number) {
     if (selected) {
@@ -44,7 +43,7 @@
               {:else} <span></span>{/if}
               <span>{index + 1}</span>
             </span>
-            <div class="tooltip" data-tip="Delete" on:click={()=>{
+            <div class="tooltip tooltip-left" data-tip="Delete" on:click={()=>{
               handleDelete(waypoint.id)
             }}>Del</div>
           </div>

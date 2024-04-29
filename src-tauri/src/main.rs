@@ -6,21 +6,29 @@ use std::{
 
 
 mod state;
+mod ipc;
 
 use crate::state::{
-    constraint::{add_constraint, get_constraint, Constraint, Constraints},
-    path::{
-        add_path_waypoint, add_path_waypoint_impl, generate_trajectory, get_path_waypoints, get_path_waypoints_impl,
-        delete_path_waypoint
-    },
-    waypoint::{
-        add_waypoint, add_waypoint_impl, get_waypoint, get_waypoint_impl, update_waypoint,
+    constraint::{add_constraint, get_constraint, Constraint, Constraints}, path::{
+        add_path_waypoint_impl, generate_trajectory, get_path_waypoints_impl
+    }, trajectory::{get_sample, insert_trajectory}, waypoint::{
+        add_waypoint_impl, get_waypoint_impl,
         update_waypoint_impl,
-    },
+    }
+};
+use crate::ipc::tauri_commands:: {
+    cmd_add_path_waypoint,
+    cmd_get_path_waypoints,
+    cmd_delete_path_waypoint,
+    
+    cmd_add_waypoint,
+    cmd_get_waypoint,
+    cmd_update_waypoint,
+    cmd_get_trajectory,
+    cmd_generate_trajectory
 };
 use state::{
-    constraint, path, robotconfig,
-    waypoint::{self, PartialWaypoint, Waypoint},
+    constraint, path, robotconfig, trajectory, waypoint::{self, PartialWaypoint, Waypoint}
 };
 use tauri::{Manager};
 
@@ -28,18 +36,15 @@ pub async fn create_tables(pool: &Pool<Sqlite>) -> Result<(), Error> {
     waypoint::create_waypoint_table(pool).await?;
     path::create_path_tables(pool).await?;
     robotconfig::create_robot_config_table(pool).await?;
-    constraint::create_constraint_tables(pool).await
+    constraint::create_constraint_tables(pool).await?;
+    trajectory::create_samples_table(pool).await
 }
 use sqlx::{
     sqlite::{SqliteConnectOptions, SqlitePoolOptions},
     Error, Pool, Sqlite,
 };
 
-#[tauri::command]
-async fn generate_traj(handle: tauri::AppHandle) {
-    let pool = handle.state::<Pool<Sqlite>>();
-    println!("{:?}", generate_trajectory(&pool, 2).await);
-}
+
 async fn test_db(handle: tauri::AppHandle) {
     let pool = handle.state::<Pool<Sqlite>>();
     let id = add_waypoint_impl(&pool, &Waypoint::new()).await;
@@ -163,19 +168,35 @@ fn main() {
                 handle.manage(pool);
                 test_db(handle).await;
                 let pool = handle2.state::<Pool<Sqlite>>();
-                println!("{:?}", generate_trajectory(&pool, 2).await)
+                let traj_res = generate_trajectory(&pool, 2).await;
+                
+                println!("{:?}", traj_res);
+                if let Ok(traj) = traj_res {
+                    let insert_res = insert_trajectory(&pool, &2, &traj).await;
+                    println!("{:?}", insert_res);
+                }
+
+                let traj_res = generate_trajectory(&pool, 2).await;
+                
+                println!("{:?}", traj_res);
+                if let Ok(traj) = traj_res {
+                    let insert_res = insert_trajectory(&pool, &2, &traj).await;
+                    println!("{:?}", insert_res);
+                }
+                println!("{:?}", get_sample(&pool, &2, &56).await);
             });
             Ok(())
             // define in memory DB connection options
         })
         .invoke_handler(tauri::generate_handler![
-            delete_path_waypoint,
-            add_waypoint,
-            update_waypoint,
-            add_path_waypoint,
-            get_path_waypoints,
-            get_waypoint,
-            generate_traj
+            cmd_delete_path_waypoint,
+            cmd_add_waypoint,
+            cmd_update_waypoint,
+            cmd_add_path_waypoint,
+            cmd_get_path_waypoints,
+            cmd_get_waypoint,
+            cmd_generate_trajectory,
+            cmd_get_trajectory
         ])
         //     generate_trajectory,
         //     cancel,

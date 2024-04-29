@@ -1,10 +1,19 @@
 import { derived, writable, type Subscriber, get as getStore} from "svelte/store";
 import type {RemoteValue, Waypoint} from "./waypoint.js"
 import { WaypointSubscribers, WaypointStore } from "./waypoint.js";
-import { TauriEvent, listen } from "@tauri-apps/api/event";
-import { invoke } from "@tauri-apps/api";
 
+import { Trajectory } from "./trajectory.js";
+import Commands from "./commands.js";
+import { EV_UPDATE_PATH_WAYPOINTS, type UpdatePathWaypointsPayload } from "./events.js";
 
+export function generate(id:number) {
+    Commands.CMD_GENERATE_TRAJ(id)
+    .then((traj)=>{
+        Trajectory(id).set(traj)
+    }
+    );
+}
+ 
 let Paths: Record<number, RemoteValue<number[]>> = {};
 
 export function PathOrder(id: number): RemoteValue<number[]> {
@@ -25,7 +34,8 @@ export function PathOrder(id: number): RemoteValue<number[]> {
         return ids;
     }
     const internal = writable<number[]>([], (set: Subscriber<number[]>) => {
-        let unlisten = listen("update_path_waypoints", (e: TauriEvent) => {
+        let unlisten = EV_UPDATE_PATH_WAYPOINTS(
+            (e) => {
             if (e.payload.id == id) {
                 const points = e.payload.order as Waypoint[];
 
@@ -35,8 +45,8 @@ export function PathOrder(id: number): RemoteValue<number[]> {
         return () => unlisten;
     });
     console.log("create path", id)
-
-    invoke("get_path_waypoints", { id }).then(w => internal.set(idsFromPoints(w)));
+    Commands.CMD_GET_PATH_WAYPOINTS(id)
+        .then(w => internal.set(idsFromPoints(w)));
 
 
     const subscribe = internal.subscribe;

@@ -11,9 +11,6 @@ pub enum WaypointScope {
 }
 
 
-use serde::Serialize;
-use tauri::Manager;
-
 #[allow(non_snake_case)]
 #[derive(serde::Serialize, serde::Deserialize, sqlx::FromRow, sqlxinsert::SqliteInsert, Debug, Partial, Clone)]
 #[partially(derive(Default, serde::Serialize, serde::Deserialize, Debug, Clone))]
@@ -112,60 +109,14 @@ pub async fn create_waypoint_table(
 }
 use sqlx::{Error, Pool, Sqlite};
 
-use super::utils::sqlx_stringify;
 
-#[tauri::command]
-pub async fn add_waypoint(
-    handle: tauri::AppHandle,
-    waypoint: Option<PartialWaypoint>,
-) -> Result<i64, String> {
-    let _pool = handle.state::<Pool<Sqlite>>();
-    let mut wpt = Waypoint::new();
-    if waypoint.is_some() {
-        wpt.apply_some(waypoint.unwrap());
-    }
-    add_waypoint_impl(&_pool, &wpt)
-        .await
-        .map_err(sqlx_stringify)
-}
 
-#[tauri::command]
-pub async fn update_waypoint(
-    handle: tauri::AppHandle,
-    id: i64,
-    update: PartialWaypoint,
-) -> Result<(), String> {
-    let _pool = handle.state::<Pool<Sqlite>>();
-    update_waypoint_impl(&_pool, &id, update)
-        .await
-        .map(|_| ())
-        .map_err(sqlx_stringify)?;
-    let waypoint = get_waypoint_impl(&_pool, &id).await.map_err(sqlx_stringify)?;
-    if let Some(waypoint) = waypoint {
-        broadcast_waypoint_update(handle, id, waypoint).await;
-    }
 
-    Ok(())
-}
 
-#[derive(serde::Serialize, Clone)]
-pub struct UpdateWaypointPayload {
-    id: WaypointID,
-    update: Waypoint
-}
-pub async fn broadcast_waypoint_update(
-    handle: tauri::AppHandle,
-    id: i64,
-    update: Waypoint,
-) {
-    handle.emit_all::<UpdateWaypointPayload>("update_waypoint", UpdateWaypointPayload {id, update});
-}
 
-#[tauri::command]
-pub async fn get_waypoint(handle: tauri::AppHandle, id: i64) -> Result<Option<Waypoint>, String> {
-    let _pool = handle.state::<Pool<Sqlite>>();
-    get_waypoint_impl(&_pool, &id).await.map_err(sqlx_stringify)
-}
+
+
+
 
 pub async fn add_waypoint_impl(pool: &Pool<Sqlite>, waypoint: &Waypoint) -> Result<i64, Error> {
     
