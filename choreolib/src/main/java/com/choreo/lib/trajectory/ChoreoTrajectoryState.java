@@ -1,6 +1,6 @@
 // Copyright (c) Choreo contributors
 
-package com.choreo.lib;
+package com.choreo.lib.trajectory;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -128,5 +128,16 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
         -this.velocityX,
         this.velocityY,
         -this.angularVelocity);
+  }
+
+  public ChoreoTrajectoryState offsetTimestamp(double offset) {
+    return new ChoreoTrajectoryState(
+        this.timestamp + offset,
+        this.x,
+        this.y,
+        this.heading,
+        this.velocityX,
+        this.velocityY,
+        this.angularVelocity);
   }
 }

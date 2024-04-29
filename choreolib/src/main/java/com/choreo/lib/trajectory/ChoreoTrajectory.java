@@ -1,18 +1,52 @@
 // Copyright (c) Choreo contributors
 
-package com.choreo.lib;
+package com.choreo.lib.trajectory;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /** A trajectory loaded from Choreo. */
 public class ChoreoTrajectory {
+  /**
+   * Merge a list of trajectories into a single trajectory.
+   * 
+   * @param trajectories the list of trajectories to merge.
+   * @return the merged trajectory.
+   */
+  public static ChoreoTrajectory merge(List<ChoreoTrajectory> trajectories) {
+    var samples = new ArrayList<ChoreoTrajectoryState>();
+    var events = new ArrayList<ChoreoEventMarker>();
+
+    double timeOffset = 0;
+    for (var trajectory : trajectories) {
+      final double offset = timeOffset;
+      samples.addAll(
+        trajectory.samples
+          .stream()
+          .map(state -> state.offsetTimestamp(offset))
+          .toList()
+      );
+      events.addAll(
+        trajectory.events
+          .stream()
+          .map(event -> event.offsetTimestamp(offset))
+          .toList()
+      );
+      timeOffset += trajectory.getTotalTime();
+    }
+
+    return new ChoreoTrajectory(samples, events);
+  }
+
   private final List<ChoreoTrajectoryState> samples;
+  private final List<ChoreoEventMarker> events;
 
   /** Create an empty ChoreoTrajectory. */
   public ChoreoTrajectory() {
     samples = List.of();
+    events = List.of();
   }
 
   /**
@@ -20,8 +54,9 @@ public class ChoreoTrajectory {
    *
    * @param samples a vector containing a list of ChoreoTrajectoryStates
    */
-  public ChoreoTrajectory(List<ChoreoTrajectoryState> samples) {
+  public ChoreoTrajectory(List<ChoreoTrajectoryState> samples, List<ChoreoEventMarker> events) {
     this.samples = samples;
+    this.events = events;
   }
 
   /**
@@ -172,6 +207,29 @@ public class ChoreoTrajectory {
     for (var state : samples) {
       flippedStates.add(state.flipped());
     }
-    return new ChoreoTrajectory(flippedStates);
+    return new ChoreoTrajectory(flippedStates, this.events);
+  }
+
+  /**
+   * Returns if this trajectory has a given event.
+   *
+   * @return if this trajectory has a given event.
+   */
+  public boolean hasEvent(String eventName) {
+    for (var event : events) {
+      if (event.event.equals(eventName)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public Optional<ChoreoEventMarker> getEvent(String eventName) {
+    for (var event : events) {
+      if (event.event.equals(eventName)) {
+        return Optional.of(event);
+      }
+    }
+    return Optional.empty();
   }
 }

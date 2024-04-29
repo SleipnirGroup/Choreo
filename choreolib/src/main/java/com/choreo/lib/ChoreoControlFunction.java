@@ -6,6 +6,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import java.util.function.BiFunction;
 
+import com.choreo.lib.trajectory.ChoreoTrajectoryState;
+
 /**
  * This interface exists as a type alias. A ChoreoControlFunction has signature (Pose2d currentPose,
  * ChoreoTrajectoryState referenceState)-&gt;ChassisSpeeds, where the function returns
