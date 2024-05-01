@@ -98,13 +98,6 @@ const StateStore = types
                 reject("Cannot end a path with an initial guess point.");
               }
             }
-            if (wpt.isInitialGuess) {
-              if (idx == 0) {
-                reject("Cannot start a path with an initial guess point.");
-              } else if (idx == pathStore.waypoints.length - 1) {
-                reject("Cannot end a path with an initial guess point.");
-              }
-            }
           });
           pathStore.setGenerating(true);
           // Capture the timestamps of the waypoints that were actually sent to the solver
