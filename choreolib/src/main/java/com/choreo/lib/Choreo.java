@@ -26,10 +26,9 @@ import java.util.function.Supplier;
 public class Choreo {
   private static final Gson gson = new Gson();
 
-  private static ChoreoTrajectory emptyTraj = new ChoreoTrajectory();
-  private static ChoreoTrajectory currentTraj = emptyTraj;
+  private Timer timer = new Timer();
 
-  private Timer trajTimer = new Timer();
+  ChoreoEvent events;
 
   /** Default constructor. */
   public Choreo() {}
@@ -88,6 +87,19 @@ public class Choreo {
       ChoreoTrajectory traj = gson.fromJson(reader, ChoreoTrajectory.class);
 
       return traj;
+    } catch (Exception ex) {
+      DriverStation.reportError(ex.getMessage(), ex.getStackTrace());
+    }
+    return null;
+  }
+
+  private static ChoreoEvent loadEvents(File path) {
+    try {
+      var reader = new BufferedReader(new FileReader(path));
+      ChoreoEvent event = gson.fromJson(reader, ChoreoEvent.class);
+
+      events = event;
+      return event;
     } catch (Exception ex) {
       DriverStation.reportError(ex.getMessage(), ex.getStackTrace());
     }
@@ -160,7 +172,6 @@ public class Choreo {
       Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
       Subsystem... requirements) {
-    var timer = new Timer();
     return new FunctionalCommand(
         () -> {
           timer.restart();
@@ -218,76 +229,20 @@ public class Choreo {
     };
   }
 
-  private static boolean onTrajectory(String trajName) {
-    return currentTraj == getTrajectory(trajName);
+  public static ArrayList<ChoreoEvent> loadEvents(File path) {
+    var event_dir = new File(Filesystem.getDeployDirectory(), "choreo");
+    File[] files = 
+      event_dir.listFiles((file) -> file.getName().matches(trajName + "\\.\\d+\\.traj"));
+    int eventCount = files.length;
+    // Try to load the events.
+    var events = new ArrayList<ChoreoEvent>();
+    for (int i = 1; i <= eventCount; ++i) {
+      File traj = new File(traj_dir, String.format("%s.%d.traj", trajName, i));
+      ChoreoEvent event = loadFile(traj);
+    }
   }
 
-  /**
-   * Returns a Trigger which fires if the robot is currently on a given ChoreoTrajectory.
-   * 
-   * @param trajName The file name (without the .traj) of the given trajectory.
-   * @return A Trigger which activates if the robot is on the trajectory trajName.
-   */
-  public static Trigger trajTrigger(String trajName) {
-    return new Trigger(() -> onTrajectory(trajName));
-  }
-
-  /**
-   * Returns a Trigger which fires when the robot hits an event marker, 
-   * then stops when the robot starts on a different trajectory.
-   * 
-   * @param trajName The file name (without the .traj) of the given trajectory.
-   * @param offset The time between when the inputted trajectory is started and when the event
-   * trigger should fire.
-   * @return A Trigger which activates when the robot hits an event marker.
-   */
-  public static Trigger pointTrigger(String trajName, double offset) {
-    boolean started = false;
-    return new Trigger(() -> {
-      if (onTrajectory(trajName) && !started) {
-        started = true;
-        trajTimer.restart();
-      }
-      return started && timer.hasElapsed(offset) && onTrajectory(trajName);
-    });
-  }
-
-// NOTE: the following Triggers will not stop firing even when the robot starts on another ChoreoTrajectory.
-
-  /**
-   * Returns a Trigger which activates at a certain time since starting on a 
-   * ChoreoTrajectory, then deactivates at a point in time after that.
-   * 
-   * @param trajName The file name (without the .traj) of the given trajectory.
-   * @param risingEdge The time since the robot has started on the trajectory
-   * trajName, in seconds, that the trigger should begin to fire.
-   * @param fallingEdge The time since the robot has started on the trajectory
-   * trajName, in seconds, that the trigger should stop firing.
-   * fallingEdge should be a greater number than risingEdge, or the Trigger will not fire.
-   * @return A Trigger which activates if the robot is on the trajectory trajName.
-   */
-  public static Trigger spanTrigger(String trajName, double risingEdge, double fallingEdge) {
-    boolean started = false;
-    return new Trigger(() -> {
-      if (onTrajectory(trajName) && !started) {
-        started = true;
-        trajTimer.restart();
-      }
-      return started && timer.hasElapsed(risingEdge) && !timer.hasElapsed(fallingEdge);
-    });
-  }
-
-  /**
-   * Returns a Trigger which activates for a certain period of time after the robot
-   * hits an event marker.
-   * 
-   * @param trajName The file name (without the .traj) of the given trajectory.
-   * @param offset The time in seconds between when the inputted trajectory is 
-   * started and when the event trigger should fire.
-   * @param length The duration of the trigger in seconds, from start to finish.
-   * @return A Trigger which activates if the robot is on the trajectory trajName.
-   */
-  public static Trigger spotTrigger(String trajName, double offset, double length) {
-    return event(trajName, offset, length + offset);
+  public static Trigger event(String eventName) {
+    return new Trigger(() -> timer.hasElapsed(events.startTime(eventName)) && timer.hasElapsed(events.endTime(eventName)));
   }
 }
