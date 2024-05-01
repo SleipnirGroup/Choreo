@@ -11,7 +11,7 @@ import java.util.Optional;
 public class ChoreoTrajectory {
   /**
    * Merge a list of trajectories into a single trajectory.
-   * 
+   *
    * @param trajectories the list of trajectories to merge.
    * @return the merged trajectory.
    */
@@ -23,17 +23,9 @@ public class ChoreoTrajectory {
     for (var trajectory : trajectories) {
       final double offset = timeOffset;
       samples.addAll(
-        trajectory.samples
-          .stream()
-          .map(state -> state.offsetTimestamp(offset))
-          .toList()
-      );
+          trajectory.samples.stream().map(state -> state.offsetTimestamp(offset)).toList());
       events.addAll(
-        trajectory.events
-          .stream()
-          .map(event -> event.offsetTimestamp(offset))
-          .toList()
-      );
+          trajectory.events.stream().map(event -> event.offsetTimestamp(offset)).toList());
       timeOffset += trajectory.getTotalTime();
     }
 
@@ -53,6 +45,7 @@ public class ChoreoTrajectory {
    * Constructs a new trajectory from a list of trajectory states
    *
    * @param samples a vector containing a list of ChoreoTrajectoryStates
+   * @param events a vector containing a list of ChoreoEventMarkers
    */
   public ChoreoTrajectory(List<ChoreoTrajectoryState> samples, List<ChoreoEventMarker> events) {
     this.samples = samples;
@@ -213,6 +206,7 @@ public class ChoreoTrajectory {
   /**
    * Returns if this trajectory has a given event.
    *
+   * @param eventName The name of the event.
    * @return if this trajectory has a given event.
    */
   public boolean hasEvent(String eventName) {
@@ -224,6 +218,12 @@ public class ChoreoTrajectory {
     return false;
   }
 
+  /**
+   * Returns the event with the given name.
+   *
+   * @param eventName The name of the event.
+   * @return The event with the given name, or an empty optional if the event does not exist.
+   */
   public Optional<ChoreoEventMarker> getEvent(String eventName) {
     for (var event : events) {
       if (event.event.equals(eventName)) {

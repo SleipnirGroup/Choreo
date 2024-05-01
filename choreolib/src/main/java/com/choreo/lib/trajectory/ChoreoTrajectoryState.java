@@ -130,6 +130,12 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
         -this.angularVelocity);
   }
 
+  /**
+   * Returns this state with the timestamp offset by the given amount.
+   *
+   * @param offset The amount to offset the timestamp by.
+   * @return this state with the timestamp offset by the given amount.
+   */
   public ChoreoTrajectoryState offsetTimestamp(double offset) {
     return new ChoreoTrajectoryState(
         this.timestamp + offset,

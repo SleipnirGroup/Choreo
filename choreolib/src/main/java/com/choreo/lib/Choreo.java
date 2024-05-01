@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /** Utilities to load and follow ChoreoTrajectories */
-public class Choreo {
+public final class Choreo {
   private static final Gson gson = new Gson();
 
   /** Default constructor. */
@@ -106,22 +106,16 @@ public class Choreo {
    * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
    *     while keeping the same coordinate system origin. This will be called every loop during the
    *     command.
-   * @param requirements The drive subsystem to require for commands made from this factory.
+   * @param driveSubsystem The drive subsystem to require for commands made from this factory.
    * @return A command that follows a Choreo path.
    */
   public static ChoreoAutoFactory createAutoFactory(
-    Supplier<Pose2d> poseSupplier,
-    ChoreoControlFunction controller,
-    Consumer<ChassisSpeeds> outputChassisSpeeds,
-    BooleanSupplier mirrorTrajectory,
-    Subsystem driveSubsystem
-  ) {
+      Supplier<Pose2d> poseSupplier,
+      ChoreoControlFunction controller,
+      Consumer<ChassisSpeeds> outputChassisSpeeds,
+      BooleanSupplier mirrorTrajectory,
+      Subsystem driveSubsystem) {
     return new ChoreoAutoFactory(
-      poseSupplier,
-      controller,
-      outputChassisSpeeds,
-      mirrorTrajectory,
-      driveSubsystem
-    );
+        poseSupplier, controller, outputChassisSpeeds, mirrorTrajectory, driveSubsystem);
   }
 }

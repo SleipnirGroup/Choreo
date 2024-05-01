@@ -1,0 +1,138 @@
+{
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/Robot/field": "Field2d",
+      "/Robot/mech": "Mechanism2d",
+      "/Visualizers/SwerveModules/Module[0]": "Mechanism2d",
+      "/Visualizers/SwerveModules/Module[1]": "Mechanism2d",
+      "/Visualizers/SwerveModules/Module[2]": "Mechanism2d",
+      "/Visualizers/SwerveModules/Module[3]": "Mechanism2d",
+      "/Visualizers/field": "Field2d"
+    },
+    "windows": {
+      "/Robot/field": {
+        "bottom": 544,
+        "builtin": "2023 Charged Up",
+        "height": 8.013679504394531,
+        "left": 46,
+        "right": 1088,
+        "top": 36,
+        "width": 16.541748046875,
+        "window": {
+          "visible": true
+        }
+      }
+    }
+  },
+  "NetworkTables": {
+    "retained": {
+      ".schema": {
+        "open": true
+      },
+      "Robot": {
+        "open": true
+      }
+    },
+    "transitory": {
+      "Robot": {
+        "SwerveModuleState##v_/Robot/state": {
+          "Rotation2d##v_angle": {
+            "open": true
+          }
+        },
+        "SwerveModuleState[]##v_/Robot/stateArr": {
+          "open": true
+        },
+        "Transform2d##v_/Robot/imperative": {
+          "Translation2d##v_translation": {
+            "open": true
+          }
+        },
+        "Translation2d##v_/Robot/structTest": {
+          "open": true
+        },
+        "double[]##v_/Robot/array": {
+          "open": true
+        },
+        "field": {
+          "double[]##v_/Robot/field/Robot": {
+            "open": true
+          }
+        },
+        "geometry": {
+          "Rotation2d##v_/Robot/geometry/getRotation2d": {
+            "open": true
+          },
+          "Rotation3d##v_/Robot/geometry/getRotation3d": {
+            "open": true
+          },
+          "Transform2d##v_/Robot/geometry/getTransform2d": {
+            "Translation2d##v_translation": {
+              "open": true
+            },
+            "open": true
+          }
+        },
+        "internals": {
+          "Internal[0]": {
+            "ArmFeedforward##v_/Robot/internals/Internal[0]/construct": {
+              "open": true
+            },
+            "ArmFeedforward##v_/Robot/internals/Internal[0]/ff": {
+              "open": true
+            },
+            "SwerveModuleState##v_/Robot/internals/Internal[0]/state": {
+              "Rotation2d##v_angle": {
+                "open": true
+              }
+            },
+            "open": true
+          },
+          "asdfghjklqwertyuiopzxcvbnm,qwertyuio": {
+            "open": true
+          },
+          "asdfghjklqwertyuiopzxcvbnm,qwertyuio[0]": {
+            "SwerveModuleState##v_/Robot/internals/asdfghjklqwertyuiopzxcvbnm,qwertyuio[0]/state": {
+              "Rotation2d##v_angle": {
+                "open": true
+              },
+              "open": true
+            },
+            "open": true
+          },
+          "asdfghjklqwertyuiopzxcvbnm,qwertyuio[1]": {
+            "open": true
+          },
+          "asdfghjklqwertyuiopzxcvbnm,qwertyuio[2]": {
+            "open": true
+          },
+          "open": true
+        },
+        "open": true
+      },
+      "Shuffleboard": {
+        "Robot": {
+          "m_sbTest": {
+            "open": true
+          },
+          "open": true
+        }
+      },
+      "Tracer": {
+        "Robot Loop": {
+          "open": true,
+          "robotPeriodic": {
+            "open": true
+          }
+        }
+      },
+      "notfound": {
+        "open": true
+      }
+    }
+  },
+  "NetworkTables Info": {
+    "visible": true
+  }
+}
