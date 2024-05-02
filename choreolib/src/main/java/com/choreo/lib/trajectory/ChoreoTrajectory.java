@@ -5,38 +5,16 @@ package com.choreo.lib.trajectory;
 import edu.wpi.first.math.geometry.Pose2d;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /** A trajectory loaded from Choreo. */
 public class ChoreoTrajectory {
-  /**
-   * Merge a list of trajectories into a single trajectory.
-   *
-   * @param trajectories the list of trajectories to merge.
-   * @return the merged trajectory.
-   */
-  public static ChoreoTrajectory merge(List<ChoreoTrajectory> trajectories) {
-    var samples = new ArrayList<ChoreoTrajectoryState>();
-    var events = new ArrayList<ChoreoEventMarker>();
-
-    double timeOffset = 0;
-    for (var trajectory : trajectories) {
-      final double offset = timeOffset;
-      samples.addAll(
-          trajectory.samples.stream().map(state -> state.offsetTimestamp(offset)).toList());
-      events.addAll(
-          trajectory.events.stream().map(event -> event.offsetTimestamp(offset)).toList());
-      timeOffset += trajectory.getTotalTime();
-    }
-
-    return new ChoreoTrajectory(samples, events);
-  }
-
+  private final String name;
   private final List<ChoreoTrajectoryState> samples;
   private final List<ChoreoEventMarker> events;
 
   /** Create an empty ChoreoTrajectory. */
   public ChoreoTrajectory() {
+    name = "Empty Trajctory";
     samples = List.of();
     events = List.of();
   }
@@ -47,9 +25,21 @@ public class ChoreoTrajectory {
    * @param samples a vector containing a list of ChoreoTrajectoryStates
    * @param events a vector containing a list of ChoreoEventMarkers
    */
-  public ChoreoTrajectory(List<ChoreoTrajectoryState> samples, List<ChoreoEventMarker> events) {
+  public ChoreoTrajectory(String name, List<ChoreoTrajectoryState> samples, List<ChoreoEventMarker> events) {
+    this.name = name;
     this.samples = samples;
     this.events = events;
+  }
+
+  /**
+   * Returns the name stored in the trajectory from the Choreo app
+   * 
+   * @return Returns the name of the trajecotry
+   * 
+   * @implNote Don't use this for equality checks or assertion has this has no promise to stay identical between choreo versions
+   */
+  public String name() {
+    return name;
   }
 
   /**
@@ -200,22 +190,7 @@ public class ChoreoTrajectory {
     for (var state : samples) {
       flippedStates.add(state.flipped());
     }
-    return new ChoreoTrajectory(flippedStates, this.events);
-  }
-
-  /**
-   * Returns if this trajectory has a given event.
-   *
-   * @param eventName The name of the event.
-   * @return if this trajectory has a given event.
-   */
-  public boolean hasEvent(String eventName) {
-    for (var event : events) {
-      if (event.event.equals(eventName)) {
-        return true;
-      }
-    }
-    return false;
+    return new ChoreoTrajectory(name, flippedStates, this.events);
   }
 
   /**
@@ -224,12 +199,9 @@ public class ChoreoTrajectory {
    * @param eventName The name of the event.
    * @return The event with the given name, or an empty optional if the event does not exist.
    */
-  public Optional<ChoreoEventMarker> getEvent(String eventName) {
-    for (var event : events) {
-      if (event.event.equals(eventName)) {
-        return Optional.of(event);
-      }
-    }
-    return Optional.empty();
+  public List<ChoreoEventMarker> getEvents(String eventName) {
+    return events.stream()
+        .filter(event -> event.event.equals(eventName))
+        .toList();
   }
 }

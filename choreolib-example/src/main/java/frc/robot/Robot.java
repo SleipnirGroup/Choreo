@@ -46,8 +46,15 @@ public class Robot extends TimedRobot {
       List.of(
         new Transform2d(
           new Translation2d(
-            kRobotGeometry.FRAME_WIDTH / 2.0,
-            0
+            -kRobotGeometry.FRAME_WIDTH / 2.0,
+            -kRobotGeometry.FRAME_WIDTH / 3.0
+          ),
+          new Rotation2d()
+        ),
+        new Transform2d(
+          new Translation2d(
+            -kRobotGeometry.FRAME_WIDTH / 2.0,
+            kRobotGeometry.FRAME_WIDTH / 3.0
           ),
           new Rotation2d()
         )

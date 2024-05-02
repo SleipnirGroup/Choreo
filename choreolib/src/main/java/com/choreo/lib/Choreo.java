@@ -2,6 +2,8 @@
 
 package com.choreo.lib;
 
+import static edu.wpi.first.util.ErrorMessages.requireNonNullParam;
+
 import com.choreo.lib.trajectory.ChoreoTrajectory;
 import com.google.gson.Gson;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -48,6 +50,8 @@ public final class Choreo {
    * @return the loaded trajectory, or null if the trajectory could not be loaded.
    */
   public static Optional<ChoreoTrajectory> getTrajectory(String trajName) {
+    requireNonNullParam(trajName, "trajName", "Choreo.getTrajectory");
+
     String fileExtension = ".traj";
     if (trajName.endsWith(fileExtension)) {
       trajName = trajName.substring(0, trajName.length() - fileExtension.length());
@@ -71,6 +75,8 @@ public final class Choreo {
    * @return The List of segments, in order, or null.
    */
   public static Optional<List<ChoreoTrajectory>> getTrajectoryGroup(String trajName) {
+    requireNonNullParam(trajName, "trajName", "Choreo.getTrajectoryGroup");
+
     // Count files matching the pattern for split parts.
     var traj_dir = new File(Filesystem.getDeployDirectory(), "choreo");
     File[] files =
@@ -94,6 +100,7 @@ public final class Choreo {
   /**
    * Create a command to follow a Choreo path.
    *
+   * @param driveSubsystem The drive subsystem to require for commands made from this factory.
    * @param poseSupplier A function that returns the current field-relative pose of the robot.
    * @param controller A ChoreoControlFunction to follow the current trajectory state. Use
    *     ChoreoCommands.choreoSwerveController(PIDController xController, PIDController yController,
@@ -106,16 +113,59 @@ public final class Choreo {
    * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
    *     while keeping the same coordinate system origin. This will be called every loop during the
    *     command.
-   * @param driveSubsystem The drive subsystem to require for commands made from this factory.
    * @return A command that follows a Choreo path.
    */
   public static ChoreoAutoFactory createAutoFactory(
+      Subsystem driveSubsystem,
+      Supplier<Pose2d> poseSupplier,
+      ChoreoControlFunction controller,
+      Consumer<ChassisSpeeds> outputChassisSpeeds,
+      BooleanSupplier mirrorTrajectory
+    ) {
+    return new ChoreoAutoFactory(
+        requireNonNullParam(poseSupplier, "poseSupplier", "Choreo.createAutoFactory"),
+        requireNonNullParam(controller, "controller", "Choreo.createAutoFactory"),
+        requireNonNullParam(outputChassisSpeeds, "outputChassisSpeeds", "Choreo.createAutoFactory"),
+        requireNonNullParam(mirrorTrajectory, "mirrorTrajectory", "Choreo.createAutoFactory"),
+        Optional.empty(),
+        requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory")
+      );
+  }
+
+  /**
+   * Create a command to follow a Choreo path.
+   *
+   * @param driveSubsystem The drive subsystem to require for commands made from this factory.
+   * @param poseSupplier A function that returns the current field-relative pose of the robot.
+   * @param controller A ChoreoControlFunction to follow the current trajectory state. Use
+   *     ChoreoCommands.choreoSwerveController(PIDController xController, PIDController yController,
+   *     PIDController rotationController) to create one using PID controllers for each degree of
+   *     freedom. You can also pass in a function with the signature (Pose2d currentPose,
+   *     ChoreoTrajectoryState referenceState) -&gt; ChassisSpeeds to implement a custom follower
+   *     (i.e. for logging).
+   * @param outputChassisSpeeds A function that consumes the target robot-relative chassis speeds
+   *     and commands them to the robot.
+   * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
+   *     while keeping the same coordinate system origin. This will be called every loop during the
+   *     command.
+   * @param trajLogger A function that consumes a trajectory whever one is started, should be used for logging.x
+   * @return A command that follows a Choreo path.
+   */
+  public static ChoreoAutoFactory createAutoFactory(
+      Subsystem driveSubsystem,
       Supplier<Pose2d> poseSupplier,
       ChoreoControlFunction controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
-      Subsystem driveSubsystem) {
-    return new ChoreoAutoFactory(
-        poseSupplier, controller, outputChassisSpeeds, mirrorTrajectory, driveSubsystem);
+      Consumer<ChoreoTrajectory> trajLogger
+    ) {
+      return new ChoreoAutoFactory(
+        requireNonNullParam(poseSupplier, "poseSupplier", "Choreo.createAutoFactory"),
+        requireNonNullParam(controller, "controller", "Choreo.createAutoFactory"),
+        requireNonNullParam(outputChassisSpeeds, "outputChassisSpeeds", "Choreo.createAutoFactory"),
+        requireNonNullParam(mirrorTrajectory, "mirrorTrajectory", "Choreo.createAutoFactory"),
+        Optional.of(requireNonNullParam(trajLogger, "trajLogger", "Choreo.createAutoFactory")),
+        requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory")
+      );
   }
 }
