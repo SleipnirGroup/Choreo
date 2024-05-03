@@ -1,9 +1,18 @@
 {
+  "HALProvider": {
+    "Other Devices": {
+      "window": {
+        "visible": false
+      }
+    }
+  },
   "NTProvider": {
     "types": {
+      "/AutoChooser": "String Chooser",
       "/FMSInfo": "FMSInfo",
       "/Robot/field": "Field2d",
       "/Robot/mech": "Mechanism2d",
+      "/SmartDashboard/SendableChooser[0]": "String Chooser",
       "/Visualizers/SwerveModules/Module[0]": "Mechanism2d",
       "/Visualizers/SwerveModules/Module[1]": "Mechanism2d",
       "/Visualizers/SwerveModules/Module[2]": "Mechanism2d",
@@ -22,14 +31,47 @@
         "window": {
           "visible": true
         }
+      },
+      "/SmartDashboard/SendableChooser[0]": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/Visualizers/SwerveModules/Module[0]": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/Visualizers/SwerveModules/Module[1]": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/Visualizers/SwerveModules/Module[2]": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/Visualizers/SwerveModules/Module[3]": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/Visualizers/field": {
+        "bottom": 1476,
+        "height": 8.210550308227539,
+        "left": 150,
+        "right": 2961,
+        "top": 79,
+        "width": 16.541748046875,
+        "window": {
+          "visible": true
+        }
       }
     }
   },
   "NetworkTables": {
     "retained": {
-      ".schema": {
-        "open": true
-      },
       "Robot": {
         "open": true
       }
@@ -119,6 +161,14 @@
           "open": true
         }
       },
+      "SmartDashboard": {
+        "Intake": {
+          "open": true
+        },
+        "Shooter": {
+          "open": true
+        }
+      },
       "Tracer": {
         "Robot Loop": {
           "open": true,
@@ -126,6 +176,19 @@
             "open": true
           }
         }
+      },
+      "Visualizers": {
+        "field": {
+          "double[]##v_/Visualizers/field/Robot": {
+            "open": true
+          }
+        }
+      },
+      "choreo": {
+        "ChassisSpeeds##v_/choreo/DesiredSpeeds": {
+          "open": true
+        },
+        "open": true
       },
       "notfound": {
         "open": true

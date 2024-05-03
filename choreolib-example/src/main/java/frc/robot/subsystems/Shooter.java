@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -22,7 +23,7 @@ public class Shooter extends SubsystemBase{
     }
 
     public Trigger reachedTarget() {
-        return new Trigger(() -> Math.abs(targetRpm - rpm) < 0.5);
+        return new Trigger(() -> Math.abs(targetRpm - rpm) < 0.5 && rpm > 0.0);
     }
 
     @Override
@@ -33,5 +34,9 @@ public class Shooter extends SubsystemBase{
                 -maxDiff,
                 maxDiff);
         rpm += diff;
+
+        SmartDashboard.putNumber("Shooter/RPM", rpm);
+        SmartDashboard.putNumber("Shooter/TargetRPM", targetRpm);
+        SmartDashboard.putBoolean("Shooter/AtTarget", Math.abs(targetRpm - rpm) < 0.5  && rpm > 0.0);
     }
 }

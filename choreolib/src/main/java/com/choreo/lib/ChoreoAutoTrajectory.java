@@ -2,7 +2,6 @@ package com.choreo.lib;
 
 import com.choreo.lib.trajectory.ChoreoTrajectory;
 import com.choreo.lib.trajectory.ChoreoTrajectoryState;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
@@ -13,7 +12,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
@@ -46,13 +44,16 @@ public class ChoreoAutoTrajectory {
   // hypothetically if you do `.onFalse()` on done when you schedule the next command
   // the trigger will run and could be unexpected behavior
 
-  /**If the trajecoty has finished */
+  /** If the trajecoty has finished */
   private boolean isDone = false;
-  /**If this trajectory us currently running */
+
+  /** If this trajectory us currently running */
   private boolean isActive = false;
-  /**The index of the current trajectory being run */
+
+  /** The index of the current trajectory being run */
   private int trajectoryIndex = 0;
-  /**The time that the previous trajectories took up */
+
+  /** The time that the previous trajectories took up */
   private double timeOffset = 0.0;
 
   ChoreoAutoTrajectory(
@@ -101,7 +102,7 @@ public class ChoreoAutoTrajectory {
 
   /**
    * Returns the index of the last trajectory in the list
-   * 
+   *
    * @return Returns the index of the last trajectory in the list
    */
   private int lastTrajIndex() {
@@ -125,7 +126,7 @@ public class ChoreoAutoTrajectory {
   }
 
   private void cmdInitialize() {
-    timer.reset();
+    timer.restart();
     trajLogger.ifPresent(logger -> logger.accept(trajectories.get(0)));
     isDone = false;
     isActive = true;
@@ -134,15 +135,15 @@ public class ChoreoAutoTrajectory {
   }
 
   private void cmdExecute() {
-    if (timeIntoCurrentTraj() > currentTrajectory().getTotalTime()) {
+    if (timeIntoCurrentTraj() > currentTrajectory().getTotalTime()
+        && trajectoryIndex < lastTrajIndex()) {
       timeOffset += currentTrajectory().getTotalTime();
-      trajectoryIndex = Math.min(trajectoryIndex+1, lastTrajIndex());
+      trajectoryIndex = Math.min(trajectoryIndex + 1, lastTrajIndex());
     }
     outputChassisSpeeds.accept(
         controller.apply(
             poseSupplier.get(),
-            currentTrajectory()
-              .sample(timeIntoCurrentTraj(), mirrorTrajectory.getAsBoolean())));
+            currentTrajectory().sample(timeIntoCurrentTraj(), mirrorTrajectory.getAsBoolean())));
   }
 
   private void cmdEnd(boolean interrupted) {
@@ -162,9 +163,31 @@ public class ChoreoAutoTrajectory {
         && timeIntoCurrentTraj() > currentTrajectory().getTotalTime();
   }
 
+  /**
+   * Creates a command that allocates the drive subsystem and follows the trajectory using the
+   * factories control function
+   *
+   * @return The command that will follow the trajectory
+   */
   public Command cmd() {
     return new FunctionalCommand(
         this::cmdInitialize, this::cmdExecute, this::cmdEnd, this::cmdIsFinished, driveSubsystem);
+  }
+
+  /**
+   * Will get the starting pose of the trajectory.
+   *
+   * <p>This position is mirrored based on the {@code mirrorTrajectory} boolean supplier in the
+   * factory used to make this trajectory
+   *
+   * @return The starting pose
+   */
+  public Pose2d getStartingPose() {
+    if (mirrorTrajectory.getAsBoolean()) {
+      return trajectories.get(0).getFlippedInitialPose();
+    } else {
+      return trajectories.get(0).getInitialPose();
+    }
   }
 
   /**
@@ -220,16 +243,15 @@ public class ChoreoAutoTrajectory {
     // Make the trigger only be high for 1 cycle whne the time has elapsed,
     // this is needed for better support of multi-time triggers for multi events
     return new Trigger(
-      loop,
-      new BooleanSupplier() {
-        double lastTimestamp = timer.get();
+        loop,
+        new BooleanSupplier() {
+          double lastTimestamp = timer.get();
 
-        public boolean getAsBoolean() {
-          double nowTimestamp = timer.get();
-          return lastTimestamp < nowTimestamp && nowTimestamp >= timeSinceStart;
-        };
-      }
-    );
+          public boolean getAsBoolean() {
+            double nowTimestamp = timer.get();
+            return lastTimestamp < nowTimestamp && nowTimestamp >= timeSinceStart;
+          }
+        });
   }
 
   /**
@@ -252,7 +274,8 @@ public class ChoreoAutoTrajectory {
     for (var traj : trajectories) {
       for (var event : traj.getEvents(eventName)) {
         // This could create alot of objects, could be done a more efficient way
-        // with having it all be 1 trigger that just has a list of times and checks each one each cycle
+        // with having it all be 1 trigger that just has a list of times and checks each one each
+        // cycle
         // or something like that. If choreo starts proposing memory issues we can look into this.
         trig = trig.or(atTime(pastTrajTotalTime + event.timestamp));
         foundEvent = true;
@@ -301,9 +324,11 @@ public class ChoreoAutoTrajectory {
     for (var traj : trajectories) {
       for (var event : traj.getEvents(eventName)) {
         // This could create alot of objects, could be done a more efficient way
-        // with having it all be 1 trigger that just has a list of posess and checks each one each cycle
+        // with having it all be 1 trigger that just has a list of posess and checks each one each
+        // cycle
         // or something like that. If choreo starts proposing memory issues we can look into this.
-        ChoreoTrajectoryState state = traj.sample(pastTrajTotalTime + event.timestamp, mirrorTrajectory.getAsBoolean());
+        ChoreoTrajectoryState state =
+            traj.sample(pastTrajTotalTime + event.timestamp, mirrorTrajectory.getAsBoolean());
         trig = trig.or(atPose(state.getPose(), toleranceMeters));
         foundEvent = true;
       }
@@ -365,9 +390,9 @@ public class ChoreoAutoTrajectory {
   }
 
   /**
-   * Creates a trigger at the start of a sub trajectory.
-   * This is best used with trajectory groups, with non group trajectories only 0 is a valid argument
-   * 
+   * Creates a trigger at the start of a sub trajectory. This is best used with trajectory groups,
+   * with non group trajectories only 0 is a valid argument
+   *
    * @param index The index of the command in the group
    * @return A trigger that is true while the subtrajectory is running
    */

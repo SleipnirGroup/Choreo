@@ -22,10 +22,12 @@ public class ChoreoTrajectory {
   /**
    * Constructs a new trajectory from a list of trajectory states
    *
+   * @param name the name of the trajectory
    * @param samples a vector containing a list of ChoreoTrajectoryStates
    * @param events a vector containing a list of ChoreoEventMarkers
    */
-  public ChoreoTrajectory(String name, List<ChoreoTrajectoryState> samples, List<ChoreoEventMarker> events) {
+  public ChoreoTrajectory(
+      String name, List<ChoreoTrajectoryState> samples, List<ChoreoEventMarker> events) {
     this.name = name;
     this.samples = samples;
     this.events = events;
@@ -33,10 +35,11 @@ public class ChoreoTrajectory {
 
   /**
    * Returns the name stored in the trajectory from the Choreo app
-   * 
+   *
+   * <p>Note: Don't use this for equality checks or assertion has this has no promise to stay
+   * identical between choreo versions
+   *
    * @return Returns the name of the trajecotry
-   * 
-   * @implNote Don't use this for equality checks or assertion has this has no promise to stay identical between choreo versions
    */
   public String name() {
     return name;
@@ -62,12 +65,15 @@ public class ChoreoTrajectory {
 
   private ChoreoTrajectoryState sampleInternal(double timestamp) {
     if (timestamp < samples.get(0).timestamp) {
-      return samples.get(0);
+      // timestamp oob, return the initial state
+      return getInitialState();
     }
     if (timestamp >= getTotalTime()) {
-      return samples.get(samples.size() - 1);
+      // timestamp oob, return the final state
+      return getFinalState();
     }
 
+    // binary search to find the sample before and ahead of the timestamp
     int low = 0;
     int high = samples.size() - 1;
 
@@ -200,8 +206,6 @@ public class ChoreoTrajectory {
    * @return The event with the given name, or an empty optional if the event does not exist.
    */
   public List<ChoreoEventMarker> getEvents(String eventName) {
-    return events.stream()
-        .filter(event -> event.event.equals(eventName))
-        .toList();
+    return events.stream().filter(event -> event.event.equals(eventName)).toList();
   }
 }

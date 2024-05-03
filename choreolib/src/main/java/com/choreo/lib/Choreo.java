@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +35,9 @@ public final class Choreo {
     try {
       var reader = new BufferedReader(new FileReader(path));
       ChoreoTrajectory traj = gson.fromJson(reader, ChoreoTrajectory.class);
-
       return Optional.ofNullable(traj);
+    } catch (FileNotFoundException ex) {
+      return Optional.empty();
     } catch (Exception ex) {
       DriverStation.reportError(ex.getMessage(), ex.getStackTrace());
     }
@@ -120,16 +122,14 @@ public final class Choreo {
       Supplier<Pose2d> poseSupplier,
       ChoreoControlFunction controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
-      BooleanSupplier mirrorTrajectory
-    ) {
+      BooleanSupplier mirrorTrajectory) {
     return new ChoreoAutoFactory(
         requireNonNullParam(poseSupplier, "poseSupplier", "Choreo.createAutoFactory"),
         requireNonNullParam(controller, "controller", "Choreo.createAutoFactory"),
         requireNonNullParam(outputChassisSpeeds, "outputChassisSpeeds", "Choreo.createAutoFactory"),
         requireNonNullParam(mirrorTrajectory, "mirrorTrajectory", "Choreo.createAutoFactory"),
         Optional.empty(),
-        requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory")
-      );
+        requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory"));
   }
 
   /**
@@ -148,7 +148,8 @@ public final class Choreo {
    * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
    *     while keeping the same coordinate system origin. This will be called every loop during the
    *     command.
-   * @param trajLogger A function that consumes a trajectory whever one is started, should be used for logging.x
+   * @param trajLogger A function that consumes a trajectory whever one is started, should be used
+   *     for logging.x
    * @return A command that follows a Choreo path.
    */
   public static ChoreoAutoFactory createAutoFactory(
@@ -157,15 +158,13 @@ public final class Choreo {
       ChoreoControlFunction controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
-      Consumer<ChoreoTrajectory> trajLogger
-    ) {
-      return new ChoreoAutoFactory(
+      Consumer<ChoreoTrajectory> trajLogger) {
+    return new ChoreoAutoFactory(
         requireNonNullParam(poseSupplier, "poseSupplier", "Choreo.createAutoFactory"),
         requireNonNullParam(controller, "controller", "Choreo.createAutoFactory"),
         requireNonNullParam(outputChassisSpeeds, "outputChassisSpeeds", "Choreo.createAutoFactory"),
         requireNonNullParam(mirrorTrajectory, "mirrorTrajectory", "Choreo.createAutoFactory"),
         Optional.of(requireNonNullParam(trajLogger, "trajLogger", "Choreo.createAutoFactory")),
-        requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory")
-      );
+        requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory"));
   }
 }

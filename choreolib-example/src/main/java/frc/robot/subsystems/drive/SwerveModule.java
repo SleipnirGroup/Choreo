@@ -10,6 +10,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 import frc.robot.Constants.kSwerve;
 import frc.robot.Constants.kSwerve.kAngleMotor;
@@ -27,7 +28,7 @@ public class SwerveModule {
     public double angleVolts = 0.0;
     public double angleAmps = 0.0;
 
-    private FlywheelSim driveSim = new FlywheelSim(DCMotor.getFalcon500(1), kSwerve.DRIVE_GEAR_RATIO, 0.025);
+    private FlywheelSim driveSim = new FlywheelSim(DCMotor.getKrakenX60(1), kSwerve.DRIVE_GEAR_RATIO, 0.025);
     private FlywheelSim angleSim = new FlywheelSim(DCMotor.getFalcon500(1), kSwerve.ANGLE_GEAR_RATIO, 0.004);
 
     private boolean gotDirectionsLastCycle = false;
@@ -147,5 +148,17 @@ public class SwerveModule {
 
         this.driveVeloMPS = driveRotationsToMeters(driveSim.getAngularVelocityRPM() / 60.0);
         this.driveAmps = driveSim.getCurrentDrawAmps();
+
+        String prefix = "Swerve/Module" + this.moduleNumber + "/";
+        SmartDashboard.putNumber(prefix + "DriveVelocity", this.driveVeloMPS);
+        SmartDashboard.putNumber(prefix + "TargetDriveVelocity", this.targetDriveVeloMPS);
+        SmartDashboard.putNumber(prefix + "DrivePosition", this.drivePositionMeters);
+        SmartDashboard.putNumber(prefix + "DriveVolts", this.driveVolts);
+        SmartDashboard.putNumber(prefix + "DriveAmps", this.driveAmps);
+        SmartDashboard.putNumber(prefix + "AngleVelocity", this.angleVeloRadPS);
+        SmartDashboard.putNumber(prefix + "AnglePosition", this.angleAbsoluteRads);
+        SmartDashboard.putNumber(prefix + "TargetAnglePosition", this.targetAngleAbsoluteRads);
+        SmartDashboard.putNumber(prefix + "AngleVolts", this.angleVolts);
+        SmartDashboard.putNumber(prefix + "AngleAmps", this.angleAmps);
     }
 }

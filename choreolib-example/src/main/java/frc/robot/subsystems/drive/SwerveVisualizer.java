@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilderImpl;
 import edu.wpi.first.wpilibj.util.Color8Bit;
+import frc.robot.Robot;
 import frc.robot.Constants.kSwerve;
 
 public class SwerveVisualizer {
@@ -93,7 +94,7 @@ public class SwerveVisualizer {
 
         modulesOnField.set(false);
 
-        field = new Field2d();
+        field = Robot.field;
 
         field.initSendable(
             getBuilder("field")

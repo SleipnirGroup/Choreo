@@ -1,6 +1,7 @@
 plugins {
     id 'cpp'
     id 'java'
+    id "java-library"
     id 'google-test'
     id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2020.2'
     id 'edu.wpi.first.NativeUtils' version '2024.7.0'

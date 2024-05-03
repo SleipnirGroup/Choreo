@@ -18,8 +18,4 @@ public class ChoreoEventMarker {
     this.timestamp = timestamp;
     this.event = event;
   }
-
-  public ChoreoEventMarker offsetTimestamp(double offset) {
-    return new ChoreoEventMarker(timestamp + offset, event);
-  }
 }

@@ -10,7 +10,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.kFieldConstants;
@@ -127,25 +126,6 @@ public class Swerve extends SubsystemBase {
         poseEstimator.resetPosition(pose.getRotation(), getModulePositions(), pose);
     }
 
-    @Override
-    public void periodic() {
-        for (SwerveModule module : swerveMods) {
-            module.periodic();
-        }
-
-        gyro.periodic();
-
-        visualizer.update(poseEstimator.update(getYawWrappedRot(), getModulePositions()));
-
-        if (DriverStation.isDisabled()) {
-            drive(new ChassisSpeeds(), true);
-        }
-    }
-
-    public Field2d getField() {
-        return visualizer.getField();
-    }
-
     public static double scope0To360(double angle) {
         if (angle < 0) {
             angle = 360 - (Math.abs(angle) % 360);
@@ -153,5 +133,20 @@ public class Swerve extends SubsystemBase {
             angle %= 360;
         }
         return angle;
+    }
+
+    @Override
+    public void periodic() {
+        if (DriverStation.isDisabled()) {
+            drive(new ChassisSpeeds(), true);
+        }
+
+        for (SwerveModule module : swerveMods) {
+            module.periodic();
+        }
+
+        gyro.periodic();
+
+        visualizer.update(poseEstimator.update(getYawWrappedRot(), getModulePositions()));
     }
 }

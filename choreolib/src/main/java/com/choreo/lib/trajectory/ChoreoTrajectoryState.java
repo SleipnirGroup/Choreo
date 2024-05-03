@@ -83,12 +83,13 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
    * Interpolate between this state and the provided state.
    *
    * @param endValue The next state. It should have a timestamp after this state.
-   * @param t the timestamp of the interpolated state. It should be between this state and endValue.
+   * @param timestamp the timestamp of the interpolated state. It should be between this state and
+   *     endValue.
    * @return the interpolated state.
    */
   @Override
-  public ChoreoTrajectoryState interpolate(ChoreoTrajectoryState endValue, double t) {
-    double scale = (t - this.timestamp) / (endValue.timestamp - this.timestamp);
+  public ChoreoTrajectoryState interpolate(ChoreoTrajectoryState endValue, double timestamp) {
+    double scale = (timestamp - this.timestamp) / (endValue.timestamp - this.timestamp);
     var interp_pose = getPose().interpolate(endValue.getPose(), scale);
 
     return new ChoreoTrajectoryState(
@@ -128,22 +129,5 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
         -this.velocityX,
         this.velocityY,
         -this.angularVelocity);
-  }
-
-  /**
-   * Returns this state with the timestamp offset by the given amount.
-   *
-   * @param offset The amount to offset the timestamp by.
-   * @return this state with the timestamp offset by the given amount.
-   */
-  public ChoreoTrajectoryState offsetTimestamp(double offset) {
-    return new ChoreoTrajectoryState(
-        this.timestamp + offset,
-        this.x,
-        this.y,
-        this.heading,
-        this.velocityX,
-        this.velocityY,
-        this.angularVelocity);
   }
 }

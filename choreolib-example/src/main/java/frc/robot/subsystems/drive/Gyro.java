@@ -1,6 +1,7 @@
 package frc.robot.subsystems.drive;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants;
 
 import java.util.function.Supplier;
@@ -28,5 +29,7 @@ public class Gyro {
         var oldYaw = this.yawRads;
         this.yawRads += chassisSpeedSupplier.get().omegaRadiansPerSecond * Constants.PERIODIC_TIME;
         this.yawVelRadsPerSec = (this.yawRads - oldYaw) / Constants.PERIODIC_TIME;
+
+        SmartDashboard.putNumber("Swerve/Gyro/Yaw", this.yawRads);
     }
 }

@@ -5,7 +5,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Subsystem;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
@@ -62,10 +61,11 @@ public class ChoreoAutoFactory {
   /**
    * Creates a new auto loop to be used to make an auto routine.
    *
+   * @param loopName The name of the auto loop
    * @return A new auto loop.
    */
-  public ChoreoAutoLoop newLoop() {
-    return new ChoreoAutoLoop();
+  public ChoreoAutoLoop newLoop(String loopName) {
+    return new ChoreoAutoLoop(loopName);
   }
 
   /**
@@ -141,13 +141,13 @@ public class ChoreoAutoFactory {
   /**
    * Creates a new auto trajectory based on a trajectory group.
    *
-   * @param trajName The name of the trajectory group to use.
+   * @param trajectories The list of trajectories to use.
    * @param loop The auto loop to use as the triggers polling context.
    * @return A new auto trajectory.
    */
   public ChoreoAutoTrajectory trajGroup(List<ChoreoTrajectory> trajectories, ChoreoAutoLoop loop) {
     return new ChoreoAutoTrajectory(
-        "", //TODO
+        "", // TODO
         trajectories,
         poseSupplier,
         controller,

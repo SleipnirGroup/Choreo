@@ -9,15 +9,35 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  * logic and schedule commands.
  */
 public class ChoreoAutoLoop {
+  /** The name of the loop */
+  protected String name;
+
+  /** The underlying {@link EventLoop} stuff is bound to and polled */
   protected final EventLoop loop;
+
+  /** A boolean utilized in {@link #enabled()} to resolve trueness */
   protected boolean hasBeenPolled = false;
 
-  protected ChoreoAutoLoop() {
+  /**
+   * Creates a new loop with a specific name
+   *
+   * @param name Loop name
+   * @see com.choreo.lib.ChoreoAutoFactory#newLoop(String) Creating a loop from a ChoreoAutoFactory
+   */
+  public ChoreoAutoLoop(String name) {
     this.loop = new EventLoop();
+    this.name = name;
   }
 
-  protected ChoreoAutoLoop(ChoreoAutoLoop template) {
-    this.loop = template.getLoop();
+  /**
+   * A constructor to be used when inhereting this class to instantiate a custom inner loop
+   *
+   * @param name The name of the loop
+   * @param loop The inner {@link EventLoop}
+   */
+  protected ChoreoAutoLoop(String name, EventLoop loop) {
+    this.loop = loop;
+    this.name = name;
   }
 
   /**
@@ -40,7 +60,25 @@ public class ChoreoAutoLoop {
    *
    * @return The event loop that this loop is using.
    */
-  protected EventLoop getLoop() {
+  public EventLoop getLoop() {
     return loop;
+  }
+
+  /**
+   * Gets the name of the loop
+   *
+   * @return The name of the loop
+   */
+  public String getName() {
+    return name;
+  }
+
+  /**
+   * Sets the name of the loop
+   *
+   * @param name The loops new name
+   */
+  public void setName(String name) {
+    this.name = name;
   }
 }
