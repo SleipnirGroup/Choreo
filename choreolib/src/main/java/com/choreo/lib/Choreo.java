@@ -27,8 +27,6 @@ public class Choreo {
 
   private static Timer timer = new Timer();
 
-  private static ChoreoEvent events;
-
   /** Default constructor. */
   public Choreo() {}
 
@@ -86,40 +84,6 @@ public class Choreo {
       ChoreoTrajectory traj = gson.fromJson(reader, ChoreoTrajectory.class);
 
       return traj;
-    } catch (Exception ex) {
-      DriverStation.reportError(ex.getMessage(), ex.getStackTrace());
-    }
-    return null;
-  }
-
-  public static ArrayList<ChoreoEvent> getEventGroup(String trajName) {
-    // Count files matching the pattern for split parts.
-    var traj_dir = new File(Filesystem.getDeployDirectory(), "choreo");
-    File[] files =
-        traj_dir.listFiles((file) -> file.getName().matches(trajName + "\\.\\d+\\.traj"));
-    int segmentCount = files.length;
-    // Try to load the segments.
-    var eventlist = new ArrayList<ChoreoEvent>();
-    for (int i = 1; i <= segmentCount; ++i) {
-      File traj = new File(traj_dir, String.format("%s.%d.traj", trajName, i));
-      ChoreoEvent event = loadEvents(traj);
-      if (event == null) {
-        DriverStation.reportError("ChoreoLib: Missing segments for path group " + trajName, false);
-        return null;
-      }
-      eventlist.add(event);
-    }
-
-    return eventlist;
-  }
-
-  private static ChoreoEvent loadEvents(File path) {
-    try {
-      var reader = new BufferedReader(new FileReader(path));
-      ChoreoEvent event = gson.fromJson(reader, ChoreoEvent.class);
-
-      events = event;
-      return event;
     } catch (Exception ex) {
       DriverStation.reportError(ex.getMessage(), ex.getStackTrace());
     }
@@ -247,10 +211,18 @@ public class Choreo {
     };
   }
 
-  public static Trigger event(String eventName) {
+  /**
+   * Returns a trigger, which activates at the specified event marker's start time, and ends at the
+   * event marker's end time.
+   *
+   * @param eventName The name of the event marker.
+   * @param traj The trajectory which houses the event markers.
+   * @return A trigger which activates during an event marker.
+   */
+  public static Trigger event(String eventName, ChoreoTrajectory traj) {
     return new Trigger(
         () ->
-            timer.hasElapsed(events.startTime(eventName))
-                && timer.hasElapsed(events.endTime(eventName)));
+            timer.hasElapsed(traj.markerFromName(eventName).startTime())
+                && !timer.hasElapsed(traj.markerFromName(eventName).endTime()));
   }
 }
