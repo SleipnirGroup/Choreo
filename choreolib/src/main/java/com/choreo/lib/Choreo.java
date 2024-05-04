@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -249,6 +248,9 @@ public class Choreo {
   }
 
   public static Trigger event(String eventName) {
-    return new Trigger(() -> timer.hasElapsed(events.startTime(eventName)) && timer.hasElapsed(events.endTime(eventName)));
+    return new Trigger(
+        () ->
+            timer.hasElapsed(events.startTime(eventName))
+                && timer.hasElapsed(events.endTime(eventName)));
   }
 }
