@@ -26,9 +26,9 @@ import java.util.function.Supplier;
 public class Choreo {
   private static final Gson gson = new Gson();
 
-  private Timer timer = new Timer();
+  private static Timer timer = new Timer();
 
-  ChoreoEvent events;
+  private static ChoreoEvent events;
 
   /** Default constructor. */
   public Choreo() {}
@@ -91,6 +91,27 @@ public class Choreo {
       DriverStation.reportError(ex.getMessage(), ex.getStackTrace());
     }
     return null;
+  }
+
+  public static ArrayList<ChoreoEvent> getEventGroup(String trajName) {
+    // Count files matching the pattern for split parts.
+    var traj_dir = new File(Filesystem.getDeployDirectory(), "choreo");
+    File[] files =
+        traj_dir.listFiles((file) -> file.getName().matches(trajName + "\\.\\d+\\.traj"));
+    int segmentCount = files.length;
+    // Try to load the segments.
+    var eventlist = new ArrayList<ChoreoEvent>();
+    for (int i = 1; i <= segmentCount; ++i) {
+      File traj = new File(traj_dir, String.format("%s.%d.traj", trajName, i));
+      ChoreoEvent event = loadEvents(traj);
+      if (event == null) {
+        DriverStation.reportError("ChoreoLib: Missing segments for path group " + trajName, false);
+        return null;
+      }
+      eventlist.add(event);
+    }
+
+    return eventlist;
   }
 
   private static ChoreoEvent loadEvents(File path) {
@@ -175,7 +196,6 @@ public class Choreo {
     return new FunctionalCommand(
         () -> {
           timer.restart();
-          currentTraj = trajectory;
         },
         () -> {
           ;
@@ -186,7 +206,6 @@ public class Choreo {
         },
         (interrupted) -> {
           timer.stop();
-          currentTraj = emptyTraj;
 
           if (interrupted) {
             outputChassisSpeeds.accept(new ChassisSpeeds());
@@ -227,19 +246,6 @@ public class Choreo {
       return ChassisSpeeds.fromFieldRelativeSpeeds(
           xFF + xFeedback, yFF + yFeedback, rotationFF + rotationFeedback, pose.getRotation());
     };
-  }
-
-  public static ArrayList<ChoreoEvent> loadEvents(File path) {
-    var event_dir = new File(Filesystem.getDeployDirectory(), "choreo");
-    File[] files = 
-      event_dir.listFiles((file) -> file.getName().matches(trajName + "\\.\\d+\\.traj"));
-    int eventCount = files.length;
-    // Try to load the events.
-    var events = new ArrayList<ChoreoEvent>();
-    for (int i = 1; i <= eventCount; ++i) {
-      File traj = new File(traj_dir, String.format("%s.%d.traj", trajName, i));
-      ChoreoEvent event = loadFile(traj);
-    }
   }
 
   public static Trigger event(String eventName) {

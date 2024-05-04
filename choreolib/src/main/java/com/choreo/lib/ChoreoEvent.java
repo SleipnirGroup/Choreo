@@ -1,5 +1,9 @@
+package com.choreo.lib;
+
+import java.util.List;
+
 public class ChoreoEvent {
-    private final List<ChoreoTrajectoryState> samples;
+    private final List<ChoreoMarker> samples;
 
 
     public ChoreoEvent() {
@@ -16,7 +20,7 @@ public class ChoreoEvent {
     }
 
     public ChoreoMarker fromName(String name) {
-        for (var marker : samples) {
+        for (ChoreoMarker marker : samples) {
             if (marker.name() == name) {
                 return marker;
             }

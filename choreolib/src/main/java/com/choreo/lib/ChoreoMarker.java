@@ -1,3 +1,5 @@
+package com.choreo.lib;
+
 public class ChoreoMarker {
     private String name;
     private double startTime;
