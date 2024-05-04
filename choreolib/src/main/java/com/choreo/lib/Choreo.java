@@ -27,6 +27,9 @@ public class Choreo {
 
   private static Timer timer = new Timer();
 
+  private static final ChoreoTrajectory emptyTraj = new ChoreoTrajectory();
+  private static ChoreoTrajectory currTraj = emptyTraj;
+
   /** Default constructor. */
   public Choreo() {}
 
@@ -166,9 +169,11 @@ public class Choreo {
               controller.apply(
                   poseSupplier.get(),
                   trajectory.sample(timer.get(), mirrorTrajectory.getAsBoolean())));
+          currTraj = trajectory;
         },
         (interrupted) -> {
           timer.stop();
+          currTraj = emptyTraj;
 
           if (interrupted) {
             outputChassisSpeeds.accept(new ChassisSpeeds());
@@ -216,13 +221,12 @@ public class Choreo {
    * event marker's end time.
    *
    * @param eventName The name of the event marker.
-   * @param traj The trajectory which houses the event markers.
    * @return A trigger which activates during an event marker.
    */
-  public static Trigger event(String eventName, ChoreoTrajectory traj) {
+  public static Trigger event(String eventName) {
     return new Trigger(
         () ->
-            timer.hasElapsed(traj.markerFromName(eventName).startTime())
-                && !timer.hasElapsed(traj.markerFromName(eventName).endTime()));
+            timer.hasElapsed(currTraj.markerFromName(eventName).startTime())
+                && !timer.hasElapsed(currTraj.markerFromName(eventName).endTime()));
   }
 }

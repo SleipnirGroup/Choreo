@@ -11,6 +11,8 @@ public class ChoreoTrajectory {
   private final List<ChoreoTrajectoryState> samples;
   private final List<ChoreoMarker> events;
 
+  private static final ChoreoMarker nullMarker = new ChoreoMarker("null", 1, 0);
+
   /** Create an empty ChoreoTrajectory. */
   public ChoreoTrajectory() {
     samples = List.of();
@@ -135,7 +137,9 @@ public class ChoreoTrajectory {
         return marker;
       }
     }
-    return null;
+    return nullMarker;
+    // If there is no marker of that name in the trajectory, it will return a defective marker that
+    // can never trigger.
   }
 
   /**
