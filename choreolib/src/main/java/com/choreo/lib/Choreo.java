@@ -27,7 +27,7 @@ public final class Choreo {
   private static final Gson gson = new Gson();
 
   /** Default constructor. */
-  public Choreo() {
+  private Choreo() {
     throw new UnsupportedOperationException("This is a utility class!");
   }
 

@@ -61,11 +61,10 @@ public class ChoreoAutoFactory {
   /**
    * Creates a new auto loop to be used to make an auto routine.
    *
-   * @param loopName The name of the auto loop
    * @return A new auto loop.
    */
-  public ChoreoAutoLoop newLoop(String loopName) {
-    return new ChoreoAutoLoop(loopName);
+  public ChoreoAutoLoop newLoop() {
+    return new ChoreoAutoLoop();
   }
 
   /**

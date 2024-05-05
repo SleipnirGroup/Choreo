@@ -200,10 +200,11 @@ public class ChoreoTrajectory {
   }
 
   /**
-   * Returns the event with the given name.
+   * Returns a list of all events with the given name in the trajectory.
    *
    * @param eventName The name of the event.
-   * @return The event with the given name, or an empty optional if the event does not exist.
+   * @return A list of all events with the given name in the trajectory, if no events are found, an
+   *     empty list is returned.
    */
   public List<ChoreoEventMarker> getEvents(String eventName) {
     return events.stream().filter(event -> event.event.equals(eventName)).toList();

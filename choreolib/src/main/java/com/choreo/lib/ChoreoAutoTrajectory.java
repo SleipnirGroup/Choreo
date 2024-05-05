@@ -89,7 +89,7 @@ public class ChoreoAutoTrajectory {
       Subsystem driveSubsystem,
       EventLoop loop) {
     this.name = "Group " + name;
-    this.trajectories = trajectories;
+    this.trajectories = List.copyOf(trajectories);
     this.trajLogger = trajLogger;
     this.poseSupplier = poseSupplier;
     this.controller = controller;
@@ -249,7 +249,11 @@ public class ChoreoAutoTrajectory {
 
           public boolean getAsBoolean() {
             double nowTimestamp = timer.get();
-            return lastTimestamp < nowTimestamp && nowTimestamp >= timeSinceStart;
+            try {
+              return lastTimestamp < nowTimestamp && nowTimestamp >= timeSinceStart;
+            } finally {
+              lastTimestamp = nowTimestamp;
+            }
           }
         });
   }
