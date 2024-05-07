@@ -83,6 +83,8 @@ public class AutoRoutines {
 
     loop.enabled().onTrue(m1sub.cmd());
 
-    return loop.cmd(m1sub.done().and(intake.hasNote().negate()));
+    return fourpiece(factory).andThen(
+      loop.cmd(m1sub.done().and(intake.hasNote().negate()))
+    );
   }
 }

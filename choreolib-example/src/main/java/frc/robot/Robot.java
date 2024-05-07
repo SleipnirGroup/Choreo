@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.choreo.lib.Choreo;
 import com.choreo.lib.ChoreoControlFunction;
+import com.choreo.lib.ChoreoAutoFactory.ChoreoAutoBindings;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -84,7 +85,10 @@ public class Robot extends TimedRobot {
             swerve::getPose,
             choreoSwerveController(),
             chassisSpeeds -> swerve.drive(chassisSpeeds, false),
-            () -> DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)));
+            () -> DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red),
+            new ChoreoAutoBindings()
+              .bind("shoot", intake.feed())
+        ));
 
     var routines = new AutoRoutines(swerve, intake, shooter);
 

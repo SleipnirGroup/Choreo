@@ -4,6 +4,7 @@ package com.choreo.lib;
 
 import static edu.wpi.first.util.ErrorMessages.requireNonNullParam;
 
+import com.choreo.lib.ChoreoAutoFactory.ChoreoAutoBindings;
 import com.choreo.lib.trajectory.ChoreoTrajectory;
 import com.google.gson.Gson;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -115,6 +116,7 @@ public final class Choreo {
    * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
    *     while keeping the same coordinate system origin. This will be called every loop during the
    *     command.
+   * @param bindings Universal trajectory event bindings.
    * @return A command that follows a Choreo path.
    */
   public static ChoreoAutoFactory createAutoFactory(
@@ -122,14 +124,16 @@ public final class Choreo {
       Supplier<Pose2d> poseSupplier,
       ChoreoControlFunction controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
-      BooleanSupplier mirrorTrajectory) {
+      BooleanSupplier mirrorTrajectory,
+      ChoreoAutoBindings bindings) {
     return new ChoreoAutoFactory(
         requireNonNullParam(poseSupplier, "poseSupplier", "Choreo.createAutoFactory"),
         requireNonNullParam(controller, "controller", "Choreo.createAutoFactory"),
         requireNonNullParam(outputChassisSpeeds, "outputChassisSpeeds", "Choreo.createAutoFactory"),
         requireNonNullParam(mirrorTrajectory, "mirrorTrajectory", "Choreo.createAutoFactory"),
         Optional.empty(),
-        requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory"));
+        requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory"),
+        requireNonNullParam(bindings, "bindings", "Choreo.createAutoFactory"));
   }
 
   /**
@@ -148,8 +152,9 @@ public final class Choreo {
    * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
    *     while keeping the same coordinate system origin. This will be called every loop during the
    *     command.
+   * @param bindings Universal trajectory event bindings.
    * @param trajLogger A function that consumes a trajectory whever one is started, should be used
-   *     for logging.x
+   *     for logging.
    * @return A command that follows a Choreo path.
    */
   public static ChoreoAutoFactory createAutoFactory(
@@ -158,6 +163,7 @@ public final class Choreo {
       ChoreoControlFunction controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
+      ChoreoAutoBindings bindings,
       Consumer<ChoreoTrajectory> trajLogger) {
     return new ChoreoAutoFactory(
         requireNonNullParam(poseSupplier, "poseSupplier", "Choreo.createAutoFactory"),
@@ -165,6 +171,7 @@ public final class Choreo {
         requireNonNullParam(outputChassisSpeeds, "outputChassisSpeeds", "Choreo.createAutoFactory"),
         requireNonNullParam(mirrorTrajectory, "mirrorTrajectory", "Choreo.createAutoFactory"),
         Optional.of(requireNonNullParam(trajLogger, "trajLogger", "Choreo.createAutoFactory")),
-        requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory"));
+        requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory"),
+        requireNonNullParam(bindings, "bindings", "Choreo.createAutoFactory"));
   }
 }

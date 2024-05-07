@@ -1,5 +1,6 @@
 package com.choreo.lib;
 
+import com.choreo.lib.ChoreoAutoFactory.ChoreoAutoBindings;
 import com.choreo.lib.trajectory.ChoreoTrajectory;
 import com.choreo.lib.trajectory.ChoreoTrajectoryState;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -65,7 +66,8 @@ public class ChoreoAutoTrajectory {
       BooleanSupplier mirrorTrajectory,
       Optional<Consumer<ChoreoTrajectory>> trajLogger,
       Subsystem driveSubsystem,
-      EventLoop loop) {
+      EventLoop loop,
+      ChoreoAutoBindings bindings) {
     this.name = name;
     this.trajectories = List.of(trajectory);
     this.trajLogger = trajLogger;
@@ -76,6 +78,8 @@ public class ChoreoAutoTrajectory {
     this.driveSubsystem = driveSubsystem;
     this.loop = loop;
     this.offTrigger = new Trigger(loop, () -> false);
+
+    bindings.getBindings().forEach((key, value) -> active().and(atTime(key)).onTrue(value));
   }
 
   ChoreoAutoTrajectory(
@@ -87,7 +91,8 @@ public class ChoreoAutoTrajectory {
       BooleanSupplier mirrorTrajectory,
       Optional<Consumer<ChoreoTrajectory>> trajLogger,
       Subsystem driveSubsystem,
-      EventLoop loop) {
+      EventLoop loop,
+      ChoreoAutoBindings bindings) {
     this.name = "Group " + name;
     this.trajectories = List.copyOf(trajectories);
     this.trajLogger = trajLogger;
@@ -98,6 +103,8 @@ public class ChoreoAutoTrajectory {
     this.driveSubsystem = driveSubsystem;
     this.loop = loop;
     this.offTrigger = new Trigger(loop, () -> false);
+
+    bindings.getBindings().forEach((key, value) -> active().and(atTime(key)).onTrue(value));
   }
 
   /**
@@ -407,26 +414,5 @@ public class ChoreoAutoTrajectory {
     } else {
       return new Trigger(loop, () -> trajectoryIndex == index && isActive);
     }
-  }
-
-  /**
-   * Clones this trajectory with a new name. This leaves the original trajectory unchanged. All
-   * triggers that are based off this trajecotry will not be triggered off the clone.
-   *
-   * @param newName The new name for the cloned trajectory.
-   * @return A new {@link ChoreoAutoTrajectory} with the same properties as this trajectory but with
-   *     a new name.
-   */
-  public ChoreoAutoTrajectory clone(String newName) {
-    return new ChoreoAutoTrajectory(
-        newName,
-        trajectories,
-        poseSupplier,
-        controller,
-        outputChassisSpeeds,
-        mirrorTrajectory,
-        trajLogger,
-        driveSubsystem,
-        loop);
   }
 }
