@@ -9,7 +9,7 @@ concurrency:
 jobs:
   format:
     name: "Format"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -74,8 +74,7 @@ jobs:
 
   tidy:
     name: "clang-tidy"
-    runs-on: ubuntu-latest
-    container: wpilib/roborio-cross-ubuntu:2023-22.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
         with:
