@@ -36,6 +36,11 @@ jobs:
           working-directory: "choreolib"
           doxyfile-path: "docs/Doxyfile"
 
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: 17
+
       - name: Run JavaDoc
         run: |
           cd choreolib
