@@ -1,16 +1,14 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use regex::{escape, Regex};
 use std::sync::mpsc::{channel, Sender};
 use std::sync::OnceLock;
 use std::thread;
-use std::{fs, path::Path};
-use tauri::regex::{escape, Regex};
+use std::{fs, path::Path, str};
 
-use tauri::{
-    api::{dialog::blocking::FileDialogBuilder, file},
-    Manager,
-};
+use tauri::Emitter;
+use tauri_plugin_dialog::DialogExt;
 use trajoptlib::{Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory, Translation2d};
 
 #[derive(Clone, serde::Serialize, Debug)]
@@ -22,7 +20,7 @@ struct OpenFileEventPayload<'a> {
 }
 
 #[tauri::command]
-async fn contains_build_gradle(dir: Option<&Path>) -> Result<bool, &'static str> {
+fn contains_build_gradle(dir: Option<&Path>) -> Result<bool, &'static str> {
     dir.map_or_else(
         || Err("Directory does not exist"),
         |dir_path| {
@@ -37,28 +35,32 @@ async fn contains_build_gradle(dir: Option<&Path>) -> Result<bool, &'static str>
 
 #[tauri::command]
 async fn open_file_dialog(app_handle: tauri::AppHandle) {
-    let file_path = FileDialogBuilder::new()
+    app_handle
+        .dialog()
+        .file()
         .set_title("Open a .chor file")
         .add_filter("Choreo Save File", &["chor"])
-        .pick_file();
-    // TODO: Replace with if-let chains (https://github.com/rust-lang/rfcs/pull/2497)
-    if let Some(path) = file_path {
-        if let Some(dir) = path.parent() {
-            if let Some(name) = path.file_name() {
-                if let Ok(adjacent_gradle) = contains_build_gradle(Some(dir)).await {
-                    let _ = app_handle.emit_all(
-                        "open-file",
-                        OpenFileEventPayload {
-                            dir: dir.as_os_str().to_str(),
-                            name: name.to_str(),
-                            contents: file::read_string(path.clone()).ok().as_deref(),
-                            adjacent_gradle,
-                        },
-                    );
+        .pick_file(move |file_path| {
+            // TODO: Replace with if-let chains (https://github.com/rust-lang/rfcs/pull/2497)
+            if let Some(file_response) = file_path {
+                let path = file_response.path;
+                if let Some(dir) = path.parent() {
+                    if let Some(name) = path.file_name() {
+                        if let Ok(adjacent_gradle) = contains_build_gradle(Some(dir)) {
+                            let _ = app_handle.emit(
+                                "open-file",
+                                OpenFileEventPayload {
+                                    dir: dir.as_os_str().to_str(),
+                                    name: name.to_str(),
+                                    contents: std::fs::read_to_string(path.clone()).ok().as_deref(),
+                                    adjacent_gradle,
+                                },
+                            );
+                        }
+                    }
                 }
             }
-        }
-    }
+        })
 }
 
 // parameters:
@@ -72,8 +74,8 @@ async fn file_event_payload_from_dir(
     name: String,
 ) -> Result<(), String> {
     let dir = Path::new(&dir);
-    let adjacent_gradle = contains_build_gradle(Some(dir)).await?;
-    let contents = file::read_string(path.clone()).map_err(|err| err.to_string())?;
+    let adjacent_gradle = contains_build_gradle(Some(dir))?;
+    let contents = std::fs::read_to_string(path.clone()).map_err(|err| err.to_string())?;
     let payload = OpenFileEventPayload {
         dir: dir.as_os_str().to_str(),
         name: Some(&name),
@@ -81,7 +83,7 @@ async fn file_event_payload_from_dir(
         adjacent_gradle,
     };
     app_handle
-        .emit_all("file_event_payload_from_dir", payload)
+        .emit("file_event_payload_from_dir", payload)
         .map_err(|err| err.to_string())?;
 
     Ok(())
@@ -466,11 +468,14 @@ fn main() {
     PROGRESS_SENDER_LOCK.get_or_init(move || tx);
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_os::init())
         .setup(|app| {
             let progress_emitter = app.handle().clone();
             thread::spawn(move || {
                 for received in rx {
-                    let _ = progress_emitter.emit_all("solver-status", received);
+                    let _ = progress_emitter.emit("solver-status", received);
                 }
             });
             Ok(())

@@ -14,7 +14,7 @@ import ViewOptionsPanel from "../config/ViewOptionsPanel";
 import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel";
 import { IConstraintStore } from "../../document/ConstraintStore";
 import "react-toastify/dist/ReactToastify.min.css";
-import { invoke } from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api/core";
 import { Close } from "@mui/icons-material";
 import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
 import CircularObstacleConfigPanel from "../config/CircularObstacleConfigPanel";
