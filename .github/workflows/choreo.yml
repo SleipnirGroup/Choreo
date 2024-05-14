@@ -31,7 +31,7 @@ jobs:
             tauri-build-flags: -- --target aarch64-apple-darwin
 
           - artifact-name: Linux-x86_64
-            os: ubuntu-22.04
+            os: ubuntu-24.04
             tauri-build-flags:
 
     name: "${{ matrix.artifact-name }}"
@@ -52,8 +52,7 @@ jobs:
             libgtk-3-dev \
             librsvg2-dev \
             libssl-dev \
-            libwebkit2gtk-4.0-dev \
-            wget
+            libwebkit2gtk-4.1-dev
 
       - name: Install Node.js dependencies
         run: npm install
@@ -99,7 +98,7 @@ jobs:
   release:
     name: Create draft release
     needs: [build]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: |
       github.repository_owner == 'SleipnirGroup' &&
       startsWith(github.ref, 'refs/tags/v')
