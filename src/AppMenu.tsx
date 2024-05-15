@@ -23,7 +23,9 @@ import {
   Settings
 } from "@mui/icons-material";
 import { toast } from "react-toastify";
-import { dialog, invoke, path } from "@tauri-apps/api";
+import { path } from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api/core";
+import { ask, confirm } from "@tauri-apps/plugin-dialog";
 
 import SettingsModal from "./components/config/SettingsModal";
 import { version } from "./util/version";
@@ -42,9 +44,9 @@ class AppMenu extends Component<Props, State> {
   private convertToRelative(filePath: string): string {
     return filePath.replace(
       RegExp(
-        `^(?:C:)?\\${path.sep}(Users|home)\\${path.sep}[a-zA-Z]+\\${path.sep}`
+        `^(?:C:)?\\${path.sep()}(Users|home)\\${path.sep()}[a-zA-Z]+\\${path.sep()}`
       ),
-      "~" + path.sep
+      "~" + path.sep()
     );
   }
 
@@ -81,10 +83,12 @@ class AppMenu extends Component<Props, State> {
     const { mainMenuOpen, toggleMainMenu } = this.context.model.uiState;
     return (
       <Drawer
-        ModalProps={{ onBackdropClick: toggleMainMenu }}
         anchor="left"
         open={mainMenuOpen}
-        onClose={(_) => {
+        onClose={(_event, reason) => {
+          if (reason == "backdropClick") {
+            toggleMainMenu();
+          }
           this.setState({ settingsOpen: false });
         }}
       >
@@ -142,10 +146,10 @@ class AppMenu extends Component<Props, State> {
             <ListItemButton
               onClick={async () => {
                 if (
-                  await dialog.confirm(
-                    "You may lose unsaved changes. Continue?",
-                    { title: "Choreo", type: "warning" }
-                  )
+                  await confirm("You may lose unsaved changes. Continue?", {
+                    title: "Choreo",
+                    kind: "warning"
+                  })
                 ) {
                   invoke("open_file_dialog");
                 }
@@ -177,10 +181,10 @@ class AppMenu extends Component<Props, State> {
             <ListItemButton
               onClick={async () => {
                 if (
-                  await dialog.confirm(
-                    "You may lose unsaved changes. Continue?",
-                    { title: "Choreo", type: "warning" }
-                  )
+                  await confirm("You may lose unsaved changes. Continue?", {
+                    title: "Choreo",
+                    kind: "warning"
+                  })
                 ) {
                   this.context.newFile();
                 }
@@ -216,11 +220,11 @@ class AppMenu extends Component<Props, State> {
               onClick={async () => {
                 if (!this.context.model.uiState.hasSaveLocation) {
                   if (
-                    await dialog.ask(
+                    await ask(
                       "Saving trajectories to the deploy directory requires saving the project. Save it now?",
                       {
                         title: "Choreo",
-                        type: "warning"
+                        kind: "warning"
                       }
                     )
                   ) {
@@ -343,7 +347,7 @@ class AppMenu extends Component<Props, State> {
         ? this.convertToRelative(
             this.context.model.uiState.saveFileDir as string
           )
-        : this.context.model.uiState.saveFileDir) + path.sep
+        : this.context.model.uiState.saveFileDir) + path.sep()
     );
   }
 
@@ -351,7 +355,7 @@ class AppMenu extends Component<Props, State> {
     return (
       this.projectLocation(relativeFormat) +
       this.context.model.uiState.chorRelativeTrajDir +
-      path.sep
+      path.sep()
     );
   }
 }

@@ -1,6 +1,8 @@
 import { createContext } from "react";
 import StateStore, { IStateStore } from "./DocumentModel";
-import { dialog, invoke, path, window as tauriWindow } from "@tauri-apps/api";
+import { path, window as tauriWindow } from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api/core";
+import { ask, confirm, save } from "@tauri-apps/plugin-dialog";
 import { listen, TauriEvent, Event } from "@tauri-apps/api/event";
 import { v4 as uuidv4 } from "uuid";
 import { validate } from "./DocumentSpecTypes";
@@ -67,7 +69,7 @@ export class DocumentManager {
       const fileDirectory: OpenFileEventPayload = JSON.parse(
         lastOpenedFileEventPayload
       );
-      const filePath = fileDirectory.dir + path.sep + fileDirectory.name;
+      const filePath = fileDirectory.dir + path.sep() + fileDirectory.name;
       console.log(`Attempting to open: ${filePath}`);
       invoke("file_event_payload_from_dir", {
         dir: fileDirectory.dir,
@@ -201,9 +203,9 @@ export class DocumentManager {
       .listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
         if (!this.model.uiState.hasSaveLocation) {
           if (
-            await dialog.ask("Save project?", {
+            await ask("Save project?", {
               title: "Choreo",
-              type: "warning"
+              kind: "warning"
             })
           ) {
             if (!(await this.saveFileDialog())) {
@@ -211,7 +213,7 @@ export class DocumentManager {
             }
           }
         }
-        await tauriWindow.getCurrent().close();
+        await tauriWindow.getCurrent().destroy();
       })
       .then((unlisten) => {
         window.addEventListener("unload", () => {
@@ -246,14 +248,12 @@ export class DocumentManager {
       this.model.uiState.setSelectedNavbarItem(-1);
     });
     hotkeys("ctrl+o,command+o", () => {
-      dialog
-        .confirm("You may lose unsaved or not generated changes. Continue?", {
-          title: "Choreo",
-          type: "warning"
-        })
-        .then((proceed) => {
-          proceed && invoke("open_file_dialog");
-        });
+      confirm("You may lose unsaved or not generated changes. Continue?", {
+        title: "Choreo",
+        kind: "warning"
+      }).then((proceed) => {
+        proceed && invoke("open_file_dialog");
+      });
     });
     hotkeys("f5,ctrl+shift+r,ctrl+r", function (event, handler) {
       event.preventDefault();
@@ -602,7 +602,7 @@ export class DocumentManager {
     }
     const dir =
       this.model.uiState.saveFileDir +
-      path.sep +
+      path.sep() +
       this.model.uiState.chorRelativeTrajDir;
     return [dir, `${choreoPath.name}.traj`];
   }
@@ -612,7 +612,7 @@ export class DocumentManager {
       const { hasSaveLocation, chorRelativeTrajDir } = this.model.uiState;
       if (!hasSaveLocation || chorRelativeTrajDir === undefined) {
         return (async () => {
-          const file = await dialog.save({
+          const file = await save({
             title: "Export Trajectory",
             filters: [
               {
@@ -628,9 +628,9 @@ export class DocumentManager {
         })();
       }
       return this.getTrajFilePath(uuid).then(async (filepath) => {
-        const file = await dialog.save({
+        const file = await save({
           title: "Export Trajectory",
-          defaultPath: filepath.join(path.sep),
+          defaultPath: filepath.join(path.sep()),
           filters: [
             {
               name: "Trajopt Trajectory",
@@ -666,7 +666,7 @@ export class DocumentManager {
   }
 
   async saveFileDialog() {
-    const filePath = await dialog.save({
+    const filePath = await save({
       title: "Save Document",
       filters: [
         {
@@ -770,7 +770,7 @@ export class DocumentManager {
       invoke("delete_dir", {
         dir:
           this.model.uiState.saveFileDir +
-          path.sep +
+          path.sep() +
           this.model.uiState.chorRelativeTrajDir
       });
     }
