@@ -129,6 +129,7 @@ pub async fn get_trajectory(pool: &Pool<Sqlite>, path_id: &i64) -> Result<Vec<Ho
     res.iter().map(|row|sample_from_row(row)).collect()
 }
 
+/// Convert a row of the `samples` table into a HolonomicTrajectorySample.
 fn sample_from_row(row: &SqliteRow) -> Result<HolonomicTrajectorySample, Error> {
     let timestamp = row.try_get("timestamp")?;
     let x = row.try_get("x")?;
