@@ -296,7 +296,7 @@ pub async fn delete_path_waypoint_impl(
             .bind(wpt_id)
             .execute(pool)
             .await?;
-        sqlx::query("DELETE FROM waypoints WHERE id==?")
+        sqlx::query("UPDATE waypoints SET is_deleted=TRUE WHERE id==?")
             .bind(wpt_id)
             .execute(pool)
             .await

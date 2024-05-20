@@ -4,7 +4,7 @@ import styles from "./InputList.module.css";
 
 export let rowGap = 0;
 export let noCheckbox = false;
-export let style: string;
+export let style = "";
 
 
     const className =

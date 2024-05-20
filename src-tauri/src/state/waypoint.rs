@@ -13,11 +13,25 @@ pub enum WaypointScope {
 
 #[allow(non_snake_case)]
 #[derive(serde::Serialize, serde::Deserialize, sqlx::FromRow, sqlxinsert::SqliteInsert, Debug, Partial, Clone)]
-#[partially(derive(Default, serde::Serialize, serde::Deserialize, Debug, Clone))]
+#[partially(derive(Default, serde::Serialize, serde::Deserialize, Debug, Clone, sqlx::FromRow))]
+
 pub struct Waypoint {
     // don't allow the id to be in the update struct
     #[partially(omit)]
-    id: WaypointID,
+    pub id: WaypointID,
+    pub x: f64,
+    pub y: f64,
+    pub heading: f64,
+    pub is_initial_guess: bool,
+    pub translation_constrained: bool,
+    pub heading_constrained: bool,
+    pub control_interval_count: i32
+}
+
+#[allow(non_snake_case)]
+#[derive(serde::Serialize, serde::Deserialize, sqlx::FromRow, sqlxinsert::SqliteInsert, Debug, Partial, Clone)]
+
+pub struct WaypointData {
     pub x: f64,
     pub y: f64,
     pub heading: f64,
@@ -31,19 +45,79 @@ pub struct Waypoint {
 pub static WPT_ID: AtomicI64 = AtomicI64::new(2);
 pub static KEYS : &str = "id, x, y, heading, is_initial_guess, translation_constrained, heading_constrained, control_interval_count";
 
-impl Waypoint {
+pub static DEFAULT_WAYPOINT: WaypointData = WaypointData {
+    x: 0.0,
+    y: 0.0,
+    heading: 0.0,
+    is_initial_guess: false,
+    translation_constrained: true,
+    heading_constrained : true,
+    control_interval_count: 40
+};
+impl PartialWaypoint {
     pub fn new() -> Self {
-        Waypoint {
-            id: WPT_ID.fetch_add(1, Ordering::Relaxed),
-            x: 0.0,
-            y: 0.0,
-            heading: 0.0,
-            is_initial_guess: false,
-            translation_constrained: true,
-            heading_constrained: true,
-            control_interval_count: 40,
+        PartialWaypoint {
+            x: None,
+            y: None,
+            heading: None,
+            is_initial_guess: None,
+            translation_constrained: None,
+            heading_constrained: None,
+            control_interval_count: None,
         }
     }
+
+    pub fn default() -> Self {
+        
+        PartialWaypoint {
+            x: Some(DEFAULT_WAYPOINT.x),
+            y: Some(DEFAULT_WAYPOINT.y),
+            heading: Some(DEFAULT_WAYPOINT.heading),
+            is_initial_guess: Some(DEFAULT_WAYPOINT.is_initial_guess),
+            translation_constrained: Some(DEFAULT_WAYPOINT.translation_constrained),
+            heading_constrained: Some(DEFAULT_WAYPOINT.heading_constrained),
+            control_interval_count: Some(DEFAULT_WAYPOINT.control_interval_count),
+        }
+    }
+}
+//id: WPT_ID.fetch_add(1, Ordering::Relaxed),
+impl Waypoint {
+    pub fn new(id: WaypointID, partial: &PartialWaypoint) -> Self {
+        let mut pt = Waypoint::default(id);
+        pt.apply_some(partial.clone());
+        pt
+    }
+
+    pub fn default(id: WaypointID) -> Self {
+        let mut pt = Waypoint {
+            id: id,
+            
+            // The below values mean nothing, default Waypoint content
+            // should be defined in PartialWaypoint::default()
+            x: DEFAULT_WAYPOINT.x,
+            y: DEFAULT_WAYPOINT.y,
+            heading: DEFAULT_WAYPOINT.heading,
+            is_initial_guess: DEFAULT_WAYPOINT.is_initial_guess,
+            translation_constrained: DEFAULT_WAYPOINT.translation_constrained,
+            heading_constrained: DEFAULT_WAYPOINT.heading_constrained,
+            control_interval_count: DEFAULT_WAYPOINT.control_interval_count,
+        };
+        pt
+    }
+
+    // pub fn new() -> Self {
+    //     Waypoint {
+    //         id: None,
+
+    //         x: 0.0,
+    //         y: 0.0,
+    //         heading: 0.0,
+    //         is_initial_guess: false,
+    //         translation_constrained: true,
+    //         heading_constrained: true,
+    //         control_interval_count: 40,
+    //     }
+    // }
 }
 
 pub fn scope_to_waypoint_id<'a>(
@@ -100,7 +174,8 @@ pub async fn create_waypoint_table(
             is_initial_guess BOOL NOT NULL,
             translation_constrained BOOL NOT NULL,
             heading_constrained BOOL NOT NULL,
-            control_interval_count INT NOT NULL
+            control_interval_count INT NOT NULL,
+            is_deleted BOOL NOT NULL DEFAULT FALSE
         )
     ",
     )
@@ -118,30 +193,65 @@ use sqlx::{Error, Pool, Sqlite};
 
 
 
-pub async fn add_waypoint_impl(pool: &Pool<Sqlite>, waypoint: &Waypoint) -> Result<i64, Error> {
+pub async fn add_waypoint_impl(pool: &Pool<Sqlite>, waypoint: &PartialWaypoint) -> Result<Waypoint, Error> {
+    let id = WPT_ID.fetch_add(1, Ordering::Relaxed);
+    let full_point = Waypoint::new(id, waypoint);
     
     sqlx::query(
     format!("INSERT INTO waypoints
             ({}) VALUES(
             ?,       ?, ?, ?,       ?,                ?,                       ?,                   ?)", KEYS).as_str(),
     )
-    .bind(waypoint.id)
-    .bind(waypoint.x)
-    .bind(waypoint.y)
-    .bind(waypoint.heading)
-    .bind(waypoint.is_initial_guess)
-    .bind(waypoint.translation_constrained)
-    .bind(waypoint.heading_constrained)
-    .bind(waypoint.control_interval_count)
+    .bind(id)
+    .bind(full_point.x)
+    .bind(full_point.y)
+    .bind(full_point.heading)
+    .bind(full_point.is_initial_guess)
+    .bind(full_point.translation_constrained)
+    .bind(full_point.heading_constrained)
+    .bind(full_point.control_interval_count)
     .execute(pool)
     .await?;
-    Ok(waypoint.id)
+    Ok(full_point)
+}
+
+/// Returns a PartialWaypoint containing the current values of waypoint [id]
+/// for every field present in the provided PartialWaypoint
+pub async fn get_prev_waypoint(
+    pool: &Pool<Sqlite>,
+    id: &i64,
+    wpt: &PartialWaypoint,
+) -> Result<PartialWaypoint, Error> {
+    sqlx::query_as::<Sqlite, PartialWaypoint>(
+        "SELECT 
+            CASE WHEN ? IS NULL THEN NULL ELSE x END  as x,
+            CASE WHEN ? IS NULL THEN NULL ELSE y END as y,
+            CASE WHEN ? IS NULL THEN NULL ELSE heading END as heading, 
+            CASE WHEN ? IS NULL THEN NULL ELSE is_initial_guess END as is_initial_guess,
+            CASE WHEN ? IS NULL THEN NULL ELSE translation_constrained END as translation_constrained,
+            CASE WHEN ? IS NULL THEN NULL ELSE heading_constrained END as heading_constrained,
+            CASE WHEN ? IS NULL THEN NULL ELSE control_interval_count END as control_interval_count
+            FROM waypoints
+            WHERE id == ?
+        "
+    )
+    .bind(wpt.x)
+    .bind(wpt.y)
+    .bind(wpt.heading)
+    .bind(wpt.is_initial_guess)
+    .bind(wpt.translation_constrained)
+    .bind(wpt.heading_constrained)
+    .bind(wpt.control_interval_count)
+    .bind(id)
+    .fetch_one(pool)
+    .await
 }
 pub async fn update_waypoint_impl(
     pool: &Pool<Sqlite>,
     id: &i64,
-    wpt: PartialWaypoint,
-) -> Result<<Sqlite as sqlx::Database>::QueryResult, Error> {
+    wpt: &PartialWaypoint,
+) -> Result<(), Error> {
+
     sqlx::query(
         "UPDATE waypoints SET
             x = COALESCE(?, x),
@@ -162,7 +272,20 @@ pub async fn update_waypoint_impl(
     .bind(wpt.control_interval_count)
     .bind(id)
     .execute(pool)
-    .await
+    .await?;
+    Ok(())
+}
+
+/// Fully deletes waypoint. Used only as rollback for add_waypoint
+/// Precondition: 
+pub async fn delete_waypoint (
+    pool: &Pool<Sqlite>,
+    id: &i64
+) -> Result<(), sqlx::Error> {
+    sqlx::query("DELETE FROM waypoints WHERE id==?")
+    .bind(id)
+    .execute(pool)
+    .await.map(|_|())
 }
 
 pub async fn get_waypoint_impl(pool: &Pool<Sqlite>, id: &i64) -> Result<Option<Waypoint>, Error> {

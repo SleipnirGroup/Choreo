@@ -58,7 +58,10 @@
   let generating = false;
   let stale = false;
 </script>
-      <a href={`/paths/${id}`}
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <!-- svelte-ignore a11y-no-static-element-interactions -->
+      <div on:click={()=>location.replace(`/paths/${id}`)}
+        aria-roledescription=""
         class={styles.SidebarItem + " " + (selected ? styles.Selected : "")}
         style="borderWidth: 0; border-left-width: 4; height: auto;"
       >
@@ -180,4 +183,4 @@
               </InputList>
             </span>
             {/if}
-          </a>
+          </div>

@@ -9,11 +9,10 @@ mod state;
 mod ipc;
 
 use crate::state::{
-    constraint::{add_constraint, get_constraint, Constraint, Constraints}, path::{
+    action::{add_waypoint::AddWaypoint, print_action::Print, update_waypoint::UpdateWaypoint}, constraint::{add_constraint, get_constraint, Constraint, Constraints}, path::{
         add_path_waypoint_impl, generate_trajectory, get_path_waypoints_impl
     }, trajectory::{get_sample, insert_trajectory}, waypoint::{
-        add_waypoint_impl, get_waypoint_impl,
-        update_waypoint_impl,
+        add_waypoint_impl, get_prev_waypoint, get_waypoint_impl, update_waypoint_impl
     }
 };
 use crate::ipc::tauri_commands:: {
@@ -28,7 +27,7 @@ use crate::ipc::tauri_commands:: {
     cmd_generate_trajectory
 };
 use state::{
-    constraint, path, robotconfig, trajectory, waypoint::{self, PartialWaypoint, Waypoint}
+    action::{action::Redo, history::History}, constraint, path, robotconfig, trajectory, waypoint::{self, PartialWaypoint, Waypoint}
 };
 use tauri::{Manager};
 
@@ -47,27 +46,31 @@ use sqlx::{
 
 async fn test_db(handle: tauri::AppHandle) {
     let pool = handle.state::<Pool<Sqlite>>();
-    let id = add_waypoint_impl(&pool, &Waypoint::new()).await;
-    println!("{:?}", id);
-    let first_id = id.unwrap();
-    let id2 = add_waypoint_impl(&pool, &Waypoint::new()).await;
+    let wpt = add_waypoint_impl(&pool, &PartialWaypoint::new()).await;
+    println!("{:?}", wpt);
+    let first_pt = wpt.unwrap().id;
+    let id2 = add_waypoint_impl(&pool, &PartialWaypoint::new()).await;
     println!("{:?}", id2);
-    let second_id = id2.unwrap();
-    println!("{:?}", get_waypoint_impl(&pool, &first_id).await);
+    let second_id = id2.unwrap().id;
+    println!("{:?}", get_waypoint_impl(&pool, &first_pt).await);
 
     // let mut update = PartialWaypoint::default();
     // update.x=Some(1.0f64);
     let update = serde_json::from_str::<PartialWaypoint>("{\"y\":1.0}").unwrap();
     println!(
-        "{:?}",
-        update_waypoint_impl(&pool, &first_id, update.clone()).await
+        "before update: {:?}",
+        get_prev_waypoint(&pool, &first_pt, &update.clone()).await
     );
-    println!("{:?}", get_waypoint_impl(&pool, &first_id).await);
+    println!(
+        "{:?}",
+        update_waypoint_impl(&pool, &first_pt, &update.clone()).await
+    );
+    println!("{:?}", get_waypoint_impl(&pool, &first_pt).await);
 
     let path_id = 2;
     println!(
         "add to path: {:?}",
-        add_path_waypoint_impl(&pool, &path_id, &first_id).await
+        add_path_waypoint_impl(&pool, &path_id, &first_pt).await
     );
     println!(
         "add to path: {:?}",
@@ -78,7 +81,7 @@ async fn test_db(handle: tauri::AppHandle) {
         add_path_waypoint_impl(
             &pool,
             &path_id,
-            &add_waypoint_impl(&pool, &Waypoint::new()).await.unwrap()
+            &add_waypoint_impl(&pool, &PartialWaypoint::default()).await.unwrap().id
         )
         .await
     );
@@ -105,6 +108,39 @@ async fn test_db(handle: tauri::AppHandle) {
     println!(
         "constraint {:?}", serde_json::to_string(&get_constraint(&pool, &cons).await.unwrap()).unwrap()
     );
+}
+
+async fn test_history(handle: tauri::AppHandle) {
+    let pool = handle.state::<Pool<Sqlite>>();
+    let mut history = History::new(&pool);
+    println!("empty history: {:#?}", history);
+    history.add(Print::new("step 1".to_string())).await;
+    history.start_group(Print::new("step 2.1".to_string())).await;
+    history.add(Print::new("step 2.2".to_string())).await;
+    history.stop_group();
+    println!("history: {:#?}", history);
+    history.undo().await;
+    history.start_group(Print::new("step 3.1".to_string())).await;
+    println!("history: {:#?}", history);
+    history.redo().await;
+    println!("history: {:#?}", history);
+    // let id = history.add(AddWaypoint::new(PartialWaypoint::default())).await;
+    // println!("add waypoint: {:?}", id);
+    // if (id.is_err()) {
+    //     return;
+    // }
+    // let waypoint = id.unwrap();
+    // println!("history: {:#?}", history);
+    // let mut update1=PartialWaypoint::default();
+    // update1.x = Some(1.0);
+    // let mut update2=PartialWaypoint::default();
+    // update2.y = Some(3.0);
+    // println!("update: {:?}", history.start_group(UpdateWaypoint::new(waypoint.id, PartialWaypoint::default())).await);
+    // println!("history: {:#?}", history);
+    // println!("update: {:?}", history.start_group(UpdateWaypoint::new(waypoint.id, PartialWaypoint::default())).await);
+    // history.stop_group();
+    // println!("history: {:#?}", history);
+
 }
 fn main() {
     /*
@@ -153,6 +189,8 @@ fn main() {
         .setup(|app| {
             let handle = app.handle();
             let handle2 = app.handle();
+            let history : Vec<Vec<Box<dyn Redo>>> = Vec::new();
+            handle.manage(history);
             tauri::async_runtime::spawn(async move {
                 let sqlite_opts = SqliteConnectOptions::from_str(":memory:").unwrap();
 
@@ -164,9 +202,11 @@ fn main() {
                     .await
                     .unwrap();
 
-                println!("{:?}", create_tables(&pool).await);
+                println!("create tables: {:?}", create_tables(&pool).await);
                 handle.manage(pool);
-                test_db(handle).await;
+                //test_db(handle).await;
+                test_history(handle).await;
+                if false {
                 let pool = handle2.state::<Pool<Sqlite>>();
                 let traj_res = generate_trajectory(&pool, 2).await;
                 
@@ -184,6 +224,7 @@ fn main() {
                     println!("{:?}", insert_res);
                 }
                 println!("{:?}", get_sample(&pool, &2, &56).await);
+            }
             });
             Ok(())
             // define in memory DB connection options

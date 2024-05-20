@@ -10,7 +10,7 @@ use super::tauri_events::{broadcast_path_update, broadcast_waypoint_update};
 pub async fn cmd_generate_trajectory(handle: tauri::AppHandle, id: i64)-> Result<Vec<HolonomicTrajectorySample>, String> {
     let pool = handle.state::<Pool<Sqlite>>();
     let traj = generate_trajectory(&pool, id).await?;
-    insert_trajectory(&pool, &id, &traj).await.map_err(sqlx_stringify);
+    let _ = insert_trajectory(&pool, &id, &traj).await.map_err(sqlx_stringify);
     Ok(traj.samples)
 }
 #[tauri::command]
@@ -28,9 +28,9 @@ pub async fn cmd_get_trajectory(
 pub async fn cmd_add_waypoint(
     handle: tauri::AppHandle,
     waypoint: Option<PartialWaypoint>,
-) -> Result<i64, String> {
+) -> Result<Waypoint, String> {
     let _pool = handle.state::<Pool<Sqlite>>();
-    let mut wpt = Waypoint::new();
+    let mut wpt = PartialWaypoint::default();
     if waypoint.is_some() {
         wpt.apply_some(waypoint.unwrap());
     }
@@ -46,7 +46,7 @@ pub async fn cmd_update_waypoint(
     update: PartialWaypoint,
 ) -> Result<(), String> {
     let _pool = handle.state::<Pool<Sqlite>>();
-    update_waypoint_impl(&_pool, &id, update)
+    update_waypoint_impl(&_pool, &id, &update)
         .await
         .map(|_| ())
         .map_err(sqlx_stringify)?;
@@ -72,7 +72,7 @@ pub async fn cmd_delete_path_waypoint(
 )  -> Result<(), String> {
     let pool = handle.state::<Pool<Sqlite>>();
     delete_path_waypoint_impl(&pool, &path_id, &wpt_id).await.map_err(sqlx_stringify)?;
-    broadcast_path_update(&handle, path_id).await;
+    let _ = broadcast_path_update(&handle, path_id).await;
     Ok(())
 }
 
@@ -92,10 +92,8 @@ pub async fn cmd_add_path_waypoint(
     update: PartialWaypoint
 ) -> Result<Waypoint, String> {
     let pool = handle.state::<Pool<Sqlite>>();
-    let mut waypoint = Waypoint::new();
-    waypoint.apply_some(update);
-    let wpt_id = add_waypoint_impl(&pool, &waypoint).await.map_err(sqlx_stringify)?;
-    add_path_waypoint_impl(&pool, &id, &wpt_id).await.map_err(sqlx_stringify)?;
+    let waypoint = add_waypoint_impl(&pool, &update).await.map_err(sqlx_stringify)?;
+    add_path_waypoint_impl(&pool, &id, &waypoint.id).await.map_err(sqlx_stringify)?;
     broadcast_path_update(&handle, id).await?;
     Ok(waypoint)
 }

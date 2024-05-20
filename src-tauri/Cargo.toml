@@ -25,6 +25,8 @@ open = "3"
 serde_with = "3.7.0"
 partially = {version = "0.2.1", features = ["derive"] }
 sqlxinsert = "0.10.0"
+async-trait = "0.1.80"
+educe = "0.5.11"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

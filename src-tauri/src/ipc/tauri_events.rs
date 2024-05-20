@@ -26,5 +26,5 @@ pub async fn broadcast_waypoint_update(
     id: i64,
     update: Waypoint,
 ) {
-    handle.emit_all::<UpdateWaypointPayload>("ev_update_waypoint", UpdateWaypointPayload {id, update});
+    let _ = handle.emit_all::<UpdateWaypointPayload>("ev_update_waypoint", UpdateWaypointPayload {id, update});
 }
