@@ -743,7 +743,6 @@ export const HolonomicPathStore = types
         return marker;
       },
       setControlIntervalCounts(counts: number[]) {
-        console.log("wpts: [" + self.waypoints.concat() + "]  counts: [" + counts.concat() + "]\n");
         counts.forEach((count, idx) => {
           if (idx < self.waypoints.length) {
             self.waypoints[idx]?.setControlIntervalCount(count);
