@@ -130,6 +130,8 @@ void choreolib::from_json(const wpi::json& json,
   trajState.angularVelocity =
       units::radians_per_second_t{json.at("angularVelocity").get<double>()};
 
-  // TODO: figure out how to get array back from JSON
-  // std::array<double, 4> fx(json.at("moduleForcesX").get<double[]>());
+  for(int i = 0; i < 4; ++i) {
+    trajState.moduleForcesX[i] = units::newton_t{json.at("moduleForcesX").at(i).get<double>()};
+    trajState.moduleForcesY[i] = units::newton_t{json.at("moduleForcesY").at(i).get<double>()};
+  }
 }
