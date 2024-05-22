@@ -2,7 +2,7 @@
  * Add module forces
  */
 
-export const SAVE_FILE_VERSION = "v0.4.0";
+export const SAVE_FILE_VERSION = "v0.4";
 export interface SavedWaypoint {
   x: number;
   y: number;
