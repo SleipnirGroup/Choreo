@@ -6,7 +6,14 @@
 #include <frc/kinematics/ChassisSpeeds.h>
 #include <wpi/json_fwd.h>
 
+#include <units/force.h>
+
+#include <array>
+
 namespace choreolib {
+
+using ModuleForces = std::array<units::newton_t, 4>;
+
 /// A single state in a ChoreoTrajectory
 class ChoreoTrajectoryState {
  public:
@@ -27,7 +34,9 @@ class ChoreoTrajectoryState {
                         units::radian_t heading,
                         units::meters_per_second_t xVel,
                         units::meters_per_second_t yVel,
-                        units::radians_per_second_t angularVel);
+                        units::radians_per_second_t angularVel,
+                        std::array<units::newton_t, 4> moduleForcesX,
+                        std::array<units::newton_t, 4> moduleForcesY);
 
   /**
    * Returns the pose of the robot at this state
@@ -90,6 +99,12 @@ class ChoreoTrajectoryState {
 
   /// The angular component of the velocity at that point in the trajectory
   units::radians_per_second_t angularVelocity = 0_rad_per_s;
+
+  /// The forces on the modules in the X direction
+  std::array<units::newton_t, 4> moduleForcesX{{0_N, 0_N, 0_N, 0_N}};
+
+  /// The forces on the modules in the Y direction
+  std::array<units::newton_t, 4> moduleForcesY{{0_N, 0_N, 0_N, 0_N}};
 
  private:
   static constexpr units::meter_t fieldLength = 16.5410515_m;
