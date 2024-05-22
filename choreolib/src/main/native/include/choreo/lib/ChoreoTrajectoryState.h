@@ -11,10 +11,11 @@
 
 namespace choreolib {
 
-using ModuleForces = std::array<units::newton_t, 4>;
 
 /// A single state in a ChoreoTrajectory
 class ChoreoTrajectoryState {
+ public:
+  using ModuleForces = std::array<units::newton_t, 4>;
  public:
   ChoreoTrajectoryState() = default;
 
@@ -34,8 +35,8 @@ class ChoreoTrajectoryState {
                         units::meters_per_second_t xVel,
                         units::meters_per_second_t yVel,
                         units::radians_per_second_t angularVel,
-                        std::array<units::newton_t, 4> moduleForcesX,
-                        std::array<units::newton_t, 4> moduleForcesY);
+                        ModuleForces moduleForcesX,
+                        ModuleForces moduleForcesY);
 
   /**
    * Returns the pose of the robot at this state
@@ -101,11 +102,11 @@ class ChoreoTrajectoryState {
 
   /// The forces on the modules in the X direction
   /// Forces appear in the following order: [FL, FR, BL, BR]
-  std::array<units::newton_t, 4> moduleForcesX{{0_N, 0_N, 0_N, 0_N}};
+  ModuleForces moduleForcesX{{0_N, 0_N, 0_N, 0_N}};
 
   /// The forces on the modules in the Y direction
   /// Forces appear in the following order: [FL, FR, BL, BR]
-  std::array<units::newton_t, 4> moduleForcesY{{0_N, 0_N, 0_N, 0_N}};
+  ModuleForces moduleForcesY{{0_N, 0_N, 0_N, 0_N}};
 
  private:
   static constexpr units::meter_t fieldLength = 16.5410515_m;

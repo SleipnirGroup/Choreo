@@ -31,8 +31,8 @@ ChoreoTrajectoryState::ChoreoTrajectoryState(
     units::second_t t, units::meter_t x, units::meter_t y,
     units::radian_t heading, units::meters_per_second_t xVel,
     units::meters_per_second_t yVel, units::radians_per_second_t angularVel,
-    std::array<units::newton_t, 4> moduleForcesX,
-    std::array<units::newton_t, 4> moduleForcesY)
+    ModuleForces moduleForcesX,
+    ModuleForces moduleForcesY)
     : timestamp(t),
       x(x),
       y(y),
@@ -83,7 +83,7 @@ std::array<double, 7> ChoreoTrajectoryState::AsArray() const {
 ChoreoTrajectoryState ChoreoTrajectoryState::Flipped() const {
 
   // Flip x forces.
-  std::array<units::newton_t, 4> newFX;
+  ModuleForces newFX;
   std::transform(moduleForcesX.begin(), moduleForcesX.end(), newFX.begin(),
                  std::negate<>{});
 
