@@ -55,7 +55,7 @@ ChoreoTrajectoryState ChoreoTrajectoryState::Interpolate(
     const ChoreoTrajectoryState& endValue, double i) const {
   frc::Pose2d interpPose = frc::Interpolate(GetPose(), endValue.GetPose(), i);
 
-  // TODO: Can this be done cleaner?
+  // LERP all force values in both directions.
   std::array<units::newton_t, 4> lerpFX, lerpFY;
   for (int idx = 0; idx < 4; ++idx) {
     lerpFX[idx] = wpi::Lerp(moduleForcesX[idx], endValue.moduleForcesX[idx], i);
@@ -81,8 +81,9 @@ std::array<double, 7> ChoreoTrajectoryState::AsArray() const {
 }
 
 ChoreoTrajectoryState ChoreoTrajectoryState::Flipped() const {
+
+  // Flip x forces.
   std::array<units::newton_t, 4> newFX;
-  // Does this have a performance downside?
   std::transform(moduleForcesX.begin(), moduleForcesX.end(), newFX.begin(),
                  std::negate<>{});
 
@@ -99,6 +100,8 @@ ChoreoTrajectoryState ChoreoTrajectoryState::Flipped() const {
 
 void choreolib::to_json(wpi::json& json,
                         const ChoreoTrajectoryState& trajState) {
+
+  // convert unit checked arrays to raw double arrays
   std::array<double, 4> fx, fy;
   std::transform(trajState.moduleForcesX.begin(), trajState.moduleForcesX.end(),
                  fx.begin(), [](units::newton_t x) { return x.value(); });
@@ -113,7 +116,7 @@ void choreolib::to_json(wpi::json& json,
                 {"velocityX", trajState.velocityX.value()},
                 {"velocityY", trajState.velocityY.value()},
                 {"angularVelocity", trajState.angularVelocity.value()},
-                {"moduleForcesX", fx},  // TODO: Check that this actually works
+                {"moduleForcesX", fx},
                 {"moduleForcesY", fy}};
 }
 
@@ -130,9 +133,11 @@ void choreolib::from_json(const wpi::json& json,
   trajState.angularVelocity =
       units::radians_per_second_t{json.at("angularVelocity").get<double>()};
 
-  // TODO: I should probably store the array object itself here. Probably gets optimized out, but good to be sure.
+  // these probably get optimized out anyways, but wanted to reduce accesses
+  const auto& fx = json.at("moduleForcesX");
+  const auto& fy = json.at("moduleForcesY");
   for(int i = 0; i < 4; ++i) {
-    trajState.moduleForcesX[i] = units::newton_t{json.at("moduleForcesX").at(i).get<double>()};
-    trajState.moduleForcesY[i] = units::newton_t{json.at("moduleForcesY").at(i).get<double>()};
+    trajState.moduleForcesX[i] = units::newton_t{fx.at(i).get<double>()};
+    trajState.moduleForcesY[i] = units::newton_t{fy.at(i).get<double>()};
   }
 }
