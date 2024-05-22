@@ -51,6 +51,11 @@ import {
   SAVE_FILE_VERSION as v0_3_1_Version
 } from "./previousSpecs/v0_3_1";
 import v0_3_1_Schema from "./previousSpecs/v0.3.1.json";
+import {
+  SavedDocument as v0_4,
+  SAVE_FILE_VERSION as v0_4_Version
+} from "./previousSpecs/v0_4";
+import v0_4_Schema from "./previousSpecs/v0.4.json";
 
 // Paste new version import blocks above this line.
 // Import SAVE_FILE_VERSION, SavedDocument and only the other types needed for the upgrader functions.
@@ -60,7 +65,7 @@ import v0_3_1_Schema from "./previousSpecs/v0.3.1.json";
 import Ajv from "ajv";
 import { ROBOT_CONFIG_DEFAULTS } from "./RobotConfigStore";
 // Update the import path in the below to point to a particular version as current
-import { SAVE_FILE_VERSION } from "./previousSpecs/v0_3_1";
+import { SAVE_FILE_VERSION } from "./previousSpecs/v0_4";
 
 export type {
   SavedDocument,
@@ -77,8 +82,8 @@ export type {
   SavedNamedCommand,
   SavedWaitCommand,
   SavedGeneratedWaypoint
-} from "./previousSpecs/v0_3_1";
-export { SAVE_FILE_VERSION } from "./previousSpecs/v0_3_1";
+} from "./previousSpecs/v0_4";
+export { SAVE_FILE_VERSION } from "./previousSpecs/v0_4";
 
 const ajv = new Ajv();
 
