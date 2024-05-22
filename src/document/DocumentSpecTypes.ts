@@ -277,6 +277,19 @@ export const VERSIONS = {
       updated.version = v0_4_Version;
 
       // TODO: implement this upgrade
+      // because we added module forces in this version
+      // add zero-initialized module forces to each path.
+      // Since we can't figure out module forces from here,
+      // just mark the paths as stale
+      for(const entry of Object.keys(updated.paths)) {
+        const path = updated.paths[entry];
+        if(path.trajectory == null) continue;
+        path.isTrajectoryStale = true;
+        for(const sample of path.trajectory) {
+          sample.moduleForcesX = [0.0, 0.0, 0.0, 0.0];
+          sample.moduleForcesY = [0.0, 0.0, 0.0, 0.0];
+        }
+      }
 
       return updated;
     },
