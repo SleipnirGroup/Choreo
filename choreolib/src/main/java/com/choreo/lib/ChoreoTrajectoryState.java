@@ -7,7 +7,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.interpolation.Interpolatable;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-
 import java.util.Arrays;
 
 /** A single robot state in a ChoreoTrajectory. */
@@ -108,7 +107,7 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
     // NOTE: Could maybe do this with streams? This seems more efficient for now.
     double[] interp_fx = new double[4];
     double[] interp_fy = new double[4];
-    for(int i = 0; i < 4; ++i) {
+    for (int i = 0; i < 4; ++i) {
       interp_fx[i] = MathUtil.interpolate(this.moduleForcesX[i], endValue.moduleForcesX[i], scale);
       interp_fy[i] = MathUtil.interpolate(this.moduleForcesY[i], endValue.moduleForcesY[i], scale);
     }
@@ -121,9 +120,8 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
         MathUtil.interpolate(this.velocityX, endValue.velocityX, scale),
         MathUtil.interpolate(this.velocityY, endValue.velocityY, scale),
         MathUtil.interpolate(this.angularVelocity, endValue.angularVelocity, scale),
-        interp_fx, 
-        interp_fy
-    );
+        interp_fx,
+        interp_fy);
   }
 
   /**
@@ -154,7 +152,6 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
         this.velocityY,
         -this.angularVelocity,
         Arrays.stream(this.moduleForcesX).map(x -> -x).toArray(),
-        this.moduleForcesY
-        );
+        this.moduleForcesY);
   }
 }

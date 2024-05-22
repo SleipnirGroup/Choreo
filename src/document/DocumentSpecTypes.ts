@@ -273,12 +273,12 @@ export const VERSIONS = {
   },
   "v0.3.1": {
     up: (document: any): v0_4 => {
-        const updated: v0_4 = document;
-        updated.version = v0_4_Version;
+      const updated: v0_4 = document;
+      updated.version = v0_4_Version;
 
-        // TODO: implement this upgrade
+      // TODO: implement this upgrade
 
-        return updated;
+      return updated;
     },
     schema: v0_3_1_Schema
   },

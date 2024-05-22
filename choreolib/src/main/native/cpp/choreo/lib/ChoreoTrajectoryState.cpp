@@ -6,8 +6,8 @@
 #include <wpi/MathExtras.h>
 #include <wpi/json.h>
 
-#include <numbers>
 #include <algorithm>
+#include <numbers>
 
 using namespace choreolib;
 
@@ -31,7 +31,8 @@ ChoreoTrajectoryState::ChoreoTrajectoryState(
     units::second_t t, units::meter_t x, units::meter_t y,
     units::radian_t heading, units::meters_per_second_t xVel,
     units::meters_per_second_t yVel, units::radians_per_second_t angularVel,
-    std::array<units::newton_t, 4> moduleForcesX, std::array<units::newton_t, 4> moduleForcesY)
+    std::array<units::newton_t, 4> moduleForcesX,
+    std::array<units::newton_t, 4> moduleForcesY)
     : timestamp(t),
       x(x),
       y(y),
@@ -40,8 +41,7 @@ ChoreoTrajectoryState::ChoreoTrajectoryState(
       velocityY(yVel),
       angularVelocity(angularVel),
       moduleForcesX(moduleForcesX),
-      moduleForcesY(moduleForcesY)
-       {}
+      moduleForcesY(moduleForcesY) {}
 
 frc::Pose2d ChoreoTrajectoryState::GetPose() const {
   return frc::Pose2d{x, y, frc::Rotation2d{heading}};
@@ -57,7 +57,7 @@ ChoreoTrajectoryState ChoreoTrajectoryState::Interpolate(
 
   // TODO: Can this be done cleaner?
   std::array<units::newton_t, 4> lerpFX, lerpFY;
-  for(int idx = 0; idx < 4; ++idx) {
+  for (int idx = 0; idx < 4; ++idx) {
     lerpFX[idx] = wpi::Lerp(moduleForcesX[idx], endValue.moduleForcesX[idx], i);
     lerpFY[idx] = wpi::Lerp(moduleForcesY[idx], endValue.moduleForcesY[idx], i);
   }
@@ -71,8 +71,7 @@ ChoreoTrajectoryState ChoreoTrajectoryState::Interpolate(
       wpi::Lerp(velocityY, endValue.velocityY, i),
       wpi::Lerp(angularVelocity, endValue.angularVelocity, i),
       lerpFX,
-      lerpFY
-      };
+      lerpFY};
 }
 
 std::array<double, 7> ChoreoTrajectoryState::AsArray() const {
@@ -82,10 +81,10 @@ std::array<double, 7> ChoreoTrajectoryState::AsArray() const {
 }
 
 ChoreoTrajectoryState ChoreoTrajectoryState::Flipped() const {
-
   std::array<units::newton_t, 4> newFX;
   // Does this have a performance downside?
-  std::transform(moduleForcesX.begin(), moduleForcesX.end(), newFX.begin(), std::negate<>{});
+  std::transform(moduleForcesX.begin(), moduleForcesX.end(), newFX.begin(),
+                 std::negate<>{});
 
   return ChoreoTrajectoryState{timestamp,
                                fieldLength - x,
@@ -100,26 +99,26 @@ ChoreoTrajectoryState ChoreoTrajectoryState::Flipped() const {
 
 void choreolib::to_json(wpi::json& json,
                         const ChoreoTrajectoryState& trajState) {
-
   std::array<double, 4> fx, fy;
-  std::transform(trajState.moduleForcesX.begin(), trajState.moduleForcesX.end(), fx.begin(), [](units::newton_t x) { return x.value(); });
-  std::transform(trajState.moduleForcesY.begin(), trajState.moduleForcesY.end(), fy.begin(), [](units::newton_t x) { return x.value(); });
+  std::transform(trajState.moduleForcesX.begin(), trajState.moduleForcesX.end(),
+                 fx.begin(), [](units::newton_t x) { return x.value(); });
+  std::transform(trajState.moduleForcesY.begin(), trajState.moduleForcesY.end(),
+                 fy.begin(), [](units::newton_t x) { return x.value(); });
 
-  json = wpi::json{{"timestamp", trajState.timestamp.value()},
-                   {"x", trajState.x.value()},
-                   {"y", trajState.y.value()},
-                   {"heading", trajState.heading.value()},
-                   {"velocityX", trajState.velocityX.value()},
-                   {"velocityY", trajState.velocityY.value()},
-                   {"angularVelocity", trajState.angularVelocity.value()},
-                   {"moduleForcesX", fx}, // TODO: Check that this actually works
-                   {"moduleForcesY", fy}
-                   };
+  json =
+      wpi::json{{"timestamp", trajState.timestamp.value()},
+                {"x", trajState.x.value()},
+                {"y", trajState.y.value()},
+                {"heading", trajState.heading.value()},
+                {"velocityX", trajState.velocityX.value()},
+                {"velocityY", trajState.velocityY.value()},
+                {"angularVelocity", trajState.angularVelocity.value()},
+                {"moduleForcesX", fx},  // TODO: Check that this actually works
+                {"moduleForcesY", fy}};
 }
 
 void choreolib::from_json(const wpi::json& json,
                           ChoreoTrajectoryState& trajState) {
-
   trajState.timestamp = units::second_t{json.at("timestamp").get<double>()};
   trajState.x = units::meter_t{json.at("x").get<double>()};
   trajState.y = units::meter_t{json.at("y").get<double>()};
@@ -131,6 +130,6 @@ void choreolib::from_json(const wpi::json& json,
   trajState.angularVelocity =
       units::radians_per_second_t{json.at("angularVelocity").get<double>()};
 
-  // TODO: figure out how to get array back from JSON 
+  // TODO: figure out how to get array back from JSON
   // std::array<double, 4> fx(json.at("moduleForcesX").get<double[]>());
 }

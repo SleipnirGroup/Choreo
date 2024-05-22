@@ -23,8 +23,8 @@ export interface SavedTrajectorySample {
   heading: number;
   velocityX: number;
   velocityY: number;
-  angularVelocity: number,
-  moduleForcesX: Array<number>,
+  angularVelocity: number;
+  moduleForcesX: Array<number>;
   moduleForcesY: Array<number>;
 }
 export interface SavedPath {

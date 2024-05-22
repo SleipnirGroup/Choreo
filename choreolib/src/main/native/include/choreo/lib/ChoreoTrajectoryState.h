@@ -4,9 +4,8 @@
 
 #include <frc/geometry/Pose2d.h>
 #include <frc/kinematics/ChassisSpeeds.h>
-#include <wpi/json_fwd.h>
-
 #include <units/force.h>
+#include <wpi/json_fwd.h>
 
 #include <array>
 

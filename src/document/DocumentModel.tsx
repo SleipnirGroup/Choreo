@@ -15,7 +15,6 @@ import { UndoManager } from "mst-middlewares";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
-import { sample } from "../util/MathUtil";
 
 export const DocumentStore = types
   .model("DocumentStore", {
