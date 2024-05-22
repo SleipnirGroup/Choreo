@@ -100,9 +100,11 @@ class ChoreoTrajectoryState {
   units::radians_per_second_t angularVelocity = 0_rad_per_s;
 
   /// The forces on the modules in the X direction
+  /// Forces appear in the following order: [FL, FR, BL, BR]
   std::array<units::newton_t, 4> moduleForcesX{{0_N, 0_N, 0_N, 0_N}};
 
   /// The forces on the modules in the Y direction
+  /// Forces appear in the following order: [FL, FR, BL, BR]
   std::array<units::newton_t, 4> moduleForcesY{{0_N, 0_N, 0_N, 0_N}};
 
  private:

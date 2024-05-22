@@ -34,10 +34,18 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
   /** The angular velocity of the state in rad/s. */
   public final double angularVelocity;
 
-  /** The force on each module in Newtons */
+  /** 
+   * The force on each module in the X direction in Newtons 
+   * Module forces appear in the following order:
+   * [FL, FR, BL, BR]
+  */
   public final double[] moduleForcesX;
 
-  /** The force on each module in Newtons */
+  /** 
+   * The force on each module in the Y direction in Newtons 
+   * Module forces appear in the following order:
+   * [FL, FR, BL, BR]
+  */
   public final double[] moduleForcesY;
 
   /**
