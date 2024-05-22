@@ -281,11 +281,12 @@ export const VERSIONS = {
       // add zero-initialized module forces to each path.
       // Since we can't figure out module forces from here,
       // just mark the paths as stale
-      for(const entry of Object.keys(updated.paths)) {
+      for (const entry of Object.keys(updated.paths)) {
         const path = updated.paths[entry];
-        if(path.trajectory == null) continue;
+        // the trajectory can be null, just skip if so
+        if (path.trajectory == null) continue;
         path.isTrajectoryStale = true;
-        for(const sample of path.trajectory) {
+        for (const sample of path.trajectory) {
           sample.moduleForcesX = [0.0, 0.0, 0.0, 0.0];
           sample.moduleForcesY = [0.0, 0.0, 0.0, 0.0];
         }

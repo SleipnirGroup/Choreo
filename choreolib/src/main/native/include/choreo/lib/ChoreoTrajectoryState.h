@@ -11,11 +11,11 @@
 
 namespace choreolib {
 
-
 /// A single state in a ChoreoTrajectory
 class ChoreoTrajectoryState {
  public:
   using ModuleForces = std::array<units::newton_t, 4>;
+
  public:
   ChoreoTrajectoryState() = default;
 
@@ -35,8 +35,7 @@ class ChoreoTrajectoryState {
                         units::meters_per_second_t xVel,
                         units::meters_per_second_t yVel,
                         units::radians_per_second_t angularVel,
-                        ModuleForces moduleForcesX,
-                        ModuleForces moduleForcesY);
+                        ModuleForces moduleForcesX, ModuleForces moduleForcesY);
 
   /**
    * Returns the pose of the robot at this state
