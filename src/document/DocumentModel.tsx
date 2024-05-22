@@ -214,7 +214,6 @@ const StateStore = types
                 });
               });
               if (newTraj.length == 0) throw "No traj";
-              console.log("New traj:", newTraj);
               self.document.history.startGroup(() => {
                 pathStore.setTrajectory(newTraj);
                 if (newTraj.length > 0) {
