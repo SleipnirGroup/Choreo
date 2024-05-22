@@ -286,6 +286,7 @@ export const VERSIONS = {
     up: (document: any): v0_4 => document,
     schema: v0_4_Schema
   }
+
   /**
    * For developers adding new document versions-Keep this comment at the end of the list.
    *

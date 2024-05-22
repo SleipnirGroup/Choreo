@@ -15,6 +15,7 @@ import { UndoManager } from "mst-middlewares";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
+import { sample } from "../util/MathUtil";
 
 export const DocumentStore = types
   .model("DocumentStore", {
@@ -207,10 +208,13 @@ const StateStore = types
                   angularVelocity: samp.angular_velocity,
                   velocityX: samp.velocity_x,
                   velocityY: samp.velocity_y,
+                  moduleForcesX: samp.module_forces_x,
+                  moduleForcesY: samp.module_forces_y,
                   timestamp: samp.timestamp
                 });
               });
               if (newTraj.length == 0) throw "No traj";
+              console.log("New traj:", newTraj);
               self.document.history.startGroup(() => {
                 pathStore.setTrajectory(newTraj);
                 if (newTraj.length > 0) {
