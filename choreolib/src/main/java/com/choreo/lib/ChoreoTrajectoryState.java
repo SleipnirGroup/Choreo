@@ -102,19 +102,6 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
   }
 
   /**
-   * Returns this state as a double array: {timestamp, x, y, heading, velocityX, velocityY,
-   * angularVelocity}.
-   *
-   * @return This state as a double array: {timestamp, x, y, heading, velocityX, velocityY,
-   *     angularVelocity}.
-   */
-  public double[] asArray() {
-    return new double[] {
-      timestamp, x, y, heading, velocityX, velocityY, angularVelocity,
-    };
-  }
-
-  /**
    * Returns this state, mirrored across the field midline.
    *
    * @return this state, mirrored across the field midline.
