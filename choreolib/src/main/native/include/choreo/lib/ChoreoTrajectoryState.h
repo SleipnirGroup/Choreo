@@ -63,13 +63,6 @@ class ChoreoTrajectoryState {
                                     double i) const;
 
   /**
-   * Returns this state as an array of doubles
-   *
-   * @return this state as an array of doubles
-   */
-  std::array<double, 7> AsArray() const;
-
-  /**
    * Returns a new instance of this state mirrored across the midline of the
    * field
    *

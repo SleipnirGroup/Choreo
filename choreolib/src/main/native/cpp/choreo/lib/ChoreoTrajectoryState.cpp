@@ -73,12 +73,6 @@ ChoreoTrajectoryState ChoreoTrajectoryState::Interpolate(
       lerpFY};
 }
 
-std::array<double, 7> ChoreoTrajectoryState::AsArray() const {
-  return {timestamp.value(),      x.value(),         y.value(),
-          heading.value(),        velocityX.value(), velocityY.value(),
-          angularVelocity.value()};
-}
-
 ChoreoTrajectoryState ChoreoTrajectoryState::Flipped() const {
   // Flip x forces.
   ModuleForces newFX;
