@@ -93,9 +93,11 @@ ChoreoTrajectoryState ChoreoTrajectoryState::Flipped() const {
 void choreolib::to_json(wpi::json& json,
                         const ChoreoTrajectoryState& trajState) {
   // convert unit checked arrays to raw double arrays
-  std::array<double, 4> fx, fy;
+  std::array<double, 4> fx
   std::transform(trajState.moduleForcesX.begin(), trajState.moduleForcesX.end(),
                  fx.begin(), [](units::newton_t x) { return x.value(); });
+
+  std::array<double, 4> fy;
   std::transform(trajState.moduleForcesY.begin(), trajState.moduleForcesY.end(),
                  fy.begin(), [](units::newton_t x) { return x.value(); });
 
