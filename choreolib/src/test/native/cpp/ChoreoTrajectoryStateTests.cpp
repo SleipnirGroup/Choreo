@@ -4,7 +4,6 @@
 #include <wpi/json.h>
 
 #include <iostream>
-#include <string>
 
 #include "choreo/lib/ChoreoTrajectoryState.h"
 
@@ -12,13 +11,13 @@ using namespace choreolib;
 
 constexpr double epsilon = 0.001;
 
-const std::string correct_json_str = R"({
+const char* correct_json_str = R"({
   "timestamp":0.0,
   "x":1.0,"y":2.0,"heading":3.14,
   "velocityX":1.0,"velocityY":2.0,"angularVelocity":3.14,
   "moduleForcesX":[1.0,2.0,3.0,4.0],"moduleForcesY":[1.0,2.0,3.0,4.0]
   })";
-const wpi::json correct_json = wpi::json::parse(correct_json_str.c_str());
+const wpi::json correct_json = wpi::json::parse(correct_json_str);
 const ChoreoTrajectoryState state = {0.0_s,
                                      1.0_m,
                                      2.0_m,
