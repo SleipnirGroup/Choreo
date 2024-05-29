@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 
 public class ChoreoTrajectoryStateTests {
   private static final double kEpsilon = 0.001;
-  private static final int kNumModules = 4;
 
   private static final Gson sGson = new Gson();
 
