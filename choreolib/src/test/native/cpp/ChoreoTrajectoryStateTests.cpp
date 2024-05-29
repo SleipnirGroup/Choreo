@@ -1,9 +1,11 @@
-#include <gtest/gtest.h>
+// Copyright (c) Choreo contributors
 
 #include <units/force.h>
 #include <wpi/json.h>
 
 #include <iostream>
+
+#include <gtest/gtest.h>
 
 #include "choreo/lib/ChoreoTrajectoryState.h"
 
