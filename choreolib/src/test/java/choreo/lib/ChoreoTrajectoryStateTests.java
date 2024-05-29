@@ -62,6 +62,11 @@ public class ChoreoTrajectoryStateTests {
     assertEquals(state.velocityY, mState.velocityY, kEpsilon);
     assertEquals(state.angularVelocity, mState.angularVelocity, kEpsilon);
 
+    // check for correct length
+    assertEquals(state.moduleForcesX.length, mState.moduleForcesX.length);
+    // check for same length
+    assertEquals(state.moduleForcesX.length, state.moduleForcesY.length);
+
     for (int i = 0; i < 4; ++i) {
       assertEquals(state.moduleForcesX[i], mState.moduleForcesX[i], kEpsilon);
       assertEquals(state.moduleForcesY[i], mState.moduleForcesY[i], kEpsilon);
