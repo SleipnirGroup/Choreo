@@ -1,14 +1,14 @@
 // Copyright (c) Choreo contributors
 
-#include <gtest/gtest.h>
-
-#include <string>
-#include <iostream>
-
-#include "choreo/lib/ChoreoTrajectoryState.h"
-
 #include <units/force.h>
 #include <wpi/json.h>
+
+#include <iostream>
+#include <string>
+
+#include <gtest/gtest.h>
+
+#include "choreo/lib/ChoreoTrajectoryState.h"
 
 using namespace choreolib;
 
@@ -21,15 +21,17 @@ const std::string correct_json_str = R"({
   "moduleForcesX":[1.0,2.0,3.0,4.0],"moduleForcesY":[1.0,2.0,3.0,4.0]
   })";
 const wpi::json correct_json = wpi::json::parse(correct_json_str.c_str());
-const ChoreoTrajectoryState state = {
-  0.0_s, 
-  1.0_m, 2.0_m, 3.14_rad,
-  1.0_mps, 2.0_mps, 3.14_rad / 1.0_s,
-  {1.0_N, 2.0_N, 3.0_N, 4.0_N},
-  {1.0_N, 2.0_N, 3.0_N, 4.0_N}
-};
+const ChoreoTrajectoryState state = {0.0_s,
+                                     1.0_m,
+                                     2.0_m,
+                                     3.14_rad,
+                                     1.0_mps,
+                                     2.0_mps,
+                                     3.14_rad / 1.0_s,
+                                     {1.0_N, 2.0_N, 3.0_N, 4.0_N},
+                                     {1.0_N, 2.0_N, 3.0_N, 4.0_N}};
 
-TEST(TrajectoryStateTests, Serialize) {
+TEST(TrajectoryStateTest, Serialize) {
   wpi::json json{};
   to_json(json, state);
 
@@ -38,7 +40,7 @@ TEST(TrajectoryStateTests, Serialize) {
   ASSERT_EQ(json.dump(), correct_json.dump());
 }
 
-TEST(TrajectoryStateTests, Deserialize) {
+TEST(TrajectoryStateTest, Deserialize) {
   ChoreoTrajectoryState new_state;
   wpi::json json = wpi::json::parse(correct_json_str);
   choreolib::from_json(json, new_state);
@@ -51,14 +53,17 @@ TEST(TrajectoryStateTests, Deserialize) {
 
   ASSERT_NEAR(state.velocityX.value(), new_state.velocityX.value(), epsilon);
   ASSERT_NEAR(state.velocityY.value(), new_state.velocityY.value(), epsilon);
-  ASSERT_NEAR(state.angularVelocity.value(), new_state.angularVelocity.value(), epsilon);
+  ASSERT_NEAR(state.angularVelocity.value(), new_state.angularVelocity.value(),
+              epsilon);
 
   ASSERT_EQ(state.moduleForcesX.size(), new_state.moduleForcesX.size());
   ASSERT_EQ(new_state.moduleForcesX.size(), new_state.moduleForcesY.size());
 
-  for(int i = 0; i < 4; ++i) {
-    ASSERT_NEAR(state.moduleForcesX[i].value(), new_state.moduleForcesX[i].value(), epsilon);
-    ASSERT_NEAR(state.moduleForcesY[i].value(), new_state.moduleForcesY[i].value(), epsilon);
+  for (int i = 0; i < 4; ++i) {
+    ASSERT_NEAR(state.moduleForcesX[i].value(),
+                new_state.moduleForcesX[i].value(), epsilon);
+    ASSERT_NEAR(state.moduleForcesY[i].value(),
+                new_state.moduleForcesY[i].value(), epsilon);
   }
 }
 

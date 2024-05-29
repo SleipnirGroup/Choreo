@@ -1,3 +1,5 @@
+// Copyright (c) Choreo contributors
+
 package choreo.lib;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -8,7 +10,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class ChoreoTrajectoryStateTest {
-
   private static final double kEpsilon = 0.001;
   private static final int kNumModules = 4;
 
