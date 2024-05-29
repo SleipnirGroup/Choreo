@@ -276,8 +276,7 @@ export const VERSIONS = {
       const updated: v0_4 = document;
       updated.version = v0_4_Version;
 
-      // TODO: implement this upgrade
-      // because we added module forces in this version
+      // Because we added module forces in this version
       // add zero-initialized module forces to each path.
       // Since we can't figure out module forces from here,
       // just mark the paths as stale
