@@ -9,7 +9,7 @@ import com.google.gson.Gson;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class ChoreoTrajectoryStateTest {
+public class ChoreoTrajectoryStateTests {
   private static final double kEpsilon = 0.001;
   private static final int kNumModules = 4;
 
