@@ -27,7 +27,7 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
   /** The velocity of the state in the X direction in m/s. */
   public final double velocityX;
 
-  /** The velocity of the state in the X direction in m/s. */
+  /** The velocity of the state in the Y direction in m/s. */
   public final double velocityY;
 
   /** The angular velocity of the state in rad/s. */
