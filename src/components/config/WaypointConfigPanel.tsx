@@ -36,7 +36,7 @@ class WaypointPanel extends Component<Props, State> {
               top: 0,
               padding: "inherit",
               background: "var(--darker-purple)",
-              borderBottomLeftRadius : "8px",
+              borderBottomLeftRadius: "8px",
               fontWeight: "bolder",
               fontSize: "1em"
             }}
