@@ -6,7 +6,7 @@ import Input from "../input/Input";
 import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../input/InputList";
 import { ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
-import { WaypointData } from "../../document/UIStateStore";
+import { NavbarItemData, WaypointData } from "../../document/UIStateStore";
 import { angleModulus } from "../../util/MathUtil";
 
 type Props = { waypoint: IHolonomicWaypointStore | null; index: number };
@@ -34,10 +34,11 @@ class WaypointPanel extends Component<Props, State> {
               position: "absolute",
               right: 0,
               top: 0,
-              paddingTop: "inherit",
-              paddingRight: "inherit",
+              padding: "inherit",
+              background: "var(--darker-purple)",
+              borderBottomLeftRadius : "8px",
               fontWeight: "bolder",
-              fontSize: "1.5em"
+              fontSize: "1em"
             }}
           >
             {index + 1}
