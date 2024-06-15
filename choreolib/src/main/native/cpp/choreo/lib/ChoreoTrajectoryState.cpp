@@ -59,12 +59,6 @@ ChoreoTrajectoryState ChoreoTrajectoryState::Interpolate(
       wpi::Lerp(angularVelocity, endValue.angularVelocity, i)};
 }
 
-std::array<double, 7> ChoreoTrajectoryState::AsArray() const {
-  return {timestamp.value(),      x.value(),         y.value(),
-          heading.value(),        velocityX.value(), velocityY.value(),
-          angularVelocity.value()};
-}
-
 ChoreoTrajectoryState ChoreoTrajectoryState::Flipped() const {
   return ChoreoTrajectoryState{timestamp,
                                fieldLength - x,

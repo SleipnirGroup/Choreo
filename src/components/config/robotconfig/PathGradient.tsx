@@ -200,19 +200,17 @@ class PathGradientFunctions {
     arr: SavedTrajectorySample[],
     documentModel: IStateStore
   ) {
-    const stopPointGeneratedWaypoints =
-      documentModel.document.pathlist.activePath.generatedWaypoints.filter(
-        (wp) => wp.isStopPoint
-      );
+    const stopPointControlIntervals =
+      documentModel.document.pathlist.activePath.stopPointIndices();
 
-    for (let i = 0; i < stopPointGeneratedWaypoints.length - 1; i++) {
+    for (let split = 0; split < stopPointControlIntervals.length - 1; split++) {
       if (
-        stopPointGeneratedWaypoints[i].timestamp <= point.timestamp &&
-        point.timestamp <= stopPointGeneratedWaypoints[i + 1].timestamp
+        i > stopPointControlIntervals[split] &&
+        i < stopPointControlIntervals[split + 1]
       ) {
         // an absolute value sine function is used to generate a distinct color between [0, 1]
         // then a scalar is used to scale the color between the full color range [0, 360]
-        return `hsl(${Math.abs(Math.sin(i) * 360)}, 100%, 50%)`;
+        return `hsl(${Math.abs(Math.sin(split) * 360)}, 100%, 50%)`;
       }
     }
   }

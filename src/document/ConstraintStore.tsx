@@ -6,6 +6,7 @@ import {
   PriorityHigh,
   StopCircleOutlined,
   SyncDisabledOutlined,
+  SyncOutlined,
   Timeline
 } from "@mui/icons-material";
 import { toJS } from "mobx";
@@ -108,6 +109,21 @@ export const constraints = {
         name: "Max Velocity",
         description: "Maximum Velocity of robot chassis",
         units: "m/s"
+      }
+    },
+    wptScope: true,
+    sgmtScope: true
+  },
+  MaxAngularVelocity: {
+    name: "Max Angular Velocity",
+    shortName: "Max Ang Velo",
+    description: "Maximum Angular Velocity",
+    icon: <SyncOutlined />,
+    properties: {
+      angular_velocity: {
+        name: "Max Angular Velocity",
+        description: "Maximum Angular Velocity of robot chassis",
+        units: "rad/s"
       }
     },
     wptScope: true,

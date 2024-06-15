@@ -45,6 +45,8 @@ export const HolonomicPathStore = types
     visibleWaypointsEnd: types.number,
     constraints: types.array(types.union(...Object.values(ConstraintStores))),
     generated: types.frozen<Array<SavedTrajectorySample>>([]),
+    generationProgress: types.frozen<Array<SavedTrajectorySample>>([]),
+    generationIterationNumber: 0,
     generatedWaypoints: types.frozen<Array<SavedGeneratedWaypoint>>([]),
     generating: false,
     isTrajectoryStale: true,
@@ -64,8 +66,11 @@ export const HolonomicPathStore = types
   .views((self) => {
     return {
       waypointIdToSavedWaypointId(
-        waypointId: IWaypointScope
+        waypointId: IWaypointScope | undefined
       ): "first" | "last" | number | undefined {
+        if (waypointId === null || waypointId === undefined) {
+          return undefined;
+        }
         if (typeof waypointId !== "string") {
           const scopeIndex = self.findUUIDIndex(waypointId.uuid);
           if (scopeIndex == -1) {
@@ -248,7 +253,7 @@ export const HolonomicPathStore = types
         return wptIndices;
         // remove duplicates
       },
-      stopPointIndices() {
+      stopPointIndices(): Array<number | undefined> {
         const stopPoints = this.stopPoints();
         return stopPoints.length > 1
           ? stopPoints
@@ -570,6 +575,18 @@ export const HolonomicPathStore = types
           self.generating = false;
         });
       },
+      setIterationNumber(it: number) {
+        const history = getRoot<IStateStore>(self).document.history;
+        history.withoutUndo(() => {
+          self.generationIterationNumber = it;
+        });
+      },
+      setInProgressTrajectory(trajectory: Array<SavedTrajectorySample>) {
+        const history = getRoot<IStateStore>(self).document.history;
+        history.withoutUndo(() => {
+          self.generationProgress = trajectory;
+        });
+      },
       setGenerating(generating: boolean) {
         const history = getRoot<IStateStore>(self).document.history;
         history.withoutUndo(() => {
@@ -766,8 +783,9 @@ export const HolonomicPathStore = types
       guessControlIntervalCount(i: number, robotConfig: IRobotConfigStore) {
         const dx = self.waypoints.at(i + 1)!.x - self.waypoints.at(i)!.x;
         const dy = self.waypoints.at(i + 1)!.y - self.waypoints.at(i)!.y;
-        const dtheta =
-          self.waypoints.at(i + 1)!.heading - self.waypoints.at(i)!.heading;
+        const dtheta = angleModulus(
+          self.waypoints.at(i + 1)!.heading - self.waypoints.at(i)!.heading
+        );
         const headingWeight = 0.5; // arbitrary
         const distance = Math.sqrt(dx * dx + dy * dy);
         const maxForce = robotConfig.wheelMaxTorque / robotConfig.wheelRadius;
@@ -784,7 +802,7 @@ export const HolonomicPathStore = types
 
             // Check if current waypoint "i" is within the scope of this constraint
             if (startIdx !== undefined && endIdx !== undefined) {
-              if (i >= startIdx && i <= endIdx) {
+              if (i >= startIdx && i < endIdx) {
                 if (constraint.velocity !== undefined) {
                   maxVel = Math.min(maxVel, constraint.velocity);
                 }

@@ -20,7 +20,7 @@ class ChoreoTrajectoryState {
    * @param y The y position of the robot at this state
    * @param heading The heading of the robot at this state
    * @param xVel The x velocity of the robot at this state
-   * @param yVel The x velocity of the robot at this state
+   * @param yVel The y velocity of the robot at this state
    * @param angularVel The angular velocity of the robot at this state
    */
   ChoreoTrajectoryState(units::second_t t, units::meter_t x, units::meter_t y,
@@ -53,13 +53,6 @@ class ChoreoTrajectoryState {
    */
   ChoreoTrajectoryState Interpolate(const ChoreoTrajectoryState& endValue,
                                     double i) const;
-
-  /**
-   * Returns this state as an array of doubles
-   *
-   * @return this state as an array of doubles
-   */
-  std::array<double, 7> AsArray() const;
 
   /**
    * Returns a new instance of this state mirrored across the midline of the
