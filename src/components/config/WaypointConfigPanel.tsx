@@ -6,7 +6,7 @@ import Input from "../input/Input";
 import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../input/InputList";
 import { ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
-import { NavbarItemData, WaypointData } from "../../document/UIStateStore";
+import { WaypointData } from "../../document/UIStateStore";
 import { angleModulus } from "../../util/MathUtil";
 
 type Props = { waypoint: IHolonomicWaypointStore | null; index: number };
