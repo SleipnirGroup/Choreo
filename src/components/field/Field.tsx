@@ -33,17 +33,19 @@ export class Field extends Component<Props, State> {
     const selectedSidebar = this.context.model.uiState.selectedSidebarItem;
     const activePath = this.context.model.document.pathlist.activePath;
     const activePathUUID = this.context.model.document.pathlist.activePathUUID;
+    const indexIfWaypoint = activePath.waypoints.findIndex(
+      (point: IHolonomicWaypointStore) =>
+        point.uuid == (selectedSidebar as IHolonomicWaypointStore)!.uuid
+    );
     return (
       <div className={styles.Container}>
         <FieldOverlayRoot></FieldOverlayRoot>
         {selectedSidebar !== undefined &&
           "heading" in selectedSidebar &&
-          activePath.waypoints.find(
-            (point) =>
-              point.uuid == (selectedSidebar as IHolonomicWaypointStore)!.uuid
-          ) && (
+          indexIfWaypoint !== -1 && (
             <WaypointPanel
               waypoint={selectedSidebar as IHolonomicWaypointStore}
+              index={indexIfWaypoint}
             ></WaypointPanel>
           )}
         {selectedSidebar !== undefined &&
