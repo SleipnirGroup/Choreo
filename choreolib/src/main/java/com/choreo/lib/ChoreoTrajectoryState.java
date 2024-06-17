@@ -28,7 +28,7 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
   /** The velocity of the state in the X direction in m/s. */
   public final double velocityX;
 
-  /** The velocity of the state in the X direction in m/s. */
+  /** The velocity of the state in the Y direction in m/s. */
   public final double velocityY;
 
   /** The angular velocity of the state in rad/s. */
@@ -54,7 +54,7 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
    * @param y The Y position of the state in meters.
    * @param heading The heading of the state in radians, with 0 being in the +X direction.
    * @param velocityX The velocity of the state in the X direction in m/s.
-   * @param velocityY The velocity of the state in the X direction in m/s.
+   * @param velocityY The velocity of the state in the Y direction in m/s.
    * @param angularVelocity The angular velocity of the state in rad/s.
    * @param moduleForcesX The force on the swerve modules in the X direction in Newtons.
    * @param moduleForcesY The force on the swerve modules in the Y direction in Netwons.
