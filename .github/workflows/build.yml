@@ -23,12 +23,12 @@ jobs:
             tauri-build-flags: -- --target aarch64-pc-windows-msvc
 
           - artifact-name: macOS-x86_64
-            os: macOS-13
-            tauri-build-flags:
+            os: macOS-14
+            tauri-build-flags: -- --target x86_64-apple-darwin
 
           - artifact-name: macOS-arm64
             os: macOS-14
-            tauri-build-flags:
+            tauri-build-flags: -- --target aarch64-apple-darwin
 
           - artifact-name: Linux-x86_64
             os: ubuntu-22.04
@@ -62,6 +62,13 @@ jobs:
       - name: Set up Windows aarch64 Rust compiler
         if: matrix.artifact-name == 'Windows-aarch64'
         run: rustup target install aarch64-pc-windows-msvc
+
+      - name: Set up macOS x86_64 Rust compiler
+        if: matrix.artifact-name == 'macOS-x86_64'
+        run: rustup target add x86_64-apple-darwin
+
+      - run: sudo xcode-select -switch /Applications/Xcode_15.3.app
+        if: startsWith(matrix.os, 'macOS')
 
       - name: Build package
         run: npm run tauri build ${{ matrix.tauri-build-flags }}
