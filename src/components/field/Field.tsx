@@ -10,7 +10,7 @@ import ShapeLineIcon from "@mui/icons-material/ShapeLine";
 import { CircularProgress, Tooltip } from "@mui/material";
 import Box from "@mui/material/Box/Box";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
-import VisibilityPanel from "../config/VisibilityPanel";
+import ViewOptionsPanel from "../config/ViewOptionsPanel";
 import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel";
 import { IConstraintStore } from "../../document/ConstraintStore";
 import "react-toastify/dist/ReactToastify.min.css";
@@ -33,17 +33,19 @@ export class Field extends Component<Props, State> {
     const selectedSidebar = this.context.model.uiState.selectedSidebarItem;
     const activePath = this.context.model.document.pathlist.activePath;
     const activePathUUID = this.context.model.document.pathlist.activePathUUID;
+    const indexIfWaypoint = activePath.waypoints.findIndex(
+      (point: IHolonomicWaypointStore) =>
+        point.uuid == (selectedSidebar as IHolonomicWaypointStore)!.uuid
+    );
     return (
       <div className={styles.Container}>
         <FieldOverlayRoot></FieldOverlayRoot>
         {selectedSidebar !== undefined &&
           "heading" in selectedSidebar &&
-          activePath.waypoints.find(
-            (point) =>
-              point.uuid == (selectedSidebar as IHolonomicWaypointStore)!.uuid
-          ) && (
+          indexIfWaypoint !== -1 && (
             <WaypointPanel
               waypoint={selectedSidebar as IHolonomicWaypointStore}
+              index={indexIfWaypoint}
             ></WaypointPanel>
           )}
         {selectedSidebar !== undefined &&
@@ -76,8 +78,8 @@ export class Field extends Component<Props, State> {
               marker={selectedSidebar as IEventMarkerStore}
             ></EventMarkerConfigPanel>
           )}
-        <VisibilityPanel></VisibilityPanel>
-        <WaypointVisibilityPanel></WaypointVisibilityPanel>
+        <ViewOptionsPanel />
+        <WaypointVisibilityPanel />
         <Tooltip
           disableInteractive
           placement="top-start"

@@ -130,6 +130,24 @@ class OverlayWaypoint extends Component<Props, State> {
   }
   componentDidMount() {
     if (this.rootRef.current) {
+      d3.select<SVGCircleElement, undefined>(
+        `#waypointGroup${this.props.index}`
+      ).on("contextmenu", (e) => {
+        console.log("selecting waypoint: " + this.props.index);
+        this.context.model.document.pathlist.activePath.selectOnly(
+          this.props.index
+        );
+        this.context.model.uiState.setContextMenuMouseSelection(e);
+        this.context.model.uiState.setContextMenuSelectedWaypoint(
+          this.props.index
+        );
+        this.context.model.uiState.setContextMenuWaypointType(
+          this.context.model.document.pathlist.activePath.waypoints[
+            this.props.index
+          ].type
+        );
+      });
+
       const rotateHandleDrag = d3
         .drag<SVGCircleElement, undefined>()
         .on("drag", (event) => this.dragPointRotate(event))

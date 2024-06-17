@@ -6,7 +6,7 @@ ChoreoTrajectory traj = Choreo.getTrajectory("Trajectory"); // (1)
 // (2)
 Choreo.choreoSwerveCommand(
     traj, // (3)
-    this::getPose // (4)
+    this::getPose, // (4)
     new PIDController(Constants.AutoConstants.kPXController, 0.0, 0.0), // (5)
     new PIDController(Constants.AutoConstants.kPXController, 0.0, 0.0), // (6)
     new PIDController(Constants.AutoConstants.kPThetaController, 0.0, 0.0), // (7)
@@ -14,9 +14,9 @@ Choreo.choreoSwerveCommand(
         this.drive(new Translation2d(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond), ...),
     () -> {
         Optional<DriverStation.Alliance> alliance = DriverStation.getAlliance();
-            mirror = alliance.isPresent() && alliance.get() == Alliance.Red;
+        mirror = alliance.isPresent() && alliance.get() == Alliance.Red;
     }, // (9)
-    this, // (10)
+    this // (10)
 );
 ```
 

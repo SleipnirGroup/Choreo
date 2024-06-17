@@ -245,6 +245,16 @@ export class DocumentManager {
       this.model.uiState.setSelectedSidebarItem(undefined);
       this.model.uiState.setSelectedNavbarItem(-1);
     });
+    hotkeys("ctrl+o,command+o", () => {
+      dialog
+        .confirm("You may lose unsaved or not generated changes. Continue?", {
+          title: "Choreo",
+          type: "warning"
+        })
+        .then((proceed) => {
+          proceed && invoke("open_file_dialog");
+        });
+    });
     hotkeys("f5,ctrl+shift+r,ctrl+r", function (event, handler) {
       event.preventDefault();
     });
@@ -461,6 +471,7 @@ export class DocumentManager {
         usesObstacles: false
       }
     });
+    this.model.uiState.loadPathGradientFromLocalStorage();
     this.model.document.pathlist.addPath("NewPath");
     this.model.document.history.clear();
   }
@@ -470,6 +481,8 @@ export class DocumentManager {
     const validationError = validate(parsed);
     if (validationError.length == 0) {
       this.model.fromSavedDocument(parsed);
+      // if we got this far, clear the undo history
+      this.model.document.history.clear();
     } else {
       throw `Invalid Document JSON: ${validationError}`;
     }

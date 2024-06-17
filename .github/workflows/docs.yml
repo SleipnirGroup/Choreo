@@ -7,7 +7,7 @@ permissions:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
@@ -30,15 +30,16 @@ jobs:
             mkdocs-material-
 
       - run: pip install mkdocs-material
-
-      - name: Create Doxygen build directory
-        run: mkdir -p choreolib/build/docs/cpp
-
-      - name: Run Doxygen
-        uses: mattnotmitt/doxygen-action@edge
+      - run: mkdir -p choreolib/build/docs/cpp
+      - uses: mattnotmitt/doxygen-action@edge
         with:
           working-directory: "choreolib"
           doxyfile-path: "docs/Doxyfile"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: 17
 
       - name: Run JavaDoc
         run: |

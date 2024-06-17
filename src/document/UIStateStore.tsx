@@ -182,7 +182,7 @@ export type SelectableItemTypes =
   | IEventMarkerStore
   | undefined;
 
-/* Visibility stuff */
+/* ViewOptionsPanel items */
 const ViewData = {
   Field: {
     index: 0,
@@ -247,7 +247,7 @@ export const ViewItemData = (() => {
 })();
 export const ViewLayerDefaults = ViewItemData.map((layer) => layer.default);
 export type ViewLayerType = typeof ViewLayers;
-export const NUM_SETTINGS_TABS = 3;
+export const NUM_SETTINGS_TABS = 4;
 export const UIStateStore = types
   .model("UIStateStore", {
     fieldScalingFactor: 0.02,
@@ -255,7 +255,7 @@ export const UIStateStore = types
     saveFileDir: types.maybe(types.string),
     isGradleProject: types.maybe(types.boolean),
     waypointPanelOpen: false,
-    visibilityPanelOpen: false,
+    isViewOptionsPanelOpen: false,
     robotConfigOpen: false,
     mainMenuOpen: false,
     settingsTab: types.refinement(
@@ -273,7 +273,11 @@ export const UIStateStore = types
       types.union(
         ...Object.keys(PathGradients).map((key) => types.literal(key))
       )
-    )
+    ),
+
+    contextMenuSelectedWaypoint: types.maybe(types.number),
+    contextMenuWaypointType: types.maybe(types.number),
+    contextMenuMouseSelection: types.maybe(types.array(types.number)) // [clientX, clientY] from `MouseEvent`
   })
   .views((self: any) => {
     return {
@@ -387,8 +391,8 @@ export const UIStateStore = types
     setWaypointPanelOpen(open: boolean) {
       self.waypointPanelOpen = open;
     },
-    setVisibilityPanelOpen(open: boolean) {
-      self.visibilityPanelOpen = open;
+    setViewOptionsPanelOpen(open: boolean) {
+      self.isViewOptionsPanelOpen = open;
     },
     setPathAnimationTimestamp(time: number) {
       self.pathAnimationTimestamp = time;
@@ -424,6 +428,17 @@ export const UIStateStore = types
       self.selectedPathGradient =
         localStorage.getItem(LocalStorageKeys.PATH_GRADIENT) ??
         PathGradients.Velocity.name;
+    },
+    setContextMenuSelectedWaypoint(waypointIndex: number | undefined) {
+      self.contextMenuSelectedWaypoint = waypointIndex;
+    },
+    setContextMenuWaypointType(waypointType: number | undefined) {
+      self.contextMenuWaypointType = waypointType;
+    },
+    setContextMenuMouseSelection(mouseSelection: MouseEvent | undefined) {
+      self.contextMenuMouseSelection = mouseSelection
+        ? [mouseSelection.clientX, mouseSelection.clientY]
+        : undefined;
     }
   }));
 export interface IUIStateStore extends Instance<typeof UIStateStore> {}

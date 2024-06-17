@@ -13,44 +13,43 @@ class FieldPathLines extends Component<Props, State> {
   declare context: React.ContextType<typeof DocumentManagerContext>;
 
   render() {
+    const path = this.context.model.document.pathlist.activePath;
     let generatedPathString = "";
-    const generated = this.context.model.document.pathlist.activePath.generated;
-    this.context.model.document.pathlist.activePath.generated.forEach(
-      (point) => {
-        generatedPathString += `${point.x},${point.y} `;
-      }
-    );
+    const trajectory = path.generating
+      ? path.generationProgress
+      : path.generated;
+    // preserve the acccess of generationIterationNumber
+    // to trigger rerenders when mutating the in-progress trajectory in place
+    const _ = path.generationIterationNumber;
+    trajectory.forEach((point) => {
+      generatedPathString += `${point.x},${point.y} `;
+    });
     const key = this.context.model.uiState
       .selectedPathGradient as keyof typeof PathGradients;
     const pathGradient = PathGradients[key];
-    this.context.model.uiState.loadPathGradientFromLocalStorage();
-
+    if (
+      pathGradient === undefined ||
+      this.context.model.uiState.selectedPathGradient == PathGradients.None.name
+    ) {
+      return (
+        <polyline
+          points={generatedPathString}
+          stroke="var(--select-yellow)"
+          strokeWidth={0.05}
+          fill="transparent"
+          style={{ pointerEvents: "none" }}
+        ></polyline>
+      );
+    }
     return (
       <>
-        {this.context.model.uiState.selectedPathGradient ==
-          PathGradients.None.name && (
-          <polyline
-            points={generatedPathString}
-            stroke="var(--select-yellow)"
-            strokeWidth={0.05}
-            fill="transparent"
-            style={{ pointerEvents: "none" }}
-          ></polyline>
-        )}
         <g>
-          /
-          {this.context.model.uiState.selectedPathGradient !=
-            PathGradients.None.name &&
-            generated.length > 1 &&
-            generated.map((point, i, arr) => {
+          {trajectory.length > 1 &&
+            trajectory.map((point, i, arr) => {
               if (i == arr.length - 1) {
                 return <></>;
               }
               const point2 = arr[i + 1];
-
-              if (!pathGradient) {
-                return <></>;
-              }
 
               // 0 t = red, 1 t = green
               return (
