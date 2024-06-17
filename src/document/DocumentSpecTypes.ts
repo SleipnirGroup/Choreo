@@ -291,6 +291,21 @@ export const VERSIONS = {
         }
       }
 
+      // Replace zero velocity and zero angular velocity constraints with max
+      // magnitude constraints
+      for (const entry of Object.keys(updated.paths)) {
+        const path = updated.paths[entry];
+        for (var constraint of path.constraints) {
+          if (constraint.type === "WptZeroVelocity") {
+            constraint.type = "MaxVelocity";
+            constraint.velocity = 0.0;
+          } else if (constraint.type === "ZeroAngularVelocity") {
+            constraint.type = "MaxAngularVelocity";
+            constraint.angular_velocity = 0.0;
+          }
+        }
+      }
+
       return updated;
     },
     schema: v0_3_1_Schema
