@@ -295,7 +295,7 @@ export const VERSIONS = {
       // magnitude constraints
       for (const entry of Object.keys(updated.paths)) {
         const path = updated.paths[entry];
-        for (var constraint of path.constraints) {
+        for (const constraint of path.constraints) {
           if (constraint.type === "WptZeroVelocity") {
             constraint.type = "MaxVelocity";
             constraint.velocity = 0.0;
