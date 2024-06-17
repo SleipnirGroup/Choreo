@@ -207,6 +207,8 @@ const StateStore = types
                   angularVelocity: samp.angular_velocity,
                   velocityX: samp.velocity_x,
                   velocityY: samp.velocity_y,
+                  moduleForcesX: samp.module_forces_x,
+                  moduleForcesY: samp.module_forces_y,
                   timestamp: samp.timestamp
                 });
               });

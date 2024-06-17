@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.interpolation.Interpolatable;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import java.util.Arrays;
 
 /** A single robot state in a ChoreoTrajectory. */
 public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectoryState> {
@@ -34,6 +35,18 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
   public final double angularVelocity;
 
   /**
+   * The force on each module in the X direction in Newtons Module forces appear in the following
+   * order: [FL, FR, BL, BR]
+   */
+  public final double[] moduleForcesX;
+
+  /**
+   * The force on each module in the Y direction in Newtons Module forces appear in the following
+   * order: [FL, FR, BL, BR]
+   */
+  public final double[] moduleForcesY;
+
+  /**
    * Constructs a ChoreoTrajectoryState with the specified parameters.
    *
    * @param timestamp The timestamp of this state, relative to the beginning of the trajectory.
@@ -43,6 +56,8 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
    * @param velocityX The velocity of the state in the X direction in m/s.
    * @param velocityY The velocity of the state in the Y direction in m/s.
    * @param angularVelocity The angular velocity of the state in rad/s.
+   * @param moduleForcesX The force on the swerve modules in the X direction in Newtons.
+   * @param moduleForcesY The force on the swerve modules in the Y direction in Netwons.
    */
   public ChoreoTrajectoryState(
       double timestamp,
@@ -51,7 +66,9 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
       double heading,
       double velocityX,
       double velocityY,
-      double angularVelocity) {
+      double angularVelocity,
+      double[] moduleForcesX,
+      double[] moduleForcesY) {
     this.timestamp = timestamp;
     this.x = x;
     this.y = y;
@@ -59,6 +76,8 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
     this.velocityX = velocityX;
     this.velocityY = velocityY;
     this.angularVelocity = angularVelocity;
+    this.moduleForcesX = moduleForcesX;
+    this.moduleForcesY = moduleForcesY;
   }
 
   /**
@@ -91,6 +110,14 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
     double scale = (t - this.timestamp) / (endValue.timestamp - this.timestamp);
     var interp_pose = getPose().interpolate(endValue.getPose(), scale);
 
+    // NOTE: Could maybe do this with streams? This seems more efficient for now.
+    double[] interp_fx = new double[4];
+    double[] interp_fy = new double[4];
+    for (int i = 0; i < 4; ++i) {
+      interp_fx[i] = MathUtil.interpolate(this.moduleForcesX[i], endValue.moduleForcesX[i], scale);
+      interp_fy[i] = MathUtil.interpolate(this.moduleForcesY[i], endValue.moduleForcesY[i], scale);
+    }
+
     return new ChoreoTrajectoryState(
         MathUtil.interpolate(this.timestamp, endValue.timestamp, scale),
         interp_pose.getX(),
@@ -98,7 +125,9 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
         interp_pose.getRotation().getRadians(),
         MathUtil.interpolate(this.velocityX, endValue.velocityX, scale),
         MathUtil.interpolate(this.velocityY, endValue.velocityY, scale),
-        MathUtil.interpolate(this.angularVelocity, endValue.angularVelocity, scale));
+        MathUtil.interpolate(this.angularVelocity, endValue.angularVelocity, scale),
+        interp_fx,
+        interp_fy);
   }
 
   /**
@@ -114,6 +143,8 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
         Math.PI - this.heading,
         -this.velocityX,
         this.velocityY,
-        -this.angularVelocity);
+        -this.angularVelocity,
+        Arrays.stream(this.moduleForcesX).map(x -> -x).toArray(),
+        this.moduleForcesY);
   }
 }
