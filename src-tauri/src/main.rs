@@ -210,9 +210,6 @@ enum Constraints {
         scope: ChoreoConstraintScope,
         direction: f64,
     },
-    WptZeroVelocity {
-        scope: ChoreoConstraintScope,
-    },
     StopPoint {
         scope: ChoreoConstraintScope,
     },
@@ -223,9 +220,6 @@ enum Constraints {
     MaxAngularVelocity {
         scope: ChoreoConstraintScope,
         angular_velocity: f64,
-    },
-    ZeroAngularVelocity {
-        scope: ChoreoConstraintScope,
     },
     StraightLine {
         scope: ChoreoConstraintScope,
@@ -344,11 +338,6 @@ async fn generate_trajectory(
                     path_builder.wpt_linear_velocity_direction(fix_scope(idx[0], &rm), *direction);
                 }
             }
-            Constraints::WptZeroVelocity { scope } => {
-                if let ChoreoConstraintScope::Waypoint(idx) = scope {
-                    path_builder.wpt_linear_velocity_max_magnitude(fix_scope(idx[0], &rm), 0.0f64);
-                }
-            }
             Constraints::StopPoint { scope } => {
                 if let ChoreoConstraintScope::Waypoint(idx) = scope {
                     path_builder.wpt_linear_velocity_max_magnitude(fix_scope(idx[0], &rm), 0.0f64);
@@ -369,24 +358,35 @@ async fn generate_trajectory(
                 scope,
                 angular_velocity,
             } => match scope {
-                ChoreoConstraintScope::Waypoint(idx) => path_builder
-                    .wpt_angular_velocity_max_magnitude(fix_scope(idx[0], &rm), *angular_velocity),
-                ChoreoConstraintScope::Segment(idx) => path_builder
-                    .sgmt_angular_velocity_max_magnitude(
-                        fix_scope(idx[0], &rm),
-                        fix_scope(idx[1], &rm),
-                        *angular_velocity,
-                    ),
-            },
-            Constraints::ZeroAngularVelocity { scope } => match scope {
                 ChoreoConstraintScope::Waypoint(idx) => {
-                    path_builder.wpt_angular_velocity(fix_scope(idx[0], &rm), 0.0)
+                    // If the angular velocity max magnitude is zero, use an
+                    // angular velocity equality constraint instead
+                    if *angular_velocity == 0.0f64 {
+                        path_builder.wpt_angular_velocity(fix_scope(idx[0], &rm), 0.0f64)
+                    } else {
+                        path_builder.wpt_angular_velocity_max_magnitude(
+                            fix_scope(idx[0], &rm),
+                            *angular_velocity,
+                        )
+                    }
                 }
-                ChoreoConstraintScope::Segment(idx) => path_builder.sgmt_angular_velocity(
-                    fix_scope(idx[0], &rm),
-                    fix_scope(idx[1], &rm),
-                    0.0,
-                ),
+                ChoreoConstraintScope::Segment(idx) => {
+                    // If the angular velocity max magnitude is zero, use an
+                    // angular velocity equality constraint instead
+                    if *angular_velocity == 0.0f64 {
+                        path_builder.sgmt_angular_velocity(
+                            fix_scope(idx[0], &rm),
+                            fix_scope(idx[1], &rm),
+                            0.0f64,
+                        )
+                    } else {
+                        path_builder.sgmt_angular_velocity_max_magnitude(
+                            fix_scope(idx[0], &rm),
+                            fix_scope(idx[1], &rm),
+                            *angular_velocity,
+                        )
+                    }
+                }
             },
             Constraints::StraightLine { scope } => {
                 if let ChoreoConstraintScope::Segment(idx) = scope {
