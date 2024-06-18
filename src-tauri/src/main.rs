@@ -229,6 +229,7 @@ enum Constraints {
         x: f64,
         y: f64,
         tolerance: f64,
+        offset: f64,
     },
 }
 
@@ -414,9 +415,10 @@ async fn generate_trajectory(
                 x,
                 y,
                 tolerance,
+                offset,
             } => match scope {
                 ChoreoConstraintScope::Waypoint(idx) => {
-                    path_builder.wpt_point_at(fix_scope(idx[0], &rm), *x, *y, *tolerance)
+                    path_builder.wpt_point_at(fix_scope(idx[0], &rm), *x, *y, *tolerance, *offset)
                 }
                 ChoreoConstraintScope::Segment(idx) => path_builder.sgmt_point_at(
                     fix_scope(idx[0], &rm),
@@ -424,6 +426,7 @@ async fn generate_trajectory(
                     *x,
                     *y,
                     *tolerance,
+                    *offset,
                 ),
             }, // add more cases here to impl each constraint.
         }

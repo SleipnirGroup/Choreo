@@ -3212,7 +3212,7 @@ dependencies = [
 [[package]]
 name = "trajoptlib"
 version = "0.1.0"
-source = "git+https://github.com/SleipnirGroup/TrajoptLib.git?rev=4c9809c7ea272ee7003246160105d5178e4f0c3a#4c9809c7ea272ee7003246160105d5178e4f0c3a"
+source = "git+https://github.com/jlmcmchl/TrajoptLib.git?branch=add-heading-offset-to-point-at-constraint#b3e1e085145c3485e7652e16ac3c457f620588a7"
 dependencies = [
  "cmake",
  "cxx",
