@@ -122,11 +122,11 @@ jobs:
         run: mv *.exe Choreo-${{ github.ref_name }}-Windows-aarch64.exe
 
       - name: Rename macOS x86_64 bundle
-        working-directory: pkg/macOS-x86_64/release/bundle/dmg
+        working-directory: pkg/macOS-x86_64/x86_64-apple-darwin/release/bundle/dmg
         run: mv *.dmg Choreo-${{ github.ref_name }}-macOS-x86_64.dmg
 
       - name: Rename macOS arm64 bundle
-        working-directory: pkg/macOS-arm64/release/bundle/dmg
+        working-directory: pkg/macOS-arm64/aarch64-apple-darwin/release/bundle/dmg
         run: mv *.dmg Choreo-${{ github.ref_name }}-macOS-arm64.dmg
 
       - name: Rename Linux x86_64 file (.AppImage)
