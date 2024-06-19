@@ -157,7 +157,7 @@ export const EventMarkerStore = types
         return false;
       }
       return (
-        self.uuid ==
+        self.uuid ===
         safeGetIdentifier(
           getRoot<IStateStore>(self).uiState.selectedSidebarItem
         )
