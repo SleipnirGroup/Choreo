@@ -262,16 +262,26 @@ class AppMenu extends Component<Props, State> {
               >
                 {this.context.model.uiState.hasSaveLocation ? (
                   <>
-                    Project saved at<br></br>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center"
+                      }}
+                    >
+                      <span>Project saved at</span>
+                      <span>
+                        <this.CopyToClipboardButton
+                          data={this.projectLocation(false)}
+                          tooltip="Copy full path to clipboard"
+                        ></this.CopyToClipboardButton>
+                        <this.OpenInFilesApp
+                          dir={this.projectLocation(false)}
+                        ></this.OpenInFilesApp>
+                      </span>
+                    </div>
                     <div style={{ fontSize: "0.9em", color: "#D3D3D3" }}>
                       {this.projectLocation(true)}
-                      <this.CopyToClipboardButton
-                        data={this.projectLocation(false)}
-                        tooltip="Copy full path to clipboard"
-                      ></this.CopyToClipboardButton>
-                      <this.OpenInFilesApp
-                        dir={this.projectLocation(false)}
-                      ></this.OpenInFilesApp>
                     </div>
                     <br></br>
                     {this.context.model.uiState.isGradleProject
@@ -282,16 +292,26 @@ class AppMenu extends Component<Props, State> {
                     <div></div>
                     {this.context.model.uiState.hasSaveLocation ? (
                       <>
-                        Trajectories saved in<br></br>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center"
+                          }}
+                        >
+                          <span>Trajectories saved in</span>
+                          <span>
+                            <this.CopyToClipboardButton
+                              data={this.trajectoriesLocation(false)}
+                              tooltip="Copy full path to clipboard"
+                            ></this.CopyToClipboardButton>
+                            <this.OpenInFilesApp
+                              dir={this.trajectoriesLocation(false)}
+                            ></this.OpenInFilesApp>
+                          </span>
+                        </div>
                         <div style={{ fontSize: "0.9em", color: "#D3D3D3" }}>
                           {this.trajectoriesLocation(true)}
-                          <this.CopyToClipboardButton
-                            data={this.trajectoriesLocation(false)}
-                            tooltip="Copy full path to clipboard"
-                          ></this.CopyToClipboardButton>
-                          <this.OpenInFilesApp
-                            dir={this.trajectoriesLocation(false)}
-                          ></this.OpenInFilesApp>
                         </div>
                       </>
                     ) : (

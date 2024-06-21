@@ -1,6 +1,6 @@
 [package]
 name = "choreo"
-version = "2024.2.2"
+version = "2024.2.3"
 edition = "2021"
 description = """\
   A graphical tool for planning time-optimized trajectories for autonomous \
@@ -15,10 +15,10 @@ license = "BSD-3-Clause"
 tauri-build = { version = "1.5.2", features = [] }
 
 [dependencies]
-tauri = { version = "1.6.5", features = [ "os-all", "window-close", "window-set-title", "path-all", "dialog", "dialog-confirm", "dialog-save", "dialog-open", "dialog-ask", "fs-all", "shell-open", "devtools"] }
+tauri = { version = "1.6.6", features = [ "os-all", "window-close", "window-set-title", "path-all", "dialog", "dialog-confirm", "dialog-save", "dialog-open", "dialog-ask", "fs-all", "shell-open", "devtools"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
- trajoptlib = { git = "https://github.com/SleipnirGroup/TrajoptLib.git", rev = "58ef24ee18957813ac44fa9bd2cac0d9a489af15", features = ["sleipnir"] }
+trajoptlib = { git = "https://github.com/bruingineer/TrajoptLib.git", rev = "748dd18e4eec74ce3a0f2b8ee4fbf7c23aa10924", features = ["sleipnir"] }
 open = "3"
 lazy_static = "1.4.0"
 
