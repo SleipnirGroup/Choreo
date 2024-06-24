@@ -592,31 +592,6 @@ export const HolonomicPathStore = types
         history.withoutUndo(() => {
           self.generating = generating;
         });
-      },
-      fixWaypointHeadings() {
-        let fullRots = 0;
-        let prevHeading = 0;
-        self.waypoints.forEach((point, i, pts) => {
-          if (i == 0) {
-            prevHeading = point.heading;
-          } else if (point.headingConstrained && !point.isInitialGuess) {
-            const prevHeadingMod = angleModulus(prevHeading);
-            const heading = pts[i].heading;
-            const headingMod = angleModulus(heading);
-            if (prevHeadingMod < 0 && headingMod > prevHeadingMod + Math.PI) {
-              // negative rollunder
-              fullRots--;
-            } else if (
-              prevHeadingMod > 0 &&
-              headingMod < prevHeadingMod - Math.PI
-            ) {
-              // positive rollover
-              fullRots++;
-            }
-            point.heading = fullRots * 2 * Math.PI + headingMod;
-            prevHeading = point.heading;
-          }
-        });
       }
     };
   })
