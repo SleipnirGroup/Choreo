@@ -74,7 +74,6 @@ const StateStore = types
         }
         let generatedWaypoints: SavedGeneratedWaypoint[] = [];
         return new Promise((resolve, reject) => {
-          pathStore.fixWaypointHeadings();
           const controlIntervalOptResult =
             pathStore.optimizeControlIntervalCounts(self.document.robotConfig);
           if (controlIntervalOptResult !== undefined) {

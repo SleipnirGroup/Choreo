@@ -3212,7 +3212,7 @@ dependencies = [
 [[package]]
 name = "trajoptlib"
 version = "0.1.0"
-source = "git+https://github.com/bruingineer/TrajoptLib.git?branch=better-initial-guess-wpi-v2#5878e5d4ef62c69e317beef5482de0f18243cf80"
+source = "git+https://github.com/bruingineer/TrajoptLib.git?branch=better-initial-guess-wpi-v2#6d717da17dee4c847c2f20282e4d835cec675fd6"
 dependencies = [
  "cmake",
  "cxx",
