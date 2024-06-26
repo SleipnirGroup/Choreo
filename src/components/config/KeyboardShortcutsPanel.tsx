@@ -5,7 +5,7 @@ import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer/TableContainer";
 import TableRow from "@mui/material/TableRow/TableRow";
-import { type } from "@tauri-apps/api/os";
+import { type } from "@tauri-apps/plugin-os";
 import { Component } from "react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
