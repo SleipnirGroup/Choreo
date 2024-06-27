@@ -11,9 +11,7 @@ use tauri::{
     api::{dialog::blocking::FileDialogBuilder, file},
     Manager,
 };
-use trajoptlib::{
-    HolonomicTrajectory, InitialGuessPoint, SwerveDrivetrain, SwerveModule, SwervePathBuilder,
-};
+use trajoptlib::{HolonomicTrajectory, Pose2d, SwerveDrivetrain, SwerveModule, SwervePathBuilder};
 
 #[derive(Clone, serde::Serialize, Debug)]
 struct OpenFileEventPayload<'a> {
@@ -293,11 +291,11 @@ async fn generate_trajectory(
     let mut wpt_cnt: usize = 0;
     let mut rm: Vec<usize> = Vec::new();
     let mut control_interval_counts: Vec<usize> = Vec::new();
-    let mut guess_points_after_waypoint: Vec<InitialGuessPoint> = Vec::new();
+    let mut guess_points_after_waypoint: Vec<Pose2d> = Vec::new();
     for i in 0..path.len() {
         let wpt: &ChoreoWaypoint = &path[i];
         if wpt.isInitialGuess {
-            let guess_point: InitialGuessPoint = InitialGuessPoint {
+            let guess_point = Pose2d {
                 x: wpt.x,
                 y: wpt.y,
                 heading: wpt.heading,
