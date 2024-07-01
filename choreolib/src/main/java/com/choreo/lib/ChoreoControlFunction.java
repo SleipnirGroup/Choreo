@@ -2,6 +2,7 @@
 
 package com.choreo.lib;
 
+import com.choreo.lib.trajectory.ChoreoTrajectoryState;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import java.util.function.BiFunction;

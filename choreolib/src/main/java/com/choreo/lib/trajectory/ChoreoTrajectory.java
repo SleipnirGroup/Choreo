@@ -1,6 +1,6 @@
 // Copyright (c) Choreo contributors
 
-package com.choreo.lib;
+package com.choreo.lib.trajectory;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import java.util.ArrayList;
@@ -8,20 +8,41 @@ import java.util.List;
 
 /** A trajectory loaded from Choreo. */
 public class ChoreoTrajectory {
+  private final String name;
   private final List<ChoreoTrajectoryState> samples;
+  private final List<ChoreoEventMarker> events;
 
   /** Create an empty ChoreoTrajectory. */
   public ChoreoTrajectory() {
+    name = "Empty Trajctory";
     samples = List.of();
+    events = List.of();
   }
 
   /**
    * Constructs a new trajectory from a list of trajectory states
    *
+   * @param name the name of the trajectory
    * @param samples a vector containing a list of ChoreoTrajectoryStates
+   * @param events a vector containing a list of ChoreoEventMarkers
    */
-  public ChoreoTrajectory(List<ChoreoTrajectoryState> samples) {
+  public ChoreoTrajectory(
+      String name, List<ChoreoTrajectoryState> samples, List<ChoreoEventMarker> events) {
+    this.name = name;
     this.samples = samples;
+    this.events = events;
+  }
+
+  /**
+   * Returns the name stored in the trajectory from the Choreo app
+   *
+   * <p>Note: Don't use this for equality checks or assertion has this has no promise to stay
+   * identical between choreo versions
+   *
+   * @return Returns the name of the trajecotry
+   */
+  public String name() {
+    return name;
   }
 
   /**
@@ -44,12 +65,15 @@ public class ChoreoTrajectory {
 
   private ChoreoTrajectoryState sampleInternal(double timestamp) {
     if (timestamp < samples.get(0).timestamp) {
-      return samples.get(0);
+      // timestamp oob, return the initial state
+      return getInitialState();
     }
     if (timestamp >= getTotalTime()) {
-      return samples.get(samples.size() - 1);
+      // timestamp oob, return the final state
+      return getFinalState();
     }
 
+    // binary search to find the sample before and ahead of the timestamp
     int low = 0;
     int high = samples.size() - 1;
 
@@ -172,6 +196,17 @@ public class ChoreoTrajectory {
     for (var state : samples) {
       flippedStates.add(state.flipped());
     }
-    return new ChoreoTrajectory(flippedStates);
+    return new ChoreoTrajectory(name, flippedStates, this.events);
+  }
+
+  /**
+   * Returns a list of all events with the given name in the trajectory.
+   *
+   * @param eventName The name of the event.
+   * @return A list of all events with the given name in the trajectory, if no events are found, an
+   *     empty list is returned.
+   */
+  public List<ChoreoEventMarker> getEvents(String eventName) {
+    return events.stream().filter(event -> event.event.equals(eventName)).toList();
   }
 }
