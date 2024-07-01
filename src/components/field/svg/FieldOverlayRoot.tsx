@@ -392,6 +392,16 @@ class FieldOverlayRoot extends Component<Props, State> {
   }
 
   createWaypoint(e: MouseEvent, waypointType: number): void {
+    if (
+      ![
+        NavbarLabels.FullWaypoint,
+        NavbarLabels.TranslationWaypoint,
+        NavbarLabels.EmptyWaypoint,
+        NavbarLabels.InitialGuessPoint
+      ].includes(waypointType)
+    ) {
+      return;
+    }
     const coords = this.screenSpaceToFieldSpace(this.svgRef?.current, {
       x: e.clientX,
       y: e.clientY

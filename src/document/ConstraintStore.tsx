@@ -1,11 +1,9 @@
 import {
-  Dangerous,
   Explore,
   KeyboardDoubleArrowRight,
   NearMe,
   PriorityHigh,
   StopCircleOutlined,
-  SyncDisabledOutlined,
   SyncOutlined,
   Timeline
 } from "@mui/icons-material";
@@ -34,16 +32,12 @@ import { IHolonomicPathStore } from "./HolonomicPathStore";
       size_t fromIdx, const std::vector<InitialGuessPoint>& sgmtPoseGuess);
     void WptVelocityDirection(size_t idx, double angle);
     void WptVelocityMagnitude(size_t idx, double v);
-    void WptZeroVelocity(size_t idx);
     void WptVelocityPolar(size_t idx, double vr, double vtheta);
-    void WptZeroAngularVelocity(size_t idx);
     void SgmtVelocityDirection(size_t fromIdx, size_t toIdx, double angle,
                              bool includeWpts = true)
     // maximum
     void SgmtVelocityMagnitude(size_t fromIdx, size_t toIdx, double v,
                              bool includeWpts = true);
-     void SgmtZeroAngularVelocity(size_t fromIdx, size_t toIdx,
-                               bool includeWpts = true);
  */
 export type ConstraintPropertyDefinition = {
   name: string;
@@ -78,15 +72,6 @@ export const constraints = {
         units: "rad"
       }
     },
-    wptScope: true,
-    sgmtScope: false
-  },
-  WptZeroVelocity: {
-    name: "Waypoint Zero Velocity",
-    shortName: "Wpt 0 Velo",
-    description: "Zero velocity at waypoint",
-    icon: <Dangerous></Dangerous>,
-    properties: {},
     wptScope: true,
     sgmtScope: false
   },
@@ -126,15 +111,6 @@ export const constraints = {
         units: "rad/s"
       }
     },
-    wptScope: true,
-    sgmtScope: true
-  },
-  ZeroAngularVelocity: {
-    name: "Zero Angular Velocity",
-    shortName: "0 Ang Velo",
-    description: "Zero angular velocity throughout scope",
-    icon: <SyncDisabledOutlined></SyncDisabledOutlined>,
-    properties: {},
     wptScope: true,
     sgmtScope: true
   },
@@ -220,7 +196,7 @@ export const ConstraintStore = types
         return false;
       }
       return (
-        self.uuid ==
+        self.uuid ===
         safeGetIdentifier(
           getRoot<IStateStore>(self).uiState.selectedSidebarItem
         )

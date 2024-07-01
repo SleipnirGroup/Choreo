@@ -4,10 +4,10 @@ plugins {
     id "java-library"
     id 'google-test'
     id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2020.2'
-    id 'edu.wpi.first.NativeUtils' version '2024.7.0'
+    id 'edu.wpi.first.NativeUtils' version '2024.7.2'
     id 'edu.wpi.first.GradleJni' version '1.1.0'
     id 'edu.wpi.first.GradleVsCode' version '2.1.0'
-    id 'com.diffplug.spotless' version '6.20.0'
+    id 'com.diffplug.spotless' version '6.25.0'
     id 'jacoco'
 }
 
@@ -37,6 +37,10 @@ dependencies {
     implementation 'edu.wpi.first.wpiunits:wpiunits-java:2024.+'
 
     implementation 'com.google.code.gson:gson:2.10.1'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 }
 
 // Set up exports properly
@@ -151,7 +155,10 @@ jacocoTestReport {
 }
 
 test {
+    dependsOn cleanTest
+
     useJUnitPlatform()
+    testLogging.showStandardStreams = true
 
     finalizedBy jacocoTestReport
 }
