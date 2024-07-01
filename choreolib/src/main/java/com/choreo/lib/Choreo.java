@@ -123,6 +123,49 @@ public class Choreo {
         choreoSwerveController(xController, yController, rotationController),
         outputChassisSpeeds,
         mirrorTrajectory,
+        0.0, // By default the start time should be 0
+        requirements);
+  }
+
+  /**
+   * Create a command to follow a Choreo path with a specific start time.
+   *
+   * @param trajectory The trajectory to follow. Use Choreo.getTrajectory(String trajName) to load
+   *     this from the deploy directory.
+   * @param poseSupplier A function that returns the current field-relative pose of the robot.
+   * @param xController A PIDController for field-relative X translation (input: X error in meters,
+   *     output: m/s).
+   * @param yController A PIDController for field-relative Y translation (input: Y error in meters,
+   *     output: m/s).
+   * @param rotationController A PIDController for robot rotation (input: heading error in radians,
+   *     output: rad/s). This controller will have its continuous input range set to -pi..pi by
+   *     ChoreoLib.
+   * @param outputChassisSpeeds A function that consumes the target robot-relative chassis speeds
+   *     and commands them to the robot.
+   * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
+   *     while keeping the same coordinate system origin. This will be called every loop during the
+   *     command.
+   * @param startTime The time (in the trajectory file) at which the robot will start tracking the path
+   * @param requirements The subsystem(s) to require, typically your drive subsystem only.
+   * @return A command that follows a Choreo path starting at the specified time.
+   */
+  public static Command choreoSwerveCommand(
+      ChoreoTrajectory trajectory,
+      Supplier<Pose2d> poseSupplier,
+      PIDController xController,
+      PIDController yController,
+      PIDController rotationController,
+      Consumer<ChassisSpeeds> outputChassisSpeeds,
+      BooleanSupplier mirrorTrajectory,
+      double startTime,
+      Subsystem... requirements) {
+    return choreoSwerveCommand(
+        trajectory,
+        poseSupplier,
+        choreoSwerveController(xController, yController, rotationController),
+        outputChassisSpeeds,
+        mirrorTrajectory,
+        startTime,
         requirements);
   }
 
@@ -143,8 +186,9 @@ public class Choreo {
    * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
    *     while keeping the same coordinate system origin. This will be called every loop during the
    *     command.
+   * @param startTime The time (in the trajectory file) at which the robot will start tracking the path
    * @param requirements The subsystem(s) to require, typically your drive subsystem only.
-   * @return A command that follows a Choreo path.
+   * @return A command that follows a Choreo path starting at the specified time.
    */
   public static Command choreoSwerveCommand(
       ChoreoTrajectory trajectory,
@@ -152,6 +196,7 @@ public class Choreo {
       ChoreoControlFunction controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
+      double startTime,
       Subsystem... requirements) {
     var timer = new Timer();
     return new FunctionalCommand(
@@ -161,7 +206,7 @@ public class Choreo {
           outputChassisSpeeds.accept(
               controller.apply(
                   poseSupplier.get(),
-                  trajectory.sample(timer.get(), mirrorTrajectory.getAsBoolean())));
+                  trajectory.sample(timer.get() + startTime, mirrorTrajectory.getAsBoolean())));
         },
         (interrupted) -> {
           timer.stop();
@@ -171,7 +216,7 @@ public class Choreo {
             outputChassisSpeeds.accept(trajectory.getFinalState().getChassisSpeeds());
           }
         },
-        () -> timer.hasElapsed(trajectory.getTotalTime()),
+        () -> timer.hasElapsed(trajectory.getTotalTime() - startTime),
         requirements);
   }
 
