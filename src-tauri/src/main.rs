@@ -265,8 +265,7 @@ fn fix_scope(idx: usize, removed_idxs: &Vec<usize>) -> usize {
 
 #[tauri::command]
 async fn cancel() {
-    let mut builder = SwervePathBuilder::new();
-    builder.cancel_all();
+    trajoptlib::cancel_all();
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
