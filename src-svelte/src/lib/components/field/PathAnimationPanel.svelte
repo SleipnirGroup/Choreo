@@ -1,38 +1,30 @@
 <script lang="ts">
-    import { playbackTime } from "$lib/uistate.js";
     import { onDestroy } from "svelte";
     import {get} from "svelte/store"
-    import {Trajectory} from "$lib/trajectory.js"
+    import {Trajectory, type TrajectorySample} from "$lib/trajectory.svelte.js"
     import GraphLegend from "./GraphLegend.svelte";
     import PathAnimationSlider from "./PathAnimationSlider.svelte"
-    import {GRAPH_PANEL_MIN_HEIGHT, graphPanelHeight, toggleGraphPanel} from "$lib/uistate"
-    export let trajectory: Writable<TrajectorySample[]>
+    import {GRAPH_PANEL_MIN_HEIGHT, uistate} from "$lib/uistate.svelte.ts"
+    let {output}: {output: Output} = $props();
 
-    let running = false;
-    let timerId = 0;
-    let totalTime =0;
-    function updateTotalTime(traj) {
-        
-        if (traj.length < 2) {
-            totalTime = 0;
-        } else {
-            totalTime = traj[traj.length-1].timestamp;
-        }
-    }
-    $: updateTotalTime($trajectory);
+    let running = $state(false);
+    let timerId = $state(0);
+    let samples = $derived.by(()=>{console.log("output", output); return output.samples});
+    let totalTime = $derived.by(()=>{console.log(samples, samples[0]); return samples[samples.length-1]?.timestamp ?? 0});
+
     let i = 0;
     let then = Date.now();
     let step = (dt: number) => incrementTimer(dt);
 
-    function onStart() {
+  function onStart() {
     then = Date.now();
     running = true;
     if (
       Math.abs(
-        totalTime - $playbackTime
+        totalTime - uistate.playbackTime
       ) < 0.1
     ) {
-      $playbackTime = 0;
+      uistate.playbackTime = 0;
     }
     window.cancelAnimationFrame(timerId);
     timerId = requestAnimationFrame(step);
@@ -42,11 +34,11 @@
     then = Date.now();
     if (running) {
       const pathAnimationTimestamp =
-        $playbackTime;
+        uistate.playbackTime;
       if (pathAnimationTimestamp > totalTime) {
-        $playbackTime = 0;
+        uistate.playbackTime = 0;
       } else {
-        playbackTime.update(time=>time+dt / 1e3)
+        uistate.playbackTime = uistate.playbackTime+(dt / 1e3);
       }
 
       timerId = requestAnimationFrame(step);
@@ -114,7 +106,7 @@
 </style>
       <div
         class="Panel"
-        style={`height:${$graphPanelHeight}px`}
+        style={`height:${uistate.graphPanelHeight}px`}
       >
         <div
             class={
@@ -124,14 +116,14 @@
         <div class="Sidebar">
             <div class="PlayTime">
                 <div class="tooltip align-self-start" data-tip={"Plots"}>
-                    <button class="btn btn-ghost btn-sm" on:click={
-                        ()=>toggleGraphPanel()
+                    <button class="btn btn-ghost btn-sm" onclick={
+                        ()=>uistate.toggleGraphPanel()
                     }>
                     Plots
                         </button>
                     </div>
                 <div class="tooltip align-self-end" data-tip={running ? "Pause":"Play"}>
-                <button class="btn btn-ghost btn-sm" on:click={
+                <button class="btn btn-ghost btn-sm" onclick={
                     ()=>running ? onStop() : onStart()
                 }>
                 {#if  running} Pause {:else} Play {/if}
@@ -140,15 +132,15 @@
                 </div>
                 <span
                 class="w-min whitespace-nowrap"
-                >{`${$playbackTime.toFixed(
+                >{`${uistate.playbackTime.toFixed(
                 1
               )} s / ${totalTime.toFixed(1)} s`}</span>
 
             </div>
-            <GraphLegend trajectory={$trajectory} time={$playbackTime}></GraphLegend>
+            <GraphLegend trajectory={output} time={uistate.playbackTime}></GraphLegend>
 
         </div>
-        <PathAnimationSlider trajectory={$trajectory} timeStore={playbackTime} totalTime={totalTime}></PathAnimationSlider>
+        <PathAnimationSlider trajectory={output} uistate={uistate} totalTime={totalTime}></PathAnimationSlider>
         </div>
       </div>
 

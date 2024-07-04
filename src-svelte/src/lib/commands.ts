@@ -1,22 +1,30 @@
 import { invoke } from "@tauri-apps/api"
-import type { TrajectorySample } from "./trajectory.js"
-import type { Waypoint, WaypointNoID } from "./waypoint.js"
+import type { TrajectorySample } from "./trajectory.svelte.js"
+import type {IWaypoint} from "./waypoint.svelte.js"
 
+const config = {
+    mass: 74.088,
+    rotationalInertia: 6.0,
+    bumperWidth: 0.876,
+    bumperLength: 0.876,
+    wheelbase: 0.578,
+    trackWidth: 0.578,
+    motorMaxTorque: 1.162,
+    motorMaxVelocity: 4800.0,
+    gearing: 6.75,
+    wheelRadius: 0.050799972568014815,
+    wheelMaxTorque: 1.162*6.75,
+    wheelMaxVelocity: (4800 * (Math.PI * 2)) / 60 / 6.75
+}
 export default {
-    CMD_GENERATE_TRAJ: (path: number)=>
-        invoke("cmd_generate_trajectory", {id: path}) as Promise<TrajectorySample[]>,
-    CMD_GET_PATH_WAYPOINTS: (path: number)=>
-        invoke("cmd_get_path_waypoints", {id: path}) as Promise<Waypoint[]>,
-    CMD_GET_TRAJECTORY: (path: number)=>
-        invoke("cmd_get_trajectory", {pathId:path}) as Promise<TrajectorySample[]>,
-    CMD_DELETE_PATH_WAYPOINT: (path: number, wpt: number)=>
-        invoke("cmd_delete_path_waypoint", {pathId: path, wptId: wpt}) as Promise<void>,
-    CMD_ADD_PATH_WAYPOINT: (path: number, update: Partial<WaypointNoID>)=>
-        invoke("cmd_add_path_waypoint", { id: path, update }) as Promise<Waypoint>,
-    CMD_GET_WAYPOINT: (wpt: number)=>
-        invoke("cmd_get_waypoint", {id:wpt}) as Promise<Waypoint>,
-    CMD_UPDATE_WAYPOINT: (wpt: number, update: Partial<WaypointNoID>)=>
-        invoke("cmd_update_waypoint", {id: wpt, update}) as Promise<void>,
+    CMD_GENERATE_TRAJ: (path_id: number, waypoints: IWaypoint[],)=>{
+        if (waypoints.length >= 2) {
+            return invoke("generate_trajectory", {handle: path_id, path: waypoints, config, constraints: [], circleObstacles: [], polygonObstacles: []}) as Promise<{samples: TrajectorySample[]}>
+        } else {
+            throw "Generated with <2 waypoints";
+        } 
+    }
+        
     
 
 

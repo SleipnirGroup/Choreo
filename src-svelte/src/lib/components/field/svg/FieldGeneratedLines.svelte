@@ -1,9 +1,13 @@
 <script lang="ts">
-  import {type TrajectorySample} from "$lib/trajectory";
+  import {type TrajectorySample} from "$lib/trajectory.svelte.js";
   import {PathGradients} from "$lib/PathGradient"
-  export let trajectory: TrajectorySample[] = [];
-  export let noneColor = "var(--select-yellow)";
-  $: generatedPathString = updateString(trajectory);
+  type Props  = {
+    trajectory: TrajectorySample[];
+    noneColor: string;
+  }
+  let {trajectory = [], noneColor = "var(--select-yellow)"} = $props();
+
+  let generatedPathString = $derived(updateString(trajectory));
 
   function updateString(trajectory: TrajectorySample[]) {
     console.log(trajectory);

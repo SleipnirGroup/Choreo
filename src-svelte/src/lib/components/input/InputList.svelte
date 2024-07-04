@@ -1,10 +1,12 @@
 <script lang="ts">
 
 import styles from "./InputList.module.css";
+let {
+  rowGap = 0,
+  noCheckbox = false,
+  style
+} : {rowGap: number, noCheckbox: boolean, style: string} = $props();
 
-export let rowGap = 0;
-export let noCheckbox = false;
-export let style: string;
 
 
     const className =

@@ -1,1 +1,3 @@
-<script>import "../app.pcss";</script><slot></slot>
+<script lang="ts">import "../app.pcss";import type { Snippet } from "svelte";
+    let { children }: { children: Snippet } = $props();</script>
+    {@render children()}

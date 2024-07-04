@@ -6,13 +6,12 @@
     import Input from "../input/Input.svelte";
     import InputList from "../input/InputList.svelte";
     import styles from "./Sidebar.module.css";
-    export let id: number;
-    export let selected;
-    let renaming = false;
-    let renameError = false;
+    let {id, selected} : {id:number, selected:boolean} = $props();
+    let renaming = $state(false);
+    let renameError = $state(false);
     const originalName= `Path ${id}`;
-    let name= originalName;
-    let settingsOpen = false;
+    let name= $state(originalName);
+    let settingsOpen = $state(false);
 
   let nameInputRef: HTMLInputElement;
 
@@ -79,9 +78,9 @@
                 " input input-bordered"
             }
             bind:this={nameInputRef}
-            on:change={()=>checkName()}
+            onchange={()=>checkName()}
             value={name}
-            on:keydown={(event) => {
+            onkeydown={(event) => {
                 if (event.key == "Enter") {
                   completeRename();
                   nameInputRef.blur();
@@ -90,17 +89,17 @@
                   escapeRename();
                 }
               }}
-            on:focus={(e) => {
+            onfocus={(e) => {
             e.preventDefault();
             }}
-            on:doubleclick={(e) => {
+            ondoubleclick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             startRename();
             nameInputRef.focus();
             }}
-            on:blur={() => completeRename()}
-            on:doubleclickcapture={(e)=>{
+            onblur={() => completeRename()}
+            ondoubleclickcapture={(e)=>{
                 e.stopPropagation();
             startRename();
             setTimeout(() => nameInputRef.select(), 0.001);}
@@ -109,7 +108,7 @@
         <div>
             <div class="tooltip" data-tip="PathConfig">
                 <button class="btn btn-square btn-ghost"
-                on:click={(e) => {
+                onclick={(e) => {
                     e.stopPropagation();
                     settingsOpen = !settingsOpen;
                   }}
@@ -120,7 +119,7 @@
             </div>
             <div class="tooltip" data-tip="Delete Path">
                 <button class="btn btn-square btn-ghost"
-                on:click={(e)=>{
+                onclick={(e)=>{
                 e.stopPropagation();
                     dialog
                       .confirm(`Delete "${originalName}"?`)

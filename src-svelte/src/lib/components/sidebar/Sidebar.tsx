@@ -123,7 +123,7 @@ class Sidebar extends Component<Props, State> {
                     id,
                     update:{
                     x:2.0,
-                    is_initial_guess:false,
+                    isInitialGuess:false,
                     control_interval_count: 20
                   }})
                   console.log(await invoke("get_waypoint", {id}))

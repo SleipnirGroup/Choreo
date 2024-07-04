@@ -3,8 +3,8 @@
 
 import styles from "./Field.module.css";
 import FieldOverlayRoot from "./svg/FieldOverlayRoot.svelte";
-import {generate} from "$lib/path"
-export let pathId;
+import {generate} from "$lib/path.svelte.ts"
+let {pathId} = $props();
 // import IconButton from "@mui/material/IconButton";
 // import ShapeLineIcon from "@mui/icons-material/ShapeLine";
 // import { CircularProgress, Tooltip } from "@mui/material";
@@ -23,7 +23,7 @@ export let pathId;
 </script>
       <div class={styles.Container}>
         <FieldOverlayRoot pathId={pathId}></FieldOverlayRoot>
-        <button class="btn btn-circle z-10 absolute" on:click={()=>generate(pathId)}>Gen</button>
+        <button class="btn btn-circle z-10 absolute" onclick={()=>generate(pathId)}>Gen</button>
         <!-- {selectedSidebar !== undefined &&
           "heading" in selectedSidebar &&
           activePath.waypoints.find(
@@ -152,5 +152,4 @@ export let pathId;
               right: 16
             }}
           /> -->
-        )}
       </div>

@@ -1,10 +1,8 @@
 <script lang="ts">
-    import { type, deletePathWaypoint, type Waypoint, getWaypoint} from "$lib/waypoint.js";
+    import { deletePathWaypoint, type Waypoint, getWaypoint} from "$lib/waypoint.svelte.js";
 import styles from "./Sidebar.module.css";
 import SidebarWaypoint from "./SidebarWaypoint.svelte"
-export let pathId;
-export let pathOrderStore;
-$: waypoints = $pathOrderStore;
+let {pathId, waypoints} : {pathId: number, waypoints: number[]} = $props();
 console.log("wpts", waypoints);
 const getListStyle = (isDraggingOver: boolean) => ({
   outline: isDraggingOver ? "2px solid var(--darker-purple)" : "transparent"
@@ -24,14 +22,14 @@ const onDragEnd = (result: any) => {
   }
   const getIssue = (holonomicWaypoint: Waypoint, index: number) => {
     let issue = "";
-    if (holonomicWaypoint.is_initial_guess) {
+    if (holonomicWaypoint.isInitialGuess) {
     if (index == 0) {
         issue = "Cannot start with an initial guess point.";
     } else if (index == waypoints.length - 1) {
         issue = "Cannot end with an initial guess point.";
     }
     }
-    if (type(holonomicWaypoint) == 2) {
+    if (holonomicWaypoint.waypoint_type == 2) {
     if (index == 0) {
         issue = "Cannot start with an empty waypoint.";
     } else if (index == waypoints.length - 1) {

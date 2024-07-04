@@ -1,5 +1,5 @@
 
-import { type TrajectorySample } from "$lib/trajectory.js";
+import { type TrajectorySample } from "$lib/trajectory.svelte.js";
 
 /**
  * Represents a path gradient.

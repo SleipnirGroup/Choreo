@@ -1,17 +1,25 @@
 <script lang="ts">
-    import type { TrajectorySample } from "$lib/trajectory";
-    import { fieldScalingFactor } from "$lib/uistate";
+    import type { TrajectorySample } from "$lib/trajectory.svelte.js";
+    import { uistate } from "$lib/uistate.svelte.js";
     import { sample } from "$lib/util/MathUtil";
     import BumperBox from "./BumperBox.svelte";
-
-  export let timestamp: number;
-  export let trajectory: TrajectorySample[];
-  export let bumperWidth: number;
-  export let bumperLength: number;
-  export let wheelbase: number;
-  export let trackWidth: number;
-  export let wheelRadius: number;
-  export let color = "white";
+  type Props = {
+    timestamp: number;
+    trajectory: TrajectorySample[];
+    bumperWidth: number;
+    bumperLength: number;
+    wheelbase: number;
+    trackWidth: number;
+    wheelRadius: number;
+    color: string;
+  }
+  let {timestamp,
+    trajectory,
+    bumperLength,
+    bumperWidth,
+    wheelbase,
+    trackWidth,
+    wheelRadius,color = "white"} : Props = $props();
   
 </script>
 {#if trajectory.length >= 2}

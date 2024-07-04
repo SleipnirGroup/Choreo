@@ -1,4 +1,4 @@
-import { type TrajectorySample } from "$lib/trajectory.js";
+import { type TrajectorySample } from "$lib/trajectory.svelte.js";
 
 /**
  * A port of WPILib's MathUtil.inputModulus

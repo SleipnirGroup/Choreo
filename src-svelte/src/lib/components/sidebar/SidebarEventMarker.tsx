@@ -59,7 +59,7 @@ class SidebarMarker extends Component<Props, State> {
           this.context.model.uiState.setSelectedSidebarItem(marker);
         }}
       >
-        {React.cloneElement(<Room></Room>, {
+        {React.cloneElement(<span>M</span>, {
           className: styles.SidebarIcon,
           htmlColor: selected ? "var(--select-yellow)" : "var(--accent-purple)"
         })}

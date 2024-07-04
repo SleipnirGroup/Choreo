@@ -1,29 +1,39 @@
 <script lang="ts">
   import styles from "./InputList.module.css"
+  type  Props = {
   /** The text to show before the number */
-  export let title: string;
+  title: string;
   /** The text to show before the number */
-  export let suffix: string;
+  suffix: string;
   /** Whether the input should be editable, or else italic and grayed out */
-  export let enabled: boolean;
+  enabled: boolean;
   /** The value of the input */
-  export let number: number;
+  number: number;
   /** The number of decimal places to show when not editing. */
-  export let roundingPrecision = 3;
-  export let setNumber: (newNumber: number) => void;
-  export let setEnabled: (value: boolean) => void;
+  roundingPrecision: number;
+  setNumber: (newNumber: number) => void;
+  setEnabled: (value: boolean) => void;
   /** Show a checkbox after the suffix that controls the enabled state of the input */
-  export let showCheckbox = false;
+  showCheckbox: boolean;
   /** Whether or not to show the number when the input is disabled */
-  export let showNumberWhenDisabled = true;
+  showNumberWhenDisabled: boolean;
   /** The tooltip for the title */
-  export let titleTooltip = undefined;
+  titleTooltip: string | undefined;
   /** Maximum width of the number input, in monospace characters */
-  export let maxWidthCharacters=10;
-
-  let focused = false;
-  let editing = false;
-  let editedValue = "";
+  maxWidthCharacters: number;
+  }
+  let {
+    title, suffix, enabled,
+    number,roundingPrecision = 3,
+    setNumber, setEnabled,
+    showCheckbox = false,
+    showNumberWhenDisabled = true,
+    titleTooltip = undefined,
+    maxWidthCharacters = 10
+  } : Props = $props();
+  let focused = $state(false);
+  let editing = $state(false);
+  let editedValue = $state("");
   let inputElemRef: HTMLInputElement;
 
 
@@ -82,10 +92,7 @@
   //     unfocusedMode();
   //   }
   // }
-    let characters = getRoundedStr().length + 3;
-    if (maxWidthCharacters !== undefined) {
-      characters = Math.min(characters, maxWidthCharacters);
-    }
+    let characters = $derived(Math.min(getRoundedStr().length + 3, maxWidthCharacters ?? Infinity));
 </script>
 <div class="tooltip" data-tip={titleTooltip??""}>
           <span
@@ -110,27 +117,25 @@
           style={`min-width: ${characters}ch` }
           disabled={!enabled}
           
-          on:click={(e) => e.stopPropagation()}
-          on:focus={(e) => {
+          onclick={(e) => e.stopPropagation()}
+          onfocus={(e) => {
             focusedMode();
           }}
-          on:blur={(e) => {
-            const newNumber = parseFloat(state.editedValue);
+          onblur={(e) => {
+            const newNumber = parseFloat(editedValue);
             if (!Number.isNaN(newNumber)) {
               setNumber(newNumber);
             }
             unfocusedMode();
           }}
-          on:change={(e) => {
-            if (!state.editing) {
+          onchange={(e) => {
+            if (!editing) {
               editingMode();
             }
-            setState({
-              editedValue: e.target.value
-            });
+            editedValue = e.target?.value ?? editedValue;
             e.preventDefault();
           }}
-          on:keydown={(e) => {
+          onkeydown={(e) => {
             if (e.key == "Enter") {
               inputElemRef.blur();
               // let newNumber = parseFloat(state.editedValue);
@@ -141,7 +146,7 @@
             }
           }}
           value={getDisplayStr()}
-          on:mousedown={(e) => {
+          onmousedown={(e) => {
             if (!focused) {
               focusedMode();
               e.preventDefault();
@@ -163,7 +168,7 @@
             type="checkbox"
             class={styles.Checkbox}
             checked={enabled}
-            onChange={handleSetEnabled}
+            onchange={handleSetEnabled}
           />
           {:else}
           <span></span>

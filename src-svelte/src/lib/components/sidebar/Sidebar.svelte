@@ -1,13 +1,9 @@
 <script lang="ts">
-  import MenuIcon from "virtual:icons/mdi/menu";
-  import UndoIcon from "virtual:icons/mdi/undo";
-  import RedoIcon from "virtual:icons/mdi/redo";
   import WaypointList from "./WaypointList.svelte"
   import PathSelector from "./PathSelector.svelte"
-  import {PathOrder} from "$lib/path.js";
-  export let pathId;
-  $: active = PathOrder(pathId);
-  $: waypoints = $active;
+  import {Paths} from "$lib/path.svelte.js";
+  let {pathId}: {pathId:number} = $props();
+  let waypoints = $derived(Paths[pathId]);
   let constraints:any[] = [];
   let obstacles:any[] = [];
   let markers:any[] = [];
@@ -140,7 +136,7 @@
       <span class="inline">
         <div class="tooltip tooltip-bottom" data-tip="Main Menu">
           <a href="/" class="btn btn-ghost btn-square btn-md">
-            <MenuIcon/>
+            M
           </a>
         </div>
         
@@ -157,14 +153,14 @@
       <span class="inline">
         <div class="tooltip tooltip-bottom" data-tip="Undo">
           <button class="btn btn-ghost btn-square btn-md">
-            <UndoIcon></UndoIcon>
+            U
         <!-- <ArrowLeftOutline></ArrowLeftOutline> -->
       </button>
     </div>
         
     <div class="tooltip tooltip-bottom" data-tip="Redo">
       <button class="btn btn-ghost btn-square btn-md">
-        <RedoIcon></RedoIcon>
+        R
         <!-- <ArrowRightOutline></ArrowRightOutline> -->
       </button>
                 </div>
@@ -213,7 +209,7 @@
                 id,
                 update:{
                 x:2.0,
-                is_initial_guess:false,
+                isInitialGuess:false,
                 control_interval_count: 20
               }})
               console.log(await invoke("get_waypoint", {id}))
@@ -237,7 +233,7 @@
     <div class="Sidebar">
       <div class="divider divider-start SidebarHr">WAYPOINTS</div>
 
-      <WaypointList pathOrderStore={active} pathId={pathId}></WaypointList>
+      <WaypointList {waypoints} pathId={pathId}></WaypointList>
       {#if waypoints.length == 0}
 
       <div class={"SidebarItem Noninteractible"}>

@@ -1,17 +1,15 @@
 <script lang="ts">
 
-    import { WaypointSubscribers, waypointType } from "$lib/waypoint.js";
+    import { WaypointSubscribers} from "$lib/waypoint.svelte.js";
 import * as d3 from "d3";
     import { onMount } from "svelte";
     import BumperBox from "./BumperBox.svelte";
     import { readable, type Readable } from "svelte/store";
 
 
-export let point: number;
-export let index: number;
+let {point, index}: {point:number, index:number} = $props();
 
-let wpt = WaypointSubscribers[point]!;
-let {x, y, heading} = wpt;
+let wpt = $derived(WaypointSubscribers[point]!);
 type Coordinates = {
   x: number;
   y: number;
@@ -33,8 +31,8 @@ let bumperWidth: Readable<number> = readable(0.9);
 
   let coordsFromWaypoint = (): Coordinates => {
     return {
-      x: wpt.x.get(),
-      y: wpt.y.get()
+      x: wpt.x,
+      y: wpt.y
     };
   }
   let dragPointRotate = (event: any) => {
@@ -49,7 +47,7 @@ let bumperWidth: Readable<number> = readable(0.9);
     // converts the values to stay inside the 360 positive
 
     // creates the new rotate position array
-    wpt.heading.set(angleFinal);
+    wpt.heading=angleFinal;
     //d3.select(`#group`).attr('transform', `rotate(${ this.r.angle })`)
   }
 
@@ -71,8 +69,8 @@ let bumperWidth: Readable<number> = readable(0.9);
 
   let dragPointTranslate = (event: any) => {
     const pointerPos: Coordinates = { x: 0, y: 0 };
-    $x = (event.x);
-    $y = (event.y);
+    wpt.x = (event.x);
+    wpt.y = (event.y);
 
     // gets the difference of the angles to get to the final angle
     // converts the values to stay inside the 360 positive
@@ -86,7 +84,7 @@ let bumperWidth: Readable<number> = readable(0.9);
     //   this.props.index
     // );
   }
-  onMount(()=> {
+  $effect(()=> {
     if (rootRef) {
       const rotateHandleDrag = d3
         .drag<SVGCircleElement, undefined>()
@@ -161,13 +159,13 @@ let bumperWidth: Readable<number> = readable(0.9);
 
     let boxColorStr = getBoxColor();
 
-    let type = waypointType(wpt);
+    let type = wpt.waypoint_type;
     //const robotConfig = this.context.model.document.robotConfig;
     </script>
       <g bind:this={rootRef}>
         <g
-          transform={`translate(${$x}, ${$y}) rotate(${
-            ($heading * 180) / Math.PI
+          transform={`translate(${wpt.x}, ${wpt.y}) rotate(${
+            (wpt.heading * 180) / Math.PI
           })`}
           id={appendIndexID("waypointGroup")}
         >
@@ -176,7 +174,7 @@ let bumperWidth: Readable<number> = readable(0.9);
                 bumperWidth={$bumperWidth}
               strokeColor={boxColorStr}
               strokeWidthPx={6}
-              dashed={$type !== 0}
+              dashed={wpt.waypoint_type !== 0}
               index={index}
             ></BumperBox>
           <!-- {/* Heading drag point */} -->
@@ -210,18 +208,18 @@ let bumperWidth: Readable<number> = readable(0.9);
                     }
                     id={appendIndexID("dragTarget")}
                     fill={
-                      $type == 2 || $type == 3
+                      type == 2 || type == 3
                         ? "transparent"
                         : getDragTargetColor()
                     }
                     stroke={
-                      $type == 2 || $type == 3
+                      type == 2 || type == 3
                         ? getDragTargetColor()
                         : "black"
                     }
-                    stroke-dasharray={$type == 3 ? targetRadius : 0}
+                    stroke-dasharray={type == 3 ? targetRadius : 0}
                     stroke-width={outlineWidth}
-                    on:click={() => {}}
+                    onclick={() => {}}
                   ></circle>
         </g>
       </g>

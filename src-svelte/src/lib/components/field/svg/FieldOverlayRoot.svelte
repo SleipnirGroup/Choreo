@@ -5,11 +5,11 @@
 
 import * as d3 from "d3";
 import { onMount } from 'svelte';
-import {get} from 'svelte/store';
-import {PathOrder} from '$lib/path.ts';
-import {update_waypoint,  add_path_waypoint, get_path_waypoints } from '$lib/waypoint.ts';
-import {Trajectory} from '$lib/trajectory.ts';
-import { fieldScalingFactor , playbackTime} from "$lib/uistate";
+import {Paths, add_path_waypoint} from '$lib/path.svelte.js';
+
+
+import {Trajectory} from '$lib/trajectory.svelte.js';
+import { uistate } from "$lib/uistate.svelte.ts";
 import FieldGeneratedLines from "./FieldGeneratedLines.svelte";
 // import FieldGrid from "./FieldGrid";
 // import FieldPathLines from "./FieldPathLines";
@@ -28,18 +28,18 @@ import FieldImage24 from "./fields/FieldImage24.svelte";
 // import FieldSamples from "./FieldSamples";
 // import FieldGeneratedWaypoints from "./FieldGeneratedWaypoints";
 // import FieldEventMarkerAddLayer from "./FieldEventMarkerAddLayer";
-export let pathId: number;
-$: waypoints = PathOrder(pathId);
-$: trajectory = Trajectory(pathId);
-let xPan = 0;
-let yPan = 0;
-let zoom = 1;
+let {pathId}: {pathId:number} = $props();
+let waypoints = $derived(Paths[pathId]);
+let trajectory = $derived(Trajectory(pathId).samples);
+let xPan = $state(0);
+let yPan = $state(0);
+let zoom = $state(1);
 let svgRef :SVGSVGElement;
 let frameRef: SVGGElement;
 const WIDTH_M = 8.21055;
      const LENGTH_M = 16.54175;
-    let canvasHeightMeters = WIDTH_M + 1;
-    let canvasWidthMeters = LENGTH_M + 1;
+    let canvasHeightMeters = $state(WIDTH_M + 1);
+    let canvasWidthMeters = $state(LENGTH_M + 1);
 
 let zoomBehavior = d3
       .zoom<SVGGElement, undefined>()
@@ -136,7 +136,7 @@ let zoomed = (e: any) => {
   }
   let handleResize = () => {
     const factor = getScalingFactor(svgRef);
-    fieldScalingFactor.set(factor);
+    uistate.fieldScalingFactor = factor;
   }
 
   let createWaypoint = (e): void  => {
@@ -145,7 +145,7 @@ let zoomed = (e: any) => {
         x: e.clientX,
         y: e.clientY
       });
-      add_path_waypoint(pathId, {x: coords.x, y: coords.y, translation_constrained: true, heading_constrained: true});
+      add_path_waypoint(pathId, {x: coords.x, y: coords.y, translationConstrained: true, headingConstrained: true});
       
     //   this.context.history.startGroup(() => {
     //     const newPoint =
@@ -210,14 +210,15 @@ let zoomed = (e: any) => {
           id="rootFrame"
         >
         <FieldImage24></FieldImage24>
-        <FieldGeneratedLines trajectory={$trajectory}></FieldGeneratedLines>
+        <FieldGeneratedLines trajectory={trajectory}></FieldGeneratedLines>
+        
         <InterpolatedRobot
-          timestamp={$playbackTime}
+          timestamp={uistate.playbackTime}
           bumperLength={0.9}
           bumperWidth={0.9}
           wheelbase={0.7}
           trackWidth={0.7}
-          trajectory={$trajectory}
+          trajectory={trajectory}
           wheelRadius={0.05}
         ></InterpolatedRobot>
         {#if true}
@@ -226,15 +227,14 @@ let zoomed = (e: any) => {
                 cy={0}
                 r={10000}
                 style="fill: transparent"
-                on:click={(e) => createWaypoint(e)}
+                onclick={(e) => createWaypoint(e)}
               ></circle>
         {/if}
-        {#key $waypoints}
-        {#each $waypoints as pt, idx}
+        {#key waypoints}
+        {#each waypoints as pt, idx}
         
         <OverlayWaypoint index={idx} point={pt}></OverlayWaypoint>
         {/each}
         {/key}
-
         </g>
       </svg>

@@ -2,9 +2,11 @@
     import Field from "$lib/components/field/Field.svelte"
     import Sidebar from "$lib/components/sidebar/Sidebar.svelte"
     import PathAnimationPanel from "$lib/components/field/PathAnimationPanel.svelte"
-    import {Trajectory} from "$lib/trajectory.ts"
-    export let data;
-    $: id = data.id;
+    import {Trajectory} from "$lib/trajectory.svelte.js"
+    import { add_path } from "$lib/path.svelte.js";
+    let {data} : {data:{id:number}} = $props();
+    let id = $derived(data.id);
+    $effect.pre(()=>add_path(id));
 </script>
 <style>
     .App {
@@ -64,6 +66,6 @@
           <Field pathId={id}></Field>
         </span>
       </span>
-      <PathAnimationPanel trajectory={Trajectory(id)}></PathAnimationPanel>
+      <PathAnimationPanel output={Trajectory(id)}></PathAnimationPanel>
     </div>
   </div>

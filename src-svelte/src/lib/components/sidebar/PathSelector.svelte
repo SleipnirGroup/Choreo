@@ -1,7 +1,7 @@
-<script>
+<script lang="ts">
     import styles from "./Sidebar.module.css";
     import PathSelectorOption from "./PathSelectorOption.svelte";
-    export let pathId;
+    let {pathId}: {pathId:number}  = $props();
 </script>
 
 <div>

@@ -1,5 +1,5 @@
 import { writable, type Writable } from "svelte/store";
-import type { RemoteReadable } from "./waypoint.js";
+
 import { invoke } from "@tauri-apps/api";
 import Commands from "./commands.js"
 
@@ -13,15 +13,14 @@ export interface TrajectorySample {
     angular_velocity: number;
   }
 
-type TrajectoryStore = Writable<TrajectorySample[]>
-
-export let Trajectories : Record<number, TrajectoryStore> = {}
-
+export let Trajectories : Record<number, Output> = {}
+class Output{
+    samples = $state<TrajectorySample[]>([]);
+}
 export function Trajectory(path_id: number) {
     if (Trajectories[path_id] === undefined) {
-        Trajectories[path_id] = writable<TrajectorySample[]>([]);
-        Commands.CMD_GET_TRAJECTORY(path_id)
-        .then((traj: TrajectorySample[])=>Trajectories[path_id].set(traj));
+        let traj = new Output();
+         Trajectories[path_id] = traj;
     }
     return Trajectories[path_id];
 }

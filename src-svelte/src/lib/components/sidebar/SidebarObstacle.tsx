@@ -33,7 +33,7 @@ class SidebarObstacle extends Component<Props, State> {
           this.context.model.uiState.setSelectedNavbarItem(9);
         }}
       >
-        {React.cloneElement(<DoNotDisturb></DoNotDisturb>, {
+        {React.cloneElement(<span>X</span>, {
           className: styles.SidebarIcon,
           htmlColor: this.state.selected
             ? "var(--select-yellow)"
