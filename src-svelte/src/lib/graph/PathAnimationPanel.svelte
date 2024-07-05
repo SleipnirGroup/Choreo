@@ -1,16 +1,15 @@
 <script lang="ts">
     import { onDestroy } from "svelte";
-    import {get} from "svelte/store"
-    import {Trajectory, type TrajectorySample} from "$lib/trajectory.svelte.js"
     import GraphLegend from "./GraphLegend.svelte";
     import PathAnimationSlider from "./PathAnimationSlider.svelte"
-    import {GRAPH_PANEL_MIN_HEIGHT, uistate} from "$lib/uistate.svelte.ts"
+    import {GRAPH_PANEL_MIN_HEIGHT} from "./graph.js"
+    import {uistate} from "$lib/uistate.svelte.ts"
     let {output}: {output: Output} = $props();
 
     let running = $state(false);
     let timerId = $state(0);
-    let samples = $derived.by(()=>{console.log("output", output); return output.samples});
-    let totalTime = $derived.by(()=>{console.log(samples, samples[0]); return samples[samples.length-1]?.timestamp ?? 0});
+    let samples = $derived(output.samples);
+    let totalTime = $derived(samples[samples.length-1]?.timestamp ?? 0);
 
     let i = 0;
     let then = Date.now();

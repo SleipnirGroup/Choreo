@@ -1,23 +1,22 @@
 <script lang="ts">
   import {type TrajectorySample} from "$lib/trajectory.svelte.js";
-  import {PathGradients} from "$lib/PathGradient"
+  import {PathGradients} from "./PathGradient.js"
   type Props  = {
     trajectory: TrajectorySample[];
     noneColor: string;
   }
-  let {trajectory = [], noneColor = "var(--select-yellow)"} = $props();
+  let {trajectory = [], noneColor = "var(--select-yellow)"}:Props = $props();
 
   let generatedPathString = $derived(updateString(trajectory));
 
   function updateString(trajectory: TrajectorySample[]) {
-    console.log(trajectory);
     let gen = "";
     trajectory.forEach((point) => {
       gen += `${point.x},${point.y} `;
     });
     return gen;
   }
-  const key = "none";
+  const key: keyof PathGradients = "Velocity";
   const pathGradient = PathGradients[key];
 </script>
 
@@ -41,7 +40,7 @@
             x2={point2.x}
             y2={point2.y}
             stroke-width={0.05}
-            stroke={pathGradient.function(point, i, arr)}
+            stroke={pathGradient.function(point, i, trajectory)}
           ></line>
         {/if}
       {/each}

@@ -2,8 +2,9 @@
     type Props = {trajectory: TrajectorySample[], time: number};
     let {trajectory, time} : Props = $props();
     import {sampleD3} from "$lib/util/MathUtil.ts"
-    import {graphViews, graphColors, type GraphLine, uistate} from "$lib/uistate.svelte.ts"
-    import GraphLegendCheckbox from "./GraphLegendCheckbox.svelte"
+    import {graphViews, graphColors, type GraphLine} from "./graph.js"
+    import { uistate} from "$lib/uistate.svelte.ts"
+    import GraphLegendCheckbox from "../graph/GraphLegendCheckbox.svelte"
     import type { TrajectorySample } from "$lib/trajectory.svelte.js";
     let graphData = $derived(uistate.graphData);
     </script>
@@ -11,7 +12,7 @@
 style=" grid-template-columns: min-content max-content 5ch max-content; column-gap:8px">
 {#each Object.entries(graphColors) as [name, data]}
 {@const value = sampleD3(time, graphData[name])?.toFixed(2) ?? ""}
-<GraphLegendCheckbox key={name} bind:store={graphViews[name]} color={data}></GraphLegendCheckbox>
+<GraphLegendCheckbox key={name} store={graphViews[name]} color={data}></GraphLegendCheckbox>
 <span>{data.name}</span>
 <span style="text-align:right">{value}</span>
 <span>{data.units}</span>

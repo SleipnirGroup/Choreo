@@ -6,7 +6,8 @@
     }
     import * as d3 from "d3";
     import {onMount} from "svelte";
-    import {GRAPH_PANEL_MIN_HEIGHT, type UIState} from "$lib/uistate.svelte.js"
+    import {GRAPH_PANEL_MIN_HEIGHT} from "./graph.js"
+    import {type UIState} from "$lib/uistate.svelte.js"
     import GraphPanel from "./GraphPanel.svelte"
     import type { TrajectorySample } from "$lib/trajectory.svelte.js";
     let root: SVGSVGElement;

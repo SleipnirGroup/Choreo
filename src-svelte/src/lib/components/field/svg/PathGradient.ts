@@ -72,7 +72,7 @@ class PathGradientFunctions {
     // calculates the maginitude of the velocity vector, then divides it by the theoretical floor speed
     // then it scales the ratio [0, 1]: red to green[0, 100]
     const floorSpeed = 5.0;
-    const t = Math.hypot(point.velocityX, point.velocityY) / floorSpeed;
+    const t = Math.hypot(point.velocity_x, point.velocity_y) / floorSpeed;
     return `hsl(${100 * t}, 100%, 50%)`;
   }
 
@@ -121,7 +121,7 @@ class PathGradientFunctions {
       // then, it is scaled/normalized for the HSL color value.
       const A = arr[i];
       const B = arr[i + 1];
-      t = Math.hypot(B.velocityX - A.velocityX, B.velocityY - A.velocityY);
+      t = Math.hypot(B.velocity_x - A.velocity_x, B.velocity_y - A.velocity_y);
       const dt = B.timestamp - A.timestamp;
       t /= dt * 10;
     }
@@ -173,7 +173,7 @@ class PathGradientFunctions {
   ) {
     // the color value is normalized from red (0) to green (100)
     // based on an artificial angular velocity max of 2 r/s
-    return `hsl(${Math.abs(point.angularVelocity * 100) / 2}, 100%, 50%)`;
+    return `hsl(${Math.abs(point.angular_velocity * 100) / 2}, 100%, 50%)`;
   }
 
   /**

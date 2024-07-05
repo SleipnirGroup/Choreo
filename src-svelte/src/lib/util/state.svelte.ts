@@ -22,45 +22,70 @@ type HistoryStep<T> = { oldVal: T, newVal: T, idx: number }
 
 
 type Undoable<T> = Signal<T> & { setNoTrack: (val: T) => void }
-export class History {
+type Item<T> = { sig: Undoable<T>, snapshot: T };
+export class UndoManager {
 
-    undoStack: Array<HistoryStep<any>[]> = [[]];
-    redoStack: Array<HistoryStep<any>[]> = [[]];
-    undoables: Map<number, Undoable<any>> = new Map();
+    undoStack: Array<HistoryStep<any>[]> = $state([]);
+    redoStack: Array<HistoryStep<any>[]> = $state([]);
+    undoables: Map<number, Item<any>> = new Map();
+    snapshot: Map<number, any> = new Map();
     idx = 0;
     canUndo = $derived(this.undoStack.length != 0);
     canRedo = $derived(this.redoStack.length != 0);
     _inGroup: boolean = false;
-    isInGroup = $derived(this._inGroup);
-    activeGroup = [];
     startGroup() {
+        console.log("start group");
         this._inGroup = true;
+        this.undoables.forEach((item) => {
+            item.snapshot = item.sig();
+        });
     }
     stopGroup() {
+        console.log("stop group");
         this._inGroup = false;
-        if (this.activeGroup.length != 0) {
-            this.undoStack.push(this.activeGroup);
+        let batch: HistoryStep<any>[] = [];
+        this.undoables.forEach((item, id) => {
+            if (item.snapshot != item.sig()) {
+                batch.push({ oldVal: item.snapshot, newVal: item.sig(), idx: id })
+            }
+        });
+        if (batch.length != 0) {
+            this.undoStack.push(batch);
         }
 
     }
     reportChange<T>(oldVal: T, newVal: T, idx: number) {
-        console.log(oldVal, newVal, this.isInGroup);
         let step = { oldVal, newVal, idx };
-        this.undoStack[this.undoStack.length - 1].push(step);
-        console.log("stack add", this.undoStack);
-
+        // grouping is handled by before-after comparison
+        if (!this._inGroup) { 
+            this.undoStack.push([step]);
+        }
     }
     undo() {
-        console.log("stack", this.undoStack);
         if (this.canUndo) {
             let step = this.undoStack.pop();
             if (step !== undefined) {
                 step.toReversed().forEach(st => {
-                    this.undoables.get(st.idx)?.setNoTrack(st.oldVal)
+                    this.undoables.get(st.idx)?.sig.setNoTrack(st.oldVal)
                 });
-
+                this.redoStack.push(step);
             }
         }
+        console.log("undo stack", this.undoStack, this.redoStack);
+    }
+
+    redo() {
+        
+        if (this.canRedo) {
+            let step = this.redoStack.pop();
+            if (step !== undefined) {
+                step.forEach(st => {
+                    this.undoables.get(st.idx)?.sig.setNoTrack(st.newVal)
+                });
+                this.undoStack.push(step);
+            }
+        }
+        console.log("redo stack", this.undoStack, this.redoStack);
     }
 
     undoable<T>(sig: Signal<T>): Signal<T> {
@@ -69,16 +94,23 @@ export class History {
             ignore: false,
             oldVal: $state.snapshot(sig())
         }
-        $effect.pre(() => {
-            let newVal = $state.snapshot(sig());
-            untrack(() => {
-                if (!watcher.ignore) {
-                    this.reportChange(watcher.oldVal, newVal, newIDX);
+        // A function that unlistens to changes 
+        const unwatch = $effect.root(() => {
+            let firstRun = true;
+            $effect(() => {
+                let newVal = $state.snapshot(sig());
+                untrack(() => {
+                    if (!watcher.ignore && !firstRun) {
+                        this.reportChange(watcher.oldVal, newVal, newIDX);
+                    }
+                    watcher.oldVal = newVal;
+                    firstRun = false;
                 }
-                watcher.oldVal = $state.snapshot(newVal);
-            }
-            )
-        })
+                )
+            })
+            return () => console.log("unwatch", sig);
+        }
+        );
 
         let ret: Undoable<T> = Object.assign(
             sig,
@@ -92,7 +124,7 @@ export class History {
                 }
             }
         );
-        this.undoables.set(newIDX, ret);
+        this.undoables.set(newIDX, { sig: ret, snapshot: ret() });
         return ret;
     }
 }

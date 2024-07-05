@@ -2,45 +2,65 @@
 
 import { Trajectory } from "./trajectory.svelte.js";
 import Commands from "./commands.js";
-import { add_waypoint, getWaypoint, type IWaypoint} from "./waypoint.svelte.js";
-import { History, signal, type Signal } from "./util/state.svelte.js";
+import {Map} from "svelte/reactivity";
+import { getWaypoint, Waypoint, WaypointSubscribers, type WaypointData, type WaypointNoID} from "./waypoint.svelte.js";
+import { UndoManager, signal, type Signal } from "./util/state.svelte.js";
 
-export function generate(id:number) {
-    if (Paths[id] === undefined) return;
-    let waypoints : IWaypoint[] = Paths[id].map((id)=>getWaypoint(id)?.unreactive() as IWaypoint);
-    console.log(waypoints);
-    Commands.CMD_GENERATE_TRAJ(id, waypoints)
+export function generate(path: Path) {
+    let snapshot = path.snapshot;
+    console.log(snapshot);
+    Commands.CMD_GENERATE_TRAJ(path.id, snapshot.waypoints)
     .then((traj)=>{
         console.log("after generate", traj);
-        Trajectory(id).samples = traj.samples;
+        Trajectory(path.id).samples = traj.samples;
     }
     );
 }
 
 
 export class Path {
-    history = new History();
+    id: number;
+    history = new UndoManager();
+    _createSignal: <T>(arg:T)=>Signal<T> = (arg)=>this.history.undoable(signal(arg));
     order : Signal<number[]> = this.history.undoable(signal([] as number[]));
-    constructor() {
+    _waypoints():Waypoint[] {return this.order().map((id)=>WaypointSubscribers.get(id)).filter(pt=>pt!=undefined) as Waypoint[]}
+    snapshot = $derived.by(()=>this._snapshot());
+    waypoints = $derived.by(()=>{console.log("waypoints"); return this._waypoints()});
+    
+    
+    constructor(id: number) {
+        this.id = id;
+        
+        
     }
-
+    addWaypoint(update: Partial<WaypointNoID>) {
+        let newWpt = new Waypoint(this._createSignal, update);
+        this.order().push(newWpt.id);
+        return newWpt.id;
+    }
+    // We don't delete the actual object from WaypointSubscribers because it's still referenced in the undo history
+    deleteWaypoint(wptId: number) {
+        console.log(this);
+        console.log("delete", wptId);
+        this.order.set(this.order().filter(pt=>pt!=wptId));
+    }
+    _snapshot() {
+        return {
+            waypoints: this._waypoints().map(pt=>pt.snapshot())
+        }
+    }
 }
-export let Paths: Record<number, Path> = $state({});
+export let Paths = new Map<number, Path>();
 
 export function add_path(id:number) {
-    if (Paths[id] == undefined) {
+    if (Paths.get(id) == undefined) {
         console.log("use path", id);
         
-        let newPath = new Path();
-        Paths[id] = newPath;
+        let newPath = new Path(id);
+        Paths.set(id, newPath);
     }
-}
+    return Paths.get(id)!;
 
-export async function add_path_waypoint(path_id: number, update: Partial<IWaypoint>) {
-    if (Paths[path_id] === undefined) return;
-    let newWpt = add_waypoint(update);
-    Paths[path_id].order().push(newWpt.id);
-    return newWpt.id;
 }
 //     const idsFromPoints = (points: Waypoint[]) => {
 //         console.log(points);

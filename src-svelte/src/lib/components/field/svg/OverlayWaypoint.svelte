@@ -5,11 +5,11 @@ import * as d3 from "d3";
     import { onMount } from "svelte";
     import BumperBox from "./BumperBox.svelte";
     import { readable, type Readable } from "svelte/store";
+    import {type UndoManager} from "$lib/util/state.svelte.js";
 
 
-let {point, index}: {point:number, index:number} = $props();
+let {wpt, index, history}: {wpt:Waypoint, index:number, history: UndoManager} = $props();
 
-let wpt = $derived(WaypointSubscribers[point]!);
 type Coordinates = {
   x: number;
   y: number;
@@ -31,8 +31,8 @@ let bumperWidth: Readable<number> = readable(0.9);
 
   let coordsFromWaypoint = (): Coordinates => {
     return {
-      x: wpt.x,
-      y: wpt.y
+      x: wpt.x(),
+      y: wpt.y()
     };
   }
   let dragPointRotate = (event: any) => {
@@ -47,7 +47,7 @@ let bumperWidth: Readable<number> = readable(0.9);
     // converts the values to stay inside the 360 positive
 
     // creates the new rotate position array
-    wpt.heading=angleFinal;
+    wpt.heading.set(angleFinal);
     //d3.select(`#group`).attr('transform', `rotate(${ this.r.angle })`)
   }
 
@@ -68,9 +68,8 @@ let bumperWidth: Readable<number> = readable(0.9);
   // }
 
   let dragPointTranslate = (event: any) => {
-    const pointerPos: Coordinates = { x: 0, y: 0 };
-    wpt.x = (event.x);
-    wpt.y = (event.y);
+    wpt.x.set(event.x);
+    wpt.y.set(event.y);
 
     // gets the difference of the angles to get to the final angle
     // converts the values to stay inside the 360 positive
@@ -89,12 +88,12 @@ let bumperWidth: Readable<number> = readable(0.9);
       const rotateHandleDrag = d3
         .drag<SVGCircleElement, undefined>()
         .on("drag", (event) => dragPointRotate(event))
-        // .on("start", () => {
-        //   this.selectWaypoint();
-        //   this.context.history.startGroup(() => {});
-        // })
+        .on("start", () => {
+          //this.selectWaypoint();
+          history.startGroup();
+        })
         .on("end", (event) => {
-;
+          history.stopGroup();
         })
         .container(rootRef);
       d3.select<SVGCircleElement, undefined>(
@@ -117,10 +116,13 @@ let bumperWidth: Readable<number> = readable(0.9);
       const dragHandleDrag = d3
         .drag<SVGCircleElement, undefined>()
         .on("drag", (event) => dragPointTranslate(event))
-        // .on("start", () => {
-        //   this.selectWaypoint();
-        //   this.context.history.startGroup(() => {});
-        // })
+        .on("start", () => {
+          //this.selectWaypoint();
+          history.startGroup();
+        })
+        .on("end", (event) => {
+          history.stopGroup();
+        })
         .container(rootRef);
       d3.select<SVGCircleElement, undefined>(
         `#dragTarget${index}`
@@ -159,13 +161,13 @@ let bumperWidth: Readable<number> = readable(0.9);
 
     let boxColorStr = getBoxColor();
 
-    let type = wpt.waypoint_type;
+    let type = $derived(wpt.waypoint_type);
     //const robotConfig = this.context.model.document.robotConfig;
     </script>
       <g bind:this={rootRef}>
         <g
-          transform={`translate(${wpt.x}, ${wpt.y}) rotate(${
-            (wpt.heading * 180) / Math.PI
+          transform={`translate(${wpt.x()}, ${wpt.y()}) rotate(${
+            (wpt.heading() * 180) / Math.PI
           })`}
           id={appendIndexID("waypointGroup")}
         >

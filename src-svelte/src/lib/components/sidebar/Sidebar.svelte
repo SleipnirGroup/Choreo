@@ -1,9 +1,9 @@
 <script lang="ts">
   import WaypointList from "./WaypointList.svelte"
   import PathSelector from "./PathSelector.svelte"
-  import {Paths} from "$lib/path.svelte.js";
-  let {pathId}: {pathId:number} = $props();
-  let waypoints = $derived(Paths[pathId]);
+  import {Path} from "$lib/path.svelte.js";
+  let {path}: {path:Path} = $props();
+  let waypointSig = path.order;
   let constraints:any[] = [];
   let obstacles:any[] = [];
   let markers:any[] = [];
@@ -152,18 +152,18 @@
       </span>
       <span class="inline">
         <div class="tooltip tooltip-bottom" data-tip="Undo">
-          <button class="btn btn-ghost btn-square btn-md">
-            U
+          <button class="btn btn-ghost btn-square btn-md" class:btn-disabled={!path.history.canUndo} onclick={()=>path.history.undo()}>
+            &lt;-
         <!-- <ArrowLeftOutline></ArrowLeftOutline> -->
       </button>
     </div>
         
     <div class="tooltip tooltip-bottom" data-tip="Redo">
-      <button class="btn btn-ghost btn-square btn-md">
-        R
+      <button class="btn btn-ghost btn-square btn-md" class:btn-disabled={!path.history.canRedo} onclick={()=>path.history.redo()}>
+        -&gt;
         <!-- <ArrowRightOutline></ArrowRightOutline> -->
       </button>
-                </div>
+    </div>
       </span>
     </div>
     
@@ -225,7 +225,7 @@
     <div
       class="Sidebar max-h-300 min-h-50"
     >
-      <PathSelector pathId={pathId}></PathSelector>
+      <PathSelector pathId={path.id}></PathSelector>
     </div>
     <div class="divider SidebarHr"></div>
     <div class="SidebarHeading">FEATURES</div>
@@ -233,16 +233,7 @@
     <div class="Sidebar">
       <div class="divider divider-start SidebarHr">WAYPOINTS</div>
 
-      <WaypointList {waypoints} pathId={pathId}></WaypointList>
-      {#if waypoints.length == 0}
-
-      <div class={"SidebarItem Noninteractible"}>
-        <span></span>
-        <span style="color: gray; font-style: italic">
-          No Waypoints
-        </span>
-      </div>
-    {/if}
+      <WaypointList {path}></WaypointList>
       <div class="divider divider-start SidebarHr">CONSTRAINTS</div>
       <div class="WaypointList">
         {#each constraints as constraint}

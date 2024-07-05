@@ -1,12 +1,14 @@
 <script lang="ts">
     import Field from "$lib/components/field/Field.svelte"
     import Sidebar from "$lib/components/sidebar/Sidebar.svelte"
-    import PathAnimationPanel from "$lib/components/field/PathAnimationPanel.svelte"
+    import PathAnimationPanel from "$lib/graph/PathAnimationPanel.svelte"
     import {Trajectory} from "$lib/trajectory.svelte.js"
-    import { add_path } from "$lib/path.svelte.js";
+    import { add_path, Paths } from "$lib/path.svelte.js";
     let {data} : {data:{id:number}} = $props();
     let id = $derived(data.id);
     $effect.pre(()=>add_path(id));
+    let path = $derived(Paths.get(id));
+    $inspect(path?.snapshot).with(console.trace)
 </script>
 <style>
     .App {
@@ -54,7 +56,7 @@
           height: 0;
           width: 100%;"
       >
-        <Sidebar pathId={id}></Sidebar>
+        <Sidebar {path}></Sidebar>
         <span
             style="
             display: flex;
@@ -63,7 +65,7 @@
             width: 0"
         >
           <!-- <Navbar></Navbar> -->
-          <Field pathId={id}></Field>
+          <Field {path}></Field>
         </span>
       </span>
       <PathAnimationPanel output={Trajectory(id)}></PathAnimationPanel>

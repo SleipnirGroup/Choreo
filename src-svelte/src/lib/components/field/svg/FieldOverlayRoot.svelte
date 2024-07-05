@@ -5,10 +5,10 @@
 
 import * as d3 from "d3";
 import { onMount } from 'svelte';
-import {Paths, add_path_waypoint} from '$lib/path.svelte.js';
+import {Path} from '$lib/path.svelte.js';
 
 
-import {Trajectory} from '$lib/trajectory.svelte.js';
+import {Trajectory, type TrajectorySample} from '$lib/trajectory.svelte.js';
 import { uistate } from "$lib/uistate.svelte.ts";
 import FieldGeneratedLines from "./FieldGeneratedLines.svelte";
 // import FieldGrid from "./FieldGrid";
@@ -28,9 +28,9 @@ import FieldImage24 from "./fields/FieldImage24.svelte";
 // import FieldSamples from "./FieldSamples";
 // import FieldGeneratedWaypoints from "./FieldGeneratedWaypoints";
 // import FieldEventMarkerAddLayer from "./FieldEventMarkerAddLayer";
-let {pathId}: {pathId:number} = $props();
-let waypoints = $derived(Paths[pathId]);
-let trajectory = $derived(Trajectory(pathId).samples);
+let {path}: {path: Path} = $props();
+let waypoints : number[] = $derived(path.order());
+let trajectory : TrajectorySample[] = $derived(Trajectory(path.id).samples);
 let xPan = $state(0);
 let yPan = $state(0);
 let zoom = $state(1);
@@ -145,7 +145,7 @@ let zoomed = (e: any) => {
         x: e.clientX,
         y: e.clientY
       });
-      add_path_waypoint(pathId, {x: coords.x, y: coords.y, translationConstrained: true, headingConstrained: true});
+      path.addWaypoint({x: coords.x, y: coords.y, translationConstrained: true, headingConstrained: true})
       
     //   this.context.history.startGroup(() => {
     //     const newPoint =
@@ -230,11 +230,9 @@ let zoomed = (e: any) => {
                 onclick={(e) => createWaypoint(e)}
               ></circle>
         {/if}
-        {#key waypoints}
-        {#each waypoints as pt, idx}
+        {#each path.waypoints as pt, idx}
         
-        <OverlayWaypoint index={idx} point={pt}></OverlayWaypoint>
+        <OverlayWaypoint index={idx} wpt={pt} history={path.history}></OverlayWaypoint>
         {/each}
-        {/key}
         </g>
       </svg>
