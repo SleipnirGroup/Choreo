@@ -5,8 +5,8 @@
 #include <filesystem>
 #include <numbers>
 #include <regex>
-#include <vector>
 
+#include <fmt/format.h>
 #include <frc/DriverStation.h>
 #include <frc/Filesystem.h>
 #include <frc/Timer.h>
