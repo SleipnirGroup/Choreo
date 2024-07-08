@@ -1,4 +1,4 @@
-name: ChoreoLib
+name: ChoreoLib / Build
 
 on: [push, pull_request]
 

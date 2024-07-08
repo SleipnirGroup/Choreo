@@ -18,6 +18,13 @@ Check out the [Docs](https://sleipnirgroup.github.io/Choreo), which covers insta
 
 An example project using Choreo is available [here](https://github.com/SleipnirGroup/ChoreoSwerveBot).
 
+## Repository directory structure
+
+- [src](src) - Choreo frontend
+- [src-tauri](src-tauri) - Choreo backend
+- [choreolib](choreolib) - ChoreoLib: robot-side library for loading and following Choreo paths
+- [trajoptlib](trajoptlib) - TrajoptLib: library used by Choreo to generate time-optimal trajectories for FRC robots
+
 ## Authors
 
 <a href="https://github.com/SleipnirGroup/Choreo/graphs/contributors">
