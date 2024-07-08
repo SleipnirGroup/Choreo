@@ -30,7 +30,7 @@ fn main() {
         bridge_build.flag("/EHsc").flag("/utf-8");
     }
 
-    bridge_build.compile("trajoptrust");
+    bridge_build.compile("TrajoptLibRust");
 
     println!(
         "cargo:rustc-link-search=native={}/bin",
@@ -40,7 +40,7 @@ fn main() {
         "cargo:rustc-link-search=native={}/lib",
         cmake_dest.display()
     );
-    println!("cargo:rustc-link-lib=trajoptrust");
+    println!("cargo:rustc-link-lib=TrajoptLibRust");
     println!("cargo:rustc-link-lib=TrajoptLib");
     println!("cargo:rustc-link-lib=Sleipnir");
     println!("cargo:rustc-link-lib=fmt");
