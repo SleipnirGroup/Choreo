@@ -95,8 +95,10 @@ nav:
   - ChoreoLib:
       - Installation: choreolib/installation.md
       - Usage: choreolib/usage.md
-      - Java API: api/java/index.html
-      - C++ API: api/cpp/index.html
+      - Java API: api/choreolib/java/index.html
+      - C++ API: api/choreolib/cpp/index.html
+  - TrajoptLib:
+      - C++ API: api/trajoptlib/cpp/index.html
   - Contributing:
       - Building: contributing/building-choreo.md
       - Contributing Guide: contributing/contributing-guide.md

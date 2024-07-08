@@ -30,11 +30,6 @@ jobs:
             mkdocs-material-
 
       - run: pip install mkdocs-material
-      - run: mkdir -p choreolib/build/docs/cpp
-      - uses: mattnotmitt/doxygen-action@edge
-        with:
-          working-directory: "choreolib"
-          doxyfile-path: "docs/Doxyfile"
 
       - uses: actions/setup-java@v4
         with:

@@ -73,8 +73,8 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
         if: ${{ failure() }}
 
-  tidy:
-    name: "clang-tidy"
+  choreolib-tidy:
+    name: "ChoreoLib clang-tidy"
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -111,3 +111,46 @@ jobs:
       - name: Run clang-tidy release
         working-directory: choreolib
         run: wpiformat -no-format -tidy-all -compile-commands=build/TargetedCompileCommands/linuxx86-64release -vv
+
+  trajoptlib-tidy:
+    name: "TrajoptLib clang-tidy"
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch all history and metadata
+        run: |
+          git config --global --add safe.directory /__w/Choreo/Choreo
+          git checkout -b pr
+          git branch -f main origin/main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Install LLVM 18
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 18 all
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-18 200
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-18 200
+          echo "CC=clang" >> $GITHUB_ENV
+          echo "CXX=clang++" >> $GITHUB_ENV
+          echo "CXXFLAGS=-stdlib=libc++" >> $GITHUB_ENV
+
+      - run: pip3 install wpiformat
+
+      - name: Create compile_commands.json
+        run: cmake -B build -S . -DCMAKE_EXPORT_COMPILE_COMMANDS=YES
+        working-directory: trajoptlib
+
+      - name: List changed files
+        run: wpiformat -list-changed-files
+        working-directory: trajoptlib
+
+      - name: Run clang-tidy
+        run: wpiformat -no-format -tidy-all -compile-commands=build -tidy-extra-args std=c++23 -vv
+        working-directory: trajoptlib
