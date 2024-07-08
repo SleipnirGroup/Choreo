@@ -22,7 +22,7 @@ macro(compiler_flags target)
         )
     endif()
 
-    target_compile_features(${target} PUBLIC cxx_std_20)
+    target_compile_features(${target} PUBLIC cxx_std_23)
     if(MSVC)
         target_compile_options(${target} PUBLIC /MP /Zf /utf-8 /bigobj)
     endif()
