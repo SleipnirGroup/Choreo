@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include <cmath>
+#include <expected>
 #include <utility>
 #include <vector>
 
@@ -14,7 +15,6 @@
 
 #include "trajopt/path/PathBuilder.hpp"
 #include "trajopt/util/SymbolExports.hpp"
-#include "trajopt/util/expected"
 
 namespace trajopt {
 
@@ -229,7 +229,7 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectoryGenerator {
    * @return Returns a holonomic trajectory on success, or a string containing a
    *   failure reason.
    */
-  expected<DifferentialSolution, sleipnir::SolverExitCondition> Generate(
+  std::expected<DifferentialSolution, sleipnir::SolverExitCondition> Generate(
       bool diagnostics = false);
 
  private:
