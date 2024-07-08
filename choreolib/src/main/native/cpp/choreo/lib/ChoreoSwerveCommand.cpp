@@ -2,9 +2,9 @@
 
 #include "choreo/lib/ChoreoSwerveCommand.h"
 
-#include <frc/DriverStation.h>
-
 #include <utility>
+
+#include <frc/DriverStation.h>
 
 using namespace choreolib;
 
