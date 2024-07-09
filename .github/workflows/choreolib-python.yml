@@ -1,61 +1,43 @@
 name: ChoreoLib / Build Python
 
-permissions:
-  id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
+on: [push, pull_request]
 
-on:
-  push:
-    branches: [master]
-    tags:
-      - "v*"
-  pull_request:
-    branches: [master]
+permissions:
+  # IMPORTANT: this permission is mandatory for trusted publishing
+  id-token: write
 
 jobs:
-  buildAndDeploy:
-    runs-on: ubuntu-latest
-
+  build:
+    runs-on: ubuntu-22.04
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
-          sparse-checkout-cone-mode: false
-          fetch-tags: true
-          fetch-depth: 99999
+          fetch-depth: 0
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: 3.12
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install setuptools wheel pytest
+      - run: pip3 install setuptools wheel pytest
 
-      - name: Build wheel
+      - run: python3 setup.py sdist bdist_wheel
         working-directory: ./choreolib/py
-        run: |
-          python setup.py sdist bdist_wheel
-
-      - name: Run Unit Tests
+      - run: pip3 install --no-cache-dir dist/*.whl
         working-directory: ./choreolib/py
-        run: |
-          pip install --no-cache-dir dist/*.whl
-          pytest
+      - run: pytest
+        working-directory: ./choreolib/py
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@v4
         with:
           name: dist
           path: ./choreolib/py/dist/
 
       - name: Publish package distributions to PyPI
-        # Only upload on tags
         if: startsWith(github.ref, 'refs/tags/v')
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages_dir: ./choreolib/py/dist/
 
     permissions:
-      id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
+      # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write
