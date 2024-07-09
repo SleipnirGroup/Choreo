@@ -167,9 +167,9 @@ jobs:
         with:
           python-version: 3.12
 
-      - run: pip3 install setuptools wheel pytest
+      - run: pip3 install build wheel pytest
 
-      - run: python3 setup.py sdist bdist_wheel
+      - run: python3 -m build
         working-directory: ./choreolib/py
       - run: pip3 install --no-cache-dir dist/*.whl
         working-directory: ./choreolib/py
