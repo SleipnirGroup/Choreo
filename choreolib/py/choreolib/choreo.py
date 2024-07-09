@@ -1,12 +1,12 @@
 import json
-from choreolib.choreoTrajectory import ChoreoTrajectoryState
-from choreolib.choreoTrajectory import ChoreoTrajectory
+from choreolib.choreo_trajectory import ChoreoTrajectoryState
+from choreolib.choreo_trajectory import ChoreoTrajectory
 
 
-def fromFile(file: str) -> ChoreoTrajectory:
+def from_file(file: str) -> ChoreoTrajectory:
     samples = []
-    with open(file, "r", encoding="utf-8") as trajFile:
-        data = json.load(trajFile)
+    with open(file, "r", encoding="utf-8") as traj_file:
+        data = json.load(traj_file)
         for sample in data["samples"]:
             samples.append(
                 ChoreoTrajectoryState(

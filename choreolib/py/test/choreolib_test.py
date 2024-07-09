@@ -1,33 +1,32 @@
 import os
-from choreolib import choreo, choreoTrajectory
+from choreolib import choreo, choreo_trajectory
 
 
-def getResourcesFolder():
-    return os.path.join(os.path.dirname(__file__), "resources")
-
-
-def test_basicParse():
-    fileUnderTest = os.path.join(getResourcesFolder(), "test1.traj")
-    path = choreo.fromFile(fileUnderTest)
+def test_basic_parse1():
+    traj = choreo.from_file(
+        os.path.join(os.path.dirname(__file__), "resources", "test1.traj")
+    )
 
     for i in range(0, 500):
-        path.sample(i * 0.01)
-        # todo some pass fail
+        traj.sample(i * 0.01)
+        # TODO: some pass fail
 
 
-def test_basicParse2():
-    fileUnderTest = os.path.join(getResourcesFolder(), "test2.traj")
-    path = choreo.fromFile(fileUnderTest)
-
-    for i in range(0, 500):
-        path.sample(i * 0.01)
-        # todo some pass fail
-
-
-def test_basicParse3():
-    fileUnderTest = os.path.join(getResourcesFolder(), "test3.traj")
-    path = choreo.fromFile(fileUnderTest)
+def test_basic_parse2():
+    traj = choreo.from_file(
+        os.path.join(os.path.dirname(__file__), "resources", "test2.traj")
+    )
 
     for i in range(0, 500):
-        path.sample(i * 0.01)
-        # todo some pass fail
+        traj.sample(i * 0.01)
+        # TODO: some pass fail
+
+
+def test_basic_parse3():
+    traj = choreo.from_file(
+        os.path.join(os.path.dirname(__file__), "resources", "test3.traj")
+    )
+
+    for i in range(0, 500):
+        traj.sample(i * 0.01)
+        # TODO: some pass fail
