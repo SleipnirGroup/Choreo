@@ -13,7 +13,7 @@ def get_version():
         encoding="utf-8",
         stdout=subprocess.PIPE,
     )
-    # If there is no main branch, default to 0.0.0
+    # If there are no tags, default to 0.0.0
     if proc.returncode:
         return "0.0.0"
     else:
