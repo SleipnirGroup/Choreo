@@ -158,11 +158,6 @@ jobs:
   build-python:
     name: "Build Python"
     runs-on: ubuntu-24.04
-    environment:
-      name: pypi
-      url: https://pypi.org/p/sleipnirgroup-jormungandr
-    permissions:
-      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -200,6 +195,6 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: dist
-          pattern: 'dist'
+          pattern: "dist"
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
