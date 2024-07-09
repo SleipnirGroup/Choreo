@@ -1,10 +1,10 @@
 import os
-from choreolib import choreo, choreo_trajectory
+from choreolib import choreo
 
 
 def test_basic_parse1():
-    traj = choreo.from_file(
-        os.path.join(os.path.dirname(__file__), "resources", "test1.traj")
+    traj = choreo.get_trajectory(
+        os.path.join(os.path.dirname(__file__), "resources", "test1")
     )
 
     for i in range(0, 500):
@@ -13,8 +13,8 @@ def test_basic_parse1():
 
 
 def test_basic_parse2():
-    traj = choreo.from_file(
-        os.path.join(os.path.dirname(__file__), "resources", "test2.traj")
+    traj = choreo.get_trajectory(
+        os.path.join(os.path.dirname(__file__), "resources", "test2")
     )
 
     for i in range(0, 500):
@@ -23,8 +23,8 @@ def test_basic_parse2():
 
 
 def test_basic_parse3():
-    traj = choreo.from_file(
-        os.path.join(os.path.dirname(__file__), "resources", "test3.traj")
+    traj = choreo.get_trajectory(
+        os.path.join(os.path.dirname(__file__), "resources", "test3")
     )
 
     for i in range(0, 500):

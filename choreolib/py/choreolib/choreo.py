@@ -3,9 +3,15 @@ from choreolib.choreo_trajectory import ChoreoTrajectoryState
 from choreolib.choreo_trajectory import ChoreoTrajectory
 
 
-def from_file(file: str) -> ChoreoTrajectory:
+def get_trajectory(traj_name: str) -> ChoreoTrajectory:
+    """Load a trajectory from a file.
+
+    Parameter ``traj_name``:
+        The path name in Choreo, which matches the file name in the deploy
+        directory. Do not include ".traj" here.
+    """
     samples = []
-    with open(file, "r", encoding="utf-8") as traj_file:
+    with open(traj_name + ".traj", "r", encoding="utf-8") as traj_file:
         data = json.load(traj_file)
         for sample in data["samples"]:
             samples.append(
@@ -17,6 +23,9 @@ def from_file(file: str) -> ChoreoTrajectory:
                     float(sample["velocityX"]),
                     float(sample["velocityY"]),
                     float(sample["angularVelocity"]),
+                    # TODO: Deserialize these from a modern .traj file
+                    [],
+                    [],
                 )
             )
 
