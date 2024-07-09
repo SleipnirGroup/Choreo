@@ -178,7 +178,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: dist
+          name: Python
           path: ./choreolib/py/dist
 
   pypi-publish:
@@ -195,6 +195,6 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: dist
-          pattern: "dist"
+          pattern: "Python"
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
