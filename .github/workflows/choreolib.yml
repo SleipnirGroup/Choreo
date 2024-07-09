@@ -1,4 +1,4 @@
-name: ChoreoLib / Build C++ and Java
+name: ChoreoLib
 
 on: [push, pull_request]
 
@@ -26,7 +26,7 @@ jobs:
             artifact-name: Linux-x86_64
             build-options:
 
-    name: "${{ matrix.artifact-name }}"
+    name: "Build C++ and Java / ${{ matrix.artifact-name }}"
     runs-on: ubuntu-22.04
     container: ${{ matrix.container }}
     steps:
@@ -83,7 +83,7 @@ jobs:
             artifact-name: macOS-arm64
             build-options:
 
-    name: "${{ matrix.artifact-name }}"
+    name: "Build C++ and Java / ${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -154,3 +154,35 @@ jobs:
         with:
           name: ChoreoLib-Maven
           path: ~/releases
+
+  build-python:
+    name: "Build Python"
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - run: pip3 install setuptools wheel pytest
+
+      - run: python3 setup.py sdist bdist_wheel
+        working-directory: ./choreolib/py
+      - run: pip3 install --no-cache-dir dist/*.whl
+        working-directory: ./choreolib/py
+      - run: pytest
+        working-directory: ./choreolib/py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: ./choreolib/py/dist/
+
+      - name: Publish package distributions to PyPI
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages_dir: ./choreolib/py/dist/
