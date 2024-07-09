@@ -1,4 +1,4 @@
-name: Build and Distribute Python choreolib
+name: ChoreoLib / Build Python
 
 permissions:
   id-token: write # IMPORTANT: this permission is mandatory for trusted publishing

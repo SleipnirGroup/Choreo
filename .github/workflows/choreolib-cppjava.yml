@@ -1,4 +1,4 @@
-name: ChoreoLib / Build
+name: ChoreoLib / Build C++ and Java
 
 on: [push, pull_request]
 
