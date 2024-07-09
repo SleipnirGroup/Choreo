@@ -59,8 +59,16 @@ frc::Pose2d ChoreoTrajectory::GetInitialPose() const {
   return samples.front().GetPose();
 }
 
+frc::Pose2d ChoreoTrajectory::GetFlippedInitialPose() const {
+  return samples.front().Flipped().GetPose();
+}
+
 frc::Pose2d ChoreoTrajectory::GetFinalPose() const {
   return samples.back().GetPose();
+}
+
+frc::Pose2d ChoreoTrajectory::GetFlippedFinalPose() const {
+  return samples.back().Flipped().GetPose();
 }
 
 units::second_t ChoreoTrajectory::GetTotalTime() const {

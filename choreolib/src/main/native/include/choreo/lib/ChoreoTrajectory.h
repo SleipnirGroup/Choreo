@@ -34,20 +34,32 @@ class ChoreoTrajectory {
                                bool mirrorForRedAlliance = false);
 
   /**
-   * Returns the first pose in the list of samples of the trajectory (t=0)
+   * Returns the initial, non-mirrored pose of the trajectory.
    *
-   * @return the first pose in the list of samples of the trajectory (t=0)
+   * @return the initial, non-mirrored pose of the trajectory.
    */
   frc::Pose2d GetInitialPose() const;
 
   /**
-   * Returns the last pose in the list of samples of the trajectory
-   *  (t=GetTotalTime())
+   * Returns the initial, mirrored pose of the trajectory.
    *
-   * @return the last pose in the list of samples of the trajectory
-   *  (t=GetTotalTime())
+   * @return the initial, mirrored pose of the trajectory.
+   */
+  frc::Pose2d GetFlippedInitialPose() const;
+
+  /**
+   * Returns the final, non-mirrored pose of the trajectory.
+   *
+   * @return the final, non-mirrored pose of the trajectory.
    */
   frc::Pose2d GetFinalPose() const;
+
+  /**
+   * Returns the final, mirrored pose of the trajectory.
+   *
+   * @return the final, mirrored pose of the trajectory.
+   */
+  frc::Pose2d GetFlippedFinalPose() const;
 
   /**
    * Returns the total run time of the trajectory

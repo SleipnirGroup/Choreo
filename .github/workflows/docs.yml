@@ -7,7 +7,7 @@ permissions:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
@@ -16,7 +16,7 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: 3.x
 
@@ -31,14 +31,10 @@ jobs:
 
       - run: pip install mkdocs-material
 
-      - name: Create Doxygen build directory
-        run: mkdir -p choreolib/build/docs/cpp
-
-      - name: Run Doxygen
-        uses: mattnotmitt/doxygen-action@edge
+      - uses: actions/setup-java@v4
         with:
-          working-directory: "choreolib"
-          doxyfile-path: "docs/Doxyfile"
+          distribution: "temurin"
+          java-version: 17
 
       - name: Run JavaDoc
         run: |

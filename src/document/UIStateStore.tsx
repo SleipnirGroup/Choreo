@@ -3,6 +3,7 @@ import {
   CircleOutlined,
   DoNotDisturb,
   Grid4x4,
+  Room,
   Route,
   ScatterPlot,
   SquareOutlined,
@@ -30,11 +31,18 @@ import {
   CircularObstacleStore,
   ICircularObstacleStore
 } from "./CircularObstacleStore";
+import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
+import {
+  PathGradient,
+  PathGradients
+} from "../components/config/robotconfig/PathGradient";
+import LocalStorageKeys from "../util/LocalStorageKeys";
 
 export const SelectableItem = types.union(
   {
     dispatcher: (snapshot) => {
       if (snapshot.mass) return RobotConfigStore;
+      if (snapshot.target) return EventMarkerStore;
       if (snapshot.scope) {
         return ConstraintStores[snapshot.type];
       }
@@ -47,6 +55,7 @@ export const SelectableItem = types.union(
   RobotConfigStore,
   HolonomicWaypointStore,
   CircularObstacleStore,
+  EventMarkerStore,
   ...Object.values(ConstraintStores)
 );
 
@@ -120,7 +129,8 @@ export const ObstacleData: {
     icon: <DoNotDisturb />
   }
 };
-const obstacleNavbarCount = Object.keys(ObstacleData).length;
+let obstacleNavbarCount = 0;
+obstacleNavbarCount = Object.keys(ObstacleData).length;
 Object.entries(ObstacleData).forEach(([name, data]) => {
   const obstaclesOffset = Object.keys(NavbarData).length;
   NavbarData[name] = {
@@ -129,6 +139,13 @@ Object.entries(ObstacleData).forEach(([name, data]) => {
     icon: data.icon
   };
 });
+
+const eventMarkerCount = 1;
+NavbarData.EventMarker = {
+  index: Object.keys(NavbarData).length,
+  name: "Event Marker",
+  icon: <Room></Room>
+};
 
 /** An map of  */
 export const NavbarLabels = (() => {
@@ -148,20 +165,24 @@ export const NavbarItemData = (() => {
   return x;
 })();
 
-export const NavbarItemSectionLengths = [
-  waypointNavbarCount - 1,
-  waypointNavbarCount + constraintNavbarCount - 1,
-  waypointNavbarCount + constraintNavbarCount + obstacleNavbarCount - 1
-];
+const NavbarItemSections = [waypointNavbarCount, constraintNavbarCount];
+NavbarItemSections.push(obstacleNavbarCount);
+NavbarItemSections.push(eventMarkerCount);
+
+export const NavbarItemSectionEnds = NavbarItemSections.map((s, idx) =>
+  NavbarItemSections.slice(0, idx + 1).reduce((prev, cur) => prev + cur, -1)
+);
+console.log(NavbarItemSectionEnds);
 
 export type SelectableItemTypes =
   | IRobotConfigStore
   | IHolonomicWaypointStore
   | IConstraintStore
   | ICircularObstacleStore
+  | IEventMarkerStore
   | undefined;
 
-/* Visibility stuff */
+/* ViewOptionsPanel items */
 const ViewData = {
   Field: {
     index: 0,
@@ -226,7 +247,7 @@ export const ViewItemData = (() => {
 })();
 export const ViewLayerDefaults = ViewItemData.map((layer) => layer.default);
 export type ViewLayerType = typeof ViewLayers;
-export const NUM_SETTINGS_TABS = 3;
+export const NUM_SETTINGS_TABS = 4;
 export const UIStateStore = types
   .model("UIStateStore", {
     fieldScalingFactor: 0.02,
@@ -234,7 +255,7 @@ export const UIStateStore = types
     saveFileDir: types.maybe(types.string),
     isGradleProject: types.maybe(types.boolean),
     waypointPanelOpen: false,
-    visibilityPanelOpen: false,
+    isViewOptionsPanelOpen: false,
     robotConfigOpen: false,
     mainMenuOpen: false,
     settingsTab: types.refinement(
@@ -247,7 +268,16 @@ export const UIStateStore = types
       (arr) => arr?.length == ViewItemData.length
     ),
     selectedSidebarItem: types.maybe(types.safeReference(SelectableItem)),
-    selectedNavbarItem: NavbarLabels.FullWaypoint
+    selectedNavbarItem: NavbarLabels.FullWaypoint,
+    selectedPathGradient: types.maybe(
+      types.union(
+        ...Object.keys(PathGradients).map((key) => types.literal(key))
+      )
+    ),
+
+    contextMenuSelectedWaypoint: types.maybe(types.number),
+    contextMenuWaypointType: types.maybe(types.number),
+    contextMenuMouseSelection: types.maybe(types.array(types.number)) // [clientX, clientY] from `MouseEvent`
   })
   .views((self: any) => {
     return {
@@ -299,12 +329,18 @@ export const UIStateStore = types
       },
       isConstraintSelected() {
         return (
-          self.selectedNavbarItem > NavbarItemSectionLengths[0] &&
-          self.selectedNavbarItem <= NavbarItemSectionLengths[1]
+          self.selectedNavbarItem > NavbarItemSectionEnds[0] &&
+          self.selectedNavbarItem <= NavbarItemSectionEnds[1]
         );
       },
+      isEventMarkerSelected() {
+        return self.selectedNavbarItem == NavbarData.EventMarker.index;
+      },
       isNavbarObstacleSelected() {
-        return self.selectedNavbarItem > NavbarItemSectionLengths[1];
+        return (
+          self.selectedNavbarItem > NavbarItemSectionEnds[1] &&
+          self.selectedNavbarItem <= NavbarItemSectionEnds[2]
+        );
       },
       visibleLayersOnly() {
         return self.layers.flatMap((visible: boolean, index: number) => {
@@ -355,8 +391,8 @@ export const UIStateStore = types
     setWaypointPanelOpen(open: boolean) {
       self.waypointPanelOpen = open;
     },
-    setVisibilityPanelOpen(open: boolean) {
-      self.visibilityPanelOpen = open;
+    setViewOptionsPanelOpen(open: boolean) {
+      self.isViewOptionsPanelOpen = open;
     },
     setPathAnimationTimestamp(time: number) {
       self.pathAnimationTimestamp = time;
@@ -377,6 +413,32 @@ export const UIStateStore = types
     },
     setSelectedNavbarItem(item: number) {
       self.selectedNavbarItem = item;
+    },
+    setSelectedPathGradient(pathGradient: PathGradient) {
+      self.selectedPathGradient = pathGradient.name;
+      this._saveSelectedPathGradientToLocalStorage();
+    },
+    _saveSelectedPathGradientToLocalStorage() {
+      localStorage.setItem(
+        LocalStorageKeys.PATH_GRADIENT,
+        self.selectedPathGradient
+      );
+    },
+    loadPathGradientFromLocalStorage() {
+      self.selectedPathGradient =
+        localStorage.getItem(LocalStorageKeys.PATH_GRADIENT) ??
+        PathGradients.Velocity.name;
+    },
+    setContextMenuSelectedWaypoint(waypointIndex: number | undefined) {
+      self.contextMenuSelectedWaypoint = waypointIndex;
+    },
+    setContextMenuWaypointType(waypointType: number | undefined) {
+      self.contextMenuWaypointType = waypointType;
+    },
+    setContextMenuMouseSelection(mouseSelection: MouseEvent | undefined) {
+      self.contextMenuMouseSelection = mouseSelection
+        ? [mouseSelection.clientX, mouseSelection.clientY]
+        : undefined;
     }
   }));
 export interface IUIStateStore extends Instance<typeof UIStateStore> {}

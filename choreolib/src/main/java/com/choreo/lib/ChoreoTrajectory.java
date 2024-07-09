@@ -118,12 +118,30 @@ public class ChoreoTrajectory {
   }
 
   /**
+   * Returns the initial, mirrored pose of the trajectory.
+   *
+   * @return the initial, mirrored pose of the trajectory.
+   */
+  public Pose2d getFlippedInitialPose() {
+    return samples.get(0).flipped().getPose();
+  }
+
+  /**
    * Returns the final, non-mirrored pose of the trajectory.
    *
    * @return the final, non-mirrored pose of the trajectory.
    */
   public Pose2d getFinalPose() {
     return samples.get(samples.size() - 1).getPose();
+  }
+
+  /**
+   * Returns the final, mirrored pose of the trajectory.
+   *
+   * @return the final, mirrored pose of the trajectory.
+   */
+  public Pose2d getFlippedFinalPose() {
+    return samples.get(samples.size() - 1).flipped().getPose();
   }
 
   /**

@@ -9,6 +9,18 @@ export const PathListStore = types
     paths: types.map(HolonomicPathStore),
     activePathUUID: ""
   })
+  .actions((self) => {
+    let pathExporter: (uuid: string) => void = (uuid) => {};
+    return {
+      setExporter(exportFunction: (uuid: string) => void) {
+        pathExporter = exportFunction;
+        self.paths.forEach((p) => p.setExporter(pathExporter));
+      },
+      getExporter(): (uuid: string) => void {
+        return pathExporter;
+      }
+    };
+  })
   .views((self) => {
     return {
       asSavedPathList(): SavedPathList {
@@ -73,6 +85,7 @@ export const PathListStore = types
           name: usedName,
           waypoints: []
         });
+        path.setExporter(self.getExporter());
         path.addConstraint(ConstraintStores.StopPoint)?.setScope(["first"]);
         path.addConstraint(ConstraintStores.StopPoint)?.setScope(["last"]);
         self.paths.put(path);

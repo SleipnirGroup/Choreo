@@ -41,6 +41,21 @@ import {
   SAVE_FILE_VERSION as v0_2_2_Version
 } from "./previousSpecs/v0_2_2";
 import v0_2_2_Schema from "./previousSpecs/v0.2.2.json";
+import {
+  SavedDocument as v0_3,
+  SAVE_FILE_VERSION as v0_3_Version
+} from "./previousSpecs/v0_3";
+import v0_3_Schema from "./previousSpecs/v0.3.json";
+import {
+  SavedDocument as v0_3_1,
+  SAVE_FILE_VERSION as v0_3_1_Version
+} from "./previousSpecs/v0_3_1";
+import v0_3_1_Schema from "./previousSpecs/v0.3.1.json";
+import {
+  SavedDocument as v0_4,
+  SAVE_FILE_VERSION as v0_4_Version
+} from "./previousSpecs/v0_4";
+import v0_4_Schema from "./previousSpecs/v0.4.json";
 
 // Paste new version import blocks above this line.
 // Import SAVE_FILE_VERSION, SavedDocument and only the other types needed for the upgrader functions.
@@ -50,7 +65,8 @@ import v0_2_2_Schema from "./previousSpecs/v0.2.2.json";
 import Ajv from "ajv";
 import { ROBOT_CONFIG_DEFAULTS } from "./RobotConfigStore";
 // Update the import path in the below to point to a particular version as current
-import { SAVE_FILE_VERSION } from "./previousSpecs/v0_2_2";
+import { SAVE_FILE_VERSION } from "./previousSpecs/v0_4";
+
 export type {
   SavedDocument,
   SavedTrajectorySample,
@@ -59,9 +75,15 @@ export type {
   SavedRobotConfig,
   SavedWaypoint,
   SavedConstraint,
-  SavedCircleObstacle
-} from "./previousSpecs/v0_2_2";
-export { SAVE_FILE_VERSION } from "./previousSpecs/v0_2_2";
+  SavedCircleObstacle,
+  SavedEventMarker,
+  SavedCommand,
+  SavedGroupCommand,
+  SavedNamedCommand,
+  SavedWaitCommand,
+  SavedGeneratedWaypoint
+} from "./previousSpecs/v0_4";
+export { SAVE_FILE_VERSION } from "./previousSpecs/v0_4";
 
 const ajv = new Ajv();
 
@@ -206,9 +228,93 @@ export const VERSIONS = {
     schema: v0_2_1_Schema
   },
   "v0.2.2": {
-    up: (document: any): v0_2_2 => document,
+    up: (document: any): v0_3 => {
+      const updated: v0_3 = document;
+      updated.version = v0_3_Version;
+      for (const entry of Object.keys(updated.paths)) {
+        updated.paths[entry].eventMarkers = [];
+        updated.paths[entry].trajectoryWaypoints = [];
+        updated.paths[entry].isTrajectoryStale = false;
+      }
+      return updated;
+    },
     schema: v0_2_2_Schema
+  },
+  "v0.3": {
+    up: (document: any): v0_3_1 => {
+      const updated: v0_3_1 = document;
+      updated.version = v0_3_1_Version;
+      for (const entry of Object.keys(updated.paths)) {
+        const path = updated.paths[entry];
+        for (const marker of path.eventMarkers) {
+          marker.trajTargetIndex = null;
+          /**check if the saved targetTimestamp
+             matches the targeted waypoint in generatedWaypoint.
+             If it doesn't match any, something desynced that shouldn't have, and we can't recover its location
+             If it does, we know which waypoint it targeted.
+            */
+          if (marker.targetTimestamp !== null) {
+            for (let i = 0; i < path.trajectoryWaypoints.length; i++) {
+              if (
+                Math.abs(
+                  path.trajectoryWaypoints[i].timestamp - marker.targetTimestamp
+                ) < 0.01
+              ) {
+                marker.trajTargetIndex = i;
+                break;
+              }
+            }
+          }
+        }
+      }
+      return updated;
+    },
+    schema: v0_3_Schema
+  },
+  "v0.3.1": {
+    up: (document: any): v0_4 => {
+      const updated: v0_4 = document;
+      updated.version = v0_4_Version;
+
+      // Because we added module forces in this version
+      // add zero-initialized module forces to each path.
+      // Since we can't figure out module forces from here,
+      // just mark the paths as stale
+      for (const entry of Object.keys(updated.paths)) {
+        const path = updated.paths[entry];
+        // the trajectory can be null, just skip if so
+        if (path.trajectory == null) continue;
+        path.isTrajectoryStale = true;
+        for (const sample of path.trajectory) {
+          sample.moduleForcesX = [0.0, 0.0, 0.0, 0.0];
+          sample.moduleForcesY = [0.0, 0.0, 0.0, 0.0];
+        }
+      }
+
+      // Replace zero velocity and zero angular velocity constraints with max
+      // magnitude constraints
+      for (const entry of Object.keys(updated.paths)) {
+        const path = updated.paths[entry];
+        for (const constraint of path.constraints) {
+          if (constraint.type === "WptZeroVelocity") {
+            constraint.type = "MaxVelocity";
+            constraint.velocity = 0.0;
+          } else if (constraint.type === "ZeroAngularVelocity") {
+            constraint.type = "MaxAngularVelocity";
+            constraint.angular_velocity = 0.0;
+          }
+        }
+      }
+
+      return updated;
+    },
+    schema: v0_3_1_Schema
+  },
+  "v0.4": {
+    up: (document: any): v0_4 => document,
+    schema: v0_4_Schema
   }
+
   /**
    * For developers adding new document versions-Keep this comment at the end of the list.
    *

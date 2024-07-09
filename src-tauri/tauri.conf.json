@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "Choreo",
-    "version": "2024.1.3"
+    "version": "2024.2.3"
   },
   "tauri": {
     "allowlist": {
@@ -32,19 +32,27 @@
       "window": {
         "setTitle": true,
         "close": true
+      },
+      "os": {
+        "all": true
       }
     },
     "bundle": {
       "active": true,
-      "targets": ["deb", "nsis", "dmg"],
+      "targets": ["appimage", "deb", "nsis", "dmg"],
       "identifier": "org.sleipnirgroup",
+      "shortDescription": "Choreo",
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
         "icons/128x128@2x.png",
         "icons/icon.icns",
         "icons/icon.ico"
-      ]
+      ],
+      "macOS": {
+        "minimumSystemVersion": "13.3",
+        "signingIdentity": "-"
+      }
     },
     "security": {
       "csp": null
@@ -53,7 +61,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "Choreo v2024.1.3",
+        "title": "Choreo v2024.2.3",
         "width": 1200,
         "height": 800
       }

@@ -13,7 +13,7 @@ const DOT = 0.1;
 
 class FieldGrid extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  context!: React.ContextType<typeof DocumentManagerContext>;
+  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
   rootRef: React.RefObject<SVGElement> = React.createRef<SVGElement>();
 

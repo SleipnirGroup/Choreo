@@ -1,10 +1,10 @@
 import {
-  Dangerous,
   Explore,
   KeyboardDoubleArrowRight,
+  NearMe,
   PriorityHigh,
   StopCircleOutlined,
-  SyncDisabledOutlined,
+  SyncOutlined,
   Timeline
 } from "@mui/icons-material";
 import { toJS } from "mobx";
@@ -32,16 +32,12 @@ import { IHolonomicPathStore } from "./HolonomicPathStore";
       size_t fromIdx, const std::vector<InitialGuessPoint>& sgmtPoseGuess);
     void WptVelocityDirection(size_t idx, double angle);
     void WptVelocityMagnitude(size_t idx, double v);
-    void WptZeroVelocity(size_t idx);
     void WptVelocityPolar(size_t idx, double vr, double vtheta);
-    void WptZeroAngularVelocity(size_t idx);
     void SgmtVelocityDirection(size_t fromIdx, size_t toIdx, double angle,
                              bool includeWpts = true)
     // maximum
     void SgmtVelocityMagnitude(size_t fromIdx, size_t toIdx, double v,
                              bool includeWpts = true);
-     void SgmtZeroAngularVelocity(size_t fromIdx, size_t toIdx,
-                               bool includeWpts = true);
  */
 export type ConstraintPropertyDefinition = {
   name: string;
@@ -79,15 +75,6 @@ export const constraints = {
     wptScope: true,
     sgmtScope: false
   },
-  WptZeroVelocity: {
-    name: "Waypoint Zero Velocity",
-    shortName: "Wpt 0 Velo",
-    description: "Zero velocity at waypoint",
-    icon: <Dangerous></Dangerous>,
-    properties: {},
-    wptScope: true,
-    sgmtScope: false
-  },
   StopPoint: {
     name: "Stop Point",
     shortName: "Stop Point",
@@ -112,12 +99,18 @@ export const constraints = {
     wptScope: true,
     sgmtScope: true
   },
-  ZeroAngularVelocity: {
-    name: "Zero Angular Velocity",
-    shortName: "0 Ang Velo",
-    description: "Zero angular velocity throughout scope",
-    icon: <SyncDisabledOutlined></SyncDisabledOutlined>,
-    properties: {},
+  MaxAngularVelocity: {
+    name: "Max Angular Velocity",
+    shortName: "Max Ang Velo",
+    description: "Maximum Angular Velocity",
+    icon: <SyncOutlined />,
+    properties: {
+      angular_velocity: {
+        name: "Max Angular Velocity",
+        description: "Maximum Angular Velocity of robot chassis",
+        units: "rad/s"
+      }
+    },
     wptScope: true,
     sgmtScope: true
   },
@@ -128,6 +121,32 @@ export const constraints = {
     icon: <Timeline></Timeline>,
     properties: {},
     wptScope: false,
+    sgmtScope: true
+  },
+  PointAt: {
+    name: "Point At",
+    shortName: "Point At",
+    description: "Face a specified point",
+    icon: <NearMe />,
+    properties: {
+      x: {
+        name: "X",
+        description: "The x coordinate of the point the robot should face",
+        units: "m"
+      },
+      y: {
+        name: "Y",
+        description: "The y coordinate of the point the robot should face",
+        units: "m"
+      },
+      tolerance: {
+        name: "Heading Tolerance",
+        description:
+          "The allowable heading range relative to the direction to the point. Keep less than Pi.",
+        units: "rad"
+      }
+    },
+    wptScope: true,
     sgmtScope: true
   }
 };
@@ -177,7 +196,7 @@ export const ConstraintStore = types
         return false;
       }
       return (
-        self.uuid ==
+        self.uuid ===
         safeGetIdentifier(
           getRoot<IStateStore>(self).uiState.selectedSidebarItem
         )
@@ -255,18 +274,17 @@ export const ConstraintStore = types
       if (scope.length == 2) {
         if (startWaypoint === undefined || endWaypoint === undefined) {
           issueText.push("Constraint refers to missing waypoint(s)");
-        } else {
-          if (startWaypoint!.isInitialGuess || endWaypoint!.isInitialGuess) {
-            issueText.push("Cannot have initial guess point as endpoint");
-          }
+        } else if (
+          startWaypoint!.isInitialGuess ||
+          endWaypoint!.isInitialGuess
+        ) {
+          issueText.push("Cannot have initial guess point as endpoint");
         }
       } else if (scope.length == 1) {
         if (startWaypoint === undefined) {
           issueText.push("Constraint refers to missing waypoint");
-        } else {
-          if (startWaypoint!.isInitialGuess) {
-            issueText.push("Cannot constrain initial guess point");
-          }
+        } else if (startWaypoint!.isInitialGuess) {
+          issueText.push("Cannot constrain initial guess point");
         }
       } else if (scope.length == 0) {
         issueText.push("Scope not set");

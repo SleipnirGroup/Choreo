@@ -10,7 +10,7 @@ import ShapeLineIcon from "@mui/icons-material/ShapeLine";
 import { CircularProgress, Tooltip } from "@mui/material";
 import Box from "@mui/material/Box/Box";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
-import VisibilityPanel from "../config/VisibilityPanel";
+import ViewOptionsPanel from "../config/ViewOptionsPanel";
 import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel";
 import { IConstraintStore } from "../../document/ConstraintStore";
 import "react-toastify/dist/ReactToastify.min.css";
@@ -18,7 +18,9 @@ import { invoke } from "@tauri-apps/api";
 import { Close } from "@mui/icons-material";
 import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
 import CircularObstacleConfigPanel from "../config/CircularObstacleConfigPanel";
+import EventMarkerConfigPanel from "../config/eventmarker/EventMarkerConfigPanel";
 import WaypointVisibilityPanel from "../config/WaypointVisibilityPanel";
+import { IEventMarkerStore } from "../../document/EventMarkerStore";
 
 type Props = object;
 
@@ -26,22 +28,28 @@ type State = object;
 
 export class Field extends Component<Props, State> {
   static contextType = DocumentManagerContext;
-  context!: React.ContextType<typeof DocumentManagerContext>;
+  declare context: React.ContextType<typeof DocumentManagerContext>;
   render() {
     const selectedSidebar = this.context.model.uiState.selectedSidebarItem;
     const activePath = this.context.model.document.pathlist.activePath;
     const activePathUUID = this.context.model.document.pathlist.activePathUUID;
+    let indexIfWaypoint = -1;
+    if (selectedSidebar !== undefined && "heading" in selectedSidebar) {
+      indexIfWaypoint = activePath.waypoints.findIndex(
+        (point: IHolonomicWaypointStore) =>
+          point.uuid == (selectedSidebar as IHolonomicWaypointStore)?.uuid
+      );
+    }
+
     return (
       <div className={styles.Container}>
         <FieldOverlayRoot></FieldOverlayRoot>
         {selectedSidebar !== undefined &&
           "heading" in selectedSidebar &&
-          activePath.waypoints.find(
-            (point) =>
-              point.uuid == (selectedSidebar as IHolonomicWaypointStore)!.uuid
-          ) && (
+          indexIfWaypoint !== -1 && (
             <WaypointPanel
               waypoint={selectedSidebar as IHolonomicWaypointStore}
+              index={indexIfWaypoint}
             ></WaypointPanel>
           )}
         {selectedSidebar !== undefined &&
@@ -64,14 +72,24 @@ export class Field extends Component<Props, State> {
               obstacle={selectedSidebar as ICircularObstacleStore}
             ></CircularObstacleConfigPanel>
           )}
-        <VisibilityPanel></VisibilityPanel>
-        <WaypointVisibilityPanel></WaypointVisibilityPanel>
+        {selectedSidebar !== undefined &&
+          "offset" in selectedSidebar &&
+          activePath.eventMarkers.find(
+            (marker) =>
+              marker.uuid == (selectedSidebar as IEventMarkerStore)!.uuid
+          ) && (
+            <EventMarkerConfigPanel
+              marker={selectedSidebar as IEventMarkerStore}
+            ></EventMarkerConfigPanel>
+          )}
+        <ViewOptionsPanel />
+        <WaypointVisibilityPanel />
         <Tooltip
           disableInteractive
           placement="top-start"
           title={
             activePath.generating
-              ? "Cancel All (Ctrl-click)"
+              ? "Cancel All"
               : activePath.canGenerate()
                 ? "Generate Path"
                 : "Generate Path (needs 2 waypoints)"
@@ -109,9 +127,7 @@ export class Field extends Component<Props, State> {
                 }
               }}
               onClick={(event) => {
-                if (event.ctrlKey) {
-                  invoke("cancel");
-                }
+                invoke("cancel");
               }}
               disabled={activePath.canGenerate()}
             >
