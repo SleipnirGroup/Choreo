@@ -185,7 +185,7 @@ jobs:
     name: Upload release to PyPI
     runs-on: ubuntu-24.04
     needs: [build-python]
-    if: github.repository_owner == 'SleipnirGroup' && github.ref == 'refs/heads/main'
+    if: github.repository_owner == 'SleipnirGroup' && startsWith(github.ref, 'refs/tags/v')
     environment:
       name: pypi
       url: https://pypi.org/p/sleipnirgroup-choreolib
@@ -196,5 +196,6 @@ jobs:
         with:
           path: dist
           pattern: "Python"
+          merge-multiple: true
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
