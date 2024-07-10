@@ -34,6 +34,7 @@ async fn contains_build_gradle(dir: Option<&Path>) -> Result<bool, &'static str>
         },
     )
 }
+
 #[tauri::command]
 async fn open_file_dialog(app_handle: tauri::AppHandle) {
     let file_path = FileDialogBuilder::new()
@@ -468,6 +469,7 @@ fn solver_status_callback(traj: HolonomicTrajectory, handle: i64) {
         let _ = tx.send(ProgressUpdate { traj, handle });
     };
 }
+
 fn main() {
     let (tx, rx) = channel::<ProgressUpdate>();
     PROGRESS_SENDER_LOCK.get_or_init(move || tx);
