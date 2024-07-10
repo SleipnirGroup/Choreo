@@ -106,8 +106,8 @@ set(BUILD_EXAMPLES OFF)
 fetchcontent_declare(
     Sleipnir
     GIT_REPOSITORY https://github.com/SleipnirGroup/Sleipnir.git
-    # main on 2024-06-23
-    GIT_TAG 346ef361d306b60fa9cf8d96912c37cfaecf78b7
+    # main on 2024-07-09
+    GIT_TAG b6ffa2d4fdb99cab1bf79491f715a6a9a86633b5
     PATCH_COMMAND
         git apply ${CMAKE_CURRENT_SOURCE_DIR}/cmake/0001-Downgrade-to-C-20.patch
     UPDATE_DISCONNECTED 1
