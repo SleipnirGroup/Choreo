@@ -13,6 +13,7 @@ type Coordinates = {
   y: number;
 };
 const targetRadius = 0.1;
+const targetHeight = 0.2;
 const outlineWidth = 0.03;
 class OverlayWaypoint extends Component<Props, State> {
   static contextType = DocumentManagerContext;
@@ -220,6 +221,10 @@ class OverlayWaypoint extends Component<Props, State> {
     const waypoint = this.props.waypoint;
     const boxColorStr = this.getBoxColor();
     const robotConfig = this.context.model.document.robotConfig;
+
+    const headingPointSideLength = targetHeight * Math.min(robotConfig.bumperLength, robotConfig.bumperWidth)
+    const headingPointHeight = (Math.sqrt(3) * headingPointSideLength) / 2
+
     return (
       <g ref={this.rootRef}>
         <g
@@ -237,18 +242,18 @@ class OverlayWaypoint extends Component<Props, State> {
             ></this.BumperBox>
           }
           {/* Heading drag point */}
-          <circle
-            cx={robotConfig.bumperLength / 2}
-            cy={0}
-            r={
-              targetRadius *
-              Math.min(robotConfig.bumperLength, robotConfig.bumperWidth)
-            }
+          <polygon
+            transform={`translate(${robotConfig.bumperLength / 2},0)`}
             id={this.appendIndexID("rotateTarget")}
             fill={boxColorStr}
             strokeWidth={outlineWidth}
             stroke="black"
-          ></circle>
+            points={
+              `${-headingPointHeight / 2},${headingPointSideLength / 2} ` +
+              `${-headingPointHeight / 2},${-headingPointSideLength / 2} ` +
+              `${headingPointHeight / 2},${0} `
+            }
+          ></polygon>
 
           {/* Center Drag Target */}
           {(() => {
