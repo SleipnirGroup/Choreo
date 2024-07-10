@@ -70,7 +70,10 @@ def remove_protobuf_support():
     modify_file(
         "CMakeLists.txt",
         lambda lines: [
-            line for line in lines if line != "find_package(Protobuf REQUIRED)"
+            line
+            for line in lines
+            if line != "find_package(Protobuf REQUIRED)"
+            and line != "find_program(PROTOC_COMPILER protoc REQUIRED)"
         ],
     )
     modify_file(
