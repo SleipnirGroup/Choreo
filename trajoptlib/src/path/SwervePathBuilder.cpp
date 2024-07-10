@@ -1,9 +1,30 @@
 // Copyright (c) TrajoptLib contributors
 
+#if __GNUC__
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif
+
 #include "trajopt/path/SwervePathBuilder.hpp"
 
+#include <stdint.h>
+
+#include <cassert>
+#include <cmath>
 #include <utility>
 
+#include <frc/MathUtil.h>
+#include <frc/geometry/Translation2d.h>
+#include <frc/kinematics/SwerveDriveKinematics.h>
+#include <frc/trajectory/Trajectory.h>
+#include <frc/trajectory/TrajectoryGenerator.h>
+#include <frc/trajectory/TrajectoryParameterizer.h>
+#include <wpi/array.h>
+
+#include "spline/CubicHermitePoseSplineHolonomic.hpp"
+#include "spline/SplineParameterizer.hpp"
+#include "spline/SplineUtil.hpp"
+#include "trajopt/constraint/AngularVelocityMaxMagnitudeConstraint.hpp"
+#include "trajopt/constraint/Constraint.hpp"
 #include "trajopt/constraint/LinePointConstraint.hpp"
 #include "trajopt/constraint/PointLineConstraint.hpp"
 #include "trajopt/constraint/PointPointConstraint.hpp"
@@ -13,6 +34,8 @@
 #include "trajopt/solution/SwerveSolution.hpp"
 #include "trajopt/util/Cancellation.hpp"
 #include "trajopt/util/GenerateLinearInitialGuess.hpp"
+#include "trajopt/util/GenerateSplineInitialGuess.hpp"
+#include "trajopt/util/TrajoptUtil.hpp"
 
 namespace trajopt {
 
@@ -188,9 +211,19 @@ const std::vector<size_t>& SwervePathBuilder::GetControlIntervalCounts() const {
   return controlIntervalCounts;
 }
 
+const std::vector<size_t> SwervePathBuilder::CalculateControlIntervalCounts()
+    const {
+  return CalculateControlIntervalCountsWithDt(path, initialGuessPoints, 0.1);
+}
+
 SwerveSolution SwervePathBuilder::CalculateInitialGuess() const {
   return GenerateLinearInitialGuess<SwerveSolution>(initialGuessPoints,
                                                     controlIntervalCounts);
+}
+
+SwerveSolution SwervePathBuilder::CalculateSplineInitialGuess() const {
+  return CalculateSplineInitialGuessWithKinematicsAndConstraints(
+      path, initialGuessPoints, controlIntervalCounts);
 }
 
 void SwervePathBuilder::AddIntermediateCallback(

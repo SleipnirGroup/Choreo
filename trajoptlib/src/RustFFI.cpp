@@ -241,6 +241,48 @@ void SwervePathBuilder::add_progress_callback(
       });
 }
 
+HolonomicTrajectory _convert_sol_to_holonomic_trajectory(
+    const trajopt::SwerveSolution& solution) {
+  trajopt::HolonomicTrajectory cppTrajectory{solution};
+
+  rust::Vec<HolonomicTrajectorySample> rustSamples;
+  for (const auto& cppSample : cppTrajectory.samples) {
+    rust::Vec<double> fx;
+    std::copy(cppSample.moduleForcesX.begin(), cppSample.moduleForcesX.end(),
+              std::back_inserter(fx));
+
+    rust::Vec<double> fy;
+    std::copy(cppSample.moduleForcesY.begin(), cppSample.moduleForcesY.end(),
+              std::back_inserter(fy));
+
+    rustSamples.push_back(HolonomicTrajectorySample{
+        cppSample.timestamp, cppSample.x, cppSample.y, cppSample.heading,
+        cppSample.velocityX, cppSample.velocityY, cppSample.angularVelocity,
+        std::move(fx), std::move(fy)});
+  }
+  return HolonomicTrajectory{rustSamples};
+}
+
+HolonomicTrajectory SwervePathBuilder::calculate_linear_initial_guess() const {
+  return _convert_sol_to_holonomic_trajectory(
+      path_builder.CalculateInitialGuess());
+}
+
+HolonomicTrajectory SwervePathBuilder::calculate_spline_initial_guess() const {
+  return _convert_sol_to_holonomic_trajectory(
+      path_builder.CalculateSplineInitialGuess());
+}
+
+rust::Vec<rust::usize> SwervePathBuilder::calculate_control_interval_counts()
+    const {
+  auto cppCounts = path_builder.CalculateControlIntervalCounts();
+  rust::Vec<rust::usize> rustCounts;
+  for (const auto count : cppCounts) {
+    rustCounts.emplace_back(count);
+  }
+  return rustCounts;
+}
+
 std::unique_ptr<SwervePathBuilder> swerve_path_builder_new() {
   return std::make_unique<SwervePathBuilder>();
 }
