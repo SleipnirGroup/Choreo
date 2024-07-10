@@ -102,9 +102,14 @@ class ChoreoTrajectoryState:
             lerp(self.velocity_x, end_value.velocity_x, scale),
             lerp(self.velocity_y, end_value.velocity_y, scale),
             lerp(self.angular_velocity, end_value.angular_velocity, scale),
-            # TODO: Interpolate module force lists
-            [],
-            [],
+            [
+                lerp(self.module_forces_x[i], end_value.module_forces_x[i], scale)
+                for i in range(len(self.module_forces_x))
+            ],
+            [
+                lerp(self.module_forces_y[i], end_value.module_forces_y[i], scale)
+                for i in range(len(self.module_forces_y))
+            ],
         )
 
     def flipped(self):
@@ -119,6 +124,8 @@ class ChoreoTrajectoryState:
             -self.velocity_x,
             self.velocity_y,
             -self.angular_velocity,
+            [-x for x in self.module_forces_x],
+            self.module_forces_y,
         )
 
 

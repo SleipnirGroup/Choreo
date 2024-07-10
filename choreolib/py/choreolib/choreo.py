@@ -23,9 +23,8 @@ def get_trajectory(traj_name: str) -> ChoreoTrajectory:
                     float(sample["velocityX"]),
                     float(sample["velocityY"]),
                     float(sample["angularVelocity"]),
-                    # TODO: Deserialize these from a modern .traj file
-                    [],
-                    [],
+                    [float(x) for x in sample["moduleForcesX"]],
+                    [float(y) for y in sample["moduleForcesY"]],
                 )
             )
 
