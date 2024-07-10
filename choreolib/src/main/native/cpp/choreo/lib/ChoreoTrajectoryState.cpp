@@ -2,12 +2,12 @@
 
 #include "choreo/lib/ChoreoTrajectoryState.h"
 
+#include <algorithm>
+#include <numbers>
+
 #include <frc/geometry/Twist2d.h>
 #include <wpi/MathExtras.h>
 #include <wpi/json.h>
-
-#include <algorithm>
-#include <numbers>
 
 using namespace choreolib;
 

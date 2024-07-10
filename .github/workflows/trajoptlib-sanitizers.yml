@@ -1,0 +1,39 @@
+name: TrajoptLib / Sanitizers
+
+on: [pull_request, push]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - sanitizer-name: asan
+            cmake-args: "-DCMAKE_BUILD_TYPE=Asan"
+          - sanitizer-name: tsan
+            cmake-args: "-DCMAKE_BUILD_TYPE=Tsan"
+          - sanitizer-name: ubsan
+            cmake-args: "-DCMAKE_BUILD_TYPE=Ubsan"
+
+    name: ${{ matrix.sanitizer-name }}
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make GCC 14 the default toolchain (Linux)
+        run: |
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
+
+      - run: cmake -B build -S . -DBUILD_EXAMPLES=ON ${{ matrix.cmake-args }}
+        working-directory: trajoptlib
+      - run: cmake --build build --config RelWithDebInfo --parallel $(nproc)
+        working-directory: trajoptlib
+      - run: ctest --test-dir build -C RelWithDebInfo --output-on-failure
+        working-directory: trajoptlib

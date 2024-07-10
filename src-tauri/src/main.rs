@@ -11,9 +11,7 @@ use tauri::{
     api::{dialog::blocking::FileDialogBuilder, file},
     Manager,
 };
-use trajoptlib::{
-    HolonomicTrajectory, InitialGuessPoint, SwerveDrivetrain, SwerveModule, SwervePathBuilder,
-};
+use trajoptlib::{HolonomicTrajectory, Pose2d, SwerveDrivetrain, SwerveModule, SwervePathBuilder};
 
 #[derive(Clone, serde::Serialize, Debug)]
 struct OpenFileEventPayload<'a> {
@@ -268,8 +266,7 @@ fn fix_scope(idx: usize, removed_idxs: &Vec<usize>) -> usize {
 
 #[tauri::command]
 async fn cancel() {
-    let mut builder = SwervePathBuilder::new();
-    builder.cancel_all();
+    trajoptlib::cancel_all();
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
@@ -292,11 +289,11 @@ fn configure_path_builder(
     let mut wpt_cnt: usize = 0;
     let mut rm: Vec<usize> = Vec::new();
     let mut control_interval_counts: Vec<usize> = Vec::new();
-    let mut guess_points_after_waypoint: Vec<InitialGuessPoint> = Vec::new();
+    let mut guess_points_after_waypoint: Vec<Pose2d> = Vec::new();
     for i in 0..path.len() {
         let wpt: &ChoreoWaypoint = &path[i];
         if wpt.isInitialGuess {
-            let guess_point: InitialGuessPoint = InitialGuessPoint {
+            let guess_point = Pose2d {
                 x: wpt.x,
                 y: wpt.y,
                 heading: wpt.heading,
@@ -340,7 +337,7 @@ fn configure_path_builder(
             Constraints::StopPoint { scope } => {
                 if let ChoreoConstraintScope::Waypoint(idx) = scope {
                     path_builder.wpt_linear_velocity_max_magnitude(fix_scope(idx[0], &rm), 0.0f64);
-                    path_builder.wpt_angular_velocity(fix_scope(idx[0], &rm), 0.0);
+                    path_builder.wpt_angular_velocity_max_magnitude(fix_scope(idx[0], &rm), 0.0f64);
                 }
             }
             Constraints::MaxVelocity { scope, velocity } => match scope {
@@ -357,35 +354,14 @@ fn configure_path_builder(
                 scope,
                 angular_velocity,
             } => match scope {
-                ChoreoConstraintScope::Waypoint(idx) => {
-                    // If the angular velocity max magnitude is zero, use an
-                    // angular velocity equality constraint instead
-                    if *angular_velocity == 0.0f64 {
-                        path_builder.wpt_angular_velocity(fix_scope(idx[0], &rm), 0.0f64)
-                    } else {
-                        path_builder.wpt_angular_velocity_max_magnitude(
-                            fix_scope(idx[0], &rm),
-                            *angular_velocity,
-                        )
-                    }
-                }
-                ChoreoConstraintScope::Segment(idx) => {
-                    // If the angular velocity max magnitude is zero, use an
-                    // angular velocity equality constraint instead
-                    if *angular_velocity == 0.0f64 {
-                        path_builder.sgmt_angular_velocity(
-                            fix_scope(idx[0], &rm),
-                            fix_scope(idx[1], &rm),
-                            0.0f64,
-                        )
-                    } else {
-                        path_builder.sgmt_angular_velocity_max_magnitude(
-                            fix_scope(idx[0], &rm),
-                            fix_scope(idx[1], &rm),
-                            *angular_velocity,
-                        )
-                    }
-                }
+                ChoreoConstraintScope::Waypoint(idx) => path_builder
+                    .wpt_angular_velocity_max_magnitude(fix_scope(idx[0], &rm), *angular_velocity),
+                ChoreoConstraintScope::Segment(idx) => path_builder
+                    .sgmt_angular_velocity_max_magnitude(
+                        fix_scope(idx[0], &rm),
+                        fix_scope(idx[1], &rm),
+                        *angular_velocity,
+                    ),
             },
             Constraints::StraightLine { scope } => {
                 if let ChoreoConstraintScope::Segment(idx) = scope {

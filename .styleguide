@@ -1,7 +1,6 @@
 cppHeaderFileInclude {
   \.h$
   \.hpp$
-  \.inc$
 }
 
 cppSrcFileInclude {
@@ -16,9 +15,10 @@ modifiableFileExclude {
 }
 
 includeOtherLibs {
-  ^Eigen/
   ^fmt/
-  ^casadi/
-  ^sleipnir/
+  ^frc/
+  ^frc2/
   ^gtest/
+  ^units/
+  ^wpi/
 }

@@ -2,17 +2,17 @@
 
 #include "choreo/lib/Choreo.h"
 
+#include <filesystem>
+#include <numbers>
+#include <regex>
+
+#include <fmt/format.h>
 #include <frc/DriverStation.h>
 #include <frc/Filesystem.h>
 #include <frc/Timer.h>
 #include <frc2/command/FunctionalCommand.h>
 #include <wpi/MemoryBuffer.h>
 #include <wpi/json.h>
-
-#include <filesystem>
-#include <numbers>
-#include <regex>
-#include <vector>
 
 #include "choreo/lib/ChoreoSwerveCommand.h"
 

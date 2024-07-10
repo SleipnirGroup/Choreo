@@ -23,14 +23,21 @@ dist-ssr
 *.sln
 *.sw?
 
-# Rust target
+# Choreo
 src-tauri/target
+target
 
-# Built trajoptlib dylibs
-src-tauri/*.dll
-src-tauri/lib*.dylib
-src-tauri/lib*.so
-src-tauri/lib*.so.*
+# TrajoptLib
+trajoptlib/build*
+trajoptlib/target
+trajoptlib/Cargo.lock
+
+# Python
+*.egg-info/
+.eggs/
+.pytest_cache/
+__pycache__/
+dist/
 
 # clangd
 .cache

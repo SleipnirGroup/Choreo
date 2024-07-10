@@ -1,0 +1,58 @@
+name: TrajoptLib / Build C++
+
+on: [pull_request, push]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - artifact-name: Windows x86_64
+            # FIXME: Tests give "Exit code 0xc0000135" for missing DLLs
+            cmake-args: "-DCMAKE_GENERATOR_PLATFORM=x64 -DBUILD_TESTING=OFF"
+            os: windows-2022
+          - artifact-name: Windows aarch64
+            # FIXME: Tests give "Exit code 0xc0000135" for missing DLLs
+            cmake-args: "-DCMAKE_GENERATOR_PLATFORM=ARM64 -DBUILD_TESTING=OFF"
+            os: windows-2022
+          - artifact-name: macOS universal
+            cmake-args: -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+            os: macOS-14
+          - artifact-name: Linux x86_64
+            cmake-args:
+            os: ubuntu-24.04
+
+    name: "${{ matrix.artifact-name }}"
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make GCC 14 the default toolchain (Linux)
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
+
+      - run: sudo xcode-select -switch /Applications/Xcode_15.3.app
+        if: startsWith(matrix.os, 'macOS')
+
+      - run: cmake -B build -S . -DBUILD_EXAMPLES=ON ${{ matrix.cmake-args }}
+        working-directory: trajoptlib
+      - run: cmake --build build --config RelWithDebInfo --parallel 4
+        working-directory: trajoptlib
+      - run: ctest --test-dir build -C RelWithDebInfo --output-on-failure
+        working-directory: trajoptlib
+      - run: cmake --install build --config RelWithDebInfo --prefix pkg
+        working-directory: trajoptlib
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: trajoptlib/pkg
