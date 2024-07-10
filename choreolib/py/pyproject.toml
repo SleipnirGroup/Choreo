@@ -1,0 +1,32 @@
+[project]
+name = "sleipnirgroup-choreolib"
+description = "Robot-side library for parsing and following Choreo paths."
+dynamic = [ "version" ]
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [ "robotpy-wpimath" ]
+
+  [project.license]
+  text = "BSD-3-Clause"
+
+  [[project.authors]]
+  name = "Choreo Development Team"
+
+  [project.urls]
+  Documentation = "https://sleipnirgroup.github.io/Choreo/"
+
+[build-system]
+requires = [
+  "robotpy-wpimath",
+  "setuptools>=61.0",
+  "setuptools-git-versioning"
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools-git-versioning]
+enabled = true
+version_callback = "choreolib.version:get_version"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = [ "choreolib/test" ]

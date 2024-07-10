@@ -32,6 +32,13 @@ trajoptlib/build*
 trajoptlib/target
 trajoptlib/Cargo.lock
 
+# Python
+*.egg-info/
+.eggs/
+.pytest_cache/
+__pycache__/
+dist/
+
 # clangd
 .cache
 compile_commands.json
