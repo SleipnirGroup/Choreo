@@ -129,6 +129,17 @@ def main():
         check=True,
     )
 
+    # Compile wpiutil as utf-8
+    subprocess.run(
+        [
+            "git",
+            "apply",
+            "--ignore-whitespace",
+            os.path.join(sys.argv[1], "cmake/allwpilib-compile-wpiutil-as-utf-8.patch"),
+        ],
+        check=True,
+    )
+
 
 if __name__ == "__main__":
     main()
