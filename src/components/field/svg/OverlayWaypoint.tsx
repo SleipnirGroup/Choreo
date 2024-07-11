@@ -12,8 +12,19 @@ type Coordinates = {
   x: number;
   y: number;
 };
+
 const targetRadius = 0.1;
-const targetHeight = 0.2;
+
+// triangle area = circle area
+// 1/2 bh = πr²
+// 1/2 (l)(√3/2 l) = πr²
+// √3/4 l² = πr²
+// l² = 4πr²/√3
+// l = √(4πr²/√3)
+// l = 2r√(π/√3)
+// l = 2r√(π√3/3)
+const targetHeight = 2 * targetRadius * Math.sqrt(Math.PI * Math.sqrt(3) / 3);
+
 const outlineWidth = 0.03;
 class OverlayWaypoint extends Component<Props, State> {
   static contextType = DocumentManagerContext;
