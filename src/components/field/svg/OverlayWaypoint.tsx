@@ -15,15 +15,22 @@ type Coordinates = {
 
 const targetRadius = 0.1;
 
-// triangle area = circle area
-// 1/2 bh = πr²
-// 1/2 (l)(√3/2 l) = πr²
-// √3/4 l² = πr²
-// l² = 4πr²/√3
-// l = √(4πr²/√3)
-// l = 2r√(π/√3)
-// l = 2r√(π√3/3)
-const targetHeight = 2 * targetRadius * Math.sqrt(Math.PI * Math.sqrt(3) / 3);
+// Find the side length that makes an equilateral triangle have same area as a
+// circle.
+//
+//   triangle area = circle area
+//   1/2 bh = πr²
+//
+// An equilateral triangle with side length l has a height of √3/2 l.
+//
+//   1/2 (l)(√3/2 l) = πr²
+//   √3/4 l² = πr²
+//   l² = 4πr²/√3
+//   l = √(4πr²/√3)
+//   l = 2r√(π/√3)
+//   l = 2r√(π√3/3)
+const targetSideLength =
+  2 * targetRadius * Math.sqrt((Math.PI * Math.sqrt(3)) / 3);
 
 const outlineWidth = 0.03;
 class OverlayWaypoint extends Component<Props, State> {
@@ -234,9 +241,9 @@ class OverlayWaypoint extends Component<Props, State> {
     const robotConfig = this.context.model.document.robotConfig;
 
     const headingPointSideLength =
-      targetHeight *
+      targetSideLength *
       Math.min(robotConfig.bumperLength, robotConfig.bumperWidth);
-    const headingPointHeight = (Math.sqrt(3) * headingPointSideLength) / 2;
+    const headingPointHeight = (Math.sqrt(3) / 2) * headingPointSideLength;
 
     return (
       <g ref={this.rootRef}>
