@@ -15,8 +15,8 @@ type Coordinates = {
 
 const targetRadius = 0.1;
 
-// Find the side length that makes an equilateral triangle have same area as a
-// circle.
+// Find the side length that makes an equilateral triangle have the same area as
+// a circle.
 //
 //   triangle area = circle area
 //   1/2 bh = πr²
