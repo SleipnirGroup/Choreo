@@ -222,8 +222,10 @@ class OverlayWaypoint extends Component<Props, State> {
     const boxColorStr = this.getBoxColor();
     const robotConfig = this.context.model.document.robotConfig;
 
-    const headingPointSideLength = targetHeight * Math.min(robotConfig.bumperLength, robotConfig.bumperWidth)
-    const headingPointHeight = (Math.sqrt(3) * headingPointSideLength) / 2
+    const headingPointSideLength =
+      targetHeight *
+      Math.min(robotConfig.bumperLength, robotConfig.bumperWidth);
+    const headingPointHeight = (Math.sqrt(3) * headingPointSideLength) / 2;
 
     return (
       <g ref={this.rootRef}>
