@@ -164,6 +164,12 @@ mod ffi {
 
         fn swerve_path_builder_new() -> UniquePtr<SwervePathBuilder>;
 
+        fn calculate_linear_initial_guess(self: &SwervePathBuilder) -> HolonomicTrajectory;
+
+        fn calculate_spline_initial_guess(self: &SwervePathBuilder) -> HolonomicTrajectory;
+
+        fn calculate_control_interval_counts(self: &SwervePathBuilder) -> Vec<usize>;
+
         fn cancel_all();
     }
 }
@@ -423,6 +429,18 @@ impl SwervePathBuilder {
     ///
     pub fn add_progress_callback(&mut self, callback: fn(HolonomicTrajectory, i64)) {
         crate::ffi::SwervePathBuilder::add_progress_callback(self.path_builder.pin_mut(), callback);
+    }
+
+    pub fn calculate_linear_initial_guess(&self) -> HolonomicTrajectory {
+        self.path_builder.calculate_linear_initial_guess()
+    }
+
+    pub fn calculate_spline_initial_guess(&self) -> HolonomicTrajectory {
+        self.path_builder.calculate_spline_initial_guess()
+    }
+
+    pub fn calculate_control_interval_counts(&self) -> Vec<usize> {
+        self.path_builder.calculate_control_interval_counts()
     }
 }
 

@@ -24,6 +24,8 @@ fn main() {
         .include("src")
         .include(format!("{}/include", cmake_dest.display()))
         .include(format!("{}/include/eigen3", cmake_dest.display()))
+        .include(format!("{}/include/wpimath", cmake_dest.display()))
+        .include(format!("{}/include/wpiutil", cmake_dest.display()))
         .std("c++20");
 
     if cfg!(target_os = "windows") {
@@ -44,6 +46,8 @@ fn main() {
     println!("cargo:rustc-link-lib=TrajoptLib");
     println!("cargo:rustc-link-lib=Sleipnir");
     println!("cargo:rustc-link-lib=fmt");
+    println!("cargo:rustc-link-lib=wpimath");
+    println!("cargo:rustc-link-lib=wpiutil");
 
     println!("cargo:rerun-if-changed=src/RustFFI.hpp");
     println!("cargo:rerun-if-changed=src/RustFFI.cpp");

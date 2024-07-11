@@ -277,16 +277,14 @@ struct ProgressUpdate {
 
 #[allow(non_snake_case)]
 #[tauri::command]
-async fn generate_trajectory(
+fn configure_path_builder(
     _app_handle: tauri::AppHandle,
     path: Vec<ChoreoWaypoint>,
     config: ChoreoRobotConfig,
     constraints: Vec<Constraints>,
     circleObstacles: Vec<CircleObstacle>,
     polygonObstacles: Vec<PolygonObstacle>,
-    // The handle referring to this path for the solver state callback
-    handle: i64,
-) -> Result<HolonomicTrajectory, String> {
+) -> SwervePathBuilder {
     let mut path_builder = SwervePathBuilder::new();
     let mut wpt_cnt: usize = 0;
     let mut rm: Vec<usize> = Vec::new();
@@ -454,6 +452,51 @@ async fn generate_trajectory(
         path_builder.sgmt_polygon_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
     }
     path_builder.set_drivetrain(&drivetrain);
+
+    path_builder
+}
+
+#[allow(non_snake_case)]
+#[tauri::command]
+fn calculate_interval_counts(
+    _app_handle: tauri::AppHandle,
+    path: Vec<ChoreoWaypoint>,
+    config: ChoreoRobotConfig,
+    constraints: Vec<Constraints>,
+    circleObstacles: Vec<CircleObstacle>,
+    polygonObstacles: Vec<PolygonObstacle>,
+) -> Vec<usize> {
+    let path_builder = configure_path_builder(
+        _app_handle,
+        path,
+        config,
+        constraints,
+        circleObstacles,
+        polygonObstacles,
+    );
+    path_builder.calculate_control_interval_counts()
+}
+
+#[allow(non_snake_case)]
+#[tauri::command]
+async fn generate_trajectory(
+    _app_handle: tauri::AppHandle,
+    path: Vec<ChoreoWaypoint>,
+    config: ChoreoRobotConfig,
+    constraints: Vec<Constraints>,
+    circleObstacles: Vec<CircleObstacle>,
+    polygonObstacles: Vec<PolygonObstacle>,
+    // The handle referring to this path for the solver state callback
+    handle: i64,
+) -> Result<HolonomicTrajectory, String> {
+    let mut path_builder = configure_path_builder(
+        _app_handle,
+        path,
+        config,
+        constraints,
+        circleObstacles,
+        polygonObstacles,
+    );
     path_builder.generate(true, handle)
 }
 
@@ -486,6 +529,7 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             generate_trajectory,
+            calculate_interval_counts,
             cancel,
             open_file_dialog,
             file_event_payload_from_dir,

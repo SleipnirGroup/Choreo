@@ -18,6 +18,9 @@ namespace trajopt {
  */
 class TRAJOPT_DLLEXPORT LinearVelocityMaxMagnitudeConstraint {
  public:
+  /// The maximum linear velocity magnitude.
+  double m_maxMagnitude;
+
   /**
    * Constructs a LinearVelocityMaxMagnitudeConstraint.
    *
@@ -53,9 +56,6 @@ class TRAJOPT_DLLEXPORT LinearVelocityMaxMagnitudeConstraint {
                         m_maxMagnitude * m_maxMagnitude);
     }
   }
-
- private:
-  double m_maxMagnitude;
 };
 
 }  // namespace trajopt

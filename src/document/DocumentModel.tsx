@@ -98,19 +98,32 @@ const StateStore = types
               }
             }
           });
-          pathStore.setGenerating(true);
-          // Capture the timestamps of the waypoints that were actually sent to the solver
-          const waypointTimestamps = pathStore.waypointTimestamps();
-          console.log(waypointTimestamps);
-          const stopPoints = pathStore.stopPoints();
-          generatedWaypoints = pathStore.waypoints.map((point, idx) => ({
-            timestamp: 0,
-            isStopPoint: stopPoints.includes(idx),
-            ...point.asSavedWaypoint()
-          }));
-          pathStore.eventMarkers.forEach((m) => m.updateTargetIndex());
           resolve(pathStore);
         })
+          .then(() => {
+            return invoke("calculate_interval_counts", {
+              path: pathStore.waypoints,
+              config: self.document.robotConfig.asSolverRobotConfig(),
+              constraints: pathStore.asSolverPath().constraints,
+              circleObstacles: pathStore.asSolverPath().circleObstacles,
+              polygonObstacles: []
+            }).then((result: unknown | number[]) => {
+              pathStore.setControlIntervalCounts(result as number[]);
+            });
+          })
+          .then(() => {
+            pathStore.setGenerating(true);
+            // Capture the timestamps of the waypoints that were actually sent to the solver
+            const waypointTimestamps = pathStore.waypointTimestamps();
+            console.log(waypointTimestamps);
+            const stopPoints = pathStore.stopPoints();
+            generatedWaypoints = pathStore.waypoints.map((point, idx) => ({
+              timestamp: 0,
+              isStopPoint: stopPoints.includes(idx),
+              ...point.asSavedWaypoint()
+            }));
+            pathStore.eventMarkers.forEach((m) => m.updateTargetIndex());
+          })
           .then(
             () => {
               const handle = pathStore.uuid

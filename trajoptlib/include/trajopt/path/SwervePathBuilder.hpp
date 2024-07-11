@@ -9,6 +9,8 @@
 #include <functional>
 #include <vector>
 
+#include <frc/trajectory/Trajectory.h>
+
 #include "trajopt/constraint/Constraint.hpp"
 #include "trajopt/drivetrain/SwerveDrivetrain.hpp"
 #include "trajopt/geometry/Pose2.hpp"
@@ -163,12 +165,28 @@ class TRAJOPT_DLLEXPORT SwervePathBuilder {
   const std::vector<size_t>& GetControlIntervalCounts() const;
 
   /**
+   * Calculate a best guess of control interval counts
+   *
+   * @return the vector of best guess control interval counts
+   */
+  const std::vector<size_t> CalculateControlIntervalCounts() const;
+
+  /**
    * Calculate a discrete, linear initial guess of the x, y, and heading
    * of the robot that goes through each segment.
    *
    * @return the initial guess, as a solution
    */
   SwerveSolution CalculateInitialGuess() const;
+
+  /**
+   * Calculate a discrete, spline initial guess of the x, y, and heading
+   * of the robot that goes through each segment with some kinematics
+   *  and considering some path constraints.
+   *
+   * @return the initial guess, as a solution
+   */
+  SwerveSolution CalculateSplineInitialGuess() const;
 
   /**
    * Add a callback to retrieve the state of the solver as a SwerveSolution.

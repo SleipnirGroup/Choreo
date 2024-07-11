@@ -1,0 +1,12 @@
+diff --git a/cmake/modules/CompileWarnings.cmake b/cmake/modules/CompileWarnings.cmake
+index 5de103201..78a5c3009 100644
+--- a/cmake/modules/CompileWarnings.cmake
++++ b/cmake/modules/CompileWarnings.cmake
+@@ -5,6 +5,7 @@ macro(wpilib_target_warnings target)
+             -pedantic
+             -Wextra
+             -Wno-unused-parameter
++            -Wno-psabi
+             ${WPILIB_TARGET_WARNINGS}
+         )
+         if(NOT NO_WERROR)
