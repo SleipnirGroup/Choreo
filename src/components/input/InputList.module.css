@@ -38,6 +38,8 @@
   border-bottom: solid 1px;
   text-align: right;
 }
+
+
 .Number:disabled {
   border-bottom: 1px solid var(--disabled-color);
   color: transparent;
@@ -46,6 +48,11 @@
 .Number:disabled.ShowWhenDisabled {
   color: var(--disabled-color);
 }
+
+.Number.Invalid {
+  border-bottom: 2px solid red;
+}
+
 .Suffix {
   min-width: max-content;
   text-align: left;

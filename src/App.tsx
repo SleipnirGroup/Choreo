@@ -6,8 +6,17 @@ import { observer } from "mobx-react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Body from "./Body";
+import { ExpressionStore } from "./document/ExpressionStore";
+import {parse} from "mathjs";
+import ExpressionInput from "./components/input/ExpressionInput";
+import InputList from "./components/input/InputList";
+import Input from "./components/input/Input";
 
 function App() {
+  const expression = ExpressionStore.create({
+    expr: parse("0 m"),
+    defaultUnit: "m"
+  });
   const buttonOverrides = {
     // Name of the slot
     root: ({ ownerState, theme }) => ({
@@ -51,6 +60,17 @@ function App() {
   return (
     <CssBaseline>
       <ThemeProvider theme={createTheme(themeOptions)}>
+        <div style={{backgroundColor:"black"}}>
+        <InputList>
+        <ExpressionInput number={expression} title={"Expression"} suffix={""} enabled={true} setEnabled={function (value: boolean): void {
+          } }></ExpressionInput>
+        <ExpressionInput number={expression} title={"Dependent"} suffix={""} enabled={false} setEnabled={function (value: boolean): void {
+          } }></ExpressionInput>
+          <Input title={"Original"} suffix={"m"} enabled={false} number={0} setNumber={function (newNumber: number): void {
+            } } setEnabled={function (value: boolean): void {
+            } }></Input>
+        </InputList>
+</div>
         <Body></Body>
       </ThemeProvider>
     </CssBaseline>
