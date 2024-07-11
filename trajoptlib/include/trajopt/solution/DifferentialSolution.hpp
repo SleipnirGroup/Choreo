@@ -27,10 +27,10 @@ struct TRAJOPT_DLLEXPORT DifferentialSolution {
   /// Heading sine.
   std::vector<double> thetasin;
 
-  /// The x velocities.
+  /// The left velocities.
   std::vector<double> vL;
 
-  /// The y velocities.
+  /// The right velocities.
   std::vector<double> vR;
 
   /// The torque of the left driverail wheels.
