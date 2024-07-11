@@ -1,7 +1,6 @@
 # TrajoptLib
 
 ![Build](https://github.com/SleipnirGroup/Choreo/actions/workflows/trajoptlib-cpp.yml/badge.svg)
-[![Discord](https://img.shields.io/discord/975739302933856277?color=%23738ADB&label=Join%20our%20Discord&logo=discord&logoColor=white)](https://discord.gg/ad2EEZZwsS)
 
 This library is used to generate time-optimal trajectories for FRC robots.
 
