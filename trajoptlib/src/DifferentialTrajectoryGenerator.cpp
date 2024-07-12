@@ -6,31 +6,10 @@
 
 #include "trajopt/geometry/Rotation2.hpp"
 #include "trajopt/solution/DifferentialSolution.hpp"
-#include "trajopt/util/Cancellation.hpp"
 #include "trajopt/util/TrajoptUtil.hpp"
 #include "trajopt/util/expected"
 
 namespace trajopt {
-
-inline std::vector<double> RowSolutionValue(
-    std::vector<sleipnir::Variable>& rowVector) {
-  std::vector<double> valueRowVector;
-  valueRowVector.reserve(rowVector.size());
-  for (auto& expression : rowVector) {
-    valueRowVector.push_back(expression.Value());
-  }
-  return valueRowVector;
-}
-
-inline std::vector<std::vector<double>> MatrixSolutionValue(
-    std::vector<std::vector<sleipnir::Variable>>& matrix) {
-  std::vector<std::vector<double>> valueMatrix;
-  valueMatrix.reserve(matrix.size());
-  for (auto& row : matrix) {
-    valueMatrix.push_back(RowSolutionValue(row));
-  }
-  return valueMatrix;
-}
 
 DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     DifferentialPathBuilder pathbuilder)
@@ -50,14 +29,14 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
             x.at(index), y.at(index), {thetacos.at(index), thetasin.at(index)}};
         Translation2v linearVelocity{(vL.at(index) + vR.at(index)) / 2, 0.0};
         auto angularVelocity =
-            (vL.at(index) - vR.at(index)) / path.drivetrain.trackwidth;
+            (vR.at(index) - vL.at(index)) / path.drivetrain.trackwidth;
         Translation2v linearAcceleration{((vL.at(index) + vR.at(index)) / 2 -
                                           (vL.at(index) + vR.at(index)) / 2) /
                                              dt.at(index),
                                          0.0};
         auto angularAcceleration =
-            (vL.at(index) - vR.at(index)) / path.drivetrain.trackwidth -
-            (vL.at(index - 1) - vR.at(index - 1)) / path.drivetrain.trackwidth /
+            (vR.at(index) - vL.at(index)) / path.drivetrain.trackwidth -
+            (vR.at(index - 1) - vL.at(index - 1)) / path.drivetrain.trackwidth /
                 dt.at(index);
 
         std::visit(

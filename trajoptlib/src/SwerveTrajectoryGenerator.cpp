@@ -17,26 +17,6 @@
 
 namespace trajopt {
 
-inline std::vector<double> RowSolutionValue(
-    std::vector<sleipnir::Variable>& rowVector) {
-  std::vector<double> valueRowVector;
-  valueRowVector.reserve(rowVector.size());
-  for (auto& expression : rowVector) {
-    valueRowVector.push_back(expression.Value());
-  }
-  return valueRowVector;
-}
-
-inline std::vector<std::vector<double>> MatrixSolutionValue(
-    std::vector<std::vector<sleipnir::Variable>>& matrix) {
-  std::vector<std::vector<double>> valueMatrix;
-  valueMatrix.reserve(matrix.size());
-  for (auto& row : matrix) {
-    valueMatrix.push_back(RowSolutionValue(row));
-  }
-  return valueMatrix;
-}
-
 SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     SwervePathBuilder pathBuilder, int64_t handle)
     : path(pathBuilder.GetPath()), N(pathBuilder.GetControlIntervalCounts()) {

@@ -12,6 +12,7 @@
 
 #include "path/Path.hpp"
 #include "solution/DifferentialSolution.hpp"
+#include "trajopt/TrajectoryGenerator.hpp"
 #include "trajopt/path/DifferentialPathBuilder.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 #include "trajopt/util/expected"
@@ -20,9 +21,10 @@ namespace trajopt {
 
 /**
  * This trajectory generator class contains functions to generate
- * time-optimal trajectories for several drivetrain types.
+ * time-optimal trajectories for differential drivetrain types.
  */
-class TRAJOPT_DLLEXPORT DifferentialTrajectoryGenerator {
+class TRAJOPT_DLLEXPORT DifferentialTrajectoryGenerator
+    : public TrajectoryGenerator {
  public:
   /**
    * Construct a new swerve trajectory optimization problem.
