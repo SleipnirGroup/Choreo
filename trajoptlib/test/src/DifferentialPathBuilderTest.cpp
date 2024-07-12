@@ -5,7 +5,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include <trajopt/path/DifferentialPathBuilder.hpp>
 
-TEST_CASE("DifferentialPathBuilder - Linear initial guess", "[DifferentialPathBuilder]") {
+TEST_CASE("DifferentialPathBuilder - Linear initial guess",
+          "[DifferentialPathBuilder]") {
   using namespace trajopt;
 
   trajopt::DifferentialPathBuilder path;
