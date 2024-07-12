@@ -25,7 +25,6 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   vR.reserve(sampTot);
   tauL.reserve(sampTot);
   tauR.reserve(sampTot);
-
   dt.reserve(sgmtCnt);
 
   for (size_t index = 0; index < sampTot; ++index) {
@@ -37,6 +36,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     vR.emplace_back(problem.DecisionVariable());
     tauL.emplace_back(problem.DecisionVariable());
     tauR.emplace_back(problem.DecisionVariable());
+    dt.emplace_back(problem.DecisionVariable());
   }
 
   for (size_t sgmtIndex = 0; sgmtIndex < sgmtCnt; ++sgmtIndex) {
@@ -51,15 +51,18 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
         Translation2v linearVelocity{(vL.at(index) + vR.at(index)) / 2, 0.0};
         auto angularVelocity =
             (vR.at(index) - vL.at(index)) / path.drivetrain.trackwidth;
+        auto y_n1 = (y.size() > 0) ? y.at(index - 1) : 0;
+        auto vL_n1 = ((vL.size() > 0) ? vL.at(index - 1) : 0);
+        auto vR_n1 = ((vR.size() > 0) ? vR.at(index - 1) : 0);
         Translation2v linearAcceleration{
-            ((vL.at(index) + vR.at(index)) / 2 -
-             (vL.at(index - 1) + vR.at(index - 1)) / 2) /
+            ((vL.at(index) + vR.at(index)) / 2 - (vL_n1 + vR_n1) / 2) /
                 dt.at(index),
-            0.0};
+            (y.at(index) - y_n1 / dt.at(index)) - y_n1 -
+                ((y.size() > 1 && index >= 2) ? y.at(index - 2) : 0) /
+                    dt.at(index)};
         auto angularAcceleration =
             (vR.at(index) - vL.at(index)) / path.drivetrain.trackwidth -
-            (vR.at(index - 1) - vL.at(index - 1)) / path.drivetrain.trackwidth /
-                dt.at(index);
+            (vR_n1 - vL_n1) / path.drivetrain.trackwidth / dt.at(index);
 
         std::visit(
             [&](auto&& arg) {
@@ -138,13 +141,16 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
           (vR.at(index) - vL.at(index)) / path.drivetrain.trackwidth;
       Translation2v linearAcceleration{
           ((vL.at(index) + vR.at(index)) / 2 -
-           (vL.at(index - 1) + vR.at(index - 1)) / 2) /
+           (((index > 0) ? vL.at(index - 1) : 0.0) +
+            ((index > 0) ? vR.at(index - 1) : 0.0)) /
+               2) /
               dt.at(index),
           0.0};
       auto angularAcceleration =
           (vR.at(index) - vL.at(index)) / path.drivetrain.trackwidth -
-          (vR.at(index - 1) - vL.at(index - 1)) / path.drivetrain.trackwidth /
-              dt.at(index);
+          (((index > 0) ? vR.at(index - 1) : 0.0) -
+           ((index > 0) ? vL.at(index - 1) : 0.0)) /
+              path.drivetrain.trackwidth / dt.at(index);
 
       std::visit(
           [&](auto&& arg) {
@@ -214,10 +220,28 @@ void DifferentialTrajectoryGenerator::ApplyInitialGuess(
     y[sampleIndex].SetValue(solution.y[sampleIndex]);
     thetacos[sampleIndex].SetValue(solution.thetacos[sampleIndex]);
     thetasin[sampleIndex].SetValue(solution.thetasin[sampleIndex]);
-    vL[sampleIndex].SetValue(solution.vL[sampleIndex]);
-    vR[sampleIndex].SetValue(solution.vR[sampleIndex]);
-    tauL[sampleIndex].SetValue(solution.tauL[sampleIndex]);
-    tauR[sampleIndex].SetValue(solution.tauR[sampleIndex]);
+
+    Translation2v linearVelocity{
+        (x.at(sampleIndex) -
+         ((sampleIndex > 0) ? x.at(sampleIndex - 1) : 0.0)) /
+            dt.at(sampleIndex),
+        (y.at(sampleIndex) -
+         ((sampleIndex > 0) ? y.at(sampleIndex - 1) : 0.0)) /
+            dt.at(sampleIndex)};
+    Rotation2v angularVelocity{thetasin.at(sampleIndex),
+                               thetacos.at(sampleIndex)};
+    vL[sampleIndex].SetValue(
+        (linearVelocity.X() +
+         path.drivetrain.trackwidth / 2 * angularVelocity.Radians())
+            .Value());
+    vR[sampleIndex].SetValue(
+        (linearVelocity.X() -
+         path.drivetrain.trackwidth / 2 * angularVelocity.Radians())
+            .Value());
+    tauL[sampleIndex].SetValue(path.drivetrain.moi *
+                               vL.at(sampleIndex).Value());
+    tauR[sampleIndex].SetValue(path.drivetrain.moi *
+                               vL.at(sampleIndex).Value());
   }
 }
 
