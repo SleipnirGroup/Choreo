@@ -59,10 +59,8 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectoryGenerator
   std::vector<sleipnir::Variable> thetasin;
   std::vector<sleipnir::Variable> vL;
   std::vector<sleipnir::Variable> vR;
-  std::vector<sleipnir::Variable> omega;
   std::vector<sleipnir::Variable> aL;
   std::vector<sleipnir::Variable> aR;
-  std::vector<sleipnir::Variable> alpha;
 
   /// Input Variables
   std::vector<sleipnir::Variable> FL;

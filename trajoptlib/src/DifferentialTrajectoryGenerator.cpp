@@ -41,10 +41,8 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   thetasin.reserve(sampTot);
   vL.reserve(sampTot);
   vR.reserve(sampTot);
-  omega.reserve(sampTot);
   aL.reserve(sampTot);
   aR.reserve(sampTot);
-  alpha.reserve(sampTot);
 
   FL.reserve(sampTot);
   FR.reserve(sampTot);
@@ -58,10 +56,8 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     thetasin.emplace_back(problem.DecisionVariable());
     vL.emplace_back(problem.DecisionVariable());
     vR.emplace_back(problem.DecisionVariable());
-    omega.emplace_back(problem.DecisionVariable());
     aL.emplace_back(problem.DecisionVariable());
     aR.emplace_back(problem.DecisionVariable());
-    alpha.emplace_back(problem.DecisionVariable());
 
     FL.emplace_back(problem.DecisionVariable());
     FR.emplace_back(problem.DecisionVariable());
@@ -107,31 +103,34 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
       Rotation2v theta_n_1{thetacos.at(index - 1), thetasin.at(index - 1)};
 
       Translation2v v_n{vL.at(index), vR.at(index)};
+      v_n = v_n.RotateBy(theta_n);
       Translation2v v_n_1{vL.at(index - 1), vR.at(index - 1)};
+      v_n_1 = v_n_1.RotateBy(theta_n_1);
 
-      auto omega_n = omega.at(index);
-      auto omega_n_1 = omega.at(index - 1);
+      auto omega_n = (vR.at(index) - vL.at(index)) / path.drivetrain.trackwidth;
+      auto omega_n_1 =
+          (vR.at(index - 1) - vL.at(index - 1)) / path.drivetrain.trackwidth;
 
       Translation2v a_n{aL.at(index), aR.at(index)};
-      auto alpha_n = alpha.at(index);
 
       problem.SubjectTo(x_n_1 + v_n * dt_sgmt == x_n);
       problem.SubjectTo((theta_n - theta_n_1) == Rotation2v{omega_n * dt_sgmt});
       problem.SubjectTo(v_n_1 + a_n * dt_sgmt == v_n);
-      problem.SubjectTo(omega_n_1 + alpha_n * dt_sgmt == omega_n);
     }
   }
 
   for (size_t index = 0; index < sampTot; ++index) {
     Rotation2v theta{thetacos.at(index), thetasin.at(index)};
     Translation2v v{vL.at(index), vR.at(index)};
+    auto angularVelocity =
+        (vR.at(index) - vL.at(index)) / path.drivetrain.trackwidth;
 
     // Solve for net force
     auto F_net = FL.at(index) + FR.at(index);
 
     // Solve for net torque
-    auto r = path.drivetrain.trackwidth / 2.0;
-    sleipnir::Variable tau_net = r * FR.at(index) - r * FL.at(index);
+    double r = path.drivetrain.trackwidth / 2.0;
+    auto tau_net = r * FR.at(index) - r * FL.at(index);
 
     // Apply module power constraints
     {
@@ -140,7 +139,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
           path.drivetrain.left;
 
       Translation2v vWheelWrtRobot{
-          vWrtRobot.X() - path.drivetrain.trackwidth / 2.0 * omega.at(index),
+          vWrtRobot.X() - path.drivetrain.trackwidth / 2.0 * angularVelocity,
           0.0};
       double maxWheelVelocity = wheelRadius * wheelMaxAngularVelocity;
       problem.SubjectTo(vWheelWrtRobot.SquaredNorm() <=
@@ -152,7 +151,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
       problem.SubjectTo(-maxForce < FR.at(index));
       problem.SubjectTo(FR.at(index) < maxForce);
 
-      // Apply dynamics constraints (ΣF = ma, Στ = Jα)
+      // Apply dynamics constraints
       auto a = (aL.at(index) + aR.at(index)) / 2.0;
       problem.SubjectTo(FL.at(index) + FR.at(index) ==
                         path.drivetrain.mass * a);
@@ -168,14 +167,20 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
 
       Pose2v pose{
           x.at(index), y.at(index), {thetacos.at(index), thetasin.at(index)}};
+
       auto v = (vL.at(index) + vR.at(index)) / 2.0;
       Translation2v linearVelocity{v * thetacos.at(index),
                                    v * thetasin.at(index)};
-      auto angularVelocity = omega.at(index);
+
+      auto angularVelocity =
+          (vR.at(index) - vL.at(index)) / path.drivetrain.trackwidth;
+
       auto a = (aL.at(index) + aR.at(index)) / 2.0;
       Translation2v linearAcceleration{a * thetacos.at(index),
                                        a * thetasin.at(index)};
-      auto angularAcceleration = alpha.at(index);
+
+      auto angularAcceleration =
+          (aR.at(index) - aL.at(index)) / path.drivetrain.trackwidth;
 
       std::visit(
           [&](auto&& arg) {
@@ -195,14 +200,20 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
       for (size_t index = startIndex; index < endIndex; ++index) {
         Pose2v pose{
             x.at(index), y.at(index), {thetacos.at(index), thetasin.at(index)}};
+
         auto v = (vL.at(index) + vR.at(index)) / 2.0;
         Translation2v linearVelocity{v * thetacos.at(index),
                                      v * thetasin.at(index)};
-        auto angularVelocity = omega.at(index);
+
+        auto angularVelocity =
+            (vR.at(index) - vL.at(index)) / path.drivetrain.trackwidth;
+
         auto a = (aL.at(index) + aR.at(index)) / 2.0;
         Translation2v linearAcceleration{a * thetacos.at(index),
                                          a * thetasin.at(index)};
-        auto angularAcceleration = alpha.at(index);
+
+        auto angularAcceleration =
+            (aR.at(index) - aL.at(index)) / path.drivetrain.trackwidth;
 
         std::visit(
             [&](auto&& arg) {
@@ -243,10 +254,8 @@ void DifferentialTrajectoryGenerator::ApplyInitialGuess(
 
   vL[0].SetValue(0.0);
   vR[0].SetValue(0.0);
-  omega[0].SetValue(0.0);
   aL[0].SetValue(0.0);
   aR[0].SetValue(0.0);
-  alpha[0].SetValue(0.0);
 
   for (size_t sampleIndex = 1; sampleIndex < sampleTotal; sampleIndex++) {
     double linearVelocity =
@@ -258,17 +267,14 @@ void DifferentialTrajectoryGenerator::ApplyInitialGuess(
     double last_thetacos = solution.thetacos[sampleIndex - 1];
     double last_thetasin = solution.thetasin[sampleIndex - 1];
 
-    omega[sampleIndex].SetValue(
-        Rotation2d{thetacos, thetasin}
-            .RotateBy(-Rotation2d{last_thetacos, last_thetasin})
-            .Radians() /
-        solution.dt[sampleIndex]);
+    double omega = Rotation2d{thetacos, thetasin}
+                       .RotateBy(-Rotation2d{last_thetacos, last_thetasin})
+                       .Radians() /
+                   solution.dt[sampleIndex];
     vL[sampleIndex].SetValue(
-        (linearVelocity - path.drivetrain.trackwidth / 2 * omega[sampleIndex])
-            .Value());
+        (linearVelocity - path.drivetrain.trackwidth / 2 * omega));
     vR[sampleIndex].SetValue(
-        (linearVelocity + path.drivetrain.trackwidth / 2 * omega[sampleIndex])
-            .Value());
+        (linearVelocity + path.drivetrain.trackwidth / 2 * omega));
     aL[sampleIndex].SetValue(
         (vL[sampleIndex].Value() - vL[sampleIndex - 1].Value()) /
         solution.dt[sampleIndex]);
