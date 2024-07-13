@@ -22,7 +22,7 @@ namespace trajopt {
  * This trajectory generator class contains functions to generate
  * time-optimal trajectories for several drivetrain types.
  */
-class TRAJOPT_DLLEXPORT SwerveTrajectoryGenerator : TrajectoryGenerator {
+class TRAJOPT_DLLEXPORT SwerveTrajectoryGenerator : public TrajectoryGenerator {
  public:
   /**
    * Construct a new swerve trajectory optimization problem.

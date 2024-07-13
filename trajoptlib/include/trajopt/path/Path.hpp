@@ -10,6 +10,7 @@
 #include "trajopt/constraint/Constraint.hpp"
 #include "trajopt/drivetrain/DifferentialDrivetrain.hpp"
 #include "trajopt/drivetrain/SwerveDrivetrain.hpp"
+#include "trajopt/solution/DifferentialSolution.hpp"
 #include "trajopt/solution/SwerveSolution.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 
@@ -50,6 +51,10 @@ struct TRAJOPT_DLLEXPORT DifferentialPath {
 
   /// Drivetrain of the robot.
   DifferentialDrivetrain drivetrain;
+
+  /// A vector of callbacks to be called with the intermediate SwerveSolution
+  /// and a user-specified handle at every iteration of the solver.
+  std::vector<std::function<void(DifferentialSolution&, int64_t)>> callbacks;
 };
 
 }  // namespace trajopt

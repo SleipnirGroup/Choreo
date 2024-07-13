@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -30,8 +31,10 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectoryGenerator
    * Construct a new swerve trajectory optimization problem.
    *
    * @param pathBuilder The path builder.
+   * @param handle An identifier for state callbacks.
    */
-  explicit DifferentialTrajectoryGenerator(DifferentialPathBuilder pathBuilder);
+  explicit DifferentialTrajectoryGenerator(DifferentialPathBuilder pathBuilder,
+                                           int64_t handle = 0);
 
   /**
    * Generates an optimal trajectory.
@@ -49,9 +52,6 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectoryGenerator
   /// Differential path
   DifferentialPath path;
 
-  /// Time Variables
-  std::vector<sleipnir::Variable> dt;
-
   /// State Variables
   std::vector<sleipnir::Variable> x;
   std::vector<sleipnir::Variable> y;
@@ -59,13 +59,23 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectoryGenerator
   std::vector<sleipnir::Variable> thetasin;
   std::vector<sleipnir::Variable> vL;
   std::vector<sleipnir::Variable> vR;
-  std::vector<sleipnir::Variable> tauL;
-  std::vector<sleipnir::Variable> tauR;
+  std::vector<sleipnir::Variable> omega;
+  std::vector<sleipnir::Variable> aL;
+  std::vector<sleipnir::Variable> aR;
+  std::vector<sleipnir::Variable> alpha;
+
+  /// Input Variables
+  std::vector<sleipnir::Variable> FL;
+  std::vector<sleipnir::Variable> FR;
+
+  /// Time Variables
+  std::vector<sleipnir::Variable> dt;
 
   /// Discretization Constants
   std::vector<size_t> N;
 
   sleipnir::OptimizationProblem problem;
+  std::vector<std::function<void()>> callbacks;
 
   void ApplyInitialGuess(const DifferentialSolution& solution);
 
