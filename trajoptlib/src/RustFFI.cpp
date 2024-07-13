@@ -4,17 +4,23 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <cstddef>
 #include <stdexcept>
 #include <vector>
 
+#include "trajopt/DifferentialTrajectoryGenerator.hpp"
 #include "trajopt/SwerveTrajectoryGenerator.hpp"
 #include "trajopt/constraint/AngularVelocityMaxMagnitudeConstraint.hpp"
 #include "trajopt/constraint/LinearAccelerationMaxMagnitudeConstraint.hpp"
 #include "trajopt/constraint/LinearVelocityDirectionConstraint.hpp"
 #include "trajopt/constraint/LinearVelocityMaxMagnitudeConstraint.hpp"
 #include "trajopt/constraint/PointAtConstraint.hpp"
+#include "trajopt/drivetrain/DifferentialDrivetrain.hpp"
 #include "trajopt/drivetrain/SwerveModule.hpp"
+#include "trajopt/path/DifferentialPathBuilder.hpp"
+#include "trajopt/trajectory/DifferentialTrajcectory.hpp"
+#include "trajopt/trajectory/DifferentialTrajectorySample.hpp"
 #include "trajopt/trajectory/HolonomicTrajectory.hpp"
 #include "trajopt/trajectory/HolonomicTrajectorySample.hpp"
 #include "trajopt/util/Cancellation.hpp"
@@ -243,6 +249,175 @@ void SwervePathBuilder::add_progress_callback(
 
 std::unique_ptr<SwervePathBuilder> swerve_path_builder_new() {
   return std::make_unique<SwervePathBuilder>();
+}
+
+void DifferentialPathBuilder::set_drivetrain(
+    const DifferentialDrivetrain& drivetrain) {
+  trajopt::DifferentialDriverail left{
+      drivetrain.left.wheel_radius, drivetrain.left.wheel_max_angular_velocity,
+      drivetrain.left.wheel_max_torque};
+  trajopt::DifferentialDriverail right{
+      drivetrain.right.wheel_radius,
+      drivetrain.right.wheel_max_angular_velocity,
+      drivetrain.right.wheel_max_torque};
+
+  path_builder.SetDrivetrain(trajopt::DifferentialDrivetrain{
+      drivetrain.mass, drivetrain.moi, drivetrain.trackwidth, std::move(left),
+      std::move(right)});
+}
+
+void DifferentialPathBuilder::set_control_interval_counts(
+    const rust::Vec<size_t> counts) {
+  std::vector<size_t> cppCounts;
+  for (const auto& count : counts) {
+    cppCounts.emplace_back(count);
+  }
+
+  path_builder.ControlIntervalCounts(std::move(cppCounts));
+}
+
+void DifferentialPathBuilder::set_bumpers(double length, double width) {
+  path_builder.AddBumpers(
+      trajopt::Bumpers{.safetyDistance = 0.01,
+                       .points = {{+length / 2, +width / 2},
+                                  {-length / 2, +width / 2},
+                                  {-length / 2, -width / 2},
+                                  {+length / 2, -width / 2}}});
+}
+
+void DifferentialPathBuilder::pose_wpt(size_t index, double x, double y,
+                                       double heading) {
+  path_builder.PoseWpt(index, x, y, heading);
+}
+
+void DifferentialPathBuilder::translation_wpt(size_t index, double x, double y,
+                                              double heading_guess) {
+  path_builder.TranslationWpt(index, x, y, heading_guess);
+}
+
+void DifferentialPathBuilder::empty_wpt(size_t index, double x_guess,
+                                        double y_guess, double heading_guess) {
+  path_builder.WptInitialGuessPoint(index, {x_guess, y_guess, heading_guess});
+}
+
+void DifferentialPathBuilder::sgmt_initial_guess_points(
+    size_t from_index, const rust::Vec<Pose2d>& guess_points) {
+  std::vector<trajopt::Pose2d> cppGuessPoints;
+  for (const auto& guess_point : guess_points) {
+    cppGuessPoints.emplace_back(guess_point.x, guess_point.y,
+                                guess_point.heading);
+  }
+
+  path_builder.SgmtInitialGuessPoints(from_index, std::move(cppGuessPoints));
+}
+
+void DifferentialPathBuilder::wpt_linear_velocity_direction(size_t index,
+                                                            double angle) {
+  path_builder.WptConstraint(index,
+                             trajopt::LinearVelocityDirectionConstraint{angle});
+}
+
+void DifferentialPathBuilder::wpt_linear_velocity_max_magnitude(
+    size_t index, double magnitude) {
+  path_builder.WptConstraint(
+      index, trajopt::LinearVelocityMaxMagnitudeConstraint{magnitude});
+}
+
+void DifferentialPathBuilder::wpt_angular_velocity_max_magnitude(
+    size_t index, double angular_velocity) {
+  path_builder.WptConstraint(
+      index, trajopt::AngularVelocityMaxMagnitudeConstraint{angular_velocity});
+}
+
+void DifferentialPathBuilder::wpt_linear_acceleration_max_magnitude(
+    size_t index, double magnitude) {
+  path_builder.WptConstraint(
+      index, trajopt::LinearAccelerationMaxMagnitudeConstraint{magnitude});
+}
+
+void DifferentialPathBuilder::wpt_point_at(size_t index, double field_point_x,
+                                           double field_point_y,
+                                           double heading_tolerance) {
+  path_builder.WptConstraint(
+      index, trajopt::PointAtConstraint{
+                 trajopt::Translation2d{field_point_x, field_point_y},
+                 heading_tolerance});
+}
+
+void DifferentialPathBuilder::sgmt_linear_velocity_direction(size_t from_index,
+                                                             size_t to_index,
+                                                             double angle) {
+  path_builder.SgmtConstraint(
+      from_index, to_index, trajopt::LinearVelocityDirectionConstraint{angle});
+}
+
+void DifferentialPathBuilder::sgmt_linear_velocity_max_magnitude(
+    size_t from_index, size_t to_index, double magnitude) {
+  path_builder.SgmtConstraint(
+      from_index, to_index,
+      trajopt::LinearVelocityMaxMagnitudeConstraint{magnitude});
+}
+
+void DifferentialPathBuilder::sgmt_angular_velocity_max_magnitude(
+    size_t from_index, size_t to_index, double angular_velocity) {
+  path_builder.SgmtConstraint(
+      from_index, to_index,
+      trajopt::AngularVelocityMaxMagnitudeConstraint{angular_velocity});
+}
+
+void DifferentialPathBuilder::sgmt_linear_acceleration_max_magnitude(
+    size_t from_index, size_t to_index, double magnitude) {
+  path_builder.SgmtConstraint(
+      from_index, to_index,
+      trajopt::LinearAccelerationMaxMagnitudeConstraint{magnitude});
+}
+
+void DifferentialPathBuilder::sgmt_circle_obstacle(size_t from_index,
+                                                   size_t to_index, double x,
+                                                   double y, double radius) {
+  path_builder.SgmtObstacle(from_index, to_index, {radius, {{x, y}}});
+}
+
+void DifferentialPathBuilder::sgmt_polygon_obstacle(size_t from_index,
+                                                    size_t to_index,
+                                                    const rust::Vec<double> x,
+                                                    const rust::Vec<double> y,
+                                                    double radius) {
+  if (x.size() != y.size()) [[unlikely]] {
+    return;
+  }
+
+  std::vector<trajopt::Translation2d> cppPoints;
+  for (size_t i = 0; i < x.size(); ++i) {
+    cppPoints.emplace_back(x.at(i), y.at(i));
+  }
+
+  path_builder.SgmtObstacle(from_index, to_index,
+                            trajopt::Obstacle{.safetyDistance = radius,
+                                              .points = std::move(cppPoints)});
+}
+
+DifferentialTrajectory DifferentialPathBuilder::generate(bool diagnostics,
+                                                         int64_t handle) const {
+  trajopt::DifferentialTrajectoryGenerator generator{path_builder, handle};
+  if (auto sol = generator.Generate(diagnostics); sol.has_value()) {
+    trajopt::DifferentialTrajectory cppTrajectory{sol.value()};
+
+    rust::Vec<DifferentialTrajectorySample> rustSamples;
+    for (const auto& cppSample : cppTrajectory.samples) {
+      rustSamples.push_back(DifferentialTrajectorySample{
+          cppSample.timestamp, cppSample.x, cppSample.y, cppSample.heading,
+          cppSample.velocityL, cppSample.velocityR});
+    }
+
+    return DifferentialTrajectory{std::move(rustSamples)};
+  } else {
+    throw std::runtime_error{sol.error()};
+  }
+}
+
+std::unique_ptr<DifferentialPathBuilder> differential_path_builder_new() {
+  return std::make_unique<DifferentialPathBuilder>();
 }
 
 void cancel_all() {
