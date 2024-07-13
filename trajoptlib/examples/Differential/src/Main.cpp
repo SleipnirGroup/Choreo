@@ -71,7 +71,7 @@ int main() {
     path.PoseWpt(2, 2.0, 0.0, std::numbers::pi / 2);
     path.WptConstraint(0, zeroLinearVelocity);
     path.WptConstraint(1, zeroLinearVelocity);
-    path.ControlIntervalCounts({40, 40});
+    path.ControlIntervalCounts({50, 50});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
     [[maybe_unused]]
@@ -171,7 +171,7 @@ int main() {
 
     path.WptConstraint(0, zeroLinearVelocity);
     path.WptConstraint(1, zeroLinearVelocity);
-    path.ControlIntervalCounts({30});
+    path.ControlIntervalCounts({40});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
     [[maybe_unused]]
