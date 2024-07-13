@@ -132,7 +132,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     double r = path.drivetrain.trackwidth / 2.0;
     auto tau_net = r * FR.at(index) - r * FL.at(index);
 
-    // Apply module power constraints
+    // Apply wheel power constraints
     {
       auto vWrtRobot = v.RotateBy(-theta);
       const auto& [wheelRadius, wheelMaxAngularVelocity, wheelMaxTorque] =
@@ -140,7 +140,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
 
       Translation2v vWheelWrtRobot{
           vWrtRobot.X() - path.drivetrain.trackwidth / 2.0 * angularVelocity,
-          0.0};
+          vWrtRobot.Y()};
       double maxWheelVelocity = wheelRadius * wheelMaxAngularVelocity;
       problem.SubjectTo(vWheelWrtRobot.SquaredNorm() <=
                         maxWheelVelocity * maxWheelVelocity);

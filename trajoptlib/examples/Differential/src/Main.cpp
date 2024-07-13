@@ -171,7 +171,7 @@ int main() {
 
     path.WptConstraint(0, zeroLinearVelocity);
     path.WptConstraint(1, zeroLinearVelocity);
-    path.ControlIntervalCounts({40});
+    path.ControlIntervalCounts({50});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
     [[maybe_unused]]
