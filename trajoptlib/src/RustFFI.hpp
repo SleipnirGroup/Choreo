@@ -120,6 +120,9 @@ class DifferentialPathBuilder {
   DifferentialTrajectory generate(bool diagnostics = false,
                                   int64_t handle = 0) const;
 
+  void add_progress_callback(
+      rust::Fn<void(DifferentialTrajectory, int64_t)> callback);
+
  private:
   trajopt::DifferentialPathBuilder path_builder;
 };

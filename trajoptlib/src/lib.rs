@@ -309,6 +309,11 @@ mod ffi {
             uuid: i64,
         ) -> Result<DifferentialTrajectory>;
 
+        fn add_progress_callback(
+            self: Pin<&mut DifferentialPathBuilder>,
+            callback: fn(DifferentialTrajectory, i64),
+        );
+
         fn differential_path_builder_new() -> UniquePtr<DifferentialPathBuilder>;
 
         fn cancel_all();
@@ -815,6 +820,23 @@ impl DifferentialPathBuilder {
             Ok(traj) => Ok(traj),
             Err(msg) => Err(msg.what().to_string()),
         }
+    }
+
+    ///
+    /// Add a callback that will be called on each iteration of the solver.
+    ///
+    /// * callback: a `fn` (not a closure) to be executed. The callback's first
+    ///       parameter will be a `trajopt::HolonomicTrajectory`, and the second
+    ///       parameter will be an `i64` equal to the handle passed in
+    ///       `generate()`
+    ///
+    /// This function can be called multiple times to add multiple callbacks.
+    ///
+    pub fn add_progress_callback(&mut self, callback: fn(DifferentialTrajectory, i64)) {
+        crate::ffi::DifferentialPathBuilder::add_progress_callback(
+            self.path_builder.pin_mut(),
+            callback,
+        );
     }
 }
 

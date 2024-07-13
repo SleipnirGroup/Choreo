@@ -4,16 +4,13 @@
 
 #include <stdint.h>
 
-#include <cassert>
-#include <cstddef>
 #include <functional>
-#include <vector>
 
 #include "trajopt/drivetrain/SwerveDrivetrain.hpp"
-#include "trajopt/geometry/Pose2.hpp"
 #include "trajopt/path/Path.hpp"
 #include "trajopt/path/PathBuilder.hpp"
 #include "trajopt/solution/SwerveSolution.hpp"
+#include "trajopt/util/SymbolExports.hpp"
 
 namespace trajopt {
 

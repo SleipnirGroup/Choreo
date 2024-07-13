@@ -4,8 +4,6 @@
 
 #include <utility>
 
-#include "trajopt/drivetrain/DifferentialDrivetrain.hpp"
-#include "trajopt/path/Path.hpp"
 #include "trajopt/solution/DifferentialSolution.hpp"
 #include "trajopt/util/GenerateLinearInitialGuess.hpp"
 
@@ -18,6 +16,11 @@ void DifferentialPathBuilder::SetDrivetrain(DifferentialDrivetrain drivetrain) {
 DifferentialSolution DifferentialPathBuilder::CalculateInitialGuess() const {
   return GenerateLinearInitialGuess<DifferentialSolution>(
       initialGuessPoints, controlIntervalCounts);
+}
+
+void DifferentialPathBuilder::AddIntermediateCallback(
+    const std::function<void(DifferentialSolution&, int64_t)> callback) {
+  path.callbacks.push_back(callback);
 }
 
 }  // namespace trajopt

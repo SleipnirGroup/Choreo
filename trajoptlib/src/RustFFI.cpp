@@ -416,6 +416,32 @@ DifferentialTrajectory DifferentialPathBuilder::generate(bool diagnostics,
   }
 }
 
+/**
+ * Add a callback that will be called on each iteration of the solver.
+ *
+ * @param callback: a `fn` (not a closure) to be executed. The callback's
+ * first parameter will be a `trajopt::DifferentialTrajectory`, and the second
+ * parameter will be an `i64` equal to the handle passed in `generate()`
+ *
+ * This function can be called multiple times to add multiple callbacks.
+ */
+void DifferentialPathBuilder::add_progress_callback(
+    rust::Fn<void(DifferentialTrajectory, int64_t)> callback) {
+  path_builder.AddIntermediateCallback(
+      [=](trajopt::DifferentialSolution& solution, int64_t handle) {
+        trajopt::DifferentialTrajectory cppTrajectory{solution};
+
+        rust::Vec<DifferentialTrajectorySample> rustSamples;
+        for (const auto& cppSample : cppTrajectory.samples) {
+          rustSamples.push_back(DifferentialTrajectorySample{
+              cppSample.timestamp, cppSample.x, cppSample.y, cppSample.heading,
+              cppSample.velocityL, cppSample.velocityR});
+        }
+
+        callback(DifferentialTrajectory{rustSamples}, handle);
+      });
+}
+
 std::unique_ptr<DifferentialPathBuilder> differential_path_builder_new() {
   return std::make_unique<DifferentialPathBuilder>();
 }
