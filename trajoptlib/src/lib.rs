@@ -826,8 +826,8 @@ impl DifferentialPathBuilder {
     /// Add a callback that will be called on each iteration of the solver.
     ///
     /// * callback: a `fn` (not a closure) to be executed. The callback's first
-    ///       parameter will be a `trajopt::HolonomicTrajectory`, and the second
-    ///       parameter will be an `i64` equal to the handle passed in
+    ///       parameter will be a `trajopt::DifferentialTrajectory`, and the
+    ///       second parameter will be an `i64` equal to the handle passed in
     ///       `generate()`
     ///
     /// This function can be called multiple times to add multiple callbacks.
