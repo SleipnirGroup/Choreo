@@ -33,11 +33,11 @@ struct TRAJOPT_DLLEXPORT DifferentialSolution {
   /// The right velocities.
   std::vector<double> vR;
 
-  /// The torque of the left driverail wheels.
-  std::vector<double> tauL;
+  /// The force of the left driverail wheels.
+  std::vector<double> FL;
 
-  /// The torque of the right driverail wheels.
-  std::vector<double> tauR;
+  /// The force of the right driverail wheels.
+  std::vector<double> FR;
 };
 
 }  // namespace trajopt
