@@ -20,15 +20,15 @@ jobs:
 
           - artifact-name: Windows-aarch64
             os: windows-2022
-            tauri-build-flags: -- --target aarch64-pc-windows-msvc
+            tauri-build-flags: --target aarch64-pc-windows-msvc
 
           - artifact-name: macOS-x86_64
             os: macOS-14
-            tauri-build-flags: -- --target x86_64-apple-darwin
+            tauri-build-flags: --target x86_64-apple-darwin
 
           - artifact-name: macOS-arm64
             os: macOS-14
-            tauri-build-flags: -- --target aarch64-apple-darwin
+            tauri-build-flags: --target aarch64-apple-darwin
 
           - artifact-name: Linux-x86_64
             os: ubuntu-22.04
@@ -39,6 +39,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
 
       - name: Install Linux dependencies
         if: startsWith(matrix.os, 'ubuntu')
@@ -56,7 +60,7 @@ jobs:
             wget
 
       - name: Install Node.js dependencies
-        run: npm install
+        run: pnpm install
         continue-on-error: true
 
       - name: Set up Windows aarch64 Rust compiler
@@ -71,7 +75,7 @@ jobs:
         if: startsWith(matrix.os, 'macOS')
 
       - name: Build package
-        run: npm run tauri build ${{ matrix.tauri-build-flags }}
+        run: pnpm run tauri build ${{ matrix.tauri-build-flags }}
 
       - name: Upload bundle (Windows)
         if: startsWith(matrix.os, 'windows')
