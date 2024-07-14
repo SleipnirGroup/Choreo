@@ -4,6 +4,7 @@
 
 #include "trajopt/geometry/Rotation2.hpp"
 #include "trajopt/geometry/Translation2.hpp"
+#include "trajopt/util/Cancellation.hpp"
 #include "trajopt/util/TrajoptUtil.hpp"
 
 namespace trajopt {
@@ -230,6 +231,13 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
 
 expected<DifferentialSolution, std::string>
 DifferentialTrajectoryGenerator::Generate(bool diagnostics) {
+  problem.Callback([this](const sleipnir::SolverIterationInfo&) -> bool {
+    for (auto& callback : callbacks) {
+      callback();
+    }
+    return trajopt::GetCancellationFlag();
+  });
+
   // tolerance of 1e-4 is 0.1 mm
   auto status = problem.Solve({.tolerance = 1e-4, .diagnostics = diagnostics});
 
