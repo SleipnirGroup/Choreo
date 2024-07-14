@@ -1,20 +1,13 @@
-use trajoptlib::{DifferentialDriverail, DifferentialDrivetrain, DifferentialPathBuilder};
+use trajoptlib::{DifferentialDrivetrain, DifferentialPathBuilder};
 
 fn main() {
     let drivetrain = DifferentialDrivetrain {
         mass: 45.0,
         moi: 6.0,
         trackwidth: 6.0,
-        left: DifferentialDriverail {
-            wheel_radius: 0.08,
-            wheel_max_angular_velocity: 70.0,
-            wheel_max_torque: 5.0,
-        },
-        right: DifferentialDriverail {
-            wheel_radius: 0.08,
-            wheel_max_angular_velocity: 70.0,
-            wheel_max_torque: 5.0,
-        },
+        wheel_radius: 0.08,
+        wheel_max_angular_velocity: 70.0,
+        wheel_max_torque: 5.0,
     };
 
     let mut path = DifferentialPathBuilder::new();

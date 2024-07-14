@@ -68,11 +68,11 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
 
   for (size_t sgmtIndex = 0; sgmtIndex < sgmtCnt; ++sgmtIndex) {
     dt.emplace_back(problem.DecisionVariable());
-    problem.SubjectTo(dt.at(sgmtIndex) * path.drivetrain.left.wheelRadius *
-                          path.drivetrain.left.wheelMaxAngularVelocity <=
+    problem.SubjectTo(dt.at(sgmtIndex) * path.drivetrain.wheelRadius *
+                          path.drivetrain.wheelMaxAngularVelocity <=
                       minWidth);
-    problem.SubjectTo(dt.at(sgmtIndex) * path.drivetrain.right.wheelRadius *
-                          path.drivetrain.right.wheelMaxAngularVelocity <=
+    problem.SubjectTo(dt.at(sgmtIndex) * path.drivetrain.wheelRadius *
+                          path.drivetrain.wheelMaxAngularVelocity <=
                       minWidth);
   }
 
@@ -136,8 +136,10 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     // Apply wheel power constraints
     {
       auto vWrtRobot = v.RotateBy(-theta);
-      const auto& [wheelRadius, wheelMaxAngularVelocity, wheelMaxTorque] =
-          path.drivetrain.left;
+      const auto& wheelRadius = path.drivetrain.wheelRadius;
+      const auto& wheelMaxAngularVelocity =
+          path.drivetrain.wheelMaxAngularVelocity;
+      const auto& wheelMaxTorque = path.drivetrain.wheelMaxTorque;
 
       Translation2v vWheelWrtRobot{
           vWrtRobot.X() - path.drivetrain.trackwidth / 2.0 * angularVelocity,

@@ -17,19 +17,13 @@ mod ffi {
     }
 
     #[derive(Debug, Deserialize, Serialize)]
-    struct DifferentialDriverail {
-        wheel_radius: f64,
-        wheel_max_angular_velocity: f64,
-        wheel_max_torque: f64,
-    }
-
-    #[derive(Debug, Deserialize, Serialize)]
     struct DifferentialDrivetrain {
         mass: f64,
         moi: f64,
         trackwidth: f64,
-        left: DifferentialDriverail,
-        right: DifferentialDriverail,
+        wheel_radius: f64,
+        wheel_max_angular_velocity: f64,
+        wheel_max_torque: f64,
     }
 
     #[derive(Debug, Deserialize, Serialize)]
@@ -850,7 +844,6 @@ pub fn cancel_all() {
     crate::ffi::cancel_all();
 }
 
-pub use ffi::DifferentialDriverail;
 pub use ffi::DifferentialDrivetrain;
 pub use ffi::DifferentialTrajectory;
 pub use ffi::DifferentialTrajectorySample;

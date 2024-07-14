@@ -253,17 +253,10 @@ std::unique_ptr<SwervePathBuilder> swerve_path_builder_new() {
 
 void DifferentialPathBuilder::set_drivetrain(
     const DifferentialDrivetrain& drivetrain) {
-  trajopt::DifferentialDriverail left{
-      drivetrain.left.wheel_radius, drivetrain.left.wheel_max_angular_velocity,
-      drivetrain.left.wheel_max_torque};
-  trajopt::DifferentialDriverail right{
-      drivetrain.right.wheel_radius,
-      drivetrain.right.wheel_max_angular_velocity,
-      drivetrain.right.wheel_max_torque};
-
   path_builder.SetDrivetrain(trajopt::DifferentialDrivetrain{
-      drivetrain.mass, drivetrain.moi, drivetrain.trackwidth, std::move(left),
-      std::move(right)});
+      drivetrain.mass, drivetrain.moi, drivetrain.trackwidth,
+      drivetrain.wheel_radius, drivetrain.wheel_max_angular_velocity,
+      drivetrain.wheel_max_torque});
 }
 
 void DifferentialPathBuilder::set_control_interval_counts(

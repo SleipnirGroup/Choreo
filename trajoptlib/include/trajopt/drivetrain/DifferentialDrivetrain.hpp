@@ -7,18 +7,6 @@
 namespace trajopt {
 
 /**
- * A driverail of a differential drivetrain
- */
-struct TRAJOPT_DLLEXPORT DifferentialDriverail {
-  /// radius of the wheels or treads
-  double wheelRadius;
-  /// maximum angular velocity
-  double wheelMaxAngularVelocity;
-  /// maximum torque applied to wheel
-  double wheelMaxTorque;
-};
-
-/**
  * A differential drivetrain physical model
  */
 struct TRAJOPT_DLLEXPORT DifferentialDrivetrain {
@@ -29,10 +17,12 @@ struct TRAJOPT_DLLEXPORT DifferentialDrivetrain {
   /// distance between the two driverails
   double trackwidth;
 
-  /// the left driverail
-  DifferentialDriverail left;
-  /// the right driverail
-  DifferentialDriverail right;
+  /// radius of the wheels or treads
+  double wheelRadius;
+  /// maximum angular velocity
+  double wheelMaxAngularVelocity;
+  /// maximum torque applied to wheel
+  double wheelMaxTorque;
 };
 
 }  // namespace trajopt
