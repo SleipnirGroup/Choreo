@@ -1,38 +1,17 @@
-use trajoptlib::{SwerveDrivetrain, SwerveModule, SwervePathBuilder};
+use trajoptlib::{SwerveDrivetrain, SwervePathBuilder, Translation2d};
 
 fn main() {
     let drivetrain = SwerveDrivetrain {
         mass: 45.0,
         moi: 6.0,
+        wheel_radius: 0.04,
+        wheel_max_angular_velocity: 70.0,
+        wheel_max_torque: 2.0,
         modules: vec![
-            SwerveModule {
-                x: 0.6,
-                y: 0.6,
-                wheel_radius: 0.04,
-                wheel_max_angular_velocity: 70.0,
-                wheel_max_torque: 2.0,
-            },
-            SwerveModule {
-                x: 0.6,
-                y: -0.6,
-                wheel_radius: 0.04,
-                wheel_max_angular_velocity: 70.0,
-                wheel_max_torque: 2.0,
-            },
-            SwerveModule {
-                x: -0.6,
-                y: 0.6,
-                wheel_radius: 0.04,
-                wheel_max_angular_velocity: 70.0,
-                wheel_max_torque: 2.0,
-            },
-            SwerveModule {
-                x: -0.6,
-                y: -0.6,
-                wheel_radius: 0.04,
-                wheel_max_angular_velocity: 70.0,
-                wheel_max_torque: 2.0,
-            },
+            Translation2d { x: 0.6, y: 0.6 },
+            Translation2d { x: 0.6, y: -0.6 },
+            Translation2d { x: -0.6, y: 0.6 },
+            Translation2d { x: -0.6, y: -0.6 },
         ],
     };
 

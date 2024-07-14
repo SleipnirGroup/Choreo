@@ -17,10 +17,10 @@ int main() {
   trajopt::SwerveDrivetrain swerveDrivetrain{
       .mass = 45,
       .moi = 6,
-      .modules = {{{+0.6, +0.6}, 0.04, 70, 2},
-                  {{+0.6, -0.6}, 0.04, 70, 2},
-                  {{-0.6, +0.6}, 0.04, 70, 2},
-                  {{-0.6, -0.6}, 0.04, 70, 2}}};
+      .wheelRadius = 0.04,
+      .wheelMaxAngularVelocity = 70,
+      .wheelMaxTorque = 2,
+      .modules = {{+0.6, +0.6}, {+0.6, -0.6}, {-0.6, +0.6}, {-0.6, -0.6}}};
 
   trajopt::LinearVelocityMaxMagnitudeConstraint zeroLinearVelocity{0.0};
   trajopt::AngularVelocityMaxMagnitudeConstraint zeroAngularVelocity{0.0};

@@ -1,19 +1,19 @@
 #[cxx::bridge(namespace = "trajopt::rsffi")]
 mod ffi {
     #[derive(Debug, Deserialize, Serialize)]
-    struct SwerveModule {
+    struct Translation2d {
         x: f64,
         y: f64,
-        wheel_radius: f64,
-        wheel_max_angular_velocity: f64,
-        wheel_max_torque: f64,
     }
 
     #[derive(Debug, Deserialize, Serialize)]
     struct SwerveDrivetrain {
         mass: f64,
         moi: f64,
-        modules: Vec<SwerveModule>,
+        wheel_radius: f64,
+        wheel_max_angular_velocity: f64,
+        wheel_max_torque: f64,
+        modules: Vec<Translation2d>,
     }
 
     #[derive(Debug, Deserialize, Serialize)]
@@ -440,4 +440,4 @@ pub use ffi::HolonomicTrajectory;
 pub use ffi::HolonomicTrajectorySample;
 pub use ffi::Pose2d;
 pub use ffi::SwerveDrivetrain;
-pub use ffi::SwerveModule;
+pub use ffi::Translation2d;

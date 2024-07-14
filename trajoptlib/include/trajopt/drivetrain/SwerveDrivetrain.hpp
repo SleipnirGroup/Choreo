@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "trajopt/drivetrain/SwerveModule.hpp"
+#include "trajopt/geometry/Translation2.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 
 namespace trajopt {
@@ -16,13 +16,25 @@ namespace trajopt {
  * be four. The order the swerve modules are listed does not matter.
  */
 struct TRAJOPT_DLLEXPORT SwerveDrivetrain {
-  /// the mass of the robot (kg)
+  /// The mass of the robot (kg).
   double mass;
-  /// the moment of inertia of the robot about the origin (kg−m²)
+
+  /// The moment of inertia of the robot about the origin (kg−m²).
   double moi;
-  /// The list of swerve modules that make the robot move, usually one in each
+
+  /// Radius of wheel (meters).
+  double wheelRadius;
+
+  /// Maximum angular velocity of wheel (rad/s).
+  double wheelMaxAngularVelocity;
+
+  /// Maximum torque (N−m) applied to wheel.
+  double wheelMaxTorque;
+
+  /// Translation (meters) of each swerve module from the origin of the robot
+  /// coordinate system to the center of the module. There's usually one in each
   /// corner.
-  std::vector<SwerveModule> modules;
+  std::vector<Translation2d> modules;
 };
 
 }  // namespace trajopt
