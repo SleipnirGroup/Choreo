@@ -17,10 +17,10 @@ int main() {
   trajopt::DifferentialDrivetrain differentialDrivetrain{
       .mass = 45,
       .moi = 6,
-      .trackwidth = 0.6,
       .wheelRadius = 0.08,
       .wheelMaxAngularVelocity = 70,
-      .wheelMaxTorque = 5};
+      .wheelMaxTorque = 5,
+      .trackwidth = 0.6};
 
   trajopt::LinearVelocityMaxMagnitudeConstraint zeroLinearVelocity{0.0};
   trajopt::AngularVelocityMaxMagnitudeConstraint zeroAngularVelocity{0.0};

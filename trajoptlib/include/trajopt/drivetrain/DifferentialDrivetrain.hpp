@@ -7,22 +7,26 @@
 namespace trajopt {
 
 /**
- * A differential drivetrain physical model
+ * A differential drivetrain physical model.
  */
 struct TRAJOPT_DLLEXPORT DifferentialDrivetrain {
-  /// mass of the robot
+  /// The mass of the robot (kg).
   double mass;
-  /// moment of inertia of the robot about the central axis
-  double moi;
-  /// distance between the two driverails
-  double trackwidth;
 
-  /// radius of the wheels or treads
+  /// The moment of inertia of the robot about the origin (kg−m²).
+  double moi;
+
+  /// Radius of wheel (m).
   double wheelRadius;
-  /// maximum angular velocity
+
+  /// Maximum angular velocity of wheel (rad/s).
   double wheelMaxAngularVelocity;
-  /// maximum torque applied to wheel
+
+  /// Maximum torque applied to wheel (N−m).
   double wheelMaxTorque;
+
+  /// Distance between the two driverails (m).
+  double trackwidth;
 };
 
 }  // namespace trajopt

@@ -71,9 +71,6 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     problem.SubjectTo(dt.at(sgmtIndex) * path.drivetrain.wheelRadius *
                           path.drivetrain.wheelMaxAngularVelocity <=
                       minWidth);
-    problem.SubjectTo(dt.at(sgmtIndex) * path.drivetrain.wheelRadius *
-                          path.drivetrain.wheelMaxAngularVelocity <=
-                      minWidth);
   }
 
   // Minimize total time
