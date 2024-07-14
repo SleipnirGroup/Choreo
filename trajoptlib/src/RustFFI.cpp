@@ -14,7 +14,6 @@
 #include "trajopt/constraint/LinearVelocityDirectionConstraint.hpp"
 #include "trajopt/constraint/LinearVelocityMaxMagnitudeConstraint.hpp"
 #include "trajopt/constraint/PointAtConstraint.hpp"
-#include "trajopt/drivetrain/SwerveModule.hpp"
 #include "trajopt/trajectory/HolonomicTrajectory.hpp"
 #include "trajopt/trajectory/HolonomicTrajectorySample.hpp"
 #include "trajopt/util/Cancellation.hpp"
@@ -23,17 +22,15 @@
 namespace trajopt::rsffi {
 
 void SwervePathBuilder::set_drivetrain(const SwerveDrivetrain& drivetrain) {
-  std::vector<trajopt::SwerveModule> cppModules;
+  std::vector<trajopt::Translation2d> cppModules;
   for (const auto& module : drivetrain.modules) {
-    cppModules.push_back(
-        trajopt::SwerveModule{{module.x, module.y},
-                              module.wheel_radius,
-                              module.wheel_max_angular_velocity,
-                              module.wheel_max_torque});
+    cppModules.emplace_back(module.x, module.y);
   }
 
   path_builder.SetDrivetrain(trajopt::SwerveDrivetrain{
-      drivetrain.mass, drivetrain.moi, std::move(cppModules)});
+      drivetrain.mass, drivetrain.moi, drivetrain.wheel_radius,
+      drivetrain.wheel_max_angular_velocity, drivetrain.wheel_max_torque,
+      std::move(cppModules)});
 }
 
 void SwervePathBuilder::set_control_interval_counts(

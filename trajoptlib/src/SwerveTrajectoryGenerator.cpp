@@ -107,27 +107,25 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
 
   double minWidth = INFINITY;
   for (size_t i = 1; i < path.drivetrain.modules.size(); i++) {
-    if (std::abs(path.drivetrain.modules.at(i - 1).translation.X() -
-                 path.drivetrain.modules.at(i).translation.X()) != 0) {
-      minWidth = std::min(
-          minWidth, std::abs(path.drivetrain.modules.at(i - 1).translation.X() -
-                             path.drivetrain.modules.at(i).translation.X()));
+    if (std::abs(path.drivetrain.modules.at(i - 1).X() -
+                 path.drivetrain.modules.at(i).X()) != 0) {
+      minWidth =
+          std::min(minWidth, std::abs(path.drivetrain.modules.at(i - 1).X() -
+                                      path.drivetrain.modules.at(i).X()));
     }
-    if (std::abs(path.drivetrain.modules.at(i - 1).translation.Y() -
-                 path.drivetrain.modules.at(i).translation.Y()) != 0) {
-      minWidth = std::min(
-          minWidth, std::abs(path.drivetrain.modules.at(i - 1).translation.Y() -
-                             path.drivetrain.modules.at(i).translation.Y()));
+    if (std::abs(path.drivetrain.modules.at(i - 1).Y() -
+                 path.drivetrain.modules.at(i).Y()) != 0) {
+      minWidth =
+          std::min(minWidth, std::abs(path.drivetrain.modules.at(i - 1).Y() -
+                                      path.drivetrain.modules.at(i).Y()));
     }
   }
 
   for (size_t sgmtIndex = 0; sgmtIndex < sgmtCnt; ++sgmtIndex) {
     dt.emplace_back(problem.DecisionVariable());
-    for (auto module : path.drivetrain.modules) {
-      problem.SubjectTo(dt.at(sgmtIndex) * module.wheelRadius *
-                            module.wheelMaxAngularVelocity <=
-                        minWidth);
-    }
+    problem.SubjectTo(dt.at(sgmtIndex) * path.drivetrain.wheelRadius *
+                          path.drivetrain.wheelMaxAngularVelocity <=
+                      minWidth);
   }
 
   // Minimize total time
@@ -183,13 +181,16 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     auto Fy_net = std::accumulate(Fy.at(index).begin(), Fy.at(index).end(),
                                   sleipnir::Variable{0.0});
 
+    const auto& wheelRadius = path.drivetrain.wheelRadius;
+    const auto& wheelMaxAngularVelocity =
+        path.drivetrain.wheelMaxAngularVelocity;
+    const auto& wheelMaxTorque = path.drivetrain.wheelMaxTorque;
+
     // Solve for net torque
     sleipnir::Variable tau_net = 0.0;
     for (size_t moduleIndex = 0; moduleIndex < path.drivetrain.modules.size();
          ++moduleIndex) {
-      const auto& [translation, wheelRadius, wheelMaxAngularVelocity,
-                   wheelMaxTorque] = path.drivetrain.modules.at(moduleIndex);
-
+      const auto& translation = path.drivetrain.modules.at(moduleIndex);
       auto r = translation.RotateBy(theta);
       Translation2v F{Fx.at(index).at(moduleIndex),
                       Fy.at(index).at(moduleIndex)};
@@ -201,8 +202,7 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     auto vWrtRobot = v.RotateBy(-theta);
     for (size_t moduleIndex = 0; moduleIndex < path.drivetrain.modules.size();
          ++moduleIndex) {
-      const auto& [translation, wheelRadius, wheelMaxAngularVelocity,
-                   wheelMaxTorque] = path.drivetrain.modules.at(moduleIndex);
+      const auto& translation = path.drivetrain.modules.at(moduleIndex);
 
       Translation2v vWheelWrtRobot{
           vWrtRobot.X() - translation.Y() * omega.at(index),
