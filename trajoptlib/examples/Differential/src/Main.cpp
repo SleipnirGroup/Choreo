@@ -4,7 +4,7 @@
 
 #include <trajopt/DifferentialTrajectoryGenerator.hpp>
 
-// SwervePathBuilder is used to build paths that are optimized into full
+// DifferentialPathBuilder is used to build paths that are optimized into full
 // trajectories.
 //
 // "Wpt" stands for waypoint, an instantaneous moment in the path where certain
