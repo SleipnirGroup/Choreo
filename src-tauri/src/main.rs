@@ -11,7 +11,7 @@ use tauri::{
     api::{dialog::blocking::FileDialogBuilder, file},
     Manager,
 };
-use trajoptlib::{HolonomicTrajectory, Pose2d, SwerveDrivetrain, SwerveModule, SwervePathBuilder};
+use trajoptlib::{HolonomicTrajectory, Pose2d, SwerveDrivetrain, SwervePathBuilder, Translation2d};
 
 #[derive(Clone, serde::Serialize, Debug)]
 struct OpenFileEventPayload<'a> {
@@ -410,34 +410,25 @@ async fn generate_trajectory(
     let drivetrain = SwerveDrivetrain {
         mass: config.mass,
         moi: config.rotationalInertia,
+        wheel_radius: config.wheelRadius,
+        wheel_max_angular_velocity: config.wheelMaxVelocity,
+        wheel_max_torque: config.wheelMaxTorque,
         modules: vec![
-            SwerveModule {
+            Translation2d {
                 x: half_wheel_base,
                 y: half_track_width,
-                wheel_radius: config.wheelRadius,
-                wheel_max_angular_velocity: config.wheelMaxVelocity,
-                wheel_max_torque: config.wheelMaxTorque,
             },
-            SwerveModule {
+            Translation2d {
                 x: half_wheel_base,
                 y: -half_track_width,
-                wheel_radius: config.wheelRadius,
-                wheel_max_angular_velocity: config.wheelMaxVelocity,
-                wheel_max_torque: config.wheelMaxTorque,
             },
-            SwerveModule {
+            Translation2d {
                 x: -half_wheel_base,
                 y: half_track_width,
-                wheel_radius: config.wheelRadius,
-                wheel_max_angular_velocity: config.wheelMaxVelocity,
-                wheel_max_torque: config.wheelMaxTorque,
             },
-            SwerveModule {
+            Translation2d {
                 x: -half_wheel_base,
                 y: -half_track_width,
-                wheel_radius: config.wheelRadius,
-                wheel_max_angular_velocity: config.wheelMaxVelocity,
-                wheel_max_torque: config.wheelMaxTorque,
             },
         ],
     };
