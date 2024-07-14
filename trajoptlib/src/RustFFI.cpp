@@ -18,7 +18,7 @@
 #include "trajopt/constraint/PointAtConstraint.hpp"
 #include "trajopt/drivetrain/DifferentialDrivetrain.hpp"
 #include "trajopt/path/DifferentialPathBuilder.hpp"
-#include "trajopt/trajectory/DifferentialTrajcectory.hpp"
+#include "trajopt/trajectory/DifferentialTrajectory.hpp"
 #include "trajopt/trajectory/DifferentialTrajectorySample.hpp"
 #include "trajopt/trajectory/HolonomicTrajectory.hpp"
 #include "trajopt/trajectory/HolonomicTrajectorySample.hpp"

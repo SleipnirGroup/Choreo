@@ -7,11 +7,8 @@
 
 #include <rust/cxx.h>
 
-#include "trajopt/DifferentialTrajectoryGenerator.hpp"
-#include "trajopt/drivetrain/DifferentialDrivetrain.hpp"
 #include "trajopt/path/DifferentialPathBuilder.hpp"
 #include "trajopt/path/SwervePathBuilder.hpp"
-#include "trajopt/trajectory/DifferentialTrajcectory.hpp"
 
 namespace trajopt::rsffi {
 
