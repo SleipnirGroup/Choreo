@@ -6,36 +6,15 @@
 
 #include <algorithm>
 #include <chrono>
+#include <ranges>
 #include <utility>
 
 #include <sleipnir/optimization/OptimizationProblem.hpp>
 
-#include "trajopt/path/SwervePathBuilder.hpp"
-#include "trajopt/solution/SwerveSolution.hpp"
 #include "trajopt/util/Cancellation.hpp"
 #include "trajopt/util/TrajoptUtil.hpp"
 
 namespace trajopt {
-
-inline std::vector<double> RowSolutionValue(
-    std::vector<sleipnir::Variable>& rowVector) {
-  std::vector<double> valueRowVector;
-  valueRowVector.reserve(rowVector.size());
-  for (auto& expression : rowVector) {
-    valueRowVector.push_back(expression.Value());
-  }
-  return valueRowVector;
-}
-
-inline std::vector<std::vector<double>> MatrixSolutionValue(
-    std::vector<std::vector<sleipnir::Variable>>& matrix) {
-  std::vector<std::vector<double>> valueMatrix;
-  valueMatrix.reserve(matrix.size());
-  for (auto& row : matrix) {
-    valueMatrix.push_back(RowSolutionValue(row));
-  }
-  return valueMatrix;
-}
 
 SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     SwervePathBuilder pathBuilder, int64_t handle)
@@ -342,29 +321,41 @@ void SwerveTrajectoryGenerator::ApplyInitialGuess(
 }
 
 SwerveSolution SwerveTrajectoryGenerator::ConstructSwerveSolution() {
-  std::vector<double> dtPerSamp;
+  std::vector<double> dtPerSample;
   for (size_t sgmtIndex = 0; sgmtIndex < Ns.size(); ++sgmtIndex) {
-    size_t N_sgmt = Ns.at(sgmtIndex);
-    sleipnir::Variable dt_sgmt = dts.at(sgmtIndex);
-    double dt_val = dt_sgmt.Value();
-    for (size_t i = 0; i < N_sgmt; ++i) {
-      dtPerSamp.push_back(dt_val);
+    auto N = Ns.at(sgmtIndex);
+    auto dt = dts.at(sgmtIndex);
+
+    double dt_value = dt.Value();
+    for (size_t i = 0; i < N; ++i) {
+      dtPerSample.push_back(dt_value);
     }
   }
 
-  return SwerveSolution{dtPerSamp,
-                        RowSolutionValue(x),
-                        RowSolutionValue(y),
-                        RowSolutionValue(thetacos),
-                        RowSolutionValue(thetasin),
-                        RowSolutionValue(vx),
-                        RowSolutionValue(vy),
-                        RowSolutionValue(omega),
-                        RowSolutionValue(ax),
-                        RowSolutionValue(ay),
-                        RowSolutionValue(alpha),
-                        MatrixSolutionValue(Fx),
-                        MatrixSolutionValue(Fy)};
+  auto getValue = [](auto& var) { return var.Value(); };
+
+  // TODO: Use std::ranges::to() from C++23
+  auto vectorValue = [&](std::vector<sleipnir::Variable>& row) {
+    auto view = row | std::views::transform(getValue);
+    return std::vector<double>{std::begin(view), std::end(view)};
+  };
+
+  // TODO: Use std::ranges::to() from C++23
+  auto matrixValue = [&](std::vector<std::vector<sleipnir::Variable>>& mat) {
+    auto view =
+        mat | std::views::transform([&](auto& v) {
+          auto view2 = v | std::views::transform(getValue);
+          return std::vector<double>{std::begin(view2), std::end(view2)};
+        });
+    return std::vector<std::vector<double>>{std::begin(view), std::end(view)};
+  };
+
+  return SwerveSolution{
+      dtPerSample,           vectorValue(x),        vectorValue(y),
+      vectorValue(thetacos), vectorValue(thetasin), vectorValue(vx),
+      vectorValue(vy),       vectorValue(omega),    vectorValue(ax),
+      vectorValue(ay),       vectorValue(alpha),    matrixValue(Fx),
+      matrixValue(Fy)};
 }
 
 }  // namespace trajopt

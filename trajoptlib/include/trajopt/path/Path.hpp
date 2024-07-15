@@ -8,9 +8,6 @@
 #include <vector>
 
 #include "trajopt/constraint/Constraint.hpp"
-#include "trajopt/drivetrain/DifferentialDrivetrain.hpp"
-#include "trajopt/drivetrain/SwerveDrivetrain.hpp"
-#include "trajopt/solution/SwerveSolution.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 
 namespace trajopt {
@@ -27,29 +24,23 @@ struct TRAJOPT_DLLEXPORT Waypoint {
 };
 
 /**
- * Swerve path.
+ * A path.
+ *
+ * @tparam Drivetrain The drivetrain type (e.g., swerve, differential).
+ * @tparam Solution The solution type (e.g., swerve, differential).
  */
-struct TRAJOPT_DLLEXPORT SwervePath {
+template <typename Drivetrain, typename Solution>
+struct TRAJOPT_DLLEXPORT Path {
   /// Waypoints along the path.
   std::vector<Waypoint> waypoints;
 
   /// Drivetrain of the robot.
-  SwerveDrivetrain drivetrain;
+  Drivetrain drivetrain;
 
-  /// A vector of callbacks to be called with the intermediate SwerveSolution
-  /// and a user-specified handle at every iteration of the solver.
-  std::vector<std::function<void(SwerveSolution&, int64_t)>> callbacks;
-};
-
-/**
- * Differential path.
- */
-struct TRAJOPT_DLLEXPORT DifferentialPath {
-  /// Waypoints along the path.
-  std::vector<Waypoint> waypoints;
-
-  /// Drivetrain of the robot.
-  DifferentialDrivetrain drivetrain;
+  /// A vector of callbacks to be called with the intermediate solution and a
+  /// user-specified handle at every iteration of the solver.
+  std::vector<std::function<void(Solution& solution, int64_t handle)>>
+      callbacks;
 };
 
 }  // namespace trajopt
