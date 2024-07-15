@@ -91,11 +91,17 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
   /// The heading.
   double heading = 0.0;
 
-  /// The left wheels velocity.
+  /// The left wheel velocity.
   double velocityL = 0.0;
 
-  /// The right wheels velocity.
+  /// The right wheel velocity.
   double velocityR = 0.0;
+
+  /// The left wheel force.
+  double forceL = 0.0;
+
+  /// The right wheel force.
+  double forceR = 0.0;
 
   DifferentialTrajectorySample() = default;
 
@@ -105,18 +111,22 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
    * @param timestamp The timestamp.
    * @param x The x coordinate. @param y The y coordinate.
    * @param heading The heading.
-   * @param velocityL The left wheels velocity.
-   * @param velocityR The right wheels velocity.
+   * @param velocityL The left wheel velocity.
+   * @param velocityR The right wheel velocity.
+   * @param forceL The left wheel force.
+   * @param forceR The right wheel force.
    */
   DifferentialTrajectorySample(double timestamp, double x, double y,
                                double heading, double velocityL,
-                               double velocityR)
+                               double velocityR, double forceL, double forceR)
       : timestamp{timestamp},
         x{x},
         y{y},
         heading{heading},
         velocityL{velocityL},
-        velocityR{velocityR} {}
+        velocityR{velocityR},
+        forceL{forceL},
+        forceR{forceR} {}
 };
 
 /**
@@ -149,7 +159,8 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectory {
       samples.emplace_back(
           ts, solution.x[sample], solution.y[sample],
           std::atan2(solution.thetasin[sample], solution.thetacos[sample]),
-          solution.vL[sample], solution.vR[sample]);
+          solution.vL[sample], solution.vR[sample], solution.FL[sample],
+          solution.FR[sample]);
       ts += solution.dt[sample];
     }
   }
