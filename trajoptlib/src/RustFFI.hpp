@@ -7,12 +7,12 @@
 
 #include <rust/cxx.h>
 
-#include "trajopt/path/DifferentialPathBuilder.hpp"
-#include "trajopt/path/SwervePathBuilder.hpp"
+#include "trajopt/DifferentialTrajectoryGenerator.hpp"
+#include "trajopt/SwerveTrajectoryGenerator.hpp"
 
 namespace trajopt::rsffi {
 
-struct HolonomicTrajectory;
+struct SwerveTrajectory;
 struct DifferentialTrajectory;
 struct Pose2d;
 struct SwerveDrivetrain;
@@ -60,13 +60,12 @@ class SwervePathBuilder {
                              rust::Vec<double> x, rust::Vec<double> y,
                              double radius);
 
-  // TODO: Return std::expected<HolonomicTrajectory, std::string> instead of
+  // TODO: Return std::expected<SwerveTrajectory, std::string> instead of
   // throwing exception, once cxx supports it
-  HolonomicTrajectory generate(bool diagnostics = false,
-                               int64_t handle = 0) const;
+  SwerveTrajectory generate(bool diagnostics = false, int64_t handle = 0) const;
 
   void add_progress_callback(
-      rust::Fn<void(HolonomicTrajectory, int64_t)> callback);
+      rust::Fn<void(SwerveTrajectory, int64_t)> callback);
 
  private:
   trajopt::SwervePathBuilder path_builder;

@@ -9,19 +9,11 @@
 #include <stdexcept>
 #include <vector>
 
-#include "trajopt/DifferentialTrajectoryGenerator.hpp"
-#include "trajopt/SwerveTrajectoryGenerator.hpp"
 #include "trajopt/constraint/AngularVelocityMaxMagnitudeConstraint.hpp"
 #include "trajopt/constraint/LinearAccelerationMaxMagnitudeConstraint.hpp"
 #include "trajopt/constraint/LinearVelocityDirectionConstraint.hpp"
 #include "trajopt/constraint/LinearVelocityMaxMagnitudeConstraint.hpp"
 #include "trajopt/constraint/PointAtConstraint.hpp"
-#include "trajopt/drivetrain/DifferentialDrivetrain.hpp"
-#include "trajopt/path/DifferentialPathBuilder.hpp"
-#include "trajopt/trajectory/DifferentialTrajectory.hpp"
-#include "trajopt/trajectory/DifferentialTrajectorySample.hpp"
-#include "trajopt/trajectory/HolonomicTrajectory.hpp"
-#include "trajopt/trajectory/HolonomicTrajectorySample.hpp"
 #include "trajopt/util/Cancellation.hpp"
 #include "trajoptlib/src/lib.rs.h"
 
@@ -181,13 +173,13 @@ void SwervePathBuilder::sgmt_polygon_obstacle(size_t from_index,
                                               .points = std::move(cppPoints)});
 }
 
-HolonomicTrajectory SwervePathBuilder::generate(bool diagnostics,
-                                                int64_t handle) const {
+SwerveTrajectory SwervePathBuilder::generate(bool diagnostics,
+                                             int64_t handle) const {
   trajopt::SwerveTrajectoryGenerator generator{path_builder, handle};
   if (auto sol = generator.Generate(diagnostics); sol.has_value()) {
-    trajopt::HolonomicTrajectory cppTrajectory{sol.value()};
+    trajopt::SwerveTrajectory cppTrajectory{sol.value()};
 
-    rust::Vec<HolonomicTrajectorySample> rustSamples;
+    rust::Vec<SwerveTrajectorySample> rustSamples;
     for (const auto& cppSample : cppTrajectory.samples) {
       rust::Vec<double> fx;
       std::copy(cppSample.moduleForcesX.begin(), cppSample.moduleForcesX.end(),
@@ -197,13 +189,13 @@ HolonomicTrajectory SwervePathBuilder::generate(bool diagnostics,
       std::copy(cppSample.moduleForcesY.begin(), cppSample.moduleForcesY.end(),
                 std::back_inserter(fy));
 
-      rustSamples.push_back(HolonomicTrajectorySample{
+      rustSamples.push_back(SwerveTrajectorySample{
           cppSample.timestamp, cppSample.x, cppSample.y, cppSample.heading,
           cppSample.velocityX, cppSample.velocityY, cppSample.angularVelocity,
           std::move(fx), std::move(fy)});
     }
 
-    return HolonomicTrajectory{std::move(rustSamples)};
+    return SwerveTrajectory{std::move(rustSamples)};
   } else {
     throw std::runtime_error{sol.error()};
   }
@@ -213,18 +205,18 @@ HolonomicTrajectory SwervePathBuilder::generate(bool diagnostics,
  * Add a callback that will be called on each iteration of the solver.
  *
  * @param callback: a `fn` (not a closure) to be executed. The callback's
- * first parameter will be a `trajopt::HolonomicTrajectory`, and the second
+ * first parameter will be a `trajopt::SwerveTrajectory`, and the second
  * parameter will be an `i64` equal to the handle passed in `generate()`
  *
  * This function can be called multiple times to add multiple callbacks.
  */
 void SwervePathBuilder::add_progress_callback(
-    rust::Fn<void(HolonomicTrajectory, int64_t)> callback) {
+    rust::Fn<void(SwerveTrajectory, int64_t)> callback) {
   path_builder.AddIntermediateCallback(
       [=](trajopt::SwerveSolution& solution, int64_t handle) {
-        trajopt::HolonomicTrajectory cppTrajectory{solution};
+        trajopt::SwerveTrajectory cppTrajectory{solution};
 
-        rust::Vec<HolonomicTrajectorySample> rustSamples;
+        rust::Vec<SwerveTrajectorySample> rustSamples;
         for (const auto& cppSample : cppTrajectory.samples) {
           rust::Vec<double> fx;
           std::copy(cppSample.moduleForcesX.begin(),
@@ -234,13 +226,13 @@ void SwervePathBuilder::add_progress_callback(
           std::copy(cppSample.moduleForcesY.begin(),
                     cppSample.moduleForcesY.end(), std::back_inserter(fy));
 
-          rustSamples.push_back(HolonomicTrajectorySample{
+          rustSamples.push_back(SwerveTrajectorySample{
               cppSample.timestamp, cppSample.x, cppSample.y, cppSample.heading,
               cppSample.velocityX, cppSample.velocityY,
               cppSample.angularVelocity, std::move(fx), std::move(fy)});
         }
 
-        callback(HolonomicTrajectory{rustSamples}, handle);
+        callback(SwerveTrajectory{rustSamples}, handle);
       });
 }
 

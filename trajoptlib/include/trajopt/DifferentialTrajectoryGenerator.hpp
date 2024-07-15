@@ -4,19 +4,169 @@
 
 #include <stdint.h>
 
+#include <cmath>
 #include <functional>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <sleipnir/autodiff/Variable.hpp>
 #include <sleipnir/optimization/OptimizationProblem.hpp>
 
 #include "trajopt/path/PathBuilder.hpp"
-#include "trajopt/solution/DifferentialSolution.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 #include "trajopt/util/expected"
 
 namespace trajopt {
+
+/**
+ * A differential drivetrain physical model.
+ */
+struct TRAJOPT_DLLEXPORT DifferentialDrivetrain {
+  /// The mass of the robot (kg).
+  double mass;
+
+  /// The moment of inertia of the robot about the origin (kg−m²).
+  double moi;
+
+  /// Radius of wheel (m).
+  double wheelRadius;
+
+  /// Maximum angular velocity of wheel (rad/s).
+  double wheelMaxAngularVelocity;
+
+  /// Maximum torque applied to wheel (N−m).
+  double wheelMaxTorque;
+
+  /// Distance between the two driverails (m).
+  double trackwidth;
+};
+
+/**
+ * The holonomic trajectory optimization solution.
+ */
+struct TRAJOPT_DLLEXPORT DifferentialSolution {
+  /// Times between samples.
+  std::vector<double> dt;
+
+  /// X positions.
+  std::vector<double> x;
+
+  /// Y positions.
+  std::vector<double> y;
+
+  /// Heading cosine.
+  std::vector<double> thetacos;
+
+  /// Heading sine.
+  std::vector<double> thetasin;
+
+  /// The left velocities.
+  std::vector<double> vL;
+
+  /// The right velocities.
+  std::vector<double> vR;
+
+  /// The force of the left driverail wheels.
+  std::vector<double> FL;
+
+  /// The force of the right driverail wheels.
+  std::vector<double> FR;
+};
+
+/**
+ * Differential trajectory sample.
+ */
+class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
+ public:
+  /// The timestamp.
+  double timestamp = 0.0;
+
+  /// The x coordinate.
+  double x = 0.0;
+
+  /// The y coordinate.
+  double y = 0.0;
+
+  /// The heading.
+  double heading = 0.0;
+
+  /// The left wheels velocity.
+  double velocityL = 0.0;
+
+  /// The right wheels velocity.
+  double velocityR = 0.0;
+
+  DifferentialTrajectorySample() = default;
+
+  /**
+   * Construct a DifferentialTrajectorySample.
+   *
+   * @param timestamp The timestamp.
+   * @param x The x coordinate. @param y The y coordinate.
+   * @param heading The heading.
+   * @param velocityL The left wheels velocity.
+   * @param velocityR The right wheels velocity.
+   */
+  DifferentialTrajectorySample(double timestamp, double x, double y,
+                               double heading, double velocityL,
+                               double velocityR)
+      : timestamp{timestamp},
+        x{x},
+        y{y},
+        heading{heading},
+        velocityL{velocityL},
+        velocityR{velocityR} {}
+};
+
+/**
+ * Differential trajectory.
+ */
+class TRAJOPT_DLLEXPORT DifferentialTrajectory {
+ public:
+  /// Trajectory samples.
+  std::vector<DifferentialTrajectorySample> samples;
+
+  DifferentialTrajectory() = default;
+
+  /**
+   * Construct a DifferentialTrajectory from samples.
+   *
+   * @param samples The samples.
+   */
+  explicit DifferentialTrajectory(
+      std::vector<DifferentialTrajectorySample> samples)
+      : samples{std::move(samples)} {}
+
+  /**
+   * Construct a DifferentialTrajectory from a swerve solution.
+   *
+   * @param solution The swerve solution.
+   */
+  explicit DifferentialTrajectory(const DifferentialSolution& solution) {
+    double ts = 0.0;
+    for (size_t sample = 0; sample < solution.x.size(); ++sample) {
+      samples.emplace_back(
+          ts, solution.x[sample], solution.y[sample],
+          std::atan2(solution.thetasin[sample], solution.thetacos[sample]),
+          solution.vL[sample], solution.vR[sample]);
+      ts += solution.dt[sample];
+    }
+  }
+};
+
+/**
+ * A differential drive path.
+ */
+using DifferentialPath = Path<DifferentialDrivetrain, DifferentialSolution>;
+
+/**
+ * Builds a differential drive path using information about how the robot
+ * must travel through a series of waypoints. This path can be converted
+ * to a trajectory using DifferentialTrajectoryGenerator.
+ */
+using DifferentialPathBuilder =
+    PathBuilder<DifferentialDrivetrain, DifferentialSolution>;
 
 /**
  * This trajectory generator class contains functions to generate

@@ -9,19 +9,21 @@
 #include <vector>
 
 #include "trajopt/constraint/Constraint.hpp"
-#include "trajopt/drivetrain/DifferentialDrivetrain.hpp"
-#include "trajopt/drivetrain/SwerveDrivetrain.hpp"
 #include "trajopt/obstacle/Bumpers.hpp"
 #include "trajopt/obstacle/Obstacle.hpp"
 #include "trajopt/path/Path.hpp"
-#include "trajopt/solution/DifferentialSolution.hpp"
-#include "trajopt/solution/SwerveSolution.hpp"
 #include "trajopt/util/GenerateLinearInitialGuess.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 
 namespace trajopt {
 
-template <typename Drivetrain, typename Path, typename Solution>
+/**
+ * Path builder.
+ *
+ * @tparam Drivetrain The drivetrain type (e.g., swerve, differential).
+ * @tparam Solution The solution type (e.g., swerve, differential).
+ */
+template <typename Drivetrain, typename Solution>
 class TRAJOPT_DLLEXPORT PathBuilder {
  public:
   /**
@@ -38,7 +40,7 @@ class TRAJOPT_DLLEXPORT PathBuilder {
    *
    * @return the path
    */
-  Path& GetPath() { return path; }
+  Path<Drivetrain, Solution>& GetPath() { return path; }
 
   /**
    * Create a pose waypoint constraint on the waypoint at the provided
@@ -318,20 +320,22 @@ class TRAJOPT_DLLEXPORT PathBuilder {
   }
 
   /**
-   * Add a callback to retrieve the state of the solver as a SwerveSolution.
+   * Add a callback to retrieve the state of the solver as a Solution.
+   *
    * This callback will run on every iteration of the solver.
-   * The callback's first parameter is the SwerveSolution based on the solver's
-   * state at that iteration. The second parameter is the handle passed into
-   * Generate().
-   * @param callback the callback
+   *
+   * @param callback A callback whose first parameter is the Solution based on
+   *     the solver's state at that iteration, and second parameter is the
+   *     handle passed into Generate().
+   *
    */
   void AddIntermediateCallback(
-      const std::function<void(SwerveSolution&, int64_t)> callback) {
+      const std::function<void(Solution& solution, int64_t handle)> callback) {
     path.callbacks.push_back(callback);
   }
 
  protected:
-  Path path;
+  Path<Drivetrain, Solution> path;
 
   std::vector<Bumpers> bumpers;
 
@@ -352,21 +356,5 @@ class TRAJOPT_DLLEXPORT PathBuilder {
     }
   }
 };
-
-/**
- * Builds a swerve path using information about how the robot
- * must travel through a series of waypoints. This path can be converted
- * to a trajectory using SwerveTrajectoryGenerator.
- */
-using SwervePathBuilder =
-    PathBuilder<SwerveDrivetrain, SwervePath, SwerveSolution>;
-
-/**
- * Builds a differential drive path using information about how the robot
- * must travel through a series of waypoints. This path can be converted
- * to a trajectory using DifferentialTrajectoryGenerator.
- */
-using DifferentialPathBuilder =
-    PathBuilder<DifferentialDrivetrain, DifferentialPath, DifferentialSolution>;
 
 }  // namespace trajopt
