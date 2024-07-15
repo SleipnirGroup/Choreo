@@ -9,6 +9,7 @@
 
 namespace trajopt {
 
+// TODO: Replace with std::vector.append_range() from C++23
 template <typename T>
 inline void append_vector(std::vector<T>& base,
                           const std::vector<T>& newItems) {
