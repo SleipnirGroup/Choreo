@@ -35,7 +35,7 @@ inline std::vector<double> Linspace(double startValue, double endValue,
                                     size_t numSamples) {
   std::vector<double> result;
   double delta = (endValue - startValue) / numSamples;
-  for (size_t index = 1; index <= numSamples; index++) {
+  for (size_t index = 1; index <= numSamples; ++index) {
     result.push_back(startValue + index * delta);
   }
   return result;

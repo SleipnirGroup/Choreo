@@ -73,7 +73,7 @@ void SwervePathBuilder::WptObstacle(size_t index, const Obstacle& obstacle) {
     for (auto& obstaclePoint : obstacle.points) {
       // First apply constraint for all but last edge
       for (size_t bumperCornerIndex = 0;
-           bumperCornerIndex < bumperCornerCount - 1; bumperCornerIndex++) {
+           bumperCornerIndex < bumperCornerCount - 1; ++bumperCornerIndex) {
         WptConstraint(index, LinePointConstraint{
                                  _bumpers.points.at(bumperCornerIndex),
                                  _bumpers.points.at(bumperCornerIndex + 1),
@@ -94,7 +94,7 @@ void SwervePathBuilder::WptObstacle(size_t index, const Obstacle& obstacle) {
       if (obstacleCornerCount > 1) {
         for (size_t obstacleCornerIndex = 0;
              obstacleCornerIndex < obstacleCornerCount - 1;
-             obstacleCornerIndex++) {
+             ++obstacleCornerIndex) {
           WptConstraint(
               index,
               PointLineConstraint{
@@ -135,7 +135,7 @@ void SwervePathBuilder::SgmtObstacle(size_t fromIndex, size_t toIndex,
     for (auto& obstaclePoint : obstacle.points) {
       // First apply constraint for all but last edge
       for (size_t bumperCornerIndex = 0;
-           bumperCornerIndex < bumperCornerCount - 1; bumperCornerIndex++) {
+           bumperCornerIndex < bumperCornerCount - 1; ++bumperCornerIndex) {
         SgmtConstraint(
             fromIndex, toIndex,
             LinePointConstraint{_bumpers.points.at(bumperCornerIndex),
@@ -157,7 +157,7 @@ void SwervePathBuilder::SgmtObstacle(size_t fromIndex, size_t toIndex,
       if (obstacleCornerCount > 1) {
         for (size_t obstacleCornerIndex = 0;
              obstacleCornerIndex < obstacleCornerCount - 1;
-             obstacleCornerIndex++) {
+             ++obstacleCornerIndex) {
           SgmtConstraint(
               fromIndex, toIndex,
               PointLineConstraint{
