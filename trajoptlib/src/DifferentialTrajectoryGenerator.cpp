@@ -14,7 +14,7 @@ namespace trajopt {
 
 DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     DifferentialPathBuilder pathbuilder, int64_t handle)
-    : path(pathbuilder.GetPath()), N(pathbuilder.GetControlIntervalCounts()) {
+    : path(pathbuilder.GetPath()), Ns(pathbuilder.GetControlIntervalCounts()) {
   auto initialGuess = pathbuilder.CalculateInitialGuess();
 
   callbacks.emplace_back([this, handle = handle] {
@@ -35,9 +35,9 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
       callback(soln, handle);
     }
   });
-  size_t wptCnt = 1 + N.size();
-  size_t sgmtCnt = N.size();
-  size_t sampTot = GetIndex(N, wptCnt, 0);
+  size_t wptCnt = 1 + Ns.size();
+  size_t sgmtCnt = Ns.size();
+  size_t sampTot = GetIndex(Ns, wptCnt, 0);
 
   x.reserve(sampTot);
   y.reserve(sampTot);
@@ -51,7 +51,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   FL.reserve(sampTot);
   FR.reserve(sampTot);
 
-  dt.reserve(sgmtCnt);
+  dts.reserve(sgmtCnt);
 
   for (size_t index = 0; index < sampTot; ++index) {
     x.emplace_back(problem.DecisionVariable());
@@ -70,17 +70,17 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   double minWidth = path.drivetrain.trackwidth;
 
   for (size_t sgmtIndex = 0; sgmtIndex < sgmtCnt; ++sgmtIndex) {
-    dt.emplace_back(problem.DecisionVariable());
-    problem.SubjectTo(dt.at(sgmtIndex) * path.drivetrain.wheelRadius *
+    dts.emplace_back(problem.DecisionVariable());
+    problem.SubjectTo(dts.at(sgmtIndex) * path.drivetrain.wheelRadius *
                           path.drivetrain.wheelMaxAngularVelocity <=
                       minWidth);
   }
 
   // Minimize total time
   sleipnir::Variable T_tot = 0;
-  for (size_t sgmtIndex = 0; sgmtIndex < N.size(); ++sgmtIndex) {
-    auto& dt_sgmt = dt.at(sgmtIndex);
-    auto N_sgmt = N.at(sgmtIndex);
+  for (size_t sgmtIndex = 0; sgmtIndex < Ns.size(); ++sgmtIndex) {
+    auto& dt_sgmt = dts.at(sgmtIndex);
+    auto N_sgmt = Ns.at(sgmtIndex);
     auto T_sgmt = dt_sgmt * static_cast<int>(N_sgmt);
     T_tot += T_sgmt;
 
@@ -91,11 +91,11 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
 
   // Apply kinematics constraints
   for (size_t wptIndex = 1; wptIndex < wptCnt; ++wptIndex) {
-    size_t N_sgmt = N.at(wptIndex - 1);
-    auto dt_sgmt = dt.at(wptIndex - 1);
+    size_t N_sgmt = Ns.at(wptIndex - 1);
+    auto dt_sgmt = dts.at(wptIndex - 1);
 
     for (size_t sampIndex = 0; sampIndex < N_sgmt; ++sampIndex) {
-      size_t index = GetIndex(N, wptIndex, sampIndex);
+      size_t index = GetIndex(Ns, wptIndex, sampIndex);
 
       Translation2v x_n{x.at(index), y.at(index)};
       Translation2v x_n_1{x.at(index - 1), y.at(index - 1)};
@@ -166,7 +166,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   for (size_t wptIndex = 0; wptIndex < wptCnt; ++wptIndex) {
     for (auto& constraint : path.waypoints.at(wptIndex).waypointConstraints) {
       // First index of next wpt - 1
-      size_t index = GetIndex(N, wptIndex + 1, 0) - 1;
+      size_t index = GetIndex(Ns, wptIndex + 1, 0) - 1;
 
       Pose2v pose{
           x.at(index), y.at(index), {thetacos.at(index), thetasin.at(index)}};
@@ -197,8 +197,8 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   for (size_t sgmtIndex = 0; sgmtIndex < sgmtCnt; ++sgmtIndex) {
     for (auto& constraint :
          path.waypoints.at(sgmtIndex + 1).segmentConstraints) {
-      size_t startIndex = GetIndex(N, sgmtIndex + 1, 0);
-      size_t endIndex = GetIndex(N, sgmtIndex + 2, 0);
+      size_t startIndex = GetIndex(Ns, sgmtIndex + 1, 0);
+      size_t endIndex = GetIndex(Ns, sgmtIndex + 2, 0);
 
       for (size_t index = startIndex; index < endIndex; ++index) {
         Pose2v pose{
@@ -296,13 +296,14 @@ void DifferentialTrajectoryGenerator::ApplyInitialGuess(
 
 DifferentialSolution
 DifferentialTrajectoryGenerator::ConstructDifferentialSolution() {
-  std::vector<double> dtPerSamp;
-  for (size_t sgmtIndex = 0; sgmtIndex < N.size(); ++sgmtIndex) {
-    size_t N_sgmt = N.at(sgmtIndex);
-    sleipnir::Variable dt_sgmt = dt.at(sgmtIndex);
-    double dt_val = dt_sgmt.Value();
-    for (size_t i = 0; i < N_sgmt; ++i) {
-      dtPerSamp.push_back(dt_val);
+  std::vector<double> dtPerSample;
+  for (size_t sgmtIndex = 0; sgmtIndex < Ns.size(); ++sgmtIndex) {
+    auto N = Ns.at(sgmtIndex);
+    auto dt = dts.at(sgmtIndex);
+
+    double dt_value = dt.Value();
+    for (size_t i = 0; i < N; ++i) {
+      dtPerSample.push_back(dt_value);
     }
   }
 
@@ -315,15 +316,9 @@ DifferentialTrajectoryGenerator::ConstructDifferentialSolution() {
   };
 
   return DifferentialSolution{
-      dtPerSamp,
-      vectorValue(x),
-      vectorValue(y),
-      vectorValue(thetacos),
-      vectorValue(thetasin),
-      vectorValue(vL),
-      vectorValue(vR),
-      vectorValue(FL),
-      vectorValue(FR),
+      dtPerSample,           vectorValue(x),        vectorValue(y),
+      vectorValue(thetacos), vectorValue(thetasin), vectorValue(vL),
+      vectorValue(vR),       vectorValue(FL),       vectorValue(FR),
   };
 }
 
