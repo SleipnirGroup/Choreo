@@ -9,6 +9,25 @@ type Props = {
 
 type State = object;
 
+const targetRadius = 0.1;
+
+// Find the side length that makes an equilateral triangle have the same area as
+// a circle.
+//
+//   triangle area = circle area
+//   1/2 bh = πr²
+//
+// An equilateral triangle with side length l has a height of √3/2 l.
+//
+//   1/2 (l)(√3/2 l) = πr²
+//   √3/4 l² = πr²
+//   l² = 4πr²/√3
+//   l = √(4πr²/√3)
+//   l = 2r√(π/√3)
+//   l = 2r√(π√3/3)
+const targetSideLength =
+  2 * targetRadius * Math.sqrt((Math.PI * Math.sqrt(3)) / 3);
+
 class InterpolatedRobot extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
@@ -22,6 +41,15 @@ class InterpolatedRobot extends Component<Props, State> {
       this.props.timestamp,
       this.context.model.document.pathlist.activePath.generated
     );
+
+    const headingPointSideLength =
+      targetSideLength *
+      Math.min(
+        this.context.model.document.robotConfig.bumperLength,
+        this.context.model.document.robotConfig.bumperWidth
+      );
+    const headingPointHeight = (Math.sqrt(3) / 2) * headingPointSideLength;
+
     return (
       <g
         transform={`translate(${pose1.x}, ${pose1.y}) rotate(${
@@ -48,12 +76,16 @@ class InterpolatedRobot extends Component<Props, State> {
           vectorEffect={"non-scaling-stroke"}
           style={{ pointerEvents: "none" }}
         />
-        <circle
-          cx={this.context.model.document.robotConfig.bumperLength / 2}
-          cy={0}
-          r={0.1}
+        {/* Heading point */}
+        <polygon
+          transform={`translate(${this.context.model.document.robotConfig.bumperLength / 2},0)`}
           fill="white"
-        ></circle>
+          points={
+            `${-headingPointHeight / 2},${headingPointSideLength / 2} ` +
+            `${-headingPointHeight / 2},${-headingPointSideLength / 2} ` +
+            `${headingPointHeight / 2},${0} `
+          }
+        ></polygon>
         {/* Wheel locations */}
         <circle
           cx={this.context.model.document.robotConfig.wheelbase / 2}
