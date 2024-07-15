@@ -11,7 +11,7 @@ use tauri::{
     api::{dialog::blocking::FileDialogBuilder, file},
     Manager,
 };
-use trajoptlib::{HolonomicTrajectory, Pose2d, SwerveDrivetrain, SwerveModule, SwervePathBuilder};
+use trajoptlib::{Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory, Translation2d};
 
 #[derive(Clone, serde::Serialize, Debug)]
 struct OpenFileEventPayload<'a> {
@@ -271,7 +271,7 @@ async fn cancel() {
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 struct ProgressUpdate {
-    traj: HolonomicTrajectory,
+    traj: SwerveTrajectory,
     handle: i64,
 }
 
@@ -286,7 +286,7 @@ async fn generate_trajectory(
     polygonObstacles: Vec<PolygonObstacle>,
     // The handle referring to this path for the solver state callback
     handle: i64,
-) -> Result<HolonomicTrajectory, String> {
+) -> Result<SwerveTrajectory, String> {
     let mut path_builder = SwervePathBuilder::new();
     let mut wpt_cnt: usize = 0;
     let mut rm: Vec<usize> = Vec::new();
@@ -410,34 +410,25 @@ async fn generate_trajectory(
     let drivetrain = SwerveDrivetrain {
         mass: config.mass,
         moi: config.rotationalInertia,
+        wheel_radius: config.wheelRadius,
+        wheel_max_angular_velocity: config.wheelMaxVelocity,
+        wheel_max_torque: config.wheelMaxTorque,
         modules: vec![
-            SwerveModule {
+            Translation2d {
                 x: half_wheel_base,
                 y: half_track_width,
-                wheel_radius: config.wheelRadius,
-                wheel_max_angular_velocity: config.wheelMaxVelocity,
-                wheel_max_torque: config.wheelMaxTorque,
             },
-            SwerveModule {
+            Translation2d {
                 x: half_wheel_base,
                 y: -half_track_width,
-                wheel_radius: config.wheelRadius,
-                wheel_max_angular_velocity: config.wheelMaxVelocity,
-                wheel_max_torque: config.wheelMaxTorque,
             },
-            SwerveModule {
+            Translation2d {
                 x: -half_wheel_base,
                 y: half_track_width,
-                wheel_radius: config.wheelRadius,
-                wheel_max_angular_velocity: config.wheelMaxVelocity,
-                wheel_max_torque: config.wheelMaxTorque,
             },
-            SwerveModule {
+            Translation2d {
                 x: -half_wheel_base,
                 y: -half_track_width,
-                wheel_radius: config.wheelRadius,
-                wheel_max_angular_velocity: config.wheelMaxVelocity,
-                wheel_max_torque: config.wheelMaxTorque,
             },
         ],
     };
@@ -463,7 +454,7 @@ async fn generate_trajectory(
  * constructed in a static context.
  */
 static PROGRESS_SENDER_LOCK: OnceLock<Sender<ProgressUpdate>> = OnceLock::new();
-fn solver_status_callback(traj: HolonomicTrajectory, handle: i64) {
+fn solver_status_callback(traj: SwerveTrajectory, handle: i64) {
     let tx_opt = PROGRESS_SENDER_LOCK.get();
     if let Some(tx) = tx_opt {
         let _ = tx.send(ProgressUpdate { traj, handle });

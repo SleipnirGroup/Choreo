@@ -3,12 +3,13 @@
 #include <vector>
 
 #include <catch2/catch_test_macros.hpp>
-#include <trajopt/SwerveTrajectoryGenerator.hpp>
+#include <trajopt/DifferentialTrajectoryGenerator.hpp>
 
-TEST_CASE("SwervePathBuilder - Linear initial guess", "[SwervePathBuilder]") {
+TEST_CASE("DifferentialPathBuilder - Linear initial guess",
+          "[DifferentialPathBuilder]") {
   using namespace trajopt;
 
-  trajopt::SwervePathBuilder path;
+  trajopt::DifferentialPathBuilder path;
   path.WptInitialGuessPoint(0, Pose2d{0.0, 0.0, 0.0});  // at 0
 
   path.SgmtInitialGuessPoints(

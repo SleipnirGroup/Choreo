@@ -39,7 +39,7 @@ jobs:
           node-version: 18.x
           cache: "npm"
 
-      - run: npm install prettier
+      - run: npm install prettier@3.3.3
 
       - uses: actions/setup-python@v5
         with:

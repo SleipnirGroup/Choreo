@@ -2,9 +2,9 @@
 
 #include <numbers>
 
-#include <trajopt/SwerveTrajectoryGenerator.hpp>
+#include <trajopt/DifferentialTrajectoryGenerator.hpp>
 
-// SwervePathBuilder is used to build paths that are optimized into full
+// DifferentialPathBuilder is used to build paths that are optimized into full
 // trajectories.
 //
 // "Wpt" stands for waypoint, an instantaneous moment in the path where certain
@@ -14,81 +14,81 @@
 // waypoints where constraints can also be applied.
 
 int main() {
-  trajopt::SwerveDrivetrain swerveDrivetrain{
+  trajopt::DifferentialDrivetrain differentialDrivetrain{
       .mass = 45,
       .moi = 6,
-      .wheelRadius = 0.04,
+      .wheelRadius = 0.08,
       .wheelMaxAngularVelocity = 70,
-      .wheelMaxTorque = 2,
-      .modules = {{+0.6, +0.6}, {+0.6, -0.6}, {-0.6, +0.6}, {-0.6, -0.6}}};
+      .wheelMaxTorque = 5,
+      .trackwidth = 0.6};
 
   trajopt::LinearVelocityMaxMagnitudeConstraint zeroLinearVelocity{0.0};
   trajopt::AngularVelocityMaxMagnitudeConstraint zeroAngularVelocity{0.0};
 
-  // Example 1: Swerve, one meter forward motion profile
+  // Example 1: Differential, one meter forward motion profile
   {
-    trajopt::SwervePathBuilder path;
-    path.SetDrivetrain(swerveDrivetrain);
+    trajopt::DifferentialPathBuilder path;
+    path.SetDrivetrain(differentialDrivetrain);
     path.PoseWpt(0, 0.0, 0.0, 0.0);
     path.PoseWpt(1, 1.0, 0.0, 0.0);
     path.WptConstraint(0, zeroLinearVelocity);
     path.WptConstraint(1, zeroLinearVelocity);
     path.ControlIntervalCounts({40});
 
-    trajopt::SwerveTrajectoryGenerator generator{path};
+    trajopt::DifferentialTrajectoryGenerator generator{path};
     [[maybe_unused]]
     auto solution = generator.Generate(true);
   }
 
-  // Example 2: Swerve, basic curve
+  // Example 2: Differential, basic curve
   {
-    trajopt::SwervePathBuilder path;
-    path.SetDrivetrain(swerveDrivetrain);
+    trajopt::DifferentialPathBuilder path;
+    path.SetDrivetrain(differentialDrivetrain);
     path.PoseWpt(0, 1.0, 1.0, -std::numbers::pi / 2);
     path.PoseWpt(1, 2.0, 0.0, 0.0);
     path.WptConstraint(0, zeroLinearVelocity);
     path.WptConstraint(1, zeroLinearVelocity);
     path.ControlIntervalCounts({40});
 
-    trajopt::SwerveTrajectoryGenerator generator{path};
+    trajopt::DifferentialTrajectoryGenerator generator{path};
     [[maybe_unused]]
     auto solution = generator.Generate(true);
   }
 
-  // Example 3: Swerve, three waypoints
+  // Example 3: Differential, three waypoints
   {
-    trajopt::SwervePathBuilder path;
-    path.SetDrivetrain(swerveDrivetrain);
+    trajopt::DifferentialPathBuilder path;
+    path.SetDrivetrain(differentialDrivetrain);
     path.PoseWpt(0, 0.0, 0.0, std::numbers::pi / 2);
     path.PoseWpt(1, 1.0, 1.0, 0.0);
     path.PoseWpt(2, 2.0, 0.0, std::numbers::pi / 2);
     path.WptConstraint(0, zeroLinearVelocity);
     path.WptConstraint(1, zeroLinearVelocity);
-    path.ControlIntervalCounts({40, 40});
+    path.ControlIntervalCounts({50, 50});
 
-    trajopt::SwerveTrajectoryGenerator generator{path};
+    trajopt::DifferentialTrajectoryGenerator generator{path};
     [[maybe_unused]]
     auto solution = generator.Generate(true);
   }
 
-  // Example 4: Swerve, ending velocity
+  // Example 4: Differential, ending velocity
   {
-    trajopt::SwervePathBuilder path;
-    path.SetDrivetrain(swerveDrivetrain);
+    trajopt::DifferentialPathBuilder path;
+    path.SetDrivetrain(differentialDrivetrain);
     path.PoseWpt(0, 0.0, 0.0, 0.0);
     path.PoseWpt(1, 0.0, 1.0, 0.0);
     path.WptConstraint(0, zeroLinearVelocity);
     path.ControlIntervalCounts({40});
 
-    trajopt::SwerveTrajectoryGenerator generator{path};
+    trajopt::DifferentialTrajectoryGenerator generator{path};
     [[maybe_unused]]
     auto solution = generator.Generate(true);
   }
 
-  // Example 5: Swerve, circle obstacle
+  // Example 5: Differential, circle obstacle
   {
-    trajopt::SwervePathBuilder path;
-    path.SetDrivetrain(swerveDrivetrain);
+    trajopt::DifferentialPathBuilder path;
+    path.SetDrivetrain(differentialDrivetrain);
     path.PoseWpt(0, 0.0, 0.0, 0.0);
     trajopt::Obstacle obstacle{// Radius of 0.1
                                .safetyDistance = 0.1,
@@ -99,15 +99,15 @@ int main() {
     path.WptConstraint(1, zeroLinearVelocity);
     path.ControlIntervalCounts({40});
 
-    trajopt::SwerveTrajectoryGenerator generator{path};
+    trajopt::DifferentialTrajectoryGenerator generator{path};
     [[maybe_unused]]
     auto solution = generator.Generate(true);
   }
 
   // Example 6: Approach a pick up station at a certain direction
   {
-    trajopt::SwervePathBuilder path;
-    path.SetDrivetrain(swerveDrivetrain);
+    trajopt::DifferentialPathBuilder path;
+    path.SetDrivetrain(differentialDrivetrain);
 
     // Starting position
     path.PoseWpt(0, 0.0, 0.0, 0.0);
@@ -135,7 +135,7 @@ int main() {
     path.WptConstraint(4, zeroLinearVelocity);
     path.ControlIntervalCounts({40, 30, 30, 40});
 
-    trajopt::SwerveTrajectoryGenerator generator{path};
+    trajopt::DifferentialTrajectoryGenerator generator{path};
     [[maybe_unused]]
     auto solution = generator.Generate(true);
   }
@@ -144,8 +144,8 @@ int main() {
   {
     // Note that forcing a circular path is not a common problem in FRC. This
     // example is only here to demonstrate how various constraints work.
-    trajopt::SwervePathBuilder path;
-    path.SetDrivetrain(swerveDrivetrain);
+    trajopt::DifferentialPathBuilder path;
+    path.SetDrivetrain(differentialDrivetrain);
 
     path.PoseWpt(0, 0.0, 0.0, 0.0);
     path.SgmtConstraint(
@@ -164,9 +164,9 @@ int main() {
 
     path.WptConstraint(0, zeroLinearVelocity);
     path.WptConstraint(1, zeroLinearVelocity);
-    path.ControlIntervalCounts({30});
+    path.ControlIntervalCounts({50});
 
-    trajopt::SwerveTrajectoryGenerator generator{path};
+    trajopt::DifferentialTrajectoryGenerator generator{path};
     [[maybe_unused]]
     auto solution = generator.Generate(true);
   }
