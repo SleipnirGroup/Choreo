@@ -64,10 +64,10 @@ class TRAJOPT_DLLEXPORT SwerveTrajectoryGenerator {
   std::vector<std::vector<sleipnir::Variable>> Fy;
 
   /// Time Variables
-  std::vector<sleipnir::Variable> dt;
+  std::vector<sleipnir::Variable> dts;
 
   /// Discretization Constants
-  std::vector<size_t> N;
+  std::vector<size_t> Ns;
 
   sleipnir::OptimizationProblem problem;
   std::vector<std::function<void()>> callbacks;
