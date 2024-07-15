@@ -255,7 +255,7 @@ DifferentialTrajectoryGenerator::Generate(bool diagnostics) {
 void DifferentialTrajectoryGenerator::ApplyInitialGuess(
     const DifferentialSolution& solution) {
   size_t sampleTotal = x.size();
-  for (size_t sampleIndex = 0; sampleIndex < sampleTotal; sampleIndex++) {
+  for (size_t sampleIndex = 0; sampleIndex < sampleTotal; ++sampleIndex) {
     x[sampleIndex].SetValue(solution.x[sampleIndex]);
     y[sampleIndex].SetValue(solution.y[sampleIndex]);
     thetacos[sampleIndex].SetValue(solution.thetacos[sampleIndex]);
@@ -267,7 +267,7 @@ void DifferentialTrajectoryGenerator::ApplyInitialGuess(
   aL[0].SetValue(0.0);
   aR[0].SetValue(0.0);
 
-  for (size_t sampleIndex = 1; sampleIndex < sampleTotal; sampleIndex++) {
+  for (size_t sampleIndex = 1; sampleIndex < sampleTotal; ++sampleIndex) {
     double linearVelocity =
         std::hypot(solution.x[sampleIndex] - solution.x[sampleIndex - 1],
                    solution.y[sampleIndex] - solution.y[sampleIndex - 1]) /

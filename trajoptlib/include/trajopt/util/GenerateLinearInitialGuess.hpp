@@ -37,11 +37,11 @@ inline Solution GenerateLinearInitialGuess(
   initialGuess.thetasin.push_back(
       initialGuessPoints.front().front().Rotation().Sin());
 
-  for (size_t i = 0; i < sampTot; i++) {
+  for (size_t i = 0; i < sampTot; ++i) {
     initialGuess.dt.push_back((wptCnt * 5.0) / sampTot);
   }
 
-  for (size_t wptIndex = 1; wptIndex < wptCnt; wptIndex++) {
+  for (size_t wptIndex = 1; wptIndex < wptCnt; ++wptIndex) {
     size_t N_sgmt = controlIntervalCounts.at(wptIndex - 1);
     size_t guessPointCount = initialGuessPoints.at(wptIndex).size();
     size_t N_guessSgmt = N_sgmt / guessPointCount;
@@ -62,7 +62,7 @@ inline Solution GenerateLinearInitialGuess(
       initialGuess.thetasin.push_back(std::sin(theta));
     }
     for (size_t guessPointIndex = 1; guessPointIndex < guessPointCount - 1;
-         guessPointIndex++) {  // if three or more guess points
+         ++guessPointIndex) {  // if three or more guess points
       append_vector(
           initialGuess.x,
           Linspace(initialGuessPoints.at(wptIndex).at(guessPointIndex - 1).X(),

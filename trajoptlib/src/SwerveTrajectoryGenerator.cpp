@@ -87,7 +87,7 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   }
 
   double minWidth = INFINITY;
-  for (size_t i = 1; i < path.drivetrain.modules.size(); i++) {
+  for (size_t i = 1; i < path.drivetrain.modules.size(); ++i) {
     if (std::abs(path.drivetrain.modules.at(i - 1).X() -
                  path.drivetrain.modules.at(i).X()) != 0) {
       minWidth =
@@ -277,7 +277,7 @@ expected<SwerveSolution, std::string> SwerveTrajectoryGenerator::Generate(
 void SwerveTrajectoryGenerator::ApplyInitialGuess(
     const SwerveSolution& solution) {
   size_t sampleTotal = x.size();
-  for (size_t sampleIndex = 0; sampleIndex < sampleTotal; sampleIndex++) {
+  for (size_t sampleIndex = 0; sampleIndex < sampleTotal; ++sampleIndex) {
     x[sampleIndex].SetValue(solution.x[sampleIndex]);
     y[sampleIndex].SetValue(solution.y[sampleIndex]);
     thetacos[sampleIndex].SetValue(solution.thetacos[sampleIndex]);
@@ -291,7 +291,7 @@ void SwerveTrajectoryGenerator::ApplyInitialGuess(
   ay[0].SetValue(0.0);
   alpha[0].SetValue(0.0);
 
-  for (size_t sampleIndex = 1; sampleIndex < sampleTotal; sampleIndex++) {
+  for (size_t sampleIndex = 1; sampleIndex < sampleTotal; ++sampleIndex) {
     vx[sampleIndex].SetValue(
         (solution.x[sampleIndex] - solution.x[sampleIndex - 1]) /
         solution.dt[sampleIndex]);
