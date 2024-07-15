@@ -11,7 +11,6 @@
 
 #include <sleipnir/optimization/OptimizationProblem.hpp>
 
-#include "trajopt/path/SwervePathBuilder.hpp"
 #include "trajopt/solution/SwerveSolution.hpp"
 #include "trajopt/util/Cancellation.hpp"
 #include "trajopt/util/TrajoptUtil.hpp"

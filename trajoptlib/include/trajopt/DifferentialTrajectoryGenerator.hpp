@@ -11,8 +11,8 @@
 #include <sleipnir/autodiff/Variable.hpp>
 #include <sleipnir/optimization/OptimizationProblem.hpp>
 
-#include "solution/DifferentialSolution.hpp"
-#include "trajopt/path/DifferentialPathBuilder.hpp"
+#include "trajopt/path/PathBuilder.hpp"
+#include "trajopt/solution/DifferentialSolution.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 #include "trajopt/util/expected"
 

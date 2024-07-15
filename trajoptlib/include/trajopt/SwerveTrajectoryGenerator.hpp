@@ -11,7 +11,7 @@
 #include <sleipnir/autodiff/Variable.hpp>
 #include <sleipnir/optimization/OptimizationProblem.hpp>
 
-#include "trajopt/path/SwervePathBuilder.hpp"
+#include "trajopt/path/PathBuilder.hpp"
 #include "trajopt/solution/SwerveSolution.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 #include "trajopt/util/expected"
