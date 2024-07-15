@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <ranges>
 #include <utility>
 
 #include <sleipnir/optimization/OptimizationProblem.hpp>
@@ -332,19 +333,37 @@ SwerveSolution SwerveTrajectoryGenerator::ConstructSwerveSolution() {
     }
   }
 
+  auto getValue = [](auto& var) { return var.Value(); };
+
+  // TODO: Use std::ranges::to() from C++23
+  auto vectorValue = [&](std::vector<sleipnir::Variable>& row) {
+    auto view = row | std::views::transform(getValue);
+    return std::vector<double>{std::begin(view), std::end(view)};
+  };
+
+  // TODO: Use std::ranges::to() from C++23
+  auto matrixValue = [&](std::vector<std::vector<sleipnir::Variable>>& mat) {
+    auto view =
+        mat | std::views::transform([&](auto& v) {
+          auto view2 = v | std::views::transform(getValue);
+          return std::vector<double>{std::begin(view2), std::end(view2)};
+        });
+    return std::vector<std::vector<double>>{std::begin(view), std::end(view)};
+  };
+
   return SwerveSolution{dtPerSamp,
-                        RowSolutionValue(x),
-                        RowSolutionValue(y),
-                        RowSolutionValue(thetacos),
-                        RowSolutionValue(thetasin),
-                        RowSolutionValue(vx),
-                        RowSolutionValue(vy),
-                        RowSolutionValue(omega),
-                        RowSolutionValue(ax),
-                        RowSolutionValue(ay),
-                        RowSolutionValue(alpha),
-                        MatrixSolutionValue(Fx),
-                        MatrixSolutionValue(Fy)};
+                        vectorValue(x),
+                        vectorValue(y),
+                        vectorValue(thetacos),
+                        vectorValue(thetasin),
+                        vectorValue(vx),
+                        vectorValue(vy),
+                        vectorValue(omega),
+                        vectorValue(ax),
+                        vectorValue(ay),
+                        vectorValue(alpha),
+                        matrixValue(Fx),
+                        matrixValue(Fy)};
 }
 
 }  // namespace trajopt

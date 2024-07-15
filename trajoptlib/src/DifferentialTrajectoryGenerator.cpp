@@ -2,6 +2,9 @@
 
 #include "trajopt/DifferentialTrajectoryGenerator.hpp"
 
+#include <algorithm>
+#include <ranges>
+
 #include "trajopt/geometry/Rotation2.hpp"
 #include "trajopt/geometry/Translation2.hpp"
 #include "trajopt/util/Cancellation.hpp"
@@ -303,16 +306,24 @@ DifferentialTrajectoryGenerator::ConstructDifferentialSolution() {
     }
   }
 
+  auto getValue = [](auto& var) { return var.Value(); };
+
+  // TODO: Use std::ranges::to() from C++23
+  auto vectorValue = [&](std::vector<sleipnir::Variable>& row) {
+    auto view = row | std::views::transform(getValue);
+    return std::vector<double>{std::begin(view), std::end(view)};
+  };
+
   return DifferentialSolution{
       dtPerSamp,
-      RowSolutionValue(x),
-      RowSolutionValue(y),
-      RowSolutionValue(thetacos),
-      RowSolutionValue(thetasin),
-      RowSolutionValue(vL),
-      RowSolutionValue(vR),
-      RowSolutionValue(FL),
-      RowSolutionValue(FR),
+      vectorValue(x),
+      vectorValue(y),
+      vectorValue(thetacos),
+      vectorValue(thetasin),
+      vectorValue(vL),
+      vectorValue(vR),
+      vectorValue(FL),
+      vectorValue(FR),
   };
 }
 

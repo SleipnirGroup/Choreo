@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
+#include <sleipnir/autodiff/Variable.hpp>
 #include <sleipnir/optimization/OptimizationProblem.hpp>
 
-#include "trajopt/TrajectoryGenerator.hpp"
 #include "trajopt/path/SwervePathBuilder.hpp"
 #include "trajopt/solution/SwerveSolution.hpp"
 #include "trajopt/util/SymbolExports.hpp"
@@ -22,7 +22,7 @@ namespace trajopt {
  * This trajectory generator class contains functions to generate
  * time-optimal trajectories for several drivetrain types.
  */
-class TRAJOPT_DLLEXPORT SwerveTrajectoryGenerator : public TrajectoryGenerator {
+class TRAJOPT_DLLEXPORT SwerveTrajectoryGenerator {
  public:
   /**
    * Construct a new swerve trajectory optimization problem.
