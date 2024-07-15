@@ -4,7 +4,6 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <trajopt/SwerveTrajectoryGenerator.hpp>
-#include <trajopt/path/SwervePathBuilder.hpp>
 
 TEST_CASE("Obstacle - Linear initial guess", "[Obstacle]") {
   SKIP("Fails");

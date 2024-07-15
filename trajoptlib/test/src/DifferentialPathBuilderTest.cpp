@@ -3,7 +3,7 @@
 #include <vector>
 
 #include <catch2/catch_test_macros.hpp>
-#include <trajopt/path/DifferentialPathBuilder.hpp>
+#include <trajopt/DifferentialTrajectoryGenerator.hpp>
 
 TEST_CASE("DifferentialPathBuilder - Linear initial guess",
           "[DifferentialPathBuilder]") {

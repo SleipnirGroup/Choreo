@@ -3,7 +3,7 @@
 #include <vector>
 
 #include <catch2/catch_test_macros.hpp>
-#include <trajopt/solution/SwerveSolution.hpp>
+#include <trajopt/SwerveTrajectoryGenerator.hpp>
 #include <trajopt/util/GenerateLinearInitialGuess.hpp>
 
 TEST_CASE("GenerateLinearInitialGuess - Linear initial guess",
