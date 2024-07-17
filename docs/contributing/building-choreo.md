@@ -51,7 +51,7 @@ pnpm run tauri dev
 Start development server (release).
 
 ```console
-pnpm run tauri dev -- --release
+pnpm run tauri dev --release
 ```
 
 ## macOS Cross Compilation
