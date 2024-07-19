@@ -2,8 +2,8 @@ import { Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import styles from "./InputList.module.css";
-import { IExpressionStore } from "../../document/ExpressionStore";
-import { format, parse } from "mathjs";
+import { IExpressionStore, math } from "../../document/ExpressionStore";
+import { getDependencyTree } from "mobx";
 
 type Props = {
   /** The text to show before the number */
@@ -87,14 +87,14 @@ class Input extends Component<Props, State> {
 
   getRoundedStr(): string {
     const precision = this.props.roundingPrecision ?? 3;
-    return format(this.props.number.expr.evaluate().to(this.props.number.defaultUnit), {
+    return math.format(this.props.number.toDefaultUnit(), {
         precision,
       });
   }
 
   getValid() : boolean {
     try {
-    let newNode = this.props.number.validate(parse(this.state.editedValue));
+    let newNode = this.props.number.validate(math.parse(this.state.editedValue));
     return newNode !== undefined;
     }
     catch {
@@ -106,7 +106,8 @@ class Input extends Component<Props, State> {
     prevState: Readonly<State>,
     snapshot?: any
   ): void {
-    if (prevProps.number !== this.props.number) {
+    if (!prevProps.number.expr.equals(this.props.number.expr)) {
+      console.log(prevProps, this.props);
       // if the value has changed from the outside, make sure it is no longer
       // focused so concise precision is shown.
       this.unfocusedMode();
@@ -114,6 +115,9 @@ class Input extends Component<Props, State> {
   }
 
   render() {
+    try{
+    this.props.number.expr;
+    } catch (e) {console.error(e); throw(e);}
     const showNumberWhenDisabled = this.props.showNumberWhenDisabled ?? true;
     let characters = this.getRoundedStr().length + 3;
     if (this.props.maxWidthCharacters !== undefined) {
@@ -150,7 +154,7 @@ class Input extends Component<Props, State> {
             this.focusedMode();
           }}
           onBlur={(e) => {
-            let newNode = this.props.number.validate(parse(this.state.editedValue));
+            let newNode = this.props.number.validate(math.parse(this.state.editedValue));
             if (newNode !== undefined) {
               this.props.number.setNode(newNode);
             }

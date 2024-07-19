@@ -15,6 +15,7 @@ import { UndoManager } from "mst-middlewares";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
+import { Units, Variables } from "./ExpressionStore";
 
 export const DocumentStore = types
   .model("DocumentStore", {
@@ -32,7 +33,8 @@ export interface IDocumentStore extends Instance<typeof DocumentStore> {}
 const StateStore = types
   .model("StateStore", {
     uiState: UIStateStore,
-    document: DocumentStore
+    document: DocumentStore,
+    variables: Variables,
   })
   .views((self) => ({
     asSavedDocument(): SavedDocument {
@@ -49,6 +51,8 @@ const StateStore = types
   .actions((self) => {
     return {
       afterCreate() {
+        self.variables.add("pose", self.variables.Expression("0 m", Units.Meter));
+        self.variables.add("name", self.variables.Expression("pose()", Units.Meter));
         self.document.history = UndoManager.create(
           {},
           { targetStore: self.document }

@@ -6,6 +6,10 @@ import Field from "./components/field/Field";
 import Sidebar from "./components/sidebar/Sidebar";
 import AppMenu from "./AppMenu";
 import PathAnimationPanel from "./components/field/PathAnimationPanel";
+import InputList from "./components/input/InputList";
+import ExpressionInput from "./components/input/ExpressionInput";
+import Input from "./components/input/Input";
+import {IExpressionStore, Units } from "./document/ExpressionStore";
 
 type Props = object;
 
@@ -17,8 +21,22 @@ class Body extends Component<Props, State> {
   state = {};
 
   render() {
+    const expression = (this.context.model.variables.store.get("name")! as IExpressionStore);
+    const variable = (this.context.model.variables.store.get("pose")! as IExpressionStore);
+    //expression.setEvaluator((node)=>node.evaluate({pose: {x: variable.evaluate}}));
     return (
       <>
+          <div style={{backgroundColor:"black"}}>
+        <InputList>
+        <ExpressionInput number={expression} title={"Expression"} suffix={""} enabled={true} setEnabled={function (value: boolean): void {
+          } }></ExpressionInput>
+        <ExpressionInput number={variable} title={"Dependent"} suffix={""} enabled={true} setEnabled={function (value: boolean): void {
+          } }></ExpressionInput>
+          {/* <Input title={"Original"} suffix={"m"} enabled={false} number={value??NaN} setNumber={function (newNumber: number): void {
+            } } setEnabled={function (value: boolean): void {
+            } }></Input> */}
+        </InputList>
+</div>
         <div className="App">
           <div className="Page">
             <AppMenu></AppMenu>

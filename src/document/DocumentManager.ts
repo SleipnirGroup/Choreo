@@ -11,6 +11,7 @@ import "react-toastify/dist/ReactToastify.min.css";
 import hotkeys from "hotkeys-js";
 import { ViewLayerDefaults } from "./UIStateStore";
 import LocalStorageKeys from "../util/LocalStorageKeys";
+import { Units, Variables } from "./ExpressionStore";
 
 type OpenFileEventPayload = {
   adjacent_gradle: boolean;
@@ -43,6 +44,8 @@ export class DocumentManager {
         splitTrajectoriesAtStopPoints: false,
         usesObstacles: false
       }
+      ,
+      variables: {}
     });
     this.model.document.pathlist.setExporter((uuid) => {
       try {
@@ -469,11 +472,14 @@ export class DocumentManager {
         pathlist: {},
         splitTrajectoriesAtStopPoints: false,
         usesObstacles: false
-      }
+      },
+      variables: getSnapshot(this.model.variables)
     });
     this.model.uiState.loadPathGradientFromLocalStorage();
     this.model.document.pathlist.addPath("NewPath");
     this.model.document.history.clear();
+    this.model.variables.add("pose", this.model.variables.Expression("0 m", Units.Meter));
+    this.model.variables.add("name", this.model.variables.Expression("pose()", Units.Meter));
   }
 
   async openFromContents(chorContents: string) {
