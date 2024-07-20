@@ -49,7 +49,7 @@ jobs:
         with:
           python-version: 3.12
 
-      - run: pip3 install wpiformat==2024.33
+      - run: pip3 install wpiformat==2024.38
 
       - run: pnpm run fmt
 
