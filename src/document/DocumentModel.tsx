@@ -272,8 +272,8 @@ const StateStore = types
                     velocityL: samp.velocity_l,
                     velocityR: samp.velocity_r,
                     timestamp: samp.timestamp,
-                    forceL: 0,
-                    forceR: 0
+                    forceL: samp.force_l,
+                    forceR: samp.force_r
                   });
                 });
                 if (newTraj.length == 0) throw "No traj";
