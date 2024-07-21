@@ -17,6 +17,8 @@ namespace trajopt {
 DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     DifferentialPathBuilder pathbuilder, int64_t handle)
     : path(pathbuilder.GetPath()), Ns(pathbuilder.GetControlIntervalCounts()) {
+  namespace slp = sleipnir;
+
   auto initialGuess = pathbuilder.CalculateInitialGuess();
 
   callbacks.emplace_back([this, handle = handle] {
@@ -77,7 +79,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   }
 
   // Minimize total time
-  sleipnir::Variable T_tot = 0;
+  slp::Variable T_tot = 0;
   for (size_t sgmtIndex = 0; sgmtIndex < Ns.size(); ++sgmtIndex) {
     auto& dt_sgmt = dts.at(sgmtIndex);
     auto N_sgmt = Ns.at(sgmtIndex);
@@ -171,15 +173,15 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
       Pose2v pose{x.at(index), y.at(index), {heading.at(index)}};
 
       auto v = (vL.at(index) + vR.at(index)) / 2.0;
-      Translation2v linearVelocity{v * std::cos(heading.at(index)),
-                                   v * std::sin(heading.at(index))};
+      Translation2v linearVelocity{v * slp::cos(heading.at(index)),
+                                   v * slp::sin(heading.at(index))};
 
       auto angularVelocity =
           (vR.at(index) - vL.at(index)) / path.drivetrain.trackwidth;
 
       auto a = (aL.at(index) + aR.at(index)) / 2.0;
-      Translation2v linearAcceleration{a * std::cos(heading.at(index)),
-                                       a * std::sin(heading.at(index))};
+      Translation2v linearAcceleration{a * slp::cos(heading.at(index)),
+                                       a * slp::sin(heading.at(index))};
 
       auto angularAcceleration =
           (aR.at(index) - aL.at(index)) / path.drivetrain.trackwidth;
@@ -203,15 +205,15 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
         Pose2v pose{x.at(index), y.at(index), {heading.at(index)}};
 
         auto v = (vL.at(index) + vR.at(index)) / 2.0;
-        Translation2v linearVelocity{v * std::cos(heading.at(index)),
-                                     v * std::sin(heading.at(index))};
+        Translation2v linearVelocity{v * slp::cos(heading.at(index)),
+                                     v * slp::sin(heading.at(index))};
 
         auto angularVelocity =
             (vR.at(index) - vL.at(index)) / path.drivetrain.trackwidth;
 
         auto a = (aL.at(index) + aR.at(index)) / 2.0;
-        Translation2v linearAcceleration{a * std::cos(heading.at(index)),
-                                         a * std::sin(heading.at(index))};
+        Translation2v linearAcceleration{a * slp::cos(heading.at(index)),
+                                         a * slp::sin(heading.at(index))};
 
         auto angularAcceleration =
             (aR.at(index) - aL.at(index)) / path.drivetrain.trackwidth;
