@@ -14,6 +14,7 @@ import { WaypointID, WaypointScope } from "./ConstraintStore";
 import { IStateStore } from "./DocumentModel";
 import { SavedCommand } from "./DocumentSpecTypes";
 import { IHolonomicPathStore } from "./HolonomicPathStore";
+import { ITankDrivePathStore } from "./TankPathStore"; // Import the tank drive path store
 import { v4 as uuidv4 } from "uuid";
 
 export type CommandType =
@@ -173,16 +174,14 @@ export const EventMarkerStore = types
         );
       }
     },
-    getPath(): IHolonomicPathStore {
-      const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
+    getPath(): IHolonomicPathStore | ITankDrivePathStore { // Update the return type to include both path stores
+      const path = getParent<IHolonomicPathStore | ITankDrivePathStore>(
         getParent<IEventMarkerStore[]>(self)
       );
       return path;
     },
     getTargetIndex(): number | undefined {
-      const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
-        getParent<IEventMarkerStore[]>(self)
-      );
+      const path = this.getPath();
       if (path === undefined) {
         return undefined;
       }
@@ -199,9 +198,7 @@ export const EventMarkerStore = types
     get targetTimestamp(): number | undefined {
       const path = self.getPath();
       if (self.trajTargetIndex === undefined) return undefined;
-      return (path as IHolonomicPathStore).generatedWaypoints[
-        self.trajTargetIndex
-      ]?.timestamp;
+      return path.generatedWaypoints[self.trajTargetIndex]?.timestamp;
     },
     get timestamp(): number | undefined {
       if (this.targetTimestamp === undefined) {

@@ -36,6 +36,7 @@ export interface SavedPath {
   circleObstacles: Array<SavedCircleObstacle>;
   eventMarkers: Array<SavedEventMarker>;
   isTrajectoryStale: boolean;
+  type: "holonomic" | "tank";
 }
 export interface SavedPathList extends Record<string, SavedPath> {}
 export interface SavedRobotConfig {

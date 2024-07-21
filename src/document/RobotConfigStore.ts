@@ -22,7 +22,8 @@ export const ROBOT_CONFIG_DEFAULTS = {
   bumperWidth: DEFAULT_BUMPER,
   bumperLength: DEFAULT_BUMPER,
   wheelbase: DEFAULT_WHEELBASE,
-  trackWidth: DEFAULT_WHEELBASE
+  trackWidth: DEFAULT_WHEELBASE,
+  tank: false
 };
 export const RobotConfigStore = types
   .model("RobotConfigStore", {
@@ -73,6 +74,9 @@ export const RobotConfigStore = types
       },
       setWheelRadius(arg: number) {
         self.wheelRadius = arg;
+      },
+      setTankDrive(arg: boolean) {
+        self.tank = arg;
       }
     };
   })
@@ -96,7 +100,8 @@ export const RobotConfigStore = types
           trackWidth: trackwidth,
           bumperLength,
           bumperWidth,
-          wheelRadius
+          wheelRadius,
+          tank
         } = self;
         return {
           mass,
@@ -108,7 +113,8 @@ export const RobotConfigStore = types
           trackWidth: trackwidth,
           bumperLength,
           bumperWidth,
-          wheelRadius
+          wheelRadius,
+          tank
         };
       },
       asSolverRobotConfig(): Omit<
@@ -128,7 +134,8 @@ export const RobotConfigStore = types
           bumperWidth,
           wheelRadius,
           wheelMaxTorque,
-          wheelMaxVelocity
+          wheelMaxVelocity,
+          tank
         } = self;
         return {
           mass,
@@ -139,7 +146,8 @@ export const RobotConfigStore = types
           bumperWidth,
           wheelRadius,
           wheelMaxTorque,
-          wheelMaxVelocity
+          wheelMaxVelocity,
+          tank
         };
       },
       bumperSVGElement() {

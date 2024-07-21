@@ -300,6 +300,7 @@ dependencies = [
  "tauri",
  "tauri-build",
  "trajoptlib",
+ "trajoptlib_macros",
 ]
 
 [[package]]
@@ -3212,6 +3213,14 @@ dependencies = [
  "cxx-build",
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "trajoptlib_macros"
+version = "0.1.0"
+dependencies = [
+ "quote",
+ "syn 1.0.109",
 ]
 
 [[package]]

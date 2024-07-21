@@ -22,6 +22,7 @@ import { safeGetIdentifier } from "../util/mobxutils";
 import { IStateStore } from "./DocumentModel";
 import { IHolonomicWaypointStore } from "./HolonomicWaypointStore";
 import { IHolonomicPathStore } from "./HolonomicPathStore";
+import { ITankDrivePathStore } from "./TankPathStore";
 
 /**
  * PoseWpt (idx, x, y, heading)
@@ -188,9 +189,6 @@ export const ConstraintStore = types
     get sgmtScope() {
       return self.definition.sgmtScope;
     },
-    // get definition(): ConstraintDefinition {
-    //   return self.definition;
-    // },
     get selected(): boolean {
       if (!isAlive(self)) {
         return false;
@@ -210,7 +208,7 @@ export const ConstraintStore = types
           if (b === "first") return 1;
           if (a === "last") return 1;
           if (b === "last") return -1;
-          const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
+          const path: IHolonomicPathStore | ITankDrivePathStore = getParent<IHolonomicPathStore | ITankDrivePathStore>(
             getParent<IConstraintStore[]>(self)
           );
           const aIdx = path.findUUIDIndex(a.uuid) || 0;
@@ -225,7 +223,7 @@ export const ConstraintStore = types
       if (startScope === undefined) {
         return undefined;
       }
-      const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
+      const path: IHolonomicPathStore | ITankDrivePathStore = getParent<IHolonomicPathStore | ITankDrivePathStore>(
         getParent<IConstraintStore[]>(self)
       );
       return path.getByWaypointID(startScope);
@@ -236,7 +234,7 @@ export const ConstraintStore = types
       if (endScope === undefined) {
         return undefined;
       }
-      const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
+      const path: IHolonomicPathStore | ITankDrivePathStore = getParent<IHolonomicPathStore | ITankDrivePathStore>(
         getParent<IConstraintStore[]>(self)
       );
       return path.getByWaypointID(endScope);
@@ -244,7 +242,7 @@ export const ConstraintStore = types
   }))
   .views((self) => ({
     getStartWaypointIndex(): number | undefined {
-      const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
+      const path: IHolonomicPathStore | ITankDrivePathStore = getParent<IHolonomicPathStore | ITankDrivePathStore>(
         getParent<IConstraintStore[]>(self)
       );
       const waypoint = self.getStartWaypoint();
@@ -252,15 +250,15 @@ export const ConstraintStore = types
       return path.findUUIDIndex(waypoint.uuid);
     },
     getEndWaypointIndex(): number | undefined {
-      const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
+      const path: IHolonomicPathStore | ITankDrivePathStore = getParent<IHolonomicPathStore | ITankDrivePathStore>(
         getParent<IConstraintStore[]>(self)
       );
       const waypoint = self.getEndWaypoint();
       if (waypoint === undefined) return undefined;
       return path.findUUIDIndex(waypoint.uuid);
     },
-    getPath(): IHolonomicPathStore {
-      const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
+    getPath(): IHolonomicPathStore | ITankDrivePathStore {
+      const path: IHolonomicPathStore | ITankDrivePathStore = getParent<IHolonomicPathStore | ITankDrivePathStore>(
         getParent<IConstraintStore[]>(self)
       );
       return path;

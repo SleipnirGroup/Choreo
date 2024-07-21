@@ -1,12 +1,30 @@
 import { Instance, types } from "mobx-state-tree";
-import { SavedPathList } from "./DocumentSpecTypes";
+import { SavedPathList, SavedPathSwerve, SavedPathTank, SavedPath } from "./DocumentSpecTypes";
 import { HolonomicPathStore } from "./HolonomicPathStore";
 import { v4 as uuidv4 } from "uuid";
 import { ConstraintStores } from "./ConstraintStore";
+import { TankDrivePathStore } from "./TankPathStore";
+
+const PathStoreUnion = types.union(
+  {
+    dispatcher: (snapshot) => {
+      switch (snapshot.type) {
+        case 'holonomic':
+          return HolonomicPathStore;
+        case 'tank':
+          return TankDrivePathStore;
+        default:
+          throw new Error('Unknown path type');
+      }
+    }
+  },
+  HolonomicPathStore,
+  TankDrivePathStore
+);
 
 export const PathListStore = types
   .model("PathListStore", {
-    paths: types.map(HolonomicPathStore),
+    paths: types.map(PathStoreUnion),
     activePathUUID: ""
   })
   .actions((self) => {
@@ -53,7 +71,8 @@ export const PathListStore = types
             name: "New Path",
             visibleWaypointsStart: 0,
             visibleWaypointsEnd: 0,
-            uuid: uuidv4()
+            uuid: uuidv4(),
+            type: "holonomic"
           })
         );
       }
@@ -75,16 +94,30 @@ export const PathListStore = types
           self.activePathUUID = uuid;
         }
       },
-      addPath(name: string, select: boolean = false): string {
+      addPathBool(name: string, select: boolean = false, _type: boolean): string {
+        return this.addPath(name, select, _type ? "holonomic" : "tank");
+      },
+      addPath(name: string, select: boolean = false, _type: "holonomic" | "tank" = "holonomic"): string {
         const usedName = this.disambiguateName(name);
         const newUUID = uuidv4();
-        const path = HolonomicPathStore.create({
-          uuid: newUUID,
-          visibleWaypointsStart: 0,
-          visibleWaypointsEnd: 0,
-          name: usedName,
-          waypoints: []
-        });
+        const path = _type === "holonomic" 
+          ? HolonomicPathStore.create({
+              uuid: newUUID,
+              visibleWaypointsStart: 0,
+              visibleWaypointsEnd: 0,
+              name: usedName,
+              waypoints: [],
+              type: "holonomic"
+            })
+          : TankDrivePathStore.create({
+              uuid: newUUID,
+              visibleWaypointsStart: 0,
+              visibleWaypointsEnd: 0,
+              name: usedName,
+              waypoints: [],
+              type: "tank"
+            });
+
         path.setExporter(self.getExporter());
         path.addConstraint(ConstraintStores.StopPoint)?.setScope(["first"]);
         path.addConstraint(ConstraintStores.StopPoint)?.setScope(["last"]);
@@ -96,7 +129,6 @@ export const PathListStore = types
         return newUUID;
       }
     };
-    // The annoying thing we have to do to add the above actions to the object before we use them below
   })
   .actions((self) => {
     return {
@@ -111,23 +143,27 @@ export const PathListStore = types
       duplicatePath(uuid: string) {
         if (self.pathUUIDs.includes(uuid)) {
           const oldPath = self.paths.get(uuid);
-          // shouldn't hit this ever since we checked if the path exists
-          if (oldPath === undefined) {
+          if (!oldPath) {
             return;
           }
           const newName = self.disambiguateName(oldPath.name);
-          const newuuid = self.addPath(newName, false);
+          const newuuid = self.addPath(newName, false, oldPath.type);
           const path = self.paths.get(newuuid);
-          path!.fromSavedPath(oldPath.asSavedPath());
+          if (path && oldPath) {
+            path.fromSavedPath(oldPath.asSavedPath());
+          }
         }
       },
       fromSavedPathList(list: SavedPathList) {
         self.paths.clear();
         if (list) {
-          Array.from(Object.keys(list).values()).forEach((name) => {
-            const uuid = self.addPath(name, false);
+          Object.keys(list).forEach((name) => {
+            const pathData = list[name];
+            const uuid = self.addPath(name, false, pathData.type);
             const path = self.paths.get(uuid);
-            path!.fromSavedPath(list[name]);
+            if (path) {
+              path.fromSavedPath(pathData);
+            }
           });
         }
         if (self.paths.size == 0) {

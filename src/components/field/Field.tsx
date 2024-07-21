@@ -2,7 +2,6 @@ import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
 import WaypointPanel from "../config/WaypointConfigPanel";
-
 import styles from "./Field.module.css";
 import FieldOverlayRoot from "./svg/FieldOverlayRoot";
 import IconButton from "@mui/material/IconButton";
@@ -10,6 +9,7 @@ import ShapeLineIcon from "@mui/icons-material/ShapeLine";
 import { CircularProgress, Tooltip } from "@mui/material";
 import Box from "@mui/material/Box/Box";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
+import { ITankDriveWaypointStore } from "../../document/TankDriveWaypointStore";
 import ViewOptionsPanel from "../config/ViewOptionsPanel";
 import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel";
 import { IConstraintStore } from "../../document/ConstraintStore";
@@ -29,26 +29,32 @@ type State = object;
 export class Field extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
+
   render() {
     const selectedSidebar = this.context.model.uiState.selectedSidebarItem;
     const activePath = this.context.model.document.pathlist.activePath;
     const activePathUUID = this.context.model.document.pathlist.activePathUUID;
     let indexIfWaypoint = -1;
-    if (selectedSidebar !== undefined && "heading" in selectedSidebar) {
-      indexIfWaypoint = activePath.waypoints.findIndex(
-        (point: IHolonomicWaypointStore) =>
-          point.uuid == (selectedSidebar as IHolonomicWaypointStore)?.uuid
-      );
+
+    if (selectedSidebar !== undefined) {
+      // Determine the type of waypoint
+      if ("heading" in selectedSidebar) {
+        indexIfWaypoint = activePath.waypoints.findIndex(
+          (point) =>
+            point.uuid === (selectedSidebar as IHolonomicWaypointStore | ITankDriveWaypointStore).uuid
+        );
+      }
     }
 
     return (
       <div className={styles.Container}>
         <FieldOverlayRoot></FieldOverlayRoot>
         {selectedSidebar !== undefined &&
-          "heading" in selectedSidebar &&
+          ("heading" in selectedSidebar ||
+           "leftMotor" in selectedSidebar && "rightMotor" in selectedSidebar) &&
           indexIfWaypoint !== -1 && (
             <WaypointPanel
-              waypoint={selectedSidebar as IHolonomicWaypointStore}
+              waypoint={selectedSidebar as IHolonomicWaypointStore | ITankDriveWaypointStore}
               index={indexIfWaypoint}
             ></WaypointPanel>
           )}
@@ -56,7 +62,7 @@ export class Field extends Component<Props, State> {
           "type" in selectedSidebar &&
           activePath.constraints.find(
             (constraint) =>
-              constraint.uuid == (selectedSidebar as IConstraintStore)!.uuid
+              constraint.uuid === (selectedSidebar as IConstraintStore).uuid
           ) && (
             <ConstraintsConfigPanel
               constraint={selectedSidebar as IConstraintStore}
@@ -66,7 +72,7 @@ export class Field extends Component<Props, State> {
           "radius" in selectedSidebar &&
           activePath.obstacles.find(
             (obstacle) =>
-              obstacle.uuid == (selectedSidebar as ICircularObstacleStore)!.uuid
+              obstacle.uuid === (selectedSidebar as ICircularObstacleStore).uuid
           ) && (
             <CircularObstacleConfigPanel
               obstacle={selectedSidebar as ICircularObstacleStore}
@@ -76,7 +82,7 @@ export class Field extends Component<Props, State> {
           "offset" in selectedSidebar &&
           activePath.eventMarkers.find(
             (marker) =>
-              marker.uuid == (selectedSidebar as IEventMarkerStore)!.uuid
+              marker.uuid === (selectedSidebar as IEventMarkerStore).uuid
           ) && (
             <EventMarkerConfigPanel
               marker={selectedSidebar as IEventMarkerStore}
@@ -126,7 +132,7 @@ export class Field extends Component<Props, State> {
                   backgroundColor: "darkred"
                 }
               }}
-              onClick={(event) => {
+              onClick={() => {
                 invoke("cancel");
               }}
               disabled={activePath.canGenerate()}

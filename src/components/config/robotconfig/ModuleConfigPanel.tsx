@@ -5,7 +5,7 @@ import InputList from "../../input/InputList";
 import Input from "../../input/Input";
 import { InToM, MetersOrInches, MToIn } from "../../../util/UnitConversions";
 
-type Props = { rowGap: number; imperial: boolean };
+type Props = { rowGap: number; imperial: boolean, type: boolean };
 
 type State = object;
 

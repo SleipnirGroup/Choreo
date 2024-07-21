@@ -11,16 +11,44 @@ import ModuleConfigPanel from "./ModuleConfigPanel";
 
 type Props = object;
 
-type State = { imperial: boolean; bottomHalf: boolean };
+type State = { imperial: boolean; bottomHalf: boolean, tank: boolean };
 
 class RobotConfigPanel extends Component<Props, State> {
   static contextType = DocumentManagerContext;
   declare context: React.ContextType<typeof DocumentManagerContext>;
-  state = { imperial: false, bottomHalf: false };
+  state = { imperial: false, bottomHalf: false, tank: true };
   rowGap = 16;
   render() {
     const imp = this.state.imperial;
+      const config = this.context.model.document.robotConfig;
     return (
+      <>
+      <Divider sx={{ color: "gray", marginBottom: `${this.rowGap}px` }}>
+        ROBOT CONFIG
+      </Divider>
+
+      <div style={{display: "flex", alignItems: "center", justifyContent: "center", minWidth: "100%", textAlign: "center", gap: "50px"}}>
+
+      <span className={inputStyles.Title} style={{ gridColumn: "1" }}>
+        Tank
+      </span>
+
+      <Switch
+        size="small"
+        sx={{ gridColumn: 2 }}
+        checked={config.tank}
+        color="success"
+        onChange={(e, checked) => {config.setTankDrive(checked)}}
+      ></Switch>
+
+      <span className={inputStyles.Title} style={{ gridColumn: "1" }}>
+        Holonomic
+      </span>
+
+
+      </div>
+
+      
       <div
         style={{
           display: "grid",
@@ -69,6 +97,7 @@ class RobotConfigPanel extends Component<Props, State> {
           <ModuleConfigPanel
             rowGap={this.rowGap}
             imperial={imp}
+            type={this.state.tank}
           ></ModuleConfigPanel>
         </div>
         {/* Left label divider when calculator is open */}
@@ -169,6 +198,7 @@ class RobotConfigPanel extends Component<Props, State> {
           ></TheoreticalPanel>
         </div>
       </div>
+      </>
     );
   }
 }

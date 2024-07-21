@@ -472,7 +472,7 @@ export class DocumentManager {
       }
     });
     this.model.uiState.loadPathGradientFromLocalStorage();
-    this.model.document.pathlist.addPath("NewPath");
+    this.model.document.pathlist.addPathBool("NewPath", undefined, this.model.document.robotConfig.tank);
     this.model.document.history.clear();
   }
 
@@ -550,7 +550,7 @@ export class DocumentManager {
       };
     });
     const content = JSON.stringify(
-      { samples: trajectory, eventMarkers: exportedEventMarkers },
+      { samples: trajectory, eventMarkers: exportedEventMarkers, type: this.model.document.robotConfig.tank ? "holonomic" : "differential" },
       undefined,
       2
     );

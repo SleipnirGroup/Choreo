@@ -8,6 +8,7 @@ import styles from "./Sidebar.module.css";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { getParent } from "mobx-state-tree";
 import { IHolonomicPathStore } from "../../document/HolonomicPathStore";
+import { ITankDrivePathStore } from "../../document/TankPathStore";
 import { PriorityHigh } from "@mui/icons-material";
 
 type Props = {
@@ -26,11 +27,10 @@ class SidebarConstraint extends Component<Props, State> {
     const waypointIDToText = (id: WaypointID) => {
       if (id == "first") return "Start";
       if (id == "last") return "End";
-      return (
-        getParent<IHolonomicPathStore>(
-          getParent<IConstraintStore[]>(this.props.constraint)
-        ).findUUIDIndex(id.uuid) + 1
+      const parentPath = getParent<IHolonomicPathStore | ITankDrivePathStore>(
+        getParent<IConstraintStore[]>(this.props.constraint)
       );
+      return parentPath.findUUIDIndex(id.uuid) + 1;
     };
     const scope = this.props.constraint.getSortedScope();
     if (scope.length == 0) return "!";
@@ -65,9 +65,6 @@ class SidebarConstraint extends Component<Props, State> {
           className: styles.SidebarIcon,
           htmlColor: selected ? "var(--select-yellow)" : "var(--accent-purple)"
         })}
-        {/* className={styles.SidebarIcon}
-          htmlColor={selected ? "var(--select-yellow)" : "var(--accent-purple)"}
-        ></Icon> */}
         <span
           className={styles.SidebarLabel}
           style={{ display: "grid", gridTemplateColumns: "1fr auto auto" }}

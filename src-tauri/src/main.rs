@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use core::panic;
 use std::sync::mpsc::{channel, Sender};
 use std::sync::OnceLock;
 use std::thread;
@@ -11,7 +12,8 @@ use tauri::{
     api::{dialog::blocking::FileDialogBuilder, file},
     Manager,
 };
-use trajoptlib::{Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory, Translation2d};
+use trajoptlib::{DifferentialDrivetrain, DifferentialPathBuilder, DifferentialTrajectory, Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory, Translation2d};
+use trajoptlib_macros::create_builder;
 
 #[derive(Clone, serde::Serialize, Debug)]
 struct OpenFileEventPayload<'a> {
@@ -184,6 +186,7 @@ struct ChoreoRobotConfig {
     bumperLength: f64,
     wheelbase: f64,
     trackWidth: f64,
+    tank: bool
 }
 
 #[allow(non_snake_case)]
@@ -269,10 +272,196 @@ async fn cancel() {
     trajoptlib::cancel_all();
 }
 
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+enum Trajectory {
+    Swerve(SwerveTrajectory),
+    Differential(DifferentialTrajectory)
+}
+
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 struct ProgressUpdate {
-    traj: SwerveTrajectory,
+    traj: Trajectory,
     handle: i64,
+}
+
+enum PathBuilder {
+    Swerve(SwervePathBuilder),
+    Differential(DifferentialPathBuilder),
+}
+
+enum Drivetrain {
+    Swerve(SwerveDrivetrain),
+    Differential(DifferentialDrivetrain)
+}
+
+enum ProgressCallback {
+    Swerve(fn(SwerveTrajectory, i64)),
+    Differential(fn(DifferentialTrajectory, i64))
+}
+
+impl PathBuilder {
+    fn sgmt_initial_guess_points(&mut self, index: usize, points: &Vec<Pose2d>) {
+        match self {
+            PathBuilder::Swerve(builder) => builder.sgmt_initial_guess_points(index, points),
+            PathBuilder::Differential(builder) => builder.sgmt_initial_guess_points(index, points),
+        }
+    }
+
+    fn pose_wpt(&mut self, index: usize, x: f64, y: f64, heading: f64) {
+        match self {
+            PathBuilder::Swerve(builder) => builder.pose_wpt(index, x, y, heading),
+            PathBuilder::Differential(builder) => builder.pose_wpt(index, x, y, heading),
+        }
+    }
+
+    fn translation_wpt(&mut self, index: usize, x: f64, y: f64, heading: f64) {
+        match self {
+            PathBuilder::Swerve(builder) => builder.translation_wpt(index, x, y, heading),
+            PathBuilder::Differential(builder) => builder.translation_wpt(index, x, y, heading),
+        }
+    }
+
+    fn empty_wpt(&mut self, index: usize, x: f64, y: f64, heading: f64) {
+        match self {
+            PathBuilder::Swerve(builder) => builder.empty_wpt(index, x, y, heading),
+            PathBuilder::Differential(builder) => builder.empty_wpt(index, x, y, heading),
+        }
+    }
+
+    fn set_control_interval_counts(&mut self, counts: Vec<usize>) {
+        match self {
+            PathBuilder::Swerve(builder) => builder.set_control_interval_counts(counts),
+            PathBuilder::Differential(builder) => builder.set_control_interval_counts(counts),
+        }
+    }
+
+    fn wpt_linear_velocity_direction(&mut self, index: usize, direction: f64) {
+        match self {
+            PathBuilder::Swerve(builder) => builder.wpt_linear_velocity_direction(index, direction),
+            PathBuilder::Differential(builder) => builder.wpt_linear_velocity_direction(index, direction),
+        }
+    }
+
+    fn wpt_linear_velocity_max_magnitude(&mut self, index: usize, magnitude: f64) {
+        match self {
+            PathBuilder::Swerve(builder) => builder.wpt_linear_velocity_max_magnitude(index, magnitude),
+            PathBuilder::Differential(builder) => builder.wpt_linear_velocity_max_magnitude(index, magnitude),
+        }
+    }
+
+    fn wpt_angular_velocity_max_magnitude(&mut self, index: usize, magnitude: f64) {
+        match self {
+            PathBuilder::Swerve(builder) => builder.wpt_angular_velocity_max_magnitude(index, magnitude),
+            PathBuilder::Differential(builder) => builder.wpt_angular_velocity_max_magnitude(index, magnitude),
+        }
+    }
+
+    fn sgmt_linear_velocity_max_magnitude(&mut self, start_index: usize, end_index: usize, magnitude: f64) {
+        match self {
+            PathBuilder::Swerve(builder) => builder.sgmt_linear_velocity_max_magnitude(start_index, end_index, magnitude),
+            PathBuilder::Differential(builder) => builder.sgmt_linear_velocity_max_magnitude(start_index, end_index, magnitude),
+        }
+    }
+
+    fn sgmt_angular_velocity_max_magnitude(&mut self, start_index: usize, end_index: usize, magnitude: f64) {
+        match self {
+            PathBuilder::Swerve(builder) => builder.sgmt_angular_velocity_max_magnitude(start_index, end_index, magnitude),
+            PathBuilder::Differential(builder) => builder.sgmt_angular_velocity_max_magnitude(start_index, end_index, magnitude),
+        }
+    }
+
+    fn sgmt_linear_velocity_direction(&mut self, start_index: usize, end_index: usize, direction: f64) {
+        match self {
+            PathBuilder::Swerve(builder) => builder.sgmt_linear_velocity_direction(start_index, end_index, direction),
+            PathBuilder::Differential(builder) => builder.sgmt_linear_velocity_direction(start_index, end_index, direction),
+        }
+    }
+
+    fn wpt_point_at(&mut self, index: usize, x: f64, y: f64, tolerance: f64) {
+        match self {
+            PathBuilder::Swerve(builder) => builder.wpt_point_at(index, x, y, tolerance),
+            PathBuilder::Differential(builder) => builder.wpt_point_at(index, x, y, tolerance),
+        }
+    }
+
+    fn sgmt_point_at(&mut self, start_index: usize, end_index: usize, x: f64, y: f64, tolerance: f64) {
+        match self {
+            PathBuilder::Swerve(builder) => builder.sgmt_point_at(start_index, end_index, x, y, tolerance),
+            _ => {}
+        }
+    }
+
+    fn set_bumpers(&mut self, length: f64, width: f64) {
+        match self {
+            PathBuilder::Swerve(builder) => builder.set_bumpers(length, width),
+            PathBuilder::Differential(builder) => builder.set_bumpers(length, width),
+        }
+    }
+
+    fn add_progress_callback(&mut self, callback: ProgressCallback) {
+        match self {
+            PathBuilder::Swerve(builder) => {
+                match callback {
+                    ProgressCallback::Swerve(c) => builder.add_progress_callback(c),
+                    ProgressCallback::Differential(c) => panic!("Incorrect Callback"),
+                }
+            },
+            PathBuilder::Differential(builder) => {
+                match callback {
+                    ProgressCallback::Differential(c) => builder.add_progress_callback(c),
+                    ProgressCallback::Swerve(c) => panic!("Incorrect Callback"),
+                }
+            },
+        }
+    }
+
+    fn sgmt_circle_obstacle(&mut self, start_index: usize, end_index: usize, x: f64, y: f64, radius: f64) {
+        match self {
+            PathBuilder::Swerve(builder) => builder.sgmt_circle_obstacle(start_index, end_index, x, y, radius),
+            PathBuilder::Differential(builder) => builder.sgmt_circle_obstacle(start_index, end_index, x, y, radius),
+        }
+    }
+
+    fn sgmt_polygon_obstacle(&mut self, start_index: usize, end_index: usize, x: Vec<f64>, y: Vec<f64>, radius: f64) {
+        match self {
+            PathBuilder::Swerve(builder) => builder.sgmt_polygon_obstacle(start_index, end_index, x, y, radius),
+            PathBuilder::Differential(builder) => builder.sgmt_polygon_obstacle(start_index, end_index, x, y, radius),
+        }
+    }
+
+    fn set_drivetrain(&mut self, drivetrain: &Drivetrain) {
+        match self {
+            PathBuilder::Swerve(builder) => {
+                match drivetrain {
+                    Drivetrain::Swerve(drivetrain) => {
+                        builder.set_drivetrain(drivetrain)
+                    },
+                    _ => { panic!("Incorrect Drivetrain"); }
+                }
+            },
+            PathBuilder::Differential(builder) => {
+                match drivetrain {
+                    Drivetrain::Differential(drivetrain) => {
+                        builder.set_drivetrain(drivetrain)
+                    },
+                    _ => { panic!("Incorrect Drivetrain"); }
+                }
+            },
+        }
+    }
+
+    fn generate(&mut self, generate: bool, handle: i64) -> TrajectoryExport {
+        match self {
+            PathBuilder::Swerve(builder) => TrajectoryExport::Swerve(builder.generate(generate, handle)),
+            PathBuilder::Differential(builder) => TrajectoryExport::Differential(builder.generate(generate, handle)),
+        }
+    }
+}
+
+#[derive(serde::Serialize)]
+enum TrajectoryExport {
+    Swerve(Result<SwerveTrajectory, String>),
+    Differential(Result<DifferentialTrajectory, String>)
 }
 
 #[allow(non_snake_case)]
@@ -286,8 +475,9 @@ async fn generate_trajectory(
     polygonObstacles: Vec<PolygonObstacle>,
     // The handle referring to this path for the solver state callback
     handle: i64,
-) -> Result<SwerveTrajectory, String> {
-    let mut path_builder = SwervePathBuilder::new();
+) -> TrajectoryExport {
+    create_builder!(config.tank);
+
     let mut wpt_cnt: usize = 0;
     let mut rm: Vec<usize> = Vec::new();
     let mut control_interval_counts: Vec<usize> = Vec::new();
@@ -407,34 +597,50 @@ async fn generate_trajectory(
     }
     let half_wheel_base = config.wheelbase / 2.0;
     let half_track_width = config.trackWidth / 2.0;
-    let drivetrain = SwerveDrivetrain {
-        mass: config.mass,
-        moi: config.rotationalInertia,
-        wheel_radius: config.wheelRadius,
-        wheel_max_angular_velocity: config.wheelMaxVelocity,
-        wheel_max_torque: config.wheelMaxTorque,
-        modules: vec![
-            Translation2d {
-                x: half_wheel_base,
-                y: half_track_width,
-            },
-            Translation2d {
-                x: half_wheel_base,
-                y: -half_track_width,
-            },
-            Translation2d {
-                x: -half_wheel_base,
-                y: half_track_width,
-            },
-            Translation2d {
-                x: -half_wheel_base,
-                y: -half_track_width,
-            },
-        ],
-    };
+    let drivetrain: Drivetrain;
+    if config.tank {
+        drivetrain = Drivetrain::Swerve(SwerveDrivetrain {
+            mass: config.mass,
+            moi: config.rotationalInertia,
+            wheel_radius: config.wheelRadius,
+            wheel_max_angular_velocity: config.wheelMaxVelocity,
+            wheel_max_torque: config.wheelMaxTorque,
+            modules: vec![
+                Translation2d {
+                    x: half_wheel_base,
+                    y: half_track_width,
+                },
+                Translation2d {
+                    x: half_wheel_base,
+                    y: -half_track_width,
+                },
+                Translation2d {
+                    x: -half_wheel_base,
+                    y: half_track_width,
+                },
+                Translation2d {
+                    x: -half_wheel_base,
+                    y: -half_track_width,
+                },
+            ],
+        });
+    } else {
+        drivetrain = Drivetrain::Differential(DifferentialDrivetrain {
+            mass: config.mass,
+            moi: config.rotationalInertia,
+            trackwidth: config.trackWidth,
+            wheel_max_angular_velocity: config.wheelMaxVelocity,
+            wheel_max_torque: config.wheelMaxTorque,
+            wheel_radius: config.wheelRadius
+        })
+    }
 
     path_builder.set_bumpers(config.bumperLength, config.bumperWidth);
-    path_builder.add_progress_callback(solver_status_callback);
+    if config.tank {
+        path_builder.add_progress_callback(ProgressCallback::Swerve(solver_status_callback));
+    } else {
+        path_builder.add_progress_callback(ProgressCallback::Differential(solver_status_callback_diff));
+    }
     // Skip obstacles for now while we figure out whats wrong with them
     for o in circleObstacles {
         path_builder.sgmt_circle_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
@@ -444,7 +650,9 @@ async fn generate_trajectory(
     for o in polygonObstacles {
         path_builder.sgmt_polygon_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
     }
+
     path_builder.set_drivetrain(&drivetrain);
+
     path_builder.generate(true, handle)
 }
 
@@ -457,7 +665,14 @@ static PROGRESS_SENDER_LOCK: OnceLock<Sender<ProgressUpdate>> = OnceLock::new();
 fn solver_status_callback(traj: SwerveTrajectory, handle: i64) {
     let tx_opt = PROGRESS_SENDER_LOCK.get();
     if let Some(tx) = tx_opt {
-        let _ = tx.send(ProgressUpdate { traj, handle });
+        let _ = tx.send(ProgressUpdate { traj: Trajectory::Swerve(traj), handle });
+    };
+}
+
+fn solver_status_callback_diff(traj: DifferentialTrajectory, handle: i64) {
+    let tx_opt = PROGRESS_SENDER_LOCK.get();
+    if let Some(tx) = tx_opt {
+        let _ = tx.send(ProgressUpdate { traj: Trajectory::Differential(traj), handle });
     };
 }
 

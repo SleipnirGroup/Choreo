@@ -2,9 +2,10 @@ import { observer } from "mobx-react";
 import React, { Component } from "react";
 import DocumentManagerContext from "../../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../../document/HolonomicWaypointStore";
+import { ITankDriveWaypointStore } from "../../../document/TankDriveWaypointStore";
 import * as d3 from "d3";
 
-type Props = { waypoint: IHolonomicWaypointStore; index: number };
+type Props = { waypoint: IHolonomicWaypointStore | ITankDriveWaypointStore; index: number };
 
 type State = object;
 
@@ -83,6 +84,7 @@ class OverlayWaypoint extends Component<Props, State> {
       </g>
     )
   );
+
   // gets the angle in degrees between two points
   calcAngleRad(p1: Coordinates, p2: Coordinates) {
     const p1x = p1.x;
@@ -96,6 +98,7 @@ class OverlayWaypoint extends Component<Props, State> {
       y: this.props.waypoint.y
     };
   }
+
   dragPointRotate(event: any) {
     const pointerPos: Coordinates = { x: 0, y: 0 };
     pointerPos.x = event.x;
@@ -112,22 +115,6 @@ class OverlayWaypoint extends Component<Props, State> {
     //d3.select(`#group`).attr('transform', `rotate(${ this.r.angle })`)
   }
 
-  // dragPointVelocityRotate(event: any) {
-  //   let pointerPos: Coordinates = { x: 0, y: 0 };
-  //   pointerPos.x = event.x;
-  //   pointerPos.y = event.y;
-
-  //   const waypointCoordinates = this.coordsFromWaypoint();
-  //   // calculates the difference between the current mouse position and the center line
-  //   var angleFinal = this.calcAngleRad(waypointCoordinates, pointerPos);
-  //   // gets the difference of the angles to get to the final angle
-  //   // converts the values to stay inside the 360 positive
-
-  //   // creates the new rotate position array
-  //   this.props.waypoint.setVelocityAngle(angleFinal);
-  //   //d3.select(`#group`).attr('transform', `rotate(${ this.r.angle })`)
-  // }
-
   dragPointTranslate(event: any) {
     const pointerPos: Coordinates = { x: 0, y: 0 };
     pointerPos.x = event.x;
@@ -142,11 +129,13 @@ class OverlayWaypoint extends Component<Props, State> {
 
     //d3.select(`#group`).attr('transform', `rotate(${ this.r.angle })`)
   }
+
   selectWaypoint() {
     this.context.model.document.pathlist.activePath.selectOnly(
       this.props.index
     );
   }
+
   componentDidMount() {
     if (this.rootRef.current) {
       d3.select<SVGCircleElement, undefined>(
@@ -180,19 +169,6 @@ class OverlayWaypoint extends Component<Props, State> {
         `#rotateTarget${this.props.index}`
       ).call(rotateHandleDrag);
 
-      // var velocityRotateHandleDrag = d3
-      //   .drag<SVGCircleElement, undefined>()
-      //   .on("drag", (event) => this.dragPointVelocityRotate(event))
-      //   .on("end", (event) => this.context.history.stopGroup())
-      //   .on("start", () => {
-      //     this.selectWaypoint();
-      //     this.context.history.startGroup(() => {});
-      //   })
-      //   .container(this.rootRef.current);
-      // d3.select<SVGCircleElement, undefined>(
-      //   `#velocityRotateTarget${this.props.index}`
-      // ).call(velocityRotateHandleDrag);
-
       const dragHandleDrag = d3
         .drag<SVGCircleElement, undefined>()
         .on("drag", (event) => this.dragPointTranslate(event))
@@ -217,6 +193,7 @@ class OverlayWaypoint extends Component<Props, State> {
       ? "var(--select-yellow)"
       : "var(--accent-purple)";
   }
+
   getDragTargetColor(): string {
     const waypoints = this.context.model.document.pathlist.activePath.waypoints;
     let color = "var(--accent-purple)";
@@ -311,7 +288,6 @@ class OverlayWaypoint extends Component<Props, State> {
                     onClick={() => this.selectWaypoint()}
                   ></circle>
                 );
-                break;
               case 4: {
                 // Question mark icon's raw svg
                 const boxSize =
@@ -351,19 +327,10 @@ class OverlayWaypoint extends Component<Props, State> {
               }
             }
           })()}
-          {/* <circle
-            cx={0}
-            cy={0}
-            r={
-              0.2 * Math.min(robotConfig.bumperLength, robotConfig.bumperWidth)
-            }
-            id={this.appendIndexID("dragTarget")}
-            fill={this.getDragTargetColor()}
-            onClick={() => this.selectWaypoint()}
-          ></circle> */}
         </g>
       </g>
     );
   }
 }
+
 export default observer(OverlayWaypoint);

@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { DragDropContext, Droppable } from "react-beautiful-dnd";
 import DocumentManagerContext from "../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
+import { ITankDriveWaypointStore } from "../../document/TankDriveWaypointStore";
 import { observer } from "mobx-react";
 import SidebarWaypoint from "./SidebarWaypoint";
 import styles from "./Sidebar.module.css";
@@ -59,16 +60,16 @@ class WaypointList extends Component<Props, State> {
       );
     }
     const waypointElements = waypoints.map(
-      (holonomicWaypoint: IHolonomicWaypointStore, index: number) => {
+      (waypoint: IHolonomicWaypointStore | ITankDriveWaypointStore, index: number) => {
         let issue = "";
-        if (holonomicWaypoint.isInitialGuess) {
+        if (waypoint.isInitialGuess) {
           if (index == 0) {
             issue = "Cannot start with an initial guess point.";
           } else if (index == waypoints.length - 1) {
             issue = "Cannot end with an initial guess point.";
           }
         }
-        if (holonomicWaypoint.type == 2) {
+        if (waypoint.type == 2) {
           if (index == 0) {
             issue = "Cannot start with an empty waypoint.";
           } else if (index == waypoints.length - 1) {
@@ -77,12 +78,12 @@ class WaypointList extends Component<Props, State> {
         }
         return (
           <SidebarWaypoint
-            waypoint={holonomicWaypoint}
+            waypoint={waypoint}
             index={index}
             issue={issue}
             pathLength={waypoints.length}
             context={this.context}
-            key={holonomicWaypoint.uuid}
+            key={waypoint.uuid}
           ></SidebarWaypoint>
         );
       }

@@ -3,14 +3,14 @@ import {
   SavedConstraint,
   SavedEventMarker,
   SavedGeneratedWaypoint,
-  SavedPath,
-  SavedTrajectorySample,
+  SavedPathTank,
+  SavedTrajectorySampleTank, // Imported SavedTrajectorySampleTank
   SavedWaypoint
 } from "./DocumentSpecTypes";
 import {
-  HolonomicWaypointStore,
-  IHolonomicWaypointStore
-} from "./HolonomicWaypointStore";
+  TankDriveWaypointStore, // Updated to TankDriveWaypointStore
+  ITankDriveWaypointStore
+} from "./TankDriveWaypointStore";
 import { moveItem } from "mobx-utils";
 import { v4 as uuidv4 } from "uuid";
 import { IStateStore } from "./DocumentModel";
@@ -35,18 +35,17 @@ import {
   IEventMarkerStore
 } from "./EventMarkerStore";
 import { IReactionDisposer, reaction, toJS } from "mobx";
-import { SavedTrajectorySampleSwerve, SavedTrajectorySampleTank } from "./previousSpecs/v0_4";
 
-export const HolonomicPathStore = types
-  .model("HolonomicPathStore", {
+export const TankDrivePathStore = types
+  .model("TankDrivePathStore", {
     name: "",
     uuid: types.identifier,
-    waypoints: types.array(HolonomicWaypointStore),
+    waypoints: types.array(TankDriveWaypointStore),
     visibleWaypointsStart: types.number,
     visibleWaypointsEnd: types.number,
     constraints: types.array(types.union(...Object.values(ConstraintStores))),
-    generated: types.frozen<Array<SavedTrajectorySampleSwerve>>([]),
-    generationProgress: types.frozen<Array<SavedTrajectorySample>>([]),
+    generated: types.frozen<Array<SavedTrajectorySampleTank>>([]), // Updated to SavedTrajectorySampleTank
+    generationProgress: types.frozen<Array<SavedTrajectorySampleTank>>([]), // Updated to SavedTrajectorySampleTank
     generationIterationNumber: 0,
     generatedWaypoints: types.frozen<Array<SavedGeneratedWaypoint>>([]),
     generating: false,
@@ -56,7 +55,7 @@ export const HolonomicPathStore = types
     usesDefaultObstacles: true,
     obstacles: types.array(CircularObstacleStore),
     eventMarkers: types.array(EventMarkerStore),
-    type: types.literal("holonomic")
+    type: "tank"
   })
   .views((self) => {
     return {
@@ -138,8 +137,8 @@ export const HolonomicPathStore = types
           return self.waypoints[self.findUUIDIndex(id.uuid)];
         }
       },
-      asSavedPath(): SavedPath {
-        const trajectory: Array<SavedTrajectorySample> = self.generated;
+      asSavedPath(): SavedPathTank {
+        const trajectory: Array<SavedTrajectorySampleTank> = self.generated;
         // constraints are converted here because of the need to search the path for uuids
         return {
           waypoints: self.waypoints.map((point) => point.asSavedWaypoint()),
@@ -181,11 +180,11 @@ export const HolonomicPathStore = types
             return [saved];
           }),
           isTrajectoryStale: self.isTrajectoryStale,
-          type: "holonomic"
+          type: "tank"
         };
       },
 
-      lowestSelectedPoint(): IHolonomicWaypointStore | null {
+      lowestSelectedPoint(): ITankDriveWaypointStore | null {
         for (const point of self.waypoints) {
           if (point.selected) return point;
         }
@@ -385,8 +384,8 @@ export const HolonomicPathStore = types
           point.setSelected(selectedIndex == index);
         });
       },
-      addWaypoint(): IHolonomicWaypointStore {
-        self.waypoints.push(HolonomicWaypointStore.create({ uuid: uuidv4() }));
+      addWaypoint(): ITankDriveWaypointStore {
+        self.waypoints.push(TankDriveWaypointStore.create({ uuid: uuidv4() }));
         if (self.waypoints.length === 1) {
           const root = getRoot<IStateStore>(self);
           root.select(self.waypoints[0]);
@@ -571,7 +570,7 @@ export const HolonomicPathStore = types
       reorder(startIndex: number, endIndex: number) {
         moveItem(self.waypoints, startIndex, endIndex);
       },
-      setTrajectory(trajectory: Array<SavedTrajectorySample>) {
+      setTrajectory(trajectory: Array<SavedTrajectorySampleTank>) { // Updated to SavedTrajectorySampleTank
         self.generated = trajectory;
         const history = getRoot<IStateStore>(self).document.history;
         history.withoutUndo(() => {
@@ -584,7 +583,7 @@ export const HolonomicPathStore = types
           self.generationIterationNumber = it;
         });
       },
-      setInProgressTrajectory(trajectory: Array<SavedTrajectorySample>) {
+      setInProgressTrajectory(trajectory: Array<SavedTrajectorySampleTank>) { // Updated to SavedTrajectorySampleTank
         const history = getRoot<IStateStore>(self).document.history;
         history.withoutUndo(() => {
           self.generationProgress = trajectory;
@@ -605,104 +604,98 @@ export const HolonomicPathStore = types
         if (index == -1) return;
         self.deleteWaypoint(index);
       },
-    fromSavedPath(savedPath: SavedPath) {
-  self.waypoints.clear();
-  savedPath.waypoints.forEach(
-    (point: SavedWaypoint, index: number): void => {
-      const waypoint = self.addWaypoint();
-      waypoint.fromSavedWaypoint(point);
-    }
-  );
-  self.constraints.clear();
-  savedPath.constraints.forEach((saved: SavedConstraint) => {
-    const constraintStore = ConstraintStores[saved.type];
-    if (constraintStore !== undefined) {
-      const scope = saved.scope.map((id) =>
-        self.savedWaypointIdToWaypointId(id)
-      );
-      if (scope.includes(undefined)) {
-        return; // don't attempt to load
-      }
-      const constraint = self.addConstraint(
-        constraintStore,
-        scope as WaypointID[]
-      );
-
-      Object.keys(constraint?.definition.properties ?? {}).forEach(
-        (key) => {
-          if (
-            Object.hasOwn(saved, key) &&
-            typeof saved[key] === "number" &&
-            key.length >= 1
-          ) {
-            const upperCaseName = key[0].toUpperCase() + key.slice(1);
-            constraint[`set${upperCaseName}`](saved[key]);
+      fromSavedPath(savedPath: SavedPathTank) {
+        self.waypoints.clear();
+        savedPath.waypoints.forEach(
+          (point: SavedWaypoint, index: number): void => {
+            const waypoint = self.addWaypoint();
+            waypoint.fromSavedWaypoint(point);
           }
+        );
+        self.constraints.clear();
+        savedPath.constraints.forEach((saved: SavedConstraint) => {
+          const constraintStore = ConstraintStores[saved.type];
+          if (constraintStore !== undefined) {
+            const scope = saved.scope.map((id) =>
+              self.savedWaypointIdToWaypointId(id)
+            );
+            if (scope.includes(undefined)) {
+              return; // don't attempt to load
+            }
+            const constraint = self.addConstraint(
+              constraintStore,
+              scope as WaypointID[]
+            );
+
+            Object.keys(constraint?.definition.properties ?? {}).forEach(
+              (key) => {
+                if (
+                  Object.hasOwn(saved, key) &&
+                  typeof saved[key] === "number" &&
+                  key.length >= 1
+                ) {
+                  const upperCaseName = key[0].toUpperCase() + key.slice(1);
+                  constraint[`set${upperCaseName}`](saved[key]);
+                }
+              }
+            );
+          }
+        });
+        self.obstacles.clear();
+        savedPath.circleObstacles.forEach((o) => {
+          this.addObstacle(
+            CircularObstacleStore.create({
+              x: o.x,
+              y: o.y,
+              radius: o.radius,
+              uuid: uuidv4()
+            })
+          );
+        });
+        if (
+          savedPath.trajectory !== undefined &&
+          savedPath.trajectory !== null
+        ) {
+          self.generated = savedPath.trajectory;
         }
-      );
-    }
-  });
-  self.obstacles.clear();
-  savedPath.circleObstacles.forEach((o) => {
-    this.addObstacle(
-      CircularObstacleStore.create({
-        x: o.x,
-        y: o.y,
-        radius: o.radius,
-        uuid: uuidv4()
-      })
-    );
-  });
-  if (
-    savedPath.trajectory !== undefined &&
-    savedPath.trajectory !== null
-  ) {
-    if (savedPath.type === "holonomic") {
-      self.generated = savedPath.trajectory as SavedTrajectorySampleSwerve[];
-    } 
-    // else if (savedPath.type === "tank") {
-    //   self.generated = savedPath.trajectory as SavedTrajectorySampleTank[];
-    // }
-  }
-  if (
-    savedPath.trajectoryWaypoints !== undefined &&
-    savedPath.trajectoryWaypoints !== null
-  ) {
-    self.generatedWaypoints = savedPath.trajectoryWaypoints;
-  }
-  self.usesControlIntervalGuessing =
-    savedPath.usesControlIntervalGuessing;
-  self.defaultControlIntervalCount =
-    savedPath.defaultControlIntervalCount;
-  self.eventMarkers.clear();
-  savedPath.eventMarkers.forEach((saved) => {
-    const rootCommandType = saved.command.type;
-    let target: WaypointID | undefined;
-    if (saved.target !== null) {
-      target = self.savedWaypointIdToWaypointId(saved.target);
-    }
+        if (
+          savedPath.trajectoryWaypoints !== undefined &&
+          savedPath.trajectoryWaypoints !== null
+        ) {
+          self.generatedWaypoints = savedPath.trajectoryWaypoints;
+        }
+        self.usesControlIntervalGuessing =
+          savedPath.usesControlIntervalGuessing;
+        self.defaultControlIntervalCount =
+          savedPath.defaultControlIntervalCount;
+        self.eventMarkers.clear();
+        savedPath.eventMarkers.forEach((saved) => {
+          const rootCommandType = saved.command.type;
+          let target: WaypointID | undefined;
+          if (saved.target !== null) {
+            target = self.savedWaypointIdToWaypointId(saved.target);
+          }
 
-    const marker = EventMarkerStore.create({
-      name: saved.name,
-      target: target as WaypointID | undefined,
-      offset: saved.offset,
-      trajTargetIndex: saved.trajTargetIndex ?? undefined,
-      command: CommandStore.create({
-        type: rootCommandType,
-        name: "",
-        commands: [],
-        time: 0,
-        uuid: uuidv4()
-      }),
-      uuid: uuidv4()
-    });
-    marker.command.fromSavedCommand(saved.command);
-    this.addEventMarker(marker);
-  });
-  // this needs to be last or populating other parts of the path will set it to false
-  self.setIsTrajectoryStale(savedPath.isTrajectoryStale ?? false);
-},
-
+          const marker = EventMarkerStore.create({
+            name: saved.name,
+            target: target as WaypointID | undefined,
+            offset: saved.offset,
+            trajTargetIndex: saved.trajTargetIndex ?? undefined,
+            command: CommandStore.create({
+              type: rootCommandType,
+              name: "",
+              commands: [],
+              time: 0,
+              uuid: uuidv4()
+            }),
+            uuid: uuidv4()
+          });
+          marker.command.fromSavedCommand(saved.command);
+          this.addEventMarker(marker);
+        });
+        // this needs to be last or populating other parts of the path will set it to false
+        self.setIsTrajectoryStale(savedPath.isTrajectoryStale ?? false);
+      },
       addObstacle(obstacle: ICircularObstacleStore) {
         self.obstacles.push(obstacle);
       },
@@ -868,5 +861,5 @@ export const HolonomicPathStore = types
       beforeDestroy
     };
   });
-export interface IHolonomicPathStore
-  extends Instance<typeof HolonomicPathStore> {}
+export interface ITankDrivePathStore
+  extends Instance<typeof TankDrivePathStore> {}
