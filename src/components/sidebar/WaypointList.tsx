@@ -60,7 +60,10 @@ class WaypointList extends Component<Props, State> {
       );
     }
     const waypointElements = waypoints.map(
-      (waypoint: IHolonomicWaypointStore | ITankDriveWaypointStore, index: number) => {
+      (
+        waypoint: IHolonomicWaypointStore | ITankDriveWaypointStore,
+        index: number
+      ) => {
         let issue = "";
         if (waypoint.isInitialGuess) {
           if (index == 0) {

@@ -41,7 +41,12 @@ export class Field extends Component<Props, State> {
       if ("heading" in selectedSidebar) {
         indexIfWaypoint = activePath.waypoints.findIndex(
           (point) =>
-            point.uuid === (selectedSidebar as IHolonomicWaypointStore | ITankDriveWaypointStore).uuid
+            point.uuid ===
+            (
+              selectedSidebar as
+                | IHolonomicWaypointStore
+                | ITankDriveWaypointStore
+            ).uuid
         );
       }
     }
@@ -51,10 +56,15 @@ export class Field extends Component<Props, State> {
         <FieldOverlayRoot></FieldOverlayRoot>
         {selectedSidebar !== undefined &&
           ("heading" in selectedSidebar ||
-           "leftMotor" in selectedSidebar && "rightMotor" in selectedSidebar) &&
+            ("leftMotor" in selectedSidebar &&
+              "rightMotor" in selectedSidebar)) &&
           indexIfWaypoint !== -1 && (
             <WaypointPanel
-              waypoint={selectedSidebar as IHolonomicWaypointStore | ITankDriveWaypointStore}
+              waypoint={
+                selectedSidebar as
+                  | IHolonomicWaypointStore
+                  | ITankDriveWaypointStore
+              }
               index={indexIfWaypoint}
             ></WaypointPanel>
           )}

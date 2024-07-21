@@ -47,6 +47,8 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.1.0",
+    "@eslint/js": "^9.7.0",
     "@tauri-apps/cli": "^1.5.11",
     "@types/d3": "^7.4.3",
     "@types/node": "^20.12.7",
@@ -63,6 +65,7 @@
     "eslint-plugin-react": "^7.34.1",
     "fs": "^0.0.2",
     "glob": "^10.3.12",
+    "globals": "^15.8.0",
     "prettier": "^3.3.3",
     "typescript": "^5.4.5",
     "vite": "^5.2.10"

@@ -26,7 +26,10 @@ import {
   HolonomicWaypointStore,
   IHolonomicWaypointStore
 } from "./HolonomicWaypointStore";
-import { ITankDriveWaypointStore, TankDriveWaypointStore } from "./TankDriveWaypointStore";
+import {
+  ITankDriveWaypointStore,
+  TankDriveWaypointStore
+} from "./TankDriveWaypointStore";
 import { IRobotConfigStore, RobotConfigStore } from "./RobotConfigStore";
 import {
   CircularObstacleStore,
@@ -50,7 +53,8 @@ export const SelectableItem = types.union(
       if (snapshot.radius) {
         return CircularObstacleStore;
       }
-      if (snapshot.translationConstrained !== undefined) return HolonomicWaypointStore;
+      if (snapshot.translationConstrained !== undefined)
+        return HolonomicWaypointStore;
       if (snapshot.velocityL !== undefined) return TankDriveWaypointStore;
       return HolonomicWaypointStore;
     }

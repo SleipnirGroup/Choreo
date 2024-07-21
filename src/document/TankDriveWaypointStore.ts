@@ -155,5 +155,3 @@ export const TankDriveWaypointStore = types
   }));
 export interface ITankDriveWaypointStore
   extends Instance<typeof TankDriveWaypointStore> {}
-
-

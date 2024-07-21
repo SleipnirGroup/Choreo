@@ -5,7 +5,10 @@ import { IHolonomicWaypointStore } from "../../../document/HolonomicWaypointStor
 import { ITankDriveWaypointStore } from "../../../document/TankDriveWaypointStore";
 import * as d3 from "d3";
 
-type Props = { waypoint: IHolonomicWaypointStore | ITankDriveWaypointStore; index: number };
+type Props = {
+  waypoint: IHolonomicWaypointStore | ITankDriveWaypointStore;
+  index: number;
+};
 
 type State = object;
 

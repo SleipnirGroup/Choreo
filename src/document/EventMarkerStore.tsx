@@ -174,7 +174,8 @@ export const EventMarkerStore = types
         );
       }
     },
-    getPath(): IHolonomicPathStore | ITankDrivePathStore { // Update the return type to include both path stores
+    getPath(): IHolonomicPathStore | ITankDrivePathStore {
+      // Update the return type to include both path stores
       const path = getParent<IHolonomicPathStore | ITankDrivePathStore>(
         getParent<IEventMarkerStore[]>(self)
       );

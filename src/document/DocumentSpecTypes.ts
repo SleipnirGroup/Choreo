@@ -50,11 +50,11 @@ import {
   SavedDocument as v0_3_1,
   SAVE_FILE_VERSION as v0_3_1_Version
 } from "./previousSpecs/v0_3_1";
-import v0_3_1_Schema from "./previousSpecs/v0.3.1.json";
+// import v0_3_1_Schema from "./previousSpecs/v0.3.1.json";
 import {
-    SavedTrajectorySampleSwerve,
+  SavedTrajectorySampleSwerve,
   SavedDocument as v0_4,
-  SAVE_FILE_VERSION as v0_4_Version
+  // SAVE_FILE_VERSION as v0_4_Version
 } from "./previousSpecs/v0_4";
 import v0_4_Schema from "./previousSpecs/v0.4.json";
 
@@ -276,46 +276,50 @@ export const VERSIONS = {
     schema: v0_3_Schema
   },
   "v0.3.1": {
-  up: (document: any): v0_3_1 => {
-    const updated: v0_3_1 = document;
-    updated.version = v0_3_1_Version;
+    up: (document: any): v0_3_1 => {
+      const updated: v0_3_1 = document;
+      updated.version = v0_3_1_Version;
 
-    // Because we added module forces in this version
-    // add zero-initialized module forces to each path.
-    // Since we can't figure out module forces from here,
-    // just mark the paths as stale
-    for (const entry of Object.keys(updated.paths)) {
-      const path = updated.paths[entry];
-      // the trajectory can be null, just skip if so
-      if (path.trajectory == null) continue;
-      path.isTrajectoryStale = true;
-      if (path.type === "holonomic") {
-        for (const sample of path.trajectory) {
-          (sample as SavedTrajectorySampleSwerve).moduleForcesX = [0.0, 0.0, 0.0, 0.0];
-          (sample as SavedTrajectorySampleSwerve).moduleForcesY = [0.0, 0.0, 0.0, 0.0];
+      // Because we added module forces in this version
+      // add zero-initialized module forces to each path.
+      // Since we can't figure out module forces from here,
+      // just mark the paths as stale
+      for (const entry of Object.keys(updated.paths)) {
+        const path = updated.paths[entry];
+        // the trajectory can be null, just skip if so
+        if (path.trajectory == null) continue;
+        path.isTrajectoryStale = true;
+        if (path.type === "holonomic") {
+          for (const sample of path.trajectory) {
+            (sample as SavedTrajectorySampleSwerve).moduleForcesX = [
+              0.0, 0.0, 0.0, 0.0
+            ];
+            (sample as SavedTrajectorySampleSwerve).moduleForcesY = [
+              0.0, 0.0, 0.0, 0.0
+            ];
+          }
         }
       }
-    }
 
-    // Replace zero velocity and zero angular velocity constraints with max
-    // magnitude constraints
-    for (const entry of Object.keys(updated.paths)) {
-      const path = updated.paths[entry];
-      for (const constraint of path.constraints) {
-        if (constraint.type === "WptZeroVelocity") {
-          constraint.type = "MaxVelocity";
-          constraint.velocity = 0.0;
-        } else if (constraint.type === "ZeroAngularVelocity") {
-          constraint.type = "MaxAngularVelocity";
-          constraint.angular_velocity = 0.0;
+      // Replace zero velocity and zero angular velocity constraints with max
+      // magnitude constraints
+      for (const entry of Object.keys(updated.paths)) {
+        const path = updated.paths[entry];
+        for (const constraint of path.constraints) {
+          if (constraint.type === "WptZeroVelocity") {
+            constraint.type = "MaxVelocity";
+            constraint.velocity = 0.0;
+          } else if (constraint.type === "ZeroAngularVelocity") {
+            constraint.type = "MaxAngularVelocity";
+            constraint.angular_velocity = 0.0;
+          }
         }
       }
-    }
 
-    return updated;
+      return updated;
+    },
+    schema: v0_3_Schema
   },
-  schema: v0_3_Schema
-},
 
   "v0.4": {
     up: (document: any): v0_4 => document,

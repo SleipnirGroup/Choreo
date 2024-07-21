@@ -570,7 +570,8 @@ export const TankDrivePathStore = types
       reorder(startIndex: number, endIndex: number) {
         moveItem(self.waypoints, startIndex, endIndex);
       },
-      setTrajectory(trajectory: Array<SavedTrajectorySampleTank>) { // Updated to SavedTrajectorySampleTank
+      setTrajectory(trajectory: Array<SavedTrajectorySampleTank>) {
+        // Updated to SavedTrajectorySampleTank
         self.generated = trajectory;
         const history = getRoot<IStateStore>(self).document.history;
         history.withoutUndo(() => {
@@ -583,7 +584,8 @@ export const TankDrivePathStore = types
           self.generationIterationNumber = it;
         });
       },
-      setInProgressTrajectory(trajectory: Array<SavedTrajectorySampleTank>) { // Updated to SavedTrajectorySampleTank
+      setInProgressTrajectory(trajectory: Array<SavedTrajectorySampleTank>) {
+        // Updated to SavedTrajectorySampleTank
         const history = getRoot<IStateStore>(self).document.history;
         history.withoutUndo(() => {
           self.generationProgress = trajectory;

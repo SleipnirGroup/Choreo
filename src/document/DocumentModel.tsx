@@ -21,10 +21,10 @@ export const DocumentStore = types
     pathlist: PathListStore,
     robotConfig: RobotConfigStore,
     splitTrajectoriesAtStopPoints: types.boolean,
-    usesObstacles: types.boolean,
+    usesObstacles: types.boolean
   })
   .volatile((self) => ({
-    history: UndoManager.create({}, { targetStore: self }),
+    history: UndoManager.create({}, { targetStore: self })
   }));
 
 export interface IDocumentStore extends Instance<typeof DocumentStore> {}
@@ -32,7 +32,7 @@ export interface IDocumentStore extends Instance<typeof DocumentStore> {}
 const StateStore = types
   .model("StateStore", {
     uiState: UIStateStore,
-    document: DocumentStore,
+    document: DocumentStore
   })
   .views((self) => ({
     asSavedDocument(): SavedDocument {
@@ -42,9 +42,9 @@ const StateStore = types
         paths: self.document.pathlist.asSavedPathList(),
         splitTrajectoriesAtStopPoints:
           self.document.splitTrajectoriesAtStopPoints,
-        usesObstacles: self.document.usesObstacles,
+        usesObstacles: self.document.usesObstacles
       };
-    },
+    }
   }))
   .actions((self) => {
     return {
@@ -151,7 +151,7 @@ const StateStore = types
                             velocityY: samp.velocity_y,
                             timestamp: samp.timestamp,
                             moduleForcesX: samp.module_forces_x,
-                            moduleForcesY: samp.module_forces_y,
+                            moduleForcesY: samp.module_forces_y
                           } as SavedTrajectorySample;
                         } else {
                           return {
@@ -162,7 +162,7 @@ const StateStore = types
                             velocityR: samp.velocity_r,
                             timestamp: samp.timestamp,
                             forceL: 0,
-                            forceR: 0,
+                            forceR: 0
                           } as SavedTrajectorySampleTank;
                         }
                       })
@@ -248,7 +248,9 @@ const StateStore = types
                   if (newTraj.length > 0) {
                     let currentInterval = 0;
                     generatedWaypoints.forEach((w) => {
-                      if (newTraj.at(currentInterval)?.timestamp !== undefined) {
+                      if (
+                        newTraj.at(currentInterval)?.timestamp !== undefined
+                      ) {
                         w.timestamp = newTraj.at(currentInterval)!.timestamp;
                         currentInterval += w.controlIntervalCount;
                       }
@@ -261,7 +263,6 @@ const StateStore = types
                   pathStore.setIsTrajectoryStale(false);
                   self.document.history.stopGroup();
                 });
-
               } else {
                 const newTraj: Array<SavedTrajectorySampleTank> = [];
                 rust_traj.Differential.Ok.samples.forEach((samp) => {
@@ -282,7 +283,9 @@ const StateStore = types
                   if (newTraj.length > 0) {
                     let currentInterval = 0;
                     generatedWaypoints.forEach((w) => {
-                      if (newTraj.at(currentInterval)?.timestamp !== undefined) {
+                      if (
+                        newTraj.at(currentInterval)?.timestamp !== undefined
+                      ) {
                         w.timestamp = newTraj.at(currentInterval)!.timestamp;
                         currentInterval += w.controlIntervalCount;
                       }

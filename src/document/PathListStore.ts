@@ -1,5 +1,10 @@
 import { Instance, types } from "mobx-state-tree";
-import { SavedPathList, SavedPathSwerve, SavedPathTank, SavedPath } from "./DocumentSpecTypes";
+import {
+  SavedPathList,
+  // SavedPathSwerve,
+  // SavedPathTank,
+  // SavedPath
+} from "./DocumentSpecTypes";
 import { HolonomicPathStore } from "./HolonomicPathStore";
 import { v4 as uuidv4 } from "uuid";
 import { ConstraintStores } from "./ConstraintStore";
@@ -9,12 +14,12 @@ const PathStoreUnion = types.union(
   {
     dispatcher: (snapshot) => {
       switch (snapshot.type) {
-        case 'holonomic':
+        case "holonomic":
           return HolonomicPathStore;
-        case 'tank':
+        case "tank":
           return TankDrivePathStore;
         default:
-          throw new Error('Unknown path type');
+          throw new Error("Unknown path type");
       }
     }
   },
@@ -94,29 +99,38 @@ export const PathListStore = types
           self.activePathUUID = uuid;
         }
       },
-      addPathBool(name: string, select: boolean = false, _type: boolean): string {
+      addPathBool(
+        name: string,
+        select: boolean = false,
+        _type: boolean
+      ): string {
         return this.addPath(name, select, _type ? "holonomic" : "tank");
       },
-      addPath(name: string, select: boolean = false, _type: "holonomic" | "tank" = "holonomic"): string {
+      addPath(
+        name: string,
+        select: boolean = false,
+        _type: "holonomic" | "tank" = "holonomic"
+      ): string {
         const usedName = this.disambiguateName(name);
         const newUUID = uuidv4();
-        const path = _type === "holonomic" 
-          ? HolonomicPathStore.create({
-              uuid: newUUID,
-              visibleWaypointsStart: 0,
-              visibleWaypointsEnd: 0,
-              name: usedName,
-              waypoints: [],
-              type: "holonomic"
-            })
-          : TankDrivePathStore.create({
-              uuid: newUUID,
-              visibleWaypointsStart: 0,
-              visibleWaypointsEnd: 0,
-              name: usedName,
-              waypoints: [],
-              type: "tank"
-            });
+        const path =
+          _type === "holonomic"
+            ? HolonomicPathStore.create({
+                uuid: newUUID,
+                visibleWaypointsStart: 0,
+                visibleWaypointsEnd: 0,
+                name: usedName,
+                waypoints: [],
+                type: "holonomic"
+              })
+            : TankDrivePathStore.create({
+                uuid: newUUID,
+                visibleWaypointsStart: 0,
+                visibleWaypointsEnd: 0,
+                name: usedName,
+                waypoints: [],
+                type: "tank"
+              });
 
         path.setExporter(self.getExporter());
         path.addConstraint(ConstraintStores.StopPoint)?.setScope(["first"]);

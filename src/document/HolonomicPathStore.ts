@@ -35,7 +35,10 @@ import {
   IEventMarkerStore
 } from "./EventMarkerStore";
 import { IReactionDisposer, reaction, toJS } from "mobx";
-import { SavedTrajectorySampleSwerve, SavedTrajectorySampleTank } from "./previousSpecs/v0_4";
+import {
+  SavedTrajectorySampleSwerve,
+  // SavedTrajectorySampleTank
+} from "./previousSpecs/v0_4";
 
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
@@ -605,103 +608,104 @@ export const HolonomicPathStore = types
         if (index == -1) return;
         self.deleteWaypoint(index);
       },
-    fromSavedPath(savedPath: SavedPath) {
-  self.waypoints.clear();
-  savedPath.waypoints.forEach(
-    (point: SavedWaypoint, index: number): void => {
-      const waypoint = self.addWaypoint();
-      waypoint.fromSavedWaypoint(point);
-    }
-  );
-  self.constraints.clear();
-  savedPath.constraints.forEach((saved: SavedConstraint) => {
-    const constraintStore = ConstraintStores[saved.type];
-    if (constraintStore !== undefined) {
-      const scope = saved.scope.map((id) =>
-        self.savedWaypointIdToWaypointId(id)
-      );
-      if (scope.includes(undefined)) {
-        return; // don't attempt to load
-      }
-      const constraint = self.addConstraint(
-        constraintStore,
-        scope as WaypointID[]
-      );
-
-      Object.keys(constraint?.definition.properties ?? {}).forEach(
-        (key) => {
-          if (
-            Object.hasOwn(saved, key) &&
-            typeof saved[key] === "number" &&
-            key.length >= 1
-          ) {
-            const upperCaseName = key[0].toUpperCase() + key.slice(1);
-            constraint[`set${upperCaseName}`](saved[key]);
+      fromSavedPath(savedPath: SavedPath) {
+        self.waypoints.clear();
+        savedPath.waypoints.forEach(
+          (point: SavedWaypoint, index: number): void => {
+            const waypoint = self.addWaypoint();
+            waypoint.fromSavedWaypoint(point);
           }
-        }
-      );
-    }
-  });
-  self.obstacles.clear();
-  savedPath.circleObstacles.forEach((o) => {
-    this.addObstacle(
-      CircularObstacleStore.create({
-        x: o.x,
-        y: o.y,
-        radius: o.radius,
-        uuid: uuidv4()
-      })
-    );
-  });
-  if (
-    savedPath.trajectory !== undefined &&
-    savedPath.trajectory !== null
-  ) {
-    if (savedPath.type === "holonomic") {
-      self.generated = savedPath.trajectory as SavedTrajectorySampleSwerve[];
-    } 
-    // else if (savedPath.type === "tank") {
-    //   self.generated = savedPath.trajectory as SavedTrajectorySampleTank[];
-    // }
-  }
-  if (
-    savedPath.trajectoryWaypoints !== undefined &&
-    savedPath.trajectoryWaypoints !== null
-  ) {
-    self.generatedWaypoints = savedPath.trajectoryWaypoints;
-  }
-  self.usesControlIntervalGuessing =
-    savedPath.usesControlIntervalGuessing;
-  self.defaultControlIntervalCount =
-    savedPath.defaultControlIntervalCount;
-  self.eventMarkers.clear();
-  savedPath.eventMarkers.forEach((saved) => {
-    const rootCommandType = saved.command.type;
-    let target: WaypointID | undefined;
-    if (saved.target !== null) {
-      target = self.savedWaypointIdToWaypointId(saved.target);
-    }
+        );
+        self.constraints.clear();
+        savedPath.constraints.forEach((saved: SavedConstraint) => {
+          const constraintStore = ConstraintStores[saved.type];
+          if (constraintStore !== undefined) {
+            const scope = saved.scope.map((id) =>
+              self.savedWaypointIdToWaypointId(id)
+            );
+            if (scope.includes(undefined)) {
+              return; // don't attempt to load
+            }
+            const constraint = self.addConstraint(
+              constraintStore,
+              scope as WaypointID[]
+            );
 
-    const marker = EventMarkerStore.create({
-      name: saved.name,
-      target: target as WaypointID | undefined,
-      offset: saved.offset,
-      trajTargetIndex: saved.trajTargetIndex ?? undefined,
-      command: CommandStore.create({
-        type: rootCommandType,
-        name: "",
-        commands: [],
-        time: 0,
-        uuid: uuidv4()
-      }),
-      uuid: uuidv4()
-    });
-    marker.command.fromSavedCommand(saved.command);
-    this.addEventMarker(marker);
-  });
-  // this needs to be last or populating other parts of the path will set it to false
-  self.setIsTrajectoryStale(savedPath.isTrajectoryStale ?? false);
-},
+            Object.keys(constraint?.definition.properties ?? {}).forEach(
+              (key) => {
+                if (
+                  Object.hasOwn(saved, key) &&
+                  typeof saved[key] === "number" &&
+                  key.length >= 1
+                ) {
+                  const upperCaseName = key[0].toUpperCase() + key.slice(1);
+                  constraint[`set${upperCaseName}`](saved[key]);
+                }
+              }
+            );
+          }
+        });
+        self.obstacles.clear();
+        savedPath.circleObstacles.forEach((o) => {
+          this.addObstacle(
+            CircularObstacleStore.create({
+              x: o.x,
+              y: o.y,
+              radius: o.radius,
+              uuid: uuidv4()
+            })
+          );
+        });
+        if (
+          savedPath.trajectory !== undefined &&
+          savedPath.trajectory !== null
+        ) {
+          if (savedPath.type === "holonomic") {
+            self.generated =
+              savedPath.trajectory as SavedTrajectorySampleSwerve[];
+          }
+          // else if (savedPath.type === "tank") {
+          //   self.generated = savedPath.trajectory as SavedTrajectorySampleTank[];
+          // }
+        }
+        if (
+          savedPath.trajectoryWaypoints !== undefined &&
+          savedPath.trajectoryWaypoints !== null
+        ) {
+          self.generatedWaypoints = savedPath.trajectoryWaypoints;
+        }
+        self.usesControlIntervalGuessing =
+          savedPath.usesControlIntervalGuessing;
+        self.defaultControlIntervalCount =
+          savedPath.defaultControlIntervalCount;
+        self.eventMarkers.clear();
+        savedPath.eventMarkers.forEach((saved) => {
+          const rootCommandType = saved.command.type;
+          let target: WaypointID | undefined;
+          if (saved.target !== null) {
+            target = self.savedWaypointIdToWaypointId(saved.target);
+          }
+
+          const marker = EventMarkerStore.create({
+            name: saved.name,
+            target: target as WaypointID | undefined,
+            offset: saved.offset,
+            trajTargetIndex: saved.trajTargetIndex ?? undefined,
+            command: CommandStore.create({
+              type: rootCommandType,
+              name: "",
+              commands: [],
+              time: 0,
+              uuid: uuidv4()
+            }),
+            uuid: uuidv4()
+          });
+          marker.command.fromSavedCommand(saved.command);
+          this.addEventMarker(marker);
+        });
+        // this needs to be last or populating other parts of the path will set it to false
+        self.setIsTrajectoryStale(savedPath.isTrajectoryStale ?? false);
+      },
 
       addObstacle(obstacle: ICircularObstacleStore) {
         self.obstacles.push(obstacle);
