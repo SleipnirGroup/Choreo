@@ -432,11 +432,8 @@ impl PathBuilder {
         y: f64,
         tolerance: f64,
     ) {
-        match self {
-            PathBuilder::Swerve(builder) => {
-                builder.sgmt_point_at(start_index, end_index, x, y, tolerance)
-            }
-            _ => {}
+        if let PathBuilder::Swerve(builder) = self {
+            builder.sgmt_point_at(start_index, end_index, x, y, tolerance)
         }
     }
 
@@ -664,9 +661,8 @@ async fn generate_trajectory(
     }
     let half_wheel_base = config.wheelbase / 2.0;
     let half_track_width = config.trackWidth / 2.0;
-    let drivetrain: Drivetrain;
-    if config.tank {
-        drivetrain = Drivetrain::Swerve(SwerveDrivetrain {
+    let drivetrain: Drivetrain = if config.tank {
+        Drivetrain::Swerve(SwerveDrivetrain {
             mass: config.mass,
             moi: config.rotationalInertia,
             wheel_radius: config.wheelRadius,
@@ -690,9 +686,9 @@ async fn generate_trajectory(
                     y: -half_track_width,
                 },
             ],
-        });
+        })
     } else {
-        drivetrain = Drivetrain::Differential(DifferentialDrivetrain {
+        Drivetrain::Differential(DifferentialDrivetrain {
             mass: config.mass,
             moi: config.rotationalInertia,
             trackwidth: config.trackWidth,
@@ -700,7 +696,7 @@ async fn generate_trajectory(
             wheel_max_torque: config.wheelMaxTorque,
             wheel_radius: config.wheelRadius,
         })
-    }
+    };
 
     path_builder.set_bumpers(config.bumperLength, config.bumperWidth);
     if config.tank {
