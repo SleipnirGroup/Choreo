@@ -1,6 +1,6 @@
 import { Instance, types } from "mobx-state-tree";
 import {
-  SavedPathList,
+  SavedPathList
   // SavedPathSwerve,
   // SavedPathTank,
   // SavedPath

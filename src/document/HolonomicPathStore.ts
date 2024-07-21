@@ -36,7 +36,7 @@ import {
 } from "./EventMarkerStore";
 import { IReactionDisposer, reaction, toJS } from "mobx";
 import {
-  SavedTrajectorySampleSwerve,
+  SavedTrajectorySampleSwerve
   // SavedTrajectorySampleTank
 } from "./previousSpecs/v0_4";
 

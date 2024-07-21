@@ -52,13 +52,13 @@ import {
 } from "./previousSpecs/v0_3_1";
 // import v0_3_1_Schema from "./previousSpecs/v0.3.1.json";
 import {
-  SavedDocument as v0_4,
+  SavedDocument as v0_4
   // SAVE_FILE_VERSION as v0_4_Version
 } from "./previousSpecs/v0_4";
 import v0_4_Schema from "./previousSpecs/v0.4.json";
 
 import {
-  SavedDocument as v0_5,
+  SavedDocument as v0_5
   // SAVE_FILE_VERSION as v0_4_Version
 } from "./previousSpecs/v0_4";
 import v0_5_Schema from "./previousSpecs/v0.4.json";
