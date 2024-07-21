@@ -13,6 +13,7 @@
 #include <sleipnir/autodiff/Variable.hpp>
 #include <sleipnir/optimization/OptimizationProblem.hpp>
 
+#include "trajopt/DifferentialSolution.hpp"
 #include "trajopt/path/PathBuilder.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 #include "trajopt/util/expected"
@@ -40,38 +41,6 @@ struct TRAJOPT_DLLEXPORT DifferentialDrivetrain {
 
   /// Distance between the two driverails (m).
   double trackwidth;
-};
-
-/**
- * The holonomic trajectory optimization solution.
- */
-struct TRAJOPT_DLLEXPORT DifferentialSolution {
-  /// Times between samples.
-  std::vector<double> dt;
-
-  /// X positions.
-  std::vector<double> x;
-
-  /// Y positions.
-  std::vector<double> y;
-
-  /// Heading cosine.
-  std::vector<double> thetacos;
-
-  /// Heading sine.
-  std::vector<double> thetasin;
-
-  /// The left velocities.
-  std::vector<double> vL;
-
-  /// The right velocities.
-  std::vector<double> vR;
-
-  /// The force of the left driverail wheels.
-  std::vector<double> FL;
-
-  /// The force of the right driverail wheels.
-  std::vector<double> FR;
 };
 
 /**
@@ -156,11 +125,10 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectory {
   explicit DifferentialTrajectory(const DifferentialSolution& solution) {
     double ts = 0.0;
     for (size_t sample = 0; sample < solution.x.size(); ++sample) {
-      samples.emplace_back(
-          ts, solution.x[sample], solution.y[sample],
-          std::atan2(solution.thetasin[sample], solution.thetacos[sample]),
-          solution.vL[sample], solution.vR[sample], solution.FL[sample],
-          solution.FR[sample]);
+      samples.emplace_back(ts, solution.x[sample], solution.y[sample],
+                           solution.heading[sample], solution.vL[sample],
+                           solution.vR[sample], solution.FL[sample],
+                           solution.FR[sample]);
       ts += solution.dt[sample];
     }
   }
@@ -213,8 +181,7 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectoryGenerator {
   /// State Variables
   std::vector<sleipnir::Variable> x;
   std::vector<sleipnir::Variable> y;
-  std::vector<sleipnir::Variable> thetacos;
-  std::vector<sleipnir::Variable> thetasin;
+  std::vector<sleipnir::Variable> heading;
   std::vector<sleipnir::Variable> vL;
   std::vector<sleipnir::Variable> vR;
   std::vector<sleipnir::Variable> aL;
