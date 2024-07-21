@@ -403,13 +403,13 @@ impl PathBuilder {
             PathBuilder::Swerve(builder) => {
                 match callback {
                     ProgressCallback::Swerve(c) => builder.add_progress_callback(c),
-                    ProgressCallback::Differential(c) => panic!("Incorrect Callback"),
+                    ProgressCallback::Differential(_) => panic!("Incorrect Callback"),
                 }
             },
             PathBuilder::Differential(builder) => {
                 match callback {
                     ProgressCallback::Differential(c) => builder.add_progress_callback(c),
-                    ProgressCallback::Swerve(c) => panic!("Incorrect Callback"),
+                    ProgressCallback::Swerve(_) => panic!("Incorrect Callback"),
                 }
             },
         }
