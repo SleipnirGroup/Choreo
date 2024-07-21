@@ -117,7 +117,10 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
       Translation2v a_n{aL.at(index), aR.at(index)};
 
       problem.SubjectTo(x_n_1 + v_n * dt_sgmt == x_n);
-      problem.SubjectTo((theta_n - theta_n_1) == Rotation2v{omega_n * dt_sgmt});
+      auto lhs = theta_n - theta_n_1;
+      auto rhs = omega_n * dt_sgmt;
+      problem.SubjectTo(lhs.Cos() == slp::cos(rhs));
+      problem.SubjectTo(lhs.Sin() == slp::sin(rhs));
       problem.SubjectTo(v_n_1 + a_n * dt_sgmt == v_n);
     }
   }
