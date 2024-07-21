@@ -5,6 +5,7 @@ import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../input/InputList";
 import Input from "../input/Input";
 import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
+import ExpressionInput from "../input/ExpressionInput";
 
 type Props = { obstacle: ICircularObstacleStore | null };
 
@@ -20,35 +21,32 @@ class CircularObstacleConfigPanel extends Component<Props, State> {
       return (
         <div className={styles.WaypointPanel}>
           <InputList noCheckbox>
-            <Input
+            <ExpressionInput
               title="x"
-              suffix="m"
+              suffix=""
               enabled={true}
               setEnabled={(a) => null}
               number={obstacle.x}
-              setNumber={(x) => obstacle!.setX(x)}
               showCheckbox={false}
               titleTooltip={"Obstacle Center X"}
             />
 
-            <Input
+            <ExpressionInput
               title="y"
-              suffix="m"
+              suffix=""
               enabled={true}
               setEnabled={(a) => null}
               number={obstacle.y}
-              setNumber={(y) => obstacle!.setY(y)}
               showCheckbox={false}
               titleTooltip={"Obstacle Center Y"}
             />
 
-            <Input
+            <ExpressionInput
               title="r"
               suffix="m"
               enabled={true}
               setEnabled={(a) => null}
               number={obstacle.radius}
-              setNumber={(r) => obstacle!.setRadius(r)}
               showCheckbox={false}
               titleTooltip={"Obstacle Radius"}
             />

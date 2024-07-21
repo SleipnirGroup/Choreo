@@ -15,7 +15,7 @@ import FieldGeneratedLines from "./FieldGeneratedLines";
 import FieldAxisLines from "./FieldAxisLines";
 import FieldObstacle from "./FieldObstacles";
 import { v4 as uuidv4 } from "uuid";
-import { CircularObstacleStore } from "../../../document/CircularObstacleStore";
+import { CircularObstacleStore, createObstacleStore } from "../../../document/CircularObstacleStore";
 import FieldImage24 from "./fields/FieldImage24";
 import FieldEventMarkers from "./FieldEventMarkers";
 import FieldSamples from "./FieldSamples";
@@ -446,12 +446,7 @@ class FieldOverlayRoot extends Component<Props, State> {
       });
       this.context.history.startGroup(() => {
         this.context.model.document.pathlist.activePath.addObstacle(
-          CircularObstacleStore.create({
-            x: coords.x,
-            y: coords.y,
-            radius: 0.5,
-            uuid: uuidv4()
-          })
+          this.context.model.document.createObstacleStore(coords.x, coords.y, 0.5)
         );
       });
       this.context.history.stopGroup();

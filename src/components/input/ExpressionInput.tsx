@@ -156,7 +156,7 @@ class Input extends Component<Props, State> {
           onBlur={(e) => {
             let newNode = this.props.number.validate(math.parse(this.state.editedValue));
             if (newNode !== undefined) {
-              this.props.number.setNode(newNode);
+              this.props.number.set(newNode);
             }
             this.unfocusedMode();
           }}

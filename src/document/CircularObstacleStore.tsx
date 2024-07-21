@@ -2,21 +2,25 @@ import { Instance, getParent, getRoot, isAlive, types } from "mobx-state-tree";
 import { SavedCircleObstacle } from "./DocumentSpecTypes";
 import { safeGetIdentifier } from "../util/mobxutils";
 import { IStateStore } from "./DocumentModel";
+import { ExpressionStore, Units } from "./ExpressionStore";
+import { number } from "mathjs";
+import {v4 as uuidv4} from "uuid"
+
 
 export const CircularObstacleStore = types
   .model("CircularObstacleStore", {
-    x: 0,
-    y: 0,
-    radius: 0,
+    x: ExpressionStore,
+    y: ExpressionStore,
+    radius: ExpressionStore,
     uuid: types.identifier
   })
   .views((self) => ({
     asSavedCircleObstacle(): SavedCircleObstacle {
       const { x, y, radius } = self;
       return {
-        x,
-        y,
-        radius
+        x: x.value,
+        y: y.value,
+        radius: radius.value
       };
     },
     get selected(): boolean {
@@ -33,18 +37,9 @@ export const CircularObstacleStore = types
   }))
   .actions((self) => ({
     fromSavedCircleObstacle(obstacle: SavedCircleObstacle) {
-      self.x = obstacle.x;
-      self.y = obstacle.y;
-      self.radius = obstacle.radius;
-    },
-    setX(x: number) {
-      self.x = x;
-    },
-    setY(y: number) {
-      self.y = y;
-    },
-    setRadius(radius: number) {
-      self.radius = radius;
+      self.x.set(obstacle.x);
+      self.y.set(obstacle.y);
+      self.radius.set(obstacle.radius);
     },
     setSelected(selected: boolean) {
       if (selected && !self.selected) {
@@ -60,6 +55,6 @@ export const CircularObstacleStore = types
       }
     }
   }));
-
-export interface ICircularObstacleStore
+  export interface ICircularObstacleStore
   extends Instance<typeof CircularObstacleStore> {}
+

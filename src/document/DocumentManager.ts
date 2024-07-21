@@ -5,13 +5,14 @@ import { listen, TauriEvent, Event } from "@tauri-apps/api/event";
 import { v4 as uuidv4 } from "uuid";
 import { validate } from "./DocumentSpecTypes";
 import { applySnapshot, getSnapshot } from "mobx-state-tree";
-import { reaction } from "mobx";
+import { reaction, toJS } from "mobx";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import hotkeys from "hotkeys-js";
 import { ViewLayerDefaults } from "./UIStateStore";
 import LocalStorageKeys from "../util/LocalStorageKeys";
-import { Units, Variables } from "./ExpressionStore";
+import { Evaluated, Units, Variables } from "./ExpressionStore";
+import { MathNode, Unit } from "mathjs";
 
 type OpenFileEventPayload = {
   adjacent_gradle: boolean;
@@ -28,6 +29,7 @@ export class DocumentManager {
     this.model.document.history.canRedo && this.model.document.history.redo();
   }
   get history() {
+    console.log(toJS(this.model.document.history));
     return this.model.document.history;
   }
   model: IStateStore;
@@ -42,11 +44,12 @@ export class DocumentManager {
         robotConfig: { identifier: uuidv4() },
         pathlist: {},
         splitTrajectoriesAtStopPoints: false,
-        usesObstacles: false
+        usesObstacles: false,
+        variables: {}
       }
-      ,
-      variables: {}
-    });
+    },
+    {scope: ()=> this.model.document?.variables.scope}
+    );
     this.model.document.pathlist.setExporter((uuid) => {
       try {
         this.writeTrajectory(() => this.getTrajFilePath(uuid), uuid);
@@ -471,15 +474,16 @@ export class DocumentManager {
         robotConfig: { identifier: uuidv4() },
         pathlist: {},
         splitTrajectoriesAtStopPoints: false,
-        usesObstacles: false
+        usesObstacles: false,
+        variables: {}
       },
-      variables: getSnapshot(this.model.variables)
+      
     });
     this.model.uiState.loadPathGradientFromLocalStorage();
     this.model.document.pathlist.addPath("NewPath");
     this.model.document.history.clear();
-    this.model.variables.add("pose", this.model.variables.Expression("0 m", Units.Meter));
-    this.model.variables.add("name", this.model.variables.Expression("pose()", Units.Meter));
+    this.model.document.variables.addPose("pose");
+    this.model.document.variables.add("name", "pose.x()", Units.Meter);
   }
 
   async openFromContents(chorContents: string) {

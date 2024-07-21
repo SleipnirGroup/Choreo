@@ -1,7 +1,7 @@
-import { EvalFunction, MathNode, OperatorNode, Unit } from "mathjs";
-import { Instance, types } from "mobx-state-tree";
+import { EvalFunction, MathNode, OperatorNode, Unit, e, isNull } from "mathjs";
+import { Instance, getEnv, types } from "mobx-state-tree";
 import {create, all} from "mathjs";
-import { getDependencyTree, toJS, trace } from "mobx";
+import { IReactionDisposer, autorun, getDependencyTree, toJS, trace } from "mobx";
 
 export const math = create(all);
 const {
@@ -18,12 +18,27 @@ math.import({
   }),
 
 },   {override:true})
+
+function addUnitToExpression(
+  expression: math.MathNode,
+  unit: string
+): math.MathNode {
+  const unitNode = math.parse(unit);
+  return new math.OperatorNode(
+    "*",
+    "multiply",
+    [expression, unitNode],
+    true
+  );
+}
+
+
 export const Units = {
     Meter: math.unit("m"),
     Radian: math.unit("rad"),
     Unitless: math.unit("1")
 }
-type Evaluated = null|undefined|number|Unit;
+export type Evaluated = null|undefined|number|Unit;
 type Evaluator = (arg: MathNode)=>Evaluated;
 export const ExpressionStore = types.model( "ExpressionStore",
     {
@@ -32,40 +47,53 @@ export const ExpressionStore = types.model( "ExpressionStore",
     }
 )
 .volatile(self=>({
-    evaluator: (()=>{console.error("Created an ExpressionStore outside of Variables"); return undefined;}) as Evaluator
-})).actions(self=>{
-    return {
-    setEvaluator(ev: Evaluator) {
-        self.evaluator = ev;
-    }
-}
-})
+    value: 0,
+    getScope: ()=>{console.error("Evaluating without variables!"); return new Map<string, any>();}
+}))
 .actions((self)=>({
-    setNode(newNode:MathNode) {
+    setScopeGetter(getter: ()=>Map<string, any>) {
+      self.getScope = getter;
+    },
+    set(newNode:MathNode|number) {
+        if (typeof newNode === "number") {
+          self.expr = math.parse(math.unit(newNode, self.defaultUnit.toString()).toString());
+          return;
+        }
         console.log("setting ", newNode.toString());
         self.expr = newNode;
+    },
+    setValue(value:number) {
+      self.value = value;
     }
+}))
+.views(self=>({
+  evaluator(node: MathNode) : Evaluated {
+    let scope = self.getScope() ?? (()=>{console.error("Evaluating without variables!"); return undefined;}) as Evaluator;
+    let result = node.evaluate(scope) ?? undefined;
+    if (result["isNode"]) {
+      result = (result as MathNode).evaluate(scope);
+    }
+    return result;
+  }
 }))
 .views((self)=>({
   get evaluate() : Evaluated {
-    self.expr;
-    console.log("eval", self.expr.toString());
-    let result = self.evaluator(self.expr);
-    console.log("dep", self.expr.toString(), Object.assign({}, getDependencyTree(self, "evaluate")));
-    return result;
+    return self.evaluator(self.expr);
   }})).views((self)=>({
+    get asScope() {
+      return ()=>self.expr;
+    },
     toDefaultUnit() : Unit | undefined {
       self.expr;
       
-        const result = self.evaluator(self.expr);
-        console.log(self.expr, "to default unit = ", result)
-        if (result === undefined || result === null) {return undefined;}
+        const result = self.evaluate;
+        if (result === undefined || result === null) {return undefined}
         if (typeof result === "number") {
           return math.unit(result, self.defaultUnit.toString());
         }
         return (math.unit(result.toString()).to(self.defaultUnit.toString()));
     },
-    defaultUnitMagnitude() : number | undefined {
+    get defaultUnitMagnitude() : number | undefined {
       self.expr;
       return this.toDefaultUnit()?.toNumber(self.defaultUnit.toString())
     },
@@ -94,26 +122,15 @@ export const ExpressionStore = types.model( "ExpressionStore",
             return undefined;
           }
 
-
-
-          function addUnitToExpression(
-            expression: math.MathNode,
-            unit: string
-          ): math.MathNode {
-            const unitNode = math.parse(unit);
-            return new math.OperatorNode(
-              "*",
-              "multiply",
-              [expression, unitNode],
-              true
-            );
-          }
-
           newNode = addUnitToExpression(newNode, self.defaultUnit.toString());
           } else {
           let unit = self.defaultUnit;
           if (!newNumber.equalBase(unit)) {
             console.error("unit mismatch", unit);
+            return undefined;
+          }
+          if (isNull(newNumber.value)) {
+            console.error("valueless unit", unit);
             return undefined;
           }
           if (!isFinite(newNumber.value)) {
@@ -123,25 +140,41 @@ export const ExpressionStore = types.model( "ExpressionStore",
         }
         return newNode;
     }
-}));
+}))
+.volatile(self=>{
+  let recalcDispose: IReactionDisposer;
+  return {
+    afterCreate: ()=>{
+      recalcDispose = autorun(()=>{
+        let value = (self.defaultUnitMagnitude);
+        if (value !== undefined) {
+          self.setValue(value);
+        }
+      });
+    },
+    beforeDestroy: ()=>{
+      recalcDispose();
+    }
+  }
+});
 export interface IExpressionStore
   extends Instance<typeof ExpressionStore> {}
 
-// const ExprPose = types.model({
-//     x: ExpressionStore,
-//     y: ExpressionStore,
-//     heading: types.maybe(ExpressionStore)
-// })
-// .views(self=>({
-//   get expr(): MathNode {
-//     let node: Record<string, MathNode> = {x: 
-//       self.x.expr, y: self.y.expr};
-//     if (self.heading !== undefined) {
-//         node.heading = self.heading?.expr;
-//     }
-//     return new math.ObjectNode(node);
-//   }
-// }));
+const ExprPose = types.model({
+    x: ExpressionStore,
+    y: ExpressionStore,
+    heading: types.maybe(ExpressionStore)
+})
+.views(self=>({
+  get asScope(): Record<string, ()=>MathNode> {
+    let node: Record<string, ()=>MathNode> = {x: 
+      ()=>self.x.expr, y: ()=>self.y.expr};
+    if (self.heading !== undefined) {
+        node.heading = ()=>self.heading!.expr;
+    }
+    return node;
+  }
+}));
 // function isSafeProperty(object, prop) {
 //     if (!object || typeof object !== 'object') {
 //       return false;
@@ -164,26 +197,43 @@ export interface IExpressionStore
 //     }
 //     return true;
 //   }
-// export interface IExprPose extends Instance<typeof ExprPose> {}
+export interface IExprPose extends Instance<typeof ExprPose> {}
+type Pose = {x: number, y: number, heading: number};
 export const Variables = types.model("Variables",
     {
         store: types.map(
-            types.union(
-                ExpressionStore,
-                // ExprPose
+                ExpressionStore
             )
+        ,
+        poses: types.map(
+          ExprPose
         )
     }
 )
 .views(self=>({
   get scope() {
     let vars: Map<string, any> = new Map();
-    vars.set("m", math.unit("m"));
+    //vars.set("m", math.unit("m"));
     for (let [key, val] of self.store.entries()) {
-      vars.set(key, ()=>val.expr);
+      vars.set(key, val.asScope);
+    }
+    for (let [key, val] of self.poses.entries()) {
+      vars.set(key, val.asScope);
     }
     console.log(vars);
     return vars;
+  }
+}))
+.actions(self=>({
+  createExpression(expr: string|number, unit: math.Unit): IExpressionStore {
+     let store: IExpressionStore;
+    if (typeof expr === "number") {
+      store = ExpressionStore.create({expr: addUnitToExpression(new math.ConstantNode(expr), unit.toString()), defaultUnit: unit, });
+    }
+    else {store = ExpressionStore.create({expr: math.parse(expr), defaultUnit: unit, });}
+    store.setScopeGetter(()=>self.scope);
+    
+    return store;
   }
 }))
 .views(self=>({
@@ -196,51 +246,20 @@ export const Variables = types.model("Variables",
       return result;
   }
 }))
-.views(self=>({
-  Expression(expr: string, unit: math.Unit): IExpressionStore {
-     
-      let store = ExpressionStore.create({expr: math.parse(expr), defaultUnit: unit});
-      store.setEvaluator((node)=>self.evaluate(node));
-      return store;
-  }
-}))
 .actions(self=>({
 
       // addTranslation(key:string) {
       //   self.store.set(key, {x: self.Expression("0 m", Units.Meter), y: self.Expression("0 m", Units.Meter)});
       // },
-      // addPose(key:string) {
-      //   self.store.set(key, ExprPose.create({
-      //       x: self.Expression("0 m", Units.Meter),
-      //       y: self.Expression("0 m", Units.Meter),
-      //       heading: self.Expression("0 rad", Units.Radian)}));
-      // },
-      add(key:string, store: IExpressionStore) {
-        self.store.set(key, store);
+      
+      addPose(key:string, pose?: Pose) {
+        self.poses.set(key, ExprPose.create({
+            x: self.createExpression(pose?.x ?? 0, Units.Meter),
+            y: self.createExpression(pose?.y ?? 0, Units.Meter),
+            heading: self.createExpression(pose?.heading ?? 0, Units.Radian)}));
       },
-
-      set (key: string){},
-      get (key:string):Evaluated | Record<string,Evaluated> | undefined {
-        console.trace("get", key)
-        let entry = self.store.get(key) ?? undefined as IExpressionStore|undefined;
-        if (entry == undefined) return undefined;
-        return (entry as IExpressionStore).evaluate;
-      },
-   
-      has (key:string) {
-        return self.store.has(key);
-      },
-    
-      keys () {
-        return self.store.keys()
-      },
-    
-      delete (key:string) {
-        return self.store.delete(key)
-      },
-    
-      clear () {
-        return self.store.clear();
+      add(key:string, expr: string|number, defaultUnit: Unit) {
+        self.store.set(key, self.createExpression(expr, defaultUnit));
       }
 }
 ));

@@ -21,8 +21,8 @@ class Body extends Component<Props, State> {
   state = {};
 
   render() {
-    const expression = (this.context.model.variables.store.get("name")! as IExpressionStore);
-    const variable = (this.context.model.variables.store.get("pose")! as IExpressionStore);
+    const expression = (this.context.model.document.variables.store.get("name")!);
+    const variable = (this.context.model.document.variables.poses.get("pose")!).x;
     //expression.setEvaluator((node)=>node.evaluate({pose: {x: variable.evaluate}}));
     return (
       <>
@@ -30,7 +30,7 @@ class Body extends Component<Props, State> {
         <InputList>
         <ExpressionInput number={expression} title={"Expression"} suffix={""} enabled={true} setEnabled={function (value: boolean): void {
           } }></ExpressionInput>
-        <ExpressionInput number={variable} title={"Dependent"} suffix={""} enabled={true} setEnabled={function (value: boolean): void {
+        <ExpressionInput number={variable} title={"pose.x()"} suffix={""} enabled={true} setEnabled={function (value: boolean): void {
           } }></ExpressionInput>
           {/* <Input title={"Original"} suffix={"m"} enabled={false} number={value??NaN} setNumber={function (newNumber: number): void {
             } } setEnabled={function (value: boolean): void {

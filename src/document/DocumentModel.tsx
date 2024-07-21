@@ -1,4 +1,4 @@
-import { Instance, types } from "mobx-state-tree";
+import { Instance, getEnv, types } from "mobx-state-tree";
 import {
   SavedDocument,
   SavedGeneratedWaypoint,
@@ -15,18 +15,30 @@ import { UndoManager } from "mst-middlewares";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
-import { Units, Variables } from "./ExpressionStore";
+import { Units, Variables} from "./ExpressionStore";
+import { CircularObstacleStore, ICircularObstacleStore } from "./CircularObstacleStore";
+import {v4 as uuidv4} from "uuid";
 
 export const DocumentStore = types
   .model("DocumentStore", {
     pathlist: PathListStore,
     robotConfig: RobotConfigStore,
+    variables: Variables,
     splitTrajectoriesAtStopPoints: types.boolean,
     usesObstacles: types.boolean
   })
   .volatile((self) => ({
     history: UndoManager.create({}, { targetStore: self })
-  }));
+  })).actions(self=>({
+    createObstacleStore : (x: number, y: number, radius: number):ICircularObstacleStore =>{
+      return CircularObstacleStore.create({
+        x: self.variables.createExpression(x, Units.Meter),
+        y: self.variables.createExpression(y, Units.Meter),
+        radius: self.variables.createExpression(radius, Units.Meter),
+        uuid: uuidv4()
+      })
+    }}
+  ));
 
 export interface IDocumentStore extends Instance<typeof DocumentStore> {}
 
@@ -34,7 +46,7 @@ const StateStore = types
   .model("StateStore", {
     uiState: UIStateStore,
     document: DocumentStore,
-    variables: Variables,
+    
   })
   .views((self) => ({
     asSavedDocument(): SavedDocument {
@@ -51,8 +63,8 @@ const StateStore = types
   .actions((self) => {
     return {
       afterCreate() {
-        self.variables.add("pose", self.variables.Expression("0 m", Units.Meter));
-        self.variables.add("name", self.variables.Expression("pose()", Units.Meter));
+        self.document.variables.addPose("pose");
+        self.document.variables.add("name", "pose.x()", Units.Meter);
         self.document.history = UndoManager.create(
           {},
           { targetStore: self.document }

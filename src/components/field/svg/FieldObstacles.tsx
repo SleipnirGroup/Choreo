@@ -22,16 +22,16 @@ class FieldGrid extends Component<Props, State> {
   }
 
   dragPointTranslate(event: any) {
-    this.props.obstacle.setX(this.props.obstacle.x + event.dx);
-    this.props.obstacle.setY(this.props.obstacle.y + event.dy);
+    this.props.obstacle.x.set(this.props.obstacle.x + event.dx);
+    this.props.obstacle.y.set(this.props.obstacle.y + event.dy);
   }
 
   dragPointRadius(event: any) {
-    const dx = event.x - this.props.obstacle.x;
-    const dy = event.y - this.props.obstacle.y;
+    const dx = event.x - this.props.obstacle.x.value;
+    const dy = event.y - this.props.obstacle.y.value;
     const r = Math.sqrt(dx * dx + dy * dy);
 
-    this.props.obstacle.setRadius(r);
+    this.props.obstacle.radius.set(r);
   }
 
   componentDidMount(): void {
@@ -69,13 +69,16 @@ class FieldGrid extends Component<Props, State> {
 
   render() {
     const o = this.props.obstacle;
+    const x = o.x.value;
+    const y = o.y.value;
+    const r = o.radius.value;
     return (
       <g ref={this.rootRef}>
         {/* Main Circle */}
         <circle
-          cx={o.x}
-          cy={o.y}
-          r={o.radius - STROKE / 2}
+          cx={x}
+          cy={y}
+          r={r - STROKE / 2}
           fill={"red"}
           fillOpacity={0.1}
           onClick={() => this.context.model.select(o)}
@@ -83,9 +86,9 @@ class FieldGrid extends Component<Props, State> {
         ></circle>
         {/* Center Dot */}
         <circle
-          cx={o.x}
-          cy={o.y}
-          r={o.radius < DOT * 2 ? 0.0 : DOT}
+          cx={x}
+          cy={y}
+          r={r < DOT * 2 ? 0.0 : DOT}
           fill={o.selected ? "var(--select-yellow)" : "red"}
           fillOpacity={o.selected ? 1.0 : 0.8}
           onClick={() => this.context.model.select(o)}
@@ -93,9 +96,9 @@ class FieldGrid extends Component<Props, State> {
         ></circle>
         {/* Radius Handle */}
         <circle
-          cx={o.x}
-          cy={o.y}
-          r={o.radius - STROKE / 2}
+          cx={x}
+          cy={y}
+          r={r - STROKE / 2}
           fill={"transparent"}
           pointerEvents={"visibleStroke"}
           stroke={o.selected ? "var(--select-yellow)" : "red"}
