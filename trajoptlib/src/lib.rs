@@ -59,6 +59,8 @@ mod ffi {
         heading: f64,
         velocity_l: f64,
         velocity_r: f64,
+        force_l: f64,
+        force_r: f64,
     }
 
     #[derive(Debug, Deserialize, Serialize, Clone)]
