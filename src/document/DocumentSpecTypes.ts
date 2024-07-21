@@ -52,11 +52,16 @@ import {
 } from "./previousSpecs/v0_3_1";
 // import v0_3_1_Schema from "./previousSpecs/v0.3.1.json";
 import {
-  SavedTrajectorySampleSwerve,
   SavedDocument as v0_4,
   // SAVE_FILE_VERSION as v0_4_Version
 } from "./previousSpecs/v0_4";
 import v0_4_Schema from "./previousSpecs/v0.4.json";
+
+import {
+  SavedDocument as v0_5,
+  // SAVE_FILE_VERSION as v0_4_Version
+} from "./previousSpecs/v0_4";
+import v0_5_Schema from "./previousSpecs/v0.4.json";
 
 // Paste new version import blocks above this line.
 // Import SAVE_FILE_VERSION, SavedDocument and only the other types needed for the upgrader functions.
@@ -86,8 +91,8 @@ export type {
   SavedNamedCommand,
   SavedWaitCommand,
   SavedGeneratedWaypoint
-} from "./previousSpecs/v0_4";
-export { SAVE_FILE_VERSION } from "./previousSpecs/v0_4";
+} from "./previousSpecs/v0_5";
+export { SAVE_FILE_VERSION } from "./previousSpecs/v0_5";
 
 const ajv = new Ajv();
 
@@ -324,6 +329,11 @@ export const VERSIONS = {
   "v0.4": {
     up: (document: any): v0_4 => document,
     schema: v0_4_Schema
+  },
+
+  "v0.5": {
+    up: (document: any): v0_5 => document,
+    schema: v0_5_Schema
   }
 
   /**

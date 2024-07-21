@@ -178,7 +178,7 @@ struct ChoreoWaypoint {
 }
 
 #[allow(non_snake_case)]
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
 struct ChoreoRobotConfig {
     mass: f64,
     rotationalInertia: f64,
@@ -541,6 +541,8 @@ async fn generate_trajectory(
     handle: i64,
 ) -> TrajectoryExport {
     create_builder!(config.tank);
+
+    println!("{:?}", config);
 
     let mut wpt_cnt: usize = 0;
     let mut rm: Vec<usize> = Vec::new();

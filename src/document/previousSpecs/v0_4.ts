@@ -3,7 +3,6 @@
  */
 
 export const SAVE_FILE_VERSION = "v0.4";
-
 export interface SavedWaypoint {
   x: number;
   y: number;
@@ -13,13 +12,11 @@ export interface SavedWaypoint {
   headingConstrained: boolean;
   controlIntervalCount: number; // positive-integer
 }
-
 export type SavedGeneratedWaypoint = SavedWaypoint & {
   timestamp: number;
   isStopPoint: boolean;
 };
-
-export interface SavedTrajectorySampleSwerve {
+export interface SavedTrajectorySample {
   timestamp: number; // positive
   x: number;
   y: number;
@@ -30,20 +27,9 @@ export interface SavedTrajectorySampleSwerve {
   moduleForcesX: Array<number>;
   moduleForcesY: Array<number>;
 }
-
-export interface SavedTrajectorySampleTank {
-  timestamp: number; // positive
-  x: number;
-  y: number;
-  heading: number;
-  velocityL: number;
-  velocityR: number;
-  forceL: number;
-  forceR: number;
-}
-
-export interface SavedPathBase {
+export interface SavedPath {
   waypoints: Array<SavedWaypoint>;
+  trajectory: Array<SavedTrajectorySample> | null;
   trajectoryWaypoints: Array<SavedGeneratedWaypoint>;
   constraints: Array<SavedConstraint>;
   usesDefaultFieldObstacles: boolean;
@@ -52,23 +38,8 @@ export interface SavedPathBase {
   circleObstacles: Array<SavedCircleObstacle>;
   eventMarkers: Array<SavedEventMarker>;
   isTrajectoryStale: boolean;
-  type: "holonomic" | "tank";
 }
-
-export interface SavedPathSwerve extends SavedPathBase {
-  trajectory: Array<SavedTrajectorySampleSwerve> | null;
-  type: "holonomic";
-}
-
-export interface SavedPathTank extends SavedPathBase {
-  trajectory: Array<SavedTrajectorySampleTank> | null;
-  type: "tank";
-}
-
-export type SavedPath = SavedPathSwerve | SavedPathTank;
-
 export interface SavedPathList extends Record<string, SavedPath> {}
-
 export interface SavedRobotConfig {
   mass: number;
   rotationalInertia: number;
@@ -80,9 +51,7 @@ export interface SavedRobotConfig {
   gearing: number;
   bumperLength: number;
   bumperWidth: number;
-  tank: boolean;
 }
-
 export interface SavedDocument {
   version: typeof SAVE_FILE_VERSION;
   robotConfiguration: SavedRobotConfig;
@@ -90,47 +59,39 @@ export interface SavedDocument {
   splitTrajectoriesAtStopPoints: boolean;
   usesObstacles: boolean;
 }
-
 export type SavedWaypointId = "first" | "last" | number;
-
 export interface SavedConstraint {
   scope: Array<SavedWaypointId>;
   type: string;
   [key: string]: unknown;
 }
-
 export interface SavedCircleObstacle {
   x: number;
   y: number;
   radius: number;
 }
-
 export type SavedGroupCommand = {
   type: "deadline" | "parallel" | "race" | "sequential";
   data: {
     commands: SavedCommand[];
   };
 };
-
 export type SavedWaitCommand = {
   type: "wait";
   data: {
     waitTime: number;
   };
 };
-
 export type SavedNamedCommand = {
   type: "named";
   data: {
     name: string | null;
   };
 };
-
 export type SavedCommand =
   | SavedWaitCommand
   | SavedGroupCommand
   | SavedNamedCommand;
-
 export interface SavedEventMarker {
   name: string;
   target: SavedWaypointId | null;
