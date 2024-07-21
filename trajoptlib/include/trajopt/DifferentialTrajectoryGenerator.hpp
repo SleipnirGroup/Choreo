@@ -13,7 +13,6 @@
 #include <sleipnir/autodiff/Variable.hpp>
 #include <sleipnir/optimization/OptimizationProblem.hpp>
 
-#include "trajopt/DifferentialSolution.hpp"
 #include "trajopt/path/PathBuilder.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 #include "trajopt/util/expected"
@@ -41,6 +40,35 @@ struct TRAJOPT_DLLEXPORT DifferentialDrivetrain {
 
   /// Distance between the two driverails (m).
   double trackwidth;
+};
+
+/**
+ * The holonomic trajectory optimization solution.
+ */
+struct TRAJOPT_DLLEXPORT DifferentialSolution {
+  /// Times between samples.
+  std::vector<double> dt;
+
+  /// X positions.
+  std::vector<double> x;
+
+  /// Y positions.
+  std::vector<double> y;
+
+  /// Heading.
+  std::vector<double> heading;
+
+  /// The left velocities.
+  std::vector<double> vL;
+
+  /// The right velocities.
+  std::vector<double> vR;
+
+  /// The force of the left driverail wheels.
+  std::vector<double> FL;
+
+  /// The force of the right driverail wheels.
+  std::vector<double> FR;
 };
 
 /**

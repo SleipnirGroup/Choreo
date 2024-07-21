@@ -2,16 +2,16 @@
 
 #pragma once
 
+#include <cmath>
 #include <concepts>
 #include <vector>
 
-#include <sleipnir/autodiff/Variable.hpp>
-
-#include "trajopt/DifferentialSolution.hpp"
 #include "trajopt/geometry/Pose2.hpp"
 #include "trajopt/util/TrajoptUtil.hpp"
 
 namespace trajopt {
+
+struct DifferentialSolution;
 
 // TODO: Replace with std::vector.append_range() from C++23
 template <typename T>
