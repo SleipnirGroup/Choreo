@@ -1,7 +1,6 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use core::panic;
 use std::sync::mpsc::{channel, Sender};
 use std::sync::OnceLock;
 use std::thread;
@@ -542,8 +541,6 @@ async fn generate_trajectory(
 ) -> TrajectoryExport {
     create_builder!(config.tank);
 
-    println!("{:?}", config);
-
     let mut wpt_cnt: usize = 0;
     let mut rm: Vec<usize> = Vec::new();
     let mut control_interval_counts: Vec<usize> = Vec::new();
@@ -716,9 +713,7 @@ async fn generate_trajectory(
     for o in polygonObstacles {
         path_builder.sgmt_polygon_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
     }
-
     path_builder.set_drivetrain(&drivetrain);
-
     path_builder.generate(true, handle)
 }
 
