@@ -1,0 +1,152 @@
+name: Build Python
+
+on: [pull_request, push]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-wheel:
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows x86_64
+            os: windows-2022
+            version: "3.9"
+            cmake-env:
+          - name: Windows x86_64
+            os: windows-2022
+            version: "3.10"
+            cmake-env:
+          - name: Windows x86_64
+            os: windows-2022
+            version: "3.11"
+            cmake-env:
+          - name: Windows x86_64
+            os: windows-2022
+            version: "3.12"
+            cmake-env:
+          - name: Linux x86_64
+            os: ubuntu-24.04
+            version: "3.9"
+            cmake-env:
+          - name: Linux x86_64
+            os: ubuntu-24.04
+            version: "3.10"
+            cmake-env:
+          - name: Linux x86_64
+            os: ubuntu-24.04
+            version: "3.11"
+            cmake-env:
+          - name: Linux x86_64
+            os: ubuntu-24.04
+            version: "3.12"
+            cmake-env:
+          - name: macOS universal
+            os: macOS-14
+            version: "3.10"
+            cmake-env: CMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+          - name: macOS universal
+            os: macOS-14
+            version: "3.11"
+            cmake-env: CMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+          - name: macOS universal
+            os: macOS-14
+            version: "3.12"
+            cmake-env: CMAKE_OSX_ARCHITECTURES="x86_64;arm64"
+
+    name: ${{ matrix.version }} ${{ matrix.name }} wheel
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: ./trajoptlib
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Make GCC 14 the default toolchain (Linux)
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
+
+      - run: sudo xcode-select -switch /Applications/Xcode_15.3.app
+        if: startsWith(matrix.os, 'macOS')
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.version }}
+
+      - run: pip install typing_extensions
+        if: matrix.version == '3.9' || matrix.version == '3.10'
+
+      - run: pip3 install build pytest
+      - run: ${{ matrix.cmake-env }} python3 -m build --wheel
+      - run: python3 ../.github/workflows/repair_wheel.py trajoptlib-*.whl
+        if: startsWith(matrix.os, 'ubuntu') || startsWith(matrix.os, 'macOS')
+        working-directory: dist
+      - run: pip3 install dist/trajoptlib-*.whl
+        shell: bash
+      - run: pytest
+        shell: bash
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.version }} ${{ matrix.name }} wheel
+          path: dist
+
+  build-sdist:
+    timeout-minutes: 10
+
+    name: sdist
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: ./trajoptlib
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - run: pip3 install build
+      - run: python3 -m build --sdist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: dist
+
+  pypi-publish:
+    name: Upload release to PyPI
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: ./trajoptlib
+    needs: [build-wheel, build-sdist]
+    if: github.repository_owner == 'SleipnirGroup' && github.ref == 'refs/heads/main'
+    environment:
+      name: pypi
+      url: https://pypi.org/p/trajoptlib
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: '* wheel'
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: 'sdist'
+          merge-multiple: true
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

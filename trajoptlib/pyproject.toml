@@ -1,0 +1,44 @@
+[project]
+name = "trajoptlib"
+description = "A library for generating time optimal trajectories for FRC robots."
+version = "0.0.1.dev124"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [ "matplotlib", "numpy", "scipy" ]
+
+  [project.license]
+  file = "LICENSE.txt"
+
+  [project.urls]
+  Documentation = "https://sleipnirgroup.github.io/Choreo/trajoptlib/"
+
+[build-system]
+requires = [ "py-build-cmake~=0.1.8", "nanobind", "pybind11-mkdoc" ]
+build-backend = "py_build_cmake.build"
+
+[tool.py-build-cmake.module]
+name = "py"
+directory = "."
+
+[tool.py-build-cmake.sdist]
+include = [
+  "CMakeLists.txt",
+  "TrajoptlibConfig.cmake.in",
+  "cmake/modules/*.cmake",
+  "cmake/*.py",
+  "include/*",
+  "src/*",
+  "py/*"
+]
+exclude = [ ]
+
+[tool.py-build-cmake.cmake]
+build_type = "Release"
+source_path = "."
+build_args = [ "--target", "_trajoptlib" ]
+install_components = [ "python_modules" ]
+install_args = [ ]
+
+  [tool.py-build-cmake.cmake.options]
+  BUILD_TESTING = "OFF"
+  BUILD_PYTHON = "ON"
