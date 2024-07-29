@@ -9,19 +9,36 @@ import java.util.List;
 /** A trajectory loaded from Choreo. */
 public class ChoreoTrajectory {
   private final List<ChoreoTrajectoryState> samples;
+  private final List<ChoreoMarker> events;
+
+  private static final ChoreoMarker nullMarker = new ChoreoMarker("null", 1, 0);
 
   /** Create an empty ChoreoTrajectory. */
   public ChoreoTrajectory() {
     samples = List.of();
+    events = List.of();
   }
 
   /**
-   * Constructs a new trajectory from a list of trajectory states
+   * Constructs a new trajectory from a list of trajectory states, without event markers.
    *
    * @param samples a vector containing a list of ChoreoTrajectoryStates
    */
   public ChoreoTrajectory(List<ChoreoTrajectoryState> samples) {
     this.samples = samples;
+    events = List.of();
+  }
+
+  /**
+   * Constructs a new trajectory from a list of trajectory states, with event markers included from
+   * a list of markers.
+   *
+   * @param samples a vector containing a list of ChoreoTrajectoryStates
+   * @param events a vector containing a list of ChoreoMarkers
+   */
+  public ChoreoTrajectory(List<ChoreoTrajectoryState> samples, List<ChoreoMarker> events) {
+    this.samples = samples;
+    this.events = events;
   }
 
   /**
@@ -106,6 +123,23 @@ public class ChoreoTrajectory {
    */
   public List<ChoreoTrajectoryState> getSamples() {
     return samples;
+  }
+
+  /**
+   * Finds the event marker in the ChoreoEvent by name.
+   *
+   * @param name The name of the event marker.
+   * @return The event marker, with the specified name, in this ChoreoEvent.
+   */
+  public ChoreoMarker markerFromName(String name) {
+    for (ChoreoMarker marker : events) {
+      if (marker.name() == name) {
+        return marker;
+      }
+    }
+    return nullMarker;
+    // If there is no marker of that name in the trajectory, it will return a defective marker that
+    // can never trigger.
   }
 
   /**

@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -23,6 +24,11 @@ import java.util.function.Supplier;
 /** Utilities to load and follow ChoreoTrajectories */
 public class Choreo {
   private static final Gson gson = new Gson();
+
+  private static Timer timer = new Timer();
+
+  private static final ChoreoTrajectory emptyTraj = new ChoreoTrajectory();
+  private static ChoreoTrajectory currTraj = emptyTraj;
 
   /** Default constructor. */
   public Choreo() {}
@@ -153,18 +159,22 @@ public class Choreo {
       Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
       Subsystem... requirements) {
-    var timer = new Timer();
     return new FunctionalCommand(
-        timer::restart,
+        () -> {
+          timer.restart();
+        },
         () -> {
           ;
           outputChassisSpeeds.accept(
               controller.apply(
                   poseSupplier.get(),
                   trajectory.sample(timer.get(), mirrorTrajectory.getAsBoolean())));
+          currTraj = trajectory;
         },
         (interrupted) -> {
           timer.stop();
+          currTraj = emptyTraj;
+
           if (interrupted) {
             outputChassisSpeeds.accept(new ChassisSpeeds());
           } else {
@@ -204,5 +214,19 @@ public class Choreo {
       return ChassisSpeeds.fromFieldRelativeSpeeds(
           xFF + xFeedback, yFF + yFeedback, rotationFF + rotationFeedback, pose.getRotation());
     };
+  }
+
+  /**
+   * Returns a trigger, which activates at the specified event marker's start time, and ends at the
+   * event marker's end time.
+   *
+   * @param eventName The name of the event marker.
+   * @return A trigger which activates during an event marker.
+   */
+  public static Trigger event(String eventName) {
+    return new Trigger(
+        () ->
+            timer.hasElapsed(currTraj.markerFromName(eventName).startTime())
+                && !timer.hasElapsed(currTraj.markerFromName(eventName).endTime()));
   }
 }
