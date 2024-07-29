@@ -6,28 +6,27 @@ import {
   NotDraggingStyle
 } from "react-beautiful-dnd";
 import { CSSProperties } from "styled-components";
-import DocumentManagerContext from "../../document/DocumentManager";
+import {doc, uiState} from "../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import styles from "./Sidebar.module.css";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { IconButton, Tooltip } from "@mui/material";
 import { isAlive } from "mobx-state-tree";
 import { PriorityHigh } from "@mui/icons-material";
-import { NavbarItemData } from "../../document/UIStateStore";
+import { NavbarItemData } from "../../document/UIData";
 
 type Props = {
   waypoint: IHolonomicWaypointStore;
   index: number;
   pathLength: number;
-  context: React.ContextType<typeof DocumentManagerContext>;
   issue: string | undefined;
 };
 
 type State = { selected: boolean };
 
 class SidebarWaypoint extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   id: number = 0;
   state = { selected: false };
 
@@ -63,7 +62,7 @@ class SidebarWaypoint extends Component<Props, State> {
     const type = waypoint.type;
     // apparently we have to dereference this here instead of inline in the class name
     // Otherwise the component won't rerender when it changes
-    const { selected, _translationConstrained, _headingConstrained } = waypoint;
+    const { selected, translationConstrained, headingConstrained } = waypoint;
     if (!isAlive(waypoint)) return <></>;
     return (
       <Draggable
@@ -84,8 +83,8 @@ class SidebarWaypoint extends Component<Props, State> {
               provided.draggableProps.style
             )}
             onClick={() => {
-              this.context.model.uiState.setSelectedSidebarItem(waypoint);
-              this.context.model.uiState.setSelectedNavbarItem(waypoint.type);
+              doc.setSelectedSidebarItem(waypoint);
+              uiState.setSelectedNavbarItem(waypoint.type);
             }}
           >
             {React.cloneElement(NavbarItemData[type].icon, {
@@ -130,7 +129,7 @@ class SidebarWaypoint extends Component<Props, State> {
                 className={styles.SidebarRightIcon}
                 onClick={(e) => {
                   e.stopPropagation();
-                  this.context.model.document.pathlist.activePath.deleteWaypointUUID(
+                  doc.pathlist.activePath.deleteWaypointUUID(
                     waypoint?.uuid || ""
                   );
                 }}

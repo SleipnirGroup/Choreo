@@ -8,90 +8,125 @@ import {
 } from "./DocumentSpecTypes";
 
 import { invoke } from "@tauri-apps/api/tauri";
-import { RobotConfigStore } from "./RobotConfigStore";
-import { SelectableItemTypes, UIStateStore } from "./UIStateStore";
+import { IRobotConfigStore, RobotConfigStore } from "./RobotConfigStore";
 import { PathListStore } from "./PathListStore";
 import { UndoManager } from "mst-middlewares";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
-import { Units, Variables} from "./ExpressionStore";
+import { ExpressionStore, Units, Variables} from "./ExpressionStore";
 import { CircularObstacleStore, ICircularObstacleStore } from "./CircularObstacleStore";
 import {v4 as uuidv4} from "uuid";
+import { HolonomicWaypointStore, IHolonomicWaypointStore } from "./HolonomicWaypointStore";
+import { ConstraintStores, IConstraintStore } from "./ConstraintStore";
+import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
 
+export type SelectableItemTypes =
+| IRobotConfigStore
+| IHolonomicWaypointStore
+| IConstraintStore
+| ICircularObstacleStore
+| IEventMarkerStore
+| undefined;
+export const SelectableItem = types.union(
+  {
+    dispatcher: (snapshot) => {
+      if (snapshot.mass) return RobotConfigStore;
+      if (snapshot.target) return EventMarkerStore;
+      if (snapshot.scope) {
+        return ConstraintStores[snapshot.type];
+      }
+      if (snapshot.radius) {
+        return CircularObstacleStore;
+      }
+      return HolonomicWaypointStore;
+    }
+  },
+  RobotConfigStore,
+  HolonomicWaypointStore,
+  CircularObstacleStore,
+  EventMarkerStore,
+  ...Object.values(ConstraintStores)
+);
 export const DocumentStore = types
   .model("DocumentStore", {
     pathlist: PathListStore,
-    robotConfig: RobotConfigStore,
+    robotConfig: RobotConfigStore, 
     variables: Variables,
     splitTrajectoriesAtStopPoints: types.boolean,
-    usesObstacles: types.boolean
-  })
-  .volatile((self) => ({
-    history: UndoManager.create({}, { targetStore: self })
-  })).actions(self=>({
-    createObstacleStore : (x: number, y: number, radius: number):ICircularObstacleStore =>{
-      return CircularObstacleStore.create({
-        x: self.variables.createExpression(x, Units.Meter),
-        y: self.variables.createExpression(y, Units.Meter),
-        radius: self.variables.createExpression(radius, Units.Meter),
-        uuid: uuidv4()
-      })
-    }}
-  ));
-
-export interface IDocumentStore extends Instance<typeof DocumentStore> {}
-
-const StateStore = types
-  .model("StateStore", {
-    uiState: UIStateStore,
-    document: DocumentStore,
-    
+    usesObstacles: types.boolean,
+    selectedSidebarItem: types.maybe(types.safeReference(SelectableItem)),
   })
   .views((self) => ({
     asSavedDocument(): SavedDocument {
       return {
         version: SAVE_FILE_VERSION,
-        robotConfiguration: self.document.robotConfig.asSavedRobotConfig(),
-        paths: self.document.pathlist.asSavedPathList(),
+        robotConfiguration: self.robotConfig.asSavedRobotConfig(),
+        paths: self.pathlist.asSavedPathList(),
         splitTrajectoriesAtStopPoints:
-          self.document.splitTrajectoriesAtStopPoints,
-        usesObstacles: self.document.usesObstacles
+          self.splitTrajectoriesAtStopPoints,
+        usesObstacles: self.usesObstacles
       };
-    }
+    },
+    get isSidebarConstraintSelected() {
+      return (
+        self.selectedSidebarItem !== undefined &&
+        self.selectedSidebarItem.scope !== undefined
+      );
+    },
+    get isSidebarCircularObstacleSelected() {
+      return (
+        self.selectedSidebarItem !== undefined &&
+        self.selectedSidebarItem.radius !== undefined
+      );
+    },
+    get isSidebarWaypointSelected() {
+      return (
+        self.selectedSidebarItem !== undefined &&
+        !this.isSidebarConstraintSelected &&
+        !this.isSidebarCircularObstacleSelected
+      );
+    },
   }))
-  .actions((self) => {
-    return {
+  .volatile((self) => ({
+    history: UndoManager.create({}, { targetStore: self })
+  })).actions(self=>({
+    setSelectedSidebarItem(item: SelectableItemTypes) {
+      self.selectedSidebarItem = item;
+    },
       afterCreate() {
-        self.document.variables.addPose("pose");
-        self.document.variables.add("name", "pose.x()", Units.Meter);
-        self.document.history = UndoManager.create(
+        self.variables.addPose("pose");
+        self.variables.add("name", "pose.x()", Units.Meter);
+        self.history = UndoManager.create(
           {},
-          { targetStore: self.document }
+          { targetStore: self }
         );
+      },
+      undo() {
+        self.history.canUndo && self.history.undo();
+      },
+      redo() {
+        self.history.canRedo && self.history.redo();
       },
       fromSavedDocument(document: any) {
         document = updateToCurrent(document);
-        self.document.robotConfig.fromSavedRobotConfig(
+        self.robotConfig.fromSavedRobotConfig(
           document.robotConfiguration
         );
-        self.document.pathlist.fromSavedPathList(document.paths);
-        self.document.splitTrajectoriesAtStopPoints =
+        self.pathlist.fromSavedPathList(document.paths);
+        self.splitTrajectoriesAtStopPoints =
           document.splitTrajectoriesAtStopPoints;
-        self.document.usesObstacles = document.usesObstacles;
-      },
-      select(item: SelectableItemTypes) {
-        self.uiState.setSelectedSidebarItem(item);
+        self.usesObstacles = document.usesObstacles;
       },
       async generatePath(uuid: string) {
-        const pathStore = self.document.pathlist.paths.get(uuid);
+        const pathStore = self.pathlist.paths.get(uuid);
         if (pathStore === undefined) {
           throw "Path store is undefined";
         }
         let generatedWaypoints: SavedGeneratedWaypoint[] = [];
         return new Promise((resolve, reject) => {
           const controlIntervalOptResult =
-            pathStore.optimizeControlIntervalCounts(self.document.robotConfig);
+            pathStore.optimizeControlIntervalCounts(self.robotConfig);
           if (controlIntervalOptResult !== undefined) {
             return new Promise((resolve, reject) =>
               reject(controlIntervalOptResult)
@@ -188,7 +223,7 @@ const StateStore = types
                   unlisten = unlistener;
                   return invoke("generate_trajectory", {
                     path: pathStore.waypoints,
-                    config: self.document.robotConfig.asSolverRobotConfig(),
+                    config: self.robotConfig.asSolverRobotConfig(),
                     constraints: pathStore.asSolverPath().constraints,
                     circleObstacles: pathStore.asSolverPath().circleObstacles,
                     polygonObstacles: [],
@@ -228,7 +263,7 @@ const StateStore = types
                 });
               });
               if (newTraj.length == 0) throw "No traj";
-              self.document.history.startGroup(() => {
+              self.history.startGroup(() => {
                 pathStore.setTrajectory(newTraj);
                 if (newTraj.length > 0) {
                   let currentInterval = 0;
@@ -245,7 +280,7 @@ const StateStore = types
                 pathStore.setGeneratedWaypoints(generatedWaypoints);
                 // set this within the group so it gets picked up in the autosave
                 pathStore.setIsTrajectoryStale(false);
-                self.document.history.stopGroup();
+                self.history.stopGroup();
               });
             },
             (e) => {
@@ -262,16 +297,15 @@ const StateStore = types
           .finally(() => {
             // none of the below should trigger autosave
             pathStore.setGenerating(false);
-            self.uiState.setPathAnimationTimestamp(0);
             pathStore.setIsTrajectoryStale(false);
           });
       }
-    };
-  })
+    }
+  ))
   .actions((self) => {
     return {
       generatePathWithToasts(activePathUUID: string) {
-        const path = self.document.pathlist.paths.get(activePathUUID)!;
+        const path = self.pathlist.paths.get(activePathUUID)!;
         if (path.generating) {
           return Promise.resolve();
         }
@@ -301,7 +335,7 @@ const StateStore = types
         });
       },
       zoomToFitWaypoints() {
-        const waypoints = self.document.pathlist.activePath.waypoints;
+        const waypoints = self.pathlist.activePath.waypoints;
         if (waypoints.length <= 0) {
           return;
         }
@@ -312,10 +346,10 @@ const StateStore = types
         let yMax = -Infinity;
 
         for (const waypoint of waypoints) {
-          xMin = Math.min(xMin, waypoint.x);
-          xMax = Math.max(xMax, waypoint.x);
-          yMin = Math.min(yMin, waypoint.y);
-          yMax = Math.max(yMax, waypoint.y);
+          xMin = Math.min(xMin, waypoint.x.value);
+          xMax = Math.max(xMax, waypoint.x.value);
+          yMin = Math.min(yMin, waypoint.y.value);
+          yMax = Math.max(yMax, waypoint.y.value);
         }
 
         const x = (xMin + xMax) / 2;
@@ -348,13 +382,12 @@ const StateStore = types
   .actions((self) => {
     return {
       setSplitTrajectoriesAtStopPoints(split: boolean) {
-        self.document.splitTrajectoriesAtStopPoints = split;
+        self.splitTrajectoriesAtStopPoints = split;
       },
       setUsesObstacles(usesObstacles: boolean) {
-        self.document.usesObstacles = usesObstacles;
+        self.usesObstacles = usesObstacles;
       }
     };
   });
-
-export default StateStore;
-export interface IStateStore extends Instance<typeof StateStore> {}
+export interface IDocumentStore extends Instance<typeof DocumentStore> {}
+export default DocumentStore;

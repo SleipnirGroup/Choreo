@@ -7,7 +7,7 @@ import {
 } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import DocumentManagerContext from "../../document/DocumentManager";
+import {doc, uiState, renamePath, deletePath} from "../../document/DocumentManager";
 import DeleteIcon from "@mui/icons-material/Delete";
 import styles from "./Sidebar.module.css";
 import { Tooltip } from "@mui/material";
@@ -35,8 +35,8 @@ type OptionState = {
 };
 
 class PathSelectorOption extends Component<OptionProps, OptionState> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   state = {
     renaming: false,
     renameError: false,
@@ -46,11 +46,11 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
   nameInputRef = React.createRef<HTMLInputElement>();
   getSelected() {
     return (
-      this.props.uuid == this.context.model.document.pathlist.activePathUUID
+      this.props.uuid == doc.pathlist.activePathUUID
     );
   }
   getPath() {
-    return this.context.model.document.pathlist.paths.get(this.props.uuid)!;
+    return doc.pathlist.paths.get(this.props.uuid)!;
   }
   startRename() {
     this.setState({ renaming: true });
@@ -58,7 +58,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
   }
   completeRename() {
     if (!this.checkName()) {
-      this.context.renamePath(
+      renamePath(
         this.props.uuid,
         this.nameInputRef.current!.value
       );
@@ -85,10 +85,10 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
   }
   searchForName(name: string): boolean {
     const didFind =
-      Array.from(this.context.model.document.pathlist.paths.keys())
+      Array.from(doc.pathlist.paths.keys())
         .filter((uuid) => uuid !== this.props.uuid)
         .map(
-          (uuid) => this.context.model.document.pathlist.paths.get(uuid)!.name
+          (uuid) => doc.pathlist.paths.get(uuid)!.name
         )
         .find((existingName) => existingName === name) !== undefined;
     return didFind;
@@ -98,7 +98,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     // so mobx knows to rerender this component when it changes
     this.searchForName("");
     const selected =
-      this.props.uuid == this.context.model.document.pathlist.activePathUUID;
+      this.props.uuid == doc.pathlist.activePathUUID;
     const name = this.getPath().name;
     if (name != this.state.name && !this.state.renaming) {
       this.state.name = name;
@@ -110,7 +110,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
         onClick={() => {
           toast.dismiss(); // remove toasts that showed from last path, which is irrelevant for the new path
 
-          this.context.model.document.pathlist.setActivePathUUID(
+          doc.pathlist.setActivePathUUID(
             this.props.uuid
           );
         }}
@@ -234,7 +234,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
                   .confirm(`Delete "${this.getPath().name}"?`)
                   .then((result) => {
                     if (result) {
-                      this.context.deletePath(this.props.uuid);
+                      deletePath(this.props.uuid);
                     }
                   });
               }}
@@ -310,8 +310,8 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
 }
 
 class PathSelector extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   state = {};
 
   Option = observer(PathSelectorOption);
@@ -319,7 +319,7 @@ class PathSelector extends Component<Props, State> {
     return (
       <div>
         <div className={styles.WaypointList}>
-          {Array.from(this.context.model.document.pathlist.paths.keys()).map(
+          {Array.from(doc.pathlist.paths.keys()).map(
             (uuid) => (
               <this.Option uuid={uuid} key={uuid}></this.Option>
             )

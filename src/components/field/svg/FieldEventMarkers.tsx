@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import DocumentManagerContext from "../../../document/DocumentManager";
+import {doc, uiState} from "../../../document/DocumentManager";
 
 import { sample } from "../../../util/MathUtil";
 
@@ -44,12 +44,12 @@ class FieldEventMarker extends Component<MarkerProps, MarkerState> {
 }
 
 class FieldEventMarkers extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   state = {};
 
   render() {
-    const path = this.context.model.document.pathlist.activePath;
+    const path = doc.pathlist.activePath;
     return path.eventMarkers.flatMap((marker) => {
       if (marker.timestamp === undefined) {
         return [];
@@ -61,7 +61,7 @@ class FieldEventMarkers extends Component<Props, State> {
           y={marked.y}
           selected={marker.selected}
           onSelect={() =>
-            this.context.model.uiState.setSelectedSidebarItem(marker)
+            doc.setSelectedSidebarItem(marker)
           }
         ></FieldEventMarker>
       );

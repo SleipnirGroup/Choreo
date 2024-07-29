@@ -1,25 +1,21 @@
 import React, { Component, Fragment } from "react";
-import DocumentManagerContext from "../../../document/DocumentManager";
+import { doc, uiState } from "../../../document/DocumentManager";
 
 import { observer } from "mobx-react";
-import { ViewLayers } from "../../../document/UIStateStore";
+import { ViewLayers } from "../../../document/UIData";
 
-type Props = object;
+function FieldConstraintsAddLayer() {
+  
 
-type State = object;
+  // state = {};
 
-class FieldConstraintsAddLayer extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
-  state = {};
-
-  render() {
-    const layers = this.context.model.uiState.layers;
-    const activePath = this.context.model.document.pathlist.activePath;
+  // render() {
+    const layers = uiState.layers;
+    const activePath = doc.pathlist.activePath;
     const selectedConstraint =
-      this.context.model.uiState.getSelectedConstraint();
+      uiState.getSelectedConstraint();
     const selectedConstraintDefinition =
-      this.context.model.uiState.getSelectedConstraintDefinition();
+      uiState.getSelectedConstraintDefinition();
     const waypoints = activePath.waypoints;
     return (
       <>
@@ -29,7 +25,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
             .filter((waypoint) => !waypoint.isInitialGuess)
             .map((point, index) => {
               const activePath =
-                this.context.model.document.pathlist.activePath;
+                doc.pathlist.activePath;
               if (
                 (activePath.visibleWaypointsStart <= index &&
                   activePath.visibleWaypointsEnd >= index) ||
@@ -38,8 +34,8 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                 return (
                   <circle
                     key={index}
-                    cx={point.x}
-                    cy={point.y}
+                    cx={point.x.value}
+                    cy={point.y.value}
                     r={0.2}
                     fill={"black"}
                     fillOpacity={0.2}
@@ -61,7 +57,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                             newConstraint.setScope([{ uuid: point.uuid }]);
                           }
                         }
-                        this.context.model.uiState.setSelectedSidebarItem(
+                        doc.setSelectedSidebarItem(
                           newConstraint
                         );
                       }
@@ -84,18 +80,18 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                   <Fragment key={`frag-${index}-${index + 1}`}>
                     <line
                       key={`line-${index}-${index + 1}`}
-                      x1={point1.x}
-                      x2={point2.x}
-                      y1={point1.y}
-                      y2={point2.y}
+                      x1={point1.x.value}
+                      x2={point2.x.value}
+                      y1={point1.y.value}
+                      y2={point2.y.value}
                       strokeDasharray={0.2}
                       stroke="white"
                       strokeWidth={0.05}
                     ></line>
                     <circle
                       key={`${index}-${index + 1}`}
-                      cx={(point1.x + point2.x) / 2}
-                      cy={(point1.y + point2.y) / 2}
+                      cx={(point1.x.value + point2.x.value) / 2}
+                      cy={(point1.y.value + point2.y.value) / 2}
                       r={0.2}
                       fill={"black"}
                       fillOpacity={0.2}
@@ -103,14 +99,15 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                       strokeWidth={0.05}
                       onClick={() => {
                         const constraintToAdd =
-                          this.context.model.uiState.getSelectedConstraint();
+                          uiState.getSelectedConstraintKey();
+                
                         const newConstraint = activePath.addConstraint(
                           constraintToAdd,
                           [{ uuid: point1.uuid }, { uuid: point2.uuid }]
                         );
 
                         if (newConstraint !== undefined) {
-                          this.context.model.uiState.setSelectedSidebarItem(
+                          doc.setSelectedSidebarItem(
                             newConstraint
                           );
                         }
@@ -123,5 +120,5 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
       </>
     );
   }
-}
+
 export default observer(FieldConstraintsAddLayer);

@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import DocumentManagerContext from "../../../document/DocumentManager";
+import {doc, uiState} from "../../../document/DocumentManager";
 import InputList from "../../input/InputList";
 import Input from "../../input/Input";
 import { Button, FormControl, MenuItem, Select } from "@mui/material";
@@ -14,14 +14,14 @@ type State = {
 };
 
 class RobotConfigPanel extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   state = {
     selectedMotor: "KrakenX60" as keyof typeof MotorCurves,
     currentLimit: 60
   };
   render() {
-    const config = this.context.model.document.robotConfig;
+    const config = doc.robotConfig;
     return (
       <>
         <FormControl
@@ -51,18 +51,18 @@ class RobotConfigPanel extends Component<Props, State> {
           <Button
             variant="outlined"
             onClick={() => {
-              this.context.history.startGroup(() => {
-                config.setMaxVelocity(
+              doc.history.startGroup(() => {
+                config.motorMaxVelocity.set(
                   MotorCurves[this.state.selectedMotor].motorMaxVelocity * 0.8
                 );
-                config.setMaxTorque(
+                config.motorMaxTorque.set(
                   maxTorqueCurrentLimited(
                     MotorCurves[this.state.selectedMotor].kt,
                     this.state.currentLimit
                   )
                 );
               });
-              this.context.history.stopGroup();
+              doc.history.stopGroup();
             }}
           >
             Apply

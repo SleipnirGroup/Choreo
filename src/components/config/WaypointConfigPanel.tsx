@@ -1,21 +1,23 @@
 import { observer } from "mobx-react";
 import React, { Component, ReactElement } from "react";
-import DocumentManagerContext from "../../document/DocumentManager";
+import {doc, uiState} from "../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import Input from "../input/Input";
 import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../input/InputList";
 import { ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
-import { WaypointData } from "../../document/UIStateStore";
+import { WaypointData } from "../../document/UIData";
 import { angleModulus } from "../../util/MathUtil";
+import ExpressionInput from "../input/ExpressionInput";
+import ExpressionInputList from "../input/ExpressionInputList";
 
 type Props = { waypoint: IHolonomicWaypointStore | null; index: number };
 
 type State = object;
 
 class WaypointPanel extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   state = {};
 
   isWaypointNonNull(
@@ -43,37 +45,29 @@ class WaypointPanel extends Component<Props, State> {
           >
             {index + 1}
           </span>
-          <InputList noCheckbox>
-            <Input
+          <ExpressionInputList>
+            <ExpressionInput
               title="x"
-              suffix="m"
-              showCheckbox={false}
               enabled={true}
-              setEnabled={(_) => {}}
               maxWidthCharacters={8}
               number={waypoint.x}
-              setNumber={(x) => waypoint!.setX(x)}
-            ></Input>
-            <Input
+            ></ExpressionInput>
+            <ExpressionInput
               title="y"
-              suffix="m"
-              showCheckbox={false}
               enabled={true}
-              setEnabled={(_) => {}}
               maxWidthCharacters={8}
               number={waypoint.y}
-              setNumber={(y) => waypoint!.setY(y)}
-            ></Input>
-            <Input
+              
+            ></ExpressionInput>
+            <ExpressionInput
               title="θ"
-              suffix="rad"
-              showCheckbox={false}
               enabled={waypoint.headingConstrained}
-              setEnabled={(_) => {}}
               maxWidthCharacters={8}
-              number={angleModulus(waypoint.heading)}
-              setNumber={(heading) => waypoint!.setHeading(heading)}
-            ></Input>
+              number={waypoint.heading}
+              //setNumber={(heading) => waypoint!.setHeading(heading)}
+            ></ExpressionInput>
+            </ExpressionInputList>
+            <InputList noCheckbox>
             <Input
               title=""
               suffix="samples"

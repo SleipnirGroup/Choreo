@@ -1,27 +1,27 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import DocumentManagerContext from "../../document/DocumentManager";
+import {doc, uiState} from "../../document/DocumentManager";
 import styles from "./WaypointConfigPanel.module.css";
 import { Slider } from "@mui/material";
-import { ViewLayers } from "../../document/UIStateStore";
+import { ViewLayers } from "../../document/UIData";
 
 type Props = object;
 
 type State = object;
 
 class WaypointVisibilityPanel extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   state = {};
   render() {
-    const layers = this.context.model.uiState.layers;
+    const layers = uiState.layers;
 
     const startIndex =
-      this.context.model.document.pathlist.activePath.visibleWaypointsStart ??
+      doc.pathlist.activePath.visibleWaypointsStart ??
       0;
     const endIndex =
-      this.context.model.document.pathlist.activePath.visibleWaypointsEnd ?? 0;
-    const points = this.context.model.document.pathlist.activePath.waypoints;
+      doc.pathlist.activePath.visibleWaypointsEnd ?? 0;
+    const points = doc.pathlist.activePath.waypoints;
     const pointcount = points.length;
 
     const sliderMarks = points.map((point, idx) => ({
@@ -29,7 +29,7 @@ class WaypointVisibilityPanel extends Component<Props, State> {
       label: idx + 1
     }));
 
-    if (this.context.model.document.pathlist.activePath.waypoints.length >= 2) {
+    if (doc.pathlist.activePath.waypoints.length >= 2) {
       return (
         layers[ViewLayers.Focus] && (
           <div
@@ -52,17 +52,17 @@ class WaypointVisibilityPanel extends Component<Props, State> {
                   activeThumb: number
                 ) => {
                   if (typeof value === "number") {
-                    this.context.model.document.pathlist.activePath.setVisibleWaypointsStart(
+                    doc.pathlist.activePath.setVisibleWaypointsStart(
                       value
                     );
-                    this.context.model.document.pathlist.activePath.setVisibleWaypointsEnd(
+                    doc.pathlist.activePath.setVisibleWaypointsEnd(
                       value
                     );
                   } else {
-                    this.context.model.document.pathlist.activePath.setVisibleWaypointsStart(
+                    doc.pathlist.activePath.setVisibleWaypointsStart(
                       value[0]
                     );
-                    this.context.model.document.pathlist.activePath.setVisibleWaypointsEnd(
+                    doc.pathlist.activePath.setVisibleWaypointsEnd(
                       value[1]
                     );
                   }

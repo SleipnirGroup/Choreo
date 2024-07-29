@@ -1,8 +1,10 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import DocumentManagerContext from "../../../document/DocumentManager";
+import {doc, uiState} from "../../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../../document/HolonomicWaypointStore";
 import * as d3 from "d3";
+import { IDocumentStore } from "../../../document/DocumentModel";
+import { IRobotConfigStore } from "../../../document/RobotConfigStore";
 
 type Props = { waypoint: IHolonomicWaypointStore; index: number };
 
@@ -15,8 +17,8 @@ type Coordinates = {
 const targetRadius = 0.1;
 const outlineWidth = 0.03;
 class OverlayWaypoint extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   state = {};
   bumperRef: any;
   rootRef: React.RefObject<SVGGElement> = React.createRef<SVGGElement>();
@@ -26,12 +28,12 @@ class OverlayWaypoint extends Component<Props, State> {
 
   BumperBox = observer(
     ({
-      context,
+      robotConfig,
       strokeColor,
       strokeWidthPx,
       dashed
     }: {
-      context: React.ContextType<typeof DocumentManagerContext>;
+      robotConfig: IRobotConfigStore;
       strokeColor: string;
       strokeWidthPx: number;
       dashed: boolean;
@@ -42,8 +44,8 @@ class OverlayWaypoint extends Component<Props, State> {
             id={this.appendIndexID("bumpers")}
             d={
               dashed
-                ? context.model.document.robotConfig.dashedBumperSVGElement()
-                : context.model.document.robotConfig.bumperSVGElement()
+                ? robotConfig.dashedBumperSVGElement()
+                : robotConfig.bumperSVGElement()
             }
           ></path>
           <clipPath id={this.appendIndexID("clip")}>
@@ -55,7 +57,7 @@ class OverlayWaypoint extends Component<Props, State> {
           xlinkHref={`#${this.appendIndexID("bumpers")}`}
           clipPath={`url(#${this.appendIndexID("clip")})`}
           stroke={strokeColor}
-          strokeWidth={strokeWidthPx * context.model.uiState.fieldScalingFactor}
+          strokeWidth={strokeWidthPx * uiState.fieldScalingFactor}
           strokeLinecap="square"
           fill={"transparent"}
           vectorEffect={"non-scaling-stroke"}
@@ -73,8 +75,8 @@ class OverlayWaypoint extends Component<Props, State> {
 
   coordsFromWaypoint(): Coordinates {
     return {
-      x: this.props.waypoint.x,
-      y: this.props.waypoint.y
+      x: this.props.waypoint.x.value,
+      y: this.props.waypoint.y.value
     };
   }
   dragPointRotate(event: any) {
@@ -89,7 +91,7 @@ class OverlayWaypoint extends Component<Props, State> {
     // converts the values to stay inside the 360 positive
 
     // creates the new rotate position array
-    this.props.waypoint.setHeading(angleFinal);
+    this.props.waypoint.heading.set(angleFinal);
     //d3.select(`#group`).attr('transform', `rotate(${ this.r.angle })`)
   }
 
@@ -118,13 +120,13 @@ class OverlayWaypoint extends Component<Props, State> {
     // converts the values to stay inside the 360 positive
 
     // creates the new rotate position array
-    this.props.waypoint.setX(pointerPos.x);
-    this.props.waypoint.setY(pointerPos.y);
+    this.props.waypoint.x.set(pointerPos.x);
+    this.props.waypoint.y.set(pointerPos.y);
 
     //d3.select(`#group`).attr('transform', `rotate(${ this.r.angle })`)
   }
   selectWaypoint() {
-    this.context.model.document.pathlist.activePath.selectOnly(
+    doc.pathlist.activePath.selectOnly(
       this.props.index
     );
   }
@@ -134,15 +136,15 @@ class OverlayWaypoint extends Component<Props, State> {
         `#waypointGroup${this.props.index}`
       ).on("contextmenu", (e) => {
         console.log("selecting waypoint: " + this.props.index);
-        this.context.model.document.pathlist.activePath.selectOnly(
+        doc.pathlist.activePath.selectOnly(
           this.props.index
         );
-        this.context.model.uiState.setContextMenuMouseSelection(e);
-        this.context.model.uiState.setContextMenuSelectedWaypoint(
+        uiState.setContextMenuMouseSelection(e);
+        uiState.setContextMenuSelectedWaypoint(
           this.props.index
         );
-        this.context.model.uiState.setContextMenuWaypointType(
-          this.context.model.document.pathlist.activePath.waypoints[
+        uiState.setContextMenuWaypointType(
+          doc.pathlist.activePath.waypoints[
             this.props.index
           ].type
         );
@@ -153,9 +155,9 @@ class OverlayWaypoint extends Component<Props, State> {
         .on("drag", (event) => this.dragPointRotate(event))
         .on("start", () => {
           this.selectWaypoint();
-          this.context.history.startGroup(() => {});
+          doc.history.startGroup(() => {});
         })
-        .on("end", (event) => this.context.history.stopGroup())
+        .on("end", (event) => doc.history.stopGroup())
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
         `#rotateTarget${this.props.index}`
@@ -179,9 +181,9 @@ class OverlayWaypoint extends Component<Props, State> {
         .on("drag", (event) => this.dragPointTranslate(event))
         .on("start", () => {
           this.selectWaypoint();
-          this.context.history.startGroup(() => {});
+          doc.history.startGroup(() => {});
         })
-        .on("end", (event) => this.context.history.stopGroup())
+        .on("end", (event) => doc.history.stopGroup())
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
         `#dragTarget${this.props.index}`
@@ -199,7 +201,7 @@ class OverlayWaypoint extends Component<Props, State> {
       : "var(--accent-purple)";
   }
   getDragTargetColor(): string {
-    const waypoints = this.context.model.document.pathlist.activePath.waypoints;
+    const waypoints = doc.pathlist.activePath.waypoints;
     let color = "var(--accent-purple)";
     if (waypoints.length >= 2) {
       if (this.props.index === 0) {
@@ -219,18 +221,18 @@ class OverlayWaypoint extends Component<Props, State> {
   render() {
     const waypoint = this.props.waypoint;
     const boxColorStr = this.getBoxColor();
-    const robotConfig = this.context.model.document.robotConfig;
+    const robotConfig = doc.robotConfig;
     return (
       <g ref={this.rootRef}>
         <g
-          transform={`translate(${waypoint.x}, ${waypoint.y}) rotate(${
-            (waypoint.heading * 180) / Math.PI
+          transform={`translate(${waypoint.x.value}, ${waypoint.y.value}) rotate(${
+            (waypoint.heading.value * 180) / Math.PI
           })`}
           id={this.appendIndexID("waypointGroup")}
         >
           {
             <this.BumperBox
-              context={this.context}
+              robotConfig={robotConfig}
               strokeColor={boxColorStr}
               strokeWidthPx={6}
               dashed={this.props.waypoint.type !== 0}
@@ -238,11 +240,11 @@ class OverlayWaypoint extends Component<Props, State> {
           }
           {/* Heading drag point */}
           <circle
-            cx={robotConfig.bumperLength / 2}
+            cx={robotConfig.bumperLength.value / 2}
             cy={0}
             r={
               targetRadius *
-              Math.min(robotConfig.bumperLength, robotConfig.bumperWidth)
+              Math.min(robotConfig.bumperLength.value, robotConfig.bumperWidth.value)
             }
             id={this.appendIndexID("rotateTarget")}
             fill={boxColorStr}
@@ -266,8 +268,8 @@ class OverlayWaypoint extends Component<Props, State> {
                       targetRadius *
                       1.5 *
                       Math.min(
-                        robotConfig.bumperLength,
-                        robotConfig.bumperWidth
+                        robotConfig.bumperLength.value,
+                        robotConfig.bumperWidth.value
                       )
                     }
                     id={this.appendIndexID("dragTarget")}
@@ -291,7 +293,7 @@ class OverlayWaypoint extends Component<Props, State> {
                 // Question mark icon's raw svg
                 const boxSize =
                   ((0.4 * 24) / 20) *
-                  Math.min(robotConfig.bumperLength, robotConfig.bumperWidth);
+                  Math.min(robotConfig.bumperLength.value, robotConfig.bumperWidth.value);
                 const sx = 1;
                 const cx = 12;
                 const cy = 12;

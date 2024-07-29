@@ -1,7 +1,5 @@
-import { Instance, getParent, getRoot, isAlive, types } from "mobx-state-tree";
+import { Instance, getEnv, getParent, getRoot, isAlive, types } from "mobx-state-tree";
 import { SavedCircleObstacle } from "./DocumentSpecTypes";
-import { safeGetIdentifier } from "../util/mobxutils";
-import { IStateStore } from "./DocumentModel";
 import { ExpressionStore, Units } from "./ExpressionStore";
 import { number } from "mathjs";
 import {v4 as uuidv4} from "uuid"
@@ -29,9 +27,7 @@ export const CircularObstacleStore = types
       }
       return (
         self.uuid ===
-        safeGetIdentifier(
-          getRoot<IStateStore>(self).uiState.selectedSidebarItem
-        )
+          getEnv(self).selectedSidebar()
       );
     }
   }))
@@ -43,11 +39,7 @@ export const CircularObstacleStore = types
     },
     setSelected(selected: boolean) {
       if (selected && !self.selected) {
-        const root = getRoot<IStateStore>(self);
-        if (root === undefined) {
-          return;
-        }
-        root.select(
+        getEnv(self).select(
           getParent<ICircularObstacleStore[]>(self)?.find(
             (obstacle) => self.uuid == obstacle.uuid
           )

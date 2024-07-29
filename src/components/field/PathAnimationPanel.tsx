@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import DocumentManagerContext from "../../document/DocumentManager";
+import {doc, uiState} from "../../document/DocumentManager";
 import PathAnimationSlider from "./PathAnimationSlider";
 import IconButton from "@mui/material/IconButton";
 import PlayIcon from "@mui/icons-material/PlayArrow";
@@ -19,8 +19,8 @@ class PathAnimationPanel extends Component<Props, State> {
   state = {
     running: false
   };
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   timerId = 0;
   totalTime = 0;
   i = 0;
@@ -32,10 +32,10 @@ class PathAnimationPanel extends Component<Props, State> {
     this.setState({ running: true });
     if (
       Math.abs(
-        this.totalTime - this.context.model.uiState.pathAnimationTimestamp
+        this.totalTime - uiState.pathAnimationTimestamp
       ) < 0.1
     ) {
-      this.context.model.uiState.setPathAnimationTimestamp(0);
+      uiState.setPathAnimationTimestamp(0);
     }
     window.cancelAnimationFrame(this.timerId);
     this.timerId = requestAnimationFrame(this.step);
@@ -46,11 +46,11 @@ class PathAnimationPanel extends Component<Props, State> {
     this.then = Date.now();
     if (this.state.running) {
       const pathAnimationTimestamp =
-        this.context.model.uiState.pathAnimationTimestamp;
+        uiState.pathAnimationTimestamp;
       if (pathAnimationTimestamp > this.totalTime) {
-        this.context.model.uiState.setPathAnimationTimestamp(0);
+        uiState.setPathAnimationTimestamp(0);
       } else {
-        this.context.model.uiState.setPathAnimationTimestamp(
+        uiState.setPathAnimationTimestamp(
           pathAnimationTimestamp + dt / 1e3
         );
       }
@@ -76,14 +76,14 @@ class PathAnimationPanel extends Component<Props, State> {
     });
     autorun(() => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const activePath = this.context.model.document.pathlist.activePathUUID;
+      const activePath = doc.pathlist.activePathUUID;
       this.onStop();
     });
   }
   render() {
-    const activePath = this.context.model.document.pathlist.activePath;
+    const activePath = doc.pathlist.activePath;
     this.totalTime =
-      this.context.model.document.pathlist.activePath.getTotalTimeSeconds();
+      doc.pathlist.activePath.getTotalTimeSeconds();
     return (
       <div
         style={{

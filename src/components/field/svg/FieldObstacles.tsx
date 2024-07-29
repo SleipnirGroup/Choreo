@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import DocumentManagerContext from "../../../document/DocumentManager";
+import {doc, select, uiState} from "../../../document/DocumentManager";
 import { observer } from "mobx-react";
 import * as d3 from "d3";
 import { ICircularObstacleStore } from "../../../document/CircularObstacleStore";
@@ -12,8 +12,8 @@ const STROKE = 0.1;
 const DOT = 0.1;
 
 class FieldGrid extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   state = {};
   rootRef: React.RefObject<SVGElement> = React.createRef<SVGElement>();
 
@@ -22,8 +22,8 @@ class FieldGrid extends Component<Props, State> {
   }
 
   dragPointTranslate(event: any) {
-    this.props.obstacle.x.set(this.props.obstacle.x + event.dx);
-    this.props.obstacle.y.set(this.props.obstacle.y + event.dy);
+    this.props.obstacle.x.set(this.props.obstacle.x.value + event.dx);
+    this.props.obstacle.y.set(this.props.obstacle.y.value + event.dy);
   }
 
   dragPointRadius(event: any) {
@@ -40,10 +40,10 @@ class FieldGrid extends Component<Props, State> {
         .drag<SVGCircleElement, undefined>()
         .on("drag", (event) => this.dragPointTranslate(event))
         .on("start", () => {
-          this.context.model.select(this.props.obstacle);
-          this.context.history.startGroup(() => {});
+          select(this.props.obstacle);
+          doc.history.startGroup(() => {});
         })
-        .on("end", (event) => this.context.history.stopGroup())
+        .on("end", (event) => doc.history.stopGroup())
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
         `#oDragTarget${this.props.index}`
@@ -56,10 +56,10 @@ class FieldGrid extends Component<Props, State> {
         .drag<SVGCircleElement, undefined>()
         .on("drag", (event) => this.dragPointRadius(event))
         .on("start", () => {
-          this.context.model.select(this.props.obstacle);
-          this.context.history.startGroup(() => {});
+          select(this.props.obstacle);
+          doc.history.startGroup(() => {});
         })
-        .on("end", (event) => this.context.history.stopGroup())
+        .on("end", (event) => doc.history.stopGroup())
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
         `#oRadiusDragTarget${this.props.index}`
@@ -81,7 +81,7 @@ class FieldGrid extends Component<Props, State> {
           r={r - STROKE / 2}
           fill={"red"}
           fillOpacity={0.1}
-          onClick={() => this.context.model.select(o)}
+          onClick={() => select(o)}
           id={this.appendIndexID("oDragTarget")}
         ></circle>
         {/* Center Dot */}
@@ -91,7 +91,7 @@ class FieldGrid extends Component<Props, State> {
           r={r < DOT * 2 ? 0.0 : DOT}
           fill={o.selected ? "var(--select-yellow)" : "red"}
           fillOpacity={o.selected ? 1.0 : 0.8}
-          onClick={() => this.context.model.select(o)}
+          onClick={() => select(o)}
           id={this.appendIndexID("oCenterDragTarget")}
         ></circle>
         {/* Radius Handle */}
@@ -104,7 +104,7 @@ class FieldGrid extends Component<Props, State> {
           stroke={o.selected ? "var(--select-yellow)" : "red"}
           strokeWidth={STROKE}
           strokeOpacity={o.selected ? 1.0 : 0.8}
-          onClick={() => this.context.model.select(o)}
+          onClick={() => select(o)}
           id={this.appendIndexID("oRadiusDragTarget")}
         ></circle>
       </g>

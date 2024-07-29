@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import DocumentManagerContext from "../../../document/DocumentManager";
+import {doc, uiState} from "../../../document/DocumentManager";
 
 import { observer } from "mobx-react";
 import { PathGradients } from "../../config/robotconfig/PathGradient";
@@ -9,11 +9,11 @@ type Props = object;
 type State = object;
 
 class FieldPathLines extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
 
   render() {
-    const path = this.context.model.document.pathlist.activePath;
+    const path = doc.pathlist.activePath;
     let generatedPathString = "";
     const trajectory = path.generating
       ? path.generationProgress
@@ -24,12 +24,12 @@ class FieldPathLines extends Component<Props, State> {
     trajectory.forEach((point) => {
       generatedPathString += `${point.x},${point.y} `;
     });
-    const key = this.context.model.uiState
+    const key = uiState
       .selectedPathGradient as keyof typeof PathGradients;
     const pathGradient = PathGradients[key];
     if (
       pathGradient === undefined ||
-      this.context.model.uiState.selectedPathGradient == PathGradients.None.name
+      uiState.selectedPathGradient == PathGradients.None.name
     ) {
       return (
         <polyline
@@ -63,7 +63,7 @@ class FieldPathLines extends Component<Props, State> {
                     point,
                     i,
                     arr,
-                    this.context.model
+                    doc
                   )}
                 ></line>
               );

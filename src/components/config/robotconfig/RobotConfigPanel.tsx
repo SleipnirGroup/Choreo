@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import DocumentManagerContext from "../../../document/DocumentManager";
+import {doc, uiState} from "../../../document/DocumentManager";
 import MotorCalculatorPanel from "./MotorCalculatorPanel";
 import inputStyles from "../../input/InputList.module.css";
 import { Divider, FormHelperText, IconButton, Switch } from "@mui/material";
@@ -14,9 +14,9 @@ type Props = object;
 type State = { imperial: boolean; bottomHalf: boolean };
 
 class RobotConfigPanel extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
-  state = { imperial: false, bottomHalf: false };
+  
+
+  state = { imperial:false, bottomHalf: false };
   rowGap = 16;
   render() {
     const imp = this.state.imperial;
@@ -37,10 +37,17 @@ class RobotConfigPanel extends Component<Props, State> {
           </Divider>
           <DimensionsConfigPanel
             rowGap={this.rowGap}
-            imperial={imp}
           ></DimensionsConfigPanel>
         </div>
         <div style={{ gridRow: 1, gridColumn: 2 }}>
+
+          <Divider sx={{ color: "gray", marginBlock: `${this.rowGap}px` }}>
+            DRIVE MOTOR
+          </Divider>
+          <ModuleConfigPanel
+            rowGap={this.rowGap}
+          ></ModuleConfigPanel>
+
           <Divider sx={{ color: "gray", marginBottom: `${this.rowGap}px` }}>
             DISPLAY
           </Divider>
@@ -63,13 +70,6 @@ class RobotConfigPanel extends Component<Props, State> {
               onChange={(e, checked) => this.setState({ imperial: checked })}
             ></Switch>
           </div>
-          <Divider sx={{ color: "gray", marginBlock: `${this.rowGap}px` }}>
-            DRIVE MOTOR
-          </Divider>
-          <ModuleConfigPanel
-            rowGap={this.rowGap}
-            imperial={imp}
-          ></ModuleConfigPanel>
         </div>
         {/* Left label divider when calculator is open */}
         <div

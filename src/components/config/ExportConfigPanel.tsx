@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import DocumentManagerContext from "../../document/DocumentManager";
+import {clearAllTrajectories, doc, exportAllTrajectories, uiState} from "../../document/DocumentManager";
 import inputStyles from "../input/InputList.module.css";
 import { Switch } from "@mui/material";
 
@@ -9,8 +9,8 @@ type Props = object;
 type State = object;
 
 class ExportConfigPanel extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   rowGap = 16;
   render() {
     return (
@@ -28,11 +28,11 @@ class ExportConfigPanel extends Component<Props, State> {
         <Switch
           size="small"
           sx={{ gridColumn: 2 }}
-          checked={this.context.model.document.splitTrajectoriesAtStopPoints}
+          checked={doc.splitTrajectoriesAtStopPoints}
           onChange={(e, checked) => {
-            this.context.model.setSplitTrajectoriesAtStopPoints(checked);
-            this.context.clearAllTrajectories();
-            this.context.exportAllTrajectories();
+            doc.setSplitTrajectoriesAtStopPoints(checked);
+            clearAllTrajectories();
+            exportAllTrajectories();
           }}
         ></Switch>
       </div>

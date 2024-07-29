@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import DocumentManagerContext from "../../../document/DocumentManager";
+import {doc, uiState} from "../../../document/DocumentManager";
 import { sample } from "../../../util/MathUtil";
 
 type Props = {
@@ -10,17 +10,17 @@ type Props = {
 type State = object;
 
 class InterpolatedRobot extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   state = {};
 
   render() {
-    if (this.context.model.document.pathlist.activePath.generated.length < 2) {
+    if (doc.pathlist.activePath.generated.length < 2) {
       return <></>;
     }
     const pose1 = sample(
       this.props.timestamp,
-      this.context.model.document.pathlist.activePath.generated
+      doc.pathlist.activePath.generated
     );
     return (
       <g
@@ -32,7 +32,7 @@ class InterpolatedRobot extends Component<Props, State> {
         <defs>
           <path
             id={"robot-bumpers"}
-            d={this.context.model.document.robotConfig.bumperSVGElement()}
+            d={doc.robotConfig.bumperSVGElement()}
           ></path>
           <clipPath id={"robot-clip"}>
             <use xlinkHref={"#robot-bumpers"} />
@@ -43,40 +43,40 @@ class InterpolatedRobot extends Component<Props, State> {
           xlinkHref={"#robot-bumpers"}
           clipPath={"url(#robot-clip)"}
           stroke={"white"}
-          strokeWidth={5 * this.context.model.uiState.fieldScalingFactor}
+          strokeWidth={5 * uiState.fieldScalingFactor}
           fill={"transparent"}
           vectorEffect={"non-scaling-stroke"}
           style={{ pointerEvents: "none" }}
         />
         <circle
-          cx={this.context.model.document.robotConfig.bumperLength / 2}
+          cx={doc.robotConfig.bumperLength.value / 2}
           cy={0}
           r={0.1}
           fill="white"
         ></circle>
         {/* Wheel locations */}
         <circle
-          cx={this.context.model.document.robotConfig.wheelbase / 2}
-          cy={this.context.model.document.robotConfig.trackWidth / 2}
-          r={this.context.model.document.robotConfig.wheelRadius}
+          cx={doc.robotConfig.wheelbase.value / 2}
+          cy={doc.robotConfig.trackWidth.value / 2}
+          r={doc.robotConfig.wheelRadius.value}
           fill="white"
         ></circle>
         <circle
-          cx={this.context.model.document.robotConfig.wheelbase / 2}
-          cy={-this.context.model.document.robotConfig.trackWidth / 2}
-          r={this.context.model.document.robotConfig.wheelRadius}
+          cx={doc.robotConfig.wheelbase.value / 2}
+          cy={-doc.robotConfig.trackWidth.value / 2}
+          r={doc.robotConfig.wheelRadius.value}
           fill="white"
         ></circle>
         <circle
-          cx={-this.context.model.document.robotConfig.wheelbase / 2}
-          cy={-this.context.model.document.robotConfig.trackWidth / 2}
-          r={this.context.model.document.robotConfig.wheelRadius}
+          cx={-doc.robotConfig.wheelbase.value / 2}
+          cy={-doc.robotConfig.trackWidth.value / 2}
+          r={doc.robotConfig.wheelRadius.value}
           fill="white"
         ></circle>
         <circle
-          cx={-this.context.model.document.robotConfig.wheelbase / 2}
-          cy={this.context.model.document.robotConfig.trackWidth / 2}
-          r={this.context.model.document.robotConfig.wheelRadius}
+          cx={-doc.robotConfig.wheelbase.value / 2}
+          cy={doc.robotConfig.trackWidth.value / 2}
+          r={doc.robotConfig.wheelRadius.value}
           fill="white"
         ></circle>
       </g>

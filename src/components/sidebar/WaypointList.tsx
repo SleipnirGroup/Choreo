@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { DragDropContext, Droppable } from "react-beautiful-dnd";
-import DocumentManagerContext from "../../document/DocumentManager";
+import {doc, uiState} from "../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import { observer } from "mobx-react";
 import SidebarWaypoint from "./SidebarWaypoint";
@@ -15,8 +15,8 @@ type Props = object;
 type State = object;
 
 class WaypointList extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   state = {};
   constructor(props: Props) {
     super(props);
@@ -25,7 +25,7 @@ class WaypointList extends Component<Props, State> {
   }
 
   reorder(startIndex: number, endIndex: number) {
-    this.context.model.document.pathlist.activePath.reorder(
+    doc.pathlist.activePath.reorder(
       startIndex,
       endIndex
     );
@@ -40,14 +40,14 @@ class WaypointList extends Component<Props, State> {
   }
 
   newWaypoint(): void {
-    this.context.model.document.pathlist.activePath.addWaypoint();
+    doc.pathlist.activePath.addWaypoint();
   }
   // Normally you would want to split things out into separate components.
   // But in this example everything is just done in one place for simplicity
   render() {
-    const waypoints = this.context.model.document.pathlist.activePath.waypoints;
+    const waypoints = doc.pathlist.activePath.waypoints;
     const waypointsLength =
-      this.context.model.document.pathlist.activePath.waypoints.length;
+      doc.pathlist.activePath.waypoints.length;
     if (waypointsLength == 0) {
       return (
         <div className={styles.SidebarItem + " " + styles.Noninteractible}>
@@ -81,7 +81,6 @@ class WaypointList extends Component<Props, State> {
             index={index}
             issue={issue}
             pathLength={waypoints.length}
-            context={this.context}
             key={holonomicWaypoint.uuid}
           ></SidebarWaypoint>
         );

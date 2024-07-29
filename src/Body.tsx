@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import DocumentManagerContext from "./document/DocumentManager";
+import {doc, uiState} from "./document/DocumentManager";
 import { observer } from "mobx-react";
 import Navbar from "./components/navbar/Navbar";
 import Field from "./components/field/Field";
@@ -16,27 +16,16 @@ type Props = object;
 type State = object;
 
 class Body extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   state = {};
 
   render() {
-    const expression = (this.context.model.document.variables.store.get("name")!);
-    const variable = (this.context.model.document.variables.poses.get("pose")!).x;
+    const expression = (doc.variables.store.get("name")!);
+    const variable = (doc.variables.poses.get("pose")!).x;
     //expression.setEvaluator((node)=>node.evaluate({pose: {x: variable.evaluate}}));
     return (
       <>
-          <div style={{backgroundColor:"black"}}>
-        <InputList>
-        <ExpressionInput number={expression} title={"Expression"} suffix={""} enabled={true} setEnabled={function (value: boolean): void {
-          } }></ExpressionInput>
-        <ExpressionInput number={variable} title={"pose.x()"} suffix={""} enabled={true} setEnabled={function (value: boolean): void {
-          } }></ExpressionInput>
-          {/* <Input title={"Original"} suffix={"m"} enabled={false} number={value??NaN} setNumber={function (newNumber: number): void {
-            } } setEnabled={function (value: boolean): void {
-            } }></Input> */}
-        </InputList>
-</div>
         <div className="App">
           <div className="Page">
             <AppMenu></AppMenu>

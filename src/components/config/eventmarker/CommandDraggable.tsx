@@ -1,12 +1,12 @@
 import { observer } from "mobx-react";
-import React, { Component } from "react";
+import React, { CSSProperties, Component } from "react";
 import {
   Draggable,
   DraggingStyle,
   NotDraggingStyle,
   Droppable
 } from "react-beautiful-dnd";
-import DocumentManagerContext from "../../../document/DocumentManager";
+import {doc, uiState} from "../../../document/DocumentManager";
 import { isAlive } from "mobx-state-tree";
 import {
   CommandType,
@@ -22,7 +22,6 @@ type Props = {
   command: ICommandStore;
   index: number;
   parent?: ICommandStore;
-  context: React.ContextType<typeof DocumentManagerContext>;
   isDraggable: boolean;
   isRoot?: boolean;
 };
@@ -30,8 +29,8 @@ type Props = {
 type State = { selected: boolean };
 
 class CommandDraggable extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   id: number = 0;
   state = { selected: false };
   nameInputRef: React.RefObject<HTMLInputElement> =
@@ -197,7 +196,7 @@ class CommandDraggable extends Component<Props, State> {
                           command={c}
                           index={idx}
                           parent={command}
-                          context={this.props.context}
+                          
                           isDraggable={true}
                         ></CommandDraggable>
                       </div>

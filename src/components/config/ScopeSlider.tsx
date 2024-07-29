@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import DocumentManagerContext from "../../document/DocumentManager";
+import {doc, uiState} from "../../document/DocumentManager";
 import { Slider, SliderProps } from "@mui/material";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 
@@ -16,8 +16,8 @@ type Props = {
 type State = object;
 
 class ScopeSlider extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   state = {};
   render() {
     const isRange = this.props.isRange;

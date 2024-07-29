@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import DocumentManagerContext from "../../../document/DocumentManager";
+import {doc, uiState} from "../../../document/DocumentManager";
 import InputList from "../../input/InputList";
 import Input from "../../input/Input";
 
@@ -11,11 +11,11 @@ type Props = { rowGap: number; imperial: boolean };
 type State = object;
 
 class RobotConfigPanel extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   state = { selectedMotor: "NEO", currentLimit: 40 };
   render() {
-    const config = this.context.model.document.robotConfig;
+    const config = doc.robotConfig.asSolverRobotConfig();
     const floorSpeed = config.wheelMaxVelocity * config.wheelRadius;
     const floorLinearForce = (4 * config.wheelMaxTorque) / config.wheelRadius; // N
     const floorLinearAccel = floorLinearForce / config.mass;

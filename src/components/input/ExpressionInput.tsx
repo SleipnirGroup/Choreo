@@ -8,17 +8,12 @@ import { getDependencyTree } from "mobx";
 type Props = {
   /** The text to show before the number */
   title: string;
-  /** The text to show before the number */
-  suffix: string;
   /** Whether the input should be editable, or else italic and grayed out */
   enabled: boolean;
   /** The value of the input */
   number: IExpressionStore;
   /** The number of decimal places to show when not editing. */
   roundingPrecision?: number;
-  setEnabled: (value: boolean) => void;
-  /** Show a checkbox after the suffix that controls the enabled state of the input */
-  showCheckbox?: boolean;
   /** Whether or not to show the number when the input is disabled */
   showNumberWhenDisabled?: boolean;
   /** The tooltip for the title */
@@ -44,9 +39,6 @@ class Input extends Component<Props, State> {
     };
     this.inputElemRef = React.createRef<HTMLInputElement>();
   }
-  setEnabled = (event: React.ChangeEvent<HTMLInputElement>) => {
-    this.props.setEnabled(event.target.checked);
-  };
 
   unfocusedMode() {
     this.setState({
@@ -146,7 +138,9 @@ class Input extends Component<Props, State> {
             (showNumberWhenDisabled ? " " + styles.ShowWhenDisabled : "") +
             (this.getValid() ? " " : (" "+ styles.Invalid))
           }
-          style={{ minWidth: `${characters}ch`, gridColumn: "span 2" }}
+          style={{ 
+            minWidth: `${characters}ch`,
+            gridColumn: "span 1" }}
           disabled={!this.props.enabled}
           // The below is needed to make inputs on CommandDraggables work
           onClick={(e) => e.stopPropagation()}
@@ -190,16 +184,6 @@ class Input extends Component<Props, State> {
           autoCorrect="off"
           autoCapitalize="off"
         ></input>
-        {this.props.showCheckbox ? (
-          <input
-            type="checkbox"
-            className={styles.Checkbox}
-            checked={this.props.enabled}
-            onChange={this.setEnabled}
-          ></input>
-        ) : (
-          <span></span>
-        )}
       </>
     );
   }

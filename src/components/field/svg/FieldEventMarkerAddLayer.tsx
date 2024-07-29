@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import DocumentManagerContext from "../../../document/DocumentManager";
+import {doc, uiState} from "../../../document/DocumentManager";
 
 import { observer } from "mobx-react";
 
@@ -8,12 +8,12 @@ type Props = object;
 type State = object;
 
 class FieldConstraintsAddLayer extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   state = {};
 
   render() {
-    const activePath = this.context.model.document.pathlist.activePath;
+    const activePath = doc.pathlist.activePath;
     const waypoints = activePath.waypoints;
     return (
       <>
@@ -38,7 +38,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                   if (!activePath.isTrajectoryStale) {
                     newMarker.setTrajTargetIndex(index);
                   }
-                  this.context.model.uiState.setSelectedSidebarItem(newMarker);
+                  doc.setSelectedSidebarItem(newMarker);
                 }}
               ></circle>
             );

@@ -3,7 +3,7 @@ import { observer } from "mobx-react";
 
 import React, { Component } from "react";
 import { IConstraintStore, WaypointID } from "../../document/ConstraintStore";
-import DocumentManagerContext from "../../document/DocumentManager";
+import {doc, uiState} from "../../document/DocumentManager";
 import styles from "./Sidebar.module.css";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { getParent } from "mobx-state-tree";
@@ -17,8 +17,8 @@ type Props = {
 type State = object;
 
 class SidebarConstraint extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   id: number = 0;
   state = {};
 
@@ -56,7 +56,7 @@ class SidebarConstraint extends Component<Props, State> {
       <div
         className={styles.SidebarItem + (selected ? ` ${styles.Selected}` : "")}
         onClick={() => {
-          this.context.model.uiState.setSelectedSidebarItem(
+          doc.setSelectedSidebarItem(
             this.props.constraint
           );
         }}
@@ -91,7 +91,7 @@ class SidebarConstraint extends Component<Props, State> {
             className={styles.SidebarRightIcon}
             onClick={(e) => {
               e.stopPropagation();
-              this.context.model.document.pathlist.activePath.deleteConstraintUUID(
+              doc.pathlist.activePath.deleteConstraintUUID(
                 this.props.constraint?.uuid || ""
               );
             }}

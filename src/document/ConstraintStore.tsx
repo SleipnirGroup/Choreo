@@ -8,7 +8,7 @@ import {
   Timeline
 } from "@mui/icons-material";
 import { toJS } from "mobx";
-import { getParent, types } from "mobx-state-tree";
+import { getEnv, getParent, types } from "mobx-state-tree";
 import {
   getRoot,
   Instance,
@@ -18,10 +18,11 @@ import {
   ModelActions
 } from "mobx-state-tree";
 import { JSXElementConstructor, ReactElement } from "react";
-import { safeGetIdentifier } from "../util/mobxutils";
-import { IStateStore } from "./DocumentModel";
 import { IHolonomicWaypointStore } from "./HolonomicWaypointStore";
 import { IHolonomicPathStore } from "./HolonomicPathStore";
+import { ExpressionStore, IExpressionStore, IVariables, Units } from "./ExpressionStore";
+import { v4 as uuidv4 } from "uuid"
+import { Unit } from "mathjs";
 
 /**
  * PoseWpt (idx, x, y, heading)
@@ -42,7 +43,7 @@ import { IHolonomicPathStore } from "./HolonomicPathStore";
 export type ConstraintPropertyDefinition = {
   name: string;
   description: string;
-  units: string;
+  units: Unit;
   default?: number;
 };
 export type ConstraintDefinition = {
@@ -69,7 +70,7 @@ export const constraints = {
       direction: {
         name: "Direction",
         description: "The direction of velocity",
-        units: "rad"
+        units: Units.Radian
       }
     },
     wptScope: true,
@@ -93,7 +94,7 @@ export const constraints = {
       velocity: {
         name: "Max Velocity",
         description: "Maximum Velocity of robot chassis",
-        units: "m/s"
+        units: Units.MeterPerSecond
       }
     },
     wptScope: true,
@@ -108,7 +109,7 @@ export const constraints = {
       angular_velocity: {
         name: "Max Angular Velocity",
         description: "Maximum Angular Velocity of robot chassis",
-        units: "rad/s"
+        units: Units.RadianPerSecond
       }
     },
     wptScope: true,
@@ -132,24 +133,27 @@ export const constraints = {
       x: {
         name: "X",
         description: "The x coordinate of the point the robot should face",
-        units: "m"
+        units: Units.Meter
       },
       y: {
         name: "Y",
         description: "The y coordinate of the point the robot should face",
-        units: "m"
+        units: Units.Meter
       },
       tolerance: {
         name: "Heading Tolerance",
         description:
           "The allowable heading range relative to the direction to the point. Keep less than Pi.",
-        units: "rad"
+        units: Units.Radian
       }
     },
     wptScope: true,
     sgmtScope: true
   }
-};
+} satisfies { [key: string]: ConstraintDefinition };
+
+export type ConstraintKey = keyof typeof constraints;
+
 const WaypointUUIDScope = types.model("WaypointScope", {
   uuid: types.string
 });
@@ -197,9 +201,7 @@ export const ConstraintStore = types
       }
       return (
         self.uuid ===
-        safeGetIdentifier(
-          getRoot<IStateStore>(self).uiState.selectedSidebarItem
-        )
+          getEnv(self).selectedSidebar()
       );
     },
     getSortedScope(): Array<IWaypointScope> {
@@ -294,14 +296,13 @@ export const ConstraintStore = types
   }))
   .actions((self) => ({
     afterCreate() {},
-    setScope(scope: Array<Instance<typeof WaypointScope>>) {
+    setScope(scope: Array<IWaypointScope>) {
       self.scope.length = 0;
       self.scope.push(...scope);
     },
     setSelected(selected: boolean) {
       if (selected && !self.selected) {
-        const root = getRoot<IStateStore>(self);
-        root.select(
+        getEnv(self).select(
           getParent<IConstraintStore[]>(self)?.find(
             (point) => self.uuid == point.uuid
           )
@@ -311,7 +312,7 @@ export const ConstraintStore = types
   }));
 
 const defineConstraintStore = (
-  key: string,
+  key: ConstraintKey,
   definition: ConstraintDefinition
 ) => {
   return (
@@ -320,13 +321,10 @@ const defineConstraintStore = (
       .props(
         (() => {
           const x: {
-            [key: string]: IOptionalIType<ISimpleType<number>, [number]>;
+            [key: string]: typeof ExpressionStore;
           } = {};
           Object.keys(definition.properties).forEach((key) => {
-            x[key] = types.optional(
-              types.number,
-              definition.properties[key]?.default ?? 0
-            );
+            x[key] = ExpressionStore;
           });
           return x;
         })()
@@ -336,26 +334,42 @@ const defineConstraintStore = (
         definition: types.frozen(definition)
       })
       // Defined setters for each property
-      .actions((self) => {
-        const x: ModelActions = {};
-        Object.keys(definition.properties).forEach((key) => {
-          if (key.length == 0) {
-            return;
-          }
-          const upperCaseName = key[0].toUpperCase() + key.slice(1);
-          x[`set${upperCaseName}`] = (arg0: number) => {
-            self[key] = arg0;
-          };
-        });
-        return x;
-      })
   );
 };
 
-const constraintsStores: { [key: string]: typeof ConstraintStore } = {};
+const constraintsStores: Partial<Record<ConstraintKey, typeof ConstraintStore>> = {};
 Object.entries(constraints).forEach((entry) => {
-  constraintsStores[entry[0]] = defineConstraintStore(entry[0], entry[1]);
+  let key = entry[0] as ConstraintKey;
+  constraintsStores[key] = defineConstraintStore(key, entry[1]);
 });
 // Export constraint stores down here
-export const ConstraintStores: { [key: string]: typeof ConstraintStore } =
+export const ConstraintStores: Record<ConstraintKey, typeof ConstraintStore> =
   constraintsStores;
+
+const defineCreateConstraintStore = (
+    key: ConstraintKey,
+    definition: ConstraintDefinition,
+    vars: ()=>IVariables
+  ) => {
+    return (scope?: Array<IWaypointScope>)=>{
+      const snapshot: {
+        [key: string]: IExpressionStore;
+      } = {};
+      Object.keys(definition.properties).forEach((key) => {
+        snapshot[key] = vars().createExpression(definition.properties[key].default??0, definition.properties[key].units);
+      });
+      let result = ConstraintStores[key].create(
+        {
+          ...snapshot,
+          scope,
+          uuid: uuidv4()
+        }
+      );
+      return result;
+    }
+  }
+export const defineConstraintConstructors = (vars: ()=>IVariables) : {[T in ConstraintKey]: (scope: Array<IWaypointScope>)=>typeof ConstraintStores[T]} => {
+  let x: Partial<Record<ConstraintKey, (scope: Array<IWaypointScope>)=>typeof ConstraintStore>> = {};
+  (Object.keys(constraints) as ConstraintKey[]).forEach((key) => x[key]= defineCreateConstraintStore(key, constraints[key], vars));
+  return x as Record<ConstraintKey, (scope: Array<IWaypointScope>)=>typeof ConstraintStore>;;
+} 

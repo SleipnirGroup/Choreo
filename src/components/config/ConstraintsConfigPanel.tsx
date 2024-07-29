@@ -1,19 +1,21 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import DocumentManagerContext from "../../document/DocumentManager";
+import {doc, uiState} from "../../document/DocumentManager";
 import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../input/InputList";
 import Input from "../input/Input";
 import { IConstraintStore } from "../../document/ConstraintStore";
 import ScopeSlider from "./ScopeSlider";
+import ExpressionInput from "../input/ExpressionInput";
+import ExpressionInputList from "../input/ExpressionInputList";
 
 type Props = { constraint: IConstraintStore };
 
 type State = object;
 
 class ConstraintsConfigPanel extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   state = {};
   render() {
     const constraint = this.props.constraint;
@@ -64,7 +66,7 @@ class ConstraintsConfigPanel extends Component<Props, State> {
           points={points}
         ></ScopeSlider>
 
-        <InputList>
+        <ExpressionInputList>
           {/* {isSegmentConstraint && <>
             <span className={inputStyles.Title}>From</span>
             <span> */}
@@ -78,20 +80,16 @@ class ConstraintsConfigPanel extends Component<Props, State> {
             const setterName =
               "set" + key.charAt(0).toUpperCase() + key.slice(1);
             return (
-              <Input
+              <ExpressionInput
                 key={key}
                 title={propdef.name}
-                suffix={propdef.units}
                 enabled={true}
-                setEnabled={(a) => null}
                 number={constraint[key]}
-                setNumber={constraint[setterName]}
-                showCheckbox={false}
                 titleTooltip={propdef.description}
               />
             );
           })}
-        </InputList>
+        </ExpressionInputList>
       </div>
     );
   }

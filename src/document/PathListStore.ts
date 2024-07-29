@@ -86,9 +86,10 @@ export const PathListStore = types
           waypoints: []
         });
         path.setExporter(self.getExporter());
-        path.addConstraint(ConstraintStores.StopPoint)?.setScope(["first"]);
-        path.addConstraint(ConstraintStores.StopPoint)?.setScope(["last"]);
         self.paths.put(path);
+        path.addConstraint("StopPoint", ["first"]);
+        path.addConstraint("StopPoint", ["last"]);
+
         if (self.paths.size === 1 || select) {
           self.activePathUUID = newUUID;
         }

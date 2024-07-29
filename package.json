@@ -20,7 +20,7 @@
     "fmtRust": "cd src-tauri && cargo fmt",
     "lintJs": "eslint --fix src",
     "fmt": "npm run fmtCpp && npm run fmtJava && npm run fmtJs && npm run fmtRust && npm run lintJs",
-    "dev": "vite",
+    "dev": "vite --debug hmr",
     "build": "vite build",
     "tauri": "tauri"
   },

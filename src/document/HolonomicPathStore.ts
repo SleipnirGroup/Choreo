@@ -1,4 +1,4 @@
-import { Instance, types, getRoot, destroy } from "mobx-state-tree";
+import { Instance, types, getRoot, destroy, getEnv } from "mobx-state-tree";
 import {
   SavedConstraint,
   SavedEventMarker,
@@ -8,13 +8,14 @@ import {
   SavedWaypoint
 } from "./DocumentSpecTypes";
 import {
+  DEFAULT_WAYPOINT,
   HolonomicWaypointStore,
   IHolonomicWaypointStore
 } from "./HolonomicWaypointStore";
 import { moveItem } from "mobx-utils";
 import { v4 as uuidv4 } from "uuid";
-import { IStateStore } from "./DocumentModel";
 import {
+  ConstraintKey,
   ConstraintStore,
   ConstraintStores,
   IConstraintStore,
@@ -332,17 +333,15 @@ export const HolonomicPathStore = types
   .actions((self) => {
     return {
       addConstraint(
-        store: typeof ConstraintStore | undefined,
+        key: ConstraintKey,
         scope?: Array<Instance<typeof WaypointScope>>
       ): Instance<typeof ConstraintStore> | undefined {
+        console.log(getEnv(self));
+        let store : (scope?: Array<IWaypointScope>)=>IConstraintStore = getEnv(self).create.constraint[key];
         if (store === undefined) {
           return;
         }
-        if (scope === undefined) {
-          self.constraints.push(store.create({ uuid: uuidv4() }));
-        } else {
-          self.constraints.push(store.create({ uuid: uuidv4(), scope }));
-        }
+        self.constraints.push(store(scope));
         return self.constraints[self.constraints.length - 1];
       }
     };
@@ -350,8 +349,7 @@ export const HolonomicPathStore = types
   .actions((self) => {
     return {
       setIsTrajectoryStale(isTrajectoryStale: boolean) {
-        const history = getRoot<IStateStore>(self).document.history;
-        history.withoutUndo(() => {
+        getEnv(self).withoutUndo(() => {
           self.isTrajectoryStale = isTrajectoryStale;
         });
       },
@@ -382,11 +380,13 @@ export const HolonomicPathStore = types
           point.setSelected(selectedIndex == index);
         });
       },
-      addWaypoint(): IHolonomicWaypointStore {
-        self.waypoints.push(HolonomicWaypointStore.create({ uuid: uuidv4() }));
+      addWaypoint(waypoint?: Partial<SavedWaypoint>): IHolonomicWaypointStore {
+        self.waypoints.push(
+          getEnv(self).create.WaypointStore(
+            Object.assign({...DEFAULT_WAYPOINT}, waypoint))
+        );
         if (self.waypoints.length === 1) {
-          const root = getRoot<IStateStore>(self);
-          root.select(self.waypoints[0]);
+          getEnv(self).select(self.waypoints[0]);
         }
 
         // Initialize waypoints
@@ -407,8 +407,7 @@ export const HolonomicPathStore = types
           return;
         }
         const uuid = self.waypoints[index]?.uuid;
-        const root = getRoot<IStateStore>(self);
-        root.select(undefined);
+        getEnv(self).select(undefined);
 
         // clean up constraints
         self.constraints = self.constraints.flatMap(
@@ -526,8 +525,7 @@ export const HolonomicPathStore = types
           (point) => point.uuid === uuid
         );
         if (index == -1) return;
-        const root = getRoot<IStateStore>(self);
-        root.select(undefined);
+        getEnv(self).select(undefined);
 
         if (self.constraints.length === 1) {
           // no-op
@@ -553,8 +551,7 @@ export const HolonomicPathStore = types
           (obstacle) => obstacle.uuid === uuid
         );
         if (index == -1) return;
-        const root = getRoot<IStateStore>(self);
-        root.select(undefined);
+        getEnv(self).select(undefined);
 
         if (self.obstacles.length === 1) {
           // no-op
@@ -570,26 +567,22 @@ export const HolonomicPathStore = types
       },
       setTrajectory(trajectory: Array<SavedTrajectorySample>) {
         self.generated = trajectory;
-        const history = getRoot<IStateStore>(self).document.history;
-        history.withoutUndo(() => {
+        getEnv(self).withoutUndo(() => {
           self.generating = false;
         });
       },
       setIterationNumber(it: number) {
-        const history = getRoot<IStateStore>(self).document.history;
-        history.withoutUndo(() => {
+        getEnv(self).withoutUndo(() => {
           self.generationIterationNumber = it;
         });
       },
       setInProgressTrajectory(trajectory: Array<SavedTrajectorySample>) {
-        const history = getRoot<IStateStore>(self).document.history;
-        history.withoutUndo(() => {
+        getEnv(self).withoutUndo(() => {
           self.generationProgress = trajectory;
         });
       },
       setGenerating(generating: boolean) {
-        const history = getRoot<IStateStore>(self).document.history;
-        history.withoutUndo(() => {
+        getEnv(self).withoutUndo(() => {
           self.generating = generating;
         });
       }
@@ -641,14 +634,7 @@ export const HolonomicPathStore = types
         });
         self.obstacles.clear();
         savedPath.circleObstacles.forEach((o) => {
-          this.addObstacle(
-            CircularObstacleStore.create({
-              x: o.x,
-              y: o.y,
-              radius: o.radius,
-              uuid: uuidv4()
-            })
-          );
+          this.addObstacle(o.x, o.y, o.radius);
         });
         if (
           savedPath.trajectory !== undefined &&
@@ -694,8 +680,8 @@ export const HolonomicPathStore = types
         // this needs to be last or populating other parts of the path will set it to false
         self.setIsTrajectoryStale(savedPath.isTrajectoryStale ?? false);
       },
-      addObstacle(obstacle: ICircularObstacleStore) {
-        self.obstacles.push(obstacle);
+      addObstacle(x: number, y: number, radius:number) {
+        self.obstacles.push(getEnv(self).create.ObstacleStore(x,y,radius));
       },
       addEventMarker(marker?: IEventMarkerStore) {
         if (marker === undefined) {
@@ -756,10 +742,10 @@ export const HolonomicPathStore = types
           ?.setControlIntervalCount(self.defaultControlIntervalCount);
       },
       guessControlIntervalCount(i: number, robotConfig: IRobotConfigStore) {
-        const dx = self.waypoints.at(i + 1)!.x - self.waypoints.at(i)!.x;
-        const dy = self.waypoints.at(i + 1)!.y - self.waypoints.at(i)!.y;
+        const dx = self.waypoints.at(i + 1)!.x.value - self.waypoints.at(i)!.x.value;
+        const dy = self.waypoints.at(i + 1)!.y.value - self.waypoints.at(i)!.y.value;
         const dtheta = angleModulus(
-          self.waypoints.at(i + 1)!.heading - self.waypoints.at(i)!.heading
+          self.waypoints.at(i + 1)!.heading.value - self.waypoints.at(i)!.heading.value
         );
         const headingWeight = 0.5; // arbitrary
         const distance = Math.sqrt(dx * dx + dy * dy);

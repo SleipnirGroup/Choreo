@@ -1,4 +1,5 @@
-import { IStateStore } from "../../../document/DocumentModel";
+
+import { IDocumentStore } from "../../../document/DocumentModel";
 import { SavedTrajectorySample } from "../../../document/DocumentSpecTypes";
 
 /**
@@ -11,6 +12,7 @@ export type PathGradient = {
    */
   name: string;
 
+  localizedDescription: string;
   /**
    * The localized/user-facing description of the path gradient.
    */
@@ -28,7 +30,7 @@ export type PathGradient = {
     point: SavedTrajectorySample,
     i: number,
     arr: SavedTrajectorySample[],
-    documentModel: IStateStore
+    documentModel: IDocumentStore
   ) => string;
 };
 
@@ -51,8 +53,8 @@ class PathGradientFunctions {
     point: SavedTrajectorySample,
     i: number,
     arr: SavedTrajectorySample[],
-    documentModel: IStateStore
-  ) {
+    documentModel: IDocumentStore
+  ) :string {
     return "var(--select-yellow)";
   }
 
@@ -70,13 +72,13 @@ class PathGradientFunctions {
     point: SavedTrajectorySample,
     i: number,
     arr: SavedTrajectorySample[],
-    documentModel: IStateStore
-  ) {
+    documentModel: IDocumentStore
+  ) :string {
     // calculates the maginitude of the velocity vector, then divides it by the theoretical floor speed
     // then it scales the ratio [0, 1]: red to green[0, 100]
     const floorSpeed =
-      documentModel.document.robotConfig.wheelMaxVelocity *
-      documentModel.document.robotConfig.wheelRadius;
+      documentModel.robotConfig.wheelMaxVelocity *
+      documentModel.robotConfig.wheelRadius;
     const t = Math.hypot(point.velocityX, point.velocityY) / floorSpeed;
     return `hsl(${100 * t}, 100%, 50%)`;
   }
@@ -96,8 +98,8 @@ class PathGradientFunctions {
     point: SavedTrajectorySample,
     i: number,
     arr: SavedTrajectorySample[],
-    documentModel: IStateStore
-  ) {
+    documentModel: IDocumentStore
+  ) :string {
     // this creates a ratio [0, 1] of the current point against the total points
     // then scales it from red to greeen, [0, 100]
     const t = 1 - i / arr.length;
@@ -118,8 +120,8 @@ class PathGradientFunctions {
     point: SavedTrajectorySample,
     i: number,
     arr: SavedTrajectorySample[],
-    documentModel: IStateStore
-  ) {
+    documentModel: IDocumentStore
+  ) :string {
     let t = 0;
 
     if (i != 0 && i != arr.length - 1) {
@@ -150,8 +152,8 @@ class PathGradientFunctions {
     point: SavedTrajectorySample,
     i: number,
     arr: SavedTrajectorySample[],
-    documentModel: IStateStore
-  ) {
+    documentModel: IDocumentStore
+  ) :string {
     let t = 0;
     if (i == 0 || i == arr.length - 1) {
       t = 0;
@@ -178,8 +180,8 @@ class PathGradientFunctions {
     point: SavedTrajectorySample,
     i: number,
     arr: SavedTrajectorySample[],
-    documentModel: IStateStore
-  ) {
+    documentModel: IDocumentStore
+  ) :string {
     // the color value is normalized from red (0) to green (100)
     // based on an artificial angular velocity max of 2 r/s
     return `hsl(${Math.abs(point.angularVelocity * 100) / 2}, 100%, 50%)`;
@@ -198,13 +200,13 @@ class PathGradientFunctions {
     point: SavedTrajectorySample,
     i: number,
     arr: SavedTrajectorySample[],
-    documentModel: IStateStore
-  ) {
-    if (!documentModel.document.splitTrajectoriesAtStopPoints) {
+    documentModel: IDocumentStore
+  ) :string {
+    if (!documentModel.splitTrajectoriesAtStopPoints) {
       return "var(--select-yellow)";
     }
     const stopPointControlIntervals =
-      documentModel.document.pathlist.activePath.stopPointIndices();
+      documentModel.pathlist.activePath.stopPointIndices();
 
     for (let split = 0; split < stopPointControlIntervals.length - 1; split++) {
       if (
@@ -216,6 +218,7 @@ class PathGradientFunctions {
         return `hsl(${Math.abs(Math.sin(split) * 360)}, 100%, 50%)`;
       }
     }
+    return "var(--select-yellow)";
   }
 }
 
@@ -223,7 +226,7 @@ class PathGradientFunctions {
  * Represents the available path gradients.
  * This links a gradient's user-facing description to its corresponding function.'
  */
-export const PathGradients = {
+export const PathGradients : Record<string, PathGradient> = {
   None: {
     name: "None",
     localizedDescription: "None",

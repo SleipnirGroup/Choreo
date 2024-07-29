@@ -1,6 +1,6 @@
 import { Component } from "react";
 import React from "react";
-import DocumentManagerContext from "../../document/DocumentManager";
+import {doc, uiState} from "../../document/DocumentManager";
 import styles from "./Sidebar.module.css";
 import { observer } from "mobx-react";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -14,14 +14,13 @@ import { WaypointID } from "../../document/ConstraintStore";
 type Props = {
   marker: IEventMarkerStore;
   index: number;
-  context: React.ContextType<typeof DocumentManagerContext>;
 };
 
 type State = { selected: boolean };
 
 class SidebarMarker extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   id: number = 0;
   state = { selected: false };
 
@@ -56,7 +55,7 @@ class SidebarMarker extends Component<Props, State> {
       <div
         className={styles.SidebarItem + (selected ? ` ${styles.Selected}` : "")}
         onClick={() => {
-          this.context.model.uiState.setSelectedSidebarItem(marker);
+          doc.setSelectedSidebarItem(marker);
         }}
       >
         {React.cloneElement(<Room></Room>, {
@@ -102,7 +101,7 @@ class SidebarMarker extends Component<Props, State> {
             className={styles.SidebarRightIcon}
             onClick={(e) => {
               e.stopPropagation();
-              this.context.model.document.pathlist.activePath.deleteMarkerUUID(
+              doc.pathlist.activePath.deleteMarkerUUID(
                 marker?.uuid || ""
               );
             }}

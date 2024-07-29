@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import DocumentManagerContext from "./document/DocumentManager";
+import {doc, exportActiveTrajectory, exportAllTrajectories, newFile, saveFileDialog, uiState} from "./document/DocumentManager";
 import { observer } from "mobx-react";
 import {
   Divider,
@@ -33,8 +33,8 @@ type Props = object;
 type State = { settingsOpen: boolean };
 
 class AppMenu extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   state = {
     settingsOpen: false
   };
@@ -78,7 +78,7 @@ class AppMenu extends Component<Props, State> {
   }
 
   render() {
-    const { mainMenuOpen, toggleMainMenu } = this.context.model.uiState;
+    const { mainMenuOpen, toggleMainMenu } = uiState;
     return (
       <Drawer
         ModalProps={{ onBackdropClick: toggleMainMenu }}
@@ -128,7 +128,7 @@ class AppMenu extends Component<Props, State> {
             >
               <ListItemButton
                 onClick={() =>
-                  this.context.model.uiState.setRobotConfigOpen(true)
+                  uiState.setRobotConfigOpen(true)
                 }
               >
                 <ListItemIcon>
@@ -159,7 +159,7 @@ class AppMenu extends Component<Props, State> {
             {/* Save File */}
             <ListItemButton
               onClick={async () => {
-                this.context.saveFileDialog();
+                saveFileDialog();
               }}
             >
               <ListItemIcon>
@@ -167,7 +167,7 @@ class AppMenu extends Component<Props, State> {
               </ListItemIcon>
               <ListItemText
                 primary={
-                  this.context.model.uiState.hasSaveLocation
+                  uiState.hasSaveLocation
                     ? "Save File As"
                     : "Save File"
                 }
@@ -182,7 +182,7 @@ class AppMenu extends Component<Props, State> {
                     { title: "Choreo", type: "warning" }
                   )
                 ) {
-                  this.context.newFile();
+                  newFile();
                 }
               }}
             >
@@ -194,7 +194,7 @@ class AppMenu extends Component<Props, State> {
             {/* Export Active Trajectory */}
             <ListItemButton
               onClick={() => {
-                toast.promise(this.context.exportActiveTrajectory(), {
+                toast.promise(exportActiveTrajectory(), {
                   pending: "Exporting trajectory...",
                   success: "Trajectory exported",
                   error: {
@@ -214,7 +214,7 @@ class AppMenu extends Component<Props, State> {
             {/* Export All to Deploy */}
             <ListItemButton
               onClick={async () => {
-                if (!this.context.model.uiState.hasSaveLocation) {
+                if (!uiState.hasSaveLocation) {
                   if (
                     await dialog.ask(
                       "Saving trajectories to the deploy directory requires saving the project. Save it now?",
@@ -224,7 +224,7 @@ class AppMenu extends Component<Props, State> {
                       }
                     )
                   ) {
-                    if (!(await this.context.saveFileDialog())) {
+                    if (!(await saveFileDialog())) {
                       return;
                     }
                   } else {
@@ -232,8 +232,8 @@ class AppMenu extends Component<Props, State> {
                   }
                 }
 
-                toast.promise(this.context.exportAllTrajectories(), {
-                  success: `Saved all trajectories to ${this.context.model.uiState.chorRelativeTrajDir}.`,
+                toast.promise(exportAllTrajectories(), {
+                  success: `Saved all trajectories to ${uiState.chorRelativeTrajDir}.`,
                   error: {
                     render(toastProps) {
                       console.error(toastProps.data);
@@ -260,7 +260,7 @@ class AppMenu extends Component<Props, State> {
                   width: "100%"
                 }}
               >
-                {this.context.model.uiState.hasSaveLocation ? (
+                {uiState.hasSaveLocation ? (
                   <>
                     <div
                       style={{
@@ -284,13 +284,13 @@ class AppMenu extends Component<Props, State> {
                       {this.projectLocation(true)}
                     </div>
                     <br></br>
-                    {this.context.model.uiState.isGradleProject
+                    {uiState.isGradleProject
                       ? "Gradle (Java/C++) project detected."
                       : "Python project or no robot project detected."}
                     <br></br>
                     <br></br>
                     <div></div>
-                    {this.context.model.uiState.hasSaveLocation ? (
+                    {uiState.hasSaveLocation ? (
                       <>
                         <div
                           style={{
@@ -341,16 +341,16 @@ class AppMenu extends Component<Props, State> {
     return (
       (relativeFormat
         ? this.convertToRelative(
-            this.context.model.uiState.saveFileDir as string
+            uiState.saveFileDir as string
           )
-        : this.context.model.uiState.saveFileDir) + path.sep
+        : uiState.saveFileDir) + path.sep
     );
   }
 
   private trajectoriesLocation(relativeFormat: boolean): string {
     return (
       this.projectLocation(relativeFormat) +
-      this.context.model.uiState.chorRelativeTrajDir +
+      uiState.chorRelativeTrajDir +
       path.sep
     );
   }

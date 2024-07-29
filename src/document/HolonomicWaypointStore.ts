@@ -1,14 +1,22 @@
-import { types, getRoot, Instance, getParent, isAlive } from "mobx-state-tree";
-import { safeGetIdentifier } from "../util/mobxutils";
-import { IStateStore } from "./DocumentModel";
+import { types, getRoot, Instance, getParent, isAlive, getEnv } from "mobx-state-tree";
 import { SavedWaypoint } from "./DocumentSpecTypes";
-import { NavbarItemData } from "./UIStateStore";
+import { NavbarItemData } from "./UIData";
+import { ExpressionStore } from "./ExpressionStore";
 
+export const DEFAULT_WAYPOINT: SavedWaypoint = {
+  x: 0,
+  y: 0,
+  heading: 0,
+  translationConstrained: true,
+  headingConstrained: true,
+  controlIntervalCount: 40,
+  isInitialGuess: false,
+}
 export const HolonomicWaypointStore = types
   .model("WaypointStore", {
-    x: 0,
-    y: 0,
-    heading: 0,
+    x: ExpressionStore,
+    y: ExpressionStore,
+    heading: ExpressionStore,
     translationConstrained: true,
     headingConstrained: true,
     controlIntervalCount: 40,
@@ -36,10 +44,7 @@ export const HolonomicWaypointStore = types
           return false;
         }
         return (
-          self.uuid ===
-          safeGetIdentifier(
-            getRoot<IStateStore>(self).uiState.selectedSidebarItem
-          )
+          self.uuid === getEnv(self).selectedSidebar()
         );
       },
       asSavedWaypoint(): SavedWaypoint {
@@ -53,9 +58,9 @@ export const HolonomicWaypointStore = types
           controlIntervalCount
         } = self;
         return {
-          x,
-          y,
-          heading,
+          x:x.value,
+          y:y.value,
+          heading:heading.value,
           isInitialGuess,
           translationConstrained,
           headingConstrained,
@@ -72,34 +77,23 @@ export const HolonomicWaypointStore = types
   .actions((self) => {
     return {
       fromSavedWaypoint(point: SavedWaypoint) {
-        self.x = point.x;
-        self.y = point.y;
-        self.heading = point.heading;
+        self.x.set(point.x);
+        self.y.set(point.y);
+        self.heading.set(point.heading);
         self.isInitialGuess = point.isInitialGuess;
         self.translationConstrained = point.translationConstrained;
         self.headingConstrained = point.headingConstrained;
         self.controlIntervalCount = point.controlIntervalCount;
       },
-
-      setX(x: number) {
-        self.x = x;
-      },
       setTranslationConstrained(translationConstrained: boolean) {
         self.translationConstrained = translationConstrained;
-      },
-      setY(y: number) {
-        self.y = y;
-      },
-      setHeading(heading: number) {
-        self.heading = heading;
       },
       setHeadingConstrained(headingConstrained: boolean) {
         self.headingConstrained = headingConstrained;
       },
       setSelected(selected: boolean) {
         if (selected && !self.selected) {
-          const root = getRoot<IStateStore>(self);
-          root.select(
+          getEnv(self).select(
             getParent<IHolonomicWaypointStore[]>(self)?.find(
               (point) => self.uuid == point.uuid
             )

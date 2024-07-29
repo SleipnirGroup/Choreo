@@ -1,7 +1,7 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import { DragDropContext } from "react-beautiful-dnd";
-import DocumentManagerContext from "../../../document/DocumentManager";
+import {doc, uiState} from "../../../document/DocumentManager";
 import styles from "../WaypointConfigPanel.module.css";
 import InputList from "../../input/InputList";
 import Input from "../../input/Input";
@@ -21,8 +21,8 @@ type Props = { marker: IEventMarkerStore };
 type State = object;
 
 class EventMarkerConfigPanel extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   nameInputRef: React.RefObject<HTMLInputElement> =
     React.createRef<HTMLInputElement>();
   state = {};
@@ -165,7 +165,6 @@ class EventMarkerConfigPanel extends Component<Props, State> {
           <CommandDraggable
             command={marker.command}
             index={0}
-            context={this.context}
             isDraggable={false}
             isRoot
           ></CommandDraggable>

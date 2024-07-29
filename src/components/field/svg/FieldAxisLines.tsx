@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import DocumentManagerContext from "../../../document/DocumentManager";
+import {doc, uiState} from "../../../document/DocumentManager";
 import { observer } from "mobx-react";
 
 type Props = object;
@@ -9,12 +9,7 @@ type State = object;
 const DRAW_BOUND = 100;
 const GRID_STROKE = 0.01;
 
-class FieldGrid extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
-  state = {};
-
-  render() {
+function FieldGrid () {
     return (
       <>
         <line
@@ -38,5 +33,4 @@ class FieldGrid extends Component<Props, State> {
       </>
     );
   }
-}
 export default observer(FieldGrid);

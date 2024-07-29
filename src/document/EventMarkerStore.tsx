@@ -6,15 +6,15 @@ import {
   isAlive,
   getParent,
   destroy,
-  detach
+  detach,
+  getEnv
 } from "mobx-state-tree";
 import { moveItem } from "mobx-utils";
-import { safeGetIdentifier } from "../util/mobxutils";
 import { WaypointID, WaypointScope } from "./ConstraintStore";
-import { IStateStore } from "./DocumentModel";
 import { SavedCommand } from "./DocumentSpecTypes";
 import { IHolonomicPathStore } from "./HolonomicPathStore";
 import { v4 as uuidv4 } from "uuid";
+import { uiState } from "./DocumentManager";
 
 export type CommandType =
   | "sequential"
@@ -158,15 +158,12 @@ export const EventMarkerStore = types
       }
       return (
         self.uuid ===
-        safeGetIdentifier(
-          getRoot<IStateStore>(self).uiState.selectedSidebarItem
-        )
+          getEnv(self).selectedSidebar()
       );
     },
     setSelected(selected: boolean) {
       if (selected && !this.selected) {
-        const root = getRoot<IStateStore>(self);
-        root.select(
+        getEnv(self).select(
           getParent<IEventMarkerStore[]>(self)?.find(
             (point) => self.uuid == point.uuid
           )

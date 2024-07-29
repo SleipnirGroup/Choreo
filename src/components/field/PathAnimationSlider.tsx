@@ -1,9 +1,9 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import DocumentManagerContext from "../../document/DocumentManager";
+import {doc, uiState} from "../../document/DocumentManager";
 import Slider from "@mui/material/Slider";
 import { Tooltip } from "@mui/material";
-import { NavbarItemData } from "../../document/UIStateStore";
+import { NavbarItemData } from "../../document/UIData";
 import { Room } from "@mui/icons-material";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
 
@@ -12,11 +12,11 @@ type Props = object;
 type State = object;
 
 class PathAnimationSlider extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   totalTime = 0;
   render() {
-    const activePath = this.context.model.document.pathlist.activePath;
+    const activePath = doc.pathlist.activePath;
     this.totalTime = activePath.getTotalTimeSeconds();
     return (
       <>
@@ -104,9 +104,9 @@ class PathAnimationSlider extends Component<Props, State> {
           aria-label="Default"
           valueLabelDisplay="auto"
           valueLabelFormat={(x: number) => x.toFixed(2)}
-          value={this.context.model.uiState.pathAnimationTimestamp}
+          value={uiState.pathAnimationTimestamp}
           onChange={(e, newVal) =>
-            this.context.model.uiState.setPathAnimationTimestamp(
+            uiState.setPathAnimationTimestamp(
               newVal as number
             )
           }
@@ -139,7 +139,7 @@ class PathAnimationSlider extends Component<Props, State> {
         />
         <span
           style={{ width: "min-content", whiteSpace: "nowrap" }}
-        >{`${this.context.model.uiState.pathAnimationTimestamp.toFixed(
+        >{`${uiState.pathAnimationTimestamp.toFixed(
           1
         )} s / ${this.totalTime.toFixed(1)} s`}</span>
       </>

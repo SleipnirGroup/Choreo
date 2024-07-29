@@ -1,11 +1,11 @@
-import { EvalFunction, MathNode, OperatorNode, Unit, e, isNull } from "mathjs";
+import { BigNumber, ConstantNode, EvalFunction, FormatOptions, Fraction, MathJSON, MathNode, OperatorNode, Unit, UnitComponent, e, isNull } from "mathjs";
 import { Instance, getEnv, types } from "mobx-state-tree";
-import {create, all} from "mathjs";
+import {create, all,} from "mathjs";
 import { IReactionDisposer, autorun, getDependencyTree, toJS, trace } from "mobx";
 
-export const math = create(all);
+export const math = create(all, {predictable:true});
 const {
-  add, subtract, multiply
+  add, subtract, multiply, divide
 }= math;
 math.import({
   add: math.typed('add', {
@@ -15,6 +15,14 @@ math.import({
   subtract: math.typed('subtract', {
     'Node | OperatorNode | Unit, Node | OperatorNode | Unit': function (x:MathNode, y:MathNode) { return subtract(math.unit(x.toString()), math.unit(y.toString())) }, // <--- what goes in here??
     'any, any': subtract
+  }),
+  multiply: math.typed('multiply', {
+    'Node | OperatorNode | Unit, Node | OperatorNode | Unit': function (x:MathNode, y:MathNode) { return multiply(math.unit(x.toString()), math.unit(y.toString())) }, // <--- what goes in here??
+    'any, any': multiply
+  }),
+  divide: math.typed('divide', {
+    'Node | OperatorNode | Unit, Node | OperatorNode | Unit': function (x:MathNode, y:MathNode) { return divide(math.unit(x.toString()), math.unit(y.toString())) }, // <--- what goes in here??
+    'any, any': divide
   }),
 
 },   {override:true})
@@ -32,23 +40,37 @@ function addUnitToExpression(
   );
 }
 
-
+//@ts-expect-error
+const isAlphaOriginal = Unit.isValidAlpha
+//@ts-expect-error
+math.Unit.isValidAlpha = function (c) {
+  return isAlphaOriginal(c) || c=='#'
+}
 export const Units = {
     Meter: math.unit("m"),
+    MeterPerSecond: math.unit("m/s"),
     Radian: math.unit("rad"),
-    Unitless: math.unit("1")
+    RadianPerSecond: math.unit("rad/s"),
+    KgM2: math.unit("kg m^2"),
+    Newton: math.unit("N"),
+    Kg: math.unit("kg"),
+    RPM: math.createUnit("rpm", "1 cycle/min")
 }
 export type Evaluated = null|undefined|number|Unit;
 type Evaluator = (arg: MathNode)=>Evaluated;
+export type SerialExpr = {
+  expr: string,
+  value: number
+}
 export const ExpressionStore = types.model( "ExpressionStore",
     {
         expr: types.frozen<MathNode>(),
-        defaultUnit: types.frozen<Unit>(Units.Unitless)
+        defaultUnit: types.maybe(types.frozen<Unit>())
     }
 )
 .volatile(self=>({
     value: 0,
-    getScope: ()=>{console.error("Evaluating without variables!"); return new Map<string, any>();}
+    getScope: ()=>{console.error("Evaluating without variables!", self.toString()); return new Map<string, any>();}
 }))
 .actions((self)=>({
     setScopeGetter(getter: ()=>Map<string, any>) {
@@ -56,10 +78,14 @@ export const ExpressionStore = types.model( "ExpressionStore",
     },
     set(newNode:MathNode|number) {
         if (typeof newNode === "number") {
-          self.expr = math.parse(math.unit(newNode, self.defaultUnit.toString()).toString());
+          if (self.defaultUnit === undefined) {
+            self.expr = new ConstantNode(newNode);
+          } else {
+            self.expr = math.parse(math.unit(newNode, self.defaultUnit.toString()).toString());
+          }
           return;
         }
-        console.log("setting ", newNode.toString());
+        console.log("setting ", JSON.stringify(newNode));
         self.expr = newNode;
     },
     setValue(value:number) {
@@ -74,6 +100,15 @@ export const ExpressionStore = types.model( "ExpressionStore",
       result = (result as MathNode).evaluate(scope);
     }
     return result;
+  },
+  serialize() : SerialExpr {
+    return {
+      expr: self.expr.toString(),
+      value: self.value
+    }
+  },
+  deserialize(serial: SerialExpr) {
+    self.expr = math.parse(serial.expr);
   }
 }))
 .views((self)=>({
@@ -83,19 +118,32 @@ export const ExpressionStore = types.model( "ExpressionStore",
     get asScope() {
       return ()=>self.expr;
     },
-    toDefaultUnit() : Unit | undefined {
-      self.expr;
+    toDefaultUnit() : Unit | number | undefined {
+
+        self.expr;
       
         const result = self.evaluate;
         if (result === undefined || result === null) {return undefined}
         if (typeof result === "number") {
+          if (self.defaultUnit === undefined) {
+            return result;
+          }
+          console.error("unit expression", self.expr.toString(), "evaluated to number")
           return math.unit(result, self.defaultUnit.toString());
         }
-        return (math.unit(result.toString()).to(self.defaultUnit.toString()));
+        if (self.defaultUnit === undefined) {
+          console.error("number expression", self.expr.toString(), "evaluated to unit")
+          return undefined;
+        }
+        return (math.unit(result.toString()).to(self.defaultUnit!.toString()));
     },
     get defaultUnitMagnitude() : number | undefined {
       self.expr;
-      return this.toDefaultUnit()?.toNumber(self.defaultUnit.toString())
+      let defaultUnit = this.toDefaultUnit();
+      if (typeof defaultUnit === "number") {
+        return defaultUnit;
+      }
+      return defaultUnit?.toNumber(self.defaultUnit!.toString())
     },
     validate(newNode: MathNode){
         try {
@@ -121,22 +169,28 @@ export const ExpressionStore = types.model( "ExpressionStore",
             console.error("failed to evaluate: ", newNumber, "is infinite");
             return undefined;
           }
-
-          newNode = addUnitToExpression(newNode, self.defaultUnit.toString());
-          } else {
-          let unit = self.defaultUnit;
-          if (!newNumber.equalBase(unit)) {
-            console.error("unit mismatch", unit);
-            return undefined;
+          if (self.defaultUnit !== undefined) {
+            return addUnitToExpression(newNode, self.defaultUnit.toString());
           }
-          if (isNull(newNumber.value)) {
-            console.error("valueless unit", unit);
-            return undefined;
-          }
-          if (!isFinite(newNumber.value)) {
-            console.error("failed to evaluate: ", newNumber.value, "is infinite");
-            return undefined;
-          }
+          return newNode;
+        }
+        // newNumber is Unit
+        let unit = self.defaultUnit;
+        if (unit === undefined) {
+          console.error("failed to evaluate: ", newNumber, "is unit on unitless expr");
+          return undefined;
+        }
+        if (!newNumber.equalBase(unit)) {
+          console.error("unit mismatch", unit);
+          return undefined;
+        }
+        if (isNull(newNumber.value)) {
+          console.error("valueless unit", unit);
+          return undefined;
+        }
+        if (!isFinite(newNumber.value)) {
+          console.error("failed to evaluate: ", newNumber.value, "is infinite");
+          return undefined;
         }
         return newNode;
     }
@@ -146,10 +200,15 @@ export const ExpressionStore = types.model( "ExpressionStore",
   return {
     afterCreate: ()=>{
       recalcDispose = autorun(()=>{
+        try{
         let value = (self.defaultUnitMagnitude);
         if (value !== undefined) {
           self.setValue(value);
         }
+      } catch (e) {
+        console.log(self.expr.toString());
+        throw(e);
+      }
       });
     },
     beforeDestroy: ()=>{
@@ -225,10 +284,15 @@ export const Variables = types.model("Variables",
   }
 }))
 .actions(self=>({
-  createExpression(expr: string|number, unit: math.Unit): IExpressionStore {
+  createExpression(expr: string|number, unit?: math.Unit): IExpressionStore {
      let store: IExpressionStore;
     if (typeof expr === "number") {
-      store = ExpressionStore.create({expr: addUnitToExpression(new math.ConstantNode(expr), unit.toString()), defaultUnit: unit, });
+      if (unit === undefined) {
+        store = ExpressionStore.create({expr: new ConstantNode(expr)})
+      } else {
+        store = ExpressionStore.create({expr: addUnitToExpression(new math.ConstantNode(expr), unit.toString()), defaultUnit: unit, });
+      }
+      
     }
     else {store = ExpressionStore.create({expr: math.parse(expr), defaultUnit: unit, });}
     store.setScopeGetter(()=>self.scope);
@@ -263,3 +327,4 @@ export const Variables = types.model("Variables",
       }
 }
 ));
+export interface IVariables extends Instance<typeof Variables>{}

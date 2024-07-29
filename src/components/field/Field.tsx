@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import DocumentManagerContext from "../../document/DocumentManager";
+import {doc, generateWithToastsAndExport, uiState} from "../../document/DocumentManager";
 import WaypointPanel from "../config/WaypointConfigPanel";
 
 import styles from "./Field.module.css";
@@ -27,12 +27,12 @@ type Props = object;
 type State = object;
 
 export class Field extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
+  
+
   render() {
-    const selectedSidebar = this.context.model.uiState.selectedSidebarItem;
-    const activePath = this.context.model.document.pathlist.activePath;
-    const activePathUUID = this.context.model.document.pathlist.activePathUUID;
+    const selectedSidebar = doc.selectedSidebarItem;
+    const activePath = doc.pathlist.activePath;
+    const activePathUUID = doc.pathlist.activePathUUID;
     let indexIfWaypoint = -1;
     if (selectedSidebar !== undefined && "heading" in selectedSidebar) {
       indexIfWaypoint = activePath.waypoints.findIndex(
@@ -152,7 +152,7 @@ export class Field extends Component<Props, State> {
                 visibility: activePath.canGenerate() ? "visible" : "hidden"
               }}
               onClick={() =>
-                this.context.generateWithToastsAndExport(activePathUUID)
+                generateWithToastsAndExport(activePathUUID)
               }
               disabled={!activePath.canGenerate()}
             >
