@@ -18,10 +18,10 @@ Trajectory optimization works by mathematically formulating the problem of trave
 
 ### Dependencies
 
-* C++23 compiler
-  * On Windows, install [Visual Studio Community 2022](https://visualstudio.microsoft.com/vs/community/) and select the C++ programming language during installation
-  * On Linux, install GCC 14 or greater via `sudo apt install g++`
-  * On macOS 14 or greater, install the Xcode command-line build tools via `xcode-select --install`. Xcode 15.3 or greater is required.
+* C++20 compiler
+  * On Windows 10 or greater, install [Visual Studio Community 2022](https://visualstudio.microsoft.com/vs/community/) and select the C++ programming language during installation
+  * On Ubuntu 22.04 or greater, install GCC 11 via `sudo apt install g++-11`
+  * On macOS 13.3 or greater, install the Xcode 14 command-line build tools via `xcode-select --install`
 * [CMake](https://cmake.org/download/) 3.21 or greater
   * On Windows, install from the link above
   * On Linux, install via `sudo apt install cmake`
