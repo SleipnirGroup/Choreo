@@ -6,7 +6,6 @@
 #include <utility>
 
 #include <sleipnir/autodiff/Variable.hpp>
-#include <sleipnir/optimization/Constraints.hpp>
 
 #include "trajopt/geometry/Rotation2.hpp"
 #include "trajopt/geometry/Translation2.hpp"
