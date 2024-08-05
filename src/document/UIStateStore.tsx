@@ -284,7 +284,7 @@ export const UIStateStore = types
       get chorRelativeTrajDir() {
         return (
           self.isGradleProject ? "src/main/deploy/choreo" : "deploy/choreo"
-        ).replaceAll("/", path.sep);
+        ).replaceAll("/", path.sep());
       },
       get hasSaveLocation() {
         return (

@@ -24,6 +24,7 @@ dist-ssr
 *.sw?
 
 # Choreo
+src-tauri/gen
 src-tauri/target
 target
 

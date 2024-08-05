@@ -19,7 +19,7 @@ import {
 } from "@mui/icons-material";
 import Input from "../input/Input";
 import InputList from "../input/InputList";
-import { dialog } from "@tauri-apps/api";
+import { confirm } from "@tauri-apps/plugin-dialog";
 import { toast } from "react-toastify";
 
 type Props = object;
@@ -230,13 +230,11 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
               className={styles.SidebarRightIcon}
               onClick={(e) => {
                 e.stopPropagation();
-                dialog
-                  .confirm(`Delete "${this.getPath().name}"?`)
-                  .then((result) => {
-                    if (result) {
-                      this.context.deletePath(this.props.uuid);
-                    }
-                  });
+                confirm(`Delete "${this.getPath().name}"?`).then((result) => {
+                  if (result) {
+                    this.context.deletePath(this.props.uuid);
+                  }
+                });
               }}
             >
               <DeleteIcon></DeleteIcon>
