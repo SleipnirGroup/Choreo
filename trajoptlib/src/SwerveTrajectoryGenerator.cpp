@@ -143,7 +143,8 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       Translation2v a_n{ax.at(index), ay.at(index)};
       auto alpha_n = alpha.at(index);
 
-      problem.SubjectTo(x_n_1 + v_n * dt_sgmt == x_n);
+      problem.SubjectTo(x_n_1 + v_n * dt_sgmt + a_n * 0.5 * dt_sgmt * dt_sgmt ==
+                        x_n);
       problem.SubjectTo((theta_n - theta_n_1) == Rotation2v{omega_n * dt_sgmt});
       problem.SubjectTo(v_n_1 + a_n * dt_sgmt == v_n);
       problem.SubjectTo(omega_n_1 + alpha_n * dt_sgmt == omega_n);
