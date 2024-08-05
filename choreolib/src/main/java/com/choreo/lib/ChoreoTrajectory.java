@@ -3,6 +3,7 @@
 package com.choreo.lib;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.trajectory.Trajectory;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -173,5 +174,26 @@ public class ChoreoTrajectory {
       flippedStates.add(state.flipped());
     }
     return new ChoreoTrajectory(flippedStates);
+  }
+
+  /**
+   * Converts the trajectory to a WPILib {@link Trajectory}.
+   *
+   * @return The converted Trajectory.
+   */
+  public Trajectory toTrajectory() {
+    var trajectory = new Trajectory();
+    var lastVel = 0.0;
+    var lastTime = 0.0;
+    for (var state : samples) {
+      var vel = Math.hypot(state.velocityX, state.velocityY);
+      trajectory
+          .getStates()
+          .add(state.toTrajectoryState((vel - lastVel) / (state.timestamp - lastTime)));
+      lastVel = vel;
+      lastTime = state.timestamp;
+    }
+
+    return trajectory;
   }
 }
