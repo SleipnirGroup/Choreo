@@ -9,6 +9,7 @@ import { Tooltip, IconButton } from "@mui/material";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
 import { getParent } from "mobx-state-tree";
 import { IHolonomicPathStore } from "../../document/HolonomicPathStore";
+import { ITankDrivePathStore } from "../../document/TankPathStore";
 import { WaypointID } from "../../document/ConstraintStore";
 
 type Props = {
@@ -28,11 +29,10 @@ class SidebarMarker extends Component<Props, State> {
   waypointIDToText(id: WaypointID) {
     if (id == "first") return "Start";
     if (id == "last") return "End";
-    return (
-      getParent<IHolonomicPathStore>(
-        getParent<IEventMarkerStore[]>(this.props.marker)
-      ).findUUIDIndex(id.uuid) + 1
+    const parentPath = getParent<IHolonomicPathStore | ITankDrivePathStore>(
+      getParent<IEventMarkerStore[]>(this.props.marker)
     );
+    return parentPath.findUUIDIndex(id.uuid) + 1;
   }
 
   render() {

@@ -26,6 +26,10 @@ import {
   HolonomicWaypointStore,
   IHolonomicWaypointStore
 } from "./HolonomicWaypointStore";
+import {
+  ITankDriveWaypointStore,
+  TankDriveWaypointStore
+} from "./TankDriveWaypointStore";
 import { IRobotConfigStore, RobotConfigStore } from "./RobotConfigStore";
 import {
   CircularObstacleStore,
@@ -49,11 +53,15 @@ export const SelectableItem = types.union(
       if (snapshot.radius) {
         return CircularObstacleStore;
       }
+      if (snapshot.translationConstrained !== undefined)
+        return HolonomicWaypointStore;
+      if (snapshot.velocityL !== undefined) return TankDriveWaypointStore;
       return HolonomicWaypointStore;
     }
   },
   RobotConfigStore,
   HolonomicWaypointStore,
+  TankDriveWaypointStore,
   CircularObstacleStore,
   EventMarkerStore,
   ...Object.values(ConstraintStores)
@@ -177,6 +185,7 @@ console.log(NavbarItemSectionEnds);
 export type SelectableItemTypes =
   | IRobotConfigStore
   | IHolonomicWaypointStore
+  | ITankDriveWaypointStore
   | IConstraintStore
   | ICircularObstacleStore
   | IEventMarkerStore

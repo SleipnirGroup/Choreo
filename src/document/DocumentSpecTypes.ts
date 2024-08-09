@@ -50,12 +50,18 @@ import {
   SavedDocument as v0_3_1,
   SAVE_FILE_VERSION as v0_3_1_Version
 } from "./previousSpecs/v0_3_1";
-import v0_3_1_Schema from "./previousSpecs/v0.3.1.json";
+// import v0_3_1_Schema from "./previousSpecs/v0.3.1.json";
 import {
-  SavedDocument as v0_4,
-  SAVE_FILE_VERSION as v0_4_Version
+  SavedDocument as v0_4
+  // SAVE_FILE_VERSION as v0_4_Version
 } from "./previousSpecs/v0_4";
 import v0_4_Schema from "./previousSpecs/v0.4.json";
+
+import {
+  SavedDocument as v0_5
+  // SAVE_FILE_VERSION as v0_4_Version
+} from "./previousSpecs/v0_4";
+import v0_5_Schema from "./previousSpecs/v0.4.json";
 
 // Paste new version import blocks above this line.
 // Import SAVE_FILE_VERSION, SavedDocument and only the other types needed for the upgrader functions.
@@ -69,8 +75,11 @@ import { SAVE_FILE_VERSION } from "./previousSpecs/v0_4";
 
 export type {
   SavedDocument,
-  SavedTrajectorySample,
+  SavedTrajectorySampleSwerve as SavedTrajectorySample,
+  SavedTrajectorySampleTank,
   SavedPath,
+  SavedPathTank,
+  SavedPathSwerve,
   SavedPathList,
   SavedRobotConfig,
   SavedWaypoint,
@@ -82,8 +91,8 @@ export type {
   SavedNamedCommand,
   SavedWaitCommand,
   SavedGeneratedWaypoint
-} from "./previousSpecs/v0_4";
-export { SAVE_FILE_VERSION } from "./previousSpecs/v0_4";
+} from "./previousSpecs/v0_5";
+export { SAVE_FILE_VERSION } from "./previousSpecs/v0_5";
 
 const ajv = new Ajv();
 
@@ -272,9 +281,9 @@ export const VERSIONS = {
     schema: v0_3_Schema
   },
   "v0.3.1": {
-    up: (document: any): v0_4 => {
-      const updated: v0_4 = document;
-      updated.version = v0_4_Version;
+    up: (document: any): v0_3_1 => {
+      const updated: v0_3_1 = document;
+      updated.version = v0_3_1_Version;
 
       // Because we added module forces in this version
       // add zero-initialized module forces to each path.
@@ -285,9 +294,15 @@ export const VERSIONS = {
         // the trajectory can be null, just skip if so
         if (path.trajectory == null) continue;
         path.isTrajectoryStale = true;
-        for (const sample of path.trajectory) {
-          sample.moduleForcesX = [0.0, 0.0, 0.0, 0.0];
-          sample.moduleForcesY = [0.0, 0.0, 0.0, 0.0];
+        if (path.type === "holonomic") {
+          for (const sample of path.trajectory) {
+            (sample as SavedTrajectorySampleSwerve).moduleForcesX = [
+              0.0, 0.0, 0.0, 0.0
+            ];
+            (sample as SavedTrajectorySampleSwerve).moduleForcesY = [
+              0.0, 0.0, 0.0, 0.0
+            ];
+          }
         }
       }
 
@@ -308,11 +323,17 @@ export const VERSIONS = {
 
       return updated;
     },
-    schema: v0_3_1_Schema
+    schema: v0_3_Schema
   },
+
   "v0.4": {
     up: (document: any): v0_4 => document,
     schema: v0_4_Schema
+  },
+
+  "v0.5": {
+    up: (document: any): v0_5 => document,
+    schema: v0_5_Schema
   }
 
   /**

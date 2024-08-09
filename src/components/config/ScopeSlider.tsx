@@ -3,10 +3,11 @@ import React, { Component } from "react";
 import DocumentManagerContext from "../../document/DocumentManager";
 import { Slider, SliderProps } from "@mui/material";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
+import { ITankDriveWaypointStore } from "../../document/TankDriveWaypointStore";
 
 type Props = {
   isRange: boolean;
-  points: IHolonomicWaypointStore[];
+  points: (IHolonomicWaypointStore | ITankDriveWaypointStore)[];
   startIndex: number;
   endIndex: number;
   setRange: (arg1: [number] | [number, number]) => void;
@@ -20,10 +21,7 @@ class ScopeSlider extends Component<Props, State> {
   declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
   render() {
-    const isRange = this.props.isRange;
-    const startIndex = this.props.startIndex;
-    const endIndex = this.props.endIndex;
-    const points = this.props.points;
+    const { isRange, startIndex, endIndex, points } = this.props;
     const pointcount = points.length;
 
     const sliderMarks = [
@@ -37,9 +35,9 @@ class ScopeSlider extends Component<Props, State> {
       }),
       { value: pointcount + 1, label: "End" }
     ];
+
     return (
       <div style={{ marginInline: "4ch" }}>
-        {" "}
         <Slider
           sx={{
             '& .MuiSlider-markLabel[data-index="0"]': {
@@ -56,7 +54,7 @@ class ScopeSlider extends Component<Props, State> {
           marks={sliderMarks}
           track={isRange ? "normal" : false}
           onChange={(e, value: number | number[]) => {
-            let selection = [];
+            let selection: [number] | [number, number] = [0];
             if (typeof value === "number") {
               selection = [value] as [number];
             } else {
@@ -65,9 +63,10 @@ class ScopeSlider extends Component<Props, State> {
             this.props.setRange(selection);
           }}
           {...this.props.sliderProps}
-        ></Slider>
+        />
       </div>
     );
   }
 }
+
 export default observer(ScopeSlider);

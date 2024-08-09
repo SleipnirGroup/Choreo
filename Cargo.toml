@@ -2,6 +2,6 @@
 
 members = [
     "src-tauri",
-    "trajoptlib",
+    "trajoptlib", "trajoptlib_macros",
 ]
 resolver = "2"

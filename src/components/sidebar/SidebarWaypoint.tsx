@@ -8,6 +8,7 @@ import {
 import { CSSProperties } from "styled-components";
 import DocumentManagerContext from "../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
+import { ITankDriveWaypointStore } from "../../document/TankDriveWaypointStore";
 import styles from "./Sidebar.module.css";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { IconButton, Tooltip } from "@mui/material";
@@ -16,7 +17,7 @@ import { PriorityHigh } from "@mui/icons-material";
 import { NavbarItemData } from "../../document/UIStateStore";
 
 type Props = {
-  waypoint: IHolonomicWaypointStore;
+  waypoint: IHolonomicWaypointStore | ITankDriveWaypointStore;
   index: number;
   pathLength: number;
   context: React.ContextType<typeof DocumentManagerContext>;
@@ -92,24 +93,6 @@ class SidebarWaypoint extends Component<Props, State> {
               className: styles.SidebarIcon,
               htmlColor: this.getIconColor(pathLength)
             })}
-            {/* {translationConstrained && headingConstrained && (
-              <Waypoint
-                htmlColor={this.getIconColor(pathLength)}
-                className={styles.SidebarIcon}
-              ></Waypoint>
-            )}
-            {translationConstrained && !headingConstrained && (
-              <Circle
-                htmlColor={this.getIconColor(pathLength)}
-                className={styles.SidebarIcon}
-              ></Circle>
-            )}
-            {!translationConstrained && (
-              <CircleOutlined
-                htmlColor={this.getIconColor(pathLength)}
-                className={styles.SidebarIcon}
-              ></CircleOutlined>
-            )} */}
             <span
               className={styles.SidebarLabel}
               style={{ display: "grid", gridTemplateColumns: "1fr auto auto" }}

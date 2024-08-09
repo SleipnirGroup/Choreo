@@ -126,12 +126,9 @@ target_include_directories(
 install(
     TARGETS TrajoptLib
     EXPORT TrajoptLibTargets
-    LIBRARY
-    DESTINATION lib
-    ARCHIVE
-    DESTINATION lib
-    RUNTIME
-    DESTINATION bin
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+    RUNTIME DESTINATION bin
     INCLUDES DESTINATION include
 )
 export(TARGETS TrajoptLib FILE TrajoptLib.cmake NAMESPACE TrajoptLib::)

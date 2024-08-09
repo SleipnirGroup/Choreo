@@ -3,10 +3,10 @@ import {
   SavedDocument,
   SavedGeneratedWaypoint,
   SavedTrajectorySample,
+  SavedTrajectorySampleTank,
   SAVE_FILE_VERSION,
   updateToCurrent
 } from "./DocumentSpecTypes";
-
 import { invoke } from "@tauri-apps/api/tauri";
 import { RobotConfigStore } from "./RobotConfigStore";
 import { SelectableItemTypes, UIStateStore } from "./UIStateStore";
@@ -99,7 +99,6 @@ const StateStore = types
             }
           });
           pathStore.setGenerating(true);
-          // Capture the timestamps of the waypoints that were actually sent to the solver
           const waypointTimestamps = pathStore.waypointTimestamps();
           console.log(waypointTimestamps);
           const stopPoints = pathStore.stopPoints();
@@ -121,7 +120,6 @@ const StateStore = types
               for (const waypoint of generatedWaypoints) {
                 controlIntervalCount += waypoint.controlIntervalCount;
               }
-              // last waypoint doesn't count, except as its own interval.
               controlIntervalCount -=
                 generatedWaypoints[generatedWaypoints.length - 1]
                   .controlIntervalCount;
@@ -131,38 +129,70 @@ const StateStore = types
 
               return listen("solver-status", async (event) => {
                 if (event.payload!.handle == handle) {
-                  const samples = event.payload.traj.samples;
+                  console.log(event.payload);
+                  let samples;
+                  if (event.payload.traj.Differential != undefined) {
+                    samples = event.payload.traj.Differential.samples;
+                  } else {
+                    samples = event.payload.traj.Swerve.traj.samples;
+                  }
                   const progress = pathStore.generationProgress;
-                  // mutate in-progress trajectory in place if it's already the right size
-                  // should avoid allocations on every progress update
                   if (progress.length != controlIntervalCount) {
                     console.log("resize", controlIntervalCount, samples.length);
                     pathStore.setInProgressTrajectory(
-                      samples.map((samp) => ({
-                        x: samp.x,
-                        y: samp.y,
-                        heading: samp.heading,
-                        angularVelocity: samp.angular_velocity,
-                        velocityX: samp.velocity_x,
-                        velocityY: samp.velocity_y,
-                        timestamp: samp.timestamp
-                      }))
+                      samples.map((samp) => {
+                        if ("module_forces_x" in samp) {
+                          return {
+                            x: samp.x,
+                            y: samp.y,
+                            heading: samp.heading,
+                            angularVelocity: samp.angular_velocity,
+                            velocityX: samp.velocity_x,
+                            velocityY: samp.velocity_y,
+                            timestamp: samp.timestamp,
+                            moduleForcesX: samp.module_forces_x,
+                            moduleForcesY: samp.module_forces_y
+                          } as SavedTrajectorySample;
+                        } else {
+                          return {
+                            x: samp.x,
+                            y: samp.y,
+                            heading: samp.heading,
+                            velocityL: samp.velocity_l,
+                            velocityR: samp.velocity_r,
+                            timestamp: samp.timestamp,
+                            forceL: 0,
+                            forceR: 0
+                          } as SavedTrajectorySampleTank;
+                        }
+                      })
                     );
                   } else {
                     for (let i = 0; i < controlIntervalCount; i++) {
                       const samp = samples[i];
                       const prog = progress[i];
-                      prog.x = samp.x;
-                      prog.y = samp.y;
-                      prog.heading = samp.heading;
-                      prog.angularVelocity = samp.angular_velocity;
-                      prog.velocityX = samp.velocity_x;
-                      prog.velocityY = samp.velocity_y;
-                      prog.timestamp = samp.timestamp;
+                      if ("module_forces_x" in samp) {
+                        prog.x = samp.x;
+                        prog.y = samp.y;
+                        prog.heading = samp.heading;
+                        prog.angularVelocity = samp.angular_velocity;
+                        prog.velocityX = samp.velocity_x;
+                        prog.velocityY = samp.velocity_y;
+                        prog.timestamp = samp.timestamp;
+                        prog.moduleForcesX = samp.module_forces_x;
+                        prog.moduleForcesY = samp.module_forces_y;
+                      } else {
+                        prog.x = samp.x;
+                        prog.y = samp.y;
+                        prog.heading = samp.heading;
+                        prog.velocityL = samp.velocity_l;
+                        prog.velocityR = samp.velocity_r;
+                        prog.timestamp = samp.timestamp;
+                        prog.forceL = 0;
+                        prog.forceR = 0;
+                      }
                     }
                   }
-                  // todo: get this from the progress update, so it actually means something
-                  // beyond just triggering UI updates
                   pathStore.setIterationNumber(
                     pathStore.generationIterationNumber + 1
                   );
@@ -181,6 +211,7 @@ const StateStore = types
                 })
                 .then(
                   (result) => {
+                    console.log(result);
                     unlisten();
                     return result;
                   },
@@ -190,47 +221,84 @@ const StateStore = types
                   }
                 );
             },
-
             (e) => {
               throw e;
             }
           )
           .then(
             (rust_traj) => {
-              const newTraj: Array<SavedTrajectorySample> = [];
-              rust_traj.samples.forEach((samp) => {
-                newTraj.push({
-                  x: samp.x,
-                  y: samp.y,
-                  heading: samp.heading,
-                  angularVelocity: samp.angular_velocity,
-                  velocityX: samp.velocity_x,
-                  velocityY: samp.velocity_y,
-                  moduleForcesX: samp.module_forces_x,
-                  moduleForcesY: samp.module_forces_y,
-                  timestamp: samp.timestamp
+              if (rust_traj.Differential == undefined) {
+                const newTraj: Array<SavedTrajectorySample> = [];
+                rust_traj.Swerve.Ok.samples.forEach((samp) => {
+                  newTraj.push({
+                    x: samp.x,
+                    y: samp.y,
+                    heading: samp.heading,
+                    angularVelocity: samp.angular_velocity,
+                    velocityX: samp.velocity_x,
+                    velocityY: samp.velocity_y,
+                    moduleForcesX: samp.module_forces_x,
+                    moduleForcesY: samp.module_forces_y,
+                    timestamp: samp.timestamp
+                  });
                 });
-              });
-              if (newTraj.length == 0) throw "No traj";
-              self.document.history.startGroup(() => {
-                pathStore.setTrajectory(newTraj);
-                if (newTraj.length > 0) {
-                  let currentInterval = 0;
-                  generatedWaypoints.forEach((w) => {
-                    if (newTraj.at(currentInterval)?.timestamp !== undefined) {
-                      w.timestamp = newTraj.at(currentInterval)!.timestamp;
-                      currentInterval += w.controlIntervalCount;
-                    }
+                if (newTraj.length == 0) throw "No traj";
+                self.document.history.startGroup(() => {
+                  pathStore.setTrajectory(newTraj);
+                  if (newTraj.length > 0) {
+                    let currentInterval = 0;
+                    generatedWaypoints.forEach((w) => {
+                      if (
+                        newTraj.at(currentInterval)?.timestamp !== undefined
+                      ) {
+                        w.timestamp = newTraj.at(currentInterval)!.timestamp;
+                        currentInterval += w.controlIntervalCount;
+                      }
+                    });
+                    pathStore.eventMarkers.forEach((m) => {
+                      m.updateTargetIndex();
+                    });
+                  }
+                  pathStore.setGeneratedWaypoints(generatedWaypoints);
+                  pathStore.setIsTrajectoryStale(false);
+                  self.document.history.stopGroup();
+                });
+              } else {
+                const newTraj: Array<SavedTrajectorySampleTank> = [];
+                rust_traj.Differential.Ok.samples.forEach((samp) => {
+                  newTraj.push({
+                    x: samp.x,
+                    y: samp.y,
+                    heading: samp.heading,
+                    velocityL: samp.velocity_l,
+                    velocityR: samp.velocity_r,
+                    timestamp: samp.timestamp,
+                    forceL: samp.force_l,
+                    forceR: samp.force_r
                   });
-                  pathStore.eventMarkers.forEach((m) => {
-                    m.updateTargetIndex();
-                  });
-                }
-                pathStore.setGeneratedWaypoints(generatedWaypoints);
-                // set this within the group so it gets picked up in the autosave
-                pathStore.setIsTrajectoryStale(false);
-                self.document.history.stopGroup();
-              });
+                });
+                if (newTraj.length == 0) throw "No traj";
+                self.document.history.startGroup(() => {
+                  pathStore.setTrajectory(newTraj);
+                  if (newTraj.length > 0) {
+                    let currentInterval = 0;
+                    generatedWaypoints.forEach((w) => {
+                      if (
+                        newTraj.at(currentInterval)?.timestamp !== undefined
+                      ) {
+                        w.timestamp = newTraj.at(currentInterval)!.timestamp;
+                        currentInterval += w.controlIntervalCount;
+                      }
+                    });
+                    pathStore.eventMarkers.forEach((m) => {
+                      m.updateTargetIndex();
+                    });
+                  }
+                  pathStore.setGeneratedWaypoints(generatedWaypoints);
+                  pathStore.setIsTrajectoryStale(false);
+                  self.document.history.stopGroup();
+                });
+              }
             },
             (e) => {
               console.error(e);
@@ -244,7 +312,6 @@ const StateStore = types
             }
           )
           .finally(() => {
-            // none of the below should trigger autosave
             pathStore.setGenerating(false);
             self.uiState.setPathAnimationTimestamp(0);
             pathStore.setIsTrajectoryStale(false);
@@ -306,8 +373,6 @@ const StateStore = types
         const y = (yMin + yMax) / 2;
         let k = 10 / (xMax - xMin) + 0.01;
 
-        // x-scaling desmos graph: https://www.desmos.com/calculator/5ie360vse3
-
         if (k > 1.7) {
           k = 1.7;
         }
@@ -321,7 +386,6 @@ const StateStore = types
         window.dispatchEvent(new CustomEvent("zoomOut"));
       },
 
-      // x, y, k are the center coordinates (x, y) and scale factor (k)
       callCenter(x: number, y: number, k: number) {
         window.dispatchEvent(
           new CustomEvent("center", { detail: { x, y, k } })
