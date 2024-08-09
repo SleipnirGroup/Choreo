@@ -110,7 +110,7 @@ export class DocumentManager {
           this.model.uiState.setSaveFileName(saveName);
           this.model.uiState.setSaveFileDir(saveDir);
           this.model.uiState.setIsGradleProject(adjacent_gradle);
-          const payloadLessContents = {...payload, contents: ""};
+          const payloadLessContents = { ...payload, contents: "" };
           localStorage.setItem(
             LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
             JSON.stringify(payloadLessContents)
