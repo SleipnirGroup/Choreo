@@ -124,7 +124,7 @@ export const constraints = {
       acceleration: {
         name: "Max Acceleration",
         description: "Maximum Linear Acceleration of robot chassis",
-        units: "m/s\u{00B2}"
+        units: "m/s²"
       }
     },
     wptScope: true,
