@@ -765,7 +765,6 @@ export const HolonomicPathStore = types
         const distance = Math.sqrt(dx * dx + dy * dy);
         const maxForce = robotConfig.wheelMaxTorque / robotConfig.wheelRadius;
 
-
         // Default to robotConfig's max velocity and acceleration
         let maxVel = robotConfig.wheelMaxVelocity * robotConfig.wheelRadius;
         let maxAccel = (maxForce * 4) / robotConfig.mass; // times 4 for 4 modules
