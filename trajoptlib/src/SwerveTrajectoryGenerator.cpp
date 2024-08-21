@@ -111,6 +111,8 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
 
   // Minimize total time
   sleipnir::Variable T_tot = 0;
+  std::printf("Ns.size: %zd - path.wpts.size(): %zd\n", Ns.size(),
+              path.waypoints.size());
   for (size_t sgmtIndex = 0; sgmtIndex < Ns.size(); ++sgmtIndex) {
     auto& dt_sgmt = dts.at(sgmtIndex);
     auto N_sgmt = Ns.at(sgmtIndex);
@@ -118,7 +120,37 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     T_tot += T_sgmt;
 
     problem.SubjectTo(dt_sgmt >= 0);
-    dt_sgmt.SetValue(5.0 / N_sgmt);
+
+    // have to use Ns and initialGuess to find the dx, dy between wpts
+    auto x_0 = initialGuess.x.at(sgmtIndex);
+    auto x_1 = initialGuess.x.at(sgmtIndex + Ns.at(sgmtIndex));
+    auto y_0 = initialGuess.y.at(sgmtIndex);
+    auto y_1 = initialGuess.y.at(sgmtIndex + Ns.at(sgmtIndex));
+    auto dx = x_1 - x_0;
+    auto dy = y_1 - y_0;
+    auto dist = std::sqrt(dx * dx + dy * dy);
+    const auto maxLinearVel =
+        path.drivetrain.wheelRadius * path.drivetrain.wheelMaxAngularVelocity;
+    const double maxForce =
+        path.drivetrain.wheelMaxTorque / path.drivetrain.wheelRadius;
+    const auto maxAccel = maxForce / path.drivetrain.mass;
+    const auto distanceAtCruise =
+        dist - (maxLinearVel * maxLinearVel) / maxAccel;
+    auto sgmtTime = 5.0;
+    if (distanceAtCruise < 0) {
+      // triangle
+      sgmtTime = 2 * (std::sqrt(dist * maxAccel) / maxAccel);
+      // not taking thete into account...
+    } else {
+      // trapezoid
+      sgmtTime = dist / maxLinearVel + maxLinearVel / maxAccel;
+      // no heading....
+    }
+
+    std::printf(
+        "initial values for decision variable dt: %f - totalSgmtTime: %f",
+        sgmtTime / N_sgmt, sgmtTime);
+    dt_sgmt.SetValue(sgmtTime / N_sgmt);
   }
   problem.Minimize(std::move(T_tot));
 
