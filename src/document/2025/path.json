@@ -1,0 +1,65 @@
+{
+    "name": string,
+    "version": string,
+    "path": {
+        "waypoints":[
+            {
+                "x": Expr,
+                "y": Expr,
+                "heading": Expr,
+                "intervals": number,
+                "split": boolean,
+                "fixTranslation": boolean,
+                "fixHeading": boolean
+            }
+        ],
+        "constraints": [
+            {
+                "type": "ConstraintType",
+                "data": {
+                    "arg1": Expr,
+                    "arg2": boolean //etc, according to constraint types
+                },
+                "from": 0, // idx | "first" | "last"
+                "to": 2 //idx | "first" | "last" | undefined
+            }
+        ],
+        "obstacles": []
+    },
+    "snapshot": {
+        // copy of path as of last generation, with exprs replaced with numbers.
+        // Comparison of path with snapshot tells if the traj is out of date.
+    },
+    "traj": {
+        "waypoints": [ // timestamps of each waypoint in "snapshot"
+            0, 1.0, 1.3, 2.0
+        ],
+        "samples": [
+            [
+                {"t": 0, "x": 0, "y":0, "heading": 0, "vx": 0, "vy": 0, "omega": 0, "fx": [0, 0, 0, 0], "fy": [0, 0, 0, 0]},
+                //...
+                {"t": 1.0, "x": 0, "y":0, "heading": 0, "vx": 0, "vy": 0, "omega": 0, "fx": [0, 0, 0, 0], "fy": [0, 0, 0, 0]}
+            ],
+            // when loading split parts as one path, ignore last sample of each section except last section
+            [
+                {"t": 1.0, "x": 0, "y":0, "heading": 0, "vx": 0, "vy": 0, "omega": 0, "fx": [0, 0, 0, 0], "fy": [0, 0, 0, 0]},
+                //...
+                {"t": 2.0, "x": 0, "y":0, "heading": 0, "vx": 0, "vy": 0, "omega": 0, "fx": [0, 0, 0, 0], "fy": [0, 0, 0, 0]}
+            ]
+        ],
+        "markers": [
+            {
+                "name": "Marker",
+                "target": 0, // idx of waypoint in traj.waypoints
+                "offset": -1, // time offset
+                // consumers of file calculate marker timestamp as (traj.waypoints[marker.target] + marker.offset)
+                "command": {
+                    "type": "named",
+                    "data": {
+                        "name": "Shoot"
+                    }
+                }
+            }
+        ]
+    }
+}
