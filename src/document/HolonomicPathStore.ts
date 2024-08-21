@@ -798,11 +798,11 @@ export const HolonomicPathStore = types
           }
         });
 
-        // anti tunnelling used as ceiling of dt
-        const minWidth =
-          robotConfig.trackWidth < robotConfig.wheelbase
-            ? robotConfig.trackWidth
-            : robotConfig.wheelbase;
+        // anti-tunnelling used as ceiling of dt to get more control intervals for slimmer robots
+        const minWidth = Math.min(
+          robotConfig.trackWidth,
+          robotConfig.bumperWidth
+        );
         const dtCeiling =
           minWidth / (robotConfig.wheelRadius * robotConfig.wheelMaxVelocity);
         const distanceAtCruise = distance - (maxVel * maxVel) / maxAccel;
@@ -811,20 +811,15 @@ export const HolonomicPathStore = types
           // triangle
           totalTime = 2 * (Math.sqrt(distance * maxAccel) / maxAccel);
           totalTime += headingWeight * Math.abs(dtheta);
-          // self.waypoints
-          //   .at(i)
-          //   ?.setControlIntervalCount(Math.ceil(totalTime / 0.1));
         } else {
           // trapezoid
           totalTime = distance / maxVel + maxVel / maxAccel;
           totalTime += headingWeight * Math.abs(dtheta);
-          // self.waypoints
-          //   .at(i)
-          //   ?.setControlIntervalCount(Math.ceil(totalTime / 0.1));
         }
-        const dt = Math.ceil(totalTime / 0.1);
-        self.waypoints.at(i)?.setControlIntervalCount(Math.max(dt, dtCeiling));
-        console.log("dtCeiling: %d - dt: %d\n", dtCeiling, dt);
+        // use default of 0.1s as dt or lower value based on minWidth
+        const dt = Math.min(0.1, dtCeiling);
+        const controlIntervalCount = Math.ceil(totalTime / dt);
+        self.waypoints.at(i)?.setControlIntervalCount(controlIntervalCount);
       }
     };
   })
