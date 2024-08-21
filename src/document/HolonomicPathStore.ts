@@ -801,10 +801,10 @@ export const HolonomicPathStore = types
         // anti-tunnelling used as ceiling of dt to get more control intervals for slimmer robots
         const minWidth = Math.min(
           robotConfig.trackWidth,
-          robotConfig.bumperWidth
+          robotConfig.wheelbase
         );
         const dtCeiling =
-          minWidth / (robotConfig.wheelRadius * robotConfig.wheelMaxVelocity);
+          minWidth / (robotConfig.wheelMaxVelocity * robotConfig.wheelRadius);
         const distanceAtCruise = distance - (maxVel * maxVel) / maxAccel;
         let totalTime;
         if (distanceAtCruise < 0) {
@@ -819,6 +819,12 @@ export const HolonomicPathStore = types
         // use default of 0.1s as dt or lower value based on minWidth
         const dt = Math.min(0.1, dtCeiling);
         const controlIntervalCount = Math.ceil(totalTime / dt);
+        console.log(
+          "dtCeiling: %f - dt: %f - controlIntervalCount: %d\n",
+          dtCeiling,
+          dt,
+          controlIntervalCount
+        );
         self.waypoints.at(i)?.setControlIntervalCount(controlIntervalCount);
       }
     };
