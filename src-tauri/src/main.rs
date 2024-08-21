@@ -1,10 +1,14 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod document;
+use std::collections::HashMap;
+use std::hash::Hash;
 use std::sync::mpsc::{channel, Sender};
 use std::sync::OnceLock;
 use std::thread;
 use std::{fs, path::Path};
+use document::v2025_0_0::{Expr, Module, Project, RobotConfig, Variables, Bumper};
 use tauri::regex::{escape, Regex};
 
 use tauri::{
@@ -472,28 +476,84 @@ fn main() {
     let (tx, rx) = channel::<ProgressUpdate>();
     PROGRESS_SENDER_LOCK.get_or_init(move || tx);
 
-    tauri::Builder::default()
-        .setup(|app| {
-            let progress_emitter = app.handle().clone();
-            thread::spawn(move || {
-                for received in rx {
-                    let _ = progress_emitter.emit_all("solver-status", received);
-                }
-            });
-            Ok(())
-        })
-        .invoke_handler(tauri::generate_handler![
-            generate_trajectory,
-            cancel,
-            open_file_dialog,
-            file_event_payload_from_dir,
-            save_file,
-            contains_build_gradle,
-            delete_file,
-            delete_dir,
-            delete_traj_segments,
-            open_file_app
-        ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+    let project = Project{
+        version: "v2025.0.0".to_string(),
+        variables: Variables {
+            expressions: HashMap::new(),
+            poses: HashMap::new()
+        },
+        config: RobotConfig{
+            modules: (
+                Module {
+                    x: Expr {expr: "".to_string(),value: 0.4},
+                    y: Expr {expr: "".to_string(),value: 0.4},
+                    gearing: Expr {expr: "6.5".to_string(),value: 6.5},
+                    radius: Expr {expr: "2 in".to_string(),value: 0.0508},
+                    vmax: Expr {expr: "".to_string(),value: 6000.0},
+                    tmax: Expr {expr: "".to_string(),value: 1.2}
+                },
+                Module {
+                    x: Expr {expr: "".to_string(),value: 0.4},
+                    y: Expr {expr: "".to_string(),value: 0.4},
+                    gearing: Expr {expr: "6.5".to_string(),value: 6.5},
+                    radius: Expr {expr: "2 in".to_string(),value: 0.0508},
+                    vmax: Expr {expr: "".to_string(),value: 6000.0},
+                    tmax: Expr {expr: "".to_string(),value: 1.2}
+                },
+                Module {
+                    x: Expr {expr: "".to_string(),value: 0.4},
+                    y: Expr {expr: "".to_string(),value: 0.4},
+                    gearing: Expr {expr: "6.5".to_string(),value: 6.5},
+                    radius: Expr {expr: "2 in".to_string(),value: 0.0508},
+                    vmax: Expr {expr: "".to_string(),value: 6000.0},
+                    tmax: Expr {expr: "".to_string(),value: 1.2}
+                },
+                Module {
+                    x: Expr {expr: "".to_string(),value: 0.4},
+                    y: Expr {expr: "".to_string(),value: 0.4},
+                    gearing: Expr {expr: "6.5".to_string(),value: 6.5},
+                    radius: Expr {expr: "2 in".to_string(),value: 0.0508},
+                    vmax: Expr {expr: "".to_string(),value: 6000.0},
+                    tmax: Expr {expr: "".to_string(),value: 1.2}
+                },
+            ),
+            mass: Expr {expr: "".to_string(), value: 76.0},
+            inertia: Expr {expr: "".to_string(), value: 6.0},
+            bumper: Bumper {
+                front: Expr {expr: "".to_string(), value: 0.6},
+                left: Expr {expr: "".to_string(), value: 0.6},
+                back: Expr {expr: "".to_string(), value: 0.6},
+                right: Expr {expr: "".to_string(), value: 0.6}
+            },
+        },
+    };
+
+    let stringified = serde_json::to_string_pretty::<Project>(&project);
+    println!("{:?}", stringified);
+
+
+    // tauri::Builder::default()
+    //     .setup(|app| {
+    //         let progress_emitter = app.handle().clone();
+    //         thread::spawn(move || {
+    //             for received in rx {
+    //                 let _ = progress_emitter.emit_all("solver-status", received);
+    //             }
+    //         });
+    //         Ok(())
+    //     })
+    //     .invoke_handler(tauri::generate_handler![
+    //         generate_trajectory,
+    //         cancel,
+    //         open_file_dialog,
+    //         file_event_payload_from_dir,
+    //         save_file,
+    //         contains_build_gradle,
+    //         delete_file,
+    //         delete_dir,
+    //         delete_traj_segments,
+    //         open_file_app
+    //     ])
+    //     .run(tauri::generate_context!())
+    //     .expect("error while running tauri application");
 }

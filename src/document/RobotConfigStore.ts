@@ -174,8 +174,9 @@ export const RobotConfigStore = types
       dashedBumperSVGElement() {
         let l = self.bumperLength.value;
         let w = self.bumperWidth.value;
-        return `M ${l / 2} ${w / 4}
-              L ${l / 2} ${w / 2}
+        return `
+            M ${l / 2} ${w / 4}
+            L ${l / 2} ${w / 2}
             L ${l / 4} ${w / 2}
 
             M ${-l / 4} ${w / 2}
