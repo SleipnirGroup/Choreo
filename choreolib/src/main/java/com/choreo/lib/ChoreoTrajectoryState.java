@@ -102,7 +102,7 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
    * Interpolate between this state and the provided state.
    *
    * @param endValue The next state. It should have a timestamp after this state.
-   * @param t the timestamp of the interpolated state. It should be between this state and endValue.
+   * @param t The timestamp of the interpolated state. It should be between this state and endValue.
    * @return the interpolated state.
    */
   @Override

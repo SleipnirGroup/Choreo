@@ -1,21 +1,16 @@
-use trajoptlib::{SwerveDrivetrain, SwervePathBuilder, Translation2d};
+use trajoptlib::{DifferentialDrivetrain, DifferentialPathBuilder};
 
 fn main() {
-    let drivetrain = SwerveDrivetrain {
+    let drivetrain = DifferentialDrivetrain {
         mass: 45.0,
         moi: 6.0,
-        wheel_radius: 0.04,
+        wheel_radius: 0.08,
         wheel_max_angular_velocity: 70.0,
-        wheel_max_torque: 2.0,
-        modules: vec![
-            Translation2d { x: 0.6, y: 0.6 },
-            Translation2d { x: 0.6, y: -0.6 },
-            Translation2d { x: -0.6, y: 0.6 },
-            Translation2d { x: -0.6, y: -0.6 },
-        ],
+        wheel_max_torque: 5.0,
+        trackwidth: 6.0,
     };
 
-    let mut path = SwervePathBuilder::new();
+    let mut path = DifferentialPathBuilder::new();
 
     path.add_progress_callback(|traj, handle| println!("{:?}: handle {}", traj, handle));
     path.set_drivetrain(&drivetrain);

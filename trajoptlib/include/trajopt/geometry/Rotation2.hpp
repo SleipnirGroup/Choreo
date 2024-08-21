@@ -9,7 +9,6 @@
 #include <vector>
 
 #include <sleipnir/autodiff/Variable.hpp>
-#include <sleipnir/optimization/Constraints.hpp>
 
 namespace trajopt {
 

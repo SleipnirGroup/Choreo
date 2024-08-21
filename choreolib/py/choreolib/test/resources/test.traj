@@ -1,0 +1,37 @@
+{
+    "samples": [
+        {
+            "timestamp": 0,
+            "x": 2.7,
+            "y": 4.4,
+            "heading": 0,
+            "velocityX": 0,
+            "velocityY": 0,
+            "angularVelocity": -0.2,
+            "moduleForcesX": [1.0, 2.0, 3.0, 4.0],
+            "moduleForcesY": [5.0, 6.0, 7.0, 8.0]
+        },
+        {
+            "timestamp": 0.005,
+            "x": 2.8,
+            "y": 4.48,
+            "heading": -0.01,
+            "velocityX": 0.16,
+            "velocityY": 0.17,
+            "angularVelocity": -0.21,
+            "moduleForcesX": [1.0, 2.0, 3.0, 4.0],
+            "moduleForcesY": [5.0, 6.0, 7.0, 8.0]
+        },
+        {
+            "timestamp": 0.01,
+            "x": 2.83,
+            "y": 4.51,
+            "heading": -0.03,
+            "velocityX": 0.32,
+            "velocityY": 0.34,
+            "angularVelocity": -0.22,
+            "moduleForcesX": [1.0, 2.0, 3.0, 4.0],
+            "moduleForcesY": [5.0, 6.0, 7.0, 8.0]
+        }
+    ]
+}

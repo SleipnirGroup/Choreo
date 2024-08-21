@@ -5,6 +5,7 @@ import {
   PriorityHigh,
   StopCircleOutlined,
   SyncOutlined,
+  TextRotationNoneOutlined,
   Timeline
 } from "@mui/icons-material";
 import { toJS } from "mobx";
@@ -110,6 +111,21 @@ export const constraints = {
         name: "Max Angular Velocity",
         description: "Maximum Angular Velocity of robot chassis",
         units: Units.RadianPerSecond
+      }
+    },
+    wptScope: true,
+    sgmtScope: true
+  },
+  MaxAcceleration: {
+    name: "Max Acceleration",
+    shortName: "Max Acc",
+    description: "Maximum Linear Acceleration",
+    icon: <TextRotationNoneOutlined />,
+    properties: {
+      acceleration: {
+        name: "Max Acceleration",
+        description: "Maximum Linear Acceleration of robot chassis",
+        units: "m/s²"
       }
     },
     wptScope: true,

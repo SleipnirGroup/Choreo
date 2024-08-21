@@ -1,38 +1,54 @@
-## UI
+## Path
 
-| Shortcut                       | Description                                                                                |
-| ------------------------------ | ------------------------------------------------------------------------------------------ |
-| Left Mouse Click               | Add selected waypoint from navbar at click position                                        |
-| Left Mouse Drag                | Pan around the map                                                                     |
-| Scroll Wheel, Trackpad Gesture | Zoom in or out of the map                                                                  |
-| Delete/Backspace               | Delete highlighted waypoint                                                                |
-| Ctrl/⌘ + Z                     | Undo                                                                                       |
-| Ctrl/⌘ + Shift + Z, Ctrl/⌘ + Y | Redo                                                                                       |
-| Ctrl/⌘ + N                     | Creates a new File                                                                         |
-| Left Arrow                     | Highlights previous waypoint                                                               |
-| Right Arrow                    | Highlights next waypoint                                                                   |
-| G, Ctrl/⌘ + G                  | Generates current path                                                                     |
-| F                              | Add selected waypoint from navbar at last waypoint location. Defaults to coordinate (5, 5) |
-| 1 through 4                    | Selects waypoint type in navbar (2 selects 2nd waypoint type, Translation Waypoint)        |
+| Shortcut      | Description                        |
+| ------------- | ---------------------------------- |
+| G, Ctrl/⌘ + G | Generate current path              |
+| Space         | Start/stop path playback           |
+| Escape        | Clear sidebar and navbar selection |
 
-## Waypoint Rotation
+## Field View
 
-> NOTE: Holding Shift changes rotation to π/4. For example, Shift + E rotates selected waypoint by -π/4 (clockwise)
+| Shortcut                      | Description                 |
+| ----------------------------- | --------------------------- |
+| Left Mouse Drag               | Pan around the field        |
+| Scroll Wheel, Trackpad Scroll | Zoom in or out of the field |
+| Ctrl/⌘ + Plus                 | Zoom in                     |
+| Ctrl/⌘ + Minus                | Zoom out                    |
+| Ctrl/⌘ + 0                    | Fit zoom to waypoints       |
 
-| Shortcut | Description                                          |
-| -------- | ---------------------------------------------------- |
-| E        | Rotates selected waypoint by -π/16 (clockwise)       |
-| Q        | Rotates selected waypoint by π/16 (counterclockwise) |
+## File
 
-## Waypoint Translation
+| Shortcut                       | Description |
+| ------------------------------ | ----------- |
+| Ctrl/⌘ + N                     | New File    |
+| Ctrl/⌘ + O                     | Open File   |
+| Ctrl/⌘ + Z                     | Undo        |
+| Ctrl/⌘ + Shift + Z, Ctrl/⌘ + Y | Redo        |
 
-> NOTE: Holding Shift changes translation to 0.5m
+## Waypoints
 
-| Shortcut | Description                                |
-| -------- | ------------------------------------------ |
-| W        | Translates selected waypoint by 0.1m up    |
-| S        | Translates selected waypoint by 0.1m down  |
-| A        | Translates selected waypoint by 0.1m left  |
-| D        | Translates Selected waypoint by 0.1m right |
+| Shortcut                       | Description                                            |
+| ------------------------------ | ------------------------------------------------------ |
+| 1 through 4                    | Select waypoint type in navbar                         |
+| Shift + 1 through Shift + 4    | Change type of selected waypoint                       |
+| Left Mouse Click               | Add waypoint type selected in navbar at click position |
+| Left Arrow                     | Select previous waypoint in path                       |
+| Right Arrow                    | Select next waypoint in path                           |
+| Delete/Backspace               | Delete selected waypoint                               |
+
+## Selected Waypoint Movement
+
+| Shortcut                  | Description                             |
+| ------------------------- | --------------------------------------- |
+| Left Mouse Drag on Center | Move Waypoint                           |
+| Left Mouse Drag on Edge   | Rotate Waypoint                         |
+| Q                         | Rotate 1/32 turn counterclockwise       |
+| E                         | Rotate 1/32 turn clockwise              |
+| Shift + Rotation Key      | Rotate by 1/8 turn instead of 1/32 turn |
+| W                         | Translate 0.1 m up (+Y)                 |
+| A                         | Translate 0.1 m left (-X)               |
+| S                         | Translate 0.1 m down (-Y)               |
+| D                         | Translate 0.1 m right (+X)              |
+| Shift + Translation Key   | Translate by 0.5 m instead of 0.1 m     |
 
 > NOTE: For all shortcuts with Ctrl/⌘ on macOS, pressing Ctrl is the same command as pressing ⌘

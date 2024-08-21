@@ -159,9 +159,10 @@ export async function handleOpenFileEvent(event: Event<unknown>) {
           uiState.setSaveFileName(saveName);
           uiState.setSaveFileDir(saveDir);
           uiState.setIsGradleProject(adjacent_gradle);
+          const payloadLessContents = { ...payload, contents: "" };
           localStorage.setItem(
             LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
-            JSON.stringify(payload)
+            JSON.stringify(payloadLessContents)
           );
         });
     }

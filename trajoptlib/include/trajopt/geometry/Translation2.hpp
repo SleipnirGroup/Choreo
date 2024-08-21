@@ -9,7 +9,6 @@
 
 #include <sleipnir/autodiff/Variable.hpp>
 #include <sleipnir/autodiff/VariableMatrix.hpp>
-#include <sleipnir/optimization/Constraints.hpp>
 
 #include "trajopt/geometry/Rotation2.hpp"
 

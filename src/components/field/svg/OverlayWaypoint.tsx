@@ -14,7 +14,26 @@ type Coordinates = {
   x: number;
   y: number;
 };
+
 const targetRadius = 0.1;
+
+// Find the side length that makes an equilateral triangle have the same area as
+// a circle.
+//
+//   triangle area = circle area
+//   1/2 bh = πr²
+//
+// An equilateral triangle with side length l has a height of √3/2 l.
+//
+//   1/2 (l)(√3/2 l) = πr²
+//   √3/4 l² = πr²
+//   l² = 4πr²/√3
+//   l = √(4πr²/√3)
+//   l = 2r√(π/√3)
+//   l = 2r√(π√3/3)
+const targetSideLength =
+  2 * targetRadius * Math.sqrt((Math.PI * Math.sqrt(3)) / 3);
+
 const outlineWidth = 0.03;
 class OverlayWaypoint extends Component<Props, State> {
   
@@ -222,6 +241,12 @@ class OverlayWaypoint extends Component<Props, State> {
     const waypoint = this.props.waypoint;
     const boxColorStr = this.getBoxColor();
     const robotConfig = doc.robotConfig;
+
+    const headingPointSideLength =
+      targetSideLength *
+      Math.min(robotConfig.bumperLength.value, robotConfig.bumperWidth.value);
+    const headingPointHeight = (Math.sqrt(3) / 2) * headingPointSideLength;
+
     return (
       <g ref={this.rootRef}>
         <g
@@ -239,18 +264,18 @@ class OverlayWaypoint extends Component<Props, State> {
             ></this.BumperBox>
           }
           {/* Heading drag point */}
-          <circle
-            cx={robotConfig.bumperLength.value / 2}
-            cy={0}
-            r={
-              targetRadius *
-              Math.min(robotConfig.bumperLength.value, robotConfig.bumperWidth.value)
-            }
+          <polygon
+            transform={`translate(${robotConfig.bumperLength.value / 2},0)`}
             id={this.appendIndexID("rotateTarget")}
             fill={boxColorStr}
             strokeWidth={outlineWidth}
             stroke="black"
-          ></circle>
+            points={
+              `${-headingPointHeight / 2},${headingPointSideLength / 2} ` +
+              `${-headingPointHeight / 2},${-headingPointSideLength / 2} ` +
+              `${headingPointHeight / 2},${0} `
+            }
+          ></polygon>
 
           {/* Center Drag Target */}
           {(() => {

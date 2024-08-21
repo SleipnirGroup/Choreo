@@ -34,20 +34,24 @@ jobs:
             libwebkit2gtk-4.0-dev \
             wget
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - uses: actions/setup-node@v3
         with:
           node-version: 18.x
-          cache: "npm"
+          cache: "pnpm"
 
-      - run: npm install prettier
+      - run: pnpm install prettier@3.3.3
 
       - uses: actions/setup-python@v5
         with:
           python-version: 3.12
 
-      - run: pip3 install wpiformat==2024.33
+      - run: pip3 install wpiformat==2024.40
 
-      - run: npm run fmt
+      - run: pnpm run fmt
 
       - run: cargo clippy -- -D warnings
         working-directory: src-tauri
@@ -91,7 +95,7 @@ jobs:
         with:
           python-version: 3.12
 
-      - run: pip3 install wpiformat
+      - run: pip3 install wpiformat==2024.40
 
       - name: Create compile_commands.json
         working-directory: choreolib
@@ -141,7 +145,7 @@ jobs:
           echo "CXX=clang++" >> $GITHUB_ENV
           echo "CXXFLAGS=-stdlib=libc++" >> $GITHUB_ENV
 
-      - run: pip3 install wpiformat
+      - run: pip3 install wpiformat==2024.40
 
       - name: Create compile_commands.json
         run: cmake -B build -S . -DCMAKE_EXPORT_COMPILE_COMMANDS=YES

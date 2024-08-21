@@ -19,7 +19,7 @@ class InputList extends Component<PropsWithChildren<Props>, State> {
     const className =
       styles.InputList +
       " " +
-      (this.props.noCheckbox ?? false ? styles.NoCheckbox : "");
+      ((this.props.noCheckbox ?? false) ? styles.NoCheckbox : "");
     const rowGap = this.props.rowGap ?? 0;
     return (
       <div className={className} style={{ rowGap, ...this.props.style }}>

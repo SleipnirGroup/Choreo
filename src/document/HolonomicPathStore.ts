@@ -750,10 +750,10 @@ export const HolonomicPathStore = types
         const headingWeight = 0.5; // arbitrary
         const distance = Math.sqrt(dx * dx + dy * dy);
         const maxForce = robotConfig.wheelMaxTorque / robotConfig.wheelRadius;
-        const maxAccel = (maxForce * 4) / robotConfig.mass; // times 4 for 4 modules
 
-        // Default to robotConfig's max velocity
+        // Default to robotConfig's max velocity and acceleration
         let maxVel = robotConfig.wheelMaxVelocity * robotConfig.wheelRadius;
+        let maxAccel = (maxForce * 4) / robotConfig.mass; // times 4 for 4 modules
 
         // Iterate through constraints to find applicable "Max Velocity" constraints
         self.constraints.forEach((constraint) => {
@@ -766,6 +766,18 @@ export const HolonomicPathStore = types
               if (i >= startIdx && i < endIdx) {
                 if (constraint.velocity !== undefined) {
                   maxVel = Math.min(maxVel, constraint.velocity);
+                }
+              }
+            }
+          } else if (constraint.type === "MaxAcceleration") {
+            const startIdx = constraint.getStartWaypointIndex();
+            const endIdx = constraint.getEndWaypointIndex();
+
+            // Check if current waypoint "i" is within the scope of this constraint
+            if (startIdx !== undefined && endIdx !== undefined) {
+              if (i >= startIdx && i < endIdx) {
+                if (constraint.acceleration !== undefined) {
+                  maxAccel = Math.min(maxAccel, constraint.acceleration);
                 }
               }
             }
