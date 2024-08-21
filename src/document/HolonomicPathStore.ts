@@ -798,22 +798,33 @@ export const HolonomicPathStore = types
           }
         });
 
+        // anti tunnelling used as ceiling of dt
+        const minWidth =
+          robotConfig.trackWidth < robotConfig.wheelbase
+            ? robotConfig.trackWidth
+            : robotConfig.wheelbase;
+        const dtCeiling =
+          minWidth / (robotConfig.wheelRadius * robotConfig.wheelMaxVelocity);
         const distanceAtCruise = distance - (maxVel * maxVel) / maxAccel;
+        let totalTime;
         if (distanceAtCruise < 0) {
           // triangle
-          let totalTime = 2 * (Math.sqrt(distance * maxAccel) / maxAccel);
+          totalTime = 2 * (Math.sqrt(distance * maxAccel) / maxAccel);
           totalTime += headingWeight * Math.abs(dtheta);
-          self.waypoints
-            .at(i)
-            ?.setControlIntervalCount(Math.ceil(totalTime / 0.1));
+          // self.waypoints
+          //   .at(i)
+          //   ?.setControlIntervalCount(Math.ceil(totalTime / 0.1));
         } else {
           // trapezoid
-          let totalTime = distance / maxVel + maxVel / maxAccel;
+          totalTime = distance / maxVel + maxVel / maxAccel;
           totalTime += headingWeight * Math.abs(dtheta);
-          self.waypoints
-            .at(i)
-            ?.setControlIntervalCount(Math.ceil(totalTime / 0.1));
+          // self.waypoints
+          //   .at(i)
+          //   ?.setControlIntervalCount(Math.ceil(totalTime / 0.1));
         }
+        const dt = Math.ceil(totalTime / 0.1);
+        self.waypoints.at(i)?.setControlIntervalCount(Math.max(dt, dtCeiling));
+        console.log("dtCeiling: %d - dt: %d\n", dtCeiling, dt);
       }
     };
   })
