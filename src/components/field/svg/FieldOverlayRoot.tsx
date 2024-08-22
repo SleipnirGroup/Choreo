@@ -16,7 +16,7 @@ import FieldAxisLines from "./FieldAxisLines";
 import FieldObstacle from "./FieldObstacles";
 import { v4 as uuidv4 } from "uuid";
 import { CircularObstacleStore } from "../../../document/CircularObstacleStore";
-import FieldImage24 from "./fields/FieldImage24";
+import FieldImage2024 from "./fields/FieldImage2024";
 import FieldEventMarkers from "./FieldEventMarkers";
 import FieldSamples from "./FieldSamples";
 import FieldGeneratedWaypoints from "./FieldGeneratedWaypoints";
@@ -197,8 +197,8 @@ class FieldOverlayRoot extends Component<Props, State> {
     this.context.model.uiState.setFieldScalingFactor(factor);
   }
   render() {
-    this.canvasHeightMeters = FieldImage24.WIDTH_M + 1;
-    this.canvasWidthMeters = FieldImage24.LENGTH_M + 1;
+    this.canvasHeightMeters = FieldImage2024.WIDTH_M + 1;
+    this.canvasWidthMeters = FieldImage2024.LENGTH_M + 1;
     const layers = this.context.model.uiState.layers;
     const constraintSelected =
       this.context.model.uiState.isConstraintSelected();
@@ -234,8 +234,7 @@ class FieldOverlayRoot extends Component<Props, State> {
           {/* Background */}
           {layers[ViewLayers.Field] && (
             <>
-              {/* <JSONFieldImage24 opacity={10} imageHeightPx={1556} imageWidthPx={3112}></JSONFieldImage24> */}
-              <FieldImage24 />
+              <FieldImage2024 />
             </>
           )}
           {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
