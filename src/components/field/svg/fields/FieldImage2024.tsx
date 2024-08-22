@@ -7,7 +7,7 @@ type State = object;
 export const WIDTH_M = 8.21055;
 export const LENGTH_M = 16.54175;
 
-export default class FieldImage23 extends Component<Props, State> {
+export default class FieldImage2024 extends Component<Props, State> {
   static WIDTH_M = WIDTH_M;
   static LENGTH_M = LENGTH_M;
   state = {};
