@@ -769,7 +769,7 @@ export const HolonomicPathStore = types
         // Default to robotConfig's max velocity and acceleration
         let maxVel = robotConfig.wheelMaxVelocity * robotConfig.wheelRadius;
         let maxAccel = (maxForce * 4) / robotConfig.mass; // times 4 for 4 modules
-        let maxAngVel =
+        const maxAngVel =
           maxVel /
           Math.hypot(robotConfig.trackWidth / 2.0, robotConfig.wheelbase / 2.0);
         // use peak angVel and dtheta to calculate the time
