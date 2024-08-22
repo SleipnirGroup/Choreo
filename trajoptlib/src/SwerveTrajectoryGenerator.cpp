@@ -121,14 +121,23 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
 
     problem.SubjectTo(dt_sgmt >= 0);
 
-    // have to use Ns and initialGuess to find the dx, dy between wpts
+    // Use initialGuess and Ns to find the dx, dy, dtheta between wpts
     auto x_0 = initialGuess.x.at(sgmtIndex);
     auto x_1 = initialGuess.x.at(sgmtIndex + Ns.at(sgmtIndex));
     auto y_0 = initialGuess.y.at(sgmtIndex);
     auto y_1 = initialGuess.y.at(sgmtIndex + Ns.at(sgmtIndex));
     auto dx = x_1 - x_0;
     auto dy = y_1 - y_0;
-    auto dist = std::sqrt(dx * dx + dy * dy);
+    auto dist = std::hypot(dx, dy);
+    auto dtheta = std::atan2(
+        initialGuess.thetacos.at(sgmtIndex) *
+                initialGuess.thetasin.at(sgmtIndex + Ns.at(sgmtIndex)) -
+            initialGuess.thetasin.at(sgmtIndex) *
+                initialGuess.thetacos.at(sgmtIndex + Ns.at(sgmtIndex)),
+        initialGuess.thetacos.at(sgmtIndex) *
+                initialGuess.thetasin.at(sgmtIndex + Ns.at(sgmtIndex)) +
+            initialGuess.thetasin.at(sgmtIndex) *
+                initialGuess.thetacos.at(sgmtIndex + Ns.at(sgmtIndex)));
     const auto maxLinearVel =
         path.drivetrain.wheelRadius * path.drivetrain.wheelMaxAngularVelocity;
     const double maxForce =
@@ -140,13 +149,13 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     if (distanceAtCruise < 0) {
       // triangle
       sgmtTime = 2 * (std::sqrt(dist * maxAccel) / maxAccel);
-      // not taking thete into account...
     } else {
       // trapezoid
       sgmtTime = dist / maxLinearVel + maxLinearVel / maxAccel;
-      // no heading....
     }
-
+    // 0.5 is an arbitrary weight given to change in theta. 
+    // Pulled from choreo guessControlIntervalCount(...)
+    sgmtTime += 0.5 * dtheta;
     std::printf(
         "initial values for decision variable dt: %f - totalSgmtTime: %f",
         sgmtTime / N_sgmt, sgmtTime);
