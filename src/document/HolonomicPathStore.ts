@@ -758,62 +758,63 @@ export const HolonomicPathStore = types
       guessControlIntervalCount(i: number, robotConfig: IRobotConfigStore) {
         const dx = self.waypoints.at(i + 1)!.x - self.waypoints.at(i)!.x;
         const dy = self.waypoints.at(i + 1)!.y - self.waypoints.at(i)!.y;
-        const dtheta = angleModulus(
-          self.waypoints.at(i + 1)!.heading - self.waypoints.at(i)!.heading
+        const dtheta = Math.abs(
+          angleModulus(
+            self.waypoints.at(i + 1)!.heading - self.waypoints.at(i)!.heading
+          )
         );
-        const headingWeight = 0.5; // arbitrary
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        const distance = Math.hypot(dx, dy);
         const maxForce = robotConfig.wheelMaxTorque / robotConfig.wheelRadius;
 
         // Default to robotConfig's max velocity and acceleration
         let maxVel = robotConfig.wheelMaxVelocity * robotConfig.wheelRadius;
         let maxAccel = (maxForce * 4) / robotConfig.mass; // times 4 for 4 modules
+        let maxAngVel =
+          maxVel /
+          Math.hypot(robotConfig.trackWidth / 2.0, robotConfig.wheelbase / 2.0);
+        // use peak angVel and dtheta to calculate the time
+        // for theta to travel in a cubic hermite spline
+        const time = (1.5 * dtheta) / maxAngVel;
+        maxVel = Math.min(distance / time, maxVel);
 
         // Iterate through constraints to find applicable "Max Velocity" constraints
         self.constraints.forEach((constraint) => {
-          if (constraint.type === "MaxVelocity") {
-            const startIdx = constraint.getStartWaypointIndex();
-            const endIdx = constraint.getEndWaypointIndex();
+          const startIdx = constraint.getStartWaypointIndex();
+          const endIdx = constraint.getEndWaypointIndex();
 
-            // Check if current waypoint "i" is within the scope of this constraint
-            if (startIdx !== undefined && endIdx !== undefined) {
-              if (i >= startIdx && i < endIdx) {
+          // Check if current waypoint "i" is within the scope of this constraint
+          if (startIdx !== undefined && endIdx !== undefined) {
+            if (i >= startIdx && i < endIdx) {
+              if (constraint.type === "MaxVelocity") {
                 if (constraint.velocity !== undefined) {
                   maxVel = Math.min(maxVel, constraint.velocity);
                 }
-              }
-            }
-          } else if (constraint.type === "MaxAcceleration") {
-            const startIdx = constraint.getStartWaypointIndex();
-            const endIdx = constraint.getEndWaypointIndex();
-
-            // Check if current waypoint "i" is within the scope of this constraint
-            if (startIdx !== undefined && endIdx !== undefined) {
-              if (i >= startIdx && i < endIdx) {
+              } else if (constraint.type === "MaxAcceleration") {
                 if (constraint.acceleration !== undefined) {
                   maxAccel = Math.min(maxAccel, constraint.acceleration);
+                }
+              } else if (constraint.type === "MaxAngularVelocity") {
+                if (constraint.angular_velocity !== undefined) {
+                  const time = (1.5 * dtheta) / constraint.angular_velocity;
+                  maxVel = Math.min(distance / time, maxVel);
                 }
               }
             }
           }
         });
 
+        let totalTime;
         const distanceAtCruise = distance - (maxVel * maxVel) / maxAccel;
         if (distanceAtCruise < 0) {
           // triangle
-          let totalTime = 2 * (Math.sqrt(distance * maxAccel) / maxAccel);
-          totalTime += headingWeight * Math.abs(dtheta);
-          self.waypoints
-            .at(i)
-            ?.setControlIntervalCount(Math.ceil(totalTime / 0.1));
+          totalTime = 2 * (Math.sqrt(distance * maxAccel) / maxAccel);
         } else {
           // trapezoid
-          let totalTime = distance / maxVel + maxVel / maxAccel;
-          totalTime += headingWeight * Math.abs(dtheta);
-          self.waypoints
-            .at(i)
-            ?.setControlIntervalCount(Math.ceil(totalTime / 0.1));
+          totalTime = distance / maxVel + maxVel / maxAccel;
         }
+        self.waypoints
+          .at(i)
+          ?.setControlIntervalCount(Math.ceil(totalTime / 0.1));
       }
     };
   })
