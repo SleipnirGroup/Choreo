@@ -10,12 +10,12 @@ pub fn expr(ex: &str, val: f64) -> Expr {
 }
 impl Expr {
     pub fn snapshot(&self) -> f64 {
-        return self.1;
+        self.1
     }
 }
 impl AsRef<f64> for Expr {
     fn as_ref(&self) -> &f64 {
-        return &(self.1);
+        &(self.1)
     }
 }
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
@@ -114,11 +114,11 @@ impl RobotConfig<Expr> {
     }
 }
 impl RobotConfig<f64> {
-    pub fn wheelMaxTorque(&self) -> f64 {
-        return self.tmax * self.gearing;
+    pub fn wheel_max_torque(&self) -> f64 {
+        self.tmax * self.gearing
     }
-    pub fn wheelMaxVelocity(&self) -> f64 {
-        return (self.vmax / self.gearing) * 2.0 * PI / 60.0;
+    pub fn wheel_max_velocity(&self) -> f64 {
+        (self.vmax / self.gearing) * 2.0 * PI / 60.0
     }
 }
 #[derive(Debug, Serialize, Deserialize)]
@@ -130,6 +130,7 @@ pub struct Project {
 
 // traj file
 #[derive(Serialize, Deserialize, Clone, Copy)]
+#[allow(non_snake_case)]
 pub struct Waypoint<T> {
     pub x: T,
     pub y: T,
@@ -167,22 +168,22 @@ impl WaypointID {
     pub fn to_idx(&self, count: &usize) -> Option<usize> {
         match self {
             WaypointID::Idx(idx) => {
-                if (*idx < *count) {
-                    Some(idx.clone())
+                if *idx < *count {
+                    Some(*idx)
                 } else {
                     None
                 }
             }
             WaypointID::First => {
-                if (*count > 0) {
-                    Some(1)
+                if *count > 0 {
+                    Some(0)
                 } else {
                     None
                 }
             }
             WaypointID::Last => {
-                if (*count > 0) {
-                    Some(count.clone())
+                if *count > 0 {
+                    Some(*count-1)
                 } else {
                     None
                 }
@@ -218,14 +219,14 @@ pub enum ConstraintData<T> {
 impl<T> ConstraintData<T> {
     pub fn scope(&self) -> ConstraintType {
         match self {
-            ConstraintData::MaxVelocity { max } => ConstraintType::Both,
+            ConstraintData::MaxVelocity { max: _ } => ConstraintType::Both,
             ConstraintData::PointAt {
-                x,
-                y,
-                tolerance,
-                flip,
+                x: _,
+                y: _,
+                tolerance: _,
+                flip: _,
             } => ConstraintType::Both,
-            ConstraintData::MaxAcceleration { max } => ConstraintType::Both,
+            ConstraintData::MaxAcceleration { max: _ } => ConstraintType::Both,
             ConstraintData::StopPoint {} => ConstraintType::Waypoint,
         }
     }
@@ -271,11 +272,11 @@ pub struct ConstraintIDX<T> {
 
 impl Constraint<Expr> {
     pub fn snapshot(&self) -> Constraint<f64> {
-        return Constraint::<f64> {
+        Constraint::<f64> {
             from: self.from,
             to: self.to,
             data: self.data.snapshot(),
-        };
+        }
     }
 }
 

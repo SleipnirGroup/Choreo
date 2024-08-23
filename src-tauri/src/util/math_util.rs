@@ -1,26 +1,26 @@
-use std::{f64::consts::PI, num};
+use std::f64::consts::PI;
 
 /**
  * A port of WPILib's MathUtil.inputModulus
  */
-pub fn inputModulus(input: f64, maximumInput: f64, minimumInput: f64) -> f64 {
+pub fn input_modulus(input: f64, maximum_input: f64, minimum_input: f64) -> f64 {
     let mut val = input;
-    let modulus = maximumInput - minimumInput;
+    let modulus = maximum_input - minimum_input;
 
     // Wrap input if it's above the maximum input
-    let numMax = ((val - minimumInput) / modulus).trunc();
-    val -= numMax * modulus;
+    let num_max = ((val - minimum_input) / modulus).trunc();
+    val -= num_max * modulus;
 
     // Wrap input if it's below the minimum input
-    let numMin = ((val - maximumInput) / modulus).trunc();
-    val -= numMin * modulus;
+    let num_min = ((val - maximum_input) / modulus).trunc();
+    val -= num_min * modulus;
 
-    return input;
+    val
 }
 
 /**
  * A port of WPILib's MathUtil.angleModulus
  */
 pub fn angle_modulus(input: f64) -> f64 {
-    return inputModulus(input, PI, -PI);
+    input_modulus(input, PI, -PI)
 }

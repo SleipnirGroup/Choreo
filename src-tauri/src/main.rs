@@ -20,7 +20,7 @@ use tauri::{
     api::{dialog::blocking::FileDialogBuilder, file},
     Manager,
 };
-use trajoptlib::{Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory, Translation2d};
+use trajoptlib::{Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory};
 
 #[derive(Clone, serde::Serialize, Debug)]
 struct OpenFileEventPayload<'a> {
@@ -688,7 +688,7 @@ fn postprocess(result: SwerveTrajectory, traj: Traj, snapshot: ChoreoPath<f64>) 
                 .map(|slice| {
                     // convert into samples
                     slice
-                        .into_iter()
+                        .iter()
                         .map(|swerve_sample| {
                             let mut out = Sample {
                                 t: swerve_sample.timestamp,
@@ -704,8 +704,8 @@ fn postprocess(result: SwerveTrajectory, traj: Traj, snapshot: ChoreoPath<f64>) 
                             for i in 0..4 {
                                 let x = swerve_sample.module_forces_x.get(i);
                                 let y = swerve_sample.module_forces_y.get(i);
-                                out.fx[i] = x.unwrap_or(&0.0).clone();
-                                out.fy[i] = (y.unwrap_or(&0.0)).clone();
+                                out.fx[i] = *x.unwrap_or(&0.0);
+                                out.fy[i] = *(y.unwrap_or(&0.0));
                             }
                             out
                         })
@@ -737,7 +737,7 @@ fn main() {
     tauri::Builder::default()
         .setup(|app| {
             tauri::async_runtime::spawn(async {
-                let project = Project {
+                let _project = Project {
                     version: "v2025.0.0".to_string(),
                     variables: Variables {
                         expressions: HashMap::new(),
@@ -780,7 +780,7 @@ fn main() {
                 // let stringified = serde_json::to_string::<Project>(&project);
                 // println!("{:?}", stringified.unwrap());
 
-                let traj = Traj {
+                let _traj = Traj {
                     name: "Simple Auto".to_string(),
                     version: "v2025.0.0".to_string(),
                     path: ChoreoPath {
