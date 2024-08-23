@@ -35,7 +35,7 @@ export class Field extends Component<Props, State> {
     const activePathUUID = doc.pathlist.activePathUUID;
     let indexIfWaypoint = -1;
     if (selectedSidebar !== undefined && "heading" in selectedSidebar) {
-      indexIfWaypoint = activePath.waypoints.findIndex(
+      indexIfWaypoint = activePath.path.waypoints.findIndex(
         (point: IHolonomicWaypointStore) =>
           point.uuid == (selectedSidebar as IHolonomicWaypointStore)?.uuid
       );
@@ -54,7 +54,7 @@ export class Field extends Component<Props, State> {
           )}
         {selectedSidebar !== undefined &&
           "type" in selectedSidebar &&
-          activePath.constraints.find(
+          activePath.path.constraints.find(
             (constraint) =>
               constraint.uuid == (selectedSidebar as IConstraintStore)!.uuid
           ) && (
@@ -64,7 +64,7 @@ export class Field extends Component<Props, State> {
           )}
         {selectedSidebar !== undefined &&
           "radius" in selectedSidebar &&
-          activePath.obstacles.find(
+          activePath.path.obstacles.find(
             (obstacle) =>
               obstacle.uuid == (selectedSidebar as ICircularObstacleStore)!.uuid
           ) && (
@@ -74,7 +74,7 @@ export class Field extends Component<Props, State> {
           )}
         {selectedSidebar !== undefined &&
           "offset" in selectedSidebar &&
-          activePath.eventMarkers.find(
+          activePath.traj.markers.find(
             (marker) =>
               marker.uuid == (selectedSidebar as IEventMarkerStore)!.uuid
           ) && (
@@ -88,7 +88,7 @@ export class Field extends Component<Props, State> {
           disableInteractive
           placement="top-start"
           title={
-            activePath.generating
+            activePath.ui.generating
               ? "Cancel All"
               : activePath.canGenerate()
                 ? "Generate Path"
@@ -120,7 +120,7 @@ export class Field extends Component<Props, State> {
                 borderRadius: "50%",
                 boxShadow: "3px",
                 marginInline: 0,
-                zIndex: activePath.generating ? 10 : -1,
+                zIndex: activePath.ui.generating ? 10 : -1,
                 backgroundColor: "red",
                 "&:hover": {
                   backgroundColor: "darkred"
@@ -160,7 +160,7 @@ export class Field extends Component<Props, State> {
             </IconButton>
           </Box>
         </Tooltip>
-        {activePath.generating && (
+        {activePath.ui.generating && (
           <CircularProgress
             size={48 * 1.3}
             sx={{

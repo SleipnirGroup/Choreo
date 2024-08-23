@@ -61,7 +61,7 @@ class WaypointPanel extends Component<Props, State> {
             ></ExpressionInput>
             <ExpressionInput
               title="θ"
-              enabled={waypoint.headingConstrained}
+              enabled={waypoint.fixHeading}
               maxWidthCharacters={8}
               number={waypoint.heading}
               //setNumber={(heading) => waypoint!.setHeading(heading)}
@@ -75,7 +75,7 @@ class WaypointPanel extends Component<Props, State> {
               enabled={true}
               setEnabled={(_) => {}}
               maxWidthCharacters={8}
-              number={waypoint.controlIntervalCount}
+              number={waypoint.intervals}
               roundingPrecision={0}
               setNumber={(_) => {}}
             ></Input>

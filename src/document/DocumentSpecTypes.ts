@@ -189,7 +189,7 @@ export const VERSIONS = {
     up: (document: any): v0_2 => {
       document = document as v0_1_2;
       const robotConfiguration: v0_2_Config = {
-        motorMaxTorque: ROBOT_CONFIG_DEFAULTS.motorMaxTorque,
+        tmax: ROBOT_CONFIG_DEFAULTS.tmax,
         motorMaxVelocity: ROBOT_CONFIG_DEFAULTS.motorMaxVelocity,
         gearing: ROBOT_CONFIG_DEFAULTS.gearing,
         ...document.robotConfiguration

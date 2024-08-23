@@ -20,7 +20,7 @@ class RobotConfigPanel extends Component<Props, State> {
           title="Wheel Radius"
           enabled={true}
           roundingPrecision={3}
-          number={config.wheelRadius}
+          number={config.radius}
           maxWidthCharacters={8}
           titleTooltip="Radius of swerve wheels"
         />
@@ -36,7 +36,7 @@ class RobotConfigPanel extends Component<Props, State> {
           title="Motor Max Speed"
           enabled={true}
           roundingPrecision={0}
-          number={config.motorMaxVelocity}
+          number={config.vmax}
           maxWidthCharacters={8}
           titleTooltip="Actual motor speed at 12V"
         />
@@ -45,7 +45,7 @@ class RobotConfigPanel extends Component<Props, State> {
           title="Motor Max Torque"
           enabled={true}
           roundingPrecision={3}
-          number={config.motorMaxTorque}
+          number={config.tmax}
           maxWidthCharacters={8}
           titleTooltip="Motor torque as current-limited"
         />

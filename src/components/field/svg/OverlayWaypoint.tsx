@@ -145,7 +145,7 @@ class OverlayWaypoint extends Component<Props, State> {
     //d3.select(`#group`).attr('transform', `rotate(${ this.r.angle })`)
   }
   selectWaypoint() {
-    doc.pathlist.activePath.selectOnly(
+    doc.pathlist.activePath.path.selectOnly(
       this.props.index
     );
   }
@@ -155,7 +155,7 @@ class OverlayWaypoint extends Component<Props, State> {
         `#waypointGroup${this.props.index}`
       ).on("contextmenu", (e) => {
         console.log("selecting waypoint: " + this.props.index);
-        doc.pathlist.activePath.selectOnly(
+        doc.pathlist.activePath.path.selectOnly(
           this.props.index
         );
         uiState.setContextMenuMouseSelection(e);
@@ -163,7 +163,7 @@ class OverlayWaypoint extends Component<Props, State> {
           this.props.index
         );
         uiState.setContextMenuWaypointType(
-          doc.pathlist.activePath.waypoints[
+          doc.pathlist.activePath.path.waypoints[
             this.props.index
           ].type
         );
@@ -220,7 +220,7 @@ class OverlayWaypoint extends Component<Props, State> {
       : "var(--accent-purple)";
   }
   getDragTargetColor(): string {
-    const waypoints = doc.pathlist.activePath.waypoints;
+    const waypoints = doc.pathlist.activePath.path.waypoints;
     let color = "var(--accent-purple)";
     if (waypoints.length >= 2) {
       if (this.props.index === 0) {
@@ -244,7 +244,7 @@ class OverlayWaypoint extends Component<Props, State> {
 
     const headingPointSideLength =
       targetSideLength *
-      Math.min(robotConfig.bumperLength.value, robotConfig.bumperWidth.value);
+      Math.min(robotConfig.bumper.length, robotConfig.bumper.width);
     const headingPointHeight = (Math.sqrt(3) / 2) * headingPointSideLength;
 
     return (
@@ -265,7 +265,7 @@ class OverlayWaypoint extends Component<Props, State> {
           }
           {/* Heading drag point */}
           <polygon
-            transform={`translate(${robotConfig.bumperLength.value / 2},0)`}
+            transform={`translate(${robotConfig.bumper.length / 2},0)`}
             id={this.appendIndexID("rotateTarget")}
             fill={boxColorStr}
             strokeWidth={outlineWidth}
@@ -293,8 +293,8 @@ class OverlayWaypoint extends Component<Props, State> {
                       targetRadius *
                       1.5 *
                       Math.min(
-                        robotConfig.bumperLength.value,
-                        robotConfig.bumperWidth.value
+                        robotConfig.bumper.width,
+                        robotConfig.bumper.length
                       )
                     }
                     id={this.appendIndexID("dragTarget")}
@@ -318,7 +318,7 @@ class OverlayWaypoint extends Component<Props, State> {
                 // Question mark icon's raw svg
                 const boxSize =
                   ((0.4 * 24) / 20) *
-                  Math.min(robotConfig.bumperLength.value, robotConfig.bumperWidth.value);
+                  Math.min(robotConfig.bumper.length, robotConfig.bumper.width);
                 const sx = 1;
                 const cx = 12;
                 const cy = 12;

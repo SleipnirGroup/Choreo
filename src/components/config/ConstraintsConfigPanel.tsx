@@ -23,18 +23,18 @@ class ConstraintsConfigPanel extends Component<Props, State> {
     const isSegmentConstraint = definition.sgmtScope;
     let startIndex = (this.props.constraint.getStartWaypointIndex() ?? 0) + 1;
     let endIndex = (this.props.constraint.getEndWaypointIndex() ?? 0) + 1;
-    const points = this.props.constraint.getPath().waypoints;
+    const points = this.props.constraint.getPath().path.waypoints;
     const pointcount = points.length;
-    if (this.props.constraint.getSortedScope()[0] === "first") {
+    if (this.props.constraint.from === "first") {
       startIndex = 0;
     }
-    if (this.props.constraint.getSortedScope()[0] === "last") {
+    if (this.props.constraint.from === "last") {
       startIndex = pointcount + 1;
     }
-    if (this.props.constraint.getSortedScope()[1] === "last") {
+    if (this.props.constraint.to === "last") {
       endIndex = pointcount + 1;
     }
-    if (this.props.constraint.getSortedScope()[1] === "first") {
+    if (this.props.constraint.to === "first") {
       endIndex = 0;
     }
 
@@ -51,8 +51,8 @@ class ConstraintsConfigPanel extends Component<Props, State> {
           endIndex={endIndex}
           setRange={(selection) => {
             const lastIdx = pointcount + 1;
-            this.props.constraint.setScope(
-              selection.map((idx) => {
+            
+              const scope =selection.map((idx) => {
                 if (idx == 0) {
                   return "first";
                 } else if (idx == lastIdx) {
@@ -60,8 +60,9 @@ class ConstraintsConfigPanel extends Component<Props, State> {
                 } else {
                   return { uuid: points[idx - 1]?.uuid ?? "" };
                 }
-              })
-            );
+              });
+            this.props.constraint.setFrom(scope[0]);
+            this.props.constraint.setTo(scope[1])
           }}
           points={points}
         ></ScopeSlider>

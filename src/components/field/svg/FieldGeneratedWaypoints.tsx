@@ -16,16 +16,14 @@ class FieldSamples extends Component<Props, State> {
     const path = doc.pathlist.activePath;
     return (
       <>
-        {path.generatedWaypoints.map((point, idx) => {
+        {path.snapshot.waypoints.map((point, idx) => {
           let color = "white";
           if (idx === 0) {
             color = "green";
-          } else if (idx === path.generatedWaypoints.length - 1) {
+          } else if (idx === path.snapshot.waypoints.length - 1) {
             color = "red";
           }
-          if (point.isInitialGuess) {
-            return <></>; // Guess
-          } else if (point.headingConstrained) {
+          if (point.fixHeading) {
             return (
               <g
                 transform={` translate(${point.x}, ${point.y}) rotate(${
@@ -45,7 +43,7 @@ class FieldSamples extends Component<Props, State> {
                 ></rect>
               </g> // Full
             );
-          } else if (point.translationConstrained) {
+          } else if (point.fixTranslation) {
             return (
               <circle cx={point.x} cy={point.y} r={0.08} fill={color}></circle>
             );

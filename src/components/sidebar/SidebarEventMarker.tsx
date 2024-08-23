@@ -8,8 +8,10 @@ import { PriorityHigh, Room } from "@mui/icons-material";
 import { Tooltip, IconButton } from "@mui/material";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
 import { getParent } from "mobx-state-tree";
-import { IHolonomicPathStore } from "../../document/HolonomicPathStore";
+import { IHolonomicPathStore } from "../../document/path/HolonomicPathStore";
 import { WaypointID } from "../../document/ConstraintStore";
+import { IChoreoPathStore } from "../../document/path/ChoreoPathStore";
+import { IChoreoTrajStore } from "../../document/path/ChoreoTrajStore";
 
 type Props = {
   marker: IEventMarkerStore;
@@ -24,13 +26,15 @@ class SidebarMarker extends Component<Props, State> {
   id: number = 0;
   state = { selected: false };
 
-  waypointIDToText(id: WaypointID) {
+  waypointIDToText(id: WaypointID | undefined) {
+    if (id == undefined) return "?";
     if (id == "first") return "Start";
     if (id == "last") return "End";
     return (
       getParent<IHolonomicPathStore>(
+      getParent<IChoreoTrajStore>(
         getParent<IEventMarkerStore[]>(this.props.marker)
-      ).findUUIDIndex(id.uuid) + 1
+      )).path.findUUIDIndex(id.uuid) + 1
     );
   }
 
@@ -89,8 +93,8 @@ class SidebarMarker extends Component<Props, State> {
             </span>
             <span style={{}}>
               (
-              {(this.props.marker.offset < 0 ? "" : "+") +
-                this.props.marker.offset.toFixed(2) +
+              {(this.props.marker.offset.value < 0 ? "" : "+") +
+                this.props.marker.offset.value.toFixed(2) +
                 " s"}
               )
             </span>
@@ -101,7 +105,7 @@ class SidebarMarker extends Component<Props, State> {
             className={styles.SidebarRightIcon}
             onClick={(e) => {
               e.stopPropagation();
-              doc.pathlist.activePath.deleteMarkerUUID(
+              doc.pathlist.activePath.traj.deleteMarkerUUID(
                 marker?.uuid || ""
               );
             }}

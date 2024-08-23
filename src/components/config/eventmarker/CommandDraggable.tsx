@@ -17,6 +17,8 @@ import { IconButton, MenuItem, Select, TextField } from "@mui/material";
 import { Add, Delete, DragHandle } from "@mui/icons-material";
 import InputList from "../../input/InputList";
 import Input from "../../input/Input";
+import ExpressionInputList from "../../input/ExpressionInputList";
+import ExpressionInput from "../../input/ExpressionInput";
 
 type Props = {
   command: ICommandStore;
@@ -122,16 +124,13 @@ class CommandDraggable extends Component<Props, State> {
             ></TextField>
           )}
           {command.type === "wait" && (
-            <InputList noCheckbox style={{ flexGrow: 1 }}>
-              <Input
+            <ExpressionInputList style={{ flexGrow: 1 }}>
+              <ExpressionInput
                 title={""}
-                suffix={"s"}
                 enabled={true}
                 number={command.time}
-                setNumber={command.setTime}
-                setEnabled={() => {}}
-              ></Input>
-            </InputList>
+              ></ExpressionInput>
+            </ExpressionInputList>
           )}
           {(command.isGroup() || !isRoot) && (
             <span style={{ flexGrow: 1 }}></span>

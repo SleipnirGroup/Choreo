@@ -14,12 +14,12 @@ class FieldSamples extends Component<Props, State> {
   LINE_LENGTH = 0.15;
   render() {
     const path = doc.pathlist.activePath;
-    const trajectory = path.generating
-      ? path.generationProgress
-      : path.generated;
+    const trajectory = path.ui.generating
+      ? path.ui.generationProgress
+      : path.traj.fullTraj;
     // preserve the acccess of generationIterationNumber
     // to trigger rerenders when mutating the in-progress trajectory in place
-    const _ = path.generationIterationNumber;
+    const _ = path.ui.generationIterationNumber;
     return (
       <>
         {trajectory.map((point) => (

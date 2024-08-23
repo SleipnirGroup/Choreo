@@ -10,11 +10,14 @@ import {
   getEnv
 } from "mobx-state-tree";
 import { moveItem } from "mobx-utils";
-import { WaypointID, WaypointScope } from "./ConstraintStore";
-import { SavedCommand } from "./DocumentSpecTypes";
-import { IHolonomicPathStore } from "./HolonomicPathStore";
+import { WaypointScope } from "./ConstraintStore";
+import { IHolonomicPathStore } from "./path/HolonomicPathStore";
 import { v4 as uuidv4 } from "uuid";
 import { uiState } from "./DocumentManager";
+import {Command, Expr} from "./2025/DocumentTypes"
+import { ExpressionStore } from "./ExpressionStore";
+import { IChoreoTrajStore } from "./path/ChoreoTrajStore";
+import { WaypointID } from "./ConstraintDefinitions";
 
 export type CommandType =
   | "sequential"
@@ -44,7 +47,7 @@ export const CommandStore = types
       types.literal("named")
     ),
     commands: types.array(types.late((): IAnyType => CommandStore)),
-    time: types.number,
+    time: ExpressionStore,
     name: types.maybeNull(types.string),
     uuid: types.identifier
   })
@@ -57,54 +60,50 @@ export const CommandStore = types
         self.type === "sequential"
       );
     },
-    asSavedCommand(): SavedCommand {
-      if (self.type === "named") {
-        return {
-          type: "named",
-          data: {
-            name: self.name
-          }
-        };
-      } else if (self.type === "wait") {
-        return {
-          type: "wait",
-          data: {
-            waitTime: self.time
-          }
-        };
-      } else {
-        return {
-          type: self.type,
-          data: {
-            commands: self.commands.map((c) => c.asSavedCommand())
-          }
-        };
+    serialize(): Command<Expr> {
+
+        if (self.type === "named") {
+          return {
+            type: "named",
+            data: {
+              name: self.name
+            }
+          };
+        } else if (self.type === "wait") {
+          return {
+            type: "wait",
+            data: {
+              waitTime: self.time.serialize()
+            }
+          };
+        } else {
+          return {
+            type: self.type,
+            data: {
+              commands: self.commands.map((c) => c.asSavedCommand())
+            }
+          };
+        }
       }
-    }
+    
   }))
   .actions((self) => ({
-    fromSavedCommand(saved: SavedCommand) {
+    deserialize(ser: Command<Expr>) {
       self.commands.clear();
       self.name = "";
-      self.time = 0;
-      self.type = saved.type;
-      if (saved.type === "named") {
-        self.name = saved.data.name;
-      } else if (saved.type === "wait") {
-        self.time = saved.data.waitTime;
+      self.type = ser.type;
+      if (ser.type === "named") {
+        self.name = ser.data.name;
+      } else if (ser.type === "wait") {
+        self.time.deserialize(ser.data.waitTime);
       } else {
-        saved.data.commands.forEach((s) => {
-          const command = CommandStore.create({
-            type: "wait",
-            time: 0,
-            uuid: uuidv4()
-          });
-          command.fromSavedCommand(s);
+        ser.data.commands.forEach((c) => {
+          const command:ICommandStore = getEnv(self).create.CommandStore(c);
           self.commands.push(command);
         });
       }
     },
-    reorder(startIndex: number, endIndex: number) {
+    reorderCommands(startIndex: number, endIndex: number) {
       moveItem(self.commands, startIndex, endIndex);
     },
     setType(type: CommandType) {
@@ -113,19 +112,17 @@ export const CommandStore = types
     setName(name: string) {
       self.name = name;
     },
-    setTime(waitTime: number) {
-      self.time = Math.max(0, waitTime);
-    },
     addSubCommand() {
-      const newCommand = CommandStore.create({
+      // TODO add subcommand
+      const newCommand = getEnv(self).create.CommandStore({
         type: "named",
         uuid: uuidv4(),
-        time: 0,
+        time: ["0 s", 0],
         name: "",
         commands: []
       });
       self.commands.push(newCommand);
-      return newCommand;
+      return undefined;
     },
     pushCommand(subcommand: ICommandStore) {
       self.commands.push(subcommand);
@@ -147,7 +144,7 @@ export const EventMarkerStore = types
     name: types.string,
     target: types.maybe(WaypointScope),
     trajTargetIndex: types.maybe(types.number),
-    offset: types.number,
+    offset: ExpressionStore,
     command: CommandStore,
     uuid: types.identifier
   })
@@ -172,14 +169,14 @@ export const EventMarkerStore = types
     },
     getPath(): IHolonomicPathStore {
       const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
+        getParent<IChoreoTrajStore>(
         getParent<IEventMarkerStore[]>(self)
+        )
       );
       return path;
     },
     getTargetIndex(): number | undefined {
-      const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
-        getParent<IEventMarkerStore[]>(self)
-      );
+      const path: IHolonomicPathStore = this.getPath();
       if (path === undefined) {
         return undefined;
       }
@@ -187,24 +184,24 @@ export const EventMarkerStore = types
       if (startScope === undefined) {
         return undefined;
       }
-      const waypoint = path.getByWaypointID(startScope);
+      const waypoint = path.path.getByWaypointID(startScope);
       if (waypoint === undefined) return undefined;
-      return path.findUUIDIndex(waypoint.uuid);
+      return path.path.findUUIDIndex(waypoint.uuid);
     }
   }))
   .views((self) => ({
     get targetTimestamp(): number | undefined {
       const path = self.getPath();
       if (self.trajTargetIndex === undefined) return undefined;
-      return (path as IHolonomicPathStore).generatedWaypoints[
+      return (path as IHolonomicPathStore).traj.waypoints[
         self.trajTargetIndex
-      ]?.timestamp;
+      ];
     },
     get timestamp(): number | undefined {
       if (this.targetTimestamp === undefined) {
         return undefined;
       }
-      return this.targetTimestamp + self.offset;
+      return this.targetTimestamp + self.offset.value;
     }
   }))
   .actions((self) => ({
@@ -218,9 +215,6 @@ export const EventMarkerStore = types
     },
     setTarget(target: WaypointID) {
       self.target = target;
-    },
-    setOffset(offset: number) {
-      self.offset = offset;
     },
     setName(name: string) {
       self.name = name;
@@ -240,12 +234,11 @@ export const EventMarkerStore = types
       if (targetTimestamp === undefined || timestamp === undefined) {
         retVal = undefined;
         return undefined;
-      } else if (self.offset == 0) {
+      } else if (self.offset.value == 0) {
         return true;
       } else {
-        path.generatedWaypoints.forEach((pt) => {
-          if (pt.isStopPoint && retVal) {
-            const stopTimestamp = pt.timestamp;
+        let splitTimes = path.traj.samples.map((sect)=>sect[0]?.t);
+        splitTimes.forEach((stopTimestamp) => {
             if (
               (targetTimestamp < stopTimestamp && timestamp > stopTimestamp) ||
               (targetTimestamp > stopTimestamp && timestamp < stopTimestamp)
@@ -253,7 +246,7 @@ export const EventMarkerStore = types
               retVal = false;
             }
           }
-        });
+        );
       }
       return retVal;
     }

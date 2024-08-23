@@ -1,9 +1,8 @@
 import { Instance, getEnv, getParent, getRoot, isAlive, types } from "mobx-state-tree";
-import { SavedCircleObstacle } from "./DocumentSpecTypes";
 import { ExpressionStore, Units } from "./ExpressionStore";
 import { number } from "mathjs";
 import {v4 as uuidv4} from "uuid"
-
+import { CircleObstacle, Expr } from "./2025/DocumentTypes";
 
 export const CircularObstacleStore = types
   .model("CircularObstacleStore", {
@@ -13,13 +12,12 @@ export const CircularObstacleStore = types
     uuid: types.identifier
   })
   .views((self) => ({
-    asSavedCircleObstacle(): SavedCircleObstacle {
-      const { x, y, radius } = self;
+    serialize() : CircleObstacle<Expr> {
       return {
-        x: x.value,
-        y: y.value,
-        radius: radius.value
-      };
+        x: self.x.serialize(),
+        y: self.y.serialize(),
+        r: self.radius.serialize()
+      }
     },
     get selected(): boolean {
       if (!isAlive(self)) {
@@ -32,10 +30,10 @@ export const CircularObstacleStore = types
     }
   }))
   .actions((self) => ({
-    fromSavedCircleObstacle(obstacle: SavedCircleObstacle) {
-      self.x.set(obstacle.x);
-      self.y.set(obstacle.y);
-      self.radius.set(obstacle.radius);
+    deserialize(ser: CircleObstacle<Expr>) {
+      self.x.deserialize(ser.x);
+      self.y.deserialize(ser.y);
+      self.radius.deserialize(ser.r);
     },
     setSelected(selected: boolean) {
       if (selected && !self.selected) {

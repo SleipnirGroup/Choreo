@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import {doc, uiState} from "../../../document/DocumentManager";
 
 import { observer } from "mobx-react";
-import { PathGradients } from "../../config/robotconfig/PathGradient";
+import { PathGradient, PathGradientArgs, PathGradients } from "../../config/robotconfig/PathGradient";
 
 type Props = object;
 
@@ -15,12 +15,12 @@ class FieldPathLines extends Component<Props, State> {
   render() {
     const path = doc.pathlist.activePath;
     let generatedPathString = "";
-    const trajectory = path.generating
-      ? path.generationProgress
-      : path.generated;
+    const trajectory = path.ui.generating
+      ? path.ui.generationProgress
+      : path.traj.fullTraj;
     // preserve the acccess of generationIterationNumber
     // to trigger rerenders when mutating the in-progress trajectory in place
-    const _ = path.generationIterationNumber;
+    const _ = path.ui.generationIterationNumber;
     trajectory.forEach((point) => {
       generatedPathString += `${point.x},${point.y} `;
     });
@@ -46,11 +46,26 @@ class FieldPathLines extends Component<Props, State> {
         <g>
           {trajectory.length > 1 &&
             trajectory.map((point, i, arr) => {
+
               if (i == arr.length - 1) {
                 return <></>;
               }
               const point2 = arr[i + 1];
-
+              let [sect, indexInSect] = path.traj.getIdxOfFullTraj(i) ?? [0,0];
+              let indexI
+              const args : PathGradientArgs = {
+                point: point,
+                prev: arr[i-1],
+                next: arr[i+1],
+                arr: path.ui.generating
+                  ? [path.ui.generationProgress]
+                  : path.traj.samples,
+                total: arr.length,
+                count: i,
+                i: path.ui.generating ? 0: sect,
+                j: path.ui.generating ? 0: indexInSect,
+                documentModel: doc
+              }
               // 0 t = red, 1 t = green
               return (
                 <line
@@ -59,12 +74,7 @@ class FieldPathLines extends Component<Props, State> {
                   x2={point2.x}
                   y2={point2.y}
                   strokeWidth={0.05}
-                  stroke={pathGradient.function(
-                    point,
-                    i,
-                    arr,
-                    doc
-                  )}
+                  stroke={pathGradient.function(args)}
                 ></line>
               );
             })}

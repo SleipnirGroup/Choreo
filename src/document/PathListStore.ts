@@ -1,8 +1,7 @@
 import { Instance, types } from "mobx-state-tree";
-import { SavedPathList } from "./DocumentSpecTypes";
-import { HolonomicPathStore } from "./HolonomicPathStore";
+import { HolonomicPathStore } from "./path/HolonomicPathStore";
 import { v4 as uuidv4 } from "uuid";
-import { ConstraintStores } from "./ConstraintStore";
+import { SAVE_FILE_VERSION } from "./2025/v2025_0_0";
 
 export const PathListStore = types
   .model("PathListStore", {
@@ -23,13 +22,6 @@ export const PathListStore = types
   })
   .views((self) => {
     return {
-      asSavedPathList(): SavedPathList {
-        const obj: any = {};
-        self.paths.forEach((path) => {
-          obj[path.name] = path.asSavedPath();
-        });
-        return obj;
-      },
       toJSON(): any {
         const obj: any = {};
         self.paths.forEach((path) => {
@@ -48,12 +40,28 @@ export const PathListStore = types
       },
       get activePath() {
         return (
-          self.paths.get(self.activePathUUID) ||
+          self.paths.get(self.activePathUUID)! ||
           HolonomicPathStore.create({
+            uuid: uuidv4(),
             name: "New Path",
-            visibleWaypointsStart: 0,
-            visibleWaypointsEnd: 0,
-            uuid: uuidv4()
+            path: {
+              constraints: [],
+              waypoints:[],
+              obstacles:[]
+            },
+            ui: {
+              visibleWaypointsEnd: 0,
+              visibleWaypointsStart: 0
+            },
+            snapshot: {
+              waypoints:[],
+              constraints:[]
+            },
+            traj: {
+              waypoints:[],
+              samples:[],
+              markers:[]
+            }
           })
         );
       }
@@ -80,15 +88,30 @@ export const PathListStore = types
         const newUUID = uuidv4();
         const path = HolonomicPathStore.create({
           uuid: newUUID,
-          visibleWaypointsStart: 0,
-          visibleWaypointsEnd: 0,
           name: usedName,
-          waypoints: []
+          path: {
+            constraints: [],
+            waypoints:[],
+            obstacles:[]
+          },
+          ui: {
+            visibleWaypointsEnd: 0,
+            visibleWaypointsStart: 0
+          },
+          snapshot: {
+            waypoints:[],
+            constraints:[]
+          },
+          traj: {
+            waypoints:[],
+            samples:[],
+            markers:[]
+          }
         });
         path.setExporter(self.getExporter());
         self.paths.put(path);
-        path.addConstraint("StopPoint", ["first"]);
-        path.addConstraint("StopPoint", ["last"]);
+        // path.path.addConstraint("StopPoint", "first");
+        // path.path.addConstraint("StopPoint", "last");
 
         if (self.paths.size === 1 || select) {
           self.activePathUUID = newUUID;
@@ -119,20 +142,7 @@ export const PathListStore = types
           const newName = self.disambiguateName(oldPath.name);
           const newuuid = self.addPath(newName, false);
           const path = self.paths.get(newuuid);
-          path!.fromSavedPath(oldPath.asSavedPath());
-        }
-      },
-      fromSavedPathList(list: SavedPathList) {
-        self.paths.clear();
-        if (list) {
-          Array.from(Object.keys(list).values()).forEach((name) => {
-            const uuid = self.addPath(name, false);
-            const path = self.paths.get(uuid);
-            path!.fromSavedPath(list[name]);
-          });
-        }
-        if (self.paths.size == 0) {
-          self.addPath("New Path", true);
+          path!.deserialize(oldPath.serialize());
         }
       }
     };

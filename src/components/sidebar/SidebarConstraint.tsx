@@ -6,9 +6,11 @@ import { IConstraintStore, WaypointID } from "../../document/ConstraintStore";
 import {doc, uiState} from "../../document/DocumentManager";
 import styles from "./Sidebar.module.css";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { getParent } from "mobx-state-tree";
-import { IHolonomicPathStore } from "../../document/HolonomicPathStore";
+import { Instance, getParent } from "mobx-state-tree";
+import { IHolonomicPathStore } from "../../document/path/HolonomicPathStore";
+
 import { PriorityHigh } from "@mui/icons-material";
+import { ChoreoPathStore } from "../../document/path/ChoreoPathStore";
 
 type Props = {
   constraint: IConstraintStore;
@@ -27,23 +29,24 @@ class SidebarConstraint extends Component<Props, State> {
       if (id == "first") return "Start";
       if (id == "last") return "End";
       return (
-        getParent<IHolonomicPathStore>(
+        getParent<Instance<typeof ChoreoPathStore>>(
           getParent<IConstraintStore[]>(this.props.constraint)
         ).findUUIDIndex(id.uuid) + 1
       );
     };
-    const scope = this.props.constraint.getSortedScope();
-    if (scope.length == 0) return "!";
+    const from = this.props.constraint.from;
+    const to = this.props.constraint.to;
+    if (from===undefined && to===undefined) return "!";
     else if (
-      scope.length == 1 ||
-      scope[0] === scope[1] ||
-      (Object.hasOwn(scope[0], "uuid") &&
-        Object.hasOwn(scope[1], "uuid") &&
-        scope[0]!.uuid == scope[1]!.uuid)
+      to === undefined ||
+      from===to ||
+      (Object.hasOwn(from, "uuid") &&
+        Object.hasOwn(to, "uuid") &&
+        from!.uuid == to!.uuid)
     )
-      return waypointIDToText(scope[0]);
+      return waypointIDToText(from);
     else {
-      return `${waypointIDToText(scope[0])}-${waypointIDToText(scope[1])}`;
+      return `${waypointIDToText(from)}-${waypointIDToText(to)}`;
     }
   }
   render() {
@@ -91,7 +94,7 @@ class SidebarConstraint extends Component<Props, State> {
             className={styles.SidebarRightIcon}
             onClick={(e) => {
               e.stopPropagation();
-              doc.pathlist.activePath.deleteConstraintUUID(
+              doc.pathlist.activePath.path.deleteConstraint(
                 this.props.constraint?.uuid || ""
               );
             }}

@@ -7,7 +7,7 @@ import {
 } from "../components/config/robotconfig/PathGradient";
 import LocalStorageKeys from "../util/LocalStorageKeys";
 import { NUM_SETTINGS_TABS, NavbarData, NavbarItemSectionEnds, NavbarLabels, ViewItemData, navbarIndexToConstraint, navbarIndexToConstraintDefinition, navbarIndexToConstraintKey } from "./UIData";
-import { ConstraintKey } from "./ConstraintStore";
+import { ConstraintKey } from "./ConstraintDefinitions";
 
 export const UIStateStore = types
   .model("UIStateStore", {
@@ -60,6 +60,7 @@ export const UIStateStore = types
           undefined
         );
       },
+      
       getSelectedConstraintKey() : ConstraintKey {
         return (
           navbarIndexToConstraintKey[self.selectedNavbarItem] ??

@@ -14,25 +14,24 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
 
   render() {
     const activePath = doc.pathlist.activePath;
-    const waypoints = activePath.waypoints;
+    const waypoints = activePath.path.waypoints;
     return (
       <>
         {/* Draw circles on each waypoint */}
         {waypoints
-          .filter((waypoint) => !waypoint.isInitialGuess)
           .map((point, index) => {
             return (
               <circle
                 key={index}
-                cx={point.x}
-                cy={point.y}
+                cx={point.x.value}
+                cy={point.y.value}
                 r={0.2}
                 fill={"black"}
                 fillOpacity={0.2}
                 stroke="white"
                 strokeWidth={0.05}
                 onClick={() => {
-                  const newMarker = activePath.addEventMarker();
+                  const newMarker = activePath.traj.addEventMarker();
 
                   newMarker.setTarget({ uuid: point.uuid });
                   if (!activePath.isTrajectoryStale) {

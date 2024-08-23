@@ -57,7 +57,7 @@ class ViewOptionsPanel extends Component<Props, State> {
           {/* If there's no waypoints, then don't allow user to zoom to fit Waypoints */}
           <IconButton
             disabled={
-              doc.pathlist.activePath.waypoints
+              doc.pathlist.activePath.path.waypoints
                 .length == 0
             }
             onClick={() => doc.zoomToFitWaypoints()}

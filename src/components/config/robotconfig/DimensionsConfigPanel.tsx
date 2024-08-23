@@ -40,45 +40,115 @@ class RobotConfigPanel extends Component<Props, State> {
         <ExpressionInput
           title="MOI"
           enabled={true}
-          number={config.rotationalInertia}
+          number={config.inertia}
           maxWidthCharacters={8}
           titleTooltip={"Robot moment of inertia around center vertical axis"}
         />
 
         <ExpressionInput
-          title="Bumper Width"
+          title="Bumper Front"
           enabled={true}
           roundingPrecision={3}
-          number={config.bumperWidth}
+          number={config.bumper.front}
           maxWidthCharacters={8}
           titleTooltip="Width of robot with bumpers on"
         />
 
         <ExpressionInput
-          title="Bumper Length"
+          title="Bumper Back"
           enabled={true}
           roundingPrecision={3}
-          number={config.bumperLength}
+          number={config.bumper.back}
           maxWidthCharacters={8}
           titleTooltip="Length of robot with bumpers on"
         />
 
         <ExpressionInput
-          title="Wheelbase"
+          title="Bumper Left"
           enabled={true}
           roundingPrecision={3}
-          number={config.wheelbase}
+          number={config.bumper.left}
+          maxWidthCharacters={8}
+          titleTooltip="Width of robot with bumpers on"
+        />
+
+        <ExpressionInput
+          title="Bumper Right"
+          enabled={true}
+          roundingPrecision={3}
+          number={config.bumper.right}
+          maxWidthCharacters={8}
+          titleTooltip="Length of robot with bumpers on"
+        />
+
+
+        <ExpressionInput
+          title="FL.X"
+          enabled={true}
+          roundingPrecision={3}
+          number={config.modules[0].x}
+          maxWidthCharacters={8}
+          titleTooltip="Front-back distance between wheel centers"
+        />
+
+<ExpressionInput
+          title="FL.Y"
+          enabled={true}
+          roundingPrecision={3}
+          number={config.modules[0].y}
+          maxWidthCharacters={8}
+          titleTooltip="Front-back distance between wheel centers"
+        />
+        <ExpressionInput
+          title="BL.X"
+          enabled={true}
+          roundingPrecision={3}
+          number={config.modules[1].x}
           maxWidthCharacters={8}
           titleTooltip="Front-back distance between wheel centers"
         />
 
         <ExpressionInput
-          title="Trackwidth"
+          title="BL.Y"
           enabled={true}
           roundingPrecision={3}
-          number={config.trackWidth}
+          number={config.modules[1].y}
           maxWidthCharacters={8}
-          titleTooltip="Left-right distance between wheel centers"
+          titleTooltip="Front-back distance between wheel centers"
+        />
+        <ExpressionInput
+          title="BR.X"
+          enabled={true}
+          roundingPrecision={3}
+          number={config.modules[2].x}
+          maxWidthCharacters={8}
+          titleTooltip="Front-back distance between wheel centers"
+        />
+
+        <ExpressionInput
+          title="BR.Y"
+          enabled={true}
+          roundingPrecision={3}
+          number={config.modules[2].y}
+          maxWidthCharacters={8}
+          titleTooltip="Front-back distance between wheel centers"
+        />
+        <ExpressionInput
+          title="FR.X"
+          enabled={true}
+          roundingPrecision={3}
+          number={config.modules[3].x}
+          maxWidthCharacters={8}
+          titleTooltip="Front-back distance between wheel centers"
+        />
+
+        <ExpressionInput
+          title="FR.Y"
+          enabled={true}
+          roundingPrecision={3}
+          number={config.modules[3].y}
+          maxWidthCharacters={8}
+          titleTooltip="Front-back distance between wheel centers"
         />
       </ExpressionInputList>
     );

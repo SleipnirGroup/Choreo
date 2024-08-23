@@ -16,12 +16,9 @@ import {
   import InitialGuessPoint from "../assets/InitialGuessPoint";
   import Waypoint from "../assets/Waypoint";
   import {
-    ConstraintDefinition,
-    ConstraintKey,
-    constraints,
     ConstraintStore,
-    ConstraintStores,
   } from "./ConstraintStore";
+import { ConstraintDefinition, ConstraintDefinitions, ConstraintKey } from "./ConstraintDefinitions";
   
   
   /* Navbar stuff */
@@ -64,27 +61,26 @@ import {
   const constraintsIndices: number[] = [];
   export const navbarIndexToConstraint: { [key: number]: typeof ConstraintStore } = {};
   export const navbarIndexToConstraintDefinition: {
-    [key: number]: ConstraintDefinition;
+    [key: number]: ConstraintDefinition<any>;
   } = {};
   export const navbarIndexToConstraintKey: {
     [key: number]: ConstraintKey;
   } = {};
   {
     let constraintsOffset = Object.keys(NavbarData).length;
-    Object.entries(constraints).forEach(([key, data], index) => {
+    Object.entries(ConstraintDefinitions).forEach(([key, data], index) => {
       NavbarData[key] = {
         index: constraintsOffset,
         name: data.name,
         icon: data.icon
       };
-      navbarIndexToConstraint[constraintsOffset] = ConstraintStores[key];
       navbarIndexToConstraintDefinition[constraintsOffset] = data;
-      navbarIndexToConstraintKey[constraintsOffset] = key;
+      navbarIndexToConstraintKey[constraintsOffset] = key as ConstraintKey;
       constraintsIndices.push(constraintsOffset);
       constraintsOffset++;
     });
   }
-  const constraintNavbarCount = Object.keys(constraints).length;
+  const constraintNavbarCount = Object.keys(ConstraintDefinitions).length;
   export const ObstacleData: {
     [key: string]: {
       index: number;

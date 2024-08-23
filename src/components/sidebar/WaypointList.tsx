@@ -25,7 +25,7 @@ class WaypointList extends Component<Props, State> {
   }
 
   reorder(startIndex: number, endIndex: number) {
-    doc.pathlist.activePath.reorder(
+    doc.pathlist.activePath.path.reorderWaypoint(
       startIndex,
       endIndex
     );
@@ -45,9 +45,9 @@ class WaypointList extends Component<Props, State> {
   // Normally you would want to split things out into separate components.
   // But in this example everything is just done in one place for simplicity
   render() {
-    const waypoints = doc.pathlist.activePath.waypoints;
+    const waypoints = doc.pathlist.activePath.path.waypoints;
     const waypointsLength =
-      doc.pathlist.activePath.waypoints.length;
+      waypoints.length;
     if (waypointsLength == 0) {
       return (
         <div className={styles.SidebarItem + " " + styles.Noninteractible}>
@@ -61,13 +61,6 @@ class WaypointList extends Component<Props, State> {
     const waypointElements = waypoints.map(
       (holonomicWaypoint: IHolonomicWaypointStore, index: number) => {
         let issue = "";
-        if (holonomicWaypoint.isInitialGuess) {
-          if (index == 0) {
-            issue = "Cannot start with an initial guess point.";
-          } else if (index == waypoints.length - 1) {
-            issue = "Cannot end with an initial guess point.";
-          }
-        }
         if (holonomicWaypoint.type == 2) {
           if (index == 0) {
             issue = "Cannot start with an empty waypoint.";

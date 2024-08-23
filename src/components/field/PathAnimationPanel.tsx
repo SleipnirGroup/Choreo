@@ -83,7 +83,7 @@ class PathAnimationPanel extends Component<Props, State> {
   render() {
     const activePath = doc.pathlist.activePath;
     this.totalTime =
-      doc.pathlist.activePath.getTotalTimeSeconds();
+      doc.pathlist.activePath.traj.getTotalTimeSeconds();
     return (
       <div
         style={{
@@ -101,7 +101,7 @@ class PathAnimationPanel extends Component<Props, State> {
       >
         <span
           style={{
-            display: activePath.generated.length >= 2 ? "flex" : "none",
+            display: activePath.traj.fullTraj.length >= 2 ? "flex" : "none",
             flexDirection: "row",
             width: "100%",
             height: "100%",

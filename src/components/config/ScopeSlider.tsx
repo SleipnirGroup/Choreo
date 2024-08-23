@@ -28,13 +28,7 @@ class ScopeSlider extends Component<Props, State> {
 
     const sliderMarks = [
       { value: 0, label: "Start" },
-      ...points.flatMap((point, idx) => {
-        if (point.isInitialGuess) {
-          return [];
-        } else {
-          return { value: idx + 1, label: idx + 1 };
-        }
-      }),
+      ...points.flatMap((point, idx) => ({ value: idx + 1, label: idx + 1 })),
       { value: pointcount + 1, label: "End" }
     ];
     return (

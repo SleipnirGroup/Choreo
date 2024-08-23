@@ -1,0 +1,50 @@
+{
+    "name": "Simple Auto",
+    "version": "v2025.0.0",
+    "path": {
+      "waypoints": [
+        {
+          "x": [
+            "0",
+            0
+          ],
+          "y": [
+            "0",
+            0
+          ],
+          "heading": [
+            "0",
+            0
+          ],
+          "intervals": 30,
+          "split": false,
+          "fixTranslation": true,
+          "fixHeading": true
+        },
+        {
+          "x": [
+            "1",
+            1
+          ],
+          "y": [
+            "0",
+            0
+          ],
+          "heading": [
+            "0",
+            0
+          ],
+          "intervals": 30,
+          "split": false,
+          "fixTranslation": true,
+          "fixHeading": true
+        }
+      ],
+      "constraints": []
+    },
+    "snapshot": null,
+    "traj": {
+      "waypoints": [],
+      "samples": []
+    }
+  }

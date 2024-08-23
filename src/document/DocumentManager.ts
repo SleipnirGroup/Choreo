@@ -3,7 +3,7 @@ import { DocumentStore, SelectableItemTypes } from "./DocumentModel";
 import { dialog, invoke, path, window as tauriWindow } from "@tauri-apps/api";
 import { listen, TauriEvent, Event } from "@tauri-apps/api/event";
 import { v4 as uuidv4 } from "uuid";
-import { SavedRobotConfig, SavedWaypoint, validate } from "./DocumentSpecTypes";
+
 import { applySnapshot, getSnapshot, castToReferenceSnapshot } from "mobx-state-tree";
 import { reaction, toJS } from "mobx";
 import { toast } from "react-toastify";
@@ -17,8 +17,19 @@ import { safeGetIdentifier } from "../util/mobxutils";
 import { ViewLayerDefaults } from "./UIData";
 import { CircularObstacleStore, ICircularObstacleStore } from "./CircularObstacleStore";
 import { HolonomicWaypointStore as WaypointStore } from "./HolonomicWaypointStore";
-import { ConstraintDefinition, ConstraintStore, ConstraintStores, IWaypointScope, defineConstraintConstructors } from "./ConstraintStore";
-import { EXPR_DEFAULTS, ExprRobotConfig, RobotConfigStore } from "./RobotConfigStore";
+import { ConstraintStore, IWaypointScope,} from "./ConstraintStore";
+import { EXPR_DEFAULTS, RobotConfigStore } from "./RobotConfigStore";
+import {
+  type RobotConfig,
+  type Expr,
+  type Waypoint,
+  SAVE_FILE_VERSION,
+  EventMarker,
+  Command
+} from "./2025/DocumentTypes";
+import { CommandStore, EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
+import { IConstraintDataStore, defineCreateConstraintData } from "./ConstraintDataStore";
+import { ConstraintData, ConstraintDefinitions, ConstraintKey, DataMap } from "./ConstraintDefinitions";
 
 type OpenFileEventPayload = {
   adjacent_gradle: boolean;
@@ -36,23 +47,48 @@ export const uiState = UIStateStore.create(
   }
 );
 function getConstructors(vars: ()=>IVariables){
+
+  function createCommandStore(command: Command<Expr>){
+    return CommandStore.create({
+      type: command.type,
+      name: command.data?.name! ?? "",
+      commands: (command.data?.commands ?? []).map(c=>createCommandStore(c)),
+      time: vars().createExpression(command.data?.time ?? 0, Units.Second),
+      uuid: uuidv4()
+    })
+  }
+
+  let constraintDataConstructors = Object.fromEntries(Object.entries(ConstraintDefinitions)
+  .map(([key ,def]) =>
+      ([key as ConstraintKey, defineCreateConstraintData(key as ConstraintKey, def, vars)]))) as {
+    [key in ConstraintKey]: (data:Partial<DataMap[key]["props"]>)=>IConstraintDataStore<DataMap[key]>
+  };
+
   return {
-    RobotConfigStore: (config: SavedRobotConfig|ExprRobotConfig)=>{
+    RobotConfigStore: (config: RobotConfig<Expr>)=>{
       return RobotConfigStore.create({
         mass: vars().createExpression(config.mass, Units.Kg),
-        rotationalInertia: vars().createExpression(config.rotationalInertia, Units.KgM2),
-        motorMaxTorque: vars().createExpression(config.motorMaxTorque, math.multiply(Units.Newton, Units.Meter)),
-        motorMaxVelocity: vars().createExpression(config.motorMaxVelocity, Units.RPM),
+        inertia: vars().createExpression(config.inertia, Units.KgM2),
+        tmax: vars().createExpression(config.tmax, math.multiply(Units.Newton, Units.Meter)),
+        vmax: vars().createExpression(config.vmax, Units.RPM),
         gearing: vars().createExpression(config.gearing),
-        wheelRadius: vars().createExpression(config.wheelRadius, Units.Meter),
-        bumperLength: vars().createExpression(config.bumperLength, Units.Meter),
-        bumperWidth: vars().createExpression(config.bumperWidth, Units.Meter),
-        wheelbase: vars().createExpression(config.wheelbase, Units.Meter),
-        trackWidth: vars().createExpression(config.trackWidth, Units.Meter),
+        radius: vars().createExpression(config.radius, Units.Meter),
+        bumper: {
+          front: vars().createExpression(config.bumper.front, Units.Meter),
+          left: vars().createExpression(config.bumper.left, Units.Meter),
+          right: vars().createExpression(config.bumper.right, Units.Meter),
+          back: vars().createExpression(config.bumper.back, Units.Meter),
+        },
+        modules: [0,1,2,3].map(i=>{
+          return {
+            x: vars().createExpression(config.modules[i].x, Units.Meter),
+            y: vars().createExpression(config.modules[i].y, Units.Meter),
+          }
+        }),
         identifier: uuidv4()
       })
     },
-    WaypointStore: (waypoint: SavedWaypoint)=> {
+    WaypointStore: (waypoint: Waypoint<Expr>)=> {
       return WaypointStore.create({
         ...waypoint,
         x: vars().createExpression(waypoint.x, Units.Meter),
@@ -69,10 +105,29 @@ function getConstructors(vars: ()=>IVariables){
         uuid: uuidv4()
       })
     },
-    constraint: defineConstraintConstructors(vars)
+    CommandStore: createCommandStore,
+    EventMarkerStore: (marker: EventMarker<Expr>) : IEventMarkerStore =>{
+      return EventMarkerStore.create({
+        name: marker.name,
+        target: marker.target,
+        trajTargetIndex: marker.trajTargetIndex,
+        offset: vars().createExpression(marker.offset, Units.Second),
+        command: createCommandStore(marker.command),
+        uuid: uuidv4()
+      })
+    },
+    ConstraintData: constraintDataConstructors,
+    Constraint: <K extends ConstraintKey>(type: K, data: Partial<DataMap[K]["props"]>, from: IWaypointScope, to?:IWaypointScope) => {
+      return ConstraintStore.create({
+        from,
+        to,
+        uuid: uuidv4(),
+        data: constraintDataConstructors[type](data)
+      })
+    }
 }
 }
-let variables = Variables.create({store:{}, poses:{}});
+let variables = Variables.create({expressions:{}, poses:{}});
 export const doc = DocumentStore.create({
   robotConfig: getConstructors(()=>variables).RobotConfigStore(EXPR_DEFAULTS),
   pathlist: {},
@@ -104,7 +159,7 @@ doc.history.clear();
 setupEventListeners()
   .then(() => newFile())
   .then(() => uiState.updateWindowTitle())
-  .then(() => openLastFile());
+  //.then(() => openLastFile());
 }
 setup();
 
@@ -159,10 +214,9 @@ export async function handleOpenFileEvent(event: Event<unknown>) {
           uiState.setSaveFileName(saveName);
           uiState.setSaveFileDir(saveDir);
           uiState.setIsGradleProject(adjacent_gradle);
-          const payloadLessContents = { ...payload, contents: "" };
           localStorage.setItem(
             LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
-            JSON.stringify(payloadLessContents)
+            JSON.stringify(payload)
           );
         });
     }
@@ -219,7 +273,7 @@ export async function setupEventListeners() {
         if (savedObject.dataType === "choreo/waypoint") {
           let currentSelectedWaypointIdx = -1;
           if (doc.isSidebarWaypointSelected) {
-            const idx = activePath.findUUIDIndex(
+            const idx = activePath.path.findUUIDIndex(
               doc.selectedSidebarItem.uuid
             );
             if (idx != -1) {
@@ -229,10 +283,10 @@ export async function setupEventListeners() {
           doc.history.startGroup(() => {
             const newWaypoint =
               doc.pathlist.activePath.addWaypoint();
-            newWaypoint.fromSavedWaypoint(savedObject);
+            newWaypoint.deserialize(savedObject);
             if (currentSelectedWaypointIdx != -1) {
-              activePath.reorder(
-                activePath.waypoints.length - 1,
+              activePath.path.reorderWaypoint(
+                activePath.path.waypoints.length - 1,
                 currentSelectedWaypointIdx + 1
               );
             }
@@ -310,7 +364,7 @@ export async function setupEventListeners() {
       event.preventDefault();
     });
     hotkeys("command+g,ctrl+g,g", () => {
-      if (!doc.pathlist.activePath.generating) {
+      if (!doc.pathlist.activePath.ui.generating) {
         generateWithToastsAndExport(
           doc.pathlist.activePathUUID
         );
@@ -332,14 +386,14 @@ export async function setupEventListeners() {
       doc.zoomOut();
     });
     hotkeys("command+0,ctrl+0", () => {
-      if (doc.pathlist.activePath.waypoints.length == 0) {
+      if (doc.pathlist.activePath.path.waypoints.length == 0) {
         toast.error("No waypoints to zoom to");
       } else {
         doc.zoomToFitWaypoints();
       }
     });
     hotkeys("right,x", () => {
-      const waypoints = doc.pathlist.activePath.waypoints;
+      const waypoints = doc.pathlist.activePath.path.waypoints;
       const selected = waypoints.find((w) => {
         return w.selected;
       });
@@ -351,7 +405,7 @@ export async function setupEventListeners() {
       select(waypoints[i]);
     });
     hotkeys("left,z", () => {
-      const waypoints = doc.pathlist.activePath.waypoints;
+      const waypoints = doc.pathlist.activePath.path.waypoints;
       const selected = waypoints.find((w) => {
         return w.selected;
       });
@@ -445,19 +499,19 @@ export async function setupEventListeners() {
     hotkeys("delete,backspace,clear", () => {
       const selectedWaypoint = getSelectedWaypoint();
       if (selectedWaypoint) {
-        doc.pathlist.activePath.deleteWaypointUUID(
+        doc.pathlist.activePath.path.deleteWaypoint(
           selectedWaypoint.uuid
         );
       }
-      const selectedConstraint = getSelecteConstraint();
+      const selectedConstraint = getSelectedConstraint();
       if (selectedConstraint) {
-        doc.pathlist.activePath.deleteConstraintUUID(
+        doc.pathlist.activePath.path.deleteConstraint(
           selectedConstraint.uuid
         );
       }
       const selectedObstacle = getSelectedObstacle();
       if (selectedObstacle) {
-        doc.pathlist.activePath.deleteObstacleUUID(
+        doc.pathlist.activePath.path.deleteObstacle(
           selectedObstacle.uuid
         );
       }
@@ -490,20 +544,20 @@ export async function generateWithToastsAndExport(uuid: string) {
   }
 
 function getSelectedWaypoint() {
-    const waypoints = doc.pathlist.activePath.waypoints;
+    const waypoints = doc.pathlist.activePath.path.waypoints;
     return waypoints.find((w) => {
       return w.selected;
     });
   }
-  function getSelecteConstraint() {
-    const constraints = doc.pathlist.activePath.constraints;
+  function getSelectedConstraint() {
+    const constraints = doc.pathlist.activePath.path.constraints;
     return constraints.find((c) => {
       return c.selected;
     });
   }
 
   function getSelectedObstacle() {
-    const obstacles = doc.pathlist.activePath.obstacles;
+    const obstacles = doc.pathlist.activePath.path.obstacles;
     return obstacles.find((o) => {
       return o.selected;
     });
@@ -513,6 +567,13 @@ function getSelectedWaypoint() {
         settingsTab: 0,
         layers: ViewLayerDefaults
       });
+    doc.deserializeChor(
+      {
+        variables: {expressions: {}, poses: {}},
+        config: EXPR_DEFAULTS,
+        version: SAVE_FILE_VERSION
+      }
+    );
     //let newVariables
 
     //TODO change this for opening from new content.
@@ -535,13 +596,12 @@ export function select(item: SelectableItemTypes) {
 }
 async function openFromContents(chorContents: string) {
     const parsed = JSON.parse(chorContents);
-    const validationError = validate(parsed);
-    if (validationError.length == 0) {
-      doc.fromSavedDocument(parsed);
+    try {
+      doc.deserializeChor(parsed);
       // if we got this far, clear the undo history
       doc.history.clear();
-    } else {
-      throw `Invalid Document JSON: ${validationError}`;
+    } catch(e) {
+      throw `Invalid Document JSON: ${e}`;
     }
   }
 
@@ -592,24 +652,13 @@ export async function writeTrajectory(
     if (chorPath === undefined) {
       throw `Tried to export trajectory with unknown uuid ${uuid}`;
     }
-    const trajectory = chorPath.generated;
-    if (trajectory.length < 2) {
-      throw "Path is not generated";
-    }
+    const trajectory = chorPath.serialize();
     const file = await filePath();
     console.log("file: " + file);
-
-    const exportedEventMarkers = chorPath.eventMarkers.flatMap((m) => {
-      if (m.timestamp === undefined) return [];
-      return {
-        timestamp: m.timestamp,
-        command: m.command.asSavedCommand()
-      };
-    });
     const content = JSON.stringify(
-      { samples: trajectory, eventMarkers: exportedEventMarkers },
+      trajectory,
       undefined,
-      2
+      1
     );
     if (file) {
       await invoke("save_file", {
@@ -617,34 +666,6 @@ export async function writeTrajectory(
         name: file[1],
         contents: content
       });
-      // "Split" naming scheme for consistency when path splitting is turned on/off
-      if (
-        !doc.splitTrajectoriesAtStopPoints ||
-        chorPath.stopPointIndices().length >= 2
-      ) {
-        await invoke("save_file", {
-          dir: file[0],
-          name: file[1].replace(".", ".1."),
-          contents: content
-        });
-      }
-    }
-
-    if (
-      doc.splitTrajectoriesAtStopPoints &&
-      file !== null &&
-      chorPath.stopPointIndices().length >= 2
-    ) {
-      const splits = chorPath.splitTrajectories();
-      for (let i = 0; i < splits.length; i++) {
-        const name = file[1].replace(".", "." + (i + 1).toString() + ".");
-
-        await invoke("save_file", {
-          dir: file[0],
-          name: name,
-          contents: JSON.stringify(splits[i], undefined, 2)
-        });
-      }
     }
   }
 
@@ -778,7 +799,7 @@ export async function saveFileDialog() {
    * if something failed
    */
   async function saveFileAs(dir: string, name: string): Promise<boolean | undefined> {
-    const contents = JSON.stringify(doc.asSavedDocument(), undefined, 4);
+    const contents = JSON.stringify(doc.serializeChor(), undefined, 4);
     try {
       invoke("save_file", { dir, name, contents });
       // if we get past the above line, the dir and name were valid for saving.
@@ -832,4 +853,3 @@ export async function saveFileDialog() {
       });
     }
   }
-

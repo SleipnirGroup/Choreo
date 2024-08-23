@@ -49,7 +49,7 @@ class SidebarObstacle extends Component<Props, State> {
             className={styles.SidebarRightIcon}
             onClick={(e) => {
               e.stopPropagation();
-              doc.pathlist.activePath.deleteObstacleUUID(
+              doc.pathlist.activePath.path.deleteObstacle(
                 obstacle?.uuid || ""
               );
             }}

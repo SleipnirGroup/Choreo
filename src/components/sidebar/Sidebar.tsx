@@ -142,7 +142,7 @@ class Sidebar extends Component<Props, State> {
             <span>CONSTRAINTS</span>
           </Divider>
           <div className={styles.WaypointList}>
-            {doc.pathlist.activePath.constraints.map(
+            {doc.pathlist.activePath.path.constraints.map(
               (constraint) => {
                 return (
                   <SidebarConstraint
@@ -153,7 +153,7 @@ class Sidebar extends Component<Props, State> {
               }
             )}
           </div>
-          {doc.pathlist.activePath.constraints.length ==
+          {doc.pathlist.activePath.path.constraints.length ==
             0 && (
             <div className={styles.SidebarItem + " " + styles.Noninteractible}>
               <span></span>
@@ -163,8 +163,8 @@ class Sidebar extends Component<Props, State> {
             </div>
           )}
           {(doc.usesObstacles ||
-            doc.pathlist.activePath.obstacles.includes(
-              uiState.selectedSidebarItem
+            doc.pathlist.activePath.path.obstacles.includes(
+              doc.selectedSidebarItem
             )) && (
             <>
               <Divider
@@ -175,7 +175,7 @@ class Sidebar extends Component<Props, State> {
                 <span>OBSTACLES</span>
               </Divider>
               <div className={styles.WaypointList}>
-                {doc.pathlist.activePath.obstacles.map(
+                {doc.pathlist.activePath.path.obstacles.map(
                   (obstacle: ICircularObstacleStore, index: number) => {
                     return (
                       <SidebarObstacle
@@ -186,7 +186,7 @@ class Sidebar extends Component<Props, State> {
                   }
                 )}
               </div>
-              {doc.pathlist.activePath.obstacles
+              {doc.pathlist.activePath.path.obstacles
                 .length == 0 && (
                 <div
                   className={styles.SidebarItem + " " + styles.Noninteractible}
@@ -203,7 +203,7 @@ class Sidebar extends Component<Props, State> {
             <span>MARKERS</span>
           </Divider>
           <div className={styles.WaypointList}>
-            {doc.pathlist.activePath.eventMarkers.map(
+            {doc.pathlist.activePath.traj.markers.map(
               (marker: IEventMarkerStore, index: number) => {
                 return (
                   <SidebarEventMarker
@@ -215,7 +215,7 @@ class Sidebar extends Component<Props, State> {
               }
             )}
           </div>
-          {doc.pathlist.activePath.eventMarkers
+          {doc.pathlist.activePath.traj.markers
             .length == 0 && (
             <div className={styles.SidebarItem + " " + styles.Noninteractible}>
               <span></span>

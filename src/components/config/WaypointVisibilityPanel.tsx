@@ -17,11 +17,11 @@ class WaypointVisibilityPanel extends Component<Props, State> {
     const layers = uiState.layers;
 
     const startIndex =
-      doc.pathlist.activePath.visibleWaypointsStart ??
+      doc.pathlist.activePath.ui.visibleWaypointsStart ??
       0;
     const endIndex =
-      doc.pathlist.activePath.visibleWaypointsEnd ?? 0;
-    const points = doc.pathlist.activePath.waypoints;
+      doc.pathlist.activePath.ui.visibleWaypointsEnd ?? 0;
+    const points = doc.pathlist.activePath.path.waypoints;
     const pointcount = points.length;
 
     const sliderMarks = points.map((point, idx) => ({
@@ -29,7 +29,7 @@ class WaypointVisibilityPanel extends Component<Props, State> {
       label: idx + 1
     }));
 
-    if (doc.pathlist.activePath.waypoints.length >= 2) {
+    if (doc.pathlist.activePath.path.waypoints.length >= 2) {
       return (
         layers[ViewLayers.Focus] && (
           <div
@@ -52,17 +52,17 @@ class WaypointVisibilityPanel extends Component<Props, State> {
                   activeThumb: number
                 ) => {
                   if (typeof value === "number") {
-                    doc.pathlist.activePath.setVisibleWaypointsStart(
+                    doc.pathlist.activePath.ui.setVisibleWaypointsStart(
                       value
                     );
-                    doc.pathlist.activePath.setVisibleWaypointsEnd(
+                    doc.pathlist.activePath.ui.setVisibleWaypointsEnd(
                       value
                     );
                   } else {
-                    doc.pathlist.activePath.setVisibleWaypointsStart(
+                    doc.pathlist.activePath.ui.setVisibleWaypointsStart(
                       value[0]
                     );
-                    doc.pathlist.activePath.setVisibleWaypointsEnd(
+                    doc.pathlist.activePath.ui.setVisibleWaypointsEnd(
                       value[1]
                     );
                   }

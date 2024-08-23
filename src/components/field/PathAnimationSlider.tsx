@@ -17,7 +17,7 @@ class PathAnimationSlider extends Component<Props, State> {
   totalTime = 0;
   render() {
     const activePath = doc.pathlist.activePath;
-    this.totalTime = activePath.getTotalTimeSeconds();
+    this.totalTime = activePath.traj.getTotalTimeSeconds();
     return (
       <>
         <Slider
@@ -26,15 +26,14 @@ class PathAnimationSlider extends Component<Props, State> {
           min={0}
           max={this.totalTime}
           marks={
-            activePath.generated.length > 0
-              ? activePath.generatedWaypoints
+            activePath.traj.fullTraj.length > 0
+              ? activePath.snapshot.waypoints
                   .flatMap((point, idx) => {
                     let type = 0;
-                    if (point.isInitialGuess) {
-                      type = 3; // Guess
-                    } else if (point.headingConstrained) {
+
+                    if (point.fixHeading) {
                       type = 0; // Full
-                    } else if (point.translationConstrained) {
+                    } else if (point.fixTranslation) {
                       type = 1; // Translation
                     } else {
                       type = 2; // Empty
@@ -47,13 +46,13 @@ class PathAnimationSlider extends Component<Props, State> {
                       color = "green";
                     } else if (
                       idx ===
-                      activePath.generatedWaypoints.length - 1
+                      activePath.snapshot.waypoints.length - 1
                     ) {
                       color = "red";
                     }
                     return [
                       {
-                        value: point.timestamp,
+                        value: activePath.traj.waypoints[idx],
                         label: (
                           <Tooltip
                             disableInteractive
@@ -71,7 +70,7 @@ class PathAnimationSlider extends Component<Props, State> {
                     ];
                   })
                   .concat(
-                    activePath.eventMarkers.flatMap(
+                    activePath.traj.markers.flatMap(
                       (marker: IEventMarkerStore) => {
                         if (marker.timestamp === undefined) {
                           return [];

@@ -27,7 +27,8 @@ import {
 } from "@mui/material";
 import FieldConstraintsAddLayer from "./FieldConstraintsAddLayer";
 import FieldEventMarkerAddLayer from "./FieldEventMarkerAddLayer";
-import { SavedWaypoint } from "../../../document/DocumentSpecTypes";
+import { Expr, Waypoint } from "../../../document/2025/DocumentTypes";
+
 
 type Props = object;
 
@@ -141,7 +142,7 @@ class FieldOverlayRoot extends Component<Props, State> {
     // User selects a waypoint
     else {
       const waypoint =
-        doc.pathlist.activePath.waypoints[
+        doc.pathlist.activePath.path.waypoints[
           uiState.contextMenuSelectedWaypoint
         ];
       waypoint.setType(contextMenuWaypointType);
@@ -322,7 +323,7 @@ class FieldOverlayRoot extends Component<Props, State> {
               ></circle>
             )}
           {layers[ViewLayers.Obstacles] &&
-            doc.pathlist.activePath.obstacles.map(
+            doc.pathlist.activePath.path.obstacles.map(
               (obstacle, index) => (
                 <FieldObstacle
                   obstacle={obstacle}
@@ -344,13 +345,13 @@ class FieldOverlayRoot extends Component<Props, State> {
           )}
           <FieldEventMarkers></FieldEventMarkers>
           {layers[ViewLayers.Waypoints] &&
-            doc.pathlist.activePath.waypoints
+            doc.pathlist.activePath.path.waypoints
               .map((point, index) => {
                 const activePath =
                   doc.pathlist.activePath;
                 if (
-                  (activePath.visibleWaypointsStart <= index &&
-                    activePath.visibleWaypointsEnd >= index) ||
+                  (activePath.ui.visibleWaypointsStart <= index &&
+                    activePath.ui.visibleWaypointsEnd >= index) ||
                   !layers[ViewLayers.Focus]
                 ) {
                   return [
@@ -408,23 +409,20 @@ class FieldOverlayRoot extends Component<Props, State> {
     });
     doc.history.startGroup(() => {
 
-      let initial: Partial<SavedWaypoint> = {}
+      let initial: Partial<Waypoint<Expr>> = {}
       if (
         waypointType == NavbarLabels.TranslationWaypoint ||
         waypointType == NavbarLabels.EmptyWaypoint
       ) {
-        initial.headingConstrained = false;
+        initial.fixHeading = false;
       }
       if (waypointType == NavbarLabels.EmptyWaypoint) {
-        initial.translationConstrained = false;
+        initial.fixTranslation = false;
       }
-      if (waypointType == NavbarLabels.InitialGuessPoint) {
-        initial.isInitialGuess = true
-      }
-      initial.x = coords.x;
-      initial.y = coords.y;
-      initial.heading = 0;
-      const newPoint = doc.pathlist.activePath.addWaypoint(initial);
+      initial.x = [`${coords.x} m`, coords.x];
+      initial.y = [`${coords.y} m`, coords.y];
+      initial.heading = [`0 deg`,0];
+      const newPoint = doc.pathlist.activePath.path.addWaypoint(initial);
       newPoint.setSelected(true);
     });
     doc.history.stopGroup();
@@ -447,7 +445,7 @@ class FieldOverlayRoot extends Component<Props, State> {
         y: e.clientY
       });
       doc.history.startGroup(() => {
-        doc.pathlist.activePath.addObstacle(
+        doc.pathlist.activePath.path.addObstacle(
           coords.x, coords.y, 0.5
         );
       });

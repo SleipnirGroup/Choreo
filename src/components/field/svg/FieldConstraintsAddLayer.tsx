@@ -13,22 +13,21 @@ function FieldConstraintsAddLayer() {
     const layers = uiState.layers;
     const activePath = doc.pathlist.activePath;
     const selectedConstraint =
-      uiState.getSelectedConstraint();
+      uiState.getSelectedConstraintKey();
     const selectedConstraintDefinition =
       uiState.getSelectedConstraintDefinition();
-    const waypoints = activePath.waypoints;
+    const waypoints = activePath.path.waypoints;
     return (
       <>
         {/* Draw circles on each waypoint */}
         {selectedConstraintDefinition!.wptScope &&
           waypoints
-            .filter((waypoint) => !waypoint.isInitialGuess)
             .map((point, index) => {
               const activePath =
                 doc.pathlist.activePath;
               if (
-                (activePath.visibleWaypointsStart <= index &&
-                  activePath.visibleWaypointsEnd >= index) ||
+                (activePath.ui.visibleWaypointsStart <= index &&
+                  activePath.ui.visibleWaypointsEnd >= index) ||
                 !layers[ViewLayers.Focus]
               ) {
                 return (
@@ -44,17 +43,15 @@ function FieldConstraintsAddLayer() {
                     onClick={() => {
                       const constraintToAdd = selectedConstraint;
                       const newConstraint =
-                        activePath.addConstraint(constraintToAdd);
+                        activePath.path.addConstraint(constraintToAdd, { uuid: point.uuid });
 
                       if (newConstraint !== undefined) {
                         if (newConstraint.wptScope) {
                           if (newConstraint.sgmtScope) {
-                            newConstraint.setScope([
-                              { uuid: point.uuid },
+                            newConstraint.setTo(
                               { uuid: point.uuid }
-                            ]);
-                          } else {
-                            newConstraint.setScope([{ uuid: point.uuid }]);
+                              
+                            );
                           }
                         }
                         doc.setSelectedSidebarItem(
@@ -67,13 +64,12 @@ function FieldConstraintsAddLayer() {
               }
             })}
         {selectedConstraintDefinition!.sgmtScope &&
-          activePath.nonGuessPoints
-            .slice(0, activePath.nonGuessPoints.length - 1)
+          activePath.path.waypoints.slice(0, -1)
             .map((point1, index) => {
-              const point2 = activePath.nonGuessPoints[index + 1];
+              const point2 = activePath.path.waypoints[index + 1];
               if (
-                (activePath.visibleWaypointsStart <= index &&
-                  activePath.visibleWaypointsEnd >= index + 1) ||
+                (activePath.ui.visibleWaypointsStart <= index &&
+                  activePath.ui.visibleWaypointsEnd >= index + 1) ||
                 !layers[ViewLayers.Focus]
               ) {
                 return (
@@ -101,9 +97,9 @@ function FieldConstraintsAddLayer() {
                         const constraintToAdd =
                           uiState.getSelectedConstraintKey();
                 
-                        const newConstraint = activePath.addConstraint(
+                        const newConstraint = activePath.path.addConstraint(
                           constraintToAdd,
-                          [{ uuid: point1.uuid }, { uuid: point2.uuid }]
+                          { uuid: point1.uuid }, { uuid: point2.uuid }
                         );
 
                         if (newConstraint !== undefined) {

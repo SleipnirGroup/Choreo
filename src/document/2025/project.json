@@ -28,7 +28,7 @@
                 "x": Expr,
                 "y": Expr,
                 "gearing": Expr, //unitless
-                "wheelRadius": Expr,
+                "radius": Expr,
                 "maxV":Expr, //motor shaft speed
                 "maxT":Expr, //motor shaft torque
             }

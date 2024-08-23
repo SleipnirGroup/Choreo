@@ -2,6 +2,7 @@ import { BigNumber, ConstantNode, EvalFunction, FormatOptions, Fraction, MathJSO
 import { Instance, getEnv, types } from "mobx-state-tree";
 import {create, all,} from "mathjs";
 import { IReactionDisposer, autorun, getDependencyTree, toJS, trace } from "mobx";
+import { Expr, Variables as DocVariables, Variable as DocVariable, PoseVariable as DocPoseVariable } from "./2025/DocumentTypes";
 
 export const math = create(all, {predictable:true});
 const {
@@ -47,8 +48,10 @@ math.Unit.isValidAlpha = function (c) {
   return isAlphaOriginal(c) || c=='#'
 }
 export const Units = {
+    Second: math.unit("s"),
     Meter: math.unit("m"),
     MeterPerSecond: math.unit("m/s"),
+    MeterPerSecondSquared: math.unit("m/s^2"),
     Radian: math.unit("rad"),
     RadianPerSecond: math.unit("rad/s"),
     KgM2: math.unit("kg m^2"),
@@ -56,12 +59,9 @@ export const Units = {
     Kg: math.unit("kg"),
     RPM: math.createUnit("rpm", "1 cycle/min")
 }
+
 export type Evaluated = null|undefined|number|Unit;
 type Evaluator = (arg: MathNode)=>Evaluated;
-export type SerialExpr = {
-  expr: string,
-  value: number
-}
 export const ExpressionStore = types.model( "ExpressionStore",
     {
         expr: types.frozen<MathNode>(),
@@ -73,6 +73,11 @@ export const ExpressionStore = types.model( "ExpressionStore",
     getScope: ()=>{console.error("Evaluating without variables!", self.toString()); return new Map<string, any>();}
 }))
 .actions((self)=>({
+  deserialize(serial: Expr) {
+    self.expr = math.parse(serial[0]);
+    self.value = serial[1];
+    return self;
+  },
     setScopeGetter(getter: ()=>Map<string, any>) {
       self.getScope = getter;
     },
@@ -85,7 +90,7 @@ export const ExpressionStore = types.model( "ExpressionStore",
           }
           return;
         }
-        console.log("setting ", JSON.stringify(newNode));
+
         self.expr = newNode;
     },
     setValue(value:number) {
@@ -101,15 +106,10 @@ export const ExpressionStore = types.model( "ExpressionStore",
     }
     return result;
   },
-  serialize() : SerialExpr {
-    return {
-      expr: self.expr.toString(),
-      value: self.value
-    }
+  serialize() : Expr {
+    return [self.expr.toString(), self.value];
   },
-  deserialize(serial: SerialExpr) {
-    self.expr = math.parse(serial.expr);
-  }
+
 }))
 .views((self)=>({
   get evaluate() : Evaluated {
@@ -147,7 +147,6 @@ export const ExpressionStore = types.model( "ExpressionStore",
     },
     validate(newNode: MathNode){
         try {
-          console.log("new node: " + newNode.toString());
         } catch {
           console.error("failed to evaluate");
           return undefined;
@@ -155,7 +154,6 @@ export const ExpressionStore = types.model( "ExpressionStore",
         let newNumber: undefined | null | number | Unit;
         try {
           newNumber = self.evaluator(newNode);
-          console.log("val: ", newNumber);
         } catch (e) {
             console.error("failed to evaluate", e);
           return undefined;
@@ -206,7 +204,6 @@ export const ExpressionStore = types.model( "ExpressionStore",
           self.setValue(value);
         }
       } catch (e) {
-        console.log(self.expr.toString());
         throw(e);
       }
       });
@@ -222,16 +219,26 @@ export interface IExpressionStore
 const ExprPose = types.model({
     x: ExpressionStore,
     y: ExpressionStore,
-    heading: types.maybe(ExpressionStore)
+    heading: ExpressionStore
 })
 .views(self=>({
   get asScope(): Record<string, ()=>MathNode> {
     let node: Record<string, ()=>MathNode> = {x: 
-      ()=>self.x.expr, y: ()=>self.y.expr};
-    if (self.heading !== undefined) {
-        node.heading = ()=>self.heading!.expr;
-    }
+      ()=>self.x.expr, y: ()=>self.y.expr, heading: ()=>self.heading.expr};
     return node;
+  },
+  serialize() : DocPoseVariable {
+    return {
+      x: self.x.serialize(),
+      y: self.y.serialize(),
+      heading: self.heading.serialize()
+    }
+  }
+})).actions(self=>({
+  deserialize(pose: DocPoseVariable) {
+    self.x.deserialize(pose.x);
+    self.y.deserialize(pose.y);
+    self.heading.deserialize(pose.heading);
   }
 }));
 // function isSafeProperty(object, prop) {
@@ -260,7 +267,7 @@ export interface IExprPose extends Instance<typeof ExprPose> {}
 type Pose = {x: number, y: number, heading: number};
 export const Variables = types.model("Variables",
     {
-        store: types.map(
+        expressions: types.map(
                 ExpressionStore
             )
         ,
@@ -270,21 +277,37 @@ export const Variables = types.model("Variables",
     }
 )
 .views(self=>({
+  serialize() : DocVariables {
+    let out : DocVariables = {
+      expressions: {},
+      poses: {}
+    };
+    for (let entry of self.expressions.entries()) {
+      out.expressions[entry[0]] = {
+        unit: "Meter",
+        var: (entry[1] as IExpressionStore).serialize()
+      }
+    }
+
+    for (let entry of self.poses.entries()) {
+      out.poses[entry[0]] = entry[1].serialize()
+    }
+    return out;
+  },
   get scope() {
     let vars: Map<string, any> = new Map();
     //vars.set("m", math.unit("m"));
-    for (let [key, val] of self.store.entries()) {
+    for (let [key, val] of self.expressions.entries()) {
       vars.set(key, val.asScope);
     }
     for (let [key, val] of self.poses.entries()) {
       vars.set(key, val.asScope);
     }
-    console.log(vars);
     return vars;
   }
 }))
 .actions(self=>({
-  createExpression(expr: string|number, unit?: math.Unit): IExpressionStore {
+  createExpression(expr: string|number|Expr, unit?: math.Unit): IExpressionStore {
      let store: IExpressionStore;
     if (typeof expr === "number") {
       if (unit === undefined) {
@@ -293,6 +316,10 @@ export const Variables = types.model("Variables",
         store = ExpressionStore.create({expr: addUnitToExpression(new math.ConstantNode(expr), unit.toString()), defaultUnit: unit, });
       }
       
+    }
+    else if (Array.isArray(expr)) {
+      store = ExpressionStore.create({expr: math.parse(expr[0]), defaultUnit: unit});
+      store.deserialize(expr);
     }
     else {store = ExpressionStore.create({expr: math.parse(expr), defaultUnit: unit, });}
     store.setScopeGetter(()=>self.scope);
@@ -323,7 +350,19 @@ export const Variables = types.model("Variables",
             heading: self.createExpression(pose?.heading ?? 0, Units.Radian)}));
       },
       add(key:string, expr: string|number, defaultUnit: Unit) {
-        self.store.set(key, self.createExpression(expr, defaultUnit));
+        self.expressions.set(key, self.createExpression(expr, defaultUnit));
+      },
+      deserialize(vars: DocVariables) {
+        for (let entry of Object.entries(vars.expressions)) {
+          self.expressions.set(entry[0], self.createExpression(entry[1].var[0], Units[entry[1].unit]))
+        }
+
+        for (let entry of Object.entries(vars.poses)) {
+          self.poses.set(entry[0], ExprPose.create({
+            x: self.createExpression(entry[1].x[0] ?? "0 m", Units.Meter),
+            y: self.createExpression(entry[1].y[0] ?? "0 m", Units.Meter),
+            heading: self.createExpression(entry[1].heading[0] ?? "0 rad", Units.Radian)}));
+        }
       }
 }
 ));

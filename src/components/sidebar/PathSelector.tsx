@@ -115,7 +115,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
           );
         }}
       >
-        {this.getPath().generating ? (
+        {this.getPath().ui.generating ? (
           <CircularProgress
             size={20}
             sx={{

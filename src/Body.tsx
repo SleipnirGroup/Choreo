@@ -21,9 +21,6 @@ class Body extends Component<Props, State> {
   state = {};
 
   render() {
-    const expression = (doc.variables.store.get("name")!);
-    const variable = (doc.variables.poses.get("pose")!).x;
-    //expression.setEvaluator((node)=>node.evaluate({pose: {x: variable.evaluate}}));
     return (
       <>
         <div className="App">

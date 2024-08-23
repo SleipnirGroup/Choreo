@@ -52,10 +52,10 @@ class RobotConfigPanel extends Component<Props, State> {
             variant="outlined"
             onClick={() => {
               doc.history.startGroup(() => {
-                config.motorMaxVelocity.set(
-                  MotorCurves[this.state.selectedMotor].motorMaxVelocity * 0.8
+                config.vmax.set(
+                  MotorCurves[this.state.selectedMotor].vmax * 0.8
                 );
-                config.motorMaxTorque.set(
+                config.tmax.set(
                   maxTorqueCurrentLimited(
                     MotorCurves[this.state.selectedMotor].kt,
                     this.state.currentLimit
@@ -95,7 +95,7 @@ class RobotConfigPanel extends Component<Props, State> {
               setEnabled={(a) => null}
               roundingPrecision={0}
               number={
-                MotorCurves[this.state.selectedMotor].motorMaxVelocity * 0.8
+                MotorCurves[this.state.selectedMotor].vmax * 0.8
               }
               showNumberWhenDisabled={
                 MotorCurves[this.state.selectedMotor] !== undefined

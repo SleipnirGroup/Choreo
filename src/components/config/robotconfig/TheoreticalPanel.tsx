@@ -15,16 +15,16 @@ class RobotConfigPanel extends Component<Props, State> {
 
   state = { selectedMotor: "NEO", currentLimit: 40 };
   render() {
-    const config = doc.robotConfig.asSolverRobotConfig();
-    const floorSpeed = config.wheelMaxVelocity * config.wheelRadius;
-    const floorLinearForce = (4 * config.wheelMaxTorque) / config.wheelRadius; // N
+    const config = doc.robotConfig.snapshot();
+    const floorSpeed = doc.robotConfig.wheelMaxVelocity * config.radius;
+    const floorLinearForce = (4 * doc.robotConfig.wheelMaxTorque) / config.radius; // N
     const floorLinearAccel = floorLinearForce / config.mass;
-    const driveRadius = Math.hypot(config.wheelbase / 2, config.trackWidth / 2);
+    const driveRadius = Math.hypot(config.modules[0].x, config.modules[0].y); // TODO proper sum of forces from four wheels
     const chassisTorque = floorLinearForce * driveRadius; // N*m
     //N*m/(kg*m*m) = N/(kg*m) = (kg*m/s^2)/(kg*m)=1/s^2= rad/s^2
-    const chassisAngularAccel = chassisTorque / config.rotationalInertia; //N*m/(kg*m*m) = N/(kg*m)
+    const chassisAngularAccel = chassisTorque / config.inertia; //N*m/(kg*m*m) = N/(kg*m)
     const floorAngularVelocity =
-      (config.wheelMaxVelocity * config.wheelRadius) / driveRadius;
+      (doc.robotConfig.wheelMaxVelocity * config.radius) / driveRadius;
     const imp = this.props.imperial;
     return (
       <InputList noCheckbox rowGap={this.props.rowGap}>

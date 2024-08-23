@@ -62,7 +62,7 @@ class SidebarWaypoint extends Component<Props, State> {
     const type = waypoint.type;
     // apparently we have to dereference this here instead of inline in the class name
     // Otherwise the component won't rerender when it changes
-    const { selected, translationConstrained, headingConstrained } = waypoint;
+    const { selected, fixTranslation, fixHeading } = waypoint;
     if (!isAlive(waypoint)) return <></>;
     return (
       <Draggable
@@ -91,19 +91,19 @@ class SidebarWaypoint extends Component<Props, State> {
               className: styles.SidebarIcon,
               htmlColor: this.getIconColor(pathLength)
             })}
-            {/* {translationConstrained && headingConstrained && (
+            {/* {fixTranslation && fixHeading && (
               <Waypoint
                 htmlColor={this.getIconColor(pathLength)}
                 className={styles.SidebarIcon}
               ></Waypoint>
             )}
-            {translationConstrained && !headingConstrained && (
+            {fixTranslation && !fixHeading && (
               <Circle
                 htmlColor={this.getIconColor(pathLength)}
                 className={styles.SidebarIcon}
               ></Circle>
             )}
-            {!translationConstrained && (
+            {!fixTranslation && (
               <CircleOutlined
                 htmlColor={this.getIconColor(pathLength)}
                 className={styles.SidebarIcon}
@@ -129,7 +129,7 @@ class SidebarWaypoint extends Component<Props, State> {
                 className={styles.SidebarRightIcon}
                 onClick={(e) => {
                   e.stopPropagation();
-                  doc.pathlist.activePath.deleteWaypointUUID(
+                  doc.pathlist.activePath.path.deleteWaypoint(
                     waypoint?.uuid || ""
                   );
                 }}

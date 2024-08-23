@@ -34,19 +34,20 @@ class InterpolatedRobot extends Component<Props, State> {
   state = {};
 
   render() {
-    if (doc.pathlist.activePath.generated.length < 2) {
+    const traj = doc.pathlist.activePath.traj.fullTraj;
+    if (traj.length < 2) {
       return <></>;
     }
     const pose1 = sample(
       this.props.timestamp,
-      doc.pathlist.activePath.generated
+      traj
     );
 
     const headingPointSideLength =
       targetSideLength *
       Math.min(
-        doc.robotConfig.bumperLength.value,
-        doc.robotConfig.bumperWidth.value
+        
+        doc.robotConfig.bumper.length, doc.robotConfig.bumper.width
       );
     const headingPointHeight = (Math.sqrt(3) / 2) * headingPointSideLength;
 
@@ -78,7 +79,7 @@ class InterpolatedRobot extends Component<Props, State> {
         />
         {/* Heading point */}
         <polygon
-          transform={`translate(${doc.robotConfig.bumperLength.value / 2},0)`}
+          transform={`translate(${doc.robotConfig.bumper.length / 2},0)`}
           fill="white"
           points={
             `${-headingPointHeight / 2},${headingPointSideLength / 2} ` +
@@ -87,30 +88,16 @@ class InterpolatedRobot extends Component<Props, State> {
           }
         ></polygon>
         {/* Wheel locations */}
-        <circle
-          cx={doc.robotConfig.wheelbase.value / 2}
-          cy={doc.robotConfig.trackWidth.value / 2}
-          r={doc.robotConfig.wheelRadius.value}
-          fill="white"
-        ></circle>
-        <circle
-          cx={doc.robotConfig.wheelbase.value / 2}
-          cy={-doc.robotConfig.trackWidth.value / 2}
-          r={doc.robotConfig.wheelRadius.value}
-          fill="white"
-        ></circle>
-        <circle
-          cx={-doc.robotConfig.wheelbase.value / 2}
-          cy={-doc.robotConfig.trackWidth.value / 2}
-          r={doc.robotConfig.wheelRadius.value}
-          fill="white"
-        ></circle>
-        <circle
-          cx={-doc.robotConfig.wheelbase.value / 2}
-          cy={doc.robotConfig.trackWidth.value / 2}
-          r={doc.robotConfig.wheelRadius.value}
-          fill="white"
-        ></circle>
+        {
+          doc.robotConfig.modules.map(mod=>(
+            <circle
+            cx={mod.x.value}
+            cy={mod.y.value}
+            r={doc.robotConfig.radius.value}
+            fill="white"
+          ></circle>
+          ))
+        }
       </g>
     );
   }

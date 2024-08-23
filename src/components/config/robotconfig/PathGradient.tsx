@@ -1,10 +1,21 @@
 
+import { Sample } from "../../../document/2025/DocumentTypes";
 import { IDocumentStore } from "../../../document/DocumentModel";
-import { SavedTrajectorySample } from "../../../document/DocumentSpecTypes";
 
 /**
  * Represents a path gradient.
  */
+export type PathGradientArgs = {
+  point: Sample,
+  prev: Sample,
+  next: Sample,
+  arr: Sample[][],
+  total: number,
+  count: number,
+  i: number,
+  j: number,
+  documentModel: IDocumentStore
+}
 export type PathGradient = {
   /**
    * The name/key of the path gradient.
@@ -27,10 +38,7 @@ export type PathGradient = {
    * @returns The gradient value as a string.
    */
   function: (
-    point: SavedTrajectorySample,
-    i: number,
-    arr: SavedTrajectorySample[],
-    documentModel: IDocumentStore
+    args: PathGradientArgs
   ) => string;
 };
 
@@ -49,12 +57,7 @@ class PathGradientFunctions {
    * @param documentModel - The document model object.
    * @returns The "select-yellow" color.
    */
-  static none(
-    point: SavedTrajectorySample,
-    i: number,
-    arr: SavedTrajectorySample[],
-    documentModel: IDocumentStore
-  ) :string {
+  static none({}:PathGradientArgs) :string {
     return "var(--select-yellow)";
   }
 
@@ -68,18 +71,14 @@ class PathGradientFunctions {
    * @param documentModel - The document model.
    * @returns The color gradient in HSL format.
    */
-  static velocity(
-    point: SavedTrajectorySample,
-    i: number,
-    arr: SavedTrajectorySample[],
-    documentModel: IDocumentStore
+  static velocity({point, documentModel}:PathGradientArgs
   ) :string {
     // calculates the maginitude of the velocity vector, then divides it by the theoretical floor speed
     // then it scales the ratio [0, 1]: red to green[0, 100]
     const floorSpeed =
       documentModel.robotConfig.wheelMaxVelocity *
-      documentModel.robotConfig.wheelRadius;
-    const t = Math.hypot(point.velocityX, point.velocityY) / floorSpeed;
+      documentModel.robotConfig.radius.value;
+    const t = Math.hypot(point.vx, point.vy) / floorSpeed;
     return `hsl(${100 * t}, 100%, 50%)`;
   }
 
@@ -94,15 +93,11 @@ class PathGradientFunctions {
    * @param documentModel - The document model.
    * @returns The progress color in HSL format.
    */
-  static progress(
-    point: SavedTrajectorySample,
-    i: number,
-    arr: SavedTrajectorySample[],
-    documentModel: IDocumentStore
+  static progress({count, total}:PathGradientArgs
   ) :string {
     // this creates a ratio [0, 1] of the current point against the total points
     // then scales it from red to greeen, [0, 100]
-    const t = 1 - i / arr.length;
+    const t = 1 - count / total;
     return `hsl(${100 * t}, 100%, 50%)`;
   }
 
@@ -117,21 +112,18 @@ class PathGradientFunctions {
    * @returns The color gradient for the acceleration.
    */
   static acceleration(
-    point: SavedTrajectorySample,
-    i: number,
-    arr: SavedTrajectorySample[],
-    documentModel: IDocumentStore
+    {point, next, count, total}: PathGradientArgs
   ) :string {
     let t = 0;
 
-    if (i != 0 && i != arr.length - 1) {
+    if (count != 0 && count != total - 1) {
       // first calculates the magnitude of the change in velocity vector over change in time
       // between the current point and the next point.
       // then, it is scaled/normalized for the HSL color value.
-      const A = arr[i];
-      const B = arr[i + 1];
-      t = Math.hypot(B.velocityX - A.velocityX, B.velocityY - A.velocityY);
-      const dt = B.timestamp - A.timestamp;
+      const A = point;
+      const B = next;
+      t = Math.hypot(B.vx - A.vx, B.vy - A.vy);
+      const dt = B.t - A.t;
       t /= dt * 10;
     }
 
@@ -148,19 +140,14 @@ class PathGradientFunctions {
    * @param documentModel - The document model.
    * @returns The computed intervalDt value.
    */
-  static intervalDt(
-    point: SavedTrajectorySample,
-    i: number,
-    arr: SavedTrajectorySample[],
-    documentModel: IDocumentStore
-  ) :string {
+  static intervalDt({point, next, count, total}: PathGradientArgs) :string {
     let t = 0;
-    if (i == 0 || i == arr.length - 1) {
+    if (count == 0 || count == total - 1) {
       t = 0;
     } else {
-      const A = arr[i];
-      const B = arr[i + 1];
-      const dt = B.timestamp - A.timestamp;
+      const A = point;
+      const B = next;
+      const dt = B.t - A.t;
       t = 1.5 - 10 * dt;
     }
     return `hsl(${100 * t}, 100%, 50%)`;
@@ -176,15 +163,10 @@ class PathGradientFunctions {
    * @param documentModel - The document model.
    * @returns The color value in HSL format.
    */
-  static angularVelocity(
-    point: SavedTrajectorySample,
-    i: number,
-    arr: SavedTrajectorySample[],
-    documentModel: IDocumentStore
-  ) :string {
+  static angularVelocity({point}:PathGradientArgs) :string {
     // the color value is normalized from red (0) to green (100)
     // based on an artificial angular velocity max of 2 r/s
-    return `hsl(${Math.abs(point.angularVelocity * 100) / 2}, 100%, 50%)`;
+    return `hsl(${Math.abs(point.omega * 100) / 2}, 100%, 50%)`;
   }
 
   /**
@@ -196,29 +178,15 @@ class PathGradientFunctions {
    * @param documentModel - The document model.
    * @returns The color gradient in HSL format.
    */
-  static splitTrajectories(
-    point: SavedTrajectorySample,
-    i: number,
-    arr: SavedTrajectorySample[],
-    documentModel: IDocumentStore
-  ) :string {
-    if (!documentModel.splitTrajectoriesAtStopPoints) {
+  static splitTrajectories({arr, i}: PathGradientArgs) :string {
+    if (!(arr.length<2)) {
       return "var(--select-yellow)";
     }
-    const stopPointControlIntervals =
-      documentModel.pathlist.activePath.stopPointIndices();
 
-    for (let split = 0; split < stopPointControlIntervals.length - 1; split++) {
-      if (
-        i > stopPointControlIntervals[split] &&
-        i < stopPointControlIntervals[split + 1]
-      ) {
-        // an absolute value sine function is used to generate a distinct color between [0, 1]
-        // then a scalar is used to scale the color between the full color range [0, 360]
-        return `hsl(${Math.abs(Math.sin(split) * 360)}, 100%, 50%)`;
-      }
-    }
-    return "var(--select-yellow)";
+
+    // an absolute value sine function is used to generate a distinct color between [0, 1]
+    // then a scalar is used to scale the color between the full color range [0, 360]
+    return `hsl(${Math.abs(Math.sin(i) * 360)}, 100%, 50%)`;
   }
 }
 
