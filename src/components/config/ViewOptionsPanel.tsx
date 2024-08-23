@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import {doc, uiState} from "../../document/DocumentManager";
+import { doc, uiState } from "../../document/DocumentManager";
 import styles from "./WaypointConfigPanel.module.css";
 import {
   IconButton,
@@ -23,8 +23,6 @@ type State = {
 };
 
 class ViewOptionsPanel extends Component<Props, State> {
-  
-
   state = {
     selectedElement: null,
     isOpen: false
@@ -56,10 +54,7 @@ class ViewOptionsPanel extends Component<Props, State> {
         <Tooltip disableInteractive title="Zoom to fit trajectory">
           {/* If there's no waypoints, then don't allow user to zoom to fit Waypoints */}
           <IconButton
-            disabled={
-              doc.pathlist.activePath.path.waypoints
-                .length == 0
-            }
+            disabled={doc.pathlist.activePath.path.waypoints.length == 0}
             onClick={() => doc.zoomToFitWaypoints()}
           >
             <AspectRatio></AspectRatio>

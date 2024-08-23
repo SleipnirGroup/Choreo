@@ -1,7 +1,14 @@
-import { Instance, getEnv, getParent, getRoot, isAlive, types } from "mobx-state-tree";
+import {
+  Instance,
+  getEnv,
+  getParent,
+  getRoot,
+  isAlive,
+  types
+} from "mobx-state-tree";
 import { ExpressionStore, Units } from "./ExpressionStore";
 import { number } from "mathjs";
-import {v4 as uuidv4} from "uuid"
+import { v4 as uuidv4 } from "uuid";
 import { CircleObstacle, Expr } from "./2025/DocumentTypes";
 import { Env } from "./DocumentManager";
 
@@ -13,21 +20,18 @@ export const CircularObstacleStore = types
     uuid: types.identifier
   })
   .views((self) => ({
-    serialize() : CircleObstacle<Expr> {
+    serialize(): CircleObstacle<Expr> {
       return {
         x: self.x.serialize(),
         y: self.y.serialize(),
         r: self.radius.serialize()
-      }
+      };
     },
     get selected(): boolean {
       if (!isAlive(self)) {
         return false;
       }
-      return (
-        self.uuid ===
-          getEnv<Env>(self).selectedSidebar()
-      );
+      return self.uuid === getEnv<Env>(self).selectedSidebar();
     }
   }))
   .actions((self) => ({
@@ -46,6 +50,5 @@ export const CircularObstacleStore = types
       }
     }
   }));
-  export interface ICircularObstacleStore
+export interface ICircularObstacleStore
   extends Instance<typeof CircularObstacleStore> {}
-

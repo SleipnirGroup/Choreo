@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import {doc, uiState} from "../../../document/DocumentManager";
+import { doc, uiState } from "../../../document/DocumentManager";
 
 import { sample } from "../../../util/MathUtil";
 
@@ -44,8 +44,6 @@ class FieldEventMarker extends Component<MarkerProps, MarkerState> {
 }
 
 class FieldEventMarkers extends Component<Props, State> {
-  
-
   state = {};
 
   render() {
@@ -60,9 +58,7 @@ class FieldEventMarkers extends Component<Props, State> {
           x={marked.x}
           y={marked.y}
           selected={marker.selected}
-          onSelect={() =>
-            doc.setSelectedSidebarItem(marker)
-          }
+          onSelect={() => doc.setSelectedSidebarItem(marker)}
         ></FieldEventMarker>
       );
     });

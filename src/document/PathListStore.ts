@@ -46,21 +46,21 @@ export const PathListStore = types
             name: "New Path",
             path: {
               constraints: [],
-              waypoints:[],
-              obstacles:[]
+              waypoints: [],
+              obstacles: []
             },
             ui: {
               visibleWaypointsEnd: 0,
               visibleWaypointsStart: 0
             },
             snapshot: {
-              waypoints:[],
-              constraints:[]
+              waypoints: [],
+              constraints: []
             },
             traj: {
-              waypoints:[],
-              samples:[],
-              markers:[]
+              waypoints: [],
+              samples: [],
+              markers: []
             }
           })
         );
@@ -91,21 +91,21 @@ export const PathListStore = types
           name: usedName,
           path: {
             constraints: [],
-            waypoints:[],
-            obstacles:[]
+            waypoints: [],
+            obstacles: []
           },
           ui: {
             visibleWaypointsEnd: 0,
             visibleWaypointsStart: 0
           },
           snapshot: {
-            waypoints:[],
-            constraints:[]
+            waypoints: [],
+            constraints: []
           },
           traj: {
-            waypoints:[],
-            samples:[],
-            markers:[]
+            waypoints: [],
+            samples: [],
+            markers: []
           }
         });
         path.setExporter(self.getExporter());

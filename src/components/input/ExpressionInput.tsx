@@ -80,17 +80,18 @@ class Input extends Component<Props, State> {
   getRoundedStr(): string {
     const precision = this.props.roundingPrecision ?? 3;
     return math.format(this.props.number.toDefaultUnit(), {
-        precision,
-      });
+      precision
+    });
   }
 
-  getValid() : boolean {
+  getValid(): boolean {
     try {
-    let newNode = this.props.number.validate(math.parse(this.state.editedValue));
-    return newNode !== undefined;
-    }
-    catch {
-        return false;
+      let newNode = this.props.number.validate(
+        math.parse(this.state.editedValue)
+      );
+      return newNode !== undefined;
+    } catch {
+      return false;
     }
   }
   componentDidUpdate(
@@ -107,9 +108,12 @@ class Input extends Component<Props, State> {
   }
 
   render() {
-    try{
-    this.props.number.expr;
-    } catch (e) {console.error(e); throw(e);}
+    try {
+      this.props.number.expr;
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
     const showNumberWhenDisabled = this.props.showNumberWhenDisabled ?? true;
     let characters = this.getRoundedStr().length + 3;
     if (this.props.maxWidthCharacters !== undefined) {
@@ -136,11 +140,12 @@ class Input extends Component<Props, State> {
           className={
             styles.Number +
             (showNumberWhenDisabled ? " " + styles.ShowWhenDisabled : "") +
-            (this.getValid() ? " " : (" "+ styles.Invalid))
+            (this.getValid() ? " " : " " + styles.Invalid)
           }
-          style={{ 
+          style={{
             minWidth: `${characters}ch`,
-            gridColumn: "span 1" }}
+            gridColumn: "span 1"
+          }}
           disabled={!this.props.enabled}
           // The below is needed to make inputs on CommandDraggables work
           onClick={(e) => e.stopPropagation()}
@@ -148,7 +153,9 @@ class Input extends Component<Props, State> {
             this.focusedMode();
           }}
           onBlur={(e) => {
-            let newNode = this.props.number.validate(math.parse(this.state.editedValue));
+            let newNode = this.props.number.validate(
+              math.parse(this.state.editedValue)
+            );
             if (newNode !== undefined) {
               this.props.number.set(newNode);
             }

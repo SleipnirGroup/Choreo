@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component, ReactElement } from "react";
-import {doc, uiState} from "../../document/DocumentManager";
+import { doc, uiState } from "../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import Input from "../input/Input";
 import styles from "./WaypointConfigPanel.module.css";
@@ -16,8 +16,6 @@ type Props = { waypoint: IHolonomicWaypointStore | null; index: number };
 type State = object;
 
 class WaypointPanel extends Component<Props, State> {
-  
-
   state = {};
 
   isWaypointNonNull(
@@ -57,7 +55,6 @@ class WaypointPanel extends Component<Props, State> {
               enabled={true}
               maxWidthCharacters={8}
               number={waypoint.y}
-              
             ></ExpressionInput>
             <ExpressionInput
               title="θ"
@@ -66,8 +63,8 @@ class WaypointPanel extends Component<Props, State> {
               number={waypoint.heading}
               //setNumber={(heading) => waypoint!.setHeading(heading)}
             ></ExpressionInput>
-            </ExpressionInputList>
-            <InputList noCheckbox>
+          </ExpressionInputList>
+          <InputList noCheckbox>
             <Input
               title=""
               suffix="samples"

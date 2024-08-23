@@ -1,17 +1,18 @@
 import React, { Component } from "react";
-import {doc, uiState} from "../../../document/DocumentManager";
+import { doc, uiState } from "../../../document/DocumentManager";
 
 import { observer } from "mobx-react";
-import { PathGradient, PathGradientArgs, PathGradients } from "../../config/robotconfig/PathGradient";
+import {
+  PathGradient,
+  PathGradientArgs,
+  PathGradients
+} from "../../config/robotconfig/PathGradient";
 
 type Props = object;
 
 type State = object;
 
 class FieldPathLines extends Component<Props, State> {
-  
-
-
   render() {
     const path = doc.pathlist.activePath;
     let generatedPathString = "";
@@ -24,8 +25,7 @@ class FieldPathLines extends Component<Props, State> {
     trajectory.forEach((point) => {
       generatedPathString += `${point.x},${point.y} `;
     });
-    const key = uiState
-      .selectedPathGradient as keyof typeof PathGradients;
+    const key = uiState.selectedPathGradient as keyof typeof PathGradients;
     const pathGradient = PathGradients[key];
     if (
       pathGradient === undefined ||
@@ -46,26 +46,25 @@ class FieldPathLines extends Component<Props, State> {
         <g>
           {trajectory.length > 1 &&
             trajectory.map((point, i, arr) => {
-
               if (i == arr.length - 1) {
                 return <></>;
               }
               const point2 = arr[i + 1];
-              let [sect, indexInSect] = path.traj.getIdxOfFullTraj(i) ?? [0,0];
-              let indexI
-              const args : PathGradientArgs = {
+              let [sect, indexInSect] = path.traj.getIdxOfFullTraj(i) ?? [0, 0];
+              let indexI;
+              const args: PathGradientArgs = {
                 point: point,
-                prev: arr[i-1],
-                next: arr[i+1],
+                prev: arr[i - 1],
+                next: arr[i + 1],
                 arr: path.ui.generating
                   ? [path.ui.generationProgress]
                   : path.traj.samples,
                 total: arr.length,
                 count: i,
-                i: path.ui.generating ? 0: sect,
-                j: path.ui.generating ? 0: indexInSect,
+                i: path.ui.generating ? 0 : sect,
+                j: path.ui.generating ? 0 : indexInSect,
                 documentModel: doc
-              }
+              };
               // 0 t = red, 1 t = green
               return (
                 <line

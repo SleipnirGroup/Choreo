@@ -10,12 +10,11 @@ import {
   type Traj,
   Waypoint,
   Expr
-} from "../2025/DocumentTypes"
+} from "../2025/DocumentTypes";
 import { ChoreoPathStore } from "./ChoreoPathStore";
 import { ChoreoTrajStore } from "./ChoreoTrajStore";
 import { PathUIStore } from "./PathUIStore";
 import { Env } from "../DocumentManager";
-
 
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
@@ -28,9 +27,8 @@ export const HolonomicPathStore = types
     isTrajectoryStale: true,
     usesControlIntervalGuessing: true,
     defaultControlIntervalCount: 40,
-    usesDefaultObstacles: true,
+    usesDefaultObstacles: true
   })
-
 
   .views((self) => {
     return {
@@ -47,7 +45,7 @@ export const HolonomicPathStore = types
           path: self.path.serialize(),
           traj: self.traj.serialize(),
           snapshot: self.snapshot
-        }
+        };
       },
       lowestSelectedPoint(): IHolonomicWaypointStore | null {
         for (const point of self.path.waypoints) {
@@ -61,7 +59,7 @@ export const HolonomicPathStore = types
     return {
       waypointTimestamps(): number[] {
         return self.traj.waypoints;
-      },
+      }
       // asSolverPath() {
       //   const savedPath = self.asSavedPath();
       //   savedPath.constraints.forEach((constraint) => {
@@ -209,7 +207,8 @@ export const HolonomicPathStore = types
       addWaypoint(waypoint?: Partial<Waypoint<Expr>>): IHolonomicWaypointStore {
         self.path.waypoints.push(
           getEnv<Env>(self).create.WaypointStore(
-            Object.assign({...DEFAULT_WAYPOINT}, waypoint))
+            Object.assign({ ...DEFAULT_WAYPOINT }, waypoint)
+          )
         );
         if (self.path.waypoints.length === 1) {
           getEnv<Env>(self).select(self.path.waypoints[0]);
@@ -237,7 +236,7 @@ export const HolonomicPathStore = types
         self.snapshot = ser.snapshot;
         self.path.deserialize(ser.path);
         self.traj.deserialize(ser.traj);
-      }      
+      }
     };
   })
   .actions((self) => {

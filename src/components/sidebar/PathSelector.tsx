@@ -7,7 +7,12 @@ import {
 } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import {doc, uiState, renamePath, deletePath} from "../../document/DocumentManager";
+import {
+  doc,
+  uiState,
+  renamePath,
+  deletePath
+} from "../../document/DocumentManager";
 import DeleteIcon from "@mui/icons-material/Delete";
 import styles from "./Sidebar.module.css";
 import { Tooltip } from "@mui/material";
@@ -35,8 +40,6 @@ type OptionState = {
 };
 
 class PathSelectorOption extends Component<OptionProps, OptionState> {
-  
-
   state = {
     renaming: false,
     renameError: false,
@@ -45,9 +48,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
   };
   nameInputRef = React.createRef<HTMLInputElement>();
   getSelected() {
-    return (
-      this.props.uuid == doc.pathlist.activePathUUID
-    );
+    return this.props.uuid == doc.pathlist.activePathUUID;
   }
   getPath() {
     return doc.pathlist.paths.get(this.props.uuid)!;
@@ -58,10 +59,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
   }
   completeRename() {
     if (!this.checkName()) {
-      renamePath(
-        this.props.uuid,
-        this.nameInputRef.current!.value
-      );
+      renamePath(this.props.uuid, this.nameInputRef.current!.value);
     }
     this.escapeRename();
   }
@@ -87,9 +85,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     const didFind =
       Array.from(doc.pathlist.paths.keys())
         .filter((uuid) => uuid !== this.props.uuid)
-        .map(
-          (uuid) => doc.pathlist.paths.get(uuid)!.name
-        )
+        .map((uuid) => doc.pathlist.paths.get(uuid)!.name)
         .find((existingName) => existingName === name) !== undefined;
     return didFind;
   }
@@ -97,8 +93,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     // this is here to use the data we care about during actual rendering
     // so mobx knows to rerender this component when it changes
     this.searchForName("");
-    const selected =
-      this.props.uuid == doc.pathlist.activePathUUID;
+    const selected = this.props.uuid == doc.pathlist.activePathUUID;
     const name = this.getPath().name;
     if (name != this.state.name && !this.state.renaming) {
       this.state.name = name;
@@ -110,9 +105,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
         onClick={() => {
           toast.dismiss(); // remove toasts that showed from last path, which is irrelevant for the new path
 
-          doc.pathlist.setActivePathUUID(
-            this.props.uuid
-          );
+          doc.pathlist.setActivePathUUID(this.props.uuid);
         }}
       >
         {this.getPath().ui.generating ? (
@@ -310,8 +303,6 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
 }
 
 class PathSelector extends Component<Props, State> {
-  
-
   state = {};
 
   Option = observer(PathSelectorOption);
@@ -319,11 +310,9 @@ class PathSelector extends Component<Props, State> {
     return (
       <div>
         <div className={styles.WaypointList}>
-          {Array.from(doc.pathlist.paths.keys()).map(
-            (uuid) => (
-              <this.Option uuid={uuid} key={uuid}></this.Option>
-            )
-          )}
+          {Array.from(doc.pathlist.paths.keys()).map((uuid) => (
+            <this.Option uuid={uuid} key={uuid}></this.Option>
+          ))}
         </div>
       </div>
     );

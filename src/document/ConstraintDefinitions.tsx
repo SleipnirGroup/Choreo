@@ -2,13 +2,13 @@ import { Unit } from "mathjs";
 import { Expr } from "./2025/DocumentTypes";
 import { Units } from "./ExpressionStore";
 import {
-    KeyboardDoubleArrowRight,
-    NearMe,
-    Stop,
-    StopCircleOutlined,
-    TextRotationNoneOutlined  } from "@mui/icons-material";
-  import { JSXElementConstructor, ReactElement } from "react";
-  
+  KeyboardDoubleArrowRight,
+  NearMe,
+  Stop,
+  StopCircleOutlined,
+  TextRotationNoneOutlined
+} from "@mui/icons-material";
+import { JSXElementConstructor, ReactElement } from "react";
 
 export type ConstraintPropertyType = Expr | boolean;
 
@@ -16,12 +16,12 @@ export type ConstraintPropertyDefinition<P extends ConstraintPropertyType> = {
   name: string;
   description: string;
   defaultVal: P;
-} & (P extends Expr ? { units: Unit; } : {});
+} & (P extends Expr ? { units: Unit } : {});
 
-export type DataPropsList = { [key: string]: ConstraintPropertyType }
+export type DataPropsList = { [key: string]: ConstraintPropertyType };
 export type PropertyDefinitionList<P extends DataPropsList> = {
   [key in keyof P]: ConstraintPropertyDefinition<P[key]>;
-}
+};
 export type ConstraintDefinition<D extends ConstraintData> = {
   type: D["type"];
   name: string;
@@ -30,58 +30,64 @@ export type ConstraintDefinition<D extends ConstraintData> = {
   description: string;
   wptScope: boolean;
   sgmtScope: boolean;
-  properties: PropertyDefinitionList<D["props"]>
+  properties: PropertyDefinitionList<D["props"]>;
 };
 
 export type WaypointID = "first" | "last" | { uuid: string };
 
 // Constraints
-interface IConstraintData<name, Props extends DataPropsList> { readonly type: name, props: Props };
+interface IConstraintData<name, Props extends DataPropsList> {
+  readonly type: name;
+  props: Props;
+}
 
 export type ConstraintDataTypeMap = {
-    MaxVelocity: {max: Expr},
-    MaxAcceleration: {max: Expr},
-    StopPoint: {},
-    PointAt: {
-        x: Expr,
-        y: Expr,
-        tolerance: Expr,
-        flip: boolean
-      }
-}
+  MaxVelocity: { max: Expr };
+  MaxAcceleration: { max: Expr };
+  StopPoint: {};
+  PointAt: {
+    x: Expr;
+    y: Expr;
+    tolerance: Expr;
+    flip: boolean;
+  };
+};
 export type DataMap = {
-    [K in keyof ConstraintDataTypeMap]: IConstraintData<K, ConstraintDataTypeMap[K]>
-}
+  [K in keyof ConstraintDataTypeMap]: IConstraintData<
+    K,
+    ConstraintDataTypeMap[K]
+  >;
+};
 export type ConstraintData = DataMap[keyof DataMap];
 
 export const consts: ConstraintDefinition<any>[] = [
-    {
-        type: "StopPoint" as const,
-        name: "Stop Point",
-        shortName: "Stop",
-        description: "Zero linear and angular velocity at waypoint",
-        icon: <StopCircleOutlined />,
-        properties: {},
-        wptScope: true,
-        sgmtScope: false
-      } satisfies ConstraintDefinition<DataMap["StopPoint"]>,
-    {
-        type: "MaxVelocity" as const,
+  {
+    type: "StopPoint" as const,
+    name: "Stop Point",
+    shortName: "Stop",
+    description: "Zero linear and angular velocity at waypoint",
+    icon: <StopCircleOutlined />,
+    properties: {},
+    wptScope: true,
+    sgmtScope: false
+  } satisfies ConstraintDefinition<DataMap["StopPoint"]>,
+  {
+    type: "MaxVelocity" as const,
+    name: "Max Velocity",
+    shortName: "Max Velo",
+    description: "Maximum Velocity",
+    icon: <KeyboardDoubleArrowRight />,
+    properties: {
+      max: {
         name: "Max Velocity",
-        shortName: "Max Velo",
-        description: "Maximum Velocity",
-        icon: <KeyboardDoubleArrowRight />,
-        properties: {
-          max: {
-            name: "Max Velocity",
-            description: "Maximum linear velocity of robot chassis",
-            units: Units.MeterPerSecond,
-            defaultVal: ["0 m/s", 0]
-          }
-        },
-        wptScope: true,
-        sgmtScope: true
-      } satisfies ConstraintDefinition<DataMap["MaxVelocity"]>,
+        description: "Maximum linear velocity of robot chassis",
+        units: Units.MeterPerSecond,
+        defaultVal: ["0 m/s", 0]
+      }
+    },
+    wptScope: true,
+    sgmtScope: true
+  } satisfies ConstraintDefinition<DataMap["MaxVelocity"]>,
   {
     type: "MaxAcceleration" as const,
     name: "Max Acceleration",
@@ -127,17 +133,17 @@ export const consts: ConstraintDefinition<any>[] = [
       },
       flip: {
         name: "Flip",
-        description: "Whether to point the back of the robot at the point instead of the front",
+        description:
+          "Whether to point the back of the robot at the point instead of the front",
         defaultVal: false
       }
     },
     wptScope: true,
     sgmtScope: true
-  } satisfies ConstraintDefinition<DataMap["PointAt"]>,
-]
-
+  } satisfies ConstraintDefinition<DataMap["PointAt"]>
+];
 
 export type ConstraintKey = keyof DataMap;
 export const ConstraintDefinitions: {
-    [key in ConstraintKey]: ConstraintDefinition<any>
-  } = Object.fromEntries(consts.map(def => [def.type, def]));
+  [key in ConstraintKey]: ConstraintDefinition<any>;
+} = Object.fromEntries(consts.map((def) => [def.type, def]));

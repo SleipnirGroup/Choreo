@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import {doc, uiState} from "../../../document/DocumentManager";
+import { doc, uiState } from "../../../document/DocumentManager";
 
 import { observer } from "mobx-react";
 
@@ -8,17 +8,13 @@ type Props = object;
 type State = object;
 
 class FieldPathLines extends Component<Props, State> {
-  
-
   state = {};
 
   render() {
     let pathString = "";
-    doc.pathlist.activePath.path.waypoints.forEach(
-      (point, index) => {
-        pathString += `${point.x.value}, ${point.y.value} `;
-      }
-    );
+    doc.pathlist.activePath.path.waypoints.forEach((point, index) => {
+      pathString += `${point.x.value}, ${point.y.value} `;
+    });
     return (
       <>
         <polyline

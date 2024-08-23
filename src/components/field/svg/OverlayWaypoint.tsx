@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import {doc, uiState} from "../../../document/DocumentManager";
+import { doc, uiState } from "../../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../../document/HolonomicWaypointStore";
 import * as d3 from "d3";
 import { IDocumentStore } from "../../../document/DocumentModel";
@@ -36,8 +36,6 @@ const targetSideLength =
 
 const outlineWidth = 0.03;
 class OverlayWaypoint extends Component<Props, State> {
-  
-
   state = {};
   bumperRef: any;
   rootRef: React.RefObject<SVGGElement> = React.createRef<SVGGElement>();
@@ -145,9 +143,7 @@ class OverlayWaypoint extends Component<Props, State> {
     //d3.select(`#group`).attr('transform', `rotate(${ this.r.angle })`)
   }
   selectWaypoint() {
-    doc.pathlist.activePath.path.selectOnly(
-      this.props.index
-    );
+    doc.pathlist.activePath.path.selectOnly(this.props.index);
   }
   componentDidMount() {
     if (this.rootRef.current) {
@@ -155,17 +151,11 @@ class OverlayWaypoint extends Component<Props, State> {
         `#waypointGroup${this.props.index}`
       ).on("contextmenu", (e) => {
         console.log("selecting waypoint: " + this.props.index);
-        doc.pathlist.activePath.path.selectOnly(
-          this.props.index
-        );
+        doc.pathlist.activePath.path.selectOnly(this.props.index);
         uiState.setContextMenuMouseSelection(e);
-        uiState.setContextMenuSelectedWaypoint(
-          this.props.index
-        );
+        uiState.setContextMenuSelectedWaypoint(this.props.index);
         uiState.setContextMenuWaypointType(
-          doc.pathlist.activePath.path.waypoints[
-            this.props.index
-          ].type
+          doc.pathlist.activePath.path.waypoints[this.props.index].type
         );
       });
 

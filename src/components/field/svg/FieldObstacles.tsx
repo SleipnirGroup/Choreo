@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import {doc, select, uiState} from "../../../document/DocumentManager";
+import { doc, select, uiState } from "../../../document/DocumentManager";
 import { observer } from "mobx-react";
 import * as d3 from "d3";
 import { ICircularObstacleStore } from "../../../document/CircularObstacleStore";
@@ -12,8 +12,6 @@ const STROKE = 0.1;
 const DOT = 0.1;
 
 class FieldGrid extends Component<Props, State> {
-  
-
   state = {};
   rootRef: React.RefObject<SVGElement> = React.createRef<SVGElement>();
 

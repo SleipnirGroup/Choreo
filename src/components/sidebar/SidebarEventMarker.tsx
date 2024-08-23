@@ -1,6 +1,6 @@
 import { Component } from "react";
 import React from "react";
-import {doc, uiState} from "../../document/DocumentManager";
+import { doc, uiState } from "../../document/DocumentManager";
 import styles from "./Sidebar.module.css";
 import { observer } from "mobx-react";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -21,8 +21,6 @@ type Props = {
 type State = { selected: boolean };
 
 class SidebarMarker extends Component<Props, State> {
-  
-
   id: number = 0;
   state = { selected: false };
 
@@ -32,9 +30,10 @@ class SidebarMarker extends Component<Props, State> {
     if (id == "last") return "End";
     return (
       getParent<IHolonomicPathStore>(
-      getParent<IChoreoTrajStore>(
-        getParent<IEventMarkerStore[]>(this.props.marker)
-      )).path.findUUIDIndex(id.uuid) + 1
+        getParent<IChoreoTrajStore>(
+          getParent<IEventMarkerStore[]>(this.props.marker)
+        )
+      ).path.findUUIDIndex(id.uuid) + 1
     );
   }
 
@@ -105,9 +104,7 @@ class SidebarMarker extends Component<Props, State> {
             className={styles.SidebarRightIcon}
             onClick={(e) => {
               e.stopPropagation();
-              doc.pathlist.activePath.traj.deleteMarkerUUID(
-                marker?.uuid || ""
-              );
+              doc.pathlist.activePath.traj.deleteMarkerUUID(marker?.uuid || "");
             }}
           >
             <DeleteIcon />

@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import {doc, uiState} from "../../../document/DocumentManager";
+import { doc, uiState } from "../../../document/DocumentManager";
 
 import { observer } from "mobx-react";
 
@@ -8,8 +8,6 @@ type Props = object;
 type State = object;
 
 class FieldConstraintsAddLayer extends Component<Props, State> {
-  
-
   state = {};
 
   render() {
@@ -18,30 +16,29 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
     return (
       <>
         {/* Draw circles on each waypoint */}
-        {waypoints
-          .map((point, index) => {
-            return (
-              <circle
-                key={index}
-                cx={point.x.value}
-                cy={point.y.value}
-                r={0.2}
-                fill={"black"}
-                fillOpacity={0.2}
-                stroke="white"
-                strokeWidth={0.05}
-                onClick={() => {
-                  const newMarker = activePath.traj.addEventMarker();
+        {waypoints.map((point, index) => {
+          return (
+            <circle
+              key={index}
+              cx={point.x.value}
+              cy={point.y.value}
+              r={0.2}
+              fill={"black"}
+              fillOpacity={0.2}
+              stroke="white"
+              strokeWidth={0.05}
+              onClick={() => {
+                const newMarker = activePath.traj.addEventMarker();
 
-                  newMarker.setTarget({ uuid: point.uuid });
-                  if (!activePath.isTrajectoryStale) {
-                    newMarker.setTrajTargetIndex(index);
-                  }
-                  doc.setSelectedSidebarItem(newMarker);
-                }}
-              ></circle>
-            );
-          })}
+                newMarker.setTarget({ uuid: point.uuid });
+                if (!activePath.isTrajectoryStale) {
+                  newMarker.setTrajTargetIndex(index);
+                }
+                doc.setSelectedSidebarItem(newMarker);
+              }}
+            ></circle>
+          );
+        })}
       </>
     );
   }

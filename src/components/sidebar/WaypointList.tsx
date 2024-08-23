@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import { DragDropContext, Droppable } from "react-beautiful-dnd";
-import {doc, uiState} from "../../document/DocumentManager";
+import { doc, uiState } from "../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import { observer } from "mobx-react";
 import SidebarWaypoint from "./SidebarWaypoint";
@@ -15,8 +15,6 @@ type Props = object;
 type State = object;
 
 class WaypointList extends Component<Props, State> {
-  
-
   state = {};
   constructor(props: Props) {
     super(props);
@@ -25,10 +23,7 @@ class WaypointList extends Component<Props, State> {
   }
 
   reorder(startIndex: number, endIndex: number) {
-    doc.pathlist.activePath.path.reorderWaypoint(
-      startIndex,
-      endIndex
-    );
+    doc.pathlist.activePath.path.reorderWaypoint(startIndex, endIndex);
   }
 
   onDragEnd(result: any) {
@@ -46,8 +41,7 @@ class WaypointList extends Component<Props, State> {
   // But in this example everything is just done in one place for simplicity
   render() {
     const waypoints = doc.pathlist.activePath.path.waypoints;
-    const waypointsLength =
-      waypoints.length;
+    const waypointsLength = waypoints.length;
     if (waypointsLength == 0) {
       return (
         <div className={styles.SidebarItem + " " + styles.Noninteractible}>

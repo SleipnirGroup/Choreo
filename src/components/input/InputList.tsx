@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component, PropsWithChildren } from "react";
-import {doc, uiState} from "../../document/DocumentManager";
+import { doc, uiState } from "../../document/DocumentManager";
 import styles from "./InputList.module.css";
 
 type Props = {
@@ -12,8 +12,6 @@ type Props = {
 type State = object;
 
 class InputList extends Component<PropsWithChildren<Props>, State> {
-  
-
   state = {};
   render() {
     const className =

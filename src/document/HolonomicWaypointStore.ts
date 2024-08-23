@@ -1,4 +1,11 @@
-import { types, getRoot, Instance, getParent, isAlive, getEnv } from "mobx-state-tree";
+import {
+  types,
+  getRoot,
+  Instance,
+  getParent,
+  isAlive,
+  getEnv
+} from "mobx-state-tree";
 import { NavbarItemData } from "./UIData";
 import { ExpressionStore } from "./ExpressionStore";
 import { Expr, Waypoint } from "./2025/DocumentTypes";
@@ -12,7 +19,7 @@ export const DEFAULT_WAYPOINT: Waypoint<number> = {
   fixHeading: true,
   intervals: 40,
   split: false
-}
+};
 export const HolonomicWaypointStore = types
   .model("WaypointStore", {
     x: ExpressionStore,
@@ -39,9 +46,7 @@ export const HolonomicWaypointStore = types
         if (!isAlive(self)) {
           return false;
         }
-        return (
-          self.uuid === getEnv<Env>(self).selectedSidebar()
-        );
+        return self.uuid === getEnv<Env>(self).selectedSidebar();
       },
       serialize(): Waypoint<Expr> {
         return {
@@ -52,8 +57,7 @@ export const HolonomicWaypointStore = types
           fixHeading: self.fixHeading,
           intervals: self.intervals,
           split: self.split
-
-        }
+        };
       }
     };
   })
@@ -94,8 +98,8 @@ export const HolonomicWaypointStore = types
   })
   .actions((self) => ({
     setType(type: number) {
-      self.setFixHeading(type==0);
-      self.setFixTranslation(type==0 || type==1);
+      self.setFixHeading(type == 0);
+      self.setFixTranslation(type == 0 || type == 1);
     }
   }))
   .views((self) => ({

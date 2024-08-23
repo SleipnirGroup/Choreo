@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import {doc, uiState} from "../../document/DocumentManager";
+import { doc, uiState } from "../../document/DocumentManager";
 import PathAnimationSlider from "./PathAnimationSlider";
 import IconButton from "@mui/material/IconButton";
 import PlayIcon from "@mui/icons-material/PlayArrow";
@@ -19,7 +19,6 @@ class PathAnimationPanel extends Component<Props, State> {
   state = {
     running: false
   };
-  
 
   timerId = 0;
   totalTime = 0;
@@ -30,11 +29,7 @@ class PathAnimationPanel extends Component<Props, State> {
   onStart() {
     this.then = Date.now();
     this.setState({ running: true });
-    if (
-      Math.abs(
-        this.totalTime - uiState.pathAnimationTimestamp
-      ) < 0.1
-    ) {
+    if (Math.abs(this.totalTime - uiState.pathAnimationTimestamp) < 0.1) {
       uiState.setPathAnimationTimestamp(0);
     }
     window.cancelAnimationFrame(this.timerId);
@@ -45,14 +40,11 @@ class PathAnimationPanel extends Component<Props, State> {
     const dt = Date.now() - this.then;
     this.then = Date.now();
     if (this.state.running) {
-      const pathAnimationTimestamp =
-        uiState.pathAnimationTimestamp;
+      const pathAnimationTimestamp = uiState.pathAnimationTimestamp;
       if (pathAnimationTimestamp > this.totalTime) {
         uiState.setPathAnimationTimestamp(0);
       } else {
-        uiState.setPathAnimationTimestamp(
-          pathAnimationTimestamp + dt / 1e3
-        );
+        uiState.setPathAnimationTimestamp(pathAnimationTimestamp + dt / 1e3);
       }
 
       this.timerId = requestAnimationFrame(this.step);
@@ -82,8 +74,7 @@ class PathAnimationPanel extends Component<Props, State> {
   }
   render() {
     const activePath = doc.pathlist.activePath;
-    this.totalTime =
-      doc.pathlist.activePath.traj.getTotalTimeSeconds();
+    this.totalTime = doc.pathlist.activePath.traj.getTotalTimeSeconds();
     return (
       <div
         style={{

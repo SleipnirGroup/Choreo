@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import {doc, uiState} from "../../document/DocumentManager";
+import { doc, uiState } from "../../document/DocumentManager";
 import { observer } from "mobx-react";
 import styles from "./Sidebar.module.css";
 import { Divider, IconButton, Tooltip } from "@mui/material";
@@ -19,8 +19,6 @@ type Props = object;
 type State = object;
 
 class Sidebar extends Component<Props, State> {
-  
-
   state = {};
   constructor(props: Props) {
     super(props);
@@ -94,14 +92,9 @@ class Sidebar extends Component<Props, State> {
               style={{
                 float: "right"
               }}
-              disabled={
-                Object.keys(doc.pathlist.paths)
-                  .length == 0
-              }
+              disabled={Object.keys(doc.pathlist.paths).length == 0}
               onClick={() =>
-                doc.pathlist.duplicatePath(
-                  doc.pathlist.activePathUUID
-                )
+                doc.pathlist.duplicatePath(doc.pathlist.activePathUUID)
               }
             >
               <ContentCopy fontSize="small"></ContentCopy>
@@ -114,9 +107,7 @@ class Sidebar extends Component<Props, State> {
               style={{
                 float: "right"
               }}
-              onClick={() =>
-                doc.pathlist.addPath("New Path", true)
-              }
+              onClick={() => doc.pathlist.addPath("New Path", true)}
             >
               <Add fontSize="small"></Add>
             </IconButton>
@@ -142,19 +133,16 @@ class Sidebar extends Component<Props, State> {
             <span>CONSTRAINTS</span>
           </Divider>
           <div className={styles.WaypointList}>
-            {doc.pathlist.activePath.path.constraints.map(
-              (constraint) => {
-                return (
-                  <SidebarConstraint
-                    key={constraint.uuid}
-                    constraint={constraint}
-                  ></SidebarConstraint>
-                );
-              }
-            )}
+            {doc.pathlist.activePath.path.constraints.map((constraint) => {
+              return (
+                <SidebarConstraint
+                  key={constraint.uuid}
+                  constraint={constraint}
+                ></SidebarConstraint>
+              );
+            })}
           </div>
-          {doc.pathlist.activePath.path.constraints.length ==
-            0 && (
+          {doc.pathlist.activePath.path.constraints.length == 0 && (
             <div className={styles.SidebarItem + " " + styles.Noninteractible}>
               <span></span>
               <span style={{ color: "gray", fontStyle: "italic" }}>
@@ -186,8 +174,7 @@ class Sidebar extends Component<Props, State> {
                   }
                 )}
               </div>
-              {doc.pathlist.activePath.path.obstacles
-                .length == 0 && (
+              {doc.pathlist.activePath.path.obstacles.length == 0 && (
                 <div
                   className={styles.SidebarItem + " " + styles.Noninteractible}
                 >
@@ -215,8 +202,7 @@ class Sidebar extends Component<Props, State> {
               }
             )}
           </div>
-          {doc.pathlist.activePath.traj.markers
-            .length == 0 && (
+          {doc.pathlist.activePath.traj.markers.length == 0 && (
             <div className={styles.SidebarItem + " " + styles.Noninteractible}>
               <span></span>
               <span style={{ color: "gray", fontStyle: "italic" }}>

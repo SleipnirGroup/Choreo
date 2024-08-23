@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import {doc, uiState} from "../../document/DocumentManager";
+import { doc, uiState } from "../../document/DocumentManager";
 import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../input/InputList";
 import Input from "../input/Input";
@@ -16,8 +16,6 @@ type Props = { constraint: IConstraintStore };
 type State = object;
 
 class ConstraintsConfigPanel extends Component<Props, State> {
-  
-
   state = {};
   render() {
     const constraint = this.props.constraint;
@@ -53,18 +51,18 @@ class ConstraintsConfigPanel extends Component<Props, State> {
           endIndex={endIndex}
           setRange={(selection) => {
             const lastIdx = pointcount + 1;
-            
-              const scope =selection.map((idx) => {
-                if (idx == 0) {
-                  return "first";
-                } else if (idx == lastIdx) {
-                  return "last";
-                } else {
-                  return { uuid: points[idx - 1]?.uuid ?? "" };
-                }
-              });
+
+            const scope = selection.map((idx) => {
+              if (idx == 0) {
+                return "first";
+              } else if (idx == lastIdx) {
+                return "last";
+              } else {
+                return { uuid: points[idx - 1]?.uuid ?? "" };
+              }
+            });
             this.props.constraint.setFrom(scope[0]);
-            this.props.constraint.setTo(scope[1])
+            this.props.constraint.setTo(scope[1]);
           }}
           points={points}
         ></ScopeSlider>
@@ -74,29 +72,29 @@ class ConstraintsConfigPanel extends Component<Props, State> {
             const [key, propdef] = entry;
             const setterName =
               "set" + key.charAt(0).toUpperCase() + key.slice(1);
-              console.log(key, propdef, toJS(constraint.data));
-              if (Array.isArray(propdef.defaultVal)) {
-                return (
-                  <ExpressionInput
-                    key={key}
-                    title={propdef.name}
-                    enabled={true}
-                    number={constraint.data[key]}
-                    titleTooltip={propdef.description}
-                  />
-                );
-              } else if (
-                typeof propdef.defaultVal === "boolean"
-              ) {
-                return <BooleanInput 
+            console.log(key, propdef, toJS(constraint.data));
+            if (Array.isArray(propdef.defaultVal)) {
+              return (
+                <ExpressionInput
                   key={key}
-                    title={propdef.name}
-                    enabled={true}
-                    value = {constraint.data[key]}
-                    setValue={(v)=>constraint.data[setterName](v)}
-                    titleTooltip={propdef.description}
-                  ></BooleanInput>
-              }
+                  title={propdef.name}
+                  enabled={true}
+                  number={constraint.data[key]}
+                  titleTooltip={propdef.description}
+                />
+              );
+            } else if (typeof propdef.defaultVal === "boolean") {
+              return (
+                <BooleanInput
+                  key={key}
+                  title={propdef.name}
+                  enabled={true}
+                  value={constraint.data[key]}
+                  setValue={(v) => constraint.data[setterName](v)}
+                  titleTooltip={propdef.description}
+                ></BooleanInput>
+              );
+            }
           })}
         </ExpressionInputList>
       </div>

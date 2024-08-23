@@ -6,7 +6,7 @@ import {
   NotDraggingStyle,
   Droppable
 } from "react-beautiful-dnd";
-import {doc, uiState} from "../../../document/DocumentManager";
+import { doc, uiState } from "../../../document/DocumentManager";
 import { isAlive } from "mobx-state-tree";
 import {
   CommandType,
@@ -31,8 +31,6 @@ type Props = {
 type State = { selected: boolean };
 
 class CommandDraggable extends Component<Props, State> {
-  
-
   id: number = 0;
   state = { selected: false };
   nameInputRef: React.RefObject<HTMLInputElement> =
@@ -195,7 +193,6 @@ class CommandDraggable extends Component<Props, State> {
                           command={c}
                           index={idx}
                           parent={command}
-                          
                           isDraggable={true}
                         ></CommandDraggable>
                       </div>

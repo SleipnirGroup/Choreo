@@ -1,5 +1,12 @@
 import React, { Component } from "react";
-import {doc, exportActiveTrajectory, exportAllTrajectories, newFile, saveFileDialog, uiState} from "./document/DocumentManager";
+import {
+  doc,
+  exportActiveTrajectory,
+  exportAllTrajectories,
+  newFile,
+  saveFileDialog,
+  uiState
+} from "./document/DocumentManager";
 import { observer } from "mobx-react";
 import {
   Divider,
@@ -33,8 +40,6 @@ type Props = object;
 type State = { settingsOpen: boolean };
 
 class AppMenu extends Component<Props, State> {
-  
-
   state = {
     settingsOpen: false
   };
@@ -126,11 +131,7 @@ class AppMenu extends Component<Props, State> {
               disableInteractive
               title="Robot configuration and other settings"
             >
-              <ListItemButton
-                onClick={() =>
-                  uiState.setRobotConfigOpen(true)
-                }
-              >
+              <ListItemButton onClick={() => uiState.setRobotConfigOpen(true)}>
                 <ListItemIcon>
                   <Settings />
                 </ListItemIcon>
@@ -166,11 +167,7 @@ class AppMenu extends Component<Props, State> {
                 <SaveIcon />
               </ListItemIcon>
               <ListItemText
-                primary={
-                  uiState.hasSaveLocation
-                    ? "Save File As"
-                    : "Save File"
-                }
+                primary={uiState.hasSaveLocation ? "Save File As" : "Save File"}
               ></ListItemText>
             </ListItemButton>
             {/* New File */}
@@ -340,9 +337,7 @@ class AppMenu extends Component<Props, State> {
   private projectLocation(relativeFormat: boolean): string {
     return (
       (relativeFormat
-        ? this.convertToRelative(
-            uiState.saveFileDir as string
-          )
+        ? this.convertToRelative(uiState.saveFileDir as string)
         : uiState.saveFileDir) + path.sep
     );
   }

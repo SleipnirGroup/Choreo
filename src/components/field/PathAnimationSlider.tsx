@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import {doc, uiState} from "../../document/DocumentManager";
+import { doc, uiState } from "../../document/DocumentManager";
 import Slider from "@mui/material/Slider";
 import { Tooltip } from "@mui/material";
 import { NavbarItemData } from "../../document/UIData";
@@ -12,8 +12,6 @@ type Props = object;
 type State = object;
 
 class PathAnimationSlider extends Component<Props, State> {
-  
-
   totalTime = 0;
   render() {
     const activePath = doc.pathlist.activePath;
@@ -105,9 +103,7 @@ class PathAnimationSlider extends Component<Props, State> {
           valueLabelFormat={(x: number) => x.toFixed(2)}
           value={uiState.pathAnimationTimestamp}
           onChange={(e, newVal) =>
-            uiState.setPathAnimationTimestamp(
-              newVal as number
-            )
+            uiState.setPathAnimationTimestamp(newVal as number)
           }
           sx={{
             flexGrow: "1",

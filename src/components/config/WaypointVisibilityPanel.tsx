@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import {doc, uiState} from "../../document/DocumentManager";
+import { doc, uiState } from "../../document/DocumentManager";
 import styles from "./WaypointConfigPanel.module.css";
 import { Slider } from "@mui/material";
 import { ViewLayers } from "../../document/UIData";
@@ -10,17 +10,12 @@ type Props = object;
 type State = object;
 
 class WaypointVisibilityPanel extends Component<Props, State> {
-  
-
   state = {};
   render() {
     const layers = uiState.layers;
 
-    const startIndex =
-      doc.pathlist.activePath.ui.visibleWaypointsStart ??
-      0;
-    const endIndex =
-      doc.pathlist.activePath.ui.visibleWaypointsEnd ?? 0;
+    const startIndex = doc.pathlist.activePath.ui.visibleWaypointsStart ?? 0;
+    const endIndex = doc.pathlist.activePath.ui.visibleWaypointsEnd ?? 0;
     const points = doc.pathlist.activePath.path.waypoints;
     const pointcount = points.length;
 
@@ -52,19 +47,13 @@ class WaypointVisibilityPanel extends Component<Props, State> {
                   activeThumb: number
                 ) => {
                   if (typeof value === "number") {
-                    doc.pathlist.activePath.ui.setVisibleWaypointsStart(
-                      value
-                    );
-                    doc.pathlist.activePath.ui.setVisibleWaypointsEnd(
-                      value
-                    );
+                    doc.pathlist.activePath.ui.setVisibleWaypointsStart(value);
+                    doc.pathlist.activePath.ui.setVisibleWaypointsEnd(value);
                   } else {
                     doc.pathlist.activePath.ui.setVisibleWaypointsStart(
                       value[0]
                     );
-                    doc.pathlist.activePath.ui.setVisibleWaypointsEnd(
-                      value[1]
-                    );
+                    doc.pathlist.activePath.ui.setVisibleWaypointsEnd(value[1]);
                   }
                 }}
               ></Slider>

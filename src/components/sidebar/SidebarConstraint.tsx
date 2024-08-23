@@ -3,7 +3,7 @@ import { observer } from "mobx-react";
 
 import React, { Component } from "react";
 import { IConstraintStore, WaypointID } from "../../document/ConstraintStore";
-import {doc, uiState} from "../../document/DocumentManager";
+import { doc, uiState } from "../../document/DocumentManager";
 import styles from "./Sidebar.module.css";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Instance, getParent } from "mobx-state-tree";
@@ -19,8 +19,6 @@ type Props = {
 type State = object;
 
 class SidebarConstraint extends Component<Props, State> {
-  
-
   id: number = 0;
   state = {};
 
@@ -36,10 +34,10 @@ class SidebarConstraint extends Component<Props, State> {
     };
     const from = this.props.constraint.from;
     const to = this.props.constraint.to;
-    if (from===undefined && to===undefined) return "!";
+    if (from === undefined && to === undefined) return "!";
     else if (
       to === undefined ||
-      from===to ||
+      from === to ||
       (Object.hasOwn(from, "uuid") &&
         Object.hasOwn(to, "uuid") &&
         from!.uuid == to!.uuid)
@@ -59,9 +57,7 @@ class SidebarConstraint extends Component<Props, State> {
       <div
         className={styles.SidebarItem + (selected ? ` ${styles.Selected}` : "")}
         onClick={() => {
-          doc.setSelectedSidebarItem(
-            this.props.constraint
-          );
+          doc.setSelectedSidebarItem(this.props.constraint);
         }}
       >
         {React.cloneElement(this.props.constraint.data.def.icon, {

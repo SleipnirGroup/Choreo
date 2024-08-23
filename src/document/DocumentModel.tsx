@@ -7,17 +7,18 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import { ExpressionStore, Units, Variables } from "./ExpressionStore";
-import { CircularObstacleStore, ICircularObstacleStore } from "./CircularObstacleStore";
+import {
+  CircularObstacleStore,
+  ICircularObstacleStore
+} from "./CircularObstacleStore";
 import { v4 as uuidv4 } from "uuid";
-import { HolonomicWaypointStore, IHolonomicWaypointStore } from "./HolonomicWaypointStore";
+import {
+  HolonomicWaypointStore,
+  IHolonomicWaypointStore
+} from "./HolonomicWaypointStore";
 import { ConstraintStore, IConstraintStore } from "./ConstraintStore";
 import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
-import {
-  SAVE_FILE_VERSION,
-  Project,
-  Traj,
-  Sample
-} from "./2025/DocumentTypes";
+import { SAVE_FILE_VERSION, Project, Traj, Sample } from "./2025/DocumentTypes";
 
 export type SelectableItemTypes =
   | IHolonomicWaypointStore
@@ -51,7 +52,7 @@ export const DocumentStore = types
     variables: Variables,
     splitTrajectoriesAtStopPoints: types.boolean,
     usesObstacles: types.boolean,
-    selectedSidebarItem: types.maybe(types.safeReference(SelectableItem)),
+    selectedSidebarItem: types.maybe(types.safeReference(SelectableItem))
   })
   .views((self) => ({
     serializeChor(): Project {
@@ -59,7 +60,7 @@ export const DocumentStore = types
         version: SAVE_FILE_VERSION,
         variables: self.variables.serialize(),
         config: self.robotConfig.serialize()
-      }
+      };
     },
     get isSidebarConstraintSelected() {
       console.log("sidebar constraint", self.selectedSidebarItem);
@@ -81,11 +82,12 @@ export const DocumentStore = types
         !this.isSidebarConstraintSelected &&
         !this.isSidebarCircularObstacleSelected
       );
-    },
+    }
   }))
   .volatile((self) => ({
     history: UndoManager.create({}, { targetStore: self })
-  })).actions(self => ({
+  }))
+  .actions((self) => ({
     deserializeChor(ser: Project) {
       self.variables.deserialize(ser.variables);
       self.robotConfig.deserialize(ser.config);
@@ -94,10 +96,7 @@ export const DocumentStore = types
       self.selectedSidebarItem = item;
     },
     afterCreate() {
-      self.history = UndoManager.create(
-        {},
-        { targetStore: self }
-      );
+      self.history = UndoManager.create({}, { targetStore: self });
     },
     undo() {
       self.history.canUndo && self.history.undo();
@@ -113,17 +112,19 @@ export const DocumentStore = types
       if (pathStore.path.waypoints.length < 2) {
         return;
       }
-      console.log(pathStore.serialize(), self.robotConfig.serialize())
-      const controlIntervalOptResult = await invoke("guess_control_interval_counts", {
-        traj: pathStore.serialize(),
-        config: self.robotConfig.serialize()
-      }) as number[];
+      console.log(pathStore.serialize(), self.robotConfig.serialize());
+      const controlIntervalOptResult = (await invoke(
+        "guess_control_interval_counts",
+        {
+          traj: pathStore.serialize(),
+          config: self.robotConfig.serialize()
+        }
+      )) as number[];
       pathStore.path.constraints.forEach((constraint) => {
         if (constraint.issues.length > 0) {
           throw constraint.issues.join(", ");
         }
       });
-
 
       // TODO error if start or end are unconstrained.
       // pathStore.waypoints.forEach((wpt, idx) => {
@@ -161,12 +162,9 @@ export const DocumentStore = types
           // should avoid allocations on every progress update
           if (progress.length != controlIntervalCount) {
             console.log("resize", controlIntervalCount, samples.length);
-            pathStore.ui.setInProgressTrajectory(
-              samples
-            );
+            pathStore.ui.setInProgressTrajectory(samples);
             controlIntervalCount = progress.length;
           } else {
-
             for (let i = 0; i < controlIntervalCount; i++) {
               const samp = samples[i];
               const prog = progress[i];
@@ -196,7 +194,9 @@ export const DocumentStore = types
             handle: handle
           });
         })
-        .finally(()=>{unlisten()})
+        .finally(() => {
+          unlisten();
+        })
         .then(
           (rust_traj) => {
             const result: Traj = rust_traj as Traj;
@@ -228,8 +228,7 @@ export const DocumentStore = types
           pathStore.setIsTrajectoryStale(false);
         });
     }
-  }
-  ))
+  }))
   .actions((self) => {
     return {
       generatePathWithToasts(activePathUUID: string) {
@@ -317,5 +316,5 @@ export const DocumentStore = types
       }
     };
   });
-export interface IDocumentStore extends Instance<typeof DocumentStore> { }
+export interface IDocumentStore extends Instance<typeof DocumentStore> {}
 export default DocumentStore;

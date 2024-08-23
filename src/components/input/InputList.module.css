@@ -42,7 +42,6 @@
   text-align: right;
 }
 
-
 .Number:disabled {
   border-bottom: 1px solid var(--disabled-color);
   color: transparent;

@@ -1,6 +1,10 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import {doc, generateWithToastsAndExport, uiState} from "../../document/DocumentManager";
+import {
+  doc,
+  generateWithToastsAndExport,
+  uiState
+} from "../../document/DocumentManager";
 import WaypointPanel from "../config/WaypointConfigPanel";
 
 import styles from "./Field.module.css";
@@ -27,8 +31,6 @@ type Props = object;
 type State = object;
 
 export class Field extends Component<Props, State> {
-  
-
   render() {
     const selectedSidebar = doc.selectedSidebarItem;
     const activePath = doc.pathlist.activePath;
@@ -151,9 +153,7 @@ export class Field extends Component<Props, State> {
                 marginInline: 0,
                 visibility: activePath.canGenerate() ? "visible" : "hidden"
               }}
-              onClick={() =>
-                generateWithToastsAndExport(activePathUUID)
-              }
+              onClick={() => generateWithToastsAndExport(activePathUUID)}
               disabled={!activePath.canGenerate()}
             >
               <ShapeLineIcon></ShapeLineIcon>

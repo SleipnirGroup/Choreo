@@ -1,7 +1,7 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import { DragDropContext } from "react-beautiful-dnd";
-import {doc, uiState} from "../../../document/DocumentManager";
+import { doc, uiState } from "../../../document/DocumentManager";
 import styles from "../WaypointConfigPanel.module.css";
 import InputList from "../../input/InputList";
 import Input from "../../input/Input";
@@ -23,8 +23,6 @@ type Props = { marker: IEventMarkerStore };
 type State = object;
 
 class EventMarkerConfigPanel extends Component<Props, State> {
-  
-
   nameInputRef: React.RefObject<HTMLInputElement> =
     React.createRef<HTMLInputElement>();
   state = {};
@@ -51,7 +49,10 @@ class EventMarkerConfigPanel extends Component<Props, State> {
       return;
     }
     if (sourceCommandList === targetCommandList) {
-      targetCommand.reorderCommands(result.source.index, result.destination.index);
+      targetCommand.reorderCommands(
+        result.source.index,
+        result.destination.index
+      );
     } else {
       // This section is dead code until we have a DnD library that allows dragging
       // between layers of nested drop areas

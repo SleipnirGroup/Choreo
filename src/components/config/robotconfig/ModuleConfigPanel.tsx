@@ -1,13 +1,13 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import {doc, uiState} from "../../../document/DocumentManager";
+import { doc, uiState } from "../../../document/DocumentManager";
 import InputList from "../../input/InputList";
 import Input from "../../input/Input";
 import { InToM, MetersOrInches, MToIn } from "../../../util/UnitConversions";
 import ExpressionInput from "../../input/ExpressionInput";
 import ExpressionInputList from "../../input/ExpressionInputList";
 
-type Props = { rowGap: number; };
+type Props = { rowGap: number };
 
 type State = object;
 

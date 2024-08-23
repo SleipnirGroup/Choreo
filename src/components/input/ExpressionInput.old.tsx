@@ -31,21 +31,21 @@ class Input2 extends Component<Props, State> {
   unfocusedMode() {
     this.setState({
       focused: false,
-      editing: false,
+      editing: false
     });
   }
 
   focusedMode() {
     this.setState({
       focused: true,
-      editing: false,
+      editing: false
     });
   }
 
   editingMode() {
     this.setState({
       focused: true,
-      editing: true,
+      editing: true
     });
   }
 
@@ -56,9 +56,12 @@ class Input2 extends Component<Props, State> {
       if (this.state.focused) {
         return this.props.expr.expr.toString();
       } else {
-        return format(this.props.expr.expr.evaluate().to(this.props.expr.defaultUnit), {
-          precision: 4,
-        });
+        return format(
+          this.props.expr.expr.evaluate().to(this.props.expr.defaultUnit),
+          {
+            precision: 4
+          }
+        );
       }
     }
   }
@@ -70,19 +73,18 @@ class Input2 extends Component<Props, State> {
   }
   checkValidity(): void {
     let newNode = this.props.expr.validate(math.parse(this.state.editedValue));
-    let valid = newNode!== undefined;
-    this.setState({valid});
+    let valid = newNode !== undefined;
+    this.setState({ valid });
   }
 
   render() {
     return (
       <input
         style={{
-            border: this.state.valid ? "none": "2px solid red"
+          border: this.state.valid ? "none" : "2px solid red"
         }}
         ref={this.inputElemRef}
         type="text"
-        
         onFocus={() => {
           this.focusedMode();
         }}
@@ -94,17 +96,16 @@ class Input2 extends Component<Props, State> {
             this.editingMode();
           }
           this.setState({
-            editedValue: e.target.value,
+            editedValue: e.target.value
           });
           e.preventDefault();
         }}
         onKeyDown={(e) => {
-            this.checkValidity();
-            if (e.key == "Enter") {
-                this.inputElemRef.current?.blur();
-            }
+          this.checkValidity();
+          if (e.key == "Enter") {
+            this.inputElemRef.current?.blur();
           }
-        }
+        }}
         value={this.getDisplayStr()}
         onMouseDown={(e) => {
           if (!this.state.focused) {

@@ -9,7 +9,7 @@ import {
   Timeline
 } from "@mui/icons-material";
 import { toJS } from "mobx";
-import {  IModelType, getEnv, getParent, types } from "mobx-state-tree";
+import { IModelType, getEnv, getParent, types } from "mobx-state-tree";
 import {
   getRoot,
   Instance,
@@ -21,15 +21,30 @@ import {
 import { JSXElementConstructor, ReactElement } from "react";
 import { IHolonomicWaypointStore } from "./HolonomicWaypointStore";
 import { IHolonomicPathStore } from "./path/HolonomicPathStore";
-import { ExpressionStore, IExpressionStore, IVariables, Units } from "./ExpressionStore";
-import { v4 as uuidv4 } from "uuid"
+import {
+  ExpressionStore,
+  IExpressionStore,
+  IVariables,
+  Units
+} from "./ExpressionStore";
+import { v4 as uuidv4 } from "uuid";
 import { Unit } from "mathjs";
 import { IChoreoPathStore } from "./path/ChoreoPathStore";
 import { Expr, ExprOrNumber } from "./2025/DocumentTypes";
-import { ConstraintData, ConstraintDefinition, ConstraintKey, ConstraintPropertyDefinition, DataMap, PropertyDefinitionList } from "./ConstraintDefinitions";
-import { ConstraintDataObjects, IConstraintDataStore, asType } from "./ConstraintDataStore";
+import {
+  ConstraintData,
+  ConstraintDefinition,
+  ConstraintKey,
+  ConstraintPropertyDefinition,
+  DataMap,
+  PropertyDefinitionList
+} from "./ConstraintDefinitions";
+import {
+  ConstraintDataObjects,
+  IConstraintDataStore,
+  asType
+} from "./ConstraintDataStore";
 import { Env } from "./DocumentManager";
-
 
 // export const constraints = {
 //   WptVelocityDirection: {
@@ -138,7 +153,6 @@ import { Env } from "./DocumentManager";
 //   }
 // } satisfies { [key: string]: ConstraintDefinition };
 
-
 const WaypointUUIDScope = types.model("WaypointScope", {
   uuid: types.string
 });
@@ -148,21 +162,20 @@ export const WaypointScope = types.union(
   WaypointUUIDScope
 );
 export type IWaypointScope = IWaypointUUIDScope | "first" | "last";
-interface IWaypointUUIDScope extends Instance<typeof WaypointUUIDScope> { }
+interface IWaypointUUIDScope extends Instance<typeof WaypointUUIDScope> {}
 
-export interface IConstraintStore extends Instance<typeof ConstraintStore> { }
-
-
+export interface IConstraintStore extends Instance<typeof ConstraintStore> {}
 
 export const ConstraintStore = types
   .model("ConstraintStore", {
     from: WaypointScope,
     to: types.maybe(WaypointScope),
-    data: types.union(...Object.values(ConstraintDataObjects)) as IConstraintDataStore<ConstraintData>,
+    data: types.union(
+      ...Object.values(ConstraintDataObjects)
+    ) as IConstraintDataStore<ConstraintData>,
     uuid: types.identifier
   })
   .views((self) => ({
- 
     getType() {
       return self.data.type;
     },
@@ -176,18 +189,14 @@ export const ConstraintStore = types
       if (!isAlive(self)) {
         return false;
       }
-      return (
-        self.uuid ===
-        getEnv<Env>(self).selectedSidebar()
-      );
+      return self.uuid === getEnv<Env>(self).selectedSidebar();
     },
     getPath(): IHolonomicPathStore {
       const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
-        getParent<IChoreoPathStore>(
-          getParent<IConstraintStore[]>(self)
-        ));
+        getParent<IChoreoPathStore>(getParent<IConstraintStore[]>(self))
+      );
       return path;
-    },
+    }
   }))
   .views((self) => ({
     getStartWaypoint(): IHolonomicWaypointStore | undefined {
@@ -229,7 +238,7 @@ export const ConstraintStore = types
     }
   }))
   .actions((self) => ({
-    afterCreate() { },
+    afterCreate() {},
     setFrom(from: IWaypointScope) {
       self.from = from;
     },

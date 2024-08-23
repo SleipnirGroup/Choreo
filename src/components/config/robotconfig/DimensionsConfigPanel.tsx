@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import {doc, uiState} from "../../../document/DocumentManager";
+import { doc, uiState } from "../../../document/DocumentManager";
 import InputList from "../../input/InputList";
 import Input from "../../input/Input";
 import {
@@ -16,13 +16,11 @@ import {
 import ExpressionInput from "../../input/ExpressionInput";
 import ExpressionInputList from "../../input/ExpressionInputList";
 
-type Props = { rowGap: number; };
+type Props = { rowGap: number };
 
 type State = object;
 
 class RobotConfigPanel extends Component<Props, State> {
-  
-
   state = { selectedMotor: "NEO", currentLimit: 40 };
   render() {
     const config = doc.robotConfig;
@@ -32,7 +30,6 @@ class RobotConfigPanel extends Component<Props, State> {
           title="Mass"
           enabled={true}
           number={config.mass}
-  
           maxWidthCharacters={8}
           titleTooltip={"Total robot mass"}
         />
@@ -81,7 +78,6 @@ class RobotConfigPanel extends Component<Props, State> {
           titleTooltip="Length of robot with bumpers on"
         />
 
-
         <ExpressionInput
           title="FL.X"
           enabled={true}
@@ -91,7 +87,7 @@ class RobotConfigPanel extends Component<Props, State> {
           titleTooltip="Front-back distance between wheel centers"
         />
 
-<ExpressionInput
+        <ExpressionInput
           title="FL.Y"
           enabled={true}
           roundingPrecision={3}

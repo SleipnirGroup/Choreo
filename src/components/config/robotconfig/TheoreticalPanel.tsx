@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import {doc, uiState} from "../../../document/DocumentManager";
+import { doc, uiState } from "../../../document/DocumentManager";
 import InputList from "../../input/InputList";
 import Input from "../../input/Input";
 
@@ -11,13 +11,12 @@ type Props = { rowGap: number; imperial: boolean };
 type State = object;
 
 class RobotConfigPanel extends Component<Props, State> {
-  
-
   state = { selectedMotor: "NEO", currentLimit: 40 };
   render() {
     const config = doc.robotConfig.snapshot();
     const floorSpeed = doc.robotConfig.wheelMaxVelocity * config.radius;
-    const floorLinearForce = (4 * doc.robotConfig.wheelMaxTorque) / config.radius; // N
+    const floorLinearForce =
+      (4 * doc.robotConfig.wheelMaxTorque) / config.radius; // N
     const floorLinearAccel = floorLinearForce / config.mass;
     const driveRadius = Math.hypot(config.modules[0].x, config.modules[0].y); // TODO proper sum of forces from four wheels
     const chassisTorque = floorLinearForce * driveRadius; // N*m

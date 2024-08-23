@@ -14,7 +14,7 @@ import { WaypointScope } from "./ConstraintStore";
 import { IHolonomicPathStore } from "./path/HolonomicPathStore";
 import { v4 as uuidv4 } from "uuid";
 import { Env, uiState } from "./DocumentManager";
-import {Command, Expr} from "./2025/DocumentTypes"
+import { Command, Expr } from "./2025/DocumentTypes";
 import { ExpressionStore } from "./ExpressionStore";
 import { IChoreoTrajStore } from "./path/ChoreoTrajStore";
 import { WaypointID } from "./ConstraintDefinitions";
@@ -61,31 +61,29 @@ export const CommandStore = types
       );
     },
     serialize(): Command<Expr> {
-
-        if (self.type === "named") {
-          return {
-            type: "named",
-            data: {
-              name: self.name
-            }
-          };
-        } else if (self.type === "wait") {
-          return {
-            type: "wait",
-            data: {
-              waitTime: self.time.serialize()
-            }
-          };
-        } else {
-          return {
-            type: self.type,
-            data: {
-              commands: self.commands.map((c) => c.asSavedCommand())
-            }
-          };
-        }
+      if (self.type === "named") {
+        return {
+          type: "named",
+          data: {
+            name: self.name
+          }
+        };
+      } else if (self.type === "wait") {
+        return {
+          type: "wait",
+          data: {
+            waitTime: self.time.serialize()
+          }
+        };
+      } else {
+        return {
+          type: self.type,
+          data: {
+            commands: self.commands.map((c) => c.asSavedCommand())
+          }
+        };
       }
-    
+    }
   }))
   .actions((self) => ({
     deserialize(ser: Command<Expr>) {
@@ -98,7 +96,8 @@ export const CommandStore = types
         self.time.deserialize(ser.data.waitTime);
       } else {
         ser.data.commands.forEach((c) => {
-          const command:ICommandStore = getEnv<Env>(self).create.CommandStore(c);
+          const command: ICommandStore =
+            getEnv<Env>(self).create.CommandStore(c);
           self.commands.push(command);
         });
       }
@@ -153,10 +152,7 @@ export const EventMarkerStore = types
       if (!isAlive(self)) {
         return false;
       }
-      return (
-        self.uuid ===
-          getEnv<Env>(self).selectedSidebar()
-      );
+      return self.uuid === getEnv<Env>(self).selectedSidebar();
     },
     setSelected(selected: boolean) {
       if (selected && !this.selected) {
@@ -169,9 +165,7 @@ export const EventMarkerStore = types
     },
     getPath(): IHolonomicPathStore {
       const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
-        getParent<IChoreoTrajStore>(
-        getParent<IEventMarkerStore[]>(self)
-        )
+        getParent<IChoreoTrajStore>(getParent<IEventMarkerStore[]>(self))
       );
       return path;
     },
@@ -193,9 +187,7 @@ export const EventMarkerStore = types
     get targetTimestamp(): number | undefined {
       const path = self.getPath();
       if (self.trajTargetIndex === undefined) return undefined;
-      return (path as IHolonomicPathStore).traj.waypoints[
-        self.trajTargetIndex
-      ];
+      return (path as IHolonomicPathStore).traj.waypoints[self.trajTargetIndex];
     },
     get timestamp(): number | undefined {
       if (this.targetTimestamp === undefined) {
@@ -237,16 +229,15 @@ export const EventMarkerStore = types
       } else if (self.offset.value == 0) {
         return true;
       } else {
-        let splitTimes = path.traj.samples.map((sect)=>sect[0]?.t);
+        let splitTimes = path.traj.samples.map((sect) => sect[0]?.t);
         splitTimes.forEach((stopTimestamp) => {
-            if (
-              (targetTimestamp < stopTimestamp && timestamp > stopTimestamp) ||
-              (targetTimestamp > stopTimestamp && timestamp < stopTimestamp)
-            ) {
-              retVal = false;
-            }
+          if (
+            (targetTimestamp < stopTimestamp && timestamp > stopTimestamp) ||
+            (targetTimestamp > stopTimestamp && timestamp < stopTimestamp)
+          ) {
+            retVal = false;
           }
-        );
+        });
       }
       return retVal;
     }

@@ -1,26 +1,20 @@
 import React, { Component } from "react";
-import {doc, uiState} from "../../document/DocumentManager";
+import { doc, uiState } from "../../document/DocumentManager";
 import Tooltip from "@mui/material/Tooltip";
 import styles from "./Navbar.module.css";
 import { observer } from "mobx-react";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
-import {
-  NavbarItemData,
-  NavbarItemSectionEnds
-} from "../../document/UIData";
+import { NavbarItemData, NavbarItemSectionEnds } from "../../document/UIData";
 
 type Props = object;
 
 type State = object;
 
 class Navbar extends Component<Props, State> {
-  
-
   state = {};
 
   render() {
-    const { selectedNavbarItem, setSelectedNavbarItem } =
-      uiState;
+    const { selectedNavbarItem, setSelectedNavbarItem } = uiState;
     return (
       <div className={styles.Container}>
         {NavbarItemSectionEnds.map((endSplit, sectionIdx) =>

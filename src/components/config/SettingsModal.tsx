@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import {doc, uiState} from "../../document/DocumentManager";
+import { doc, uiState } from "../../document/DocumentManager";
 import { Fade, IconButton, Modal, Tab, Tabs } from "@mui/material";
 import RobotConfigPanel from "./robotconfig/RobotConfigPanel";
 import { Close } from "@mui/icons-material";
@@ -13,8 +13,6 @@ type Props = object;
 type State = object;
 
 class SettingsModal extends Component<Props, State> {
-  
-
   state = {};
   render() {
     return (

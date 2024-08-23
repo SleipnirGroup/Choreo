@@ -6,7 +6,16 @@ import {
   PathGradients
 } from "../components/config/robotconfig/PathGradient";
 import LocalStorageKeys from "../util/LocalStorageKeys";
-import { NUM_SETTINGS_TABS, NavbarData, NavbarItemSectionEnds, NavbarLabels, ViewItemData, navbarIndexToConstraint, navbarIndexToConstraintDefinition, navbarIndexToConstraintKey } from "./UIData";
+import {
+  NUM_SETTINGS_TABS,
+  NavbarData,
+  NavbarItemSectionEnds,
+  NavbarLabels,
+  ViewItemData,
+  navbarIndexToConstraint,
+  navbarIndexToConstraintDefinition,
+  navbarIndexToConstraintKey
+} from "./UIData";
 import { ConstraintKey } from "./ConstraintDefinitions";
 
 export const UIStateStore = types
@@ -60,12 +69,9 @@ export const UIStateStore = types
           undefined
         );
       },
-      
-      getSelectedConstraintKey() : ConstraintKey {
-        return (
-          navbarIndexToConstraintKey[self.selectedNavbarItem] ??
-          undefined
-        );
+
+      getSelectedConstraintKey(): ConstraintKey {
+        return navbarIndexToConstraintKey[self.selectedNavbarItem] ?? undefined;
       },
       isNavbarWaypointSelected() {
         return (

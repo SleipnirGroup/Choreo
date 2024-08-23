@@ -1,6 +1,11 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import {clearAllTrajectories, doc, exportAllTrajectories, uiState} from "../../document/DocumentManager";
+import {
+  clearAllTrajectories,
+  doc,
+  exportAllTrajectories,
+  uiState
+} from "../../document/DocumentManager";
 import inputStyles from "../input/InputList.module.css";
 import { Switch } from "@mui/material";
 
@@ -9,8 +14,6 @@ type Props = object;
 type State = object;
 
 class ExportConfigPanel extends Component<Props, State> {
-  
-
   rowGap = 16;
   render() {
     return (

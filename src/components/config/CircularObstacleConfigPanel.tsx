@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import {doc, uiState} from "../../document/DocumentManager";
+import { doc, uiState } from "../../document/DocumentManager";
 import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../input/InputList";
 import Input from "../input/Input";
@@ -13,8 +13,6 @@ type Props = { obstacle: ICircularObstacleStore | null };
 type State = object;
 
 class CircularObstacleConfigPanel extends Component<Props, State> {
-  
-
   state = {};
   render() {
     const { obstacle } = this.props;

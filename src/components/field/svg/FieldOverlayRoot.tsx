@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import {doc, uiState} from "../../../document/DocumentManager";
+import { doc, uiState } from "../../../document/DocumentManager";
 import OverlayWaypoint from "./OverlayWaypoint";
 import * as d3 from "d3";
 import FieldGrid from "./FieldGrid";
@@ -29,7 +29,6 @@ import FieldConstraintsAddLayer from "./FieldConstraintsAddLayer";
 import FieldEventMarkerAddLayer from "./FieldEventMarkerAddLayer";
 import { Expr, Waypoint } from "../../../document/2025/DocumentTypes";
 
-
 type Props = object;
 
 type State = {
@@ -40,7 +39,6 @@ type State = {
 
 class FieldOverlayRoot extends Component<Props, State> {
   private static instance: FieldOverlayRoot | null = null;
-  
 
   state = {
     xPan: 0,
@@ -201,10 +199,8 @@ class FieldOverlayRoot extends Component<Props, State> {
     this.canvasHeightMeters = FieldImage24.WIDTH_M + 1;
     this.canvasWidthMeters = FieldImage24.LENGTH_M + 1;
     const layers = uiState.layers;
-    const constraintSelected =
-      uiState.isConstraintSelected();
-    const eventMarkerSelected =
-      uiState.isEventMarkerSelected();
+    const constraintSelected = uiState.isConstraintSelected();
+    const eventMarkerSelected = uiState.isEventMarkerSelected();
 
     return (
       <svg
@@ -257,10 +253,7 @@ class FieldOverlayRoot extends Component<Props, State> {
                 vertical: "top",
                 horizontal: "left"
               }}
-              open={
-                uiState.contextMenuMouseSelection !==
-                undefined
-              }
+              open={uiState.contextMenuMouseSelection !== undefined}
               onClose={this.handleCloseContextMenu.bind(this)}
             >
               <div
@@ -278,8 +271,7 @@ class FieldOverlayRoot extends Component<Props, State> {
                             <ToggleButton
                               value={`${index}`}
                               selected={
-                                uiState
-                                  .contextMenuWaypointType == index
+                                uiState.contextMenuWaypointType == index
                               }
                               onClick={() => {
                                 this.handleContextMenuSelection(index);
@@ -323,15 +315,13 @@ class FieldOverlayRoot extends Component<Props, State> {
               ></circle>
             )}
           {layers[ViewLayers.Obstacles] &&
-            doc.pathlist.activePath.path.obstacles.map(
-              (obstacle, index) => (
-                <FieldObstacle
-                  obstacle={obstacle}
-                  index={index}
-                  key={obstacle.uuid}
-                ></FieldObstacle>
-              )
-            )}
+            doc.pathlist.activePath.path.obstacles.map((obstacle, index) => (
+              <FieldObstacle
+                obstacle={obstacle}
+                index={index}
+                key={obstacle.uuid}
+              ></FieldObstacle>
+            ))}
           {/* Line paths */}
           {layers[ViewLayers.Waypoints] && <FieldPathLines></FieldPathLines>}
           {layers[ViewLayers.Trajectory] && (
@@ -347,8 +337,7 @@ class FieldOverlayRoot extends Component<Props, State> {
           {layers[ViewLayers.Waypoints] &&
             doc.pathlist.activePath.path.waypoints
               .map((point, index) => {
-                const activePath =
-                  doc.pathlist.activePath;
+                const activePath = doc.pathlist.activePath;
                 if (
                   (activePath.ui.visibleWaypointsStart <= index &&
                     activePath.ui.visibleWaypointsEnd >= index) ||
@@ -397,7 +386,7 @@ class FieldOverlayRoot extends Component<Props, State> {
       ![
         NavbarLabels.FullWaypoint,
         NavbarLabels.TranslationWaypoint,
-        NavbarLabels.EmptyWaypoint,
+        NavbarLabels.EmptyWaypoint
       ].includes(waypointType)
     ) {
       return;
@@ -407,8 +396,7 @@ class FieldOverlayRoot extends Component<Props, State> {
       y: e.clientY
     });
     doc.history.startGroup(() => {
-
-      let initial: Partial<Waypoint<Expr>> = {}
+      let initial: Partial<Waypoint<Expr>> = {};
       if (
         waypointType == NavbarLabels.TranslationWaypoint ||
         waypointType == NavbarLabels.EmptyWaypoint
@@ -420,7 +408,7 @@ class FieldOverlayRoot extends Component<Props, State> {
       }
       initial.x = [`${coords.x} m`, coords.x];
       initial.y = [`${coords.y} m`, coords.y];
-      initial.heading = [`0 deg`,0];
+      initial.heading = [`0 deg`, 0];
       const newPoint = doc.pathlist.activePath.path.addWaypoint(initial);
       newPoint.setSelected(true);
     });
@@ -444,9 +432,7 @@ class FieldOverlayRoot extends Component<Props, State> {
         y: e.clientY
       });
       doc.history.startGroup(() => {
-        doc.pathlist.activePath.path.addObstacle(
-          coords.x, coords.y, 0.5
-        );
+        doc.pathlist.activePath.path.addObstacle(coords.x, coords.y, 0.5);
       });
       doc.history.stopGroup();
     }

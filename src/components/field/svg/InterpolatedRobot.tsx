@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import {doc, uiState} from "../../../document/DocumentManager";
+import { doc, uiState } from "../../../document/DocumentManager";
 import { sample } from "../../../util/MathUtil";
 
 type Props = {
@@ -29,8 +29,6 @@ const targetSideLength =
   2 * targetRadius * Math.sqrt((Math.PI * Math.sqrt(3)) / 3);
 
 class InterpolatedRobot extends Component<Props, State> {
-  
-
   state = {};
 
   render() {
@@ -38,17 +36,11 @@ class InterpolatedRobot extends Component<Props, State> {
     if (traj.length < 2) {
       return <></>;
     }
-    const pose1 = sample(
-      this.props.timestamp,
-      traj
-    );
+    const pose1 = sample(this.props.timestamp, traj);
 
     const headingPointSideLength =
       targetSideLength *
-      Math.min(
-        
-        doc.robotConfig.bumper.length, doc.robotConfig.bumper.width
-      );
+      Math.min(doc.robotConfig.bumper.length, doc.robotConfig.bumper.width);
     const headingPointHeight = (Math.sqrt(3) / 2) * headingPointSideLength;
 
     return (
@@ -88,16 +80,14 @@ class InterpolatedRobot extends Component<Props, State> {
           }
         ></polygon>
         {/* Wheel locations */}
-        {
-          doc.robotConfig.modules.map(mod=>(
-            <circle
+        {doc.robotConfig.modules.map((mod) => (
+          <circle
             cx={mod.x.value}
             cy={mod.y.value}
             r={doc.robotConfig.radius.value}
             fill="white"
           ></circle>
-          ))
-        }
+        ))}
       </g>
     );
   }

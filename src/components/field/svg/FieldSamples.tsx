@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import {doc, uiState} from "../../../document/DocumentManager";
+import { doc, uiState } from "../../../document/DocumentManager";
 
 import { observer } from "mobx-react";
 
@@ -8,8 +8,6 @@ type Props = object;
 type State = object;
 
 class FieldSamples extends Component<Props, State> {
-  
-
   state = {};
   LINE_LENGTH = 0.15;
   render() {

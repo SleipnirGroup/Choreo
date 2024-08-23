@@ -12,7 +12,7 @@ type Props = {
   enabled: boolean;
   /** The value of the input */
   value: boolean;
-  setValue: (arg: boolean)=>void;
+  setValue: (arg: boolean) => void;
   /** The tooltip for the title */
   titleTooltip?: string;
 };
@@ -45,12 +45,11 @@ class Input extends Component<Props, State> {
         <input
           ref={this.inputElemRef}
           type="checkbox"
-          className={
-            styles.Number
-          }
+          className={styles.Number}
           checked={this.props.value}
-          style={{ 
-            gridColumn: "span 1" }}
+          style={{
+            gridColumn: "span 1"
+          }}
           disabled={!this.props.enabled}
           // The below is needed to make inputs on CommandDraggables work
           onClick={(e) => e.stopPropagation()}

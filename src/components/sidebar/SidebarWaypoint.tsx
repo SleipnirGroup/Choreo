@@ -6,7 +6,7 @@ import {
   NotDraggingStyle
 } from "react-beautiful-dnd";
 import { CSSProperties } from "styled-components";
-import {doc, uiState} from "../../document/DocumentManager";
+import { doc, uiState } from "../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import styles from "./Sidebar.module.css";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -25,8 +25,6 @@ type Props = {
 type State = { selected: boolean };
 
 class SidebarWaypoint extends Component<Props, State> {
-  
-
   id: number = 0;
   state = { selected: false };
 
