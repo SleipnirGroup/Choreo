@@ -80,6 +80,18 @@ export interface Sample {
   fy: [number, number, number, number];
 }
 
+export interface TrajoptlibSample {
+  timestamp: number; // positive
+  x: number;
+  y: number;
+  heading: number;
+  velocity_x: number;
+  velocity_y: number;
+  angular_velocity: number;
+  module_forces_x: [number, number, number, number];
+  module_forces_y: [number, number, number, number];
+}
+
 export interface ChoreoPath<T extends ExprOrNumber> {
   waypoints: Waypoint<T>[];
   constraints: Constraint<T>[];

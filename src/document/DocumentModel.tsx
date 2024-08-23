@@ -18,7 +18,8 @@ import {
 } from "./HolonomicWaypointStore";
 import { ConstraintStore, IConstraintStore } from "./ConstraintStore";
 import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
-import { SAVE_FILE_VERSION, Project, Traj, Sample } from "./2025/DocumentTypes";
+import { SAVE_FILE_VERSION, Project, Traj, Sample, TrajoptlibSample } from "./2025/DocumentTypes";
+import { SavedTrajectorySample } from "./DocumentSpecTypes";
 
 export type SelectableItemTypes =
   | IHolonomicWaypointStore
@@ -151,32 +152,38 @@ export const DocumentStore = types
         .split("")
         .reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) | 0, 0);
       let unlisten: UnlistenFn;
-      let controlIntervalCount = 0;
       pathStore.ui.setIterationNumber(0);
 
       await listen("solver-status", async (event) => {
         if (event.payload!.handle == handle) {
-          const samples = event.payload.traj.samples as Sample[];
+          const samples = event.payload.traj.samples as TrajoptlibSample[];
           const progress = pathStore.ui.generationProgress;
+          console.log(samples);
           // mutate in-progress trajectory in place if it's already the right size
           // should avoid allocations on every progress update
-          if (progress.length != controlIntervalCount) {
-            console.log("resize", controlIntervalCount, samples.length);
-            pathStore.ui.setInProgressTrajectory(samples);
-            controlIntervalCount = progress.length;
+          if (samples.length != progress.length) {
+            pathStore.ui.setInProgressTrajectory(samples.map(s=>({
+              t:s.timestamp,
+              vx: s.velocity_x,
+              vy: s.velocity_y,
+              omega: s.angular_velocity,
+              fx: s.module_forces_x,
+              fy: s.module_forces_y,
+              ...s
+            })));
           } else {
-            for (let i = 0; i < controlIntervalCount; i++) {
+            for (let i = 0; i < samples.length; i++) {
               const samp = samples[i];
               const prog = progress[i];
-              samp.t = prog.t;
-              samp.x = prog.x;
-              samp.y = prog.y;
-              samp.heading = prog.heading;
-              samp.vx = prog.vx;
-              samp.vy = prog.vy;
-              samp.omega = prog.omega;
-              samp.fx = prog.fx;
-              samp.fy = prog.fy;
+              prog.t = samp.timestamp;
+              prog.x = samp.x;
+              prog.y = samp.y;
+              prog.heading = samp.heading;
+              prog.vx = samp.velocity_x;
+              prog.vy = samp.velocity_y;
+              prog.omega = samp.angular_velocity;
+              prog.fx = samp.module_forces_x;
+              prog.fy = samp.module_forces_y;
             }
           }
           // todo: get this from the progress update, so it actually means something

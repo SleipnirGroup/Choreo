@@ -12,8 +12,7 @@ type Props = object;
 
 type State = object;
 
-class FieldPathLines extends Component<Props, State> {
-  render() {
+  function FieldGeneratedLines() {
     const path = doc.pathlist.activePath;
     let generatedPathString = "";
     const trajectory = path.ui.generating
@@ -21,7 +20,8 @@ class FieldPathLines extends Component<Props, State> {
       : path.traj.fullTraj;
     // preserve the acccess of generationIterationNumber
     // to trigger rerenders when mutating the in-progress trajectory in place
-    const _ = path.ui.generationIterationNumber;
+    const it = path.ui.generationIterationNumber;
+    console.log(it, path.ui.generationProgress);
     trajectory.forEach((point) => {
       generatedPathString += `${point.x},${point.y} `;
     });
@@ -81,5 +81,4 @@ class FieldPathLines extends Component<Props, State> {
       </>
     );
   }
-}
-export default observer(FieldPathLines);
+export default observer(FieldGeneratedLines);
