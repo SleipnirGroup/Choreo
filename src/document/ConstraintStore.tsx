@@ -172,7 +172,7 @@ export const ConstraintStore = types
     to: types.maybe(WaypointScope),
     data: types.union(
       ...Object.values(ConstraintDataObjects)
-    ) as IConstraintDataStore<ConstraintData>,
+    ) as IConstraintDataStore<ConstraintKey>,
     uuid: types.identifier
   })
   .views((self) => ({

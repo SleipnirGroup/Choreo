@@ -33,19 +33,18 @@ type lookup<T> = T extends Expr
     ? boolean
     : never;
 
-type DataStoreProps<D extends ConstraintData> =
-  ModelPropertiesDeclarationToProperties<
-    { [propkey in keyof D["props"]]: lookup<D["props"][propkey]> } & {
-      type: ISimpleType<D["type"]>;
-      def: IType<
-        ConstraintDefinition<D> | null | undefined,
-        ConstraintDefinition<D>,
-        ConstraintDefinition<D>
-      >;
-    }
+type Props<K extends ConstraintKey, D extends ConstraintData = DataMap[K]> = 
+{ [propkey in keyof D["props"]]: lookup<D["props"][propkey]> } & {
+  type: ISimpleType<D["type"]>;
+  def: IType<
+    ConstraintDefinition<K> | null | undefined,
+    ConstraintDefinition<K>,
+    ConstraintDefinition<K>
   >;
-export type IConstraintDataStore<D extends ConstraintData> = IModelType<
-  DataStoreProps<D>,
+}
+type DataStoreProps<K extends ConstraintKey, D extends ConstraintData = DataMap[K]> =  ModelPropertiesDeclarationToProperties<Props<K>>;
+export type IConstraintDataStore<K extends ConstraintKey, D extends ConstraintData = DataMap[K]> = IModelType<
+  DataStoreProps<K>,
   {
     [setterkey in keyof D["props"] as `set${Capitalize<string & setterkey>}`]: (
       arg: D["props"][setterkey]
@@ -56,21 +55,16 @@ export type IConstraintDataStore<D extends ConstraintData> = IModelType<
 >;
 
 export function asType<K extends ConstraintKey>(
-  store: Instance<IConstraintDataStore<ConstraintData>>
-): Instance<IConstraintDataStore<DataMap[K]>> {
-  return store as Instance<IConstraintDataStore<DataMap[K]>>;
+  store: Instance<IConstraintDataStore<ConstraintKey>>
+): Instance<IConstraintDataStore<K>> {
+  return store as Instance<IConstraintDataStore<K>>;
 }
 
-function createDataStore<D extends ConstraintData>(
-  def: ConstraintDefinition<D>
-): IConstraintDataStore<D> {
+function createDataStore<K extends ConstraintKey, D extends ConstraintData = DataMap[K]>(
+  def: ConstraintDefinition<K>
+): IConstraintDataStore<K> {
   // The object mapping the properties to ExpressionStore or to default primitives
-  type Props = {
-    [key in keyof PropertyDefinitionList<D["props"]>]:
-      | boolean
-      | typeof ExpressionStore;
-  };
-  const props: Partial<Props> = {};
+  const props: Partial<Props<K>> = {};
   // The object of setters for primitives
   type Setter<U> = U extends any ? (self: any) => (arg: U) => void : never;
   type PropertySetter = Setter<ConstraintPropertyType>;
@@ -108,11 +102,11 @@ function createDataStore<D extends ConstraintData>(
   });
 
   let store = types
-    .model(def.type, props as Props)
-    .props({
+    .model(def.type, {
       type: types.literal(def.type),
-      def: types.frozen<ConstraintDefinition<D>>(def)
-    })
+      def: types.frozen<ConstraintDefinition<K>>(def),
+      ...props
+    } as Props<K>)
     .actions((self) =>
       Object.fromEntries(
         Object.entries(setters).map(([key, val]) => [key, val(self)])
@@ -126,12 +120,12 @@ function createDataStore<D extends ConstraintData>(
         } as D;
       }
     }));
-  return store as IConstraintDataStore<D>;
+  return store as IConstraintDataStore<K>;
 }
 
-export const ConstraintDataObjects: {
-  [key in ConstraintKey]: IConstraintDataStore<DataMap[key]>;
-} = Object.fromEntries(consts.map((def) => [def.type, createDataStore(def)]));
+export const ConstraintDataObjects = Object.fromEntries(consts.map(<K extends ConstraintKey>(def: ConstraintDefinition<K>) => [def.type, createDataStore(def)])) as {
+  [key in ConstraintKey]: IConstraintDataStore<key>;
+};
 
 export function defineCreateConstraintData<
   K extends ConstraintKey,
@@ -139,7 +133,7 @@ export function defineCreateConstraintData<
   P extends D["props"]
 >(
   key: K,
-  def: ConstraintDefinition<D>,
+  def: ConstraintDefinition<K>,
   vars: () => IVariables
 ): (data: Partial<P>) => (typeof ConstraintDataObjects)[K]["Type"] {
   return (data: Partial<P>) => {

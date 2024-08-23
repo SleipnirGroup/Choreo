@@ -65,6 +65,7 @@ import {
   IEventMarkerStore
 } from "./EventMarkerStore";
 import {
+  ConstraintDataObjects,
   IConstraintDataStore,
   defineCreateConstraintData
 } from "./ConstraintDataStore";
@@ -92,7 +93,8 @@ export const uiState = UIStateStore.create({
 });
 type ConstraintDataConstructor<K extends ConstraintKey> = (
   data: Partial<DataMap[K]["props"]>
-) => Instance<IConstraintDataStore<DataMap[K]>>;
+) => Instance<IConstraintDataStore<K>>;
+
 type ConstraintDataConstructors = {
   [key in ConstraintKey]: ConstraintDataConstructor<key>;
 };
@@ -127,39 +129,12 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
     });
   }
 
-  type ConstraintDefinitionEntry<K extends ConstraintKey> = [
-    K,
-    ConstraintDefinition<DataMap[K]>
-  ];
-  let entries = ObjectTyped.entries(ConstraintDefinitions).map(([key, def]) => [
-    key,
-    defineCreateConstraintData(key, ConstraintDefinitions[key], vars)
-  ]);
-
   let keys = ObjectTyped.keys(ConstraintDefinitions);
-  let constraintDataConstructors: ConstraintDataConstructors = {
-    MaxAcceleration: defineCreateConstraintData(
-      "MaxAcceleration",
-      ConstraintDefinitions["MaxAcceleration"],
-      vars
-    ),
-    MaxVelocity: defineCreateConstraintData(
-      "MaxVelocity",
-      ConstraintDefinitions["MaxVelocity"],
-      vars
-    ),
-    StopPoint: defineCreateConstraintData(
-      "StopPoint",
-      ConstraintDefinitions["StopPoint"],
-      vars
-    ),
-    PointAt: defineCreateConstraintData(
-      "PointAt",
-      ConstraintDefinitions["PointAt"],
-      vars
-    )
-  };
-  //let constraintDataConstructors = ObjectTyped.fromEntries(entries) as ConstraintDataConstructors;
+  let constraintDataConstructors = Object.fromEntries(keys.map(<K extends ConstraintKey>(key:K)=>[key, defineCreateConstraintData(key,ConstraintDefinitions[key],vars)] as 
+  [
+    K,
+    (data: Partial<DataMap[K]["props"]>) => (typeof ConstraintDataObjects)[K]["Type"]
+  ])) as ConstraintDataConstructors;
 
   return {
     RobotConfigStore: (config: RobotConfig<Expr>) => {

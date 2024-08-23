@@ -10,6 +10,24 @@
  * - Discussion: https://stackoverflow.com/a/65117465/565877
 
  */
+export type TupleUnion<U extends string | number| symbol, R extends any[] = []> = {
+   [S in U]: Exclude<U, S> extends never ? [S, ...R] : TupleUnion<Exclude<U, S>, [ S, ...R]>;
+ }[U];
+ type Values<O extends {}, Tuple extends (keyof O)[]> = {
+   [Index in keyof Tuple]: O[Tuple[Index]];
+ } & {length: Tuple['length']};
+
+ type Entries<O extends {}, Tuple extends (keyof O)[]> = {
+   [Index in keyof Tuple]: [Tuple[Index], O[Tuple[Index]]];
+ } & {length: Tuple['length']};
+
+ let vals : Values<AbortController, TupleUnion<keyof AbortController>>
+
+ type ObjectType = Record<PropertyKey, unknown>;
+type PickByValue<OBJ_T, VALUE_T> // From https://stackoverflow.com/a/55153000
+    = Pick<OBJ_T, { [K in keyof OBJ_T]: OBJ_T[K] extends VALUE_T ? K : never }[keyof OBJ_T]>;
+type ObjectEntries<OBJ_T> // From https://stackoverflow.com/a/60142095
+    = { [K in keyof OBJ_T]: [keyof PickByValue<OBJ_T, OBJ_T[K]>, OBJ_T[K]] }[keyof OBJ_T][];
 
 export const ObjectTyped = {
   /**
@@ -18,7 +36,7 @@ export const ObjectTyped = {
   
      */
 
-  keys: Object.keys as <T extends {}>(yourObject: T) => Array<keyof T>,
+  keys: Object.keys as <T extends {}>(yourObject: T) => TupleUnion<keyof T>,
 
   /**
   
@@ -29,8 +47,8 @@ export const ObjectTyped = {
      * (TS 4.4.2 - typing is: values<T>(yourObject: { [s: string]: T } | ArrayLike<T>): T[];)
   
      */
-
-  values: Object.values as <U extends {}>(yourObject: U) => Array<U[keyof U]>, // Using ValueOf here was giving weird hover annotation: ValueOf<{ ...the whole damn object... }> as opposed to ['key1', 'key2', etc]
+   
+  values: Object.values as <U extends {}>(yourObject: U) => Values<U, TupleUnion<keyof U>>, // Using ValueOf here was giving weird hover annotation: ValueOf<{ ...the whole damn object... }> as opposed to ['key1', 'key2', etc]
 
   /**
   
@@ -40,7 +58,7 @@ export const ObjectTyped = {
 
   entries: Object.entries as <O extends {}>(
     yourObject: O
-  ) => Array<[keyof O, O[keyof O]]>,
+  ) => ObjectEntries<O>,
 
   /**
   
@@ -52,6 +70,13 @@ export const ObjectTyped = {
     yourObjectEntries: [K, V][]
   ) => Record<K, V>
 };
+let obj = {a:1, b: false};
+let keys = ObjectTyped.keys(obj);
+keys = [];
+let arr = ObjectTyped.entries(obj);
+arr = [];
+arr[0];
+arr[1];
 
 // Built-ins documented here: https://www.typescriptlang.org/docs/handbook/utility-types.html
 

@@ -219,15 +219,8 @@ pub enum ConstraintData<T> {
 impl<T> ConstraintData<T> {
     pub fn scope(&self) -> ConstraintType {
         match self {
-            ConstraintData::MaxVelocity { max: _ } => ConstraintType::Both,
-            ConstraintData::PointAt {
-                x: _,
-                y: _,
-                tolerance: _,
-                flip: _,
-            } => ConstraintType::Both,
-            ConstraintData::MaxAcceleration { max: _ } => ConstraintType::Both,
             ConstraintData::StopPoint {} => ConstraintType::Waypoint,
+            _ => ConstraintType::Both
         }
     }
 }

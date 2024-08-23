@@ -9,6 +9,7 @@ import {
   TextRotationNoneOutlined
 } from "@mui/icons-material";
 import { JSXElementConstructor, ReactElement } from "react";
+import { ObjectTyped } from "../util/ObjectTyped";
 
 export type ConstraintPropertyType = Expr | boolean;
 
@@ -22,7 +23,7 @@ export type DataPropsList = { [key: string]: ConstraintPropertyType };
 export type PropertyDefinitionList<P extends DataPropsList> = {
   [key in keyof P]: ConstraintPropertyDefinition<P[key]>;
 };
-export type ConstraintDefinition<D extends ConstraintData> = {
+export type ConstraintDefinition<K extends ConstraintKey, D extends ConstraintData = DataMap[K]> = {
   type: D["type"];
   name: string;
   shortName: string;
@@ -42,9 +43,9 @@ interface IConstraintData<name, Props extends DataPropsList> {
 }
 
 export type ConstraintDataTypeMap = {
+  StopPoint: {};
   MaxVelocity: { max: Expr };
   MaxAcceleration: { max: Expr };
-  StopPoint: {};
   PointAt: {
     x: Expr;
     y: Expr;
@@ -60,8 +61,9 @@ export type DataMap = {
 };
 export type ConstraintData = DataMap[keyof DataMap];
 
-export const consts: ConstraintDefinition<any>[] = [
-  {
+type defs = { [K in ConstraintKey]: ConstraintDefinition<K> };
+export const ConstraintDefinitions: defs = {
+  StopPoint: {
     type: "StopPoint" as const,
     name: "Stop Point",
     shortName: "Stop",
@@ -70,8 +72,8 @@ export const consts: ConstraintDefinition<any>[] = [
     properties: {},
     wptScope: true,
     sgmtScope: false
-  } satisfies ConstraintDefinition<DataMap["StopPoint"]>,
-  {
+  } satisfies ConstraintDefinition<"StopPoint">,
+  MaxVelocity: {
     type: "MaxVelocity" as const,
     name: "Max Velocity",
     shortName: "Max Velo",
@@ -87,8 +89,8 @@ export const consts: ConstraintDefinition<any>[] = [
     },
     wptScope: true,
     sgmtScope: true
-  } satisfies ConstraintDefinition<DataMap["MaxVelocity"]>,
-  {
+  } satisfies ConstraintDefinition<"MaxVelocity">,
+  MaxAcceleration: {
     type: "MaxAcceleration" as const,
     name: "Max Acceleration",
     shortName: "Max Acc",
@@ -104,8 +106,8 @@ export const consts: ConstraintDefinition<any>[] = [
     },
     wptScope: true,
     sgmtScope: true
-  } satisfies ConstraintDefinition<DataMap["MaxAcceleration"]>,
-  {
+  } satisfies ConstraintDefinition<"MaxAcceleration">,
+  PointAt: {
     type: "PointAt" as const,
     name: "Point At",
     shortName: "Point At",
@@ -140,10 +142,8 @@ export const consts: ConstraintDefinition<any>[] = [
     },
     wptScope: true,
     sgmtScope: true
-  } satisfies ConstraintDefinition<DataMap["PointAt"]>
-];
+  } satisfies ConstraintDefinition<"PointAt">
+};
 
 export type ConstraintKey = keyof DataMap;
-export const ConstraintDefinitions: {
-  [key in ConstraintKey]: ConstraintDefinition<any>;
-} = Object.fromEntries(consts.map((def) => [def.type, def]));
+export const consts = ObjectTyped.values(ConstraintDefinitions);
