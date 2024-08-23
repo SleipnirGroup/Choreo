@@ -5,65 +5,86 @@ use super::v2025_0_0::{Expr, RobotConfig, Traj, Waypoint};
 #[tauri::command]
 pub fn guess_control_interval_counts(
     config: RobotConfig<Expr>,
-    traj: Traj
-  ) -> Result<Vec<usize>, String> {
+    traj: Traj,
+) -> Result<Vec<usize>, String> {
     let config = config.snapshot();
     if (config.wheelMaxTorque() <= 0.0) {
-      return Err("Wheel max torque must be positive".to_string());
+        return Err("Wheel max torque must be positive".to_string());
     } else if (config.wheelMaxVelocity() <= 0.0) {
-      return Err("Wheel max velocity must be positive".to_string());
+        return Err("Wheel max velocity must be positive".to_string());
     } else if (config.mass <= 0.0) {
-      return Err("Robot mass must be positive".to_string());
+        return Err("Robot mass must be positive".to_string());
     } else if (config.radius <= 0.0) {
-      return Err("Wheel radius must be positive".to_string());
+        return Err("Wheel radius must be positive".to_string());
     }
-    Ok(traj.path.waypoints.iter().enumerate().map(|(i, w)|guess_control_interval_count(i, &traj, config, w)).collect::<Vec<usize>>())
-  }
-  pub fn guess_control_interval_count(i: usize, traj: &Traj, config: RobotConfig<f64>, w: &Waypoint<Expr>) -> usize {
+    Ok(traj
+        .path
+        .waypoints
+        .iter()
+        .enumerate()
+        .map(|(i, w)| guess_control_interval_count(i, &traj, config, w))
+        .collect::<Vec<usize>>())
+}
+pub fn guess_control_interval_count(
+    i: usize,
+    traj: &Traj,
+    config: RobotConfig<f64>,
+    w: &Waypoint<Expr>,
+) -> usize {
     let this = w.snapshot();
-    let next = traj.path.waypoints.get(i+1).map(|w|w.snapshot());
+    let next = traj.path.waypoints.get(i + 1).map(|w| w.snapshot());
     match next {
-        None=> 1,
-        Some(next)=> {
-    
-    let dx = next.x - this.x;
-    let dy = next.y - this.y;
-    let dtheta = angle_modulus(
-      next.heading - this.heading
-    );
-    let heading_weight = 0.5; // arbitrary
-    let distance = (dx * dx + dy * dy).sqrt();
-    let max_force = config.wheelMaxTorque() / config.radius;
+        None => 1,
+        Some(next) => {
+            let dx = next.x - this.x;
+            let dy = next.y - this.y;
+            let dtheta = angle_modulus(next.heading - this.heading);
+            let heading_weight = 0.5; // arbitrary
+            let distance = (dx * dx + dy * dy).sqrt();
+            let max_force = config.wheelMaxTorque() / config.radius;
 
-    // Default to robotConfig's max velocity and acceleration
-    let mut max_vel = config.wheelMaxVelocity() * config.radius;
-    let mut max_accel = (max_force * 4.0) / config.mass; // times 4 for 4 modules
+            // Default to robotConfig's max velocity and acceleration
+            let mut max_vel = config.wheelMaxVelocity() * config.radius;
+            let mut max_accel = (max_force * 4.0) / config.mass; // times 4 for 4 modules
 
-    // Iterate through constraints to find applicable "Max Velocity" constraints
-    traj.path.constraints.iter().map(|c|c.snapshot()).for_each(|constraint| {
-        if let Some(to) = constraint.to.and_then(|id|id.to_idx(&traj.path.waypoints.len())) {
+            // Iterate through constraints to find applicable "Max Velocity" constraints
+            traj.path
+                .constraints
+                .iter()
+                .map(|c| c.snapshot())
+                .for_each(|constraint| {
+                    if let Some(to) = constraint
+                        .to
+                        .and_then(|id| id.to_idx(&traj.path.waypoints.len()))
+                    {
+                        if let Some(from) = constraint.from.to_idx(&traj.path.waypoints.len()) {
+                            if i < to && i >= from {
+                                match constraint.data {
+                                    ConstraintData::MaxVelocity { max } => {
+                                        max_vel = max_vel.min(max)
+                                    }
+                                    ConstraintData::MaxAcceleration { max } => {
+                                        max_accel = max_accel.min(max)
+                                    }
+                                    _ => {}
+                                };
+                            }
+                        }
+                    }
+                });
 
-            if let Some(from) = constraint.from.to_idx(&traj.path.waypoints.len()) {
-                if i < to && i >= from {
-                    match constraint.data {
-                        ConstraintData::MaxVelocity { max } => max_vel = max_vel.min(max),
-                        ConstraintData::MaxAcceleration { max } => max_accel = max_accel.min(max),
-                        _ =>{}
-                    };
-                }
+            let distance_at_cruise = distance - (max_vel * max_vel) / max_accel;
+            if (distance_at_cruise < 0.0) {
+                // triangle
+                let total_time = 2.0 * ((distance * max_accel).sqrt() / max_accel)
+                    + heading_weight * dtheta.abs();
+                return (total_time / 0.1).ceil() as usize;
+            } else {
+                // trapezoid
+                let total_time =
+                    distance / max_vel + max_vel / max_accel + heading_weight * dtheta.abs();
+                return (total_time / 0.1).ceil() as usize;
             }
         }
-    });
-
-    let distance_at_cruise = distance - (max_vel * max_vel) / max_accel;
-    if (distance_at_cruise < 0.0) {
-      // triangle
-      let total_time = 2.0 * ((distance * max_accel).sqrt() / max_accel) + heading_weight * dtheta.abs();
-      return (total_time / 0.1).ceil() as usize;
-    } else {
-      // trapezoid
-      let total_time = distance / max_vel + max_vel / max_accel + heading_weight * dtheta.abs();
-        return (total_time / 0.1).ceil() as usize;
     }
-}}
-  }
+}

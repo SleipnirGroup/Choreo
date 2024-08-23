@@ -4,8 +4,8 @@ use serde::{Deserialize, Serialize};
 use trajoptlib::Translation2d;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Expr (pub String, pub f64);
-pub fn expr(ex: &str, val: f64)->Expr {
+pub struct Expr(pub String, pub f64);
+pub fn expr(ex: &str, val: f64) -> Expr {
     Expr(ex.to_string(), val)
 }
 impl Expr {
@@ -24,30 +24,30 @@ pub enum Unit {
     MeterPerSecond,
     Radian,
     RadianPerSecond,
-    KgM2
+    KgM2,
 }
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Variable {
     pub unit: Unit,
-    pub var: Expr
+    pub var: Expr,
 }
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PoseVariable {
     pub x: Expr,
     pub y: Expr,
-    pub heading: Expr
+    pub heading: Expr,
 }
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Variables {
     pub expressions: HashMap<String, Variable>,
-    pub poses: HashMap<String, PoseVariable>
+    pub poses: HashMap<String, PoseVariable>,
 }
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Bumper<T> {
     pub front: T,
     pub left: T,
     pub back: T,
-    pub right: T
+    pub right: T,
 }
 
 impl Bumper<Expr> {
@@ -56,27 +56,30 @@ impl Bumper<Expr> {
             front: self.front.snapshot(),
             left: self.left.snapshot(),
             back: self.back.snapshot(),
-            right: self.right.snapshot()
+            right: self.right.snapshot(),
         }
     }
 }
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Module<T> {
     pub x: T,
-    pub y: T
+    pub y: T,
 }
 
 impl Module<Expr> {
     pub fn snapshot(&self) -> Module<f64> {
         Module {
             x: self.x.snapshot(),
-            y: self.y.snapshot()
+            y: self.y.snapshot(),
         }
     }
 }
 impl Module<f64> {
-    pub fn translation(&self)-> Translation2d {
-        Translation2d{x:self.x, y: self.y}
+    pub fn translation(&self) -> Translation2d {
+        Translation2d {
+            x: self.x,
+            y: self.y,
+        }
     }
 }
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
@@ -90,36 +93,39 @@ pub struct RobotConfig<T> {
     pub vmax: T, // motor rpm
     /// motor N*m
     pub tmax: T, // N*m
-    pub bumper: Bumper<T>
+    pub bumper: Bumper<T>,
 }
 
 impl RobotConfig<Expr> {
     pub fn snapshot(&self) -> RobotConfig<f64> {
         RobotConfig {
-            modules: self.modules.clone().map(|modu: Module::<Expr>|modu.snapshot()),
+            modules: self
+                .modules
+                .clone()
+                .map(|modu: Module<Expr>| modu.snapshot()),
             mass: self.mass.snapshot(),
             inertia: self.inertia.snapshot(),
             gearing: self.gearing.snapshot(),
             radius: self.radius.snapshot(),
             vmax: self.vmax.snapshot(),
             tmax: self.tmax.snapshot(),
-            bumper: self.bumper.snapshot()
+            bumper: self.bumper.snapshot(),
         }
     }
 }
 impl RobotConfig<f64> {
-    pub fn wheelMaxTorque(&self)->f64 {
+    pub fn wheelMaxTorque(&self) -> f64 {
         return self.tmax * self.gearing;
     }
-    pub fn wheelMaxVelocity(&self)->f64 {
-        return (self.vmax / self.gearing) * 2.0*PI/60.0;
+    pub fn wheelMaxVelocity(&self) -> f64 {
+        return (self.vmax / self.gearing) * 2.0 * PI / 60.0;
     }
 }
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Project {
     pub version: String,
     pub variables: Variables,
-    pub config: RobotConfig<Expr>
+    pub config: RobotConfig<Expr>,
 }
 
 // traj file
@@ -131,7 +137,7 @@ pub struct Waypoint<T> {
     pub intervals: usize,
     pub split: bool,
     pub fixTranslation: bool,
-    pub fixHeading: bool
+    pub fixHeading: bool,
 }
 
 impl Waypoint<Expr> {
@@ -155,14 +161,32 @@ pub enum WaypointID {
     #[serde(rename = "first")]
     First,
     #[serde(rename = "last")]
-    Last
+    Last,
 }
 impl WaypointID {
     pub fn to_idx(&self, count: &usize) -> Option<usize> {
         match self {
-            WaypointID::Idx(idx) => if (*idx < *count) {Some(idx.clone())} else {None},
-            WaypointID::First => if (*count > 0) {Some(1)} else {None},
-            WaypointID::Last => if (*count > 0) {Some(count.clone())} else {None},
+            WaypointID::Idx(idx) => {
+                if (*idx < *count) {
+                    Some(idx.clone())
+                } else {
+                    None
+                }
+            }
+            WaypointID::First => {
+                if (*count > 0) {
+                    Some(1)
+                } else {
+                    None
+                }
+            }
+            WaypointID::Last => {
+                if (*count > 0) {
+                    Some(count.clone())
+                } else {
+                    None
+                }
+            }
         }
     }
 }
@@ -171,51 +195,78 @@ impl WaypointID {
 pub enum ConstraintType {
     Waypoint,
     Segment,
-    Both
+    Both,
 }
 #[derive(Serialize, Deserialize, Clone, Copy)]
 #[serde(tag = "type", content = "props")]
 pub enum ConstraintData<T> {
-    MaxVelocity {max: T},
-    MaxAcceleration {max: T},
-    PointAt {x: T, y: T, tolerance: T, flip: bool},
-    StopPoint {}
-} 
+    MaxVelocity {
+        max: T,
+    },
+    MaxAcceleration {
+        max: T,
+    },
+    PointAt {
+        x: T,
+        y: T,
+        tolerance: T,
+        flip: bool,
+    },
+    StopPoint {},
+}
 
-impl <T> ConstraintData<T> {
+impl<T> ConstraintData<T> {
     pub fn scope(&self) -> ConstraintType {
         match self {
-             ConstraintData::MaxVelocity{max} => ConstraintType::Both,
-             ConstraintData::PointAt{x, y, tolerance, flip } => ConstraintType::Both,
-             ConstraintData::MaxAcceleration { max } => ConstraintType::Both,
-             ConstraintData::StopPoint {} => ConstraintType::Waypoint,
+            ConstraintData::MaxVelocity { max } => ConstraintType::Both,
+            ConstraintData::PointAt {
+                x,
+                y,
+                tolerance,
+                flip,
+            } => ConstraintType::Both,
+            ConstraintData::MaxAcceleration { max } => ConstraintType::Both,
+            ConstraintData::StopPoint {} => ConstraintType::Waypoint,
         }
     }
 }
 impl ConstraintData<Expr> {
     pub fn snapshot(&self) -> ConstraintData<f64> {
         match self {
-            ConstraintData::MaxVelocity{max} => ConstraintData::MaxVelocity{max: max.snapshot()},
-            ConstraintData::PointAt { x, y, tolerance, flip }
-                => ConstraintData::PointAt { x: x.snapshot(), y: y.snapshot(), tolerance: tolerance.snapshot(), flip:*flip },
-            ConstraintData::MaxAcceleration { max } => ConstraintData::MaxAcceleration { max: max.snapshot() },
-            ConstraintData::StopPoint {} => ConstraintData::StopPoint {}
+            ConstraintData::MaxVelocity { max } => ConstraintData::MaxVelocity {
+                max: max.snapshot(),
+            },
+            ConstraintData::PointAt {
+                x,
+                y,
+                tolerance,
+                flip,
+            } => ConstraintData::PointAt {
+                x: x.snapshot(),
+                y: y.snapshot(),
+                tolerance: tolerance.snapshot(),
+                flip: *flip,
+            },
+            ConstraintData::MaxAcceleration { max } => ConstraintData::MaxAcceleration {
+                max: max.snapshot(),
+            },
+            ConstraintData::StopPoint {} => ConstraintData::StopPoint {},
         }
     }
 }
 
 #[derive(Serialize, Deserialize, Clone)]
-pub struct Constraint <T> {
+pub struct Constraint<T> {
     pub from: WaypointID,
     pub to: Option<WaypointID>,
-    pub data: ConstraintData<T>
+    pub data: ConstraintData<T>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
-pub struct ConstraintIDX <T> {
+pub struct ConstraintIDX<T> {
     pub from: usize,
     pub to: Option<usize>,
-    pub data: ConstraintData<T>
+    pub data: ConstraintData<T>,
 }
 
 impl Constraint<Expr> {
@@ -223,8 +274,8 @@ impl Constraint<Expr> {
         return Constraint::<f64> {
             from: self.from,
             to: self.to,
-            data: self.data.snapshot()
-        }
+            data: self.data.snapshot(),
+        };
     }
 }
 
@@ -237,28 +288,27 @@ pub struct Sample {
     pub vx: f64,
     pub vy: f64,
     pub omega: f64,
-    pub fx: [f64;4],
-    pub fy: [f64;4]
+    pub fx: [f64; 4],
+    pub fy: [f64; 4],
 }
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ChoreoPath<T> {
     pub waypoints: Vec<Waypoint<T>>,
-    pub constraints: Vec<Constraint<T>>
+    pub constraints: Vec<Constraint<T>>,
 }
 
 impl ChoreoPath<Expr> {
     pub fn snapshot(&self) -> ChoreoPath<f64> {
         ChoreoPath {
             waypoints: self.waypoints.iter().map(Waypoint::snapshot).collect(),
-            constraints: self.constraints.iter().map(Constraint::snapshot).collect()
+            constraints: self.constraints.iter().map(Constraint::snapshot).collect(),
         }
     }
 }
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Output {
     pub waypoints: Vec<f64>,
-    pub samples: Vec<Vec<Sample>>
-
+    pub samples: Vec<Vec<Sample>>,
 }
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Traj {
@@ -266,5 +316,5 @@ pub struct Traj {
     pub version: String,
     pub path: ChoreoPath<Expr>,
     pub snapshot: Option<ChoreoPath<f64>>,
-    pub traj: Output
+    pub traj: Output,
 }

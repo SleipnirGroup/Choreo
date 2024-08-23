@@ -4,7 +4,8 @@
 mod document;
 mod util;
 use document::v2025_0_0::{
-    expr, Bumper, ChoreoPath, Constraint, ConstraintData, ConstraintIDX, ConstraintType, Module, Output, Project, RobotConfig, Sample, Traj, Variables, Waypoint, WaypointID
+    expr, Bumper, ChoreoPath, Constraint, ConstraintData, ConstraintIDX, ConstraintType, Module,
+    Output, Project, RobotConfig, Sample, Traj, Variables, Waypoint, WaypointID,
 };
 use std::collections::HashMap;
 use std::f64::consts::PI;
@@ -14,12 +15,12 @@ use std::{fs, path::Path};
 use std::{thread, vec};
 use tauri::regex::{escape, Regex};
 
+use document::intervals::guess_control_interval_counts;
 use tauri::{
     api::{dialog::blocking::FileDialogBuilder, file},
     Manager,
 };
 use trajoptlib::{Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory, Translation2d};
-use document::intervals::guess_control_interval_counts;
 
 #[derive(Clone, serde::Serialize, Debug)]
 struct OpenFileEventPayload<'a> {
@@ -513,8 +514,6 @@ async fn generate(
                     ConstraintType::Segment => validSgmt,
                     ConstraintType::Both => validWpt || validSgmt,
                 } {
-                    
-
                     isInitialGuess[from_idx] = false;
                     let mut fixed_to = to;
                     let mut fixed_from = from_idx;
@@ -530,9 +529,9 @@ async fn generate(
                                 }
                                 fixed_to = None;
                             } else {
-                            isInitialGuess[to_idx] = false;
+                                isInitialGuess[to_idx] = false;
                             }
-                        },
+                        }
                         _ => {}
                     }
                     constraint_idx.push(ConstraintIDX {
@@ -588,28 +587,29 @@ async fn generate(
                 x,
                 y,
                 tolerance,
-                flip:_,
+                flip: _,
             } => {
                 println!("{}, {}, {}, {}", x, y, tolerance, from);
                 match to_opt {
-                None => path_builder.wpt_point_at(from, x, y, tolerance),
-                Some(to) => path_builder.sgmt_point_at(from, to, x, y, tolerance),
+                    None => path_builder.wpt_point_at(from, x, y, tolerance),
+                    Some(to) => path_builder.sgmt_point_at(from, to, x, y, tolerance),
                 }
-            },
+            }
             ConstraintData::MaxVelocity { max } => match to_opt {
                 None => path_builder.wpt_linear_velocity_max_magnitude(from, max),
                 Some(to) => path_builder.sgmt_linear_velocity_max_magnitude(from, to, max),
             },
             ConstraintData::MaxAcceleration { max } => match to_opt {
                 None => path_builder.wpt_linear_acceleration_max_magnitude(from, max),
-                Some(to) => path_builder.sgmt_linear_acceleration_max_magnitude(from, to, max)
+                Some(to) => path_builder.sgmt_linear_acceleration_max_magnitude(from, to, max),
             },
-            ConstraintData::StopPoint {  } => match to_opt {
+            ConstraintData::StopPoint {} => match to_opt {
                 None => {
                     path_builder.wpt_linear_velocity_max_magnitude(from, 0.0f64);
                     path_builder.wpt_angular_velocity_max_magnitude(from, 0.0f64);
-                }, Some(_) => ()
-            }
+                }
+                Some(_) => (),
+            },
         };
     }
     let config = chor.config.snapshot();
@@ -649,7 +649,7 @@ async fn generate(
 
 fn postprocess(result: SwerveTrajectory, traj: Traj, snapshot: ChoreoPath<f64>) -> Traj {
     let mut new_traj = traj.clone();
-    
+
     // convert the result from trajoptlib to a format matching the save file.
     // Calculate the waypoint timing
     let mut interval = 0;
@@ -661,7 +661,7 @@ fn postprocess(result: SwerveTrajectory, traj: Traj, snapshot: ChoreoPath<f64>) 
             let total_intervals = interval;
             interval += pt.1.intervals;
             (
-                pt.1.split || pt.0 == 0 || pt.0 == snapshot.waypoints.len() -1,
+                pt.1.split || pt.0 == 0 || pt.0 == snapshot.waypoints.len() - 1,
                 total_intervals,
                 result
                     .samples
@@ -680,12 +680,13 @@ fn postprocess(result: SwerveTrajectory, traj: Traj, snapshot: ChoreoPath<f64>) 
         .map(|a| a.1) // map to associate interval
         .collect::<Vec<usize>>();
     new_traj.traj.samples = splits
-        .windows(2) // get adjacent pairs of interval counts 
+        .windows(2) // get adjacent pairs of interval counts
         .filter_map(|window| {
             result
                 .samples
-                .get((window[0])..(window[1]) + 1)// grab the range including both endpoints
-                .map(|slice| { // convert into samples
+                .get((window[0])..(window[1]) + 1) // grab the range including both endpoints
+                .map(|slice| {
+                    // convert into samples
                     slice
                         .into_iter()
                         .map(|swerve_sample| {
@@ -733,12 +734,9 @@ fn main() {
     let (tx, rx) = channel::<ProgressUpdate>();
     PROGRESS_SENDER_LOCK.get_or_init(move || tx);
 
-
     tauri::Builder::default()
         .setup(|app| {
-            tauri::async_runtime::spawn(
-                async {
-
+            tauri::async_runtime::spawn(async {
                 let project = Project {
                     version: "v2025.0.0".to_string(),
                     variables: Variables {
@@ -781,7 +779,7 @@ fn main() {
                 // println!("{:?}", project);
                 // let stringified = serde_json::to_string::<Project>(&project);
                 // println!("{:?}", stringified.unwrap());
-            
+
                 let traj = Traj {
                     name: "Simple Auto".to_string(),
                     version: "v2025.0.0".to_string(),
@@ -806,11 +804,13 @@ fn main() {
                                 fixHeading: true,
                             },
                         ],
-                        constraints: vec![
-                            Constraint {
-                                from: WaypointID::Idx(0),
-                                to: Some(WaypointID::Idx(1)), data: ConstraintData::MaxVelocity { max: expr("3 m/s", 3.0) } }
-                        ],
+                        constraints: vec![Constraint {
+                            from: WaypointID::Idx(0),
+                            to: Some(WaypointID::Idx(1)),
+                            data: ConstraintData::MaxVelocity {
+                                max: expr("3 m/s", 3.0),
+                            },
+                        }],
                     },
                     snapshot: None,
                     traj: Output {
@@ -822,7 +822,7 @@ fn main() {
                 // let stringified = serde_json::to_string::<Traj>(&traj);
                 // println!("{:?}", stringified.unwrap());
                 // let traj = generate(project, traj, 0).await;
-                
+
                 // let after = serde_json::to_string::<Traj>(&traj.unwrap());
                 // println!("{:?}", after.unwrap());
             });
