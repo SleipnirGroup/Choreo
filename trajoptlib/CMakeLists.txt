@@ -15,6 +15,12 @@ set(CMAKE_MODULE_PATH
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules"
 )
 
+# Set default build type to release with debug info (i.e. release mode
+# optimizations are performed, but debug info still exists).
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "" FORCE)
+endif()
+
 project(TrajoptLib LANGUAGES CXX)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -39,12 +45,6 @@ list(
 )
 if("${isSystemDir}" STREQUAL "-1")
     list(APPEND CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-endif()
-
-# Set default build type to release with debug info (i.e. release mode
-# optimizations are performed, but debug info still exists).
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "" FORCE)
 endif()
 
 # Generate compile_commands.json by default
