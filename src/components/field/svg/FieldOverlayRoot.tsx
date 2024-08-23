@@ -398,7 +398,6 @@ class FieldOverlayRoot extends Component<Props, State> {
         NavbarLabels.FullWaypoint,
         NavbarLabels.TranslationWaypoint,
         NavbarLabels.EmptyWaypoint,
-        NavbarLabels.InitialGuessPoint
       ].includes(waypointType)
     ) {
       return;

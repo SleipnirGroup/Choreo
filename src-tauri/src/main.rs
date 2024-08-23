@@ -4,8 +4,7 @@
 mod document;
 mod util;
 use document::v2025_0_0::{
-    expr, Bumper, ChoreoPath, ConstraintData, ConstraintIDX, ConstraintType,
-    Module, Output, Project, RobotConfig, Sample, Traj, Variables, Waypoint
+    expr, Bumper, ChoreoPath, Constraint, ConstraintData, ConstraintIDX, ConstraintType, Module, Output, Project, RobotConfig, Sample, Traj, Variables, Waypoint, WaypointID
 };
 use std::collections::HashMap;
 use std::f64::consts::PI;
@@ -506,21 +505,41 @@ async fn generate(
         match from {
             None => {}
             Some(from_idx) => {
+                let validWpt = to.is_none();
+                let validSgmt = to.is_some();
+                // Check for valid scope
                 if match constraint.data.scope() {
-                    ConstraintType::Waypoint => to.is_none(),
-                    ConstraintType::Segment => to.is_some(),
-                    ConstraintType::Both => true,
+                    ConstraintType::Waypoint => validWpt,
+                    ConstraintType::Segment => validSgmt,
+                    ConstraintType::Both => validWpt || validSgmt,
                 } {
-                    constraint_idx.push(ConstraintIDX {
-                        from: from_idx,
-                        to,
-                        data: constraint.data,
-                    });
+                    
+
                     isInitialGuess[from_idx] = false;
+                    let mut fixed_to = to;
+                    let mut fixed_from = from_idx;
                     match to {
-                        Some(to_idx) => isInitialGuess[to_idx] = false,
+                        Some(to_idx) => {
+                            if to_idx < from_idx {
+                                fixed_to = Some(from_idx);
+                                fixed_from = to_idx;
+                            }
+                            if to_idx == from_idx {
+                                if constraint.data.scope() == ConstraintType::Segment {
+                                    continue;
+                                }
+                                fixed_to = None;
+                            } else {
+                            isInitialGuess[to_idx] = false;
+                            }
+                        },
                         _ => {}
                     }
+                    constraint_idx.push(ConstraintIDX {
+                        from: fixed_from,
+                        to: fixed_to,
+                        data: constraint.data,
+                    });
                 }
             }
         };
@@ -570,9 +589,12 @@ async fn generate(
                 y,
                 tolerance,
                 flip:_,
-            } => match to_opt {
+            } => {
+                println!("{}, {}, {}, {}", x, y, tolerance, from);
+                match to_opt {
                 None => path_builder.wpt_point_at(from, x, y, tolerance),
                 Some(to) => path_builder.sgmt_point_at(from, to, x, y, tolerance),
+                }
             },
             ConstraintData::MaxVelocity { max } => match to_opt {
                 None => path_builder.wpt_linear_velocity_max_magnitude(from, max),
@@ -581,6 +603,12 @@ async fn generate(
             ConstraintData::MaxAcceleration { max } => match to_opt {
                 None => path_builder.wpt_linear_acceleration_max_magnitude(from, max),
                 Some(to) => path_builder.sgmt_linear_acceleration_max_magnitude(from, to, max)
+            },
+            ConstraintData::StopPoint {  } => match to_opt {
+                None => {
+                    path_builder.wpt_linear_velocity_max_magnitude(from, 0.0f64);
+                    path_builder.wpt_angular_velocity_max_magnitude(from, 0.0f64);
+                }, Some(_) => ()
             }
         };
     }
@@ -750,9 +778,9 @@ fn main() {
                         },
                     },
                 };
-                println!("{:?}", project);
-                let stringified = serde_json::to_string::<Project>(&project);
-                println!("{:?}", stringified.unwrap());
+                // println!("{:?}", project);
+                // let stringified = serde_json::to_string::<Project>(&project);
+                // println!("{:?}", stringified.unwrap());
             
                 let traj = Traj {
                     name: "Simple Auto".to_string(),
@@ -778,7 +806,11 @@ fn main() {
                                 fixHeading: true,
                             },
                         ],
-                        constraints: vec![],
+                        constraints: vec![
+                            Constraint {
+                                from: WaypointID::Idx(0),
+                                to: Some(WaypointID::Idx(1)), data: ConstraintData::MaxVelocity { max: expr("3 m/s", 3.0) } }
+                        ],
                     },
                     snapshot: None,
                     traj: Output {
@@ -787,12 +819,12 @@ fn main() {
                     },
                 };
 
-                let stringified = serde_json::to_string::<Traj>(&traj);
-                println!("{:?}", stringified.unwrap());
-                let traj = generate(project, traj, 0).await;
+                // let stringified = serde_json::to_string::<Traj>(&traj);
+                // println!("{:?}", stringified.unwrap());
+                // let traj = generate(project, traj, 0).await;
                 
-                let after = serde_json::to_string::<Traj>(&traj.unwrap());
-                println!("{:?}", after.unwrap());
+                // let after = serde_json::to_string::<Traj>(&traj.unwrap());
+                // println!("{:?}", after.unwrap());
             });
             let progress_emitter = app.handle().clone();
             thread::spawn(move || {

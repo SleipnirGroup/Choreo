@@ -13,7 +13,7 @@ import { moveItem } from "mobx-utils";
 import { WaypointScope } from "./ConstraintStore";
 import { IHolonomicPathStore } from "./path/HolonomicPathStore";
 import { v4 as uuidv4 } from "uuid";
-import { uiState } from "./DocumentManager";
+import { Env, uiState } from "./DocumentManager";
 import {Command, Expr} from "./2025/DocumentTypes"
 import { ExpressionStore } from "./ExpressionStore";
 import { IChoreoTrajStore } from "./path/ChoreoTrajStore";
@@ -98,7 +98,7 @@ export const CommandStore = types
         self.time.deserialize(ser.data.waitTime);
       } else {
         ser.data.commands.forEach((c) => {
-          const command:ICommandStore = getEnv(self).create.CommandStore(c);
+          const command:ICommandStore = getEnv<Env>(self).create.CommandStore(c);
           self.commands.push(command);
         });
       }
@@ -114,7 +114,7 @@ export const CommandStore = types
     },
     addSubCommand() {
       // TODO add subcommand
-      const newCommand = getEnv(self).create.CommandStore({
+      const newCommand = getEnv<Env>(self).create.CommandStore({
         type: "named",
         uuid: uuidv4(),
         time: ["0 s", 0],
@@ -155,12 +155,12 @@ export const EventMarkerStore = types
       }
       return (
         self.uuid ===
-          getEnv(self).selectedSidebar()
+          getEnv<Env>(self).selectedSidebar()
       );
     },
     setSelected(selected: boolean) {
       if (selected && !this.selected) {
-        getEnv(self).select(
+        getEnv<Env>(self).select(
           getParent<IEventMarkerStore[]>(self)?.find(
             (point) => self.uuid == point.uuid
           )

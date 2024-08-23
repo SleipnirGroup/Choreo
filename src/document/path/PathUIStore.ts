@@ -1,6 +1,7 @@
 import { types, getEnv, Instance } from "mobx-state-tree";
 import {
   type Sample} from "../2025/DocumentTypes"
+import { Env } from "../DocumentManager";
 
 export const PathUIStore = types.model("PathUIStore", {
   visibleWaypointsStart: types.number,
@@ -21,17 +22,17 @@ export const PathUIStore = types.model("PathUIStore", {
     }
   },
   setIterationNumber(it: number) {
-    getEnv(self).withoutUndo(() => {
+    getEnv<Env>(self).withoutUndo(() => {
       self.generationIterationNumber = it;
     });
   },
   setInProgressTrajectory(trajectory: Array<Sample>) {
-    getEnv(self).withoutUndo(() => {
+    getEnv<Env>(self).withoutUndo(() => {
       self.generationProgress = trajectory;
     });
   },
   setGenerating(generating: boolean) {
-    getEnv(self).withoutUndo(() => {
+    getEnv<Env>(self).withoutUndo(() => {
       self.generating = generating;
     });
   }

@@ -64,7 +64,7 @@ class SidebarConstraint extends Component<Props, State> {
           );
         }}
       >
-        {React.cloneElement(this.props.constraint.definition.icon, {
+        {React.cloneElement(this.props.constraint.data.def.icon, {
           className: styles.SidebarIcon,
           htmlColor: selected ? "var(--select-yellow)" : "var(--accent-purple)"
         })}
@@ -75,7 +75,7 @@ class SidebarConstraint extends Component<Props, State> {
           className={styles.SidebarLabel}
           style={{ display: "grid", gridTemplateColumns: "1fr auto auto" }}
         >
-          <span>{this.props.constraint.definition.shortName}</span>
+          <span>{this.props.constraint.data.def.shortName}</span>
           {issues.length !== 0 ? (
             <Tooltip disableInteractive title={issues.join(", ")}>
               <PriorityHigh

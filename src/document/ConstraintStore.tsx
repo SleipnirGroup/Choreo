@@ -27,7 +27,8 @@ import { Unit } from "mathjs";
 import { IChoreoPathStore } from "./path/ChoreoPathStore";
 import { Expr, ExprOrNumber } from "./2025/DocumentTypes";
 import { ConstraintData, ConstraintDefinition, ConstraintKey, ConstraintPropertyDefinition, DataMap, PropertyDefinitionList } from "./ConstraintDefinitions";
-import { ConstraintDataObjects, IConstraintDataStore } from "./ConstraintDataStore";
+import { ConstraintDataObjects, IConstraintDataStore, asType } from "./ConstraintDataStore";
+import { Env } from "./DocumentManager";
 
 
 // export const constraints = {
@@ -157,38 +158,27 @@ export const ConstraintStore = types
   .model("ConstraintStore", {
     from: WaypointScope,
     to: types.maybe(WaypointScope),
-    // definition: types.frozen<ConstraintDefinition>({
-    //   name: "Default",
-    //   shortName: "Default",
-    //   description: "",
-    //   sgmtScope: false,
-    //   wptScope: false,
-    //   icon: <PriorityHigh></PriorityHigh>,
-    //   properties: {}
-    // }),
-    data: types.union(ConstraintDataObjects.PointAt),
+    data: types.union(...Object.values(ConstraintDataObjects)) as IConstraintDataStore<ConstraintData>,
     uuid: types.identifier
   })
   .views((self) => ({
+ 
     getType() {
-      return self.data.type ?? "";
+      return self.data.type;
     },
     get wptScope() {
-      return self.definition.wptScope;
+      return self.data.def.wptScope;
     },
     get sgmtScope() {
-      return self.definition.sgmtScope;
+      return self.data.def.sgmtScope;
     },
-    // get definition(): ConstraintDefinition {
-    //   return self.definition;
-    // },
     get selected(): boolean {
       if (!isAlive(self)) {
         return false;
       }
       return (
         self.uuid ===
-        getEnv(self).selectedSidebar()
+        getEnv<Env>(self).selectedSidebar()
       );
     },
     getPath(): IHolonomicPathStore {
@@ -248,7 +238,7 @@ export const ConstraintStore = types
     },
     setSelected(selected: boolean) {
       if (selected && !self.selected) {
-        getEnv(self).select(
+        getEnv<Env>(self).select(
           getParent<IConstraintStore[]>(self)?.find(
             (point) => self.uuid == point.uuid
           )
@@ -256,8 +246,6 @@ export const ConstraintStore = types
       }
     }
   }));
-
-
 // const constraintsStores: Partial<Record<ConstraintKey, typeof ConstraintStore>> = {};
 // Object.entries(constraints).forEach((entry) => {
 //   let key = entry[0] as ConstraintKey;

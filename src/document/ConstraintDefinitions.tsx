@@ -4,6 +4,8 @@ import { Units } from "./ExpressionStore";
 import {
     KeyboardDoubleArrowRight,
     NearMe,
+    Stop,
+    StopCircleOutlined,
     TextRotationNoneOutlined  } from "@mui/icons-material";
   import { JSXElementConstructor, ReactElement } from "react";
   
@@ -53,23 +55,33 @@ export type DataMap = {
 export type ConstraintData = DataMap[keyof DataMap];
 
 export const consts: ConstraintDefinition<any>[] = [
-  {
-    type: "MaxVelocity" as const,
-    name: "Max Velocity",
-    shortName: "Max Velo",
-    description: "Maximum Velocity",
-    icon: <KeyboardDoubleArrowRight />,
-    properties: {
-      max: {
+    {
+        type: "StopPoint" as const,
+        name: "Stop Point",
+        shortName: "Stop",
+        description: "Zero linear and angular velocity at waypoint",
+        icon: <StopCircleOutlined />,
+        properties: {},
+        wptScope: true,
+        sgmtScope: false
+      } satisfies ConstraintDefinition<DataMap["StopPoint"]>,
+    {
+        type: "MaxVelocity" as const,
         name: "Max Velocity",
-        description: "Maximum linear velocity of robot chassis",
-        units: Units.MeterPerSecond,
-        defaultVal: ["0 m/s", 0]
-      }
-    },
-    wptScope: true,
-    sgmtScope: true
-  } satisfies ConstraintDefinition<DataMap["MaxVelocity"]>,
+        shortName: "Max Velo",
+        description: "Maximum Velocity",
+        icon: <KeyboardDoubleArrowRight />,
+        properties: {
+          max: {
+            name: "Max Velocity",
+            description: "Maximum linear velocity of robot chassis",
+            units: Units.MeterPerSecond,
+            defaultVal: ["0 m/s", 0]
+          }
+        },
+        wptScope: true,
+        sgmtScope: true
+      } satisfies ConstraintDefinition<DataMap["MaxVelocity"]>,
   {
     type: "MaxAcceleration" as const,
     name: "Max Acceleration",

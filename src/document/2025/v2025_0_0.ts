@@ -66,7 +66,7 @@ export type WaypointID = number | "first" | "last"
 export interface Constraint<T extends ExprOrNumber> {
     from: WaypointID,
     to?: WaypointID,
-    data: ConstraintData<T> 
+    data: ConstraintData
 }
 
 export interface Sample {

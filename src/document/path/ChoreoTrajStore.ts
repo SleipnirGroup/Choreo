@@ -9,6 +9,7 @@ import {
   type Sample,
   Output
 } from "../2025/DocumentTypes"
+import { Env } from "../DocumentManager";
 
 export const ChoreoTrajStore = types.model("ChoreoTrajStore", {
   waypoints: types.frozen<number[]>(),
@@ -85,9 +86,9 @@ export const ChoreoTrajStore = types.model("ChoreoTrajStore", {
       }
     }
   },
-  addEventMarker(marker?: IEventMarkerStore) {
+  addEventMarker(marker?: IEventMarkerStore) : IEventMarkerStore {
     if (marker === undefined) {
-      marker = getEnv(self).create.EventMarkerStore({
+      marker = getEnv<Env>(self).create.EventMarkerStore({
         name: "Marker",
         target: "first",
         trajTargetIndex: undefined,

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { SvgIcon as MuiSvgIcon, SvgIconProps, styled } from "@mui/material";
 const SvgIcon = styled(MuiSvgIcon, {
-  name: "InitialGuessPoint",
+  name: "EventMarker",
   shouldForwardProp: (prop) => prop !== "fill"
 })<SvgIconProps>(() => ({
   fill: "none",

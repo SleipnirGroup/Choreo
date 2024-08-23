@@ -14,6 +14,7 @@ import {
 import { ChoreoPathStore } from "./ChoreoPathStore";
 import { ChoreoTrajStore } from "./ChoreoTrajStore";
 import { PathUIStore } from "./PathUIStore";
+import { Env } from "../DocumentManager";
 
 
 export const HolonomicPathStore = types
@@ -191,7 +192,7 @@ export const HolonomicPathStore = types
         self.snapshot = snap;
       },
       setIsTrajectoryStale(isTrajectoryStale: boolean) {
-        getEnv(self).withoutUndo(() => {
+        getEnv<Env>(self).withoutUndo(() => {
           self.isTrajectoryStale = isTrajectoryStale;
         });
       },
@@ -207,11 +208,11 @@ export const HolonomicPathStore = types
 
       addWaypoint(waypoint?: Partial<Waypoint<Expr>>): IHolonomicWaypointStore {
         self.path.waypoints.push(
-          getEnv(self).create.WaypointStore(
+          getEnv<Env>(self).create.WaypointStore(
             Object.assign({...DEFAULT_WAYPOINT}, waypoint))
         );
         if (self.path.waypoints.length === 1) {
-          getEnv(self).select(self.path.waypoints[0]);
+          getEnv<Env>(self).select(self.path.waypoints[0]);
         }
 
         // Initialize waypoints

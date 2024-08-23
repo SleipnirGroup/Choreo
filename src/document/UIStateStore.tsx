@@ -71,8 +71,7 @@ export const UIStateStore = types
         return (
           self.selectedNavbarItem == NavbarLabels.FullWaypoint ||
           self.selectedNavbarItem == NavbarLabels.TranslationWaypoint ||
-          self.selectedNavbarItem == NavbarLabels.EmptyWaypoint ||
-          self.selectedNavbarItem == NavbarLabels.InitialGuessPoint
+          self.selectedNavbarItem == NavbarLabels.EmptyWaypoint
         );
       },
       isConstraintSelected() {

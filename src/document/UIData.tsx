@@ -13,7 +13,6 @@ import {
   import { getVersion } from "@tauri-apps/api/app";
   import { Instance, types } from "mobx-state-tree";
   import { ReactElement } from "react";
-  import InitialGuessPoint from "../assets/InitialGuessPoint";
   import Waypoint from "../assets/Waypoint";
   import {
     ConstraintStore,
@@ -43,11 +42,6 @@ import { ConstraintDefinition, ConstraintDefinitions, ConstraintKey } from "./Co
       index: 2,
       name: "Empty Waypoint",
       icon: <CircleOutlined />
-    },
-    InitialGuessPoint: {
-      index: 3,
-      name: "Initial Guess Point",
-      icon: <InitialGuessPoint />
     }
   };
   export const NavbarData: {
@@ -133,6 +127,7 @@ import { ConstraintDefinition, ConstraintDefinitions, ConstraintKey } from "./Co
   const NavbarItemSections = [waypointNavbarCount, constraintNavbarCount];
   NavbarItemSections.push(obstacleNavbarCount);
   NavbarItemSections.push(eventMarkerCount);
+  console.log("navbar", NavbarItemSections, NavbarItemData);
   
   export const NavbarItemSectionEnds = NavbarItemSections.map((s, idx) =>
     NavbarItemSections.slice(0, idx + 1).reduce((prev, cur) => prev + cur, -1)

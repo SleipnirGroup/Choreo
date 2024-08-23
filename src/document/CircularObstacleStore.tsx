@@ -3,6 +3,7 @@ import { ExpressionStore, Units } from "./ExpressionStore";
 import { number } from "mathjs";
 import {v4 as uuidv4} from "uuid"
 import { CircleObstacle, Expr } from "./2025/DocumentTypes";
+import { Env } from "./DocumentManager";
 
 export const CircularObstacleStore = types
   .model("CircularObstacleStore", {
@@ -25,7 +26,7 @@ export const CircularObstacleStore = types
       }
       return (
         self.uuid ===
-          getEnv(self).selectedSidebar()
+          getEnv<Env>(self).selectedSidebar()
       );
     }
   }))
@@ -37,7 +38,7 @@ export const CircularObstacleStore = types
     },
     setSelected(selected: boolean) {
       if (selected && !self.selected) {
-        getEnv(self).select(
+        getEnv<Env>(self).select(
           getParent<ICircularObstacleStore[]>(self)?.find(
             (obstacle) => self.uuid == obstacle.uuid
           )

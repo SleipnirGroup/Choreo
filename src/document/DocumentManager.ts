@@ -4,7 +4,7 @@ import { dialog, invoke, path, window as tauriWindow } from "@tauri-apps/api";
 import { listen, TauriEvent, Event } from "@tauri-apps/api/event";
 import { v4 as uuidv4 } from "uuid";
 
-import { applySnapshot, getSnapshot, castToReferenceSnapshot } from "mobx-state-tree";
+import { applySnapshot, getSnapshot, castToReferenceSnapshot, Instance, IMaybe, IModelType, IStateTreeNode, IType, _NotCustomized } from "mobx-state-tree";
 import { reaction, toJS } from "mobx";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
@@ -16,9 +16,9 @@ import { MathNode, Unit } from "mathjs";
 import { safeGetIdentifier } from "../util/mobxutils";
 import { ViewLayerDefaults } from "./UIData";
 import { CircularObstacleStore, ICircularObstacleStore } from "./CircularObstacleStore";
-import { HolonomicWaypointStore as WaypointStore } from "./HolonomicWaypointStore";
-import { ConstraintStore, IWaypointScope,} from "./ConstraintStore";
-import { EXPR_DEFAULTS, RobotConfigStore } from "./RobotConfigStore";
+import { IHolonomicWaypointStore, HolonomicWaypointStore as WaypointStore } from "./HolonomicWaypointStore";
+import { ConstraintStore, IConstraintStore, IWaypointScope,} from "./ConstraintStore";
+import { EXPR_DEFAULTS, IRobotConfigStore, RobotConfigStore } from "./RobotConfigStore";
 import {
   type RobotConfig,
   type Expr,
@@ -27,9 +27,11 @@ import {
   EventMarker,
   Command
 } from "./2025/DocumentTypes";
-import { CommandStore, EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
+import { CommandStore, EventMarkerStore, ICommandStore, IEventMarkerStore } from "./EventMarkerStore";
 import { IConstraintDataStore, defineCreateConstraintData } from "./ConstraintDataStore";
-import { ConstraintData, ConstraintDefinitions, ConstraintKey, DataMap } from "./ConstraintDefinitions";
+import { ConstraintData, ConstraintDefinition, ConstraintDefinitions, ConstraintKey, DataMap } from "./ConstraintDefinitions";
+import { ObjectTyped } from "../util/ObjectTyped";
+import { NonEmptyObject } from "mobx-state-tree/dist/internal";
 
 type OpenFileEventPayload = {
   adjacent_gradle: boolean;
@@ -46,9 +48,22 @@ export const uiState = UIStateStore.create(
     layers: ViewLayerDefaults
   }
 );
-function getConstructors(vars: ()=>IVariables){
+type ConstraintDataConstructor<K extends ConstraintKey> =(data:Partial<DataMap[K]["props"]>)=>Instance<IConstraintDataStore<DataMap[K]>>;
+type ConstraintDataConstructors = {
+  [key in ConstraintKey]: ConstraintDataConstructor<key>
+}
+export type EnvConstructors = {
+  RobotConfigStore: (config: RobotConfig<Expr>) => IRobotConfigStore,
+  WaypointStore: (config: Waypoint<Expr>) => IHolonomicWaypointStore,
+  ObstacleStore: (x: number, y: number, radius: number)=>ICircularObstacleStore,
+  CommandStore: (command: Command<Expr>)=>ICommandStore,
+  EventMarkerStore: (marker: EventMarker<Expr>)=>IEventMarkerStore,
+  ConstraintData: ConstraintDataConstructors,
+  ConstraintStore: <K extends ConstraintKey>(type: K, data: Partial<DataMap[K]["props"]>, from: IWaypointScope, to?:IWaypointScope) => IConstraintStore
+}
+function getConstructors(vars: ()=>IVariables) : EnvConstructors{
 
-  function createCommandStore(command: Command<Expr>){
+  function createCommandStore(command: Command<Expr>): ICommandStore{
     return CommandStore.create({
       type: command.type,
       name: command.data?.name! ?? "",
@@ -58,11 +73,19 @@ function getConstructors(vars: ()=>IVariables){
     })
   }
 
-  let constraintDataConstructors = Object.fromEntries(Object.entries(ConstraintDefinitions)
+  type ConstraintDefinitionEntry<K extends ConstraintKey> = [K, ConstraintDefinition<DataMap[K]>]; 
+  let entries = ObjectTyped.entries(ConstraintDefinitions)
   .map(([key ,def]) =>
-      ([key as ConstraintKey, defineCreateConstraintData(key as ConstraintKey, def, vars)]))) as {
-    [key in ConstraintKey]: (data:Partial<DataMap[key]["props"]>)=>IConstraintDataStore<DataMap[key]>
-  };
+      ([key, defineCreateConstraintData(key, ConstraintDefinitions[key], vars)]))
+
+  let keys = ObjectTyped.keys(ConstraintDefinitions)
+  let constraintDataConstructors : ConstraintDataConstructors = {
+    MaxAcceleration: defineCreateConstraintData("MaxAcceleration", ConstraintDefinitions["MaxAcceleration"], vars),
+    MaxVelocity: defineCreateConstraintData("MaxVelocity", ConstraintDefinitions["MaxVelocity"], vars),
+    StopPoint: defineCreateConstraintData("StopPoint", ConstraintDefinitions["StopPoint"], vars),
+    PointAt: defineCreateConstraintData("PointAt", ConstraintDefinitions["PointAt"], vars),
+  }
+  //let constraintDataConstructors = ObjectTyped.fromEntries(entries) as ConstraintDataConstructors;
 
   return {
     RobotConfigStore: (config: RobotConfig<Expr>)=>{
@@ -117,7 +140,7 @@ function getConstructors(vars: ()=>IVariables){
       })
     },
     ConstraintData: constraintDataConstructors,
-    Constraint: <K extends ConstraintKey>(type: K, data: Partial<DataMap[K]["props"]>, from: IWaypointScope, to?:IWaypointScope) => {
+    ConstraintStore: <K extends ConstraintKey>(type: K, data: Partial<DataMap[K]["props"]>, from: IWaypointScope, to?:IWaypointScope) => {
       return ConstraintStore.create({
         from,
         to,
@@ -128,6 +151,16 @@ function getConstructors(vars: ()=>IVariables){
 }
 }
 let variables = Variables.create({expressions:{}, poses:{}});
+
+let env = {
+  selectedSidebar: ()=>safeGetIdentifier(doc.selectedSidebarItem),
+  select: (item: SelectableItemTypes)=>select(item),
+  withoutUndo: (callback: any)=>{withoutUndo(callback)},
+  startGroup: (callback:any)=>{startGroup(callback)},
+  stopGroup :()=>{stopGroup()},
+  create: getConstructors(()=>doc.variables)
+}
+export type Env = typeof env;
 export const doc = DocumentStore.create({
   robotConfig: getConstructors(()=>variables).RobotConfigStore(EXPR_DEFAULTS),
   pathlist: {},
@@ -136,14 +169,8 @@ export const doc = DocumentStore.create({
   variables: castToReferenceSnapshot(variables),
   selectedSidebarItem: undefined,
 },
-{
-  selectedSidebar: ()=>safeGetIdentifier(doc.selectedSidebarItem),
-  select: (item: SelectableItemTypes)=>select(item),
-  withoutUndo: (callback: any)=>{withoutUndo(callback)},
-  startGroup: (callback:any)=>{startGroup(callback)},
-  stopGroup :()=>{stopGroup()},
-  create: getConstructors(()=>doc.variables)
-});
+env
+);
 function withoutUndo (callback:any){doc.history.withoutUndo(callback)}
 function startGroup (callback:any){doc.history.startGroup(callback)}
 function stopGroup (){doc.history.stopGroup()}

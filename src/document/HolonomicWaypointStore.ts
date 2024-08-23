@@ -2,6 +2,7 @@ import { types, getRoot, Instance, getParent, isAlive, getEnv } from "mobx-state
 import { NavbarItemData } from "./UIData";
 import { ExpressionStore } from "./ExpressionStore";
 import { Expr, Waypoint } from "./2025/DocumentTypes";
+import { Env } from "./DocumentManager";
 
 export const DEFAULT_WAYPOINT: Waypoint<number> = {
   x: 0,
@@ -39,7 +40,7 @@ export const HolonomicWaypointStore = types
           return false;
         }
         return (
-          self.uuid === getEnv(self).selectedSidebar()
+          self.uuid === getEnv<Env>(self).selectedSidebar()
         );
       },
       serialize(): Waypoint<Expr> {
@@ -79,7 +80,7 @@ export const HolonomicWaypointStore = types
       },
       setSelected(selected: boolean) {
         if (selected && !self.selected) {
-          getEnv(self).select(
+          getEnv<Env>(self).select(
             getParent<IHolonomicWaypointStore[]>(self)?.find(
               (point) => self.uuid == point.uuid
             )

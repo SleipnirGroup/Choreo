@@ -8,6 +8,8 @@ import { IConstraintStore } from "../../document/ConstraintStore";
 import ScopeSlider from "./ScopeSlider";
 import ExpressionInput from "../input/ExpressionInput";
 import ExpressionInputList from "../input/ExpressionInputList";
+import { toJS } from "mobx";
+import BooleanInput from "../input/BooleanInput";
 
 type Props = { constraint: IConstraintStore };
 
@@ -19,7 +21,7 @@ class ConstraintsConfigPanel extends Component<Props, State> {
   state = {};
   render() {
     const constraint = this.props.constraint;
-    const definition = constraint.definition;
+    const definition = constraint.data.def;
     const isSegmentConstraint = definition.sgmtScope;
     let startIndex = (this.props.constraint.getStartWaypointIndex() ?? 0) + 1;
     let endIndex = (this.props.constraint.getEndWaypointIndex() ?? 0) + 1;
@@ -68,27 +70,33 @@ class ConstraintsConfigPanel extends Component<Props, State> {
         ></ScopeSlider>
 
         <ExpressionInputList>
-          {/* {isSegmentConstraint && <>
-            <span className={inputStyles.Title}>From</span>
-            <span> */}
-
-          {/* <input className={inputStyles.Number} value={(constraint.getStartWaypointIndex() ?? -1) + 1}></input>
-            <span>Start</span><span>End</span></span>
-            <span></span><span></span></>
-          } */}
           {Object.entries(definition.properties).map((entry) => {
             const [key, propdef] = entry;
             const setterName =
               "set" + key.charAt(0).toUpperCase() + key.slice(1);
-            return (
-              <ExpressionInput
-                key={key}
-                title={propdef.name}
-                enabled={true}
-                number={constraint[key]}
-                titleTooltip={propdef.description}
-              />
-            );
+              console.log(key, propdef, toJS(constraint.data));
+              if (Array.isArray(propdef.defaultVal)) {
+                return (
+                  <ExpressionInput
+                    key={key}
+                    title={propdef.name}
+                    enabled={true}
+                    number={constraint.data[key]}
+                    titleTooltip={propdef.description}
+                  />
+                );
+              } else if (
+                typeof propdef.defaultVal === "boolean"
+              ) {
+                return <BooleanInput 
+                  key={key}
+                    title={propdef.name}
+                    enabled={true}
+                    value = {constraint.data[key]}
+                    setValue={(v)=>constraint.data[setterName](v)}
+                    titleTooltip={propdef.description}
+                  ></BooleanInput>
+              }
           })}
         </ExpressionInputList>
       </div>

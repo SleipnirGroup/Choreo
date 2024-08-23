@@ -53,7 +53,7 @@ export class Field extends Component<Props, State> {
             ></WaypointPanel>
           )}
         {selectedSidebar !== undefined &&
-          "type" in selectedSidebar &&
+          "from" in selectedSidebar &&
           activePath.path.constraints.find(
             (constraint) =>
               constraint.uuid == (selectedSidebar as IConstraintStore)!.uuid

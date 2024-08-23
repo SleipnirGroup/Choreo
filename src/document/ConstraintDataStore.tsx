@@ -1,30 +1,28 @@
-import { IAnyModelType, IAnyType, IModelType, ISimpleType, Instance, ModelCreationType2, ModelPropertiesDeclarationToProperties, types } from "mobx-state-tree";
+import { IAnyModelType, IAnyType, IModelType, ISimpleType, IType, Instance, ModelCreationType2, ModelPropertiesDeclarationToProperties, types } from "mobx-state-tree";
 import { ConstraintData, ConstraintDefinition, ConstraintDefinitions, ConstraintKey, ConstraintPropertyDefinition, ConstraintPropertyType, DataMap, PropertyDefinitionList, consts } from "./ConstraintDefinitions";
 import { ExpressionStore, IExpressionStore, IVariables } from "./ExpressionStore";
 import { Expr } from "./2025/DocumentTypes";
 
-//interface Registry {[key:string]: [ConstraintPropertyType, IAnyType]}
-interface LookupType {
-    bool: [boolean, ISimpleType<boolean>],
-    expr: [Expr, typeof ExpressionStore]
-}
-interface LookupInstance {
-    bool: [boolean, boolean],
-    expr: [Expr, IExpressionStore]
-}
 
 type lookup<T> = (T extends Expr ? typeof ExpressionStore : T extends boolean ? boolean : never);
 
 type DataStoreProps<D extends ConstraintData> = ModelPropertiesDeclarationToProperties<
-{[propkey in keyof D["props"]]: lookup<D["props"][propkey]>;} & {type: ISimpleType<D["type"]>}
+    {[propkey in keyof D["props"]]: lookup<D["props"][propkey]>;} 
+    & {
+        type: ISimpleType<D["type"]>;
+        def: IType<ConstraintDefinition<D> | null | undefined, ConstraintDefinition<D>, ConstraintDefinition<D>>;
+    }
 >
 export type IConstraintDataStore<D extends ConstraintData> = IModelType<
     DataStoreProps<D>, 
     {[setterkey in keyof D["props"] as `set${Capitalize<string & setterkey>}`]: (arg: D["props"][setterkey])=>void;
 } & {
-    serialize: ()=>D
+    serialize: ()=>D,
 }>;
 
+export function asType<K extends ConstraintKey>(store: Instance<IConstraintDataStore<ConstraintData>>): Instance<IConstraintDataStore<DataMap[K]>> {
+    return (store as Instance<IConstraintDataStore<DataMap[K]>>)
+}
 
 function createDataStore<D extends ConstraintData>(def: ConstraintDefinition<D>): IConstraintDataStore<D> {
     
@@ -44,8 +42,9 @@ function createDataStore<D extends ConstraintData>(def: ConstraintDefinition<D>)
       let settername = "set" + key[0].toUpperCase() + key.slice(1);
       if (Array.isArray(defau)) {
         props[key] = ExpressionStore;
+        let oldSerialize = serialize;
         serialize = (self) => {
-          let part = serialize(self);
+          let part = oldSerialize(self);
           part[key] = (self[key] as IExpressionStore).serialize();
           setters[settername] = (self: any) => ((arg: Expr) => { self[key] = arg });
           return part;
@@ -53,15 +52,18 @@ function createDataStore<D extends ConstraintData>(def: ConstraintDefinition<D>)
       } else if (typeof defau === "boolean") {
         props[key] = defau;
         setters[settername] = (self: any) => ((arg: boolean) => { self[key] = arg });
+        let oldSerialize = serialize;
         serialize = (self) => {
-          let part = serialize(self);
+          let part = oldSerialize(self);
           part[key] = (self[key]);
           return part;
         }
       }
     });
   
-    let store = types.model(def.type, props as Props).props({type: types.literal(def.type)})
+    let store = types.model(def.type, props as Props).props({type: types.literal(def.type), def: types.frozen<ConstraintDefinition<D>>(
+        def
+    )})
       .actions(self =>
         Object.fromEntries(Object.entries(setters).map(([key, val]) => [key, val(self)]))
       )
@@ -96,7 +98,8 @@ function createDataStore<D extends ConstraintData>(def: ConstraintDefinition<D>)
         // defaults for primitives are set in the store definition
       });
       let store = ConstraintDataObjects[key].create(
-        snapshot
+        {type: key,
+        ...snapshot}
       );
       //store.apply(data);
       return store;

@@ -15,6 +15,8 @@ import { ChoreoPath, Expr, RobotConfig, Waypoint, Constraint, WaypointID } from 
 import { moveItem } from "mobx-utils";
 import { angleModulus } from "../../util/MathUtil";
 import { IRobotConfigStore } from "../RobotConfigStore";
+import { ConstraintKey, DataMap } from "../ConstraintDefinitions";
+import { Env } from "../DocumentManager";
 
 export const ChoreoPathStore = types.model("ChoreoPathStore", {
     waypoints: types.array(HolonomicWaypointStore),
@@ -91,33 +93,22 @@ export const ChoreoPathStore = types.model("ChoreoPathStore", {
         const from = self.waypointIdToSavedWaypointId(con.from)!;
         const to = self.waypointIdToSavedWaypointId(con.to);
         const toReturn:Constraint<Expr> = {
-          data: con.data.,
-          
-
+          data: con.data.serialize(),
           from, 
           to
         };
-        delete toReturn.data.icon;
-        delete toReturn.data.definition;
-        delete toReturn.data.uuid;
-        delete toReturn.data.from;
-        delete toReturn.data.to;
         return toReturn;
       }),
     }
   }
 })).actions(self=>({
-  addConstraint(
-    key: ConstraintKey,
+  addConstraint<K extends ConstraintKey>(
+    key: K,
     from: IWaypointScope,
-    to?: IWaypointScope
+    to?: IWaypointScope,
+    data: Partial<DataMap[K]["props"]> = {}
   ): Instance<typeof ConstraintStore> | undefined {
-    console.log(getEnv(self));
-    let store : (from: IWaypointScope, to?: IWaypointScope)=>IConstraintStore = getEnv(self).create.constraint[key];
-    if (store === undefined) {
-      return;
-    }
-    self.constraints.push(store(from, to));
+    self.constraints.push(getEnv<Env>(self).create.ConstraintStore(key, data, from, to));
     return self.constraints[self.constraints.length - 1];
   },
   selectOnly(selectedIndex: number) {
@@ -130,11 +121,11 @@ export const ChoreoPathStore = types.model("ChoreoPathStore", {
   },
   addWaypoint(waypoint?: Partial<Waypoint<Expr>>): IHolonomicWaypointStore {
     self.waypoints.push(
-      getEnv(self).create.WaypointStore(
+      getEnv<Env>(self).create.WaypointStore(
         Object.assign({...DEFAULT_WAYPOINT}, waypoint))
     );
     if (self.waypoints.length === 1) {
-      getEnv(self).select(self.waypoints[0]);
+      getEnv<Env>(self).select(self.waypoints[0]);
     }
     return self.waypoints[self.waypoints.length - 1];
   },
@@ -151,7 +142,7 @@ export const ChoreoPathStore = types.model("ChoreoPathStore", {
       return;
     }
     const uuid = self.waypoints[index]?.uuid;
-    getEnv(self).select(undefined);
+    getEnv<Env>(self).select(undefined);
 
     // clean up constraints
     self.constraints = self.constraints.flatMap(
@@ -212,7 +203,7 @@ export const ChoreoPathStore = types.model("ChoreoPathStore", {
           }
           // if we shrunk to a single point and the constraint can't be wpt scope, delete constraint
           if (
-            !constraint.definition.wptScope &&
+            !constraint.data.def.wptScope &&
             endIndex == startIndex &&
             firstIsUUID &&
             secondIsUUID
@@ -256,7 +247,7 @@ export const ChoreoPathStore = types.model("ChoreoPathStore", {
     } else {
       index = id;
     }
-    getEnv(self).select(undefined);
+    getEnv<Env>(self).select(undefined);
 
     if (self.constraints.length === 1) {
       // no-op
@@ -279,7 +270,7 @@ export const ChoreoPathStore = types.model("ChoreoPathStore", {
       index = id;
     }
 
-    getEnv(self).select(undefined);
+    getEnv<Env>(self).select(undefined);
 
     if (self.obstacles.length === 1) {
       // no-op
@@ -291,94 +282,7 @@ export const ChoreoPathStore = types.model("ChoreoPathStore", {
     destroy(self.obstacles[index]);
   },
   addObstacle(x: number, y: number, radius:number) {
-    self.obstacles.push(getEnv(self).create.ObstacleStore(x,y,radius));
-  },
-
-
-  optimizeControlIntervalCounts(
-    robotConfig: IRobotConfigStore
-  ): string | undefined {
-    
-      return this.guessControlIntervalCounts(robotConfig);
-  },
-  guessControlIntervalCounts(
-    robotConfig: IRobotConfigStore
-  ): string | undefined {
-    if (robotConfig.wheelMaxTorque == 0) {
-      return "Wheel max torque may not be 0";
-    } else if (robotConfig.wheelMaxVelocity == 0) {
-      return "Wheel max velocity may not be 0";
-    } else if (robotConfig.mass.value == 0) {
-      return "Robot mass may not be 0";
-    } else if (robotConfig.radius.value == 0) {
-      return "Wheel radius may not be 0";
-    }
-    for (let i = 0; i < self.waypoints.length - 1; i++) {
-      this.guessControlIntervalCount(i, robotConfig);
-    }
-    self.waypoints
-      .at(self.waypoints.length - 1)
-      ?.setIntervals(1);
-  },
-  guessControlIntervalCount(i: number, robotConfig: IRobotConfigStore) {
-    const dx = self.waypoints.at(i + 1)!.x.value - self.waypoints.at(i)!.x.value;
-    const dy = self.waypoints.at(i + 1)!.y.value - self.waypoints.at(i)!.y.value;
-    const dtheta = angleModulus(
-      self.waypoints.at(i + 1)!.heading.value - self.waypoints.at(i)!.heading.value
-    );
-    const headingWeight = 0.5; // arbitrary
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    const maxForce = robotConfig.wheelMaxTorque / robotConfig.radius.value;
-
-    // Default to robotConfig's max velocity and acceleration
-    let maxVel = robotConfig.wheelMaxVelocity * robotConfig.radius.value;
-    let maxAccel = (maxForce * 4) / robotConfig.mass.value; // times 4 for 4 modules
-
-    // Iterate through constraints to find applicable "Max Velocity" constraints
-    self.constraints.forEach((constraint) => {
-      if (constraint.type === "MaxVelocity") {
-        const startIdx = constraint.getStartWaypointIndex();
-        const endIdx = constraint.getEndWaypointIndex();
-
-        // Check if current waypoint "i" is within the scope of this constraint
-        if (startIdx !== undefined && endIdx !== undefined) {
-          if (i >= startIdx && i < endIdx) {
-            if (constraint.velocity !== undefined) {
-              maxVel = Math.min(maxVel, constraint.velocity);
-            }
-          }
-        }
-      } else if (constraint.type === "MaxAcceleration") {
-        const startIdx = constraint.getStartWaypointIndex();
-        const endIdx = constraint.getEndWaypointIndex();
-
-        // Check if current waypoint "i" is within the scope of this constraint
-        if (startIdx !== undefined && endIdx !== undefined) {
-          if (i >= startIdx && i < endIdx) {
-            if (constraint.acceleration !== undefined) {
-              maxAccel = Math.min(maxAccel, constraint.acceleration);
-            }
-          }
-        }
-      }
-    });
-
-    const distanceAtCruise = distance - (maxVel * maxVel) / maxAccel;
-    if (distanceAtCruise < 0) {
-      // triangle
-      let totalTime = 2 * (Math.sqrt(distance * maxAccel) / maxAccel);
-      totalTime += headingWeight * Math.abs(dtheta);
-      self.waypoints
-        .at(i)
-        ?.setIntervals(Math.ceil(totalTime / 0.1));
-    } else {
-      // trapezoid
-      let totalTime = distance / maxVel + maxVel / maxAccel;
-      totalTime += headingWeight * Math.abs(dtheta);
-      self.waypoints
-        .at(i)
-        ?.setIntervals(Math.ceil(totalTime / 0.1));
-    }
+    self.obstacles.push(getEnv<Env>(self).create.ObstacleStore(x,y,radius));
   }
 })).actions(self=>({
   deserialize(ser: ChoreoPath<Expr>) {
@@ -391,31 +295,18 @@ export const ChoreoPathStore = types.model("ChoreoPathStore", {
     );
     self.constraints.clear();
     ser.constraints.forEach((saved: Constraint<Expr>) => {
-      const constraintStore = ConstraintStores[saved.data.type];
-      if (constraintStore !== undefined) {
         let from = self.savedWaypointIdToWaypointId(saved.from);
         if( from === undefined) {return;}
         let to = self.savedWaypointIdToWaypointId(saved.to);
         let constraint = self.addConstraint(
           saved.data.type,
+          
           from,
-          to
-        );
-
-        Object.keys(constraint?.definition.properties ?? {}).forEach(
-          (key) => {
-            if (
-              Object.hasOwn(saved, key) &&
-              typeof saved[key] === "number" &&
-              key.length >= 1
-            ) {
-              const upperCaseName = key[0].toUpperCase() + key.slice(1);
-              constraint[`set${upperCaseName}`](saved[key]);
-            }
-          }
+          to,
+          saved.data.props
         );
       }
-    });
+    );
     self.obstacles.clear();
     // ser.circleObstacles.forEach((o) => {
     //   this.addObstacle(o.x, o.y, o.radius);

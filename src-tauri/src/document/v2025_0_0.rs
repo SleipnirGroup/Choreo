@@ -149,6 +149,7 @@ impl Waypoint<Expr> {
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy)]
+#[serde(untagged)]
 pub enum WaypointID {
     Idx(usize),
     #[serde(rename = "first")]
@@ -166,17 +167,19 @@ impl WaypointID {
     }
 }
 
+#[derive(PartialEq)]
 pub enum ConstraintType {
     Waypoint,
     Segment,
     Both
 }
 #[derive(Serialize, Deserialize, Clone, Copy)]
-#[serde(tag = "type")]
+#[serde(tag = "type", content = "props")]
 pub enum ConstraintData<T> {
     MaxVelocity {max: T},
     MaxAcceleration {max: T},
-    PointAt {x: T, y: T, tolerance: T, flip: bool}
+    PointAt {x: T, y: T, tolerance: T, flip: bool},
+    StopPoint {}
 } 
 
 impl <T> ConstraintData<T> {
@@ -185,6 +188,7 @@ impl <T> ConstraintData<T> {
              ConstraintData::MaxVelocity{max} => ConstraintType::Both,
              ConstraintData::PointAt{x, y, tolerance, flip } => ConstraintType::Both,
              ConstraintData::MaxAcceleration { max } => ConstraintType::Both,
+             ConstraintData::StopPoint {} => ConstraintType::Waypoint,
         }
     }
 }
@@ -194,7 +198,8 @@ impl ConstraintData<Expr> {
             ConstraintData::MaxVelocity{max} => ConstraintData::MaxVelocity{max: max.snapshot()},
             ConstraintData::PointAt { x, y, tolerance, flip }
                 => ConstraintData::PointAt { x: x.snapshot(), y: y.snapshot(), tolerance: tolerance.snapshot(), flip:*flip },
-            ConstraintData::MaxAcceleration { max } => ConstraintData::MaxAcceleration { max: max.snapshot() }
+            ConstraintData::MaxAcceleration { max } => ConstraintData::MaxAcceleration { max: max.snapshot() },
+            ConstraintData::StopPoint {} => ConstraintData::StopPoint {}
         }
     }
 }
