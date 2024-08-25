@@ -62,11 +62,11 @@ class TRAJOPT_DLLEXPORT PointAtConstraint {
     auto dy = m_fieldPoint.Y() - pose.Y();
     auto dot = pose.Rotation().Cos() * dx + pose.Rotation().Sin() * dy;
     if (!m_flip) {
-      // dot close to 1 * hypot
+      // dot close to 1 * hypot (point toward)
         problem.SubjectTo(dot >=
                     std::cos(m_headingTolerance) * sleipnir::hypot(dx, dy));
     } else {
-      // dot close to -1 * hypot
+      // dot close to -1 * hypot (point away)
       problem.SubjectTo(dot <=
                     -std::cos(m_headingTolerance) * sleipnir::hypot(dx, dy));
     }
