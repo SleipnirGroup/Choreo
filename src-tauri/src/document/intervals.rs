@@ -33,7 +33,7 @@ pub fn guess_control_interval_counts(
             if w.overrideIntervals {
                 w.intervals
             } else {
-                guess_control_interval_count(i, &traj, config, w)
+                guess_control_interval_count(i, traj, config, w)
             }
         })
         .collect::<Vec<usize>>())
@@ -68,9 +68,9 @@ pub fn guess_control_interval_count(
                 .for_each(|constraint| {
                     if let Some(to) = constraint
                         .to
-                        .and_then(|id| id.to_idx(&traj.path.waypoints.len()))
+                        .and_then(|id| id.get_idx(&traj.path.waypoints.len()))
                     {
-                        if let Some(from) = constraint.from.to_idx(&traj.path.waypoints.len()) {
+                        if let Some(from) = constraint.from.get_idx(&traj.path.waypoints.len()) {
                             if i < to && i >= from {
                                 match constraint.data {
                                     ConstraintData::MaxVelocity { max } => {

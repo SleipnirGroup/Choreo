@@ -1,12 +1,10 @@
 use std::{
-    borrow::{Borrow, BorrowMut},
     collections::HashMap,
-    ffi::OsStr,
     path::{Path, PathBuf},
 };
 
 use dashmap::DashMap;
-use serde::{de::value::Error, Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tauri::{
     api::{dialog::blocking::FileDialogBuilder, file},
@@ -15,7 +13,7 @@ use tauri::{
 use tokio::{
     fs,
     sync::{
-        mpsc::{self, Sender, UnboundedSender},
+        mpsc::{self, UnboundedSender},
         RwLock,
     },
 };
@@ -55,8 +53,7 @@ pub async fn write_traj(
             senders.get(&file)
         })
         .ok_or("Could not get or insert traj file writer. Notify developers.")?;
-    sender.send(WriterCommand::Write(traj));
-    Ok(())
+    sender.send(WriterCommand::Write(traj)).map_err(|e|e.to_string())
 }
 
 #[tauri::command]
@@ -64,8 +61,7 @@ pub async fn write_chor(app_handle: tauri::AppHandle, chor: Project) -> Result<(
     let state = app_handle.state::<RwLock<Option<UnboundedSender<WriterCommand<Project>>>>>();
     let opt = state.read().await;
     let sender = opt.as_ref().ok_or("No project is open")?;
-    sender.send(WriterCommand::Write(chor));
-    Ok(())
+    sender.send(WriterCommand::Write(chor)).map_err(|e|e.to_string())
 }
 #[tauri::command]
 pub async fn set_chor_path(
@@ -94,8 +90,8 @@ async fn handle_write<T: Serialize>(contents: T, file: &Path) -> Result<(), ()> 
                 return Err(());
             }
             let parent = parent.expect("file parent opt check failed");
-            let dir_res = fs::create_dir_all(parent).await.map_err(|e| ())?;
-            fs::write(file, stringified).await.map_err(|e| ())?;
+            fs::create_dir_all(parent).await.map_err(|_e| ())?;
+            fs::write(file, stringified).await.map_err(|_e| ())?;
             Ok(())
         }
         Err(e) => {
@@ -113,13 +109,13 @@ pub fn start<T: Serialize + Send + Sync + 'static>(
     tokio::spawn(async move {
         loop {
             let mut contents = (rx).recv().await;
-            while (rx.len() > 0) {
+            while !rx.is_empty() {
                 contents = (rx).recv().await;
             }
             match contents {
                 None => break,
                 Some(contents) => {
-                    match contents {
+                    let _ = match contents {
                         WriterCommand::Move(_) => Ok(()), // TODO
                         WriterCommand::Write(contents) => handle_write(contents, &filepath).await,
                     };
@@ -129,6 +125,8 @@ pub fn start<T: Serialize + Send + Sync + 'static>(
     });
     tx
 }
+
+#[allow(dead_code)]
 async fn send_open_chor_event(
     app_handle: tauri::AppHandle,
     chor: Project,
@@ -145,6 +143,7 @@ async fn send_open_chor_event(
     )
 }
 
+#[allow(dead_code)]
 async fn send_open_traj_event(
     app_handle: tauri::AppHandle,
     traj: Traj,
@@ -160,7 +159,7 @@ async fn send_open_traj_event(
 }
 
 #[tauri::command]
-pub async fn open_file_dialog(app_handle: tauri::AppHandle) -> Result<(String, String), String> {
+pub async fn open_file_dialog(_app_handle: tauri::AppHandle) -> Result<(String, String), String> {
     let file_path = FileDialogBuilder::new()
         .set_title("Open a .chor file")
         .add_filter("Choreo Save File", &["chor"])
@@ -178,7 +177,7 @@ pub async fn open_file_dialog(app_handle: tauri::AppHandle) -> Result<(String, S
             }
         }
     }
-    return Err("Incomplete Selection".to_string());
+    Err("Incomplete Selection".to_string())
     // TODO: Replace with if-let chains (https://github.com/rust-lang/rfcs/pull/2497)
 }
 
@@ -191,7 +190,7 @@ pub async fn open_chor(
         None => open_file_dialog(app_handle.clone()).await?,
         Some(path) => path,
     };
-    let pathbuf = Path::new(&dir).join(&name);
+    let pathbuf = Path::new(&dir).join(name);
     let contents = file::read_string(pathbuf).map_err(|e| e.to_string())?;
     let chor = open_chor_from_contents(&contents).map_err(|e| e.to_string())?;
     //let _ = send_open_chor_event(app_handle, chor, dir.as_str(), name.as_str());
@@ -200,7 +199,7 @@ pub async fn open_chor(
 
 #[tauri::command]
 pub async fn open_traj(
-    app_handle: tauri::AppHandle,
+    _app_handle: tauri::AppHandle,
     path: (String, String),
 ) -> Result<Traj, String> {
     let pathbuf = Path::new(&path.0).join(&path.1);
@@ -211,7 +210,7 @@ pub async fn open_traj(
 }
 
 #[tauri::command]
-pub async fn new_file(app_handle: tauri::AppHandle) -> Result<Project, String> {
+pub async fn new_file(_app_handle: tauri::AppHandle) -> Result<Project, String> {
     //let _ = send_open_chor_event(app_handle, chor, dir.as_str(), name.as_str());
     Ok(Project {
         version: "v2025.0.0".to_string(),
@@ -257,26 +256,26 @@ pub async fn new_file(app_handle: tauri::AppHandle) -> Result<Project, String> {
 fn open_traj_from_contents(input: &str) -> Result<Traj, serde_json::Error> {
     let json: Value = serde_json::from_str(input)?;
     let traj: Traj = serde_json::from_value(json)?;
-    return Ok(traj);
+    Ok(traj)
 }
 
 fn open_chor_from_contents(input: &str) -> Result<Project, serde_json::Error> {
     let json: Value = serde_json::from_str(input)?;
     let chor: Project = serde_json::from_value(json)?;
-    return Ok(chor);
+    Ok(chor)
 }
 
 #[tauri::command]
 pub async fn delete_dir(dir: String) {
     let dir_path = Path::new(&dir);
-    let _ = fs::remove_dir_all(dir_path);
+    let _ = fs::remove_dir_all(dir_path).await;
 }
 
 #[tauri::command]
 pub async fn delete_file(dir: String, name: String) {
     let dir_path = Path::new(&dir);
     let name_path = Path::join(dir_path, name);
-    let _ = fs::remove_file(name_path);
+    let _ = fs::remove_file(name_path).await;
 }
 
 #[tauri::command]

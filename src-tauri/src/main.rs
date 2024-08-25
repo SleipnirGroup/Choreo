@@ -7,22 +7,21 @@ use document::file::{
     delete_dir, delete_file, find_all_traj, new_file, open_chor, open_file_dialog, open_traj,
     set_chor_path, setup_senders, write_chor, write_traj,
 };
-use document::generate::{cancel, generate, setup_progress_sender, PROGRESS_SENDER_LOCK};
-use std::collections::HashMap;
-use std::f64::consts::PI;
-use std::ffi::OsStr;
-use std::sync::mpsc::{channel, Sender};
-use std::sync::OnceLock;
+use document::generate::{cancel, generate, setup_progress_sender};
+
+
+
+
+
 use std::{fs, path::Path};
 use std::{thread, vec};
-use tauri::regex::{escape, Regex};
+
 
 use document::intervals::cmd_guess_control_interval_counts;
 use tauri::{
-    api::{dialog::blocking::FileDialogBuilder, file},
     Manager,
 };
-use trajoptlib::{Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory};
+
 
 #[tauri::command]
 async fn save_file(dir: String, name: String, contents: String) -> Result<(), &'static str> {

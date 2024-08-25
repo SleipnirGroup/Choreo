@@ -168,7 +168,7 @@ pub enum WaypointID {
     Idx(usize),
 }
 impl WaypointID {
-    pub fn to_idx(&self, count: &usize) -> Option<usize> {
+    pub fn get_idx(&self, count: &usize) -> Option<usize> {
         match self {
             WaypointID::Idx(idx) => {
                 if *idx < *count {
@@ -303,9 +303,11 @@ impl ChoreoPath<Expr> {
     }
 }
 #[derive(Serialize, Deserialize, Clone)]
+#[allow(non_snake_case)]
 pub struct Output {
     pub waypoints: Vec<f64>,
     pub samples: Vec<Vec<Sample>>,
+
     pub useModuleForces: bool,
 }
 #[derive(Serialize, Deserialize, Clone)]

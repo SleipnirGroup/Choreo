@@ -1,14 +1,13 @@
 use super::v2025_0_0::{
-    expr, Bumper, ChoreoPath, Constraint, ConstraintData, ConstraintIDX, ConstraintType, Module,
-    Output, Project, RobotConfig, Sample, Traj, Variables, Waypoint, WaypointID,
+    ChoreoPath, ConstraintData, ConstraintIDX, ConstraintType, Module, Project, Sample, Traj,
 };
-use std::collections::HashMap;
+
 use std::f64::consts::PI;
-use std::ffi::OsStr;
+
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::OnceLock;
-use std::{thread, vec};
-use tauri::regex::{escape, Regex};
+use std::{vec};
+
 
 use super::intervals::guess_control_interval_counts;
 use trajoptlib::{Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory};
@@ -76,8 +75,8 @@ pub async fn generate(
 
     // Convert constraints to index form. Throw out constraints without valid index
     for constraint in &snapshot.constraints {
-        let from = constraint.from.to_idx(&num_wpts);
-        let to = constraint.to.as_ref().and_then(|id| id.to_idx(&num_wpts));
+        let from = constraint.from.get_idx(&num_wpts);
+        let to = constraint.to.as_ref().and_then(|id| id.get_idx(&num_wpts));
         // from and to are None if they did not point to a valid waypoint.
         match from {
             None => {}
@@ -93,22 +92,19 @@ pub async fn generate(
                     isInitialGuess[from_idx] = false;
                     let mut fixed_to = to;
                     let mut fixed_from = from_idx;
-                    match to {
-                        Some(to_idx) => {
-                            if to_idx < from_idx {
-                                fixed_to = Some(from_idx);
-                                fixed_from = to_idx;
-                            }
-                            if to_idx == from_idx {
-                                if constraint.data.scope() == ConstraintType::Segment {
-                                    continue;
-                                }
-                                fixed_to = None;
-                            } else {
-                                isInitialGuess[to_idx] = false;
-                            }
+                    if let Some(to_idx) = to {
+                        if to_idx < from_idx {
+                            fixed_to = Some(from_idx);
+                            fixed_from = to_idx;
                         }
-                        _ => {}
+                        if to_idx == from_idx {
+                            if constraint.data.scope() == ConstraintType::Segment {
+                                continue;
+                            }
+                            fixed_to = None;
+                        } else {
+                            isInitialGuess[to_idx] = false;
+                        }
                     }
                     constraint_idx.push(ConstraintIDX {
                         from: fixed_from,
@@ -289,7 +285,7 @@ fn postprocess(
                                 fx: [0.0, 0.0, 0.0, 0.0],
                                 fy: [0.0, 0.0, 0.0, 0.0],
                             };
-                            if (traj.traj.useModuleForces) {
+                            if traj.traj.useModuleForces {
                                 for i in 0..4 {
                                     let x = swerve_sample.module_forces_x.get(i);
                                     let y = swerve_sample.module_forces_y.get(i);
