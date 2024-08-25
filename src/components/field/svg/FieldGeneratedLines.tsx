@@ -20,8 +20,7 @@ type State = object;
       : path.traj.fullTraj;
     // preserve the acccess of generationIterationNumber
     // to trigger rerenders when mutating the in-progress trajectory in place
-    const it = path.ui.generationIterationNumber;
-    console.log(it, path.ui.generationProgress);
+    const _ = path.ui.generationIterationNumber;
     trajectory.forEach((point) => {
       generatedPathString += `${point.x},${point.y} `;
     });

@@ -121,10 +121,12 @@ export const ChoreoPathStore = types
       to?: IWaypointScope,
       data: Partial<DataMap[K]["props"]> = {}
     ): Instance<typeof ConstraintStore> | undefined {
+      console.log("adding constraint", key, data, from, to);
       self.constraints.push(
         getEnv<Env>(self).create.ConstraintStore(key, data, from, to)
       );
-      return self.constraints[self.constraints.length - 1];
+      let store = self.constraints[self.constraints.length - 1];
+      store.data.deserPartial(data);
     },
     selectOnly(selectedIndex: number) {
       self.waypoints.forEach((point, index) => {

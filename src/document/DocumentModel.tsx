@@ -20,6 +20,7 @@ import { ConstraintStore, IConstraintStore } from "./ConstraintStore";
 import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
 import { SAVE_FILE_VERSION, Project, Traj, Sample, TrajoptlibSample } from "./2025/DocumentTypes";
 import { SavedTrajectorySample } from "./DocumentSpecTypes";
+import { Commands } from "./tauriCommands";
 
 export type SelectableItemTypes =
   | IHolonomicWaypointStore
@@ -92,6 +93,7 @@ export const DocumentStore = types
     deserializeChor(ser: Project) {
       self.variables.deserialize(ser.variables);
       self.robotConfig.deserialize(ser.config);
+      self.pathlist.paths.clear();
     },
     setSelectedSidebarItem(item: SelectableItemTypes) {
       self.selectedSidebarItem = item;
@@ -114,13 +116,13 @@ export const DocumentStore = types
         return;
       }
       console.log(pathStore.serialize(), self.robotConfig.serialize());
-      const controlIntervalOptResult = (await invoke(
-        "guess_control_interval_counts",
-        {
-          traj: pathStore.serialize(),
-          config: self.robotConfig.serialize()
-        }
-      )) as number[];
+      // const controlIntervalOptResult = (await invoke(
+      //   "guess_control_interval_counts",
+      //   {
+      //     traj: pathStore.serialize(),
+      //     config: self.robotConfig.serialize()
+      //   }
+      // )) as number[];
       pathStore.path.constraints.forEach((constraint) => {
         if (constraint.issues.length > 0) {
           throw constraint.issues.join(", ");
@@ -158,7 +160,6 @@ export const DocumentStore = types
         if (event.payload!.handle == handle) {
           const samples = event.payload.traj.samples as TrajoptlibSample[];
           const progress = pathStore.ui.generationProgress;
-          console.log(samples);
           // mutate in-progress trajectory in place if it's already the right size
           // should avoid allocations on every progress update
           if (samples.length != progress.length) {
@@ -195,11 +196,11 @@ export const DocumentStore = types
       })
         .then((unlistener) => {
           unlisten = unlistener;
-          return invoke("generate", {
-            chor: self.serializeChor(),
-            traj: pathStore.serialize(),
-            handle: handle
-          });
+          return Commands.generate(
+            self.serializeChor(),
+            pathStore.serialize(),
+            handle
+          )
         })
         .finally(() => {
           unlisten();

@@ -25,6 +25,7 @@ import CircularObstacleConfigPanel from "../config/CircularObstacleConfigPanel";
 import EventMarkerConfigPanel from "../config/eventmarker/EventMarkerConfigPanel";
 import WaypointVisibilityPanel from "../config/WaypointVisibilityPanel";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
+import { Commands } from "../../document/tauriCommands";
 
 type Props = object;
 
@@ -129,7 +130,7 @@ export class Field extends Component<Props, State> {
                 }
               }}
               onClick={(event) => {
-                invoke("cancel");
+                Commands.cancel()
               }}
               disabled={activePath.canGenerate()}
             >

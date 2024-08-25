@@ -56,7 +56,9 @@ import {
   type Waypoint,
   SAVE_FILE_VERSION,
   EventMarker,
-  Command
+  Command,
+  Project,
+  Traj
 } from "./2025/DocumentTypes";
 import {
   CommandStore,
@@ -78,6 +80,7 @@ import {
 } from "./ConstraintDefinitions";
 import { ObjectTyped } from "../util/ObjectTyped";
 import { NonEmptyObject } from "mobx-state-tree/dist/internal";
+import { Commands } from "./tauriCommands";
 
 type OpenFileEventPayload = {
   adjacent_gradle: boolean;
@@ -202,12 +205,14 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
       from: IWaypointScope,
       to?: IWaypointScope
     ) => {
-      return ConstraintStore.create({
+      let store = ConstraintStore.create({
         from,
         to,
         uuid: uuidv4(),
         data: constraintDataConstructors[type](data)
       });
+      (store.data as Instance<IConstraintDataStore<K>>).deserPartial(data);
+      return store;
     }
   };
 }
@@ -277,18 +282,18 @@ export function openLastFile() {
     );
     const filePath = fileDirectory.dir + path.sep + fileDirectory.name;
     console.log(`Attempting to open: ${filePath}`);
-    invoke("file_event_payload_from_dir", {
-      dir: fileDirectory.dir,
-      name: fileDirectory.name,
-      path: filePath
-    }).catch((err) => {
-      console.error(
-        `Failed to open last Choreo file '${fileDirectory.name}': ${err}`
-      );
-      toast.error(
-        `Failed to open last Choreo file '${fileDirectory.name}': ${err}`
-      );
-    });
+    // invoke("file_event_payload_from_dir", {
+    //   dir: fileDirectory.dir,
+    //   name: fileDirectory.name,
+    //   path: filePath
+    // }).catch((err) => {
+    //   console.error(
+    //     `Failed to open last Choreo file '${fileDirectory.name}': ${err}`
+    //   );
+    //   toast.error(
+    //     `Failed to open last Choreo file '${fileDirectory.name}': ${err}`
+    //   );
+    // });
   }
 }
 
@@ -382,6 +387,7 @@ export async function setupEventListeners() {
           }
         }
         doc.history.startGroup(() => {
+          try {
           const newWaypoint = doc.pathlist.activePath.addWaypoint();
           newWaypoint.deserialize(savedObject);
           if (currentSelectedWaypointIdx != -1) {
@@ -390,8 +396,9 @@ export async function setupEventListeners() {
               currentSelectedWaypointIdx + 1
             );
           }
-
+        } finally {
           doc.history.stopGroup();
+        }
         });
       }
     } catch (err) {
@@ -457,7 +464,7 @@ export async function setupEventListeners() {
         type: "warning"
       })
       .then((proceed) => {
-        proceed && invoke("open_file_dialog");
+        proceed && Commands.openFileDialog().then((filepath)=>openProject(filepath))
       });
   });
   hotkeys("f5,ctrl+shift+r,ctrl+r", function (event, handler) {
@@ -608,6 +615,33 @@ export async function setupEventListeners() {
   });
 }
 
+export async function openProject(chorFile: [dir:string, name:string]) {
+  let [dir, name] = chorFile;
+  console.log(chorFile);
+  let joined = chorFile.join(path.sep);
+  let chor : Project | undefined = undefined;
+  let trajs: Traj[] = [];
+  let results = await Promise.allSettled([
+    Commands.openChor(dir, name).then(c=>chor = c).catch(console.error),
+    Commands.findAllTraj(dir).then(paths=>Promise.allSettled(
+      paths.map((p)=>
+        Commands.openTraj(dir, p)
+        .then(t=>trajs.push(t))
+      ))
+    ).catch(console.error)
+  ]);
+  console.log(chor, trajs);
+  if (chor === undefined) { throw "Internal error. Check console logs."}
+  doc.deserializeChor(chor);
+  trajs.forEach(traj=>{
+    let newuuid = doc.pathlist.addPath(traj.name, true, traj);
+  })
+  uiState.setSaveFileDir(dir);
+  uiState.setSaveFileName(name);
+  await Commands.setChorPath(dir, name);
+
+}
+
 export async function generateAndExport(uuid: string) {
   await doc.generatePath(uuid);
   await exportTrajectory(uuid);
@@ -650,16 +684,13 @@ function getSelectedObstacle() {
     return o.selected;
   });
 }
-export function newFile(): void {
+export async function newFile() {
   applySnapshot(uiState, {
     settingsTab: 0,
     layers: ViewLayerDefaults
   });
-  doc.deserializeChor({
-    variables: { expressions: {}, poses: {} },
-    config: EXPR_DEFAULTS,
-    version: SAVE_FILE_VERSION
-  });
+  let newChor = await Commands.newFile();
+  doc.deserializeChor(newChor);
   //let newVariables
 
   //TODO change this for opening from new content.
@@ -697,13 +728,10 @@ export async function renamePath(uuid: string, newName: string) {
     const oldName = doc.pathlist.paths.get(uuid)?.name;
     doc.pathlist.paths.get(uuid)?.setName(newName);
     const newPath = await getTrajFilePath(uuid);
+    console.log("new:", newPath, "old", oldPath);
     if (oldPath !== null) {
       Promise.all([
-        invoke("delete_file", { dir: oldPath[0], name: oldPath[1] }),
-        invoke("delete_traj_segments", {
-          dir: oldPath[0],
-          trajName: oldName
-        })
+        Commands.deleteFile(oldPath[0], oldPath[1])
       ])
         .then(() => writeTrajectory(() => newPath, uuid))
         .catch((e) => {
@@ -719,8 +747,7 @@ export async function deletePath(uuid: string) {
   const newPath = await getTrajFilePath(uuid).catch(() => null);
   doc.pathlist.deletePath(uuid);
   if (newPath !== null && uiState.hasSaveLocation) {
-    invoke("delete_file", { dir: newPath[0], name: newPath[1] });
-    writeTrajectory(() => newPath, uuid);
+    await Commands.deleteFile(newPath[0], newPath[1]);
   }
 }
 
@@ -740,14 +767,8 @@ export async function writeTrajectory(
   }
   const trajectory = chorPath.serialize();
   const file = await filePath();
-  console.log("file: " + file);
-  const content = JSON.stringify(trajectory, undefined, 1);
   if (file) {
-    await invoke("save_file", {
-      dir: file[0],
-      name: file[1],
-      contents: content
-    });
+    await Commands.writeTraj(file[0]+path.sep+ file[1], trajectory)
   }
 }
 
@@ -756,11 +777,11 @@ export async function getTrajFilePath(uuid: string): Promise<[string, string]> {
   if (choreoPath === undefined) {
     throw `Trajectory has unknown uuid ${uuid}`;
   }
-  const { hasSaveLocation, chorRelativeTrajDir } = uiState;
-  if (!hasSaveLocation || chorRelativeTrajDir === undefined) {
+  const { hasSaveLocation } = uiState;
+  if (!hasSaveLocation) {
     throw "Project has not been saved yet";
   }
-  const dir = uiState.saveFileDir + path.sep + uiState.chorRelativeTrajDir;
+  const dir = uiState.saveFileDir; //+ path.sep + uiState.chorRelativeTrajDir;
   return [dir, `${choreoPath.name}.traj`];
 }
 
@@ -815,7 +836,7 @@ export async function saveFile() {
   if (dir === undefined || name === undefined) {
     return await saveFileDialog();
   } else {
-    handleChangeIsGradleProject(await saveFileAs(dir, name));
+    await saveFileAs(dir, name);
   }
   return true;
 }
@@ -838,34 +859,12 @@ export async function saveFileDialog() {
   if (!name.endsWith(".chor")) {
     name = name + ".chor";
   }
-  const newIsGradleProject = await saveFileAs(dir, name);
+  await saveFileAs(dir, name);
   uiState.setSaveFileDir(dir);
   uiState.setSaveFileName(name);
 
-  toast.promise(handleChangeIsGradleProject(newIsGradleProject), {
-    success: `Saved all trajectories to ${uiState.chorRelativeTrajDir}.`,
-    error: {
-      render(toastProps) {
-        console.error(toastProps.data);
-        return `Couldn't export trajectories: ${toastProps.data as string[]}`;
-      }
-    }
-  });
-
   toast.success(`Saved ${name}. Future changes will now be auto-saved.`);
   return true;
-}
-
-async function handleChangeIsGradleProject(
-  newIsGradleProject: boolean | undefined
-) {
-  const prevIsGradleProject = uiState.isGradleProject;
-  if (newIsGradleProject !== undefined) {
-    if (newIsGradleProject !== prevIsGradleProject) {
-      uiState.setIsGradleProject(newIsGradleProject);
-      await exportAllTrajectories();
-    }
-  }
 }
 
 /**
@@ -878,20 +877,13 @@ async function handleChangeIsGradleProject(
 async function saveFileAs(
   dir: string,
   name: string
-): Promise<boolean | undefined> {
-  const contents = JSON.stringify(doc.serializeChor(), undefined, 4);
-  try {
-    invoke("save_file", { dir, name, contents });
-    // if we get past the above line, the dir and name were valid for saving.
-    const adjacent_build_gradle = invoke<boolean>("contains_build_gradle", {
-      dir,
-      name
-    });
-    return adjacent_build_gradle;
-  } catch (err) {
-    console.error(err);
-    return undefined;
-  }
+): Promise<void> {
+  if (dir !== uiState.saveFileDir || name !== uiState.saveFileName) {
+    await Commands.setChorPath(dir, name);
+    uiState.setSaveFileDir(dir);
+    uiState.setSaveFileName(name);
+  } 
+  return Commands.writeChor(doc.serializeChor());
 }
 
 /**

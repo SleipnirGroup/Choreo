@@ -37,7 +37,7 @@ pub struct PoseVariable {
     pub y: Expr,
     pub heading: Expr,
 }
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Variables {
     pub expressions: HashMap<String, Variable>,
     pub poses: HashMap<String, PoseVariable>,
@@ -121,7 +121,7 @@ impl RobotConfig<f64> {
         (self.vmax / self.gearing) * 2.0 * PI / 60.0
     }
 }
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Project {
     pub version: String,
     pub variables: Variables,
@@ -249,14 +249,14 @@ impl ConstraintData<Expr> {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Copy)]
 pub struct Constraint<T> {
     pub from: WaypointID,
     pub to: Option<WaypointID>,
     pub data: ConstraintData<T>,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Copy)]
 pub struct ConstraintIDX<T> {
     pub from: usize,
     pub to: Option<usize>,
@@ -273,7 +273,7 @@ impl Constraint<Expr> {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Copy)]
 pub struct Sample {
     pub t: f64,
     pub x: f64,

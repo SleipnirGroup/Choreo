@@ -4,6 +4,7 @@ import {
   exportActiveTrajectory,
   exportAllTrajectories,
   newFile,
+  openProject,
   saveFileDialog,
   uiState
 } from "./document/DocumentManager";
@@ -34,6 +35,7 @@ import { dialog, invoke, path } from "@tauri-apps/api";
 
 import SettingsModal from "./components/config/SettingsModal";
 import { version } from "./util/version";
+import { Commands } from "./document/tauriCommands";
 
 type Props = object;
 
@@ -70,7 +72,7 @@ class AppMenu extends Component<Props, State> {
 
   OpenInFilesApp({ dir }: { dir: string }) {
     const handleAction = async function () {
-      invoke("open_file_app", { dir });
+      await Commands.openInExplorer(dir)
     };
 
     return (
@@ -148,7 +150,7 @@ class AppMenu extends Component<Props, State> {
                     { title: "Choreo", type: "warning" }
                   )
                 ) {
-                  invoke("open_file_dialog");
+                  await Commands.openFileDialog().then((filepath)=>openProject(filepath))
                 }
               }}
             >

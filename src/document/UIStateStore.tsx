@@ -51,9 +51,7 @@ export const UIStateStore = types
   .views((self: any) => {
     return {
       get chorRelativeTrajDir() {
-        return (
-          self.isGradleProject ? "src/main/deploy/choreo" : "deploy/choreo"
-        ).replaceAll("/", path.sep);
+        return "";
       },
       get hasSaveLocation() {
         return (

@@ -96,8 +96,9 @@ export const Units = {
   KgM2: math.unit("kg m^2"),
   Newton: math.unit("N"),
   Kg: math.unit("kg"),
-  RPM: math.createUnit("rpm", "1 cycle/min")
+  RPM: math.createUnit("RPM", "1 cycle/min", {aliases: ["rpm"]})
 };
+console.log("rpm parse", math.parse("1 RPM").evaluate());
 
 export type Evaluated = null | undefined | number | Unit;
 type Evaluator = (arg: MathNode) => Evaluated;

@@ -240,7 +240,6 @@ export const HolonomicPathStore = types
     };
   })
   .actions((self) => {
-    let staleDisposer: IReactionDisposer;
     let autosaveDisposer: IReactionDisposer;
     let exporter: (uuid: string) => void;
     const afterCreate = () => {
@@ -266,16 +265,11 @@ export const HolonomicPathStore = types
 
       autosaveDisposer = reaction(
         () => {
-          if (self.traj.samples.length == 0) {
-            return [];
-          }
-          //toJS(self.splitTrajectories());
-          return self.traj.samples;
+          return self.serialize()
         },
         (value) => {
-          if (value.length > 0) {
+            console.log("save", self.name)
             exporter(self.uuid);
-          }
         }
       );
     };
@@ -283,7 +277,6 @@ export const HolonomicPathStore = types
       exporter = exportFunction;
     };
     const beforeDestroy = () => {
-      staleDisposer();
       autosaveDisposer();
       console.log("Deleted ", self.uuid);
     };

@@ -36,6 +36,7 @@ function FieldConstraintsAddLayer() {
                 stroke="white"
                 strokeWidth={0.05}
                 onClick={() => {
+                  doc.history.startGroup(()=>{
                   const constraintToAdd = selectedConstraint;
                   const newConstraint = activePath.path.addConstraint(
                     constraintToAdd,
@@ -49,7 +50,9 @@ function FieldConstraintsAddLayer() {
                       }
                     }
                     doc.setSelectedSidebarItem(newConstraint);
-                  }
+                  } 
+                  doc.history.stopGroup();
+                });
                 }}
               ></circle>
             );
@@ -85,6 +88,7 @@ function FieldConstraintsAddLayer() {
                   stroke="white"
                   strokeWidth={0.05}
                   onClick={() => {
+                    doc.history.startGroup(()=>{
                     const constraintToAdd = uiState.getSelectedConstraintKey();
 
                     const newConstraint = activePath.path.addConstraint(
@@ -95,7 +99,7 @@ function FieldConstraintsAddLayer() {
 
                     if (newConstraint !== undefined) {
                       doc.setSelectedSidebarItem(newConstraint);
-                    }
+                    }});
                   }}
                 ></circle>
               </Fragment>

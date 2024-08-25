@@ -51,6 +51,8 @@ export type IConstraintDataStore<K extends ConstraintKey, D extends ConstraintDa
     ) => void;
   } & {
     serialize: () => D;
+    deserialize: (ser:D)=>void;
+    deserPartial: (ser: Partial<D["props"]>)=>void;
   }
 >;
 
@@ -71,33 +73,59 @@ function createDataStore<K extends ConstraintKey, D extends ConstraintData = Dat
   const setters: { [key: string]: PropertySetter } = {};
   // The function to serialize into a data object
   let serialize: (self: any) => Partial<D["props"]> = (self) => ({});
+  let deserialize: (self: any, data: D["props"]) => void = (self, data)=>{};
+  let deserPartial: (self: any, data: Partial<D["props"]>) => void = (self, data)=>{};
   // Iterate through each property. based on the type of its default value, add the correct infrastructure
   Object.keys(def.properties).forEach((k) => {
     let key = k as string & keyof PropertyDefinitionList<D["props"]>;
     let defau = def.properties[key].defaultVal;
     let settername = "set" + key[0].toUpperCase() + key.slice(1);
+    let oldSerialize = serialize;
+    let oldDeserialize = deserialize;
+    let oldDeserPartial = deserPartial;
     if (Array.isArray(defau)) {
       props[key] = ExpressionStore;
-      let oldSerialize = serialize;
+      setters[settername] = (self: any) => (arg: Expr) => {
+        self[key] = arg;
+      };
       serialize = (self) => {
         let part = oldSerialize(self);
         part[key] = (self[key] as IExpressionStore).serialize();
-        setters[settername] = (self: any) => (arg: Expr) => {
-          self[key] = arg;
-        };
+
         return part;
       };
+      deserialize = (self, data) => {
+        oldDeserialize(self, data);
+        (self[key] as IExpressionStore).deserialize(data[key]);
+      }
+      deserPartial = (self, data) => {
+        oldDeserPartial(self, data);
+        if (data[key] !== undefined) {
+          (self[key] as IExpressionStore).deserialize(data[key]);
+        }
+
+      }
     } else if (typeof defau === "boolean") {
       props[key] = defau;
       setters[settername] = (self: any) => (arg: boolean) => {
         self[key] = arg;
       };
-      let oldSerialize = serialize;
       serialize = (self) => {
         let part = oldSerialize(self);
         part[key] = self[key];
         return part;
       };
+      deserialize = (self, data) => {
+        oldDeserialize(self, data);
+        self[key] = data[key];
+      };
+      deserPartial = (self, data) => {
+        oldDeserPartial(self, data);
+        if (data[key] !== undefined) {
+          self[key] = data[key];
+        }
+
+      }
     }
   });
 
@@ -118,6 +146,13 @@ function createDataStore<K extends ConstraintKey, D extends ConstraintData = Dat
           type: def.type,
           props: serialize(self) as D["props"]
         } as D;
+      },
+      deserialize(ser: D) {
+        console.log(ser);
+        deserialize(self, ser.props);
+      },
+      deserPartial(ser: Partial<D["props"]>) {
+        deserPartial(self, ser);
       }
     }));
   return store as IConstraintDataStore<K>;

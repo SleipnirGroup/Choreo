@@ -1,0 +1,67 @@
+{
+  "name": "NewPath1",
+  "version": "v2025.0.0",
+  "path": {
+    "waypoints": [
+      {
+        "x": [
+          "3.904928207397461 m",
+          3.904928207397461
+        ],
+        "y": [
+          "3.2866601943969727 m",
+          3.2866601943969727
+        ],
+        "heading": [
+          "0 deg",
+          0.0
+        ],
+        "intervals": 40,
+        "split": false,
+        "fixTranslation": true,
+        "fixHeading": true
+      },
+      {
+        "x": [
+          "8.875090599060059 m",
+          8.875090599060059
+        ],
+        "y": [
+          "4.728981971740723 m",
+          4.728981971740723
+        ],
+        "heading": [
+          "0 deg",
+          0.0
+        ],
+        "intervals": 40,
+        "split": false,
+        "fixTranslation": true,
+        "fixHeading": true
+      }
+    ],
+    "constraints": [
+      {
+        "from": 0,
+        "to": 1,
+        "data": {
+          "type": "MaxVelocity",
+          "props": {
+            "max": [
+              "0 m / s",
+              0.0
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "snapshot": {
+    "waypoints": [],
+    "constraints": []
+  },
+  "traj": {
+    "waypoints": [],
+    "samples": []
+  }
+}
