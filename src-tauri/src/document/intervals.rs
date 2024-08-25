@@ -2,10 +2,17 @@ use crate::document::v2025_0_0::ConstraintData;
 use crate::util::math_util::angle_modulus;
 
 use super::v2025_0_0::{Expr, RobotConfig, Traj, Waypoint};
+// A value version since commands don't support borrows, but we need the borrow version for generation.
 #[tauri::command]
-pub fn guess_control_interval_counts(
+pub fn cmd_guess_control_interval_counts(
     config: RobotConfig<Expr>,
     traj: Traj,
+) -> Result<Vec<usize>, String> {
+    guess_control_interval_counts(&config, &traj)
+}
+pub fn guess_control_interval_counts(
+    config: &RobotConfig<Expr>,
+    traj: &Traj,
 ) -> Result<Vec<usize>, String> {
     let config = config.snapshot();
     if config.wheel_max_torque() <= 0.0 {

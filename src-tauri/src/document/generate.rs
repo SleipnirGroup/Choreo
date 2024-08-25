@@ -56,9 +56,15 @@ pub async fn generate(
     let mut guess_points_after_waypoint: Vec<Pose2d> = Vec::new();
 
     let snapshot = traj.path.snapshot();
+    
     let path = &snapshot.waypoints;
+    
     if path.len() < 2 {
         return Err("Path needs at least 2 waypoints.".to_string());
+    }
+    let counts_vec = guess_control_interval_counts(&chor.config, &traj)?;
+    if counts_vec.len() != path.len() {
+        return Err(format!("Intervals guess had {} wpts, path has {}", counts_vec.len(), path.len()));
     }
     let num_wpts = path.len();
     let mut constraint_idx = Vec::<ConstraintIDX<f64>>::new();
@@ -122,7 +128,7 @@ pub async fn generate(
             guess_points_after_waypoint.push(guess_point);
             rm.push(i);
             if let Some(last) = control_interval_counts.last_mut() {
-                *last += wpt.intervals;
+                *last += counts_vec[i];
             }
         } else {
             if wpt_cnt > 0 {
@@ -139,7 +145,7 @@ pub async fn generate(
             }
             wpt_cnt += 1;
             if i != path.len() - 1 {
-                control_interval_counts.push(wpt.intervals);
+                control_interval_counts.push(counts_vec[i]);
             }
         }
     }
@@ -211,12 +217,16 @@ pub async fn generate(
     //Err("".to_string())
     let result = path_builder.generate(true, handle)?;
 
-    Ok(postprocess(result, traj, snapshot))
+    Ok(postprocess(result, traj, snapshot, counts_vec))
 }
 
-fn postprocess(result: SwerveTrajectory, traj: Traj, snapshot: ChoreoPath<f64>) -> Traj {
+fn postprocess(result: SwerveTrajectory, traj: Traj, mut snapshot: ChoreoPath<f64>, counts_vec: Vec<usize>) -> Traj {
     let mut new_traj = traj.clone();
-
+    new_traj.path.waypoints.iter_mut().zip(snapshot.waypoints.iter_mut()).zip(counts_vec)
+    .for_each(|w|{
+        w.0.0.intervals = w.1;
+        w.0.1.intervals = w.1;
+    });
     // convert the result from trajoptlib to a format matching the save file.
     // Calculate the waypoint timing
     let mut interval = 0;

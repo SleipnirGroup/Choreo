@@ -14,7 +14,7 @@ use std::{fs, path::Path};
 use std::{thread, vec};
 use tauri::regex::{escape, Regex};
 
-use document::intervals::guess_control_interval_counts;
+use document::intervals::cmd_guess_control_interval_counts;
 use tauri::{
     api::{dialog::blocking::FileDialogBuilder, file},
     Manager,
@@ -61,7 +61,7 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             generate,
-            guess_control_interval_counts,
+            cmd_guess_control_interval_counts,
             cancel,
             save_file,
             delete_file,

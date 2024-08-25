@@ -83,10 +83,8 @@ import { NonEmptyObject } from "mobx-state-tree/dist/internal";
 import { Commands } from "./tauriCommands";
 
 type OpenFileEventPayload = {
-  adjacent_gradle: boolean;
-  name: string | undefined;
-  dir: string | undefined;
-  contents: string;
+  name: string;
+  dir: string;
 };
 
 export const uiState = UIStateStore.create({
@@ -266,13 +264,13 @@ export function setup() {
   doc.history.clear();
   setupEventListeners()
     .then(() => newFile())
-    .then(() => uiState.updateWindowTitle());
-  //.then(() => openLastFile());
+    .then(() => uiState.updateWindowTitle())
+    .then(() => openLastFile());
 }
 setup();
 
 // opens the last Choreo file saved in LocalStorage, if it exists
-export function openLastFile() {
+export async function openLastFile() {
   const lastOpenedFileEventPayload = localStorage.getItem(
     LocalStorageKeys.LAST_OPENED_FILE_LOCATION
   );
@@ -282,6 +280,14 @@ export function openLastFile() {
     );
     const filePath = fileDirectory.dir + path.sep + fileDirectory.name;
     console.log(`Attempting to open: ${filePath}`);
+    return openProject([fileDirectory.dir, fileDirectory.name]).catch((err) => {
+        console.error(
+          `Failed to open last Choreo file '${fileDirectory.name}': ${err}`
+        );
+        toast.error(
+          `Failed to open last Choreo file '${fileDirectory.name}': ${err}`
+        );
+      });
     // invoke("file_event_payload_from_dir", {
     //   dir: fileDirectory.dir,
     //   name: fileDirectory.name,
@@ -297,45 +303,42 @@ export function openLastFile() {
   }
 }
 
-export async function handleOpenFileEvent(event: Event<unknown>) {
-  const payload = event.payload as OpenFileEventPayload;
-  if (payload.dir === undefined || payload.name === undefined) {
-    throw "Non-UTF-8 characters in file path";
-  } else if (payload.contents === undefined) {
-    throw "Unable to read file";
-  } else {
-    const oldDocument = getSnapshot(doc);
-    const oldUIState = getSnapshot(uiState);
-    const saveName = payload.name;
-    const saveDir = payload.dir;
-    const adjacent_gradle = payload.adjacent_gradle;
-    uiState.setSaveFileName(undefined);
-    uiState.setSaveFileDir(undefined);
-    uiState.setIsGradleProject(undefined);
-    await openFromContents(payload.contents)
-      .catch((err) => {
-        applySnapshot(doc, oldDocument);
-        applySnapshot(uiState, oldUIState);
-        throw `Internal parsing error: ${err}`;
-      })
-      .then(() => {
-        uiState.setSaveFileName(saveName);
-        uiState.setSaveFileDir(saveDir);
-        uiState.setIsGradleProject(adjacent_gradle);
-        localStorage.setItem(
-          LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
-          JSON.stringify(payload)
-        );
-      });
-  }
-}
+// export async function handleOpenFileEvent(event: Event<unknown>) {
+//   const payload = event.payload as OpenFileEventPayload;
+//   if (payload.dir === undefined || payload.name === undefined) {
+//     throw "Non-UTF-8 characters in file path";
+//   } else if (payload.contents === undefined) {
+//     throw "Unable to read file";
+//   } else {
+//     const oldDocument = getSnapshot(doc);
+//     const oldUIState = getSnapshot(uiState);
+//     const saveName = payload.name;
+//     const saveDir = payload.dir;
+//     const adjacent_gradle = payload.adjacent_gradle;
+//     uiState.setSaveFileName(undefined);
+//     uiState.setSaveFileDir(undefined);
+//     uiState.setIsGradleProject(undefined);
+//     await openFromContents(payload.contents)
+//       .catch((err) => {
+//         applySnapshot(doc, oldDocument);
+//         applySnapshot(uiState, oldUIState);
+//         throw `Internal parsing error: ${err}`;
+//       })
+//       .then(() => {
+//         uiState.setSaveFileName(saveName);
+//         uiState.setSaveFileDir(saveDir);
+//         uiState.setIsGradleProject(adjacent_gradle);
+
+//       });
+//   }
+// }
 
 export async function setupEventListeners() {
-  const openFileUnlisten = await listen("open-file", async (event) =>
-    handleOpenFileEvent(event).catch((err) =>
-      toast.error("Opening file error: " + err)
-    )
-  );
+  // const openFileUnlisten = await listen("open-file", async (event) =>
+  //   handleOpenFileEvent(event).catch((err) =>
+  //     toast.error("Opening file error: " + err)
+  //   )
+  // );
 
   const fileOpenFromDirUnlisten = await listen(
     "file_event_payload_from_dir",
@@ -447,7 +450,7 @@ export async function setupEventListeners() {
   );
   window.addEventListener("unload", () => {
     hotkeys.unbind();
-    openFileUnlisten();
+    ///openFileUnlisten();
     fileOpenFromDirUnlisten();
     autoSaveUnlisten();
     updateTitleUnlisten();
@@ -639,7 +642,10 @@ export async function openProject(chorFile: [dir:string, name:string]) {
   uiState.setSaveFileDir(dir);
   uiState.setSaveFileName(name);
   await Commands.setChorPath(dir, name);
-
+  localStorage.setItem(
+    LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
+    JSON.stringify({dir, name})
+  );
 }
 
 export async function generateAndExport(uuid: string) {

@@ -213,6 +213,7 @@ export const DocumentStore = types
               const newTraj = result.traj.samples;
               pathStore.traj.setSamples(newTraj);
               pathStore.traj.setWaypoints(result.traj.waypoints);
+              
               pathStore.setSnapshot(result.snapshot);
               // set this within the group so it gets picked up in the autosave
               pathStore.setIsTrajectoryStale(false);

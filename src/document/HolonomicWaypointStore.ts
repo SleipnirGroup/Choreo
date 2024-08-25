@@ -93,6 +93,9 @@ export const HolonomicWaypointStore = types
       },
       setIntervals(count: number) {
         self.intervals = count;
+      },
+      setSplit(split: boolean) {
+        self.split = split
       }
     };
   })

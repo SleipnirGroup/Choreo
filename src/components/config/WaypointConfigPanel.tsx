@@ -5,11 +5,12 @@ import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import Input from "../input/Input";
 import styles from "./WaypointConfigPanel.module.css";
 import InputList from "../input/InputList";
-import { ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
+import { Checkbox, ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
 import { WaypointData } from "../../document/UIData";
 import { angleModulus } from "../../util/MathUtil";
 import ExpressionInput from "../input/ExpressionInput";
 import ExpressionInputList from "../input/ExpressionInputList";
+import BooleanInput from "../input/BooleanInput";
 
 type Props = { waypoint: IHolonomicWaypointStore | null; index: number };
 
@@ -63,7 +64,12 @@ class WaypointPanel extends Component<Props, State> {
               number={waypoint.heading}
               //setNumber={(heading) => waypoint!.setHeading(heading)}
             ></ExpressionInput>
+            <BooleanInput
+              title={"Split"}
+              enabled={true} value={waypoint.split} setValue={s=>waypoint.setSplit(s)}
+              titleTooltip="Split trajectory at this point. Does not force stopping."></BooleanInput>
           </ExpressionInputList>
+
           <InputList noCheckbox>
             <Input
               title=""
@@ -77,6 +83,7 @@ class WaypointPanel extends Component<Props, State> {
               setNumber={(_) => {}}
             ></Input>
           </InputList>
+
           <ToggleButtonGroup
             sx={{ marginInline: "auto", paddingTop: "8px" }}
             size="small"

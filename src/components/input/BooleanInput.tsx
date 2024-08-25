@@ -45,7 +45,7 @@ class Input extends Component<Props, State> {
         <input
           ref={this.inputElemRef}
           type="checkbox"
-          className={styles.Number}
+          className={"mui-Checkbox"}
           checked={this.props.value}
           style={{
             gridColumn: "span 1"

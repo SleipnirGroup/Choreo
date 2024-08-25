@@ -3,7 +3,7 @@ import { Expr, Project, RobotConfig, Traj } from "./2025/v2025_0_0";
 
 export const Commands = {
     generate:       (chor: Project, traj: Traj, handle: number)=>   invoke<Traj>("generate", {chor, traj, handle}),
-    guessIntervals: (config: RobotConfig<Expr>, traj: Traj) =>      invoke<number[]>("guess_control_interval_counts", {config, traj}),
+    guessIntervals: (config: RobotConfig<Expr>, traj: Traj) =>      invoke<number[]>("cmd_guess_control_interval_counts", {config, traj}),
     cancel:         ()=>                          invoke<void>("cancel"),
     deleteFile:     (dir: string, name: string)=> invoke<void>("delete_file",{dir, name}),
     deleteDir:      (dir: string)=>               invoke<void>("delete_dir",{dir}),

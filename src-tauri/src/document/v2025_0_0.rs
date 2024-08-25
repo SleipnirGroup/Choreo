@@ -156,13 +156,15 @@ impl Waypoint<Expr> {
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy)]
-#[serde(untagged)]
+
 pub enum WaypointID {
-    Idx(usize),
+    
     #[serde(rename = "first")]
     First,
     #[serde(rename = "last")]
     Last,
+    #[serde(untagged)]
+    Idx(usize),
 }
 impl WaypointID {
     pub fn to_idx(&self, count: &usize) -> Option<usize> {
