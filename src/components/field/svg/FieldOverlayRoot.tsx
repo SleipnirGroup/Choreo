@@ -9,7 +9,8 @@ import InterpolatedRobot from "./InterpolatedRobot";
 import {
   NavbarLabels,
   ViewLayers,
-  NavbarItemData
+  NavbarItemData,
+  NavbarItemSectionEnds
 } from "../../../document/UIData";
 import FieldGeneratedLines from "./FieldGeneratedLines";
 import FieldAxisLines from "./FieldAxisLines";
@@ -265,7 +266,7 @@ class FieldOverlayRoot extends Component<Props, State> {
                 <ToggleButtonGroup>
                   {NavbarItemData.map(
                     (item, index) =>
-                      index <= 3 && (
+                      index <= NavbarItemSectionEnds[0] && (
                         <>
                           <Tooltip disableInteractive title={item.name}>
                             <ToggleButton
