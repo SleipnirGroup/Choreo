@@ -125,6 +125,7 @@ mod ffi {
             field_point_x: f64,
             field_point_y: f64,
             heading_tolerance: f64,
+            flip: bool
         );
 
         fn sgmt_linear_velocity_direction(
@@ -158,6 +159,7 @@ mod ffi {
             field_point_x: f64,
             field_point_y: f64,
             heading_tolerance: f64,
+            flip: bool
         );
 
         fn sgmt_circle_obstacle(
@@ -254,6 +256,7 @@ mod ffi {
             field_point_x: f64,
             field_point_y: f64,
             heading_tolerance: f64,
+            flip: bool
         );
 
         fn sgmt_linear_velocity_direction(
@@ -416,6 +419,7 @@ impl SwervePathBuilder {
         field_point_x: f64,
         field_point_y: f64,
         heading_tolerance: f64,
+        flip: bool
     ) {
         crate::ffi::SwervePathBuilder::wpt_point_at(
             self.path_builder.pin_mut(),
@@ -423,6 +427,7 @@ impl SwervePathBuilder {
             field_point_x,
             field_point_y,
             heading_tolerance,
+            flip
         )
     }
 
@@ -489,6 +494,7 @@ impl SwervePathBuilder {
         field_point_x: f64,
         field_point_y: f64,
         heading_tolerance: f64,
+        flip:bool
     ) {
         crate::ffi::SwervePathBuilder::sgmt_point_at(
             self.path_builder.pin_mut(),
@@ -497,6 +503,7 @@ impl SwervePathBuilder {
             field_point_x,
             field_point_y,
             heading_tolerance,
+            flip
         )
     }
 
@@ -689,6 +696,7 @@ impl DifferentialPathBuilder {
         field_point_x: f64,
         field_point_y: f64,
         heading_tolerance: f64,
+        flip: bool
     ) {
         crate::ffi::DifferentialPathBuilder::wpt_point_at(
             self.path_builder.pin_mut(),
@@ -696,6 +704,7 @@ impl DifferentialPathBuilder {
             field_point_x,
             field_point_y,
             heading_tolerance,
+            flip
         )
     }
 

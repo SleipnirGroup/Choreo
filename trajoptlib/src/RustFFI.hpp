@@ -40,7 +40,7 @@ class SwervePathBuilder {
                                           double angular_velocity);
   void wpt_linear_acceleration_max_magnitude(size_t index, double magnitude);
   void wpt_point_at(size_t index, double field_point_x, double field_point_y,
-                    double heading_tolerance);
+                    double heading_tolerance, bool flip);
 
   void sgmt_linear_velocity_direction(size_t from_index, size_t to_index,
                                       double angle);
@@ -52,7 +52,7 @@ class SwervePathBuilder {
                                               size_t to_index,
                                               double magnitude);
   void sgmt_point_at(size_t from_index, size_t to_index, double field_point_x,
-                     double field_point_y, double heading_tolerance);
+                     double field_point_y, double heading_tolerance, bool flip);
 
   void sgmt_circle_obstacle(size_t from_index, size_t to_index, double x,
                             double y, double radius);
@@ -93,7 +93,7 @@ class DifferentialPathBuilder {
                                           double angular_velocity);
   void wpt_linear_acceleration_max_magnitude(size_t index, double magnitude);
   void wpt_point_at(size_t index, double field_point_x, double field_point_y,
-                    double heading_tolerance);
+                    double heading_tolerance, bool flip);
 
   void sgmt_linear_velocity_direction(size_t from_index, size_t to_index,
                                       double angle);

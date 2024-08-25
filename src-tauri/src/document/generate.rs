@@ -160,12 +160,11 @@ pub async fn generate(
                 x,
                 y,
                 tolerance,
-                flip: _,
+                flip,
             } => {
-                println!("{}, {}, {}, {}", x, y, tolerance, from);
                 match to_opt {
-                    None => path_builder.wpt_point_at(from, x, y, tolerance),
-                    Some(to) => path_builder.sgmt_point_at(from, to, x, y, tolerance),
+                    None => path_builder.wpt_point_at(from, x, y, tolerance, flip),
+                    Some(to) => path_builder.sgmt_point_at(from, to, x, y, tolerance, flip),
                 }
             }
             ConstraintData::MaxVelocity { max } => match to_opt {
