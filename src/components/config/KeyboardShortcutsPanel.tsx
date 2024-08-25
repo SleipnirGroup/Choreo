@@ -1,3 +1,4 @@
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
 import Paper from "@mui/material/Paper";
 import Table from "@mui/material/Table";
@@ -7,7 +8,6 @@ import TableContainer from "@mui/material/TableContainer/TableContainer";
 import TableRow from "@mui/material/TableRow/TableRow";
 import { type } from "@tauri-apps/api/os";
 import { Component } from "react";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 type Props = object;
 

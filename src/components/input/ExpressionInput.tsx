@@ -1,9 +1,8 @@
 import { Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import styles from "./InputList.module.css";
 import { IExpressionStore, math } from "../../document/ExpressionStore";
-import { getDependencyTree } from "mobx";
+import styles from "./InputList.module.css";
 
 type Props = {
   /** The text to show before the number */
@@ -86,7 +85,7 @@ class Input extends Component<Props, State> {
 
   getValid(): boolean {
     try {
-      let newNode = this.props.number.validate(
+      const newNode = this.props.number.validate(
         math.parse(this.state.editedValue)
       );
       return newNode !== undefined;
@@ -109,6 +108,7 @@ class Input extends Component<Props, State> {
 
   render() {
     try {
+      //eslint-disable-next-line @typescript-eslint/no-unused-expressions
       this.props.number.expr;
     } catch (e) {
       console.error(e);
@@ -153,7 +153,7 @@ class Input extends Component<Props, State> {
             this.focusedMode();
           }}
           onBlur={(e) => {
-            let newNode = this.props.number.validate(
+            const newNode = this.props.number.validate(
               math.parse(this.state.editedValue)
             );
             if (newNode !== undefined) {

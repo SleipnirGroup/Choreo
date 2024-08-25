@@ -1,31 +1,10 @@
+import { ConstantNode, MathNode, Unit, all, create, isNull } from "mathjs";
+import { IReactionDisposer, autorun } from "mobx";
+import { Instance, types } from "mobx-state-tree";
 import {
-  BigNumber,
-  ConstantNode,
-  EvalFunction,
-  FormatOptions,
-  Fraction,
-  MathJSON,
-  MathNode,
-  OperatorNode,
-  Unit,
-  UnitComponent,
-  e,
-  isNull
-} from "mathjs";
-import { Instance, getEnv, types } from "mobx-state-tree";
-import { create, all } from "mathjs";
-import {
-  IReactionDisposer,
-  autorun,
-  getDependencyTree,
-  toJS,
-  trace
-} from "mobx";
-import {
-  Expr,
+  PoseVariable as DocPoseVariable,
   Variables as DocVariables,
-  Variable as DocVariable,
-  PoseVariable as DocPoseVariable
+  Expr
 } from "./2025/DocumentTypes";
 
 export const math = create(all, { predictable: true });
@@ -80,9 +59,7 @@ function addUnitToExpression(
   return new math.OperatorNode("*", "multiply", [expression, unitNode], true);
 }
 
-//@ts-expect-error
 const isAlphaOriginal = Unit.isValidAlpha;
-//@ts-expect-error
 math.Unit.isValidAlpha = function (c) {
   return isAlphaOriginal(c) || c == "#";
 };
@@ -96,7 +73,7 @@ export const Units = {
   KgM2: math.unit("kg m^2"),
   Newton: math.unit("N"),
   Kg: math.unit("kg"),
-  RPM: math.createUnit("RPM", "1 cycle/min", {aliases: ["rpm"]})
+  RPM: math.createUnit("RPM", "1 cycle/min", { aliases: ["rpm"] })
 };
 console.log("rpm parse", math.parse("1 RPM").evaluate());
 
@@ -143,7 +120,7 @@ export const ExpressionStore = types
   }))
   .views((self) => ({
     evaluator(node: MathNode): Evaluated {
-      let scope =
+      const scope =
         self.getScope() ??
         ((() => {
           console.error("Evaluating without variables!");
@@ -169,6 +146,7 @@ export const ExpressionStore = types
       return () => self.expr;
     },
     toDefaultUnit(): Unit | number | undefined {
+      //eslint-disable-next-line @typescript-eslint/no-unused-expressions
       self.expr;
 
       const result = self.evaluate;
@@ -197,19 +175,15 @@ export const ExpressionStore = types
       return math.unit(result.toString()).to(self.defaultUnit!.toString());
     },
     get defaultUnitMagnitude(): number | undefined {
+      //eslint-disable-next-line @typescript-eslint/no-unused-expressions
       self.expr;
-      let defaultUnit = this.toDefaultUnit();
+      const defaultUnit = this.toDefaultUnit();
       if (typeof defaultUnit === "number") {
         return defaultUnit;
       }
       return defaultUnit?.toNumber(self.defaultUnit!.toString());
     },
     validate(newNode: MathNode) {
-      try {
-      } catch {
-        console.error("failed to evaluate");
-        return undefined;
-      }
       let newNumber: undefined | null | number | Unit;
       try {
         newNumber = self.evaluator(newNode);
@@ -232,7 +206,7 @@ export const ExpressionStore = types
         return newNode;
       }
       // newNumber is Unit
-      let unit = self.defaultUnit;
+      const unit = self.defaultUnit;
       if (unit === undefined) {
         console.error(
           "failed to evaluate: ",
@@ -261,8 +235,9 @@ export const ExpressionStore = types
     return {
       afterCreate: () => {
         recalcDispose = autorun(() => {
+          //eslint-disable-next-line no-useless-catch
           try {
-            let value = self.defaultUnitMagnitude;
+            const value = self.defaultUnitMagnitude;
             if (value !== undefined) {
               self.setValue(value);
             }
@@ -276,7 +251,7 @@ export const ExpressionStore = types
       }
     };
   });
-export interface IExpressionStore extends Instance<typeof ExpressionStore> {}
+export type IExpressionStore = Instance<typeof ExpressionStore>;
 
 const ExprPose = types
   .model({
@@ -286,7 +261,7 @@ const ExprPose = types
   })
   .views((self) => ({
     get asScope(): Record<string, () => MathNode> {
-      let node: Record<string, () => MathNode> = {
+      const node: Record<string, () => MathNode> = {
         x: () => self.x.expr,
         y: () => self.y.expr,
         heading: () => self.heading.expr
@@ -330,7 +305,7 @@ const ExprPose = types
 //     }
 //     return true;
 //   }
-export interface IExprPose extends Instance<typeof ExprPose> {}
+export type IExprPose = Instance<typeof ExprPose>;
 type Pose = { x: number; y: number; heading: number };
 export const Variables = types
   .model("Variables", {
@@ -339,29 +314,29 @@ export const Variables = types
   })
   .views((self) => ({
     serialize(): DocVariables {
-      let out: DocVariables = {
+      const out: DocVariables = {
         expressions: {},
         poses: {}
       };
-      for (let entry of self.expressions.entries()) {
+      for (const entry of self.expressions.entries()) {
         out.expressions[entry[0]] = {
           unit: "Meter",
           var: (entry[1] as IExpressionStore).serialize()
         };
       }
 
-      for (let entry of self.poses.entries()) {
+      for (const entry of self.poses.entries()) {
         out.poses[entry[0]] = entry[1].serialize();
       }
       return out;
     },
     get scope() {
-      let vars: Map<string, any> = new Map();
+      const vars: Map<string, any> = new Map();
       //vars.set("m", math.unit("m"));
-      for (let [key, val] of self.expressions.entries()) {
+      for (const [key, val] of self.expressions.entries()) {
         vars.set(key, val.asScope);
       }
-      for (let [key, val] of self.poses.entries()) {
+      for (const [key, val] of self.poses.entries()) {
         vars.set(key, val.asScope);
       }
       return vars;
@@ -430,14 +405,14 @@ export const Variables = types
       self.expressions.set(key, self.createExpression(expr, defaultUnit));
     },
     deserialize(vars: DocVariables) {
-      for (let entry of Object.entries(vars.expressions)) {
+      for (const entry of Object.entries(vars.expressions)) {
         self.expressions.set(
           entry[0],
           self.createExpression(entry[1].var[0], Units[entry[1].unit])
         );
       }
 
-      for (let entry of Object.entries(vars.poses)) {
+      for (const entry of Object.entries(vars.poses)) {
         self.poses.set(
           entry[0],
           ExprPose.create({
@@ -452,4 +427,4 @@ export const Variables = types
       }
     }
   }));
-export interface IVariables extends Instance<typeof Variables> {}
+export type IVariables = Instance<typeof Variables>;

@@ -6,5 +6,4 @@ export const PolygonObstacleStore = types.model("PolygonObstacleStore", {
   radius: 0
 });
 
-export interface IPolygonObstacleStore
-  extends Instance<typeof PolygonObstacleStore> {}
+export type IPolygonObstacleStore = Instance<typeof PolygonObstacleStore>;

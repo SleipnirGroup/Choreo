@@ -54,7 +54,7 @@ class PathGradientFunctions {
    * @param documentModel - The document model object.
    * @returns The "select-yellow" color.
    */
-  static none({}: PathGradientArgs): string {
+  static none(args: PathGradientArgs): string {
     return "var(--select-yellow)";
   }
 

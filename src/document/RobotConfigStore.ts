@@ -1,18 +1,11 @@
-import {
-  applySnapshot,
-  getEnv,
-  getRoot,
-  Instance,
-  types
-} from "mobx-state-tree";
+import { Instance, types } from "mobx-state-tree";
 import {
   maxTorqueCurrentLimited,
   MotorCurves
 } from "../components/config/robotconfig/MotorCurves";
 import { InToM, LbsToKg, MToIn } from "../util/UnitConversions";
-import { ExpressionStore, Units } from "./ExpressionStore";
-import { Unit } from "mathjs";
 import { Bumper, Expr, Module, RobotConfig } from "./2025/DocumentTypes";
+import { ExpressionStore } from "./ExpressionStore";
 
 const DEFAULT_FRAME_SIZE = InToM(28);
 const DEFAULT_BUMPER = DEFAULT_FRAME_SIZE + 2 * InToM(2.5 + 0.75); // 28x28 bot with 2.5" noodle and 0.75" backing
@@ -193,10 +186,10 @@ export const RobotConfigStore = types
   .views((self) => {
     return {
       bumperSVGElement() {
-        let front = self.bumper.front.value;
-        let back = -self.bumper.back.value;
-        let left = self.bumper.left.value;
-        let right = -self.bumper.right.value;
+        const front = self.bumper.front.value;
+        const back = -self.bumper.back.value;
+        const left = self.bumper.left.value;
+        const right = -self.bumper.right.value;
         return `M ${front} ${left}
                 L ${front} ${right}
                 L ${back} ${right}
@@ -204,10 +197,10 @@ export const RobotConfigStore = types
                 L ${front} ${left}`;
       },
       dashedBumperSVGElement() {
-        let front = self.bumper.front.value; //l/2
-        let back = -self.bumper.back.value; //-l/2
-        let left = self.bumper.left.value;
-        let right = -self.bumper.right.value;
+        const front = self.bumper.front.value; //l/2
+        const back = -self.bumper.back.value; //-l/2
+        const left = self.bumper.left.value;
+        const right = -self.bumper.right.value;
         return `
             M ${front} ${left / 2}
             L ${front} ${left}
@@ -228,4 +221,4 @@ export const RobotConfigStore = types
       }
     };
   });
-export interface IRobotConfigStore extends Instance<typeof RobotConfigStore> {}
+export type IRobotConfigStore = Instance<typeof RobotConfigStore>;

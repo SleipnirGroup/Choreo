@@ -28,7 +28,7 @@ export interface SavedPath {
   usesControlIntervalGuessing: boolean;
   defaultControlIntervalCount: number;
 }
-export interface SavedPathList extends Record<string, SavedPath> {}
+export type SavedPathList = Record<string, SavedPath>;
 export interface SavedRobotConfig {
   mass: number;
   rotationalInertia: number;

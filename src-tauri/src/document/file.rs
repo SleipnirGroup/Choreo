@@ -1,10 +1,24 @@
-use std::{borrow::{Borrow, BorrowMut}, collections::HashMap, ffi::OsStr, path::{Path, PathBuf}};
+use std::{
+    borrow::{Borrow, BorrowMut},
+    collections::HashMap,
+    ffi::OsStr,
+    path::{Path, PathBuf},
+};
 
 use dashmap::DashMap;
 use serde::{de::value::Error, Deserialize, Serialize};
 use serde_json::Value;
-use tauri::{api::{dialog::blocking::FileDialogBuilder, file}, Manager};
-use tokio::{fs, sync::{mpsc::{self, Sender, UnboundedSender}, RwLock}};
+use tauri::{
+    api::{dialog::blocking::FileDialogBuilder, file},
+    Manager,
+};
+use tokio::{
+    fs,
+    sync::{
+        mpsc::{self, Sender, UnboundedSender},
+        RwLock,
+    },
+};
 
 use super::v2025_0_0::{expr, Bumper, Module, Project, RobotConfig, Traj, Variables};
 
@@ -12,27 +26,35 @@ use super::v2025_0_0::{expr, Bumper, Module, Project, RobotConfig, Traj, Variabl
 struct OpenFileEventPayload<'a> {
     dir: Option<&'a str>,
     name: Option<&'a str>,
-    contents: Project
+    contents: Project,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
 struct OpenTrajEventPayload<'a> {
     name: Option<&'a str>,
-    contents: Traj
+    contents: Traj,
 }
 
 pub fn setup_senders(app_handle: tauri::AppHandle) {
-    let senders : DashMap<String, UnboundedSender<WriterCommand<Traj>>> = DashMap::new();
+    let senders: DashMap<String, UnboundedSender<WriterCommand<Traj>>> = DashMap::new();
     app_handle.manage(senders);
     app_handle.manage::<RwLock<Option<UnboundedSender<WriterCommand<Project>>>>>(RwLock::new(None));
 }
 #[tauri::command]
-pub async fn write_traj(app_handle: tauri::AppHandle, file: String, traj: Traj) -> Result<(), String> {
-    let senders: tauri::State<DashMap<String, UnboundedSender<WriterCommand<Traj>>>>  = app_handle.state();
-    let sender = senders.get(&file).or_else(||{
-        senders.insert(file.clone(), start::<Traj>(Path::new(&(file.clone()))));
-        senders.get(&file)
-    }).ok_or("Could not get or insert traj file writer. Notify developers.")?;
+pub async fn write_traj(
+    app_handle: tauri::AppHandle,
+    file: String,
+    traj: Traj,
+) -> Result<(), String> {
+    let senders: tauri::State<DashMap<String, UnboundedSender<WriterCommand<Traj>>>> =
+        app_handle.state();
+    let sender = senders
+        .get(&file)
+        .or_else(|| {
+            senders.insert(file.clone(), start::<Traj>(Path::new(&(file.clone()))));
+            senders.get(&file)
+        })
+        .ok_or("Could not get or insert traj file writer. Notify developers.")?;
     sender.send(WriterCommand::Write(traj));
     Ok(())
 }
@@ -41,18 +63,21 @@ pub async fn write_traj(app_handle: tauri::AppHandle, file: String, traj: Traj) 
 pub async fn write_chor(app_handle: tauri::AppHandle, chor: Project) -> Result<(), String> {
     let state = app_handle.state::<RwLock<Option<UnboundedSender<WriterCommand<Project>>>>>();
     let opt = state.read().await;
-    let sender  = opt.as_ref().ok_or("No project is open")?;
+    let sender = opt.as_ref().ok_or("No project is open")?;
     sender.send(WriterCommand::Write(chor));
     Ok(())
 }
 #[tauri::command]
-pub async fn set_chor_path(app_handle: tauri::AppHandle, dir:String, name: String) -> Result<(), String> {
+pub async fn set_chor_path(
+    app_handle: tauri::AppHandle,
+    dir: String,
+    name: String,
+) -> Result<(), String> {
     let state = app_handle.state::<RwLock<Option<UnboundedSender<WriterCommand<Project>>>>>();
     let mut opt = state.write().await;
     opt.replace(start(&Path::new(&dir).join(name)));
     Ok(())
 }
-
 
 #[derive(Serialize, Deserialize)]
 pub enum WriterCommand<T> {
@@ -60,63 +85,76 @@ pub enum WriterCommand<T> {
     Move(String),
 }
 
-    async fn handle_write<T:Serialize>(contents: T, file: &Path) -> Result<(), ()> {
-        let json = super::formatter::to_string_pretty(&contents);
-        match json {
-            Ok(stringified) => {
-                let parent = file.parent();
-                if parent.is_none() {return Err(())}
-                let parent = parent.expect("file parent opt check failed");
-                let dir_res = fs::create_dir_all(parent).await.map_err(|e|())?;
-                fs::write(file, stringified).await.map_err(|e|())?;
-                Ok(())
-            },
-            Err(e) => {
-                println!("{:?}", e.to_string());
-                Err(())
+async fn handle_write<T: Serialize>(contents: T, file: &Path) -> Result<(), ()> {
+    let json = super::formatter::to_string_pretty(&contents);
+    match json {
+        Ok(stringified) => {
+            let parent = file.parent();
+            if parent.is_none() {
+                return Err(());
             }
+            let parent = parent.expect("file parent opt check failed");
+            let dir_res = fs::create_dir_all(parent).await.map_err(|e| ())?;
+            fs::write(file, stringified).await.map_err(|e| ())?;
+            Ok(())
+        }
+        Err(e) => {
+            println!("{:?}", e.to_string());
+            Err(())
         }
     }
-    pub fn start<T:Serialize + Send + Sync+'static>(file:& Path) -> tokio::sync::mpsc::UnboundedSender<WriterCommand<T>> {
-        let (tx, mut rx) = mpsc::unbounded_channel::<WriterCommand<T>>();
-        let mut filepath = PathBuf::new();
-         (*file).clone_into(&mut filepath);
-        tokio::spawn(async move {
-            loop {
-                let mut contents = (rx).recv().await;
-                while(rx.len() > 0) {
-                    contents = (rx).recv().await;
-                }
-                match contents{
+}
+pub fn start<T: Serialize + Send + Sync + 'static>(
+    file: &Path,
+) -> tokio::sync::mpsc::UnboundedSender<WriterCommand<T>> {
+    let (tx, mut rx) = mpsc::unbounded_channel::<WriterCommand<T>>();
+    let mut filepath = PathBuf::new();
+    (*file).clone_into(&mut filepath);
+    tokio::spawn(async move {
+        loop {
+            let mut contents = (rx).recv().await;
+            while (rx.len() > 0) {
+                contents = (rx).recv().await;
+            }
+            match contents {
                 None => break,
                 Some(contents) => {
                     match contents {
                         WriterCommand::Move(_) => Ok(()), // TODO
-                        WriterCommand::Write(contents,) => handle_write(contents, &filepath).await,
+                        WriterCommand::Write(contents) => handle_write(contents, &filepath).await,
                     };
                 }
             }
-            }
-        });
-        tx
-    }
-async fn send_open_chor_event(app_handle: tauri::AppHandle, chor: Project, dir: &str, name: &str) -> Result<(), tauri::Error> {
+        }
+    });
+    tx
+}
+async fn send_open_chor_event(
+    app_handle: tauri::AppHandle,
+    chor: Project,
+    dir: &str,
+    name: &str,
+) -> Result<(), tauri::Error> {
     app_handle.emit_all(
         "open-file",
         OpenFileEventPayload {
             dir: Some(dir),
             name: Some(name),
-            contents: chor
+            contents: chor,
         },
     )
 }
 
-async fn send_open_traj_event(app_handle: tauri::AppHandle, traj: Traj, name: &str) -> Result<(), tauri::Error> {
+async fn send_open_traj_event(
+    app_handle: tauri::AppHandle,
+    traj: Traj,
+    name: &str,
+) -> Result<(), tauri::Error> {
     app_handle.emit_all(
         "open-traj",
         OpenTrajEventPayload {
             name: Some(name),
-            contents: traj
+            contents: traj,
         },
     )
 }
@@ -127,53 +165,53 @@ pub async fn open_file_dialog(app_handle: tauri::AppHandle) -> Result<(String, S
         .set_title("Open a .chor file")
         .add_filter("Choreo Save File", &["chor"])
         .pick_file();
-        if let Some(path) = file_path {
-            if let Some(dir) = path.parent() {
-                if let Some(name) = path.file_name() {
-                    let dir = dir.to_str();
-                    let name = name.to_str();
-                    if let (Some(dir), Some(name)) = (dir,name) {
-                        return Ok((dir.to_string(), name.to_string()));
-                    } else {
-                        return Err("Filepath was not UTF-8".to_string());
-                    }
-                    
+    if let Some(path) = file_path {
+        if let Some(dir) = path.parent() {
+            if let Some(name) = path.file_name() {
+                let dir = dir.to_str();
+                let name = name.to_str();
+                if let (Some(dir), Some(name)) = (dir, name) {
+                    return Ok((dir.to_string(), name.to_string()));
+                } else {
+                    return Err("Filepath was not UTF-8".to_string());
                 }
             }
         }
-        return Err("Incomplete Selection".to_string());
+    }
+    return Err("Incomplete Selection".to_string());
     // TODO: Replace with if-let chains (https://github.com/rust-lang/rfcs/pull/2497)
 }
 
 #[tauri::command]
-pub async fn open_chor(app_handle: tauri::AppHandle, path: Option<(String, String)>) -> Result<Project, String> {
-    
+pub async fn open_chor(
+    app_handle: tauri::AppHandle,
+    path: Option<(String, String)>,
+) -> Result<Project, String> {
     let (dir, name) = match path {
         None => open_file_dialog(app_handle.clone()).await?,
-        Some(path) => path
+        Some(path) => path,
     };
     let pathbuf = Path::new(&dir).join(&name);
-    let contents = file::read_string(pathbuf).map_err(|e|e.to_string())?;
-    let chor = open_chor_from_contents(&contents).map_err(|e|e.to_string())?;
+    let contents = file::read_string(pathbuf).map_err(|e| e.to_string())?;
+    let chor = open_chor_from_contents(&contents).map_err(|e| e.to_string())?;
     //let _ = send_open_chor_event(app_handle, chor, dir.as_str(), name.as_str());
     Ok(chor)
-
 }
 
 #[tauri::command]
-pub async fn open_traj(app_handle: tauri::AppHandle, path: (String, String)) -> Result<Traj, String> {
-    
+pub async fn open_traj(
+    app_handle: tauri::AppHandle,
+    path: (String, String),
+) -> Result<Traj, String> {
     let pathbuf = Path::new(&path.0).join(&path.1);
-    let contents = file::read_string(pathbuf).map_err(|e|e.to_string())?;
-    let chor = open_traj_from_contents(&contents).map_err(|e|e.to_string())?;
+    let contents = file::read_string(pathbuf).map_err(|e| e.to_string())?;
+    let chor = open_traj_from_contents(&contents).map_err(|e| e.to_string())?;
     //let _ = send_open_chor_event(app_handle, chor, dir.as_str(), name.as_str());
     Ok(chor)
-
 }
 
 #[tauri::command]
 pub async fn new_file(app_handle: tauri::AppHandle) -> Result<Project, String> {
-    
     //let _ = send_open_chor_event(app_handle, chor, dir.as_str(), name.as_str());
     Ok(Project {
         version: "v2025.0.0".to_string(),
@@ -212,20 +250,19 @@ pub async fn new_file(app_handle: tauri::AppHandle) -> Result<Project, String> {
                 back: expr("16 in", 0.4064),
                 right: expr("16 in", 0.4064),
             },
-        }})
-
+        },
+    })
 }
 
-
 fn open_traj_from_contents(input: &str) -> Result<Traj, serde_json::Error> {
-    let json:Value = serde_json::from_str(input)?;
-    let traj:Traj = serde_json::from_value(json)?;
+    let json: Value = serde_json::from_str(input)?;
+    let traj: Traj = serde_json::from_value(json)?;
     return Ok(traj);
 }
 
 fn open_chor_from_contents(input: &str) -> Result<Project, serde_json::Error> {
-    let json:Value = serde_json::from_str(input)?;
-    let chor:Project = serde_json::from_value(json)?;
+    let json: Value = serde_json::from_str(input)?;
+    let chor: Project = serde_json::from_value(json)?;
     return Ok(chor);
 }
 
@@ -248,17 +285,26 @@ pub async fn find_all_traj(dir: Option<&Path>) -> Result<Vec<String>, String> {
         || Err("Directory does not exist".to_string()),
         |dir_path| {
             Ok(dir_path
-                .read_dir().map_err(|e|e.to_string())?
+                .read_dir()
+                .map_err(|e| e.to_string())?
                 .flatten()
                 .filter_map(|entry| {
                     let path = entry.path();
-                    let extension = if path.is_file() {path.extension()} else {None};
-                    if extension.map(|e|e.eq_ignore_ascii_case("traj")).unwrap_or(false) {
-                        entry.path().to_str().map(|str|str.to_string())
-                    } else {None}}
-                )
-                .collect::<Vec<String>>()
-            )
+                    let extension = if path.is_file() {
+                        path.extension()
+                    } else {
+                        None
+                    };
+                    if extension
+                        .map(|e| e.eq_ignore_ascii_case("traj"))
+                        .unwrap_or(false)
+                    {
+                        entry.path().to_str().map(|str| str.to_string())
+                    } else {
+                        None
+                    }
+                })
+                .collect::<Vec<String>>())
         },
     )
 }

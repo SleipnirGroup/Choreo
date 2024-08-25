@@ -1,25 +1,22 @@
 import {
   Circle,
   CircleOutlined,
+  CropFree,
   DoNotDisturb,
   Grid4x4,
   Room,
   Route,
   ScatterPlot,
-  SquareOutlined,
-  CropFree
+  SquareOutlined
 } from "@mui/icons-material";
-import { path, window as tauriWindow } from "@tauri-apps/api";
-import { getVersion } from "@tauri-apps/api/app";
-import { Instance, types } from "mobx-state-tree";
 import { ReactElement } from "react";
 import Waypoint from "../assets/Waypoint";
-import { ConstraintStore } from "./ConstraintStore";
 import {
   ConstraintDefinition,
   ConstraintDefinitions,
   ConstraintKey
 } from "./ConstraintDefinitions";
+import { ConstraintStore } from "./ConstraintStore";
 
 /* Navbar stuff */
 export const WaypointData: {

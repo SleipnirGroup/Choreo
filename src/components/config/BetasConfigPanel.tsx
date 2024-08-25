@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import { doc, uiState } from "../../document/DocumentManager";
+import { doc } from "../../document/DocumentManager";
 import inputStyles from "../input/InputList.module.css";
 import { Divider, Switch, Tooltip } from "@mui/material";
 import { Warning } from "@mui/icons-material";

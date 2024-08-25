@@ -28,11 +28,11 @@ class TRAJOPT_DLLEXPORT PointAtConstraint {
    * @param headingTolerance The allowed robot heading tolerance (radians). Must
    *     be nonnegative.
    */
-  explicit PointAtConstraint(Translation2d fieldPoint, double headingTolerance, bool flip = false)
+  explicit PointAtConstraint(Translation2d fieldPoint, double headingTolerance,
+                             bool flip = false)
       : m_fieldPoint{std::move(fieldPoint)},
         m_headingTolerance{headingTolerance},
-        m_flip{flip}
-         {
+        m_flip{flip} {
     assert(m_headingTolerance >= 0.0);
   }
 
@@ -63,14 +63,13 @@ class TRAJOPT_DLLEXPORT PointAtConstraint {
     auto dot = pose.Rotation().Cos() * dx + pose.Rotation().Sin() * dy;
     if (!m_flip) {
       // dot close to 1 * hypot (point toward)
-        problem.SubjectTo(dot >=
-                    std::cos(m_headingTolerance) * sleipnir::hypot(dx, dy));
+      problem.SubjectTo(dot >=
+                        std::cos(m_headingTolerance) * sleipnir::hypot(dx, dy));
     } else {
       // dot close to -1 * hypot (point away)
-      problem.SubjectTo(dot <=
-                    -std::cos(m_headingTolerance) * sleipnir::hypot(dx, dy));
+      problem.SubjectTo(dot <= -std::cos(m_headingTolerance) *
+                                   sleipnir::hypot(dx, dy));
     }
-
   }
 
  private:

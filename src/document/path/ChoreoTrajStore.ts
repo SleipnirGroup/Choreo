@@ -1,12 +1,7 @@
-import { types, destroy, Instance, getEnv } from "mobx-state-tree";
-import { v4 as uuidv4 } from "uuid";
-import {
-  CommandStore,
-  EventMarkerStore,
-  IEventMarkerStore
-} from "../EventMarkerStore";
-import { type Sample, Output } from "../2025/DocumentTypes";
+import { Instance, destroy, getEnv, types } from "mobx-state-tree";
+import { Output, type Sample } from "../2025/DocumentTypes";
 import { Env } from "../DocumentManager";
+import { EventMarkerStore, IEventMarkerStore } from "../EventMarkerStore";
 
 export const ChoreoTrajStore = types
   .model("ChoreoTrajStore", {
@@ -29,7 +24,6 @@ export const ChoreoTrajStore = types
         return undefined;
       }
       let sect = 0;
-      let indexInSect = 0;
       while (
         self.samples[sect] !== undefined &&
         self.samples[sect].length <= indexInFull
@@ -48,7 +42,7 @@ export const ChoreoTrajStore = types
       if (self.samples.length === 0) {
         return 0;
       }
-      let lastSection = self.samples[self.samples.length - 1];
+      const lastSection = self.samples[self.samples.length - 1];
       if (lastSection.length === 0) {
         return 0;
       }
@@ -119,4 +113,4 @@ export const ChoreoTrajStore = types
     }
   }));
 
-export interface IChoreoTrajStore extends Instance<typeof ChoreoTrajStore> {}
+export type IChoreoTrajStore = Instance<typeof ChoreoTrajStore>;

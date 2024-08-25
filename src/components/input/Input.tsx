@@ -190,7 +190,7 @@ class Input extends Component<Props, State> {
             className={styles.Checkbox}
             checked={this.props.enabled}
             onChange={this.setEnabled}
-            disabled={!(this.props.checkboxEnabled?? true)}
+            disabled={!(this.props.checkboxEnabled ?? true)}
           ></input>
         ) : (
           <span></span>

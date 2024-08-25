@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from "react";
+import { Fragment } from "react";
 import { doc, uiState } from "../../../document/DocumentManager";
 
 import { observer } from "mobx-react";
@@ -36,23 +36,23 @@ function FieldConstraintsAddLayer() {
                 stroke="white"
                 strokeWidth={0.05}
                 onClick={() => {
-                  doc.history.startGroup(()=>{
-                  const constraintToAdd = selectedConstraint;
-                  const newConstraint = activePath.path.addConstraint(
-                    constraintToAdd,
-                    { uuid: point.uuid }
-                  );
+                  doc.history.startGroup(() => {
+                    const constraintToAdd = selectedConstraint;
+                    const newConstraint = activePath.path.addConstraint(
+                      constraintToAdd,
+                      { uuid: point.uuid }
+                    );
 
-                  if (newConstraint !== undefined) {
-                    if (newConstraint.wptScope) {
-                      if (newConstraint.sgmtScope) {
-                        newConstraint.setTo({ uuid: point.uuid });
+                    if (newConstraint !== undefined) {
+                      if (newConstraint.wptScope) {
+                        if (newConstraint.sgmtScope) {
+                          newConstraint.setTo({ uuid: point.uuid });
+                        }
                       }
+                      doc.setSelectedSidebarItem(newConstraint);
                     }
-                    doc.setSelectedSidebarItem(newConstraint);
-                  } 
-                  doc.history.stopGroup();
-                });
+                    doc.history.stopGroup();
+                  });
                 }}
               ></circle>
             );
@@ -88,18 +88,20 @@ function FieldConstraintsAddLayer() {
                   stroke="white"
                   strokeWidth={0.05}
                   onClick={() => {
-                    doc.history.startGroup(()=>{
-                    const constraintToAdd = uiState.getSelectedConstraintKey();
+                    doc.history.startGroup(() => {
+                      const constraintToAdd =
+                        uiState.getSelectedConstraintKey();
 
-                    const newConstraint = activePath.path.addConstraint(
-                      constraintToAdd,
-                      { uuid: point1.uuid },
-                      { uuid: point2.uuid }
-                    );
+                      const newConstraint = activePath.path.addConstraint(
+                        constraintToAdd,
+                        { uuid: point1.uuid },
+                        { uuid: point2.uuid }
+                      );
 
-                    if (newConstraint !== undefined) {
-                      doc.setSelectedSidebarItem(newConstraint);
-                    }});
+                      if (newConstraint !== undefined) {
+                        doc.setSelectedSidebarItem(newConstraint);
+                      }
+                    });
                   }}
                 ></circle>
               </Fragment>

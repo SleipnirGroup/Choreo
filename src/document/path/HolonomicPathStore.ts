@@ -265,11 +265,11 @@ export const HolonomicPathStore = types
 
       autosaveDisposer = reaction(
         () => {
-          return self.serialize()
+          return self.serialize();
         },
         (value) => {
-            console.log("save", self.name)
-            exporter(self.uuid);
+          console.log("save", self.name);
+          exporter(self.uuid);
         }
       );
     };
@@ -286,5 +286,7 @@ export const HolonomicPathStore = types
       beforeDestroy
     };
   });
+// TS complains of circular dependencies if we directly alias this
+//eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface IHolonomicPathStore
   extends Instance<typeof HolonomicPathStore> {}

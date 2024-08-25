@@ -2,8 +2,6 @@ import { Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import styles from "./InputList.module.css";
-import { IExpressionStore, math } from "../../document/ExpressionStore";
-import { getDependencyTree } from "mobx";
 
 type Props = {
   /** The text to show before the number */
@@ -15,7 +13,7 @@ type Props = {
   setValue: (arg: boolean) => void;
   /** The tooltip for the title */
   titleTooltip?: string;
-  inputListCheckbox?:boolean;
+  inputListCheckbox?: boolean;
 };
 
 type State = object;

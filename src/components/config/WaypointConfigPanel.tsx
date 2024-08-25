@@ -1,16 +1,14 @@
+import { ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
-import React, { Component, ReactElement } from "react";
-import { doc, uiState } from "../../document/DocumentManager";
+import { Component, ReactElement } from "react";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
-import Input from "../input/Input";
-import styles from "./WaypointConfigPanel.module.css";
-import InputList from "../input/InputList";
-import { Checkbox, ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
 import { WaypointData } from "../../document/UIData";
-import { angleModulus } from "../../util/MathUtil";
+import BooleanInput from "../input/BooleanInput";
 import ExpressionInput from "../input/ExpressionInput";
 import ExpressionInputList from "../input/ExpressionInputList";
-import BooleanInput from "../input/BooleanInput";
+import Input from "../input/Input";
+import InputList from "../input/InputList";
+import styles from "./WaypointConfigPanel.module.css";
 
 type Props = { waypoint: IHolonomicWaypointStore | null; index: number };
 
@@ -64,29 +62,33 @@ class WaypointPanel extends Component<Props, State> {
               number={waypoint.heading}
               //setNumber={(heading) => waypoint!.setHeading(heading)}
             ></ExpressionInput>
-            
           </ExpressionInputList>
 
           <InputList>
-          
-
             <Input
               title="Samples"
               suffix=""
               showCheckbox={!waypoint.isLast()}
               enabled={waypoint.overrideIntervals && !waypoint.isLast()}
               showNumberWhenDisabled={!waypoint.isLast()}
-              setEnabled={(e) => {waypoint.setOverrideIntervals(e)}}
+              setEnabled={(e) => {
+                waypoint.setOverrideIntervals(e);
+              }}
               maxWidthCharacters={8}
               number={waypoint.intervals}
               roundingPrecision={0}
-              setNumber={(num) => {waypoint.setIntervals(num)}}
+              setNumber={(num) => {
+                waypoint.setIntervals(num);
+              }}
               titleTooltip="Override the number of samples between this and next waypoint"
             ></Input>
             <BooleanInput
               title={"Split"}
-              enabled={true} value={waypoint.split} setValue={s=>waypoint.setSplit(s)}
-              titleTooltip="Split trajectory at this point. Does not force stopping."></BooleanInput>
+              enabled={true}
+              value={waypoint.split}
+              setValue={(s) => waypoint.setSplit(s)}
+              titleTooltip="Split trajectory at this point. Does not force stopping."
+            ></BooleanInput>
           </InputList>
 
           <ToggleButtonGroup

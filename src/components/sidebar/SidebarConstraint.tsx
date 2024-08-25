@@ -1,13 +1,12 @@
 import { IconButton, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 
-import React, { Component } from "react";
-import { IConstraintStore, WaypointID } from "../../document/ConstraintStore";
-import { doc, uiState } from "../../document/DocumentManager";
-import styles from "./Sidebar.module.css";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Instance, getParent } from "mobx-state-tree";
-import { IHolonomicPathStore } from "../../document/path/HolonomicPathStore";
+import React, { Component } from "react";
+import { IConstraintStore, WaypointID } from "../../document/ConstraintStore";
+import { doc } from "../../document/DocumentManager";
+import styles from "./Sidebar.module.css";
 
 import { PriorityHigh } from "@mui/icons-material";
 import { ChoreoPathStore } from "../../document/path/ChoreoPathStore";

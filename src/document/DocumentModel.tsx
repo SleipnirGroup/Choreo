@@ -1,25 +1,27 @@
-import { Instance, getEnv, types } from "mobx-state-tree";
-import { invoke } from "@tauri-apps/api/tauri";
-import { IRobotConfigStore, RobotConfigStore } from "./RobotConfigStore";
-import { PathListStore } from "./PathListStore";
+import { UnlistenFn, listen } from "@tauri-apps/api/event";
+import { Instance, types } from "mobx-state-tree";
 import { UndoManager } from "mst-middlewares";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
-import { listen, UnlistenFn } from "@tauri-apps/api/event";
-import { ExpressionStore, Units, Variables } from "./ExpressionStore";
+import {
+  Project,
+  SAVE_FILE_VERSION,
+  Traj,
+  TrajoptlibSample
+} from "./2025/DocumentTypes";
 import {
   CircularObstacleStore,
   ICircularObstacleStore
 } from "./CircularObstacleStore";
-import { v4 as uuidv4 } from "uuid";
+import { ConstraintStore, IConstraintStore } from "./ConstraintStore";
+import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
+import { Variables } from "./ExpressionStore";
 import {
   HolonomicWaypointStore,
   IHolonomicWaypointStore
 } from "./HolonomicWaypointStore";
-import { ConstraintStore, IConstraintStore } from "./ConstraintStore";
-import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
-import { SAVE_FILE_VERSION, Project, Traj, Sample, TrajoptlibSample } from "./2025/DocumentTypes";
-import { SavedTrajectorySample } from "./DocumentSpecTypes";
+import { PathListStore } from "./PathListStore";
+import { RobotConfigStore } from "./RobotConfigStore";
 import { Commands } from "./tauriCommands";
 
 export type SelectableItemTypes =
@@ -102,10 +104,14 @@ export const DocumentStore = types
       self.history = UndoManager.create({}, { targetStore: self });
     },
     undo() {
-      self.history.canUndo && self.history.undo();
+      if (self.history.canUndo) {
+        self.history.undo();
+      }
     },
     redo() {
-      self.history.canRedo && self.history.redo();
+      if (self.history.canRedo) {
+        self.history.redo();
+      }
     },
     async generatePath(uuid: string) {
       const pathStore = self.pathlist.paths.get(uuid);
@@ -116,7 +122,7 @@ export const DocumentStore = types
         return;
       }
       const config = self.robotConfig.serialize();
-      console.log(pathStore.serialize(), );
+      console.log(pathStore.serialize());
       // const controlIntervalOptResult = (await invoke(
       //   "guess_control_interval_counts",
       //   {
@@ -158,71 +164,81 @@ export const DocumentStore = types
       pathStore.ui.setIterationNumber(0);
 
       await Commands.guessIntervals(config, pathStore.serialize())
-      .then(counts=>{
-        counts.forEach((count, i) => {
-          let waypoint = pathStore.path.waypoints[i];
-          if (waypoint.overrideIntervals && count !== waypoint.intervals) {
-            console.assert(false,
-              "Control interval guessing did not ignore override intervals! %o", {
-                path: pathStore.name,
-                waypoint: i,
-                override: waypoint.intervals,
-                calculated: count
-              })
-
-          } else {
-            waypoint.setIntervals(count);
-          }
-
-      })}).then(()=> 
-      listen("solver-status", async (event) => {
-        if (event.payload!.handle == handle) {
-          const samples = event.payload.traj.samples as TrajoptlibSample[];
-          const progress = pathStore.ui.generationProgress;
-          const useModuleForces = pathStore.traj.useModuleForces;
-          // mutate in-progress trajectory in place if it's already the right size
-          // should avoid allocations on every progress update
-          if (samples.length != progress.length) {
-            pathStore.ui.setInProgressTrajectory(samples.map(s=>({
-              t:s.timestamp,
-              vx: s.velocity_x,
-              vy: s.velocity_y,
-              omega: s.angular_velocity,
-              fx: useModuleForces ? s.module_forces_x : [0, 0, 0, 0],
-              fy: useModuleForces ? s.module_forces_y : [0, 0, 0, 0],
-              ...s
-            })));
-          } else {
-            for (let i = 0; i < samples.length; i++) {
-              const samp = samples[i];
-              const prog = progress[i];
-              prog.t = samp.timestamp;
-              prog.x = samp.x;
-              prog.y = samp.y;
-              prog.heading = samp.heading;
-              prog.vx = samp.velocity_x;
-              prog.vy = samp.velocity_y;
-              prog.omega = samp.angular_velocity;
-              
-              prog.fx = useModuleForces ? samp.module_forces_x : [0, 0, 0, 0];
-              prog.fy = useModuleForces ? samp.module_forces_x : [0, 0, 0, 0];
+        .then((counts) => {
+          counts.forEach((count, i) => {
+            const waypoint = pathStore.path.waypoints[i];
+            if (waypoint.overrideIntervals && count !== waypoint.intervals) {
+              console.assert(
+                false,
+                "Control interval guessing did not ignore override intervals! %o",
+                {
+                  path: pathStore.name,
+                  waypoint: i,
+                  override: waypoint.intervals,
+                  calculated: count
+                }
+              );
+            } else {
+              waypoint.setIntervals(count);
             }
-          }
-          // todo: get this from the progress update, so it actually means something
-          // beyond just triggering UI updates
-          pathStore.ui.setIterationNumber(
-            pathStore.ui.generationIterationNumber + 1
-          );
-        }
-      }))
-      
+          });
+        })
+        .then(() =>
+          listen("solver-status", async (event) => {
+            if (event.payload!.handle == handle) {
+              const samples = event.payload.traj.samples as TrajoptlibSample[];
+              const progress = pathStore.ui.generationProgress;
+              const useModuleForces = pathStore.traj.useModuleForces;
+              // mutate in-progress trajectory in place if it's already the right size
+              // should avoid allocations on every progress update
+              if (samples.length != progress.length) {
+                pathStore.ui.setInProgressTrajectory(
+                  samples.map((s) => ({
+                    t: s.timestamp,
+                    vx: s.velocity_x,
+                    vy: s.velocity_y,
+                    omega: s.angular_velocity,
+                    fx: useModuleForces ? s.module_forces_x : [0, 0, 0, 0],
+                    fy: useModuleForces ? s.module_forces_y : [0, 0, 0, 0],
+                    ...s
+                  }))
+                );
+              } else {
+                for (let i = 0; i < samples.length; i++) {
+                  const samp = samples[i];
+                  const prog = progress[i];
+                  prog.t = samp.timestamp;
+                  prog.x = samp.x;
+                  prog.y = samp.y;
+                  prog.heading = samp.heading;
+                  prog.vx = samp.velocity_x;
+                  prog.vy = samp.velocity_y;
+                  prog.omega = samp.angular_velocity;
+
+                  prog.fx = useModuleForces
+                    ? samp.module_forces_x
+                    : [0, 0, 0, 0];
+                  prog.fy = useModuleForces
+                    ? samp.module_forces_x
+                    : [0, 0, 0, 0];
+                }
+              }
+              // todo: get this from the progress update, so it actually means something
+              // beyond just triggering UI updates
+              pathStore.ui.setIterationNumber(
+                pathStore.ui.generationIterationNumber + 1
+              );
+            }
+          })
+        )
+
         .then((unlistener) => {
           unlisten = unlistener;
           return Commands.generate(
             self.serializeChor(),
             pathStore.serialize(),
             handle
-          )
+          );
         })
         .finally(() => {
           unlisten();
@@ -235,7 +251,7 @@ export const DocumentStore = types
               const newTraj = result.traj.samples;
               pathStore.traj.setSamples(newTraj);
               pathStore.traj.setWaypoints(result.traj.waypoints);
-              
+
               pathStore.setSnapshot(result.snapshot);
               // set this within the group so it gets picked up in the autosave
               pathStore.setIsTrajectoryStale(false);
@@ -347,5 +363,5 @@ export const DocumentStore = types
       }
     };
   });
-export interface IDocumentStore extends Instance<typeof DocumentStore> {}
+export type IDocumentStore = Instance<typeof DocumentStore>;
 export default DocumentStore;

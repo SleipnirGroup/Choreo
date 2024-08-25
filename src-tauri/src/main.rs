@@ -3,8 +3,11 @@
 
 mod document;
 mod util;
+use document::file::{
+    delete_dir, delete_file, find_all_traj, new_file, open_chor, open_file_dialog, open_traj,
+    set_chor_path, setup_senders, write_chor, write_traj,
+};
 use document::generate::{cancel, generate, setup_progress_sender, PROGRESS_SENDER_LOCK};
-use document::file::{setup_senders, new_file, open_chor, write_chor, write_traj, find_all_traj, open_file_dialog, delete_dir, delete_file, set_chor_path, open_traj};
 use std::collections::HashMap;
 use std::f64::consts::PI;
 use std::ffi::OsStr;
@@ -20,7 +23,6 @@ use tauri::{
     Manager,
 };
 use trajoptlib::{Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory};
-
 
 #[tauri::command]
 async fn save_file(dir: String, name: String, contents: String) -> Result<(), &'static str> {
@@ -40,11 +42,6 @@ async fn save_file(dir: String, name: String, contents: String) -> Result<(), &'
 async fn open_file_app(path: String) {
     let _ = open::that(path);
 }
-
-
-
-
-
 
 fn main() {
     let rx = setup_progress_sender();

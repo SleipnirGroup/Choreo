@@ -1,17 +1,15 @@
-import { Component } from "react";
-import React from "react";
-import { doc, uiState } from "../../document/DocumentManager";
-import styles from "./Sidebar.module.css";
-import { observer } from "mobx-react";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { PriorityHigh, Room } from "@mui/icons-material";
-import { Tooltip, IconButton } from "@mui/material";
-import { IEventMarkerStore } from "../../document/EventMarkerStore";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { IconButton, Tooltip } from "@mui/material";
+import { observer } from "mobx-react";
 import { getParent } from "mobx-state-tree";
-import { IHolonomicPathStore } from "../../document/path/HolonomicPathStore";
+import React, { Component } from "react";
 import { WaypointID } from "../../document/ConstraintStore";
-import { IChoreoPathStore } from "../../document/path/ChoreoPathStore";
+import { doc } from "../../document/DocumentManager";
+import { IEventMarkerStore } from "../../document/EventMarkerStore";
 import { IChoreoTrajStore } from "../../document/path/ChoreoTrajStore";
+import { IHolonomicPathStore } from "../../document/path/HolonomicPathStore";
+import styles from "./Sidebar.module.css";
 
 type Props = {
   marker: IEventMarkerStore;

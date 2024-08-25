@@ -38,4 +38,4 @@ export const PathUIStore = types
     }
   }));
 
-export interface IPathUIStore extends Instance<typeof PathUIStore> {}
+export type IPathUIStore = Instance<typeof PathUIStore>;

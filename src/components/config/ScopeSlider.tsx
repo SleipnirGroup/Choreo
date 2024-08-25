@@ -1,7 +1,6 @@
-import { observer } from "mobx-react";
-import React, { Component } from "react";
-import { doc, uiState } from "../../document/DocumentManager";
 import { Slider, SliderProps } from "@mui/material";
+import { observer } from "mobx-react";
+import { Component } from "react";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 
 type Props = {

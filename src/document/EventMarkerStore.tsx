@@ -1,23 +1,22 @@
 import {
   IAnyType,
   Instance,
-  types,
-  getRoot,
-  isAlive,
-  getParent,
   destroy,
   detach,
-  getEnv
+  getEnv,
+  getParent,
+  isAlive,
+  types
 } from "mobx-state-tree";
 import { moveItem } from "mobx-utils";
-import { WaypointScope } from "./ConstraintStore";
-import { IHolonomicPathStore } from "./path/HolonomicPathStore";
 import { v4 as uuidv4 } from "uuid";
-import { Env, uiState } from "./DocumentManager";
 import { Command, Expr } from "./2025/DocumentTypes";
+import { WaypointID } from "./ConstraintDefinitions";
+import { WaypointScope } from "./ConstraintStore";
+import { Env } from "./DocumentManager";
 import { ExpressionStore } from "./ExpressionStore";
 import { IChoreoTrajStore } from "./path/ChoreoTrajStore";
-import { WaypointID } from "./ConstraintDefinitions";
+import { IHolonomicPathStore } from "./path/HolonomicPathStore";
 
 export type CommandType =
   | "sequential"
@@ -137,7 +136,7 @@ export const CommandStore = types
     }
   }));
 
-export interface ICommandStore extends Instance<typeof CommandStore> {}
+export type ICommandStore = Instance<typeof CommandStore>;
 export const EventMarkerStore = types
   .model("EventMarker", {
     name: types.string,
@@ -229,7 +228,7 @@ export const EventMarkerStore = types
       } else if (self.offset.value == 0) {
         return true;
       } else {
-        let splitTimes = path.traj.samples.map((sect) => sect[0]?.t);
+        const splitTimes = path.traj.samples.map((sect) => sect[0]?.t);
         splitTimes.forEach((stopTimestamp) => {
           if (
             (targetTimestamp < stopTimestamp && timestamp > stopTimestamp) ||
@@ -243,4 +242,4 @@ export const EventMarkerStore = types
     }
   }));
 
-export interface IEventMarkerStore extends Instance<typeof EventMarkerStore> {}
+export type IEventMarkerStore = Instance<typeof EventMarkerStore>;

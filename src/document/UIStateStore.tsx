@@ -1,4 +1,4 @@
-import { path, window as tauriWindow } from "@tauri-apps/api";
+import { window as tauriWindow } from "@tauri-apps/api";
 import { getVersion } from "@tauri-apps/api/app";
 import { Instance, types } from "mobx-state-tree";
 import {
@@ -6,6 +6,7 @@ import {
   PathGradients
 } from "../components/config/robotconfig/PathGradient";
 import LocalStorageKeys from "../util/LocalStorageKeys";
+import { ConstraintKey } from "./ConstraintDefinitions";
 import {
   NUM_SETTINGS_TABS,
   NavbarData,
@@ -16,7 +17,6 @@ import {
   navbarIndexToConstraintDefinition,
   navbarIndexToConstraintKey
 } from "./UIData";
-import { ConstraintKey } from "./ConstraintDefinitions";
 
 export const UIStateStore = types
   .model("UIStateStore", {
@@ -190,4 +190,4 @@ export const UIStateStore = types
         : undefined;
     }
   }));
-export interface IUIStateStore extends Instance<typeof UIStateStore> {}
+export type IUIStateStore = Instance<typeof UIStateStore>;

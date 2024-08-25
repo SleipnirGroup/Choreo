@@ -1,4 +1,8 @@
+import { PriorityHigh } from "@mui/icons-material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { IconButton, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
+import { isAlive } from "mobx-state-tree";
 import React, { Component } from "react";
 import {
   Draggable,
@@ -8,12 +12,8 @@ import {
 import { CSSProperties } from "styled-components";
 import { doc, uiState } from "../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
-import styles from "./Sidebar.module.css";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { IconButton, Tooltip } from "@mui/material";
-import { isAlive } from "mobx-state-tree";
-import { PriorityHigh } from "@mui/icons-material";
 import { NavbarItemData } from "../../document/UIData";
+import styles from "./Sidebar.module.css";
 
 type Props = {
   waypoint: IHolonomicWaypointStore;
@@ -60,7 +60,7 @@ class SidebarWaypoint extends Component<Props, State> {
     const type = waypoint.type;
     // apparently we have to dereference this here instead of inline in the class name
     // Otherwise the component won't rerender when it changes
-    const { selected, fixTranslation, fixHeading } = waypoint;
+    const { selected } = waypoint;
     if (!isAlive(waypoint)) return <></>;
     return (
       <Draggable
@@ -89,24 +89,6 @@ class SidebarWaypoint extends Component<Props, State> {
               className: styles.SidebarIcon,
               htmlColor: this.getIconColor(pathLength)
             })}
-            {/* {fixTranslation && fixHeading && (
-              <Waypoint
-                htmlColor={this.getIconColor(pathLength)}
-                className={styles.SidebarIcon}
-              ></Waypoint>
-            )}
-            {fixTranslation && !fixHeading && (
-              <Circle
-                htmlColor={this.getIconColor(pathLength)}
-                className={styles.SidebarIcon}
-              ></Circle>
-            )}
-            {!fixTranslation && (
-              <CircleOutlined
-                htmlColor={this.getIconColor(pathLength)}
-                className={styles.SidebarIcon}
-              ></CircleOutlined>
-            )} */}
             <span
               className={styles.SidebarLabel}
               style={{ display: "grid", gridTemplateColumns: "1fr auto auto" }}

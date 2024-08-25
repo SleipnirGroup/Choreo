@@ -29,10 +29,13 @@ pub fn guess_control_interval_counts(
         .waypoints
         .iter()
         .enumerate()
-        .map(|(i, w)| 
-            if w.overrideIntervals 
-                {w.intervals} 
-                else {guess_control_interval_count(i, &traj, config, w)})
+        .map(|(i, w)| {
+            if w.overrideIntervals {
+                w.intervals
+            } else {
+                guess_control_interval_count(i, &traj, config, w)
+            }
+        })
         .collect::<Vec<usize>>())
 }
 pub fn guess_control_interval_count(

@@ -1,24 +1,21 @@
+import { Add, Delete, DragHandle } from "@mui/icons-material";
+import { IconButton, MenuItem, Select, TextField } from "@mui/material";
 import { observer } from "mobx-react";
+import { isAlive } from "mobx-state-tree";
 import React, { CSSProperties, Component } from "react";
 import {
   Draggable,
   DraggingStyle,
-  NotDraggingStyle,
-  Droppable
+  Droppable,
+  NotDraggingStyle
 } from "react-beautiful-dnd";
-import { doc, uiState } from "../../../document/DocumentManager";
-import { isAlive } from "mobx-state-tree";
 import {
   CommandType,
   CommandUIData,
   ICommandStore
 } from "../../../document/EventMarkerStore";
-import { IconButton, MenuItem, Select, TextField } from "@mui/material";
-import { Add, Delete, DragHandle } from "@mui/icons-material";
-import InputList from "../../input/InputList";
-import Input from "../../input/Input";
-import ExpressionInputList from "../../input/ExpressionInputList";
 import ExpressionInput from "../../input/ExpressionInput";
+import ExpressionInputList from "../../input/ExpressionInputList";
 
 type Props = {
   command: ICommandStore;

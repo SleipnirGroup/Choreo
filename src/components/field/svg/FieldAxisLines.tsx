@@ -1,10 +1,4 @@
-import React, { Component } from "react";
-import { doc, uiState } from "../../../document/DocumentManager";
 import { observer } from "mobx-react";
-
-type Props = object;
-
-type State = object;
 
 const DRAW_BOUND = 100;
 const GRID_STROKE = 0.01;

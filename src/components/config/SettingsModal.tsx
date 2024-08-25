@@ -1,12 +1,12 @@
-import { observer } from "mobx-react";
-import React, { Component } from "react";
-import { doc, uiState } from "../../document/DocumentManager";
-import { Fade, IconButton, Modal, Tab, Tabs } from "@mui/material";
-import RobotConfigPanel from "./robotconfig/RobotConfigPanel";
 import { Close } from "@mui/icons-material";
-import ExportConfigPanel from "./ExportConfigPanel";
+import { Fade, IconButton, Modal, Tab, Tabs } from "@mui/material";
+import { observer } from "mobx-react";
+import { Component } from "react";
+import { uiState } from "../../document/DocumentManager";
 import BetasConfigPanel from "./BetasConfigPanel";
+import ExportConfigPanel from "./ExportConfigPanel";
 import KeyboardShortcutsPanel from "./KeyboardShortcutsPanel";
+import RobotConfigPanel from "./robotconfig/RobotConfigPanel";
 
 type Props = object;
 

@@ -1,50 +1,13 @@
-import {
-  Explore,
-  KeyboardDoubleArrowRight,
-  NearMe,
-  PriorityHigh,
-  StopCircleOutlined,
-  SyncOutlined,
-  TextRotationNoneOutlined,
-  Timeline
-} from "@mui/icons-material";
-import { toJS } from "mobx";
-import { IModelType, getEnv, getParent, types } from "mobx-state-tree";
-import {
-  getRoot,
-  Instance,
-  IOptionalIType,
-  isAlive,
-  ISimpleType,
-  ModelActions
-} from "mobx-state-tree";
-import { JSXElementConstructor, ReactElement } from "react";
-import { IHolonomicWaypointStore } from "./HolonomicWaypointStore";
-import { IHolonomicPathStore } from "./path/HolonomicPathStore";
-import {
-  ExpressionStore,
-  IExpressionStore,
-  IVariables,
-  Units
-} from "./ExpressionStore";
-import { v4 as uuidv4 } from "uuid";
-import { Unit } from "mathjs";
-import { IChoreoPathStore } from "./path/ChoreoPathStore";
-import { Expr, ExprOrNumber } from "./2025/DocumentTypes";
-import {
-  ConstraintData,
-  ConstraintDefinition,
-  ConstraintKey,
-  ConstraintPropertyDefinition,
-  DataMap,
-  PropertyDefinitionList
-} from "./ConstraintDefinitions";
+import { Instance, getEnv, getParent, isAlive, types } from "mobx-state-tree";
 import {
   ConstraintDataObjects,
-  IConstraintDataStore,
-  asType
+  IConstraintDataStore
 } from "./ConstraintDataStore";
+import { ConstraintKey } from "./ConstraintDefinitions";
 import { Env } from "./DocumentManager";
+import { IHolonomicWaypointStore } from "./HolonomicWaypointStore";
+import { IChoreoPathStore } from "./path/ChoreoPathStore";
+import { IHolonomicPathStore } from "./path/HolonomicPathStore";
 
 // export const constraints = {
 //   WptVelocityDirection: {
@@ -162,9 +125,9 @@ export const WaypointScope = types.union(
   WaypointUUIDScope
 );
 export type IWaypointScope = IWaypointUUIDScope | "first" | "last";
-interface IWaypointUUIDScope extends Instance<typeof WaypointUUIDScope> {}
+type IWaypointUUIDScope = Instance<typeof WaypointUUIDScope>;
 
-export interface IConstraintStore extends Instance<typeof ConstraintStore> {}
+export type IConstraintStore = Instance<typeof ConstraintStore>;
 
 export const ConstraintStore = types
   .model("ConstraintStore", {

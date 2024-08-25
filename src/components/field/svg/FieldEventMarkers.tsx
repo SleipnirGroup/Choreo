@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
-import React, { Component } from "react";
-import { doc, uiState } from "../../../document/DocumentManager";
+import { Component } from "react";
+import { doc } from "../../../document/DocumentManager";
 
 import { sample } from "../../../util/MathUtil";
 

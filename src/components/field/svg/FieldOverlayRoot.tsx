@@ -1,34 +1,33 @@
-import { observer } from "mobx-react";
-import React, { Component } from "react";
-import { doc, uiState } from "../../../document/DocumentManager";
-import OverlayWaypoint from "./OverlayWaypoint";
-import * as d3 from "d3";
-import FieldGrid from "./FieldGrid";
-import FieldPathLines from "./FieldPathLines";
-import InterpolatedRobot from "./InterpolatedRobot";
-import {
-  NavbarLabels,
-  ViewLayers,
-  NavbarItemData,
-  NavbarItemSectionEnds
-} from "../../../document/UIData";
-import FieldGeneratedLines from "./FieldGeneratedLines";
-import FieldAxisLines from "./FieldAxisLines";
-import FieldObstacle from "./FieldObstacles";
-import { v4 as uuidv4 } from "uuid";
-import FieldImage24 from "./fields/FieldImage24";
-import FieldEventMarkers from "./FieldEventMarkers";
-import FieldSamples from "./FieldSamples";
-import FieldGeneratedWaypoints from "./FieldGeneratedWaypoints";
 import {
   Popover,
   ToggleButton,
   ToggleButtonGroup,
   Tooltip
 } from "@mui/material";
+import * as d3 from "d3";
+import { observer } from "mobx-react";
+import React, { Component } from "react";
+import { Expr, Waypoint } from "../../../document/2025/DocumentTypes";
+import { doc, uiState } from "../../../document/DocumentManager";
+import {
+  NavbarItemData,
+  NavbarItemSectionEnds,
+  NavbarLabels,
+  ViewLayers
+} from "../../../document/UIData";
+import FieldAxisLines from "./FieldAxisLines";
 import FieldConstraintsAddLayer from "./FieldConstraintsAddLayer";
 import FieldEventMarkerAddLayer from "./FieldEventMarkerAddLayer";
-import { Expr, Waypoint } from "../../../document/2025/DocumentTypes";
+import FieldEventMarkers from "./FieldEventMarkers";
+import FieldGeneratedLines from "./FieldGeneratedLines";
+import FieldGeneratedWaypoints from "./FieldGeneratedWaypoints";
+import FieldGrid from "./FieldGrid";
+import FieldObstacle from "./FieldObstacles";
+import FieldPathLines from "./FieldPathLines";
+import FieldSamples from "./FieldSamples";
+import InterpolatedRobot from "./InterpolatedRobot";
+import OverlayWaypoint from "./OverlayWaypoint";
+import FieldImage24 from "./fields/FieldImage24";
 
 type Props = object;
 
@@ -397,7 +396,7 @@ class FieldOverlayRoot extends Component<Props, State> {
       y: e.clientY
     });
     doc.history.startGroup(() => {
-      let initial: Partial<Waypoint<Expr>> = {};
+      const initial: Partial<Waypoint<Expr>> = {};
       if (
         waypointType == NavbarLabels.TranslationWaypoint ||
         waypointType == NavbarLabels.EmptyWaypoint

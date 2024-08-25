@@ -1,8 +1,8 @@
 import { Instance, getEnv, types } from "mobx-state-tree";
-import { HolonomicPathStore } from "./path/HolonomicPathStore";
 import { v4 as uuidv4 } from "uuid";
-import { SAVE_FILE_VERSION, Traj } from "./2025/v2025_0_0";
+import { Traj } from "./2025/v2025_0_0";
 import { Env } from "./DocumentManager";
+import { HolonomicPathStore } from "./path/HolonomicPathStore";
 
 export const PathListStore = types
   .model("PathListStore", {
@@ -84,52 +84,50 @@ export const PathListStore = types
           self.activePathUUID = uuid;
         }
       },
-      addPath(name: string, select: boolean = false, contents?:Traj): string {
+      addPath(name: string, select: boolean = false, contents?: Traj): string {
         const usedName = this.disambiguateName(name);
         const newUUID = uuidv4();
         const env = getEnv<Env>(self);
-        env.startGroup(()=>{
+        env.startGroup(() => {
           try {
-        const path = HolonomicPathStore.create({
-          uuid: newUUID,
-          name: usedName,
-          path: {
-            constraints: [],
-            waypoints: [],
-            obstacles: []
-          },
-          ui: {
-            visibleWaypointsEnd: 0,
-            visibleWaypointsStart: 0
-          },
-          snapshot: {
-            waypoints: [],
-            constraints: []
-          },
-          traj: {
-            waypoints: [],
-            samples: [],
-            markers: []
+            const path = HolonomicPathStore.create({
+              uuid: newUUID,
+              name: usedName,
+              path: {
+                constraints: [],
+                waypoints: [],
+                obstacles: []
+              },
+              ui: {
+                visibleWaypointsEnd: 0,
+                visibleWaypointsStart: 0
+              },
+              snapshot: {
+                waypoints: [],
+                constraints: []
+              },
+              traj: {
+                waypoints: [],
+                samples: [],
+                markers: []
+              }
+            });
+            path.setExporter(self.getExporter());
+            self.paths.put(path); //It's not ready yet but it needs to get the env injected
+            if (contents !== undefined) {
+              path.deserialize(contents);
+            } else {
+              path.path.addConstraint("StopPoint", "first");
+              path.path.addConstraint("StopPoint", "last");
+            }
+
+            if (self.paths.size === 1 || select) {
+              self.activePathUUID = newUUID;
+            }
+          } finally {
+            env.stopGroup();
           }
         });
-        path.setExporter(self.getExporter());
-        self.paths.put(path);//It's not ready yet but it needs to get the env injected
-        if (contents !== undefined) {
-          path.deserialize(contents);
-        } else {
-          path.path.addConstraint("StopPoint", "first");
-          path.path.addConstraint("StopPoint", "last");
-        }
-        
-        
-
-
-        if (self.paths.size === 1 || select) {
-          self.activePathUUID = newUUID;
-        }} finally {
-        env.stopGroup();
-        }
-      });
         return newUUID;
       }
     };
@@ -161,4 +159,4 @@ export const PathListStore = types
     };
   });
 
-export interface IPathListStore extends Instance<typeof PathListStore> {}
+export type IPathListStore = Instance<typeof PathListStore>;

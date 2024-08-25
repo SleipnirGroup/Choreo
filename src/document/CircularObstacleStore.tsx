@@ -1,16 +1,7 @@
-import {
-  Instance,
-  getEnv,
-  getParent,
-  getRoot,
-  isAlive,
-  types
-} from "mobx-state-tree";
-import { ExpressionStore, Units } from "./ExpressionStore";
-import { number } from "mathjs";
-import { v4 as uuidv4 } from "uuid";
+import { Instance, getEnv, getParent, isAlive, types } from "mobx-state-tree";
 import { CircleObstacle, Expr } from "./2025/DocumentTypes";
 import { Env } from "./DocumentManager";
+import { ExpressionStore } from "./ExpressionStore";
 
 export const CircularObstacleStore = types
   .model("CircularObstacleStore", {
@@ -50,5 +41,4 @@ export const CircularObstacleStore = types
       }
     }
   }));
-export interface ICircularObstacleStore
-  extends Instance<typeof CircularObstacleStore> {}
+export type ICircularObstacleStore = Instance<typeof CircularObstacleStore>;

@@ -1,15 +1,14 @@
-import { Unit } from "mathjs";
-import { Expr } from "./2025/DocumentTypes";
-import { Units } from "./ExpressionStore";
 import {
   KeyboardDoubleArrowRight,
   NearMe,
-  Stop,
   StopCircleOutlined,
   TextRotationNoneOutlined
 } from "@mui/icons-material";
+import { Unit } from "mathjs";
 import { JSXElementConstructor, ReactElement } from "react";
 import { ObjectTyped } from "../util/ObjectTyped";
+import { Expr } from "./2025/DocumentTypes";
+import { Units } from "./ExpressionStore";
 
 export type ConstraintPropertyType = Expr | boolean;
 
@@ -17,13 +16,16 @@ export type ConstraintPropertyDefinition<P extends ConstraintPropertyType> = {
   name: string;
   description: string;
   defaultVal: P;
-} & (P extends Expr ? { units: Unit } : {});
+} & (P extends Expr ? { units: Unit } : object);
 
 export type DataPropsList = { [key: string]: ConstraintPropertyType };
 export type PropertyDefinitionList<P extends DataPropsList> = {
   [key in keyof P]: ConstraintPropertyDefinition<P[key]>;
 };
-export type ConstraintDefinition<K extends ConstraintKey, D extends ConstraintData = DataMap[K]> = {
+export type ConstraintDefinition<
+  K extends ConstraintKey,
+  D extends ConstraintData = DataMap[K]
+> = {
   type: D["type"];
   name: string;
   shortName: string;
@@ -43,7 +45,7 @@ interface IConstraintData<name, Props extends DataPropsList> {
 }
 
 export type ConstraintDataTypeMap = {
-  StopPoint: {};
+  StopPoint: Record<string, never>;
   MaxVelocity: { max: Expr };
   MaxAcceleration: { max: Expr };
   PointAt: {

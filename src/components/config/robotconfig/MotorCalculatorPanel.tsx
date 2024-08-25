@@ -1,10 +1,10 @@
-import { observer } from "mobx-react";
-import React, { Component } from "react";
-import { doc, uiState } from "../../../document/DocumentManager";
-import InputList from "../../input/InputList";
-import Input from "../../input/Input";
 import { Button, FormControl, MenuItem, Select } from "@mui/material";
-import { maxTorqueCurrentLimited, MotorCurves } from "./MotorCurves";
+import { observer } from "mobx-react";
+import { Component } from "react";
+import { doc } from "../../../document/DocumentManager";
+import Input from "../../input/Input";
+import InputList from "../../input/InputList";
+import { MotorCurves, maxTorqueCurrentLimited } from "./MotorCurves";
 
 type Props = { rowGap: number };
 

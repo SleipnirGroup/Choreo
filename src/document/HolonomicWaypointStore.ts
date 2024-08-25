@@ -1,15 +1,8 @@
-import {
-  types,
-  getRoot,
-  Instance,
-  getParent,
-  isAlive,
-  getEnv
-} from "mobx-state-tree";
-import { NavbarItemData } from "./UIData";
-import { ExpressionStore } from "./ExpressionStore";
+import { Instance, getEnv, getParent, isAlive, types } from "mobx-state-tree";
 import { Expr, Waypoint } from "./2025/DocumentTypes";
 import { Env } from "./DocumentManager";
+import { ExpressionStore } from "./ExpressionStore";
+import { NavbarItemData } from "./UIData";
 
 export const DEFAULT_WAYPOINT: Waypoint<number> = {
   x: 0,
@@ -19,7 +12,7 @@ export const DEFAULT_WAYPOINT: Waypoint<number> = {
   fixHeading: true,
   intervals: 40,
   split: false,
-  overrideIntervals : false
+  overrideIntervals: false
 };
 export const HolonomicWaypointStore = types
   .model("WaypointStore", {
@@ -70,8 +63,8 @@ export const HolonomicWaypointStore = types
     },
     isLast(): boolean {
       try {
-        let list = getParent<IHolonomicWaypointStore[]>(self);
-        return list[list.length - 1]?.uuid === self.uuid; 
+        const list = getParent<IHolonomicWaypointStore[]>(self);
+        return list[list.length - 1]?.uuid === self.uuid;
       } catch (e) {
         console.error(e);
         return false;
@@ -111,7 +104,7 @@ export const HolonomicWaypointStore = types
         self.overrideIntervals = override;
       },
       setSplit(split: boolean) {
-        self.split = split
+        self.split = split;
       }
     };
   })
@@ -132,5 +125,4 @@ export const HolonomicWaypointStore = types
       console.log(evt.clipboardData);
     }
   }));
-export interface IHolonomicWaypointStore
-  extends Instance<typeof HolonomicWaypointStore> {}
+export type IHolonomicWaypointStore = Instance<typeof HolonomicWaypointStore>;

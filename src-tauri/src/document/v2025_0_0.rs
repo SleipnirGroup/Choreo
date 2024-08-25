@@ -139,7 +139,7 @@ pub struct Waypoint<T> {
     pub split: bool,
     pub fixTranslation: bool,
     pub fixHeading: bool,
-    pub overrideIntervals: bool
+    pub overrideIntervals: bool,
 }
 
 impl Waypoint<Expr> {
@@ -152,7 +152,7 @@ impl Waypoint<Expr> {
             split: self.split,
             fixTranslation: self.fixTranslation,
             fixHeading: self.fixHeading,
-            overrideIntervals: self.overrideIntervals
+            overrideIntervals: self.overrideIntervals,
         }
     }
 }
@@ -160,7 +160,6 @@ impl Waypoint<Expr> {
 #[derive(Serialize, Deserialize, Clone, Copy)]
 
 pub enum WaypointID {
-    
     #[serde(rename = "first")]
     First,
     #[serde(rename = "last")]
@@ -187,7 +186,7 @@ impl WaypointID {
             }
             WaypointID::Last => {
                 if *count > 0 {
-                    Some(*count-1)
+                    Some(*count - 1)
                 } else {
                     None
                 }
@@ -224,7 +223,7 @@ impl<T> ConstraintData<T> {
     pub fn scope(&self) -> ConstraintType {
         match self {
             ConstraintData::StopPoint {} => ConstraintType::Waypoint,
-            _ => ConstraintType::Both
+            _ => ConstraintType::Both,
         }
     }
 }
@@ -307,7 +306,7 @@ impl ChoreoPath<Expr> {
 pub struct Output {
     pub waypoints: Vec<f64>,
     pub samples: Vec<Vec<Sample>>,
-    pub useModuleForces: bool
+    pub useModuleForces: bool,
 }
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Traj {

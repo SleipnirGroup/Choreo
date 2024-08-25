@@ -1,15 +1,12 @@
+import { toJS } from "mobx";
 import { observer } from "mobx-react";
-import React, { Component } from "react";
-import { doc, uiState } from "../../document/DocumentManager";
-import styles from "./WaypointConfigPanel.module.css";
-import InputList from "../input/InputList";
-import Input from "../input/Input";
+import { Component } from "react";
 import { IConstraintStore } from "../../document/ConstraintStore";
-import ScopeSlider from "./ScopeSlider";
+import BooleanInput from "../input/BooleanInput";
 import ExpressionInput from "../input/ExpressionInput";
 import ExpressionInputList from "../input/ExpressionInputList";
-import { toJS } from "mobx";
-import BooleanInput from "../input/BooleanInput";
+import ScopeSlider from "./ScopeSlider";
+import styles from "./WaypointConfigPanel.module.css";
 
 type Props = { constraint: IConstraintStore };
 

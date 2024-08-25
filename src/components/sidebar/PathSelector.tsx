@@ -1,31 +1,26 @@
 import {
-  Checkbox,
-  CircularProgress,
-  FormControlLabel,
-  IconButton,
-  TextField
-} from "@mui/material";
-import { observer } from "mobx-react";
-import React, { Component } from "react";
-import {
-  doc,
-  uiState,
-  renamePath,
-  deletePath
-} from "../../document/DocumentManager";
-import DeleteIcon from "@mui/icons-material/Delete";
-import styles from "./Sidebar.module.css";
-import { Tooltip } from "@mui/material";
-import {
   KeyboardArrowDown,
   PriorityHigh,
   Route,
   Settings
 } from "@mui/icons-material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import {
+  Checkbox,
+  CircularProgress,
+  FormControlLabel,
+  IconButton,
+  TextField,
+  Tooltip
+} from "@mui/material";
+import { dialog } from "@tauri-apps/api";
+import { observer } from "mobx-react";
+import React, { Component } from "react";
+import { toast } from "react-toastify";
+import { deletePath, doc, renamePath } from "../../document/DocumentManager";
 import Input from "../input/Input";
 import InputList from "../input/InputList";
-import { dialog } from "@tauri-apps/api";
-import { toast } from "react-toastify";
+import styles from "./Sidebar.module.css";
 
 type Props = object;
 

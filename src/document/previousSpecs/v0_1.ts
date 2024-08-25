@@ -34,7 +34,7 @@ export interface SavedPath {
   trajectory: Array<SavedTrajectorySample> | null;
   constraints: Array<SavedConstraint>;
 }
-export interface SavedPathList extends Record<string, SavedPath> {}
+export type SavedPathList = Record<string, SavedPath>;
 export interface SavedRobotConfig {
   mass: number;
   rotationalInertia: number;

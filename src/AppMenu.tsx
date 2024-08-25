@@ -1,14 +1,13 @@
-import React, { Component } from "react";
 import {
-  doc,
-  exportActiveTrajectory,
-  exportAllTrajectories,
-  newFile,
-  openProject,
-  saveFileDialog,
-  uiState
-} from "./document/DocumentManager";
-import { observer } from "mobx-react";
+  CopyAll,
+  NoteAddOutlined,
+  OpenInNew,
+  Settings
+} from "@mui/icons-material";
+import FileDownload from "@mui/icons-material/FileDownload";
+import MenuIcon from "@mui/icons-material/Menu";
+import SaveIcon from "@mui/icons-material/Save";
+import UploadIcon from "@mui/icons-material/UploadFile";
 import {
   Divider,
   Drawer,
@@ -18,24 +17,24 @@ import {
   ListItemIcon,
   ListItemText
 } from "@mui/material";
-import SaveIcon from "@mui/icons-material/Save";
-import MenuIcon from "@mui/icons-material/Menu";
-import UploadIcon from "@mui/icons-material/UploadFile";
 import IconButton from "@mui/material/IconButton";
-import FileDownload from "@mui/icons-material/FileDownload";
 import Tooltip from "@mui/material/Tooltip";
-import {
-  CopyAll,
-  NoteAddOutlined,
-  OpenInNew,
-  Settings
-} from "@mui/icons-material";
+import { dialog, path } from "@tauri-apps/api";
+import { observer } from "mobx-react";
+import { Component } from "react";
 import { toast } from "react-toastify";
-import { dialog, invoke, path } from "@tauri-apps/api";
+import {
+  exportActiveTrajectory,
+  exportAllTrajectories,
+  newFile,
+  openProject,
+  saveFileDialog,
+  uiState
+} from "./document/DocumentManager";
 
 import SettingsModal from "./components/config/SettingsModal";
-import { version } from "./util/version";
 import { Commands } from "./document/tauriCommands";
+import { version } from "./util/version";
 
 type Props = object;
 
@@ -72,7 +71,7 @@ class AppMenu extends Component<Props, State> {
 
   OpenInFilesApp({ dir }: { dir: string }) {
     const handleAction = async function () {
-      await Commands.openInExplorer(dir)
+      await Commands.openInExplorer(dir);
     };
 
     return (
@@ -150,7 +149,9 @@ class AppMenu extends Component<Props, State> {
                     { title: "Choreo", type: "warning" }
                   )
                 ) {
-                  await Commands.openFileDialog().then((filepath)=>openProject(filepath))
+                  await Commands.openFileDialog().then((filepath) =>
+                    openProject(filepath)
+                  );
                 }
               }}
             >

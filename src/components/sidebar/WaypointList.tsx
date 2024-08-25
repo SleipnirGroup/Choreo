@@ -1,10 +1,10 @@
-import React, { Component } from "react";
-import { DragDropContext, Droppable } from "react-beautiful-dnd";
-import { doc, uiState } from "../../document/DocumentManager";
-import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import { observer } from "mobx-react";
-import SidebarWaypoint from "./SidebarWaypoint";
+import { Component } from "react";
+import { DragDropContext, Droppable } from "react-beautiful-dnd";
+import { doc } from "../../document/DocumentManager";
+import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import styles from "./Sidebar.module.css";
+import SidebarWaypoint from "./SidebarWaypoint";
 
 const getListStyle = (isDraggingOver: boolean) => ({
   outline: isDraggingOver ? "2px solid var(--darker-purple)" : "transparent"

@@ -6,10 +6,6 @@ import { observer } from "mobx-react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Body from "./Body";
-import { parse } from "mathjs";
-import ExpressionInput from "./components/input/ExpressionInput";
-import InputList from "./components/input/InputList";
-import Input from "./components/input/Input";
 
 function App() {
   const buttonOverrides = {

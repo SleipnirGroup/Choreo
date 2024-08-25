@@ -1,30 +1,25 @@
 import { Instance, destroy, getEnv, types } from "mobx-state-tree";
+import { moveItem } from "mobx-utils";
+import {
+  ChoreoPath,
+  Constraint,
+  Expr,
+  Waypoint,
+  WaypointID
+} from "../2025/DocumentTypes";
+import { CircularObstacleStore } from "../CircularObstacleStore";
+import { ConstraintKey, DataMap } from "../ConstraintDefinitions";
+import {
+  ConstraintStore,
+  IConstraintStore,
+  IWaypointScope
+} from "../ConstraintStore";
+import { Env } from "../DocumentManager";
 import {
   DEFAULT_WAYPOINT,
   HolonomicWaypointStore,
   IHolonomicWaypointStore
 } from "../HolonomicWaypointStore";
-import {
-  ConstraintStore,
-  IConstraintStore,
-  IWaypointScope,
-  WaypointScope
-} from "../ConstraintStore";
-import { SavedWaypointId } from "../previousSpecs/v0_1_2";
-import { CircularObstacleStore } from "../CircularObstacleStore";
-import {
-  ChoreoPath,
-  Expr,
-  RobotConfig,
-  Waypoint,
-  Constraint,
-  WaypointID
-} from "../2025/DocumentTypes";
-import { moveItem } from "mobx-utils";
-import { angleModulus } from "../../util/MathUtil";
-import { IRobotConfigStore } from "../RobotConfigStore";
-import { ConstraintKey, DataMap } from "../ConstraintDefinitions";
-import { Env } from "../DocumentManager";
 
 export const ChoreoPathStore = types
   .model("ChoreoPathStore", {
@@ -104,7 +99,7 @@ export const ChoreoPathStore = types
           const con = constraint;
           const from = self.waypointIdToSavedWaypointId(con.from)!;
           const to = self.waypointIdToSavedWaypointId(con.to);
-          const toReturn: Constraint<Expr> = {
+          const toReturn: Constraint = {
             data: con.data.serialize(),
             from,
             to
@@ -125,7 +120,7 @@ export const ChoreoPathStore = types
       self.constraints.push(
         getEnv<Env>(self).create.ConstraintStore(key, data, from, to)
       );
-      let store = self.constraints[self.constraints.length - 1];
+      const store = self.constraints[self.constraints.length - 1];
       store.data.deserPartial(data);
     },
     selectOnly(selectedIndex: number) {
@@ -301,13 +296,13 @@ export const ChoreoPathStore = types
         waypoint.deserialize(point);
       });
       self.constraints.clear();
-      ser.constraints.forEach((saved: Constraint<Expr>) => {
-        let from = self.savedWaypointIdToWaypointId(saved.from);
+      ser.constraints.forEach((saved: Constraint) => {
+        const from = self.savedWaypointIdToWaypointId(saved.from);
         if (from === undefined) {
           return;
         }
-        let to = self.savedWaypointIdToWaypointId(saved.to);
-        let constraint = self.addConstraint(
+        const to = self.savedWaypointIdToWaypointId(saved.to);
+        self.addConstraint(
           saved.data.type,
 
           from,
@@ -322,4 +317,4 @@ export const ChoreoPathStore = types
     }
   }));
 
-export interface IChoreoPathStore extends Instance<typeof ChoreoPathStore> {}
+export type IChoreoPathStore = Instance<typeof ChoreoPathStore>;

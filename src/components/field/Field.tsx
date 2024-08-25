@@ -1,31 +1,29 @@
 import { observer } from "mobx-react";
-import React, { Component } from "react";
+import { Component } from "react";
 import {
   doc,
-  generateWithToastsAndExport,
-  uiState
+  generateWithToastsAndExport
 } from "../../document/DocumentManager";
 import WaypointPanel from "../config/WaypointConfigPanel";
 
-import styles from "./Field.module.css";
-import FieldOverlayRoot from "./svg/FieldOverlayRoot";
-import IconButton from "@mui/material/IconButton";
+import { Close } from "@mui/icons-material";
 import ShapeLineIcon from "@mui/icons-material/ShapeLine";
 import { CircularProgress, Tooltip } from "@mui/material";
 import Box from "@mui/material/Box/Box";
-import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
-import ViewOptionsPanel from "../config/ViewOptionsPanel";
-import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel";
-import { IConstraintStore } from "../../document/ConstraintStore";
+import IconButton from "@mui/material/IconButton";
 import "react-toastify/dist/ReactToastify.min.css";
-import { invoke } from "@tauri-apps/api";
-import { Close } from "@mui/icons-material";
 import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
-import CircularObstacleConfigPanel from "../config/CircularObstacleConfigPanel";
-import EventMarkerConfigPanel from "../config/eventmarker/EventMarkerConfigPanel";
-import WaypointVisibilityPanel from "../config/WaypointVisibilityPanel";
+import { IConstraintStore } from "../../document/ConstraintStore";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
+import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import { Commands } from "../../document/tauriCommands";
+import CircularObstacleConfigPanel from "../config/CircularObstacleConfigPanel";
+import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel";
+import ViewOptionsPanel from "../config/ViewOptionsPanel";
+import WaypointVisibilityPanel from "../config/WaypointVisibilityPanel";
+import EventMarkerConfigPanel from "../config/eventmarker/EventMarkerConfigPanel";
+import styles from "./Field.module.css";
+import FieldOverlayRoot from "./svg/FieldOverlayRoot";
 
 type Props = object;
 
@@ -130,7 +128,7 @@ export class Field extends Component<Props, State> {
                 }
               }}
               onClick={(event) => {
-                Commands.cancel()
+                Commands.cancel();
               }}
               disabled={activePath.canGenerate()}
             >

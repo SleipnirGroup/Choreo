@@ -1,18 +1,6 @@
 import { observer } from "mobx-react";
-import React, { Component } from "react";
-import { doc, uiState } from "../../../document/DocumentManager";
-import InputList from "../../input/InputList";
-import Input from "../../input/Input";
-import {
-  InToM,
-  KgToLbs,
-  KG_TO_LBS,
-  LbsToKg,
-  MassUnit,
-  MetersOrInches,
-  MToIn,
-  M_TO_FT
-} from "../../../util/UnitConversions";
+import { Component } from "react";
+import { doc } from "../../../document/DocumentManager";
 import ExpressionInput from "../../input/ExpressionInput";
 import ExpressionInputList from "../../input/ExpressionInputList";
 

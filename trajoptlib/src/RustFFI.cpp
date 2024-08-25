@@ -144,8 +144,8 @@ void SwervePathBuilder::sgmt_point_at(size_t from_index, size_t to_index,
                                       double heading_tolerance, bool flip) {
   path_builder.SgmtConstraint(
       from_index, to_index,
-      trajopt::PointAtConstraint{{field_point_x, field_point_y},
-                                 heading_tolerance, flip});
+      trajopt::PointAtConstraint{
+          {field_point_x, field_point_y}, heading_tolerance, flip});
 }
 
 void SwervePathBuilder::sgmt_circle_obstacle(size_t from_index, size_t to_index,
@@ -319,7 +319,8 @@ void DifferentialPathBuilder::wpt_linear_acceleration_max_magnitude(
 
 void DifferentialPathBuilder::wpt_point_at(size_t index, double field_point_x,
                                            double field_point_y,
-                                           double heading_tolerance, bool flip) {
+                                           double heading_tolerance,
+                                           bool flip) {
   path_builder.WptConstraint(
       index, trajopt::PointAtConstraint{
                  trajopt::Translation2d{field_point_x, field_point_y},

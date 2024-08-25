@@ -1,13 +1,12 @@
+import { Switch } from "@mui/material";
 import { observer } from "mobx-react";
-import React, { Component } from "react";
+import { Component } from "react";
 import {
   clearAllTrajectories,
   doc,
-  exportAllTrajectories,
-  uiState
+  exportAllTrajectories
 } from "../../document/DocumentManager";
 import inputStyles from "../input/InputList.module.css";
-import { Switch } from "@mui/material";
 
 type Props = object;
 

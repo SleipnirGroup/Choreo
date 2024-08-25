@@ -1,13 +1,12 @@
-import { observer } from "mobx-react";
-import React, { Component } from "react";
-import { doc, uiState } from "../../../document/DocumentManager";
-import MotorCalculatorPanel from "./MotorCalculatorPanel";
-import inputStyles from "../../input/InputList.module.css";
-import { Divider, FormHelperText, IconButton, Switch } from "@mui/material";
 import { ArrowDropDown, ArrowDropUp } from "@mui/icons-material";
+import { Divider, FormHelperText, IconButton, Switch } from "@mui/material";
+import { observer } from "mobx-react";
+import { Component } from "react";
+import inputStyles from "../../input/InputList.module.css";
 import DimensionsConfigPanel from "./DimensionsConfigPanel";
-import TheoreticalPanel from "./TheoreticalPanel";
 import ModuleConfigPanel from "./ModuleConfigPanel";
+import MotorCalculatorPanel from "./MotorCalculatorPanel";
+import TheoreticalPanel from "./TheoreticalPanel";
 
 type Props = object;
 

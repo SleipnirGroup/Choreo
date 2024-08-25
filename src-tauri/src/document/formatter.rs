@@ -1,6 +1,6 @@
 use serde::Serialize;
-use serde_json::{ser::Formatter, Serializer};
 use serde_json::error::{Error, Result};
+use serde_json::{ser::Formatter, Serializer};
 use std::io;
 
 // We only use our own error type; no need for From conversions provided by the
@@ -132,9 +132,8 @@ impl<'a> Formatter for PrettyFormatter<'a> {
             indent(writer, self.current_indent, self.indent);
         }
         self.in_array.push(false);
-        
+
         writer.write_all(b"{")
-        
     }
 
     #[inline]
@@ -144,7 +143,7 @@ impl<'a> Formatter for PrettyFormatter<'a> {
     {
         self.current_indent -= 1;
 
-        if self.has_value && ! self.in_array.contains(&true){
+        if self.has_value && !self.in_array.contains(&true) {
             tri!(writer.write_all(b"\n"));
             tri!(indent(writer, self.current_indent, self.indent));
         }
@@ -165,7 +164,6 @@ impl<'a> Formatter for PrettyFormatter<'a> {
             indent(writer, self.current_indent, self.indent)?;
         }
         Ok(())
-
     }
 
     #[inline]

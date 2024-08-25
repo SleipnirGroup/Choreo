@@ -1,85 +1,67 @@
-import { createContext } from "react";
-import { DocumentStore, SelectableItemTypes } from "./DocumentModel";
 import { dialog, invoke, path, window as tauriWindow } from "@tauri-apps/api";
-import { listen, TauriEvent, Event } from "@tauri-apps/api/event";
+import { TauriEvent, listen } from "@tauri-apps/api/event";
 import { v4 as uuidv4 } from "uuid";
+import { DocumentStore, SelectableItemTypes } from "./DocumentModel";
 
+import hotkeys from "hotkeys-js";
+import { reaction } from "mobx";
 import {
-  applySnapshot,
-  getSnapshot,
-  castToReferenceSnapshot,
   Instance,
-  IMaybe,
-  IModelType,
-  IStateTreeNode,
-  IType,
-  _NotCustomized
+  applySnapshot,
+  castToReferenceSnapshot,
+  getSnapshot
 } from "mobx-state-tree";
-import { reaction, toJS } from "mobx";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
-import hotkeys from "hotkeys-js";
-import { UIStateStore } from "./UIStateStore";
 import LocalStorageKeys from "../util/LocalStorageKeys";
-import {
-  Evaluated,
-  IExpressionStore,
-  IVariables,
-  Units,
-  Variables,
-  math
-} from "./ExpressionStore";
-import { MathNode, Unit } from "mathjs";
+import { ObjectTyped } from "../util/ObjectTyped";
 import { safeGetIdentifier } from "../util/mobxutils";
-import { ViewLayerDefaults } from "./UIData";
+import {
+  Command,
+  EventMarker,
+  Project,
+  Traj,
+  type Expr,
+  type RobotConfig,
+  type Waypoint
+} from "./2025/DocumentTypes";
 import {
   CircularObstacleStore,
   ICircularObstacleStore
 } from "./CircularObstacleStore";
-import {
-  IHolonomicWaypointStore,
-  HolonomicWaypointStore as WaypointStore
-} from "./HolonomicWaypointStore";
-import {
-  ConstraintStore,
-  IConstraintStore,
-  IWaypointScope
-} from "./ConstraintStore";
-import {
-  EXPR_DEFAULTS,
-  IRobotConfigStore,
-  RobotConfigStore
-} from "./RobotConfigStore";
-import {
-  type RobotConfig,
-  type Expr,
-  type Waypoint,
-  SAVE_FILE_VERSION,
-  EventMarker,
-  Command,
-  Project,
-  Traj
-} from "./2025/DocumentTypes";
-import {
-  CommandStore,
-  EventMarkerStore,
-  ICommandStore,
-  IEventMarkerStore
-} from "./EventMarkerStore";
 import {
   ConstraintDataObjects,
   IConstraintDataStore,
   defineCreateConstraintData
 } from "./ConstraintDataStore";
 import {
-  ConstraintData,
-  ConstraintDefinition,
   ConstraintDefinitions,
   ConstraintKey,
   DataMap
 } from "./ConstraintDefinitions";
-import { ObjectTyped } from "../util/ObjectTyped";
-import { NonEmptyObject } from "mobx-state-tree/dist/internal";
+import {
+  ConstraintStore,
+  IConstraintStore,
+  IWaypointScope
+} from "./ConstraintStore";
+import {
+  CommandStore,
+  EventMarkerStore,
+  ICommandStore,
+  IEventMarkerStore
+} from "./EventMarkerStore";
+import { IVariables, Units, Variables, math } from "./ExpressionStore";
+import {
+  IHolonomicWaypointStore,
+  HolonomicWaypointStore as WaypointStore
+} from "./HolonomicWaypointStore";
+import {
+  EXPR_DEFAULTS,
+  IRobotConfigStore,
+  RobotConfigStore
+} from "./RobotConfigStore";
+import { ViewLayerDefaults } from "./UIData";
+import { UIStateStore } from "./UIStateStore";
 import { Commands } from "./tauriCommands";
 
 type OpenFileEventPayload = {
@@ -121,21 +103,28 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
   function createCommandStore(command: Command<Expr>): ICommandStore {
     return CommandStore.create({
       type: command.type,
-      name: command.data?.name! ?? "",
-      commands: (command.data?.commands ?? []).map((c) =>
-        createCommandStore(c)
-      ),
-      time: vars().createExpression(command.data?.time ?? 0, Units.Second),
+      name: command.data.name ?? "",
+      commands: (command.data.commands ?? []).map((c) => createCommandStore(c)),
+      time: vars().createExpression(command.data.time ?? 0, Units.Second),
       uuid: uuidv4()
     });
   }
 
-  let keys = ObjectTyped.keys(ConstraintDefinitions);
-  let constraintDataConstructors = Object.fromEntries(keys.map(<K extends ConstraintKey>(key:K)=>[key, defineCreateConstraintData(key,ConstraintDefinitions[key],vars)] as 
-  [
-    K,
-    (data: Partial<DataMap[K]["props"]>) => (typeof ConstraintDataObjects)[K]["Type"]
-  ])) as ConstraintDataConstructors;
+  const keys = ObjectTyped.keys(ConstraintDefinitions);
+  const constraintDataConstructors = Object.fromEntries(
+    keys.map(
+      <K extends ConstraintKey>(key: K) =>
+        [
+          key,
+          defineCreateConstraintData(key, ConstraintDefinitions[key], vars)
+        ] as [
+          K,
+          (
+            data: Partial<DataMap[K]["props"]>
+          ) => (typeof ConstraintDataObjects)[K]["Type"]
+        ]
+    )
+  ) as ConstraintDataConstructors;
 
   return {
     RobotConfigStore: (config: RobotConfig<Expr>) => {
@@ -203,7 +192,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
       from: IWaypointScope,
       to?: IWaypointScope
     ) => {
-      let store = ConstraintStore.create({
+      const store = ConstraintStore.create({
         from,
         to,
         uuid: uuidv4(),
@@ -214,9 +203,9 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
     }
   };
 }
-let variables = Variables.create({ expressions: {}, poses: {} });
+const variables = Variables.create({ expressions: {}, poses: {} });
 
-let env = {
+const env = {
   selectedSidebar: () => safeGetIdentifier(doc.selectedSidebarItem),
   select: (item: SelectableItemTypes) => select(item),
   withoutUndo: (callback: any) => {
@@ -281,13 +270,13 @@ export async function openLastFile() {
     const filePath = fileDirectory.dir + path.sep + fileDirectory.name;
     console.log(`Attempting to open: ${filePath}`);
     return openProject([fileDirectory.dir, fileDirectory.name]).catch((err) => {
-        console.error(
-          `Failed to open last Choreo file '${fileDirectory.name}': ${err}`
-        );
-        toast.error(
-          `Failed to open last Choreo file '${fileDirectory.name}': ${err}`
-        );
-      });
+      console.error(
+        `Failed to open last Choreo file '${fileDirectory.name}': ${err}`
+      );
+      toast.error(
+        `Failed to open last Choreo file '${fileDirectory.name}': ${err}`
+      );
+    });
     // invoke("file_event_payload_from_dir", {
     //   dir: fileDirectory.dir,
     //   name: fileDirectory.name,
@@ -391,17 +380,17 @@ export async function setupEventListeners() {
         }
         doc.history.startGroup(() => {
           try {
-          const newWaypoint = doc.pathlist.activePath.addWaypoint();
-          newWaypoint.deserialize(savedObject);
-          if (currentSelectedWaypointIdx != -1) {
-            activePath.path.reorderWaypoint(
-              activePath.path.waypoints.length - 1,
-              currentSelectedWaypointIdx + 1
-            );
+            const newWaypoint = doc.pathlist.activePath.addWaypoint();
+            newWaypoint.deserialize(savedObject);
+            if (currentSelectedWaypointIdx != -1) {
+              activePath.path.reorderWaypoint(
+                activePath.path.waypoints.length - 1,
+                currentSelectedWaypointIdx + 1
+              );
+            }
+          } finally {
+            doc.history.stopGroup();
           }
-        } finally {
-          doc.history.stopGroup();
-        }
         });
       }
     } catch (err) {
@@ -467,7 +456,9 @@ export async function setupEventListeners() {
         type: "warning"
       })
       .then((proceed) => {
-        proceed && Commands.openFileDialog().then((filepath)=>openProject(filepath))
+        if (proceed) {
+          Commands.openFileDialog().then((filepath) => openProject(filepath));
+        }
       });
   });
   hotkeys("f5,ctrl+shift+r,ctrl+r", function (event, handler) {
@@ -618,33 +609,37 @@ export async function setupEventListeners() {
   });
 }
 
-export async function openProject(chorFile: [dir:string, name:string]) {
-  let [dir, name] = chorFile;
+export async function openProject(chorFile: [dir: string, name: string]) {
+  const [dir, name] = chorFile;
   console.log(chorFile);
-  let joined = chorFile.join(path.sep);
-  let chor : Project | undefined = undefined;
-  let trajs: Traj[] = [];
-  let results = await Promise.allSettled([
-    Commands.openChor(dir, name).then(c=>chor = c).catch(console.error),
-    Commands.findAllTraj(dir).then(paths=>Promise.allSettled(
-      paths.map((p)=>
-        Commands.openTraj(dir, p)
-        .then(t=>trajs.push(t))
-      ))
-    ).catch(console.error)
+  let chor: Project | undefined = undefined;
+  const trajs: Traj[] = [];
+  await Promise.allSettled([
+    Commands.openChor(dir, name)
+      .then((c) => (chor = c))
+      .catch(console.error),
+    Commands.findAllTraj(dir)
+      .then((paths) =>
+        Promise.allSettled(
+          paths.map((p) => Commands.openTraj(dir, p).then((t) => trajs.push(t)))
+        )
+      )
+      .catch(console.error)
   ]);
   console.log(chor, trajs);
-  if (chor === undefined) { throw "Internal error. Check console logs."}
+  if (chor === undefined) {
+    throw "Internal error. Check console logs.";
+  }
   doc.deserializeChor(chor);
-  trajs.forEach(traj=>{
-    let newuuid = doc.pathlist.addPath(traj.name, true, traj);
-  })
+  trajs.forEach((traj) => {
+    doc.pathlist.addPath(traj.name, true, traj);
+  });
   uiState.setSaveFileDir(dir);
   uiState.setSaveFileName(name);
   await Commands.setChorPath(dir, name);
   localStorage.setItem(
     LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
-    JSON.stringify({dir, name})
+    JSON.stringify({ dir, name })
   );
 }
 
@@ -695,7 +690,7 @@ export async function newFile() {
     settingsTab: 0,
     layers: ViewLayerDefaults
   });
-  let newChor = await Commands.newFile();
+  const newChor = await Commands.newFile();
   doc.deserializeChor(newChor);
   //let newVariables
 
@@ -717,28 +712,15 @@ export async function newFile() {
 export function select(item: SelectableItemTypes) {
   doc.setSelectedSidebarItem(item);
 }
-async function openFromContents(chorContents: string) {
-  const parsed = JSON.parse(chorContents);
-  try {
-    doc.deserializeChor(parsed);
-    // if we got this far, clear the undo history
-    doc.history.clear();
-  } catch (e) {
-    throw `Invalid Document JSON: ${e}`;
-  }
-}
 
 export async function renamePath(uuid: string, newName: string) {
   if (uiState.hasSaveLocation) {
     const oldPath = await getTrajFilePath(uuid);
-    const oldName = doc.pathlist.paths.get(uuid)?.name;
     doc.pathlist.paths.get(uuid)?.setName(newName);
     const newPath = await getTrajFilePath(uuid);
     console.log("new:", newPath, "old", oldPath);
     if (oldPath !== null) {
-      Promise.all([
-        Commands.deleteFile(oldPath[0], oldPath[1])
-      ])
+      Promise.all([Commands.deleteFile(oldPath[0], oldPath[1])])
         .then(() => writeTrajectory(() => newPath, uuid))
         .catch((e) => {
           console.error(e);
@@ -774,7 +756,7 @@ export async function writeTrajectory(
   const trajectory = chorPath.serialize();
   const file = await filePath();
   if (file) {
-    await Commands.writeTraj(file[0]+path.sep+ file[1], trajectory)
+    await Commands.writeTraj(file[0] + path.sep + file[1], trajectory);
   }
 }
 
@@ -880,15 +862,12 @@ export async function saveFileDialog() {
  * @returns Whether the dir contains a file named "build.gradle", or undefined
  * if something failed
  */
-async function saveFileAs(
-  dir: string,
-  name: string
-): Promise<void> {
+async function saveFileAs(dir: string, name: string): Promise<void> {
   if (dir !== uiState.saveFileDir || name !== uiState.saveFileName) {
     await Commands.setChorPath(dir, name);
     uiState.setSaveFileDir(dir);
     uiState.setSaveFileName(name);
-  } 
+  }
   return Commands.writeChor(doc.serializeChor());
 }
 

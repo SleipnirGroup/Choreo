@@ -1,7 +1,4 @@
-import { observer } from "mobx-react";
-import React, { Component } from "react";
-import { doc, uiState } from "../../document/DocumentManager";
-import styles from "./WaypointConfigPanel.module.css";
+import { AspectRatio, Close, Gradient, Visibility } from "@mui/icons-material";
 import {
   IconButton,
   Menu,
@@ -10,9 +7,11 @@ import {
   ToggleButtonGroup,
   Tooltip
 } from "@mui/material";
+import { observer } from "mobx-react";
+import React, { Component } from "react";
+import { doc, uiState } from "../../document/DocumentManager";
 import { ViewItemData } from "../../document/UIData";
-import { AspectRatio, Gradient, Visibility } from "@mui/icons-material";
-import { Close } from "@mui/icons-material";
+import styles from "./WaypointConfigPanel.module.css";
 import { PathGradients } from "./robotconfig/PathGradient";
 
 type Props = object;

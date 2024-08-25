@@ -1,4 +1,3 @@
-
 use super::v2025_0_0::{
     expr, Bumper, ChoreoPath, Constraint, ConstraintData, ConstraintIDX, ConstraintType, Module,
     Output, Project, RobotConfig, Sample, Traj, Variables, Waypoint, WaypointID,
@@ -56,15 +55,19 @@ pub async fn generate(
     let mut guess_points_after_waypoint: Vec<Pose2d> = Vec::new();
 
     let snapshot = traj.path.snapshot();
-    
+
     let path = &snapshot.waypoints;
-    
+
     if path.len() < 2 {
         return Err("Path needs at least 2 waypoints.".to_string());
     }
     let counts_vec = guess_control_interval_counts(&chor.config, &traj)?;
     if counts_vec.len() != path.len() {
-        return Err(format!("Intervals guess had {} wpts, path has {}", counts_vec.len(), path.len()));
+        return Err(format!(
+            "Intervals guess had {} wpts, path has {}",
+            counts_vec.len(),
+            path.len()
+        ));
     }
     let num_wpts = path.len();
     let mut constraint_idx = Vec::<ConstraintIDX<f64>>::new();
@@ -161,12 +164,10 @@ pub async fn generate(
                 y,
                 tolerance,
                 flip,
-            } => {
-                match to_opt {
-                    None => path_builder.wpt_point_at(from, x, y, tolerance, flip),
-                    Some(to) => path_builder.sgmt_point_at(from, to, x, y, tolerance, flip),
-                }
-            }
+            } => match to_opt {
+                None => path_builder.wpt_point_at(from, x, y, tolerance, flip),
+                Some(to) => path_builder.sgmt_point_at(from, to, x, y, tolerance, flip),
+            },
             ConstraintData::MaxVelocity { max } => match to_opt {
                 None => path_builder.wpt_linear_velocity_max_magnitude(from, max),
                 Some(to) => path_builder.sgmt_linear_velocity_max_magnitude(from, to, max),
@@ -219,13 +220,23 @@ pub async fn generate(
     Ok(postprocess(result, traj, snapshot, counts_vec))
 }
 
-fn postprocess(result: SwerveTrajectory, traj: Traj, mut snapshot: ChoreoPath<f64>, counts_vec: Vec<usize>) -> Traj {
+fn postprocess(
+    result: SwerveTrajectory,
+    traj: Traj,
+    mut snapshot: ChoreoPath<f64>,
+    counts_vec: Vec<usize>,
+) -> Traj {
     let mut new_traj = traj.clone();
-    new_traj.path.waypoints.iter_mut().zip(snapshot.waypoints.iter_mut()).zip(counts_vec)
-    .for_each(|w|{
-        w.0.0.intervals = w.1;
-        w.0.1.intervals = w.1;
-    });
+    new_traj
+        .path
+        .waypoints
+        .iter_mut()
+        .zip(snapshot.waypoints.iter_mut())
+        .zip(counts_vec)
+        .for_each(|w| {
+            w.0 .0.intervals = w.1;
+            w.0 .1.intervals = w.1;
+        });
     // convert the result from trajoptlib to a format matching the save file.
     // Calculate the waypoint timing
     let mut interval = 0;
@@ -255,7 +266,7 @@ fn postprocess(result: SwerveTrajectory, traj: Traj, mut snapshot: ChoreoPath<f6
         .filter(|a| a.0) // filter by split flag
         .map(|a| a.1) // map to associate interval
         .collect::<Vec<usize>>();
-    let nudge_zero = |f:f64|if f.abs()<1e-12 {0.0} else {f}; 
+    let nudge_zero = |f: f64| if f.abs() < 1e-12 { 0.0 } else { f };
     new_traj.traj.samples = splits
         .windows(2) // get adjacent pairs of interval counts
         .filter_map(|window| {
