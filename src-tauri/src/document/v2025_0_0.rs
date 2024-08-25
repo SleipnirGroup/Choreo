@@ -305,6 +305,7 @@ impl ChoreoPath<Expr> {
 pub struct Output {
     pub waypoints: Vec<f64>,
     pub samples: Vec<Vec<Sample>>,
+    pub useModuleForces: bool
 }
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Traj {

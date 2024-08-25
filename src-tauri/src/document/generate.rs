@@ -256,6 +256,7 @@ fn postprocess(result: SwerveTrajectory, traj: Traj, mut snapshot: ChoreoPath<f6
         .filter(|a| a.0) // filter by split flag
         .map(|a| a.1) // map to associate interval
         .collect::<Vec<usize>>();
+    let nudge_zero = |f:f64|if f.abs()<1e-12 {0.0} else {f}; 
     new_traj.traj.samples = splits
         .windows(2) // get adjacent pairs of interval counts
         .filter_map(|window| {
@@ -268,22 +269,25 @@ fn postprocess(result: SwerveTrajectory, traj: Traj, mut snapshot: ChoreoPath<f6
                         .iter()
                         .map(|swerve_sample| {
                             let mut out = Sample {
-                                t: swerve_sample.timestamp,
-                                x: swerve_sample.x,
-                                y: swerve_sample.y,
-                                vx: swerve_sample.velocity_x,
-                                vy: swerve_sample.velocity_y,
-                                heading: swerve_sample.heading,
-                                omega: swerve_sample.angular_velocity,
+                                t: nudge_zero(swerve_sample.timestamp),
+                                x: nudge_zero(swerve_sample.x),
+                                y: nudge_zero(swerve_sample.y),
+                                vx: nudge_zero(swerve_sample.velocity_x),
+                                vy: nudge_zero(swerve_sample.velocity_y),
+                                heading: nudge_zero(swerve_sample.heading),
+                                omega: nudge_zero(swerve_sample.angular_velocity),
                                 fx: [0.0, 0.0, 0.0, 0.0],
                                 fy: [0.0, 0.0, 0.0, 0.0],
                             };
-                            for i in 0..4 {
-                                let x = swerve_sample.module_forces_x.get(i);
-                                let y = swerve_sample.module_forces_y.get(i);
-                                out.fx[i] = *x.unwrap_or(&0.0);
-                                out.fy[i] = *(y.unwrap_or(&0.0));
+                            if (traj.traj.useModuleForces) {
+                                for i in 0..4 {
+                                    let x = swerve_sample.module_forces_x.get(i);
+                                    let y = swerve_sample.module_forces_y.get(i);
+                                    out.fx[i] = nudge_zero(*x.unwrap_or(&0.0));
+                                    out.fy[i] = nudge_zero(*(y.unwrap_or(&0.0)));
+                                }
                             }
+
                             out
                         })
                         .collect::<Vec<Sample>>()

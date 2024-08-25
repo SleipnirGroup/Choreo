@@ -61,7 +61,7 @@ pub enum WriterCommand<T> {
 }
 
     async fn handle_write<T:Serialize>(contents: T, file: &Path) -> Result<(), ()> {
-        let json = serde_json::to_string_pretty(&contents);
+        let json = super::formatter::to_string_pretty(&contents);
         match json {
             Ok(stringified) => {
                 let parent = file.parent();
@@ -204,13 +204,13 @@ pub async fn new_file(app_handle: tauri::AppHandle) -> Result<Project, String> {
                     y: expr("-11 in", -0.2794),
                 },
             ],
-            mass: expr("150 lbs", 76.0),
+            mass: expr("150 lbs", 68.0388555),
             inertia: expr("6 kg m^2", 6.0),
             bumper: Bumper {
-                front: expr("16 in", 0.4),
-                left: expr("16 in", 0.4),
-                back: expr("16 in", 0.4),
-                right: expr("16 in", 0.4),
+                front: expr("16 in", 0.4064),
+                left: expr("16 in", 0.4064),
+                back: expr("16 in", 0.4064),
+                right: expr("16 in", 0.4064),
             },
         }})
 

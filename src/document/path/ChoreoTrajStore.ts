@@ -12,6 +12,7 @@ export const ChoreoTrajStore = types
   .model("ChoreoTrajStore", {
     waypoints: types.frozen<number[]>(),
     samples: types.frozen<Sample[][]>(),
+    useModuleForces: false,
     markers: types.array(EventMarkerStore)
   })
   .views((self) => ({
@@ -56,7 +57,8 @@ export const ChoreoTrajStore = types
     serialize(): Output {
       return {
         waypoints: self.waypoints,
-        samples: self.samples
+        samples: self.samples,
+        useModuleForces: self.useModuleForces
         // markers: self.markers.flatMap((marker) => {
         //   const target = self.waypoints.waypointIdToSavedWaypointId(marker.target);
         //   const saved: SavedEventMarker = {
@@ -77,6 +79,7 @@ export const ChoreoTrajStore = types
     deserialize(ser: Output) {
       self.waypoints = ser.waypoints;
       self.samples = ser.samples;
+      self.useModuleForces = ser.useModuleForces;
     },
     deleteMarkerUUID(uuid: string) {
       const index = self.markers.findIndex((m) => m.uuid === uuid);

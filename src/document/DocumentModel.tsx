@@ -160,6 +160,7 @@ export const DocumentStore = types
         if (event.payload!.handle == handle) {
           const samples = event.payload.traj.samples as TrajoptlibSample[];
           const progress = pathStore.ui.generationProgress;
+          const useModuleForces = pathStore.traj.useModuleForces;
           // mutate in-progress trajectory in place if it's already the right size
           // should avoid allocations on every progress update
           if (samples.length != progress.length) {
@@ -168,8 +169,8 @@ export const DocumentStore = types
               vx: s.velocity_x,
               vy: s.velocity_y,
               omega: s.angular_velocity,
-              fx: s.module_forces_x,
-              fy: s.module_forces_y,
+              fx: useModuleForces ? s.module_forces_x : [0, 0, 0, 0],
+              fy: useModuleForces ? s.module_forces_y : [0, 0, 0, 0],
               ...s
             })));
           } else {
@@ -183,8 +184,9 @@ export const DocumentStore = types
               prog.vx = samp.velocity_x;
               prog.vy = samp.velocity_y;
               prog.omega = samp.angular_velocity;
-              prog.fx = samp.module_forces_x;
-              prog.fy = samp.module_forces_y;
+              
+              prog.fx = useModuleForces ? samp.module_forces_x : [0, 0, 0, 0];
+              prog.fy = useModuleForces ? samp.module_forces_x : [0, 0, 0, 0];
             }
           }
           // todo: get this from the progress update, so it actually means something

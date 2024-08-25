@@ -76,8 +76,8 @@ export interface Sample {
   vx: number;
   vy: number;
   omega: number;
-  fx: [number, number, number, number];
-  fy: [number, number, number, number];
+  fx?: [number, number, number, number];
+  fy?: [number, number, number, number];
 }
 
 export interface TrajoptlibSample {
@@ -100,6 +100,7 @@ export interface ChoreoPath<T extends ExprOrNumber> {
 export interface Output {
   waypoints: number[];
   samples: Sample[][];
+  useModuleForces: boolean;
 }
 
 export interface Traj {
