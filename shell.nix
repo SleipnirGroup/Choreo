@@ -5,13 +5,19 @@ pkgs.mkShell {
 
   packages = with pkgs; [
     cargo
+    rustc
     nodejs
     gcc
+    pnpm
+    git
 
     pkg-config
     cmake
     webkitgtk
     gnome.libsoup
+    librsvg
+    fmt_11
+    cacert
   ];
 
   shellHook = ''
