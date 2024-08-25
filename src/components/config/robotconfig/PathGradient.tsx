@@ -11,8 +11,8 @@ export type PathGradientArgs = {
   arr: Sample[][];
   total: number;
   count: number;
-  i: number;
-  j: number;
+  sect: number;
+  idxInSect: number;
   documentModel: IDocumentStore;
 };
 export type PathGradient = {
@@ -171,8 +171,8 @@ class PathGradientFunctions {
    * @param documentModel - The document model.
    * @returns The color gradient in HSL format.
    */
-  static splitTrajectories({ arr, i }: PathGradientArgs): string {
-    if (!(arr.length < 2)) {
+  static splitTrajectories({ arr, sect: i }: PathGradientArgs): string {
+    if (arr.length < 2) {
       return "var(--select-yellow)";
     }
 

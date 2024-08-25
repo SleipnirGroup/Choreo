@@ -60,8 +60,8 @@ type State = object;
                   : path.traj.samples,
                 total: arr.length,
                 count: i,
-                i: path.ui.generating ? 0 : sect,
-                j: path.ui.generating ? 0 : indexInSect,
+                sect: path.ui.generating ? 0 : sect,
+                idxInSect: path.ui.generating ? 0 : indexInSect,
                 documentModel: doc
               };
               // 0 t = red, 1 t = green

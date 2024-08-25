@@ -31,7 +31,7 @@ export const ChoreoTrajStore = types
       let indexInSect = 0;
       while (
         self.samples[sect] !== undefined &&
-        self.samples[sect].length > indexInFull
+        self.samples[sect].length <= indexInFull
       ) {
         indexInFull -= self.samples[sect].length;
         sect++;
@@ -39,6 +39,7 @@ export const ChoreoTrajStore = types
       if (self.samples[sect] === undefined) {
         return undefined;
       } else {
+        console.log(sect);
         return [sect, indexInFull];
       }
     },
