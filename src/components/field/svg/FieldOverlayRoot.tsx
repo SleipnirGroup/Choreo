@@ -27,7 +27,7 @@ import FieldPathLines from "./FieldPathLines";
 import FieldSamples from "./FieldSamples";
 import InterpolatedRobot from "./InterpolatedRobot";
 import OverlayWaypoint from "./OverlayWaypoint";
-import FieldImage24 from "./fields/FieldImage24";
+import FieldImage2024 from "./fields/FieldImage2024";
 
 type Props = object;
 
@@ -196,8 +196,8 @@ class FieldOverlayRoot extends Component<Props, State> {
     uiState.setFieldScalingFactor(factor);
   }
   render() {
-    this.canvasHeightMeters = FieldImage24.WIDTH_M + 1;
-    this.canvasWidthMeters = FieldImage24.LENGTH_M + 1;
+    this.canvasHeightMeters = FieldImage2024.WIDTH_M + 1;
+    this.canvasWidthMeters = FieldImage2024.LENGTH_M + 1;
     const layers = uiState.layers;
     const constraintSelected = uiState.isConstraintSelected();
     const eventMarkerSelected = uiState.isEventMarkerSelected();
