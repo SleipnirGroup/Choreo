@@ -147,6 +147,7 @@ function createDataStore<K extends ConstraintKey, D extends ConstraintData = Dat
           props: serialize(self) as D["props"]
         } as D;
       },
+    })).actions(self=>({
       deserialize(ser: D) {
         console.log(ser);
         deserialize(self, ser.props);
