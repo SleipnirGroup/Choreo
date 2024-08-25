@@ -58,6 +58,7 @@ export interface Waypoint<T extends ExprOrNumber> {
   split: boolean;
   fixTranslation: boolean;
   fixHeading: boolean;
+  overrideIntervals: boolean;
 }
 
 export type WaypointID = number | "first" | "last";

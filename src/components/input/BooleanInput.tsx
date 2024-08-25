@@ -15,6 +15,7 @@ type Props = {
   setValue: (arg: boolean) => void;
   /** The tooltip for the title */
   titleTooltip?: string;
+  inputListCheckbox?:boolean;
 };
 
 type State = object;
@@ -45,11 +46,8 @@ class Input extends Component<Props, State> {
         <input
           ref={this.inputElemRef}
           type="checkbox"
-          className={"mui-Checkbox"}
+          className={styles.Checkbox}
           checked={this.props.value}
-          style={{
-            gridColumn: "span 1"
-          }}
           disabled={!this.props.enabled}
           // The below is needed to make inputs on CommandDraggables work
           onClick={(e) => e.stopPropagation()}

@@ -14,6 +14,12 @@
 .InputList.Expression {
   grid-template-columns: max-content auto;
 }
+.InputList:not(.NoCheckbox):not(.Expression) .Checkbox {
+  grid-column: 4;
+}
+.InputList:not(.NoCheckbox).Expression .Checkbox {
+  grid-column: 2;
+}
 
 .Title {
   text-align: right;

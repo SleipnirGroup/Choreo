@@ -124,7 +124,6 @@ function createDataStore<K extends ConstraintKey, D extends ConstraintData = Dat
         if (data[key] !== undefined) {
           self[key] = data[key];
         }
-
       }
     }
   });

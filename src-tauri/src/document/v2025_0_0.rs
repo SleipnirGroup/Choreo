@@ -139,6 +139,7 @@ pub struct Waypoint<T> {
     pub split: bool,
     pub fixTranslation: bool,
     pub fixHeading: bool,
+    pub overrideIntervals: bool
 }
 
 impl Waypoint<Expr> {
@@ -151,6 +152,7 @@ impl Waypoint<Expr> {
             split: self.split,
             fixTranslation: self.fixTranslation,
             fixHeading: self.fixHeading,
+            overrideIntervals: self.overrideIntervals
         }
     }
 }

@@ -29,7 +29,10 @@ pub fn guess_control_interval_counts(
         .waypoints
         .iter()
         .enumerate()
-        .map(|(i, w)| guess_control_interval_count(i, &traj, config, w))
+        .map(|(i, w)| 
+            if w.overrideIntervals 
+                {w.intervals} 
+                else {guess_control_interval_count(i, &traj, config, w)})
         .collect::<Vec<usize>>())
 }
 pub fn guess_control_interval_count(
@@ -41,7 +44,7 @@ pub fn guess_control_interval_count(
     let this = w.snapshot();
     let next = traj.path.waypoints.get(i + 1).map(|w| w.snapshot());
     match next {
-        None => 1,
+        None => this.intervals,
         Some(next) => {
             let dx = next.x - this.x;
             let dy = next.y - this.y;

@@ -64,24 +64,29 @@ class WaypointPanel extends Component<Props, State> {
               number={waypoint.heading}
               //setNumber={(heading) => waypoint!.setHeading(heading)}
             ></ExpressionInput>
+            
+          </ExpressionInputList>
+
+          <InputList>
+          
+
+            <Input
+              title="Samples"
+              suffix=""
+              showCheckbox={!waypoint.isLast()}
+              enabled={waypoint.overrideIntervals && !waypoint.isLast()}
+              showNumberWhenDisabled={!waypoint.isLast()}
+              setEnabled={(e) => {waypoint.setOverrideIntervals(e)}}
+              maxWidthCharacters={8}
+              number={waypoint.intervals}
+              roundingPrecision={0}
+              setNumber={(num) => {waypoint.setIntervals(num)}}
+              titleTooltip="Override the number of samples between this and next waypoint"
+            ></Input>
             <BooleanInput
               title={"Split"}
               enabled={true} value={waypoint.split} setValue={s=>waypoint.setSplit(s)}
               titleTooltip="Split trajectory at this point. Does not force stopping."></BooleanInput>
-          </ExpressionInputList>
-
-          <InputList noCheckbox>
-            <Input
-              title=""
-              suffix="samples"
-              showCheckbox={false}
-              enabled={true}
-              setEnabled={(_) => {}}
-              maxWidthCharacters={8}
-              number={waypoint.intervals}
-              roundingPrecision={0}
-              setNumber={(_) => {}}
-            ></Input>
           </InputList>
 
           <ToggleButtonGroup

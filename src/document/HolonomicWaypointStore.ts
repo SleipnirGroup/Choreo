@@ -18,7 +18,8 @@ export const DEFAULT_WAYPOINT: Waypoint<number> = {
   fixTranslation: true,
   fixHeading: true,
   intervals: 40,
-  split: false
+  split: false,
+  overrideIntervals : false
 };
 export const HolonomicWaypointStore = types
   .model("WaypointStore", {
@@ -28,6 +29,7 @@ export const HolonomicWaypointStore = types
     fixTranslation: true,
     fixHeading: true,
     intervals: 40,
+    overrideIntervals: false,
     split: false,
     uuid: types.identifier
   })
@@ -56,6 +58,7 @@ export const HolonomicWaypointStore = types
           fixTranslation: self.fixTranslation,
           fixHeading: self.fixHeading,
           intervals: self.intervals,
+          overrideIntervals: self.overrideIntervals,
           split: self.split
         };
       }
@@ -64,6 +67,15 @@ export const HolonomicWaypointStore = types
   .views((self) => ({
     get typeName() {
       return NavbarItemData[self.type].name;
+    },
+    isLast(): boolean {
+      try {
+        let list = getParent<IHolonomicWaypointStore[]>(self);
+        return list[list.length - 1]?.uuid === self.uuid; 
+      } catch (e) {
+        console.error(e);
+        return false;
+      }
     }
   }))
   .actions((self) => {
@@ -75,6 +87,7 @@ export const HolonomicWaypointStore = types
         self.fixTranslation = point.fixTranslation;
         self.fixHeading = point.fixHeading;
         self.intervals = point.intervals;
+        self.overrideIntervals = point.overrideIntervals;
       },
       setFixTranslation(fixTranslation: boolean) {
         self.fixTranslation = fixTranslation;
@@ -93,6 +106,9 @@ export const HolonomicWaypointStore = types
       },
       setIntervals(count: number) {
         self.intervals = count;
+      },
+      setOverrideIntervals(override: boolean) {
+        self.overrideIntervals = override;
       },
       setSplit(split: boolean) {
         self.split = split

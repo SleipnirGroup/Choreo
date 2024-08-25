@@ -115,7 +115,8 @@ export const DocumentStore = types
       if (pathStore.path.waypoints.length < 2) {
         return;
       }
-      console.log(pathStore.serialize(), self.robotConfig.serialize());
+      const config = self.robotConfig.serialize();
+      console.log(pathStore.serialize(), );
       // const controlIntervalOptResult = (await invoke(
       //   "guess_control_interval_counts",
       //   {
@@ -156,7 +157,25 @@ export const DocumentStore = types
       let unlisten: UnlistenFn;
       pathStore.ui.setIterationNumber(0);
 
-      await listen("solver-status", async (event) => {
+      await Commands.guessIntervals(config, pathStore.serialize())
+      .then(counts=>{
+        counts.forEach((count, i) => {
+          let waypoint = pathStore.path.waypoints[i];
+          if (waypoint.overrideIntervals && count !== waypoint.intervals) {
+            console.assert(false,
+              "Control interval guessing did not ignore override intervals! %o", {
+                path: pathStore.name,
+                waypoint: i,
+                override: waypoint.intervals,
+                calculated: count
+              })
+
+          } else {
+            waypoint.setIntervals(count);
+          }
+
+      })}).then(()=> 
+      listen("solver-status", async (event) => {
         if (event.payload!.handle == handle) {
           const samples = event.payload.traj.samples as TrajoptlibSample[];
           const progress = pathStore.ui.generationProgress;
@@ -195,7 +214,8 @@ export const DocumentStore = types
             pathStore.ui.generationIterationNumber + 1
           );
         }
-      })
+      }))
+      
         .then((unlistener) => {
           unlisten = unlistener;
           return Commands.generate(
