@@ -6,8 +6,7 @@ use std::f64::consts::PI;
 
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::OnceLock;
-use std::{vec};
-
+use std::vec;
 
 use super::intervals::guess_control_interval_counts;
 use trajoptlib::{Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory};

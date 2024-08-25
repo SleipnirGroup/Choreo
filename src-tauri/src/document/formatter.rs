@@ -1,5 +1,5 @@
 use serde::Serialize;
-use serde_json::error::{Result};
+use serde_json::error::Result;
 use serde_json::{ser::Formatter, Serializer};
 use std::io;
 

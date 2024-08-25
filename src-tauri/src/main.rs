@@ -9,19 +9,11 @@ use document::file::{
 };
 use document::generate::{cancel, generate, setup_progress_sender};
 
-
-
-
-
 use std::{fs, path::Path};
 use std::{thread, vec};
 
-
 use document::intervals::cmd_guess_control_interval_counts;
-use tauri::{
-    Manager,
-};
-
+use tauri::Manager;
 
 #[tauri::command]
 async fn save_file(dir: String, name: String, contents: String) -> Result<(), &'static str> {

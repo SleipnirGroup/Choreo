@@ -53,7 +53,9 @@ pub async fn write_traj(
             senders.get(&file)
         })
         .ok_or("Could not get or insert traj file writer. Notify developers.")?;
-    sender.send(WriterCommand::Write(traj)).map_err(|e|e.to_string())
+    sender
+        .send(WriterCommand::Write(traj))
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -61,7 +63,9 @@ pub async fn write_chor(app_handle: tauri::AppHandle, chor: Project) -> Result<(
     let state = app_handle.state::<RwLock<Option<UnboundedSender<WriterCommand<Project>>>>>();
     let opt = state.read().await;
     let sender = opt.as_ref().ok_or("No project is open")?;
-    sender.send(WriterCommand::Write(chor)).map_err(|e|e.to_string())
+    sender
+        .send(WriterCommand::Write(chor))
+        .map_err(|e| e.to_string())
 }
 #[tauri::command]
 pub async fn set_chor_path(
