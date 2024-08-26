@@ -81,6 +81,7 @@ export const HolonomicWaypointStore = types
         self.fixHeading = point.fixHeading;
         self.intervals = point.intervals;
         self.overrideIntervals = point.overrideIntervals;
+        self.split = point.split;
       },
       setFixTranslation(fixTranslation: boolean) {
         self.fixTranslation = fixTranslation;

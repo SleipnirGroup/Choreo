@@ -19,22 +19,37 @@ export const ChoreoTrajStore = types
         return sect;
       });
     },
-    getIdxOfFullTraj(indexInFull: number): [number, number] | undefined {
+    // 01234567
+    // ...
+    //   ...
+    //     ...
+    // 0 = 0,0
+    // 1 0,1
+    // 2 1,0
+    // 3,1,1
+    // 4,2,0,
+    // 5,2,1,
+    // 6,2,2
+    // the last interval of a section is considered the first interval of the next
+    getIdxOfFullTraj(indexRemaining: number): [number, number] | undefined {
       if (self.samples.length === 0) {
         return undefined;
       }
       let sect = 0;
       while (
         self.samples[sect] !== undefined &&
-        self.samples[sect].length <= indexInFull
+        self.samples[sect].length <= indexRemaining+1
       ) {
-        indexInFull -= self.samples[sect].length;
+        indexRemaining -= self.samples[sect].length-1;
         sect++;
       }
+      
       if (self.samples[sect] === undefined) {
         return undefined;
       } else {
-        return [sect, indexInFull];
+        // indexRemaining calculates the number of elements in the last section before and include the target
+        // but we need the index within that section
+        return [sect, indexRemaining];
       }
     },
     getTotalTimeSeconds(): number {
