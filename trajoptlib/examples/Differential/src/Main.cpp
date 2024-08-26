@@ -36,7 +36,8 @@ int main() {
     path.ControlIntervalCounts({40});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
-    [[maybe_unused]] auto solution = generator.Generate(true);
+    [[maybe_unused]]
+    auto solution = generator.Generate(true);
   }
 
   // Example 2: Differential, basic curve
@@ -50,7 +51,8 @@ int main() {
     path.ControlIntervalCounts({40});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
-    [[maybe_unused]] auto solution = generator.Generate(true);
+    [[maybe_unused]]
+    auto solution = generator.Generate(true);
   }
 
   // Example 3: Differential, three waypoints
@@ -65,7 +67,8 @@ int main() {
     path.ControlIntervalCounts({50, 50});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
-    [[maybe_unused]] auto solution = generator.Generate(true);
+    [[maybe_unused]]
+    auto solution = generator.Generate(true);
   }
 
   // Example 4: Differential, ending velocity
@@ -78,7 +81,8 @@ int main() {
     path.ControlIntervalCounts({40});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
-    [[maybe_unused]] auto solution = generator.Generate(true);
+    [[maybe_unused]]
+    auto solution = generator.Generate(true);
   }
 
   // Example 5: Differential, circle obstacle
@@ -96,7 +100,8 @@ int main() {
     path.ControlIntervalCounts({40});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
-    [[maybe_unused]] auto solution = generator.Generate(true);
+    [[maybe_unused]]
+    auto solution = generator.Generate(true);
   }
 
   // Example 6: Approach a pick up station at a certain direction
@@ -131,7 +136,8 @@ int main() {
     path.ControlIntervalCounts({40, 30, 30, 40});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
-    [[maybe_unused]] auto solution = generator.Generate(true);
+    [[maybe_unused]]
+    auto solution = generator.Generate(true);
   }
 
   // Example 7: Circular path with a point-point constraint
@@ -161,6 +167,7 @@ int main() {
     path.ControlIntervalCounts({50});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
-    [[maybe_unused]] auto solution = generator.Generate(true);
+    [[maybe_unused]]
+    auto solution = generator.Generate(true);
   }
 }
