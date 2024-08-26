@@ -127,12 +127,10 @@ export const NavbarItemData = (() => {
 const NavbarItemSections = [waypointNavbarCount, constraintNavbarCount];
 NavbarItemSections.push(obstacleNavbarCount);
 NavbarItemSections.push(eventMarkerCount);
-console.log("navbar", NavbarItemSections, NavbarItemData);
 
 export const NavbarItemSectionEnds = NavbarItemSections.map((s, idx) =>
   NavbarItemSections.slice(0, idx + 1).reduce((prev, cur) => prev + cur, -1)
 );
-console.log(NavbarItemSectionEnds);
 
 /* ViewOptionsPanel items */
 export const ViewData = {

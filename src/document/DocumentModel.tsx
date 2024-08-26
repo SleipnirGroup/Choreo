@@ -67,7 +67,6 @@ export const DocumentStore = types
       };
     },
     get isSidebarConstraintSelected() {
-      console.log("sidebar constraint", self.selectedSidebarItem);
       return (
         self.selectedSidebarItem !== undefined &&
         self.selectedSidebarItem.from !== undefined
@@ -80,7 +79,6 @@ export const DocumentStore = types
       );
     },
     get isSidebarWaypointSelected() {
-      console.log("sidebar wpt", self.selectedSidebarItem);
       return (
         self.selectedSidebarItem !== undefined &&
         !this.isSidebarConstraintSelected &&
@@ -122,14 +120,6 @@ export const DocumentStore = types
         return;
       }
       const config = self.robotConfig.serialize();
-      console.log(pathStore.serialize());
-      // const controlIntervalOptResult = (await invoke(
-      //   "guess_control_interval_counts",
-      //   {
-      //     traj: pathStore.serialize(),
-      //     config: self.robotConfig.serialize()
-      //   }
-      // )) as number[];
       pathStore.path.constraints.forEach((constraint) => {
         if (constraint.issues.length > 0) {
           throw constraint.issues.join(", ");

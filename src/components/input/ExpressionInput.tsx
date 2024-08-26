@@ -99,7 +99,6 @@ class Input extends Component<Props, State> {
     snapshot?: any
   ): void {
     if (!prevProps.number.expr.equals(this.props.number.expr)) {
-      console.log(prevProps, this.props);
       // if the value has changed from the outside, make sure it is no longer
       // focused so concise precision is shown.
       this.unfocusedMode();

@@ -268,7 +268,6 @@ export const HolonomicPathStore = types
           return self.serialize();
         },
         (value) => {
-          console.log("save", self.name);
           exporter(self.uuid);
         }
       );
@@ -278,7 +277,6 @@ export const HolonomicPathStore = types
     };
     const beforeDestroy = () => {
       autosaveDisposer();
-      console.log("Deleted ", self.uuid);
     };
     return {
       afterCreate,

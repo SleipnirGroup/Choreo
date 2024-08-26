@@ -611,7 +611,6 @@ export async function setupEventListeners() {
 
 export async function openProject(chorFile: [dir: string, name: string]) {
   const [dir, name] = chorFile;
-  console.log(chorFile);
   let chor: Project | undefined = undefined;
   const trajs: Traj[] = [];
   await Promise.allSettled([
@@ -626,7 +625,6 @@ export async function openProject(chorFile: [dir: string, name: string]) {
       )
       .catch(console.error)
   ]);
-  console.log(chor, trajs);
   if (chor === undefined) {
     throw "Internal error. Check console logs.";
   }
@@ -718,7 +716,6 @@ export async function renamePath(uuid: string, newName: string) {
     const oldPath = await getTrajFilePath(uuid);
     doc.pathlist.paths.get(uuid)?.setName(newName);
     const newPath = await getTrajFilePath(uuid);
-    console.log("new:", newPath, "old", oldPath);
     if (oldPath !== null) {
       Promise.all([Commands.deleteFile(oldPath[0], oldPath[1])])
         .then(() => writeTrajectory(() => newPath, uuid))

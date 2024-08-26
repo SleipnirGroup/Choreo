@@ -153,7 +153,6 @@ function createDataStore<
     }))
     .actions((self) => ({
       deserialize(ser: D) {
-        console.log(ser);
         deserialize(self, ser.props);
       },
       deserPartial(ser: Partial<D["props"]>) {

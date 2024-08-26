@@ -34,7 +34,6 @@ export const ChoreoTrajStore = types
       if (self.samples[sect] === undefined) {
         return undefined;
       } else {
-        console.log(sect);
         return [sect, indexInFull];
       }
     },

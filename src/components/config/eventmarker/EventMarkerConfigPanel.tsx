@@ -1,5 +1,4 @@
 import { TextField, Tooltip } from "@mui/material";
-import { toJS } from "mobx";
 import { observer } from "mobx-react";
 import { resolveIdentifier } from "mobx-state-tree";
 import React, { Component } from "react";
@@ -40,8 +39,6 @@ class EventMarkerConfigPanel extends Component<Props, State> {
     if (targetCommand === undefined) {
       return;
     }
-    console.log(targetCommand);
-    console.log(toJS(this.props.marker));
     if (targetCommand === undefined) {
       return;
     }

@@ -75,7 +75,8 @@ export const Units = {
   Kg: math.unit("kg"),
   RPM: math.createUnit("RPM", "1 cycle/min", { aliases: ["rpm"] })
 };
-console.log("rpm parse", math.parse("1 RPM").evaluate());
+// not sure why the alias above doesn't work
+math.createUnit("rpm", "1 RPM");
 
 export type Evaluated = null | undefined | number | Unit;
 type Evaluator = (arg: MathNode) => Evaluated;

@@ -149,7 +149,6 @@ class OverlayWaypoint extends Component<Props, State> {
       d3.select<SVGCircleElement, undefined>(
         `#waypointGroup${this.props.index}`
       ).on("contextmenu", (e) => {
-        console.log("selecting waypoint: " + this.props.index);
         doc.pathlist.activePath.path.selectOnly(this.props.index);
         uiState.setContextMenuMouseSelection(e);
         uiState.setContextMenuSelectedWaypoint(this.props.index);

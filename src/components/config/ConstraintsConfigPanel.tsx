@@ -1,4 +1,3 @@
-import { toJS } from "mobx";
 import { observer } from "mobx-react";
 import { Component } from "react";
 import { IConstraintStore } from "../../document/ConstraintStore";
@@ -69,7 +68,6 @@ class ConstraintsConfigPanel extends Component<Props, State> {
             const [key, propdef] = entry;
             const setterName =
               "set" + key.charAt(0).toUpperCase() + key.slice(1);
-            console.log(key, propdef, toJS(constraint.data));
             if (Array.isArray(propdef.defaultVal)) {
               return (
                 <ExpressionInput
