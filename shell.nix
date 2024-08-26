@@ -5,6 +5,7 @@ pkgs.mkShell {
 
   packages = with pkgs; [
     cargo
+    cmake
     gcc
     git
     nodejs
@@ -12,7 +13,6 @@ pkgs.mkShell {
     rustc
 
     cacert
-    cmake
     gnome.libsoup
     librsvg
     pkg-config
