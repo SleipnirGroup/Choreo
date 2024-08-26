@@ -71,5 +71,6 @@
 }
 .Checkbox {
   min-width: 10%;
-  margin-left: 0;
+  margin: 1px;
+  padding: 0px;
 }

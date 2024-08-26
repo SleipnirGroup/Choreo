@@ -28,20 +28,7 @@ class WaypointPanel extends Component<Props, State> {
     if (this.isWaypointNonNull(waypoint)) {
       return (
         <div className={styles.WaypointPanel}>
-          <span
-            style={{
-              position: "absolute",
-              right: 0,
-              top: 0,
-              padding: "inherit",
-              background: "var(--darker-purple)",
-              borderBottomLeftRadius: "8px",
-              fontWeight: "bolder",
-              fontSize: "1em"
-            }}
-          >
-            {index + 1}
-          </span>
+
           <ExpressionInputList>
             <ExpressionInput
               title="x"
@@ -90,7 +77,6 @@ class WaypointPanel extends Component<Props, State> {
               titleTooltip="Split trajectory at this point. Does not force stopping."
             ></BooleanInput>
           </InputList>
-
           <ToggleButtonGroup
             sx={{ marginInline: "auto", paddingTop: "8px" }}
             size="small"
@@ -128,6 +114,19 @@ class WaypointPanel extends Component<Props, State> {
               );
             })}
           </ToggleButtonGroup>
+          {/* <span
+            style={{
+              width: "min-content",
+              padding: "inherit",
+              background: "var(--darker-purple)",
+              borderBottomRightRadius: "8px",
+              fontWeight: "bolder",
+              fontSize: "1em",
+
+            }}
+          >
+            {index + 1}
+          </span> */}
         </div>
       );
     }

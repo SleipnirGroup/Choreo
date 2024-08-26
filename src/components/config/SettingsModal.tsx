@@ -66,7 +66,7 @@ class SettingsModal extends Component<Props, State> {
                 }}
               >
                 <Tab label="Robot Config" />
-                <Tab label="Export Config" />
+                {/* <Tab label="Export Config" /> */}
                 <Tab label="Controls" />
                 <Tab label="Betas" />
               </Tabs>
@@ -78,13 +78,13 @@ class SettingsModal extends Component<Props, State> {
               {uiState.settingsTab == 0 && (
                 <RobotConfigPanel></RobotConfigPanel>
               )}
-              {uiState.settingsTab == 1 && (
+              {/* {uiState.settingsTab == 1 && (
                 <ExportConfigPanel></ExportConfigPanel>
-              )}
-              {uiState.settingsTab == 2 && (
+              )} */}
+              {uiState.settingsTab == 1 && (
                 <KeyboardShortcutsPanel></KeyboardShortcutsPanel>
               )}
-              {uiState.settingsTab == 3 && (
+              {uiState.settingsTab == 2 && (
                 <BetasConfigPanel></BetasConfigPanel>
               )}
             </div>

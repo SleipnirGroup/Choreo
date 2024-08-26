@@ -102,6 +102,7 @@ function FieldConstraintsAddLayer() {
                         doc.setSelectedSidebarItem(newConstraint);
                       }
                     });
+                    doc.history.stopGroup();
                   }}
                 ></circle>
               </Fragment>

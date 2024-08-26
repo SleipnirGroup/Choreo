@@ -25,12 +25,12 @@ class ExportConfigPanel extends Component<Props, State> {
         }}
       >
         <span className={inputStyles.Title} style={{ gridColumn: "1" }}>
-          Split .traj files at stop points
+          Export Module Forces
         </span>
         <Switch
           size="small"
           sx={{ gridColumn: 2 }}
-          checked={doc.splitTrajectoriesAtStopPoints}
+          checked={doc.traj.useModuleForces}
           onChange={(e, checked) => {
             doc.setSplitTrajectoriesAtStopPoints(checked);
             clearAllTrajectories();
