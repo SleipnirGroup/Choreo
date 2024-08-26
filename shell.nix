@@ -4,13 +4,12 @@ pkgs.mkShell {
   name = "Choreo";
 
   packages = with pkgs; [
-    cargo
     cmake
     gcc
     git
     nodejs
     pnpm
-    rustc
+    rustup
 
     cacert
     gnome.libsoup
