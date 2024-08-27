@@ -14,7 +14,7 @@ public class ChoreoTrajectory {
 
   /** Create an empty ChoreoTrajectory. */
   public ChoreoTrajectory() {
-    name = "Empty Trajctory";
+    name = "Empty Trajectory";
     samples = List.of();
     events = List.of();
   }

@@ -25,6 +25,7 @@ dist-ssr
 
 # Rust target
 src-tauri/target
+target
 
 # Built trajoptlib dylibs
 src-tauri/*.dll
