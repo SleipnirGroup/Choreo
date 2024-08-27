@@ -112,7 +112,9 @@ export const ChoreoTrajStore = types
           offset: ["0 s", 0],
           command: {
             type: "named",
-            name: ""
+            data: {
+              name: ""
+            }
           }
         });
       }

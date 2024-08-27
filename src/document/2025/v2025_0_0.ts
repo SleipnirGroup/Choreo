@@ -95,7 +95,7 @@ export interface TrajoptlibSample {
 
 export interface ChoreoPath<T extends ExprOrNumber> {
   waypoints: Waypoint<T>[];
-  constraints: Constraint<T>[];
+  constraints: Constraint[];
 }
 
 export interface Output {
