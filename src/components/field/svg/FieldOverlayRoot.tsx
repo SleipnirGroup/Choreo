@@ -28,6 +28,8 @@ import FieldSamples from "./FieldSamples";
 import InterpolatedRobot from "./InterpolatedRobot";
 import OverlayWaypoint from "./OverlayWaypoint";
 import FieldImage2024 from "./fields/FieldImage2024";
+import FieldConstraintDisplayLayer from "./constraintDisplay/FieldConstraintDisplayLayer";
+import FieldConstraintAddLayer from "./constraintDisplay/FieldConstraintAddLayer";
 
 type Props = object;
 
@@ -181,6 +183,7 @@ class FieldOverlayRoot extends Component<Props, State> {
       let zeroOne = current.createSVGPoint();
       zeroOne.x = 0;
       zeroOne.y = 1;
+      let matrix = this.frameRef.current!.getScreenCTM()!;
       origin = origin.matrixTransform(
         this.frameRef.current!.getScreenCTM()!.inverse()
       );
@@ -194,6 +197,8 @@ class FieldOverlayRoot extends Component<Props, State> {
   private handleResize() {
     const factor = this.getScalingFactor(this.svgRef?.current);
     uiState.setFieldScalingFactor(factor);
+    uiState.setFieldCTM(this.frameRef.current!.getScreenCTM()!);
+    
   }
   render() {
     this.canvasHeightMeters = FieldImage2024.WIDTH_M + 1;
@@ -365,11 +370,14 @@ class FieldOverlayRoot extends Component<Props, State> {
               .map((pt) => pt?.[0])}
 
           {constraintSelected && (
-            <FieldConstraintsAddLayer></FieldConstraintsAddLayer>
+            <FieldConstraintAddLayer lineColor="var(--select-yellow)"></FieldConstraintAddLayer>
           )}
           {eventMarkerSelected && (
             <FieldEventMarkerAddLayer></FieldEventMarkerAddLayer>
           )}
+          {doc.isSidebarConstraintSelected && <FieldConstraintDisplayLayer constraint={doc.selectedSidebarItem} lineColor="var(--select-yellow)"></FieldConstraintDisplayLayer>}
+
+          {!doc.isSidebarConstraintSelected && doc.isSidebarConstraintHovered && <FieldConstraintDisplayLayer constraint={doc.hoveredSidebarItem} lineColor="white"></FieldConstraintDisplayLayer>}
           {layers[ViewLayers.Trajectory] && (
             <InterpolatedRobot
               timestamp={uiState.pathAnimationTimestamp}

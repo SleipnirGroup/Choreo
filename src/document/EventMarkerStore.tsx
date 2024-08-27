@@ -59,7 +59,7 @@ export const CommandStore = types
         self.type === "sequential"
       );
     },
-    serialize(): Command<Expr> {
+    get serialize(): Command<Expr> {
       if (self.type === "named") {
         return {
           type: "named",
@@ -71,7 +71,7 @@ export const CommandStore = types
         return {
           type: "wait",
           data: {
-            waitTime: self.time.serialize()
+            waitTime: self.time.serialize
           }
         };
       } else {

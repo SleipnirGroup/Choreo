@@ -153,7 +153,7 @@ export const PathListStore = types
           const newName = self.disambiguateName(oldPath.name);
           const newuuid = self.addPath(newName, false);
           const path = self.paths.get(newuuid);
-          path!.deserialize(oldPath.serialize());
+          path!.deserialize(oldPath.serialize);
         }
       }
     };

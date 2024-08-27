@@ -344,7 +344,7 @@ export async function setupEventListeners() {
     }
   );
 
-  window.addEventListener("contextmenu", (e) => e.preventDefault());
+  //window.addEventListener("contextmenu", (e) => e.preventDefault());
   window.addEventListener("copy", (e) => {
     const selection = document.getSelection();
     // Sometimes clicking away from a text input with selection retains that input element as
@@ -750,7 +750,7 @@ export async function writeTrajectory(
   if (chorPath === undefined) {
     throw `Tried to export trajectory with unknown uuid ${uuid}`;
   }
-  const trajectory = chorPath.serialize();
+  const trajectory = chorPath.serialize;
   const file = await filePath();
   if (file) {
     await Commands.writeTraj(file[0] + path.sep + file[1], trajectory);

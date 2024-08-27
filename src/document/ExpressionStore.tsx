@@ -1,5 +1,5 @@
 import { ConstantNode, MathNode, Unit, all, create, isNull } from "mathjs";
-import { IReactionDisposer, autorun } from "mobx";
+import { IReactionDisposer, autorun, reaction } from "mobx";
 import { Instance, types } from "mobx-state-tree";
 import {
   PoseVariable as DocPoseVariable,
@@ -86,6 +86,7 @@ export const ExpressionStore = types
     defaultUnit: types.maybe(types.frozen<Unit>())
   })
   .volatile((self) => ({
+    tempDisableRecalc: false,
     value: 0,
     getScope: () => {
       console.error("Evaluating without variables!", self.toString());
@@ -103,13 +104,20 @@ export const ExpressionStore = types
     },
     set(newNode: MathNode | number) {
       if (typeof newNode === "number") {
+        self.tempDisableRecalc = true;
+        try {
         if (self.defaultUnit === undefined) {
           self.expr = new ConstantNode(newNode);
+          this.setValue(newNode);
         } else {
           self.expr = math.parse(
             math.unit(newNode, self.defaultUnit.toString()).toString()
           );
+          this.setValue(newNode);
+        }} finally {
+          
         }
+
         return;
       }
 
@@ -117,6 +125,9 @@ export const ExpressionStore = types
     },
     setValue(value: number) {
       self.value = value;
+    },
+    setTempDisableRecalc(disable: boolean) {
+      self.tempDisableRecalc = disable;
     }
   }))
   .views((self) => ({
@@ -133,7 +144,7 @@ export const ExpressionStore = types
       }
       return result;
     },
-    serialize(): Expr {
+    get serialize(): Expr {
       return [self.expr.toString(), self.value];
     }
   }))
@@ -235,17 +246,22 @@ export const ExpressionStore = types
     let recalcDispose: IReactionDisposer;
     return {
       afterCreate: () => {
-        recalcDispose = autorun(() => {
+        recalcDispose = reaction(() => {
+          
+          if (!self.tempDisableRecalc) {
           //eslint-disable-next-line no-useless-catch
           try {
             const value = self.defaultUnitMagnitude;
             if (value !== undefined) {
-              self.setValue(value);
+             return value;
             }
           } catch (e) {
             throw e;
+          } finally {
+            self.setTempDisableRecalc(false);
           }
-        });
+        } else {return self.value;}
+    }, (value)=>self.setValue(value));
       },
       beforeDestroy: () => {
         recalcDispose();
@@ -269,11 +285,11 @@ const ExprPose = types
       };
       return node;
     },
-    serialize(): DocPoseVariable {
+    get serialize(): DocPoseVariable {
       return {
-        x: self.x.serialize(),
-        y: self.y.serialize(),
-        heading: self.heading.serialize()
+        x: self.x.serialize,
+        y: self.y.serialize,
+        heading: self.heading.serialize
       };
     }
   }))
@@ -314,7 +330,7 @@ export const Variables = types
     poses: types.map(ExprPose)
   })
   .views((self) => ({
-    serialize(): DocVariables {
+    get serialize(): DocVariables {
       const out: DocVariables = {
         expressions: {},
         poses: {}
@@ -322,12 +338,12 @@ export const Variables = types
       for (const entry of self.expressions.entries()) {
         out.expressions[entry[0]] = {
           unit: "Meter",
-          var: (entry[1] as IExpressionStore).serialize()
+          var: (entry[1] as IExpressionStore).serialize
         };
       }
 
       for (const entry of self.poses.entries()) {
-        out.poses[entry[0]] = entry[1].serialize();
+        out.poses[entry[0]] = entry[1].serialize;
       }
       return out;
     },
