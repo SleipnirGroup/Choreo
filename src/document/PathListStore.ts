@@ -1,6 +1,6 @@
 import { Instance, getEnv, types } from "mobx-state-tree";
 import { v4 as uuidv4 } from "uuid";
-import { Traj } from "./2025/v2025_0_0";
+import { Traj } from "./2025/DocumentTypes";
 import { Env } from "./DocumentManager";
 import { HolonomicPathStore } from "./path/HolonomicPathStore";
 

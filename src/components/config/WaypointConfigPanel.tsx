@@ -23,12 +23,11 @@ class WaypointPanel extends Component<Props, State> {
     return (point as IHolonomicWaypointStore) !== null;
   }
   render() {
-    const { waypoint, index } = this.props;
+    const { waypoint } = this.props;
     const waypointType = this.props.waypoint?.type;
     if (this.isWaypointNonNull(waypoint)) {
       return (
         <div className={styles.WaypointPanel}>
-
           <ExpressionInputList>
             <ExpressionInput
               title="x"

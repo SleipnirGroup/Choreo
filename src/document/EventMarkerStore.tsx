@@ -78,7 +78,7 @@ export const CommandStore = types
         return {
           type: self.type,
           data: {
-            commands: self.commands.map((c) => c.asSavedCommand())
+            commands: self.commands.map((c) => c.serialize())
           }
         };
       }

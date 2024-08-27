@@ -1,7 +1,7 @@
-use crate::document::v2025_0_0::ConstraintData;
+use crate::document::types::ConstraintData;
 use crate::util::math_util::angle_modulus;
 
-use super::v2025_0_0::{Expr, RobotConfig, Traj, Waypoint};
+use super::types::{Expr, RobotConfig, Traj, Waypoint};
 // A value version since commands don't support borrows, but we need the borrow version for generation.
 #[tauri::command]
 pub fn cmd_guess_control_interval_counts(
@@ -60,7 +60,7 @@ pub fn guess_control_interval_count(
             let mut max_vel = config.wheel_max_velocity() * config.radius;
             let mut max_accel = (max_force * 4.0) / config.mass; // times 4 for 4 modules
 
-            // Iterate through constraints to find applicable "Max Velocity" constraints
+            // Iterate through constraints to find applicable "Max Velocity" and "Max Acceleration" constraints
             traj.path
                 .constraints
                 .iter()

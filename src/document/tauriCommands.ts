@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api";
-import { Expr, Project, RobotConfig, Traj } from "./2025/v2025_0_0";
+import { Expr, Project, RobotConfig, Traj } from "./2025/DocumentTypes";
 
 export const Commands = {
   generate: (chor: Project, traj: Traj, handle: number) =>

@@ -48,7 +48,8 @@ pub async fn generate(
 ) -> Result<Traj, String> {
     let mut path_builder = SwervePathBuilder::new();
     let mut wpt_cnt: usize = 0;
-    let mut rm: Vec<usize> = Vec::new();
+    // tracks which idxs were guess points, which get added differently and require adjusting indexes after them
+    let mut guess_point_idxs: Vec<usize> = Vec::new();
     let mut control_interval_counts: Vec<usize> = Vec::new();
     let mut guess_points_after_waypoint: Vec<Pose2d> = Vec::new();
 
@@ -139,7 +140,7 @@ pub async fn generate(
     }
     for i in 0..path.len() {
         let wpt = &path[i];
-
+        // add initial guess points (actually unconstrained empty wpts in Choreo terms)
         if isInitialGuess[i] && !wpt.fixHeading && !wpt.fixTranslation {
             let guess_point = Pose2d {
                 x: wpt.x,
@@ -147,7 +148,7 @@ pub async fn generate(
                 heading: wpt.heading,
             };
             guess_points_after_waypoint.push(guess_point);
-            rm.push(i);
+            guess_point_idxs.push(i);
             if let Some(last) = control_interval_counts.last_mut() {
                 *last += counts_vec[i];
             }
@@ -174,8 +175,8 @@ pub async fn generate(
     path_builder.set_control_interval_counts(control_interval_counts);
 
     for constraint in &constraint_idx {
-        let from = fix_scope(constraint.from, &rm);
-        let to_opt = constraint.to.map(|idx| fix_scope(idx, &rm));
+        let from = fix_scope(constraint.from, &guess_point_idxs);
+        let to_opt = constraint.to.map(|idx| fix_scope(idx, &guess_point_idxs));
         match constraint.data {
             ConstraintData::PointAt {
                 x,
@@ -224,12 +225,11 @@ pub async fn generate(
 
 fn postprocess(
     result: SwerveTrajectory,
-    traj: Traj,
+    mut traj: Traj,
     mut snapshot: ChoreoPath<f64>,
     counts_vec: Vec<usize>,
 ) -> Traj {
-    let mut new_traj = traj.clone();
-    new_traj
+    traj
         .path
         .waypoints
         .iter_mut()
@@ -269,7 +269,7 @@ fn postprocess(
         .map(|a| a.1) // map to associate interval
         .collect::<Vec<usize>>();
     let nudge_zero = |f: f64| if f.abs() < 1e-12 { 0.0 } else { f };
-    new_traj.traj.samples = splits
+    traj.traj.samples = splits
         .windows(2) // get adjacent pairs of interval counts
         .filter_map(|window| {
             result
@@ -306,9 +306,9 @@ fn postprocess(
                 })
         })
         .collect::<Vec<Vec<Sample>>>();
-    new_traj.traj.waypoints = waypoint_times;
-    new_traj.snapshot = Some(snapshot);
-    new_traj
+    traj.traj.waypoints = waypoint_times;
+    traj.snapshot = Some(snapshot);
+    traj
 }
 
 fn solver_status_callback(traj: SwerveTrajectory, handle: i64) {

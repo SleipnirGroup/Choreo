@@ -38,12 +38,12 @@ export const ChoreoTrajStore = types
       let sect = 0;
       while (
         self.samples[sect] !== undefined &&
-        self.samples[sect].length <= indexRemaining+1
+        self.samples[sect].length <= indexRemaining + 1
       ) {
-        indexRemaining -= self.samples[sect].length-1;
+        indexRemaining -= self.samples[sect].length - 1;
         sect++;
       }
-      
+
       if (self.samples[sect] === undefined) {
         return undefined;
       } else {
@@ -112,7 +112,9 @@ export const ChoreoTrajStore = types
           offset: ["0 s", 0],
           command: {
             type: "named",
-            name: ""
+            data: {
+              name: ""
+            }
           }
         });
       }
