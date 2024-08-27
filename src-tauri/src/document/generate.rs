@@ -1,4 +1,4 @@
-use super::v2025_0_0::{
+use super::types::{
     ChoreoPath, ConstraintData, ConstraintIDX, ConstraintType, Module, Project, Sample, Traj,
 };
 
@@ -229,8 +229,7 @@ fn postprocess(
     mut snapshot: ChoreoPath<f64>,
     counts_vec: Vec<usize>,
 ) -> Traj {
-    traj
-        .path
+    traj.path
         .waypoints
         .iter_mut()
         .zip(snapshot.waypoints.iter_mut())

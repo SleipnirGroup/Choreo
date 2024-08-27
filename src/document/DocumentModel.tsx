@@ -1,5 +1,5 @@
 import { UnlistenFn, listen } from "@tauri-apps/api/event";
-import { Instance, types } from "mobx-state-tree";
+import { Instance, types, getParent } from "mobx-state-tree";
 import { UndoManager } from "mst-middlewares";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
@@ -56,14 +56,15 @@ export const DocumentStore = types
     variables: Variables,
     splitTrajectoriesAtStopPoints: types.boolean,
     usesObstacles: types.boolean,
-    selectedSidebarItem: types.maybe(types.safeReference(SelectableItem))
+    selectedSidebarItem: types.maybe(types.safeReference(SelectableItem)),
+    hoveredSidebarItem: types.maybe(types.safeReference(SelectableItem))
   })
   .views((self) => ({
     serializeChor(): Project {
       return {
         version: SAVE_FILE_VERSION,
-        variables: self.variables.serialize(),
-        config: self.robotConfig.serialize()
+        variables: self.variables.serialize,
+        config: self.robotConfig.serialize
       };
     },
     get isSidebarConstraintSelected() {
@@ -84,6 +85,35 @@ export const DocumentStore = types
         !this.isSidebarConstraintSelected &&
         !this.isSidebarCircularObstacleSelected
       );
+    },
+    get isSidebarConstraintHovered() {
+      return (
+        self.hoveredSidebarItem !== undefined &&
+        self.hoveredSidebarItem.from !== undefined
+      );
+    },
+    get isSidebarCircularObstacleHovered() {
+      return (
+        self.hoveredSidebarItem !== undefined &&
+        self.hoveredSidebarItem.radius !== undefined
+      );
+    },
+    get isSidebarWaypointHovered() {
+      return (
+        self.hoveredSidebarItem !== undefined &&
+        !this.isSidebarConstraintHovered &&
+        !this.isSidebarCircularObstacleHovered
+      );
+    },
+    get hoveredWaypointIndex() {
+      if (this.isSidebarWaypointHovered) {
+        const pt = self.hoveredSidebarItem as IHolonomicWaypointStore;
+        return getParent<IHolonomicWaypointStore[]>(pt).findIndex(
+          (p) => p.uuid == pt.uuid
+        );
+      } else {
+        return undefined;
+      }
     }
   }))
   .volatile((self) => ({
@@ -96,7 +126,14 @@ export const DocumentStore = types
       self.pathlist.paths.clear();
     },
     setSelectedSidebarItem(item: SelectableItemTypes) {
-      self.selectedSidebarItem = item;
+      self.history.withoutUndo(() => {
+        self.selectedSidebarItem = item;
+      });
+    },
+    setHoveredSidebarItem(item: SelectableItemTypes | undefined) {
+      self.history.withoutUndo(() => {
+        self.hoveredSidebarItem = item;
+      });
     },
     afterCreate() {
       self.history = UndoManager.create({}, { targetStore: self });
@@ -119,7 +156,8 @@ export const DocumentStore = types
       if (pathStore.path.waypoints.length < 2) {
         return;
       }
-      const config = self.robotConfig.serialize();
+      console.log(pathStore.serialize);
+      const config = self.robotConfig.serialize;
       pathStore.path.constraints.forEach((constraint) => {
         if (constraint.issues.length > 0) {
           throw constraint.issues.join(", ");
@@ -153,8 +191,9 @@ export const DocumentStore = types
       let unlisten: UnlistenFn;
       pathStore.ui.setIterationNumber(0);
 
-      await Commands.guessIntervals(config, pathStore.serialize())
+      await Commands.guessIntervals(config, pathStore.serialize)
         .then((counts) => {
+          console.log(counts);
           counts.forEach((count, i) => {
             const waypoint = pathStore.path.waypoints[i];
             if (waypoint.overrideIntervals && count !== waypoint.intervals) {
@@ -226,7 +265,7 @@ export const DocumentStore = types
           unlisten = unlistener;
           return Commands.generate(
             self.serializeChor(),
-            pathStore.serialize(),
+            pathStore.serialize,
             handle
           );
         })
