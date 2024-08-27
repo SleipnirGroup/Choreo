@@ -1,11 +1,7 @@
 import { Switch } from "@mui/material";
 import { observer } from "mobx-react";
 import { Component } from "react";
-import {
-  clearAllTrajectories,
-  doc,
-  exportAllTrajectories
-} from "../../document/DocumentManager";
+import { doc } from "../../document/DocumentManager";
 import inputStyles from "../input/InputList.module.css";
 
 type Props = object;
@@ -32,9 +28,7 @@ class ExportConfigPanel extends Component<Props, State> {
           sx={{ gridColumn: 2 }}
           checked={doc.traj.useModuleForces}
           onChange={(e, checked) => {
-            doc.setSplitTrajectoriesAtStopPoints(checked);
-            clearAllTrajectories();
-            exportAllTrajectories();
+            doc.traj.setUseModuleForces(checked);
           }}
         ></Switch>
       </div>

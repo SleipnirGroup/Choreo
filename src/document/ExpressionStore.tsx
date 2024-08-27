@@ -105,7 +105,6 @@ export const ExpressionStore = types
     set(newNode: MathNode | number) {
       if (typeof newNode === "number") {
         self.tempDisableRecalc = true;
-        try {
         if (self.defaultUnit === undefined) {
           self.expr = new ConstantNode(newNode);
           this.setValue(newNode);
@@ -114,10 +113,7 @@ export const ExpressionStore = types
             math.unit(newNode, self.defaultUnit.toString()).toString()
           );
           this.setValue(newNode);
-        }} finally {
-          
         }
-
         return;
       }
 

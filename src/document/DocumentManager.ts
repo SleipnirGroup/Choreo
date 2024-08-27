@@ -103,9 +103,11 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
   function createCommandStore(command: Command<Expr>): ICommandStore {
     return CommandStore.create({
       type: command.type,
-      name: command.data.name ?? "",
-      commands: (command.data.commands ?? []).map((c) => createCommandStore(c)),
-      time: vars().createExpression(command.data.time ?? 0, Units.Second),
+      name: command.data?.name ?? "",
+      commands: (command.data?.commands ?? []).map((c) =>
+        createCommandStore(c)
+      ),
+      time: vars().createExpression(command.data?.time ?? 0, Units.Second),
       uuid: uuidv4()
     });
   }
@@ -135,7 +137,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
           config.tmax,
           math.multiply(Units.Newton, Units.Meter)
         ),
-        vmax: vars().createExpression(config.vmax, Units.RPM),
+        vmax: vars().createExpression(config.vmax, Units.RadianPerSecond),
         gearing: vars().createExpression(config.gearing),
         radius: vars().createExpression(config.radius, Units.Meter),
         bumper: {
@@ -344,7 +346,7 @@ export async function setupEventListeners() {
     }
   );
 
-  //window.addEventListener("contextmenu", (e) => e.preventDefault());
+  window.addEventListener("contextmenu", (e) => e.preventDefault());
   window.addEventListener("copy", (e) => {
     const selection = document.getSelection();
     // Sometimes clicking away from a text input with selection retains that input element as

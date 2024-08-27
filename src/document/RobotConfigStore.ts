@@ -17,7 +17,7 @@ export const EXPR_DEFAULTS: RobotConfig<Expr> = {
   mass: ["150 lbs", LbsToKg(150)],
   inertia: ["6 kg*m^2", 6],
   vmax: [
-    `${MotorCurves.KrakenX60.vmax * 0.8} rpm`,
+    `${(MotorCurves.KrakenX60.vmax * 0.8 * 60) / (2 * Math.PI)} rpm`,
     MotorCurves.KrakenX60.vmax * 0.8
   ],
   tmax: [
@@ -136,7 +136,7 @@ export const RobotConfigStore = types
   .views((self) => {
     return {
       get wheelMaxVelocity() {
-        return (self.vmax.value * (Math.PI * 2)) / 60 / self.gearing.value;
+        return self.vmax.value / self.gearing.value;
       },
       get wheelMaxTorque() {
         return self.tmax.value * self.gearing.value;

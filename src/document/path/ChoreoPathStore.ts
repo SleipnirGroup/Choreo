@@ -99,7 +99,7 @@ export const ChoreoPathStore = types
           const con = constraint;
           const from = self.waypointIdToSavedWaypointId(con.from)!;
           const to = self.waypointIdToSavedWaypointId(con.to);
-          const toReturn: Constraint<Expr> = {
+          const toReturn: Constraint = {
             data: con.data.serialize,
             from,
             to
@@ -116,7 +116,6 @@ export const ChoreoPathStore = types
       to?: IWaypointScope,
       data: Partial<DataMap[K]["props"]> = {}
     ): Instance<typeof ConstraintStore> | undefined {
-      console.log("adding constraint", key, data, from, to);
       self.constraints.push(
         getEnv<Env>(self).create.ConstraintStore(key, data, from, to)
       );
@@ -296,7 +295,7 @@ export const ChoreoPathStore = types
         waypoint.deserialize(point);
       });
       self.constraints.clear();
-      ser.constraints.forEach((saved: Constraint<Expr>) => {
+      ser.constraints.forEach((saved: Constraint) => {
         const from = self.savedWaypointIdToWaypointId(saved.from);
         if (from === undefined) {
           return;

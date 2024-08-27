@@ -16,7 +16,6 @@ function FieldConstraintsAddLayer() {
   const waypoints = activePath.path.waypoints;
   return (
     <>
-    
       {/* Draw circles on each waypoint */}
       {selectedConstraintDefinition!.wptScope &&
         waypoints.map((point, index) => {
