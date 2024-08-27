@@ -84,10 +84,10 @@ class SidebarWaypoint extends Component<Props, State> {
               doc.setSelectedSidebarItem(waypoint);
               uiState.setSelectedNavbarItem(waypoint.type);
             }}
-            onMouseOver = {()=>{
+            onMouseOver={() => {
               doc.setHoveredSidebarItem(waypoint);
             }}
-            onMouseLeave = {()=>{
+            onMouseLeave={() => {
               doc.setHoveredSidebarItem(undefined);
             }}
           >

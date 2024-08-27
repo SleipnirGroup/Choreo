@@ -4,7 +4,6 @@ import { observer } from "mobx-react";
 import { Component } from "react";
 import { uiState } from "../../document/DocumentManager";
 import BetasConfigPanel from "./BetasConfigPanel";
-import ExportConfigPanel from "./ExportConfigPanel";
 import KeyboardShortcutsPanel from "./KeyboardShortcutsPanel";
 import RobotConfigPanel from "./robotconfig/RobotConfigPanel";
 

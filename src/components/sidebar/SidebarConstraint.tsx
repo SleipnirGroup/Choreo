@@ -58,10 +58,10 @@ class SidebarConstraint extends Component<Props, State> {
         onClick={() => {
           doc.setSelectedSidebarItem(this.props.constraint);
         }}
-        onMouseOver = {()=>{
+        onMouseOver={() => {
           doc.setHoveredSidebarItem(this.props.constraint);
         }}
-        onMouseLeave = {()=>{
+        onMouseLeave={() => {
           doc.setHoveredSidebarItem(undefined);
         }}
       >

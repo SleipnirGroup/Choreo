@@ -20,11 +20,11 @@ import {
 
 export const UIStateStore = types
   .model("UIStateStore", {
-    fieldMatrix: types.frozen<DOMMatrix>(DOMMatrixReadOnly.fromFloat32Array(Float32Array.from(
-      [1,0,0,0,
-       0,1,0,0,
-       0,0,1,0,
-       0,0,0,1]))),
+    fieldMatrix: types.frozen<DOMMatrix>(
+      DOMMatrixReadOnly.fromFloat32Array(
+        Float32Array.from([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
+      )
+    ),
     fieldScalingFactor: 0.02,
     saveFileName: types.maybe(types.string),
     saveFileDir: types.maybe(types.string),

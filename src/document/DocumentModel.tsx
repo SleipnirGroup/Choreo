@@ -107,10 +107,12 @@ export const DocumentStore = types
     },
     get hoveredWaypointIndex() {
       if (this.isSidebarWaypointHovered) {
-        let pt = self.hoveredSidebarItem as IHolonomicWaypointStore;
-        return getParent<IHolonomicWaypointStore[]>(pt).findIndex(p=>p.uuid == pt.uuid);
+        const pt = self.hoveredSidebarItem as IHolonomicWaypointStore;
+        return getParent<IHolonomicWaypointStore[]>(pt).findIndex(
+          (p) => p.uuid == pt.uuid
+        );
       } else {
-        return undefined
+        return undefined;
       }
     }
   }))
@@ -124,12 +126,12 @@ export const DocumentStore = types
       self.pathlist.paths.clear();
     },
     setSelectedSidebarItem(item: SelectableItemTypes) {
-      self.history.withoutUndo(()=>{
+      self.history.withoutUndo(() => {
         self.selectedSidebarItem = item;
       });
     },
     setHoveredSidebarItem(item: SelectableItemTypes | undefined) {
-      self.history.withoutUndo(()=>{
+      self.history.withoutUndo(() => {
         self.hoveredSidebarItem = item;
       });
     },

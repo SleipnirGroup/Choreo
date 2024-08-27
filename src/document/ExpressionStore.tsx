@@ -1,5 +1,5 @@
 import { ConstantNode, MathNode, Unit, all, create, isNull } from "mathjs";
-import { IReactionDisposer, autorun, reaction } from "mobx";
+import { IReactionDisposer, reaction } from "mobx";
 import { Instance, types } from "mobx-state-tree";
 import {
   PoseVariable as DocPoseVariable,
@@ -242,22 +242,23 @@ export const ExpressionStore = types
     let recalcDispose: IReactionDisposer;
     return {
       afterCreate: () => {
-        recalcDispose = reaction(() => {
-          
-          if (!self.tempDisableRecalc) {
-          //eslint-disable-next-line no-useless-catch
-          try {
-            const value = self.defaultUnitMagnitude;
-            if (value !== undefined) {
-             return value;
+        recalcDispose = reaction(
+          () => {
+            if (!self.tempDisableRecalc) {
+              try {
+                const value = self.defaultUnitMagnitude;
+                if (value !== undefined) {
+                  return value;
+                }
+              } finally {
+                self.setTempDisableRecalc(false);
+              }
+            } else {
+              return self.value;
             }
-          } catch (e) {
-            throw e;
-          } finally {
-            self.setTempDisableRecalc(false);
-          }
-        } else {return self.value;}
-    }, (value)=>self.setValue(value));
+          },
+          (value) => self.setValue(value)
+        );
       },
       beforeDestroy: () => {
         recalcDispose();

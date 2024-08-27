@@ -16,7 +16,6 @@ import {
   ViewLayers
 } from "../../../document/UIData";
 import FieldAxisLines from "./FieldAxisLines";
-import FieldConstraintsAddLayer from "./FieldConstraintsAddLayer";
 import FieldEventMarkerAddLayer from "./FieldEventMarkerAddLayer";
 import FieldEventMarkers from "./FieldEventMarkers";
 import FieldGeneratedLines from "./FieldGeneratedLines";
@@ -183,7 +182,6 @@ class FieldOverlayRoot extends Component<Props, State> {
       let zeroOne = current.createSVGPoint();
       zeroOne.x = 0;
       zeroOne.y = 1;
-      let matrix = this.frameRef.current!.getScreenCTM()!;
       origin = origin.matrixTransform(
         this.frameRef.current!.getScreenCTM()!.inverse()
       );
@@ -198,7 +196,6 @@ class FieldOverlayRoot extends Component<Props, State> {
     const factor = this.getScalingFactor(this.svgRef?.current);
     uiState.setFieldScalingFactor(factor);
     uiState.setFieldCTM(this.frameRef.current!.getScreenCTM()!);
-    
   }
   render() {
     this.canvasHeightMeters = FieldImage2024.WIDTH_M + 1;
@@ -375,9 +372,20 @@ class FieldOverlayRoot extends Component<Props, State> {
           {eventMarkerSelected && (
             <FieldEventMarkerAddLayer></FieldEventMarkerAddLayer>
           )}
-          {doc.isSidebarConstraintSelected && <FieldConstraintDisplayLayer constraint={doc.selectedSidebarItem} lineColor="var(--select-yellow)"></FieldConstraintDisplayLayer>}
+          {doc.isSidebarConstraintSelected && (
+            <FieldConstraintDisplayLayer
+              constraint={doc.selectedSidebarItem}
+              lineColor="var(--select-yellow)"
+            ></FieldConstraintDisplayLayer>
+          )}
 
-          {!doc.isSidebarConstraintSelected && doc.isSidebarConstraintHovered && <FieldConstraintDisplayLayer constraint={doc.hoveredSidebarItem} lineColor="white"></FieldConstraintDisplayLayer>}
+          {!doc.isSidebarConstraintSelected &&
+            doc.isSidebarConstraintHovered && (
+              <FieldConstraintDisplayLayer
+                constraint={doc.hoveredSidebarItem}
+                lineColor="white"
+              ></FieldConstraintDisplayLayer>
+            )}
           {layers[ViewLayers.Trajectory] && (
             <InterpolatedRobot
               timestamp={uiState.pathAnimationTimestamp}
