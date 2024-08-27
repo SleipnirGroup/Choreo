@@ -21,6 +21,7 @@ import {
 export const UIStateStore = types
   .model("UIStateStore", {
     fieldMatrix: types.frozen<DOMMatrix>(
+      //identity, because there's apparently no factory for it
       DOMMatrixReadOnly.fromFloat32Array(
         Float32Array.from([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
       )

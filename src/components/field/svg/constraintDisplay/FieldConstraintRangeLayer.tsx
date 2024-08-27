@@ -39,8 +39,7 @@ function FieldConstraintRangeLayer(props: Props) {
                   cx={w.x.value}
                   cy={w.y.value}
                   r={
-                    0.15 *
-                    1.5 *
+                    2.25 *
                     Math.min(
                       doc.robotConfig.bumper.width,
                       doc.robotConfig.bumper.length
