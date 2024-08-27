@@ -7,7 +7,7 @@ permissions:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
@@ -35,6 +35,11 @@ jobs:
         with:
           working-directory: "choreolib"
           doxyfile-path: "docs/Doxyfile"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: 17
 
       - name: Run JavaDoc
         run: |

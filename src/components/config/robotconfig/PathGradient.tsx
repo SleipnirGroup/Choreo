@@ -37,7 +37,7 @@ export type PathGradient = {
  */
 class PathGradientFunctions {
   /**
-   * Returns the color "yellow" for the given point in the trajectory.
+   * Returns the "select-yellow" color for the given point in the trajectory.
    * This is the default color used when no gradient is applied.
    * NOTE: This function is not used and is included only for completeness.
    *
@@ -45,7 +45,7 @@ class PathGradientFunctions {
    * @param i - The index of the current point in the trajectory.
    * @param arr - The array of all points in the trajectory.
    * @param documentModel - The document model object.
-   * @returns The color "yellow".
+   * @returns The "select-yellow" color.
    */
   static none(
     point: SavedTrajectorySample,
@@ -53,7 +53,7 @@ class PathGradientFunctions {
     arr: SavedTrajectorySample[],
     documentModel: IStateStore
   ) {
-    return "yellow";
+    return "var(--select-yellow)";
   }
 
   /**
@@ -200,6 +200,9 @@ class PathGradientFunctions {
     arr: SavedTrajectorySample[],
     documentModel: IStateStore
   ) {
+    if (!documentModel.document.splitTrajectoriesAtStopPoints) {
+      return "var(--select-yellow)";
+    }
     const stopPointControlIntervals =
       documentModel.document.pathlist.activePath.stopPointIndices();
 

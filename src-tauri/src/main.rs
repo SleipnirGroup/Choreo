@@ -11,9 +11,7 @@ use tauri::{
     api::{dialog::blocking::FileDialogBuilder, file},
     Manager,
 };
-use trajoptlib::{
-    HolonomicTrajectory, InitialGuessPoint, SwerveDrivetrain, SwerveModule, SwervePathBuilder,
-};
+use trajoptlib::{HolonomicTrajectory, Pose2d, SwerveDrivetrain, SwerveModule, SwervePathBuilder};
 
 #[derive(Clone, serde::Serialize, Debug)]
 struct OpenFileEventPayload<'a> {
@@ -210,9 +208,6 @@ enum Constraints {
         scope: ChoreoConstraintScope,
         direction: f64,
     },
-    WptZeroVelocity {
-        scope: ChoreoConstraintScope,
-    },
     StopPoint {
         scope: ChoreoConstraintScope,
     },
@@ -223,9 +218,6 @@ enum Constraints {
     MaxAngularVelocity {
         scope: ChoreoConstraintScope,
         angular_velocity: f64,
-    },
-    ZeroAngularVelocity {
-        scope: ChoreoConstraintScope,
     },
     StraightLine {
         scope: ChoreoConstraintScope,
@@ -299,11 +291,11 @@ async fn generate_trajectory(
     let mut wpt_cnt: usize = 0;
     let mut rm: Vec<usize> = Vec::new();
     let mut control_interval_counts: Vec<usize> = Vec::new();
-    let mut guess_points_after_waypoint: Vec<InitialGuessPoint> = Vec::new();
+    let mut guess_points_after_waypoint: Vec<Pose2d> = Vec::new();
     for i in 0..path.len() {
         let wpt: &ChoreoWaypoint = &path[i];
         if wpt.isInitialGuess {
-            let guess_point: InitialGuessPoint = InitialGuessPoint {
+            let guess_point = Pose2d {
                 x: wpt.x,
                 y: wpt.y,
                 heading: wpt.heading,
@@ -344,15 +336,10 @@ async fn generate_trajectory(
                     path_builder.wpt_linear_velocity_direction(fix_scope(idx[0], &rm), *direction);
                 }
             }
-            Constraints::WptZeroVelocity { scope } => {
-                if let ChoreoConstraintScope::Waypoint(idx) = scope {
-                    path_builder.wpt_linear_velocity_max_magnitude(fix_scope(idx[0], &rm), 0.0f64);
-                }
-            }
             Constraints::StopPoint { scope } => {
                 if let ChoreoConstraintScope::Waypoint(idx) = scope {
                     path_builder.wpt_linear_velocity_max_magnitude(fix_scope(idx[0], &rm), 0.0f64);
-                    path_builder.wpt_angular_velocity(fix_scope(idx[0], &rm), 0.0);
+                    path_builder.wpt_angular_velocity_max_magnitude(fix_scope(idx[0], &rm), 0.0f64);
                 }
             }
             Constraints::MaxVelocity { scope, velocity } => match scope {
@@ -377,16 +364,6 @@ async fn generate_trajectory(
                         fix_scope(idx[1], &rm),
                         *angular_velocity,
                     ),
-            },
-            Constraints::ZeroAngularVelocity { scope } => match scope {
-                ChoreoConstraintScope::Waypoint(idx) => {
-                    path_builder.wpt_angular_velocity(fix_scope(idx[0], &rm), 0.0)
-                }
-                ChoreoConstraintScope::Segment(idx) => path_builder.sgmt_angular_velocity(
-                    fix_scope(idx[0], &rm),
-                    fix_scope(idx[1], &rm),
-                    0.0,
-                ),
             },
             Constraints::StraightLine { scope } => {
                 if let ChoreoConstraintScope::Segment(idx) = scope {

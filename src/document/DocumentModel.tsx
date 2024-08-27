@@ -74,7 +74,6 @@ const StateStore = types
         }
         let generatedWaypoints: SavedGeneratedWaypoint[] = [];
         return new Promise((resolve, reject) => {
-          pathStore.fixWaypointHeadings();
           const controlIntervalOptResult =
             pathStore.optimizeControlIntervalCounts(self.document.robotConfig);
           if (controlIntervalOptResult !== undefined) {
@@ -91,13 +90,6 @@ const StateStore = types
             }
           });
           pathStore.waypoints.forEach((wpt, idx) => {
-            if (wpt.isInitialGuess) {
-              if (idx == 0) {
-                reject("Cannot start a path with an initial guess point.");
-              } else if (idx == pathStore.waypoints.length - 1) {
-                reject("Cannot end a path with an initial guess point.");
-              }
-            }
             if (wpt.isInitialGuess) {
               if (idx == 0) {
                 reject("Cannot start a path with an initial guess point.");
@@ -214,6 +206,8 @@ const StateStore = types
                   angularVelocity: samp.angular_velocity,
                   velocityX: samp.velocity_x,
                   velocityY: samp.velocity_y,
+                  moduleForcesX: samp.module_forces_x,
+                  moduleForcesY: samp.module_forces_y,
                   timestamp: samp.timestamp
                 });
               });

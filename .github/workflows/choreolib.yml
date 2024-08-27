@@ -27,7 +27,7 @@ jobs:
             build-options:
 
     name: "${{ matrix.artifact-name }}"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     container: ${{ matrix.container }}
     steps:
       - uses: actions/checkout@v4
@@ -61,30 +61,26 @@ jobs:
 
   build-host:
     env:
-      MACOSX_DEPLOYMENT_TARGET: 12
+      MACOSX_DEPLOYMENT_TARGET: 13
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: windows-2022
             artifact-name: Windows-x86_64
-            architecture: x64
             build-options:
 
           # FIXME: Link failure on commands library
           # - os: windows-2022
           #   artifact-name: Windows-aarch64
-          #   architecture: x64
           #   build-options: -Pbuildwinarm64 -Ponlywindowsarm64
 
           - os: macOS-13
             artifact-name: macOS-x86_64
-            architecture: x64
             build-options:
 
           - os: macOS-14
             artifact-name: macOS-arm64
-            architecture: x64
             build-options:
 
     name: "${{ matrix.artifact-name }}"
@@ -99,9 +95,8 @@ jobs:
 
       - uses: actions/setup-java@v4
         with:
-          distribution: "zulu"
+          distribution: "temurin"
           java-version: 17
-          architecture: ${{ matrix.architecture }}
 
       - name: Set version (Windows release)
         if: startsWith(matrix.os, 'windows') && startsWith(github.ref, 'refs/tags/v')
@@ -133,7 +128,7 @@ jobs:
   combine:
     name: Combine
     needs: [build-docker, build-host]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -148,7 +143,7 @@ jobs:
 
       - uses: actions/setup-java@v4
         with:
-          distribution: "zulu"
+          distribution: "temurin"
           java-version: 17
 
       - name: Combine
