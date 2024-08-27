@@ -1,5 +1,7 @@
 use std::{
-    collections::HashMap, f64::consts::PI, path::{Path, PathBuf}
+    collections::HashMap,
+    f64::consts::PI,
+    path::{Path, PathBuf},
 };
 
 use dashmap::DashMap;

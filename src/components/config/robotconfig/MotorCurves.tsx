@@ -5,7 +5,7 @@ export type MotorCurve = { name: string; vmax: number; kt: number };
 // kt = stallTorque/stallCurrent
 
 // 1 rpm in rad/s
-const rpm = 2 * Math.PI / 60;
+const rpm = (2 * Math.PI) / 60;
 export const MotorCurves: Record<
   | "Falcon500"
   | "FalconFOC"
