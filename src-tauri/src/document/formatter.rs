@@ -1,7 +1,8 @@
+use std::io;
+
 use serde::Serialize;
 use serde_json::error::Result;
 use serde_json::{ser::Formatter, Serializer};
-use std::io;
 
 // We only use our own error type; no need for From conversions provided by the
 // standard library's try! macro. This reduces lines of LLVM IR by 4%.
@@ -25,12 +26,14 @@ pub struct PrettyFormatter<'a> {
 }
 
 impl<'a> PrettyFormatter<'a> {
-    /// Construct a pretty printer formatter that defaults to using two spaces for indentation.
+    /// Construct a pretty printer formatter that defaults to using two spaces
+    /// for indentation.
     pub fn new() -> Self {
         PrettyFormatter::with_indent(b" ")
     }
 
-    /// Construct a pretty printer formatter that uses the `indent` string for indentation.
+    /// Construct a pretty printer formatter that uses the `indent` string for
+    /// indentation.
     pub fn with_indent(indent: &'a [u8]) -> Self {
         PrettyFormatter {
             current_indent: 0,
@@ -41,13 +44,13 @@ impl<'a> PrettyFormatter<'a> {
     }
 }
 
-impl<'a> Default for PrettyFormatter<'a> {
+impl Default for PrettyFormatter<'_> {
     fn default() -> Self {
         PrettyFormatter::new()
     }
 }
 
-impl<'a> Formatter for PrettyFormatter<'a> {
+impl Formatter for PrettyFormatter<'_> {
     #[inline]
     fn begin_array<W>(&mut self, writer: &mut W) -> io::Result<()>
     where
@@ -70,7 +73,7 @@ impl<'a> Formatter for PrettyFormatter<'a> {
             //tri!(writer.write_all(b"\n"));
             //tri!(indent(writer, self.current_indent, self.indent));
         }
-        self.in_array.pop();
+        let _ = self.in_array.pop();
         writer.write_all(b"]")
     }
 
@@ -81,7 +84,8 @@ impl<'a> Formatter for PrettyFormatter<'a> {
     {
         tri!(writer.write_all(if first { b"" } else { b"," }));
         Ok(())
-        //if !first {indent(writer, self.current_indent, self.indent)} else {Ok(())}
+        //if !first {indent(writer, self.current_indent, self.indent)} else
+        // {Ok(())}
     }
 
     #[inline]
@@ -121,7 +125,7 @@ impl<'a> Formatter for PrettyFormatter<'a> {
             tri!(writer.write_all(b"\n"));
             tri!(indent(writer, self.current_indent, self.indent));
         }
-        self.in_array.pop();
+        let _ = self.in_array.pop();
         writer.write_all(b"}")
     }
 
@@ -162,7 +166,7 @@ fn indent<W>(wr: &mut W, n: usize, s: &[u8]) -> io::Result<()>
 where
     W: ?Sized + io::Write,
 {
-    for _ in 0..n {
+    for _ in 0 .. n {
         tri!(wr.write_all(s));
     }
 

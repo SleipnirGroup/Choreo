@@ -23,6 +23,7 @@ open = "3"
 lazy_static = "1.4.0"
 tokio = { version = "1", features = ["full"] }
 dashmap = "6.0.1"
+thiserror = "1.0.63"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

@@ -21,6 +21,9 @@ use tokio::{
 
 use super::types::{expr, Bumper, Module, Project, RobotConfig, Traj, Variables};
 
+type WriterMap = DashMap<String, UnboundedSender<WriterCommand<Traj>>>;
+type OptionalProjectWriter = RwLock<Option<UnboundedSender<WriterCommand<Project>>>>;
+
 #[derive(Serialize, Deserialize, Clone)]
 struct OpenFileEventPayload<'a> {
     dir: Option<&'a str>,
@@ -34,23 +37,27 @@ struct OpenTrajEventPayload<'a> {
     contents: Traj,
 }
 
-pub fn setup_senders(app_handle: tauri::AppHandle) {
-    let senders: DashMap<String, UnboundedSender<WriterCommand<Traj>>> = DashMap::new();
-    app_handle.manage(senders);
-    app_handle.manage::<RwLock<Option<UnboundedSender<WriterCommand<Project>>>>>(RwLock::new(None));
+pub fn setup_senders(app_handle: &tauri::AppHandle) {
+    let map: WriterMap = DashMap::new(); // this is for the type inference
+    let first_writemap = app_handle.manage(map);
+    let first_project_writer = app_handle.manage::<OptionalProjectWriter>(RwLock::new(None));
+    assert!(
+        first_writemap && first_project_writer,
+        "Setup Senders was called twice"
+    );
 }
+
 #[tauri::command]
 pub async fn write_traj(
     app_handle: tauri::AppHandle,
     file: String,
     traj: Traj,
 ) -> Result<(), String> {
-    let senders: tauri::State<DashMap<String, UnboundedSender<WriterCommand<Traj>>>> =
-        app_handle.state();
+    let senders: tauri::State<WriterMap> = app_handle.state();
     let sender = senders
         .get(&file)
         .or_else(|| {
-            senders.insert(file.clone(), start::<Traj>(Path::new(&(file.clone()))));
+            let _ = senders.insert(file.clone(), start::<Traj>(Path::new(&(file.clone()))));
             senders.get(&file)
         })
         .ok_or("Could not get or insert traj file writer. Notify developers.")?;
@@ -61,7 +68,7 @@ pub async fn write_traj(
 
 #[tauri::command]
 pub async fn write_chor(app_handle: tauri::AppHandle, chor: Project) -> Result<(), String> {
-    let state = app_handle.state::<RwLock<Option<UnboundedSender<WriterCommand<Project>>>>>();
+    let state = app_handle.state::<OptionalProjectWriter>();
     let opt = state.read().await;
     let sender = opt.as_ref().ok_or("No project is open")?;
     sender
@@ -74,9 +81,12 @@ pub async fn set_chor_path(
     dir: String,
     name: String,
 ) -> Result<(), String> {
-    let state = app_handle.state::<RwLock<Option<UnboundedSender<WriterCommand<Project>>>>>();
-    let mut opt = state.write().await;
-    opt.replace(start(&Path::new(&dir).join(name)));
+    // TODO: make this return nothing, this could be a breaking change for frontend
+    let state = app_handle.state::<OptionalProjectWriter>();
+    let _ = state
+        .write()
+        .await
+        .replace(start(&Path::new(&dir).join(name)));
     Ok(())
 }
 
@@ -86,7 +96,7 @@ pub enum WriterCommand<T> {
     Move(String),
 }
 
-async fn handle_write<T: Serialize>(contents: T, file: &Path) -> Result<(), ()> {
+async fn handle_write<T: Serialize + Send>(contents: T, file: &Path) -> Result<(), ()> {
     let json = super::formatter::to_string_pretty(&contents);
     match json {
         Ok(stringified) => {
@@ -105,6 +115,8 @@ async fn handle_write<T: Serialize>(contents: T, file: &Path) -> Result<(), ()> 
         }
     }
 }
+
+#[allow(unused_results)]
 pub fn start<T: Serialize + Send + Sync + 'static>(
     file: &Path,
 ) -> tokio::sync::mpsc::UnboundedSender<WriterCommand<T>> {
@@ -131,37 +143,35 @@ pub fn start<T: Serialize + Send + Sync + 'static>(
     tx
 }
 
-#[allow(dead_code)]
-async fn send_open_chor_event(
-    app_handle: tauri::AppHandle,
-    chor: Project,
-    dir: &str,
-    name: &str,
-) -> Result<(), tauri::Error> {
-    app_handle.emit_all(
-        "open-file",
-        OpenFileEventPayload {
-            dir: Some(dir),
-            name: Some(name),
-            contents: chor,
-        },
-    )
-}
+// async fn send_open_chor_event(
+//     app_handle: tauri::AppHandle,
+//     chor: Project,
+//     dir: &str,
+//     name: &str,
+// ) -> Result<(), tauri::Error> {
+//     app_handle.emit_all(
+//         "open-file",
+//         OpenFileEventPayload {
+//             dir: Some(dir),
+//             name: Some(name),
+//             contents: chor,
+//         },
+//     )
+// }
 
-#[allow(dead_code)]
-async fn send_open_traj_event(
-    app_handle: tauri::AppHandle,
-    traj: Traj,
-    name: &str,
-) -> Result<(), tauri::Error> {
-    app_handle.emit_all(
-        "open-traj",
-        OpenTrajEventPayload {
-            name: Some(name),
-            contents: traj,
-        },
-    )
-}
+// async fn send_open_traj_event(
+//     app_handle: tauri::AppHandle,
+//     traj: Traj,
+//     name: &str,
+// ) -> Result<(), tauri::Error> {
+//     app_handle.emit_all(
+//         "open-traj",
+//         OpenTrajEventPayload {
+//             name: Some(name),
+//             contents: traj,
+//         },
+//     )
+// }
 
 #[tauri::command]
 pub async fn open_file_dialog(_app_handle: tauri::AppHandle) -> Result<(String, String), String> {
@@ -176,9 +186,8 @@ pub async fn open_file_dialog(_app_handle: tauri::AppHandle) -> Result<(String, 
                 let name = name.to_str();
                 if let (Some(dir), Some(name)) = (dir, name) {
                     return Ok((dir.to_string(), name.to_string()));
-                } else {
-                    return Err("Filepath was not UTF-8".to_string());
                 }
+                return Err("Filepath was not UTF-8".to_string());
             }
         }
     }
@@ -246,7 +255,7 @@ pub async fn new_file(_app_handle: tauri::AppHandle) -> Result<Project, String> 
                     y: expr("-11 in", -0.2794),
                 },
             ],
-            mass: expr("150 lbs", 68.0388555),
+            mass: expr("150 lbs", 68.038_855_5),
             inertia: expr("6 kg m^2", 6.0),
             bumper: Bumper {
                 front: expr("16 in", 0.4064),
@@ -299,11 +308,8 @@ pub async fn find_all_traj(dir: Option<&Path>) -> Result<Vec<String>, String> {
                     } else {
                         None
                     };
-                    if extension
-                        .map(|e| e.eq_ignore_ascii_case("traj"))
-                        .unwrap_or(false)
-                    {
-                        entry.path().to_str().map(|str| str.to_string())
+                    if extension.map_or(false, |e| e.eq_ignore_ascii_case("traj")) {
+                        entry.path().to_str().map(ToString::to_string)
                     } else {
                         None
                     }

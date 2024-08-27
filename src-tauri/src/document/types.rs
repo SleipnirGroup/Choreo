@@ -1,23 +1,34 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::Debug};
 
 use serde::{Deserialize, Serialize};
 use trajoptlib::Translation2d;
+
+/// A trait for types that can be snapshotted.
+/// This allows for the type to be converted to a f64.
+/// This trait is only implemented for [`f64`] and [`Expr`].
+pub trait SnapshottableType: Debug + Clone {
+    fn snapshot(&self) -> f64;
+}
+
+impl SnapshottableType for f64 {
+    #[inline]
+    fn snapshot(&self) -> f64 {
+        *self
+    }
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Expr(pub String, pub f64);
 pub fn expr(ex: &str, val: f64) -> Expr {
     Expr(ex.to_string(), val)
 }
-impl Expr {
-    pub fn snapshot(&self) -> f64 {
+impl SnapshottableType for Expr {
+    #[inline]
+    fn snapshot(&self) -> f64 {
         self.1
     }
 }
-impl AsRef<f64> for Expr {
-    fn as_ref(&self) -> &f64 {
-        &(self.1)
-    }
-}
+
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum Unit {
     Meter,
@@ -43,14 +54,14 @@ pub struct Variables {
     pub poses: HashMap<String, PoseVariable>,
 }
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
-pub struct Bumper<T> {
+pub struct Bumper<T: SnapshottableType> {
     pub front: T,
     pub left: T,
     pub back: T,
     pub right: T,
 }
 
-impl Bumper<Expr> {
+impl<T: SnapshottableType> Bumper<T> {
     pub fn snapshot(&self) -> Bumper<f64> {
         Bumper {
             front: self.front.snapshot(),
@@ -61,12 +72,12 @@ impl Bumper<Expr> {
     }
 }
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
-pub struct Module<T> {
+pub struct Module<T: SnapshottableType> {
     pub x: T,
     pub y: T,
 }
 
-impl Module<Expr> {
+impl<T: SnapshottableType> Module<T> {
     pub fn snapshot(&self) -> Module<f64> {
         Module {
             x: self.x.snapshot(),
@@ -83,7 +94,7 @@ impl Module<f64> {
     }
 }
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
-pub struct RobotConfig<T> {
+pub struct RobotConfig<T: SnapshottableType> {
     pub modules: [Module<T>; 4],
     pub mass: T,
     pub inertia: T,
@@ -96,13 +107,10 @@ pub struct RobotConfig<T> {
     pub bumper: Bumper<T>,
 }
 
-impl RobotConfig<Expr> {
+impl<T: SnapshottableType> RobotConfig<T> {
     pub fn snapshot(&self) -> RobotConfig<f64> {
         RobotConfig {
-            modules: self
-                .modules
-                .clone()
-                .map(|modu: Module<Expr>| modu.snapshot()),
+            modules: self.modules.clone().map(|modu: Module<T>| modu.snapshot()),
             mass: self.mass.snapshot(),
             inertia: self.inertia.snapshot(),
             gearing: self.gearing.snapshot(),
@@ -113,14 +121,15 @@ impl RobotConfig<Expr> {
         }
     }
 }
-impl RobotConfig<f64> {
+impl<T: SnapshottableType> RobotConfig<T> {
     pub fn wheel_max_torque(&self) -> f64 {
-        self.tmax * self.gearing
+        self.tmax.snapshot() * self.gearing.snapshot()
     }
     pub fn wheel_max_velocity(&self) -> f64 {
-        self.vmax / self.gearing
+        self.vmax.snapshot() / self.gearing.snapshot()
     }
 }
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Project {
     pub version: String,
@@ -130,19 +139,19 @@ pub struct Project {
 
 // traj file
 #[derive(Serialize, Deserialize, Clone, Copy)]
-#[allow(non_snake_case)]
-pub struct Waypoint<T> {
+#[serde(rename_all = "camelCase")]
+pub struct Waypoint<T: SnapshottableType> {
     pub x: T,
     pub y: T,
     pub heading: T,
     pub intervals: usize,
     pub split: bool,
-    pub fixTranslation: bool,
-    pub fixHeading: bool,
-    pub overrideIntervals: bool,
+    pub fix_translation: bool,
+    pub fix_heading: bool,
+    pub override_intervals: bool,
 }
 
-impl Waypoint<Expr> {
+impl<T: SnapshottableType> Waypoint<T> {
     pub fn snapshot(&self) -> Waypoint<f64> {
         Waypoint {
             x: self.x.snapshot(),
@@ -150,15 +159,14 @@ impl Waypoint<Expr> {
             heading: self.heading.snapshot(),
             intervals: self.intervals,
             split: self.split,
-            fixTranslation: self.fixTranslation,
-            fixHeading: self.fixHeading,
-            overrideIntervals: self.overrideIntervals,
+            fix_translation: self.fix_translation,
+            fix_heading: self.fix_heading,
+            override_intervals: self.override_intervals,
         }
     }
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy)]
-
 pub enum WaypointID {
     #[serde(rename = "first")]
     First,
@@ -168,25 +176,25 @@ pub enum WaypointID {
     Idx(usize),
 }
 impl WaypointID {
-    pub fn get_idx(&self, count: &usize) -> Option<usize> {
+    pub fn get_idx(&self, count: usize) -> Option<usize> {
         match self {
             WaypointID::Idx(idx) => {
-                if *idx < *count {
+                if *idx < count {
                     Some(*idx)
                 } else {
                     None
                 }
             }
             WaypointID::First => {
-                if *count > 0 {
+                if count > 0 {
                     Some(0)
                 } else {
                     None
                 }
             }
             WaypointID::Last => {
-                if *count > 0 {
-                    Some(*count - 1)
+                if count > 0 {
+                    Some(count - 1)
                 } else {
                     None
                 }
@@ -195,7 +203,7 @@ impl WaypointID {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Eq)]
 pub enum ConstraintType {
     Waypoint,
     Segment,
@@ -203,7 +211,7 @@ pub enum ConstraintType {
 }
 #[derive(Serialize, Deserialize, Clone, Copy)]
 #[serde(tag = "type", content = "props")]
-pub enum ConstraintData<T> {
+pub enum ConstraintData<T: SnapshottableType> {
     MaxVelocity {
         max: T,
     },
@@ -219,15 +227,14 @@ pub enum ConstraintData<T> {
     StopPoint {},
 }
 
-impl<T> ConstraintData<T> {
+impl<T: SnapshottableType> ConstraintData<T> {
     pub fn scope(&self) -> ConstraintType {
         match self {
             ConstraintData::StopPoint {} => ConstraintType::Waypoint,
             _ => ConstraintType::Both,
         }
     }
-}
-impl ConstraintData<Expr> {
+
     pub fn snapshot(&self) -> ConstraintData<f64> {
         match self {
             ConstraintData::MaxVelocity { max } => ConstraintData::MaxVelocity {
@@ -253,20 +260,13 @@ impl ConstraintData<Expr> {
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy)]
-pub struct Constraint<T> {
+pub struct Constraint<T: SnapshottableType> {
     pub from: WaypointID,
     pub to: Option<WaypointID>,
     pub data: ConstraintData<T>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy)]
-pub struct ConstraintIDX<T> {
-    pub from: usize,
-    pub to: Option<usize>,
-    pub data: ConstraintData<T>,
-}
-
-impl Constraint<Expr> {
+impl<T: SnapshottableType> Constraint<T> {
     pub fn snapshot(&self) -> Constraint<f64> {
         Constraint::<f64> {
             from: self.from,
@@ -274,6 +274,13 @@ impl Constraint<Expr> {
             data: self.data.snapshot(),
         }
     }
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy)]
+pub struct ConstraintIDX<T: SnapshottableType> {
+    pub from: usize,
+    pub to: Option<usize>,
+    pub data: ConstraintData<T>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Copy)]
@@ -288,13 +295,14 @@ pub struct Sample {
     pub fx: [f64; 4],
     pub fy: [f64; 4],
 }
+
 #[derive(Serialize, Deserialize, Clone)]
-pub struct ChoreoPath<T> {
+pub struct ChoreoPath<T: SnapshottableType> {
     pub waypoints: Vec<Waypoint<T>>,
     pub constraints: Vec<Constraint<T>>,
 }
 
-impl ChoreoPath<Expr> {
+impl<T: SnapshottableType> ChoreoPath<T> {
     pub fn snapshot(&self) -> ChoreoPath<f64> {
         ChoreoPath {
             waypoints: self.waypoints.iter().map(Waypoint::snapshot).collect(),
@@ -302,20 +310,24 @@ impl ChoreoPath<Expr> {
         }
     }
 }
+
 #[derive(Serialize, Deserialize, Clone)]
-#[allow(non_snake_case)]
+#[serde(rename_all = "camelCase")]
 pub struct Output {
     pub waypoints: Vec<f64>,
     pub samples: Vec<Vec<Sample>>,
 
-    pub useModuleForces: bool,
+    pub use_module_forces: bool,
 }
+
 #[derive(Serialize, Deserialize, Clone)]
+#[allow(clippy::struct_field_names)]
 pub struct Traj {
     pub name: String,
     pub version: String,
     pub path: ChoreoPath<Expr>,
     // Captures the path that formed the current generated trajectory
     pub snapshot: Option<ChoreoPath<f64>>,
+    // TODO: maybe rename to `output`, this is a breaking change for frontend though
     pub traj: Output,
 }

@@ -1,15 +1,16 @@
-use super::types::{
-    ChoreoPath, ConstraintData, ConstraintIDX, ConstraintType, Module, Project, Sample, Traj,
-};
-
 use std::f64::consts::PI;
-
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::OnceLock;
 use std::vec;
 
-use super::intervals::guess_control_interval_counts;
 use trajoptlib::{Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory};
+
+use super::intervals::guess_control_interval_counts;
+use super::types::{
+    ChoreoPath, ConstraintData, ConstraintIDX, ConstraintType, Module, Project, Sample, Traj,
+};
+use crate::error::ChoreoError;
+use crate::Result;
 
 fn fix_scope(idx: usize, removed_idxs: &Vec<usize>) -> usize {
     let mut to_subtract: usize = 0;
@@ -34,21 +35,22 @@ pub struct ProgressUpdate {
 
 pub fn setup_progress_sender() -> Receiver<ProgressUpdate> {
     let (tx, rx) = channel::<ProgressUpdate>();
-    PROGRESS_SENDER_LOCK.get_or_init(move || tx);
+    let _ = PROGRESS_SENDER_LOCK.get_or_init(move || tx);
     rx
 }
 
-#[allow(non_snake_case)]
 #[tauri::command]
+#[allow(clippy::too_many_lines)]
 pub async fn generate(
     chor: Project,
     traj: Traj,
     // The handle referring to this path for the solver state callback
     handle: i64,
-) -> Result<Traj, String> {
+) -> Result<Traj> {
     let mut path_builder = SwervePathBuilder::new();
     let mut wpt_cnt: usize = 0;
-    // tracks which idxs were guess points, which get added differently and require adjusting indexes after them
+    // tracks which idxs were guess points, which get added differently and require
+    // adjusting indexes after them
     let mut guess_point_idxs: Vec<usize> = Vec::new();
     let mut control_interval_counts: Vec<usize> = Vec::new();
     let mut guess_points_after_waypoint: Vec<Pose2d> = Vec::new();
@@ -58,38 +60,38 @@ pub async fn generate(
     let path = &snapshot.waypoints;
 
     if path.len() < 2 {
-        return Err("Path needs at least 2 waypoints.".to_string());
+        return Err(ChoreoError::OutOfBounds("Waypoints", "at least 2"));
     }
     let counts_vec = guess_control_interval_counts(&chor.config, &traj)?;
     if counts_vec.len() != path.len() {
-        return Err(format!(
-            "Intervals guess had {} wpts, path has {}",
-            counts_vec.len(),
-            path.len()
+        return Err(ChoreoError::Inequality(
+            "Control interval counts",
+            "waypoint count",
         ));
     }
     let num_wpts = path.len();
     let mut constraint_idx = Vec::<ConstraintIDX<f64>>::new();
-    // Step 1; Find out which waypoints are unconstrained in translation and heading and also not the endpoint of another constraint.
-    let mut isInitialGuess = vec![true; path.len()];
+    // Step 1; Find out which waypoints are unconstrained in translation and heading
+    // and also not the endpoint of another constraint.
+    let mut is_initial_guess = vec![true; path.len()];
 
     // Convert constraints to index form. Throw out constraints without valid index
     for constraint in &snapshot.constraints {
-        let from = constraint.from.get_idx(&num_wpts);
-        let to = constraint.to.as_ref().and_then(|id| id.get_idx(&num_wpts));
+        let from = constraint.from.get_idx(num_wpts);
+        let to = constraint.to.as_ref().and_then(|id| id.get_idx(num_wpts));
         // from and to are None if they did not point to a valid waypoint.
         match from {
             None => {}
             Some(from_idx) => {
-                let validWpt = to.is_none();
-                let validSgmt = to.is_some();
+                let valid_wpt = to.is_none();
+                let valid_sgmt = to.is_some();
                 // Check for valid scope
                 if match constraint.data.scope() {
-                    ConstraintType::Waypoint => validWpt,
-                    ConstraintType::Segment => validSgmt,
-                    ConstraintType::Both => validWpt || validSgmt,
+                    ConstraintType::Waypoint => valid_wpt,
+                    ConstraintType::Segment => valid_sgmt,
+                    ConstraintType::Both => valid_wpt || valid_sgmt,
                 } {
-                    isInitialGuess[from_idx] = false;
+                    is_initial_guess[from_idx] = false;
                     let mut fixed_to = to;
                     let mut fixed_from = from_idx;
                     if let Some(to_idx) = to {
@@ -103,7 +105,7 @@ pub async fn generate(
                             }
                             fixed_to = None;
                         } else {
-                            isInitialGuess[to_idx] = false;
+                            is_initial_guess[to_idx] = false;
                         }
                     }
                     constraint_idx.push(ConstraintIDX {
@@ -115,10 +117,10 @@ pub async fn generate(
             }
         };
     }
-    for i in 0..path.len() {
+    for i in 0 .. path.len() {
         let wpt = &path[i];
         // add initial guess points (actually unconstrained empty wpts in Choreo terms)
-        if isInitialGuess[i] && !wpt.fixHeading && !wpt.fixTranslation {
+        if is_initial_guess[i] && !wpt.fix_heading && !wpt.fix_translation {
             let guess_point = Pose2d {
                 x: wpt.x,
                 y: wpt.y,
@@ -135,9 +137,9 @@ pub async fn generate(
             }
 
             guess_points_after_waypoint.clear();
-            if wpt.fixHeading && wpt.fixTranslation {
+            if wpt.fix_heading && wpt.fix_translation {
                 path_builder.pose_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
-            } else if wpt.fixTranslation {
+            } else if wpt.fix_translation {
                 path_builder.translation_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
             } else {
                 path_builder.empty_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
@@ -211,13 +213,16 @@ pub async fn generate(
     // }
     path_builder.set_drivetrain(&drivetrain);
     //Err("".to_string())
-    let result = path_builder.generate(true, handle)?;
+    let result = path_builder
+        .generate(true, handle)
+        .map_err(ChoreoError::TrajOpt)?;
 
-    Ok(postprocess(result, traj, snapshot, counts_vec))
+    Ok(postprocess(&result, traj, snapshot, counts_vec))
 }
 
+#[allow(clippy::missing_asserts_for_indexing)]
 fn postprocess(
-    result: SwerveTrajectory,
+    result: &SwerveTrajectory,
     mut traj: Traj,
     mut snapshot: ChoreoPath<f64>,
     counts_vec: Vec<usize>,
@@ -247,8 +252,7 @@ fn postprocess(
                 result
                     .samples
                     .get(total_intervals)
-                    .map(|s| s.timestamp)
-                    .unwrap_or(0.0),
+                    .map_or(0.0, |s| s.timestamp),
             )
         })
         .collect::<Vec<(bool, usize, f64)>>();
@@ -266,7 +270,9 @@ fn postprocess(
         .filter_map(|window| {
             result
                 .samples
-                .get((window[0])..(window[1]) + 1) // grab the range including both endpoints
+                // grab the range including both endpoints,
+                // there are no bounds checks on this slice so be weary of crashes
+                .get((window[0])..=(window[1])) 
                 .map(|slice| {
                     // convert into samples
                     slice
@@ -283,7 +289,7 @@ fn postprocess(
                                 fx: [0.0, 0.0, 0.0, 0.0],
                                 fy: [0.0, 0.0, 0.0, 0.0],
                             };
-                            if traj.traj.useModuleForces {
+                            if traj.traj.use_module_forces {
                                 for i in 0..4 {
                                     let x = swerve_sample.module_forces_x.get(i);
                                     let y = swerve_sample.module_forces_y.get(i);
@@ -311,8 +317,8 @@ fn solver_status_callback(traj: SwerveTrajectory, handle: i64) {
 }
 
 /**
- * A OnceLock is a synchronization primitive that can be written to once. Used here to
- * create a read-only static reference to the sender, even though the sender can't be
- * constructed in a static context.
+ * A [`OnceLock`] is a synchronization primitive that can be written to
+ * once. Used here to create a read-only static reference to the sender,
+ * even though the sender can't be constructed in a static context.
  */
 pub static PROGRESS_SENDER_LOCK: OnceLock<Sender<ProgressUpdate>> = OnceLock::new();
