@@ -189,7 +189,7 @@ export const VERSIONS = {
     up: (document: any): v0_2 => {
       document = document as v0_1_2;
       const robotConfiguration: v0_2_Config = {
-        motorMaxTorque: ROBOT_CONFIG_DEFAULTS.motorMaxTorque,
+        tmax: ROBOT_CONFIG_DEFAULTS.tmax,
         motorMaxVelocity: ROBOT_CONFIG_DEFAULTS.motorMaxVelocity,
         gearing: ROBOT_CONFIG_DEFAULTS.gearing,
         ...document.robotConfiguration
@@ -340,14 +340,11 @@ export const updateToCurrent = (document: {
     version !== SAVE_FILE_VERSION && i < Object.keys(VERSIONS).length;
     i++
   ) {
-    console.log(document);
     if (Object.keys(VERSIONS).includes(version)) {
-      console.log(version);
       document = VERSIONS[version as keyof typeof VERSIONS].up(document);
       version = document.version;
     }
   }
-  console.log(document);
   return document as SavedDocument;
 };
 

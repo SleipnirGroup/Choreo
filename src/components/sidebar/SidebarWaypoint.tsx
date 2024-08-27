@@ -1,4 +1,8 @@
+import { PriorityHigh } from "@mui/icons-material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { IconButton, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
+import { isAlive } from "mobx-state-tree";
 import React, { Component } from "react";
 import {
   Draggable,
@@ -6,28 +10,21 @@ import {
   NotDraggingStyle
 } from "react-beautiful-dnd";
 import { CSSProperties } from "styled-components";
-import DocumentManagerContext from "../../document/DocumentManager";
+import { doc, uiState } from "../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
+import { NavbarItemData } from "../../document/UIData";
 import styles from "./Sidebar.module.css";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { IconButton, Tooltip } from "@mui/material";
-import { isAlive } from "mobx-state-tree";
-import { PriorityHigh } from "@mui/icons-material";
-import { NavbarItemData } from "../../document/UIStateStore";
 
 type Props = {
   waypoint: IHolonomicWaypointStore;
   index: number;
   pathLength: number;
-  context: React.ContextType<typeof DocumentManagerContext>;
   issue: string | undefined;
 };
 
 type State = { selected: boolean };
 
 class SidebarWaypoint extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
   id: number = 0;
   state = { selected: false };
 
@@ -63,7 +60,7 @@ class SidebarWaypoint extends Component<Props, State> {
     const type = waypoint.type;
     // apparently we have to dereference this here instead of inline in the class name
     // Otherwise the component won't rerender when it changes
-    const { selected, _translationConstrained, _headingConstrained } = waypoint;
+    const { selected } = waypoint;
     if (!isAlive(waypoint)) return <></>;
     return (
       <Draggable
@@ -84,32 +81,14 @@ class SidebarWaypoint extends Component<Props, State> {
               provided.draggableProps.style
             )}
             onClick={() => {
-              this.context.model.uiState.setSelectedSidebarItem(waypoint);
-              this.context.model.uiState.setSelectedNavbarItem(waypoint.type);
+              doc.setSelectedSidebarItem(waypoint);
+              uiState.setSelectedNavbarItem(waypoint.type);
             }}
           >
             {React.cloneElement(NavbarItemData[type].icon, {
               className: styles.SidebarIcon,
               htmlColor: this.getIconColor(pathLength)
             })}
-            {/* {translationConstrained && headingConstrained && (
-              <Waypoint
-                htmlColor={this.getIconColor(pathLength)}
-                className={styles.SidebarIcon}
-              ></Waypoint>
-            )}
-            {translationConstrained && !headingConstrained && (
-              <Circle
-                htmlColor={this.getIconColor(pathLength)}
-                className={styles.SidebarIcon}
-              ></Circle>
-            )}
-            {!translationConstrained && (
-              <CircleOutlined
-                htmlColor={this.getIconColor(pathLength)}
-                className={styles.SidebarIcon}
-              ></CircleOutlined>
-            )} */}
             <span
               className={styles.SidebarLabel}
               style={{ display: "grid", gridTemplateColumns: "1fr auto auto" }}
@@ -130,7 +109,7 @@ class SidebarWaypoint extends Component<Props, State> {
                 className={styles.SidebarRightIcon}
                 onClick={(e) => {
                   e.stopPropagation();
-                  this.context.model.document.pathlist.activePath.deleteWaypointUUID(
+                  doc.pathlist.activePath.path.deleteWaypoint(
                     waypoint?.uuid || ""
                   );
                 }}

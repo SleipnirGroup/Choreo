@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import DocumentManagerContext from "../../document/DocumentManager";
+import { doc, uiState } from "../../document/DocumentManager";
 import { observer } from "mobx-react";
 import styles from "./Sidebar.module.css";
 import { Divider, IconButton, Tooltip } from "@mui/material";
@@ -19,15 +19,13 @@ type Props = object;
 type State = object;
 
 class Sidebar extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
   constructor(props: Props) {
     super(props);
   }
 
   render() {
-    const { toggleMainMenu } = this.context.model.uiState;
+    const { toggleMainMenu } = uiState;
     return (
       <div className={styles.Container}>
         <div
@@ -59,9 +57,9 @@ class Sidebar extends Component<Props, State> {
             <Tooltip disableInteractive title="Undo">
               <span>
                 <IconButton
-                  disabled={!this.context.history.canUndo}
+                  disabled={!doc.history.canUndo}
                   onClick={() => {
-                    this.context.undo();
+                    doc.undo();
                   }}
                 >
                   <Undo></Undo>
@@ -71,9 +69,9 @@ class Sidebar extends Component<Props, State> {
             <Tooltip disableInteractive title="Redo">
               <span>
                 <IconButton
-                  disabled={!this.context.history.canRedo}
+                  disabled={!doc.history.canRedo}
                   onClick={() => {
-                    this.context.redo();
+                    doc.redo();
                   }}
                 >
                   <Redo></Redo>
@@ -94,14 +92,9 @@ class Sidebar extends Component<Props, State> {
               style={{
                 float: "right"
               }}
-              disabled={
-                Object.keys(this.context.model.document.pathlist.paths)
-                  .length == 0
-              }
+              disabled={Object.keys(doc.pathlist.paths).length == 0}
               onClick={() =>
-                this.context.model.document.pathlist.duplicatePath(
-                  this.context.model.document.pathlist.activePathUUID
-                )
+                doc.pathlist.duplicatePath(doc.pathlist.activePathUUID)
               }
             >
               <ContentCopy fontSize="small"></ContentCopy>
@@ -114,9 +107,7 @@ class Sidebar extends Component<Props, State> {
               style={{
                 float: "right"
               }}
-              onClick={() =>
-                this.context.model.document.pathlist.addPath("New Path", true)
-              }
+              onClick={() => doc.pathlist.addPath("New Path", true)}
             >
               <Add fontSize="small"></Add>
             </IconButton>
@@ -142,19 +133,16 @@ class Sidebar extends Component<Props, State> {
             <span>CONSTRAINTS</span>
           </Divider>
           <div className={styles.WaypointList}>
-            {this.context.model.document.pathlist.activePath.constraints.map(
-              (constraint) => {
-                return (
-                  <SidebarConstraint
-                    key={constraint.uuid}
-                    constraint={constraint}
-                  ></SidebarConstraint>
-                );
-              }
-            )}
+            {doc.pathlist.activePath.path.constraints.map((constraint) => {
+              return (
+                <SidebarConstraint
+                  key={constraint.uuid}
+                  constraint={constraint}
+                ></SidebarConstraint>
+              );
+            })}
           </div>
-          {this.context.model.document.pathlist.activePath.constraints.length ==
-            0 && (
+          {doc.pathlist.activePath.path.constraints.length == 0 && (
             <div className={styles.SidebarItem + " " + styles.Noninteractible}>
               <span></span>
               <span style={{ color: "gray", fontStyle: "italic" }}>
@@ -162,9 +150,9 @@ class Sidebar extends Component<Props, State> {
               </span>
             </div>
           )}
-          {(this.context.model.document.usesObstacles ||
-            this.context.model.document.pathlist.activePath.obstacles.includes(
-              this.context.model.uiState.selectedSidebarItem
+          {(doc.usesObstacles ||
+            doc.pathlist.activePath.path.obstacles.includes(
+              doc.selectedSidebarItem
             )) && (
             <>
               <Divider
@@ -175,20 +163,18 @@ class Sidebar extends Component<Props, State> {
                 <span>OBSTACLES</span>
               </Divider>
               <div className={styles.WaypointList}>
-                {this.context.model.document.pathlist.activePath.obstacles.map(
+                {doc.pathlist.activePath.path.obstacles.map(
                   (obstacle: ICircularObstacleStore, index: number) => {
                     return (
                       <SidebarObstacle
                         obstacle={obstacle}
                         index={index}
-                        context={this.context}
                       ></SidebarObstacle>
                     );
                   }
                 )}
               </div>
-              {this.context.model.document.pathlist.activePath.obstacles
-                .length == 0 && (
+              {doc.pathlist.activePath.path.obstacles.length == 0 && (
                 <div
                   className={styles.SidebarItem + " " + styles.Noninteractible}
                 >
@@ -204,21 +190,19 @@ class Sidebar extends Component<Props, State> {
             <span>MARKERS</span>
           </Divider>
           <div className={styles.WaypointList}>
-            {this.context.model.document.pathlist.activePath.eventMarkers.map(
+            {doc.pathlist.activePath.traj.markers.map(
               (marker: IEventMarkerStore, index: number) => {
                 return (
                   <SidebarEventMarker
                     marker={marker}
                     index={index}
-                    context={this.context}
                     key={marker.uuid}
                   ></SidebarEventMarker>
                 );
               }
             )}
           </div>
-          {this.context.model.document.pathlist.activePath.eventMarkers
-            .length == 0 && (
+          {doc.pathlist.activePath.traj.markers.length == 0 && (
             <div className={styles.SidebarItem + " " + styles.Noninteractible}>
               <span></span>
               <span style={{ color: "gray", fontStyle: "italic" }}>

@@ -1,14 +1,15 @@
 import { IconButton, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 
+import DeleteIcon from "@mui/icons-material/Delete";
+import { Instance, getParent } from "mobx-state-tree";
 import React, { Component } from "react";
 import { IConstraintStore, WaypointID } from "../../document/ConstraintStore";
-import DocumentManagerContext from "../../document/DocumentManager";
+import { doc } from "../../document/DocumentManager";
 import styles from "./Sidebar.module.css";
-import DeleteIcon from "@mui/icons-material/Delete";
-import { getParent } from "mobx-state-tree";
-import { IHolonomicPathStore } from "../../document/HolonomicPathStore";
+
 import { PriorityHigh } from "@mui/icons-material";
+import { ChoreoPathStore } from "../../document/path/ChoreoPathStore";
 
 type Props = {
   constraint: IConstraintStore;
@@ -17,8 +18,6 @@ type Props = {
 type State = object;
 
 class SidebarConstraint extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
   id: number = 0;
   state = {};
 
@@ -27,23 +26,24 @@ class SidebarConstraint extends Component<Props, State> {
       if (id == "first") return "Start";
       if (id == "last") return "End";
       return (
-        getParent<IHolonomicPathStore>(
+        getParent<Instance<typeof ChoreoPathStore>>(
           getParent<IConstraintStore[]>(this.props.constraint)
         ).findUUIDIndex(id.uuid) + 1
       );
     };
-    const scope = this.props.constraint.getSortedScope();
-    if (scope.length == 0) return "!";
+    const from = this.props.constraint.from;
+    const to = this.props.constraint.to;
+    if (from === undefined && to === undefined) return "!";
     else if (
-      scope.length == 1 ||
-      scope[0] === scope[1] ||
-      (Object.hasOwn(scope[0], "uuid") &&
-        Object.hasOwn(scope[1], "uuid") &&
-        scope[0]!.uuid == scope[1]!.uuid)
+      to === undefined ||
+      from === to ||
+      (Object.hasOwn(from, "uuid") &&
+        Object.hasOwn(to, "uuid") &&
+        from!.uuid == to!.uuid)
     )
-      return waypointIDToText(scope[0]);
+      return waypointIDToText(from);
     else {
-      return `${waypointIDToText(scope[0])}-${waypointIDToText(scope[1])}`;
+      return `${waypointIDToText(from)}-${waypointIDToText(to)}`;
     }
   }
   render() {
@@ -56,12 +56,10 @@ class SidebarConstraint extends Component<Props, State> {
       <div
         className={styles.SidebarItem + (selected ? ` ${styles.Selected}` : "")}
         onClick={() => {
-          this.context.model.uiState.setSelectedSidebarItem(
-            this.props.constraint
-          );
+          doc.setSelectedSidebarItem(this.props.constraint);
         }}
       >
-        {React.cloneElement(this.props.constraint.definition.icon, {
+        {React.cloneElement(this.props.constraint.data.def.icon, {
           className: styles.SidebarIcon,
           htmlColor: selected ? "var(--select-yellow)" : "var(--accent-purple)"
         })}
@@ -72,7 +70,7 @@ class SidebarConstraint extends Component<Props, State> {
           className={styles.SidebarLabel}
           style={{ display: "grid", gridTemplateColumns: "1fr auto auto" }}
         >
-          <span>{this.props.constraint.definition.shortName}</span>
+          <span>{this.props.constraint.data.def.shortName}</span>
           {issues.length !== 0 ? (
             <Tooltip disableInteractive title={issues.join(", ")}>
               <PriorityHigh
@@ -91,7 +89,7 @@ class SidebarConstraint extends Component<Props, State> {
             className={styles.SidebarRightIcon}
             onClick={(e) => {
               e.stopPropagation();
-              this.context.model.document.pathlist.activePath.deleteConstraintUUID(
+              doc.pathlist.activePath.path.deleteConstraint(
                 this.props.constraint?.uuid || ""
               );
             }}

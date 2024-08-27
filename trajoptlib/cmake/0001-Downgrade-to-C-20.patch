@@ -1,0 +1,140 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Tyler Veness <calcmogul@gmail.com>
+Date: Thu, 20 Jun 2024 12:30:54 -0700
+Subject: [PATCH] Downgrade to C++20
+
+---
+ .styleguide                       |  1 +
+ CMakeLists.txt                    | 10 ++++++++++
+ cmake/modules/CompilerFlags.cmake |  2 +-
+ include/.styleguide               |  1 +
+ include/sleipnir/util/Print.hpp   | 27 ++++++++++++++-------------
+ 5 files changed, 27 insertions(+), 14 deletions(-)
+
+diff --git a/.styleguide b/.styleguide
+index fc51b044a61dd842dca50d013c52baed00612545..2476200a8763368007c3d4029bf326619a7bf0fa 100644
+--- a/.styleguide
++++ b/.styleguide
+@@ -17,6 +17,7 @@ modifiableFileExclude {
+ includeOtherLibs {
+   ^Eigen/
+   ^catch2/
++  ^fmt/
+   ^nanobind/
+   ^sleipnir/
+ }
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index e9668b53d6a0317cf2367b212f5013cbb2aa7ad5..1db191b6492a5f10b657c42c7959a73ef72724e3 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -114,6 +114,16 @@ endif()
+ 
+ target_link_libraries(Sleipnir PUBLIC Eigen3::Eigen)
+ 
++# fmt dependency
++fetchcontent_declare(
++    fmt
++    GIT_REPOSITORY https://github.com/fmtlib/fmt.git
++    GIT_TAG 11.0.2
++)
++fetchcontent_makeavailable(fmt)
++
++target_link_libraries(Sleipnir PUBLIC fmt::fmt)
++
+ if(BUILD_TESTING)
+     # Catch2 dependency
+     fetchcontent_declare(
+diff --git a/cmake/modules/CompilerFlags.cmake b/cmake/modules/CompilerFlags.cmake
+index 9f3fad1ce359897d6e87d5c37efae51d55bcf160..4331baf9394a7f27bde51906c9dd14b8543e4af4 100644
+--- a/cmake/modules/CompilerFlags.cmake
++++ b/cmake/modules/CompilerFlags.cmake
+@@ -11,7 +11,7 @@ macro(compiler_flags target)
+         target_compile_options(${target} PRIVATE /wd4244 /wd4251 /WX)
+     endif()
+ 
+-    target_compile_features(${target} PUBLIC cxx_std_23)
++    target_compile_features(${target} PUBLIC cxx_std_20)
+     if(MSVC)
+         target_compile_options(${target} PUBLIC /MP /utf-8 /bigobj)
+     endif()
+diff --git a/include/.styleguide b/include/.styleguide
+index 8fb61fdf9cc5ceff633d3126f0579eef25a1326f..6a7f8ed28f9cb037c9746a7e0ef5e110481d9825 100644
+--- a/include/.styleguide
++++ b/include/.styleguide
+@@ -12,4 +12,5 @@ licenseUpdateExclude {
+ 
+ includeOtherLibs {
+   ^Eigen/
++  ^fmt/
+ }
+diff --git a/include/sleipnir/util/Print.hpp b/include/sleipnir/util/Print.hpp
+index 339320bce6d017ca85025060ba445b2f025bb225..fcf2e69bfb5a081cd915bdded3caa80cd9c38518 100644
+--- a/include/sleipnir/util/Print.hpp
++++ b/include/sleipnir/util/Print.hpp
+@@ -2,52 +2,53 @@
+ 
+ #pragma once
+ 
+-#include <print>
+ #include <system_error>
+ #include <utility>
+ 
++#include <fmt/base.h>
++
+ namespace sleipnir {
+ 
+ /**
+- * Wrapper around std::print() that squelches write failure exceptions.
++ * Wrapper around fmt::print() that squelches write failure exceptions.
+  */
+ template <typename... T>
+-inline void print(std::format_string<T...> fmt, T&&... args) {
++inline void print(fmt::format_string<T...> fmt, T&&... args) {
+   try {
+-    std::print(fmt, std::forward<T>(args)...);
++    fmt::print(fmt, std::forward<T>(args)...);
+   } catch (const std::system_error&) {
+   }
+ }
+ 
+ /**
+- * Wrapper around std::print() that squelches write failure exceptions.
++ * Wrapper around fmt::print() that squelches write failure exceptions.
+  */
+ template <typename... T>
+-inline void print(std::FILE* f, std::format_string<T...> fmt, T&&... args) {
++inline void print(std::FILE* f, fmt::format_string<T...> fmt, T&&... args) {
+   try {
+-    std::print(f, fmt, std::forward<T>(args)...);
++    fmt::print(f, fmt, std::forward<T>(args)...);
+   } catch (const std::system_error&) {
+   }
+ }
+ 
+ /**
+- * Wrapper around std::println() that squelches write failure exceptions.
++ * Wrapper around fmt::println() that squelches write failure exceptions.
+  */
+ template <typename... T>
+-inline void println(std::format_string<T...> fmt, T&&... args) {
++inline void println(fmt::format_string<T...> fmt, T&&... args) {
+   try {
+-    std::println(fmt, std::forward<T>(args)...);
++    fmt::println(fmt, std::forward<T>(args)...);
+   } catch (const std::system_error&) {
+   }
+ }
+ 
+ /**
+- * Wrapper around std::println() that squelches write failure exceptions.
++ * Wrapper around fmt::println() that squelches write failure exceptions.
+  */
+ template <typename... T>
+-inline void println(std::FILE* f, std::format_string<T...> fmt, T&&... args) {
++inline void println(std::FILE* f, fmt::format_string<T...> fmt, T&&... args) {
+   try {
+-    std::println(f, fmt, std::forward<T>(args)...);
++    fmt::println(f, fmt, std::forward<T>(args)...);
+   } catch (const std::system_error&) {
+   }
+ }

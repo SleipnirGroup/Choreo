@@ -1,31 +1,37 @@
-import { types, getRoot, Instance, getParent, isAlive } from "mobx-state-tree";
-import { safeGetIdentifier } from "../util/mobxutils";
-import { IStateStore } from "./DocumentModel";
-import { SavedWaypoint } from "./DocumentSpecTypes";
-import { NavbarItemData } from "./UIStateStore";
+import { Instance, getEnv, getParent, isAlive, types } from "mobx-state-tree";
+import { Expr, Waypoint } from "./2025/DocumentTypes";
+import { Env } from "./DocumentManager";
+import { ExpressionStore } from "./ExpressionStore";
+import { NavbarItemData } from "./UIData";
 
+export const DEFAULT_WAYPOINT: Waypoint<number> = {
+  x: 0,
+  y: 0,
+  heading: 0,
+  fixTranslation: true,
+  fixHeading: true,
+  intervals: 40,
+  split: false,
+  overrideIntervals: false
+};
 export const HolonomicWaypointStore = types
   .model("WaypointStore", {
-    x: 0,
-    y: 0,
-    heading: 0,
-    translationConstrained: true,
-    headingConstrained: true,
-    controlIntervalCount: 40,
-    isInitialGuess: false,
+    x: ExpressionStore,
+    y: ExpressionStore,
+    heading: ExpressionStore,
+    fixTranslation: true,
+    fixHeading: true,
+    intervals: 40,
+    overrideIntervals: false,
+    split: false,
     uuid: types.identifier
   })
   .views((self) => {
     return {
-      isConstrainable() {
-        return !self.isInitialGuess;
-      },
       get type(): number {
-        if (self.isInitialGuess) {
-          return 3; // Guess
-        } else if (self.headingConstrained) {
+        if (self.fixHeading) {
           return 0; // Full
-        } else if (self.translationConstrained) {
+        } else if (self.fixTranslation) {
           return 1; // Translation
         } else {
           return 2; // Empty
@@ -35,31 +41,18 @@ export const HolonomicWaypointStore = types
         if (!isAlive(self)) {
           return false;
         }
-        return (
-          self.uuid ===
-          safeGetIdentifier(
-            getRoot<IStateStore>(self).uiState.selectedSidebarItem
-          )
-        );
+        return self.uuid === getEnv<Env>(self).selectedSidebar();
       },
-      asSavedWaypoint(): SavedWaypoint {
-        const {
-          x,
-          y,
-          isInitialGuess,
-          heading,
-          translationConstrained,
-          headingConstrained,
-          controlIntervalCount
-        } = self;
+      serialize(): Waypoint<Expr> {
         return {
-          x,
-          y,
-          heading,
-          isInitialGuess,
-          translationConstrained,
-          headingConstrained,
-          controlIntervalCount
+          x: self.x.serialize(),
+          y: self.y.serialize(),
+          heading: self.heading.serialize(),
+          fixTranslation: self.fixTranslation,
+          fixHeading: self.fixHeading,
+          intervals: self.intervals,
+          overrideIntervals: self.overrideIntervals,
+          split: self.split
         };
       }
     };
@@ -67,79 +60,59 @@ export const HolonomicWaypointStore = types
   .views((self) => ({
     get typeName() {
       return NavbarItemData[self.type].name;
+    },
+    isLast(): boolean {
+      try {
+        const list = getParent<IHolonomicWaypointStore[]>(self);
+        return list[list.length - 1]?.uuid === self.uuid;
+      } catch (e) {
+        console.error(e);
+        return false;
+      }
     }
   }))
   .actions((self) => {
     return {
-      fromSavedWaypoint(point: SavedWaypoint) {
-        self.x = point.x;
-        self.y = point.y;
-        self.heading = point.heading;
-        self.isInitialGuess = point.isInitialGuess;
-        self.translationConstrained = point.translationConstrained;
-        self.headingConstrained = point.headingConstrained;
-        self.controlIntervalCount = point.controlIntervalCount;
+      deserialize(point: Waypoint<Expr>) {
+        self.x.deserialize(point.x);
+        self.y.deserialize(point.y);
+        self.heading.deserialize(point.heading);
+        self.fixTranslation = point.fixTranslation;
+        self.fixHeading = point.fixHeading;
+        self.intervals = point.intervals;
+        self.overrideIntervals = point.overrideIntervals;
+        self.split = point.split;
       },
-
-      setX(x: number) {
-        self.x = x;
+      setFixTranslation(fixTranslation: boolean) {
+        self.fixTranslation = fixTranslation;
       },
-      setTranslationConstrained(translationConstrained: boolean) {
-        self.translationConstrained = translationConstrained;
-      },
-      setY(y: number) {
-        self.y = y;
-      },
-      setHeading(heading: number) {
-        self.heading = heading;
-      },
-      setHeadingConstrained(headingConstrained: boolean) {
-        self.headingConstrained = headingConstrained;
+      setFixHeading(fixHeading: boolean) {
+        self.fixHeading = fixHeading;
       },
       setSelected(selected: boolean) {
         if (selected && !self.selected) {
-          const root = getRoot<IStateStore>(self);
-          root.select(
+          getEnv<Env>(self).select(
             getParent<IHolonomicWaypointStore[]>(self)?.find(
               (point) => self.uuid == point.uuid
             )
           );
         }
       },
-      setInitialGuess(initialGuess: boolean) {
-        self.isInitialGuess = initialGuess;
+      setIntervals(count: number) {
+        self.intervals = count;
       },
-      setControlIntervalCount(count: number) {
-        self.controlIntervalCount = count;
+      setOverrideIntervals(override: boolean) {
+        self.overrideIntervals = override;
+      },
+      setSplit(split: boolean) {
+        self.split = split;
       }
     };
   })
   .actions((self) => ({
     setType(type: number) {
-      switch (type) {
-        case 0:
-          self.setHeadingConstrained(true);
-          self.setTranslationConstrained(true);
-          self.setInitialGuess(false);
-          break;
-        case 1:
-          self.setHeadingConstrained(false);
-          self.setTranslationConstrained(true);
-          self.setInitialGuess(false);
-          break;
-        case 2:
-          self.setTranslationConstrained(false);
-          self.setHeadingConstrained(false);
-          self.setInitialGuess(false);
-          break;
-        case 3:
-          self.setTranslationConstrained(true);
-          self.setHeadingConstrained(true);
-          self.setInitialGuess(true);
-          break;
-        default:
-          break;
-      }
+      self.setFixHeading(type == 0);
+      self.setFixTranslation(type == 0 || type == 1);
     }
   }))
   .views((self) => ({
@@ -147,11 +120,10 @@ export const HolonomicWaypointStore = types
       console.log("copying waypoint to", evt.clipboardData);
       const content = JSON.stringify({
         dataType: "choreo/waypoint",
-        ...self.asSavedWaypoint()
+        ...self.serialize()
       });
       evt.clipboardData?.setData("text/plain", content);
       console.log(evt.clipboardData);
     }
   }));
-export interface IHolonomicWaypointStore
-  extends Instance<typeof HolonomicWaypointStore> {}
+export type IHolonomicWaypointStore = Instance<typeof HolonomicWaypointStore>;

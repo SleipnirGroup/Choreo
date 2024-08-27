@@ -1,5 +1,4 @@
-import React, { Component } from "react";
-import DocumentManagerContext from "./document/DocumentManager";
+import { Component } from "react";
 import { observer } from "mobx-react";
 import Navbar from "./components/navbar/Navbar";
 import Field from "./components/field/Field";
@@ -12,8 +11,6 @@ type Props = object;
 type State = object;
 
 class Body extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
 
   render() {

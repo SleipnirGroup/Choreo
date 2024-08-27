@@ -1,20 +1,22 @@
 import {
   IAnyType,
   Instance,
-  types,
-  getRoot,
-  isAlive,
-  getParent,
   destroy,
-  detach
+  detach,
+  getEnv,
+  getParent,
+  isAlive,
+  types
 } from "mobx-state-tree";
 import { moveItem } from "mobx-utils";
-import { safeGetIdentifier } from "../util/mobxutils";
-import { WaypointID, WaypointScope } from "./ConstraintStore";
-import { IStateStore } from "./DocumentModel";
-import { SavedCommand } from "./DocumentSpecTypes";
-import { IHolonomicPathStore } from "./HolonomicPathStore";
 import { v4 as uuidv4 } from "uuid";
+import { Command, Expr } from "./2025/DocumentTypes";
+import { WaypointID } from "./ConstraintDefinitions";
+import { WaypointScope } from "./ConstraintStore";
+import { Env } from "./DocumentManager";
+import { ExpressionStore } from "./ExpressionStore";
+import { IChoreoTrajStore } from "./path/ChoreoTrajStore";
+import { IHolonomicPathStore } from "./path/HolonomicPathStore";
 
 export type CommandType =
   | "sequential"
@@ -44,7 +46,7 @@ export const CommandStore = types
       types.literal("named")
     ),
     commands: types.array(types.late((): IAnyType => CommandStore)),
-    time: types.number,
+    time: ExpressionStore,
     name: types.maybeNull(types.string),
     uuid: types.identifier
   })
@@ -57,7 +59,7 @@ export const CommandStore = types
         self.type === "sequential"
       );
     },
-    asSavedCommand(): SavedCommand {
+    serialize(): Command<Expr> {
       if (self.type === "named") {
         return {
           type: "named",
@@ -69,42 +71,37 @@ export const CommandStore = types
         return {
           type: "wait",
           data: {
-            waitTime: self.time
+            waitTime: self.time.serialize()
           }
         };
       } else {
         return {
           type: self.type,
           data: {
-            commands: self.commands.map((c) => c.asSavedCommand())
+            commands: self.commands.map((c) => c.serialize())
           }
         };
       }
     }
   }))
   .actions((self) => ({
-    fromSavedCommand(saved: SavedCommand) {
+    deserialize(ser: Command<Expr>) {
       self.commands.clear();
       self.name = "";
-      self.time = 0;
-      self.type = saved.type;
-      if (saved.type === "named") {
-        self.name = saved.data.name;
-      } else if (saved.type === "wait") {
-        self.time = saved.data.waitTime;
+      self.type = ser.type;
+      if (ser.type === "named") {
+        self.name = ser.data.name;
+      } else if (ser.type === "wait") {
+        self.time.deserialize(ser.data.waitTime);
       } else {
-        saved.data.commands.forEach((s) => {
-          const command = CommandStore.create({
-            type: "wait",
-            time: 0,
-            uuid: uuidv4()
-          });
-          command.fromSavedCommand(s);
+        ser.data.commands.forEach((c) => {
+          const command: ICommandStore =
+            getEnv<Env>(self).create.CommandStore(c);
           self.commands.push(command);
         });
       }
     },
-    reorder(startIndex: number, endIndex: number) {
+    reorderCommands(startIndex: number, endIndex: number) {
       moveItem(self.commands, startIndex, endIndex);
     },
     setType(type: CommandType) {
@@ -113,19 +110,17 @@ export const CommandStore = types
     setName(name: string) {
       self.name = name;
     },
-    setTime(waitTime: number) {
-      self.time = Math.max(0, waitTime);
-    },
     addSubCommand() {
-      const newCommand = CommandStore.create({
+      // TODO add subcommand
+      const newCommand = getEnv<Env>(self).create.CommandStore({
         type: "named",
         uuid: uuidv4(),
-        time: 0,
+        time: ["0 s", 0],
         name: "",
         commands: []
       });
       self.commands.push(newCommand);
-      return newCommand;
+      return undefined;
     },
     pushCommand(subcommand: ICommandStore) {
       self.commands.push(subcommand);
@@ -141,13 +136,13 @@ export const CommandStore = types
     }
   }));
 
-export interface ICommandStore extends Instance<typeof CommandStore> {}
+export type ICommandStore = Instance<typeof CommandStore>;
 export const EventMarkerStore = types
   .model("EventMarker", {
     name: types.string,
     target: types.maybe(WaypointScope),
     trajTargetIndex: types.maybe(types.number),
-    offset: types.number,
+    offset: ExpressionStore,
     command: CommandStore,
     uuid: types.identifier
   })
@@ -156,17 +151,11 @@ export const EventMarkerStore = types
       if (!isAlive(self)) {
         return false;
       }
-      return (
-        self.uuid ===
-        safeGetIdentifier(
-          getRoot<IStateStore>(self).uiState.selectedSidebarItem
-        )
-      );
+      return self.uuid === getEnv<Env>(self).selectedSidebar();
     },
     setSelected(selected: boolean) {
       if (selected && !this.selected) {
-        const root = getRoot<IStateStore>(self);
-        root.select(
+        getEnv<Env>(self).select(
           getParent<IEventMarkerStore[]>(self)?.find(
             (point) => self.uuid == point.uuid
           )
@@ -175,14 +164,12 @@ export const EventMarkerStore = types
     },
     getPath(): IHolonomicPathStore {
       const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
-        getParent<IEventMarkerStore[]>(self)
+        getParent<IChoreoTrajStore>(getParent<IEventMarkerStore[]>(self))
       );
       return path;
     },
     getTargetIndex(): number | undefined {
-      const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
-        getParent<IEventMarkerStore[]>(self)
-      );
+      const path: IHolonomicPathStore = this.getPath();
       if (path === undefined) {
         return undefined;
       }
@@ -190,24 +177,22 @@ export const EventMarkerStore = types
       if (startScope === undefined) {
         return undefined;
       }
-      const waypoint = path.getByWaypointID(startScope);
+      const waypoint = path.path.getByWaypointID(startScope);
       if (waypoint === undefined) return undefined;
-      return path.findUUIDIndex(waypoint.uuid);
+      return path.path.findUUIDIndex(waypoint.uuid);
     }
   }))
   .views((self) => ({
     get targetTimestamp(): number | undefined {
       const path = self.getPath();
       if (self.trajTargetIndex === undefined) return undefined;
-      return (path as IHolonomicPathStore).generatedWaypoints[
-        self.trajTargetIndex
-      ]?.timestamp;
+      return (path as IHolonomicPathStore).traj.waypoints[self.trajTargetIndex];
     },
     get timestamp(): number | undefined {
       if (this.targetTimestamp === undefined) {
         return undefined;
       }
-      return this.targetTimestamp + self.offset;
+      return this.targetTimestamp + self.offset.value;
     }
   }))
   .actions((self) => ({
@@ -221,9 +206,6 @@ export const EventMarkerStore = types
     },
     setTarget(target: WaypointID) {
       self.target = target;
-    },
-    setOffset(offset: number) {
-      self.offset = offset;
     },
     setName(name: string) {
       self.name = name;
@@ -243,18 +225,16 @@ export const EventMarkerStore = types
       if (targetTimestamp === undefined || timestamp === undefined) {
         retVal = undefined;
         return undefined;
-      } else if (self.offset == 0) {
+      } else if (self.offset.value == 0) {
         return true;
       } else {
-        path.generatedWaypoints.forEach((pt) => {
-          if (pt.isStopPoint && retVal) {
-            const stopTimestamp = pt.timestamp;
-            if (
-              (targetTimestamp < stopTimestamp && timestamp > stopTimestamp) ||
-              (targetTimestamp > stopTimestamp && timestamp < stopTimestamp)
-            ) {
-              retVal = false;
-            }
+        const splitTimes = path.traj.samples.map((sect) => sect[0]?.t);
+        splitTimes.forEach((stopTimestamp) => {
+          if (
+            (targetTimestamp < stopTimestamp && timestamp > stopTimestamp) ||
+            (targetTimestamp > stopTimestamp && timestamp < stopTimestamp)
+          ) {
+            retVal = false;
           }
         });
       }
@@ -262,4 +242,4 @@ export const EventMarkerStore = types
     }
   }));
 
-export interface IEventMarkerStore extends Instance<typeof EventMarkerStore> {}
+export type IEventMarkerStore = Instance<typeof EventMarkerStore>;

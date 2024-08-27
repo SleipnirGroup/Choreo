@@ -26,7 +26,7 @@ jobs:
             artifact-name: Linux-x86_64
             build-options:
 
-    name: "${{ matrix.artifact-name }}"
+    name: "Build C++ and Java / ${{ matrix.artifact-name }}"
     runs-on: ubuntu-22.04
     container: ${{ matrix.container }}
     steps:
@@ -83,7 +83,7 @@ jobs:
             artifact-name: macOS-arm64
             build-options:
 
-    name: "${{ matrix.artifact-name }}"
+    name: "Build C++ and Java / ${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -139,7 +139,7 @@ jobs:
           path: combiner/products/build/allOutputs
 
       - name: Flatten Artifacts
-        run: rsync -a --delete combiner/products/build/allOutputs/*/* combiner/products/build/allOutputs/
+        run: rsync -a --delete combiner/products/build/allOutputs/*/* combiner/products/build/allOutputs
 
       - uses: actions/setup-java@v4
         with:
@@ -154,3 +154,48 @@ jobs:
         with:
           name: ChoreoLib-Maven
           path: ~/releases
+
+  build-python:
+    name: "Build Python"
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - run: pip3 install build wheel pytest
+
+      - run: python3 -m build
+        working-directory: ./choreolib/py
+      - run: pip3 install --no-cache-dir dist/*.whl
+        working-directory: ./choreolib/py
+      - run: pytest
+        working-directory: ./choreolib/py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Python
+          path: ./choreolib/py/dist
+
+  pypi-publish:
+    name: Upload release to PyPI
+    runs-on: ubuntu-24.04
+    needs: [build-python]
+    if: github.repository_owner == 'SleipnirGroup' && startsWith(github.ref, 'refs/tags/v')
+    environment:
+      name: pypi
+      url: https://pypi.org/p/sleipnirgroup-choreolib
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: "Python"
+          merge-multiple: true
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

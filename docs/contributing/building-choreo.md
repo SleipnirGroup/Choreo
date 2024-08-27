@@ -2,17 +2,17 @@
 
 ### Requirements for Windows
 
-- [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm), [Rust](https://www.rust-lang.org/tools/install) ≥ 1.70.0, [CMake](https://cmake.org/download) ≥ 3.21, [Git](https://git-scm.com/)
+- [node](https://nodejs.org/en/download/), [pnpm](https://pnpm.io/installation), [Rust](https://www.rust-lang.org/tools/install) ≥ 1.70.0, [CMake](https://cmake.org/download) ≥ 3.21, [Git](https://git-scm.com/)
 - [Visual Studio Community 2022](https://visualstudio.microsoft.com/vs/community/) with C++ programming language selected during installation
 
 ### Requirements for macOS
 
-- [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm), [Rust](https://www.rust-lang.org/tools/install) ≥ 1.70.0, [CMake](https://cmake.org/download) ≥ 3.21, [Git](https://git-scm.com/)
+- [node](https://nodejs.org/en/download/), [pnpm](https://pnpm.io/installation), [Rust](https://www.rust-lang.org/tools/install) ≥ 1.70.0, [CMake](https://cmake.org/download) ≥ 3.21, [Git](https://git-scm.com/)
 - Xcode ≥ 15.0.1 command-line tools via `xcode-select --install`
 
 ### Requirements for Linux
 
-- [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm), [Rust](https://www.rust-lang.org/tools/install) ≥ 1.70.0, [CMake](https://cmake.org/download) ≥ 3.21, [Git](https://git-scm.com/)
+- [node](https://nodejs.org/en/download/), [pnpm](https://pnpm.io/installation), [Rust](https://www.rust-lang.org/tools/install) ≥ 1.70.0, [CMake](https://cmake.org/download) ≥ 3.21, [Git](https://git-scm.com/)
 - GCC ≥ 11 via `sudo apt install gcc`
 - Tauri dependencies (see [here](https://tauri.app/v1/guides/getting-started/prerequisites/#setting-up-linux)).
 
@@ -25,13 +25,13 @@
 Install Node.js dependencies.
 
 ```console
-npm install
+pnpm install
 ```
 
 Build an NSIS `.exe` installer on Windows, `.dmg` bundle on macOS, or `.deb` package on Linux.
 
 ```console
-npm run tauri build
+pnpm run tauri build
 ```
 
 ## Development Server
@@ -39,19 +39,19 @@ npm run tauri build
 Install Node.js dependencies.
 
 ```console
-npm install
+pnpm install
 ```
 
 Start development server (debug).
 
 ```console
-npm run tauri dev
+pnpm run tauri dev
 ```
 
 Start development server (release).
 
 ```console
-npm run tauri dev -- --release
+pnpm run tauri dev --release
 ```
 
 ## macOS Cross Compilation
@@ -79,7 +79,7 @@ target = "<target>"
 - ⚛️ [React](https://react.dev/): Frontend UI framework (TypeScript)
 - ⚡️ [Vite](https://vitejs.dev/): Frontend build system (TypeScript)
 - 🖥️ [Tauri](https://tauri.app/): Desktop application framework and backend (Rust)
-- 🚗 [TrajoptLib](https://github.com/SleipnirGroup/TrajoptLib): Generates trajectories with Sleipnir (C++, Rust)
+- 🚗 [TrajoptLib](trajoptlib): Generates trajectories with Sleipnir (C++, Rust)
 - 📈 [Sleipnir](https://github.com/SleipnirGroup/Sleipnir): Numerical optimizer (C++)
 
 ### Formatters/linters

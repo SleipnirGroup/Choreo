@@ -1,10 +1,10 @@
-import React, { Component } from "react";
-import { DragDropContext, Droppable } from "react-beautiful-dnd";
-import DocumentManagerContext from "../../document/DocumentManager";
-import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import { observer } from "mobx-react";
-import SidebarWaypoint from "./SidebarWaypoint";
+import { Component } from "react";
+import { DragDropContext, Droppable } from "react-beautiful-dnd";
+import { doc } from "../../document/DocumentManager";
+import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import styles from "./Sidebar.module.css";
+import SidebarWaypoint from "./SidebarWaypoint";
 
 const getListStyle = (isDraggingOver: boolean) => ({
   outline: isDraggingOver ? "2px solid var(--darker-purple)" : "transparent"
@@ -15,8 +15,6 @@ type Props = object;
 type State = object;
 
 class WaypointList extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
   constructor(props: Props) {
     super(props);
@@ -25,10 +23,7 @@ class WaypointList extends Component<Props, State> {
   }
 
   reorder(startIndex: number, endIndex: number) {
-    this.context.model.document.pathlist.activePath.reorder(
-      startIndex,
-      endIndex
-    );
+    doc.pathlist.activePath.path.reorderWaypoint(startIndex, endIndex);
   }
 
   onDragEnd(result: any) {
@@ -40,14 +35,13 @@ class WaypointList extends Component<Props, State> {
   }
 
   newWaypoint(): void {
-    this.context.model.document.pathlist.activePath.addWaypoint();
+    doc.pathlist.activePath.addWaypoint();
   }
   // Normally you would want to split things out into separate components.
   // But in this example everything is just done in one place for simplicity
   render() {
-    const waypoints = this.context.model.document.pathlist.activePath.waypoints;
-    const waypointsLength =
-      this.context.model.document.pathlist.activePath.waypoints.length;
+    const waypoints = doc.pathlist.activePath.path.waypoints;
+    const waypointsLength = waypoints.length;
     if (waypointsLength == 0) {
       return (
         <div className={styles.SidebarItem + " " + styles.Noninteractible}>
@@ -61,13 +55,6 @@ class WaypointList extends Component<Props, State> {
     const waypointElements = waypoints.map(
       (holonomicWaypoint: IHolonomicWaypointStore, index: number) => {
         let issue = "";
-        if (holonomicWaypoint.isInitialGuess) {
-          if (index == 0) {
-            issue = "Cannot start with an initial guess point.";
-          } else if (index == waypoints.length - 1) {
-            issue = "Cannot end with an initial guess point.";
-          }
-        }
         if (holonomicWaypoint.type == 2) {
           if (index == 0) {
             issue = "Cannot start with an empty waypoint.";
@@ -81,7 +68,6 @@ class WaypointList extends Component<Props, State> {
             index={index}
             issue={issue}
             pathLength={waypoints.length}
-            context={this.context}
             key={holonomicWaypoint.uuid}
           ></SidebarWaypoint>
         );

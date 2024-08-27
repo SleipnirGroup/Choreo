@@ -1,37 +1,37 @@
-import { Component } from "react";
-import React from "react";
-import DocumentManagerContext from "../../document/DocumentManager";
-import styles from "./Sidebar.module.css";
-import { observer } from "mobx-react";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { PriorityHigh, Room } from "@mui/icons-material";
-import { Tooltip, IconButton } from "@mui/material";
-import { IEventMarkerStore } from "../../document/EventMarkerStore";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { IconButton, Tooltip } from "@mui/material";
+import { observer } from "mobx-react";
 import { getParent } from "mobx-state-tree";
-import { IHolonomicPathStore } from "../../document/HolonomicPathStore";
+import React, { Component } from "react";
 import { WaypointID } from "../../document/ConstraintStore";
+import { doc } from "../../document/DocumentManager";
+import { IEventMarkerStore } from "../../document/EventMarkerStore";
+import { IChoreoTrajStore } from "../../document/path/ChoreoTrajStore";
+import { IHolonomicPathStore } from "../../document/path/HolonomicPathStore";
+import styles from "./Sidebar.module.css";
 
 type Props = {
   marker: IEventMarkerStore;
   index: number;
-  context: React.ContextType<typeof DocumentManagerContext>;
 };
 
 type State = { selected: boolean };
 
 class SidebarMarker extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
   id: number = 0;
   state = { selected: false };
 
-  waypointIDToText(id: WaypointID) {
+  waypointIDToText(id: WaypointID | undefined) {
+    if (id == undefined) return "?";
     if (id == "first") return "Start";
     if (id == "last") return "End";
     return (
       getParent<IHolonomicPathStore>(
-        getParent<IEventMarkerStore[]>(this.props.marker)
-      ).findUUIDIndex(id.uuid) + 1
+        getParent<IChoreoTrajStore>(
+          getParent<IEventMarkerStore[]>(this.props.marker)
+        )
+      ).path.findUUIDIndex(id.uuid) + 1
     );
   }
 
@@ -56,7 +56,7 @@ class SidebarMarker extends Component<Props, State> {
       <div
         className={styles.SidebarItem + (selected ? ` ${styles.Selected}` : "")}
         onClick={() => {
-          this.context.model.uiState.setSelectedSidebarItem(marker);
+          doc.setSelectedSidebarItem(marker);
         }}
       >
         {React.cloneElement(<Room></Room>, {
@@ -90,8 +90,8 @@ class SidebarMarker extends Component<Props, State> {
             </span>
             <span style={{}}>
               (
-              {(this.props.marker.offset < 0 ? "" : "+") +
-                this.props.marker.offset.toFixed(2) +
+              {(this.props.marker.offset.value < 0 ? "" : "+") +
+                this.props.marker.offset.value.toFixed(2) +
                 " s"}
               )
             </span>
@@ -102,9 +102,7 @@ class SidebarMarker extends Component<Props, State> {
             className={styles.SidebarRightIcon}
             onClick={(e) => {
               e.stopPropagation();
-              this.context.model.document.pathlist.activePath.deleteMarkerUUID(
-                marker?.uuid || ""
-              );
+              doc.pathlist.activePath.traj.deleteMarkerUUID(marker?.uuid || "");
             }}
           >
             <DeleteIcon />

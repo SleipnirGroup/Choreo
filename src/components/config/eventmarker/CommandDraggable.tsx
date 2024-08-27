@@ -1,28 +1,26 @@
+import { Add, Delete, DragHandle } from "@mui/icons-material";
+import { IconButton, MenuItem, Select, TextField } from "@mui/material";
 import { observer } from "mobx-react";
-import React, { Component } from "react";
+import { isAlive } from "mobx-state-tree";
+import React, { CSSProperties, Component } from "react";
 import {
   Draggable,
   DraggingStyle,
-  NotDraggingStyle,
-  Droppable
+  Droppable,
+  NotDraggingStyle
 } from "react-beautiful-dnd";
-import DocumentManagerContext from "../../../document/DocumentManager";
-import { isAlive } from "mobx-state-tree";
 import {
   CommandType,
   CommandUIData,
   ICommandStore
 } from "../../../document/EventMarkerStore";
-import { IconButton, MenuItem, Select, TextField } from "@mui/material";
-import { Add, Delete, DragHandle } from "@mui/icons-material";
-import InputList from "../../input/InputList";
-import Input from "../../input/Input";
+import ExpressionInput from "../../input/ExpressionInput";
+import ExpressionInputList from "../../input/ExpressionInputList";
 
 type Props = {
   command: ICommandStore;
   index: number;
   parent?: ICommandStore;
-  context: React.ContextType<typeof DocumentManagerContext>;
   isDraggable: boolean;
   isRoot?: boolean;
 };
@@ -30,8 +28,6 @@ type Props = {
 type State = { selected: boolean };
 
 class CommandDraggable extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
   id: number = 0;
   state = { selected: false };
   nameInputRef: React.RefObject<HTMLInputElement> =
@@ -123,16 +119,13 @@ class CommandDraggable extends Component<Props, State> {
             ></TextField>
           )}
           {command.type === "wait" && (
-            <InputList noCheckbox style={{ flexGrow: 1 }}>
-              <Input
+            <ExpressionInputList style={{ flexGrow: 1 }}>
+              <ExpressionInput
                 title={""}
-                suffix={"s"}
                 enabled={true}
                 number={command.time}
-                setNumber={command.setTime}
-                setEnabled={() => {}}
-              ></Input>
-            </InputList>
+              ></ExpressionInput>
+            </ExpressionInputList>
           )}
           {(command.isGroup() || !isRoot) && (
             <span style={{ flexGrow: 1 }}></span>
@@ -197,7 +190,6 @@ class CommandDraggable extends Component<Props, State> {
                           command={c}
                           index={idx}
                           parent={command}
-                          context={this.props.context}
                           isDraggable={true}
                         ></CommandDraggable>
                       </div>

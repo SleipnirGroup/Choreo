@@ -1,6 +1,13 @@
-import React, { Component } from "react";
-import DocumentManagerContext from "./document/DocumentManager";
-import { observer } from "mobx-react";
+import {
+  CopyAll,
+  NoteAddOutlined,
+  OpenInNew,
+  Settings
+} from "@mui/icons-material";
+import FileDownload from "@mui/icons-material/FileDownload";
+import MenuIcon from "@mui/icons-material/Menu";
+import SaveIcon from "@mui/icons-material/Save";
+import UploadIcon from "@mui/icons-material/UploadFile";
 import {
   Divider,
   Drawer,
@@ -10,22 +17,23 @@ import {
   ListItemIcon,
   ListItemText
 } from "@mui/material";
-import SaveIcon from "@mui/icons-material/Save";
-import MenuIcon from "@mui/icons-material/Menu";
-import UploadIcon from "@mui/icons-material/UploadFile";
 import IconButton from "@mui/material/IconButton";
-import FileDownload from "@mui/icons-material/FileDownload";
 import Tooltip from "@mui/material/Tooltip";
-import {
-  CopyAll,
-  NoteAddOutlined,
-  OpenInNew,
-  Settings
-} from "@mui/icons-material";
+import { dialog, path } from "@tauri-apps/api";
+import { observer } from "mobx-react";
+import { Component } from "react";
 import { toast } from "react-toastify";
-import { dialog, invoke, path } from "@tauri-apps/api";
+import {
+  exportActiveTrajectory,
+  exportAllTrajectories,
+  newFile,
+  openProject,
+  saveFileDialog,
+  uiState
+} from "./document/DocumentManager";
 
 import SettingsModal from "./components/config/SettingsModal";
+import { Commands } from "./document/tauriCommands";
 import { version } from "./util/version";
 
 type Props = object;
@@ -33,8 +41,6 @@ type Props = object;
 type State = { settingsOpen: boolean };
 
 class AppMenu extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {
     settingsOpen: false
   };
@@ -65,7 +71,7 @@ class AppMenu extends Component<Props, State> {
 
   OpenInFilesApp({ dir }: { dir: string }) {
     const handleAction = async function () {
-      invoke("open_file_app", { dir });
+      await Commands.openInExplorer(dir);
     };
 
     return (
@@ -78,7 +84,7 @@ class AppMenu extends Component<Props, State> {
   }
 
   render() {
-    const { mainMenuOpen, toggleMainMenu } = this.context.model.uiState;
+    const { mainMenuOpen, toggleMainMenu } = uiState;
     return (
       <Drawer
         ModalProps={{ onBackdropClick: toggleMainMenu }}
@@ -126,11 +132,7 @@ class AppMenu extends Component<Props, State> {
               disableInteractive
               title="Robot configuration and other settings"
             >
-              <ListItemButton
-                onClick={() =>
-                  this.context.model.uiState.setRobotConfigOpen(true)
-                }
-              >
+              <ListItemButton onClick={() => uiState.setRobotConfigOpen(true)}>
                 <ListItemIcon>
                   <Settings />
                 </ListItemIcon>
@@ -147,7 +149,9 @@ class AppMenu extends Component<Props, State> {
                     { title: "Choreo", type: "warning" }
                   )
                 ) {
-                  invoke("open_file_dialog");
+                  await Commands.openFileDialog().then((filepath) =>
+                    openProject(filepath)
+                  );
                 }
               }}
             >
@@ -159,18 +163,14 @@ class AppMenu extends Component<Props, State> {
             {/* Save File */}
             <ListItemButton
               onClick={async () => {
-                this.context.saveFileDialog();
+                saveFileDialog();
               }}
             >
               <ListItemIcon>
                 <SaveIcon />
               </ListItemIcon>
               <ListItemText
-                primary={
-                  this.context.model.uiState.hasSaveLocation
-                    ? "Save File As"
-                    : "Save File"
-                }
+                primary={uiState.hasSaveLocation ? "Save File As" : "Save File"}
               ></ListItemText>
             </ListItemButton>
             {/* New File */}
@@ -182,7 +182,7 @@ class AppMenu extends Component<Props, State> {
                     { title: "Choreo", type: "warning" }
                   )
                 ) {
-                  this.context.newFile();
+                  newFile();
                 }
               }}
             >
@@ -194,7 +194,7 @@ class AppMenu extends Component<Props, State> {
             {/* Export Active Trajectory */}
             <ListItemButton
               onClick={() => {
-                toast.promise(this.context.exportActiveTrajectory(), {
+                toast.promise(exportActiveTrajectory(), {
                   pending: "Exporting trajectory...",
                   success: "Trajectory exported",
                   error: {
@@ -214,7 +214,7 @@ class AppMenu extends Component<Props, State> {
             {/* Export All to Deploy */}
             <ListItemButton
               onClick={async () => {
-                if (!this.context.model.uiState.hasSaveLocation) {
+                if (!uiState.hasSaveLocation) {
                   if (
                     await dialog.ask(
                       "Saving trajectories to the deploy directory requires saving the project. Save it now?",
@@ -224,7 +224,7 @@ class AppMenu extends Component<Props, State> {
                       }
                     )
                   ) {
-                    if (!(await this.context.saveFileDialog())) {
+                    if (!(await saveFileDialog())) {
                       return;
                     }
                   } else {
@@ -232,8 +232,8 @@ class AppMenu extends Component<Props, State> {
                   }
                 }
 
-                toast.promise(this.context.exportAllTrajectories(), {
-                  success: `Saved all trajectories to ${this.context.model.uiState.chorRelativeTrajDir}.`,
+                toast.promise(exportAllTrajectories(), {
+                  success: `Saved all trajectories to ${uiState.chorRelativeTrajDir}.`,
                   error: {
                     render(toastProps) {
                       console.error(toastProps.data);
@@ -260,7 +260,7 @@ class AppMenu extends Component<Props, State> {
                   width: "100%"
                 }}
               >
-                {this.context.model.uiState.hasSaveLocation ? (
+                {uiState.hasSaveLocation ? (
                   <>
                     <div
                       style={{
@@ -284,13 +284,13 @@ class AppMenu extends Component<Props, State> {
                       {this.projectLocation(true)}
                     </div>
                     <br></br>
-                    {this.context.model.uiState.isGradleProject
+                    {uiState.isGradleProject
                       ? "Gradle (Java/C++) project detected."
                       : "Python project or no robot project detected."}
                     <br></br>
                     <br></br>
                     <div></div>
-                    {this.context.model.uiState.hasSaveLocation ? (
+                    {uiState.hasSaveLocation ? (
                       <>
                         <div
                           style={{
@@ -340,17 +340,15 @@ class AppMenu extends Component<Props, State> {
   private projectLocation(relativeFormat: boolean): string {
     return (
       (relativeFormat
-        ? this.convertToRelative(
-            this.context.model.uiState.saveFileDir as string
-          )
-        : this.context.model.uiState.saveFileDir) + path.sep
+        ? this.convertToRelative(uiState.saveFileDir as string)
+        : uiState.saveFileDir) + path.sep
     );
   }
 
   private trajectoriesLocation(relativeFormat: boolean): string {
     return (
       this.projectLocation(relativeFormat) +
-      this.context.model.uiState.chorRelativeTrajDir +
+      uiState.chorRelativeTrajDir +
       path.sep
     );
   }

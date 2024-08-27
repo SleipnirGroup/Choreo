@@ -2,15 +2,14 @@
 
 #pragma once
 
+#include <functional>
+#include <string_view>
+#include <vector>
+
 #include <frc/controller/PIDController.h>
 #include <frc/kinematics/ChassisSpeeds.h>
 #include <frc2/command/CommandPtr.h>
 #include <frc2/command/Requirements.h>
-
-#include <functional>
-#include <string>
-#include <string_view>
-#include <vector>
 
 #include "ChoreoTrajectory.h"
 

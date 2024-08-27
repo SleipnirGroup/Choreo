@@ -1,7 +1,7 @@
 import { Component } from "react";
 import React from "react";
 import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
-import DocumentManagerContext from "../../document/DocumentManager";
+import { doc, uiState } from "../../document/DocumentManager";
 import styles from "./Sidebar.module.css";
 import { observer } from "mobx-react";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -11,14 +11,11 @@ import { Tooltip, IconButton } from "@mui/material";
 type Props = {
   obstacle: ICircularObstacleStore;
   index: number;
-  context: React.ContextType<typeof DocumentManagerContext>;
 };
 
 type State = { selected: boolean };
 
 class SidebarObstacle extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
   id: number = 0;
   state = { selected: false };
 
@@ -29,8 +26,8 @@ class SidebarObstacle extends Component<Props, State> {
       <div
         className={styles.SidebarItem + (selected ? ` ${styles.Selected}` : "")}
         onClick={() => {
-          this.context.model.uiState.setSelectedSidebarItem(obstacle);
-          this.context.model.uiState.setSelectedNavbarItem(9);
+          doc.setSelectedSidebarItem(obstacle);
+          uiState.setSelectedNavbarItem(9);
         }}
       >
         {React.cloneElement(<DoNotDisturb></DoNotDisturb>, {
@@ -50,9 +47,7 @@ class SidebarObstacle extends Component<Props, State> {
             className={styles.SidebarRightIcon}
             onClick={(e) => {
               e.stopPropagation();
-              this.context.model.document.pathlist.activePath.deleteObstacleUUID(
-                obstacle?.uuid || ""
-              );
+              doc.pathlist.activePath.path.deleteObstacle(obstacle?.uuid || "");
             }}
           >
             <DeleteIcon />

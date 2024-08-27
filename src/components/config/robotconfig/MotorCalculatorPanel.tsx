@@ -1,10 +1,10 @@
-import { observer } from "mobx-react";
-import React, { Component } from "react";
-import DocumentManagerContext from "../../../document/DocumentManager";
-import InputList from "../../input/InputList";
-import Input from "../../input/Input";
 import { Button, FormControl, MenuItem, Select } from "@mui/material";
-import { maxTorqueCurrentLimited, MotorCurves } from "./MotorCurves";
+import { observer } from "mobx-react";
+import { Component } from "react";
+import { doc } from "../../../document/DocumentManager";
+import Input from "../../input/Input";
+import InputList from "../../input/InputList";
+import { MotorCurves, maxTorqueCurrentLimited } from "./MotorCurves";
 
 type Props = { rowGap: number };
 
@@ -14,14 +14,12 @@ type State = {
 };
 
 class RobotConfigPanel extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {
     selectedMotor: "KrakenX60" as keyof typeof MotorCurves,
     currentLimit: 60
   };
   render() {
-    const config = this.context.model.document.robotConfig;
+    const config = doc.robotConfig;
     return (
       <>
         <FormControl
@@ -51,18 +49,18 @@ class RobotConfigPanel extends Component<Props, State> {
           <Button
             variant="outlined"
             onClick={() => {
-              this.context.history.startGroup(() => {
-                config.setMaxVelocity(
-                  MotorCurves[this.state.selectedMotor].motorMaxVelocity * 0.8
+              doc.history.startGroup(() => {
+                config.vmax.set(
+                  MotorCurves[this.state.selectedMotor].vmax * 0.8
                 );
-                config.setMaxTorque(
+                config.tmax.set(
                   maxTorqueCurrentLimited(
                     MotorCurves[this.state.selectedMotor].kt,
                     this.state.currentLimit
                   )
                 );
               });
-              this.context.history.stopGroup();
+              doc.history.stopGroup();
             }}
           >
             Apply
@@ -94,9 +92,7 @@ class RobotConfigPanel extends Component<Props, State> {
               enabled={false}
               setEnabled={(a) => null}
               roundingPrecision={0}
-              number={
-                MotorCurves[this.state.selectedMotor].motorMaxVelocity * 0.8
-              }
+              number={MotorCurves[this.state.selectedMotor].vmax * 0.8}
               showNumberWhenDisabled={
                 MotorCurves[this.state.selectedMotor] !== undefined
               }

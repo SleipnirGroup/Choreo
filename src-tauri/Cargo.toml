@@ -18,9 +18,11 @@ tauri-build = { version = "1.5.2", features = [] }
 tauri = { version = "1.6.6", features = [ "os-all", "window-close", "window-set-title", "path-all", "dialog", "dialog-confirm", "dialog-save", "dialog-open", "dialog-ask", "fs-all", "shell-open", "devtools"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-trajoptlib = { git = "https://github.com/SleipnirGroup/TrajoptLib.git", rev = "674240dd0016c9190998cd2e2cd846a4c34756d3" }
+trajoptlib = { path = "../trajoptlib" }
 open = "3"
 lazy_static = "1.4.0"
+tokio = { version = "1", features = ["full"] }
+dashmap = "6.0.1"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

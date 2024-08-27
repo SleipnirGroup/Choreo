@@ -1,38 +1,36 @@
 import { observer } from "mobx-react";
-import React, { Component } from "react";
-import DocumentManagerContext from "../../document/DocumentManager";
-import styles from "./WaypointConfigPanel.module.css";
-import InputList from "../input/InputList";
-import Input from "../input/Input";
+import { Component } from "react";
 import { IConstraintStore } from "../../document/ConstraintStore";
+import BooleanInput from "../input/BooleanInput";
+import ExpressionInput from "../input/ExpressionInput";
+import ExpressionInputList from "../input/ExpressionInputList";
 import ScopeSlider from "./ScopeSlider";
+import styles from "./WaypointConfigPanel.module.css";
 
 type Props = { constraint: IConstraintStore };
 
 type State = object;
 
 class ConstraintsConfigPanel extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
   render() {
     const constraint = this.props.constraint;
-    const definition = constraint.definition;
+    const definition = constraint.data.def;
     const isSegmentConstraint = definition.sgmtScope;
     let startIndex = (this.props.constraint.getStartWaypointIndex() ?? 0) + 1;
     let endIndex = (this.props.constraint.getEndWaypointIndex() ?? 0) + 1;
-    const points = this.props.constraint.getPath().waypoints;
+    const points = this.props.constraint.getPath().path.waypoints;
     const pointcount = points.length;
-    if (this.props.constraint.getSortedScope()[0] === "first") {
+    if (this.props.constraint.from === "first") {
       startIndex = 0;
     }
-    if (this.props.constraint.getSortedScope()[0] === "last") {
+    if (this.props.constraint.from === "last") {
       startIndex = pointcount + 1;
     }
-    if (this.props.constraint.getSortedScope()[1] === "last") {
+    if (this.props.constraint.to === "last") {
       endIndex = pointcount + 1;
     }
-    if (this.props.constraint.getSortedScope()[1] === "first") {
+    if (this.props.constraint.to === "first") {
       endIndex = 0;
     }
 
@@ -49,49 +47,51 @@ class ConstraintsConfigPanel extends Component<Props, State> {
           endIndex={endIndex}
           setRange={(selection) => {
             const lastIdx = pointcount + 1;
-            this.props.constraint.setScope(
-              selection.map((idx) => {
-                if (idx == 0) {
-                  return "first";
-                } else if (idx == lastIdx) {
-                  return "last";
-                } else {
-                  return { uuid: points[idx - 1]?.uuid ?? "" };
-                }
-              })
-            );
+
+            const scope = selection.map((idx) => {
+              if (idx == 0) {
+                return "first";
+              } else if (idx == lastIdx) {
+                return "last";
+              } else {
+                return { uuid: points[idx - 1]?.uuid ?? "" };
+              }
+            });
+            this.props.constraint.setFrom(scope[0]);
+            this.props.constraint.setTo(scope[1]);
           }}
           points={points}
         ></ScopeSlider>
 
-        <InputList>
-          {/* {isSegmentConstraint && <>
-            <span className={inputStyles.Title}>From</span>
-            <span> */}
-
-          {/* <input className={inputStyles.Number} value={(constraint.getStartWaypointIndex() ?? -1) + 1}></input>
-            <span>Start</span><span>End</span></span>
-            <span></span><span></span></>
-          } */}
+        <ExpressionInputList>
           {Object.entries(definition.properties).map((entry) => {
             const [key, propdef] = entry;
             const setterName =
               "set" + key.charAt(0).toUpperCase() + key.slice(1);
-            return (
-              <Input
-                key={key}
-                title={propdef.name}
-                suffix={propdef.units}
-                enabled={true}
-                setEnabled={(a) => null}
-                number={constraint[key]}
-                setNumber={constraint[setterName]}
-                showCheckbox={false}
-                titleTooltip={propdef.description}
-              />
-            );
+            if (Array.isArray(propdef.defaultVal)) {
+              return (
+                <ExpressionInput
+                  key={key}
+                  title={propdef.name}
+                  enabled={true}
+                  number={constraint.data[key]}
+                  titleTooltip={propdef.description}
+                />
+              );
+            } else if (typeof propdef.defaultVal === "boolean") {
+              return (
+                <BooleanInput
+                  key={key}
+                  title={propdef.name}
+                  enabled={true}
+                  value={constraint.data[key]}
+                  setValue={(v) => constraint.data[setterName](v)}
+                  titleTooltip={propdef.description}
+                ></BooleanInput>
+              );
+            }
           })}
-        </InputList>
+        </ExpressionInputList>
       </div>
     );
   }

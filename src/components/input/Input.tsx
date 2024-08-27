@@ -10,6 +10,7 @@ type Props = {
   suffix: string;
   /** Whether the input should be editable, or else italic and grayed out */
   enabled: boolean;
+  checkboxEnabled?: boolean;
   /** The value of the input */
   number: number;
   /** The number of decimal places to show when not editing. */
@@ -189,6 +190,7 @@ class Input extends Component<Props, State> {
             className={styles.Checkbox}
             checked={this.props.enabled}
             onChange={this.setEnabled}
+            disabled={!(this.props.checkboxEnabled ?? true)}
           ></input>
         ) : (
           <span></span>

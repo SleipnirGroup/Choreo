@@ -1,0 +1,7 @@
+[workspace]
+
+members = [
+    "src-tauri",
+    "trajoptlib",
+]
+resolver = "2"

@@ -2,7 +2,7 @@
 
 [![Discord](https://img.shields.io/discord/975739302933856277?color=%23738ADB&label=Join%20our%20Discord&logo=discord&logoColor=white)](https://discord.gg/ad2EEZZwsS)
 
-![A screenshot of choreo with an example path](./public/readmeScreenshot.png)
+![A screenshot of choreo with an example path](./docs/media/readmeScreenshot.png)
 
 Choreo (_Constraint-Honoring Omnidirectional Route Editor and Optimizer_, pronounced like choreography) is a graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics Competition.
 
@@ -17,6 +17,13 @@ Check out the [Docs](https://sleipnirgroup.github.io/Choreo), which covers insta
 ## Robot code integration
 
 An example project using Choreo is available [here](https://github.com/SleipnirGroup/ChoreoSwerveBot).
+
+## Repository directory structure
+
+- [src](src) - Choreo frontend
+- [src-tauri](src-tauri) - Choreo backend
+- [choreolib](choreolib) - ChoreoLib: robot-side library for loading and following Choreo paths
+- [trajoptlib](trajoptlib) - TrajoptLib: library used by Choreo to generate time-optimal trajectories for FRC robots
 
 ## Authors
 
