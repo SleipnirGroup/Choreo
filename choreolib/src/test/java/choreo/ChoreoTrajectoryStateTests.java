@@ -1,10 +1,10 @@
 // Copyright (c) Choreo contributors
 
-package choreo.lib;
+package choreo;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.choreo.lib.ChoreoTrajectoryState;
+import choreo.trajectory.ChoreoTrajectoryState;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
