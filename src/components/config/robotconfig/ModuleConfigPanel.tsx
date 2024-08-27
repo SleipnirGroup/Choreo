@@ -1,75 +1,52 @@
 import { observer } from "mobx-react";
-import React, { Component } from "react";
-import DocumentManagerContext from "../../../document/DocumentManager";
-import InputList from "../../input/InputList";
-import Input from "../../input/Input";
-import { InToM, MetersOrInches, MToIn } from "../../../util/UnitConversions";
+import { Component } from "react";
+import { doc } from "../../../document/DocumentManager";
+import ExpressionInput from "../../input/ExpressionInput";
+import ExpressionInputList from "../../input/ExpressionInputList";
 
-type Props = { rowGap: number; imperial: boolean };
+type Props = { rowGap: number };
 
 type State = object;
 
 class RobotConfigPanel extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
-  state = { selectedMotor: "NEO", currentLimit: 40 };
   render() {
-    const config = this.context.model.document.robotConfig;
-    const imp = this.props.imperial;
+    const config = doc.robotConfig;
     return (
-      <InputList noCheckbox rowGap={this.props.rowGap}>
-        <Input
+      <ExpressionInputList rowGap={this.props.rowGap}>
+        <ExpressionInput
           title="Wheel Radius"
-          suffix={MetersOrInches(imp)}
           enabled={true}
-          setEnabled={(a) => null}
           roundingPrecision={3}
-          number={imp ? MToIn(config.wheelRadius) : config.wheelRadius}
-          setNumber={(length) =>
-            config!.setWheelRadius(imp ? InToM(length) : length)
-          }
+          number={config.radius}
           maxWidthCharacters={8}
-          showCheckbox={false}
           titleTooltip="Radius of swerve wheels"
         />
-        <Input
-          title="Gearing"
-          suffix=": 1"
+        <ExpressionInput
+          title="Motor Rev/Wheel Rev"
           enabled={true}
-          setEnabled={(a) => null}
           roundingPrecision={3}
           number={config.gearing}
-          setNumber={config!.setGearing}
           maxWidthCharacters={8}
-          showCheckbox={false}
           titleTooltip="Gearing between motor shaft and wheel axle (>1)"
         />
-        <Input
+        <ExpressionInput
           title="Motor Max Speed"
-          suffix="RPM"
           enabled={true}
-          setEnabled={(a) => null}
           roundingPrecision={0}
-          number={config.motorMaxVelocity}
-          setNumber={config!.setMaxVelocity}
+          number={config.vmax}
           maxWidthCharacters={8}
-          showCheckbox={false}
           titleTooltip="Actual motor speed at 12V"
         />
 
-        <Input
+        <ExpressionInput
           title="Motor Max Torque"
-          suffix="N · m"
           enabled={true}
-          setEnabled={(a) => null}
           roundingPrecision={3}
-          number={config.motorMaxTorque}
-          setNumber={config!.setMaxTorque}
+          number={config.tmax}
           maxWidthCharacters={8}
-          showCheckbox={false}
           titleTooltip="Motor torque as current-limited"
         />
-      </InputList>
+      </ExpressionInputList>
     );
   }
 }

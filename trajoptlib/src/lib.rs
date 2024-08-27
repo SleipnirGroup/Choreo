@@ -1,12 +1,12 @@
 #[cxx::bridge(namespace = "trajopt::rsffi")]
 mod ffi {
-    #[derive(Debug, Deserialize, Serialize)]
+    #[derive(Debug, Deserialize, Serialize, Clone)]
     struct Translation2d {
         x: f64,
         y: f64,
     }
 
-    #[derive(Debug, Deserialize, Serialize)]
+    #[derive(Debug, Deserialize, Serialize, Clone)]
     struct SwerveDrivetrain {
         mass: f64,
         moi: f64,
@@ -16,7 +16,7 @@ mod ffi {
         modules: Vec<Translation2d>,
     }
 
-    #[derive(Debug, Deserialize, Serialize)]
+    #[derive(Debug, Deserialize, Serialize, Clone)]
     struct DifferentialDrivetrain {
         mass: f64,
         moi: f64,
@@ -26,7 +26,7 @@ mod ffi {
         wheel_max_torque: f64,
     }
 
-    #[derive(Debug, Deserialize, Serialize)]
+    #[derive(Debug, Deserialize, Serialize, Clone)]
     struct Pose2d {
         x: f64,
         y: f64,
@@ -125,6 +125,7 @@ mod ffi {
             field_point_x: f64,
             field_point_y: f64,
             heading_tolerance: f64,
+            flip: bool
         );
 
         fn sgmt_linear_velocity_direction(
@@ -158,6 +159,7 @@ mod ffi {
             field_point_x: f64,
             field_point_y: f64,
             heading_tolerance: f64,
+            flip: bool
         );
 
         fn sgmt_circle_obstacle(
@@ -254,6 +256,7 @@ mod ffi {
             field_point_x: f64,
             field_point_y: f64,
             heading_tolerance: f64,
+            flip: bool
         );
 
         fn sgmt_linear_velocity_direction(
@@ -416,6 +419,7 @@ impl SwervePathBuilder {
         field_point_x: f64,
         field_point_y: f64,
         heading_tolerance: f64,
+        flip: bool
     ) {
         crate::ffi::SwervePathBuilder::wpt_point_at(
             self.path_builder.pin_mut(),
@@ -423,6 +427,7 @@ impl SwervePathBuilder {
             field_point_x,
             field_point_y,
             heading_tolerance,
+            flip
         )
     }
 
@@ -489,6 +494,7 @@ impl SwervePathBuilder {
         field_point_x: f64,
         field_point_y: f64,
         heading_tolerance: f64,
+        flip:bool
     ) {
         crate::ffi::SwervePathBuilder::sgmt_point_at(
             self.path_builder.pin_mut(),
@@ -497,6 +503,7 @@ impl SwervePathBuilder {
             field_point_x,
             field_point_y,
             heading_tolerance,
+            flip
         )
     }
 
@@ -689,6 +696,7 @@ impl DifferentialPathBuilder {
         field_point_x: f64,
         field_point_y: f64,
         heading_tolerance: f64,
+        flip: bool
     ) {
         crate::ffi::DifferentialPathBuilder::wpt_point_at(
             self.path_builder.pin_mut(),
@@ -696,6 +704,7 @@ impl DifferentialPathBuilder {
             field_point_x,
             field_point_y,
             heading_tolerance,
+            flip
         )
     }
 

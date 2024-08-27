@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import DocumentManagerContext from "../../../document/DocumentManager";
+import { doc, uiState } from "../../../document/DocumentManager";
 import { sample } from "../../../util/MathUtil";
 
 type Props = {
@@ -29,25 +29,18 @@ const targetSideLength =
   2 * targetRadius * Math.sqrt((Math.PI * Math.sqrt(3)) / 3);
 
 class InterpolatedRobot extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
 
   render() {
-    if (this.context.model.document.pathlist.activePath.generated.length < 2) {
+    const traj = doc.pathlist.activePath.traj.fullTraj;
+    if (traj.length < 2) {
       return <></>;
     }
-    const pose1 = sample(
-      this.props.timestamp,
-      this.context.model.document.pathlist.activePath.generated
-    );
+    const pose1 = sample(this.props.timestamp, traj);
 
     const headingPointSideLength =
       targetSideLength *
-      Math.min(
-        this.context.model.document.robotConfig.bumperLength,
-        this.context.model.document.robotConfig.bumperWidth
-      );
+      Math.min(doc.robotConfig.bumper.length, doc.robotConfig.bumper.width);
     const headingPointHeight = (Math.sqrt(3) / 2) * headingPointSideLength;
 
     return (
@@ -60,7 +53,7 @@ class InterpolatedRobot extends Component<Props, State> {
         <defs>
           <path
             id={"robot-bumpers"}
-            d={this.context.model.document.robotConfig.bumperSVGElement()}
+            d={doc.robotConfig.bumperSVGElement()}
           ></path>
           <clipPath id={"robot-clip"}>
             <use xlinkHref={"#robot-bumpers"} />
@@ -71,14 +64,14 @@ class InterpolatedRobot extends Component<Props, State> {
           xlinkHref={"#robot-bumpers"}
           clipPath={"url(#robot-clip)"}
           stroke={"white"}
-          strokeWidth={5 * this.context.model.uiState.fieldScalingFactor}
+          strokeWidth={5 * uiState.fieldScalingFactor}
           fill={"transparent"}
           vectorEffect={"non-scaling-stroke"}
           style={{ pointerEvents: "none" }}
         />
         {/* Heading point */}
         <polygon
-          transform={`translate(${this.context.model.document.robotConfig.bumperLength / 2},0)`}
+          transform={`translate(${doc.robotConfig.bumper.length / 2},0)`}
           fill="white"
           points={
             `${-headingPointHeight / 2},${headingPointSideLength / 2} ` +
@@ -87,30 +80,14 @@ class InterpolatedRobot extends Component<Props, State> {
           }
         ></polygon>
         {/* Wheel locations */}
-        <circle
-          cx={this.context.model.document.robotConfig.wheelbase / 2}
-          cy={this.context.model.document.robotConfig.trackWidth / 2}
-          r={this.context.model.document.robotConfig.wheelRadius}
-          fill="white"
-        ></circle>
-        <circle
-          cx={this.context.model.document.robotConfig.wheelbase / 2}
-          cy={-this.context.model.document.robotConfig.trackWidth / 2}
-          r={this.context.model.document.robotConfig.wheelRadius}
-          fill="white"
-        ></circle>
-        <circle
-          cx={-this.context.model.document.robotConfig.wheelbase / 2}
-          cy={-this.context.model.document.robotConfig.trackWidth / 2}
-          r={this.context.model.document.robotConfig.wheelRadius}
-          fill="white"
-        ></circle>
-        <circle
-          cx={-this.context.model.document.robotConfig.wheelbase / 2}
-          cy={this.context.model.document.robotConfig.trackWidth / 2}
-          r={this.context.model.document.robotConfig.wheelRadius}
-          fill="white"
-        ></circle>
+        {doc.robotConfig.modules.map((mod) => (
+          <circle
+            cx={mod.x.value}
+            cy={mod.y.value}
+            r={doc.robotConfig.radius.value}
+            fill="white"
+          ></circle>
+        ))}
       </g>
     );
   }

@@ -27,7 +27,7 @@ export interface SavedPath {
   waypoints: Array<SavedWaypoint>;
   trajectory: Array<SavedTrajectorySample> | null;
 }
-export interface SavedPathList extends Record<string, SavedPath> {}
+export type SavedPathList = Record<string, SavedPath>;
 export interface SavedRobotConfig {
   mass: number;
   rotationalInertia: number;

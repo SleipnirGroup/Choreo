@@ -39,7 +39,7 @@ export interface SavedPath {
   eventMarkers: Array<SavedEventMarker>;
   isTrajectoryStale: boolean;
 }
-export interface SavedPathList extends Record<string, SavedPath> {}
+export type SavedPathList = Record<string, SavedPath>;
 export interface SavedRobotConfig {
   mass: number;
   rotationalInertia: number;

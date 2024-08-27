@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import DocumentManagerContext from "../../../document/DocumentManager";
+import { Component } from "react";
+import { doc } from "../../../document/DocumentManager";
 
 import { observer } from "mobx-react";
 
@@ -8,24 +8,20 @@ type Props = object;
 type State = object;
 
 class FieldSamples extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
 
   render() {
-    const path = this.context.model.document.pathlist.activePath;
+    const path = doc.pathlist.activePath;
     return (
       <>
-        {path.generatedWaypoints.map((point, idx) => {
+        {path.snapshot.waypoints.map((point, idx) => {
           let color = "white";
           if (idx === 0) {
             color = "green";
-          } else if (idx === path.generatedWaypoints.length - 1) {
+          } else if (idx === path.snapshot.waypoints.length - 1) {
             color = "red";
           }
-          if (point.isInitialGuess) {
-            return <></>; // Guess
-          } else if (point.headingConstrained) {
+          if (point.fixHeading) {
             return (
               <g
                 transform={` translate(${point.x}, ${point.y}) rotate(${
@@ -45,7 +41,7 @@ class FieldSamples extends Component<Props, State> {
                 ></rect>
               </g> // Full
             );
-          } else if (point.translationConstrained) {
+          } else if (point.fixTranslation) {
             return (
               <circle cx={point.x} cy={point.y} r={0.08} fill={color}></circle>
             );

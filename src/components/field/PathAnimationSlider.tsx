@@ -1,9 +1,9 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import DocumentManagerContext from "../../document/DocumentManager";
+import { doc, uiState } from "../../document/DocumentManager";
 import Slider from "@mui/material/Slider";
 import { Tooltip } from "@mui/material";
-import { NavbarItemData } from "../../document/UIStateStore";
+import { NavbarItemData } from "../../document/UIData";
 import { Room } from "@mui/icons-material";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
 
@@ -12,12 +12,10 @@ type Props = object;
 type State = object;
 
 class PathAnimationSlider extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
   totalTime = 0;
   render() {
-    const activePath = this.context.model.document.pathlist.activePath;
-    this.totalTime = activePath.getTotalTimeSeconds();
+    const activePath = doc.pathlist.activePath;
+    this.totalTime = activePath.traj.getTotalTimeSeconds();
     return (
       <>
         <Slider
@@ -26,15 +24,14 @@ class PathAnimationSlider extends Component<Props, State> {
           min={0}
           max={this.totalTime}
           marks={
-            activePath.generated.length > 0
-              ? activePath.generatedWaypoints
+            activePath.traj.fullTraj.length > 0
+              ? activePath.snapshot.waypoints
                   .flatMap((point, idx) => {
                     let type = 0;
-                    if (point.isInitialGuess) {
-                      type = 3; // Guess
-                    } else if (point.headingConstrained) {
+
+                    if (point.fixHeading) {
                       type = 0; // Full
-                    } else if (point.translationConstrained) {
+                    } else if (point.fixTranslation) {
                       type = 1; // Translation
                     } else {
                       type = 2; // Empty
@@ -47,13 +44,13 @@ class PathAnimationSlider extends Component<Props, State> {
                       color = "green";
                     } else if (
                       idx ===
-                      activePath.generatedWaypoints.length - 1
+                      activePath.snapshot.waypoints.length - 1
                     ) {
                       color = "red";
                     }
                     return [
                       {
-                        value: point.timestamp,
+                        value: activePath.traj.waypoints[idx],
                         label: (
                           <Tooltip
                             disableInteractive
@@ -71,7 +68,7 @@ class PathAnimationSlider extends Component<Props, State> {
                     ];
                   })
                   .concat(
-                    activePath.eventMarkers.flatMap(
+                    activePath.traj.markers.flatMap(
                       (marker: IEventMarkerStore) => {
                         if (marker.timestamp === undefined) {
                           return [];
@@ -104,11 +101,9 @@ class PathAnimationSlider extends Component<Props, State> {
           aria-label="Default"
           valueLabelDisplay="auto"
           valueLabelFormat={(x: number) => x.toFixed(2)}
-          value={this.context.model.uiState.pathAnimationTimestamp}
+          value={uiState.pathAnimationTimestamp}
           onChange={(e, newVal) =>
-            this.context.model.uiState.setPathAnimationTimestamp(
-              newVal as number
-            )
+            uiState.setPathAnimationTimestamp(newVal as number)
           }
           sx={{
             flexGrow: "1",
@@ -139,7 +134,7 @@ class PathAnimationSlider extends Component<Props, State> {
         />
         <span
           style={{ width: "min-content", whiteSpace: "nowrap" }}
-        >{`${this.context.model.uiState.pathAnimationTimestamp.toFixed(
+        >{`${uiState.pathAnimationTimestamp.toFixed(
           1
         )} s / ${this.totalTime.toFixed(1)} s`}</span>
       </>

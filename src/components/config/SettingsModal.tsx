@@ -1,23 +1,19 @@
-import { observer } from "mobx-react";
-import React, { Component } from "react";
-import DocumentManagerContext from "../../document/DocumentManager";
-import { Fade, IconButton, Modal, Tab, Tabs } from "@mui/material";
-import RobotConfigPanel from "./robotconfig/RobotConfigPanel";
 import { Close } from "@mui/icons-material";
-import ExportConfigPanel from "./ExportConfigPanel";
+import { Fade, IconButton, Modal, Tab, Tabs } from "@mui/material";
+import { observer } from "mobx-react";
+import { Component } from "react";
+import { uiState } from "../../document/DocumentManager";
 import BetasConfigPanel from "./BetasConfigPanel";
 import KeyboardShortcutsPanel from "./KeyboardShortcutsPanel";
+import RobotConfigPanel from "./robotconfig/RobotConfigPanel";
 
 type Props = object;
 
 type State = object;
 
 class SettingsModal extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
   render() {
-    const uiState = this.context.model.uiState;
     return (
       <Modal
         open={uiState.robotConfigOpen}
@@ -69,7 +65,7 @@ class SettingsModal extends Component<Props, State> {
                 }}
               >
                 <Tab label="Robot Config" />
-                <Tab label="Export Config" />
+                {/* <Tab label="Export Config" /> */}
                 <Tab label="Controls" />
                 <Tab label="Betas" />
               </Tabs>
@@ -81,13 +77,13 @@ class SettingsModal extends Component<Props, State> {
               {uiState.settingsTab == 0 && (
                 <RobotConfigPanel></RobotConfigPanel>
               )}
-              {uiState.settingsTab == 1 && (
+              {/* {uiState.settingsTab == 1 && (
                 <ExportConfigPanel></ExportConfigPanel>
-              )}
-              {uiState.settingsTab == 2 && (
+              )} */}
+              {uiState.settingsTab == 1 && (
                 <KeyboardShortcutsPanel></KeyboardShortcutsPanel>
               )}
-              {uiState.settingsTab == 3 && (
+              {uiState.settingsTab == 2 && (
                 <BetasConfigPanel></BetasConfigPanel>
               )}
             </div>

@@ -1,16 +1,14 @@
-import { observer } from "mobx-react";
-import React, { Component } from "react";
-import DocumentManagerContext from "../../document/DocumentManager";
-import inputStyles from "../input/InputList.module.css";
 import { Switch } from "@mui/material";
+import { observer } from "mobx-react";
+import { Component } from "react";
+import { doc } from "../../document/DocumentManager";
+import inputStyles from "../input/InputList.module.css";
 
 type Props = object;
 
 type State = object;
 
 class ExportConfigPanel extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
   rowGap = 16;
   render() {
     return (
@@ -23,16 +21,14 @@ class ExportConfigPanel extends Component<Props, State> {
         }}
       >
         <span className={inputStyles.Title} style={{ gridColumn: "1" }}>
-          Split .traj files at stop points
+          Export Module Forces
         </span>
         <Switch
           size="small"
           sx={{ gridColumn: 2 }}
-          checked={this.context.model.document.splitTrajectoriesAtStopPoints}
+          checked={doc.traj.useModuleForces}
           onChange={(e, checked) => {
-            this.context.model.setSplitTrajectoriesAtStopPoints(checked);
-            this.context.clearAllTrajectories();
-            this.context.exportAllTrajectories();
+            doc.traj.setUseModuleForces(checked);
           }}
         ></Switch>
       </div>

@@ -1,131 +1,140 @@
 import { observer } from "mobx-react";
-import React, { Component } from "react";
-import DocumentManagerContext from "../../../document/DocumentManager";
-import InputList from "../../input/InputList";
-import Input from "../../input/Input";
-import {
-  InToM,
-  KgToLbs,
-  KG_TO_LBS,
-  LbsToKg,
-  MassUnit,
-  MetersOrInches,
-  MToIn,
-  M_TO_FT
-} from "../../../util/UnitConversions";
+import { Component } from "react";
+import { doc } from "../../../document/DocumentManager";
+import ExpressionInput from "../../input/ExpressionInput";
+import ExpressionInputList from "../../input/ExpressionInputList";
 
-type Props = { rowGap: number; imperial: boolean };
+type Props = { rowGap: number };
 
 type State = object;
 
 class RobotConfigPanel extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = { selectedMotor: "NEO", currentLimit: 40 };
   render() {
-    const config = this.context.model.document.robotConfig;
-    const imp = this.props.imperial;
+    const config = doc.robotConfig;
     return (
-      <InputList noCheckbox rowGap={this.props.rowGap}>
-        <Input
+      <ExpressionInputList rowGap={this.props.rowGap}>
+        <ExpressionInput
           title="Mass"
-          suffix={MassUnit(imp)}
           enabled={true}
-          setEnabled={(a) => null}
-          number={imp ? KgToLbs(config.mass) : config.mass}
-          setNumber={(mass) => config!.setMass(imp ? LbsToKg(mass) : mass)}
+          number={config.mass}
           maxWidthCharacters={8}
-          showCheckbox={false}
           titleTooltip={"Total robot mass"}
         />
 
-        <Input
+        <ExpressionInput
           title="MOI"
-          suffix={imp ? "lb · ft²" : "kg · m²"}
           enabled={true}
-          setEnabled={(a) => null}
-          number={
-            imp
-              ? config.rotationalInertia * KG_TO_LBS * M_TO_FT * M_TO_FT
-              : config.rotationalInertia
-          }
-          setNumber={(moi) =>
-            config!.setRotationalInertia(
-              imp ? moi / (KG_TO_LBS * M_TO_FT * M_TO_FT) : moi
-            )
-          }
+          number={config.inertia}
           maxWidthCharacters={8}
-          showCheckbox={false}
           titleTooltip={"Robot moment of inertia around center vertical axis"}
         />
 
-        <Input
-          title="Bumper Width"
-          suffix={MetersOrInches(imp)}
+        <ExpressionInput
+          title="Bumper Front"
           enabled={true}
-          setEnabled={(a) => null}
           roundingPrecision={3}
-          number={imp ? MToIn(config.bumperWidth) : config.bumperWidth}
-          setNumber={(width) =>
-            config!.setBumperWidth(imp ? InToM(width) : width)
-          }
+          number={config.bumper.front}
           maxWidthCharacters={8}
-          showCheckbox={false}
           titleTooltip="Width of robot with bumpers on"
         />
 
-        <Input
-          title="Bumper Length"
-          suffix={MetersOrInches(imp)}
+        <ExpressionInput
+          title="Bumper Back"
           enabled={true}
-          setEnabled={(a) => null}
           roundingPrecision={3}
-          number={imp ? MToIn(config.bumperLength) : config.bumperLength}
-          setNumber={(length) =>
-            config!.setBumperLength(imp ? InToM(length) : length)
-          }
+          number={config.bumper.back}
           maxWidthCharacters={8}
-          showCheckbox={false}
           titleTooltip="Length of robot with bumpers on"
         />
 
-        <Input
-          title="Wheelbase"
-          suffix={MetersOrInches(imp)}
+        <ExpressionInput
+          title="Bumper Left"
           enabled={true}
-          setEnabled={(a) => null}
           roundingPrecision={3}
-          number={imp ? MToIn(config.wheelbase) : config.wheelbase}
-          setNumber={(wheelbase) =>
-            config!.setWheelbase(imp ? InToM(wheelbase) : wheelbase)
-          }
+          number={config.bumper.left}
           maxWidthCharacters={8}
-          showCheckbox={false}
+          titleTooltip="Width of robot with bumpers on"
+        />
+
+        <ExpressionInput
+          title="Bumper Right"
+          enabled={true}
+          roundingPrecision={3}
+          number={config.bumper.right}
+          maxWidthCharacters={8}
+          titleTooltip="Length of robot with bumpers on"
+        />
+
+        <ExpressionInput
+          title="FL.X"
+          enabled={true}
+          roundingPrecision={3}
+          number={config.modules[0].x}
+          maxWidthCharacters={8}
           titleTooltip="Front-back distance between wheel centers"
         />
 
-        <Input
-          title="Trackwidth"
-          suffix={MetersOrInches(imp)}
+        <ExpressionInput
+          title="FL.Y"
           enabled={true}
-          setEnabled={(a) => null}
           roundingPrecision={3}
-          number={imp ? MToIn(config.trackWidth) : config.trackWidth}
-          setNumber={(trackwidth) =>
-            config!.setTrackwidth(imp ? InToM(trackwidth) : trackwidth)
-          }
+          number={config.modules[0].y}
           maxWidthCharacters={8}
-          showCheckbox={false}
-          titleTooltip="Left-right distance between wheel centers"
+          titleTooltip="Front-back distance between wheel centers"
         />
-        {/* An extra invisible element to keep the list width from shrinking when switching to imperial units */}
-        <span style={{ color: "transparent", height: 0, gridColumn: 1 }}>
-          Floor Speed
-        </span>
-        <span style={{ color: "transparent", height: 0, gridColumn: 3 }}>
-          kg · m²
-        </span>
-      </InputList>
+        <ExpressionInput
+          title="BL.X"
+          enabled={true}
+          roundingPrecision={3}
+          number={config.modules[1].x}
+          maxWidthCharacters={8}
+          titleTooltip="Front-back distance between wheel centers"
+        />
+
+        <ExpressionInput
+          title="BL.Y"
+          enabled={true}
+          roundingPrecision={3}
+          number={config.modules[1].y}
+          maxWidthCharacters={8}
+          titleTooltip="Front-back distance between wheel centers"
+        />
+        <ExpressionInput
+          title="BR.X"
+          enabled={true}
+          roundingPrecision={3}
+          number={config.modules[2].x}
+          maxWidthCharacters={8}
+          titleTooltip="Front-back distance between wheel centers"
+        />
+
+        <ExpressionInput
+          title="BR.Y"
+          enabled={true}
+          roundingPrecision={3}
+          number={config.modules[2].y}
+          maxWidthCharacters={8}
+          titleTooltip="Front-back distance between wheel centers"
+        />
+        <ExpressionInput
+          title="FR.X"
+          enabled={true}
+          roundingPrecision={3}
+          number={config.modules[3].x}
+          maxWidthCharacters={8}
+          titleTooltip="Front-back distance between wheel centers"
+        />
+
+        <ExpressionInput
+          title="FR.Y"
+          enabled={true}
+          roundingPrecision={3}
+          number={config.modules[3].y}
+          maxWidthCharacters={8}
+          titleTooltip="Front-back distance between wheel centers"
+        />
+      </ExpressionInputList>
     );
   }
 }

@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import DocumentManagerContext from "../../document/DocumentManager";
+import { doc } from "../../document/DocumentManager";
 import inputStyles from "../input/InputList.module.css";
 import { Divider, Switch, Tooltip } from "@mui/material";
 import { Warning } from "@mui/icons-material";
@@ -10,8 +10,6 @@ type Props = object;
 type State = object;
 
 class BetasConfigPanel extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
   rowGap = 16;
   render() {
     return (
@@ -60,9 +58,9 @@ class BetasConfigPanel extends Component<Props, State> {
             <Switch
               size="small"
               sx={{ gridColumn: 2 }}
-              checked={this.context.model.document.usesObstacles}
+              checked={doc.usesObstacles}
               onChange={(e, checked) => {
-                this.context.model.setUsesObstacles(checked);
+                doc.setUsesObstacles(checked);
               }}
             ></Switch>
           </Tooltip>

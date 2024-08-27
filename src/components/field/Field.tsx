@@ -1,41 +1,42 @@
 import { observer } from "mobx-react";
-import React, { Component } from "react";
-import DocumentManagerContext from "../../document/DocumentManager";
+import { Component } from "react";
+import {
+  doc,
+  generateWithToastsAndExport
+} from "../../document/DocumentManager";
 import WaypointPanel from "../config/WaypointConfigPanel";
 
-import styles from "./Field.module.css";
-import FieldOverlayRoot from "./svg/FieldOverlayRoot";
-import IconButton from "@mui/material/IconButton";
+import { Close } from "@mui/icons-material";
 import ShapeLineIcon from "@mui/icons-material/ShapeLine";
 import { CircularProgress, Tooltip } from "@mui/material";
 import Box from "@mui/material/Box/Box";
-import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
-import ViewOptionsPanel from "../config/ViewOptionsPanel";
-import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel";
-import { IConstraintStore } from "../../document/ConstraintStore";
+import IconButton from "@mui/material/IconButton";
 import "react-toastify/dist/ReactToastify.min.css";
-import { invoke } from "@tauri-apps/api";
-import { Close } from "@mui/icons-material";
 import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
-import CircularObstacleConfigPanel from "../config/CircularObstacleConfigPanel";
-import EventMarkerConfigPanel from "../config/eventmarker/EventMarkerConfigPanel";
-import WaypointVisibilityPanel from "../config/WaypointVisibilityPanel";
+import { IConstraintStore } from "../../document/ConstraintStore";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
+import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
+import { Commands } from "../../document/tauriCommands";
+import CircularObstacleConfigPanel from "../config/CircularObstacleConfigPanel";
+import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel";
+import ViewOptionsPanel from "../config/ViewOptionsPanel";
+import WaypointVisibilityPanel from "../config/WaypointVisibilityPanel";
+import EventMarkerConfigPanel from "../config/eventmarker/EventMarkerConfigPanel";
+import styles from "./Field.module.css";
+import FieldOverlayRoot from "./svg/FieldOverlayRoot";
 
 type Props = object;
 
 type State = object;
 
 export class Field extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
   render() {
-    const selectedSidebar = this.context.model.uiState.selectedSidebarItem;
-    const activePath = this.context.model.document.pathlist.activePath;
-    const activePathUUID = this.context.model.document.pathlist.activePathUUID;
+    const selectedSidebar = doc.selectedSidebarItem;
+    const activePath = doc.pathlist.activePath;
+    const activePathUUID = doc.pathlist.activePathUUID;
     let indexIfWaypoint = -1;
     if (selectedSidebar !== undefined && "heading" in selectedSidebar) {
-      indexIfWaypoint = activePath.waypoints.findIndex(
+      indexIfWaypoint = activePath.path.waypoints.findIndex(
         (point: IHolonomicWaypointStore) =>
           point.uuid == (selectedSidebar as IHolonomicWaypointStore)?.uuid
       );
@@ -53,8 +54,8 @@ export class Field extends Component<Props, State> {
             ></WaypointPanel>
           )}
         {selectedSidebar !== undefined &&
-          "type" in selectedSidebar &&
-          activePath.constraints.find(
+          "from" in selectedSidebar &&
+          activePath.path.constraints.find(
             (constraint) =>
               constraint.uuid == (selectedSidebar as IConstraintStore)!.uuid
           ) && (
@@ -64,7 +65,7 @@ export class Field extends Component<Props, State> {
           )}
         {selectedSidebar !== undefined &&
           "radius" in selectedSidebar &&
-          activePath.obstacles.find(
+          activePath.path.obstacles.find(
             (obstacle) =>
               obstacle.uuid == (selectedSidebar as ICircularObstacleStore)!.uuid
           ) && (
@@ -74,7 +75,7 @@ export class Field extends Component<Props, State> {
           )}
         {selectedSidebar !== undefined &&
           "offset" in selectedSidebar &&
-          activePath.eventMarkers.find(
+          activePath.traj.markers.find(
             (marker) =>
               marker.uuid == (selectedSidebar as IEventMarkerStore)!.uuid
           ) && (
@@ -88,7 +89,7 @@ export class Field extends Component<Props, State> {
           disableInteractive
           placement="top-start"
           title={
-            activePath.generating
+            activePath.ui.generating
               ? "Cancel All"
               : activePath.canGenerate()
                 ? "Generate Path"
@@ -120,14 +121,14 @@ export class Field extends Component<Props, State> {
                 borderRadius: "50%",
                 boxShadow: "3px",
                 marginInline: 0,
-                zIndex: activePath.generating ? 10 : -1,
+                zIndex: activePath.ui.generating ? 10 : -1,
                 backgroundColor: "red",
                 "&:hover": {
                   backgroundColor: "darkred"
                 }
               }}
               onClick={(event) => {
-                invoke("cancel");
+                Commands.cancel();
               }}
               disabled={activePath.canGenerate()}
             >
@@ -151,16 +152,14 @@ export class Field extends Component<Props, State> {
                 marginInline: 0,
                 visibility: activePath.canGenerate() ? "visible" : "hidden"
               }}
-              onClick={() =>
-                this.context.generateWithToastsAndExport(activePathUUID)
-              }
+              onClick={() => generateWithToastsAndExport(activePathUUID)}
               disabled={!activePath.canGenerate()}
             >
               <ShapeLineIcon></ShapeLineIcon>
             </IconButton>
           </Box>
         </Tooltip>
-        {activePath.generating && (
+        {activePath.ui.generating && (
           <CircularProgress
             size={48 * 1.3}
             sx={{

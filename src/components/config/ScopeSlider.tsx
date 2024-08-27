@@ -1,7 +1,6 @@
-import { observer } from "mobx-react";
-import React, { Component } from "react";
-import DocumentManagerContext from "../../document/DocumentManager";
 import { Slider, SliderProps } from "@mui/material";
+import { observer } from "mobx-react";
+import { Component } from "react";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 
 type Props = {
@@ -16,8 +15,6 @@ type Props = {
 type State = object;
 
 class ScopeSlider extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
   render() {
     const isRange = this.props.isRange;
@@ -28,13 +25,7 @@ class ScopeSlider extends Component<Props, State> {
 
     const sliderMarks = [
       { value: 0, label: "Start" },
-      ...points.flatMap((point, idx) => {
-        if (point.isInitialGuess) {
-          return [];
-        } else {
-          return { value: idx + 1, label: idx + 1 };
-        }
-      }),
+      ...points.flatMap((point, idx) => ({ value: idx + 1, label: idx + 1 })),
       { value: pointcount + 1, label: "End" }
     ];
     return (

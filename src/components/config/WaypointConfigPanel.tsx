@@ -1,21 +1,20 @@
-import { observer } from "mobx-react";
-import React, { Component, ReactElement } from "react";
-import DocumentManagerContext from "../../document/DocumentManager";
-import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
-import Input from "../input/Input";
-import styles from "./WaypointConfigPanel.module.css";
-import InputList from "../input/InputList";
 import { ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
-import { WaypointData } from "../../document/UIStateStore";
-import { angleModulus } from "../../util/MathUtil";
+import { observer } from "mobx-react";
+import { Component, ReactElement } from "react";
+import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
+import { WaypointData } from "../../document/UIData";
+import BooleanInput from "../input/BooleanInput";
+import ExpressionInput from "../input/ExpressionInput";
+import ExpressionInputList from "../input/ExpressionInputList";
+import Input from "../input/Input";
+import InputList from "../input/InputList";
+import styles from "./WaypointConfigPanel.module.css";
 
 type Props = { waypoint: IHolonomicWaypointStore | null; index: number };
 
 type State = object;
 
 class WaypointPanel extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
 
   isWaypointNonNull(
@@ -24,67 +23,58 @@ class WaypointPanel extends Component<Props, State> {
     return (point as IHolonomicWaypointStore) !== null;
   }
   render() {
-    const { waypoint, index } = this.props;
+    const { waypoint } = this.props;
     const waypointType = this.props.waypoint?.type;
     if (this.isWaypointNonNull(waypoint)) {
       return (
         <div className={styles.WaypointPanel}>
-          <span
-            style={{
-              position: "absolute",
-              right: 0,
-              top: 0,
-              padding: "inherit",
-              background: "var(--darker-purple)",
-              borderBottomLeftRadius: "8px",
-              fontWeight: "bolder",
-              fontSize: "1em"
-            }}
-          >
-            {index + 1}
-          </span>
-          <InputList noCheckbox>
-            <Input
+          <ExpressionInputList>
+            <ExpressionInput
               title="x"
-              suffix="m"
-              showCheckbox={false}
               enabled={true}
-              setEnabled={(_) => {}}
               maxWidthCharacters={8}
               number={waypoint.x}
-              setNumber={(x) => waypoint!.setX(x)}
-            ></Input>
-            <Input
+            ></ExpressionInput>
+            <ExpressionInput
               title="y"
-              suffix="m"
-              showCheckbox={false}
               enabled={true}
-              setEnabled={(_) => {}}
               maxWidthCharacters={8}
               number={waypoint.y}
-              setNumber={(y) => waypoint!.setY(y)}
-            ></Input>
-            <Input
+            ></ExpressionInput>
+            <ExpressionInput
               title="θ"
-              suffix="rad"
-              showCheckbox={false}
-              enabled={waypoint.headingConstrained}
-              setEnabled={(_) => {}}
+              enabled={waypoint.fixHeading}
               maxWidthCharacters={8}
-              number={angleModulus(waypoint.heading)}
-              setNumber={(heading) => waypoint!.setHeading(heading)}
-            ></Input>
+              number={waypoint.heading}
+              //setNumber={(heading) => waypoint!.setHeading(heading)}
+            ></ExpressionInput>
+          </ExpressionInputList>
+
+          <InputList>
             <Input
-              title=""
-              suffix="samples"
-              showCheckbox={false}
-              enabled={true}
-              setEnabled={(_) => {}}
+              title="Samples"
+              suffix=""
+              showCheckbox={!waypoint.isLast()}
+              enabled={waypoint.overrideIntervals && !waypoint.isLast()}
+              showNumberWhenDisabled={!waypoint.isLast()}
+              setEnabled={(e) => {
+                waypoint.setOverrideIntervals(e);
+              }}
               maxWidthCharacters={8}
-              number={waypoint.controlIntervalCount}
+              number={waypoint.intervals}
               roundingPrecision={0}
-              setNumber={(_) => {}}
+              setNumber={(num) => {
+                waypoint.setIntervals(num);
+              }}
+              titleTooltip="Override the number of samples between this and next waypoint"
             ></Input>
+            <BooleanInput
+              title={"Split"}
+              enabled={true}
+              value={waypoint.split}
+              setValue={(s) => waypoint.setSplit(s)}
+              titleTooltip="Split trajectory at this point. Does not force stopping."
+            ></BooleanInput>
           </InputList>
           <ToggleButtonGroup
             sx={{ marginInline: "auto", paddingTop: "8px" }}
@@ -123,6 +113,19 @@ class WaypointPanel extends Component<Props, State> {
               );
             })}
           </ToggleButtonGroup>
+          {/* <span
+            style={{
+              width: "min-content",
+              padding: "inherit",
+              background: "var(--darker-purple)",
+              borderBottomRightRadius: "8px",
+              fontWeight: "bolder",
+              fontSize: "1em",
+
+            }}
+          >
+            {index + 1}
+          </span> */}
         </div>
       );
     }

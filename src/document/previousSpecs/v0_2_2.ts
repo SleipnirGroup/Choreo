@@ -30,7 +30,7 @@ export interface SavedPath {
   defaultControlIntervalCount: number;
   circleObstacles: Array<SavedCircleObstacle>;
 }
-export interface SavedPathList extends Record<string, SavedPath> {}
+export type SavedPathList = Record<string, SavedPath>;
 export interface SavedRobotConfig {
   mass: number;
   rotationalInertia: number;

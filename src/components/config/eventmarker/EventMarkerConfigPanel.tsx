@@ -1,28 +1,24 @@
+import { TextField, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
+import { resolveIdentifier } from "mobx-state-tree";
 import React, { Component } from "react";
 import { DragDropContext } from "react-beautiful-dnd";
-import DocumentManagerContext from "../../../document/DocumentManager";
-import styles from "../WaypointConfigPanel.module.css";
-import InputList from "../../input/InputList";
-import Input from "../../input/Input";
-import ScopeSlider from "../ScopeSlider";
 import {
   CommandStore,
   IEventMarkerStore
 } from "../../../document/EventMarkerStore";
-import { toJS } from "mobx";
-import CommandDraggable from "./CommandDraggable";
-import { resolveIdentifier } from "mobx-state-tree";
-import { TextField, Tooltip } from "@mui/material";
+import ExpressionInput from "../../input/ExpressionInput";
+import ExpressionInputList from "../../input/ExpressionInputList";
 import InputStyles from "../../input/InputList.module.css";
+import ScopeSlider from "../ScopeSlider";
+import styles from "../WaypointConfigPanel.module.css";
+import CommandDraggable from "./CommandDraggable";
 
 type Props = { marker: IEventMarkerStore };
 
 type State = object;
 
 class EventMarkerConfigPanel extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
   nameInputRef: React.RefObject<HTMLInputElement> =
     React.createRef<HTMLInputElement>();
   state = {};
@@ -43,13 +39,14 @@ class EventMarkerConfigPanel extends Component<Props, State> {
     if (targetCommand === undefined) {
       return;
     }
-    console.log(targetCommand);
-    console.log(toJS(this.props.marker));
     if (targetCommand === undefined) {
       return;
     }
     if (sourceCommandList === targetCommandList) {
-      targetCommand.reorder(result.source.index, result.destination.index);
+      targetCommand.reorderCommands(
+        result.source.index,
+        result.destination.index
+      );
     } else {
       // This section is dead code until we have a DnD library that allows dragging
       // between layers of nested drop areas
@@ -64,7 +61,7 @@ class EventMarkerConfigPanel extends Component<Props, State> {
       targetCommand.pushCommand(
         sourceCommand.detachCommand(result.source.index)
       );
-      targetCommand.reorder(
+      targetCommand.reorderCommands(
         targetCommand.commands.length - 1,
         result.destination.index
       );
@@ -74,7 +71,7 @@ class EventMarkerConfigPanel extends Component<Props, State> {
     const marker = this.props.marker;
 
     let startIndex = (marker.getTargetIndex() ?? -0.5) + 1;
-    const points = marker.getPath().waypoints;
+    const points = marker.getPath().path.waypoints;
     const pointcount = points.length;
     if (marker.target === "first") {
       startIndex = 0;
@@ -117,7 +114,7 @@ class EventMarkerConfigPanel extends Component<Props, State> {
         <span style={{ width: "100%", fontSize: "0.8em", opacity: 0.8 }}>
           Changes to waypoint target will not take effect until regeneration.
         </span>
-        <InputList noCheckbox>
+        <ExpressionInputList>
           <Tooltip
             disableInteractive
             title="Name of the marker (not the command)"
@@ -147,25 +144,20 @@ class EventMarkerConfigPanel extends Component<Props, State> {
           ></TextField>
           <span></span>
           <span></span>
-          <Input
+          <ExpressionInput
             key={"offset"}
             title={"Offset"}
-            suffix={"s"}
             enabled={true}
-            setEnabled={(a) => null}
             number={this.props.marker.offset}
-            setNumber={(offset) => this.props.marker.setOffset(offset)}
-            showCheckbox={false}
             titleTooltip={
               "The marker's time offset before or after this waypoint"
             }
           />
-        </InputList>
+        </ExpressionInputList>
         <DragDropContext onDragEnd={(result) => this.onDragEnd(result)}>
           <CommandDraggable
             command={marker.command}
             index={0}
-            context={this.context}
             isDraggable={false}
             isRoot
           ></CommandDraggable>

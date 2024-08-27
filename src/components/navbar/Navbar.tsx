@@ -1,30 +1,24 @@
 import React, { Component } from "react";
-import DocumentManagerContext from "../../document/DocumentManager";
+import { doc, uiState } from "../../document/DocumentManager";
 import Tooltip from "@mui/material/Tooltip";
 import styles from "./Navbar.module.css";
 import { observer } from "mobx-react";
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
-import {
-  NavbarItemData,
-  NavbarItemSectionEnds
-} from "../../document/UIStateStore";
+import { NavbarItemData, NavbarItemSectionEnds } from "../../document/UIData";
 
 type Props = object;
 
 type State = object;
 
 class Navbar extends Component<Props, State> {
-  static contextType = DocumentManagerContext;
-  declare context: React.ContextType<typeof DocumentManagerContext>;
   state = {};
 
   render() {
-    const { selectedNavbarItem, setSelectedNavbarItem } =
-      this.context.model.uiState;
+    const { selectedNavbarItem, setSelectedNavbarItem } = uiState;
     return (
       <div className={styles.Container}>
         {NavbarItemSectionEnds.map((endSplit, sectionIdx) =>
-          sectionIdx != 2 || this.context.model.document.usesObstacles ? (
+          sectionIdx != 2 || doc.usesObstacles ? (
             <ToggleButtonGroup
               className={styles.ToggleGroup}
               exclusive
