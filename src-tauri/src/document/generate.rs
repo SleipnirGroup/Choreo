@@ -222,8 +222,7 @@ fn postprocess(
     mut snapshot: ChoreoPath<f64>,
     counts_vec: Vec<usize>,
 ) -> Traj {
-    traj
-        .path
+    traj.path
         .waypoints
         .iter_mut()
         .zip(snapshot.waypoints.iter_mut())
