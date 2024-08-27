@@ -37,8 +37,8 @@ export interface RobotConfig<T extends ExprOrNumber> {
   inertia: T;
   gearing: T;
   radius: T;
-  /// motor rpm
-  vmax: T; // motor rpm
+  /// motor rad/s
+  vmax: T;
   /// motor N*m
   tmax: T; // N*m
   bumper: Bumper<T>;

@@ -89,8 +89,8 @@ pub struct RobotConfig<T> {
     pub inertia: T,
     pub gearing: T,
     pub radius: T,
-    /// motor rpm
-    pub vmax: T, // motor rpm
+    /// motor rad/s
+    pub vmax: T, // motor rad/s
     /// motor N*m
     pub tmax: T, // N*m
     pub bumper: Bumper<T>,
@@ -118,7 +118,7 @@ impl RobotConfig<f64> {
         self.tmax * self.gearing
     }
     pub fn wheel_max_velocity(&self) -> f64 {
-        (self.vmax / self.gearing) * 2.0 * PI / 60.0
+        (self.vmax / self.gearing)
     }
 }
 #[derive(Debug, Serialize, Deserialize, Clone)]

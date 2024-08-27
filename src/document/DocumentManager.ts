@@ -137,7 +137,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
           config.tmax,
           math.multiply(Units.Newton, Units.Meter)
         ),
-        vmax: vars().createExpression(config.vmax, Units.RPM),
+        vmax: vars().createExpression(config.vmax, Units.RadianPerSecond),
         gearing: vars().createExpression(config.gearing),
         radius: vars().createExpression(config.radius, Units.Meter),
         bumper: {

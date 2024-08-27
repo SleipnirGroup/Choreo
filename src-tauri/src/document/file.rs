@@ -1,6 +1,5 @@
 use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
+    collections::HashMap, f64::consts::PI, path::{Path, PathBuf}
 };
 
 use dashmap::DashMap;
@@ -225,7 +224,7 @@ pub async fn new_file(_app_handle: tauri::AppHandle) -> Result<Project, String> 
         config: RobotConfig {
             gearing: expr("6.5", 6.5),
             radius: expr("2 in", 0.0508),
-            vmax: expr("6000.0 RPM", 6000.0),
+            vmax: expr("6000.0 RPM", 6000.0 * 2.0 * PI / 60.0),
             tmax: expr("1.2 N*m", 1.2),
             modules: [
                 Module {
