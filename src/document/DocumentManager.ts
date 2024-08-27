@@ -103,9 +103,9 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
   function createCommandStore(command: Command<Expr>): ICommandStore {
     return CommandStore.create({
       type: command.type,
-      name: command.data.name ?? "",
-      commands: (command.data.commands ?? []).map((c) => createCommandStore(c)),
-      time: vars().createExpression(command.data.time ?? 0, Units.Second),
+      name: command.data?.name ?? "",
+      commands: (command.data?.commands ?? []).map((c) => createCommandStore(c)),
+      time: vars().createExpression(command.data?.time ?? 0, Units.Second),
       uuid: uuidv4()
     });
   }
