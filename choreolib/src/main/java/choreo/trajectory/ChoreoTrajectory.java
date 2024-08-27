@@ -1,6 +1,6 @@
 // Copyright (c) Choreo contributors
 
-package com.choreo.lib.trajectory;
+package choreo.trajectory;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import java.util.ArrayList;
@@ -43,6 +43,16 @@ public class ChoreoTrajectory {
    */
   public String name() {
     return name;
+  }
+
+  /**
+   * Returns a new trajectory with the given name
+   * 
+   * @param name the new name of the trajectory
+   * @return a new trajectory with the given name
+   */
+  public ChoreoTrajectory withName(String name) {
+    return new ChoreoTrajectory(name, samples, events);
   }
 
   /**

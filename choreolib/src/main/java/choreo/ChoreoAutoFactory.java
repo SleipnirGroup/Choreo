@@ -1,6 +1,7 @@
-package com.choreo.lib;
+package choreo;
 
-import com.choreo.lib.trajectory.ChoreoTrajectory;
+import choreo.Choreo.ChoreoControlFunction;
+import choreo.trajectory.ChoreoTrajectory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 /**
@@ -18,8 +20,10 @@ import java.util.function.Supplier;
  *
  * <p>Here is an example of how to use this class to create an auto routine:
  *
+ * <h2>Example using <code>Trigger</code>s</h2>
+ * 
  * <pre><code>
- * public ChoreoAutoLoop shootThenMove(ChoreoAutoFactory factory) {
+ * public Command shootThenMove(ChoreoAutoFactory factory) {
  *   // create a new auto loop to return
  *   var loop = factory.newLoop();
  *
@@ -33,7 +37,23 @@ import java.util.function.Supplier;
  *   // and will run the trajectory command when the shooter does not have a note
  *   loop.enabled().and(shooter.hasNote()).onFalse(traj.cmd());
  *
- *   return loop;
+ *   return loopcmd().withName("ShootThenMove");
+ * }
+ * </code></pre>
+ * 
+ * <h2>Example using <code>CommandGroup</code>s</h2>
+ * 
+ * <pre><code>
+ * public Command shootThenMove(ChoreoAutoFactory factory) {
+ *   // create a new auto loop to return
+ *   var loop = factory.newLoop();
+ *
+ *   // create a trajectory that moves the robot 2 meters
+ *   ChoreoAutoTrajectory traj = factory.traj("move2meters", loop);
+ *
+ *   return shooter.shoot()
+ *      .andThen(traj.cmd())
+ *      .withName("ShootThenMove");
  * }
  * </code></pre>
  */
@@ -75,25 +95,25 @@ public class ChoreoAutoFactory {
   private final ChoreoControlFunction controller;
   private final Consumer<ChassisSpeeds> outputChassisSpeeds;
   private final BooleanSupplier mirrorTrajectory;
-  private final Optional<Consumer<ChoreoTrajectory>> trajLogger;
   private final Subsystem driveSubsystem;
   private final ChoreoAutoBindings bindings = new ChoreoAutoBindings();
+  private final Optional<BiConsumer<ChoreoTrajectory, Boolean>> trajLogger;
 
   ChoreoAutoFactory(
       Supplier<Pose2d> poseSupplier,
       ChoreoControlFunction controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
-      Optional<Consumer<ChoreoTrajectory>> trajLogger,
       Subsystem driveSubsystem,
-      ChoreoAutoBindings bindings) {
+      ChoreoAutoBindings bindings,
+      Optional<BiConsumer<ChoreoTrajectory, Boolean>> trajLogger) {
     this.poseSupplier = poseSupplier;
     this.controller = controller;
     this.outputChassisSpeeds = outputChassisSpeeds;
     this.mirrorTrajectory = mirrorTrajectory;
     this.driveSubsystem = driveSubsystem;
-    this.trajLogger = trajLogger;
     this.bindings.merge(bindings);
+    this.trajLogger = trajLogger;
   }
 
   /**
@@ -113,7 +133,7 @@ public class ChoreoAutoFactory {
    * @return A new auto trajectory.
    */
   public ChoreoAutoTrajectory traj(String trajName, ChoreoAutoLoop loop) {
-    return new ChoreoAutoTrajectory(
+    var traj = new ChoreoAutoTrajectory(
         trajName,
         Choreo.getTrajectory(trajName)
             .orElseGet(
@@ -128,7 +148,11 @@ public class ChoreoAutoFactory {
         trajLogger,
         driveSubsystem,
         loop.getLoop(),
-        bindings);
+        bindings,
+        loop::onNewTrajectory
+    );
+    loop.addTrajectory(traj);
+    return traj;
   }
 
   /**
@@ -139,7 +163,7 @@ public class ChoreoAutoFactory {
    * @return A new auto trajectory.
    */
   public ChoreoAutoTrajectory traj(ChoreoTrajectory trajectory, ChoreoAutoLoop loop) {
-    return new ChoreoAutoTrajectory(
+    var traj = new ChoreoAutoTrajectory(
         trajectory.name(),
         trajectory,
         poseSupplier,
@@ -149,7 +173,11 @@ public class ChoreoAutoFactory {
         trajLogger,
         driveSubsystem,
         loop.getLoop(),
-        bindings);
+        bindings,
+        loop::onNewTrajectory
+    );
+    loop.addTrajectory(traj);
+    return traj;
   }
 
   /**
@@ -160,7 +188,7 @@ public class ChoreoAutoFactory {
    * @return A new auto trajectory.
    */
   public ChoreoAutoTrajectory trajGroup(String trajName, ChoreoAutoLoop loop) {
-    return new ChoreoAutoTrajectory(
+    var traj =  new ChoreoAutoTrajectory(
         trajName,
         Choreo.getTrajectoryGroup(trajName)
             .orElseGet(
@@ -175,7 +203,11 @@ public class ChoreoAutoFactory {
         trajLogger,
         driveSubsystem,
         loop.getLoop(),
-        bindings);
+        bindings,
+        loop::onNewTrajectory
+    );
+    loop.addTrajectory(traj);
+    return traj;
   }
 
   /**
@@ -185,9 +217,9 @@ public class ChoreoAutoFactory {
    * @param loop The auto loop to use as the triggers polling context.
    * @return A new auto trajectory.
    */
-  public ChoreoAutoTrajectory trajGroup(List<ChoreoTrajectory> trajectories, ChoreoAutoLoop loop) {
-    return new ChoreoAutoTrajectory(
-        "", // TODO
+  public ChoreoAutoTrajectory trajGroup(String name, List<ChoreoTrajectory> trajectories, ChoreoAutoLoop loop) {
+    var traj =  new ChoreoAutoTrajectory(
+        name,
         trajectories,
         poseSupplier,
         controller,
@@ -196,7 +228,11 @@ public class ChoreoAutoFactory {
         trajLogger,
         driveSubsystem,
         loop.getLoop(),
-        bindings);
+        bindings,
+        loop::onNewTrajectory
+    );
+    loop.addTrajectory(traj);
+    return traj;
   }
 
   /**

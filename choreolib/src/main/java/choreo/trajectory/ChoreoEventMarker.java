@@ -1,4 +1,4 @@
-package com.choreo.lib.trajectory;
+package choreo.trajectory;
 
 /** A marker for an event in a trajectory. */
 public class ChoreoEventMarker {

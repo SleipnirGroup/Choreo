@@ -1,6 +1,6 @@
 // Copyright (c) Choreo contributors
 
-package com.choreo.lib.trajectory;
+package choreo.trajectory;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
