@@ -1,4 +1,4 @@
-use std::{collections::HashMap, f64::consts::PI};
+use std::{collections::HashMap};
 
 use serde::{Deserialize, Serialize};
 use trajoptlib::Translation2d;
@@ -118,7 +118,7 @@ impl RobotConfig<f64> {
         self.tmax * self.gearing
     }
     pub fn wheel_max_velocity(&self) -> f64 {
-        (self.vmax / self.gearing)
+        self.vmax / self.gearing
     }
 }
 #[derive(Debug, Serialize, Deserialize, Clone)]

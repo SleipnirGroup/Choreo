@@ -1,7 +1,7 @@
-use crate::document::document::ConstraintData;
+use crate::document::types::ConstraintData;
 use crate::util::math_util::angle_modulus;
 
-use super::document::{Expr, RobotConfig, Traj, Waypoint};
+use super::types::{Expr, RobotConfig, Traj, Waypoint};
 // A value version since commands don't support borrows, but we need the borrow version for generation.
 #[tauri::command]
 pub fn cmd_guess_control_interval_counts(

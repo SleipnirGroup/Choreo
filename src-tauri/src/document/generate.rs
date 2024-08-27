@@ -1,4 +1,4 @@
-use super::document::{
+use super::types::{
     ChoreoPath, ConstraintData, ConstraintIDX, ConstraintType, Module, Project, Sample, Traj,
 };
 

@@ -1,4 +1,4 @@
-pub mod document;
+pub mod types;
 pub mod file;
 pub mod formatter;
 pub mod generate;
