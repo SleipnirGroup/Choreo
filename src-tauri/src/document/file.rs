@@ -18,7 +18,7 @@ use tokio::{
     },
 };
 
-use super::v2025_0_0::{expr, Bumper, Module, Project, RobotConfig, Traj, Variables};
+use super::document::{expr, Bumper, Module, Project, RobotConfig, Traj, Variables};
 
 #[derive(Serialize, Deserialize, Clone)]
 struct OpenFileEventPayload<'a> {

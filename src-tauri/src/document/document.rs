@@ -315,6 +315,7 @@ pub struct Traj {
     pub name: String,
     pub version: String,
     pub path: ChoreoPath<Expr>,
+    // Captures the path that formed the current generated trajectory
     pub snapshot: Option<ChoreoPath<f64>>,
     pub traj: Output,
 }
