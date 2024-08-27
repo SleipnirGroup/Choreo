@@ -172,6 +172,23 @@ void SwervePathBuilder::sgmt_point_at(size_t from_index, size_t to_index,
           {field_point_x, field_point_y}, heading_tolerance, flip});
 }
 
+void SwervePathBuilder::sgmt_keep_in_circle(size_t from_index, size_t to_index, double field_point_x,
+                                     double field_point_y, double keep_in_radius) {
+  for (size_t bumper = 0; bumper < path_builder.GetBumpers().size(); bumper++)
+  {
+    for (size_t i = 0; i < path_builder.GetBumpers().at(bumper).points.size(); i++)
+    {
+      path_builder.SgmtConstraint(
+        from_index, to_index, trajopt::PointPointMaxConstraint{
+          path_builder.GetBumpers().at(bumper).points.at(i),
+          {field_point_x, field_point_y},
+          keep_in_radius
+        }
+      );
+    }    
+  }
+}
+
 void SwervePathBuilder::sgmt_circle_obstacle(size_t from_index, size_t to_index,
                                              double x, double y,
                                              double radius) {

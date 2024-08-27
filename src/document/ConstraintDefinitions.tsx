@@ -178,7 +178,7 @@ export const ConstraintDefinitions: defs = {
       }
     },
     wptScope: true,
-    sgmtScope: false
+    sgmtScope: true
   } satisfies ConstraintDefinition<"KeepInCircle">
 };
 

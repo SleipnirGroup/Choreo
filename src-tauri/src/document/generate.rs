@@ -203,7 +203,7 @@ pub async fn generate(
             },
             ConstraintData::KeepInCircle { x, y, r } => match to_opt {
                 None => path_builder.wpt_keep_in_circle(from, x, y, r),
-                Some(_) => (),
+                Some(to) => path_builder.sgmt_keep_in_circle(from, to, x, y, r),
             }
         };
     }
