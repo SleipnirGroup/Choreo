@@ -127,6 +127,13 @@ mod ffi {
             heading_tolerance: f64,
             flip: bool
         );
+        fn wpt_keep_in_circle(
+            self: Pin<&mut SwervePathBuilder>,
+            index: usize,
+            field_point_x: f64,
+            field_point_y: f64,
+            keep_in_radius: f64
+        );
 
         fn sgmt_linear_velocity_direction(
             self: Pin<&mut SwervePathBuilder>,
@@ -430,6 +437,21 @@ impl SwervePathBuilder {
             flip
         )
     }
+
+    pub fn wpt_keep_in_circle(
+        &mut self,
+        index: usize,
+        field_point_x: f64,
+        field_point_y: f64,
+        keep_in_radius: f64) {
+            crate::ffi::SwervePathBuilder::wpt_keep_in_circle(
+                self.path_builder.pin_mut(),
+                index,
+                field_point_x,
+                field_point_y,
+                keep_in_radius
+            )
+        }
 
     pub fn sgmt_linear_velocity_direction(
         &mut self,

@@ -52,6 +52,29 @@ pub async fn generate(
     let mut control_interval_counts: Vec<usize> = Vec::new();
     let mut guess_points_after_waypoint: Vec<Pose2d> = Vec::new();
 
+    let config = chor.config.snapshot();
+    let drivetrain = SwerveDrivetrain {
+        mass: config.mass,
+        moi: config.inertia,
+        wheel_radius: config.radius,
+        // rad per sec
+        wheel_max_angular_velocity: (config.vmax / config.gearing) * 2.0 * PI / 60.0,
+        wheel_max_torque: config.tmax * config.gearing,
+        modules: config
+            .modules
+            .map(|modu: Module<f64>| modu.translation())
+            .to_vec(),
+    };
+
+    path_builder.add_progress_callback(solver_status_callback);
+
+    path_builder.set_bumpers(
+        config.bumper.back + config.bumper.front,
+        config.bumper.left + config.bumper.right,
+    );
+
+    path_builder.set_drivetrain(&drivetrain);
+
     let snapshot = traj.path.snapshot();
 
     let path = &snapshot.waypoints;
@@ -180,25 +203,6 @@ pub async fn generate(
             },
         };
     }
-    let config = chor.config.snapshot();
-    let drivetrain = SwerveDrivetrain {
-        mass: config.mass,
-        moi: config.inertia,
-        wheel_radius: config.radius,
-        // rad per sec
-        wheel_max_angular_velocity: (config.vmax / config.gearing) * 2.0 * PI / 60.0,
-        wheel_max_torque: config.tmax * config.gearing,
-        modules: config
-            .modules
-            .map(|modu: Module<f64>| modu.translation())
-            .to_vec(),
-    };
-
-    path_builder.set_bumpers(
-        config.bumper.back + config.bumper.front,
-        config.bumper.left + config.bumper.right,
-    );
-    path_builder.add_progress_callback(solver_status_callback);
     // Skip obstacles for now while we figure out whats wrong with them
     // for o in circleObstacles {
     //     path_builder.sgmt_circle_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
@@ -208,7 +212,7 @@ pub async fn generate(
     // for o in polygonObstacles {
     //     path_builder.sgmt_polygon_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
     // }
-    path_builder.set_drivetrain(&drivetrain);
+    path_builder.wpt_keep_in_circle(1, 0.0, 0.0, 1.0);
     //Err("".to_string())
     let result = path_builder.generate(true, handle)?;
 

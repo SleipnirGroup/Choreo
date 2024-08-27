@@ -42,6 +42,8 @@ class TRAJOPT_DLLEXPORT PathBuilder {
    */
   Path<Drivetrain, Solution>& GetPath() { return path; }
 
+  std::vector<Bumpers>& GetBumpers() { return bumpers; }
+
   /**
    * Create a pose waypoint constraint on the waypoint at the provided
    * index, and add an initial guess with the same pose This specifies that the
@@ -131,7 +133,7 @@ class TRAJOPT_DLLEXPORT PathBuilder {
       if (bumperCornerCount == 1 && obstacleCornerCount == 1) {
         // if the bumpers and obstacle are only one point
         WptConstraint(index,
-                      PointPointConstraint{_bumpers.points.at(0),
+                      PointPointMinConstraint{_bumpers.points.at(0),
                                            obstacle.points.at(0), minDistance});
         return;
       }
@@ -176,7 +178,7 @@ class TRAJOPT_DLLEXPORT PathBuilder {
           }
         } else {
           WptConstraint(
-              index, PointPointConstraint{bumperCorner, obstacle.points.at(0),
+              index, PointPointMinConstraint{bumperCorner, obstacle.points.at(0),
                                           minDistance});
         }
       }
@@ -202,7 +204,7 @@ class TRAJOPT_DLLEXPORT PathBuilder {
         // if the bumpers and obstacle are only one point
         SgmtConstraint(
             fromIndex, toIndex,
-            PointPointConstraint{_bumpers.points.at(0), obstacle.points.at(0),
+            PointPointMinConstraint{_bumpers.points.at(0), obstacle.points.at(0),
                                  minDistance});
         return;
       }
@@ -250,7 +252,7 @@ class TRAJOPT_DLLEXPORT PathBuilder {
           }
         } else {
           SgmtConstraint(fromIndex, toIndex,
-                         PointPointConstraint{
+                         PointPointMinConstraint{
                              bumperCorner, obstacle.points.at(0), minDistance});
         }
       }

@@ -109,6 +109,30 @@ void SwervePathBuilder::wpt_point_at(size_t index, double field_point_x,
                  heading_tolerance, flip});
 }
 
+void SwervePathBuilder::wpt_keep_in_circle(size_t index, double field_point_x,
+                                     double field_point_y, double keep_in_radius) {
+  for (size_t bumper = 0; bumper < path_builder.GetBumpers().size(); bumper++)
+  {
+    for (size_t i = 0; i < path_builder.GetBumpers().at(bumper).points.size(); i++)
+    {
+      path_builder.WptConstraint(
+        index, trajopt::PointPointMaxConstraint{
+          path_builder.GetBumpers().at(bumper).points.at(i),
+          {field_point_x, field_point_y},
+          keep_in_radius
+        }
+      );
+    }    
+  }
+  path_builder.WptConstraint(
+        index, trajopt::PointPointMaxConstraint{
+          {0.0, 0.0},
+          {field_point_x, field_point_y},
+          keep_in_radius
+        }
+      );
+}
+
 void SwervePathBuilder::sgmt_linear_velocity_direction(size_t from_index,
                                                        size_t to_index,
                                                        double angle) {

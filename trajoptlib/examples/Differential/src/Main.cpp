@@ -150,7 +150,7 @@ int main() {
     path.PoseWpt(0, 0.0, 0.0, 0.0);
     path.SgmtConstraint(
         0, 1,
-        trajopt::PointPointConstraint{// Robot point -- center of robot
+        trajopt::PointPointMinConstraint{// Robot point -- center of robot
                                       {0.0, 0.0},
                                       // Field point around which to orbit
                                       {1.0, 0.0},
