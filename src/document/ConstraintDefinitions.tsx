@@ -160,19 +160,19 @@ export const ConstraintDefinitions: defs = {
     properties: {
       x: {
         name: "X",
-        description: "The x coordinate of the point the robot should face",
+        description: "The x coordinate of the center of the keep in zone",
         units: Units.Meter,
         defaultVal: ["0 m", 0]
       },
       y: {
         name: "Y",
-        description: "The y coordinate of the point the robot should face",
+        description: "The y coordinate of the center of the keep in zone",
         units: Units.Meter,
         defaultVal: ["0 m", 0]
       },
       r: {
         name: "R",
-        description: "The radius of the zone",
+        description: "The radius of the keep in zone",
         units: Units.Meter,
         defaultVal: ["1 m", 1]
       }
