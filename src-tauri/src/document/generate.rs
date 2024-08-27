@@ -272,7 +272,7 @@ fn postprocess(
                 .samples
                 // grab the range including both endpoints,
                 // there are no bounds checks on this slice so be weary of crashes
-                .get((window[0])..=(window[1])) 
+                .get((window[0])..=(window[1]))
                 .map(|slice| {
                     // convert into samples
                     slice
