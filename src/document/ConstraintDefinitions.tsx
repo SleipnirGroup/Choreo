@@ -1,4 +1,5 @@
 import {
+  ArrowCircleDown,
   KeyboardDoubleArrowRight,
   NearMe,
   StopCircleOutlined,
@@ -54,6 +55,11 @@ export type ConstraintDataTypeMap = {
     tolerance: Expr;
     flip: boolean;
   };
+  KeepInCircle: {
+    x: Expr;
+    y: Expr;
+    r: Expr;
+  }
 };
 export type DataMap = {
   [K in keyof ConstraintDataTypeMap]: IConstraintData<
@@ -144,7 +150,36 @@ export const ConstraintDefinitions: defs = {
     },
     wptScope: true,
     sgmtScope: true
-  } satisfies ConstraintDefinition<"PointAt">
+  } satisfies ConstraintDefinition<"PointAt">,
+  KeepInCircle: {
+    type: "KeepInCircle" as const,
+    name: "Keep In Circle",
+    shortName: "Keep In C",
+    description: "Keep the robot's bumpers within a circular region",
+    icon: <ArrowCircleDown />,
+    properties: {
+      x: {
+        name: "X",
+        description: "The x coordinate of the point the robot should face",
+        units: Units.Meter,
+        defaultVal: ["0 m", 0]
+      },
+      y: {
+        name: "Y",
+        description: "The y coordinate of the point the robot should face",
+        units: Units.Meter,
+        defaultVal: ["0 m", 0]
+      },
+      r: {
+        name: "R",
+        description: "The radius of the zone",
+        units: Units.Meter,
+        defaultVal: ["1 m", 1]
+      }
+    },
+    wptScope: true,
+    sgmtScope: false
+  } satisfies ConstraintDefinition<"KeepInCircle">
 };
 
 export type ConstraintKey = keyof DataMap;

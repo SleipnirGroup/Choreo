@@ -217,6 +217,11 @@ pub enum ConstraintData<T> {
         flip: bool,
     },
     StopPoint {},
+    KeepInCircle {
+        x: T,
+        y: T,
+        r: T
+    }
 }
 
 impl<T> ConstraintData<T> {
@@ -248,6 +253,7 @@ impl ConstraintData<Expr> {
                 max: max.snapshot(),
             },
             ConstraintData::StopPoint {} => ConstraintData::StopPoint {},
+            ConstraintData::KeepInCircle { x, y, r } => ConstraintData::KeepInCircle { x: x.snapshot(), y: y.snapshot(), r: r.snapshot() }
         }
     }
 }

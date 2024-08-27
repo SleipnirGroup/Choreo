@@ -201,6 +201,10 @@ pub async fn generate(
                 }
                 Some(_) => (),
             },
+            ConstraintData::KeepInCircle { x, y, r } => match to_opt {
+                None => path_builder.wpt_keep_in_circle(from, x, y, r),
+                Some(_) => (),
+            }
         };
     }
     // Skip obstacles for now while we figure out whats wrong with them
@@ -212,7 +216,6 @@ pub async fn generate(
     // for o in polygonObstacles {
     //     path_builder.sgmt_polygon_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
     // }
-    path_builder.wpt_keep_in_circle(1, 0.0, 0.0, 1.0);
     //Err("".to_string())
     let result = path_builder.generate(true, handle)?;
 
