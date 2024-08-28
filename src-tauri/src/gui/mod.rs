@@ -55,8 +55,6 @@ pub fn run_tauri(resources: WritingResources, project: Option<PathBuf>) {
             generate,
             cancel,
             guess_control_interval_counts,
-            delete_file,
-            delete_dir,
             open_in_explorer,
             default_project,
             read_project,
@@ -68,7 +66,8 @@ pub fn run_tauri(resources: WritingResources, project: Option<PathBuf>) {
             rename_traj,
             set_deploy_root,
             get_deploy_root,
-            requested_file
+            requested_file,
+            delete_traj,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

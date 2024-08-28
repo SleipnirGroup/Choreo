@@ -105,7 +105,7 @@ impl WritingResources {
 }
 
 pub async fn set_deploy_path(resources: &WritingResources, path: PathBuf) {
-    tracing::info!("Setting deploy path to {:?}", path);
+    tracing::debug!("Setting deploy path to {:?}", path);
     let mut root = resources.root.lock().await;
     *root = path;
 }
@@ -165,13 +165,36 @@ pub async fn rename_traj(
         return Err(ChoreoError::FileSave("Trajectory already exists"));
     }
 
+    let old_name = old.name.clone();
     old.name.clone_from(&new_name);
 
     fs::remove_file(&old_path).await?;
 
     write_traj(resources, old.clone()).await;
 
+    tracing::debug!(
+        "Renamed trajectory {old_name}.traj to {new_name}.traj at {:}",
+        resources.get_deploy_path().await?.display()
+    );
+
     Ok(old)
+}
+
+pub async fn delete_traj(resources: &WritingResources, traj: Traj) -> ChoreoResult<()> {
+    let root_path = resources.get_deploy_path().await?;
+    let path = root_path.join(&traj.name).with_extension("traj");
+    if !path.exists() || resources.traj_pool.remove(&traj.name).is_none() {
+        return Err(ChoreoError::FileNotFound(Some(path)));
+    }
+    fs::remove_file(&path).await?;
+
+    tracing::debug!(
+        "Deleted trajectory {:}.traj at {:}",
+        traj.name,
+        resources.get_deploy_path().await?.display()
+    );
+
+    Ok(())
 }
 
 pub async fn write_project(resources: &WritingResources, chor: Project) {

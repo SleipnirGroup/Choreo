@@ -9,23 +9,6 @@ export const Commands = {
   cancel: () => invoke<void>("cancel"),
 
   /**
-   * Deletes the specified file from the specified directory.
-   * 
-   * @param dir The directory that the file is in.
-   * @param name The name of the file to delete.
-   * @returns `void`
-   */
-  deleteFile: (dir: string, name: string) =>
-    invoke<void>("delete_file", { dir, name }),
-  /**
-   * Deletes the specified directory and all of its contents.
-   * 
-   * @param dir The directory to delete.
-   * @returns `void`
-   */
-  deleteDir: (dir: string) => invoke<void>("delete_dir", { dir }),
-
-  /**
    * Opens the specified directory in the system's file explorer.
    * 
    * @param path The path of the directory to open.
@@ -102,6 +85,13 @@ export const Commands = {
    * @returns The renamed `Traj`.
    */
   renameTraj: (oldTraj: Traj, newName: string) => invoke<Traj>("rename_traj", { oldTraj, newName }),
+  /**
+   * Deletes the specified `Traj` from the deploy root directory.
+   * 
+   * @param traj The `Traj` to delete.
+   * @returns `void`
+   */
+  deleteTraj: (traj: Traj) => invoke<void>("delete_traj", { traj }),
 
   /**
    * If the application was opened via CLI and a file was specified, this will return the path of that file.

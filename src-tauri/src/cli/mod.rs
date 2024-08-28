@@ -48,13 +48,13 @@ impl Cli {
     pub fn exec(&self) {
         match self.format.as_str() {
             "pretty" => {
-                tracing_subscriber::fmt().pretty().init();
+                tracing_subscriber::fmt().pretty().with_max_level(tracing::Level::DEBUG).init();
             }
             "json" => {
-                tracing_subscriber::fmt().json().init();
+                tracing_subscriber::fmt().json().with_max_level(tracing::Level::DEBUG).init();
             }
             _ => {
-                tracing_subscriber::fmt().init();
+                tracing_subscriber::fmt().with_max_level(tracing::Level::DEBUG).init();
             }
         }
 

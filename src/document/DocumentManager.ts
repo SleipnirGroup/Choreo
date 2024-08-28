@@ -670,12 +670,12 @@ export function select(item: SelectableItemTypes) {
 
 export async function renamePath(uuid: string, newName: string) {
   if (uiState.hasSaveLocation) {
-    const oldPath = await getTrajFilePath(uuid);
-    doc.pathlist.paths.get(uuid)?.setName(newName);
-    const newPath = await getTrajFilePath(uuid);
-    if (oldPath !== null) {
-      Promise.all([Commands.deleteFile(oldPath[0], oldPath[1])])
-        .then(() => writeTrajectory(uuid))
+    let traj = doc.pathlist.paths.get(uuid);
+    if (traj) {
+      await Commands.renameTraj(traj.serialize, newName)
+        .then((new_traj) => {
+          doc.pathlist.addPath(newName, true, new_traj);
+        })
         .catch((e) => {
           console.error(e);
         });
@@ -686,11 +686,16 @@ export async function renamePath(uuid: string, newName: string) {
 }
 
 export async function deletePath(uuid: string) {
-  const newPath = await getTrajFilePath(uuid).catch(() => null);
-  doc.pathlist.deletePath(uuid);
-  if (newPath !== null && uiState.hasSaveLocation) {
-    await Commands.deleteFile(newPath[0], newPath[1]);
+  if (uiState.hasSaveLocation) {
+    let traj = doc.pathlist.paths.get(uuid);
+    if (traj) {
+      await Commands.deleteTraj(traj.serialize)
+        .catch((e) => {
+          console.error(e);
+        });
+    }
   }
+  doc.pathlist.deletePath(uuid);
 }
 
 /**
@@ -706,20 +711,7 @@ export async function writeTrajectory(
   if (chorPath === undefined) {
     throw `Tried to export trajectory with unknown uuid ${uuid}`;
   }
-  await Commands.writeTraj(chorPath.serialize());
-}
-
-export async function getTrajFilePath(uuid: string): Promise<[string, string]> {
-  const choreoPath = doc.pathlist.paths.get(uuid);
-  if (choreoPath === undefined) {
-    throw `Trajectory has unknown uuid ${uuid}`;
-  }
-  const { hasSaveLocation } = uiState;
-  if (!hasSaveLocation) {
-    throw "Project has not been saved yet";
-  }
-  const dir = uiState.saveFileDir; //+ path.sep + uiState.chorRelativeTrajDir;
-  return [dir, `${choreoPath.name}.traj`];
+  await Commands.writeTraj(chorPath.serialize);
 }
 
 export async function exportTrajectory(uuid: string) {

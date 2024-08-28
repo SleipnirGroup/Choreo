@@ -1,7 +1,6 @@
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use tauri::{api::dialog::blocking::FileDialogBuilder, Manager};
-use tokio::fs;
 
 use crate::{error::ChoreoError, ChoreoResult, ResultExt};
 
@@ -18,19 +17,6 @@ pub fn guess_control_interval_counts(
     traj: Traj,
 ) -> ChoreoResult<Vec<usize>> {
     super::intervals::guess_control_interval_counts(&config, &traj)
-}
-
-#[tauri::command]
-pub async fn delete_file(dir: String, name: String) -> ChoreoResult<()> {
-    let dir_path = Path::new(&dir);
-    let name_path = Path::join(dir_path, name);
-    fs::remove_file(name_path).await.map_err(Into::into)
-}
-
-#[tauri::command]
-pub async fn delete_dir(dir: String) -> ChoreoResult<()> {
-    let dir_path = Path::new(&dir);
-    fs::remove_dir_all(dir_path).await.map_err(Into::into)
 }
 
 #[tauri::command]
@@ -128,6 +114,12 @@ pub async fn rename_traj(
 ) -> ChoreoResult<Traj> {
     let resources = app_handle.state::<WritingResources>();
     file::rename_traj(&resources, old, new_name).await
+}
+
+#[tauri::command]
+pub async fn delete_traj(app_handle: tauri::AppHandle, traj: Traj) -> ChoreoResult<()> {
+    let resources = app_handle.state::<WritingResources>();
+    file::delete_traj(&resources, traj).await
 }
 
 #[tauri::command]

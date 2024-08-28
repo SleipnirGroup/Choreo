@@ -6,7 +6,8 @@
     {"x":["1.3209397792816162 m",1.3209397792816162], "y":["5.552000045776367 m",5.552000045776367], "heading":["-5.543921404009825 mrad",-0.005543921404009825], "intervals":7, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
     {"x":["2.3801863193511963 m",2.3801863193511963], "y":["5.552000045776367 m",5.552000045776367], "heading":["-25.225687691188455 mrad",-0.025225687691188457], "intervals":11, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
     {"x":["2.3399617671966553 m",2.3399617671966553], "y":["4.144140720367432 m",4.144140720367432], "heading":["-0.4674579625964281 rad",-0.4674579625964281], "intervals":22, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
-    {"x":["4.041553497314453 m",4.041553497314453], "y":["2.3567769527435303 m",2.3567769527435303], "heading":["1.6812956536940709 rad",1.6812956536940709], "intervals":1, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
+    {"x":["4.041553497314453 m",4.041553497314453], "y":["2.3567769527435303 m",2.3567769527435303], "heading":["1.6812956536940709 rad",1.6812956536940709], "intervals":1, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":["6.1853556632995605 m",6.1853556632995605], "y":["5.1967620849609375 m",5.1967620849609375], "heading":["0 deg",0.0], "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
   "constraints":[
     {"from":1, "to":2, "data":{"type":"MaxVelocity", "props":{"max":["3 m / s",3.0]}}},
     {"from":0, "to":2, "data":{"type":"PointAt", "props":{"x":["0.4083106517791748 m",0.4083106517791748], "y":["5.5926337242126465 m",5.5926337242126465], "tolerance":["1 deg",0.017453292519943295], "flip":true}}},
