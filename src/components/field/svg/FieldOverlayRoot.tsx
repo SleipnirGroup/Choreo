@@ -195,7 +195,7 @@ class FieldOverlayRoot extends Component<Props, State> {
   private handleResize() {
     const factor = this.getScalingFactor(this.svgRef?.current);
     uiState.setFieldScalingFactor(factor);
-    uiState.setFieldCTM(this.frameRef.current!.getScreenCTM()!);
+    uiState.setFieldMatrix(this.frameRef.current!.getScreenCTM()!);
   }
   render() {
     this.canvasHeightMeters = FieldImage2024.WIDTH_M + 1;
