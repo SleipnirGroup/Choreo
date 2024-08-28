@@ -63,17 +63,16 @@
 // )]
 #![cfg_attr(not(test), warn(missing_docs))]
 
+mod cli;
 mod document;
 mod error;
-mod util;
-mod cli;
 mod gui;
+mod util;
 
 use std::error::Error;
 
 use clap::Parser;
 use cli::Cli;
-
 
 /// Type alias for a `Result` with a `ChoreoError` error type.
 pub type ChoreoResult<T> = std::result::Result<T, error::ChoreoError>;
@@ -127,7 +126,6 @@ impl<T, E: Error> ResultExt<T, E> for Result<T, E> {
         self.map(|_| f())
     }
 }
-
 
 fn main() {
     Cli::parse_from(std::env::args()).exec();

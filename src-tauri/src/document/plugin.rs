@@ -1,28 +1,23 @@
 use std::path::{Path, PathBuf};
 
-use tauri::{ api::dialog::blocking::FileDialogBuilder, Manager};
+use tauri::{api::dialog::blocking::FileDialogBuilder, Manager};
 use tokio::fs;
 
-use crate::{error::ChoreoError, ChoreoResult};
+use crate::{error::ChoreoError, ChoreoResult, ResultExt};
 
-use super::{file::{self, WritingResources}, generate, intervals::guess_control_interval_counts, types::{Expr, Project, RobotConfig, Traj}};
-
-
-
+use super::{
+    file::{self, WritingResources},
+    generate,
+    types::{Expr, OpenFilePayload, Project, RobotConfig, Traj},
+};
 
 #[tauri::command]
 #[allow(clippy::needless_pass_by_value)]
-pub fn cmd_guess_control_interval_counts(
+pub fn guess_control_interval_counts(
     config: RobotConfig<Expr>,
     traj: Traj,
 ) -> ChoreoResult<Vec<usize>> {
-    guess_control_interval_counts(&config, &traj)
-}
-
-#[tauri::command]
-pub async fn delete_dir(dir: String) -> ChoreoResult<()> {
-    let dir_path = Path::new(&dir);
-    fs::remove_dir_all(dir_path).await.map_err(Into::into)
+    super::intervals::guess_control_interval_counts(&config, &traj)
 }
 
 #[tauri::command]
@@ -32,70 +27,107 @@ pub async fn delete_file(dir: String, name: String) -> ChoreoResult<()> {
     fs::remove_file(name_path).await.map_err(Into::into)
 }
 
-
 #[tauri::command]
-pub async fn open_chor(
-    app_handle: tauri::AppHandle,
-    path: Option<(String, String)>,
-) -> ChoreoResult<Project> {
-    let (dir, name) = match path {
-        None => open_file_dialog().await?,
-        Some(path) => path,
-    };
-
-    let resources = app_handle.state::<WritingResources>();
-    file::set_deploy_path(&resources, PathBuf::from(&dir)).await;
-
-    tracing::info!("Opening chor {:} from {:}", name, dir);
-
-    let pathbuf = Path::new(&dir).join(name.clone());
-    let contents = fs::read_to_string(pathbuf).await?;
-    let mut chor = Project::from_content(&contents)?;
-    chor.name = name;
-
-    // let _ = send_open_chor_event(app_handle, chor, dir.as_str(), name.as_str());
-    Ok(chor)
+pub async fn delete_dir(dir: String) -> ChoreoResult<()> {
+    let dir_path = Path::new(&dir);
+    fs::remove_dir_all(dir_path).await.map_err(Into::into)
 }
 
 #[tauri::command]
-pub async fn open_traj(
-    app_handle: tauri::AppHandle,
-    name: String,
-) -> ChoreoResult<Traj> {
-    tracing::info!("Opening traj {:}", name);
-
-    let resources = app_handle.state::<WritingResources>();
-    let root = resources.root.lock().await.clone();
-    let pathbuf = root.join(&name);
-    let contents = fs::read_to_string(pathbuf).await?;
-    let traj = Traj::from_content(&contents)?;
-    //let _ = send_open_chor_event(app_handle, chor, dir.as_str(), name.as_str());
-    Ok(traj)
-}
-
-#[tauri::command]
-pub async fn open_file_app(path: String) -> ChoreoResult<()> {
+pub async fn open_in_explorer(path: String) -> ChoreoResult<()> {
     open::that(path).map_err(ChoreoError::Io)
 }
 
 #[tauri::command]
-pub async fn write_chor(app_handle: tauri::AppHandle, chor: Project) {
+pub async fn open_project_dialog() -> ChoreoResult<OpenFilePayload> {
+    FileDialogBuilder::new()
+        .set_title("Open a .chor file")
+        .add_filter("Choreo Save File", &["chor"])
+        .pick_file()
+        .ok_or(ChoreoError::FileNotFound(None))
+        .map(|file| {
+            Ok(OpenFilePayload {
+                dir: file
+                    .parent()
+                    .ok_or(ChoreoError::FileNotFound(None))?
+                    .to_str()
+                    .ok_or(ChoreoError::FileNotFound(None))?
+                    .to_string(),
+                name: file
+                    .file_name()
+                    .ok_or(ChoreoError::FileNotFound(None))?
+                    .to_str()
+                    .ok_or(ChoreoError::FileNotFound(None))?
+                    .to_string(),
+            })
+        })?
+}
+
+#[tauri::command]
+pub async fn default_project() -> ChoreoResult<Project> {
+    Ok(Project::default())
+}
+
+#[tauri::command]
+pub async fn read_project(app_handle: tauri::AppHandle, name: String) -> ChoreoResult<Project> {
     let resources = app_handle.state::<WritingResources>();
-    file::write_project(&resources, chor).await;
+
+    tracing::info!(
+        "Opening project {name}.chor at {:}",
+        resources.get_deploy_path().await?.display()
+    );
+
+    file::read_project(&resources, name).await
+}
+
+#[tauri::command]
+pub async fn write_project(app_handle: tauri::AppHandle, project: Project) {
+    let resources = app_handle.state::<WritingResources>();
+    file::write_project(&resources, project).await;
+}
+
+#[tauri::command]
+pub async fn read_traj(app_handle: tauri::AppHandle, name: String) -> ChoreoResult<Traj> {
+    let resources = app_handle.state::<WritingResources>();
+
+    tracing::info!(
+        "Opening trajectory {name}.traj at {:}",
+        resources.get_deploy_path().await?.display()
+    );
+
+    file::read_traj(&resources, name).await
+}
+
+#[tauri::command]
+pub async fn read_all_traj(app_handle: tauri::AppHandle) -> Vec<Traj> {
+    let resources = app_handle.state::<WritingResources>();
+    let trajs = file::find_all_traj(&resources).await;
+    let mut out = vec![];
+    for traj_name in trajs {
+        let traj_res = file::read_traj(&resources, traj_name).await;
+        if let Ok(traj) = traj_res {
+            out.push(traj);
+        } else {
+            traj_res.trace_warn();
+        }
+    }
+    out
 }
 
 #[tauri::command]
 pub async fn write_traj(app_handle: tauri::AppHandle, traj: Traj) {
-    tracing::debug!("Writing traj {:}", traj.name);
-
     let resources = app_handle.state::<WritingResources>();
     file::write_traj(&resources, traj).await;
 }
 
 #[tauri::command]
-pub async fn set_chor_path(app_handle: tauri::AppHandle, dir: String, _name: String) {
+pub async fn rename_traj(
+    app_handle: tauri::AppHandle,
+    old: Traj,
+    new_name: String,
+) -> ChoreoResult<Traj> {
     let resources = app_handle.state::<WritingResources>();
-    file::set_deploy_path(&resources, PathBuf::from(dir)).await;
+    file::rename_traj(&resources, old, new_name).await
 }
 
 #[tauri::command]
@@ -105,46 +137,20 @@ pub async fn set_deploy_root(app_handle: tauri::AppHandle, dir: String) {
 }
 
 #[tauri::command]
-pub async fn open_file_dialog() -> ChoreoResult<(String, String)> {
-    let file_path = FileDialogBuilder::new()
-        .set_title("Open a .chor file")
-        .add_filter("Choreo Save File", &["chor"])
-        .pick_file();
-    if let Some(path) = file_path {
-        if let Some(dir) = path.parent() {
-            if let Some(name) = path.file_name() {
-                let dir = dir.to_str();
-                let name = name.to_str();
-                if let (Some(dir), Some(name)) = (dir, name) {
-                    return Ok((dir.to_string(), name.to_string()));
-                }
-                return Err(ChoreoError::FileRead(path.clone()));
-            }
-        }
-    }
-    Err(ChoreoError::FileNotFound(None))
-}
-
-#[tauri::command]
-pub async fn default_project() -> ChoreoResult<Project> {
-    Ok(file::default_project("New Project".to_string()))
-}
-
-#[tauri::command]
-pub async fn find_all_traj(app_handle: tauri::AppHandle, dir: String) -> Vec<String> {
+pub async fn get_deploy_root(app_handle: tauri::AppHandle) -> ChoreoResult<String> {
     let resources = app_handle.state::<WritingResources>();
-    file::set_deploy_path(&resources, PathBuf::from(dir)).await;
-    file::find_all_traj(&resources).await
+    let path = resources.get_deploy_path().await?;
+    Ok(path.to_string_lossy().to_string())
 }
 
 #[tauri::command]
 pub async fn generate(
-    chor: Project,
+    project: Project,
     traj: Traj,
     // The handle referring to this path for the solver state callback
     handle: i64,
 ) -> ChoreoResult<Traj> {
-    generate::generate(&chor, traj, handle)
+    generate::generate(&project, traj, handle)
 }
 
 #[tauri::command]

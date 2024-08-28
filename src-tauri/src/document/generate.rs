@@ -21,7 +21,6 @@ fn fix_scope(idx: usize, removed_idxs: &Vec<usize>) -> usize {
     idx - to_subtract
 }
 
-
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct ProgressUpdate {
     traj: SwerveTrajectory,

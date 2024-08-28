@@ -1,15 +1,19 @@
-
 use std::path::PathBuf;
 
 use clap::Parser;
 use tokio::fs;
 
-use crate::{document::{file::{self, WritingResources}, generate::generate, types::{Project, Traj}}, gui::run_tauri};
-
+use crate::{
+    document::{
+        file::{self, WritingResources},
+        generate::generate,
+        types::{Project, Traj},
+    },
+    gui::run_tauri,
+};
 
 const FORMATING_OPTIONS: &str = "Formating Options";
 const FILE_OPTIONS: &str = "File Options";
-
 
 #[derive(Parser)]
 pub struct Cli {
@@ -76,7 +80,9 @@ impl Cli {
 
     #[allow(clippy::cast_possible_wrap)]
     async fn async_exec(&self, resources: WritingResources) {
-        let chor = self.chor.as_ref()
+        let chor = self
+            .chor
+            .as_ref()
             .expect("This can only run if choreo is some.");
 
         file::set_deploy_path(
@@ -84,13 +90,15 @@ impl Cli {
             chor.parent()
                 .expect("Choreo file must have a parent directory.")
                 .to_path_buf(),
-        ).await;
+        )
+        .await;
 
-        let contents = fs::read_to_string(chor).await
+        let contents = fs::read_to_string(chor)
+            .await
             .expect("Failed to read choreo file.");
-        let mut project = Project::from_content(&contents)
-            .expect("Failed to parse choreo file.");
-        project.name = chor.file_name()
+        let mut project = Project::from_content(&contents).expect("Failed to parse choreo file.");
+        project.name = chor
+            .file_name()
             .expect("Choreo file must have a name.")
             .to_str()
             .expect("Choreo file name must be a valid UTF-8 string.")
@@ -99,20 +107,21 @@ impl Cli {
         for (i, traj_name) in self.traj.iter().enumerate() {
             tracing::info!("Generating trajectory {:} for {:}", traj_name, project.name);
 
-            let path = chor.parent()
+            let path = chor
+                .parent()
                 .expect("Choreo file must have a parent directory.")
                 .join(traj_name)
                 .with_extension("traj");
 
-            let contents = fs::read_to_string(&path).await
+            let contents = fs::read_to_string(&path)
+                .await
                 .expect("Failed to read trajectory file.");
-            let traj = Traj::from_content(&contents)
-                .expect("Failed to parse trajectory file.");
+            let traj = Traj::from_content(&contents).expect("Failed to parse trajectory file.");
 
             match generate(&project, traj, i as i64) {
                 Ok(new_traj) => {
                     file::write_traj(&resources, new_traj).await;
-                },
+                }
                 Err(e) => {
                     tracing::error!("Failed to generate trajectory {:}: {:}", traj_name, e);
                 }

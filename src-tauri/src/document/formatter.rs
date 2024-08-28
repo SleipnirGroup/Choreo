@@ -4,7 +4,6 @@ use serde::Serialize;
 use serde_json::error::Result;
 use serde_json::{ser::Formatter, Serializer};
 
-
 /// This structure pretty prints a JSON value to make it human readable.
 /// Variant from serde formatter:
 /// 1-space indent

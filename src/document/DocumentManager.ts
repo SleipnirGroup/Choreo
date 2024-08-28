@@ -64,7 +64,7 @@ import { ViewLayerDefaults } from "./UIData";
 import { UIStateStore } from "./UIStateStore";
 import { Commands } from "./tauriCommands";
 
-export type OpenFileEventPayload = {
+export type OpenFilePayload = {
   name: string;
   dir: string;
 };
@@ -269,10 +269,10 @@ export async function openProjectFile() {
   const cliRequestedProject = await Commands.requestedProject();
 
   if (cliRequestedProject) {
-    const fileDirectory: OpenFileEventPayload = cliRequestedProject;
+    const fileDirectory: OpenFilePayload = cliRequestedProject;
     const filePath = fileDirectory.dir + path.sep + fileDirectory.name;
     console.log(`Attempting to open: ${filePath}`);
-    return openProject([fileDirectory.dir, fileDirectory.name]).catch((err) => {
+    return openProject(fileDirectory).catch((err) => {
       console.error(
         `Failed to open cli requested Choreo file '${fileDirectory.name}': ${err}`
       );
@@ -281,12 +281,12 @@ export async function openProjectFile() {
       );
     });
   } else if (lastOpenedFileEventPayload) {
-    const fileDirectory: OpenFileEventPayload = JSON.parse(
+    const fileDirectory: OpenFilePayload = JSON.parse(
       lastOpenedFileEventPayload
     );
     const filePath = fileDirectory.dir + path.sep + fileDirectory.name;
     console.log(`Attempting to open: ${filePath}`);
-    return openProject([fileDirectory.dir, fileDirectory.name]).catch((err) => {
+    return openProject(fileDirectory).catch((err) => {
       console.error(
         `Failed to open last Choreo file '${fileDirectory.name}': ${err}`
       );
@@ -297,58 +297,8 @@ export async function openProjectFile() {
   }
 }
 
-// export async function handleOpenFileEvent(event: Event<unknown>) {
-//   const payload = event.payload as OpenFileEventPayload;
-//   if (payload.dir === undefined || payload.name === undefined) {
-//     throw "Non-UTF-8 characters in file path";
-//   } else if (payload.contents === undefined) {
-//     throw "Unable to read file";
-//   } else {
-//     const oldDocument = getSnapshot(doc);
-//     const oldUIState = getSnapshot(uiState);
-//     const saveName = payload.name;
-//     const saveDir = payload.dir;
-//     const adjacent_gradle = payload.adjacent_gradle;
-//     uiState.setSaveFileName(undefined);
-//     uiState.setSaveFileDir(undefined);
-//     uiState.setIsGradleProject(undefined);
-//     await openFromContents(payload.contents)
-//       .catch((err) => {
-//         applySnapshot(doc, oldDocument);
-//         applySnapshot(uiState, oldUIState);
-//         throw `Internal parsing error: ${err}`;
-//       })
-//       .then(() => {
-//         uiState.setSaveFileName(saveName);
-//         uiState.setSaveFileDir(saveDir);
-//         uiState.setIsGradleProject(adjacent_gradle);
-
-//       });
-//   }
-// }
 
 export async function setupEventListeners() {
-  // const openFileUnlisten = await listen("open-file", async (event) =>
-  //   handleOpenFileEvent(event).catch((err) =>
-  //     toast.error("Opening file error: " + err)
-  //   )
-  // );
-
-  const fileOpenFromDirUnlisten = await listen(
-    "file_event_payload_from_dir",
-    async (event) => {
-      console.log("Received file event from dir: ");
-      console.log(event.payload);
-      handleOpenFileEvent(event)
-        .then(() => {
-          toast.success(
-            `Opened last Choreo file '${(event.payload as OpenFileEventPayload).name}'`
-          );
-        })
-        .catch((err) => toast.error(`Failed to open last Choreo file: ${err}`));
-    }
-  );
-
   window.addEventListener("contextmenu", (e) => e.preventDefault());
   window.addEventListener("copy", (e) => {
     const selection = document.getSelection();
@@ -445,7 +395,7 @@ export async function setupEventListeners() {
   window.addEventListener("unload", () => {
     hotkeys.unbind();
     ///openFileUnlisten();
-    fileOpenFromDirUnlisten();
+    // fileOpenFromDirUnlisten();
     autoSaveUnlisten();
     updateTitleUnlisten();
   });
@@ -462,7 +412,7 @@ export async function setupEventListeners() {
       })
       .then((proceed) => {
         if (proceed) {
-          Commands.openFileDialog().then((filepath) => openProject(filepath));
+          Commands.openProjectDialog().then((filepath) => openProject(filepath));
         }
       });
   });
@@ -614,22 +564,25 @@ export async function setupEventListeners() {
   });
 }
 
-export async function openProject(chorFile: [dir: string, name: string]) {
-  const [dir, name] = chorFile;
+export async function openProject(projectPath: OpenFilePayload) {
+  const dir = projectPath.dir;
+  const name = projectPath.name;
   let chor: Project | undefined = undefined;
   const trajs: Traj[] = [];
+  await Commands.setDeployRoot(dir);
   await Promise.allSettled([
-    Commands.openChor(dir, name)
+    Commands.readProject(name)
       .then((c) => (chor = c))
       .catch(console.error),
-    Commands.findAllTraj(dir)
+    Commands.readAllTraj()
       .then((paths) =>
-        Promise.allSettled(
-          paths.map((p) => Commands.openTraj(p).then((t) => trajs.push(t)))
-        )
+        paths.forEach((path) => {
+          trajs.push(path);
+        })
       )
       .catch(console.error)
   ]);
+
   if (chor === undefined) {
     throw "Internal error. Check console logs.";
   }
@@ -829,7 +782,7 @@ async function saveFileAs(dir: string, name: string): Promise<void> {
     uiState.setSaveFileDir(dir);
     uiState.setSaveFileName(name);
   }
-  return Commands.writeChor(doc.serializeChor());
+  return Commands.writeProject(doc.serializeChor());
 }
 
 /**

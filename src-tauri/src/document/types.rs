@@ -1,9 +1,16 @@
+use core::f64;
 use std::{collections::HashMap, fmt::Debug};
 
 use serde::{Deserialize, Serialize};
 use trajoptlib::Translation2d;
 
 use crate::ChoreoResult;
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct OpenFilePayload {
+    pub dir: String,
+    pub name: String,
+}
 
 /// A trait for types that can be snapshotted.
 /// This allows for the type to be converted to a f64.
@@ -146,6 +153,51 @@ pub struct Project {
 impl Project {
     pub fn from_content(content: &str) -> ChoreoResult<Project> {
         serde_json::from_str(content).map_err(Into::into)
+    }
+}
+
+impl Default for Project {
+    fn default() -> Self {
+        Project {
+            name: "New Project".to_string(),
+            version: "v2025.0.0".to_string(),
+            variables: Variables {
+                expressions: HashMap::new(),
+                poses: HashMap::new(),
+            },
+            config: RobotConfig {
+                gearing: Expr::new("6.5", 6.5),
+                radius: Expr::new("2 in", 0.0508),
+                vmax: Expr::new("6000.0 RPM", (6000.0 / 60.0) * f64::consts::TAU),
+                tmax: Expr::new("1.2 N*m", 1.2),
+                modules: [
+                    Module {
+                        x: Expr::new("11 in", 0.2794),
+                        y: Expr::new("11 in", 0.2794),
+                    },
+                    Module {
+                        x: Expr::new("-11 in", -0.2794),
+                        y: Expr::new("11 in", 0.2794),
+                    },
+                    Module {
+                        x: Expr::new("-11 in", -0.2794),
+                        y: Expr::new("-11 in", -0.2794),
+                    },
+                    Module {
+                        x: Expr::new("11 in", 0.2794),
+                        y: Expr::new("-11 in", -0.2794),
+                    },
+                ],
+                mass: Expr::new("150 lbs", 68.038_855_5),
+                inertia: Expr::new("6 kg m^2", 6.0),
+                bumper: Bumper {
+                    front: Expr::new("16 in", 0.4064),
+                    left: Expr::new("16 in", 0.4064),
+                    back: Expr::new("16 in", 0.4064),
+                    right: Expr::new("16 in", 0.4064),
+                },
+            },
+        }
     }
 }
 

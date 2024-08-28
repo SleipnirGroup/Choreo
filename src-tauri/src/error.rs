@@ -28,6 +28,8 @@ pub enum ChoreoError {
     Inequality(&'static str, &'static str),
     #[error("TrajOpt error: {0:?}")]
     TrajOpt(String),
+    #[error("No Deploy Path error")]
+    NoDeployPath,
 }
 
 // This is how the error will be propagated to the frontend,

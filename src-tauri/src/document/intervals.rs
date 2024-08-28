@@ -4,7 +4,6 @@ use crate::error::ChoreoError;
 use crate::util::math_util::angle_modulus;
 use crate::ChoreoResult;
 
-
 pub fn guess_control_interval_counts(
     config: &RobotConfig<Expr>,
     traj: &Traj,

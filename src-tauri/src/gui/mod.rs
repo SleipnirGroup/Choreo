@@ -1,18 +1,12 @@
-use std::path::PathBuf;
-use std::sync::OnceLock;
-use std::{thread, vec};
 use crate::document::file::WritingResources;
 use crate::document::generate::setup_progress_sender;
 #[allow(clippy::wildcard_imports)]
 use crate::document::plugin::*;
-use serde::{Deserialize, Serialize};
+use crate::document::types::OpenFilePayload;
+use std::path::PathBuf;
+use std::sync::OnceLock;
+use std::{thread, vec};
 use tauri::Manager;
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-struct OpenFilePayload {
-    dir: String,
-    name: String
-}
 
 static REQUESTED_FILE: OnceLock<OpenFilePayload> = OnceLock::new();
 
@@ -26,18 +20,21 @@ pub fn run_tauri(resources: WritingResources, project: Option<PathBuf>) {
 
     if let Some(project_path) = project {
         let payload = OpenFilePayload {
-            dir: project_path.parent()
+            dir: project_path
+                .parent()
                 .expect("project path should have a parent directory")
                 .to_str()
                 .expect("project path should be a valid string")
                 .to_string(),
-            name: project_path.file_name()
+            name: project_path
+                .file_name()
                 .expect("project path should have a file name")
                 .to_str()
                 .expect("project path should be a valid string")
-                .to_string()
+                .to_string(),
         };
-        REQUESTED_FILE.set(payload)
+        REQUESTED_FILE
+            .set(payload)
             .expect("requested file should be set");
     }
 
@@ -57,19 +54,20 @@ pub fn run_tauri(resources: WritingResources, project: Option<PathBuf>) {
         .invoke_handler(tauri::generate_handler![
             generate,
             cancel,
-            cmd_guess_control_interval_counts,
+            guess_control_interval_counts,
             delete_file,
             delete_dir,
-            open_file_app,
+            open_in_explorer,
             default_project,
-            open_chor,
-            write_chor,
+            read_project,
+            write_project,
             write_traj,
-            find_all_traj,
-            open_file_dialog,
-            set_chor_path,
-            open_traj,
+            read_all_traj,
+            open_project_dialog,
+            read_traj,
+            rename_traj,
             set_deploy_root,
+            get_deploy_root,
             requested_file
         ])
         .run(tauri::generate_context!())

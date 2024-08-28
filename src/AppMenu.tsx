@@ -149,7 +149,7 @@ class AppMenu extends Component<Props, State> {
                     { title: "Choreo", type: "warning" }
                   )
                 ) {
-                  await Commands.openFileDialog().then((filepath) =>
+                  await Commands.openProjectDialog().then((filepath) =>
                     openProject(filepath)
                   );
                 }
