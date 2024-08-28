@@ -43,7 +43,7 @@ jobs:
       - run: sudo xcode-select -switch /Applications/Xcode_15.3.app
         if: startsWith(matrix.os, 'macOS')
 
-      - run: cmake -B build -S . -DBUILD_EXAMPLES=ON ${{ matrix.cmake-args }}
+      - run: cmake --preset with-examples ${{ matrix.cmake-args }}
         working-directory: trajoptlib
       - run: cmake --build build --config RelWithDebInfo --parallel 4
         working-directory: trajoptlib
