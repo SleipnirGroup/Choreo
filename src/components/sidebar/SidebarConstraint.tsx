@@ -58,6 +58,12 @@ class SidebarConstraint extends Component<Props, State> {
         onClick={() => {
           doc.setSelectedSidebarItem(this.props.constraint);
         }}
+        onMouseOver={() => {
+          doc.setHoveredSidebarItem(this.props.constraint);
+        }}
+        onMouseLeave={() => {
+          doc.setHoveredSidebarItem(undefined);
+        }}
       >
         {React.cloneElement(this.props.constraint.data.def.icon, {
           className: styles.SidebarIcon,

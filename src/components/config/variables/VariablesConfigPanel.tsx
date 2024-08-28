@@ -47,7 +47,7 @@ class VariablesConfigPanel extends Component<Props, State> {
             <IconButton onClick={_ => {
               let { newVarName, newVarExpr, newVarUnit} = this.state;
               doc.variables.add(newVarName, newVarExpr, newVarUnit);
-              console.log(doc.variables.serialize())
+              console.log(doc.variables.serialize)
             }}>
               <Add></Add>
             </IconButton>

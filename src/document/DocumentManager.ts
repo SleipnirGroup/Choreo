@@ -752,7 +752,7 @@ export async function writeTrajectory(
   if (chorPath === undefined) {
     throw `Tried to export trajectory with unknown uuid ${uuid}`;
   }
-  const trajectory = chorPath.serialize();
+  const trajectory = chorPath.serialize;
   const file = await filePath();
   if (file) {
     await Commands.writeTraj(file[0] + path.sep + file[1], trajectory);
