@@ -1,4 +1,3 @@
-use core::f64;
 use std::{collections::HashMap, fmt::Debug};
 
 use serde::{Deserialize, Serialize};
@@ -168,7 +167,7 @@ impl Default for Project {
             config: RobotConfig {
                 gearing: Expr::new("6.5", 6.5),
                 radius: Expr::new("2 in", 0.0508),
-                vmax: Expr::new("6000.0 RPM", (6000.0 / 60.0) * f64::consts::TAU),
+                vmax: Expr::new("6000.0 RPM", (6000.0 / 60.0) * std::f64::consts::TAU),
                 tmax: Expr::new("1.2 N*m", 1.2),
                 modules: [
                     Module {
