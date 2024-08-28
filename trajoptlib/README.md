@@ -27,7 +27,7 @@ Trajectory optimization works by mathematically formulating the problem of trave
   * On Linux, install via `sudo apt install cmake`
   * On macOS, install via `brew install cmake`
 * [Rust](https://www.rust-lang.org/) compiler
-* [Sleipnir](https://github.com/SleipnirGroup/Sleipnir) (optional backend)
+* [Sleipnir](https://github.com/SleipnirGroup/Sleipnir)
 * [Catch2](https://github.com/catchorg/Catch2) (tests only)
 
 Library dependencies which aren't installed locally will be automatically downloaded and built by CMake.
