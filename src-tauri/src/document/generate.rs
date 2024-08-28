@@ -2,8 +2,6 @@ use super::types::{
     ChoreoPath, ConstraintData, ConstraintIDX, ConstraintType, Module, Project, Sample, Traj,
 };
 
-use std::f64::consts::PI;
-
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::OnceLock;
 use std::vec;
