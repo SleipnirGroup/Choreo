@@ -187,7 +187,7 @@ pub async fn generate(
         moi: config.inertia,
         wheel_radius: config.radius,
         // rad per sec
-        wheel_max_angular_velocity: (config.vmax / config.gearing) * 2.0 * PI / 60.0,
+        wheel_max_angular_velocity: config.vmax / config.gearing,
         wheel_max_torque: config.tmax * config.gearing,
         modules: config
             .modules
