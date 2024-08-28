@@ -268,7 +268,7 @@ fn postprocess(
         .map(|a| a.1) // map to associate interval
         .collect::<Vec<usize>>();
     let nudge_zero = |f: f64| if f.abs() < 1e-12 { 0.0 } else { f };
-    traj.traj.samples = splits
+    traj.output.samples = splits
         .windows(2) // get adjacent pairs of interval counts
         .filter_map(|window| {
             result
@@ -292,7 +292,7 @@ fn postprocess(
                                 fx: [0.0, 0.0, 0.0, 0.0],
                                 fy: [0.0, 0.0, 0.0, 0.0],
                             };
-                            if traj.traj.use_module_forces {
+                            if traj.output.use_module_forces {
                                 for i in 0..4 {
                                     let x = swerve_sample.module_forces_x.get(i);
                                     let y = swerve_sample.module_forces_y.get(i);
@@ -307,7 +307,7 @@ fn postprocess(
                 })
         })
         .collect::<Vec<Vec<Sample>>>();
-    traj.traj.waypoints = waypoint_times;
+    traj.output.waypoints = waypoint_times;
     traj.snapshot = Some(snapshot);
     traj
 }

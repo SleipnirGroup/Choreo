@@ -109,7 +109,7 @@ export interface Traj {
   version: typeof SAVE_FILE_VERSION;
   path: ChoreoPath<Expr>;
   snapshot: ChoreoPath<number>;
-  traj: Output;
+  output: Output;
 }
 
 export interface CircleObstacle<T extends ExprOrNumber> {

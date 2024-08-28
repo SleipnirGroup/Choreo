@@ -334,6 +334,5 @@ pub struct Traj {
     pub path: ChoreoPath<Expr>,
     // Captures the path that formed the current generated trajectory
     pub snapshot: Option<ChoreoPath<f64>>,
-    // TODO: maybe rename to `output`, this is a breaking change for frontend though
-    pub traj: Output,
+    pub output: Output,
 }

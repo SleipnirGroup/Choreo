@@ -275,11 +275,11 @@ export const DocumentStore = types
         .then(
           (rust_traj) => {
             const result: Traj = rust_traj as Traj;
-            if (result.traj.samples.length == 0) throw "No traj";
+            if (result.output.samples.length == 0) throw "No traj";
             self.history.startGroup(() => {
-              const newTraj = result.traj.samples;
+              const newTraj = result.output.samples;
               pathStore.traj.setSamples(newTraj);
-              pathStore.traj.setWaypoints(result.traj.waypoints);
+              pathStore.traj.setWaypoints(result.output.waypoints);
 
               pathStore.setSnapshot(result.snapshot);
               // set this within the group so it gets picked up in the autosave
