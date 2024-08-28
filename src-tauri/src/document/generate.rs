@@ -117,7 +117,7 @@ pub async fn generate(
             }
         };
     }
-    for i in 0 .. path.len() {
+    for i in 0..path.len() {
         let wpt = &path[i];
         // add initial guess points (actually unconstrained empty wpts in Choreo terms)
         if is_initial_guess[i] && !wpt.fix_heading && !wpt.fix_translation {
