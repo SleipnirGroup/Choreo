@@ -67,24 +67,13 @@ mod document;
 mod error;
 mod util;
 mod cli;
+mod gui;
 
 use std::error::Error;
-use std::{thread, vec};
-
-// use document::file::{
-//     delete_dir, delete_file, find_all_traj, new_file, open_chor, open_file_dialog, open_traj,
-//     set_chor_path, setup_senders, write_chor, write_traj,
-// };
-// use document::generate::{cancel, generate, setup_progress_sender};
-// use document::intervals::cmd_guess_control_interval_counts;
 
 use clap::Parser;
 use cli::Cli;
-use document::file::WritingResources;
-use document::generate::setup_progress_sender;
-#[allow(clippy::wildcard_imports)]
-use document::plugin::*;
-use tauri::Manager;
+
 
 /// Type alias for a `Result` with a `ChoreoError` error type.
 pub type ChoreoResult<T> = std::result::Result<T, error::ChoreoError>;
@@ -139,58 +128,7 @@ impl<T, E: Error> ResultExt<T, E> for Result<T, E> {
     }
 }
 
-fn arg_count() -> usize {
-    std::env::args().count()
-}
-
-fn run_tauri() {
-    tracing_subscriber::fmt::fmt()
-        .with_max_level(tracing::Level::DEBUG)
-        .pretty()
-        .init();
-
-    tracing::info!("Starting Choreo Gui");
-
-    let rx = setup_progress_sender();
-    tauri::Builder::default()
-        .setup(move |app| {
-            let resources = WritingResources::new();
-            resources.delegate_to_app(&app.app_handle());
-            let progress_emitter = app.handle();
-            let _ = thread::spawn(move || {
-                for received in rx {
-                    let _ = progress_emitter.emit_all("solver-status", received);
-                }
-            });
-            Ok(())
-        })
-        .invoke_handler(tauri::generate_handler![
-            generate,
-            cancel,
-            save_file,
-            cmd_guess_control_interval_counts,
-            delete_file,
-            delete_dir,
-            open_file_app,
-            default_project,
-            open_chor,
-            write_chor,
-            write_traj,
-            find_all_traj,
-            open_file_dialog,
-            set_chor_path,
-            open_traj,
-            set_deploy_root
-        ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
-}
 
 fn main() {
-    if arg_count() <= 1 {
-        run_tauri();
-    } else {
-        let args = std::env::args().collect::<Vec<String>>();
-        Cli::parse_from(args).exec();
-    }
+    Cli::parse_from(std::env::args()).exec();
 }

@@ -74,18 +74,6 @@ pub async fn open_traj(
 }
 
 #[tauri::command]
-pub async fn save_file(dir: String, name: String, contents: String) -> ChoreoResult<()> {
-    let dir_path = Path::new(&dir);
-    let name_path = Path::join(dir_path, name);
-    if name_path.is_relative() {
-        return Err(ChoreoError::FileSave("Dir needs to be absolute"));
-    }
-    fs::create_dir_all(dir_path).await?;
-    fs::write(name_path, contents).await?;
-    Ok(())
-}
-
-#[tauri::command]
 pub async fn open_file_app(path: String) -> ChoreoResult<()> {
     open::that(path).map_err(ChoreoError::Io)
 }

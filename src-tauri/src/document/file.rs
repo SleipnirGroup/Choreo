@@ -3,7 +3,7 @@ use std::{
 };
 
 use dashmap::DashMap;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use tokio::{
     fs,
     sync::{mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender}, Mutex, Notify},
@@ -84,19 +84,6 @@ impl WritingResources {
     pub fn delegate_to_app(&self, app_handle: &tauri::AppHandle) {
         tauri::Manager::manage(app_handle, self.clone());
     }
-}
-
-#[derive(Serialize, Deserialize, Clone)]
-struct OpenFileEventPayload<'a> {
-    dir: Option<&'a str>,
-    name: Option<&'a str>,
-    contents: Project,
-}
-
-#[derive(Serialize, Deserialize, Clone)]
-struct OpenTrajEventPayload<'a> {
-    name: Option<&'a str>,
-    contents: Traj,
 }
 
 #[allow(clippy::unused_async)]

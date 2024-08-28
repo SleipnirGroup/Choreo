@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use clap::Parser;
 use tokio::fs;
 
-use crate::document::{file::{self, WritingResources}, generate::generate, types::{Project, Traj}};
+use crate::{document::{file::{self, WritingResources}, generate::generate, types::{Project, Traj}}, gui::run_tauri};
 
 
 const FORMATING_OPTIONS: &str = "Formating Options";
@@ -16,10 +16,9 @@ pub struct Cli {
     #[arg(
         long,
         value_name = "path/to/myproject.chor",
-        help_heading = FILE_OPTIONS,
-        required = true
+        help_heading = FILE_OPTIONS
     )]
-    pub chor: PathBuf,
+    pub chor: Option<PathBuf>,
 
     #[arg(
         long,
@@ -55,7 +54,15 @@ impl Cli {
             }
         }
 
-        if !self.generate || self.traj.is_empty() {
+        if let Some(chor) = &self.chor {
+            assert!(chor.exists(), "Choreo file does not exist.");
+        }
+
+        let resources = WritingResources::new();
+
+        if !self.generate && self.traj.is_empty() {
+            return run_tauri(resources, self.chor.clone());
+        } else if !self.generate || self.traj.is_empty() {
             tracing::error!("Only generating trajectories is supported at the moment.");
             return;
         }
@@ -64,34 +71,35 @@ impl Cli {
             .enable_all()
             .build()
             .expect("Failed to build tokio runtime")
-            .block_on(self.async_exec());
+            .block_on(self.async_exec(resources));
     }
 
     #[allow(clippy::cast_possible_wrap)]
-    async fn async_exec(&self) {
-        let resources = WritingResources::new();
+    async fn async_exec(&self, resources: WritingResources) {
+        let chor = self.chor.as_ref()
+            .expect("This can only run if choreo is some.");
 
         file::set_deploy_path(
             &resources,
-            self.chor.parent()
+            chor.parent()
                 .expect("Choreo file must have a parent directory.")
                 .to_path_buf(),
         ).await;
 
-        let contents = fs::read_to_string(&self.chor).await
+        let contents = fs::read_to_string(chor).await
             .expect("Failed to read choreo file.");
-        let mut chor = Project::from_content(&contents)
+        let mut project = Project::from_content(&contents)
             .expect("Failed to parse choreo file.");
-        chor.name = self.chor.file_name()
+        project.name = chor.file_name()
             .expect("Choreo file must have a name.")
             .to_str()
             .expect("Choreo file name must be a valid UTF-8 string.")
             .to_string();
 
         for (i, traj_name) in self.traj.iter().enumerate() {
-            tracing::info!("Generating trajectory {:} for {:}", traj_name, chor.name);
+            tracing::info!("Generating trajectory {:} for {:}", traj_name, project.name);
 
-            let path = self.chor.parent()
+            let path = chor.parent()
                 .expect("Choreo file must have a parent directory.")
                 .join(traj_name)
                 .with_extension("traj");
@@ -101,7 +109,7 @@ impl Cli {
             let traj = Traj::from_content(&contents)
                 .expect("Failed to parse trajectory file.");
 
-            match generate(&chor, traj, i as i64) {
+            match generate(&project, traj, i as i64) {
                 Ok(new_traj) => {
                     file::write_traj(&resources, new_traj).await;
                 },

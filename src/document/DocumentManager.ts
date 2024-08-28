@@ -64,7 +64,7 @@ import { ViewLayerDefaults } from "./UIData";
 import { UIStateStore } from "./UIStateStore";
 import { Commands } from "./tauriCommands";
 
-type OpenFileEventPayload = {
+export type OpenFileEventPayload = {
   name: string;
   dir: string;
 };
@@ -257,16 +257,30 @@ export function setup() {
   setupEventListeners()
     .then(() => newProject())
     .then(() => uiState.updateWindowTitle())
-    .then(() => openLastFile());
+    .then(() => openProjectFile());
 }
 setup();
 
 // opens the last Choreo file saved in LocalStorage, if it exists
-export async function openLastFile() {
+export async function openProjectFile() {
   const lastOpenedFileEventPayload = localStorage.getItem(
     LocalStorageKeys.LAST_OPENED_FILE_LOCATION
   );
-  if (lastOpenedFileEventPayload) {
+  const cliRequestedProject = await Commands.requestedProject();
+
+  if (cliRequestedProject) {
+    const fileDirectory: OpenFileEventPayload = cliRequestedProject;
+    const filePath = fileDirectory.dir + path.sep + fileDirectory.name;
+    console.log(`Attempting to open: ${filePath}`);
+    return openProject([fileDirectory.dir, fileDirectory.name]).catch((err) => {
+      console.error(
+        `Failed to open cli requested Choreo file '${fileDirectory.name}': ${err}`
+      );
+      toast.error(
+        `Failed to open cli requested Choreo file '${fileDirectory.name}': ${err}`
+      );
+    });
+  } else if (lastOpenedFileEventPayload) {
     const fileDirectory: OpenFileEventPayload = JSON.parse(
       lastOpenedFileEventPayload
     );
@@ -280,18 +294,6 @@ export async function openLastFile() {
         `Failed to open last Choreo file '${fileDirectory.name}': ${err}`
       );
     });
-    // invoke("file_event_payload_from_dir", {
-    //   dir: fileDirectory.dir,
-    //   name: fileDirectory.name,
-    //   path: filePath
-    // }).catch((err) => {
-    //   console.error(
-    //     `Failed to open last Choreo file '${fileDirectory.name}': ${err}`
-    //   );
-    //   toast.error(
-    //     `Failed to open last Choreo file '${fileDirectory.name}': ${err}`
-    //   );
-    // });
   }
 }
 
@@ -637,7 +639,6 @@ export async function openProject(chorFile: [dir: string, name: string]) {
   });
   uiState.setSaveFileDir(dir);
   uiState.setSaveFileName(name);
-  await Commands.setDeployRoot(dir);
   localStorage.setItem(
     LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
     JSON.stringify({ dir, name })

@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api";
 import { Expr, Project, RobotConfig, Traj } from "./2025/DocumentTypes";
+import { OpenFileEventPayload } from "./DocumentManager";
 
 export const Commands = {
   generate: (chor: Project, traj: Traj, handle: number) =>
@@ -21,5 +22,6 @@ export const Commands = {
   findAllTraj: (dir: string) => invoke<string[]>("find_all_traj", { dir }),
   openFileDialog: () => invoke<[string, string]>("open_file_dialog"),
   setDeployRoot: (dir: string) =>
-    invoke<void>("set_deploy_root", { dir })
+    invoke<void>("set_deploy_root", { dir }),
+  requestedProject: () => invoke<OpenFileEventPayload | null>("requested_file"),
 };
