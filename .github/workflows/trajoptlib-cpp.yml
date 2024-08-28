@@ -34,6 +34,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install dependencies (Windows)
+        uses: lukka/get-cmake@v3.29.3
+        if: runner.os == 'windows-2022'
+
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'ubuntu-24.04'
+        run: sudo apt-get update && sudo apt-get install -y ninja-build
+
+      - name: Install dependencies (macOS)
+        run: brew install ninja
+        if: runner.os == 'macOS-14'
+
       - name: Make GCC 14 the default toolchain (Linux)
         if: startsWith(matrix.os, 'ubuntu')
         run: |
@@ -43,7 +56,7 @@ jobs:
       - run: sudo xcode-select -switch /Applications/Xcode_15.3.app
         if: startsWith(matrix.os, 'macOS')
 
-      - run: cmake -B build -S . -DBUILD_EXAMPLES=ON ${{ matrix.cmake-args }}
+      - run: cmake --preset with-examples ${{ matrix.cmake-args }}
         working-directory: trajoptlib
       - run: cmake --build build --config RelWithDebInfo --parallel 4
         working-directory: trajoptlib
