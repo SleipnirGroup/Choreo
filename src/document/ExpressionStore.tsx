@@ -154,7 +154,6 @@ export const ExpressionStore = types
       return () => self.expr;
     },
     toDefaultUnit(): Unit | number | undefined {
-      //eslint-disable-next-line @typescript-eslint/no-unused-expressions
       self.expr;
 
       const result = self.evaluate;
@@ -183,7 +182,6 @@ export const ExpressionStore = types
       return math.unit(result.toString()).to(self.defaultUnit!.toString());
     },
     get defaultUnitMagnitude(): number | undefined {
-      //eslint-disable-next-line @typescript-eslint/no-unused-expressions
       self.expr;
       const defaultUnit = this.toDefaultUnit();
       if (typeof defaultUnit === "number") {
