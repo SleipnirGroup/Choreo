@@ -66,6 +66,8 @@
 mod document;
 mod error;
 mod util;
+mod cli;
+
 use std::error::Error;
 use std::{thread, vec};
 
@@ -76,6 +78,8 @@ use std::{thread, vec};
 // use document::generate::{cancel, generate, setup_progress_sender};
 // use document::intervals::cmd_guess_control_interval_counts;
 
+use clap::Parser;
+use cli::Cli;
 use document::file::WritingResources;
 use document::generate::setup_progress_sender;
 #[allow(clippy::wildcard_imports)]
@@ -135,13 +139,17 @@ impl<T, E: Error> ResultExt<T, E> for Result<T, E> {
     }
 }
 
-fn main() {
+fn arg_count() -> usize {
+    std::env::args().count()
+}
+
+fn run_tauri() {
     tracing_subscriber::fmt::fmt()
         .with_max_level(tracing::Level::DEBUG)
         .pretty()
         .init();
 
-    tracing::info!("Starting Choreo");
+    tracing::info!("Starting Choreo Gui");
 
     let rx = setup_progress_sender();
     tauri::Builder::default()
@@ -176,4 +184,13 @@ fn main() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+fn main() {
+    if arg_count() <= 1 {
+        run_tauri();
+    } else {
+        let args = std::env::args().collect::<Vec<String>>();
+        Cli::parse_from(args).exec();
+    }
 }
