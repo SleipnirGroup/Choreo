@@ -36,16 +36,16 @@ jobs:
 
       - name: Install dependencies (Windows)
         uses: lukka/get-cmake@v3.29.3
-        if: runner.os == 'windows-2022'
+        if: runner.os == 'Windows'
 
 
       - name: Install dependencies (Linux)
-        if: runner.os == 'ubuntu-24.04'
+        if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y ninja-build
 
       - name: Install dependencies (macOS)
         run: brew install ninja
-        if: runner.os == 'macOS-14'
+        if: runner.os == 'macOS'
 
       - name: Make GCC 14 the default toolchain (Linux)
         if: startsWith(matrix.os, 'ubuntu')
