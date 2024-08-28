@@ -5,6 +5,10 @@
    "name":{
     "unit":"Meter",
     "var":["pose.x()",0.0]
+   },
+   "var":{
+    "unit":"Meter",
+    "var":["1 m",1.0]
    }
   },
   "poses":{

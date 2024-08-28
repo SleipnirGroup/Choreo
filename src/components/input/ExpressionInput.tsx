@@ -1,12 +1,12 @@
 import { Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
-import React, { Component } from "react";
+import React, { Component, ReactFragment } from "react";
 import { IExpressionStore, math } from "../../document/ExpressionStore";
 import styles from "./InputList.module.css";
 
 type Props = {
   /** The text to show before the number */
-  title: string;
+  title: string | (()=>React.ReactNode);
   /** Whether the input should be editable, or else italic and grayed out */
   enabled: boolean;
   /** The value of the input */
@@ -120,6 +120,7 @@ class Input extends Component<Props, State> {
     }
     return (
       <>
+      {!(this.props.title instanceof Function) &&
         <Tooltip disableInteractive title={this.props.titleTooltip ?? ""}>
           <span
             className={
@@ -130,9 +131,11 @@ class Input extends Component<Props, State> {
               (this.props.titleTooltip === undefined ? "" : styles.Tooltip)
             }
           >
-            {this.props.title}
+            {this.props.title as string}
           </span>
         </Tooltip>
+      }
+      {this.props.title instanceof Function && this.props.title()}
         <input
           ref={this.inputElemRef}
           type="text"

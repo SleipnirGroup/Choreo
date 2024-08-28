@@ -77,7 +77,6 @@ export const Units = {
 };
 // not sure why the alias above doesn't work
 math.createUnit("rpm", "1 RPM");
-
 export type Evaluated = null | undefined | number | Unit;
 type Evaluator = (arg: MathNode) => Evaluated;
 export const ExpressionStore = types
