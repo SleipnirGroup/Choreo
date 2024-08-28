@@ -84,6 +84,12 @@ class SidebarWaypoint extends Component<Props, State> {
               doc.setSelectedSidebarItem(waypoint);
               uiState.setSelectedNavbarItem(waypoint.type);
             }}
+            onMouseOver={() => {
+              doc.setHoveredSidebarItem(waypoint);
+            }}
+            onMouseLeave={() => {
+              doc.setHoveredSidebarItem(undefined);
+            }}
           >
             {React.cloneElement(NavbarItemData[type].icon, {
               className: styles.SidebarIcon,

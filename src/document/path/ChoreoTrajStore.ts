@@ -62,7 +62,7 @@ export const ChoreoTrajStore = types
       }
       return lastSection[lastSection.length - 1].t;
     },
-    serialize(): Output {
+    get serialize(): Output {
       return {
         waypoints: self.waypoints,
         samples: self.samples,

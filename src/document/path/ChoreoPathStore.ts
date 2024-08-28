@@ -92,15 +92,15 @@ export const ChoreoPathStore = types
     }
   }))
   .views((self) => ({
-    serialize(): ChoreoPath<Expr> {
+    get serialize(): ChoreoPath<Expr> {
       return {
-        waypoints: self.waypoints.map((w) => w.serialize()),
+        waypoints: self.waypoints.map((w) => w.serialize),
         constraints: self.constraints.flatMap((constraint) => {
           const con = constraint;
           const from = self.waypointIdToSavedWaypointId(con.from)!;
           const to = self.waypointIdToSavedWaypointId(con.to);
           const toReturn: Constraint = {
-            data: con.data.serialize(),
+            data: con.data.serialize,
             from,
             to
           };
