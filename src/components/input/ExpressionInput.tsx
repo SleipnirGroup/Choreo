@@ -84,10 +84,15 @@ class Input extends Component<Props, State> {
 
   getValid(): boolean {
     try {
+      if (this.state.editing) {
       const newNode = this.props.number.validate(
         math.parse(this.state.editedValue)
       );
       return newNode !== undefined;
+      }
+      else {
+        return this.props.number.valid;
+      }
     } catch {
       return false;
     }

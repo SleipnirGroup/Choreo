@@ -61,10 +61,6 @@
 .Number.Invalid {
   border-bottom: 2px solid red;
 }
-input.Number:hover {
-  overflow:visible;
-  z-index:100;
-}
 
 .Suffix {
   min-width: max-content;

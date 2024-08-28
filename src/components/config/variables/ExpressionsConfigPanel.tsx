@@ -32,12 +32,12 @@ class ExpressionsConfigPanel extends Component<Props, State> {
           fontSize: "2rem",
           margin: `${1 * this.rowGap}px`,
           display: "flex",
-          flexDirection:"row",
+          flexDirection:"column",
           overflow: "hidden"
         }}
       >
         <VariablesConfigPanel></VariablesConfigPanel>
-        <Divider orientation="vertical" flexItem></Divider>
+        <Divider flexItem></Divider>
         <PoseVariablesConfigPanel></PoseVariablesConfigPanel>
       </div>
     );

@@ -3,6 +3,7 @@ import { observer } from "mobx-react";
 import { detach } from "mobx-state-tree";
 import { useState } from "react";
 import { IVariables } from "../../../document/ExpressionStore";
+import styles from "../../input/InputList.module.css"
 
 type Props = {
     name: string,
@@ -15,7 +16,7 @@ function VariableRenamingInput(props: Props) {
         }
     }
     const [newName, setNewName] = useState<string>(props.name);
-    return <Input type="text" value={newName}
+    return <input className={styles.Number} type="text" style={{width:"7ch"}}value={newName}
         onChange={e=>setNewName(e.currentTarget.value)}
         onKeyDown={e => {
             if (e.key == "Enter") {
@@ -24,7 +25,7 @@ function VariableRenamingInput(props: Props) {
             }
         }}
         onBlur={e=>submit(e.currentTarget.value)}>
-
-      </Input>
+        
+      </input>
 }
 export default observer(VariableRenamingInput);

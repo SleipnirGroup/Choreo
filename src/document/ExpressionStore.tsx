@@ -1,11 +1,12 @@
-import { ConstantNode, MathNode, Unit, all, create, isNode, isNull } from "mathjs";
+import { ConstantNode, FunctionNode, MathNode, SymbolNode, Unit, all, create, isNode, isNull } from "mathjs";
 import { IReactionDisposer, getDependencyTree, getObserverTree, reaction, untracked } from "mobx";
-import { Instance, detach, types } from "mobx-state-tree";
+import { Instance, detach, getEnv, types } from "mobx-state-tree";
 import {
   PoseVariable as DocPoseVariable,
   Variables as DocVariables,
   Expr
 } from "./2025/DocumentTypes";
+import { Env } from "./DocumentManager";
 
 export const math = create(all, { predictable: true });
 const { add, subtract, multiply, divide, cos, sin } = math;
@@ -104,11 +105,30 @@ export const ExpressionStore = types
     tempDisableRecalc: false,
     value: 0,
     getScope: () => {
-      console.error("Evaluating without variables!", self.toString());
-      return new Map<string, any>();
+      let env = getEnv<Env>(self);
+      if (env.vars === undefined) {
+        console.error("Evaluating without variables!", self.toString());
+        return new Map<string, any>();
+      }
+      let scope = env.vars().scope;
+      console.log(scope);
+      return scope;
     }
   }))
   .actions((self) => ({
+    findReplaceVariable(find: string, replace: string) {
+      console.log(self.expr)
+      self.expr = self.expr.transform(function (node, path, parent) {
+        if (node["isSymbolNode"] && node.name === find) {
+          let clone = (node as SymbolNode).clone();
+          clone.name = replace;
+          return clone;
+        }
+        else {
+          return node;
+        }}
+      )
+    },
     deserialize(serial: Expr) {
       self.expr = math.parse(serial[0]);
       self.value = serial[1];
@@ -143,14 +163,16 @@ export const ExpressionStore = types
   }))
   .views((self) => ({
     evaluator(node: MathNode): Evaluated {
-      let scope;
-      untracked(()=>{
+      let scope!: Map<string,any>;
+      // untracked(()=>{
         scope = 
         self.getScope() ??
         ((() => {
           console.error("Evaluating without variables!");
           return undefined;
-        }) as Evaluator);})
+        }) as Evaluator);
+      // })
+        scope.keys();
       let result = node.evaluate(scope) ?? undefined;
       if (result["isNode"]) {
         result = this.evaluator(result);
@@ -165,7 +187,7 @@ export const ExpressionStore = types
   .views((self) => ({
     get evaluate(): Evaluated {
       let result = self.evaluator(self.expr);
-      setTimeout(()=>console.log(self.toString(), "depends", getDependencyTree(self, "evaluate")), 30);
+      // setTimeout(()=>console.log(self.toString(), "depends", getDependencyTree(self, "evaluate")), 30);
       return result;
     }
   }))
@@ -189,19 +211,19 @@ export const ExpressionStore = types
         if (self.defaultUnit === undefined) {
           return result;
         }
-        console.error(
-          "unit expression",
-          self.expr.toString(),
-          "evaluated to number"
-        );
+        // console.error(
+        //   "unit expression",
+        //   self.expr.toString(),
+        //   "evaluated to number"
+        // );
         return math.unit(result, self.defaultUnit.toString());
       }
       if (self.defaultUnit === undefined) {
-        console.error(
-          "number expression",
-          self.expr.toString(),
-          "evaluated to unit"
-        );
+        // console.error(
+        //   "number expression",
+        //   self.expr.toString(),
+        //   "evaluated to unit"
+        // );
         return undefined;
       }
       return math.unit(result.toString()).to(self.defaultUnit!.toString());
@@ -215,22 +237,22 @@ export const ExpressionStore = types
       }
       return defaultUnit?.toNumber(self.defaultUnit!.toString());
     },
-    validate(newNode: MathNode) {
+    validate(newNode: MathNode) : MathNode | undefined {
       //console.log("Validate", newNode.toString())
       let newNumber: undefined | null | number | Unit;
       try {
         newNumber = self.evaluator(newNode);
       } catch (e) {
-        console.error("failed to evaluate", e);
+        console.error(self.toString(), "failed to evaluate", e);
         return undefined;
       }
       if (newNumber === undefined || newNumber === null) {
-        console.error("evaluated to undefined or null");
+        console.error(self.toString(), "evaluated to undefined or null");
         return undefined;
       }
       if (typeof newNumber === "number") {
         if (!isFinite(newNumber)) {
-          console.error("failed to evaluate: ", newNumber, "is infinite");
+          console.error(self.toString(), "failed to evaluate: ", newNumber, "is infinite");
           return undefined;
         }
         if (self.defaultUnit !== undefined) {
@@ -244,7 +266,7 @@ export const ExpressionStore = types
       // newNumber is Unit
       const unit = self.defaultUnit;
       if (unit === undefined) {
-        console.error(
+        console.error(self.toString(), 
           "failed to evaluate: ",
           newNumber,
           "is unit on unitless expr"
@@ -252,18 +274,22 @@ export const ExpressionStore = types
         return undefined;
       }
       if (!newNumber.equalBase(unit)) {
-        console.error("unit mismatch", unit);
+        console.error(self.toString(), "unit mismatch", unit);
         return undefined;
       }
       if (isNull(newNumber.value)) {
-        console.error("valueless unit", unit);
+        console.error(self.toString(), "valueless unit", unit);
         return undefined;
       }
       if (!isFinite(newNumber.value)) {
-        console.error("failed to evaluate: ", newNumber.value, "is infinite");
+        console.error(self.toString(), "failed to evaluate: ", newNumber.value, "is infinite");
         return undefined;
       }
       return newNode;
+    },
+    get valid(): boolean {
+      // setTimeout(()=>{console.log(getDependencyTree(self, "valid"))})
+      return this.validate(self.expr) !== undefined;
     }
   }))
   .volatile((self) => {
@@ -430,18 +456,27 @@ export const Variables = types
     }
   }))
   .actions((self) => ({
+    deletePose(key: string) {
+      self.poses.delete(key);
+    },
+    deleteExpression(key: string) {
+      self.expressions.delete(key);
+    },
     // addTranslation(key:string) {
     //   self.store.set(key, {x: self.Expression("0 m", Units.Meter), y: self.Expression("0 m", Units.Meter)});
     // },
     renameExpression(cur:string, next: string) {
       let current = self.expressions.get(cur);
       if (current === undefined) return;
+      getEnv<Env>(self).renameVariable(cur, next);
       self.expressions.set(next, detach(current));
     },
     renamePose(cur:string, next: string) {
       let current = self.poses.get(cur);
       if (current === undefined) return;
+      getEnv<Env>(self).renameVariable(cur, next);
       self.poses.set(next, detach(current));
+      
     },
     addPose(key: string, pose?: Pose | {x:Expr, y:Expr, heading:Expr}) {
       let store = ExprPose.create({

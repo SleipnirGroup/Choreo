@@ -1,10 +1,10 @@
-import { IconButton, Input, Switch, Tooltip } from "@mui/material";
+import { Divider, IconButton, Input, Switch, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import { Component } from "react";
 import { doc } from "../../../document/DocumentManager";
 import inputStyles from "../input/InputList.module.css";
 import ExpressionInput from "../../input/ExpressionInput";
-import { Add } from "@mui/icons-material";
+import { Add, Delete } from "@mui/icons-material";
 import ExpressionInputList from "../../input/ExpressionInputList";
 import { IExpressionStore, Units } from "../../../document/ExpressionStore";
 import VariableRenamingInput from "./VariableRenamingInput";
@@ -22,24 +22,23 @@ class VariablesConfigPanel extends Component<Props, State> {
     doc.variables.expressions.keys();
     return (
 
-        <div className={className} style={{ gridTemplateColumns: "10ch auto max-content", overflowY: "scroll", overflowX: "hidden"}}>
+        <div className={className} style={{ gridTemplateColumns: "max-content auto max-content", overflowY: "scroll", overflowX: "hidden", width:"max-content"}}>
           {
-            Array.from(doc.variables.expressions.entries()).map((entry) => <><ExpressionInput
+            Array.from(doc.variables.expressions.entries()).map((entry) => <><ExpressionInput key={`${entry[0]}-expr`}
               enabled
-              //title={""}
+              // title={entry[0]}
               title={() =>
                 <VariableRenamingInput name={entry[0]} setName={name=>doc.variables.renameExpression(entry[0], name)}></VariableRenamingInput>
               }
               number={entry[1]}
-            ></ExpressionInput><span></span></>)}
-          <Input type="text"
-            onChange={e => this.setState({ newVarName: e.currentTarget.value ?? "" })}
-          ></Input>
+            ></ExpressionInput><Delete onClick={()=>doc.variables.deleteExpression(entry[0])}></Delete></>)}
+            <Divider sx={{gridColumn:"1 / -1"}}></Divider>
           <>
-            <Input type="text"
+          <VariableRenamingInput name={this.state.newVarName} setName={name => this.setState({ newVarName: name })}></VariableRenamingInput>
+            <Input className={styles.Number}type="text"
               onChange={e => this.setState({ newVarExpr: e.currentTarget.value ?? "" })}
             ></Input>
-            <IconButton onClick={_ => {
+            <IconButton size="small" onClick={_ => {
               let { newVarName, newVarExpr, newVarUnit } = this.state;
               doc.variables.add(newVarName, newVarExpr, newVarUnit);
             }}>

@@ -4,7 +4,7 @@ import { Component } from "react";
 import { Env, doc } from "../../../document/DocumentManager";
 import inputStyles from "../input/InputList.module.css";
 import ExpressionInput from "../../input/ExpressionInput";
-import { Add } from "@mui/icons-material";
+import { Add, Delete } from "@mui/icons-material";
 import ExpressionInputList from "../../input/ExpressionInputList";
 import { IExpressionStore, Units } from "../../../document/ExpressionStore";
 import VariableRenamingInput from "./VariableRenamingInput";
@@ -28,7 +28,7 @@ class PoseVariablesConfigPanel extends Component<Props, State> {
     doc.variables.poses.keys();
     return (
       <div style={{display:"flex", flexDirection:"column", justifyContent:"flex-start", overflowY:"scroll"}}>
-        <div className={className} style={{ gridTemplateColumns: "10ch max-content auto max-content auto max-content auto max-content", gridTemplateRows: "repeat(auto)" }}>
+        <div className={className} style={{ gridTemplateColumns: "max-content max-content auto max-content auto max-content auto max-content" }}>
           {
             Array.from(doc.variables.poses.entries()).map((entry) => 
             <>
@@ -59,8 +59,8 @@ class PoseVariablesConfigPanel extends Component<Props, State> {
               title={"θ"}
               number={entry[1].heading}
             ></ExpressionInput>
-            <span></span></>)}
-            <Divider sx={{gridColumn:"1 / -1", display:"inline"}}></Divider>
+            <Delete onClick={()=>doc.variables.deletePose(entry[0])}></Delete></>)}
+            <Divider sx={{gridColumn:"1 / -1"}}></Divider>
             {/* <span></span>
             <span></span>
             <span></span>

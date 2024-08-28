@@ -4,7 +4,7 @@
   "expressions":{
    "nar":{
     "unit":"Meter",
-    "var":["2 m",0.0]
+    "var":["3 m",0.0]
    },
    "var":{
     "unit":"Meter",
@@ -12,7 +12,7 @@
    },
    "name":{
     "unit":"Meter",
-    "var":["1 m",0.0]
+    "var":["2 m",0.0]
    }
   },
   "poses":{
@@ -21,25 +21,25 @@
     "y":["0 m",0.0],
     "heading":["0 rad",0.0]
    },
+   "pvae":{
+    "x":["var() + nar()",0.0],
+    "y":["3 m",0.0],
+    "heading":["6 rad",0.0]
+   },
+   "spkr":{
+    "x":["0 m",0.0],
+    "y":["0 m",0.0],
+    "heading":["0 deg",0.0]
+   },
    "posed":{
     "x":["0 m",0.0],
     "y":["0 m",0.0],
     "heading":["0 rad",0.0]
    },
-   "pose":{
-    "x":["1.4 m",0.0],
-    "y":["5.56 m",0.0],
-    "heading":["70 deg",0.0]
-   },
    "rev":{
     "x":["nar()",0.0],
     "y":["2 m",0.0],
     "heading":["0 rad",0.0]
-   },
-   "pvae":{
-    "x":["var() + nar()",0.0],
-    "y":["3 m",0.0],
-    "heading":["6 rad",0.0]
    }
   }
  },

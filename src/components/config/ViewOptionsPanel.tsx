@@ -103,6 +103,15 @@ class ViewOptionsPanel extends Component<Props, State> {
             </IconButton>
           </Tooltip>
         </div>
+        <div><IconButton
+          onClick={() => {
+            uiState.setVariablesPanelOpen(!uiState.variablesPanelOpen);
+          }}
+        >
+        {uiState.variablesPanelOpen ? <Close /> : <Numbers />}
+
+        </IconButton>
+        </div>
         <IconButton
           onClick={() => {
             uiState.setViewOptionsPanelOpen(!uiState.isViewOptionsPanelOpen);
@@ -152,15 +161,7 @@ class ViewOptionsPanel extends Component<Props, State> {
             </ToggleButtonGroup>
           </div>
         )}
-    <div><IconButton
-      onClick={() => {
-        uiState.setVariablesPanelOpen(!uiState.variablesPanelOpen);
-      }}
-    >
-    {uiState.variablesPanelOpen ? <Close /> : <Numbers />}
-
-    </IconButton>
-    </div>
+    
     {uiState.variablesPanelOpen && 
         <div
         style={{
@@ -174,8 +175,7 @@ class ViewOptionsPanel extends Component<Props, State> {
           // padding: "8px",
 
           borderRadius: "10px",
-          maxHeight: "100%",
-          
+         
           display: "flex",
           flexDirection: "column"
         }}

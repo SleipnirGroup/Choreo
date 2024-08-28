@@ -9,7 +9,8 @@ import {
   Instance,
   applySnapshot,
   castToReferenceSnapshot,
-  getSnapshot
+  getSnapshot,
+  walk
 } from "mobx-state-tree";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
@@ -50,7 +51,7 @@ import {
   ICommandStore,
   IEventMarkerStore
 } from "./EventMarkerStore";
-import { IVariables, Units, Variables, math } from "./ExpressionStore";
+import { IExpressionStore, IVariables, Units, Variables, math } from "./ExpressionStore";
 import {
   IHolonomicWaypointStore,
   HolonomicWaypointStore as WaypointStore
@@ -219,6 +220,8 @@ const env = {
   stopGroup: () => {
     stopGroup();
   },
+  vars: ()=>(doc.variables),
+  renameVariable: renameVariable,
   create: getConstructors(() => doc.variables)
 };
 export type Env = typeof env;
@@ -243,6 +246,13 @@ function startGroup(callback: any) {
 }
 function stopGroup() {
   doc.history.stopGroup();
+}
+function renameVariable(find: string, replace: string) {
+  walk(doc, (node)=> {
+    if (node["expr"] !== undefined) {
+      (node as IExpressionStore).findReplaceVariable(find, replace)
+    }
+  })
 }
 export function setup() {
   doc.pathlist.setExporter((uuid) => {
@@ -706,8 +716,6 @@ export async function newFile() {
   uiState.loadPathGradientFromLocalStorage();
   doc.pathlist.addPath("NewPath");
   doc.history.clear();
-  doc.variables.addPose("pose");
-  doc.variables.add("name", "pose.x()", Units.Meter);
 }
 export function select(item: SelectableItemTypes) {
   doc.setSelectedSidebarItem(item);
