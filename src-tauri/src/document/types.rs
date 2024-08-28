@@ -210,6 +210,9 @@ pub enum ConstraintData<T> {
     MaxAcceleration {
         max: T,
     },
+    MaxAngularVelocity {
+        max: T,
+    },
     PointAt {
         x: T,
         y: T,
@@ -233,6 +236,7 @@ impl ConstraintData<Expr> {
             ConstraintData::MaxVelocity { max } => ConstraintData::MaxVelocity {
                 max: max.snapshot(),
             },
+            ConstraintData::MaxAngularVelocity { max } => ConstraintData::MaxAngularVelocity { max: max.snapshot(), },
             ConstraintData::PointAt {
                 x,
                 y,
