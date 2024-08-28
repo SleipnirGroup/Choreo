@@ -7,6 +7,7 @@ import ExpressionInput from "../../input/ExpressionInput";
 import { Add } from "@mui/icons-material";
 import ExpressionInputList from "../../input/ExpressionInputList";
 import { IExpressionStore, Units } from "../../../document/ExpressionStore";
+import VariableRenamingInput from "./VariableRenamingInput";
 
 type Props = object;
 
@@ -30,16 +31,10 @@ class VariablesConfigPanel extends Component<Props, State> {
           {
             Array.from(doc.variables.expressions.entries()).map((entry)=> <ExpressionInput
               enabled
-              title={""}
-              // title={observer(() =>
-              //   <Input type="text" onSubmit={e => {
-              //     let newName = e.currentTarget.nodeValue;
-              //     if (newName !== null) {
-              //       doc.variables.expressions.set(newName, entry[1]);
-              //     }
-              //   }}>
-
-              //   </Input>)}
+              //title={""}
+              title={()=>
+                <VariableRenamingInput vars={doc.variables} name={entry[0]}></VariableRenamingInput>
+              }
               number={entry[1]}
             ></ExpressionInput>)}
           <Input type="text"

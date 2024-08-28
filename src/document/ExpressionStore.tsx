@@ -1,6 +1,6 @@
 import { ConstantNode, MathNode, Unit, all, create, isNull } from "mathjs";
 import { IReactionDisposer, autorun } from "mobx";
-import { Instance, types } from "mobx-state-tree";
+import { Instance, detach, types } from "mobx-state-tree";
 import {
   PoseVariable as DocPoseVariable,
   Variables as DocVariables,
@@ -339,6 +339,7 @@ export const Variables = types
       for (const [key, val] of self.poses.entries()) {
         vars.set(key, val.asScope);
       }
+      console.log(vars)
       return vars;
     }
   }))
@@ -390,7 +391,11 @@ export const Variables = types
     // addTranslation(key:string) {
     //   self.store.set(key, {x: self.Expression("0 m", Units.Meter), y: self.Expression("0 m", Units.Meter)});
     // },
-
+    renameExpression(cur:string, next: string) {
+      let current = self.expressions.get(cur);
+      if (current === undefined) return;
+      self.expressions.set(next, detach(current));
+    },
     addPose(key: string, pose?: Pose) {
       self.poses.set(
         key,

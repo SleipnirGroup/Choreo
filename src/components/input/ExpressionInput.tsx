@@ -3,6 +3,7 @@ import { observer } from "mobx-react";
 import React, { Component, ReactFragment } from "react";
 import { IExpressionStore, math } from "../../document/ExpressionStore";
 import styles from "./InputList.module.css";
+import { isAlive } from "mobx-state-tree";
 
 type Props = {
   /** The text to show before the number */
@@ -106,6 +107,9 @@ class Input extends Component<Props, State> {
   }
 
   render() {
+    if(!isAlive(this.props.number)){
+      return <></>
+    }
     try {
       //eslint-disable-next-line @typescript-eslint/no-unused-expressions
       this.props.number.expr;
