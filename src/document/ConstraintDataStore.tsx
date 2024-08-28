@@ -95,7 +95,7 @@ function createDataStore<
       };
       serialize = (self) => {
         const part = oldSerialize(self);
-        part[key] = (self[key] as IExpressionStore).serialize();
+        part[key] = (self[key] as IExpressionStore).serialize;
 
         return part;
       };
@@ -144,7 +144,7 @@ function createDataStore<
       )
     )
     .views((self) => ({
-      serialize(): D {
+      get serialize(): D {
         return {
           type: def.type,
           props: serialize(self) as D["props"]

@@ -35,14 +35,14 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
   public final double angularVelocity;
 
   /**
-   * The force on each module in the X direction in Newtons Module forces appear in the following
-   * order: [FL, FR, BL, BR]
+   * The force on each swerve module in the X direction in Newtons. Module forces appear in the
+   * following order: [FL, FR, BL, BR].
    */
   public final double[] moduleForcesX;
 
   /**
-   * The force on each module in the Y direction in Newtons Module forces appear in the following
-   * order: [FL, FR, BL, BR]
+   * The force on each swerve module in the Y direction in Newtons Module forces appear in the
+   * following order: [FL, FR, BL, BR].
    */
   public final double[] moduleForcesY;
 
@@ -56,8 +56,8 @@ public class ChoreoTrajectoryState implements Interpolatable<ChoreoTrajectorySta
    * @param velocityX The velocity of the state in the X direction in m/s.
    * @param velocityY The velocity of the state in the Y direction in m/s.
    * @param angularVelocity The angular velocity of the state in rad/s.
-   * @param moduleForcesX The force on the swerve modules in the X direction in Newtons.
-   * @param moduleForcesY The force on the swerve modules in the Y direction in Netwons.
+   * @param moduleForcesX The force on each swerve module in the X direction in Newtons.
+   * @param moduleForcesY The force on each swerve module in the Y direction in Netwons.
    */
   public ChoreoTrajectoryState(
       double timestamp,

@@ -22,11 +22,13 @@ namespace trajopt {
 class TRAJOPT_DLLEXPORT PointAtConstraint {
  public:
   /**
-   * Cosntructs a PointAtConstraint.
+   * Constructs a PointAtConstraint.
    *
    * @param fieldPoint Field point.
    * @param headingTolerance The allowed robot heading tolerance (radians). Must
    *     be nonnegative.
+   * @param flip False points at the field point while true points away from the
+   *     field point.
    */
   explicit PointAtConstraint(Translation2d fieldPoint, double headingTolerance,
                              bool flip = false)
