@@ -26,7 +26,7 @@ import { toast } from "react-toastify";
 import {
   exportActiveTrajectory,
   exportAllTrajectories,
-  newFile,
+  newProject,
   openProject,
   saveFileDialog,
   uiState
@@ -182,7 +182,7 @@ class AppMenu extends Component<Props, State> {
                     { title: "Choreo", type: "warning" }
                   )
                 ) {
-                  newFile();
+                  newProject();
                 }
               }}
             >

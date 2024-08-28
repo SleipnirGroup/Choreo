@@ -1,4 +1,5 @@
 {
+ "name":"project.chor",
  "version":"v2025.0.0",
  "variables":{
   "expressions":{
@@ -22,7 +23,7 @@
     {"x":["-11 in",-0.2794], "y":["-11 in",-0.2794]},
     {"x":["11 in",0.2794], "y":["-11 in",-0.2794]}],
   "mass":["150 lbs",68.0388555],
-  "inertia":["6 kg m ^ 2",6.0],
+  "inertia":["8 kg m ^ 2",8.0],
   "gearing":["6.5",6.5],
   "radius":["2 in",0.0508],
   "vmax":["6000 RPM",6000.0],

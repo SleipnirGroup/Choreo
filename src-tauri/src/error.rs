@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -12,6 +14,12 @@ pub enum ChoreoError {
     Json(#[from] serde_json::Error),
     #[error("File saving error: {0:?}")]
     FileSave(&'static str),
+    #[error("File writing error: {0:?}")]
+    FileWrite(PathBuf),
+    #[error("File reading error: {0:?}")]
+    FileRead(PathBuf),
+    #[error("File not found error: {0:?}")]
+    FileNotFound(Option<PathBuf>),
     #[error("Sign error: {0:?} should be {1:?}")]
     Sign(&'static str, &'static str),
     #[error("Out Of Bounds error: {0:?} should be {1:?}")]

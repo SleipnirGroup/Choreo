@@ -45,6 +45,7 @@ export interface RobotConfig<T extends ExprOrNumber> {
 }
 
 export interface Project {
+  name: string;
   version: typeof SAVE_FILE_VERSION;
   variables: Variables;
   config: RobotConfig<Expr>;

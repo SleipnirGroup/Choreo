@@ -2,23 +2,13 @@ use super::types::{Constraint, Expr, RobotConfig, Traj, Waypoint};
 use crate::document::types::ConstraintData;
 use crate::error::ChoreoError;
 use crate::util::math_util::angle_modulus;
-use crate::Result;
+use crate::ChoreoResult;
 
-// A value version since commands don't support borrows, but we need the borrow
-// version for generation.
-#[tauri::command]
-#[allow(clippy::needless_pass_by_value)]
-pub fn cmd_guess_control_interval_counts(
-    config: RobotConfig<Expr>,
-    traj: Traj,
-) -> Result<Vec<usize>> {
-    guess_control_interval_counts(&config, &traj)
-}
 
 pub fn guess_control_interval_counts(
     config: &RobotConfig<Expr>,
     traj: &Traj,
-) -> Result<Vec<usize>> {
+) -> ChoreoResult<Vec<usize>> {
     let config = config.snapshot();
     if config.wheel_max_torque() <= 0.0 {
         return Err(ChoreoError::Sign("Wheel max torque", "positive"));

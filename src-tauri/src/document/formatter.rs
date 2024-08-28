@@ -4,16 +4,7 @@ use serde::Serialize;
 use serde_json::error::Result;
 use serde_json::{ser::Formatter, Serializer};
 
-// We only use our own error type; no need for From conversions provided by the
-// standard library's try! macro. This reduces lines of LLVM IR by 4%.
-macro_rules! tri {
-    ($e:expr $(,)?) => {
-        match $e {
-            core::result::Result::Ok(val) => val,
-            core::result::Result::Err(err) => return core::result::Result::Err(err),
-        }
-    };
-}
+
 /// This structure pretty prints a JSON value to make it human readable.
 /// Variant from serde formatter:
 /// 1-space indent
@@ -82,7 +73,7 @@ impl Formatter for PrettyFormatter<'_> {
     where
         W: ?Sized + io::Write,
     {
-        tri!(writer.write_all(if first { b"" } else { b"," }));
+        writer.write_all(if first { b"" } else { b"," })?;
         Ok(())
         //if !first {indent(writer, self.current_indent, self.indent)} else
         // {Ok(())}
@@ -106,7 +97,7 @@ impl Formatter for PrettyFormatter<'_> {
         self.has_value = false;
         // if stack is empty (shouldn't happen) don't add line break
         if *(self.in_array.last().unwrap_or(&false)) {
-            tri!(writer.write_all(b"\n"));
+            writer.write_all(b"\n")?;
             indent(writer, self.current_indent, self.indent)?;
         }
         self.in_array.push(false);
@@ -122,8 +113,8 @@ impl Formatter for PrettyFormatter<'_> {
         self.current_indent -= 1;
 
         if self.has_value && !self.in_array.contains(&true) {
-            tri!(writer.write_all(b"\n"));
-            tri!(indent(writer, self.current_indent, self.indent));
+            writer.write_all(b"\n")?;
+            indent(writer, self.current_indent, self.indent)?;
         }
         let _ = self.in_array.pop();
         writer.write_all(b"}")
@@ -136,9 +127,9 @@ impl Formatter for PrettyFormatter<'_> {
     {
         if self.in_array.contains(&true) {
             // don't linebreak
-            tri!(writer.write_all(if first { b"" } else { b", " }));
+            writer.write_all(if first { b"" } else { b", " })?;
         } else {
-            tri!(writer.write_all(if first { b"\n" } else { b",\n" }));
+            writer.write_all(if first { b"\n" } else { b",\n" })?;
             indent(writer, self.current_indent, self.indent)?;
         }
         Ok(())
@@ -167,7 +158,7 @@ where
     W: ?Sized + io::Write,
 {
     for _ in 0..n {
-        tri!(wr.write_all(s));
+        wr.write_all(s)?;
     }
 
     Ok(())
@@ -205,7 +196,7 @@ where
     T: ?Sized + Serialize,
 {
     let mut writer = Vec::with_capacity(128);
-    tri!(to_writer_pretty(&mut writer, value));
+    to_writer_pretty(&mut writer, value)?;
     Ok(writer)
 }
 
@@ -220,7 +211,7 @@ pub fn to_string_pretty<T>(value: &T) -> Result<String>
 where
     T: ?Sized + Serialize,
 {
-    let vec = tri!(to_vec_pretty(value));
+    let vec = to_vec_pretty(value)?;
     let string = unsafe {
         // We do not emit invalid UTF-8.
         String::from_utf8_unchecked(vec)

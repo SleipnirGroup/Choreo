@@ -1,28 +1,90 @@
 use std::{
-    collections::HashMap,
-    f64::consts::PI,
-    path::{Path, PathBuf},
+    collections::HashMap, f64::consts::PI, path::{Path, PathBuf}, sync::Arc, thread
 };
 
 use dashmap::DashMap;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use tauri::{
-    api::{dialog::blocking::FileDialogBuilder, file},
-    Manager,
-};
 use tokio::{
     fs,
-    sync::{
-        mpsc::{self, UnboundedSender},
-        RwLock,
-    },
+    sync::{mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender}, Mutex, Notify},
 };
 
-use super::types::{expr, Bumper, Module, Project, RobotConfig, Traj, Variables};
+use crate::{error::ChoreoError, ChoreoResult, ResultExt};
 
-type WriterMap = DashMap<String, UnboundedSender<WriterCommand<Traj>>>;
-type OptionalProjectWriter = RwLock<Option<UnboundedSender<WriterCommand<Project>>>>;
+use super::types::{Bumper, Expr, Module, Project, RobotConfig, Traj, Variables};
+
+type TrajWriterPool = Arc<DashMap<String, UnboundedSender<Traj>>>;
+type DeployPath = Arc<Mutex<PathBuf>>;
+
+pub struct ProjectUpdate {
+    project: Mutex<Option<Project>>,
+    notifier: Notify,
+}
+
+impl ProjectUpdate {
+    pub fn new() -> Self {
+        Self {
+            project: Mutex::new(None),
+            notifier: Notify::new(),
+        }
+    }
+
+    pub async fn update(&self, project: Project) {
+        let mut lock = self.project.lock().await;
+        *lock = Some(project);
+        self.notifier.notify_one();
+    }
+
+    pub async fn wait_for(&self) -> Project {
+        self.notifier.notified().await;
+        self.project.lock().await.take()
+            .expect("Project should be updated before waiting for it")
+    }
+}
+
+/// A collection of resources for writing to files.
+/// 
+/// All members support interior mutability.
+#[derive(Clone)]
+pub struct WritingResources {
+    /// The project writer.
+    pub project: Arc<ProjectUpdate>,
+    pub traj_pool: TrajWriterPool,
+    pub root: DeployPath,
+}
+
+impl WritingResources {
+    pub fn new() -> Self {
+        let out = Self {
+            project: Arc::new(ProjectUpdate::new()),
+            traj_pool: Arc::new(DashMap::new()),
+            root: Arc::new(Mutex::new(PathBuf::new())),
+        };
+        let root = out.root.clone();
+        let project_updater = out.project.clone();
+        thread::spawn(move || {
+            tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .expect("Failed to build tokio runtime")
+                .block_on(async move {
+                    loop {
+                        let proj = project_updater.wait_for().await;
+                        let root = root.lock().await;
+                        let path = root.join(&proj.name);
+                        handle_write(proj, &path).await
+                            .trace_err();
+                        tracing::debug!("Wrote project to {:?}", path);
+                    }
+                });
+        });
+        out
+    }
+
+    pub fn delegate_to_app(&self, app_handle: &tauri::AppHandle) {
+        tauri::Manager::manage(app_handle, self.clone());
+    }
+}
 
 #[derive(Serialize, Deserialize, Clone)]
 struct OpenFileEventPayload<'a> {
@@ -37,110 +99,64 @@ struct OpenTrajEventPayload<'a> {
     contents: Traj,
 }
 
-pub fn setup_senders(app_handle: &tauri::AppHandle) {
-    let map: WriterMap = DashMap::new(); // this is for the type inference
-    let first_writemap = app_handle.manage(map);
-    let first_project_writer = app_handle.manage::<OptionalProjectWriter>(RwLock::new(None));
-    assert!(
-        first_writemap && first_project_writer,
-        "Setup Senders was called twice"
-    );
-}
-
-#[tauri::command]
+#[allow(clippy::unused_async)]
 pub async fn write_traj(
-    app_handle: tauri::AppHandle,
-    file: String,
+    resources: &WritingResources,
     traj: Traj,
-) -> Result<(), String> {
-    let senders: tauri::State<WriterMap> = app_handle.state();
-    let sender = senders
-        .get(&file)
-        .or_else(|| {
-            let _ = senders.insert(file.clone(), start::<Traj>(Path::new(&(file.clone()))));
-            senders.get(&file)
-        })
-        .ok_or("Could not get or insert traj file writer. Notify developers.")?;
+) {
+    let file = resources.root.lock().await.join(&traj.name).with_extension("traj");
+    tracing::debug!("Writing traj {:} to {:}", traj.name, file.display());
+    let entry = resources
+        .traj_pool
+        .entry(file.to_string_lossy().to_string());
+    let sender = entry.or_insert_with(|| {
+        let (sender, receiver) = unbounded_channel();
+        spawn_writer_task(PathBuf::from(&file), receiver);
+        sender
+    });
     sender
-        .send(WriterCommand::Write(traj))
-        .map_err(|e| e.to_string())
+        .send(traj)
+        .trace_err();
 }
 
-#[tauri::command]
-pub async fn write_chor(app_handle: tauri::AppHandle, chor: Project) -> Result<(), String> {
-    let state = app_handle.state::<OptionalProjectWriter>();
-    let opt = state.read().await;
-    let sender = opt.as_ref().ok_or("No project is open")?;
-    sender
-        .send(WriterCommand::Write(chor))
-        .map_err(|e| e.to_string())
+pub async fn write_project(resources: &WritingResources, chor: Project) {
+    tracing::debug!(
+        "Writing project {:} to {:}",
+        chor.name,
+        resources.root.lock().await.join(&chor.name).with_extension("chor").display()
+    );
+    resources.project.update(chor).await;
 }
-#[tauri::command]
-pub async fn set_chor_path(
-    app_handle: tauri::AppHandle,
-    dir: String,
-    name: String,
-) -> Result<(), String> {
-    // TODO: make this return nothing, this could be a breaking change for frontend
-    let state = app_handle.state::<OptionalProjectWriter>();
-    let _ = state
-        .write()
-        .await
-        .replace(start(&Path::new(&dir).join(name)));
+
+pub async fn set_deploy_path(
+    resources: &WritingResources,
+    path: PathBuf,
+) {
+    tracing::info!("Setting deploy path to {:?}", path);
+    let mut root = resources.root.lock().await;
+    *root = path;
+}
+
+async fn handle_write<T: Serialize + Send>(contents: T, file: &Path) -> ChoreoResult<()> {
+    let json = super::formatter::to_string_pretty(&contents)?;
+    let parent = file.parent()
+        .ok_or_else(|| ChoreoError::FileWrite(file.to_path_buf()))?;
+    fs::create_dir_all(parent).await?;
+    fs::write(file, json).await?;
     Ok(())
 }
 
-#[derive(Serialize, Deserialize)]
-pub enum WriterCommand<T> {
-    Write(T),
-    Move(String),
-}
-
-async fn handle_write<T: Serialize + Send>(contents: T, file: &Path) -> Result<(), ()> {
-    let json = super::formatter::to_string_pretty(&contents);
-    match json {
-        Ok(stringified) => {
-            let parent = file.parent();
-            if parent.is_none() {
-                return Err(());
-            }
-            let parent = parent.expect("file parent opt check failed");
-            fs::create_dir_all(parent).await.map_err(|_e| ())?;
-            fs::write(file, stringified).await.map_err(|_e| ())?;
-            Ok(())
-        }
-        Err(e) => {
-            println!("{:?}", e.to_string());
-            Err(())
-        }
-    }
-}
-
 #[allow(unused_results)]
-pub fn start<T: Serialize + Send + Sync + 'static>(
-    file: &Path,
-) -> tokio::sync::mpsc::UnboundedSender<WriterCommand<T>> {
-    let (tx, mut rx) = mpsc::unbounded_channel::<WriterCommand<T>>();
-    let mut filepath = PathBuf::new();
-    (*file).clone_into(&mut filepath);
+pub fn spawn_writer_task<T: Serialize + Send + Sync + 'static>(
+    file: PathBuf,
+    mut traj_receiver: UnboundedReceiver<T>,
+) {
     tokio::spawn(async move {
-        loop {
-            let mut contents = (rx).recv().await;
-            while !rx.is_empty() {
-                contents = (rx).recv().await;
-            }
-            match contents {
-                None => break,
-                Some(contents) => {
-                    let _ = match contents {
-                        WriterCommand::Move(_) => Ok(()), // TODO
-                        WriterCommand::Write(contents) => handle_write(contents, &filepath).await,
-                    };
-                }
-            }
+        while let Some(mut contents) = traj_receiver.recv().await {
+            handle_write(&mut contents, &file).await?;
         }
+        Ok::<(), ChoreoError>(())
     });
-    tx
 }
 
 // async fn send_open_chor_event(
@@ -173,148 +189,64 @@ pub fn start<T: Serialize + Send + Sync + 'static>(
 //     )
 // }
 
-#[tauri::command]
-pub async fn open_file_dialog(_app_handle: tauri::AppHandle) -> Result<(String, String), String> {
-    let file_path = FileDialogBuilder::new()
-        .set_title("Open a .chor file")
-        .add_filter("Choreo Save File", &["chor"])
-        .pick_file();
-    if let Some(path) = file_path {
-        if let Some(dir) = path.parent() {
-            if let Some(name) = path.file_name() {
-                let dir = dir.to_str();
-                let name = name.to_str();
-                if let (Some(dir), Some(name)) = (dir, name) {
-                    return Ok((dir.to_string(), name.to_string()));
-                }
-                return Err("Filepath was not UTF-8".to_string());
-            }
-        }
-    }
-    Err("Incomplete Selection".to_string())
-    // TODO: Replace with if-let chains (https://github.com/rust-lang/rfcs/pull/2497)
-}
-
-#[tauri::command]
-pub async fn open_chor(
-    app_handle: tauri::AppHandle,
-    path: Option<(String, String)>,
-) -> Result<Project, String> {
-    let (dir, name) = match path {
-        None => open_file_dialog(app_handle.clone()).await?,
-        Some(path) => path,
-    };
-    let pathbuf = Path::new(&dir).join(name);
-    let contents = file::read_string(pathbuf).map_err(|e| e.to_string())?;
-    let chor = open_chor_from_contents(&contents).map_err(|e| e.to_string())?;
-    //let _ = send_open_chor_event(app_handle, chor, dir.as_str(), name.as_str());
-    Ok(chor)
-}
-
-#[tauri::command]
-pub async fn open_traj(
-    _app_handle: tauri::AppHandle,
-    path: (String, String),
-) -> Result<Traj, String> {
-    let pathbuf = Path::new(&path.0).join(&path.1);
-    let contents = file::read_string(pathbuf).map_err(|e| e.to_string())?;
-    let chor = open_traj_from_contents(&contents).map_err(|e| e.to_string())?;
-    //let _ = send_open_chor_event(app_handle, chor, dir.as_str(), name.as_str());
-    Ok(chor)
-}
-
-#[tauri::command]
-pub async fn new_file(_app_handle: tauri::AppHandle) -> Result<Project, String> {
-    //let _ = send_open_chor_event(app_handle, chor, dir.as_str(), name.as_str());
-    Ok(Project {
+pub fn default_project(name: String) -> Project {
+    Project {
+        name,
         version: "v2025.0.0".to_string(),
         variables: Variables {
             expressions: HashMap::new(),
             poses: HashMap::new(),
         },
         config: RobotConfig {
-            gearing: expr("6.5", 6.5),
-            radius: expr("2 in", 0.0508),
-            vmax: expr("6000.0 RPM", 6000.0 * 2.0 * PI / 60.0),
-            tmax: expr("1.2 N*m", 1.2),
+            gearing: Expr::new("6.5", 6.5),
+            radius: Expr::new("2 in", 0.0508),
+            vmax: Expr::new("6000.0 RPM", 6000.0 * 2.0 * PI / 60.0),
+            tmax: Expr::new("1.2 N*m", 1.2),
             modules: [
                 Module {
-                    x: expr("11 in", 0.2794),
-                    y: expr("11 in", 0.2794),
+                    x: Expr::new("11 in", 0.2794),
+                    y: Expr::new("11 in", 0.2794),
                 },
                 Module {
-                    x: expr("-11 in", -0.2794),
-                    y: expr("11 in", 0.2794),
+                    x: Expr::new("-11 in", -0.2794),
+                    y: Expr::new("11 in", 0.2794),
                 },
                 Module {
-                    x: expr("-11 in", -0.2794),
-                    y: expr("-11 in", -0.2794),
+                    x: Expr::new("-11 in", -0.2794),
+                    y: Expr::new("-11 in", -0.2794),
                 },
                 Module {
-                    x: expr("11 in", 0.2794),
-                    y: expr("-11 in", -0.2794),
+                    x: Expr::new("11 in", 0.2794),
+                    y: Expr::new("-11 in", -0.2794),
                 },
             ],
-            mass: expr("150 lbs", 68.038_855_5),
-            inertia: expr("6 kg m^2", 6.0),
+            mass: Expr::new("150 lbs", 68.038_855_5),
+            inertia: Expr::new("6 kg m^2", 6.0),
             bumper: Bumper {
-                front: expr("16 in", 0.4064),
-                left: expr("16 in", 0.4064),
-                back: expr("16 in", 0.4064),
-                right: expr("16 in", 0.4064),
+                front: Expr::new("16 in", 0.4064),
+                left: Expr::new("16 in", 0.4064),
+                back: Expr::new("16 in", 0.4064),
+                right: Expr::new("16 in", 0.4064),
             },
         },
-    })
+    }
 }
 
-fn open_traj_from_contents(input: &str) -> Result<Traj, serde_json::Error> {
-    let json: Value = serde_json::from_str(input)?;
-    let traj: Traj = serde_json::from_value(json)?;
-    Ok(traj)
-}
-
-fn open_chor_from_contents(input: &str) -> Result<Project, serde_json::Error> {
-    let json: Value = serde_json::from_str(input)?;
-    let chor: Project = serde_json::from_value(json)?;
-    Ok(chor)
-}
-
-#[tauri::command]
-pub async fn delete_dir(dir: String) {
-    let dir_path = Path::new(&dir);
-    let _ = fs::remove_dir_all(dir_path).await;
-}
-
-#[tauri::command]
-pub async fn delete_file(dir: String, name: String) {
-    let dir_path = Path::new(&dir);
-    let name_path = Path::join(dir_path, name);
-    let _ = fs::remove_file(name_path).await;
-}
-
-#[tauri::command]
-pub async fn find_all_traj(dir: Option<&Path>) -> Result<Vec<String>, String> {
-    dir.map_or_else(
-        || Err("Directory does not exist".to_string()),
-        |dir_path| {
-            Ok(dir_path
-                .read_dir()
-                .map_err(|e| e.to_string())?
-                .flatten()
-                .filter_map(|entry| {
-                    let path = entry.path();
-                    let extension = if path.is_file() {
-                        path.extension()
-                    } else {
-                        None
-                    };
-                    if extension.map_or(false, |e| e.eq_ignore_ascii_case("traj")) {
-                        entry.path().to_str().map(ToString::to_string)
-                    } else {
-                        None
+pub async fn find_all_traj(resources: &WritingResources) -> Vec<String> {
+    let deploy_dir = resources.root.lock().await.clone();
+    let mut out = vec![];
+    if let Ok(mut dir) = fs::read_dir(&deploy_dir).await {
+        while let Ok(Some(entry)) = dir.next_entry().await {
+            let path = entry.path();
+            if let Some(extension) = path.extension() {
+                if extension.eq_ignore_ascii_case("traj") {
+                    if let Some(path) = path.file_name().map(|p| p.to_string_lossy().to_string()) {
+                        out.push(path);
                     }
-                })
-                .collect::<Vec<String>>())
-        },
-    )
+                }
+            }
+        }
+    }
+    tracing::debug!("Found {:} traj files in {:}", out.len(), deploy_dir.display());
+    out
 }

@@ -51,6 +51,7 @@ export const SelectableItem = types.union(
 );
 export const DocumentStore = types
   .model("DocumentStore", {
+    name: types.string,
     pathlist: PathListStore,
     robotConfig: RobotConfigStore,
     variables: Variables,
@@ -61,6 +62,7 @@ export const DocumentStore = types
   .views((self) => ({
     serializeChor(): Project {
       return {
+        name: self.name,
         version: SAVE_FILE_VERSION,
         variables: self.variables.serialize(),
         config: self.robotConfig.serialize()
@@ -91,6 +93,7 @@ export const DocumentStore = types
   }))
   .actions((self) => ({
     deserializeChor(ser: Project) {
+      self.name = ser.name;
       self.variables.deserialize(ser.variables);
       self.robotConfig.deserialize(ser.config);
       self.pathlist.paths.clear();

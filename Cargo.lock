@@ -311,6 +311,8 @@ dependencies = [
  "tauri-build",
  "thiserror",
  "tokio",
+ "tracing",
+ "tracing-subscriber",
  "trajoptlib",
 ]
 

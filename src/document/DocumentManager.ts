@@ -230,6 +230,7 @@ export const doc = DocumentStore.create(
     pathlist: {},
     splitTrajectoriesAtStopPoints: false,
     usesObstacles: false,
+    name: "Untitled",
     variables: castToReferenceSnapshot(variables),
     selectedSidebarItem: undefined
   },
@@ -247,14 +248,14 @@ function stopGroup() {
 export function setup() {
   doc.pathlist.setExporter((uuid) => {
     try {
-      writeTrajectory(() => getTrajFilePath(uuid), uuid);
+      writeTrajectory(uuid);
     } catch (e) {
       console.error(e);
     }
   });
   doc.history.clear();
   setupEventListeners()
-    .then(() => newFile())
+    .then(() => newProject())
     .then(() => uiState.updateWindowTitle())
     .then(() => openLastFile());
 }
@@ -478,7 +479,7 @@ export async function setupEventListeners() {
     doc.redo();
   });
   hotkeys("command+n,ctrl+n", { keydown: true }, () => {
-    newFile();
+    newProject();
   });
   hotkeys("command+=,ctrl+=", () => {
     doc.zoomIn();
@@ -622,7 +623,7 @@ export async function openProject(chorFile: [dir: string, name: string]) {
     Commands.findAllTraj(dir)
       .then((paths) =>
         Promise.allSettled(
-          paths.map((p) => Commands.openTraj(dir, p).then((t) => trajs.push(t)))
+          paths.map((p) => Commands.openTraj(p).then((t) => trajs.push(t)))
         )
       )
       .catch(console.error)
@@ -636,7 +637,7 @@ export async function openProject(chorFile: [dir: string, name: string]) {
   });
   uiState.setSaveFileDir(dir);
   uiState.setSaveFileName(name);
-  await Commands.setChorPath(dir, name);
+  await Commands.setDeployRoot(dir);
   localStorage.setItem(
     LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
     JSON.stringify({ dir, name })
@@ -652,7 +653,7 @@ export async function generateWithToastsAndExport(uuid: string) {
   const pathName = doc.pathlist.paths.get(uuid)?.name;
   doc.generatePathWithToasts(uuid).then(() =>
     toast.promise(
-      writeTrajectory(() => getTrajFilePath(uuid), uuid),
+      writeTrajectory(uuid),
       {
         success: `Saved "${pathName}" to ${uiState.chorRelativeTrajDir}.`,
         error: {
@@ -685,12 +686,12 @@ function getSelectedObstacle() {
     return o.selected;
   });
 }
-export async function newFile() {
+export async function newProject() {
   applySnapshot(uiState, {
     settingsTab: 0,
     layers: ViewLayerDefaults
   });
-  const newChor = await Commands.newFile();
+  const newChor = await Commands.defaultProject();
   doc.deserializeChor(newChor);
   //let newVariables
 
@@ -720,7 +721,7 @@ export async function renamePath(uuid: string, newName: string) {
     const newPath = await getTrajFilePath(uuid);
     if (oldPath !== null) {
       Promise.all([Commands.deleteFile(oldPath[0], oldPath[1])])
-        .then(() => writeTrajectory(() => newPath, uuid))
+        .then(() => writeTrajectory(uuid))
         .catch((e) => {
           console.error(e);
         });
@@ -744,7 +745,6 @@ export async function deletePath(uuid: string) {
  * @param uuid the UUID of the path with the trajectory to export
  */
 export async function writeTrajectory(
-  filePath: () => Promise<[string, string] | null> | [string, string] | null,
   uuid: string
 ) {
   // Avoid conflicts with tauri path namespace
@@ -752,11 +752,7 @@ export async function writeTrajectory(
   if (chorPath === undefined) {
     throw `Tried to export trajectory with unknown uuid ${uuid}`;
   }
-  const trajectory = chorPath.serialize();
-  const file = await filePath();
-  if (file) {
-    await Commands.writeTraj(file[0] + path.sep + file[1], trajectory);
-  }
+  await Commands.writeTraj(chorPath.serialize());
 }
 
 export async function getTrajFilePath(uuid: string): Promise<[string, string]> {
@@ -773,42 +769,7 @@ export async function getTrajFilePath(uuid: string): Promise<[string, string]> {
 }
 
 export async function exportTrajectory(uuid: string) {
-  return await writeTrajectory(() => {
-    const { hasSaveLocation, chorRelativeTrajDir } = uiState;
-    if (!hasSaveLocation || chorRelativeTrajDir === undefined) {
-      return (async () => {
-        const file = await dialog.save({
-          title: "Export Trajectory",
-          filters: [
-            {
-              name: "Trajopt Trajectory",
-              extensions: ["traj"]
-            }
-          ]
-        });
-        if (file == null) {
-          throw "No file selected or user cancelled";
-        }
-        return [await path.dirname(file), await path.basename(file)];
-      })();
-    }
-    return getTrajFilePath(uuid).then(async (filepath) => {
-      const file = await dialog.save({
-        title: "Export Trajectory",
-        defaultPath: filepath.join(path.sep),
-        filters: [
-          {
-            name: "Trajopt Trajectory",
-            extensions: ["traj"]
-          }
-        ]
-      });
-      if (file == null) {
-        throw "No file selected or user cancelled";
-      }
-      return [await path.dirname(file), await path.basename(file)];
-    });
-  }, uuid);
+  return await writeTrajectory(uuid);
 }
 
 export async function exportActiveTrajectory() {
@@ -863,7 +824,7 @@ export async function saveFileDialog() {
  */
 async function saveFileAs(dir: string, name: string): Promise<void> {
   if (dir !== uiState.saveFileDir || name !== uiState.saveFileName) {
-    await Commands.setChorPath(dir, name);
+    await Commands.setDeployRoot(dir);
     uiState.setSaveFileDir(dir);
     uiState.setSaveFileName(name);
   }
@@ -876,7 +837,7 @@ async function saveFileAs(dir: string, name: string): Promise<void> {
 export async function exportAllTrajectories() {
   if (uiState.hasSaveLocation) {
     const promises = doc.pathlist.pathUUIDs.map((uuid) =>
-      writeTrajectory(() => getTrajFilePath(uuid), uuid)
+      writeTrajectory(uuid)
     );
     const pathNames = doc.pathlist.pathNames;
     Promise.allSettled(promises).then((results) => {

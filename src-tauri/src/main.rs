@@ -49,7 +49,8 @@
     clippy::struct_excessive_bools,
     clippy::use_self,
     clippy::suboptimal_flops,
-    clippy::significant_drop_tightening
+    clippy::significant_drop_tightening,
+    unused_results
 )]
 // #![cfg_attr(
 //     not(test),
@@ -65,42 +66,88 @@
 mod document;
 mod error;
 mod util;
-use std::{fs, path::Path};
+use std::error::Error;
 use std::{thread, vec};
 
-use document::file::{
-    delete_dir, delete_file, find_all_traj, new_file, open_chor, open_file_dialog, open_traj,
-    set_chor_path, setup_senders, write_chor, write_traj,
-};
-use document::generate::{cancel, generate, setup_progress_sender};
-use document::intervals::cmd_guess_control_interval_counts;
-use error::ChoreoError;
+// use document::file::{
+//     delete_dir, delete_file, find_all_traj, new_file, open_chor, open_file_dialog, open_traj,
+//     set_chor_path, setup_senders, write_chor, write_traj,
+// };
+// use document::generate::{cancel, generate, setup_progress_sender};
+// use document::intervals::cmd_guess_control_interval_counts;
+
+use document::file::WritingResources;
+use document::generate::setup_progress_sender;
+#[allow(clippy::wildcard_imports)]
+use document::plugin::*;
 use tauri::Manager;
 
-type Result<T> = std::result::Result<T, error::ChoreoError>;
+/// Type alias for a `Result` with a `ChoreoError` error type.
+pub type ChoreoResult<T> = std::result::Result<T, error::ChoreoError>;
 
-#[tauri::command]
-async fn save_file(dir: String, name: String, contents: String) -> Result<()> {
-    let dir_path = Path::new(&dir);
-    let name_path = Path::join(dir_path, name);
-    if name_path.is_relative() {
-        return Err(ChoreoError::FileSave("Dir needs to be absolute"));
-    }
-    fs::create_dir_all(dir_path)?;
-    fs::write(name_path, contents)?;
-    Ok(())
+/// Extension trait for `Result` to trace errors and warnings.
+pub trait ResultExt<T, E: Error> {
+    /// Trace an error if the result is an error.
+    #[track_caller]
+    fn trace_err(self);
+    /// Trace a warning if the result is an error.
+    #[track_caller]
+    fn trace_warn(self);
+    /// Trace an error if the result is an error, then execute a closure.
+    #[allow(clippy::missing_errors_doc)]
+    #[track_caller]
+    fn trace_err_then<U, F: FnOnce() -> U>(self, f: F) -> Result<U, E>;
+    /// Trace a warning if the result is an error, then execute a closure.
+    #[allow(clippy::missing_errors_doc)]
+    #[track_caller]
+    fn trace_warn_then<U, F: FnOnce() -> U>(self, f: F) -> Result<U, E>;
 }
 
-#[tauri::command]
-async fn open_file_app(path: String) -> Result<()> {
-    open::that(path).map_err(ChoreoError::Io)
+impl<T, E: Error> ResultExt<T, E> for Result<T, E> {
+    #[track_caller]
+    fn trace_err(self) {
+        if let Err(e) = self {
+            tracing::error!("{}", e);
+        }
+    }
+
+    #[track_caller]
+    fn trace_warn(self) {
+        if let Err(e) = self {
+            tracing::warn!("{}", e);
+        }
+    }
+
+    #[track_caller]
+    fn trace_err_then<U, F: FnOnce() -> U>(self, f: F) -> Result<U, E> {
+        if let Err(e) = &self {
+            tracing::error!("{}", e);
+        }
+        self.map(|_| f())
+    }
+
+    #[track_caller]
+    fn trace_warn_then<U, F: FnOnce() -> U>(self, f: F) -> Result<U, E> {
+        if let Err(e) = &self {
+            tracing::warn!("{}", e);
+        }
+        self.map(|_| f())
+    }
 }
 
 fn main() {
+    tracing_subscriber::fmt::fmt()
+        .with_max_level(tracing::Level::DEBUG)
+        .pretty()
+        .init();
+
+    tracing::info!("Starting Choreo");
+
     let rx = setup_progress_sender();
     tauri::Builder::default()
-        .setup(|app| {
-            setup_senders(&app.handle());
+        .setup(move |app| {
+            let resources = WritingResources::new();
+            resources.delegate_to_app(&app.app_handle());
             let progress_emitter = app.handle();
             let _ = thread::spawn(move || {
                 for received in rx {
@@ -111,20 +158,21 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             generate,
-            cmd_guess_control_interval_counts,
             cancel,
             save_file,
+            cmd_guess_control_interval_counts,
             delete_file,
             delete_dir,
             open_file_app,
-            new_file,
+            default_project,
             open_chor,
             write_chor,
             write_traj,
             find_all_traj,
             open_file_dialog,
             set_chor_path,
-            open_traj
+            open_traj,
+            set_deploy_root
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

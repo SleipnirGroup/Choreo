@@ -10,7 +10,7 @@ use super::types::{
     ChoreoPath, ConstraintData, ConstraintIDX, ConstraintType, Module, Project, Sample, Traj,
 };
 use crate::error::ChoreoError;
-use crate::Result;
+use crate::ChoreoResult;
 
 fn fix_scope(idx: usize, removed_idxs: &Vec<usize>) -> usize {
     let mut to_subtract: usize = 0;
@@ -22,10 +22,6 @@ fn fix_scope(idx: usize, removed_idxs: &Vec<usize>) -> usize {
     idx - to_subtract
 }
 
-#[tauri::command]
-pub async fn cancel() {
-    trajoptlib::cancel_all();
-}
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct ProgressUpdate {
@@ -39,14 +35,13 @@ pub fn setup_progress_sender() -> Receiver<ProgressUpdate> {
     rx
 }
 
-#[tauri::command]
 #[allow(clippy::too_many_lines)]
-pub async fn generate(
-    chor: Project,
+pub fn generate(
+    chor: &Project,
     traj: Traj,
     // The handle referring to this path for the solver state callback
     handle: i64,
-) -> Result<Traj> {
+) -> ChoreoResult<Traj> {
     let mut path_builder = SwervePathBuilder::new();
     let mut wpt_cnt: usize = 0;
     // tracks which idxs were guess points, which get added differently and require

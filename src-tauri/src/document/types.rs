@@ -3,6 +3,8 @@ use std::{collections::HashMap, fmt::Debug};
 use serde::{Deserialize, Serialize};
 use trajoptlib::Translation2d;
 
+use crate::ChoreoResult;
+
 /// A trait for types that can be snapshotted.
 /// This allows for the type to be converted to a f64.
 /// This trait is only implemented for [`f64`] and [`Expr`].
@@ -19,8 +21,10 @@ impl SnapshottableType for f64 {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Expr(pub String, pub f64);
-pub fn expr(ex: &str, val: f64) -> Expr {
-    Expr(ex.to_string(), val)
+impl Expr {
+    pub fn new(name: &str, value: f64) -> Self {
+        Self(name.to_string(), value)
+    }
 }
 impl SnapshottableType for Expr {
     #[inline]
@@ -132,9 +136,17 @@ impl<T: SnapshottableType> RobotConfig<T> {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Project {
+    #[serde(default = "Default::default")]
+    pub name: String,
     pub version: String,
     pub variables: Variables,
     pub config: RobotConfig<Expr>,
+}
+
+impl Project {
+    pub fn from_content(content: &str) -> ChoreoResult<Project> {
+        serde_json::from_str(content).map_err(Into::into)
+    }
 }
 
 // traj file
@@ -330,4 +342,10 @@ pub struct Traj {
     pub snapshot: Option<ChoreoPath<f64>>,
     // TODO: maybe rename to `output`, this is a breaking change for frontend though
     pub traj: Output,
+}
+
+impl Traj {
+    pub fn from_content(content: &str) -> ChoreoResult<Traj> {
+        serde_json::from_str(content).map_err(Into::into)
+    }
 }
