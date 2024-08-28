@@ -11,9 +11,14 @@
 
 namespace choreolib {
 
-/// A single state in a ChoreoTrajectory
+/**
+ * A single state in a ChoreoTrajectory
+ */
 class ChoreoTrajectoryState {
  public:
+  /**
+   * The force on each swerve module in Newtons.
+   */
   using ModuleForces = std::array<units::newton_t, 4>;
 
  public:
@@ -29,6 +34,8 @@ class ChoreoTrajectoryState {
    * @param xVel The x velocity of the robot at this state
    * @param yVel The y velocity of the robot at this state
    * @param angularVel The angular velocity of the robot at this state
+   * @param moduleForcesX The force on each swerve module in the X direction.
+   * @param moduleForcesY The force on each swerve module in the Y direction.
    */
   ChoreoTrajectoryState(units::second_t t, units::meter_t x, units::meter_t y,
                         units::radian_t heading,
@@ -92,12 +99,12 @@ class ChoreoTrajectoryState {
   /// The angular component of the velocity at that point in the trajectory
   units::radians_per_second_t angularVelocity = 0_rad_per_s;
 
-  /// The forces on the modules in the X direction
-  /// Forces appear in the following order: [FL, FR, BL, BR]
+  /// The force on each swerve module in the X direction.
+  /// Forces appear in the following order: [FL, FR, BL, BR].
   ModuleForces moduleForcesX{{0_N, 0_N, 0_N, 0_N}};
 
-  /// The forces on the modules in the Y direction
-  /// Forces appear in the following order: [FL, FR, BL, BR]
+  /// The force on each swerve module in the Y direction.
+  /// Forces appear in the following order: [FL, FR, BL, BR].
   ModuleForces moduleForcesY{{0_N, 0_N, 0_N, 0_N}};
 
  private:

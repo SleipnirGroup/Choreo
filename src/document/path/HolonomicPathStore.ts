@@ -38,12 +38,12 @@ export const HolonomicPathStore = types
       canExport(): boolean {
         return self.traj.samples.length >= 2;
       },
-      serialize(): Traj {
+      get serialize(): Traj {
         return {
           name: self.name,
           version: SAVE_FILE_VERSION,
-          path: self.path.serialize(),
-          traj: self.traj.serialize(),
+          path: self.path.serialize,
+          traj: self.traj.serialize,
           snapshot: self.snapshot
         };
       },
@@ -265,7 +265,7 @@ export const HolonomicPathStore = types
 
       autosaveDisposer = reaction(
         () => {
-          return self.serialize();
+          return self.serialize;
         },
         (value) => {
           exporter(self.uuid);

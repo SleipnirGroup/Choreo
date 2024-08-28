@@ -60,12 +60,12 @@ export const BumperStore = types
     back: ExpressionStore
   })
   .views((self) => ({
-    serialize(): Bumper<Expr> {
+    get serialize(): Bumper<Expr> {
       return {
-        front: self.front.serialize(),
-        left: self.left.serialize(),
-        right: self.right.serialize(),
-        back: self.back.serialize()
+        front: self.front.serialize,
+        left: self.left.serialize,
+        right: self.right.serialize,
+        back: self.back.serialize
       };
     },
     snapshot(): Bumper<number> {
@@ -98,10 +98,10 @@ export const ModuleStore = types
     y: ExpressionStore
   })
   .views((self) => ({
-    serialize(): Module<Expr> {
+    get serialize(): Module<Expr> {
       return {
-        x: self.x.serialize(),
-        y: self.y.serialize()
+        x: self.x.serialize,
+        y: self.y.serialize
       };
     },
     snapshot(): Module<number> {
@@ -141,17 +141,17 @@ export const RobotConfigStore = types
       get wheelMaxTorque() {
         return self.tmax.value * self.gearing.value;
       },
-      serialize(): RobotConfig<Expr> {
+      get serialize(): RobotConfig<Expr> {
         return {
-          mass: self.mass.serialize(),
-          inertia: self.inertia.serialize(),
-          tmax: self.tmax.serialize(),
-          vmax: self.vmax.serialize(),
-          gearing: self.gearing.serialize(),
-          radius: self.radius.serialize(),
-          bumper: self.bumper.serialize(),
+          mass: self.mass.serialize,
+          inertia: self.inertia.serialize,
+          tmax: self.tmax.serialize,
+          vmax: self.vmax.serialize,
+          gearing: self.gearing.serialize,
+          radius: self.radius.serialize,
+          bumper: self.bumper.serialize,
           //@ts-expect-error can't encode fixed length array in mobx ts typing
-          modules: self.modules.map((mod) => mod.serialize())
+          modules: self.modules.map((mod) => mod.serialize)
         };
       },
       snapshot(): RobotConfig<number> {

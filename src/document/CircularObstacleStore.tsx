@@ -11,11 +11,11 @@ export const CircularObstacleStore = types
     uuid: types.identifier
   })
   .views((self) => ({
-    serialize(): CircleObstacle<Expr> {
+    get serialize(): CircleObstacle<Expr> {
       return {
-        x: self.x.serialize(),
-        y: self.y.serialize(),
-        r: self.radius.serialize()
+        x: self.x.serialize,
+        y: self.y.serialize,
+        r: self.radius.serialize
       };
     },
     get selected(): boolean {
