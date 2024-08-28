@@ -1,5 +1,5 @@
 import { dialog, invoke, path, window as tauriWindow } from "@tauri-apps/api";
-import { TauriEvent, listen } from "@tauri-apps/api/event";
+import { TauriEvent } from "@tauri-apps/api/event";
 import { v4 as uuidv4 } from "uuid";
 import { DocumentStore, SelectableItemTypes } from "./DocumentModel";
 
@@ -668,7 +668,7 @@ export function select(item: SelectableItemTypes) {
 
 export async function renamePath(uuid: string, newName: string) {
   if (uiState.hasSaveLocation) {
-    let traj = doc.pathlist.paths.get(uuid);
+    const traj = doc.pathlist.paths.get(uuid);
     if (traj) {
       await Commands.renameTraj(traj.serialize, newName)
         .then((new_traj) => {
@@ -685,7 +685,7 @@ export async function renamePath(uuid: string, newName: string) {
 
 export async function deletePath(uuid: string) {
   if (uiState.hasSaveLocation) {
-    let traj = doc.pathlist.paths.get(uuid);
+    const traj = doc.pathlist.paths.get(uuid);
     if (traj) {
       await Commands.deleteTraj(traj.serialize).catch((e) => {
         console.error(e);
