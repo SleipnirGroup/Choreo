@@ -106,15 +106,14 @@ pub fn guess_control_interval_count(
                     }
                 });
 
-            let total_time;
             let distance_at_cruise = distance - (max_vel * max_vel) / max_accel;
-            if distance_at_cruise < 0.0 {
+            let total_time = if distance_at_cruise < 0.0 {
                 // triangle
-                total_time = 2.0 * ((distance * max_accel).sqrt() / max_accel);
+                2.0 * ((distance * max_accel).sqrt() / max_accel)
             } else {
                 // trapezoid
-                total_time = distance / max_vel + max_vel / max_accel;
-            }
+                distance / max_vel + max_vel / max_accel
+            };
             (total_time / 0.1).ceil() as usize
         }
     }
