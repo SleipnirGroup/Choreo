@@ -1,13 +1,12 @@
+#![allow(dead_code)]
 use std::path::PathBuf;
 
 use clap::Parser;
-use tokio::fs;
 
 use crate::{
     document::{
         file::{self, WritingResources},
         generate::generate,
-        types::{Project, Traj},
     },
     gui::run_tauri,
 };
@@ -15,7 +14,60 @@ use crate::{
 const FORMATING_OPTIONS: &str = "Formating Options";
 const FILE_OPTIONS: &str = "File Options";
 
+#[derive(Debug)]
+enum CliAction {
+    Generate(PathBuf, Vec<String>),
+    Gui,
+    GuiWithProject(PathBuf),
+    Error(String),
+}
+
+impl CliAction {
+    #[allow(clippy::match_wildcard_for_single_variants)]
+    fn prefered_tracing_level(&self) -> tracing::Level {
+        match self {
+            Self::Gui | Self::GuiWithProject(_) | Self::Generate(_, _) => tracing::Level::DEBUG,
+            _ => tracing::Level::WARN,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+enum CliFormat {
+    Pretty,
+    Json,
+    Slim,
+}
+
+impl CliFormat {
+    fn enable_subscriber(self, level: tracing::Level) {
+        match self {
+            Self::Pretty => {
+                tracing_subscriber::fmt()
+                    .pretty()
+                    .with_max_level(level)
+                    .init();
+            }
+            Self::Json => {
+                tracing_subscriber::fmt()
+                    .json()
+                    .with_max_level(level)
+                    .init();
+            }
+            Self::Slim => {
+                tracing_subscriber::fmt().with_max_level(level).init();
+            }
+        }
+    }
+}
+
 #[derive(Parser)]
+#[clap(
+    version = "0.1",
+    author = "Choreo Contributors",
+    about = "Choreo CLI",
+    bin_name = "Choreo"
+)]
 pub struct Cli {
     #[arg(
         long,
@@ -26,7 +78,7 @@ pub struct Cli {
 
     #[arg(
         long,
-        value_name = "[test, test2]",
+        value_name = "test2",
         help_heading = FILE_OPTIONS
     )]
     pub traj: Vec<String>,
@@ -45,78 +97,95 @@ pub struct Cli {
 }
 
 impl Cli {
-    pub fn exec(&self) {
-        match self.format.as_str() {
-            "pretty" => {
-                tracing_subscriber::fmt().pretty().with_max_level(tracing::Level::DEBUG).init();
+    fn action(self) -> CliAction {
+        if self.generate {
+            if let Some(project_path) = self.chor {
+                if self.traj.is_empty() {
+                    return CliAction::Error(
+                        "Trajectories must be provided for generation.".to_string(),
+                    );
+                }
+                return CliAction::Generate(project_path, self.traj);
             }
-            "json" => {
-                tracing_subscriber::fmt().json().with_max_level(tracing::Level::DEBUG).init();
-            }
-            _ => {
-                tracing_subscriber::fmt().with_max_level(tracing::Level::DEBUG).init();
-            }
+            CliAction::Error("Choreo file must be provided for generation.".to_string())
+        } else if let Some(project_path) = self.chor {
+            CliAction::GuiWithProject(project_path)
+        } else {
+            CliAction::Gui
         }
+    }
 
-        if let Some(chor) = &self.chor {
-            assert!(chor.exists(), "Choreo file does not exist.");
-        }
-
+    pub fn exec(self) {
         let resources = WritingResources::new();
+        let format = match self.format.as_str() {
+            "pretty" => CliFormat::Pretty,
+            "json" => CliFormat::Json,
+            _ => CliFormat::Slim,
+        };
 
-        if !self.generate && self.traj.is_empty() {
-            return run_tauri(resources, self.chor.clone());
-        } else if !self.generate || self.traj.is_empty() {
-            tracing::error!("Only generating trajectories is supported at the moment.");
-            return;
+        let action = self.action();
+
+        format.enable_subscriber(action.prefered_tracing_level());
+
+        match action {
+            CliAction::Generate(project_path, traj_names) => {
+                tracing::info!("CLIAction is Generate");
+                tokio::runtime::Builder::new_current_thread()
+                    .enable_all()
+                    .build()
+                    .expect("Failed to build tokio runtime")
+                    .block_on(Self::generate_trajs(resources, project_path, traj_names));
+            }
+            CliAction::Gui => {
+                tracing::info!("CLIAction is Gui");
+                run_tauri(resources, None);
+            }
+            CliAction::GuiWithProject(project_path) => {
+                tracing::info!("CLIAction is GuiWithProject");
+                run_tauri(resources, Some(project_path));
+            }
+            CliAction::Error(e) => {
+                tracing::error!("{}", e);
+            }
         }
-
-        tokio::runtime::Builder::new_multi_thread()
-            .enable_all()
-            .build()
-            .expect("Failed to build tokio runtime")
-            .block_on(self.async_exec(resources));
     }
 
     #[allow(clippy::cast_possible_wrap)]
-    async fn async_exec(&self, resources: WritingResources) {
-        let chor = self
-            .chor
-            .as_ref()
-            .expect("This can only run if choreo is some.");
-
+    async fn generate_trajs(
+        resources: WritingResources,
+        project_path: PathBuf,
+        traj_names: Vec<String>,
+    ) {
+        // set the deploy path to the project directory
         file::set_deploy_path(
             &resources,
-            chor.parent()
-                .expect("Choreo file must have a parent directory.")
+            project_path
+                .parent()
+                .expect("project path should have a parent directory")
                 .to_path_buf(),
         )
         .await;
 
-        let contents = fs::read_to_string(chor)
-            .await
-            .expect("Failed to read choreo file.");
-        let mut project = Project::from_content(&contents).expect("Failed to parse choreo file.");
-        project.name = chor
-            .file_name()
-            .expect("Choreo file must have a name.")
-            .to_str()
-            .expect("Choreo file name must be a valid UTF-8 string.")
-            .to_string();
+        // read the project file
+        let project = file::read_project(
+            &resources,
+            project_path
+                .file_stem()
+                .expect("project path should have a file name")
+                .to_str()
+                .expect("project path should be a valid string")
+                .to_string(),
+        )
+        .await
+        .expect("Failed to read project file");
 
-        for (i, traj_name) in self.traj.iter().enumerate() {
+        // generate trajectories
+        for (i, traj_name) in traj_names.iter().enumerate() {
             tracing::info!("Generating trajectory {:} for {:}", traj_name, project.name);
 
-            let path = chor
-                .parent()
-                .expect("Choreo file must have a parent directory.")
-                .join(traj_name)
-                .with_extension("traj");
-
-            let contents = fs::read_to_string(&path)
+            let traj = file::read_traj(&resources, traj_name.to_string())
                 .await
-                .expect("Failed to read trajectory file.");
-            let traj = Traj::from_content(&contents).expect("Failed to parse trajectory file.");
+                .expect("Failed to read trajectory file");
 
             match generate(&project, traj, i as i64) {
                 Ok(new_traj) => {

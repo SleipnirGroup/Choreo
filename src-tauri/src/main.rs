@@ -128,5 +128,6 @@ impl<T, E: Error> ResultExt<T, E> for Result<T, E> {
 }
 
 fn main() {
-    Cli::parse_from(std::env::args()).exec();
+    let args = std::env::args().collect::<Vec<String>>();
+    Cli::parse_from(args).exec();
 }

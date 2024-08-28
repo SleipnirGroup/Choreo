@@ -297,7 +297,6 @@ export async function openProjectFile() {
   }
 }
 
-
 export async function setupEventListeners() {
   window.addEventListener("contextmenu", (e) => e.preventDefault());
   window.addEventListener("copy", (e) => {
@@ -412,7 +411,9 @@ export async function setupEventListeners() {
       })
       .then((proceed) => {
         if (proceed) {
-          Commands.openProjectDialog().then((filepath) => openProject(filepath));
+          Commands.openProjectDialog().then((filepath) =>
+            openProject(filepath)
+          );
         }
       });
   });
@@ -606,18 +607,15 @@ export async function generateAndExport(uuid: string) {
 export async function generateWithToastsAndExport(uuid: string) {
   const pathName = doc.pathlist.paths.get(uuid)?.name;
   doc.generatePathWithToasts(uuid).then(() =>
-    toast.promise(
-      writeTrajectory(uuid),
-      {
-        success: `Saved "${pathName}" to ${uiState.chorRelativeTrajDir}.`,
-        error: {
-          render(toastProps) {
-            console.error(toastProps.data);
-            return `Couldn't export trajectory: ${toastProps.data as string[]}`;
-          }
+    toast.promise(writeTrajectory(uuid), {
+      success: `Saved "${pathName}" to ${uiState.chorRelativeTrajDir}.`,
+      error: {
+        render(toastProps) {
+          console.error(toastProps.data);
+          return `Couldn't export trajectory: ${toastProps.data as string[]}`;
         }
       }
-    )
+    })
   );
 }
 
@@ -689,10 +687,9 @@ export async function deletePath(uuid: string) {
   if (uiState.hasSaveLocation) {
     let traj = doc.pathlist.paths.get(uuid);
     if (traj) {
-      await Commands.deleteTraj(traj.serialize)
-        .catch((e) => {
-          console.error(e);
-        });
+      await Commands.deleteTraj(traj.serialize).catch((e) => {
+        console.error(e);
+      });
     }
   }
   doc.pathlist.deletePath(uuid);
@@ -703,9 +700,7 @@ export async function deletePath(uuid: string) {
  * @param filePath An (optionally async) function returning a 2-string array of [dir, name], or null
  * @param uuid the UUID of the path with the trajectory to export
  */
-export async function writeTrajectory(
-  uuid: string
-) {
+export async function writeTrajectory(uuid: string) {
   // Avoid conflicts with tauri path namespace
   const chorPath = doc.pathlist.paths.get(uuid);
   if (chorPath === undefined) {
