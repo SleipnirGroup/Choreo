@@ -428,11 +428,15 @@ impl SwervePathBuilder {
     ///   been called, this value has no significance.
     ///
     /// Returns a result with either the final `trajopt::SwerveTrajectory`,
-    /// or a String error message if generation failed.
-    pub fn generate(&self, diagnostics: bool, handle: i64) -> Result<SwerveTrajectory, String> {
+    /// or a TrajoptError if generation failed.
+    pub fn generate(
+        &self,
+        diagnostics: bool,
+        handle: i64,
+    ) -> Result<SwerveTrajectory, TrajoptError> {
         match self.path_builder.generate(diagnostics, handle) {
             Ok(traj) => Ok(traj),
-            Err(msg) => Err(msg.what().to_string()),
+            Err(msg) => Err(TrajoptError::from(msg.what().parse::<i8>().unwrap())),
         }
     }
 
@@ -668,16 +672,16 @@ impl DifferentialPathBuilder {
     ///   been called, this value has no significance.
     ///
     /// Returns a result with either the final
-    /// `trajopt::DifferentialTrajectory`, or a String error message if
+    /// `trajopt::DifferentialTrajectory`, or TrajoptError
     /// generation failed.
     pub fn generate(
         &self,
         diagnostics: bool,
         handle: i64,
-    ) -> Result<DifferentialTrajectory, String> {
+    ) -> Result<DifferentialTrajectory, TrajoptError> {
         match self.path_builder.generate(diagnostics, handle) {
             Ok(traj) => Ok(traj),
-            Err(msg) => Err(msg.what().to_string()),
+            Err(msg) => Err(TrajoptError::from(msg.what().parse::<i8>().unwrap())),
         }
     }
 
@@ -904,6 +908,7 @@ pub fn cancel_all() {
 
 use std::any::Any;
 
+use error::TrajoptError;
 pub use ffi::DifferentialDrivetrain;
 pub use ffi::DifferentialTrajectory;
 pub use ffi::DifferentialTrajectorySample;
@@ -912,3 +917,5 @@ pub use ffi::SwerveDrivetrain;
 pub use ffi::SwerveTrajectory;
 pub use ffi::SwerveTrajectorySample;
 pub use ffi::Translation2d;
+
+pub mod error;
