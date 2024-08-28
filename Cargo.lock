@@ -353,7 +353,6 @@ version = "2024.2.3"
 dependencies = [
  "clap",
  "dashmap",
- "lazy_static",
  "open 5.3.0",
  "serde",
  "serde_json",
@@ -3451,7 +3450,6 @@ dependencies = [
  "cxx",
  "cxx-build",
  "serde",
- "serde_json",
 ]
 
 [[package]]

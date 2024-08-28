@@ -43,11 +43,11 @@ export const HolonomicWaypointStore = types
         }
         return self.uuid === getEnv<Env>(self).selectedSidebar();
       },
-      serialize(): Waypoint<Expr> {
+      get serialize(): Waypoint<Expr> {
         return {
-          x: self.x.serialize(),
-          y: self.y.serialize(),
-          heading: self.heading.serialize(),
+          x: self.x.serialize,
+          y: self.y.serialize,
+          heading: self.heading.serialize,
           fixTranslation: self.fixTranslation,
           fixHeading: self.fixHeading,
           intervals: self.intervals,
@@ -120,7 +120,7 @@ export const HolonomicWaypointStore = types
       console.log("copying waypoint to", evt.clipboardData);
       const content = JSON.stringify({
         dataType: "choreo/waypoint",
-        ...self.serialize()
+        ...self.serialize
       });
       evt.clipboardData?.setData("text/plain", content);
       console.log(evt.clipboardData);

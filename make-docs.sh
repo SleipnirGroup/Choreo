@@ -1,13 +1,17 @@
 #!/bin/bash
 
+set -e
+
 rm -rf site
 
 pushd choreolib
+mkdir -p build/docs
 ./gradlew javadoc
 doxygen docs/Doxyfile
 popd
 
 pushd trajoptlib
+mkdir -p build/docs
 doxygen docs/Doxyfile
 popd
 

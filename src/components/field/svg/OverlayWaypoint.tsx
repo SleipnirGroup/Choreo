@@ -243,14 +243,15 @@ class OverlayWaypoint extends Component<Props, State> {
           })`}
           id={this.appendIndexID("waypointGroup")}
         >
-          {
+          {this.props.waypoint.type === 0 && (
             <this.BumperBox
               robotConfig={robotConfig}
               strokeColor={boxColorStr}
               strokeWidthPx={6}
               dashed={this.props.waypoint.type !== 0}
             ></this.BumperBox>
-          }
+          )}
+
           {/* Heading drag point */}
           <polygon
             transform={`translate(${robotConfig.bumper.length / 2},0)`}
@@ -263,6 +264,7 @@ class OverlayWaypoint extends Component<Props, State> {
               `${-headingPointHeight / 2},${-headingPointSideLength / 2} ` +
               `${headingPointHeight / 2},${0} `
             }
+            visibility={this.props.waypoint.type === 0 ? "visible" : "hidden"}
           ></polygon>
 
           {/* Center Drag Target */}
