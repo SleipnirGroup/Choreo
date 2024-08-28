@@ -1,7 +1,7 @@
 use std::f64::consts::PI;
 
 /**
- * A port of WPILib's MathUtil.inputModulus
+ * A port of `WPILib`'s MathUtil.inputModulus
  */
 pub fn input_modulus(input: f64, maximum_input: f64, minimum_input: f64) -> f64 {
     let mut val = input;
@@ -19,7 +19,7 @@ pub fn input_modulus(input: f64, maximum_input: f64, minimum_input: f64) -> f64 
 }
 
 /**
- * A port of WPILib's MathUtil.angleModulus
+ * A port of `WPILib`'s MathUtil.angleModulus
  */
 pub fn angle_modulus(input: f64) -> f64 {
     input_modulus(input, PI, -PI)
