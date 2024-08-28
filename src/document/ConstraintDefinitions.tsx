@@ -124,7 +124,7 @@ export const ConstraintDefinitions: defs = {
         units: Units.RadianPerSecond,
         defaultVal: ["0 rad/s", 0]
       }
-    }, 
+    },
     wptScope: true,
     sgmtScope: true
   } satisfies ConstraintDefinition<"MaxAngularVelocity">,
