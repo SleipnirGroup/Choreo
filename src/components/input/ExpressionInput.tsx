@@ -79,9 +79,7 @@ class Input extends Component<Props, State> {
 
   getRoundedStr(): string {
     const precision = this.props.roundingPrecision ?? 3;
-    return math.format(this.props.number.toDefaultUnit(), {
-      precision
-    });
+    return this.props.number.expr.toString();
   }
 
   getValid(): boolean {
@@ -99,6 +97,9 @@ class Input extends Component<Props, State> {
     prevState: Readonly<State>,
     snapshot?: any
   ): void {
+    if (!isAlive(this.props.number)) {
+      return;
+    }
     if (!prevProps.number.expr.equals(this.props.number.expr)) {
       // if the value has changed from the outside, make sure it is no longer
       // focused so concise precision is shown.

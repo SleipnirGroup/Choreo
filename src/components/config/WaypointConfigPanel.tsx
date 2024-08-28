@@ -49,7 +49,7 @@ class WaypointPanel extends Component<Props, State> {
               //setNumber={(heading) => waypoint!.setHeading(heading)}
             ></ExpressionInput>
           </ExpressionInputList>
-
+          <span style={{display: "flex", flexDirection:"row", gap:"8px", paddingTop:"8px"}}>
           <InputList>
             <Input
               title="Samples"
@@ -60,7 +60,7 @@ class WaypointPanel extends Component<Props, State> {
               setEnabled={(e) => {
                 waypoint.setOverrideIntervals(e);
               }}
-              maxWidthCharacters={8}
+              maxWidthCharacters={4}
               number={waypoint.intervals}
               roundingPrecision={0}
               setNumber={(num) => {
@@ -76,8 +76,9 @@ class WaypointPanel extends Component<Props, State> {
               titleTooltip="Split trajectory at this point. Does not force stopping."
             ></BooleanInput>
           </InputList>
+          <span style={{flexGrow:1}}></span>
           <ToggleButtonGroup
-            sx={{ marginInline: "auto", paddingTop: "8px" }}
+            sx={{ marginInline: "auto" }}
             size="small"
             exclusive
             value={waypointType}
@@ -113,19 +114,24 @@ class WaypointPanel extends Component<Props, State> {
               );
             })}
           </ToggleButtonGroup>
-          {/* <span
+          <div
             style={{
               width: "min-content",
-              padding: "inherit",
+              padding: "4px",
               background: "var(--darker-purple)",
-              borderBottomRightRadius: "8px",
+              borderRadius: "8px",
               fontWeight: "bolder",
               fontSize: "1em",
-
+              display: "flex",
+              flexDirection:"column",
+              justifyContent:"center"
+              
             }}
           >
-            {index + 1}
-          </span> */}
+            <div>{this.props.index + 1}</div>
+            
+          </div>
+          </span>
         </div>
       );
     }

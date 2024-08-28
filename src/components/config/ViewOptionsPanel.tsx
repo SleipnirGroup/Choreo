@@ -1,4 +1,4 @@
-import { AspectRatio, Close, Gradient, Visibility } from "@mui/icons-material";
+import { AspectRatio, Close, Gradient, Numbers, Visibility } from "@mui/icons-material";
 import {
   IconButton,
   Menu,
@@ -13,6 +13,8 @@ import { doc, uiState } from "../../document/DocumentManager";
 import { ViewItemData } from "../../document/UIData";
 import styles from "./WaypointConfigPanel.module.css";
 import { PathGradients } from "./robotconfig/PathGradient";
+import VariablesConfigPanel from "./variables/VariablesConfigPanel";
+import ExpressionsConfigPanel from "./variables/ExpressionsConfigPanel";
 
 type Props = object;
 
@@ -150,7 +152,36 @@ class ViewOptionsPanel extends Component<Props, State> {
             </ToggleButtonGroup>
           </div>
         )}
-      </div>
+    <div><IconButton
+      onClick={() => {
+        uiState.setVariablesPanelOpen(!uiState.variablesPanelOpen);
+      }}
+    >
+    {uiState.variablesPanelOpen ? <Close /> : <Numbers />}
+
+    </IconButton>
+    </div>
+    {uiState.variablesPanelOpen && 
+        <div
+        style={{
+          overflowY: "hidden",
+          position: "absolute",
+          top: "0",
+          right: "100%",
+          background: "var(--background-light-gray)",
+          color: "white",
+          width: "min-content",
+          // padding: "8px",
+
+          borderRadius: "10px",
+          maxHeight: "100%",
+          
+          display: "flex",
+          flexDirection: "column"
+        }}
+      >
+          <ExpressionsConfigPanel></ExpressionsConfigPanel></div>
+        }</div>
     );
   }
 }

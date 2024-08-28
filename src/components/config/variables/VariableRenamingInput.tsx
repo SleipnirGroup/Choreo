@@ -5,21 +5,25 @@ import { useState } from "react";
 import { IVariables } from "../../../document/ExpressionStore";
 
 type Props = {
-    vars: IVariables,
-    name: string
-}
+    name: string,
+    setName: (name: string)=>void
+}  
 function VariableRenamingInput(props: Props) {
+    function submit(name:string) {
+        if (newName !== null) {
+            props.setName(newName);
+        }
+    }
     const [newName, setNewName] = useState<string>(props.name);
     return <Input type="text" value={newName}
         onChange={e=>setNewName(e.currentTarget.value)}
-    onKeyDown={e => {
-        if (e.key == "Enter") {
-            let newName = e.currentTarget.value;
-            if (newName !== null) {
-            props.vars.renameExpression(props.name, newName);
+        onKeyDown={e => {
+            if (e.key == "Enter") {
+                submit(e.currentTarget.value);
+                e.currentTarget.blur();
             }
-        }
-        }}>
+        }}
+        onBlur={e=>submit(e.currentTarget.value)}>
 
       </Input>
 }

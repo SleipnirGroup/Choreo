@@ -8,6 +8,7 @@ import { Add } from "@mui/icons-material";
 import ExpressionInputList from "../../input/ExpressionInputList";
 import { IExpressionStore, Units } from "../../../document/ExpressionStore";
 import VariableRenamingInput from "./VariableRenamingInput";
+import styles from "../../input/InputList.module.css"
 
 type Props = object;
 
@@ -17,26 +18,20 @@ class VariablesConfigPanel extends Component<Props, State> {
   state = { newVarName: "", newVarExpr: "", newVarUnit: Units.Meter }
   rowGap = 16;
   render() {
+    const className = styles.InputList + " " + styles.Expression;
     doc.variables.expressions.keys();
     return (
-      <div
-        style={{
-          minWidth: "600px",
-          rowGap: `${0 * this.rowGap}px`,
-          fontSize: "2rem",
-          margin: `${1 * this.rowGap}px`
-        }}
-      >
-        <ExpressionInputList>
+
+        <div className={className} style={{ gridTemplateColumns: "10ch auto max-content", overflowY: "scroll", overflowX: "hidden"}}>
           {
-            Array.from(doc.variables.expressions.entries()).map((entry)=> <ExpressionInput
+            Array.from(doc.variables.expressions.entries()).map((entry) => <><ExpressionInput
               enabled
               //title={""}
-              title={()=>
-                <VariableRenamingInput vars={doc.variables} name={entry[0]}></VariableRenamingInput>
+              title={() =>
+                <VariableRenamingInput name={entry[0]} setName={name=>doc.variables.renameExpression(entry[0], name)}></VariableRenamingInput>
               }
               number={entry[1]}
-            ></ExpressionInput>)}
+            ></ExpressionInput><span></span></>)}
           <Input type="text"
             onChange={e => this.setState({ newVarName: e.currentTarget.value ?? "" })}
           ></Input>
@@ -45,16 +40,13 @@ class VariablesConfigPanel extends Component<Props, State> {
               onChange={e => this.setState({ newVarExpr: e.currentTarget.value ?? "" })}
             ></Input>
             <IconButton onClick={_ => {
-              let { newVarName, newVarExpr, newVarUnit} = this.state;
+              let { newVarName, newVarExpr, newVarUnit } = this.state;
               doc.variables.add(newVarName, newVarExpr, newVarUnit);
-              console.log(doc.variables.serialize)
             }}>
               <Add></Add>
             </IconButton>
           </>
-        </ExpressionInputList>
-
-      </div>
+        </div>
     );
   }
 }

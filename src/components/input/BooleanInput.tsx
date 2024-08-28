@@ -1,4 +1,4 @@
-import { Tooltip } from "@mui/material";
+import { Checkbox, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import styles from "./InputList.module.css";
@@ -41,9 +41,9 @@ class Input extends Component<Props, State> {
             {this.props.title}
           </span>
         </Tooltip>
-        <input
-          ref={this.inputElemRef}
-          type="checkbox"
+        <Checkbox
+          inputRef={this.inputElemRef}
+          
           className={styles.Checkbox}
           checked={this.props.value}
           disabled={!this.props.enabled}
@@ -52,7 +52,7 @@ class Input extends Component<Props, State> {
           onChange={(e) => {
             this.props.setValue(e.currentTarget.checked);
           }}
-        ></input>
+        ></Checkbox>
       </>
     );
   }

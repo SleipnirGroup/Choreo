@@ -2,20 +2,44 @@
  "version":"v2025.0.0",
  "variables":{
   "expressions":{
-   "name":{
+   "nar":{
     "unit":"Meter",
-    "var":["pose.x()",0.0]
+    "var":["2 m",0.0]
    },
    "var":{
     "unit":"Meter",
-    "var":["1 m",1.0]
+    "var":["2 m",0.0]
+   },
+   "name":{
+    "unit":"Meter",
+    "var":["1 m",0.0]
    }
   },
   "poses":{
-   "pose":{
+   "ree":{
     "x":["0 m",0.0],
     "y":["0 m",0.0],
     "heading":["0 rad",0.0]
+   },
+   "posed":{
+    "x":["0 m",0.0],
+    "y":["0 m",0.0],
+    "heading":["0 rad",0.0]
+   },
+   "pose":{
+    "x":["1.4 m",0.0],
+    "y":["5.56 m",0.0],
+    "heading":["70 deg",0.0]
+   },
+   "rev":{
+    "x":["nar()",0.0],
+    "y":["2 m",0.0],
+    "heading":["0 rad",0.0]
+   },
+   "pvae":{
+    "x":["var() + nar()",0.0],
+    "y":["3 m",0.0],
+    "heading":["6 rad",0.0]
    }
   }
  },
@@ -29,7 +53,7 @@
   "inertia":["6 kg m ^ 2",6.0],
   "gearing":["6.5",6.5],
   "radius":["2 in",0.0508],
-  "vmax":["6000 RPM",6000.0],
+  "vmax":["6000 RPM",628.3185307179587],
   "tmax":["1.2 N * m",1.2],
   "bumper":{
    "front":["16 in",0.4064],

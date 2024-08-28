@@ -22,6 +22,7 @@ import KeyboardShortcutsPanel from "../components/config/KeyboardShortcutsPanel"
 import ExportConfigPanel from "../components/config/ExportConfigPanel";
 import BetasConfigPanel from "../components/config/BetasConfigPanel";
 import VariablesConfigPanel from "../components/config/variables/VariablesConfigPanel";
+import ExpressionsConfigPanel from "../components/config/variables/ExpressionsConfigPanel";
 
 /* Navbar stuff */
 export const WaypointData: {
@@ -207,7 +208,6 @@ export const SETTINGS_TABS = [
   {name: "Robot Config", component: ()=><RobotConfigPanel></RobotConfigPanel>},
   {name: "Export Config", component: ()=><ExportConfigPanel></ExportConfigPanel>},
   {name: "Controls", component: ()=><KeyboardShortcutsPanel></KeyboardShortcutsPanel>},
-  {name: "Betas", component: ()=><BetasConfigPanel></BetasConfigPanel>},
-  {name: "Variables", component: ()=><VariablesConfigPanel></VariablesConfigPanel>},
+  {name: "Betas", component: ()=><BetasConfigPanel></BetasConfigPanel>}
  ] as const;
  export const NUM_SETTINGS_TABS = SETTINGS_TABS.length;

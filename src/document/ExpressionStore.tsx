@@ -1,5 +1,5 @@
-import { ConstantNode, MathNode, Unit, all, create, isNull } from "mathjs";
-import { IReactionDisposer, reaction } from "mobx";
+import { ConstantNode, MathNode, Unit, all, create, isNode, isNull } from "mathjs";
+import { IReactionDisposer, getDependencyTree, getObserverTree, reaction, untracked } from "mobx";
 import { Instance, detach, types } from "mobx-state-tree";
 import {
   PoseVariable as DocPoseVariable,
@@ -8,7 +8,7 @@ import {
 } from "./2025/DocumentTypes";
 
 export const math = create(all, { predictable: true });
-const { add, subtract, multiply, divide } = math;
+const { add, subtract, multiply, divide, cos, sin } = math;
 math.import(
   {
     add: math.typed("add", {
@@ -46,6 +46,22 @@ math.import(
         return divide(math.unit(x.toString()), math.unit(y.toString()));
       }, // <--- what goes in here??
       "any, any": divide
+    }),
+    cos: math.typed("cos", {
+      "Node | OperatorNode | Unit": function (
+        arg: MathNode
+      ) {
+        return cos(math.unit(arg.toString()));
+      },
+      "any": cos
+    }),
+    sin: math.typed("sin", {
+      "Node | OperatorNode | Unit": function (
+        arg: MathNode
+      ) {
+        return sin(math.unit(arg.toString()));
+      },
+      "any": sin
     })
   },
   { override: true }
@@ -127,16 +143,19 @@ export const ExpressionStore = types
   }))
   .views((self) => ({
     evaluator(node: MathNode): Evaluated {
-      const scope =
+      let scope;
+      untracked(()=>{
+        scope = 
         self.getScope() ??
         ((() => {
           console.error("Evaluating without variables!");
           return undefined;
-        }) as Evaluator);
+        }) as Evaluator);})
       let result = node.evaluate(scope) ?? undefined;
       if (result["isNode"]) {
-        result = (result as MathNode).evaluate(scope);
+        result = this.evaluator(result);
       }
+      
       return result;
     },
     get serialize(): Expr {
@@ -145,14 +164,20 @@ export const ExpressionStore = types
   }))
   .views((self) => ({
     get evaluate(): Evaluated {
-      return self.evaluator(self.expr);
+      let result = self.evaluator(self.expr);
+      setTimeout(()=>console.log(self.toString(), "depends", getDependencyTree(self, "evaluate")), 30);
+      return result;
     }
   }))
   .views((self) => ({
     get asScope() {
-      return () => self.expr;
+      return () =>{
+        self.value;
+      
+        let expr = untracked(()=>{return self.expr})
+        return expr;};
     },
-    toDefaultUnit(): Unit | number | undefined {
+    get toDefaultUnit(): Unit | number | undefined {
       //eslint-disable-next-line @typescript-eslint/no-unused-expressions
       self.expr;
 
@@ -184,13 +209,14 @@ export const ExpressionStore = types
     get defaultUnitMagnitude(): number | undefined {
       //eslint-disable-next-line @typescript-eslint/no-unused-expressions
       self.expr;
-      const defaultUnit = this.toDefaultUnit();
+      const defaultUnit = this.toDefaultUnit;
       if (typeof defaultUnit === "number") {
         return defaultUnit;
       }
       return defaultUnit?.toNumber(self.defaultUnit!.toString());
     },
     validate(newNode: MathNode) {
+      //console.log("Validate", newNode.toString())
       let newNumber: undefined | null | number | Unit;
       try {
         newNumber = self.evaluator(newNode);
@@ -211,6 +237,9 @@ export const ExpressionStore = types
           return addUnitToExpression(newNode, self.defaultUnit.toString());
         }
         return newNode;
+      }
+      if (isNode(newNumber)) {
+        return this.validate(newNumber);
       }
       // newNumber is Unit
       const unit = self.defaultUnit;
@@ -253,6 +282,7 @@ export const ExpressionStore = types
                 self.setTempDisableRecalc(false);
               }
             } else {
+              self.setTempDisableRecalc(false);
               return self.value;
             }
           },
@@ -275,9 +305,9 @@ const ExprPose = types
   .views((self) => ({
     get asScope(): Record<string, () => MathNode> {
       const node: Record<string, () => MathNode> = {
-        x: () => self.x.expr,
-        y: () => self.y.expr,
-        heading: () => self.heading.expr
+        x: self.x.asScope,
+        y: self.y.asScope,
+        heading: self.heading.asScope
       };
       return node;
     },
@@ -352,7 +382,6 @@ export const Variables = types
       for (const [key, val] of self.poses.entries()) {
         vars.set(key, val.asScope);
       }
-      console.log(vars)
       return vars;
     }
   }))
@@ -409,14 +438,20 @@ export const Variables = types
       if (current === undefined) return;
       self.expressions.set(next, detach(current));
     },
-    addPose(key: string, pose?: Pose) {
+    renamePose(cur:string, next: string) {
+      let current = self.poses.get(cur);
+      if (current === undefined) return;
+      self.poses.set(next, detach(current));
+    },
+    addPose(key: string, pose?: Pose | {x:Expr, y:Expr, heading:Expr}) {
+      let store = ExprPose.create({
+        x: self.createExpression(pose?.x ?? 0, Units.Meter),
+        y: self.createExpression(pose?.y ?? 0, Units.Meter),
+        heading: self.createExpression(pose?.heading ?? 0, Units.Radian)
+      });
       self.poses.set(
-        key,
-        ExprPose.create({
-          x: self.createExpression(pose?.x ?? 0, Units.Meter),
-          y: self.createExpression(pose?.y ?? 0, Units.Meter),
-          heading: self.createExpression(pose?.heading ?? 0, Units.Radian)
-        })
+        key, store
+        
       );
     },
     add(key: string, expr: string | number, defaultUnit: Unit) {

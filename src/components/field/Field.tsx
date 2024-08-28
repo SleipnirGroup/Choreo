@@ -2,6 +2,7 @@ import { observer } from "mobx-react";
 import { Component } from "react";
 import {
   doc,
+  uiState,
   generateWithToastsAndExport
 } from "../../document/DocumentManager";
 import WaypointPanel from "../config/WaypointConfigPanel";
@@ -24,6 +25,8 @@ import WaypointVisibilityPanel from "../config/WaypointVisibilityPanel";
 import EventMarkerConfigPanel from "../config/eventmarker/EventMarkerConfigPanel";
 import styles from "./Field.module.css";
 import FieldOverlayRoot from "./svg/FieldOverlayRoot";
+import VariablesConfigPanel from "../config/variables/VariablesConfigPanel";
+import ExpressionsConfigPanel from "../config/variables/ExpressionsConfigPanel";
 
 type Props = object;
 
@@ -83,8 +86,10 @@ export class Field extends Component<Props, State> {
               marker={selectedSidebar as IEventMarkerStore}
             ></EventMarkerConfigPanel>
           )}
+        
         <ViewOptionsPanel />
         <WaypointVisibilityPanel />
+        
         <Tooltip
           disableInteractive
           placement="top-start"
