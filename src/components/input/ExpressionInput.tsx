@@ -107,7 +107,7 @@ class Input extends Component<Props, State> {
 
   render() {
     try {
-       
+      //eslint-disable-next-line @typescript-eslint/no-unused-expressions
       this.props.number.expr;
     } catch (e) {
       console.error(e);
