@@ -92,9 +92,12 @@ pub fn guess_control_interval_count(
                                         max_accel = max_accel.min(max)
                                     }
                                     ConstraintData::MaxAngularVelocity { max } => {
-                                        // see note above for math reasoning
-                                        let time = (1.5 * dtheta) / max;
-                                        max_vel = max_vel.min(distance / time);
+                                        // avoid divide by 0
+                                        if max >= 0.1 {
+                                            // see note above for math reasoning
+                                            let time = (1.5 * dtheta) / max;
+                                            max_vel = max_vel.min(distance / time);
+                                        }
                                     }
                                     _ => {}
                                 };
