@@ -73,13 +73,33 @@ pub fn guess_control_interval_count(
                 .fold(0f64, |max, &module| max.max(module.x.hypot(module.y)));
             let max_ang_vel = max_vel / max_wheel_position_radius;
 
-            // use peak angular velocity and dtheta to calculate the time
-            // for theta to travel a cubic hermite spline profile
-            // in which the max angular velocity is not exceeded as an estimate
+            // Proof for T = 1.5 * θ / ω:
+            //
+            // The position function of a cubic Hermite spline
+            // where t∈[0, 1] and θ∈[0, dtheta]:
+            // x(t) = (-2t^3 +3t^2)θ
+            //
+            // The velocity function derived from the cubic Hermite spline is:
+            // v(t) = (-6t^2 + 6t)θ.
+            //
+            // The peak velocity occurs at t = 0.5, where t∈[0, 1] :
+            // v(0.5) = 1.5*θ, which is the max angular velocity during the motion.
+            //
+            // To ensure this peak velocity does not exceed ω, max_ang_vel, we set:
+            // 1.5 * θ = ω.
+            //
+            // The total time T needed to reach the final θ and
+            // not exceed ω is thus derived as:
+            // T = θ / (ω / 1.5) = 1.5 * θ / ω.
+            //
+            // This calculation ensures the peak velocity meets but does not exceed ω,
+            // extending the time proportionally to meet this requirement.
+            // This is an alternative estimation method to finding the trapezoidal or
+            // triangular profile for the change heading.
             let time = (1.5 * dtheta) / max_ang_vel;
             max_vel = max_vel.min(distance / time);
 
-            // Iterate through constraints to find applicable "Max Velocity" and "Max Acceleration" constraints
+            // Iterate through constraints to find applicable constraints
             traj.path
                 .constraints
                 .iter()
