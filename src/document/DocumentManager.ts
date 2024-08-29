@@ -463,7 +463,7 @@ export async function setupEventListeners() {
         }
       });
   });
-  hotkeys("f5,ctrl+shift+r,ctrl+r", function (event, handler) {
+  hotkeys("f5,ctrl+shift+r,ctrl+r", function (event, _handler) {
     event.preventDefault();
   });
   hotkeys("command+g,ctrl+g,g", () => {
@@ -773,7 +773,7 @@ export async function getTrajFilePath(uuid: string): Promise<[string, string]> {
 }
 
 export async function exportTrajectory(uuid: string) {
-  return await writeTrajectory(() => {
+  return await writeTrajectory(async () => {
     const { hasSaveLocation, chorRelativeTrajDir } = uiState;
     if (!hasSaveLocation || chorRelativeTrajDir === undefined) {
       return (async () => {
