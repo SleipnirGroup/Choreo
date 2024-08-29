@@ -4,7 +4,6 @@ import { doc, uiState } from "../../../../document/DocumentManager";
 import { observer } from "mobx-react";
 import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer";
 import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
-import { TraceDebug } from "../../../../document/tauriTracing";
 
 type Props = {
   lineColor?: string;

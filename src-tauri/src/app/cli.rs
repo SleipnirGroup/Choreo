@@ -28,7 +28,7 @@ enum CliAction {
         progress_responder: Option<IpcSender<RemoteProgressUpdate>>,
     },
     Gui,
-    GuiWithProject{
+    GuiWithProject {
         project_path: PathBuf,
     },
     Error(String),
@@ -38,7 +38,7 @@ impl CliAction {
     #[allow(clippy::match_wildcard_for_single_variants)]
     fn enable_tracing(&self) {
         match self {
-            Self::Gui | Self::GuiWithProject{ .. } => {
+            Self::Gui | Self::GuiWithProject { .. } => {
                 tracing_subscriber::registry()
                     .with(
                         tracing_subscriber::fmt::layer()
@@ -133,7 +133,7 @@ impl Cli {
                 } else {
                     None
                 };
-                return CliAction::Generate{
+                return CliAction::Generate {
                     project_path,
                     traj_names: self.traj,
                     progress_responder: ipc,
@@ -141,7 +141,7 @@ impl Cli {
             }
             CliAction::Error("Choreo file must be provided for generation.".to_string())
         } else if let Some(project_path) = self.chor {
-            CliAction::GuiWithProject{ project_path }
+            CliAction::GuiWithProject { project_path }
         } else {
             CliAction::Gui
         }
@@ -155,7 +155,11 @@ impl Cli {
         action.enable_tracing();
 
         match action {
-            CliAction::Generate{project_path, traj_names, progress_responder} => {
+            CliAction::Generate {
+                project_path,
+                traj_names,
+                progress_responder,
+            } => {
                 tracing::info!("CLIAction is Generate");
                 if let Some(ipc) = progress_responder {
                     let rx = setup_progress_sender();
@@ -206,7 +210,7 @@ impl Cli {
                 tracing::info!("CLIAction is Gui");
                 run_tauri(resources, None);
             }
-            CliAction::GuiWithProject{project_path} => {
+            CliAction::GuiWithProject { project_path } => {
                 tracing::info!("CLIAction is GuiWithProject");
                 run_tauri(resources, Some(project_path));
             }
@@ -301,9 +305,7 @@ impl Cli {
             .expect("Failed to read trajectory file");
 
         match generate(&project, traj, 0i64) {
-            Ok(new_traj) => {
-                Ok(new_traj)
-            }
+            Ok(new_traj) => Ok(new_traj),
             Err(e) => {
                 tracing::error!("Failed to generate trajectory {:}: {:}", traj_name, e);
                 Err(e)

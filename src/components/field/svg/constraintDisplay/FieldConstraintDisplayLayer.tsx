@@ -3,7 +3,6 @@ import { IConstraintStore } from "../../../../document/ConstraintStore";
 import { doc } from "../../../../document/DocumentManager";
 import PointAtOverlay from "./PointAtOverlay";
 import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer";
-import { TraceDebug, TraceInfo } from "../../../../document/tauriTracing";
 
 const overlays = {
   PointAt: (constraint: IConstraintStore, lineColor: string) => (
