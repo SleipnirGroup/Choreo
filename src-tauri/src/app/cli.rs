@@ -4,12 +4,10 @@ use std::path::PathBuf;
 use clap::Parser;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use crate::{
-    document::{
-        file::{self, WritingResources},
-        generate::generate,
-    },
-    app::run_tauri,
+use super::tauri::run_tauri;
+use crate::document::{
+    file::{self, WritingResources},
+    generate::generate,
 };
 
 const FORMATING_OPTIONS: &str = "Formating Options";
@@ -27,14 +25,17 @@ impl CliAction {
     #[allow(clippy::match_wildcard_for_single_variants)]
     fn enable_tracing(&self) {
         match self {
-            Self::Gui | Self::GuiWithProject(_)  => {
+            Self::Gui | Self::GuiWithProject(_) => {
                 tracing_subscriber::registry()
                     .with(
                         tracing_subscriber::fmt::layer()
-                            .event_format(super::logging::PrettyFormatter)
-                    ).init();
+                            .event_format(super::logging::PrettyFormatter),
+                    )
+                    .init();
             }
-            _ => tracing_subscriber::fmt().with_max_level(tracing::Level::INFO).init(),
+            _ => tracing_subscriber::fmt()
+                .with_max_level(tracing::Level::INFO)
+                .init(),
         }
     }
 }

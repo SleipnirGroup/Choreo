@@ -1,13 +1,16 @@
+#![allow(
+    clippy::uninlined_format_args,
+    clippy::or_fun_call,
+    clippy::single_char_pattern
+)]
 
-#![allow(clippy::uninlined_format_args, clippy::or_fun_call, clippy::single_char_pattern)]
-
-use nu_ansi_term::{Style, Color};
-use tracing::{Level, field::Visit};
+use nu_ansi_term::{Color, Style};
+use tracing::{field::Visit, Level};
 
 enum Locations {
     Frontend,
     Scripting,
-    Native
+    Native,
 }
 
 #[derive(Default)]
@@ -108,7 +111,10 @@ where
         let thread = match loc {
             Locations::Frontend => "js-main".to_owned(),
             Locations::Scripting => visitor.thread().unwrap_or("unknown").to_owned(),
-            Locations::Native => std::thread::current().name().unwrap_or("unknown").to_owned(),
+            Locations::Native => std::thread::current()
+                .name()
+                .unwrap_or("unknown")
+                .to_owned(),
         };
 
         write!(writer, "    {} ", dimmed.paint("at"))?;
@@ -117,14 +123,18 @@ where
         write!(
             writer,
             "{}:{}",
-            visitor.file_path()
-                .unwrap_or(meta.file()
-                .unwrap_or("unknown"))
+            visitor
+                .file_path()
+                .unwrap_or(meta.file().unwrap_or("unknown"))
                 .to_owned()
                 .replace("\"", ""),
-            visitor.line_num.unwrap_or_else(|| {
-                meta.line().map_or_else(|| "-1".to_owned(), |l| l.to_string())
-            }).replace("\"", "")
+            visitor
+                .line_num
+                .unwrap_or_else(|| {
+                    meta.line()
+                        .map_or_else(|| "-1".to_owned(), |l| l.to_string())
+                })
+                .replace("\"", "")
         )?;
 
         write!(writer, " {} {}", dimmed.paint("on"), thread)?;
@@ -147,7 +157,6 @@ fn fill_string(left_aligned: bool, width: usize, mut s: String) -> String {
     }
     s
 }
-
 
 pub struct CompactFormatter;
 
@@ -186,15 +195,20 @@ where
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
                 .expect("Time went backwards")
-                .as_secs() % 86400 / 3600,
+                .as_secs()
+                % 86400
+                / 3600,
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
                 .expect("Time went backwards")
-                .as_secs() % 3600 / 60,
+                .as_secs()
+                % 3600
+                / 60,
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
                 .expect("Time went backwards")
-                .as_secs() % 60,
+                .as_secs()
+                % 60,
             std::time::SystemTime::now()
                 .duration_since(std::time::UNIX_EPOCH)
                 .expect("Time went backwards")
@@ -209,9 +223,13 @@ where
 
         let message = visitor.message();
 
-        let file = visitor.file_path().unwrap_or(meta.file().unwrap_or("unknown")).to_owned();
+        let file = visitor
+            .file_path()
+            .unwrap_or(meta.file().unwrap_or("unknown"))
+            .to_owned();
         let line = visitor.line_num.unwrap_or_else(|| {
-            meta.line().map_or_else(|| "-1".to_owned(), |l| l.to_string())
+            meta.line()
+                .map_or_else(|| "-1".to_owned(), |l| l.to_string())
         });
 
         let file_line = format!("{}:{}", file, line);
