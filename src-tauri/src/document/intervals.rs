@@ -1,5 +1,3 @@
-use std::f64::INFINITY;
-
 use super::types::{Constraint, Expr, RobotConfig, Traj, Waypoint};
 use crate::document::types::ConstraintData;
 use crate::error::ChoreoError;
@@ -136,7 +134,7 @@ pub fn guess_control_interval_count(
                 });
 
             // anti-tunneling used to find ceiling value of dt
-            let mut min_width = INFINITY;
+            let mut min_width = f64::INFINITY;
             for idx in 0..config.modules.len() {
                 let mod_a = config
                     .modules
