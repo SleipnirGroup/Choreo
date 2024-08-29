@@ -218,6 +218,9 @@ pub enum ConstraintData<T: SnapshottableType> {
     MaxAcceleration {
         max: T,
     },
+    MaxAngularVelocity {
+        max: T,
+    },
     PointAt {
         x: T,
         y: T,
@@ -238,6 +241,9 @@ impl<T: SnapshottableType> ConstraintData<T> {
     pub fn snapshot(&self) -> ConstraintData<f64> {
         match self {
             ConstraintData::MaxVelocity { max } => ConstraintData::MaxVelocity {
+                max: max.snapshot(),
+            },
+            ConstraintData::MaxAngularVelocity { max } => ConstraintData::MaxAngularVelocity {
                 max: max.snapshot(),
             },
             ConstraintData::PointAt {
