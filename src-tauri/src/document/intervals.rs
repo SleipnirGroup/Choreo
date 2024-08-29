@@ -1,3 +1,5 @@
+use std::f64::INFINITY;
+
 use super::types::{Constraint, Expr, RobotConfig, Traj, Waypoint};
 use crate::document::types::ConstraintData;
 use crate::error::ChoreoError;
@@ -133,6 +135,26 @@ pub fn guess_control_interval_count(
                     }
                 });
 
+            // anti-tunneling used to find ceiling value of dt
+            let mut min_wdith = INFINITY;
+            for idx in 0..config.modules.len() {
+                let mod_a = config
+                    .modules
+                    .get(idx)
+                    .expect("Module expected when finding minimum width.");
+                let mod_b_idx = if idx == 0 {
+                    config.modules.len() - 1
+                } else {
+                    idx - 1
+                };
+                let mod_b = config
+                    .modules
+                    .get(mod_b_idx)
+                    .expect("Module expected when finding minimum width.");
+                min_wdith = min_wdith.min(mod_a.x - mod_b.x).hypot(mod_a.y - mod_b.y);
+            }
+            let dt_ceiling = min_wdith / (config.vmax * config.radius);
+            let dt = dt_ceiling.min(0.1);
             let distance_at_cruise = distance - (max_vel * max_vel) / max_accel;
             let total_time = if distance_at_cruise < 0.0 {
                 // triangle
@@ -141,7 +163,7 @@ pub fn guess_control_interval_count(
                 // trapezoid
                 distance / max_vel + max_vel / max_accel
             };
-            (total_time / 0.1).ceil() as usize
+            (total_time / dt).ceil() as usize
         }
     }
 }
