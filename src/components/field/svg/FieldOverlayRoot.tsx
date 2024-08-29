@@ -5,8 +5,8 @@ import {
   Tooltip
 } from "@mui/material";
 import * as d3 from "d3";
-import { observer } from "mobx-react";
-import React, { Component } from "react";
+import { Provider, observer } from "mobx-react";
+import React, { Component, createContext } from "react";
 import { Expr, Waypoint } from "../../../document/2025/DocumentTypes";
 import { doc, uiState } from "../../../document/DocumentManager";
 import {
@@ -29,6 +29,7 @@ import OverlayWaypoint from "./OverlayWaypoint";
 import FieldImage2024 from "./fields/FieldImage2024";
 import FieldConstraintDisplayLayer from "./constraintDisplay/FieldConstraintDisplayLayer";
 import FieldConstraintAddLayer from "./constraintDisplay/FieldConstraintAddLayer";
+import { DOMMatrixIdentity, FieldMatrixContext } from "./FieldMatrixContext";
 
 type Props = object;
 
@@ -36,7 +37,9 @@ type State = {
   xPan: number;
   yPan: number;
   zoom: number;
+  fieldMatrix: DOMMatrix;
 };
+
 
 class FieldOverlayRoot extends Component<Props, State> {
   private static instance: FieldOverlayRoot | null = null;
@@ -44,7 +47,8 @@ class FieldOverlayRoot extends Component<Props, State> {
   state = {
     xPan: 0,
     yPan: 0,
-    zoom: 1
+    zoom: 1,
+    fieldMatrix: DOMMatrixIdentity
   };
   canvasHeightMeters!: number;
   canvasWidthMeters!: number;
@@ -195,7 +199,7 @@ class FieldOverlayRoot extends Component<Props, State> {
   private handleResize() {
     const factor = this.getScalingFactor(this.svgRef?.current);
     uiState.setFieldScalingFactor(factor);
-    uiState.setFieldMatrix(this.frameRef.current!.getScreenCTM()!);
+    this.setState({fieldMatrix: (this.frameRef.current!.getScreenCTM() ?? this.state.fieldMatrix)});
   }
   render() {
     this.canvasHeightMeters = FieldImage2024.WIDTH_M + 1;
@@ -221,6 +225,7 @@ class FieldOverlayRoot extends Component<Props, State> {
         //
         id="field-svg-container"
       >
+        <FieldMatrixContext.Provider value={this.state.fieldMatrix}>
         <g
           transform={`
               matrix(${this.state.zoom} 0  0 ${-this.state.zoom} ${
@@ -392,6 +397,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             ></InterpolatedRobot>
           )}
         </g>
+        </FieldMatrixContext.Provider>
       </svg>
     );
   }

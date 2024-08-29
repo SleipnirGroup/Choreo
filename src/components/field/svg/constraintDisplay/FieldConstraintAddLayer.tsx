@@ -1,9 +1,10 @@
-import { Component } from "react";
+import { Component, Context } from "react";
 import { doc, uiState } from "../../../../document/DocumentManager";
 
 import { observer } from "mobx-react";
 import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer";
 import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
+import { FieldMatrixContext } from "../FieldMatrixContext";
 
 type Props = {
   lineColor?: string;
@@ -15,6 +16,8 @@ type State = {
 };
 
 class FieldConstraintsAddLayer extends Component<Props, State> {
+  static contextType =  FieldMatrixContext;
+  declare context: React.ContextType<typeof FieldMatrixContext>;
   state = { firstIndex: undefined, mouseX: undefined, mouseY: undefined };
   constructor(props: Props) {
     super(props);
@@ -96,7 +99,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
             style={{ pointerEvents: "visible" }}
             onMouseMove={(e) => {
               let coords = new DOMPoint(e.clientX, e.clientY);
-              coords = coords.matrixTransform(uiState.fieldMatrix.inverse());
+              coords = coords.matrixTransform(this.context.inverse());
               this.setState({ mouseX: coords.x, mouseY: coords.y });
             }}
             onMouseLeave={(e) =>
