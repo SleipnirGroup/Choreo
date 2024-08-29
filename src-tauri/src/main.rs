@@ -63,16 +63,15 @@
 // )]
 #![cfg_attr(not(test), warn(missing_docs))]
 
-mod cli;
 mod document;
 mod error;
-mod gui;
+mod app;
 mod util;
 
 use std::error::Error;
 
 use clap::Parser;
-use cli::Cli;
+use app::cli::Cli;
 
 /// Type alias for a `Result` with a `ChoreoError` error type.
 pub type ChoreoResult<T> = std::result::Result<T, error::ChoreoError>;

@@ -8,8 +8,6 @@ use std::sync::OnceLock;
 use std::{thread, vec};
 use tauri::Manager;
 
-pub mod logging;
-
 static REQUESTED_FILE: OnceLock<OpenFilePayload> = OnceLock::new();
 
 #[tauri::command]

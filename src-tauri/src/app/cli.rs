@@ -9,7 +9,7 @@ use crate::{
         file::{self, WritingResources},
         generate::generate,
     },
-    gui::run_tauri,
+    app::run_tauri,
 };
 
 const FORMATING_OPTIONS: &str = "Formating Options";
@@ -31,7 +31,7 @@ impl CliAction {
                 tracing_subscriber::registry()
                     .with(
                         tracing_subscriber::fmt::layer()
-                            .event_format(crate::gui::logging::PrettyFormatter)
+                            .event_format(super::logging::PrettyFormatter)
                     ).init();
             }
             _ => tracing_subscriber::fmt().with_max_level(tracing::Level::INFO).init(),
