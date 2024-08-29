@@ -136,7 +136,7 @@ pub fn guess_control_interval_count(
                 });
 
             // anti-tunneling used to find ceiling value of dt
-            let mut min_wdith = INFINITY;
+            let mut min_width = INFINITY;
             for idx in 0..config.modules.len() {
                 let mod_a = config
                     .modules
@@ -151,9 +151,17 @@ pub fn guess_control_interval_count(
                     .modules
                     .get(mod_b_idx)
                     .expect("Module expected when finding minimum width.");
-                min_wdith = min_wdith.min(mod_a.x - mod_b.x).hypot(mod_a.y - mod_b.y);
+                // using the current impl of trajoptlib "minimum width"
+                if (mod_a.x - mod_b.x).abs() != 0. {
+                    min_width = min_width.min((mod_a.x - mod_b.x).abs());
+                };
+                if (mod_a.y - mod_b.y).abs() != 0. {
+                    min_width = min_width.min((mod_a.y - mod_b.y).abs());
+                };
+                // TODO: swap trajoptlib and here with logic below
+                // min_width = min_width.min(mod_a.x - mod_b.x).hypot(mod_a.y - mod_b.y);
             }
-            let dt_ceiling = min_wdith / (config.vmax * config.radius);
+            let dt_ceiling = min_width / (config.wheel_max_velocity() * config.radius);
             let dt = dt_ceiling.min(0.1);
             let distance_at_cruise = distance - (max_vel * max_vel) / max_accel;
             let total_time = if distance_at_cruise < 0.0 {
