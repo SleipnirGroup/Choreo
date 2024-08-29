@@ -67,11 +67,11 @@ pub fn guess_control_interval_count(
             let mut max_accel = (max_force * 4.0) / config.mass; // times 4 for 4 modules
 
             // find max wheel position radius for calculating max angular velocity
-            let max_wheel_distance = config
+            let max_wheel_position_radius = config
                 .modules
                 .iter()
                 .fold(0f64, |max, &module| max.max(module.x.hypot(module.y)));
-            let max_ang_vel = max_vel / max_wheel_distance;
+            let max_ang_vel = max_vel / max_wheel_position_radius;
 
             // use peak angular velocity and dtheta to calculate the time
             // for theta to travel a cubic hermite spline profile
