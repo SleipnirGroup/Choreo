@@ -48,18 +48,16 @@ class KeepInCircleOverlay extends Component<Props<"KeepInCircle">, object> {
   }
 
   dragPointTranslate(event: any) {
-    // this.props.data.x.set(this.props.data.x[1] + event.dx);
-    // this.props.data.y.set(this.props.data.y[1] + event.dy);
-    this.props.data.x.set(event.x);
-    this.props.data.y.set(event.y);
+    this.props.data.x.set(this.props.data.serialize.props.x[1] + event.dx);
+    this.props.data.y.set(this.props.data.serialize.props.y[1] + event.dy);
   }
 
   dragPointRadius(event: any) {
-    const dx = event.x - this.props.data.x[1];
-    const dy = event.y - this.props.data.y[1];
+    const dx = event.x - this.props.data.serialize.props.x[1];
+    const dy = event.y - this.props.data.serialize.props.y[1];
     const r = Math.sqrt(dx * dx + dy * dy);
 
-    // this.props.data.r.set(r);
+    this.props.data.r.set(r);
   }
 
   render() {
