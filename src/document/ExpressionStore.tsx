@@ -1,4 +1,4 @@
-import { ConstantNode, FunctionNode, MathNode, SymbolNode, Unit, all, create, isNode, isNull } from "mathjs";
+import { AccessorNode, ConstantNode, FunctionNode, IndexNode, MathNode, MathType, OperatorNode, SymbolNode, Unit, all, create, factory, isNode, isNull, isUnit } from "mathjs";
 import { IReactionDisposer, getDependencyTree, getObserverTree, reaction, untracked } from "mobx";
 import { Instance, detach, getEnv, types } from "mobx-state-tree";
 import {
@@ -9,64 +9,68 @@ import {
 import { Env } from "./DocumentManager";
 
 export const math = create(all, { predictable: true });
-const { add, subtract, multiply, divide, cos, sin } = math;
-math.import(
-  {
-    add: math.typed("add", {
-      "Node | OperatorNode | Unit, Node | OperatorNode | Unit": function (
-        x: MathNode,
-        y: MathNode
-      ) {
-        return add(math.unit(x.toString()), math.unit(y.toString()));
-      }, // <--- what goes in here??
-      "any, any": add
-    }),
-    subtract: math.typed("subtract", {
-      "Node | OperatorNode | Unit, Node | OperatorNode | Unit": function (
-        x: MathNode,
-        y: MathNode
-      ) {
-        return subtract(math.unit(x.toString()), math.unit(y.toString()));
-      }, // <--- what goes in here??
-      "any, any": subtract
-    }),
-    multiply: math.typed("multiply", {
-      "Node | OperatorNode | Unit, Node | OperatorNode | Unit": function (
-        x: MathNode,
-        y: MathNode
-      ) {
-        return multiply(math.unit(x.toString()), math.unit(y.toString()));
-      }, // <--- what goes in here??
-      "any, any": multiply
-    }),
-    divide: math.typed("divide", {
-      "Node | OperatorNode | Unit, Node | OperatorNode | Unit": function (
-        x: MathNode,
-        y: MathNode
-      ) {
-        return divide(math.unit(x.toString()), math.unit(y.toString()));
-      }, // <--- what goes in here??
-      "any, any": divide
-    }),
-    cos: math.typed("cos", {
-      "Node | OperatorNode | Unit": function (
-        arg: MathNode
-      ) {
-        return cos(math.unit(arg.toString()));
-      },
-      "any": cos
-    }),
-    sin: math.typed("sin", {
-      "Node | OperatorNode | Unit": function (
-        arg: MathNode
-      ) {
-        return sin(math.unit(arg.toString()));
-      },
-      "any": sin
-    })
-  },
-  { override: true }
-);
+
+// const createPose2d = factory('Pose2d', ['typed'], ({ typed }) => {
+//   // create a new data type
+//   function Pose2d (x: ()=>MathType, y: ()=>MathType, heading: ()=>MathType) {
+//     this.x = x;
+//     this.y = y;
+//     this.heading = heading;
+//     return {
+//       x, y, heading, isPose2d: true
+//     }
+//   }
+//   Pose2d.prototype.isPose2d = true
+//   Pose2d.prototype.toString = function () {
+//     return 'Pose2d:' + this.x() + ' ' + this.y() + ' ' + this.heading();
+//   }
+
+//   // define a new data type with typed-function
+//   typed.addType({
+//     name: 'Pose2d',
+//     test: function (x) {
+//       // test whether x is of type Pose2d
+//       return x && x.isPose2d === true
+//     }
+//   })
+
+//   return Pose2d
+// })
+
+// // function add which can add the Pose2d data type
+// // When imported in math.js, the existing function `add` with support for
+// // Pose2d, because both implementations are typed-functions and do not
+// // have conflicting signatures.
+// const createAddPose2d = factory('add', ['typed', 'Pose2d'], ({ typed, Pose2d }) => {
+//   return typed('add', {
+//     'Pose2d, Pose2d': function (a, b) {
+//       return new Pose2d(math.add(a.x(), b.x()), math.add(a.y(), b.y()), math.add(a.heading(), b.heading()));
+//     }
+//   })
+// })
+// const createTransformByPose2d = factory('transformBy', ['typed', 'Pose2d'], ({ typed, Pose2d }) => {
+//   return typed('transformBy', {
+//     'Pose2d, Pose2d': function (a, b) {
+//       return {
+//         x:()=>math.add(a.x(), 
+//           math.multiply(b.x(), math.cos(a.heading())),
+//           math.multiply(b.y(), math.unaryMinus(math.sin(a.heading())))
+//           ), 
+//         y:()=>math.add(a.y(),
+//           math.multiply(b.x(),math.sin(a.heading())),
+//           math.multiply(b.y(),math.cos(a.heading()))),
+//         heading:()=>math.add(a.heading(), b.heading()), isPose2d: true}
+//     }
+//   })
+// })
+
+// // import the new data type and function
+// math.import([
+//   createPose2d,
+//   createAddPose2d,
+//   createTransformByPose2d
+// ])
+
 
 function addUnitToExpression(
   expression: math.MathNode,
@@ -94,7 +98,7 @@ export const Units = {
 };
 // not sure why the alias above doesn't work
 math.createUnit("rpm", "1 RPM");
-export type Evaluated = null | undefined | number | Unit;
+export type Evaluated = MathType | null | undefined;
 type Evaluator = (arg: MathNode) => Evaluated;
 export const ExpressionStore = types
   .model("ExpressionStore", {
@@ -111,13 +115,11 @@ export const ExpressionStore = types
         return new Map<string, any>();
       }
       let scope = env.vars().scope;
-      console.log(scope);
       return scope;
     }
   }))
   .actions((self) => ({
     findReplaceVariable(find: string, replace: string) {
-      console.log(self.expr)
       self.expr = self.expr.transform(function (node, path, parent) {
         if (node["isSymbolNode"] && node.name === find) {
           let clone = (node as SymbolNode).clone();
@@ -162,7 +164,7 @@ export const ExpressionStore = types
     }
   }))
   .views((self) => ({
-    evaluator(node: MathNode): Evaluated {
+    evaluator(node: MathNode): MathType {
       let scope!: Map<string,any>;
       // untracked(()=>{
         scope = 
@@ -173,8 +175,32 @@ export const ExpressionStore = types
         }) as Evaluator);
       // })
         scope.keys();
-      let result = node.evaluate(scope) ?? undefined;
-      if (result["isNode"]) {
+        // turn symbol variables into function variables if they're found in scope
+        let transformed = node.transform((innerNode, path, parent) => {
+          if( innerNode.isSymbolNode && typeof scope.get(innerNode.name) === "function" && ( !parent?.isFunctionNode || path !== "fn")) {
+            return new math.FunctionNode(innerNode, []);
+          }
+          if( innerNode.isAccessorNode ){
+            if( !parent?.isFunctionNode || path !== "fn"){
+            let accessorNode = innerNode as AccessorNode;
+            let {object, index} = accessorNode;
+            if (object.isSymbolNode && index.isIndexNode){
+              let symbol = object as SymbolNode;
+              let idx = index as IndexNode;
+              if (idx.dimensions[0]?.isConstantNode) {
+                let constant = idx.dimensions[0] as ConstantNode;
+                if (typeof scope.get(symbol.name) === "object" 
+                && typeof scope.get(symbol.name)?.[constant.value] === "function") {
+                  return new FunctionNode(innerNode, [])
+                }
+              }
+            }
+            }
+          }
+          return innerNode;
+        })
+        let result = transformed.evaluate(scope) ?? undefined;
+      if (result?.["isNode"]) {
         result = this.evaluator(result);
       }
       
@@ -185,7 +211,7 @@ export const ExpressionStore = types
     }
   }))
   .views((self) => ({
-    get evaluate(): Evaluated {
+    get evaluate(): MathType {
       let result = self.evaluator(self.expr);
       // setTimeout(()=>console.log(self.toString(), "depends", getDependencyTree(self, "evaluate")), 30);
       return result;
@@ -196,7 +222,7 @@ export const ExpressionStore = types
       return () =>{
         self.value;
       
-        let expr = untracked(()=>{return self.expr})
+        let expr = untracked(()=>{return self.evaluate})
         return expr;};
     },
     get toDefaultUnit(): Unit | number | undefined {
@@ -322,6 +348,7 @@ export const ExpressionStore = types
   });
 export type IExpressionStore = Instance<typeof ExpressionStore>;
 
+type Pose2d = {x: Evaluated, y: Evaluated, heading: Evaluated, isPose2d: true}
 const ExprPose = types
   .model({
     x: ExpressionStore,
@@ -329,11 +356,12 @@ const ExprPose = types
     heading: ExpressionStore
   })
   .views((self) => ({
-    get asScope(): Record<string, () => MathNode> {
-      const node: Record<string, () => MathNode> = {
+    get asScope(): Pose2d {
+      const node: Pose2d = {
         x: self.x.asScope,
         y: self.y.asScope,
-        heading: self.heading.asScope
+        heading: self.heading.asScope,
+        isPose2d:true
       };
       return node;
     },
