@@ -29,7 +29,7 @@ impl CliAction {
                 tracing_subscriber::registry()
                     .with(
                         tracing_subscriber::fmt::layer()
-                            .event_format(super::logging::PrettyFormatter),
+                            .event_format(super::logging::CompactFormatter),
                     )
                     .init();
             }

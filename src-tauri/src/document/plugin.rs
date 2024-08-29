@@ -57,12 +57,6 @@ pub async fn default_project() -> ChoreoResult<Project> {
 #[tauri::command]
 pub async fn read_project(app_handle: tauri::AppHandle, name: String) -> ChoreoResult<Project> {
     let resources = app_handle.state::<WritingResources>();
-
-    tracing::info!(
-        "Opening project {name}.chor at {:}",
-        resources.get_deploy_path().await?.display()
-    );
-
     file::read_project(&resources, name).await
 }
 

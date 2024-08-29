@@ -88,8 +88,8 @@ where
         let target_style = style.bold();
 
         let target = match loc {
-            Locations::Frontend => "enoki::frontend",
-            Locations::Scripting => "enoki::scripting",
+            Locations::Frontend => "choreo::frontend",
+            Locations::Scripting => "choreo::scripting",
             Locations::Native => meta.target(),
         };
 
@@ -176,11 +176,11 @@ where
         let mut visitor = MetaVisitor::default();
         event.record(&mut visitor);
 
-        let loc = match visitor.source() {
-            Some("scripting") => Locations::Scripting,
-            Some("frontend") => Locations::Frontend,
-            _ => Locations::Native,
-        };
+        // let loc = match visitor.source() {
+        //     Some("scripting") => Locations::Scripting,
+        //     Some("frontend") => Locations::Frontend,
+        //     _ => Locations::Native,
+        // };
 
         let level_str = match *meta.level() {
             Level::TRACE => "TRACE",
@@ -188,6 +188,15 @@ where
             Level::INFO => "INFO ",
             Level::WARN => "WARN ",
             Level::ERROR => "ERROR",
+        };
+
+        let style = match *meta.level() {
+            Level::TRACE => Style::new().fg(Color::Purple),
+            Level::DEBUG => Style::new().fg(Color::Blue),
+            Level::INFO => Style::new().fg(Color::Green),
+            Level::WARN => Style::new().fg(Color::Yellow),
+            Level::ERROR => Style::new().fg(Color::Red),
+            // _ => return Ok(()),
         };
 
         let now_str = format!(
@@ -215,31 +224,34 @@ where
                 .subsec_millis()
         );
 
-        let target = match loc {
-            Locations::Frontend => "enoki::frontend",
-            Locations::Scripting => "enoki::scripting",
-            Locations::Native => meta.target(),
-        };
+        // let target = match loc {
+        //     Locations::Frontend => "choreo::frontend",
+        //     Locations::Scripting => "choreo::scripting",
+        //     Locations::Native => meta.target(),
+        // };
 
         let message = visitor.message();
 
         let file = visitor
             .file_path()
             .unwrap_or(meta.file().unwrap_or("unknown"))
-            .to_owned();
+            .to_owned()
+            .replace("\"", "")
+            .replace("src-tauri/", "")
+            .replace("src-tauri\\", "");
         let line = visitor.line_num.unwrap_or_else(|| {
             meta.line()
                 .map_or_else(|| "-1".to_owned(), |l| l.to_string())
-        });
+        }).replace("\"", "");
 
         let file_line = format!("{}:{}", file, line);
 
-        //write LEVEL TIME TARGET FILE:LINE MESSAGE
+        //write LEVEL TIME FILE:LINE MESSAGE
 
-        write!(writer, "{}| ", level_str)?;
+        write!(writer, "{}| ", style.paint(level_str))?;
         write!(writer, "{}| ", now_str)?;
-        write!(writer, "{}| ", fill_string(true, 22, target.to_string()))?;
-        write!(writer, "{}| ", fill_string(true, 16, file_line))?;
+        // write!(writer, "{}| ", fill_string(true, 22, target.to_string()))?;
+        write!(writer, "{}| ", fill_string(true, 32, file_line))?;
         write!(writer, "{}", message)?;
         writer.write_char('\n')?;
 

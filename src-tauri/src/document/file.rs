@@ -72,21 +72,23 @@ impl WritingResources {
         };
         let root = out.root.clone();
         let project_updater = out.project.clone();
-        thread::spawn(move || {
-            tokio::runtime::Builder::new_current_thread()
-                .enable_all()
-                .build()
-                .expect("Failed to build tokio runtime")
-                .block_on(async move {
-                    loop {
-                        let proj = project_updater.wait_for().await;
-                        let root = root.lock().await;
-                        let path = root.join(&proj.name);
-                        write_serializable(proj, &path).await.trace_err();
-                        tracing::debug!("Wrote project to {:?}", path);
-                    }
-                });
-        });
+        thread::Builder::new()
+            .name("Project Writer".to_string())
+            .spawn(move || {
+                tokio::runtime::Builder::new_current_thread()
+                    .enable_all()
+                    .build()
+                    .expect("Failed to build tokio runtime")
+                    .block_on(async move {
+                        loop {
+                            let proj = project_updater.wait_for().await;
+                            let root = root.lock().await;
+                            let path = root.join(&proj.name);
+                            write_serializable(proj, &path).await.trace_err();
+                            tracing::debug!("Wrote project to {:?}", path);
+                        }
+                    });
+            }).expect("Failed to spawn project writer thread");
         out
     }
 
@@ -213,6 +215,11 @@ pub async fn write_project(resources: &WritingResources, chor: Project) {
 }
 
 pub async fn read_project(resources: &WritingResources, name: String) -> ChoreoResult<Project> {
+    tracing::info!(
+        "Opening project {name}.chor at {:}",
+        resources.get_deploy_path().await?.display()
+    );
+
     let path = resources
         .root
         .lock()

@@ -568,7 +568,7 @@ export async function setupEventListeners() {
 
 export async function openProject(projectPath: OpenFilePayload) {
   const dir = projectPath.dir;
-  const name = projectPath.name;
+  const name = projectPath.name.split(".")[0];
   let chor: Project | undefined = undefined;
   const trajs: Traj[] = [];
   await Commands.setDeployRoot(dir);
