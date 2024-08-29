@@ -22,6 +22,7 @@ trajoptlib = { path = "../trajoptlib" }
 open = "3"
 tokio = { version = "1", features = ["full"] }
 dashmap = "6.0.1"
+thiserror = "1.0.63"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem
