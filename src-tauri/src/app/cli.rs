@@ -2,14 +2,18 @@
 use std::{path::PathBuf, process::exit, thread};
 
 use clap::Parser;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use ipc_channel::ipc::{self, IpcSender};
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use super::tauri::run_tauri;
-use crate::{document::{
-    file::{self, WritingResources},
-    generate::{generate, setup_progress_sender, RemoteProgressUpdate}, types::Traj,
-}, ChoreoResult};
+use crate::{
+    document::{
+        file::{self, WritingResources},
+        generate::{generate, setup_progress_sender, RemoteProgressUpdate},
+        types::Traj,
+    },
+    ChoreoResult,
+};
 
 const FORMATING_OPTIONS: &str = "Formating Options";
 const FILE_OPTIONS: &str = "File Options";
@@ -18,7 +22,11 @@ const ACTION_OPTIONS: &str = "Action Options";
 
 #[derive(Debug)]
 enum CliAction {
-    Generate(PathBuf, Vec<String>, Option<IpcSender<RemoteProgressUpdate>>),
+    Generate(
+        PathBuf,
+        Vec<String>,
+        Option<IpcSender<RemoteProgressUpdate>>,
+    ),
     Gui,
     GuiWithProject(PathBuf),
     Error(String),
@@ -150,7 +158,8 @@ impl Cli {
                         .name("choreo-cli-progressupdater".to_string())
                         .spawn(move || {
                             for received in rx {
-                                cln_ipc.send(RemoteProgressUpdate::IncompleteTraj(received.traj))
+                                cln_ipc
+                                    .send(RemoteProgressUpdate::IncompleteTraj(received.traj))
                                     .expect("Failed to send progress update");
                             }
                         })
@@ -160,20 +169,20 @@ impl Cli {
                         .enable_all()
                         .build()
                         .expect("Failed to build tokio runtime")
-                        .block_on(
-                            Self::generate_single_traj(
-                                resources,
-                                project_path,
-                                traj_names.first()
-                                    .expect("Traj names should have at least one element")
-                                    .to_string(),
+                        .block_on(Self::generate_single_traj(
+                            resources,
+                            project_path,
+                            traj_names
+                                .first()
+                                .expect("Traj names should have at least one element")
+                                .to_string(),
                         ));
 
                     match res {
                         Ok(traj) => {
                             ipc.send(RemoteProgressUpdate::CompleteTraj(traj))
                                 .expect("Failed to send progress update");
-                        },
+                        }
                         Err(e) => {
                             ipc.send(RemoteProgressUpdate::Error(e.to_string()))
                                 .expect("Failed to send progress update");

@@ -24,14 +24,14 @@ fn fix_scope(idx: usize, removed_idxs: &Vec<usize>) -> usize {
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct LocalProgressUpdate {
     pub traj: SwerveTrajectory,
-    pub handle: i64
+    pub handle: i64,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub enum RemoteProgressUpdate {
     IncompleteTraj(SwerveTrajectory),
     CompleteTraj(Traj),
-    Error(String)
+    Error(String),
 }
 
 pub fn setup_progress_sender() -> Receiver<LocalProgressUpdate> {
@@ -308,8 +308,6 @@ fn postprocess(
     traj.snapshot = Some(snapshot);
     traj
 }
-
-
 
 fn solver_status_callback(traj: SwerveTrajectory, handle: i64) {
     let tx_opt = PROGRESS_SENDER_LOCK.get();

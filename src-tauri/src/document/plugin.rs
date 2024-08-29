@@ -1,10 +1,9 @@
 use std::path::PathBuf;
 
 use futures::TryStreamExt;
+use ipc_channel::ipc;
 use tauri::{api::dialog::blocking::FileDialogBuilder, Manager};
 use tokio::{process::Command, select};
-use ipc_channel::ipc;
-
 
 use crate::{error::ChoreoError, ChoreoResult, ResultExt};
 
@@ -156,8 +155,10 @@ pub async fn generate_remote(
     handle: i64,
 ) -> ChoreoResult<Traj> {
     let resources = app_handle.state::<WritingResources>();
-    let project_path = resources.get_deploy_path()
-        .await?.join(format!("{}.chor", project.name));
+    let project_path = resources
+        .get_deploy_path()
+        .await?
+        .join(format!("{}.chor", project.name));
 
     let (server, server_name) = ipc::IpcOneShotServer::<RemoteProgressUpdate>::new()
         .map_err(|e| ChoreoError::SolverError(format!("Failed to create IPC server: {e:?}")))?;
@@ -172,8 +173,8 @@ pub async fn generate_remote(
         .arg(server_name)
         .spawn()?;
 
-
-    let (rx, _) = server.accept()
+    let (rx, _) = server
+        .accept()
         .map_err(|e| ChoreoError::SolverError(format!("Failed to accept IPC connection: {e:?}")))?;
 
     let mut stream = rx.to_stream();
