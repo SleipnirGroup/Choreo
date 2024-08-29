@@ -239,10 +239,13 @@ where
             .replace("\"", "")
             .replace("src-tauri/", "")
             .replace("src-tauri\\", "");
-        let line = visitor.line_num.unwrap_or_else(|| {
-            meta.line()
-                .map_or_else(|| "-1".to_owned(), |l| l.to_string())
-        }).replace("\"", "");
+        let line = visitor
+            .line_num
+            .unwrap_or_else(|| {
+                meta.line()
+                    .map_or_else(|| "-1".to_owned(), |l| l.to_string())
+            })
+            .replace("\"", "");
 
         let file_line = format!("{}:{}", file, line);
 

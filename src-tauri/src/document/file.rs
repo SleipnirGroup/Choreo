@@ -88,7 +88,8 @@ impl WritingResources {
                             tracing::debug!("Wrote project to {:?}", path);
                         }
                     });
-            }).expect("Failed to spawn project writer thread");
+            })
+            .expect("Failed to spawn project writer thread");
         out
     }
 
