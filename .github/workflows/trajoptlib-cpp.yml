@@ -59,7 +59,7 @@ jobs:
         if: runner.os != 'Windows'
         working-directory: trajoptlib
       - run: cmake -B build -S . -DWITH_EXAMPLES=ON ${{ matrix.cmake-args }}
-        if: runner.os -= 'Windows'
+        if: runner.os == 'Windows'
         working-directory: trajoptlib
       - run: cmake --build build --config RelWithDebInfo --parallel 4
         working-directory: trajoptlib
