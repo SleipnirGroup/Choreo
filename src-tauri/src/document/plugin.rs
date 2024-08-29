@@ -179,36 +179,6 @@ pub async fn generate_remote(
 
     let mut stream = rx.to_stream();
 
-    // loop {
-    //     match rx.try_next().await {
-    //         Ok(Some(update)) => {
-    //             match update {
-    //                 RemoteProgressUpdate::IncompleteTraj(traj) => {
-    //                     app_handle.emit_all(
-    //                         "solver-status",
-    //                         LocalProgressUpdate {
-    //                             traj,
-    //                             handle
-    //                         },
-    //                     ).expect("Failed to emit solver status");
-    //                 },
-    //                 RemoteProgressUpdate::CompleteTraj(traj) => {
-    //                     return Ok(traj);
-    //                 },
-    //                 RemoteProgressUpdate::Error(e) => {
-    //                     return Err(ChoreoError::SolverError(e));
-    //                 },
-    //             }
-    //         },
-    //         Ok(None) => {
-    //             return Err(ChoreoError::SolverError("Solver exited without sending a result".to_string()));
-    //         },
-    //         Err(e) => {
-    //             return Err(ChoreoError::SolverError(format!("Error receiving solver update: {e:?}")));
-    //         },
-    //     }
-    // }
-
     loop {
         // select over rx.try_next() and child.wait()
         select! {

@@ -81,7 +81,7 @@ export function TraceInfo(message: any, ...optionalParams: any[]): void {
  * @param optionalParams Additional parameters to be logged.
  */
 export function TraceWarn(message: any, ...optionalParams: any[]): void {
-  console.log(message, optionalParams);
+  console.warn(message, optionalParams);
   //get the line number of the caller and the file
   const stack: string = new Error().stack ?? "";
   const caller: string = stack.split("\n")[2];
@@ -118,7 +118,7 @@ export function TraceWarn(message: any, ...optionalParams: any[]): void {
  * @param optionalParams Additional parameters to be logged.
  */
 export function TraceError(message: any, ...optionalParams: any[]): void {
-  console.log(message, optionalParams);
+  console.error(message, optionalParams);
   //get the line number of the caller and the file
   const stack: string = new Error().stack ?? "";
   const caller: string = stack.split("\n")[2];

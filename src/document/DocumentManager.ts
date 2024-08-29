@@ -673,6 +673,7 @@ export async function renamePath(uuid: string, newName: string) {
     if (traj) {
       await Commands.renameTraj(traj.serialize, newName)
         .then((new_traj) => {
+          doc.pathlist.deletePath(uuid);
           doc.pathlist.addPath(newName, true, new_traj);
         })
         .catch((e) => {

@@ -20,9 +20,7 @@ type Props = {
   lineColor: string;
 };
 function FieldConstraintDisplayLayer(props: Props) {
-  TraceInfo("FieldConstraintDisplayLayer", doc.isSidebarConstraintSelected);
   const constraint = props.constraint;
-  TraceDebug(constraint);
   const startIndex = constraint.getStartWaypointIndex();
   const endIndex = constraint.getEndWaypointIndex();
 

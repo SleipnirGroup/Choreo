@@ -23,7 +23,7 @@ import {
 import { PathListStore } from "./PathListStore";
 import { RobotConfigStore } from "./RobotConfigStore";
 import { Commands } from "./tauriCommands";
-import { TraceError } from "./tauriTracing";
+import { TraceDebug, TraceError } from "./tauriTracing";
 
 export type SelectableItemTypes =
   | IHolonomicWaypointStore
@@ -160,7 +160,7 @@ export const DocumentStore = types
       if (pathStore.path.waypoints.length < 2) {
         return;
       }
-      console.log(pathStore.serialize);
+      TraceDebug(pathStore.serialize);
       const config = self.robotConfig.serialize;
       pathStore.path.constraints.forEach((constraint) => {
         if (constraint.issues.length > 0) {
@@ -197,7 +197,7 @@ export const DocumentStore = types
 
       await Commands.guessIntervals(config, pathStore.serialize)
         .then((counts) => {
-          console.log(counts);
+          TraceDebug(counts);
           counts.forEach((count, i) => {
             const waypoint = pathStore.path.waypoints[i];
             if (waypoint.overrideIntervals && count !== waypoint.intervals) {

@@ -79,7 +79,6 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
           showLines={false}
           id="add-first-circles"
           onCircleClick={(id) => {
-            TraceDebug("constraint from: ", id);
             this.setState({ firstIndex: id });
           }}
         ></FieldConstraintRangeLayer>

@@ -15,20 +15,22 @@ use crate::{
     ChoreoResult,
 };
 
-const FORMATING_OPTIONS: &str = "Formating Options";
+const FORMATTING_OPTIONS: &str = "Formating Options";
 const FILE_OPTIONS: &str = "File Options";
 const ADVANCED_OPTIONS: &str = "Advanced Options";
 const ACTION_OPTIONS: &str = "Action Options";
 
 #[derive(Debug)]
 enum CliAction {
-    Generate(
-        PathBuf,
-        Vec<String>,
-        Option<IpcSender<RemoteProgressUpdate>>,
-    ),
+    Generate {
+        project_path: PathBuf,
+        traj_names: Vec<String>,
+        progress_responder: Option<IpcSender<RemoteProgressUpdate>>,
+    },
     Gui,
-    GuiWithProject(PathBuf),
+    GuiWithProject{
+        project_path: PathBuf,
+    },
     Error(String),
 }
 
@@ -36,7 +38,7 @@ impl CliAction {
     #[allow(clippy::match_wildcard_for_single_variants)]
     fn enable_tracing(&self) {
         match self {
-            Self::Gui | Self::GuiWithProject(_) => {
+            Self::Gui | Self::GuiWithProject{ .. } => {
                 tracing_subscriber::registry()
                     .with(
                         tracing_subscriber::fmt::layer()
@@ -131,11 +133,15 @@ impl Cli {
                 } else {
                     None
                 };
-                return CliAction::Generate(project_path, self.traj, ipc);
+                return CliAction::Generate{
+                    project_path,
+                    traj_names: self.traj,
+                    progress_responder: ipc,
+                };
             }
             CliAction::Error("Choreo file must be provided for generation.".to_string())
         } else if let Some(project_path) = self.chor {
-            CliAction::GuiWithProject(project_path)
+            CliAction::GuiWithProject{ project_path }
         } else {
             CliAction::Gui
         }
@@ -149,9 +155,9 @@ impl Cli {
         action.enable_tracing();
 
         match action {
-            CliAction::Generate(project_path, traj_names, ipc_opt) => {
+            CliAction::Generate{project_path, traj_names, progress_responder} => {
                 tracing::info!("CLIAction is Generate");
-                if let Some(ipc) = ipc_opt {
+                if let Some(ipc) = progress_responder {
                     let rx = setup_progress_sender();
                     let cln_ipc = ipc.clone();
                     thread::Builder::new()
@@ -200,7 +206,7 @@ impl Cli {
                 tracing::info!("CLIAction is Gui");
                 run_tauri(resources, None);
             }
-            CliAction::GuiWithProject(project_path) => {
+            CliAction::GuiWithProject{project_path} => {
                 tracing::info!("CLIAction is GuiWithProject");
                 run_tauri(resources, Some(project_path));
             }
@@ -296,7 +302,6 @@ impl Cli {
 
         match generate(&project, traj, 0i64) {
             Ok(new_traj) => {
-                file::write_traj(&resources, new_traj.clone()).await;
                 Ok(new_traj)
             }
             Err(e) => {
