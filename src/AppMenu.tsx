@@ -35,6 +35,7 @@ import {
 import SettingsModal from "./components/config/SettingsModal";
 import { Commands } from "./document/tauriCommands";
 import { version } from "./util/version";
+import { TraceError } from "./document/tauriTracing";
 
 type Props = object;
 
@@ -199,7 +200,7 @@ class AppMenu extends Component<Props, State> {
                   success: "Trajectory exported",
                   error: {
                     render(toastProps) {
-                      console.error(toastProps.data);
+                      TraceError(toastProps.data);
                       return `Error exporting trajectory: ${toastProps.data}`;
                     }
                   }
@@ -236,7 +237,7 @@ class AppMenu extends Component<Props, State> {
                   success: `Saved all trajectories to ${uiState.chorRelativeTrajDir}.`,
                   error: {
                     render(toastProps) {
-                      console.error(toastProps.data);
+                      TraceError(toastProps.data);
                       return `Couldn't export trajectories: ${
                         toastProps.data as string[]
                       }`;

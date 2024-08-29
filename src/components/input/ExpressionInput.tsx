@@ -110,7 +110,7 @@ class Input extends Component<Props, State> {
       //eslint-disable-next-line @typescript-eslint/no-unused-expressions
       this.props.number.expr;
     } catch (e) {
-      console.error(e);
+      TraceError(e);
       throw e;
     }
     const showNumberWhenDisabled = this.props.showNumberWhenDisabled ?? true;

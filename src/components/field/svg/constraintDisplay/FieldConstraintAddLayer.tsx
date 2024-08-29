@@ -4,6 +4,7 @@ import { doc, uiState } from "../../../../document/DocumentManager";
 import { observer } from "mobx-react";
 import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer";
 import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
+import { TraceDebug } from "../../../../document/tauriTracing";
 
 type Props = {
   lineColor?: string;
@@ -78,7 +79,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
           showLines={false}
           id="add-first-circles"
           onCircleClick={(id) => {
-            console.log("constraint from: ", id);
+            TraceDebug("constraint from: ", id);
             this.setState({ firstIndex: id });
           }}
         ></FieldConstraintRangeLayer>

@@ -3,6 +3,7 @@ import { IConstraintStore } from "../../../../document/ConstraintStore";
 import { doc } from "../../../../document/DocumentManager";
 import PointAtOverlay from "./PointAtOverlay";
 import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer";
+import { TraceDebug, TraceInfo } from "../../../../document/tauriTracing";
 
 const overlays = {
   PointAt: (constraint: IConstraintStore, lineColor: string) => (
@@ -19,9 +20,9 @@ type Props = {
   lineColor: string;
 };
 function FieldConstraintDisplayLayer(props: Props) {
-  console.log("FieldConstraintDisplayLayer", doc.isSidebarConstraintSelected);
+  TraceInfo("FieldConstraintDisplayLayer", doc.isSidebarConstraintSelected);
   const constraint = props.constraint;
-  console.log(constraint);
+  TraceDebug(constraint);
   const startIndex = constraint.getStartWaypointIndex();
   const endIndex = constraint.getEndWaypointIndex();
 

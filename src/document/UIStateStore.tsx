@@ -17,6 +17,7 @@ import {
   navbarIndexToConstraintDefinition,
   navbarIndexToConstraintKey
 } from "./UIData";
+import { ErrorHook } from "./tauriTracing";
 
 export const UIStateStore = types
   .model("UIStateStore", {
@@ -114,7 +115,7 @@ export const UIStateStore = types
           .setTitle(
             `Choreo ${await getVersion()} - ${self.saveFileName ?? "Untitled"}`
           )
-          .catch(console.error);
+          .catch(ErrorHook);
       }
     };
   })

@@ -2,6 +2,7 @@
 use std::path::PathBuf;
 
 use clap::Parser;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::{
     document::{
@@ -24,39 +25,16 @@ enum CliAction {
 
 impl CliAction {
     #[allow(clippy::match_wildcard_for_single_variants)]
-    fn prefered_tracing_level(&self) -> tracing::Level {
+    fn enable_tracing(&self) {
         match self {
-            Self::Gui | Self::GuiWithProject(_) | Self::Generate(_, _) => tracing::Level::DEBUG,
-            _ => tracing::Level::WARN,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-enum CliFormat {
-    Pretty,
-    Json,
-    Slim,
-}
-
-impl CliFormat {
-    fn enable_subscriber(self, level: tracing::Level) {
-        match self {
-            Self::Pretty => {
-                tracing_subscriber::fmt()
-                    .pretty()
-                    .with_max_level(level)
-                    .init();
+            Self::Gui | Self::GuiWithProject(_)  => {
+                tracing_subscriber::registry()
+                    .with(
+                        tracing_subscriber::fmt::layer()
+                            .event_format(crate::gui::logging::PrettyFormatter)
+                    ).init();
             }
-            Self::Json => {
-                tracing_subscriber::fmt()
-                    .json()
-                    .with_max_level(level)
-                    .init();
-            }
-            Self::Slim => {
-                tracing_subscriber::fmt().with_max_level(level).init();
-            }
+            _ => tracing_subscriber::fmt().with_max_level(tracing::Level::INFO).init(),
         }
     }
 }
@@ -85,15 +63,6 @@ pub struct Cli {
 
     #[arg(long, short)]
     pub generate: bool,
-
-    #[arg(
-        long,
-        short,
-        value_name = "(pretty|json|slim)",
-        help_heading = FORMATING_OPTIONS,
-        default_value = "slim"
-    )]
-    pub format: String,
 }
 
 impl Cli {
@@ -117,15 +86,10 @@ impl Cli {
 
     pub fn exec(self) {
         let resources = WritingResources::new();
-        let format = match self.format.as_str() {
-            "pretty" => CliFormat::Pretty,
-            "json" => CliFormat::Json,
-            _ => CliFormat::Slim,
-        };
 
         let action = self.action();
 
-        format.enable_subscriber(action.prefered_tracing_level());
+        action.enable_tracing();
 
         match action {
             CliAction::Generate(project_path, traj_names) => {

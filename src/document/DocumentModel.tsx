@@ -23,6 +23,7 @@ import {
 import { PathListStore } from "./PathListStore";
 import { RobotConfigStore } from "./RobotConfigStore";
 import { Commands } from "./tauriCommands";
+import { TraceError } from "./tauriTracing";
 
 export type SelectableItemTypes =
   | IHolonomicWaypointStore
@@ -291,7 +292,7 @@ export const DocumentStore = types
             });
           },
           (e) => {
-            console.error(e);
+            TraceError(e);
             if ((e as string).includes("infeasible")) {
               throw "Infeasible Problem Detected";
             }
@@ -330,7 +331,7 @@ export const DocumentStore = types
 
           error: {
             render({ data, toastProps }) {
-              console.error(data);
+              TraceError(data);
               if ((data as string).includes("callback requested stop")) {
                 toastProps.style = { visibility: "hidden" };
                 return `Cancelled "${pathName}"`;

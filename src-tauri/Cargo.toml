@@ -26,6 +26,7 @@ thiserror = "1.0.63"
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["ansi", "fmt", "std", "json"] }
 clap = { version = "4.5.16", features = ["derive"] }
+nu-ansi-term = "0.50.1"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

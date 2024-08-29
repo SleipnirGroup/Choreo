@@ -63,6 +63,7 @@ import {
 import { ViewLayerDefaults } from "./UIData";
 import { UIStateStore } from "./UIStateStore";
 import { Commands } from "./tauriCommands";
+import { ErrorHook, TraceError, TraceInfo } from "./tauriTracing";
 
 export type OpenFilePayload = {
   name: string;
@@ -250,7 +251,7 @@ export function setup() {
     try {
       writeTrajectory(uuid);
     } catch (e) {
-      console.error(e);
+      TraceError(e);
     }
   });
   doc.history.clear();
@@ -271,9 +272,9 @@ export async function openProjectFile() {
   if (cliRequestedProject) {
     const fileDirectory: OpenFilePayload = cliRequestedProject;
     const filePath = fileDirectory.dir + path.sep + fileDirectory.name;
-    console.log(`Attempting to open: ${filePath}`);
+    TraceInfo(`Attempting to open: ${filePath}`);
     return openProject(fileDirectory).catch((err) => {
-      console.error(
+      TraceError(
         `Failed to open cli requested Choreo file '${fileDirectory.name}': ${err}`
       );
       toast.error(
@@ -285,9 +286,9 @@ export async function openProjectFile() {
       lastOpenedFileEventPayload
     );
     const filePath = fileDirectory.dir + path.sep + fileDirectory.name;
-    console.log(`Attempting to open: ${filePath}`);
+    TraceInfo(`Attempting to open: ${filePath}`);
     return openProject(fileDirectory).catch((err) => {
-      console.error(
+      TraceError(
         `Failed to open last Choreo file '${fileDirectory.name}': ${err}`
       );
       toast.error(
@@ -348,7 +349,7 @@ export async function setupEventListeners() {
         });
       }
     } catch (err) {
-      console.error("Error when pasting:", err);
+      TraceError("Error when pasting:", err);
       applySnapshot(activePath, pathSnapshot);
     }
   });
@@ -380,7 +381,7 @@ export async function setupEventListeners() {
     () => doc.history.undoIdx,
     () => {
       if (uiState.hasSaveLocation) {
-        console.log("autosave");
+        TraceInfo("autosave");
         saveFile();
       }
     }
@@ -574,14 +575,14 @@ export async function openProject(projectPath: OpenFilePayload) {
   await Promise.allSettled([
     Commands.readProject(name)
       .then((c) => (chor = c))
-      .catch(console.error),
+      .catch(ErrorHook),
     Commands.readAllTraj()
       .then((paths) =>
         paths.forEach((path) => {
           trajs.push(path);
         })
       )
-      .catch(console.error)
+      .catch(ErrorHook)
   ]);
 
   if (chor === undefined) {
@@ -611,7 +612,7 @@ export async function generateWithToastsAndExport(uuid: string) {
       success: `Saved "${pathName}" to ${uiState.chorRelativeTrajDir}.`,
       error: {
         render(toastProps) {
-          console.error(toastProps.data);
+          TraceError(toastProps.data);
           return `Couldn't export trajectory: ${toastProps.data as string[]}`;
         }
       }
@@ -675,7 +676,7 @@ export async function renamePath(uuid: string, newName: string) {
           doc.pathlist.addPath(newName, true, new_traj);
         })
         .catch((e) => {
-          console.error(e);
+          TraceError(e);
         });
     }
   } else {
@@ -688,7 +689,7 @@ export async function deletePath(uuid: string) {
     const traj = doc.pathlist.paths.get(uuid);
     if (traj) {
       await Commands.deleteTraj(traj.serialize).catch((e) => {
-        console.error(e);
+        TraceError(e);
       });
     }
   }
@@ -786,7 +787,7 @@ export async function exportAllTrajectories() {
 
       results.map((result, i) => {
         if (result.status === "rejected") {
-          console.error(pathNames[i], ":", result.reason);
+          TraceError(pathNames[i], ":", result.reason);
           errors.push(`Couldn't save "${pathNames[i]}": ${result.reason}`);
         }
       });

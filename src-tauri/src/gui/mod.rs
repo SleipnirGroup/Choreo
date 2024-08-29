@@ -8,11 +8,25 @@ use std::sync::OnceLock;
 use std::{thread, vec};
 use tauri::Manager;
 
+pub mod logging;
+
 static REQUESTED_FILE: OnceLock<OpenFilePayload> = OnceLock::new();
 
 #[tauri::command]
 fn requested_file() -> Option<OpenFilePayload> {
     REQUESTED_FILE.get().cloned()
+}
+
+#[tauri::command]
+pub async fn tracing_frontend(level: String, msg: String, line: String, file: String) {
+    match level.as_str() {
+        "trace" => tracing::trace!(source = "frontend", message = msg, line = line, file = file),
+        "debug" => tracing::debug!(source = "frontend", message = msg, line = line, file = file),
+        "info" => tracing::info!(source = "frontend", message = msg, line = line, file = file),
+        "warn" => tracing::warn!(source = "frontend", message = msg, line = line, file = file),
+        "error" => tracing::error!(source = "frontend", message = msg, line = line, file = file),
+        _ => tracing::error!("Invalid log level: {}", level),
+    }
 }
 
 pub fn run_tauri(resources: WritingResources, project: Option<PathBuf>) {
@@ -68,6 +82,7 @@ pub fn run_tauri(resources: WritingResources, project: Option<PathBuf>) {
             get_deploy_root,
             requested_file,
             delete_traj,
+            tracing_frontend
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
