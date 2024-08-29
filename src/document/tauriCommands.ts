@@ -5,6 +5,8 @@ import { OpenFilePayload } from "./DocumentManager";
 export const Commands = {
   generate: (project: Project, traj: Traj, handle: number) =>
     invoke<Traj>("generate", { project, traj, handle }),
+  generateRemote: (project: Project, traj: Traj, handle: number) =>
+    invoke<Traj>("generate_remote", { project, traj, handle }),
   guessIntervals: (config: RobotConfig<Expr>, traj: Traj) =>
     invoke<number[]>("guess_control_interval_counts", { config, traj }),
   cancel: () => invoke<void>("cancel"),

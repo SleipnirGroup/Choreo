@@ -30,6 +30,8 @@ pub enum ChoreoError {
     TrajOpt(String),
     #[error("No Deploy Path error")]
     NoDeployPath,
+    #[error("Solver Error: {0:?}")]
+    SolverError(String),
 }
 
 // This is how the error will be propagated to the frontend,

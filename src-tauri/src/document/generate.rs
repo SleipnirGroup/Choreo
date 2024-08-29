@@ -22,13 +22,20 @@ fn fix_scope(idx: usize, removed_idxs: &Vec<usize>) -> usize {
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
-pub struct ProgressUpdate {
-    traj: SwerveTrajectory,
-    handle: i64,
+pub struct LocalProgressUpdate {
+    pub traj: SwerveTrajectory,
+    pub handle: i64
 }
 
-pub fn setup_progress_sender() -> Receiver<ProgressUpdate> {
-    let (tx, rx) = channel::<ProgressUpdate>();
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+pub enum RemoteProgressUpdate {
+    IncompleteTraj(SwerveTrajectory),
+    CompleteTraj(Traj),
+    Error(String)
+}
+
+pub fn setup_progress_sender() -> Receiver<LocalProgressUpdate> {
+    let (tx, rx) = channel::<LocalProgressUpdate>();
     let _ = PROGRESS_SENDER_LOCK.get_or_init(move || tx);
     rx
 }
@@ -302,10 +309,12 @@ fn postprocess(
     traj
 }
 
+
+
 fn solver_status_callback(traj: SwerveTrajectory, handle: i64) {
     let tx_opt = PROGRESS_SENDER_LOCK.get();
     if let Some(tx) = tx_opt {
-        let _ = tx.send(ProgressUpdate { traj, handle });
+        let _ = tx.send(LocalProgressUpdate { traj, handle });
     };
 }
 
@@ -314,4 +323,4 @@ fn solver_status_callback(traj: SwerveTrajectory, handle: i64) {
  * once. Used here to create a read-only static reference to the sender,
  * even though the sender can't be constructed in a static context.
  */
-pub static PROGRESS_SENDER_LOCK: OnceLock<Sender<ProgressUpdate>> = OnceLock::new();
+pub static PROGRESS_SENDER_LOCK: OnceLock<Sender<LocalProgressUpdate>> = OnceLock::new();

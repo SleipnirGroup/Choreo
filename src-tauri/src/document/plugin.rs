@@ -1,12 +1,16 @@
 use std::path::PathBuf;
 
+use futures::TryStreamExt;
 use tauri::{api::dialog::blocking::FileDialogBuilder, Manager};
+use tokio::{process::Command, select};
+use ipc_channel::ipc;
+
 
 use crate::{error::ChoreoError, ChoreoResult, ResultExt};
 
 use super::{
     file::{self, WritingResources},
-    generate,
+    generate::{self, LocalProgressUpdate, RemoteProgressUpdate},
     types::{Expr, OpenFilePayload, Project, RobotConfig, Traj},
 };
 
@@ -142,4 +146,103 @@ pub async fn generate(
 #[tauri::command]
 pub async fn cancel() {
     trajoptlib::cancel_all();
+}
+
+#[tauri::command]
+pub async fn generate_remote(
+    app_handle: tauri::AppHandle,
+    project: Project,
+    traj: Traj,
+    handle: i64,
+) -> ChoreoResult<Traj> {
+    let resources = app_handle.state::<WritingResources>();
+    let project_path = resources.get_deploy_path()
+        .await?.join(format!("{}.chor", project.name));
+
+    let (server, server_name) = ipc::IpcOneShotServer::<RemoteProgressUpdate>::new()
+        .map_err(|e| ChoreoError::SolverError(format!("Failed to create IPC server: {e:?}")))?;
+
+    let mut child = Command::new("Choreo")
+        .arg("--chor")
+        .arg(project_path)
+        .arg("--traj")
+        .arg(traj.name)
+        .arg("-g")
+        .arg("--ipc")
+        .arg(server_name)
+        .spawn()?;
+
+
+    let (rx, _) = server.accept()
+        .map_err(|e| ChoreoError::SolverError(format!("Failed to accept IPC connection: {e:?}")))?;
+
+    let mut stream = rx.to_stream();
+
+    // loop {
+    //     match rx.try_next().await {
+    //         Ok(Some(update)) => {
+    //             match update {
+    //                 RemoteProgressUpdate::IncompleteTraj(traj) => {
+    //                     app_handle.emit_all(
+    //                         "solver-status",
+    //                         LocalProgressUpdate {
+    //                             traj,
+    //                             handle
+    //                         },
+    //                     ).expect("Failed to emit solver status");
+    //                 },
+    //                 RemoteProgressUpdate::CompleteTraj(traj) => {
+    //                     return Ok(traj);
+    //                 },
+    //                 RemoteProgressUpdate::Error(e) => {
+    //                     return Err(ChoreoError::SolverError(e));
+    //                 },
+    //             }
+    //         },
+    //         Ok(None) => {
+    //             return Err(ChoreoError::SolverError("Solver exited without sending a result".to_string()));
+    //         },
+    //         Err(e) => {
+    //             return Err(ChoreoError::SolverError(format!("Error receiving solver update: {e:?}")));
+    //         },
+    //     }
+    // }
+
+    loop {
+        // select over rx.try_next() and child.wait()
+        select! {
+            update_res = stream.try_next() => {
+                match update_res {
+                    Ok(Some(update)) => {
+                        match update {
+                            RemoteProgressUpdate::IncompleteTraj(traj) => {
+                                app_handle.emit_all(
+                                    "solver-status",
+                                    LocalProgressUpdate {
+                                        traj,
+                                        handle
+                                    },
+                                ).expect("Failed to emit solver status");
+                            },
+                            RemoteProgressUpdate::CompleteTraj(traj) => {
+                                return Ok(traj);
+                            },
+                            RemoteProgressUpdate::Error(e) => {
+                                return Err(ChoreoError::SolverError(e));
+                            },
+                        }
+                    },
+                    Ok(None) => {
+                        return Err(ChoreoError::SolverError("Solver exited without sending a result".to_string()));
+                    },
+                    Err(e) => {
+                        return Err(ChoreoError::SolverError(format!("Error receiving solver update: {e:?}")));
+                    },
+                }
+            },
+            _ = child.wait() => {
+                return Err(ChoreoError::SolverError("Solver exited without sending a result".to_string()));
+            },
+        }
+    }
 }

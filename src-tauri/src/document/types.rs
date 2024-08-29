@@ -201,7 +201,7 @@ impl Default for Project {
 }
 
 // traj file
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Waypoint<T: SnapshottableType> {
     pub x: T,
@@ -229,7 +229,7 @@ impl<T: SnapshottableType> Waypoint<T> {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 pub enum WaypointID {
     #[serde(rename = "first")]
     First,
@@ -272,7 +272,7 @@ pub enum ConstraintType {
     Segment,
     Both,
 }
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 #[serde(tag = "type", content = "props")]
 pub enum ConstraintData<T: SnapshottableType> {
     MaxVelocity {
@@ -322,7 +322,7 @@ impl<T: SnapshottableType> ConstraintData<T> {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 pub struct Constraint<T: SnapshottableType> {
     pub from: WaypointID,
     pub to: Option<WaypointID>,
@@ -346,7 +346,7 @@ pub struct ConstraintIDX<T: SnapshottableType> {
     pub data: ConstraintData<T>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 pub struct Sample {
     pub t: f64,
     pub x: f64,
@@ -359,7 +359,7 @@ pub struct Sample {
     pub fy: [f64; 4],
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ChoreoPath<T: SnapshottableType> {
     pub waypoints: Vec<Waypoint<T>>,
     pub constraints: Vec<Constraint<T>>,
@@ -374,7 +374,7 @@ impl<T: SnapshottableType> ChoreoPath<T> {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Output {
     pub waypoints: Vec<f64>,
@@ -383,7 +383,7 @@ pub struct Output {
     pub use_module_forces: bool,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[allow(clippy::struct_field_names)]
 pub struct Traj {
     pub name: String,

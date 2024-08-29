@@ -110,7 +110,8 @@ pub fn run_tauri(resources: WritingResources, project: Option<PathBuf>) {
             get_deploy_root,
             requested_file,
             delete_traj,
-            tracing_frontend
+            tracing_frontend,
+            generate_remote
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
