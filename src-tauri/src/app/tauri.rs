@@ -1,5 +1,5 @@
 use crate::document::file::WritingResources;
-use crate::document::generate::setup_progress_sender;
+use crate::document::generate::{setup_progress_sender, RemoteGenerationResources};
 #[allow(clippy::wildcard_imports)]
 use crate::document::plugin::*;
 use crate::document::types::OpenFilePayload;
@@ -57,7 +57,7 @@ pub async fn tracing_frontend(level: String, msg: String, line: String, file: St
     }
 }
 
-pub fn run_tauri(resources: WritingResources, project: Option<PathBuf>) {
+pub fn run_tauri(writing_resources: WritingResources, project: Option<PathBuf>) {
     tracing::info!("Starting Choreo Gui");
 
     if let Some(project_path) = project {
@@ -81,9 +81,12 @@ pub fn run_tauri(resources: WritingResources, project: Option<PathBuf>) {
     }
 
     let rx = setup_progress_sender();
+    let remote_resources = RemoteGenerationResources::new();
+
     tauri::Builder::default()
         .setup(move |app| {
-            resources.delegate_to_app(&app.app_handle());
+            writing_resources.delegate_to_app(&app.app_handle());
+            remote_resources.delegate_to_app(&app.app_handle());
 
             let progress_emitter = app.handle();
             let _ = thread::spawn(move || {
@@ -95,7 +98,7 @@ pub fn run_tauri(resources: WritingResources, project: Option<PathBuf>) {
         })
         .invoke_handler(tauri::generate_handler![
             generate,
-            cancel,
+            cancel_all,
             guess_control_interval_counts,
             open_in_explorer,
             default_project,
@@ -111,7 +114,9 @@ pub fn run_tauri(resources: WritingResources, project: Option<PathBuf>) {
             requested_file,
             delete_traj,
             tracing_frontend,
-            generate_remote
+            generate_remote,
+            kill_remote_generation,
+            kill_all_remote_generators
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

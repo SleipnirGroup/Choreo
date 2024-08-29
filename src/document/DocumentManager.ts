@@ -671,18 +671,10 @@ export async function renamePath(uuid: string, newName: string) {
   if (uiState.hasSaveLocation) {
     const traj = doc.pathlist.paths.get(uuid);
     if (traj) {
-      await Commands.renameTraj(traj.serialize, newName)
-        .then((new_traj) => {
-          doc.pathlist.deletePath(uuid);
-          doc.pathlist.addPath(newName, true, new_traj);
-        })
-        .catch((e) => {
-          TraceError(e);
-        });
+      await Commands.renameTraj(traj.serialize, newName).catch(ErrorHook);
     }
-  } else {
-    doc.pathlist.paths.get(uuid)?.setName(newName);
   }
+  doc.pathlist.paths.get(uuid)?.setName(newName);
 }
 
 export async function deletePath(uuid: string) {

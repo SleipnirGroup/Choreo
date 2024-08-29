@@ -9,7 +9,10 @@ export const Commands = {
     invoke<Traj>("generate_remote", { project, traj, handle }),
   guessIntervals: (config: RobotConfig<Expr>, traj: Traj) =>
     invoke<number[]>("guess_control_interval_counts", { config, traj }),
-  cancel: () => invoke<void>("cancel"),
+  cancelAll: () => invoke<void>("cancel_all"),
+  cancelAllRemote: () => invoke<void>("kill_all_remote_generators"),
+  cancelRemote: (handle: number) =>
+    invoke<void>("kill_remote_generation", { handle }),
 
   /**
    * Opens the specified directory in the system's file explorer.
@@ -82,14 +85,12 @@ export const Commands = {
   /**
    * Renames the specified `Traj` to the specified name.
    *
-   * The old `Traj` should not be used again after this operation.
-   *
    * @param oldTraj The `Traj` to rename.
    * @param newName The new name for the `Traj`.
-   * @returns The renamed `Traj`.
+   * @returns `void`
    */
   renameTraj: (oldTraj: Traj, newName: string) =>
-    invoke<Traj>("rename_traj", { oldTraj, newName }),
+    invoke<void>("rename_traj", { oldTraj, newName }),
   /**
    * Deletes the specified `Traj` from the deploy root directory.
    *

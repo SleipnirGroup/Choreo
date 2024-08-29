@@ -1,15 +1,37 @@
 use std::sync::mpsc::{channel, Receiver, Sender};
-use std::sync::OnceLock;
+use std::sync::{Arc, OnceLock};
 use std::vec;
 
+use dashmap::DashMap;
+use futures::{FutureExt, TryStreamExt};
+use ipc_channel::ipc;
+use tauri::Manager;
+use tokio::process::Command;
+use tokio::select;
+use tokio::sync::oneshot::{self, Sender as OneshotSender};
 use trajoptlib::{Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory};
 
+use super::file::WritingResources;
 use super::intervals::guess_control_interval_counts;
 use super::types::{
     ChoreoPath, ConstraintData, ConstraintIDX, ConstraintType, Module, Project, Sample, Traj,
 };
 use crate::error::ChoreoError;
-use crate::ChoreoResult;
+use crate::{ChoreoResult, ResultExt};
+
+/**
+ * A [`OnceLock`] is a synchronization primitive that can be written to
+ * once. Used here to create a read-only static reference to the sender,
+ * even though the sender can't be constructed in a static context.
+ */
+pub static PROGRESS_SENDER_LOCK: OnceLock<Sender<LocalProgressUpdate>> = OnceLock::new();
+
+fn solver_status_callback(traj: SwerveTrajectory, handle: i64) {
+    let tx_opt = PROGRESS_SENDER_LOCK.get();
+    if let Some(tx) = tx_opt {
+        tx.send(LocalProgressUpdate { traj, handle }).trace_warn();
+    };
+}
 
 fn fix_scope(idx: usize, removed_idxs: &Vec<usize>) -> usize {
     let mut to_subtract: usize = 0;
@@ -32,6 +54,58 @@ pub enum RemoteProgressUpdate {
     IncompleteTraj(SwerveTrajectory),
     CompleteTraj(Traj),
     Error(String),
+}
+
+#[derive(Clone)]
+pub struct RemoteGenerationResources {
+    frontend_emitter: Option<Sender<LocalProgressUpdate>>,
+    kill_map: Arc<DashMap<i64, OneshotSender<()>>>,
+}
+
+impl RemoteGenerationResources {
+    /**
+     * Should be called after [`setup_progress_sender`] to ensure that the sender is initialized.
+     */
+    pub fn new() -> Self {
+        Self {
+            frontend_emitter: PROGRESS_SENDER_LOCK.get().cloned(),
+            kill_map: Arc::new(DashMap::new()),
+        }
+    }
+
+    pub fn add_killer(&self, handle: i64, sender: OneshotSender<()>) {
+        self.kill_map.insert(handle, sender);
+    }
+
+    pub fn kill(&self, handle: i64) -> ChoreoResult<()> {
+        self.kill_map
+            .remove(&handle)
+            .ok_or(ChoreoError::OutOfBounds("Handle", "not found"))
+            .map(|(_, sender)| {
+                let _ = sender.send(());
+            })
+    }
+
+    pub fn kill_all(&self) {
+        let handles = self
+            .kill_map
+            .iter()
+            .map(|r| *r.key())
+            .collect::<vec::Vec<i64>>();
+        for handle in handles {
+            let _ = self.kill(handle);
+        }
+    }
+
+    pub fn emit_progress(&self, update: LocalProgressUpdate) {
+        if let Some(emitter) = &self.frontend_emitter {
+            emitter.send(update).trace_warn();
+        }
+    }
+
+    pub fn delegate_to_app(&self, app_handle: &tauri::AppHandle) {
+        app_handle.manage(self.clone());
+    }
 }
 
 pub fn setup_progress_sender() -> Receiver<LocalProgressUpdate> {
@@ -309,16 +383,78 @@ fn postprocess(
     traj
 }
 
-fn solver_status_callback(traj: SwerveTrajectory, handle: i64) {
-    let tx_opt = PROGRESS_SENDER_LOCK.get();
-    if let Some(tx) = tx_opt {
-        let _ = tx.send(LocalProgressUpdate { traj, handle });
-    };
-}
+pub async fn generate_remote(
+    writing_resources: &WritingResources,
+    remote_resources: &RemoteGenerationResources,
+    project: Project,
+    traj: Traj,
+    handle: i64,
+) -> ChoreoResult<Traj> {
+    let project_path = writing_resources
+        .get_deploy_path()
+        .await?
+        .join(format!("{}.chor", project.name));
 
-/**
- * A [`OnceLock`] is a synchronization primitive that can be written to
- * once. Used here to create a read-only static reference to the sender,
- * even though the sender can't be constructed in a static context.
- */
-pub static PROGRESS_SENDER_LOCK: OnceLock<Sender<LocalProgressUpdate>> = OnceLock::new();
+    let (server, server_name) = ipc::IpcOneShotServer::<RemoteProgressUpdate>::new()
+        .map_err(|e| ChoreoError::SolverError(format!("Failed to create IPC server: {e:?}")))?;
+
+    let mut child = Command::new("Choreo")
+        .arg("--chor")
+        .arg(project_path)
+        .arg("--traj")
+        .arg(traj.name)
+        .arg("-g")
+        .arg("--ipc")
+        .arg(server_name)
+        .spawn()?;
+
+    let (rx, _) = server
+        .accept()
+        .map_err(|e| ChoreoError::SolverError(format!("Failed to accept IPC connection: {e:?}")))?;
+
+    let (killer, victim) = oneshot::channel::<()>();
+    remote_resources.add_killer(handle, killer);
+    let mut victim = victim.into_stream();
+
+    let mut stream = rx.to_stream();
+
+    loop {
+        select! {
+            update_res = stream.try_next() => {
+                match update_res {
+                    Ok(Some(update)) => {
+                        match update {
+                            RemoteProgressUpdate::IncompleteTraj(traj) => {
+                                remote_resources.emit_progress(
+                                    LocalProgressUpdate {
+                                        traj,
+                                        handle
+                                    }
+                                );
+                            },
+                            RemoteProgressUpdate::CompleteTraj(traj) => {
+                                return Ok(traj);
+                            },
+                            RemoteProgressUpdate::Error(e) => {
+                                return Err(ChoreoError::SolverError(e));
+                            },
+                        }
+                    },
+                    Ok(None) => {
+                        return Err(ChoreoError::SolverError("Solver exited without sending a result".to_string()));
+                    },
+                    Err(e) => {
+                        return Err(ChoreoError::SolverError(format!("Error receiving solver update: {e:?}")));
+                    },
+                }
+            },
+            _ = child.wait() => {
+                return Err(ChoreoError::SolverError("Solver exited without sending a result".to_string()));
+            },
+            _ = victim.try_next() => {
+                child.kill().await?;
+                return Err(ChoreoError::SolverError("Solver killed".to_string()));
+            }
+        }
+    }
+}
