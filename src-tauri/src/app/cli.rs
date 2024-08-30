@@ -190,7 +190,7 @@ impl Cli {
 
                     match res {
                         Ok(traj) => {
-                            ipc.send(RemoteProgressUpdate::CompleteTraj(traj))
+                            ipc.send(RemoteProgressUpdate::CompleteTraj(traj.traj))
                                 .expect("Failed to send progress update");
                         }
                         Err(e) => {

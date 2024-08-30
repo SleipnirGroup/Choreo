@@ -14,7 +14,7 @@ use trajoptlib::{Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory};
 use super::file::WritingResources;
 use super::intervals::guess_control_interval_counts;
 use super::types::{
-    ChoreoPath, ConstraintData, ConstraintIDX, ConstraintType, Module, Project, Sample, Traj,
+    ChoreoPath, ConstraintData, ConstraintIDX, ConstraintType, Module, Output, Project, Sample, Traj
 };
 use crate::error::ChoreoError;
 use crate::{ChoreoResult, ResultExt};
@@ -52,7 +52,7 @@ pub struct LocalProgressUpdate {
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub enum RemoteProgressUpdate {
     IncompleteTraj(SwerveTrajectory),
-    CompleteTraj(Traj),
+    CompleteTraj(Output),
     Error(String),
 }
 
@@ -402,7 +402,7 @@ pub async fn generate_remote(
         .arg("--chor")
         .arg(project_path)
         .arg("--traj")
-        .arg(traj.name)
+        .arg(&traj.name)
         .arg("-g")
         .arg("--ipc")
         .arg(server_name)
@@ -432,8 +432,14 @@ pub async fn generate_remote(
                                     }
                                 );
                             },
-                            RemoteProgressUpdate::CompleteTraj(traj) => {
-                                return Ok(traj);
+                            RemoteProgressUpdate::CompleteTraj(output) => {
+                                return Ok(
+                                    Traj { 
+                                        traj: output,
+                                        snapshot: Some(traj.path.snapshot()),
+                                        .. traj
+                                    }
+                                )
                             },
                             RemoteProgressUpdate::Error(e) => {
                                 return Err(ChoreoError::SolverError(e));
