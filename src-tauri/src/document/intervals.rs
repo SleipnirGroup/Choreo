@@ -58,8 +58,8 @@ pub fn guess_control_interval_count(
         Some(next) => {
             let dx = next.x - this.x;
             let dy = next.y - this.y;
-            let dtheta = angle_modulus(next.heading - this.heading).abs();
             let distance = dx.hypot(dy);
+            let dtheta = angle_modulus(next.heading - this.heading).abs();
             let max_force = config.wheel_max_torque() / config.radius;
 
             // Default to robotConfig's max velocity and acceleration
