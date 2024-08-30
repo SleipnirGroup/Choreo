@@ -2,7 +2,9 @@
 use std::{path::PathBuf, process::exit, thread};
 
 use clap::Parser;
-use ipc_channel::ipc::{self, IpcSender};
+use ipc_channel::ipc::IpcSender;
+use serde::{Deserialize, Serialize};
+use tokio::fs;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use super::tauri::run_tauri;
@@ -10,7 +12,7 @@ use crate::{
     document::{
         file::{self, WritingResources},
         generate::{generate, setup_progress_sender, RemoteProgressUpdate},
-        types::Traj,
+        types::{Project, Traj},
     },
     ChoreoResult,
 };
@@ -24,8 +26,12 @@ const ACTION_OPTIONS: &str = "Action Options";
 enum CliAction {
     Generate {
         project_path: PathBuf,
-        traj_names: Vec<String>,
-        progress_responder: Option<IpcSender<RemoteProgressUpdate>>,
+        traj_names: Vec<String>
+    },
+    Remote {
+        project_path: PathBuf,
+        traj_path: PathBuf,
+        responder: IpcSender<RemoteProgressUpdate>,
     },
     Gui,
     GuiWithProject {
@@ -51,6 +57,13 @@ impl CliAction {
                 .init(),
         }
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RemoteArgs {
+    pub project: PathBuf,
+    pub traj: PathBuf,
+    pub ipc: String,
 }
 
 #[derive(Parser)]
@@ -106,13 +119,26 @@ pub struct Cli {
     #[arg(
         long,
         help_heading = ADVANCED_OPTIONS,
-        help = "A serialized IPC handle to the parent process",
+        help = "The information needed to do a remote generation",
     )]
-    pub ipc: Option<String>,
+    pub remote: Option<String>,
 }
 
 impl Cli {
     fn action(self) -> CliAction {
+        if let Some(remote_args) = self.remote {
+            let remote_args: RemoteArgs = serde_json::from_str(&remote_args)
+                .expect("Failed to deserialize remote arguments");
+
+            let ipc = IpcSender::<RemoteProgressUpdate>::connect(remote_args.ipc)
+                .expect("Failed to deserialize IPC handle");
+
+            return CliAction::Remote {
+                project_path: remote_args.project,
+                traj_path: remote_args.traj,
+                responder: ipc,
+            };
+        }
         if self.generate {
             if let Some(project_path) = self.chor {
                 if self.traj.is_empty() {
@@ -120,23 +146,9 @@ impl Cli {
                         "Trajectories must be provided for generation.".to_string(),
                     );
                 }
-                let ipc = if let Some(ipc) = self.ipc {
-                    if self.traj.len() > 1 || self.all_traj {
-                        return CliAction::Error(
-                            "IPC handle can only be used with a single trajectory.".to_string(),
-                        );
-                    }
-                    let tx = ipc::IpcSender::<RemoteProgressUpdate>::connect(ipc)
-                        .expect("Failed to deserialize IPC handle");
-
-                    Some(tx)
-                } else {
-                    None
-                };
                 return CliAction::Generate {
                     project_path,
-                    traj_names: self.traj,
-                    progress_responder: ipc,
+                    traj_names: self.traj
                 };
             }
             CliAction::Error("Choreo file must be provided for generation.".to_string())
@@ -158,52 +170,44 @@ impl Cli {
             CliAction::Generate {
                 project_path,
                 traj_names,
-                progress_responder,
             } => {
                 tracing::info!("CLIAction is Generate");
-                if let Some(ipc) = progress_responder {
-                    let rx = setup_progress_sender();
-                    let cln_ipc = ipc.clone();
-                    thread::Builder::new()
-                        .name("choreo-cli-progressupdater".to_string())
-                        .spawn(move || {
-                            for received in rx {
-                                cln_ipc
-                                    .send(RemoteProgressUpdate::IncompleteTraj(received.traj))
-                                    .expect("Failed to send progress update");
-                            }
-                        })
-                        .expect("Failed to spawn thread");
-
-                    let res = tokio::runtime::Builder::new_current_thread()
-                        .enable_all()
-                        .build()
-                        .expect("Failed to build tokio runtime")
-                        .block_on(Self::generate_single_traj(
-                            resources,
-                            project_path,
-                            traj_names
-                                .first()
-                                .expect("Traj names should have at least one element")
-                                .to_string(),
-                        ));
-
-                    match res {
-                        Ok(traj) => {
-                            ipc.send(RemoteProgressUpdate::CompleteTraj(traj.traj))
+                tokio::runtime::Builder::new_current_thread()
+                    .enable_all()
+                    .build()
+                    .expect("Failed to build tokio runtime")
+                    .block_on(Self::generate_trajs(resources, project_path, traj_names));
+            },
+            CliAction::Remote { project_path, traj_path, responder } => {
+                tracing::info!("CLIAction is Remote");
+                let rx = setup_progress_sender();
+                let cln_ipc = responder.clone();
+                thread::Builder::new()
+                    .name("choreo-cli-progressupdater".to_string())
+                    .spawn(move || {
+                        for received in rx {
+                            cln_ipc
+                                .send(RemoteProgressUpdate::IncompleteTraj(received.traj))
                                 .expect("Failed to send progress update");
                         }
-                        Err(e) => {
-                            ipc.send(RemoteProgressUpdate::Error(e.to_string()))
-                                .expect("Failed to send progress update");
-                        }
+                    })
+                    .expect("Failed to spawn thread");
+
+                let res = tokio::runtime::Builder::new_current_thread()
+                    .enable_all()
+                    .build()
+                    .expect("Failed to build tokio runtime")
+                    .block_on(Self::remote_generate(project_path, traj_path));
+
+                match res {
+                    Ok(traj) => {
+                        responder.send(RemoteProgressUpdate::CompleteTraj(traj.traj))
+                            .expect("Failed to send progress update");
                     }
-                } else {
-                    tokio::runtime::Builder::new_current_thread()
-                        .enable_all()
-                        .build()
-                        .expect("Failed to build tokio runtime")
-                        .block_on(Self::generate_trajs(resources, project_path, traj_names));
+                    Err(e) => {
+                        responder.send(RemoteProgressUpdate::Error(e.to_string()))
+                            .expect("Failed to send progress update");
+                    }
                 }
             }
             CliAction::Gui => {
@@ -270,44 +274,23 @@ impl Cli {
     }
 
     #[allow(clippy::cast_possible_wrap)]
-    async fn generate_single_traj(
-        resources: WritingResources,
+    async fn remote_generate(
         project_path: PathBuf,
-        traj_name: String,
+        traj_path: PathBuf
     ) -> ChoreoResult<Traj> {
         // set the deploy path to the project directory
-        file::set_deploy_path(
-            &resources,
-            project_path
-                .parent()
-                .expect("project path should have a parent directory")
-                .to_path_buf(),
-        )
-        .await;
+        let project = Project::from_content(&fs::read_to_string(&project_path).await?)?;
+        let traj = Traj::from_content(&fs::read_to_string(&traj_path).await?)?;
 
-        // read the project file
-        let project = file::read_project(
-            &resources,
-            project_path
-                .file_stem()
-                .expect("project path should have a file name")
-                .to_str()
-                .expect("project path should be a valid string")
-                .to_string(),
-        )
-        .await
-        .expect("Failed to read project file");
+        fs::remove_file(&project_path).await?;
+        fs::remove_file(&traj_path).await?;
 
-        tracing::info!("Generating trajectory {:} for {:}", traj_name, project.name);
-
-        let traj = file::read_traj(&resources, traj_name.to_string())
-            .await
-            .expect("Failed to read trajectory file");
+        tracing::info!("Generating trajectory {:} for {:}", traj.name, project.name);
 
         match generate(&project, traj, 0i64) {
             Ok(new_traj) => Ok(new_traj),
             Err(e) => {
-                tracing::error!("Failed to generate trajectory {:}: {:}", traj_name, e);
+                tracing::error!("Failed to generate trajectory {:}", e);
                 Err(e)
             }
         }

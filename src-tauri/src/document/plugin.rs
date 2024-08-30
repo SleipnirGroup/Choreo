@@ -155,9 +155,8 @@ pub async fn generate_remote(
     traj: Traj,
     handle: i64,
 ) -> ChoreoResult<Traj> {
-    let writing_resources = app_handle.state::<WritingResources>();
     let remote_resources = app_handle.state::<RemoteGenerationResources>();
-    generate::generate_remote(&writing_resources, &remote_resources, project, traj, handle).await
+    generate::generate_remote(&remote_resources, project, traj, handle).await
 }
 
 #[tauri::command]

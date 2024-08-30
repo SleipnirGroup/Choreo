@@ -1,3 +1,4 @@
+use std::mem::forget;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, OnceLock};
 use std::vec;
@@ -6,16 +7,17 @@ use dashmap::DashMap;
 use futures::{FutureExt, TryStreamExt};
 use ipc_channel::ipc;
 use tauri::Manager;
+use tempfile::NamedTempFile;
 use tokio::process::Command;
 use tokio::select;
 use tokio::sync::oneshot::{self, Sender as OneshotSender};
 use trajoptlib::{Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory};
 
-use super::file::WritingResources;
 use super::intervals::guess_control_interval_counts;
 use super::types::{
     ChoreoPath, ConstraintData, ConstraintIDX, ConstraintType, Module, Output, Project, Sample, Traj
 };
+use crate::app::cli::RemoteArgs;
 use crate::error::ChoreoError;
 use crate::{ChoreoResult, ResultExt};
 
@@ -384,28 +386,37 @@ fn postprocess(
 }
 
 pub async fn generate_remote(
-    writing_resources: &WritingResources,
     remote_resources: &RemoteGenerationResources,
     project: Project,
     traj: Traj,
     handle: i64,
 ) -> ChoreoResult<Traj> {
-    let project_path = writing_resources
-        .get_deploy_path()
-        .await?
-        .join(format!("{}.chor", project.name));
+    // create temp file for project and traj
+    let project_tmp = NamedTempFile::new()?;
+    let traj_tmp = NamedTempFile::new()?;
+
+    // write project and traj to temp files
+    let project_str = serde_json::to_string(&project).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
+    let traj_str = serde_json::to_string(&traj).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
+
+    tokio::fs::write(project_tmp.path(), project_str).await?;
+    tokio::fs::write(traj_tmp.path(), traj_str).await?;
 
     let (server, server_name) = ipc::IpcOneShotServer::<RemoteProgressUpdate>::new()
         .map_err(|e| ChoreoError::SolverError(format!("Failed to create IPC server: {e:?}")))?;
 
+    let remote_args = RemoteArgs {
+        project: project_tmp.path().to_path_buf(),
+        traj: traj_tmp.path().to_path_buf(),
+        ipc: server_name,
+    };
+
+    forget(project_tmp);
+    forget(traj_tmp);
+
     let mut child = Command::new("Choreo")
-        .arg("--chor")
-        .arg(project_path)
-        .arg("--traj")
-        .arg(&traj.name)
-        .arg("-g")
-        .arg("--ipc")
-        .arg(server_name)
+        .arg("--remote")
+        .arg(serde_json::to_string(&remote_args)?)
         .spawn()?;
 
     let (rx, _) = server

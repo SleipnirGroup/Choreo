@@ -29,6 +29,7 @@ clap = { version = "4.5.16", features = ["derive"] }
 nu-ansi-term = "0.50.1"
 ipc-channel = { version = "0.18.2", features = ["async"] }
 futures = "0.3.30"
+tempfile = "3.12.0"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

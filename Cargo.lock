@@ -370,6 +370,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tauri-build",
+ "tempfile",
  "thiserror",
  "tokio",
  "tracing",
