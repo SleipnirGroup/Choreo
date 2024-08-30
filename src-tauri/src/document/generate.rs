@@ -15,7 +15,8 @@ use trajoptlib::{Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory};
 
 use super::intervals::guess_control_interval_counts;
 use super::types::{
-    ChoreoPath, ConstraintData, ConstraintIDX, ConstraintType, Module, Output, Project, Sample, Traj
+    ChoreoPath, ConstraintData, ConstraintIDX, ConstraintType, Module, Output, Project, Sample,
+    Traj,
 };
 use crate::app::cli::RemoteArgs;
 use crate::error::ChoreoError;
@@ -396,8 +397,10 @@ pub async fn generate_remote(
     let traj_tmp = NamedTempFile::new()?;
 
     // write project and traj to temp files
-    let project_str = serde_json::to_string(&project).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
-    let traj_str = serde_json::to_string(&traj).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
+    let project_str =
+        serde_json::to_string(&project).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
+    let traj_str =
+        serde_json::to_string(&traj).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
 
     tokio::fs::write(project_tmp.path(), project_str).await?;
     tokio::fs::write(traj_tmp.path(), traj_str).await?;
@@ -445,7 +448,7 @@ pub async fn generate_remote(
                             },
                             RemoteProgressUpdate::CompleteTraj(output) => {
                                 return Ok(
-                                    Traj { 
+                                    Traj {
                                         traj: output,
                                         snapshot: Some(traj.path.snapshot()),
                                         .. traj

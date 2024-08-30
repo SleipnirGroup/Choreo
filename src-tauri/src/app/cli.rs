@@ -26,7 +26,7 @@ const ACTION_OPTIONS: &str = "Action Options";
 enum CliAction {
     Generate {
         project_path: PathBuf,
-        traj_names: Vec<String>
+        traj_names: Vec<String>,
     },
     Remote {
         project_path: PathBuf,
@@ -127,8 +127,8 @@ pub struct Cli {
 impl Cli {
     fn action(self) -> CliAction {
         if let Some(remote_args) = self.remote {
-            let remote_args: RemoteArgs = serde_json::from_str(&remote_args)
-                .expect("Failed to deserialize remote arguments");
+            let remote_args: RemoteArgs =
+                serde_json::from_str(&remote_args).expect("Failed to deserialize remote arguments");
 
             let ipc = IpcSender::<RemoteProgressUpdate>::connect(remote_args.ipc)
                 .expect("Failed to deserialize IPC handle");
@@ -148,7 +148,7 @@ impl Cli {
                 }
                 return CliAction::Generate {
                     project_path,
-                    traj_names: self.traj
+                    traj_names: self.traj,
                 };
             }
             CliAction::Error("Choreo file must be provided for generation.".to_string())
@@ -177,8 +177,12 @@ impl Cli {
                     .build()
                     .expect("Failed to build tokio runtime")
                     .block_on(Self::generate_trajs(resources, project_path, traj_names));
-            },
-            CliAction::Remote { project_path, traj_path, responder } => {
+            }
+            CliAction::Remote {
+                project_path,
+                traj_path,
+                responder,
+            } => {
                 tracing::info!("CLIAction is Remote");
                 let rx = setup_progress_sender();
                 let cln_ipc = responder.clone();
@@ -201,11 +205,13 @@ impl Cli {
 
                 match res {
                     Ok(traj) => {
-                        responder.send(RemoteProgressUpdate::CompleteTraj(traj.traj))
+                        responder
+                            .send(RemoteProgressUpdate::CompleteTraj(traj.traj))
                             .expect("Failed to send progress update");
                     }
                     Err(e) => {
-                        responder.send(RemoteProgressUpdate::Error(e.to_string()))
+                        responder
+                            .send(RemoteProgressUpdate::Error(e.to_string()))
                             .expect("Failed to send progress update");
                     }
                 }
@@ -274,10 +280,7 @@ impl Cli {
     }
 
     #[allow(clippy::cast_possible_wrap)]
-    async fn remote_generate(
-        project_path: PathBuf,
-        traj_path: PathBuf
-    ) -> ChoreoResult<Traj> {
+    async fn remote_generate(project_path: PathBuf, traj_path: PathBuf) -> ChoreoResult<Traj> {
         // set the deploy path to the project directory
         let project = Project::from_content(&fs::read_to_string(&project_path).await?)?;
         let traj = Traj::from_content(&fs::read_to_string(&traj_path).await?)?;
