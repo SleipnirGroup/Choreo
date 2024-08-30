@@ -28,7 +28,7 @@ import {
   exportAllTrajectories,
   newProject,
   openProject,
-  saveFileDialog,
+  saveProjectDialog,
   uiState
 } from "./document/DocumentManager";
 
@@ -164,7 +164,7 @@ class AppMenu extends Component<Props, State> {
             {/* Save File */}
             <ListItemButton
               onClick={async () => {
-                saveFileDialog();
+                saveProjectDialog();
               }}
             >
               <ListItemIcon>
@@ -225,7 +225,7 @@ class AppMenu extends Component<Props, State> {
                       }
                     )
                   ) {
-                    if (!(await saveFileDialog())) {
+                    if (!(await saveProjectDialog())) {
                       return;
                     }
                   } else {
@@ -234,7 +234,7 @@ class AppMenu extends Component<Props, State> {
                 }
 
                 toast.promise(exportAllTrajectories(), {
-                  success: `Saved all trajectories to ${uiState.chorRelativeTrajDir}.`,
+                  success: `Saved all trajectories.`,
                   error: {
                     render(toastProps) {
                       tracing.error(toastProps.data);
@@ -341,15 +341,14 @@ class AppMenu extends Component<Props, State> {
   private projectLocation(relativeFormat: boolean): string {
     return (
       (relativeFormat
-        ? this.convertToRelative(uiState.saveFileDir as string)
-        : uiState.saveFileDir) + path.sep
+        ? this.convertToRelative(uiState.projectDir as string)
+        : uiState.projectDir) + path.sep
     );
   }
 
   private trajectoriesLocation(relativeFormat: boolean): string {
     return (
       this.projectLocation(relativeFormat) +
-      uiState.chorRelativeTrajDir +
       path.sep
     );
   }

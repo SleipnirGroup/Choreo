@@ -129,6 +129,9 @@ export const DocumentStore = types
       self.robotConfig.deserialize(ser.config);
       self.pathlist.paths.clear();
     },
+    setName(name: string) {
+      self.name = name;
+    },
     setSelectedSidebarItem(item: SelectableItemTypes) {
       self.history.withoutUndo(() => {
         self.selectedSidebarItem = item;

@@ -358,14 +358,14 @@ export async function setupEventListeners() {
   tauriWindow
     .getCurrent()
     .listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
-      if (!uiState.hasSaveLocation) {
+      if (await canSave()) {
         if (
           await dialog.ask("Save project?", {
             title: "Choreo",
             type: "warning"
           })
         ) {
-          if (!(await saveFileDialog())) {
+          if (!(await saveProjectDialog())) {
             return;
           }
         }
@@ -381,13 +381,13 @@ export async function setupEventListeners() {
     () => doc.history.undoIdx,
     () => {
       if (uiState.hasSaveLocation) {
-        tracing.info("autosave");
-        saveFile();
+        tracing.debug("autosaving project");
+        saveProject();
       }
     }
   );
   const updateTitleUnlisten = reaction(
-    () => uiState.saveFileName,
+    () => uiState.projectName,
     () => {
       uiState.updateWindowTitle();
     }
@@ -567,49 +567,54 @@ export async function setupEventListeners() {
 }
 
 export async function openProject(projectPath: OpenFilePayload) {
-  const dir = projectPath.dir;
-  const name = projectPath.name.split(".")[0];
-  let chor: Project | undefined = undefined;
-  const trajs: Traj[] = [];
-  await Commands.setDeployRoot(dir);
-  await Promise.allSettled([
-    Commands.readProject(name)
-      .then((c) => (chor = c))
-      .catch(tracing.error),
-    Commands.readAllTraj()
-      .then((paths) =>
-        paths.forEach((path) => {
-          trajs.push(path);
-        })
-      )
-      .catch(tracing.error)
-  ]);
+  try {
+    const dir = projectPath.dir;
+    const name = projectPath.name.split(".")[0];
+    let project: Project | undefined = undefined;
+    const trajs: Traj[] = [];
+    await Commands.setDeployRoot(dir);
+    await Promise.allSettled([
+      Commands.readProject(name)
+        .then((p) => (project = p))
+        .catch(tracing.error),
+      Commands.readAllTraj()
+        .then((paths) =>
+          paths.forEach((path) => {
+            trajs.push(path);
+          })
+        )
+        .catch(tracing.error)
+    ]);
 
-  if (chor === undefined) {
-    throw "Internal error. Check console logs.";
+    if (project === undefined) {
+      throw "Internal error. Check console logs.";
+    }
+    doc.deserializeChor(project);
+    trajs.forEach((traj) => {
+      doc.pathlist.addPath(traj.name, true, traj);
+    });
+    uiState.setSaveFileDir(dir);
+    uiState.setProjectName(name);
+    localStorage.setItem(
+      LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
+      JSON.stringify({ dir, name })
+    );
+  } catch (e) {
+    await Commands.setDeployRoot("");
+    throw e;
   }
-  doc.deserializeChor(chor);
-  trajs.forEach((traj) => {
-    doc.pathlist.addPath(traj.name, true, traj);
-  });
-  uiState.setSaveFileDir(dir);
-  uiState.setSaveFileName(name);
-  localStorage.setItem(
-    LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
-    JSON.stringify({ dir, name })
-  );
 }
 
 export async function generateAndExport(uuid: string) {
   await doc.generatePath(uuid);
-  await exportTrajectory(uuid);
+  await writeTrajectory(uuid);
 }
 
 export async function generateWithToastsAndExport(uuid: string) {
   const pathName = doc.pathlist.paths.get(uuid)?.name;
   doc.generatePathWithToasts(uuid).then(() =>
     toast.promise(writeTrajectory(uuid), {
-      success: `Saved "${pathName}" to ${uiState.chorRelativeTrajDir}.`,
+      success: `Saved "${pathName}" to ${uiState.projectDir}.`,
       error: {
         render(toastProps) {
           tracing.error(toastProps.data);
@@ -667,6 +672,10 @@ export function select(item: SelectableItemTypes) {
   doc.setSelectedSidebarItem(item);
 }
 
+export async function canSave(): Promise<boolean> {
+  return (await Commands.getDeployRoot()).length > 0;
+}
+
 export async function renamePath(uuid: string, newName: string) {
   if (uiState.hasSaveLocation) {
     const traj = doc.pathlist.paths.get(uuid);
@@ -701,35 +710,30 @@ export async function deletePath(uuid: string) {
  */
 export async function writeTrajectory(uuid: string) {
   // Avoid conflicts with tauri path namespace
-  const chorPath = doc.pathlist.paths.get(uuid);
-  if (chorPath === undefined) {
-    throw `Tried to export trajectory with unknown uuid ${uuid}`;
+  if (await canSave()) {
+    const traj = doc.pathlist.paths.get(uuid);
+    if (traj === undefined) {
+      throw `Tried to export trajectory with unknown uuid ${uuid}`;
+    }
+    await Commands.writeTraj(traj.serialize);
+  } else {
+    tracing.warn("Can't save trajectory, skipping");
   }
-  await Commands.writeTraj(chorPath.serialize);
-}
-
-export async function exportTrajectory(uuid: string) {
-  return await writeTrajectory(uuid);
 }
 
 export async function exportActiveTrajectory() {
-  return await exportTrajectory(doc.pathlist.activePathUUID);
+  return await writeTrajectory(doc.pathlist.activePathUUID);
 }
 
-export async function saveFile() {
-  const dir = uiState.saveFileDir;
-  const name = uiState.saveFileName;
-  // we could use hasSaveLocation but TS wouldn't know
-  // that dir and name aren't undefined below
-  if (dir === undefined || name === undefined) {
-    return await saveFileDialog();
+export async function saveProject() {
+  if (await canSave()) {
+    await Commands.writeProject(doc.serializeChor());
   } else {
-    await saveFileAs(dir, name);
+    tracing.warn("Can't save project, skipping");
   }
-  return true;
 }
 
-export async function saveFileDialog() {
+export async function saveProjectDialog() {
   const filePath = await dialog.save({
     title: "Save Document",
     filters: [
@@ -743,32 +747,22 @@ export async function saveFileDialog() {
     return false;
   }
   const dir = await path.dirname(filePath);
-  let name = await path.basename(filePath);
-  if (!name.endsWith(".chor")) {
-    name = name + ".chor";
-  }
-  await saveFileAs(dir, name);
+  const name = (await path.basename(filePath)).split(".")[0];
+
+  tracing.info("Saving to", dir, name);
+
+  doc.setName(name);
+
+  await Commands.setDeployRoot(dir)
+    .catch(tracing.error);
+
   uiState.setSaveFileDir(dir);
-  uiState.setSaveFileName(name);
+  uiState.setProjectName(name);
+
+  await saveProject();
 
   toast.success(`Saved ${name}. Future changes will now be auto-saved.`);
   return true;
-}
-
-/**
- * Save the doc as `dir/name`.
- * @param dir The absolute path to the directory that will contain the saved file
- * @param name The saved file, name only, including the extension ".chor"
- * @returns Whether the dir contains a file named "build.gradle", or undefined
- * if something failed
- */
-async function saveFileAs(dir: string, name: string): Promise<void> {
-  if (dir !== uiState.saveFileDir || name !== uiState.saveFileName) {
-    await Commands.setDeployRoot(dir);
-    uiState.setSaveFileDir(dir);
-    uiState.setSaveFileName(name);
-  }
-  return Commands.writeProject(doc.serializeChor());
 }
 
 /**
@@ -793,14 +787,6 @@ export async function exportAllTrajectories() {
       if (errors.length != 0) {
         throw errors;
       }
-    });
-  }
-}
-
-export async function clearAllTrajectories() {
-  if (uiState.hasSaveLocation && uiState.chorRelativeTrajDir !== undefined) {
-    invoke("delete_dir", {
-      dir: uiState.saveFileDir + path.sep + uiState.chorRelativeTrajDir
     });
   }
 }
