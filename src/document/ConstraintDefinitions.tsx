@@ -8,7 +8,7 @@ import { Unit } from "mathjs";
 import { JSXElementConstructor, ReactElement } from "react";
 import { ObjectTyped } from "../util/ObjectTyped";
 import { Expr } from "./2025/DocumentTypes";
-import { Units } from "./ExpressionStore";
+import { Dimensions, Units } from "./ExpressionStore";
 
 export type ConstraintPropertyType = Expr | boolean;
 
@@ -85,7 +85,7 @@ export const ConstraintDefinitions: defs = {
       max: {
         name: "Max Velocity",
         description: "Maximum linear velocity of robot chassis",
-        units: Units.MeterPerSecond,
+        units: Dimensions.LinVel.unit,
         defaultVal: ["0 m/s", 0]
       }
     },
@@ -102,7 +102,7 @@ export const ConstraintDefinitions: defs = {
       max: {
         name: "Max Acceleration",
         description: "Maximum Linear Acceleration of robot chassis",
-        units: Units.MeterPerSecondSquared,
+        units: Dimensions.LinAcc.unit,
         defaultVal: ["10 m/s^2", 10]
       }
     },
@@ -119,20 +119,20 @@ export const ConstraintDefinitions: defs = {
       x: {
         name: "X",
         description: "The x coordinate of the point the robot should face",
-        units: Units.Meter,
+        units: Dimensions.Length.unit,
         defaultVal: ["0 m", 0]
       },
       y: {
         name: "Y",
         description: "The y coordinate of the point the robot should face",
-        units: Units.Meter,
+        units: Dimensions.Length.unit,
         defaultVal: ["0 m", 0]
       },
       tolerance: {
         name: "Heading Tolerance",
         description:
           "The allowable heading range relative to the direction to the point. Keep less than Pi.",
-        units: Units.Radian,
+        units: Dimensions.Angle.unit,
         defaultVal: ["1 deg", Math.PI / 180.0]
       },
       flip: {

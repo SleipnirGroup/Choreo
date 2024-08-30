@@ -2,6 +2,14 @@
  "version":"v2025.0.0",
  "variables":{
   "expressions":{
+   "rmass":{
+    "unit":"Meter",
+    "var":["68 kg",68.0]
+   },
+   "frame":{
+    "unit":"Meter",
+    "var":["27 in",0.0]
+   },
    "hw":{
     "unit":"Meter",
     "var":["(frame - 5 in) / 2",0.0]
@@ -9,10 +17,6 @@
    "hb":{
     "unit":"Meter",
     "var":["(frame + 3.25 in) / 2",0.0]
-   },
-   "frame":{
-    "unit":"Meter",
-    "var":["27 in",0.0]
    }
   },
   "poses":{
@@ -21,7 +25,7 @@
     "y":["3 m",0.0],
     "heading":["70 deg",0.0]
    },
-   "spkr":{
+   "\"spkr p\"":{
     "x":["8 m",0.0],
     "y":["0 m",0.0],
     "heading":["0 deg",0.0]

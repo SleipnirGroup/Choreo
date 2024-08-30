@@ -91,13 +91,62 @@ export const Units = {
   MeterPerSecondSquared: math.unit("m/s^2"),
   Radian: math.unit("rad"),
   RadianPerSecond: math.unit("rad/s"),
+  RadianPerSecondSquared: math.unit("rad/s^2"),
   KgM2: math.unit("kg m^2"),
   Newton: math.unit("N"),
+  NewtonMeter: math.unit("N*m"),
   Kg: math.unit("kg"),
   RPM: math.createUnit("RPM", "1 cycle/min", { aliases: ["rpm"] })
 };
 // not sure why the alias above doesn't work
 math.createUnit("rpm", "1 RPM");
+
+export type Dimension = {
+  name: string,
+  unit: Unit
+}
+export const Dimensions = {
+  Length: {
+    name: "Length",
+    unit: Units.Meter
+  },
+  Angle: {
+    name: "Angle",
+    unit: Units.Radian
+  },
+  LinVel: {
+    name :"Linear Velocity",
+    unit: Units.MeterPerSecond
+  },
+  LinAcc: {
+    name: "Linear Acceleration",
+    unit: Units.MeterPerSecondSquared
+  },
+  AngVel: {
+    name: "Angular Velocity",
+    unit: Units.RadianPerSecond,
+  },
+  AngAcc: {
+    name: "Angular Acceleration",
+    unit: Units.RadianPerSecondSquared
+  },
+  Time: {
+    name: "Time",
+    unit: Units.Second
+  },
+  Mass: {
+    name: "Mass",
+    unit: Units.Kg
+  },
+  MoI: {
+    name: "Moment of Inertia",
+    unit: Units.KgM2
+  },
+  Torque: {
+    name: "Torque",
+    unit: Units.NewtonMeter
+  }
+} as const satisfies Record<string, Dimension>;
 export type Evaluated = MathType | null | undefined;
 type Evaluator = (arg: MathNode) => Evaluated;
 export const ExpressionStore = types
@@ -135,6 +184,11 @@ export const ExpressionStore = types
       self.expr = math.parse(serial[0]);
       self.value = serial[1];
       return self;
+    },
+    // WARNING: should not be generally used. This is for cases
+    // where the user needs to change the unit for validation
+    setDefaultUnit(newDefault: Unit) {
+      self.defaultUnit = newDefault;
     },
     setScopeGetter(getter: () => Map<string, any>) {
       self.getScope = getter;
@@ -442,9 +496,14 @@ export const Variables = types
   .actions((self) => ({
     createExpression(
       expr: string | number | Expr,
-      unit?: math.Unit
+      unit?: math.Unit | Dimension
     ): IExpressionStore {
       let store: IExpressionStore;
+      // convert dimension to unit
+      if (unit !== undefined && Object.hasOwn(unit, "name")) {
+        unit = (unit as Dimension).unit;
+      }
+      // add unit if expr is just a solo number
       if (typeof expr === "number") {
         if (unit === undefined) {
           store = ExpressionStore.create({ expr: new ConstantNode(expr) });
@@ -457,13 +516,14 @@ export const Variables = types
             defaultUnit: unit
           });
         }
-      } else if (Array.isArray(expr)) {
+      } else if (Array.isArray(expr)) { // deserialize Expr
         store = ExpressionStore.create({
           expr: math.parse(expr[0]),
           defaultUnit: unit
         });
         store.deserialize(expr);
       } else {
+        // handle string exprs
         store = ExpressionStore.create({
           expr: math.parse(expr),
           defaultUnit: unit
@@ -490,9 +550,6 @@ export const Variables = types
     deleteExpression(key: string) {
       self.expressions.delete(key);
     },
-    // addTranslation(key:string) {
-    //   self.store.set(key, {x: self.Expression("0 m", Units.Meter), y: self.Expression("0 m", Units.Meter)});
-    // },
     renameExpression(cur:string, next: string) {
       let current = self.expressions.get(cur);
       if (current === undefined) return;
@@ -508,9 +565,9 @@ export const Variables = types
     },
     addPose(key: string, pose?: Pose | {x:Expr, y:Expr, heading:Expr}) {
       let store = ExprPose.create({
-        x: self.createExpression(pose?.x ?? 0, Units.Meter),
-        y: self.createExpression(pose?.y ?? 0, Units.Meter),
-        heading: self.createExpression(pose?.heading ?? 0, Units.Radian)
+        x: self.createExpression(pose?.x ?? 0, Dimensions.Length),
+        y: self.createExpression(pose?.y ?? 0, Dimensions.Length),
+        heading: self.createExpression(pose?.heading ?? 0, Dimensions.Angle)
       });
       self.poses.set(
         key, store
@@ -532,11 +589,11 @@ export const Variables = types
         self.poses.set(
           entry[0],
           ExprPose.create({
-            x: self.createExpression(entry[1].x[0] ?? "0 m", Units.Meter),
-            y: self.createExpression(entry[1].y[0] ?? "0 m", Units.Meter),
+            x: self.createExpression(entry[1].x[0] ?? "0 m", Dimensions.Length),
+            y: self.createExpression(entry[1].y[0] ?? "0 m", Dimensions.Length),
             heading: self.createExpression(
               entry[1].heading[0] ?? "0 rad",
-              Units.Radian
+              Dimensions.Angle
             )
           })
         );

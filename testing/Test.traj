@@ -3,9 +3,9 @@
  "version":"v2025.0.0",
  "path":{
   "waypoints":[
-    {"x":["spkr.x()",0.0], "y":["spkr.y()",0.0], "heading":["spkr.heading()",0.0], "intervals":11, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":["\"spkr p\".x()",0.0], "y":["\"spkr p\".y()",0.0], "heading":["\"spkr p\".heading()",0.0], "intervals":11, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":["1.0676369667053223 m",1.0676369667053225], "y":["7.162326335906982 m",7.162326335906982], "heading":["0 deg",0.0], "intervals":13, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":["spkr.x() - cos(spkr.heading()) m",-1.0], "y":["spkr.y() - sin(spkr.heading()) m",0.0], "heading":["spkr.heading()",0.0], "intervals":21, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":true},
+    {"x":["\"spkr p\".x() - cos(\"spkr p\".heading()) m",-1.0], "y":["\"spkr p\".y() - sin(\"spkr p\".heading()) m",0.0], "heading":["\"spkr p\".heading()",0.0], "intervals":21, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":true},
     {"x":["5.233711242675781 m",5.233711242675781], "y":["2.030352830886841 m",2.030352830886841], "heading":["0 deg",0.0], "intervals":13, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":["8.696645736694336 m",8.696645736694336], "y":["2.3000075817108154 m",2.300007581710815], "heading":["0 deg",0.0], "intervals":11, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":["10.229419708251953 m",10.229419708251951], "y":["4.329514026641846 m",4.329514026641846], "heading":["0 deg",0.0], "intervals":13, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},

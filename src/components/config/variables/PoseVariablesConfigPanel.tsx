@@ -6,7 +6,7 @@ import inputStyles from "../input/InputList.module.css";
 import ExpressionInput from "../../input/ExpressionInput";
 import { Add, Delete } from "@mui/icons-material";
 import ExpressionInputList from "../../input/ExpressionInputList";
-import { IExpressionStore, Units } from "../../../document/ExpressionStore";
+import { Dimensions, IExpressionStore, Units } from "../../../document/ExpressionStore";
 import VariableRenamingInput from "./VariableRenamingInput";
 import styles from "../../input/InputList.module.css"
 import { getEnv } from "mobx-state-tree";
@@ -20,9 +20,9 @@ class PoseVariablesConfigPanel extends Component<Props, State> {
   rowGap = 16;
   state={newVarName:""}
   localExpression = {
-    x:doc.variables.createExpression("0 m", Units.Meter),
-    y:doc.variables.createExpression("0 m", Units.Meter),
-    heading: doc.variables.createExpression("0 deg", Units.Radian),}
+    x:doc.variables.createExpression("0 m", Dimensions.Length.unit),
+    y:doc.variables.createExpression("0 m", Dimensions.Length.unit),
+    heading: doc.variables.createExpression("0 deg", Dimensions.Angle.unit),}
   render() {
     const className = styles.InputList + " " + styles.Expression;
     doc.variables.poses.keys();
