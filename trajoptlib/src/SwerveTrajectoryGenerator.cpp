@@ -112,14 +112,15 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   // Minimize total time
   sleipnir::Variable T_tot = 0;
   const double maxForce =
-        path.drivetrain.wheelMaxTorque / path.drivetrain.wheelRadius;
-            const auto maxAccel = maxForce / path.drivetrain.mass;
-  const double maxDrivetrainVelocity = path.drivetrain.wheelRadius * path.drivetrain.wheelMaxAngularVelocity;
+      path.drivetrain.wheelMaxTorque / path.drivetrain.wheelRadius;
+  const auto maxAccel = maxForce / path.drivetrain.mass;
+  const double maxDrivetrainVelocity =
+      path.drivetrain.wheelRadius * path.drivetrain.wheelMaxAngularVelocity;
   auto maxWheelPositionRadius = 0.0;
-    for (auto module : path.drivetrain.modules) {
-      maxWheelPositionRadius = std::max(maxWheelPositionRadius, module.Norm());
-    }
-    const auto maxAngVel = maxDrivetrainVelocity / maxWheelPositionRadius;
+  for (auto module : path.drivetrain.modules) {
+    maxWheelPositionRadius = std::max(maxWheelPositionRadius, module.Norm());
+  }
+  const auto maxAngVel = maxDrivetrainVelocity / maxWheelPositionRadius;
   for (size_t sgmtIndex = 0; sgmtIndex < Ns.size(); ++sgmtIndex) {
     auto& dt_sgmt = dts.at(sgmtIndex);
     auto N_sgmt = Ns.at(sgmtIndex);
@@ -131,18 +132,15 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     // Use initialGuess and Ns to find the dx, dy, dtheta between wpts
     const auto sgmt_start = GetIndex(Ns, sgmtIndex);
     const auto sgmt_end = GetIndex(Ns, sgmtIndex + 1);
-    const auto dx = initialGuess.x.at(sgmt_end) -
-                    initialGuess.x.at(sgmt_start);
-    const auto dy = initialGuess.y.at(sgmt_end) -
-                    initialGuess.y.at(sgmt_start);
-    printf("- dx: %f - dy: %f\n", dx, dy);
+    const auto dx = initialGuess.x.at(sgmt_end) - initialGuess.x.at(sgmt_start);
+    const auto dy = initialGuess.y.at(sgmt_end) - initialGuess.y.at(sgmt_start);
     const auto dist = std::hypot(dx, dy);
     const auto cos_0 = initialGuess.thetacos.at(sgmt_start);
     const auto sin_0 = initialGuess.thetasin.at(sgmt_start);
     const auto cos_1 = initialGuess.thetacos.at(sgmt_end);
     const auto sin_1 = initialGuess.thetasin.at(sgmt_end);
     const auto dtheta = std::abs(std::atan2(cos_0 * sin_1 - sin_0 * cos_1,
-                                   cos_0 * sin_1 + sin_0 * cos_1));
+                                            cos_0 * sin_1 + sin_0 * cos_1));
     auto maxLinearVel = maxDrivetrainVelocity;
 
     // Proof for T = 1.5 * θ / ω:
@@ -182,12 +180,6 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       // trapezoid
       sgmtTime = dist / maxLinearVel + maxLinearVel / maxAccel;
     }
-    std::printf(
-        "{%zd} dtheta: %f - maxAng: %f - time: %f - maxLinear: %f - dist: %f\n",
-        sgmtIndex+1, dtheta, maxAngVel, time, maxLinearVel, dist);
-    std::printf(
-        "{%zd} initial values dt: %f - totalSgmtTime: %f\n",
-        sgmtIndex+1, sgmtTime / N_sgmt, sgmtTime);
     dt_sgmt.SetValue(sgmtTime / N_sgmt);
   }
   problem.Minimize(std::move(T_tot));
