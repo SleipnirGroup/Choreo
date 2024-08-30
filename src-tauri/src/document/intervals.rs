@@ -150,14 +150,14 @@ pub fn guess_control_interval_count(
                     .get(mod_b_idx)
                     .expect("Module expected when finding minimum width.");
                 // using the current impl of trajoptlib "minimum width"
-                if (mod_a.x - mod_b.x).abs() != 0. {
-                    min_width = min_width.min((mod_a.x - mod_b.x).abs());
-                };
-                if (mod_a.y - mod_b.y).abs() != 0. {
-                    min_width = min_width.min((mod_a.y - mod_b.y).abs());
-                };
+                // if (mod_a.x - mod_b.x).abs() != 0. {
+                //     min_width = min_width.min((mod_a.x - mod_b.x).abs());
+                // };
+                // if (mod_a.y - mod_b.y).abs() != 0. {
+                //     min_width = min_width.min((mod_a.y - mod_b.y).abs());
+                // };
                 // TODO: swap trajoptlib and here with logic below
-                // min_width = min_width.min(mod_a.x - mod_b.x).hypot(mod_a.y - mod_b.y);
+                min_width = min_width.min(mod_a.x - mod_b.x).hypot(mod_a.y - mod_b.y);
             }
             let dt_ceiling = min_width / (config.wheel_max_velocity() * config.radius);
             let dt = dt_ceiling.min(0.1);

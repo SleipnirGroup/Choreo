@@ -85,19 +85,26 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   }
 
   double minWidth = INFINITY;
-  for (size_t i = 1; i < path.drivetrain.modules.size(); ++i) {
-    if (std::abs(path.drivetrain.modules.at(i - 1).X() -
-                 path.drivetrain.modules.at(i).X()) != 0) {
-      minWidth =
-          std::min(minWidth, std::abs(path.drivetrain.modules.at(i - 1).X() -
-                                      path.drivetrain.modules.at(i).X()));
-    }
-    if (std::abs(path.drivetrain.modules.at(i - 1).Y() -
-                 path.drivetrain.modules.at(i).Y()) != 0) {
-      minWidth =
-          std::min(minWidth, std::abs(path.drivetrain.modules.at(i - 1).Y() -
-                                      path.drivetrain.modules.at(i).Y()));
-    }
+  for (size_t i = 0; i < path.drivetrain.modules.size(); ++i) {
+    auto mod_a = path.drivetrain.modules.at(i);
+    size_t mod_b_idx = i == 0 ? path.drivetrain.modules.size() - 1 : i - 1;
+    auto mod_b = path.drivetrain.modules.at(mod_b_idx);
+    minWidth = std::min(
+        minWidth, std::hypot(mod_a.X() - mod_b.X(), mod_a.Y() - mod_b.Y()));
+
+    // if (std::abs(path.drivetrain.modules.at(i - 1).X() -
+    //              path.drivetrain.modules.at(i).X()) != 0) {
+    //   minWidth =
+    //       std::min(minWidth, std::abs(path.drivetrain.modules.at(i - 1).X() -
+    //                                   path.drivetrain.modules.at(i).X()));
+    // }
+    // if (std::abs(path.drivetrain.modules.at(i - 1).Y() -
+    //              path.drivetrain.modules.at(i).Y()) != 0) {
+    //   minWidth =
+    //       std::min(minWidth, std::abs(path.drivetrain.modules.at(i - 1).Y() -
+    //                                   path.drivetrain.modules.at(i).Y()));
+    // }
+    // min_width = min_width.min(mod_a.x - mod_b.x).hypot(mod_a.y - mod_b.y);
   }
 
   for (size_t sgmtIndex = 0; sgmtIndex < sgmtCnt; ++sgmtIndex) {
