@@ -1,10 +1,10 @@
-import { Component, Context } from "react";
+import { Component } from "react";
 import { doc, uiState } from "../../../../document/DocumentManager";
 
 import { observer } from "mobx-react";
-import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer";
 import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
 import { FieldMatrixContext } from "../FieldMatrixContext";
+import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer";
 
 type Props = {
   lineColor?: string;
@@ -16,7 +16,7 @@ type State = {
 };
 
 class FieldConstraintsAddLayer extends Component<Props, State> {
-  static contextType =  FieldMatrixContext;
+  static contextType = FieldMatrixContext;
   declare context: React.ContextType<typeof FieldMatrixContext>;
   state = { firstIndex: undefined, mouseX: undefined, mouseY: undefined };
   constructor(props: Props) {
