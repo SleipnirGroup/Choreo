@@ -23,7 +23,7 @@ import {
 import { PathListStore } from "./PathListStore";
 import { RobotConfigStore } from "./RobotConfigStore";
 import { Commands } from "./tauriCommands";
-import { TraceDebug, TraceError } from "./tauriTracing";
+import { tracing } from "./tauriTracing";
 
 export type SelectableItemTypes =
   | IHolonomicWaypointStore
@@ -160,7 +160,7 @@ export const DocumentStore = types
       if (pathStore.path.waypoints.length < 2) {
         return;
       }
-      TraceDebug(pathStore.serialize);
+      tracing.debug(pathStore.serialize);
       const config = self.robotConfig.serialize;
       pathStore.path.constraints.forEach((constraint) => {
         if (constraint.issues.length > 0) {
@@ -197,7 +197,7 @@ export const DocumentStore = types
 
       await Commands.guessIntervals(config, pathStore.serialize)
         .then((counts) => {
-          TraceDebug(counts);
+          tracing.debug(counts);
           counts.forEach((count, i) => {
             const waypoint = pathStore.path.waypoints[i];
             if (waypoint.overrideIntervals && count !== waypoint.intervals) {
@@ -292,7 +292,7 @@ export const DocumentStore = types
             });
           },
           (e) => {
-            TraceError(e);
+            tracing.error(e);
             if ((e as string).includes("infeasible")) {
               throw "Infeasible Problem Detected";
             }
@@ -331,7 +331,7 @@ export const DocumentStore = types
 
           error: {
             render({ data, toastProps }) {
-              TraceError(data);
+              tracing.error(data);
               if ((data as string).includes("callback requested stop")) {
                 toastProps.style = { visibility: "hidden" };
                 return `Cancelled "${pathName}"`;

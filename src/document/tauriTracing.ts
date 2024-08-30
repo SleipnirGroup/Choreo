@@ -1,171 +1,77 @@
 import { invoke } from "@tauri-apps/api";
 
-/**
- * A console.log substitute that logs the value to the native tracing pipeline.
- *
- * @param message The message to be logged. This will be converted to a string.
- * @param optionalParams Additional parameters to be logged.
- */
-export function TraceDebug(message: any, ...optionalParams: any[]): void {
-  console.log(message, optionalParams);
-  //get the line number of the caller and the file
-  const stack: string = new Error().stack ?? "";
+type Location = {
+  line: string;
+  file: string;
+};
+
+function parseStack(stack: string | undefined): Location {
+  if (!stack) {
+    return { line: "-1", file: "unknown" };
+  }
   const caller: string = stack.split("\n")[2];
+  const isAsync: boolean = caller.includes("async");
   const callerParts: string[] = caller.split(" ");
   const inter: string | undefined = callerParts[callerParts.length - 1]
     .split("/")
     .pop();
-  const callerFile: string | undefined = inter?.split(":")[0];
-  const callerLine: string | undefined = inter?.split(":")[1].split(")")[0];
-  if (optionalParams.length === 0) {
-    invoke("tracing_frontend", {
-      level: "debug",
-      msg: message.toString(),
-      line: callerLine,
-      file: callerFile
-    });
-  } else {
-    invoke("tracing_frontend", {
-      level: "debug",
-      msg:
-        message.toString() +
-        " " +
-        optionalParams.map((p) => p.toString()).join(" "),
-      line: callerLine,
-      file: callerFile
-    });
+  const callerFile: string = inter?.split(":")[0].split("?")[0] ?? "unknown";
+  const callerLine: string = inter?.split(":")[1].split(")")[0] ?? "-1";
+  if (isAsync) {
+    return { line: "async", file: callerFile };
   }
+  return { line: callerLine, file: callerFile };
 }
 
-/**
- * A console.log substitute that logs the value to the native tracing pipeline.
- *
- * @param message The message to be logged. This will be converted to a string.
- * @param optionalParams Additional parameters to be logged.
- */
-export function TraceInfo(message: any, ...optionalParams: any[]): void {
-  console.log(message, optionalParams);
-  //get the line number of the caller and the file
-  const stack: string = new Error().stack ?? "";
-  const caller: string = stack.split("\n")[2];
-  const callerParts: string[] = caller.split(" ");
-  const inter: string | undefined = callerParts[callerParts.length - 1]
-    .split("/")
-    .pop();
-  const callerFile: string | undefined = inter?.split(":")[0];
-  const callerLine: string | undefined = inter?.split(":")[1].split(")")[0];
-  if (optionalParams.length === 0) {
-    invoke("tracing_frontend", {
-      level: "info",
-      msg: message.toString(),
-      line: callerLine,
-      file: callerFile
-    });
-  } else {
-    invoke("tracing_frontend", {
-      level: "info",
-      msg:
-        message.toString() +
-        " " +
-        optionalParams.map((p) => p.toString()).join(" "),
-      line: callerLine,
-      file: callerFile
-    });
-  }
-}
-
-/**
- * A console.warn substitute that logs the warning to the native tracing pipeline.
- *
- * @param message The message to be logged. This will be converted to a string.
- * @param optionalParams Additional parameters to be logged.
- */
-export function TraceWarn(message: any, ...optionalParams: any[]): void {
-  console.warn(message, optionalParams);
-  //get the line number of the caller and the file
-  const stack: string = new Error().stack ?? "";
-  const caller: string = stack.split("\n")[2];
-  const callerParts: string[] = caller.split(" ");
-  const inter: string | undefined = callerParts[callerParts.length - 1]
-    .split("/")
-    .pop();
-  const callerFile: string | undefined = inter?.split(":")[0];
-  const callerLine: string | undefined = inter?.split(":")[1].split(")")[0];
-  if (optionalParams.length === 0) {
-    invoke("tracing_frontend", {
-      level: "warn",
-      msg: message.toString(),
-      line: callerLine,
-      file: callerFile
-    });
-  } else {
-    invoke("tracing_frontend", {
-      level: "warn",
-      msg:
-        message.toString() +
-        " " +
-        optionalParams.map((p) => p.toString()).join(" "),
-      line: callerLine,
-      file: callerFile
-    });
-  }
-}
-
-/**
- * A console.error substitute that logs the error to the native tracing pipeline.
- *
- * @param message The message to be logged. This will be converted to a string.
- * @param optionalParams Additional parameters to be logged.
- */
-export function TraceError(message: any, ...optionalParams: any[]): void {
-  console.error(message, optionalParams);
-  //get the line number of the caller and the file
-  const stack: string = new Error().stack ?? "";
-  const caller: string = stack.split("\n")[2];
-  const callerParts: string[] = caller.split(" ");
-  const inter: string | undefined = callerParts[callerParts.length - 1]
-    .split("/")
-    .pop();
-  const callerFile: string | undefined = inter?.split(":")[0];
-  const callerLine: string | undefined = inter?.split(":")[1].split(")")[0];
-  if (optionalParams.length === 0) {
-    invoke("tracing_frontend", {
-      level: "error",
-      msg: message.toString(),
-      line: callerLine,
-      file: callerFile
-    });
-  } else {
-    invoke("tracing_frontend", {
-      level: "error",
-      msg:
-        message.toString() +
-        " " +
-        optionalParams.map((p) => p.toString()).join(" "),
-      line: callerLine,
-      file: callerFile
-    });
-  }
-}
-
-/**
- * A tracing substitute for console.error. This will log the error to the native tracing pipeline.
- * @param data The data to be logged. This will be converted to a string.
- */
-export function ErrorHook(data: any[]): void {
-  console.error(data);
-  const stack: string = new Error().stack ?? "";
-  const caller: string = stack.split("\n")[2];
-  const callerParts: string[] = caller.split(" ");
-  const inter: string | undefined = callerParts[callerParts.length - 1]
-    .split("/")
-    .pop();
-  const callerFile: string | undefined = inter?.split(":")[0];
-  const callerLine: string | undefined = inter?.split(":")[1].split(")")[0];
+function trace(level: string, stack: string | undefined, ...data: any[]): void {
+  const location = parseStack(stack);
   invoke("tracing_frontend", {
-    level: "error",
+    level: level,
     msg: data.map((p) => p.toString()).join(" "),
-    line: callerLine,
-    file: callerFile
+    line: location.line,
+    file: location.file
   });
 }
+
+export const tracing = {
+  /**
+   * A console.log substitute that logs the value to the native tracing pipeline.
+   *
+   * @param message The message to be logged. This will be converted to a string.
+   * @param optionalParams Additional parameters to be logged.
+   */
+  debug: (message: any, ...optionalParams: any[]) => {
+    console.log(message, optionalParams);
+    trace("debug", new Error().stack, message, ...optionalParams);
+  },
+  /**
+   * A console.log substitute that logs the value to the native tracing pipeline.
+   *
+   * @param message The message to be logged. This will be converted to a string.
+   * @param optionalParams Additional parameters to be logged.
+   */
+  info: (message: any, ...optionalParams: any[]) => {
+    console.log(message, optionalParams);
+    trace("info", new Error().stack, message, ...optionalParams);
+  },
+  /**
+   * A console.warn substitute that logs the warning to the native tracing pipeline.
+   *
+   * @param message The message to be logged. This will be converted to a string.
+   * @param optionalParams Additional parameters to be logged.
+   */
+  warn: (message: any, ...optionalParams: any[]) => {
+    console.warn(message, optionalParams);
+    trace("warn", new Error().stack, message, ...optionalParams);
+  },
+  /**
+   * A console.error substitute that logs the error to the native tracing pipeline.
+   *
+   * @param message The message to be logged. This will be converted to a string.
+   * @param optionalParams Additional parameters to be logged.
+   */
+  error: (message: any, ...optionalParams: any[]) => {
+    console.error(message, optionalParams);
+    trace("error", new Error().stack, message, ...optionalParams);
+  },
+};

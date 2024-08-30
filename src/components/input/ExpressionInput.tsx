@@ -3,6 +3,7 @@ import { observer } from "mobx-react";
 import React, { Component } from "react";
 import { IExpressionStore, math } from "../../document/ExpressionStore";
 import styles from "./InputList.module.css";
+import { tracing } from "../../document/tauriTracing";
 
 type Props = {
   /** The text to show before the number */
@@ -110,7 +111,7 @@ class Input extends Component<Props, State> {
       //eslint-disable-next-line @typescript-eslint/no-unused-expressions
       this.props.number.expr;
     } catch (e) {
-      TraceError(e);
+      tracing.error(e);
       throw e;
     }
     const showNumberWhenDisabled = this.props.showNumberWhenDisabled ?? true;

@@ -105,11 +105,11 @@ pub async fn write_traj(app_handle: tauri::AppHandle, traj: Traj) {
 #[tauri::command]
 pub async fn rename_traj(
     app_handle: tauri::AppHandle,
-    old: Traj,
+    old_traj: Traj,
     new_name: String,
 ) -> ChoreoResult<()> {
     let resources = app_handle.state::<WritingResources>();
-    file::rename_traj(&resources, old, new_name)
+    file::rename_traj(&resources, old_traj, new_name)
         .await
         .map(|_| ())
 }

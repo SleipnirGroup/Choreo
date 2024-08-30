@@ -83,7 +83,7 @@ impl WritingResources {
                         loop {
                             let proj = project_updater.wait_for().await;
                             let root = root.lock().await;
-                            let path = root.join(&proj.name);
+                            let path = root.join(&proj.name).with_extension("chor");
                             write_serializable(proj, &path).await.trace_err();
                             tracing::debug!("Wrote project to {:?}", path);
                         }
@@ -153,42 +153,50 @@ pub async fn read_traj(resources: &WritingResources, name: TrajName) -> ChoreoRe
 
 pub async fn rename_traj(
     resources: &WritingResources,
-    mut old: Traj,
+    mut old_traj: Traj,
     new_name: TrajName,
 ) -> ChoreoResult<Traj> {
-    let root_path = resources.get_deploy_path().await?;
-    let old_path = root_path.join(&old.name).with_extension("traj");
-    let new_path = root_path.join(&new_name).with_extension("traj");
+    tracing::debug!(
+        "Renaming trajectory {old_name}.traj to {new_name}.traj",
+        old_name = old_traj.name,
+        new_name = new_name
+    );
 
-    if !old_path.exists() || resources.traj_pool.remove(&old.name).is_none() {
+    let root_path = resources.get_deploy_path().await?;
+    let old_path = root_path.join(&old_traj.name).with_extension("traj");
+
+    if !old_path.exists() {
         return Err(ChoreoError::FileNotFound(Some(old_path)));
     }
 
-    if new_path.exists() {
-        return Err(ChoreoError::FileSave("Trajectory already exists"));
-    }
+    delete_traj(resources, old_traj.clone()).await?;
 
-    let old_name = old.name.clone();
-    old.name.clone_from(&new_name);
+    let old_name = old_traj.name.clone();
+    old_traj.name.clone_from(&new_name);
 
-    fs::remove_file(&old_path).await?;
-
-    write_traj(resources, old.clone()).await;
+    write_traj(resources, old_traj.clone()).await;
 
     tracing::debug!(
         "Renamed trajectory {old_name}.traj to {new_name}.traj at {:}",
         resources.get_deploy_path().await?.display()
     );
 
-    Ok(old)
+    Ok(old_traj)
 }
 
 pub async fn delete_traj(resources: &WritingResources, traj: Traj) -> ChoreoResult<()> {
+    tracing::debug!(
+        "Deleting trajectory {}",
+        traj.name
+    );
+
     let root_path = resources.get_deploy_path().await?;
     let path = root_path.join(&traj.name).with_extension("traj");
-    if !path.exists() || resources.traj_pool.remove(&traj.name).is_none() {
+    if !path.exists() {
         return Err(ChoreoError::FileNotFound(Some(path)));
     }
+
+    let _ = resources.traj_pool.remove(&traj.name);
     fs::remove_file(&path).await?;
 
     tracing::debug!(

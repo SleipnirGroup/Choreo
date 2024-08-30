@@ -63,7 +63,7 @@ import {
 import { ViewLayerDefaults } from "./UIData";
 import { UIStateStore } from "./UIStateStore";
 import { Commands } from "./tauriCommands";
-import { ErrorHook, TraceError, TraceInfo } from "./tauriTracing";
+import { tracing } from "./tauriTracing";
 
 export type OpenFilePayload = {
   name: string;
@@ -251,7 +251,7 @@ export function setup() {
     try {
       writeTrajectory(uuid);
     } catch (e) {
-      TraceError(e);
+      tracing.error(e);
     }
   });
   doc.history.clear();
@@ -272,9 +272,9 @@ export async function openProjectFile() {
   if (cliRequestedProject) {
     const fileDirectory: OpenFilePayload = cliRequestedProject;
     const filePath = fileDirectory.dir + path.sep + fileDirectory.name;
-    TraceInfo(`Attempting to open: ${filePath}`);
+    tracing.info(`Attempting to open: ${filePath}`);
     return openProject(fileDirectory).catch((err) => {
-      TraceError(
+      tracing.error(
         `Failed to open cli requested Choreo file '${fileDirectory.name}': ${err}`
       );
       toast.error(
@@ -286,9 +286,9 @@ export async function openProjectFile() {
       lastOpenedFileEventPayload
     );
     const filePath = fileDirectory.dir + path.sep + fileDirectory.name;
-    TraceInfo(`Attempting to open: ${filePath}`);
+    tracing.info(`Attempting to open: ${filePath}`);
     return openProject(fileDirectory).catch((err) => {
-      TraceError(
+      tracing.error(
         `Failed to open last Choreo file '${fileDirectory.name}': ${err}`
       );
       toast.error(
@@ -349,7 +349,7 @@ export async function setupEventListeners() {
         });
       }
     } catch (err) {
-      TraceError("Error when pasting:", err);
+      tracing.error("Error when pasting:", err);
       applySnapshot(activePath, pathSnapshot);
     }
   });
@@ -381,7 +381,7 @@ export async function setupEventListeners() {
     () => doc.history.undoIdx,
     () => {
       if (uiState.hasSaveLocation) {
-        TraceInfo("autosave");
+        tracing.info("autosave");
         saveFile();
       }
     }
@@ -575,14 +575,14 @@ export async function openProject(projectPath: OpenFilePayload) {
   await Promise.allSettled([
     Commands.readProject(name)
       .then((c) => (chor = c))
-      .catch(ErrorHook),
+      .catch(tracing.error),
     Commands.readAllTraj()
       .then((paths) =>
         paths.forEach((path) => {
           trajs.push(path);
         })
       )
-      .catch(ErrorHook)
+      .catch(tracing.error)
   ]);
 
   if (chor === undefined) {
@@ -612,7 +612,7 @@ export async function generateWithToastsAndExport(uuid: string) {
       success: `Saved "${pathName}" to ${uiState.chorRelativeTrajDir}.`,
       error: {
         render(toastProps) {
-          TraceError(toastProps.data);
+          tracing.error(toastProps.data);
           return `Couldn't export trajectory: ${toastProps.data as string[]}`;
         }
       }
@@ -671,22 +671,27 @@ export async function renamePath(uuid: string, newName: string) {
   if (uiState.hasSaveLocation) {
     const traj = doc.pathlist.paths.get(uuid);
     if (traj) {
-      await Commands.renameTraj(traj.serialize, newName).catch(ErrorHook);
+      tracing.debug("renamePath", uuid, "to", newName);
+      await Commands.renameTraj(traj.serialize, newName)
+        .then(() => doc.pathlist.paths.get(uuid)?.setName(newName))
+        .catch(tracing.error);
     }
+  } else {
+    doc.pathlist.paths.get(uuid)?.setName(newName);
   }
-  doc.pathlist.paths.get(uuid)?.setName(newName);
 }
 
 export async function deletePath(uuid: string) {
   if (uiState.hasSaveLocation) {
     const traj = doc.pathlist.paths.get(uuid);
     if (traj) {
-      await Commands.deleteTraj(traj.serialize).catch((e) => {
-        TraceError(e);
-      });
+      await Commands.deleteTraj(traj.serialize)
+        .then(() => doc.pathlist.deletePath(uuid))
+        .catch(tracing.error);
     }
+  } else {
+    doc.pathlist.deletePath(uuid);
   }
-  doc.pathlist.deletePath(uuid);
 }
 
 /**
@@ -780,7 +785,7 @@ export async function exportAllTrajectories() {
 
       results.map((result, i) => {
         if (result.status === "rejected") {
-          TraceError(pathNames[i], ":", result.reason);
+          tracing.error(pathNames[i], ":", result.reason);
           errors.push(`Couldn't save "${pathNames[i]}": ${result.reason}`);
         }
       });
