@@ -73,5 +73,5 @@ export const tracing = {
   error: (message: any, ...optionalParams: any[]) => {
     console.error(message, optionalParams);
     trace("error", new Error().stack, message, ...optionalParams);
-  },
+  }
 };

@@ -347,10 +347,7 @@ class AppMenu extends Component<Props, State> {
   }
 
   private trajectoriesLocation(relativeFormat: boolean): string {
-    return (
-      this.projectLocation(relativeFormat) +
-      path.sep
-    );
+    return this.projectLocation(relativeFormat) + path.sep;
   }
 }
 export default observer(AppMenu);

@@ -185,10 +185,7 @@ pub async fn rename_traj(
 }
 
 pub async fn delete_traj(resources: &WritingResources, traj: Traj) -> ChoreoResult<()> {
-    tracing::debug!(
-        "Deleting trajectory {}",
-        traj.name
-    );
+    tracing::debug!("Deleting trajectory {}", traj.name);
 
     let root_path = resources.get_deploy_path().await?;
     let path = root_path.join(&traj.name).with_extension("traj");

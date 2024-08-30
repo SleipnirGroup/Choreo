@@ -59,9 +59,7 @@ export const UIStateStore = types
   .views((self: any) => {
     return {
       get hasSaveLocation() {
-        return (
-          self.projectName !== undefined && self.projectDir !== undefined
-        );
+        return self.projectName !== undefined && self.projectDir !== undefined;
       },
       getSelectedConstraint() {
         return navbarIndexToConstraint[self.selectedNavbarItem] ?? undefined;

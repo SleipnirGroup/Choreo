@@ -1,4 +1,4 @@
-import { dialog, invoke, path, window as tauriWindow } from "@tauri-apps/api";
+import { dialog, path, window as tauriWindow } from "@tauri-apps/api";
 import { TauriEvent } from "@tauri-apps/api/event";
 import { v4 as uuidv4 } from "uuid";
 import { DocumentStore, SelectableItemTypes } from "./DocumentModel";
@@ -753,8 +753,7 @@ export async function saveProjectDialog() {
 
   doc.setName(name);
 
-  await Commands.setDeployRoot(dir)
-    .catch(tracing.error);
+  await Commands.setDeployRoot(dir).catch(tracing.error);
 
   uiState.setSaveFileDir(dir);
   uiState.setProjectName(name);
