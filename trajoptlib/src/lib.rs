@@ -273,6 +273,13 @@ mod ffi {
             heading_tolerance: f64,
             flip: bool
         );
+        fn wpt_keep_in_circle(
+            self: Pin<&mut DifferentialPathBuilder>,
+            index: usize,
+            field_point_x: f64,
+            field_point_y: f64,
+            keep_in_radius: f64
+        );
 
         fn sgmt_linear_velocity_direction(
             self: Pin<&mut DifferentialPathBuilder>,
@@ -297,6 +304,14 @@ mod ffi {
             from_index: usize,
             to_index: usize,
             magnitude: f64,
+        );
+        fn sgmt_keep_in_circle(
+            self: Pin<&mut DifferentialPathBuilder>,
+            from_index: usize,
+            to_index: usize,
+            field_point_x: f64,
+            field_point_y: f64,
+            keep_in_radius: f64
         );
 
         fn sgmt_circle_obstacle(
@@ -755,6 +770,21 @@ impl DifferentialPathBuilder {
         )
     }
 
+    pub fn wpt_keep_in_circle(
+        &mut self,
+        index: usize,
+        field_point_x: f64,
+        field_point_y: f64,
+        keep_in_radius: f64) {
+            crate::ffi::DifferentialPathBuilder::wpt_keep_in_circle(
+                self.path_builder.pin_mut(),
+                index,
+                field_point_x,
+                field_point_y,
+                keep_in_radius
+            )
+        }
+
     pub fn sgmt_linear_velocity_direction(
         &mut self,
         from_index: usize,
@@ -810,6 +840,24 @@ impl DifferentialPathBuilder {
             magnitude,
         );
     }
+
+    pub fn sgmt_keep_in_circle(
+        &mut self,
+        from_index: usize,
+        to_index: usize,
+        field_point_x: f64,
+        field_point_y: f64,
+        keep_in_radius: f64) {
+            crate::ffi::DifferentialPathBuilder::sgmt_keep_in_circle(
+                self.path_builder.pin_mut(),
+                from_index,
+                to_index,
+                field_point_x,
+                field_point_y,
+                keep_in_radius
+            )
+        }
+
 
     pub fn sgmt_circle_obstacle(
         &mut self,
