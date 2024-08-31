@@ -71,33 +71,7 @@ pub fn guess_control_interval_count(
                 .modules
                 .iter()
                 .fold(0f64, |max, &module| max.max(module.x.hypot(module.y)));
-            let max_ang_vel = max_vel / max_wheel_position_radius;
-
-            // Proof for T = 1.5 * θ / ω:
-            //
-            // The position function of a cubic Hermite spline
-            // where t∈[0, 1] and θ∈[0, dtheta]:
-            // x(t) = (-2t^3 +3t^2)θ
-            //
-            // The velocity function derived from the cubic Hermite spline is:
-            // v(t) = (-6t^2 + 6t)θ.
-            //
-            // The peak velocity occurs at t = 0.5, where t∈[0, 1] :
-            // v(0.5) = 1.5*θ, which is the max angular velocity during the motion.
-            //
-            // To ensure this peak velocity does not exceed ω, max_ang_vel, we set:
-            // 1.5 * θ = ω.
-            //
-            // The total time T needed to reach the final θ and
-            // not exceed ω is thus derived as:
-            // T = θ / (ω / 1.5) = 1.5 * θ / ω.
-            //
-            // This calculation ensures the peak velocity meets but does not exceed ω,
-            // extending the time proportionally to meet this requirement.
-            // This is an alternative estimation method to finding the trapezoidal or
-            // triangular profile for the change heading.
-            let time = (1.5 * dtheta) / max_ang_vel;
-            max_vel = max_vel.min(distance / time);
+            let mut max_ang_vel = max_vel / max_wheel_position_radius;
 
             // Iterate through constraints to find applicable constraints
             traj.path
@@ -119,12 +93,34 @@ pub fn guess_control_interval_count(
                                         max_accel = max_accel.min(max);
                                     }
                                     ConstraintData::MaxAngularVelocity { max } => {
-                                        // avoid divide by 0
+                                        // Proof for T = 1.5 * θ / ω:
+                                        //
+                                        // The position function of a cubic Hermite spline
+                                        // where t∈[0, 1] and θ∈[0, dtheta]:
+                                        // x(t) = (-2t^3 +3t^2)θ
+                                        //
+                                        // The velocity function derived from the cubic Hermite spline is:
+                                        // v(t) = (-6t^2 + 6t)θ.
+                                        //
+                                        // The peak velocity occurs at t = 0.5, where t∈[0, 1] :
+                                        // v(0.5) = 1.5*θ, which is the max angular velocity during the motion.
+                                        //
+                                        // To ensure this peak velocity does not exceed ω, max_ang_vel, we set:
+                                        // 1.5 * θ = ω.
+                                        //
+                                        // The total time T needed to reach the final θ and
+                                        // not exceed ω is thus derived as:
+                                        // T = θ / (ω / 1.5) = 1.5 * θ / ω.
+                                        //
+                                        // This calculation ensures the peak velocity meets but does not exceed ω,
+                                        // extending the time proportionally to meet this requirement.
+                                        // This is an alternative estimation method to finding the trapezoidal or
+                                        // triangular profile for the change heading.
                                         if max >= 0.1 {
-                                            // see note above for math reasoning
                                             let time = (1.5 * dtheta) / max;
                                             max_vel = max_vel.min(distance / time);
                                         }
+                                        max_ang_vel = max_ang_vel.min(max);
                                     }
                                     _ => {}
                                 };
@@ -154,13 +150,24 @@ pub fn guess_control_interval_count(
             let dt_ceiling = min_width / (config.wheel_max_velocity() * config.radius);
             let dt = dt_ceiling.min(0.1);
             let distance_at_cruise = distance - (max_vel * max_vel) / max_accel;
-            let total_time = if distance_at_cruise < 0.0 {
+            let linear_time = if distance_at_cruise < 0.0 {
                 // triangle
                 2.0 * ((distance * max_accel).sqrt() / max_accel)
             } else {
                 // trapezoid
                 distance / max_vel + max_vel / max_accel
             };
+
+            // avoid divide by 0
+            let angular_time = if max_ang_vel >= 0.1 {
+                // see note above for math reasoning
+                (1.5 * dtheta) / max_ang_vel
+            } else {
+                0.0f64
+            }
+            .max(0.2); // keep some time allocated for rotating
+            let total_time = linear_time + angular_time;
+            std::println!("dt estimate: {dt} - total time estimate: {total_time}");
             (total_time / dt).ceil() as usize
         }
     }
