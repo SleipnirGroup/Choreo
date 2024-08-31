@@ -20,12 +20,16 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
     super(props);
   }
 
-  addConstraint(points: IHolonomicWaypointStore[], start: number, end?: number) {
+  addConstraint(
+    points: IHolonomicWaypointStore[],
+    start: number,
+    end?: number
+  ) {
     doc.setHoveredSidebarItem(undefined);
     doc.history.startGroup(() => {
       const constraintToAdd = uiState.getSelectedConstraintKey();
       const point1 = points[start];
-      const point2 = (end !== undefined) ? points[end] : undefined;
+      const point2 = end !== undefined ? points[end] : undefined;
       const newConstraint = doc.pathlist.activePath.path.addConstraint(
         constraintToAdd,
         { uuid: point1.uuid },
@@ -66,7 +70,6 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
     return undefined;
   }
 
-
   render() {
     const lineColor = this.props.lineColor ?? "white";
     const activePath = doc.pathlist.activePath;
@@ -86,11 +89,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
             const constraintToAdd = uiState.getSelectedConstraintKey();
             console.log("constraint to add key: ", constraintToAdd);
             if (constraintToAdd == "StopPoint") {
-              this.addConstraint(
-                waypoints,
-                id,
-                undefined
-              );
+              this.addConstraint(waypoints, id, undefined);
             } else {
               this.setState({ firstIndex: id });
             }
