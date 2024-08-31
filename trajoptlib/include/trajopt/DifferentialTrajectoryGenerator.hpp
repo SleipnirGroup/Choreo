@@ -67,6 +67,12 @@ struct TRAJOPT_DLLEXPORT DifferentialSolution {
   /// The right velocities.
   std::vector<double> vR;
 
+  /// The left accelerations.
+  std::vector<double> aL;
+
+  /// The right acceleration.
+  std::vector<double> aR;
+
   /// The force of the left driverail wheels.
   std::vector<double> FL;
 
@@ -97,6 +103,12 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
   /// The right wheel velocity.
   double velocityR = 0.0;
 
+  /// The left wheel acceleration.
+  double accelerationL = 0.0;
+
+  /// The right wheel acceleration.
+  double accelerationR = 0.0;
+
   /// The left wheel force.
   double forceL = 0.0;
 
@@ -113,18 +125,24 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
    * @param heading The heading.
    * @param velocityL The left wheel velocity.
    * @param velocityR The right wheel velocity.
+   * @param accelerationL The left wheel acceleration.
+   * @param accelerationR The right wheel acceleration.
    * @param forceL The left wheel force.
    * @param forceR The right wheel force.
    */
   DifferentialTrajectorySample(double timestamp, double x, double y,
                                double heading, double velocityL,
-                               double velocityR, double forceL, double forceR)
+                               double velocityR, double accelerationL,
+                               double accelerationR, double forceL,
+                               double forceR)
       : timestamp{timestamp},
         x{x},
         y{y},
         heading{heading},
         velocityL{velocityL},
         velocityR{velocityR},
+        accelerationL{accelerationL},
+        accelerationR{accelerationR},
         forceL{forceL},
         forceR{forceR} {}
 };
@@ -159,8 +177,8 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectory {
       samples.emplace_back(
           ts, solution.x[sample], solution.y[sample],
           std::atan2(solution.thetasin[sample], solution.thetacos[sample]),
-          solution.vL[sample], solution.vR[sample], solution.FL[sample],
-          solution.FR[sample]);
+          solution.vL[sample], solution.vR[sample], solution.aL[sample],
+          solution.aR[sample], solution.FL[sample], solution.FR[sample]);
       ts += solution.dt[sample];
     }
   }
