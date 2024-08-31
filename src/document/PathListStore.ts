@@ -10,7 +10,7 @@ export const PathListStore = types
     activePathUUID: ""
   })
   .actions((self) => {
-    let pathExporter: (uuid: string) => void = (uuid) => {};
+    let pathExporter: (uuid: string) => void = (_uuid) => {};
     return {
       setExporter(exportFunction: (uuid: string) => void) {
         pathExporter = exportFunction;
