@@ -67,7 +67,7 @@ pub fn run_tauri(writing_resources: WritingResources, project: Option<PathBuf>) 
         let mut console_mode = 0;
         if w::consoleapi::GetConsoleMode(dyn_handle, &mut console_mode) != 0 {
             w::wincon::FreeConsole();
-        } 
+        }
     }
 
     if let Some(project_path) = project {

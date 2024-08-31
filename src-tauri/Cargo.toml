@@ -9,6 +9,7 @@ description = """\
 readme = "../README.md"
 homepage = "https://github.com/SleipnirGroup/Choreo"
 repository = "https://github.com/SleipnirGroup/Choreo.git"
+authors = ["Sleipnir Group"]
 license = "BSD-3-Clause"
 
 [build-dependencies]

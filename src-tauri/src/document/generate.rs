@@ -251,6 +251,10 @@ pub fn generate(
                 None => path_builder.wpt_linear_acceleration_max_magnitude(from, max),
                 Some(to) => path_builder.sgmt_linear_acceleration_max_magnitude(from, to, max),
             },
+            ConstraintData::MaxAngularVelocity { max } => match to_opt {
+                None => path_builder.wpt_angular_velocity_max_magnitude(from, max),
+                Some(to) => path_builder.sgmt_angular_velocity_max_magnitude(from, to, max),
+            },
             ConstraintData::StopPoint {} => match to_opt {
                 None => {
                     path_builder.wpt_linear_velocity_max_magnitude(from, 0.0f64);
