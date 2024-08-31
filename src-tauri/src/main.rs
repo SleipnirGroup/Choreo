@@ -3,8 +3,6 @@
 //! time-optimized trajectories for autonomous mobile robots in the FIRST
 //! Robotics Competition.
 
-// Prevents additional console window on Windows in release, DO NOT REMOVE!!
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 #![deny(clippy::all, clippy::pedantic, clippy::nursery)]
 #![deny(
     warnings,

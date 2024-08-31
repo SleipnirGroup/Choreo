@@ -60,6 +60,16 @@ pub async fn tracing_frontend(level: String, msg: String, line: String, file: St
 pub fn run_tauri(writing_resources: WritingResources, project: Option<PathBuf>) {
     tracing::info!("Starting Choreo Gui");
 
+    #[cfg(all(windows, not(debug_assertions)))]
+    unsafe {
+        use winapi::um as w;
+        let dyn_handle = w::processenv::GetStdHandle(w::winbase::STD_OUTPUT_HANDLE);
+        let mut console_mode = 0;
+        if w::consoleapi::GetConsoleMode(dyn_handle, &mut console_mode) != 0 {
+            w::wincon::FreeConsole();
+        } 
+    }
+
     if let Some(project_path) = project {
         let payload = OpenFilePayload {
             dir: project_path

@@ -376,6 +376,7 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "trajoptlib",
+ "winapi",
 ]
 
 [[package]]
