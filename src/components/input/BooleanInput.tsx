@@ -43,7 +43,6 @@ class Input extends Component<Props, State> {
         </Tooltip>
         <Checkbox
           inputRef={this.inputElemRef}
-          
           className={styles.Checkbox}
           checked={this.props.value}
           disabled={!this.props.enabled}

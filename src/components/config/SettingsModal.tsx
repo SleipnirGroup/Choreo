@@ -3,11 +3,6 @@ import { Fade, IconButton, Modal, Tab, Tabs } from "@mui/material";
 import { observer } from "mobx-react";
 import { Component } from "react";
 import { uiState } from "../../document/DocumentManager";
-import BetasConfigPanel from "./BetasConfigPanel";
-import KeyboardShortcutsPanel from "./KeyboardShortcutsPanel";
-import RobotConfigPanel from "./robotconfig/RobotConfigPanel";
-import ExportConfigPanel from "./ExportConfigPanel";
-import VariablesConfigPanel from "./variables/VariablesConfigPanel";
 import { SETTINGS_TABS } from "../../document/UIData";
 
 type Props = object;
@@ -67,18 +62,18 @@ class SettingsModal extends Component<Props, State> {
                   marginLeft: "8px"
                 }}
               >
-                {SETTINGS_TABS.map((data) => <Tab label={data.name} />)}
+                {SETTINGS_TABS.map((data) => (
+                  <Tab label={data.name} />
+                ))}
               </Tabs>
               <IconButton onClick={() => uiState.setRobotConfigOpen(false)}>
                 <Close></Close>
               </IconButton>
             </div>
             <div style={{ paddingTop: 8, flexGrow: 1, overflowY: "scroll" }}>
-              {SETTINGS_TABS.map((data, i) =>
-                <>{uiState.settingsTab == i && (
-                  data.component()
-                )}</>
-              )}
+              {SETTINGS_TABS.map((data, i) => (
+                <>{uiState.settingsTab == i && data.component()}</>
+              ))}
             </div>
           </div>
         </Fade>

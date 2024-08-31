@@ -11,18 +11,16 @@ import {
 } from "@mui/icons-material";
 import { ReactElement } from "react";
 import Waypoint from "../assets/Waypoint";
+import BetasConfigPanel from "../components/config/BetasConfigPanel";
+import ExportConfigPanel from "../components/config/ExportConfigPanel";
+import KeyboardShortcutsPanel from "../components/config/KeyboardShortcutsPanel";
+import RobotConfigPanel from "../components/config/robotconfig/RobotConfigPanel";
 import {
   ConstraintDefinition,
   ConstraintDefinitions,
   ConstraintKey
 } from "./ConstraintDefinitions";
 import { ConstraintStore } from "./ConstraintStore";
-import RobotConfigPanel from "../components/config/robotconfig/RobotConfigPanel";
-import KeyboardShortcutsPanel from "../components/config/KeyboardShortcutsPanel";
-import ExportConfigPanel from "../components/config/ExportConfigPanel";
-import BetasConfigPanel from "../components/config/BetasConfigPanel";
-import VariablesConfigPanel from "../components/config/variables/VariablesConfigPanel";
-import ExpressionsConfigPanel from "../components/config/variables/ExpressionsConfigPanel";
 
 /* Navbar stuff */
 export const WaypointData: {
@@ -205,9 +203,18 @@ export const ViewLayerDefaults = ViewItemData.map((layer) => layer.default);
 export type ViewLayerType = typeof ViewLayers;
 
 export const SETTINGS_TABS = [
-  {name: "Robot Config", component: ()=><RobotConfigPanel></RobotConfigPanel>},
-  {name: "Export Config", component: ()=><ExportConfigPanel></ExportConfigPanel>},
-  {name: "Controls", component: ()=><KeyboardShortcutsPanel></KeyboardShortcutsPanel>},
-  {name: "Betas", component: ()=><BetasConfigPanel></BetasConfigPanel>}
- ] as const;
- export const NUM_SETTINGS_TABS = SETTINGS_TABS.length;
+  {
+    name: "Robot Config",
+    component: () => <RobotConfigPanel></RobotConfigPanel>
+  },
+  {
+    name: "Export Config",
+    component: () => <ExportConfigPanel></ExportConfigPanel>
+  },
+  {
+    name: "Controls",
+    component: () => <KeyboardShortcutsPanel></KeyboardShortcutsPanel>
+  },
+  { name: "Betas", component: () => <BetasConfigPanel></BetasConfigPanel> }
+] as const;
+export const NUM_SETTINGS_TABS = SETTINGS_TABS.length;

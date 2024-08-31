@@ -1,20 +1,40 @@
-import { AccessorNode, ConstantNode, FunctionNode, IndexNode, MathNode, MathType, OperatorNode, SymbolNode, Unit, all, create, factory, isNode, isNull, isUnit } from "mathjs";
-import { IReactionDisposer, getDependencyTree, getObserverTree, reaction, untracked } from "mobx";
+import {
+  KeyboardArrowRight,
+  KeyboardDoubleArrowRight,
+  Numbers,
+  RotateLeftOutlined,
+  Straighten,
+  SyncOutlined,
+  TimerOutlined
+} from "@mui/icons-material";
+import { Tooltip } from "@mui/material";
+import {
+  AccessorNode,
+  ConstantNode,
+  FunctionNode,
+  IndexNode,
+  MathNode,
+  MathType,
+  SymbolNode,
+  Unit,
+  all,
+  create,
+  isNode,
+  isNull
+} from "mathjs";
+import { IReactionDisposer, reaction, untracked } from "mobx";
 import { Instance, detach, getEnv, types } from "mobx-state-tree";
+import Angle from "../assets/Angle";
+import Mass from "../assets/Mass";
+import MoI from "../assets/MoI";
+import Torque from "../assets/Torque";
+import Waypoint from "../assets/Waypoint";
 import {
   PoseVariable as DocPoseVariable,
   Variables as DocVariables,
   Expr
 } from "./2025/DocumentTypes";
 import { Env } from "./DocumentManager";
-import { East, KeyboardArrowRight, KeyboardDoubleArrowRight, Numbers, Rotate90DegreesCwOutlined, RotateLeftOutlined, Scale, Straighten, SyncOutlined, TextRotationNoneOutlined, TimerOutlined } from "@mui/icons-material";
-import { Tooltip } from "@mui/material";
-import Waypoint from "../assets/Waypoint";
-import Angle from "../assets/Angle";
-import Mass from "../assets/Mass";
-import LinearAccel from "../assets/LinearAccel";
-import MoI from "../assets/MoI";
-import Torque from "../assets/Torque";
 
 export const math = create(all, { predictable: true });
 
@@ -60,10 +80,10 @@ export const math = create(all, { predictable: true });
 //   return typed('transformBy', {
 //     'Pose2d, Pose2d': function (a, b) {
 //       return {
-//         x:()=>math.add(a.x(), 
+//         x:()=>math.add(a.x(),
 //           math.multiply(b.x(), math.cos(a.heading())),
 //           math.multiply(b.y(), math.unaryMinus(math.sin(a.heading())))
-//           ), 
+//           ),
 //         y:()=>math.add(a.y(),
 //           math.multiply(b.x(),math.sin(a.heading())),
 //           math.multiply(b.y(),math.cos(a.heading()))),
@@ -78,7 +98,6 @@ export const math = create(all, { predictable: true });
 //   createAddPose2d,
 //   createTransformByPose2d
 // ])
-
 
 function addUnitToExpression(
   expression: math.MathNode,
@@ -125,17 +144,17 @@ export const DimensionNames = [
 ] as const;
 export type DimensionName = (typeof DimensionNames)[number];
 export type Dimension<T> = {
-  type: T,
-  name: string,
-  unit?: Unit,
-  icon: () => JSX.Element
-}
+  type: T;
+  name: string;
+  unit?: Unit;
+  icon: () => JSX.Element;
+};
 export const Dimensions = {
   Number: {
     type: "Number",
     name: "Number",
     unit: undefined,
-    icon: () => <Numbers></Numbers>,
+    icon: () => <Numbers></Numbers>
   },
   Length: {
     type: "Length",
@@ -159,7 +178,7 @@ export const Dimensions = {
     type: "LinAcc",
     name: "Linear Acceleration",
     unit: Units.MeterPerSecondSquared,
-    icon: () => <KeyboardDoubleArrowRight/>
+    icon: () => <KeyboardDoubleArrowRight />
   },
   AngVel: {
     type: "AngVel",
@@ -171,7 +190,7 @@ export const Dimensions = {
     type: "AngAcc",
     name: "Angular Acceleration",
     unit: Units.RadianPerSecondSquared,
-    icon: () => <RotateLeftOutlined/>
+    icon: () => <RotateLeftOutlined />
   },
   Time: {
     type: "Time",
@@ -198,12 +217,9 @@ export const Dimensions = {
     type: "Torque"
   }
 } as const satisfies {
-    [key in DimensionName]: Dimension<key>
-  }
-export const DimensionNamesExt = [
-  ...DimensionNames,
-  "Pose"
-] as const;
+  [key in DimensionName]: Dimension<key>;
+};
+export const DimensionNamesExt = [...DimensionNames, "Pose"] as const;
 export type DimensionNameExt = (typeof DimensionNamesExt)[number];
 export const DimensionsExt = {
   ...Dimensions,
@@ -211,34 +227,35 @@ export const DimensionsExt = {
     type: "Pose",
     name: "Pose",
     unit: undefined,
-    icon : () => <Tooltip disableInteractive title="Pose"><Waypoint></Waypoint></Tooltip>
-  },
+    icon: () => (
+      <Tooltip disableInteractive title="Pose">
+        <Waypoint></Waypoint>
+      </Tooltip>
+    )
+  }
   // TODO add obstacle here
 } as const satisfies {
-  [key in DimensionNameExt]: Dimension<key>
-}
-
-
+  [key in DimensionNameExt]: Dimension<key>;
+};
 
 export type Evaluated = MathType | null | undefined;
 type Evaluator = (arg: MathNode) => Evaluated;
 export const ExpressionStore = types
   .model("ExpressionStore", {
     expr: types.frozen<MathNode>(),
-    dimension: types.frozen<DimensionName>(),
+    dimension: types.frozen<DimensionName>()
   })
   .volatile((self) => ({
-
     tempDisableRecalc: false,
     value: 0,
     getScope: () => {
       // intentionally not typing it here, so that there's not a circular type dependency
-      let env = getEnv(self);
+      const env = getEnv(self);
       if (env.vars === undefined) {
         console.error("Evaluating without variables!", self.toString());
         return new Map<string, any>();
       }
-      let scope = env.vars().scope;
+      const scope = env.vars().scope;
       return scope;
     }
   }))
@@ -251,15 +268,13 @@ export const ExpressionStore = types
     findReplaceVariable(find: string, replace: string) {
       self.expr = self.expr.transform(function (node, path, parent) {
         if (node["isSymbolNode"] && node.name === find) {
-          let clone = (node as SymbolNode).clone();
+          const clone = (node as SymbolNode).clone();
           clone.name = replace;
           return clone;
-        }
-        else {
+        } else {
           return node;
         }
-      }
-      )
+      });
     },
     deserialize(serial: Expr) {
       self.expr = math.parse(serial[0]);
@@ -300,40 +315,44 @@ export const ExpressionStore = types
   }))
   .views((self) => ({
     evaluator(node: MathNode): MathType {
-      let scope!: Map<string, any>;
-      // untracked(()=>{
-      scope =
+      // TODO investigate whether this should be untracked
+      const scope: Map<string, any> =
         self.getScope() ??
         ((() => {
           console.error("Evaluating without variables!");
           return undefined;
         }) as Evaluator);
-      // })
       scope.keys();
       // turn symbol variables into function variables if they're found in scope
-      let transformed = node.transform((innerNode, path, parent) => {
-        if (innerNode.isSymbolNode && typeof scope.get(innerNode.name) === "function" && (!parent?.isFunctionNode || path !== "fn")) {
+      const transformed = node.transform((innerNode, path, parent) => {
+        if (
+          innerNode.isSymbolNode &&
+          typeof scope.get(innerNode.name) === "function" &&
+          (!parent?.isFunctionNode || path !== "fn")
+        ) {
           return new math.FunctionNode(innerNode, []);
         }
         if (innerNode.isAccessorNode) {
           if (!parent?.isFunctionNode || path !== "fn") {
-            let accessorNode = innerNode as AccessorNode;
-            let { object, index } = accessorNode;
+            const accessorNode = innerNode as AccessorNode;
+            const { object, index } = accessorNode;
             if (object.isSymbolNode && index.isIndexNode) {
-              let symbol = object as SymbolNode;
-              let idx = index as IndexNode;
+              const symbol = object as SymbolNode;
+              const idx = index as IndexNode;
               if (idx.dimensions[0]?.isConstantNode) {
-                let constant = idx.dimensions[0] as ConstantNode;
-                if (typeof scope.get(symbol.name) === "object"
-                  && typeof scope.get(symbol.name)?.[constant.value] === "function") {
-                  return new FunctionNode(innerNode, [])
+                const constant = idx.dimensions[0] as ConstantNode;
+                if (
+                  typeof scope.get(symbol.name) === "object" &&
+                  typeof scope.get(symbol.name)?.[constant.value] === "function"
+                ) {
+                  return new FunctionNode(innerNode, []);
                 }
               }
             }
           }
         }
         return innerNode;
-      })
+      });
       let result = transformed.evaluate(scope) ?? undefined;
       if (result?.["isNode"]) {
         result = this.evaluator(result);
@@ -347,7 +366,7 @@ export const ExpressionStore = types
   }))
   .views((self) => ({
     get evaluate(): MathType {
-      let result = self.evaluator(self.expr);
+      const result = self.evaluator(self.expr);
       // setTimeout(()=>console.log(self.toString(), "depends", getDependencyTree(self, "evaluate")), 30);
       return result;
     }
@@ -355,9 +374,12 @@ export const ExpressionStore = types
   .views((self) => ({
     get asScope() {
       return () => {
+        //eslint-disable-next-line @typescript-eslint/no-unused-expressions
         self.value;
 
-        let expr = untracked(() => { return self.evaluate })
+        const expr = untracked(() => {
+          return self.evaluate;
+        });
         return expr;
       };
     },
@@ -414,7 +436,12 @@ export const ExpressionStore = types
       }
       if (typeof newNumber === "number") {
         if (!isFinite(newNumber)) {
-          console.error(self.toString(), "failed to evaluate: ", newNumber, "is infinite");
+          console.error(
+            self.toString(),
+            "failed to evaluate: ",
+            newNumber,
+            "is infinite"
+          );
           return undefined;
         }
         if (self.defaultUnit !== undefined) {
@@ -428,7 +455,8 @@ export const ExpressionStore = types
       // newNumber is Unit
       const unit = self.defaultUnit;
       if (unit === undefined) {
-        console.error(self.toString(),
+        console.error(
+          self.toString(),
           "failed to evaluate: ",
           newNumber,
           "is unit on unitless expr"
@@ -444,7 +472,12 @@ export const ExpressionStore = types
         return undefined;
       }
       if (!isFinite(newNumber.value)) {
-        console.error(self.toString(), "failed to evaluate: ", newNumber.value, "is infinite");
+        console.error(
+          self.toString(),
+          "failed to evaluate: ",
+          newNumber.value,
+          "is infinite"
+        );
         return undefined;
       }
       return newNode;
@@ -484,7 +517,6 @@ export const ExpressionStore = types
   });
 export type IExpressionStore = Instance<typeof ExpressionStore>;
 
-type Pose2d = { x: Evaluated, y: Evaluated, heading: Evaluated, isPose2d: true }
 const ExprPose = types
   .model({
     x: ExpressionStore,
@@ -584,7 +616,10 @@ export const Variables = types
       // add unit if expr is just a solo number
       if (typeof expr === "number") {
         if (dimension === "Number") {
-          store = ExpressionStore.create({ expr: new ConstantNode(expr), dimension });
+          store = ExpressionStore.create({
+            expr: new ConstantNode(expr),
+            dimension
+          });
         } else {
           store = ExpressionStore.create({
             expr: addUnitToExpression(
@@ -594,7 +629,8 @@ export const Variables = types
             dimension
           });
         }
-      } else if (Array.isArray(expr)) { // deserialize Expr
+      } else if (Array.isArray(expr)) {
+        // deserialize Expr
         store = ExpressionStore.create({
           expr: math.parse(expr[0]),
           dimension
@@ -611,7 +647,7 @@ export const Variables = types
 
       return store;
     },
-    createPose(pose?: Pose | { x: Expr, y: Expr, heading: Expr }) {
+    createPose(pose?: Pose | { x: Expr; y: Expr; heading: Expr }) {
       return ExprPose.create({
         x: this.createExpression(pose?.x ?? 0, "Length"),
         y: this.createExpression(pose?.y ?? 0, "Length"),
@@ -628,18 +664,25 @@ export const Variables = types
       return result;
     },
     // criteria according to https://mathjs.org/docs/expressions/syntax.html#constants-and-variables
-    validateName(name: string, selfName: string ):boolean {
-      console.log(name.split(""))
+    validateName(name: string, selfName: string): boolean {
+      console.log(name.split(""));
 
-      let notAlreadyExists = name === selfName || (!self.poses.has(name) && 
-      !self.expressions.has(name));
-      return notAlreadyExists &&
-       name.length != 0 &&
-       math.parse.isAlpha(name[0],"", name[1]) &&
-       name.split("").every(
-        (c, i, arr)=>math.parse.isAlpha(arr[i], arr[i-1], arr[i+1]) || math.parse.isDigit(arr[i]))&&
-      !["mod", "to", "in", "and", "xor", "or", "not", "end"].includes(name)
-      ;
+      const notAlreadyExists =
+        name === selfName ||
+        (!self.poses.has(name) && !self.expressions.has(name));
+      return (
+        notAlreadyExists &&
+        name.length != 0 &&
+        math.parse.isAlpha(name[0], "", name[1]) &&
+        name
+          .split("")
+          .every(
+            (c, i, arr) =>
+              math.parse.isAlpha(arr[i], arr[i - 1], arr[i + 1]) ||
+              math.parse.isDigit(arr[i])
+          ) &&
+        !["mod", "to", "in", "and", "xor", "or", "not", "end"].includes(name)
+      );
     }
   }))
   .actions((self) => ({
@@ -650,31 +693,27 @@ export const Variables = types
       self.expressions.delete(key);
     },
     renameExpression(cur: string, next: string) {
-      let current = self.expressions.get(cur);
+      const current = self.expressions.get(cur);
       if (current === undefined) return;
       getEnv<Env>(self).renameVariable(cur, next);
       self.expressions.set(next, detach(current));
     },
     renamePose(cur: string, next: string) {
-      let current = self.poses.get(cur);
+      const current = self.poses.get(cur);
       if (current === undefined) return;
       getEnv<Env>(self).renameVariable(cur, next);
       self.poses.set(next, detach(current));
-
     },
-    addPose(key: string, pose?: Pose | { x: Expr, y: Expr, heading: Expr }) {
-      let store = self.createPose(pose);
-      self.poses.set(
-        key, store
-
-      );
+    addPose(key: string, pose?: Pose | { x: Expr; y: Expr; heading: Expr }) {
+      const store = self.createPose(pose);
+      self.poses.set(key, store);
     },
     add(key: string, expr: string | number | Expr, defaultUnit: DimensionName) {
       self.expressions.set(key, self.createExpression(expr, defaultUnit));
     },
     deserialize(vars: DocVariables) {
       for (const entry of Object.entries(vars.expressions)) {
-        this.add(entry[0], entry[1].var, entry[1].dimension)
+        this.add(entry[0], entry[1].var, entry[1].dimension);
       }
 
       for (const entry of Object.entries(vars.poses)) {

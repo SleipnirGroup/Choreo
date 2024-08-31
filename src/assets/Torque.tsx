@@ -17,24 +17,35 @@ SvgIcon.defaultProps = {
   "aria-hidden": "true"
 };
 const Torque: React.FunctionComponent<SvgIconProps> = (props) => {
-  let cornerX = 4;
-  let cornerY = 18;
-  let endX = 20;
-  let length = endX-cornerX;
-  let angle = Math.PI/2;
-  let r = 8;
+  const cornerX = 4;
+  const cornerY = 18;
+  const endX = 20;
+  const angle = Math.PI / 2;
+  const r = 8;
   return (
     <SvgIcon {...props}>
       <line x1={cornerX} y1={cornerY} x2={endX} y2={cornerY}></line>
       <circle cx={cornerX} cy={cornerY} r={2}></circle>
       {/* up arrow */}
-      <line x1={endX-3} y1={cornerY-4} x2={endX-3} y2={cornerY-12}></line>
+      <line
+        x1={endX - 3}
+        y1={cornerY - 4}
+        x2={endX - 3}
+        y2={cornerY - 12}
+      ></line>
       {/* left arrow part */}
-      <line x1={endX-6} y1={cornerY-9} x2={endX-3} y2={cornerY-12}></line>
+      <line
+        x1={endX - 6}
+        y1={cornerY - 9}
+        x2={endX - 3}
+        y2={cornerY - 12}
+      ></line>
       {/* right arrow part */}
-      <line x1={endX} y1={cornerY-9} x2={endX-3} y2={cornerY-12}></line>
-      <path d={`M ${cornerX+r} ${cornerY} A ${r} ${r} 0 0 0 ${cornerX+r*Math.cos(angle)} ${cornerY-r*Math.sin(angle)}`}></path>
-      
+      <line x1={endX} y1={cornerY - 9} x2={endX - 3} y2={cornerY - 12}></line>
+      <path
+        d={`M ${cornerX + r} ${cornerY} A ${r} ${r} 0 0 0 ${cornerX + r * Math.cos(angle)} ${cornerY - r * Math.sin(angle)}`}
+      ></path>
+
       {/* <circle cx={12} cy={12} r={2} fill="currentColor"></circle>
       <circle cx={20} cy={12} r={2} fill="currentColor"></circle>
       <rect x={4} y={4} width={16} height={16}></rect> */}

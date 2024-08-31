@@ -51,7 +51,7 @@ import {
   ICommandStore,
   IEventMarkerStore
 } from "./EventMarkerStore";
-import { Dimensions, IExpressionStore, IVariables, Units, Variables, math } from "./ExpressionStore";
+import { IExpressionStore, IVariables, Variables } from "./ExpressionStore";
 import {
   IHolonomicWaypointStore,
   HolonomicWaypointStore as WaypointStore
@@ -134,10 +134,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
       return RobotConfigStore.create({
         mass: vars().createExpression(config.mass, "Mass"),
         inertia: vars().createExpression(config.inertia, "MoI"),
-        tmax: vars().createExpression(
-          config.tmax,
-          "Torque"
-        ),
+        tmax: vars().createExpression(config.tmax, "Torque"),
         vmax: vars().createExpression(config.vmax, "AngVel"),
         gearing: vars().createExpression(config.gearing, "Number"),
         radius: vars().createExpression(config.radius, "Length"),
@@ -220,7 +217,7 @@ const env = {
   stopGroup: () => {
     stopGroup();
   },
-  vars: ()=>(doc.variables),
+  vars: () => doc.variables,
   renameVariable: renameVariable,
   create: getConstructors(() => doc.variables)
 };
@@ -248,11 +245,11 @@ function stopGroup() {
   doc.history.stopGroup();
 }
 function renameVariable(find: string, replace: string) {
-  walk(doc, (node)=> {
+  walk(doc, (node) => {
     if (node["expr"] !== undefined) {
-      (node as IExpressionStore).findReplaceVariable(find, replace)
+      (node as IExpressionStore).findReplaceVariable(find, replace);
     }
-  })
+  });
 }
 export function setup() {
   doc.pathlist.setExporter((uuid) => {

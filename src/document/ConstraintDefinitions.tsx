@@ -1,14 +1,9 @@
-import {
-  KeyboardDoubleArrowRight,
-  NearMe,
-  StopCircleOutlined,
-  TextRotationNoneOutlined
-} from "@mui/icons-material";
+import { NearMe, StopCircleOutlined } from "@mui/icons-material";
 import { Unit } from "mathjs";
 import { JSXElementConstructor, ReactElement } from "react";
 import { ObjectTyped } from "../util/ObjectTyped";
 import { Expr } from "./2025/DocumentTypes";
-import { Dimensions, Units } from "./ExpressionStore";
+import { Dimensions } from "./ExpressionStore";
 
 export type ConstraintPropertyType = Expr | boolean;
 

@@ -1,13 +1,13 @@
 import { Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
-import React, { Component, ReactFragment } from "react";
+import { isAlive } from "mobx-state-tree";
+import React, { Component } from "react";
 import { IExpressionStore, math } from "../../document/ExpressionStore";
 import styles from "./InputList.module.css";
-import { isAlive } from "mobx-state-tree";
 
 type Props = {
   /** The text to show before the number */
-  title: string | (()=>React.ReactNode);
+  title: string | (() => React.ReactNode);
   /** Whether the input should be editable, or else italic and grayed out */
   enabled: boolean;
   /** The value of the input */
@@ -78,19 +78,17 @@ class Input extends Component<Props, State> {
   }
 
   getRoundedStr(): string {
-    const precision = this.props.roundingPrecision ?? 3;
     return this.props.number.expr.toString();
   }
 
   getValid(): boolean {
     try {
       if (this.state.editing) {
-      const newNode = this.props.number.validate(
-        math.parse(this.state.editedValue)
-      );
-      return newNode !== undefined;
-      }
-      else {
+        const newNode = this.props.number.validate(
+          math.parse(this.state.editedValue)
+        );
+        return newNode !== undefined;
+      } else {
         return this.props.number.valid;
       }
     } catch {
@@ -113,8 +111,8 @@ class Input extends Component<Props, State> {
   }
 
   render() {
-    if(!isAlive(this.props.number)){
-      return <></>
+    if (!isAlive(this.props.number)) {
+      return <></>;
     }
     try {
       //eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -130,22 +128,22 @@ class Input extends Component<Props, State> {
     }
     return (
       <>
-      {!(this.props.title instanceof Function) &&
-        <Tooltip disableInteractive title={this.props.titleTooltip ?? ""}>
-          <span
-            className={
-              styles.Title +
-              " " +
-              (this.props.enabled ? "" : styles.Disabled) +
-              " " +
-              (this.props.titleTooltip === undefined ? "" : styles.Tooltip)
-            }
-          >
-            {this.props.title as string}
-          </span>
-        </Tooltip>
-      }
-      {this.props.title instanceof Function && this.props.title()}
+        {!(this.props.title instanceof Function) && (
+          <Tooltip disableInteractive title={this.props.titleTooltip ?? ""}>
+            <span
+              className={
+                styles.Title +
+                " " +
+                (this.props.enabled ? "" : styles.Disabled) +
+                " " +
+                (this.props.titleTooltip === undefined ? "" : styles.Tooltip)
+              }
+            >
+              {this.props.title as string}
+            </span>
+          </Tooltip>
+        )}
+        {this.props.title instanceof Function && this.props.title()}
         <input
           ref={this.inputElemRef}
           type="text"

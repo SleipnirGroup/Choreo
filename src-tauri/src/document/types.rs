@@ -30,7 +30,7 @@ pub enum Dimension {
     Time,
     Mass,
     Torque,
-    MoI
+    MoI,
 }
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Variable {
