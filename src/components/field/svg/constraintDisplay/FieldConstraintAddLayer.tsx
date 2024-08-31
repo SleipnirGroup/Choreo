@@ -1,5 +1,6 @@
 import { Component } from "react";
 import { doc, uiState } from "../../../../document/DocumentManager";
+import { ConstraintDefinitions } from "../../../../document/ConstraintDefinitions";
 
 import { observer } from "mobx-react";
 import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer";
@@ -87,8 +88,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
           onCircleClick={(id) => {
             console.log("constraint from: ", id);
             const constraintToAdd = uiState.getSelectedConstraintKey();
-            console.log("constraint to add key: ", constraintToAdd);
-            if (constraintToAdd == "StopPoint") {
+            if (!ConstraintDefinitions[constraintToAdd].sgmtScope) {
               this.addConstraint(waypoints, id, undefined);
             } else {
               this.setState({ firstIndex: id });
