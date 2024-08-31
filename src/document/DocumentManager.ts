@@ -752,6 +752,11 @@ export async function saveProjectDialog() {
 
   tracing.info("Saving to", dir, name);
 
+  localStorage.setItem(
+    LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
+    JSON.stringify({ dir, name })
+  );
+
   doc.setName(name);
 
   await Commands.setDeployRoot(dir).catch(tracing.error);
@@ -760,6 +765,9 @@ export async function saveProjectDialog() {
   uiState.setProjectName(name);
 
   await saveProject();
+
+  //save all trajectories
+  await exportAllTrajectories();
 
   toast.success(`Saved ${name}. Future changes will now be auto-saved.`);
   return true;
@@ -774,19 +782,12 @@ export async function exportAllTrajectories() {
       writeTrajectory(uuid)
     );
     const pathNames = doc.pathlist.pathNames;
-    Promise.allSettled(promises).then((results) => {
-      const errors: string[] = [];
-
+    await Promise.allSettled(promises).then((results) => {
       results.map((result, i) => {
         if (result.status === "rejected") {
           tracing.error(pathNames[i], ":", result.reason);
-          errors.push(`Couldn't save "${pathNames[i]}": ${result.reason}`);
         }
       });
-
-      if (errors.length != 0) {
-        throw errors;
-      }
     });
   }
 }
