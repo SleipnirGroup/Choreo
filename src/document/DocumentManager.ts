@@ -136,10 +136,10 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         inertia: vars().createExpression(config.inertia, "MoI"),
         tmax: vars().createExpression(
           config.tmax,
-          Dimensions.Torque
+          "Torque"
         ),
         vmax: vars().createExpression(config.vmax, "AngVel"),
-        gearing: vars().createExpression(config.gearing),
+        gearing: vars().createExpression(config.gearing, "Number"),
         radius: vars().createExpression(config.radius, "Length"),
         bumper: {
           front: vars().createExpression(config.bumper.front, "Length"),
