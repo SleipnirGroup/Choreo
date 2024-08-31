@@ -9,7 +9,7 @@ import ExpressionInputList from "../../input/ExpressionInputList";
 import { Dimensions, IExpressionStore, Units } from "../../../document/ExpressionStore";
 import VariableRenamingInput from "./VariableRenamingInput";
 import styles from "../../input/InputList.module.css"
-import VariablesConfigPanel from "./VariablesConfigPanel";
+import VariablesConfigPanel, { GeneralVariableAddPanel } from "./VariablesConfigPanel";
 import PoseVariablesConfigPanel from "./PoseVariablesConfigPanel";
 
 type Props = object;
@@ -17,26 +17,25 @@ type Props = object;
 type State = object;
 
 class ExpressionsConfigPanel extends Component<Props, State> {
-  rowGap = 16;
+  rowGap = 4;
 
   render() {
     doc.variables.expressions.keys();
     return (
       <div
         style={{
-          minWidth: "600px",
-          rowGap: `${0 * this.rowGap}px`,
+          rowGap: `${1 * this.rowGap}px`,
           columnGap: this.rowGap,
-          fontSize: "2rem",
+          fontSize: "1rem",
           margin: `${1 * this.rowGap}px`,
-          display: "flex",
-          flexDirection:"column",
-          overflow: "hidden"
-        }}
+          display: "grid",
+          gridTemplateColumns: "max-content max-content max-content max-content", width: "max-content"}}
       >
         <VariablesConfigPanel></VariablesConfigPanel>
-        <Divider flexItem></Divider>
+        {doc.variables.expressions.size > 0 && <Divider sx={{ gridColumn: "1 / -1" }}></Divider>}
         <PoseVariablesConfigPanel></PoseVariablesConfigPanel>
+        {doc.variables.poses.size > 0 && <Divider sx={{ gridColumn: "1 / -1" }}></Divider>}
+        <GeneralVariableAddPanel></GeneralVariableAddPanel>
       </div>
     );
   }

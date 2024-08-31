@@ -1,4 +1,4 @@
-import { AspectRatio, Close, Gradient, Numbers, Visibility } from "@mui/icons-material";
+import { AspectRatio, Close, Functions, Gradient, Numbers, Visibility } from "@mui/icons-material";
 import {
   IconButton,
   Menu,
@@ -51,7 +51,9 @@ class ViewOptionsPanel extends Component<Props, State> {
 
   render() {
     return (
-      <div className={styles.ViewOptionsPanel}>
+      <div className={styles.ViewOptionsPanel} style={
+        {borderLeft: uiState.variablesPanelOpen ? "solid gray 1px": "none"}
+      }>
         <Tooltip disableInteractive title="Zoom to fit trajectory">
           {/* If there's no waypoints, then don't allow user to zoom to fit Waypoints */}
           <IconButton
@@ -103,15 +105,20 @@ class ViewOptionsPanel extends Component<Props, State> {
             </IconButton>
           </Tooltip>
         </div>
-        <div><IconButton
+        <div>
+          <Tooltip disableInteractive title={"Variables"}>
+          <IconButton
           onClick={() => {
             uiState.setVariablesPanelOpen(!uiState.variablesPanelOpen);
           }}
         >
-        {uiState.variablesPanelOpen ? <Close /> : <Numbers />}
+
+        {uiState.variablesPanelOpen ? <Close /> : <Functions />}
 
         </IconButton>
+        </Tooltip>
         </div>
+        <Tooltip disableInteractive title={"View Layers"}>
         <IconButton
           onClick={() => {
             uiState.setViewOptionsPanelOpen(!uiState.isViewOptionsPanelOpen);
@@ -119,6 +126,7 @@ class ViewOptionsPanel extends Component<Props, State> {
         >
           {uiState.isViewOptionsPanelOpen ? <Close /> : <Visibility />}
         </IconButton>
+        </Tooltip>
         {uiState.isViewOptionsPanelOpen && (
           <div
             style={{
@@ -165,17 +173,18 @@ class ViewOptionsPanel extends Component<Props, State> {
     {uiState.variablesPanelOpen && 
         <div
         style={{
-          overflowY: "hidden",
+          overflowY: "scroll",
           position: "absolute",
           top: "0",
-          right: "100%",
+          right: "105%",
           background: "var(--background-light-gray)",
           color: "white",
           width: "min-content",
-          // padding: "8px",
+          padding: "8px",
 
-          borderRadius: "10px",
-         
+          borderBottomLeftRadius: "10px",
+          borderBottomRightRadius: "10px",
+          
           display: "flex",
           flexDirection: "column"
         }}

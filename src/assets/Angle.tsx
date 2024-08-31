@@ -1,0 +1,35 @@
+import * as React from "react";
+import { SvgIcon as MuiSvgIcon, SvgIconProps, styled } from "@mui/material";
+const SvgIcon = styled(MuiSvgIcon, {
+  name: "MopeimIcon",
+  shouldForwardProp: (prop) => prop !== "fill"
+})<SvgIconProps>(() => ({
+  fill: "none",
+  stroke: "currentColor",
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+  strokeWidth: "2.25px"
+}));
+
+SvgIcon.defaultProps = {
+  viewBox: "0 0 24 24",
+  focusable: "false",
+  "aria-hidden": "true",
+  pointerEvents:"all"
+};
+const Angle: React.FunctionComponent<SvgIconProps> = (props) => {
+  let cornerX = 4;
+  let cornerY = 18;
+  let endX = 20;
+  let length = endX-cornerX;
+  let angle = Math.PI/3;
+  let r = 10;
+  return (
+    <SvgIcon {...props}>
+      <line x1={cornerX} y1={cornerY} x2={endX} y2={cornerY}></line>
+      <line x1={cornerX} y1={cornerY} x2={cornerX+length*Math.cos(angle)} y2={cornerY-length*Math.sin(angle)}></line>
+      <path d={`M ${cornerX+r} ${cornerY} A ${r} ${r} 0 0 0 ${cornerX+r*Math.cos(angle)} ${cornerY-r*Math.sin(angle)}`}></path>
+    </SvgIcon>
+  );
+};
+export default Angle;

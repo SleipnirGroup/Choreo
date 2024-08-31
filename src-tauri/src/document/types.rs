@@ -19,16 +19,22 @@ impl AsRef<f64> for Expr {
     }
 }
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
-pub enum Unit {
-    Meter,
-    MeterPerSecond,
-    Radian,
-    RadianPerSecond,
-    KgM2,
+pub enum Dimension {
+    Number,
+    Length,
+    LinVel,
+    LinAcc,
+    Angle,
+    AngVel,
+    AngAcc,
+    Time,
+    Mass,
+    Torque,
+    MoI
 }
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Variable {
-    pub unit: Unit,
+    pub dimension: Dimension,
     pub var: Expr,
 }
 #[derive(Debug, Serialize, Deserialize, Clone)]

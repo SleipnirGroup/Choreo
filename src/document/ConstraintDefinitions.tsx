@@ -80,7 +80,7 @@ export const ConstraintDefinitions: defs = {
     name: "Max Velocity",
     shortName: "Max Velo",
     description: "Maximum Velocity",
-    icon: <KeyboardDoubleArrowRight />,
+    icon: Dimensions.LinVel.icon(),
     properties: {
       max: {
         name: "Max Velocity",
@@ -97,7 +97,7 @@ export const ConstraintDefinitions: defs = {
     name: "Max Acceleration",
     shortName: "Max Acc",
     description: "Maximum Linear Acceleration",
-    icon: <TextRotationNoneOutlined />,
+    icon: Dimensions.LinAcc.icon(),
     properties: {
       max: {
         name: "Max Acceleration",

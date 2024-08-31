@@ -108,7 +108,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
       commands: (command.data?.commands ?? []).map((c) =>
         createCommandStore(c)
       ),
-      time: vars().createExpression(command.data?.time ?? 0, Dimensions.Time.unit),
+      time: vars().createExpression(command.data?.time ?? 0, "Time"),
       uuid: uuidv4()
     });
   }
@@ -132,25 +132,25 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
   return {
     RobotConfigStore: (config: RobotConfig<Expr>) => {
       return RobotConfigStore.create({
-        mass: vars().createExpression(config.mass, Dimensions.Mass),
-        inertia: vars().createExpression(config.inertia, Dimensions.MoI),
+        mass: vars().createExpression(config.mass, "Mass"),
+        inertia: vars().createExpression(config.inertia, "MoI"),
         tmax: vars().createExpression(
           config.tmax,
           Dimensions.Torque
         ),
-        vmax: vars().createExpression(config.vmax, Dimensions.AngVel),
+        vmax: vars().createExpression(config.vmax, "AngVel"),
         gearing: vars().createExpression(config.gearing),
-        radius: vars().createExpression(config.radius, Dimensions.Length),
+        radius: vars().createExpression(config.radius, "Length"),
         bumper: {
-          front: vars().createExpression(config.bumper.front, Dimensions.Length),
-          left: vars().createExpression(config.bumper.left, Dimensions.Length),
-          right: vars().createExpression(config.bumper.right, Dimensions.Length),
-          back: vars().createExpression(config.bumper.back, Dimensions.Length)
+          front: vars().createExpression(config.bumper.front, "Length"),
+          left: vars().createExpression(config.bumper.left, "Length"),
+          right: vars().createExpression(config.bumper.right, "Length"),
+          back: vars().createExpression(config.bumper.back, "Length")
         },
         modules: [0, 1, 2, 3].map((i) => {
           return {
-            x: vars().createExpression(config.modules[i].x, Dimensions.Length),
-            y: vars().createExpression(config.modules[i].y, Dimensions.Length)
+            x: vars().createExpression(config.modules[i].x, "Length"),
+            y: vars().createExpression(config.modules[i].y, "Length")
           };
         }),
         identifier: uuidv4()
@@ -159,9 +159,9 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
     WaypointStore: (waypoint: Waypoint<Expr>) => {
       return WaypointStore.create({
         ...waypoint,
-        x: vars().createExpression(waypoint.x, Dimensions.Length),
-        y: vars().createExpression(waypoint.y, Dimensions.Length),
-        heading: vars().createExpression(waypoint.heading, Dimensions.Angle),
+        x: vars().createExpression(waypoint.x, "Length"),
+        y: vars().createExpression(waypoint.y, "Length"),
+        heading: vars().createExpression(waypoint.heading, "Angle"),
         uuid: uuidv4()
       });
     },
@@ -171,9 +171,9 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
       radius: number
     ): ICircularObstacleStore => {
       return CircularObstacleStore.create({
-        x: vars().createExpression(x, Dimensions.Length),
-        y: vars().createExpression(y, Dimensions.Length),
-        radius: vars().createExpression(radius, Dimensions.Length),
+        x: vars().createExpression(x, "Length"),
+        y: vars().createExpression(y, "Length"),
+        radius: vars().createExpression(radius, "Length"),
         uuid: uuidv4()
       });
     },
@@ -183,7 +183,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         name: marker.name,
         target: marker.target,
         trajTargetIndex: marker.trajTargetIndex,
-        offset: vars().createExpression(marker.offset, Dimensions.Time),
+        offset: vars().createExpression(marker.offset, "Time"),
         command: createCommandStore(marker.command),
         uuid: uuidv4()
       });
