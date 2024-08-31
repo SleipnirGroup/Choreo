@@ -159,19 +159,19 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     // extending the time proportionally to meet this requirement.
     // This is an alternative estimation method to finding the trapezoidal or
     // triangular profile for the change heading.
-    const auto time = (1.5 * dtheta) / maxAngVel;
-    maxLinearVel = std::min(maxLinearVel, dist / time);
+    const auto angular_time = (1.5 * dtheta) / maxAngVel;
+    maxLinearVel = std::min(maxLinearVel, dist / angular_time);
 
     const auto distanceAtCruise =
         dist - (maxLinearVel * maxLinearVel) / maxAccel;
 
-    double sgmtTime;
+    double sgmtTime = angular_time;
     if (distanceAtCruise < 0) {
       // triangle
-      sgmtTime = 2.0 * (std::sqrt(dist * maxAccel) / maxAccel);
+      sgmtTime += 2.0 * (std::sqrt(dist * maxAccel) / maxAccel);
     } else {
       // trapezoid
-      sgmtTime = dist / maxLinearVel + maxLinearVel / maxAccel;
+      sgmtTime += dist / maxLinearVel + maxLinearVel / maxAccel;
     }
     dt_sgmt.SetValue(sgmtTime / N_sgmt);
   }
