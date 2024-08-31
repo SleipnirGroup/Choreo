@@ -358,7 +358,7 @@ export async function setupEventListeners() {
   tauriWindow
     .getCurrent()
     .listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
-      if (await canSave()) {
+      if (!(await canSave())) {
         if (
           await dialog.ask("Save project?", {
             title: "Choreo",
@@ -649,6 +649,7 @@ export async function newProject() {
     settingsTab: 0,
     layers: ViewLayerDefaults
   });
+  await Commands.setDeployRoot("");
   const newChor = await Commands.defaultProject();
   doc.deserializeChor(newChor);
   //let newVariables

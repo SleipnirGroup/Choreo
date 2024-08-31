@@ -14,6 +14,7 @@ use crate::{
         generate::{generate, setup_progress_sender, RemoteProgressUpdate},
         types::{Project, Traj},
     },
+    error::ChoreoError,
     ChoreoResult,
 };
 
@@ -87,7 +88,7 @@ pub struct Cli {
         help_heading = FILE_OPTIONS,
         value_delimiter = ',',
         conflicts_with = "all_traj",
-        help = "Adds trajectories to be used by cli actions"
+        help = "Adds trajectories to be used by cli actions (names not paths)"
     )]
     pub traj: Vec<String>,
 
@@ -125,7 +126,18 @@ pub struct Cli {
 }
 
 impl Cli {
-    fn action(self) -> CliAction {
+    fn action(mut self) -> CliAction {
+        //if chor is provided and not an absolute path, make it absolute
+        if let Some(chor) = &self.chor {
+            if !chor.is_absolute() {
+                self.chor = Some(
+                    std::fs::canonicalize(chor)
+                        .map_err(|_| ChoreoError::FileNotFound(Some(chor.clone())))
+                        .expect("Failed to make path absolute"),
+                );
+            }
+        }
+
         if let Some(remote_args) = self.remote {
             let remote_args: RemoteArgs =
                 serde_json::from_str(&remote_args).expect("Failed to deserialize remote arguments");
@@ -141,7 +153,7 @@ impl Cli {
         }
         if self.generate {
             if let Some(project_path) = self.chor {
-                if self.traj.is_empty() {
+                if self.traj.is_empty() && !self.all_traj {
                     return CliAction::Error(
                         "Trajectories must be provided for generation.".to_string(),
                     );
@@ -235,7 +247,7 @@ impl Cli {
     async fn generate_trajs(
         resources: WritingResources,
         project_path: PathBuf,
-        traj_names: Vec<String>,
+        mut traj_names: Vec<String>,
     ) {
         // set the deploy path to the project directory
         file::set_deploy_path(
@@ -259,6 +271,15 @@ impl Cli {
         )
         .await
         .expect("Failed to read project file");
+
+        if traj_names.is_empty() {
+            traj_names = file::find_all_traj(&resources).await;
+        }
+
+        if traj_names.is_empty() {
+            tracing::error!("No trajectories found in the project directory");
+            return;
+        }
 
         // generate trajectories
         for (i, traj_name) in traj_names.iter().enumerate() {

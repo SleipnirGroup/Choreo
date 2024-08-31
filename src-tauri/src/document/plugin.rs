@@ -129,8 +129,12 @@ pub async fn set_deploy_root(app_handle: tauri::AppHandle, dir: String) {
 #[tauri::command]
 pub async fn get_deploy_root(app_handle: tauri::AppHandle) -> ChoreoResult<String> {
     let resources = app_handle.state::<WritingResources>();
-    let path = resources.get_deploy_path().await?;
-    Ok(path.to_string_lossy().to_string())
+    match resources.get_deploy_path().await {
+        Ok(path) => Ok(path.to_string_lossy().to_string()),
+        // an absent deploy path is represented as an empty string in the frontend
+        Err(ChoreoError::NoDeployPath) => Ok(String::new()),
+        Err(e) => Err(e),
+    }
 }
 
 #[tauri::command]
@@ -160,13 +164,13 @@ pub async fn generate_remote(
 }
 
 #[tauri::command]
-pub fn kill_remote_generation(app_handle: tauri::AppHandle, handle: i64) -> ChoreoResult<()> {
+pub fn cancel_remote_generator(app_handle: tauri::AppHandle, handle: i64) -> ChoreoResult<()> {
     let remote_resources = app_handle.state::<RemoteGenerationResources>();
     remote_resources.kill(handle)
 }
 
 #[tauri::command]
-pub fn kill_all_remote_generators(app_handle: tauri::AppHandle) {
+pub fn cancel_all_remote_generators(app_handle: tauri::AppHandle) {
     let remote_resources = app_handle.state::<RemoteGenerationResources>();
     remote_resources.kill_all();
 }

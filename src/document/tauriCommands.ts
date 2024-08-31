@@ -10,9 +10,9 @@ export const Commands = {
   guessIntervals: (config: RobotConfig<Expr>, traj: Traj) =>
     invoke<number[]>("guess_control_interval_counts", { config, traj }),
   cancelAll: () => invoke<void>("cancel_all"),
-  cancelAllRemote: () => invoke<void>("kill_all_remote_generators"),
+  cancelAllRemote: () => invoke<void>("cancel_all_remote_generators"),
   cancelRemote: (handle: number) =>
-    invoke<void>("kill_remote_generation", { handle }),
+    invoke<void>("cancel_remote_generator", { handle }),
 
   /**
    * Opens the specified directory in the system's file explorer.

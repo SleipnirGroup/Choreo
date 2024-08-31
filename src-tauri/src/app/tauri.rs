@@ -115,8 +115,8 @@ pub fn run_tauri(writing_resources: WritingResources, project: Option<PathBuf>) 
             delete_traj,
             tracing_frontend,
             generate_remote,
-            kill_remote_generation,
-            kill_all_remote_generators
+            cancel_remote_generator,
+            cancel_all_remote_generators
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

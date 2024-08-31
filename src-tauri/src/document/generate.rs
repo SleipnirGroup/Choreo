@@ -473,7 +473,7 @@ pub async fn generate_remote(
             },
             _ = victim.try_next() => {
                 child.kill().await?;
-                return Err(ChoreoError::SolverError("Solver killed".to_string()));
+                return Err(ChoreoError::SolverError("Solver canceled".to_string()));
             }
         }
     }
