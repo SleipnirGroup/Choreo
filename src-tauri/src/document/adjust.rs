@@ -33,11 +33,20 @@ pub fn adjust_waypoint_headings(traj: &Traj) -> Result<Vec<f64>> {
                 // interpolate headings from last fixed idx
                 let start = traj.path.waypoints[last_fixed_idx].heading.1;
                 let dtheta = angle_modulus(wpt.heading.1 - start);
-                for interp_idx in last_fixed_idx + 1..idx {
-                    let scalar =
-                        (interp_idx - last_fixed_idx) as f64 / (idx - last_fixed_idx) as f64;
-                    new_headings[interp_idx] = start + scalar * dtheta;
-                }
+                // for interp_idx in last_fixed_idx + 1..idx {
+                //     let scalar =
+                //         (interp_idx - last_fixed_idx) as f64 / (idx - last_fixed_idx) as f64;
+                //     new_headings[interp_idx] = start + scalar * dtheta;
+                // }
+                new_headings
+                    .iter_mut()
+                    .take(idx + 1)
+                    .skip(last_fixed_idx)
+                    .enumerate()
+                    .for_each(|(i, heading)| {
+                        let scalar = (i + 1) as f64 / (idx - last_fixed_idx) as f64;
+                        *heading = start + scalar * dtheta;
+                    })
             }
             last_fixed_idx = idx;
         }
@@ -47,13 +56,22 @@ pub fn adjust_waypoint_headings(traj: &Traj) -> Result<Vec<f64>> {
     let (constraints_idx, is_initial_guess) =
         convert_constraints_to_index(&traj.path.snapshot(), num_wpts);
     let mut guess_point_idxs: Vec<usize> = Vec::new();
-    for i in 0..num_wpts {
-        let wpt = &traj.path.snapshot().waypoints[i];
-        // add initial guess points (actually unconstrained empty wpts in Choreo terms)
-        if is_initial_guess[i] && !wpt.fix_heading && !wpt.fix_translation {
-            guess_point_idxs.push(i);
-        }
-    }
+    // for i in 0..num_wpts {
+    //     let wpt = &traj.path.snapshot().waypoints[i];
+    //     // add initial guess points (actually unconstrained empty wpts in Choreo terms)
+    //     if is_initial_guess[i] && !wpt.fix_heading && !wpt.fix_translation {
+    //         guess_point_idxs.push(i);
+    //     }
+    // }
+    is_initial_guess
+        .iter()
+        .zip(&traj.path.snapshot().waypoints)
+        .enumerate()
+        .for_each(|(i, (&is_guess, wpt))| {
+            if is_guess && !wpt.fix_heading && !wpt.fix_translation {
+                guess_point_idxs.push(i);
+            }
+        });
     for constraint in &constraints_idx {
         let from = fix_scope(constraint.from, &guess_point_idxs);
         let to_opt = constraint.to.map(|idx| fix_scope(idx, &guess_point_idxs));
@@ -65,16 +83,33 @@ pub fn adjust_waypoint_headings(traj: &Traj) -> Result<Vec<f64>> {
                         None => {}
                         Some(to) => {
                             let mut fixed_heading = None;
-                            for wpt_idx in from..=to {
-                                heading_fixed_references[wpt_idx] += 1;
-                                if traj.path.waypoints[wpt_idx].fix_heading {
-                                    fixed_heading = Some(traj.path.waypoints[wpt_idx].heading.1);
-                                }
-                            }
+                            // for wpt_idx in from..=to {
+                            //     heading_fixed_references[wpt_idx] += 1;
+                            //     if traj.path.waypoints[wpt_idx].fix_heading {
+                            //         fixed_heading = Some(traj.path.waypoints[wpt_idx].heading.1);
+                            //     }
+                            // }
+                            traj.path
+                                .waypoints
+                                .iter()
+                                .enumerate()
+                                .take(to + 1)
+                                .skip(from)
+                                .for_each(|(wpt_idx, wpt)| {
+                                    heading_fixed_references[wpt_idx] += 1;
+                                    if wpt.fix_heading {
+                                        fixed_heading = Some(wpt.heading.1);
+                                    }
+                                });
                             if let Some(heading) = fixed_heading {
-                                for wpt_idx in from..=to {
-                                    new_headings[wpt_idx] = heading;
-                                }
+                                // for wpt_idx in from..=to {
+                                //     new_headings[wpt_idx] = heading;
+                                // }
+                                new_headings.iter_mut().take(to + 1).skip(from).for_each(
+                                    |new_heading| {
+                                        *new_heading = heading;
+                                    },
+                                )
                             }
                         }
                     }
