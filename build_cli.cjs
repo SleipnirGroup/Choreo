@@ -34,6 +34,8 @@ if (targetTriple === "") {
   throw new Error("Could not find target triple: " + output);
 }
 
+console.log("Target triple: " + targetTriple);
+
 // move and rename cli
 const executableExtension = get_executable_extension();
 build.once("exit", (code) => {
