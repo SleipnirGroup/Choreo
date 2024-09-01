@@ -74,6 +74,7 @@ use document::file::{
 };
 use document::generate::{cancel, generate, setup_progress_sender};
 use document::intervals::cmd_guess_control_interval_counts;
+use document::adjust::cmd_adjust_waypoint_headings;
 use error::ChoreoError;
 use tauri::Manager;
 
@@ -112,6 +113,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             generate,
             cmd_guess_control_interval_counts,
+            cmd_adjust_waypoint_headings,
             cancel,
             save_file,
             delete_file,

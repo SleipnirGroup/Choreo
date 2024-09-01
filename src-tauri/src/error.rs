@@ -20,6 +20,8 @@ pub enum ChoreoError {
     Inequality(&'static str, &'static str),
     #[error("TrajOpt error: {0:?}")]
     TrajOpt(String),
+    #[error("Heading constraint conflict at wpt {0:?}")]
+    HeadingConflict(usize),
 }
 
 // This is how the error will be propagated to the frontend,

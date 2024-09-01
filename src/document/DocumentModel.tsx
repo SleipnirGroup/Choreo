@@ -156,6 +156,15 @@ export const DocumentStore = types
       if (pathStore.path.waypoints.length < 2) {
         return;
       }
+      console.log("og wpt2: ", pathStore.path.waypoints[1].heading.value);
+      const rust_traj = await Commands.adjustHeadings(pathStore.serialize);
+      if (rust_traj.traj.samples.length == 0) throw "No traj";
+      rust_traj.path.waypoints.forEach((new_wpt, i) => {
+        pathStore.path.waypoints[i].heading.deserialize(new_wpt.heading);
+        pathStore.snapshot.waypoints[i].heading =
+          rust_traj.snapshot.waypoints[i].heading;
+      });
+      console.log("new wpt2: ", pathStore.path.waypoints[1].heading.value);
       console.log(pathStore.serialize);
       const config = self.robotConfig.serialize;
       pathStore.path.constraints.forEach((constraint) => {
