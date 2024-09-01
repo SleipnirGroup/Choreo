@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <ranges>
 
+#include <sleipnir/optimization/SolverExitCondition.hpp>
+
 #include "trajopt/geometry/Rotation2.hpp"
 #include "trajopt/geometry/Translation2.hpp"
 #include "trajopt/util/Cancellation.hpp"
@@ -234,7 +236,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   ApplyInitialGuess(initialGuess);
 }
 
-expected<DifferentialSolution, std::string>
+expected<DifferentialSolution, sleipnir::SolverExitCondition>
 DifferentialTrajectoryGenerator::Generate(bool diagnostics) {
   problem.Callback([this](const sleipnir::SolverIterationInfo&) -> bool {
     for (auto& callback : callbacks) {
@@ -249,7 +251,7 @@ DifferentialTrajectoryGenerator::Generate(bool diagnostics) {
   if (static_cast<int>(status.exitCondition) < 0 ||
       status.exitCondition ==
           sleipnir::SolverExitCondition::kCallbackRequestedStop) {
-    return unexpected{std::string{sleipnir::ToMessage(status.exitCondition)}};
+    return unexpected{status.exitCondition};
   } else {
     return ConstructDifferentialSolution();
   }
@@ -321,7 +323,8 @@ DifferentialTrajectoryGenerator::ConstructDifferentialSolution() {
   return DifferentialSolution{
       dtPerSample,           vectorValue(x),        vectorValue(y),
       vectorValue(thetacos), vectorValue(thetasin), vectorValue(vL),
-      vectorValue(vR),       vectorValue(FL),       vectorValue(FR),
+      vectorValue(vR),       vectorValue(aL),       vectorValue(aR),
+      vectorValue(FL),       vectorValue(FR),
   };
 }
 
