@@ -2,7 +2,10 @@
 
 #include <numbers>
 
+#include <sleipnir/optimization/SolverExitCondition.hpp>
 #include <trajopt/DifferentialTrajectoryGenerator.hpp>
+
+#include "fmt/base.h"
 
 // DifferentialPathBuilder is used to build paths that are optimized into full
 // trajectories.
@@ -36,8 +39,14 @@ int main() {
     path.ControlIntervalCounts({40});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
-    [[maybe_unused]]
     auto solution = generator.Generate(true);
+    if (!(solution.error() == sleipnir::SolverExitCondition::kSuccess ||
+          solution.error() ==
+              sleipnir::SolverExitCondition::kSolvedToAcceptableTolerance)) {
+      fmt::println("Error in example 1: {}",
+                   sleipnir::ToMessage(solution.error()));
+      return static_cast<int>(solution.error());
+    }
   }
 
   // Example 2: Differential, basic curve
@@ -51,8 +60,14 @@ int main() {
     path.ControlIntervalCounts({40});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
-    [[maybe_unused]]
     auto solution = generator.Generate(true);
+    if (!(solution.error() == sleipnir::SolverExitCondition::kSuccess ||
+          solution.error() ==
+              sleipnir::SolverExitCondition::kSolvedToAcceptableTolerance)) {
+      fmt::println("Error in example 2: {}",
+                   sleipnir::ToMessage(solution.error()));
+      return static_cast<int>(solution.error());
+    }
   }
 
   // Example 3: Differential, three waypoints
@@ -67,8 +82,14 @@ int main() {
     path.ControlIntervalCounts({50, 50});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
-    [[maybe_unused]]
     auto solution = generator.Generate(true);
+    if (!(solution.error() == sleipnir::SolverExitCondition::kSuccess ||
+          solution.error() ==
+              sleipnir::SolverExitCondition::kSolvedToAcceptableTolerance)) {
+      fmt::println("Error in example 3: {}",
+                   sleipnir::ToMessage(solution.error()));
+      return static_cast<int>(solution.error());
+    }
   }
 
   // Example 4: Differential, ending velocity
@@ -81,8 +102,14 @@ int main() {
     path.ControlIntervalCounts({40});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
-    [[maybe_unused]]
     auto solution = generator.Generate(true);
+    if (!(solution.error() == sleipnir::SolverExitCondition::kSuccess ||
+          solution.error() ==
+              sleipnir::SolverExitCondition::kSolvedToAcceptableTolerance)) {
+      fmt::println("Error in example 4: {}",
+                   sleipnir::ToMessage(solution.error()));
+      return static_cast<int>(solution.error());
+    }
   }
 
   // Example 5: Differential, circle obstacle
@@ -112,8 +139,14 @@ int main() {
     path.ControlIntervalCounts({40});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
-    [[maybe_unused]]
     auto solution = generator.Generate(true);
+    if (!(solution.error() == sleipnir::SolverExitCondition::kSuccess ||
+          solution.error() ==
+              sleipnir::SolverExitCondition::kSolvedToAcceptableTolerance)) {
+      fmt::println("Error in example 5: {}",
+                   sleipnir::ToMessage(solution.error()));
+      return static_cast<int>(solution.error());
+    }
   }
 
   // Example 6: Approach a pick up station at a certain direction
@@ -148,8 +181,14 @@ int main() {
     path.ControlIntervalCounts({40, 30, 30, 40});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
-    [[maybe_unused]]
     auto solution = generator.Generate(true);
+    if (!(solution.error() == sleipnir::SolverExitCondition::kSuccess ||
+          solution.error() ==
+              sleipnir::SolverExitCondition::kSolvedToAcceptableTolerance)) {
+      fmt::println("Error in example 6: {}",
+                   sleipnir::ToMessage(solution.error()));
+      return static_cast<int>(solution.error());
+    }
   }
 
   // Example 7: Circular path with a point-point constraint
@@ -179,7 +218,13 @@ int main() {
     path.ControlIntervalCounts({50});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
-    [[maybe_unused]]
     auto solution = generator.Generate(true);
+    if (!(solution.error() == sleipnir::SolverExitCondition::kSuccess ||
+          solution.error() ==
+              sleipnir::SolverExitCondition::kSolvedToAcceptableTolerance)) {
+      fmt::println("Error in example 7: {}",
+                   sleipnir::ToMessage(solution.error()));
+      return static_cast<int>(solution.error());
+    }
   }
 }
