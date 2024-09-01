@@ -19,9 +19,8 @@ tauri-build = { version = "1.5.2", features = [] }
 choreo-core = { path = "../src-core" }
 tauri = { version = "1.6.6", features = ["devtools", "dialog", "dialog-ask", "dialog-confirm", "dialog-open", "dialog-save", "fs-all", "os-all", "path-all", "shell-open", "window-close", "window-set-title"] }
 open = "5.3.0"
-tokio = { version = "1", features = ["full"] }
 tracing = "0.1.40"
-tracing-subscriber = { version = "0.3.18", features = ["ansi", "fmt", "std", "json"] }
+tracing-subscriber = { version = "0.3.18", features = ["ansi", "fmt", "std"] }
 nu-ansi-term = "0.50.1"
 
 [features]

@@ -7,7 +7,7 @@ use std::sync::{Arc, OnceLock};
 use std::vec;
 
 use dashmap::DashMap;
-use futures::{FutureExt, TryStreamExt};
+use futures_util::{FutureExt, TryStreamExt};
 use ipc_channel::ipc;
 use tempfile::NamedTempFile;
 use tokio::process::Command;

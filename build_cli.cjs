@@ -25,21 +25,34 @@ if (platType === "Darwin") {
 
 console.log("Target triple: " + targetTriple);
 
-// build cli
-const build = exec(`cargo build --release -p choreo-cli --target ${targetTriple}`);
-build.stdout.on("data", (data) => print(data, (end = "")));
-build.stderr.on("data", (data) => console.error(data));
+if (!fs.existsSync("cli")) {
+  fs.mkdirSync("cli");
+}
 
+const cliPath = `cli/choreo-cli-${targetTriple}${extension}`;
+
+if (process.env.TAURI_DEBUG && !fs.existsSync(cliPath)) {
+  fs.writeFileSync(cliPath, "");
+  return;
+}
+
+// build cli
+const build = exec(
+  `cargo build --release -p choreo-cli --target ${targetTriple}`
+);
+// build.stdout.on("data", (data) => process.stdout.write(data));
+build.stdout.pipe(process.stdout);
+build.stderr.on("data", (data) => console.error(data));
 
 // move and rename cli
 build.once("exit", (code) => {
   if (code !== 0) {
     throw new Error("Build failed");
   }
-  if (!fs.existsSync("cli")) {
-    fs.mkdirSync("cli");
+  if (fs.existsSync(cliPath)) {
+    fs.unlinkSync(cliPath);
   }
   execSync(
-    `mv target/release/choreo-cli${extension} cli/choreo-cli-${targetTriple}${extension}`
+    `mv target/${targetTriple}/release/choreo-cli${extension} ${cliPath} -f`
   );
 });
