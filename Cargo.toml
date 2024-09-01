@@ -2,7 +2,7 @@
 
 members = [
     "src-tauri",
-    # "src-cli",
+    "src-cli",
     "src-core",
     "trajoptlib",
 ]

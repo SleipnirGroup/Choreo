@@ -31,6 +31,8 @@ pub mod file_management;
 /// The api for generating trajectories.
 pub mod generation;
 
+pub use tokio;
+
 use std::error::Error;
 
 /// Type alias for a `Result` with a `ChoreoError` error type.

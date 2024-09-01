@@ -1,22 +1,8 @@
 #![allow(dead_code)]
-use std::{path::PathBuf, process::exit, thread};
+use std::{path::PathBuf, process::{exit, Command}};
 
+use choreo_core::{file_management::{self, WritingResources}, generation::generate::generate, ChoreoError};
 use clap::Parser;
-use ipc_channel::ipc::IpcSender;
-use serde::{Deserialize, Serialize};
-use tokio::fs;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-
-use super::tauri::run_tauri;
-use crate::{
-    document::{
-        file::{self, WritingResources},
-        generate::{generate, setup_progress_sender, RemoteProgressUpdate},
-        types::{Project, Traj},
-    },
-    error::ChoreoError,
-    ChoreoResult,
-};
 
 const FORMATTING_OPTIONS: &str = "Formating Options";
 const FILE_OPTIONS: &str = "File Options";
@@ -29,54 +15,11 @@ enum CliAction {
         project_path: PathBuf,
         traj_names: Vec<String>,
     },
-    Remote {
-        project_path: PathBuf,
-        traj_path: PathBuf,
-        responder: IpcSender<RemoteProgressUpdate>,
-    },
     Gui,
     GuiWithProject {
         project_path: PathBuf,
     },
     Error(String),
-}
-
-impl CliAction {
-    #[allow(clippy::match_wildcard_for_single_variants)]
-    fn enable_tracing(&self) {
-        match self {
-            Self::Gui | Self::GuiWithProject { .. } => {
-                // #[cfg(all(windows, not(debug_assertions)))]
-                // unsafe {
-                //     use winapi::um as w;
-                //     let dyn_handle = w::processenv::GetStdHandle(w::winbase::STD_OUTPUT_HANDLE);
-                //     let mut console_mode = 0;
-                //     if w::consoleapi::GetConsoleMode(dyn_handle, &mut console_mode) != 0 {
-                //         w::wincon::FreeConsole();
-                //     }
-                // }
-                tracing_subscriber::registry()
-                    .with(
-                        tracing_subscriber::fmt::layer()
-                            .event_format(super::logging::CompactFormatter),
-                    )
-                    .init();
-            },
-            CliAction::Remote { .. } => {},
-            _ => {
-                tracing_subscriber::fmt()
-                    .with_max_level(tracing::Level::INFO)
-                    .init();
-            },
-        }
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct RemoteArgs {
-    pub project: PathBuf,
-    pub traj: PathBuf,
-    pub ipc: String,
 }
 
 #[derive(Parser)]
@@ -120,21 +63,6 @@ pub struct Cli {
         help = "Generate the provided trajectories for the project"
     )]
     pub generate: bool,
-
-    #[arg(
-        long,
-        short,
-        help_heading = ADVANCED_OPTIONS,
-        help = "Free the process to run in another process and return immediately"
-    )]
-    pub free: bool,
-
-    #[arg(
-        long,
-        help_heading = ADVANCED_OPTIONS,
-        help = "The information needed to do a remote generation",
-    )]
-    pub remote: Option<String>,
 }
 
 impl Cli {
@@ -150,19 +78,6 @@ impl Cli {
             }
         }
 
-        if let Some(remote_args) = self.remote {
-            let remote_args: RemoteArgs =
-                serde_json::from_str(&remote_args).expect("Failed to deserialize remote arguments");
-
-            let ipc = IpcSender::<RemoteProgressUpdate>::connect(remote_args.ipc)
-                .expect("Failed to deserialize IPC handle");
-
-            return CliAction::Remote {
-                project_path: remote_args.project,
-                traj_path: remote_args.traj,
-                responder: ipc,
-            };
-        }
         if self.generate {
             if let Some(project_path) = self.chor {
                 if self.traj.is_empty() && !self.all_traj {
@@ -188,15 +103,13 @@ impl Cli {
 
         let action = self.action();
 
-        action.enable_tracing();
-
         match action {
             CliAction::Generate {
                 project_path,
                 traj_names,
             } => {
                 tracing::info!("CLIAction is Generate");
-                tokio::runtime::Builder::new_current_thread()
+                choreo_core::tokio::runtime::Builder::new_current_thread()
                     .enable_all()
                     .build()
                     .expect("Failed to build tokio runtime")
@@ -204,11 +117,16 @@ impl Cli {
             }
             CliAction::Gui => {
                 tracing::info!("CLIAction is Gui");
-                run_tauri(resources, None);
+                Command::new("Choreo")
+                    .spawn()
+                    .expect("Failed to open GUI");
             }
             CliAction::GuiWithProject { project_path } => {
                 tracing::info!("CLIAction is GuiWithProject");
-                run_tauri(resources, Some(project_path));
+                Command::new("Choreo")
+                    .arg(project_path)
+                    .spawn()
+                    .expect("Failed to open GUI with project");
             }
             CliAction::Error(e) => {
                 tracing::error!("{}", e);
@@ -224,7 +142,7 @@ impl Cli {
         mut traj_names: Vec<String>,
     ) {
         // set the deploy path to the project directory
-        file::set_deploy_path(
+        file_management::set_deploy_path(
             &resources,
             project_path
                 .parent()
@@ -234,7 +152,7 @@ impl Cli {
         .await;
 
         // read the project file
-        let project = file::read_project(
+        let project = file_management::read_projectfile(
             &resources,
             project_path
                 .file_stem()
@@ -247,7 +165,7 @@ impl Cli {
         .expect("Failed to read project file");
 
         if traj_names.is_empty() {
-            traj_names = file::find_all_traj(&resources).await;
+            traj_names = file_management::find_all_traj(&resources).await;
         }
 
         if traj_names.is_empty() {
@@ -259,13 +177,13 @@ impl Cli {
         for (i, traj_name) in traj_names.iter().enumerate() {
             tracing::info!("Generating trajectory {:} for {:}", traj_name, project.name);
 
-            let traj = file::read_traj(&resources, traj_name.to_string())
+            let traj = file_management::read_trajfile(&resources, traj_name.to_string())
                 .await
                 .expect("Failed to read trajectory file");
 
             match generate(&project, traj, i as i64) {
                 Ok(new_traj) => {
-                    file::write_traj(&resources, new_traj).await;
+                    file_management::write_trajfile(&resources, new_traj).await;
                     tracing::info!("Succesfully generated trajectory {:}", traj_name);
                 }
                 Err(e) => {
@@ -277,5 +195,8 @@ impl Cli {
 }
 
 fn main() {
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        .init();
     Cli::parse_from(std::env::args()).exec();
 }
