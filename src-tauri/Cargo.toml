@@ -16,27 +16,13 @@ license = "BSD-3-Clause"
 tauri-build = { version = "1.5.2", features = [] }
 
 [dependencies]
+choreo-core = { path = "../src-core" }
 tauri = { version = "1.6.6", features = ["devtools", "dialog", "dialog-ask", "dialog-confirm", "dialog-open", "dialog-save", "fs-all", "os-all", "path-all", "shell-open", "window-close", "window-set-title"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-trajoptlib = { path = "../trajoptlib" }
 open = "5.3.0"
 tokio = { version = "1", features = ["full"] }
-dashmap = "6.0.1"
-thiserror = "1.0.63"
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["ansi", "fmt", "std", "json"] }
-clap = { version = "4.5.16", features = ["derive"] }
 nu-ansi-term = "0.50.1"
-ipc-channel = { version = "0.18.2", features = ["async"] }
-futures = "0.3.30"
-tempfile = "3.12.0"
-
-# Windows-specific dependencies for closing the console window when the app is launched not via console
-[target.'cfg(windows)'.dependencies]
-winapi = "0.3.9"
 
 [features]
-# this feature is used for production builds or when `devPath` points to the filesystem
-# DO NOT REMOVE!!
 custom-protocol = ["tauri/custom-protocol"]

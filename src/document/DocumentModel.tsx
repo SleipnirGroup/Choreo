@@ -160,12 +160,11 @@ export const DocumentStore = types
       if (pathStore === undefined) {
         throw "Path store is undefined";
       }
-      if (pathStore.path.waypoints.length < 2) {
+      if (pathStore.params.waypoints.length < 2) {
         return;
       }
-      tracing.debug(pathStore.serialize);
       const config = self.robotConfig.serialize;
-      pathStore.path.constraints.forEach((constraint) => {
+      pathStore.params.constraints.forEach((constraint) => {
         if (constraint.issues.length > 0) {
           throw constraint.issues.join(", ");
         }
@@ -199,10 +198,14 @@ export const DocumentStore = types
       pathStore.ui.setIterationNumber(0);
 
       await Commands.guessIntervals(config, pathStore.serialize)
+        .catch((e) => {
+          tracing.error("guessIntervals:", e);
+          throw e;
+        })
         .then((counts) => {
           tracing.debug(counts);
           counts.forEach((count, i) => {
-            const waypoint = pathStore.path.waypoints[i];
+            const waypoint = pathStore.params.waypoints[i];
             if (waypoint.overrideIntervals && count !== waypoint.intervals) {
               console.assert(
                 false,
@@ -219,8 +222,10 @@ export const DocumentStore = types
             }
           });
         })
-        .then(() =>
-          listen("solver-status", async (event) => {
+        .then(() => {
+          tracing.debug("generatePathPre");
+          return listen("solver-status", async (event) => {
+            // tracing.debug(event);
             if (event.payload!.handle == handle) {
               const samples = event.payload.traj.samples as TrajoptlibSample[];
               const progress = pathStore.ui.generationProgress;
@@ -265,9 +270,8 @@ export const DocumentStore = types
                 pathStore.ui.generationIterationNumber + 1
               );
             }
-          })
-        )
-
+          });
+        })
         .then((unlistener) => {
           unlisten = unlistener;
           return Commands.generateRemote(
@@ -295,13 +299,7 @@ export const DocumentStore = types
             });
           },
           (e) => {
-            tracing.error(e);
-            if ((e as string).includes("infeasible")) {
-              throw "Infeasible Problem Detected";
-            }
-            if ((e as string).includes("maximum iterations exceeded")) {
-              throw "Maximum Iterations Exceeded";
-            }
+            tracing.error("generatePathPost:", e);
             throw e;
           }
         )
@@ -315,6 +313,7 @@ export const DocumentStore = types
   .actions((self) => {
     return {
       generatePathWithToasts(activePathUUID: string) {
+        tracing.debug("generatePathWithToasts", activePathUUID);
         const path = self.pathlist.paths.get(activePathUUID)!;
         if (path.ui.generating) {
           return Promise.resolve();
@@ -334,7 +333,7 @@ export const DocumentStore = types
 
           error: {
             render({ data, toastProps }) {
-              tracing.error(data);
+              tracing.error("generatePathWithToasts:", data);
               if ((data as string).includes("callback requested stop")) {
                 toastProps.style = { visibility: "hidden" };
                 return `Cancelled "${pathName}"`;
@@ -345,7 +344,7 @@ export const DocumentStore = types
         });
       },
       zoomToFitWaypoints() {
-        const waypoints = self.pathlist.activePath.path.waypoints;
+        const waypoints = self.pathlist.activePath.params.waypoints;
         if (waypoints.length <= 0) {
           return;
         }

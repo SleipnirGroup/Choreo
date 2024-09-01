@@ -32,7 +32,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
       const constraintToAdd = uiState.getSelectedConstraintKey();
       const point1 = points[start];
       const point2 = end !== undefined ? points[end] : undefined;
-      const newConstraint = doc.pathlist.activePath.path.addConstraint(
+      const newConstraint = doc.pathlist.activePath.params.addConstraint(
         constraintToAdd,
         { uuid: point1.uuid },
         point2 !== undefined ? { uuid: point2.uuid } : undefined
@@ -75,7 +75,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
   render() {
     const lineColor = this.props.lineColor ?? "white";
     const activePath = doc.pathlist.activePath;
-    const waypoints = activePath.path.waypoints;
+    const waypoints = activePath.params.waypoints;
     if (this.state.firstIndex === undefined) {
       return (
         <FieldConstraintRangeLayer

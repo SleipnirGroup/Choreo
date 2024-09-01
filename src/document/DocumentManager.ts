@@ -326,7 +326,7 @@ export async function setupEventListeners() {
       if (savedObject.dataType === "choreo/waypoint") {
         let currentSelectedWaypointIdx = -1;
         if (doc.isSidebarWaypointSelected) {
-          const idx = activePath.path.findUUIDIndex(
+          const idx = activePath.params.findUUIDIndex(
             doc.selectedSidebarItem.uuid
           );
           if (idx != -1) {
@@ -338,8 +338,8 @@ export async function setupEventListeners() {
             const newWaypoint = doc.pathlist.activePath.addWaypoint();
             newWaypoint.deserialize(savedObject);
             if (currentSelectedWaypointIdx != -1) {
-              activePath.path.reorderWaypoint(
-                activePath.path.waypoints.length - 1,
+              activePath.params.reorderWaypoint(
+                activePath.params.waypoints.length - 1,
                 currentSelectedWaypointIdx + 1
               );
             }
@@ -442,14 +442,14 @@ export async function setupEventListeners() {
     doc.zoomOut();
   });
   hotkeys("command+0,ctrl+0", () => {
-    if (doc.pathlist.activePath.path.waypoints.length == 0) {
+    if (doc.pathlist.activePath.params.waypoints.length == 0) {
       toast.error("No waypoints to zoom to");
     } else {
       doc.zoomToFitWaypoints();
     }
   });
   hotkeys("right,x", () => {
-    const waypoints = doc.pathlist.activePath.path.waypoints;
+    const waypoints = doc.pathlist.activePath.params.waypoints;
     const selected = waypoints.find((w) => {
       return w.selected;
     });
@@ -461,7 +461,7 @@ export async function setupEventListeners() {
     select(waypoints[i]);
   });
   hotkeys("left,z", () => {
-    const waypoints = doc.pathlist.activePath.path.waypoints;
+    const waypoints = doc.pathlist.activePath.params.waypoints;
     const selected = waypoints.find((w) => {
       return w.selected;
     });
@@ -553,15 +553,15 @@ export async function setupEventListeners() {
   hotkeys("delete,backspace,clear", () => {
     const selectedWaypoint = getSelectedWaypoint();
     if (selectedWaypoint) {
-      doc.pathlist.activePath.path.deleteWaypoint(selectedWaypoint.uuid);
+      doc.pathlist.activePath.params.deleteWaypoint(selectedWaypoint.uuid);
     }
     const selectedConstraint = getSelectedConstraint();
     if (selectedConstraint) {
-      doc.pathlist.activePath.path.deleteConstraint(selectedConstraint.uuid);
+      doc.pathlist.activePath.params.deleteConstraint(selectedConstraint.uuid);
     }
     const selectedObstacle = getSelectedObstacle();
     if (selectedObstacle) {
-      doc.pathlist.activePath.path.deleteObstacle(selectedObstacle.uuid);
+      doc.pathlist.activePath.params.deleteObstacle(selectedObstacle.uuid);
     }
   });
 }
@@ -606,11 +606,13 @@ export async function openProject(projectPath: OpenFilePayload) {
 }
 
 export async function generateAndExport(uuid: string) {
+  tracing.debug("generateAndExport", uuid);
   await doc.generatePath(uuid);
   await writeTrajectory(uuid);
 }
 
 export async function generateWithToastsAndExport(uuid: string) {
+  tracing.debug("generateWithToastsAndExport", uuid);
   const pathName = doc.pathlist.paths.get(uuid)?.name;
   doc.generatePathWithToasts(uuid).then(() =>
     toast.promise(writeTrajectory(uuid), {
@@ -626,20 +628,20 @@ export async function generateWithToastsAndExport(uuid: string) {
 }
 
 function getSelectedWaypoint() {
-  const waypoints = doc.pathlist.activePath.path.waypoints;
+  const waypoints = doc.pathlist.activePath.params.waypoints;
   return waypoints.find((w) => {
     return w.selected;
   });
 }
 function getSelectedConstraint() {
-  const constraints = doc.pathlist.activePath.path.constraints;
+  const constraints = doc.pathlist.activePath.params.constraints;
   return constraints.find((c) => {
     return c.selected;
   });
 }
 
 function getSelectedObstacle() {
-  const obstacles = doc.pathlist.activePath.path.obstacles;
+  const obstacles = doc.pathlist.activePath.params.obstacles;
   return obstacles.find((o) => {
     return o.selected;
   });

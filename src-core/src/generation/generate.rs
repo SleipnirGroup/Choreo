@@ -1,4 +1,7 @@
+#![allow(clippy::missing_errors_doc)]
+
 use std::mem::forget;
+use std::path::PathBuf;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, OnceLock};
 use std::vec;
@@ -6,21 +9,34 @@ use std::vec;
 use dashmap::DashMap;
 use futures::{FutureExt, TryStreamExt};
 use ipc_channel::ipc;
-use tauri::Manager;
 use tempfile::NamedTempFile;
 use tokio::process::Command;
 use tokio::select;
 use tokio::sync::oneshot::{self, Sender as OneshotSender};
-use trajoptlib::{Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory};
+use trajoptlib::{
+    DifferentialTrajectory, Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory,
+};
 
 use super::intervals::guess_control_interval_counts;
-use super::types::{
-    ChoreoPath, ConstraintData, ConstraintIDX, ConstraintType, Module, Output, Project, Sample,
-    Traj,
-};
-use crate::app::cli::RemoteArgs;
 use crate::error::ChoreoError;
+use crate::spec::project::{Module, ProjectFile};
+use crate::spec::traj::{
+    ConstraintData, ConstraintIDX, ConstraintScope, Parameters, Sample, TrajFile, Trajectory,
+};
 use crate::{ChoreoResult, ResultExt};
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct RemoteArgs {
+    pub project: PathBuf,
+    pub traj: PathBuf,
+    pub ipc: String,
+}
+
+impl RemoteArgs {
+    pub fn from_content(s: &str) -> ChoreoResult<Self> {
+        serde_json::from_str(s).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))
+    }
+}
 
 /**
  * A [`OnceLock`] is a synchronization primitive that can be written to
@@ -54,12 +70,15 @@ pub struct LocalProgressUpdate {
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub enum RemoteProgressUpdate {
-    IncompleteTraj(SwerveTrajectory),
-    CompleteTraj(Output),
+    IncompleteSwerveTraj(SwerveTrajectory),
+    IncompleteTankTraj(DifferentialTrajectory),
+    CompleteTraj(Trajectory),
     Error(String),
 }
 
+
 #[derive(Clone)]
+#[allow(missing_debug_implementations)]
 pub struct RemoteGenerationResources {
     frontend_emitter: Option<Sender<LocalProgressUpdate>>,
     kill_map: Arc<DashMap<i64, OneshotSender<()>>>,
@@ -69,6 +88,7 @@ impl RemoteGenerationResources {
     /**
      * Should be called after [`setup_progress_sender`] to ensure that the sender is initialized.
      */
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             frontend_emitter: PROGRESS_SENDER_LOCK.get().cloned(),
@@ -105,10 +125,6 @@ impl RemoteGenerationResources {
             emitter.send(update).trace_warn();
         }
     }
-
-    pub fn delegate_to_app(&self, app_handle: &tauri::AppHandle) {
-        app_handle.manage(self.clone());
-    }
 }
 
 pub fn setup_progress_sender() -> Receiver<LocalProgressUpdate> {
@@ -119,12 +135,12 @@ pub fn setup_progress_sender() -> Receiver<LocalProgressUpdate> {
 
 #[allow(clippy::too_many_lines)]
 pub fn generate(
-    chor: &Project,
-    traj: Traj,
+    chor: &ProjectFile,
+    path: TrajFile,
     // The handle referring to this path for the solver state callback
     handle: i64,
-) -> ChoreoResult<Traj> {
-    let mut path_builder = SwervePathBuilder::new();
+) -> ChoreoResult<TrajFile> {
+    let mut traj_builder = SwervePathBuilder::new();
     let mut wpt_cnt: usize = 0;
     // tracks which idxs were guess points, which get added differently and require
     // adjusting indexes after them
@@ -132,25 +148,25 @@ pub fn generate(
     let mut control_interval_counts: Vec<usize> = Vec::new();
     let mut guess_points_after_waypoint: Vec<Pose2d> = Vec::new();
 
-    let snapshot = traj.path.snapshot();
+    let snapshot = path.params.snapshot();
 
-    let path = &snapshot.waypoints;
+    let waypoints = &snapshot.waypoints;
 
-    if path.len() < 2 {
+    if waypoints.len() < 2 {
         return Err(ChoreoError::OutOfBounds("Waypoints", "at least 2"));
     }
-    let counts_vec = guess_control_interval_counts(&chor.config, &traj)?;
-    if counts_vec.len() != path.len() {
+    let counts_vec = guess_control_interval_counts(&chor.config, &path)?;
+    if counts_vec.len() != waypoints.len() {
         return Err(ChoreoError::Inequality(
             "Control interval counts",
             "waypoint count",
         ));
     }
-    let num_wpts = path.len();
+    let num_wpts = waypoints.len();
     let mut constraint_idx = Vec::<ConstraintIDX<f64>>::new();
     // Step 1; Find out which waypoints are unconstrained in translation and heading
     // and also not the endpoint of another constraint.
-    let mut is_initial_guess = vec![true; path.len()];
+    let mut is_initial_guess = vec![true; waypoints.len()];
 
     // Convert constraints to index form. Throw out constraints without valid index
     for constraint in &snapshot.constraints {
@@ -164,9 +180,9 @@ pub fn generate(
                 let valid_sgmt = to.is_some();
                 // Check for valid scope
                 if match constraint.data.scope() {
-                    ConstraintType::Waypoint => valid_wpt,
-                    ConstraintType::Segment => valid_sgmt,
-                    ConstraintType::Both => valid_wpt || valid_sgmt,
+                    ConstraintScope::Waypoint => valid_wpt,
+                    ConstraintScope::Segment => valid_sgmt,
+                    ConstraintScope::Both => valid_wpt || valid_sgmt,
                 } {
                     is_initial_guess[from_idx] = false;
                     let mut fixed_to = to;
@@ -177,7 +193,7 @@ pub fn generate(
                             fixed_from = to_idx;
                         }
                         if to_idx == from_idx {
-                            if constraint.data.scope() == ConstraintType::Segment {
+                            if constraint.data.scope() == ConstraintScope::Segment {
                                 continue;
                             }
                             fixed_to = None;
@@ -194,8 +210,8 @@ pub fn generate(
             }
         };
     }
-    for i in 0..path.len() {
-        let wpt = &path[i];
+    for i in 0..waypoints.len() {
+        let wpt = &waypoints[i];
         // add initial guess points (actually unconstrained empty wpts in Choreo terms)
         if is_initial_guess[i] && !wpt.fix_heading && !wpt.fix_translation {
             let guess_point = Pose2d {
@@ -210,25 +226,25 @@ pub fn generate(
             }
         } else {
             if wpt_cnt > 0 {
-                path_builder.sgmt_initial_guess_points(wpt_cnt - 1, &guess_points_after_waypoint);
+                traj_builder.sgmt_initial_guess_points(wpt_cnt - 1, &guess_points_after_waypoint);
             }
 
             guess_points_after_waypoint.clear();
             if wpt.fix_heading && wpt.fix_translation {
-                path_builder.pose_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
+                traj_builder.pose_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
             } else if wpt.fix_translation {
-                path_builder.translation_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
+                traj_builder.translation_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
             } else {
-                path_builder.empty_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
+                traj_builder.empty_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
             }
             wpt_cnt += 1;
-            if i != path.len() - 1 {
+            if i != waypoints.len() - 1 {
                 control_interval_counts.push(counts_vec[i]);
             }
         }
     }
 
-    path_builder.set_control_interval_counts(control_interval_counts);
+    traj_builder.set_control_interval_counts(control_interval_counts);
 
     for constraint in &constraint_idx {
         let from = fix_scope(constraint.from, &guess_point_idxs);
@@ -240,25 +256,25 @@ pub fn generate(
                 tolerance,
                 flip,
             } => match to_opt {
-                None => path_builder.wpt_point_at(from, x, y, tolerance, flip),
-                Some(to) => path_builder.sgmt_point_at(from, to, x, y, tolerance, flip),
+                None => traj_builder.wpt_point_at(from, x, y, tolerance, flip),
+                Some(to) => traj_builder.sgmt_point_at(from, to, x, y, tolerance, flip),
             },
             ConstraintData::MaxVelocity { max } => match to_opt {
-                None => path_builder.wpt_linear_velocity_max_magnitude(from, max),
-                Some(to) => path_builder.sgmt_linear_velocity_max_magnitude(from, to, max),
+                None => traj_builder.wpt_linear_velocity_max_magnitude(from, max),
+                Some(to) => traj_builder.sgmt_linear_velocity_max_magnitude(from, to, max),
             },
             ConstraintData::MaxAcceleration { max } => match to_opt {
-                None => path_builder.wpt_linear_acceleration_max_magnitude(from, max),
-                Some(to) => path_builder.sgmt_linear_acceleration_max_magnitude(from, to, max),
+                None => traj_builder.wpt_linear_acceleration_max_magnitude(from, max),
+                Some(to) => traj_builder.sgmt_linear_acceleration_max_magnitude(from, to, max),
             },
             ConstraintData::MaxAngularVelocity { max } => match to_opt {
-                None => path_builder.wpt_angular_velocity_max_magnitude(from, max),
-                Some(to) => path_builder.sgmt_angular_velocity_max_magnitude(from, to, max),
+                None => traj_builder.wpt_angular_velocity_max_magnitude(from, max),
+                Some(to) => traj_builder.sgmt_angular_velocity_max_magnitude(from, to, max),
             },
             ConstraintData::StopPoint {} => match to_opt {
                 None => {
-                    path_builder.wpt_linear_velocity_max_magnitude(from, 0.0f64);
-                    path_builder.wpt_angular_velocity_max_magnitude(from, 0.0f64);
+                    traj_builder.wpt_linear_velocity_max_magnitude(from, 0.0f64);
+                    traj_builder.wpt_angular_velocity_max_magnitude(from, 0.0f64);
                 }
                 Some(_) => (),
             },
@@ -278,11 +294,11 @@ pub fn generate(
             .to_vec(),
     };
 
-    path_builder.set_bumpers(
+    traj_builder.set_bumpers(
         config.bumper.back + config.bumper.front,
         config.bumper.left + config.bumper.right,
     );
-    path_builder.add_progress_callback(solver_status_callback);
+    traj_builder.add_progress_callback(solver_status_callback);
     // Skip obstacles for now while we figure out whats wrong with them
     // for o in circleObstacles {
     //     path_builder.sgmt_circle_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
@@ -292,23 +308,23 @@ pub fn generate(
     // for o in polygonObstacles {
     //     path_builder.sgmt_polygon_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
     // }
-    path_builder.set_drivetrain(&drivetrain);
+    traj_builder.set_drivetrain(&drivetrain);
     //Err("".to_string())
-    let result = path_builder
+    let result = traj_builder
         .generate(true, handle)
         .map_err(ChoreoError::TrajOpt)?;
 
-    Ok(postprocess(&result, traj, snapshot, counts_vec))
+    Ok(postprocess(&result, path, snapshot, counts_vec))
 }
 
 #[allow(clippy::missing_asserts_for_indexing)]
 fn postprocess(
     result: &SwerveTrajectory,
-    mut traj: Traj,
-    mut snapshot: ChoreoPath<f64>,
+    mut path: TrajFile,
+    mut snapshot: Parameters<f64>,
     counts_vec: Vec<usize>,
-) -> Traj {
-    traj.path
+) -> TrajFile {
+    path.params
         .waypoints
         .iter_mut()
         .zip(snapshot.waypoints.iter_mut())
@@ -346,7 +362,7 @@ fn postprocess(
         .map(|a| a.1) // map to associate interval
         .collect::<Vec<usize>>();
     let nudge_zero = |f: f64| if f.abs() < 1e-12 { 0.0 } else { f };
-    traj.traj.samples = splits
+    path.traj.samples = splits
         .windows(2) // get adjacent pairs of interval counts
         .filter_map(|window| {
             result
@@ -358,44 +374,52 @@ fn postprocess(
                     // convert into samples
                     slice
                         .iter()
-                        .map(|swerve_sample| {
-                            let mut out = Sample {
-                                t: nudge_zero(swerve_sample.timestamp),
-                                x: nudge_zero(swerve_sample.x),
-                                y: nudge_zero(swerve_sample.y),
-                                vx: nudge_zero(swerve_sample.velocity_x),
-                                vy: nudge_zero(swerve_sample.velocity_y),
-                                heading: nudge_zero(swerve_sample.heading),
-                                omega: nudge_zero(swerve_sample.angular_velocity),
-                                fx: [0.0, 0.0, 0.0, 0.0],
-                                fy: [0.0, 0.0, 0.0, 0.0],
-                            };
-                            if traj.traj.use_module_forces {
-                                for i in 0..4 {
-                                    let x = swerve_sample.module_forces_x.get(i);
-                                    let y = swerve_sample.module_forces_y.get(i);
-                                    out.fx[i] = nudge_zero(*x.unwrap_or(&0.0));
-                                    out.fy[i] = nudge_zero(*(y.unwrap_or(&0.0)));
-                                }
-                            }
-
-                            out
+                        .map(|swerve_sample| Sample::Swerve {
+                            t: nudge_zero(swerve_sample.timestamp),
+                            x: nudge_zero(swerve_sample.x),
+                            y: nudge_zero(swerve_sample.y),
+                            vx: nudge_zero(swerve_sample.velocity_x),
+                            vy: nudge_zero(swerve_sample.velocity_y),
+                            heading: nudge_zero(swerve_sample.heading),
+                            omega: nudge_zero(swerve_sample.angular_velocity),
+                            fx: if path.traj.forces_available {
+                                [
+                                    nudge_zero(swerve_sample.module_forces_x[0]),
+                                    nudge_zero(swerve_sample.module_forces_x[1]),
+                                    nudge_zero(swerve_sample.module_forces_x[2]),
+                                    nudge_zero(swerve_sample.module_forces_x[3]),
+                                ]
+                            } else {
+                                [0.0, 0.0, 0.0, 0.0]
+                            },
+                            fy: if path.traj.forces_available {
+                                [
+                                    nudge_zero(swerve_sample.module_forces_y[0]),
+                                    nudge_zero(swerve_sample.module_forces_y[1]),
+                                    nudge_zero(swerve_sample.module_forces_y[2]),
+                                    nudge_zero(swerve_sample.module_forces_y[3]),
+                                ]
+                            } else {
+                                [0.0, 0.0, 0.0, 0.0]
+                            },
                         })
                         .collect::<Vec<Sample>>()
                 })
         })
         .collect::<Vec<Vec<Sample>>>();
-    traj.traj.waypoints = waypoint_times;
-    traj.snapshot = Some(snapshot);
-    traj
+    path.traj.waypoints = waypoint_times;
+    path.snapshot = Some(snapshot);
+    path
 }
 
 pub async fn generate_remote(
     remote_resources: &RemoteGenerationResources,
-    project: Project,
-    traj: Traj,
+    project: ProjectFile,
+    path: TrajFile,
     handle: i64,
-) -> ChoreoResult<Traj> {
+) -> ChoreoResult<TrajFile> {
+    tracing::info!("Generating remote trajectory {}", path.name);
+
     // create temp file for project and traj
     let project_tmp = NamedTempFile::new()?;
     let traj_tmp = NamedTempFile::new()?;
@@ -404,12 +428,12 @@ pub async fn generate_remote(
     let project_str =
         serde_json::to_string(&project).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
     let traj_str =
-        serde_json::to_string(&traj).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
+        serde_json::to_string(&path).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
 
     tokio::fs::write(project_tmp.path(), project_str).await?;
     tokio::fs::write(traj_tmp.path(), traj_str).await?;
 
-    let (server, server_name) = ipc::IpcOneShotServer::<RemoteProgressUpdate>::new()
+    let (server, server_name) = ipc::IpcOneShotServer::<String>::new()
         .map_err(|e| ChoreoError::SolverError(format!("Failed to create IPC server: {e:?}")))?;
 
     let remote_args = RemoteArgs {
@@ -422,7 +446,6 @@ pub async fn generate_remote(
     forget(traj_tmp);
 
     let mut child = Command::new("Choreo")
-        .arg("--remote")
         .arg(serde_json::to_string(&remote_args)?)
         .spawn()?;
 
@@ -440,9 +463,9 @@ pub async fn generate_remote(
         select! {
             update_res = stream.try_next() => {
                 match update_res {
-                    Ok(Some(update)) => {
-                        match update {
-                            RemoteProgressUpdate::IncompleteTraj(traj) => {
+                    Ok(Some(update_string)) => {
+                        match serde_json::from_str(&update_string) {
+                            Ok(RemoteProgressUpdate::IncompleteSwerveTraj(traj)) => {
                                 remote_resources.emit_progress(
                                     LocalProgressUpdate {
                                         traj,
@@ -450,18 +473,24 @@ pub async fn generate_remote(
                                     }
                                 );
                             },
-                            RemoteProgressUpdate::CompleteTraj(output) => {
+                            Ok(RemoteProgressUpdate::IncompleteTankTraj(_)) => {
+                                return Err(ChoreoError::SolverError("Tank drive not supported".to_string()));
+                            },
+                            Ok(RemoteProgressUpdate::CompleteTraj(traj)) => {
                                 return Ok(
-                                    Traj {
-                                        traj: output,
-                                        snapshot: Some(traj.path.snapshot()),
-                                        .. traj
+                                    TrajFile {
+                                        traj,
+                                        snapshot: Some(path.params.snapshot()),
+                                        .. path
                                     }
                                 )
                             },
-                            RemoteProgressUpdate::Error(e) => {
+                            Ok(RemoteProgressUpdate::Error(e)) => {
                                 return Err(ChoreoError::SolverError(e));
                             },
+                            Err(e) => {
+                                return Err(ChoreoError::SolverError(format!("Error parsing solver update: {e:?}")));
+                            }
                         }
                     },
                     Ok(None) => {
@@ -481,4 +510,8 @@ pub async fn generate_remote(
             }
         }
     }
+}
+
+pub fn cancel_all() {
+    trajoptlib::cancel_all();
 }

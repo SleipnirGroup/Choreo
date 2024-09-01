@@ -46,16 +46,28 @@ impl CliAction {
     fn enable_tracing(&self) {
         match self {
             Self::Gui | Self::GuiWithProject { .. } => {
+                // #[cfg(all(windows, not(debug_assertions)))]
+                // unsafe {
+                //     use winapi::um as w;
+                //     let dyn_handle = w::processenv::GetStdHandle(w::winbase::STD_OUTPUT_HANDLE);
+                //     let mut console_mode = 0;
+                //     if w::consoleapi::GetConsoleMode(dyn_handle, &mut console_mode) != 0 {
+                //         w::wincon::FreeConsole();
+                //     }
+                // }
                 tracing_subscriber::registry()
                     .with(
                         tracing_subscriber::fmt::layer()
                             .event_format(super::logging::CompactFormatter),
                     )
                     .init();
-            }
-            _ => tracing_subscriber::fmt()
-                .with_max_level(tracing::Level::INFO)
-                .init(),
+            },
+            CliAction::Remote { .. } => {},
+            _ => {
+                tracing_subscriber::fmt()
+                    .with_max_level(tracing::Level::INFO)
+                    .init();
+            },
         }
     }
 }
@@ -190,44 +202,6 @@ impl Cli {
                     .expect("Failed to build tokio runtime")
                     .block_on(Self::generate_trajs(resources, project_path, traj_names));
             }
-            CliAction::Remote {
-                project_path,
-                traj_path,
-                responder,
-            } => {
-                tracing::info!("CLIAction is Remote");
-                let rx = setup_progress_sender();
-                let cln_ipc = responder.clone();
-                thread::Builder::new()
-                    .name("choreo-cli-progressupdater".to_string())
-                    .spawn(move || {
-                        for received in rx {
-                            cln_ipc
-                                .send(RemoteProgressUpdate::IncompleteTraj(received.traj))
-                                .expect("Failed to send progress update");
-                        }
-                    })
-                    .expect("Failed to spawn thread");
-
-                let res = tokio::runtime::Builder::new_current_thread()
-                    .enable_all()
-                    .build()
-                    .expect("Failed to build tokio runtime")
-                    .block_on(Self::remote_generate(project_path, traj_path));
-
-                match res {
-                    Ok(traj) => {
-                        responder
-                            .send(RemoteProgressUpdate::CompleteTraj(traj.traj))
-                            .expect("Failed to send progress update");
-                    }
-                    Err(e) => {
-                        responder
-                            .send(RemoteProgressUpdate::Error(e.to_string()))
-                            .expect("Failed to send progress update");
-                    }
-                }
-            }
             CliAction::Gui => {
                 tracing::info!("CLIAction is Gui");
                 run_tauri(resources, None);
@@ -292,6 +266,7 @@ impl Cli {
             match generate(&project, traj, i as i64) {
                 Ok(new_traj) => {
                     file::write_traj(&resources, new_traj).await;
+                    tracing::info!("Succesfully generated trajectory {:}", traj_name);
                 }
                 Err(e) => {
                     tracing::error!("Failed to generate trajectory {:}: {:}", traj_name, e);
@@ -299,24 +274,8 @@ impl Cli {
             }
         }
     }
+}
 
-    #[allow(clippy::cast_possible_wrap)]
-    async fn remote_generate(project_path: PathBuf, traj_path: PathBuf) -> ChoreoResult<Traj> {
-        // set the deploy path to the project directory
-        let project = Project::from_content(&fs::read_to_string(&project_path).await?)?;
-        let traj = Traj::from_content(&fs::read_to_string(&traj_path).await?)?;
-
-        fs::remove_file(&project_path).await?;
-        fs::remove_file(&traj_path).await?;
-
-        tracing::info!("Generating trajectory {:} for {:}", traj.name, project.name);
-
-        match generate(&project, traj, 0i64) {
-            Ok(new_traj) => Ok(new_traj),
-            Err(e) => {
-                tracing::error!("Failed to generate trajectory {:}", e);
-                Err(e)
-            }
-        }
-    }
+fn main() {
+    Cli::parse_from(std::env::args()).exec();
 }

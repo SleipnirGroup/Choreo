@@ -2,28 +2,29 @@
 
 use std::path::PathBuf;
 
+use choreo_core::{
+    file_management::{self, WritingResources},
+    generation::generate::RemoteGenerationResources,
+    spec::{
+        project::{ProjectFile, RobotConfig},
+        traj::TrajFile,
+        Expr, OpenFilePayload,
+    },
+    ChoreoError, ChoreoResult, ResultExt,
+};
 use tauri::{api::dialog::blocking::FileDialogBuilder, Manager};
 
-use crate::{error::ChoreoError, ChoreoResult, ResultExt};
-
-use super::{
-    file::{self, WritingResources},
-    generate::{self, RemoteGenerationResources},
-    types::{Expr, OpenFilePayload, Project, RobotConfig, Traj},
-};
-
 #[tauri::command]
-#[allow(clippy::needless_pass_by_value)]
 pub fn guess_control_interval_counts(
     config: RobotConfig<Expr>,
-    traj: Traj,
+    traj: TrajFile,
 ) -> ChoreoResult<Vec<usize>> {
-    super::intervals::guess_control_interval_counts(&config, &traj)
+    choreo_core::generation::intervals::guess_control_interval_counts(&config, &traj)
 }
 
 #[tauri::command]
 pub async fn open_in_explorer(path: String) -> ChoreoResult<()> {
-    open::that(path).map_err(ChoreoError::Io)
+    open::that(path).map_err(Into::into)
 }
 
 #[tauri::command]
@@ -52,41 +53,35 @@ pub async fn open_project_dialog() -> ChoreoResult<OpenFilePayload> {
 }
 
 #[tauri::command]
-pub async fn default_project() -> ChoreoResult<Project> {
-    Ok(Project::default())
+pub async fn default_project() -> ChoreoResult<ProjectFile> {
+    Ok(ProjectFile::default())
 }
 
 #[tauri::command]
-pub async fn read_project(app_handle: tauri::AppHandle, name: String) -> ChoreoResult<Project> {
+pub async fn read_project(app_handle: tauri::AppHandle, name: String) -> ChoreoResult<ProjectFile> {
     let resources = app_handle.state::<WritingResources>();
-    file::read_project(&resources, name).await
+    file_management::read_projectfile(&resources, name).await
 }
 
 #[tauri::command]
-pub async fn write_project(app_handle: tauri::AppHandle, project: Project) {
+pub async fn write_project(app_handle: tauri::AppHandle, project: ProjectFile) {
     let resources = app_handle.state::<WritingResources>();
-    file::write_project(&resources, project).await;
+    file_management::write_projectfile(&resources, project).await;
 }
 
 #[tauri::command]
-pub async fn read_traj(app_handle: tauri::AppHandle, name: String) -> ChoreoResult<Traj> {
+pub async fn read_traj(app_handle: tauri::AppHandle, name: String) -> ChoreoResult<TrajFile> {
     let resources = app_handle.state::<WritingResources>();
-
-    tracing::info!(
-        "Opening trajectory {name}.traj at {:}",
-        resources.get_deploy_path().await?.display()
-    );
-
-    file::read_traj(&resources, name).await
+    file_management::read_trajfile(&resources, name).await
 }
 
 #[tauri::command]
-pub async fn read_all_traj(app_handle: tauri::AppHandle) -> Vec<Traj> {
+pub async fn read_all_traj(app_handle: tauri::AppHandle) -> Vec<TrajFile> {
     let resources = app_handle.state::<WritingResources>();
-    let trajs = file::find_all_traj(&resources).await;
+    let trajs = file_management::find_all_traj(&resources).await;
     let mut out = vec![];
     for traj_name in trajs {
-        let traj_res = file::read_traj(&resources, traj_name).await;
+        let traj_res = file_management::read_trajfile(&resources, traj_name).await;
         if let Ok(traj) = traj_res {
             out.push(traj);
         } else {
@@ -97,33 +92,33 @@ pub async fn read_all_traj(app_handle: tauri::AppHandle) -> Vec<Traj> {
 }
 
 #[tauri::command]
-pub async fn write_traj(app_handle: tauri::AppHandle, traj: Traj) {
+pub async fn write_traj(app_handle: tauri::AppHandle, traj: TrajFile) {
     let resources = app_handle.state::<WritingResources>();
-    file::write_traj(&resources, traj).await;
+    file_management::write_trajfile(&resources, traj).await;
 }
 
 #[tauri::command]
 pub async fn rename_traj(
     app_handle: tauri::AppHandle,
-    old_traj: Traj,
+    old_traj: TrajFile,
     new_name: String,
 ) -> ChoreoResult<()> {
     let resources = app_handle.state::<WritingResources>();
-    file::rename_traj(&resources, old_traj, new_name)
+    file_management::rename_trajfile(&resources, old_traj, new_name)
         .await
         .map(|_| ())
 }
 
 #[tauri::command]
-pub async fn delete_traj(app_handle: tauri::AppHandle, traj: Traj) -> ChoreoResult<()> {
+pub async fn delete_traj(app_handle: tauri::AppHandle, traj: TrajFile) -> ChoreoResult<()> {
     let resources = app_handle.state::<WritingResources>();
-    file::delete_traj(&resources, traj).await
+    file_management::delete_trajfile(&resources, traj).await
 }
 
 #[tauri::command]
 pub async fn set_deploy_root(app_handle: tauri::AppHandle, dir: String) {
     let resources = app_handle.state::<WritingResources>();
-    file::set_deploy_path(&resources, PathBuf::from(dir)).await;
+    file_management::set_deploy_path(&resources, PathBuf::from(dir)).await;
 }
 
 #[tauri::command]
@@ -139,28 +134,29 @@ pub async fn get_deploy_root(app_handle: tauri::AppHandle) -> ChoreoResult<Strin
 
 #[tauri::command]
 pub async fn generate(
-    project: Project,
-    traj: Traj,
+    project: ProjectFile,
+    traj: TrajFile,
     // The handle referring to this path for the solver state callback
     handle: i64,
-) -> ChoreoResult<Traj> {
-    generate::generate(&project, traj, handle)
+) -> ChoreoResult<TrajFile> {
+    choreo_core::generation::generate::generate(&project, traj, handle)
 }
 
 #[tauri::command]
 pub async fn cancel_all() {
-    trajoptlib::cancel_all();
+    choreo_core::generation::generate::cancel_all();
 }
 
 #[tauri::command]
 pub async fn generate_remote(
     app_handle: tauri::AppHandle,
-    project: Project,
-    traj: Traj,
+    project: ProjectFile,
+    traj: TrajFile,
     handle: i64,
-) -> ChoreoResult<Traj> {
+) -> ChoreoResult<TrajFile> {
     let remote_resources = app_handle.state::<RemoteGenerationResources>();
-    generate::generate_remote(&remote_resources, project, traj, handle).await
+    choreo_core::generation::generate::generate_remote(&remote_resources, project, traj, handle)
+        .await
 }
 
 #[tauri::command]

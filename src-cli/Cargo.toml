@@ -1,0 +1,14 @@
+[package]
+name = "choreo-cli"
+version = "2024.2.3"
+edition = "2021"
+homepage = "https://github.com/SleipnirGroup/Choreo"
+repository = "https://github.com/SleipnirGroup/Choreo.git"
+authors = ["Sleipnir Group"]
+license = "BSD-3-Clause"
+
+[dependencies]
+choreo-core = { path = "../src-core" }
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["ansi", "fmt", "std", "json"] }
+clap = { version = "4.5.16", features = ["derive"] }

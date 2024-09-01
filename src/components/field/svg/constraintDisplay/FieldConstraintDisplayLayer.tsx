@@ -26,7 +26,7 @@ function FieldConstraintDisplayLayer(props: Props) {
   return (
     <g>
       <FieldConstraintRangeLayer
-        points={doc.pathlist.activePath.path.waypoints}
+        points={doc.pathlist.activePath.params.waypoints}
         start={startIndex}
         end={endIndex}
         lineColor={props.lineColor}

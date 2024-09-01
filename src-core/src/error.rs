@@ -3,15 +3,16 @@ use std::path::PathBuf;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
+#[allow(missing_docs)]
 pub enum ChoreoError {
     #[error("Choreo io error: {0:?}")]
-    Io(#[from] std::io::Error),
+    Io(String),
     #[error("Choreo Int Cast error: {0:?}")]
-    IntCast(#[from] std::num::TryFromIntError),
+    IntCast(String),
     #[error("Choreo Utf8 Assertion error: {0:?}")]
-    Utf8(#[from] std::string::FromUtf8Error),
+    Utf8(String),
     #[error("Choreo Json error: {0:?}")]
-    Json(#[from] serde_json::Error),
+    Json(String),
     #[error("File saving error: {0:?}")]
     FileSave(&'static str),
     #[error("File writing error: {0:?}")]
@@ -34,9 +35,30 @@ pub enum ChoreoError {
     SolverError(String),
 }
 
-// This is how the error will be propagated to the frontend,
-// if more structure or metadata is needed, it can be added here
-// although that would be a breaking change for the backend interface
+impl From<std::io::Error> for ChoreoError {
+    fn from(e: std::io::Error) -> Self {
+        Self::Io(e.to_string())
+    }
+}
+
+impl From<std::num::TryFromIntError> for ChoreoError {
+    fn from(e: std::num::TryFromIntError) -> Self {
+        Self::IntCast(e.to_string())
+    }
+}
+
+impl From<std::str::Utf8Error> for ChoreoError {
+    fn from(e: std::str::Utf8Error) -> Self {
+        Self::Utf8(e.to_string())
+    }
+}
+
+impl From<serde_json::Error> for ChoreoError {
+    fn from(e: serde_json::Error) -> Self {
+        Self::Json(e.to_string())
+    }
+}
+
 impl serde::Serialize for ChoreoError {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where

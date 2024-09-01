@@ -1,8 +1,7 @@
-use crate::document::file::WritingResources;
-use crate::document::generate::{setup_progress_sender, RemoteGenerationResources};
-#[allow(clippy::wildcard_imports)]
-use crate::document::plugin::*;
-use crate::document::types::OpenFilePayload;
+use crate::api::*;
+use choreo_core::file_management::WritingResources;
+use choreo_core::generation::generate::{setup_progress_sender, RemoteGenerationResources};
+use choreo_core::spec::OpenFilePayload;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 use std::{thread, vec};
@@ -57,18 +56,8 @@ pub async fn tracing_frontend(level: String, msg: String, line: String, file: St
     }
 }
 
-pub fn run_tauri(writing_resources: WritingResources, project: Option<PathBuf>) {
+pub fn run_tauri(project: Option<PathBuf>) {
     tracing::info!("Starting Choreo Gui");
-
-    #[cfg(all(windows, not(debug_assertions)))]
-    unsafe {
-        use winapi::um as w;
-        let dyn_handle = w::processenv::GetStdHandle(w::winbase::STD_OUTPUT_HANDLE);
-        let mut console_mode = 0;
-        if w::consoleapi::GetConsoleMode(dyn_handle, &mut console_mode) != 0 {
-            w::wincon::FreeConsole();
-        }
-    }
 
     if let Some(project_path) = project {
         let payload = OpenFilePayload {
@@ -92,11 +81,12 @@ pub fn run_tauri(writing_resources: WritingResources, project: Option<PathBuf>) 
 
     let rx = setup_progress_sender();
     let remote_resources = RemoteGenerationResources::new();
+    let writing_resources = WritingResources::new();
 
     tauri::Builder::default()
         .setup(move |app| {
-            writing_resources.delegate_to_app(&app.app_handle());
-            remote_resources.delegate_to_app(&app.app_handle());
+            app.app_handle().manage(writing_resources);
+            app.app_handle().manage(remote_resources);
 
             let progress_emitter = app.handle();
             let _ = thread::spawn(move || {

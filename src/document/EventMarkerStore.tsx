@@ -177,9 +177,9 @@ export const EventMarkerStore = types
       if (startScope === undefined) {
         return undefined;
       }
-      const waypoint = path.path.getByWaypointID(startScope);
+      const waypoint = path.params.getByWaypointID(startScope);
       if (waypoint === undefined) return undefined;
-      return path.path.findUUIDIndex(waypoint.uuid);
+      return path.params.findUUIDIndex(waypoint.uuid);
     }
   }))
   .views((self) => ({

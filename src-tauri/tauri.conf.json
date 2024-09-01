@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "Choreo",
-    "version": "2024.2.3"
+    "version": "2025.0.0-alpha"
   },
   "tauri": {
     "allowlist": {
