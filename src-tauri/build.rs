@@ -23,7 +23,6 @@ fn spoof_cli() {
     }
 }
 
-
 fn main() {
     spoof_cli();
     tauri_build::build();

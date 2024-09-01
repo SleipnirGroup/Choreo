@@ -1,7 +1,14 @@
 #![allow(dead_code)]
-use std::{path::PathBuf, process::{exit, Command}};
+use std::{
+    path::PathBuf,
+    process::{exit, Command},
+};
 
-use choreo_core::{file_management::{self, WritingResources}, generation::generate::generate, ChoreoError};
+use choreo_core::{
+    file_management::{self, WritingResources},
+    generation::generate::generate,
+    ChoreoError,
+};
 use clap::Parser;
 
 const FORMATTING_OPTIONS: &str = "Formating Options";
@@ -117,9 +124,7 @@ impl Cli {
             }
             CliAction::Gui => {
                 tracing::info!("CLIAction is Gui");
-                Command::new("Choreo")
-                    .spawn()
-                    .expect("Failed to open GUI");
+                Command::new("Choreo").spawn().expect("Failed to open GUI");
             }
             CliAction::GuiWithProject { project_path } => {
                 tracing::info!("CLIAction is GuiWithProject");

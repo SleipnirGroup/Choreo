@@ -3,26 +3,28 @@ use std::{path::PathBuf, thread};
 use ipc_channel::ipc::IpcSender;
 use tokio::fs;
 
-use crate::{generation::generate::generate, spec::{project::ProjectFile, traj::TrajFile}, ChoreoResult};
+use crate::{
+    generation::generate::generate,
+    spec::{project::ProjectFile, traj::TrajFile},
+    ChoreoResult,
+};
 
 use super::generate::{setup_progress_sender, RemoteArgs, RemoteProgressUpdate};
 
-
-
-
-
 pub fn remote_main(args: RemoteArgs) {
     let rx = setup_progress_sender();
-    let ipc = IpcSender::<String>::connect(args.ipc)
-                .expect("Failed to deserialize IPC handle");
+    let ipc = IpcSender::<String>::connect(args.ipc).expect("Failed to deserialize IPC handle");
     let cln_ipc: IpcSender<String> = ipc.clone();
     thread::Builder::new()
         .name("choreo-cli-progressupdater".to_string())
         .spawn(move || {
             for received in rx {
-                let ser_string = serde_json::to_string(&RemoteProgressUpdate::IncompleteSwerveTraj(received.traj))
-                    .expect("Failed to serialize progress update");
-                cln_ipc.send(ser_string)
+                let ser_string = serde_json::to_string(
+                    &RemoteProgressUpdate::IncompleteSwerveTraj(received.traj),
+                )
+                .expect("Failed to serialize progress update");
+                cln_ipc
+                    .send(ser_string)
                     .expect("Failed to send progress update");
             }
         })
@@ -59,7 +61,10 @@ async fn remote_generate(project_path: PathBuf, traj_path: PathBuf) -> ChoreoRes
     fs::remove_file(&project_path).await?;
     fs::remove_file(&traj_path).await?;
 
-    println!("Generating trajectory {:} for {:} remotely", traj.name, project.name);
+    println!(
+        "Generating trajectory {:} for {:} remotely",
+        traj.name, project.name
+    );
 
     match generate(&project, traj, 0i64) {
         Ok(new_traj) => Ok(new_traj),

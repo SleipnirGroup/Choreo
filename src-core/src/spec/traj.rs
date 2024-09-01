@@ -7,15 +7,15 @@ use super::{Expr, SnapshottableType};
 /// A waypoint parameter.
 pub struct Waypoint<T: SnapshottableType> {
     /// The x coordinate of the waypoint (blue origin).
-    /// 
+    ///
     /// Units: meters
     pub x: T,
     /// The y coordinate of the waypoint (blue origin).
-    /// 
+    ///
     /// Units: meters
     pub y: T,
     /// The heading of the waypoint (blue origin).
-    /// 
+    ///
     /// Units: radians
     pub heading: T,
     /// The number of control intervals to use between this waypoint and the next.
@@ -121,15 +121,15 @@ pub enum ConstraintData<T: SnapshottableType> {
     /// A constraint on the robot's orientation.
     PointAt {
         /// The x coordinate of the point to face (blue origin).
-        /// 
+        ///
         /// Units: meters
         x: T,
         /// The y coordinate of the point to face (blue origin).
-        /// 
+        ///
         /// Units: meters
         y: T,
         /// The tolerance for the orientation.
-        /// 
+        ///
         /// Units: radians
         tolerance: T,
         /// Whether to flip the orientation.
@@ -182,7 +182,7 @@ pub struct Constraint<T: SnapshottableType> {
     /// The waypoint the constraint starts at.
     pub from: WaypointID,
     /// The waypoint the constraint ends at.
-    /// 
+    ///
     /// If `None`, the constraint applies for all waypoints after `from`.
     pub to: Option<WaypointID>,
     /// The constraint to apply.
@@ -206,7 +206,7 @@ pub struct ConstraintIDX<T: SnapshottableType> {
     /// The index of the waypoint the constraint starts at.
     pub from: usize,
     /// The index of the waypoint the constraint ends at.
-    /// 
+    ///
     /// If `None`, the constraint applies for all waypoints after `from`.
     pub to: Option<usize>,
     /// The constraint to apply.
@@ -309,7 +309,7 @@ impl TrajFile {
     pub const EXTENSION: &'static str = "traj";
 
     /// Create a new `TrajFile` from a json string.
-    /// 
+    ///
     /// # Errors
     /// - [`crate::ChoreoError::Json`] if the json string is invalid.
     pub fn from_content(content: &str) -> crate::ChoreoResult<TrajFile> {

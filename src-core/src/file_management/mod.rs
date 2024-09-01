@@ -1,10 +1,17 @@
-use std::{path::{Path, PathBuf}, sync::Arc, thread};
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+    thread,
+};
 
 use serde::Serialize;
-use tokio::{fs, sync::{
-    mpsc::{unbounded_channel, UnboundedSender, UnboundedReceiver},
-    Mutex, Notify,
-}};
+use tokio::{
+    fs,
+    sync::{
+        mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender},
+        Mutex, Notify,
+    },
+};
 
 use crate::{ChoreoError, ChoreoResult, ResultExt};
 
@@ -95,7 +102,7 @@ pub struct WritingResources {
 impl WritingResources {
     /// Create a new `WritingResources`,
     /// this will spawn a new thread to write projects that are updated.
-    /// 
+    ///
     /// # Panics
     /// If the project writer thread could not be spawned.
     #[must_use]
@@ -130,7 +137,7 @@ impl WritingResources {
     }
 
     /// Get the deploy path.
-    /// 
+    ///
     /// # Errors
     /// - [`crate::ChoreoError::NoDeployPath`] if the deploy path is not set.
     pub async fn get_deploy_path(&self) -> ChoreoResult<PathBuf> {
@@ -260,7 +267,10 @@ pub async fn write_projectfile(resources: &WritingResources, project: ProjectFil
     resources.project.update(project).await;
 }
 
-pub async fn read_projectfile(resources: &WritingResources, name: String) -> ChoreoResult<ProjectFile> {
+pub async fn read_projectfile(
+    resources: &WritingResources,
+    name: String,
+) -> ChoreoResult<ProjectFile> {
     tracing::info!(
         "Opening project {name}.chor at {:}",
         resources.get_deploy_path().await?.display()

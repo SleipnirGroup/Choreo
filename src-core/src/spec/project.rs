@@ -120,7 +120,7 @@ impl ProjectFile {
     pub const EXTENSION: &'static str = "chor";
 
     /// Create a new `ProjectFile` from a json string.
-    /// 
+    ///
     /// # Errors
     /// - [`crate::ChoreoError::Json`] if the json string is invalid.
     pub fn from_content(content: &str) -> crate::ChoreoResult<ProjectFile> {

@@ -16,20 +16,19 @@
     clippy::significant_drop_tightening,
     unused_results,
     clippy::missing_panics_doc,
-    clippy::missing_errors_doc,
+    clippy::missing_errors_doc
 )]
 
 mod error;
 
 pub use error::ChoreoError;
 
-
-/// An implementation of the `Choreo Document Specification`.
-pub mod spec;
 /// The api for managing choreo files.
 pub mod file_management;
 /// The api for generating trajectories.
 pub mod generation;
+/// An implementation of the `Choreo Document Specification`.
+pub mod spec;
 
 pub use tokio;
 

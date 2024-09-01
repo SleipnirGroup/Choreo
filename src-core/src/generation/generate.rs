@@ -76,7 +76,6 @@ pub enum RemoteProgressUpdate {
     Error(String),
 }
 
-
 #[derive(Clone)]
 #[allow(missing_debug_implementations)]
 pub struct RemoteGenerationResources {
