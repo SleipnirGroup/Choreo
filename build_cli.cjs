@@ -1,16 +1,21 @@
 const { exec, execSync } = require("child_process");
 const fs = require("fs");
 
-function get_executable_extension(targetTriple) {
-  if (process.platform === "win32") {
+function get_executable_extension() {
+  if (process.env.TAURI_PLATFORM === "windows") {
     return ".exe";
-  } else if (targetTriple === "x86_64-apple-darwin") {
-    return ".dmg";
   }
   return "";
 }
 
 console.log("Building CLI...");
+
+console.log(process.env.TAURI_PLATFORM);
+console.log(process.env.TAURI_ARCH);
+console.log(process.env.TAURI_FAMILY);
+console.log(process.env.TAURI_PLATFORM_VERSION);
+console.log(process.env.TAURI_PLATFORM_TYPE);
+console.log(process.env.TAURI_DEBUG);
 
 // build cli
 const build = exec("cargo build --release -p choreo-cli");
