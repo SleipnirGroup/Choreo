@@ -53,9 +53,7 @@
         "minimumSystemVersion": "13.3",
         "signingIdentity": "-"
       },
-      "externalBin": [
-        "../cli/choreo-cli"
-      ]
+      "externalBin": ["../cli/choreo-cli"]
     },
     "security": {
       "csp": null
