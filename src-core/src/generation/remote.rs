@@ -2,7 +2,6 @@ use std::{mem::forget, path::PathBuf, thread};
 
 use futures_util::{FutureExt, TryStreamExt};
 use ipc_channel::ipc::{self, IpcSender};
-use tempfile::NamedTempFile;
 use tokio::{process::Command, select, sync::oneshot};
 use trajoptlib::{DifferentialTrajectory, SwerveTrajectory};
 use std::fs;
@@ -102,10 +101,10 @@ pub fn remote_generate_child(args: RemoteArgs) {
 pub async fn remote_generate_parent(
     remote_resources: &RemoteGenerationResources,
     project: ProjectFile,
-    path: TrajFile,
+    trajfile: TrajFile,
     handle: i64,
 ) -> ChoreoResult<TrajFile> {
-    tracing::info!("Generating remote trajectory {}", path.name);
+    tracing::info!("Generating remote trajectory {}", trajfile.name);
 
     // create temp file for project and traj
     let mut builder = tempfile::Builder::new();
@@ -120,12 +119,10 @@ pub async fn remote_generate_parent(
     let project_str =
         serde_json::to_string(&project).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
     let traj_str =
-        serde_json::to_string(&path).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
+        serde_json::to_string(&trajfile).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
 
-    tokio::fs::write(project_tmp.path(), project_str).await
-        .expect("Failed to write project to temp file");
-    tokio::fs::write(traj_tmp.path(), traj_str).await
-        .expect("Failed to write traj to temp file");
+    tokio::fs::write(project_tmp.path(), project_str).await?;
+    tokio::fs::write(traj_tmp.path(), traj_str).await?;
 
     tracing::debug!("Wrote project and traj to temp files");
 
@@ -183,8 +180,8 @@ pub async fn remote_generate_parent(
                                 return Ok(
                                     TrajFile {
                                         traj,
-                                        snapshot: Some(path.params.snapshot()),
-                                        .. path
+                                        snapshot: Some(trajfile.params.snapshot()),
+                                        .. trajfile
                                     }
                                 )
                             },

@@ -188,8 +188,23 @@ impl Cli {
 
             match generate(&project, traj, i as i64) {
                 Ok(new_traj) => {
-                    file_management::write_trajfile(&resources, new_traj).await;
-                    tracing::info!("Succesfully generated trajectory {:}", traj_name);
+                    match file_management::write_trajfile_immediately(&resources, new_traj).await {
+                        Ok(_) => {
+                            tracing::info!(
+                                "Succesfully generated trajectory {:} for {:}",
+                                traj_name,
+                                project.name
+                            );
+                        },
+                        Err(e) => {
+                            tracing::error!(
+                                "Failed to write trajectory {:} for {:}: {:}",
+                                traj_name,
+                                project.name,
+                                e
+                            );
+                        }
+                    }
                 }
                 Err(e) => {
                     tracing::error!("Failed to generate trajectory {:}: {:}", traj_name, e);

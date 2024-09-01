@@ -156,14 +156,14 @@ pub async fn set_deploy_path(resources: &WritingResources, path: PathBuf) {
     *root = path;
 }
 
-#[allow(clippy::unused_async)]
 pub async fn write_trajfile(resources: &WritingResources, trajfile: TrajFile) {
     let file = resources
         .root
         .lock()
         .await
         .join(&trajfile.name)
-        .with_extension("traj");
+        .with_extension(TrajFile::EXTENSION);
+
     tracing::debug!("Writing path {:} to {:}", trajfile.name, file.display());
 
     resources
@@ -176,6 +176,18 @@ pub async fn write_trajfile(resources: &WritingResources, trajfile: TrajFile) {
         })
         .send(trajfile)
         .trace_err();
+}
+
+pub async fn write_trajfile_immediately(resources: &WritingResources, trajfile: TrajFile) -> ChoreoResult<()> {
+    let file = resources
+        .get_deploy_path()
+        .await?
+        .join(&trajfile.name)
+        .with_extension(TrajFile::EXTENSION);
+
+    tracing::debug!("Writing path {:} to {:} immediately", trajfile.name, file.display());
+
+    write_serializable(trajfile, &file).await
 }
 
 /// Read a trajectory from a file.
