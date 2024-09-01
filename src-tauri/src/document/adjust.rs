@@ -1,7 +1,6 @@
 use std::f64::consts::PI;
 
 use super::generate::{convert_constraints_to_index, fix_scope};
-// use super::types::{Constraint, Expr, RobotConfig, Traj, Waypoint, expr};
 use super::types::Traj;
 use crate::document::types::ConstraintData::{MaxAngularVelocity, PointAt};
 use crate::error::ChoreoError;
@@ -33,11 +32,6 @@ pub fn adjust_waypoint_headings(traj: &Traj) -> Result<Vec<f64>> {
                 // interpolate headings from last fixed idx
                 let start = traj.path.waypoints[last_fixed_idx].heading.1;
                 let dtheta = angle_modulus(wpt.heading.1 - start);
-                // for interp_idx in last_fixed_idx + 1..idx {
-                //     let scalar =
-                //         (interp_idx - last_fixed_idx) as f64 / (idx - last_fixed_idx) as f64;
-                //     new_headings[interp_idx] = start + scalar * dtheta;
-                // }
                 new_headings
                     .iter_mut()
                     .take(idx + 1)
@@ -56,13 +50,6 @@ pub fn adjust_waypoint_headings(traj: &Traj) -> Result<Vec<f64>> {
     let (constraints_idx, is_initial_guess) =
         convert_constraints_to_index(&traj.path.snapshot(), num_wpts);
     let mut guess_point_idxs: Vec<usize> = Vec::new();
-    // for i in 0..num_wpts {
-    //     let wpt = &traj.path.snapshot().waypoints[i];
-    //     // add initial guess points (actually unconstrained empty wpts in Choreo terms)
-    //     if is_initial_guess[i] && !wpt.fix_heading && !wpt.fix_translation {
-    //         guess_point_idxs.push(i);
-    //     }
-    // }
     is_initial_guess
         .iter()
         .zip(&traj.path.snapshot().waypoints)
@@ -83,12 +70,6 @@ pub fn adjust_waypoint_headings(traj: &Traj) -> Result<Vec<f64>> {
                         None => {}
                         Some(to) => {
                             let mut fixed_heading = None;
-                            // for wpt_idx in from..=to {
-                            //     heading_fixed_references[wpt_idx] += 1;
-                            //     if traj.path.waypoints[wpt_idx].fix_heading {
-                            //         fixed_heading = Some(traj.path.waypoints[wpt_idx].heading.1);
-                            //     }
-                            // }
                             traj.path
                                 .waypoints
                                 .iter()
@@ -102,9 +83,6 @@ pub fn adjust_waypoint_headings(traj: &Traj) -> Result<Vec<f64>> {
                                     }
                                 });
                             if let Some(heading) = fixed_heading {
-                                // for wpt_idx in from..=to {
-                                //     new_headings[wpt_idx] = heading;
-                                // }
                                 new_headings.iter_mut().take(to + 1).skip(from).for_each(
                                     |new_heading| {
                                         *new_heading = heading;
