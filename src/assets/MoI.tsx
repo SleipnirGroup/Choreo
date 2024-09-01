@@ -16,7 +16,7 @@ SvgIcon.defaultProps = {
   focusable: "false",
   "aria-hidden": "true"
 };
-const Angle: React.FunctionComponent<SvgIconProps> = (props) => {
+const MoI: React.FunctionComponent<SvgIconProps> = (props) => {
   return (
     <SvgIcon {...props}>
       {/* the rotational velocity icon */}
@@ -30,4 +30,4 @@ const Angle: React.FunctionComponent<SvgIconProps> = (props) => {
     </SvgIcon>
   );
 };
-export default Angle;
+export default MoI;

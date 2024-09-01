@@ -16,7 +16,7 @@ SvgIcon.defaultProps = {
   focusable: "false",
   "aria-hidden": "true"
 };
-const Angle: React.FunctionComponent<SvgIconProps> = (props) => {
+const Mass: React.FunctionComponent<SvgIconProps> = (props) => {
   return (
     <SvgIcon {...props}>
       <path
@@ -27,4 +27,4 @@ const Angle: React.FunctionComponent<SvgIconProps> = (props) => {
     </SvgIcon>
   );
 };
-export default Angle;
+export default Mass;
