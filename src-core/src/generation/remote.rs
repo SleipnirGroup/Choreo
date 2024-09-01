@@ -108,8 +108,11 @@ pub async fn remote_generate_parent(
     tracing::info!("Generating remote trajectory {}", path.name);
 
     // create temp file for project and traj
-    let project_tmp = NamedTempFile::new()?;
-    let traj_tmp = NamedTempFile::new()?;
+    let mut builder = tempfile::Builder::new();
+    builder.prefix("choreo-remote-").rand_bytes(5);
+
+    let project_tmp = builder.suffix("project").tempfile()?;
+    let traj_tmp = builder.suffix("traj").tempfile()?;
 
     tracing::debug!("Created temp files for remote generation");
 
@@ -119,8 +122,10 @@ pub async fn remote_generate_parent(
     let traj_str =
         serde_json::to_string(&path).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
 
-    tokio::fs::write(project_tmp.path(), project_str).await?;
-    tokio::fs::write(traj_tmp.path(), traj_str).await?;
+    tokio::fs::write(project_tmp.path(), project_str).await
+        .expect("Failed to write project to temp file");
+    tokio::fs::write(traj_tmp.path(), traj_str).await
+        .expect("Failed to write traj to temp file");
 
     tracing::debug!("Wrote project and traj to temp files");
 
