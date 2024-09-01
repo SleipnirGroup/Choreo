@@ -6,21 +6,22 @@ type Location = {
 };
 
 function parseStack(stack: string | undefined): Location {
-  if (!stack) {
-    return { line: "-1", file: "unknown" };
-  }
-  const caller: string = stack.split("\n")[2];
-  const isAsync: boolean = caller.includes("async");
-  const callerParts: string[] = caller.split(" ");
-  const inter: string | undefined = callerParts[callerParts.length - 1]
-    .split("/")
-    .pop();
-  const callerFile: string = inter?.split(":")[0].split("?")[0] ?? "unknown";
-  const callerLine: string = inter?.split(":")[1].split(")")[0] ?? "-1";
-  if (isAsync) {
-    return { line: "async", file: callerFile };
-  }
-  return { line: callerLine, file: callerFile };
+  // if (!stack) {
+  //   return { line: "-1", file: "unknown" };
+  // }
+  // const caller: string = stack.split("\n")[2];
+  // const isAsync: boolean = caller.includes("async");
+  // const callerParts: string[] = caller.split(" ");
+  // const inter: string | undefined = callerParts[callerParts.length - 1]
+  //   .split("/")
+  //   .pop();
+  // const callerFile: string = inter?.split(":")[0].split("?")[0] ?? "unknown";
+  // const callerLine: string = inter?.split(":")[1].split(")")[0] ?? "-1";
+  // if (isAsync) {
+  //   return { line: "async", file: callerFile };
+  // }
+  // return { line: callerLine, file: callerFile };
+  return { line: " :(", file: "disabled" };
 }
 
 function trace(level: string, stack: string | undefined, ...data: any[]): void {
