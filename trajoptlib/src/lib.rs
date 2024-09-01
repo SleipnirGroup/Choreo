@@ -125,7 +125,7 @@ mod ffi {
             field_point_x: f64,
             field_point_y: f64,
             heading_tolerance: f64,
-            flip: bool
+            flip: bool,
         );
         fn wpt_keep_in_circle(
             self: Pin<&mut SwervePathBuilder>,
@@ -172,7 +172,7 @@ mod ffi {
             field_point_x: f64,
             field_point_y: f64,
             heading_tolerance: f64,
-            flip: bool
+            flip: bool,
         );
         fn sgmt_keep_in_circle(
             self: Pin<&mut SwervePathBuilder>,
@@ -277,7 +277,7 @@ mod ffi {
             field_point_x: f64,
             field_point_y: f64,
             heading_tolerance: f64,
-            flip: bool
+            flip: bool,
         );
         fn wpt_keep_in_circle(
             self: Pin<&mut DifferentialPathBuilder>,
@@ -455,7 +455,7 @@ impl SwervePathBuilder {
         field_point_x: f64,
         field_point_y: f64,
         heading_tolerance: f64,
-        flip: bool
+        flip: bool,
     ) {
         crate::ffi::SwervePathBuilder::wpt_point_at(
             self.path_builder.pin_mut(),
@@ -463,7 +463,7 @@ impl SwervePathBuilder {
             field_point_x,
             field_point_y,
             heading_tolerance,
-            flip
+            flip,
         )
     }
 
@@ -558,7 +558,7 @@ impl SwervePathBuilder {
         field_point_x: f64,
         field_point_y: f64,
         heading_tolerance: f64,
-        flip:bool
+        flip: bool,
     ) {
         crate::ffi::SwervePathBuilder::sgmt_point_at(
             self.path_builder.pin_mut(),
@@ -567,7 +567,7 @@ impl SwervePathBuilder {
             field_point_x,
             field_point_y,
             heading_tolerance,
-            flip
+            flip,
         )
     }
 
@@ -628,14 +628,13 @@ impl SwervePathBuilder {
     /// Generate the trajectory;
     ///
     /// * diagnostics: If true, prints per-iteration details of the solver to
-    ///       stdout.
+    ///   stdout.
     /// * handle: A number used to identify results from this generation in the
-    ///       `add_progress_callback` callback. If `add_progress_callback` has
-    ///       not been called, this value has no significance.
+    ///   `add_progress_callback` callback. If `add_progress_callback` has not
+    ///   been called, this value has no significance.
     ///
     /// Returns a result with either the final `trajopt::SwerveTrajectory`,
     /// or a String error message if generation failed.
-    ///
     pub fn generate(&mut self, diagnostics: bool, handle: i64) -> Result<SwerveTrajectory, String> {
         match self.path_builder.generate(diagnostics, handle) {
             Ok(traj) => Ok(traj),
@@ -647,12 +646,10 @@ impl SwervePathBuilder {
     /// Add a callback that will be called on each iteration of the solver.
     ///
     /// * callback: a `fn` (not a closure) to be executed. The callback's first
-    ///       parameter will be a `trajopt::SwerveTrajectory`, and the second
-    ///       parameter will be an `i64` equal to the handle passed in
-    ///       `generate()`
+    ///   parameter will be a `trajopt::SwerveTrajectory`, and the second
+    ///   parameter will be an `i64` equal to the handle passed in `generate()`
     ///
     /// This function can be called multiple times to add multiple callbacks.
-    ///
     pub fn add_progress_callback(&mut self, callback: fn(SwerveTrajectory, i64)) {
         crate::ffi::SwervePathBuilder::add_progress_callback(self.path_builder.pin_mut(), callback);
     }
@@ -777,7 +774,7 @@ impl DifferentialPathBuilder {
         field_point_x: f64,
         field_point_y: f64,
         heading_tolerance: f64,
-        flip: bool
+        flip: bool,
     ) {
         crate::ffi::DifferentialPathBuilder::wpt_point_at(
             self.path_builder.pin_mut(),
@@ -785,7 +782,7 @@ impl DifferentialPathBuilder {
             field_point_x,
             field_point_y,
             heading_tolerance,
-            flip
+            flip,
         )
     }
 
@@ -918,14 +915,14 @@ impl DifferentialPathBuilder {
     /// Generate the trajectory;
     ///
     /// * diagnostics: If true, prints per-iteration details of the solver to
-    ///       stdout.
+    ///   stdout.
     /// * handle: A number used to identify results from this generation in the
-    ///       `add_progress_callback` callback. If `add_progress_callback` has
-    ///       not been called, this value has no significance.
+    ///   `add_progress_callback` callback. If `add_progress_callback` has not
+    ///   been called, this value has no significance.
     ///
-    /// Returns a result with either the final `trajopt::DifferentialTrajectory`,
-    /// or a String error message if generation failed.
-    ///
+    /// Returns a result with either the final
+    /// `trajopt::DifferentialTrajectory`, or a String error message if
+    /// generation failed.
     pub fn generate(
         &mut self,
         diagnostics: bool,
@@ -941,12 +938,10 @@ impl DifferentialPathBuilder {
     /// Add a callback that will be called on each iteration of the solver.
     ///
     /// * callback: a `fn` (not a closure) to be executed. The callback's first
-    ///       parameter will be a `trajopt::DifferentialTrajectory`, and the
-    ///       second parameter will be an `i64` equal to the handle passed in
-    ///       `generate()`
+    ///   parameter will be a `trajopt::DifferentialTrajectory`, and the second
+    ///   parameter will be an `i64` equal to the handle passed in `generate()`
     ///
     /// This function can be called multiple times to add multiple callbacks.
-    ///
     pub fn add_progress_callback(&mut self, callback: fn(DifferentialTrajectory, i64)) {
         crate::ffi::DifferentialPathBuilder::add_progress_callback(
             self.path_builder.pin_mut(),

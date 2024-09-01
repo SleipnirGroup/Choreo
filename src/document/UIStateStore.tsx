@@ -20,8 +20,10 @@ import {
 
 export const UIStateStore = types
   .model("UIStateStore", {
+    //The transform matrix between mouse event clientX/Y and field coordinates
     fieldMatrix: types.frozen<DOMMatrix>(
-      DOMMatrixReadOnly.fromFloat32Array(
+      //identity, because there's apparently no factory for it
+      DOMMatrix.fromFloat32Array(
         Float32Array.from([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
       )
     ),
@@ -117,8 +119,8 @@ export const UIStateStore = types
     };
   })
   .actions((self: any) => ({
-    setFieldCTM(matrix: DOMMatrix) {
-      self.fieldCTM = matrix;
+    setFieldMatrix(matrix: DOMMatrix) {
+      self.fieldMatrix = matrix;
     },
     setMainMenuOpen(open: boolean) {
       self.mainMenuOpen = open;

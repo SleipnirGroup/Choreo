@@ -66,6 +66,8 @@ class SwervePathBuilder {
 
   // TODO: Return std::expected<SwerveTrajectory, std::string> instead of
   // throwing exception, once cxx supports it
+  //
+  // https://github.com/dtolnay/cxx/issues/1052
   SwerveTrajectory generate(bool diagnostics = false, int64_t handle = 0) const;
 
   void add_progress_callback(
@@ -120,6 +122,8 @@ class DifferentialPathBuilder {
 
   // TODO: Return std::expected<DifferentialTrajectory, std::string> instead of
   // throwing exception, once cxx supports it
+  //
+  // https://github.com/dtolnay/cxx/issues/1052
   DifferentialTrajectory generate(bool diagnostics = false,
                                   int64_t handle = 0) const;
 

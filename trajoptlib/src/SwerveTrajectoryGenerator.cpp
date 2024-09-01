@@ -10,6 +10,7 @@
 #include <utility>
 
 #include <sleipnir/optimization/OptimizationProblem.hpp>
+#include <sleipnir/optimization/SolverExitCondition.hpp>
 
 #include "trajopt/util/Cancellation.hpp"
 #include "trajopt/util/TrajoptUtil.hpp"
@@ -85,19 +86,12 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   }
 
   double minWidth = INFINITY;
-  for (size_t i = 1; i < path.drivetrain.modules.size(); ++i) {
-    if (std::abs(path.drivetrain.modules.at(i - 1).X() -
-                 path.drivetrain.modules.at(i).X()) != 0) {
-      minWidth =
-          std::min(minWidth, std::abs(path.drivetrain.modules.at(i - 1).X() -
-                                      path.drivetrain.modules.at(i).X()));
-    }
-    if (std::abs(path.drivetrain.modules.at(i - 1).Y() -
-                 path.drivetrain.modules.at(i).Y()) != 0) {
-      minWidth =
-          std::min(minWidth, std::abs(path.drivetrain.modules.at(i - 1).Y() -
-                                      path.drivetrain.modules.at(i).Y()));
-    }
+  for (size_t i = 0; i < path.drivetrain.modules.size(); ++i) {
+    auto mod_a = path.drivetrain.modules.at(i);
+    size_t mod_b_idx = i == 0 ? path.drivetrain.modules.size() - 1 : i - 1;
+    auto mod_b = path.drivetrain.modules.at(mod_b_idx);
+    minWidth = std::min(
+        minWidth, std::hypot(mod_a.X() - mod_b.X(), mod_a.Y() - mod_b.Y()));
   }
 
   for (size_t sgmtIndex = 0; sgmtIndex < sgmtCnt; ++sgmtIndex) {
@@ -253,8 +247,8 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   ApplyInitialGuess(initialGuess);
 }
 
-expected<SwerveSolution, std::string> SwerveTrajectoryGenerator::Generate(
-    bool diagnostics) {
+expected<SwerveSolution, sleipnir::SolverExitCondition>
+SwerveTrajectoryGenerator::Generate(bool diagnostics) {
   GetCancellationFlag() = 0;
   problem.Callback([this](const sleipnir::SolverIterationInfo&) -> bool {
     for (auto& callback : callbacks) {
@@ -269,7 +263,7 @@ expected<SwerveSolution, std::string> SwerveTrajectoryGenerator::Generate(
   if (static_cast<int>(status.exitCondition) < 0 ||
       status.exitCondition ==
           sleipnir::SolverExitCondition::kCallbackRequestedStop) {
-    return unexpected{std::string{sleipnir::ToMessage(status.exitCondition)}};
+    return unexpected{status.exitCondition};
   } else {
     return ConstructSwerveSolution();
   }

@@ -46,4 +46,7 @@ compile_commands.json
 # mkdocs
 site/
 
+# cmake user presets
+CMakeUserPresets.json
+
 build/

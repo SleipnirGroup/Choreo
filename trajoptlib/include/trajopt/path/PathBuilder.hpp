@@ -337,23 +337,33 @@ class TRAJOPT_DLLEXPORT PathBuilder {
   }
 
  protected:
+  /// The path.
   Path<Drivetrain, Solution> path;
 
+  /// The list of bumpers.
   std::vector<Bumpers> bumpers;
 
+  /// The initial guess points.
   std::vector<std::vector<Pose2d>> initialGuessPoints;
+
+  /// The control interval counts.
   std::vector<size_t> controlIntervalCounts;
 
+  /**
+   * Add new waypoints up to and including the given index.
+   *
+   * @param finalIndex The final index.
+   */
   void NewWpts(size_t finalIndex) {
-    int64_t targetIndex = finalIndex;
-    int64_t greatestIndex = path.waypoints.size() - 1;
-    if (targetIndex > greatestIndex) {
-      for (int64_t i = greatestIndex + 1; i <= targetIndex; ++i) {
-        path.waypoints.emplace_back();
-        initialGuessPoints.emplace_back(std::vector<Pose2d>{{0.0, 0.0, {0.0}}});
-        if (i != 0) {
-          controlIntervalCounts.push_back(40);
-        }
+    if (finalIndex < path.waypoints.size()) {
+      return;
+    }
+
+    for (size_t i = path.waypoints.size(); i <= finalIndex; ++i) {
+      path.waypoints.emplace_back();
+      initialGuessPoints.emplace_back(std::vector<Pose2d>{{0.0, 0.0, {0.0}}});
+      if (i != 0) {
+        controlIntervalCounts.push_back(40);
       }
     }
   }

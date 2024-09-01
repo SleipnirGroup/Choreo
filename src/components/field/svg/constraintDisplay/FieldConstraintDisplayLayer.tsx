@@ -3,7 +3,6 @@ import { IConstraintStore } from "../../../../document/ConstraintStore";
 import { doc } from "../../../../document/DocumentManager";
 import PointAtOverlay from "./PointAtOverlay";
 import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer";
-import KeepInCircleOverlay from "./KeepInCircleOverlay";
 
 const overlays = {
   PointAt: (constraint: IConstraintStore, lineColor: string) => (

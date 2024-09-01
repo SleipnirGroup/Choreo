@@ -1,5 +1,6 @@
 import { Component } from "react";
 import { doc, uiState } from "../../../../document/DocumentManager";
+import { ConstraintDefinitions } from "../../../../document/ConstraintDefinitions";
 
 import { observer } from "mobx-react";
 import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer";
@@ -20,15 +21,20 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
     super(props);
   }
 
-  addConstraint(points: IHolonomicWaypointStore[], start: number, end: number) {
+  addConstraint(
+    points: IHolonomicWaypointStore[],
+    start: number,
+    end?: number
+  ) {
+    doc.setHoveredSidebarItem(undefined);
     doc.history.startGroup(() => {
       const constraintToAdd = uiState.getSelectedConstraintKey();
       const point1 = points[start];
-      const point2 = points[end];
+      const point2 = end !== undefined ? points[end] : undefined;
       const newConstraint = doc.pathlist.activePath.path.addConstraint(
         constraintToAdd,
         { uuid: point1.uuid },
-        { uuid: point2.uuid }
+        point2 !== undefined ? { uuid: point2.uuid } : undefined
       );
 
       if (newConstraint !== undefined) {
@@ -36,6 +42,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
       }
       doc.history.stopGroup();
     });
+    this.setState({ firstIndex: undefined });
   }
 
   get endIndex() {
@@ -63,6 +70,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
     }
     return undefined;
   }
+
   render() {
     const lineColor = this.props.lineColor ?? "white";
     const activePath = doc.pathlist.activePath;
@@ -79,7 +87,12 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
           id="add-first-circles"
           onCircleClick={(id) => {
             console.log("constraint from: ", id);
-            this.setState({ firstIndex: id });
+            const constraintToAdd = uiState.getSelectedConstraintKey();
+            if (!ConstraintDefinitions[constraintToAdd].sgmtScope) {
+              this.addConstraint(waypoints, id, undefined);
+            } else {
+              this.setState({ firstIndex: id });
+            }
           }}
         ></FieldConstraintRangeLayer>
       );
@@ -96,7 +109,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
             style={{ pointerEvents: "visible" }}
             onMouseMove={(e) => {
               let coords = new DOMPoint(e.clientX, e.clientY);
-              coords = coords.matrixTransform(uiState.fieldCTM.inverse());
+              coords = coords.matrixTransform(uiState.fieldMatrix.inverse());
               this.setState({ mouseX: coords.x, mouseY: coords.y });
             }}
             onMouseLeave={(e) =>
@@ -137,13 +150,11 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
             showLines={false}
             id="add-second-circles"
             onCircleClick={(id) => {
-              doc.setHoveredSidebarItem(undefined);
               this.addConstraint(
                 waypoints,
                 Math.min(this.state.firstIndex!, id),
                 Math.max(this.state.firstIndex!, id)
               );
-              this.setState({ firstIndex: undefined });
             }}
             onCircleMouseOver={(id) => doc.setHoveredSidebarItem(waypoints[id])}
             onCircleMouseOff={(id) => doc.setHoveredSidebarItem(undefined)}
@@ -151,104 +162,6 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
         </>
       );
     }
-    //   return (
-    //     <>
-
-    //       {/* Draw circles on each waypoint */}
-    //       {selectedConstraintDefinition!.wptScope &&
-    //         waypoints.map((point, index) => {
-    //           const activePath = doc.pathlist.activePath;
-    //           if (
-    //             (activePath.ui.visibleWaypointsStart <= index &&
-    //               activePath.ui.visibleWaypointsEnd >= index) ||
-    //             !layers[ViewLayers.Focus]
-    //           ) {
-    //             return (
-    //               <circle
-    //                 key={index}
-    //                 cx={point.x.value}
-    //                 cy={point.y.value}
-    //                 r={0.2}
-    //                 fill={"black"}
-    //                 fillOpacity={0.2}
-    //                 stroke="white"
-    //                 strokeWidth={0.05}
-    //                 onClick={() => {
-    //                   doc.history.startGroup(() => {
-    //                     const constraintToAdd = selectedConstraint;
-    //                     const newConstraint = activePath.path.addConstraint(
-    //                       constraintToAdd,
-    //                       { uuid: point.uuid }
-    //                     );
-
-    //                     if (newConstraint !== undefined) {
-    //                       if (newConstraint.wptScope) {
-    //                         if (newConstraint.sgmtScope) {
-    //                           newConstraint.setTo({ uuid: point.uuid });
-    //                         }
-    //                       }
-    //                       doc.setSelectedSidebarItem(newConstraint);
-    //                     }
-    //                     doc.history.stopGroup();
-    //                   });
-    //                 }}
-    //               ></circle>
-    //             );
-    //           }
-    //         })}
-    //       {selectedConstraintDefinition!.sgmtScope &&
-    //         activePath.path.waypoints.slice(0, -1).map((point1, index) => {
-    //           const point2 = activePath.path.waypoints[index + 1];
-    //           if (
-    //             (activePath.ui.visibleWaypointsStart <= index &&
-    //               activePath.ui.visibleWaypointsEnd >= index + 1) ||
-    //             !layers[ViewLayers.Focus]
-    //           ) {
-    //             return (
-    //               <Fragment key={`frag-${index}-${index + 1}`}>
-    //                 <line
-    //                   key={`line-${index}-${index + 1}`}
-    //                   x1={point1.x.value}
-    //                   x2={point2.x.value}
-    //                   y1={point1.y.value}
-    //                   y2={point2.y.value}
-    //                   strokeDasharray={0.2}
-    //                   stroke="white"
-    //                   strokeWidth={0.05}
-    //                 ></line>
-    //                 <circle
-    //                   key={`${index}-${index + 1}`}
-    //                   cx={(point1.x.value + point2.x.value) / 2}
-    //                   cy={(point1.y.value + point2.y.value) / 2}
-    //                   r={0.2}
-    //                   fill={"black"}
-    //                   fillOpacity={0.2}
-    //                   stroke="white"
-    //                   strokeWidth={0.05}
-    //                   onClick={() => {
-    //                     doc.history.startGroup(() => {
-    //                       const constraintToAdd =
-    //                         uiState.getSelectedConstraintKey();
-
-    //                       const newConstraint = activePath.path.addConstraint(
-    //                         constraintToAdd,
-    //                         { uuid: point1.uuid },
-    //                         { uuid: point2.uuid }
-    //                       );
-
-    //                       if (newConstraint !== undefined) {
-    //                         doc.setSelectedSidebarItem(newConstraint);
-    //                       }
-    //                     });
-    //                     doc.history.stopGroup();
-    //                   }}
-    //                 ></circle>
-    //               </Fragment>
-    //             );
-    //           }
-    //         })}
-    //     </>
-    //   );
   }
 }
 
