@@ -116,7 +116,6 @@ async fn handle_write<T: Serialize + Send>(contents: T, file: &Path) -> Result<(
     }
 }
 
-#[allow(unused_results)]
 pub fn start<T: Serialize + Send + Sync + 'static>(
     file: &Path,
 ) -> tokio::sync::mpsc::UnboundedSender<WriterCommand<T>> {
