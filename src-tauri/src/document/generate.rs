@@ -39,7 +39,6 @@ pub fn setup_progress_sender() -> Receiver<ProgressUpdate> {
 }
 
 #[tauri::command]
-#[allow(clippy::too_many_lines)]
 pub async fn generate(
     chor: Project,
     traj: Traj,
@@ -223,7 +222,6 @@ pub async fn generate(
     Ok(postprocess(&result, traj, snapshot, counts_vec))
 }
 
-#[allow(clippy::missing_asserts_for_indexing)]
 fn postprocess(
     result: &SwerveTrajectory,
     mut traj: Traj,
