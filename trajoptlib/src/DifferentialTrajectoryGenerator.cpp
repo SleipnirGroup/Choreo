@@ -321,7 +321,8 @@ DifferentialTrajectoryGenerator::ConstructDifferentialSolution() {
   return DifferentialSolution{
       dtPerSample,           vectorValue(x),        vectorValue(y),
       vectorValue(thetacos), vectorValue(thetasin), vectorValue(vL),
-      vectorValue(vR),       vectorValue(FL),       vectorValue(FR),
+      vectorValue(vR),       vectorValue(aL),       vectorValue(aR),
+      vectorValue(FL),       vectorValue(FR),
   };
 }
 
