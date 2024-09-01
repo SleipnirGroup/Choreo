@@ -1,9 +1,11 @@
 const { exec, execSync } = require("child_process");
 const fs = require("fs");
 
-function get_executable_extension() {
+function get_executable_extension(targetTriple) {
   if (process.platform === "win32") {
     return ".exe";
+  } else if (targetTriple === "x86_64-apple-darwin") {
+    return ".dmg";
   }
   return "";
 }
