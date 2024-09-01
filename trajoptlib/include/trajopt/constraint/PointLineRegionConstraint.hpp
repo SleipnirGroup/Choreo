@@ -50,7 +50,8 @@ class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
              [[maybe_unused]] const Translation2v& linearAcceleration,
              [[maybe_unused]] const sleipnir::Variable& angularAcceleration) {
     auto point = pose.Translation() + m_robotPoint.RotateBy(pose.Rotation());
-    // auto denominator = (
+    // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
+    // auto denominator = sleipnir::sqrt(
     //   (m_fieldLineEnd.Y() - m_fieldLineStart.Y()) * (m_fieldLineEnd.Y() - m_fieldLineStart.Y())
     //   + (m_fieldLineEnd.X() - m_fieldLineStart.X()) * (m_fieldLineEnd.X() - m_fieldLineStart.X())
     //   );
