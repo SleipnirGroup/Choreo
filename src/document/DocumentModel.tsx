@@ -157,13 +157,15 @@ export const DocumentStore = types
         return;
       }
       console.log("og wpt2: ", pathStore.path.waypoints[1].heading.value);
-      const adjustedHeadings = await Commands.adjustHeadings(pathStore.serialize);
+      const adjustedHeadings = await Commands.adjustHeadings(
+        pathStore.serialize
+      );
       if (adjustedHeadings.length == 0) throw "No headings";
       adjustedHeadings.forEach((heading, i) => {
-        console.log("trying to set wpt ", i, " to ",heading);
-        if( heading !== undefined || heading !== null){
-        pathStore.path.waypoints[i].heading.setValue(heading);
-      }
+        console.log("trying to set wpt ", i, " to ", heading);
+        if (heading !== undefined || heading !== null) {
+          pathStore.path.waypoints[i].heading.setValue(heading);
+        }
       });
       console.log("new wpt2: ", pathStore.path.waypoints[1].heading.value);
       console.log(pathStore.serialize);

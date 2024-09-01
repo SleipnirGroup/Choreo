@@ -68,13 +68,13 @@ mod util;
 use std::{fs, path::Path};
 use std::{thread, vec};
 
+use document::adjust::cmd_adjust_waypoint_headings;
 use document::file::{
     delete_dir, delete_file, find_all_traj, new_file, open_chor, open_file_dialog, open_traj,
     set_chor_path, setup_senders, write_chor, write_traj,
 };
 use document::generate::{cancel, generate, setup_progress_sender};
 use document::intervals::cmd_guess_control_interval_counts;
-use document::adjust::cmd_adjust_waypoint_headings;
 use error::ChoreoError;
 use tauri::Manager;
 
