@@ -133,6 +133,27 @@ void SwervePathBuilder::wpt_keep_in_circle(size_t index, double field_point_x,
       );
 }
 
+void SwervePathBuilder::wpt_keep_in_polygon(size_t index, rust::Vec<double> field_points_x, rust::Vec<double> field_points_y) {
+  if (field_points_x.size() != field_points_y.size()) {
+    return;
+  }
+  for (size_t bumper = 0; bumper < path_builder.GetBumpers().size(); bumper++)
+  {
+    for (size_t corner = 0; corner < path_builder.GetBumpers().at(bumper).points.size(); corner++)
+    {
+      for (size_t i = 0; i < field_points_x.size(); i++)
+      {
+        auto j = (i + 1) % field_points_x.size();
+        path_builder.WptConstraint(index, trajopt::PointLineRegionConstraint{
+          path_builder.GetBumpers().at(bumper).points[corner],
+          {field_points_x[i], field_points_y[i]},
+          {field_points_x[j], field_points_y[j]}
+        });
+      }
+    }
+  }
+}
+
 void SwervePathBuilder::sgmt_linear_velocity_direction(size_t from_index,
                                                        size_t to_index,
                                                        double angle) {

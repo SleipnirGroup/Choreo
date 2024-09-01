@@ -42,6 +42,7 @@ class SwervePathBuilder {
   void wpt_point_at(size_t index, double field_point_x, double field_point_y,
                     double heading_tolerance, bool flip);
   void wpt_keep_in_circle(size_t index, double field_point_x, double field_point_y, double keep_in_radius);
+  void wpt_keep_in_polygon(size_t index, rust::Vec<double> field_points_x, rust::Vec<double> field_points_y);
 
   void sgmt_linear_velocity_direction(size_t from_index, size_t to_index,
                                       double angle);

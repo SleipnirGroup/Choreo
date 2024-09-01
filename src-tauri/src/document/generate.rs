@@ -206,6 +206,7 @@ pub async fn generate(
             }
         };
     }
+    path_builder.wpt_keep_in_polygon(1, vec![-2.0, 2.0, 2.0, -2.0], vec![2.0, 2.0, -2.0, -2.0]);
     // Skip obstacles for now while we figure out whats wrong with them
     // for o in circleObstacles {
     //     path_builder.sgmt_circle_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
