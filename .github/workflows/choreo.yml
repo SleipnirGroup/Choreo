@@ -82,7 +82,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}
-          path: target/release/bundle/nsis/*.exe
+          path: target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
 
       - name: Upload bundle (Windows ARM)
         if: matrix.artifact-name == 'Windows-aarch64'
@@ -111,8 +111,8 @@ jobs:
         with:
           name: ${{ matrix.artifact-name }}
           path: |
-            target/release/bundle/appimage/*.AppImage
-            target/release/bundle/deb/*.deb
+            target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.AppImage
+            target/x86_64-unknown-linux-gnu/release/bundle/deb/*.deb
 
   release:
     name: Create draft release
