@@ -113,7 +113,6 @@ pub fn setup_progress_sender() -> Receiver<LocalProgressUpdate> {
     rx
 }
 
-#[allow(clippy::too_many_lines)]
 pub fn generate(
     chor: &ProjectFile,
     path: TrajFile,
@@ -297,7 +296,6 @@ pub fn generate(
     Ok(postprocess(&result, path, snapshot, counts_vec))
 }
 
-#[allow(clippy::missing_asserts_for_indexing)]
 fn postprocess(
     result: &SwerveTrajectory,
     mut path: TrajFile,
