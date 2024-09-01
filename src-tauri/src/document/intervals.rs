@@ -7,7 +7,6 @@ use crate::Result;
 // A value version since commands don't support borrows, but we need the borrow
 // version for generation.
 #[tauri::command]
-#[allow(clippy::needless_pass_by_value)]
 pub fn cmd_guess_control_interval_counts(
     config: RobotConfig<Expr>,
     traj: Traj,
@@ -44,7 +43,6 @@ pub fn guess_control_interval_counts(
         .collect::<Vec<usize>>())
 }
 
-#[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
 pub fn guess_control_interval_count(
     i: usize,
     traj: &Traj,

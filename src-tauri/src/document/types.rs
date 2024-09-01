@@ -327,7 +327,6 @@ pub struct Output {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
-#[allow(clippy::struct_field_names)]
 pub struct Traj {
     pub name: String,
     pub version: String,
