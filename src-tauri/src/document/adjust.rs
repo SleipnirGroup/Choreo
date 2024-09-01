@@ -73,9 +73,7 @@ pub fn adjust_waypoint_headings(traj: &Traj) -> Result<Vec<f64>> {
                             }
                             if let Some(heading) = fixed_heading {
                                 for wpt_idx in from..=to {
-                                    if !traj.path.waypoints[wpt_idx].fix_heading {
-                                        new_headings[wpt_idx] = heading;
-                                    }
+                                    new_headings[wpt_idx] = heading;
                                 }
                             }
                         }
@@ -93,7 +91,9 @@ pub fn adjust_waypoint_headings(traj: &Traj) -> Result<Vec<f64>> {
                         // heading can point at target
                         let robot_x = traj.path.waypoints[from].x.1;
                         let robot_y = traj.path.waypoints[from].y.1;
-                        let heading = ((x - robot_x) / (y - robot_y)).acos();
+                        let new_x = x - robot_x;
+                        let new_y = y - robot_y;
+                        let heading = new_y.atan2(new_x);
                         let heading = if flip {
                             angle_modulus(heading + PI)
                         } else {
@@ -113,8 +113,7 @@ pub fn adjust_waypoint_headings(traj: &Traj) -> Result<Vec<f64>> {
                             let robot_y = traj.path.waypoints[wpt_idx].y.1;
                             let new_x = x - robot_x;
                             let new_y = y - robot_y;
-                            let heading = ((new_x / new_y) / new_x.hypot(new_y)).acos();
-                            
+                            let heading = new_y.atan2(new_x);
                             let heading = if flip {
                                 angle_modulus(heading + PI)
                             } else {
@@ -132,17 +131,5 @@ pub fn adjust_waypoint_headings(traj: &Traj) -> Result<Vec<f64>> {
         }
     }
     std::println!("heading_fixed_references: {heading_fixed_references:?}");
-    // if heading_fixed_references.iter().any(|&x| x > 1) {}
-    // modified_traj
-    //     .path
-    //     .waypoints
-    //     .iter_mut()
-    //     .zip(snapshot.waypoints.iter_mut())
-    //     .zip(new_headings.into_iter())
-    //     .for_each(|((path_wpt, snap_wpt), new_heading)| {
-    //         path_wpt.heading = expr(format!("{new_heading} rad").as_str(), new_heading);
-    //         snap_wpt.heading = new_heading;
-    //     });
-    // modified_traj.snapshot = Some(snapshot);
     Ok(new_headings)
 }
