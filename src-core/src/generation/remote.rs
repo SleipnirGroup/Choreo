@@ -111,6 +111,8 @@ pub async fn remote_generate_parent(
     let project_tmp = NamedTempFile::new()?;
     let traj_tmp = NamedTempFile::new()?;
 
+    tracing::debug!("Created temp files for remote generation");
+
     // write project and traj to temp files
     let project_str =
         serde_json::to_string(&project).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
@@ -119,6 +121,8 @@ pub async fn remote_generate_parent(
 
     tokio::fs::write(project_tmp.path(), project_str).await?;
     tokio::fs::write(traj_tmp.path(), traj_str).await?;
+
+    tracing::debug!("Wrote project and traj to temp files");
 
     let (server, server_name) = ipc::IpcOneShotServer::<String>::new()
         .map_err(|e| ChoreoError::SolverError(format!("Failed to create IPC server: {e:?}")))?;
@@ -135,6 +139,8 @@ pub async fn remote_generate_parent(
     let mut child = Command::new("Choreo")
         .arg(serde_json::to_string(&remote_args)?)
         .spawn()?;
+
+    tracing::debug!("Spawned remote generator");
 
     let (rx, _) = server
         .accept()
