@@ -33,9 +33,8 @@ build.once('exit', code => {
     if (code !== 0) {
         throw new Error("Build failed");
     }
-    const f = fs.readFileSync(`target/release/choreo-cli${executableExtension}`);
     if (!fs.existsSync("cli")) {
         fs.mkdirSync("cli");
     }
-    fs.writeFileSync(`cli/choreo-cli-${targetTriple}${executableExtension}`, f);
+    execSync(`cp target/release/choreo-cli${executableExtension} cli/choreo-cli-${targetTriple}${executableExtension}`);
 });
