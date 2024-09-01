@@ -20,6 +20,7 @@
 #include "trajopt/constraint/PointPointMaxConstraint.hpp"
 #include "trajopt/constraint/PoseEqualityConstraint.hpp"
 #include "trajopt/constraint/TranslationEqualityConstraint.hpp"
+#include "trajopt/constraint/PointLineRegionConstraint.hpp"
 #include "trajopt/geometry/Pose2.hpp"
 #include "trajopt/geometry/Translation2.hpp"
 
@@ -59,6 +60,7 @@ static_assert(ConstraintType<PointPointMinConstraint>);
 static_assert(ConstraintType<PointPointMaxConstraint>);
 static_assert(ConstraintType<PoseEqualityConstraint>);
 static_assert(ConstraintType<TranslationEqualityConstraint>);
+static_assert(ConstraintType<PointLineRegionConstraint>);
 
 using Constraint =
     std::variant<AngularVelocityMaxMagnitudeConstraint, LinePointConstraint,
@@ -67,6 +69,6 @@ using Constraint =
                  LinearVelocityMaxMagnitudeConstraint, PointAtConstraint,
                  PointLineConstraint, PointPointMinConstraint,
                  PointPointMaxConstraint,
-                 PoseEqualityConstraint, TranslationEqualityConstraint>;
+                 PoseEqualityConstraint, TranslationEqualityConstraint, PointLineRegionConstraint>;
 
 }  // namespace trajopt
