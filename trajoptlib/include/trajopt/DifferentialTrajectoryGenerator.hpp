@@ -6,12 +6,12 @@
 
 #include <cmath>
 #include <functional>
-#include <string>
 #include <utility>
 #include <vector>
 
 #include <sleipnir/autodiff/Variable.hpp>
 #include <sleipnir/optimization/OptimizationProblem.hpp>
+#include <sleipnir/optimization/SolverExitCondition.hpp>
 
 #include "trajopt/path/PathBuilder.hpp"
 #include "trajopt/util/SymbolExports.hpp"
@@ -221,7 +221,7 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectoryGenerator {
    * @return Returns a holonomic trajectory on success, or a string containing a
    *   failure reason.
    */
-  expected<DifferentialSolution, std::string> Generate(
+  expected<DifferentialSolution, sleipnir::SolverExitCondition> Generate(
       bool diagnostics = false);
 
  private:

@@ -10,6 +10,7 @@
 #include <utility>
 
 #include <sleipnir/optimization/OptimizationProblem.hpp>
+#include <sleipnir/optimization/SolverExitCondition.hpp>
 
 #include "trajopt/util/Cancellation.hpp"
 #include "trajopt/util/TrajoptUtil.hpp"
@@ -246,8 +247,8 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   ApplyInitialGuess(initialGuess);
 }
 
-expected<SwerveSolution, std::string> SwerveTrajectoryGenerator::Generate(
-    bool diagnostics) {
+expected<SwerveSolution, sleipnir::SolverExitCondition>
+SwerveTrajectoryGenerator::Generate(bool diagnostics) {
   GetCancellationFlag() = 0;
   problem.Callback([this](const sleipnir::SolverIterationInfo&) -> bool {
     for (auto& callback : callbacks) {
@@ -262,7 +263,7 @@ expected<SwerveSolution, std::string> SwerveTrajectoryGenerator::Generate(
   if (static_cast<int>(status.exitCondition) < 0 ||
       status.exitCondition ==
           sleipnir::SolverExitCondition::kCallbackRequestedStop) {
-    return unexpected{std::string{sleipnir::ToMessage(status.exitCondition)}};
+    return unexpected{status.exitCondition};
   } else {
     return ConstructSwerveSolution();
   }

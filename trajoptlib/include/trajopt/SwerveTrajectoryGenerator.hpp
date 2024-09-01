@@ -5,12 +5,12 @@
 #include <stdint.h>
 
 #include <functional>
-#include <string>
 #include <utility>
 #include <vector>
 
 #include <sleipnir/autodiff/Variable.hpp>
 #include <sleipnir/optimization/OptimizationProblem.hpp>
+#include <sleipnir/optimization/SolverExitCondition.hpp>
 
 #include "trajopt/geometry/Translation2.hpp"
 #include "trajopt/path/PathBuilder.hpp"
@@ -223,7 +223,8 @@ class TRAJOPT_DLLEXPORT SwerveTrajectoryGenerator {
    * @return Returns a holonomic trajectory on success, or a string containing a
    *   failure reason.
    */
-  expected<SwerveSolution, std::string> Generate(bool diagnostics = false);
+  expected<SwerveSolution, sleipnir::SolverExitCondition> Generate(
+      bool diagnostics = false);
 
  private:
   /// Swerve path
