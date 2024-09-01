@@ -1,7 +1,7 @@
 {
   "build": {
     "beforeDevCommand": "pnpm run dev",
-    "beforeBuildCommand": "pnpm run build",
+    "beforeBuildCommand": "node build_cli.cjs && pnpm run build",
     "devPath": "http://localhost:1420",
     "distDir": "../dist",
     "withGlobalTauri": false
@@ -52,7 +52,10 @@
       "macOS": {
         "minimumSystemVersion": "13.3",
         "signingIdentity": "-"
-      }
+      },
+      "externalBin": [
+        "../cli/choreo-cli"
+      ]
     },
     "security": {
       "csp": null
