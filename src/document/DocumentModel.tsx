@@ -157,12 +157,13 @@ export const DocumentStore = types
         return;
       }
       console.log("og wpt2: ", pathStore.path.waypoints[1].heading.value);
-      const rust_traj = await Commands.adjustHeadings(pathStore.serialize);
-      if (rust_traj.traj.samples.length == 0) throw "No traj";
-      rust_traj.path.waypoints.forEach((new_wpt, i) => {
-        pathStore.path.waypoints[i].heading.deserialize(new_wpt.heading);
-        pathStore.snapshot.waypoints[i].heading =
-          rust_traj.snapshot.waypoints[i].heading;
+      const adjustedHeadings = await Commands.adjustHeadings(pathStore.serialize);
+      if (adjustedHeadings.length == 0) throw "No headings";
+      adjustedHeadings.forEach((heading, i) => {
+        console.log("trying to set wpt ", i, " to ",heading);
+        if( heading !== undefined || heading !== null){
+        pathStore.path.waypoints[i].heading.setValue(heading);
+      }
       });
       console.log("new wpt2: ", pathStore.path.waypoints[1].heading.value);
       console.log(pathStore.serialize);

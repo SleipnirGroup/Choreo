@@ -7,7 +7,7 @@ export const Commands = {
   guessIntervals: (config: RobotConfig<Expr>, traj: Traj) =>
     invoke<number[]>("cmd_guess_control_interval_counts", { config, traj }),
   adjustHeadings: (traj: Traj) =>
-    invoke<Traj>("cmd_adjust_waypoint_headings", { traj }),
+    invoke<number[]>("cmd_adjust_waypoint_headings", { traj }),
   cancel: () => invoke<void>("cancel"),
   deleteFile: (dir: string, name: string) =>
     invoke<void>("delete_file", { dir, name }),
