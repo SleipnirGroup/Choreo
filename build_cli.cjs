@@ -53,6 +53,6 @@ build.once("exit", (code) => {
     fs.unlinkSync(cliPath);
   }
   execSync(
-    `mv target/${targetTriple}/release/choreo-cli${extension} ${cliPath} -f`
+    `mv target/${targetTriple}/release/choreo-cli${extension} ${cliPath}`
   );
 });
