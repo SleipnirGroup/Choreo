@@ -129,7 +129,7 @@ export class Field extends Component<Props, State> {
               }}
               onClick={(event) => {
                 Commands.cancelAll();
-                Commands.cancelAllRemote();
+                Commands.cancelAll();
               }}
               disabled={activePath.canGenerate()}
             >

@@ -97,8 +97,6 @@ pub fn run_tauri(project: Option<PathBuf>) {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            generate,
-            cancel_all,
             guess_control_interval_counts,
             open_in_explorer,
             default_project,

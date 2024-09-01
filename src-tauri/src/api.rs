@@ -133,21 +133,6 @@ pub async fn get_deploy_root(app_handle: tauri::AppHandle) -> ChoreoResult<Strin
 }
 
 #[tauri::command]
-pub async fn generate(
-    project: ProjectFile,
-    traj: TrajFile,
-    // The handle referring to this path for the solver state callback
-    handle: i64,
-) -> ChoreoResult<TrajFile> {
-    choreo_core::generation::generate::generate(&project, traj, handle)
-}
-
-#[tauri::command]
-pub async fn cancel_all() {
-    choreo_core::generation::generate::cancel_all();
-}
-
-#[tauri::command]
 pub async fn generate_remote(
     app_handle: tauri::AppHandle,
     project: ProjectFile,
@@ -155,8 +140,8 @@ pub async fn generate_remote(
     handle: i64,
 ) -> ChoreoResult<TrajFile> {
     let remote_resources = app_handle.state::<RemoteGenerationResources>();
-    choreo_core::generation::generate::generate_remote(&remote_resources, project, traj, handle)
-        .await
+    use choreo_core::generation::remote::remote_generate_parent;
+    remote_generate_parent(&remote_resources, project, traj, handle).await
 }
 
 #[tauri::command]

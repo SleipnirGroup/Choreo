@@ -274,7 +274,7 @@ export const DocumentStore = types
         })
         .then((unlistener) => {
           unlisten = unlistener;
-          return Commands.generateRemote(
+          return Commands.generate(
             self.serializeChor(),
             pathStore.serialize,
             handle

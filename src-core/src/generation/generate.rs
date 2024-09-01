@@ -1,42 +1,24 @@
 #![allow(clippy::missing_errors_doc)]
 
-use std::mem::forget;
-use std::path::PathBuf;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, OnceLock};
 use std::vec;
 
 use dashmap::DashMap;
-use futures_util::{FutureExt, TryStreamExt};
-use ipc_channel::ipc;
-use tempfile::NamedTempFile;
-use tokio::process::Command;
-use tokio::select;
-use tokio::sync::oneshot::{self, Sender as OneshotSender};
+use tokio::sync::oneshot::Sender as OneshotSender;
 use trajoptlib::{
-    DifferentialTrajectory, Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory,
+    DifferentialTrajectory, Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory
 };
 
 use super::intervals::guess_control_interval_counts;
 use crate::error::ChoreoError;
 use crate::spec::project::{Module, ProjectFile};
 use crate::spec::traj::{
-    ConstraintData, ConstraintIDX, ConstraintScope, Parameters, Sample, TrajFile, Trajectory,
+    ConstraintData, ConstraintIDX, ConstraintScope, Parameters, Sample, TrajFile
 };
 use crate::{ChoreoResult, ResultExt};
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct RemoteArgs {
-    pub project: PathBuf,
-    pub traj: PathBuf,
-    pub ipc: String,
-}
 
-impl RemoteArgs {
-    pub fn from_content(s: &str) -> ChoreoResult<Self> {
-        serde_json::from_str(s).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))
-    }
-}
 
 /**
  * A [`OnceLock`] is a synchronization primitive that can be written to
@@ -48,7 +30,7 @@ pub static PROGRESS_SENDER_LOCK: OnceLock<Sender<LocalProgressUpdate>> = OnceLoc
 fn solver_status_callback(traj: SwerveTrajectory, handle: i64) {
     let tx_opt = PROGRESS_SENDER_LOCK.get();
     if let Some(tx) = tx_opt {
-        tx.send(LocalProgressUpdate { traj, handle }).trace_warn();
+        tx.send(LocalProgressUpdate::SwerveTraj { traj, handle }).trace_warn();
     };
 }
 
@@ -62,18 +44,17 @@ fn fix_scope(idx: usize, removed_idxs: &Vec<usize>) -> usize {
     idx - to_subtract
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
-pub struct LocalProgressUpdate {
-    pub traj: SwerveTrajectory,
-    pub handle: i64,
-}
-
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
-pub enum RemoteProgressUpdate {
-    IncompleteSwerveTraj(SwerveTrajectory),
-    IncompleteTankTraj(DifferentialTrajectory),
-    CompleteTraj(Trajectory),
-    Error(String),
+#[derive(Debug, serde::Serialize, Clone)]
+#[serde(untagged)]
+pub enum LocalProgressUpdate {
+    SwerveTraj {
+        traj: SwerveTrajectory,
+        handle: i64,
+    },
+    TankTraj {
+        traj: DifferentialTrajectory,
+        handle: i64,
+    },
 }
 
 #[derive(Clone)]
@@ -409,108 +390,4 @@ fn postprocess(
     path.traj.waypoints = waypoint_times;
     path.snapshot = Some(snapshot);
     path
-}
-
-pub async fn generate_remote(
-    remote_resources: &RemoteGenerationResources,
-    project: ProjectFile,
-    path: TrajFile,
-    handle: i64,
-) -> ChoreoResult<TrajFile> {
-    tracing::info!("Generating remote trajectory {}", path.name);
-
-    // create temp file for project and traj
-    let project_tmp = NamedTempFile::new()?;
-    let traj_tmp = NamedTempFile::new()?;
-
-    // write project and traj to temp files
-    let project_str =
-        serde_json::to_string(&project).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
-    let traj_str =
-        serde_json::to_string(&path).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
-
-    tokio::fs::write(project_tmp.path(), project_str).await?;
-    tokio::fs::write(traj_tmp.path(), traj_str).await?;
-
-    let (server, server_name) = ipc::IpcOneShotServer::<String>::new()
-        .map_err(|e| ChoreoError::SolverError(format!("Failed to create IPC server: {e:?}")))?;
-
-    let remote_args = RemoteArgs {
-        project: project_tmp.path().to_path_buf(),
-        traj: traj_tmp.path().to_path_buf(),
-        ipc: server_name,
-    };
-
-    forget(project_tmp);
-    forget(traj_tmp);
-
-    let mut child = Command::new("Choreo")
-        .arg(serde_json::to_string(&remote_args)?)
-        .spawn()?;
-
-    let (rx, _) = server
-        .accept()
-        .map_err(|e| ChoreoError::SolverError(format!("Failed to accept IPC connection: {e:?}")))?;
-
-    let (killer, victim) = oneshot::channel::<()>();
-    remote_resources.add_killer(handle, killer);
-    let mut victim = victim.into_stream();
-
-    let mut stream = rx.to_stream();
-
-    loop {
-        select! {
-            update_res = stream.try_next() => {
-                match update_res {
-                    Ok(Some(update_string)) => {
-                        match serde_json::from_str(&update_string) {
-                            Ok(RemoteProgressUpdate::IncompleteSwerveTraj(traj)) => {
-                                remote_resources.emit_progress(
-                                    LocalProgressUpdate {
-                                        traj,
-                                        handle
-                                    }
-                                );
-                            },
-                            Ok(RemoteProgressUpdate::IncompleteTankTraj(_)) => {
-                                return Err(ChoreoError::SolverError("Tank drive not supported".to_string()));
-                            },
-                            Ok(RemoteProgressUpdate::CompleteTraj(traj)) => {
-                                return Ok(
-                                    TrajFile {
-                                        traj,
-                                        snapshot: Some(path.params.snapshot()),
-                                        .. path
-                                    }
-                                )
-                            },
-                            Ok(RemoteProgressUpdate::Error(e)) => {
-                                return Err(ChoreoError::SolverError(e));
-                            },
-                            Err(e) => {
-                                return Err(ChoreoError::SolverError(format!("Error parsing solver update: {e:?}")));
-                            }
-                        }
-                    },
-                    Ok(None) => {
-                        return Err(ChoreoError::SolverError("Solver exited without sending a result".to_string()));
-                    },
-                    Err(e) => {
-                        return Err(ChoreoError::SolverError(format!("Error receiving solver update: {e:?}")));
-                    },
-                }
-            },
-            _ = child.wait() => {
-                return Err(ChoreoError::SolverError("Solver exited without sending a result".to_string()));
-            },
-            _ = victim.try_next() => {
-                child.kill().await?;
-                return Err(ChoreoError::SolverError("Solver canceled".to_string()));
-            }
-        }
-    }
-}
-
-pub fn cancel_all() {
-    trajoptlib::cancel_all();
 }

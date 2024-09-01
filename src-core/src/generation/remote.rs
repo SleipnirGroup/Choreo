@@ -1,28 +1,55 @@
-use std::{path::PathBuf, thread};
+use std::{mem::forget, path::PathBuf, thread};
 
-use ipc_channel::ipc::IpcSender;
-use tokio::fs;
+use futures_util::{FutureExt, TryStreamExt};
+use ipc_channel::ipc::{self, IpcSender};
+use tempfile::NamedTempFile;
+use tokio::{process::Command, select, sync::oneshot};
+use trajoptlib::{DifferentialTrajectory, SwerveTrajectory};
+use std::fs;
 
 use crate::{
-    generation::generate::generate,
-    spec::{project::ProjectFile, traj::TrajFile},
-    ChoreoResult,
+    generation::generate::{generate, LocalProgressUpdate}, spec::{project::ProjectFile, traj::{TrajFile, Trajectory}}, ChoreoError, ChoreoResult
 };
 
-use super::generate::{setup_progress_sender, RemoteArgs, RemoteProgressUpdate};
+use super::generate::{setup_progress_sender, RemoteGenerationResources};
 
-pub fn remote_main(args: RemoteArgs) {
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct RemoteArgs {
+    pub project: PathBuf,
+    pub traj: PathBuf,
+    pub ipc: String,
+}
+
+impl RemoteArgs {
+    pub fn from_content(s: &str) -> ChoreoResult<Self> {
+        serde_json::from_str(s).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))
+    }
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub enum RemoteProgressUpdate {
+    IncompleteSwerveTraj(SwerveTrajectory),
+    IncompleteTankTraj(DifferentialTrajectory),
+    CompleteTraj(Trajectory),
+    Error(String),
+}
+
+pub fn remote_generate_child(args: RemoteArgs) {
     let rx = setup_progress_sender();
-    let ipc = IpcSender::<String>::connect(args.ipc).expect("Failed to deserialize IPC handle");
+    let ipc = IpcSender::<String>::connect(args.ipc.clone()).expect("Failed to deserialize IPC handle");
     let cln_ipc: IpcSender<String> = ipc.clone();
     thread::Builder::new()
         .name("choreo-cli-progressupdater".to_string())
         .spawn(move || {
             for received in rx {
-                let ser_string = serde_json::to_string(
-                    &RemoteProgressUpdate::IncompleteSwerveTraj(received.traj),
-                )
-                .expect("Failed to serialize progress update");
+                let ser_string = match received {
+                    LocalProgressUpdate::SwerveTraj { traj, .. } => {
+                        serde_json::to_string(&RemoteProgressUpdate::IncompleteSwerveTraj(traj))
+                    },
+                    LocalProgressUpdate::TankTraj { traj, .. } => {
+                        serde_json::to_string(&RemoteProgressUpdate::IncompleteTankTraj(traj))
+                    },
+                }.expect("Failed to serialize progress update");
                 cln_ipc
                     .send(ser_string)
                     .expect("Failed to send progress update");
@@ -30,13 +57,32 @@ pub fn remote_main(args: RemoteArgs) {
         })
         .expect("Failed to spawn thread");
 
-    let res = tokio::runtime::Builder::new_current_thread()
-        .enable_all()
-        .build()
-        .expect("Failed to build tokio runtime")
-        .block_on(remote_generate(args.project, args.traj));
+    fn read_files(args: &RemoteArgs) -> ChoreoResult<(ProjectFile, TrajFile)> {
+        let project = ProjectFile::from_content(&fs::read_to_string(&args.project)?)?;
+        let traj = TrajFile::from_content(&fs::read_to_string(&args.traj)?)?;
+        fs::remove_file(&args.project)?;
+        fs::remove_file(&args.traj)?;
 
-    match res {
+        Ok((project, traj))
+    }
+
+    let (project, traj) = match read_files(&args) {
+        Ok((project, traj)) => (project, traj),
+        Err(e) => {
+            let ser_string = serde_json::to_string(&RemoteProgressUpdate::Error(e.to_string()))
+                .expect("Failed to serialize progress update");
+            ipc.send(ser_string)
+                .expect("Failed to send progress update");
+            return;
+        }
+    };
+
+    println!(
+        "Generating trajectory {:} for {:} remotely",
+        traj.name, project.name
+    );
+
+    match generate(&project, traj, 0i64) {
         Ok(traj) => {
             let ser_string = serde_json::to_string(&RemoteProgressUpdate::CompleteTraj(traj.traj))
                 .expect("Failed to serialize progress update");
@@ -44,6 +90,7 @@ pub fn remote_main(args: RemoteArgs) {
                 .expect("Failed to send progress update");
         }
         Err(e) => {
+            tracing::error!("Failed to generate trajectory {:}", e);
             let ser_string = serde_json::to_string(&RemoteProgressUpdate::Error(e.to_string()))
                 .expect("Failed to serialize progress update");
             ipc.send(ser_string)
@@ -52,25 +99,107 @@ pub fn remote_main(args: RemoteArgs) {
     }
 }
 
-#[allow(clippy::cast_possible_wrap)]
-async fn remote_generate(project_path: PathBuf, traj_path: PathBuf) -> ChoreoResult<TrajFile> {
-    // set the deploy path to the project directory
-    let project = ProjectFile::from_content(&fs::read_to_string(&project_path).await?)?;
-    let traj = TrajFile::from_content(&fs::read_to_string(&traj_path).await?)?;
+pub async fn remote_generate_parent(
+    remote_resources: &RemoteGenerationResources,
+    project: ProjectFile,
+    path: TrajFile,
+    handle: i64,
+) -> ChoreoResult<TrajFile> {
+    tracing::info!("Generating remote trajectory {}", path.name);
 
-    fs::remove_file(&project_path).await?;
-    fs::remove_file(&traj_path).await?;
+    // create temp file for project and traj
+    let project_tmp = NamedTempFile::new()?;
+    let traj_tmp = NamedTempFile::new()?;
 
-    println!(
-        "Generating trajectory {:} for {:} remotely",
-        traj.name, project.name
-    );
+    // write project and traj to temp files
+    let project_str =
+        serde_json::to_string(&project).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
+    let traj_str =
+        serde_json::to_string(&path).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
 
-    match generate(&project, traj, 0i64) {
-        Ok(new_traj) => Ok(new_traj),
-        Err(e) => {
-            tracing::error!("Failed to generate trajectory {:}", e);
-            Err(e)
+    tokio::fs::write(project_tmp.path(), project_str).await?;
+    tokio::fs::write(traj_tmp.path(), traj_str).await?;
+
+    let (server, server_name) = ipc::IpcOneShotServer::<String>::new()
+        .map_err(|e| ChoreoError::SolverError(format!("Failed to create IPC server: {e:?}")))?;
+
+    let remote_args = RemoteArgs {
+        project: project_tmp.path().to_path_buf(),
+        traj: traj_tmp.path().to_path_buf(),
+        ipc: server_name,
+    };
+
+    forget(project_tmp);
+    forget(traj_tmp);
+
+    let mut child = Command::new("Choreo")
+        .arg(serde_json::to_string(&remote_args)?)
+        .spawn()?;
+
+    let (rx, _) = server
+        .accept()
+        .map_err(|e| ChoreoError::SolverError(format!("Failed to accept IPC connection: {e:?}")))?;
+
+    let (killer, victim) = oneshot::channel::<()>();
+    remote_resources.add_killer(handle, killer);
+    let mut victim = victim.into_stream();
+
+    let mut stream = rx.to_stream();
+
+    loop {
+        select! {
+            update_res = stream.try_next() => {
+                match update_res {
+                    Ok(Some(update_string)) => {
+                        match serde_json::from_str(&update_string) {
+                            Ok(RemoteProgressUpdate::IncompleteSwerveTraj(traj)) => {
+                                remote_resources.emit_progress(
+                                    LocalProgressUpdate::SwerveTraj {
+                                        traj,
+                                        handle
+                                    }
+                                );
+                            },
+                            Ok(RemoteProgressUpdate::IncompleteTankTraj(traj)) => {
+                                remote_resources.emit_progress(
+                                    LocalProgressUpdate::TankTraj {
+                                        traj,
+                                        handle
+                                    }
+                                );
+                            },
+                            Ok(RemoteProgressUpdate::CompleteTraj(traj)) => {
+                                return Ok(
+                                    TrajFile {
+                                        traj,
+                                        snapshot: Some(path.params.snapshot()),
+                                        .. path
+                                    }
+                                )
+                            },
+                            Ok(RemoteProgressUpdate::Error(e)) => {
+                                return Err(ChoreoError::SolverError(e));
+                            },
+                            Err(e) => {
+                                return Err(ChoreoError::SolverError(format!("Error parsing solver update: {e:?}")));
+                            }
+                        }
+                    },
+                    Ok(None) => {
+                        return Err(ChoreoError::SolverError("Solver exited without sending a result".to_string()));
+                    },
+                    Err(e) => {
+                        return Err(ChoreoError::SolverError(format!("Error receiving solver update: {e:?}")));
+                    },
+                }
+            },
+            _ = child.wait() => {
+                return Err(ChoreoError::SolverError("Solver exited without sending a result".to_string()));
+            },
+            _ = victim.try_next() => {
+                child.kill().await?;
+                return Err(ChoreoError::SolverError("Solver canceled".to_string()));
+            }
         }
     }
 }

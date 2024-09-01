@@ -11,7 +11,7 @@ mod tauri;
 
 use std::fs;
 
-use choreo_core::generation::{generate::RemoteArgs, remote::remote_main};
+use choreo_core::generation::remote::{remote_generate_child, RemoteArgs};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 fn main() {
@@ -26,7 +26,7 @@ fn main() {
 
     if let Some(arg) = args.get(1) {
         if let Ok(remote_args) = RemoteArgs::from_content(arg) {
-            remote_main(remote_args);
+            remote_generate_child(remote_args);
         } else {
             match fs::canonicalize(arg) {
                 Ok(path) => {

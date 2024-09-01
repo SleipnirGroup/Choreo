@@ -3,15 +3,35 @@ import { Expr, Project, RobotConfig, Traj } from "./2025/DocumentTypes";
 import { OpenFilePayload } from "./DocumentManager";
 
 export const Commands = {
-  generate: (project: Project, traj: Traj, handle: number) =>
-    invoke<Traj>("generate", { project, traj, handle }),
-  generateRemote: (project: Project, traj: Traj, handle: number) =>
-    invoke<Traj>("generate_remote", { project, traj, handle }),
   guessIntervals: (config: RobotConfig<Expr>, traj: Traj) =>
     invoke<number[]>("guess_control_interval_counts", { config, traj }),
-  cancelAll: () => invoke<void>("cancel_all"),
-  cancelAllRemote: () => invoke<void>("cancel_all_remote_generators"),
-  cancelRemote: (handle: number) =>
+
+  /**
+   * Generates a `Traj` using the specified `Project` and `Traj`.
+   *
+   * @param project The `Project` to use for generation.
+   * @param traj The `Traj` to use for generation.
+   * @param handle The handle of the generator to use.
+   *
+   * @returns The generated `Traj`.
+   */
+  generate: (project: Project, traj: Traj, handle: number) =>
+    invoke<Traj>("generate_remote", { project, traj, handle }),
+
+  /**
+   * Cancels all of the generators that are currently running.
+   *
+   * @returns `void`
+   */
+  cancelAll: () => invoke<void>("cancel_all_remote_generators"),
+
+  /**
+   * Cancels the generator with the specified handle.
+   *
+   * @param handle The handle of the generator to cancel.
+   * @returns `void`
+   */
+  cancel: (handle: number) =>
     invoke<void>("cancel_remote_generator", { handle }),
 
   /**
