@@ -269,7 +269,7 @@ class TRAJOPT_DLLEXPORT PathBuilder {
   }
 
   /**
-   * Apply a custom holonomic constraint to the continuum of state between two
+   * Apply a custom constraint to the continuum of state between two
    * waypoints.
    *
    * @param fromIndex Index of the waypoint at the beginning of the continuum.
