@@ -4,43 +4,8 @@
 //! Robotics Competition.
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-#![deny(clippy::all, clippy::pedantic, clippy::nursery)]
-#![deny(
-    warnings,
-    missing_copy_implementations,
-    single_use_lifetimes,
-    variant_size_differences,
-    arithmetic_overflow,
-    missing_debug_implementations,
-    trivial_casts,
-    trivial_numeric_casts,
-    unused_import_braces,
-    unused_results,
-    unused_lifetimes,
-    unused_unsafe,
-    useless_ptr_null_checks,
-    cenum_impl_drop_cast,
-    while_true,
-    unused_features,
-    absolute_paths_not_starting_with_crate,
-    unused_allocation,
-    unreachable_code,
-    unused_comparisons,
-    unused_parens,
-    asm_sub_register,
-    break_with_label_and_loop,
-    bindings_with_variant_name,
-    anonymous_parameters,
-    clippy::unwrap_used,
-    clippy::panicking_unwrap,
-    missing_abi,
-    missing_fragment_specifier,
-    clippy::missing_safety_doc,
-    clippy::missing_asserts_for_indexing,
-    clippy::missing_assert_message,
-    clippy::possible_missing_comma,
-    deprecated
-)]
+#![deny(clippy::all)]
+#![deny(warnings)]
 #![allow(
     clippy::module_name_repetitions,
     clippy::option_if_let_else,
@@ -53,7 +18,6 @@
     clippy::missing_panics_doc,
     clippy::missing_errors_doc,
 )]
-// #![cfg_attr(not(test), warn(missing_docs))]
 
 mod error;
 
