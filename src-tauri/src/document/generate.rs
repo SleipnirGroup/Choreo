@@ -109,66 +109,20 @@ pub async fn generate(
 
     let path = &snapshot.waypoints;
 
-    if path.len() < 2 {
+    let num_wpts = path.len();
+
+    if num_wpts < 2 {
         return Err(ChoreoError::OutOfBounds("Waypoints", "at least 2"));
     }
     let counts_vec = guess_control_interval_counts(&chor.config, &traj)?;
-    if counts_vec.len() != path.len() {
+    if counts_vec.len() != num_wpts {
         return Err(ChoreoError::Inequality(
             "Control interval counts",
             "waypoint count",
         ));
     }
-    let num_wpts = path.len();
     let (constraint_idx, is_initial_guess) = convert_constraints_to_index(&snapshot, num_wpts);
-    // let mut constraint_idx = Vec::<ConstraintIDX<f64>>::new();
-    // // Step 1; Find out which waypoints are unconstrained in translation and heading
-    // // and also not the endpoint of another constraint.
-    // let mut is_initial_guess = vec![true; path.len()];
-
-    // // Convert constraints to index form. Throw out constraints without valid index
-    // for constraint in &snapshot.constraints {
-    //     let from = constraint.from.get_idx(num_wpts);
-    //     let to = constraint.to.as_ref().and_then(|id| id.get_idx(num_wpts));
-    //     // from and to are None if they did not point to a valid waypoint.
-    //     match from {
-    //         None => {}
-    //         Some(from_idx) => {
-    //             let valid_wpt = to.is_none();
-    //             let valid_sgmt = to.is_some();
-    //             // Check for valid scope
-    //             if match constraint.data.scope() {
-    //                 ConstraintType::Waypoint => valid_wpt,
-    //                 ConstraintType::Segment => valid_sgmt,
-    //                 ConstraintType::Both => valid_wpt || valid_sgmt,
-    //             } {
-    //                 is_initial_guess[from_idx] = false;
-    //                 let mut fixed_to = to;
-    //                 let mut fixed_from = from_idx;
-    //                 if let Some(to_idx) = to {
-    //                     if to_idx < from_idx {
-    //                         fixed_to = Some(from_idx);
-    //                         fixed_from = to_idx;
-    //                     }
-    //                     if to_idx == from_idx {
-    //                         if constraint.data.scope() == ConstraintType::Segment {
-    //                             continue;
-    //                         }
-    //                         fixed_to = None;
-    //                     } else {
-    //                         is_initial_guess[to_idx] = false;
-    //                     }
-    //                 }
-    //                 constraint_idx.push(ConstraintIDX {
-    //                     from: fixed_from,
-    //                     to: fixed_to,
-    //                     data: constraint.data,
-    //                 });
-    //             }
-    //         }
-    //     };
-    // }
-    for i in 0..path.len() {
+    for i in 0..num_wpts {
         let wpt = &path[i];
         // add initial guess points (actually unconstrained empty wpts in Choreo terms)
         if is_initial_guess[i] && !wpt.fix_heading && !wpt.fix_translation {
@@ -196,7 +150,7 @@ pub async fn generate(
                 path_builder.empty_wpt(wpt_cnt, wpt.x, wpt.y, wpt.heading);
             }
             wpt_cnt += 1;
-            if i != path.len() - 1 {
+            if i != num_wpts - 1 {
                 control_interval_counts.push(counts_vec[i]);
             }
         }
