@@ -22,7 +22,8 @@
     "fmt": "pnpm run fmtCpp && pnpm run fmtJava && pnpm run fmtJs && pnpm run fmtRust && pnpm run lintJs",
     "dev": "vite",
     "build": "vite build",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "build-cli": "node build_cli.cjs"
   },
   "dependencies": {
     "@emotion/styled": "^11.13.0",

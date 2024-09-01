@@ -31,7 +31,7 @@ enum CliAction {
 
 #[derive(Parser)]
 #[clap(
-    version = "0.1",
+    version = "2025.0.0-alpha",
     author = "Choreo Contributors",
     about = "Choreo CLI",
     bin_name = "Choreo"

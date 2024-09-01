@@ -3,38 +3,54 @@ const fs = require("fs");
 
 console.log("Building CLI...");
 
-// console.log(process.env.TAURI_PLATFORM);
-// console.log(process.env.TAURI_ARCH);
-// console.log(process.env.TAURI_FAMILY);
-// console.log(process.env.TAURI_PLATFORM_VERSION);
-// console.log(process.env.TAURI_PLATFORM_TYPE);
-// console.log(process.env.TAURI_DEBUG);
+function getTargetTriple() {
+  let targetTriple = "";
+  let extension = "";
 
-let targetTriple = "";
-let extension = "";
-const platType = process.env.TAURI_PLATFORM_TYPE;
-const platArch = process.env.TAURI_ARCH;
-if (platType === "Darwin") {
-  targetTriple = `${platArch}-apple-darwin`;
-} else if (platType === "Linux") {
-  targetTriple = `${platArch}-unknown-linux-gnu`;
-} else if (platType === "Windows_NT") {
-  targetTriple = `${platArch}-pc-windows-msvc`;
-  extension = ".exe";
+  if (process.env.TAURI_PLATFORM_TYPE) {
+    const platType = process.env.TAURI_PLATFORM_TYPE;
+    const platArch = process.env.TAURI_ARCH;
+    if (platType === "Darwin") {
+      targetTriple = `${platArch}-apple-darwin`;
+    } else if (platType === "Linux") {
+      targetTriple = `${platArch}-unknown-linux-gnu`;
+    } else if (platType === "Windows_NT") {
+      targetTriple = `${platArch}-pc-windows-msvc`;
+      extension = ".exe";
+    }
+  } else {
+    // get host out of rustc -Vv output
+    const rustcVv = execSync("rustc -Vv").toString();
+    const host = rustcVv.match(/host: (.*)\n/)[1];
+    targetTriple = host;
+    if (host.includes("windows")) {
+      extension = ".exe";
+    }
+  }
+
+  console.log("Target triple: " + targetTriple);
+  return { targetTriple, extension };
 }
 
-console.log("Target triple: " + targetTriple);
+const { targetTriple, extension } = getTargetTriple();
 
+// create cli directory if it doesn't exist
 if (!fs.existsSync("cli")) {
   fs.mkdirSync("cli");
 }
 
-const cliPath = `cli/choreo-cli-${targetTriple}${extension}`;
+// remove existing cli files
+fs.readdir("cli", (err, files) => {
+  if (err) throw err;
 
-if (process.env.TAURI_DEBUG && !fs.existsSync(cliPath)) {
-  fs.writeFileSync(cliPath, "");
-  return;
-}
+  for (const file of files) {
+    fs.unlink(`cli/${file}`, (err) => {
+      if (err) throw err;
+    });
+  }
+});
+
+const cliPath = `cli/choreo-cli-${targetTriple}${extension}`;
 
 // build cli
 const build = exec(
@@ -49,9 +65,9 @@ build.once("exit", (code) => {
   if (code !== 0) {
     throw new Error("Build failed");
   }
-  if (fs.existsSync(cliPath)) {
-    fs.unlinkSync(cliPath);
-  }
+  execSync(
+    `cp target/${targetTriple}/release/choreo-cli${extension} cli/choreo-cli${extension}`
+  )
   execSync(
     `mv target/${targetTriple}/release/choreo-cli${extension} ${cliPath}`
   );
