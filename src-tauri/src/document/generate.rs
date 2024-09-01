@@ -9,9 +9,6 @@ use std::vec;
 use trajoptlib::{Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory};
 
 use super::intervals::guess_control_interval_counts;
-use super::types::{
-    ChoreoPath, ConstraintData, ConstraintIDX, ConstraintType, Module, Project, Sample, Traj,
-};
 use crate::error::ChoreoError;
 use crate::Result;
 
@@ -218,7 +215,7 @@ pub async fn generate(
         };
     }
     // path_builder.wpt_keep_in_polygon(1, vec![-2.0, 2.0, 2.0, -2.0], vec![2.0, 2.0, -2.0, -2.0]);
-    path_builder.wpt_keep_in_polygon(1, vec![-2.0, -2.0, 2.0, 2.0], vec![2.0, -2.0, -2.0, 2.0]);
+    // path_builder.wpt_keep_in_polygon(1, vec![-2.0, -2.0, 2.0, 2.0], vec![2.0, -2.0, -2.0, 2.0]);
     // path_builder.wpt_keep_in_polygon(1, vec![-2.0, -2.0], vec![2.0, -2.0]);
     // Skip obstacles for now while we figure out whats wrong with them
     // for o in circleObstacles {
