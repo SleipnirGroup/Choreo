@@ -45,3 +45,5 @@ compile_commands.json
 
 # mkdocs
 site/
+
+build/
