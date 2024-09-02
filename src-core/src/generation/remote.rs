@@ -121,10 +121,8 @@ pub async fn remote_generate_parent(
     let traj_str =
         serde_json::to_string(&trajfile).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
 
-    tokio::fs::write(project_tmp.path(), project_str).await
-        .map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
-    tokio::fs::write(traj_tmp.path(), traj_str).await
-        .map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
+    tokio::fs::write(project_tmp.path(), project_str).await?;
+    tokio::fs::write(traj_tmp.path(), traj_str).await?;
 
     tracing::debug!("Wrote project and traj to temp files");
 
@@ -140,15 +138,36 @@ pub async fn remote_generate_parent(
     forget(project_tmp);
     forget(traj_tmp);
 
-    let mut child = Command::new("Choreo")
+    let mut child = Command::new(std::env::current_exe()?)
         .arg(serde_json::to_string(&remote_args)?)
         .spawn()?;
 
     tracing::debug!("Spawned remote generator");
 
-    let (rx, _) = server
+    let (rx, o) = server
         .accept()
         .map_err(|e| ChoreoError::SolverError(format!("Failed to accept IPC connection: {e:?}")))?;
+
+    match serde_json::from_str::<RemoteProgressUpdate>(&o) {
+        Ok(RemoteProgressUpdate::CompleteTraj(traj)) => {
+            child.kill().await?;
+            tracing::debug!("Remote generator completed (early return)");
+            return Ok(
+                TrajFile {
+                    traj,
+                    snapshot: Some(trajfile.params.snapshot()),
+                    ..trajfile
+                }
+            )
+        },
+        Ok(RemoteProgressUpdate::Error(e)) => {
+            return Err(ChoreoError::SolverError(e));
+        },
+        Err(e) => {
+            return Err(ChoreoError::SolverError(format!("Error parsing solver update: {e:?}")));
+        }
+        _ => {}
+    }
 
     let (killer, victim) = oneshot::channel::<()>();
     remote_resources.add_killer(handle, killer);
@@ -196,7 +215,7 @@ pub async fn remote_generate_parent(
                         }
                     },
                     Ok(None) => {
-                        return Err(ChoreoError::SolverError("Solver exited without sending a result".to_string()));
+                        return Err(ChoreoError::SolverError("Solver exited without sending a result (close)".to_string()));
                     },
                     Err(e) => {
                         return Err(ChoreoError::SolverError(format!("Error receiving solver update: {e:?}")));
@@ -204,7 +223,7 @@ pub async fn remote_generate_parent(
                 }
             },
             _ = child.wait() => {
-                return Err(ChoreoError::SolverError("Solver exited without sending a result".to_string()));
+                return Err(ChoreoError::SolverError("Solver exited without sending a result (death)".to_string()));
             },
             _ = victim.try_next() => {
                 child.kill().await?;
