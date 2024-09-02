@@ -39,13 +39,9 @@ import { tracing } from "./document/tauriTracing";
 
 type Props = object;
 
-type State = { settingsOpen: boolean };
+type State = object;
 
 class AppMenu extends Component<Props, State> {
-  state = {
-    settingsOpen: false
-  };
-
   private convertToRelative(filePath: string): string {
     return filePath.replace(
       RegExp(
@@ -88,11 +84,10 @@ class AppMenu extends Component<Props, State> {
     const { mainMenuOpen, toggleMainMenu } = uiState;
     return (
       <Drawer
-        ModalProps={{ onBackdropClick: toggleMainMenu }}
         anchor="left"
         open={mainMenuOpen}
         onClose={(_) => {
-          this.setState({ settingsOpen: false });
+          uiState.setMainMenuOpen(false);
         }}
       >
         <div
