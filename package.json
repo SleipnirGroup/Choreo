@@ -17,7 +17,7 @@
     "fmtCpp": "wpiformat -f choreolib && wpiformat -f trajoptlib",
     "fmtJava": "cd choreolib && bash ./gradlew spotlessApply",
     "fmtJs": "prettier --write .",
-    "fmtRust": "cd src-tauri && cargo fmt",
+    "fmtRust": "cargo fmt",
     "lintJs": "eslint --fix src",
     "fmt": "pnpm run fmtCpp && pnpm run fmtJava && pnpm run fmtJs && pnpm run fmtRust && pnpm run lintJs",
     "dev": "vite",

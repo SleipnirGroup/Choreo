@@ -7,18 +7,16 @@ use std::vec;
 use dashmap::DashMap;
 use tokio::sync::oneshot::Sender as OneshotSender;
 use trajoptlib::{
-    DifferentialTrajectory, Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory
+    DifferentialTrajectory, Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory,
 };
 
 use super::intervals::guess_control_interval_counts;
 use crate::error::ChoreoError;
 use crate::spec::project::{Module, ProjectFile};
 use crate::spec::traj::{
-    ConstraintData, ConstraintIDX, ConstraintScope, Parameters, Sample, TrajFile
+    ConstraintData, ConstraintIDX, ConstraintScope, Parameters, Sample, TrajFile,
 };
 use crate::{ChoreoResult, ResultExt};
-
-
 
 /**
  * A [`OnceLock`] is a synchronization primitive that can be written to
@@ -30,7 +28,8 @@ pub static PROGRESS_SENDER_LOCK: OnceLock<Sender<LocalProgressUpdate>> = OnceLoc
 fn solver_status_callback(traj: SwerveTrajectory, handle: i64) {
     let tx_opt = PROGRESS_SENDER_LOCK.get();
     if let Some(tx) = tx_opt {
-        tx.send(LocalProgressUpdate::SwerveTraj { traj, handle }).trace_warn();
+        tx.send(LocalProgressUpdate::SwerveTraj { traj, handle })
+            .trace_warn();
     };
 }
 

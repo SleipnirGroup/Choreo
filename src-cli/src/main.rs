@@ -1,8 +1,5 @@
 #![allow(dead_code)]
-use std::{
-    path::PathBuf,
-    process::exit,
-};
+use std::{path::PathBuf, process::exit};
 
 use choreo_core::{
     file_management::{self, WritingResources},
@@ -186,7 +183,7 @@ impl Cli {
                                 traj_name,
                                 project.name
                             );
-                        },
+                        }
                         Err(e) => {
                             tracing::error!(
                                 "Failed to write trajectory {:} for {:}: {:}",

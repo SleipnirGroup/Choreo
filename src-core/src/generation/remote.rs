@@ -2,12 +2,17 @@ use std::{mem::forget, path::PathBuf, thread};
 
 use futures_util::{FutureExt, TryStreamExt};
 use ipc_channel::ipc::{self, IpcSender};
+use std::fs;
 use tokio::{process::Command, select, sync::oneshot};
 use trajoptlib::{DifferentialTrajectory, SwerveTrajectory};
-use std::fs;
 
 use crate::{
-    generation::generate::{generate, LocalProgressUpdate}, spec::{project::ProjectFile, traj::{TrajFile, Trajectory}}, ChoreoError, ChoreoResult
+    generation::generate::{generate, LocalProgressUpdate},
+    spec::{
+        project::ProjectFile,
+        traj::{TrajFile, Trajectory},
+    },
+    ChoreoError, ChoreoResult,
 };
 
 use super::generate::{setup_progress_sender, RemoteGenerationResources};
@@ -35,7 +40,8 @@ pub enum RemoteProgressUpdate {
 
 pub fn remote_generate_child(args: RemoteArgs) {
     let rx = setup_progress_sender();
-    let ipc = IpcSender::<String>::connect(args.ipc.clone()).expect("Failed to deserialize IPC handle");
+    let ipc =
+        IpcSender::<String>::connect(args.ipc.clone()).expect("Failed to deserialize IPC handle");
     let cln_ipc: IpcSender<String> = ipc.clone();
     thread::Builder::new()
         .name("choreo-cli-progressupdater".to_string())
@@ -44,11 +50,12 @@ pub fn remote_generate_child(args: RemoteArgs) {
                 let ser_string = match received {
                     LocalProgressUpdate::SwerveTraj { traj, .. } => {
                         serde_json::to_string(&RemoteProgressUpdate::IncompleteSwerveTraj(traj))
-                    },
+                    }
                     LocalProgressUpdate::TankTraj { traj, .. } => {
                         serde_json::to_string(&RemoteProgressUpdate::IncompleteTankTraj(traj))
-                    },
-                }.expect("Failed to serialize progress update");
+                    }
+                }
+                .expect("Failed to serialize progress update");
                 cln_ipc
                     .send(ser_string)
                     .expect("Failed to send progress update");
@@ -153,19 +160,19 @@ pub async fn remote_generate_parent(
         Ok(RemoteProgressUpdate::CompleteTraj(traj)) => {
             child.kill().await?;
             tracing::debug!("Remote generator completed (early return)");
-            return Ok(
-                TrajFile {
-                    traj,
-                    snapshot: Some(trajfile.params.snapshot()),
-                    ..trajfile
-                }
-            )
-        },
+            return Ok(TrajFile {
+                traj,
+                snapshot: Some(trajfile.params.snapshot()),
+                ..trajfile
+            });
+        }
         Ok(RemoteProgressUpdate::Error(e)) => {
             return Err(ChoreoError::SolverError(e));
-        },
+        }
         Err(e) => {
-            return Err(ChoreoError::SolverError(format!("Error parsing solver update: {e:?}")));
+            return Err(ChoreoError::SolverError(format!(
+                "Error parsing solver update: {e:?}"
+            )));
         }
         _ => {}
     }
