@@ -53,9 +53,16 @@ jobs:
       - run: sudo xcode-select -switch /Applications/Xcode_15.3.app
         if: startsWith(matrix.os, 'macOS')
 
-      - run: cmake --preset with-examples ${{ matrix.cmake-args }}
+      - name: Set up sccache
+        uses: mozilla-actions/sccache-action@v0.0.5
+        # sccache doesn't work with MSBuild
+        if: ${{ !startsWith(matrix.os, 'windows') }}
+
+      - run: cmake --preset with-examples-sccache ${{ matrix.cmake-args }}
         if: ${{ !startsWith(matrix.os, 'windows') }}
         working-directory: trajoptlib
+        env:
+          SCCACHE_GHA_ENABLED: true
       - run: cmake -B build -S . -DBUILD_EXAMPLES=ON ${{ matrix.cmake-args }}
         if: startsWith(matrix.os, 'windows')
         working-directory: trajoptlib

@@ -34,8 +34,14 @@ jobs:
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
 
-      - run: cmake --preset with-examples ${{ matrix.cmake-args }}
+      - name: Set up sccache
+        uses: mozilla-actions/sccache-action@v0.0.5
+
+      - run: cmake --preset with-examples-sccache ${{ matrix.cmake-args }}
         working-directory: trajoptlib
+        env:
+          RUSTC_WRAPPER: sccache
+          SCCACHE_GHA_ENABLED: true
       - run: cmake --build build --config RelWithDebInfo --parallel $(nproc)
         working-directory: trajoptlib
       - run: ctest --test-dir build -C RelWithDebInfo --output-on-failure
