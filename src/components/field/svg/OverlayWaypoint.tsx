@@ -234,7 +234,6 @@ class OverlayWaypoint extends Component<Props, State> {
       targetSideLength *
       Math.min(robotConfig.bumper.length, robotConfig.bumper.width);
     const headingPointHeight = (Math.sqrt(3) / 2) * headingPointSideLength;
-
     return (
       <g ref={this.rootRef}>
         <g

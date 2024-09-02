@@ -36,6 +36,7 @@ function FieldConstraintRangeLayer(props: Props) {
             {points.map((w, i) => {
               return (
                 <circle
+                  key={w.uuid}
                   cx={w.x.value}
                   cy={w.y.value}
                   r={
@@ -76,7 +77,7 @@ function FieldConstraintRangeLayer(props: Props) {
             {points.map((w, i) => {
               const next = points[i + 1];
               return (
-                <g>
+                <g key={w.uuid}>
                   {next !== undefined && (
                     <line
                       x1={w.x.value}

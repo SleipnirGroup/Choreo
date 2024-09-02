@@ -20,8 +20,14 @@ class FieldSamples extends Component<Props, State> {
     const _ = path.ui.generationIterationNumber;
     return (
       <>
-        {trajectory.map((point) => (
-          <circle cx={point.x} cy={point.y} r={0.02} fill="black"></circle>
+        {trajectory.map((point, idx) => (
+          <circle
+            cx={point.x}
+            cy={point.y}
+            r={0.02}
+            fill="black"
+            key={idx}
+          ></circle>
         ))}
       </>
     );

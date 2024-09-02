@@ -41,7 +41,7 @@ class RobotConfigPanel extends Component<Props, State> {
             }}
           >
             {Object.keys(MotorCurves).map((key) => (
-              <MenuItem value={key}>
+              <MenuItem value={key} key={key}>
                 {MotorCurves[key as keyof typeof MotorCurves].name}
               </MenuItem>
             ))}
