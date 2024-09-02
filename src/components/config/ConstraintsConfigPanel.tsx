@@ -9,7 +9,7 @@ import styles from "./WaypointConfigPanel.module.css";
 import { Expr } from "../../document/2025/DocumentTypes"
 import { Button, IconButton } from "@mui/material";
 import { AddCircleOutline } from "@mui/icons-material";
-import { ExpressionStore, Units } from "../../document/ExpressionStore";
+import { ExpressionStore, IExpressionStore, Units } from "../../document/ExpressionStore";
 
 type Props = { constraint: IConstraintStore };
 
@@ -92,23 +92,23 @@ class ConstraintsConfigPanel extends Component<Props, State> {
               for (let i = 0; i < data.length; i++) {
                 const element = data[i];
                 res.push(<ExpressionInput
-                  key={key}
-                  title={propdef.name}
+                  key={key.concat(i)}
+                  title={propdef.name + " " + (i + 1)}
                   enabled={true}
                   number={element}
                   titleTooltip={propdef.description}
                   />);
               }
-              res.push(
-                <IconButton
-                  onClick={() => {
-                    constraint.data[setterName](constraint.data[key].concat([["0 m", 0] as Expr]))
-                  }}
-                >
-                  <AddCircleOutline></AddCircleOutline>
-                </IconButton>
-              );
-              return <>{res}</>;
+              // res.push(
+              //   <IconButton
+              //     onClick={() => {
+              //       constraint.data[setterName](constraint.data[key].concat([["0 m", 0]]))
+              //     }}
+              //   >
+              //     <AddCircleOutline></AddCircleOutline>
+              //   </IconButton>
+              // );
+              return <>{res}<></></>;
             } else if (typeof propdef.defaultVal === "boolean") {
               return (
                 <BooleanInput
