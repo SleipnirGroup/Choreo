@@ -3,7 +3,7 @@ import { Unit } from "mathjs";
 import { JSXElementConstructor, ReactElement } from "react";
 import { ObjectTyped } from "../util/ObjectTyped";
 import { Expr } from "./2025/DocumentTypes";
-import { Dimensions } from "./ExpressionStore";
+import { Dimensions, Units } from "./ExpressionStore";
 
 export type ConstraintPropertyType = Expr | boolean;
 

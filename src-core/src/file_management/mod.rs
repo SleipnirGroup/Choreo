@@ -178,14 +178,21 @@ pub async fn write_trajfile(resources: &WritingResources, trajfile: TrajFile) {
         .trace_err();
 }
 
-pub async fn write_trajfile_immediately(resources: &WritingResources, trajfile: TrajFile) -> ChoreoResult<()> {
+pub async fn write_trajfile_immediately(
+    resources: &WritingResources,
+    trajfile: TrajFile,
+) -> ChoreoResult<()> {
     let file = resources
         .get_deploy_path()
         .await?
         .join(&trajfile.name)
         .with_extension(TrajFile::EXTENSION);
 
-    tracing::debug!("Writing path {:} to {:} immediately", trajfile.name, file.display());
+    tracing::debug!(
+        "Writing path {:} to {:} immediately",
+        trajfile.name,
+        file.display()
+    );
 
     write_serializable(trajfile, &file).await
 }
