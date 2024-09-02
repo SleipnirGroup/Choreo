@@ -287,42 +287,9 @@ class AppMenu extends Component<Props, State> {
                       {this.projectLocation(true)}
                     </div>
                     <br></br>
-                    {uiState.isGradleProject
-                      ? "Gradle (Java/C++) project detected."
-                      : "Python project or no robot project detected."}
                     <br></br>
                     <br></br>
                     <div></div>
-                    {uiState.hasSaveLocation ? (
-                      <>
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center"
-                          }}
-                        >
-                          <span>Trajectories saved in</span>
-                          <span>
-                            <this.CopyToClipboardButton
-                              data={this.trajectoriesLocation(false)}
-                              tooltip="Copy full path to clipboard"
-                            ></this.CopyToClipboardButton>
-                            <this.OpenInFilesApp
-                              dir={this.trajectoriesLocation(false)}
-                            ></this.OpenInFilesApp>
-                          </span>
-                        </div>
-                        <div style={{ fontSize: "0.9em", color: "#D3D3D3" }}>
-                          {this.trajectoriesLocation(true)}
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <br />
-                        <br />
-                      </>
-                    )}
                   </>
                 ) : (
                   <>
@@ -349,7 +316,7 @@ class AppMenu extends Component<Props, State> {
   }
 
   private trajectoriesLocation(relativeFormat: boolean): string {
-    return this.projectLocation(relativeFormat) + path.sep;
+    return this.projectLocation(relativeFormat);
   }
 }
 export default observer(AppMenu);
