@@ -3,6 +3,7 @@ import { Expr, Waypoint } from "./2025/DocumentTypes";
 import { Env } from "./DocumentManager";
 import { ExpressionStore } from "./ExpressionStore";
 import { NavbarItemData } from "./UIData";
+import { tracing } from "./tauriTracing";
 
 export const DEFAULT_WAYPOINT: Waypoint<number> = {
   x: 0,
@@ -66,7 +67,7 @@ export const HolonomicWaypointStore = types
         const list = getParent<IHolonomicWaypointStore[]>(self);
         return list[list.length - 1]?.uuid === self.uuid;
       } catch (e) {
-        console.error(e);
+        tracing.error(e);
         return false;
       }
     }
@@ -117,7 +118,7 @@ export const HolonomicWaypointStore = types
   }))
   .views((self) => ({
     copyToClipboard(evt: ClipboardEvent) {
-      console.log("copying waypoint to", evt.clipboardData);
+      tracing.info("copying waypoint to", evt.clipboardData);
       const content = JSON.stringify({
         dataType: "choreo/waypoint",
         ...self.serialize

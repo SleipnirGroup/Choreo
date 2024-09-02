@@ -3,129 +3,66 @@
 //! time-optimized trajectories for autonomous mobile robots in the FIRST
 //! Robotics Competition.
 
-// Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-#![deny(clippy::all, clippy::pedantic, clippy::nursery)]
-#![deny(
-    warnings,
-    missing_copy_implementations,
-    single_use_lifetimes,
-    variant_size_differences,
-    arithmetic_overflow,
-    missing_debug_implementations,
-    trivial_casts,
-    trivial_numeric_casts,
-    unused_import_braces,
-    unused_results,
-    unused_lifetimes,
-    unused_unsafe,
-    useless_ptr_null_checks,
-    cenum_impl_drop_cast,
-    while_true,
-    unused_features,
-    absolute_paths_not_starting_with_crate,
-    unused_allocation,
-    unreachable_code,
-    unused_comparisons,
-    unused_parens,
-    asm_sub_register,
-    break_with_label_and_loop,
-    bindings_with_variant_name,
-    anonymous_parameters,
-    clippy::unwrap_used,
-    clippy::panicking_unwrap,
-    missing_abi,
-    missing_fragment_specifier,
-    clippy::missing_safety_doc,
-    clippy::missing_asserts_for_indexing,
-    clippy::missing_assert_message,
-    clippy::possible_missing_comma,
-    deprecated
-)]
-#![allow(
-    clippy::module_name_repetitions,
-    clippy::option_if_let_else,
-    clippy::missing_const_for_fn,
-    clippy::struct_excessive_bools,
-    clippy::use_self,
-    clippy::suboptimal_flops,
-    clippy::significant_drop_tightening
-)]
-// #![cfg_attr(
-//     not(test),
-//     forbid(
-//         clippy::panic,
-//         clippy::todo,
-//         clippy::unimplemented,
-//         clippy::expect_used
-//     )
-// )]
-#![cfg_attr(not(test), warn(missing_docs))]
 
-mod document;
-mod error;
-mod util;
-use std::{fs, path::Path};
-use std::{thread, vec};
+mod api;
+mod logging;
+mod tauri;
 
-use document::file::{
-    delete_dir, delete_file, find_all_traj, new_file, open_chor, open_file_dialog, open_traj,
-    set_chor_path, setup_senders, write_chor, write_traj,
-};
-use document::generate::{cancel, generate, setup_progress_sender};
-use document::intervals::cmd_guess_control_interval_counts;
-use error::ChoreoError;
-use tauri::Manager;
+use std::fs;
 
-type Result<T> = std::result::Result<T, error::ChoreoError>;
+use ::tauri::api::path::document_dir;
+use choreo_core::generation::remote::{remote_generate_child, RemoteArgs};
+use logging::now_str;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-#[tauri::command]
-async fn save_file(dir: String, name: String, contents: String) -> Result<()> {
-    let dir_path = Path::new(&dir);
-    let name_path = Path::join(dir_path, name);
-    if name_path.is_relative() {
-        return Err(ChoreoError::FileSave("Dir needs to be absolute"));
-    }
-    fs::create_dir_all(dir_path)?;
-    fs::write(name_path, contents)?;
-    Ok(())
-}
-
-#[tauri::command]
-async fn open_file_app(path: String) -> Result<()> {
-    open::that(path).map_err(ChoreoError::Io)
+fn get_log_file() -> fs::File {
+    let docu_dir = document_dir().expect("Failed to get document directory");
+    let dir = docu_dir.join("choreo-logs");
+    fs::create_dir_all(&dir).expect("Failed to create log directory");
+    let time_str = now_str().replace([':', '.'], "-");
+    let path = dir.join(format!("choreo-{}.log", time_str));
+    fs::File::create(path).expect("Failed to create log file")
 }
 
 fn main() {
-    let rx = setup_progress_sender();
-    tauri::Builder::default()
-        .setup(|app| {
-            setup_senders(&app.handle());
-            let progress_emitter = app.handle();
-            let _ = thread::spawn(move || {
-                for received in rx {
-                    let _ = progress_emitter.emit_all("solver-status", received);
+    let args = std::env::args().collect::<Vec<_>>();
+    if args.len() > 2 {
+        panic!("Unsupoorted arguments: {:?}", args);
+    }
+
+    let (std_io, _guard_std_io) = tracing_appender::non_blocking(std::io::stdout());
+    let (file, _guard_file) = tracing_appender::non_blocking(get_log_file());
+    let _guard_lock = (_guard_std_io, _guard_file);
+
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::fmt::layer()
+                .with_writer(std_io)
+                .event_format(logging::CompactFormatter),
+        )
+        .with(
+            tracing_subscriber::fmt::layer()
+                .with_writer(file)
+                .event_format(logging::CompactFormatter),
+        )
+        .init();
+
+    if let Some(arg) = args.get(1) {
+        if let Ok(remote_args) = RemoteArgs::from_content(arg) {
+            remote_generate_child(remote_args);
+        } else {
+            match fs::canonicalize(arg) {
+                Ok(path) => {
+                    tauri::run_tauri(Some(path));
                 }
-            });
-            Ok(())
-        })
-        .invoke_handler(tauri::generate_handler![
-            generate,
-            cmd_guess_control_interval_counts,
-            cancel,
-            save_file,
-            delete_file,
-            delete_dir,
-            open_file_app,
-            new_file,
-            open_chor,
-            write_chor,
-            write_traj,
-            find_all_traj,
-            open_file_dialog,
-            set_chor_path,
-            open_traj
-        ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+                Err(e) => {
+                    tracing::error!("Failed to canonicalize path: {:?}", e);
+                    tauri::run_tauri(None);
+                }
+            }
+        }
+    } else {
+        tauri::run_tauri(None);
+    }
 }

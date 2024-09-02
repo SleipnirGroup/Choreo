@@ -164,23 +164,23 @@ export const ConstraintStore = types
   .views((self) => ({
     getStartWaypoint(): IHolonomicWaypointStore | undefined {
       const startScope = self.from;
-      return self.getPath().path.getByWaypointID(startScope);
+      return self.getPath().params.getByWaypointID(startScope);
     },
     getEndWaypoint(): IHolonomicWaypointStore | undefined {
       const scope = self.to ?? self.from;
-      return self.getPath().path.getByWaypointID(scope);
+      return self.getPath().params.getByWaypointID(scope);
     }
   }))
   .views((self) => ({
     getStartWaypointIndex(): number | undefined {
       const waypoint = self.getStartWaypoint();
       if (waypoint === undefined) return undefined;
-      return self.getPath().path.findUUIDIndex(waypoint.uuid);
+      return self.getPath().params.findUUIDIndex(waypoint.uuid);
     },
     getEndWaypointIndex(): number | undefined {
       const waypoint = self.getEndWaypoint();
       if (waypoint === undefined) return undefined;
-      return self.getPath().path.findUUIDIndex(waypoint.uuid);
+      return self.getPath().params.findUUIDIndex(waypoint.uuid);
     },
 
     get issues() {

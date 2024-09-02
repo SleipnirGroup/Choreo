@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <ranges>
 
+#include <sleipnir/optimization/SolverExitCondition.hpp>
+
 #include "trajopt/geometry/Rotation2.hpp"
 #include "trajopt/geometry/Translation2.hpp"
 #include "trajopt/util/Cancellation.hpp"
@@ -80,6 +82,12 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
 
   // Minimize total time
   sleipnir::Variable T_tot = 0;
+  const double maxForce =
+      path.drivetrain.wheelMaxTorque / path.drivetrain.wheelRadius;
+  const auto maxAccel = maxForce / path.drivetrain.mass;
+  const double maxDrivetrainVelocity =
+      path.drivetrain.wheelRadius * path.drivetrain.wheelMaxAngularVelocity;
+  const auto maxAngVel = maxDrivetrainVelocity * 2 / path.drivetrain.trackwidth;
   for (size_t sgmtIndex = 0; sgmtIndex < Ns.size(); ++sgmtIndex) {
     auto& dt_sgmt = dts.at(sgmtIndex);
     auto N_sgmt = Ns.at(sgmtIndex);
@@ -87,7 +95,59 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     T_tot += T_sgmt;
 
     problem.SubjectTo(dt_sgmt >= 0);
-    dt_sgmt.SetValue(5.0 / N_sgmt);
+    // Use initialGuess and Ns to find the dx, dy, dtheta between wpts
+    const auto sgmt_start = GetIndex(Ns, sgmtIndex);
+    const auto sgmt_end = GetIndex(Ns, sgmtIndex + 1);
+    const auto dx = initialGuess.x.at(sgmt_end) - initialGuess.x.at(sgmt_start);
+    const auto dy = initialGuess.y.at(sgmt_end) - initialGuess.y.at(sgmt_start);
+    const auto dist = std::hypot(dx, dy);
+    const auto cos_0 = initialGuess.thetacos.at(sgmt_start);
+    const auto sin_0 = initialGuess.thetasin.at(sgmt_start);
+    const auto cos_1 = initialGuess.thetacos.at(sgmt_end);
+    const auto sin_1 = initialGuess.thetasin.at(sgmt_end);
+    const auto dtheta = std::abs(std::atan2(cos_0 * sin_1 - sin_0 * cos_1,
+                                            cos_0 * sin_1 + sin_0 * cos_1));
+    auto maxLinearVel = maxDrivetrainVelocity;
+
+    // Proof for T = 1.5 * θ / ω:
+    //
+    // The position function of a cubic Hermite spline
+    // where t∈[0, 1] and θ∈[0, dtheta]:
+    // x(t) = (-2t^3 +3t^2)θ
+    //
+
+    // The velocity function derived from the cubic Hermite spline is:
+    // v(t) = (-6t^2 + 6t)θ.
+    //
+    // The peak velocity occurs at t = 0.5, where t∈[0, 1] :
+    // v(0.5) = 1.5*θ, which is the max angular velocity during the motion.
+    //
+    // To ensure this peak velocity does not exceed ω, max_ang_vel, we set:
+    // 1.5 * θ = ω.
+    //
+    // The total time T needed to reach the final θ and
+    // not exceed ω is thus derived as:
+    // T = θ / (ω / 1.5) = 1.5 * θ / ω.
+    //
+    // This calculation ensures the peak velocity meets but does not exceed ω,
+    // extending the time proportionally to meet this requirement.
+    // This is an alternative estimation method to finding the trapezoidal or
+    // triangular profile for the change heading.
+    const auto angular_time = (1.5 * dtheta) / maxAngVel;
+    maxLinearVel = std::min(maxLinearVel, dist / angular_time);
+
+    const auto distanceAtCruise =
+        dist - (maxLinearVel * maxLinearVel) / maxAccel;
+
+    double sgmtTime = angular_time;
+    if (distanceAtCruise < 0) {
+      // triangle
+      sgmtTime += 2.0 * (std::sqrt(dist * maxAccel) / maxAccel);
+    } else {
+      // trapezoid
+      sgmtTime += dist / maxLinearVel + maxLinearVel / maxAccel;
+    }
+    dt_sgmt.SetValue(sgmtTime / N_sgmt);
   }
   problem.Minimize(std::move(T_tot));
 
@@ -234,7 +294,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   ApplyInitialGuess(initialGuess);
 }
 
-expected<DifferentialSolution, std::string>
+expected<DifferentialSolution, sleipnir::SolverExitCondition>
 DifferentialTrajectoryGenerator::Generate(bool diagnostics) {
   problem.Callback([this](const sleipnir::SolverIterationInfo&) -> bool {
     for (auto& callback : callbacks) {
@@ -249,7 +309,7 @@ DifferentialTrajectoryGenerator::Generate(bool diagnostics) {
   if (static_cast<int>(status.exitCondition) < 0 ||
       status.exitCondition ==
           sleipnir::SolverExitCondition::kCallbackRequestedStop) {
-    return unexpected{std::string{sleipnir::ToMessage(status.exitCondition)}};
+    return unexpected{status.exitCondition};
   } else {
     return ConstructDifferentialSolution();
   }
@@ -321,7 +381,8 @@ DifferentialTrajectoryGenerator::ConstructDifferentialSolution() {
   return DifferentialSolution{
       dtPerSample,           vectorValue(x),        vectorValue(y),
       vectorValue(thetacos), vectorValue(thetasin), vectorValue(vL),
-      vectorValue(vR),       vectorValue(FL),       vectorValue(FR),
+      vectorValue(vR),       vectorValue(aL),       vectorValue(aR),
+      vectorValue(FL),       vectorValue(FR),
   };
 }
 

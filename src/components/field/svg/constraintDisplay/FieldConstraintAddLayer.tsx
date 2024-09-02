@@ -1,10 +1,12 @@
 import { Component } from "react";
 import { doc, uiState } from "../../../../document/DocumentManager";
+import { ConstraintDefinitions } from "../../../../document/ConstraintDefinitions";
 
 import { observer } from "mobx-react";
 import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
 import { FieldMatrixContext } from "../FieldMatrixContext";
 import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer";
+import { tracing } from "../../../../document/tauriTracing";
 
 type Props = {
   lineColor?: string;
@@ -23,15 +25,20 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
     super(props);
   }
 
-  addConstraint(points: IHolonomicWaypointStore[], start: number, end: number) {
+  addConstraint(
+    points: IHolonomicWaypointStore[],
+    start: number,
+    end?: number
+  ) {
+    doc.setHoveredSidebarItem(undefined);
     doc.history.startGroup(() => {
       const constraintToAdd = uiState.getSelectedConstraintKey();
       const point1 = points[start];
-      const point2 = points[end];
-      const newConstraint = doc.pathlist.activePath.path.addConstraint(
+      const point2 = end !== undefined ? points[end] : undefined;
+      const newConstraint = doc.pathlist.activePath.params.addConstraint(
         constraintToAdd,
         { uuid: point1.uuid },
-        { uuid: point2.uuid }
+        point2 !== undefined ? { uuid: point2.uuid } : undefined
       );
 
       if (newConstraint !== undefined) {
@@ -39,6 +46,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
       }
       doc.history.stopGroup();
     });
+    this.setState({ firstIndex: undefined });
   }
 
   get endIndex() {
@@ -66,10 +74,11 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
     }
     return undefined;
   }
+
   render() {
     const lineColor = this.props.lineColor ?? "white";
     const activePath = doc.pathlist.activePath;
-    const waypoints = activePath.path.waypoints;
+    const waypoints = activePath.params.waypoints;
     if (this.state.firstIndex === undefined) {
       return (
         <FieldConstraintRangeLayer
@@ -81,8 +90,13 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
           showLines={false}
           id="add-first-circles"
           onCircleClick={(id) => {
-            console.log("constraint from: ", id);
-            this.setState({ firstIndex: id });
+            tracing.debug("constraint from: ", id);
+            const constraintToAdd = uiState.getSelectedConstraintKey();
+            if (!ConstraintDefinitions[constraintToAdd].sgmtScope) {
+              this.addConstraint(waypoints, id, undefined);
+            } else {
+              this.setState({ firstIndex: id });
+            }
           }}
         ></FieldConstraintRangeLayer>
       );
@@ -140,13 +154,11 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
             showLines={false}
             id="add-second-circles"
             onCircleClick={(id) => {
-              doc.setHoveredSidebarItem(undefined);
               this.addConstraint(
                 waypoints,
                 Math.min(this.state.firstIndex!, id),
                 Math.max(this.state.firstIndex!, id)
               );
-              this.setState({ firstIndex: undefined });
             }}
             onCircleMouseOver={(id) => doc.setHoveredSidebarItem(waypoints[id])}
             onCircleMouseOff={(id) => doc.setHoveredSidebarItem(undefined)}

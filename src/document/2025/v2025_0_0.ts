@@ -45,6 +45,7 @@ export interface RobotConfig<T extends ExprOrNumber> {
 }
 
 export interface Project {
+  name: string;
   version: typeof SAVE_FILE_VERSION;
   variables: Variables;
   config: RobotConfig<Expr>;
@@ -107,7 +108,7 @@ export interface Output {
 export interface Traj {
   name: string;
   version: typeof SAVE_FILE_VERSION;
-  path: ChoreoPath<Expr>;
+  params: ChoreoPath<Expr>;
   snapshot: ChoreoPath<number>;
   traj: Output;
 }

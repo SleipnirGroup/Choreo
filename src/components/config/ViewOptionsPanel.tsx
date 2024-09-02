@@ -51,13 +51,15 @@ class ViewOptionsPanel extends Component<Props, State> {
     return (
       <div className={styles.ViewOptionsPanel}>
         <Tooltip disableInteractive title="Zoom to fit trajectory">
-          {/* If there's no waypoints, then don't allow user to zoom to fit Waypoints */}
-          <IconButton
-            disabled={doc.pathlist.activePath.path.waypoints.length == 0}
-            onClick={() => doc.zoomToFitWaypoints()}
-          >
-            <AspectRatio></AspectRatio>
-          </IconButton>
+          <span>
+            {/* If there's no waypoints, then don't allow user to zoom to fit Waypoints */}
+            <IconButton
+              disabled={doc.pathlist.activePath.params.waypoints.length == 0}
+              onClick={() => doc.zoomToFitWaypoints()}
+            >
+              <AspectRatio></AspectRatio>
+            </IconButton>
+          </span>
         </Tooltip>
         <div>
           <Tooltip
@@ -82,6 +84,7 @@ class ViewOptionsPanel extends Component<Props, State> {
                       PathGradients[key as keyof typeof PathGradients]
                         .description
                     }
+                    key={key}
                   >
                     <MenuItem
                       value={key}

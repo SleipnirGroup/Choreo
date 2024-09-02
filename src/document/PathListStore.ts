@@ -10,7 +10,7 @@ export const PathListStore = types
     activePathUUID: ""
   })
   .actions((self) => {
-    let pathExporter: (uuid: string) => void = (uuid) => {};
+    let pathExporter: (uuid: string) => void = (_uuid) => {};
     return {
       setExporter(exportFunction: (uuid: string) => void) {
         pathExporter = exportFunction;
@@ -45,7 +45,7 @@ export const PathListStore = types
           HolonomicPathStore.create({
             uuid: uuidv4(),
             name: "New Path",
-            path: {
+            params: {
               constraints: [],
               waypoints: [],
               obstacles: []
@@ -93,7 +93,7 @@ export const PathListStore = types
             const path = HolonomicPathStore.create({
               uuid: newUUID,
               name: usedName,
-              path: {
+              params: {
                 constraints: [],
                 waypoints: [],
                 obstacles: []
@@ -117,8 +117,8 @@ export const PathListStore = types
             if (contents !== undefined) {
               path.deserialize(contents);
             } else {
-              path.path.addConstraint("StopPoint", "first");
-              path.path.addConstraint("StopPoint", "last");
+              path.params.addConstraint("StopPoint", "first");
+              path.params.addConstraint("StopPoint", "last");
             }
 
             if (self.paths.size === 1 || select) {
