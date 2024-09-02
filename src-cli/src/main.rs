@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 use std::{
     path::PathBuf,
-    process::{exit, Command},
+    process::exit,
 };
 
 use choreo_core::{
@@ -22,10 +22,6 @@ enum CliAction {
         project_path: PathBuf,
         traj_names: Vec<String>,
     },
-    Gui,
-    GuiWithProject {
-        project_path: PathBuf,
-    },
     Error(String),
 }
 
@@ -34,13 +30,20 @@ enum CliAction {
     version = "2025.0.0-alpha",
     author = "Choreo Contributors",
     about = "Choreo CLI",
-    bin_name = "Choreo"
+    bin_name = "Choreo",
+    before_long_help = r#"
+    This CLI is still in alpha and has some quirks.
+    Gui opening has been deprecated from this exe and can be done by running `Choreo.exe` directly
+    with 1 argument being the path to the project file.
+
+"#
 )]
 pub struct Cli {
     #[arg(
         long,
         value_name = "path/to/myproject.chor",
-        help_heading = FILE_OPTIONS
+        help_heading = FILE_OPTIONS,
+        required = true,
     )]
     pub chor: Option<PathBuf>,
 
@@ -67,7 +70,8 @@ pub struct Cli {
         short,
         requires = "chor",
         help_heading = ACTION_OPTIONS,
-        help = "Generate the provided trajectories for the project"
+        help = "Generate the provided trajectories for the project",
+        required = true,
     )]
     pub generate: bool,
 }
@@ -98,10 +102,8 @@ impl Cli {
                 };
             }
             CliAction::Error("Choreo file must be provided for generation.".to_string())
-        } else if let Some(project_path) = self.chor {
-            CliAction::GuiWithProject { project_path }
         } else {
-            CliAction::Gui
+            CliAction::Error("Only generate action is supported for now".to_string())
         }
     }
 
@@ -121,17 +123,6 @@ impl Cli {
                     .build()
                     .expect("Failed to build tokio runtime")
                     .block_on(Self::generate_trajs(resources, project_path, traj_names));
-            }
-            CliAction::Gui => {
-                tracing::info!("CLIAction is Gui");
-                Command::new("Choreo").spawn().expect("Failed to open GUI");
-            }
-            CliAction::GuiWithProject { project_path } => {
-                tracing::info!("CLIAction is GuiWithProject");
-                Command::new("Choreo")
-                    .arg(project_path)
-                    .spawn()
-                    .expect("Failed to open GUI with project");
             }
             CliAction::Error(e) => {
                 tracing::error!("{}", e);
