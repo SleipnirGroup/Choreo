@@ -21,7 +21,13 @@ class FieldSamples extends Component<Props, State> {
     return (
       <>
         {trajectory.map((point, idx) => (
-          <circle cx={point.x} cy={point.y} r={0.02} fill="black" key={idx}></circle>
+          <circle
+            cx={point.x}
+            cy={point.y}
+            r={0.02}
+            fill="black"
+            key={idx}
+          ></circle>
         ))}
       </>
     );

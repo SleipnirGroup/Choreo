@@ -52,13 +52,13 @@ class ViewOptionsPanel extends Component<Props, State> {
       <div className={styles.ViewOptionsPanel}>
         <Tooltip disableInteractive title="Zoom to fit trajectory">
           <span>
-          {/* If there's no waypoints, then don't allow user to zoom to fit Waypoints */}
-          <IconButton
-            disabled={doc.pathlist.activePath.params.waypoints.length == 0}
-            onClick={() => doc.zoomToFitWaypoints()}
-          >
-            <AspectRatio></AspectRatio>
-          </IconButton>
+            {/* If there's no waypoints, then don't allow user to zoom to fit Waypoints */}
+            <IconButton
+              disabled={doc.pathlist.activePath.params.waypoints.length == 0}
+              onClick={() => doc.zoomToFitWaypoints()}
+            >
+              <AspectRatio></AspectRatio>
+            </IconButton>
           </span>
         </Tooltip>
         <div>

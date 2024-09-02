@@ -4,11 +4,7 @@ import { IconButton, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import { isAlive } from "mobx-state-tree";
 import React, { Component } from "react";
-import {
-  Draggable,
-  DraggingStyle,
-  NotDraggingStyle
-} from "@hello-pangea/dnd";
+import { Draggable, DraggingStyle, NotDraggingStyle } from "@hello-pangea/dnd";
 import { CSSProperties } from "styled-components";
 import { doc, uiState } from "../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";

@@ -87,19 +87,19 @@ class Sidebar extends Component<Props, State> {
           PATHS
           <Tooltip disableInteractive title="Duplicate Path">
             <span>
-            <IconButton
-              size="small"
-              color="default"
-              style={{
-                float: "right"
-              }}
-              disabled={Object.keys(doc.pathlist.paths).length == 0}
-              onClick={() =>
-                doc.pathlist.duplicatePath(doc.pathlist.activePathUUID)
-              }
-            >
-              <ContentCopy fontSize="small"></ContentCopy>
-            </IconButton>
+              <IconButton
+                size="small"
+                color="default"
+                style={{
+                  float: "right"
+                }}
+                disabled={Object.keys(doc.pathlist.paths).length == 0}
+                onClick={() =>
+                  doc.pathlist.duplicatePath(doc.pathlist.activePathUUID)
+                }
+              >
+                <ContentCopy fontSize="small"></ContentCopy>
+              </IconButton>
             </span>
           </Tooltip>
           <Tooltip disableInteractive title="Add Path">

@@ -267,25 +267,27 @@ class FieldOverlayRoot extends Component<Props, State> {
                   {NavbarItemData.map(
                     (item, index) =>
                       index <= NavbarItemSectionEnds[0] && (
-                          <Tooltip disableInteractive title={item.name} key={item.name}>
-                            <ToggleButton
-                              value={`${index}`}
-                              selected={
-                                uiState.contextMenuWaypointType == index
+                        <Tooltip
+                          disableInteractive
+                          title={item.name}
+                          key={item.name}
+                        >
+                          <ToggleButton
+                            value={`${index}`}
+                            selected={uiState.contextMenuWaypointType == index}
+                            onClick={() => {
+                              this.handleContextMenuSelection(index);
+                            }}
+                            sx={{
+                              color: "var(--accent-purple)",
+                              "&.Mui-selected": {
+                                color: "var(--select-yellow)"
                               }
-                              onClick={() => {
-                                this.handleContextMenuSelection(index);
-                              }}
-                              sx={{
-                                color: "var(--accent-purple)",
-                                "&.Mui-selected": {
-                                  color: "var(--select-yellow)"
-                                }
-                              }}
-                            >
-                              {item.icon}
-                            </ToggleButton>
-                          </Tooltip>
+                            }}
+                          >
+                            {item.icon}
+                          </ToggleButton>
+                        </Tooltip>
                       )
                   )}
                 </ToggleButtonGroup>
