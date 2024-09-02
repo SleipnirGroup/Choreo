@@ -14,11 +14,9 @@ jobs:
       matrix:
         include:
           - artifact-name: Windows x86_64
-            # FIXME: Tests give "Exit code 0xc0000135" for missing DLLs
-            cmake-args: "-DCMAKE_GENERATOR_PLATFORM=x64 -DBUILD_TESTING=OFF"
+            cmake-args: "-DCMAKE_GENERATOR_PLATFORM=x64"
             os: windows-2022
           - artifact-name: Windows aarch64
-            # FIXME: Tests give "Exit code 0xc0000135" for missing DLLs
             cmake-args: "-DCMAKE_GENERATOR_PLATFORM=ARM64 -DBUILD_TESTING=OFF"
             os: windows-2022
           - artifact-name: macOS universal
@@ -58,7 +56,7 @@ jobs:
       - run: cmake --preset with-examples ${{ matrix.cmake-args }}
         if: ${{ !startsWith(matrix.os, 'windows') }}
         working-directory: trajoptlib
-      - run: cmake -B build -S . -DWITH_EXAMPLES=ON ${{ matrix.cmake-args }}
+      - run: cmake -B build -S . -DBUILD_EXAMPLES=ON ${{ matrix.cmake-args }}
         if: startsWith(matrix.os, 'windows')
         working-directory: trajoptlib
       - run: cmake --build build --config RelWithDebInfo --parallel 4
