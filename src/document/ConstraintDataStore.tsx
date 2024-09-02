@@ -211,21 +211,27 @@ export function defineCreateConstraintData<
         def.properties[
           key as keyof PropertyDefinitionList<DataMap[K]["props"]>
         ];
-      if (typeof prop[0] === "string") {
+      console.log("prop", prop);
+      if (typeof prop["defaultVal"][0] === "string") {
+        console.log("plain expr");
         const exprProp = prop as ConstraintPropertyDefinition<Expr>;
         snapshot[key as keyof P] = vars().createExpression(
           exprProp.defaultVal,
           exprProp!.units
         );
-      } else if (typeof prop[0] === "object") {
-        const exprArrayProp = prop as ConstraintPropertyDefinition<Expr>[];
-        snapshot[key as keyof P] = exprArrayProp.map((exprProp) => vars().createExpression(
-          exprProp.defaultVal,
-          exprProp!.units
+      } else if (typeof prop["defaultVal"][0] === "object") {
+        console.log("array expr");
+        const exprArrayProp = prop as ConstraintPropertyDefinition<Expr[]>;
+        console.log(exprArrayProp);
+        snapshot[key as keyof P] = exprArrayProp["defaultVal"].map((expr) => vars().createExpression(
+          expr,
+          exprArrayProp!.units
         ));
       }
+      
       // defaults for primitives are set in the store definition
     });
+    console.log("snap", snapshot);
     const store = ConstraintDataObjects[key].create({ type: key, ...snapshot });
     //store.apply(data);
     return store;

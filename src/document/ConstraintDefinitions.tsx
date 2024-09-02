@@ -216,13 +216,13 @@ export const ConstraintDefinitions: defs = {
         name: "Xs",
         description: "The x values of the points",
         units: Units.Meter,
-        defaultVal: [["0 m", 0] as Expr]
+        defaultVal: [["0 m", 0] as Expr, ["0 m", 0] as Expr, ["1 m", 1] as Expr, ["1 m", 1] as Expr]
       },
       ys: {
         name: "Ys",
         description: "The y values of the points",
         units: Units.Meter,
-        defaultVal: [["0 m", 0] as Expr]
+        defaultVal: [["1 m", 1] as Expr, ["0 m", 0] as Expr, ["1 m", 1] as Expr, ["0 m", 0] as Expr]
       }
     },
     wptScope: true,
