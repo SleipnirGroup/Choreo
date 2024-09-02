@@ -226,10 +226,12 @@ export const DocumentStore = types
         .then(() => {
           tracing.debug("generatePathPre");
           return listen("solver-status", async (rawEvent) => {
-            const event: Event<ProgressUpdate> = rawEvent as Event<ProgressUpdate>;
+            const event: Event<ProgressUpdate> =
+              rawEvent as Event<ProgressUpdate>;
             if (event.payload!.handle == handle) {
               if (event.payload!.type === "swerveTraj") {
-                const samples = event.payload.update as SwerveTrajoptlibSample[];
+                const samples = event.payload
+                  .update as SwerveTrajoptlibSample[];
                 const useModuleForces = pathStore.traj.useModuleForces;
                 pathStore.ui.setInProgressTrajectory(
                   samples.map((s) => ({
@@ -246,9 +248,9 @@ export const DocumentStore = types
                   pathStore.ui.generationIterationNumber + 1
                 );
               } else if (event.payload!.type === "diagnosticText") {
-                const line = event.payload.update as string;
-                // lines.forEach(console.log);
-                console.log(line)
+                // const line = event.payload.update as string;
+                // This is the text output of sleipnir solver
+                // console.log(line)
               }
             }
           });

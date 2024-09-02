@@ -13,8 +13,6 @@ use std::fs;
 
 use choreo_core::generation::remote::{remote_generate_child, RemoteArgs};
 
-
-
 fn main() {
     let args = std::env::args().collect::<Vec<_>>();
     if args.len() > 2 {

@@ -3,13 +3,13 @@ use choreo_core::file_management::WritingResources;
 use choreo_core::generation::generate::{setup_progress_sender, RemoteGenerationResources};
 use choreo_core::spec::OpenFilePayload;
 use choreo_core::{ChoreoError, ChoreoResult};
-use tauri::api::path::app_log_dir;
-use tracing_appender::non_blocking::WorkerGuard;
+use logging::now_str;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 use std::{fs, thread};
+use tauri::api::path::app_log_dir;
 use tauri::{AppHandle, Config, Manager};
-use logging::now_str;
+use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 static REQUESTED_FILE: OnceLock<OpenFilePayload> = OnceLock::new();
@@ -82,11 +82,10 @@ fn setup_tracing(config: &Config) -> Vec<WorkerGuard> {
 
     let (std_io, guard_std_io) = tracing_appender::non_blocking(std::io::stdout());
     guards.push(guard_std_io);
-    let registry = tracing_subscriber::registry()
-        .with(
+    let registry = tracing_subscriber::registry().with(
         tracing_subscriber::fmt::layer()
             .with_writer(std_io)
-            .event_format(logging::CompactFormatter{ ansicolor: true }),
+            .event_format(logging::CompactFormatter { ansicolor: true }),
     );
 
     if let Some(log_file) = file {
@@ -97,7 +96,7 @@ fn setup_tracing(config: &Config) -> Vec<WorkerGuard> {
             .with(
                 tracing_subscriber::fmt::layer()
                     .with_writer(file_writer)
-                    .event_format(logging::CompactFormatter{ ansicolor: false }),
+                    .event_format(logging::CompactFormatter { ansicolor: false }),
             )
             .init();
     } else {
@@ -112,7 +111,11 @@ pub fn run_tauri(project: Option<PathBuf>) {
 
     let guards = setup_tracing(context.config());
 
-    tracing::info!("Starting Choreo {} {}", env!("CARGO_PKG_VERSION"), current_platform::CURRENT_PLATFORM);
+    tracing::info!(
+        "Starting Choreo {} {}",
+        env!("CARGO_PKG_VERSION"),
+        current_platform::CURRENT_PLATFORM
+    );
 
     if let Some(project_path) = project {
         let payload = OpenFilePayload {

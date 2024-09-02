@@ -206,7 +206,9 @@ fn fill_string(left_aligned: bool, width: usize, mut s: String) -> String {
     s
 }
 
-pub struct CompactFormatter{ pub ansicolor: bool }
+pub struct CompactFormatter {
+    pub ansicolor: bool,
+}
 
 impl<S, N> tracing_subscriber::fmt::FormatEvent<S, N> for CompactFormatter
 where
