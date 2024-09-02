@@ -63,7 +63,7 @@ class SettingsModal extends Component<Props, State> {
                 }}
               >
                 {SETTINGS_TABS.map((data) => (
-                  <Tab label={data.name} />
+                  <Tab key={data.name} label={data.name} />
                 ))}
               </Tabs>
               <IconButton onClick={() => uiState.setRobotConfigOpen(false)}>
