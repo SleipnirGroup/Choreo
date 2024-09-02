@@ -7,6 +7,26 @@
 use nu_ansi_term::{Color, Style};
 use tracing::{field::Visit, Level};
 
+#[inline]
+fn hone_file(file: &str) -> String {
+    let mut string = file.to_string();
+    #[cfg(windows)]
+    {
+        string = string.replace("\\", "/");
+    }
+    const REPLACEMENTS: [(&str, &str); 2] = [
+        ("src-core/", "core/"),
+        ("src-tauri/", "gui/")
+    ];
+    for (from, to) in REPLACEMENTS.iter() {
+        if string.contains(from) {
+            string = string.replace(from, to);
+        }
+    }
+    string
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Locations {
     Frontend,
     Scripting,
@@ -16,6 +36,7 @@ enum Locations {
 #[derive(Default)]
 struct MetaVisitor {
     pub line_num: Option<String>,
+    pub function: Option<String>,
     pub file_path: Option<String>,
     pub source: Option<String>,
     pub thread: Option<String>,
@@ -25,6 +46,7 @@ impl Visit for MetaVisitor {
     fn record_debug(&mut self, field: &tracing::field::Field, value: &dyn std::fmt::Debug) {
         match field.name() {
             "line" => self.line_num = Some(format!("{:?}", value)),
+            "function" => self.function = Some(format!("{:?}", value)),
             "file" => self.file_path = Some(format!("{:?}", value)),
             "source" => self.source = Some(format!("{:?}", value)),
             "thread" => self.thread = Some(format!("{:?}", value)),
@@ -80,7 +102,6 @@ where
             Level::INFO => Style::new().fg(Color::Green),
             Level::WARN => Style::new().fg(Color::Yellow),
             Level::ERROR => Style::new().fg(Color::Red),
-            // _ => return Ok(()),
         };
 
         write!(writer, "{} ", style.paint(meta.level().to_string()))?;
@@ -122,20 +143,21 @@ where
         //write file and line number
         write!(
             writer,
-            "{}:{}",
-            visitor
+            "{}",
+            hone_file(&visitor
                 .file_path()
                 .unwrap_or(meta.file().unwrap_or("unknown"))
                 .to_owned()
-                .replace("\"", ""),
-            visitor
-                .line_num
-                .unwrap_or_else(|| {
-                    meta.line()
-                        .map_or_else(|| "-1".to_owned(), |l| l.to_string())
-                })
-                .replace("\"", "")
+                .replace("\"", "")),
         )?;
+
+        if let Some(line) = visitor.line_num {
+            write!(writer, ":{}", line.replace("\"", ""))?;
+        } else if let Some(function) = visitor.function {
+            write!(writer, "@{}", function.replace("\"", ""))?;
+        } else {
+            write!(writer, "{}", dimmed.paint("?"))?;
+        }
 
         write!(writer, " {} {}", dimmed.paint("on"), thread)?;
 
@@ -176,11 +198,18 @@ where
         let mut visitor = MetaVisitor::default();
         event.record(&mut visitor);
 
-        // let loc = match visitor.source() {
-        //     Some("scripting") => Locations::Scripting,
-        //     Some("frontend") => Locations::Frontend,
-        //     _ => Locations::Native,
-        // };
+        let loc = match &visitor.source {
+            Some(loc) => {
+                if loc.contains("scripting") {
+                    Locations::Scripting
+                } else if loc.contains("frontend") {
+                    Locations::Frontend
+                } else {
+                    Locations::Native
+                }
+            }
+            _ => Locations::Native,
+        };
 
         let level_str = match *meta.level() {
             Level::TRACE => "TRACE",
@@ -232,29 +261,33 @@ where
 
         let message = visitor.message();
 
-        let file = visitor
+        let mut target = String::new();
+
+        let file = hone_file(&visitor
             .file_path()
             .unwrap_or(meta.file().unwrap_or("unknown"))
             .to_owned()
-            .replace("\"", "")
-            .replace("src-tauri/", "")
-            .replace("src-tauri\\", "");
-        let line = visitor
-            .line_num
-            .unwrap_or_else(|| {
-                meta.line()
-                    .map_or_else(|| "-1".to_owned(), |l| l.to_string())
-            })
-            .replace("\"", "");
+            .replace("\"", ""));
+        target.push_str(&file);
 
-        let file_line = format!("{}:{}", file, line);
+        if loc != Locations::Native {
+            if let Some(line) = visitor.line_num {
+                target.push_str(&format!(":{}", line.replace("\"", "")));
+            } else if let Some(function) = visitor.function {
+                target.push_str(&format!("@{}", function.replace("\"", "")));
+            } else {
+                target.push('?');
+            }
+        } else if let Some(line) = meta.line() {
+            target.push_str(&format!(":{}", line));
+        }
 
         //write LEVEL TIME FILE:LINE MESSAGE
 
         write!(writer, "{}| ", style.paint(level_str))?;
         write!(writer, "{}| ", now_str)?;
         // write!(writer, "{}| ", fill_string(true, 22, target.to_string()))?;
-        write!(writer, "{}| ", fill_string(true, 32, file_line))?;
+        write!(writer, "{}| ", fill_string(true, 32, target))?;
         write!(writer, "{}", message)?;
         writer.write_char('\n')?;
 

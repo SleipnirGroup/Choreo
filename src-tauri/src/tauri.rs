@@ -15,41 +15,41 @@ fn requested_file() -> Option<OpenFilePayload> {
 }
 
 #[tauri::command]
-pub async fn tracing_frontend(level: String, msg: String, line: String, file: String) {
+pub async fn tracing_frontend(level: String, msg: String, file: String, function: Option<String>) {
     match level.as_str() {
         "trace" => tracing::trace!(
             source = "frontend",
             message = msg,
-            line = line,
             file = file,
+            function = function,
             source = "frontend"
         ),
         "debug" => tracing::debug!(
             source = "frontend",
             message = msg,
-            line = line,
             file = file,
+            function = function,
             source = "frontend"
         ),
         "info" => tracing::info!(
             source = "frontend",
             message = msg,
-            line = line,
             file = file,
+            function = function,
             source = "frontend"
         ),
         "warn" => tracing::warn!(
             source = "frontend",
             message = msg,
-            line = line,
             file = file,
+            function = function,
             source = "frontend"
         ),
         "error" => tracing::error!(
             source = "frontend",
             message = msg,
-            line = line,
             file = file,
+            function = function,
             source = "frontend"
         ),
         _ => tracing::error!("Invalid log level: {}", level),
