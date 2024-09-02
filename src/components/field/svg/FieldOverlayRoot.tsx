@@ -275,7 +275,11 @@ class FieldOverlayRoot extends Component<Props, State> {
                       (item, index) =>
                         index <= NavbarItemSectionEnds[0] && (
                           <>
-                            <Tooltip disableInteractive title={item.name} key={item.name}>
+                            <Tooltip
+                              disableInteractive
+                              title={item.name}
+                              key={item.name}
+                            >
                               <ToggleButton
                                 value={`${index}`}
                                 selected={
