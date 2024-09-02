@@ -3,7 +3,19 @@ const fs = require("fs");
 
 console.log("Building CLI...");
 
-function getTargetTriple() {
+function getNativeTargetTriple() {
+  let targetTripleNative = "";
+  let extension = "";
+  const rustcVv = execSync("rustc -Vv").toString();
+  targetTripleNative = rustcVv.match(/host: (.*)\n/)[1];
+  if (targetTriple.includes("windows")) {
+    extension = ".exe";
+  }
+
+  return { targetTripleNative, extension };
+}
+
+function getTargetTripleTauri() {
   let targetTriple = "";
   let extension = "";
 
@@ -28,11 +40,14 @@ function getTargetTriple() {
     }
   }
 
-  console.log("Target triple: " + targetTriple);
   return { targetTriple, extension };
 }
 
-const { targetTriple, extension } = getTargetTriple();
+const { targetTriple, extension } = getTargetTripleTauri();
+const { targetTripleNative, _ } = getNativeTargetTriple();
+
+console.log(targetTriple);
+console.log(targetTripleNative);
 
 // create cli directory if it doesn't exist
 if (!fs.existsSync("cli")) {
@@ -52,10 +67,13 @@ fs.readdir("cli", (err, files) => {
 
 const cliPath = `cli/choreo-cli-${targetTriple}${extension}`;
 
+const buildTarget = targetTriple === targetTripleNative ? "" : ` --target ${targetTriple}`;
+const buildCmd = `cargo build --release -p choreo-cli${buildTarget} --target-dir ./src-tauri/target`;
+
+console.log(`Running: ${buildCmd}`);
+
 // build cli
-const build = exec(
-  `cargo build --release -p choreo-cli --target ${targetTriple}`
-);
+const build = exec(buildCmd);
 // build.stdout.on("data", (data) => process.stdout.write(data));
 build.stdout.pipe(process.stdout);
 build.stderr.on("data", (data) => console.error(data));
@@ -65,12 +83,13 @@ build.once("exit", (code) => {
   if (code !== 0) {
     throw new Error("Build failed");
   }
+  const targetPath = targetTriple === targetTripleNative ? "" : `/${targetTriple}`;
   fs.copyFileSync(
-    `target/${targetTriple}/release/choreo-cli${extension}`,
+    `./src-tauri/target${targetPath}/release/choreo-cli${extension}`,
     `cli/choreo-cli${extension}`
   );
   fs.renameSync(
-    `target/${targetTriple}/release/choreo-cli${extension}`,
+    `./src-tauri/target${targetPath}/release/choreo-cli${extension}`,
     cliPath
   );
 });
