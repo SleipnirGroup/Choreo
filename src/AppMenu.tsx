@@ -159,9 +159,9 @@ class AppMenu extends Component<Props, State> {
               <ListItemIcon>
                 <UploadIcon />
               </ListItemIcon>
-              <ListItemText primary="Open File"></ListItemText>
+              <ListItemText primary="Open Project"></ListItemText>
             </ListItemButton>
-            {/* Save File */}
+            {/* Save Project */}
             <ListItemButton
               onClick={async () => {
                 saveProjectDialog();
@@ -171,7 +171,9 @@ class AppMenu extends Component<Props, State> {
                 <SaveIcon />
               </ListItemIcon>
               <ListItemText
-                primary={uiState.hasSaveLocation ? "Save File As" : "Save File"}
+                primary={
+                  uiState.hasSaveLocation ? "Save Project As" : "Save Project"
+                }
               ></ListItemText>
             </ListItemButton>
             {/* New File */}
@@ -190,7 +192,7 @@ class AppMenu extends Component<Props, State> {
               <ListItemIcon>
                 <NoteAddOutlined />
               </ListItemIcon>
-              <ListItemText primary="New File"></ListItemText>
+              <ListItemText primary="New Project"></ListItemText>
             </ListItemButton>
             {/* Export Active Trajectory */}
             <ListItemButton
@@ -326,7 +328,7 @@ class AppMenu extends Component<Props, State> {
                   <>
                     Project not saved.
                     <br />
-                    Click "Save File" above to save.
+                    Click "Save Project" above to save.
                   </>
                 )}
               </div>
