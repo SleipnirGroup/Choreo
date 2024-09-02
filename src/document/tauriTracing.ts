@@ -18,7 +18,8 @@ function parseStack(stack: string | undefined): Location {
       const inter: string | undefined = callerParts[callerParts.length - 1]
         .split("/")
         .pop();
-      const callerFile: string = inter?.split(":")[0].split("?")[0] ?? "unknown";
+      const callerFile: string =
+        inter?.split(":")[0].split("?")[0] ?? "unknown";
       let callerFunc: string | undefined = callerParts[callerParts.length - 2];
       if (callerFunc === "Object.<anonymous>") {
         callerFunc = undefined;

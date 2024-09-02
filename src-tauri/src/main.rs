@@ -11,16 +11,16 @@ mod tauri;
 
 use std::fs;
 
+use ::tauri::api::path::document_dir;
 use choreo_core::generation::remote::{remote_generate_child, RemoteArgs};
 use logging::now_str;
-use ::tauri::api::path::document_dir;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 fn get_log_file() -> fs::File {
     let docu_dir = document_dir().expect("Failed to get document directory");
     let dir = docu_dir.join("choreo-logs");
     fs::create_dir_all(&dir).expect("Failed to create log directory");
-    let time_str = now_str().replace(':', "-").replace('.', "-");
+    let time_str = now_str().replace([':', '.'], "-");
     let path = dir.join(format!("choreo-{}.log", time_str));
     fs::File::create(path).expect("Failed to create log file")
 }
@@ -39,11 +39,13 @@ fn main() {
         .with(
             tracing_subscriber::fmt::layer()
                 .with_writer(std_io)
-                .event_format(logging::CompactFormatter))
+                .event_format(logging::CompactFormatter),
+        )
         .with(
             tracing_subscriber::fmt::layer()
                 .with_writer(file)
-                .event_format(logging::CompactFormatter))
+                .event_format(logging::CompactFormatter),
+        )
         .init();
 
     if let Some(arg) = args.get(1) {

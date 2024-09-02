@@ -67,7 +67,7 @@ build.once("exit", (code) => {
   }
   execSync(
     `cp target/${targetTriple}/release/choreo-cli${extension} cli/choreo-cli${extension}`
-  )
+  );
   execSync(
     `mv target/${targetTriple}/release/choreo-cli${extension} ${cliPath}`
   );

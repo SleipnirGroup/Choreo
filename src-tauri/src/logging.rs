@@ -41,10 +41,7 @@ fn hone_file(file: &str) -> String {
     {
         string = string.replace("\\", "/");
     }
-    const REPLACEMENTS: [(&str, &str); 2] = [
-        ("src-core/", "core/"),
-        ("src-tauri/", "gui/")
-    ];
+    const REPLACEMENTS: [(&str, &str); 2] = [("src-core/", "core/"), ("src-tauri/", "gui/")];
     for (from, to) in REPLACEMENTS.iter() {
         if string.contains(from) {
             string = string.replace(from, to);
@@ -171,11 +168,13 @@ where
         write!(
             writer,
             "{}",
-            hone_file(&visitor
-                .file_path()
-                .unwrap_or(meta.file().unwrap_or("unknown"))
-                .to_owned()
-                .replace("\"", "")),
+            hone_file(
+                &visitor
+                    .file_path()
+                    .unwrap_or(meta.file().unwrap_or("unknown"))
+                    .to_owned()
+                    .replace("\"", "")
+            ),
         )?;
 
         if let Some(line) = visitor.line_num {
@@ -267,11 +266,13 @@ where
 
         let mut target = String::new();
 
-        let file = hone_file(&visitor
-            .file_path()
-            .unwrap_or(meta.file().unwrap_or("unknown"))
-            .to_owned()
-            .replace("\"", ""));
+        let file = hone_file(
+            &visitor
+                .file_path()
+                .unwrap_or(meta.file().unwrap_or("unknown"))
+                .to_owned()
+                .replace("\"", ""),
+        );
         target.push_str(&file);
 
         if loc != Locations::Native {
