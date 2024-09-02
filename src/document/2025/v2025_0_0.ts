@@ -1,11 +1,12 @@
 import { ConstraintData } from "../ConstraintStore";
+import { Dimensions } from "../ExpressionStore";
 
 export const SAVE_FILE_VERSION = "v2025.0.0";
 export type Expr = [string, number];
 
 export type ExprOrNumber = Expr | number;
 export interface Variable {
-  unit: "Meter" | "MeterPerSecond" | "Radian";
+  dimension: keyof typeof Dimensions;
   var: Expr;
 }
 export interface PoseVariable {

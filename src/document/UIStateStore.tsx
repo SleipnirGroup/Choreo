@@ -36,6 +36,7 @@ export const UIStateStore = types
     isViewOptionsPanelOpen: false,
     robotConfigOpen: false,
     mainMenuOpen: false,
+    variablesPanelOpen: false,
     settingsTab: types.refinement(
       types.integer,
       (i) => i >= 0 && i < NUM_SETTINGS_TABS
@@ -150,6 +151,9 @@ export const UIStateStore = types
     },
     setViewOptionsPanelOpen(open: boolean) {
       self.isViewOptionsPanelOpen = open;
+    },
+    setVariablesPanelOpen(open: boolean) {
+      self.variablesPanelOpen = open;
     },
     setPathAnimationTimestamp(time: number) {
       self.pathAnimationTimestamp = time;

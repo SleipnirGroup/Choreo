@@ -1,4 +1,10 @@
-import { AspectRatio, Close, Gradient, Visibility } from "@mui/icons-material";
+import {
+  AspectRatio,
+  Close,
+  Functions,
+  Gradient,
+  Visibility
+} from "@mui/icons-material";
 import {
   IconButton,
   Menu,
@@ -13,6 +19,7 @@ import { doc, uiState } from "../../document/DocumentManager";
 import { ViewItemData } from "../../document/UIData";
 import styles from "./WaypointConfigPanel.module.css";
 import { PathGradients } from "./robotconfig/PathGradient";
+import ExpressionsConfigPanel from "./variables/ExpressionsConfigPanel";
 
 type Props = object;
 
@@ -49,7 +56,12 @@ class ViewOptionsPanel extends Component<Props, State> {
 
   render() {
     return (
-      <div className={styles.ViewOptionsPanel}>
+      <div
+        className={styles.ViewOptionsPanel}
+        style={{
+          borderLeft: uiState.variablesPanelOpen ? "solid gray 1px" : "none"
+        }}
+      >
         <Tooltip disableInteractive title="Zoom to fit trajectory">
           <span>
             {/* If there's no waypoints, then don't allow user to zoom to fit Waypoints */}
@@ -104,13 +116,26 @@ class ViewOptionsPanel extends Component<Props, State> {
             </IconButton>
           </Tooltip>
         </div>
-        <IconButton
-          onClick={() => {
-            uiState.setViewOptionsPanelOpen(!uiState.isViewOptionsPanelOpen);
-          }}
-        >
-          {uiState.isViewOptionsPanelOpen ? <Close /> : <Visibility />}
-        </IconButton>
+        <div>
+          <Tooltip disableInteractive title={"Variables"}>
+            <IconButton
+              onClick={() => {
+                uiState.setVariablesPanelOpen(!uiState.variablesPanelOpen);
+              }}
+            >
+              {uiState.variablesPanelOpen ? <Close /> : <Functions />}
+            </IconButton>
+          </Tooltip>
+        </div>
+        <Tooltip disableInteractive title={"View Layers"}>
+          <IconButton
+            onClick={() => {
+              uiState.setViewOptionsPanelOpen(!uiState.isViewOptionsPanelOpen);
+            }}
+          >
+            {uiState.isViewOptionsPanelOpen ? <Close /> : <Visibility />}
+          </IconButton>
+        </Tooltip>
         {uiState.isViewOptionsPanelOpen && (
           <div
             style={{
@@ -151,6 +176,29 @@ class ViewOptionsPanel extends Component<Props, State> {
                 </Tooltip>
               ))}
             </ToggleButtonGroup>
+          </div>
+        )}
+
+        {uiState.variablesPanelOpen && (
+          <div
+            style={{
+              overflowY: "scroll",
+              position: "absolute",
+              top: "0",
+              right: "105%",
+              background: "var(--background-light-gray)",
+              color: "white",
+              width: "min-content",
+              padding: "8px",
+
+              borderBottomLeftRadius: "10px",
+              borderBottomRightRadius: "10px",
+
+              display: "flex",
+              flexDirection: "column"
+            }}
+          >
+            <ExpressionsConfigPanel></ExpressionsConfigPanel>
           </div>
         )}
       </div>
