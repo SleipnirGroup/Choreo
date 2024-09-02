@@ -25,9 +25,11 @@ import {
 
 type lookup<T> = T extends Expr
   ? typeof ExpressionStore
-  : T extends boolean
-    ? boolean
-    : never;
+  : T extends Expr[] 
+    ? typeof ExpressionStore[]
+    : T extends boolean
+      ? boolean
+      : never;
 
 type Props<K extends ConstraintKey, D extends ConstraintData = DataMap[K]> = {
   [propkey in keyof D["props"]]: lookup<D["props"][propkey]>;
@@ -88,7 +90,27 @@ function createDataStore<
     const oldSerialize = serialize;
     const oldDeserialize = deserialize;
     const oldDeserPartial = deserPartial;
-    if (Array.isArray(defau)) {
+    if (typeof defau === "boolean") {
+      props[key] = defau;
+      setters[settername] = (self: any) => (arg: boolean) => {
+        self[key] = arg;
+      };
+      serialize = (self) => {
+        const part = oldSerialize(self);
+        part[key] = self[key];
+        return part;
+      };
+      deserialize = (self, data) => {
+        oldDeserialize(self, data);
+        self[key] = data[key];
+      };
+      deserPartial = (self, data) => {
+        oldDeserPartial(self, data);
+        if (data[key] !== undefined) {
+          self[key] = data[key];
+        }
+      };
+    } else if (typeof defau[0] === "string") {
       props[key] = ExpressionStore;
       setters[settername] = (self: any) => (arg: Expr) => {
         self[key] = arg;
@@ -109,28 +131,30 @@ function createDataStore<
           (self[key] as IExpressionStore).deserialize(data[key]);
         }
       };
-    } else if (typeof defau === "boolean") {
-      props[key] = defau;
-      setters[settername] = (self: any) => (arg: boolean) => {
+    } else if (typeof defau[0] === "object") {
+      props[key] = types.array(ExpressionStore);
+      setters[settername] = (self: any) => (arg: Expr[]) => {
         self[key] = arg;
       };
       serialize = (self) => {
         const part = oldSerialize(self);
-        part[key] = self[key];
+        part[key] = (self[key] as IExpressionStore[]).map((e) => e.serialize);
+
         return part;
       };
       deserialize = (self, data) => {
         oldDeserialize(self, data);
-        self[key] = data[key];
+        (self[key] as IExpressionStore[]).entries().map((i, e) => e.deserialize(data[key][i]));
       };
       deserPartial = (self, data) => {
         oldDeserPartial(self, data);
         if (data[key] !== undefined) {
-          self[key] = data[key];
+          (self[key] as IExpressionStore[]).entries().map((i, e) => e.deserialize(data[key][i]));
         }
       };
     }
   });
+  console.log(def.type)
 
   const store = types
     .model(def.type, {
@@ -187,12 +211,18 @@ export function defineCreateConstraintData<
         def.properties[
           key as keyof PropertyDefinitionList<DataMap[K]["props"]>
         ];
-      if (Array.isArray(prop.defaultVal)) {
+      if (typeof prop[0] === "string") {
         const exprProp = prop as ConstraintPropertyDefinition<Expr>;
         snapshot[key as keyof P] = vars().createExpression(
           exprProp.defaultVal,
           exprProp!.units
         );
+      } else if (typeof prop[0] === "object") {
+        const exprArrayProp = prop as ConstraintPropertyDefinition<Expr>[];
+        snapshot[key as keyof P] = exprArrayProp.map((exprProp) => vars().createExpression(
+          exprProp.defaultVal,
+          exprProp!.units
+        ));
       }
       // defaults for primitives are set in the store definition
     });

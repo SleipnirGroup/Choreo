@@ -209,7 +209,7 @@ pub enum ConstraintType {
     Segment,
     Both,
 }
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone)]
 #[serde(tag = "type", content = "props")]
 pub enum ConstraintData<T: SnapshottableType> {
     MaxVelocity {
@@ -232,7 +232,11 @@ pub enum ConstraintData<T: SnapshottableType> {
         x: T,
         y: T,
         r: T
-    }
+    },
+    KeepInPolygon {
+        xs: Vec<T>,
+        ys: Vec<T>
+    },
 }
 
 impl<T: SnapshottableType> ConstraintData<T> {
@@ -275,11 +279,18 @@ impl<T: SnapshottableType> ConstraintData<T> {
                 y: y.snapshot(),
                 r: r.snapshot()
             },
+            ConstraintData::KeepInPolygon {
+                xs,
+                ys
+            } => ConstraintData::KeepInPolygon {
+                xs: xs.iter().map(|x| x.snapshot()).collect(),
+                ys: ys.iter().map(|y| y.snapshot()).collect()
+            },
         }
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Constraint<T: SnapshottableType> {
     pub from: WaypointID,
     pub to: Option<WaypointID>,
@@ -296,7 +307,7 @@ impl<T: SnapshottableType> Constraint<T> {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct ConstraintIDX<T: SnapshottableType> {
     pub from: usize,
     pub to: Option<usize>,

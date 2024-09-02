@@ -6,6 +6,7 @@ import ExpressionInput from "../input/ExpressionInput";
 import ExpressionInputList from "../input/ExpressionInputList";
 import ScopeSlider from "./ScopeSlider";
 import styles from "./WaypointConfigPanel.module.css";
+import { Expr } from "../../document/2025/DocumentTypes"
 
 type Props = { constraint: IConstraintStore };
 
@@ -68,7 +69,8 @@ class ConstraintsConfigPanel extends Component<Props, State> {
             const [key, propdef] = entry;
             const setterName =
               "set" + key.charAt(0).toUpperCase() + key.slice(1);
-            if (Array.isArray(propdef.defaultVal)) {
+            console.log(typeof propdef.defaultVal[0]);
+            if (typeof propdef.defaultVal[0] === "string") {
               return (
                 <ExpressionInput
                   key={key}
@@ -77,6 +79,24 @@ class ConstraintsConfigPanel extends Component<Props, State> {
                   number={constraint.data[key]}
                   titleTooltip={propdef.description}
                 />
+              );
+            } else if (typeof propdef.defaultVal[0] === "object") {
+              console.log("expr array")
+              return (<></>
+                // <ExpressionInputList>
+                //   { 
+                  
+                //     <ExpressionInput
+                //     key={key}
+                //     title={propdef.name}
+                //     enabled={true}
+                //     number={constraint.data[key][0]}
+                //     titleTooltip={propdef.description}
+                //     />
+                  
+                  
+                //     }
+                // </ExpressionInputList>  
               );
             } else if (typeof propdef.defaultVal === "boolean") {
               return (

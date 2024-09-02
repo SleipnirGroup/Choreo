@@ -182,6 +182,13 @@ mod ffi {
             field_point_y: f64,
             keep_in_radius: f64
         );
+        fn sgmt_keep_in_polygon(
+            self: Pin<&mut SwervePathBuilder>,
+            from_index: usize,
+            to_index: usize,
+            field_points_x: Vec<f64>,
+            field_points_y: Vec<f64>
+        );
 
         fn sgmt_circle_obstacle(
             self: Pin<&mut SwervePathBuilder>,
@@ -587,6 +594,20 @@ impl SwervePathBuilder {
                 keep_in_radius
             )
         }
+    pub fn sgmt_keep_in_polygon(
+        &mut self,
+        from_index: usize,
+        to_index: usize,
+        field_points_x: Vec<f64>,
+        field_points_y: Vec<f64>
+    ) {
+        crate::ffi::SwervePathBuilder::sgmt_keep_in_polygon(
+            self.path_builder.pin_mut(), 
+            from_index,
+            to_index, 
+            field_points_x, 
+            field_points_y);
+    }
 
     pub fn sgmt_circle_obstacle(
         &mut self,
