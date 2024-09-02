@@ -327,13 +327,15 @@ class FieldOverlayRoot extends Component<Props, State> {
                 ></circle>
               )}
             {layers[ViewLayers.Obstacles] &&
-              doc.pathlist.activePath.path.obstacles.map((obstacle, index) => (
-                <FieldObstacle
-                  obstacle={obstacle}
-                  index={index}
-                  key={obstacle.uuid}
-                ></FieldObstacle>
-              ))}
+              doc.pathlist.activePath.params.obstacles.map(
+                (obstacle, index) => (
+                  <FieldObstacle
+                    obstacle={obstacle}
+                    index={index}
+                    key={obstacle.uuid}
+                  ></FieldObstacle>
+                )
+              )}
             {/* Line paths */}
             {layers[ViewLayers.Waypoints] && <FieldPathLines></FieldPathLines>}
             {layers[ViewLayers.Trajectory] && (
@@ -347,7 +349,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             )}
             <FieldEventMarkers></FieldEventMarkers>
             {layers[ViewLayers.Waypoints] &&
-              doc.pathlist.activePath.path.waypoints
+              doc.pathlist.activePath.params.waypoints
                 .map((point, index) => {
                   const activePath = doc.pathlist.activePath;
                   if (
