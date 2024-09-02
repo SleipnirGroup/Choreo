@@ -26,6 +26,7 @@ dist-ssr
 # Choreo
 src-tauri/target
 target
+cli
 
 # TrajoptLib
 trajoptlib/build*

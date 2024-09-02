@@ -1,23 +1,41 @@
-use super::types::{Constraint, Expr, RobotConfig, Traj, Waypoint};
-use crate::document::types::ConstraintData;
 use crate::error::ChoreoError;
-use crate::util::math_util::angle_modulus;
-use crate::Result;
+use crate::spec::project::RobotConfig;
+use crate::spec::traj::{Constraint, ConstraintData, TrajFile, Waypoint};
+use crate::spec::Expr;
+use crate::ChoreoResult;
 
-// A value version since commands don't support borrows, but we need the borrow
-// version for generation.
-#[tauri::command]
-pub fn cmd_guess_control_interval_counts(
-    config: RobotConfig<Expr>,
-    traj: Traj,
-) -> Result<Vec<usize>> {
-    guess_control_interval_counts(&config, &traj)
+/**
+ * A port of `WPILib`'s MathUtil.inputModulus
+ */
+#[must_use]
+pub fn input_modulus(input: f64, maximum_input: f64, minimum_input: f64) -> f64 {
+    let mut val = input;
+    let modulus = maximum_input - minimum_input;
+
+    // Wrap input if it's above the maximum input
+    let num_max = ((val - minimum_input) / modulus).trunc();
+    val -= num_max * modulus;
+
+    // Wrap input if it's below the minimum input
+    let num_min = ((val - maximum_input) / modulus).trunc();
+    val -= num_min * modulus;
+
+    val
+}
+
+/**
+ * A port of `WPILib`'s MathUtil.angleModulus
+ */
+#[must_use]
+pub fn angle_modulus(input: f64) -> f64 {
+    use std::f64::consts::PI;
+    input_modulus(input, PI, -PI)
 }
 
 pub fn guess_control_interval_counts(
     config: &RobotConfig<Expr>,
-    traj: &Traj,
-) -> Result<Vec<usize>> {
+    traj: &TrajFile,
+) -> ChoreoResult<Vec<usize>> {
     let config = config.snapshot();
     if config.wheel_max_torque() <= 0.0 {
         return Err(ChoreoError::Sign("Wheel max torque", "positive"));
@@ -29,7 +47,7 @@ pub fn guess_control_interval_counts(
         return Err(ChoreoError::Sign("Wheel radius", "positive"));
     }
     Ok(traj
-        .path
+        .params
         .waypoints
         .iter()
         .enumerate()
@@ -45,12 +63,12 @@ pub fn guess_control_interval_counts(
 
 pub fn guess_control_interval_count(
     i: usize,
-    traj: &Traj,
+    traj: &TrajFile,
     config: RobotConfig<f64>,
     w: &Waypoint<Expr>,
 ) -> usize {
     let this = w.snapshot();
-    let next = traj.path.waypoints.get(i + 1).map(Waypoint::snapshot);
+    let next = traj.params.waypoints.get(i + 1).map(Waypoint::snapshot);
     match next {
         None => this.intervals,
         Some(next) => {
@@ -72,16 +90,16 @@ pub fn guess_control_interval_count(
             let mut max_ang_vel = max_vel / max_wheel_position_radius;
 
             // Iterate through constraints to find applicable constraints
-            traj.path
+            traj.params
                 .constraints
                 .iter()
                 .map(Constraint::snapshot)
                 .for_each(|constraint| {
                     if let Some(to) = constraint
                         .to
-                        .and_then(|id| id.get_idx(traj.path.waypoints.len()))
+                        .and_then(|id| id.get_idx(traj.params.waypoints.len()))
                     {
-                        if let Some(from) = constraint.from.get_idx(traj.path.waypoints.len()) {
+                        if let Some(from) = constraint.from.get_idx(traj.params.waypoints.len()) {
                             if i < to && i >= from {
                                 match constraint.data {
                                     ConstraintData::MaxVelocity { max } => {
@@ -165,7 +183,7 @@ pub fn guess_control_interval_count(
             }
             .max(0.2); // keep some time allocated for rotating
             let total_time = linear_time + angular_time;
-            std::println!("dt estimate: {dt} - total time estimate: {total_time}");
+            tracing::debug!("dt estimate: {dt} - total time estimate: {total_time}");
             (total_time / dt).ceil() as usize
         }
     }
