@@ -121,8 +121,10 @@ pub async fn remote_generate_parent(
     let traj_str =
         serde_json::to_string(&trajfile).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
 
-    tokio::fs::write(project_tmp.path(), project_str).await?;
-    tokio::fs::write(traj_tmp.path(), traj_str).await?;
+    tokio::fs::write(project_tmp.path(), project_str).await
+        .map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
+    tokio::fs::write(traj_tmp.path(), traj_str).await
+        .map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
 
     tracing::debug!("Wrote project and traj to temp files");
 
