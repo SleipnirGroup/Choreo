@@ -148,6 +148,7 @@ pub async fn remote_generate_parent(
         .accept()
         .map_err(|e| ChoreoError::SolverError(format!("Failed to accept IPC connection: {e:?}")))?;
 
+    // check if the solver has already completed
     match serde_json::from_str::<RemoteProgressUpdate>(&o) {
         Ok(RemoteProgressUpdate::CompleteTraj(traj)) => {
             child.kill().await?;
