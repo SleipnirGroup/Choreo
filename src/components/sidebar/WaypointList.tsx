@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import { Component } from "react";
-import { DragDropContext, Droppable } from "react-beautiful-dnd";
+import { DragDropContext, Droppable } from "@hello-pangea/dnd";
 import { doc } from "../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import styles from "./Sidebar.module.css";

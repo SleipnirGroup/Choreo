@@ -24,6 +24,7 @@ class FieldSamples extends Component<Props, State> {
           if (point.fixHeading) {
             return (
               <g
+                key={idx}
                 transform={` translate(${point.x}, ${point.y}) rotate(${
                   (point.heading * 180) / Math.PI
                 })`}

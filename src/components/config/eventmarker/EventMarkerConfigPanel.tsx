@@ -2,7 +2,7 @@ import { TextField, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import { resolveIdentifier } from "mobx-state-tree";
 import React, { Component } from "react";
-import { DragDropContext } from "react-beautiful-dnd";
+import { DragDropContext } from "@hello-pangea/dnd";
 import {
   CommandStore,
   IEventMarkerStore
