@@ -327,13 +327,15 @@ class FieldOverlayRoot extends Component<Props, State> {
                 ></circle>
               )}
             {layers[ViewLayers.Obstacles] &&
-              doc.pathlist.activePath.params.obstacles.map((obstacle, index) => (
-                <FieldObstacle
-                  obstacle={obstacle}
-                  index={index}
-                  key={obstacle.uuid}
-                ></FieldObstacle>
-              ))}
+              doc.pathlist.activePath.params.obstacles.map(
+                (obstacle, index) => (
+                  <FieldObstacle
+                    obstacle={obstacle}
+                    index={index}
+                    key={obstacle.uuid}
+                  ></FieldObstacle>
+                )
+              )}
             {/* Line paths */}
             {layers[ViewLayers.Waypoints] && <FieldPathLines></FieldPathLines>}
             {layers[ViewLayers.Trajectory] && (
