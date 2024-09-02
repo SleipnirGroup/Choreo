@@ -2,8 +2,13 @@ use std::{mem::forget, path::PathBuf, sync::Arc, thread};
 
 use futures_util::{FutureExt, TryStreamExt};
 use ipc_channel::ipc::{self, IpcSender};
-use tokio::{io::AsyncReadExt, process::Command, select, sync::{oneshot, Notify}};
 use std::fs;
+use tokio::{
+    io::AsyncReadExt,
+    process::Command,
+    select,
+    sync::{oneshot, Notify},
+};
 use trajoptlib::{DifferentialTrajectory, SwerveTrajectory};
 
 use crate::{
@@ -50,12 +55,13 @@ pub fn remote_generate_child(args: RemoteArgs) {
                 let ser_string = match received {
                     LocalProgressUpdate::SwerveTraj { update: traj, .. } => {
                         serde_json::to_string(&RemoteProgressUpdate::IncompleteSwerveTraj(traj))
-                    },
+                    }
                     LocalProgressUpdate::DiffTraj { update: traj, .. } => {
                         serde_json::to_string(&RemoteProgressUpdate::IncompleteTankTraj(traj))
-                    },
+                    }
                     _ => continue,
-                }.expect("Failed to serialize progress update");
+                }
+                .expect("Failed to serialize progress update");
                 cln_ipc
                     .send(ser_string)
                     .expect("Failed to send progress update");
@@ -222,16 +228,14 @@ pub async fn remote_generate_parent(
             buffer.push(byte)
         }
         if !buffer.is_empty() {
-            let string = unsafe { String::from_utf8_unchecked(std::mem::take(&mut buffer))};
+            let string = unsafe { String::from_utf8_unchecked(std::mem::take(&mut buffer)) };
             let lines: Vec<String> = string.split('\n').map(ToString::to_string).collect();
             for line in lines {
-                println!{"{line}"}
-                remote_resources.emit_progress(
-                    LocalProgressUpdate::DiagnosticText {
-                        handle,
-                        update: line,
-                    }
-                );
+                println! {"{line}"}
+                remote_resources.emit_progress(LocalProgressUpdate::DiagnosticText {
+                    handle,
+                    update: line,
+                });
             }
         }
     });
