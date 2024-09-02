@@ -31,7 +31,6 @@ export const UIStateStore = types
     fieldScalingFactor: 0.02,
     projectName: types.maybe(types.string),
     projectDir: types.maybe(types.string),
-    isGradleProject: types.maybe(types.boolean),
     waypointPanelOpen: false,
     isViewOptionsPanelOpen: false,
     robotConfigOpen: false,
@@ -142,9 +141,6 @@ export const UIStateStore = types
     },
     setSaveFileDir(dir: string | undefined) {
       self.projectDir = dir;
-    },
-    setIsGradleProject(isGradleProject: boolean | undefined) {
-      self.isGradleProject = isGradleProject;
     },
     setWaypointPanelOpen(open: boolean) {
       self.waypointPanelOpen = open;
