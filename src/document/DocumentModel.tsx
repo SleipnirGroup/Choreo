@@ -163,7 +163,7 @@ export const DocumentStore = types
       if (pathStore.params.waypoints.length < 2) {
         return;
       }
-      console.log("og wpt2: ", pathStore.path.waypoints[1].heading.value);
+      console.log("og wpt2: ", pathStore.params.waypoints[1].heading.value);
       const adjustedHeadings = await Commands.adjustHeadings(
         pathStore.serialize
       );
@@ -171,10 +171,10 @@ export const DocumentStore = types
       adjustedHeadings.forEach((heading, i) => {
         console.log("trying to set wpt ", i, " to ", heading);
         if (heading !== undefined || heading !== null) {
-          pathStore.path.waypoints[i].heading.setValue(heading);
+          pathStore.params.waypoints[i].heading.setValue(heading);
         }
       });
-      console.log("new wpt2: ", pathStore.path.waypoints[1].heading.value);
+      console.log("new wpt2: ", pathStore.params.waypoints[1].heading.value);
       console.log(pathStore.serialize);
       const config = self.robotConfig.serialize;
       pathStore.params.constraints.forEach((constraint) => {

@@ -1,26 +1,20 @@
 use std::f64::consts::PI;
 
 use super::generate::{convert_constraints_to_index, fix_scope};
-use super::types::Traj;
-use crate::document::types::ConstraintData::{MaxAngularVelocity, PointAt};
 use crate::error::ChoreoError;
-use crate::util::math_util::angle_modulus;
-use crate::Result;
+use crate::spec::traj::ConstraintData::{MaxAngularVelocity, PointAt};
+use crate::spec::traj::TrajFile;
+use crate::ChoreoResult;
+use super::angle_modulus;
 
-// A value version since commands don't support borrows, but we need the borrow
-// version for generation.
-#[tauri::command]
-#[allow(clippy::needless_pass_by_value)]
-pub fn cmd_adjust_waypoint_headings(traj: Traj) -> Result<Vec<f64>> {
-    adjust_waypoint_headings(&traj)
-}
 
-pub fn adjust_waypoint_headings(traj: &Traj) -> Result<Vec<f64>> {
-    let mut new_headings = vec![0f64; traj.path.waypoints.len()];
-    let mut heading_fixed_references = vec![0u8; traj.path.waypoints.len()];
+
+pub fn adjust_waypoint_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
+    let mut new_headings = vec![0f64; traj.params.waypoints.len()];
+    let mut heading_fixed_references = vec![0u8; traj.params.waypoints.len()];
     let mut last_fixed_idx = 0;
 
-    for (idx, wpt) in traj.path.waypoints.iter().enumerate() {
+    for (idx, wpt) in traj.params.waypoints.iter().enumerate() {
         if idx == 0 && !wpt.fix_heading {
             return Err(ChoreoError::HeadingConflict(idx));
         }
@@ -30,7 +24,7 @@ pub fn adjust_waypoint_headings(traj: &Traj) -> Result<Vec<f64>> {
             heading_fixed_references[idx] += 1;
             if idx > 0 {
                 // interpolate headings from last fixed idx
-                let start = traj.path.waypoints[last_fixed_idx].heading.1;
+                let start = traj.params.waypoints[last_fixed_idx].heading.1;
                 let dtheta = angle_modulus(wpt.heading.1 - start);
                 new_headings
                     .iter_mut()
@@ -46,13 +40,13 @@ pub fn adjust_waypoint_headings(traj: &Traj) -> Result<Vec<f64>> {
         }
     }
 
-    let num_wpts = traj.path.waypoints.len();
+    let num_wpts = traj.params.waypoints.len();
     let (constraints_idx, is_initial_guess) =
-        convert_constraints_to_index(&traj.path.snapshot(), num_wpts);
+        convert_constraints_to_index(&traj.params.snapshot(), num_wpts);
     let mut guess_point_idxs: Vec<usize> = Vec::new();
     is_initial_guess
         .iter()
-        .zip(&traj.path.snapshot().waypoints)
+        .zip(&traj.params.snapshot().waypoints)
         .enumerate()
         .for_each(|(i, (&is_guess, wpt))| {
             if is_guess && !wpt.fix_heading && !wpt.fix_translation {
@@ -70,7 +64,7 @@ pub fn adjust_waypoint_headings(traj: &Traj) -> Result<Vec<f64>> {
                         None => {}
                         Some(to) => {
                             let mut fixed_heading = None;
-                            traj.path
+                            traj.params
                                 .waypoints
                                 .iter()
                                 .enumerate()
@@ -102,8 +96,8 @@ pub fn adjust_waypoint_headings(traj: &Traj) -> Result<Vec<f64>> {
                 match to_opt {
                     None => {
                         // heading can point at target
-                        let robot_x = traj.path.waypoints[from].x.1;
-                        let robot_y = traj.path.waypoints[from].y.1;
+                        let robot_x = traj.params.waypoints[from].x.1;
+                        let robot_y = traj.params.waypoints[from].y.1;
                         let new_x = x - robot_x;
                         let new_y = y - robot_y;
                         let heading = new_y.atan2(new_x);
@@ -112,18 +106,18 @@ pub fn adjust_waypoint_headings(traj: &Traj) -> Result<Vec<f64>> {
                         } else {
                             heading
                         };
-                        if !traj.path.waypoints[from].fix_heading
-                            && (traj.path.waypoints[from].heading.1 != heading)
+                        if !traj.params.waypoints[from].fix_heading
+                            && (traj.params.waypoints[from].heading.1 != heading)
                         {
                             new_headings[from] = heading;
                         } else {
-                            std::println!("heading conflict on wpt {from}");
+                            tracing::debug!("heading conflict on wpt {from}");
                         }
                     }
                     Some(to) => {
                         for wpt_idx in from..=to {
-                            let robot_x = traj.path.waypoints[wpt_idx].x.1;
-                            let robot_y = traj.path.waypoints[wpt_idx].y.1;
+                            let robot_x = traj.params.waypoints[wpt_idx].x.1;
+                            let robot_y = traj.params.waypoints[wpt_idx].y.1;
                             let new_x = x - robot_x;
                             let new_y = y - robot_y;
                             let heading = new_y.atan2(new_x);
@@ -133,7 +127,7 @@ pub fn adjust_waypoint_headings(traj: &Traj) -> Result<Vec<f64>> {
                                 heading
                             };
                             heading_fixed_references[wpt_idx] += 1;
-                            if !traj.path.waypoints[wpt_idx].fix_heading {
+                            if !traj.params.waypoints[wpt_idx].fix_heading {
                                 new_headings[wpt_idx] = heading;
                             }
                         }
@@ -143,6 +137,6 @@ pub fn adjust_waypoint_headings(traj: &Traj) -> Result<Vec<f64>> {
             _ => {}
         }
     }
-    std::println!("heading_fixed_references: {heading_fixed_references:?}");
+    tracing::debug!("heading_fixed_references: {heading_fixed_references:?}");
     Ok(new_headings)
 }

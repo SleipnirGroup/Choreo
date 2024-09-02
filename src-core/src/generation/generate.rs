@@ -12,7 +12,7 @@ use trajoptlib::{
 
 use super::intervals::guess_control_interval_counts;
 use crate::error::ChoreoError;
-use crate::spec::project::Module;
+use crate::spec::project::{Module, ProjectFile};
 use crate::spec::traj::{
     ConstraintData, ConstraintIDX, ConstraintScope, Parameters, Sample, TrajFile
 };
@@ -114,7 +114,7 @@ pub fn setup_progress_sender() -> Receiver<LocalProgressUpdate> {
 }
 
 pub fn convert_constraints_to_index(
-    path_snapshot: &ChoreoPath<f64>,
+    path_snapshot: &Parameters<f64>,
     num_wpts: usize,
 ) -> (Vec<ConstraintIDX<f64>>, Vec<bool>) {
     let mut constraint_idx = Vec::<ConstraintIDX<f64>>::new();
@@ -165,14 +165,13 @@ pub fn convert_constraints_to_index(
     (constraint_idx, is_initial_guess)
 }
 
-#[tauri::command]
-pub async fn generate(
-    chor: Project,
-    traj: Traj,
+pub fn generate(
+    chor: &ProjectFile,
+    traj: TrajFile,
     // The handle referring to this path for the solver state callback
     handle: i64,
-) -> Result<Traj> {
-    let mut path_builder = SwervePathBuilder::new();
+) -> ChoreoResult<TrajFile> {
+    let mut traj_builder = SwervePathBuilder::new();
     let mut wpt_cnt: usize = 0;
     // tracks which idxs were guess points, which get added differently and require
     // adjusting indexes after them
@@ -180,7 +179,7 @@ pub async fn generate(
     let mut control_interval_counts: Vec<usize> = Vec::new();
     let mut guess_points_after_waypoint: Vec<Pose2d> = Vec::new();
 
-    let snapshot = traj.path.snapshot();
+    let snapshot = traj.params.snapshot();
 
     let path = &snapshot.waypoints;
 
@@ -301,16 +300,16 @@ pub async fn generate(
         .generate(true, handle)
         .map_err(ChoreoError::TrajOpt)?;
 
-    Ok(postprocess(&result, path, snapshot, counts_vec))
+    Ok(postprocess(&result, traj, snapshot, counts_vec))
 }
 
 fn postprocess(
     result: &SwerveTrajectory,
-    mut path: TrajFile,
+    mut traj: TrajFile,
     mut snapshot: Parameters<f64>,
     counts_vec: Vec<usize>,
 ) -> TrajFile {
-    path.params
+    traj.params
         .waypoints
         .iter_mut()
         .zip(snapshot.waypoints.iter_mut())
@@ -348,7 +347,7 @@ fn postprocess(
         .map(|a| a.1) // map to associate interval
         .collect::<Vec<usize>>();
     let nudge_zero = |f: f64| if f.abs() < 1e-12 { 0.0 } else { f };
-    path.traj.samples = splits
+    traj.traj.samples = splits
         .windows(2) // get adjacent pairs of interval counts
         .filter_map(|window| {
             result
@@ -368,7 +367,7 @@ fn postprocess(
                             vy: nudge_zero(swerve_sample.velocity_y),
                             heading: nudge_zero(swerve_sample.heading),
                             omega: nudge_zero(swerve_sample.angular_velocity),
-                            fx: if path.traj.forces_available {
+                            fx: if traj.traj.forces_available {
                                 [
                                     nudge_zero(swerve_sample.module_forces_x[0]),
                                     nudge_zero(swerve_sample.module_forces_x[1]),
@@ -378,7 +377,7 @@ fn postprocess(
                             } else {
                                 [0.0, 0.0, 0.0, 0.0]
                             },
-                            fy: if path.traj.forces_available {
+                            fy: if traj.traj.forces_available {
                                 [
                                     nudge_zero(swerve_sample.module_forces_y[0]),
                                     nudge_zero(swerve_sample.module_forces_y[1]),
@@ -393,7 +392,7 @@ fn postprocess(
                 })
         })
         .collect::<Vec<Vec<Sample>>>();
-    path.traj.waypoints = waypoint_times;
-    path.snapshot = Some(snapshot);
-    path
+    traj.traj.waypoints = waypoint_times;
+    traj.snapshot = Some(snapshot);
+    traj
 }

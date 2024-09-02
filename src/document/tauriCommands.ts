@@ -6,7 +6,7 @@ export const Commands = {
   guessIntervals: (config: RobotConfig<Expr>, traj: Traj) =>
     invoke<number[]>("guess_control_interval_counts", { config, traj }),
   adjustHeadings: (traj: Traj) =>
-    invoke<number[]>("cmd_adjust_waypoint_headings", { traj }),
+    invoke<number[]>("adjust_waypoint_headings", { traj }),
 
   /**
    * Generates a `Traj` using the specified `Project` and `Traj`.
