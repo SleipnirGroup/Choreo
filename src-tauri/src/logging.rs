@@ -206,7 +206,7 @@ fn fill_string(left_aligned: bool, width: usize, mut s: String) -> String {
     s
 }
 
-pub struct CompactFormatter;
+pub struct CompactFormatter{ pub ansicolor: bool }
 
 impl<S, N> tracing_subscriber::fmt::FormatEvent<S, N> for CompactFormatter
 where
@@ -287,7 +287,11 @@ where
 
         //write LEVEL TIME FILE:LINE MESSAGE
 
-        write!(writer, "{}| ", style.paint(level_str))?;
+        if self.ansicolor {
+            write!(writer, "{}| ", style.paint(level_str))?;
+        } else {
+            write!(writer, "{}| ", level_str)?;
+        }
         write!(writer, "{}| ", now_str)?;
         // write!(writer, "{}| ", fill_string(true, 22, target.to_string()))?;
         write!(writer, "{}| ", fill_string(true, 32, target))?;

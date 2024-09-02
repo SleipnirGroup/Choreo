@@ -361,6 +361,7 @@ name = "choreo"
 version = "2024.2.3"
 dependencies = [
  "choreo-core",
+ "current_platform",
  "nu-ansi-term 0.50.1",
  "open 5.3.0",
  "tauri",
@@ -664,6 +665,12 @@ dependencies = [
  "quote",
  "syn 2.0.75",
 ]
+
+[[package]]
+name = "current_platform"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a74858bcfe44b22016cb49337d7b6f04618c58e5dbfdef61b06b8c434324a0bc"
 
 [[package]]
 name = "cxx"
