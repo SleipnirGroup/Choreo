@@ -154,6 +154,7 @@ pub async fn set_deploy_path(resources: &WritingResources, path: PathBuf) {
     tracing::debug!("Setting deploy path to {:?}", path);
     let mut root = resources.root.lock().await;
     *root = path;
+    resources.trajfile_pool.clear();
 }
 
 pub async fn write_trajfile(resources: &WritingResources, trajfile: TrajFile) {
