@@ -78,8 +78,7 @@ class KeyboardShortcutsPanel extends Component<Props, State> {
         }}
       >
         {Object.entries(shortcuts).map((entry) => (
-          <>
-            <Accordion disableGutters>
+            <Accordion disableGutters key={entry[0]}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 {entry[0].toUpperCase()}
               </AccordionSummary>
@@ -110,7 +109,6 @@ class KeyboardShortcutsPanel extends Component<Props, State> {
                 </TableContainer>
               </AccordionDetails>
             </Accordion>
-          </>
         ))}
       </div>
     );

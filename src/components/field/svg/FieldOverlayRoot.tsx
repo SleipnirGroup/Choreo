@@ -267,8 +267,7 @@ class FieldOverlayRoot extends Component<Props, State> {
                   {NavbarItemData.map(
                     (item, index) =>
                       index <= NavbarItemSectionEnds[0] && (
-                        <>
-                          <Tooltip disableInteractive title={item.name}>
+                          <Tooltip disableInteractive title={item.name} key={item.name}>
                             <ToggleButton
                               value={`${index}`}
                               selected={
@@ -287,7 +286,6 @@ class FieldOverlayRoot extends Component<Props, State> {
                               {item.icon}
                             </ToggleButton>
                           </Tooltip>
-                        </>
                       )
                   )}
                 </ToggleButtonGroup>

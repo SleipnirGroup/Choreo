@@ -86,6 +86,7 @@ class Sidebar extends Component<Props, State> {
         >
           PATHS
           <Tooltip disableInteractive title="Duplicate Path">
+            <span>
             <IconButton
               size="small"
               color="default"
@@ -99,6 +100,7 @@ class Sidebar extends Component<Props, State> {
             >
               <ContentCopy fontSize="small"></ContentCopy>
             </IconButton>
+            </span>
           </Tooltip>
           <Tooltip disableInteractive title="Add Path">
             <IconButton
@@ -167,6 +169,7 @@ class Sidebar extends Component<Props, State> {
                   (obstacle: ICircularObstacleStore, index: number) => {
                     return (
                       <SidebarObstacle
+                        key={obstacle.uuid}
                         obstacle={obstacle}
                         index={index}
                       ></SidebarObstacle>

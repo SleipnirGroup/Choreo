@@ -8,7 +8,7 @@ import {
   Draggable,
   DraggingStyle,
   NotDraggingStyle
-} from "react-beautiful-dnd";
+} from "@hello-pangea/dnd";
 import { CSSProperties } from "styled-components";
 import { doc, uiState } from "../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";

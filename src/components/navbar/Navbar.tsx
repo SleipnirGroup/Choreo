@@ -18,7 +18,7 @@ class Navbar extends Component<Props, State> {
     return (
       <div className={styles.Container}>
         {NavbarItemSectionEnds.map((endSplit, sectionIdx) =>
-          sectionIdx != 2 || doc.usesObstacles ? (
+          (sectionIdx != 2 || doc.usesObstacles) && (
             <ToggleButtonGroup
               className={styles.ToggleGroup}
               exclusive
@@ -37,7 +37,7 @@ class Navbar extends Component<Props, State> {
                       //@ts-expect-error needs a value prop for ToggleButtonGroup
                       value={`${index}`}
                       title={item.name}
-                      key={`${sectionIdx}_${index}`}
+                      key={item.name}
                     >
                       <ToggleButton
                         value={`${index}`}
@@ -47,6 +47,7 @@ class Navbar extends Component<Props, State> {
                             color: "var(--select-yellow)"
                           }
                         }}
+                        key={item.name}
                       >
                         {item.icon}
                       </ToggleButton>
@@ -54,8 +55,6 @@ class Navbar extends Component<Props, State> {
                   )
               )}
             </ToggleButtonGroup>
-          ) : (
-            <></>
           )
         )}
       </div>
