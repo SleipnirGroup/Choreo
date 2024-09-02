@@ -12,7 +12,7 @@ use trajoptlib::{
 
 use super::intervals::guess_control_interval_counts;
 use crate::error::ChoreoError;
-use crate::spec::project::{Module, ProjectFile};
+use crate::spec::project::Module;
 use crate::spec::traj::{
     ConstraintData, ConstraintIDX, ConstraintScope, Parameters, Sample, TrajFile
 };
