@@ -65,10 +65,12 @@ build.once("exit", (code) => {
   if (code !== 0) {
     throw new Error("Build failed");
   }
-  execSync(
-    `cp target/${targetTriple}/release/choreo-cli${extension} cli/choreo-cli${extension}`
+  fs.copyFileSync(
+    `target/${targetTriple}/release/choreo-cli${extension}`,
+    `cli/choreo-cli${extension}`
   );
-  execSync(
-    `mv target/${targetTriple}/release/choreo-cli${extension} ${cliPath}`
+  fs.renameSync(
+    `target/${targetTriple}/release/choreo-cli${extension}`,
+    cliPath
   );
 });
