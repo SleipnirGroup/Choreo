@@ -39,7 +39,7 @@
     },
     "bundle": {
       "active": true,
-      "targets": ["appimage", "deb", "nsis", "dmg"],
+      "targets": ["appimage", "deb", "dmg", "nsis", "rpm"],
       "identifier": "org.sleipnirgroup",
       "shortDescription": "Choreo",
       "icon": [

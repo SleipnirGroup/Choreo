@@ -119,6 +119,7 @@ jobs:
           path: |
             target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.AppImage
             target/x86_64-unknown-linux-gnu/release/bundle/deb/*.deb
+            target/x86_64-unknown-linux-gnu/release/bundle/rpm/*.rpm
 
   release:
     name: Create draft release
@@ -161,6 +162,10 @@ jobs:
         working-directory: pkg/Linux-x86_64/deb
         run: mv *.deb Choreo-${{ github.ref_name }}-Linux-x86_64.deb
 
+      - name: Rename Linux x86_64 file (.rpm)
+        working-directory: pkg/Linux-x86_64/rpm
+        run: mv *.rpm Choreo-${{ github.ref_name }}-Linux-x86_64.rpm
+
       - name: Display structure of renamed files
         run: ls -R
 
@@ -168,6 +173,6 @@ jobs:
         with:
           name: Choreo ${{ github.ref_name }}
           tag: ${{ github.ref_name }}
-          artifacts: "pkg/**/*.AppImage,pkg/**/*.exe,pkg/**/*.deb,pkg/**/*.dmg"
+          artifacts: "pkg/**/*.AppImage,pkg/**/*.deb,pkg/**/*.dmg,pkg/**/*.exe,pkg/**/*.rpm"
           draft: true
           prerelease: true
