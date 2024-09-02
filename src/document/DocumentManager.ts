@@ -780,7 +780,7 @@ export async function saveProjectDialog() {
 }
 
 /**
- * Export all trajectories to the deploy directory, as determined by uiState.isGradleProject
+ * Export all trajectories to the deploy directory
  */
 export async function exportAllTrajectories() {
   if (uiState.hasSaveLocation) {
