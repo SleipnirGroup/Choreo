@@ -42,6 +42,9 @@ mod ffi {
         velocity_x: f64,
         velocity_y: f64,
         angular_velocity: f64,
+        acceleration_x: f64,
+        acceleration_y: f64,
+        angular_acceleration: f64,
         module_forces_x: Vec<f64>,
         module_forces_y: Vec<f64>,
     }
