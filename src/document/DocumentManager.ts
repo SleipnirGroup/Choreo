@@ -381,7 +381,6 @@ export async function setupEventListeners() {
     () => doc.history.undoIdx,
     () => {
       if (uiState.hasSaveLocation) {
-        tracing.debug("autosaving project");
         saveProject();
       }
     }

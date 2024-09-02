@@ -7,6 +7,33 @@
 use nu_ansi_term::{Color, Style};
 use tracing::{field::Visit, Level};
 
+pub fn now_str() -> String {
+    format!(
+        "{:02}:{:02}:{:02}.{:03}",
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("Time went backwards")
+            .as_secs()
+            % 86400
+            / 3600,
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("Time went backwards")
+            .as_secs()
+            % 3600
+            / 60,
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("Time went backwards")
+            .as_secs()
+            % 60,
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("Time went backwards")
+            .subsec_millis()
+    )
+}
+
 #[inline]
 fn hone_file(file: &str) -> String {
     let mut string = file.to_string();
@@ -228,30 +255,7 @@ where
             // _ => return Ok(()),
         };
 
-        let now_str = format!(
-            "{:02}:{:02}:{:02}.{:03}",
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .expect("Time went backwards")
-                .as_secs()
-                % 86400
-                / 3600,
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .expect("Time went backwards")
-                .as_secs()
-                % 3600
-                / 60,
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .expect("Time went backwards")
-                .as_secs()
-                % 60,
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .expect("Time went backwards")
-                .subsec_millis()
-        );
+        let now_str = now_str();
 
         // let target = match loc {
         //     Locations::Frontend => "choreo::frontend",
@@ -275,8 +279,6 @@ where
                 target.push_str(&format!(":{}", line.replace("\"", "")));
             } else if let Some(function) = visitor.function {
                 target.push_str(&format!("@{}", function.replace("\"", "")));
-            } else {
-                target.push('?');
             }
         } else if let Some(line) = meta.line() {
             target.push_str(&format!(":{}", line));

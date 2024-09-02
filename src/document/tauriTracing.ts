@@ -15,12 +15,16 @@ function parseStack(stack: string | undefined): Location {
       //parse v8 stack
       const caller: string = stack.split("\n")[2];
       const callerParts: string[] = caller.split(" ");
-      console.log(stack);
       const inter: string | undefined = callerParts[callerParts.length - 1]
         .split("/")
         .pop();
       const callerFile: string = inter?.split(":")[0].split("?")[0] ?? "unknown";
-      const callerFunc: string = callerParts[callerParts.length - 2];
+      let callerFunc: string | undefined = callerParts[callerParts.length - 2];
+      if (callerFunc === "Object.<anonymous>") {
+        callerFunc = undefined;
+      } else if (callerFunc === "at") {
+        callerFunc = undefined;
+      }
       return { file: callerFile, function: callerFunc };
     } else {
       // parse spidermonkey / jscore stack
