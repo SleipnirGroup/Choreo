@@ -35,6 +35,7 @@ import {
   Expr
 } from "./2025/DocumentTypes";
 import { Env } from "./DocumentManager";
+import { tracing } from "./tauriTracing";
 
 export const math = create(all, { predictable: true });
 
@@ -252,7 +253,7 @@ export const ExpressionStore = types
       // intentionally not typing it here, so that there's not a circular type dependency
       const env = getEnv(self);
       if (env.vars === undefined) {
-        console.error("Evaluating without variables!", self.toString());
+        tracing.error("Evaluating without variables!", self.toString());
         return new Map<string, any>();
       }
       const scope = env.vars().scope;
@@ -319,7 +320,7 @@ export const ExpressionStore = types
       const scope: Map<string, any> =
         self.getScope() ??
         ((() => {
-          console.error("Evaluating without variables!");
+          tracing.error("Evaluating without variables!");
           return undefined;
         }) as Evaluator);
       scope.keys();
@@ -395,19 +396,19 @@ export const ExpressionStore = types
         if (self.defaultUnit === undefined) {
           return result;
         }
-        // console.error(
-        //   "unit expression",
-        //   self.expr.toString(),
-        //   "evaluated to number"
-        // );
+        tracing.error(
+          "unit expression",
+          self.expr.toString(),
+          "evaluated to number"
+        );
         return math.unit(result, self.defaultUnit.toString());
       }
       if (self.defaultUnit === undefined) {
-        // console.error(
-        //   "number expression",
-        //   self.expr.toString(),
-        //   "evaluated to unit"
-        // );
+        tracing.error(
+          "number expression",
+          self.expr.toString(),
+          "evaluated to unit"
+        );
         return undefined;
       }
       return math.unit(result.toString()).to(self.defaultUnit!.toString());
@@ -427,21 +428,16 @@ export const ExpressionStore = types
       try {
         newNumber = self.evaluator(newNode);
       } catch (e) {
-        console.error(self.toString(), "failed to evaluate", e);
+        tracing.error("failed to evaluate", e);
         return undefined;
       }
       if (newNumber === undefined || newNumber === null) {
-        console.error(self.toString(), "evaluated to undefined or null");
+        tracing.error("evaluated to undefined or null");
         return undefined;
       }
       if (typeof newNumber === "number") {
         if (!isFinite(newNumber)) {
-          console.error(
-            self.toString(),
-            "failed to evaluate: ",
-            newNumber,
-            "is infinite"
-          );
+          tracing.error("failed to evaluate: ", newNumber, "is infinite");
           return undefined;
         }
         if (self.defaultUnit !== undefined) {
@@ -455,8 +451,7 @@ export const ExpressionStore = types
       // newNumber is Unit
       const unit = self.defaultUnit;
       if (unit === undefined) {
-        console.error(
-          self.toString(),
+        tracing.error(
           "failed to evaluate: ",
           newNumber,
           "is unit on unitless expr"
@@ -464,20 +459,15 @@ export const ExpressionStore = types
         return undefined;
       }
       if (!newNumber.equalBase(unit)) {
-        console.error(self.toString(), "unit mismatch", unit);
+        tracing.error("unit mismatch", unit);
         return undefined;
       }
       if (isNull(newNumber.value)) {
-        console.error(self.toString(), "valueless unit", unit);
+        tracing.error("valueless unit", unit);
         return undefined;
       }
       if (!isFinite(newNumber.value)) {
-        console.error(
-          self.toString(),
-          "failed to evaluate: ",
-          newNumber.value,
-          "is infinite"
-        );
+        tracing.error("failed to evaluate: ", newNumber.value, "is infinite");
         return undefined;
       }
       return newNode;

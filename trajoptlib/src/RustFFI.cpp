@@ -7,7 +7,10 @@
 #include <algorithm>
 #include <cstddef>
 #include <stdexcept>
+#include <string>
 #include <vector>
+
+#include <sleipnir/optimization/SolverExitCondition.hpp>
 
 #include "trajopt/constraint/AngularVelocityMaxMagnitudeConstraint.hpp"
 #include "trajopt/constraint/LinearAccelerationMaxMagnitudeConstraint.hpp"
@@ -197,7 +200,7 @@ SwerveTrajectory SwervePathBuilder::generate(bool diagnostics,
 
     return SwerveTrajectory{std::move(rustSamples)};
   } else {
-    throw std::runtime_error{sol.error()};
+    throw std::runtime_error{std::string{sleipnir::ToMessage(sol.error())}};
   }
 }
 
@@ -396,7 +399,7 @@ DifferentialTrajectory DifferentialPathBuilder::generate(bool diagnostics,
 
     return DifferentialTrajectory{std::move(rustSamples)};
   } else {
-    throw std::runtime_error{sol.error()};
+    throw std::runtime_error{std::string{sleipnir::ToMessage(sol.error())}};
   }
 }
 

@@ -26,6 +26,7 @@ dist-ssr
 # Choreo
 src-tauri/target
 target
+cli
 
 # TrajoptLib
 trajoptlib/build*
@@ -45,3 +46,6 @@ compile_commands.json
 
 # mkdocs
 site/
+
+# cmake user presets
+CMakeUserPresets.json

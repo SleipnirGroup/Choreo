@@ -2,7 +2,7 @@ import { TextField, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import { resolveIdentifier } from "mobx-state-tree";
 import React, { Component } from "react";
-import { DragDropContext } from "react-beautiful-dnd";
+import { DragDropContext } from "@hello-pangea/dnd";
 import {
   CommandStore,
   IEventMarkerStore
@@ -71,7 +71,7 @@ class EventMarkerConfigPanel extends Component<Props, State> {
     const marker = this.props.marker;
 
     let startIndex = (marker.getTargetIndex() ?? -0.5) + 1;
-    const points = marker.getPath().path.waypoints;
+    const points = marker.getPath().params.waypoints;
     const pointcount = points.length;
     if (marker.target === "first") {
       startIndex = 0;

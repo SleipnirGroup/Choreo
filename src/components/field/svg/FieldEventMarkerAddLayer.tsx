@@ -12,7 +12,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
 
   render() {
     const activePath = doc.pathlist.activePath;
-    const waypoints = activePath.path.waypoints;
+    const waypoints = activePath.params.waypoints;
     return (
       <>
         {/* Draw circles on each waypoint */}

@@ -4,14 +4,18 @@ pkgs.mkShell {
   name = "Choreo";
 
   packages = with pkgs; [
-    cargo
-    nodejs
-    gcc
-
-    pkg-config
     cmake
-    webkitgtk
+    gcc
+    git
+    nodejs
+    pnpm
+    rustup
+
+    cacert
     gnome.libsoup
+    librsvg
+    pkg-config
+    webkitgtk
   ];
 
   shellHook = ''

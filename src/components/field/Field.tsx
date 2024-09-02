@@ -36,7 +36,7 @@ export class Field extends Component<Props, State> {
     const activePathUUID = doc.pathlist.activePathUUID;
     let indexIfWaypoint = -1;
     if (selectedSidebar !== undefined && "heading" in selectedSidebar) {
-      indexIfWaypoint = activePath.path.waypoints.findIndex(
+      indexIfWaypoint = activePath.params.waypoints.findIndex(
         (point: IHolonomicWaypointStore) =>
           point.uuid == (selectedSidebar as IHolonomicWaypointStore)?.uuid
       );
@@ -55,7 +55,7 @@ export class Field extends Component<Props, State> {
           )}
         {selectedSidebar !== undefined &&
           "from" in selectedSidebar &&
-          activePath.path.constraints.find(
+          activePath.params.constraints.find(
             (constraint) =>
               constraint.uuid == (selectedSidebar as IConstraintStore)!.uuid
           ) && (
@@ -65,7 +65,7 @@ export class Field extends Component<Props, State> {
           )}
         {selectedSidebar !== undefined &&
           "radius" in selectedSidebar &&
-          activePath.path.obstacles.find(
+          activePath.params.obstacles.find(
             (obstacle) =>
               obstacle.uuid == (selectedSidebar as ICircularObstacleStore)!.uuid
           ) && (
@@ -130,7 +130,8 @@ export class Field extends Component<Props, State> {
                 }
               }}
               onClick={(event) => {
-                Commands.cancel();
+                Commands.cancelAll();
+                Commands.cancelAll();
               }}
               disabled={activePath.canGenerate()}
             >

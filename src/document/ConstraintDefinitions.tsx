@@ -1,4 +1,4 @@
-import { NearMe, StopCircleOutlined } from "@mui/icons-material";
+import { NearMe, StopCircleOutlined, SyncOutlined } from "@mui/icons-material";
 import { Unit } from "mathjs";
 import { JSXElementConstructor, ReactElement } from "react";
 import { ObjectTyped } from "../util/ObjectTyped";
@@ -43,6 +43,7 @@ export type ConstraintDataTypeMap = {
   StopPoint: Record<string, never>;
   MaxVelocity: { max: Expr };
   MaxAcceleration: { max: Expr };
+  MaxAngularVelocity: { max: Expr };
   PointAt: {
     x: Expr;
     y: Expr;
@@ -104,6 +105,23 @@ export const ConstraintDefinitions: defs = {
     wptScope: true,
     sgmtScope: true
   } satisfies ConstraintDefinition<"MaxAcceleration">,
+  MaxAngularVelocity: {
+    type: "MaxAngularVelocity" as const,
+    name: "Max Angular Velocity",
+    shortName: "Max Ang Vel",
+    description: "Maximum Angular Velocity",
+    icon: <SyncOutlined />,
+    properties: {
+      max: {
+        name: "Max Angular Velocity",
+        description: "Maximum Angular Velocity of robot chassis",
+        units: Units.RadianPerSecond,
+        defaultVal: ["0 rad/s", 0]
+      }
+    },
+    wptScope: true,
+    sgmtScope: true
+  } satisfies ConstraintDefinition<"MaxAngularVelocity">,
   PointAt: {
     type: "PointAt" as const,
     name: "Point At",

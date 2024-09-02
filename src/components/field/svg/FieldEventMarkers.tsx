@@ -55,6 +55,7 @@ class FieldEventMarkers extends Component<Props, State> {
       const marked = sample(marker.timestamp, path.traj.fullTraj);
       return (
         <FieldEventMarker
+          key={marker.uuid}
           x={marked.x}
           y={marked.y}
           selected={marker.selected}

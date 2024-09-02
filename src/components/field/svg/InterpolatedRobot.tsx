@@ -80,8 +80,9 @@ class InterpolatedRobot extends Component<Props, State> {
           }
         ></polygon>
         {/* Wheel locations */}
-        {doc.robotConfig.modules.map((mod) => (
+        {doc.robotConfig.modules.map((mod, idx) => (
           <circle
+            key={idx}
             cx={mod.x.value}
             cy={mod.y.value}
             r={doc.robotConfig.radius.value}
