@@ -22,7 +22,8 @@
     "fmt": "pnpm run fmtCpp && pnpm run fmtJava && pnpm run fmtJs && pnpm run fmtRust && pnpm run lintJs",
     "dev": "tauri dev -- --target-dir ./target/tauri",
     "build": "tauri build",
-    "build-cli": "node build_cli.cjs"
+    "build-cli": "node build_cli.cjs",
+    "tauri": "tauri"
   },
   "dependencies": {
     "@emotion/styled": "^11.13.0",
