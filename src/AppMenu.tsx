@@ -26,15 +26,16 @@ import { toast } from "react-toastify";
 import {
   exportActiveTrajectory,
   exportAllTrajectories,
-  newFile,
+  newProject,
   openProject,
-  saveFileDialog,
+  saveProjectDialog,
   uiState
 } from "./document/DocumentManager";
 
 import SettingsModal from "./components/config/SettingsModal";
 import { Commands } from "./document/tauriCommands";
 import { version } from "./util/version";
+import { tracing } from "./document/tauriTracing";
 
 type Props = object;
 
@@ -149,7 +150,7 @@ class AppMenu extends Component<Props, State> {
                     { title: "Choreo", type: "warning" }
                   )
                 ) {
-                  await Commands.openFileDialog().then((filepath) =>
+                  await Commands.openProjectDialog().then((filepath) =>
                     openProject(filepath)
                   );
                 }
@@ -163,7 +164,7 @@ class AppMenu extends Component<Props, State> {
             {/* Save File */}
             <ListItemButton
               onClick={async () => {
-                saveFileDialog();
+                saveProjectDialog();
               }}
             >
               <ListItemIcon>
@@ -182,7 +183,7 @@ class AppMenu extends Component<Props, State> {
                     { title: "Choreo", type: "warning" }
                   )
                 ) {
-                  newFile();
+                  newProject();
                 }
               }}
             >
@@ -199,7 +200,7 @@ class AppMenu extends Component<Props, State> {
                   success: "Trajectory exported",
                   error: {
                     render(toastProps) {
-                      console.error(toastProps.data);
+                      tracing.error(toastProps.data);
                       return `Error exporting trajectory: ${toastProps.data}`;
                     }
                   }
@@ -224,7 +225,7 @@ class AppMenu extends Component<Props, State> {
                       }
                     )
                   ) {
-                    if (!(await saveFileDialog())) {
+                    if (!(await saveProjectDialog())) {
                       return;
                     }
                   } else {
@@ -233,10 +234,10 @@ class AppMenu extends Component<Props, State> {
                 }
 
                 toast.promise(exportAllTrajectories(), {
-                  success: `Saved all trajectories to ${uiState.chorRelativeTrajDir}.`,
+                  success: `Saved all trajectories.`,
                   error: {
                     render(toastProps) {
-                      console.error(toastProps.data);
+                      tracing.error(toastProps.data);
                       return `Couldn't export trajectories: ${
                         toastProps.data as string[]
                       }`;
@@ -340,17 +341,13 @@ class AppMenu extends Component<Props, State> {
   private projectLocation(relativeFormat: boolean): string {
     return (
       (relativeFormat
-        ? this.convertToRelative(uiState.saveFileDir as string)
-        : uiState.saveFileDir) + path.sep
+        ? this.convertToRelative(uiState.projectDir as string)
+        : uiState.projectDir) + path.sep
     );
   }
 
   private trajectoriesLocation(relativeFormat: boolean): string {
-    return (
-      this.projectLocation(relativeFormat) +
-      uiState.chorRelativeTrajDir +
-      path.sep
-    );
+    return this.projectLocation(relativeFormat) + path.sep;
   }
 }
 export default observer(AppMenu);

@@ -19,7 +19,7 @@ class ConstraintsConfigPanel extends Component<Props, State> {
     const isSegmentConstraint = definition.sgmtScope;
     let startIndex = (this.props.constraint.getStartWaypointIndex() ?? 0) + 1;
     let endIndex = (this.props.constraint.getEndWaypointIndex() ?? 0) + 1;
-    const points = this.props.constraint.getPath().path.waypoints;
+    const points = this.props.constraint.getPath().params.waypoints;
     const pointcount = points.length;
     if (this.props.constraint.from === "first") {
       startIndex = 0;

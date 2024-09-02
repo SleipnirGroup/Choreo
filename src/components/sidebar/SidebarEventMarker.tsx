@@ -31,7 +31,7 @@ class SidebarMarker extends Component<Props, State> {
         getParent<IChoreoTrajStore>(
           getParent<IEventMarkerStore[]>(this.props.marker)
         )
-      ).path.findUUIDIndex(id.uuid) + 1
+      ).params.findUUIDIndex(id.uuid) + 1
     );
   }
 

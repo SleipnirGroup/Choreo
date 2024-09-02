@@ -66,6 +66,7 @@ import Ajv from "ajv";
 import { ROBOT_CONFIG_DEFAULTS } from "./RobotConfigStore";
 // Update the import path in the below to point to a particular version as current
 import { SAVE_FILE_VERSION } from "./previousSpecs/v0_4";
+import { tracing } from "./tauriTracing";
 
 export type {
   SavedDocument,
@@ -340,6 +341,7 @@ export const updateToCurrent = (document: {
     version !== SAVE_FILE_VERSION && i < Object.keys(VERSIONS).length;
     i++
   ) {
+    tracing.debug(`Upgrading document from ${version} to ${SAVE_FILE_VERSION}`);
     if (Object.keys(VERSIONS).includes(version)) {
       document = VERSIONS[version as keyof typeof VERSIONS].up(document);
       version = document.version;

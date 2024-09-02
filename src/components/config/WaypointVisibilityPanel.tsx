@@ -16,7 +16,7 @@ class WaypointVisibilityPanel extends Component<Props, State> {
 
     const startIndex = doc.pathlist.activePath.ui.visibleWaypointsStart ?? 0;
     const endIndex = doc.pathlist.activePath.ui.visibleWaypointsEnd ?? 0;
-    const points = doc.pathlist.activePath.path.waypoints;
+    const points = doc.pathlist.activePath.params.waypoints;
     const pointcount = points.length;
 
     const sliderMarks = points.map((point, idx) => ({
@@ -24,7 +24,7 @@ class WaypointVisibilityPanel extends Component<Props, State> {
       label: idx + 1
     }));
 
-    if (doc.pathlist.activePath.path.waypoints.length >= 2) {
+    if (doc.pathlist.activePath.params.waypoints.length >= 2) {
       return (
         layers[ViewLayers.Focus] && (
           <div

@@ -95,7 +95,7 @@ class SidebarConstraint extends Component<Props, State> {
             className={styles.SidebarRightIcon}
             onClick={(e) => {
               e.stopPropagation();
-              doc.pathlist.activePath.path.deleteConstraint(
+              doc.pathlist.activePath.params.deleteConstraint(
                 this.props.constraint?.uuid || ""
               );
             }}

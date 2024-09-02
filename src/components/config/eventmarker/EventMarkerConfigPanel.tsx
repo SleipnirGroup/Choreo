@@ -71,7 +71,7 @@ class EventMarkerConfigPanel extends Component<Props, State> {
     const marker = this.props.marker;
 
     let startIndex = (marker.getTargetIndex() ?? -0.5) + 1;
-    const points = marker.getPath().path.waypoints;
+    const points = marker.getPath().params.waypoints;
     const pointcount = points.length;
     if (marker.target === "first") {
       startIndex = 0;

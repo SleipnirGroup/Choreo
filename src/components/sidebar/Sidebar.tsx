@@ -133,7 +133,7 @@ class Sidebar extends Component<Props, State> {
             <span>CONSTRAINTS</span>
           </Divider>
           <div className={styles.WaypointList}>
-            {doc.pathlist.activePath.path.constraints.map((constraint) => {
+            {doc.pathlist.activePath.params.constraints.map((constraint) => {
               return (
                 <SidebarConstraint
                   key={constraint.uuid}
@@ -142,7 +142,7 @@ class Sidebar extends Component<Props, State> {
               );
             })}
           </div>
-          {doc.pathlist.activePath.path.constraints.length == 0 && (
+          {doc.pathlist.activePath.params.constraints.length == 0 && (
             <div className={styles.SidebarItem + " " + styles.Noninteractible}>
               <span></span>
               <span style={{ color: "gray", fontStyle: "italic" }}>
@@ -151,7 +151,7 @@ class Sidebar extends Component<Props, State> {
             </div>
           )}
           {(doc.usesObstacles ||
-            doc.pathlist.activePath.path.obstacles.includes(
+            doc.pathlist.activePath.params.obstacles.includes(
               doc.selectedSidebarItem
             )) && (
             <>
@@ -163,7 +163,7 @@ class Sidebar extends Component<Props, State> {
                 <span>OBSTACLES</span>
               </Divider>
               <div className={styles.WaypointList}>
-                {doc.pathlist.activePath.path.obstacles.map(
+                {doc.pathlist.activePath.params.obstacles.map(
                   (obstacle: ICircularObstacleStore, index: number) => {
                     return (
                       <SidebarObstacle
@@ -174,7 +174,7 @@ class Sidebar extends Component<Props, State> {
                   }
                 )}
               </div>
-              {doc.pathlist.activePath.path.obstacles.length == 0 && (
+              {doc.pathlist.activePath.params.obstacles.length == 0 && (
                 <div
                   className={styles.SidebarItem + " " + styles.Noninteractible}
                 >

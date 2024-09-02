@@ -19,16 +19,14 @@ type Props = {
   lineColor: string;
 };
 function FieldConstraintDisplayLayer(props: Props) {
-  console.log("FieldConstraintDisplayLayer", doc.isSidebarConstraintSelected);
   const constraint = props.constraint;
-  console.log(constraint);
   const startIndex = constraint.getStartWaypointIndex();
   const endIndex = constraint.getEndWaypointIndex();
 
   return (
     <g>
       <FieldConstraintRangeLayer
-        points={doc.pathlist.activePath.path.waypoints}
+        points={doc.pathlist.activePath.params.waypoints}
         start={startIndex}
         end={endIndex}
         lineColor={props.lineColor}

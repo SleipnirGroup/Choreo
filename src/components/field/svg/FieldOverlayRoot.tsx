@@ -141,7 +141,7 @@ class FieldOverlayRoot extends Component<Props, State> {
     // User selects a waypoint
     else {
       const waypoint =
-        doc.pathlist.activePath.path.waypoints[
+        doc.pathlist.activePath.params.waypoints[
           uiState.contextMenuSelectedWaypoint
         ];
       waypoint.setType(contextMenuWaypointType);
@@ -316,7 +316,7 @@ class FieldOverlayRoot extends Component<Props, State> {
               ></circle>
             )}
           {layers[ViewLayers.Obstacles] &&
-            doc.pathlist.activePath.path.obstacles.map((obstacle, index) => (
+            doc.pathlist.activePath.params.obstacles.map((obstacle, index) => (
               <FieldObstacle
                 obstacle={obstacle}
                 index={index}
@@ -336,7 +336,7 @@ class FieldOverlayRoot extends Component<Props, State> {
           )}
           <FieldEventMarkers></FieldEventMarkers>
           {layers[ViewLayers.Waypoints] &&
-            doc.pathlist.activePath.path.waypoints
+            doc.pathlist.activePath.params.waypoints
               .map((point, index) => {
                 const activePath = doc.pathlist.activePath;
                 if (
@@ -424,7 +424,7 @@ class FieldOverlayRoot extends Component<Props, State> {
       initial.x = [`${coords.x} m`, coords.x];
       initial.y = [`${coords.y} m`, coords.y];
       initial.heading = [`0 deg`, 0];
-      const newPoint = doc.pathlist.activePath.path.addWaypoint(initial);
+      const newPoint = doc.pathlist.activePath.params.addWaypoint(initial);
       newPoint.setSelected(true);
     });
     doc.history.stopGroup();
@@ -447,7 +447,7 @@ class FieldOverlayRoot extends Component<Props, State> {
         y: e.clientY
       });
       doc.history.startGroup(() => {
-        doc.pathlist.activePath.path.addObstacle(coords.x, coords.y, 0.5);
+        doc.pathlist.activePath.params.addObstacle(coords.x, coords.y, 0.5);
       });
       doc.history.stopGroup();
     }

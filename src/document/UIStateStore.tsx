@@ -17,6 +17,7 @@ import {
   navbarIndexToConstraintDefinition,
   navbarIndexToConstraintKey
 } from "./UIData";
+import { tracing } from "./tauriTracing";
 
 export const UIStateStore = types
   .model("UIStateStore", {
@@ -28,8 +29,8 @@ export const UIStateStore = types
       )
     ),
     fieldScalingFactor: 0.02,
-    saveFileName: types.maybe(types.string),
-    saveFileDir: types.maybe(types.string),
+    projectName: types.maybe(types.string),
+    projectDir: types.maybe(types.string),
     isGradleProject: types.maybe(types.boolean),
     waypointPanelOpen: false,
     isViewOptionsPanelOpen: false,
@@ -57,13 +58,8 @@ export const UIStateStore = types
   })
   .views((self: any) => {
     return {
-      get chorRelativeTrajDir() {
-        return "";
-      },
       get hasSaveLocation() {
-        return (
-          self.saveFileName !== undefined && self.saveFileDir !== undefined
-        );
+        return self.projectName !== undefined && self.projectDir !== undefined;
       },
       getSelectedConstraint() {
         return navbarIndexToConstraint[self.selectedNavbarItem] ?? undefined;
@@ -112,9 +108,9 @@ export const UIStateStore = types
         await tauriWindow
           .getCurrent()
           .setTitle(
-            `Choreo ${await getVersion()} - ${self.saveFileName ?? "Untitled"}`
+            `Choreo ${await getVersion()} - ${self.projectName ?? "Untitled"}`
           )
-          .catch(console.error);
+          .catch(tracing.error);
       }
     };
   })
@@ -139,12 +135,12 @@ export const UIStateStore = types
     setFieldScalingFactor(metersPerPixel: number) {
       self.fieldScalingFactor = metersPerPixel;
     },
-    setSaveFileName(name: string | undefined) {
-      self.saveFileName = name;
+    setProjectName(name: string | undefined) {
+      self.projectName = name;
       self.updateWindowTitle();
     },
     setSaveFileDir(dir: string | undefined) {
-      self.saveFileDir = dir;
+      self.projectDir = dir;
     },
     setIsGradleProject(isGradleProject: boolean | undefined) {
       self.isGradleProject = isGradleProject;
