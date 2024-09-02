@@ -149,9 +149,8 @@ class TRAJOPT_DLLEXPORT SwerveTrajectorySample {
    */
   SwerveTrajectorySample(double timestamp, double x, double y, double heading,
                          double velocityX, double velocityY,
-                         double angularVelocity,
-                         double accelerationX, double accelerationY,
-                         double angularAcceleration,
+                         double angularVelocity, double accelerationX,
+                         double accelerationY, double angularAcceleration,
                          std::vector<double> moduleForcesX,
                          std::vector<double> moduleForcesY)
       : timestamp{timestamp},
