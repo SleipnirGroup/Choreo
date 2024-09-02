@@ -20,9 +20,8 @@
     "fmtRust": "cargo fmt",
     "lintJs": "eslint --fix src",
     "fmt": "pnpm run fmtCpp && pnpm run fmtJava && pnpm run fmtJs && pnpm run fmtRust && pnpm run lintJs",
-    "dev": "vite",
-    "build": "vite build",
-    "tauri": "tauri",
+    "dev": "tauri dev -- --target-dir ./target/tauri",
+    "build": "tauri build",
     "build-cli": "node build_cli.cjs"
   },
   "dependencies": {
