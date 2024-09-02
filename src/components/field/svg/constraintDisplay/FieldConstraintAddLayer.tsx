@@ -102,6 +102,10 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
       );
     } else {
       const point = waypoints[this.state.firstIndex];
+      if (point == undefined) {
+        this.setState({firstIndex: undefined});
+        return <></>;
+      }
       return (
         <>
           <circle
