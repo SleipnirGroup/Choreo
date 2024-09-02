@@ -12,7 +12,7 @@ license = "BSD-3-Clause"
 trajoptlib = { path = "../trajoptlib" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-tokio = { version = "1", features = ["process", "macros", "rt", "fs", "sync"] }
+tokio = { version = "1", features = ["process", "macros", "rt", "fs", "sync", "io-util"] }
 dashmap = "6.0.1"
 thiserror = "1.0.63"
 tracing = "0.1.40"

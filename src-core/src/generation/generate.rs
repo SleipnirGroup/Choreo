@@ -28,8 +28,11 @@ pub static PROGRESS_SENDER_LOCK: OnceLock<Sender<LocalProgressUpdate>> = OnceLoc
 fn solver_status_callback(traj: SwerveTrajectory, handle: i64) {
     let tx_opt = PROGRESS_SENDER_LOCK.get();
     if let Some(tx) = tx_opt {
-        tx.send(LocalProgressUpdate::SwerveTraj { traj, handle })
-            .trace_warn();
+        tx.send(LocalProgressUpdate::SwerveTraj {
+            update: traj,
+            handle,
+        })
+        .trace_warn();
     };
 }
 
@@ -43,17 +46,78 @@ fn fix_scope(idx: usize, removed_idxs: &Vec<usize>) -> usize {
     idx - to_subtract
 }
 
-#[derive(Debug, serde::Serialize, Clone)]
-#[serde(untagged)]
+#[derive(Debug, Clone)]
+// #[serde(rename_all = "camelCase", tag = "type")]
 pub enum LocalProgressUpdate {
     SwerveTraj {
-        traj: SwerveTrajectory,
         handle: i64,
+        // #[serde(flatten, rename = "update")]
+        update: SwerveTrajectory,
     },
-    TankTraj {
-        traj: DifferentialTrajectory,
+    DiffTraj {
         handle: i64,
+        // #[serde(flatten, rename = "update")]
+        update: DifferentialTrajectory,
     },
+    DiagnosticText {
+        handle: i64,
+        update: String,
+    },
+}
+
+impl serde::Serialize for LocalProgressUpdate {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut serde_state =
+            serde::Serializer::serialize_struct(serializer, "LocalProgressUpdate", 3)?;
+        match *self {
+            LocalProgressUpdate::SwerveTraj {
+                ref handle,
+                ref update,
+            } => {
+                serde::ser::SerializeStruct::serialize_field(
+                    &mut serde_state,
+                    "type",
+                    "swerveTraj",
+                )?;
+                serde::ser::SerializeStruct::serialize_field(&mut serde_state, "handle", handle)?;
+                serde::ser::SerializeStruct::serialize_field(
+                    &mut serde_state,
+                    "update",
+                    &update.samples,
+                )?;
+                serde::ser::SerializeStruct::end(serde_state)
+            }
+            LocalProgressUpdate::DiffTraj {
+                ref handle,
+                ref update,
+            } => {
+                serde::ser::SerializeStruct::serialize_field(&mut serde_state, "type", "diffTraj")?;
+                serde::ser::SerializeStruct::serialize_field(&mut serde_state, "handle", handle)?;
+                serde::ser::SerializeStruct::serialize_field(
+                    &mut serde_state,
+                    "update",
+                    &update.samples,
+                )?;
+                serde::ser::SerializeStruct::end(serde_state)
+            }
+            LocalProgressUpdate::DiagnosticText {
+                ref handle,
+                ref update,
+            } => {
+                serde::ser::SerializeStruct::serialize_field(
+                    &mut serde_state,
+                    "type",
+                    "diagnosticText",
+                )?;
+                serde::ser::SerializeStruct::serialize_field(&mut serde_state, "handle", handle)?;
+                serde::ser::SerializeStruct::serialize_field(&mut serde_state, "update", update)?;
+                serde::ser::SerializeStruct::end(serde_state)
+            }
+        }
+    }
 }
 
 #[derive(Clone)]
