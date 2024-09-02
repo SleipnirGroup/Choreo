@@ -195,6 +195,7 @@ SwerveTrajectory SwervePathBuilder::generate(bool diagnostics,
       rustSamples.push_back(SwerveTrajectorySample{
           cppSample.timestamp, cppSample.x, cppSample.y, cppSample.heading,
           cppSample.velocityX, cppSample.velocityY, cppSample.angularVelocity,
+          cppSample.accelerationX, cppSample.accelerationY, cppSample.angularAcceleration,
           std::move(fx), std::move(fy)});
     }
 
@@ -232,7 +233,9 @@ void SwervePathBuilder::add_progress_callback(
           rustSamples.push_back(SwerveTrajectorySample{
               cppSample.timestamp, cppSample.x, cppSample.y, cppSample.heading,
               cppSample.velocityX, cppSample.velocityY,
-              cppSample.angularVelocity, std::move(fx), std::move(fy)});
+              cppSample.angularVelocity,
+              cppSample.accelerationX, cppSample.accelerationY,
+              cppSample.angularAcceleration, std::move(fx), std::move(fy)});
         }
 
         callback(SwerveTrajectory{rustSamples}, handle);
