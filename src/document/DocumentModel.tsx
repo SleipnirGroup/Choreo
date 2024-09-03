@@ -172,7 +172,7 @@ export const DocumentStore = types
       adjustedHeadings.forEach((heading, i) => {
         console.log("trying to set wpt ", i, " to ", heading);
         if (heading !== undefined || heading !== null) {
-          pathStore.params.waypoints[i].heading.setValue(heading);
+          pathStore.params.waypoints[i].heading.set(heading);
         }
       });
       console.log("new wpt2: ", pathStore.params.waypoints[1].heading.value);
