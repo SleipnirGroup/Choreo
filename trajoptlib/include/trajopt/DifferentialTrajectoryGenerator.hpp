@@ -55,11 +55,8 @@ struct TRAJOPT_DLLEXPORT DifferentialSolution {
   /// Y positions.
   std::vector<double> y;
 
-  /// Heading cosine.
-  std::vector<double> thetacos;
-
-  /// Heading sine.
-  std::vector<double> thetasin;
+  /// Heading.
+  std::vector<double> heading;
 
   /// The left velocities.
   std::vector<double> vL;
@@ -175,8 +172,7 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectory {
     double ts = 0.0;
     for (size_t sample = 0; sample < solution.x.size(); ++sample) {
       samples.emplace_back(
-          ts, solution.x[sample], solution.y[sample],
-          std::atan2(solution.thetasin[sample], solution.thetacos[sample]),
+          ts, solution.x[sample], solution.y[sample], solution.heading[sample],
           solution.vL[sample], solution.vR[sample], solution.aL[sample],
           solution.aR[sample], solution.FL[sample], solution.FR[sample]);
       ts += solution.dt[sample];
@@ -231,8 +227,7 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectoryGenerator {
   /// State Variables
   std::vector<sleipnir::Variable> x;
   std::vector<sleipnir::Variable> y;
-  std::vector<sleipnir::Variable> thetacos;
-  std::vector<sleipnir::Variable> thetasin;
+  std::vector<sleipnir::Variable> heading;
   std::vector<sleipnir::Variable> vL;
   std::vector<sleipnir::Variable> vR;
   std::vector<sleipnir::Variable> aL;

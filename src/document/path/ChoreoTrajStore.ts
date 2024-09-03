@@ -1,23 +1,37 @@
 import { Instance, destroy, getEnv, types } from "mobx-state-tree";
-import { Output, type Sample } from "../2025/DocumentTypes";
+import {
+  DifferentialDriveSample,
+  Output,
+  type SwerveSample
+} from "../2025/DocumentTypes";
 import { Env } from "../DocumentManager";
 import { EventMarkerStore, IEventMarkerStore } from "../EventMarkerStore";
 
 export const ChoreoTrajStore = types
   .model("ChoreoTrajStore", {
     waypoints: types.frozen<number[]>(),
-    samples: types.frozen<Sample[][]>(),
-    useModuleForces: false,
+    samples: types.frozen<SwerveSample[][] | DifferentialDriveSample[][]>(),
+    forcesAvailable: false,
     markers: types.array(EventMarkerStore)
   })
   .views((self) => ({
-    get fullTraj(): Sample[] {
+    get fullTraj(): SwerveSample[] | DifferentialDriveSample[] {
       return self.samples.flatMap((sect, i, samp) => {
         if (i != 0) {
           return sect.slice(1);
         }
         return sect;
       });
+    },
+    get isSwerve(): boolean {
+      return (
+        this.fullTraj.length === 0 || Object.hasOwn(this.fullTraj[0], "vx")
+      );
+    },
+    get isDifferentialDrive(): boolean {
+      return (
+        this.fullTraj.length === 0 || Object.hasOwn(this.fullTraj[0], "vl")
+      );
     },
     // 01234567
     // ...
@@ -66,7 +80,7 @@ export const ChoreoTrajStore = types
       return {
         waypoints: self.waypoints,
         samples: self.samples,
-        useModuleForces: self.useModuleForces
+        forcesAvailable: self.forcesAvailable
         // markers: self.markers.flatMap((marker) => {
         //   const target = self.waypoints.waypointIdToSavedWaypointId(marker.target);
         //   const saved: SavedEventMarker = {
@@ -87,7 +101,7 @@ export const ChoreoTrajStore = types
     deserialize(ser: Output) {
       self.waypoints = ser.waypoints;
       self.samples = ser.samples;
-      self.useModuleForces = ser.useModuleForces;
+      self.forcesAvailable = ser.forcesAvailable;
     },
     deleteMarkerUUID(uuid: string) {
       const index = self.markers.findIndex((m) => m.uuid === uuid);
@@ -121,14 +135,14 @@ export const ChoreoTrajStore = types
       self.markers.push(marker as IEventMarkerStore);
       return marker;
     },
-    setSamples(samples: Sample[][]) {
+    setSamples(samples: SwerveSample[][] | DifferentialDriveSample[][]) {
       self.samples = samples;
     },
     setWaypoints(waypoints: number[]) {
       self.waypoints = waypoints;
     },
-    setUseModuleForces(use: boolean) {
-      self.useModuleForces = use;
+    setForcesAvailable(use: boolean) {
+      self.forcesAvailable = use;
     }
   }));
 

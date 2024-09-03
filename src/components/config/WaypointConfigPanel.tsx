@@ -103,6 +103,7 @@ class WaypointPanel extends Component<Props, State> {
                   <Tooltip
                     disableInteractive
                     key={waypoint.index}
+                    //@ts-expect-error We need the value for the toggle group
                     value={waypoint.index}
                     title={waypoint.name}
                   >

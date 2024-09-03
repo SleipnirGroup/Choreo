@@ -6,7 +6,6 @@ import { DocumentStore, SelectableItemTypes } from "./DocumentModel";
 import hotkeys from "hotkeys-js";
 import { reaction } from "mobx";
 import {
-  Instance,
   applySnapshot,
   castToReferenceSnapshot,
   getSnapshot,
@@ -20,8 +19,11 @@ import { safeGetIdentifier } from "../util/mobxutils";
 import {
   Command,
   EventMarker,
+  GroupCommand,
+  NamedCommand,
   Project,
   Traj,
+  WaitCommand,
   type Expr,
   type RobotConfig,
   type Waypoint
@@ -78,7 +80,7 @@ export const uiState = UIStateStore.create({
 });
 type ConstraintDataConstructor<K extends ConstraintKey> = (
   data: Partial<DataMap[K]["props"]>
-) => Instance<IConstraintDataStore<K>>;
+) => IConstraintDataStore<K>;
 
 type ConstraintDataConstructors = {
   [key in ConstraintKey]: ConstraintDataConstructor<key>;
@@ -91,7 +93,17 @@ export type EnvConstructors = {
     y: number,
     radius: number
   ) => ICircularObstacleStore;
-  CommandStore: (command: Command<Expr>) => ICommandStore;
+  CommandStore: (
+    command: Command<Expr> &
+      (
+        | {
+            data: WaitCommand<Expr>["data"] &
+              GroupCommand<Expr>["data"] &
+              NamedCommand["data"];
+          }
+        | object
+      )
+  ) => ICommandStore;
   EventMarkerStore: (marker: EventMarker<Expr>) => IEventMarkerStore;
   ConstraintData: ConstraintDataConstructors;
   ConstraintStore: <K extends ConstraintKey>(
@@ -102,14 +114,28 @@ export type EnvConstructors = {
   ) => IConstraintStore;
 };
 function getConstructors(vars: () => IVariables): EnvConstructors {
+  function commandIsNamed(command: Command<Expr>): command is NamedCommand {
+    return Object.hasOwn(command.data, "name");
+  }
+  function commandIsGroup(
+    command: Command<Expr>
+  ): command is GroupCommand<Expr> {
+    return Object.hasOwn(command.data, "commands");
+  }
+  function commandIsTime(command: Command<Expr>): command is WaitCommand<Expr> {
+    return Object.hasOwn(command.data, "time");
+  }
   function createCommandStore(command: Command<Expr>): ICommandStore {
     return CommandStore.create({
       type: command.type,
-      name: command.data?.name ?? "",
-      commands: (command.data?.commands ?? []).map((c) =>
-        createCommandStore(c)
+      name: commandIsNamed(command) ? command.data.name : "",
+      commands: commandIsGroup(command)
+        ? command.data.commands.map((c) => createCommandStore(c))
+        : [],
+      time: vars().createExpression(
+        commandIsTime(command) ? command.data.waitTime : 0,
+        "Time"
       ),
-      time: vars().createExpression(command.data?.time ?? 0, "Time"),
       uuid: uuidv4()
     });
   }
@@ -179,7 +205,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
     EventMarkerStore: (marker: EventMarker<Expr>): IEventMarkerStore => {
       return EventMarkerStore.create({
         name: marker.name,
-        target: marker.target,
+        target: undefined,
         trajTargetIndex: marker.trajTargetIndex,
         offset: vars().createExpression(marker.offset, "Time"),
         command: createCommandStore(marker.command),
@@ -197,9 +223,10 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         from,
         to,
         uuid: uuidv4(),
+        //@ts-expect-error more constraint stuff not quite working
         data: constraintDataConstructors[type](data)
       });
-      (store.data as Instance<IConstraintDataStore<K>>).deserPartial(data);
+      store.data.deserPartial(data);
       return store;
     }
   };
@@ -228,10 +255,12 @@ export const doc = DocumentStore.create(
     robotConfig: getConstructors(() => variables).RobotConfigStore(
       EXPR_DEFAULTS
     ),
+    type: "Swerve",
     pathlist: {},
     splitTrajectoriesAtStopPoints: false,
     usesObstacles: false,
     name: "Untitled",
+    //@ts-expect-error this is recommended, not sure why it doesn't work
     variables: castToReferenceSnapshot(variables),
     selectedSidebarItem: undefined
   },
@@ -313,7 +342,7 @@ export async function setupEventListeners() {
     // doc.getSelection()'s focusNode, but sets the actual selection range to ''
     if (selection?.focusNode === null || selection?.toString() === "") {
       if (doc.isSidebarWaypointSelected) {
-        doc.selectedSidebarItem.copyToClipboard(e);
+        (doc.selectedSidebarItem as IHolonomicWaypointStore).copyToClipboard(e);
       }
       e.preventDefault();
     }
@@ -334,7 +363,7 @@ export async function setupEventListeners() {
         let currentSelectedWaypointIdx = -1;
         if (doc.isSidebarWaypointSelected) {
           const idx = activePath.params.findUUIDIndex(
-            doc.selectedSidebarItem.uuid
+            (doc.selectedSidebarItem as IHolonomicWaypointStore).uuid
           );
           if (idx != -1) {
             currentSelectedWaypointIdx = idx;

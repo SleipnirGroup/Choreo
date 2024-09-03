@@ -1,4 +1,4 @@
-import { ConstraintData } from "../ConstraintStore";
+import { ConstraintData } from "../ConstraintDefinitions";
 import { Dimensions } from "../ExpressionStore";
 
 export const SAVE_FILE_VERSION = "v2025.0.0";
@@ -47,6 +47,7 @@ export interface RobotConfig<T extends ExprOrNumber> {
 
 export interface Project {
   name: string;
+  type: SampleType;
   version: typeof SAVE_FILE_VERSION;
   variables: Variables;
   config: RobotConfig<Expr>;
@@ -71,7 +72,7 @@ export interface Constraint {
   data: ConstraintData;
 }
 
-export interface Sample {
+export interface SwerveSample {
   t: number;
   x: number;
   y: number;
@@ -81,6 +82,17 @@ export interface Sample {
   omega: number;
   fx?: [number, number, number, number];
   fy?: [number, number, number, number];
+}
+
+export interface DifferentialDriveSample {
+  t: number;
+  x: number;
+  y: number;
+  heading: number;
+  vl: number;
+  vr: number;
+  fl: number;
+  fr: number;
 }
 
 export interface SwerveTrajoptlibSample {
@@ -117,10 +129,11 @@ export interface ChoreoPath<T extends ExprOrNumber> {
   constraints: Constraint[];
 }
 
+export type SampleType = "Swerve" | "DifferentialDrive";
 export interface Output {
   waypoints: number[];
-  samples: Sample[][];
-  useModuleForces: boolean;
+  samples: SwerveSample[][] | DifferentialDriveSample[][];
+  forcesAvailable: boolean;
 }
 
 export interface Traj {
@@ -162,11 +175,11 @@ export type Command<T extends ExprOrNumber> =
 export interface EventMarker<T extends ExprOrNumber> {
   name: string;
   target: WaypointID;
-  trajTargetIndex: number;
+  trajTargetIndex: number | undefined;
   offset: T;
   /**
    * The timestamp along the trajectory of the waypoint this marker targeted on the last generation.
    */
-  targetTimestamp: number;
+  targetTimestamp: number | undefined;
   command: Command<T>;
 }
