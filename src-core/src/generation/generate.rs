@@ -136,6 +136,7 @@ pub fn generate(
     // The handle referring to this path for the solver state callback
     handle: i64,
     features: Vec<String>,
+    diffy: bool,
 ) -> ChoreoResult<TrajFile> {
     set_initial_guess(&mut path);
 
@@ -143,6 +144,7 @@ pub fn generate(
 
     ctx.add_swerve_transformer::<IntervalCountSetter>();
     ctx.add_swerve_transformer::<DrivetrainAndBumpersSetter>();
+    ctx.add_diffy_transformer::<DrivetrainAndBumpersSetter>();
 
     // for constraint in &constraint_idx {
     //     let from = fix_scope(constraint.from, &guess_point_idxs);
@@ -178,10 +180,17 @@ pub fn generate(
     //     };
     // }
 
-    Ok(postprocess(&ctx.generate_swerve(handle, features)?, path, snapshot, counts_vec))
+    let result = if diffy {
+        let diffy_traj = ctx.generate_diffy(handle, features)?;
+        Ok(postprocess_diffy(&diffy_traj, path, counts_vec))
+    } else {
+        let swerve_traj = ctx.generate_swerve(handle, features)?;
+        Ok(postprocess_swerve(&swerve_traj, path, counts_vec))
+    };
+
 }
 
-fn postprocess(
+fn postprocess_swerve(
     result: &SwerveTrajectory,
     mut path: TrajFile,
     counts_vec: Vec<usize>,
