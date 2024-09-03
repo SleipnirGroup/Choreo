@@ -24,8 +24,8 @@ import { observer } from "mobx-react";
 import { Component } from "react";
 import { toast } from "react-toastify";
 import {
-  exportActiveTrajectory,
-  exportAllTrajectories,
+  writeActiveTrajectory,
+  writeAllTrajectories,
   newProject,
   openProject,
   saveProjectDialog,
@@ -192,7 +192,7 @@ class AppMenu extends Component<Props, State> {
             {/* Export Active Trajectory */}
             <ListItemButton
               onClick={() => {
-                toast.promise(exportActiveTrajectory(), {
+                toast.promise(writeActiveTrajectory(), {
                   pending: "Exporting trajectory...",
                   success: "Trajectory exported",
                   error: {
@@ -230,7 +230,7 @@ class AppMenu extends Component<Props, State> {
                   }
                 }
 
-                toast.promise(exportAllTrajectories(), {
+                toast.promise(writeAllTrajectories(), {
                   success: `Saved all trajectories.`,
                   error: {
                     render(toastProps) {

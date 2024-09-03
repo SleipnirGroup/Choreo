@@ -120,7 +120,6 @@ export interface DifferentialTrajectorySample {
 
 export interface ProgressUpdate {
   type: "swerveTraj" | "diffTraj" | "diagnosticText";
-  handle: number;
   update: SwerveTrajoptlibSample[] | DifferentialTrajectorySample[] | string;
 }
 

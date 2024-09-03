@@ -3,7 +3,7 @@
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::OnceLock;
 
-use trajoptlib::{DifferentialTrajectory, SwerveTrajectory};
+use trajoptlib::{DifferentialTrajectory, DifferentialTrajectorySample, SwerveTrajectory, SwerveTrajectorySample};
 
 use super::transformers::{
     CallbackSetter, ConstraintSetter, DrivetrainAndBumpersSetter, IntervalCountSetter,
@@ -18,81 +18,51 @@ use crate::ChoreoResult;
  * once. Used here to create a read-only static reference to the sender,
  * even though the sender can't be constructed in a static context.
  */
-pub(super) static PROGRESS_SENDER_LOCK: OnceLock<Sender<LocalProgressUpdate>> = OnceLock::new();
+pub(super) static PROGRESS_SENDER_LOCK: OnceLock<Sender<HandledLocalProgressUpdate>> = OnceLock::new();
 
-#[derive(Debug, Clone)]
-// #[serde(rename_all = "camelCase", tag = "type")]
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase", tag = "type")]
 pub enum LocalProgressUpdate {
     SwerveTraj {
-        handle: i64,
-        // #[serde(flatten, rename = "update")]
-        update: SwerveTrajectory,
+        update: Vec<SwerveTrajectorySample>,
     },
     DiffTraj {
-        handle: i64,
-        // #[serde(flatten, rename = "update")]
-        update: DifferentialTrajectory,
+        update: Vec<DifferentialTrajectorySample>,
     },
     DiagnosticText {
-        handle: i64,
         update: String,
     },
 }
 
 impl LocalProgressUpdate {
-    pub fn handle(&self) -> i64 {
-        match self {
-            LocalProgressUpdate::SwerveTraj { handle, .. } => *handle,
-            LocalProgressUpdate::DiffTraj { handle, .. } => *handle,
-            LocalProgressUpdate::DiagnosticText { handle, .. } => *handle,
+    pub fn handled(self, handle: i64) -> HandledLocalProgressUpdate {
+        HandledLocalProgressUpdate { handle, update: self }
+    }
+}
+
+impl From<SwerveTrajectory> for LocalProgressUpdate {
+    fn from(traj: SwerveTrajectory) -> Self {
+        LocalProgressUpdate::SwerveTraj {
+            update: traj.samples,
         }
     }
 }
 
-impl serde::Serialize for LocalProgressUpdate {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        let mut serde_state =
-            serde::Serializer::serialize_struct(serializer, "LocalProgressUpdate", 3)?;
-        serde::ser::SerializeStruct::serialize_field(&mut serde_state, "handle", &self.handle())?;
-        match self {
-            LocalProgressUpdate::SwerveTraj { update, .. } => {
-                serde::ser::SerializeStruct::serialize_field(
-                    &mut serde_state,
-                    "type",
-                    "swerveTraj",
-                )?;
-                serde::ser::SerializeStruct::serialize_field(
-                    &mut serde_state,
-                    "update",
-                    &update.samples,
-                )?;
-            }
-            LocalProgressUpdate::DiffTraj { update, .. } => {
-                serde::ser::SerializeStruct::serialize_field(&mut serde_state, "type", "diffTraj")?;
-                serde::ser::SerializeStruct::serialize_field(
-                    &mut serde_state,
-                    "update",
-                    &update.samples,
-                )?;
-            }
-            LocalProgressUpdate::DiagnosticText { update, .. } => {
-                serde::ser::SerializeStruct::serialize_field(
-                    &mut serde_state,
-                    "type",
-                    "diagnosticText",
-                )?;
-                serde::ser::SerializeStruct::serialize_field(&mut serde_state, "update", update)?;
-            }
-        };
-        serde::ser::SerializeStruct::end(serde_state)
+impl From<DifferentialTrajectory> for LocalProgressUpdate {
+    fn from(traj: DifferentialTrajectory) -> Self {
+        LocalProgressUpdate::DiffTraj {
+            update: traj.samples,
+        }
     }
 }
 
-pub fn setup_progress_sender() -> Receiver<LocalProgressUpdate> {
-    let (tx, rx) = channel::<LocalProgressUpdate>();
+pub struct HandledLocalProgressUpdate {
+    pub handle: i64,
+    pub update: LocalProgressUpdate,
+}
+
+pub fn setup_progress_sender() -> Receiver<HandledLocalProgressUpdate> {
+    let (tx, rx) = channel::<HandledLocalProgressUpdate>();
     let _ = PROGRESS_SENDER_LOCK.get_or_init(move || tx);
     rx
 }

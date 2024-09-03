@@ -15,7 +15,7 @@ use tokio::{
     select,
     sync::{oneshot, Notify},
 };
-use trajoptlib::{DifferentialTrajectory, SwerveTrajectory};
+use trajoptlib::{DifferentialTrajectorySample, SwerveTrajectorySample};
 
 use crate::{
     generation::generate::{generate, LocalProgressUpdate},
@@ -26,12 +26,12 @@ use crate::{
     ChoreoError, ChoreoResult, ResultExt,
 };
 
-use super::generate::{setup_progress_sender, PROGRESS_SENDER_LOCK};
+use super::generate::{setup_progress_sender, HandledLocalProgressUpdate, PROGRESS_SENDER_LOCK};
 
 #[derive(Clone)]
 #[allow(missing_debug_implementations)]
 pub struct RemoteGenerationResources {
-    frontend_emitter: Option<mpsc::Sender<LocalProgressUpdate>>,
+    frontend_emitter: Option<mpsc::Sender<HandledLocalProgressUpdate>>,
     kill_map: Arc<DashMap<i64, oneshot::Sender<()>>>,
 }
 
@@ -67,7 +67,7 @@ impl RemoteGenerationResources {
         }
     }
 
-    pub fn emit_progress(&self, update: LocalProgressUpdate) {
+    pub fn emit_progress(&self, update: HandledLocalProgressUpdate) {
         if let Some(emitter) = &self.frontend_emitter {
             emitter.send(update).trace_warn();
         }
@@ -89,8 +89,8 @@ impl RemoteArgs {
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum RemoteProgressUpdate {
-    IncompleteSwerveTraj(SwerveTrajectory),
-    IncompleteTankTraj(DifferentialTrajectory),
+    IncompleteSwerveTraj(Vec<SwerveTrajectorySample>),
+    IncompleteTankTraj(Vec<DifferentialTrajectorySample>),
     CompleteTraj(Trajectory),
     Error(String),
 }
@@ -105,11 +105,11 @@ pub fn remote_generate_child(args: RemoteArgs) {
         .spawn(move || {
             for received in rx {
                 let ser_string = match received {
-                    LocalProgressUpdate::SwerveTraj { update: traj, .. } => {
-                        serde_json::to_string(&RemoteProgressUpdate::IncompleteSwerveTraj(traj))
+                    HandledLocalProgressUpdate { update: LocalProgressUpdate::SwerveTraj { update }, ..} => {
+                        serde_json::to_string(&RemoteProgressUpdate::IncompleteSwerveTraj(update))
                     }
-                    LocalProgressUpdate::DiffTraj { update: traj, .. } => {
-                        serde_json::to_string(&RemoteProgressUpdate::IncompleteTankTraj(traj))
+                    HandledLocalProgressUpdate { update: LocalProgressUpdate::DiffTraj { update }, ..} => {
+                        serde_json::to_string(&RemoteProgressUpdate::IncompleteTankTraj(update))
                     }
                     _ => continue,
                 }
@@ -262,9 +262,8 @@ pub async fn remote_generate_parent(
                             println!{"{string}"}
                             remote_resources.emit_progress(
                                 LocalProgressUpdate::DiagnosticText {
-                                    handle,
                                     update: string,
-                                }
+                                }.handled(handle)
                             );
                         } else {
                             buffer.push(byte);
@@ -285,9 +284,8 @@ pub async fn remote_generate_parent(
             for line in lines {
                 println! {"{line}"}
                 remote_resources.emit_progress(LocalProgressUpdate::DiagnosticText {
-                    handle,
                     update: line,
-                });
+                }.handled(handle));
             }
         }
     });
@@ -301,17 +299,15 @@ pub async fn remote_generate_parent(
                             Ok(RemoteProgressUpdate::IncompleteSwerveTraj(traj)) => {
                                 remote_resources.emit_progress(
                                     LocalProgressUpdate::SwerveTraj {
-                                        handle,
                                         update: traj
-                                    }
+                                    }.handled(handle)
                                 );
                             },
                             Ok(RemoteProgressUpdate::IncompleteTankTraj(traj)) => {
                                 remote_resources.emit_progress(
                                     LocalProgressUpdate::DiffTraj {
-                                        handle,
                                         update: traj
-                                    }
+                                    }.handled(handle)
                                 );
                             },
                             Ok(RemoteProgressUpdate::CompleteTraj(traj)) => {

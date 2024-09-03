@@ -329,9 +329,6 @@ impl<T: SnapshottableType> Parameters<T> {
 pub struct Trajectory {
     /// The times at which the robot will reach each waypoint.
     pub waypoints: Vec<f64>,
-    /// The type of samples in the trajectory.
-    // #[serde(rename = "type", default)]
-    // pub r#type: SampleType,
     /// The samples of the trajectory.
     pub samples: Vec<Vec<Sample>>,
     /// Whether the forces are available to use in the samples.
