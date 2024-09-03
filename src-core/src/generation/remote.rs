@@ -1,4 +1,9 @@
-use std::{mem::forget, path::PathBuf, sync::{mpsc, Arc}, thread};
+use std::{
+    mem::forget,
+    path::PathBuf,
+    sync::{mpsc, Arc},
+    thread,
+};
 
 use dashmap::DashMap;
 use futures_util::{FutureExt, TryStreamExt};
@@ -56,11 +61,7 @@ impl RemoteGenerationResources {
     }
 
     pub fn kill_all(&self) {
-        let handles = self
-            .kill_map
-            .iter()
-            .map(|r| *r.key())
-            .collect::<Vec<i64>>();
+        let handles = self.kill_map.iter().map(|r| *r.key()).collect::<Vec<i64>>();
         for handle in handles {
             let _ = self.kill(handle);
         }

@@ -3,11 +3,12 @@
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::OnceLock;
 
-use trajoptlib::{
-    DifferentialTrajectory, SwerveTrajectory,
-};
+use trajoptlib::{DifferentialTrajectory, SwerveTrajectory};
 
-use super::transformers::{CallbackSetter, ConstraintSetter, DrivetrainAndBumpersSetter, IntervalCountSetter, TrajFileGenerator};
+use super::transformers::{
+    CallbackSetter, ConstraintSetter, DrivetrainAndBumpersSetter, IntervalCountSetter,
+    TrajFileGenerator,
+};
 use crate::spec::project::ProjectFile;
 use crate::spec::traj::{ConstraintScope, TrajFile};
 use crate::ChoreoResult;
@@ -53,19 +54,36 @@ impl serde::Serialize for LocalProgressUpdate {
     where
         S: serde::Serializer,
     {
-        let mut serde_state = serde::Serializer::serialize_struct(serializer, "LocalProgressUpdate", 3)?;
+        let mut serde_state =
+            serde::Serializer::serialize_struct(serializer, "LocalProgressUpdate", 3)?;
         serde::ser::SerializeStruct::serialize_field(&mut serde_state, "handle", &self.handle())?;
         match self {
             LocalProgressUpdate::SwerveTraj { update, .. } => {
-                serde::ser::SerializeStruct::serialize_field(&mut serde_state, "type", "swerveTraj")?;
-                serde::ser::SerializeStruct::serialize_field(&mut serde_state, "update", update)?;
+                serde::ser::SerializeStruct::serialize_field(
+                    &mut serde_state,
+                    "type",
+                    "swerveTraj",
+                )?;
+                serde::ser::SerializeStruct::serialize_field(
+                    &mut serde_state,
+                    "update",
+                    &update.samples,
+                )?;
             }
             LocalProgressUpdate::DiffTraj { update, .. } => {
                 serde::ser::SerializeStruct::serialize_field(&mut serde_state, "type", "diffTraj")?;
-                serde::ser::SerializeStruct::serialize_field(&mut serde_state, "update", update)?;
+                serde::ser::SerializeStruct::serialize_field(
+                    &mut serde_state,
+                    "update",
+                    &update.samples,
+                )?;
             }
             LocalProgressUpdate::DiagnosticText { update, .. } => {
-                serde::ser::SerializeStruct::serialize_field(&mut serde_state, "type", "diagnosticText")?;
+                serde::ser::SerializeStruct::serialize_field(
+                    &mut serde_state,
+                    "type",
+                    "diagnosticText",
+                )?;
                 serde::ser::SerializeStruct::serialize_field(&mut serde_state, "update", update)?;
             }
         };
@@ -87,7 +105,10 @@ fn set_initial_guess(traj: &mut TrajFile) {
     let waypoint_count = traj.params.waypoints.len();
     for constraint in traj.params.snapshot().constraints {
         let from = constraint.from.get_idx(waypoint_count);
-        let to = constraint.to.as_ref().and_then(|id| id.get_idx(waypoint_count));
+        let to = constraint
+            .to
+            .as_ref()
+            .and_then(|id| id.get_idx(waypoint_count));
 
         if let Some(from_idx) = from {
             let valid_wpt = to.is_none();
@@ -104,11 +125,7 @@ fn set_initial_guess(traj: &mut TrajFile) {
     }
 }
 
-pub fn generate(
-    chor: ProjectFile,
-    mut trajfile: TrajFile,
-    handle: i64
-) -> ChoreoResult<TrajFile> {
+pub fn generate(chor: ProjectFile, mut trajfile: TrajFile, handle: i64) -> ChoreoResult<TrajFile> {
     set_initial_guess(&mut trajfile);
 
     let mut ctx = TrajFileGenerator::new(chor, trajfile, handle);
