@@ -18,8 +18,7 @@ export type ConstraintPropertyDefinition<P extends ConstraintPropertyType> = {
   name: string;
   description: string;
   defaultVal: P;
-} & (P extends Expr ? { units: Unit } : object)
-  & (P extends Expr[] ? { units: Unit } : object);
+} & (P extends Expr ? { units: Unit } : object);
 
 export type DataPropsList = { [key: string]: ConstraintPropertyType };
 export type PropertyDefinitionList<P extends DataPropsList> = {
@@ -63,9 +62,11 @@ export type ConstraintDataTypeMap = {
     y: Expr;
     r: Expr;
   };
-  KeepInPolygon: {
-    xs: Array<Expr>;
-    ys: Array<Expr>;
+  KeepInRectangle: {
+    x: Expr;
+    y: Expr;
+    w: Expr;
+    h: Expr;
   };
 };
 export type DataMap = {
@@ -204,29 +205,41 @@ export const ConstraintDefinitions: defs = {
     wptScope: true,
     sgmtScope: true
   } satisfies ConstraintDefinition<"KeepInCircle">,
-  KeepInPolygon: {
-    type: "KeepInPolygon" as const,
-    name: "Keep In Polygon",
-    shortName: "Keep In P",
-    description: "Keep the robot's bumpers within a polygonal region",
+  KeepInRectangle: {
+    type: "KeepInRectangle" as const,
+    name: "Keep In Rectangle",
+    shortName: "Keep In R",
+    description: "Keep the robot's bumpers within a rectangular region",
     icon: <ArrowCircleDown />,
     properties: {
-      xs: {
-        name: "Xs",
-        description: "The x values of the points",
+      x: {
+        name: "X",
+        description: "The x coordinate of the bottom left of the keep in zone",
         units: Units.Meter,
-        defaultVal: [["0 m", 0]]
+        defaultVal: ["0 m", 0]
       },
-      ys: {
-        name: "Ys",
-        description: "The y values of the points",
+      y: {
+        name: "Y",
+        description: "The y coordinate of the bottom left of the keep in zone",
         units: Units.Meter,
-        defaultVal: [["0 m", 0]]
-      }
+        defaultVal: ["0 m", 0]
+      },
+      w: {
+        name: "W",
+        description: "The width of the keep in zone",
+        units: Units.Meter,
+        defaultVal: ["1 m", 1]
+      },
+      h: {
+        name: "H",
+        description: "The height of the keep in zone",
+        units: Units.Meter,
+        defaultVal: ["1 m", 1]
+      },
     },
     wptScope: true,
-    sgmtScope: false
-  } satisfies ConstraintDefinition<"KeepInPolygon">
+    sgmtScope: true
+  } satisfies ConstraintDefinition<"KeepInRectangle">
 };
 
 export type ConstraintKey = keyof DataMap;
