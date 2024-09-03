@@ -1,4 +1,3 @@
-
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
@@ -6,10 +5,10 @@ from typing import Literal
 REQUIREMENTS = ["json", "toml"]
 
 try:
-    import json
-    import toml
+    pass
 except ImportError:
     raise ImportError(f"Please install the following packages: {REQUIREMENTS}")
+
 
 @dataclass(frozen=True, slots=True)
 class VersionLocation:
@@ -18,6 +17,7 @@ class VersionLocation:
     file_format: Literal["json2", "json4", "toml"]
     prefix: str = ""
     suffix: str = ""
+
 
 LOCATIONS: list[VersionLocation] = [
     VersionLocation(
@@ -53,6 +53,7 @@ def update_version(version: str) -> None:
         file_path = Path(__file__).parent / location.relative_path
         if location.file_format == "json2" or location.file_format == "json4":
             import json
+
             with open(file_path, "r") as f:
                 data = json.load(f)
             og = data
@@ -62,12 +63,15 @@ def update_version(version: str) -> None:
                     data = data[key]
                 data[location.version_path[-1]] = version_str
             except KeyError as e:
-                print(f"Version path not found: {location.version_path} in {location.relative_path}")
+                print(
+                    f"Version path not found: {location.version_path} in {location.relative_path}"
+                )
                 raise e
             with open(file_path, "w") as f:
                 json.dump(og, f, indent=int(location.file_format[-1]))
         elif location.file_format == "toml":
             import toml
+
             with open(file_path, "r") as f:
                 data = toml.load(f)
             og = data
@@ -77,7 +81,9 @@ def update_version(version: str) -> None:
                     data = data[key]
                 data[location.version_path[-1]] = version_str
             except KeyError as e:
-                print(f"Version path not found: {location.version_path} in {location.relative_path}")
+                print(
+                    f"Version path not found: {location.version_path} in {location.relative_path}"
+                )
                 raise e
             with open(file_path, "w") as f:
                 toml.dump(og, f)
