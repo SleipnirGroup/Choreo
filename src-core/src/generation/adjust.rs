@@ -29,7 +29,7 @@ pub fn adjust_waypoint_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                 new_headings
                     .iter_mut()
                     .take(idx + 1)
-                    .skip(last_fixed_idx)
+                    .skip(last_fixed_idx + 1)
                     .enumerate()
                     .for_each(|(i, heading)| {
                         let scalar = (i + 1) as f64 / (idx - last_fixed_idx) as f64;
