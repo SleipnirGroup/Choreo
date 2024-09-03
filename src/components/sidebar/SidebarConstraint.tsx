@@ -38,8 +38,10 @@ class SidebarConstraint extends Component<Props, State> {
     else if (
       to === undefined || // wpt constraint
       from === to || //first-first, last-last
-      ( typeof from === "object" && Object.hasOwn(from, "uuid") &&
-        typeof to === "object" && Object.hasOwn(to, "uuid") &&
+      (typeof from === "object" &&
+        Object.hasOwn(from, "uuid") &&
+        typeof to === "object" &&
+        Object.hasOwn(to, "uuid") &&
         from!.uuid == to!.uuid) // zero-length segment
     )
       return waypointIDToText(from);

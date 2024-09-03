@@ -162,11 +162,11 @@ export type Command<T extends ExprOrNumber> =
 export interface EventMarker<T extends ExprOrNumber> {
   name: string;
   target: WaypointID;
-  trajTargetIndex: number;
+  trajTargetIndex: number | undefined;
   offset: T;
   /**
    * The timestamp along the trajectory of the waypoint this marker targeted on the last generation.
    */
-  targetTimestamp: number;
+  targetTimestamp: number | undefined;
   command: Command<T>;
 }

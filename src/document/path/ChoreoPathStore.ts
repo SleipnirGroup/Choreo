@@ -100,7 +100,7 @@ export const ChoreoPathStore = types
           const from = self.waypointIdToSavedWaypointId(con.from)!;
           const to = self.waypointIdToSavedWaypointId(con.to);
           const toReturn: Constraint = {
-            data: con.data.serialize,
+            data: con.data.serialize(),
             from,
             to
           };
@@ -121,6 +121,7 @@ export const ChoreoPathStore = types
       );
       const store = self.constraints[self.constraints.length - 1];
       store.data.deserPartial(data);
+      return store;
     },
     selectOnly(selectedIndex: number) {
       self.waypoints.forEach((point, index) => {

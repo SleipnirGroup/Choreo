@@ -30,6 +30,7 @@ type lookup<T extends ConstraintPropertyType> = T extends Expr
     : never;
 
 type Props<K extends ConstraintKey, D extends ConstraintData = DataMap[K]> = {
+  // @ts-expect-error lookup type is fragile
   [propkey in keyof D["props"]]: lookup<D["props"][propkey]>;
 } & {
   type: ISimpleType<D["type"]>;
@@ -43,13 +44,13 @@ type DataStoreProps<K extends ConstraintKey> =
   ModelPropertiesDeclarationToProperties<Props<K>>;
 
 export type ConstraintSetters<
-K extends ConstraintKey,
-D extends ConstraintData = DataMap[K]
-> =   {
+  K extends ConstraintKey,
+  D extends ConstraintData = DataMap[K]
+> = {
   [setterkey in keyof D["props"] as `set${Capitalize<string & setterkey>}`]: (
     arg: D["props"][setterkey]
   ) => void;
-}
+};
 export type ConstraintDataStore<
   K extends ConstraintKey,
   D extends ConstraintData = DataMap[K]
@@ -62,7 +63,9 @@ export type ConstraintDataStore<
   }
 >;
 
-export type IConstraintDataStore<K extends ConstraintKey> = Instance<ConstraintDataStore<K>>;
+export type IConstraintDataStore<K extends ConstraintKey> = Instance<
+  ConstraintDataStore<K>
+>;
 
 function createDataStore<
   K extends ConstraintKey,
@@ -89,10 +92,12 @@ function createDataStore<
     const oldSerialize = serialize;
     const oldDeserialize = deserialize;
     const oldDeserPartial = deserPartial;
-    if (Array.isArray(defau) 
-        && typeof defau[0] === "string" 
-        && typeof defau[1] === "number" 
-        && defau.length === 2) {
+    if (
+      Array.isArray(defau) &&
+      typeof defau[0] === "string" &&
+      typeof defau[1] === "number" &&
+      defau.length === 2
+    ) {
       //@ts-expect-error not assignable
       props[key] = ExpressionStore as lookup<Expr>;
       setters[settername] = (self: any) => (arg: Expr) => {
@@ -145,11 +150,15 @@ function createDataStore<
       def: types.frozen<ConstraintDefinition<K>>(def),
       ...props
     } as Props<K>)
-    .actions((self) =>
-    //@ts-expect-error
-      Object.fromEntries(
-        Object.entries(setters).map(([key, val]) => [key as keyof ConstraintSetters<K>, val(self)])
-      ) as ConstraintSetters<K>
+    .actions(
+      (self) =>
+        //@ts-expect-error the typing doesn't preserve through fromEntries()
+        Object.fromEntries(
+          Object.entries(setters).map(([key, val]) => [
+            key as keyof ConstraintSetters<K>,
+            val(self)
+          ])
+        ) as ConstraintSetters<K>
     )
     .views((self) => ({
       get serialize(): D {
@@ -167,7 +176,7 @@ function createDataStore<
         deserPartial(self, ser);
       }
     }));
-  //@ts-expect-error
+  //@ts-expect-error just force ts to acknowledge that it's correct
   return store as ConstraintDataStore<K>;
 }
 

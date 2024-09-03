@@ -39,7 +39,9 @@ interface IConstraintData<name, Props extends DataPropsList> {
 }
 
 export type ConstraintDataTypeMap = {
-  StopPoint: Record<string, never>;
+  //Record<string,never> broke the keyof operator
+  //eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  StopPoint: {};
   MaxVelocity: { max: Expr };
   MaxAcceleration: { max: Expr };
   MaxAngularVelocity: { max: Expr };
@@ -49,7 +51,7 @@ export type ConstraintDataTypeMap = {
     tolerance: Expr;
     flip: boolean;
   };
-}
+};
 export type DataMap = {
   [K in keyof ConstraintDataTypeMap]: IConstraintData<
     K,

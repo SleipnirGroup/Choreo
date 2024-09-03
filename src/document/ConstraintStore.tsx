@@ -1,7 +1,7 @@
 import { Instance, getEnv, getParent, isAlive, types } from "mobx-state-tree";
 import {
   ConstraintDataObjects,
-  ConstraintDataStore
+  IConstraintDataStore
 } from "./ConstraintDataStore";
 import { ConstraintKey } from "./ConstraintDefinitions";
 import { Env } from "./DocumentManager";
@@ -116,28 +116,24 @@ import { IHolonomicPathStore } from "./path/HolonomicPathStore";
 //   }
 // } satisfies { [key: string]: ConstraintDefinition };
 
-const WaypointUUIDScope = types.model("WaypointScope", {
-  uuid: types.string
-});
 export const WaypointScope = types.union(
   types.literal("first"),
   types.literal("last"),
-  WaypointUUIDScope
+  types.frozen<{ uuid: string }>()
 );
 export type IWaypointScope = IWaypointUUIDScope | "first" | "last";
-type IWaypointUUIDScope = Instance<typeof WaypointUUIDScope>;
+type IWaypointUUIDScope = { uuid: string };
 
 export type IConstraintStore = Instance<typeof ConstraintStore>;
 
-export type IConstraintStoreKeyed<K extends ConstraintKey> = IConstraintStore & {data: IConstraintDataStore<K>};
+export type IConstraintStoreKeyed<K extends ConstraintKey> =
+  IConstraintStore & { data: IConstraintDataStore<K> };
 
 export const ConstraintStore = types
   .model("ConstraintStore", {
     from: WaypointScope,
     to: types.maybe(WaypointScope),
-    data: types.union(
-      ...Object.values(ConstraintDataObjects)
-    ),
+    data: types.union(...Object.values(ConstraintDataObjects)),
     uuid: types.identifier
   })
   .views((self) => ({

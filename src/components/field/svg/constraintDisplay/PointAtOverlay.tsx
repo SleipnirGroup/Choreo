@@ -38,7 +38,7 @@ class PointAtOverlay extends Component<Props<"PointAt">, object> {
   }
   render() {
     if (this.props.start === undefined) {
-      return <></>
+      return <></>;
     }
     const data = this.props.data.serialize() as DataMap["PointAt"];
     return (

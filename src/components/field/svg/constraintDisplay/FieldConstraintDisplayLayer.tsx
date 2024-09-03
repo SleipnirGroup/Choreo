@@ -1,13 +1,15 @@
 import { observer } from "mobx-react";
-import { IConstraintStore, IConstraintStoreKeyed } from "../../../../document/ConstraintStore";
-import { doc } from "../../../../document/DocumentManager";
-import PointAtOverlay from "./PointAtOverlay";
-import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer";
-import { ConstraintDataStore } from "../../../../document/ConstraintDataStore";
 import { ConstraintKey } from "../../../../document/ConstraintDefinitions";
+import { IConstraintStoreKeyed } from "../../../../document/ConstraintStore";
+import { doc } from "../../../../document/DocumentManager";
+import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer";
+import PointAtOverlay from "./PointAtOverlay";
 
 const overlays = {
-  PointAt: (constraint: IConstraintStoreKeyed<"PointAt">, lineColor: string) => (
+  PointAt: (
+    constraint: IConstraintStoreKeyed<"PointAt">,
+    lineColor: string
+  ) => (
     <PointAtOverlay
       data={constraint.data}
       start={constraint.getStartWaypoint()}
@@ -15,14 +17,18 @@ const overlays = {
       lineColor={lineColor}
     ></PointAtOverlay>
   ),
-  StopPoint: undefined,
-  MaxAcceleration: undefined,
-  MaxVelocity: undefined,
-  MaxAngularVelocity: undefined
-
-} satisfies {[K in ConstraintKey]: ((constraint: IConstraintStoreKeyed<K>, lineColor: string)=>JSX.Element) | undefined};
+  StopPoint: (c: IConstraintStoreKeyed<"StopPoint">) => <></>,
+  MaxAcceleration: (c: IConstraintStoreKeyed<"MaxAcceleration">) => <></>,
+  MaxVelocity: (c: IConstraintStoreKeyed<"MaxVelocity">) => <></>,
+  MaxAngularVelocity: (c: IConstraintStoreKeyed<"MaxAngularVelocity">) => <></>
+} satisfies {
+  [K in ConstraintKey]: (
+    constraint: IConstraintStoreKeyed<K>,
+    lineColor: string
+  ) => JSX.Element;
+};
 type Props = {
-  constraint?: IConstraintStore;
+  constraint?: IConstraintStoreKeyed<ConstraintKey>;
   lineColor: string;
 };
 function FieldConstraintDisplayLayer(props: Props) {
@@ -44,7 +50,8 @@ function FieldConstraintDisplayLayer(props: Props) {
         lineColor={props.lineColor}
         id="display"
       ></FieldConstraintRangeLayer>
-      {(overlays[constraint.data.type] ?? ((c: IConstraintStore) => <></>))(
+      {overlays[constraint.data.type](
+        // @ts-expect-error can't cast the constraint as the proper type.
         constraint,
         props.lineColor
       )}
