@@ -11,7 +11,7 @@ export type ConstraintPropertyDefinition<P extends ConstraintPropertyType> = {
   name: string;
   description: string;
   defaultVal: P;
-} & (P extends Expr ? { units: Unit } : object);
+} & (P extends Expr ? { dimension: Dimension } : object);
 
 export type DataPropsList = { [key: string]: ConstraintPropertyType };
 export type PropertyDefinitionList<P extends DataPropsList> = {
@@ -81,7 +81,7 @@ export const ConstraintDefinitions: defs = {
       max: {
         name: "Max Velocity",
         description: "Maximum linear velocity of robot chassis",
-        units: Dimensions.LinVel.unit,
+        dimension: Dimensions.LinVel,
         defaultVal: ["0 m/s", 0]
       }
     },
@@ -98,7 +98,7 @@ export const ConstraintDefinitions: defs = {
       max: {
         name: "Max Acceleration",
         description: "Maximum Linear Acceleration of robot chassis",
-        units: Dimensions.LinAcc.unit,
+        dimension: Dimensions.LinAcc,
         defaultVal: ["10 m/s^2", 10]
       }
     },
@@ -115,7 +115,7 @@ export const ConstraintDefinitions: defs = {
       max: {
         name: "Max Angular Velocity",
         description: "Maximum Angular Velocity of robot chassis",
-        units: Units.RadianPerSecond,
+        dimension: Dimensions.AngVel,
         defaultVal: ["0 rad/s", 0]
       }
     },
@@ -132,20 +132,20 @@ export const ConstraintDefinitions: defs = {
       x: {
         name: "X",
         description: "The x coordinate of the point the robot should face",
-        units: Dimensions.Length.unit,
+        dimension: Dimensions.Length,
         defaultVal: ["0 m", 0]
       },
       y: {
         name: "Y",
         description: "The y coordinate of the point the robot should face",
-        units: Dimensions.Length.unit,
+        dimension: Dimensions.Length,
         defaultVal: ["0 m", 0]
       },
       tolerance: {
-        name: "Heading Tolerance",
+        name: "θ Tol.",
         description:
           "The allowable heading range relative to the direction to the point. Keep less than Pi.",
-        units: Dimensions.Angle.unit,
+        dimension: Dimensions.Angle,
         defaultVal: ["1 deg", Math.PI / 180.0]
       },
       flip: {
