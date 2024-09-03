@@ -100,7 +100,7 @@ export const ChoreoPathStore = types
           const from = self.waypointIdToSavedWaypointId(con.from)!;
           const to = self.waypointIdToSavedWaypointId(con.to);
           const toReturn: Constraint = {
-            data: con.data.serialize(),
+            data: con.data.serialize,
             from,
             to
           };

@@ -57,7 +57,7 @@ export type ConstraintDataStore<
 > = IModelType<
   DataStoreProps<K>,
   ConstraintSetters<K> & {
-    serialize: () => D;
+    serialize: D;
     deserialize: (ser: D) => void;
     deserPartial: (ser: Partial<D["props"]>) => void;
   }
