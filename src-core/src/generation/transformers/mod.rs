@@ -4,7 +4,9 @@ use std::collections::{HashMap, HashSet};
 
 use trajoptlib::{DifferentialPathBuilder, DifferentialTrajectory, SwervePathBuilder, SwerveTrajectory};
 
-use crate::{spec::{project::ProjectFile, traj::{Parameters, SampleType, TrajFile}}, ChoreoError, ChoreoResult};
+use crate::{spec::{project::ProjectFile, traj::{DriveType, Parameters, Sample, TrajFile}}, ChoreoError, ChoreoResult};
+
+use super::intervals::guess_control_interval_counts;
 
 macro_rules! add_transformers (
     ($module:ident : $($transformer:ident),*) => {
@@ -16,69 +18,65 @@ macro_rules! add_transformers (
 
 add_transformers!(interval_count: IntervalCountSetter);
 add_transformers!(drivetrain_and_bumpers: DrivetrainAndBumpersSetter);
+add_transformers!(constraints: ConstraintSetter);
+add_transformers!(callback: CallbackSetter);
 
 
 
-struct GenerationContext {
+pub(super) struct GenerationContext {
     pub project: ProjectFile,
-    pub params: Parameters<f64>
+    pub params: Parameters<f64>,
+    pub handle: i64,
 }
 
 pub(super) struct TrajFileGenerator {
     ctx: GenerationContext,
     trajfile: TrajFile,
     swerve_transformers: HashMap<String, Vec<Box<dyn InitializedSwerveGenerationTransformer>>>,
-    swerve_post_processor: Option<fn(TrajFile, SwerveTrajectory) -> ChoreoResult<TrajFile>>,
     diffy_transformers: HashMap<String, Vec<Box<dyn InitializedDiffyGenerationTransformer>>>,
-    diffy_post_processor: Option<fn(TrajFile, DifferentialTrajectory) -> ChoreoResult<TrajFile>>
 }
 
 impl TrajFileGenerator {
-    pub fn new(project: ProjectFile, trajfile: TrajFile) -> Self {
+    /// Create a new generator
+    pub fn new(project: ProjectFile, trajfile: TrajFile, handle: i64) -> Self {
         Self {
             ctx: GenerationContext {
                 project,
-                params: trajfile.params.snapshot()
+                params: trajfile.params.snapshot(),
+                handle,
             },
             trajfile,
             swerve_transformers: HashMap::new(),
             diffy_transformers: HashMap::new(),
-            swerve_post_processor: None,
-            diffy_post_processor: None
         }
     }
 
+    /// Add a transformer to the generator that is only applied when generating a swerve trajectory
     pub fn add_swerve_transformer<T: SwerveGenerationTransformer + 'static>(&mut self) {
-        let featurelocked_transformer = T::initialize(&mut self.ctx);
+        let featurelocked_transformer = T::initialize(&self.ctx);
         let feature = featurelocked_transformer.feature;
         let transformer = Box::new(featurelocked_transformer.inner);
         self.swerve_transformers.entry(feature).or_default().push(transformer);
     }
 
+    /// Add a transformer to the generator that is only applied when generating a differential trajectory
     pub fn add_diffy_transformer<T: DiffyGenerationTransformer + 'static>(&mut self) {
-        let featurelocked_transformer = T::initialize(&mut self.ctx);
+        let featurelocked_transformer = T::initialize(&self.ctx);
         let feature = featurelocked_transformer.feature;
         let transformer = Box::new(featurelocked_transformer.inner);
         self.diffy_transformers.entry(feature).or_default().push(transformer);
     }
 
+    /// Add a transformer to the generator that is applied when generating both swerve and differential trajectories
     pub fn add_omni_transformer<T: SwerveGenerationTransformer + DiffyGenerationTransformer + 'static>(&mut self) {
         self.add_swerve_transformer::<T>();
         self.add_diffy_transformer::<T>();
     }
 
-    pub fn set_swerve_post_processor(&mut self, post_processor: fn(TrajFile, SwerveTrajectory) -> ChoreoResult<TrajFile>) {
-        self.swerve_post_processor = Some(post_processor);
-    }
-
-    pub fn set_diffy_post_processor(&mut self, post_processor: fn(TrajFile, DifferentialTrajectory) -> ChoreoResult<TrajFile>) {
-        self.diffy_post_processor = Some(post_processor);
-    }
-
-    fn generate_swerve(&self, handle: i64, features: Vec<String>) -> ChoreoResult<SwerveTrajectory> {
+    fn generate_swerve(&self, handle: i64) -> ChoreoResult<SwerveTrajectory> {
         let mut builder = SwervePathBuilder::new();
         let mut feature_set = HashSet::new();
-        feature_set.extend(features);
+        feature_set.extend(self.ctx.project.generation_features.clone());
         feature_set.insert("".to_string());
 
         for feature in feature_set.iter() {
@@ -92,10 +90,10 @@ impl TrajFileGenerator {
         builder.generate(true, handle).map_err(ChoreoError::TrajOpt)
     }
 
-    fn generate_diffy(&self, handle: i64, features: Vec<String>) -> ChoreoResult<DifferentialTrajectory> {
+    fn generate_diffy(&self, handle: i64) -> ChoreoResult<DifferentialTrajectory> {
         let mut builder = DifferentialPathBuilder::new();
         let mut feature_set = HashSet::new();
-        feature_set.extend(features);
+        feature_set.extend(self.ctx.project.generation_features.clone());
         feature_set.insert("".to_string());
 
         for feature in feature_set.iter() {
@@ -109,21 +107,31 @@ impl TrajFileGenerator {
         builder.generate(true, handle).map_err(ChoreoError::TrajOpt)
     }
 
-    pub fn generate(self, r#type: SampleType, handle: i64, features: Vec<String>) -> ChoreoResult<TrajFile> {
-        match r#type {
-            SampleType::Swerve => {
-                let gen_traj = self.generate_swerve(handle, features)?;
-                self.swerve_post_processor
-                    .unwrap_or(|trajfile, _| Ok(trajfile))
-                    (self.trajfile, gen_traj)
+    /// Generate the trajectory file
+    pub fn generate(self) -> ChoreoResult<TrajFile> {
+        let samples: Vec<Sample> = match &self.ctx.project.r#type {
+            DriveType::Swerve => {
+                self.generate_swerve(self.ctx.handle)?
+                    .samples
+                    .into_iter()
+                    .map(Into::into)
+                    .collect()
             },
-            SampleType::Differential => {
-                let gen_traj = self.generate_diffy(handle, features)?;
-                self.diffy_post_processor
-                    .unwrap_or(|trajfile, _| Ok(trajfile))
-                    (self.trajfile, gen_traj)
+            DriveType::Differential => {
+                self.generate_diffy(self.ctx.handle)?
+                    .samples
+                    .into_iter()
+                    .map(Into::into)
+                    .collect()
             }
-        }
+        };
+
+        let counts_vec = guess_control_interval_counts(
+            &self.ctx.project.config.snapshot(),
+            &self.trajfile.params.snapshot()
+        )?;
+
+        Ok(postprocess(&samples, self.trajfile, counts_vec))
     }
 }
 
@@ -182,4 +190,62 @@ impl<T: DiffyGenerationTransformer> InitializedDiffyGenerationTransformer for T 
     fn trans(&self, builder: &mut DifferentialPathBuilder) {
         self.transform(builder);
     }
+}
+
+fn postprocess(
+    result: &[Sample],
+    mut path: TrajFile,
+    counts_vec: Vec<usize>,
+) -> TrajFile {
+    let mut snapshot = path.params.snapshot();
+    path.params
+        .waypoints
+        .iter_mut()
+        .zip(snapshot.waypoints.iter_mut())
+        .zip(counts_vec)
+        .for_each(|w| {
+            w.0.0.intervals = Some(w.1);
+            w.0.1.intervals = Some(w.1);
+        });
+    // convert the result from trajoptlib to a format matching the save file.
+    // Calculate the waypoint timing
+    let mut interval = 0;
+    let intervals = snapshot
+        .waypoints
+        .iter()
+        .enumerate()
+        .map(|pt| {
+            let total_intervals = interval;
+            interval += pt.1.intervals.unwrap_or(40);
+            (
+                pt.1.split || pt.0 == 0 || pt.0 == snapshot.waypoints.len() - 1,
+                total_intervals,
+                result.get(total_intervals).map_or(0.0, |s| match s {
+                    Sample::Swerve { t, .. } => *t,
+                    Sample::DifferentialDrive { t, .. } => *t,
+                }),
+            )
+        })
+        .collect::<Vec<(bool, usize, f64)>>();
+
+    let waypoint_times = intervals.iter().map(|a| a.2).collect::<Vec<f64>>();
+    // Calculate splits
+    let splits = intervals
+        .iter()
+        .filter(|a| a.0) // filter by split flag
+        .map(|a| a.1) // map to associate interval
+        .collect::<Vec<usize>>();
+    path.traj.samples = splits
+        .windows(2) // get adjacent pairs of interval counts
+        .filter_map(|window| {
+            result
+                // grab the range including both endpoints,
+                // there are no bounds checks on this slice so be weary of crashes
+                .get((window[0])..=(window[1]))
+                .map(|slice| slice.to_vec())
+        })
+        .collect::<Vec<Vec<Sample>>>();
+    path.traj.waypoints = waypoint_times;
+    path.snapshot = Some(snapshot);
+    path
 }

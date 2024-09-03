@@ -1,8 +1,8 @@
-use trajoptlib::Pose2d;
+use trajoptlib::{PathBuilder, Pose2d};
 
 use crate::{generation::intervals::guess_control_interval_counts, spec::traj::Waypoint};
 
-use super::{FeatureLockedTransformer, GenerationContext, SwerveGenerationTransformer};
+use super::{DiffyGenerationTransformer, FeatureLockedTransformer, GenerationContext, SwerveGenerationTransformer};
 
 
 pub struct IntervalCountSetter {
@@ -18,13 +18,7 @@ impl IntervalCountSetter {
             waypoints: ctx.params.waypoints.clone()
         })
     }
-}
-
-impl SwerveGenerationTransformer for IntervalCountSetter {
-    fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
-        Self::initialize(context)
-    }
-    fn transform(&self, builder: &mut trajoptlib::SwervePathBuilder) {
+    fn transform<T: PathBuilder>(&self, builder: &mut T) {
         let waypoints = &self.waypoints;
         let mut guess_points_after_waypoint = Vec::new();
         let mut control_interval_counts = Vec::new();
@@ -62,5 +56,23 @@ impl SwerveGenerationTransformer for IntervalCountSetter {
         }
 
         builder.set_control_interval_counts(control_interval_counts);
+    }
+}
+
+impl SwerveGenerationTransformer for IntervalCountSetter {
+    fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
+        Self::initialize(context)
+    }
+    fn transform(&self, builder: &mut trajoptlib::SwervePathBuilder) {
+        self.transform(builder);
+    }
+}
+
+impl DiffyGenerationTransformer for IntervalCountSetter {
+    fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
+        Self::initialize(context)
+    }
+    fn transform(&self, builder: &mut trajoptlib::DifferentialPathBuilder) {
+        self.transform(builder);
     }
 }

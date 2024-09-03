@@ -1,6 +1,5 @@
 #![allow(clippy::missing_errors_doc)]
 
-use std::any::Any;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::OnceLock;
 
@@ -8,49 +7,17 @@ use trajoptlib::{
     DifferentialTrajectory, SwerveTrajectory,
 };
 
-use super::transformers::{DrivetrainAndBumpersSetter, IntervalCountSetter, TrajFileGenerator};
+use super::transformers::{CallbackSetter, ConstraintSetter, DrivetrainAndBumpersSetter, IntervalCountSetter, TrajFileGenerator};
 use crate::spec::project::ProjectFile;
-use crate::spec::traj::{ConstraintScope, SampleType, TrajFile};
-use crate::{ChoreoResult, ResultExt};
+use crate::spec::traj::{ConstraintScope, TrajFile};
+use crate::ChoreoResult;
 
 /**
  * A [`OnceLock`] is a synchronization primitive that can be written to
  * once. Used here to create a read-only static reference to the sender,
  * even though the sender can't be constructed in a static context.
  */
-pub static PROGRESS_SENDER_LOCK: OnceLock<Sender<LocalProgressUpdate>> = OnceLock::new();
-
-fn swerve_status_callback(traj: SwerveTrajectory, handle: i64) {
-    let tx_opt = PROGRESS_SENDER_LOCK.get();
-    if let Some(tx) = tx_opt {
-        tx.send(LocalProgressUpdate::SwerveTraj {
-            update: traj,
-            handle,
-        })
-        .trace_warn();
-    };
-}
-
-fn diff_status_callback(traj: DifferentialTrajectory, handle: i64) {
-    let tx_opt = PROGRESS_SENDER_LOCK.get();
-    if let Some(tx) = tx_opt {
-        tx.send(LocalProgressUpdate::DiffTraj {
-            update: traj,
-            handle,
-        })
-        .trace_warn();
-    };
-}
-
-fn fix_scope(idx: usize, removed_idxs: &Vec<usize>) -> usize {
-    let mut to_subtract: usize = 0;
-    for removed in removed_idxs {
-        if *removed < idx {
-            to_subtract += 1;
-        }
-    }
-    idx - to_subtract
-}
+pub(super) static PROGRESS_SENDER_LOCK: OnceLock<Sender<LocalProgressUpdate>> = OnceLock::new();
 
 #[derive(Debug, Clone)]
 // #[serde(rename_all = "camelCase", tag = "type")]
@@ -138,54 +105,18 @@ fn set_initial_guess(traj: &mut TrajFile) {
 }
 
 pub fn generate(
-    chor: &ProjectFile,
-    mut path: TrajFile,
-    // The handle referring to this path for the solver state callback
+    chor: ProjectFile,
+    mut trajfile: TrajFile,
     handle: i64
 ) -> ChoreoResult<TrajFile> {
-    set_initial_guess(&mut path);
+    set_initial_guess(&mut trajfile);
 
-    let mut ctx = TrajFileGenerator::new(chor.clone(), path.clone());
+    let mut ctx = TrajFileGenerator::new(chor, trajfile, handle);
 
-    ctx.add_swerve_transformer::<IntervalCountSetter>();
-    ctx.add_swerve_transformer::<DrivetrainAndBumpersSetter>();
-    ctx.add_diffy_transformer::<DrivetrainAndBumpersSetter>();
+    ctx.add_omni_transformer::<IntervalCountSetter>();
+    ctx.add_omni_transformer::<DrivetrainAndBumpersSetter>();
+    ctx.add_omni_transformer::<ConstraintSetter>();
+    ctx.add_omni_transformer::<CallbackSetter>();
 
-    // for constraint in &constraint_idx {
-    //     let from = fix_scope(constraint.from, &guess_point_idxs);
-    //     let to_opt = constraint.to.map(|idx| fix_scope(idx, &guess_point_idxs));
-    //     match constraint.data {
-    //         ConstraintData::PointAt {
-    //             x,
-    //             y,
-    //             tolerance,
-    //             flip,
-    //         } => match to_opt {
-    //             None => traj_builder.wpt_point_at(from, x, y, tolerance, flip),
-    //             Some(to) => traj_builder.sgmt_point_at(from, to, x, y, tolerance, flip),
-    //         },
-    //         ConstraintData::MaxVelocity { max } => match to_opt {
-    //             None => traj_builder.wpt_linear_velocity_max_magnitude(from, max),
-    //             Some(to) => traj_builder.sgmt_linear_velocity_max_magnitude(from, to, max),
-    //         },
-    //         ConstraintData::MaxAcceleration { max } => match to_opt {
-    //             None => traj_builder.wpt_linear_acceleration_max_magnitude(from, max),
-    //             Some(to) => traj_builder.sgmt_linear_acceleration_max_magnitude(from, to, max),
-    //         },
-    //         ConstraintData::MaxAngularVelocity { max } => match to_opt {
-    //             None => traj_builder.wpt_angular_velocity_max_magnitude(from, max),
-    //             Some(to) => traj_builder.sgmt_angular_velocity_max_magnitude(from, to, max),
-    //         },
-    //         ConstraintData::StopPoint {} => {
-    //             if to_opt.is_none() {
-    //                 traj_builder.wpt_linear_velocity_max_magnitude(from, 0.0f64);
-    //                 traj_builder.wpt_angular_velocity_max_magnitude(from, 0.0f64);
-    //             }
-    //         }
-    //     };
-    // }
-
-    let sample_type = if diffy { SampleType::Differential } else { SampleType::Swerve };
-    ctx.generate(sample_type, handle, features)
-
+    ctx.generate()
 }

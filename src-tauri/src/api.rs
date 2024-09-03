@@ -19,7 +19,7 @@ pub fn guess_control_interval_counts(
     config: RobotConfig<Expr>,
     traj: TrajFile,
 ) -> ChoreoResult<Vec<usize>> {
-    choreo_core::generation::intervals::guess_control_interval_counts(&config, &traj)
+    choreo_core::generation::intervals::guess_control_interval_counts(&config.snapshot(), &traj.params.snapshot())
 }
 
 #[tauri::command]

@@ -253,8 +253,8 @@ fn nudge_zero(f: f64) -> f64 {
     }
 }
 
-impl From<&SwerveTrajectorySample> for Sample {
-    fn from(swerve_sample: &SwerveTrajectorySample) -> Self {
+impl From<SwerveTrajectorySample> for Sample {
+    fn from(swerve_sample: SwerveTrajectorySample) -> Self {
         Sample::Swerve {
             t: nudge_zero(swerve_sample.timestamp),
             x: nudge_zero(swerve_sample.x),
@@ -279,8 +279,8 @@ impl From<&SwerveTrajectorySample> for Sample {
     }
 }
 
-impl From<&DifferentialTrajectorySample> for Sample {
-    fn from(diff_sample: &DifferentialTrajectorySample) -> Self {
+impl From<DifferentialTrajectorySample> for Sample {
+    fn from(diff_sample: DifferentialTrajectorySample) -> Self {
         Sample::DifferentialDrive {
             t: nudge_zero(diff_sample.timestamp),
             x: nudge_zero(diff_sample.x),
@@ -296,7 +296,7 @@ impl From<&DifferentialTrajectorySample> for Sample {
 
 /// The type of samples in a trajectory.
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
-pub enum SampleType {
+pub enum DriveType {
     /// The variant for [`Sample::Swerve`].
     #[default]
     Swerve,

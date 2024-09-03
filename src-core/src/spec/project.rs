@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use trajoptlib::Translation2d;
 
-use super::{traj::SampleType, Expr, SnapshottableType};
+use super::{traj::DriveType, Expr, SnapshottableType};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum Dimension {
@@ -119,7 +119,7 @@ pub struct ProjectFile {
     pub name: String,
     pub version: String,
     #[serde(rename = "type", default)]
-    pub r#type: SampleType,
+    pub r#type: DriveType,
     pub variables: Variables,
     pub config: RobotConfig<Expr>,
     #[serde(default)]
@@ -143,7 +143,7 @@ impl Default for ProjectFile {
         ProjectFile {
             name: "New Project".to_string(),
             version: "v2025.0.0".to_string(),
-            r#type: SampleType::Swerve,
+            r#type: DriveType::Swerve,
             variables: Variables {
                 expressions: HashMap::new(),
                 poses: HashMap::new(),

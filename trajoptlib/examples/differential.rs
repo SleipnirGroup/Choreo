@@ -1,4 +1,4 @@
-use trajoptlib::{DifferentialDrivetrain, DifferentialPathBuilder};
+use trajoptlib::{DifferentialDrivetrain, DifferentialPathBuilder, PathBuilder};
 
 fn main() {
     let drivetrain = DifferentialDrivetrain {

@@ -383,8 +383,6 @@ pub trait PathBuilder: Any {
         y: Vec<f64>,
         radius: f64,
     );
-
-    fn as_any(&mut self) -> &mut dyn Any;
 }
 pub struct SwervePathBuilder {
     path_builder: cxx::UniquePtr<crate::ffi::SwervePathBuilder>,
@@ -633,10 +631,6 @@ impl PathBuilder for SwervePathBuilder {
             y,
             radius,
         );
-    }
-
-    fn as_any(&mut self) -> &mut dyn Any {
-        self
     }
 }
 
@@ -895,10 +889,6 @@ impl PathBuilder for DifferentialPathBuilder {
             y,
             radius,
         );
-    }
-
-    fn as_any(&mut self) -> &mut dyn Any {
-        self
     }
 }
 

@@ -145,7 +145,7 @@ pub fn remote_generate_child(args: RemoteArgs) {
         traj.name, project.name
     );
 
-    match generate(&project, traj, 0i64) {
+    match generate(project, traj, 0i64) {
         Ok(traj) => {
             let ser_string = serde_json::to_string(&RemoteProgressUpdate::CompleteTraj(traj.traj))
                 .expect("Failed to serialize progress update");

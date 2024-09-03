@@ -1,4 +1,4 @@
-use trajoptlib::{DifferentialDrivetrain, SwerveDrivetrain};
+use trajoptlib::{DifferentialDrivetrain, PathBuilder, SwerveDrivetrain};
 
 use crate::spec::project::{Module, RobotConfig};
 
