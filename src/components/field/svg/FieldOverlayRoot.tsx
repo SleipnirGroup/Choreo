@@ -8,6 +8,8 @@ import * as d3 from "d3";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import { Expr, Waypoint } from "../../../document/2025/DocumentTypes";
+import { ConstraintKey } from "../../../document/ConstraintDefinitions";
+import { IConstraintStoreKeyed } from "../../../document/ConstraintStore";
 import { doc, uiState } from "../../../document/DocumentManager";
 import {
   NavbarItemData,
@@ -387,7 +389,9 @@ class FieldOverlayRoot extends Component<Props, State> {
             )}
             {doc.isSidebarConstraintSelected && (
               <FieldConstraintDisplayLayer
-                constraint={doc.selectedSidebarItem}
+                constraint={
+                  doc.selectedSidebarItem as IConstraintStoreKeyed<ConstraintKey>
+                }
                 lineColor="var(--select-yellow)"
               ></FieldConstraintDisplayLayer>
             )}
@@ -395,7 +399,9 @@ class FieldOverlayRoot extends Component<Props, State> {
             {!doc.isSidebarConstraintSelected &&
               doc.isSidebarConstraintHovered && (
                 <FieldConstraintDisplayLayer
-                  constraint={doc.hoveredSidebarItem}
+                  constraint={
+                    doc.hoveredSidebarItem as IConstraintStoreKeyed<ConstraintKey>
+                  }
                   lineColor="white"
                 ></FieldConstraintDisplayLayer>
               )}

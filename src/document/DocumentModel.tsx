@@ -74,13 +74,13 @@ export const DocumentStore = types
     get isSidebarConstraintSelected() {
       return (
         self.selectedSidebarItem !== undefined &&
-        self.selectedSidebarItem.from !== undefined
+        Object.hasOwn(self.selectedSidebarItem, "from")
       );
     },
     get isSidebarCircularObstacleSelected() {
       return (
         self.selectedSidebarItem !== undefined &&
-        self.selectedSidebarItem.radius !== undefined
+        Object.hasOwn(self.selectedSidebarItem, "radius")
       );
     },
     get isSidebarWaypointSelected() {
@@ -93,13 +93,13 @@ export const DocumentStore = types
     get isSidebarConstraintHovered() {
       return (
         self.hoveredSidebarItem !== undefined &&
-        self.hoveredSidebarItem.from !== undefined
+        Object.hasOwn(self.hoveredSidebarItem, "from")
       );
     },
     get isSidebarCircularObstacleHovered() {
       return (
         self.hoveredSidebarItem !== undefined &&
-        self.hoveredSidebarItem.radius !== undefined
+        Object.hasOwn(self.hoveredSidebarItem, "radius")
       );
     },
     get isSidebarWaypointHovered() {
