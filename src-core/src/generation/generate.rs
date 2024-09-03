@@ -333,13 +333,12 @@ pub fn generate(
                 None => traj_builder.wpt_angular_velocity_max_magnitude(from, max),
                 Some(to) => traj_builder.sgmt_angular_velocity_max_magnitude(from, to, max),
             },
-            ConstraintData::StopPoint {} => match to_opt {
-                None => {
+            ConstraintData::StopPoint {} => {
+                if to_opt.is_none() {
                     traj_builder.wpt_linear_velocity_max_magnitude(from, 0.0f64);
                     traj_builder.wpt_angular_velocity_max_magnitude(from, 0.0f64);
                 }
-                Some(_) => (),
-            },
+            }
         };
     }
     let config = chor.config.snapshot();

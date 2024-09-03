@@ -14,6 +14,15 @@
 
 namespace trajopt {
 
+inline Translation2d WheelToChassisSpeeds(double vL, double vR) {
+  return Translation2d{(vL + vR) / 2, 0.0};
+}
+
+inline Translation2v WheelToChassisSpeeds(sleipnir::Variable vL,
+                                          sleipnir::Variable vR) {
+  return Translation2v{(vL + vR) / 2, 0.0};
+}
+
 DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     DifferentialPathBuilder pathbuilder, int64_t handle)
     : path(pathbuilder.GetPath()), Ns(pathbuilder.GetControlIntervalCounts()) {
@@ -165,16 +174,17 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
       Rotation2v theta_n{thetacos.at(index), thetasin.at(index)};
       Rotation2v theta_n_1{thetacos.at(index - 1), thetasin.at(index - 1)};
 
-      Translation2v v_n{vL.at(index), vR.at(index)};
+      Translation2v v_n = WheelToChassisSpeeds(vL.at(index), vR.at(index));
       v_n = v_n.RotateBy(theta_n);
-      Translation2v v_n_1{vL.at(index - 1), vR.at(index - 1)};
+      Translation2v v_n_1 =
+          WheelToChassisSpeeds(vL.at(index - 1), vR.at(index - 1));
       v_n_1 = v_n_1.RotateBy(theta_n_1);
 
       auto omega_n = (vR.at(index) - vL.at(index)) / path.drivetrain.trackwidth;
       auto omega_n_1 =
           (vR.at(index - 1) - vL.at(index - 1)) / path.drivetrain.trackwidth;
 
-      Translation2v a_n{aL.at(index), aR.at(index)};
+      Translation2v a_n = WheelToChassisSpeeds(aL.at(index), aR.at(index));
 
       problem.SubjectTo(x_n_1 + v_n * dt_sgmt + a_n * 0.5 * dt_sgmt * dt_sgmt ==
                         x_n);
@@ -185,7 +195,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
 
   for (size_t index = 0; index < sampTot; ++index) {
     Rotation2v theta{thetacos.at(index), thetasin.at(index)};
-    Translation2v v{vL.at(index), vR.at(index)};
+    Translation2v v = WheelToChassisSpeeds(vL.at(index), vR.at(index));
     auto angularVelocity =
         (vR.at(index) - vL.at(index)) / path.drivetrain.trackwidth;
 
@@ -234,16 +244,14 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
       Pose2v pose{
           x.at(index), y.at(index), {thetacos.at(index), thetasin.at(index)}};
 
-      auto v = (vL.at(index) + vR.at(index)) / 2.0;
-      Translation2v linearVelocity{v * thetacos.at(index),
-                                   v * thetasin.at(index)};
+      Translation2v linearVelocity =
+          WheelToChassisSpeeds(vL.at(index), vR.at(index));
 
       auto angularVelocity =
           (vR.at(index) - vL.at(index)) / path.drivetrain.trackwidth;
 
-      auto a = (aL.at(index) + aR.at(index)) / 2.0;
-      Translation2v linearAcceleration{a * thetacos.at(index),
-                                       a * thetasin.at(index)};
+      Translation2v linearAcceleration =
+          WheelToChassisSpeeds(aL.at(index), aR.at(index));
 
       auto angularAcceleration =
           (aR.at(index) - aL.at(index)) / path.drivetrain.trackwidth;
@@ -267,16 +275,14 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
         Pose2v pose{
             x.at(index), y.at(index), {thetacos.at(index), thetasin.at(index)}};
 
-        auto v = (vL.at(index) + vR.at(index)) / 2.0;
-        Translation2v linearVelocity{v * thetacos.at(index),
-                                     v * thetasin.at(index)};
+        Translation2v linearVelocity =
+            WheelToChassisSpeeds(vL.at(index), vR.at(index));
 
         auto angularVelocity =
             (vR.at(index) - vL.at(index)) / path.drivetrain.trackwidth;
 
-        auto a = (aL.at(index) + aR.at(index)) / 2.0;
-        Translation2v linearAcceleration{a * thetacos.at(index),
-                                         a * thetasin.at(index)};
+        Translation2v linearAcceleration =
+            WheelToChassisSpeeds(aL.at(index), aR.at(index));
 
         auto angularAcceleration =
             (aR.at(index) - aL.at(index)) / path.drivetrain.trackwidth;

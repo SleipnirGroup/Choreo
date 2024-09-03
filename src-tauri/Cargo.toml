@@ -1,6 +1,6 @@
 [package]
 name = "choreo"
-version = "2024.2.3"
+version = "2025.0.0-beta"
 edition = "2021"
 description = """\
   A graphical tool for planning time-optimized trajectories for autonomous \
@@ -14,6 +14,7 @@ license = "BSD-3-Clause"
 
 [build-dependencies]
 tauri-build = { version = "1.5.2", features = [] }
+built = { version = "0.7.4", features = ["chrono", "dependency-tree"] }
 
 [dependencies]
 choreo-core = { path = "../src-core" }
@@ -24,6 +25,7 @@ tracing-subscriber = { version = "0.3.18", features = ["ansi", "fmt", "std"] }
 nu-ansi-term = "0.50.1"
 tracing-appender = "0.2.3"
 current_platform = "0.2.0"
+serde = "1.0.209"
 
 [features]
 custom-protocol = ["tauri/custom-protocol"]

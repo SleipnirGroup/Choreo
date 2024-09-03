@@ -1,3 +1,4 @@
+use crate::built::BuiltInfo;
 use crate::{api::*, logging};
 use choreo_core::file_management::WritingResources;
 use choreo_core::generation::generate::{setup_progress_sender, RemoteGenerationResources};
@@ -27,6 +28,11 @@ async fn open_log_dir(app_handle: AppHandle) -> ChoreoResult<()> {
     } else {
         Err(ChoreoError::FileNotFound(None))
     }
+}
+
+#[tauri::command]
+fn build_info() -> BuiltInfo {
+    BuiltInfo::from_build()
 }
 
 #[tauri::command]
@@ -173,7 +179,8 @@ pub fn run_tauri(project: Option<PathBuf>) {
             generate_remote,
             cancel_remote_generator,
             cancel_all_remote_generators,
-            open_log_dir
+            open_log_dir,
+            build_info
         ])
         .run(context)
         .expect("error while running tauri application");

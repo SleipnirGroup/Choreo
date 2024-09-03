@@ -61,13 +61,13 @@ jobs:
       - run: cmake --preset with-examples-sccache ${{ matrix.cmake-args }}
         if: ${{ !startsWith(matrix.os, 'windows') }}
         working-directory: trajoptlib
-        env:
-          SCCACHE_GHA_ENABLED: true
       - run: cmake -B build -S . -DBUILD_EXAMPLES=ON ${{ matrix.cmake-args }}
         if: startsWith(matrix.os, 'windows')
         working-directory: trajoptlib
       - run: cmake --build build --config RelWithDebInfo --parallel 4
         working-directory: trajoptlib
+        env:
+          SCCACHE_GHA_ENABLED: "true"
       - run: ctest --test-dir build -C RelWithDebInfo --output-on-failure
         working-directory: trajoptlib
       - run: cmake --install build --config RelWithDebInfo --prefix pkg
