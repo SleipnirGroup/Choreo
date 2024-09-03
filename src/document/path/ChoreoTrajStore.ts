@@ -16,6 +16,7 @@ export const ChoreoTrajStore = types
   })
   .views((self) => ({
     get fullTraj(): SwerveSample[] | DifferentialDriveSample[] {
+      //@ts-expect-error This might be a TS bug, flatMap on an A[] | B[] returns an (A | B)[]
       return self.samples.flatMap((sect, i, samp) => {
         if (i != 0) {
           return sect.slice(1);
