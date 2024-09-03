@@ -211,6 +211,14 @@ pub async fn generate(
             ConstraintData::KeepInCircle { x, y, r } => match to_opt {
                 None => path_builder.wpt_keep_in_circle(from, x, y, r),
                 Some(to) => path_builder.sgmt_keep_in_circle(from, to, x, y, r),
+            },
+            ConstraintData::KeepInRectangle { x, y, w, h } => {
+                let xs = vec![x, x + w, x + w, x];
+                let ys = vec![y, y, y + h, y + h];
+                match to_opt {
+                    None => path_builder.wpt_keep_in_polygon(from, xs, ys),
+                    Some(to) => path_builder.sgmt_keep_in_polygon(from, to, xs, ys),
+                }
             }
         };
     }

@@ -232,6 +232,12 @@ pub enum ConstraintData<T: SnapshottableType> {
         x: T,
         y: T,
         r: T
+    },
+    KeepInRectangle {
+        x: T,
+        y: T,
+        w: T,
+        h: T
     }
 }
 
@@ -274,6 +280,17 @@ impl<T: SnapshottableType> ConstraintData<T> {
                 x: x.snapshot(),
                 y: y.snapshot(),
                 r: r.snapshot()
+            },
+            ConstraintData::KeepInRectangle {
+                x,
+                y,
+                w,
+                h
+            } => ConstraintData::KeepInRectangle {
+                x: x.snapshot(),
+                y: y.snapshot(),
+                w: w.snapshot(),
+                h: h.snapshot()
             },
         }
     }
