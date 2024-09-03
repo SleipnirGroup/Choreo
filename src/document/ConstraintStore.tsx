@@ -1,7 +1,7 @@
 import { Instance, getEnv, getParent, isAlive, types } from "mobx-state-tree";
 import {
   ConstraintDataObjects,
-  IConstraintDataStore
+  ConstraintDataStore
 } from "./ConstraintDataStore";
 import { ConstraintKey } from "./ConstraintDefinitions";
 import { Env } from "./DocumentManager";
@@ -129,13 +129,15 @@ type IWaypointUUIDScope = Instance<typeof WaypointUUIDScope>;
 
 export type IConstraintStore = Instance<typeof ConstraintStore>;
 
+export type IConstraintStoreKeyed<K extends ConstraintKey> = IConstraintStore & {data: IConstraintDataStore<K>};
+
 export const ConstraintStore = types
   .model("ConstraintStore", {
     from: WaypointScope,
     to: types.maybe(WaypointScope),
     data: types.union(
       ...Object.values(ConstraintDataObjects)
-    ) as IConstraintDataStore<ConstraintKey>,
+    ),
     uuid: types.identifier
   })
   .views((self) => ({

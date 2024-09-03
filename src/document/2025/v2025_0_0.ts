@@ -1,4 +1,4 @@
-import { ConstraintData } from "../ConstraintStore";
+import { ConstraintData } from "../ConstraintDefinitions";
 import { Dimensions } from "../ExpressionStore";
 
 export const SAVE_FILE_VERSION = "v2025.0.0";

@@ -50,7 +50,7 @@ export type ConstraintDataTypeMap = {
     tolerance: Expr;
     flip: boolean;
   };
-};
+}
 export type DataMap = {
   [K in keyof ConstraintDataTypeMap]: IConstraintData<
     K,

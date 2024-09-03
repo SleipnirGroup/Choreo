@@ -11,7 +11,7 @@ import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointS
 
 type Props<K extends ConstraintKey> = {
   data: IConstraintDataStore<K>;
-  start: IHolonomicWaypointStore;
+  start?: IHolonomicWaypointStore;
   end?: IHolonomicWaypointStore;
   lineColor: string;
 };
@@ -37,7 +37,10 @@ class PointAtOverlay extends Component<Props<"PointAt">, object> {
     this.props.data.y.set(event.y);
   }
   render() {
-    const data = this.props.data.serialize as DataMap["PointAt"];
+    if (this.props.start === undefined) {
+      return <></>
+    }
+    const data = this.props.data.serialize() as DataMap["PointAt"];
     return (
       <g ref={this.rootRef}>
         <circle

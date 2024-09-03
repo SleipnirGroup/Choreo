@@ -30,6 +30,8 @@ import OverlayWaypoint from "./OverlayWaypoint";
 import FieldConstraintAddLayer from "./constraintDisplay/FieldConstraintAddLayer";
 import FieldConstraintDisplayLayer from "./constraintDisplay/FieldConstraintDisplayLayer";
 import FieldImage2024 from "./fields/FieldImage2024";
+import { ConstraintDataStore } from "../../../document/ConstraintDataStore";
+import { IConstraintStore } from "../../../document/ConstraintStore";
 
 type Props = object;
 
@@ -387,7 +389,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             )}
             {doc.isSidebarConstraintSelected && (
               <FieldConstraintDisplayLayer
-                constraint={doc.selectedSidebarItem}
+                constraint={doc.selectedSidebarItem as IConstraintStore}
                 lineColor="var(--select-yellow)"
               ></FieldConstraintDisplayLayer>
             )}
@@ -395,7 +397,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             {!doc.isSidebarConstraintSelected &&
               doc.isSidebarConstraintHovered && (
                 <FieldConstraintDisplayLayer
-                  constraint={doc.hoveredSidebarItem}
+                  constraint={doc.hoveredSidebarItem as IConstraintStore}
                   lineColor="white"
                 ></FieldConstraintDisplayLayer>
               )}

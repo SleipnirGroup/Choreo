@@ -32,7 +32,7 @@ import {
 } from "./CircularObstacleStore";
 import {
   ConstraintDataObjects,
-  IConstraintDataStore,
+  ConstraintDataStore,
   defineCreateConstraintData
 } from "./ConstraintDataStore";
 import {
@@ -78,7 +78,7 @@ export const uiState = UIStateStore.create({
 });
 type ConstraintDataConstructor<K extends ConstraintKey> = (
   data: Partial<DataMap[K]["props"]>
-) => Instance<IConstraintDataStore<K>>;
+) => Instance<ConstraintDataStore<K>>;
 
 type ConstraintDataConstructors = {
   [key in ConstraintKey]: ConstraintDataConstructor<key>;
@@ -199,7 +199,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         uuid: uuidv4(),
         data: constraintDataConstructors[type](data)
       });
-      (store.data as Instance<IConstraintDataStore<K>>).deserPartial(data);
+      (store.data as Instance<ConstraintDataStore<K>>).deserPartial(data);
       return store;
     }
   };
