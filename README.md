@@ -22,8 +22,11 @@ An example project using Choreo is available [here](https://github.com/SleipnirG
 
 - [src](src) - Choreo frontend
 - [src-tauri](src-tauri) - Choreo backend
+- [src-cli](src-cli) - Choreo command-line generation tool
+- [src-core](src-core) - Rust code shared between the app and the CLI
 - [choreolib](choreolib) - ChoreoLib: robot-side library for loading and following Choreo paths
 - [trajoptlib](trajoptlib) - TrajoptLib: library used by Choreo to generate time-optimal trajectories for FRC robots
+- [docs](docs) - Source for the [documentation](https://sleipnirgroup.github.io/Choreo)
 
 ## Authors
 
