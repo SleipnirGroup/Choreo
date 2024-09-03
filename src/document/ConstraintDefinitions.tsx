@@ -4,7 +4,6 @@ import {
   NearMe,
   StopCircleOutlined,
   SyncOutlined,
-  SystemUpdateAlt,
   TextRotationNoneOutlined
 } from "@mui/icons-material";
 import { Unit } from "mathjs";
@@ -13,7 +12,7 @@ import { ObjectTyped } from "../util/ObjectTyped";
 import { Expr } from "./2025/DocumentTypes";
 import { Units } from "./ExpressionStore";
 
-export type ConstraintPropertyType = Expr | Expr[] | boolean;
+export type ConstraintPropertyType = Expr | boolean;
 
 export type ConstraintPropertyDefinition<P extends ConstraintPropertyType> = {
   name: string;
@@ -65,8 +64,8 @@ export type ConstraintDataTypeMap = {
     r: Expr;
   };
   KeepInPolygon: {
-    xs: Expr[];
-    ys: Expr[];
+    xs: Array<Expr>;
+    ys: Array<Expr>;
   };
 };
 export type DataMap = {
@@ -210,23 +209,23 @@ export const ConstraintDefinitions: defs = {
     name: "Keep In Polygon",
     shortName: "Keep In P",
     description: "Keep the robot's bumpers within a polygonal region",
-    icon: <SystemUpdateAlt />,
+    icon: <ArrowCircleDown />,
     properties: {
       xs: {
         name: "Xs",
         description: "The x values of the points",
         units: Units.Meter,
-        defaultVal: [["0 m", 0] as Expr]
+        defaultVal: [["0 m", 0]]
       },
       ys: {
         name: "Ys",
         description: "The y values of the points",
         units: Units.Meter,
-        defaultVal: [["0 m", 0] as Expr]
+        defaultVal: [["0 m", 0]]
       }
     },
     wptScope: true,
-    sgmtScope: true
+    sgmtScope: false
   } satisfies ConstraintDefinition<"KeepInPolygon">
 };
 

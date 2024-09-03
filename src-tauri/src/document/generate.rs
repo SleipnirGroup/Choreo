@@ -134,7 +134,7 @@ pub async fn generate(
                     constraint_idx.push(ConstraintIDX {
                         from: fixed_from,
                         to: fixed_to,
-                        data: constraint.data.clone(),
+                        data: constraint.data,
                     });
                 }
             }
@@ -179,7 +179,7 @@ pub async fn generate(
     for constraint in &constraint_idx {
         let from = fix_scope(constraint.from, &guess_point_idxs);
         let to_opt = constraint.to.map(|idx| fix_scope(idx, &guess_point_idxs));
-        match constraint.data.clone() {
+        match constraint.data {
             ConstraintData::PointAt {
                 x,
                 y,
@@ -211,10 +211,6 @@ pub async fn generate(
             ConstraintData::KeepInCircle { x, y, r } => match to_opt {
                 None => path_builder.wpt_keep_in_circle(from, x, y, r),
                 Some(to) => path_builder.sgmt_keep_in_circle(from, to, x, y, r),
-            },
-            ConstraintData::KeepInPolygon { xs, ys } => match to_opt {
-                None => path_builder.wpt_keep_in_polygon(from, xs, ys),
-                Some(to) => path_builder.sgmt_keep_in_polygon(from, to, xs, ys)
             }
         };
     }
