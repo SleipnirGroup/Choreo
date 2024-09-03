@@ -20,7 +20,6 @@ An example project using Choreo is available [here](https://github.com/SleipnirG
 
 ## Repository directory structure
 
-
 - [src](src) - Choreo frontend
 - [src-tauri](src-tauri) - Choreo backend
 - [src-cli](src-cli) - Choreo command-line generation tool
