@@ -316,7 +316,9 @@ pub fn generate(
             } => match to_opt {
                 None => traj_builder.wpt_point_at(from, x, y, tolerance, flip),
                 Some(to) => {
-                    if let Some(swerve_builder) = (&mut traj_builder as &mut dyn Any).downcast_mut::<SwervePathBuilder>() {
+                    if let Some(swerve_builder) =
+                        (&mut traj_builder as &mut dyn Any).downcast_mut::<SwervePathBuilder>()
+                    {
                         swerve_builder.sgmt_point_at(from, to, x, y, tolerance, flip)
                     }
                 }
