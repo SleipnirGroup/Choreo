@@ -77,9 +77,10 @@ pub fn adjust_waypoint_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                         Some(to) => {
                             sgmt_has_0_ang_vel
                                 .iter_mut()
-                                .take(to + 1)
+                                .take(to)
                                 .skip(from)
                                 .for_each(|b| *b += 1);
+
                             let mut fixed_count = 0u8;
                             let mut idx = 0;
                             let mut fixed_heading = None;
@@ -166,8 +167,8 @@ pub fn adjust_waypoint_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                                 wpt_has_point_at[from] += 1;
                             } else {
                                 if wpt_idx != to {
-                                sgmt_has_point_at[wpt_idx] += 1;
-                            }
+                                    sgmt_has_point_at[wpt_idx] += 1;
+                                }
                             }
                             if !traj.params.waypoints[wpt_idx].fix_heading {
                                 new_headings[wpt_idx] = heading;
@@ -184,6 +185,31 @@ pub fn adjust_waypoint_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
             _ => {}
         }
     }
+    // check for 0 ang vel and point at
+    for (sgmt, ((((&sgmt_v, &sgmt_p), &_wpt_v), &_wpt_p), &_pose)) in sgmt_has_0_ang_vel
+        .iter()
+        .zip(&sgmt_has_point_at)
+        .zip(&wpt_has_0_ang_vel)
+        .zip(&wpt_has_point_at)
+        .zip(&wpt_is_pose)
+        .enumerate()
+    {
+        if sgmt_v >= 1 && sgmt_p >= 1 {
+            return Err(ChoreoError::HeadingConflict(
+                sgmt + 1,
+                "0 maxAngVel and Point At.",
+            ));
+        }
+        if sgmt > 0 {
+            if sgmt_p >= 1 && sgmt_has_0_ang_vel[sgmt - 1] >= 1 {
+                return Err(ChoreoError::HeadingConflict(
+                    sgmt + 1,
+                    "0 maxAngVel on segment prior to Point At.",
+                ));
+            }
+        }
+    }
+
     tracing::debug!(
         "heading conflict references:\n
     {wpt_has_point_at:?} - wpt_has_point_at\n
