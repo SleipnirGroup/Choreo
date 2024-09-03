@@ -165,7 +165,6 @@ pub async fn remote_generate_parent(
     // check if the solver has already completed
     match serde_json::from_str::<RemoteProgressUpdate>(&o) {
         Ok(RemoteProgressUpdate::CompleteTraj(traj)) => {
-            println!("{:?}", traj);
             tracing::debug!("Remote generator completed (early return)");
             return Ok(TrajFile {
                 traj,

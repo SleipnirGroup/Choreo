@@ -424,7 +424,6 @@ pub fn generate(
             }
         }
     }?;
-    println!("{:?}", samples);
     Ok(postprocess(&samples, path, snapshot, counts_vec))
 }
 
