@@ -252,7 +252,7 @@ pub enum SampleType {
     #[default]
     Swerve,
     /// The variant for [`Sample::DifferentialDrive`].
-    DifferentialDrive,
+    Differential,
 }
 
 /// The parameters used for generating a trajectory.
