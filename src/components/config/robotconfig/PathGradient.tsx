@@ -7,18 +7,17 @@ import { IDocumentStore } from "../../../document/DocumentModel";
 /**
  * Represents a path gradient.
  */
-export type PathGradientArgs<S extends SwerveSample | DifferentialSample> =
-  {
-    point: S;
-    prev: S;
-    next: S;
-    arr: S[][];
-    total: number;
-    count: number;
-    sect: number;
-    idxInSect: number;
-    documentModel: IDocumentStore;
-  };
+export type PathGradientArgs<S extends SwerveSample | DifferentialSample> = {
+  point: S;
+  prev: S;
+  next: S;
+  arr: S[][];
+  total: number;
+  count: number;
+  sect: number;
+  idxInSect: number;
+  documentModel: IDocumentStore;
+};
 export type PathGradient = {
   /**
    * The name/key of the path gradient.
