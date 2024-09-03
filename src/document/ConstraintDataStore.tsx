@@ -200,7 +200,7 @@ export function defineCreateConstraintData<
         const exprProp = prop as ConstraintPropertyDefinition<Expr>;
         snapshot[key as keyof P] = vars().createExpression(
           exprProp.defaultVal,
-          exprProp!.units
+          exprProp!.dimension.type
         );
       }
       // defaults for primitives are set in the store definition
