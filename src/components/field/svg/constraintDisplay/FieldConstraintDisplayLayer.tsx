@@ -4,6 +4,7 @@ import { doc } from "../../../../document/DocumentManager";
 import PointAtOverlay from "./PointAtOverlay";
 import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer";
 import KeepInCircleOverlay from "./KeepInCircleOverlay";
+import KeepInRectangleOverlay from "./KeepInRectangleOverlay";
 
 const overlays = {
   PointAt: (constraint: IConstraintStore, lineColor: string) => (
@@ -21,6 +22,14 @@ const overlays = {
       end={constraint.getEndWaypoint()}
       lineColor={lineColor}
     ></KeepInCircleOverlay>
+  ),
+  KeepInRectangle: (constraint: IConstraintStore, lineColor: string) => (
+    <KeepInRectangleOverlay
+      data={constraint.data}
+      start={constraint.getStartWaypoint()}
+      end={constraint.getEndWaypoint()}
+      lineColor={lineColor}
+    ></KeepInRectangleOverlay>
   )
 };
 type Props = {

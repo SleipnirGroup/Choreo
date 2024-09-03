@@ -4,6 +4,8 @@ import {
   NearMe,
   StopCircleOutlined,
   SyncOutlined,
+  SystemSecurityUpdate,
+  SystemUpdateAlt,
   TextRotationNoneOutlined
 } from "@mui/icons-material";
 import { Unit } from "mathjs";
@@ -210,7 +212,7 @@ export const ConstraintDefinitions: defs = {
     name: "Keep In Rectangle",
     shortName: "Keep In R",
     description: "Keep the robot's bumpers within a rectangular region",
-    icon: <ArrowCircleDown />,
+    icon: <SystemUpdateAlt />,
     properties: {
       x: {
         name: "X",
