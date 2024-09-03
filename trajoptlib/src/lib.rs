@@ -323,21 +323,22 @@ mod ffi {
 }
 
 pub trait PathBuilder: Any {
-    fn set_bumpers(self: &mut Self, length: f64, width: f64);
-    fn set_control_interval_counts(self: &mut Self, counts: Vec<usize>);
+    fn set_bumpers(&mut self, length: f64, width: f64);
+    fn set_control_interval_counts(&mut self, counts: Vec<usize>);
 
-    fn pose_wpt(self: &mut Self, index: usize, x: f64, y: f64, heading: f64);
-    fn translation_wpt(self: &mut Self, index: usize, x: f64, y: f64, heading_guess: f64);
-    fn empty_wpt(self: &mut Self, index: usize, x_guess: f64, y_guess: f64, heading_guess: f64);
+    fn pose_wpt(&mut self, index: usize, x: f64, y: f64, heading: f64);
+    fn translation_wpt(&mut self, index: usize, x: f64, y: f64, heading_guess: f64);
+    fn empty_wpt(&mut self, index: usize, x_guess: f64, y_guess: f64, heading_guess: f64);
 
-    fn sgmt_initial_guess_points(self: &mut Self, from_index: usize, guess_points: &Vec<Pose2d>);
+    #[allow(clippy::ptr_arg)]
+    fn sgmt_initial_guess_points(&mut self, from_index: usize, guess_points: &Vec<Pose2d>);
 
-    fn wpt_linear_velocity_direction(self: &mut Self, index: usize, angle: f64);
-    fn wpt_linear_velocity_max_magnitude(self: &mut Self, index: usize, magnitude: f64);
-    fn wpt_angular_velocity_max_magnitude(self: &mut Self, index: usize, angular_velocity: f64);
-    fn wpt_linear_acceleration_max_magnitude(self: &mut Self, index: usize, magnitude: f64);
+    fn wpt_linear_velocity_direction(&mut self, index: usize, angle: f64);
+    fn wpt_linear_velocity_max_magnitude(&mut self, index: usize, magnitude: f64);
+    fn wpt_angular_velocity_max_magnitude(&mut self, index: usize, angular_velocity: f64);
+    fn wpt_linear_acceleration_max_magnitude(&mut self, index: usize, magnitude: f64);
     fn wpt_point_at(
-        self: &mut Self,
+        &mut self,
         index: usize,
         field_point_x: f64,
         field_point_y: f64,
@@ -346,32 +347,32 @@ pub trait PathBuilder: Any {
     );
 
     fn sgmt_linear_velocity_direction(
-        self: &mut Self,
+        &mut self,
         from_index: usize,
         to_index: usize,
         angle: f64,
     );
     fn sgmt_linear_velocity_max_magnitude(
-        self: &mut Self,
+        &mut self,
         from_index: usize,
         to_index: usize,
         magnitude: f64,
     );
     fn sgmt_angular_velocity_max_magnitude(
-        self: &mut Self,
+        &mut self,
         from_index: usize,
         to_index: usize,
         angular_velocity: f64,
     );
     fn sgmt_linear_acceleration_max_magnitude(
-        self: &mut Self,
+        &mut self,
         from_index: usize,
         to_index: usize,
         magnitude: f64,
     );
 
     fn sgmt_circle_obstacle(
-        self: &mut Self,
+        &mut self,
         from_index: usize,
         to_index: usize,
         x: f64,
@@ -380,7 +381,7 @@ pub trait PathBuilder: Any {
     );
 
     fn sgmt_polygon_obstacle(
-        self: &mut Self,
+        &mut self,
         from_index: usize,
         to_index: usize,
         x: Vec<f64>,

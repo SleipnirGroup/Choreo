@@ -188,9 +188,7 @@ pub fn setup_progress_sender() -> Receiver<LocalProgressUpdate> {
     let _ = PROGRESS_SENDER_LOCK.get_or_init(move || tx);
     rx
 }
-trait NewTrait: Any + PathBuilder {}
-impl NewTrait for SwervePathBuilder {}
-impl NewTrait for DifferentialPathBuilder {}
+
 pub fn generate(
     chor: &ProjectFile,
     path: TrajFile,
