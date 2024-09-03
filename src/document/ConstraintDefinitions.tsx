@@ -188,19 +188,19 @@ export const ConstraintDefinitions: defs = {
       x: {
         name: "X",
         description: "The x coordinate of the center of the keep in zone",
-        units: Units.Meter,
+        dimension: Dimensions.Length,
         defaultVal: ["0 m", 0]
       },
       y: {
         name: "Y",
         description: "The y coordinate of the center of the keep in zone",
-        units: Units.Meter,
+        dimension: Dimensions.Length,
         defaultVal: ["0 m", 0]
       },
       r: {
         name: "R",
         description: "The radius of the keep in zone",
-        units: Units.Meter,
+        dimension: Dimensions.Length,
         defaultVal: ["1 m", 1]
       }
     },
@@ -217,25 +217,25 @@ export const ConstraintDefinitions: defs = {
       x: {
         name: "X",
         description: "The x coordinate of the bottom left of the keep in zone",
-        units: Units.Meter,
+        dimension: Dimensions.Length,
         defaultVal: ["0 m", 0]
       },
       y: {
         name: "Y",
         description: "The y coordinate of the bottom left of the keep in zone",
-        units: Units.Meter,
+        dimension: Dimensions.Length,
         defaultVal: ["0 m", 0]
       },
       w: {
         name: "W",
         description: "The width of the keep in zone",
-        units: Units.Meter,
+        dimension: Dimensions.Length,
         defaultVal: ["1 m", 1]
       },
       h: {
         name: "H",
         description: "The height of the keep in zone",
-        units: Units.Meter,
+        dimension: Dimensions.Length,
         defaultVal: ["1 m", 1]
       },
     },
