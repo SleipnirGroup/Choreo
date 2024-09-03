@@ -31,7 +31,7 @@ class TRAJOPT_DLLEXPORT PointPointMaxConstraint {
    *     Must be nonnegative.
    */
   explicit PointPointMaxConstraint(Translation2d robotPoint,
-                                Translation2d fieldPoint, double maxDistance)
+                                   Translation2d fieldPoint, double maxDistance)
       : m_robotPoint{std::move(robotPoint)},
         m_fieldPoint{std::move(fieldPoint)},
         m_maxDistance{maxDistance} {

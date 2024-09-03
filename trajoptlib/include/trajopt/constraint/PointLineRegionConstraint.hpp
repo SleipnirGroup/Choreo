@@ -16,7 +16,7 @@
 namespace trajopt {
 
 /**
- * 
+ *
  */
 class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
  public:
@@ -28,8 +28,8 @@ class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
    * @param fieldLineEnd Field line end.
    */
   explicit PointLineRegionConstraint(Translation2d robotPoint,
-                               Translation2d fieldLineStart,
-                               Translation2d fieldLineEnd)
+                                     Translation2d fieldLineStart,
+                                     Translation2d fieldLineEnd)
       : m_robotPoint{std::move(robotPoint)},
         m_fieldLineStart{std::move(fieldLineStart)},
         m_fieldLineEnd{std::move(fieldLineEnd)} {}
@@ -49,9 +49,11 @@ class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
              [[maybe_unused]] const sleipnir::Variable& angularVelocity,
              [[maybe_unused]] const Translation2v& linearAcceleration,
              [[maybe_unused]] const sleipnir::Variable& angularAcceleration) {
-    auto bumperCorner = pose.Translation() + m_robotPoint.RotateBy(pose.Rotation());
-    
-    // Rearrange y − y₀ = m(x − x₀) where m = (y₁ − y₀)/(x₁ − x₀) into ax + by = c form.
+    auto bumperCorner =
+        pose.Translation() + m_robotPoint.RotateBy(pose.Rotation());
+
+    // Rearrange y − y₀ = m(x − x₀) where m = (y₁ − y₀)/(x₁ − x₀) into ax + by =
+    // c form.
 
     // y − y₀ = m(x − x₀)
     // y − y₀ = (y₁ − y₀)/(x₁ − x₀)(x − x₀)
@@ -71,11 +73,11 @@ class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
     //   b = x₁ − x₀
 
     problem.SubjectTo(
-      ((m_fieldLineStart.Y() - m_fieldLineEnd.Y()) * bumperCorner.X()) +
-      ((m_fieldLineEnd.X() - m_fieldLineStart.X()) * bumperCorner.Y()) >
-      ((m_fieldLineEnd.X() - m_fieldLineStart.X()) * m_fieldLineStart.Y()) +
-      ((m_fieldLineStart.Y() - m_fieldLineEnd.Y()) * m_fieldLineStart.X())
-    );
+        ((m_fieldLineStart.Y() - m_fieldLineEnd.Y()) * bumperCorner.X()) +
+            ((m_fieldLineEnd.X() - m_fieldLineStart.X()) * bumperCorner.Y()) >
+        ((m_fieldLineEnd.X() - m_fieldLineStart.X()) * m_fieldLineStart.Y()) +
+            ((m_fieldLineStart.Y() - m_fieldLineEnd.Y()) *
+             m_fieldLineStart.X()));
   }
 
  private:

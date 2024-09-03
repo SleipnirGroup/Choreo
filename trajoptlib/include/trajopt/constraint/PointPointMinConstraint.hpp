@@ -31,7 +31,7 @@ class TRAJOPT_DLLEXPORT PointPointMinConstraint {
    *     Must be nonnegative.
    */
   explicit PointPointMinConstraint(Translation2d robotPoint,
-                                Translation2d fieldPoint, double minDistance)
+                                   Translation2d fieldPoint, double minDistance)
       : m_robotPoint{std::move(robotPoint)},
         m_fieldPoint{std::move(fieldPoint)},
         m_minDistance{minDistance} {

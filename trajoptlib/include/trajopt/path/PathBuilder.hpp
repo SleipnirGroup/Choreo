@@ -132,8 +132,8 @@ class TRAJOPT_DLLEXPORT PathBuilder {
       size_t obstacleCornerCount = obstacle.points.size();
       if (bumperCornerCount == 1 && obstacleCornerCount == 1) {
         // if the bumpers and obstacle are only one point
-        WptConstraint(index,
-                      PointPointMinConstraint{_bumpers.points.at(0),
+        WptConstraint(
+            index, PointPointMinConstraint{_bumpers.points.at(0),
                                            obstacle.points.at(0), minDistance});
         return;
       }
@@ -177,9 +177,9 @@ class TRAJOPT_DLLEXPORT PathBuilder {
                                      obstacle.points.at(0), minDistance});
           }
         } else {
-          WptConstraint(
-              index, PointPointMinConstraint{bumperCorner, obstacle.points.at(0),
-                                          minDistance});
+          WptConstraint(index,
+                        PointPointMinConstraint{
+                            bumperCorner, obstacle.points.at(0), minDistance});
         }
       }
     }
@@ -204,8 +204,8 @@ class TRAJOPT_DLLEXPORT PathBuilder {
         // if the bumpers and obstacle are only one point
         SgmtConstraint(
             fromIndex, toIndex,
-            PointPointMinConstraint{_bumpers.points.at(0), obstacle.points.at(0),
-                                 minDistance});
+            PointPointMinConstraint{_bumpers.points.at(0),
+                                    obstacle.points.at(0), minDistance});
         return;
       }
 

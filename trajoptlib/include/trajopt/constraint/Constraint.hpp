@@ -16,11 +16,11 @@
 #include "trajopt/constraint/LinearVelocityMaxMagnitudeConstraint.hpp"
 #include "trajopt/constraint/PointAtConstraint.hpp"
 #include "trajopt/constraint/PointLineConstraint.hpp"
-#include "trajopt/constraint/PointPointMinConstraint.hpp"
+#include "trajopt/constraint/PointLineRegionConstraint.hpp"
 #include "trajopt/constraint/PointPointMaxConstraint.hpp"
+#include "trajopt/constraint/PointPointMinConstraint.hpp"
 #include "trajopt/constraint/PoseEqualityConstraint.hpp"
 #include "trajopt/constraint/TranslationEqualityConstraint.hpp"
-#include "trajopt/constraint/PointLineRegionConstraint.hpp"
 #include "trajopt/geometry/Pose2.hpp"
 #include "trajopt/geometry/Translation2.hpp"
 
@@ -68,7 +68,7 @@ using Constraint =
                  LinearVelocityDirectionConstraint,
                  LinearVelocityMaxMagnitudeConstraint, PointAtConstraint,
                  PointLineConstraint, PointPointMinConstraint,
-                 PointPointMaxConstraint,
-                 PoseEqualityConstraint, TranslationEqualityConstraint, PointLineRegionConstraint>;
+                 PointPointMaxConstraint, PoseEqualityConstraint,
+                 TranslationEqualityConstraint, PointLineRegionConstraint>;
 
 }  // namespace trajopt

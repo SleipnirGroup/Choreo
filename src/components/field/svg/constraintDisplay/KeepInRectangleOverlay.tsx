@@ -18,7 +18,10 @@ type Props<K extends ConstraintKey> = {
   end?: IHolonomicWaypointStore;
   lineColor: string;
 };
-class KeepInRectangleOverlay extends Component<Props<"KeepInRectangle">, object> {
+class KeepInRectangleOverlay extends Component<
+  Props<"KeepInRectangle">,
+  object
+> {
   rootRef: React.RefObject<SVGGElement> = React.createRef<SVGGElement>();
   componentDidMount() {
     if (this.rootRef.current) {
@@ -34,9 +37,9 @@ class KeepInRectangleOverlay extends Component<Props<"KeepInRectangle">, object>
           doc.history.stopGroup();
         })
         .container(this.rootRef.current);
-      d3.select<SVGCircleElement, undefined>(`#dragTarget-keepInRectangle`).call(
-        dragHandleDrag
-      );
+      d3.select<SVGCircleElement, undefined>(
+        `#dragTarget-keepInRectangle`
+      ).call(dragHandleDrag);
 
       const dragHandleDragW = d3
         .drag<SVGCircleElement, undefined>()
@@ -49,9 +52,9 @@ class KeepInRectangleOverlay extends Component<Props<"KeepInRectangle">, object>
           doc.history.stopGroup();
         })
         .container(this.rootRef.current);
-      d3.select<SVGCircleElement, undefined>(`#dragTarget-keepInRectangleW`).call(
-        dragHandleDragW
-      );
+      d3.select<SVGCircleElement, undefined>(
+        `#dragTarget-keepInRectangleW`
+      ).call(dragHandleDragW);
 
       const dragHandleDragWH = d3
         .drag<SVGCircleElement, undefined>()
@@ -64,9 +67,9 @@ class KeepInRectangleOverlay extends Component<Props<"KeepInRectangle">, object>
           doc.history.stopGroup();
         })
         .container(this.rootRef.current);
-      d3.select<SVGCircleElement, undefined>(`#dragTarget-keepInRectangleWH`).call(
-        dragHandleDragWH
-      );
+      d3.select<SVGCircleElement, undefined>(
+        `#dragTarget-keepInRectangleWH`
+      ).call(dragHandleDragWH);
 
       const dragHandleDragH = d3
         .drag<SVGCircleElement, undefined>()
@@ -79,9 +82,9 @@ class KeepInRectangleOverlay extends Component<Props<"KeepInRectangle">, object>
           doc.history.stopGroup();
         })
         .container(this.rootRef.current);
-      d3.select<SVGCircleElement, undefined>(`#dragTarget-keepInRectangleH`).call(
-        dragHandleDragH
-      );
+      d3.select<SVGCircleElement, undefined>(
+        `#dragTarget-keepInRectangleH`
+      ).call(dragHandleDragH);
 
       const dragHandleRegion = d3
         .drag<SVGCircleElement, undefined>()
@@ -94,19 +97,27 @@ class KeepInRectangleOverlay extends Component<Props<"KeepInRectangle">, object>
           doc.history.stopGroup();
         })
         .container(this.rootRef.current);
-      d3.select<SVGCircleElement, undefined>(`#dragTarget-keepInRectangleRegion`).call(
-        dragHandleRegion
-      );
+      d3.select<SVGCircleElement, undefined>(
+        `#dragTarget-keepInRectangleRegion`
+      ).call(dragHandleRegion);
     }
   }
 
   dragPointTranslate(event: any, xOffset: boolean, yOffset: boolean) {
     console.log(xOffset, yOffset);
-    this.props.data.x.set(this.props.data.serialize.props.x[1] + (event.dx * (xOffset ? 0.0 : 1.0)));
-    this.props.data.y.set(this.props.data.serialize.props.y[1] + (event.dy * (yOffset ? 0.0 : 1.0)));
+    this.props.data.x.set(
+      this.props.data.serialize.props.x[1] + event.dx * (xOffset ? 0.0 : 1.0)
+    );
+    this.props.data.y.set(
+      this.props.data.serialize.props.y[1] + event.dy * (yOffset ? 0.0 : 1.0)
+    );
 
-    this.props.data.w.set(this.props.data.serialize.props.w[1] - (event.dx * (xOffset ? -1.0 : 1.0)));
-    this.props.data.h.set(this.props.data.serialize.props.h[1] - (event.dy * (yOffset ? -1.0 : 1.0)));
+    this.props.data.w.set(
+      this.props.data.serialize.props.w[1] - event.dx * (xOffset ? -1.0 : 1.0)
+    );
+    this.props.data.h.set(
+      this.props.data.serialize.props.h[1] - event.dy * (yOffset ? -1.0 : 1.0)
+    );
   }
 
   dragRegionTranslate(event: any) {
@@ -116,12 +127,18 @@ class KeepInRectangleOverlay extends Component<Props<"KeepInRectangle">, object>
 
   fixWidthHeight() {
     if (this.props.data.serialize.props.w[1] < 0.0) {
-      this.props.data.x.set(this.props.data.serialize.props.x[1] + this.props.data.serialize.props.w[1]);
+      this.props.data.x.set(
+        this.props.data.serialize.props.x[1] +
+          this.props.data.serialize.props.w[1]
+      );
       this.props.data.w.set(-this.props.data.serialize.props.w[1]);
     }
 
     if (this.props.data.serialize.props.h[1] < 0.0) {
-      this.props.data.y.set(this.props.data.serialize.props.y[1] + this.props.data.serialize.props.h[1]);
+      this.props.data.y.set(
+        this.props.data.serialize.props.y[1] +
+          this.props.data.serialize.props.h[1]
+      );
       this.props.data.h.set(-this.props.data.serialize.props.h[1]);
     }
   }
@@ -134,29 +151,29 @@ class KeepInRectangleOverlay extends Component<Props<"KeepInRectangle">, object>
     const h = data.props.h[1];
     return (
       <g ref={this.rootRef}>
-      {/* Fill Rect*/}
-      <rect
-        x={w >= 0 ? x : x + w}
-        y={h >= 0 ? y : y + h}
-        width={Math.abs(w)}
-        height={Math.abs(h)}
-        fill={"green"}
-        fillOpacity={0.1}
-        id="dragTarget-keepInRectangleRegion"
-      ></rect>
-      {/*Border Rect*/}
-      <rect
-        x={w >= 0 ? x : x + w}
-        y={h >= 0 ? y : y + h}
-        width={Math.abs(w)}
-        height={Math.abs(h)}
-        fill={"transparent"}
-        pointerEvents={"visibleStroke"}
-        stroke={"green"}
-        strokeWidth={STROKE}
-        strokeOpacity={1.0}
-        id="dragTarget-keepInRectangleRegion"
-      ></rect>
+        {/* Fill Rect*/}
+        <rect
+          x={w >= 0 ? x : x + w}
+          y={h >= 0 ? y : y + h}
+          width={Math.abs(w)}
+          height={Math.abs(h)}
+          fill={"green"}
+          fillOpacity={0.1}
+          id="dragTarget-keepInRectangleRegion"
+        ></rect>
+        {/*Border Rect*/}
+        <rect
+          x={w >= 0 ? x : x + w}
+          y={h >= 0 ? y : y + h}
+          width={Math.abs(w)}
+          height={Math.abs(h)}
+          fill={"transparent"}
+          pointerEvents={"visibleStroke"}
+          stroke={"green"}
+          strokeWidth={STROKE}
+          strokeOpacity={1.0}
+          id="dragTarget-keepInRectangleRegion"
+        ></rect>
         {/* Corners */}
         <circle
           cx={x}

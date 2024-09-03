@@ -43,7 +43,7 @@ fn main() {
     println!(
         "cargo:rustc-link-search=native={}/build/_deps/sleipnir-build/",
         cmake_dest.display()
-    );     
+    );
     println!("cargo:rustc-link-lib=TrajoptLibRust");
     println!("cargo:rustc-link-lib=TrajoptLib");
     println!("cargo:rustc-link-lib=Sleipnir");

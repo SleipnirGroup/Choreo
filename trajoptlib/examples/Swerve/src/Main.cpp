@@ -148,14 +148,14 @@ int main() {
     path.SetDrivetrain(swerveDrivetrain);
 
     path.PoseWpt(0, 0.0, 0.0, 0.0);
-    path.SgmtConstraint(
-        0, 1,
-        trajopt::PointPointMinConstraint{// Robot point -- center of robot
-                                      {0.0, 0.0},
-                                      // Field point around which to orbit
-                                      {1.0, 0.0},
-                                      // Stay 1 m away to force circular motion
-                                      1.0});
+    path.SgmtConstraint(0, 1,
+                        trajopt::PointPointMinConstraint{
+                            // Robot point -- center of robot
+                            {0.0, 0.0},
+                            // Field point around which to orbit
+                            {1.0, 0.0},
+                            // Stay 1 m away to force circular motion
+                            1.0});
 
     // Tell optimizer to go in +y direction rather than -y
     path.WptInitialGuessPoint(0, {0.0, 0.0, 0.0});

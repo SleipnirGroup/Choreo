@@ -1,14 +1,10 @@
 import {
   ArrowCircleDown,
-  KeyboardDoubleArrowRight,
   NearMe,
   StopCircleOutlined,
   SyncOutlined,
-  SystemSecurityUpdate,
-  SystemUpdateAlt,
-  TextRotationNoneOutlined
+  SystemUpdateAlt
 } from "@mui/icons-material";
-import { Unit } from "mathjs";
 import { JSXElementConstructor, ReactElement } from "react";
 import { ObjectTyped } from "../util/ObjectTyped";
 import { Expr } from "./2025/DocumentTypes";
@@ -237,7 +233,7 @@ export const ConstraintDefinitions: defs = {
         description: "The height of the keep in zone",
         dimension: Dimensions.Length,
         defaultVal: ["1 m", 1]
-      },
+      }
     },
     wptScope: true,
     sgmtScope: true

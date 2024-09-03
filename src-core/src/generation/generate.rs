@@ -210,7 +210,6 @@ pub fn generate(
     // and also not the endpoint of another constraint.
     let mut is_initial_guess = vec![true; waypoints.len()];
 
-
     // Set bumpers now so that constraints can read them
     let config: crate::spec::project::RobotConfig<f64> = chor.config.snapshot();
     traj_builder.set_bumpers(
@@ -326,7 +325,7 @@ pub fn generate(
                     traj_builder.wpt_linear_velocity_max_magnitude(from, 0.0f64);
                     traj_builder.wpt_angular_velocity_max_magnitude(from, 0.0f64);
                 }
-            },
+            }
             ConstraintData::KeepInCircle { x, y, r } => match to_opt {
                 None => traj_builder.wpt_keep_in_circle(from, x, y, r),
                 Some(to) => traj_builder.sgmt_keep_in_circle(from, to, x, y, r),
