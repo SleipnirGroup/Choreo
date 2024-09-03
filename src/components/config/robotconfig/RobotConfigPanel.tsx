@@ -7,6 +7,7 @@ import DimensionsConfigPanel from "./DimensionsConfigPanel";
 import ModuleConfigPanel from "./ModuleConfigPanel";
 import MotorCalculatorPanel from "./MotorCalculatorPanel";
 import TheoreticalPanel from "./TheoreticalPanel";
+import { doc } from "../../../document/DocumentManager";
 
 type Props = object;
 
@@ -52,14 +53,16 @@ class RobotConfigPanel extends Component<Props, State> {
             }}
           >
             <span className={inputStyles.Title} style={{ gridColumn: "1" }}>
-              Use Imperial Units
+              Differential
             </span>
 
             <Switch
               size="small"
               sx={{ gridColumn: 2 }}
-              checked={this.state.imperial}
-              onChange={(e, checked) => this.setState({ imperial: checked })}
+              checked={doc.type === "DifferentialDrive"}
+              onChange={(e, checked) =>
+                doc.setType(checked ? "DifferentialDrive" : "Swerve")
+              }
             ></Switch>
           </div>
         </div>
