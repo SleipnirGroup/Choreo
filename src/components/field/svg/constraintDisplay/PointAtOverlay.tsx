@@ -40,7 +40,7 @@ class PointAtOverlay extends Component<Props<"PointAt">, object> {
     if (this.props.start === undefined) {
       return <></>;
     }
-    const data = this.props.data.serialize() as DataMap["PointAt"];
+    const data = this.props.data.serialize as DataMap["PointAt"];
     return (
       <g ref={this.rootRef}>
         <circle
