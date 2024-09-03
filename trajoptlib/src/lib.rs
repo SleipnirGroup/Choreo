@@ -296,6 +296,12 @@ mod ffi {
             field_point_y: f64,
             keep_in_radius: f64
         );
+        fn wpt_keep_in_polygon(
+            self: Pin<&mut DifferentialPathBuilder>,
+            index: usize,
+            field_points_x: Vec<f64>,
+            field_points_y: Vec<f64>
+        );
 
         fn sgmt_linear_velocity_direction(
             self: Pin<&mut DifferentialPathBuilder>,
@@ -328,6 +334,13 @@ mod ffi {
             field_point_x: f64,
             field_point_y: f64,
             keep_in_radius: f64
+        );
+        pub fn sgmt_keep_in_polygon(
+            self: Pin<&mut DifferentialPathBuilder>,
+            from_index: usize,
+            to_index: usize,
+            field_points_x: Vec<f64>,
+            field_points_y: Vec<f64>
         );
 
         fn sgmt_circle_obstacle(
@@ -826,6 +839,19 @@ impl DifferentialPathBuilder {
             )
         }
 
+    pub fn wpt_keep_in_polygon(
+        &mut self,
+        index: usize,
+        field_points_x: Vec<f64>,
+        field_points_y: Vec<f64>
+    ) {
+        crate::ffi::DifferentialPathBuilder::wpt_keep_in_polygon(
+            self.path_builder.pin_mut(), 
+            index, 
+            field_points_x, 
+            field_points_y);
+    }
+    
     pub fn sgmt_linear_velocity_direction(
         &mut self,
         from_index: usize,
@@ -899,6 +925,20 @@ impl DifferentialPathBuilder {
             )
         }
 
+    pub fn sgmt_keep_in_polygon(
+        &mut self,
+        from_index: usize,
+        to_index: usize,
+        field_points_x: Vec<f64>,
+        field_points_y: Vec<f64>
+    ) {
+        crate::ffi::DifferentialPathBuilder::sgmt_keep_in_polygon(
+            self.path_builder.pin_mut(), 
+            from_index,
+            to_index, 
+            field_points_x, 
+            field_points_y);
+    }
 
     pub fn sgmt_circle_obstacle(
         &mut self,
