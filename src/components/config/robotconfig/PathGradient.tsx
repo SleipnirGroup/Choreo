@@ -1,5 +1,5 @@
 import {
-  DifferentialDriveSample,
+  DifferentialSample,
   SwerveSample
 } from "../../../document/2025/DocumentTypes";
 import { IDocumentStore } from "../../../document/DocumentModel";
@@ -7,7 +7,7 @@ import { IDocumentStore } from "../../../document/DocumentModel";
 /**
  * Represents a path gradient.
  */
-export type PathGradientArgs<S extends SwerveSample | DifferentialDriveSample> =
+export type PathGradientArgs<S extends SwerveSample | DifferentialSample> =
   {
     point: S;
     prev: S;
