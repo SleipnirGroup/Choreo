@@ -165,9 +165,9 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
       Rotation2v theta_n{thetacos.at(index), thetasin.at(index)};
       Rotation2v theta_n_1{thetacos.at(index - 1), thetasin.at(index - 1)};
 
-      Translation2v v_n{vL.at(index), vR.at(index)};
+      Translation2v v_n = WheelToChassisSpeeds(vL.at(index), vR.at(index));
       v_n = v_n.RotateBy(theta_n);
-      Translation2v v_n_1{vL.at(index - 1), vR.at(index - 1)};
+      Translation2v v_n_1 = WheelToChassisSpeeds(vL.at(index -1), vR.at(index - 1));
       v_n_1 = v_n_1.RotateBy(theta_n_1);
 
       auto omega_n = (vR.at(index) - vL.at(index)) / path.drivetrain.trackwidth;
@@ -185,7 +185,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
 
   for (size_t index = 0; index < sampTot; ++index) {
     Rotation2v theta{thetacos.at(index), thetasin.at(index)};
-    Translation2v v{vL.at(index), vR.at(index)};
+    Translation2v v = WheelToChassisSpeeds(vL.at(index), vR.at(index));
     auto angularVelocity =
         (vR.at(index) - vL.at(index)) / path.drivetrain.trackwidth;
 

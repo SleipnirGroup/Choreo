@@ -13,6 +13,7 @@
 #include <sleipnir/optimization/OptimizationProblem.hpp>
 #include <sleipnir/optimization/SolverExitCondition.hpp>
 
+#include "trajopt/geometry/Translation2.hpp"
 #include "trajopt/path/PathBuilder.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 #include "trajopt/util/expected"
@@ -225,6 +226,14 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectoryGenerator {
       bool diagnostics = false);
 
  private:
+  Translation2d WheelToChassisSpeeds(double vL, double vR) {
+    return Translation2d{(vL + vR) / 2, 0.0};
+  }
+
+  Translation2v WheelToChassisSpeeds(sleipnir::Variable vL, sleipnir::Variable vR) {
+    return Translation2v{(vL + vR) / 2, 0.0};
+  }
+
   /// Differential path
   DifferentialPath path;
 
