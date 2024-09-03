@@ -230,8 +230,7 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectoryGenerator {
     return Translation2d{(vL + vR) / 2, 0.0};
   }
 
-  Translation2v WheelToChassisSpeeds(sleipnir::Variable vL,
-                                     sleipnir::Variable vR) {
+  Translation2v WheelToChassisSpeeds(sleipnir::Variable vL, sleipnir::Variable vR) {
     return Translation2v{(vL + vR) / 2, 0.0};
   }
 
