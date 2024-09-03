@@ -806,4 +806,3 @@ export async function saveProjectDialog() {
   toast.success(`Saved ${name}. Future changes will now be auto-saved.`);
   return true;
 }
-

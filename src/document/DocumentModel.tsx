@@ -216,10 +216,10 @@ export const DocumentStore = types
         .then(() => {
           tracing.debug("generatePathPre");
           return listen(`solver-status-${handle}`, async (rawEvent) => {
-            const event: Event<ProgressUpdate> = rawEvent as Event<ProgressUpdate>;
+            const event: Event<ProgressUpdate> =
+              rawEvent as Event<ProgressUpdate>;
             if (event.payload!.type === "swerveTraj") {
-              const samples = event.payload
-                .update as SwerveTrajoptlibSample[];
+              const samples = event.payload.update as SwerveTrajoptlibSample[];
               const forcesAvailable = pathStore.traj.forcesAvailable;
               pathStore.ui.setInProgressTrajectory(
                 samples.map((s) => ({

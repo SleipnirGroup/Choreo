@@ -3,7 +3,9 @@
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::OnceLock;
 
-use trajoptlib::{DifferentialTrajectory, DifferentialTrajectorySample, SwerveTrajectory, SwerveTrajectorySample};
+use trajoptlib::{
+    DifferentialTrajectory, DifferentialTrajectorySample, SwerveTrajectory, SwerveTrajectorySample,
+};
 
 use super::transformers::{
     CallbackSetter, ConstraintSetter, DrivetrainAndBumpersSetter, IntervalCountSetter,
@@ -18,7 +20,8 @@ use crate::ChoreoResult;
  * once. Used here to create a read-only static reference to the sender,
  * even though the sender can't be constructed in a static context.
  */
-pub(super) static PROGRESS_SENDER_LOCK: OnceLock<Sender<HandledLocalProgressUpdate>> = OnceLock::new();
+pub(super) static PROGRESS_SENDER_LOCK: OnceLock<Sender<HandledLocalProgressUpdate>> =
+    OnceLock::new();
 
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
@@ -36,7 +39,10 @@ pub enum LocalProgressUpdate {
 
 impl LocalProgressUpdate {
     pub fn handled(self, handle: i64) -> HandledLocalProgressUpdate {
-        HandledLocalProgressUpdate { handle, update: self }
+        HandledLocalProgressUpdate {
+            handle,
+            update: self,
+        }
     }
 }
 

@@ -105,12 +105,14 @@ pub fn remote_generate_child(args: RemoteArgs) {
         .spawn(move || {
             for received in rx {
                 let ser_string = match received {
-                    HandledLocalProgressUpdate { update: LocalProgressUpdate::SwerveTraj { update }, ..} => {
-                        serde_json::to_string(&RemoteProgressUpdate::IncompleteSwerveTraj(update))
-                    }
-                    HandledLocalProgressUpdate { update: LocalProgressUpdate::DiffTraj { update }, ..} => {
-                        serde_json::to_string(&RemoteProgressUpdate::IncompleteTankTraj(update))
-                    }
+                    HandledLocalProgressUpdate {
+                        update: LocalProgressUpdate::SwerveTraj { update },
+                        ..
+                    } => serde_json::to_string(&RemoteProgressUpdate::IncompleteSwerveTraj(update)),
+                    HandledLocalProgressUpdate {
+                        update: LocalProgressUpdate::DiffTraj { update },
+                        ..
+                    } => serde_json::to_string(&RemoteProgressUpdate::IncompleteTankTraj(update)),
                     _ => continue,
                 }
                 .expect("Failed to serialize progress update");
@@ -283,9 +285,9 @@ pub async fn remote_generate_parent(
             let lines: Vec<String> = string.split('\n').map(ToString::to_string).collect();
             for line in lines {
                 println! {"{line}"}
-                remote_resources.emit_progress(LocalProgressUpdate::DiagnosticText {
-                    update: line,
-                }.handled(handle));
+                remote_resources.emit_progress(
+                    LocalProgressUpdate::DiagnosticText { update: line }.handled(handle),
+                );
             }
         }
     });

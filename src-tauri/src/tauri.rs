@@ -157,7 +157,7 @@ pub fn run_tauri(project: Option<PathBuf>) {
                 for received in rx {
                     let _ = progress_emitter.emit_all(
                         &format!("solver-status-{}", received.handle),
-                        received.update
+                        received.update,
                     );
                 }
             });
