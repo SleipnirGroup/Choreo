@@ -71,16 +71,15 @@ pub fn adjust_waypoint_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                         None => {
                             wpt_has_0_ang_vel[from] += 1;
                         }
+                        Some(to) if from == to => {
+                            wpt_has_0_ang_vel[from] += 1;
+                        }
                         Some(to) => {
-                            if from == to {
-                                wpt_has_0_ang_vel[from] += 1;
-                            } else {
-                                sgmt_has_0_ang_vel
-                                    .iter_mut()
-                                    .take(to + 1)
-                                    .skip(from)
-                                    .for_each(|b| *b += 1);
-                            }
+                            sgmt_has_0_ang_vel
+                                .iter_mut()
+                                .take(to + 1)
+                                .skip(from)
+                                .for_each(|b| *b += 1);
                             let mut fixed_count = 0u8;
                             let mut idx = 0;
                             let mut fixed_heading = None;
@@ -142,7 +141,10 @@ pub fn adjust_waypoint_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                         if traj.params.waypoints[from].fix_heading
                             && (traj.params.waypoints[from].heading.1 != heading)
                         {
-                            return Err(ChoreoError::HeadingConflict(from + 1, "Point At and Pose."));
+                            return Err(ChoreoError::HeadingConflict(
+                                from + 1,
+                                "Point At and Pose.",
+                            ));
                         } else {
                             new_headings[from] = heading;
                         }
@@ -161,13 +163,11 @@ pub fn adjust_waypoint_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                                 heading
                             };
                             if from == to {
-                                sgmt_has_point_at[from] += 1;
+                                wpt_has_point_at[from] += 1;
                             } else {
-                                sgmt_has_point_at
-                                    .iter_mut()
-                                    .take(to + 1)
-                                    .skip(from)
-                                    .for_each(|b| *b += 1);
+                                if wpt_idx != to {
+                                sgmt_has_point_at[wpt_idx] += 1;
+                            }
                             }
                             if !traj.params.waypoints[wpt_idx].fix_heading {
                                 new_headings[wpt_idx] = heading;
@@ -186,11 +186,11 @@ pub fn adjust_waypoint_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
     }
     tracing::debug!(
         "heading conflict references:\n
-    {wpt_has_point_at:?}\n
-    {sgmt_has_point_at:?}\n
-    {wpt_has_0_ang_vel:?}\n
-    {sgmt_has_0_ang_vel:?}\n
-    {wpt_is_pose:?}"
+    {wpt_has_point_at:?} - wpt_has_point_at\n
+    {sgmt_has_point_at:?} - sgmt_has_point_at\n
+    {wpt_has_0_ang_vel:?} - wpt_has_0_ang_vel\n
+    {sgmt_has_0_ang_vel:?} - sgmt_has_0_ang_vel\n
+    {wpt_is_pose:?} - wpt_is_pose"
     );
     Ok(new_headings)
 }
