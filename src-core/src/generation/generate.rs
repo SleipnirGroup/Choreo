@@ -1,11 +1,9 @@
 #![allow(clippy::missing_errors_doc)]
 
 use std::sync::mpsc::{channel, Receiver, Sender};
-use std::sync::{Arc, OnceLock};
+use std::sync::OnceLock;
 use std::vec;
 
-use dashmap::DashMap;
-use tokio::sync::oneshot::Sender as OneshotSender;
 use trajoptlib::{
     DifferentialTrajectory, Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory,
 };
@@ -65,108 +63,38 @@ pub enum LocalProgressUpdate {
     },
 }
 
+impl LocalProgressUpdate {
+    pub fn handle(&self) -> i64 {
+        match self {
+            LocalProgressUpdate::SwerveTraj { handle, .. } => *handle,
+            LocalProgressUpdate::DiffTraj { handle, .. } => *handle,
+            LocalProgressUpdate::DiagnosticText { handle, .. } => *handle,
+        }
+    }
+}
+
 impl serde::Serialize for LocalProgressUpdate {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
     {
-        let mut serde_state =
-            serde::Serializer::serialize_struct(serializer, "LocalProgressUpdate", 3)?;
-        match *self {
-            LocalProgressUpdate::SwerveTraj {
-                ref handle,
-                ref update,
-            } => {
-                serde::ser::SerializeStruct::serialize_field(
-                    &mut serde_state,
-                    "type",
-                    "swerveTraj",
-                )?;
-                serde::ser::SerializeStruct::serialize_field(&mut serde_state, "handle", handle)?;
-                serde::ser::SerializeStruct::serialize_field(
-                    &mut serde_state,
-                    "update",
-                    &update.samples,
-                )?;
-                serde::ser::SerializeStruct::end(serde_state)
-            }
-            LocalProgressUpdate::DiffTraj {
-                ref handle,
-                ref update,
-            } => {
-                serde::ser::SerializeStruct::serialize_field(&mut serde_state, "type", "diffTraj")?;
-                serde::ser::SerializeStruct::serialize_field(&mut serde_state, "handle", handle)?;
-                serde::ser::SerializeStruct::serialize_field(
-                    &mut serde_state,
-                    "update",
-                    &update.samples,
-                )?;
-                serde::ser::SerializeStruct::end(serde_state)
-            }
-            LocalProgressUpdate::DiagnosticText {
-                ref handle,
-                ref update,
-            } => {
-                serde::ser::SerializeStruct::serialize_field(
-                    &mut serde_state,
-                    "type",
-                    "diagnosticText",
-                )?;
-                serde::ser::SerializeStruct::serialize_field(&mut serde_state, "handle", handle)?;
+        let mut serde_state = serde::Serializer::serialize_struct(serializer, "LocalProgressUpdate", 3)?;
+        serde::ser::SerializeStruct::serialize_field(&mut serde_state, "handle", &self.handle())?;
+        match self {
+            LocalProgressUpdate::SwerveTraj { update, .. } => {
+                serde::ser::SerializeStruct::serialize_field(&mut serde_state, "type", "swerveTraj")?;
                 serde::ser::SerializeStruct::serialize_field(&mut serde_state, "update", update)?;
-                serde::ser::SerializeStruct::end(serde_state)
             }
-        }
-    }
-}
-
-#[derive(Clone)]
-#[allow(missing_debug_implementations)]
-pub struct RemoteGenerationResources {
-    frontend_emitter: Option<Sender<LocalProgressUpdate>>,
-    kill_map: Arc<DashMap<i64, OneshotSender<()>>>,
-}
-
-impl RemoteGenerationResources {
-    /**
-     * Should be called after [`setup_progress_sender`] to ensure that the sender is initialized.
-     */
-    #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
-        Self {
-            frontend_emitter: PROGRESS_SENDER_LOCK.get().cloned(),
-            kill_map: Arc::new(DashMap::new()),
-        }
-    }
-
-    pub fn add_killer(&self, handle: i64, sender: OneshotSender<()>) {
-        self.kill_map.insert(handle, sender);
-    }
-
-    pub fn kill(&self, handle: i64) -> ChoreoResult<()> {
-        self.kill_map
-            .remove(&handle)
-            .ok_or(ChoreoError::OutOfBounds("Handle", "not found"))
-            .map(|(_, sender)| {
-                let _ = sender.send(());
-            })
-    }
-
-    pub fn kill_all(&self) {
-        let handles = self
-            .kill_map
-            .iter()
-            .map(|r| *r.key())
-            .collect::<vec::Vec<i64>>();
-        for handle in handles {
-            let _ = self.kill(handle);
-        }
-    }
-
-    pub fn emit_progress(&self, update: LocalProgressUpdate) {
-        if let Some(emitter) = &self.frontend_emitter {
-            emitter.send(update).trace_warn();
-        }
+            LocalProgressUpdate::DiffTraj { update, .. } => {
+                serde::ser::SerializeStruct::serialize_field(&mut serde_state, "type", "diffTraj")?;
+                serde::ser::SerializeStruct::serialize_field(&mut serde_state, "update", update)?;
+            }
+            LocalProgressUpdate::DiagnosticText { update, .. } => {
+                serde::ser::SerializeStruct::serialize_field(&mut serde_state, "type", "diagnosticText")?;
+                serde::ser::SerializeStruct::serialize_field(&mut serde_state, "update", update)?;
+            }
+        };
+        serde::ser::SerializeStruct::end(serde_state)
     }
 }
 

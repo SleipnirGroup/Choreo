@@ -4,7 +4,7 @@ use std::path::PathBuf;
 
 use choreo_core::{
     file_management::{self, WritingResources},
-    generation::generate::RemoteGenerationResources,
+    generation::remote::RemoteGenerationResources,
     spec::{
         project::{ProjectFile, RobotConfig},
         traj::TrajFile,

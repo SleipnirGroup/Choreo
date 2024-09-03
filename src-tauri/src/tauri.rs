@@ -1,7 +1,7 @@
 use crate::built::BuiltInfo;
 use crate::{api::*, logging};
 use choreo_core::file_management::WritingResources;
-use choreo_core::generation::generate::{setup_progress_sender, RemoteGenerationResources};
+use choreo_core::generation::{generate::setup_progress_sender, remote::RemoteGenerationResources};
 use choreo_core::spec::OpenFilePayload;
 use choreo_core::{ChoreoError, ChoreoResult};
 use logging::now_str;

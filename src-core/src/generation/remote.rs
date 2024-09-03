@@ -1,5 +1,6 @@
-use std::{mem::forget, path::PathBuf, sync::Arc, thread};
+use std::{mem::forget, path::PathBuf, sync::{mpsc, Arc}, thread};
 
+use dashmap::DashMap;
 use futures_util::{FutureExt, TryStreamExt};
 use ipc_channel::ipc::{self, IpcSender};
 use std::fs;
@@ -17,10 +18,60 @@ use crate::{
         project::ProjectFile,
         traj::{TrajFile, Trajectory},
     },
-    ChoreoError, ChoreoResult,
+    ChoreoError, ChoreoResult, ResultExt,
 };
 
-use super::generate::{setup_progress_sender, RemoteGenerationResources};
+use super::generate::{setup_progress_sender, PROGRESS_SENDER_LOCK};
+
+#[derive(Clone)]
+#[allow(missing_debug_implementations)]
+pub struct RemoteGenerationResources {
+    frontend_emitter: Option<mpsc::Sender<LocalProgressUpdate>>,
+    kill_map: Arc<DashMap<i64, oneshot::Sender<()>>>,
+}
+
+impl RemoteGenerationResources {
+    /**
+     * Should be called after [`setup_progress_sender`] to ensure that the sender is initialized.
+     */
+    #[allow(clippy::new_without_default)]
+    pub fn new() -> Self {
+        Self {
+            frontend_emitter: PROGRESS_SENDER_LOCK.get().cloned(),
+            kill_map: Arc::new(DashMap::new()),
+        }
+    }
+
+    pub fn add_killer(&self, handle: i64, sender: oneshot::Sender<()>) {
+        self.kill_map.insert(handle, sender);
+    }
+
+    pub fn kill(&self, handle: i64) -> ChoreoResult<()> {
+        self.kill_map
+            .remove(&handle)
+            .ok_or(ChoreoError::OutOfBounds("Handle", "not found"))
+            .map(|(_, sender)| {
+                let _ = sender.send(());
+            })
+    }
+
+    pub fn kill_all(&self) {
+        let handles = self
+            .kill_map
+            .iter()
+            .map(|r| *r.key())
+            .collect::<Vec<i64>>();
+        for handle in handles {
+            let _ = self.kill(handle);
+        }
+    }
+
+    pub fn emit_progress(&self, update: LocalProgressUpdate) {
+        if let Some(emitter) = &self.frontend_emitter {
+            emitter.send(update).trace_warn();
+        }
+    }
+}
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct RemoteArgs {
