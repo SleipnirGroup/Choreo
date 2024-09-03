@@ -13,7 +13,6 @@
 #include <sleipnir/optimization/OptimizationProblem.hpp>
 #include <sleipnir/optimization/SolverExitCondition.hpp>
 
-#include "trajopt/geometry/Translation2.hpp"
 #include "trajopt/path/PathBuilder.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 #include "trajopt/util/expected"
