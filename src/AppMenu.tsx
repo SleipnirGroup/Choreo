@@ -39,13 +39,9 @@ import { tracing } from "./document/tauriTracing";
 
 type Props = object;
 
-type State = { settingsOpen: boolean };
+type State = object;
 
 class AppMenu extends Component<Props, State> {
-  state = {
-    settingsOpen: false
-  };
-
   private convertToRelative(filePath: string): string {
     return filePath.replace(
       RegExp(
@@ -88,11 +84,10 @@ class AppMenu extends Component<Props, State> {
     const { mainMenuOpen, toggleMainMenu } = uiState;
     return (
       <Drawer
-        ModalProps={{ onBackdropClick: toggleMainMenu }}
         anchor="left"
         open={mainMenuOpen}
         onClose={(_) => {
-          this.setState({ settingsOpen: false });
+          uiState.setMainMenuOpen(false);
         }}
       >
         <div
@@ -159,9 +154,9 @@ class AppMenu extends Component<Props, State> {
               <ListItemIcon>
                 <UploadIcon />
               </ListItemIcon>
-              <ListItemText primary="Open File"></ListItemText>
+              <ListItemText primary="Open Project"></ListItemText>
             </ListItemButton>
-            {/* Save File */}
+            {/* Save Project */}
             <ListItemButton
               onClick={async () => {
                 saveProjectDialog();
@@ -171,7 +166,9 @@ class AppMenu extends Component<Props, State> {
                 <SaveIcon />
               </ListItemIcon>
               <ListItemText
-                primary={uiState.hasSaveLocation ? "Save File As" : "Save File"}
+                primary={
+                  uiState.hasSaveLocation ? "Save Project As" : "Save Project"
+                }
               ></ListItemText>
             </ListItemButton>
             {/* New File */}
@@ -190,7 +187,7 @@ class AppMenu extends Component<Props, State> {
               <ListItemIcon>
                 <NoteAddOutlined />
               </ListItemIcon>
-              <ListItemText primary="New File"></ListItemText>
+              <ListItemText primary="New Project"></ListItemText>
             </ListItemButton>
             {/* Export Active Trajectory */}
             <ListItemButton
@@ -285,48 +282,15 @@ class AppMenu extends Component<Props, State> {
                       {this.projectLocation(true)}
                     </div>
                     <br></br>
-                    {uiState.isGradleProject
-                      ? "Gradle (Java/C++) project detected."
-                      : "Python project or no robot project detected."}
                     <br></br>
                     <br></br>
                     <div></div>
-                    {uiState.hasSaveLocation ? (
-                      <>
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center"
-                          }}
-                        >
-                          <span>Trajectories saved in</span>
-                          <span>
-                            <this.CopyToClipboardButton
-                              data={this.trajectoriesLocation(false)}
-                              tooltip="Copy full path to clipboard"
-                            ></this.CopyToClipboardButton>
-                            <this.OpenInFilesApp
-                              dir={this.trajectoriesLocation(false)}
-                            ></this.OpenInFilesApp>
-                          </span>
-                        </div>
-                        <div style={{ fontSize: "0.9em", color: "#D3D3D3" }}>
-                          {this.trajectoriesLocation(true)}
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <br />
-                        <br />
-                      </>
-                    )}
                   </>
                 ) : (
                   <>
                     Project not saved.
                     <br />
-                    Click "Save File" above to save.
+                    Click "Save Project" above to save.
                   </>
                 )}
               </div>
@@ -347,7 +311,7 @@ class AppMenu extends Component<Props, State> {
   }
 
   private trajectoriesLocation(relativeFormat: boolean): string {
-    return this.projectLocation(relativeFormat) + path.sep;
+    return this.projectLocation(relativeFormat);
   }
 }
 export default observer(AppMenu);

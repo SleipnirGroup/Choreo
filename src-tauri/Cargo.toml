@@ -23,6 +23,7 @@ tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["ansi", "fmt", "std"] }
 nu-ansi-term = "0.50.1"
 tracing-appender = "0.2.3"
+current_platform = "0.2.0"
 
 [features]
 custom-protocol = ["tauri/custom-protocol"]

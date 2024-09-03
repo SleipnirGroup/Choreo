@@ -31,11 +31,11 @@ export const UIStateStore = types
     fieldScalingFactor: 0.02,
     projectName: types.maybe(types.string),
     projectDir: types.maybe(types.string),
-    isGradleProject: types.maybe(types.boolean),
     waypointPanelOpen: false,
     isViewOptionsPanelOpen: false,
     robotConfigOpen: false,
     mainMenuOpen: false,
+    variablesPanelOpen: false,
     settingsTab: types.refinement(
       types.integer,
       (i) => i >= 0 && i < NUM_SETTINGS_TABS
@@ -142,14 +142,14 @@ export const UIStateStore = types
     setSaveFileDir(dir: string | undefined) {
       self.projectDir = dir;
     },
-    setIsGradleProject(isGradleProject: boolean | undefined) {
-      self.isGradleProject = isGradleProject;
-    },
     setWaypointPanelOpen(open: boolean) {
       self.waypointPanelOpen = open;
     },
     setViewOptionsPanelOpen(open: boolean) {
       self.isViewOptionsPanelOpen = open;
+    },
+    setVariablesPanelOpen(open: boolean) {
+      self.variablesPanelOpen = open;
     },
     setPathAnimationTimestamp(time: number) {
       self.pathAnimationTimestamp = time;

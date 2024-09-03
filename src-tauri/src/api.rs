@@ -23,6 +23,11 @@ pub fn guess_control_interval_counts(
 }
 
 #[tauri::command]
+pub fn adjust_waypoint_headings(traj: TrajFile) -> ChoreoResult<Vec<f64>> {
+    choreo_core::generation::adjust::adjust_waypoint_headings(&traj)
+}
+
+#[tauri::command]
 pub async fn open_in_explorer(path: String) -> ChoreoResult<()> {
     open::that(path).map_err(Into::into)
 }
