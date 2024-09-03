@@ -3,62 +3,32 @@
     "beforeDevCommand": "vite",
     "beforeBuildCommand": "vite build",
     "beforeBundleCommand": "node copy-sidecar.cjs choreo-cli ./target",
-    "devPath": "http://localhost:1420",
-    "distDir": "../dist",
-    "withGlobalTauri": false
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420"
   },
-  "package": {
-    "productName": "Choreo",
-    "version": "2025.0.3"
+  "bundle": {
+    "active": true,
+    "targets": ["appimage", "deb", "dmg", "nsis", "rpm"],
+    "macOS": {
+      "minimumSystemVersion": "13.3",
+      "signingIdentity": "-"
+    },
+    "shortDescription": "Choreo",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "externalBin": ["../target/choreo-cli"]
   },
-  "tauri": {
-    "allowlist": {
-      "all": false,
-      "shell": {
-        "all": false,
-        "open": true
-      },
-      "path": {
-        "all": true
-      },
-      "fs": {
-        "all": true
-      },
-      "dialog": {
-        "confirm": true,
-        "open": true,
-        "save": true,
-        "ask": true
-      },
-      "window": {
-        "setTitle": true,
-        "close": true
-      },
-      "os": {
-        "all": true
-      }
-    },
-    "bundle": {
-      "active": true,
-      "targets": ["appimage", "deb", "dmg", "nsis", "rpm"],
-      "identifier": "org.sleipnirgroup",
-      "shortDescription": "Choreo",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "macOS": {
-        "minimumSystemVersion": "13.3",
-        "signingIdentity": "-"
-      },
-      "externalBin": ["../target/choreo-cli"]
-    },
-    "security": {
-      "csp": null
-    },
+  "productName": "Choreo",
+  "version": "2025.0.3",
+  "identifier": "org.sleipnirgroup",
+  "plugins": {},
+  "app": {
+    "withGlobalTauri": false,
     "windows": [
       {
         "fullscreen": false,
@@ -67,6 +37,10 @@
         "width": 1200,
         "height": 800
       }
-    ]
+    ],
+    "security": {
+      "capabilities": ["main-capability"],
+      "csp": null
+    }
   }
 }
