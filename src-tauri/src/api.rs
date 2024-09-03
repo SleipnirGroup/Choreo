@@ -4,7 +4,7 @@ use std::path::PathBuf;
 
 use choreo_core::{
     file_management::{self, WritingResources},
-    generation::generate::RemoteGenerationResources,
+    generation::remote::RemoteGenerationResources,
     spec::{
         project::{ProjectFile, RobotConfig},
         traj::TrajFile,
@@ -19,7 +19,10 @@ pub fn guess_control_interval_counts(
     config: RobotConfig<Expr>,
     traj: TrajFile,
 ) -> ChoreoResult<Vec<usize>> {
-    choreo_core::generation::intervals::guess_control_interval_counts(&config, &traj)
+    choreo_core::generation::intervals::guess_control_interval_counts(
+        &config.snapshot(),
+        &traj.params.snapshot(),
+    )
 }
 
 #[tauri::command]

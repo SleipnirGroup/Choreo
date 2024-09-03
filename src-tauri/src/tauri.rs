@@ -1,7 +1,7 @@
 use crate::built::BuiltInfo;
 use crate::{api::*, logging};
 use choreo_core::file_management::WritingResources;
-use choreo_core::generation::generate::{setup_progress_sender, RemoteGenerationResources};
+use choreo_core::generation::{generate::setup_progress_sender, remote::RemoteGenerationResources};
 use choreo_core::spec::OpenFilePayload;
 use choreo_core::{ChoreoError, ChoreoResult};
 use logging::now_str;
@@ -155,7 +155,10 @@ pub fn run_tauri(project: Option<PathBuf>) {
             let progress_emitter = app.handle();
             let _ = thread::spawn(move || {
                 for received in rx {
-                    let _ = progress_emitter.emit_all("solver-status", received);
+                    let _ = progress_emitter.emit_all(
+                        &format!("solver-status-{}", received.handle),
+                        received.update,
+                    );
                 }
             });
             Ok(())

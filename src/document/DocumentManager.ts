@@ -689,17 +689,6 @@ export async function newProject() {
   await Commands.setDeployRoot("");
   const newChor = await Commands.defaultProject();
   doc.deserializeChor(newChor);
-  //let newVariables
-
-  //TODO change this for opening from new content.
-  // applySnapshot(doc,{
-  //     robotConfig: { identifier: uuidv4() },
-  //     pathlist: {},
-  //     splitTrajectoriesAtStopPoints: false,
-  //     usesObstacles: false,
-  //     variables: {},
-  //     selectedSidebarItem: undefined,
-  //   });
   uiState.loadPathGradientFromLocalStorage();
   doc.pathlist.addPath("NewPath");
   doc.history.clear();
@@ -739,13 +728,7 @@ export async function deletePath(uuid: string) {
   }
 }
 
-/**
- * Save the specified trajectory to the file path supplied by the given async function
- * @param filePath An (optionally async) function returning a 2-string array of [dir, name], or null
- * @param uuid the UUID of the path with the trajectory to export
- */
 export async function writeTrajectory(uuid: string) {
-  // Avoid conflicts with tauri path namespace
   if (await canSave()) {
     const traj = doc.pathlist.paths.get(uuid);
     if (traj === undefined) {
@@ -757,8 +740,24 @@ export async function writeTrajectory(uuid: string) {
   }
 }
 
-export async function exportActiveTrajectory() {
+export async function writeActiveTrajectory() {
   return await writeTrajectory(doc.pathlist.activePathUUID);
+}
+
+export async function writeAllTrajectories() {
+  if (uiState.hasSaveLocation) {
+    const promises = doc.pathlist.pathUUIDs.map((uuid) =>
+      writeTrajectory(uuid)
+    );
+    const pathNames = doc.pathlist.pathNames;
+    await Promise.allSettled(promises).then((results) => {
+      results.map((result, i) => {
+        if (result.status === "rejected") {
+          tracing.error(pathNames[i], ":", result.reason);
+        }
+      });
+    });
+  }
 }
 
 export async function saveProject() {
@@ -802,27 +801,8 @@ export async function saveProjectDialog() {
   await saveProject();
 
   //save all trajectories
-  await exportAllTrajectories();
+  await writeAllTrajectories();
 
   toast.success(`Saved ${name}. Future changes will now be auto-saved.`);
   return true;
-}
-
-/**
- * Export all trajectories to the deploy directory
- */
-export async function exportAllTrajectories() {
-  if (uiState.hasSaveLocation) {
-    const promises = doc.pathlist.pathUUIDs.map((uuid) =>
-      writeTrajectory(uuid)
-    );
-    const pathNames = doc.pathlist.pathNames;
-    await Promise.allSettled(promises).then((results) => {
-      results.map((result, i) => {
-        if (result.status === "rejected") {
-          tracing.error(pathNames[i], ":", result.reason);
-        }
-      });
-    });
-  }
 }

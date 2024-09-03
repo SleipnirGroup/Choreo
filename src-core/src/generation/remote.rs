@@ -1,5 +1,11 @@
-use std::{mem::forget, path::PathBuf, sync::Arc, thread};
+use std::{
+    mem::forget,
+    path::PathBuf,
+    sync::{mpsc, Arc},
+    thread,
+};
 
+use dashmap::DashMap;
 use futures_util::{FutureExt, TryStreamExt};
 use ipc_channel::ipc::{self, IpcSender};
 use std::fs;
@@ -9,7 +15,7 @@ use tokio::{
     select,
     sync::{oneshot, Notify},
 };
-use trajoptlib::{DifferentialTrajectory, SwerveTrajectory};
+use trajoptlib::{DifferentialTrajectorySample, SwerveTrajectorySample};
 
 use crate::{
     generation::generate::{generate, LocalProgressUpdate},
@@ -17,10 +23,56 @@ use crate::{
         project::ProjectFile,
         traj::{TrajFile, Trajectory},
     },
-    ChoreoError, ChoreoResult,
+    ChoreoError, ChoreoResult, ResultExt,
 };
 
-use super::generate::{setup_progress_sender, RemoteGenerationResources};
+use super::generate::{setup_progress_sender, HandledLocalProgressUpdate, PROGRESS_SENDER_LOCK};
+
+#[derive(Clone)]
+#[allow(missing_debug_implementations)]
+pub struct RemoteGenerationResources {
+    frontend_emitter: Option<mpsc::Sender<HandledLocalProgressUpdate>>,
+    kill_map: Arc<DashMap<i64, oneshot::Sender<()>>>,
+}
+
+impl RemoteGenerationResources {
+    /**
+     * Should be called after [`setup_progress_sender`] to ensure that the sender is initialized.
+     */
+    #[allow(clippy::new_without_default)]
+    pub fn new() -> Self {
+        Self {
+            frontend_emitter: PROGRESS_SENDER_LOCK.get().cloned(),
+            kill_map: Arc::new(DashMap::new()),
+        }
+    }
+
+    pub fn add_killer(&self, handle: i64, sender: oneshot::Sender<()>) {
+        self.kill_map.insert(handle, sender);
+    }
+
+    pub fn kill(&self, handle: i64) -> ChoreoResult<()> {
+        self.kill_map
+            .remove(&handle)
+            .ok_or(ChoreoError::OutOfBounds("Handle", "not found"))
+            .map(|(_, sender)| {
+                let _ = sender.send(());
+            })
+    }
+
+    pub fn kill_all(&self) {
+        let handles = self.kill_map.iter().map(|r| *r.key()).collect::<Vec<i64>>();
+        for handle in handles {
+            let _ = self.kill(handle);
+        }
+    }
+
+    pub fn emit_progress(&self, update: HandledLocalProgressUpdate) {
+        if let Some(emitter) = &self.frontend_emitter {
+            emitter.send(update).trace_warn();
+        }
+    }
+}
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct RemoteArgs {
@@ -37,8 +89,8 @@ impl RemoteArgs {
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum RemoteProgressUpdate {
-    IncompleteSwerveTraj(SwerveTrajectory),
-    IncompleteTankTraj(DifferentialTrajectory),
+    IncompleteSwerveTraj(Vec<SwerveTrajectorySample>),
+    IncompleteTankTraj(Vec<DifferentialTrajectorySample>),
     CompleteTraj(Trajectory),
     Error(String),
 }
@@ -53,12 +105,14 @@ pub fn remote_generate_child(args: RemoteArgs) {
         .spawn(move || {
             for received in rx {
                 let ser_string = match received {
-                    LocalProgressUpdate::SwerveTraj { update: traj, .. } => {
-                        serde_json::to_string(&RemoteProgressUpdate::IncompleteSwerveTraj(traj))
-                    }
-                    LocalProgressUpdate::DiffTraj { update: traj, .. } => {
-                        serde_json::to_string(&RemoteProgressUpdate::IncompleteTankTraj(traj))
-                    }
+                    HandledLocalProgressUpdate {
+                        update: LocalProgressUpdate::SwerveTraj { update },
+                        ..
+                    } => serde_json::to_string(&RemoteProgressUpdate::IncompleteSwerveTraj(update)),
+                    HandledLocalProgressUpdate {
+                        update: LocalProgressUpdate::DiffTraj { update },
+                        ..
+                    } => serde_json::to_string(&RemoteProgressUpdate::IncompleteTankTraj(update)),
                     _ => continue,
                 }
                 .expect("Failed to serialize progress update");
@@ -94,7 +148,7 @@ pub fn remote_generate_child(args: RemoteArgs) {
         traj.name, project.name
     );
 
-    match generate(&project, traj, 0i64) {
+    match generate(project, traj, 0i64) {
         Ok(traj) => {
             let ser_string = serde_json::to_string(&RemoteProgressUpdate::CompleteTraj(traj.traj))
                 .expect("Failed to serialize progress update");
@@ -210,9 +264,8 @@ pub async fn remote_generate_parent(
                             println!{"{string}"}
                             remote_resources.emit_progress(
                                 LocalProgressUpdate::DiagnosticText {
-                                    handle,
                                     update: string,
-                                }
+                                }.handled(handle)
                             );
                         } else {
                             buffer.push(byte);
@@ -232,10 +285,9 @@ pub async fn remote_generate_parent(
             let lines: Vec<String> = string.split('\n').map(ToString::to_string).collect();
             for line in lines {
                 println! {"{line}"}
-                remote_resources.emit_progress(LocalProgressUpdate::DiagnosticText {
-                    handle,
-                    update: line,
-                });
+                remote_resources.emit_progress(
+                    LocalProgressUpdate::DiagnosticText { update: line }.handled(handle),
+                );
             }
         }
     });
@@ -249,17 +301,15 @@ pub async fn remote_generate_parent(
                             Ok(RemoteProgressUpdate::IncompleteSwerveTraj(traj)) => {
                                 remote_resources.emit_progress(
                                     LocalProgressUpdate::SwerveTraj {
-                                        handle,
                                         update: traj
-                                    }
+                                    }.handled(handle)
                                 );
                             },
                             Ok(RemoteProgressUpdate::IncompleteTankTraj(traj)) => {
                                 remote_resources.emit_progress(
                                     LocalProgressUpdate::DiffTraj {
-                                        handle,
                                         update: traj
-                                    }
+                                    }.handled(handle)
                                 );
                             },
                             Ok(RemoteProgressUpdate::CompleteTraj(traj)) => {
