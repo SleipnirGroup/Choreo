@@ -97,6 +97,7 @@ pub fn setup_progress_sender() -> Receiver<LocalProgressUpdate> {
     rx
 }
 
+/// TODO: This definetly isn't correctly implemented
 fn set_initial_guess(traj: &mut TrajFile) {
     fn set_initial_guess_wpt(traj: &mut TrajFile, idx: usize) {
         let wpt = &mut traj.params.waypoints[idx];
@@ -128,12 +129,12 @@ fn set_initial_guess(traj: &mut TrajFile) {
 pub fn generate(chor: ProjectFile, mut trajfile: TrajFile, handle: i64) -> ChoreoResult<TrajFile> {
     set_initial_guess(&mut trajfile);
 
-    let mut ctx = TrajFileGenerator::new(chor, trajfile, handle);
+    let mut gen = TrajFileGenerator::new(chor, trajfile, handle);
 
-    ctx.add_omni_transformer::<IntervalCountSetter>();
-    ctx.add_omni_transformer::<DrivetrainAndBumpersSetter>();
-    ctx.add_omni_transformer::<ConstraintSetter>();
-    ctx.add_omni_transformer::<CallbackSetter>();
+    gen.add_omni_transformer::<IntervalCountSetter>();
+    gen.add_omni_transformer::<DrivetrainAndBumpersSetter>();
+    gen.add_omni_transformer::<ConstraintSetter>();
+    gen.add_omni_transformer::<CallbackSetter>();
 
-    ctx.generate()
+    gen.generate()
 }
