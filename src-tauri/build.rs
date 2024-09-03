@@ -25,5 +25,6 @@ fn spoof_cli() {
 
 fn main() {
     spoof_cli();
+    built::write_built_file().expect("Failed to acquire build-time information");
     tauri_build::build();
 }
