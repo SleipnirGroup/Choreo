@@ -49,10 +49,10 @@ class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
              [[maybe_unused]] const sleipnir::Variable& angularVelocity,
              [[maybe_unused]] const Translation2v& linearAcceleration,
              [[maybe_unused]] const sleipnir::Variable& angularAcceleration) {
-    auto point = pose.Translation() + m_robotPoint.RotateBy(pose.Rotation());
+    auto bumperCorner = pose.Translation() + m_robotPoint.RotateBy(pose.Rotation());
     problem.SubjectTo(
-      ((m_fieldLineStart.Y() - m_fieldLineEnd.Y()) * pose.X()) +
-      ((m_fieldLineEnd.X() - m_fieldLineStart.X()) * pose.Y()) >
+      ((m_fieldLineStart.Y() - m_fieldLineEnd.Y()) * bumperCorner.X()) +
+      ((m_fieldLineEnd.X() - m_fieldLineStart.X()) * bumperCorner.Y()) >
       ((m_fieldLineEnd.X() - m_fieldLineStart.X()) * m_fieldLineStart.Y()) +
       ((m_fieldLineStart.Y() - m_fieldLineEnd.Y()) * m_fieldLineStart.X())
     );

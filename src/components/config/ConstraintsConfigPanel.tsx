@@ -99,15 +99,15 @@ class ConstraintsConfigPanel extends Component<Props, State> {
                   titleTooltip={propdef.description}
                   />);
               }
-              // res.push(
-              //   <IconButton
-              //     onClick={() => {
-              //       constraint.data[setterName](constraint.data[key].concat([["0 m", 0]]))
-              //     }}
-              //   >
-              //     <AddCircleOutline></AddCircleOutline>
-              //   </IconButton>
-              // );
+              res.push(
+                <IconButton
+                  onClick={() => {
+                    constraint.data[setterName](constraint.data[key].concat(this.context.document.variables.))
+                  }}
+                >
+                  <AddCircleOutline></AddCircleOutline>
+                </IconButton>
+              );
               return <>{res}<></></>;
             } else if (typeof propdef.defaultVal === "boolean") {
               return (
