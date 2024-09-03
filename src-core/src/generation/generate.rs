@@ -316,11 +316,8 @@ pub fn generate(
             } => match to_opt {
                 None => traj_builder.wpt_point_at(from, x, y, tolerance, flip),
                 Some(to) => {
-                    match (&mut traj_builder as &mut dyn Any).downcast_mut::<SwervePathBuilder>() {
-                        Some(swerve_builder) => {
-                            swerve_builder.sgmt_point_at(from, to, x, y, tolerance, flip)
-                        }
-                        None => {}
+                    if let Some(swerve_builder) = (&mut traj_builder as &mut dyn Any).downcast_mut::<SwervePathBuilder>() {
+                        swerve_builder.sgmt_point_at(from, to, x, y, tolerance, flip)
                     }
                 }
             },
@@ -428,7 +425,7 @@ pub fn generate(
 }
 
 fn postprocess(
-    result: &Vec<Sample>,
+    result: &[Sample],
     mut path: TrajFile,
     mut snapshot: Parameters<f64>,
     counts_vec: Vec<usize>,
