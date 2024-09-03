@@ -1,4 +1,5 @@
-import { dialog, path, window as tauriWindow } from "@tauri-apps/api";
+import { path, window as tauriWindow } from "@tauri-apps/api";
+import { ask, confirm, save } from "@tauri-apps/plugin-dialog";
 import { TauriEvent } from "@tauri-apps/api/event";
 import { DocumentStore, SelectableItemTypes } from "./DocumentModel";
 
@@ -296,7 +297,7 @@ export async function openProjectFile() {
 
   if (cliRequestedProject) {
     const fileDirectory: OpenFilePayload = cliRequestedProject;
-    const filePath = fileDirectory.dir + path.sep + fileDirectory.name;
+    const filePath = fileDirectory.dir + path.sep() + fileDirectory.name;
     tracing.info(`Attempting to open: ${filePath}`);
     return openProject(fileDirectory).catch((err) => {
       tracing.error(
@@ -310,7 +311,7 @@ export async function openProjectFile() {
     const fileDirectory: OpenFilePayload = JSON.parse(
       lastOpenedFileEventPayload
     );
-    const filePath = fileDirectory.dir + path.sep + fileDirectory.name;
+    const filePath = fileDirectory.dir + path.sep() + fileDirectory.name;
     tracing.info(`Attempting to open: ${filePath}`);
     return openProject(fileDirectory).catch((err) => {
       tracing.error(
@@ -382,13 +383,13 @@ export async function setupEventListeners() {
 
   // Save files on closing
   tauriWindow
-    .getCurrent()
+    .getCurrentWindow()
     .listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
       if (!(await canSave())) {
         if (
-          await dialog.ask("Save project?", {
+          await ask("Save project?", {
             title: "Choreo",
-            type: "warning"
+            kind: "warning"
           })
         ) {
           if (!(await saveProjectDialog())) {
@@ -396,7 +397,7 @@ export async function setupEventListeners() {
           }
         }
       }
-      await tauriWindow.getCurrent().close();
+      await tauriWindow.getCurrentWindow().destroy();
     })
     .then((unlisten) => {
       window.addEventListener("unload", () => {
@@ -430,18 +431,14 @@ export async function setupEventListeners() {
     uiState.setSelectedNavbarItem(-1);
   });
   hotkeys("ctrl+o,command+o", () => {
-    dialog
-      .confirm("You may lose unsaved or not generated changes. Continue?", {
-        title: "Choreo",
-        type: "warning"
-      })
-      .then((proceed) => {
-        if (proceed) {
-          Commands.openProjectDialog().then((filepath) =>
-            openProject(filepath)
-          );
-        }
-      });
+    confirm("You may lose unsaved or not generated changes. Continue?", {
+      title: "Choreo",
+      kind: "warning"
+    }).then((proceed) => {
+      if (proceed) {
+        Commands.openProjectDialog().then((filepath) => openProject(filepath));
+      }
+    });
   });
   hotkeys("f5,ctrl+shift+r,ctrl+r", function (event, _handler) {
     event.preventDefault();
@@ -754,7 +751,7 @@ export async function saveProject() {
 }
 
 export async function saveProjectDialog() {
-  const filePath = await dialog.save({
+  const filePath = await save({
     title: "Save Document",
     filters: [
       {
