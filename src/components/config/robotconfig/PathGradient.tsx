@@ -1,20 +1,24 @@
-import { DifferentialDriveSample, SwerveSample } from "../../../document/2025/DocumentTypes";
+import {
+  DifferentialDriveSample,
+  SwerveSample
+} from "../../../document/2025/DocumentTypes";
 import { IDocumentStore } from "../../../document/DocumentModel";
 
 /**
  * Represents a path gradient.
  */
-export type PathGradientArgs<S extends SwerveSample|DifferentialDriveSample> = {
-  point: S;
-  prev: S;
-  next: S;
-  arr: S[][];
-  total: number;
-  count: number;
-  sect: number;
-  idxInSect: number;
-  documentModel: IDocumentStore;
-};
+export type PathGradientArgs<S extends SwerveSample | DifferentialDriveSample> =
+  {
+    point: S;
+    prev: S;
+    next: S;
+    arr: S[][];
+    total: number;
+    count: number;
+    sect: number;
+    idxInSect: number;
+    documentModel: IDocumentStore;
+  };
 export type PathGradient = {
   /**
    * The name/key of the path gradient.
@@ -106,24 +110,29 @@ class PathGradientFunctions {
    * @param documentModel - The document model.
    * @returns The color gradient for the acceleration.
    */
-  static acceleration({ point, next, count, total }: PathGradientArgs<any>): string {
+  static acceleration({
+    point,
+    next,
+    count,
+    total
+  }: PathGradientArgs<any>): string {
     let t = 0;
     if (point.vx) {
-    if (count != 0 && count != total - 1) {
-      // first calculates the magnitude of the change in velocity vector over change in time
-      // between the current point and the next point.
-      // then, it is scaled/normalized for the HSL color value.
-      const A = point;
-      const B = next;
-      t = Math.hypot(B.vx - A.vx, B.vy - A.vy);
-      const dt = B.t - A.t;
-      t /= dt * 10;
-    }
+      if (count != 0 && count != total - 1) {
+        // first calculates the magnitude of the change in velocity vector over change in time
+        // between the current point and the next point.
+        // then, it is scaled/normalized for the HSL color value.
+        const A = point;
+        const B = next;
+        t = Math.hypot(B.vx - A.vx, B.vy - A.vy);
+        const dt = B.t - A.t;
+        t /= dt * 10;
+      }
 
-    return `hsl(${100 * (1 - t)}, 100%, 50%)`;
-  } else {
-    return "var(--select-yellow)";
-  }
+      return `hsl(${100 * (1 - t)}, 100%, 50%)`;
+    } else {
+      return "var(--select-yellow)";
+    }
   }
 
   /**
@@ -136,7 +145,12 @@ class PathGradientFunctions {
    * @param documentModel - The document model.
    * @returns The computed intervalDt value.
    */
-  static intervalDt({ point, next, count, total }: PathGradientArgs<any>): string {
+  static intervalDt({
+    point,
+    next,
+    count,
+    total
+  }: PathGradientArgs<any>): string {
     let t = 0;
     if (count == 0 || count == total - 1) {
       t = 0;

@@ -323,52 +323,19 @@ mod ffi {
 }
 
 pub trait PathBuilder: Any {
-   
     fn set_bumpers(self: &mut Self, length: f64, width: f64);
     fn set_control_interval_counts(self: &mut Self, counts: Vec<usize>);
 
     fn pose_wpt(self: &mut Self, index: usize, x: f64, y: f64, heading: f64);
-    fn translation_wpt(
-        self: &mut Self,
-        index: usize,
-        x: f64,
-        y: f64,
-        heading_guess: f64,
-    );
-    fn empty_wpt(
-        self: &mut Self,
-        index: usize,
-        x_guess: f64,
-        y_guess: f64,
-        heading_guess: f64,
-    );
+    fn translation_wpt(self: &mut Self, index: usize, x: f64, y: f64, heading_guess: f64);
+    fn empty_wpt(self: &mut Self, index: usize, x_guess: f64, y_guess: f64, heading_guess: f64);
 
-    fn sgmt_initial_guess_points(
-        self: &mut Self,
-        from_index: usize,
-        guess_points: &Vec<Pose2d>,
-    );
+    fn sgmt_initial_guess_points(self: &mut Self, from_index: usize, guess_points: &Vec<Pose2d>);
 
-    fn wpt_linear_velocity_direction(
-        self: &mut Self,
-        index: usize,
-        angle: f64,
-    );
-    fn wpt_linear_velocity_max_magnitude(
-        self: &mut Self,
-        index: usize,
-        magnitude: f64,
-    );
-    fn wpt_angular_velocity_max_magnitude(
-        self: &mut Self,
-        index: usize,
-        angular_velocity: f64,
-    );
-    fn wpt_linear_acceleration_max_magnitude(
-        self: &mut Self,
-        index: usize,
-        magnitude: f64,
-    );
+    fn wpt_linear_velocity_direction(self: &mut Self, index: usize, angle: f64);
+    fn wpt_linear_velocity_max_magnitude(self: &mut Self, index: usize, magnitude: f64);
+    fn wpt_angular_velocity_max_magnitude(self: &mut Self, index: usize, angular_velocity: f64);
+    fn wpt_linear_acceleration_max_magnitude(self: &mut Self, index: usize, magnitude: f64);
     fn wpt_point_at(
         self: &mut Self,
         index: usize,
@@ -402,7 +369,6 @@ pub trait PathBuilder: Any {
         to_index: usize,
         magnitude: f64,
     );
-
 
     fn sgmt_circle_obstacle(
         self: &mut Self,
@@ -488,9 +454,7 @@ impl SwervePathBuilder {
         crate::ffi::SwervePathBuilder::add_progress_callback(self.path_builder.pin_mut(), callback);
     }
 }
-impl PathBuilder for SwervePathBuilder{
-
-    
+impl PathBuilder for SwervePathBuilder {
     fn set_bumpers(&mut self, length: f64, width: f64) {
         crate::ffi::SwervePathBuilder::set_bumpers(self.path_builder.pin_mut(), length, width);
     }
@@ -588,12 +552,7 @@ impl PathBuilder for SwervePathBuilder{
         )
     }
 
-    fn sgmt_linear_velocity_direction(
-        &mut self,
-        from_index: usize,
-        to_index: usize,
-        angle: f64,
-    ) {
+    fn sgmt_linear_velocity_direction(&mut self, from_index: usize, to_index: usize, angle: f64) {
         crate::ffi::SwervePathBuilder::sgmt_linear_velocity_direction(
             self.path_builder.pin_mut(),
             from_index,
@@ -679,7 +638,7 @@ impl PathBuilder for SwervePathBuilder{
             radius,
         );
     }
-    
+
     fn as_any(&mut self) -> &mut dyn Any {
         self
     }
@@ -709,7 +668,7 @@ impl DifferentialPathBuilder {
         );
     }
 
-        ///
+    ///
     /// Generate the trajectory;
     ///
     /// * diagnostics: If true, prints per-iteration details of the solver to
@@ -748,7 +707,6 @@ impl DifferentialPathBuilder {
     }
 }
 impl PathBuilder for DifferentialPathBuilder {
-
     fn set_bumpers(&mut self, length: f64, width: f64) {
         crate::ffi::DifferentialPathBuilder::set_bumpers(
             self.path_builder.pin_mut(),
@@ -856,12 +814,7 @@ impl PathBuilder for DifferentialPathBuilder {
         )
     }
 
-    fn sgmt_linear_velocity_direction(
-        &mut self,
-        from_index: usize,
-        to_index: usize,
-        angle: f64,
-    ) {
+    fn sgmt_linear_velocity_direction(&mut self, from_index: usize, to_index: usize, angle: f64) {
         crate::ffi::DifferentialPathBuilder::sgmt_linear_velocity_direction(
             self.path_builder.pin_mut(),
             from_index,
@@ -947,7 +900,7 @@ impl PathBuilder for DifferentialPathBuilder {
             radius,
         );
     }
-    
+
     fn as_any(&mut self) -> &mut dyn Any {
         self
     }

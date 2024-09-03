@@ -96,7 +96,6 @@ pub fn remote_generate_child(args: RemoteArgs) {
 
     match generate(&project, traj, 0i64) {
         Ok(traj) => {
-            
             let ser_string = serde_json::to_string(&RemoteProgressUpdate::CompleteTraj(traj.traj))
                 .expect("Failed to serialize progress update");
             ipc.send(ser_string)

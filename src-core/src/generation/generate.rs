@@ -1,6 +1,6 @@
 #![allow(clippy::missing_errors_doc)]
 
-use std::any::{Any};
+use std::any::Any;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, OnceLock};
 use std::vec;
@@ -27,10 +27,21 @@ use crate::{ChoreoResult, ResultExt};
  */
 pub static PROGRESS_SENDER_LOCK: OnceLock<Sender<LocalProgressUpdate>> = OnceLock::new();
 
-fn solver_status_callback(traj: SwerveTrajectory, handle: i64) {
+fn swerve_status_callback(traj: SwerveTrajectory, handle: i64) {
     let tx_opt = PROGRESS_SENDER_LOCK.get();
     if let Some(tx) = tx_opt {
         tx.send(LocalProgressUpdate::SwerveTraj {
+            update: traj,
+            handle,
+        })
+        .trace_warn();
+    };
+}
+
+fn diff_status_callback(traj: DifferentialTrajectory, handle: i64) {
+    let tx_opt = PROGRESS_SENDER_LOCK.get();
+    if let Some(tx) = tx_opt {
+        tx.send(LocalProgressUpdate::DiffTraj {
             update: traj,
             handle,
         })
@@ -306,12 +317,14 @@ pub fn generate(
                 flip,
             } => match to_opt {
                 None => traj_builder.wpt_point_at(from, x, y, tolerance, flip),
-                Some(to) => match (&mut traj_builder as &mut dyn Any).downcast_mut::<SwervePathBuilder>() {
-                    Some(swerve_builder) => {
-                        swerve_builder.sgmt_point_at(from, to, x, y, tolerance, flip)
+                Some(to) => {
+                    match (&mut traj_builder as &mut dyn Any).downcast_mut::<SwervePathBuilder>() {
+                        Some(swerve_builder) => {
+                            swerve_builder.sgmt_point_at(from, to, x, y, tolerance, flip)
+                        }
+                        None => {}
                     }
-                    None => {}
-                },
+                }
             },
             ConstraintData::MaxVelocity { max } => match to_opt {
                 None => traj_builder.wpt_linear_velocity_max_magnitude(from, max),
@@ -363,7 +376,7 @@ pub fn generate(
                     .to_vec(),
             };
 
-            traj_builder.add_progress_callback(solver_status_callback);
+            traj_builder.add_progress_callback(swerve_status_callback);
 
             traj_builder.set_drivetrain(&drivetrain);
             //Err("".to_string())
@@ -378,7 +391,10 @@ pub fn generate(
         }
         // not swerve
         None => {
-            match traj_builder.as_any().downcast_mut::<DifferentialPathBuilder>() {
+            match traj_builder
+                .as_any()
+                .downcast_mut::<DifferentialPathBuilder>()
+            {
                 Some(traj_builder) => {
                     let drivetrain = DifferentialDrivetrain {
                         mass: config.mass,
@@ -387,10 +403,10 @@ pub fn generate(
                         // rad per sec
                         wheel_max_angular_velocity: config.vmax / config.gearing,
                         wheel_max_torque: config.tmax * config.gearing,
-                        trackwidth: config.modules[0].y * 2.0,
+                        trackwidth: config.modules[1].y * 2.0,
                     };
 
-                    //traj_builder.add_progress_callback(solver_status_callback);
+                    traj_builder.add_progress_callback(diff_status_callback);
 
                     traj_builder.set_drivetrain(&drivetrain);
                     //Err("".to_string())
@@ -463,7 +479,8 @@ fn postprocess(
             result
                 // grab the range including both endpoints,
                 // there are no bounds checks on this slice so be weary of crashes
-                .get((window[0])..=(window[1])).map(|slice|slice.to_vec())
+                .get((window[0])..=(window[1]))
+                .map(|slice| slice.to_vec())
         })
         .collect::<Vec<Vec<Sample>>>();
     path.traj.waypoints = waypoint_times;

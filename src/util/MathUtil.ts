@@ -44,7 +44,10 @@ export function interpolate(p1: Pose, p2: Pose, frac: number) {
     rot: p1.rot + frac * shortest_angle
   };
 }
-export function sample(timeSeconds: number, m_states: Array<SwerveSample>): Pose {
+export function sample(
+  timeSeconds: number,
+  m_states: Array<SwerveSample>
+): Pose {
   if (timeSeconds <= m_states[0].t) {
     return storeToPose(m_states[0]);
   }

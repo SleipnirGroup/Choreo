@@ -1,4 +1,3 @@
-
 import { ConstraintData } from "../ConstraintDefinitions";
 import { Dimensions } from "../ExpressionStore";
 
@@ -130,7 +129,7 @@ export interface ChoreoPath<T extends ExprOrNumber> {
   constraints: Constraint[];
 }
 
-export type SampleType = "Swerve" | "DifferentialDrive"
+export type SampleType = "Swerve" | "DifferentialDrive";
 export interface Output {
   waypoints: number[];
   samples: SwerveSample[][] | DifferentialDriveSample[][];

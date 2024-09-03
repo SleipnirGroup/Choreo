@@ -243,7 +243,13 @@ pub enum Sample {
         fr: f64,
     },
 }
-fn nudge_zero( f: f64) -> f64 {if f.abs() < 1e-12 { 0.0 } else { f }}
+fn nudge_zero(f: f64) -> f64 {
+    if f.abs() < 1e-12 {
+        0.0
+    } else {
+        f
+    }
+}
 
 impl From<&SwerveTrajectorySample> for Sample {
     fn from(swerve_sample: &SwerveTrajectorySample) -> Self {
@@ -255,20 +261,18 @@ impl From<&SwerveTrajectorySample> for Sample {
             vy: nudge_zero(swerve_sample.velocity_y),
             heading: nudge_zero(swerve_sample.heading),
             omega: nudge_zero(swerve_sample.angular_velocity),
-            fx: 
-                [
-                    nudge_zero(swerve_sample.module_forces_x[0]),
-                    nudge_zero(swerve_sample.module_forces_x[1]),
-                    nudge_zero(swerve_sample.module_forces_x[2]),
-                    nudge_zero(swerve_sample.module_forces_x[3]),
-                ],
-            fy:
-                [
-                    nudge_zero(swerve_sample.module_forces_y[0]),
-                    nudge_zero(swerve_sample.module_forces_y[1]),
-                    nudge_zero(swerve_sample.module_forces_y[2]),
-                    nudge_zero(swerve_sample.module_forces_y[3]),
-                ]
+            fx: [
+                nudge_zero(swerve_sample.module_forces_x[0]),
+                nudge_zero(swerve_sample.module_forces_x[1]),
+                nudge_zero(swerve_sample.module_forces_x[2]),
+                nudge_zero(swerve_sample.module_forces_x[3]),
+            ],
+            fy: [
+                nudge_zero(swerve_sample.module_forces_y[0]),
+                nudge_zero(swerve_sample.module_forces_y[1]),
+                nudge_zero(swerve_sample.module_forces_y[2]),
+                nudge_zero(swerve_sample.module_forces_y[3]),
+            ],
         }
     }
 }
@@ -282,8 +286,8 @@ impl From<&DifferentialTrajectorySample> for Sample {
             vl: nudge_zero(diff_sample.velocity_l),
             vr: nudge_zero(diff_sample.velocity_r),
             heading: nudge_zero(diff_sample.heading),
-            fl: nudge_zero(diff_sample.force_l), 
-            fr: nudge_zero(diff_sample.force_r)
+            fl: nudge_zero(diff_sample.force_l),
+            fr: nudge_zero(diff_sample.force_r),
         }
     }
 }

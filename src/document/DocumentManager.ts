@@ -228,7 +228,7 @@ export const doc = DocumentStore.create(
     robotConfig: getConstructors(() => variables).RobotConfigStore(
       EXPR_DEFAULTS
     ),
-    type: "DifferentialDrive",
+    type: "Swerve",
     pathlist: {},
     splitTrajectoriesAtStopPoints: false,
     usesObstacles: false,

@@ -1,5 +1,9 @@
 import { Instance, destroy, getEnv, types } from "mobx-state-tree";
-import { DifferentialDriveSample, Output, type SwerveSample } from "../2025/DocumentTypes";
+import {
+  DifferentialDriveSample,
+  Output,
+  type SwerveSample
+} from "../2025/DocumentTypes";
 import { Env } from "../DocumentManager";
 import { EventMarkerStore, IEventMarkerStore } from "../EventMarkerStore";
 
@@ -11,7 +15,6 @@ export const ChoreoTrajStore = types
     markers: types.array(EventMarkerStore)
   })
   .views((self) => ({
-
     get fullTraj(): SwerveSample[] | DifferentialDriveSample[] {
       return self.samples.flatMap((sect, i, samp) => {
         if (i != 0) {
@@ -21,10 +24,14 @@ export const ChoreoTrajStore = types
       });
     },
     get isSwerve(): boolean {
-      return this.fullTraj.length === 0 || Object.hasOwn(this.fullTraj[0], "vx")
+      return (
+        this.fullTraj.length === 0 || Object.hasOwn(this.fullTraj[0], "vx")
+      );
     },
-    get isDifferentialDrive() : boolean {
-      return this.fullTraj.length === 0 || Object.hasOwn(this.fullTraj[0], "vl")
+    get isDifferentialDrive(): boolean {
+      return (
+        this.fullTraj.length === 0 || Object.hasOwn(this.fullTraj[0], "vl")
+      );
     },
     // 01234567
     // ...

@@ -53,7 +53,10 @@ export const SelectableItem = types.union(
   EventMarkerStore,
   ConstraintStore
 );
-export const ISampleType = types.enumeration<SampleType>(["Swerve", "DifferentialDrive"]);
+export const ISampleType = types.enumeration<SampleType>([
+  "Swerve",
+  "DifferentialDrive"
+]);
 export const DocumentStore = types
   .model("DocumentStore", {
     name: types.string,
@@ -134,9 +137,13 @@ export const DocumentStore = types
       self.variables.deserialize(ser.variables);
       self.robotConfig.deserialize(ser.config);
       self.pathlist.paths.clear();
+      self.type = ser.type;
     },
     setName(name: string) {
       self.name = name;
+    },
+    setType(type: SampleType) {
+      self.type = type;
     },
     setSelectedSidebarItem(item: SelectableItemTypes) {
       self.history.withoutUndo(() => {
@@ -270,9 +277,7 @@ export const DocumentStore = types
                 pathStore.ui.setIterationNumber(
                   pathStore.ui.generationIterationNumber + 1
                 );
-              } 
-              
-              else if (event.payload!.type === "diagnosticText") {
+              } else if (event.payload!.type === "diagnosticText") {
                 // const line = event.payload.update as string;
                 // This is the text output of sleipnir solver
                 // console.log(line)
