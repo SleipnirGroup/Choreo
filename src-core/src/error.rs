@@ -33,8 +33,8 @@ pub enum ChoreoError {
     NoDeployPath,
     #[error("Solver Error: {0:?}")]
     SolverError(String),
-    #[error("Heading Conflict error: {0:?}")]
-    HeadingConflict(usize),
+    #[error("Heading Conflict error: waypoint {0:?} - {1:?}")]
+    HeadingConflict(usize, &'static str),
 }
 
 impl From<std::io::Error> for ChoreoError {
