@@ -262,7 +262,7 @@ export const ExpressionStore = types
   }))
   .views((self) => ({
     get defaultUnit(): Unit | undefined {
-      return Dimensions[self.dimension].unit;
+      return Dimensions[self.dimension]?.unit;
     }
   }))
   .actions((self) => ({
@@ -538,28 +538,6 @@ const ExprPose = types
       self.heading.deserialize(pose.heading);
     }
   }));
-// function isSafeProperty(object, prop) {
-//     if (!object || typeof object !== 'object') {
-//       return false;
-//     }
-//     // UNSAFE: inherited from Object prototype
-//     // e.g constructor
-//     if (prop in Object.prototype) {
-//       // 'in' is used instead of hasOwnProperty for nodejs v0.10
-//       // which is inconsistent on root prototypes. It is safe
-//       // here because Object.prototype is a root object
-//       return false;
-//     }
-//     // UNSAFE: inherited from Function prototype
-//     // e.g call, apply
-//     if (prop in Function.prototype) {
-//       // 'in' is used instead of hasOwnProperty for nodejs v0.10
-//       // which is inconsistent on root prototypes. It is safe
-//       // here because Function.prototype is a root object
-//       return false;
-//     }
-//     return true;
-//   }
 export type IExprPose = Instance<typeof ExprPose>;
 type Pose = { x: number; y: number; heading: number };
 export const Variables = types
@@ -614,7 +592,7 @@ export const Variables = types
           store = ExpressionStore.create({
             expr: addUnitToExpression(
               new math.ConstantNode(expr),
-              Dimensions[dimension].unit.toString()
+              Dimensions[dimension]?.unit.toString()
             ),
             dimension
           });
