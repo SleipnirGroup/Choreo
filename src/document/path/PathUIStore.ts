@@ -1,8 +1,5 @@
 import { types, getEnv, Instance } from "mobx-state-tree";
-import {
-  DifferentialDriveSample,
-  type SwerveSample
-} from "../2025/DocumentTypes";
+import { DifferentialSample, type SwerveSample } from "../2025/DocumentTypes";
 import { Env } from "../DocumentManager";
 
 export const PathUIStore = types
@@ -10,7 +7,7 @@ export const PathUIStore = types
     visibleWaypointsStart: types.number,
     visibleWaypointsEnd: types.number,
     generationProgress: types.frozen<
-      Array<SwerveSample> | Array<DifferentialDriveSample>
+      Array<SwerveSample> | Array<DifferentialSample>
     >([]),
     generating: false,
     generationIterationNumber: 0
@@ -32,7 +29,7 @@ export const PathUIStore = types
       });
     },
     setInProgressTrajectory(
-      trajectory: Array<SwerveSample> | Array<DifferentialDriveSample>
+      trajectory: Array<SwerveSample> | Array<DifferentialSample>
     ) {
       getEnv<Env>(self).withoutUndo(() => {
         self.generationProgress = trajectory;
