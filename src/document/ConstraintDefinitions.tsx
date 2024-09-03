@@ -181,7 +181,7 @@ export const ConstraintDefinitions: defs = {
   KeepInCircle: {
     type: "KeepInCircle" as const,
     name: "Keep In Circle",
-    shortName: "Keep In C",
+    shortName: "Keep In Circle",
     description: "Keep the robot's bumpers within a circular region",
     icon: <ArrowCircleDown />,
     properties: {
@@ -210,7 +210,7 @@ export const ConstraintDefinitions: defs = {
   KeepInRectangle: {
     type: "KeepInRectangle" as const,
     name: "Keep In Rectangle",
-    shortName: "Keep In R",
+    shortName: "Keep In Rect",
     description: "Keep the robot's bumpers within a rectangular region",
     icon: <SystemUpdateAlt />,
     properties: {
