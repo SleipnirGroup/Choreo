@@ -1,14 +1,14 @@
 {
   "build": {
-    "beforeDevCommand": "pnpm run dev",
-    "beforeBuildCommand": "pnpm run build",
+    "beforeDevCommand": "node build_cli.cjs && pnpm run dev",
+    "beforeBuildCommand": "node build_cli.cjs && pnpm run build",
     "devPath": "http://localhost:1420",
     "distDir": "../dist",
     "withGlobalTauri": false
   },
   "package": {
     "productName": "Choreo",
-    "version": "2024.2.3"
+    "version": "2025.0.0-beta"
   },
   "tauri": {
     "allowlist": {
@@ -39,7 +39,7 @@
     },
     "bundle": {
       "active": true,
-      "targets": ["appimage", "deb", "nsis", "dmg"],
+      "targets": ["appimage", "deb", "dmg", "nsis", "rpm"],
       "identifier": "org.sleipnirgroup",
       "shortDescription": "Choreo",
       "icon": [
@@ -52,7 +52,8 @@
       "macOS": {
         "minimumSystemVersion": "13.3",
         "signingIdentity": "-"
-      }
+      },
+      "externalBin": ["../cli/choreo-cli"]
     },
     "security": {
       "csp": null
@@ -61,7 +62,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "Choreo v2024.2.3",
+        "title": "Choreo v2025.0.0-beta",
         "width": 1200,
         "height": 800
       }

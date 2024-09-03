@@ -21,14 +21,15 @@ import FieldEventMarkers from "./FieldEventMarkers";
 import FieldGeneratedLines from "./FieldGeneratedLines";
 import FieldGeneratedWaypoints from "./FieldGeneratedWaypoints";
 import FieldGrid from "./FieldGrid";
+import { DOMMatrixIdentity, FieldMatrixContext } from "./FieldMatrixContext";
 import FieldObstacle from "./FieldObstacles";
 import FieldPathLines from "./FieldPathLines";
 import FieldSamples from "./FieldSamples";
 import InterpolatedRobot from "./InterpolatedRobot";
 import OverlayWaypoint from "./OverlayWaypoint";
-import FieldImage2024 from "./fields/FieldImage2024";
-import FieldConstraintDisplayLayer from "./constraintDisplay/FieldConstraintDisplayLayer";
 import FieldConstraintAddLayer from "./constraintDisplay/FieldConstraintAddLayer";
+import FieldConstraintDisplayLayer from "./constraintDisplay/FieldConstraintDisplayLayer";
+import FieldImage2024 from "./fields/FieldImage2024";
 
 type Props = object;
 
@@ -36,6 +37,7 @@ type State = {
   xPan: number;
   yPan: number;
   zoom: number;
+  fieldMatrix: DOMMatrix;
 };
 
 class FieldOverlayRoot extends Component<Props, State> {
@@ -44,7 +46,8 @@ class FieldOverlayRoot extends Component<Props, State> {
   state = {
     xPan: 0,
     yPan: 0,
-    zoom: 1
+    zoom: 1,
+    fieldMatrix: DOMMatrixIdentity
   };
   canvasHeightMeters!: number;
   canvasWidthMeters!: number;
@@ -141,7 +144,7 @@ class FieldOverlayRoot extends Component<Props, State> {
     // User selects a waypoint
     else {
       const waypoint =
-        doc.pathlist.activePath.path.waypoints[
+        doc.pathlist.activePath.params.waypoints[
           uiState.contextMenuSelectedWaypoint
         ];
       waypoint.setType(contextMenuWaypointType);
@@ -195,7 +198,10 @@ class FieldOverlayRoot extends Component<Props, State> {
   private handleResize() {
     const factor = this.getScalingFactor(this.svgRef?.current);
     uiState.setFieldScalingFactor(factor);
-    uiState.setFieldMatrix(this.frameRef.current!.getScreenCTM()!);
+    this.setState({
+      fieldMatrix:
+        this.frameRef.current!.getScreenCTM() ?? this.state.fieldMatrix
+    });
   }
   render() {
     this.canvasHeightMeters = FieldImage2024.WIDTH_M + 1;
@@ -221,177 +227,185 @@ class FieldOverlayRoot extends Component<Props, State> {
         //
         id="field-svg-container"
       >
-        <g
-          transform={`
+        <FieldMatrixContext.Provider value={this.state.fieldMatrix}>
+          <g
+            transform={`
               matrix(${this.state.zoom} 0  0 ${-this.state.zoom} ${
                 this.state.xPan
               } ${this.state.yPan})`}
-          ref={this.frameRef}
-          id="rootFrame"
-        >
-          <FieldAxisLines></FieldAxisLines>
-          {/* Background */}
-          {layers[ViewLayers.Field] && (
-            <>
-              <FieldImage2024 />
-            </>
-          )}
-          {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
-          {/* Obstacle and waypoint mouse capture*/}
+            ref={this.frameRef}
+            id="rootFrame"
+          >
+            <FieldAxisLines></FieldAxisLines>
+            {/* Background */}
+            {layers[ViewLayers.Field] && (
+              <>
+                <FieldImage2024 />
+              </>
+            )}
+            {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
+            {/* Obstacle and waypoint mouse capture*/}
 
-          {uiState.contextMenuMouseSelection && (
-            <Popover
-              anchorReference="anchorPosition"
-              anchorPosition={{
-                left: uiState.contextMenuMouseSelection[0],
-                top: uiState.contextMenuMouseSelection[1]
-              }}
-              anchorOrigin={{
-                vertical: "top",
-                horizontal: "left"
-              }}
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "left"
-              }}
-              open={uiState.contextMenuMouseSelection !== undefined}
-              onClose={this.handleCloseContextMenu.bind(this)}
-            >
-              <div
-                style={{
-                  margin: `${2}px`,
-                  padding: `${2}px`
+            {uiState.contextMenuMouseSelection && (
+              <Popover
+                anchorReference="anchorPosition"
+                anchorPosition={{
+                  left: uiState.contextMenuMouseSelection[0],
+                  top: uiState.contextMenuMouseSelection[1]
                 }}
+                anchorOrigin={{
+                  vertical: "top",
+                  horizontal: "left"
+                }}
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "left"
+                }}
+                open={uiState.contextMenuMouseSelection !== undefined}
+                onClose={this.handleCloseContextMenu.bind(this)}
               >
-                <ToggleButtonGroup>
-                  {NavbarItemData.map(
-                    (item, index) =>
-                      index <= NavbarItemSectionEnds[0] && (
-                        <>
-                          <Tooltip disableInteractive title={item.name}>
-                            <ToggleButton
-                              value={`${index}`}
-                              selected={
-                                uiState.contextMenuWaypointType == index
-                              }
-                              onClick={() => {
-                                this.handleContextMenuSelection(index);
-                              }}
-                              sx={{
-                                color: "var(--accent-purple)",
-                                "&.Mui-selected": {
-                                  color: "var(--select-yellow)"
-                                }
-                              }}
+                <div
+                  style={{
+                    margin: `${2}px`,
+                    padding: `${2}px`
+                  }}
+                >
+                  <ToggleButtonGroup>
+                    {NavbarItemData.map(
+                      (item, index) =>
+                        index <= NavbarItemSectionEnds[0] && (
+                          <>
+                            <Tooltip
+                              disableInteractive
+                              title={item.name}
+                              key={item.name}
                             >
-                              {item.icon}
-                            </ToggleButton>
-                          </Tooltip>
-                        </>
-                      )
-                  )}
-                </ToggleButtonGroup>
-              </div>
-            </Popover>
-          )}
-
-          {layers[ViewLayers.Waypoints] &&
-            uiState.isNavbarWaypointSelected() && (
-              <circle
-                cx={0}
-                cy={0}
-                r={10000}
-                style={{ fill: "transparent" }}
-                onClick={(e) => this.createWaypointOnClick(e)}
-              ></circle>
+                              <ToggleButton
+                                value={`${index}`}
+                                selected={
+                                  uiState.contextMenuWaypointType == index
+                                }
+                                onClick={() => {
+                                  this.handleContextMenuSelection(index);
+                                }}
+                                sx={{
+                                  color: "var(--accent-purple)",
+                                  "&.Mui-selected": {
+                                    color: "var(--select-yellow)"
+                                  }
+                                }}
+                              >
+                                {item.icon}
+                              </ToggleButton>
+                            </Tooltip>
+                          </>
+                        )
+                    )}
+                  </ToggleButtonGroup>
+                </div>
+              </Popover>
             )}
-          {layers[ViewLayers.Obstacles] &&
-            uiState.isNavbarObstacleSelected() && (
-              <circle
-                cx={0}
-                cy={0}
-                r={10000}
-                style={{ fill: "transparent" }}
-                onClick={(e) => this.createObstacle(e)}
-              ></circle>
+
+            {layers[ViewLayers.Waypoints] &&
+              uiState.isNavbarWaypointSelected() && (
+                <circle
+                  cx={0}
+                  cy={0}
+                  r={10000}
+                  style={{ fill: "transparent" }}
+                  onClick={(e) => this.createWaypointOnClick(e)}
+                ></circle>
+              )}
+            {layers[ViewLayers.Obstacles] &&
+              uiState.isNavbarObstacleSelected() && (
+                <circle
+                  cx={0}
+                  cy={0}
+                  r={10000}
+                  style={{ fill: "transparent" }}
+                  onClick={(e) => this.createObstacle(e)}
+                ></circle>
+              )}
+            {layers[ViewLayers.Obstacles] &&
+              doc.pathlist.activePath.params.obstacles.map(
+                (obstacle, index) => (
+                  <FieldObstacle
+                    obstacle={obstacle}
+                    index={index}
+                    key={obstacle.uuid}
+                  ></FieldObstacle>
+                )
+              )}
+            {/* Line paths */}
+            {layers[ViewLayers.Waypoints] && <FieldPathLines></FieldPathLines>}
+            {layers[ViewLayers.Trajectory] && (
+              <FieldGeneratedLines></FieldGeneratedLines>
             )}
-          {layers[ViewLayers.Obstacles] &&
-            doc.pathlist.activePath.path.obstacles.map((obstacle, index) => (
-              <FieldObstacle
-                obstacle={obstacle}
-                index={index}
-                key={obstacle.uuid}
-              ></FieldObstacle>
-            ))}
-          {/* Line paths */}
-          {layers[ViewLayers.Waypoints] && <FieldPathLines></FieldPathLines>}
-          {layers[ViewLayers.Trajectory] && (
-            <FieldGeneratedLines></FieldGeneratedLines>
-          )}
-          {layers[ViewLayers.Samples] && layers[ViewLayers.Trajectory] && (
-            <FieldSamples></FieldSamples>
-          )}
-          {layers[ViewLayers.Samples] && layers[ViewLayers.Trajectory] && (
-            <FieldGeneratedWaypoints></FieldGeneratedWaypoints>
-          )}
-          <FieldEventMarkers></FieldEventMarkers>
-          {layers[ViewLayers.Waypoints] &&
-            doc.pathlist.activePath.path.waypoints
-              .map((point, index) => {
-                const activePath = doc.pathlist.activePath;
-                if (
-                  (activePath.ui.visibleWaypointsStart <= index &&
-                    activePath.ui.visibleWaypointsEnd >= index) ||
-                  !layers[ViewLayers.Focus]
-                ) {
-                  return [
-                    <OverlayWaypoint
-                      waypoint={point}
-                      index={index}
-                      key={point.uuid}
-                    ></OverlayWaypoint>,
-                    point.selected
-                  ];
-                }
-              })
-              // sort, such that selected waypoint ends up last,
-              // and thus above all the rest.
-              // We sort the elements, not the waypoints, so that
-              // each element still corresponds to the right waypoint index
-              .sort((_, pt2) => {
-                if (pt2?.[1]) {
-                  return -1;
-                }
-                return 0;
-              })
-              .map((pt) => pt?.[0])}
+            {layers[ViewLayers.Samples] && layers[ViewLayers.Trajectory] && (
+              <FieldSamples></FieldSamples>
+            )}
+            {layers[ViewLayers.Samples] && layers[ViewLayers.Trajectory] && (
+              <FieldGeneratedWaypoints></FieldGeneratedWaypoints>
+            )}
+            <FieldEventMarkers></FieldEventMarkers>
+            {layers[ViewLayers.Waypoints] &&
+              doc.pathlist.activePath.params.waypoints
+                .map((point, index) => {
+                  const activePath = doc.pathlist.activePath;
+                  if (
+                    (activePath.ui.visibleWaypointsStart <= index &&
+                      activePath.ui.visibleWaypointsEnd >= index) ||
+                    !layers[ViewLayers.Focus]
+                  ) {
+                    return [
+                      <OverlayWaypoint
+                        waypoint={point}
+                        index={index}
+                        key={point.uuid}
+                      ></OverlayWaypoint>,
+                      point.selected
+                    ];
+                  }
+                })
+                // sort, such that selected waypoint ends up last,
+                // and thus above all the rest.
+                // We sort the elements, not the waypoints, so that
+                // each element still corresponds to the right waypoint index
+                .sort((_, pt2) => {
+                  if (pt2?.[1]) {
+                    return -1;
+                  }
+                  return 0;
+                })
+                .map((pt) => pt?.[0])}
 
-          {constraintSelected && (
-            <FieldConstraintAddLayer lineColor="var(--select-yellow)"></FieldConstraintAddLayer>
-          )}
-          {eventMarkerSelected && (
-            <FieldEventMarkerAddLayer></FieldEventMarkerAddLayer>
-          )}
-          {doc.isSidebarConstraintSelected && (
-            <FieldConstraintDisplayLayer
-              constraint={doc.selectedSidebarItem}
-              lineColor="var(--select-yellow)"
-            ></FieldConstraintDisplayLayer>
-          )}
-
-          {!doc.isSidebarConstraintSelected &&
-            doc.isSidebarConstraintHovered && (
+            {constraintSelected && (
+              <FieldConstraintAddLayer lineColor="var(--select-yellow)"></FieldConstraintAddLayer>
+            )}
+            {eventMarkerSelected && (
+              <FieldEventMarkerAddLayer></FieldEventMarkerAddLayer>
+            )}
+            {doc.isSidebarConstraintSelected && (
               <FieldConstraintDisplayLayer
-                constraint={doc.hoveredSidebarItem}
-                lineColor="white"
+                constraint={doc.selectedSidebarItem}
+                lineColor="var(--select-yellow)"
               ></FieldConstraintDisplayLayer>
             )}
-          {layers[ViewLayers.Trajectory] && (
-            <InterpolatedRobot
-              timestamp={uiState.pathAnimationTimestamp}
-            ></InterpolatedRobot>
-          )}
-        </g>
+
+            {!doc.isSidebarConstraintSelected &&
+              doc.isSidebarConstraintHovered && (
+                <FieldConstraintDisplayLayer
+                  constraint={doc.hoveredSidebarItem}
+                  lineColor="white"
+                ></FieldConstraintDisplayLayer>
+              )}
+            {layers[ViewLayers.Trajectory] && (
+              <InterpolatedRobot
+                timestamp={uiState.pathAnimationTimestamp}
+              ></InterpolatedRobot>
+            )}
+          </g>
+        </FieldMatrixContext.Provider>
       </svg>
     );
   }
@@ -424,7 +438,7 @@ class FieldOverlayRoot extends Component<Props, State> {
       initial.x = [`${coords.x} m`, coords.x];
       initial.y = [`${coords.y} m`, coords.y];
       initial.heading = [`0 deg`, 0];
-      const newPoint = doc.pathlist.activePath.path.addWaypoint(initial);
+      const newPoint = doc.pathlist.activePath.params.addWaypoint(initial);
       newPoint.setSelected(true);
     });
     doc.history.stopGroup();
@@ -447,7 +461,7 @@ class FieldOverlayRoot extends Component<Props, State> {
         y: e.clientY
       });
       doc.history.startGroup(() => {
-        doc.pathlist.activePath.path.addObstacle(coords.x, coords.y, 0.5);
+        doc.pathlist.activePath.params.addObstacle(coords.x, coords.y, 0.5);
       });
       doc.history.stopGroup();
     }

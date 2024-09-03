@@ -9,7 +9,7 @@ FATAL: In-source builds are not allowed.
     )
 endif()
 
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.22)
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules"
@@ -166,7 +166,7 @@ if(BUILD_TESTING)
     list(APPEND CMAKE_MODULE_PATH ${Catch2_SOURCE_DIR}/extras)
     include(Catch)
 endif()
-
+get_cmake_property(IS_MULTI_CONFIG GENERATOR_IS_MULTI_CONFIG)
 # Build TrajoptLib tests
 if(BUILD_TESTING)
     file(GLOB_RECURSE TrajoptLib_test_src test/src/*.cpp)
@@ -184,7 +184,11 @@ if(BUILD_TESTING)
     )
     if(NOT CMAKE_TOOLCHAIN_FILE)
         # https://github.com/catchorg/Catch2/issues/2873
-        catch_discover_tests(TrajoptLibTest PROPERTIES SKIP_RETURN_CODE 4)
+        catch_discover_tests(
+            TrajoptLibTest
+            PROPERTIES SKIP_RETURN_CODE 4
+            DL_PATHS ${Sleipnir_BINARY_DIR}/$<${IS_MULTI_CONFIG}:$<CONFIG>>
+        )
     endif()
 endif()
 
@@ -228,7 +232,12 @@ if(BUILD_EXAMPLES)
             )
             if(NOT CMAKE_TOOLCHAIN_FILE)
                 # https://github.com/catchorg/Catch2/issues/2873
-                catch_discover_tests(${example}Test PROPERTIES SKIP_RETURN_CODE 4)
+                catch_discover_tests(
+                    ${example}Test
+                    PROPERTIES SKIP_RETURN_CODE 4
+                    DL_PATHS
+                        ${Sleipnir_BINARY_DIR}/$<${IS_MULTI_CONFIG}:$<CONFIG>>
+                )
             endif()
         endif()
     endforeach()

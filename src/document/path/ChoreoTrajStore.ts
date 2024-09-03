@@ -126,6 +126,9 @@ export const ChoreoTrajStore = types
     },
     setWaypoints(waypoints: number[]) {
       self.waypoints = waypoints;
+    },
+    setUseModuleForces(use: boolean) {
+      self.useModuleForces = use;
     }
   }));
 

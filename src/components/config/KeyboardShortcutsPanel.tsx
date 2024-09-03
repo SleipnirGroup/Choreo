@@ -78,39 +78,35 @@ class KeyboardShortcutsPanel extends Component<Props, State> {
         }}
       >
         {Object.entries(shortcuts).map((entry) => (
-          <>
-            <Accordion disableGutters>
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                {entry[0].toUpperCase()}
-              </AccordionSummary>
-              <AccordionDetails>
-                <TableContainer
-                  component={Paper}
-                  sx={{ backgroundColor: "var(--background-light-gray)" }}
-                >
-                  <Table size="small" aria-label="simple table">
-                    <TableBody>
-                      {Object.entries(entry[1]).map((entry) => (
-                        <TableRow
-                          key={entry[0]}
-                          sx={{
-                            "&:last-child td, &:last-child th": { border: 0 }
-                          }}
-                        >
-                          <TableCell>{entry[1]}</TableCell>
-                          <TableCell component="th" scope="row" align="right">
-                            {isMac
-                              ? entry[0]
-                              : entry[0].replaceAll("⌘", "Ctrl")}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </AccordionDetails>
-            </Accordion>
-          </>
+          <Accordion disableGutters key={entry[0]}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              {entry[0].toUpperCase()}
+            </AccordionSummary>
+            <AccordionDetails>
+              <TableContainer
+                component={Paper}
+                sx={{ backgroundColor: "var(--background-light-gray)" }}
+              >
+                <Table size="small" aria-label="simple table">
+                  <TableBody>
+                    {Object.entries(entry[1]).map((entry) => (
+                      <TableRow
+                        key={entry[0]}
+                        sx={{
+                          "&:last-child td, &:last-child th": { border: 0 }
+                        }}
+                      >
+                        <TableCell>{entry[1]}</TableCell>
+                        <TableCell component="th" scope="row" align="right">
+                          {isMac ? entry[0] : entry[0].replaceAll("⌘", "Ctrl")}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </AccordionDetails>
+          </Accordion>
         ))}
       </div>
     );

@@ -3,8 +3,10 @@ import { doc, uiState } from "../../../../document/DocumentManager";
 import { ConstraintDefinitions } from "../../../../document/ConstraintDefinitions";
 
 import { observer } from "mobx-react";
-import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer";
 import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
+import { FieldMatrixContext } from "../FieldMatrixContext";
+import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer";
+import { tracing } from "../../../../document/tauriTracing";
 
 type Props = {
   lineColor?: string;
@@ -16,6 +18,8 @@ type State = {
 };
 
 class FieldConstraintsAddLayer extends Component<Props, State> {
+  static contextType = FieldMatrixContext;
+  declare context: React.ContextType<typeof FieldMatrixContext>;
   state = { firstIndex: undefined, mouseX: undefined, mouseY: undefined };
   constructor(props: Props) {
     super(props);
@@ -31,7 +35,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
       const constraintToAdd = uiState.getSelectedConstraintKey();
       const point1 = points[start];
       const point2 = end !== undefined ? points[end] : undefined;
-      const newConstraint = doc.pathlist.activePath.path.addConstraint(
+      const newConstraint = doc.pathlist.activePath.params.addConstraint(
         constraintToAdd,
         { uuid: point1.uuid },
         point2 !== undefined ? { uuid: point2.uuid } : undefined
@@ -74,7 +78,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
   render() {
     const lineColor = this.props.lineColor ?? "white";
     const activePath = doc.pathlist.activePath;
-    const waypoints = activePath.path.waypoints;
+    const waypoints = activePath.params.waypoints;
     if (this.state.firstIndex === undefined) {
       return (
         <FieldConstraintRangeLayer
@@ -86,7 +90,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
           showLines={false}
           id="add-first-circles"
           onCircleClick={(id) => {
-            console.log("constraint from: ", id);
+            tracing.debug("constraint from: ", id);
             const constraintToAdd = uiState.getSelectedConstraintKey();
             if (!ConstraintDefinitions[constraintToAdd].sgmtScope) {
               this.addConstraint(waypoints, id, undefined);
@@ -98,6 +102,10 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
       );
     } else {
       const point = waypoints[this.state.firstIndex];
+      if (point == undefined) {
+        this.setState({ firstIndex: undefined });
+        return <></>;
+      }
       return (
         <>
           <circle
@@ -109,7 +117,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
             style={{ pointerEvents: "visible" }}
             onMouseMove={(e) => {
               let coords = new DOMPoint(e.clientX, e.clientY);
-              coords = coords.matrixTransform(uiState.fieldMatrix.inverse());
+              coords = coords.matrixTransform(this.context.inverse());
               this.setState({ mouseX: coords.x, mouseY: coords.y });
             }}
             onMouseLeave={(e) =>

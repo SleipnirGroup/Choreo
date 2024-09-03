@@ -13,7 +13,7 @@ function FieldConstraintsAddLayer() {
   const selectedConstraint = uiState.getSelectedConstraintKey();
   const selectedConstraintDefinition =
     uiState.getSelectedConstraintDefinition();
-  const waypoints = activePath.path.waypoints;
+  const waypoints = activePath.params.waypoints;
   return (
     <>
       {/* Draw circles on each waypoint */}
@@ -38,7 +38,7 @@ function FieldConstraintsAddLayer() {
                 onClick={() => {
                   doc.history.startGroup(() => {
                     const constraintToAdd = selectedConstraint;
-                    const newConstraint = activePath.path.addConstraint(
+                    const newConstraint = activePath.params.addConstraint(
                       constraintToAdd,
                       { uuid: point.uuid }
                     );
@@ -59,8 +59,8 @@ function FieldConstraintsAddLayer() {
           }
         })}
       {selectedConstraintDefinition!.sgmtScope &&
-        activePath.path.waypoints.slice(0, -1).map((point1, index) => {
-          const point2 = activePath.path.waypoints[index + 1];
+        activePath.params.waypoints.slice(0, -1).map((point1, index) => {
+          const point2 = activePath.params.waypoints[index + 1];
           if (
             (activePath.ui.visibleWaypointsStart <= index &&
               activePath.ui.visibleWaypointsEnd >= index + 1) ||
@@ -92,7 +92,7 @@ function FieldConstraintsAddLayer() {
                       const constraintToAdd =
                         uiState.getSelectedConstraintKey();
 
-                      const newConstraint = activePath.path.addConstraint(
+                      const newConstraint = activePath.params.addConstraint(
                         constraintToAdd,
                         { uuid: point1.uuid },
                         { uuid: point2.uuid }

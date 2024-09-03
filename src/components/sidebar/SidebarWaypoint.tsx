@@ -4,11 +4,7 @@ import { IconButton, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import { isAlive } from "mobx-state-tree";
 import React, { Component } from "react";
-import {
-  Draggable,
-  DraggingStyle,
-  NotDraggingStyle
-} from "react-beautiful-dnd";
+import { Draggable, DraggingStyle, NotDraggingStyle } from "@hello-pangea/dnd";
 import { CSSProperties } from "styled-components";
 import { doc, uiState } from "../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
@@ -115,7 +111,7 @@ class SidebarWaypoint extends Component<Props, State> {
                 className={styles.SidebarRightIcon}
                 onClick={(e) => {
                   e.stopPropagation();
-                  doc.pathlist.activePath.path.deleteWaypoint(
+                  doc.pathlist.activePath.params.deleteWaypoint(
                     waypoint?.uuid || ""
                   );
                 }}

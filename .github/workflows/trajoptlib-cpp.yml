@@ -14,11 +14,9 @@ jobs:
       matrix:
         include:
           - artifact-name: Windows x86_64
-            # FIXME: Tests give "Exit code 0xc0000135" for missing DLLs
-            cmake-args: "-DCMAKE_GENERATOR_PLATFORM=x64 -DBUILD_TESTING=OFF"
+            cmake-args: "-DCMAKE_GENERATOR_PLATFORM=x64"
             os: windows-2022
           - artifact-name: Windows aarch64
-            # FIXME: Tests give "Exit code 0xc0000135" for missing DLLs
             cmake-args: "-DCMAKE_GENERATOR_PLATFORM=ARM64 -DBUILD_TESTING=OFF"
             os: windows-2022
           - artifact-name: macOS universal
@@ -36,15 +34,15 @@ jobs:
 
       - name: Install dependencies (Windows)
         uses: lukka/get-cmake@v3.29.3
-        if: runner.os == 'Windows'
+        if: startsWith(matrix.os, 'windows')
 
       - name: Install dependencies (Linux)
-        if: runner.os == 'Linux'
+        if: startsWith(matrix.os, 'ubuntu')
         run: sudo apt-get update && sudo apt-get install -y ninja-build
 
       - name: Install dependencies (macOS)
         run: brew install ninja
-        if: runner.os == 'macOS'
+        if: startsWith(matrix.os, 'macOS')
 
       - name: Make GCC 14 the default toolchain (Linux)
         if: startsWith(matrix.os, 'ubuntu')
@@ -55,14 +53,21 @@ jobs:
       - run: sudo xcode-select -switch /Applications/Xcode_15.3.app
         if: startsWith(matrix.os, 'macOS')
 
-      - run: cmake --preset with-examples ${{ matrix.cmake-args }}
-        if: runner.os != 'Windows'
+      - name: Set up sccache
+        uses: mozilla-actions/sccache-action@v0.0.5
+        # sccache doesn't work with MSBuild
+        if: ${{ !startsWith(matrix.os, 'windows') }}
+
+      - run: cmake --preset with-examples-sccache ${{ matrix.cmake-args }}
+        if: ${{ !startsWith(matrix.os, 'windows') }}
         working-directory: trajoptlib
-      - run: cmake -B build -S . -DWITH_EXAMPLES=ON ${{ matrix.cmake-args }}
-        if: runner.os == 'Windows'
+      - run: cmake -B build -S . -DBUILD_EXAMPLES=ON ${{ matrix.cmake-args }}
+        if: startsWith(matrix.os, 'windows')
         working-directory: trajoptlib
       - run: cmake --build build --config RelWithDebInfo --parallel 4
         working-directory: trajoptlib
+        env:
+          SCCACHE_GHA_ENABLED: "true"
       - run: ctest --test-dir build -C RelWithDebInfo --output-on-failure
         working-directory: trajoptlib
       - run: cmake --install build --config RelWithDebInfo --prefix pkg

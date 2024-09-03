@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import { Component } from "react";
-import { DragDropContext, Droppable } from "react-beautiful-dnd";
+import { DragDropContext, Droppable } from "@hello-pangea/dnd";
 import { doc } from "../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import styles from "./Sidebar.module.css";
@@ -23,7 +23,7 @@ class WaypointList extends Component<Props, State> {
   }
 
   reorder(startIndex: number, endIndex: number) {
-    doc.pathlist.activePath.path.reorderWaypoint(startIndex, endIndex);
+    doc.pathlist.activePath.params.reorderWaypoint(startIndex, endIndex);
   }
 
   onDragEnd(result: any) {
@@ -40,7 +40,7 @@ class WaypointList extends Component<Props, State> {
   // Normally you would want to split things out into separate components.
   // But in this example everything is just done in one place for simplicity
   render() {
-    const waypoints = doc.pathlist.activePath.path.waypoints;
+    const waypoints = doc.pathlist.activePath.params.waypoints;
     const waypointsLength = waypoints.length;
     if (waypointsLength == 0) {
       return (

@@ -151,7 +151,6 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
           value={this.state.name}
           onKeyDown={(event) => {
             if (event.key == "Enter") {
-              this.completeRename();
               this.nameInputRef.current!.blur();
             }
             if (event.key == "Escape") {

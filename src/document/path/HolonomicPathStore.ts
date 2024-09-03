@@ -19,7 +19,7 @@ import { Env } from "../DocumentManager";
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
     snapshot: types.frozen<ChoreoPath<number>>(),
-    path: ChoreoPathStore,
+    params: ChoreoPathStore,
     traj: ChoreoTrajStore,
     ui: PathUIStore,
     name: "",
@@ -33,7 +33,7 @@ export const HolonomicPathStore = types
   .views((self) => {
     return {
       canGenerate(): boolean {
-        return self.path.waypoints.length >= 2 && !self.ui.generating;
+        return self.params.waypoints.length >= 2 && !self.ui.generating;
       },
       canExport(): boolean {
         return self.traj.samples.length >= 2;
@@ -42,13 +42,13 @@ export const HolonomicPathStore = types
         return {
           name: self.name,
           version: SAVE_FILE_VERSION,
-          path: self.path.serialize,
+          params: self.params.serialize,
           traj: self.traj.serialize,
           snapshot: self.snapshot
         };
       },
       lowestSelectedPoint(): IHolonomicWaypointStore | null {
-        for (const point of self.path.waypoints) {
+        for (const point of self.params.waypoints) {
           if (point.selected) return point;
         }
         return null;
@@ -205,13 +205,13 @@ export const HolonomicPathStore = types
       },
 
       addWaypoint(waypoint?: Partial<Waypoint<Expr>>): IHolonomicWaypointStore {
-        self.path.waypoints.push(
+        self.params.waypoints.push(
           getEnv<Env>(self).create.WaypointStore(
             Object.assign({ ...DEFAULT_WAYPOINT }, waypoint)
           )
         );
-        if (self.path.waypoints.length === 1) {
-          getEnv<Env>(self).select(self.path.waypoints[0]);
+        if (self.params.waypoints.length === 1) {
+          getEnv<Env>(self).select(self.params.waypoints[0]);
         }
 
         // Initialize waypoints
@@ -221,11 +221,11 @@ export const HolonomicPathStore = types
         }
 
         // Make the new waypoint visible by default if the (now) penultimate waypoint is already visible
-        if (self.ui.visibleWaypointsEnd === self.path.waypoints.length - 2) {
-          self.ui.setVisibleWaypointsEnd(self.path.waypoints.length - 1);
+        if (self.ui.visibleWaypointsEnd === self.params.waypoints.length - 2) {
+          self.ui.setVisibleWaypointsEnd(self.params.waypoints.length - 1);
         }
 
-        return self.path.waypoints[self.path.waypoints.length - 1];
+        return self.params.waypoints[self.params.waypoints.length - 1];
       }
     };
   })
@@ -234,7 +234,7 @@ export const HolonomicPathStore = types
       deserialize(ser: Traj) {
         self.name = ser.name;
         self.snapshot = ser.snapshot;
-        self.path.deserialize(ser.path);
+        self.params.deserialize(ser.params);
         self.traj.deserialize(ser.traj);
       }
     };

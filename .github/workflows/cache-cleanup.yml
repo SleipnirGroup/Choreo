@@ -1,0 +1,39 @@
+# Modifed from https://github.com/actions/cache/blob/main/tips-and-workarounds.md#force-deletion-of-caches-overriding-default-cache-eviction-policy
+name: Clean up unused caches
+on:
+  pull_request_target:
+    types:
+      - closed
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      # `actions:write` permission is required to delete caches
+      #   See also: https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28#delete-a-github-actions-cache-for-a-repository-using-a-cache-id
+      actions: write
+      contents: read
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Cleanup
+        run: |
+          gh extension install actions/gh-actions-cache
+
+          ## Setting this to not fail the workflow while deleting cache keys. 
+          set +e
+          for i in {1..20}
+          do
+              cacheKeysForPR=$(gh actions-cache list -R $REPO -L 100 --sort size | cut -f 1 )
+              for cacheKey in $cacheKeysForPR
+              do
+                  gh actions-cache delete "$cacheKey" -R $REPO --confirm
+                  sleep 0.1
+              done
+          done
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          BRANCH: refs/pull/${{ github.event.pull_request.number }}/merge
