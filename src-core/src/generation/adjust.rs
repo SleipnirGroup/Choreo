@@ -46,6 +46,8 @@ pub fn adjust_waypoint_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
             last_fixed_idx = idx;
         }
     }
+    // TODO: adjust heading of 0 ang vel sgmt immediately before or after point at
+    // TODO: start with point at constraints, then 0 ang vel, then interpolate
 
     let num_wpts = traj.params.waypoints.len();
     let (constraints_idx, is_initial_guess) =
@@ -110,11 +112,21 @@ pub fn adjust_waypoint_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                                 ));
                             }
                             if let Some(heading) = fixed_heading {
-                                new_headings.iter_mut().take(to + 1).skip(from).for_each(
-                                    |new_heading| {
-                                        *new_heading = heading;
-                                    },
-                                )
+                                wpt_is_pose
+                                    .iter_mut()
+                                    .take(to + 1)
+                                    .skip(from)
+                                    .for_each(|w| *w = true);
+                                new_headings
+                                    .iter_mut()
+                                    .enumerate()
+                                    .take(to + 1)
+                                    .skip(from)
+                                    .for_each(|(idx, new_heading)| {
+                                        if !traj.params.waypoints[idx].fix_heading {
+                                            *new_heading = heading;
+                                        }
+                                    })
                             }
                         }
                     }
@@ -185,6 +197,14 @@ pub fn adjust_waypoint_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
             _ => {}
         }
     }
+    tracing::debug!(
+        "heading conflict references:\n
+    {wpt_has_point_at:?} - wpt_has_point_at\n
+    {sgmt_has_point_at:?} - sgmt_has_point_at\n
+    {wpt_has_0_ang_vel:?} - wpt_has_0_ang_vel\n
+    {sgmt_has_0_ang_vel:?} - sgmt_has_0_ang_vel\n
+    {wpt_is_pose:?} - wpt_is_pose"
+    );
     // check for 0 ang vel and point at
     for (sgmt, ((((&sgmt_v, &sgmt_p), &_wpt_v), &_wpt_p), &_pose)) in sgmt_has_0_ang_vel
         .iter()
@@ -201,7 +221,7 @@ pub fn adjust_waypoint_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
             ));
         }
         if sgmt > 0 {
-            if sgmt_p >= 1 && sgmt_has_0_ang_vel[sgmt - 1] >= 1 {
+            if sgmt_p >= 1 && sgmt_has_0_ang_vel[sgmt - 1] >= 1 && wpt_is_pose[sgmt - 1] {
                 return Err(ChoreoError::HeadingConflict(
                     sgmt + 1,
                     "0 maxAngVel on segment prior to Point At.",
@@ -209,14 +229,5 @@ pub fn adjust_waypoint_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
             }
         }
     }
-
-    tracing::debug!(
-        "heading conflict references:\n
-    {wpt_has_point_at:?} - wpt_has_point_at\n
-    {sgmt_has_point_at:?} - sgmt_has_point_at\n
-    {wpt_has_0_ang_vel:?} - wpt_has_0_ang_vel\n
-    {sgmt_has_0_ang_vel:?} - sgmt_has_0_ang_vel\n
-    {wpt_is_pose:?} - wpt_is_pose"
-    );
     Ok(new_headings)
 }
