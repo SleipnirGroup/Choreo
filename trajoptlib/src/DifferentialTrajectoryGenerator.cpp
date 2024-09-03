@@ -174,7 +174,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
       auto omega_n_1 =
           (vR.at(index - 1) - vL.at(index - 1)) / path.drivetrain.trackwidth;
 
-      Translation2v a_n{aL.at(index), aR.at(index)};
+      Translation2v a_n = WheelToChassisSpeeds(aL.at(index), aR.at(index));
 
       problem.SubjectTo(x_n_1 + v_n * dt_sgmt + a_n * 0.5 * dt_sgmt * dt_sgmt ==
                         x_n);
