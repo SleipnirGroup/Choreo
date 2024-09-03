@@ -25,7 +25,6 @@ import { Component } from "react";
 import { toast } from "react-toastify";
 import {
   exportActiveTrajectory,
-  exportAllTrajectories,
   newProject,
   openProject,
   saveProjectDialog,
@@ -136,7 +135,7 @@ class AppMenu extends Component<Props, State> {
               </ListItemButton>
             </Tooltip>
             <Divider></Divider>
-            {/* Open File */}
+            {/* Open Project */}
             <ListItemButton
               onClick={async () => {
                 if (
@@ -171,7 +170,7 @@ class AppMenu extends Component<Props, State> {
                 }
               ></ListItemText>
             </ListItemButton>
-            {/* New File */}
+            {/* New Project */}
             <ListItemButton
               onClick={async () => {
                 if (
@@ -209,45 +208,6 @@ class AppMenu extends Component<Props, State> {
               </ListItemIcon>
               <ListItemText primary="Export Trajectory"></ListItemText>
             </ListItemButton>
-            {/* Export All to Deploy */}
-            <ListItemButton
-              onClick={async () => {
-                if (!uiState.hasSaveLocation) {
-                  if (
-                    await dialog.ask(
-                      "Saving trajectories to the deploy directory requires saving the project. Save it now?",
-                      {
-                        title: "Choreo",
-                        type: "warning"
-                      }
-                    )
-                  ) {
-                    if (!(await saveProjectDialog())) {
-                      return;
-                    }
-                  } else {
-                    return;
-                  }
-                }
-
-                toast.promise(exportAllTrajectories(), {
-                  success: `Saved all trajectories.`,
-                  error: {
-                    render(toastProps) {
-                      tracing.error(toastProps.data);
-                      return `Couldn't export trajectories: ${
-                        toastProps.data as string[]
-                      }`;
-                    }
-                  }
-                });
-              }}
-            >
-              <ListItemIcon>
-                <SaveIcon />
-              </ListItemIcon>
-              <ListItemText primary="Save All Trajectories"></ListItemText>
-            </ListItemButton>
             <Divider orientation="horizontal"></Divider>
             {/* Info about save locations */}
             <ListItem>
@@ -281,10 +241,6 @@ class AppMenu extends Component<Props, State> {
                     <div style={{ fontSize: "0.9em", color: "#D3D3D3" }}>
                       {this.projectLocation(true)}
                     </div>
-                    <br></br>
-                    <br></br>
-                    <br></br>
-                    <div></div>
                   </>
                 ) : (
                   <>
@@ -308,10 +264,6 @@ class AppMenu extends Component<Props, State> {
         ? this.convertToRelative(uiState.projectDir as string)
         : uiState.projectDir) + path.sep
     );
-  }
-
-  private trajectoriesLocation(relativeFormat: boolean): string {
-    return this.projectLocation(relativeFormat);
   }
 }
 export default observer(AppMenu);
