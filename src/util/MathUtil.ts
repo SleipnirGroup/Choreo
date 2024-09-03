@@ -1,4 +1,4 @@
-import { Sample } from "../document/2025/DocumentTypes";
+import { SwerveSample } from "../document/2025/DocumentTypes";
 
 /**
  * A port of WPILib's MathUtil.inputModulus
@@ -29,7 +29,7 @@ export function angleModulus(input: number) {
 }
 
 export type Pose = { x: number; y: number; rot: number };
-export function storeToPose(store: Sample) {
+export function storeToPose(store: SwerveSample) {
   return { x: store.x, y: store.y, rot: store.heading };
 }
 export function interpolate(p1: Pose, p2: Pose, frac: number) {
@@ -44,7 +44,7 @@ export function interpolate(p1: Pose, p2: Pose, frac: number) {
     rot: p1.rot + frac * shortest_angle
   };
 }
-export function sample(timeSeconds: number, m_states: Array<Sample>): Pose {
+export function sample(timeSeconds: number, m_states: Array<SwerveSample>): Pose {
   if (timeSeconds <= m_states[0].t) {
     return storeToPose(m_states[0]);
   }

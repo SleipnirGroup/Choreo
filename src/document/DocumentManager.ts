@@ -228,6 +228,7 @@ export const doc = DocumentStore.create(
     robotConfig: getConstructors(() => variables).RobotConfigStore(
       EXPR_DEFAULTS
     ),
+    type: "DifferentialDrive",
     pathlist: {},
     splitTrajectoriesAtStopPoints: false,
     usesObstacles: false,

@@ -8,7 +8,9 @@ import {
   SAVE_FILE_VERSION,
   Traj,
   SwerveTrajoptlibSample,
-  ProgressUpdate
+  ProgressUpdate,
+  SampleType,
+  DifferentialTrajectorySample
 } from "./2025/DocumentTypes";
 import {
   CircularObstacleStore,
@@ -51,9 +53,11 @@ export const SelectableItem = types.union(
   EventMarkerStore,
   ConstraintStore
 );
+export const ISampleType = types.enumeration<SampleType>(["Swerve", "DifferentialDrive"]);
 export const DocumentStore = types
   .model("DocumentStore", {
     name: types.string,
+    type: ISampleType,
     pathlist: PathListStore,
     robotConfig: RobotConfigStore,
     variables: Variables,
@@ -67,6 +71,7 @@ export const DocumentStore = types
       return {
         name: self.name,
         version: SAVE_FILE_VERSION,
+        type: self.type,
         variables: self.variables.serialize,
         config: self.robotConfig.serialize
       };
@@ -232,22 +237,42 @@ export const DocumentStore = types
               if (event.payload!.type === "swerveTraj") {
                 const samples = event.payload
                   .update as SwerveTrajoptlibSample[];
-                const useModuleForces = pathStore.traj.useModuleForces;
+                const forcesAvailable = pathStore.traj.forcesAvailable;
                 pathStore.ui.setInProgressTrajectory(
                   samples.map((s) => ({
                     t: s.timestamp,
                     vx: s.velocity_x,
                     vy: s.velocity_y,
                     omega: s.angular_velocity,
-                    fx: useModuleForces ? s.module_forces_x : [0, 0, 0, 0],
-                    fy: useModuleForces ? s.module_forces_y : [0, 0, 0, 0],
+                    fx: forcesAvailable ? s.module_forces_x : [0, 0, 0, 0],
+                    fy: forcesAvailable ? s.module_forces_y : [0, 0, 0, 0],
                     ...s
                   }))
                 );
                 pathStore.ui.setIterationNumber(
                   pathStore.ui.generationIterationNumber + 1
                 );
-              } else if (event.payload!.type === "diagnosticText") {
+              } else if (event.payload!.type === "diffTraj") {
+                const samples = event.payload
+                  .update as DifferentialTrajectorySample[];
+                const forcesAvailable = pathStore.traj.forcesAvailable;
+                pathStore.ui.setInProgressTrajectory(
+                  samples.map((s) => ({
+                    t: s.timestamp,
+                    vl: s.velocity_l,
+                    vr: s.velocity_r,
+                    //omega: s.angular_velocity,
+                    fl: forcesAvailable ? s.force_l : 0,
+                    fr: forcesAvailable ? s.force_r : 0,
+                    ...s
+                  }))
+                );
+                pathStore.ui.setIterationNumber(
+                  pathStore.ui.generationIterationNumber + 1
+                );
+              } 
+              
+              else if (event.payload!.type === "diagnosticText") {
                 // const line = event.payload.update as string;
                 // This is the text output of sleipnir solver
                 // console.log(line)
@@ -269,6 +294,7 @@ export const DocumentStore = types
         .then(
           (rust_traj) => {
             const result: Traj = rust_traj as Traj;
+            console.log(result);
             if (result.traj.samples.length == 0) throw "No traj";
             self.history.startGroup(() => {
               const newTraj = result.traj.samples;

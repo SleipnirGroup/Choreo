@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use trajoptlib::{DifferentialTrajectorySample, SwerveTrajectorySample};
 
 use super::{Expr, SnapshottableType};
 
@@ -241,6 +242,50 @@ pub enum Sample {
         fl: f64,
         fr: f64,
     },
+}
+fn nudge_zero( f: f64) -> f64 {if f.abs() < 1e-12 { 0.0 } else { f }}
+
+impl From<&SwerveTrajectorySample> for Sample {
+    fn from(swerve_sample: &SwerveTrajectorySample) -> Self {
+        Sample::Swerve {
+            t: nudge_zero(swerve_sample.timestamp),
+            x: nudge_zero(swerve_sample.x),
+            y: nudge_zero(swerve_sample.y),
+            vx: nudge_zero(swerve_sample.velocity_x),
+            vy: nudge_zero(swerve_sample.velocity_y),
+            heading: nudge_zero(swerve_sample.heading),
+            omega: nudge_zero(swerve_sample.angular_velocity),
+            fx: 
+                [
+                    nudge_zero(swerve_sample.module_forces_x[0]),
+                    nudge_zero(swerve_sample.module_forces_x[1]),
+                    nudge_zero(swerve_sample.module_forces_x[2]),
+                    nudge_zero(swerve_sample.module_forces_x[3]),
+                ],
+            fy:
+                [
+                    nudge_zero(swerve_sample.module_forces_y[0]),
+                    nudge_zero(swerve_sample.module_forces_y[1]),
+                    nudge_zero(swerve_sample.module_forces_y[2]),
+                    nudge_zero(swerve_sample.module_forces_y[3]),
+                ]
+        }
+    }
+}
+
+impl From<&DifferentialTrajectorySample> for Sample {
+    fn from(diff_sample: &DifferentialTrajectorySample) -> Self {
+        Sample::DifferentialDrive {
+            t: nudge_zero(diff_sample.timestamp),
+            x: nudge_zero(diff_sample.x),
+            y: nudge_zero(diff_sample.y),
+            vl: nudge_zero(diff_sample.velocity_l),
+            vr: nudge_zero(diff_sample.velocity_r),
+            heading: nudge_zero(diff_sample.heading),
+            fl: nudge_zero(diff_sample.force_l), 
+            fr: nudge_zero(diff_sample.force_r)
+        }
+    }
 }
 
 /// The type of samples in a trajectory.

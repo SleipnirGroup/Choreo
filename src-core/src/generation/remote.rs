@@ -96,6 +96,7 @@ pub fn remote_generate_child(args: RemoteArgs) {
 
     match generate(&project, traj, 0i64) {
         Ok(traj) => {
+            
             let ser_string = serde_json::to_string(&RemoteProgressUpdate::CompleteTraj(traj.traj))
                 .expect("Failed to serialize progress update");
             ipc.send(ser_string)
@@ -165,6 +166,7 @@ pub async fn remote_generate_parent(
     // check if the solver has already completed
     match serde_json::from_str::<RemoteProgressUpdate>(&o) {
         Ok(RemoteProgressUpdate::CompleteTraj(traj)) => {
+            println!("{:?}", traj);
             tracing::debug!("Remote generator completed (early return)");
             return Ok(TrajFile {
                 traj,

@@ -1,5 +1,6 @@
 #![allow(clippy::missing_errors_doc)]
 
+use std::any::{Any};
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, OnceLock};
 use std::vec;
@@ -7,14 +8,15 @@ use std::vec;
 use dashmap::DashMap;
 use tokio::sync::oneshot::Sender as OneshotSender;
 use trajoptlib::{
-    DifferentialTrajectory, Pose2d, SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory,
+    DifferentialDrivetrain, DifferentialPathBuilder, DifferentialTrajectory, PathBuilder, Pose2d,
+    SwerveDrivetrain, SwervePathBuilder, SwerveTrajectory,
 };
 
 use super::intervals::guess_control_interval_counts;
 use crate::error::ChoreoError;
 use crate::spec::project::{Module, ProjectFile};
 use crate::spec::traj::{
-    ConstraintData, ConstraintIDX, ConstraintScope, Parameters, Sample, TrajFile,
+    ConstraintData, ConstraintIDX, ConstraintScope, Parameters, Sample, SampleType, TrajFile,
 };
 use crate::{ChoreoResult, ResultExt};
 
@@ -175,14 +177,15 @@ pub fn setup_progress_sender() -> Receiver<LocalProgressUpdate> {
     let _ = PROGRESS_SENDER_LOCK.get_or_init(move || tx);
     rx
 }
-
+trait NewTrait: Any + PathBuilder {}
+impl NewTrait for SwervePathBuilder {}
+impl NewTrait for DifferentialPathBuilder {}
 pub fn generate(
     chor: &ProjectFile,
     path: TrajFile,
     // The handle referring to this path for the solver state callback
     handle: i64,
 ) -> ChoreoResult<TrajFile> {
-    let mut traj_builder = SwervePathBuilder::new();
     let mut wpt_cnt: usize = 0;
     // tracks which idxs were guess points, which get added differently and require
     // adjusting indexes after them
@@ -252,6 +255,10 @@ pub fn generate(
             }
         };
     }
+    let mut traj_builder: Box<dyn PathBuilder> = match chor.r#type {
+        SampleType::DifferentialDrive => Box::new(DifferentialPathBuilder::new()),
+        SampleType::Swerve => Box::new(SwervePathBuilder::new()),
+    };
     for i in 0..waypoints.len() {
         let wpt = &waypoints[i];
         // add initial guess points (actually unconstrained empty wpts in Choreo terms)
@@ -299,7 +306,12 @@ pub fn generate(
                 flip,
             } => match to_opt {
                 None => traj_builder.wpt_point_at(from, x, y, tolerance, flip),
-                Some(to) => traj_builder.sgmt_point_at(from, to, x, y, tolerance, flip),
+                Some(to) => match (&mut traj_builder as &mut dyn Any).downcast_mut::<SwervePathBuilder>() {
+                    Some(swerve_builder) => {
+                        swerve_builder.sgmt_point_at(from, to, x, y, tolerance, flip)
+                    }
+                    None => {}
+                },
             },
             ConstraintData::MaxVelocity { max } => match to_opt {
                 None => traj_builder.wpt_linear_velocity_max_magnitude(from, max),
@@ -323,24 +335,6 @@ pub fn generate(
         };
     }
     let config = chor.config.snapshot();
-    let drivetrain = SwerveDrivetrain {
-        mass: config.mass,
-        moi: config.inertia,
-        wheel_radius: config.radius,
-        // rad per sec
-        wheel_max_angular_velocity: config.vmax / config.gearing,
-        wheel_max_torque: config.tmax * config.gearing,
-        modules: config
-            .modules
-            .map(|modu: Module<f64>| modu.translation())
-            .to_vec(),
-    };
-
-    traj_builder.set_bumpers(
-        config.bumper.back + config.bumper.front,
-        config.bumper.left + config.bumper.right,
-    );
-    traj_builder.add_progress_callback(solver_status_callback);
     // Skip obstacles for now while we figure out whats wrong with them
     // for o in circleObstacles {
     //     path_builder.sgmt_circle_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
@@ -350,17 +344,78 @@ pub fn generate(
     // for o in polygonObstacles {
     //     path_builder.sgmt_polygon_obstacle(0, wpt_cnt - 1, o.x, o.y, o.radius);
     // }
-    traj_builder.set_drivetrain(&drivetrain);
-    //Err("".to_string())
-    let result = traj_builder
-        .generate(true, handle)
-        .map_err(ChoreoError::TrajOpt)?;
+    traj_builder.set_bumpers(
+        config.bumper.back + config.bumper.front,
+        config.bumper.left + config.bumper.right,
+    );
+    let samples = match traj_builder.as_any().downcast_mut::<SwervePathBuilder>() {
+        Some(traj_builder) => {
+            let drivetrain = SwerveDrivetrain {
+                mass: config.mass,
+                moi: config.inertia,
+                wheel_radius: config.radius,
+                // rad per sec
+                wheel_max_angular_velocity: config.vmax / config.gearing,
+                wheel_max_torque: config.tmax * config.gearing,
+                modules: config
+                    .modules
+                    .map(|modu: Module<f64>| modu.translation())
+                    .to_vec(),
+            };
 
-    Ok(postprocess(&result, path, snapshot, counts_vec))
+            traj_builder.add_progress_callback(solver_status_callback);
+
+            traj_builder.set_drivetrain(&drivetrain);
+            //Err("".to_string())
+            let result = traj_builder
+                .generate(true, handle)
+                .map_err(ChoreoError::TrajOpt)?;
+            Ok(result
+                .samples
+                .iter()
+                .map(Sample::from)
+                .collect::<Vec<Sample>>())
+        }
+        // not swerve
+        None => {
+            match traj_builder.as_any().downcast_mut::<DifferentialPathBuilder>() {
+                Some(traj_builder) => {
+                    let drivetrain = DifferentialDrivetrain {
+                        mass: config.mass,
+                        moi: config.inertia,
+                        wheel_radius: config.radius,
+                        // rad per sec
+                        wheel_max_angular_velocity: config.vmax / config.gearing,
+                        wheel_max_torque: config.tmax * config.gearing,
+                        trackwidth: config.modules[0].y * 2.0,
+                    };
+
+                    //traj_builder.add_progress_callback(solver_status_callback);
+
+                    traj_builder.set_drivetrain(&drivetrain);
+                    //Err("".to_string())
+                    let result = traj_builder
+                        .generate(true, handle)
+                        .map_err(ChoreoError::TrajOpt)?;
+                    Ok(result
+                        .samples
+                        .iter()
+                        .map(Sample::from)
+                        .collect::<Vec<Sample>>())
+                }
+                // not diff
+                None => Err(ChoreoError::SolverError(
+                    "Path builder was neither swerve nor differential".to_string(),
+                )),
+            }
+        }
+    }?;
+    println!("{:?}", samples);
+    Ok(postprocess(&samples, path, snapshot, counts_vec))
 }
 
 fn postprocess(
-    result: &SwerveTrajectory,
+    result: &Vec<Sample>,
     mut path: TrajFile,
     mut snapshot: Parameters<f64>,
     counts_vec: Vec<usize>,
@@ -387,10 +442,10 @@ fn postprocess(
             (
                 pt.1.split || pt.0 == 0 || pt.0 == snapshot.waypoints.len() - 1,
                 total_intervals,
-                result
-                    .samples
-                    .get(total_intervals)
-                    .map_or(0.0, |s| s.timestamp),
+                result.get(total_intervals).map_or(0.0, |s| match s {
+                    Sample::Swerve { t, .. } => *t,
+                    Sample::DifferentialDrive { t, .. } => *t,
+                }),
             )
         })
         .collect::<Vec<(bool, usize, f64)>>();
@@ -402,50 +457,13 @@ fn postprocess(
         .filter(|a| a.0) // filter by split flag
         .map(|a| a.1) // map to associate interval
         .collect::<Vec<usize>>();
-    let nudge_zero = |f: f64| if f.abs() < 1e-12 { 0.0 } else { f };
     path.traj.samples = splits
         .windows(2) // get adjacent pairs of interval counts
         .filter_map(|window| {
             result
-                .samples
                 // grab the range including both endpoints,
                 // there are no bounds checks on this slice so be weary of crashes
-                .get((window[0])..=(window[1]))
-                .map(|slice| {
-                    // convert into samples
-                    slice
-                        .iter()
-                        .map(|swerve_sample| Sample::Swerve {
-                            t: nudge_zero(swerve_sample.timestamp),
-                            x: nudge_zero(swerve_sample.x),
-                            y: nudge_zero(swerve_sample.y),
-                            vx: nudge_zero(swerve_sample.velocity_x),
-                            vy: nudge_zero(swerve_sample.velocity_y),
-                            heading: nudge_zero(swerve_sample.heading),
-                            omega: nudge_zero(swerve_sample.angular_velocity),
-                            fx: if path.traj.forces_available {
-                                [
-                                    nudge_zero(swerve_sample.module_forces_x[0]),
-                                    nudge_zero(swerve_sample.module_forces_x[1]),
-                                    nudge_zero(swerve_sample.module_forces_x[2]),
-                                    nudge_zero(swerve_sample.module_forces_x[3]),
-                                ]
-                            } else {
-                                [0.0, 0.0, 0.0, 0.0]
-                            },
-                            fy: if path.traj.forces_available {
-                                [
-                                    nudge_zero(swerve_sample.module_forces_y[0]),
-                                    nudge_zero(swerve_sample.module_forces_y[1]),
-                                    nudge_zero(swerve_sample.module_forces_y[2]),
-                                    nudge_zero(swerve_sample.module_forces_y[3]),
-                                ]
-                            } else {
-                                [0.0, 0.0, 0.0, 0.0]
-                            },
-                        })
-                        .collect::<Vec<Sample>>()
-                })
+                .get((window[0])..=(window[1])).map(|slice|slice.to_vec())
         })
         .collect::<Vec<Vec<Sample>>>();
     path.traj.waypoints = waypoint_times;
