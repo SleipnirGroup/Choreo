@@ -1,26 +1,25 @@
 import { invoke } from "@tauri-apps/api/tauri";
 
 export interface BuildInfo {
-  ci_platform: string | null;
-  pkg_name: string;
-  pkg_version: string;
-  pkg_version_major: string;
-  pkg_version_minor: string;
-  pkg_version_patch: string;
-  pkg_version_pre: string;
+  ciPlatform: string | null;
+  pkgName: string;
+  pkgVersion: string;
+  pkgVersionMajor: string;
+  pkgVersionMinor: string;
+  pkgVersionPatch: string;
+  pkgVersionPre: string;
   target: string;
   host: string;
   profile: string;
   rustc: string;
-  opt_level: string;
+  optLevel: string;
   debug: boolean;
   features: string[];
-  features_str: string;
-  rustc_version: string;
+  rustcVersion: string;
   arch: string;
   endian: string;
   toolchain_env: string;
-  os_family: string;
+  osFamily: string;
   os: string;
   deps: [string, string][];
   direct_deps: [string, string][];

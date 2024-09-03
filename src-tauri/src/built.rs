@@ -1,4 +1,5 @@
 #[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct BuiltInfo {
     pub ci_platform: Option<&'static str>,
     pub pkg_name: &'static str,
@@ -14,7 +15,6 @@ pub struct BuiltInfo {
     pub opt_level: &'static str,
     pub debug: bool,
     pub features: &'static [&'static str],
-    pub features_str: &'static str,
     pub rustc_version: &'static str,
     pub arch: &'static str,
     pub endian: &'static str,
@@ -48,7 +48,6 @@ impl BuiltInfo {
             opt_level: built_info::OPT_LEVEL,
             debug: built_info::DEBUG,
             features: &built_info::FEATURES,
-            features_str: built_info::FEATURES_STR,
             rustc_version: built_info::RUSTC_VERSION,
             arch: built_info::CFG_TARGET_ARCH,
             endian: built_info::CFG_ENDIAN,
