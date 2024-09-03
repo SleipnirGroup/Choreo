@@ -97,13 +97,15 @@ pub fn setup_progress_sender() -> Receiver<LocalProgressUpdate> {
     rx
 }
 
-/// TODO: This definetly isn't correctly implemented
 fn set_initial_guess(traj: &mut TrajFile) {
-    fn set_initial_guess_wpt(traj: &mut TrajFile, idx: usize) {
+    fn not_initial_guess_wpt(traj: &mut TrajFile, idx: usize) {
         let wpt = &mut traj.params.waypoints[idx];
-        wpt.is_initial_guess = true;
+        wpt.is_initial_guess = false;
     }
     let waypoint_count = traj.params.waypoints.len();
+    for waypoint in traj.params.waypoints.iter_mut() {
+        waypoint.is_initial_guess = true;
+    }
     for constraint in traj.params.snapshot().constraints {
         let from = constraint.from.get_idx(waypoint_count);
         let to = constraint
@@ -115,12 +117,17 @@ fn set_initial_guess(traj: &mut TrajFile) {
             let valid_wpt = to.is_none();
             let valid_sgmt = to.is_some();
             // Check for valid scope
-            if !match constraint.data.scope() {
+            if match constraint.data.scope() {
                 ConstraintScope::Waypoint => valid_wpt,
                 ConstraintScope::Segment => valid_sgmt,
                 ConstraintScope::Both => valid_wpt || valid_sgmt,
             } {
-                set_initial_guess_wpt(traj, from_idx);
+                not_initial_guess_wpt(traj, from_idx);
+                if let Some(to_idx) = to {
+                    if to_idx != from_idx {
+                        not_initial_guess_wpt(traj, to_idx);
+                    }
+                }
             }
         }
     }
