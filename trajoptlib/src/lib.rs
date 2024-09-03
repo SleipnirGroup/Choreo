@@ -346,12 +346,7 @@ pub trait PathBuilder: Any {
         flip: bool,
     );
 
-    fn sgmt_linear_velocity_direction(
-        &mut self,
-        from_index: usize,
-        to_index: usize,
-        angle: f64,
-    );
+    fn sgmt_linear_velocity_direction(&mut self, from_index: usize, to_index: usize, angle: f64);
     fn sgmt_linear_velocity_max_magnitude(
         &mut self,
         from_index: usize,
