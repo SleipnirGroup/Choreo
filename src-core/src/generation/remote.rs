@@ -1,13 +1,23 @@
-use std::{mem::forget, path::PathBuf, thread};
+use std::{mem::forget, path::PathBuf, sync::Arc, thread};
 
 use futures_util::{FutureExt, TryStreamExt};
 use ipc_channel::ipc::{self, IpcSender};
-use tokio::{process::Command, select, sync::oneshot};
-use trajoptlib::{DifferentialTrajectory, SwerveTrajectory};
 use std::fs;
+use tokio::{
+    io::AsyncReadExt,
+    process::Command,
+    select,
+    sync::{oneshot, Notify},
+};
+use trajoptlib::{DifferentialTrajectory, SwerveTrajectory};
 
 use crate::{
-    generation::generate::{generate, LocalProgressUpdate}, spec::{project::ProjectFile, traj::{TrajFile, Trajectory}}, ChoreoError, ChoreoResult
+    generation::generate::{generate, LocalProgressUpdate},
+    spec::{
+        project::ProjectFile,
+        traj::{TrajFile, Trajectory},
+    },
+    ChoreoError, ChoreoResult,
 };
 
 use super::generate::{setup_progress_sender, RemoteGenerationResources};
@@ -35,20 +45,23 @@ pub enum RemoteProgressUpdate {
 
 pub fn remote_generate_child(args: RemoteArgs) {
     let rx = setup_progress_sender();
-    let ipc = IpcSender::<String>::connect(args.ipc.clone()).expect("Failed to deserialize IPC handle");
+    let ipc =
+        IpcSender::<String>::connect(args.ipc.clone()).expect("Failed to deserialize IPC handle");
     let cln_ipc: IpcSender<String> = ipc.clone();
     thread::Builder::new()
         .name("choreo-cli-progressupdater".to_string())
         .spawn(move || {
             for received in rx {
                 let ser_string = match received {
-                    LocalProgressUpdate::SwerveTraj { traj, .. } => {
+                    LocalProgressUpdate::SwerveTraj { update: traj, .. } => {
                         serde_json::to_string(&RemoteProgressUpdate::IncompleteSwerveTraj(traj))
-                    },
-                    LocalProgressUpdate::TankTraj { traj, .. } => {
+                    }
+                    LocalProgressUpdate::DiffTraj { update: traj, .. } => {
                         serde_json::to_string(&RemoteProgressUpdate::IncompleteTankTraj(traj))
-                    },
-                }.expect("Failed to serialize progress update");
+                    }
+                    _ => continue,
+                }
+                .expect("Failed to serialize progress update");
                 cln_ipc
                     .send(ser_string)
                     .expect("Failed to send progress update");
@@ -89,7 +102,7 @@ pub fn remote_generate_child(args: RemoteArgs) {
                 .expect("Failed to send progress update");
         }
         Err(e) => {
-            tracing::error!("Failed to generate trajectory {:}", e);
+            tracing::warn!("Failed to generate trajectory {:}", e);
             let ser_string = serde_json::to_string(&RemoteProgressUpdate::Error(e.to_string()))
                 .expect("Failed to serialize progress update");
             ipc.send(ser_string)
@@ -140,6 +153,7 @@ pub async fn remote_generate_parent(
 
     let mut child = Command::new(std::env::current_exe()?)
         .arg(serde_json::to_string(&remote_args)?)
+        .stdout(std::process::Stdio::piped())
         .spawn()?;
 
     tracing::debug!("Spawned remote generator");
@@ -151,21 +165,20 @@ pub async fn remote_generate_parent(
     // check if the solver has already completed
     match serde_json::from_str::<RemoteProgressUpdate>(&o) {
         Ok(RemoteProgressUpdate::CompleteTraj(traj)) => {
-            child.kill().await?;
             tracing::debug!("Remote generator completed (early return)");
-            return Ok(
-                TrajFile {
-                    traj,
-                    snapshot: Some(trajfile.params.snapshot()),
-                    ..trajfile
-                }
-            )
-        },
+            return Ok(TrajFile {
+                traj,
+                snapshot: Some(trajfile.params.snapshot()),
+                ..trajfile
+            });
+        }
         Ok(RemoteProgressUpdate::Error(e)) => {
             return Err(ChoreoError::SolverError(e));
-        },
+        }
         Err(e) => {
-            return Err(ChoreoError::SolverError(format!("Error parsing solver update: {e:?}")));
+            return Err(ChoreoError::SolverError(format!(
+                "Error parsing solver update: {e:?}"
+            )));
         }
         _ => {}
     }
@@ -176,7 +189,58 @@ pub async fn remote_generate_parent(
 
     let mut stream = rx.to_stream();
 
-    loop {
+    let tee_killswitch = Arc::new(Notify::new());
+
+    let stdout = child.stdout.take().expect("Didn't capture stdout");
+
+    let cln_remote_resources = remote_resources.clone();
+    let cln_tee_killswitch = tee_killswitch.clone();
+    let tee_handle = tokio::spawn(async move {
+        let mut buffer = Vec::with_capacity(128);
+        let mut stdout = stdout;
+        let tee_killswitch = cln_tee_killswitch;
+        let remote_resources = cln_remote_resources;
+
+        loop {
+            select! {
+                byte_res = stdout.read_u8() => {
+                    if let Ok(byte) = byte_res {
+                        if byte as char == '\n' {
+                            let string = unsafe { String::from_utf8_unchecked(std::mem::take(&mut buffer))};
+                            println!{"{string}"}
+                            remote_resources.emit_progress(
+                                LocalProgressUpdate::DiagnosticText {
+                                    handle,
+                                    update: string,
+                                }
+                            );
+                        } else {
+                            buffer.push(byte);
+                        }
+                    }
+                },
+                _ = tee_killswitch.notified() => {
+                    break;
+                }
+            }
+        }
+        while let Ok(byte) = stdout.read_u8().await {
+            buffer.push(byte)
+        }
+        if !buffer.is_empty() {
+            let string = unsafe { String::from_utf8_unchecked(std::mem::take(&mut buffer)) };
+            let lines: Vec<String> = string.split('\n').map(ToString::to_string).collect();
+            for line in lines {
+                println! {"{line}"}
+                remote_resources.emit_progress(LocalProgressUpdate::DiagnosticText {
+                    handle,
+                    update: line,
+                });
+            }
+        }
+    });
+
+    let out: ChoreoResult<TrajFile> = loop {
         select! {
             update_res = stream.try_next() => {
                 match update_res {
@@ -185,51 +249,56 @@ pub async fn remote_generate_parent(
                             Ok(RemoteProgressUpdate::IncompleteSwerveTraj(traj)) => {
                                 remote_resources.emit_progress(
                                     LocalProgressUpdate::SwerveTraj {
-                                        traj,
-                                        handle
+                                        handle,
+                                        update: traj
                                     }
                                 );
                             },
                             Ok(RemoteProgressUpdate::IncompleteTankTraj(traj)) => {
                                 remote_resources.emit_progress(
-                                    LocalProgressUpdate::TankTraj {
-                                        traj,
-                                        handle
+                                    LocalProgressUpdate::DiffTraj {
+                                        handle,
+                                        update: traj
                                     }
                                 );
                             },
                             Ok(RemoteProgressUpdate::CompleteTraj(traj)) => {
-                                return Ok(
+                                break Ok(
                                     TrajFile {
                                         traj,
                                         snapshot: Some(trajfile.params.snapshot()),
                                         .. trajfile
                                     }
-                                )
+                                );
                             },
                             Ok(RemoteProgressUpdate::Error(e)) => {
-                                return Err(ChoreoError::SolverError(e));
+                                break Err(ChoreoError::SolverError(e));
                             },
                             Err(e) => {
-                                return Err(ChoreoError::SolverError(format!("Error parsing solver update: {e:?}")));
+                                break Err(ChoreoError::SolverError(format!("Error parsing solver update: {e:?}")));
                             }
                         }
                     },
                     Ok(None) => {
-                        return Err(ChoreoError::SolverError("Solver exited without sending a result (close)".to_string()));
+                        break Err(ChoreoError::SolverError("Solver exited without sending a result (close)".to_string()));
                     },
                     Err(e) => {
-                        return Err(ChoreoError::SolverError(format!("Error receiving solver update: {e:?}")));
+                        break Err(ChoreoError::SolverError(format!("Error receiving solver update: {e:?}")));
                     },
                 }
             },
             _ = child.wait() => {
-                return Err(ChoreoError::SolverError("Solver exited without sending a result (death)".to_string()));
+                break Err(ChoreoError::SolverError("Solver exited without sending a result (death)".to_string()));
             },
             _ = victim.try_next() => {
                 child.kill().await?;
-                return Err(ChoreoError::SolverError("Solver canceled".to_string()));
+                break Err(ChoreoError::SolverError("Solver canceled".to_string()));
             }
         }
-    }
+    };
+
+    tee_killswitch.notify_one();
+    let _ = tee_handle.await;
+
+    out
 }

@@ -86,19 +86,21 @@ class Sidebar extends Component<Props, State> {
         >
           PATHS
           <Tooltip disableInteractive title="Duplicate Path">
-            <IconButton
-              size="small"
-              color="default"
-              style={{
-                float: "right"
-              }}
-              disabled={Object.keys(doc.pathlist.paths).length == 0}
-              onClick={() =>
-                doc.pathlist.duplicatePath(doc.pathlist.activePathUUID)
-              }
-            >
-              <ContentCopy fontSize="small"></ContentCopy>
-            </IconButton>
+            <span>
+              <IconButton
+                size="small"
+                color="default"
+                style={{
+                  float: "right"
+                }}
+                disabled={Object.keys(doc.pathlist.paths).length == 0}
+                onClick={() =>
+                  doc.pathlist.duplicatePath(doc.pathlist.activePathUUID)
+                }
+              >
+                <ContentCopy fontSize="small"></ContentCopy>
+              </IconButton>
+            </span>
           </Tooltip>
           <Tooltip disableInteractive title="Add Path">
             <IconButton
@@ -167,6 +169,7 @@ class Sidebar extends Component<Props, State> {
                   (obstacle: ICircularObstacleStore, index: number) => {
                     return (
                       <SidebarObstacle
+                        key={obstacle.uuid}
                         obstacle={obstacle}
                         index={index}
                       ></SidebarObstacle>

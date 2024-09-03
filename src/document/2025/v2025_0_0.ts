@@ -1,11 +1,12 @@
 import { ConstraintData } from "../ConstraintStore";
+import { Dimensions } from "../ExpressionStore";
 
 export const SAVE_FILE_VERSION = "v2025.0.0";
 export type Expr = [string, number];
 
 export type ExprOrNumber = Expr | number;
 export interface Variable {
-  unit: "Meter" | "MeterPerSecond" | "Radian";
+  dimension: keyof typeof Dimensions;
   var: Expr;
 }
 export interface PoseVariable {
@@ -82,7 +83,7 @@ export interface Sample {
   fy?: [number, number, number, number];
 }
 
-export interface TrajoptlibSample {
+export interface SwerveTrajoptlibSample {
   timestamp: number; // positive
   x: number;
   y: number;
@@ -92,6 +93,23 @@ export interface TrajoptlibSample {
   angular_velocity: number;
   module_forces_x: [number, number, number, number];
   module_forces_y: [number, number, number, number];
+}
+
+export interface DifferentialTrajectorySample {
+  timestamp: number; // positive
+  x: number;
+  y: number;
+  heading: number;
+  velocity_l: number;
+  velocity_r: number;
+  force_l: number;
+  force_r: number;
+}
+
+export interface ProgressUpdate {
+  type: "swerveTraj" | "diffTraj" | "diagnosticText";
+  handle: number;
+  update: SwerveTrajoptlibSample[] | DifferentialTrajectorySample[] | string;
 }
 
 export interface ChoreoPath<T extends ExprOrNumber> {

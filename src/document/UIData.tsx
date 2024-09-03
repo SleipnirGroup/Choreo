@@ -11,6 +11,10 @@ import {
 } from "@mui/icons-material";
 import { ReactElement } from "react";
 import Waypoint from "../assets/Waypoint";
+import BetasConfigPanel from "../components/config/BetasConfigPanel";
+import ExportConfigPanel from "../components/config/ExportConfigPanel";
+import KeyboardShortcutsPanel from "../components/config/KeyboardShortcutsPanel";
+import RobotConfigPanel from "../components/config/robotconfig/RobotConfigPanel";
 import {
   ConstraintDefinition,
   ConstraintDefinitions,
@@ -197,4 +201,20 @@ export const ViewItemData = (() => {
 })();
 export const ViewLayerDefaults = ViewItemData.map((layer) => layer.default);
 export type ViewLayerType = typeof ViewLayers;
-export const NUM_SETTINGS_TABS = 4;
+
+export const SETTINGS_TABS = [
+  {
+    name: "Robot Config",
+    component: () => <RobotConfigPanel></RobotConfigPanel>
+  },
+  {
+    name: "Export Config",
+    component: () => <ExportConfigPanel></ExportConfigPanel>
+  },
+  {
+    name: "Controls",
+    component: () => <KeyboardShortcutsPanel></KeyboardShortcutsPanel>
+  },
+  { name: "Betas", component: () => <BetasConfigPanel></BetasConfigPanel> }
+] as const;
+export const NUM_SETTINGS_TABS = SETTINGS_TABS.length;

@@ -1,4 +1,4 @@
-import { UnlistenFn, listen } from "@tauri-apps/api/event";
+import { Event, UnlistenFn, listen } from "@tauri-apps/api/event";
 import { Instance, types, getParent } from "mobx-state-tree";
 import { UndoManager } from "mst-middlewares";
 import { toast } from "react-toastify";
@@ -7,7 +7,8 @@ import {
   Project,
   SAVE_FILE_VERSION,
   Traj,
-  TrajoptlibSample
+  SwerveTrajoptlibSample,
+  ProgressUpdate
 } from "./2025/DocumentTypes";
 import {
   CircularObstacleStore,
@@ -237,15 +238,14 @@ export const DocumentStore = types
         })
         .then(() => {
           tracing.debug("generatePathPre");
-          return listen("solver-status", async (event) => {
-            // tracing.debug(event);
+          return listen("solver-status", async (rawEvent) => {
+            const event: Event<ProgressUpdate> =
+              rawEvent as Event<ProgressUpdate>;
             if (event.payload!.handle == handle) {
-              const samples = event.payload.traj.samples as TrajoptlibSample[];
-              const progress = pathStore.ui.generationProgress;
-              const useModuleForces = pathStore.traj.useModuleForces;
-              // mutate in-progress trajectory in place if it's already the right size
-              // should avoid allocations on every progress update
-              if (samples.length != progress.length) {
+              if (event.payload!.type === "swerveTraj") {
+                const samples = event.payload
+                  .update as SwerveTrajoptlibSample[];
+                const useModuleForces = pathStore.traj.useModuleForces;
                 pathStore.ui.setInProgressTrajectory(
                   samples.map((s) => ({
                     t: s.timestamp,
@@ -257,31 +257,14 @@ export const DocumentStore = types
                     ...s
                   }))
                 );
-              } else {
-                for (let i = 0; i < samples.length; i++) {
-                  const samp = samples[i];
-                  const prog = progress[i];
-                  prog.t = samp.timestamp;
-                  prog.x = samp.x;
-                  prog.y = samp.y;
-                  prog.heading = samp.heading;
-                  prog.vx = samp.velocity_x;
-                  prog.vy = samp.velocity_y;
-                  prog.omega = samp.angular_velocity;
-
-                  prog.fx = useModuleForces
-                    ? samp.module_forces_x
-                    : [0, 0, 0, 0];
-                  prog.fy = useModuleForces
-                    ? samp.module_forces_x
-                    : [0, 0, 0, 0];
-                }
+                pathStore.ui.setIterationNumber(
+                  pathStore.ui.generationIterationNumber + 1
+                );
+              } else if (event.payload!.type === "diagnosticText") {
+                // const line = event.payload.update as string;
+                // This is the text output of sleipnir solver
+                // console.log(line)
               }
-              // todo: get this from the progress update, so it actually means something
-              // beyond just triggering UI updates
-              pathStore.ui.setIterationNumber(
-                pathStore.ui.generationIterationNumber + 1
-              );
             }
           });
         })

@@ -83,8 +83,10 @@ export class Field extends Component<Props, State> {
               marker={selectedSidebar as IEventMarkerStore}
             ></EventMarkerConfigPanel>
           )}
+
         <ViewOptionsPanel />
         <WaypointVisibilityPanel />
+
         <Tooltip
           disableInteractive
           placement="top-start"
