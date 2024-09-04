@@ -9,8 +9,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 use std::{fs, thread};
-use tauri::api::path::app_log_dir;
-use tauri::{Config, Manager};
+use tauri::Manager;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -68,8 +67,8 @@ pub async fn tracing_frontend(level: String, msg: String, file: String, function
     }
 }
 
-fn setup_tracing(config: &Config) -> Vec<WorkerGuard> {
-    let file = if let Some(log_dir) = app_log_dir(config) {
+fn setup_tracing() -> Vec<WorkerGuard> {
+    let file = if let Some(log_dir) = dirs::state_dir().map(|d| d.join("logs")) {
         fs::create_dir_all(&log_dir).trace_err();
         let log_file_name = format!("choreo-gui-{}.log", now_str().replace([':', '.'], "-"));
         match fs::File::create(log_dir.join(log_file_name)) {
@@ -118,7 +117,7 @@ fn setup_tracing(config: &Config) -> Vec<WorkerGuard> {
 pub fn run_tauri(project: Option<PathBuf>) {
     let context = tauri::generate_context!();
 
-    let guards = setup_tracing(context.config());
+    let guards = setup_tracing();
 
     tracing::info!(
         "Starting Choreo {} {}",

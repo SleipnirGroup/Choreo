@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use thiserror::Error;
+use trajoptlib::error::TrajoptError;
 
 #[derive(Error, Debug)]
 #[allow(missing_docs)]
@@ -28,7 +29,7 @@ pub enum ChoreoError {
     #[error("Inequality error: {0:?} wasn't equal to {1:?}")]
     Inequality(&'static str, &'static str),
     #[error("TrajOpt error: {0:?}")]
-    TrajOpt(String),
+    TrajOpt(TrajoptError),
     #[error("No Deploy Path error")]
     NoDeployPath,
     #[error("Solver Error: {0:?}")]

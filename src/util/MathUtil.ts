@@ -1,5 +1,5 @@
 import {
-  DifferentialDriveSample,
+  DifferentialSample,
   SwerveSample
 } from "../document/2025/DocumentTypes";
 
@@ -32,7 +32,7 @@ export function angleModulus(input: number) {
 }
 
 export type Pose = { x: number; y: number; rot: number };
-export function storeToPose(store: SwerveSample | DifferentialDriveSample) {
+export function storeToPose(store: SwerveSample | DifferentialSample) {
   return { x: store.x, y: store.y, rot: store.heading };
 }
 export function interpolate(p1: Pose, p2: Pose, frac: number) {
@@ -49,7 +49,7 @@ export function interpolate(p1: Pose, p2: Pose, frac: number) {
 }
 export function sample(
   timeSeconds: number,
-  m_states: Array<SwerveSample> | Array<DifferentialDriveSample>
+  m_states: Array<SwerveSample> | Array<DifferentialSample>
 ): Pose {
   if (timeSeconds <= m_states[0].t) {
     return storeToPose(m_states[0]);

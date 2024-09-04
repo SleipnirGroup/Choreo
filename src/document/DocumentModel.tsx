@@ -55,7 +55,7 @@ export const SelectableItem = types.union(
 );
 export const ISampleType = types.enumeration<SampleType>([
   "Swerve",
-  "DifferentialDrive"
+  "Differential"
 ]);
 export const DocumentStore = types
   .model("DocumentStore", {

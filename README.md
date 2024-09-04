@@ -2,7 +2,7 @@
 
 [![Discord](https://img.shields.io/discord/975739302933856277?color=%23738ADB&label=Join%20our%20Discord&logo=discord&logoColor=white)](https://discord.gg/ad2EEZZwsS)
 
-![A screenshot of choreo with an example path](./docs/media/readmeScreenshot.png)
+![A screenshot of Choreo with an example path](./docs/media/readmeScreenshot.png)
 
 Choreo (_Constraint-Honoring Omnidirectional Route Editor and Optimizer_, pronounced like choreography) is a graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics Competition.
 

@@ -1,6 +1,5 @@
 import { dialog, path, window as tauriWindow } from "@tauri-apps/api";
 import { TauriEvent } from "@tauri-apps/api/event";
-import { v4 as uuidv4 } from "uuid";
 import { DocumentStore, SelectableItemTypes } from "./DocumentModel";
 
 import hotkeys from "hotkeys-js";
@@ -136,7 +135,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         commandIsTime(command) ? command.data.waitTime : 0,
         "Time"
       ),
-      uuid: uuidv4()
+      uuid: crypto.randomUUID()
     });
   }
 
@@ -177,7 +176,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
             y: vars().createExpression(config.modules[i].y, "Length")
           };
         }),
-        identifier: uuidv4()
+        identifier: crypto.randomUUID()
       });
     },
     WaypointStore: (waypoint: Waypoint<Expr>) => {
@@ -186,7 +185,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         x: vars().createExpression(waypoint.x, "Length"),
         y: vars().createExpression(waypoint.y, "Length"),
         heading: vars().createExpression(waypoint.heading, "Angle"),
-        uuid: uuidv4()
+        uuid: crypto.randomUUID()
       });
     },
     ObstacleStore: (
@@ -198,7 +197,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         x: vars().createExpression(x, "Length"),
         y: vars().createExpression(y, "Length"),
         radius: vars().createExpression(radius, "Length"),
-        uuid: uuidv4()
+        uuid: crypto.randomUUID()
       });
     },
     CommandStore: createCommandStore,
@@ -209,7 +208,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         trajTargetIndex: marker.trajTargetIndex,
         offset: vars().createExpression(marker.offset, "Time"),
         command: createCommandStore(marker.command),
-        uuid: uuidv4()
+        uuid: crypto.randomUUID()
       });
     },
     ConstraintData: constraintDataConstructors,
@@ -222,7 +221,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
       const store = ConstraintStore.create({
         from,
         to,
-        uuid: uuidv4(),
+        uuid: crypto.randomUUID(),
         //@ts-expect-error more constraint stuff not quite working
         data: constraintDataConstructors[type](data)
       });

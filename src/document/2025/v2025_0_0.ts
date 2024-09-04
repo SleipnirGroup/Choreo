@@ -84,7 +84,7 @@ export interface SwerveSample {
   fy?: [number, number, number, number];
 }
 
-export interface DifferentialDriveSample {
+export interface DifferentialSample {
   t: number;
   x: number;
   y: number;
@@ -128,10 +128,10 @@ export interface ChoreoPath<T extends ExprOrNumber> {
   constraints: Constraint[];
 }
 
-export type SampleType = "Swerve" | "DifferentialDrive";
+export type SampleType = "Swerve" | "Differential";
 export interface Output {
   waypoints: number[];
-  samples: SwerveSample[][] | DifferentialDriveSample[][];
+  samples: SwerveSample[][] | DifferentialSample[][];
   forcesAvailable: boolean;
 }
 

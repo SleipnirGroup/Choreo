@@ -25,6 +25,7 @@ tracing-subscriber = { version = "0.3.18", features = ["ansi", "fmt", "std"] }
 nu-ansi-term = "0.50.1"
 tracing-appender = "0.2.3"
 current_platform = "0.2.0"
+dirs = "5.0.1"
 serde = "1.0.209"
 
 [features]
