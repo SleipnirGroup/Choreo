@@ -36,7 +36,7 @@ export class Field extends Component<Props, State> {
     const activePathUUID = doc.pathlist.activePathUUID;
     let indexIfWaypoint = -1;
     if (selectedSidebar !== undefined && "heading" in selectedSidebar) {
-      indexIfWaypoint = activePath.path.waypoints.findIndex(
+      indexIfWaypoint = activePath.params.waypoints.findIndex(
         (point: IHolonomicWaypointStore) =>
           point.uuid == (selectedSidebar as IHolonomicWaypointStore)?.uuid
       );
@@ -55,7 +55,7 @@ export class Field extends Component<Props, State> {
           )}
         {selectedSidebar !== undefined &&
           "from" in selectedSidebar &&
-          activePath.path.constraints.find(
+          activePath.params.constraints.find(
             (constraint) =>
               constraint.uuid == (selectedSidebar as IConstraintStore)!.uuid
           ) && (
@@ -65,7 +65,7 @@ export class Field extends Component<Props, State> {
           )}
         {selectedSidebar !== undefined &&
           "radius" in selectedSidebar &&
-          activePath.path.obstacles.find(
+          activePath.params.obstacles.find(
             (obstacle) =>
               obstacle.uuid == (selectedSidebar as ICircularObstacleStore)!.uuid
           ) && (
@@ -83,14 +83,16 @@ export class Field extends Component<Props, State> {
               marker={selectedSidebar as IEventMarkerStore}
             ></EventMarkerConfigPanel>
           )}
+
         <ViewOptionsPanel />
         <WaypointVisibilityPanel />
+
         <Tooltip
           disableInteractive
           placement="top-start"
           title={
             activePath.ui.generating
-              ? "Cancel All"
+              ? "Cancel Generation"
               : activePath.canGenerate()
                 ? "Generate Path"
                 : "Generate Path (needs 2 waypoints)"
@@ -128,7 +130,11 @@ export class Field extends Component<Props, State> {
                 }
               }}
               onClick={(event) => {
-                Commands.cancel();
+                Commands.cancel(
+                  activePath.uuid
+                    .split("")
+                    .reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) | 0, 0)
+                );
               }}
               disabled={activePath.canGenerate()}
             >

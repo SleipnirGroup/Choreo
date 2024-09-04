@@ -142,18 +142,18 @@ class OverlayWaypoint extends Component<Props, State> {
     //d3.select(`#group`).attr('transform', `rotate(${ this.r.angle })`)
   }
   selectWaypoint() {
-    doc.pathlist.activePath.path.selectOnly(this.props.index);
+    doc.pathlist.activePath.params.selectOnly(this.props.index);
   }
   componentDidMount() {
     if (this.rootRef.current) {
       d3.select<SVGCircleElement, undefined>(
         `#waypointGroup${this.props.index}`
       ).on("contextmenu", (e) => {
-        doc.pathlist.activePath.path.selectOnly(this.props.index);
+        doc.pathlist.activePath.params.selectOnly(this.props.index);
         uiState.setContextMenuMouseSelection(e);
         uiState.setContextMenuSelectedWaypoint(this.props.index);
         uiState.setContextMenuWaypointType(
-          doc.pathlist.activePath.path.waypoints[this.props.index].type
+          doc.pathlist.activePath.params.waypoints[this.props.index].type
         );
       });
 
@@ -208,7 +208,7 @@ class OverlayWaypoint extends Component<Props, State> {
       : "var(--accent-purple)";
   }
   getDragTargetColor(): string {
-    const waypoints = doc.pathlist.activePath.path.waypoints;
+    const waypoints = doc.pathlist.activePath.params.waypoints;
     let color = "var(--accent-purple)";
     if (waypoints.length >= 2) {
       if (this.props.index === 0) {
@@ -234,7 +234,6 @@ class OverlayWaypoint extends Component<Props, State> {
       targetSideLength *
       Math.min(robotConfig.bumper.length, robotConfig.bumper.width);
     const headingPointHeight = (Math.sqrt(3) / 2) * headingPointSideLength;
-
     return (
       <g ref={this.rootRef}>
         <g

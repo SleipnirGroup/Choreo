@@ -116,26 +116,24 @@ import { IHolonomicPathStore } from "./path/HolonomicPathStore";
 //   }
 // } satisfies { [key: string]: ConstraintDefinition };
 
-const WaypointUUIDScope = types.model("WaypointScope", {
-  uuid: types.string
-});
 export const WaypointScope = types.union(
   types.literal("first"),
   types.literal("last"),
-  WaypointUUIDScope
+  types.frozen<{ uuid: string }>()
 );
 export type IWaypointScope = IWaypointUUIDScope | "first" | "last";
-type IWaypointUUIDScope = Instance<typeof WaypointUUIDScope>;
+type IWaypointUUIDScope = { uuid: string };
 
 export type IConstraintStore = Instance<typeof ConstraintStore>;
+
+export type IConstraintStoreKeyed<K extends ConstraintKey> =
+  IConstraintStore & { data: IConstraintDataStore<K> };
 
 export const ConstraintStore = types
   .model("ConstraintStore", {
     from: WaypointScope,
     to: types.maybe(WaypointScope),
-    data: types.union(
-      ...Object.values(ConstraintDataObjects)
-    ) as IConstraintDataStore<ConstraintKey>,
+    data: types.union(...Object.values(ConstraintDataObjects)),
     uuid: types.identifier
   })
   .views((self) => ({
@@ -164,23 +162,23 @@ export const ConstraintStore = types
   .views((self) => ({
     getStartWaypoint(): IHolonomicWaypointStore | undefined {
       const startScope = self.from;
-      return self.getPath().path.getByWaypointID(startScope);
+      return self.getPath().params.getByWaypointID(startScope);
     },
     getEndWaypoint(): IHolonomicWaypointStore | undefined {
       const scope = self.to ?? self.from;
-      return self.getPath().path.getByWaypointID(scope);
+      return self.getPath().params.getByWaypointID(scope);
     }
   }))
   .views((self) => ({
     getStartWaypointIndex(): number | undefined {
       const waypoint = self.getStartWaypoint();
       if (waypoint === undefined) return undefined;
-      return self.getPath().path.findUUIDIndex(waypoint.uuid);
+      return self.getPath().params.findUUIDIndex(waypoint.uuid);
     },
     getEndWaypointIndex(): number | undefined {
       const waypoint = self.getEndWaypoint();
       if (waypoint === undefined) return undefined;
-      return self.getPath().path.findUUIDIndex(waypoint.uuid);
+      return self.getPath().params.findUUIDIndex(waypoint.uuid);
     },
 
     get issues() {

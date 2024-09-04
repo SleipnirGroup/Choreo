@@ -86,19 +86,21 @@ class Sidebar extends Component<Props, State> {
         >
           PATHS
           <Tooltip disableInteractive title="Duplicate Path">
-            <IconButton
-              size="small"
-              color="default"
-              style={{
-                float: "right"
-              }}
-              disabled={Object.keys(doc.pathlist.paths).length == 0}
-              onClick={() =>
-                doc.pathlist.duplicatePath(doc.pathlist.activePathUUID)
-              }
-            >
-              <ContentCopy fontSize="small"></ContentCopy>
-            </IconButton>
+            <span>
+              <IconButton
+                size="small"
+                color="default"
+                style={{
+                  float: "right"
+                }}
+                disabled={Object.keys(doc.pathlist.paths).length == 0}
+                onClick={() =>
+                  doc.pathlist.duplicatePath(doc.pathlist.activePathUUID)
+                }
+              >
+                <ContentCopy fontSize="small"></ContentCopy>
+              </IconButton>
+            </span>
           </Tooltip>
           <Tooltip disableInteractive title="Add Path">
             <IconButton
@@ -133,7 +135,7 @@ class Sidebar extends Component<Props, State> {
             <span>CONSTRAINTS</span>
           </Divider>
           <div className={styles.WaypointList}>
-            {doc.pathlist.activePath.path.constraints.map((constraint) => {
+            {doc.pathlist.activePath.params.constraints.map((constraint) => {
               return (
                 <SidebarConstraint
                   key={constraint.uuid}
@@ -142,7 +144,7 @@ class Sidebar extends Component<Props, State> {
               );
             })}
           </div>
-          {doc.pathlist.activePath.path.constraints.length == 0 && (
+          {doc.pathlist.activePath.params.constraints.length == 0 && (
             <div className={styles.SidebarItem + " " + styles.Noninteractible}>
               <span></span>
               <span style={{ color: "gray", fontStyle: "italic" }}>
@@ -150,10 +152,7 @@ class Sidebar extends Component<Props, State> {
               </span>
             </div>
           )}
-          {(doc.usesObstacles ||
-            doc.pathlist.activePath.path.obstacles.includes(
-              doc.selectedSidebarItem
-            )) && (
+          {(doc.usesObstacles || doc.isSidebarCircularObstacleSelected) && (
             <>
               <Divider
                 className={styles.SidebarDivider}
@@ -163,10 +162,11 @@ class Sidebar extends Component<Props, State> {
                 <span>OBSTACLES</span>
               </Divider>
               <div className={styles.WaypointList}>
-                {doc.pathlist.activePath.path.obstacles.map(
+                {doc.pathlist.activePath.params.obstacles.map(
                   (obstacle: ICircularObstacleStore, index: number) => {
                     return (
                       <SidebarObstacle
+                        key={obstacle.uuid}
                         obstacle={obstacle}
                         index={index}
                       ></SidebarObstacle>
@@ -174,7 +174,7 @@ class Sidebar extends Component<Props, State> {
                   }
                 )}
               </div>
-              {doc.pathlist.activePath.path.obstacles.length == 0 && (
+              {doc.pathlist.activePath.params.obstacles.length == 0 && (
                 <div
                   className={styles.SidebarItem + " " + styles.Noninteractible}
                 >

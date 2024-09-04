@@ -1,5 +1,4 @@
 import { Instance, getEnv, types } from "mobx-state-tree";
-import { v4 as uuidv4 } from "uuid";
 import { Traj } from "./2025/DocumentTypes";
 import { Env } from "./DocumentManager";
 import { HolonomicPathStore } from "./path/HolonomicPathStore";
@@ -10,7 +9,7 @@ export const PathListStore = types
     activePathUUID: ""
   })
   .actions((self) => {
-    let pathExporter: (uuid: string) => void = (uuid) => {};
+    let pathExporter: (uuid: string) => void = (_uuid) => {};
     return {
       setExporter(exportFunction: (uuid: string) => void) {
         pathExporter = exportFunction;
@@ -43,9 +42,9 @@ export const PathListStore = types
         return (
           self.paths.get(self.activePathUUID)! ||
           HolonomicPathStore.create({
-            uuid: uuidv4(),
+            uuid: crypto.randomUUID(),
             name: "New Path",
-            path: {
+            params: {
               constraints: [],
               waypoints: [],
               obstacles: []
@@ -86,14 +85,14 @@ export const PathListStore = types
       },
       addPath(name: string, select: boolean = false, contents?: Traj): string {
         const usedName = this.disambiguateName(name);
-        const newUUID = uuidv4();
+        const newUUID = crypto.randomUUID();
         const env = getEnv<Env>(self);
         env.startGroup(() => {
           try {
             const path = HolonomicPathStore.create({
               uuid: newUUID,
               name: usedName,
-              path: {
+              params: {
                 constraints: [],
                 waypoints: [],
                 obstacles: []
@@ -117,8 +116,8 @@ export const PathListStore = types
             if (contents !== undefined) {
               path.deserialize(contents);
             } else {
-              path.path.addConstraint("StopPoint", "first");
-              path.path.addConstraint("StopPoint", "last");
+              path.params.addConstraint("StopPoint", "first");
+              path.params.addConstraint("StopPoint", "last");
             }
 
             if (self.paths.size === 1 || select) {

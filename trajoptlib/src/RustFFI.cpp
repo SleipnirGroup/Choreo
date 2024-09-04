@@ -7,7 +7,10 @@
 #include <algorithm>
 #include <cstddef>
 #include <stdexcept>
+#include <string>
 #include <vector>
+
+#include <sleipnir/optimization/SolverExitCondition.hpp>
 
 #include "trajopt/constraint/AngularVelocityMaxMagnitudeConstraint.hpp"
 #include "trajopt/constraint/LinearAccelerationMaxMagnitudeConstraint.hpp"
@@ -192,12 +195,13 @@ SwerveTrajectory SwervePathBuilder::generate(bool diagnostics,
       rustSamples.push_back(SwerveTrajectorySample{
           cppSample.timestamp, cppSample.x, cppSample.y, cppSample.heading,
           cppSample.velocityX, cppSample.velocityY, cppSample.angularVelocity,
-          std::move(fx), std::move(fy)});
+          cppSample.accelerationX, cppSample.accelerationY,
+          cppSample.angularAcceleration, std::move(fx), std::move(fy)});
     }
 
     return SwerveTrajectory{std::move(rustSamples)};
   } else {
-    throw std::runtime_error{sol.error()};
+    throw std::runtime_error{std::string{sleipnir::ToMessage(sol.error())}};
   }
 }
 
@@ -212,28 +216,29 @@ SwerveTrajectory SwervePathBuilder::generate(bool diagnostics,
  */
 void SwervePathBuilder::add_progress_callback(
     rust::Fn<void(SwerveTrajectory, int64_t)> callback) {
-  path_builder.AddIntermediateCallback(
-      [=](trajopt::SwerveSolution& solution, int64_t handle) {
-        trajopt::SwerveTrajectory cppTrajectory{solution};
+  path_builder.AddIntermediateCallback([=](trajopt::SwerveSolution& solution,
+                                           int64_t handle) {
+    trajopt::SwerveTrajectory cppTrajectory{solution};
 
-        rust::Vec<SwerveTrajectorySample> rustSamples;
-        for (const auto& cppSample : cppTrajectory.samples) {
-          rust::Vec<double> fx;
-          std::copy(cppSample.moduleForcesX.begin(),
-                    cppSample.moduleForcesX.end(), std::back_inserter(fx));
+    rust::Vec<SwerveTrajectorySample> rustSamples;
+    for (const auto& cppSample : cppTrajectory.samples) {
+      rust::Vec<double> fx;
+      std::copy(cppSample.moduleForcesX.begin(), cppSample.moduleForcesX.end(),
+                std::back_inserter(fx));
 
-          rust::Vec<double> fy;
-          std::copy(cppSample.moduleForcesY.begin(),
-                    cppSample.moduleForcesY.end(), std::back_inserter(fy));
+      rust::Vec<double> fy;
+      std::copy(cppSample.moduleForcesY.begin(), cppSample.moduleForcesY.end(),
+                std::back_inserter(fy));
 
-          rustSamples.push_back(SwerveTrajectorySample{
-              cppSample.timestamp, cppSample.x, cppSample.y, cppSample.heading,
-              cppSample.velocityX, cppSample.velocityY,
-              cppSample.angularVelocity, std::move(fx), std::move(fy)});
-        }
+      rustSamples.push_back(SwerveTrajectorySample{
+          cppSample.timestamp, cppSample.x, cppSample.y, cppSample.heading,
+          cppSample.velocityX, cppSample.velocityY, cppSample.angularVelocity,
+          cppSample.accelerationX, cppSample.accelerationY,
+          cppSample.angularAcceleration, std::move(fx), std::move(fy)});
+    }
 
-        callback(SwerveTrajectory{rustSamples}, handle);
-      });
+    callback(SwerveTrajectory{rustSamples}, handle);
+  });
 }
 
 std::unique_ptr<SwervePathBuilder> swerve_path_builder_new() {
@@ -390,13 +395,13 @@ DifferentialTrajectory DifferentialPathBuilder::generate(bool diagnostics,
     for (const auto& cppSample : cppTrajectory.samples) {
       rustSamples.push_back(DifferentialTrajectorySample{
           cppSample.timestamp, cppSample.x, cppSample.y, cppSample.heading,
-          cppSample.velocityL, cppSample.velocityR, cppSample.forceL,
-          cppSample.forceR});
+          cppSample.velocityL, cppSample.velocityR, cppSample.accelerationL,
+          cppSample.accelerationR, cppSample.forceL, cppSample.forceR});
     }
 
     return DifferentialTrajectory{std::move(rustSamples)};
   } else {
-    throw std::runtime_error{sol.error()};
+    throw std::runtime_error{std::string{sleipnir::ToMessage(sol.error())}};
   }
 }
 
@@ -419,8 +424,8 @@ void DifferentialPathBuilder::add_progress_callback(
         for (const auto& cppSample : cppTrajectory.samples) {
           rustSamples.push_back(DifferentialTrajectorySample{
               cppSample.timestamp, cppSample.x, cppSample.y, cppSample.heading,
-              cppSample.velocityL, cppSample.velocityR, cppSample.forceL,
-              cppSample.forceR});
+              cppSample.velocityL, cppSample.velocityR, cppSample.accelerationL,
+              cppSample.accelerationR, cppSample.forceL, cppSample.forceR});
         }
 
         callback(DifferentialTrajectory{rustSamples}, handle);

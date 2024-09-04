@@ -1,69 +1,43 @@
-// Prevents additional console window on Windows in release, DO NOT REMOVE!!
+//! Choreo (_Constraint-Honoring Omnidirectional Route Editor and Optimizer_,
+//! pronounced like choreography) is a graphical tool for planning
+//! time-optimized trajectories for autonomous mobile robots in the FIRST
+//! Robotics Competition.
+
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-mod document;
-mod util;
-use document::file::{
-    delete_dir, delete_file, find_all_traj, new_file, open_chor, open_file_dialog, open_traj,
-    set_chor_path, setup_senders, write_chor, write_traj,
-};
-use document::generate::{cancel, generate, setup_progress_sender};
+mod api;
+mod built;
+mod logging;
+mod tauri;
 
-use std::{fs, path::Path};
-use std::{thread, vec};
+use std::fs;
 
-use document::intervals::cmd_guess_control_interval_counts;
-use tauri::Manager;
-
-#[tauri::command]
-async fn save_file(dir: String, name: String, contents: String) -> Result<(), &'static str> {
-    let dir_path = Path::new(&dir);
-    let name_path = Path::join(dir_path, name);
-    if name_path.is_relative() {
-        return Err("Dir needs to be absolute");
-    }
-    let _ = fs::create_dir_all(dir_path);
-    if fs::write(name_path, contents).is_err() {
-        return Err("Failed file writing");
-    }
-    Ok(())
-}
-
-#[tauri::command]
-async fn open_file_app(path: String) {
-    let _ = open::that(path);
-}
+use choreo_core::generation::remote::{remote_generate_child, RemoteArgs};
 
 fn main() {
-    let rx = setup_progress_sender();
-    tauri::Builder::default()
-        .setup(|app| {
-            setup_senders(app.handle());
-            let progress_emitter = app.handle().clone();
-            thread::spawn(move || {
-                for received in rx {
-                    let _ = progress_emitter.emit_all("solver-status", received);
+    let args = std::env::args().collect::<Vec<_>>();
+    if args.len() > 2 {
+        panic!("Unsupoorted arguments: {:?}", args);
+    }
+
+    if let Some(arg) = args.get(1) {
+        if let Ok(remote_args) = RemoteArgs::from_content(arg) {
+            tracing_subscriber::fmt()
+                .with_max_level(tracing::Level::ERROR)
+                .event_format(logging::CompactFormatter { ansicolor: false })
+                .init();
+            remote_generate_child(remote_args);
+        } else {
+            match fs::canonicalize(arg) {
+                Ok(path) => {
+                    tauri::run_tauri(Some(path));
                 }
-            });
-            Ok(())
-        })
-        .invoke_handler(tauri::generate_handler![
-            generate,
-            cmd_guess_control_interval_counts,
-            cancel,
-            save_file,
-            delete_file,
-            delete_dir,
-            open_file_app,
-            new_file,
-            open_chor,
-            write_chor,
-            write_traj,
-            find_all_traj,
-            open_file_dialog,
-            set_chor_path,
-            open_traj
-        ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+                Err(e) => {
+                    panic!("Failed to canonicalize {} : {:?}", arg, e);
+                }
+            }
+        }
+    } else {
+        tauri::run_tauri(None);
+    }
 }

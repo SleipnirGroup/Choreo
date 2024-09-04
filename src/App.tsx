@@ -3,14 +3,47 @@ import "@fontsource-variable/roboto-mono";
 import "@fontsource/roboto";
 import "./App.css";
 import { observer } from "mobx-react";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { ThemeOptions, ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Body from "./Body";
+import { OverridesStyleRules } from "@mui/material/styles/overrides";
+import { ButtonClasses, Theme } from "@mui/material";
 
 function App() {
-  const buttonOverrides = {
+  const buttonOverrides: Partial<
+    OverridesStyleRules<
+      keyof ButtonClasses,
+      "MuiButton",
+      Omit<Theme, "components">
+    >
+  > = {
     // Name of the slot
     root: ({ ownerState, theme }) => ({
+      variants: [],
+      // Some CSS
+      fontSize: "1rem",
+      color: "white",
+      borderRadius: "10px",
+      marginInline: "0.3rem",
+      boxSizing: "border-box",
+      backgroundColor:
+        ownerState.color === "primary" && theme.palette.primary.main,
+      "&:hover": {
+        backgroundColor:
+          ownerState.color === "primary" && theme.palette.secondary.main
+      }
+    })
+  };
+  const iconButtonOverrides: Partial<
+    OverridesStyleRules<
+      keyof ButtonClasses,
+      "MuiIconButton",
+      Omit<Theme, "components">
+    >
+  > = {
+    // Name of the slot
+    root: ({ ownerState, theme }) => ({
+      variants: [],
       // Some CSS
       fontSize: "1rem",
       color: "white",
@@ -34,7 +67,7 @@ function App() {
     }
   };
   // theming for mui components
-  const themeOptions = {
+  const themeOptions: ThemeOptions = {
     palette: {
       mode: "dark",
 
@@ -44,7 +77,7 @@ function App() {
     components: {
       // Name of the component
       MuiButton: { styleOverrides: buttonOverrides },
-      MuiIconButton: { styleOverrides: buttonOverrides },
+      MuiIconButton: { styleOverrides: iconButtonOverrides },
       MuiCheckbox: { styleOverrides: checkboxOverrides }
     }
   };

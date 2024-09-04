@@ -1,12 +1,14 @@
 import { Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
+import { isAlive } from "mobx-state-tree";
 import React, { Component } from "react";
 import { IExpressionStore, math } from "../../document/ExpressionStore";
 import styles from "./InputList.module.css";
+import { tracing } from "../../document/tauriTracing";
 
 type Props = {
   /** The text to show before the number */
-  title: string;
+  title: string | (() => React.ReactNode);
   /** Whether the input should be editable, or else italic and grayed out */
   enabled: boolean;
   /** The value of the input */
@@ -77,18 +79,19 @@ class Input extends Component<Props, State> {
   }
 
   getRoundedStr(): string {
-    const precision = this.props.roundingPrecision ?? 3;
-    return math.format(this.props.number.toDefaultUnit(), {
-      precision
-    });
+    return this.props.number.expr.toString();
   }
 
   getValid(): boolean {
     try {
-      const newNode = this.props.number.validate(
-        math.parse(this.state.editedValue)
-      );
-      return newNode !== undefined;
+      if (this.state.editing) {
+        const newNode = this.props.number.validate(
+          math.parse(this.state.editedValue)
+        );
+        return newNode !== undefined;
+      } else {
+        return this.props.number.valid;
+      }
     } catch {
       return false;
     }
@@ -98,6 +101,9 @@ class Input extends Component<Props, State> {
     prevState: Readonly<State>,
     snapshot?: any
   ): void {
+    if (!isAlive(this.props.number)) {
+      return;
+    }
     if (!prevProps.number.expr.equals(this.props.number.expr)) {
       // if the value has changed from the outside, make sure it is no longer
       // focused so concise precision is shown.
@@ -106,11 +112,14 @@ class Input extends Component<Props, State> {
   }
 
   render() {
+    if (!isAlive(this.props.number)) {
+      return <></>;
+    }
     try {
       //eslint-disable-next-line @typescript-eslint/no-unused-expressions
       this.props.number.expr;
     } catch (e) {
-      console.error(e);
+      tracing.error(e);
       throw e;
     }
     const showNumberWhenDisabled = this.props.showNumberWhenDisabled ?? true;
@@ -120,19 +129,22 @@ class Input extends Component<Props, State> {
     }
     return (
       <>
-        <Tooltip disableInteractive title={this.props.titleTooltip ?? ""}>
-          <span
-            className={
-              styles.Title +
-              " " +
-              (this.props.enabled ? "" : styles.Disabled) +
-              " " +
-              (this.props.titleTooltip === undefined ? "" : styles.Tooltip)
-            }
-          >
-            {this.props.title}
-          </span>
-        </Tooltip>
+        {!(this.props.title instanceof Function) && (
+          <Tooltip disableInteractive title={this.props.titleTooltip ?? ""}>
+            <span
+              className={
+                styles.Title +
+                " " +
+                (this.props.enabled ? "" : styles.Disabled) +
+                " " +
+                (this.props.titleTooltip === undefined ? "" : styles.Tooltip)
+              }
+            >
+              {this.props.title as string}
+            </span>
+          </Tooltip>
+        )}
+        {this.props.title instanceof Function && this.props.title()}
         <input
           ref={this.inputElemRef}
           type="text"

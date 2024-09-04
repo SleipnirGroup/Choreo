@@ -1,0 +1,24 @@
+[package]
+name = "choreo-core"
+version = "2025.0.0-beta"
+edition = "2021"
+homepage = "https://github.com/SleipnirGroup/Choreo"
+repository = "https://github.com/SleipnirGroup/Choreo.git"
+authors = ["Sleipnir Group"]
+license = "BSD-3-Clause"
+
+
+[dependencies]
+trajoptlib = { path = "../trajoptlib" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1", features = ["process", "macros", "rt", "fs", "sync", "io-util"] }
+dashmap = "6.0.1"
+thiserror = "1.0.63"
+tracing = "0.1.40"
+ipc-channel = { version = "0.18.2", features = ["async"] }
+tempfile = "3.12.0"
+futures-util = "0.3.30"
+zip = { version = "2.2.0", default-features = false }
+fastrand = "2.1.1"
+

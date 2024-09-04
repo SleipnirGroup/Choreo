@@ -11,7 +11,7 @@ TEST_CASE("Translation2d - Polar constructor", "[Translation2d]") {
   trajopt::Translation2d one{std::numbers::sqrt2 * 1.0,
                              trajopt::Rotation2d{std::numbers::pi / 4}};
   CHECK(one.X() == Catch::Approx(1.0).margin(1e-9));
-  CHECK(one.Y() == 1.0);
+  CHECK(one.Y() == Catch::Approx(1.0).margin(1e-9));
 
   trajopt::Translation2d two{2.0, trajopt::Rotation2d{std::numbers::pi / 3}};
   CHECK(two.X() == Catch::Approx(1.0).margin(1e-9));

@@ -19,7 +19,7 @@ class ConstraintsConfigPanel extends Component<Props, State> {
     const isSegmentConstraint = definition.sgmtScope;
     let startIndex = (this.props.constraint.getStartWaypointIndex() ?? 0) + 1;
     let endIndex = (this.props.constraint.getEndWaypointIndex() ?? 0) + 1;
-    const points = this.props.constraint.getPath().path.waypoints;
+    const points = this.props.constraint.getPath().params.waypoints;
     const pointcount = points.length;
     if (this.props.constraint.from === "first") {
       startIndex = 0;
@@ -74,6 +74,7 @@ class ConstraintsConfigPanel extends Component<Props, State> {
                   key={key}
                   title={propdef.name}
                   enabled={true}
+                  //@ts-expect-error TS doesn't acknowledge that default value being array means this is an expr
                   number={constraint.data[key]}
                   titleTooltip={propdef.description}
                 />
@@ -84,7 +85,9 @@ class ConstraintsConfigPanel extends Component<Props, State> {
                   key={key}
                   title={propdef.name}
                   enabled={true}
+                  // @ts-expect-error TS doesn't acknowledge that default value being boolean means this is boolean
                   value={constraint.data[key]}
+                  // @ts-expect-error TS doesn't know setterName matches the typing
                   setValue={(v) => constraint.data[setterName](v)}
                   titleTooltip={propdef.description}
                 ></BooleanInput>

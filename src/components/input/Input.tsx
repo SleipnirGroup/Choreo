@@ -1,4 +1,4 @@
-import { Tooltip } from "@mui/material";
+import { Checkbox, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import styles from "./InputList.module.css";
@@ -133,7 +133,7 @@ class Input extends Component<Props, State> {
             styles.Number +
             (showNumberWhenDisabled ? " " + styles.ShowWhenDisabled : "")
           }
-          style={{ minWidth: `${characters}ch` }}
+          style={{ maxWidth: `${characters}ch` }}
           disabled={!this.props.enabled}
           // The below is needed to make inputs on CommandDraggables work
           onClick={(e) => e.stopPropagation()}
@@ -185,13 +185,12 @@ class Input extends Component<Props, State> {
           {this.props.suffix}
         </span>
         {this.props.showCheckbox ? (
-          <input
-            type="checkbox"
+          <Checkbox
             className={styles.Checkbox}
             checked={this.props.enabled}
             onChange={this.setEnabled}
             disabled={!(this.props.checkboxEnabled ?? true)}
-          ></input>
+          ></Checkbox>
         ) : (
           <span></span>
         )}

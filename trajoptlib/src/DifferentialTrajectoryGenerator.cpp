@@ -2,8 +2,11 @@
 
 #include "trajopt/DifferentialTrajectoryGenerator.hpp"
 
-#include <algorithm>
+#include <cmath>
 #include <ranges>
+
+#include <sleipnir/autodiff/Variable.hpp>
+#include <sleipnir/optimization/SolverExitCondition.hpp>
 
 #include "trajopt/geometry/Rotation2.hpp"
 #include "trajopt/geometry/Translation2.hpp"
@@ -12,9 +15,20 @@
 
 namespace trajopt {
 
+inline Translation2d WheelToChassisSpeeds(double vL, double vR) {
+  return Translation2d{(vL + vR) / 2, 0.0};
+}
+
+inline Translation2v WheelToChassisSpeeds(sleipnir::Variable vL,
+                                          sleipnir::Variable vR) {
+  return Translation2v{(vL + vR) / 2, 0.0};
+}
+
 DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     DifferentialPathBuilder pathbuilder, int64_t handle)
     : path(pathbuilder.GetPath()), Ns(pathbuilder.GetControlIntervalCounts()) {
+  namespace slp = sleipnir;
+
   auto initialGuess = pathbuilder.CalculateInitialGuess();
 
   callbacks.emplace_back([this, handle = handle] {
@@ -41,8 +55,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
 
   x.reserve(sampTot);
   y.reserve(sampTot);
-  thetacos.reserve(sampTot);
-  thetasin.reserve(sampTot);
+  heading.reserve(sampTot);
   vL.reserve(sampTot);
   vR.reserve(sampTot);
   aL.reserve(sampTot);
@@ -56,8 +69,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   for (size_t index = 0; index < sampTot; ++index) {
     x.emplace_back(problem.DecisionVariable());
     y.emplace_back(problem.DecisionVariable());
-    thetacos.emplace_back(problem.DecisionVariable());
-    thetasin.emplace_back(problem.DecisionVariable());
+    heading.emplace_back(problem.DecisionVariable());
     vL.emplace_back(problem.DecisionVariable());
     vR.emplace_back(problem.DecisionVariable());
     aL.emplace_back(problem.DecisionVariable());
@@ -80,6 +92,12 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
 
   // Minimize total time
   sleipnir::Variable T_tot = 0;
+  const double maxForce =
+      path.drivetrain.wheelMaxTorque / path.drivetrain.wheelRadius;
+  const auto maxAccel = maxForce / path.drivetrain.mass;
+  const double maxDrivetrainVelocity =
+      path.drivetrain.wheelRadius * path.drivetrain.wheelMaxAngularVelocity;
+  const auto maxAngVel = maxDrivetrainVelocity * 2 / path.drivetrain.trackwidth;
   for (size_t sgmtIndex = 0; sgmtIndex < Ns.size(); ++sgmtIndex) {
     auto& dt_sgmt = dts.at(sgmtIndex);
     auto N_sgmt = Ns.at(sgmtIndex);
@@ -87,7 +105,59 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     T_tot += T_sgmt;
 
     problem.SubjectTo(dt_sgmt >= 0);
-    dt_sgmt.SetValue(5.0 / N_sgmt);
+    // Use initialGuess and Ns to find the dx, dy, dtheta between wpts
+    const auto sgmt_start = GetIndex(Ns, sgmtIndex);
+    const auto sgmt_end = GetIndex(Ns, sgmtIndex + 1);
+    const auto dx = initialGuess.x.at(sgmt_end) - initialGuess.x.at(sgmt_start);
+    const auto dy = initialGuess.y.at(sgmt_end) - initialGuess.y.at(sgmt_start);
+    const auto dist = std::hypot(dx, dy);
+    const auto cos_0 = std::cos(initialGuess.heading.at(sgmt_start));
+    const auto sin_0 = std::sin(initialGuess.heading.at(sgmt_start));
+    const auto cos_1 = std::cos(initialGuess.heading.at(sgmt_end));
+    const auto sin_1 = std::sin(initialGuess.heading.at(sgmt_end));
+    const auto dtheta = std::abs(std::atan2(cos_0 * sin_1 - sin_0 * cos_1,
+                                            cos_0 * sin_1 + sin_0 * cos_1));
+    auto maxLinearVel = maxDrivetrainVelocity;
+
+    // Proof for T = 1.5 * θ / ω:
+    //
+    // The position function of a cubic Hermite spline
+    // where t∈[0, 1] and θ∈[0, dtheta]:
+    // x(t) = (-2t^3 +3t^2)θ
+    //
+
+    // The velocity function derived from the cubic Hermite spline is:
+    // v(t) = (-6t^2 + 6t)θ.
+    //
+    // The peak velocity occurs at t = 0.5, where t∈[0, 1] :
+    // v(0.5) = 1.5*θ, which is the max angular velocity during the motion.
+    //
+    // To ensure this peak velocity does not exceed ω, max_ang_vel, we set:
+    // 1.5 * θ = ω.
+    //
+    // The total time T needed to reach the final θ and
+    // not exceed ω is thus derived as:
+    // T = θ / (ω / 1.5) = 1.5 * θ / ω.
+    //
+    // This calculation ensures the peak velocity meets but does not exceed ω,
+    // extending the time proportionally to meet this requirement.
+    // This is an alternative estimation method to finding the trapezoidal or
+    // triangular profile for the change heading.
+    const auto angular_time = (1.5 * dtheta) / maxAngVel;
+    maxLinearVel = std::min(maxLinearVel, dist / angular_time);
+
+    const auto distanceAtCruise =
+        dist - (maxLinearVel * maxLinearVel) / maxAccel;
+
+    double sgmtTime = angular_time;
+    if (distanceAtCruise < 0) {
+      // triangle
+      sgmtTime += 2.0 * (std::sqrt(dist * maxAccel) / maxAccel);
+    } else {
+      // trapezoid
+      sgmtTime += dist / maxLinearVel + maxLinearVel / maxAccel;
+    }
+    dt_sgmt.SetValue(sgmtTime / N_sgmt);
   }
   problem.Minimize(std::move(T_tot));
 
@@ -102,30 +172,35 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
       Translation2v x_n{x.at(index), y.at(index)};
       Translation2v x_n_1{x.at(index - 1), y.at(index - 1)};
 
-      Rotation2v theta_n{thetacos.at(index), thetasin.at(index)};
-      Rotation2v theta_n_1{thetacos.at(index - 1), thetasin.at(index - 1)};
+      Rotation2v theta_n{heading.at(index)};
+      Rotation2v theta_n_1{heading.at(index - 1)};
 
-      Translation2v v_n{vL.at(index), vR.at(index)};
+      Translation2v v_n = WheelToChassisSpeeds(vL.at(index), vR.at(index));
       v_n = v_n.RotateBy(theta_n);
-      Translation2v v_n_1{vL.at(index - 1), vR.at(index - 1)};
+      Translation2v v_n_1 =
+          WheelToChassisSpeeds(vL.at(index - 1), vR.at(index - 1));
       v_n_1 = v_n_1.RotateBy(theta_n_1);
 
       auto omega_n = (vR.at(index) - vL.at(index)) / path.drivetrain.trackwidth;
       auto omega_n_1 =
           (vR.at(index - 1) - vL.at(index - 1)) / path.drivetrain.trackwidth;
 
-      Translation2v a_n{aL.at(index), aR.at(index)};
+      Translation2v a_n = WheelToChassisSpeeds(aL.at(index), aR.at(index));
 
-      problem.SubjectTo(x_n_1 + v_n * dt_sgmt + a_n * 0.5 * dt_sgmt * dt_sgmt ==
-                        x_n);
-      problem.SubjectTo((theta_n - theta_n_1) == Rotation2v{omega_n * dt_sgmt});
+      problem.SubjectTo(x_n_1 + v_n * dt_sgmt == x_n);
       problem.SubjectTo(v_n_1 + a_n * dt_sgmt == v_n);
+      problem.SubjectTo(theta_n_1 + omega_n * dt_sgmt == theta_n);
+
+      auto lhs = theta_n - theta_n_1;
+      auto rhs = omega_n * dt_sgmt;
+      problem.SubjectTo(lhs.Cos() == slp::cos(rhs));
+      problem.SubjectTo(lhs.Sin() == slp::sin(rhs));
     }
   }
 
   for (size_t index = 0; index < sampTot; ++index) {
-    Rotation2v theta{thetacos.at(index), thetasin.at(index)};
-    Translation2v v{vL.at(index), vR.at(index)};
+    Translation2v v = WheelToChassisSpeeds(vL.at(index), vR.at(index));
+    Rotation2v theta{heading.at(index)};
     auto angularVelocity =
         (vR.at(index) - vL.at(index)) / path.drivetrain.trackwidth;
 
@@ -171,19 +246,16 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
       // First index of next wpt - 1
       size_t index = GetIndex(Ns, wptIndex + 1, 0) - 1;
 
-      Pose2v pose{
-          x.at(index), y.at(index), {thetacos.at(index), thetasin.at(index)}};
+      Pose2v pose{x.at(index), y.at(index), {heading.at(index)}};
 
-      auto v = (vL.at(index) + vR.at(index)) / 2.0;
-      Translation2v linearVelocity{v * thetacos.at(index),
-                                   v * thetasin.at(index)};
+      Translation2v linearVelocity =
+          WheelToChassisSpeeds(vL.at(index), vR.at(index));
 
       auto angularVelocity =
           (vR.at(index) - vL.at(index)) / path.drivetrain.trackwidth;
 
-      auto a = (aL.at(index) + aR.at(index)) / 2.0;
-      Translation2v linearAcceleration{a * thetacos.at(index),
-                                       a * thetasin.at(index)};
+      Translation2v linearAcceleration =
+          WheelToChassisSpeeds(aL.at(index), aR.at(index));
 
       auto angularAcceleration =
           (aR.at(index) - aL.at(index)) / path.drivetrain.trackwidth;
@@ -204,19 +276,16 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
       size_t endIndex = GetIndex(Ns, sgmtIndex + 2, 0);
 
       for (size_t index = startIndex; index < endIndex; ++index) {
-        Pose2v pose{
-            x.at(index), y.at(index), {thetacos.at(index), thetasin.at(index)}};
+        Pose2v pose{x.at(index), y.at(index), {heading.at(index)}};
 
-        auto v = (vL.at(index) + vR.at(index)) / 2.0;
-        Translation2v linearVelocity{v * thetacos.at(index),
-                                     v * thetasin.at(index)};
+        Translation2v linearVelocity =
+            WheelToChassisSpeeds(vL.at(index), vR.at(index));
 
         auto angularVelocity =
             (vR.at(index) - vL.at(index)) / path.drivetrain.trackwidth;
 
-        auto a = (aL.at(index) + aR.at(index)) / 2.0;
-        Translation2v linearAcceleration{a * thetacos.at(index),
-                                         a * thetasin.at(index)};
+        Translation2v linearAcceleration =
+            WheelToChassisSpeeds(aL.at(index), aR.at(index));
 
         auto angularAcceleration =
             (aR.at(index) - aL.at(index)) / path.drivetrain.trackwidth;
@@ -234,7 +303,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   ApplyInitialGuess(initialGuess);
 }
 
-expected<DifferentialSolution, std::string>
+expected<DifferentialSolution, sleipnir::SolverExitCondition>
 DifferentialTrajectoryGenerator::Generate(bool diagnostics) {
   problem.Callback([this](const sleipnir::SolverIterationInfo&) -> bool {
     for (auto& callback : callbacks) {
@@ -249,7 +318,7 @@ DifferentialTrajectoryGenerator::Generate(bool diagnostics) {
   if (static_cast<int>(status.exitCondition) < 0 ||
       status.exitCondition ==
           sleipnir::SolverExitCondition::kCallbackRequestedStop) {
-    return unexpected{std::string{sleipnir::ToMessage(status.exitCondition)}};
+    return unexpected{status.exitCondition};
   } else {
     return ConstructDifferentialSolution();
   }
@@ -261,8 +330,7 @@ void DifferentialTrajectoryGenerator::ApplyInitialGuess(
   for (size_t sampleIndex = 0; sampleIndex < sampleTotal; ++sampleIndex) {
     x[sampleIndex].SetValue(solution.x[sampleIndex]);
     y[sampleIndex].SetValue(solution.y[sampleIndex]);
-    thetacos[sampleIndex].SetValue(solution.thetacos[sampleIndex]);
-    thetasin[sampleIndex].SetValue(solution.thetasin[sampleIndex]);
+    heading[sampleIndex].SetValue(solution.heading[sampleIndex]);
   }
 
   vL[0].SetValue(0.0);
@@ -275,15 +343,12 @@ void DifferentialTrajectoryGenerator::ApplyInitialGuess(
         std::hypot(solution.x[sampleIndex] - solution.x[sampleIndex - 1],
                    solution.y[sampleIndex] - solution.y[sampleIndex - 1]) /
         solution.dt[sampleIndex];
-    double thetacos = solution.thetacos[sampleIndex];
-    double thetasin = solution.thetasin[sampleIndex];
-    double last_thetacos = solution.thetacos[sampleIndex - 1];
-    double last_thetasin = solution.thetasin[sampleIndex - 1];
+    double heading = solution.heading[sampleIndex];
+    double last_heading = solution.heading[sampleIndex - 1];
 
-    double omega = Rotation2d{thetacos, thetasin}
-                       .RotateBy(-Rotation2d{last_thetacos, last_thetasin})
-                       .Radians() /
-                   solution.dt[sampleIndex];
+    double omega =
+        Rotation2d{heading}.RotateBy(-Rotation2d{last_heading}).Radians() /
+        solution.dt[sampleIndex];
     vL[sampleIndex].SetValue(
         (linearVelocity - path.drivetrain.trackwidth / 2 * omega));
     vR[sampleIndex].SetValue(
@@ -319,9 +384,9 @@ DifferentialTrajectoryGenerator::ConstructDifferentialSolution() {
   };
 
   return DifferentialSolution{
-      dtPerSample,           vectorValue(x),        vectorValue(y),
-      vectorValue(thetacos), vectorValue(thetasin), vectorValue(vL),
-      vectorValue(vR),       vectorValue(FL),       vectorValue(FR),
+      dtPerSample,     vectorValue(x),  vectorValue(y),  vectorValue(heading),
+      vectorValue(vL), vectorValue(vR), vectorValue(aL), vectorValue(aR),
+      vectorValue(FL), vectorValue(FR),
   };
 }
 

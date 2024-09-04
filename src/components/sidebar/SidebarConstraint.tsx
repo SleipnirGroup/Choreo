@@ -4,12 +4,13 @@ import { observer } from "mobx-react";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Instance, getParent } from "mobx-state-tree";
 import React, { Component } from "react";
-import { IConstraintStore, WaypointID } from "../../document/ConstraintStore";
+import { IConstraintStore } from "../../document/ConstraintStore";
 import { doc } from "../../document/DocumentManager";
 import styles from "./Sidebar.module.css";
 
 import { PriorityHigh } from "@mui/icons-material";
 import { ChoreoPathStore } from "../../document/path/ChoreoPathStore";
+import { WaypointID } from "../../document/ConstraintDefinitions";
 
 type Props = {
   constraint: IConstraintStore;
@@ -35,11 +36,13 @@ class SidebarConstraint extends Component<Props, State> {
     const to = this.props.constraint.to;
     if (from === undefined && to === undefined) return "!";
     else if (
-      to === undefined ||
-      from === to ||
-      (Object.hasOwn(from, "uuid") &&
+      to === undefined || // wpt constraint
+      from === to || //first-first, last-last
+      (typeof from === "object" &&
+        Object.hasOwn(from, "uuid") &&
+        typeof to === "object" &&
         Object.hasOwn(to, "uuid") &&
-        from!.uuid == to!.uuid)
+        from!.uuid == to!.uuid) // zero-length segment
     )
       return waypointIDToText(from);
     else {
@@ -95,7 +98,7 @@ class SidebarConstraint extends Component<Props, State> {
             className={styles.SidebarRightIcon}
             onClick={(e) => {
               e.stopPropagation();
-              doc.pathlist.activePath.path.deleteConstraint(
+              doc.pathlist.activePath.params.deleteConstraint(
                 this.props.constraint?.uuid || ""
               );
             }}

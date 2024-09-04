@@ -15,13 +15,19 @@ class FieldSamples extends Component<Props, State> {
     const trajectory = path.ui.generating
       ? path.ui.generationProgress
       : path.traj.fullTraj;
-    // preserve the acccess of generationIterationNumber
+    // preserve the access of generationIterationNumber
     // to trigger rerenders when mutating the in-progress trajectory in place
     const _ = path.ui.generationIterationNumber;
     return (
       <>
-        {trajectory.map((point) => (
-          <circle cx={point.x} cy={point.y} r={0.02} fill="black"></circle>
+        {trajectory.map((point, idx) => (
+          <circle
+            cx={point.x}
+            cy={point.y}
+            r={0.02}
+            fill="black"
+            key={idx}
+          ></circle>
         ))}
       </>
     );

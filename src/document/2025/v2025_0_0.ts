@@ -1,11 +1,12 @@
-import { ConstraintData } from "../ConstraintStore";
+import { ConstraintData } from "../ConstraintDefinitions";
+import { Dimensions } from "../ExpressionStore";
 
 export const SAVE_FILE_VERSION = "v2025.0.0";
 export type Expr = [string, number];
 
 export type ExprOrNumber = Expr | number;
 export interface Variable {
-  unit: "Meter" | "MeterPerSecond" | "Radian";
+  dimension: keyof typeof Dimensions;
   var: Expr;
 }
 export interface PoseVariable {
@@ -45,6 +46,8 @@ export interface RobotConfig<T extends ExprOrNumber> {
 }
 
 export interface Project {
+  name: string;
+  type: SampleType;
   version: typeof SAVE_FILE_VERSION;
   variables: Variables;
   config: RobotConfig<Expr>;
@@ -69,7 +72,7 @@ export interface Constraint {
   data: ConstraintData;
 }
 
-export interface Sample {
+export interface SwerveSample {
   t: number;
   x: number;
   y: number;
@@ -77,11 +80,27 @@ export interface Sample {
   vx: number;
   vy: number;
   omega: number;
+  ax: number;
+  ay: number;
+  alpha: number;
   fx?: [number, number, number, number];
   fy?: [number, number, number, number];
 }
 
-export interface TrajoptlibSample {
+export interface DifferentialSample {
+  t: number;
+  x: number;
+  y: number;
+  heading: number;
+  vl: number;
+  vr: number;
+  al: number;
+  ar: number;
+  fl: number;
+  fr: number;
+}
+
+export interface SwerveTrajoptlibSample {
   timestamp: number; // positive
   x: number;
   y: number;
@@ -89,8 +108,29 @@ export interface TrajoptlibSample {
   velocity_x: number;
   velocity_y: number;
   angular_velocity: number;
+  acceleration_x: number;
+  acceleration_y: number;
+  angular_acceleration: number;
   module_forces_x: [number, number, number, number];
   module_forces_y: [number, number, number, number];
+}
+
+export interface DifferentialTrajectorySample {
+  timestamp: number; // positive
+  x: number;
+  y: number;
+  heading: number;
+  velocity_l: number;
+  velocity_r: number;
+  acceleration_l: number;
+  acceleration_r: number;
+  force_l: number;
+  force_r: number;
+}
+
+export interface ProgressUpdate {
+  type: "swerveTraj" | "diffTraj" | "diagnosticText";
+  update: SwerveTrajoptlibSample[] | DifferentialTrajectorySample[] | string;
 }
 
 export interface ChoreoPath<T extends ExprOrNumber> {
@@ -98,16 +138,17 @@ export interface ChoreoPath<T extends ExprOrNumber> {
   constraints: Constraint[];
 }
 
+export type SampleType = "Swerve" | "Differential";
 export interface Output {
   waypoints: number[];
-  samples: Sample[][];
-  useModuleForces: boolean;
+  samples: SwerveSample[][] | DifferentialSample[][];
+  forcesAvailable: boolean;
 }
 
 export interface Traj {
   name: string;
   version: typeof SAVE_FILE_VERSION;
-  path: ChoreoPath<Expr>;
+  params: ChoreoPath<Expr>;
   snapshot: ChoreoPath<number>;
   traj: Output;
 }
@@ -143,11 +184,11 @@ export type Command<T extends ExprOrNumber> =
 export interface EventMarker<T extends ExprOrNumber> {
   name: string;
   target: WaypointID;
-  trajTargetIndex: number;
+  trajTargetIndex: number | undefined;
   offset: T;
   /**
    * The timestamp along the trajectory of the waypoint this marker targeted on the last generation.
    */
-  targetTimestamp: number;
+  targetTimestamp: number | undefined;
   command: Command<T>;
 }

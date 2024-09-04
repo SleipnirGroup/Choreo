@@ -3,7 +3,7 @@
   position: absolute;
   top: 0;
   padding: 8px;
-  width: min-content;
+  width: max-content;
   background-color: var(--background-light-gray);
   color: white;
   display: flex;
@@ -12,7 +12,7 @@
   border-radius: 0 0 10px 0;
 }
 .ViewOptionsPanel {
-  overflow-x: hidden;
+  overflow-x: visible;
   position: absolute;
   top: 0;
   right: 0;

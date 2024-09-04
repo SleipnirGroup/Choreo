@@ -1,6 +1,6 @@
 [package]
 name = "choreo"
-version = "2024.2.3"
+version = "2025.0.0-beta"
 edition = "2021"
 description = """\
   A graphical tool for planning time-optimized trajectories for autonomous \
@@ -9,21 +9,25 @@ description = """\
 readme = "../README.md"
 homepage = "https://github.com/SleipnirGroup/Choreo"
 repository = "https://github.com/SleipnirGroup/Choreo.git"
+authors = ["Sleipnir Group"]
 license = "BSD-3-Clause"
 
 [build-dependencies]
 tauri-build = { version = "1.5.2", features = [] }
+built = { version = "0.7.4", features = ["chrono", "git2"] }
 
 [dependencies]
-tauri = { version = "1.6.6", features = [ "os-all", "window-close", "window-set-title", "path-all", "dialog", "dialog-confirm", "dialog-save", "dialog-open", "dialog-ask", "fs-all", "shell-open", "devtools"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-trajoptlib = { path = "../trajoptlib" }
-open = "3"
-tokio = { version = "1", features = ["full"] }
-dashmap = "6.0.1"
+choreo-core = { path = "../src-core" }
+tauri = { version = "1.6.6", features = ["devtools", "dialog", "dialog-ask", "dialog-confirm", "dialog-open", "dialog-save", "fs-all", "os-all", "path-all", "shell-open", "window-close", "window-set-title"] }
+open = "5.3.0"
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["ansi", "fmt", "std"] }
+nu-ansi-term = "0.50.1"
+tracing-appender = "0.2.3"
+current_platform = "0.2.0"
+dirs = "5.0.1"
+serde = "1.0.209"
 
 [features]
-# this feature is used for production builds or when `devPath` points to the filesystem
-# DO NOT REMOVE!!
+default = ["tauri/tracing"]
 custom-protocol = ["tauri/custom-protocol"]

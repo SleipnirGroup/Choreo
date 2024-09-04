@@ -1,6 +1,6 @@
 /**
  * https://github.com/devinrhode2/ObjectTyped
- * 
+ *
  * Nicely typed aliases for some `Object` Methods
 
  * - PSA: Don't mutate `yourObject`s
@@ -34,21 +34,21 @@ type ObjectEntries<OBJ_T> = // From https://stackoverflow.com/a/60142095
 
 export const ObjectTyped = {
   /**
-  
+
      * Object.keys, but with nice typing (`Array<keyof T>`)
-  
+
      */
 
   keys: Object.keys as <T extends object>(yourObject: T) => TupleUnion<keyof T>,
 
   /**
-  
+
      * Object.values, but with nice typing (`Array<ValueOf<T>>`)
-  
+
      * @deprecated - Built-in Object.values appears to have decent typing, and accounts for Arrays/ArrayLikes
-  
+
      * (TS 4.4.2 - typing is: values<T>(yourObject: { [s: string]: T } | ArrayLike<T>): T[];)
-  
+
      */
 
   values: Object.values as <U extends object>(
@@ -56,9 +56,9 @@ export const ObjectTyped = {
   ) => Values<U, TupleUnion<keyof U>>, // Using ValueOf here was giving weird hover annotation: ValueOf<{ ...the whole damn object... }> as opposed to ['key1', 'key2', etc]
 
   /**
-  
+
      * Object.entries, but with nice typing
-  
+
      */
 
   entries: Object.entries as <O extends object>(
@@ -66,9 +66,9 @@ export const ObjectTyped = {
   ) => ObjectEntries<O>,
 
   /**
-  
+
      * Object.fromEntries, but with nice typing
-  
+
      */
 
   fromEntries: Object.fromEntries as <K extends string, V>(

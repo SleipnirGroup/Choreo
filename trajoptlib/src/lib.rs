@@ -42,6 +42,9 @@ mod ffi {
         velocity_x: f64,
         velocity_y: f64,
         angular_velocity: f64,
+        acceleration_x: f64,
+        acceleration_y: f64,
+        angular_acceleration: f64,
         module_forces_x: Vec<f64>,
         module_forces_y: Vec<f64>,
     }
@@ -59,6 +62,8 @@ mod ffi {
         heading: f64,
         velocity_l: f64,
         velocity_r: f64,
+        acceleration_l: f64,
+        acceleration_r: f64,
         force_l: f64,
         force_r: f64,
     }
@@ -125,7 +130,7 @@ mod ffi {
             field_point_x: f64,
             field_point_y: f64,
             heading_tolerance: f64,
-            flip: bool
+            flip: bool,
         );
 
         fn sgmt_linear_velocity_direction(
@@ -159,7 +164,7 @@ mod ffi {
             field_point_x: f64,
             field_point_y: f64,
             heading_tolerance: f64,
-            flip: bool
+            flip: bool,
         );
 
         fn sgmt_circle_obstacle(
@@ -256,7 +261,7 @@ mod ffi {
             field_point_x: f64,
             field_point_y: f64,
             heading_tolerance: f64,
-            flip: bool
+            flip: bool,
         );
 
         fn sgmt_linear_velocity_direction(
@@ -319,10 +324,71 @@ mod ffi {
     }
 }
 
+pub trait PathBuilder: Any {
+    fn set_bumpers(&mut self, length: f64, width: f64);
+    fn set_control_interval_counts(&mut self, counts: Vec<usize>);
+
+    fn pose_wpt(&mut self, index: usize, x: f64, y: f64, heading: f64);
+    fn translation_wpt(&mut self, index: usize, x: f64, y: f64, heading_guess: f64);
+    fn empty_wpt(&mut self, index: usize, x_guess: f64, y_guess: f64, heading_guess: f64);
+
+    #[allow(clippy::ptr_arg)]
+    fn sgmt_initial_guess_points(&mut self, from_index: usize, guess_points: &Vec<Pose2d>);
+
+    fn wpt_linear_velocity_direction(&mut self, index: usize, angle: f64);
+    fn wpt_linear_velocity_max_magnitude(&mut self, index: usize, magnitude: f64);
+    fn wpt_angular_velocity_max_magnitude(&mut self, index: usize, angular_velocity: f64);
+    fn wpt_linear_acceleration_max_magnitude(&mut self, index: usize, magnitude: f64);
+    fn wpt_point_at(
+        &mut self,
+        index: usize,
+        field_point_x: f64,
+        field_point_y: f64,
+        heading_tolerance: f64,
+        flip: bool,
+    );
+
+    fn sgmt_linear_velocity_direction(&mut self, from_index: usize, to_index: usize, angle: f64);
+    fn sgmt_linear_velocity_max_magnitude(
+        &mut self,
+        from_index: usize,
+        to_index: usize,
+        magnitude: f64,
+    );
+    fn sgmt_angular_velocity_max_magnitude(
+        &mut self,
+        from_index: usize,
+        to_index: usize,
+        angular_velocity: f64,
+    );
+    fn sgmt_linear_acceleration_max_magnitude(
+        &mut self,
+        from_index: usize,
+        to_index: usize,
+        magnitude: f64,
+    );
+
+    fn sgmt_circle_obstacle(
+        &mut self,
+        from_index: usize,
+        to_index: usize,
+        x: f64,
+        y: f64,
+        radius: f64,
+    );
+
+    fn sgmt_polygon_obstacle(
+        &mut self,
+        from_index: usize,
+        to_index: usize,
+        x: Vec<f64>,
+        y: Vec<f64>,
+        radius: f64,
+    );
+}
 pub struct SwervePathBuilder {
     path_builder: cxx::UniquePtr<crate::ffi::SwervePathBuilder>,
 }
-
 impl SwervePathBuilder {
     pub fn new() -> SwervePathBuilder {
         SwervePathBuilder {
@@ -330,26 +396,81 @@ impl SwervePathBuilder {
         }
     }
 
+    pub fn sgmt_point_at(
+        &mut self,
+        from_index: usize,
+        to_index: usize,
+        field_point_x: f64,
+        field_point_y: f64,
+        heading_tolerance: f64,
+        flip: bool,
+    ) {
+        crate::ffi::SwervePathBuilder::sgmt_point_at(
+            self.path_builder.pin_mut(),
+            from_index,
+            to_index,
+            field_point_x,
+            field_point_y,
+            heading_tolerance,
+            flip,
+        )
+    }
+
     pub fn set_drivetrain(&mut self, drivetrain: &crate::ffi::SwerveDrivetrain) {
         crate::ffi::SwervePathBuilder::set_drivetrain(self.path_builder.pin_mut(), drivetrain);
     }
 
-    pub fn set_bumpers(&mut self, length: f64, width: f64) {
+    ///
+    /// Generate the trajectory;
+    ///
+    /// * diagnostics: If true, prints per-iteration details of the solver to
+    ///   stdout.
+    /// * handle: A number used to identify results from this generation in the
+    ///   `add_progress_callback` callback. If `add_progress_callback` has not
+    ///   been called, this value has no significance.
+    ///
+    /// Returns a result with either the final `trajopt::SwerveTrajectory`,
+    /// or a TrajoptError if generation failed.
+    pub fn generate(
+        &self,
+        diagnostics: bool,
+        handle: i64,
+    ) -> Result<SwerveTrajectory, TrajoptError> {
+        match self.path_builder.generate(diagnostics, handle) {
+            Ok(traj) => Ok(traj),
+            Err(msg) => Err(TrajoptError::from(msg.what().parse::<i8>().unwrap())),
+        }
+    }
+
+    ///
+    /// Add a callback that will be called on each iteration of the solver.
+    ///
+    /// * callback: a `fn` (not a closure) to be executed. The callback's first
+    ///   parameter will be a `trajopt::SwerveTrajectory`, and the second
+    ///   parameter will be an `i64` equal to the handle passed in `generate()`
+    ///
+    /// This function can be called multiple times to add multiple callbacks.
+    pub fn add_progress_callback(&mut self, callback: fn(SwerveTrajectory, i64)) {
+        crate::ffi::SwervePathBuilder::add_progress_callback(self.path_builder.pin_mut(), callback);
+    }
+}
+impl PathBuilder for SwervePathBuilder {
+    fn set_bumpers(&mut self, length: f64, width: f64) {
         crate::ffi::SwervePathBuilder::set_bumpers(self.path_builder.pin_mut(), length, width);
     }
 
-    pub fn set_control_interval_counts(&mut self, counts: Vec<usize>) {
+    fn set_control_interval_counts(&mut self, counts: Vec<usize>) {
         crate::ffi::SwervePathBuilder::set_control_interval_counts(
             self.path_builder.pin_mut(),
             counts,
         );
     }
 
-    pub fn pose_wpt(&mut self, index: usize, x: f64, y: f64, heading: f64) {
+    fn pose_wpt(&mut self, index: usize, x: f64, y: f64, heading: f64) {
         crate::ffi::SwervePathBuilder::pose_wpt(self.path_builder.pin_mut(), index, x, y, heading);
     }
 
-    pub fn translation_wpt(&mut self, index: usize, x: f64, y: f64, heading_guess: f64) {
+    fn translation_wpt(&mut self, index: usize, x: f64, y: f64, heading_guess: f64) {
         crate::ffi::SwervePathBuilder::translation_wpt(
             self.path_builder.pin_mut(),
             index,
@@ -359,7 +480,7 @@ impl SwervePathBuilder {
         );
     }
 
-    pub fn empty_wpt(&mut self, index: usize, x_guess: f64, y_guess: f64, heading_guess: f64) {
+    fn empty_wpt(&mut self, index: usize, x_guess: f64, y_guess: f64, heading_guess: f64) {
         crate::ffi::SwervePathBuilder::empty_wpt(
             self.path_builder.pin_mut(),
             index,
@@ -369,7 +490,7 @@ impl SwervePathBuilder {
         );
     }
 
-    pub fn sgmt_initial_guess_points(
+    fn sgmt_initial_guess_points(
         &mut self,
         from_index: usize,
         guess_points: &Vec<crate::ffi::Pose2d>,
@@ -381,7 +502,7 @@ impl SwervePathBuilder {
         );
     }
 
-    pub fn wpt_linear_velocity_direction(&mut self, index: usize, angle: f64) {
+    fn wpt_linear_velocity_direction(&mut self, index: usize, angle: f64) {
         crate::ffi::SwervePathBuilder::wpt_linear_velocity_direction(
             self.path_builder.pin_mut(),
             index,
@@ -389,7 +510,7 @@ impl SwervePathBuilder {
         );
     }
 
-    pub fn wpt_linear_velocity_max_magnitude(&mut self, index: usize, magnitude: f64) {
+    fn wpt_linear_velocity_max_magnitude(&mut self, index: usize, magnitude: f64) {
         crate::ffi::SwervePathBuilder::wpt_linear_velocity_max_magnitude(
             self.path_builder.pin_mut(),
             index,
@@ -397,7 +518,7 @@ impl SwervePathBuilder {
         );
     }
 
-    pub fn wpt_angular_velocity_max_magnitude(&mut self, index: usize, angular_velocity: f64) {
+    fn wpt_angular_velocity_max_magnitude(&mut self, index: usize, angular_velocity: f64) {
         crate::ffi::SwervePathBuilder::wpt_angular_velocity_max_magnitude(
             self.path_builder.pin_mut(),
             index,
@@ -405,7 +526,7 @@ impl SwervePathBuilder {
         );
     }
 
-    pub fn wpt_linear_acceleration_max_magnitude(&mut self, index: usize, magnitude: f64) {
+    fn wpt_linear_acceleration_max_magnitude(&mut self, index: usize, magnitude: f64) {
         crate::ffi::SwervePathBuilder::wpt_linear_acceleration_max_magnitude(
             self.path_builder.pin_mut(),
             index,
@@ -413,13 +534,13 @@ impl SwervePathBuilder {
         );
     }
 
-    pub fn wpt_point_at(
+    fn wpt_point_at(
         &mut self,
         index: usize,
         field_point_x: f64,
         field_point_y: f64,
         heading_tolerance: f64,
-        flip: bool
+        flip: bool,
     ) {
         crate::ffi::SwervePathBuilder::wpt_point_at(
             self.path_builder.pin_mut(),
@@ -427,16 +548,11 @@ impl SwervePathBuilder {
             field_point_x,
             field_point_y,
             heading_tolerance,
-            flip
+            flip,
         )
     }
 
-    pub fn sgmt_linear_velocity_direction(
-        &mut self,
-        from_index: usize,
-        to_index: usize,
-        angle: f64,
-    ) {
+    fn sgmt_linear_velocity_direction(&mut self, from_index: usize, to_index: usize, angle: f64) {
         crate::ffi::SwervePathBuilder::sgmt_linear_velocity_direction(
             self.path_builder.pin_mut(),
             from_index,
@@ -445,7 +561,7 @@ impl SwervePathBuilder {
         );
     }
 
-    pub fn sgmt_linear_velocity_max_magnitude(
+    fn sgmt_linear_velocity_max_magnitude(
         &mut self,
         from_index: usize,
         to_index: usize,
@@ -459,7 +575,7 @@ impl SwervePathBuilder {
         );
     }
 
-    pub fn sgmt_angular_velocity_max_magnitude(
+    fn sgmt_angular_velocity_max_magnitude(
         &mut self,
         from_index: usize,
         to_index: usize,
@@ -473,7 +589,7 @@ impl SwervePathBuilder {
         );
     }
 
-    pub fn sgmt_linear_acceleration_max_magnitude(
+    fn sgmt_linear_acceleration_max_magnitude(
         &mut self,
         from_index: usize,
         to_index: usize,
@@ -487,27 +603,7 @@ impl SwervePathBuilder {
         );
     }
 
-    pub fn sgmt_point_at(
-        &mut self,
-        from_index: usize,
-        to_index: usize,
-        field_point_x: f64,
-        field_point_y: f64,
-        heading_tolerance: f64,
-        flip:bool
-    ) {
-        crate::ffi::SwervePathBuilder::sgmt_point_at(
-            self.path_builder.pin_mut(),
-            from_index,
-            to_index,
-            field_point_x,
-            field_point_y,
-            heading_tolerance,
-            flip
-        )
-    }
-
-    pub fn sgmt_circle_obstacle(
+    fn sgmt_circle_obstacle(
         &mut self,
         from_index: usize,
         to_index: usize,
@@ -525,7 +621,7 @@ impl SwervePathBuilder {
         );
     }
 
-    pub fn sgmt_polygon_obstacle(
+    fn sgmt_polygon_obstacle(
         &mut self,
         from_index: usize,
         to_index: usize,
@@ -541,39 +637,6 @@ impl SwervePathBuilder {
             y,
             radius,
         );
-    }
-
-    ///
-    /// Generate the trajectory;
-    ///
-    /// * diagnostics: If true, prints per-iteration details of the solver to
-    ///       stdout.
-    /// * handle: A number used to identify results from this generation in the
-    ///       `add_progress_callback` callback. If `add_progress_callback` has
-    ///       not been called, this value has no significance.
-    ///
-    /// Returns a result with either the final `trajopt::SwerveTrajectory`,
-    /// or a String error message if generation failed.
-    ///
-    pub fn generate(&mut self, diagnostics: bool, handle: i64) -> Result<SwerveTrajectory, String> {
-        match self.path_builder.generate(diagnostics, handle) {
-            Ok(traj) => Ok(traj),
-            Err(msg) => Err(msg.what().to_string()),
-        }
-    }
-
-    ///
-    /// Add a callback that will be called on each iteration of the solver.
-    ///
-    /// * callback: a `fn` (not a closure) to be executed. The callback's first
-    ///       parameter will be a `trajopt::SwerveTrajectory`, and the second
-    ///       parameter will be an `i64` equal to the handle passed in
-    ///       `generate()`
-    ///
-    /// This function can be called multiple times to add multiple callbacks.
-    ///
-    pub fn add_progress_callback(&mut self, callback: fn(SwerveTrajectory, i64)) {
-        crate::ffi::SwervePathBuilder::add_progress_callback(self.path_builder.pin_mut(), callback);
     }
 }
 
@@ -601,7 +664,46 @@ impl DifferentialPathBuilder {
         );
     }
 
-    pub fn set_bumpers(&mut self, length: f64, width: f64) {
+    ///
+    /// Generate the trajectory;
+    ///
+    /// * diagnostics: If true, prints per-iteration details of the solver to
+    ///   stdout.
+    /// * handle: A number used to identify results from this generation in the
+    ///   `add_progress_callback` callback. If `add_progress_callback` has not
+    ///   been called, this value has no significance.
+    ///
+    /// Returns a result with either the final
+    /// `trajopt::DifferentialTrajectory`, or TrajoptError
+    /// generation failed.
+    pub fn generate(
+        &self,
+        diagnostics: bool,
+        handle: i64,
+    ) -> Result<DifferentialTrajectory, TrajoptError> {
+        match self.path_builder.generate(diagnostics, handle) {
+            Ok(traj) => Ok(traj),
+            Err(msg) => Err(TrajoptError::from(msg.what().parse::<i8>().unwrap())),
+        }
+    }
+
+    ///
+    /// Add a callback that will be called on each iteration of the solver.
+    ///
+    /// * callback: a `fn` (not a closure) to be executed. The callback's first
+    ///   parameter will be a `trajopt::DifferentialTrajectory`, and the second
+    ///   parameter will be an `i64` equal to the handle passed in `generate()`
+    ///
+    /// This function can be called multiple times to add multiple callbacks.
+    pub fn add_progress_callback(&mut self, callback: fn(DifferentialTrajectory, i64)) {
+        crate::ffi::DifferentialPathBuilder::add_progress_callback(
+            self.path_builder.pin_mut(),
+            callback,
+        );
+    }
+}
+impl PathBuilder for DifferentialPathBuilder {
+    fn set_bumpers(&mut self, length: f64, width: f64) {
         crate::ffi::DifferentialPathBuilder::set_bumpers(
             self.path_builder.pin_mut(),
             length,
@@ -609,14 +711,14 @@ impl DifferentialPathBuilder {
         );
     }
 
-    pub fn set_control_interval_counts(&mut self, counts: Vec<usize>) {
+    fn set_control_interval_counts(&mut self, counts: Vec<usize>) {
         crate::ffi::DifferentialPathBuilder::set_control_interval_counts(
             self.path_builder.pin_mut(),
             counts,
         );
     }
 
-    pub fn pose_wpt(&mut self, index: usize, x: f64, y: f64, heading: f64) {
+    fn pose_wpt(&mut self, index: usize, x: f64, y: f64, heading: f64) {
         crate::ffi::DifferentialPathBuilder::pose_wpt(
             self.path_builder.pin_mut(),
             index,
@@ -626,7 +728,7 @@ impl DifferentialPathBuilder {
         );
     }
 
-    pub fn translation_wpt(&mut self, index: usize, x: f64, y: f64, heading_guess: f64) {
+    fn translation_wpt(&mut self, index: usize, x: f64, y: f64, heading_guess: f64) {
         crate::ffi::DifferentialPathBuilder::translation_wpt(
             self.path_builder.pin_mut(),
             index,
@@ -636,7 +738,7 @@ impl DifferentialPathBuilder {
         );
     }
 
-    pub fn empty_wpt(&mut self, index: usize, x_guess: f64, y_guess: f64, heading_guess: f64) {
+    fn empty_wpt(&mut self, index: usize, x_guess: f64, y_guess: f64, heading_guess: f64) {
         crate::ffi::DifferentialPathBuilder::empty_wpt(
             self.path_builder.pin_mut(),
             index,
@@ -646,7 +748,7 @@ impl DifferentialPathBuilder {
         );
     }
 
-    pub fn sgmt_initial_guess_points(
+    fn sgmt_initial_guess_points(
         &mut self,
         from_index: usize,
         guess_points: &Vec<crate::ffi::Pose2d>,
@@ -658,7 +760,7 @@ impl DifferentialPathBuilder {
         );
     }
 
-    pub fn wpt_linear_velocity_direction(&mut self, index: usize, angle: f64) {
+    fn wpt_linear_velocity_direction(&mut self, index: usize, angle: f64) {
         crate::ffi::DifferentialPathBuilder::wpt_linear_velocity_direction(
             self.path_builder.pin_mut(),
             index,
@@ -666,7 +768,7 @@ impl DifferentialPathBuilder {
         );
     }
 
-    pub fn wpt_linear_velocity_max_magnitude(&mut self, index: usize, magnitude: f64) {
+    fn wpt_linear_velocity_max_magnitude(&mut self, index: usize, magnitude: f64) {
         crate::ffi::DifferentialPathBuilder::wpt_linear_velocity_max_magnitude(
             self.path_builder.pin_mut(),
             index,
@@ -674,7 +776,7 @@ impl DifferentialPathBuilder {
         );
     }
 
-    pub fn wpt_angular_velocity_max_magnitude(&mut self, index: usize, angular_velocity: f64) {
+    fn wpt_angular_velocity_max_magnitude(&mut self, index: usize, angular_velocity: f64) {
         crate::ffi::DifferentialPathBuilder::wpt_angular_velocity_max_magnitude(
             self.path_builder.pin_mut(),
             index,
@@ -682,7 +784,7 @@ impl DifferentialPathBuilder {
         );
     }
 
-    pub fn wpt_linear_acceleration_max_magnitude(&mut self, index: usize, magnitude: f64) {
+    fn wpt_linear_acceleration_max_magnitude(&mut self, index: usize, magnitude: f64) {
         crate::ffi::DifferentialPathBuilder::wpt_linear_acceleration_max_magnitude(
             self.path_builder.pin_mut(),
             index,
@@ -690,13 +792,13 @@ impl DifferentialPathBuilder {
         );
     }
 
-    pub fn wpt_point_at(
+    fn wpt_point_at(
         &mut self,
         index: usize,
         field_point_x: f64,
         field_point_y: f64,
         heading_tolerance: f64,
-        flip: bool
+        flip: bool,
     ) {
         crate::ffi::DifferentialPathBuilder::wpt_point_at(
             self.path_builder.pin_mut(),
@@ -704,16 +806,11 @@ impl DifferentialPathBuilder {
             field_point_x,
             field_point_y,
             heading_tolerance,
-            flip
+            flip,
         )
     }
 
-    pub fn sgmt_linear_velocity_direction(
-        &mut self,
-        from_index: usize,
-        to_index: usize,
-        angle: f64,
-    ) {
+    fn sgmt_linear_velocity_direction(&mut self, from_index: usize, to_index: usize, angle: f64) {
         crate::ffi::DifferentialPathBuilder::sgmt_linear_velocity_direction(
             self.path_builder.pin_mut(),
             from_index,
@@ -722,7 +819,7 @@ impl DifferentialPathBuilder {
         );
     }
 
-    pub fn sgmt_linear_velocity_max_magnitude(
+    fn sgmt_linear_velocity_max_magnitude(
         &mut self,
         from_index: usize,
         to_index: usize,
@@ -736,7 +833,7 @@ impl DifferentialPathBuilder {
         );
     }
 
-    pub fn sgmt_angular_velocity_max_magnitude(
+    fn sgmt_angular_velocity_max_magnitude(
         &mut self,
         from_index: usize,
         to_index: usize,
@@ -750,7 +847,7 @@ impl DifferentialPathBuilder {
         );
     }
 
-    pub fn sgmt_linear_acceleration_max_magnitude(
+    fn sgmt_linear_acceleration_max_magnitude(
         &mut self,
         from_index: usize,
         to_index: usize,
@@ -764,7 +861,7 @@ impl DifferentialPathBuilder {
         );
     }
 
-    pub fn sgmt_circle_obstacle(
+    fn sgmt_circle_obstacle(
         &mut self,
         from_index: usize,
         to_index: usize,
@@ -782,7 +879,7 @@ impl DifferentialPathBuilder {
         );
     }
 
-    pub fn sgmt_polygon_obstacle(
+    fn sgmt_polygon_obstacle(
         &mut self,
         from_index: usize,
         to_index: usize,
@@ -799,46 +896,6 @@ impl DifferentialPathBuilder {
             radius,
         );
     }
-
-    ///
-    /// Generate the trajectory;
-    ///
-    /// * diagnostics: If true, prints per-iteration details of the solver to
-    ///       stdout.
-    /// * handle: A number used to identify results from this generation in the
-    ///       `add_progress_callback` callback. If `add_progress_callback` has
-    ///       not been called, this value has no significance.
-    ///
-    /// Returns a result with either the final `trajopt::DifferentialTrajectory`,
-    /// or a String error message if generation failed.
-    ///
-    pub fn generate(
-        &mut self,
-        diagnostics: bool,
-        handle: i64,
-    ) -> Result<DifferentialTrajectory, String> {
-        match self.path_builder.generate(diagnostics, handle) {
-            Ok(traj) => Ok(traj),
-            Err(msg) => Err(msg.what().to_string()),
-        }
-    }
-
-    ///
-    /// Add a callback that will be called on each iteration of the solver.
-    ///
-    /// * callback: a `fn` (not a closure) to be executed. The callback's first
-    ///       parameter will be a `trajopt::DifferentialTrajectory`, and the
-    ///       second parameter will be an `i64` equal to the handle passed in
-    ///       `generate()`
-    ///
-    /// This function can be called multiple times to add multiple callbacks.
-    ///
-    pub fn add_progress_callback(&mut self, callback: fn(DifferentialTrajectory, i64)) {
-        crate::ffi::DifferentialPathBuilder::add_progress_callback(
-            self.path_builder.pin_mut(),
-            callback,
-        );
-    }
 }
 
 impl Default for DifferentialPathBuilder {
@@ -851,6 +908,9 @@ pub fn cancel_all() {
     crate::ffi::cancel_all();
 }
 
+use std::any::Any;
+
+use error::TrajoptError;
 pub use ffi::DifferentialDrivetrain;
 pub use ffi::DifferentialTrajectory;
 pub use ffi::DifferentialTrajectorySample;
@@ -859,3 +919,5 @@ pub use ffi::SwerveDrivetrain;
 pub use ffi::SwerveTrajectory;
 pub use ffi::SwerveTrajectorySample;
 pub use ffi::Translation2d;
+
+pub mod error;

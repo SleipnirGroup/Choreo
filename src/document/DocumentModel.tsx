@@ -1,4 +1,4 @@
-import { UnlistenFn, listen } from "@tauri-apps/api/event";
+import { Event, UnlistenFn, listen } from "@tauri-apps/api/event";
 import { Instance, types, getParent } from "mobx-state-tree";
 import { UndoManager } from "mst-middlewares";
 import { toast } from "react-toastify";
@@ -7,7 +7,10 @@ import {
   Project,
   SAVE_FILE_VERSION,
   Traj,
-  TrajoptlibSample
+  SwerveTrajoptlibSample,
+  ProgressUpdate,
+  SampleType,
+  DifferentialTrajectorySample
 } from "./2025/DocumentTypes";
 import {
   CircularObstacleStore,
@@ -23,6 +26,7 @@ import {
 import { PathListStore } from "./PathListStore";
 import { RobotConfigStore } from "./RobotConfigStore";
 import { Commands } from "./tauriCommands";
+import { tracing } from "./tauriTracing";
 
 export type SelectableItemTypes =
   | IHolonomicWaypointStore
@@ -49,8 +53,14 @@ export const SelectableItem = types.union(
   EventMarkerStore,
   ConstraintStore
 );
+export const ISampleType = types.enumeration<SampleType>([
+  "Swerve",
+  "Differential"
+]);
 export const DocumentStore = types
   .model("DocumentStore", {
+    name: types.string,
+    type: ISampleType,
     pathlist: PathListStore,
     robotConfig: RobotConfigStore,
     variables: Variables,
@@ -62,7 +72,9 @@ export const DocumentStore = types
   .views((self) => ({
     serializeChor(): Project {
       return {
+        name: self.name,
         version: SAVE_FILE_VERSION,
+        type: self.type,
         variables: self.variables.serialize,
         config: self.robotConfig.serialize
       };
@@ -70,13 +82,13 @@ export const DocumentStore = types
     get isSidebarConstraintSelected() {
       return (
         self.selectedSidebarItem !== undefined &&
-        self.selectedSidebarItem.from !== undefined
+        Object.hasOwn(self.selectedSidebarItem, "from")
       );
     },
     get isSidebarCircularObstacleSelected() {
       return (
         self.selectedSidebarItem !== undefined &&
-        self.selectedSidebarItem.radius !== undefined
+        Object.hasOwn(self.selectedSidebarItem, "radius")
       );
     },
     get isSidebarWaypointSelected() {
@@ -89,13 +101,13 @@ export const DocumentStore = types
     get isSidebarConstraintHovered() {
       return (
         self.hoveredSidebarItem !== undefined &&
-        self.hoveredSidebarItem.from !== undefined
+        Object.hasOwn(self.hoveredSidebarItem, "from")
       );
     },
     get isSidebarCircularObstacleHovered() {
       return (
         self.hoveredSidebarItem !== undefined &&
-        self.hoveredSidebarItem.radius !== undefined
+        Object.hasOwn(self.hoveredSidebarItem, "radius")
       );
     },
     get isSidebarWaypointHovered() {
@@ -121,9 +133,17 @@ export const DocumentStore = types
   }))
   .actions((self) => ({
     deserializeChor(ser: Project) {
+      self.name = ser.name;
       self.variables.deserialize(ser.variables);
       self.robotConfig.deserialize(ser.config);
       self.pathlist.paths.clear();
+      self.type = ser.type;
+    },
+    setName(name: string) {
+      self.name = name;
+    },
+    setType(type: SampleType) {
+      self.type = type;
     },
     setSelectedSidebarItem(item: SelectableItemTypes) {
       self.history.withoutUndo(() => {
@@ -153,49 +173,30 @@ export const DocumentStore = types
       if (pathStore === undefined) {
         throw "Path store is undefined";
       }
-      if (pathStore.path.waypoints.length < 2) {
+      if (pathStore.params.waypoints.length < 2) {
         return;
       }
-      console.log(pathStore.serialize);
       const config = self.robotConfig.serialize;
-      pathStore.path.constraints.forEach((constraint) => {
+      pathStore.params.constraints.forEach((constraint) => {
         if (constraint.issues.length > 0) {
           throw constraint.issues.join(", ");
         }
       });
-
-      // TODO error if start or end are unconstrained.
-      // pathStore.waypoints.forEach((wpt, idx) => {
-      //   if (!wpt.fixHeading && !wpt.fixTranslation) {
-      //     if (idx == 0) {
-      //       reject("Cannot start a path with an ");
-      //     } else if (idx == pathStore.waypoints.length - 1) {
-      //       reject("Cannot end a path with an initial guess point.");
-      //     }
-      //   }
-      // });
       pathStore.ui.setGenerating(true);
-      // Capture the timestamps of the waypoints that were actually sent to the solver
-      // const waypointTimestamps = pathStore.waypointTimestamps();
-      // console.log(waypointTimestamps);
-      // const stopPoints = pathStore.stopPoints();
-      // generatedWaypoints = pathStore.waypoints.map((point, idx) => ({
-      //   timestamp: 0,
-      //   isStopPoint: stopPoints.includes(idx),
-      //   ...point.asSavedWaypoint()
-      // }));
-      // pathStore.eventMarkers.forEach((m) => m.updateTargetIndex());
       const handle = pathStore.uuid
         .split("")
         .reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) | 0, 0);
       let unlisten: UnlistenFn;
       pathStore.ui.setIterationNumber(0);
-
       await Commands.guessIntervals(config, pathStore.serialize)
+        .catch((e) => {
+          tracing.error("guessIntervals:", e);
+          throw e;
+        })
         .then((counts) => {
-          console.log(counts);
+          tracing.debug(counts);
           counts.forEach((count, i) => {
-            const waypoint = pathStore.path.waypoints[i];
+            const waypoint = pathStore.params.waypoints[i];
             if (waypoint.overrideIntervals && count !== waypoint.intervals) {
               console.assert(
                 false,
@@ -212,55 +213,58 @@ export const DocumentStore = types
             }
           });
         })
-        .then(() =>
-          listen("solver-status", async (event) => {
-            if (event.payload!.handle == handle) {
-              const samples = event.payload.traj.samples as TrajoptlibSample[];
-              const progress = pathStore.ui.generationProgress;
-              const useModuleForces = pathStore.traj.useModuleForces;
-              // mutate in-progress trajectory in place if it's already the right size
-              // should avoid allocations on every progress update
-              if (samples.length != progress.length) {
-                pathStore.ui.setInProgressTrajectory(
-                  samples.map((s) => ({
-                    t: s.timestamp,
-                    vx: s.velocity_x,
-                    vy: s.velocity_y,
-                    omega: s.angular_velocity,
-                    fx: useModuleForces ? s.module_forces_x : [0, 0, 0, 0],
-                    fy: useModuleForces ? s.module_forces_y : [0, 0, 0, 0],
-                    ...s
-                  }))
-                );
-              } else {
-                for (let i = 0; i < samples.length; i++) {
-                  const samp = samples[i];
-                  const prog = progress[i];
-                  prog.t = samp.timestamp;
-                  prog.x = samp.x;
-                  prog.y = samp.y;
-                  prog.heading = samp.heading;
-                  prog.vx = samp.velocity_x;
-                  prog.vy = samp.velocity_y;
-                  prog.omega = samp.angular_velocity;
-
-                  prog.fx = useModuleForces
-                    ? samp.module_forces_x
-                    : [0, 0, 0, 0];
-                  prog.fy = useModuleForces
-                    ? samp.module_forces_x
-                    : [0, 0, 0, 0];
-                }
-              }
-              // todo: get this from the progress update, so it actually means something
-              // beyond just triggering UI updates
+        .then(() => {
+          tracing.debug("generatePathPre");
+          return listen(`solver-status-${handle}`, async (rawEvent) => {
+            const event: Event<ProgressUpdate> =
+              rawEvent as Event<ProgressUpdate>;
+            if (event.payload!.type === "swerveTraj") {
+              const samples = event.payload.update as SwerveTrajoptlibSample[];
+              const forcesAvailable = pathStore.traj.forcesAvailable;
+              pathStore.ui.setInProgressTrajectory(
+                samples.map((s) => ({
+                  t: s.timestamp,
+                  vx: s.velocity_x,
+                  vy: s.velocity_y,
+                  omega: s.angular_velocity,
+                  ax: s.acceleration_x,
+                  ay: s.acceleration_y,
+                  alpha: s.angular_acceleration,
+                  fx: forcesAvailable ? s.module_forces_x : [0, 0, 0, 0],
+                  fy: forcesAvailable ? s.module_forces_y : [0, 0, 0, 0],
+                  ...s
+                }))
+              );
               pathStore.ui.setIterationNumber(
                 pathStore.ui.generationIterationNumber + 1
               );
+            } else if (event.payload!.type === "diffTraj") {
+              const samples = event.payload
+                .update as DifferentialTrajectorySample[];
+              const forcesAvailable = pathStore.traj.forcesAvailable;
+              pathStore.ui.setInProgressTrajectory(
+                samples.map((s) => ({
+                  t: s.timestamp,
+                  vl: s.velocity_l,
+                  vr: s.velocity_r,
+                  //omega: s.angular_velocity,
+                  al: s.acceleration_l,
+                  ar: s.acceleration_r,
+                  fl: forcesAvailable ? s.force_l : 0,
+                  fr: forcesAvailable ? s.force_r : 0,
+                  ...s
+                }))
+              );
+              pathStore.ui.setIterationNumber(
+                pathStore.ui.generationIterationNumber + 1
+              );
+            } else if (event.payload!.type === "diagnosticText") {
+              // const line = event.payload.update as string;
+              // This is the text output of sleipnir solver
+              // console.log(line)
             }
-          })
-        )
-
+          });
+        })
         .then((unlistener) => {
           unlisten = unlistener;
           return Commands.generate(
@@ -275,6 +279,7 @@ export const DocumentStore = types
         .then(
           (rust_traj) => {
             const result: Traj = rust_traj as Traj;
+            console.log(result);
             if (result.traj.samples.length == 0) throw "No traj";
             self.history.startGroup(() => {
               const newTraj = result.traj.samples;
@@ -288,13 +293,7 @@ export const DocumentStore = types
             });
           },
           (e) => {
-            console.error(e);
-            if ((e as string).includes("infeasible")) {
-              throw "Infeasible Problem Detected";
-            }
-            if ((e as string).includes("maximum iterations exceeded")) {
-              throw "Maximum Iterations Exceeded";
-            }
+            tracing.error("generatePathPost:", e);
             throw e;
           }
         )
@@ -308,6 +307,7 @@ export const DocumentStore = types
   .actions((self) => {
     return {
       generatePathWithToasts(activePathUUID: string) {
+        tracing.debug("generatePathWithToasts", activePathUUID);
         const path = self.pathlist.paths.get(activePathUUID)!;
         if (path.ui.generating) {
           return Promise.resolve();
@@ -327,18 +327,14 @@ export const DocumentStore = types
 
           error: {
             render({ data, toastProps }) {
-              console.error(data);
-              if ((data as string).includes("callback requested stop")) {
-                toastProps.style = { visibility: "hidden" };
-                return `Cancelled "${pathName}"`;
-              }
+              tracing.error("generatePathWithToasts:", data);
               return `Can't generate "${pathName}": ` + (data as string);
             }
           }
         });
       },
       zoomToFitWaypoints() {
-        const waypoints = self.pathlist.activePath.path.waypoints;
+        const waypoints = self.pathlist.activePath.params.waypoints;
         if (waypoints.length <= 0) {
           return;
         }

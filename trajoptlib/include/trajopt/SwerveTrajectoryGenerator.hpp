@@ -2,15 +2,13 @@
 
 #pragma once
 
-#include <stdint.h>
-
 #include <functional>
-#include <string>
 #include <utility>
 #include <vector>
 
 #include <sleipnir/autodiff/Variable.hpp>
 #include <sleipnir/optimization/OptimizationProblem.hpp>
+#include <sleipnir/optimization/SolverExitCondition.hpp>
 
 #include "trajopt/geometry/Translation2.hpp"
 #include "trajopt/path/PathBuilder.hpp"
@@ -114,6 +112,15 @@ class TRAJOPT_DLLEXPORT SwerveTrajectorySample {
   /// The angular velocity.
   double angularVelocity = 0.0;
 
+  /// The acceleration's x component.
+  double accelerationX = 0.0;
+
+  /// The acceleration's y component.
+  double accelerationY = 0.0;
+
+  /// The angular acceleration.
+  double angularAcceleration = 0.0;
+
   /// The force on each module in the X direction.
   std::vector<double> moduleForcesX;
 
@@ -132,12 +139,16 @@ class TRAJOPT_DLLEXPORT SwerveTrajectorySample {
    * @param velocityX The velocity's x component.
    * @param velocityY The velocity's y component.
    * @param angularVelocity The angular velocity.
+   * @param accelerationX The acceleration's x component.
+   * @param accelerationY The acceleration's y component.
+   * @param angularAcceleration The angular acceleration.
    * @param moduleForcesX Forces acting on the modules in the X direction.
    * @param moduleForcesY Forces acting on the modules in the Y direction.
    */
   SwerveTrajectorySample(double timestamp, double x, double y, double heading,
                          double velocityX, double velocityY,
-                         double angularVelocity,
+                         double angularVelocity, double accelerationX,
+                         double accelerationY, double angularAcceleration,
                          std::vector<double> moduleForcesX,
                          std::vector<double> moduleForcesY)
       : timestamp{timestamp},
@@ -147,6 +158,9 @@ class TRAJOPT_DLLEXPORT SwerveTrajectorySample {
         velocityX{velocityX},
         velocityY{velocityY},
         angularVelocity{angularVelocity},
+        accelerationX{accelerationX},
+        accelerationY{accelerationY},
+        angularAcceleration{angularAcceleration},
         moduleForcesX{std::move(moduleForcesX)},
         moduleForcesY{std::move(moduleForcesY)} {}
 };
@@ -181,6 +195,7 @@ class TRAJOPT_DLLEXPORT SwerveTrajectory {
           ts, solution.x[sample], solution.y[sample],
           std::atan2(solution.thetasin[sample], solution.thetacos[sample]),
           solution.vx[sample], solution.vy[sample], solution.omega[sample],
+          solution.ax[sample], solution.ay[sample], solution.alpha[sample],
           solution.moduleFX[sample], solution.moduleFY[sample]);
       ts += solution.dt[sample];
     }
@@ -223,7 +238,8 @@ class TRAJOPT_DLLEXPORT SwerveTrajectoryGenerator {
    * @return Returns a holonomic trajectory on success, or a string containing a
    *   failure reason.
    */
-  expected<SwerveSolution, std::string> Generate(bool diagnostics = false);
+  expected<SwerveSolution, sleipnir::SolverExitCondition> Generate(
+      bool diagnostics = false);
 
  private:
   /// Swerve path

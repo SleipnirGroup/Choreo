@@ -1,14 +1,8 @@
-import {
-  KeyboardDoubleArrowRight,
-  NearMe,
-  StopCircleOutlined,
-  TextRotationNoneOutlined
-} from "@mui/icons-material";
-import { Unit } from "mathjs";
+import { NearMe, StopCircleOutlined, SyncOutlined } from "@mui/icons-material";
 import { JSXElementConstructor, ReactElement } from "react";
 import { ObjectTyped } from "../util/ObjectTyped";
 import { Expr } from "./2025/DocumentTypes";
-import { Units } from "./ExpressionStore";
+import { Dimension, DimensionName, Dimensions } from "./ExpressionStore";
 
 export type ConstraintPropertyType = Expr | boolean;
 
@@ -16,7 +10,7 @@ export type ConstraintPropertyDefinition<P extends ConstraintPropertyType> = {
   name: string;
   description: string;
   defaultVal: P;
-} & (P extends Expr ? { units: Unit } : object);
+} & (P extends Expr ? { dimension: Dimension<DimensionName> } : object);
 
 export type DataPropsList = { [key: string]: ConstraintPropertyType };
 export type PropertyDefinitionList<P extends DataPropsList> = {
@@ -45,9 +39,12 @@ interface IConstraintData<name, Props extends DataPropsList> {
 }
 
 export type ConstraintDataTypeMap = {
-  StopPoint: Record<string, never>;
+  //Record<string,never> broke the keyof operator
+  //eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  StopPoint: {};
   MaxVelocity: { max: Expr };
   MaxAcceleration: { max: Expr };
+  MaxAngularVelocity: { max: Expr };
   PointAt: {
     x: Expr;
     y: Expr;
@@ -80,12 +77,12 @@ export const ConstraintDefinitions: defs = {
     name: "Max Velocity",
     shortName: "Max Velo",
     description: "Maximum Velocity",
-    icon: <KeyboardDoubleArrowRight />,
+    icon: Dimensions.LinVel.icon(),
     properties: {
       max: {
         name: "Max Velocity",
         description: "Maximum linear velocity of robot chassis",
-        units: Units.MeterPerSecond,
+        dimension: Dimensions.LinVel,
         defaultVal: ["0 m/s", 0]
       }
     },
@@ -97,18 +94,35 @@ export const ConstraintDefinitions: defs = {
     name: "Max Acceleration",
     shortName: "Max Acc",
     description: "Maximum Linear Acceleration",
-    icon: <TextRotationNoneOutlined />,
+    icon: Dimensions.LinAcc.icon(),
     properties: {
       max: {
         name: "Max Acceleration",
         description: "Maximum Linear Acceleration of robot chassis",
-        units: Units.MeterPerSecondSquared,
+        dimension: Dimensions.LinAcc,
         defaultVal: ["10 m/s^2", 10]
       }
     },
     wptScope: true,
     sgmtScope: true
   } satisfies ConstraintDefinition<"MaxAcceleration">,
+  MaxAngularVelocity: {
+    type: "MaxAngularVelocity" as const,
+    name: "Max Angular Velocity",
+    shortName: "Max Ang Vel",
+    description: "Maximum Angular Velocity",
+    icon: <SyncOutlined />,
+    properties: {
+      max: {
+        name: "Max Angular Velocity",
+        description: "Maximum Angular Velocity of robot chassis",
+        dimension: Dimensions.AngVel,
+        defaultVal: ["0 rad/s", 0]
+      }
+    },
+    wptScope: true,
+    sgmtScope: true
+  } satisfies ConstraintDefinition<"MaxAngularVelocity">,
   PointAt: {
     type: "PointAt" as const,
     name: "Point At",
@@ -119,20 +133,20 @@ export const ConstraintDefinitions: defs = {
       x: {
         name: "X",
         description: "The x coordinate of the point the robot should face",
-        units: Units.Meter,
+        dimension: Dimensions.Length,
         defaultVal: ["0 m", 0]
       },
       y: {
         name: "Y",
         description: "The y coordinate of the point the robot should face",
-        units: Units.Meter,
+        dimension: Dimensions.Length,
         defaultVal: ["0 m", 0]
       },
       tolerance: {
-        name: "Heading Tolerance",
+        name: "θ Tol.",
         description:
           "The allowable heading range relative to the direction to the point. Keep less than Pi.",
-        units: Units.Radian,
+        dimension: Dimensions.Angle,
         defaultVal: ["1 deg", Math.PI / 180.0]
       },
       flip: {

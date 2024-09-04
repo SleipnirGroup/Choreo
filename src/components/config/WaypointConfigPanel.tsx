@@ -49,83 +49,95 @@ class WaypointPanel extends Component<Props, State> {
               //setNumber={(heading) => waypoint!.setHeading(heading)}
             ></ExpressionInput>
           </ExpressionInputList>
-
-          <InputList>
-            <Input
-              title="Samples"
-              suffix=""
-              showCheckbox={!waypoint.isLast()}
-              enabled={waypoint.overrideIntervals && !waypoint.isLast()}
-              showNumberWhenDisabled={!waypoint.isLast()}
-              setEnabled={(e) => {
-                waypoint.setOverrideIntervals(e);
-              }}
-              maxWidthCharacters={8}
-              number={waypoint.intervals}
-              roundingPrecision={0}
-              setNumber={(num) => {
-                waypoint.setIntervals(num);
-              }}
-              titleTooltip="Override the number of samples between this and next waypoint"
-            ></Input>
-            <BooleanInput
-              title={"Split"}
-              enabled={true}
-              value={waypoint.split}
-              setValue={(s) => waypoint.setSplit(s)}
-              titleTooltip="Split trajectory at this point. Does not force stopping."
-            ></BooleanInput>
-          </InputList>
-          <ToggleButtonGroup
-            sx={{ marginInline: "auto", paddingTop: "8px" }}
-            size="small"
-            exclusive
-            value={waypointType}
-            onChange={(e, newSelection) => {
-              waypoint?.setType(newSelection);
-            }}
-          >
-            {Object.entries(WaypointData).map((entry) => {
-              const waypoint: {
-                index: number;
-                name: string;
-                icon: ReactElement;
-              } = entry[1];
-              return (
-                <Tooltip
-                  disableInteractive
-                  key={waypoint.index}
-                  value={waypoint.index}
-                  title={waypoint.name}
-                >
-                  <ToggleButton
-                    value={waypoint.index}
-                    sx={{
-                      color: "var(--accent-purple)",
-                      "&.Mui-selected": {
-                        color: "var(--select-yellow)"
-                      }
-                    }}
-                  >
-                    {waypoint.icon}
-                  </ToggleButton>
-                </Tooltip>
-              );
-            })}
-          </ToggleButtonGroup>
-          {/* <span
+          <span
             style={{
-              width: "min-content",
-              padding: "inherit",
-              background: "var(--darker-purple)",
-              borderBottomRightRadius: "8px",
-              fontWeight: "bolder",
-              fontSize: "1em",
-
+              display: "flex",
+              flexDirection: "row",
+              gap: "8px",
+              paddingTop: "8px"
             }}
           >
-            {index + 1}
-          </span> */}
+            <InputList>
+              <Input
+                title="Samples"
+                suffix=""
+                showCheckbox={!waypoint.isLast()}
+                enabled={waypoint.overrideIntervals && !waypoint.isLast()}
+                showNumberWhenDisabled={!waypoint.isLast()}
+                setEnabled={(e) => {
+                  waypoint.setOverrideIntervals(e);
+                }}
+                maxWidthCharacters={4}
+                number={waypoint.intervals}
+                roundingPrecision={0}
+                setNumber={(num) => {
+                  waypoint.setIntervals(num);
+                }}
+                titleTooltip="Override the number of samples between this and next waypoint"
+              ></Input>
+              <BooleanInput
+                title={"Split"}
+                enabled={true}
+                value={waypoint.split}
+                setValue={(s) => waypoint.setSplit(s)}
+                titleTooltip="Split trajectory at this point. Does not force stopping."
+              ></BooleanInput>
+            </InputList>
+            <span style={{ flexGrow: 1 }}></span>
+            <ToggleButtonGroup
+              sx={{ marginInline: "auto" }}
+              size="small"
+              exclusive
+              value={waypointType}
+              onChange={(e, newSelection) => {
+                waypoint?.setType(newSelection);
+              }}
+            >
+              {Object.entries(WaypointData).map((entry) => {
+                const waypoint: {
+                  index: number;
+                  name: string;
+                  icon: ReactElement;
+                } = entry[1];
+                return (
+                  <Tooltip
+                    disableInteractive
+                    key={waypoint.index}
+                    //@ts-expect-error We need the value for the toggle group
+                    value={waypoint.index}
+                    title={waypoint.name}
+                  >
+                    <ToggleButton
+                      value={waypoint.index}
+                      sx={{
+                        color: "var(--accent-purple)",
+                        "&.Mui-selected": {
+                          color: "var(--select-yellow)"
+                        }
+                      }}
+                    >
+                      {waypoint.icon}
+                    </ToggleButton>
+                  </Tooltip>
+                );
+              })}
+            </ToggleButtonGroup>
+            <div
+              style={{
+                width: "min-content",
+                padding: "4px",
+                background: "var(--darker-purple)",
+                borderRadius: "8px",
+                fontWeight: "bolder",
+                fontSize: "1em",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center"
+              }}
+            >
+              <div>{this.props.index + 1}</div>
+            </div>
+          </span>
         </div>
       );
     }

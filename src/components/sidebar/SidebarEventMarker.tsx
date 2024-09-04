@@ -4,7 +4,7 @@ import { IconButton, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import { getParent } from "mobx-state-tree";
 import React, { Component } from "react";
-import { WaypointID } from "../../document/ConstraintStore";
+import { WaypointID } from "../../document/ConstraintDefinitions";
 import { doc } from "../../document/DocumentManager";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
 import { IChoreoTrajStore } from "../../document/path/ChoreoTrajStore";
@@ -31,7 +31,7 @@ class SidebarMarker extends Component<Props, State> {
         getParent<IChoreoTrajStore>(
           getParent<IEventMarkerStore[]>(this.props.marker)
         )
-      ).path.findUUIDIndex(id.uuid) + 1
+      ).params.findUUIDIndex(id.uuid) + 1
     );
   }
 
