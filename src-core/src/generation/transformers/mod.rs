@@ -213,8 +213,8 @@ fn postprocess(result: &[Sample], mut path: TrajFile, counts_vec: Vec<usize>) ->
         .zip(snapshot.waypoints.iter_mut())
         .zip(counts_vec)
         .for_each(|w| {
-            w.0 .0.intervals = Some(w.1);
-            w.0 .1.intervals = Some(w.1);
+            w.0 .0.intervals = w.1;
+            w.0 .1.intervals = w.1;
         });
     // convert the result from trajoptlib to a format matching the save file.
     // Calculate the waypoint timing
@@ -225,7 +225,7 @@ fn postprocess(result: &[Sample], mut path: TrajFile, counts_vec: Vec<usize>) ->
         .enumerate()
         .map(|pt| {
             let total_intervals = interval;
-            interval += pt.1.intervals.unwrap_or(40);
+            interval += pt.1.intervals;
             (
                 pt.1.split || pt.0 == 0 || pt.0 == snapshot.waypoints.len() - 1,
                 total_intervals,

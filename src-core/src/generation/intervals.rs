@@ -49,8 +49,8 @@ pub fn guess_control_interval_counts(
         .iter()
         .enumerate()
         .map(|(i, w)| {
-            if let Some(intervals) = w.intervals {
-                intervals
+            if w.override_intervals {
+                w.intervals
             } else {
                 guess_control_interval_count(i, params, config, w)
             }
@@ -66,7 +66,7 @@ pub fn guess_control_interval_count(
 ) -> usize {
     let next = params.waypoints.get(i + 1);
     match next {
-        None => this.intervals.unwrap_or(40),
+        None => this.intervals,
         Some(next) => {
             let dx = next.x - this.x;
             let dy = next.y - this.y;

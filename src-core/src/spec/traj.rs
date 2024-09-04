@@ -20,13 +20,15 @@ pub struct Waypoint<T: SnapshottableType> {
     /// Units: radians
     pub heading: T,
     /// The number of control intervals to use between this waypoint and the next.
-    pub intervals: Option<usize>,
+    pub intervals: usize,
     /// Whether to split the trajectory at this waypoint.
     pub split: bool,
     /// TODO
     pub fix_translation: bool,
     /// TODO
     pub fix_heading: bool,
+    /// Whether to override the intervals.
+    pub override_intervals: bool,
     /// Whether this waypoint is an initial guess,
     /// completely invisible to the frontend.
     #[serde(skip, default)]
@@ -44,6 +46,7 @@ impl<T: SnapshottableType> Waypoint<T> {
             split: self.split,
             fix_translation: self.fix_translation,
             fix_heading: self.fix_heading,
+            override_intervals: self.override_intervals,
             is_initial_guess: self.is_initial_guess,
         }
     }
