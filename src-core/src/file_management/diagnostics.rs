@@ -9,7 +9,8 @@ use std::{
 use zip;
 
 use crate::{
-    spec::{project::ProjectFile, traj::TrajFile}, ChoreoError, ChoreoResult
+    spec::{project::ProjectFile, traj::TrajFile},
+    ChoreoError, ChoreoResult,
 };
 
 fn tmpname(prefix: &str, suffix: &str, rand_len: usize) -> OsString {

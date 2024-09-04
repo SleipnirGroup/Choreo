@@ -187,7 +187,6 @@ pub fn cancel_all_remote_generators(app_handle: tauri::AppHandle) {
     remote_resources.kill_all();
 }
 
-
 #[tauri::command]
 pub fn open_diagnostic_file(project: ProjectFile, trajs: Vec<TrajFile>) -> TauriResult<()> {
     tracing::debug!("Opening diagnostic file");
