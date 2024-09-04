@@ -6,6 +6,7 @@ use trajoptlib::error::TrajoptError;
 
 #[derive(Error, Debug, Serialize, Deserialize)]
 #[allow(missing_docs)]
+#[serde(tag = "type", content = "content")]
 pub enum ChoreoError {
     #[error("IO error: {0:?}")]
     Io(String),

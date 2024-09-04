@@ -3,7 +3,7 @@ use crate::{api::*, logging};
 use choreo_core::file_management::WritingResources;
 use choreo_core::generation::{generate::setup_progress_sender, remote::RemoteGenerationResources};
 use choreo_core::spec::OpenFilePayload;
-use choreo_core::ResultExt;
+use choreo_core::{ChoreoError, ResultExt};
 use logging::now_str;
 use std::io::Write;
 use std::path::PathBuf;
@@ -12,6 +12,29 @@ use std::{fs, thread};
 use tauri::Manager;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+#[derive(Debug)]
+pub struct TauriChoreoError(ChoreoError);
+
+impl From<ChoreoError> for TauriChoreoError {
+    fn from(e: ChoreoError) -> Self {
+        Self(e)
+    }
+}
+
+impl std::fmt::Display for TauriChoreoError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl serde::Serialize for TauriChoreoError {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        self.0.to_string().replace(['\"', '\\'], "").serialize(serializer)
+    }
+}
+
+pub type TauriResult<T> = std::result::Result<T, TauriChoreoError>;
 
 static REQUESTED_FILE: OnceLock<OpenFilePayload> = OnceLock::new();
 
@@ -65,6 +88,11 @@ pub async fn tracing_frontend(level: String, msg: String, file: String, function
         ),
         _ => tracing::error!("Invalid log level: {}", level),
     }
+}
+
+#[tauri::command]
+pub async fn error_message(error: ChoreoError) -> String {
+    error.to_string()
 }
 
 fn setup_tracing() -> Vec<WorkerGuard> {
@@ -185,7 +213,8 @@ pub fn run_tauri(project: Option<PathBuf>) {
             cancel_remote_generator,
             cancel_all_remote_generators,
             build_info,
-            open_diagnostic_file
+            open_diagnostic_file,
+            error_message
         ])
         .run(context)
         .expect("error while running tauri application");
