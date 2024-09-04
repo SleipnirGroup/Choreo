@@ -261,8 +261,8 @@ fn nudge_zero(f: f64) -> f64 {
     }
 }
 
-impl From<SwerveTrajectorySample> for Sample {
-    fn from(swerve_sample: SwerveTrajectorySample) -> Self {
+impl From<&SwerveTrajectorySample> for Sample {
+    fn from(swerve_sample: &SwerveTrajectorySample) -> Self {
         Sample::Swerve {
             t: nudge_zero(swerve_sample.timestamp),
             x: nudge_zero(swerve_sample.x),
@@ -289,9 +289,14 @@ impl From<SwerveTrajectorySample> for Sample {
         }
     }
 }
+impl From<SwerveTrajectorySample> for Sample {
+    fn from(value: SwerveTrajectorySample) -> Self {
+        Self::from(&value)
+    }
+}
 
-impl From<DifferentialTrajectorySample> for Sample {
-    fn from(diff_sample: DifferentialTrajectorySample) -> Self {
+impl From<&DifferentialTrajectorySample> for Sample {
+    fn from(diff_sample: &DifferentialTrajectorySample) -> Self {
         Sample::DifferentialDrive {
             t: nudge_zero(diff_sample.timestamp),
             x: nudge_zero(diff_sample.x),
@@ -304,6 +309,11 @@ impl From<DifferentialTrajectorySample> for Sample {
             fl: nudge_zero(diff_sample.force_l),
             fr: nudge_zero(diff_sample.force_r),
         }
+    }
+}
+impl From<DifferentialTrajectorySample> for Sample {
+    fn from(value: DifferentialTrajectorySample) -> Self {
+        Self::from(&value)
     }
 }
 
