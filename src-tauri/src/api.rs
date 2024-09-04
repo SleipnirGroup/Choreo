@@ -187,10 +187,9 @@ pub fn cancel_all_remote_generators(app_handle: tauri::AppHandle) {
 }
 
 #[tauri::command]
-pub fn open_diagnostic_file(app_handle: tauri::AppHandle, project: ProjectFile, trajs: Vec<TrajFile>) -> ChoreoResult<()> {
+pub fn open_diagnostic_file(project: ProjectFile, trajs: Vec<TrajFile>) -> ChoreoResult<()> {
     tracing::debug!("Opening diagnostic file");
-    let config = app_handle.config();
-    let log_lines = if let Some(dir) = tauri::api::path::app_log_dir(&config) {
+    let log_lines = if let Some(dir) = dirs::state_dir().map(|d| d.join("logs")) {
         tracing::debug!("Looking for log files in {:}", dir.display());
         let mut log_files = std::fs::read_dir(dir)?
             .filter_map(|entry| entry.ok())
