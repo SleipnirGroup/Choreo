@@ -227,6 +227,9 @@ export const DocumentStore = types
                   vx: s.velocity_x,
                   vy: s.velocity_y,
                   omega: s.angular_velocity,
+                  ax: s.acceleration_x,
+                  ay: s.acceleration_y,
+                  alpha: s.angular_acceleration,
                   fx: forcesAvailable ? s.module_forces_x : [0, 0, 0, 0],
                   fy: forcesAvailable ? s.module_forces_y : [0, 0, 0, 0],
                   ...s
@@ -245,6 +248,8 @@ export const DocumentStore = types
                   vl: s.velocity_l,
                   vr: s.velocity_r,
                   //omega: s.angular_velocity,
+                  al: s.acceleration_l,
+                  ar: s.acceleration_r,
                   fl: forcesAvailable ? s.force_l : 0,
                   fr: forcesAvailable ? s.force_r : 0,
                   ...s
