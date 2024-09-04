@@ -19,6 +19,8 @@ pub enum TrajoptError {
     MaxIterationsExceeded,
     #[error("The solver returned its solution so far after exceeding the maximum elapsed wall clock time.")]
     Timeout,
+    #[error("The solver returned an unparsable error code")]
+    Unparsable,
     #[error("Unknown error: {0:?}")]
     Unknown(i8),
 }
@@ -33,6 +35,7 @@ impl From<i8> for TrajoptError {
             -5 => Self::DivergingIterates,
             -6 => Self::MaxIterationsExceeded,
             -7 => Self::Timeout,
+            -128 => Self::Unparsable,
             _ => Self::Unknown(value),
         }
     }
