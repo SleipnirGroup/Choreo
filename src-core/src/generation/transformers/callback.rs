@@ -17,9 +17,7 @@ impl CallbackSetter {
 fn swerve_status_callback(traj: SwerveTrajectory, handle: i64) {
     let tx_opt = PROGRESS_SENDER_LOCK.get();
     if let Some(tx) = tx_opt {
-        tx.send(LocalProgressUpdate::SwerveTraj {
-            update: traj.samples
-        }.handled(handle))
+        tx.send(LocalProgressUpdate::from(traj).handled(handle))
         .trace_warn();
     };
 }
@@ -27,9 +25,7 @@ fn swerve_status_callback(traj: SwerveTrajectory, handle: i64) {
 fn diff_status_callback(traj: DifferentialTrajectory, handle: i64) {
     let tx_opt = PROGRESS_SENDER_LOCK.get();
     if let Some(tx) = tx_opt {
-        tx.send(LocalProgressUpdate::DiffTraj {
-            update: traj.samples
-        }.handled(handle))
+        tx.send(LocalProgressUpdate::from(traj).handled(handle))
         .trace_warn();
     };
 }

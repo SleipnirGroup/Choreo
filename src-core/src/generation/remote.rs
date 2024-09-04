@@ -15,13 +15,12 @@ use tokio::{
     select,
     sync::{oneshot, Notify},
 };
-use trajoptlib::{DifferentialTrajectorySample, SwerveTrajectorySample};
 
 use crate::{
     generation::generate::{generate, LocalProgressUpdate},
     spec::{
         project::ProjectFile,
-        traj::{TrajFile, Trajectory},
+        traj::{Sample, TrajFile, Trajectory},
     },
     ChoreoError, ChoreoResult, ResultExt,
 };
@@ -89,8 +88,10 @@ impl RemoteArgs {
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub enum RemoteProgressUpdate {
-    IncompleteSwerveTraj(Vec<SwerveTrajectorySample>),
-    IncompleteTankTraj(Vec<DifferentialTrajectorySample>),
+    // Swerve variant
+    IncompleteSwerveTraj(Vec<Sample>),
+    // Diff variant
+    IncompleteTankTraj(Vec<Sample>),
     CompleteTraj(Trajectory),
     Error(ChoreoError),
 }

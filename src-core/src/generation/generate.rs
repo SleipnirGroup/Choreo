@@ -3,16 +3,14 @@
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::OnceLock;
 
-use trajoptlib::{
-    DifferentialTrajectory, DifferentialTrajectorySample, SwerveTrajectory, SwerveTrajectorySample,
-};
+use trajoptlib::{DifferentialTrajectory, SwerveTrajectory};
 
 use super::transformers::{
     CallbackSetter, ConstraintSetter, DrivetrainAndBumpersSetter, IntervalCountSetter,
     TrajFileGenerator,
 };
 use crate::spec::project::ProjectFile;
-use crate::spec::traj::{ConstraintScope, TrajFile};
+use crate::spec::traj::{ConstraintScope, Sample, TrajFile};
 use crate::ChoreoResult;
 
 /**
@@ -27,10 +25,12 @@ pub(super) static PROGRESS_SENDER_LOCK: OnceLock<Sender<HandledLocalProgressUpda
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum LocalProgressUpdate {
     SwerveTraj {
-        update: Vec<SwerveTrajectorySample>,
+        // Swerve variant
+        update: Vec<Sample>,
     },
     DiffTraj {
-        update: Vec<DifferentialTrajectorySample>,
+        // Diff variant
+        update: Vec<Sample>,
     },
     DiagnosticText {
         update: String,
@@ -49,7 +49,7 @@ impl LocalProgressUpdate {
 impl From<SwerveTrajectory> for LocalProgressUpdate {
     fn from(traj: SwerveTrajectory) -> Self {
         LocalProgressUpdate::SwerveTraj {
-            update: traj.samples,
+            update: traj.samples.iter().map(Sample::from).collect(),
         }
     }
 }
@@ -57,7 +57,7 @@ impl From<SwerveTrajectory> for LocalProgressUpdate {
 impl From<DifferentialTrajectory> for LocalProgressUpdate {
     fn from(traj: DifferentialTrajectory) -> Self {
         LocalProgressUpdate::DiffTraj {
-            update: traj.samples,
+            update: traj.samples.iter().map(Sample::from).collect(),
         }
     }
 }
