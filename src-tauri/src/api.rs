@@ -190,7 +190,7 @@ pub fn cancel_all_remote_generators(app_handle: tauri::AppHandle) {
 #[tauri::command]
 pub fn open_diagnostic_file(project: ProjectFile, trajs: Vec<TrajFile>) -> TauriResult<()> {
     tracing::debug!("Opening diagnostic file");
-    let log_lines = get_log_lines(dirs::data_local_dir().map(|d| d.join("logs")));
+    let log_lines = get_log_lines(dirs::data_local_dir().map(|d| d.join("choreo/log")));
 
     tracing::debug!("Found {:} log lines", log_lines.len());
 
