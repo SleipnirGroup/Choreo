@@ -1,6 +1,7 @@
 use thiserror::Error;
 
 #[derive(Debug, Error)]
+// messages taken from https://github.com/SleipnirGroup/Sleipnir/blob/main/include/sleipnir/optimization/SolverExitCondition.hpp#L47-L78
 pub enum TrajoptError {
     #[error("The solver determined the problem to be overconstrained and gave up.")]
     TooFewDOF,
