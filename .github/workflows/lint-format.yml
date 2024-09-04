@@ -92,7 +92,7 @@ jobs:
           cache: "pnpm"
 
       - run: pnpm install
-      - run: npx tsc
+      - run: pnpx tsc
 
   choreolib-tidy:
     name: "ChoreoLib clang-tidy"
