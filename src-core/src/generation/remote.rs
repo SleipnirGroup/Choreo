@@ -54,7 +54,7 @@ impl RemoteGenerationResources {
     pub fn kill(&self, handle: i64) -> ChoreoResult<()> {
         self.kill_map
             .remove(&handle)
-            .ok_or(ChoreoError::OutOfBounds("Handle", "not found"))
+            .ok_or(ChoreoError::out_of_bounds("Handle", "not found"))
             .map(|(_, sender)| {
                 let _ = sender.send(());
             })
@@ -83,16 +83,16 @@ pub struct RemoteArgs {
 
 impl RemoteArgs {
     pub fn from_content(s: &str) -> ChoreoResult<Self> {
-        serde_json::from_str(s).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))
+        serde_json::from_str(s).map_err(ChoreoError::remote)
     }
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub enum RemoteProgressUpdate {
     IncompleteSwerveTraj(Vec<SwerveTrajectorySample>),
     IncompleteTankTraj(Vec<DifferentialTrajectorySample>),
     CompleteTraj(Trajectory),
-    Error(String),
+    Error(ChoreoError),
 }
 
 pub fn remote_generate_child(args: RemoteArgs) {
@@ -135,7 +135,7 @@ pub fn remote_generate_child(args: RemoteArgs) {
     let (project, traj) = match read_files(&args) {
         Ok((project, traj)) => (project, traj),
         Err(e) => {
-            let ser_string = serde_json::to_string(&RemoteProgressUpdate::Error(e.to_string()))
+            let ser_string = serde_json::to_string(&RemoteProgressUpdate::Error(e))
                 .expect("Failed to serialize progress update");
             ipc.send(ser_string)
                 .expect("Failed to send progress update");
@@ -157,7 +157,7 @@ pub fn remote_generate_child(args: RemoteArgs) {
         }
         Err(e) => {
             tracing::warn!("Failed to generate trajectory {:}", e);
-            let ser_string = serde_json::to_string(&RemoteProgressUpdate::Error(e.to_string()))
+            let ser_string = serde_json::to_string(&RemoteProgressUpdate::Error(e))
                 .expect("Failed to serialize progress update");
             ipc.send(ser_string)
                 .expect("Failed to send progress update");
@@ -184,9 +184,9 @@ pub async fn remote_generate_parent(
 
     // write project and traj to temp files
     let project_str =
-        serde_json::to_string(&project).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
+        serde_json::to_string(&project).map_err(ChoreoError::remote)?;
     let traj_str =
-        serde_json::to_string(&trajfile).map_err(|e| ChoreoError::SolverError(format!("{e:?}")))?;
+        serde_json::to_string(&trajfile).map_err(ChoreoError::remote)?;
 
     tokio::fs::write(project_tmp.path(), project_str).await?;
     tokio::fs::write(traj_tmp.path(), traj_str).await?;
@@ -194,7 +194,7 @@ pub async fn remote_generate_parent(
     tracing::debug!("Wrote project and traj to temp files");
 
     let (server, server_name) = ipc::IpcOneShotServer::<String>::new()
-        .map_err(|e| ChoreoError::SolverError(format!("Failed to create IPC server: {e:?}")))?;
+        .map_err(ChoreoError::remote)?;
 
     let remote_args = RemoteArgs {
         project: project_tmp.path().to_path_buf(),
@@ -214,7 +214,7 @@ pub async fn remote_generate_parent(
 
     let (rx, o) = server
         .accept()
-        .map_err(|e| ChoreoError::SolverError(format!("Failed to accept IPC connection: {e:?}")))?;
+        .map_err(ChoreoError::remote)?;
 
     // check if the solver has already completed
     match serde_json::from_str::<RemoteProgressUpdate>(&o) {
@@ -227,12 +227,13 @@ pub async fn remote_generate_parent(
             });
         }
         Ok(RemoteProgressUpdate::Error(e)) => {
-            return Err(ChoreoError::SolverError(e));
+            return Err(ChoreoError::remote(e));
         }
         Err(e) => {
-            return Err(ChoreoError::SolverError(format!(
+            return Err(ChoreoError::remote(
+                ChoreoError::Json(format!(
                 "Error parsing solver update: {e:?}"
-            )));
+            ))));
         }
         _ => {}
     }
@@ -322,27 +323,35 @@ pub async fn remote_generate_parent(
                                 );
                             },
                             Ok(RemoteProgressUpdate::Error(e)) => {
-                                break Err(ChoreoError::SolverError(e));
+                                break Err(ChoreoError::remote(e));
                             },
                             Err(e) => {
-                                break Err(ChoreoError::SolverError(format!("Error parsing solver update: {e:?}")));
+                                break Err(ChoreoError::remote(
+                                    ChoreoError::Json(format!("Error parsing solver update: {e:?}"))
+                                ));
                             }
                         }
                     },
                     Ok(None) => {
-                        break Err(ChoreoError::SolverError("Solver exited without sending a result (close)".to_string()));
+                        break Err(ChoreoError::remote(
+                            ChoreoError::Subprocess("Solver exited without sending a result (close)".to_string())
+                        ));
                     },
                     Err(e) => {
-                        break Err(ChoreoError::SolverError(format!("Error receiving solver update: {e:?}")));
+                        break Err(ChoreoError::remote(e));
                     },
                 }
             },
             _ = child.wait() => {
-                break Err(ChoreoError::SolverError("Solver exited without sending a result (death)".to_string()));
+                break Err(ChoreoError::remote(
+                    ChoreoError::Subprocess("Solver exited without sending a result (death)".to_string())
+                ));
             },
             _ = victim.try_next() => {
                 child.kill().await?;
-                break Err(ChoreoError::SolverError("Solver canceled".to_string()));
+                break Err(ChoreoError::remote(
+                    ChoreoError::Subprocess("Solver canceled".to_string())
+                ));
             }
         }
     };

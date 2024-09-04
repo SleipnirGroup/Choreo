@@ -11,7 +11,7 @@ use crate::{
         project::ProjectFile,
         traj::{DriveType, Parameters, Sample, TrajFile},
     },
-    ChoreoError, ChoreoResult,
+    ChoreoResult,
 };
 
 use super::intervals::guess_control_interval_counts;
@@ -105,7 +105,7 @@ impl TrajFileGenerator {
             }
         }
 
-        builder.generate(true, handle).map_err(ChoreoError::TrajOpt)
+        builder.generate(true, handle).map_err(Into::into)
     }
 
     fn generate_diffy(&self, handle: i64) -> ChoreoResult<DifferentialTrajectory> {
@@ -125,7 +125,7 @@ impl TrajFileGenerator {
             }
         }
 
-        builder.generate(true, handle).map_err(ChoreoError::TrajOpt)
+        builder.generate(true, handle).map_err(Into::into)
     }
 
     /// Generate the trajectory file

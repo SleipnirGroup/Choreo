@@ -36,13 +36,13 @@ pub fn guess_control_interval_counts(
     params: &Parameters<f64>,
 ) -> ChoreoResult<Vec<usize>> {
     if config.wheel_max_torque() <= 0.0 {
-        return Err(ChoreoError::Sign("Wheel max torque", "positive"));
+        return Err(ChoreoError::sign("Wheel max torque", "positive"));
     } else if config.wheel_max_velocity() <= 0.0 {
-        return Err(ChoreoError::Sign("Wheel max velocity", "positive"));
+        return Err(ChoreoError::sign("Wheel max velocity", "positive"));
     } else if config.mass <= 0.0 {
-        return Err(ChoreoError::Sign("Robot mass", "positive"));
+        return Err(ChoreoError::sign("Robot mass", "positive"));
     } else if config.radius <= 0.0 {
-        return Err(ChoreoError::Sign("Wheel radius", "positive"));
+        return Err(ChoreoError::sign("Wheel radius", "positive"));
     }
     Ok(params
         .waypoints
