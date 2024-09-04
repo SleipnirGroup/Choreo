@@ -9,8 +9,7 @@ use std::{
 use zip;
 
 use crate::{
-    spec::{project::ProjectFile, traj::TrajFile},
-    ChoreoResult,
+    spec::{project::ProjectFile, traj::TrajFile}, ChoreoError, ChoreoResult
 };
 
 fn tmpname(prefix: &str, suffix: &str, rand_len: usize) -> OsString {
@@ -59,4 +58,48 @@ pub fn create_diagnostic_file(
 
     zip.finish()?;
     Ok(temp_path)
+}
+
+pub fn get_log_lines(log_dir: Option<PathBuf>) -> Vec<String> {
+    if let Some(dir) = log_dir {
+        tracing::debug!("Looking for log files in {:}", dir.display());
+        match std::fs::read_dir(dir) {
+            Ok(dir_content) => {
+                let mut log_files = dir_content
+                    .filter_map(|entry| entry.ok())
+                    .filter(|entry| entry.file_type().map(|ft| ft.is_file()).unwrap_or(false))
+                    .filter(|entry| entry.file_name().to_string_lossy().ends_with(".log"))
+                    .collect::<Vec<_>>();
+                log_files.sort_by_key(|entry| {
+                    entry
+                        .metadata()
+                        .map(|m| m.modified().unwrap_or(std::time::SystemTime::UNIX_EPOCH))
+                        .unwrap_or(std::time::SystemTime::UNIX_EPOCH)
+                });
+                let log_file = log_files.last().ok_or(ChoreoError::FileNotFound(None));
+                match log_file {
+                    Ok(log_file) => {
+                        return std::fs::read_to_string(log_file.path())
+                            .unwrap_or_else(|e| {
+                                tracing::error!("{e}");
+                                String::new()
+                            })
+                            .lines()
+                            .map(|line| format!("{:}\n", line))
+                            .collect::<Vec<String>>()
+                    }
+                    Err(e) => {
+                        tracing::error!("{e}");
+                        Vec::new()
+                    }
+                }
+            }
+            Err(e) => {
+                tracing::error!("{e}");
+                Vec::new()
+            }
+        }
+    } else {
+        Vec::new()
+    }
 }
