@@ -188,7 +188,7 @@ pub fn cancel_all_remote_generators(app_handle: tauri::AppHandle) {
 }
 
 fn log_lines() -> Vec<String> {
-    if let Some(dir) = dirs::state_dir().map(|d| d.join("logs")) {
+    if let Some(dir) = dirs::data_local_dir().map(|d| d.join("logs")) {
         tracing::debug!("Looking for log files in {:}", dir.display());
         match std::fs::read_dir(dir) {
             Ok(dir_content) => {

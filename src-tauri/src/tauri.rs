@@ -99,7 +99,7 @@ pub async fn error_message(error: ChoreoError) -> String {
 }
 
 fn setup_tracing() -> Vec<WorkerGuard> {
-    let file = if let Some(log_dir) = dirs::state_dir().map(|d| d.join("logs")) {
+    let file = if let Some(log_dir) = dirs::data_local_dir().map(|d| d.join("logs")) {
         fs::create_dir_all(&log_dir).trace_err();
         let log_file_name = format!("choreo-gui-{}.log", now_str().replace([':', '.'], "-"));
         match fs::File::create(log_dir.join(log_file_name)) {
