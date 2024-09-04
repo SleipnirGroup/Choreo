@@ -188,78 +188,51 @@ export const DocumentStore = types
         .reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) | 0, 0);
       let unlisten: UnlistenFn;
       pathStore.ui.setIterationNumber(0);
-      await Commands.guessIntervals(config, pathStore.serialize)
-        .catch((e) => {
-          tracing.error("guessIntervals:", e);
-          throw e;
-        })
-        .then((counts) => {
-          tracing.debug(counts);
-          counts.forEach((count, i) => {
-            const waypoint = pathStore.params.waypoints[i];
-            if (waypoint.overrideIntervals && count !== waypoint.intervals) {
-              console.assert(
-                false,
-                "Control interval guessing did not ignore override intervals! %o",
-                {
-                  path: pathStore.name,
-                  waypoint: i,
-                  override: waypoint.intervals,
-                  calculated: count
-                }
-              );
-            } else {
-              waypoint.setIntervals(count);
-            }
-          });
-        })
-        .then(() => {
-          tracing.debug("generatePathPre");
-          return listen(`solver-status-${handle}`, async (rawEvent) => {
-            const event: Event<ProgressUpdate> =
-              rawEvent as Event<ProgressUpdate>;
-            if (event.payload!.type === "swerveTraj") {
-              const samples = event.payload.update as SwerveTrajoptlibSample[];
-              const forcesAvailable = pathStore.traj.forcesAvailable;
-              pathStore.ui.setInProgressTrajectory(
-                samples.map((s) => ({
-                  t: s.timestamp,
-                  vx: s.velocity_x,
-                  vy: s.velocity_y,
-                  omega: s.angular_velocity,
-                  fx: forcesAvailable ? s.module_forces_x : [0, 0, 0, 0],
-                  fy: forcesAvailable ? s.module_forces_y : [0, 0, 0, 0],
-                  ...s
-                }))
-              );
-              pathStore.ui.setIterationNumber(
-                pathStore.ui.generationIterationNumber + 1
-              );
-            } else if (event.payload!.type === "diffTraj") {
-              const samples = event.payload
-                .update as DifferentialTrajectorySample[];
-              const forcesAvailable = pathStore.traj.forcesAvailable;
-              pathStore.ui.setInProgressTrajectory(
-                samples.map((s) => ({
-                  t: s.timestamp,
-                  vl: s.velocity_l,
-                  vr: s.velocity_r,
-                  //omega: s.angular_velocity,
-                  fl: forcesAvailable ? s.force_l : 0,
-                  fr: forcesAvailable ? s.force_r : 0,
-                  ...s
-                }))
-              );
-              pathStore.ui.setIterationNumber(
-                pathStore.ui.generationIterationNumber + 1
-              );
-            } else if (event.payload!.type === "diagnosticText") {
-              // const line = event.payload.update as string;
-              // This is the text output of sleipnir solver
-              // console.log(line)
-            }
-          });
-        })
+
+      await listen(`solver-status-${handle}`, async (rawEvent) => {
+        const event: Event<ProgressUpdate> =
+          rawEvent as Event<ProgressUpdate>;
+        if (event.payload!.type === "swerveTraj") {
+          const samples = event.payload.update as SwerveTrajoptlibSample[];
+          const forcesAvailable = pathStore.traj.forcesAvailable;
+          pathStore.ui.setInProgressTrajectory(
+            samples.map((s) => ({
+              t: s.timestamp,
+              vx: s.velocity_x,
+              vy: s.velocity_y,
+              omega: s.angular_velocity,
+              fx: forcesAvailable ? s.module_forces_x : [0, 0, 0, 0],
+              fy: forcesAvailable ? s.module_forces_y : [0, 0, 0, 0],
+              ...s
+            }))
+          );
+          pathStore.ui.setIterationNumber(
+            pathStore.ui.generationIterationNumber + 1
+          );
+        } else if (event.payload!.type === "diffTraj") {
+          const samples = event.payload
+            .update as DifferentialTrajectorySample[];
+          const forcesAvailable = pathStore.traj.forcesAvailable;
+          pathStore.ui.setInProgressTrajectory(
+            samples.map((s) => ({
+              t: s.timestamp,
+              vl: s.velocity_l,
+              vr: s.velocity_r,
+              //omega: s.angular_velocity,
+              fl: forcesAvailable ? s.force_l : 0,
+              fr: forcesAvailable ? s.force_r : 0,
+              ...s
+            }))
+          );
+          pathStore.ui.setIterationNumber(
+            pathStore.ui.generationIterationNumber + 1
+          );
+        } else if (event.payload!.type === "diagnosticText") {
+          // const line = event.payload.update as string;
+          // This is the text output of sleipnir solver
+          // console.log(line)
+        }
+      })
         .then((unlistener) => {
           unlisten = unlistener;
           return Commands.generate(
@@ -282,6 +255,7 @@ export const DocumentStore = types
               pathStore.traj.setWaypoints(result.traj.waypoints);
 
               pathStore.setSnapshot(result.snapshot);
+
               // set this within the group so it gets picked up in the autosave
               pathStore.setIsTrajectoryStale(false);
               self.history.stopGroup();
