@@ -148,8 +148,6 @@ fn setup_tracing() -> Vec<WorkerGuard> {
 }
 
 pub fn run_tauri(project: Option<PathBuf>) {
-    let context = tauri::generate_context!();
-
     let guards = setup_tracing();
 
     tracing::info!(
@@ -221,7 +219,7 @@ pub fn run_tauri(project: Option<PathBuf>) {
             open_diagnostic_file,
             error_message
         ])
-        .run(context)
+        .run(tauri::generate_context!())
         .expect("error while running tauri application");
 
     drop(guards);
