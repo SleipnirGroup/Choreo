@@ -517,9 +517,9 @@ void DifferentialPathBuilder::sgmt_keep_in_circle(size_t from_index,
   }
 }
 
-void DifferentialPathBuilder::sgmt_keep_in_polygon(size_t from_index, size_t to_index,
-                                             rust::Vec<double> field_points_x,
-                                             rust::Vec<double> field_points_y) {
+void DifferentialPathBuilder::sgmt_keep_in_polygon(
+    size_t from_index, size_t to_index, rust::Vec<double> field_points_x,
+    rust::Vec<double> field_points_y) {
   if (field_points_x.size() != field_points_y.size()) {
     return;
   }
