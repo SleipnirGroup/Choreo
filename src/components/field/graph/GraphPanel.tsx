@@ -8,7 +8,7 @@ import { Checkbox, FormControlLabel, FormGroup } from "@mui/material";
 import { blue, deepOrange, green, red, yellow } from "@mui/material/colors";
 import { DifferentialSample, SwerveSample } from "../../../document/2025/v2025_0_0";
 import { DimensionName } from "../../../document/ExpressionStore";
-import { doc } from "../../../document/DocumentManager";
+import { doc, uiState } from "../../../document/DocumentManager";
 
 type Props = object;
 type SwerveGraphLine = Exclude<keyof SwerveSample, "fx"|"fy">
@@ -21,7 +21,7 @@ type ExtraGraphLine = "absVel"
 type GraphLine = SwerveGraphLine | DifferentialGraphLine | ExtraGraphLine;
 type State = Record<GraphLine, boolean>;
 
-type Color = { name: string, color: string, defaultView: boolean, dimension: DimensionName}
+type Color = { name: string, color: string, defaultView: boolean, dimension: DimensionNameInSample}
 const sharedColors : Record<SharedGraphLine, Color> = {
     t: {
         name: "Timestamp",
@@ -47,7 +47,7 @@ const sharedColors : Record<SharedGraphLine, Color> = {
         defaultView: true,
         dimension: "Angle"
     },
-}
+} as const;
 const swerveColors : Record<OnlySwerveGraphLine, Color> = {
     vx: {
         name: "X Velocity",
@@ -85,7 +85,7 @@ const swerveColors : Record<OnlySwerveGraphLine, Color> = {
         defaultView: true,
         dimension: "AngVel"
     },
-}
+} as const;
 const diffColors: Record<OnlyDiffGraphLine, Color> = {
 
 
@@ -126,7 +126,7 @@ const diffColors: Record<OnlyDiffGraphLine, Color> = {
         defaultView: true,
         dimension: "Force"
     }
-}
+} as const;
 const extraColors: Record<ExtraGraphLine, Color> = {
     absVel: {
         name: "Absolute Velocity (m/s)",
@@ -143,7 +143,7 @@ const extraColors: Record<ExtraGraphLine, Color> = {
 
 } as const;
 
-const colors = {
+const colors : Record<GraphLine, Color> = {
     ...sharedColors,
     ...swerveColors,
     ...diffColors,
@@ -153,6 +153,22 @@ let defaultViews = Object.fromEntries(
     Object.entries(colors).map(entry => [entry[0], entry[1].defaultView])
 ) as Record<GraphLine, boolean>
 type Data = Array<[number, number]>;
+type DimensionNameInSample = Exclude<DimensionName, "Mass" | "Torque" | "MoI" | "Number">;
+type D3Ranges = Record<DimensionNameInSample, {
+    scale: d3.ScaleLinear<number, number, never>,
+    line: d3.Line<[number, number]>
+}>;
+type Ranges = Record<DimensionNameInSample, [number, number]>;
+const defaultRanges : Ranges = {
+    Length: [0,0],
+    LinVel: [0,0],
+    LinAcc: [0,0],
+    Angle:  [0,0],
+    AngVel: [0,0],
+    AngAcc: [0,0],
+    Time:   [0,0],
+    Force:  [0,0]
+}
 class GraphPanel extends Component<Props, State> {
     state = { ...defaultViews };
     redrawUnlisten: IReactionDisposer | null = null;
@@ -184,24 +200,31 @@ class GraphPanel extends Component<Props, State> {
             accel: [],
 
         };
+    ranges = defaultRanges;
+    d3Ranges= this.updateD3Ranges();
+    updateD3Ranges() {
+        let ranges = Object.fromEntries(
+            Object.keys(this.ranges).map(key=>{
+                let k = key as DimensionNameInSample;
+                let range = this.ranges[k] ?? [0,0];
+                let scale = d3.scaleLinear().domain(range).range([this.height, 0]);
+                let line =  d3.line()
+                .x((d) => { return this.x(d[0]); })
+                .y((d) => { return scale(d[1]); })
+                return [k, {
+                        scale,
+                        line}
+                    ];
+            })
+        ) as D3Ranges;
+        return ranges;
+    }
     margin = { top: 10, right: 60, bottom: 30, left: 60 };
     width = 460 - this.margin.left - this.margin.right;
     height = 400 - this.margin.top - this.margin.bottom;
     x = d3.scaleLinear()
         .domain([0, 10])
         .range([0, this.width]);
-    leftY = d3.scaleLinear()
-        .domain([-5, 5])
-        .range([this.height, 0]);
-    rightY = d3.scaleLinear()
-        .domain([-20, 20])
-        .range([this.height, 0]);
-    leftLine = d3.line()
-        .x((d) => { return this.x(d[0]); })
-        .y((d) => { return this.leftY(d[1]); });
-    rightLine = d3.line()
-        .x((d) => { return this.x(d[0]); })
-        .y((d) => { return this.rightY(d[1]); });
     componentDidMount() {
 
         this.redrawUnlisten = autorun(() => {
@@ -213,6 +236,14 @@ class GraphPanel extends Component<Props, State> {
             this.redrawUnlisten();
         }
 
+    }
+    expandRange(val: number, dim: DimensionNameInSample) {
+        if (val > this.ranges[dim][1]) {
+            this.ranges[dim][1] = val;
+        }
+        if (val < this.ranges[dim][0]) {
+            this.ranges[dim][0] = val;
+        }
     }
     handleUpdate() {
         console.log("update graph");
@@ -241,99 +272,116 @@ class GraphPanel extends Component<Props, State> {
 
         // Add Y axis
 
-        var yAxis = svg.select<SVGGElement>("#yAxis")
-        yAxis.selectChildren().remove();
-        yAxis.call(d3.axisLeft(this.leftY).ticks(10));
-        yAxis.selectAll("text").attr("fill", "white")
-        yAxis.selectAll(":is(line, path)").attr("stroke", "white")
+        // var yAxis = svg.select<SVGGElement>("#yAxis")
+        // yAxis.selectChildren().remove();
+        // yAxis.call(d3.axisLeft(this.leftY).ticks(10));
+        // yAxis.selectAll("text").attr("fill", "white")
+        // yAxis.selectAll(":is(line, path)").attr("stroke", "white")
 
-        var rightYAxis = svg.select<SVGGElement>("#rightYAxis")
-        rightYAxis.selectChildren().remove();
-        rightYAxis.call(d3.axisRight(this.rightY)
-            .tickValues([-20, -16, -12, -8, -4, 0, 4, 8, 12, 16, 20])
-        );
-        rightYAxis.selectAll("text").attr("fill", "white")
-        rightYAxis.selectAll(":is(line, path)").attr("stroke", "white")
+        // var rightYAxis = svg.select<SVGGElement>("#rightYAxis")
+        // rightYAxis.selectChildren().remove();
+        // rightYAxis.call(d3.axisRight(this.rightY)
+        //     .tickValues([-20, -16, -12, -8, -4, 0, 4, 8, 12, 16, 20])
+        // );
+        // rightYAxis.selectAll("text").attr("fill", "white")
+        // rightYAxis.selectAll(":is(line, path)").attr("stroke", "white")
 
-        var xGrid = svg.select<SVGGElement>("#xGrid")
-        xGrid.selectChildren().remove();
-        xGrid.call(d3.axisBottom(this.x).ticks(10).tickFormat(d => '').tickSize(-this.height));
-        xGrid.selectAll(":is(line, path)").attr("stroke", "#111111")
+        // var xGrid = svg.select<SVGGElement>("#xGrid")
+        // xGrid.selectChildren().remove();
+        // xGrid.call(d3.axisBottom(this.x).ticks(10).tickFormat(d => '').tickSize(-this.height));
+        // xGrid.selectAll(":is(line, path)").attr("stroke", "#111111")
 
-        var yGrid = svg.select<SVGGElement>("#yGrid")
-        yGrid.selectChildren().remove();
-        yGrid.call(d3.axisLeft(this.leftY).ticks(10).tickFormat(d => '').tickSize(-this.width));
-        yGrid.selectAll(":is(line, path)").attr("stroke", "#111111")
+        // var yGrid = svg.select<SVGGElement>("#yGrid")
+        // yGrid.selectChildren().remove();
+        // yGrid.call(d3.axisLeft(this.leftY).ticks(10).tickFormat(d => '').tickSize(-this.width));
+        // yGrid.selectAll(":is(line, path)").attr("stroke", "#111111")
 
         // color palette
         if (generated.length > 0) {
             const diff = path.traj.isDifferential;
+            
             const swerve = path.traj.isSwerve;
-            Object.keys(this.data).forEach(key => {
-                let k = key as GraphLine;
-                let color = colors[k];
-                if ((diff && color.diff) || (swerve && color.swerve)) {
-                    this.data[k] = generated.map(samp => {
-                        return [samp.t, samp[k]]
-                    });
-                }
-
+            Object.keys(this.sharedData).forEach(key => {
+                let k = key as SharedGraphLine;
+                let dim = sharedColors[k].dimension;
+                this.sharedData[k] = generated.map(samp => [samp.t, samp[k]]);
             })
-        }
-        this.data.absVel = generated.map(samp => {
-            return [samp.timestamp, Math.hypot(samp.velocityX, samp.velocityY)]
-        })
-        this.data.accel = generated.map((s, i, arr) => {
-            var samp: SavedTrajectorySample = arr[i - 1];
-            var samp2: SavedTrajectorySample = arr[i + 1];
-            if (samp2 === undefined || samp === undefined) {
-                return [s.t, 0];
-            }
+ 
+            if (diff) {
+                Object.keys(this.diffData).forEach(key => {
+                    let k = key as OnlyDiffGraphLine;
 
-            return [s.t, (this.data.absVel[i + 1][1] - this.data.absVel[i - 1][1]) / (samp2.timestamp - samp.timestamp)];
-        })
+                    let dim = diffColors[k].dimension;
+                    this.diffData[k] =  (generated as DifferentialSample[]).map(samp => [samp.t, samp[k]]);
+                })
+                this.extraData.absVel = (generated as DifferentialSample[]).map(samp => [samp.t, (samp.vl + samp.vr) / 2.0]);
+                this.extraData.accel = (generated as DifferentialSample[]).map(samp => [samp.t, (samp.al + samp.ar) / 2.0]);
+            }
+            if (swerve) {
+                Object.keys(this.swerveData).forEach(key => {
+                    let k = key as OnlySwerveGraphLine;
+                    this.swerveData[k] =  (generated as SwerveSample[]).map(samp => [samp.t, samp[k]]);
+                })
+                this.extraData.absVel = (generated as SwerveSample[]).map(samp => [samp.t, Math.hypot(samp.vx, samp.vy)]);
+                this.extraData.accel = (generated as SwerveSample[]).map(samp => [samp.t, Math.hypot(samp.ax, samp.ay)]);
+            }
+            // Set ranges
+            Object.keys(this.sharedData).forEach(key => {
+                let k = key as SharedGraphLine;
+                let dim = sharedColors[k].dimension;
+                this.sharedData[k].forEach(val=>{
+                    this.expandRange(val[1], dim);
+                })
+            })
+            Object.keys(this.swerveData).forEach(key => {
+                let k = key as OnlySwerveGraphLine;
+                let dim = swerveColors[k].dimension;
+                this.swerveData[k].forEach(val=>{
+                    this.expandRange(val[1], dim);
+                })
+            })
+            Object.keys(this.diffData).forEach(key => {
+                let k = key as OnlyDiffGraphLine;
+                let dim = diffColors[k].dimension;
+                this.diffData[k].forEach(val=>{
+                    this.expandRange(val[1], dim);
+                })
+            })
+            Object.keys(this.extraData).forEach(key => {
+                let k = key as ExtraGraphLine;
+                let dim = extraColors[k].dimension;
+                this.extraData[k].forEach(val=>{
+                    this.expandRange(val[1], dim);
+                })
+            })
+            this.d3Ranges = this.updateD3Ranges();
+        }
     }
 
+    lines<K extends GraphLine>(colors: Record<K, Color>, data: Record<K, Data>) {
+        return Object.entries(colors).map(entry => {
+            let [k, v] = entry;
+            let key = k as K;
+            let val = v as Color;
+            let d = this.d3Ranges[val.dimension].line(data[key]);
+                return (
+                    <path id={`${key}Line`} fill="none" stroke={val.color} strokeWidth={1}
+                        d={d ?? undefined} visibility={this.state[key] ? "visible" : "hidden"}></path>
+                )
+
+        })
+    }
     render() {
         const {
             height, width, margin
         } = this;
-        var time = doc.model.uiState.pathAnimationTimestamp;
-        var path = doc.model.document.pathlist.activePath
-        var generated = path.generating ? path.generationProgress : path.generated;
-        var _ = path.generationIterationNumber;
+        var time = uiState.pathAnimationTimestamp;
+        var path = doc.pathlist.activePath
+        var generated = path.ui.generating ? path.ui.generationProgress : path.traj.fullTraj;
+        var _ = path.ui.generationIterationNumber;
         return (
-            <div id="my_dataviz" style={{ backgroundColor: "var(--background-dark-gray)", color:"white"}}>
-                <svg
-                    width={width + margin.left + margin.right}
-                    height={height + margin.top + margin.bottom}
-                >
-                    <g transform={"translate(" + margin.left + "," + margin.top + ")"}
-                        id="rootGroup">
-                        <g id="xGrid" transform={"translate(0," + this.height + ")"}></g>
-                        <g id="yGrid"></g>
-                        <g id="xAxis" transform={"translate(0," + this.height + ")"}></g>
-                        <g id="yAxis"></g>
-                        <g id="rightYAxis" transform={`translate(${this.width},0)`}></g>
-                        {Object.entries(colors).map(entry => {
-                            let [k, val] = entry;
-                            let key = k as GraphLine;
-                            let data = val.leftAxis ? this.leftLine(this.data[key]) : this.rightLine(this.data[key]);
-                            if (this.state[key]) {
-                                return (
-                                    <path id={`${key}Line`} fill="none" stroke={val.color} strokeWidth={1}
-                                        d={data ?? undefined}></path>
-                                )
-                            }
-
-                        })}
-
-                        <rect x={this.x(time)} width={1} y1={0} height={this.height}
-                            fill="gray"></rect>
-                    </g>
-
-                </svg>
-                <div style={{display: "grid", gap:"8px", gridTemplateColumns: "min-content max-content auto"}}>
+            <div id="my_dataviz" style={{ backgroundColor: "var(--background-dark-gray)", color:"white", maxHeight: 400, display: "flex", flexDirection: "row"}}>
+                    <div style={{display: "grid", gap:"8px", gridTemplateColumns: "min-content max-content auto"}}>
                     <>
                     {Object.entries(colors).map(entry => {
                         var [k, value] = entry;
@@ -359,6 +407,28 @@ class GraphPanel extends Component<Props, State> {
                     })}
                     </>
                     </div>
+                <svg
+                    width={width + margin.left + margin.right}
+                    height={height + margin.top + margin.bottom}
+                >
+                    <g transform={"translate(" + margin.left + "," + margin.top + ")"}
+                        id="rootGroup">
+                        <g id="xGrid" transform={"translate(0," + this.height + ")"}></g>
+                        <g id="yGrid"></g>
+                        <g id="xAxis" transform={"translate(0," + this.height + ")"}></g>
+                        <g id="yAxis"></g>
+                        <g id="rightYAxis" transform={`translate(${this.width},0)`}></g>
+                        {this.lines(sharedColors, this.sharedData)}
+                        {this.lines(swerveColors, this.swerveData)}
+                        {this.lines(diffColors, this.diffData)}
+                        {this.lines(extraColors, this.extraData)}
+
+                        <rect x={this.x(time)} width={1} y1={0} height={this.height}
+                            fill="gray"></rect>
+                    </g>
+
+                </svg>
+
 
             </div >)
     }
