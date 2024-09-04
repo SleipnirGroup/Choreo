@@ -8,7 +8,7 @@ use choreo_core::{
 };
 use clap::Parser;
 
-const FORMATTING_OPTIONS: &str = "Formating Options";
+const FORMATTING_OPTIONS: &str = "Formatting Options";
 const FILE_OPTIONS: &str = "File Options";
 const ADVANCED_OPTIONS: &str = "Advanced Options";
 const ACTION_OPTIONS: &str = "Action Options";
@@ -174,12 +174,12 @@ impl Cli {
                 .await
                 .expect("Failed to read trajectory file");
 
-            match generate(&project, traj, i as i64) {
+            match generate(project.clone(), traj, i as i64) {
                 Ok(new_traj) => {
                     match file_management::write_trajfile_immediately(&resources, new_traj).await {
                         Ok(_) => {
                             tracing::info!(
-                                "Succesfully generated trajectory {:} for {:}",
+                                "Successfully generated trajectory {:} for {:}",
                                 traj_name,
                                 project.name
                             );

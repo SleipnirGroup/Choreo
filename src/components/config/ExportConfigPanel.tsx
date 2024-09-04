@@ -26,9 +26,9 @@ class ExportConfigPanel extends Component<Props, State> {
         <Switch
           size="small"
           sx={{ gridColumn: 2 }}
-          checked={doc.pathlist.activePath.traj.useModuleForces}
+          checked={doc.pathlist.activePath.traj.forcesAvailable}
           onChange={(e, checked) => {
-            doc.pathlist.activePath.traj.setUseModuleForces(checked);
+            doc.pathlist.activePath.traj.setForcesAvailable(checked);
           }}
         ></Switch>
       </div>
