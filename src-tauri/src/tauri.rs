@@ -5,6 +5,7 @@ use choreo_core::generation::{generate::setup_progress_sender, remote::RemoteGen
 use choreo_core::spec::OpenFilePayload;
 use choreo_core::ChoreoError;
 use logging::now_str;
+use std::io::Write;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 use std::{fs, thread};
@@ -98,6 +99,22 @@ pub async fn error_message(error: ChoreoError) -> String {
 }
 
 fn setup_tracing() -> Vec<WorkerGuard> {
+    let file = if let Some(log_dir) = dirs::data_local_dir().map(|d| d.join("choreo/log")) {
+        if let Err(e) = fs::create_dir_all(&log_dir) {
+            tracing::error!("Failed to create log directory: {}", e);
+        }
+        let log_file_name = format!("choreo-{}.log", now_str().replace([':', '.'], "-"));
+        match fs::File::create(log_dir.join(log_file_name)) {
+            Ok(file) => Some(file),
+            Err(e) => {
+                tracing::error!("Failed to create log file: {}", e);
+                None
+            }
+        }
+    } else {
+        None
+    };
+
     let mut guards = Vec::new();
 
     let (std_io, guard_std_io) = tracing_appender::non_blocking(std::io::stdout());
@@ -108,26 +125,23 @@ fn setup_tracing() -> Vec<WorkerGuard> {
             .event_format(logging::CompactFormatter { ansicolor: true }),
     );
 
-    let file = dirs::data_local_dir().and_then(|data_local_dir| {
-        let log_dir = data_local_dir.join("choreo/log");
-        fs::create_dir_all(&log_dir)
-            .and_then(|_| fs::File::create(log_dir.join(format!("choreo-gui-{}.log", now_str()))))
-            .ok()
-    });
-    match file {
-        Some(log_file) => {
-            let (file_writer, _guard_file) = tracing_appender::non_blocking(log_file);
-            guards.push(_guard_file);
-
-            registry
-                .with(
-                    tracing_subscriber::fmt::layer()
-                        .with_writer(file_writer)
-                        .event_format(logging::CompactFormatter { ansicolor: false }),
-                )
-                .init();
+    if let Some(mut log_file) = file {
+        if let Err(e) = log_file.write_all(BuildInfo::from_build().to_string().as_bytes()) {
+            tracing::error!("Failed to write build info to log file: {}", e);
         }
-        None => registry.init(),
+
+        let (file_writer, _guard_file) = tracing_appender::non_blocking(log_file);
+        guards.push(_guard_file);
+
+        registry
+            .with(
+                tracing_subscriber::fmt::layer()
+                    .with_writer(file_writer)
+                    .event_format(logging::CompactFormatter { ansicolor: false }),
+            )
+            .init();
+    } else {
+        registry.init();
     }
 
     guards
