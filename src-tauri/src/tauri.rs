@@ -8,8 +8,7 @@ use logging::now_str;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 use std::{fs, thread};
-use tauri::api::path::app_log_dir;
-use tauri::{AppHandle, Config, Manager};
+use tauri::Manager;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -21,10 +20,10 @@ fn requested_file() -> Option<OpenFilePayload> {
 }
 
 #[tauri::command]
-async fn open_log_dir(app_handle: AppHandle) -> ChoreoResult<()> {
-    let config = app_handle.config();
-    if let Some(dir) = tauri::api::path::app_log_dir(&config) {
-        open::that(dir).map_err(Into::into)
+async fn open_log_dir() -> ChoreoResult<()> {
+    if let Some(state_dir) = dirs::state_dir() {
+        let log_dir = state_dir.join("choreo/log");
+        open::that(log_dir).map_err(Into::into)
     } else {
         Err(ChoreoError::FileNotFound(None))
     }
@@ -77,9 +76,14 @@ pub async fn tracing_frontend(level: String, msg: String, file: String, function
     }
 }
 
-fn setup_tracing(config: &Config) -> Vec<WorkerGuard> {
-    let file = if let Some(log_dir) = app_log_dir(config) {
-        fs::File::create(log_dir.join(format!("choreo-gui-{}.log", now_str()))).ok()
+fn setup_tracing() -> Vec<WorkerGuard> {
+    let file = if let Some(state_dir) = dirs::state_dir() {
+        let log_dir = state_dir.join("choreo/log");
+        if fs::create_dir_all(&log_dir).is_ok() {
+            fs::File::create(log_dir.join(format!("choreo-gui-{}.log", now_str()))).ok()
+        } else {
+            None
+        }
     } else {
         None
     };
@@ -115,7 +119,7 @@ fn setup_tracing(config: &Config) -> Vec<WorkerGuard> {
 pub fn run_tauri(project: Option<PathBuf>) {
     let context = tauri::generate_context!();
 
-    let guards = setup_tracing(context.config());
+    let guards = setup_tracing();
 
     tracing::info!(
         "Starting Choreo {} {}",
