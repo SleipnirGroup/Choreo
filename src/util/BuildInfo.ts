@@ -21,10 +21,9 @@ export interface BuildInfo {
   toolchain_env: string;
   osFamily: string;
   os: string;
-  deps: [string, string][];
-  direct_deps: [string, string][];
-  indirect_deps: [string, string][];
-  build_time: string;
+  buildTime: string;
+  gitHash: string | null;
+  gitBranch: string | null;
 }
 
 export function getBuildInfo(): Promise<BuildInfo> {

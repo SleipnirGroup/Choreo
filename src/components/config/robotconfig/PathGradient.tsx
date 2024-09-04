@@ -1,5 +1,5 @@
 import {
-  DifferentialDriveSample,
+  DifferentialSample,
   SwerveSample
 } from "../../../document/2025/DocumentTypes";
 import { IDocumentStore } from "../../../document/DocumentModel";
@@ -7,18 +7,17 @@ import { IDocumentStore } from "../../../document/DocumentModel";
 /**
  * Represents a path gradient.
  */
-export type PathGradientArgs<S extends SwerveSample | DifferentialDriveSample> =
-  {
-    point: S;
-    prev: S;
-    next: S;
-    arr: S[][];
-    total: number;
-    count: number;
-    sect: number;
-    idxInSect: number;
-    documentModel: IDocumentStore;
-  };
+export type PathGradientArgs<S extends SwerveSample | DifferentialSample> = {
+  point: S;
+  prev: S;
+  next: S;
+  arr: S[][];
+  total: number;
+  count: number;
+  sect: number;
+  idxInSect: number;
+  documentModel: IDocumentStore;
+};
 export type PathGradient = {
   /**
    * The name/key of the path gradient.
@@ -73,7 +72,7 @@ class PathGradientFunctions {
    * @returns The color gradient in HSL format.
    */
   static velocity({ point, documentModel }: PathGradientArgs<any>): string {
-    // calculates the maginitude of the velocity vector, then divides it by the theoretical floor speed
+    // calculates the magnitude of the velocity vector, then divides it by the theoretical floor speed
     // then it scales the ratio [0, 1]: red to green[0, 100]
     const floorSpeed =
       documentModel.robotConfig.wheelMaxVelocity *

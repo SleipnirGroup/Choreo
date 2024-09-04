@@ -55,7 +55,7 @@ export const SelectableItem = types.union(
 );
 export const ISampleType = types.enumeration<SampleType>([
   "Swerve",
-  "DifferentialDrive"
+  "Differential"
 ]);
 export const DocumentStore = types
   .model("DocumentStore", {
@@ -297,10 +297,6 @@ export const DocumentStore = types
           error: {
             render({ data, toastProps }) {
               tracing.error("generatePathWithToasts:", data);
-              if ((data as string).includes("callback requested stop")) {
-                toastProps.style = { visibility: "hidden" };
-                return `Cancelled "${pathName}"`;
-              }
               return `Can't generate "${pathName}": ` + (data as string);
             }
           }

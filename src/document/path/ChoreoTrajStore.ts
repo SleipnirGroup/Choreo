@@ -1,6 +1,6 @@
 import { Instance, destroy, getEnv, types } from "mobx-state-tree";
 import {
-  DifferentialDriveSample,
+  DifferentialSample,
   Output,
   type SwerveSample
 } from "../2025/DocumentTypes";
@@ -10,12 +10,12 @@ import { EventMarkerStore, IEventMarkerStore } from "../EventMarkerStore";
 export const ChoreoTrajStore = types
   .model("ChoreoTrajStore", {
     waypoints: types.frozen<number[]>(),
-    samples: types.frozen<SwerveSample[][] | DifferentialDriveSample[][]>(),
+    samples: types.frozen<SwerveSample[][] | DifferentialSample[][]>(),
     forcesAvailable: false,
     markers: types.array(EventMarkerStore)
   })
   .views((self) => ({
-    get fullTraj(): SwerveSample[] | DifferentialDriveSample[] {
+    get fullTraj(): SwerveSample[] | DifferentialSample[] {
       //@ts-expect-error This might be a TS bug, flatMap on an A[] | B[] returns an (A | B)[]
       return self.samples.flatMap((sect, i, samp) => {
         if (i != 0) {
@@ -29,7 +29,7 @@ export const ChoreoTrajStore = types
         this.fullTraj.length === 0 || Object.hasOwn(this.fullTraj[0], "vx")
       );
     },
-    get isDifferentialDrive(): boolean {
+    get isDifferential(): boolean {
       return (
         this.fullTraj.length === 0 || Object.hasOwn(this.fullTraj[0], "vl")
       );
@@ -136,7 +136,7 @@ export const ChoreoTrajStore = types
       self.markers.push(marker as IEventMarkerStore);
       return marker;
     },
-    setSamples(samples: SwerveSample[][] | DifferentialDriveSample[][]) {
+    setSamples(samples: SwerveSample[][] | DifferentialSample[][]) {
       self.samples = samples;
     },
     setWaypoints(waypoints: number[]) {

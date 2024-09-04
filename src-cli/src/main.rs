@@ -8,7 +8,7 @@ use choreo_core::{
 };
 use clap::Parser;
 
-const FORMATTING_OPTIONS: &str = "Formating Options";
+const FORMATTING_OPTIONS: &str = "Formatting Options";
 const FILE_OPTIONS: &str = "File Options";
 const ADVANCED_OPTIONS: &str = "Advanced Options";
 const ACTION_OPTIONS: &str = "Action Options";
@@ -179,7 +179,7 @@ impl Cli {
                     match file_management::write_trajfile_immediately(&resources, new_traj).await {
                         Ok(_) => {
                             tracing::info!(
-                                "Succesfully generated trajectory {:} for {:}",
+                                "Successfully generated trajectory {:} for {:}",
                                 traj_name,
                                 project.name
                             );
