@@ -5,6 +5,7 @@ import Field from "./components/field/Field";
 import Sidebar from "./components/sidebar/Sidebar";
 import AppMenu from "./AppMenu";
 import PathAnimationPanel from "./components/field/PathAnimationPanel";
+import GraphPanel from "./components/field/graph/GraphPanel";
 
 type Props = object;
 
@@ -42,6 +43,7 @@ class Body extends Component<Props, State> {
               </span>
             </span>
             <PathAnimationPanel></PathAnimationPanel>
+            <GraphPanel></GraphPanel>
           </div>
         </div>
       </>

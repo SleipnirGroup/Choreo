@@ -155,6 +155,7 @@ export const DimensionNames = [
   "Time",
   "Mass",
   "Torque",
+  "Force",
   "MoI"
 ] as const;
 export type DimensionName = (typeof DimensionNames)[number];
@@ -230,6 +231,12 @@ export const Dimensions = {
     unit: Units.NewtonMeter,
     icon: () => <Torque></Torque>,
     type: "Torque"
+  },
+  Force: {
+    name: "Force",
+    unit: Units.Newton,
+    icon: () => <Numbers></Numbers>,
+    type: "Force"
   }
 } as const satisfies {
   [key in DimensionName]: Dimension<key>;
