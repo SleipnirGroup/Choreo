@@ -809,7 +809,7 @@ export async function saveProjectDialog() {
 
 export async function openDiagnosticZipWithInfo() {
   const project = doc.serializeChor();
-  let trajs: Traj[] = [];
+  const trajs: Traj[] = [];
   doc.pathlist.paths.forEach((path) => {
     trajs.push(path.serialize);
   });

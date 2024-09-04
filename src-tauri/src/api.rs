@@ -2,6 +2,7 @@
 
 use std::path::PathBuf;
 
+use crate::tauri::TauriResult;
 use choreo_core::{
     file_management::{self, create_diagnostic_file, WritingResources},
     generation::remote::RemoteGenerationResources,
@@ -10,10 +11,9 @@ use choreo_core::{
         traj::TrajFile,
         Expr, OpenFilePayload,
     },
-    ChoreoError
+    ChoreoError,
 };
 use tauri::{api::dialog::blocking::FileDialogBuilder, Manager};
-use crate::tauri::TauriResult;
 
 macro_rules! debug_result (
     ($result:expr) => {
@@ -197,11 +197,11 @@ fn log_lines() -> Vec<String> {
                     .filter(|entry| entry.file_type().map(|ft| ft.is_file()).unwrap_or(false))
                     .filter(|entry| entry.file_name().to_string_lossy().ends_with(".log"))
                     .collect::<Vec<_>>();
-                log_files.sort_by_key(
-                    |entry| {
-                        entry.metadata()
-                            .map(|m| m.modified().unwrap_or(std::time::SystemTime::UNIX_EPOCH))
-                            .unwrap_or(std::time::SystemTime::UNIX_EPOCH)
+                log_files.sort_by_key(|entry| {
+                    entry
+                        .metadata()
+                        .map(|m| m.modified().unwrap_or(std::time::SystemTime::UNIX_EPOCH))
+                        .unwrap_or(std::time::SystemTime::UNIX_EPOCH)
                 });
                 let log_file = log_files.last().ok_or(ChoreoError::FileNotFound(None));
                 match log_file {
@@ -214,13 +214,13 @@ fn log_lines() -> Vec<String> {
                             .lines()
                             .map(|line| format!("{:}\n", line))
                             .collect::<Vec<String>>()
-                    },
+                    }
                     Err(e) => {
                         tracing::error!("{e}");
                         Vec::new()
                     }
                 }
-            },
+            }
             Err(e) => {
                 tracing::error!("{e}");
                 Vec::new()

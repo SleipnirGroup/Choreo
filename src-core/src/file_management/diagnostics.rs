@@ -1,9 +1,17 @@
-
-use std::{ffi::OsString, fs, io::{BufWriter, Write}, iter::repeat_with, path::PathBuf};
+use std::{
+    ffi::OsString,
+    fs,
+    io::{BufWriter, Write},
+    iter::repeat_with,
+    path::PathBuf,
+};
 
 use zip;
 
-use crate::{spec::{project::ProjectFile, traj::TrajFile}, ChoreoResult};
+use crate::{
+    spec::{project::ProjectFile, traj::TrajFile},
+    ChoreoResult,
+};
 
 fn tmpname(prefix: &str, suffix: &str, rand_len: usize) -> OsString {
     let capacity = prefix
@@ -20,7 +28,11 @@ fn tmpname(prefix: &str, suffix: &str, rand_len: usize) -> OsString {
     buf
 }
 
-pub fn create_diagnostic_file(project: ProjectFile, trajfiles: Vec<TrajFile>, logs: Vec<String>) -> ChoreoResult<PathBuf> {
+pub fn create_diagnostic_file(
+    project: ProjectFile,
+    trajfiles: Vec<TrajFile>,
+    logs: Vec<String>,
+) -> ChoreoResult<PathBuf> {
     let dir = std::env::temp_dir().join("choreo-diagnostics");
     fs::create_dir_all(&dir)?;
     let temp_path = dir.join(tmpname("choreo-diagnostics-", ".zip", 8));

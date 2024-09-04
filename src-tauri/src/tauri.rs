@@ -30,7 +30,10 @@ impl std::fmt::Display for TauriChoreoError {
 
 impl serde::Serialize for TauriChoreoError {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        self.0.to_string().replace(['\"', '\\'], "").serialize(serializer)
+        self.0
+            .to_string()
+            .replace(['\"', '\\'], "")
+            .serialize(serializer)
     }
 }
 

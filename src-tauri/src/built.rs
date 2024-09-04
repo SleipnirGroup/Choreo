@@ -39,9 +39,22 @@ impl Display for BuildInfo {
         writeln!(f, "  at {}", self.build_time)?;
         writeln!(f, "  with features: {:?}", self.features)?;
         writeln!(f, "  in profile {}", self.profile)?;
-        writeln!(f, "  {}in ci", if self.ci_platform.is_some() { "" } else { "not " })?;
+        writeln!(
+            f,
+            "  {}in ci",
+            if self.ci_platform.is_some() {
+                ""
+            } else {
+                "not "
+            }
+        )?;
         if let Some(git_hash) = self.git_hash {
-            writeln!(f, "  from commit {} on branch {}", git_hash, self.git_branch.as_deref().unwrap_or("unknown"))?;
+            writeln!(
+                f,
+                "  from commit {} on branch {}",
+                git_hash,
+                self.git_branch.as_deref().unwrap_or("unknown")
+            )?;
         }
 
         Ok(())
@@ -81,7 +94,7 @@ impl BuildInfo {
             build_time: built_info::BUILT_TIME_UTC,
             git_hash: built_info::GIT_COMMIT_HASH_SHORT,
             git_branch: built_info::GIT_HEAD_REF
-                .map(|s| s.trim_start_matches("refs/heads/").to_string())
+                .map(|s| s.trim_start_matches("refs/heads/").to_string()),
         }
     }
 }

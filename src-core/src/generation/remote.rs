@@ -183,18 +183,16 @@ pub async fn remote_generate_parent(
     tracing::debug!("Created temp files for remote generation");
 
     // write project and traj to temp files
-    let project_str =
-        serde_json::to_string(&project).map_err(ChoreoError::remote)?;
-    let traj_str =
-        serde_json::to_string(&trajfile).map_err(ChoreoError::remote)?;
+    let project_str = serde_json::to_string(&project).map_err(ChoreoError::remote)?;
+    let traj_str = serde_json::to_string(&trajfile).map_err(ChoreoError::remote)?;
 
     tokio::fs::write(project_tmp.path(), project_str).await?;
     tokio::fs::write(traj_tmp.path(), traj_str).await?;
 
     tracing::debug!("Wrote project and traj to temp files");
 
-    let (server, server_name) = ipc::IpcOneShotServer::<String>::new()
-        .map_err(ChoreoError::remote)?;
+    let (server, server_name) =
+        ipc::IpcOneShotServer::<String>::new().map_err(ChoreoError::remote)?;
 
     let remote_args = RemoteArgs {
         project: project_tmp.path().to_path_buf(),
@@ -212,9 +210,7 @@ pub async fn remote_generate_parent(
 
     tracing::debug!("Spawned remote generator");
 
-    let (rx, o) = server
-        .accept()
-        .map_err(ChoreoError::remote)?;
+    let (rx, o) = server.accept().map_err(ChoreoError::remote)?;
 
     // check if the solver has already completed
     match serde_json::from_str::<RemoteProgressUpdate>(&o) {
@@ -230,8 +226,7 @@ pub async fn remote_generate_parent(
             return Err(ChoreoError::remote(e));
         }
         Err(e) => {
-            return Err(ChoreoError::remote(
-                ChoreoError::Json(format!(
+            return Err(ChoreoError::remote(ChoreoError::Json(format!(
                 "Error parsing solver update: {e:?}"
             ))));
         }

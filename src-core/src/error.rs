@@ -49,11 +49,17 @@ impl ChoreoError {
     }
 
     pub fn out_of_bounds<T: std::fmt::Display>(actual: T, expected: T) -> Self {
-        Self::Calculation(format!("Out Of Bounds error: {} should be {}", actual, expected))
+        Self::Calculation(format!(
+            "Out Of Bounds error: {} should be {}",
+            actual, expected
+        ))
     }
 
     pub fn inequality<T: std::fmt::Display>(actual: T, expected: T) -> Self {
-        Self::Calculation(format!("Inequality error: {} wasn't equal to {}", actual, expected))
+        Self::Calculation(format!(
+            "Inequality error: {} wasn't equal to {}",
+            actual, expected
+        ))
     }
 }
 

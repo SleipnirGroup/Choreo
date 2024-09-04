@@ -4,7 +4,6 @@ import {
   OpenInNew,
   Settings
 } from "@mui/icons-material";
-import FileDownload from "@mui/icons-material/FileDownload";
 import MenuIcon from "@mui/icons-material/Menu";
 import SaveIcon from "@mui/icons-material/Save";
 import UploadIcon from "@mui/icons-material/UploadFile";
@@ -24,7 +23,6 @@ import { observer } from "mobx-react";
 import { Component } from "react";
 import { toast } from "react-toastify";
 import {
-  writeActiveTrajectory,
   newProject,
   openProject,
   saveProjectDialog,
@@ -35,7 +33,6 @@ import {
 import SettingsModal from "./components/config/SettingsModal";
 import { Commands } from "./document/tauriCommands";
 import { version } from "./util/version";
-import { tracing } from "./document/tauriTracing";
 
 type Props = object;
 
@@ -198,9 +195,7 @@ class AppMenu extends Component<Props, State> {
               <ListItemIcon>
                 <SaveIcon />
               </ListItemIcon>
-              <ListItemText
-                primary="Export Diagnostic Report"
-              ></ListItemText>
+              <ListItemText primary="Export Diagnostic Report"></ListItemText>
             </ListItemButton>
             <Divider orientation="horizontal"></Divider>
             {/* Info about save locations */}

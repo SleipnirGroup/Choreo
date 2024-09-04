@@ -129,5 +129,6 @@ export const Commands = {
   /**
    * Opens the platforms file explorer to the directory holding a newly generated diagnostic zip file.
    */
-  openDiagnosticZip: (project: Project, trajs: Traj[]) => invoke<void>("open_diagnostic_file", { project, trajs }),
+  openDiagnosticZip: (project: Project, trajs: Traj[]) =>
+    invoke<void>("open_diagnostic_file", { project, trajs })
 };
