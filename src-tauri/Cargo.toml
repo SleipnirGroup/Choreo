@@ -14,7 +14,7 @@ license = "BSD-3-Clause"
 
 [build-dependencies]
 tauri-build = { version = "1.5.2", features = [] }
-built = { version = "0.7.4", features = ["chrono", "dependency-tree", "git2"] }
+built = { version = "0.7.4", features = ["chrono", "git2"] }
 
 [dependencies]
 choreo-core = { path = "../src-core" }
