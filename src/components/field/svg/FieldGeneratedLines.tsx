@@ -44,7 +44,7 @@ function FieldGeneratedLines() {
             }
             const point2 = arr[i + 1];
             const [sect, indexInSect] = path.traj.getIdxOfFullTraj(i) ?? [0, 0];
-            const args: PathGradientArgs = {
+            const args: PathGradientArgs<any> = {
               point: point,
               prev: arr[i - 1],
               next: arr[i + 1],

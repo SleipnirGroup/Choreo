@@ -1,15 +1,13 @@
 use crate::error::ChoreoError;
 use crate::spec::project::RobotConfig;
-use crate::spec::traj::{Constraint, ConstraintData, TrajFile, Waypoint};
-use crate::spec::Expr;
+use crate::spec::traj::{ConstraintData, Parameters, Waypoint};
 use crate::ChoreoResult;
 use super::angle_modulus;
 
 pub fn guess_control_interval_counts(
-    config: &RobotConfig<Expr>,
-    traj: &TrajFile,
+    config: &RobotConfig<f64>,
+    params: &Parameters<f64>,
 ) -> ChoreoResult<Vec<usize>> {
-    let config = config.snapshot();
     if config.wheel_max_torque() <= 0.0 {
         return Err(ChoreoError::Sign("Wheel max torque", "positive"));
     } else if config.wheel_max_velocity() <= 0.0 {
@@ -19,16 +17,15 @@ pub fn guess_control_interval_counts(
     } else if config.radius <= 0.0 {
         return Err(ChoreoError::Sign("Wheel radius", "positive"));
     }
-    Ok(traj
-        .params
+    Ok(params
         .waypoints
         .iter()
         .enumerate()
         .map(|(i, w)| {
-            if w.override_intervals {
-                w.intervals
+            if let Some(intervals) = w.intervals {
+                intervals
             } else {
-                guess_control_interval_count(i, traj, config, w)
+                guess_control_interval_count(i, params, config, w)
             }
         })
         .collect::<Vec<usize>>())
@@ -36,14 +33,13 @@ pub fn guess_control_interval_counts(
 
 pub fn guess_control_interval_count(
     i: usize,
-    traj: &TrajFile,
-    config: RobotConfig<f64>,
-    w: &Waypoint<Expr>,
+    params: &Parameters<f64>,
+    config: &RobotConfig<f64>,
+    this: &Waypoint<f64>,
 ) -> usize {
-    let this = w.snapshot();
-    let next = traj.params.waypoints.get(i + 1).map(Waypoint::snapshot);
+    let next = params.waypoints.get(i + 1);
     match next {
-        None => this.intervals,
+        None => this.intervals.unwrap_or(40),
         Some(next) => {
             let dx = next.x - this.x;
             let dy = next.y - this.y;
@@ -63,60 +59,56 @@ pub fn guess_control_interval_count(
             let mut max_ang_vel = max_vel / max_wheel_position_radius;
 
             // Iterate through constraints to find applicable constraints
-            traj.params
-                .constraints
-                .iter()
-                .map(Constraint::snapshot)
-                .for_each(|constraint| {
-                    if let Some(to) = constraint
-                        .to
-                        .and_then(|id| id.get_idx(traj.params.waypoints.len()))
-                    {
-                        if let Some(from) = constraint.from.get_idx(traj.params.waypoints.len()) {
-                            if i < to && i >= from {
-                                match constraint.data {
-                                    ConstraintData::MaxVelocity { max } => {
-                                        max_vel = max_vel.min(max);
+            params.constraints.iter().for_each(|constraint| {
+                if let Some(to) = constraint
+                    .to
+                    .and_then(|id| id.get_idx(params.waypoints.len()))
+                {
+                    if let Some(from) = constraint.from.get_idx(params.waypoints.len()) {
+                        if i < to && i >= from {
+                            match constraint.data {
+                                ConstraintData::MaxVelocity { max } => {
+                                    max_vel = max_vel.min(max);
+                                }
+                                ConstraintData::MaxAcceleration { max } => {
+                                    max_accel = max_accel.min(max);
+                                }
+                                ConstraintData::MaxAngularVelocity { max } => {
+                                    // Proof for T = 1.5 * θ / ω:
+                                    //
+                                    // The position function of a cubic Hermite spline
+                                    // where t∈[0, 1] and θ∈[0, dtheta]:
+                                    // x(t) = (-2t^3 +3t^2)θ
+                                    //
+                                    // The velocity function derived from the cubic Hermite spline is:
+                                    // v(t) = (-6t^2 + 6t)θ.
+                                    //
+                                    // The peak velocity occurs at t = 0.5, where t∈[0, 1] :
+                                    // v(0.5) = 1.5*θ, which is the max angular velocity during the motion.
+                                    //
+                                    // To ensure this peak velocity does not exceed ω, max_ang_vel, we set:
+                                    // 1.5 * θ = ω.
+                                    //
+                                    // The total time T needed to reach the final θ and
+                                    // not exceed ω is thus derived as:
+                                    // T = θ / (ω / 1.5) = 1.5 * θ / ω.
+                                    //
+                                    // This calculation ensures the peak velocity meets but does not exceed ω,
+                                    // extending the time proportionally to meet this requirement.
+                                    // This is an alternative estimation method to finding the trapezoidal or
+                                    // triangular profile for the change heading.
+                                    if max >= 0.1 {
+                                        let time = (1.5 * dtheta) / max;
+                                        max_vel = max_vel.min(distance / time);
                                     }
-                                    ConstraintData::MaxAcceleration { max } => {
-                                        max_accel = max_accel.min(max);
-                                    }
-                                    ConstraintData::MaxAngularVelocity { max } => {
-                                        // Proof for T = 1.5 * θ / ω:
-                                        //
-                                        // The position function of a cubic Hermite spline
-                                        // where t∈[0, 1] and θ∈[0, dtheta]:
-                                        // x(t) = (-2t^3 +3t^2)θ
-                                        //
-                                        // The velocity function derived from the cubic Hermite spline is:
-                                        // v(t) = (-6t^2 + 6t)θ.
-                                        //
-                                        // The peak velocity occurs at t = 0.5, where t∈[0, 1] :
-                                        // v(0.5) = 1.5*θ, which is the max angular velocity during the motion.
-                                        //
-                                        // To ensure this peak velocity does not exceed ω, max_ang_vel, we set:
-                                        // 1.5 * θ = ω.
-                                        //
-                                        // The total time T needed to reach the final θ and
-                                        // not exceed ω is thus derived as:
-                                        // T = θ / (ω / 1.5) = 1.5 * θ / ω.
-                                        //
-                                        // This calculation ensures the peak velocity meets but does not exceed ω,
-                                        // extending the time proportionally to meet this requirement.
-                                        // This is an alternative estimation method to finding the trapezoidal or
-                                        // triangular profile for the change heading.
-                                        if max >= 0.1 {
-                                            let time = (1.5 * dtheta) / max;
-                                            max_vel = max_vel.min(distance / time);
-                                        }
-                                        max_ang_vel = max_ang_vel.min(max);
-                                    }
-                                    _ => {}
-                                };
-                            }
+                                    max_ang_vel = max_ang_vel.min(max);
+                                }
+                                _ => {}
+                            };
                         }
                     }
-                });
+                }
+            });
 
             // anti-tunneling used to find ceiling value of dt
             let mut min_width = f64::INFINITY;

@@ -1,14 +1,17 @@
-import { Sample } from "../../../document/2025/DocumentTypes";
+import {
+  DifferentialSample,
+  SwerveSample
+} from "../../../document/2025/DocumentTypes";
 import { IDocumentStore } from "../../../document/DocumentModel";
 
 /**
  * Represents a path gradient.
  */
-export type PathGradientArgs = {
-  point: Sample;
-  prev: Sample;
-  next: Sample;
-  arr: Sample[][];
+export type PathGradientArgs<S extends SwerveSample | DifferentialSample> = {
+  point: S;
+  prev: S;
+  next: S;
+  arr: S[][];
   total: number;
   count: number;
   sect: number;
@@ -36,7 +39,7 @@ export type PathGradient = {
    * @param documentModel - The document model.
    * @returns The gradient value as a string.
    */
-  function: (args: PathGradientArgs) => string;
+  function: (args: PathGradientArgs<any>) => string;
 };
 
 /**
@@ -54,7 +57,7 @@ class PathGradientFunctions {
    * @param documentModel - The document model object.
    * @returns The "select-yellow" color.
    */
-  static none(args: PathGradientArgs): string {
+  static none(args: PathGradientArgs<any>): string {
     return "var(--select-yellow)";
   }
 
@@ -68,7 +71,7 @@ class PathGradientFunctions {
    * @param documentModel - The document model.
    * @returns The color gradient in HSL format.
    */
-  static velocity({ point, documentModel }: PathGradientArgs): string {
+  static velocity({ point, documentModel }: PathGradientArgs<any>): string {
     // calculates the maginitude of the velocity vector, then divides it by the theoretical floor speed
     // then it scales the ratio [0, 1]: red to green[0, 100]
     const floorSpeed =
@@ -89,7 +92,7 @@ class PathGradientFunctions {
    * @param documentModel - The document model.
    * @returns The progress color in HSL format.
    */
-  static progress({ count, total }: PathGradientArgs): string {
+  static progress({ count, total }: PathGradientArgs<any>): string {
     // this creates a ratio [0, 1] of the current point against the total points
     // then scales it from red to greeen, [0, 100]
     const t = 1 - count / total;
@@ -106,21 +109,29 @@ class PathGradientFunctions {
    * @param documentModel - The document model.
    * @returns The color gradient for the acceleration.
    */
-  static acceleration({ point, next, count, total }: PathGradientArgs): string {
+  static acceleration({
+    point,
+    next,
+    count,
+    total
+  }: PathGradientArgs<any>): string {
     let t = 0;
+    if (point.vx) {
+      if (count != 0 && count != total - 1) {
+        // first calculates the magnitude of the change in velocity vector over change in time
+        // between the current point and the next point.
+        // then, it is scaled/normalized for the HSL color value.
+        const A = point;
+        const B = next;
+        t = Math.hypot(B.vx - A.vx, B.vy - A.vy);
+        const dt = B.t - A.t;
+        t /= dt * 10;
+      }
 
-    if (count != 0 && count != total - 1) {
-      // first calculates the magnitude of the change in velocity vector over change in time
-      // between the current point and the next point.
-      // then, it is scaled/normalized for the HSL color value.
-      const A = point;
-      const B = next;
-      t = Math.hypot(B.vx - A.vx, B.vy - A.vy);
-      const dt = B.t - A.t;
-      t /= dt * 10;
+      return `hsl(${100 * (1 - t)}, 100%, 50%)`;
+    } else {
+      return "var(--select-yellow)";
     }
-
-    return `hsl(${100 * (1 - t)}, 100%, 50%)`;
   }
 
   /**
@@ -133,7 +144,12 @@ class PathGradientFunctions {
    * @param documentModel - The document model.
    * @returns The computed intervalDt value.
    */
-  static intervalDt({ point, next, count, total }: PathGradientArgs): string {
+  static intervalDt({
+    point,
+    next,
+    count,
+    total
+  }: PathGradientArgs<any>): string {
     let t = 0;
     if (count == 0 || count == total - 1) {
       t = 0;
@@ -156,10 +172,10 @@ class PathGradientFunctions {
    * @param documentModel - The document model.
    * @returns The color value in HSL format.
    */
-  static angularVelocity({ point }: PathGradientArgs): string {
+  static angularVelocity({ point }: PathGradientArgs<any>): string {
     // the color value is normalized from red (0) to green (100)
     // based on an artificial angular velocity max of 2 r/s
-    return `hsl(${Math.abs(point.omega * 100) / 2}, 100%, 50%)`;
+    return `hsl(${Math.abs((point.omega ?? 0) * 100) / 2}, 100%, 50%)`;
   }
 
   /**
@@ -171,7 +187,7 @@ class PathGradientFunctions {
    * @param documentModel - The document model.
    * @returns The color gradient in HSL format.
    */
-  static splitTrajectories({ arr, sect: i }: PathGradientArgs): string {
+  static splitTrajectories({ arr, sect: i }: PathGradientArgs<any>): string {
     if (arr.length < 2) {
       return "var(--select-yellow)";
     }

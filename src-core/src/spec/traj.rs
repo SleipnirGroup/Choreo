@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use trajoptlib::{DifferentialTrajectorySample, SwerveTrajectorySample};
 
 use super::{Expr, SnapshottableType};
 
@@ -19,15 +20,17 @@ pub struct Waypoint<T: SnapshottableType> {
     /// Units: radians
     pub heading: T,
     /// The number of control intervals to use between this waypoint and the next.
-    pub intervals: usize,
+    pub intervals: Option<usize>,
     /// Whether to split the trajectory at this waypoint.
     pub split: bool,
     /// TODO
     pub fix_translation: bool,
     /// TODO
     pub fix_heading: bool,
-    /// Whether to override the intervals.
-    pub override_intervals: bool,
+    /// Whether this waypoint is an initial guess,
+    /// completely invisible to the frontend.
+    #[serde(skip, default)]
+    pub is_initial_guess: bool,
 }
 
 #[allow(missing_docs)]
@@ -41,7 +44,7 @@ impl<T: SnapshottableType> Waypoint<T> {
             split: self.split,
             fix_translation: self.fix_translation,
             fix_heading: self.fix_heading,
-            override_intervals: self.override_intervals,
+            is_initial_guess: self.is_initial_guess,
         }
     }
 }
@@ -242,15 +245,63 @@ pub enum Sample {
         fr: f64,
     },
 }
+fn nudge_zero(f: f64) -> f64 {
+    if f.abs() < 1e-12 {
+        0.0
+    } else {
+        f
+    }
+}
+
+impl From<SwerveTrajectorySample> for Sample {
+    fn from(swerve_sample: SwerveTrajectorySample) -> Self {
+        Sample::Swerve {
+            t: nudge_zero(swerve_sample.timestamp),
+            x: nudge_zero(swerve_sample.x),
+            y: nudge_zero(swerve_sample.y),
+            vx: nudge_zero(swerve_sample.velocity_x),
+            vy: nudge_zero(swerve_sample.velocity_y),
+            heading: nudge_zero(swerve_sample.heading),
+            omega: nudge_zero(swerve_sample.angular_velocity),
+            fx: [
+                nudge_zero(swerve_sample.module_forces_x[0]),
+                nudge_zero(swerve_sample.module_forces_x[1]),
+                nudge_zero(swerve_sample.module_forces_x[2]),
+                nudge_zero(swerve_sample.module_forces_x[3]),
+            ],
+            fy: [
+                nudge_zero(swerve_sample.module_forces_y[0]),
+                nudge_zero(swerve_sample.module_forces_y[1]),
+                nudge_zero(swerve_sample.module_forces_y[2]),
+                nudge_zero(swerve_sample.module_forces_y[3]),
+            ],
+        }
+    }
+}
+
+impl From<DifferentialTrajectorySample> for Sample {
+    fn from(diff_sample: DifferentialTrajectorySample) -> Self {
+        Sample::DifferentialDrive {
+            t: nudge_zero(diff_sample.timestamp),
+            x: nudge_zero(diff_sample.x),
+            y: nudge_zero(diff_sample.y),
+            vl: nudge_zero(diff_sample.velocity_l),
+            vr: nudge_zero(diff_sample.velocity_r),
+            heading: nudge_zero(diff_sample.heading),
+            fl: nudge_zero(diff_sample.force_l),
+            fr: nudge_zero(diff_sample.force_r),
+        }
+    }
+}
 
 /// The type of samples in a trajectory.
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
-pub enum SampleType {
+pub enum DriveType {
     /// The variant for [`Sample::Swerve`].
     #[default]
     Swerve,
     /// The variant for [`Sample::DifferentialDrive`].
-    DifferentialDrive,
+    Differential,
 }
 
 /// The parameters used for generating a trajectory.
@@ -278,9 +329,6 @@ impl<T: SnapshottableType> Parameters<T> {
 pub struct Trajectory {
     /// The times at which the robot will reach each waypoint.
     pub waypoints: Vec<f64>,
-    /// The type of samples in the trajectory.
-    // #[serde(rename = "type", default)]
-    // pub r#type: SampleType,
     /// The samples of the trajectory.
     pub samples: Vec<Vec<Sample>>,
     /// Whether the forces are available to use in the samples.

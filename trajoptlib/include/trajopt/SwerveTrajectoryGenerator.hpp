@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <stdint.h>
-
 #include <functional>
 #include <utility>
 #include <vector>

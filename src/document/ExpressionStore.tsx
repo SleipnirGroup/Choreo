@@ -20,7 +20,8 @@ import {
   all,
   create,
   isNode,
-  isNull
+  isNull,
+  isUnit
 } from "mathjs";
 import { IReactionDisposer, reaction, untracked } from "mobx";
 import { Instance, detach, getEnv, types } from "mobx-state-tree";
@@ -99,6 +100,19 @@ export const math = create(all, { predictable: true });
 //   createAddPose2d,
 //   createTransformByPose2d
 // ])
+
+function isSymbolNode(node: MathNode): node is SymbolNode {
+  return Object.hasOwn(node, "isSymbolNode");
+}
+function isFunctionNode(node: MathNode): node is FunctionNode {
+  return Object.hasOwn(node, "isFunctionNode");
+}
+function isAccessorNode(node: MathNode): node is AccessorNode {
+  return Object.hasOwn(node, "isAccessorNode");
+}
+function isConstantNode(node: MathNode): node is ConstantNode {
+  return Object.hasOwn(node, "isConstantNode");
+}
 
 function addUnitToExpression(
   expression: math.MathNode,
@@ -268,7 +282,7 @@ export const ExpressionStore = types
   .actions((self) => ({
     findReplaceVariable(find: string, replace: string) {
       self.expr = self.expr.transform(function (node, path, parent) {
-        if (node["isSymbolNode"] && node.name === find) {
+        if (isSymbolNode(node) && node.name === find) {
           const clone = (node as SymbolNode).clone();
           clone.name = replace;
           return clone;
@@ -327,21 +341,21 @@ export const ExpressionStore = types
       // turn symbol variables into function variables if they're found in scope
       const transformed = node.transform((innerNode, path, parent) => {
         if (
-          innerNode.isSymbolNode &&
+          isSymbolNode(innerNode) &&
           typeof scope.get(innerNode.name) === "function" &&
-          (!parent?.isFunctionNode || path !== "fn")
+          (!isFunctionNode(parent) || path !== "fn")
         ) {
           return new math.FunctionNode(innerNode, []);
         }
-        if (innerNode.isAccessorNode) {
-          if (!parent?.isFunctionNode || path !== "fn") {
-            const accessorNode = innerNode as AccessorNode;
+        if (isAccessorNode(innerNode)) {
+          if (!isFunctionNode(parent) || path !== "fn") {
+            const accessorNode = innerNode;
             const { object, index } = accessorNode;
-            if (object.isSymbolNode && index.isIndexNode) {
+            if (isSymbolNode(object) && index.isIndexNode) {
               const symbol = object as SymbolNode;
               const idx = index as IndexNode;
-              if (idx.dimensions[0]?.isConstantNode) {
-                const constant = idx.dimensions[0] as ConstantNode;
+              if (isConstantNode(idx.dimensions[0])) {
+                const constant = idx.dimensions[0];
                 if (
                   typeof scope.get(symbol.name) === "object" &&
                   typeof scope.get(symbol.name)?.[constant.value] === "function"
@@ -424,7 +438,7 @@ export const ExpressionStore = types
     },
     validate(newNode: MathNode): MathNode | undefined {
       //console.log("Validate", newNode.toString())
-      let newNumber: undefined | null | number | Unit;
+      let newNumber: MathType;
       try {
         newNumber = self.evaluator(newNode);
       } catch (e) {
@@ -447,6 +461,9 @@ export const ExpressionStore = types
       }
       if (isNode(newNumber)) {
         return this.validate(newNumber);
+      }
+      if (!isUnit(newNumber)) {
+        return undefined;
       }
       // newNumber is Unit
       const unit = self.defaultUnit;
@@ -497,7 +514,11 @@ export const ExpressionStore = types
               return self.value;
             }
           },
-          (value) => self.setValue(value)
+          (value) => {
+            if (value !== undefined) {
+              self.setValue(value);
+            }
+          }
         );
       },
       beforeDestroy: () => {

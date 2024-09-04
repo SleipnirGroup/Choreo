@@ -174,7 +174,7 @@ impl Cli {
                 .await
                 .expect("Failed to read trajectory file");
 
-            match generate(&project, traj, i as i64) {
+            match generate(project.clone(), traj, i as i64) {
                 Ok(new_traj) => {
                     match file_management::write_trajfile_immediately(&resources, new_traj).await {
                         Ok(_) => {

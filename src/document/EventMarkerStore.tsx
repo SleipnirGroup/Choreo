@@ -9,7 +9,6 @@ import {
   types
 } from "mobx-state-tree";
 import { moveItem } from "mobx-utils";
-import { v4 as uuidv4 } from "uuid";
 import { Command, Expr } from "./2025/DocumentTypes";
 import { WaypointID } from "./ConstraintDefinitions";
 import { WaypointScope } from "./ConstraintStore";
@@ -114,10 +113,11 @@ export const CommandStore = types
       // TODO add subcommand
       const newCommand = getEnv<Env>(self).create.CommandStore({
         type: "named",
-        uuid: uuidv4(),
-        time: ["0 s", 0],
-        name: "",
-        commands: []
+        data: {
+          waitTime: ["0 s", 0] as Expr,
+          name: "",
+          commands: []
+        }
       });
       self.commands.push(newCommand);
       return undefined;

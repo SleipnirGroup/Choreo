@@ -1,12 +1,10 @@
 import { dialog, path, window as tauriWindow } from "@tauri-apps/api";
 import { TauriEvent } from "@tauri-apps/api/event";
-import { v4 as uuidv4 } from "uuid";
 import { DocumentStore, SelectableItemTypes } from "./DocumentModel";
 
 import hotkeys from "hotkeys-js";
 import { reaction } from "mobx";
 import {
-  Instance,
   applySnapshot,
   castToReferenceSnapshot,
   getSnapshot,
@@ -20,8 +18,11 @@ import { safeGetIdentifier } from "../util/mobxutils";
 import {
   Command,
   EventMarker,
+  GroupCommand,
+  NamedCommand,
   Project,
   Traj,
+  WaitCommand,
   type Expr,
   type RobotConfig,
   type Waypoint
@@ -78,7 +79,7 @@ export const uiState = UIStateStore.create({
 });
 type ConstraintDataConstructor<K extends ConstraintKey> = (
   data: Partial<DataMap[K]["props"]>
-) => Instance<IConstraintDataStore<K>>;
+) => IConstraintDataStore<K>;
 
 type ConstraintDataConstructors = {
   [key in ConstraintKey]: ConstraintDataConstructor<key>;
@@ -91,7 +92,17 @@ export type EnvConstructors = {
     y: number,
     radius: number
   ) => ICircularObstacleStore;
-  CommandStore: (command: Command<Expr>) => ICommandStore;
+  CommandStore: (
+    command: Command<Expr> &
+      (
+        | {
+            data: WaitCommand<Expr>["data"] &
+              GroupCommand<Expr>["data"] &
+              NamedCommand["data"];
+          }
+        | object
+      )
+  ) => ICommandStore;
   EventMarkerStore: (marker: EventMarker<Expr>) => IEventMarkerStore;
   ConstraintData: ConstraintDataConstructors;
   ConstraintStore: <K extends ConstraintKey>(
@@ -102,15 +113,29 @@ export type EnvConstructors = {
   ) => IConstraintStore;
 };
 function getConstructors(vars: () => IVariables): EnvConstructors {
+  function commandIsNamed(command: Command<Expr>): command is NamedCommand {
+    return Object.hasOwn(command.data, "name");
+  }
+  function commandIsGroup(
+    command: Command<Expr>
+  ): command is GroupCommand<Expr> {
+    return Object.hasOwn(command.data, "commands");
+  }
+  function commandIsTime(command: Command<Expr>): command is WaitCommand<Expr> {
+    return Object.hasOwn(command.data, "time");
+  }
   function createCommandStore(command: Command<Expr>): ICommandStore {
     return CommandStore.create({
       type: command.type,
-      name: command.data?.name ?? "",
-      commands: (command.data?.commands ?? []).map((c) =>
-        createCommandStore(c)
+      name: commandIsNamed(command) ? command.data.name : "",
+      commands: commandIsGroup(command)
+        ? command.data.commands.map((c) => createCommandStore(c))
+        : [],
+      time: vars().createExpression(
+        commandIsTime(command) ? command.data.waitTime : 0,
+        "Time"
       ),
-      time: vars().createExpression(command.data?.time ?? 0, "Time"),
-      uuid: uuidv4()
+      uuid: crypto.randomUUID()
     });
   }
 
@@ -151,7 +176,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
             y: vars().createExpression(config.modules[i].y, "Length")
           };
         }),
-        identifier: uuidv4()
+        identifier: crypto.randomUUID()
       });
     },
     WaypointStore: (waypoint: Waypoint<Expr>) => {
@@ -160,7 +185,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         x: vars().createExpression(waypoint.x, "Length"),
         y: vars().createExpression(waypoint.y, "Length"),
         heading: vars().createExpression(waypoint.heading, "Angle"),
-        uuid: uuidv4()
+        uuid: crypto.randomUUID()
       });
     },
     ObstacleStore: (
@@ -172,18 +197,18 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         x: vars().createExpression(x, "Length"),
         y: vars().createExpression(y, "Length"),
         radius: vars().createExpression(radius, "Length"),
-        uuid: uuidv4()
+        uuid: crypto.randomUUID()
       });
     },
     CommandStore: createCommandStore,
     EventMarkerStore: (marker: EventMarker<Expr>): IEventMarkerStore => {
       return EventMarkerStore.create({
         name: marker.name,
-        target: marker.target,
+        target: undefined,
         trajTargetIndex: marker.trajTargetIndex,
         offset: vars().createExpression(marker.offset, "Time"),
         command: createCommandStore(marker.command),
-        uuid: uuidv4()
+        uuid: crypto.randomUUID()
       });
     },
     ConstraintData: constraintDataConstructors,
@@ -196,10 +221,11 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
       const store = ConstraintStore.create({
         from,
         to,
-        uuid: uuidv4(),
+        uuid: crypto.randomUUID(),
+        //@ts-expect-error more constraint stuff not quite working
         data: constraintDataConstructors[type](data)
       });
-      (store.data as Instance<IConstraintDataStore<K>>).deserPartial(data);
+      store.data.deserPartial(data);
       return store;
     }
   };
@@ -228,10 +254,12 @@ export const doc = DocumentStore.create(
     robotConfig: getConstructors(() => variables).RobotConfigStore(
       EXPR_DEFAULTS
     ),
+    type: "Swerve",
     pathlist: {},
     splitTrajectoriesAtStopPoints: false,
     usesObstacles: false,
     name: "Untitled",
+    //@ts-expect-error this is recommended, not sure why it doesn't work
     variables: castToReferenceSnapshot(variables),
     selectedSidebarItem: undefined
   },
@@ -313,7 +341,7 @@ export async function setupEventListeners() {
     // doc.getSelection()'s focusNode, but sets the actual selection range to ''
     if (selection?.focusNode === null || selection?.toString() === "") {
       if (doc.isSidebarWaypointSelected) {
-        doc.selectedSidebarItem.copyToClipboard(e);
+        (doc.selectedSidebarItem as IHolonomicWaypointStore).copyToClipboard(e);
       }
       e.preventDefault();
     }
@@ -334,7 +362,7 @@ export async function setupEventListeners() {
         let currentSelectedWaypointIdx = -1;
         if (doc.isSidebarWaypointSelected) {
           const idx = activePath.params.findUUIDIndex(
-            doc.selectedSidebarItem.uuid
+            (doc.selectedSidebarItem as IHolonomicWaypointStore).uuid
           );
           if (idx != -1) {
             currentSelectedWaypointIdx = idx;
@@ -660,17 +688,6 @@ export async function newProject() {
   await Commands.setDeployRoot("");
   const newChor = await Commands.defaultProject();
   doc.deserializeChor(newChor);
-  //let newVariables
-
-  //TODO change this for opening from new content.
-  // applySnapshot(doc,{
-  //     robotConfig: { identifier: uuidv4() },
-  //     pathlist: {},
-  //     splitTrajectoriesAtStopPoints: false,
-  //     usesObstacles: false,
-  //     variables: {},
-  //     selectedSidebarItem: undefined,
-  //   });
   uiState.loadPathGradientFromLocalStorage();
   doc.pathlist.addPath("NewPath");
   doc.history.clear();
@@ -710,13 +727,7 @@ export async function deletePath(uuid: string) {
   }
 }
 
-/**
- * Save the specified trajectory to the file path supplied by the given async function
- * @param filePath An (optionally async) function returning a 2-string array of [dir, name], or null
- * @param uuid the UUID of the path with the trajectory to export
- */
 export async function writeTrajectory(uuid: string) {
-  // Avoid conflicts with tauri path namespace
   if (await canSave()) {
     const traj = doc.pathlist.paths.get(uuid);
     if (traj === undefined) {
@@ -728,8 +739,24 @@ export async function writeTrajectory(uuid: string) {
   }
 }
 
-export async function exportActiveTrajectory() {
+export async function writeActiveTrajectory() {
   return await writeTrajectory(doc.pathlist.activePathUUID);
+}
+
+export async function writeAllTrajectories() {
+  if (uiState.hasSaveLocation) {
+    const promises = doc.pathlist.pathUUIDs.map((uuid) =>
+      writeTrajectory(uuid)
+    );
+    const pathNames = doc.pathlist.pathNames;
+    await Promise.allSettled(promises).then((results) => {
+      results.map((result, i) => {
+        if (result.status === "rejected") {
+          tracing.error(pathNames[i], ":", result.reason);
+        }
+      });
+    });
+  }
 }
 
 export async function saveProject() {
@@ -773,27 +800,8 @@ export async function saveProjectDialog() {
   await saveProject();
 
   //save all trajectories
-  await exportAllTrajectories();
+  await writeAllTrajectories();
 
   toast.success(`Saved ${name}. Future changes will now be auto-saved.`);
   return true;
-}
-
-/**
- * Export all trajectories to the deploy directory
- */
-export async function exportAllTrajectories() {
-  if (uiState.hasSaveLocation) {
-    const promises = doc.pathlist.pathUUIDs.map((uuid) =>
-      writeTrajectory(uuid)
-    );
-    const pathNames = doc.pathlist.pathNames;
-    await Promise.allSettled(promises).then((results) => {
-      results.map((result, i) => {
-        if (result.status === "rejected") {
-          tracing.error(pathNames[i], ":", result.reason);
-        }
-      });
-    });
-  }
 }
