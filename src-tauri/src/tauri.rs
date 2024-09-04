@@ -21,11 +21,9 @@ fn requested_file() -> Option<OpenFilePayload> {
 
 #[tauri::command]
 async fn open_log_dir() -> ChoreoResult<()> {
-    if let Some(state_dir) = dirs::state_dir() {
-        let log_dir = state_dir.join("choreo/log");
-        open::that(log_dir).map_err(Into::into)
-    } else {
-        Err(ChoreoError::FileNotFound(None))
+    match dirs::data_local_dir().map(|d| d.join("choreo/log")) {
+        Some(log_dir) => open::that(log_dir).map_err(Into::into),
+        None => Err(ChoreoError::FileNotFound(None)),
     }
 }
 
@@ -77,17 +75,6 @@ pub async fn tracing_frontend(level: String, msg: String, file: String, function
 }
 
 fn setup_tracing() -> Vec<WorkerGuard> {
-    let file = if let Some(state_dir) = dirs::state_dir() {
-        let log_dir = state_dir.join("choreo/log");
-        if fs::create_dir_all(&log_dir).is_ok() {
-            fs::File::create(log_dir.join(format!("choreo-gui-{}.log", now_str()))).ok()
-        } else {
-            None
-        }
-    } else {
-        None
-    };
-
     let mut guards = Vec::new();
 
     let (std_io, guard_std_io) = tracing_appender::non_blocking(std::io::stdout());
@@ -98,19 +85,26 @@ fn setup_tracing() -> Vec<WorkerGuard> {
             .event_format(logging::CompactFormatter { ansicolor: true }),
     );
 
-    if let Some(log_file) = file {
-        let (file_writer, _guard_file) = tracing_appender::non_blocking(log_file);
-        guards.push(_guard_file);
+    let file = dirs::data_local_dir().and_then(|data_local_dir| {
+        let log_dir = data_local_dir.join("choreo/log");
+        fs::create_dir_all(&log_dir)
+            .and_then(|_| fs::File::create(log_dir.join(format!("choreo-gui-{}.log", now_str()))))
+            .ok()
+    });
+    match file {
+        Some(log_file) => {
+            let (file_writer, _guard_file) = tracing_appender::non_blocking(log_file);
+            guards.push(_guard_file);
 
-        registry
-            .with(
-                tracing_subscriber::fmt::layer()
-                    .with_writer(file_writer)
-                    .event_format(logging::CompactFormatter { ansicolor: false }),
-            )
-            .init();
-    } else {
-        registry.init();
+            registry
+                .with(
+                    tracing_subscriber::fmt::layer()
+                        .with_writer(file_writer)
+                        .event_format(logging::CompactFormatter { ansicolor: false }),
+                )
+                .init();
+        }
+        None => registry.init(),
     }
 
     guards
