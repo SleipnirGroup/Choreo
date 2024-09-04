@@ -28,7 +28,8 @@ import {
   newProject,
   openProject,
   saveProjectDialog,
-  uiState
+  uiState,
+  openDiagnosticZipWithInfo
 } from "./document/DocumentManager";
 
 import SettingsModal from "./components/config/SettingsModal";
@@ -188,25 +189,18 @@ class AppMenu extends Component<Props, State> {
               </ListItemIcon>
               <ListItemText primary="New Project"></ListItemText>
             </ListItemButton>
-            {/* Export Active Trajectory */}
+            {/* Export Diagnostic Report */}
             <ListItemButton
-              onClick={() => {
-                toast.promise(writeActiveTrajectory(), {
-                  pending: "Exporting trajectory...",
-                  success: "Trajectory exported",
-                  error: {
-                    render(toastProps) {
-                      tracing.error(toastProps.data);
-                      return `Error exporting trajectory: ${toastProps.data}`;
-                    }
-                  }
-                });
+              onClick={async () => {
+                openDiagnosticZipWithInfo();
               }}
             >
               <ListItemIcon>
-                <FileDownload />
+                <SaveIcon />
               </ListItemIcon>
-              <ListItemText primary="Export Trajectory"></ListItemText>
+              <ListItemText
+                primary="Export Diagnostic Report"
+              ></ListItemText>
             </ListItemButton>
             <Divider orientation="horizontal"></Divider>
             {/* Info about save locations */}

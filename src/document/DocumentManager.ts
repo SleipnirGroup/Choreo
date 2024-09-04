@@ -607,6 +607,7 @@ export async function openProject(projectPath: OpenFilePayload) {
     const name = projectPath.name.split(".")[0];
     let project: Project | undefined = undefined;
     const trajs: Traj[] = [];
+    await Commands.cancelAll();
     await Commands.setDeployRoot(dir);
     await Promise.allSettled([
       Commands.readProject(name)
@@ -805,4 +806,13 @@ export async function saveProjectDialog() {
 
   toast.success(`Saved ${name}. Future changes will now be auto-saved.`);
   return true;
+}
+
+export async function openDiagnosticZipWithInfo() {
+  const project = doc.serializeChor();
+  let trajs: Traj[] = [];
+  doc.pathlist.paths.forEach((path) => {
+    trajs.push(path.serialize);
+  });
+  await Commands.openDiagnosticZip(project, trajs);
 }

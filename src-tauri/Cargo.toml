@@ -14,7 +14,7 @@ license = "BSD-3-Clause"
 
 [build-dependencies]
 tauri-build = { version = "1.5.2", features = [] }
-built = { version = "0.7.4", features = ["chrono", "dependency-tree"] }
+built = { version = "0.7.4", features = ["chrono", "dependency-tree", "git2"] }
 
 [dependencies]
 choreo-core = { path = "../src-core" }
@@ -28,4 +28,5 @@ current_platform = "0.2.0"
 serde = "1.0.209"
 
 [features]
+default = ["tauri/tracing"]
 custom-protocol = ["tauri/custom-protocol"]

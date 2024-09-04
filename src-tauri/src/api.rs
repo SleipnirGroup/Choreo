@@ -3,31 +3,54 @@
 use std::path::PathBuf;
 
 use choreo_core::{
-    file_management::{self, WritingResources},
+    file_management::{self, create_diagnostic_file, WritingResources},
     generation::remote::RemoteGenerationResources,
     spec::{
         project::{ProjectFile, RobotConfig},
         traj::TrajFile,
         Expr, OpenFilePayload,
     },
-    ChoreoError, ChoreoResult, ResultExt,
+    ChoreoError, ChoreoResult
 };
 use tauri::{api::dialog::blocking::FileDialogBuilder, Manager};
+
+macro_rules! debug_result (
+    ($result:expr) => {
+        #[cfg(debug_assertions)]
+        {
+            match $result {
+                Ok(val) => {
+                    return Ok(val);
+                }
+                Err(e) => {
+                    tracing::debug!("{e}");
+                    return Err(e);
+                }
+            }
+        }
+        #[cfg(not(debug_assertions))]
+        {
+            return $result;
+        }
+    };
+);
 
 #[tauri::command]
 pub fn guess_control_interval_counts(
     config: RobotConfig<Expr>,
     traj: TrajFile,
 ) -> ChoreoResult<Vec<usize>> {
-    choreo_core::generation::intervals::guess_control_interval_counts(
-        &config.snapshot(),
-        &traj.params.snapshot(),
-    )
+    debug_result!(
+        choreo_core::generation::intervals::guess_control_interval_counts(
+            &config.snapshot(),
+            &traj.params.snapshot(),
+        )
+    );
 }
 
 #[tauri::command]
 pub async fn open_in_explorer(path: String) -> ChoreoResult<()> {
-    open::that(path).map_err(Into::into)
+    debug_result!(open::that(path).map_err(Into::into));
 }
 
 #[tauri::command]
@@ -63,7 +86,7 @@ pub async fn default_project() -> ChoreoResult<ProjectFile> {
 #[tauri::command]
 pub async fn read_project(app_handle: tauri::AppHandle, name: String) -> ChoreoResult<ProjectFile> {
     let resources = app_handle.state::<WritingResources>();
-    file_management::read_projectfile(&resources, name).await
+    debug_result!(file_management::read_projectfile(&resources, name).await);
 }
 
 #[tauri::command]
@@ -75,7 +98,7 @@ pub async fn write_project(app_handle: tauri::AppHandle, project: ProjectFile) {
 #[tauri::command]
 pub async fn read_traj(app_handle: tauri::AppHandle, name: String) -> ChoreoResult<TrajFile> {
     let resources = app_handle.state::<WritingResources>();
-    file_management::read_trajfile(&resources, name).await
+    debug_result!(file_management::read_trajfile(&resources, name).await);
 }
 
 #[tauri::command]
@@ -85,10 +108,9 @@ pub async fn read_all_traj(app_handle: tauri::AppHandle) -> Vec<TrajFile> {
     let mut out = vec![];
     for traj_name in trajs {
         let traj_res = file_management::read_trajfile(&resources, traj_name).await;
-        if let Ok(traj) = traj_res {
-            out.push(traj);
-        } else {
-            traj_res.trace_warn();
+        match traj_res {
+            Ok(traj) => out.push(traj),
+            Err(e) => tracing::error!("{e}"),
         }
     }
     out
@@ -107,15 +129,17 @@ pub async fn rename_traj(
     new_name: String,
 ) -> ChoreoResult<()> {
     let resources = app_handle.state::<WritingResources>();
-    file_management::rename_trajfile(&resources, old_traj, new_name)
-        .await
-        .map(|_| ())
+    debug_result!(
+        file_management::rename_trajfile(&resources, old_traj, new_name)
+            .await
+            .map(|_| ())
+    );
 }
 
 #[tauri::command]
 pub async fn delete_traj(app_handle: tauri::AppHandle, traj: TrajFile) -> ChoreoResult<()> {
     let resources = app_handle.state::<WritingResources>();
-    file_management::delete_trajfile(&resources, traj).await
+    debug_result!(file_management::delete_trajfile(&resources, traj).await);
 }
 
 #[tauri::command]
@@ -131,7 +155,10 @@ pub async fn get_deploy_root(app_handle: tauri::AppHandle) -> ChoreoResult<Strin
         Ok(path) => Ok(path.to_string_lossy().to_string()),
         // an absent deploy path is represented as an empty string in the frontend
         Err(ChoreoError::NoDeployPath) => Ok(String::new()),
-        Err(e) => Err(e),
+        Err(e) => {
+            tracing::error!("{e}");
+            Err(e)
+        }
     }
 }
 
@@ -144,17 +171,66 @@ pub async fn generate_remote(
 ) -> ChoreoResult<TrajFile> {
     let remote_resources = app_handle.state::<RemoteGenerationResources>();
     use choreo_core::generation::remote::remote_generate_parent;
-    remote_generate_parent(&remote_resources, project, traj, handle).await
+    debug_result!(remote_generate_parent(&remote_resources, project, traj, handle).await);
 }
 
 #[tauri::command]
 pub fn cancel_remote_generator(app_handle: tauri::AppHandle, handle: i64) -> ChoreoResult<()> {
     let remote_resources = app_handle.state::<RemoteGenerationResources>();
-    remote_resources.kill(handle)
+    debug_result!(remote_resources.kill(handle));
 }
 
 #[tauri::command]
 pub fn cancel_all_remote_generators(app_handle: tauri::AppHandle) {
     let remote_resources = app_handle.state::<RemoteGenerationResources>();
     remote_resources.kill_all();
+}
+
+#[tauri::command]
+pub fn open_diagnostic_file(app_handle: tauri::AppHandle, project: ProjectFile, trajs: Vec<TrajFile>) -> ChoreoResult<()> {
+    tracing::debug!("Opening diagnostic file");
+    let config = app_handle.config();
+    let log_lines = if let Some(dir) = tauri::api::path::app_log_dir(&config) {
+        tracing::debug!("Looking for log files in {:}", dir.display());
+        let mut log_files = std::fs::read_dir(dir)?
+            .filter_map(|entry| entry.ok())
+            .filter(|entry| entry.file_type().map(|ft| ft.is_file()).unwrap_or(false))
+            .filter(|entry| entry.file_name().to_string_lossy().ends_with(".log"))
+            .collect::<Vec<_>>();
+        log_files.sort_by_key(
+            |entry| {
+                entry.metadata()
+                    .map(|m| m.modified().unwrap_or(std::time::SystemTime::UNIX_EPOCH))
+                    .unwrap_or(std::time::SystemTime::UNIX_EPOCH)
+        });
+        let log_file = log_files.last().ok_or(ChoreoError::FileNotFound(None));
+        match log_file {
+            Ok(log_file) => std::fs::read_to_string(log_file.path())
+                .unwrap_or_else(|e| {
+                    tracing::error!("{e}");
+                    String::new()
+                })
+                .lines()
+                .map(|line| format!("{:}\n", line))
+                .collect::<Vec<String>>(),
+            Err(e) => {
+                tracing::error!("{e}");
+                return Err(e);
+            }
+        }
+    } else {
+        Vec::new()
+    };
+
+    tracing::debug!("Found {:} log lines", log_lines.len());
+
+    let tmp_path = create_diagnostic_file(project, trajs, log_lines)?;
+
+    tracing::debug!("Created diagnostic file");
+
+    if let Some(pth) = tmp_path.parent() {
+        debug_result!(open::that(pth).map_err(Into::into));
+    } else {
+        Err(ChoreoError::FileNotFound(None))
+    }
 }

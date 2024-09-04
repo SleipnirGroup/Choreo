@@ -1,15 +1,16 @@
-use crate::built::BuiltInfo;
+use crate::built::BuildInfo;
 use crate::{api::*, logging};
 use choreo_core::file_management::WritingResources;
 use choreo_core::generation::{generate::setup_progress_sender, remote::RemoteGenerationResources};
 use choreo_core::spec::OpenFilePayload;
-use choreo_core::{ChoreoError, ChoreoResult};
+use choreo_core::ResultExt;
 use logging::now_str;
+use std::io::Write;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 use std::{fs, thread};
 use tauri::api::path::app_log_dir;
-use tauri::{AppHandle, Config, Manager};
+use tauri::{Config, Manager};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -21,18 +22,8 @@ fn requested_file() -> Option<OpenFilePayload> {
 }
 
 #[tauri::command]
-async fn open_log_dir(app_handle: AppHandle) -> ChoreoResult<()> {
-    let config = app_handle.config();
-    if let Some(dir) = tauri::api::path::app_log_dir(&config) {
-        open::that(dir).map_err(Into::into)
-    } else {
-        Err(ChoreoError::FileNotFound(None))
-    }
-}
-
-#[tauri::command]
-fn build_info() -> BuiltInfo {
-    BuiltInfo::from_build()
+fn build_info() -> BuildInfo {
+    BuildInfo::from_build()
 }
 
 #[tauri::command]
@@ -79,7 +70,15 @@ pub async fn tracing_frontend(level: String, msg: String, file: String, function
 
 fn setup_tracing(config: &Config) -> Vec<WorkerGuard> {
     let file = if let Some(log_dir) = app_log_dir(config) {
-        fs::File::create(log_dir.join(format!("choreo-gui-{}.log", now_str()))).ok()
+        fs::create_dir_all(&log_dir).trace_err();
+        let log_file_name = format!("choreo-gui-{}.log", now_str().replace([':', '.'], "-"));
+        match fs::File::create(log_dir.join(log_file_name)) {
+            Ok(file) => Some(file),
+            Err(e) => {
+                tracing::error!("Failed to create log file: {}", e);
+                None
+            }
+        }
     } else {
         None
     };
@@ -94,7 +93,11 @@ fn setup_tracing(config: &Config) -> Vec<WorkerGuard> {
             .event_format(logging::CompactFormatter { ansicolor: true }),
     );
 
-    if let Some(log_file) = file {
+    if let Some(mut log_file) = file {
+        if let Err(e) = log_file.write_all(BuildInfo::from_build().to_string().as_bytes()) {
+            tracing::error!("Failed to write build info to log file: {}", e);
+        }
+
         let (file_writer, _guard_file) = tracing_appender::non_blocking(log_file);
         guards.push(_guard_file);
 
@@ -182,8 +185,8 @@ pub fn run_tauri(project: Option<PathBuf>) {
             generate_remote,
             cancel_remote_generator,
             cancel_all_remote_generators,
-            open_log_dir,
-            build_info
+            build_info,
+            open_diagnostic_file
         ])
         .run(context)
         .expect("error while running tauri application");

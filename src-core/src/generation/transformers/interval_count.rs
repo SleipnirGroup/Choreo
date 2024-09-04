@@ -55,6 +55,8 @@ impl IntervalCountSetter {
             }
         }
 
+        println!("Control Interval Counts: {:?}", control_interval_counts);
+
         builder.set_control_interval_counts(control_interval_counts);
     }
 }

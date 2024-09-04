@@ -1,6 +1,8 @@
+use std::fmt::{self, Display, Formatter};
+
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct BuiltInfo {
+pub struct BuildInfo {
     pub ci_platform: Option<&'static str>,
     pub pkg_name: &'static str,
     pub pkg_version: &'static str,
@@ -25,13 +27,32 @@ pub struct BuiltInfo {
     pub direct_deps: &'static [(&'static str, &'static str)],
     pub indirect_deps: &'static [(&'static str, &'static str)],
     pub build_time: &'static str,
+    pub git_hash: Option<&'static str>,
+    pub git_branch: Option<String>,
+}
+
+impl Display for BuildInfo {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        writeln!(f, "{} v{}", self.pkg_name, self.pkg_version)?;
+        writeln!(f, "  built with {}", self.rustc_version)?;
+        writeln!(f, "  on {} for {}", self.host, self.target)?;
+        writeln!(f, "  at {}", self.build_time)?;
+        writeln!(f, "  with features: {:?}", self.features)?;
+        writeln!(f, "  in profile {}", self.profile)?;
+        writeln!(f, "  {}in ci", if self.ci_platform.is_some() { "" } else { "not " })?;
+        if let Some(git_hash) = self.git_hash {
+            writeln!(f, "  from commit {} on branch {}", git_hash, self.git_branch.as_deref().unwrap_or("unknown"))?;
+        }
+
+        Ok(())
+    }
 }
 
 mod built_info {
     include!(concat!(env!("OUT_DIR"), "/built.rs"));
 }
 
-impl BuiltInfo {
+impl BuildInfo {
     pub fn from_build() -> Self {
         Self {
             ci_platform: built_info::CI_PLATFORM,
@@ -58,6 +79,9 @@ impl BuiltInfo {
             direct_deps: &built_info::DIRECT_DEPENDENCIES,
             indirect_deps: &built_info::INDIRECT_DEPENDENCIES,
             build_time: built_info::BUILT_TIME_UTC,
+            git_hash: built_info::GIT_COMMIT_HASH_SHORT,
+            git_branch: built_info::GIT_HEAD_REF
+                .map(|s| s.trim_start_matches("refs/heads/").to_string())
         }
     }
 }

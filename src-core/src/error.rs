@@ -33,6 +33,8 @@ pub enum ChoreoError {
     NoDeployPath,
     #[error("Solver Error: {0:?}")]
     SolverError(String),
+    #[error("Zip Error: {0:?}")]
+    ZipError(#[from] zip::result::ZipError),
 }
 
 impl From<std::io::Error> for ChoreoError {

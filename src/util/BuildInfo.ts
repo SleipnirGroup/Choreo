@@ -24,7 +24,9 @@ export interface BuildInfo {
   deps: [string, string][];
   direct_deps: [string, string][];
   indirect_deps: [string, string][];
-  build_time: string;
+  buildTime: string;
+  gitHash: string | null;
+  gitBranch: string | null;
 }
 
 export function getBuildInfo(): Promise<BuildInfo> {

@@ -26,6 +26,9 @@ type DeployPath = Arc<Mutex<PathBuf>>;
 type TrajFileName = String;
 
 mod formatter;
+mod diagnostics;
+
+pub use diagnostics::create_diagnostic_file;
 
 async fn write_serializable<T: Serialize + Send>(contents: T, file: &Path) -> ChoreoResult<()> {
     let json = formatter::to_string_pretty(&contents)?;
