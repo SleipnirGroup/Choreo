@@ -106,19 +106,11 @@ class KeepInRectangleOverlay extends Component<
   dragPointTranslate(event: any, xOffset: boolean, yOffset: boolean) {
     const data = this.props.data;
     console.log(xOffset, yOffset);
-    data.x.set(
-      data.serialize.props.x[1] + event.dx * (xOffset ? 0.0 : 1.0)
-    );
-    data.y.set(
-      data.serialize.props.y[1] + event.dy * (yOffset ? 0.0 : 1.0)
-    );
+    data.x.set(data.serialize.props.x[1] + event.dx * (xOffset ? 0.0 : 1.0));
+    data.y.set(data.serialize.props.y[1] + event.dy * (yOffset ? 0.0 : 1.0));
 
-    data.w.set(
-      data.serialize.props.w[1] - event.dx * (xOffset ? -1.0 : 1.0)
-    );
-    data.h.set(
-      data.serialize.props.h[1] - event.dy * (yOffset ? -1.0 : 1.0)
-    );
+    data.w.set(data.serialize.props.w[1] - event.dx * (xOffset ? -1.0 : 1.0));
+    data.h.set(data.serialize.props.h[1] - event.dy * (yOffset ? -1.0 : 1.0));
   }
 
   dragRegionTranslate(event: any) {
