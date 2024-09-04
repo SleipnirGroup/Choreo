@@ -72,7 +72,7 @@ class PathGradientFunctions {
    * @returns The color gradient in HSL format.
    */
   static velocity({ point, documentModel }: PathGradientArgs<any>): string {
-    // calculates the maginitude of the velocity vector, then divides it by the theoretical floor speed
+    // calculates the magnitude of the velocity vector, then divides it by the theoretical floor speed
     // then it scales the ratio [0, 1]: red to green[0, 100]
     const floorSpeed =
       documentModel.robotConfig.wheelMaxVelocity *

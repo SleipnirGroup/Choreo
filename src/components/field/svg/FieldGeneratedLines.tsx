@@ -12,7 +12,7 @@ function FieldGeneratedLines() {
   const trajectory = path.ui.generating
     ? path.ui.generationProgress
     : path.traj.fullTraj;
-  // preserve the acccess of generationIterationNumber
+  // preserve the access of generationIterationNumber
   // to trigger rerenders when mutating the in-progress trajectory in place
   const _ = path.ui.generationIterationNumber;
   trajectory.forEach((point) => {
