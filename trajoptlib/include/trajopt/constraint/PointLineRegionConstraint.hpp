@@ -72,12 +72,14 @@ class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
     //   a = y₀ − y₁
     //   b = x₁ − x₀
 
+    auto a = m_fieldLineStart.Y() - m_fieldLineEnd.Y();
+    auto b = m_fieldLineEnd.X() - m_fieldLineStart.X();
+
     problem.SubjectTo(
-        ((m_fieldLineStart.Y() - m_fieldLineEnd.Y()) * bumperCorner.X()) +
-            ((m_fieldLineEnd.X() - m_fieldLineStart.X()) * bumperCorner.Y()) >
-        ((m_fieldLineEnd.X() - m_fieldLineStart.X()) * m_fieldLineStart.Y()) +
-            ((m_fieldLineStart.Y() - m_fieldLineEnd.Y()) *
-             m_fieldLineStart.X()));
+        (a * bumperCorner.X()) +
+        (b * bumperCorner.Y()) >
+        (a * m_fieldLineStart.X()) +
+        (b * m_fieldLineStart.Y()));
   }
 
  private:

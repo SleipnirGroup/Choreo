@@ -104,25 +104,28 @@ class KeepInRectangleOverlay extends Component<
   }
 
   dragPointTranslate(event: any, xOffset: boolean, yOffset: boolean) {
+    const data = this.props.data;
     console.log(xOffset, yOffset);
-    this.props.data.x.set(
-      this.props.data.serialize.props.x[1] + event.dx * (xOffset ? 0.0 : 1.0)
+    data.x.set(
+      data.serialize.props.x[1] + event.dx * (xOffset ? 0.0 : 1.0)
     );
-    this.props.data.y.set(
-      this.props.data.serialize.props.y[1] + event.dy * (yOffset ? 0.0 : 1.0)
+    data.y.set(
+      data.serialize.props.y[1] + event.dy * (yOffset ? 0.0 : 1.0)
     );
 
-    this.props.data.w.set(
-      this.props.data.serialize.props.w[1] - event.dx * (xOffset ? -1.0 : 1.0)
+    data.w.set(
+      data.serialize.props.w[1] - event.dx * (xOffset ? -1.0 : 1.0)
     );
-    this.props.data.h.set(
-      this.props.data.serialize.props.h[1] - event.dy * (yOffset ? -1.0 : 1.0)
+    data.h.set(
+      data.serialize.props.h[1] - event.dy * (yOffset ? -1.0 : 1.0)
     );
   }
 
   dragRegionTranslate(event: any) {
-    this.props.data.x.set(this.props.data.serialize.props.x[1] + event.dx);
-    this.props.data.y.set(this.props.data.serialize.props.y[1] + event.dy);
+    const data = this.props.data;
+
+    data.x.set(data.serialize.props.x[1] + event.dx);
+    data.y.set(this.props.data.serialize.props.y[1] + event.dy);
   }
 
   fixWidthHeight() {
