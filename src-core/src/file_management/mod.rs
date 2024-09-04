@@ -25,7 +25,10 @@ type DeployPath = Arc<Mutex<PathBuf>>;
 /// A name of a trajectory without the file extension.
 type TrajFileName = String;
 
+mod diagnostics;
 mod formatter;
+
+pub use diagnostics::{create_diagnostic_file, get_log_lines};
 
 async fn write_serializable<T: Serialize + Send>(contents: T, file: &Path) -> ChoreoResult<()> {
     let json = formatter::to_string_pretty(&contents)?;

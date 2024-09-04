@@ -11,7 +11,7 @@ use crate::{
         project::ProjectFile,
         traj::{DriveType, Parameters, Sample, TrajFile},
     },
-    ChoreoError, ChoreoResult,
+    ChoreoResult,
 };
 
 use super::intervals::guess_control_interval_counts;
@@ -94,6 +94,9 @@ impl TrajFileGenerator {
         feature_set.extend(self.ctx.project.generation_features.clone());
         feature_set.insert("".to_string());
 
+        println!("Generating Swerve Trajectory");
+        println!("Features: {:?}", feature_set);
+
         for feature in feature_set.iter() {
             if let Some(transformers) = self.swerve_transformers.get(feature) {
                 for transformer in transformers.iter() {
@@ -102,7 +105,7 @@ impl TrajFileGenerator {
             }
         }
 
-        builder.generate(true, handle).map_err(ChoreoError::TrajOpt)
+        builder.generate(true, handle).map_err(Into::into)
     }
 
     fn generate_diffy(&self, handle: i64) -> ChoreoResult<DifferentialTrajectory> {
@@ -110,6 +113,9 @@ impl TrajFileGenerator {
         let mut feature_set = HashSet::new();
         feature_set.extend(self.ctx.project.generation_features.clone());
         feature_set.insert("".to_string());
+
+        println!("Generating Diffy Trajectory");
+        println!("Features: {:?}", feature_set);
 
         for feature in feature_set.iter() {
             if let Some(transformers) = self.diffy_transformers.get(feature) {
@@ -119,7 +125,7 @@ impl TrajFileGenerator {
             }
         }
 
-        builder.generate(true, handle).map_err(ChoreoError::TrajOpt)
+        builder.generate(true, handle).map_err(Into::into)
     }
 
     /// Generate the trajectory file
@@ -206,6 +212,8 @@ impl<T: DiffyGenerationTransformer> InitializedDiffyGenerationTransformer for T 
 }
 
 fn postprocess(result: &[Sample], mut path: TrajFile, counts_vec: Vec<usize>) -> TrajFile {
+    println!("Postprocessing");
+
     let mut snapshot = path.params.snapshot();
     path.params
         .waypoints

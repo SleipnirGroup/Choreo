@@ -323,10 +323,6 @@ export const DocumentStore = types
           error: {
             render({ data, toastProps }) {
               tracing.error("generatePathWithToasts:", data);
-              if ((data as string).includes("callback requested stop")) {
-                toastProps.style = { visibility: "hidden" };
-                return `Cancelled "${pathName}"`;
-              }
               return `Can't generate "${pathName}": ` + (data as string);
             }
           }

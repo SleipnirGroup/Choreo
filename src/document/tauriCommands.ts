@@ -124,5 +124,11 @@ export const Commands = {
    *
    * @returns The path of the file that was opened via CLI, or `null` if no file was specified.
    */
-  requestedProject: () => invoke<OpenFilePayload | null>("requested_file")
+  requestedProject: () => invoke<OpenFilePayload | null>("requested_file"),
+
+  /**
+   * Opens the platforms file explorer to the directory holding a newly generated diagnostic zip file.
+   */
+  openDiagnosticZip: (project: Project, trajs: Traj[]) =>
+    invoke<void>("open_diagnostic_file", { project, trajs })
 };
