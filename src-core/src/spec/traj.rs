@@ -27,7 +27,7 @@ pub struct Waypoint<T: SnapshottableType> {
     pub fix_translation: bool,
     /// TODO
     pub fix_heading: bool,
-    /// Whether to override the intervals.
+    /// Whether to override the intervals. Not an Option because unused overrides still get persisted to file.
     pub override_intervals: bool,
     /// Whether this waypoint is an initial guess,
     /// completely invisible to the frontend.
