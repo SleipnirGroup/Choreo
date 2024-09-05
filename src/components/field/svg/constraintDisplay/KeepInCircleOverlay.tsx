@@ -14,7 +14,7 @@ const DOT = 0.1;
 
 type Props<K extends ConstraintKey> = {
   data: IConstraintDataStore<K>;
-  start: IHolonomicWaypointStore;
+  start?: IHolonomicWaypointStore;
   end?: IHolonomicWaypointStore;
   lineColor: string;
 };
