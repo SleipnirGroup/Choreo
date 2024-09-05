@@ -3,21 +3,21 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 // messages taken from https://github.com/SleipnirGroup/Sleipnir/blob/main/include/sleipnir/optimization/SolverExitCondition.hpp#L47-L78
 pub enum TrajoptError {
-    #[error("The solver determined the problem to be overconstrained and gave up.")]
+    #[error("The solver determined the problem to be overconstrained and gave up")]
     TooFewDOF,
-    #[error("The solver determined the problem to be locally infeasible and gave up.")]
+    #[error("The solver determined the problem to be locally infeasible and gave up")]
     LocallyInfeasible,
-    #[error("The solver failed to reach the desired tolerance, and feasibility restoration failed to converge.")]
+    #[error("The solver failed to reach the desired tolerance, and feasibility restoration failed to converge")]
     FeasibilityRestorationFailed,
-    #[error("The solver encountered nonfinite initial cost or constraints and gave up.")]
+    #[error("The solver encountered nonfinite initial cost or constraints and gave up")]
     NonfiniteInitialCostOrConstraints,
-    #[error("The solver encountered diverging primal iterates xₖ and/or sₖ and gave up.")]
+    #[error("The solver encountered diverging primal iterates xₖ and/or sₖ and gave up")]
     DivergingIterates,
     #[error(
-        "The solver returned its solution so far after exceeding the maximum number of iterations."
+        "The solver returned its solution so far after exceeding the maximum number of iterations"
     )]
     MaxIterationsExceeded,
-    #[error("The solver returned its solution so far after exceeding the maximum elapsed wall clock time.")]
+    #[error("The solver returned its solution so far after exceeding the maximum elapsed wall clock time")]
     Timeout,
     #[error("The solver returned an unparsable error code")]
     Unparsable,
@@ -35,7 +35,6 @@ impl From<i8> for TrajoptError {
             -5 => Self::DivergingIterates,
             -6 => Self::MaxIterationsExceeded,
             -7 => Self::Timeout,
-            -128 => Self::Unparsable,
             _ => Self::Unknown(value),
         }
     }

@@ -441,7 +441,7 @@ impl SwervePathBuilder {
             Err(msg) => {
                 let what = msg.what();
                 println!("Trajoptlib Error: {}", what);
-                Err(TrajoptError::from(what.parse::<i8>().unwrap_or(-128)))
+                Err(TrajoptError::from(what.parse::<i8>().map_err(|_| TrajoptError::Unparsable)?))
             },
         }
     }
@@ -690,7 +690,7 @@ impl DifferentialPathBuilder {
             Err(msg) => {
                 let what = msg.what();
                 println!("Trajoptlib Error: {}", what);
-                Err(TrajoptError::from(what.parse::<i8>().unwrap_or(-128)))
+                Err(TrajoptError::from(what.parse::<i8>().map_err(|_| TrajoptError::Unparsable)?))
             },
         }
     }
