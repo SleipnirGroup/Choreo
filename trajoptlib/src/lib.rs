@@ -62,6 +62,8 @@ mod ffi {
         heading: f64,
         velocity_l: f64,
         velocity_r: f64,
+        acceleration_l: f64,
+        acceleration_r: f64,
         force_l: f64,
         force_r: f64,
     }
@@ -436,7 +438,13 @@ impl SwervePathBuilder {
     ) -> Result<SwerveTrajectory, TrajoptError> {
         match self.path_builder.generate(diagnostics, handle) {
             Ok(traj) => Ok(traj),
-            Err(msg) => Err(TrajoptError::from(msg.what().parse::<i8>().unwrap())),
+            Err(msg) => {
+                let what = msg.what();
+                Err(TrajoptError::from(
+                    what.parse::<i8>()
+                        .map_err(|_| TrajoptError::Unparsable(Box::from(what)))?,
+                ))
+            }
         }
     }
 
@@ -681,7 +689,13 @@ impl DifferentialPathBuilder {
     ) -> Result<DifferentialTrajectory, TrajoptError> {
         match self.path_builder.generate(diagnostics, handle) {
             Ok(traj) => Ok(traj),
-            Err(msg) => Err(TrajoptError::from(msg.what().parse::<i8>().unwrap())),
+            Err(msg) => {
+                let what = msg.what();
+                Err(TrajoptError::from(
+                    what.parse::<i8>()
+                        .map_err(|_| TrajoptError::Unparsable(Box::from(what)))?,
+                ))
+            }
         }
     }
 

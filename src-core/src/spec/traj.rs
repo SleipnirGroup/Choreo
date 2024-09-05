@@ -20,13 +20,15 @@ pub struct Waypoint<T: SnapshottableType> {
     /// Units: radians
     pub heading: T,
     /// The number of control intervals to use between this waypoint and the next.
-    pub intervals: Option<usize>,
+    pub intervals: usize,
     /// Whether to split the trajectory at this waypoint.
     pub split: bool,
     /// TODO
     pub fix_translation: bool,
     /// TODO
     pub fix_heading: bool,
+    /// Whether to override the intervals. Not an Option because unused overrides still get persisted to file.
+    pub override_intervals: bool,
     /// Whether this waypoint is an initial guess,
     /// completely invisible to the frontend.
     #[serde(skip, default)]
@@ -44,6 +46,7 @@ impl<T: SnapshottableType> Waypoint<T> {
             split: self.split,
             fix_translation: self.fix_translation,
             fix_heading: self.fix_heading,
+            override_intervals: self.override_intervals,
             is_initial_guess: self.is_initial_guess,
         }
     }
@@ -230,6 +233,9 @@ pub enum Sample {
         vx: f64,
         vy: f64,
         omega: f64,
+        ax: f64,
+        ay: f64,
+        alpha: f64,
         fx: [f64; 4],
         fy: [f64; 4],
     },
@@ -241,6 +247,8 @@ pub enum Sample {
         heading: f64,
         vl: f64,
         vr: f64,
+        al: f64,
+        ar: f64,
         fl: f64,
         fr: f64,
     },
@@ -253,8 +261,8 @@ fn nudge_zero(f: f64) -> f64 {
     }
 }
 
-impl From<SwerveTrajectorySample> for Sample {
-    fn from(swerve_sample: SwerveTrajectorySample) -> Self {
+impl From<&SwerveTrajectorySample> for Sample {
+    fn from(swerve_sample: &SwerveTrajectorySample) -> Self {
         Sample::Swerve {
             t: nudge_zero(swerve_sample.timestamp),
             x: nudge_zero(swerve_sample.x),
@@ -263,6 +271,9 @@ impl From<SwerveTrajectorySample> for Sample {
             vy: nudge_zero(swerve_sample.velocity_y),
             heading: nudge_zero(swerve_sample.heading),
             omega: nudge_zero(swerve_sample.angular_velocity),
+            ax: nudge_zero(swerve_sample.acceleration_x),
+            ay: nudge_zero(swerve_sample.acceleration_y),
+            alpha: nudge_zero(swerve_sample.angular_acceleration),
             fx: [
                 nudge_zero(swerve_sample.module_forces_x[0]),
                 nudge_zero(swerve_sample.module_forces_x[1]),
@@ -278,19 +289,31 @@ impl From<SwerveTrajectorySample> for Sample {
         }
     }
 }
+impl From<SwerveTrajectorySample> for Sample {
+    fn from(value: SwerveTrajectorySample) -> Self {
+        Self::from(&value)
+    }
+}
 
-impl From<DifferentialTrajectorySample> for Sample {
-    fn from(diff_sample: DifferentialTrajectorySample) -> Self {
+impl From<&DifferentialTrajectorySample> for Sample {
+    fn from(diff_sample: &DifferentialTrajectorySample) -> Self {
         Sample::DifferentialDrive {
             t: nudge_zero(diff_sample.timestamp),
             x: nudge_zero(diff_sample.x),
             y: nudge_zero(diff_sample.y),
+            heading: nudge_zero(diff_sample.heading),
             vl: nudge_zero(diff_sample.velocity_l),
             vr: nudge_zero(diff_sample.velocity_r),
-            heading: nudge_zero(diff_sample.heading),
+            al: nudge_zero(diff_sample.acceleration_l),
+            ar: nudge_zero(diff_sample.acceleration_r),
             fl: nudge_zero(diff_sample.force_l),
             fr: nudge_zero(diff_sample.force_r),
         }
+    }
+}
+impl From<DifferentialTrajectorySample> for Sample {
+    fn from(value: DifferentialTrajectorySample) -> Self {
+        Self::from(&value)
     }
 }
 

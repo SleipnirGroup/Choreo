@@ -1,41 +1,70 @@
 use std::path::PathBuf;
 
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use trajoptlib::error::TrajoptError;
 
-#[derive(Error, Debug)]
+#[derive(Error, Debug, Serialize, Deserialize)]
 #[allow(missing_docs)]
+#[serde(tag = "type", content = "content")]
 pub enum ChoreoError {
-    #[error("Choreo io error: {0:?}")]
+    #[error("IO error: {0:?}")]
     Io(String),
-    #[error("Choreo Int Cast error: {0:?}")]
+    #[error("Int Cast error: {0:?}")]
     IntCast(String),
-    #[error("Choreo Utf8 Assertion error: {0:?}")]
+    #[error("Utf8 Assertion error: {0:?}")]
     Utf8(String),
-    #[error("Choreo Json error: {0:?}")]
+    #[error("Json error: {0:?}")]
     Json(String),
-    #[error("File saving error: {0:?}")]
-    FileSave(&'static str),
+    #[error("Zip Error: {0:?}")]
+    ZipError(String),
+    #[error("IPC error: {0:?}")]
+    Ipc(String),
+    #[error("Subprocess error: {0:?}")]
+    Subprocess(String),
     #[error("File writing error: {0:?}")]
     FileWrite(PathBuf),
     #[error("File reading error: {0:?}")]
     FileRead(PathBuf),
     #[error("File not found error: {0:?}")]
     FileNotFound(Option<PathBuf>),
-    #[error("Sign error: {0:?} should be {1:?}")]
-    Sign(&'static str, &'static str),
-    #[error("Out Of Bounds error: {0:?} should be {1:?}")]
-    OutOfBounds(&'static str, &'static str),
-    #[error("Inequality error: {0:?} wasn't equal to {1:?}")]
-    Inequality(&'static str, &'static str),
+    #[error("Calculation error: {0:?}")]
+    Calculation(String),
     #[error("TrajOpt error: {0:?}")]
-    TrajOpt(TrajoptError),
+    TrajOpt(String),
     #[error("No Deploy Path error")]
     NoDeployPath,
     #[error("Solver Error: {0:?}")]
     SolverError(String),
     #[error("Heading Conflict error: waypoint {0:?} - {1:?}")]
     HeadingConflict(usize, &'static str),
+    #[error("Remote Generation Error: {0:?}")]
+    RemoteGenerationError(Box<ChoreoError>),
+}
+
+impl ChoreoError {
+    #[inline]
+    pub fn remote(e: impl Into<ChoreoError>) -> Self {
+        Self::RemoteGenerationError(Box::new(e.into()))
+    }
+
+    pub fn sign<T: std::fmt::Display>(actual: T, expected: T) -> Self {
+        Self::Calculation(format!("Sign error: {} should be {}", actual, expected))
+    }
+
+    pub fn out_of_bounds<T: std::fmt::Display>(actual: T, expected: T) -> Self {
+        Self::Calculation(format!(
+            "Out Of Bounds error: {} should be {}",
+            actual, expected
+        ))
+    }
+
+    pub fn inequality<T: std::fmt::Display>(actual: T, expected: T) -> Self {
+        Self::Calculation(format!(
+            "Inequality error: {} wasn't equal to {}",
+            actual, expected
+        ))
+    }
 }
 
 impl From<std::io::Error> for ChoreoError {
@@ -62,11 +91,20 @@ impl From<serde_json::Error> for ChoreoError {
     }
 }
 
-impl serde::Serialize for ChoreoError {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        format!("{self}").serialize(serializer)
+impl From<zip::result::ZipError> for ChoreoError {
+    fn from(e: zip::result::ZipError) -> Self {
+        Self::ZipError(e.to_string())
+    }
+}
+
+impl From<TrajoptError> for ChoreoError {
+    fn from(e: TrajoptError) -> Self {
+        Self::TrajOpt(e.to_string())
+    }
+}
+
+impl From<ipc_channel::Error> for ChoreoError {
+    fn from(e: ipc_channel::Error) -> Self {
+        Self::Io(e.to_string())
     }
 }

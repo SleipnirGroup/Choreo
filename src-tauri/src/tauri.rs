@@ -1,16 +1,43 @@
-use crate::built::BuiltInfo;
+use crate::built::BuildInfo;
 use crate::{api::*, logging};
 use choreo_core::file_management::WritingResources;
 use choreo_core::generation::{generate::setup_progress_sender, remote::RemoteGenerationResources};
 use choreo_core::spec::OpenFilePayload;
-use choreo_core::{ChoreoError, ChoreoResult};
+use choreo_core::ChoreoError;
 use logging::now_str;
+use std::io::Write;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 use std::{fs, thread};
 use tauri::Manager;
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+#[derive(Debug)]
+pub struct TauriChoreoError(ChoreoError);
+
+impl From<ChoreoError> for TauriChoreoError {
+    fn from(e: ChoreoError) -> Self {
+        Self(e)
+    }
+}
+
+impl std::fmt::Display for TauriChoreoError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl serde::Serialize for TauriChoreoError {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        self.0
+            .to_string()
+            .replace(['\"', '\\'], "")
+            .serialize(serializer)
+    }
+}
+
+pub type TauriResult<T> = std::result::Result<T, TauriChoreoError>;
 
 static REQUESTED_FILE: OnceLock<OpenFilePayload> = OnceLock::new();
 
@@ -20,18 +47,8 @@ fn requested_file() -> Option<OpenFilePayload> {
 }
 
 #[tauri::command]
-async fn open_log_dir() -> ChoreoResult<()> {
-    if let Some(state_dir) = dirs::state_dir() {
-        let log_dir = state_dir.join("choreo/log");
-        open::that(log_dir).map_err(Into::into)
-    } else {
-        Err(ChoreoError::FileNotFound(None))
-    }
-}
-
-#[tauri::command]
-fn build_info() -> BuiltInfo {
-    BuiltInfo::from_build()
+fn build_info() -> BuildInfo {
+    BuildInfo::from_build()
 }
 
 #[tauri::command]
@@ -76,13 +93,23 @@ pub async fn tracing_frontend(level: String, msg: String, file: String, function
     }
 }
 
+#[tauri::command]
+pub async fn error_message(error: ChoreoError) -> String {
+    error.to_string()
+}
+
 fn setup_tracing() -> Vec<WorkerGuard> {
-    let file = if let Some(state_dir) = dirs::state_dir() {
-        let log_dir = state_dir.join("choreo/log");
-        if fs::create_dir_all(&log_dir).is_ok() {
-            fs::File::create(log_dir.join(format!("choreo-gui-{}.log", now_str()))).ok()
-        } else {
-            None
+    let file = if let Some(log_dir) = dirs::data_local_dir().map(|d| d.join("choreo/log")) {
+        if let Err(e) = fs::create_dir_all(&log_dir) {
+            tracing::error!("Failed to create log directory: {}", e);
+        }
+        let log_file_name = format!("choreo-{}.log", now_str().replace([':', '.'], "-"));
+        match fs::File::create(log_dir.join(log_file_name)) {
+            Ok(file) => Some(file),
+            Err(e) => {
+                tracing::error!("Failed to create log file: {}", e);
+                None
+            }
         }
     } else {
         None
@@ -98,7 +125,11 @@ fn setup_tracing() -> Vec<WorkerGuard> {
             .event_format(logging::CompactFormatter { ansicolor: true }),
     );
 
-    if let Some(log_file) = file {
+    if let Some(mut log_file) = file {
+        if let Err(e) = log_file.write_all(BuildInfo::from_build().to_string().as_bytes()) {
+            tracing::error!("Failed to write build info to log file: {}", e);
+        }
+
         let (file_writer, _guard_file) = tracing_appender::non_blocking(log_file);
         guards.push(_guard_file);
 
@@ -117,8 +148,6 @@ fn setup_tracing() -> Vec<WorkerGuard> {
 }
 
 pub fn run_tauri(project: Option<PathBuf>) {
-    let context = tauri::generate_context!();
-
     let guards = setup_tracing();
 
     tracing::info!(
@@ -187,10 +216,11 @@ pub fn run_tauri(project: Option<PathBuf>) {
             generate_remote,
             cancel_remote_generator,
             cancel_all_remote_generators,
-            open_log_dir,
-            build_info
+            build_info,
+            open_diagnostic_file,
+            error_message
         ])
-        .run(context)
+        .run(tauri::generate_context!())
         .expect("error while running tauri application");
 
     drop(guards);
