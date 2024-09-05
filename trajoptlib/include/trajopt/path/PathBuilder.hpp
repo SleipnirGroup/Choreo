@@ -42,6 +42,11 @@ class TRAJOPT_DLLEXPORT PathBuilder {
    */
   Path<Drivetrain, Solution>& GetPath() { return path; }
 
+  /**
+   * Get all bumpers currently added to the path builder
+   *
+   * @return a list of bumpers applied to the builder.
+   */
   std::vector<Bumpers>& GetBumpers() { return bumpers; }
 
   /**
