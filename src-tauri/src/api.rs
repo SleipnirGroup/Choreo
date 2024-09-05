@@ -50,8 +50,8 @@ pub fn guess_control_interval_counts(
 }
 
 #[tauri::command]
-pub fn adjust_waypoint_headings(traj: TrajFile) -> TauriResult<Vec<f64>> {
-    choreo_core::generation::adjust::adjust_waypoint_headings(&traj)
+pub fn calculate_adjusted_headings(traj: TrajFile) -> TauriResult<Vec<f64>> {
+    choreo_core::generation::heading::calculate_adjusted_headings(&traj)
 }
 
 #[tauri::command]

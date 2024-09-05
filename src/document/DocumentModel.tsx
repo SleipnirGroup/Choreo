@@ -177,7 +177,7 @@ export const DocumentStore = types
         return;
       }
       console.log("og wpt2: ", pathStore.params.waypoints[1].heading.value);
-      const adjustedHeadings = await Commands.adjustHeadings(
+      const adjustedHeadings = await Commands.calculateAdjustedHeadings(
         pathStore.serialize
       );
       if (adjustedHeadings.length == 0) throw "No headings";
