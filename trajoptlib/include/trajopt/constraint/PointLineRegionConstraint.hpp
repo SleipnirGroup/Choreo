@@ -16,7 +16,7 @@
 namespace trajopt {
 
 /**
- * Point-LineRegion constraint.
+ * Point-line region constraint.
  *
  * Specifies that a point on the robot must be on one side of a line defined by
  * two points on the field
@@ -78,8 +78,8 @@ class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
     auto a = m_fieldLineStart.Y() - m_fieldLineEnd.Y();
     auto b = m_fieldLineEnd.X() - m_fieldLineStart.X();
 
-    problem.SubjectTo((a * bumperCorner.X()) + (b * bumperCorner.Y()) >
-                      (a * m_fieldLineStart.X()) + (b * m_fieldLineStart.Y()));
+    problem.SubjectTo(a * bumperCorner.X() + b * bumperCorner.Y() >
+                      a * m_fieldLineStart.X() + b * m_fieldLineStart.Y());
   }
 
  private:
