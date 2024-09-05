@@ -16,7 +16,10 @@
 namespace trajopt {
 
 /**
+ * Point-LineRegion constraint.
  *
+ * Specifies that a point on the robot must be on one side of a line defined by
+ * two points on the field
  */
 class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
  public:

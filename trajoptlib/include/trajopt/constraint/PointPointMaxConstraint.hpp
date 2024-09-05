@@ -17,7 +17,7 @@ namespace trajopt {
 /**
  * Point-point constraint.
  *
- * Specifies the required minimum distance between a point on the robot's frame
+ * Specifies the required maximum distance between a point on the robot's frame
  * and a point on the field.
  */
 class TRAJOPT_DLLEXPORT PointPointMaxConstraint {
@@ -27,7 +27,7 @@ class TRAJOPT_DLLEXPORT PointPointMaxConstraint {
    *
    * @param robotPoint Robot point.
    * @param fieldPoint Field point.
-   * @param maxDistance Minimum distance between robot line and field point.
+   * @param maxDistance Maximum distance between robot line and field point.
    *     Must be nonnegative.
    */
   explicit PointPointMaxConstraint(Translation2d robotPoint,
