@@ -19,8 +19,8 @@ pub enum TrajoptError {
     MaxIterationsExceeded,
     #[error("The solver returned its solution so far after exceeding the maximum elapsed wall clock time")]
     Timeout,
-    #[error("The solver returned an unparsable error code")]
-    Unparsable,
+    #[error("The solver returned an unparsable error code: {0}")]
+    Unparsable(Box<str>),
     #[error("Unknown error: {0:?}")]
     Unknown(i8),
 }
