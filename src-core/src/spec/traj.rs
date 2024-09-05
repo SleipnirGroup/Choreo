@@ -143,6 +143,10 @@ pub enum ConstraintData<T: SnapshottableType> {
     },
     /// A constraint to stop at a waypoint.
     StopPoint {},
+    /// A constraint to contain the bumpers within a circlular region of the field
+    KeepInCircle { x: T, y: T, r: T },
+    /// A constraint to contain the bumpers within a rectangular region of the field
+    KeepInRectangle { x: T, y: T, w: T, h: T },
 }
 
 impl<T: SnapshottableType> ConstraintData<T> {
@@ -178,6 +182,17 @@ impl<T: SnapshottableType> ConstraintData<T> {
                 max: max.snapshot(),
             },
             ConstraintData::StopPoint {} => ConstraintData::StopPoint {},
+            ConstraintData::KeepInCircle { x, y, r } => ConstraintData::KeepInCircle {
+                x: x.snapshot(),
+                y: y.snapshot(),
+                r: r.snapshot(),
+            },
+            ConstraintData::KeepInRectangle { x, y, w, h } => ConstraintData::KeepInRectangle {
+                x: x.snapshot(),
+                y: y.snapshot(),
+                w: w.snapshot(),
+                h: h.snapshot(),
+            },
         }
     }
 }

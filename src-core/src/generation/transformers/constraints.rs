@@ -112,6 +112,18 @@ impl SwerveGenerationTransformer for ConstraintSetter {
                         builder.wpt_linear_velocity_max_magnitude(from, 0.0f64);
                         builder.wpt_angular_velocity_max_magnitude(from, 0.0f64);
                     }
+                },
+                ConstraintData::KeepInCircle { x, y, r } => match to_opt {
+                    None => builder.wpt_keep_in_circle(from, x, y, r),
+                    Some(to) => builder.sgmt_keep_in_circle(from, to, x, y, r),
+                },
+                ConstraintData::KeepInRectangle { x, y, w, h } => {
+                    let xs = vec![x, x + w, x + w, x];
+                    let ys = vec![y, y, y + h, y + h];
+                    match to_opt {
+                        None => builder.wpt_keep_in_polygon(from, xs, ys),
+                        Some(to) => builder.sgmt_keep_in_polygon(from, to, xs, ys),
+                    }
                 }
             };
         }
@@ -149,6 +161,18 @@ impl DiffyGenerationTransformer for ConstraintSetter {
                     if to_opt.is_none() {
                         builder.wpt_linear_velocity_max_magnitude(from, 0.0f64);
                         builder.wpt_angular_velocity_max_magnitude(from, 0.0f64);
+                    }
+                },
+                ConstraintData::KeepInCircle { x, y, r } => match to_opt {
+                    None => builder.wpt_keep_in_circle(from, x, y, r),
+                    Some(to) => builder.sgmt_keep_in_circle(from, to, x, y, r),
+                },
+                ConstraintData::KeepInRectangle { x, y, w, h } => {
+                    let xs = vec![x, x + w, x + w, x];
+                    let ys = vec![y, y, y + h, y + h];
+                    match to_opt {
+                        None => builder.wpt_keep_in_polygon(from, xs, ys),
+                        Some(to) => builder.sgmt_keep_in_polygon(from, to, xs, ys),
                     }
                 }
             };
