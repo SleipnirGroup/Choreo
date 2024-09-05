@@ -1,10 +1,13 @@
 package choreo;
 
 import choreo.Choreo.ChoreoControlFunction;
+import choreo.Choreo.ChoreoTrajectoryLogger;
 import choreo.ChoreoAutoFactory.ChoreoAutoBindings;
 import choreo.ext.TriggerExt;
 import choreo.trajectory.ChoreoTrajectory;
-import choreo.trajectory.ChoreoTrajectoryState;
+import choreo.trajectory.DiffySample;
+import choreo.trajectory.TrajSample;
+import choreo.trajectory.SwerveSample;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -15,11 +18,10 @@ import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
-import java.util.List;
+
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 /**
@@ -29,12 +31,13 @@ import java.util.function.Supplier;
 public class ChoreoAutoTrajectory {
   // did inches to meters like this to keep final
   private static final double DEFAULT_TOLERANCE_METERS = Units.inchesToMeters(3);
+  private static final ChassisSpeeds DEFAULT_CHASSIS_SPEEDS = new ChassisSpeeds();
 
   private final String name;
-  private final List<ChoreoTrajectory> trajectories;
-  private final Optional<BiConsumer<ChoreoTrajectory, Boolean>> trajLogger;
+  private final ChoreoTrajectory<? extends TrajSample<?>> trajectory;
+  private final Optional<ChoreoTrajectoryLogger> trajLogger;
   private final Supplier<Pose2d> poseSupplier;
-  private final ChoreoControlFunction controller;
+  private final ChoreoControlFunction<? extends TrajSample<?>> controller;
   private final Consumer<ChassisSpeeds> outputChassisSpeeds;
   private final BooleanSupplier mirrorTrajectory;
   private final Timer timer = new Timer();
@@ -54,53 +57,23 @@ public class ChoreoAutoTrajectory {
   /** If this trajectory us currently running */
   private boolean isActive = false;
 
-  /** The index of the current trajectory being run */
-  private int trajectoryIndex = 0;
-
   /** The time that the previous trajectories took up */
   private double timeOffset = 0.0;
 
   ChoreoAutoTrajectory(
       String name,
-      ChoreoTrajectory trajectory,
+      ChoreoTrajectory<? extends TrajSample<?>> trajectory,
       Supplier<Pose2d> poseSupplier,
-      ChoreoControlFunction controller,
+      ChoreoControlFunction<? extends TrajSample<?>> controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
-      Optional<BiConsumer<ChoreoTrajectory, Boolean>> trajLogger,
+      Optional<ChoreoTrajectoryLogger> trajLogger,
       Subsystem driveSubsystem,
       EventLoop loop,
       ChoreoAutoBindings bindings,
       Runnable newTrajCallback) {
     this.name = name;
-    this.trajectories = List.of(trajectory);
-    this.trajLogger = trajLogger;
-    this.poseSupplier = poseSupplier;
-    this.controller = controller;
-    this.outputChassisSpeeds = outputChassisSpeeds;
-    this.mirrorTrajectory = mirrorTrajectory;
-    this.driveSubsystem = driveSubsystem;
-    this.loop = loop;
-    this.offTrigger = new TriggerExt(loop, () -> false);
-    this.newTrajCallback = newTrajCallback;
-
-    bindings.getBindings().forEach((key, value) -> active().and(atTime(key)).onTrue(value));
-  }
-
-  ChoreoAutoTrajectory(
-      String name,
-      List<ChoreoTrajectory> trajectories,
-      Supplier<Pose2d> poseSupplier,
-      ChoreoControlFunction controller,
-      Consumer<ChassisSpeeds> outputChassisSpeeds,
-      BooleanSupplier mirrorTrajectory,
-      Optional<BiConsumer<ChoreoTrajectory, Boolean>> trajLogger,
-      Subsystem driveSubsystem,
-      EventLoop loop,
-      ChoreoAutoBindings bindings,
-      Runnable newTrajCallback) {
-    this.name = "Group " + name;
-    this.trajectories = List.copyOf(trajectories);
+    this.trajectory = trajectory;
     this.trajLogger = trajLogger;
     this.poseSupplier = poseSupplier;
     this.controller = controller;
@@ -125,29 +98,12 @@ public class ChoreoAutoTrajectory {
   }
 
   /**
-   * Returns the index of the last trajectory in the list
-   *
-   * @return Returns the index of the last trajectory in the list
-   */
-  private int lastTrajIndex() {
-    return trajectories.size() - 1;
-  }
-
-  /**
    * Returns the time since the start of the current trajectory
    * 
    * @return The time since the start of the current trajectory
    */
-  private double timeIntoCurrentTraj() {
-    return timer.get() - timeOffset;
-  }
-
-  /**
-   * Returns the current trajectory
-   * @return The current trajectory
-   */
-  private ChoreoTrajectory currentTrajectory() {
-    return trajectories.get(trajectoryIndex);
+  private double timeIntoTraj() {
+    return timer.get() + timeOffset;
   }
 
   /**
@@ -156,15 +112,13 @@ public class ChoreoAutoTrajectory {
    * @return The total time of all the trajectories
    */
   private double totalTime() {
-    double totalTime = 0.0;
-    for (var traj : trajectories) {
-      totalTime += traj.getTotalTime();
-    }
-    return totalTime;
+    return trajectory.getTotalTime();
   }
 
-  private void logCurrentTrajectory(boolean starting) {
-    trajLogger.ifPresent(logger -> logger.accept(currentTrajectory(), starting));
+  private void logTrajectory(boolean starting) {
+    trajLogger.ifPresent(logger -> {
+      logger.accept(trajectory.getPoses(), starting);
+    });
   }
 
   private void cmdInitialize() {
@@ -172,23 +126,30 @@ public class ChoreoAutoTrajectory {
     timer.restart();
     isDone = false;
     isActive = true;
-    trajectoryIndex = 0;
     timeOffset = 0.0;
-    logCurrentTrajectory(true);
+    logTrajectory(true);
   }
 
+  @SuppressWarnings("unchecked")
   private void cmdExecute() {
-    if (timeIntoCurrentTraj() > currentTrajectory().getTotalTime()
-        && trajectoryIndex < lastTrajIndex()) {
-      logCurrentTrajectory(false);
-      timeOffset += currentTrajectory().getTotalTime();
-      trajectoryIndex = Math.min(trajectoryIndex + 1, lastTrajIndex());
-      logCurrentTrajectory(true);
+    TrajSample<?> sample = this.trajectory.sampleAt(
+      timeIntoTraj(),
+      mirrorTrajectory.getAsBoolean()
+    );
+
+    ChassisSpeeds chassisSpeeds = DEFAULT_CHASSIS_SPEEDS;
+
+    if (sample instanceof SwerveSample) {
+      ChoreoControlFunction<SwerveSample> swerveController = (ChoreoControlFunction<SwerveSample>) this.controller;
+      SwerveSample swerveSample = (SwerveSample) sample;
+      chassisSpeeds = swerveController.apply(poseSupplier.get(), swerveSample);
+    } else if (sample instanceof DiffySample) {
+      ChoreoControlFunction<DiffySample> diffyController = (ChoreoControlFunction<DiffySample>) this.controller;
+      DiffySample diffySample = (DiffySample) sample;
+      chassisSpeeds = diffyController.apply(poseSupplier.get(), diffySample);
     }
-    outputChassisSpeeds.accept(
-        controller.apply(
-            poseSupplier.get(),
-            currentTrajectory().sample(timeIntoCurrentTraj(), mirrorTrajectory.getAsBoolean())));
+
+    outputChassisSpeeds.accept(chassisSpeeds);
   }
 
   private void cmdEnd(boolean interrupted) {
@@ -196,17 +157,18 @@ public class ChoreoAutoTrajectory {
     if (interrupted) {
       outputChassisSpeeds.accept(new ChassisSpeeds());
     } else {
-      var lastTraj = trajectories.get(lastTrajIndex());
-      outputChassisSpeeds.accept(lastTraj.getFinalState().getChassisSpeeds());
+      outputChassisSpeeds.accept(
+        trajectory.getFinalSample()
+            .getChassisSpeeds()
+      );
     }
     isDone = true;
     isActive = false;
-    logCurrentTrajectory(false);
+    logTrajectory(false);
   }
 
   private boolean cmdIsFinished() {
-    return trajectoryIndex == lastTrajIndex()
-        && timeIntoCurrentTraj() > currentTrajectory().getTotalTime();
+    return timeIntoTraj() > totalTime();
   }
 
   /**
@@ -217,14 +179,10 @@ public class ChoreoAutoTrajectory {
    */
   public Command cmd() {
     // if the trajectory is empty, return a command that will print an error
-    if (!trajectories.isEmpty()) {
-      for (var traj : trajectories) {
-        if (traj.getSamples().isEmpty()) {
-          return driveSubsystem.runOnce(() -> {
-            DriverStation.reportError("Trajectory " + name + " has no samples", false);
-          }).withName("Trajectory_" + name);
-        }
-      }
+    if (trajectory.samples().isEmpty()) {
+      return driveSubsystem.runOnce(() -> {
+        DriverStation.reportError("Trajectory " + name + " has no samples", false);
+      }).withName("Trajectory_" + name);
     }
     return new FunctionalCommand(
         this::cmdInitialize,
@@ -243,12 +201,11 @@ public class ChoreoAutoTrajectory {
    *
    * @return The starting pose
    */
-  public Pose2d getInitialPose() {
-    if (mirrorTrajectory.getAsBoolean()) {
-      return trajectories.get(0).getFlippedInitialPose();
-    } else {
-      return trajectories.get(0).getInitialPose();
+  public Optional<Pose2d> getInitialPose() {
+    if (trajectory.samples().isEmpty()) {
+      return Optional.empty();
     }
+    return Optional.of(trajectory.getInitialPose(mirrorTrajectory.getAsBoolean()));
   }
 
   /**
@@ -259,12 +216,11 @@ public class ChoreoAutoTrajectory {
    *
    * @return The starting pose
    */
-  public Pose2d getFinalPose() {
-    if (mirrorTrajectory.getAsBoolean()) {
-      return trajectories.get(lastTrajIndex()).getFlippedFinalPose();
-    } else {
-      return trajectories.get(lastTrajIndex()).getFinalPose();
+  public Optional<Pose2d> getFinalPose() {
+    if (trajectory.samples().isEmpty()) {
+      return Optional.empty();
     }
+    return Optional.of(trajectory.getFinalPose(mirrorTrajectory.getAsBoolean()));
   }
 
   /**
@@ -354,22 +310,16 @@ public class ChoreoAutoTrajectory {
    *     time.
    */
   public TriggerExt atTime(String eventName) {
-    double pastTrajTotalTime = 0.0;
     boolean foundEvent = false;
     TriggerExt trig = offTrigger;
 
-    // couldve maybe used stream, flatmap and foreach but this is still readable
-    for (var traj : trajectories) {
-      for (var event : traj.getEvents(eventName)) {
-        // This could create alot of objects, could be done a more efficient way
-        // with having it all be 1 trigger that just has a list of times and checks each one each
-        // cycle
-        // or something like that. If choreo starts proposing memory issues we can look into this.
-        trig = TriggerExt.from(trig.or(atTime(pastTrajTotalTime + event.timestamp)));
-        foundEvent = true;
-      }
-
-      pastTrajTotalTime += traj.getTotalTime();
+    for (var event : trajectory.getEvents(eventName)) {
+      // This could create alot of objects, could be done a more efficient way
+      // with having it all be 1 trigger that just has a list of times and checks each one each
+      // cycle
+      // or something like that. If choreo starts proposing memory issues we can look into this.
+      trig = TriggerExt.from(trig.or(atTime(event.timestamp())));
+      foundEvent = true;
     }
 
     // The user probably expects an event to exist if theyre trying to do something at that event,
@@ -407,24 +357,17 @@ public class ChoreoAutoTrajectory {
    *     pose.
    */
   public TriggerExt atPose(String eventName, double toleranceMeters) {
-    double pastTrajTotalTime = 0.0;
     boolean foundEvent = false;
     TriggerExt trig = offTrigger;
 
-    // couldve maybe used stream, flatmap and foreach but this is still readable
-    for (var traj : trajectories) {
-      for (var event : traj.getEvents(eventName)) {
-        // This could create alot of objects, could be done a more efficient way
-        // with having it all be 1 trigger that just has a list of posess and checks each one each
-        // cycle
-        // or something like that. If choreo starts proposing memory issues we can look into this.
-        ChoreoTrajectoryState state =
-            traj.sample(pastTrajTotalTime + event.timestamp, mirrorTrajectory.getAsBoolean());
-        trig = TriggerExt.from(trig.or(atPose(state.getPose(), toleranceMeters)));
-        foundEvent = true;
-      }
-
-      pastTrajTotalTime += traj.getTotalTime();
+    for (var event : trajectory.getEvents(eventName)) {
+      // This could create alot of objects, could be done a more efficient way
+      // with having it all be 1 trigger that just has a list of posess and checks each one each
+      // cycle or something like that.
+      // If choreo starts proposing memory issues we can look into this.
+      Pose2d pose = trajectory.sampleAt(event.timestamp(), mirrorTrajectory.getAsBoolean()).getPose();
+      trig = TriggerExt.from(trig.or(atPose(pose, toleranceMeters)));
+      foundEvent = true;
     }
 
     // The user probably expects an event to exist if theyre trying to do something at that event,
@@ -478,21 +421,5 @@ public class ChoreoAutoTrajectory {
    */
   public TriggerExt atTimeAndPlace(String eventName) {
     return atTimeAndPlace(eventName, DEFAULT_TOLERANCE_METERS);
-  }
-
-  /**
-   * Creates a trigger at the start of a sub trajectory. This is best used with trajectory groups,
-   * with non group trajectories only 0 is a valid argument
-   *
-   * @param index The index of the command in the group
-   * @return A trigger that is true while the subtrajectory is running
-   */
-  public TriggerExt whileSubTrajectoryActive(int index) {
-    if (index > lastTrajIndex() || index < 0) {
-      DriverStation.reportWarning("Subtrajectory index was out of bounds for " + name, true);
-      return offTrigger;
-    } else {
-      return new TriggerExt(loop, () -> trajectoryIndex == index && isActive);
-    }
   }
 }

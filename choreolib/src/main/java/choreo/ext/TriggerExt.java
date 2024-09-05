@@ -24,6 +24,28 @@ public class TriggerExt extends Trigger {
         super(loop, condition);
     }
 
+    public static TriggerExt done(Command cmd, EventLoop loop) {
+        BooleanSupplier isDone = new BooleanSupplier() {
+            boolean wasJustScheduled = false;
+
+            @Override
+            public boolean getAsBoolean() {
+                if (cmd.isScheduled()) {
+                    wasJustScheduled = true;
+                } else if (wasJustScheduled) {
+                    wasJustScheduled = false;
+                    return true;
+                }
+                return false;
+            }
+        };
+        return new TriggerExt(loop, isDone);
+    }
+
+    public static TriggerExt running(Command cmd, EventLoop loop) {
+        return new TriggerExt(loop, cmd::isScheduled);
+    }
+
     /**
      * On true it will evaluate the andCondition and run the andTrueCmd if true, and the andFalseCmd if false.
      * 
@@ -37,6 +59,7 @@ public class TriggerExt extends Trigger {
         this.and(() -> !andCondition.getAsBoolean()).onTrue(andFalseCmd);
         return this;
     }
+
 
     public static TriggerExt from(Trigger trigger) {
         if (trigger instanceof TriggerExt) {

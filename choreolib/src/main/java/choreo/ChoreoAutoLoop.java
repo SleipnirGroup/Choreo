@@ -9,8 +9,10 @@ import java.util.function.BooleanSupplier;
 import java.util.ArrayList;
 
 /**
- * A loop that represents an autonomous routine. This loop is used to handle autonomous trigger
- * logic and schedule commands.
+ * A loop that represents an autonomous routine.
+ * <p>
+ * This loop is used to handle autonomous trigger logic and schedule commands.
+ * This loop should **not** be shared across multiple autonomous routines.
  */
 public class ChoreoAutoLoop {
   protected final ArrayList<ChoreoAutoTrajectory> trajectories = new ArrayList<>();

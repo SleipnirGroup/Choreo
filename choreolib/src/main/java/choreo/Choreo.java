@@ -16,14 +16,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
-import choreo.trajectory.ChoreoTrajectoryState;
+import choreo.trajectory.TrajSample;
+
 import java.util.function.BiFunction;
 
 /** Utilities to load and follow ChoreoTrajectories */
@@ -35,8 +34,8 @@ public final class Choreo {
    * ChoreoTrajectoryState referenceState)-&gt;ChassisSpeeds, where the function returns
    * robot-relative ChassisSpeeds for the robot.
    */
-  public interface ChoreoControlFunction
-      extends BiFunction<Pose2d, ChoreoTrajectoryState, ChassisSpeeds> {}
+  public interface ChoreoControlFunction<SampleType extends TrajSample<SampleType>>
+      extends BiFunction<Pose2d, SampleType, ChassisSpeeds> {}
 
   /**
    * This interface exists as a type alias. A ChoreoTrajectoryLogger has signature (ChoreoTrajectory,
@@ -44,7 +43,7 @@ public final class Choreo {
    * trajectory is starting or finishing.
    */
   public interface ChoreoTrajectoryLogger
-      extends BiConsumer<ChoreoTrajectory, Boolean> {}
+      extends BiConsumer<Pose2d[], Boolean> {}
 
 
   /** Default constructor. */
@@ -52,10 +51,11 @@ public final class Choreo {
     throw new UnsupportedOperationException("This is a utility class!");
   }
 
-  private static Optional<ChoreoTrajectory> loadFile(File path) {
+  @SuppressWarnings("unchecked")
+  private static <SampleType extends TrajSample<SampleType>> Optional<ChoreoTrajectory<SampleType>> loadFile(File path) {
     try {
       var reader = new BufferedReader(new FileReader(path));
-      ChoreoTrajectory traj = gson.fromJson(reader, ChoreoTrajectory.class);
+      ChoreoTrajectory<SampleType> traj = gson.fromJson(reader, ChoreoTrajectory.class);
       return Optional.ofNullable(traj);
     } catch (FileNotFoundException ex) {
       return Optional.empty();
@@ -72,7 +72,7 @@ public final class Choreo {
    * @param trajName the path name in Choreo, which matches the file name in the deploy directory.
    * @return the loaded trajectory, or null if the trajectory could not be loaded.
    */
-  public static Optional<ChoreoTrajectory> getTrajectory(String trajName) {
+  public static <SampleType extends TrajSample<SampleType>> Optional<ChoreoTrajectory<SampleType>> getTrajectory(String trajName) {
     requireNonNullParam(trajName, "trajName", "Choreo.getTrajectory");
 
     final String fileExtension = ".traj";
@@ -83,46 +83,11 @@ public final class Choreo {
     var traj_file = new File(traj_dir, trajName + fileExtension);
 
     //Option::map didnt like trajName not being final
-    var optTraj = loadFile(traj_file);
+    Optional<ChoreoTrajectory<SampleType>> optTraj = loadFile(traj_file);
     if (optTraj.isPresent()) {
-      return Optional.of(optTraj.get().withName(trajName));
+      return Optional.of(optTraj.get());
     }
     return Optional.empty();
-  }
-
-  /**
-   * Loads the split parts of the specified trajectory. Fails and returns null if any of the parts
-   * could not be loaded.
-   *
-   * <p>This method determines the number of parts to load by counting the files that match the
-   * pattern "trajName.X.traj", where X is a string of digits. Let this count be N. It then attempts
-   * to load "trajName.1.traj" through "trajName.N.traj", consecutively counting up. If any of these
-   * files cannot be loaded, the method returns null.
-   *
-   * @param trajName The path name in Choreo for this trajectory.
-   * @return The List of segments, in order, or null.
-   */
-  public static Optional<List<ChoreoTrajectory>> getTrajectoryGroup(String trajName) {
-    requireNonNullParam(trajName, "trajName", "Choreo.getTrajectoryGroup");
-
-    // Count files matching the pattern for split parts.
-    var traj_dir = new File(Filesystem.getDeployDirectory(), "choreo");
-    File[] files =
-        traj_dir.listFiles((file) -> file.getName().matches(trajName + "\\.\\d+\\.traj"));
-    int segmentCount = files.length;
-    // Try to load the segments.
-    var trajs = new ArrayList<ChoreoTrajectory>();
-    for (int i = 1; i <= segmentCount; ++i) {
-      File traj = new File(traj_dir, String.format("%s.%d.traj", trajName, i));
-      var trajectory = loadFile(traj);
-      if (!trajectory.isPresent()) {
-        DriverStation.reportError("ChoreoLib: Missing segments for path group " + trajName, false);
-        return Optional.empty();
-      }
-      trajs.add(trajectory.get());
-    }
-
-    return Optional.of(trajs);
   }
 
   /**
@@ -139,10 +104,10 @@ public final class Choreo {
    * @param bindings Universal trajectory event bindings.
    * @return A command that follows a Choreo path.
    */
-  public static ChoreoAutoFactory createAutoFactory(
+  public static <SampleType extends TrajSample<SampleType>> ChoreoAutoFactory createAutoFactory(
       Subsystem driveSubsystem,
       Supplier<Pose2d> poseSupplier,
-      ChoreoControlFunction controller,
+      ChoreoControlFunction<SampleType> controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
       ChoreoAutoBindings bindings) {
@@ -153,7 +118,8 @@ public final class Choreo {
         requireNonNullParam(mirrorTrajectory, "mirrorTrajectory", "Choreo.createAutoFactory"),
         requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory"),
         requireNonNullParam(bindings, "bindings", "Choreo.createAutoFactory"),
-        Optional.empty());
+        Optional.empty()
+    );
   }
 
   /**
@@ -168,14 +134,14 @@ public final class Choreo {
    *     while keeping the same coordinate system origin. This will be called every loop during the
    *     command.
    * @param bindings Universal trajectory event bindings.
-   * @param trajLogger A function that consumes a trajectory whever one is started, should be used
-   *     for logging.
+   * @param trajLogger A function that consumes a list of poses and a boolean indicating whether the
+   *    trajectory is starting or finishing.
    * @return A command that follows a Choreo path.
    */
-  public static ChoreoAutoFactory createAutoFactory(
+  public static <SampleType extends TrajSample<SampleType>> ChoreoAutoFactory createAutoFactory(
       Subsystem driveSubsystem,
       Supplier<Pose2d> poseSupplier,
-      ChoreoControlFunction controller,
+      ChoreoControlFunction<SampleType> controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
       ChoreoAutoBindings bindings,
@@ -187,6 +153,7 @@ public final class Choreo {
         requireNonNullParam(mirrorTrajectory, "mirrorTrajectory", "Choreo.createAutoFactory"),
         requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory"),
         requireNonNullParam(bindings, "bindings", "Choreo.createAutoFactory"),
-        Optional.of(requireNonNullParam(trajLogger, "trajLogger", "Choreo.createAutoFactory")));
+        Optional.of(trajLogger)
+    );
   }
 }

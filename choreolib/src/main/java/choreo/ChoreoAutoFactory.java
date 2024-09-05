@@ -1,7 +1,10 @@
 package choreo;
 
 import choreo.Choreo.ChoreoControlFunction;
+import choreo.Choreo.ChoreoTrajectoryLogger;
 import choreo.trajectory.ChoreoTrajectory;
+import choreo.trajectory.SwerveSample;
+import choreo.trajectory.TrajSample;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -12,7 +15,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 /**
@@ -92,21 +94,21 @@ public class ChoreoAutoFactory {
   }
 
   private final Supplier<Pose2d> poseSupplier;
-  private final ChoreoControlFunction controller;
+  private final ChoreoControlFunction<? extends TrajSample<?>> controller;
   private final Consumer<ChassisSpeeds> outputChassisSpeeds;
   private final BooleanSupplier mirrorTrajectory;
   private final Subsystem driveSubsystem;
   private final ChoreoAutoBindings bindings = new ChoreoAutoBindings();
-  private final Optional<BiConsumer<ChoreoTrajectory, Boolean>> trajLogger;
+  private final Optional<ChoreoTrajectoryLogger> trajLogger;
 
   ChoreoAutoFactory(
       Supplier<Pose2d> poseSupplier,
-      ChoreoControlFunction controller,
+      ChoreoControlFunction<? extends TrajSample<?>> controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
       Subsystem driveSubsystem,
       ChoreoAutoBindings bindings,
-      Optional<BiConsumer<ChoreoTrajectory, Boolean>> trajLogger) {
+      Optional<ChoreoTrajectoryLogger> trajLogger) {
     this.poseSupplier = poseSupplier;
     this.controller = controller;
     this.outputChassisSpeeds = outputChassisSpeeds;
@@ -133,14 +135,17 @@ public class ChoreoAutoFactory {
    * @return A new auto trajectory.
    */
   public ChoreoAutoTrajectory traj(String trajName, ChoreoAutoLoop loop) {
-    var traj = new ChoreoAutoTrajectory(
+    Optional<? extends ChoreoTrajectory<?>> optTraj = Choreo.getTrajectory(trajName);
+    ChoreoTrajectory<?> traj;
+    if (optTraj.isPresent()) {
+      traj = optTraj.get();
+    } else {
+      DriverStation.reportError("Could not load trajectory: " + trajName, false);
+      traj = new ChoreoTrajectory<SwerveSample>(trajName, List.of(), List.of(), List.of());
+    }
+    var autoTraj = new ChoreoAutoTrajectory(
         trajName,
-        Choreo.getTrajectory(trajName)
-            .orElseGet(
-                () -> {
-                  DriverStation.reportError("Could not load trajectory: " + trajName, false);
-                  return new ChoreoTrajectory();
-                }),
+        traj,
         poseSupplier,
         controller,
         outputChassisSpeeds,
@@ -151,8 +156,28 @@ public class ChoreoAutoFactory {
         bindings,
         loop::onNewTrajectory
     );
-    loop.addTrajectory(traj);
-    return traj;
+    loop.addTrajectory(autoTraj);
+    return autoTraj;
+  }
+
+  /**
+   * Creates a new auto trajectory to be used in an auto routine.
+   *
+   * @param trajName The name of the trajectory to use.
+   * @param splitIndex The index of the split trajectory to use.
+   * @param loop The auto loop to use as the triggers polling context.
+   * @return A new auto trajectory.
+   */
+  public ChoreoAutoTrajectory traj(String trajName, final int splitIndex, ChoreoAutoLoop loop) {
+    Optional<? extends ChoreoTrajectory<?>> optTraj = Choreo.getTrajectory(trajName).flatMap(traj -> traj.getSplit(splitIndex));
+    ChoreoTrajectory<?> traj;
+    if (optTraj.isPresent()) {
+      traj = optTraj.get();
+    } else {
+      DriverStation.reportError("Could not load trajectory: " + trajName, false);
+      traj = new ChoreoTrajectory<SwerveSample>(trajName, List.of(), List.of(), List.of());
+    }
+    return traj(traj, loop);
   }
 
   /**
@@ -162,65 +187,10 @@ public class ChoreoAutoFactory {
    * @param loop The auto loop to use as the triggers polling context.
    * @return A new auto trajectory.
    */
-  public ChoreoAutoTrajectory traj(ChoreoTrajectory trajectory, ChoreoAutoLoop loop) {
+  public <SampleType extends TrajSample<SampleType>> ChoreoAutoTrajectory traj(ChoreoTrajectory<SampleType> trajectory, ChoreoAutoLoop loop) {
     var traj = new ChoreoAutoTrajectory(
         trajectory.name(),
         trajectory,
-        poseSupplier,
-        controller,
-        outputChassisSpeeds,
-        mirrorTrajectory,
-        trajLogger,
-        driveSubsystem,
-        loop.getLoop(),
-        bindings,
-        loop::onNewTrajectory
-    );
-    loop.addTrajectory(traj);
-    return traj;
-  }
-
-  /**
-   * Creates a new auto trajectory based on a trajectory group.
-   *
-   * @param trajName The name of the trajectory group to use.
-   * @param loop The auto loop to use as the triggers polling context.
-   * @return A new auto trajectory.
-   */
-  public ChoreoAutoTrajectory trajGroup(String trajName, ChoreoAutoLoop loop) {
-    var traj =  new ChoreoAutoTrajectory(
-        trajName,
-        Choreo.getTrajectoryGroup(trajName)
-            .orElseGet(
-                () -> {
-                  DriverStation.reportError("Could not load trajectory group: " + trajName, false);
-                  return List.of();
-                }),
-        poseSupplier,
-        controller,
-        outputChassisSpeeds,
-        mirrorTrajectory,
-        trajLogger,
-        driveSubsystem,
-        loop.getLoop(),
-        bindings,
-        loop::onNewTrajectory
-    );
-    loop.addTrajectory(traj);
-    return traj;
-  }
-
-  /**
-   * Creates a new auto trajectory based on a trajectory group.
-   *
-   * @param trajectories The list of trajectories to use.
-   * @param loop The auto loop to use as the triggers polling context.
-   * @return A new auto trajectory.
-   */
-  public ChoreoAutoTrajectory trajGroup(String name, List<ChoreoTrajectory> trajectories, ChoreoAutoLoop loop) {
-    var traj =  new ChoreoAutoTrajectory(
-        name,
-        trajectories,
         poseSupplier,
         controller,
         outputChassisSpeeds,

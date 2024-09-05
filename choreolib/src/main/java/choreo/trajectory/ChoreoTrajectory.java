@@ -3,64 +3,24 @@
 package choreo.trajectory;
 
 import edu.wpi.first.math.geometry.Pose2d;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /** A trajectory loaded from Choreo. */
-public class ChoreoTrajectory {
-  private final String name;
-  private final List<ChoreoTrajectoryState> samples;
-  private final List<ChoreoEventMarker> events;
-
-  /** Create an empty ChoreoTrajectory. */
-  public ChoreoTrajectory() {
-    name = "Empty Trajectory";
-    samples = List.of();
-    events = List.of();
-  }
-
-  /**
-   * Constructs a new trajectory from a list of trajectory states
-   *
-   * @param name the name of the trajectory
-   * @param samples a vector containing a list of ChoreoTrajectoryStates
-   * @param events a vector containing a list of ChoreoEventMarkers
-   */
-  public ChoreoTrajectory(
-      String name, List<ChoreoTrajectoryState> samples, List<ChoreoEventMarker> events) {
-    this.name = name;
-    this.samples = samples;
-    this.events = events;
-  }
-
-  /**
-   * Returns the name stored in the trajectory from the Choreo app
-   *
-   * <p>Note: Don't use this for equality checks or assertion has this has no promise to stay
-   * identical between choreo versions
-   *
-   * @return Returns the name of the trajecotry
-   */
-  public String name() {
-    return name;
-  }
-
-  /**
-   * Returns a new trajectory with the given name
-   * 
-   * @param name the new name of the trajectory
-   * @return a new trajectory with the given name
-   */
-  public ChoreoTrajectory withName(String name) {
-    return new ChoreoTrajectory(name, samples, events);
-  }
-
+public record ChoreoTrajectory<SampleType extends TrajSample<SampleType>> (
+  String name,
+  List<SampleType> samples,
+  List<Integer> splits,
+  List<EventMarker> events
+) {
   /**
    * Returns the first ChoreoTrajectoryState in the trajectory.
    *
    * @return The first ChoreoTrajectoryState in the trajectory.
    */
-  public ChoreoTrajectoryState getInitialState() {
+  public SampleType getInitialState() {
     return samples.get(0);
   }
 
@@ -69,18 +29,18 @@ public class ChoreoTrajectory {
    *
    * @return The last ChoreoTrajectoryState in the trajectory.
    */
-  public ChoreoTrajectoryState getFinalState() {
+  public SampleType getFinalSample() {
     return samples.get(samples.size() - 1);
   }
 
-  private ChoreoTrajectoryState sampleInternal(double timestamp) {
-    if (timestamp < samples.get(0).timestamp) {
+  private SampleType sampleInternal(double timestamp) {
+    if (timestamp < samples.get(0).getTimestamp()) {
       // timestamp oob, return the initial state
       return getInitialState();
     }
     if (timestamp >= getTotalTime()) {
       // timestamp oob, return the final state
-      return getFinalState();
+      return getFinalSample();
     }
 
     // binary search to find the sample before and ahead of the timestamp
@@ -89,7 +49,7 @@ public class ChoreoTrajectory {
 
     while (low != high) {
       int mid = (low + high) / 2;
-      if (samples.get(mid).timestamp < timestamp) {
+      if (samples.get(mid).getTimestamp() < timestamp) {
         low = mid + 1;
       } else {
         high = mid;
@@ -103,7 +63,7 @@ public class ChoreoTrajectory {
     var behindState = samples.get(low - 1);
     var aheadState = samples.get(low);
 
-    if ((aheadState.timestamp - behindState.timestamp) < 1e-6) {
+    if ((aheadState.getTimestamp() - behindState.getTimestamp()) < 1e-6) {
       return aheadState;
     }
 
@@ -116,8 +76,8 @@ public class ChoreoTrajectory {
    * @param timestamp The timestamp of this sample relative to the beginning of the trajectory.
    * @return The ChoreoTrajectoryState at the given time.
    */
-  public ChoreoTrajectoryState sample(double timestamp) {
-    return sample(timestamp, false);
+  public SampleType sampleAt(double timestamp) {
+    return sampleAt(timestamp, false);
   }
 
   /**
@@ -128,54 +88,35 @@ public class ChoreoTrajectory {
    *     midline (as in 2023).
    * @return The ChoreoTrajectoryState at the given time.
    */
-  public ChoreoTrajectoryState sample(double timestamp, boolean mirrorForRedAlliance) {
+  public SampleType sampleAt(double timestamp, boolean mirrorForRedAlliance) {
     var state = sampleInternal(timestamp);
     return mirrorForRedAlliance ? state.flipped() : state;
   }
 
   /**
-   * Returns the list of states for this trajectory.
+   * Returns the initial pose of the trajectory.
    *
-   * @return this trajectory's states.
+   * @param mirrorForRedAlliance whether or not to return the pose as mirrored across the field
+   * @return the initial pose of the trajectory.
    */
-  public List<ChoreoTrajectoryState> getSamples() {
-    return samples;
-  }
-
-  /**
-   * Returns the initial, non-mirrored pose of the trajectory.
-   *
-   * @return the initial, non-mirrored pose of the trajectory.
-   */
-  public Pose2d getInitialPose() {
+  public Pose2d getInitialPose(boolean mirrorForRedAlliance) {
+    if (mirrorForRedAlliance) {
+      return samples.get(0).flipped().getPose();
+    }
     return samples.get(0).getPose();
   }
 
   /**
-   * Returns the initial, mirrored pose of the trajectory.
+   * Returns the final pose of the trajectory.
    *
-   * @return the initial, mirrored pose of the trajectory.
+   * @param mirrorForRedAlliance whether or not to return the pose as mirrored across the field
+   * @return the final pose of the trajectory.
    */
-  public Pose2d getFlippedInitialPose() {
-    return samples.get(0).flipped().getPose();
-  }
-
-  /**
-   * Returns the final, non-mirrored pose of the trajectory.
-   *
-   * @return the final, non-mirrored pose of the trajectory.
-   */
-  public Pose2d getFinalPose() {
+  public Pose2d getFinalPose(boolean mirrorForRedAlliance) {
+    if (mirrorForRedAlliance) {
+      return samples.get(samples.size() - 1).flipped().getPose();
+    }
     return samples.get(samples.size() - 1).getPose();
-  }
-
-  /**
-   * Returns the final, mirrored pose of the trajectory.
-   *
-   * @return the final, mirrored pose of the trajectory.
-   */
-  public Pose2d getFlippedFinalPose() {
-    return samples.get(samples.size() - 1).flipped().getPose();
   }
 
   /**
@@ -184,7 +125,7 @@ public class ChoreoTrajectory {
    * @return the total time of the trajectory (the timestamp of the last sample)
    */
   public double getTotalTime() {
-    return samples.get(samples.size() - 1).timestamp;
+    return samples.get(samples.size() - 1).getTimestamp();
   }
 
   /**
@@ -193,7 +134,7 @@ public class ChoreoTrajectory {
    * @return the array of poses corresponding to the trajectory.
    */
   public Pose2d[] getPoses() {
-    return samples.stream().map(ChoreoTrajectoryState::getPose).toArray(Pose2d[]::new);
+    return samples.stream().map(SampleType::getPose).toArray(Pose2d[]::new);
   }
 
   /**
@@ -201,12 +142,12 @@ public class ChoreoTrajectory {
    *
    * @return this trajectory, mirrored across the field midline.
    */
-  public ChoreoTrajectory flipped() {
-    var flippedStates = new ArrayList<ChoreoTrajectoryState>();
+  public ChoreoTrajectory<SampleType> flipped() {
+    var flippedStates = new ArrayList<SampleType>();
     for (var state : samples) {
       flippedStates.add(state.flipped());
     }
-    return new ChoreoTrajectory(name, flippedStates, this.events);
+    return new ChoreoTrajectory<SampleType>(this.name, flippedStates, this.splits, this.events);
   }
 
   /**
@@ -216,7 +157,28 @@ public class ChoreoTrajectory {
    * @return A list of all events with the given name in the trajectory, if no events are found, an
    *     empty list is returned.
    */
-  public List<ChoreoEventMarker> getEvents(String eventName) {
-    return events.stream().filter(event -> event.event.equals(eventName)).toList();
+  public List<EventMarker> getEvents(String eventName) {
+    return events.stream().filter(event -> event.event().equals(eventName)).toList();
+  }
+
+  public Optional<ChoreoTrajectory<SampleType>> getSplit(int splitIndex) {
+    if (splitIndex < 0 || splitIndex >= splits.size()) {
+      return Optional.empty();
+    }
+    int start = splits.get(splitIndex);
+    int end = splitIndex + 1 < splits.size() ? splits.get(splitIndex + 1) + 1 : samples.size();
+    var sublist = samples.subList(start, end);
+    double startTime = sublist.get(0).getTimestamp();
+    double endTime = sublist.get(sublist.size() - 1).getTimestamp();
+    return Optional.of(
+      new ChoreoTrajectory<SampleType>(
+        this.name + "[" + splitIndex + "]",
+        sublist.stream().map(s -> s.offsetBy(-startTime)).toList(),
+        List.of(),
+        events.stream()
+          .filter(e -> e.timestamp() >= startTime && e.timestamp() <= endTime)
+          .map(e -> e.offsetBy(-startTime))
+          .toList()
+      ));
   }
 }
