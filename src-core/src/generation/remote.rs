@@ -211,35 +211,6 @@ pub async fn remote_generate_parent(
 
     tracing::debug!("Spawned remote generator");
 
-    let (rx, o) = server.accept().map_err(ChoreoError::remote)?;
-
-    // check if the solver has already completed
-    match serde_json::from_str::<RemoteProgressUpdate>(&o) {
-        Ok(RemoteProgressUpdate::CompleteTraj(traj)) => {
-            tracing::debug!("Remote generator completed (early return)");
-            return Ok(TrajFile {
-                traj,
-                snapshot: Some(trajfile.params.snapshot()),
-                ..trajfile
-            });
-        }
-        Ok(RemoteProgressUpdate::Error(e)) => {
-            return Err(ChoreoError::remote(e));
-        }
-        Err(e) => {
-            return Err(ChoreoError::remote(ChoreoError::Json(format!(
-                "Error parsing solver update: {e:?}"
-            ))));
-        }
-        _ => {}
-    }
-
-    let (killer, victim) = oneshot::channel::<()>();
-    remote_resources.add_killer(handle, killer);
-    let mut victim = victim.into_stream();
-
-    let mut stream = rx.to_stream();
-
     let tee_killswitch = Arc::new(Notify::new());
 
     let stdout = child.stdout.take().expect("Didn't capture stdout");
@@ -288,6 +259,37 @@ pub async fn remote_generate_parent(
             }
         }
     });
+
+    let (rx, o) = server.accept().map_err(ChoreoError::remote)?;
+
+    // check if the solver has already completed
+    let early_out = match serde_json::from_str::<RemoteProgressUpdate>(&o) {
+        Ok(RemoteProgressUpdate::CompleteTraj(traj)) => {
+            tracing::debug!("Remote generator completed (early return)");
+            Some(Ok(TrajFile {
+                traj,
+                snapshot: Some(trajfile.params.snapshot()),
+                ..trajfile.clone()
+            }))
+        }
+        Ok(RemoteProgressUpdate::Error(e)) => Some(Err(ChoreoError::remote(e))),
+        Err(e) => Some(Err(ChoreoError::remote(ChoreoError::Json(format!(
+            "Error parsing solver update: {e:?}"
+        ))))),
+        _ => None,
+    };
+
+    if let Some(out) = early_out {
+        tee_killswitch.notify_one();
+        let _ = tee_handle.await;
+        return out;
+    }
+
+    let (killer, victim) = oneshot::channel::<()>();
+    remote_resources.add_killer(handle, killer);
+    let mut victim = victim.into_stream();
+
+    let mut stream = rx.to_stream();
 
     let out: ChoreoResult<TrajFile> = loop {
         select! {
