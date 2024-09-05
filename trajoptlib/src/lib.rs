@@ -444,7 +444,7 @@ impl SwervePathBuilder {
                     what.parse::<i8>()
                         .map_err(|_| TrajoptError::Unparsable(Box::from(what)))?,
                 ))
-            },
+            }
         }
     }
 
@@ -695,7 +695,7 @@ impl DifferentialPathBuilder {
                     what.parse::<i8>()
                         .map_err(|_| TrajoptError::Unparsable(Box::from(what)))?,
                 ))
-            },
+            }
         }
     }
 

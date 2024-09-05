@@ -271,15 +271,11 @@ pub async fn remote_generate_parent(
                 ..trajfile.clone()
             }))
         }
-        Ok(RemoteProgressUpdate::Error(e)) => {
-            Some(Err(ChoreoError::remote(e)))
-        }
-        Err(e) => {
-            Some(Err(ChoreoError::remote(ChoreoError::Json(format!(
-                "Error parsing solver update: {e:?}"
-            )))))
-        }
-        _ => None
+        Ok(RemoteProgressUpdate::Error(e)) => Some(Err(ChoreoError::remote(e))),
+        Err(e) => Some(Err(ChoreoError::remote(ChoreoError::Json(format!(
+            "Error parsing solver update: {e:?}"
+        ))))),
+        _ => None,
     };
 
     if let Some(out) = early_out {
