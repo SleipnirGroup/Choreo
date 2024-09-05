@@ -26,6 +26,7 @@ class Body extends Component<Props, State> {
                 flexDirection: "row",
                 flexGrow: 1,
                 height: 0,
+                maxHeight: "100%",
                 width: "100%"
               }}
             >
