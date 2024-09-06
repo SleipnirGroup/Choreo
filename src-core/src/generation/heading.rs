@@ -238,7 +238,7 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
     Ok(new_headings)
 }
 
-// This should be used before 
+// This should be used before
 pub fn adjust_headings(traj: &mut TrajFile) -> ChoreoResult<()> {
     let new_headings = calculate_adjusted_headings(traj)?;
     // new_headings, set to file

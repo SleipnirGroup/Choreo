@@ -1,8 +1,8 @@
+use super::angle_modulus;
 use crate::error::ChoreoError;
 use crate::spec::project::RobotConfig;
 use crate::spec::traj::{ConstraintData, Parameters, Waypoint};
 use crate::ChoreoResult;
-use super::angle_modulus;
 
 pub fn guess_control_interval_counts(
     config: &RobotConfig<f64>,

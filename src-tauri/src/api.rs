@@ -51,7 +51,7 @@ pub fn guess_control_interval_counts(
 
 #[tauri::command]
 pub fn calculate_adjusted_headings(traj: TrajFile) -> TauriResult<Vec<f64>> {
-    choreo_core::generation::heading::calculate_adjusted_headings(&traj)
+    debug_result!(choreo_core::generation::heading::calculate_adjusted_headings(&traj));
 }
 
 #[tauri::command]
