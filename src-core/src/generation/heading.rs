@@ -24,10 +24,9 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
 
     for (idx, wpt) in waypoints.iter().enumerate() {
         if idx == 0 && !wpt.fix_heading {
-            tracing::error!("First waypoint must have fixed heading.");
             return Err(ChoreoError::HeadingConflict(
                 1,
-                "First waypoints must have fixed heading.",
+                "First waypoints must have fixed heading.".to_string(),
             ));
         }
         if wpt.fix_heading {
@@ -96,10 +95,10 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                                 });
                             // move this to end
                             if fixed_count > 1 {
-                                tracing::error!("Multiple Pose wpts within 0 MaxAngVel Constraints including wpt# {}", idx+1);
                                 return Err(ChoreoError::HeadingConflict(
                                     idx + 1,
-                                    "Multiple Pose waypoints within 0 maxAngVel Contraints",
+                                    "Multiple Pose waypoints within 0 maxAngVel Contraints"
+                                        .to_string(),
                                 ));
                             }
                             if let Some(heading) = fixed_heading {
@@ -143,13 +142,9 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                             heading
                         };
                         if waypoints[from].fix_heading && (waypoints[from].heading.1 != heading) {
-                            tracing::error!(
-                                "Heading Conflict of Point At and Pose constraints at wpt# {}",
-                                from + 1
-                            );
                             return Err(ChoreoError::HeadingConflict(
                                 from + 1,
-                                "Point At and Pose constraints",
+                                "Point At and Pose constraints".to_string(),
                             ));
                         } else {
                             new_headings[from] = heading;
@@ -178,13 +173,9 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                             if !waypoints[wpt_idx].fix_heading {
                                 new_headings[wpt_idx] = heading;
                             } else {
-                                tracing::error!(
-                                    "Heading Conflict of Point At and Pose constraints at wpt# {}",
-                                    from + 1
-                                );
                                 return Err(ChoreoError::HeadingConflict(
                                     from + 1,
-                                    "Point At and Pose constraints",
+                                    "Point At and Pose constraints".to_string(),
                                 ));
                             }
                         }
@@ -194,7 +185,8 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
             _ => {}
         }
     }
-    tracing::debug!(
+    println!("new headings: {new_headings:?}");
+    println!(
         "heading conflict references:\n
     {wpt_has_point_at:?} - wpt_has_point_at\n
     {sgmt_has_point_at:?} - sgmt_has_point_at\n
@@ -212,25 +204,16 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
         .enumerate()
     {
         if sgmt_v >= 1 && sgmt_p >= 1 {
-            tracing::error!(
-                "0 maxAngVel and Point At across wpt# {} to wpt# {}",
-                sgmt + 1,
-                sgmt + 2
-            );
             return Err(ChoreoError::HeadingConflict(
                 sgmt + 1,
-                "0 maxAngVel and Point At",
+                "0 maxAngVel and Point At".to_string(),
             ));
         }
         if sgmt > 0 {
             if sgmt_p >= 1 && sgmt_has_0_ang_vel[sgmt - 1] >= 1 && wpt_is_pose[sgmt - 1] {
-                tracing::error!(
-                    "0 maxAngVel on segment prior to Point At at sgmt# {}",
-                    sgmt + 1
-                );
                 return Err(ChoreoError::HeadingConflict(
                     sgmt + 1,
-                    "0 maxAngVel on segment prior to Point At",
+                    "0 maxAngVel on segment prior to Point At".to_string(),
                 ));
             }
         }
