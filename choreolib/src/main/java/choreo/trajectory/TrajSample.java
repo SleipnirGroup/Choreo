@@ -1,12 +1,12 @@
+// Copyright (c) Choreo contributors
+
 package choreo.trajectory;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.interpolation.Interpolatable;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
-/**
- * The generic interface for a sample in a trajectory.
- */
+/** The generic interface for a sample in a trajectory. */
 public interface TrajSample<Self extends TrajSample<?>> extends Interpolatable<Self> {
   /**
    * Returns the timestamp of this sample.

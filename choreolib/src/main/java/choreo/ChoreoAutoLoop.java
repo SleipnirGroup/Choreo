@@ -1,3 +1,5 @@
+// Copyright (c) Choreo contributors
+
 package choreo;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -5,14 +7,14 @@ import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import java.util.function.BooleanSupplier;
 import java.util.ArrayList;
+import java.util.function.BooleanSupplier;
 
 /**
  * A loop that represents an autonomous routine.
- * <p>
- * This loop is used to handle autonomous trigger logic and schedule commands.
- * This loop should **not** be shared across multiple autonomous routines.
+ *
+ * <p>This loop is used to handle autonomous trigger logic and schedule commands. This loop should
+ * **not** be shared across multiple autonomous routines.
  */
 public class ChoreoAutoLoop {
   protected final ArrayList<ChoreoAutoTrajectory> trajectories = new ArrayList<>();
@@ -41,9 +43,7 @@ public class ChoreoAutoLoop {
     this.loop = loop;
   }
 
-  /**
-   * A callback that will cleanup state of all trajectories when a new trajectory is started.
-   */
+  /** A callback that will cleanup state of all trajectories when a new trajectory is started. */
   void onNewTrajectory() {
     for (ChoreoAutoTrajectory traj : trajectories) {
       traj.onNewTrajectory();
@@ -52,9 +52,9 @@ public class ChoreoAutoLoop {
 
   /**
    * Returns a {@link Trigger} that is true while this autonomous loop is being polled.
-   * 
-   * Using a {@link Trigger#onFalse(Command)} will do nothing as when this is false the 
-   * loop is not being polled anymore.
+   *
+   * <p>Using a {@link Trigger#onFalse(Command)} will do nothing as when this is false the loop is
+   * not being polled anymore.
    *
    * @return A {@link Trigger} that is true while this autonomous loop is being polled.
    */
@@ -107,9 +107,10 @@ public class ChoreoAutoLoop {
    * @see #cmd(BooleanSupplier) A version of this method that takes a condition to finish the loop.
    */
   public Command cmd() {
-    return Commands.run(this::poll).finallyDo(this::reset)
-      .until(() -> !DriverStation.isAutonomousEnabled())
-      .withName("ChoreoAutoLoop");
+    return Commands.run(this::poll)
+        .finallyDo(this::reset)
+        .until(() -> !DriverStation.isAutonomousEnabled())
+        .withName("ChoreoAutoLoop");
   }
 
   /**
@@ -120,8 +121,6 @@ public class ChoreoAutoLoop {
    * @see #cmd() A version of this method that doesn't take a condition and never finishes.
    */
   public Command cmd(BooleanSupplier finishCondition) {
-    return this.cmd()
-      .until(() -> finishCondition.getAsBoolean())
-      .withName("ChoreoAutoLoop");
+    return this.cmd().until(() -> finishCondition.getAsBoolean()).withName("ChoreoAutoLoop");
   }
 }

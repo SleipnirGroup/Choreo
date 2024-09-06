@@ -1,3 +1,5 @@
+// Copyright (c) Choreo contributors
+
 package choreo;
 
 import choreo.Choreo.ChoreoControlFunction;
@@ -23,7 +25,7 @@ import java.util.function.Supplier;
  * <p>Here is an example of how to use this class to create an auto routine:
  *
  * <h2>Example using <code>Trigger</code>s</h2>
- * 
+ *
  * <pre><code>
  * public Command shootThenMove(ChoreoAutoFactory factory) {
  *   // create a new auto loop to return
@@ -42,9 +44,9 @@ import java.util.function.Supplier;
  *   return loopcmd().withName("ShootThenMove");
  * }
  * </code></pre>
- * 
+ *
  * <h2>Example using <code>CommandGroup</code>s</h2>
- * 
+ *
  * <pre><code>
  * public Command shootThenMove(ChoreoAutoFactory factory) {
  *   // create a new auto loop to return
@@ -143,19 +145,19 @@ public class ChoreoAutoFactory {
       DriverStation.reportError("Could not load trajectory: " + trajName, false);
       traj = new ChoreoTrajectory<SwerveSample>(trajName, List.of(), List.of(), List.of());
     }
-    var autoTraj = new ChoreoAutoTrajectory(
-        trajName,
-        traj,
-        poseSupplier,
-        controller,
-        outputChassisSpeeds,
-        mirrorTrajectory,
-        trajLogger,
-        driveSubsystem,
-        loop.getLoop(),
-        bindings,
-        loop::onNewTrajectory
-    );
+    var autoTraj =
+        new ChoreoAutoTrajectory(
+            trajName,
+            traj,
+            poseSupplier,
+            controller,
+            outputChassisSpeeds,
+            mirrorTrajectory,
+            trajLogger,
+            driveSubsystem,
+            loop.getLoop(),
+            bindings,
+            loop::onNewTrajectory);
     loop.addTrajectory(autoTraj);
     return autoTraj;
   }
@@ -169,7 +171,8 @@ public class ChoreoAutoFactory {
    * @return A new auto trajectory.
    */
   public ChoreoAutoTrajectory traj(String trajName, final int splitIndex, ChoreoAutoLoop loop) {
-    Optional<? extends ChoreoTrajectory<?>> optTraj = Choreo.getTrajectory(trajName).flatMap(traj -> traj.getSplit(splitIndex));
+    Optional<? extends ChoreoTrajectory<?>> optTraj =
+        Choreo.getTrajectory(trajName).flatMap(traj -> traj.getSplit(splitIndex));
     ChoreoTrajectory<?> traj;
     if (optTraj.isPresent()) {
       traj = optTraj.get();
@@ -187,20 +190,21 @@ public class ChoreoAutoFactory {
    * @param loop The auto loop to use as the triggers polling context.
    * @return A new auto trajectory.
    */
-  public <SampleType extends TrajSample<SampleType>> ChoreoAutoTrajectory traj(ChoreoTrajectory<SampleType> trajectory, ChoreoAutoLoop loop) {
-    var traj = new ChoreoAutoTrajectory(
-        trajectory.name(),
-        trajectory,
-        poseSupplier,
-        controller,
-        outputChassisSpeeds,
-        mirrorTrajectory,
-        trajLogger,
-        driveSubsystem,
-        loop.getLoop(),
-        bindings,
-        loop::onNewTrajectory
-    );
+  public <SampleType extends TrajSample<SampleType>> ChoreoAutoTrajectory traj(
+      ChoreoTrajectory<SampleType> trajectory, ChoreoAutoLoop loop) {
+    var traj =
+        new ChoreoAutoTrajectory(
+            trajectory.name(),
+            trajectory,
+            poseSupplier,
+            controller,
+            outputChassisSpeeds,
+            mirrorTrajectory,
+            trajLogger,
+            driveSubsystem,
+            loop.getLoop(),
+            bindings,
+            loop::onNewTrajectory);
     loop.addTrajectory(traj);
     return traj;
   }

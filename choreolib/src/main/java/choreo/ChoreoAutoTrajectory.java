@@ -1,3 +1,5 @@
+// Copyright (c) Choreo contributors
+
 package choreo;
 
 import choreo.Choreo.ChoreoControlFunction;
@@ -6,8 +8,8 @@ import choreo.ChoreoAutoFactory.ChoreoAutoBindings;
 import choreo.ext.TriggerExt;
 import choreo.trajectory.ChoreoTrajectory;
 import choreo.trajectory.DiffySample;
-import choreo.trajectory.TrajSample;
 import choreo.trajectory.SwerveSample;
+import choreo.trajectory.TrajSample;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -18,7 +20,6 @@ import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
-
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -46,8 +47,8 @@ public class ChoreoAutoTrajectory {
   private final Runnable newTrajCallback;
 
   /**
-   * A way to create slightly less triggers for alot of actions.
-   * Not static as to not leak triggers made here into another static EventLoop.
+   * A way to create slightly less triggers for alot of actions. Not static as to not leak triggers
+   * made here into another static EventLoop.
    */
   private final TriggerExt offTrigger;
 
@@ -89,8 +90,8 @@ public class ChoreoAutoTrajectory {
 
   /**
    * A state helper that cleans up the {@link #done()} logic.
-   * 
-   * This should be called in the {@link ChoreoAutoLoop#onNewTrajectory()} method.
+   *
+   * <p>This should be called in the {@link ChoreoAutoLoop#onNewTrajectory()} method.
    */
   void onNewTrajectory() {
     isDone = false;
@@ -99,7 +100,7 @@ public class ChoreoAutoTrajectory {
 
   /**
    * Returns the time since the start of the current trajectory
-   * 
+   *
    * @return The time since the start of the current trajectory
    */
   private double timeIntoTraj() {
@@ -108,7 +109,7 @@ public class ChoreoAutoTrajectory {
 
   /**
    * Returns the total time of all the trajectories
-   * 
+   *
    * @return The total time of all the trajectories
    */
   private double totalTime() {
@@ -116,9 +117,10 @@ public class ChoreoAutoTrajectory {
   }
 
   private void logTrajectory(boolean starting) {
-    trajLogger.ifPresent(logger -> {
-      logger.accept(trajectory.getPoses(), starting);
-    });
+    trajLogger.ifPresent(
+        logger -> {
+          logger.accept(trajectory.getPoses(), starting);
+        });
   }
 
   private void cmdInitialize() {
@@ -132,19 +134,19 @@ public class ChoreoAutoTrajectory {
 
   @SuppressWarnings("unchecked")
   private void cmdExecute() {
-    TrajSample<?> sample = this.trajectory.sampleAt(
-      timeIntoTraj(),
-      mirrorTrajectory.getAsBoolean()
-    );
+    TrajSample<?> sample =
+        this.trajectory.sampleAt(timeIntoTraj(), mirrorTrajectory.getAsBoolean());
 
     ChassisSpeeds chassisSpeeds = DEFAULT_CHASSIS_SPEEDS;
 
     if (sample instanceof SwerveSample) {
-      ChoreoControlFunction<SwerveSample> swerveController = (ChoreoControlFunction<SwerveSample>) this.controller;
+      ChoreoControlFunction<SwerveSample> swerveController =
+          (ChoreoControlFunction<SwerveSample>) this.controller;
       SwerveSample swerveSample = (SwerveSample) sample;
       chassisSpeeds = swerveController.apply(poseSupplier.get(), swerveSample);
     } else if (sample instanceof DiffySample) {
-      ChoreoControlFunction<DiffySample> diffyController = (ChoreoControlFunction<DiffySample>) this.controller;
+      ChoreoControlFunction<DiffySample> diffyController =
+          (ChoreoControlFunction<DiffySample>) this.controller;
       DiffySample diffySample = (DiffySample) sample;
       chassisSpeeds = diffyController.apply(poseSupplier.get(), diffySample);
     }
@@ -157,10 +159,7 @@ public class ChoreoAutoTrajectory {
     if (interrupted) {
       outputChassisSpeeds.accept(new ChassisSpeeds());
     } else {
-      outputChassisSpeeds.accept(
-        trajectory.getFinalSample()
-            .getChassisSpeeds()
-      );
+      outputChassisSpeeds.accept(trajectory.getFinalSample().getChassisSpeeds());
     }
     isDone = true;
     isActive = false;
@@ -180,17 +179,20 @@ public class ChoreoAutoTrajectory {
   public Command cmd() {
     // if the trajectory is empty, return a command that will print an error
     if (trajectory.samples().isEmpty()) {
-      return driveSubsystem.runOnce(() -> {
-        DriverStation.reportError("Trajectory " + name + " has no samples", false);
-      }).withName("Trajectory_" + name);
+      return driveSubsystem
+          .runOnce(
+              () -> {
+                DriverStation.reportError("Trajectory " + name + " has no samples", false);
+              })
+          .withName("Trajectory_" + name);
     }
     return new FunctionalCommand(
-        this::cmdInitialize,
-        this::cmdExecute,
-        this::cmdEnd,
-        this::cmdIsFinished,
-        driveSubsystem
-      ).withName("Trajectory_" + name);
+            this::cmdInitialize,
+            this::cmdExecute,
+            this::cmdEnd,
+            this::cmdIsFinished,
+            driveSubsystem)
+        .withName("Trajectory_" + name);
   }
 
   /**
@@ -245,13 +247,13 @@ public class ChoreoAutoTrajectory {
 
   /**
    * Returns a trigger that has a rising edge when the command finishes.
-   * 
-   * When a new trajectory made off the same {@link ChoreoAutoLoop}
-   * is scheduled this trigger will become false if it was previously true.
-   * 
-   * <p> This is not a substitute for the {@link #inactive()} trigger,
-   * inactive will stay true until the trajectory is scheduled again and will
-   * also be true if thus trajectory has never been scheduled.
+   *
+   * <p>When a new trajectory made off the same {@link ChoreoAutoLoop} is scheduled this trigger
+   * will become false if it was previously true.
+   *
+   * <p>This is not a substitute for the {@link #inactive()} trigger, inactive will stay true until
+   * the trajectory is scheduled again and will also be true if thus trajectory has never been
+   * scheduled.
    *
    * @return A trigger that is true when the command is finished.
    */
@@ -266,7 +268,6 @@ public class ChoreoAutoTrajectory {
    * @return A trigger that is true when timeSinceStart has elapsed.
    */
   public TriggerExt atTime(double timeSinceStart) {
-
     // The timer shhould never be negative so report this as a warning
     if (timeSinceStart < 0) {
       DriverStation.reportWarning("Trigger time cannot be negative for " + name, true);
@@ -333,9 +334,11 @@ public class ChoreoAutoTrajectory {
 
   // private because this is a terrible way to schedule stuff
   private TriggerExt atPose(Pose2d pose, double toleranceMeters) {
-    Translation2d checkedTrans = mirrorTrajectory.getAsBoolean()
-        ? new Translation2d(16.5410515 - pose.getTranslation().getX(), pose.getTranslation().getY())
-        : pose.getTranslation();
+    Translation2d checkedTrans =
+        mirrorTrajectory.getAsBoolean()
+            ? new Translation2d(
+                16.5410515 - pose.getTranslation().getX(), pose.getTranslation().getY())
+            : pose.getTranslation();
     return new TriggerExt(
         loop,
         () -> {
@@ -365,7 +368,8 @@ public class ChoreoAutoTrajectory {
       // with having it all be 1 trigger that just has a list of posess and checks each one each
       // cycle or something like that.
       // If choreo starts proposing memory issues we can look into this.
-      Pose2d pose = trajectory.sampleAt(event.timestamp(), mirrorTrajectory.getAsBoolean()).getPose();
+      Pose2d pose =
+          trajectory.sampleAt(event.timestamp(), mirrorTrajectory.getAsBoolean()).getPose();
       trig = TriggerExt.from(trig.or(atPose(pose, toleranceMeters)));
       foundEvent = true;
     }

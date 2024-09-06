@@ -2,11 +2,11 @@
 
 package choreo.trajectory;
 
+import choreo.util.AllianceFlipUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import choreo.util.AllianceFlipUtil;
 
 /** A single robot sample in a ChoreoTrajectory. */
 public class DiffySample implements TrajSample<DiffySample> {
@@ -77,7 +77,6 @@ public class DiffySample implements TrajSample<DiffySample> {
     this.fr = fr;
   }
 
-
   @Override
   public double getTimestamp() {
     return timestamp;
@@ -87,7 +86,6 @@ public class DiffySample implements TrajSample<DiffySample> {
   public Pose2d getPose() {
     return new Pose2d(x, y, Rotation2d.fromRadians(heading));
   }
-
 
   public ChassisSpeeds getChassisSpeeds() {
     // TODO: Implement getChassisSpeeds
@@ -114,23 +112,13 @@ public class DiffySample implements TrajSample<DiffySample> {
 
   public DiffySample flipped() {
     switch (AllianceFlipUtil.getFlippingType()) {
-      // TODO: Implement flipping
+        // TODO: Implement flipping
       default:
         return this;
     }
   }
 
   public DiffySample offsetBy(double timestampOffset) {
-    return new DiffySample(
-        timestamp + timestampOffset,
-        x,
-        y,
-        heading,
-        vl,
-        vr,
-        al,
-        ar,
-        fl,
-        fr);
+    return new DiffySample(timestamp + timestampOffset, x, y, heading, vl, vr, al, ar, fl, fr);
   }
 }

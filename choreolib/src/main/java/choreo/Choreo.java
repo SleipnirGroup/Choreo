@@ -6,6 +6,7 @@ import static edu.wpi.first.util.ErrorMessages.requireNonNullParam;
 
 import choreo.ChoreoAutoFactory.ChoreoAutoBindings;
 import choreo.trajectory.ChoreoTrajectory;
+import choreo.trajectory.TrajSample;
 import com.google.gson.Gson;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -17,34 +18,30 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
-import choreo.trajectory.TrajSample;
-
-import java.util.function.BiFunction;
 
 /** Utilities to load and follow ChoreoTrajectories */
 public final class Choreo {
   private static final Gson gson = new Gson();
 
   /**
-   * This interface exists as a type alias. A ChoreoControlFunction has signature (Pose2d currentPose,
-   * ChoreoTrajectoryState referenceState)-&gt;ChassisSpeeds, where the function returns
-   * robot-relative ChassisSpeeds for the robot.
+   * This interface exists as a type alias. A ChoreoControlFunction has signature (Pose2d
+   * currentPose, ChoreoTrajectoryState referenceState)-&gt;ChassisSpeeds, where the function
+   * returns robot-relative ChassisSpeeds for the robot.
    */
   public interface ChoreoControlFunction<SampleType extends TrajSample<SampleType>>
       extends BiFunction<Pose2d, SampleType, ChassisSpeeds> {}
 
   /**
-   * This interface exists as a type alias. A ChoreoTrajectoryLogger has signature (ChoreoTrajectory,
-   * Boolean)-&gt;void, where the function consumes a trajectory and a boolean indicating whether the
-   * trajectory is starting or finishing.
+   * This interface exists as a type alias. A ChoreoTrajectoryLogger has signature
+   * (ChoreoTrajectory, Boolean)-&gt;void, where the function consumes a trajectory and a boolean
+   * indicating whether the trajectory is starting or finishing.
    */
-  public interface ChoreoTrajectoryLogger
-      extends BiConsumer<Pose2d[], Boolean> {}
-
+  public interface ChoreoTrajectoryLogger extends BiConsumer<Pose2d[], Boolean> {}
 
   /** Default constructor. */
   private Choreo() {
@@ -52,7 +49,8 @@ public final class Choreo {
   }
 
   @SuppressWarnings("unchecked")
-  private static <SampleType extends TrajSample<SampleType>> Optional<ChoreoTrajectory<SampleType>> loadFile(File path) {
+  private static <SampleType extends TrajSample<SampleType>>
+      Optional<ChoreoTrajectory<SampleType>> loadFile(File path) {
     try {
       var reader = new BufferedReader(new FileReader(path));
       ChoreoTrajectory<SampleType> traj = gson.fromJson(reader, ChoreoTrajectory.class);
@@ -72,7 +70,8 @@ public final class Choreo {
    * @param trajName the path name in Choreo, which matches the file name in the deploy directory.
    * @return the loaded trajectory, or null if the trajectory could not be loaded.
    */
-  public static <SampleType extends TrajSample<SampleType>> Optional<ChoreoTrajectory<SampleType>> getTrajectory(String trajName) {
+  public static <SampleType extends TrajSample<SampleType>>
+      Optional<ChoreoTrajectory<SampleType>> getTrajectory(String trajName) {
     requireNonNullParam(trajName, "trajName", "Choreo.getTrajectory");
 
     final String fileExtension = ".traj";
@@ -82,7 +81,7 @@ public final class Choreo {
     var traj_dir = new File(Filesystem.getDeployDirectory(), "choreo");
     var traj_file = new File(traj_dir, trajName + fileExtension);
 
-    //Option::map didnt like trajName not being final
+    // Option::map didnt like trajName not being final
     Optional<ChoreoTrajectory<SampleType>> optTraj = loadFile(traj_file);
     if (optTraj.isPresent()) {
       return Optional.of(optTraj.get());
@@ -118,12 +117,12 @@ public final class Choreo {
         requireNonNullParam(mirrorTrajectory, "mirrorTrajectory", "Choreo.createAutoFactory"),
         requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory"),
         requireNonNullParam(bindings, "bindings", "Choreo.createAutoFactory"),
-        Optional.empty()
-    );
+        Optional.empty());
   }
 
   /**
-   * Create a factory that can be used to create {@link ChoreoAutoLoop} and {@link ChoreoAutoTrajectory}.
+   * Create a factory that can be used to create {@link ChoreoAutoLoop} and {@link
+   * ChoreoAutoTrajectory}.
    *
    * @param driveSubsystem The drive subsystem to require for commands made from this factory.
    * @param poseSupplier A function that returns the current field-relative pose of the robot.
@@ -135,7 +134,7 @@ public final class Choreo {
    *     command.
    * @param bindings Universal trajectory event bindings.
    * @param trajLogger A function that consumes a list of poses and a boolean indicating whether the
-   *    trajectory is starting or finishing.
+   *     trajectory is starting or finishing.
    * @return A command that follows a Choreo path.
    */
   public static <SampleType extends TrajSample<SampleType>> ChoreoAutoFactory createAutoFactory(
@@ -153,7 +152,6 @@ public final class Choreo {
         requireNonNullParam(mirrorTrajectory, "mirrorTrajectory", "Choreo.createAutoFactory"),
         requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory"),
         requireNonNullParam(bindings, "bindings", "Choreo.createAutoFactory"),
-        Optional.of(trajLogger)
-    );
+        Optional.of(trajLogger));
   }
 }

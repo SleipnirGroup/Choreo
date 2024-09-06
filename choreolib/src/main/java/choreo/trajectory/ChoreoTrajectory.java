@@ -3,18 +3,13 @@
 package choreo.trajectory;
 
 import edu.wpi.first.math.geometry.Pose2d;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 /** A trajectory loaded from Choreo. */
-public record ChoreoTrajectory<SampleType extends TrajSample<SampleType>> (
-  String name,
-  List<SampleType> samples,
-  List<Integer> splits,
-  List<EventMarker> events
-) {
+public record ChoreoTrajectory<SampleType extends TrajSample<SampleType>>(
+    String name, List<SampleType> samples, List<Integer> splits, List<EventMarker> events) {
   /**
    * Returns the first ChoreoTrajectoryState in the trajectory.
    *
@@ -171,14 +166,13 @@ public record ChoreoTrajectory<SampleType extends TrajSample<SampleType>> (
     double startTime = sublist.get(0).getTimestamp();
     double endTime = sublist.get(sublist.size() - 1).getTimestamp();
     return Optional.of(
-      new ChoreoTrajectory<SampleType>(
-        this.name + "[" + splitIndex + "]",
-        sublist.stream().map(s -> s.offsetBy(-startTime)).toList(),
-        List.of(),
-        events.stream()
-          .filter(e -> e.timestamp() >= startTime && e.timestamp() <= endTime)
-          .map(e -> e.offsetBy(-startTime))
-          .toList()
-      ));
+        new ChoreoTrajectory<SampleType>(
+            this.name + "[" + splitIndex + "]",
+            sublist.stream().map(s -> s.offsetBy(-startTime)).toList(),
+            List.of(),
+            events.stream()
+                .filter(e -> e.timestamp() >= startTime && e.timestamp() <= endTime)
+                .map(e -> e.offsetBy(-startTime))
+                .toList()));
   }
 }

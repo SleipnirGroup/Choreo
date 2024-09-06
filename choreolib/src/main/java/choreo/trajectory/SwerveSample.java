@@ -2,18 +2,15 @@
 
 package choreo.trajectory;
 
+import choreo.util.AllianceFlipUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-
 import java.util.Arrays;
-
-import choreo.util.AllianceFlipUtil;
 
 /** A single robot sample in a ChoreoTrajectory. */
 public class SwerveSample implements TrajSample<SwerveSample> {
-
   /** The timestamp of this sample, relative to the beginning of the trajectory. */
   public final double timestamp;
 
@@ -185,32 +182,32 @@ public class SwerveSample implements TrajSample<SwerveSample> {
     switch (AllianceFlipUtil.getFlippingType()) {
       case MIRRORED:
         return new SwerveSample(
-          this.timestamp,
-          AllianceFlipUtil.flipX(this.x),
-          this.y,
-          Math.PI - this.heading,
-          -this.vx,
-          this.vy,
-          -this.omega,
-          -this.ax,
-          this.ay,
-          -this.alpha,
-          Arrays.stream(this.moduleForcesX).map(x -> -x).toArray(),
-          this.moduleForcesY);
+            this.timestamp,
+            AllianceFlipUtil.flipX(this.x),
+            this.y,
+            Math.PI - this.heading,
+            -this.vx,
+            this.vy,
+            -this.omega,
+            -this.ax,
+            this.ay,
+            -this.alpha,
+            Arrays.stream(this.moduleForcesX).map(x -> -x).toArray(),
+            this.moduleForcesY);
       case ROTATE_AROUND:
         return new SwerveSample(
-          this.timestamp,
-          AllianceFlipUtil.flipX(this.x),
-          AllianceFlipUtil.flipY(this.y),
-          Math.PI - this.heading,
-          -this.vx,
-          -this.vy,
-          -this.omega,
-          -this.ax,
-          -this.ay,
-          -this.alpha,
-          Arrays.stream(this.moduleForcesX).map(x -> -x).toArray(),
-          Arrays.stream(this.moduleForcesY).map(y -> -y).toArray());
+            this.timestamp,
+            AllianceFlipUtil.flipX(this.x),
+            AllianceFlipUtil.flipY(this.y),
+            Math.PI - this.heading,
+            -this.vx,
+            -this.vy,
+            -this.omega,
+            -this.ax,
+            -this.ay,
+            -this.alpha,
+            Arrays.stream(this.moduleForcesX).map(x -> -x).toArray(),
+            Arrays.stream(this.moduleForcesY).map(y -> -y).toArray());
       default:
         return this;
     }
