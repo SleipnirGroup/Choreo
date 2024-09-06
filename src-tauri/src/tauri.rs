@@ -198,7 +198,6 @@ pub fn run_tauri(project: Option<PathBuf>) {
         })
         .invoke_handler(tauri::generate_handler![
             guess_control_interval_counts,
-            // adjust_waypoint_headings,
             open_in_explorer,
             default_project,
             read_project,
