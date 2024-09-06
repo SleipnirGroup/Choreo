@@ -129,7 +129,7 @@ export class Field extends Component<Props, State> {
                   backgroundColor: "darkred"
                 }
               }}
-              onClick={(event) => {
+              onClick={(_event) => {
                 Commands.cancel(
                   activePath.uuid
                     .split("")

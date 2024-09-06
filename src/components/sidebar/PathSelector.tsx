@@ -178,12 +178,6 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             setTimeout(() => this.nameInputRef.current!.select(), 0.001);
           }}
           sx={{
-            // ".MuiInputBase-root-MuiInput-root:before": {
-            //   borderBottom: "2px solid transparent",
-            // "&:hover": {
-            //   borderBottom: "2px solid white",
-            // },
-            // },
             marginLeft: "-4px",
             ".MuiInputBase-root": {
               "&:before": {
@@ -275,20 +269,6 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
                 ></Input>
               </InputList>
             </span>
-            {/* </FormGroup> */}
-            {/* <div
-              style={{
-                padding:"16px"
-              }}>
-                <TextField
-                    label="Default Control Interval Count"
-                    title="When not guessing, how many control intervals to use? (default 40)"
-                    defaultValue={this.getPath().defaultControlIntervalCount}
-                    inputMode="numeric"
-                    onChange={(e) => {this.getPath().setDefaultControlIntervalCounts(parseInt(e.target.value))}}
-                    fullWidth
-                  ></TextField>
-                </div></> */}
           </>
         )}
       </span>

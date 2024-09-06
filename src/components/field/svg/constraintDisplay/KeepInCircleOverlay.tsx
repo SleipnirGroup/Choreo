@@ -28,7 +28,7 @@ class KeepInCircleOverlay extends Component<Props<"KeepInCircle">, object> {
         .on("start", () => {
           doc.history.startGroup(() => {});
         })
-        .on("end", (event) => doc.history.stopGroup())
+        .on("end", (_event) => doc.history.stopGroup())
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(`#dragTarget-keepInCircle`).call(
         dragHandleDrag
@@ -39,7 +39,7 @@ class KeepInCircleOverlay extends Component<Props<"KeepInCircle">, object> {
         .on("start", () => {
           doc.history.startGroup(() => {});
         })
-        .on("end", (event) => doc.history.stopGroup())
+        .on("end", (_event) => doc.history.stopGroup())
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
         `#dragRadiusTarget-keepInCircle`

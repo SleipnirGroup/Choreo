@@ -98,8 +98,8 @@ class Input extends Component<Props, State> {
   }
   componentDidUpdate(
     prevProps: Readonly<Props>,
-    prevState: Readonly<State>,
-    snapshot?: any
+    _prevState: Readonly<State>,
+    _snapshot?: any
   ): void {
     if (!isAlive(this.props.number)) {
       return;
@@ -116,7 +116,7 @@ class Input extends Component<Props, State> {
       return <></>;
     }
     try {
-      //eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       this.props.number.expr;
     } catch (e) {
       tracing.error(e);
@@ -160,10 +160,10 @@ class Input extends Component<Props, State> {
           disabled={!this.props.enabled}
           // The below is needed to make inputs on CommandDraggables work
           onClick={(e) => e.stopPropagation()}
-          onFocus={(e) => {
+          onFocus={(_e) => {
             this.focusedMode();
           }}
-          onBlur={(e) => {
+          onBlur={(_e) => {
             const newNode = this.props.number.validate(
               math.parse(this.state.editedValue)
             );

@@ -46,7 +46,7 @@ class SettingsModal extends Component<Props, State> {
             >
               <Tabs
                 value={uiState.settingsTab}
-                onChange={(e, newValue) => uiState.setSettingsTab(newValue)}
+                onChange={(_e, newValue) => uiState.setSettingsTab(newValue)}
                 centered
                 textColor="inherit"
                 sx={{

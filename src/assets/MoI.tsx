@@ -11,14 +11,14 @@ const SvgIcon = styled(MuiSvgIcon, {
   strokeWidth: "2.25px"
 }));
 
-SvgIcon.defaultProps = {
-  viewBox: `0 0 24 24`,
-  focusable: "false",
-  "aria-hidden": "true"
-};
 const MoI: React.FunctionComponent<SvgIconProps> = (props) => {
   return (
-    <SvgIcon {...props}>
+    <SvgIcon
+      viewBox="0 0 24 24"
+      focusable="false"
+      aria-hidden="true"
+      {...props}
+    >
       {/* the rotational velocity icon */}
       <line x1={12} y1={4} x2={12} y2={20} strokeWidth={3}></line>
       <path

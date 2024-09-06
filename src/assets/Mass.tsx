@@ -11,14 +11,14 @@ const SvgIcon = styled(MuiSvgIcon, {
   strokeWidth: "2.25px"
 }));
 
-SvgIcon.defaultProps = {
-  viewBox: "0 0 1024 1024",
-  focusable: "false",
-  "aria-hidden": "true"
-};
 const Mass: React.FunctionComponent<SvgIconProps> = (props) => {
   return (
-    <SvgIcon {...props}>
+    <SvgIcon
+      viewBox="0 0 1024 1024"
+      focusable="false"
+      aria-hidden="true"
+      {...props}
+    >
       <path
         xmlns="http://www.w3.org/2000/svg"
         stroke="none"

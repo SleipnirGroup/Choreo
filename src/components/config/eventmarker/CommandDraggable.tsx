@@ -34,7 +34,7 @@ class CommandDraggable extends Component<Props, State> {
     React.createRef<HTMLInputElement>();
 
   getItemStyle(
-    isDragging: boolean,
+    _isDragging: boolean,
     draggableStyle: DraggingStyle | NotDraggingStyle | undefined
   ): CSSProperties {
     return {
@@ -48,10 +48,11 @@ class CommandDraggable extends Component<Props, State> {
 
   render() {
     const command = this.props.command;
+
     // commandsLength is dereferenced so that this rerenders when the length
     // of its subcommands array changes
-    //eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const commandsLength = this.props.command?.commands.length;
+    const _ = this.props.command?.commands.length;
+
     const isRoot = this.props.isRoot ?? false;
     if (!isAlive(command)) return <></>;
     return (

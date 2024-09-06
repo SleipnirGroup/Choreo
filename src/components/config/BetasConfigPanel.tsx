@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import React, { Component } from "react";
+import { Component } from "react";
 import { doc } from "../../document/DocumentManager";
 import inputStyles from "../input/InputList.module.css";
 import { Divider, Switch, Tooltip } from "@mui/material";
@@ -59,7 +59,7 @@ class BetasConfigPanel extends Component<Props, State> {
               size="small"
               sx={{ gridColumn: 2 }}
               checked={doc.usesObstacles}
-              onChange={(e, checked) => {
+              onChange={(_e, checked) => {
                 doc.setUsesObstacles(checked);
               }}
             ></Switch>

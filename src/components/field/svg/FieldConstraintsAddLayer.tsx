@@ -5,9 +5,6 @@ import { observer } from "mobx-react";
 import { ViewLayers } from "../../../document/UIData";
 
 function FieldConstraintsAddLayer() {
-  // state = {};
-
-  // render() {
   const layers = uiState.layers;
   const activePath = doc.pathlist.activePath;
   const selectedConstraint = uiState.getSelectedConstraintKey();
