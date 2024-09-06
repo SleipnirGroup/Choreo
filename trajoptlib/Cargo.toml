@@ -9,8 +9,8 @@ serde = { version = "1.0", features = ["derive"] }
 thiserror = "1.0.63"
 
 [build-dependencies]
-cxx-build = "1.0"
 cmake = "0.1"
+cxx-build = "1.0"
 
 [[example]]
 name = "swerve"
