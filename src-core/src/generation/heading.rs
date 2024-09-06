@@ -1,6 +1,7 @@
 use std::f64::consts::PI;
 
 use crate::generation::angle_modulus;
+use crate::izip;
 use crate::spec::traj::ConstraintData::{MaxAngularVelocity, PointAt};
 use crate::spec::traj::{ConstraintIDX, ConstraintScope, TrajFile};
 use crate::spec::Expr;
@@ -22,13 +23,8 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
 
     let (guess_point_idxs, constraints_idx) = fix_constraint_indices(traj);
 
+    // find pose waypoints
     for (idx, wpt) in waypoints.iter().enumerate() {
-        if idx == 0 && !wpt.fix_heading {
-            return Err(ChoreoError::HeadingConflict(
-                1,
-                "First waypoints must have fixed heading.".to_string(),
-            ));
-        }
         if wpt.fix_heading {
             // set heading for fixed heading wpt
             new_headings[idx] = wpt.heading.1;
@@ -55,7 +51,7 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
     for constraint in &constraints_idx {
         let from = fix_scope(constraint.from, &guess_point_idxs);
         let to_opt = constraint.to.map(|idx| fix_scope(idx, &guess_point_idxs));
-
+        let target_heading;
         match constraint.data {
             MaxAngularVelocity { max } => {
                 if max == 0.0 {
@@ -63,60 +59,32 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                         None => {
                             wpt_has_0_ang_vel[from] += 1;
                         }
-                        Some(to) if from == to => {
-                            wpt_has_0_ang_vel[from] += 1;
-                        }
                         Some(to) => {
+                            wpt_has_0_ang_vel
+                                .iter_mut()
+                                .take(to + 1)
+                                .skip(from)
+                                .for_each(|count| *count += 1);
                             sgmt_has_0_ang_vel
                                 .iter_mut()
                                 .take(to)
                                 .skip(from)
-                                .for_each(|b| *b += 1);
+                                .for_each(|count| *count += 1);
 
-                            let mut fixed_count = 0u8;
-                            let mut idx = 0;
-                            let mut fixed_heading = None;
-                            waypoints
+                            target_heading = waypoints
                                 .iter()
-                                .enumerate()
                                 .take(to + 1)
                                 .skip(from)
-                                .filter(|(_, wpt)| wpt.fix_heading)
-                                .for_each(|(wpt_idx, wpt)| {
-                                    fixed_count += 1;
-                                    match fixed_heading {
-                                        Some(_) => {
-                                            idx = wpt_idx;
-                                        }
-                                        None => {
-                                            fixed_heading = Some(wpt.heading.1);
-                                        }
-                                    }
-                                });
-                            // move this to end
-                            if fixed_count > 1 {
-                                return Err(ChoreoError::HeadingConflict(
-                                    idx + 1,
-                                    "Multiple Pose waypoints within 0 maxAngVel Contraints"
-                                        .to_string(),
-                                ));
-                            }
-                            if let Some(heading) = fixed_heading {
-                                wpt_is_pose
-                                    .iter_mut()
-                                    .take(to + 1)
-                                    .skip(from)
-                                    .for_each(|w| *w = true);
+                                .filter(|wpt| wpt.fix_heading)
+                                .next()
+                                .map(|wpt| wpt.heading.1);
+
+                            if let Some(target_heading) = target_heading {
                                 new_headings
                                     .iter_mut()
-                                    .zip(waypoints)
                                     .take(to + 1)
                                     .skip(from)
-                                    .for_each(|(new_heading, wpt)| {
-                                        if !wpt.fix_heading {
-                                            *new_heading = heading;
-                                        }
-                                    })
+                                    .for_each(|h| *h = target_heading);
                             }
                         }
                     }
@@ -130,6 +98,8 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
             } => {
                 match to_opt {
                     None => {
+                        wpt_has_point_at[from] += 1;
+
                         // heading points at target
                         let robot_x = waypoints[from].x.1;
                         let robot_y = waypoints[from].y.1;
@@ -141,18 +111,17 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                         } else {
                             heading
                         };
-                        if waypoints[from].fix_heading && (waypoints[from].heading.1 != heading) {
-                            return Err(ChoreoError::HeadingConflict(
-                                from + 1,
-                                "Point At and Pose constraints".to_string(),
-                            ));
-                        } else {
+                        if !waypoints[from].fix_heading {
                             new_headings[from] = heading;
                         }
-                        wpt_has_point_at[from] += 1;
                     }
                     Some(to) => {
                         for wpt_idx in from..=to {
+                            wpt_has_point_at[from] += 1;
+                            if wpt_idx < to {
+                                sgmt_has_point_at[wpt_idx] += 1;
+                            }
+
                             let robot_x = waypoints[wpt_idx].x.1;
                             let robot_y = waypoints[wpt_idx].y.1;
                             let new_x = x - robot_x;
@@ -163,20 +132,9 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                             } else {
                                 heading
                             };
-                            if from == to {
-                                wpt_has_point_at[from] += 1;
-                            } else {
-                                if wpt_idx != to {
-                                    sgmt_has_point_at[wpt_idx] += 1;
-                                }
-                            }
+
                             if !waypoints[wpt_idx].fix_heading {
                                 new_headings[wpt_idx] = heading;
-                            } else {
-                                return Err(ChoreoError::HeadingConflict(
-                                    from + 1,
-                                    "Point At and Pose constraints".to_string(),
-                                ));
                             }
                         }
                     }
@@ -194,30 +152,115 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
     {sgmt_has_0_ang_vel:?} - sgmt_has_0_ang_vel\n
     {wpt_is_pose:?} - wpt_is_pose"
     );
+
     // check for 0 ang vel and point at
-    for (sgmt, ((((&sgmt_v, &sgmt_p), &_wpt_v), &_wpt_p), &_pose)) in sgmt_has_0_ang_vel
-        .iter()
-        .zip(&sgmt_has_point_at)
-        .zip(&wpt_has_0_ang_vel)
-        .zip(&wpt_has_point_at)
-        .zip(&wpt_is_pose)
-        .enumerate()
-    {
-        if sgmt_v >= 1 && sgmt_p >= 1 {
+    for (wpt, &sgmt_v, &_wpt_v, &sgmt_p, &wpt_p, &pose) in izip!(
+        0 as usize..,
+        &sgmt_has_0_ang_vel,
+        &wpt_has_0_ang_vel,
+        &sgmt_has_point_at,
+        &wpt_has_point_at,
+        &wpt_is_pose
+    ) {
+        if wpt == 0 && !pose {
             return Err(ChoreoError::HeadingConflict(
-                sgmt + 1,
-                "0 maxAngVel and Point At".to_string(),
+                1,
+                "First waypoints must have fixed heading.".to_string(),
             ));
         }
-        if sgmt > 0 {
-            if sgmt_p >= 1 && sgmt_has_0_ang_vel[sgmt - 1] >= 1 && wpt_is_pose[sgmt - 1] {
-                return Err(ChoreoError::HeadingConflict(
-                    sgmt + 1,
-                    "0 maxAngVel on segment prior to Point At".to_string(),
-                ));
+        if sgmt_v >= 1 && sgmt_p >= 1 {
+            return Err(ChoreoError::HeadingConflict(
+                wpt + 1,
+                "Segment has a 0 maxAngVel and Point At".to_string(),
+            ));
+        }
+        if wpt > 0 {
+            if sgmt_p >= 1 {
+                println!("sgmt_p{sgmt_p}");
+                for idx in (0..wpt - 1).rev() {
+                    println!("wpt{wpt} - p{}", wpt_is_pose[idx]);
+                    println!("idx{idx}");
+                    if sgmt_has_0_ang_vel[idx] > 0 {
+                        if wpt_is_pose[idx] || wpt_is_pose[idx + 1] {
+                            return Err(ChoreoError::HeadingConflict(
+                                wpt + 1,
+                                "0 maxAngVel with a Pose prior to Point At".to_string(),
+                            ));
+                        }
+                    } else {
+                        break;
+                    }
+                }
             }
         }
+        if wpt < num_wpts - 1 {
+            if sgmt_p >= 1 {
+                for idx in wpt + 1..num_wpts - 1 {
+                    if sgmt_has_0_ang_vel[idx] > 0 {
+                        if wpt_is_pose[idx] || wpt_is_pose[idx + 1] {
+                            return Err(ChoreoError::HeadingConflict(
+                                wpt + 1,
+                                "0 maxAngVel with a Pose after Point At".to_string(),
+                            ));
+                        }
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+        if pose && (sgmt_p >= 1 || wpt_p >= 1) {
+            return Err(ChoreoError::HeadingConflict(
+                wpt + 1,
+                "Point At and Pose constraints".to_string(),
+            ));
+        }
+        // if is_in_zero_ang_vel_with_pose && pose {
+        //     return Err(ChoreoError::HeadingConflict(
+        //         wpt + 1,
+        //         "Multiple Pose waypoints within 0 maxAngVel Contraints".to_string(),
+        //     ));
+        // } else if pose &&
+        // let num_pose_wpts_in_zero_ang_vel_sgmt =
+        //     for (vel_count, pose) in sgmt_has_0_ang_vel.iter().zip(&wpt_is_pose).skip(wpt) {
+
+        //     }
+        //         .take_while(|(&vel_count, _)| vel_count >= 1)
+        //         .filter(|(_, &pose)| pose)
+        //         .fold(0 as usize, |acc, _| acc + 1);
+        // if num_pose_wpts_in_zero_ang_vel_sgmt > 1 as usize {
+        //     return Err(ChoreoError::HeadingConflict(
+        //         wpt + 1,
+        //         "Multiple Pose waypoints within 0 maxAngVel Contraints".to_string(),
+        //     ));
+        // }
     }
+
+    let mut idx = 0;
+    while idx < wpt_is_pose.len() {
+        if sgmt_has_0_ang_vel[idx] > 0 {
+            let mut num_pose_wpts_in_zero_ang_vel_sgmt = 0;
+
+            for &j in sgmt_has_0_ang_vel.iter().skip(idx.clone()) {
+                if wpt_is_pose[idx] {
+                    num_pose_wpts_in_zero_ang_vel_sgmt += 1;
+                }
+                if j == 0 {
+                    break;
+                }
+                idx += 1;
+            }
+            if num_pose_wpts_in_zero_ang_vel_sgmt > 1 as usize {
+                return Err(ChoreoError::HeadingConflict(
+                    idx + 1,
+                    "Multiple Pose waypoints within 0 maxAngVel Contraints".to_string(),
+                ));
+            }
+        } else {
+            idx += 1;
+        }
+    }
+
     Ok(new_headings)
 }
 
@@ -293,5 +336,43 @@ pub fn fix_constraint_indices(traj: &TrajFile) -> (Vec<usize>, Vec<ConstraintIDX
             }
         };
     }
+
     (guess_points, constraint_idx)
+}
+
+#[macro_export]
+macro_rules! izip {
+    // @closure creates a tuple-flattening closure for .map() call. usage:
+    // @closure partial_pattern => partial_tuple , rest , of , iterators
+    // eg. izip!( @closure ((a, b), c) => (a, b, c) , dd , ee )
+    ( @closure $p:pat => $tup:expr ) => {
+        |$p| $tup
+    };
+
+    // The "b" identifier is a different identifier on each recursion level thanks to hygiene.
+    ( @closure $p:pat => ( $($tup:tt)* ) , $_iter:expr $( , $tail:expr )* ) => {
+        $crate::izip!(@closure ($p, b) => ( $($tup)*, b ) $( , $tail )*)
+    };
+
+    // unary
+    ($first:expr $(,)*) => {
+        IntoIterator::into_iter($first)
+    };
+
+    // binary
+    ($first:expr, $second:expr $(,)*) => {
+        $crate::izip!($first)
+            .zip($second)
+    };
+
+    // n-ary where n > 2
+    ( $first:expr $( , $rest:expr )* $(,)* ) => {
+        $crate::izip!($first)
+            $(
+                .zip($rest)
+            )*
+            .map(
+                $crate::izip!(@closure a => (a) $( , $rest )*)
+            )
+    };
 }
