@@ -7,7 +7,6 @@ repository = "https://github.com/SleipnirGroup/Choreo.git"
 authors = ["Sleipnir Group"]
 license = "BSD-3-Clause"
 
-
 [dependencies]
 dashmap = "6.1.0"
 fastrand = "2.1.1"
