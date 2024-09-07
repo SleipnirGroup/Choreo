@@ -152,10 +152,7 @@ class Sidebar extends Component<Props, State> {
               </span>
             </div>
           )}
-          {(doc.usesObstacles ||
-            doc.pathlist.activePath.params.obstacles.includes(
-              doc.selectedSidebarItem
-            )) && (
+          {(doc.usesObstacles || doc.isSidebarCircularObstacleSelected) && (
             <>
               <Divider
                 className={styles.SidebarDivider}

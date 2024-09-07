@@ -23,13 +23,14 @@ import {
   IVariables
 } from "./ExpressionStore";
 
-type lookup<T> = T extends Expr
+type lookup<T extends ConstraintPropertyType> = T extends Expr
   ? typeof ExpressionStore
   : T extends boolean
     ? boolean
     : never;
 
 type Props<K extends ConstraintKey, D extends ConstraintData = DataMap[K]> = {
+  // @ts-expect-error lookup type is fragile
   [propkey in keyof D["props"]]: lookup<D["props"][propkey]>;
 } & {
   type: ISimpleType<D["type"]>;
@@ -41,32 +42,35 @@ type Props<K extends ConstraintKey, D extends ConstraintData = DataMap[K]> = {
 };
 type DataStoreProps<K extends ConstraintKey> =
   ModelPropertiesDeclarationToProperties<Props<K>>;
-export type IConstraintDataStore<
+
+export type ConstraintSetters<
+  K extends ConstraintKey,
+  D extends ConstraintData = DataMap[K]
+> = {
+  [setterkey in keyof D["props"] as `set${Capitalize<string & setterkey>}`]: (
+    arg: D["props"][setterkey]
+  ) => void;
+};
+export type ConstraintDataStore<
   K extends ConstraintKey,
   D extends ConstraintData = DataMap[K]
 > = IModelType<
   DataStoreProps<K>,
-  {
-    [setterkey in keyof D["props"] as `set${Capitalize<string & setterkey>}`]: (
-      arg: D["props"][setterkey]
-    ) => void;
-  } & {
-    serialize: () => D;
+  ConstraintSetters<K> & {
+    serialize: D;
     deserialize: (ser: D) => void;
     deserPartial: (ser: Partial<D["props"]>) => void;
   }
 >;
 
-export function asType<K extends ConstraintKey>(
-  store: Instance<IConstraintDataStore<ConstraintKey>>
-): Instance<IConstraintDataStore<K>> {
-  return store as Instance<IConstraintDataStore<K>>;
-}
+export type IConstraintDataStore<K extends ConstraintKey> = Instance<
+  ConstraintDataStore<K>
+>;
 
 function createDataStore<
   K extends ConstraintKey,
   D extends ConstraintData = DataMap[K]
->(def: ConstraintDefinition<K>): IConstraintDataStore<K> {
+>(def: ConstraintDefinition<K>): ConstraintDataStore<K> {
   // The object mapping the properties to ExpressionStore or to default primitives
   const props: Partial<Props<K>> = {};
   // The object of setters for primitives
@@ -82,34 +86,42 @@ function createDataStore<
   ) => {};
   // Iterate through each property. based on the type of its default value, add the correct infrastructure
   Object.keys(def.properties).forEach((k) => {
-    const key = k as string & keyof PropertyDefinitionList<D["props"]>;
+    const key = k as keyof D["props"] & string;
     const defau = def.properties[key].defaultVal;
     const settername = "set" + key[0].toUpperCase() + key.slice(1);
     const oldSerialize = serialize;
     const oldDeserialize = deserialize;
     const oldDeserPartial = deserPartial;
-    if (Array.isArray(defau)) {
-      props[key] = ExpressionStore;
+    if (
+      Array.isArray(defau) &&
+      typeof defau[0] === "string" &&
+      typeof defau[1] === "number" &&
+      defau.length === 2
+    ) {
+      //@ts-expect-error not assignable
+      props[key] = ExpressionStore as lookup<Expr>;
       setters[settername] = (self: any) => (arg: Expr) => {
         self[key] = arg;
       };
       serialize = (self) => {
         const part = oldSerialize(self);
+        //@ts-expect-error not assignable
         part[key] = (self[key] as IExpressionStore).serialize;
 
         return part;
       };
       deserialize = (self, data) => {
         oldDeserialize(self, data);
-        (self[key] as IExpressionStore).deserialize(data[key]);
+        (self[key] as IExpressionStore).deserialize(data[key] as Expr);
       };
       deserPartial = (self, data) => {
         oldDeserPartial(self, data);
         if (data[key] !== undefined) {
-          (self[key] as IExpressionStore).deserialize(data[key]);
+          (self[key] as IExpressionStore).deserialize(data[key] as Expr);
         }
       };
     } else if (typeof defau === "boolean") {
+      //@ts-expect-error not assignable
       props[key] = defau;
       setters[settername] = (self: any) => (arg: boolean) => {
         self[key] = arg;
@@ -138,10 +150,15 @@ function createDataStore<
       def: types.frozen<ConstraintDefinition<K>>(def),
       ...props
     } as Props<K>)
-    .actions((self) =>
-      Object.fromEntries(
-        Object.entries(setters).map(([key, val]) => [key, val(self)])
-      )
+    .actions(
+      (self) =>
+        //@ts-expect-error the typing doesn't preserve through fromEntries()
+        Object.fromEntries(
+          Object.entries(setters).map(([key, val]) => [
+            key as keyof ConstraintSetters<K>,
+            val(self)
+          ])
+        ) as ConstraintSetters<K>
     )
     .views((self) => ({
       get serialize(): D {
@@ -159,7 +176,8 @@ function createDataStore<
         deserPartial(self, ser);
       }
     }));
-  return store as IConstraintDataStore<K>;
+  //@ts-expect-error just force ts to acknowledge that it's correct
+  return store as ConstraintDataStore<K>;
 }
 
 export const ConstraintDataObjects = Object.fromEntries(
@@ -168,7 +186,7 @@ export const ConstraintDataObjects = Object.fromEntries(
     createDataStore(def)
   ])
 ) as {
-  [key in ConstraintKey]: IConstraintDataStore<key>;
+  [key in ConstraintKey]: ConstraintDataStore<key>;
 };
 
 export function defineCreateConstraintData<
@@ -191,7 +209,7 @@ export function defineCreateConstraintData<
         const exprProp = prop as ConstraintPropertyDefinition<Expr>;
         snapshot[key as keyof P] = vars().createExpression(
           exprProp.defaultVal,
-          exprProp!.units
+          exprProp!.dimension.type
         );
       }
       // defaults for primitives are set in the store definition

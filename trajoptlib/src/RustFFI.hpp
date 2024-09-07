@@ -41,6 +41,10 @@ class SwervePathBuilder {
   void wpt_linear_acceleration_max_magnitude(size_t index, double magnitude);
   void wpt_point_at(size_t index, double field_point_x, double field_point_y,
                     double heading_tolerance, bool flip);
+  void wpt_keep_in_circle(size_t index, double field_point_x,
+                          double field_point_y, double keep_in_radius);
+  void wpt_keep_in_polygon(size_t index, rust::Vec<double> field_points_x,
+                           rust::Vec<double> field_points_y);
 
   void sgmt_linear_velocity_direction(size_t from_index, size_t to_index,
                                       double angle);
@@ -53,6 +57,12 @@ class SwervePathBuilder {
                                               double magnitude);
   void sgmt_point_at(size_t from_index, size_t to_index, double field_point_x,
                      double field_point_y, double heading_tolerance, bool flip);
+  void sgmt_keep_in_circle(size_t from_index, size_t to_index,
+                           double field_point_x, double field_point_y,
+                           double keep_in_radius);
+  void sgmt_keep_in_polygon(size_t from_index, size_t to_index,
+                            rust::Vec<double> field_points_x,
+                            rust::Vec<double> field_points_y);
 
   void sgmt_circle_obstacle(size_t from_index, size_t to_index, double x,
                             double y, double radius);
@@ -60,8 +70,8 @@ class SwervePathBuilder {
                              rust::Vec<double> x, rust::Vec<double> y,
                              double radius);
 
-  // TODO: Return std::expected<SwerveTrajectory, std::string> instead of
-  // throwing exception, once cxx supports it
+  // TODO: Return std::expected<SwerveTrajectory, sleipnir::SolverExitCondition>
+  // instead of throwing exception, once cxx supports it
   //
   // https://github.com/dtolnay/cxx/issues/1052
   SwerveTrajectory generate(bool diagnostics = false, int64_t handle = 0) const;
@@ -96,6 +106,10 @@ class DifferentialPathBuilder {
   void wpt_linear_acceleration_max_magnitude(size_t index, double magnitude);
   void wpt_point_at(size_t index, double field_point_x, double field_point_y,
                     double heading_tolerance, bool flip);
+  void wpt_keep_in_circle(size_t index, double field_point_x,
+                          double field_point_y, double keep_in_radius);
+  void wpt_keep_in_polygon(size_t index, rust::Vec<double> field_points_x,
+                           rust::Vec<double> field_points_y);
 
   void sgmt_linear_velocity_direction(size_t from_index, size_t to_index,
                                       double angle);
@@ -106,6 +120,12 @@ class DifferentialPathBuilder {
   void sgmt_linear_acceleration_max_magnitude(size_t from_index,
                                               size_t to_index,
                                               double magnitude);
+  void sgmt_keep_in_circle(size_t from_index, size_t to_index,
+                           double field_point_x, double field_point_y,
+                           double keep_in_radius);
+  void sgmt_keep_in_polygon(size_t from_index, size_t to_index,
+                            rust::Vec<double> field_points_x,
+                            rust::Vec<double> field_points_y);
 
   void sgmt_circle_obstacle(size_t from_index, size_t to_index, double x,
                             double y, double radius);
@@ -113,8 +133,9 @@ class DifferentialPathBuilder {
                              rust::Vec<double> x, rust::Vec<double> y,
                              double radius);
 
-  // TODO: Return std::expected<DifferentialTrajectory, std::string> instead of
-  // throwing exception, once cxx supports it
+  // TODO: Return std::expected<DifferentialTrajectory,
+  // sleipnir::SolverExitCondition> instead of throwing exception, once cxx
+  // supports it
   //
   // https://github.com/dtolnay/cxx/issues/1052
   DifferentialTrajectory generate(bool diagnostics = false,

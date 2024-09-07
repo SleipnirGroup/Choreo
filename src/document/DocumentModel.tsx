@@ -1,13 +1,16 @@
-import { UnlistenFn, listen } from "@tauri-apps/api/event";
-import { Instance, types, getParent } from "mobx-state-tree";
+import { Event, UnlistenFn, listen } from "@tauri-apps/api/event";
+import { Instance, getParent, types } from "mobx-state-tree";
 import { UndoManager } from "mst-middlewares";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import {
+  DifferentialSample,
+  ProgressUpdate,
   Project,
   SAVE_FILE_VERSION,
-  Traj,
-  TrajoptlibSample
+  SampleType,
+  SwerveSample,
+  Traj
 } from "./2025/DocumentTypes";
 import {
   CircularObstacleStore,
@@ -50,9 +53,14 @@ export const SelectableItem = types.union(
   EventMarkerStore,
   ConstraintStore
 );
+export const ISampleType = types.enumeration<SampleType>([
+  "Swerve",
+  "Differential"
+]);
 export const DocumentStore = types
   .model("DocumentStore", {
     name: types.string,
+    type: ISampleType,
     pathlist: PathListStore,
     robotConfig: RobotConfigStore,
     variables: Variables,
@@ -66,6 +74,7 @@ export const DocumentStore = types
       return {
         name: self.name,
         version: SAVE_FILE_VERSION,
+        type: self.type,
         variables: self.variables.serialize,
         config: self.robotConfig.serialize
       };
@@ -73,13 +82,13 @@ export const DocumentStore = types
     get isSidebarConstraintSelected() {
       return (
         self.selectedSidebarItem !== undefined &&
-        self.selectedSidebarItem.from !== undefined
+        Object.hasOwn(self.selectedSidebarItem, "from")
       );
     },
     get isSidebarCircularObstacleSelected() {
       return (
         self.selectedSidebarItem !== undefined &&
-        self.selectedSidebarItem.radius !== undefined
+        Object.hasOwn(self.selectedSidebarItem, "radius")
       );
     },
     get isSidebarWaypointSelected() {
@@ -92,13 +101,13 @@ export const DocumentStore = types
     get isSidebarConstraintHovered() {
       return (
         self.hoveredSidebarItem !== undefined &&
-        self.hoveredSidebarItem.from !== undefined
+        Object.hasOwn(self.hoveredSidebarItem, "from")
       );
     },
     get isSidebarCircularObstacleHovered() {
       return (
         self.hoveredSidebarItem !== undefined &&
-        self.hoveredSidebarItem.radius !== undefined
+        Object.hasOwn(self.hoveredSidebarItem, "radius")
       );
     },
     get isSidebarWaypointHovered() {
@@ -128,9 +137,13 @@ export const DocumentStore = types
       self.variables.deserialize(ser.variables);
       self.robotConfig.deserialize(ser.config);
       self.pathlist.paths.clear();
+      self.type = ser.type;
     },
     setName(name: string) {
       self.name = name;
+    },
+    setType(type: SampleType) {
+      self.type = type;
     },
     setSelectedSidebarItem(item: SelectableItemTypes) {
       self.history.withoutUndo(() => {
@@ -169,34 +182,12 @@ export const DocumentStore = types
           throw constraint.issues.join(", ");
         }
       });
-
-      // TODO error if start or end are unconstrained.
-      // pathStore.waypoints.forEach((wpt, idx) => {
-      //   if (!wpt.fixHeading && !wpt.fixTranslation) {
-      //     if (idx == 0) {
-      //       reject("Cannot start a path with an ");
-      //     } else if (idx == pathStore.waypoints.length - 1) {
-      //       reject("Cannot end a path with an initial guess point.");
-      //     }
-      //   }
-      // });
       pathStore.ui.setGenerating(true);
-      // Capture the timestamps of the waypoints that were actually sent to the solver
-      // const waypointTimestamps = pathStore.waypointTimestamps();
-      // console.log(waypointTimestamps);
-      // const stopPoints = pathStore.stopPoints();
-      // generatedWaypoints = pathStore.waypoints.map((point, idx) => ({
-      //   timestamp: 0,
-      //   isStopPoint: stopPoints.includes(idx),
-      //   ...point.asSavedWaypoint()
-      // }));
-      // pathStore.eventMarkers.forEach((m) => m.updateTargetIndex());
       const handle = pathStore.uuid
         .split("")
         .reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) | 0, 0);
       let unlisten: UnlistenFn;
       pathStore.ui.setIterationNumber(0);
-
       await Commands.guessIntervals(config, pathStore.serialize)
         .catch((e) => {
           tracing.error("guessIntervals:", e);
@@ -224,51 +215,24 @@ export const DocumentStore = types
         })
         .then(() => {
           tracing.debug("generatePathPre");
-          return listen("solver-status", async (event) => {
-            // tracing.debug(event);
-            if (event.payload!.handle == handle) {
-              const samples = event.payload.traj.samples as TrajoptlibSample[];
-              const progress = pathStore.ui.generationProgress;
-              const useModuleForces = pathStore.traj.useModuleForces;
-              // mutate in-progress trajectory in place if it's already the right size
-              // should avoid allocations on every progress update
-              if (samples.length != progress.length) {
-                pathStore.ui.setInProgressTrajectory(
-                  samples.map((s) => ({
-                    t: s.timestamp,
-                    vx: s.velocity_x,
-                    vy: s.velocity_y,
-                    omega: s.angular_velocity,
-                    fx: useModuleForces ? s.module_forces_x : [0, 0, 0, 0],
-                    fy: useModuleForces ? s.module_forces_y : [0, 0, 0, 0],
-                    ...s
-                  }))
-                );
-              } else {
-                for (let i = 0; i < samples.length; i++) {
-                  const samp = samples[i];
-                  const prog = progress[i];
-                  prog.t = samp.timestamp;
-                  prog.x = samp.x;
-                  prog.y = samp.y;
-                  prog.heading = samp.heading;
-                  prog.vx = samp.velocity_x;
-                  prog.vy = samp.velocity_y;
-                  prog.omega = samp.angular_velocity;
-
-                  prog.fx = useModuleForces
-                    ? samp.module_forces_x
-                    : [0, 0, 0, 0];
-                  prog.fy = useModuleForces
-                    ? samp.module_forces_x
-                    : [0, 0, 0, 0];
-                }
-              }
-              // todo: get this from the progress update, so it actually means something
-              // beyond just triggering UI updates
+          return listen(`solver-status-${handle}`, async (rawEvent) => {
+            const event: Event<ProgressUpdate> =
+              rawEvent as Event<ProgressUpdate>;
+            if (
+              event.payload!.type === "swerveTraj" ||
+              event.payload!.type === "diffTraj"
+            ) {
+              const samples = event.payload.update as
+                | SwerveSample[]
+                | DifferentialSample[];
+              pathStore.ui.setInProgressTrajectory(samples);
               pathStore.ui.setIterationNumber(
                 pathStore.ui.generationIterationNumber + 1
               );
+            } else if (event.payload!.type === "diagnosticText") {
+              // const line = event.payload.update as string;
+              // This is the text output of sleipnir solver
+              // console.log(line)
             }
           });
         })
@@ -286,6 +250,7 @@ export const DocumentStore = types
         .then(
           (rust_traj) => {
             const result: Traj = rust_traj as Traj;
+            console.log(result);
             if (result.traj.samples.length == 0) throw "No traj";
             self.history.startGroup(() => {
               const newTraj = result.traj.samples;
@@ -334,10 +299,6 @@ export const DocumentStore = types
           error: {
             render({ data, toastProps }) {
               tracing.error("generatePathWithToasts:", data);
-              if ((data as string).includes("callback requested stop")) {
-                toastProps.style = { visibility: "hidden" };
-                return `Cancelled "${pathName}"`;
-              }
               return `Can't generate "${pathName}": ` + (data as string);
             }
           }

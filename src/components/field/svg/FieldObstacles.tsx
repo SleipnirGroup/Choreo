@@ -13,7 +13,7 @@ const DOT = 0.1;
 
 class FieldGrid extends Component<Props, State> {
   state = {};
-  rootRef: React.RefObject<SVGElement> = React.createRef<SVGElement>();
+  rootRef: React.RefObject<SVGGElement> = React.createRef<SVGGElement>();
 
   appendIndexID(id: string): string {
     return `${id}${this.props.index}`;

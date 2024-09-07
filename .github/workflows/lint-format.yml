@@ -38,7 +38,7 @@ jobs:
         with:
           version: 9
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 18.x
           cache: "pnpm"
@@ -54,7 +54,6 @@ jobs:
       - run: pnpm run fmt
 
       - run: cargo clippy -- -D warnings
-        working-directory: src-tauri
 
       - name: Check output
         run: git --no-pager diff --exit-code HEAD
@@ -76,6 +75,24 @@ jobs:
           echo '' >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
         if: ${{ failure() }}
+
+  tsc:
+    name: "TypeScript compiler"
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+          cache: "pnpm"
+
+      - run: pnpm install
+      - run: npx tsc
 
   choreolib-tidy:
     name: "ChoreoLib clang-tidy"

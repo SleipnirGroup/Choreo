@@ -8,7 +8,7 @@ Trajectory optimization works by mathematically formulating the problem of trave
 
 ## Features
 
-* Currently only supports swerve drives with arbitray module configurations
+* Currently only supports swerve drives with arbitrary module configurations
 * Position and velocity constraints at each waypoint
 * Circle and polygon obstacle avoidance
 * Custom physical constraints of robot

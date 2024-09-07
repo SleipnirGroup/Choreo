@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use trajoptlib::{DifferentialTrajectorySample, SwerveTrajectorySample};
 
 use super::{Expr, SnapshottableType};
 
@@ -26,8 +27,12 @@ pub struct Waypoint<T: SnapshottableType> {
     pub fix_translation: bool,
     /// TODO
     pub fix_heading: bool,
-    /// Whether to override the intervals.
+    /// Whether to override the intervals. Not an Option because unused overrides still get persisted to file.
     pub override_intervals: bool,
+    /// Whether this waypoint is an initial guess,
+    /// completely invisible to the frontend.
+    #[serde(skip, default)]
+    pub is_initial_guess: bool,
 }
 
 #[allow(missing_docs)]
@@ -42,6 +47,7 @@ impl<T: SnapshottableType> Waypoint<T> {
             fix_translation: self.fix_translation,
             fix_heading: self.fix_heading,
             override_intervals: self.override_intervals,
+            is_initial_guess: self.is_initial_guess,
         }
     }
 }
@@ -137,6 +143,10 @@ pub enum ConstraintData<T: SnapshottableType> {
     },
     /// A constraint to stop at a waypoint.
     StopPoint {},
+    /// A constraint to contain the bumpers within a circlular region of the field
+    KeepInCircle { x: T, y: T, r: T },
+    /// A constraint to contain the bumpers within a rectangular region of the field
+    KeepInRectangle { x: T, y: T, w: T, h: T },
 }
 
 impl<T: SnapshottableType> ConstraintData<T> {
@@ -172,6 +182,17 @@ impl<T: SnapshottableType> ConstraintData<T> {
                 max: max.snapshot(),
             },
             ConstraintData::StopPoint {} => ConstraintData::StopPoint {},
+            ConstraintData::KeepInCircle { x, y, r } => ConstraintData::KeepInCircle {
+                x: x.snapshot(),
+                y: y.snapshot(),
+                r: r.snapshot(),
+            },
+            ConstraintData::KeepInRectangle { x, y, w, h } => ConstraintData::KeepInRectangle {
+                x: x.snapshot(),
+                y: y.snapshot(),
+                w: w.snapshot(),
+                h: h.snapshot(),
+            },
         }
     }
 }
@@ -227,6 +248,9 @@ pub enum Sample {
         vx: f64,
         vy: f64,
         omega: f64,
+        ax: f64,
+        ay: f64,
+        alpha: f64,
         fx: [f64; 4],
         fy: [f64; 4],
     },
@@ -238,19 +262,84 @@ pub enum Sample {
         heading: f64,
         vl: f64,
         vr: f64,
+        al: f64,
+        ar: f64,
         fl: f64,
         fr: f64,
     },
 }
+fn nudge_zero(f: f64) -> f64 {
+    if f.abs() < 1e-12 {
+        0.0
+    } else {
+        f
+    }
+}
+
+impl From<&SwerveTrajectorySample> for Sample {
+    fn from(swerve_sample: &SwerveTrajectorySample) -> Self {
+        Sample::Swerve {
+            t: nudge_zero(swerve_sample.timestamp),
+            x: nudge_zero(swerve_sample.x),
+            y: nudge_zero(swerve_sample.y),
+            vx: nudge_zero(swerve_sample.velocity_x),
+            vy: nudge_zero(swerve_sample.velocity_y),
+            heading: nudge_zero(swerve_sample.heading),
+            omega: nudge_zero(swerve_sample.angular_velocity),
+            ax: nudge_zero(swerve_sample.acceleration_x),
+            ay: nudge_zero(swerve_sample.acceleration_y),
+            alpha: nudge_zero(swerve_sample.angular_acceleration),
+            fx: [
+                nudge_zero(swerve_sample.module_forces_x[0]),
+                nudge_zero(swerve_sample.module_forces_x[1]),
+                nudge_zero(swerve_sample.module_forces_x[2]),
+                nudge_zero(swerve_sample.module_forces_x[3]),
+            ],
+            fy: [
+                nudge_zero(swerve_sample.module_forces_y[0]),
+                nudge_zero(swerve_sample.module_forces_y[1]),
+                nudge_zero(swerve_sample.module_forces_y[2]),
+                nudge_zero(swerve_sample.module_forces_y[3]),
+            ],
+        }
+    }
+}
+impl From<SwerveTrajectorySample> for Sample {
+    fn from(value: SwerveTrajectorySample) -> Self {
+        Self::from(&value)
+    }
+}
+
+impl From<&DifferentialTrajectorySample> for Sample {
+    fn from(diff_sample: &DifferentialTrajectorySample) -> Self {
+        Sample::DifferentialDrive {
+            t: nudge_zero(diff_sample.timestamp),
+            x: nudge_zero(diff_sample.x),
+            y: nudge_zero(diff_sample.y),
+            heading: nudge_zero(diff_sample.heading),
+            vl: nudge_zero(diff_sample.velocity_l),
+            vr: nudge_zero(diff_sample.velocity_r),
+            al: nudge_zero(diff_sample.acceleration_l),
+            ar: nudge_zero(diff_sample.acceleration_r),
+            fl: nudge_zero(diff_sample.force_l),
+            fr: nudge_zero(diff_sample.force_r),
+        }
+    }
+}
+impl From<DifferentialTrajectorySample> for Sample {
+    fn from(value: DifferentialTrajectorySample) -> Self {
+        Self::from(&value)
+    }
+}
 
 /// The type of samples in a trajectory.
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
-pub enum SampleType {
+pub enum DriveType {
     /// The variant for [`Sample::Swerve`].
     #[default]
     Swerve,
     /// The variant for [`Sample::DifferentialDrive`].
-    DifferentialDrive,
+    Differential,
 }
 
 /// The parameters used for generating a trajectory.
@@ -278,9 +367,6 @@ impl<T: SnapshottableType> Parameters<T> {
 pub struct Trajectory {
     /// The times at which the robot will reach each waypoint.
     pub waypoints: Vec<f64>,
-    /// The type of samples in the trajectory.
-    // #[serde(rename = "type", default)]
-    // pub r#type: SampleType,
     /// The samples of the trajectory.
     pub samples: Vec<Vec<Sample>>,
     /// Whether the forces are available to use in the samples.

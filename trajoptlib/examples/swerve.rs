@@ -1,4 +1,4 @@
-use trajoptlib::{SwerveDrivetrain, SwervePathBuilder, Translation2d};
+use trajoptlib::{PathBuilder, SwerveDrivetrain, SwervePathBuilder, Translation2d};
 
 fn main() {
     let drivetrain = SwerveDrivetrain {

@@ -160,6 +160,7 @@ class ViewOptionsPanel extends Component<Props, State> {
                   title={item.name}
                   placement="left"
                   key={index}
+                  //@ts-expect-error We need the value for the toggle group
                   value={`${index}`}
                 >
                   <ToggleButton

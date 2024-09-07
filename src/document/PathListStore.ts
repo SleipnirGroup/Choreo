@@ -1,5 +1,4 @@
 import { Instance, getEnv, types } from "mobx-state-tree";
-import { v4 as uuidv4 } from "uuid";
 import { Traj } from "./2025/DocumentTypes";
 import { Env } from "./DocumentManager";
 import { HolonomicPathStore } from "./path/HolonomicPathStore";
@@ -43,7 +42,7 @@ export const PathListStore = types
         return (
           self.paths.get(self.activePathUUID)! ||
           HolonomicPathStore.create({
-            uuid: uuidv4(),
+            uuid: crypto.randomUUID(),
             name: "New Path",
             params: {
               constraints: [],
@@ -86,7 +85,7 @@ export const PathListStore = types
       },
       addPath(name: string, select: boolean = false, contents?: Traj): string {
         const usedName = this.disambiguateName(name);
-        const newUUID = uuidv4();
+        const newUUID = crypto.randomUUID();
         const env = getEnv<Env>(self);
         env.startGroup(() => {
           try {

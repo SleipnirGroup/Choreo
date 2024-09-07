@@ -43,6 +43,13 @@ class TRAJOPT_DLLEXPORT PathBuilder {
   Path<Drivetrain, Solution>& GetPath() { return path; }
 
   /**
+   * Get all bumpers currently added to the path builder
+   *
+   * @return a list of bumpers applied to the builder.
+   */
+  std::vector<Bumpers>& GetBumpers() { return bumpers; }
+
+  /**
    * Create a pose waypoint constraint on the waypoint at the provided
    * index, and add an initial guess with the same pose This specifies that the
    * position and heading of the robot at the waypoint must be fixed at the
@@ -130,8 +137,8 @@ class TRAJOPT_DLLEXPORT PathBuilder {
       size_t obstacleCornerCount = obstacle.points.size();
       if (bumperCornerCount == 1 && obstacleCornerCount == 1) {
         // if the bumpers and obstacle are only one point
-        WptConstraint(index,
-                      PointPointConstraint{_bumpers.points.at(0),
+        WptConstraint(
+            index, PointPointMinConstraint{_bumpers.points.at(0),
                                            obstacle.points.at(0), minDistance});
         return;
       }
@@ -175,9 +182,9 @@ class TRAJOPT_DLLEXPORT PathBuilder {
                                      obstacle.points.at(0), minDistance});
           }
         } else {
-          WptConstraint(
-              index, PointPointConstraint{bumperCorner, obstacle.points.at(0),
-                                          minDistance});
+          WptConstraint(index,
+                        PointPointMinConstraint{
+                            bumperCorner, obstacle.points.at(0), minDistance});
         }
       }
     }
@@ -202,8 +209,8 @@ class TRAJOPT_DLLEXPORT PathBuilder {
         // if the bumpers and obstacle are only one point
         SgmtConstraint(
             fromIndex, toIndex,
-            PointPointConstraint{_bumpers.points.at(0), obstacle.points.at(0),
-                                 minDistance});
+            PointPointMinConstraint{_bumpers.points.at(0),
+                                    obstacle.points.at(0), minDistance});
         return;
       }
 
@@ -250,7 +257,7 @@ class TRAJOPT_DLLEXPORT PathBuilder {
           }
         } else {
           SgmtConstraint(fromIndex, toIndex,
-                         PointPointConstraint{
+                         PointPointMinConstraint{
                              bumperCorner, obstacle.points.at(0), minDistance});
         }
       }
