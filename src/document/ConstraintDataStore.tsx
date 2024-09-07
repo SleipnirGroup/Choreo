@@ -78,8 +78,8 @@ function createDataStore<
   type PropertySetter = Setter<ConstraintPropertyType>;
   const setters: { [key: string]: PropertySetter } = {};
   // The function to serialize into a data object
-  let serialize: (self: any) => Partial<D["props"]> = (self) => ({});
-  let deserialize: (self: any, data: D["props"]) => void = (self, data) => {};
+  let serialize: (self: any) => Partial<D["props"]> = (_self) => ({});
+  let deserialize: (self: any, data: D["props"]) => void = (_self, _data) => {};
   let deserPartial: (self: any, data: Partial<D["props"]>) => void = (
     self,
     data

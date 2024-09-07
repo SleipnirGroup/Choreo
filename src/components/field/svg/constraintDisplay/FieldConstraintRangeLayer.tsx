@@ -18,9 +18,9 @@ type Props = {
 function FieldConstraintRangeLayer(props: Props) {
   const lineColor = props.lineColor ?? "var(--select-yellow)";
   const id = props.id;
-  const onCircleClick = props.onCircleClick ?? ((arg) => {});
-  const onCircleMouseOver = props.onCircleMouseOver ?? ((arg) => {});
-  const onCircleMouseOff = props.onCircleMouseOff ?? ((arg) => {});
+  const onCircleClick = props.onCircleClick ?? ((_arg) => {});
+  const onCircleMouseOver = props.onCircleMouseOver ?? ((_arg) => {});
+  const onCircleMouseOff = props.onCircleMouseOff ?? ((_arg) => {});
   if (props.start !== undefined) {
     const points = props.points.slice(
       props.start,
@@ -47,9 +47,9 @@ function FieldConstraintRangeLayer(props: Props) {
                     )
                   }
                   strokeWidth={0.05}
-                  onClick={(e) => onCircleClick(i + props.start)}
-                  onMouseOver={(e) => onCircleMouseOver(i + props.start)}
-                  onMouseLeave={(e) => onCircleMouseOff(i + props.start)}
+                  onClick={(_e) => onCircleClick(i + props.start)}
+                  onMouseOver={(_e) => onCircleMouseOver(i + props.start)}
+                  onMouseLeave={(_e) => onCircleMouseOff(i + props.start)}
                   style={
                     props.onCircleClick === undefined &&
                     props.onCircleMouseOff === undefined &&

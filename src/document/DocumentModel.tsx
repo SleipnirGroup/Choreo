@@ -242,10 +242,6 @@ export const DocumentStore = types
               pathStore.ui.setIterationNumber(
                 pathStore.ui.generationIterationNumber + 1
               );
-            } else if (event.payload!.type === "diagnosticText") {
-              // const line = event.payload.update as string;
-              // This is the text output of sleipnir solver
-              // console.log(line)
             }
           });
         })
