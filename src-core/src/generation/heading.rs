@@ -75,8 +75,7 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                                 .iter()
                                 .take(to + 1)
                                 .skip(from)
-                                .filter(|wpt| wpt.fix_heading)
-                                .next()
+                                .find(|wpt| wpt.fix_heading)
                                 .map(|wpt| wpt.heading.1);
 
                             if let Some(target_heading) = target_heading {
@@ -155,7 +154,7 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
 
     // check for 0 ang vel and point at
     for (wpt, &sgmt_v, &_wpt_v, &sgmt_p, &wpt_p, &pose) in izip!(
-        0 as usize..,
+        0..,
         &sgmt_has_0_ang_vel,
         &wpt_has_0_ang_vel,
         &sgmt_has_point_at,
@@ -174,38 +173,34 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                 "Segment has a 0 maxAngVel and Point At".to_string(),
             ));
         }
-        if wpt > 0 {
-            if sgmt_p >= 1 {
-                println!("sgmt_p{sgmt_p}");
-                for idx in (0..wpt - 1).rev() {
-                    println!("wpt{wpt} - p{}", wpt_is_pose[idx]);
-                    println!("idx{idx}");
-                    if sgmt_has_0_ang_vel[idx] > 0 {
-                        if wpt_is_pose[idx] || wpt_is_pose[idx + 1] {
-                            return Err(ChoreoError::HeadingConflict(
-                                wpt + 1,
-                                "0 maxAngVel with a Pose prior to Point At".to_string(),
-                            ));
-                        }
-                    } else {
-                        break;
+        if wpt > 0 && sgmt_p > 0 {
+            println!("sgmt_p{sgmt_p}");
+            for idx in (0..wpt - 1).rev() {
+                println!("wpt{wpt} - p{}", wpt_is_pose[idx]);
+                println!("idx{idx}");
+                if sgmt_has_0_ang_vel[idx] > 0 {
+                    if wpt_is_pose[idx] || wpt_is_pose[idx + 1] {
+                        return Err(ChoreoError::HeadingConflict(
+                            wpt + 1,
+                            "0 maxAngVel with a Pose prior to Point At".to_string(),
+                        ));
                     }
+                } else {
+                    break;
                 }
             }
         }
-        if wpt < num_wpts - 1 {
-            if sgmt_p >= 1 {
-                for idx in wpt + 1..num_wpts - 1 {
-                    if sgmt_has_0_ang_vel[idx] > 0 {
-                        if wpt_is_pose[idx] || wpt_is_pose[idx + 1] {
-                            return Err(ChoreoError::HeadingConflict(
-                                wpt + 1,
-                                "0 maxAngVel with a Pose after Point At".to_string(),
-                            ));
-                        }
-                    } else {
-                        break;
+        if wpt < num_wpts - 1 && sgmt_p > 0 {
+            for idx in wpt + 1..num_wpts - 1 {
+                if sgmt_has_0_ang_vel[idx] > 0 {
+                    if wpt_is_pose[idx] || wpt_is_pose[idx + 1] {
+                        return Err(ChoreoError::HeadingConflict(
+                            wpt + 1,
+                            "0 maxAngVel with a Pose after Point At".to_string(),
+                        ));
                     }
+                } else {
+                    break;
                 }
             }
         }
@@ -241,16 +236,16 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
         if sgmt_has_0_ang_vel[idx] > 0 {
             let mut num_pose_wpts_in_zero_ang_vel_sgmt = 0;
 
-            for &j in sgmt_has_0_ang_vel.iter().skip(idx.clone()) {
+            for &zero_count in sgmt_has_0_ang_vel.iter().skip(idx) {
                 if wpt_is_pose[idx] {
                     num_pose_wpts_in_zero_ang_vel_sgmt += 1;
                 }
-                if j == 0 {
+                if zero_count == 0 {
                     break;
                 }
                 idx += 1;
             }
-            if num_pose_wpts_in_zero_ang_vel_sgmt > 1 as usize {
+            if num_pose_wpts_in_zero_ang_vel_sgmt > 1 {
                 return Err(ChoreoError::HeadingConflict(
                     idx + 1,
                     "Multiple Pose waypoints within 0 maxAngVel Contraints".to_string(),
