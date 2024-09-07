@@ -139,16 +139,13 @@ void SwervePathBuilder::wpt_keep_in_polygon(size_t index,
                                    {0.0, 0.0},
                                    {field_points_x[i], field_points_y[i]},
                                    {field_points_x[j], field_points_y[j]}});
-    for (size_t bumper = 0; bumper < path_builder.GetBumpers().size();
-         bumper++) {
-      for (size_t corner = 0;
-           corner < path_builder.GetBumpers().at(bumper).points.size();
-           corner++) {
-        path_builder.WptConstraint(
-            index, trajopt::PointLineRegionConstraint{
-                       path_builder.GetBumpers().at(bumper).points[corner],
-                       {field_points_x[i], field_points_y[i]},
-                       {field_points_x[j], field_points_y[j]}});
+    for (const auto& bumper : path_builder.GetBumpers()) {
+      for (const auto& corner : bumper.points) {
+        path_builder.WptConstraint(index,
+                                   trajopt::PointLineRegionConstraint{
+                                       corner,
+                                       {field_points_x[i], field_points_y[i]},
+                                       {field_points_x[j], field_points_y[j]}});
       }
     }
   }
@@ -223,15 +220,12 @@ void SwervePathBuilder::sgmt_keep_in_polygon(size_t from_index, size_t to_index,
                                     {0.0, 0.0},
                                     {field_points_x[i], field_points_y[i]},
                                     {field_points_x[j], field_points_y[j]}});
-    for (size_t bumper = 0; bumper < path_builder.GetBumpers().size();
-         bumper++) {
-      for (size_t corner = 0;
-           corner < path_builder.GetBumpers().at(bumper).points.size();
-           corner++) {
+    for (const auto& bumper : path_builder.GetBumpers()) {
+      for (const auto& corner : bumper.points) {
         path_builder.SgmtConstraint(
             from_index, to_index,
             trajopt::PointLineRegionConstraint{
-                path_builder.GetBumpers().at(bumper).points[corner],
+                corner,
                 {field_points_x[i], field_points_y[i]},
                 {field_points_x[j], field_points_y[j]}});
       }
@@ -452,16 +446,13 @@ void DifferentialPathBuilder::wpt_keep_in_polygon(
                                    {0.0, 0.0},
                                    {field_points_x[i], field_points_y[i]},
                                    {field_points_x[j], field_points_y[j]}});
-    for (size_t bumper = 0; bumper < path_builder.GetBumpers().size();
-         bumper++) {
-      for (size_t corner = 0;
-           corner < path_builder.GetBumpers().at(bumper).points.size();
-           corner++) {
-        path_builder.WptConstraint(
-            index, trajopt::PointLineRegionConstraint{
-                       path_builder.GetBumpers().at(bumper).points[corner],
-                       {field_points_x[i], field_points_y[i]},
-                       {field_points_x[j], field_points_y[j]}});
+    for (const auto& bumper : path_builder.GetBumpers()) {
+      for (const auto& corner : bumper.points) {
+        path_builder.WptConstraint(index,
+                                   trajopt::PointLineRegionConstraint{
+                                       corner,
+                                       {field_points_x[i], field_points_y[i]},
+                                       {field_points_x[j], field_points_y[j]}});
       }
     }
   }
@@ -526,15 +517,12 @@ void DifferentialPathBuilder::sgmt_keep_in_polygon(
                                     {0.0, 0.0},
                                     {field_points_x[i], field_points_y[i]},
                                     {field_points_x[j], field_points_y[j]}});
-    for (size_t bumper = 0; bumper < path_builder.GetBumpers().size();
-         bumper++) {
-      for (size_t corner = 0;
-           corner < path_builder.GetBumpers().at(bumper).points.size();
-           corner++) {
+    for (const auto& bumper : path_builder.GetBumpers()) {
+      for (const auto& corner : bumper.points) {
         path_builder.SgmtConstraint(
             from_index, to_index,
             trajopt::PointLineRegionConstraint{
-                path_builder.GetBumpers().at(bumper).points[corner],
+                corner,
                 {field_points_x[i], field_points_y[i]},
                 {field_points_x[j], field_points_y[j]}});
       }
