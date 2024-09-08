@@ -7,6 +7,16 @@ use crate::spec::traj::{ConstraintIDX, ConstraintScope, TrajFile};
 use crate::spec::Expr;
 use crate::{ChoreoError, ChoreoResult};
 
+// This should be used before sending to solver
+pub fn adjust_headings(traj: &mut TrajFile) -> ChoreoResult<()> {
+    let new_headings = calculate_adjusted_headings(traj)?;
+    // new_headings, set to file
+    new_headings.iter().enumerate().for_each(|(i, &h)| {
+        traj.params.waypoints[i].heading = Expr::new(format!("{h} rad").as_str(), h);
+    });
+    Ok(())
+}
+
 pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
     let waypoints = &traj.params.waypoints;
 
@@ -17,41 +27,33 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
     let mut sgmt_has_point_at = vec![0u8; num_wpts];
     let mut wpt_has_0_ang_vel = vec![0u8; num_wpts];
     let mut sgmt_has_0_ang_vel = vec![0u8; num_wpts];
-    let mut wpt_is_pose = vec![false; num_wpts];
-
-    let mut last_fixed_idx = 0;
+    let mut wpt_paseudo_fixed_heading = vec![None; num_wpts];
 
     let (guess_point_idxs, constraints_idx) = fix_constraint_indices(traj);
 
     // find pose waypoints
-    for (idx, wpt) in waypoints.iter().enumerate() {
-        if wpt.fix_heading {
-            // set heading for fixed heading wpt
-            new_headings[idx] = wpt.heading.1;
-            wpt_is_pose[idx] = true;
-            if idx > 0 {
-                // interpolate headings from last fixed idx
-                let start = waypoints[last_fixed_idx].heading.1;
-                let dtheta = angle_modulus(wpt.heading.1 - start);
-                new_headings
-                    .iter_mut()
-                    .take(idx) // up to not including current fixed heading wpt
-                    .skip(last_fixed_idx + 1) // skip last fixed heading wpt
-                    .enumerate()
-                    .for_each(|(i, heading)| {
-                        let scalar = (i + 1) as f64 / (idx - last_fixed_idx) as f64;
-                        *heading = start + scalar * dtheta;
-                    })
-            }
-            last_fixed_idx = idx;
-        }
-    }
-    // TODO: adjust heading of 0 ang vel sgmt immediately before or after point at
-    // TODO: start with point at constraints, then 0 ang vel, then interpolate
-    for constraint in &constraints_idx {
-        let from = fix_scope(constraint.from, &guess_point_idxs);
-        let to_opt = constraint.to.map(|idx| fix_scope(idx, &guess_point_idxs));
-        let target_heading;
+    waypoints
+        .iter()
+        .zip(wpt_paseudo_fixed_heading.iter_mut())
+        .filter(|(w, _)| w.fix_heading)
+        .for_each(|(w, maybe_h)| {
+            *maybe_h = Some(w.heading.1);
+        });
+
+    let constraints_fixed_scope: Vec<_> = constraints_idx
+        .iter()
+        .map(|c| {
+            let mut cc = c.clone();
+            cc.from = fix_scope(c.from, &guess_point_idxs);
+            cc.to = c.to.map(|idx| fix_scope(idx, &guess_point_idxs));
+            cc
+        })
+        .collect();
+
+    // count constraint references
+    for constraint in &constraints_fixed_scope {
+        let from = constraint.from;
+        let to_opt = constraint.to;
         match constraint.data {
             MaxAngularVelocity { max } => {
                 if max == 0.0 {
@@ -70,21 +72,6 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                                 .take(to)
                                 .skip(from)
                                 .for_each(|count| *count += 1);
-
-                            target_heading = waypoints
-                                .iter()
-                                .take(to + 1)
-                                .skip(from)
-                                .find(|wpt| wpt.fix_heading)
-                                .map(|wpt| wpt.heading.1);
-
-                            if let Some(target_heading) = target_heading {
-                                new_headings
-                                    .iter_mut()
-                                    .take(to + 1)
-                                    .skip(from)
-                                    .for_each(|h| *h = target_heading);
-                            }
                         }
                     }
                 }
@@ -110,13 +97,15 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                         } else {
                             heading
                         };
-                        if !waypoints[from].fix_heading {
-                            new_headings[from] = heading;
+                        if let Some(_) = wpt_paseudo_fixed_heading[from] {
+                            // this would be an error if heading == Some(_).unwrap()
+                        } else {
+                            wpt_paseudo_fixed_heading[from] = Some(heading);
                         }
                     }
                     Some(to) => {
                         for wpt_idx in from..=to {
-                            wpt_has_point_at[from] += 1;
+                            wpt_has_point_at[wpt_idx] += 1;
                             if wpt_idx < to {
                                 sgmt_has_point_at[wpt_idx] += 1;
                             }
@@ -131,9 +120,10 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                             } else {
                                 heading
                             };
-
-                            if !waypoints[wpt_idx].fix_heading {
-                                new_headings[wpt_idx] = heading;
+                            if let Some(_) = wpt_paseudo_fixed_heading[wpt_idx] {
+                                // this would be an error if heading == Some(_).unwrap()
+                            } else {
+                                wpt_paseudo_fixed_heading[wpt_idx] = Some(heading);
                             }
                         }
                     }
@@ -142,6 +132,7 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
             _ => {}
         }
     }
+
     println!("new headings: {new_headings:?}");
     println!(
         "heading conflict references:\n
@@ -149,39 +140,42 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
     {sgmt_has_point_at:?} - sgmt_has_point_at\n
     {wpt_has_0_ang_vel:?} - wpt_has_0_ang_vel\n
     {sgmt_has_0_ang_vel:?} - sgmt_has_0_ang_vel\n
-    {wpt_is_pose:?} - wpt_is_pose"
+    {wpt_paseudo_fixed_heading:?} - wpt_is_pose"
     );
 
-    // check for 0 ang vel and point at
-    for (wpt, &sgmt_v, &_wpt_v, &sgmt_p, &wpt_p, &pose) in izip!(
+    // conflict checking
+    for (idx_i, &sgmt_0v, &_wpt_0v, &sgmt_pa, &wpt_pa, wpt) in izip!(
         0..,
         &sgmt_has_0_ang_vel,
         &wpt_has_0_ang_vel,
         &sgmt_has_point_at,
         &wpt_has_point_at,
-        &wpt_is_pose
+        waypoints
     ) {
-        if wpt == 0 && !pose {
+        if idx_i == 0 && !wpt.fix_heading {
             return Err(ChoreoError::HeadingConflict(
                 1,
                 "First waypoints must have fixed heading.".to_string(),
             ));
         }
-        if sgmt_v >= 1 && sgmt_p >= 1 {
+        if sgmt_0v >= 1 && sgmt_pa >= 1 {
             return Err(ChoreoError::HeadingConflict(
-                wpt + 1,
+                idx_i + 1,
                 "Segment has a 0 maxAngVel and Point At".to_string(),
             ));
         }
-        if wpt > 0 && sgmt_p > 0 {
-            println!("sgmt_p{sgmt_p}");
-            for idx in (0..wpt - 1).rev() {
-                println!("wpt{wpt} - p{}", wpt_is_pose[idx]);
-                println!("idx{idx}");
+        if wpt_pa > 1 || sgmt_pa > 1 {
+            return Err(ChoreoError::HeadingConflict(
+                idx_i + 1,
+                "Waypoint has multiple Point At constraints.".to_string(),
+            ));
+        }
+        if idx_i > 0 && sgmt_pa > 0 {
+            for idx in (0..idx_i - 1).rev() {
                 if sgmt_has_0_ang_vel[idx] > 0 {
-                    if wpt_is_pose[idx] || wpt_is_pose[idx + 1] {
+                    if waypoints[idx].fix_heading || waypoints[idx + 1].fix_heading {
                         return Err(ChoreoError::HeadingConflict(
-                            wpt + 1,
+                            idx_i + 1,
                             "0 maxAngVel with a Pose prior to Point At".to_string(),
                         ));
                     }
@@ -190,12 +184,12 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                 }
             }
         }
-        if wpt < num_wpts - 1 && sgmt_p > 0 {
-            for idx in wpt + 1..num_wpts - 1 {
+        if idx_i < num_wpts - 1 && sgmt_pa > 0 {
+            for idx in idx_i + 1..num_wpts - 1 {
                 if sgmt_has_0_ang_vel[idx] > 0 {
-                    if wpt_is_pose[idx] || wpt_is_pose[idx + 1] {
+                    if waypoints[idx].fix_heading || waypoints[idx + 1].fix_heading {
                         return Err(ChoreoError::HeadingConflict(
-                            wpt + 1,
+                            idx_i + 1,
                             "0 maxAngVel with a Pose after Point At".to_string(),
                         ));
                     }
@@ -204,40 +198,21 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                 }
             }
         }
-        if pose && (sgmt_p >= 1 || wpt_p >= 1) {
+        if wpt.fix_heading && (sgmt_pa >= 1 || wpt_pa >= 1) {
             return Err(ChoreoError::HeadingConflict(
-                wpt + 1,
+                idx_i + 1,
                 "Point At and Pose constraints".to_string(),
             ));
         }
-        // if is_in_zero_ang_vel_with_pose && pose {
-        //     return Err(ChoreoError::HeadingConflict(
-        //         wpt + 1,
-        //         "Multiple Pose waypoints within 0 maxAngVel Contraints".to_string(),
-        //     ));
-        // } else if pose &&
-        // let num_pose_wpts_in_zero_ang_vel_sgmt =
-        //     for (vel_count, pose) in sgmt_has_0_ang_vel.iter().zip(&wpt_is_pose).skip(wpt) {
-
-        //     }
-        //         .take_while(|(&vel_count, _)| vel_count >= 1)
-        //         .filter(|(_, &pose)| pose)
-        //         .fold(0 as usize, |acc, _| acc + 1);
-        // if num_pose_wpts_in_zero_ang_vel_sgmt > 1 as usize {
-        //     return Err(ChoreoError::HeadingConflict(
-        //         wpt + 1,
-        //         "Multiple Pose waypoints within 0 maxAngVel Contraints".to_string(),
-        //     ));
-        // }
     }
 
     let mut idx = 0;
-    while idx < wpt_is_pose.len() {
+    while idx < num_wpts {
         if sgmt_has_0_ang_vel[idx] > 0 {
             let mut num_pose_wpts_in_zero_ang_vel_sgmt = 0;
 
             for &zero_count in sgmt_has_0_ang_vel.iter().skip(idx) {
-                if wpt_is_pose[idx] {
+                if waypoints[idx].fix_heading {
                     num_pose_wpts_in_zero_ang_vel_sgmt += 1;
                 }
                 if zero_count == 0 {
@@ -256,17 +231,47 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
         }
     }
 
-    Ok(new_headings)
-}
+    // interpolate non fixed headings between fixed ones.
+    let mut last_fixed_heading = (0, waypoints[0].heading.1);
+    for (idx, &maybe_fixed_heading) in wpt_paseudo_fixed_heading.iter().enumerate() {
+        if let Some(target_heading) = maybe_fixed_heading {
+            // set heading for fixed heading wpt
+            new_headings[idx] = target_heading;
 
-// This should be used before
-pub fn adjust_headings(traj: &mut TrajFile) -> ChoreoResult<()> {
-    let new_headings = calculate_adjusted_headings(traj)?;
-    // new_headings, set to file
-    new_headings.iter().enumerate().for_each(|(i, &h)| {
-        traj.params.waypoints[i].heading = Expr::new(format!("{h} rad").as_str(), h);
-    });
-    Ok(())
+            // interpolate headings from last fixed idx
+            let start = last_fixed_heading.1;
+            let dtheta = angle_modulus(target_heading - start);
+            new_headings
+                .iter_mut()
+                .take(idx) // up to not including current fixed heading wpt
+                .skip(last_fixed_heading.0 + 1) // skip last fixed heading wpt
+                .enumerate()
+                .for_each(|(i, heading)| {
+                    let scalar = (i + 1) as f64 / (idx - last_fixed_heading.0) as f64;
+                    *heading = start + scalar * dtheta;
+                });
+            last_fixed_heading = (idx, target_heading);
+        }
+    }
+
+    // sanity check that fix heading waypoints are not modified
+    if let Some((i, w)) = waypoints
+        .iter()
+        .enumerate()
+        .filter(|(_, w)| w.fix_heading)
+        .find(|(i, w)| w.heading.1 != new_headings[*i])
+    {
+        println!(
+            "waypoint heading was {}, now is {}.",
+            w.heading.1, new_headings[i]
+        );
+        return Err(ChoreoError::HeadingConflict(
+            i + 1,
+            "Fixed waypoint heading was modified.".to_string(),
+        ));
+    }
+
+    Ok(new_headings)
 }
 
 // This is duplicated in constraints::ConstraintSetter
@@ -335,6 +340,7 @@ pub fn fix_constraint_indices(traj: &TrajFile) -> (Vec<usize>, Vec<ConstraintIDX
     (guess_points, constraint_idx)
 }
 
+// taken from itertools
 #[macro_export]
 macro_rules! izip {
     // @closure creates a tuple-flattening closure for .map() call. usage:
