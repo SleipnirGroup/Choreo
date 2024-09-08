@@ -5,6 +5,7 @@ use std::sync::OnceLock;
 
 use trajoptlib::{DifferentialTrajectory, SwerveTrajectory};
 
+use super::heading::adjust_headings;
 use super::transformers::{
     CallbackSetter, ConstraintSetter, DrivetrainAndBumpersSetter, IntervalCountSetter,
     TrajFileGenerator,
@@ -111,6 +112,7 @@ fn set_initial_guess(traj: &mut TrajFile) {
 
 pub fn generate(chor: ProjectFile, mut trajfile: TrajFile, handle: i64) -> ChoreoResult<TrajFile> {
     set_initial_guess(&mut trajfile);
+    adjust_headings(&mut trajfile)?;
 
     let mut gen = TrajFileGenerator::new(chor, trajfile, handle);
 

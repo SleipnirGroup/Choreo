@@ -176,6 +176,7 @@ export const DocumentStore = types
       if (pathStore.params.waypoints.length < 2) {
         return;
       }
+      console.log(pathStore.serialize);
       const config = self.robotConfig.serialize;
       pathStore.params.constraints.forEach((constraint) => {
         if (constraint.issues.length > 0) {
