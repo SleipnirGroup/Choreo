@@ -29,5 +29,4 @@ dirs = "5.0.1"
 serde = "1.0.209"
 
 [features]
-default = ["tauri/tracing"]
 custom-protocol = ["tauri/custom-protocol"]
