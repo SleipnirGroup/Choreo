@@ -43,7 +43,7 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
     let constraints_fixed_scope: Vec<_> = constraints_idx
         .iter()
         .map(|c| {
-            let mut cc = c.clone();
+            let mut cc = c.to_owned();
             cc.from = fix_scope(c.from, &guess_point_idxs);
             cc.to = c.to.map(|idx| fix_scope(idx, &guess_point_idxs));
             cc
@@ -97,10 +97,10 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                         } else {
                             heading
                         };
-                        if let Some(_) = wpt_paseudo_fixed_heading[from] {
-                            // this would be an error if heading == Some(_).unwrap()
-                        } else {
+                        if wpt_paseudo_fixed_heading[from].is_none() {
                             wpt_paseudo_fixed_heading[from] = Some(heading);
+                        } else {
+                            // this would be an error if heading == Some(_).unwrap()
                         }
                     }
                     Some(to) => {
@@ -120,10 +120,10 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                             } else {
                                 heading
                             };
-                            if let Some(_) = wpt_paseudo_fixed_heading[wpt_idx] {
-                                // this would be an error if heading == Some(_).unwrap()
+                            if wpt_paseudo_fixed_heading[from].is_none() {
+                                wpt_paseudo_fixed_heading[from] = Some(heading);
                             } else {
-                                wpt_paseudo_fixed_heading[wpt_idx] = Some(heading);
+                                // this would be an error if heading == Some(_).unwrap()
                             }
                         }
                     }
