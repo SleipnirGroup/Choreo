@@ -29,5 +29,4 @@ tracing-appender = "0.2.3"
 tracing-subscriber = { version = "0.3.18", features = ["ansi", "fmt", "std"] }
 
 [features]
-default = ["tauri/tracing"]
 custom-protocol = ["tauri/custom-protocol"]

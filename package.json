@@ -20,10 +20,11 @@
     "fmtRs": "cargo fmt",
     "lintJs": "eslint --fix src",
     "fmt": "pnpm run fmtCpp && pnpm run fmtJava && pnpm run fmtJs && pnpm run fmtRs && pnpm run lintJs",
-    "dev": "vite",
-    "build": "vite build",
-    "tauri": "tauri",
-    "build-cli": "node build_cli.cjs"
+    "clean": "cargo clean && rm -rf dist && rm -rf node_modules",
+    "dev": "tauri dev",
+    "build": "tauri build -- --workspace",
+    "build-cli": "cargo build --release -p choreo-cli",
+    "tauri": "tauri"
   },
   "dependencies": {
     "@emotion/styled": "^11.13.0",
