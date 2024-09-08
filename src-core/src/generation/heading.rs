@@ -214,7 +214,7 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
     }
 
     // sanity check that fix heading waypoints are not modified
-    if let Some((i, w)) = waypoints
+    if let Some((i, _)) = waypoints
         .iter()
         .enumerate()
         .filter(|(_, w)| w.fix_heading)
