@@ -2,7 +2,7 @@
   "build": {
     "beforeDevCommand": "vite",
     "beforeBuildCommand": "vite build",
-    "beforeBundleCommand": "test -f ./target/release/choreo-cli && node rename-sidecar.cjs ./target/release/choreo-cli ./target",
+    "beforeBundleCommand": "node rename-sidecar.cjs choreo-cli ./target",
     "devPath": "http://localhost:1420",
     "distDir": "../dist",
     "withGlobalTauri": false

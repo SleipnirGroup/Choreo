@@ -1,8 +1,7 @@
 const fs = require("fs");
+const { exit } = require("process");
 
-const [oldPath, newPathRoot] = process.argv.slice(2);
-
-let fileName = oldPath.split("/").pop().split(".")[0];
+const [name, newPathRoot] = process.argv.slice(2);
 
 let targetTriple = "";
 let extension = "";
@@ -18,9 +17,24 @@ if (platType === "Darwin") {
   extension = ".exe";
 }
 
-const newPath = `${newPathRoot}/${fileName}-${targetTriple}${extension}`;
+const newPath = `${newPathRoot}/${name}-${targetTriple}${extension}`;
+const oldPathNative = `./target/release/${name}${extension}`;
+const oldPath = `./target/${targetTriple}/release/${name}${extension}`;
 
-fs.rename(`${oldPath}${extension}`, newPath, (err) => {
-  if (err) throw err;
+const oldPathNativeExists = fs.existsSync(`${oldPathNative}`);
+const oldPathExists = fs.existsSync(`${oldPath}`);
+
+if (!oldPathNativeExists && !oldPathExists) {
+  console.log(`No file found at ${oldPathNative} or ${oldPath}`);
+  exit(1);
+}
+
+const path = oldPathNativeExists ? oldPathNative : oldPath;
+
+fs.rename(path, newPath, (err) => {
+  if (err) {
+    console.error(`Error renaming ${oldPath} to ${newPath}: ${err}`);
+    exit(1);
+  }
   console.log(`Renamed ${oldPath} to ${newPath}`);
 });
