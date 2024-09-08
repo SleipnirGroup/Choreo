@@ -237,7 +237,7 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                 .enumerate()
                 .for_each(|(i, heading)| {
                     let scalar = (i + 1) as f64 / (idx - last_fixed_heading.0) as f64;
-                    *heading = start + scalar * dtheta;
+                    *heading = angle_modulus(start + scalar * dtheta);
                 });
             last_fixed_heading = (idx, target_heading);
         }
