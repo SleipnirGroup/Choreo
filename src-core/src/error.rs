@@ -38,7 +38,7 @@ pub enum ChoreoError {
     SolverError(String),
     #[error("Heading Conflict error: waypoint {0:?} - {1:?}")]
     HeadingConflict(usize, String),
-    #[error("Remote Generation Error: {0:?}")]
+    #[error("Remote Generation Error: {0}")]
     RemoteGenerationError(Box<ChoreoError>),
 }
 
