@@ -100,37 +100,9 @@ export interface DifferentialSample {
   fr: number;
 }
 
-export interface SwerveTrajoptlibSample {
-  timestamp: number; // positive
-  x: number;
-  y: number;
-  heading: number;
-  velocity_x: number;
-  velocity_y: number;
-  angular_velocity: number;
-  acceleration_x: number;
-  acceleration_y: number;
-  angular_acceleration: number;
-  module_forces_x: [number, number, number, number];
-  module_forces_y: [number, number, number, number];
-}
-
-export interface DifferentialTrajectorySample {
-  timestamp: number; // positive
-  x: number;
-  y: number;
-  heading: number;
-  velocity_l: number;
-  velocity_r: number;
-  acceleration_l: number;
-  acceleration_r: number;
-  force_l: number;
-  force_r: number;
-}
-
 export interface ProgressUpdate {
-  type: "swerveTraj" | "diffTraj" | "diagnosticText";
-  update: SwerveTrajoptlibSample[] | DifferentialTrajectorySample[] | string;
+  type: "swerveTraj" | "diffTraj";
+  update: SwerveSample[] | DifferentialSample[] | string;
 }
 
 export interface ChoreoPath<T extends ExprOrNumber> {

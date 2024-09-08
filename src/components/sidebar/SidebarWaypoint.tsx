@@ -24,14 +24,10 @@ class SidebarWaypoint extends Component<Props, State> {
   state = { selected: false };
 
   getItemStyle(
-    isDragging: boolean,
+    _isDragging: boolean,
     draggableStyle: DraggingStyle | NotDraggingStyle | undefined
   ): CSSProperties {
     return {
-      // change background colour if dragging
-      //background: isDragging ? "lightgreen" : "revert",
-
-      // styles we need to apply on draggables
       ...draggableStyle
     };
   }

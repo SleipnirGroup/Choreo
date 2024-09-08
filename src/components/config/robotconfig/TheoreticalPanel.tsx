@@ -35,7 +35,7 @@ class RobotConfigPanel extends Component<Props, State> {
           title="Floor Speed"
           suffix={`${MetersOrFeet(imp)}/s`}
           enabled={false}
-          setEnabled={(a) => null}
+          setEnabled={(_) => null}
           roundingPrecision={3}
           number={imp ? MToFt(floorSpeed) : floorSpeed}
           setNumber={() => null}
@@ -47,7 +47,7 @@ class RobotConfigPanel extends Component<Props, State> {
           title="Floor Accel"
           suffix={`${MetersOrFeet(imp)}/s²`}
           enabled={false}
-          setEnabled={(a) => null}
+          setEnabled={(_) => null}
           roundingPrecision={3}
           number={imp ? MToFt(floorLinearAccel) : floorLinearAccel}
           setNumber={() => null}
@@ -59,7 +59,7 @@ class RobotConfigPanel extends Component<Props, State> {
           title="Ang Speed"
           suffix={"rad/s"}
           enabled={false}
-          setEnabled={(a) => null}
+          setEnabled={(_) => null}
           roundingPrecision={3}
           number={floorAngularVelocity}
           setNumber={() => null}
@@ -72,7 +72,7 @@ class RobotConfigPanel extends Component<Props, State> {
           title="Ang Accel"
           suffix={"rad/s²"}
           enabled={false}
-          setEnabled={(a) => null}
+          setEnabled={(_) => null}
           roundingPrecision={3}
           number={chassisAngularAccel}
           setNumber={() => null}

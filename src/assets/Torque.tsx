@@ -11,11 +11,6 @@ const SvgIcon = styled(MuiSvgIcon, {
   strokeWidth: "2.25px"
 }));
 
-SvgIcon.defaultProps = {
-  viewBox: "0 0 24 24",
-  focusable: "false",
-  "aria-hidden": "true"
-};
 const Torque: React.FunctionComponent<SvgIconProps> = (props) => {
   const cornerX = 4;
   const cornerY = 18;
@@ -23,7 +18,12 @@ const Torque: React.FunctionComponent<SvgIconProps> = (props) => {
   const angle = Math.PI / 2;
   const r = 8;
   return (
-    <SvgIcon {...props}>
+    <SvgIcon
+      viewBox="0 0 24 24"
+      focusable="false"
+      aria-hidden="true"
+      {...props}
+    >
       <line x1={cornerX} y1={cornerY} x2={endX} y2={cornerY}></line>
       <circle cx={cornerX} cy={cornerY} r={2}></circle>
       {/* up arrow */}

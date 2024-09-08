@@ -41,7 +41,7 @@ class FieldGrid extends Component<Props, State> {
           select(this.props.obstacle);
           doc.history.startGroup(() => {});
         })
-        .on("end", (event) => doc.history.stopGroup())
+        .on("end", (_event) => doc.history.stopGroup())
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
         `#oDragTarget${this.props.index}`
@@ -57,7 +57,7 @@ class FieldGrid extends Component<Props, State> {
           select(this.props.obstacle);
           doc.history.startGroup(() => {});
         })
-        .on("end", (event) => doc.history.stopGroup())
+        .on("end", (_event) => doc.history.stopGroup())
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
         `#oRadiusDragTarget${this.props.index}`

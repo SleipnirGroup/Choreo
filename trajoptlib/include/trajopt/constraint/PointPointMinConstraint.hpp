@@ -20,7 +20,7 @@ namespace trajopt {
  * Specifies the required minimum distance between a point on the robot's frame
  * and a point on the field.
  */
-class TRAJOPT_DLLEXPORT PointPointConstraint {
+class TRAJOPT_DLLEXPORT PointPointMinConstraint {
  public:
   /**
    * Constructs a LinePointConstraint.
@@ -30,8 +30,8 @@ class TRAJOPT_DLLEXPORT PointPointConstraint {
    * @param minDistance Minimum distance between robot line and field point.
    *     Must be nonnegative.
    */
-  explicit PointPointConstraint(Translation2d robotPoint,
-                                Translation2d fieldPoint, double minDistance)
+  explicit PointPointMinConstraint(Translation2d robotPoint,
+                                   Translation2d fieldPoint, double minDistance)
       : m_robotPoint{std::move(robotPoint)},
         m_fieldPoint{std::move(fieldPoint)},
         m_minDistance{minDistance} {

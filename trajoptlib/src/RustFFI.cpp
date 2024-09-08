@@ -6,11 +6,7 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <stdexcept>
-#include <string>
 #include <vector>
-
-#include <sleipnir/optimization/SolverExitCondition.hpp>
 
 #include "trajopt/constraint/AngularVelocityMaxMagnitudeConstraint.hpp"
 #include "trajopt/constraint/LinearAccelerationMaxMagnitudeConstraint.hpp"
@@ -112,6 +108,49 @@ void SwervePathBuilder::wpt_point_at(size_t index, double field_point_x,
                  heading_tolerance, flip});
 }
 
+void SwervePathBuilder::wpt_keep_in_circle(size_t index, double field_point_x,
+                                           double field_point_y,
+                                           double keep_in_radius) {
+  for (size_t bumper = 0; bumper < path_builder.GetBumpers().size(); bumper++) {
+    for (size_t i = 0; i < path_builder.GetBumpers().at(bumper).points.size();
+         i++) {
+      path_builder.WptConstraint(
+          index, trajopt::PointPointMaxConstraint{
+                     path_builder.GetBumpers().at(bumper).points.at(i),
+                     {field_point_x, field_point_y},
+                     keep_in_radius});
+    }
+  }
+  path_builder.WptConstraint(
+      index, trajopt::PointPointMaxConstraint{
+                 {0.0, 0.0}, {field_point_x, field_point_y}, keep_in_radius});
+}
+
+void SwervePathBuilder::wpt_keep_in_polygon(size_t index,
+                                            rust::Vec<double> field_points_x,
+                                            rust::Vec<double> field_points_y) {
+  if (field_points_x.size() != field_points_y.size()) {
+    return;
+  }
+  for (size_t i = 0; i < field_points_x.size(); i++) {
+    auto j = (i + 1) % field_points_x.size();
+    path_builder.WptConstraint(index,
+                               trajopt::PointLineRegionConstraint{
+                                   {0.0, 0.0},
+                                   {field_points_x[i], field_points_y[i]},
+                                   {field_points_x[j], field_points_y[j]}});
+    for (const auto& bumper : path_builder.GetBumpers()) {
+      for (const auto& corner : bumper.points) {
+        path_builder.WptConstraint(index,
+                                   trajopt::PointLineRegionConstraint{
+                                       corner,
+                                       {field_points_x[i], field_points_y[i]},
+                                       {field_points_x[j], field_points_y[j]}});
+      }
+    }
+  }
+}
+
 void SwervePathBuilder::sgmt_linear_velocity_direction(size_t from_index,
                                                        size_t to_index,
                                                        double angle) {
@@ -149,6 +188,49 @@ void SwervePathBuilder::sgmt_point_at(size_t from_index, size_t to_index,
       from_index, to_index,
       trajopt::PointAtConstraint{
           {field_point_x, field_point_y}, heading_tolerance, flip});
+}
+
+void SwervePathBuilder::sgmt_keep_in_circle(size_t from_index, size_t to_index,
+                                            double field_point_x,
+                                            double field_point_y,
+                                            double keep_in_radius) {
+  for (size_t bumper = 0; bumper < path_builder.GetBumpers().size(); bumper++) {
+    for (size_t i = 0; i < path_builder.GetBumpers().at(bumper).points.size();
+         i++) {
+      path_builder.SgmtConstraint(
+          from_index, to_index,
+          trajopt::PointPointMaxConstraint{
+              path_builder.GetBumpers().at(bumper).points.at(i),
+              {field_point_x, field_point_y},
+              keep_in_radius});
+    }
+  }
+}
+
+void SwervePathBuilder::sgmt_keep_in_polygon(size_t from_index, size_t to_index,
+                                             rust::Vec<double> field_points_x,
+                                             rust::Vec<double> field_points_y) {
+  if (field_points_x.size() != field_points_y.size()) {
+    return;
+  }
+  for (size_t i = 0; i < field_points_x.size(); i++) {
+    auto j = (i + 1) % field_points_x.size();
+    path_builder.SgmtConstraint(from_index, to_index,
+                                trajopt::PointLineRegionConstraint{
+                                    {0.0, 0.0},
+                                    {field_points_x[i], field_points_y[i]},
+                                    {field_points_x[j], field_points_y[j]}});
+    for (const auto& bumper : path_builder.GetBumpers()) {
+      for (const auto& corner : bumper.points) {
+        path_builder.SgmtConstraint(
+            from_index, to_index,
+            trajopt::PointLineRegionConstraint{
+                corner,
+                {field_points_x[i], field_points_y[i]},
+                {field_points_x[j], field_points_y[j]}});
+      }
+    }
+  }
 }
 
 void SwervePathBuilder::sgmt_circle_obstacle(size_t from_index, size_t to_index,
@@ -201,7 +283,7 @@ SwerveTrajectory SwervePathBuilder::generate(bool diagnostics,
 
     return SwerveTrajectory{std::move(rustSamples)};
   } else {
-    throw std::runtime_error{std::string{sleipnir::ToMessage(sol.error())}};
+    throw sol.error();
   }
 }
 
@@ -332,6 +414,50 @@ void DifferentialPathBuilder::wpt_point_at(size_t index, double field_point_x,
                  heading_tolerance, flip});
 }
 
+void DifferentialPathBuilder::wpt_keep_in_circle(size_t index,
+                                                 double field_point_x,
+                                                 double field_point_y,
+                                                 double keep_in_radius) {
+  for (size_t bumper = 0; bumper < path_builder.GetBumpers().size(); bumper++) {
+    for (size_t i = 0; i < path_builder.GetBumpers().at(bumper).points.size();
+         i++) {
+      path_builder.WptConstraint(
+          index, trajopt::PointPointMaxConstraint{
+                     path_builder.GetBumpers().at(bumper).points.at(i),
+                     {field_point_x, field_point_y},
+                     keep_in_radius});
+    }
+  }
+  path_builder.WptConstraint(
+      index, trajopt::PointPointMaxConstraint{
+                 {0.0, 0.0}, {field_point_x, field_point_y}, keep_in_radius});
+}
+
+void DifferentialPathBuilder::wpt_keep_in_polygon(
+    size_t index, rust::Vec<double> field_points_x,
+    rust::Vec<double> field_points_y) {
+  if (field_points_x.size() != field_points_y.size()) {
+    return;
+  }
+  for (size_t i = 0; i < field_points_x.size(); i++) {
+    auto j = (i + 1) % field_points_x.size();
+    path_builder.WptConstraint(index,
+                               trajopt::PointLineRegionConstraint{
+                                   {0.0, 0.0},
+                                   {field_points_x[i], field_points_y[i]},
+                                   {field_points_x[j], field_points_y[j]}});
+    for (const auto& bumper : path_builder.GetBumpers()) {
+      for (const auto& corner : bumper.points) {
+        path_builder.WptConstraint(index,
+                                   trajopt::PointLineRegionConstraint{
+                                       corner,
+                                       {field_points_x[i], field_points_y[i]},
+                                       {field_points_x[j], field_points_y[j]}});
+      }
+    }
+  }
+}
+
 void DifferentialPathBuilder::sgmt_linear_velocity_direction(size_t from_index,
                                                              size_t to_index,
                                                              double angle) {
@@ -358,6 +484,50 @@ void DifferentialPathBuilder::sgmt_linear_acceleration_max_magnitude(
   path_builder.SgmtConstraint(
       from_index, to_index,
       trajopt::LinearAccelerationMaxMagnitudeConstraint{magnitude});
+}
+
+void DifferentialPathBuilder::sgmt_keep_in_circle(size_t from_index,
+                                                  size_t to_index,
+                                                  double field_point_x,
+                                                  double field_point_y,
+                                                  double keep_in_radius) {
+  for (size_t bumper = 0; bumper < path_builder.GetBumpers().size(); bumper++) {
+    for (size_t i = 0; i < path_builder.GetBumpers().at(bumper).points.size();
+         i++) {
+      path_builder.SgmtConstraint(
+          from_index, to_index,
+          trajopt::PointPointMaxConstraint{
+              path_builder.GetBumpers().at(bumper).points.at(i),
+              {field_point_x, field_point_y},
+              keep_in_radius});
+    }
+  }
+}
+
+void DifferentialPathBuilder::sgmt_keep_in_polygon(
+    size_t from_index, size_t to_index, rust::Vec<double> field_points_x,
+    rust::Vec<double> field_points_y) {
+  if (field_points_x.size() != field_points_y.size()) {
+    return;
+  }
+  for (size_t i = 0; i < field_points_x.size(); i++) {
+    auto j = (i + 1) % field_points_x.size();
+    path_builder.SgmtConstraint(from_index, to_index,
+                                trajopt::PointLineRegionConstraint{
+                                    {0.0, 0.0},
+                                    {field_points_x[i], field_points_y[i]},
+                                    {field_points_x[j], field_points_y[j]}});
+    for (const auto& bumper : path_builder.GetBumpers()) {
+      for (const auto& corner : bumper.points) {
+        path_builder.SgmtConstraint(
+            from_index, to_index,
+            trajopt::PointLineRegionConstraint{
+                corner,
+                {field_points_x[i], field_points_y[i]},
+                {field_points_x[j], field_points_y[j]}});
+      }
+    }
+  }
 }
 
 void DifferentialPathBuilder::sgmt_circle_obstacle(size_t from_index,
@@ -401,7 +571,7 @@ DifferentialTrajectory DifferentialPathBuilder::generate(bool diagnostics,
 
     return DifferentialTrajectory{std::move(rustSamples)};
   } else {
-    throw std::runtime_error{std::string{sleipnir::ToMessage(sol.error())}};
+    throw sol.error();
   }
 }
 

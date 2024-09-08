@@ -143,6 +143,10 @@ pub enum ConstraintData<T: SnapshottableType> {
     },
     /// A constraint to stop at a waypoint.
     StopPoint {},
+    /// A constraint to contain the bumpers within a circlular region of the field
+    KeepInCircle { x: T, y: T, r: T },
+    /// A constraint to contain the bumpers within a rectangular region of the field
+    KeepInRectangle { x: T, y: T, w: T, h: T },
 }
 
 impl<T: SnapshottableType> ConstraintData<T> {
@@ -178,6 +182,17 @@ impl<T: SnapshottableType> ConstraintData<T> {
                 max: max.snapshot(),
             },
             ConstraintData::StopPoint {} => ConstraintData::StopPoint {},
+            ConstraintData::KeepInCircle { x, y, r } => ConstraintData::KeepInCircle {
+                x: x.snapshot(),
+                y: y.snapshot(),
+                r: r.snapshot(),
+            },
+            ConstraintData::KeepInRectangle { x, y, w, h } => ConstraintData::KeepInRectangle {
+                x: x.snapshot(),
+                y: y.snapshot(),
+                w: w.snapshot(),
+                h: h.snapshot(),
+            },
         }
     }
 }
@@ -261,8 +276,8 @@ fn nudge_zero(f: f64) -> f64 {
     }
 }
 
-impl From<SwerveTrajectorySample> for Sample {
-    fn from(swerve_sample: SwerveTrajectorySample) -> Self {
+impl From<&SwerveTrajectorySample> for Sample {
+    fn from(swerve_sample: &SwerveTrajectorySample) -> Self {
         Sample::Swerve {
             t: nudge_zero(swerve_sample.timestamp),
             x: nudge_zero(swerve_sample.x),
@@ -289,9 +304,14 @@ impl From<SwerveTrajectorySample> for Sample {
         }
     }
 }
+impl From<SwerveTrajectorySample> for Sample {
+    fn from(value: SwerveTrajectorySample) -> Self {
+        Self::from(&value)
+    }
+}
 
-impl From<DifferentialTrajectorySample> for Sample {
-    fn from(diff_sample: DifferentialTrajectorySample) -> Self {
+impl From<&DifferentialTrajectorySample> for Sample {
+    fn from(diff_sample: &DifferentialTrajectorySample) -> Self {
         Sample::DifferentialDrive {
             t: nudge_zero(diff_sample.timestamp),
             x: nudge_zero(diff_sample.x),
@@ -304,6 +324,11 @@ impl From<DifferentialTrajectorySample> for Sample {
             fl: nudge_zero(diff_sample.force_l),
             fr: nudge_zero(diff_sample.force_r),
         }
+    }
+}
+impl From<DifferentialTrajectorySample> for Sample {
+    fn from(value: DifferentialTrajectorySample) -> Self {
+        Self::from(&value)
     }
 }
 

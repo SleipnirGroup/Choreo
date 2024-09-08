@@ -25,7 +25,7 @@ class PointAtOverlay extends Component<Props<"PointAt">, object> {
         .on("start", () => {
           doc.history.startGroup(() => {});
         })
-        .on("end", (event) => doc.history.stopGroup())
+        .on("end", (_event) => doc.history.stopGroup())
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(`#dragTarget-pointat`).call(
         dragHandleDrag

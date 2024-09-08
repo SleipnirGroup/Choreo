@@ -1,4 +1,10 @@
-import { NearMe, StopCircleOutlined, SyncOutlined } from "@mui/icons-material";
+import {
+  ArrowCircleDown,
+  NearMe,
+  StopCircleOutlined,
+  SyncOutlined,
+  SystemUpdateAlt
+} from "@mui/icons-material";
 import { JSXElementConstructor, ReactElement } from "react";
 import { ObjectTyped } from "../util/ObjectTyped";
 import { Expr } from "./2025/DocumentTypes";
@@ -39,8 +45,8 @@ interface IConstraintData<name, Props extends DataPropsList> {
 }
 
 export type ConstraintDataTypeMap = {
-  //Record<string,never> broke the keyof operator
-  //eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  // Record<string,never> broke the keyof operator
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   StopPoint: {};
   MaxVelocity: { max: Expr };
   MaxAcceleration: { max: Expr };
@@ -50,6 +56,17 @@ export type ConstraintDataTypeMap = {
     y: Expr;
     tolerance: Expr;
     flip: boolean;
+  };
+  KeepInCircle: {
+    x: Expr;
+    y: Expr;
+    r: Expr;
+  };
+  KeepInRectangle: {
+    x: Expr;
+    y: Expr;
+    w: Expr;
+    h: Expr;
   };
 };
 export type DataMap = {
@@ -158,7 +175,71 @@ export const ConstraintDefinitions: defs = {
     },
     wptScope: true,
     sgmtScope: true
-  } satisfies ConstraintDefinition<"PointAt">
+  } satisfies ConstraintDefinition<"PointAt">,
+  KeepInCircle: {
+    type: "KeepInCircle" as const,
+    name: "Keep In Circle",
+    shortName: "Keep In Circle",
+    description: "Keep the robot's bumpers within a circular region",
+    icon: <ArrowCircleDown />,
+    properties: {
+      x: {
+        name: "X",
+        description: "The x coordinate of the center of the keep in zone",
+        dimension: Dimensions.Length,
+        defaultVal: ["0 m", 0]
+      },
+      y: {
+        name: "Y",
+        description: "The y coordinate of the center of the keep in zone",
+        dimension: Dimensions.Length,
+        defaultVal: ["0 m", 0]
+      },
+      r: {
+        name: "R",
+        description: "The radius of the keep in zone",
+        dimension: Dimensions.Length,
+        defaultVal: ["1 m", 1]
+      }
+    },
+    wptScope: true,
+    sgmtScope: true
+  } satisfies ConstraintDefinition<"KeepInCircle">,
+  KeepInRectangle: {
+    type: "KeepInRectangle" as const,
+    name: "Keep In Rectangle",
+    shortName: "Keep In Rect",
+    description: "Keep the robot's bumpers within a rectangular region",
+    icon: <SystemUpdateAlt />,
+    properties: {
+      x: {
+        name: "X",
+        description: "The x coordinate of the bottom left of the keep in zone",
+        dimension: Dimensions.Length,
+        defaultVal: ["0 m", 0]
+      },
+      y: {
+        name: "Y",
+        description: "The y coordinate of the bottom left of the keep in zone",
+        dimension: Dimensions.Length,
+        defaultVal: ["0 m", 0]
+      },
+      w: {
+        name: "W",
+        description: "The width of the keep in zone",
+        dimension: Dimensions.Length,
+        defaultVal: ["1 m", 1]
+      },
+      h: {
+        name: "H",
+        description: "The height of the keep in zone",
+        dimension: Dimensions.Length,
+        defaultVal: ["1 m", 1]
+      }
+    },
+    wptScope: true,
+    sgmtScope: true
+  } satisfies ConstraintDefinition<"KeepInRectangle">
 };
 
 export type ConstraintKey = keyof DataMap;

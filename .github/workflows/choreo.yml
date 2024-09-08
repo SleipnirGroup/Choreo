@@ -9,30 +9,30 @@ concurrency:
 jobs:
   build:
     env:
-      MACOSX_DEPLOYMENT_TARGET: 13
+      MACOSX_DEPLOYMENT_TARGET: 13.3
     strategy:
       fail-fast: false
       matrix:
         include:
           - artifact-name: Windows-x86_64
             os: windows-2022
-            tauri-build-flags: --target x86_64-pc-windows-msvc
+            tauri-build-flags: --target x86_64-pc-windows-msvc -v -- --workspace
 
           - artifact-name: Windows-aarch64
             os: windows-2022
-            tauri-build-flags: --target aarch64-pc-windows-msvc
+            tauri-build-flags: --target aarch64-pc-windows-msvc -v -- --workspace
 
           - artifact-name: macOS-x86_64
             os: macOS-14
-            tauri-build-flags: --target x86_64-apple-darwin
+            tauri-build-flags: --target x86_64-apple-darwin -v -- --workspace
 
           - artifact-name: macOS-arm64
             os: macOS-14
-            tauri-build-flags: --target aarch64-apple-darwin
+            tauri-build-flags: --target aarch64-apple-darwin -v -- --workspace
 
           - artifact-name: Linux-x86_64
             os: ubuntu-22.04
-            tauri-build-flags: --target x86_64-unknown-linux-gnu
+            tauri-build-flags: --target x86_64-unknown-linux-gnu -v -- --workspace
 
     name: "${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
@@ -124,7 +124,7 @@ jobs:
   release:
     name: Create draft release
     needs: [build]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: |
       github.repository_owner == 'SleipnirGroup' &&
       startsWith(github.ref, 'refs/tags/v')

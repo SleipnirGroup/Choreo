@@ -29,7 +29,6 @@ const VariablePanel = observer(
         <ExpressionInput
           key={`${entry[0]}-expr`}
           enabled
-          // title={entry[0]}
           title={() => (
             <VariableRenamingInput
               validateName={(name) => props.validateName(name)}

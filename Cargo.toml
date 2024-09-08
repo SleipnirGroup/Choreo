@@ -1,9 +1,9 @@
 [workspace]
 
 members = [
-    "src-tauri",
     "src-cli",
     "src-core",
+    "src-tauri",
     "trajoptlib",
 ]
 resolver = "2"
