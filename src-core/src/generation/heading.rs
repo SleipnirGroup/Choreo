@@ -165,28 +165,58 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
         }
     }
 
-    let mut idx = 0;
-    while idx < num_wpts {
-        if sgmt_has_0_ang_vel[idx] > 0 {
+    // check for multiple pose waypoints in 0 angular velocity range
+    // if only one pose, return that heading
+    let mut idx_mult_pose = 0;
+    while idx_mult_pose < num_wpts {
+        if sgmt_has_0_ang_vel[idx_mult_pose] > 0 {
             let mut num_pose_wpts_in_zero_ang_vel_sgmt = 0;
 
-            for &zero_count in sgmt_has_0_ang_vel.iter().skip(idx) {
-                if waypoints[idx].fix_heading {
+            for &zero_count in sgmt_has_0_ang_vel.iter().skip(idx_mult_pose) {
+                if waypoints[idx_mult_pose].fix_heading {
                     num_pose_wpts_in_zero_ang_vel_sgmt += 1;
                 }
                 if zero_count == 0 {
                     break;
                 }
-                idx += 1;
+                idx_mult_pose += 1;
             }
             if num_pose_wpts_in_zero_ang_vel_sgmt > 1 {
                 return Err(ChoreoError::HeadingConflict(
-                    idx + 1,
+                    idx_mult_pose + 1,
                     "Multiple Pose waypoints within 0 maxAngVel Contraints".to_string(),
                 ));
             }
         } else {
-            idx += 1;
+            idx_mult_pose += 1;
+        }
+    }
+
+    // adjust target headings for 0 angular velocity segments
+    let mut last_fixed: Option<f64> = None;
+    let mut start = None;
+    for (idx, (&heading, is_zero_velocity)) in headings_from_constraints
+        .clone()
+        .iter()
+        .zip(sgmt_has_0_ang_vel.iter().map(|&c| c > 0))
+        .enumerate()
+    {
+        if is_zero_velocity {
+            if let Some(h) = heading {
+                last_fixed = Some(h);
+            }
+            if start.is_none() {
+                start = Some(idx);
+            }
+        } else if start.is_some() {
+            if last_fixed.is_none() && heading.is_some() {
+                last_fixed = heading;
+            }
+            headings_from_constraints[start.unwrap()..=idx]
+                .iter_mut()
+                .for_each(|x| *x = last_fixed);
+            start = None;
+            last_fixed = None;
         }
     }
 
