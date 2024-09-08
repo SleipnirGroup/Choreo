@@ -27,7 +27,6 @@ dist-ssr
 # Choreo
 src-tauri/target
 target
-target-clippy
 
 # TrajoptLib
 trajoptlib/build*
