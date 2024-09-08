@@ -110,7 +110,6 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
         }
     }
 
-    println!("new headings: {new_headings:?}");
     println!(
         "heading conflict references:\n
     {wpt_has_point_at:?} - wpt_has_point_at\n
@@ -247,6 +246,7 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
             "Fixed waypoint heading was modified.".to_string(),
         ));
     }
+    println!("new headings: {new_headings:?}");
 
     Ok(new_headings)
 }
