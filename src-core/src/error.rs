@@ -8,35 +8,33 @@ use trajoptlib::error::TrajoptError;
 #[allow(missing_docs)]
 #[serde(tag = "type", content = "content")]
 pub enum ChoreoError {
-    #[error("IO error: {0:?}")]
+    #[error("IO error: {0}")]
     Io(String),
-    #[error("Int Cast error: {0:?}")]
+    #[error("Int Cast error: {0}")]
     IntCast(String),
-    #[error("Utf8 Assertion error: {0:?}")]
+    #[error("Utf8 Assertion error: {0}")]
     Utf8(String),
-    #[error("Json error: {0:?}")]
+    #[error("Json error: {0}")]
     Json(String),
-    #[error("Zip Error: {0:?}")]
+    #[error("Zip Error: {0}")]
     ZipError(String),
-    #[error("IPC error: {0:?}")]
+    #[error("IPC error: {0}")]
     Ipc(String),
-    #[error("Subprocess error: {0:?}")]
+    #[error("Subprocess error: {0}")]
     Subprocess(String),
-    #[error("File writing error: {0:?}")]
+    #[error("File writing error: {0}")]
     FileWrite(PathBuf),
-    #[error("File reading error: {0:?}")]
+    #[error("File reading error: {0}")]
     FileRead(PathBuf),
     #[error("File not found error: {0:?}")]
     FileNotFound(Option<PathBuf>),
-    #[error("Calculation error: {0:?}")]
+    #[error("Calculation error: {0}")]
     Calculation(String),
-    #[error("TrajOpt error: {0:?}")]
+    #[error("TrajOpt error: {0}")]
     TrajOpt(String),
     #[error("No Deploy Path error")]
     NoDeployPath,
-    #[error("Solver Error: {0:?}")]
-    SolverError(String),
-    #[error("Heading Conflict error: waypoint {0:?} - {1:?}")]
+    #[error("Heading Conflict error: waypoint {0} - {1}")]
     HeadingConflict(usize, String),
     #[error("Remote Generation Error: {0}")]
     RemoteGenerationError(Box<ChoreoError>),
