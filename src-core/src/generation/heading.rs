@@ -82,50 +82,27 @@ pub fn calculate_adjusted_headings(traj: &TrajFile) -> ChoreoResult<Vec<f64>> {
                 tolerance: _,
                 flip,
             } => {
-                match to_opt {
-                    None => {
-                        wpt_has_point_at[from] += 1;
-
-                        // heading points at target
-                        let robot_x = waypoints[from].x.1;
-                        let robot_y = waypoints[from].y.1;
-                        let new_x = x - robot_x;
-                        let new_y = y - robot_y;
-                        let heading = new_y.atan2(new_x);
-                        let heading = if flip {
-                            angle_modulus(heading + PI)
-                        } else {
-                            heading
-                        };
-                        if wpt_paseudo_fixed_heading[from].is_none() {
-                            wpt_paseudo_fixed_heading[from] = Some(heading);
-                        } else {
-                            // this would be an error if heading == Some(_).unwrap()
-                        }
+                let to = to_opt.unwrap_or(from);
+                for wpt_idx in from..=to {
+                    wpt_has_point_at[wpt_idx] += 1;
+                    if wpt_idx < to {
+                        sgmt_has_point_at[wpt_idx] += 1;
                     }
-                    Some(to) => {
-                        for wpt_idx in from..=to {
-                            wpt_has_point_at[wpt_idx] += 1;
-                            if wpt_idx < to {
-                                sgmt_has_point_at[wpt_idx] += 1;
-                            }
 
-                            let robot_x = waypoints[wpt_idx].x.1;
-                            let robot_y = waypoints[wpt_idx].y.1;
-                            let new_x = x - robot_x;
-                            let new_y = y - robot_y;
-                            let heading = new_y.atan2(new_x);
-                            let heading = if flip {
-                                angle_modulus(heading + PI)
-                            } else {
-                                heading
-                            };
-                            if wpt_paseudo_fixed_heading[from].is_none() {
-                                wpt_paseudo_fixed_heading[from] = Some(heading);
-                            } else {
-                                // this would be an error if heading == Some(_).unwrap()
-                            }
-                        }
+                    let robot_x = waypoints[wpt_idx].x.1;
+                    let robot_y = waypoints[wpt_idx].y.1;
+                    let new_x = x - robot_x;
+                    let new_y = y - robot_y;
+                    let heading = new_y.atan2(new_x);
+                    let heading = if flip {
+                        angle_modulus(heading + PI)
+                    } else {
+                        heading
+                    };
+                    if wpt_paseudo_fixed_heading[wpt_idx].is_none() {
+                        wpt_paseudo_fixed_heading[wpt_idx] = Some(heading);
+                    } else {
+                        // this would be an error if heading == Some(_).unwrap()
                     }
                 }
             }
