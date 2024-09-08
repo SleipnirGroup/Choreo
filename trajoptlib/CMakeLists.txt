@@ -88,7 +88,7 @@ if(BUILD_TESTING)
     fetchcontent_declare(
         Catch2
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG v3.6.0
+        GIT_TAG v3.7.0
         CMAKE_ARGS
     )
     fetchcontent_makeavailable(Catch2)
@@ -103,8 +103,8 @@ set(BUILD_EXAMPLES OFF)
 fetchcontent_declare(
     Sleipnir
     GIT_REPOSITORY https://github.com/SleipnirGroup/Sleipnir.git
-    # main on 2024-08-03
-    GIT_TAG fe36908596cab4afbce3ddf6ced37b01982dd317
+    # main on 2024-09-07
+    GIT_TAG 6672fd9a2adf710ac5cb0edbaf36bb46b1e4815d
     PATCH_COMMAND
         git apply ${CMAKE_CURRENT_SOURCE_DIR}/cmake/0001-Downgrade-to-C-20.patch
     UPDATE_DISCONNECTED 1

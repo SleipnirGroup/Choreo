@@ -25,7 +25,7 @@ class ScopeSlider extends Component<Props, State> {
 
     const sliderMarks = [
       { value: 0, label: "Start" },
-      ...points.flatMap((point, idx) => ({ value: idx + 1, label: idx + 1 })),
+      ...points.flatMap((_point, idx) => ({ value: idx + 1, label: idx + 1 })),
       { value: pointcount + 1, label: "End" }
     ];
     return (
@@ -46,7 +46,7 @@ class ScopeSlider extends Component<Props, State> {
           value={isRange ? [startIndex, endIndex] : startIndex}
           marks={sliderMarks}
           track={isRange ? "normal" : false}
-          onChange={(e, value: number | number[]) => {
+          onChange={(_e, value: number | number[]) => {
             let selection = [];
             if (typeof value === "number") {
               selection = [value] as [number];

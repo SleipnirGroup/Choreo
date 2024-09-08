@@ -32,7 +32,7 @@ class KeepInRectangleOverlay extends Component<
         .on("start", () => {
           doc.history.startGroup(() => {});
         })
-        .on("end", (event) => {
+        .on("end", (_event) => {
           this.fixWidthHeight();
           doc.history.stopGroup();
         })
@@ -47,7 +47,7 @@ class KeepInRectangleOverlay extends Component<
         .on("start", () => {
           doc.history.startGroup(() => {});
         })
-        .on("end", (event) => {
+        .on("end", (_event) => {
           this.fixWidthHeight();
           doc.history.stopGroup();
         })
@@ -62,7 +62,7 @@ class KeepInRectangleOverlay extends Component<
         .on("start", () => {
           doc.history.startGroup(() => {});
         })
-        .on("end", (event) => {
+        .on("end", (_event) => {
           this.fixWidthHeight();
           doc.history.stopGroup();
         })
@@ -77,7 +77,7 @@ class KeepInRectangleOverlay extends Component<
         .on("start", () => {
           doc.history.startGroup(() => {});
         })
-        .on("end", (event) => {
+        .on("end", (_event) => {
           this.fixWidthHeight();
           doc.history.stopGroup();
         })
@@ -92,7 +92,7 @@ class KeepInRectangleOverlay extends Component<
         .on("start", () => {
           doc.history.startGroup(() => {});
         })
-        .on("end", (event) => {
+        .on("end", (_event) => {
           this.fixWidthHeight();
           doc.history.stopGroup();
         })

@@ -11,14 +11,14 @@ const SvgIcon = styled(MuiSvgIcon, {
   strokeWidth: "2.25px"
 }));
 
-SvgIcon.defaultProps = {
-  viewBox: "0 0 24 24",
-  focusable: "false",
-  "aria-hidden": "true"
-};
 const Waypoint: React.FunctionComponent<SvgIconProps> = (props) => {
   return (
-    <SvgIcon {...props}>
+    <SvgIcon
+      viewBox="0 0 24 24"
+      focusable="false"
+      aria-hidden="true"
+      {...props}
+    >
       <circle
         cx={12}
         cy={12}

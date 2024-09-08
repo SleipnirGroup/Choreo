@@ -17,7 +17,7 @@ export const ChoreoTrajStore = types
   .views((self) => ({
     get fullTraj(): SwerveSample[] | DifferentialSample[] {
       //@ts-expect-error This might be a TS bug, flatMap on an A[] | B[] returns an (A | B)[]
-      return self.samples.flatMap((sect, i, samp) => {
+      return self.samples.flatMap((sect, i, _samp) => {
         if (i != 0) {
           return sect.slice(1);
         }
@@ -82,19 +82,6 @@ export const ChoreoTrajStore = types
         waypoints: self.waypoints,
         samples: self.samples,
         forcesAvailable: self.forcesAvailable
-        // markers: self.markers.flatMap((marker) => {
-        //   const target = self.waypoints.waypointIdToSavedWaypointId(marker.target);
-        //   const saved: SavedEventMarker = {
-        //     name: marker.name,
-        //     target: target ?? null,
-        //     trajTargetIndex: marker.trajTargetIndex ?? null,
-        //     targetTimestamp: marker.targetTimestamp ?? null,
-        //     offset: marker.offset,
-        //     command: marker.command.asSavedCommand()
-        //   };
-
-        //   return [saved];
-        // }),
       };
     }
   }))

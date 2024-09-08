@@ -120,7 +120,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
               coords = coords.matrixTransform(this.context.inverse());
               this.setState({ mouseX: coords.x, mouseY: coords.y });
             }}
-            onMouseLeave={(e) =>
+            onMouseLeave={(_e) =>
               this.setState({ mouseX: undefined, mouseY: undefined })
             }
           ></circle>
@@ -165,7 +165,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
               );
             }}
             onCircleMouseOver={(id) => doc.setHoveredSidebarItem(waypoints[id])}
-            onCircleMouseOff={(id) => doc.setHoveredSidebarItem(undefined)}
+            onCircleMouseOff={(_id) => doc.setHoveredSidebarItem(undefined)}
           ></FieldConstraintRangeLayer>
         </>
       );

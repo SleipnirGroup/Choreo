@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import React, { Component } from "react";
+import { Component } from "react";
 import { doc, uiState } from "../../document/DocumentManager";
 import PathAnimationSlider from "./PathAnimationSlider";
 import IconButton from "@mui/material/IconButton";
@@ -67,8 +67,7 @@ class PathAnimationPanel extends Component<Props, State> {
       }
     });
     autorun(() => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const activePath = doc.pathlist.activePathUUID;
+      const _ = doc.pathlist.activePathUUID;
       this.onStop();
     });
   }

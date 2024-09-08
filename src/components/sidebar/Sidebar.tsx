@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import { Component } from "react";
 import { doc, uiState } from "../../document/DocumentManager";
 import { observer } from "mobx-react";
 import styles from "./Sidebar.module.css";

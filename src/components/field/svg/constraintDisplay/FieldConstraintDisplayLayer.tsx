@@ -41,10 +41,10 @@ const overlays = {
       lineColor={lineColor}
     ></KeepInRectangleOverlay>
   ),
-  StopPoint: (c: IConstraintStoreKeyed<"StopPoint">) => <></>,
-  MaxAcceleration: (c: IConstraintStoreKeyed<"MaxAcceleration">) => <></>,
-  MaxVelocity: (c: IConstraintStoreKeyed<"MaxVelocity">) => <></>,
-  MaxAngularVelocity: (c: IConstraintStoreKeyed<"MaxAngularVelocity">) => <></>
+  StopPoint: (_c: IConstraintStoreKeyed<"StopPoint">) => <></>,
+  MaxAcceleration: (_c: IConstraintStoreKeyed<"MaxAcceleration">) => <></>,
+  MaxVelocity: (_c: IConstraintStoreKeyed<"MaxVelocity">) => <></>,
+  MaxAngularVelocity: (_c: IConstraintStoreKeyed<"MaxAngularVelocity">) => <></>
 } satisfies {
   [K in ConstraintKey]: (
     constraint: IConstraintStoreKeyed<K>,
