@@ -425,12 +425,12 @@ pub struct PplibCommandMarker {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "type", content = "data")]
 pub enum PplibCommand {
-    Named{ name: String },
-    Wait{ wait_time: f64 },
-    Sequential{ commands: Vec<PplibCommand> },
-    Parallel{ commands: Vec<PplibCommand> },
-    Race{ commands: Vec<PplibCommand> },
-    Deadline{ commands: Vec<PplibCommand> },
+    Named { name: String },
+    Wait { wait_time: f64 },
+    Sequential { commands: Vec<PplibCommand> },
+    Parallel { commands: Vec<PplibCommand> },
+    Race { commands: Vec<PplibCommand> },
+    Deadline { commands: Vec<PplibCommand> },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

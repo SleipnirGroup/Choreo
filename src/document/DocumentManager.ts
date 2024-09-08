@@ -113,7 +113,9 @@ export type EnvConstructors = {
   ) => IConstraintStore;
 };
 function getConstructors(vars: () => IVariables): EnvConstructors {
-  function commandIsNamed(command: PplibCommand<Expr>): command is NamedCommand {
+  function commandIsNamed(
+    command: PplibCommand<Expr>
+  ): command is NamedCommand {
     return Object.hasOwn(command.data, "name");
   }
   function commandIsGroup(
@@ -121,7 +123,9 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
   ): command is GroupCommand<Expr> {
     return Object.hasOwn(command.data, "commands");
   }
-  function commandIsTime(command: PplibCommand<Expr>): command is WaitCommand<Expr> {
+  function commandIsTime(
+    command: PplibCommand<Expr>
+  ): command is WaitCommand<Expr> {
     return Object.hasOwn(command.data, "time");
   }
   function createCommandStore(command: PplibCommand<Expr>): ICommandStore {
