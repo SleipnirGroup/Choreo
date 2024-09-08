@@ -176,18 +176,6 @@ export const DocumentStore = types
       if (pathStore.params.waypoints.length < 2) {
         return;
       }
-      // console.log("og wpt2: ", pathStore.params.waypoints[1].heading.value);
-      // const adjustedHeadings = await Commands.calculateAdjustedHeadings(
-      //   pathStore.serialize
-      // );
-      // if (adjustedHeadings.length == 0) throw "No headings";
-      // adjustedHeadings.forEach((heading, i) => {
-      //   console.log("trying to set wpt ", i, " to ", heading);
-      //   if (heading !== undefined || heading !== null) {
-      //     pathStore.params.waypoints[i].heading.set(heading);
-      //   }
-      // });
-      // console.log("new wpt2: ", pathStore.params.waypoints[1].heading.value);
       console.log(pathStore.serialize);
       const config = self.robotConfig.serialize;
       pathStore.params.constraints.forEach((constraint) => {
