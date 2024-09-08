@@ -151,6 +151,8 @@ export interface Traj {
   params: ChoreoPath<Expr>;
   snapshot: ChoreoPath<number>;
   traj: Output;
+  events: EventMarker[];
+  pplivCommands: PplibCommandMarker<number>[];
 }
 
 export interface CircleObstacle<T extends ExprOrNumber> {
@@ -162,7 +164,7 @@ export interface CircleObstacle<T extends ExprOrNumber> {
 export type GroupCommand<T extends ExprOrNumber> = {
   type: "deadline" | "parallel" | "race" | "sequential";
   data: {
-    commands: Command<T>[];
+    commands: PplibCommand<T>[];
   };
 };
 export type WaitCommand<T extends ExprOrNumber> = {
@@ -177,11 +179,11 @@ export type NamedCommand = {
     name: string | null;
   };
 };
-export type Command<T extends ExprOrNumber> =
+export type PplibCommand<T extends ExprOrNumber> =
   | WaitCommand<T>
   | GroupCommand<T>
   | NamedCommand;
-export interface EventMarker<T extends ExprOrNumber> {
+export interface PplibCommandMarker<T extends ExprOrNumber> {
   name: string;
   target: WaypointID;
   trajTargetIndex: number | undefined;
@@ -190,5 +192,9 @@ export interface EventMarker<T extends ExprOrNumber> {
    * The timestamp along the trajectory of the waypoint this marker targeted on the last generation.
    */
   targetTimestamp: number | undefined;
-  command: Command<T>;
+  command: PplibCommand<T>;
+}
+export interface EventMarker {
+  event: string;
+  timestamp: number;
 }

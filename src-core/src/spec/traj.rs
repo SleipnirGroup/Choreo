@@ -412,7 +412,7 @@ pub enum PplibCommand {
 #[serde(rename_all = "camelCase")]
 pub struct EventMarker {
     /// The name of the event.
-    pub name: String,
-    /// The offset from the beginning of the first trajectory.
-    pub offset: f64,
+    pub event: String,
+    /// The offset from the beginning of the trajectory.
+    pub timestamp: f64,
 }
