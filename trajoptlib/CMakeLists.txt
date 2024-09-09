@@ -15,6 +15,9 @@ set(CMAKE_MODULE_PATH
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules"
 )
 
+# Allow overriding options in parent projects
+cmake_policy(SET CMP0077 NEW)
+
 # Set default build type to release with debug info (i.e. release mode
 # optimizations are performed, but debug info still exists).
 if(NOT CMAKE_BUILD_TYPE)
@@ -115,6 +118,30 @@ set(BUILD_TESTING ${BUILD_TESTING_SAVE})
 set(BUILD_EXAMPLES ${BUILD_EXAMPLES_SAVE})
 
 target_link_libraries(TrajoptLib PUBLIC Sleipnir)
+
+# wpimath dependency
+set(WITH_CSCORE OFF CACHE INTERNAL "With CSCore")
+set(WITH_GUI OFF CACHE INTERNAL "With GUI")
+set(WITH_JAVA OFF CACHE INTERNAL "With Java")
+set(WITH_NTCORE OFF CACHE INTERNAL "With NTCore")
+set(WITH_SIMULATION_MODULES OFF CACHE INTERNAL "With Simulation Modules")
+set(WITH_TESTS OFF CACHE INTERNAL "With Tests")
+set(WITH_WPIMATH ON CACHE INTERNAL "With WPIMath")
+set(WITH_WPILIB OFF CACHE INTERNAL "With WPILib")
+find_package(Python REQUIRED COMPONENTS Interpreter)
+fetchcontent_declare(
+    wpilib
+    GIT_REPOSITORY https://github.com/wpilibsuite/allwpilib.git
+    # main on 2024-07-10
+    GIT_TAG 27a2e02b52c349d48a6c798d7cd4611d3d6200c8
+    PATCH_COMMAND
+        ${Python_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/cmake/0004-allwpilib_patch.py
+        ${CMAKE_CURRENT_SOURCE_DIR}
+    UPDATE_DISCONNECTED 1
+)
+fetchcontent_makeavailable(wpilib)
+target_link_libraries(TrajoptLib PUBLIC wpimath Eigen3::Eigen)
 
 target_include_directories(
     TrajoptLib
