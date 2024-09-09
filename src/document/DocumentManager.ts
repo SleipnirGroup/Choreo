@@ -720,7 +720,7 @@ export async function deletePath(uuid: string) {
     const traj = doc.pathlist.paths.get(uuid);
     if (traj) {
       await Commands.deleteTraj(traj.serialize)
-        .then(() => doc.pathlist.deletePath(uuid))
+        .finally(() => doc.pathlist.deletePath(uuid))
         .catch(tracing.error);
     }
   } else {
