@@ -149,10 +149,10 @@ export const PathListStore = types
           if (oldPath === undefined) {
             return;
           }
-          const newName = self.disambiguateName(oldPath.name);
-          const newuuid = self.addPath(newName, false);
+          const newuuid = self.addPath(oldPath.name, false);
           const path = self.paths.get(newuuid);
-          path!.deserialize(oldPath.serialize);
+          const copyOfOldPath = { ...oldPath.serialize, name: path!.name };
+          path!.deserialize(copyOfOldPath);
         }
       }
     };
