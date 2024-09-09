@@ -16,18 +16,6 @@ import LocalStorageKeys from "../util/LocalStorageKeys";
 import { ObjectTyped } from "../util/ObjectTyped";
 import { safeGetIdentifier } from "../util/mobxutils";
 import {
-  PplibCommand,
-  PplibCommandMarker,
-  GroupCommand,
-  NamedCommand,
-  Project,
-  Traj,
-  WaitCommand,
-  type Expr,
-  type RobotConfig,
-  type Waypoint
-} from "./2025/DocumentTypes";
-import {
   CircularObstacleStore,
   ICircularObstacleStore
 } from "./CircularObstacleStore";
@@ -66,6 +54,9 @@ import { ViewLayerDefaults } from "./UIData";
 import { UIStateStore } from "./UIStateStore";
 import { Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
+import { GroupCommand, NamedCommand, PplibCommand, PplibCommandMarker, TrajFile, WaitCommand, Waypoint } from "./spec/Traj";
+import { Expr } from "./spec/Misc";
+import { ProjectFile, RobotConfig } from "./spec/Project";
 
 export type OpenFilePayload = {
   name: string;
@@ -113,7 +104,9 @@ export type EnvConstructors = {
   ) => IConstraintStore;
 };
 function getConstructors(vars: () => IVariables): EnvConstructors {
-  function commandIsNamed(command: PplibCommand<Expr>): command is NamedCommand {
+  function commandIsNamed(
+    command: PplibCommand<Expr>
+  ): command is NamedCommand {
     return Object.hasOwn(command.data, "name");
   }
   function commandIsGroup(
@@ -121,7 +114,9 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
   ): command is GroupCommand<Expr> {
     return Object.hasOwn(command.data, "commands");
   }
-  function commandIsTime(command: PplibCommand<Expr>): command is WaitCommand<Expr> {
+  function commandIsTime(
+    command: PplibCommand<Expr>
+  ): command is WaitCommand<Expr> {
     return Object.hasOwn(command.data, "time");
   }
   function createCommandStore(command: PplibCommand<Expr>): ICommandStore {
@@ -604,8 +599,8 @@ export async function openProject(projectPath: OpenFilePayload) {
   try {
     const dir = projectPath.dir;
     const name = projectPath.name.split(".")[0];
-    let project: Project | undefined = undefined;
-    const trajs: Traj[] = [];
+    let project: ProjectFile | undefined = undefined;
+    const trajs: TrajFile[] = [];
     await Commands.cancelAll();
     await Commands.setDeployRoot(dir);
     await Promise.allSettled([
@@ -809,7 +804,7 @@ export async function saveProjectDialog() {
 
 export async function openDiagnosticZipWithInfo() {
   const project = doc.serializeChor();
-  const trajs: Traj[] = [];
+  const trajs: TrajFile[] = [];
   doc.pathlist.paths.forEach((path) => {
     trajs.push(path.serialize);
   });

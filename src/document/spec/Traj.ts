@@ -1,57 +1,5 @@
 import { ConstraintData } from "../ConstraintDefinitions";
-import { Dimensions } from "../ExpressionStore";
-
-export const SAVE_FILE_VERSION = "v2025.0.0";
-export type Expr = [string, number];
-
-export type ExprOrNumber = Expr | number;
-export interface Variable {
-  dimension: keyof typeof Dimensions;
-  var: Expr;
-}
-export interface PoseVariable {
-  x: Expr;
-  y: Expr;
-  heading: Expr;
-}
-
-export interface Variables {
-  expressions: Record<string, Variable>;
-  poses: Record<string, PoseVariable>;
-}
-
-export interface Bumper<T extends ExprOrNumber> {
-  front: T;
-  left: T;
-  back: T;
-  right: T;
-}
-
-export interface Module<T extends ExprOrNumber> {
-  x: T;
-  y: T;
-}
-
-export interface RobotConfig<T extends ExprOrNumber> {
-  modules: [Module<T>, Module<T>, Module<T>, Module<T>];
-  mass: T;
-  inertia: T;
-  gearing: T;
-  radius: T;
-  /// motor rad/s
-  vmax: T;
-  /// motor N*m
-  tmax: T; // N*m
-  bumper: Bumper<T>;
-}
-
-export interface Project {
-  name: string;
-  type: SampleType;
-  version: typeof SAVE_FILE_VERSION;
-  variables: Variables;
-  config: RobotConfig<Expr>;
-}
+import { Expr, ExprOrNumber, SAVE_FILE_VERSION } from "./Misc";
 
 export interface Waypoint<T extends ExprOrNumber> {
   x: T;
@@ -110,20 +58,19 @@ export interface ChoreoPath<T extends ExprOrNumber> {
   constraints: Constraint[];
 }
 
-export type SampleType = "Swerve" | "Differential";
-export interface Output {
+export interface Trajectory {
   waypoints: number[];
   samples: SwerveSample[][] | DifferentialSample[][];
   forcesAvailable: boolean;
 }
 
-export interface Traj {
+export interface TrajFile {
   name: string;
   version: typeof SAVE_FILE_VERSION;
   params: ChoreoPath<Expr>;
   snapshot: ChoreoPath<number>;
-  traj: Output;
-  events: EventMarker[];
+  traj: Trajectory;
+  events: EventMarker<Expr>[];
   pplivCommands: PplibCommandMarker<number>[];
 }
 
@@ -166,7 +113,7 @@ export interface PplibCommandMarker<T extends ExprOrNumber> {
   targetTimestamp: number | undefined;
   command: PplibCommand<T>;
 }
-export interface EventMarker {
+export interface EventMarker<T extends ExprOrNumber> {
   event: string;
-  timestamp: number;
+  timestamp: T;
 }

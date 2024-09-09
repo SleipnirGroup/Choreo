@@ -4,17 +4,12 @@ import {
   IHolonomicWaypointStore
 } from "../HolonomicWaypointStore";
 import { IReactionDisposer, reaction } from "mobx";
-import {
-  SAVE_FILE_VERSION,
-  type ChoreoPath,
-  type Traj,
-  Waypoint,
-  Expr
-} from "../2025/DocumentTypes";
 import { ChoreoPathStore } from "./ChoreoPathStore";
 import { ChoreoTrajStore } from "./ChoreoTrajStore";
 import { PathUIStore } from "./PathUIStore";
 import { Env } from "../DocumentManager";
+import { ChoreoPath, TrajFile, Waypoint } from "../spec/Traj";
+import { Expr, SAVE_FILE_VERSION } from "../spec/Misc";
 
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
@@ -38,7 +33,7 @@ export const HolonomicPathStore = types
       canExport(): boolean {
         return self.traj.samples.length >= 2;
       },
-      get serialize(): Traj {
+      get serialize(): TrajFile {
         return {
           name: self.name,
           version: SAVE_FILE_VERSION,
@@ -109,7 +104,7 @@ export const HolonomicPathStore = types
   })
   .actions((self) => {
     return {
-      deserialize(ser: Traj) {
+      deserialize(ser: TrajFile) {
         self.name = ser.name;
         self.snapshot = ser.snapshot;
         self.params.deserialize(ser.params);

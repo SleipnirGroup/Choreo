@@ -1,11 +1,7 @@
 import { Instance, destroy, getEnv, types } from "mobx-state-tree";
-import {
-  DifferentialSample,
-  Output,
-  type SwerveSample
-} from "../2025/DocumentTypes";
 import { Env } from "../DocumentManager";
 import { EventMarkerStore, IEventMarkerStore } from "../EventMarkerStore";
+import { DifferentialSample, SwerveSample, Trajectory } from "../spec/Traj";
 
 export const ChoreoTrajStore = types
   .model("ChoreoTrajStore", {
@@ -77,7 +73,7 @@ export const ChoreoTrajStore = types
       }
       return lastSection[lastSection.length - 1].t;
     },
-    get serialize(): Output {
+    get serialize(): Trajectory {
       return {
         waypoints: self.waypoints,
         samples: self.samples,
@@ -86,7 +82,7 @@ export const ChoreoTrajStore = types
     }
   }))
   .actions((self) => ({
-    deserialize(ser: Output) {
+    deserialize(ser: Trajectory) {
       self.waypoints = ser.waypoints;
       self.samples = ser.samples;
       self.forcesAvailable = ser.forcesAvailable;

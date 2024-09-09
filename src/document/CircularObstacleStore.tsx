@@ -1,7 +1,8 @@
 import { Instance, getEnv, getParent, isAlive, types } from "mobx-state-tree";
-import { CircleObstacle, Expr } from "./2025/DocumentTypes";
 import { Env } from "./DocumentManager";
 import { ExpressionStore } from "./ExpressionStore";
+import { CircleObstacle } from "./spec/Traj";
+import { Expr } from "./spec/Misc";
 
 export const CircularObstacleStore = types
   .model("CircularObstacleStore", {

@@ -1,12 +1,12 @@
 use serde::{Deserialize, Serialize};
 use trajoptlib::{DifferentialTrajectorySample, SwerveTrajectorySample};
 
-use super::{Expr, SnapshottableType};
+use super::{Expr, ExprOrNumber};
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 #[serde(rename_all = "camelCase")]
 /// A waypoint parameter.
-pub struct Waypoint<T: SnapshottableType> {
+pub struct Waypoint<T: ExprOrNumber> {
     /// The x coordinate of the waypoint (blue origin).
     ///
     /// Units: meters
@@ -36,12 +36,12 @@ pub struct Waypoint<T: SnapshottableType> {
 }
 
 #[allow(missing_docs)]
-impl<T: SnapshottableType> Waypoint<T> {
+impl<T: ExprOrNumber> Waypoint<T> {
     pub fn snapshot(&self) -> Waypoint<f64> {
         Waypoint {
-            x: self.x.snapshot(),
-            y: self.y.snapshot(),
-            heading: self.heading.snapshot(),
+            x: self.x.as_number(),
+            y: self.y.as_number(),
+            heading: self.heading.as_number(),
             intervals: self.intervals,
             split: self.split,
             fix_translation: self.fix_translation,
@@ -108,7 +108,7 @@ pub enum ConstraintScope {
 /// A constraint on the robot's motion.
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 #[serde(tag = "type", content = "props")]
-pub enum ConstraintData<T: SnapshottableType> {
+pub enum ConstraintData<T: ExprOrNumber> {
     /// A constraint on the maximum velocity.
     MaxVelocity {
         /// The maximum velocity.
@@ -149,7 +149,7 @@ pub enum ConstraintData<T: SnapshottableType> {
     KeepInRectangle { x: T, y: T, w: T, h: T },
 }
 
-impl<T: SnapshottableType> ConstraintData<T> {
+impl<T: ExprOrNumber> ConstraintData<T> {
     /// The scope of the constraint.
     pub fn scope(&self) -> ConstraintScope {
         match self {
@@ -162,10 +162,10 @@ impl<T: SnapshottableType> ConstraintData<T> {
     pub fn snapshot(&self) -> ConstraintData<f64> {
         match self {
             ConstraintData::MaxVelocity { max } => ConstraintData::MaxVelocity {
-                max: max.snapshot(),
+                max: max.as_number(),
             },
             ConstraintData::MaxAngularVelocity { max } => ConstraintData::MaxAngularVelocity {
-                max: max.snapshot(),
+                max: max.as_number(),
             },
             ConstraintData::PointAt {
                 x,
@@ -173,25 +173,25 @@ impl<T: SnapshottableType> ConstraintData<T> {
                 tolerance,
                 flip,
             } => ConstraintData::PointAt {
-                x: x.snapshot(),
-                y: y.snapshot(),
-                tolerance: tolerance.snapshot(),
+                x: x.as_number(),
+                y: y.as_number(),
+                tolerance: tolerance.as_number(),
                 flip: *flip,
             },
             ConstraintData::MaxAcceleration { max } => ConstraintData::MaxAcceleration {
-                max: max.snapshot(),
+                max: max.as_number(),
             },
             ConstraintData::StopPoint {} => ConstraintData::StopPoint {},
             ConstraintData::KeepInCircle { x, y, r } => ConstraintData::KeepInCircle {
-                x: x.snapshot(),
-                y: y.snapshot(),
-                r: r.snapshot(),
+                x: x.as_number(),
+                y: y.as_number(),
+                r: r.as_number(),
             },
             ConstraintData::KeepInRectangle { x, y, w, h } => ConstraintData::KeepInRectangle {
-                x: x.snapshot(),
-                y: y.snapshot(),
-                w: w.snapshot(),
-                h: h.snapshot(),
+                x: x.as_number(),
+                y: y.as_number(),
+                w: w.as_number(),
+                h: h.as_number(),
             },
         }
     }
@@ -199,7 +199,7 @@ impl<T: SnapshottableType> ConstraintData<T> {
 
 /// A constraint on the robot's motion and where it applies.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-pub struct Constraint<T: SnapshottableType> {
+pub struct Constraint<T: ExprOrNumber> {
     /// The waypoint the constraint starts at.
     pub from: WaypointID,
     /// The waypoint the constraint ends at.
@@ -210,7 +210,7 @@ pub struct Constraint<T: SnapshottableType> {
     pub data: ConstraintData<T>,
 }
 
-impl<T: SnapshottableType> Constraint<T> {
+impl<T: ExprOrNumber> Constraint<T> {
     #[allow(missing_docs)]
     pub fn snapshot(&self) -> Constraint<f64> {
         Constraint::<f64> {
@@ -223,7 +223,7 @@ impl<T: SnapshottableType> Constraint<T> {
 
 /// A constraint on the robot's motion and where it applies.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-pub struct ConstraintIDX<T: SnapshottableType> {
+pub struct ConstraintIDX<T: ExprOrNumber> {
     /// The index of the waypoint the constraint starts at.
     pub from: usize,
     /// The index of the waypoint the constraint ends at.
@@ -344,14 +344,14 @@ pub enum DriveType {
 
 /// The parameters used for generating a trajectory.
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct Parameters<T: SnapshottableType> {
+pub struct Parameters<T: ExprOrNumber> {
     /// The waypoints the robot will pass through or use for initial guess.
     pub waypoints: Vec<Waypoint<T>>,
     /// The constraints on the robot's motion.
     pub constraints: Vec<Constraint<T>>,
 }
 
-impl<T: SnapshottableType> Parameters<T> {
+impl<T: ExprOrNumber> Parameters<T> {
     #[allow(missing_docs)]
     pub fn snapshot(&self) -> Parameters<f64> {
         Parameters {
@@ -425,12 +425,12 @@ pub struct PplibCommandMarker {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "type", content = "data")]
 pub enum PplibCommand {
-    Named{ name: String },
-    Wait{ wait_time: f64 },
-    Sequential{ commands: Vec<PplibCommand> },
-    Parallel{ commands: Vec<PplibCommand> },
-    Race{ commands: Vec<PplibCommand> },
-    Deadline{ commands: Vec<PplibCommand> },
+    Named { name: String },
+    Wait { wait_time: f64 },
+    Sequential { commands: Vec<PplibCommand> },
+    Parallel { commands: Vec<PplibCommand> },
+    Race { commands: Vec<PplibCommand> },
+    Deadline { commands: Vec<PplibCommand> },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

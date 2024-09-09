@@ -4,15 +4,6 @@ import { UndoManager } from "mst-middlewares";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import {
-  DifferentialSample,
-  ProgressUpdate,
-  Project,
-  SAVE_FILE_VERSION,
-  SampleType,
-  SwerveSample,
-  Traj
-} from "./2025/DocumentTypes";
-import {
   CircularObstacleStore,
   ICircularObstacleStore
 } from "./CircularObstacleStore";
@@ -27,6 +18,9 @@ import { PathListStore } from "./PathListStore";
 import { RobotConfigStore } from "./RobotConfigStore";
 import { Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
+import { ProjectFile, SampleType } from "./spec/Project";
+import { SAVE_FILE_VERSION } from "./spec/Misc";
+import { DifferentialSample, ProgressUpdate, SwerveSample } from "./spec/Traj";
 
 export type SelectableItemTypes =
   | IHolonomicWaypointStore
@@ -70,7 +64,7 @@ export const DocumentStore = types
     hoveredSidebarItem: types.maybe(types.safeReference(SelectableItem))
   })
   .views((self) => ({
-    serializeChor(): Project {
+    serializeChor(): ProjectFile {
       return {
         name: self.name,
         version: SAVE_FILE_VERSION,
@@ -132,7 +126,7 @@ export const DocumentStore = types
     history: UndoManager.create({}, { targetStore: self })
   }))
   .actions((self) => ({
-    deserializeChor(ser: Project) {
+    deserializeChor(ser: ProjectFile) {
       self.name = ser.name;
       self.variables.deserialize(ser.variables);
       self.robotConfig.deserialize(ser.config);
@@ -246,7 +240,7 @@ export const DocumentStore = types
         })
         .then(
           (rust_traj) => {
-            const result: Traj = rust_traj as Traj;
+            const result: TrajFile = rust_traj as TrajFile;
             console.log(result);
             if (result.traj.samples.length == 0) throw "No traj";
             self.history.startGroup(() => {

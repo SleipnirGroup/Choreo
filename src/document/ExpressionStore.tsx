@@ -32,11 +32,11 @@ import Torque from "../assets/Torque";
 import Waypoint from "../assets/Waypoint";
 import {
   PoseVariable as DocPoseVariable,
-  Variables as DocVariables,
-  Expr
-} from "./2025/DocumentTypes";
+  Variables as DocVariables
+} from "./spec/Project";
 import { Env } from "./DocumentManager";
 import { tracing } from "./tauriTracing";
+import { Expr } from "./spec/Misc";
 
 export const math = create(all, { predictable: true });
 

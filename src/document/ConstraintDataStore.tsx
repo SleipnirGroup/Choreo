@@ -6,7 +6,7 @@ import {
   ModelPropertiesDeclarationToProperties,
   types
 } from "mobx-state-tree";
-import { Expr } from "./2025/DocumentTypes";
+import { Expr } from "./spec/Misc";
 import {
   ConstraintData,
   ConstraintDefinition,

@@ -9,13 +9,14 @@ import {
   types
 } from "mobx-state-tree";
 import { moveItem } from "mobx-utils";
-import { PplibCommand, Expr } from "./2025/DocumentTypes";
 import { WaypointID } from "./ConstraintDefinitions";
 import { WaypointScope } from "./ConstraintStore";
 import { Env } from "./DocumentManager";
 import { ExpressionStore } from "./ExpressionStore";
 import { IChoreoTrajStore } from "./path/ChoreoTrajStore";
 import { IHolonomicPathStore } from "./path/HolonomicPathStore";
+import { PplibCommand } from "./spec/Traj";
+import { Expr } from "./spec/Misc";
 
 export type CommandType =
   | "sequential"
