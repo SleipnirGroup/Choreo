@@ -44,7 +44,9 @@ export const HolonomicPathStore = types
           version: SAVE_FILE_VERSION,
           params: self.params.serialize,
           traj: self.traj.serialize,
-          snapshot: self.snapshot
+          snapshot: self.snapshot,
+          pplibCommands: [],
+          events: []
         };
       },
       lowestSelectedPoint(): IHolonomicWaypointStore | null {

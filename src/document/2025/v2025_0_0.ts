@@ -124,7 +124,7 @@ export interface Traj {
   snapshot: ChoreoPath<number>;
   traj: Output;
   events: EventMarker[];
-  pplivCommands: PplibCommandMarker<number>[];
+  pplibCommands: PplibCommandMarker<number>[];
 }
 
 export interface CircleObstacle<T extends ExprOrNumber> {
