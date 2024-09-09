@@ -117,5 +117,6 @@ def remove_protobuf_support():
 def main():
     remove_protobuf_support()
 
+
 if __name__ == "__main__":
     main()

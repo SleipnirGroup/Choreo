@@ -326,7 +326,7 @@ class TRAJOPT_DLLEXPORT PathBuilder {
                                                 controlIntervalCounts);
   }
 
-    /**
+  /**
    * Calculate a discrete, linear initial guess of the x, y, and heading
    * of the robot that goes through each segment.
    *
