@@ -151,7 +151,7 @@ export const PathListStore = types
           }
           const newuuid = self.addPath(oldPath.name, false);
           const path = self.paths.get(newuuid);
-          const copyOfOldPath = {...oldPath.serialize, name: path!.name};
+          const copyOfOldPath = { ...oldPath.serialize, name: path!.name };
           path!.deserialize(copyOfOldPath);
         }
       }
