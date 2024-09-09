@@ -4,19 +4,12 @@
 
 #include <vector>
 
-#include <frc/MathUtil.h>
-#include <frc/geometry/Pose2d.h>
-#include <frc/geometry/Translation2d.h>
-#include <frc/trajectory/Trajectory.h>
 #include <frc/trajectory/TrajectoryGenerator.h>
-#include <frc/trajectory/TrajectoryParameterizer.h>
 
 #include "spline/CubicHermitePoseSplineHolonomic.hpp"
 #include "spline/SplineParameterizer.hpp"
 #include "spline/SplineUtil.hpp"
-#include "trajopt/DifferentialTrajectoryGenerator.hpp"
 #include "trajopt/geometry/Pose2.hpp"
-#include "trajopt/path/Path.hpp"
 #include "trajopt/util/TrajoptUtil.hpp"
 
 namespace trajopt {
@@ -25,10 +18,10 @@ struct DifferentialSolution;
 
 using PoseWithCurvature = frc::TrajectoryGenerator::PoseWithCurvature;
 
-std::vector<std::vector<PoseWithCurvature>>
-CalculateWaypointStatesWithControlIntervals(
-    const std::vector<std::vector<Pose2d>> initialGuessPoints,
-    std::vector<size_t> controlIntervalCounts) {
+template <typename Solution>
+inline Solution GenerateSplineInitialGuess(
+    const std::vector<std::vector<Pose2d>>& initialGuessPoints,
+    const std::vector<size_t> controlIntervalCounts) {
   std::vector<trajopt::CubicHermitePoseSplineHolonomic> splines =
       CubicPoseControlVectorsFromWaypoints(initialGuessPoints);
 
@@ -70,15 +63,7 @@ CalculateWaypointStatesWithControlIntervals(
       ++trajIdx;
     }
   }
-  return waypoint_states;
-}
-
-template <typename Solution>
-inline Solution GenerateSplineInitialGuess(
-    const std::vector<std::vector<Pose2d>>& initialGuessPoints,
-    const std::vector<size_t> controlIntervalCounts) {
-  auto sgmtPoints = CalculateWaypointStatesWithControlIntervals(
-      initialGuessPoints, controlIntervalCounts);
+  auto sgmtPoints = waypoint_states;
 
   size_t wptCnt = controlIntervalCounts.size() + 1;
   size_t sampTot = GetIndex(controlIntervalCounts, wptCnt, 0);
