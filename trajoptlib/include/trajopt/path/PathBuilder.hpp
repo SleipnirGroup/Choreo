@@ -13,6 +13,7 @@
 #include "trajopt/obstacle/Obstacle.hpp"
 #include "trajopt/path/Path.hpp"
 #include "trajopt/util/GenerateLinearInitialGuess.hpp"
+#include "trajopt/util/GenerateSplineInitialGuess.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 
 namespace trajopt {
@@ -322,6 +323,17 @@ class TRAJOPT_DLLEXPORT PathBuilder {
    */
   Solution CalculateInitialGuess() const {
     return GenerateLinearInitialGuess<Solution>(initialGuessPoints,
+                                                controlIntervalCounts);
+  }
+
+    /**
+   * Calculate a discrete, linear initial guess of the x, y, and heading
+   * of the robot that goes through each segment.
+   *
+   * @return the initial guess, as a solution
+   */
+  Solution CalculateSplineInitialGuess() const {
+    return GenerateSplineInitialGuess<Solution>(initialGuessPoints,
                                                 controlIntervalCounts);
   }
 

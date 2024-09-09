@@ -20,7 +20,8 @@ namespace trajopt {
 SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     SwervePathBuilder pathBuilder, int64_t handle)
     : path(pathBuilder.GetPath()), Ns(pathBuilder.GetControlIntervalCounts()) {
-  auto initialGuess = pathBuilder.CalculateInitialGuess();
+
+  auto initialGuess = pathBuilder.CalculateSplineInitialGuess();
 
   callbacks.emplace_back([this, handle = handle] {
     constexpr int fps = 60;
