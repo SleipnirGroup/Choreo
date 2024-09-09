@@ -19,7 +19,7 @@ import {
 } from "./stores/HolonomicWaypointStore";
 import { PathListStore } from "./stores/PathListStore";
 import { RobotConfigStore } from "./stores/RobotConfigStore";
-import { Commands } from "./tauriCommands";
+import { Commands } from "./Backend";
 import { tracing } from "../util/Tracing";
 import { ProjectFile, SampleType } from "./spec/Project";
 import { SAVE_FILE_VERSION } from "./spec/Misc";

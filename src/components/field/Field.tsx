@@ -16,7 +16,7 @@ import { ICircularObstacleStore } from "../../document/stores/CircularObstacleSt
 import { IConstraintStore } from "../../document/stores//ConstraintStore";
 import { IEventMarkerStore } from "../../document/stores/PplibCommandMarkerStore";
 import { IHolonomicWaypointStore } from "../../document/stores/HolonomicWaypointStore";
-import { Commands } from "../../document/tauriCommands";
+import { Commands } from "../../document/Backend";
 import CircularObstacleConfigPanel from "../config/CircularObstacleConfigPanel";
 import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel";
 import ViewOptionsPanel from "../config/ViewOptionsPanel";

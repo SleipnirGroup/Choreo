@@ -31,7 +31,7 @@ import {
 } from "./document/DocumentManager";
 
 import SettingsModal from "./components/config/SettingsModal";
-import { Commands } from "./document/tauriCommands";
+import { Commands } from "./document/Backend";
 import { version } from "./util/version";
 
 type Props = object;

@@ -56,7 +56,7 @@ import {
 } from "./stores/RobotConfigStore";
 import { ViewLayerDefaults } from "./UIData";
 import { UIStateStore } from "./UIStateStore";
-import { Commands } from "./tauriCommands";
+import { Commands } from "./Backend";
 import { tracing } from "../util/Tracing";
 import {
   GroupCommand,
