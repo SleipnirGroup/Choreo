@@ -2,9 +2,4 @@
     "rust-analyzer.check.overrideCommand": [
         "cargo", "clippy", "--target-dir", "./target/clippy"
     ],
-    "files.associations": {
-        "*.inc": "cpp",
-        "*.hpp": "cpp",
-        "vector": "cpp"
-    }
 }
