@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Clean up caches
         run: |
-          ## Setting this to not fail the workflow while deleting cache keys. 
+          ## Setting this to not fail the workflow while deleting cache keys.
           set +e
           for i in {1..20}
           do
