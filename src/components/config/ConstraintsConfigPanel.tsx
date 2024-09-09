@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import { Component } from "react";
-import { IConstraintStore } from "../../document/ConstraintStore";
+import { IConstraintStore } from "../../document/stores//ConstraintStore";
 import BooleanInput from "../input/BooleanInput";
 import ExpressionInput from "../input/ExpressionInput";
 import ExpressionInputList from "../input/ExpressionInputList";

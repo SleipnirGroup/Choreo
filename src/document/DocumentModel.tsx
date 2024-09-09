@@ -6,21 +6,29 @@ import "react-toastify/dist/ReactToastify.min.css";
 import {
   CircularObstacleStore,
   ICircularObstacleStore
-} from "./CircularObstacleStore";
-import { ConstraintStore, IConstraintStore } from "./ConstraintStore";
-import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
-import { Variables } from "./ExpressionStore";
+} from "./stores/CircularObstacleStore";
+import { ConstraintStore, IConstraintStore } from "./stores//ConstraintStore";
+import {
+  EventMarkerStore,
+  IEventMarkerStore
+} from "./stores/PplibCommandMarkerStore";
+import { Variables } from "./stores/ExpressionStore";
 import {
   HolonomicWaypointStore,
   IHolonomicWaypointStore
-} from "./HolonomicWaypointStore";
-import { PathListStore } from "./PathListStore";
-import { RobotConfigStore } from "./RobotConfigStore";
+} from "./stores/HolonomicWaypointStore";
+import { PathListStore } from "./stores/PathListStore";
+import { RobotConfigStore } from "./stores/RobotConfigStore";
 import { Commands } from "./tauriCommands";
-import { tracing } from "./tauriTracing";
+import { tracing } from "../util/Tracing";
 import { ProjectFile, SampleType } from "./spec/Project";
 import { SAVE_FILE_VERSION } from "./spec/Misc";
-import { DifferentialSample, ProgressUpdate, SwerveSample } from "./spec/Traj";
+import {
+  DifferentialSample,
+  ProgressUpdate,
+  SwerveSample,
+  TrajFile
+} from "./spec/Traj";
 
 export type SelectableItemTypes =
   | IHolonomicWaypointStore

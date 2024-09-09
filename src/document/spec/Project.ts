@@ -1,4 +1,4 @@
-import { Dimensions } from "../ExpressionStore";
+import { Dimensions } from "../stores/ExpressionStore";
 import { Expr, ExprOrNumber, SAVE_FILE_VERSION } from "./Misc";
 
 export interface Variable {

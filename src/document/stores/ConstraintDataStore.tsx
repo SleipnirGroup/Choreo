@@ -6,7 +6,7 @@ import {
   ModelPropertiesDeclarationToProperties,
   types
 } from "mobx-state-tree";
-import { Expr } from "./spec/Misc";
+import { Expr } from "../spec/Misc";
 import {
   ConstraintData,
   ConstraintDefinition,
@@ -16,7 +16,7 @@ import {
   DataMap,
   PropertyDefinitionList,
   consts
-} from "./ConstraintDefinitions";
+} from "../ConstraintDefinitions";
 import {
   ExpressionStore,
   IExpressionStore,

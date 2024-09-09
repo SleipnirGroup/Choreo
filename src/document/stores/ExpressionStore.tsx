@@ -8,6 +8,7 @@ import {
   TimerOutlined
 } from "@mui/icons-material";
 import { Tooltip } from "@mui/material";
+
 import {
   AccessorNode,
   ConstantNode,
@@ -25,18 +26,20 @@ import {
 } from "mathjs";
 import { IReactionDisposer, reaction, untracked } from "mobx";
 import { Instance, detach, getEnv, types } from "mobx-state-tree";
-import Angle from "../assets/Angle";
-import Mass from "../assets/Mass";
-import MoI from "../assets/MoI";
-import Torque from "../assets/Torque";
-import Waypoint from "../assets/Waypoint";
+
+import Angle from "../../assets/Angle";
+import Mass from "../../assets/Mass";
+import MoI from "../../assets/MoI";
+import Torque from "../../assets/Torque";
+import Waypoint from "../../assets/Waypoint";
+
 import {
   PoseVariable as DocPoseVariable,
   Variables as DocVariables
-} from "./spec/Project";
-import { Env } from "./DocumentManager";
-import { tracing } from "./tauriTracing";
-import { Expr } from "./spec/Misc";
+} from "../spec/Project";
+import { Env } from "../DocumentManager";
+import { tracing } from "../../util/Tracing";
+import { Expr } from "../spec/Misc";
 
 export const math = create(all, { predictable: true });
 
@@ -504,6 +507,9 @@ export const Variables = types
     poses: types.map(ExprPose)
   })
   .views((self) => ({
+    /**
+     * Returns a serialized version of the variables
+     */
     get serialize(): DocVariables {
       const out: DocVariables = {
         expressions: {},

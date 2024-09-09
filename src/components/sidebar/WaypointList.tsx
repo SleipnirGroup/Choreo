@@ -2,7 +2,7 @@ import { observer } from "mobx-react";
 import { Component } from "react";
 import { DragDropContext, Droppable } from "@hello-pangea/dnd";
 import { doc } from "../../document/DocumentManager";
-import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
+import { IHolonomicWaypointStore } from "../../document/stores/HolonomicWaypointStore";
 import styles from "./Sidebar.module.css";
 import SidebarWaypoint from "./SidebarWaypoint";
 

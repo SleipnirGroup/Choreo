@@ -10,9 +10,9 @@ import { ContentCopy, Redo, Undo } from "@mui/icons-material";
 import Add from "@mui/icons-material/Add";
 import SidebarConstraint from "./SidebarConstraint";
 import SidebarObstacle from "./SidebarObstacle";
-import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
+import { ICircularObstacleStore } from "../../document/stores/CircularObstacleStore";
 import SidebarEventMarker from "./SidebarEventMarker";
-import { IEventMarkerStore } from "../../document/EventMarkerStore";
+import { IEventMarkerStore } from "../../document/stores/PplibCommandMarkerStore";
 
 type Props = object;
 

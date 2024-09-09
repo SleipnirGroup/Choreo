@@ -13,7 +13,7 @@ import {
   CommandType,
   CommandUIData,
   ICommandStore
-} from "../../../document/EventMarkerStore";
+} from "../../../document/stores/PplibCommandMarkerStore";
 import ExpressionInput from "../../input/ExpressionInput";
 import ExpressionInputList from "../../input/ExpressionInputList";
 

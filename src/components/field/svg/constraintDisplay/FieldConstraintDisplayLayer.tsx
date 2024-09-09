@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 import { ConstraintKey } from "../../../../document/ConstraintDefinitions";
-import { IConstraintStoreKeyed } from "../../../../document/ConstraintStore";
+import { IConstraintStoreKeyed } from "../../../../document/stores//ConstraintStore";
 import { doc } from "../../../../document/DocumentManager";
 import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer";
 import KeepInCircleOverlay from "./KeepInCircleOverlay";

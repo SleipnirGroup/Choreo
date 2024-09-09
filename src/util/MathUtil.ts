@@ -1,7 +1,4 @@
-import {
-  DifferentialSample,
-  SwerveSample
-} from "../document/spec/Traj";
+import { DifferentialSample, SwerveSample } from "../document/spec/Traj";
 
 /**
  * A port of WPILib's MathUtil.inputModulus

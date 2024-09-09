@@ -2,9 +2,9 @@ import { Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import { isAlive } from "mobx-state-tree";
 import React, { Component } from "react";
-import { IExpressionStore, math } from "../../document/ExpressionStore";
+import { IExpressionStore, math } from "../../document/stores/ExpressionStore";
 import styles from "./InputList.module.css";
-import { tracing } from "../../document/tauriTracing";
+import { tracing } from "../../util/Tracing";
 
 type Props = {
   /** The text to show before the number */

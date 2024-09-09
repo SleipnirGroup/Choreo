@@ -1,7 +1,9 @@
 import { Instance, getEnv, types } from "mobx-state-tree";
-import { TrajFile } from "./spec/Traj";
-import { Env } from "./DocumentManager";
-import { HolonomicPathStore } from "./path/HolonomicPathStore";
+
+import { HolonomicPathStore } from "./HolonomicPathStore";
+
+import { TrajFile } from "../spec/Traj";
+import { Env } from "../DocumentManager";
 
 export const PathListStore = types
   .model("PathListStore", {

@@ -8,7 +8,7 @@ import {
 import { JSXElementConstructor, ReactElement } from "react";
 import { ObjectTyped } from "../util/ObjectTyped";
 import { Expr } from "./spec/Misc";
-import { Dimension, DimensionName, Dimensions } from "./ExpressionStore";
+import { Dimension, DimensionName, Dimensions } from "./stores/ExpressionStore";
 
 export type ConstraintPropertyType = Expr | boolean;
 

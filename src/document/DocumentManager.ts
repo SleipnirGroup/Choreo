@@ -18,12 +18,12 @@ import { safeGetIdentifier } from "../util/mobxutils";
 import {
   CircularObstacleStore,
   ICircularObstacleStore
-} from "./CircularObstacleStore";
+} from "./stores/CircularObstacleStore";
 import {
   ConstraintDataObjects,
   IConstraintDataStore,
   defineCreateConstraintData
-} from "./ConstraintDataStore";
+} from "./stores/ConstraintDataStore";
 import {
   ConstraintDefinitions,
   ConstraintKey,
@@ -33,28 +33,40 @@ import {
   ConstraintStore,
   IConstraintStore,
   IWaypointScope
-} from "./ConstraintStore";
+} from "./stores//ConstraintStore";
 import {
   CommandStore,
   EventMarkerStore,
   ICommandStore,
   IEventMarkerStore
-} from "./EventMarkerStore";
-import { IExpressionStore, IVariables, Variables } from "./ExpressionStore";
+} from "./stores/PplibCommandMarkerStore";
+import {
+  IExpressionStore,
+  IVariables,
+  Variables
+} from "./stores/ExpressionStore";
 import {
   IHolonomicWaypointStore,
   HolonomicWaypointStore as WaypointStore
-} from "./HolonomicWaypointStore";
+} from "./stores/HolonomicWaypointStore";
 import {
   EXPR_DEFAULTS,
   IRobotConfigStore,
   RobotConfigStore
-} from "./RobotConfigStore";
+} from "./stores/RobotConfigStore";
 import { ViewLayerDefaults } from "./UIData";
 import { UIStateStore } from "./UIStateStore";
 import { Commands } from "./tauriCommands";
-import { tracing } from "./tauriTracing";
-import { GroupCommand, NamedCommand, PplibCommand, PplibCommandMarker, TrajFile, WaitCommand, Waypoint } from "./spec/Traj";
+import { tracing } from "../util/Tracing";
+import {
+  GroupCommand,
+  NamedCommand,
+  PplibCommand,
+  PplibCommandMarker,
+  TrajFile,
+  WaitCommand,
+  Waypoint
+} from "./spec/Traj";
 import { Expr } from "./spec/Misc";
 import { ProjectFile, RobotConfig } from "./spec/Project";
 

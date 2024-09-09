@@ -3,7 +3,10 @@ import { Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import { useState } from "react";
 import { doc } from "../../../document/DocumentManager";
-import { DimensionsExt, IExprPose } from "../../../document/ExpressionStore";
+import {
+  DimensionsExt,
+  IExprPose
+} from "../../../document/stores/ExpressionStore";
 import ExpressionInput from "../../input/ExpressionInput";
 import VariableRenamingInput from "./VariableRenamingInput";
 

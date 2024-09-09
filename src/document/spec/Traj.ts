@@ -71,7 +71,7 @@ export interface TrajFile {
   snapshot: ChoreoPath<number>;
   traj: Trajectory;
   events: EventMarker<Expr>[];
-  pplivCommands: PplibCommandMarker<number>[];
+  pplibCommands: PplibCommandMarker<number>[];
 }
 
 export interface CircleObstacle<T extends ExprOrNumber> {

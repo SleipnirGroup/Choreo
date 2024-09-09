@@ -6,9 +6,9 @@ import { getParent } from "mobx-state-tree";
 import React, { Component } from "react";
 import { WaypointID } from "../../document/ConstraintDefinitions";
 import { doc } from "../../document/DocumentManager";
-import { IEventMarkerStore } from "../../document/EventMarkerStore";
-import { IChoreoTrajStore } from "../../document/path/ChoreoTrajStore";
-import { IHolonomicPathStore } from "../../document/path/HolonomicPathStore";
+import { IEventMarkerStore } from "../../document/stores/PplibCommandMarkerStore";
+import { IChoreoTrajStore } from "../../document/stores/ChoreoTrajStore";
+import { IHolonomicPathStore } from "../../document/stores/HolonomicPathStore";
 import styles from "./Sidebar.module.css";
 
 type Props = {

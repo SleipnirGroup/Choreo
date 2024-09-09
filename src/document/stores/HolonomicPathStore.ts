@@ -1,12 +1,14 @@
 import { Instance, types, getEnv } from "mobx-state-tree";
+import { IReactionDisposer, reaction } from "mobx";
+
 import {
   DEFAULT_WAYPOINT,
   IHolonomicWaypointStore
-} from "../HolonomicWaypointStore";
-import { IReactionDisposer, reaction } from "mobx";
+} from "./HolonomicWaypointStore";
 import { ChoreoPathStore } from "./ChoreoPathStore";
 import { ChoreoTrajStore } from "./ChoreoTrajStore";
 import { PathUIStore } from "./PathUIStore";
+
 import { Env } from "../DocumentManager";
 import { ChoreoPath, TrajFile, Waypoint } from "../spec/Traj";
 import { Expr, SAVE_FILE_VERSION } from "../spec/Misc";
@@ -39,7 +41,9 @@ export const HolonomicPathStore = types
           version: SAVE_FILE_VERSION,
           params: self.params.serialize,
           traj: self.traj.serialize,
-          snapshot: self.snapshot
+          snapshot: self.snapshot,
+          events: [],
+          pplibCommands: []
         };
       },
       lowestSelectedPoint(): IHolonomicWaypointStore | null {

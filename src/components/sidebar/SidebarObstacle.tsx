@@ -1,6 +1,6 @@
 import { Component } from "react";
 import React from "react";
-import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
+import { ICircularObstacleStore } from "../../document/stores/CircularObstacleStore";
 import { doc, uiState } from "../../document/DocumentManager";
 import styles from "./Sidebar.module.css";
 import { observer } from "mobx-react";

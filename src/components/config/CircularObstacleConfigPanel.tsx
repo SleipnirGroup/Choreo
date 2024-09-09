@@ -1,7 +1,7 @@
 import { observer } from "mobx-react";
 import { Component } from "react";
 import styles from "./WaypointConfigPanel.module.css";
-import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
+import { ICircularObstacleStore } from "../../document/stores/CircularObstacleStore";
 import ExpressionInput from "../input/ExpressionInput";
 import ExpressionInputList from "../input/ExpressionInputList";
 

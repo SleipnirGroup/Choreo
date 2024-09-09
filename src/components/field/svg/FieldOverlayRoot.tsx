@@ -8,7 +8,7 @@ import * as d3 from "d3";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import { ConstraintKey } from "../../../document/ConstraintDefinitions";
-import { IConstraintStoreKeyed } from "../../../document/ConstraintStore";
+import { IConstraintStoreKeyed } from "../../../document/stores//ConstraintStore";
 import { doc, uiState } from "../../../document/DocumentManager";
 import {
   NavbarItemData,

@@ -3,10 +3,10 @@ import { doc, uiState } from "../../../../document/DocumentManager";
 import { ConstraintDefinitions } from "../../../../document/ConstraintDefinitions";
 
 import { observer } from "mobx-react";
-import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
+import { IHolonomicWaypointStore } from "../../../../document/stores/HolonomicWaypointStore";
 import { FieldMatrixContext } from "../FieldMatrixContext";
 import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer";
-import { tracing } from "../../../../document/tauriTracing";
+import { tracing } from "../../../../util/Tracing";
 
 type Props = {
   lineColor?: string;

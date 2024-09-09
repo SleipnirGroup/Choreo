@@ -1,6 +1,8 @@
 import { Instance, destroy, getEnv, types } from "mobx-state-tree";
+
+import { EventMarkerStore, IEventMarkerStore } from "./PplibCommandMarkerStore";
+
 import { Env } from "../DocumentManager";
-import { EventMarkerStore, IEventMarkerStore } from "../EventMarkerStore";
 import { DifferentialSample, SwerveSample, Trajectory } from "../spec/Traj";
 
 export const ChoreoTrajStore = types

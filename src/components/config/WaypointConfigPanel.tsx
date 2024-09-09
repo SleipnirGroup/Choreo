@@ -1,7 +1,7 @@
 import { ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import { Component, ReactElement } from "react";
-import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
+import { IHolonomicWaypointStore } from "../../document/stores/HolonomicWaypointStore";
 import { WaypointData } from "../../document/UIData";
 import BooleanInput from "../input/BooleanInput";
 import ExpressionInput from "../input/ExpressionInput";

@@ -1,12 +1,15 @@
 import { Instance, types } from "mobx-state-tree";
+
+import { ExpressionStore } from "./ExpressionStore";
+
+import { Bumper, Module, RobotConfig } from "../spec/Project";
+import { Expr } from "../spec/Misc";
+
 import {
   maxTorqueCurrentLimited,
   MotorCurves
-} from "../components/config/robotconfig/MotorCurves";
-import { InToM, LbsToKg, MToIn } from "../util/UnitConversions";
-import { Bumper, Module, RobotConfig } from "./spec/Project";
-import { Expr } from "./spec/Misc";
-import { ExpressionStore } from "./ExpressionStore";
+} from "../../components/config/robotconfig/MotorCurves";
+import { InToM, LbsToKg, MToIn } from "../../util/UnitConversions";
 
 const DEFAULT_FRAME_SIZE = InToM(28);
 const DEFAULT_BUMPER = DEFAULT_FRAME_SIZE + 2 * InToM(2.5 + 0.75); // 28x28 bot with 2.5" noodle and 0.75" backing

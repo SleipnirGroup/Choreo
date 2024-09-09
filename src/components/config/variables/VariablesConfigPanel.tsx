@@ -9,7 +9,7 @@ import {
   DimensionNamesExt,
   DimensionsExt,
   IExpressionStore
-} from "../../../document/ExpressionStore";
+} from "../../../document/stores/ExpressionStore";
 import ExpressionInput from "../../input/ExpressionInput";
 import { AddPoseVariablePanel } from "./PoseVariablesConfigPanel";
 import VariableRenamingInput from "./VariableRenamingInput";
