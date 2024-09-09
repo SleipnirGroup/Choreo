@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include <frc/trajectory/TrajectoryGenerator.h>
+// #include <frc/trajectory/TrajectoryGenerator.h>
 
 #include "spline/CubicHermitePoseSplineHolonomic.hpp"
 #include "spline/SplineParameterizer.hpp"
@@ -16,7 +16,7 @@ namespace trajopt {
 
 struct DifferentialSolution;
 
-using PoseWithCurvature = frc::TrajectoryGenerator::PoseWithCurvature;
+using PoseWithCurvature = std::pair<Pose2d, units::curvature_t>;
 
 template <typename Solution>
 inline Solution GenerateSplineInitialGuess(
@@ -29,15 +29,15 @@ inline Solution GenerateSplineInitialGuess(
   for (const auto& guesses : initialGuessPoints) {
     guessPoints += guesses.size();
   }
-  std::vector<std::vector<PoseWithCurvature>> waypoint_states;
-  waypoint_states.reserve(guessPoints);
+  std::vector<std::vector<PoseWithCurvature>> sgmtPoints;
+  sgmtPoints.reserve(guessPoints);
   for (size_t i = 0; i < guessPoints; ++i) {
-    waypoint_states.push_back(std::vector<PoseWithCurvature>());
+    sgmtPoints.push_back(std::vector<PoseWithCurvature>());
   }
 
   size_t trajIdx = 0;
   std::printf("sgmt1\n");
-  waypoint_states.at(0).push_back(splines.at(trajIdx).GetPoint(0));
+  sgmtPoints.at(0).push_back(splines.at(trajIdx).GetPoint(0).first);
   std::printf("ctrlCount: [");
   for (auto count : controlIntervalCounts) {
     std::printf("%zd,", count);
@@ -54,16 +54,15 @@ inline Solution GenerateSplineInitialGuess(
       for (size_t sampleIdx = 1; sampleIdx < samples + 1; ++sampleIdx) {
         auto t = static_cast<double>(sampleIdx) / samples;
         const auto state = splines.at(trajIdx).GetPoint(t);
-        waypoint_states.at(trajIdx + 1).push_back(state);
+        sgmtPoints.at(trajIdx + 1).push_back(state);
         // std::printf("%zd, x: %f, y: %f, t: %f\n",
         //               sampleIdx, state.pose.X().value(),
         //               state.pose.Y().value(), t.value());
       }
-      std::printf(" size: %zd\n", waypoint_states.at(trajIdx + 1).size());
+      std::printf(" size: %zd\n", sgmtPoints.at(trajIdx + 1).size());
       ++trajIdx;
     }
   }
-  auto sgmtPoints = waypoint_states;
 
   size_t wptCnt = controlIntervalCounts.size() + 1;
   size_t sampTot = GetIndex(controlIntervalCounts, wptCnt, 0);

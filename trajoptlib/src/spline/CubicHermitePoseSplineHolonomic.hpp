@@ -17,6 +17,7 @@ namespace trajopt {
 class TRAJOPT_DLLEXPORT CubicHermitePoseSplineHolonomic {
  public:
   using PoseWithCurvature = std::pair<frc::Pose2d, units::curvature_t>;
+  
   CubicHermitePoseSplineHolonomic(wpi::array<double, 2> xInitialControlVector,
                                   wpi::array<double, 2> xFinalControlVector,
                                   wpi::array<double, 2> yInitialControlVector,
@@ -38,7 +39,7 @@ class TRAJOPT_DLLEXPORT CubicHermitePoseSplineHolonomic {
 
   frc::Rotation2d getCourse(double t) const {
     const auto splinePoint = spline.GetPoint(t);
-    return splinePoint.first.Rotation();
+    return splinePoint.value().first.Rotation();
   }
 
   frc::Rotation2d getHeading(double t) const {
@@ -55,8 +56,8 @@ class TRAJOPT_DLLEXPORT CubicHermitePoseSplineHolonomic {
    */
   PoseWithCurvature GetPoint(double t) const {
     const auto splinePoint = spline.GetPoint(t);
-    return {{splinePoint.first.Translation(), getHeading(t)},
-            splinePoint.second};
+    return {{splinePoint.value().first.Translation(), getHeading(t)},
+            splinePoint.value().second};
   }
 
  private:

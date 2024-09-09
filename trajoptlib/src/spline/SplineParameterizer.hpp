@@ -48,7 +48,8 @@ namespace trajopt {
  */
 class TRAJOPT_DLLEXPORT SplineParameterizer {
  public:
-  // using PoseWithCurvature = std::pair<Pose2d, units::curvature_t>;
+  using PoseWithCurvature = std::pair<frc::Pose2d, units::curvature_t>;
+
 
   struct MalformedSplineException : public std::runtime_error {
     explicit MalformedSplineException(const char* what_arg)
@@ -68,10 +69,10 @@ class TRAJOPT_DLLEXPORT SplineParameterizer {
    * @return A vector of poses and curvatures that represents various points on
    * the spline.
    */
-  static std::vector<frc::SplineParameterizer::PoseWithCurvature> Parameterize(
+  static std::vector<PoseWithCurvature> Parameterize(
       const CubicHermitePoseSplineHolonomic& spline, double t0 = 0.0,
       double t1 = 1.0) {
-    std::vector<frc::SplineParameterizer::PoseWithCurvature> splinePoints;
+    std::vector<PoseWithCurvature> splinePoints;
 
     // The parameterization does not add the initial point. Let's add that.
     splinePoints.push_back(spline.GetPoint(t0));
@@ -82,8 +83,8 @@ class TRAJOPT_DLLEXPORT SplineParameterizer {
     stack.emplace(StackContents{t0, t1});
 
     StackContents current;
-    frc::SplineParameterizer::PoseWithCurvature start;
-    frc::SplineParameterizer::PoseWithCurvature end;
+    PoseWithCurvature start;
+    PoseWithCurvature end;
     int iterations = 0;
 
     while (!stack.empty()) {
