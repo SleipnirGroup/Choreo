@@ -4,12 +4,12 @@ import { observer } from "mobx-react";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { Instance, getParent } from "mobx-state-tree";
 import React, { Component } from "react";
-import { IConstraintStore } from "../../document/ConstraintStore";
+import { IConstraintStore } from "../../document/stores//ConstraintStore";
 import { doc } from "../../document/DocumentManager";
 import styles from "./Sidebar.module.css";
 
 import { PriorityHigh } from "@mui/icons-material";
-import { ChoreoPathStore } from "../../document/path/ChoreoPathStore";
+import { ChoreoPathStore } from "../../document/stores/ChoreoPathStore";
 import { WaypointID } from "../../document/ConstraintDefinitions";
 
 type Props = {

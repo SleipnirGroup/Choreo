@@ -6,7 +6,7 @@ import { isAlive } from "mobx-state-tree";
 import React, { CSSProperties, Component } from "react";
 import { Draggable, DraggingStyle, NotDraggingStyle } from "@hello-pangea/dnd";
 import { doc, uiState } from "../../document/DocumentManager";
-import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
+import { IHolonomicWaypointStore } from "../../document/stores/HolonomicWaypointStore";
 import { NavbarItemData } from "../../document/UIData";
 import styles from "./Sidebar.module.css";
 

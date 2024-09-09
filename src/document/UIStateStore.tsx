@@ -17,7 +17,7 @@ import {
   navbarIndexToConstraintDefinition,
   navbarIndexToConstraintKey
 } from "./UIData";
-import { tracing } from "./tauriTracing";
+import { tracing } from "../util/Tracing";
 
 export const UIStateStore = types
   .model("UIStateStore", {

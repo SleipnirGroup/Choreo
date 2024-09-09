@@ -20,7 +20,7 @@ import {
   ConstraintDefinitions,
   ConstraintKey
 } from "./ConstraintDefinitions";
-import { ConstraintStore } from "./ConstraintStore";
+import { ConstraintStore } from "./stores//ConstraintStore";
 
 /* Navbar stuff */
 export const WaypointData: {

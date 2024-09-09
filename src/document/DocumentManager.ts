@@ -16,26 +16,14 @@ import LocalStorageKeys from "../util/LocalStorageKeys";
 import { ObjectTyped } from "../util/ObjectTyped";
 import { safeGetIdentifier } from "../util/mobxutils";
 import {
-  Command,
-  EventMarker,
-  GroupCommand,
-  NamedCommand,
-  Project,
-  Traj,
-  WaitCommand,
-  type Expr,
-  type RobotConfig,
-  type Waypoint
-} from "./2025/DocumentTypes";
-import {
   CircularObstacleStore,
   ICircularObstacleStore
-} from "./CircularObstacleStore";
+} from "./stores/CircularObstacleStore";
 import {
   ConstraintDataObjects,
   IConstraintDataStore,
   defineCreateConstraintData
-} from "./ConstraintDataStore";
+} from "./stores/ConstraintDataStore";
 import {
   ConstraintDefinitions,
   ConstraintKey,
@@ -45,27 +33,42 @@ import {
   ConstraintStore,
   IConstraintStore,
   IWaypointScope
-} from "./ConstraintStore";
+} from "./stores//ConstraintStore";
 import {
   CommandStore,
   EventMarkerStore,
   ICommandStore,
   IEventMarkerStore
-} from "./EventMarkerStore";
-import { IExpressionStore, IVariables, Variables } from "./ExpressionStore";
+} from "./stores/PplibCommandMarkerStore";
+import {
+  IExpressionStore,
+  IVariables,
+  Variables
+} from "./stores/ExpressionStore";
 import {
   IHolonomicWaypointStore,
   HolonomicWaypointStore as WaypointStore
-} from "./HolonomicWaypointStore";
+} from "./stores/HolonomicWaypointStore";
 import {
   EXPR_DEFAULTS,
   IRobotConfigStore,
   RobotConfigStore
-} from "./RobotConfigStore";
+} from "./stores/RobotConfigStore";
 import { ViewLayerDefaults } from "./UIData";
 import { UIStateStore } from "./UIStateStore";
-import { Commands } from "./tauriCommands";
-import { tracing } from "./tauriTracing";
+import { Commands } from "./Backend";
+import { tracing } from "../util/Tracing";
+import {
+  GroupCommand,
+  NamedCommand,
+  PplibCommand,
+  PplibCommandMarker,
+  TrajFile,
+  WaitCommand,
+  Waypoint
+} from "./spec/Traj";
+import { Expr } from "./spec/Misc";
+import { ProjectFile, RobotConfig } from "./spec/Project";
 
 export type OpenFilePayload = {
   name: string;
@@ -93,7 +96,7 @@ export type EnvConstructors = {
     radius: number
   ) => ICircularObstacleStore;
   CommandStore: (
-    command: Command<Expr> &
+    command: PplibCommand<Expr> &
       (
         | {
             data: WaitCommand<Expr>["data"] &
@@ -103,7 +106,7 @@ export type EnvConstructors = {
         | object
       )
   ) => ICommandStore;
-  EventMarkerStore: (marker: EventMarker<Expr>) => IEventMarkerStore;
+  EventMarkerStore: (marker: PplibCommandMarker<Expr>) => IEventMarkerStore;
   ConstraintData: ConstraintDataConstructors;
   ConstraintStore: <K extends ConstraintKey>(
     type: K,
@@ -113,18 +116,22 @@ export type EnvConstructors = {
   ) => IConstraintStore;
 };
 function getConstructors(vars: () => IVariables): EnvConstructors {
-  function commandIsNamed(command: Command<Expr>): command is NamedCommand {
+  function commandIsNamed(
+    command: PplibCommand<Expr>
+  ): command is NamedCommand {
     return Object.hasOwn(command.data, "name");
   }
   function commandIsGroup(
-    command: Command<Expr>
+    command: PplibCommand<Expr>
   ): command is GroupCommand<Expr> {
     return Object.hasOwn(command.data, "commands");
   }
-  function commandIsTime(command: Command<Expr>): command is WaitCommand<Expr> {
+  function commandIsTime(
+    command: PplibCommand<Expr>
+  ): command is WaitCommand<Expr> {
     return Object.hasOwn(command.data, "time");
   }
-  function createCommandStore(command: Command<Expr>): ICommandStore {
+  function createCommandStore(command: PplibCommand<Expr>): ICommandStore {
     return CommandStore.create({
       type: command.type,
       name: commandIsNamed(command) ? command.data.name : "",
@@ -201,7 +208,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
       });
     },
     CommandStore: createCommandStore,
-    EventMarkerStore: (marker: EventMarker<Expr>): IEventMarkerStore => {
+    EventMarkerStore: (marker: PplibCommandMarker<Expr>): IEventMarkerStore => {
       return EventMarkerStore.create({
         name: marker.name,
         target: undefined,
@@ -604,8 +611,8 @@ export async function openProject(projectPath: OpenFilePayload) {
   try {
     const dir = projectPath.dir;
     const name = projectPath.name.split(".")[0];
-    let project: Project | undefined = undefined;
-    const trajs: Traj[] = [];
+    let project: ProjectFile | undefined = undefined;
+    const trajs: TrajFile[] = [];
     await Commands.cancelAll();
     await Commands.setDeployRoot(dir);
     await Promise.allSettled([
@@ -809,7 +816,7 @@ export async function saveProjectDialog() {
 
 export async function openDiagnosticZipWithInfo() {
   const project = doc.serializeChor();
-  const trajs: Traj[] = [];
+  const trajs: TrajFile[] = [];
   doc.pathlist.paths.forEach((path) => {
     trajs.push(path.serialize);
   });

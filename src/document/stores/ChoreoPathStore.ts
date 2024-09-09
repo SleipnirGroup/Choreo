@@ -1,25 +1,22 @@
 import { Instance, destroy, getEnv, types } from "mobx-state-tree";
 import { moveItem } from "mobx-utils";
-import {
-  ChoreoPath,
-  Constraint,
-  Expr,
-  Waypoint,
-  WaypointID
-} from "../2025/DocumentTypes";
-import { CircularObstacleStore } from "../CircularObstacleStore";
-import { ConstraintKey, DataMap } from "../ConstraintDefinitions";
+
+import { CircularObstacleStore } from "./CircularObstacleStore";
 import {
   ConstraintStore,
   IConstraintStore,
   IWaypointScope
-} from "../ConstraintStore";
-import { Env } from "../DocumentManager";
+} from "./ConstraintStore";
 import {
   DEFAULT_WAYPOINT,
   HolonomicWaypointStore,
   IHolonomicWaypointStore
-} from "../HolonomicWaypointStore";
+} from "./HolonomicWaypointStore";
+
+import { ConstraintKey, DataMap } from "../ConstraintDefinitions";
+import { Env } from "../DocumentManager";
+import { ChoreoPath, Constraint, Waypoint, WaypointID } from "../spec/Traj";
+import { Expr } from "../spec/Misc";
 
 export const ChoreoPathStore = types
   .model("ChoreoPathStore", {

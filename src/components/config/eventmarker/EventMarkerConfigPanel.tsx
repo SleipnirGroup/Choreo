@@ -6,7 +6,7 @@ import { DragDropContext } from "@hello-pangea/dnd";
 import {
   CommandStore,
   IEventMarkerStore
-} from "../../../document/EventMarkerStore";
+} from "../../../document/stores/PplibCommandMarkerStore";
 import ExpressionInput from "../../input/ExpressionInput";
 import ExpressionInputList from "../../input/ExpressionInputList";
 import InputStyles from "../../input/InputList.module.css";

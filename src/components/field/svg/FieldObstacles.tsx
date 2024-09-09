@@ -1,7 +1,7 @@
 import * as d3 from "d3";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import { ICircularObstacleStore } from "../../../document/CircularObstacleStore";
+import { ICircularObstacleStore } from "../../../document/stores/CircularObstacleStore";
 import { doc, select } from "../../../document/DocumentManager";
 
 type Props = { obstacle: ICircularObstacleStore; index: number };

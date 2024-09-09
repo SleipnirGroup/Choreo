@@ -5,7 +5,7 @@ import Slider from "@mui/material/Slider";
 import { Tooltip } from "@mui/material";
 import { NavbarItemData } from "../../document/UIData";
 import { Room } from "@mui/icons-material";
-import { IEventMarkerStore } from "../../document/EventMarkerStore";
+import { IEventMarkerStore } from "../../document/stores/PplibCommandMarkerStore";
 
 type Props = object;
 

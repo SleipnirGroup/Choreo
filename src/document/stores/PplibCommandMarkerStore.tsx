@@ -9,13 +9,16 @@ import {
   types
 } from "mobx-state-tree";
 import { moveItem } from "mobx-utils";
-import { Command, Expr } from "./2025/DocumentTypes";
-import { WaypointID } from "./ConstraintDefinitions";
+
 import { WaypointScope } from "./ConstraintStore";
-import { Env } from "./DocumentManager";
 import { ExpressionStore } from "./ExpressionStore";
-import { IChoreoTrajStore } from "./path/ChoreoTrajStore";
-import { IHolonomicPathStore } from "./path/HolonomicPathStore";
+import { IHolonomicPathStore } from "./HolonomicPathStore";
+import { IChoreoTrajStore } from "./ChoreoTrajStore";
+
+import { WaypointID } from "../ConstraintDefinitions";
+import { Env } from "../DocumentManager";
+import { PplibCommand } from "../spec/Traj";
+import { Expr } from "../spec/Misc";
 
 export type CommandType =
   | "sequential"
@@ -58,7 +61,7 @@ export const CommandStore = types
         self.type === "sequential"
       );
     },
-    get serialize(): Command<Expr> {
+    get serialize(): PplibCommand<Expr> {
       if (self.type === "named") {
         return {
           type: "named",
@@ -84,7 +87,7 @@ export const CommandStore = types
     }
   }))
   .actions((self) => ({
-    deserialize(ser: Command<Expr>) {
+    deserialize(ser: PplibCommand<Expr>) {
       self.commands.clear();
       self.name = "";
       self.type = ser.type;

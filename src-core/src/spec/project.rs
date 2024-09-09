@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use trajoptlib::Translation2d;
 
-use super::{traj::DriveType, Expr, SnapshottableType};
+use super::{traj::DriveType, Expr, ExprOrNumber};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum Dimension {
@@ -36,34 +36,34 @@ pub struct Variables {
     pub poses: HashMap<String, PoseVariable>,
 }
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
-pub struct Bumper<T: SnapshottableType> {
+pub struct Bumper<T: ExprOrNumber> {
     pub front: T,
     pub left: T,
     pub back: T,
     pub right: T,
 }
 
-impl<T: SnapshottableType> Bumper<T> {
+impl<T: ExprOrNumber> Bumper<T> {
     pub fn snapshot(&self) -> Bumper<f64> {
         Bumper {
-            front: self.front.snapshot(),
-            left: self.left.snapshot(),
-            back: self.back.snapshot(),
-            right: self.right.snapshot(),
+            front: self.front.as_number(),
+            left: self.left.as_number(),
+            back: self.back.as_number(),
+            right: self.right.as_number(),
         }
     }
 }
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
-pub struct Module<T: SnapshottableType> {
+pub struct Module<T: ExprOrNumber> {
     pub x: T,
     pub y: T,
 }
 
-impl<T: SnapshottableType> Module<T> {
+impl<T: ExprOrNumber> Module<T> {
     pub fn snapshot(&self) -> Module<f64> {
         Module {
-            x: self.x.snapshot(),
-            y: self.y.snapshot(),
+            x: self.x.as_number(),
+            y: self.y.as_number(),
         }
     }
 }
@@ -77,7 +77,7 @@ impl Module<f64> {
     }
 }
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
-pub struct RobotConfig<T: SnapshottableType> {
+pub struct RobotConfig<T: ExprOrNumber> {
     pub modules: [Module<T>; 4],
     pub mass: T,
     pub inertia: T,
@@ -90,26 +90,26 @@ pub struct RobotConfig<T: SnapshottableType> {
     pub bumper: Bumper<T>,
 }
 
-impl<T: SnapshottableType> RobotConfig<T> {
+impl<T: ExprOrNumber> RobotConfig<T> {
     pub fn snapshot(&self) -> RobotConfig<f64> {
         RobotConfig {
             modules: self.modules.clone().map(|modu: Module<T>| modu.snapshot()),
-            mass: self.mass.snapshot(),
-            inertia: self.inertia.snapshot(),
-            gearing: self.gearing.snapshot(),
-            radius: self.radius.snapshot(),
-            vmax: self.vmax.snapshot(),
-            tmax: self.tmax.snapshot(),
+            mass: self.mass.as_number(),
+            inertia: self.inertia.as_number(),
+            gearing: self.gearing.as_number(),
+            radius: self.radius.as_number(),
+            vmax: self.vmax.as_number(),
+            tmax: self.tmax.as_number(),
             bumper: self.bumper.snapshot(),
         }
     }
 }
-impl<T: SnapshottableType> RobotConfig<T> {
+impl<T: ExprOrNumber> RobotConfig<T> {
     pub fn wheel_max_torque(&self) -> f64 {
-        self.tmax.snapshot() * self.gearing.snapshot()
+        self.tmax.as_number() * self.gearing.as_number()
     }
     pub fn wheel_max_velocity(&self) -> f64 {
-        self.vmax.snapshot() / self.gearing.snapshot()
+        self.vmax.as_number() / self.gearing.as_number()
     }
 }
 

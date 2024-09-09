@@ -1,8 +1,5 @@
-import {
-  DifferentialSample,
-  SwerveSample
-} from "../../../document/2025/DocumentTypes";
 import { IDocumentStore } from "../../../document/DocumentModel";
+import { DifferentialSample, SwerveSample } from "../../../document/spec/Traj";
 
 /**
  * Represents a path gradient.

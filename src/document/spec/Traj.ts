@@ -1,57 +1,5 @@
 import { ConstraintData } from "../ConstraintDefinitions";
-import { Dimensions } from "../ExpressionStore";
-
-export const SAVE_FILE_VERSION = "v2025.0.0";
-export type Expr = [string, number];
-
-export type ExprOrNumber = Expr | number;
-export interface Variable {
-  dimension: keyof typeof Dimensions;
-  var: Expr;
-}
-export interface PoseVariable {
-  x: Expr;
-  y: Expr;
-  heading: Expr;
-}
-
-export interface Variables {
-  expressions: Record<string, Variable>;
-  poses: Record<string, PoseVariable>;
-}
-
-export interface Bumper<T extends ExprOrNumber> {
-  front: T;
-  left: T;
-  back: T;
-  right: T;
-}
-
-export interface Module<T extends ExprOrNumber> {
-  x: T;
-  y: T;
-}
-
-export interface RobotConfig<T extends ExprOrNumber> {
-  modules: [Module<T>, Module<T>, Module<T>, Module<T>];
-  mass: T;
-  inertia: T;
-  gearing: T;
-  radius: T;
-  /// motor rad/s
-  vmax: T;
-  /// motor N*m
-  tmax: T; // N*m
-  bumper: Bumper<T>;
-}
-
-export interface Project {
-  name: string;
-  type: SampleType;
-  version: typeof SAVE_FILE_VERSION;
-  variables: Variables;
-  config: RobotConfig<Expr>;
-}
+import { Expr, ExprOrNumber, SAVE_FILE_VERSION } from "./Misc";
 
 export interface Waypoint<T extends ExprOrNumber> {
   x: T;
@@ -110,19 +58,20 @@ export interface ChoreoPath<T extends ExprOrNumber> {
   constraints: Constraint[];
 }
 
-export type SampleType = "Swerve" | "Differential";
-export interface Output {
+export interface Trajectory {
   waypoints: number[];
   samples: SwerveSample[][] | DifferentialSample[][];
   forcesAvailable: boolean;
 }
 
-export interface Traj {
+export interface TrajFile {
   name: string;
   version: typeof SAVE_FILE_VERSION;
   params: ChoreoPath<Expr>;
   snapshot: ChoreoPath<number>;
-  traj: Output;
+  traj: Trajectory;
+  events: EventMarker<Expr>[];
+  pplibCommands: PplibCommandMarker<number>[];
 }
 
 export interface CircleObstacle<T extends ExprOrNumber> {
@@ -134,7 +83,7 @@ export interface CircleObstacle<T extends ExprOrNumber> {
 export type GroupCommand<T extends ExprOrNumber> = {
   type: "deadline" | "parallel" | "race" | "sequential";
   data: {
-    commands: Command<T>[];
+    commands: PplibCommand<T>[];
   };
 };
 export type WaitCommand<T extends ExprOrNumber> = {
@@ -149,11 +98,11 @@ export type NamedCommand = {
     name: string | null;
   };
 };
-export type Command<T extends ExprOrNumber> =
+export type PplibCommand<T extends ExprOrNumber> =
   | WaitCommand<T>
   | GroupCommand<T>
   | NamedCommand;
-export interface EventMarker<T extends ExprOrNumber> {
+export interface PplibCommandMarker<T extends ExprOrNumber> {
   name: string;
   target: WaypointID;
   trajTargetIndex: number | undefined;
@@ -162,5 +111,9 @@ export interface EventMarker<T extends ExprOrNumber> {
    * The timestamp along the trajectory of the waypoint this marker targeted on the last generation.
    */
   targetTimestamp: number | undefined;
-  command: Command<T>;
+  command: PplibCommand<T>;
+}
+export interface EventMarker<T extends ExprOrNumber> {
+  event: string;
+  timestamp: T;
 }

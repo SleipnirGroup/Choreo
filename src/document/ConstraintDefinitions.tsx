@@ -7,8 +7,8 @@ import {
 } from "@mui/icons-material";
 import { JSXElementConstructor, ReactElement } from "react";
 import { ObjectTyped } from "../util/ObjectTyped";
-import { Expr } from "./2025/DocumentTypes";
-import { Dimension, DimensionName, Dimensions } from "./ExpressionStore";
+import { Expr } from "./spec/Misc";
+import { Dimension, DimensionName, Dimensions } from "./stores/ExpressionStore";
 
 export type ConstraintPropertyType = Expr | boolean;
 

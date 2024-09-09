@@ -14,17 +14,21 @@ pub struct OpenFilePayload {
 /// A trait for types that can be snapshotted.
 /// This allows for the type to be converted to a f64.
 /// This trait is only implemented for [`f64`] and [`Expr`].
-pub trait SnapshottableType: Debug + Clone {
-    fn snapshot(&self) -> f64;
+pub trait ExprOrNumber: Debug + Clone {
+    fn as_number(&self) -> f64;
 }
 
-impl SnapshottableType for f64 {
+impl ExprOrNumber for f64 {
     #[inline]
-    fn snapshot(&self) -> f64 {
+    fn as_number(&self) -> f64 {
         *self
     }
 }
 
+/// A struct that represents an expression.
+///
+/// The string is a mathematical expression that can be evaluated to a number.
+/// The number is the result of evaluating the expression.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Expr(pub String, pub f64);
 impl Expr {
@@ -33,9 +37,9 @@ impl Expr {
         Self(name.to_string(), value)
     }
 }
-impl SnapshottableType for Expr {
+impl ExprOrNumber for Expr {
     #[inline]
-    fn snapshot(&self) -> f64 {
+    fn as_number(&self) -> f64 {
         self.1
     }
 }

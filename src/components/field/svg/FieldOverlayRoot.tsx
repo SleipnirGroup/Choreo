@@ -7,9 +7,8 @@ import {
 import * as d3 from "d3";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
-import { Expr, Waypoint } from "../../../document/2025/DocumentTypes";
 import { ConstraintKey } from "../../../document/ConstraintDefinitions";
-import { IConstraintStoreKeyed } from "../../../document/ConstraintStore";
+import { IConstraintStoreKeyed } from "../../../document/stores//ConstraintStore";
 import { doc, uiState } from "../../../document/DocumentManager";
 import {
   NavbarItemData,
@@ -32,6 +31,8 @@ import OverlayWaypoint from "./OverlayWaypoint";
 import FieldConstraintAddLayer from "./constraintDisplay/FieldConstraintAddLayer";
 import FieldConstraintDisplayLayer from "./constraintDisplay/FieldConstraintDisplayLayer";
 import FieldImage2024 from "./fields/FieldImage2024";
+import { Waypoint } from "../../../document/spec/Traj";
+import { Expr } from "../../../document/spec/Misc";
 
 type Props = object;
 

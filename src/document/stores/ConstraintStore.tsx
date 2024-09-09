@@ -1,13 +1,15 @@
 import { Instance, getEnv, getParent, isAlive, types } from "mobx-state-tree";
+
 import {
   ConstraintDataObjects,
   IConstraintDataStore
 } from "./ConstraintDataStore";
-import { ConstraintKey } from "./ConstraintDefinitions";
-import { Env } from "./DocumentManager";
 import { IHolonomicWaypointStore } from "./HolonomicWaypointStore";
-import { IChoreoPathStore } from "./path/ChoreoPathStore";
-import { IHolonomicPathStore } from "./path/HolonomicPathStore";
+import { IChoreoPathStore } from "./ChoreoPathStore";
+import { IHolonomicPathStore } from "./HolonomicPathStore";
+
+import { ConstraintKey } from "../ConstraintDefinitions";
+import { Env } from "../DocumentManager";
 
 export const WaypointScope = types.union(
   types.literal("first"),
