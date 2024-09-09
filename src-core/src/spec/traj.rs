@@ -388,6 +388,14 @@ pub struct TrajFile {
     pub params: Parameters<Expr>,
     /// The trajectory the robot will follow.
     pub traj: Trajectory,
+    /// The choreo events.
+    #[serde(default)]
+    pub events: Vec<EventMarker>,
+    /// The pplib commands to execute.
+    /// This is a compatibility layer for working with
+    /// the path planner library.
+    #[serde(default)]
+    pub pplib_commands: Vec<PplibCommandMarker>,
 }
 
 impl TrajFile {
@@ -401,4 +409,35 @@ impl TrajFile {
     pub fn from_content(content: &str) -> crate::ChoreoResult<TrajFile> {
         serde_json::from_str(content).map_err(Into::into)
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PplibCommandMarker {
+    pub name: String,
+    pub target: Option<usize>,
+    pub traj_target_index: Option<usize>,
+    pub target_timestamp: Option<f64>,
+    pub offset: f64,
+    pub command: PplibCommand,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", tag = "type", content = "data")]
+pub enum PplibCommand {
+    Named { name: String },
+    Wait { wait_time: f64 },
+    Sequential { commands: Vec<PplibCommand> },
+    Parallel { commands: Vec<PplibCommand> },
+    Race { commands: Vec<PplibCommand> },
+    Deadline { commands: Vec<PplibCommand> },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EventMarker {
+    /// The name of the event.
+    pub event: String,
+    /// The offset from the beginning of the trajectory.
+    pub timestamp: f64,
 }

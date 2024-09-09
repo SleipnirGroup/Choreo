@@ -16,8 +16,8 @@ import LocalStorageKeys from "../util/LocalStorageKeys";
 import { ObjectTyped } from "../util/ObjectTyped";
 import { safeGetIdentifier } from "../util/mobxutils";
 import {
-  Command,
-  EventMarker,
+  PplibCommand,
+  PplibCommandMarker,
   GroupCommand,
   NamedCommand,
   Project,
@@ -93,7 +93,7 @@ export type EnvConstructors = {
     radius: number
   ) => ICircularObstacleStore;
   CommandStore: (
-    command: Command<Expr> &
+    command: PplibCommand<Expr> &
       (
         | {
             data: WaitCommand<Expr>["data"] &
@@ -103,7 +103,7 @@ export type EnvConstructors = {
         | object
       )
   ) => ICommandStore;
-  EventMarkerStore: (marker: EventMarker<Expr>) => IEventMarkerStore;
+  EventMarkerStore: (marker: PplibCommandMarker<Expr>) => IEventMarkerStore;
   ConstraintData: ConstraintDataConstructors;
   ConstraintStore: <K extends ConstraintKey>(
     type: K,
@@ -113,18 +113,22 @@ export type EnvConstructors = {
   ) => IConstraintStore;
 };
 function getConstructors(vars: () => IVariables): EnvConstructors {
-  function commandIsNamed(command: Command<Expr>): command is NamedCommand {
+  function commandIsNamed(
+    command: PplibCommand<Expr>
+  ): command is NamedCommand {
     return Object.hasOwn(command.data, "name");
   }
   function commandIsGroup(
-    command: Command<Expr>
+    command: PplibCommand<Expr>
   ): command is GroupCommand<Expr> {
     return Object.hasOwn(command.data, "commands");
   }
-  function commandIsTime(command: Command<Expr>): command is WaitCommand<Expr> {
+  function commandIsTime(
+    command: PplibCommand<Expr>
+  ): command is WaitCommand<Expr> {
     return Object.hasOwn(command.data, "time");
   }
-  function createCommandStore(command: Command<Expr>): ICommandStore {
+  function createCommandStore(command: PplibCommand<Expr>): ICommandStore {
     return CommandStore.create({
       type: command.type,
       name: commandIsNamed(command) ? command.data.name : "",
@@ -201,7 +205,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
       });
     },
     CommandStore: createCommandStore,
-    EventMarkerStore: (marker: EventMarker<Expr>): IEventMarkerStore => {
+    EventMarkerStore: (marker: PplibCommandMarker<Expr>): IEventMarkerStore => {
       return EventMarkerStore.create({
         name: marker.name,
         target: undefined,
