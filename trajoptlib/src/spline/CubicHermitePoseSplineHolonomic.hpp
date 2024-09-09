@@ -17,7 +17,7 @@ namespace trajopt {
 class TRAJOPT_DLLEXPORT CubicHermitePoseSplineHolonomic {
  public:
   using PoseWithCurvature = std::pair<frc::Pose2d, units::curvature_t>;
-  
+
   CubicHermitePoseSplineHolonomic(wpi::array<double, 2> xInitialControlVector,
                                   wpi::array<double, 2> xFinalControlVector,
                                   wpi::array<double, 2> yInitialControlVector,

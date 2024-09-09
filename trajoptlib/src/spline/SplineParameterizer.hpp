@@ -50,7 +50,6 @@ class TRAJOPT_DLLEXPORT SplineParameterizer {
  public:
   using PoseWithCurvature = std::pair<frc::Pose2d, units::curvature_t>;
 
-
   struct MalformedSplineException : public std::runtime_error {
     explicit MalformedSplineException(const char* what_arg)
         : runtime_error(what_arg) {}
