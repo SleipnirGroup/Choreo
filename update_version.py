@@ -20,6 +20,7 @@ def cargo_version_string(v: str, count: str, hash: str, mod: str, num: str):
     return f"{v}-{mod}.{num}" if len(mod) > 0 else v
 
 
+
 @dataclass(frozen=True, slots=True)
 class VersionLocation:
     relative_path: Path
