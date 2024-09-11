@@ -33,9 +33,11 @@ inline PoseSplineHolonomic poseSplineFromGuessPoints(
   for (const auto& guesses : initialGuessPoints) {
     num_pts += guesses.size();
   }
-  std::vector<size_t> times(num_pts);
+  std::vector<size_t> times;
+  times.reserve(num_pts);
 
-  std::vector<Pose2d> flatPoses(num_pts);
+  std::vector<Pose2d> flatPoses;
+  flatPoses.reserve(num_pts);
 
   double t = 0.0;
   times.push_back(0.0);
@@ -44,6 +46,7 @@ inline PoseSplineHolonomic poseSplineFromGuessPoints(
       flatPoses.push_back(point);
       times.push_back(t);
       t += 1.0;
+      printf("pose: %.2f, %.2f  \n", point.X(), point.Y());
     }
   }
   return PoseSplineHolonomic(flatPoses);
@@ -77,9 +80,9 @@ inline Solution GenerateSplineInitialGuess(
   for (const auto& guesses : initialGuessPoints) {
     guessPoints += guesses.size();
   }
-
+  printf("guesses size: %zd", guessPoints);
   auto poseSpline = poseSplineFromGuessPoints(initialGuessPoints);
-
+  std::cout << "POSE SPLINE: " << std::endl << poseSpline.translationSpline.ctrls() << std::endl;
   std::vector<std::vector<Pose2d>> sgmtPoints;
   sgmtPoints.reserve(guessPoints);
   for (size_t i = 0; i < guessPoints; ++i) {

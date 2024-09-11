@@ -3,6 +3,7 @@
 #pragma once
 
 #include <vector>
+#include <iostream>
 
 #include <Eigen/Core>
 #include <unsupported/Eigen/Splines>
@@ -23,39 +24,54 @@ class TRAJOPT_DLLEXPORT PoseSplineHolonomic {
   // using PoseWithCurvature = std::pair<Pose2d, double>; // <pose [meter],
   // curvature [rad/meter]>
 
-  // waypoints.size() == headings.size()
-  PoseSplineHolonomic(std::vector<Pose2d> waypoints,
-                      std::vector<Rotation2d> headings) {
+  explicit PoseSplineHolonomic(std::vector<Pose2d> waypoints) {
+    const int DEGREE = std::min(waypoints.size() - 1, static_cast<unsigned long long>(3));
+    std::vector<Rotation2d> headings;
+    headings.reserve(waypoints.size());
+    for (const auto w : waypoints) {
+      headings.push_back(w.Rotation());
+    }
+    
     size_t num_wpts = waypoints.size();
     times.resize(num_wpts + 1);
+    printf("creating pose spline with %zd wpts\n", num_wpts);
+    printf("times [ ");
     for (size_t i = 0; i < num_wpts; ++i) {
-      times(i) = i;
+      times(i) = static_cast<double>(i);
+      printf("%f, ", times(i));
     }
     times(num_wpts) = times(num_wpts - 1);
+    printf("%f] %d\n", times(num_wpts), !!(times(num_wpts) > 0.0));
 
+    printf("   xy [ ");
     Eigen::MatrixXd xy(2, num_wpts + 1);
     for (size_t i = 0; i < num_wpts; ++i) {
       auto w = waypoints[i];
       xy.col(i) << w.X(), w.Y();
+      printf("[%.2f, %.2f], ", xy.col(i)[0], xy.col(i)[1]);
     }
     xy.col(num_wpts) = xy.col(num_wpts - 1);
-    translationSpline = SplineFitting2D::Interpolate(xy, 3, times);
+    printf("[%.2f, %.2f] ] \n", xy.col(num_wpts)[0], xy.col(num_wpts)[1]);
+    translationSpline = Eigen::SplineFitting<Eigen::Spline2d>::Interpolate(xy, DEGREE, times);
+    std::cout << "\n**** transSpline:\n " << translationSpline.ctrls() << std::endl;
+    
+    for (double t = 0; t <= times(num_wpts); t += 0.25) {
+      auto values = translationSpline(t);
+      std::printf("time: %f \txy: %.2f,\t%.2f\n", t, values[0], values[1]);    
+    }
 
+
+    printf("theta [ ");
     Eigen::RowVectorXd theta(headings.size() + 1);
     for (size_t i = 0; i < headings.size(); ++i) {
       theta(i) = headings[i].Radians();
+      printf("%.2f, ", theta(i));
     }
     theta(num_wpts) = headings.back().Radians();
-    thetaSpline = SplineFitting1D::Interpolate(theta, 3, times);
+    thetaSpline = SplineFitting1D::Interpolate(theta, DEGREE, times);
+    printf("%.2f ]\n", theta(num_wpts));
   }
-
-  explicit PoseSplineHolonomic(std::vector<Pose2d> waypoints) {
-    std::vector<Rotation2d> headings(waypoints.size());
-    for (const auto w : waypoints) {
-      headings.push_back(w.Rotation());
-    }
-    PoseSplineHolonomic(waypoints, headings);
-  }
+  
 
   double getEndT() const { return times(times.SizeMinusOne); }
 
@@ -67,16 +83,17 @@ class TRAJOPT_DLLEXPORT PoseSplineHolonomic {
 
   Rotation2d getHeading(double t) const {
     const auto heading = thetaSpline(t);
+    std::cout << "heading: " << heading << std::endl;
     return Rotation2d(heading(0));
   }
 
   Pose2d getPoint(double t) const {
     auto xy = translationSpline(t);
+    std::cout << "getPoint(" << t << "): " << xy << std::endl;
     auto h = getHeading(t);
-    return Pose2d{xy(0), xy(1), h};
+    return Pose2d{xy[0], xy[1], h};
   }
 
- private:
   Eigen::RowVectorXd times;
   Eigen::Spline<double, 1> thetaSpline;
   Eigen::Spline2d translationSpline;
