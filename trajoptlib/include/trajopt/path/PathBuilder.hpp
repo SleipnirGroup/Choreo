@@ -12,6 +12,7 @@
 #include "trajopt/obstacle/Bumpers.hpp"
 #include "trajopt/path/Path.hpp"
 #include "trajopt/util/GenerateLinearInitialGuess.hpp"
+#include "trajopt/util/GenerateSplineInitialGuess.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 
 namespace trajopt {
@@ -203,6 +204,10 @@ class TRAJOPT_DLLEXPORT PathBuilder {
   Solution CalculateInitialGuess() const {
     return GenerateLinearInitialGuess<Solution>(initialGuessPoints,
                                                 controlIntervalCounts);
+  }
+
+  Solution CalculateSplineInitialGuess() const {
+    return GenerateSplineInitialGuess<Solution>(initialGuessPoints, controlIntervalCounts);
   }
 
  protected:

@@ -7,19 +7,22 @@
 #include <Eigen/Core>
 #include <unsupported/Eigen/Splines>
 
-#include "trajopt/util/SymbolExports.hpp"
-
 namespace trajopt {
 
 static int test() {
   std::vector<Eigen::Vector2d> pts;
   pts.push_back(Eigen::Vector2d(0, 0));
-  pts.push_back(Eigen::Vector2d(1, 0));
+  pts.push_back(Eigen::Vector2d(0.5, 0));
+  pts.push_back(Eigen::Vector2d(1, 0.25));
   pts.push_back(Eigen::Vector2d(2, 1));
   pts.push_back(Eigen::Vector2d(2, 2));
   pts.push_back(Eigen::Vector2d(2, 2));
-  Eigen::RowVectorXd times(5);
-  times << 0, 1, 2, 3, 3;
+
+  Eigen::RowVectorXd times(pts.size());
+  for (size_t i = 0; i < pts.size(); ++i) {
+    times.row(0)[i] = i;
+  }
+  times.row(0)[times.row(0).size() - 1] = times.row(0)[times.row(0).size() - 2];
 
   Eigen::MatrixXd points(2, pts.size());
   for (auto i = 0; i < pts.size(); ++i) {
@@ -34,11 +37,4 @@ static int test() {
   }
   return 0;
 }
-
-class TRAJOPT_DLLEXPORT Spline {
- public:
- protected:
-  Eigen::Spline2d xySpline;
-  Eigen::Spline<double, 1> heading;
-};
 }  // namespace trajopt
