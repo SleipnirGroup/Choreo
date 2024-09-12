@@ -56,8 +56,8 @@ class TRAJOPT_DLLEXPORT PoseSplineHolonomic {
     }
     sins(num_wpts) = headings.back().Sin();
     coss(num_wpts) = headings.back().Cos();
-    sin = SplineFitting1D::Interpolate(sins, DEGREE, times);
-    cos = SplineFitting1D::Interpolate(coss, DEGREE, times);
+    sinSpline = SplineFitting1D::Interpolate(sins, DEGREE, times);
+    cosSpline = SplineFitting1D::Interpolate(coss, DEGREE, times);
 
     for (double t = 0; t <= times(num_wpts); t += 0.25) {
       auto values = translationSpline(t);
@@ -76,7 +76,7 @@ class TRAJOPT_DLLEXPORT PoseSplineHolonomic {
   }
 
   Rotation2d getHeading(double t) const {
-    const auto rads = Rotation2d(std::cos(t)(0), std::sin(t)(0)).Radians();
+    const auto rads = Rotation2d(cosSpline(t)(0), sinSpline(t)(0)).Radians();
     return Rotation2d(rads);
   }
 
@@ -87,8 +87,8 @@ class TRAJOPT_DLLEXPORT PoseSplineHolonomic {
   }
 
   Eigen::RowVectorXd times;
-  Eigen::Spline<double, 1> sin;
-  Eigen::Spline<double, 1> cos;
+  Eigen::Spline<double, 1> sinSpline;
+  Eigen::Spline<double, 1> cosSpline;
   Eigen::Spline2d translationSpline;
 };
 }  // namespace trajopt
