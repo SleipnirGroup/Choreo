@@ -27,6 +27,7 @@ class TRAJOPT_DLLEXPORT PoseSplineHolonomic {
   explicit PoseSplineHolonomic(std::vector<Pose2d> waypoints) {
     const int DEGREE = std::min(waypoints.size() - 1, static_cast<unsigned long long>(3));
     std::vector<Rotation2d> headings;
+
     headings.reserve(waypoints.size());
     for (const auto w : waypoints) {
       headings.push_back(w.Rotation());
@@ -52,25 +53,33 @@ class TRAJOPT_DLLEXPORT PoseSplineHolonomic {
     }
     xy.col(num_wpts) = xy.col(num_wpts - 1);
     printf("[%.2f, %.2f] ] \n", xy.col(num_wpts)[0], xy.col(num_wpts)[1]);
-    translationSpline = Eigen::SplineFitting<Eigen::Spline2d>::Interpolate(xy, DEGREE, times);
-    std::cout << "\n**** transSpline:\n " << translationSpline.ctrls() << std::endl;
+    translationSpline = Eigen::SplineFitting<Eigen::Spline2d>::Interpolate(xy, DEGREE, times);    
     
-    for (double t = 0; t <= times(num_wpts); t += 0.25) {
-      auto values = translationSpline(t);
-      std::printf("time: %f \txy: %.2f,\t%.2f\n", t, values[0], values[1]);    
-    }
-
-
     printf("theta [ ");
     Eigen::RowVectorXd theta(headings.size() + 1);
+    Eigen::RowVectorXd sins(headings.size() + 1);
+    Eigen::RowVectorXd coss(headings.size() + 1);
     for (size_t i = 0; i < headings.size(); ++i) {
       theta(i) = headings[i].Radians();
+      sins(i) = headings[i].Sin();
+      coss(i) = headings[i].Cos();
       printf("%.2f, ", theta(i));
     }
     theta(num_wpts) = headings.back().Radians();
+    sins(num_wpts) = headings.back().Sin();
+    coss(num_wpts) = headings.back().Cos();
     thetaSpline = SplineFitting1D::Interpolate(theta, DEGREE, times);
+    sin = SplineFitting1D::Interpolate(sins, 2, times);
+    cos = SplineFitting1D::Interpolate(coss, 2, times);
     printf("%.2f ]\n", theta(num_wpts));
+
+    for (double t = 0; t <= times(num_wpts); t += 0.25) {
+      auto values = translationSpline(t);
+      auto head = getHeading(t);
+      std::printf("time: %.2f \tx: %.2f\t\ty: %.2f\t\ttheta: %.2f\n", t, values[0], values[1], head.Radians());    
+    }
   }
+
   
 
   double getEndT() const { return times(times.SizeMinusOne); }
@@ -82,9 +91,10 @@ class TRAJOPT_DLLEXPORT PoseSplineHolonomic {
   }
 
   Rotation2d getHeading(double t) const {
-    const auto heading = thetaSpline(t);
-    std::cout << "heading: " << heading << std::endl;
-    return Rotation2d(heading(0));
+    // const auto heading = thetaSpline(t);
+    const auto rads = Rotation2d(cos(t)(0), sin(t)(0)).Radians();
+    // return Rotation2d(heading(0));
+    return Rotation2d(rads);
   }
 
   Pose2d getPoint(double t) const {
@@ -94,8 +104,11 @@ class TRAJOPT_DLLEXPORT PoseSplineHolonomic {
     return Pose2d{xy[0], xy[1], h};
   }
 
+  // Rotation2d r0;
   Eigen::RowVectorXd times;
   Eigen::Spline<double, 1> thetaSpline;
+  Eigen::Spline<double, 1> sin;
+  Eigen::Spline<double, 1> cos;
   Eigen::Spline2d translationSpline;
 };
 }  // namespace trajopt

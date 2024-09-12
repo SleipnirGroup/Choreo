@@ -132,8 +132,9 @@ inline Solution GenerateSplineInitialGuess(
   }
 
   std::printf("init guess: [");
-  for (auto x : initialGuess.x) {
-    std::printf("%.2f, ", x);
+  for (auto i = 0; i < initialGuess.x.size(); ++i) {
+    std::printf("x: %.2f, y: %.2f, cos: %.2f, sin: %.2f", 
+    initialGuess.x[i], initialGuess.y[i], initialGuess.thetacos[i], initialGuess.thetasin[i]);
   }
   std::printf("]\n");
 
