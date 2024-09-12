@@ -496,7 +496,6 @@ mod ffi {
         // Cancel all generators
 
         fn cancel_all();
-        fn test();
     }
 }
 
@@ -834,8 +833,6 @@ impl SwerveTrajectoryGenerator {
             radius,
         );
     }
-
-
 
     pub fn sgmt_point_at(
         &mut self,

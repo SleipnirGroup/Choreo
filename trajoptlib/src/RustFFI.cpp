@@ -683,8 +683,4 @@ void cancel_all() {
   trajopt::GetCancellationFlag() = 1;
 }
 
-void test() {
-  trajopt::test();
-}
-
 }  // namespace trajopt::rsffi

@@ -198,6 +198,5 @@ std::unique_ptr<DifferentialTrajectoryGenerator>
 differential_trajectory_generator_new();
 
 void cancel_all();
-void test();
 
 }  // namespace trajopt::rsffi

@@ -9,6 +9,7 @@
         "deque": "cpp",
         "map": "cpp",
         "unordered_map": "cpp",
-        "xstring": "cpp"
+        "xstring": "cpp",
+        "xutility": "cpp"
     },
 }

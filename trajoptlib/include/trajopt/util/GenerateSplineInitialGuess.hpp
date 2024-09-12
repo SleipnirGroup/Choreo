@@ -18,14 +18,8 @@
 
 namespace trajopt {
 
+// TODO: implement for diffy drive
 struct DifferentialSolution;
-
-// // TODO: Replace with std::vector.append_range() from C++23
-// template <typename T>
-// inline void append_vector(std::vector<T>& base,
-//                           const std::vector<T>& newItems) {
-//   base.insert(base.end(), newItems.begin(), newItems.end());
-// }
 
 inline PoseSplineHolonomic poseSplineFromGuessPoints(
     const std::vector<std::vector<Pose2d>>& initialGuessPoints) {
@@ -46,7 +40,7 @@ inline PoseSplineHolonomic poseSplineFromGuessPoints(
       flatPoses.push_back(point);
       times.push_back(t);
       t += 1.0;
-      printf("pose: %.2f, %.2f  \n", point.X(), point.Y());
+      std::printf("pose: %.2f, %.2f\n", point.X(), point.Y());
     }
   }
   return PoseSplineHolonomic(flatPoses);
@@ -80,17 +74,17 @@ inline Solution GenerateSplineInitialGuess(
   for (const auto& guesses : initialGuessPoints) {
     guessPoints += guesses.size();
   }
-  printf("guesses size: %zd", guessPoints);
+  std::printf("guesses size: %zd\n", guessPoints);
   auto poseSpline = poseSplineFromGuessPoints(initialGuessPoints);
-  std::cout << "POSE SPLINE: " << std::endl << poseSpline.translationSpline.ctrls() << std::endl;
   std::vector<std::vector<Pose2d>> sgmtPoints;
   sgmtPoints.reserve(guessPoints);
   for (size_t i = 0; i < guessPoints; ++i) {
     sgmtPoints.push_back(std::vector<Pose2d>());
   }
 
+  // TODO: clean this up. not necessary to nest for loops since it continuous
+  // spline
   size_t trajIdx = 0;
-  std::printf("sgmt1\n");
   sgmtPoints.at(0).push_back(poseSpline.getPoint(0.0));
   std::printf("ctrlCount: [");
   for (auto count : controlIntervalCounts) {
@@ -107,7 +101,8 @@ inline Solution GenerateSplineInitialGuess(
       }
       for (size_t sampleIdx = 1; sampleIdx < samples + 1; ++sampleIdx) {
         auto t = static_cast<double>(sampleIdx) / samples;  // + trajIdx
-        const auto state = poseSpline.getPoint(static_cast<double>(trajIdx) + t);
+        const auto state =
+            poseSpline.getPoint(static_cast<double>(trajIdx) + t);
         sgmtPoints.at(trajIdx + 1).push_back(state);
         // std::printf("%zd, x: %f, y: %f, t: %f\n",
         //               sampleIdx, state.pose.X().value(),
@@ -133,8 +128,9 @@ inline Solution GenerateSplineInitialGuess(
 
   std::printf("init guess: [");
   for (auto i = 0; i < initialGuess.x.size(); ++i) {
-    std::printf("x: %.2f, y: %.2f, cos: %.2f, sin: %.2f", 
-    initialGuess.x[i], initialGuess.y[i], initialGuess.thetacos[i], initialGuess.thetasin[i]);
+    std::printf("x: %.2f, y: %.2f, cos: %.2f, sin: %.2f\n", initialGuess.x[i],
+                initialGuess.y[i], initialGuess.thetacos[i],
+                initialGuess.thetasin[i]);
   }
   std::printf("]\n");
 
