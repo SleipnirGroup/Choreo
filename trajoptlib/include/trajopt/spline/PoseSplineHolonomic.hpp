@@ -69,8 +69,8 @@ class TRAJOPT_DLLEXPORT PoseSplineHolonomic {
     sins(num_wpts) = headings.back().Sin();
     coss(num_wpts) = headings.back().Cos();
     thetaSpline = SplineFitting1D::Interpolate(theta, DEGREE, times);
-    sin = SplineFitting1D::Interpolate(sins, 2, times);
-    cos = SplineFitting1D::Interpolate(coss, 2, times);
+    sin = SplineFitting1D::Interpolate(sins, DEGREE, times);
+    cos = SplineFitting1D::Interpolate(coss, DEGREE, times);
     printf("%.2f ]\n", theta(num_wpts));
 
     for (double t = 0; t <= times(num_wpts); t += 0.25) {
