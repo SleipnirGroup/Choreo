@@ -7,7 +7,7 @@ import edu.wpi.first.math.interpolation.Interpolatable;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
 /** The generic interface for a sample in a trajectory. */
-public interface TrajSample<Self extends TrajSample<?>> extends Interpolatable<Self> {
+public interface TrajSample<Self extends TrajSample<Self>> extends Interpolatable<Self> {
   /**
    * Returns the timestamp of this sample.
    *
@@ -36,5 +36,11 @@ public interface TrajSample<Self extends TrajSample<?>> extends Interpolatable<S
    */
   Self flipped();
 
+  /**
+   * Returns this sample, offset by the given timestamp.
+   *
+   * @param timestampOffset the offset to apply to the timestamp.
+   * @return this sample, offset by the given timestamp.
+   */
   Self offsetBy(double timestampOffset);
 }

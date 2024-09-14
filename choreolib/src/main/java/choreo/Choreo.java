@@ -8,6 +8,8 @@ import choreo.ChoreoAutoFactory.ChoreoAutoBindings;
 import choreo.trajectory.ChoreoTrajectory;
 import choreo.trajectory.TrajSample;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -27,6 +29,8 @@ import java.util.function.Supplier;
 /** Utilities to load and follow ChoreoTrajectories */
 public final class Choreo {
   private static final Gson gson = new Gson();
+  private static final File CHOREO_DIR = new File(Filesystem.getDeployDirectory(), "choreo");
+  private static final String TRAJECTORY_FILE_EXTENSION = ".traj";
 
   /**
    * This interface exists as a type alias. A ChoreoControlFunction has signature (Pose2d
@@ -48,43 +52,36 @@ public final class Choreo {
     throw new UnsupportedOperationException("This is a utility class!");
   }
 
-  @SuppressWarnings("unchecked")
-  private static <SampleType extends TrajSample<SampleType>>
-      Optional<ChoreoTrajectory<SampleType>> loadFile(File path) {
-    try {
-      var reader = new BufferedReader(new FileReader(path));
-      ChoreoTrajectory<SampleType> traj = gson.fromJson(reader, ChoreoTrajectory.class);
-      return Optional.ofNullable(traj);
-    } catch (FileNotFoundException ex) {
-      return Optional.empty();
-    } catch (Exception ex) {
-      DriverStation.reportError(ex.getMessage(), ex.getStackTrace());
-    }
-    return Optional.empty();
-  }
-
   /**
    * Load a trajectory from the deploy directory. Choreolib expects .traj files to be placed in
    * src/main/deploy/choreo/[trajName].traj.
-   *
-   * @param trajName the path name in Choreo, which matches the file name in the deploy directory.
-   * @return the loaded trajectory, or null if the trajectory could not be loaded.
+   * 
+   * @param trajName the path name in Choreo, which matches the file name in the deploy directory,
+   * file extension is optional.
+   * @return the loaded trajectory, or `Optional.empty()` if the trajectory could not be loaded.
    */
+  @SuppressWarnings("unchecked")
   public static <SampleType extends TrajSample<SampleType>>
-      Optional<ChoreoTrajectory<SampleType>> getTrajectory(String trajName) {
-    requireNonNullParam(trajName, "trajName", "Choreo.getTrajectory");
+      Optional<ChoreoTrajectory<SampleType>> loadTrajectory(String trajName) {
+    requireNonNullParam(trajName, "trajName", "Choreo.loadTrajectory");
 
-    final String fileExtension = ".traj";
-    if (trajName.endsWith(fileExtension)) {
-      trajName = trajName.substring(0, trajName.length() - fileExtension.length());
+    if (trajName.endsWith(TRAJECTORY_FILE_EXTENSION)) {
+      trajName = trajName.substring(0, trajName.length() - TRAJECTORY_FILE_EXTENSION.length());
     }
-    var traj_dir = new File(Filesystem.getDeployDirectory(), "choreo");
-    var traj_file = new File(traj_dir, trajName + fileExtension);
+    var trajFile = new File(CHOREO_DIR, trajName + TRAJECTORY_FILE_EXTENSION);
 
-    // Option::map didnt like trajName not being final
-    Optional<ChoreoTrajectory<SampleType>> optTraj = loadFile(traj_file);
-    if (optTraj.isPresent()) {
-      return Optional.of(optTraj.get());
+    try {
+      var reader = new BufferedReader(new FileReader(trajFile));
+      ChoreoTrajectory<SampleType> traj = gson.fromJson(reader, ChoreoTrajectory.class);
+      return Optional.ofNullable(traj);
+    } catch (FileNotFoundException ex) {
+      DriverStation.reportError("Could not find trajectory file: " + trajFile, false);
+      return Optional.empty();
+    } catch (JsonSyntaxException ex) {
+      DriverStation.reportError("Could not parse trajectory file: " + trajFile, false);
+      return Optional.empty();
+    } catch (Exception ex) {
+      DriverStation.reportError(ex.getMessage(), ex.getStackTrace());
     }
     return Optional.empty();
   }

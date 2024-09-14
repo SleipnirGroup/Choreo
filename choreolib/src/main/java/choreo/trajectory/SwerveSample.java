@@ -96,43 +96,21 @@ public class SwerveSample implements TrajSample<SwerveSample> {
     this.moduleForcesY = moduleForcesY;
   }
 
-  /**
-   * Returns the timestamp of this sample.
-   *
-   * @return the timestamp of this sample.
-   */
   @Override
   public double getTimestamp() {
     return timestamp;
   }
 
-  /**
-   * Returns the pose at this sample.
-   *
-   * @return the pose at this sample.
-   */
   @Override
   public Pose2d getPose() {
     return new Pose2d(x, y, Rotation2d.fromRadians(heading));
   }
 
-  /**
-   * Returns the field-relative chassis speeds of this sample.
-   *
-   * @return the field-relative chassis speeds of this sample.
-   */
+  @Override
   public ChassisSpeeds getChassisSpeeds() {
     return new ChassisSpeeds(vx, vy, omega);
   }
 
-  /**
-   * Interpolate between this sample and the provided sample.
-   *
-   * @param endValue The next sample. It should have a timestamp after this sample.
-   * @param timestamp the timestamp of the interpolated sample. It should be between this sample and
-   *     endValue.
-   * @return the interpolated sample.
-   */
   @Override
   public SwerveSample interpolate(SwerveSample endValue, double timestamp) {
     double scale = (timestamp - this.timestamp) / (endValue.timestamp - this.timestamp);
@@ -178,6 +156,7 @@ public class SwerveSample implements TrajSample<SwerveSample> {
         this.moduleForcesY);
   }
 
+  @Override
   public SwerveSample flipped() {
     switch (AllianceFlipUtil.getFlippingType()) {
       case MIRRORED:

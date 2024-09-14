@@ -11,7 +11,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -62,6 +65,40 @@ import java.util.function.Supplier;
  * </code></pre>
  */
 public class ChoreoAutoFactory {
+  /**
+   * An Auto Loop that cannot have any side-effects,
+   * it stores no state and does nothing when polled.
+   */
+  public static final ChoreoAutoLoop VOID_LOOP = new ChoreoAutoLoop() {
+    @Override
+    public Command cmd() { return Commands.none(); }
+    @Override
+    public Command cmd(BooleanSupplier finishCondition) {
+      return Commands.none();
+    }
+    @Override
+    void addTrajectory(ChoreoAutoTrajectory traj) {}
+    @Override
+    void onNewTrajectory() {}
+    @Override
+    public void poll() {}
+    @Override
+    public void reset() {}
+    @Override
+    public Trigger enabled() { return new Trigger(() -> false); }
+  };
+
+  public static final class TrajectoryNotFoundException extends RuntimeException {
+    private final String trajName;
+    public TrajectoryNotFoundException(String trajName) {
+      super("Could not find trajectory: " + trajName);
+      this.trajName = trajName;
+    }
+    public String getTrajName() {
+      return trajName;
+    }
+  }
+
   /** A class used to bind commands to events in all trajectories created by this factory. */
   public static class ChoreoAutoBindings {
     private HashMap<String, Command> bindings = new HashMap<>();
@@ -137,7 +174,7 @@ public class ChoreoAutoFactory {
    * @return A new auto trajectory.
    */
   public ChoreoAutoTrajectory traj(String trajName, ChoreoAutoLoop loop) {
-    Optional<? extends ChoreoTrajectory<?>> optTraj = Choreo.getTrajectory(trajName);
+    Optional<? extends ChoreoTrajectory<?>> optTraj = Choreo.loadTrajectory(trajName);
     ChoreoTrajectory<?> traj;
     if (optTraj.isPresent()) {
       traj = optTraj.get();
@@ -172,7 +209,7 @@ public class ChoreoAutoFactory {
    */
   public ChoreoAutoTrajectory traj(String trajName, final int splitIndex, ChoreoAutoLoop loop) {
     Optional<? extends ChoreoTrajectory<?>> optTraj =
-        Choreo.getTrajectory(trajName).flatMap(traj -> traj.getSplit(splitIndex));
+        Choreo.loadTrajectory(trajName).flatMap(traj -> traj.getSplit(splitIndex));
     ChoreoTrajectory<?> traj;
     if (optTraj.isPresent()) {
       traj = optTraj.get();
@@ -207,6 +244,62 @@ public class ChoreoAutoFactory {
             loop::onNewTrajectory);
     loop.addTrajectory(traj);
     return traj;
+  }
+
+  /**
+   * Creates a new auto trajectory command to be used in an auto routine.
+   * 
+   * <p>
+   * <h1> Important </h1>
+   * <p>
+   * {@link #trajCommand} and {@link #traj} methods should not be mixed in the same auto routine.
+   * {@link #trajCommand} is used as an escape hatch for teams that don't need the benefits of the {@link #traj} method
+   * and its {@link Trigger} api. {@link #trajCommand} does not invoke bindings added via calling {@link #bind}
+   * or {@link ChoreoAutoBindings} passed into the factory constructor.
+   *
+   * @param trajName The name of the trajectory to use.
+   * @return A new auto trajectory.
+   */
+  public Command trajCommand(String trajName) {
+    return traj(trajName, VOID_LOOP).cmd();
+  }
+
+  /**
+   * Creates a new auto trajectory command to be used in an auto routine.
+   * 
+   * <p>
+   * <h1> Important </h1>
+   * <p>
+   * {@link #trajCommand} and {@link #traj} methods should not be mixed in the same auto routine.
+   * {@link #trajCommand} is used as an escape hatch for teams that don't need the benefits of the {@link #traj} method
+   * and its {@link Trigger} api. {@link #trajCommand} does not invoke bindings added via calling {@link #bind}
+   * or {@link ChoreoAutoBindings} passed into the factory constructor.
+   *
+   * @param trajName The name of the trajectory to use.
+   * @param splitIndex The index of the split trajectory to use.
+   * @return A new auto trajectory.
+   */
+  public Command trajCommand(String trajName, final int splitIndex) {
+    return traj(trajName, splitIndex, VOID_LOOP).cmd();
+  }
+
+  /**
+   * Creates a new auto trajectory command to be used in an auto routine.
+   * 
+   * <p>
+   * <h1> Important </h1>
+   * <p>
+   * {@link #trajCommand} and {@link #traj} methods should not be mixed in the same auto routine.
+   * {@link #trajCommand} is used as an escape hatch for teams that don't need the benefits of the {@link #traj} method
+   * and its {@link Trigger} api. {@link #trajCommand} does not invoke bindings added via calling {@link #bind}
+   * or {@link ChoreoAutoBindings} passed into the factory constructor.
+   *
+   * @param trajectory The trajectory to use.
+   * @return A new auto trajectory.
+   */
+  public <SampleType extends TrajSample<SampleType>> Command trajCommand(
+      ChoreoTrajectory<SampleType> trajectory) {
+    return traj(trajectory, VOID_LOOP).cmd();
   }
 
   /**

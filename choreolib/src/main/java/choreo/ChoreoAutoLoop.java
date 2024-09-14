@@ -5,6 +5,7 @@ package choreo;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.ArrayList;
@@ -24,6 +25,8 @@ public class ChoreoAutoLoop {
 
   /** A boolean utilized in {@link #enabled()} to resolve trueness */
   protected boolean isActive = false;
+
+  protected boolean isKilled = false;
 
   /**
    * Creates a new loop with a specific name
@@ -64,7 +67,7 @@ public class ChoreoAutoLoop {
 
   /** Polls the loop. Should be called in the autonomous periodic method. */
   public void poll() {
-    if (!DriverStation.isAutonomousEnabled()) {
+    if (!DriverStation.isAutonomousEnabled() || isKilled) {
       isActive = false;
       return;
     }
@@ -101,6 +104,17 @@ public class ChoreoAutoLoop {
   }
 
   /**
+   * Kills the loop and prevents it from running again.
+   */
+  public void kill() {
+    CommandScheduler.getInstance().cancelAll();
+    if (isKilled) { return; }
+    reset();
+    DriverStation.reportWarning("Killed An Auto Loop", true);
+    isKilled = true;
+  }
+
+  /**
    * Creates a command that will poll this event loop and reset it when it is cancelled.
    *
    * @return A command that will poll this event loop and reset it when it is cancelled.
@@ -121,6 +135,9 @@ public class ChoreoAutoLoop {
    * @see #cmd() A version of this method that doesn't take a condition and never finishes.
    */
   public Command cmd(BooleanSupplier finishCondition) {
-    return this.cmd().until(() -> finishCondition.getAsBoolean()).withName("ChoreoAutoLoop");
+    return Commands.run(this::poll)
+        .finallyDo(this::reset)
+        .until(() -> !DriverStation.isAutonomousEnabled() || finishCondition.getAsBoolean())
+        .withName("ChoreoAutoLoop");
   }
 }

@@ -5,9 +5,11 @@ package choreo;
 import choreo.Choreo.ChoreoControlFunction;
 import choreo.Choreo.ChoreoTrajectoryLogger;
 import choreo.ChoreoAutoFactory.ChoreoAutoBindings;
+import choreo.ext.CommandExt;
 import choreo.ext.TriggerExt;
 import choreo.trajectory.ChoreoTrajectory;
 import choreo.trajectory.DiffySample;
+import choreo.trajectory.EventMarker;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.TrajSample;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -17,7 +19,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.event.EventLoop;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import java.util.Optional;
@@ -176,23 +177,24 @@ public class ChoreoAutoTrajectory {
    *
    * @return The command that will follow the trajectory
    */
-  public Command cmd() {
+  public CommandExt cmd() {
     // if the trajectory is empty, return a command that will print an error
     if (trajectory.samples().isEmpty()) {
-      return driveSubsystem
+      return new CommandExt(driveSubsystem
           .runOnce(
               () -> {
                 DriverStation.reportError("Trajectory " + name + " has no samples", false);
               })
-          .withName("Trajectory_" + name);
+          .withName("Trajectory_" + name));
     }
-    return new FunctionalCommand(
+    return new CommandExt(
+        new FunctionalCommand(
             this::cmdInitialize,
             this::cmdExecute,
             this::cmdEnd,
             this::cmdIsFinished,
             driveSubsystem)
-        .withName("Trajectory_" + name);
+        .withName("Trajectory_" + name));
   }
 
   /**
@@ -425,5 +427,30 @@ public class ChoreoAutoTrajectory {
    */
   public TriggerExt atTimeAndPlace(String eventName) {
     return atTimeAndPlace(eventName, DEFAULT_TOLERANCE_METERS);
+  }
+
+  /**
+   * Returns an array of all the timestamps of the events with the given name.
+   * 
+   * @param eventName The name of the event.
+   * @return An array of all the timestamps of the events with the given name.
+   */
+  public double[] collectEventTimes(String eventName) {
+    return trajectory.getEvents(eventName).stream().mapToDouble(EventMarker::timestamp).toArray();
+  }
+
+  /**
+   * Returns an array of all the poses of the events with the given name.
+   * 
+   * @param eventName The name of the event.
+   * @return An array of all the poses of the events with the given name.
+   */
+  public Pose2d[] collectEventPoses(String eventName) {
+    var times = collectEventTimes(eventName);
+    var poses = new Pose2d[times.length];
+    for (int i = 0; i < times.length; i++) {
+      poses[i] = trajectory.sampleAt(times[i], mirrorTrajectory.getAsBoolean()).getPose();
+    }
+    return poses;
   }
 }
