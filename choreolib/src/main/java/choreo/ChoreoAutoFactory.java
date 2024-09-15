@@ -4,12 +4,14 @@ package choreo;
 
 import choreo.Choreo.ChoreoControlFunction;
 import choreo.Choreo.ChoreoTrajectoryLogger;
+import choreo.ext.TriggerExt;
 import choreo.trajectory.ChoreoTrajectory;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.TrajSample;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -70,6 +72,7 @@ public class ChoreoAutoFactory {
    * it stores no state and does nothing when polled.
    */
   public static final ChoreoAutoLoop VOID_LOOP = new ChoreoAutoLoop() {
+    private final EventLoop loop = new EventLoop();
     @Override
     public Command cmd() { return Commands.none(); }
     @Override
@@ -85,7 +88,7 @@ public class ChoreoAutoFactory {
     @Override
     public void reset() {}
     @Override
-    public Trigger enabled() { return new Trigger(() -> false); }
+    public TriggerExt enabled() { return new TriggerExt(loop, () -> false); }
   };
 
   public static final class TrajectoryNotFoundException extends RuntimeException {

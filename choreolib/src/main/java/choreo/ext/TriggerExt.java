@@ -4,6 +4,7 @@ package choreo.ext;
 
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
@@ -50,18 +51,50 @@ public class TriggerExt extends Trigger {
   }
 
   /**
-   * On true it will evaluate the andCondition and run the andTrueCmd if true, and the andFalseCmd
-   * if false.
+   * Sets up a {@link Command} to mimic a default command while a condition is true.
+   * 
+   * <p>
+   * The command will not interrupt any command other than the original default command of the
+   * subsystems the command requires.
    *
-   * @param andCondition The condition to evaluate
-   * @param andTrueCmd The command to run if the andCondition is true
-   * @param andFalseCmd The command to run if the andCondition is false
-   * @return This trigger
+   * @param command the command to start
+   * @return this trigger, so calls can be chained
    */
-  public TriggerExt onTrueWith(
-      BooleanSupplier andCondition, Command andTrueCmd, Command andFalseCmd) {
-    this.and(andCondition).onTrue(andTrueCmd);
-    this.and(() -> !andCondition.getAsBoolean()).onTrue(andFalseCmd);
+  public TriggerExt whileTrueDefault(Command cmd) {
+    // you could implement this by overiding the subsystems default command
+    // but that has alot of foot guns and likely would leak into causing issues
+    var cond = this;
+    ((EventLoop) loopHandle.get(this)).bind(
+        new Runnable() {
+          private final CommandScheduler scheduler = CommandScheduler.getInstance();
+          private boolean pressedLast = cond.getAsBoolean();
+
+          public boolean freeToScehdule(Command cmd) {
+            var requirements = cmd.getRequirements();
+            for (var requirement : requirements) {
+              // todo test this logic better for null cases
+              if (scheduler.requiring(requirement) != requirement.getDefaultCommand()) {
+                return false;
+              }
+            }
+            return true;
+          }
+
+          @Override
+          public void run() {
+            boolean pressed = cond.getAsBoolean();
+
+            if (!pressedLast && pressed) {
+              if (!cmd.isScheduled() && freeToScehdule(cmd)) {
+                cmd.schedule();
+              }
+            } else if (pressedLast && !pressed) {
+              cmd.cancel();
+            }
+
+            pressedLast = pressed;
+          }
+        });
     return this;
   }
 

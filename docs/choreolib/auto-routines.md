@@ -3,7 +3,7 @@
 Choreolib provides a higher level api to make it easier to create competitive and complex auto routines inside your robot code.
 This is done by providing the `ChoreoAutoFactory` class.
 
-## Tiggers vs Composition
+## Triggers vs Composition
 Composition is how most teams currently architect their auto routines.
 You start with 1 `SequentialCommandGroup` and add commands to it.
 This works for many use cases but can get unwieldy when you have branches,
@@ -36,11 +36,16 @@ Uses the `Intake` `Subsystem`.
 Uses the `Intake` `Subsystem`.
 - `shootIfGp` - Shoots the note if the robot has one.
 Uses the `Shooter` `Subsystem`.
-- `aimFor(Pose2d pose)` - Aims the shooter for a specific position.
+- `aimFor(Pose2d pose)` - Aims the shooter for a specific position, also keeps the wheels spunup.
 Uses the `Shooter` `Subsystem`.
-- `autoAimAndShoot` - Aims the shooter and rotates the robot to the correct angle to shoot and then shoots.
+- `spinnup` - Spins up the shooter wheels.
+Uses the `Shooter` `Subsystem`.
+- `aim` - Aims the shooter based on the current odometry position.
+Uses the `Shooter` `Subsystem`.
 - `resetOdometry(Pose2d pose)` - Resets the odometry to a specific position.
 Uses the `Drive` `Subsystem`.
+- `autoAimAndShoot` - Aims the shooter and rotates the robot to the correct angle to shoot and then shoots.
+Uses the `Shooter` and `Drive` `Subsystem`.
 
 There is also a method to make a trigger that represents if the robot owns a note.
 - `yeGp(ChoreoAutoLoop loop)` - Returns a trigger that is true if the robot owns a note.
@@ -49,10 +54,7 @@ There is also a method to make a trigger that represents if the robot owns a not
 
 ## Creating an auto routine with triggers and a segmented trajectory
 ```java
-/**
- * An auto routine that shoots 5 notes into the speaker
- */
-public static Command fivePieceAuto(ChoreoAutoFactory factory) {
+public Command fivePieceAutoTriggerSeg(ChoreoAutoFactory factory) {
   final ChoreoAutoLoop loop = factory.newLoop();
 
   // This uses segments that all have predefined handoff points.
@@ -77,26 +79,30 @@ public static Command fivePieceAuto(ChoreoAutoFactory factory) {
   // then runs the trajectory to the first close note while extending the intake
   loop.enabled().onTrue(
       resetOdometry(ampToC1.getInitialPose()
-        .orElseGet(() -> {loop.kill(); return new Pose2d();})
-      ).andThen(
-        autoAimAndShoot(),
-        Commands.race(
-          intake(),
-          ampToC1.cmd(),
-          aimFor(ampToC1.getFinalPose().orElseGet(Pose2d::new))
-        )
-      ).withName("fivePieceAuto entry point")
+          .orElseGet(() -> {
+            loop.kill();
+            return new Pose2d();
+          })).andThen(
+              autoAimAndShoot(),
+              Commands.race(
+                  intake(),
+                  ampToC1.cmd(),
+                  aimFor(ampToC1.getFinalPose().orElseGet(Pose2d::new))))
+          .withName("fivePieceAuto entry point")
   );
+
+  // spinnup the shooter while no other command is running
+  loop.enabled().whileTrueDefault(spinnup());
 
   // shoots the note if the robot has it, then runs the trajectory to the first middle note
   ampToC1.done()
-    .onTrue(shootIfGp())
-    .onTrue(c1ToM1.cmd().waitFor(noGp(loop)));
+      .onTrue(shootIfGp())
+      .onTrue(c1ToM1.cmd().waitFor(noGp(loop)));
 
   // extends the intake while traveling towards the first middle note
   // if the robot has the note, it goes back to shoot it,
   // otherwise it goes to the next middle note
-  c1ToM1.atTime(0.35).onTrue(intake());
+  c1ToM1.atTime("intake").onTrue(intake());
   c1ToM1.done().and(yeGp(loop)).onTrue(m1ToS1.cmd());
   c1ToM1.done().and(noGp(loop)).onTrue(m1ToM2.cmd());
 
@@ -154,6 +160,9 @@ public Command fivePieceAutoTriggerMono(ChoreoAutoFactory factory) {
           .withName("fivePieceAuto entry point")
   );
 
+  // spinnup the shooter while no other command is running
+  loop.enabled().whileTrueDefault(spinnup());
+
   // extends the intake when the intake event marker is reached
   traj.atTime("intake").onTrue(intake());
   // shoots the note when the shoot event marker is reached
@@ -169,4 +178,82 @@ public Command fivePieceAutoTriggerMono(ChoreoAutoFactory factory) {
 
   return loop.cmd().beforeStarting(() -> shootIndex.set(0)).withName("fivePieceAuto");
 }
+```
+
+## Creating an auto routine with composition and a segmented trajectory
+```java
+public Command fivePieceAutoCompositionSeg(ChoreoAutoFactory factory) {
+
+  // This uses segments that all have predefined handoff points.
+  // These handoff points follow a naming convention
+  // C1, C2, C3: The 3 close notes, C1 having the greatest y value
+  // M1, M2, M3, M4, M5: The 5 middle notes, M1 having the greatest y value
+  // S1, S2, S3: 3 arbitrary shooting positions that are near the stage, S1 having the greatest y value
+  // AMP, SUB, SRC: The 3 starting positions
+
+  // Try to load all the trajectories we need
+  final ChoreoAutoTrajectory ampToC1 = factory.traj("ampToC1", ChoreoAutoFactory.VOID_LOOP);
+  final Command c1ToM1 = factory.trajCommand("c1ToM1");
+  final Command m1ToS1 = factory.trajCommand("m1ToS1");
+  final Command m1ToM2 = factory.trajCommand("m1ToM2");
+  final Command m2ToS1 = factory.trajCommand("m2ToS2");
+  final Command s1ToC2 = factory.trajCommand("s1ToC2");
+  final Command c2ToC3 = factory.trajCommand("c2ToC3");
+
+  Pose2d startingPose;
+  if (ampToC1.getInitialPose().isPresent()) {
+    startingPose = ampToC1.getInitialPose().get();
+  } else {
+    return Commands.none();
+  }
+
+  return Commands.sequence(
+      resetOdometry(startingPose),
+      autoAimAndShoot(),
+      Commands.deadline(
+        ampToC1.cmd(),
+        intake(),
+        aimFor(ampToC1.getFinalPose().orElseGet(Pose2d::new))
+      ),
+      shootIfGp(),
+      Commands.deadline(
+        c1ToM1,
+        Commands.waitSeconds(0.35).andThen(intake())
+      ),
+      new ConditionalCommand(
+        Commands.deadline(
+          m1ToS1,
+          aim()
+        ).andThen(shootIfGp()),
+        Commands.deadline(
+          m1ToM2,
+          intake()
+        ).andThen(
+          Commands.deadline(
+            m2ToS1,
+            aim()
+          ),
+          shootIfGp()
+        ),
+        yeGp() // if you arent using the triggers api these wouldnt need a custom loop
+      ),
+      Commands.deadline(
+        s1ToC2,
+        intake(),
+        aim()
+      ),
+      shootIfGp(),
+      Commands.deadline(
+        c2ToC3,
+        intake(),
+        spinnup()
+      ),
+      shootIfGp()
+  ).withName("fivePieceAuto");
+}
+```
+
+## Creating an auto routine with composition and a monolithic trajectory
+```java
+  // please just dont do this
 ```

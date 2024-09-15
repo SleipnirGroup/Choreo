@@ -11,6 +11,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
 
+import choreo.ext.TriggerExt;
+
 /**
  * A loop that represents an autonomous routine.
  *
@@ -61,8 +63,8 @@ public class ChoreoAutoLoop {
    *
    * @return A {@link Trigger} that is true while this autonomous loop is being polled.
    */
-  public Trigger enabled() {
-    return new Trigger(loop, () -> isActive).and(DriverStation::isAutonomousEnabled);
+  public TriggerExt enabled() {
+    return new TriggerExt(loop, () -> isActive && DriverStation.isAutonomousEnabled());
   }
 
   /** Polls the loop. Should be called in the autonomous periodic method. */

@@ -1,13 +1,18 @@
-package choreo;
+package test.choreo;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import choreo.ChoreoAutoFactory;
+import choreo.ChoreoAutoLoop;
+import choreo.ChoreoAutoTrajectory;
 
 public class Examples {
   private static Subsystem shooter = new Subsystem() {
@@ -21,7 +26,15 @@ public class Examples {
     return Commands.none();
   }
 
+  private static Command spinnup() {
+    return Commands.none();
+  }
+
   private static Command aimFor(Pose2d pose) {
+    return Commands.none();
+  }
+
+  private static Command aim() {
     return Commands.none();
   }
 
@@ -38,6 +51,10 @@ public class Examples {
   }
 
   private static Trigger noGp(ChoreoAutoLoop loop) {
+    return new Trigger(() -> false);
+  }
+
+  private static Trigger yeGp() {
     return new Trigger(() -> false);
   }
 
@@ -75,7 +92,11 @@ public class Examples {
                     intake(),
                     ampToC1.cmd(),
                     aimFor(ampToC1.getFinalPose().orElseGet(Pose2d::new))))
-            .withName("fivePieceAuto entry point"));
+            .withName("fivePieceAuto entry point")
+    );
+
+    // spinnup the shooter while no other command is running
+    loop.enabled().whileTrueDefault(spinnup());
 
     // shoots the note if the robot has it, then runs the trajectory to the first middle note
     ampToC1.done()
@@ -140,6 +161,9 @@ public class Examples {
             .withName("fivePieceAuto entry point")
     );
 
+    // spinnup the shooter while no other command is running
+    loop.enabled().whileTrueDefault(spinnup());
+
     // extends the intake when the intake event marker is reached
     traj.atTime("intake").onTrue(intake());
     // shoots the note when the shoot event marker is reached
@@ -154,5 +178,75 @@ public class Examples {
         Set.of(shooter)));
 
     return loop.cmd().beforeStarting(() -> shootIndex.set(0)).withName("fivePieceAuto");
+  }
+
+  public Command fivePieceAutoCompositionSeg(ChoreoAutoFactory factory) {
+
+    // This uses segments that all have predefined handoff points.
+    // These handoff points follow a naming convention
+    // C1, C2, C3: The 3 close notes, C1 having the greatest y value
+    // M1, M2, M3, M4, M5: The 5 middle notes, M1 having the greatest y value
+    // S1, S2, S3: 3 arbitrary shooting positions that are near the stage, S1 having the greatest y value
+    // AMP, SUB, SRC: The 3 starting positions
+
+    // Try to load all the trajectories we need
+    final ChoreoAutoTrajectory ampToC1 = factory.traj("ampToC1", ChoreoAutoFactory.VOID_LOOP);
+    final Command c1ToM1 = factory.trajCommand("c1ToM1");
+    final Command m1ToS1 = factory.trajCommand("m1ToS1");
+    final Command m1ToM2 = factory.trajCommand("m1ToM2");
+    final Command m2ToS1 = factory.trajCommand("m2ToS2");
+    final Command s1ToC2 = factory.trajCommand("s1ToC2");
+    final Command c2ToC3 = factory.trajCommand("c2ToC3");
+
+    Pose2d startingPose;
+    if (ampToC1.getInitialPose().isPresent()) {
+      startingPose = ampToC1.getInitialPose().get();
+    } else {
+      return Commands.none();
+    }
+
+    return Commands.sequence(
+        resetOdometry(startingPose),
+        autoAimAndShoot(),
+        Commands.deadline(
+          ampToC1.cmd(),
+          intake(),
+          aimFor(ampToC1.getFinalPose().orElseGet(Pose2d::new))
+        ),
+        shootIfGp(),
+        Commands.deadline(
+          c1ToM1,
+          Commands.waitSeconds(0.35).andThen(intake())
+        ),
+        new ConditionalCommand(
+          Commands.deadline(
+            m1ToS1,
+            aim()
+          ).andThen(shootIfGp()),
+          Commands.deadline(
+            m1ToM2,
+            intake()
+          ).andThen(
+            Commands.deadline(
+              m2ToS1,
+              aim()
+            ),
+            shootIfGp()
+          ),
+          yeGp() // if you arent using the triggers api these wouldnt need a custom loop
+        ),
+        Commands.deadline(
+          s1ToC2,
+          intake(),
+          aim()
+        ),
+        shootIfGp(),
+        Commands.deadline(
+          c2ToC3,
+          intake(),
+          spinnup()
+        ),
+        shootIfGp()
+    ).withName("fivePieceAuto");
   }
 }
