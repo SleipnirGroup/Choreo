@@ -2,7 +2,7 @@ package test.choreo;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import static edu.wpi.first.wpilibj2.command.Commands.*;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -19,31 +19,31 @@ public class Examples {
   };
 
   private static Command intake() {
-    return Commands.none();
+    return none();
   }
 
   private static Command shootIfGp() {
-    return Commands.none();
+    return none();
   }
 
   private static Command spinnup() {
-    return Commands.none();
+    return none();
   }
 
   private static Command aimFor(Pose2d pose) {
-    return Commands.none();
+    return none();
   }
 
   private static Command aim() {
-    return Commands.none();
+    return none();
   }
 
   private static Command autoAimAndShoot() {
-    return Commands.none();
+    return none();
   }
 
   private static Command resetOdometry(Pose2d pose) {
-    return Commands.none();
+    return none();
   }
 
   private static Trigger yeGp(ChoreoAutoLoop loop) {
@@ -88,7 +88,7 @@ public class Examples {
               return new Pose2d();
             })).andThen(
                 autoAimAndShoot(),
-                Commands.race(
+                race(
                     intake(),
                     ampToC1.cmd(),
                     aimFor(ampToC1.getFinalPose().orElseGet(Pose2d::new))))
@@ -173,7 +173,7 @@ public class Examples {
     // the aim command aims based on the next shoot event marker position
     final AtomicInteger shootIndex = new AtomicInteger(0);
     final Pose2d[] shootPositions = traj.collectEventPoses("shoot");
-    traj.atTime("aim").onTrue(Commands.defer(
+    traj.atTime("aim").onTrue(defer(
         () -> aimFor(shootPositions[shootIndex.getAndIncrement()]),
         Set.of(shooter)));
 
@@ -202,32 +202,32 @@ public class Examples {
     if (ampToC1.getInitialPose().isPresent()) {
       startingPose = ampToC1.getInitialPose().get();
     } else {
-      return Commands.none();
+      return none();
     }
 
-    return Commands.sequence(
+    return sequence(
         resetOdometry(startingPose),
         autoAimAndShoot(),
-        Commands.deadline(
+        deadline(
           ampToC1.cmd(),
           intake(),
           aimFor(ampToC1.getFinalPose().orElseGet(Pose2d::new))
         ),
         shootIfGp(),
-        Commands.deadline(
+        deadline(
           c1ToM1,
-          Commands.waitSeconds(0.35).andThen(intake())
+          waitSeconds(0.35).andThen(intake())
         ),
         new ConditionalCommand(
-          Commands.deadline(
+          deadline(
             m1ToS1,
             aim()
           ).andThen(shootIfGp()),
-          Commands.deadline(
+          deadline(
             m1ToM2,
             intake()
           ).andThen(
-            Commands.deadline(
+            deadline(
               m2ToS1,
               aim()
             ),
@@ -235,13 +235,13 @@ public class Examples {
           ),
           yeGp() // if you arent using the triggers api these wouldnt need a custom loop
         ),
-        Commands.deadline(
+        deadline(
           s1ToC2,
           intake(),
           aim()
         ),
         shootIfGp(),
-        Commands.deadline(
+        deadline(
           c2ToC3,
           intake(),
           spinnup()
