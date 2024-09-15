@@ -2,6 +2,7 @@
 
 package choreo;
 
+import choreo.ext.TriggerExt;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -10,8 +11,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
-
-import choreo.ext.TriggerExt;
 
 /**
  * A loop that represents an autonomous routine.
@@ -105,12 +104,12 @@ public class ChoreoAutoLoop {
     onNewTrajectory();
   }
 
-  /**
-   * Kills the loop and prevents it from running again.
-   */
+  /** Kills the loop and prevents it from running again. */
   public void kill() {
     CommandScheduler.getInstance().cancelAll();
-    if (isKilled) { return; }
+    if (isKilled) {
+      return;
+    }
     reset();
     DriverStation.reportWarning("Killed An Auto Loop", true);
     isKilled = true;

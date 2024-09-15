@@ -180,21 +180,22 @@ public class ChoreoAutoTrajectory {
   public CommandExt cmd() {
     // if the trajectory is empty, return a command that will print an error
     if (trajectory.samples().isEmpty()) {
-      return new CommandExt(driveSubsystem
-          .runOnce(
-              () -> {
-                DriverStation.reportError("Trajectory " + name + " has no samples", false);
-              })
-          .withName("Trajectory_" + name));
+      return new CommandExt(
+          driveSubsystem
+              .runOnce(
+                  () -> {
+                    DriverStation.reportError("Trajectory " + name + " has no samples", false);
+                  })
+              .withName("Trajectory_" + name));
     }
     return new CommandExt(
         new FunctionalCommand(
-            this::cmdInitialize,
-            this::cmdExecute,
-            this::cmdEnd,
-            this::cmdIsFinished,
-            driveSubsystem)
-        .withName("Trajectory_" + name));
+                this::cmdInitialize,
+                this::cmdExecute,
+                this::cmdEnd,
+                this::cmdIsFinished,
+                driveSubsystem)
+            .withName("Trajectory_" + name));
   }
 
   /**
@@ -431,7 +432,7 @@ public class ChoreoAutoTrajectory {
 
   /**
    * Returns an array of all the timestamps of the events with the given name.
-   * 
+   *
    * @param eventName The name of the event.
    * @return An array of all the timestamps of the events with the given name.
    */
@@ -441,7 +442,7 @@ public class ChoreoAutoTrajectory {
 
   /**
    * Returns an array of all the poses of the events with the given name.
-   * 
+   *
    * @param eventName The name of the event.
    * @return An array of all the poses of the events with the given name.
    */

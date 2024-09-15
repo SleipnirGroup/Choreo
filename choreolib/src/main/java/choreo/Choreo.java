@@ -9,7 +9,6 @@ import choreo.trajectory.ChoreoTrajectory;
 import choreo.trajectory.TrajSample;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -55,9 +54,9 @@ public final class Choreo {
   /**
    * Load a trajectory from the deploy directory. Choreolib expects .traj files to be placed in
    * src/main/deploy/choreo/[trajName].traj.
-   * 
+   *
    * @param trajName the path name in Choreo, which matches the file name in the deploy directory,
-   * file extension is optional.
+   *     file extension is optional.
    * @return the loaded trajectory, or `Optional.empty()` if the trajectory could not be loaded.
    */
   @SuppressWarnings("unchecked")

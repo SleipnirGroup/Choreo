@@ -52,9 +52,8 @@ public class TriggerExt extends Trigger {
 
   /**
    * Sets up a {@link Command} to mimic a default command while a condition is true.
-   * 
-   * <p>
-   * The command will not interrupt any command other than the original default command of the
+   *
+   * <p>The command will not interrupt any command other than the original default command of the
    * subsystems the command requires.
    *
    * @param command the command to start
@@ -64,37 +63,38 @@ public class TriggerExt extends Trigger {
     // you could implement this by overiding the subsystems default command
     // but that has alot of foot guns and likely would leak into causing issues
     var cond = this;
-    ((EventLoop) loopHandle.get(this)).bind(
-        new Runnable() {
-          private final CommandScheduler scheduler = CommandScheduler.getInstance();
-          private boolean pressedLast = cond.getAsBoolean();
+    ((EventLoop) loopHandle.get(this))
+        .bind(
+            new Runnable() {
+              private final CommandScheduler scheduler = CommandScheduler.getInstance();
+              private boolean pressedLast = cond.getAsBoolean();
 
-          public boolean freeToScehdule(Command cmd) {
-            var requirements = cmd.getRequirements();
-            for (var requirement : requirements) {
-              // todo test this logic better for null cases
-              if (scheduler.requiring(requirement) != requirement.getDefaultCommand()) {
-                return false;
+              public boolean freeToScehdule(Command cmd) {
+                var requirements = cmd.getRequirements();
+                for (var requirement : requirements) {
+                  // todo test this logic better for null cases
+                  if (scheduler.requiring(requirement) != requirement.getDefaultCommand()) {
+                    return false;
+                  }
+                }
+                return true;
               }
-            }
-            return true;
-          }
 
-          @Override
-          public void run() {
-            boolean pressed = cond.getAsBoolean();
+              @Override
+              public void run() {
+                boolean pressed = cond.getAsBoolean();
 
-            if (!pressedLast && pressed) {
-              if (!cmd.isScheduled() && freeToScehdule(cmd)) {
-                cmd.schedule();
+                if (!pressedLast && pressed) {
+                  if (!cmd.isScheduled() && freeToScehdule(cmd)) {
+                    cmd.schedule();
+                  }
+                } else if (pressedLast && !pressed) {
+                  cmd.cancel();
+                }
+
+                pressedLast = pressed;
               }
-            } else if (pressedLast && !pressed) {
-              cmd.cancel();
-            }
-
-            pressedLast = pressed;
-          }
-        });
+            });
     return this;
   }
 
