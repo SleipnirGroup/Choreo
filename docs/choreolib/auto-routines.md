@@ -99,7 +99,7 @@ public Command fivePieceAutoTriggerSeg(ChoreoAutoFactory factory) {
   // shoots the note if the robot has it, then runs the trajectory to the first middle note
   ampToC1.done()
       .onTrue(shootIfGp())
-      .onTrue(c1ToM1.cmd().waitFor(noGp(loop)));
+      .onTrue(c1ToM1.cmd().after(noGp(loop)));
 
   // extends the intake while traveling towards the first middle note
   // if the robot has the note, it goes back to shoot it,
@@ -111,7 +111,7 @@ public Command fivePieceAutoTriggerSeg(ChoreoAutoFactory factory) {
   // aims the shooter while traveling to shoot
   m1ToS1.active().whileTrue(aimFor(m1ToS1.getFinalPose().orElseGet(Pose2d::new)));
   m1ToS1.done().onTrue(shootIfGp());
-  m1ToS1.done().onTrue(m1ToM2.cmd().waitFor(noGp(loop)));
+  m1ToS1.done().onTrue(m1ToM2.cmd().after(noGp(loop)));
 
   // extends the intake while traveling towards the second middle note
   // go back to shoot no matter what
@@ -121,7 +121,7 @@ public Command fivePieceAutoTriggerSeg(ChoreoAutoFactory factory) {
   // aims the shooter while traveling to shoot
   m2ToS1.active().whileTrue(aimFor(m2ToS1.getFinalPose().orElseGet(Pose2d::new)));
   m2ToS1.done().onTrue(shootIfGp());
-  m2ToS1.done().onTrue(s1ToC2.cmd().waitFor(noGp(loop)));
+  m2ToS1.done().onTrue(s1ToC2.cmd().after(noGp(loop)));
 
   // extends the intake while traveling towards the second close note
   // if the robot has the note, it shoots it
@@ -129,7 +129,7 @@ public Command fivePieceAutoTriggerSeg(ChoreoAutoFactory factory) {
   s1ToC2.active().whileTrue(intake());
   s1ToC2.active().whileTrue(aimFor(s1ToC2.getFinalPose().orElseGet(Pose2d::new)));
   s1ToC2.done().onTrue(shootIfGp());
-  s1ToC2.done().onTrue(c2ToC3.cmd().waitFor(noGp(loop)));
+  s1ToC2.done().onTrue(c2ToC3.cmd().after(noGp(loop)));
 
   // extends the intake while traveling towards the third close note
   // if the robot has the note, it shoots it

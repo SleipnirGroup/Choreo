@@ -13,7 +13,11 @@ public class CommandExt extends Command {
     this.command = command;
   }
 
-  public Command waitFor(BooleanSupplier condition) {
+  public Command after(BooleanSupplier condition) {
     return Commands.sequence(Commands.waitUntil(condition), command);
+  }
+
+  public Command afterSeconds(double seconds) {
+    return Commands.sequence(Commands.waitSeconds(seconds), command);
   }
 }
