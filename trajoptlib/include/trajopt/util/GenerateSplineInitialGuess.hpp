@@ -5,6 +5,7 @@
 #include <cmath>
 #include <concepts>
 #include <span>
+#include <utility>
 #include <vector>
 
 #include <Eigen/Core>
@@ -13,7 +14,8 @@
 #include "trajopt/geometry/Pose2.hpp"
 #include "trajopt/geometry/Rotation2.hpp"
 #include "trajopt/geometry/Translation2.hpp"
-#include "trajopt/spline/PoseSplineHolonomic.hpp"
+#include "trajopt/spline/CubicHermitePoseSplineHolonomic.hpp"
+#include "trajopt/spline/SplineHelper.hpp"
 #include "trajopt/util/TrajoptUtil.hpp"
 
 namespace trajopt {
@@ -21,71 +23,79 @@ namespace trajopt {
 // TODO: implement for diffy drive
 struct DifferentialSolution;
 
-inline PoseSplineHolonomic poseSplineFromGuessPoints(
-    const std::vector<std::vector<Pose2d>>& initialGuessPoints) {
-  size_t num_pts = 0;
-  for (const auto& guesses : initialGuessPoints) {
-    num_pts += guesses.size();
+using PoseWithCurvature = std::pair<Pose2d, double>;
+
+std::vector<CubicHermitePoseSplineHolonomic> splinesFromWaypoints(
+    const std::vector<std::vector<Pose2d>> initialGuessPoints) {
+  size_t totalGuessPoints = 0;
+  for (const auto& points : initialGuessPoints) {
+    totalGuessPoints += points.size();
   }
-  std::vector<size_t> times;
-  times.reserve(num_pts);
+  std::vector<Translation2d> flatTranslationPoints;
+  std::vector<Rotation2d> flatHeadings;
+  flatTranslationPoints.reserve(totalGuessPoints);
+  flatHeadings.reserve(totalGuessPoints);
 
-  std::vector<Pose2d> flatPoses;
-  flatPoses.reserve(num_pts);
-
-  double t = 0.0;
-  times.push_back(0.0);
-  for (auto points : initialGuessPoints) {
-    for (auto point : points) {
-      flatPoses.push_back(point);
-      times.push_back(t);
-      t += 1.0;
-      std::printf("pose: %.2f, %.2f\n", point.X(), point.Y());
+  // populate translation and heading vectors
+  for (const auto& guessPoints : initialGuessPoints) {
+    for (const auto& guessPoint : guessPoints) {
+      flatTranslationPoints.emplace_back(guessPoint.Translation().X(),
+                                         guessPoint.Translation().Y());
+      flatHeadings.emplace_back(guessPoint.Rotation().Cos(),
+                                guessPoint.Rotation().Sin());
     }
   }
-  return PoseSplineHolonomic(flatPoses);
+
+  // calculate angles and pose for start and end of path spline
+  const auto startSplineAngle =
+      (flatTranslationPoints.at(1) - flatTranslationPoints.at(0)).Angle();
+  const auto endSplineAngle =
+      (flatTranslationPoints.back() -
+       flatTranslationPoints.at(flatTranslationPoints.size() - 2))
+          .Angle();
+  const Pose2d start{flatTranslationPoints.front(), startSplineAngle};
+  const Pose2d end{flatTranslationPoints.back(), endSplineAngle};
+
+  // use all interior points to create the path spline
+  std::vector<Translation2d> interiorPoints{flatTranslationPoints.begin() + 1,
+                                            flatTranslationPoints.end() - 1};
+
+  const auto splineControlVectors =
+      frc::SplineHelper::CubicControlVectorsFromWaypoints(start, interiorPoints,
+                                                          end);
+  const auto splines_temp = frc::SplineHelper::CubicSplinesFromControlVectors(
+      splineControlVectors.front(), interiorPoints,
+      splineControlVectors.back());
+
+  std::vector<trajopt::CubicHermitePoseSplineHolonomic> splines;
+  splines.reserve(splines_temp.size());
+  for (size_t i = 1; i <= splines_temp.size(); ++i) {
+    splines.emplace_back(splines_temp.at(i - 1), flatHeadings.at(i - 1),
+                         flatHeadings.at(i));
+  }
+  return splines;
 }
 
 template <typename Solution>
 inline Solution GenerateSplineInitialGuess(
     const std::vector<std::vector<Pose2d>>& initialGuessPoints,
     const std::vector<size_t> controlIntervalCounts) {
-  size_t wptCnt = controlIntervalCounts.size() + 1;
-  size_t sampTot = GetIndex(controlIntervalCounts, wptCnt, 0);
-
-  Solution initialGuess;
-
-  initialGuess.x.reserve(sampTot);
-  initialGuess.y.reserve(sampTot);
-  if constexpr (std::same_as<Solution, DifferentialSolution>) {
-    initialGuess.heading.reserve(sampTot);
-  } else {
-    initialGuess.thetacos.reserve(sampTot);
-    initialGuess.thetasin.reserve(sampTot);
-  }
-
-  initialGuess.dt.reserve(sampTot);
-
-  for (size_t i = 0; i < sampTot; ++i) {
-    initialGuess.dt.push_back((wptCnt * 5.0) / sampTot);
-  }
+  std::vector<trajopt::CubicHermitePoseSplineHolonomic> splines =
+      splinesFromWaypoints(initialGuessPoints);
 
   size_t guessPoints = 0;
   for (const auto& guesses : initialGuessPoints) {
     guessPoints += guesses.size();
   }
-  std::printf("guesses size: %zd\n", guessPoints);
-  auto poseSpline = poseSplineFromGuessPoints(initialGuessPoints);
-  std::vector<std::vector<Pose2d>> sgmtPoints;
+  std::vector<std::vector<PoseWithCurvature>> sgmtPoints;
   sgmtPoints.reserve(guessPoints);
   for (size_t i = 0; i < guessPoints; ++i) {
-    sgmtPoints.push_back(std::vector<Pose2d>());
+    sgmtPoints.push_back(std::vector<PoseWithCurvature>());
   }
 
-  // TODO: clean this up. not necessary to nest for loops since it continuous
-  // spline
   size_t trajIdx = 0;
-  sgmtPoints.at(0).push_back(poseSpline.getPoint(0.0));
+  std::printf("sgmt1\n");
+  sgmtPoints.at(0).push_back(splines.at(trajIdx).GetPoint(0).first);
   std::printf("ctrlCount: [");
   for (auto count : controlIntervalCounts) {
     std::printf("%zd,", count);
@@ -100,9 +110,8 @@ inline Solution GenerateSplineInitialGuess(
         samples += (samplesForSgmt % guessPointsSize);
       }
       for (size_t sampleIdx = 1; sampleIdx < samples + 1; ++sampleIdx) {
-        auto t = static_cast<double>(sampleIdx) / samples;  // + trajIdx
-        const auto state =
-            poseSpline.getPoint(static_cast<double>(trajIdx) + t);
+        auto t = static_cast<double>(sampleIdx) / samples;
+        const auto state = splines.at(trajIdx).GetPoint(t);
         sgmtPoints.at(trajIdx + 1).push_back(state);
         // std::printf("%zd, x: %f, y: %f, t: %f\n",
         //               sampleIdx, state.pose.X().value(),
@@ -113,27 +122,36 @@ inline Solution GenerateSplineInitialGuess(
     }
   }
 
+  size_t wptCnt = controlIntervalCounts.size() + 1;
+  size_t sampTot = GetIndex(controlIntervalCounts, wptCnt, 0);
+
+  Solution initialGuess;
+
+  initialGuess.x.reserve(sampTot);
+  initialGuess.y.reserve(sampTot);
+  if constexpr (std::same_as<Solution, DifferentialSolution>) {
+    initialGuess.heading.reserve(sampTot);
+  } else {
+    initialGuess.thetacos.reserve(sampTot);
+    initialGuess.thetasin.reserve(sampTot);
+  }
+  initialGuess.dt.reserve(sampTot);
+  for (size_t i = 0; i < sampTot; ++i) {
+    initialGuess.dt.push_back((wptCnt * 5.0) / sampTot);
+  }
+
   for (auto sgmt : sgmtPoints) {
-    for (auto pose : sgmt) {
-      initialGuess.x.push_back(pose.X());
-      initialGuess.y.push_back(pose.Y());
+    for (auto pt : sgmt) {
+      initialGuess.x.push_back(pt.first.X().value());
+      initialGuess.y.push_back(pt.first.Y().value());
       if constexpr (std::same_as<Solution, DifferentialSolution>) {
-        initialGuess.heading.push_back(pose.Rotation().Radians());
+        initialGuess.heading.push_back(pt.first.Rotation().Radians().value());
       } else {
-        initialGuess.thetacos.push_back(pose.Rotation().Cos());
-        initialGuess.thetasin.push_back(pose.Rotation().Sin());
+        initialGuess.thetacos.push_back(pt.first.Rotation().Cos());
+        initialGuess.thetasin.push_back(pt.first.Rotation().Sin());
       }
     }
   }
-
-  std::printf("init guess: [");
-  for (auto i = 0; i < initialGuess.x.size(); ++i) {
-    std::printf("x: %.2f, y: %.2f, cos: %.2f, sin: %.2f\n", initialGuess.x[i],
-                initialGuess.y[i], initialGuess.thetacos[i],
-                initialGuess.thetasin[i]);
-  }
-  std::printf("]\n");
-
   return initialGuess;
 }
 
