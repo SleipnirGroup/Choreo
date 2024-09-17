@@ -235,7 +235,7 @@ fn postprocess(result: &[Sample], mut path: TrajFile, counts_vec: Vec<usize>) ->
             let total_intervals = interval;
             interval += pt.1.intervals;
             (
-                pt.1.split && !( pt.0 == 0 || pt.0 == snapshot.waypoints.len() - 1),
+                pt.1.split && !(pt.0 == 0 || pt.0 == snapshot.waypoints.len() - 1),
                 total_intervals,
                 result.get(total_intervals).map_or(0.0, |s| match s {
                     Sample::Swerve { t, .. } => *t,

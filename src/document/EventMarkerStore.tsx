@@ -228,15 +228,19 @@ export const EventMarkerStore = types
       } else if (self.offset.value == 0) {
         return true;
       } else {
-        const splitTimes = path.traj.splits.map((idx) => path.traj.samples[idx]?.t);
-        [0, ...splitTimes, path.traj.getTotalTimeSeconds()].forEach((stopTimestamp) => {
-          if (
-            (targetTimestamp < stopTimestamp && timestamp > stopTimestamp) ||
-            (targetTimestamp > stopTimestamp && timestamp < stopTimestamp)
-          ) {
-            retVal = false;
+        const splitTimes = path.traj.splits.map(
+          (idx) => path.traj.samples[idx]?.t
+        );
+        [0, ...splitTimes, path.traj.getTotalTimeSeconds()].forEach(
+          (stopTimestamp) => {
+            if (
+              (targetTimestamp < stopTimestamp && timestamp > stopTimestamp) ||
+              (targetTimestamp > stopTimestamp && timestamp < stopTimestamp)
+            ) {
+              retVal = false;
+            }
           }
-        });
+        );
       }
       return retVal;
     }

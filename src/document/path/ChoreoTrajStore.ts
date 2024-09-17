@@ -20,14 +20,10 @@ export const ChoreoTrajStore = types
       return self.samples;
     },
     get isSwerve(): boolean {
-      return (
-        self.samples.length === 0 || Object.hasOwn(self.samples[0], "vx")
-      );
+      return self.samples.length === 0 || Object.hasOwn(self.samples[0], "vx");
     },
     get isDifferential(): boolean {
-      return (
-        self.samples.length === 0 || Object.hasOwn(self.samples[0], "vl")
-      );
+      return self.samples.length === 0 || Object.hasOwn(self.samples[0], "vl");
     },
     // 01234567
     // ...
@@ -42,29 +38,27 @@ export const ChoreoTrajStore = types
     // 6,2,2
     // the last interval of a section is considered the first interval of the next
     getIdxOfFullTraj(indexRemaining: number): [number, number] | undefined {
-
       if (self.samples.length === 0) {
         return undefined;
       }
       if (self.splits.length === 0) {
-        console.log("no splits", self.splits)
+        console.log("no splits", self.splits);
         return [0, indexRemaining];
       }
       let sect = 0;
       // intentionally goes past valid index
       for (; sect <= self.splits.length; sect++) {
-        const prevSplit = self.splits[sect-1] ?? 0;
-        console.log("i", indexRemaining, "prev", prevSplit);//, "next", nextSplit);
+        const prevSplit = self.splits[sect - 1] ?? 0;
+        console.log("i", indexRemaining, "prev", prevSplit); //, "next", nextSplit);
         if (prevSplit <= indexRemaining) {
-          const nextSplit =  self.splits[sect];
-          
-          if (nextSplit === undefined || nextSplit > indexRemaining) {
-            return [sect, indexRemaining-prevSplit];
-          }
+          const nextSplit = self.splits[sect];
 
+          if (nextSplit === undefined || nextSplit > indexRemaining) {
+            return [sect, indexRemaining - prevSplit];
+          }
         }
       }
-      console.log("could not find any")
+      console.log("could not find any");
       return [0, indexRemaining];
     },
     getTotalTimeSeconds(): number {
@@ -88,7 +82,7 @@ export const ChoreoTrajStore = types
       self.waypoints = ser.waypoints;
       self.splits = ser.splits;
       self.samples = ser.samples;
-      
+
       self.forcesAvailable = ser.forcesAvailable;
       console.log(ser);
     },
