@@ -135,7 +135,7 @@ class Spline {
    * @return The Translation2d.
    */
   static trajopt::Translation2d FromVector(const Eigen::Vector2d& vector) {
-    return Translation2d{vector(0), vector(1)};
+    return trajopt::Translation2d{vector(0), vector(1)};
   }
 };
 }  // namespace frc

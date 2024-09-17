@@ -25,7 +25,7 @@ struct DifferentialSolution;
 
 using PoseWithCurvature = std::pair<Pose2d, double>;
 
-std::vector<CubicHermitePoseSplineHolonomic> splinesFromWaypoints(
+inline std::vector<CubicHermitePoseSplineHolonomic> splinesFromWaypoints(
     const std::vector<std::vector<Pose2d>> initialGuessPoints) {
   size_t totalGuessPoints = 0;
   for (const auto& points : initialGuessPoints) {
@@ -95,7 +95,7 @@ inline Solution GenerateSplineInitialGuess(
 
   size_t trajIdx = 0;
   std::printf("sgmt1\n");
-  sgmtPoints.at(0).push_back(splines.at(trajIdx).GetPoint(0).first);
+  sgmtPoints.at(0).push_back(splines.at(trajIdx).GetPoint(0));
   std::printf("ctrlCount: [");
   for (auto count : controlIntervalCounts) {
     std::printf("%zd,", count);
@@ -142,10 +142,10 @@ inline Solution GenerateSplineInitialGuess(
 
   for (auto sgmt : sgmtPoints) {
     for (auto pt : sgmt) {
-      initialGuess.x.push_back(pt.first.X().value());
-      initialGuess.y.push_back(pt.first.Y().value());
+      initialGuess.x.push_back(pt.first.X());
+      initialGuess.y.push_back(pt.first.Y());
       if constexpr (std::same_as<Solution, DifferentialSolution>) {
-        initialGuess.heading.push_back(pt.first.Rotation().Radians().value());
+        initialGuess.heading.push_back(pt.first.Rotation().Radians());
       } else {
         initialGuess.thetacos.push_back(pt.first.Rotation().Cos());
         initialGuess.thetasin.push_back(pt.first.Rotation().Sin());
