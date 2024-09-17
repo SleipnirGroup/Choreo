@@ -42,14 +42,12 @@ export const ChoreoTrajStore = types
         return undefined;
       }
       if (self.splits.length === 0) {
-        console.log("no splits", self.splits);
         return [0, indexRemaining];
       }
       let sect = 0;
       // intentionally goes past valid index
       for (; sect <= self.splits.length; sect++) {
         const prevSplit = self.splits[sect - 1] ?? 0;
-        console.log("i", indexRemaining, "prev", prevSplit); //, "next", nextSplit);
         if (prevSplit <= indexRemaining) {
           const nextSplit = self.splits[sect];
 
@@ -58,7 +56,6 @@ export const ChoreoTrajStore = types
           }
         }
       }
-      console.log("could not find any");
       return [0, indexRemaining];
     },
     getTotalTimeSeconds(): number {
@@ -84,7 +81,6 @@ export const ChoreoTrajStore = types
       self.samples = ser.samples;
 
       self.forcesAvailable = ser.forcesAvailable;
-      console.log(ser);
     },
     deleteMarkerUUID(uuid: string) {
       const index = self.markers.findIndex((m) => m.uuid === uuid);
