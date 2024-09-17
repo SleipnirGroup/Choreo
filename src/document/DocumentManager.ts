@@ -180,6 +180,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
             y: vars().createExpression(config.modules[i].y, "Length")
           };
         }),
+        diffTrackWidth: vars().createExpression(config.diffTrackWidth, "Length"),
         identifier: crypto.randomUUID()
       });
     },

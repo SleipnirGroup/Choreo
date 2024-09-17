@@ -43,6 +43,7 @@ export interface RobotConfig<T extends ExprOrNumber> {
   /// motor N*m
   tmax: T; // N*m
   bumper: Bumper<T>;
+  diffTrackWidth: T;
 }
 
 export interface Project {

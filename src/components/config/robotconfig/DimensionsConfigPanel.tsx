@@ -138,12 +138,12 @@ class RobotConfigPanel extends Component<Props, State> {
           </>
         ) : (
           <ExpressionInput
-            title="Half Trackwidth"
+            title="Trackwidth"
             enabled={true}
             roundingPrecision={3}
-            number={config.modules[1].y}
+            number={config.diffTrackWidth}
             maxWidthCharacters={8}
-            titleTooltip="Distance from robot center to one wheel row"
+            titleTooltip="Distance between wheel sides"
           />
         )}
       </ExpressionInputList>
