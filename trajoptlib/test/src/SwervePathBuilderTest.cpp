@@ -35,6 +35,8 @@ TEST_CASE("SwervePathBuilder - Spline initial guess", "[SwervePathBuilder]") {
       0, {Pose2d{1.0, 0.0, 0.0}, Pose2d{2.0, 0.0, 0.0}});  // from 0 to 1
   path.WptInitialGuessPoint(1, Pose2d{1.0, 0.0, 0.0});     // at 1
 
+  path.SgmtInitialGuessPoints(
+    1, {Pose2d{3.0, 0.0, 0.0}}); // from 1 to 2
   path.WptInitialGuessPoint(2, Pose2d{5.0, 0.0, 0.0});  // at 2
 
   path.ControlIntervalCounts({3, 2});
