@@ -89,7 +89,7 @@ pub struct RobotConfig<T: SnapshottableType> {
     /// motor N*m
     pub tmax: T, // N*m
     pub bumper: Bumper<T>,
-    pub diff_track_width: T
+    pub diff_track_width: T,
 }
 
 impl<T: SnapshottableType> RobotConfig<T> {
@@ -103,7 +103,7 @@ impl<T: SnapshottableType> RobotConfig<T> {
             vmax: self.vmax.snapshot(),
             tmax: self.tmax.snapshot(),
             bumper: self.bumper.snapshot(),
-            diff_track_width: self.diff_track_width.snapshot()
+            diff_track_width: self.diff_track_width.snapshot(),
         }
     }
 }
@@ -182,7 +182,7 @@ impl Default for ProjectFile {
                     back: Expr::new("16 in", 0.4064),
                     right: Expr::new("16 in", 0.4064),
                 },
-                diff_track_width: Expr::new("22 in", 0.2794 * 2.0)
+                diff_track_width: Expr::new("22 in", 0.2794 * 2.0),
             },
             generation_features: Vec::new(),
         }
