@@ -60,6 +60,7 @@ export const PathListStore = types
             traj: {
               waypoints: [],
               samples: [],
+              splits: [],
               markers: []
             }
           })
@@ -108,6 +109,7 @@ export const PathListStore = types
               traj: {
                 waypoints: [],
                 samples: [],
+                splits: [],
                 markers: []
               }
             });

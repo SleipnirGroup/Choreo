@@ -252,6 +252,7 @@ export const DocumentStore = types
             self.history.startGroup(() => {
               const newTraj = result.traj.samples;
               pathStore.traj.setSamples(newTraj);
+              pathStore.traj.setSplits(result.traj.splits);
               pathStore.traj.setWaypoints(result.traj.waypoints);
 
               pathStore.setSnapshot(result.snapshot);

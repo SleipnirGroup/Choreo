@@ -235,7 +235,7 @@ fn postprocess(result: &[Sample], mut path: TrajFile, counts_vec: Vec<usize>) ->
             let total_intervals = interval;
             interval += pt.1.intervals;
             (
-                pt.1.split || pt.0 == 0 || pt.0 == snapshot.waypoints.len() - 1,
+                pt.1.split && !( pt.0 == 0 || pt.0 == snapshot.waypoints.len() - 1),
                 total_intervals,
                 result.get(total_intervals).map_or(0.0, |s| match s {
                     Sample::Swerve { t, .. } => *t,
@@ -252,16 +252,8 @@ fn postprocess(result: &[Sample], mut path: TrajFile, counts_vec: Vec<usize>) ->
         .filter(|a| a.0) // filter by split flag
         .map(|a| a.1) // map to associate interval
         .collect::<Vec<usize>>();
-    path.traj.samples = splits
-        .windows(2) // get adjacent pairs of interval counts
-        .filter_map(|window| {
-            result
-                // grab the range including both endpoints,
-                // there are no bounds checks on this slice so be weary of crashes
-                .get((window[0])..=(window[1]))
-                .map(|slice| slice.to_vec())
-        })
-        .collect::<Vec<Vec<Sample>>>();
+    path.traj.splits = splits;
+    path.traj.samples = result.to_vec();
     path.traj.waypoints = waypoint_times;
     path.snapshot = Some(snapshot);
     path
