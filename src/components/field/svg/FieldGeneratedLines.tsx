@@ -49,7 +49,7 @@ function FieldGeneratedLines() {
               prev: arr[i - 1],
               next: arr[i + 1],
               arr: path.ui.generating
-                ? [path.ui.generationProgress]
+                ? path.ui.generationProgress
                 : path.traj.samples,
               total: arr.length,
               count: i,

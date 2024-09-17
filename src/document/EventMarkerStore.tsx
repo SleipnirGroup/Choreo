@@ -122,7 +122,7 @@ export const CommandStore = types
       self.commands.push(newCommand);
       return undefined;
     },
-    pushCommand(subcommand: ICommandStore) {
+    pushCommand(subcommand: IAnyType) {
       self.commands.push(subcommand);
     },
     detachCommand(index: number) {
@@ -228,15 +228,19 @@ export const EventMarkerStore = types
       } else if (self.offset.value == 0) {
         return true;
       } else {
-        const splitTimes = path.traj.samples.map((sect) => sect[0]?.t);
-        splitTimes.forEach((stopTimestamp) => {
-          if (
-            (targetTimestamp < stopTimestamp && timestamp > stopTimestamp) ||
-            (targetTimestamp > stopTimestamp && timestamp < stopTimestamp)
-          ) {
-            retVal = false;
+        const splitTimes = path.traj.splits.map(
+          (idx) => path.traj.samples[idx]?.t
+        );
+        [0, ...splitTimes, path.traj.getTotalTimeSeconds()].forEach(
+          (stopTimestamp) => {
+            if (
+              (targetTimestamp < stopTimestamp && timestamp > stopTimestamp) ||
+              (targetTimestamp > stopTimestamp && timestamp < stopTimestamp)
+            ) {
+              retVal = false;
+            }
           }
-        });
+        );
       }
       return retVal;
     }
