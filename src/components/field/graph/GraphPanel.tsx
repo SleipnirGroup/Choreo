@@ -1,7 +1,7 @@
 import { Component } from "react";
 import * as d3 from "d3";
 import { observer } from "mobx-react";
-import { autorun, IReactionDisposer } from "mobx";
+import { autorun, IReactionDisposer, reaction } from "mobx";
 import { line, tickFormat } from "d3";
 import { pathToFileURL } from "url";
 import { Checkbox, FormControlLabel, FormGroup } from "@mui/material";
@@ -159,10 +159,11 @@ const defaultRanges: Ranges = {
     Length: [0, 0],
     LinVel: [0, 0],
     LinAcc: [0, 0],
-    Force: [0, 0],
+    
     Angle: [0, 0],
     AngVel: [0, 0],
     AngAcc: [0, 0],
+    Force: [0, 0],
     
 }
 const AXIS_WIDTH = 50;
@@ -239,7 +240,7 @@ class GraphPanel extends Component<Props, State> {
             this.dimView[dim] = () => oldView() || this.state.views[k];
         })
     }
-    margin = { top: 20, right: 60, bottom: 30, left: 60 };
+    margin = { top: 20, right: 20, bottom: 30, left: 40 };
     width = 460 - this.margin.left - this.margin.right;
     height = 400 - this.margin.top - this.margin.bottom;
     get plotHeight() { return 150 }
@@ -249,7 +250,10 @@ class GraphPanel extends Component<Props, State> {
         .range([0, this.plotWidth]);
     componentDidMount() {
 
-        this.redrawUnlisten = autorun(() => {
+        this.redrawUnlisten = reaction(()=>{
+            return doc.pathlist.activePath.traj.samples;
+        },
+        (val) => {
             this.handleUpdate()
         })
     }
@@ -343,6 +347,7 @@ class GraphPanel extends Component<Props, State> {
                 this.extraData.accel = (generated as SwerveSample[]).map(samp => [samp.t, Math.hypot(samp.ax, samp.ay)]);
             }
             // Set ranges
+            this.ranges = defaultRanges; // 0s
             Object.keys(this.sharedData).forEach(key => {
                 let k = key as SharedGraphLine;
                 let dim = sharedColors[k].dimension;
@@ -371,6 +376,7 @@ class GraphPanel extends Component<Props, State> {
                     this.expandRange(val[1], dim);
                 })
             })
+            
             this.d3Ranges = this.updateD3Ranges();
             
             Object.entries(this.d3Ranges).forEach((entry, i) => {
@@ -383,10 +389,12 @@ class GraphPanel extends Component<Props, State> {
                 yAxis.selectAll("text").attr("fill", "white")
                 yAxis.selectAll(":is(line, path)").attr("stroke", "white")
 
-                var xAxis = svg.select<SVGGElement>(`#${entry[0]}XAxis`)
+                var xAxis = svg.select<SVGGElement>(`#${entry[0]}xAxis`)
                 xAxis.selectChildren().remove();
                 xAxis.call(d3.axisBottom(this.x).ticks(5));
                 xAxis.selectAll("text").attr("fill", "white")
+                xAxis.selectAll(":is(line, path)").attr("stroke", "white")
+
                 xAxis.selectAll(":is(line, path)").attr("stroke", "white")
                 console.log(yAxis);
             })
@@ -438,17 +446,10 @@ class GraphPanel extends Component<Props, State> {
     plot(dimension: DimensionNameInSample) {
         var path = doc.pathlist.activePath;
         let time = uiState.pathAnimationTimestamp;
-        return <> <div style={{ display: "grid", gap: "8px", gridTemplateColumns: "min-content max-content min-content", overflowY: "scroll", height: "min-content"}}>
-                    <>
-                        {this.checkboxes(sharedColors, dimension)}
-                        {path.traj.isSwerve && this.checkboxes(swerveColors, dimension)}
-                        {path.traj.isDifferential && this.checkboxes(diffColors, dimension)}
-                        {this.checkboxes(extraColors, dimension)}
-                    </>
-                </div>
-                <svg
-                    width={this.plotWidth+this.margin.left}
-                   
+        return <div style={{display: "flex", flexDirection:"column"}}>
+                        <svg
+                    width={this.plotWidth+this.margin.left+this.margin.right}
+                    height={this.plotHeight+60}
                 >
 
                     <g transform={`translate(${this.margin.left},${this.margin.top})`}
@@ -456,7 +457,7 @@ class GraphPanel extends Component<Props, State> {
 
                     <g id={`${dimension}Plot`} >
                             <g key={dimension} id={`${dimension}Axis`} ></g>
-                            <g className="xAxis" transform={"translate(0," + this.plotHeight + ")"}></g>
+                            <g id={`${dimension}xAxis`} transform={"translate(0," + this.plotHeight + ")"}></g>
 
                             {this.lines(sharedColors, this.sharedData, dimension)}
                             {path.traj.isSwerve && this.lines(swerveColors, this.swerveData, dimension)}
@@ -467,7 +468,16 @@ class GraphPanel extends Component<Props, State> {
                         </g>
                     </g>
 
-                </svg></>
+                </svg>
+        <div style={{ display: "grid", gap: "8px", gridTemplateColumns: "min-content max-content min-content", overflowY: "scroll", height: "min-content"}}>
+                    <>
+                        {this.checkboxes(sharedColors, dimension)}
+                        {path.traj.isSwerve && this.checkboxes(swerveColors, dimension)}
+                        {path.traj.isDifferential && this.checkboxes(diffColors, dimension)}
+                        {this.checkboxes(extraColors, dimension)}
+                    </>
+                </div>
+</div>
         
         
 
@@ -481,7 +491,7 @@ class GraphPanel extends Component<Props, State> {
         var _ = path.ui.generationIterationNumber;
         const marginLeft = Object.keys(this.d3Ranges).length * AXIS_WIDTH;
         return (
-            <div id="my_dataviz" style={{ backgroundColor: "var(--background-dark-gray)", color: "white", display: "grid", height:"400", gridTemplateColumns:"repeat(8, max-content)" }}>
+            <div id="my_dataviz" style={{ backgroundColor: "var(--background-dark-gray)", color: "white", display: "grid", gridTemplateColumns:"repeat(8, max-content)", overflowX:"scroll" }}>
 
 
                         {
