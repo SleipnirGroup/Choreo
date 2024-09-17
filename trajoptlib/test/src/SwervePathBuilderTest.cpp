@@ -25,22 +25,22 @@ TEST_CASE("SwervePathBuilder - Linear initial guess", "[SwervePathBuilder]") {
   CHECK(result == expected);
 }
 
-// TEST_CASE("SwervePathBuilder - Spline initial guess", "[SwervePathBuilder]") {
-//   using namespace trajopt;
+TEST_CASE("SwervePathBuilder - Spline initial guess", "[SwervePathBuilder]") {
+  using namespace trajopt;
 
-//   trajopt::SwervePathBuilder path;
-//   path.WptInitialGuessPoint(0, Pose2d{0.0, 0.0, 0.0});  // at 0
+  trajopt::SwervePathBuilder path;
+  path.WptInitialGuessPoint(0, Pose2d{0.0, 0.0, 0.0});  // at 0
 
-//   path.SgmtInitialGuessPoints(
-//       0, {Pose2d{1.0, 0.0, 0.0}, Pose2d{2.0, 0.0, 0.0}});  // from 0 to 1
-//   path.WptInitialGuessPoint(1, Pose2d{1.0, 0.0, 0.0});     // at 1
+  path.SgmtInitialGuessPoints(
+      0, {Pose2d{1.0, 0.0, 0.0}, Pose2d{2.0, 0.0, 0.0}});  // from 0 to 1
+  path.WptInitialGuessPoint(1, Pose2d{1.0, 0.0, 0.0});     // at 1
 
-//   path.WptInitialGuessPoint(2, Pose2d{5.0, 0.0, 0.0});  // at 2
+  path.WptInitialGuessPoint(2, Pose2d{5.0, 0.0, 0.0});  // at 2
 
-//   path.ControlIntervalCounts({3, 2});
+  path.ControlIntervalCounts({3, 2});
 
-//   std::vector<double> result = path.CalculateSplineInitialGuess().x;
-//   std::vector<double> expected = {0.0, 1.0, 2.0, 1.0, 3.0, 5.0};
+  std::vector<double> result = path.CalculateSplineInitialGuess().x;
+  std::vector<double> expected = {0.0, 1.0, 2.0, 1.0, 3.0, 5.0};
 
-//   CHECK(result == expected);
-// }
+  CHECK(result == expected);
+}

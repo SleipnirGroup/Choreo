@@ -9,6 +9,7 @@
 #include <Eigen/Core>
 #include <unsupported/Eigen/Splines>
 
+#include "trajopt/spline/Spline.h"
 #include "trajopt/geometry/Pose2.hpp"
 #include "trajopt/geometry/Rotation2.hpp"
 #include "trajopt/geometry/Translation2.hpp"
@@ -23,72 +24,63 @@ typedef Eigen::SplineFitting<Eigen::Spline<double, 2>> SplineFitting2D;
 class TRAJOPT_DLLEXPORT PoseSplineHolonomic {
  public:
   explicit PoseSplineHolonomic(std::vector<Pose2d> waypoints) {
-    const size_t DEGREE =
-        std::min(waypoints.size() - 1, static_cast<size_t>(3));
-    std::vector<Rotation2d> headings;
-
-    headings.reserve(waypoints.size());
-    for (const auto w : waypoints) {
-      headings.push_back(w.Rotation());
-    }
-
     size_t num_wpts = waypoints.size();
-    times.resize(num_wpts + 1);
+
+    std::vector<double> vx, vy, sins, coss;
+    vx.reserve(num_wpts);
+    vy.reserve(num_wpts);
+    sins.reserve(num_wpts);
+    coss.reserve(num_wpts);
+    std::vector<Rotation2d> headings;
+    headings.reserve(waypoints.size());
     for (size_t i = 0; i < num_wpts; ++i) {
-      times(i) = static_cast<double>(i);
+      const auto w = waypoints[i];
+      vx.push_back(w.X());
+      vy.push_back(w.Y());
+      coss.push_back(std::cos(w.Rotation().Radians()));
+      sins.push_back(std::sin(w.Rotation().Radians()));
+      times.push_back(static_cast<double>(i));
     }
-    times(num_wpts) = times(num_wpts - 1);
 
-    Eigen::MatrixXd xy(2, num_wpts + 1);
-    for (size_t i = 0; i < num_wpts; ++i) {
-      auto w = waypoints[i];
-      xy.col(i) << w.X(), w.Y();
-    }
-    xy.col(num_wpts) = xy.col(num_wpts - 1);
-    translationSpline =
-        Eigen::SplineFitting<Eigen::Spline2d>::Interpolate(xy, DEGREE, times);
+    xSpline.set_points(times, vx, tk::spline::cspline_hermite);
+    ySpline.set_points(times, vy, tk::spline::cspline_hermite);
+    cosSpline.set_points(times, coss, tk::spline::cspline_hermite);
+    sinSpline.set_points(times, sins, tk::spline::cspline_hermite);
 
-    Eigen::RowVectorXd sins(headings.size() + 1);
-    Eigen::RowVectorXd coss(headings.size() + 1);
-    for (size_t i = 0; i < headings.size(); ++i) {
-      sins(i) = headings[i].Sin();
-      coss(i) = headings[i].Cos();
-    }
-    sins(num_wpts) = headings.back().Sin();
-    coss(num_wpts) = headings.back().Cos();
-    sinSpline = SplineFitting1D::Interpolate(sins, DEGREE, times);
-    cosSpline = SplineFitting1D::Interpolate(coss, DEGREE, times);
-
-    for (double t = 0; t <= times(num_wpts); t += 0.25) {
-      auto values = translationSpline(t);
+    for (double t = 0; t <= getEndT(); t += 0.25) {
+      auto values = getTranslation(t);
       auto head = getHeading(t);
       std::printf("time: %.2f \tx: %.2f\t\ty: %.2f\t\ttheta: %.2f\n", t,
-                  values[0], values[1], head.Radians());
+                  values.X(), values.Y(), head.Radians());
     }
   }
 
-  double getEndT() const { return times(times.SizeMinusOne); }
+  double getEndT() const { return times[times.size()-1]; }
 
   Rotation2d getCourse(double t) const {
-    const auto dxdy = translationSpline.derivatives(t, 1);
-    const auto course = Rotation2d(std::atan2(dxdy(1), dxdy(0)));
+    const auto dx = xSpline.deriv(1, t);
+    const auto dy = ySpline.deriv(1, t);
+    const auto course = Rotation2d(std::atan2(dy, dx));
     return course;
   }
 
   Rotation2d getHeading(double t) const {
-    const auto rads = Rotation2d(cosSpline(t)(0), sinSpline(t)(0)).Radians();
+    const auto rads = Rotation2d(cosSpline(t), sinSpline(t)).Radians();
     return Rotation2d(rads);
   }
 
-  Pose2d getPoint(double t) const {
-    auto xy = translationSpline(t);
-    auto h = getHeading(t);
-    return Pose2d{xy[0], xy[1], h};
+  Translation2d getTranslation(double t) const {
+    return Translation2d(xSpline(t), ySpline(t));
   }
 
-  Eigen::RowVectorXd times;
-  Eigen::Spline<double, 1> sinSpline;
-  Eigen::Spline<double, 1> cosSpline;
-  Eigen::Spline2d translationSpline;
+  Pose2d getPoint(double t) const {
+    return Pose2d{getTranslation(t), getHeading(t)};
+  }
+
+  std::vector<double> times;
+  tk::spline sinSpline;
+  tk::spline cosSpline;  
+  tk::spline xSpline; 
+  tk::spline ySpline;
 };
 }  // namespace trajopt
