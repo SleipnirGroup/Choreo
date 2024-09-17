@@ -114,7 +114,8 @@ export interface ChoreoPath<T extends ExprOrNumber> {
 export type SampleType = "Swerve" | "Differential";
 export interface Output {
   waypoints: number[];
-  samples: SwerveSample[][] | DifferentialSample[][];
+  samples: SwerveSample[] | DifferentialSample[];
+  splits: number[];
   forcesAvailable: boolean;
 }
 

@@ -368,7 +368,11 @@ pub struct Trajectory {
     /// The times at which the robot will reach each waypoint.
     pub waypoints: Vec<f64>,
     /// The samples of the trajectory.
-    pub samples: Vec<Vec<Sample>>,
+    pub samples: Vec<Sample>,
+    /// The indices of samples which are associated with split waypoints.
+    /// First and last samples are never in this list even if the split toggle is set
+    /// for first or last waypoints
+    pub splits: Vec<usize>,
     /// Whether the forces are available to use in the samples.
     #[serde(default)]
     pub forces_available: bool,
