@@ -4,7 +4,7 @@
 
 #include <cmath>
 
-#include "spline/Spline1d.hpp"
+#include "trajopt/spline/Spline1d.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 
 namespace trajopt {
