@@ -47,6 +47,9 @@ public interface TrajSample<Self extends TrajSample<Self>> extends Interpolatabl
 
   /**
    * <h1> For internal use only. </h1>
+   * 
+   * @param length the length of the array to create.
+   * @return the created array.
    */
   Self[] makeArray(int length);
 }

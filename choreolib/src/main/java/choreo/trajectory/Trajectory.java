@@ -17,7 +17,7 @@ public record Trajectory<SampleType extends TrajSample<SampleType>>(
    * 
    * @return The first {@link SampleType} in the trajectory.
    */
-  public SampleType getInitialState() {
+  public SampleType getInitialSample() {
     if (samples.isEmpty()) {
       return null;
     }
@@ -41,7 +41,7 @@ public record Trajectory<SampleType extends TrajSample<SampleType>>(
   private SampleType sampleInternal(double timestamp) {
     if (timestamp < samples.get(0).getTimestamp()) {
       // timestamp oob, return the initial state
-      return getInitialState();
+      return getInitialSample();
     }
     if (timestamp >= getTotalTime()) {
       // timestamp oob, return the final state
@@ -194,8 +194,9 @@ public record Trajectory<SampleType extends TrajSample<SampleType>>(
 
   /**
    * Returns a choreo trajectory that represents the split of the trajectory at the given index.
-   * @param splitIndex
-   * @return
+   * 
+   * @param splitIndex the index of the split trajectory to return.
+   * @return a choreo trajectory that represents the split of the trajectory at the given index.
    */
   public Optional<Trajectory<SampleType>> getSplit(int splitIndex) {
     if (splitIndex < 0 || splitIndex >= splits.size()) {

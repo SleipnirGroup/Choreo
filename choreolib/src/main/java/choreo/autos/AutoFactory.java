@@ -3,9 +3,9 @@
 package choreo.autos;
 
 import choreo.Choreo;
-import choreo.Choreo.ChoreoControlFunction;
+import choreo.Choreo.ControlFunction;
 import choreo.Choreo.ChoreoTrajCache;
-import choreo.Choreo.ChoreoTrajectoryLogger;
+import choreo.Choreo.TrajectoryLogger;
 import choreo.ext.TriggerExt;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.SwerveSample;
@@ -56,10 +56,10 @@ import java.util.function.Supplier;
  * <pre><code>
  * public Command shootThenMove(ChoreoAutoFactory factory) {
  *   // create a trajectory that moves the robot 2 meters
- *   ChoreoAutoTrajectory traj = factory.trajCommand("move2meters");
+ *   Command traj = factory.trajCommand("move2meters");
  *
  *   return shooter.shoot()
- *      .andThen(traj.cmd())
+ *      .andThen(traj)
  *      .withName("ShootThenMove");
  * }
  * </code></pre>
@@ -91,19 +91,6 @@ public class AutoFactory {
           return new TriggerExt(loop, () -> false);
         }
       };
-
-  public static final class TrajectoryNotFoundException extends RuntimeException {
-    private final String trajName;
-
-    public TrajectoryNotFoundException(String trajName) {
-      super("Could not find trajectory: " + trajName);
-      this.trajName = trajName;
-    }
-
-    public String getTrajName() {
-      return trajName;
-    }
-  }
 
   /** A class used to bind commands to events in all trajectories created by this factory. */
   public static class ChoreoAutoBindings {
@@ -140,38 +127,40 @@ public class AutoFactory {
 
   private final ChoreoTrajCache trajCache = new ChoreoTrajCache();
   private final Supplier<Pose2d> poseSupplier;
-  private final ChoreoControlFunction<? extends TrajSample<?>> controller;
+  private final ControlFunction<? extends TrajSample<?>> controller;
   private final Consumer<ChassisSpeeds> outputChassisSpeeds;
   private final BooleanSupplier mirrorTrajectory;
   private final Subsystem driveSubsystem;
   private final ChoreoAutoBindings bindings = new ChoreoAutoBindings();
-  private final Optional<ChoreoTrajectoryLogger> trajLogger;
+  private final Optional<TrajectoryLogger<? extends TrajSample<?>>> trajLogger;
 
   /**
    * Its reccomended to use the {@link Choreo#createAutoFactory} to create a new instance of this class.
-   * @param poseSupplier
-   * @param controller
-   * @param outputChassisSpeeds
-   * @param mirrorTrajectory
-   * @param driveSubsystem
-   * @param bindings
-   * @param trajLogger
+   * 
+   * @param <SampleType> {@link Choreo#createAutoFactory}
+   * @param poseSupplier {@link Choreo#createAutoFactory}
+   * @param controller {@link Choreo#createAutoFactory}
+   * @param outputChassisSpeeds {@link Choreo#createAutoFactory}
+   * @param mirrorTrajectory {@link Choreo#createAutoFactory}
+   * @param driveSubsystem {@link Choreo#createAutoFactory}
+   * @param bindings {@link Choreo#createAutoFactory}
+   * @param trajLogger {@link Choreo#createAutoFactory}
    */
-  public AutoFactory(
+  public <SampleType extends TrajSample<SampleType>> AutoFactory(
       Supplier<Pose2d> poseSupplier,
-      ChoreoControlFunction<? extends TrajSample<?>> controller,
+      ControlFunction<SampleType> controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
       Subsystem driveSubsystem,
       ChoreoAutoBindings bindings,
-      Optional<ChoreoTrajectoryLogger> trajLogger) {
+      Optional<TrajectoryLogger<SampleType>> trajLogger) {
     this.poseSupplier = poseSupplier;
     this.controller = controller;
     this.outputChassisSpeeds = outputChassisSpeeds;
     this.mirrorTrajectory = mirrorTrajectory;
     this.driveSubsystem = driveSubsystem;
     this.bindings.merge(bindings);
-    this.trajLogger = trajLogger;
+    this.trajLogger = trajLogger.map(logger -> (TrajectoryLogger<? extends TrajSample<?>>) logger);
   }
 
   /**
@@ -179,6 +168,8 @@ public class AutoFactory {
    *
    * @param name The name of the auto loop.
    * @return A new auto loop.
+   * @see AutoLoop
+   * @see #voidLoop
    */
   public AutoLoop newLoop(String name) {
     return new AutoLoop(name);
@@ -187,6 +178,10 @@ public class AutoFactory {
   /**
    * An Auto Loop that cannot have any side-effects,
    * it stores no state and does nothing when polled.
+   * 
+   * @return A void auto loop.
+   * @see AutoLoop
+   * @see #newLoop
    */
   public AutoLoop voidLoop() {
     return VOID_LOOP;
@@ -234,20 +229,26 @@ public class AutoFactory {
   /**
    * Creates a new auto trajectory to be used in an auto routine.
    *
+   * @param <SampleType> The type of the trajectory samples.
    * @param trajectory The trajectory to use.
    * @param loop The auto loop to use as the triggers polling context.
    * @return A new auto trajectory.
    */
+  @SuppressWarnings("unchecked")
   public <SampleType extends TrajSample<SampleType>> AutoTrajectory traj(
       Trajectory<SampleType> trajectory, AutoLoop loop) {
+    // type solidify everything
+    final Trajectory<SampleType> solidTrajectory = trajectory;
+    final ControlFunction<SampleType> solidController = (ControlFunction<SampleType>) this.controller;
+    final Optional<TrajectoryLogger<SampleType>> solidLogger = this.trajLogger.map(logger -> (TrajectoryLogger<SampleType>) logger);
     return new AutoTrajectory(
             trajectory.name(),
-            trajectory,
+            solidTrajectory,
             poseSupplier,
-            controller,
+            solidController,
             outputChassisSpeeds,
             mirrorTrajectory,
-            trajLogger,
+            solidLogger,
             driveSubsystem,
             loop.getLoop(),
             bindings);
@@ -256,9 +257,7 @@ public class AutoFactory {
   /**
    * Creates a new auto trajectory command to be used in an auto routine.
    *
-   * <p>
-   *
-   * <h1>Important </h1>
+   * <p><h1>Important </h1>
    *
    * <p>{@link #trajCommand} and {@link #traj} methods should not be mixed in the same auto routine.
    * {@link #trajCommand} is used as an escape hatch for teams that don't need the benefits of the
@@ -276,9 +275,7 @@ public class AutoFactory {
   /**
    * Creates a new auto trajectory command to be used in an auto routine.
    *
-   * <p>
-   *
-   * <h1>Important </h1>
+   * <p><h1>Important </h1>
    *
    * <p>{@link #trajCommand} and {@link #traj} methods should not be mixed in the same auto routine.
    * {@link #trajCommand} is used as an escape hatch for teams that don't need the benefits of the
@@ -297,9 +294,7 @@ public class AutoFactory {
   /**
    * Creates a new auto trajectory command to be used in an auto routine.
    *
-   * <p>
-   *
-   * <h1>Important </h1>
+   * <p><h1>Important </h1>
    *
    * <p>{@link #trajCommand} and {@link #traj} methods should not be mixed in the same auto routine.
    * {@link #trajCommand} is used as an escape hatch for teams that don't need the benefits of the
@@ -307,6 +302,7 @@ public class AutoFactory {
    * added via calling {@link #bind} or {@link ChoreoAutoBindings} passed into the factory
    * constructor.
    *
+   * @param <SampleType> The type of the trajectory samples.
    * @param trajectory The trajectory to use.
    * @return A new auto trajectory.
    */
@@ -331,7 +327,8 @@ public class AutoFactory {
    * keeping a single copy of every trajectory ever loaded in memory aslong as the factory is
    * loaded. This method clears the cache of all trajectories.
    * 
-   * @apiNote Never clearing the cache is unlikely to have an impact on the robots
+   * <p><b>Usage Note:</b>
+   * <p>Never clearing the cache is unlikely to have an impact on the robots
    * performance on a rio 2
    */
   public void clearCache() {

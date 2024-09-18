@@ -5,91 +5,131 @@ package choreo.util;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * A utility to standardize flipping of coordinate data based on the current alliance
+ * across different years.
+ * 
+ * <p>If every vendor used this, the user would be able to specify the year and
+ * no matter the year the vendor's code is from, the user would be able to flip
+ * as expected.
+ * 
+ * <p>This api still allows vendors and users to match case against the flipping
+ * variant as a way to specially handle cases or throw errors if a variant is
+ * explicitly not supported.
+ */
 public class AllianceFlipUtil {
-  private static double fieldLength = 16.5410515;
-  private static double fieldWidth = 8.23052575;
+  private static final AtomicLong fieldLength = new AtomicLong();
+  private static final AtomicLong fieldWidth = new AtomicLong();
 
-  private interface FlipperImpl {
-    double flipX(double x);
-
-    double flipY(double y);
-
-    double flipHeading(double heading);
+  private static double getFieldLength() {
+    return Double.longBitsToDouble(fieldLength.get());
   }
 
-  private static class MirroredFlipper implements FlipperImpl {
-    private double fieldMeters = 16.5410515;
-
-    @Override
-    public double flipX(double x) {
-      return fieldMeters - x;
-    }
-
-    @Override
-    public double flipY(double y) {
-      return y;
-    }
-
-    @Override
-    public double flipHeading(double heading) {
-      return Math.PI - heading;
-    }
+  private static double getFieldWidth() {
+    return Double.longBitsToDouble(fieldWidth.get());
   }
 
-  private static class RotateAroundFlipper implements FlipperImpl {
-    @Override
-    public double flipX(double x) {
-      return fieldLength - x;
-    }
-
-    @Override
-    public double flipY(double y) {
-      return fieldWidth - y;
-    }
-
-    @Override
-    public double flipHeading(double heading) {
-      return Math.PI - heading;
-    }
-  }
-
+  /**
+   * The flipper to use for flipping coordinates.
+   */
   public static enum Flipper {
-    MIRRORED(new MirroredFlipper()),
-    ROTATE_AROUND(new RotateAroundFlipper());
+    /**
+     * X becomes fieldLength - x,
+     * leaves the y coordinate unchanged,
+     * and heading becomes PI - heading.
+     */
+    MIRRORED {
+      public double flipX(double x) {
+        return getFieldLength() - x;
+      }
+      public double flipY(double y) {
+        return y;
+      }
+      public double flipHeading(double heading) {
+        return Math.PI - heading;
+      }
+    },
+    /**
+     * X becomes fieldLength - x,
+     * Y becomes fieldWidth - y,
+     * and heading becomes PI - heading.
+     */
+    ROTATE_AROUND {
+      public double flipX(double x) {
+        return getFieldLength() - x;
+      }
+      public double flipY(double y) {
+        return getFieldWidth() - y;
+      }
+      public double flipHeading(double heading) {
+        return Math.PI - heading;
+      }
+    };
 
-    private final FlipperImpl flipper;
-
-    Flipper(FlipperImpl flipper) {
-      this.flipper = flipper;
-    }
-
-    private FlipperImpl getFlipper() {
-      return flipper;
-    }
+    /**
+     * Flips the X coordinate.
+     * @param x The X coordinate to flip.
+     * @return The flipped X coordinate.
+     */
+    public abstract double flipX(double x);
+    /**
+     * Flips the Y coordinate.
+     * @param y The Y coordinate to flip.
+     * @return The flipped Y coordinate.
+     */
+    public abstract double flipY(double y);
+    /**
+     * Flips the heading.
+     * @param heading The heading to flip.
+     * @return The flipped heading.
+     */
+    public abstract double flipHeading(double heading);
   }
 
-  private static final HashMap<Integer, Flipper> flipperMap =
-      new HashMap<Integer, Flipper>() {
+  private static record YearInfo(Flipper flipper, double fieldLength, double fieldWidth) {}
+
+  // TODO: Update and expand this map
+  private static final HashMap<Integer, YearInfo> flipperMap =
+      new HashMap<Integer, YearInfo>() {
         {
-          put(2020, Flipper.ROTATE_AROUND);
-          put(2021, Flipper.ROTATE_AROUND);
-          put(2022, Flipper.ROTATE_AROUND);
-          put(2023, Flipper.MIRRORED);
-          put(2024, Flipper.MIRRORED);
+          put(2020, new YearInfo(Flipper.ROTATE_AROUND, 16.5811, 8.19912));
+          put(2021, new YearInfo(Flipper.ROTATE_AROUND, 16.5811, 8.19912));
+          put(2022, new YearInfo(Flipper.ROTATE_AROUND, 16.5811, 8.19912));
+          put(2023, new YearInfo(Flipper.MIRRORED, 16.5811, 8.19912));
+          put(2024, new YearInfo(Flipper.MIRRORED, 16.5811, 8.19912));
         }
       };
 
-  private static Flipper currentFlipper = Flipper.MIRRORED;
+  private static YearInfo activeYear = flipperMap.get(2024);
 
-  public static Flipper getFlippingType() {
-    return currentFlipper;
+  static {
+    fieldLength.set(Double.doubleToLongBits(activeYear.fieldLength));
+    fieldWidth.set(Double.doubleToLongBits(activeYear.fieldWidth));
   }
 
-  public static void setFieldDimensions(double length, double width) {
-    fieldLength = length;
-    fieldWidth = width;
+  /**
+   * Get the flipper that is currently active for flipping coordinates.
+   * It's reccomended not to store this locally as the flipper may change.
+   * 
+   * @return The active flipper.
+   */
+  public static Flipper getFlipper() {
+    return activeYear.flipper;
+  }
+
+  /**
+   * Returns if you are on red alliance.
+   * 
+   * @return If you are on red alliance.
+   */
+  public static boolean shouldFlip() {
+    return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
   }
 
   /**
@@ -98,30 +138,81 @@ public class AllianceFlipUtil {
    * @param year The year to set the flipper to. [2020 - 2024]
    */
   public static void setYear(int year) {
-    currentFlipper = flipperMap.getOrDefault(year, currentFlipper);
+    if (!flipperMap.containsKey(year)) {
+      throw new IllegalArgumentException("Year " + year + " is not supported.");
+    }
+    activeYear = flipperMap.get(year);
+    fieldLength.set(Double.doubleToLongBits(activeYear.fieldLength));
+    fieldWidth.set(Double.doubleToLongBits(activeYear.fieldWidth));
   }
 
+  /**
+   * Flips the X coordinate.
+   * 
+   * @param x The X coordinate to flip.
+   * @return The flipped X coordinate.
+   */
   public static double flipX(double x) {
-    return currentFlipper.getFlipper().flipX(x);
+    return activeYear.flipper.flipX(x);
   }
 
+  /**
+   * Flips the Y coordinate.
+   * 
+   * @param y The Y coordinate to flip.
+   * @return The flipped Y coordinate.
+   */
   public static double flipY(double y) {
-    return currentFlipper.getFlipper().flipY(y);
+    return activeYear.flipper.flipY(y);
   }
 
+  /**
+   * Flips the heading.
+   * 
+   * @param heading The heading to flip.
+   * @return The flipped heading.
+   */
   public static double flipHeading(double heading) {
-    return currentFlipper.getFlipper().flipHeading(heading);
+    return activeYear.flipper.flipHeading(heading);
   }
 
-  public static Translation2d flipTranslation(Translation2d translation) {
+  /**
+   * Flips the translation.
+   * 
+   * @param translation The translation to flip.
+   * @return The flipped translation.
+   */
+  public static Translation2d flip(Translation2d translation) {
     return new Translation2d(flipX(translation.getX()), flipY(translation.getY()));
   }
 
-  public static Rotation2d flipRotation(Rotation2d rotation) {
-    return new Rotation2d(flipHeading(rotation.getRadians()));
+  /**
+   * Flips the rotation.
+   * 
+   * @param rotation The rotation to flip.
+   * @return The flipped rotation.
+   */
+  public static Rotation2d flip(Rotation2d rotation) {
+    switch (activeYear.flipper) {
+      case MIRRORED -> {
+        return new Rotation2d(-rotation.getCos(), rotation.getSin());
+      }
+      case ROTATE_AROUND -> {
+        return new Rotation2d(-rotation.getCos(), -rotation.getSin());
+      }
+      default -> {
+        return rotation;
+      }
+    }
   }
 
-  public static Pose2d flipPose(Pose2d pose) {
-    return new Pose2d(flipTranslation(pose.getTranslation()), flipRotation(pose.getRotation()));
+  /**
+   * Flips the pose.
+   * 
+   * @param pose The pose to flip.
+   * @return The flipped pose.
+   */
+  public static Pose2d flip(Pose2d pose) {
+    return new Pose2d(flip(pose.getTranslation()), flip(pose.getRotation()));
   }
 }

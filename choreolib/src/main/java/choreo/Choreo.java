@@ -5,6 +5,7 @@ package choreo;
 import static edu.wpi.first.util.ErrorMessages.requireNonNullParam;
 
 import choreo.trajectory.Trajectory;
+import choreo.autos.AutoChooser;
 import choreo.autos.AutoFactory;
 import choreo.autos.AutoLoop;
 import choreo.autos.AutoTrajectory;
@@ -29,7 +30,6 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /** Utilities to load and follow ChoreoTrajectories */
@@ -39,21 +39,19 @@ public final class Choreo {
   private static final String TRAJECTORY_FILE_EXTENSION = ".traj";
 
   /**
-   * This interface exists as a type alias. A ChoreoControlFunction has signature (Pose2d
-   * currentPose, ChoreoTrajectoryState referenceState)-&gt;ChassisSpeeds, where the function
-   * returns robot-relative ChassisSpeeds for the robot.
+   * This interface exists as a type alias. A ControlFunction has a signature of 
+   * ({@link Pose2d}, {@link SampleType})-&gt;{@link ChassisSpeeds}, where the function
+   * returns robot-relative {@link ChassisSpeeds} for the robot.
    */
-  public interface ChoreoControlFunction<SampleType extends TrajSample<SampleType>>
+  public interface ControlFunction<SampleType extends TrajSample<SampleType>>
       extends BiFunction<Pose2d, SampleType, ChassisSpeeds> {}
 
   /**
-   * This interface exists as a type alias. A ChoreoTrajectoryLogger has signature
-   * (ChoreoTrajectory, Boolean)-&gt;void, where the function consumes a trajectory and a boolean
+   * This interface exists as a type alias. A TrajectoryLogger has a signature of 
+   * ({@link Trajectory}, {@link Boolean})-&gt;void, where the function consumes a trajectory and a boolean
    * indicating whether the trajectory is starting or finishing.
    */
-  public interface ChoreoTrajectoryLogger extends BiConsumer<Pose2d[], Boolean> {}
-
-  public interface ChoreoAutoRountine extends Function<AutoFactory, Command> {}
+  public interface TrajectoryLogger<SampleType extends TrajSample<SampleType>> extends BiConsumer<Trajectory<SampleType>, Boolean> {}
 
   /** Default constructor. */
   private Choreo() {
@@ -64,6 +62,7 @@ public final class Choreo {
    * Load a trajectory from the deploy directory. Choreolib expects .traj files to be placed in
    * src/main/deploy/choreo/[trajName].traj.
    *
+   * @param <SampleType> The type of samples in the trajectory.
    * @param trajName the path name in Choreo, which matches the file name in the deploy directory,
    *     file extension is optional.
    * @return the loaded trajectory, or `Optional.empty()` if the trajectory could not be loaded.
@@ -184,23 +183,25 @@ public final class Choreo {
   }
 
   /**
-   * Create a command to follow a Choreo path.
+   * Create a factory that can be used to create {@link AutoLoop} and {@link
+   * AutoTrajectory}.
    *
-   * @param driveSubsystem The drive subsystem to require for commands made from this factory.
-   * @param poseSupplier A function that returns the current field-relative pose of the robot.
-   * @param controller A ChoreoControlFunction to follow the current trajectory state.
-   * @param outputChassisSpeeds A function that consumes the target robot-relative chassis speeds
+   * @param <SampleType> The type of samples in the trajectory.
+   * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link Command}s.
+   * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the robot.
+   * @param controller A {@link ControlFunction} to follow the current {@link Trajectory}&lt;{@link SampleType}&gt;.
+   * @param outputChassisSpeeds A function that consumes the target robot-relative {@link ChassisSpeeds}
    *     and commands them to the robot.
    * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
-   *     while keeping the same coordinate system origin. This will be called every loop during the
-   *     command.
+   *     while keeping the same coordinate system origin. This will be called every loop during the command.
    * @param bindings Universal trajectory event bindings.
-   * @return A command that follows a Choreo path.
+   * @return An {@link AutoFactory} that can be used to create {@link AutoLoop} and {@link AutoTrajectory}.
+   * @see {@link AutoChooser} for a way to utilize this factory to generate auto routines.
    */
   public static <SampleType extends TrajSample<SampleType>> AutoFactory createAutoFactory(
       Subsystem driveSubsystem,
       Supplier<Pose2d> poseSupplier,
-      ChoreoControlFunction<SampleType> controller,
+      ControlFunction<SampleType> controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
       ChoreoAutoBindings bindings) {
@@ -218,27 +219,27 @@ public final class Choreo {
    * Create a factory that can be used to create {@link AutoLoop} and {@link
    * AutoTrajectory}.
    *
-   * @param driveSubsystem The drive subsystem to require for commands made from this factory.
-   * @param poseSupplier A function that returns the current field-relative pose of the robot.
-   * @param controller A ChoreoControlFunction to follow the current trajectory state.
-   * @param outputChassisSpeeds A function that consumes the target robot-relative chassis speeds
-   *     and directs them to the robot.
+   * @param <SampleType> The type of samples in the trajectory.
+   * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link Command}s.
+   * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the robot.
+   * @param controller A {@link ControlFunction} to follow the current {@link Trajectory}&lt;{@link SampleType}&gt;.
+   * @param outputChassisSpeeds A function that consumes the target robot-relative {@link ChassisSpeeds}
+   *     and commands them to the robot.
    * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
-   *     while keeping the same coordinate system origin. This will be called every loop during the
-   *     command.
+   *     while keeping the same coordinate system origin. This will be called every loop during the command.
    * @param bindings Universal trajectory event bindings.
-   * @param trajLogger A function that consumes a list of poses and a boolean indicating whether the
-   *     trajectory is starting or finishing.
-   * @return A command that follows a Choreo path.
+   * @param trajLogger A {@link TrajectoryLogger} to log {@link Trajectory} as they start and finish.
+   * @return An {@link AutoFactory} that can be used to create {@link AutoLoop} and {@link AutoTrajectory}.
+   * @see {@link AutoChooser} for a way to utilize this factory to generate auto routines.
    */
   public static <SampleType extends TrajSample<SampleType>> AutoFactory createAutoFactory(
       Subsystem driveSubsystem,
       Supplier<Pose2d> poseSupplier,
-      ChoreoControlFunction<SampleType> controller,
+      ControlFunction<SampleType> controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
       ChoreoAutoBindings bindings,
-      ChoreoTrajectoryLogger trajLogger) {
+      TrajectoryLogger<SampleType> trajLogger) {
     return new AutoFactory(
         requireNonNullParam(poseSupplier, "poseSupplier", "Choreo.createAutoFactory"),
         requireNonNullParam(controller, "controller", "Choreo.createAutoFactory"),

@@ -66,7 +66,7 @@ public class TriggerExt extends Trigger {
     * <p>The command will not interrupt any command other than the original default command of the
     * subsystems the command requires.
     *
-    * @param command the command to start
+    * @param cmd the command to start
     * @return this trigger, so calls can be chained
     */
   public TriggerExt whileTrueDefault(Command cmd) {

@@ -160,7 +160,7 @@ public class SwerveSample implements TrajSample<SwerveSample> {
 
   @Override
   public SwerveSample flipped() {
-    switch (AllianceFlipUtil.getFlippingType()) {
+    switch (AllianceFlipUtil.getFlipper()) {
       case MIRRORED:
         return new SwerveSample(
             this.timestamp,
@@ -199,6 +199,9 @@ public class SwerveSample implements TrajSample<SwerveSample> {
     return new SwerveSample[length];
   }
 
+  /**
+   * The struct for the SwerveSample class.
+   */
   public static final Struct<SwerveSample> struct = new SwerveSampleStruct();
 
   private static final class SwerveSampleStruct implements Struct<SwerveSample> {

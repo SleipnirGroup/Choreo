@@ -114,7 +114,7 @@ public class DiffySample implements TrajSample<DiffySample> {
   }
 
   public DiffySample flipped() {
-    switch (AllianceFlipUtil.getFlippingType()) {
+    switch (AllianceFlipUtil.getFlipper()) {
         // TODO: Implement flipping
       default:
         return this;
@@ -130,6 +130,9 @@ public class DiffySample implements TrajSample<DiffySample> {
     return new DiffySample[length];
   }
 
+  /**
+   * The struct for the DiffySample class.
+   */
   public static final Struct<DiffySample> struct = new DiffySampleStruct();
 
   private static final class DiffySampleStruct implements Struct<DiffySample> {

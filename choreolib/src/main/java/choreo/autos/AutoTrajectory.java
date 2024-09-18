@@ -2,12 +2,13 @@
 
 package choreo.autos;
 
-import choreo.Choreo.ChoreoControlFunction;
-import choreo.Choreo.ChoreoTrajectoryLogger;
+import choreo.Choreo.ControlFunction;
+import choreo.Choreo.TrajectoryLogger;
 import choreo.autos.AutoFactory.ChoreoAutoBindings;
 import choreo.ext.CommandExt;
 import choreo.ext.TriggerExt;
 import choreo.trajectory.Trajectory;
+import choreo.util.AllianceFlipUtil;
 import choreo.trajectory.DiffySample;
 import choreo.trajectory.EventMarker;
 import choreo.trajectory.SwerveSample;
@@ -21,6 +22,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -31,15 +34,23 @@ import java.util.function.Supplier;
  * based off of it.
  */
 public class AutoTrajectory {
+  // For any devs looking through this class wondering
+  // about all the type casting and `?` for generics it's intentional.
+  // My goal was to make the sample type minimally leak into user code
+  // so you don't have to retype the sample type everywhere in your auto
+  // code. This also makes the places with generics exposed to users few
+  // and far between. This helps with more novice users
+
+
   // did inches to meters like this to keep final
   private static final double DEFAULT_TOLERANCE_METERS = Units.inchesToMeters(3);
   private static final ChassisSpeeds DEFAULT_CHASSIS_SPEEDS = new ChassisSpeeds();
 
   private final String name;
   private final Trajectory<? extends TrajSample<?>> trajectory;
-  private final Optional<ChoreoTrajectoryLogger> trajLogger;
+  private final TrajectoryLogger<? extends TrajSample<?>> trajLogger;
   private final Supplier<Pose2d> poseSupplier;
-  private final ChoreoControlFunction<? extends TrajSample<?>> controller;
+  private final ControlFunction<? extends TrajSample<?>> controller;
   private final Consumer<ChassisSpeeds> outputChassisSpeeds;
   private final BooleanSupplier mirrorTrajectory;
   private final Timer timer = new Timer();
@@ -58,20 +69,19 @@ public class AutoTrajectory {
   /** The time that the previous trajectories took up */
   private double timeOffset = 0.0;
 
-  AutoTrajectory(
+  <SampleType extends TrajSample<SampleType>> AutoTrajectory(
       String name,
-      Trajectory<? extends TrajSample<?>> trajectory,
+      Trajectory<SampleType> trajectory,
       Supplier<Pose2d> poseSupplier,
-      ChoreoControlFunction<? extends TrajSample<?>> controller,
+      ControlFunction<SampleType> controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
-      Optional<ChoreoTrajectoryLogger> trajLogger,
+      Optional<TrajectoryLogger<SampleType>> trajLogger,
       Subsystem driveSubsystem,
       EventLoop loop,
       ChoreoAutoBindings bindings) {
     this.name = name;
     this.trajectory = trajectory;
-    this.trajLogger = trajLogger;
     this.poseSupplier = poseSupplier;
     this.controller = controller;
     this.outputChassisSpeeds = outputChassisSpeeds;
@@ -79,6 +89,11 @@ public class AutoTrajectory {
     this.driveSubsystem = driveSubsystem;
     this.loop = loop;
     this.offTrigger = new TriggerExt(loop, () -> false);
+    this.trajLogger = trajLogger.isPresent()
+      ? trajLogger.get()
+      : new TrajectoryLogger<SampleType>() {
+        public void accept(Trajectory<SampleType> t, Boolean u) {}
+      };
 
     bindings.getBindings().forEach((key, value) -> active().and(atTime(key)).onTrue(value));
   }
@@ -101,11 +116,22 @@ public class AutoTrajectory {
     return trajectory.getTotalTime();
   }
 
+  @SuppressWarnings("unchecked")
   private void logTrajectory(boolean starting) {
-    trajLogger.ifPresent(
-        logger -> {
-          logger.accept(trajectory.getPoses(), starting);
-        });
+    TrajSample<?> sample = trajectory.getInitialSample();
+    if (sample == null) {
+      return;
+    } else if (sample instanceof SwerveSample) {
+      TrajectoryLogger<SwerveSample> swerveLogger =
+          (TrajectoryLogger<SwerveSample>) trajLogger;
+      Trajectory<SwerveSample> swerveTraj = (Trajectory<SwerveSample>) trajectory;
+      swerveLogger.accept(swerveTraj, starting);
+    } else if (sample instanceof DiffySample) {
+      TrajectoryLogger<DiffySample> diffyLogger =
+          (TrajectoryLogger<DiffySample>) trajLogger;
+      Trajectory<DiffySample> diffyTraj = (Trajectory<DiffySample>) trajectory;
+      diffyLogger.accept(diffyTraj, starting);
+    };
   }
 
   private void cmdInitialize() {
@@ -123,13 +149,13 @@ public class AutoTrajectory {
     ChassisSpeeds chassisSpeeds = DEFAULT_CHASSIS_SPEEDS;
 
     if (sample instanceof SwerveSample) {
-      ChoreoControlFunction<SwerveSample> swerveController =
-          (ChoreoControlFunction<SwerveSample>) this.controller;
+      ControlFunction<SwerveSample> swerveController =
+          (ControlFunction<SwerveSample>) this.controller;
       SwerveSample swerveSample = (SwerveSample) sample;
       chassisSpeeds = swerveController.apply(poseSupplier.get(), swerveSample);
     } else if (sample instanceof DiffySample) {
-      ChoreoControlFunction<DiffySample> diffyController =
-          (ChoreoControlFunction<DiffySample>) this.controller;
+      ControlFunction<DiffySample> diffyController =
+          (ControlFunction<DiffySample>) this.controller;
       DiffySample diffySample = (DiffySample) sample;
       chassisSpeeds = diffyController.apply(poseSupplier.get(), diffySample);
     }
@@ -306,14 +332,14 @@ public class AutoTrajectory {
    */
   public TriggerExt atTime(String eventName) {
     boolean foundEvent = false;
-    TriggerExt trig = offTrigger;
+    Trigger trig = offTrigger;
 
     for (var event : trajectory.getEvents(eventName)) {
       // This could create alot of objects, could be done a more efficient way
       // with having it all be 1 trigger that just has a list of times and checks each one each
       // cycle
       // or something like that. If choreo starts proposing memory issues we can look into this.
-      trig = TriggerExt.from(trig.or(atTime(event.timestamp())));
+      trig = trig.or(atTime(event.timestamp()));
       foundEvent = true;
     }
 
@@ -323,15 +349,14 @@ public class AutoTrajectory {
       DriverStation.reportWarning("Event \"" + eventName + "\" not found for " + name, true);
     }
 
-    return trig;
+    return TriggerExt.from(trig);
   }
 
   // private because this is a terrible way to schedule stuff
   private TriggerExt atPose(Pose2d pose, double toleranceMeters) {
     Translation2d checkedTrans =
         mirrorTrajectory.getAsBoolean()
-            ? new Translation2d(
-                16.5410515 - pose.getTranslation().getX(), pose.getTranslation().getY())
+            ? AllianceFlipUtil.flip(pose.getTranslation())
             : pose.getTranslation();
     return new TriggerExt(
         loop,

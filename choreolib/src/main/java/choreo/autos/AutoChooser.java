@@ -34,6 +34,7 @@ public class AutoChooser {
      * A function that generates an auto routine {@link Command} from an {@link AutoFactory}.
      */
     public static interface AutoRoutineGenerator extends Function<AutoFactory, Command> {
+        /** A generator that returns a command that does nothing */
         static final AutoRoutineGenerator NONE = factory -> Commands.none().withName("Do Nothing Auto");
     }
     private static final String NONE_NAME = "Nothing";

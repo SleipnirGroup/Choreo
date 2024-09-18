@@ -27,12 +27,14 @@ public class AutoLoop {
   /** A boolean utilized in {@link #enabled()} to resolve trueness */
   protected boolean isActive = false;
 
+  /** A boolean that is true when the loop is killed */
   protected boolean isKilled = false;
 
   /**
    * Creates a new loop with a specific name
    *
-   * @see choreo.autos.AutoFactory#newLoop() Creating a loop from a ChoreoAutoFactory
+   * @param name The name of the loop
+   * @see AutoFactory#newLoop() Creating a loop from a ChoreoAutoFactory
    */
   public AutoLoop(String name) {
     this.loop = new EventLoop();
@@ -42,6 +44,7 @@ public class AutoLoop {
   /**
    * A constructor to be used when inhereting this class to instantiate a custom inner loop
    *
+   * @param name The name of the loop
    * @param loop The inner {@link EventLoop}
    */
   protected AutoLoop(String name, EventLoop loop) {
