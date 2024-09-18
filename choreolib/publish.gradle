@@ -43,7 +43,7 @@ ext.addTaskToCopyAllOutputs = { task ->
 }
 
 def artifactGroupId = 'choreo'
-def baseArtifactId = 'Choreo'
+def baseArtifactId = 'ChoreoLib'
 def zipBaseName = "_GROUP_choreo_ID_${baseArtifactId}-cpp_CLS"
 def javaBaseName = "_GROUP_choreo_ID_${baseArtifactId}-java_CLS"
 

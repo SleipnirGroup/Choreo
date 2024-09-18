@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import React, { Component } from "react";
+import { Component } from "react";
 import { doc, uiState } from "../../document/DocumentManager";
 import styles from "./WaypointConfigPanel.module.css";
 import { Slider } from "@mui/material";
@@ -19,7 +19,7 @@ class WaypointVisibilityPanel extends Component<Props, State> {
     const points = doc.pathlist.activePath.params.waypoints;
     const pointcount = points.length;
 
-    const sliderMarks = points.map((point, idx) => ({
+    const sliderMarks = points.map((_point, idx) => ({
       value: idx,
       label: idx + 1
     }));
@@ -42,9 +42,9 @@ class WaypointVisibilityPanel extends Component<Props, State> {
                 marks={sliderMarks}
                 track={"normal"}
                 onChange={(
-                  e,
+                  _e,
                   value: number | number[],
-                  activeThumb: number
+                  _activeThumb: number
                 ) => {
                   if (typeof value === "number") {
                     doc.pathlist.activePath.ui.setVisibleWaypointsStart(value);

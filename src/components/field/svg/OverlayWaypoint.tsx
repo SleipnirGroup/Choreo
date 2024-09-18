@@ -39,9 +39,6 @@ class OverlayWaypoint extends Component<Props, State> {
   bumperRef: any;
   rootRef: React.RefObject<SVGGElement> = React.createRef<SVGGElement>();
 
-  // Used to determine if the context has changed. User switching from another path or creating a new path.
-  private isNewContext = true;
-
   BumperBox = observer(
     ({
       robotConfig,
@@ -111,22 +108,6 @@ class OverlayWaypoint extends Component<Props, State> {
     //d3.select(`#group`).attr('transform', `rotate(${ this.r.angle })`)
   }
 
-  // dragPointVelocityRotate(event: any) {
-  //   let pointerPos: Coordinates = { x: 0, y: 0 };
-  //   pointerPos.x = event.x;
-  //   pointerPos.y = event.y;
-
-  //   const waypointCoordinates = this.coordsFromWaypoint();
-  //   // calculates the difference between the current mouse position and the center line
-  //   var angleFinal = this.calcAngleRad(waypointCoordinates, pointerPos);
-  //   // gets the difference of the angles to get to the final angle
-  //   // converts the values to stay inside the 360 positive
-
-  //   // creates the new rotate position array
-  //   this.props.waypoint.setVelocityAngle(angleFinal);
-  //   //d3.select(`#group`).attr('transform', `rotate(${ this.r.angle })`)
-  // }
-
   dragPointTranslate(event: any) {
     const pointerPos: Coordinates = { x: 0, y: 0 };
     pointerPos.x = event.x;
@@ -164,24 +145,11 @@ class OverlayWaypoint extends Component<Props, State> {
           this.selectWaypoint();
           doc.history.startGroup(() => {});
         })
-        .on("end", (event) => doc.history.stopGroup())
+        .on("end", (_event) => doc.history.stopGroup())
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
         `#rotateTarget${this.props.index}`
       ).call(rotateHandleDrag);
-
-      // var velocityRotateHandleDrag = d3
-      //   .drag<SVGCircleElement, undefined>()
-      //   .on("drag", (event) => this.dragPointVelocityRotate(event))
-      //   .on("end", (event) => this.context.history.stopGroup())
-      //   .on("start", () => {
-      //     this.selectWaypoint();
-      //     this.context.history.startGroup(() => {});
-      //   })
-      //   .container(this.rootRef.current);
-      // d3.select<SVGCircleElement, undefined>(
-      //   `#velocityRotateTarget${this.props.index}`
-      // ).call(velocityRotateHandleDrag);
 
       const dragHandleDrag = d3
         .drag<SVGCircleElement, undefined>()
@@ -190,7 +158,7 @@ class OverlayWaypoint extends Component<Props, State> {
           this.selectWaypoint();
           doc.history.startGroup(() => {});
         })
-        .on("end", (event) => doc.history.stopGroup())
+        .on("end", (_event) => doc.history.stopGroup())
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
         `#dragTarget${this.props.index}`
@@ -302,7 +270,6 @@ class OverlayWaypoint extends Component<Props, State> {
                     onClick={() => this.selectWaypoint()}
                   ></circle>
                 );
-                break;
               case 4: {
                 // Question mark icon's raw svg
                 const boxSize =
@@ -342,16 +309,6 @@ class OverlayWaypoint extends Component<Props, State> {
               }
             }
           })()}
-          {/* <circle
-            cx={0}
-            cy={0}
-            r={
-              0.2 * Math.min(robotConfig.bumperLength, robotConfig.bumperWidth)
-            }
-            id={this.appendIndexID("dragTarget")}
-            fill={this.getDragTargetColor()}
-            onClick={() => this.selectWaypoint()}
-          ></circle> */}
         </g>
       </g>
     );

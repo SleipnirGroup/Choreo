@@ -12,22 +12,20 @@ jobs:
             artifact-name: Athena
             build-options: -Ponlylinuxathena
 
-          # FIXME: Generates Linux x86_64 libraries instead of arm32
-          # - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04
-          #   artifact-name: Linux-arm32
-          #   build-options: -Ponlylinuxarm32
+          - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04
+            artifact-name: Linux-arm32
+            build-options: -Ponlylinuxarm32
 
-          # FIXME: Generates Linux x86_64 libraries instead of arm64
-          # - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04
-          #   artifact-name: Linux-arm64
-          #   build-options: -Ponlylinuxarm64
+          - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04
+            artifact-name: Linux-arm64
+            build-options: -Ponlylinuxarm64
 
           - container: wpilib/ubuntu-base:22.04
             artifact-name: Linux-x86_64
             build-options:
 
     name: "Build C++ and Java / ${{ matrix.artifact-name }}"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     container: ${{ matrix.container }}
     steps:
       - uses: actions/checkout@v4
@@ -61,7 +59,7 @@ jobs:
 
   build-host:
     env:
-      MACOSX_DEPLOYMENT_TARGET: 13
+      MACOSX_DEPLOYMENT_TARGET: 13.3
     strategy:
       fail-fast: false
       matrix:
@@ -128,7 +126,7 @@ jobs:
   combine:
     name: Combine
     needs: [build-docker, build-host]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:

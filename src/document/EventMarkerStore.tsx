@@ -9,7 +9,7 @@ import {
   types
 } from "mobx-state-tree";
 import { moveItem } from "mobx-utils";
-import { Command, Expr } from "./2025/DocumentTypes";
+import { PplibCommand, Expr } from "./2025/DocumentTypes";
 import { WaypointID } from "./ConstraintDefinitions";
 import { WaypointScope } from "./ConstraintStore";
 import { Env } from "./DocumentManager";
@@ -58,7 +58,7 @@ export const CommandStore = types
         self.type === "sequential"
       );
     },
-    get serialize(): Command<Expr> {
+    get serialize(): PplibCommand<Expr> {
       if (self.type === "named") {
         return {
           type: "named",
@@ -84,7 +84,7 @@ export const CommandStore = types
     }
   }))
   .actions((self) => ({
-    deserialize(ser: Command<Expr>) {
+    deserialize(ser: PplibCommand<Expr>) {
       self.commands.clear();
       self.name = "";
       self.type = ser.type;
@@ -122,7 +122,7 @@ export const CommandStore = types
       self.commands.push(newCommand);
       return undefined;
     },
-    pushCommand(subcommand: ICommandStore) {
+    pushCommand(subcommand: IAnyType) {
       self.commands.push(subcommand);
     },
     detachCommand(index: number) {
@@ -228,15 +228,19 @@ export const EventMarkerStore = types
       } else if (self.offset.value == 0) {
         return true;
       } else {
-        const splitTimes = path.traj.samples.map((sect) => sect[0]?.t);
-        splitTimes.forEach((stopTimestamp) => {
-          if (
-            (targetTimestamp < stopTimestamp && timestamp > stopTimestamp) ||
-            (targetTimestamp > stopTimestamp && timestamp < stopTimestamp)
-          ) {
-            retVal = false;
+        const splitTimes = path.traj.splits.map(
+          (idx) => path.traj.samples[idx]?.t
+        );
+        [0, ...splitTimes, path.traj.getTotalTimeSeconds()].forEach(
+          (stopTimestamp) => {
+            if (
+              (targetTimestamp < stopTimestamp && timestamp > stopTimestamp) ||
+              (targetTimestamp > stopTimestamp && timestamp < stopTimestamp)
+            ) {
+              retVal = false;
+            }
           }
-        });
+        );
       }
       return retVal;
     }

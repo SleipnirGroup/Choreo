@@ -1,16 +1,16 @@
 import { Event, UnlistenFn, listen } from "@tauri-apps/api/event";
-import { Instance, types, getParent } from "mobx-state-tree";
+import { Instance, getParent, types } from "mobx-state-tree";
 import { UndoManager } from "mst-middlewares";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import {
+  DifferentialSample,
+  ProgressUpdate,
   Project,
   SAVE_FILE_VERSION,
-  Traj,
-  SwerveTrajoptlibSample,
-  ProgressUpdate,
   SampleType,
-  DifferentialTrajectorySample
+  SwerveSample,
+  Traj
 } from "./2025/DocumentTypes";
 import {
   CircularObstacleStore,
@@ -176,6 +176,7 @@ export const DocumentStore = types
       if (pathStore.params.waypoints.length < 2) {
         return;
       }
+      console.log(pathStore.serialize);
       const config = self.robotConfig.serialize;
       pathStore.params.constraints.forEach((constraint) => {
         if (constraint.issues.length > 0) {
@@ -218,50 +219,17 @@ export const DocumentStore = types
           return listen(`solver-status-${handle}`, async (rawEvent) => {
             const event: Event<ProgressUpdate> =
               rawEvent as Event<ProgressUpdate>;
-            if (event.payload!.type === "swerveTraj") {
-              const samples = event.payload.update as SwerveTrajoptlibSample[];
-              const forcesAvailable = pathStore.traj.forcesAvailable;
-              pathStore.ui.setInProgressTrajectory(
-                samples.map((s) => ({
-                  t: s.timestamp,
-                  vx: s.velocity_x,
-                  vy: s.velocity_y,
-                  omega: s.angular_velocity,
-                  ax: s.acceleration_x,
-                  ay: s.acceleration_y,
-                  alpha: s.angular_acceleration,
-                  fx: forcesAvailable ? s.module_forces_x : [0, 0, 0, 0],
-                  fy: forcesAvailable ? s.module_forces_y : [0, 0, 0, 0],
-                  ...s
-                }))
-              );
+            if (
+              event.payload!.type === "swerveTraj" ||
+              event.payload!.type === "diffTraj"
+            ) {
+              const samples = event.payload.update as
+                | SwerveSample[]
+                | DifferentialSample[];
+              pathStore.ui.setInProgressTrajectory(samples);
               pathStore.ui.setIterationNumber(
                 pathStore.ui.generationIterationNumber + 1
               );
-            } else if (event.payload!.type === "diffTraj") {
-              const samples = event.payload
-                .update as DifferentialTrajectorySample[];
-              const forcesAvailable = pathStore.traj.forcesAvailable;
-              pathStore.ui.setInProgressTrajectory(
-                samples.map((s) => ({
-                  t: s.timestamp,
-                  vl: s.velocity_l,
-                  vr: s.velocity_r,
-                  //omega: s.angular_velocity,
-                  al: s.acceleration_l,
-                  ar: s.acceleration_r,
-                  fl: forcesAvailable ? s.force_l : 0,
-                  fr: forcesAvailable ? s.force_r : 0,
-                  ...s
-                }))
-              );
-              pathStore.ui.setIterationNumber(
-                pathStore.ui.generationIterationNumber + 1
-              );
-            } else if (event.payload!.type === "diagnosticText") {
-              // const line = event.payload.update as string;
-              // This is the text output of sleipnir solver
-              // console.log(line)
             }
           });
         })
@@ -284,6 +252,7 @@ export const DocumentStore = types
             self.history.startGroup(() => {
               const newTraj = result.traj.samples;
               pathStore.traj.setSamples(newTraj);
+              pathStore.traj.setSplits(result.traj.splits);
               pathStore.traj.setWaypoints(result.traj.waypoints);
 
               pathStore.setSnapshot(result.snapshot);

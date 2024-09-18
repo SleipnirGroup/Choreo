@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import { Component } from "react";
 import { doc, uiState } from "../../document/DocumentManager";
 import Tooltip from "@mui/material/Tooltip";
 import styles from "./Navbar.module.css";
@@ -24,7 +24,7 @@ class Navbar extends Component<Props, State> {
                 className={styles.ToggleGroup}
                 exclusive
                 value={`${selectedNavbarItem}`}
-                onChange={(e, newSelection) => {
+                onChange={(_e, newSelection) => {
                   setSelectedNavbarItem(Number.parseInt(newSelection) ?? -1);
                 }}
                 key={sectionIdx}

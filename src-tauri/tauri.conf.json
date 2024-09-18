@@ -1,7 +1,8 @@
 {
   "build": {
-    "beforeDevCommand": "node build_cli.cjs && pnpm run dev",
-    "beforeBuildCommand": "node build_cli.cjs && pnpm run build",
+    "beforeDevCommand": "vite",
+    "beforeBuildCommand": "vite build",
+    "beforeBundleCommand": "node rename-sidecar.cjs choreo-cli ./target",
     "devPath": "http://localhost:1420",
     "distDir": "../dist",
     "withGlobalTauri": false
@@ -53,7 +54,7 @@
         "minimumSystemVersion": "13.3",
         "signingIdentity": "-"
       },
-      "externalBin": ["../cli/choreo-cli"]
+      "externalBin": ["../target/choreo-cli"]
     },
     "security": {
       "csp": null

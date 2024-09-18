@@ -143,6 +143,10 @@ pub enum ConstraintData<T: SnapshottableType> {
     },
     /// A constraint to stop at a waypoint.
     StopPoint {},
+    /// A constraint to contain the bumpers within a circlular region of the field
+    KeepInCircle { x: T, y: T, r: T },
+    /// A constraint to contain the bumpers within a rectangular region of the field
+    KeepInRectangle { x: T, y: T, w: T, h: T },
 }
 
 impl<T: SnapshottableType> ConstraintData<T> {
@@ -178,6 +182,17 @@ impl<T: SnapshottableType> ConstraintData<T> {
                 max: max.snapshot(),
             },
             ConstraintData::StopPoint {} => ConstraintData::StopPoint {},
+            ConstraintData::KeepInCircle { x, y, r } => ConstraintData::KeepInCircle {
+                x: x.snapshot(),
+                y: y.snapshot(),
+                r: r.snapshot(),
+            },
+            ConstraintData::KeepInRectangle { x, y, w, h } => ConstraintData::KeepInRectangle {
+                x: x.snapshot(),
+                y: y.snapshot(),
+                w: w.snapshot(),
+                h: h.snapshot(),
+            },
         }
     }
 }
@@ -261,8 +276,8 @@ fn nudge_zero(f: f64) -> f64 {
     }
 }
 
-impl From<SwerveTrajectorySample> for Sample {
-    fn from(swerve_sample: SwerveTrajectorySample) -> Self {
+impl From<&SwerveTrajectorySample> for Sample {
+    fn from(swerve_sample: &SwerveTrajectorySample) -> Self {
         Sample::Swerve {
             t: nudge_zero(swerve_sample.timestamp),
             x: nudge_zero(swerve_sample.x),
@@ -289,9 +304,14 @@ impl From<SwerveTrajectorySample> for Sample {
         }
     }
 }
+impl From<SwerveTrajectorySample> for Sample {
+    fn from(value: SwerveTrajectorySample) -> Self {
+        Self::from(&value)
+    }
+}
 
-impl From<DifferentialTrajectorySample> for Sample {
-    fn from(diff_sample: DifferentialTrajectorySample) -> Self {
+impl From<&DifferentialTrajectorySample> for Sample {
+    fn from(diff_sample: &DifferentialTrajectorySample) -> Self {
         Sample::DifferentialDrive {
             t: nudge_zero(diff_sample.timestamp),
             x: nudge_zero(diff_sample.x),
@@ -304,6 +324,11 @@ impl From<DifferentialTrajectorySample> for Sample {
             fl: nudge_zero(diff_sample.force_l),
             fr: nudge_zero(diff_sample.force_r),
         }
+    }
+}
+impl From<DifferentialTrajectorySample> for Sample {
+    fn from(value: DifferentialTrajectorySample) -> Self {
+        Self::from(&value)
     }
 }
 
@@ -343,7 +368,11 @@ pub struct Trajectory {
     /// The times at which the robot will reach each waypoint.
     pub waypoints: Vec<f64>,
     /// The samples of the trajectory.
-    pub samples: Vec<Vec<Sample>>,
+    pub samples: Vec<Sample>,
+    /// The indices of samples which are associated with split waypoints.
+    /// First and last samples are never in this list even if the split toggle is set
+    /// for first or last waypoints
+    pub splits: Vec<usize>,
     /// Whether the forces are available to use in the samples.
     #[serde(default)]
     pub forces_available: bool,
@@ -363,6 +392,14 @@ pub struct TrajFile {
     pub params: Parameters<Expr>,
     /// The trajectory the robot will follow.
     pub traj: Trajectory,
+    /// The choreo events.
+    #[serde(default)]
+    pub events: Vec<EventMarker>,
+    /// The pplib commands to execute.
+    /// This is a compatibility layer for working with
+    /// the path planner library.
+    #[serde(default)]
+    pub pplib_commands: Vec<PplibCommandMarker>,
 }
 
 impl TrajFile {
@@ -376,4 +413,35 @@ impl TrajFile {
     pub fn from_content(content: &str) -> crate::ChoreoResult<TrajFile> {
         serde_json::from_str(content).map_err(Into::into)
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PplibCommandMarker {
+    pub name: String,
+    pub target: Option<usize>,
+    pub traj_target_index: Option<usize>,
+    pub target_timestamp: Option<f64>,
+    pub offset: f64,
+    pub command: PplibCommand,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", tag = "type", content = "data")]
+pub enum PplibCommand {
+    Named { name: String },
+    Wait { wait_time: f64 },
+    Sequential { commands: Vec<PplibCommand> },
+    Parallel { commands: Vec<PplibCommand> },
+    Race { commands: Vec<PplibCommand> },
+    Deadline { commands: Vec<PplibCommand> },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EventMarker {
+    /// The name of the event.
+    pub event: String,
+    /// The offset from the beginning of the trajectory.
+    pub timestamp: f64,
 }

@@ -35,7 +35,7 @@ class FieldEventMarker extends Component<MarkerProps, MarkerState> {
                 : "var(--darker-purple)"
             }
             pointerEvents="visible"
-            onClick={(e) => this.props.onSelect()}
+            onClick={(_e) => this.props.onSelect()}
           />
         </g>
       </g>

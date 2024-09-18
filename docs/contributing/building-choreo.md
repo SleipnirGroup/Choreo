@@ -31,7 +31,7 @@ pnpm install
 Build an NSIS `.exe` installer on Windows, `.dmg` bundle on macOS, or `.deb` package on Linux.
 
 ```console
-pnpm run tauri build
+pnpm build
 ```
 
 ## Development Server
@@ -45,7 +45,7 @@ pnpm install
 Start development server (debug).
 
 ```console
-pnpm run tauri dev
+pnpm dev
 ```
 
 Start development server (release).

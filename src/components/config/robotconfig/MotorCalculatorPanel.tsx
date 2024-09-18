@@ -80,7 +80,7 @@ class RobotConfigPanel extends Component<Props, State> {
               title="Current Limit"
               suffix="A"
               enabled={true}
-              setEnabled={(a) => null}
+              setEnabled={(_) => null}
               roundingPrecision={0}
               number={this.state.currentLimit}
               setNumber={(currentLimit) => this.setState({ currentLimit })}
@@ -90,7 +90,7 @@ class RobotConfigPanel extends Component<Props, State> {
               title="Preview Max Speed"
               suffix="RPM"
               enabled={false}
-              setEnabled={(a) => null}
+              setEnabled={(_) => null}
               roundingPrecision={0}
               number={MotorCurves[this.state.selectedMotor].vmax * 0.8}
               showNumberWhenDisabled={
@@ -105,7 +105,7 @@ class RobotConfigPanel extends Component<Props, State> {
               title="Preview Max Torque"
               suffix="N · m"
               enabled={false}
-              setEnabled={(a) => null}
+              setEnabled={(_) => null}
               roundingPrecision={3}
               number={maxTorqueCurrentLimited(
                 MotorCurves[this.state.selectedMotor].kt,
