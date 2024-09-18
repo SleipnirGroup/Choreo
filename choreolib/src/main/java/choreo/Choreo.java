@@ -38,7 +38,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-/** Utilities to load and follow ChoreoTrajectories */
+/** Utilities to load and follow Choreo Trajectories */
 public final class Choreo {
   private static final Gson GSON = new Gson();
   private static final File CHOREO_DIR = new File(Filesystem.getDeployDirectory(), "choreo");
