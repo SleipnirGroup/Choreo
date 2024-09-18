@@ -1,11 +1,9 @@
-package choreo;
 // Copyright (c) Choreo contributors
 
+package choreo;
 
 import choreo.trajectory.ProjectFile;
-
 import com.google.gson.Gson;
-
 import org.junit.jupiter.api.Test;
 
 // import static org.junit.jupiter.api.Assertions.*;
@@ -156,6 +154,6 @@ public class ChoreoTests {
   public void testChoreo() {
     ProjectFile projectFile = GSON.fromJson(PROJ, ProjectFile.class);
     System.out.println(projectFile.name);
-    System.out.println(Choreo.readTrajectoryString(TRAJ, projectFile));
+    System.out.println(Choreo.readTrajectoryString(TRAJ, projectFile).name());
   }
 }

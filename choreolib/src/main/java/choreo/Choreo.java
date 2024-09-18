@@ -21,13 +21,13 @@ import com.google.gson.JsonSyntaxException;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,10 +41,29 @@ import java.util.function.Supplier;
 /** Utilities to load and follow Choreo Trajectories */
 public final class Choreo {
   private static final Gson GSON = new Gson();
-  private static final File CHOREO_DIR = new File(Filesystem.getDeployDirectory(), "choreo");
   private static final String TRAJECTORY_FILE_EXTENSION = ".traj";
 
-  public static Optional<ProjectFile> LAZY_PROJECT_FILE = Optional.empty();
+  private static final File CHOREO_DIR;
+
+  private static Optional<ProjectFile> LAZY_PROJECT_FILE = Optional.empty();
+
+  // due to an issue with unit tests not having certain jni accessible,
+  // loading edu.wpi.first.wpilibj.Filesystem in unit tests throws an error.
+  // this will default to a test directory if the class cannot be loaded.
+  static {
+    File DIR;
+    try {
+      // try loading edu.wpi.first.wpilibj.Filesystem class
+      Class<?> fsClass = Class.forName("edu.wpi.first.wpilibj.Filesystem");
+      DIR = (File) fsClass.getMethod("getDeployDirectory").invoke(null);
+    } catch (ClassNotFoundException
+        | NoSuchMethodException
+        | IllegalAccessException
+        | InvocationTargetException ex) {
+      DIR = new File("./test_deploy");
+    }
+    CHOREO_DIR = DIR;
+  }
 
   /**
    * Gets the project file from the deploy directory. Choreolib expects a .chor file to be placed in
@@ -139,10 +158,10 @@ public final class Choreo {
     EventMarker[] events = GSON.fromJson(wholeTraj.get("events"), EventMarker[].class);
     JsonObject trajObj = wholeTraj.getAsJsonObject("traj");
     Integer[] splits = GSON.fromJson(trajObj.get("splits"), Integer[].class);
-    if (projectFile.type == "Swerve") {
+    if (projectFile.type.equals("Swerve")) {
       SwerveSample[] samples = GSON.fromJson(trajObj.get("samples"), SwerveSample[].class);
       return new Trajectory<SwerveSample>(name, List.of(samples), List.of(splits), List.of(events));
-    } else if (projectFile.type == "Differential") {
+    } else if (projectFile.type.equals("Differential")) {
       DiffySample[] sampleArray = GSON.fromJson(trajObj.get("samples"), DiffySample[].class);
       return new Trajectory<DiffySample>(
           name, List.of(sampleArray), List.of(splits), List.of(events));

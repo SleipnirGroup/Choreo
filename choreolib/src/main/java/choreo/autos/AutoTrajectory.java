@@ -8,7 +8,6 @@ import choreo.autos.AutoFactory.ChoreoAutoBindings;
 import choreo.ext.CommandExt;
 import choreo.ext.TriggerExt;
 import choreo.trajectory.DiffySample;
-import choreo.trajectory.EventMarker;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.TrajSample;
 import choreo.trajectory.Trajectory;
@@ -338,7 +337,7 @@ public class AutoTrajectory {
       // with having it all be 1 trigger that just has a list of times and checks each one each
       // cycle
       // or something like that. If choreo starts proposing memory issues we can look into this.
-      trig = trig.or(atTime(event.timestamp()));
+      trig = trig.or(atTime(event.timestamp));
       foundEvent = true;
     }
 
@@ -386,8 +385,7 @@ public class AutoTrajectory {
       // with having it all be 1 trigger that just has a list of posess and checks each one each
       // cycle or something like that.
       // If choreo starts proposing memory issues we can look into this.
-      Pose2d pose =
-          trajectory.sampleAt(event.timestamp(), mirrorTrajectory.getAsBoolean()).getPose();
+      Pose2d pose = trajectory.sampleAt(event.timestamp, mirrorTrajectory.getAsBoolean()).getPose();
       trig = TriggerExt.from(trig.or(atPose(pose, toleranceMeters)));
       foundEvent = true;
     }
@@ -452,7 +450,7 @@ public class AutoTrajectory {
    * @return An array of all the timestamps of the events with the given name.
    */
   public double[] collectEventTimes(String eventName) {
-    return trajectory.getEvents(eventName).stream().mapToDouble(EventMarker::timestamp).toArray();
+    return trajectory.getEvents(eventName).stream().mapToDouble(e -> e.timestamp).toArray();
   }
 
   /**

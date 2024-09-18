@@ -189,7 +189,7 @@ public record Trajectory<SampleType extends TrajSample<SampleType>>(
    *     empty list is returned.
    */
   public List<EventMarker> getEvents(String eventName) {
-    return events.stream().filter(event -> event.event().equals(eventName)).toList();
+    return events.stream().filter(event -> event.event.equals(eventName)).toList();
   }
 
   /**
@@ -213,7 +213,7 @@ public record Trajectory<SampleType extends TrajSample<SampleType>>(
             sublist.stream().map(s -> s.offsetBy(-startTime)).toList(),
             List.of(),
             events.stream()
-                .filter(e -> e.timestamp() >= startTime && e.timestamp() <= endTime)
+                .filter(e -> e.timestamp >= startTime && e.timestamp <= endTime)
                 .map(e -> e.offsetBy(-startTime))
                 .toList()));
   }
