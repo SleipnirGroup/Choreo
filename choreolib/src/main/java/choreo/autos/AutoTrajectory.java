@@ -7,12 +7,12 @@ import choreo.Choreo.TrajectoryLogger;
 import choreo.autos.AutoFactory.ChoreoAutoBindings;
 import choreo.ext.CommandExt;
 import choreo.ext.TriggerExt;
-import choreo.trajectory.Trajectory;
-import choreo.util.AllianceFlipUtil;
 import choreo.trajectory.DiffySample;
 import choreo.trajectory.EventMarker;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.TrajSample;
+import choreo.trajectory.Trajectory;
+import choreo.util.AllianceFlipUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -23,7 +23,6 @@ import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -40,7 +39,6 @@ public class AutoTrajectory {
   // so you don't have to retype the sample type everywhere in your auto
   // code. This also makes the places with generics exposed to users few
   // and far between. This helps with more novice users
-
 
   // did inches to meters like this to keep final
   private static final double DEFAULT_TOLERANCE_METERS = Units.inchesToMeters(3);
@@ -89,11 +87,12 @@ public class AutoTrajectory {
     this.driveSubsystem = driveSubsystem;
     this.loop = loop;
     this.offTrigger = new TriggerExt(loop, () -> false);
-    this.trajLogger = trajLogger.isPresent()
-      ? trajLogger.get()
-      : new TrajectoryLogger<SampleType>() {
-        public void accept(Trajectory<SampleType> t, Boolean u) {}
-      };
+    this.trajLogger =
+        trajLogger.isPresent()
+            ? trajLogger.get()
+            : new TrajectoryLogger<SampleType>() {
+              public void accept(Trajectory<SampleType> t, Boolean u) {}
+            };
 
     bindings.getBindings().forEach((key, value) -> active().and(atTime(key)).onTrue(value));
   }
@@ -122,16 +121,15 @@ public class AutoTrajectory {
     if (sample == null) {
       return;
     } else if (sample instanceof SwerveSample) {
-      TrajectoryLogger<SwerveSample> swerveLogger =
-          (TrajectoryLogger<SwerveSample>) trajLogger;
+      TrajectoryLogger<SwerveSample> swerveLogger = (TrajectoryLogger<SwerveSample>) trajLogger;
       Trajectory<SwerveSample> swerveTraj = (Trajectory<SwerveSample>) trajectory;
       swerveLogger.accept(swerveTraj, starting);
     } else if (sample instanceof DiffySample) {
-      TrajectoryLogger<DiffySample> diffyLogger =
-          (TrajectoryLogger<DiffySample>) trajLogger;
+      TrajectoryLogger<DiffySample> diffyLogger = (TrajectoryLogger<DiffySample>) trajLogger;
       Trajectory<DiffySample> diffyTraj = (Trajectory<DiffySample>) trajectory;
       diffyLogger.accept(diffyTraj, starting);
-    };
+    }
+    ;
   }
 
   private void cmdInitialize() {
@@ -154,8 +152,7 @@ public class AutoTrajectory {
       SwerveSample swerveSample = (SwerveSample) sample;
       chassisSpeeds = swerveController.apply(poseSupplier.get(), swerveSample);
     } else if (sample instanceof DiffySample) {
-      ControlFunction<DiffySample> diffyController =
-          (ControlFunction<DiffySample>) this.controller;
+      ControlFunction<DiffySample> diffyController = (ControlFunction<DiffySample>) this.controller;
       DiffySample diffySample = (DiffySample) sample;
       chassisSpeeds = diffyController.apply(poseSupplier.get(), diffySample);
     }
@@ -256,8 +253,8 @@ public class AutoTrajectory {
   }
 
   /**
-   * Returns a trigger that has a rising edge when the command finishes,
-   * this edge will fall again the next cycle.
+   * Returns a trigger that has a rising edge when the command finishes, this edge will fall again
+   * the next cycle.
    *
    * <p>This is not a substitute for the {@link #inactive()} trigger, inactive will stay true until
    * the trajectory is scheduled again and will also be true if thus trajectory has never been
@@ -266,19 +263,21 @@ public class AutoTrajectory {
    * @return A trigger that is true when the command is finished.
    */
   public TriggerExt done() {
-    return new TriggerExt(loop, new BooleanSupplier() {
-      boolean wasJustActive = false;
+    return new TriggerExt(
+        loop,
+        new BooleanSupplier() {
+          boolean wasJustActive = false;
 
-      public boolean getAsBoolean() {
-        if (isActive) {
-          wasJustActive = true;
-        } else if (wasJustActive) {
-          wasJustActive = false;
-          return true;
-        }
-        return false;
-      }
-    });
+          public boolean getAsBoolean() {
+            if (isActive) {
+              wasJustActive = true;
+            } else if (wasJustActive) {
+              wasJustActive = false;
+              return true;
+            }
+            return false;
+          }
+        });
   }
 
   /**

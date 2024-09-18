@@ -2,14 +2,13 @@
 
 package choreo.trajectory;
 
-import java.nio.ByteBuffer;
-
 import choreo.util.AllianceFlipUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.util.struct.Struct;
+import java.nio.ByteBuffer;
 
 /** A single robot sample in a ChoreoTrajectory. */
 public class DiffySample implements TrajSample<DiffySample> {
@@ -130,9 +129,7 @@ public class DiffySample implements TrajSample<DiffySample> {
     return new DiffySample[length];
   }
 
-  /**
-   * The struct for the DiffySample class.
-   */
+  /** The struct for the DiffySample class. */
   public static final Struct<DiffySample> struct = new DiffySampleStruct();
 
   private static final class DiffySampleStruct implements Struct<DiffySample> {
@@ -144,26 +141,32 @@ public class DiffySample implements TrajSample<DiffySample> {
     @Override
     public String getTypeString() {
       return "struct:DiffySample";
-    };
+    }
+    ;
 
     @Override
     public int getSize() {
       return Struct.kSizeDouble * 10;
-    };
+    }
+    ;
 
     @Override
     public String getSchema() {
-        return "double timestamp;"
-            + "double x;"
-            + "double y;"
-            + "double heading;"
-            + "double vl;"
-            + "double vr;"
-            + "double al;"
-            + "double ar;"
-            + "double fl;"
-            + "double fr;";
+      return "double timestamp;"
+          + "Pose2d pose;"
+          + "double vl;"
+          + "double vr;"
+          + "double al;"
+          + "double ar;"
+          + "double fl;"
+          + "double fr;";
     }
+
+    @Override
+    public Struct<?>[] getNested() {
+      return new Struct<?>[] {Pose2d.struct};
+    }
+    ;
 
     @Override
     public DiffySample unpack(ByteBuffer bb) {

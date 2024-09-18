@@ -10,9 +10,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.util.function.BooleanSupplier;
 
-/**
- * A Trigger extension to test new features to be upstreamed
- */
+/** A Trigger extension to test new features to be upstreamed */
 public class TriggerExt extends Trigger {
   private static final VarHandle loopHandle;
   private static final VarHandle conditionHandle;
@@ -29,7 +27,7 @@ public class TriggerExt extends Trigger {
 
   /**
    * Creates a new TriggerExt with a loop and condition.
-   * 
+   *
    * @param loop The loop to run the trigger on
    * @param condition The condition to trigger on
    */
@@ -61,14 +59,14 @@ public class TriggerExt extends Trigger {
   // }
 
   /**
-    * Sets up a {@link Command} to mimic a default command while a condition is true.
-    *
-    * <p>The command will not interrupt any command other than the original default command of the
-    * subsystems the command requires.
-    *
-    * @param cmd the command to start
-    * @return this trigger, so calls can be chained
-    */
+   * Sets up a {@link Command} to mimic a default command while a condition is true.
+   *
+   * <p>The command will not interrupt any command other than the original default command of the
+   * subsystems the command requires.
+   *
+   * @param cmd the command to start
+   * @return this trigger, so calls can be chained
+   */
   public TriggerExt whileTrueDefault(Command cmd) {
     // you could implement this by overiding the subsystems default command
     // but that has alot of foot guns and likely would leak into causing issues
@@ -107,7 +105,7 @@ public class TriggerExt extends Trigger {
 
   /**
    * Creates a TriggerExt from a normal Trigger.
-   * 
+   *
    * @param trigger The trigger to convert
    * @return The converted TriggerExt
    */

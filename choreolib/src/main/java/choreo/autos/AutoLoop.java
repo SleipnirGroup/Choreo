@@ -34,7 +34,7 @@ public class AutoLoop {
    * Creates a new loop with a specific name
    *
    * @param name The name of the loop
-   * @see AutoFactory#newLoop() Creating a loop from a ChoreoAutoFactory
+   * @see AutoFactory#newLoop Creating a loop from a ChoreoAutoFactory
    */
   public AutoLoop(String name) {
     this.loop = new EventLoop();

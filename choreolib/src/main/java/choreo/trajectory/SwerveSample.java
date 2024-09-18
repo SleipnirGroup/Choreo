@@ -8,7 +8,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.util.struct.Struct;
-
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -199,9 +198,7 @@ public class SwerveSample implements TrajSample<SwerveSample> {
     return new SwerveSample[length];
   }
 
-  /**
-   * The struct for the SwerveSample class.
-   */
+  /** The struct for the SwerveSample class. */
   public static final Struct<SwerveSample> struct = new SwerveSampleStruct();
 
   private static final class SwerveSampleStruct implements Struct<SwerveSample> {
@@ -213,28 +210,34 @@ public class SwerveSample implements TrajSample<SwerveSample> {
     @Override
     public String getTypeString() {
       return "struct:SwerveSample";
-    };
+    }
+    ;
 
     @Override
     public int getSize() {
       return Struct.kSizeDouble * 18;
-    };
+    }
+    ;
 
     @Override
     public String getSchema() {
-        return "double timestamp;"
-            + "double x;"
-            + "double y;"
-            + "double heading;"
-            + "double vx;"
-            + "double vy;"
-            + "double omega;"
-            + "double ax;"
-            + "double ay;"
-            + "double alpha;"
-            + "double moduleForcesX[4];"
-            + "double moduleForcesY[4];";
+      return "double timestamp;"
+          + "Pose2d pose;"
+          + "double vx;"
+          + "double vy;"
+          + "double omega;"
+          + "double ax;"
+          + "double ay;"
+          + "double alpha;"
+          + "double moduleForcesX[4];"
+          + "double moduleForcesY[4];";
     }
+
+    @Override
+    public Struct<?>[] getNested() {
+      return new Struct<?>[] {Pose2d.struct};
+    }
+    ;
 
     @Override
     public SwerveSample unpack(ByteBuffer bb) {

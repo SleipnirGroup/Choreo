@@ -13,8 +13,8 @@ public record Trajectory<SampleType extends TrajSample<SampleType>>(
   /**
    * Returns the first {@link SampleType} in the trajectory.
    *
-   * <p> <b>NULL SAFETY:</b> This function will return null if the trajectory is empty.
-   * 
+   * <p><b>NULL SAFETY:</b> This function will return null if the trajectory is empty.
+   *
    * @return The first {@link SampleType} in the trajectory.
    */
   public SampleType getInitialSample() {
@@ -27,8 +27,8 @@ public record Trajectory<SampleType extends TrajSample<SampleType>>(
   /**
    * Returns the last {@link SampleType} in the trajectory.
    *
-   * <p> <b>NULL SAFETY:</b> This function will return null if the trajectory is empty.
-   * 
+   * <p><b>NULL SAFETY:</b> This function will return null if the trajectory is empty.
+   *
    * @return The last {@link SampleType} in the trajectory.
    */
   public SampleType getFinalSample() {
@@ -77,8 +77,8 @@ public record Trajectory<SampleType extends TrajSample<SampleType>>(
 
   /**
    * Return an interpolated sample of the trajectory at the given timestamp.
-   * 
-   * <p> <b>NULL SAFETY:</b> This function will return null if the trajectory is empty.
+   *
+   * <p><b>NULL SAFETY:</b> This function will return null if the trajectory is empty.
    *
    * @param timestamp The timestamp of this sample relative to the beginning of the trajectory.
    * @param mirrorForRedAlliance whether or not to return the sample as mirrored across the field
@@ -99,8 +99,8 @@ public record Trajectory<SampleType extends TrajSample<SampleType>>(
 
   /**
    * Returns the initial pose of the trajectory.
-   * 
-   * <p> <b>NULL SAFETY:</b> This function will return null if the trajectory is empty.
+   *
+   * <p><b>NULL SAFETY:</b> This function will return null if the trajectory is empty.
    *
    * @param mirrorForRedAlliance whether or not to return the pose as mirrored across the field
    * @return the initial pose of the trajectory.
@@ -117,8 +117,8 @@ public record Trajectory<SampleType extends TrajSample<SampleType>>(
 
   /**
    * Returns the final pose of the trajectory.
-   * 
-   * <p> <b>NULL SAFETY:</b> This function will return null if the trajectory is empty.
+   *
+   * <p><b>NULL SAFETY:</b> This function will return null if the trajectory is empty.
    *
    * @param mirrorForRedAlliance whether or not to return the pose as mirrored across the field
    * @return the final pose of the trajectory.
@@ -156,7 +156,7 @@ public record Trajectory<SampleType extends TrajSample<SampleType>>(
 
   /**
    * Returns an array of samples
-   * 
+   *
    * @return an array of samples
    */
   @SuppressWarnings("unchecked")
@@ -194,7 +194,7 @@ public record Trajectory<SampleType extends TrajSample<SampleType>>(
 
   /**
    * Returns a choreo trajectory that represents the split of the trajectory at the given index.
-   * 
+   *
    * @param splitIndex the index of the split trajectory to return.
    * @return a choreo trajectory that represents the split of the trajectory at the given index.
    */

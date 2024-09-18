@@ -3,13 +3,13 @@
 package choreo.autos;
 
 import choreo.Choreo;
-import choreo.Choreo.ControlFunction;
 import choreo.Choreo.ChoreoTrajCache;
+import choreo.Choreo.ControlFunction;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.ext.TriggerExt;
-import choreo.trajectory.Trajectory;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.TrajSample;
+import choreo.trajectory.Trajectory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -65,7 +65,6 @@ import java.util.function.Supplier;
  * </code></pre>
  */
 public class AutoFactory {
-
   private static final AutoLoop VOID_LOOP =
       new AutoLoop("VOID-LOOP") {
         private final EventLoop loop = new EventLoop();
@@ -135,8 +134,9 @@ public class AutoFactory {
   private final Optional<TrajectoryLogger<? extends TrajSample<?>>> trajLogger;
 
   /**
-   * Its reccomended to use the {@link Choreo#createAutoFactory} to create a new instance of this class.
-   * 
+   * Its reccomended to use the {@link Choreo#createAutoFactory} to create a new instance of this
+   * class.
+   *
    * @param <SampleType> {@link Choreo#createAutoFactory}
    * @param poseSupplier {@link Choreo#createAutoFactory}
    * @param controller {@link Choreo#createAutoFactory}
@@ -176,9 +176,9 @@ public class AutoFactory {
   }
 
   /**
-   * An Auto Loop that cannot have any side-effects,
-   * it stores no state and does nothing when polled.
-   * 
+   * An Auto Loop that cannot have any side-effects, it stores no state and does nothing when
+   * polled.
+   *
    * @return A void auto loop.
    * @see AutoLoop
    * @see #newLoop
@@ -239,25 +239,27 @@ public class AutoFactory {
       Trajectory<SampleType> trajectory, AutoLoop loop) {
     // type solidify everything
     final Trajectory<SampleType> solidTrajectory = trajectory;
-    final ControlFunction<SampleType> solidController = (ControlFunction<SampleType>) this.controller;
-    final Optional<TrajectoryLogger<SampleType>> solidLogger = this.trajLogger.map(logger -> (TrajectoryLogger<SampleType>) logger);
+    final ControlFunction<SampleType> solidController =
+        (ControlFunction<SampleType>) this.controller;
+    final Optional<TrajectoryLogger<SampleType>> solidLogger =
+        this.trajLogger.map(logger -> (TrajectoryLogger<SampleType>) logger);
     return new AutoTrajectory(
-            trajectory.name(),
-            solidTrajectory,
-            poseSupplier,
-            solidController,
-            outputChassisSpeeds,
-            mirrorTrajectory,
-            solidLogger,
-            driveSubsystem,
-            loop.getLoop(),
-            bindings);
+        trajectory.name(),
+        solidTrajectory,
+        poseSupplier,
+        solidController,
+        outputChassisSpeeds,
+        mirrorTrajectory,
+        solidLogger,
+        driveSubsystem,
+        loop.getLoop(),
+        bindings);
   }
 
   /**
    * Creates a new auto trajectory command to be used in an auto routine.
    *
-   * <p><h1>Important </h1>
+   * <p><b>Important </b>
    *
    * <p>{@link #trajCommand} and {@link #traj} methods should not be mixed in the same auto routine.
    * {@link #trajCommand} is used as an escape hatch for teams that don't need the benefits of the
@@ -275,7 +277,7 @@ public class AutoFactory {
   /**
    * Creates a new auto trajectory command to be used in an auto routine.
    *
-   * <p><h1>Important </h1>
+   * <p><b>Important </b>
    *
    * <p>{@link #trajCommand} and {@link #traj} methods should not be mixed in the same auto routine.
    * {@link #trajCommand} is used as an escape hatch for teams that don't need the benefits of the
@@ -294,7 +296,7 @@ public class AutoFactory {
   /**
    * Creates a new auto trajectory command to be used in an auto routine.
    *
-   * <p><h1>Important </h1>
+   * <p><b>Important </b>
    *
    * <p>{@link #trajCommand} and {@link #traj} methods should not be mixed in the same auto routine.
    * {@link #trajCommand} is used as an escape hatch for teams that don't need the benefits of the
@@ -322,14 +324,14 @@ public class AutoFactory {
   }
 
   /**
-   * The {@link AutoFactory} caches trajectories with a {@link ChoreoTrajCache}
-   * to avoid reloading the same trajectory multiple times. This can have the side effect of
-   * keeping a single copy of every trajectory ever loaded in memory aslong as the factory is
-   * loaded. This method clears the cache of all trajectories.
-   * 
+   * The {@link AutoFactory} caches trajectories with a {@link ChoreoTrajCache} to avoid reloading
+   * the same trajectory multiple times. This can have the side effect of keeping a single copy of
+   * every trajectory ever loaded in memory aslong as the factory is loaded. This method clears the
+   * cache of all trajectories.
+   *
    * <p><b>Usage Note:</b>
-   * <p>Never clearing the cache is unlikely to have an impact on the robots
-   * performance on a rio 2
+   *
+   * <p>Never clearing the cache is unlikely to have an impact on the robots performance on a rio 2
    */
   public void clearCache() {
     trajCache.clear();
