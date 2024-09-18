@@ -102,7 +102,7 @@ class PathAnimationSlider extends Component<Props, State> {
           valueLabelDisplay="auto"
           valueLabelFormat={(x: number) => x.toFixed(2)}
           value={uiState.pathAnimationTimestamp}
-          onChange={(e, newVal) =>
+          onChange={(_e, newVal) =>
             uiState.setPathAnimationTimestamp(newVal as number)
           }
           sx={{

@@ -66,7 +66,7 @@ export const navbarIndexToConstraintKey: {
 } = {};
 {
   let constraintsOffset = Object.keys(NavbarData).length;
-  Object.entries(ConstraintDefinitions).forEach(([key, data], index) => {
+  Object.entries(ConstraintDefinitions).forEach(([key, data], _index) => {
     NavbarData[key] = {
       index: constraintsOffset,
       name: data.name,
@@ -113,7 +113,7 @@ NavbarData.EventMarker = {
 /** An map of  */
 export const NavbarLabels = (() => {
   const x: { [key: string]: number } = {};
-  Object.entries(NavbarData).forEach(([key, data], index) => {
+  Object.entries(NavbarData).forEach(([key, _data], index) => {
     x[key] = index;
   });
   return x;
@@ -122,7 +122,7 @@ export const NavbarLabels = (() => {
 /** An array of name-and-icon objects for the navbar */
 export const NavbarItemData = (() => {
   const x: Array<{ name: string; icon: any }> = [];
-  Object.entries(NavbarData).forEach(([key, data], index) => {
+  Object.entries(NavbarData).forEach(([_key, data], _index) => {
     x[data.index] = { name: data.name, icon: data.icon };
   });
   return x;
@@ -132,7 +132,7 @@ const NavbarItemSections = [waypointNavbarCount, constraintNavbarCount];
 NavbarItemSections.push(obstacleNavbarCount);
 NavbarItemSections.push(eventMarkerCount);
 
-export const NavbarItemSectionEnds = NavbarItemSections.map((s, idx) =>
+export const NavbarItemSectionEnds = NavbarItemSections.map((_s, idx) =>
   NavbarItemSections.slice(0, idx + 1).reduce((prev, cur) => prev + cur, -1)
 );
 
@@ -186,7 +186,7 @@ export const ViewData = {
 
 export const ViewLayers = (() => {
   const x: { [key: string]: number } = {};
-  Object.entries(ViewData).forEach(([key, data], index) => {
+  Object.entries(ViewData).forEach(([key, _data], index) => {
     x[key] = index;
   });
   return x;
@@ -194,7 +194,7 @@ export const ViewLayers = (() => {
 
 export const ViewItemData = (() => {
   const x: Array<{ name: string; icon: any; default: boolean }> = [];
-  Object.entries(ViewData).forEach(([key, data], index) => {
+  Object.entries(ViewData).forEach(([_key, data], _index) => {
     x[data.index] = { name: data.name, icon: data.icon, default: data.default };
   });
   return x;

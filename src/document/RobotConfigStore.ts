@@ -49,7 +49,8 @@ export const EXPR_DEFAULTS: RobotConfig<Expr> = {
       x: [`${halfWheelbase} in`, DEFAULT_WHEELBASE / 2],
       y: [`${-halfWheelbase} in`, -DEFAULT_WHEELBASE / 2]
     }
-  ]
+  ],
+  diffTrackWidth: [`${MToIn(DEFAULT_WHEELBASE)} in`, DEFAULT_WHEELBASE]
 };
 
 export const BumperStore = types
@@ -131,6 +132,7 @@ export const RobotConfigStore = types
       types.array(ModuleStore),
       (snap) => snap?.length == 4
     ),
+    diffTrackWidth: ExpressionStore,
     identifier: types.identifier
   })
   .views((self) => {
@@ -151,7 +153,8 @@ export const RobotConfigStore = types
           radius: self.radius.serialize,
           bumper: self.bumper.serialize,
           //@ts-expect-error can't encode fixed length array in mobx ts typing
-          modules: self.modules.map((mod) => mod.serialize)
+          modules: self.modules.map((mod) => mod.serialize),
+          diffTrackWidth: self.diffTrackWidth.serialize
         };
       },
       snapshot(): RobotConfig<number> {
@@ -164,7 +167,8 @@ export const RobotConfigStore = types
           radius: self.radius.value,
           bumper: self.bumper.snapshot(),
           //@ts-expect-error can't encode fixed length array in mobx ts typing
-          modules: self.modules.map((mod) => mod.snapshot())
+          modules: self.modules.map((mod) => mod.snapshot()),
+          diffTrackWidth: self.diffTrackWidth.value
         };
       }
     };
@@ -180,6 +184,7 @@ export const RobotConfigStore = types
         self.radius.deserialize(config.radius);
         self.bumper.deserialize(config.bumper);
         self.modules.forEach((mod, i) => mod.deserialize(config.modules[i]));
+        self.diffTrackWidth.deserialize(config.diffTrackWidth);
       }
     };
   })

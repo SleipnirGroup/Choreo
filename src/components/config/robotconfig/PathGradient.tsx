@@ -11,7 +11,7 @@ export type PathGradientArgs<S extends SwerveSample | DifferentialSample> = {
   point: S;
   prev: S;
   next: S;
-  arr: S[][];
+  arr: S[];
   total: number;
   count: number;
   sect: number;
@@ -188,7 +188,7 @@ class PathGradientFunctions {
    * @returns The color gradient in HSL format.
    */
   static splitTrajectories({ arr, sect: i }: PathGradientArgs<any>): string {
-    if (arr.length < 2) {
+    if (i == 0) {
       return "var(--select-yellow)";
     }
 

@@ -72,9 +72,6 @@ class SidebarConstraint extends Component<Props, State> {
           className: styles.SidebarIcon,
           htmlColor: selected ? "var(--select-yellow)" : "var(--accent-purple)"
         })}
-        {/* className={styles.SidebarIcon}
-          htmlColor={selected ? "var(--select-yellow)" : "var(--accent-purple)"}
-        ></Icon> */}
         <span
           className={styles.SidebarLabel}
           style={{ display: "grid", gridTemplateColumns: "1fr auto auto" }}

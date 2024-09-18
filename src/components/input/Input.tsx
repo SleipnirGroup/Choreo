@@ -95,8 +95,8 @@ class Input extends Component<Props, State> {
 
   componentDidUpdate(
     prevProps: Readonly<Props>,
-    prevState: Readonly<State>,
-    snapshot?: any
+    _prevState: Readonly<State>,
+    _snapshot?: any
   ): void {
     if (prevProps.number !== this.props.number) {
       // if the value has changed from the outside, make sure it is no longer
@@ -137,10 +137,10 @@ class Input extends Component<Props, State> {
           disabled={!this.props.enabled}
           // The below is needed to make inputs on CommandDraggables work
           onClick={(e) => e.stopPropagation()}
-          onFocus={(e) => {
+          onFocus={(_e) => {
             this.focusedMode();
           }}
-          onBlur={(e) => {
+          onBlur={(_e) => {
             const newNumber = parseFloat(this.state.editedValue);
             if (!Number.isNaN(newNumber)) {
               this.props.setNumber(newNumber);
@@ -159,11 +159,6 @@ class Input extends Component<Props, State> {
           onKeyDown={(e) => {
             if (e.key == "Enter") {
               this.inputElemRef.current?.blur();
-              // let newNumber = parseFloat(this.state.editedValue);
-              // if (!Number.isNaN(newNumber)) {
-              //   this.props.setNumber(newNumber);
-              // }
-              // this.unfocusedMode();
             }
           }}
           value={this.getDisplayStr()}

@@ -3,6 +3,8 @@ import { ConstraintKey } from "../../../../document/ConstraintDefinitions";
 import { IConstraintStoreKeyed } from "../../../../document/ConstraintStore";
 import { doc } from "../../../../document/DocumentManager";
 import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer";
+import KeepInCircleOverlay from "./KeepInCircleOverlay";
+import KeepInRectangleOverlay from "./KeepInRectangleOverlay";
 import PointAtOverlay from "./PointAtOverlay";
 
 const overlays = {
@@ -17,10 +19,32 @@ const overlays = {
       lineColor={lineColor}
     ></PointAtOverlay>
   ),
-  StopPoint: (c: IConstraintStoreKeyed<"StopPoint">) => <></>,
-  MaxAcceleration: (c: IConstraintStoreKeyed<"MaxAcceleration">) => <></>,
-  MaxVelocity: (c: IConstraintStoreKeyed<"MaxVelocity">) => <></>,
-  MaxAngularVelocity: (c: IConstraintStoreKeyed<"MaxAngularVelocity">) => <></>
+  KeepInCircle: (
+    constraint: IConstraintStoreKeyed<"KeepInCircle">,
+    lineColor: string
+  ) => (
+    <KeepInCircleOverlay
+      data={constraint.data}
+      start={constraint.getStartWaypoint()}
+      end={constraint.getEndWaypoint()}
+      lineColor={lineColor}
+    ></KeepInCircleOverlay>
+  ),
+  KeepInRectangle: (
+    constraint: IConstraintStoreKeyed<"KeepInRectangle">,
+    lineColor: string
+  ) => (
+    <KeepInRectangleOverlay
+      data={constraint.data}
+      start={constraint.getStartWaypoint()}
+      end={constraint.getEndWaypoint()}
+      lineColor={lineColor}
+    ></KeepInRectangleOverlay>
+  ),
+  StopPoint: (_c: IConstraintStoreKeyed<"StopPoint">) => <></>,
+  MaxAcceleration: (_c: IConstraintStoreKeyed<"MaxAcceleration">) => <></>,
+  MaxVelocity: (_c: IConstraintStoreKeyed<"MaxVelocity">) => <></>,
+  MaxAngularVelocity: (_c: IConstraintStoreKeyed<"MaxAngularVelocity">) => <></>
 } satisfies {
   [K in ConstraintKey]: (
     constraint: IConstraintStoreKeyed<K>,

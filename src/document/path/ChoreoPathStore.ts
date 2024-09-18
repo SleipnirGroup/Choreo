@@ -291,7 +291,7 @@ export const ChoreoPathStore = types
   .actions((self) => ({
     deserialize(ser: ChoreoPath<Expr>) {
       self.waypoints.clear();
-      ser.waypoints.forEach((point: Waypoint<Expr>, index: number): void => {
+      ser.waypoints.forEach((point: Waypoint<Expr>, _index: number): void => {
         const waypoint = self.addWaypoint();
         waypoint.deserialize(point);
       });

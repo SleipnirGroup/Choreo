@@ -43,8 +43,6 @@ type State = {
 };
 
 class FieldOverlayRoot extends Component<Props, State> {
-  private static instance: FieldOverlayRoot | null = null;
-
   state = {
     xPan: 0,
     yPan: 0,

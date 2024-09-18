@@ -40,67 +40,6 @@ import { tracing } from "./tauriTracing";
 
 export const math = create(all, { predictable: true });
 
-// const createPose2d = factory('Pose2d', ['typed'], ({ typed }) => {
-//   // create a new data type
-//   function Pose2d (x: ()=>MathType, y: ()=>MathType, heading: ()=>MathType) {
-//     this.x = x;
-//     this.y = y;
-//     this.heading = heading;
-//     return {
-//       x, y, heading, isPose2d: true
-//     }
-//   }
-//   Pose2d.prototype.isPose2d = true
-//   Pose2d.prototype.toString = function () {
-//     return 'Pose2d:' + this.x() + ' ' + this.y() + ' ' + this.heading();
-//   }
-
-//   // define a new data type with typed-function
-//   typed.addType({
-//     name: 'Pose2d',
-//     test: function (x) {
-//       // test whether x is of type Pose2d
-//       return x && x.isPose2d === true
-//     }
-//   })
-
-//   return Pose2d
-// })
-
-// // function add which can add the Pose2d data type
-// // When imported in math.js, the existing function `add` with support for
-// // Pose2d, because both implementations are typed-functions and do not
-// // have conflicting signatures.
-// const createAddPose2d = factory('add', ['typed', 'Pose2d'], ({ typed, Pose2d }) => {
-//   return typed('add', {
-//     'Pose2d, Pose2d': function (a, b) {
-//       return new Pose2d(math.add(a.x(), b.x()), math.add(a.y(), b.y()), math.add(a.heading(), b.heading()));
-//     }
-//   })
-// })
-// const createTransformByPose2d = factory('transformBy', ['typed', 'Pose2d'], ({ typed, Pose2d }) => {
-//   return typed('transformBy', {
-//     'Pose2d, Pose2d': function (a, b) {
-//       return {
-//         x:()=>math.add(a.x(),
-//           math.multiply(b.x(), math.cos(a.heading())),
-//           math.multiply(b.y(), math.unaryMinus(math.sin(a.heading())))
-//           ),
-//         y:()=>math.add(a.y(),
-//           math.multiply(b.x(),math.sin(a.heading())),
-//           math.multiply(b.y(),math.cos(a.heading()))),
-//         heading:()=>math.add(a.heading(), b.heading()), isPose2d: true}
-//     }
-//   })
-// })
-
-// // import the new data type and function
-// math.import([
-//   createPose2d,
-//   createAddPose2d,
-//   createTransformByPose2d
-// ])
-
 function isSymbolNode(node: MathNode): node is SymbolNode {
   return Object.hasOwn(node, "isSymbolNode");
 }
@@ -281,7 +220,7 @@ export const ExpressionStore = types
   }))
   .actions((self) => ({
     findReplaceVariable(find: string, replace: string) {
-      self.expr = self.expr.transform(function (node, path, parent) {
+      self.expr = self.expr.transform(function (node, _path, _parent) {
         if (isSymbolNode(node) && node.name === find) {
           const clone = (node as SymbolNode).clone();
           clone.name = replace;
@@ -382,14 +321,13 @@ export const ExpressionStore = types
   .views((self) => ({
     get evaluate(): MathType {
       const result = self.evaluator(self.expr);
-      // setTimeout(()=>console.log(self.toString(), "depends", getDependencyTree(self, "evaluate")), 30);
       return result;
     }
   }))
   .views((self) => ({
     get asScope() {
       return () => {
-        //eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         self.value;
 
         const expr = untracked(() => {
@@ -399,7 +337,7 @@ export const ExpressionStore = types
       };
     },
     get toDefaultUnit(): Unit | number | undefined {
-      //eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       self.expr;
 
       const result = self.evaluate;
@@ -428,8 +366,9 @@ export const ExpressionStore = types
       return math.unit(result.toString()).to(self.defaultUnit!.toString());
     },
     get defaultUnitMagnitude(): number | undefined {
-      //eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       self.expr;
+
       const defaultUnit = this.toDefaultUnit;
       if (typeof defaultUnit === "number") {
         return defaultUnit;
@@ -437,7 +376,6 @@ export const ExpressionStore = types
       return defaultUnit?.toNumber(self.defaultUnit!.toString());
     },
     validate(newNode: MathNode): MathNode | undefined {
-      //console.log("Validate", newNode.toString())
       let newNumber: MathType;
       try {
         newNumber = self.evaluator(newNode);
@@ -490,7 +428,6 @@ export const ExpressionStore = types
       return newNode;
     },
     get valid(): boolean {
-      // setTimeout(()=>{console.log(getDependencyTree(self, "valid"))})
       return this.validate(self.expr) !== undefined;
     }
   }))
@@ -666,7 +603,7 @@ export const Variables = types
         name
           .split("")
           .every(
-            (c, i, arr) =>
+            (_c, i, arr) =>
               math.parse.isAlpha(arr[i], arr[i - 1], arr[i + 1]) ||
               math.parse.isDigit(arr[i])
           ) &&

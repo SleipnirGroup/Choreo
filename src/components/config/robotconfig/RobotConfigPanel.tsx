@@ -60,7 +60,7 @@ class RobotConfigPanel extends Component<Props, State> {
               size="small"
               sx={{ gridColumn: 2 }}
               checked={doc.type === "Differential"}
-              onChange={(e, checked) =>
+              onChange={(_e, checked) =>
                 doc.setType(checked ? "Differential" : "Swerve")
               }
             ></Switch>

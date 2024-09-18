@@ -44,7 +44,9 @@ export const HolonomicPathStore = types
           version: SAVE_FILE_VERSION,
           params: self.params.serialize,
           traj: self.traj.serialize,
-          snapshot: self.snapshot
+          snapshot: self.snapshot,
+          pplibCommands: [],
+          events: []
         };
       },
       lowestSelectedPoint(): IHolonomicWaypointStore | null {
@@ -60,128 +62,6 @@ export const HolonomicPathStore = types
       waypointTimestamps(): number[] {
         return self.traj.waypoints;
       }
-      // asSolverPath() {
-      //   const savedPath = self.asSavedPath();
-      //   savedPath.constraints.forEach((constraint) => {
-      //     constraint.scope = constraint.scope.map((id) => {
-      //       if (typeof id === "number") {
-      //         /* pass through, this if is for type narrowing*/
-      //       } else if (id === "first") {
-      //         id = 0;
-      //       } else if (id === "last") {
-      //         id = savedPath.waypoints.length - 1;
-      //       }
-      //       return id;
-      //     });
-      //     constraint.scope = constraint.scope.sort(
-      //       (a, b) => (a as number) - (b as number)
-      //     );
-      //     // avoid zero-length segments by converting them to waypoint constraints.
-      //     if (
-      //       constraint.scope.length == 2 &&
-      //       constraint.scope[0] == constraint.scope[1]
-      //     ) {
-      //       constraint.scope.length = 1;
-      //     }
-      //   });
-      //   return savedPath;
-      // },
-      // stopPoints() {
-      //   const stopPoints = self.constraints.filter(
-      //     (c) => c.type === "StopPoint"
-      //   );
-      //   const wptIndices = stopPoints
-      //     .flatMap((c: IConstraintStore) => {
-      //       const scope = c.scope.at(0);
-      //       if (scope === undefined) {
-      //         return 0;
-      //       } else if (scope === "first") {
-      //         return 0;
-      //       } else if (scope === "last") {
-      //         return self.waypoints.length - 1;
-      //       } else {
-      //         return self.findUUIDIndex(scope.uuid);
-      //       }
-      //     })
-      //     .filter((item, pos, ary) => !pos || item != ary[pos - 1])
-      //     .sort((a, b) => a - b);
-      //   return wptIndices;
-      //   // remove duplicates
-      // },
-      // stopPointIndices(): Array<number | undefined> {
-      //   const stopPoints = this.stopPoints();
-      //   return stopPoints.length > 1
-      //     ? stopPoints
-      //         .flatMap((w) =>
-      //           self.waypoints
-      //             .slice(0, w)
-      //             .flatMap((w) => wintervals)
-      //             .reduce((sum, num) => sum + num, 0)
-      //         )
-      //         .sort((a, b) => a - b)
-      //         // remove duplicates
-      //         .filter((item, pos, ary) => !pos || item != ary[pos - 1])
-      //     : [0, undefined];
-      // },
-      // splitTrajectories() {
-      //   const trajectories = [];
-
-      //   const split: number[] = [];
-      //   {
-      //     let stopPointIndex = 0;
-      //     self.generatedWaypoints.forEach((point, i) => {
-      //       // start and end points are always bounds for split parts
-      //       if (
-      //         point.isStopPoint ||
-      //         i == 0 ||
-      //         i == self.generatedWaypoints.length - 1
-      //       ) {
-      //         split.push(stopPointIndex);
-      //       }
-      //       stopPointIndex += pointintervals;
-      //     });
-      //   }
-      //   //const split = this.stopPointIndices();
-      //   for (let i = 1; i < split.length; i++) {
-      //     const prev = split[i - 1];
-      //     let cur = split[i];
-      //     // If we don't go to the end of trajectory, add 1 to include the end stop point
-      //     if (cur !== undefined) {
-      //       cur += 1;
-      //     }
-      //     const traj = self.generated.slice(prev, cur).map((s) => {
-      //       return { ...s };
-      //     });
-      //     if (traj === undefined) {
-      //       throw `Could not split segment from ${prev} to ${cur} given ${self.generated.length} samples`;
-      //     }
-      //     if (traj.length === 0) {
-      //       continue;
-      //     }
-      //     const startTime = traj[0].timestamp;
-      //     const endTime = traj[traj.length - 1].timestamp;
-      //     for (let i = 0; i < traj.length; i++) {
-      //       const e = traj[i];
-      //       e.timestamp -= startTime;
-      //     }
-      //     const splitEventMarkers = self.eventMarkers
-      //       .filter(
-      //         (m) =>
-      //           m.targetTimestamp !== undefined &&
-      //           m.targetTimestamp >= startTime &&
-      //           m.targetTimestamp <= endTime &&
-      //           m.timestamp !== undefined &&
-      //           m.timestamp >= startTime &&
-      //           m.timestamp <= endTime
-      //       )
-      //       .map((m) => ({
-      //         timestamp: m.timestamp! - startTime,
-      //         command: m.command.asSavedCommand()
-      //       }));
-      //     trajectories.push({ samples: traj, eventMarkers: splitEventMarkers });
-      //   }
-      //   return trajectories;
-      // }
     };
   })
   .actions((self) => {
@@ -251,23 +131,11 @@ export const HolonomicPathStore = types
       //     // Reaction needs the return value to change,
       //     // so we can't just access the values and do nothing with them
 
-      //     return {
-      //       waypoints: toJS(self.waypoints),
-      //       constraints: toJS(self.constraints),
-      //       // does not need toJS to do a deep check on this, since it's just a boolean
-      //       guessing: self.usesControlIntervalGuessing,
-      //       obstacles: toJS(self.obstacles)
-      //     };
-      //   },
-      //   (value) => {
-      //     self.setIsTrajectoryStale(true);
-      //   }
-
       autosaveDisposer = reaction(
         () => {
           return self.serialize;
         },
-        (value) => {
+        (_value) => {
           exporter(self.uuid);
         }
       );
@@ -285,6 +153,6 @@ export const HolonomicPathStore = types
     };
   });
 // TS complains of circular dependencies if we directly alias this
-//eslint-disable-next-line @typescript-eslint/no-empty-object-type
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface IHolonomicPathStore
   extends Instance<typeof HolonomicPathStore> {}
