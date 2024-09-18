@@ -8,8 +8,65 @@ import java.util.List;
 import java.util.Optional;
 
 /** A trajectory loaded from Choreo. */
-public record Trajectory<SampleType extends TrajSample<SampleType>>(
-    String name, List<SampleType> samples, List<Integer> splits, List<EventMarker> events) {
+public class ChorTrajectory<SampleType extends TrajSample<SampleType>> {
+
+  private final String name;
+  private final List<SampleType> samples;
+  private final List<Integer> splits;
+  private final List<EventMarker> events;
+
+  /**
+   * Constructs a Trajectory with the specified parameters.
+   *
+   * @param name The name of the trajectory.
+   * @param samples The samples of the trajectory.
+   * @param splits The indices of the splits in the trajectory.
+   * @param events The events in the trajectory.
+   */
+  public ChorTrajectory(
+      String name, List<SampleType> samples, List<Integer> splits, List<EventMarker> events) {
+    this.name = name;
+    this.samples = samples;
+    this.splits = splits;
+    this.events = events;
+  }
+
+  /**
+   * Returns the name of the trajectory.
+   *
+   * @return the name of the trajectory.
+   */
+  public String name() {
+    return name;
+  }
+
+  /**
+   * Returns the samples of the trajectory.
+   *
+   * @return the samples of the trajectory.
+   */
+  public List<SampleType> samples() {
+    return samples;
+  }
+
+  /**
+   * Returns the indices of the splits in the trajectory.
+   *
+   * @return the indices of the splits in the trajectory.
+   */
+  public List<Integer> splits() {
+    return splits;
+  }
+
+  /**
+   * Returns the events in the trajectory.
+   *
+   * @return the events in the trajectory.
+   */
+  public List<EventMarker> events() {
+    return events;
+  }
+
   /**
    * Returns the first {@link SampleType} in the trajectory.
    *
@@ -173,12 +230,12 @@ public record Trajectory<SampleType extends TrajSample<SampleType>>(
    *
    * @return this trajectory, mirrored across the field midline.
    */
-  public Trajectory<SampleType> flipped() {
+  public ChorTrajectory<SampleType> flipped() {
     var flippedStates = new ArrayList<SampleType>();
     for (var state : samples) {
       flippedStates.add(state.flipped());
     }
-    return new Trajectory<SampleType>(this.name, flippedStates, this.splits, this.events);
+    return new ChorTrajectory<SampleType>(this.name, flippedStates, this.splits, this.events);
   }
 
   /**
@@ -198,7 +255,7 @@ public record Trajectory<SampleType extends TrajSample<SampleType>>(
    * @param splitIndex the index of the split trajectory to return.
    * @return a choreo trajectory that represents the split of the trajectory at the given index.
    */
-  public Optional<Trajectory<SampleType>> getSplit(int splitIndex) {
+  public Optional<ChorTrajectory<SampleType>> getSplit(int splitIndex) {
     if (splitIndex < 0 || splitIndex >= splits.size()) {
       return Optional.empty();
     }
@@ -208,7 +265,7 @@ public record Trajectory<SampleType extends TrajSample<SampleType>>(
     double startTime = sublist.get(0).getTimestamp();
     double endTime = sublist.get(sublist.size() - 1).getTimestamp();
     return Optional.of(
-        new Trajectory<SampleType>(
+        new ChorTrajectory<SampleType>(
             this.name + "[" + splitIndex + "]",
             sublist.stream().map(s -> s.offsetBy(-startTime)).toList(),
             List.of(),

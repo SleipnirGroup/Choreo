@@ -7,10 +7,10 @@ import choreo.Choreo.TrajectoryLogger;
 import choreo.autos.AutoFactory.ChoreoAutoBindings;
 import choreo.ext.CommandExt;
 import choreo.ext.TriggerExt;
+import choreo.trajectory.ChorTrajectory;
 import choreo.trajectory.DiffySample;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.TrajSample;
-import choreo.trajectory.Trajectory;
 import choreo.util.AllianceFlipUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -44,7 +44,7 @@ public class AutoTrajectory {
   private static final ChassisSpeeds DEFAULT_CHASSIS_SPEEDS = new ChassisSpeeds();
 
   private final String name;
-  private final Trajectory<? extends TrajSample<?>> trajectory;
+  private final ChorTrajectory<? extends TrajSample<?>> trajectory;
   private final TrajectoryLogger<? extends TrajSample<?>> trajLogger;
   private final Supplier<Pose2d> poseSupplier;
   private final ControlFunction<? extends TrajSample<?>> controller;
@@ -68,7 +68,7 @@ public class AutoTrajectory {
 
   <SampleType extends TrajSample<SampleType>> AutoTrajectory(
       String name,
-      Trajectory<SampleType> trajectory,
+      ChorTrajectory<SampleType> trajectory,
       Supplier<Pose2d> poseSupplier,
       ControlFunction<SampleType> controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
@@ -90,7 +90,7 @@ public class AutoTrajectory {
         trajLogger.isPresent()
             ? trajLogger.get()
             : new TrajectoryLogger<SampleType>() {
-              public void accept(Trajectory<SampleType> t, Boolean u) {}
+              public void accept(ChorTrajectory<SampleType> t, Boolean u) {}
             };
 
     bindings.getBindings().forEach((key, value) -> active().and(atTime(key)).onTrue(value));
@@ -121,11 +121,11 @@ public class AutoTrajectory {
       return;
     } else if (sample instanceof SwerveSample) {
       TrajectoryLogger<SwerveSample> swerveLogger = (TrajectoryLogger<SwerveSample>) trajLogger;
-      Trajectory<SwerveSample> swerveTraj = (Trajectory<SwerveSample>) trajectory;
+      ChorTrajectory<SwerveSample> swerveTraj = (ChorTrajectory<SwerveSample>) trajectory;
       swerveLogger.accept(swerveTraj, starting);
     } else if (sample instanceof DiffySample) {
       TrajectoryLogger<DiffySample> diffyLogger = (TrajectoryLogger<DiffySample>) trajLogger;
-      Trajectory<DiffySample> diffyTraj = (Trajectory<DiffySample>) trajectory;
+      ChorTrajectory<DiffySample> diffyTraj = (ChorTrajectory<DiffySample>) trajectory;
       diffyLogger.accept(diffyTraj, starting);
     }
     ;

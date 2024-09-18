@@ -9,12 +9,12 @@ import choreo.autos.AutoFactory;
 import choreo.autos.AutoFactory.ChoreoAutoBindings;
 import choreo.autos.AutoLoop;
 import choreo.autos.AutoTrajectory;
+import choreo.trajectory.ChorTrajectory;
 import choreo.trajectory.DiffySample;
 import choreo.trajectory.EventMarker;
 import choreo.trajectory.ProjectFile;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.TrajSample;
-import choreo.trajectory.Trajectory;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
@@ -105,11 +105,11 @@ public final class Choreo {
 
   /**
    * This interface exists as a type alias. A TrajectoryLogger has a signature of ({@link
-   * Trajectory}, {@link Boolean})-&gt;void, where the function consumes a trajectory and a boolean
-   * indicating whether the trajectory is starting or finishing.
+   * ChorTrajectory}, {@link Boolean})-&gt;void, where the function consumes a trajectory and a
+   * boolean indicating whether the trajectory is starting or finishing.
    */
   public interface TrajectoryLogger<SampleType extends TrajSample<SampleType>>
-      extends BiConsumer<Trajectory<SampleType>, Boolean> {}
+      extends BiConsumer<ChorTrajectory<SampleType>, Boolean> {}
 
   /** Default constructor. */
   private Choreo() {
@@ -127,7 +127,7 @@ public final class Choreo {
    */
   @SuppressWarnings("unchecked")
   public static <SampleType extends TrajSample<SampleType>>
-      Optional<Trajectory<SampleType>> loadTrajectory(String trajName) {
+      Optional<ChorTrajectory<SampleType>> loadTrajectory(String trajName) {
     requireNonNullParam(trajName, "trajName", "Choreo.loadTrajectory");
 
     if (trajName.endsWith(TRAJECTORY_FILE_EXTENSION)) {
@@ -138,8 +138,8 @@ public final class Choreo {
       var reader = new BufferedReader(new FileReader(trajFile));
       String str = reader.lines().reduce("", (a, b) -> a + b);
       reader.close();
-      Trajectory<SampleType> traj =
-          (Trajectory<SampleType>) readTrajectoryString(str, getProjectFile());
+      ChorTrajectory<SampleType> traj =
+          (ChorTrajectory<SampleType>) readTrajectoryString(str, getProjectFile());
       return Optional.of(traj);
     } catch (FileNotFoundException ex) {
       DriverStation.reportError("Could not find trajectory file: " + trajFile, false);
@@ -151,7 +151,7 @@ public final class Choreo {
     return Optional.empty();
   }
 
-  static Trajectory<? extends TrajSample<?>> readTrajectoryString(
+  static ChorTrajectory<? extends TrajSample<?>> readTrajectoryString(
       String str, ProjectFile projectFile) {
     JsonObject wholeTraj = GSON.fromJson(str, JsonObject.class);
     String name = wholeTraj.get("name").getAsString();
@@ -160,10 +160,11 @@ public final class Choreo {
     Integer[] splits = GSON.fromJson(trajObj.get("splits"), Integer[].class);
     if (projectFile.type.equals("Swerve")) {
       SwerveSample[] samples = GSON.fromJson(trajObj.get("samples"), SwerveSample[].class);
-      return new Trajectory<SwerveSample>(name, List.of(samples), List.of(splits), List.of(events));
+      return new ChorTrajectory<SwerveSample>(
+          name, List.of(samples), List.of(splits), List.of(events));
     } else if (projectFile.type.equals("Differential")) {
       DiffySample[] sampleArray = GSON.fromJson(trajObj.get("samples"), DiffySample[].class);
-      return new Trajectory<DiffySample>(
+      return new ChorTrajectory<DiffySample>(
           name, List.of(sampleArray), List.of(splits), List.of(events));
     } else {
       throw new RuntimeException("Unknown project type: " + projectFile.type);
@@ -175,7 +176,7 @@ public final class Choreo {
    * then reusing them.
    */
   public static class ChoreoTrajCache {
-    private final Map<String, Trajectory<?>> cache;
+    private final Map<String, ChorTrajectory<?>> cache;
 
     /** Creates a new ChoreoTrajCache with a normal {@link HashMap} as the cache. */
     public ChoreoTrajCache() {
@@ -189,7 +190,7 @@ public final class Choreo {
      *
      * @param cache The cache to use.
      */
-    public ChoreoTrajCache(Map<String, Trajectory<?>> cache) {
+    public ChoreoTrajCache(Map<String, ChorTrajectory<?>> cache) {
       requireNonNullParam(cache, "cache", "ChoreoTrajCache.<init>");
       this.cache = cache;
     }
@@ -205,7 +206,7 @@ public final class Choreo {
      * @return the loaded trajectory, or `Optional.empty()` if the trajectory could not be loaded.
      * @see Choreo#loadTrajectory(String)
      */
-    public Optional<? extends Trajectory<?>> loadTrajectory(String trajName) {
+    public Optional<? extends ChorTrajectory<?>> loadTrajectory(String trajName) {
       requireNonNullParam(trajName, "trajName", "ChoreoTrajCache.loadTrajectory");
       if (cache.containsKey(trajName)) {
         return Optional.of(cache.get(trajName));
@@ -232,7 +233,7 @@ public final class Choreo {
      * @return the loaded trajectory, or `Optional.empty()` if the trajectory could not be loaded.
      * @see Choreo#loadTrajectory(String)
      */
-    public Optional<? extends Trajectory<?>> loadTrajectory(String trajName, int splitIndex) {
+    public Optional<? extends ChorTrajectory<?>> loadTrajectory(String trajName, int splitIndex) {
       requireNonNullParam(trajName, "trajName", "ChoreoTrajCache.loadTrajectory");
       // make the key something that could never possibly be a valid trajectory name
       String key = trajName + ".:." + splitIndex;
@@ -276,8 +277,8 @@ public final class Choreo {
    *     Command}s.
    * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
    *     robot.
-   * @param controller A {@link ControlFunction} to follow the current {@link Trajectory}&lt;{@link
-   *     SampleType}&gt;.
+   * @param controller A {@link ControlFunction} to follow the current {@link
+   *     ChorTrajectory}&lt;{@link SampleType}&gt;.
    * @param outputChassisSpeeds A function that consumes the target robot-relative {@link
    *     ChassisSpeeds} and commands them to the robot.
    * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
@@ -313,15 +314,15 @@ public final class Choreo {
    *     Command}s.
    * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
    *     robot.
-   * @param controller A {@link ControlFunction} to follow the current {@link Trajectory}&lt;{@link
-   *     SampleType}&gt;.
+   * @param controller A {@link ControlFunction} to follow the current {@link
+   *     ChorTrajectory}&lt;{@link SampleType}&gt;.
    * @param outputChassisSpeeds A function that consumes the target robot-relative {@link
    *     ChassisSpeeds} and commands them to the robot.
    * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
    *     while keeping the same coordinate system origin. This will be called every loop during the
    *     command.
    * @param bindings Universal trajectory event bindings.
-   * @param trajLogger A {@link TrajectoryLogger} to log {@link Trajectory} as they start and
+   * @param trajLogger A {@link TrajectoryLogger} to log {@link ChorTrajectory} as they start and
    *     finish.
    * @return An {@link AutoFactory} that can be used to create {@link AutoLoop} and {@link
    *     AutoTrajectory}.
