@@ -5,9 +5,10 @@ package choreo.trajectory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.interpolation.Interpolatable;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.util.struct.StructSerializable;
 
 /** The generic interface for a sample in a trajectory. */
-public interface TrajSample<Self extends TrajSample<Self>> extends Interpolatable<Self> {
+public interface TrajSample<Self extends TrajSample<Self>> extends Interpolatable<Self>, StructSerializable {
   /**
    * Returns the timestamp of this sample.
    *
@@ -43,4 +44,9 @@ public interface TrajSample<Self extends TrajSample<Self>> extends Interpolatabl
    * @return this sample, offset by the given timestamp.
    */
   Self offsetBy(double timestampOffset);
+
+  /**
+   * <h1> For internal use only. </h1>
+   */
+  Self[] makeArray(int length);
 }

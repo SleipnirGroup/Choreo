@@ -2,11 +2,14 @@
 
 package choreo.trajectory;
 
+import java.nio.ByteBuffer;
+
 import choreo.util.AllianceFlipUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.util.struct.Struct;
 
 /** A single robot sample in a ChoreoTrajectory. */
 public class DiffySample implements TrajSample<DiffySample> {
@@ -120,5 +123,72 @@ public class DiffySample implements TrajSample<DiffySample> {
 
   public DiffySample offsetBy(double timestampOffset) {
     return new DiffySample(timestamp + timestampOffset, x, y, heading, vl, vr, al, ar, fl, fr);
+  }
+
+  @Override
+  public DiffySample[] makeArray(int length) {
+    return new DiffySample[length];
+  }
+
+  public static final Struct<DiffySample> struct = new DiffySampleStruct();
+
+  private static final class DiffySampleStruct implements Struct<DiffySample> {
+    @Override
+    public Class<DiffySample> getTypeClass() {
+      return DiffySample.class;
+    }
+
+    @Override
+    public String getTypeString() {
+      return "struct:DiffySample";
+    };
+
+    @Override
+    public int getSize() {
+      return Struct.kSizeDouble * 10;
+    };
+
+    @Override
+    public String getSchema() {
+        return "double timestamp;"
+            + "double x;"
+            + "double y;"
+            + "double heading;"
+            + "double vl;"
+            + "double vr;"
+            + "double al;"
+            + "double ar;"
+            + "double fl;"
+            + "double fr;";
+    }
+
+    @Override
+    public DiffySample unpack(ByteBuffer bb) {
+      return new DiffySample(
+          bb.getDouble(),
+          bb.getDouble(),
+          bb.getDouble(),
+          bb.getDouble(),
+          bb.getDouble(),
+          bb.getDouble(),
+          bb.getDouble(),
+          bb.getDouble(),
+          bb.getDouble(),
+          bb.getDouble());
+    }
+
+    @Override
+    public void pack(ByteBuffer bb, DiffySample value) {
+      bb.putDouble(value.timestamp);
+      bb.putDouble(value.x);
+      bb.putDouble(value.y);
+      bb.putDouble(value.heading);
+      bb.putDouble(value.vl);
+      bb.putDouble(value.vr);
+      bb.putDouble(value.al);
+      bb.putDouble(value.ar);
+      bb.putDouble(value.fl);
+      bb.putDouble(value.fr);
+    }
   }
 }

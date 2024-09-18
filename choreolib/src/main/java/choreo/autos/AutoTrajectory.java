@@ -1,13 +1,13 @@
 // Copyright (c) Choreo contributors
 
-package choreo;
+package choreo.autos;
 
 import choreo.Choreo.ChoreoControlFunction;
 import choreo.Choreo.ChoreoTrajectoryLogger;
-import choreo.ChoreoAutoFactory.ChoreoAutoBindings;
+import choreo.autos.AutoFactory.ChoreoAutoBindings;
 import choreo.ext.CommandExt;
 import choreo.ext.TriggerExt;
-import choreo.trajectory.ChoreoTrajectory;
+import choreo.trajectory.Trajectory;
 import choreo.trajectory.DiffySample;
 import choreo.trajectory.EventMarker;
 import choreo.trajectory.SwerveSample;
@@ -30,13 +30,13 @@ import java.util.function.Supplier;
  * A class that represents a trajectory that can be used in an autonomous routine and have triggers
  * based off of it.
  */
-public class ChoreoAutoTrajectory {
+public class AutoTrajectory {
   // did inches to meters like this to keep final
   private static final double DEFAULT_TOLERANCE_METERS = Units.inchesToMeters(3);
   private static final ChassisSpeeds DEFAULT_CHASSIS_SPEEDS = new ChassisSpeeds();
 
   private final String name;
-  private final ChoreoTrajectory<? extends TrajSample<?>> trajectory;
+  private final Trajectory<? extends TrajSample<?>> trajectory;
   private final Optional<ChoreoTrajectoryLogger> trajLogger;
   private final Supplier<Pose2d> poseSupplier;
   private final ChoreoControlFunction<? extends TrajSample<?>> controller;
@@ -45,7 +45,6 @@ public class ChoreoAutoTrajectory {
   private final Timer timer = new Timer();
   private final Subsystem driveSubsystem;
   private final EventLoop loop;
-  private final Runnable newTrajCallback;
 
   /**
    * A way to create slightly less triggers for alot of actions. Not static as to not leak triggers
@@ -53,18 +52,15 @@ public class ChoreoAutoTrajectory {
    */
   private final TriggerExt offTrigger;
 
-  /** If the trajecoty has finished */
-  private boolean isDone = false;
-
   /** If this trajectory us currently running */
   private boolean isActive = false;
 
   /** The time that the previous trajectories took up */
   private double timeOffset = 0.0;
 
-  ChoreoAutoTrajectory(
+  AutoTrajectory(
       String name,
-      ChoreoTrajectory<? extends TrajSample<?>> trajectory,
+      Trajectory<? extends TrajSample<?>> trajectory,
       Supplier<Pose2d> poseSupplier,
       ChoreoControlFunction<? extends TrajSample<?>> controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
@@ -72,8 +68,7 @@ public class ChoreoAutoTrajectory {
       Optional<ChoreoTrajectoryLogger> trajLogger,
       Subsystem driveSubsystem,
       EventLoop loop,
-      ChoreoAutoBindings bindings,
-      Runnable newTrajCallback) {
+      ChoreoAutoBindings bindings) {
     this.name = name;
     this.trajectory = trajectory;
     this.trajLogger = trajLogger;
@@ -84,19 +79,8 @@ public class ChoreoAutoTrajectory {
     this.driveSubsystem = driveSubsystem;
     this.loop = loop;
     this.offTrigger = new TriggerExt(loop, () -> false);
-    this.newTrajCallback = newTrajCallback;
 
     bindings.getBindings().forEach((key, value) -> active().and(atTime(key)).onTrue(value));
-  }
-
-  /**
-   * A state helper that cleans up the {@link #done()} logic.
-   *
-   * <p>This should be called in the {@link ChoreoAutoLoop#onNewTrajectory()} method.
-   */
-  void onNewTrajectory() {
-    isDone = false;
-    isActive = false;
   }
 
   /**
@@ -125,9 +109,7 @@ public class ChoreoAutoTrajectory {
   }
 
   private void cmdInitialize() {
-    newTrajCallback.run();
     timer.restart();
-    isDone = false;
     isActive = true;
     timeOffset = 0.0;
     logTrajectory(true);
@@ -162,7 +144,6 @@ public class ChoreoAutoTrajectory {
     } else {
       outputChassisSpeeds.accept(trajectory.getFinalSample().getChassisSpeeds());
     }
-    isDone = true;
     isActive = false;
     logTrajectory(false);
   }
@@ -249,10 +230,8 @@ public class ChoreoAutoTrajectory {
   }
 
   /**
-   * Returns a trigger that has a rising edge when the command finishes.
-   *
-   * <p>When a new trajectory made off the same {@link ChoreoAutoLoop} is scheduled this trigger
-   * will become false if it was previously true.
+   * Returns a trigger that has a rising edge when the command finishes,
+   * this edge will fall again the next cycle.
    *
    * <p>This is not a substitute for the {@link #inactive()} trigger, inactive will stay true until
    * the trajectory is scheduled again and will also be true if thus trajectory has never been
@@ -261,7 +240,19 @@ public class ChoreoAutoTrajectory {
    * @return A trigger that is true when the command is finished.
    */
   public TriggerExt done() {
-    return new TriggerExt(loop, () -> this.isDone);
+    return new TriggerExt(loop, new BooleanSupplier() {
+      boolean wasJustActive = false;
+
+      public boolean getAsBoolean() {
+        if (isActive) {
+          wasJustActive = true;
+        } else if (wasJustActive) {
+          wasJustActive = false;
+          return true;
+        }
+        return false;
+      }
+    });
   }
 
   /**

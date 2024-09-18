@@ -35,6 +35,8 @@ dependencies {
     implementation 'edu.wpi.first.wpimath:wpimath-java:2024.+'
     implementation 'edu.wpi.first.wpilibNewCommands:wpilibNewCommands-java:2024.+'
     implementation 'edu.wpi.first.wpiunits:wpiunits-java:2024.+'
+    implementation 'edu.wpi.first.ntcore:ntcore-java:2024.+'
+    implementation 'edu.wpi.first.ntcore:ntcore-jni:2024.+'
 
     implementation 'com.google.code.gson:gson:2.10.1'
 

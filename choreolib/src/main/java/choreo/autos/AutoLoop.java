@@ -1,6 +1,6 @@
 // Copyright (c) Choreo contributors
 
-package choreo;
+package choreo.autos;
 
 import choreo.ext.TriggerExt;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
 
 /**
@@ -18,11 +17,12 @@ import java.util.function.BooleanSupplier;
  * <p>This loop is used to handle autonomous trigger logic and schedule commands. This loop should
  * **not** be shared across multiple autonomous routines.
  */
-public class ChoreoAutoLoop {
-  protected final ArrayList<ChoreoAutoTrajectory> trajectories = new ArrayList<>();
-
-  /** The underlying {@link EventLoop} stuff is bound to and polled */
+public class AutoLoop {
+  /** The underlying {@link EventLoop} that triggers are bound to and polled */
   protected final EventLoop loop;
+
+  /** The name of the auto routine this loop is associated with */
+  protected final String name;
 
   /** A boolean utilized in {@link #enabled()} to resolve trueness */
   protected boolean isActive = false;
@@ -32,10 +32,11 @@ public class ChoreoAutoLoop {
   /**
    * Creates a new loop with a specific name
    *
-   * @see choreo.ChoreoAutoFactory#newLoop() Creating a loop from a ChoreoAutoFactory
+   * @see choreo.autos.AutoFactory#newLoop() Creating a loop from a ChoreoAutoFactory
    */
-  public ChoreoAutoLoop() {
+  public AutoLoop(String name) {
     this.loop = new EventLoop();
+    this.name = name;
   }
 
   /**
@@ -43,15 +44,9 @@ public class ChoreoAutoLoop {
    *
    * @param loop The inner {@link EventLoop}
    */
-  protected ChoreoAutoLoop(EventLoop loop) {
+  protected AutoLoop(String name, EventLoop loop) {
     this.loop = loop;
-  }
-
-  /** A callback that will cleanup state of all trajectories when a new trajectory is started. */
-  void onNewTrajectory() {
-    for (ChoreoAutoTrajectory traj : trajectories) {
-      traj.onNewTrajectory();
-    }
+    this.name = name;
   }
 
   /**
@@ -86,22 +81,11 @@ public class ChoreoAutoLoop {
   }
 
   /**
-   * Adds a trajectory to the loop. This is used to ensure that all trajectories are reset when a
-   * new trajectory is started.
-   *
-   * @param traj The trajectory to add to the loop.
-   */
-  void addTrajectory(ChoreoAutoTrajectory traj) {
-    trajectories.add(traj);
-  }
-
-  /**
    * Resets the loop. This can either be called on auto init or auto end to reset the loop incase
    * you run it again. If this is called on a loop that doesn't need to be reset it will do nothing.
    */
   public void reset() {
     isActive = false;
-    onNewTrajectory();
   }
 
   /** Kills the loop and prevents it from running again. */
@@ -125,7 +109,7 @@ public class ChoreoAutoLoop {
     return Commands.run(this::poll)
         .finallyDo(this::reset)
         .until(() -> !DriverStation.isAutonomousEnabled())
-        .withName("ChoreoAutoLoop");
+        .withName(name);
   }
 
   /**
@@ -139,6 +123,6 @@ public class ChoreoAutoLoop {
     return Commands.run(this::poll)
         .finallyDo(this::reset)
         .until(() -> !DriverStation.isAutonomousEnabled() || finishCondition.getAsBoolean())
-        .withName("ChoreoAutoLoop");
+        .withName(name);
   }
 }

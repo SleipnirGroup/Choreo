@@ -7,6 +7,9 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.util.struct.Struct;
+
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 /** A single robot sample in a ChoreoTrajectory. */
@@ -116,7 +119,6 @@ public class SwerveSample implements TrajSample<SwerveSample> {
     double scale = (timestamp - this.timestamp) / (endValue.timestamp - this.timestamp);
     var interp_pose = getPose().interpolate(endValue.getPose(), scale);
 
-    // NOTE: Could maybe do this with streams? This seems more efficient for now.
     double[] interp_fx = new double[4];
     double[] interp_fy = new double[4];
     for (int i = 0; i < 4; ++i) {
@@ -189,6 +191,83 @@ public class SwerveSample implements TrajSample<SwerveSample> {
             Arrays.stream(this.moduleForcesY).map(y -> -y).toArray());
       default:
         return this;
+    }
+  }
+
+  @Override
+  public SwerveSample[] makeArray(int length) {
+    return new SwerveSample[length];
+  }
+
+  public static final Struct<SwerveSample> struct = new SwerveSampleStruct();
+
+  private static final class SwerveSampleStruct implements Struct<SwerveSample> {
+    @Override
+    public Class<SwerveSample> getTypeClass() {
+      return SwerveSample.class;
+    }
+
+    @Override
+    public String getTypeString() {
+      return "struct:SwerveSample";
+    };
+
+    @Override
+    public int getSize() {
+      return Struct.kSizeDouble * 18;
+    };
+
+    @Override
+    public String getSchema() {
+        return "double timestamp;"
+            + "double x;"
+            + "double y;"
+            + "double heading;"
+            + "double vx;"
+            + "double vy;"
+            + "double omega;"
+            + "double ax;"
+            + "double ay;"
+            + "double alpha;"
+            + "double moduleForcesX[4];"
+            + "double moduleForcesY[4];";
+    }
+
+    @Override
+    public SwerveSample unpack(ByteBuffer bb) {
+      return new SwerveSample(
+          bb.getDouble(),
+          bb.getDouble(),
+          bb.getDouble(),
+          bb.getDouble(),
+          bb.getDouble(),
+          bb.getDouble(),
+          bb.getDouble(),
+          bb.getDouble(),
+          bb.getDouble(),
+          bb.getDouble(),
+          new double[] {bb.getDouble(), bb.getDouble(), bb.getDouble(), bb.getDouble()},
+          new double[] {bb.getDouble(), bb.getDouble(), bb.getDouble(), bb.getDouble()});
+    }
+
+    @Override
+    public void pack(ByteBuffer bb, SwerveSample value) {
+      bb.putDouble(value.timestamp);
+      bb.putDouble(value.x);
+      bb.putDouble(value.y);
+      bb.putDouble(value.heading);
+      bb.putDouble(value.vx);
+      bb.putDouble(value.vy);
+      bb.putDouble(value.omega);
+      bb.putDouble(value.ax);
+      bb.putDouble(value.ay);
+      bb.putDouble(value.alpha);
+      for (int i = 0; i < 4; ++i) {
+        bb.putDouble(value.moduleForcesX[i]);
+      }
+      for (int i = 0; i < 4; ++i) {
+        bb.putDouble(value.moduleForcesY[i]);
+      }
     }
   }
 }

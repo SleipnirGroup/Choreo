@@ -12,6 +12,10 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import choreo.autos.AutoFactory;
+import choreo.autos.AutoLoop;
+import choreo.autos.AutoTrajectory;
+
 public class Examples {
   private static Subsystem shooter = new Subsystem() {};
 
@@ -43,11 +47,11 @@ public class Examples {
     return none();
   }
 
-  private static Trigger yeGp(ChoreoAutoLoop loop) {
+  private static Trigger yeGp(AutoLoop loop) {
     return new Trigger(() -> false);
   }
 
-  private static Trigger noGp(ChoreoAutoLoop loop) {
+  private static Trigger noGp(AutoLoop loop) {
     return new Trigger(() -> false);
   }
 
@@ -55,8 +59,8 @@ public class Examples {
     return new Trigger(() -> false);
   }
 
-  public Command fivePieceAutoTriggerSeg(ChoreoAutoFactory factory) {
-    final ChoreoAutoLoop loop = factory.newLoop();
+  public Command fivePieceAutoTriggerSeg(AutoFactory factory) {
+    final AutoLoop loop = factory.newLoop("fivePieceAuto");
 
     // This uses segments that all have predefined handoff points.
     // These handoff points follow a naming convention
@@ -67,13 +71,13 @@ public class Examples {
     // AMP, SUB, SRC: The 3 starting positions
 
     // Try to load all the trajectories we need
-    final ChoreoAutoTrajectory ampToC1 = factory.traj("ampToC1", loop);
-    final ChoreoAutoTrajectory c1ToM1 = factory.traj("c1ToM1", loop);
-    final ChoreoAutoTrajectory m1ToS1 = factory.traj("m1ToS1", loop);
-    final ChoreoAutoTrajectory m1ToM2 = factory.traj("m1ToM2", loop);
-    final ChoreoAutoTrajectory m2ToS1 = factory.traj("m2ToS2", loop);
-    final ChoreoAutoTrajectory s1ToC2 = factory.traj("s1ToC2", loop);
-    final ChoreoAutoTrajectory c2ToC3 = factory.traj("c2ToC3", loop);
+    final AutoTrajectory ampToC1 = factory.traj("ampToC1", loop);
+    final AutoTrajectory c1ToM1 = factory.traj("c1ToM1", loop);
+    final AutoTrajectory m1ToS1 = factory.traj("m1ToS1", loop);
+    final AutoTrajectory m1ToM2 = factory.traj("m1ToM2", loop);
+    final AutoTrajectory m2ToS1 = factory.traj("m2ToS2", loop);
+    final AutoTrajectory s1ToC2 = factory.traj("s1ToC2", loop);
+    final AutoTrajectory c2ToC3 = factory.traj("c2ToC3", loop);
 
     // entry point for the auto
     // resets the odometry to the starting position,
@@ -141,10 +145,10 @@ public class Examples {
     return loop.cmd();
   }
 
-  public Command fivePieceAutoTriggerMono(ChoreoAutoFactory factory) {
-    final ChoreoAutoLoop loop = factory.newLoop();
+  public Command fivePieceAutoTriggerMono(AutoFactory factory) {
+    final AutoLoop loop = factory.newLoop("fivePieceAuto");
 
-    final ChoreoAutoTrajectory traj = factory.traj("fivePieceAuto", loop);
+    final AutoTrajectory traj = factory.traj("fivePieceAuto", loop);
 
     // entry point for the auto
     // resets the odometry to the starting position,
@@ -180,7 +184,7 @@ public class Examples {
     return loop.cmd().beforeStarting(() -> shootIndex.set(0)).withName("fivePieceAuto");
   }
 
-  public Command fivePieceAutoCompositionSeg(ChoreoAutoFactory factory) {
+  public Command fivePieceAutoCompositionSeg(AutoFactory factory) {
     // This uses segments that all have predefined handoff points.
     // These handoff points follow a naming convention
     // C1, C2, C3: The 3 close notes, C1 having the greatest y value
@@ -190,7 +194,7 @@ public class Examples {
     // AMP, SUB, SRC: The 3 starting positions
 
     // Try to load all the trajectories we need
-    final ChoreoAutoTrajectory ampToC1 = factory.traj("ampToC1", ChoreoAutoFactory.VOID_LOOP);
+    final AutoTrajectory ampToC1 = factory.traj("ampToC1", factory.voidLoop());
     final Command c1ToM1 = factory.trajCommand("c1ToM1");
     final Command m1ToS1 = factory.trajCommand("m1ToS1");
     final Command m1ToM2 = factory.trajCommand("m1ToM2");

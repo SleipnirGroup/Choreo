@@ -1,11 +1,13 @@
 // Copyright (c) Choreo contributors
 
-package choreo;
+package choreo.autos;
 
+import choreo.Choreo;
 import choreo.Choreo.ChoreoControlFunction;
+import choreo.Choreo.ChoreoTrajCache;
 import choreo.Choreo.ChoreoTrajectoryLogger;
 import choreo.ext.TriggerExt;
-import choreo.trajectory.ChoreoTrajectory;
+import choreo.trajectory.Trajectory;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.TrajSample;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -53,11 +55,8 @@ import java.util.function.Supplier;
  *
  * <pre><code>
  * public Command shootThenMove(ChoreoAutoFactory factory) {
- *   // create a new auto loop to return
- *   var loop = factory.newLoop();
- *
  *   // create a trajectory that moves the robot 2 meters
- *   ChoreoAutoTrajectory traj = factory.traj("move2meters", loop);
+ *   ChoreoAutoTrajectory traj = factory.trajCommand("move2meters");
  *
  *   return shooter.shoot()
  *      .andThen(traj.cmd())
@@ -65,30 +64,21 @@ import java.util.function.Supplier;
  * }
  * </code></pre>
  */
-public class ChoreoAutoFactory {
-  /**
-   * An Auto Loop that cannot have any side-effects, it stores no state and does nothing when
-   * polled.
-   */
-  public static final ChoreoAutoLoop VOID_LOOP =
-      new ChoreoAutoLoop() {
+public class AutoFactory {
+
+  private static final AutoLoop VOID_LOOP =
+      new AutoLoop("VOID-LOOP") {
         private final EventLoop loop = new EventLoop();
 
         @Override
         public Command cmd() {
-          return Commands.none();
+          return Commands.none().withName("VoidLoop:" + name);
         }
 
         @Override
         public Command cmd(BooleanSupplier finishCondition) {
-          return Commands.none();
+          return Commands.none().withName("VoidLoop:" + name);
         }
-
-        @Override
-        void addTrajectory(ChoreoAutoTrajectory traj) {}
-
-        @Override
-        void onNewTrajectory() {}
 
         @Override
         public void poll() {}
@@ -148,6 +138,7 @@ public class ChoreoAutoFactory {
     }
   }
 
+  private final ChoreoTrajCache trajCache = new ChoreoTrajCache();
   private final Supplier<Pose2d> poseSupplier;
   private final ChoreoControlFunction<? extends TrajSample<?>> controller;
   private final Consumer<ChassisSpeeds> outputChassisSpeeds;
@@ -156,7 +147,17 @@ public class ChoreoAutoFactory {
   private final ChoreoAutoBindings bindings = new ChoreoAutoBindings();
   private final Optional<ChoreoTrajectoryLogger> trajLogger;
 
-  ChoreoAutoFactory(
+  /**
+   * Its reccomended to use the {@link Choreo#createAutoFactory} to create a new instance of this class.
+   * @param poseSupplier
+   * @param controller
+   * @param outputChassisSpeeds
+   * @param mirrorTrajectory
+   * @param driveSubsystem
+   * @param bindings
+   * @param trajLogger
+   */
+  public AutoFactory(
       Supplier<Pose2d> poseSupplier,
       ChoreoControlFunction<? extends TrajSample<?>> controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
@@ -176,10 +177,19 @@ public class ChoreoAutoFactory {
   /**
    * Creates a new auto loop to be used to make an auto routine.
    *
+   * @param name The name of the auto loop.
    * @return A new auto loop.
    */
-  public ChoreoAutoLoop newLoop() {
-    return new ChoreoAutoLoop();
+  public AutoLoop newLoop(String name) {
+    return new AutoLoop(name);
+  }
+
+  /**
+   * An Auto Loop that cannot have any side-effects,
+   * it stores no state and does nothing when polled.
+   */
+  public AutoLoop voidLoop() {
+    return VOID_LOOP;
   }
 
   /**
@@ -189,30 +199,16 @@ public class ChoreoAutoFactory {
    * @param loop The auto loop to use as the triggers polling context.
    * @return A new auto trajectory.
    */
-  public ChoreoAutoTrajectory traj(String trajName, ChoreoAutoLoop loop) {
-    Optional<? extends ChoreoTrajectory<?>> optTraj = Choreo.loadTrajectory(trajName);
-    ChoreoTrajectory<?> traj;
+  public AutoTrajectory traj(String trajName, AutoLoop loop) {
+    Optional<? extends Trajectory<?>> optTraj = trajCache.loadTrajectory(trajName);
+    Trajectory<?> traj;
     if (optTraj.isPresent()) {
       traj = optTraj.get();
     } else {
       DriverStation.reportError("Could not load trajectory: " + trajName, false);
-      traj = new ChoreoTrajectory<SwerveSample>(trajName, List.of(), List.of(), List.of());
+      traj = new Trajectory<SwerveSample>(trajName, List.of(), List.of(), List.of());
     }
-    var autoTraj =
-        new ChoreoAutoTrajectory(
-            trajName,
-            traj,
-            poseSupplier,
-            controller,
-            outputChassisSpeeds,
-            mirrorTrajectory,
-            trajLogger,
-            driveSubsystem,
-            loop.getLoop(),
-            bindings,
-            loop::onNewTrajectory);
-    loop.addTrajectory(autoTraj);
-    return autoTraj;
+    return traj(traj, loop);
   }
 
   /**
@@ -223,15 +219,14 @@ public class ChoreoAutoFactory {
    * @param loop The auto loop to use as the triggers polling context.
    * @return A new auto trajectory.
    */
-  public ChoreoAutoTrajectory traj(String trajName, final int splitIndex, ChoreoAutoLoop loop) {
-    Optional<? extends ChoreoTrajectory<?>> optTraj =
-        Choreo.loadTrajectory(trajName).flatMap(traj -> traj.getSplit(splitIndex));
-    ChoreoTrajectory<?> traj;
+  public AutoTrajectory traj(String trajName, final int splitIndex, AutoLoop loop) {
+    Optional<? extends Trajectory<?>> optTraj = trajCache.loadTrajectory(trajName, splitIndex);
+    Trajectory<?> traj;
     if (optTraj.isPresent()) {
       traj = optTraj.get();
     } else {
       DriverStation.reportError("Could not load trajectory: " + trajName, false);
-      traj = new ChoreoTrajectory<SwerveSample>(trajName, List.of(), List.of(), List.of());
+      traj = new Trajectory<SwerveSample>(trajName, List.of(), List.of(), List.of());
     }
     return traj(traj, loop);
   }
@@ -243,10 +238,9 @@ public class ChoreoAutoFactory {
    * @param loop The auto loop to use as the triggers polling context.
    * @return A new auto trajectory.
    */
-  public <SampleType extends TrajSample<SampleType>> ChoreoAutoTrajectory traj(
-      ChoreoTrajectory<SampleType> trajectory, ChoreoAutoLoop loop) {
-    var traj =
-        new ChoreoAutoTrajectory(
+  public <SampleType extends TrajSample<SampleType>> AutoTrajectory traj(
+      Trajectory<SampleType> trajectory, AutoLoop loop) {
+    return new AutoTrajectory(
             trajectory.name(),
             trajectory,
             poseSupplier,
@@ -256,10 +250,7 @@ public class ChoreoAutoFactory {
             trajLogger,
             driveSubsystem,
             loop.getLoop(),
-            bindings,
-            loop::onNewTrajectory);
-    loop.addTrajectory(traj);
-    return traj;
+            bindings);
   }
 
   /**
@@ -320,7 +311,7 @@ public class ChoreoAutoFactory {
    * @return A new auto trajectory.
    */
   public <SampleType extends TrajSample<SampleType>> Command trajCommand(
-      ChoreoTrajectory<SampleType> trajectory) {
+      Trajectory<SampleType> trajectory) {
     return traj(trajectory, VOID_LOOP).cmd();
   }
 
@@ -332,5 +323,18 @@ public class ChoreoAutoFactory {
    */
   public void bind(String name, Command cmd) {
     bindings.bind(name, cmd);
+  }
+
+  /**
+   * The {@link AutoFactory} caches trajectories with a {@link ChoreoTrajCache}
+   * to avoid reloading the same trajectory multiple times. This can have the side effect of
+   * keeping a single copy of every trajectory ever loaded in memory aslong as the factory is
+   * loaded. This method clears the cache of all trajectories.
+   * 
+   * @apiNote Never clearing the cache is unlikely to have an impact on the robots
+   * performance on a rio 2
+   */
+  public void clearCache() {
+    trajCache.clear();
   }
 }

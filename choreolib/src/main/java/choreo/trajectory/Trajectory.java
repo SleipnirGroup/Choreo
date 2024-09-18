@@ -8,23 +8,33 @@ import java.util.List;
 import java.util.Optional;
 
 /** A trajectory loaded from Choreo. */
-public record ChoreoTrajectory<SampleType extends TrajSample<SampleType>>(
+public record Trajectory<SampleType extends TrajSample<SampleType>>(
     String name, List<SampleType> samples, List<Integer> splits, List<EventMarker> events) {
   /**
-   * Returns the first ChoreoTrajectoryState in the trajectory.
+   * Returns the first {@link SampleType} in the trajectory.
    *
-   * @return The first ChoreoTrajectoryState in the trajectory.
+   * <p> <b>NULL SAFETY:</b> This function will return null if the trajectory is empty.
+   * 
+   * @return The first {@link SampleType} in the trajectory.
    */
   public SampleType getInitialState() {
+    if (samples.isEmpty()) {
+      return null;
+    }
     return samples.get(0);
   }
 
   /**
-   * Returns the last ChoreoTrajectoryState in the trajectory.
+   * Returns the last {@link SampleType} in the trajectory.
    *
-   * @return The last ChoreoTrajectoryState in the trajectory.
+   * <p> <b>NULL SAFETY:</b> This function will return null if the trajectory is empty.
+   * 
+   * @return The last {@link SampleType} in the trajectory.
    */
   public SampleType getFinalSample() {
+    if (samples.isEmpty()) {
+      return null;
+    }
     return samples.get(samples.size() - 1);
   }
 
@@ -66,17 +76,9 @@ public record ChoreoTrajectory<SampleType extends TrajSample<SampleType>>(
   }
 
   /**
-   * Return an interpolated, non-mirrored sample of the trajectory at the given timestamp.
-   *
-   * @param timestamp The timestamp of this sample relative to the beginning of the trajectory.
-   * @return The ChoreoTrajectoryState at the given time.
-   */
-  public SampleType sampleAt(double timestamp) {
-    return sampleAt(timestamp, false);
-  }
-
-  /**
    * Return an interpolated sample of the trajectory at the given timestamp.
+   * 
+   * <p> <b>NULL SAFETY:</b> This function will return null if the trajectory is empty.
    *
    * @param timestamp The timestamp of this sample relative to the beginning of the trajectory.
    * @param mirrorForRedAlliance whether or not to return the sample as mirrored across the field
@@ -84,17 +86,29 @@ public record ChoreoTrajectory<SampleType extends TrajSample<SampleType>>(
    * @return The ChoreoTrajectoryState at the given time.
    */
   public SampleType sampleAt(double timestamp, boolean mirrorForRedAlliance) {
-    var state = sampleInternal(timestamp);
+    SampleType state;
+    if (samples.isEmpty()) {
+      return null;
+    } else if (samples.size() == 1) {
+      state = samples.get(0);
+    } else {
+      state = sampleInternal(timestamp);
+    }
     return mirrorForRedAlliance ? state.flipped() : state;
   }
 
   /**
    * Returns the initial pose of the trajectory.
+   * 
+   * <p> <b>NULL SAFETY:</b> This function will return null if the trajectory is empty.
    *
    * @param mirrorForRedAlliance whether or not to return the pose as mirrored across the field
    * @return the initial pose of the trajectory.
    */
   public Pose2d getInitialPose(boolean mirrorForRedAlliance) {
+    if (samples.isEmpty()) {
+      return null;
+    }
     if (mirrorForRedAlliance) {
       return samples.get(0).flipped().getPose();
     }
@@ -103,11 +117,16 @@ public record ChoreoTrajectory<SampleType extends TrajSample<SampleType>>(
 
   /**
    * Returns the final pose of the trajectory.
+   * 
+   * <p> <b>NULL SAFETY:</b> This function will return null if the trajectory is empty.
    *
    * @param mirrorForRedAlliance whether or not to return the pose as mirrored across the field
    * @return the final pose of the trajectory.
    */
   public Pose2d getFinalPose(boolean mirrorForRedAlliance) {
+    if (samples.isEmpty()) {
+      return null;
+    }
     if (mirrorForRedAlliance) {
       return samples.get(samples.size() - 1).flipped().getPose();
     }
@@ -120,6 +139,9 @@ public record ChoreoTrajectory<SampleType extends TrajSample<SampleType>>(
    * @return the total time of the trajectory (the timestamp of the last sample)
    */
   public double getTotalTime() {
+    if (samples.isEmpty()) {
+      return 0;
+    }
     return samples.get(samples.size() - 1).getTimestamp();
   }
 
@@ -133,16 +155,30 @@ public record ChoreoTrajectory<SampleType extends TrajSample<SampleType>>(
   }
 
   /**
+   * Returns an array of samples
+   * 
+   * @return an array of samples
+   */
+  @SuppressWarnings("unchecked")
+  public SampleType[] sampleArray() {
+    if (!samples.isEmpty()) {
+      return samples.toArray(samples.get(0).makeArray(samples.size()));
+    } else {
+      return (SampleType[]) new Object[0];
+    }
+  }
+
+  /**
    * Returns this trajectory, mirrored across the field midline.
    *
    * @return this trajectory, mirrored across the field midline.
    */
-  public ChoreoTrajectory<SampleType> flipped() {
+  public Trajectory<SampleType> flipped() {
     var flippedStates = new ArrayList<SampleType>();
     for (var state : samples) {
       flippedStates.add(state.flipped());
     }
-    return new ChoreoTrajectory<SampleType>(this.name, flippedStates, this.splits, this.events);
+    return new Trajectory<SampleType>(this.name, flippedStates, this.splits, this.events);
   }
 
   /**
@@ -156,7 +192,12 @@ public record ChoreoTrajectory<SampleType extends TrajSample<SampleType>>(
     return events.stream().filter(event -> event.event().equals(eventName)).toList();
   }
 
-  public Optional<ChoreoTrajectory<SampleType>> getSplit(int splitIndex) {
+  /**
+   * Returns a choreo trajectory that represents the split of the trajectory at the given index.
+   * @param splitIndex
+   * @return
+   */
+  public Optional<Trajectory<SampleType>> getSplit(int splitIndex) {
     if (splitIndex < 0 || splitIndex >= splits.size()) {
       return Optional.empty();
     }
@@ -166,7 +207,7 @@ public record ChoreoTrajectory<SampleType extends TrajSample<SampleType>>(
     double startTime = sublist.get(0).getTimestamp();
     double endTime = sublist.get(sublist.size() - 1).getTimestamp();
     return Optional.of(
-        new ChoreoTrajectory<SampleType>(
+        new Trajectory<SampleType>(
             this.name + "[" + splitIndex + "]",
             sublist.stream().map(s -> s.offsetBy(-startTime)).toList(),
             List.of(),
