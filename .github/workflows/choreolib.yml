@@ -12,15 +12,13 @@ jobs:
             artifact-name: Athena
             build-options: -Ponlylinuxathena
 
-          # FIXME: Generates Linux x86_64 libraries instead of arm32
-          # - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04
-          #   artifact-name: Linux-arm32
-          #   build-options: -Ponlylinuxarm32
+          - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04
+            artifact-name: Linux-arm32
+            build-options: -Ponlylinuxarm32
 
-          # FIXME: Generates Linux x86_64 libraries instead of arm64
-          # - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04
-          #   artifact-name: Linux-arm64
-          #   build-options: -Ponlylinuxarm64
+          - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04
+            artifact-name: Linux-arm64
+            build-options: -Ponlylinuxarm64
 
           - container: wpilib/ubuntu-base:22.04
             artifact-name: Linux-x86_64
