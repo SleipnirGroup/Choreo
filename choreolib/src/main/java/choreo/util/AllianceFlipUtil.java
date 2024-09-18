@@ -173,10 +173,19 @@ public class AllianceFlipUtil {
    * @return The flipped rotation.
    */
   public static Rotation2d flip(Rotation2d rotation) {
-    return switch (activeYear.flipper) {
-      case MIRRORED -> new Rotation2d(-rotation.getCos(), rotation.getSin());
-      case ROTATE_AROUND -> new Rotation2d(-rotation.getCos(), -rotation.getSin());
-    };
+    // Spotless CI doesn't like switch expressions
+    // return switch (activeYear.flipper) {
+    //   case MIRRORED -> new Rotation2d(-rotation.getCos(), rotation.getSin());
+    //   case ROTATE_AROUND -> new Rotation2d(-rotation.getCos(), -rotation.getSin());
+    // };
+    switch (activeYear.flipper) {
+      case MIRRORED:
+        return new Rotation2d(-rotation.getCos(), rotation.getSin());
+      case ROTATE_AROUND:
+        return new Rotation2d(-rotation.getCos(), -rotation.getSin());
+      default:
+        return rotation;
+    }
   }
 
   /**
