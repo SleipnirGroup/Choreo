@@ -10,11 +10,8 @@ nativeUtils {
         configureDependencies {
             wpiVersion = "2025.+"
             niLibVersion = "2024.2.1"
-            opencvYear = "frc2024"
-            opencvVersion = "4.8.0-2"
-            // FIXME: uncomment when google test is fixed
-            // googleTestYear = "frc2024"
-            // googleTestVersion = "1.14.0-1"
+            opencvYear = "frc2025"
+            opencvVersion = "4.8.0-4"
         }
     }
 }

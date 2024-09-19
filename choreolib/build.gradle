@@ -4,10 +4,9 @@ plugins {
     id 'cpp'
     id 'java'
     id 'java-library'
-    // FIXME: uncomment when google test is fixed
-    // id 'google-test'
+    id 'google-test'
     id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2020.2'
-    id 'edu.wpi.first.NativeUtils' version '2024.7.2'
+    id 'edu.wpi.first.NativeUtils' version '2025.3.0'
     id 'edu.wpi.first.GradleJni' version '1.1.0'
     id 'edu.wpi.first.GradleVsCode' version '2.1.0'
     id 'com.diffplug.spotless' version '6.25.0'
@@ -28,11 +27,11 @@ java {
 repositories {
     mavenCentral()
 }
-// if (project.hasProperty('releaseMode')) {
-wpilibRepositories.addAllReleaseRepositories(project)
-// } else {
-//     wpilibRepositories.addAllDevelopmentRepositories(project)
-// }
+if (project.hasProperty('releaseMode')) {
+    wpilibRepositories.addAllReleaseRepositories(project)
+} else {
+    wpilibRepositories.addAllDevelopmentRepositories(project)
+}
 
 // Apply C++ configuration
 apply from: 'config.gradle'
@@ -49,7 +48,7 @@ dependencies {
 
     implementation 'com.google.code.gson:gson:2.10.1'
 
-    // this is needed to use wpilij Filesystem class for reasons
+    // This is needed to use wpilibj Filesystem class
     testImplementation 'edu.wpi.first.cscore:cscore-java:2025.+'
     testImplementation 'edu.wpi.first.cameraserver:cameraserver-java:2025.+'
     testImplementation 'edu.wpi.first.hal:hal-java:2025.+'
@@ -126,30 +125,29 @@ model {
             nativeUtils.useRequiredLibrary(it, 'wpilib_shared')
         }
     }
-    // FIXME: uncomment when google test is fixed
-    // testSuites {
-    //     ChoreoLibTest {
-    //         sources.cpp {
-    //             source {
-    //                 srcDir 'src/test/native/cpp'
-    //                 include '**/*.cpp'
-    //             }
-    //         }
+    testSuites {
+        ChoreoLibTest {
+            sources.cpp {
+                source {
+                    srcDir 'src/test/native/cpp'
+                    include '**/*.cpp'
+                }
+            }
 
-    //         nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared", "googletest_static")
+            nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared", "googletest_static")
 
-    //         binaries.all {
-    //             def arch = it.targetPlatform.name
-    //             if (systemArch == arch && it.buildType.name == 'debug') {
-    //                 def filePath = it.tasks.install.installDirectory.get().toString() + File.separatorChar + 'lib'
-    //                 test.dependsOn it.tasks.install
-    //                 test.systemProperty 'java.library.path', filePath
-    //                 test.environment 'LD_LIBRARY_PATH', filePath
-    //                 test.workingDir filePath
-    //             }
-    //         }
-    //     }
-    // }
+            binaries.all {
+                def arch = it.targetPlatform.name
+                if (systemArch == arch && it.buildType.name == 'debug') {
+                    def filePath = it.tasks.install.installDirectory.get().toString() + File.separatorChar + 'lib'
+                    test.dependsOn it.tasks.install
+                    test.systemProperty 'java.library.path', filePath
+                    test.environment 'LD_LIBRARY_PATH', filePath
+                    test.workingDir filePath
+                }
+            }
+        }
+    }
 }
 
 spotless {
