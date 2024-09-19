@@ -20,6 +20,11 @@ jobs:
           git checkout -b pr
           git branch -f main origin/main
 
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: 21
+
       - name: Install Linux dependencies
         run: |
           sudo apt-get update -q
