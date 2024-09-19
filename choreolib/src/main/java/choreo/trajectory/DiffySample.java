@@ -100,10 +100,7 @@ public class DiffySample implements TrajSample<DiffySample> {
    */
   @Override
   public ChassisSpeeds getChassisSpeeds() {
-    return new ChassisSpeeds(
-        (vl + vr) / 2,
-        0,
-        (vr - vl) / TRACK_WIDTH);
+    return new ChassisSpeeds((vl + vr) / 2, 0, (vr - vl) / TRACK_WIDTH);
   }
 
   @Override
