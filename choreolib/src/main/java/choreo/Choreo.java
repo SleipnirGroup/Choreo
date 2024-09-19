@@ -21,13 +21,13 @@ import com.google.gson.JsonSyntaxException;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,26 +43,13 @@ public final class Choreo {
   private static final Gson GSON = new Gson();
   private static final String TRAJECTORY_FILE_EXTENSION = ".traj";
 
-  private static final File CHOREO_DIR;
+  private static File CHOREO_DIR = new File(Filesystem.getDeployDirectory(), "choreo");
 
   private static Optional<ProjectFile> LAZY_PROJECT_FILE = Optional.empty();
 
-  // due to an issue with unit tests not having certain jni accessible,
-  // loading edu.wpi.first.wpilibj.Filesystem in unit tests throws an error.
-  // this will default to a test directory if the class cannot be loaded.
-  static {
-    File DIR;
-    try {
-      // try loading edu.wpi.first.wpilibj.Filesystem class
-      Class<?> fsClass = Class.forName("edu.wpi.first.wpilibj.Filesystem");
-      DIR = (File) fsClass.getMethod("getDeployDirectory").invoke(null);
-    } catch (ClassNotFoundException
-        | NoSuchMethodException
-        | IllegalAccessException
-        | InvocationTargetException ex) {
-      DIR = new File("./test_deploy");
-    }
-    CHOREO_DIR = DIR;
+  /** This should only be used for unit testing. */
+  static void setChoreoDir(File choreoDir) {
+    CHOREO_DIR = choreoDir;
   }
 
   /**

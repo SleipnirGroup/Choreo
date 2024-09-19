@@ -1,7 +1,7 @@
 # Auto Routines
 
 Choreolib provides a higher level api to make it easier to create competitive and complex auto routines inside your robot code.
-This is done by providing the `ChoreoAutoFactory` class.
+This is done by providing the `AutoFactory` class.
 
 ## Triggers vs Composition
 Composition is how most teams currently architect their auto routines.
@@ -48,58 +48,61 @@ Uses the `Drive` `Subsystem`.
 Uses the `Shooter` and `Drive` `Subsystem`.
 
 There is also a method to make a trigger that represents if the robot owns a note.
-- `yeGp(ChoreoAutoLoop loop)` - Returns a trigger that is true if the robot owns a note.
-- `noGp(ChoreoAutoLoop loop)` - Returns a trigger that is true if the robot does not own a note.
+- `yeGp(AutoLoop loop)` - Returns a trigger that is true if the robot owns a note.
+- `noGp(AutoLoop loop)` - Returns a trigger that is true if the robot does not own a note.
 
 Also assume a `import static edu.wpi.first.wpilibj2.command.Commands.*` is in scope.
 
 
 ## Creating an auto routine with triggers and a segmented trajectory
 ```java
-public Command fivePieceAutoTriggerSeg(ChoreoAutoFactory factory) {
-  final ChoreoAutoLoop loop = factory.newLoop();
+public Command fivePieceAutoTriggerSeg(AutoFactory factory) {
+  final AutoLoop loop = factory.newLoop("fivePieceAuto");
 
   // This uses segments that all have predefined handoff points.
   // These handoff points follow a naming convention
   // C1, C2, C3: The 3 close notes, C1 having the greatest y value
   // M1, M2, M3, M4, M5: The 5 middle notes, M1 having the greatest y value
-  // S1, S2, S3: 3 arbitrary shooting positions that are near the stage, S1 having the greatest y value
+  // S1, S2, S3: 3 arbitrary shooting positions that are near the stage, S1 having the greatest y
+  // value
   // AMP, SUB, SRC: The 3 starting positions
 
   // Try to load all the trajectories we need
-  final ChoreoAutoTrajectory ampToC1 = factory.traj("ampToC1", loop);
-  final ChoreoAutoTrajectory c1ToM1 = factory.traj("c1ToM1", loop);
-  final ChoreoAutoTrajectory m1ToS1 = factory.traj("m1ToS1", loop);
-  final ChoreoAutoTrajectory m1ToM2 = factory.traj("m1ToM2", loop);
-  final ChoreoAutoTrajectory m2ToS1 = factory.traj("m2ToS2", loop);
-  final ChoreoAutoTrajectory s1ToC2 = factory.traj("s1ToC2", loop);
-  final ChoreoAutoTrajectory c2ToC3 = factory.traj("c2ToC3", loop);
+  final AutoTrajectory ampToC1 = factory.traj("ampToC1", loop);
+  final AutoTrajectory c1ToM1 = factory.traj("c1ToM1", loop);
+  final AutoTrajectory m1ToS1 = factory.traj("m1ToS1", loop);
+  final AutoTrajectory m1ToM2 = factory.traj("m1ToM2", loop);
+  final AutoTrajectory m2ToS1 = factory.traj("m2ToS2", loop);
+  final AutoTrajectory s1ToC2 = factory.traj("s1ToC2", loop);
+  final AutoTrajectory c2ToC3 = factory.traj("c2ToC3", loop);
 
   // entry point for the auto
   // resets the odometry to the starting position,
   // then shoots the starting note,
   // then runs the trajectory to the first close note while extending the intake
-  loop.enabled().onTrue(
-      resetOdometry(ampToC1.getInitialPose()
-          .orElseGet(() -> {
-            loop.kill();
-            return new Pose2d();
-          })).andThen(
-              autoAimAndShoot(),
-              race(
-                  intake(),
-                  ampToC1.cmd(),
-                  aimFor(ampToC1.getFinalPose().orElseGet(Pose2d::new))))
-          .withName("fivePieceAuto entry point")
-  );
+  loop.enabled()
+      .onTrue(
+          resetOdometry(
+                  ampToC1
+                      .getInitialPose()
+                      .orElseGet(
+                          () -> {
+                            loop.kill();
+                            return new Pose2d();
+                          }))
+              .andThen(
+                  autoAimAndShoot(),
+                  race(
+                      intake(),
+                      ampToC1.cmd(),
+                      aimFor(ampToC1.getFinalPose().orElseGet(Pose2d::new))))
+              .withName("fivePieceAuto entry point"));
 
   // spinnup the shooter while no other command is running
   loop.enabled().whileTrueDefault(spinnup());
 
   // shoots the note if the robot has it, then runs the trajectory to the first middle note
-  ampToC1.done()
-      .onTrue(shootIfGp())
-      .onTrue(c1ToM1.cmd().after(noGp(loop)));
+  ampToC1.done().onTrue(shootIfGp()).onTrue(c1ToM1.cmd().after(noGp(loop)));
 
   // extends the intake while traveling towards the first middle note
   // if the robot has the note, it goes back to shoot it,
@@ -142,25 +145,26 @@ public Command fivePieceAutoTriggerSeg(ChoreoAutoFactory factory) {
 
 ## Creating an auto routine with composition and a monolithic trajectory
 ```java
-public Command fivePieceAutoTriggerMono(ChoreoAutoFactory factory) {
-  final ChoreoAutoLoop loop = factory.newLoop();
+public Command fivePieceAutoTriggerMono(AutoFactory factory) {
+  final AutoLoop loop = factory.newLoop("fivePieceAuto");
 
-  final ChoreoAutoTrajectory traj = factory.traj("fivePieceAuto", loop);
+  final AutoTrajectory traj = factory.traj("fivePieceAuto", loop);
 
   // entry point for the auto
   // resets the odometry to the starting position,
   // then shoots the starting note,
   // then runs the trajectory to the first close note while extending the intake
-  loop.enabled().onTrue(
-      resetOdometry(traj.getInitialPose()
-          .orElseGet(() -> {
-            loop.kill();
-            return new Pose2d();
-          })).andThen(
-              autoAimAndShoot(),
-              traj.cmd())
-          .withName("fivePieceAuto entry point")
-  );
+  loop.enabled()
+      .onTrue(
+          resetOdometry(
+                  traj.getInitialPose()
+                      .orElseGet(
+                          () -> {
+                            loop.kill();
+                            return new Pose2d();
+                          }))
+              .andThen(autoAimAndShoot(), traj.cmd())
+              .withName("fivePieceAuto entry point"));
 
   // spinnup the shooter while no other command is running
   loop.enabled().whileTrueDefault(spinnup());
@@ -174,9 +178,8 @@ public Command fivePieceAutoTriggerMono(ChoreoAutoFactory factory) {
   // the aim command aims based on the next shoot event marker position
   final AtomicInteger shootIndex = new AtomicInteger(0);
   final Pose2d[] shootPositions = traj.collectEventPoses("shoot");
-  traj.atTime("aim").onTrue(defer(
-      () -> aimFor(shootPositions[shootIndex.getAndIncrement()]),
-      Set.of(shooter)));
+  traj.atTime("aim")
+      .onTrue(defer(() -> aimFor(shootPositions[shootIndex.getAndIncrement()]), Set.of(shooter)));
 
   return loop.cmd().beforeStarting(() -> shootIndex.set(0)).withName("fivePieceAuto");
 }
@@ -184,17 +187,18 @@ public Command fivePieceAutoTriggerMono(ChoreoAutoFactory factory) {
 
 ## Creating an auto routine with composition and a segmented trajectory
 ```java
-public Command fivePieceAutoCompositionSeg(ChoreoAutoFactory factory) {
 
+public Command fivePieceAutoCompositionSeg(AutoFactory factory) {
   // This uses segments that all have predefined handoff points.
   // These handoff points follow a naming convention
   // C1, C2, C3: The 3 close notes, C1 having the greatest y value
   // M1, M2, M3, M4, M5: The 5 middle notes, M1 having the greatest y value
-  // S1, S2, S3: 3 arbitrary shooting positions that are near the stage, S1 having the greatest y value
+  // S1, S2, S3: 3 arbitrary shooting positions that are near the stage, S1 having the greatest y
+  // value
   // AMP, SUB, SRC: The 3 starting positions
 
   // Try to load all the trajectories we need
-  final ChoreoAutoTrajectory ampToC1 = factory.traj("ampToC1", ChoreoAutoFactory.VOID_LOOP);
+  final AutoTrajectory ampToC1 = factory.traj("ampToC1", factory.voidLoop());
   final Command c1ToM1 = factory.trajCommand("c1ToM1");
   final Command m1ToS1 = factory.trajCommand("m1ToS1");
   final Command m1ToM2 = factory.trajCommand("m1ToM2");
@@ -210,48 +214,22 @@ public Command fivePieceAutoCompositionSeg(ChoreoAutoFactory factory) {
   }
 
   return sequence(
-      resetOdometry(startingPose),
-      autoAimAndShoot(),
-      deadline(
-        ampToC1.cmd(),
-        intake(),
-        aimFor(ampToC1.getFinalPose().orElseGet(Pose2d::new))
-      ),
-      shootIfGp(),
-      deadline(
-        c1ToM1,
-        waitSeconds(0.35).andThen(intake())
-      ),
-      new ConditionalCommand(
-        deadline(
-          m1ToS1,
-          aim()
-        ).andThen(shootIfGp()),
-        deadline(
-          m1ToM2,
-          intake()
-        ).andThen(
+          resetOdometry(startingPose),
+          autoAimAndShoot(),
           deadline(
-            m2ToS1,
-            aim()
-          ),
-          shootIfGp()
-        ),
-        yeGp() // if you arent using the triggers api these wouldnt need a custom loop
-      ),
-      deadline(
-        s1ToC2,
-        intake(),
-        aim()
-      ),
-      shootIfGp(),
-      deadline(
-        c2ToC3,
-        intake(),
-        spinnup()
-      ),
-      shootIfGp()
-  ).withName("fivePieceAuto");
+              ampToC1.cmd(), intake(), aimFor(ampToC1.getFinalPose().orElseGet(Pose2d::new))),
+          shootIfGp(),
+          deadline(c1ToM1, waitSeconds(0.35).andThen(intake())),
+          new ConditionalCommand(
+              deadline(m1ToS1, aim()).andThen(shootIfGp()),
+              deadline(m1ToM2, intake()).andThen(deadline(m2ToS1, aim()), shootIfGp()),
+              yeGp() // if you arent using the triggers api these wouldnt need a custom loop
+              ),
+          deadline(s1ToC2, intake(), aim()),
+          shootIfGp(),
+          deadline(c2ToC3, intake(), spinnup()),
+          shootIfGp())
+      .withName("fivePieceAuto");
 }
 ```
 
