@@ -3,8 +3,11 @@
 package choreo.util;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.HashMap;
@@ -173,11 +176,6 @@ public class AllianceFlipUtil {
    * @return The flipped rotation.
    */
   public static Rotation2d flip(Rotation2d rotation) {
-    // Spotless CI doesn't like switch expressions
-    // return switch (activeYear.flipper) {
-    //   case MIRRORED -> new Rotation2d(-rotation.getCos(), rotation.getSin());
-    //   case ROTATE_AROUND -> new Rotation2d(-rotation.getCos(), -rotation.getSin());
-    // };
     switch (activeYear.flipper) {
       case MIRRORED:
         return new Rotation2d(-rotation.getCos(), rotation.getSin());
@@ -196,5 +194,39 @@ public class AllianceFlipUtil {
    */
   public static Pose2d flip(Pose2d pose) {
     return new Pose2d(flip(pose.getTranslation()), flip(pose.getRotation()));
+  }
+
+  /**
+   * Flips the translation.
+   * 
+   * @param translation The translation to flip.
+   * @return The flipped translation.
+   */
+  public static Translation3d flip(Translation3d translation) {
+    return new Translation3d(flipX(translation.getX()), flipY(translation.getY()), translation.getZ());
+  }
+
+  /**
+   * Flips the rotation.
+   * 
+   * @param rotation The rotation to flip.
+   * @return The flipped rotation.
+   */
+  public static Rotation3d flip(Rotation3d rotation) {
+    return new Rotation3d(
+          rotation.getX(),
+          rotation.getY(),
+          flip(rotation.toRotation2d()).getRadians()
+        );
+  }
+
+  /**
+   * Flips the pose.
+   * 
+   * @param pose The pose to flip.
+   * @return The flipped pose.
+   */
+  public static Pose3d flip(Pose3d pose) {
+    return new Pose3d(flip(pose.getTranslation()), flip(pose.getRotation()));
   }
 }

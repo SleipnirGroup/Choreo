@@ -2,6 +2,7 @@
 
 package choreo.trajectory;
 
+import choreo.Choreo;
 import choreo.util.AllianceFlipUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -12,6 +13,8 @@ import java.nio.ByteBuffer;
 
 /** A single robot sample in a ChoreoTrajectory. */
 public class DiffySample implements TrajSample<DiffySample> {
+  private static final double TRACK_WIDTH = Choreo.getProjectFile().config.diffTrackWidth.val;
+
   /** The timestamp of this sample, relative to the beginning of the trajectory. */
   public final double timestamp;
 
@@ -89,9 +92,18 @@ public class DiffySample implements TrajSample<DiffySample> {
     return new Pose2d(x, y, Rotation2d.fromRadians(heading));
   }
 
+  /**
+   * Returns the field-relative chassis speeds of this sample.
+   *
+   * @return the field-relative chassis speeds of this sample.
+   * @see edu.wpi.first.math.kinematics.DifferentialDriveKinematics#toChassisSpeeds
+   */
+  @Override
   public ChassisSpeeds getChassisSpeeds() {
-    // TODO: Implement getChassisSpeeds
-    return new ChassisSpeeds();
+    return new ChassisSpeeds(
+        (vl + vr) / 2,
+        0,
+        (vr - vl) / TRACK_WIDTH);
   }
 
   @Override
@@ -114,7 +126,30 @@ public class DiffySample implements TrajSample<DiffySample> {
 
   public DiffySample flipped() {
     switch (AllianceFlipUtil.getFlipper()) {
-        // TODO: Implement flipping
+      case MIRRORED:
+        return new DiffySample(
+            timestamp,
+            AllianceFlipUtil.flipX(x),
+            y,
+            AllianceFlipUtil.flipHeading(heading),
+            vl,
+            vr,
+            al,
+            ar,
+            fl,
+            fr);
+      case ROTATE_AROUND:
+        return new DiffySample(
+            timestamp,
+            AllianceFlipUtil.flipX(x),
+            AllianceFlipUtil.flipY(y),
+            AllianceFlipUtil.flipHeading(heading),
+            vr,
+            vl,
+            ar,
+            al,
+            fr,
+            fl);
       default:
         return this;
     }
@@ -142,13 +177,11 @@ public class DiffySample implements TrajSample<DiffySample> {
     public String getTypeString() {
       return "struct:DiffySample";
     }
-    ;
 
     @Override
     public int getSize() {
       return Struct.kSizeDouble * 10;
     }
-    ;
 
     @Override
     public String getSchema() {
