@@ -71,10 +71,11 @@ diff --git a/include/sleipnir/util/Print.hpp b/include/sleipnir/util/Print.hpp
 index 339320bce6d017ca85025060ba445b2f025bb225..fcf2e69bfb5a081cd915bdded3caa80cd9c38518 100644
 --- a/include/sleipnir/util/Print.hpp
 +++ b/include/sleipnir/util/Print.hpp
-@@ -2,52 +2,53 @@
+@@ -2,53 +2,54 @@
  
  #pragma once
  
+ #include <cstdio>
 -#include <print>
  #include <system_error>
  #include <utility>

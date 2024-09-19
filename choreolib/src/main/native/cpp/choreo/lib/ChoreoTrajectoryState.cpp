@@ -3,6 +3,7 @@
 #include "choreo/lib/ChoreoTrajectoryState.h"
 
 #include <algorithm>
+#include <functional>
 #include <numbers>
 
 #include <frc/geometry/Twist2d.h>

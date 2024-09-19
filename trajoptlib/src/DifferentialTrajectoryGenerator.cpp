@@ -2,8 +2,11 @@
 
 #include "trajopt/DifferentialTrajectoryGenerator.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <ranges>
+#include <utility>
+#include <vector>
 
 #include <sleipnir/autodiff/Variable.hpp>
 #include <sleipnir/optimization/SolverExitCondition.hpp>

@@ -8,6 +8,7 @@
 #include <chrono>
 #include <ranges>
 #include <utility>
+#include <vector>
 
 #include <sleipnir/optimization/OptimizationProblem.hpp>
 #include <sleipnir/optimization/SolverExitCondition.hpp>
