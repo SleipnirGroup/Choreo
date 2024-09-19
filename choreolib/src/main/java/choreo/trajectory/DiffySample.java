@@ -174,8 +174,8 @@ public class DiffySample implements TrajSample<DiffySample> {
     }
 
     @Override
-    public String getTypeString() {
-      return "struct:DiffySample";
+    public String getTypeName() {
+      return "DiffySample";
     }
 
     @Override
@@ -199,7 +199,6 @@ public class DiffySample implements TrajSample<DiffySample> {
     public Struct<?>[] getNested() {
       return new Struct<?>[] {Pose2d.struct};
     }
-    ;
 
     @Override
     public DiffySample unpack(ByteBuffer bb) {

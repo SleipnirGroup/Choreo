@@ -208,16 +208,14 @@ public class SwerveSample implements TrajSample<SwerveSample> {
     }
 
     @Override
-    public String getTypeString() {
-      return "struct:SwerveSample";
+    public String getTypeName() {
+      return "SwerveSample";
     }
-    ;
 
     @Override
     public int getSize() {
       return Struct.kSizeDouble * 18;
     }
-    ;
 
     @Override
     public String getSchema() {
@@ -237,7 +235,6 @@ public class SwerveSample implements TrajSample<SwerveSample> {
     public Struct<?>[] getNested() {
       return new Struct<?>[] {Pose2d.struct};
     }
-    ;
 
     @Override
     public SwerveSample unpack(ByteBuffer bb) {

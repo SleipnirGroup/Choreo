@@ -8,12 +8,13 @@ nativeUtils.withCrossLinuxArm64()
 nativeUtils {
     wpi {
         configureDependencies {
-            wpiVersion = "2024.+"
-            opencvYear = "frc2024"
-            googleTestYear = "frc2024"
+            wpiVersion = "2025.+"
             niLibVersion = "2024.2.1"
+            opencvYear = "frc2024"
             opencvVersion = "4.8.0-2"
-            googleTestVersion = "1.14.0-1"
+            // FIXME: uncomment when google test is fixed
+            // googleTestYear = "frc2024"
+            // googleTestVersion = "1.14.0-1"
         }
     }
 }
@@ -29,12 +30,6 @@ nativeUtils.wpi.getVendorDeps().getNativeVendor().initializeNativeDependencies()
 nativeUtils.wpi.getVendorDeps().addVendorReposToMaven(false)
 
 model {
-    // Uncomment this, and remove lines below it to enable builds for just roborio
-    // components {
-    //     all {
-    //         targetPlatform nativeUtils.wpi.platforms.roborio
-    //     }
-    // }
     components {
         all {
             nativeUtils.useAllPlatforms(it)
