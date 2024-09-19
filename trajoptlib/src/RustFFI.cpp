@@ -6,6 +6,8 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <memory>
+#include <utility>
 #include <vector>
 
 #include "trajopt/constraint/AngularVelocityMaxMagnitudeConstraint.hpp"
