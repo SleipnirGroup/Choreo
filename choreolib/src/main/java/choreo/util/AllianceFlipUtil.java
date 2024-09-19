@@ -176,14 +176,10 @@ public class AllianceFlipUtil {
    * @return The flipped rotation.
    */
   public static Rotation2d flip(Rotation2d rotation) {
-    switch (activeYear.flipper) {
-      case MIRRORED:
-        return new Rotation2d(-rotation.getCos(), rotation.getSin());
-      case ROTATE_AROUND:
-        return new Rotation2d(-rotation.getCos(), -rotation.getSin());
-      default:
-        return rotation;
-    }
+    return switch (activeYear.flipper) {
+      case MIRRORED -> new Rotation2d(-rotation.getCos(), rotation.getSin());
+      case ROTATE_AROUND -> new Rotation2d(-rotation.getCos(), -rotation.getSin());
+    };
   }
 
   /**

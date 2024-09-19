@@ -122,34 +122,32 @@ public class DiffySample implements TrajSample<DiffySample> {
   }
 
   public DiffySample flipped() {
-    switch (AllianceFlipUtil.getFlipper()) {
-      case MIRRORED:
-        return new DiffySample(
-            timestamp,
-            AllianceFlipUtil.flipX(x),
-            y,
-            AllianceFlipUtil.flipHeading(heading),
-            vl,
-            vr,
-            al,
-            ar,
-            fl,
-            fr);
-      case ROTATE_AROUND:
-        return new DiffySample(
-            timestamp,
-            AllianceFlipUtil.flipX(x),
-            AllianceFlipUtil.flipY(y),
-            AllianceFlipUtil.flipHeading(heading),
-            vr,
-            vl,
-            ar,
-            al,
-            fr,
-            fl);
-      default:
-        return this;
-    }
+    return switch (AllianceFlipUtil.getFlipper()) {
+      case MIRRORED ->
+          new DiffySample(
+              timestamp,
+              AllianceFlipUtil.flipX(x),
+              y,
+              AllianceFlipUtil.flipHeading(heading),
+              vl,
+              vr,
+              al,
+              ar,
+              fl,
+              fr);
+      case ROTATE_AROUND ->
+          new DiffySample(
+              timestamp,
+              AllianceFlipUtil.flipX(x),
+              AllianceFlipUtil.flipY(y),
+              AllianceFlipUtil.flipHeading(heading),
+              vr,
+              vl,
+              ar,
+              al,
+              fr,
+              fl);
+    };
   }
 
   public DiffySample offsetBy(double timestampOffset) {
