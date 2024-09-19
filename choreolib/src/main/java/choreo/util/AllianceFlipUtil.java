@@ -198,31 +198,29 @@ public class AllianceFlipUtil {
 
   /**
    * Flips the translation.
-   * 
+   *
    * @param translation The translation to flip.
    * @return The flipped translation.
    */
   public static Translation3d flip(Translation3d translation) {
-    return new Translation3d(flipX(translation.getX()), flipY(translation.getY()), translation.getZ());
+    return new Translation3d(
+        flipX(translation.getX()), flipY(translation.getY()), translation.getZ());
   }
 
   /**
    * Flips the rotation.
-   * 
+   *
    * @param rotation The rotation to flip.
    * @return The flipped rotation.
    */
   public static Rotation3d flip(Rotation3d rotation) {
     return new Rotation3d(
-          rotation.getX(),
-          rotation.getY(),
-          flip(rotation.toRotation2d()).getRadians()
-        );
+        rotation.getX(), rotation.getY(), flip(rotation.toRotation2d()).getRadians());
   }
 
   /**
    * Flips the pose.
-   * 
+   *
    * @param pose The pose to flip.
    * @return The flipped pose.
    */
