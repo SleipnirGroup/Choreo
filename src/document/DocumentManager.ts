@@ -28,10 +28,6 @@ import {
   type Waypoint
 } from "./2025/DocumentTypes";
 import {
-  CircularObstacleStore,
-  ICircularObstacleStore
-} from "./CircularObstacleStore";
-import {
   ConstraintDataObjects,
   IConstraintDataStore,
   defineCreateConstraintData
@@ -87,11 +83,6 @@ type ConstraintDataConstructors = {
 export type EnvConstructors = {
   RobotConfigStore: (config: RobotConfig<Expr>) => IRobotConfigStore;
   WaypointStore: (config: Waypoint<Expr>) => IHolonomicWaypointStore;
-  ObstacleStore: (
-    x: number,
-    y: number,
-    radius: number
-  ) => ICircularObstacleStore;
   CommandStore: (
     command: PplibCommand<Expr> &
       (
@@ -193,18 +184,6 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         x: vars().createExpression(waypoint.x, "Length"),
         y: vars().createExpression(waypoint.y, "Length"),
         heading: vars().createExpression(waypoint.heading, "Angle"),
-        uuid: crypto.randomUUID()
-      });
-    },
-    ObstacleStore: (
-      x: number,
-      y: number,
-      radius: number
-    ): ICircularObstacleStore => {
-      return CircularObstacleStore.create({
-        x: vars().createExpression(x, "Length"),
-        y: vars().createExpression(y, "Length"),
-        radius: vars().createExpression(radius, "Length"),
         uuid: crypto.randomUUID()
       });
     },
@@ -601,10 +580,6 @@ export async function setupEventListeners() {
     if (selectedConstraint) {
       doc.pathlist.activePath.params.deleteConstraint(selectedConstraint.uuid);
     }
-    const selectedObstacle = getSelectedObstacle();
-    if (selectedObstacle) {
-      doc.pathlist.activePath.params.deleteObstacle(selectedObstacle.uuid);
-    }
   });
 }
 
@@ -683,12 +658,6 @@ function getSelectedConstraint() {
   });
 }
 
-function getSelectedObstacle() {
-  const obstacles = doc.pathlist.activePath.params.obstacles;
-  return obstacles.find((o) => {
-    return o.selected;
-  });
-}
 export async function newProject() {
   applySnapshot(uiState, {
     settingsTab: 0,

@@ -79,29 +79,6 @@ export const navbarIndexToConstraintKey: {
   });
 }
 const constraintNavbarCount = Object.keys(ConstraintDefinitions).length;
-export const ObstacleData: {
-  [key: string]: {
-    index: number;
-    name: string;
-    icon: ReactElement;
-  };
-} = {
-  CircleObstacle: {
-    index: Object.keys(NavbarData).length,
-    name: "Circular Obstacle",
-    icon: <DoNotDisturb />
-  }
-};
-let obstacleNavbarCount = 0;
-obstacleNavbarCount = Object.keys(ObstacleData).length;
-Object.entries(ObstacleData).forEach(([name, data]) => {
-  const obstaclesOffset = Object.keys(NavbarData).length;
-  NavbarData[name] = {
-    index: obstaclesOffset,
-    name: data.name,
-    icon: data.icon
-  };
-});
 
 const eventMarkerCount = 1;
 NavbarData.EventMarker = {
@@ -129,7 +106,6 @@ export const NavbarItemData = (() => {
 })();
 
 const NavbarItemSections = [waypointNavbarCount, constraintNavbarCount];
-NavbarItemSections.push(obstacleNavbarCount);
 NavbarItemSections.push(eventMarkerCount);
 
 export const NavbarItemSectionEnds = NavbarItemSections.map((_s, idx) =>
@@ -168,12 +144,6 @@ export const ViewData = {
     index: 4,
     name: "Waypoints",
     icon: <Waypoint />,
-    default: true
-  },
-  Obstacles: {
-    index: 5,
-    name: "Obstacles",
-    icon: <DoNotDisturb />,
     default: true
   },
   Focus: {

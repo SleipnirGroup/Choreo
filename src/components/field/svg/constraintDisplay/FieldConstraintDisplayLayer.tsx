@@ -41,6 +41,12 @@ const overlays = {
       lineColor={lineColor}
     ></KeepInRectangleOverlay>
   ),
+  KeepOutCircle: (
+    constraint: IConstraintStoreKeyed<"KeepOutCircle">,
+    lineColor: string
+  ) => (
+    <></>
+  ),
   StopPoint: (_c: IConstraintStoreKeyed<"StopPoint">) => <></>,
   MaxAcceleration: (_c: IConstraintStoreKeyed<"MaxAcceleration">) => <></>,
   MaxVelocity: (_c: IConstraintStoreKeyed<"MaxVelocity">) => <></>,
