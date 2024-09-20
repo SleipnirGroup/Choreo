@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 /** A trajectory loaded from Choreo. */
-public class ChorTrajectory<SampleType extends TrajSample<SampleType>> {
+public class Trajectory<SampleType extends TrajSample<SampleType>> {
   private final String name;
   private final List<SampleType> samples;
   private final List<Integer> splits;
@@ -22,7 +22,7 @@ public class ChorTrajectory<SampleType extends TrajSample<SampleType>> {
    * @param splits The indices of the splits in the trajectory.
    * @param events The events in the trajectory.
    */
-  public ChorTrajectory(
+  public Trajectory(
       String name, List<SampleType> samples, List<Integer> splits, List<EventMarker> events) {
     this.name = name;
     this.samples = samples;
@@ -229,12 +229,12 @@ public class ChorTrajectory<SampleType extends TrajSample<SampleType>> {
    *
    * @return this trajectory, mirrored across the field midline.
    */
-  public ChorTrajectory<SampleType> flipped() {
+  public Trajectory<SampleType> flipped() {
     var flippedStates = new ArrayList<SampleType>();
     for (var state : samples) {
       flippedStates.add(state.flipped());
     }
-    return new ChorTrajectory<SampleType>(this.name, flippedStates, this.splits, this.events);
+    return new Trajectory<SampleType>(this.name, flippedStates, this.splits, this.events);
   }
 
   /**
@@ -254,7 +254,7 @@ public class ChorTrajectory<SampleType extends TrajSample<SampleType>> {
    * @param splitIndex the index of the split trajectory to return.
    * @return a choreo trajectory that represents the split of the trajectory at the given index.
    */
-  public Optional<ChorTrajectory<SampleType>> getSplit(int splitIndex) {
+  public Optional<Trajectory<SampleType>> getSplit(int splitIndex) {
     if (splitIndex < 0 || splitIndex >= splits.size()) {
       return Optional.empty();
     }
@@ -264,7 +264,7 @@ public class ChorTrajectory<SampleType extends TrajSample<SampleType>> {
     double startTime = sublist.get(0).getTimestamp();
     double endTime = sublist.get(sublist.size() - 1).getTimestamp();
     return Optional.of(
-        new ChorTrajectory<SampleType>(
+        new Trajectory<SampleType>(
             this.name + "[" + splitIndex + "]",
             sublist.stream().map(s -> s.offsetBy(-startTime)).toList(),
             List.of(),

@@ -7,9 +7,9 @@ import choreo.Choreo.ChoreoTrajCache;
 import choreo.Choreo.ControlFunction;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.ext.TriggerExt;
-import choreo.trajectory.ChorTrajectory;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.TrajSample;
+import choreo.trajectory.Trajectory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -195,13 +195,13 @@ public class AutoFactory {
    * @return A new auto trajectory.
    */
   public AutoTrajectory traj(String trajName, AutoLoop loop) {
-    Optional<? extends ChorTrajectory<?>> optTraj = trajCache.loadTrajectory(trajName);
-    ChorTrajectory<?> traj;
+    Optional<? extends Trajectory<?>> optTraj = trajCache.loadTrajectory(trajName);
+    Trajectory<?> traj;
     if (optTraj.isPresent()) {
       traj = optTraj.get();
     } else {
       DriverStation.reportError("Could not load trajectory: " + trajName, false);
-      traj = new ChorTrajectory<SwerveSample>(trajName, List.of(), List.of(), List.of());
+      traj = new Trajectory<SwerveSample>(trajName, List.of(), List.of(), List.of());
     }
     return traj(traj, loop);
   }
@@ -215,13 +215,13 @@ public class AutoFactory {
    * @return A new auto trajectory.
    */
   public AutoTrajectory traj(String trajName, final int splitIndex, AutoLoop loop) {
-    Optional<? extends ChorTrajectory<?>> optTraj = trajCache.loadTrajectory(trajName, splitIndex);
-    ChorTrajectory<?> traj;
+    Optional<? extends Trajectory<?>> optTraj = trajCache.loadTrajectory(trajName, splitIndex);
+    Trajectory<?> traj;
     if (optTraj.isPresent()) {
       traj = optTraj.get();
     } else {
       DriverStation.reportError("Could not load trajectory: " + trajName, false);
-      traj = new ChorTrajectory<SwerveSample>(trajName, List.of(), List.of(), List.of());
+      traj = new Trajectory<SwerveSample>(trajName, List.of(), List.of(), List.of());
     }
     return traj(traj, loop);
   }
@@ -236,9 +236,9 @@ public class AutoFactory {
    */
   @SuppressWarnings("unchecked")
   public <SampleType extends TrajSample<SampleType>> AutoTrajectory traj(
-      ChorTrajectory<SampleType> trajectory, AutoLoop loop) {
+      Trajectory<SampleType> trajectory, AutoLoop loop) {
     // type solidify everything
-    final ChorTrajectory<SampleType> solidTrajectory = trajectory;
+    final Trajectory<SampleType> solidTrajectory = trajectory;
     final ControlFunction<SampleType> solidController =
         (ControlFunction<SampleType>) this.controller;
     final Optional<TrajectoryLogger<SampleType>> solidLogger =
@@ -309,7 +309,7 @@ public class AutoFactory {
    * @return A new auto trajectory.
    */
   public <SampleType extends TrajSample<SampleType>> Command trajCommand(
-      ChorTrajectory<SampleType> trajectory) {
+      Trajectory<SampleType> trajectory) {
     return traj(trajectory, VOID_LOOP).cmd();
   }
 
