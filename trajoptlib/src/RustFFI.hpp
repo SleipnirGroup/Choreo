@@ -66,9 +66,6 @@ class SwervePathBuilder {
 
   void sgmt_circle_obstacle(size_t from_index, size_t to_index, double x,
                             double y, double radius);
-  void sgmt_polygon_obstacle(size_t from_index, size_t to_index,
-                             rust::Vec<double> x, rust::Vec<double> y,
-                             double radius);
 
   // TODO: Return std::expected<SwerveTrajectory, sleipnir::SolverExitCondition>
   // instead of throwing exception, once cxx supports it
@@ -129,9 +126,6 @@ class DifferentialPathBuilder {
 
   void sgmt_circle_obstacle(size_t from_index, size_t to_index, double x,
                             double y, double radius);
-  void sgmt_polygon_obstacle(size_t from_index, size_t to_index,
-                             rust::Vec<double> x, rust::Vec<double> y,
-                             double radius);
 
   // TODO: Return std::expected<DifferentialTrajectory,
   // sleipnir::SolverExitCondition> instead of throwing exception, once cxx

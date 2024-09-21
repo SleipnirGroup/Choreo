@@ -204,15 +204,6 @@ mod ffi {
             radius: f64,
         );
 
-        fn sgmt_polygon_obstacle(
-            self: Pin<&mut SwervePathBuilder>,
-            from_index: usize,
-            to_index: usize,
-            x: Vec<f64>,
-            y: Vec<f64>,
-            radius: f64,
-        );
-
         fn generate(
             self: &SwervePathBuilder,
             diagnostics: bool,
@@ -354,15 +345,6 @@ mod ffi {
             radius: f64,
         );
 
-        fn sgmt_polygon_obstacle(
-            self: Pin<&mut DifferentialPathBuilder>,
-            from_index: usize,
-            to_index: usize,
-            x: Vec<f64>,
-            y: Vec<f64>,
-            radius: f64,
-        );
-
         fn generate(
             self: &DifferentialPathBuilder,
             diagnostics: bool,
@@ -458,15 +440,6 @@ pub trait PathBuilder: Any {
         to_index: usize,
         x: f64,
         y: f64,
-        radius: f64,
-    );
-
-    fn sgmt_polygon_obstacle(
-        &mut self,
-        from_index: usize,
-        to_index: usize,
-        x: Vec<f64>,
-        y: Vec<f64>,
         radius: f64,
     );
 }
@@ -766,24 +739,6 @@ impl PathBuilder for SwervePathBuilder {
         radius: f64,
     ) {
         crate::ffi::SwervePathBuilder::sgmt_circle_obstacle(
-            self.path_builder.pin_mut(),
-            from_index,
-            to_index,
-            x,
-            y,
-            radius,
-        );
-    }
-
-    fn sgmt_polygon_obstacle(
-        &mut self,
-        from_index: usize,
-        to_index: usize,
-        x: Vec<f64>,
-        y: Vec<f64>,
-        radius: f64,
-    ) {
-        crate::ffi::SwervePathBuilder::sgmt_polygon_obstacle(
             self.path_builder.pin_mut(),
             from_index,
             to_index,
@@ -1094,24 +1049,6 @@ impl PathBuilder for DifferentialPathBuilder {
         radius: f64,
     ) {
         crate::ffi::DifferentialPathBuilder::sgmt_circle_obstacle(
-            self.path_builder.pin_mut(),
-            from_index,
-            to_index,
-            x,
-            y,
-            radius,
-        );
-    }
-
-    fn sgmt_polygon_obstacle(
-        &mut self,
-        from_index: usize,
-        to_index: usize,
-        x: Vec<f64>,
-        y: Vec<f64>,
-        radius: f64,
-    ) {
-        crate::ffi::DifferentialPathBuilder::sgmt_polygon_obstacle(
             self.path_builder.pin_mut(),
             from_index,
             to_index,
