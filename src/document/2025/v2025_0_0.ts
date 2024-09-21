@@ -129,12 +129,6 @@ export interface Traj {
   pplibCommands: PplibCommandMarker<number>[];
 }
 
-export interface CircleObstacle<T extends ExprOrNumber> {
-  x: T;
-  y: T;
-  r: T;
-}
-
 export type GroupCommand<T extends ExprOrNumber> = {
   type: "deadline" | "parallel" | "race" | "sequential";
   data: {
