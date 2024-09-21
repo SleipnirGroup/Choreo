@@ -147,7 +147,7 @@ export const ViewData = {
     default: true
   },
   Focus: {
-    index: 6,
+    index: 5,
     name: "Focus",
     icon: <CropFree />,
     default: false
