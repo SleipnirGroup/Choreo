@@ -2,7 +2,6 @@ import {
   Circle,
   CircleOutlined,
   CropFree,
-  DoNotDisturb,
   Grid4x4,
   Room,
   Route,

@@ -246,12 +246,13 @@ void SwervePathBuilder::sgmt_keep_out_circle(size_t from_index, size_t to_index,
               {x, y},
               radius});
       path_builder.SgmtConstraint(
-        from_index, to_index,
-        trajopt::LinePointConstraint{
-            path_builder.GetBumpers().at(bumper).points.at(i),
-            path_builder.GetBumpers().at(bumper).points.at((i + 1) % path_builder.GetBumpers().at(bumper).points.size()),
-            {x, y},
-            radius});
+          from_index, to_index,
+          trajopt::LinePointConstraint{
+              path_builder.GetBumpers().at(bumper).points.at(i),
+              path_builder.GetBumpers().at(bumper).points.at(
+                  (i + 1) % path_builder.GetBumpers().at(bumper).points.size()),
+              {x, y},
+              radius});
     }
   }
 }
@@ -541,12 +542,13 @@ void DifferentialPathBuilder::sgmt_keep_out_circle(size_t from_index,
               {x, y},
               radius});
       path_builder.SgmtConstraint(
-        from_index, to_index,
-        trajopt::LinePointConstraint{
-            path_builder.GetBumpers().at(bumper).points.at(i),
-            path_builder.GetBumpers().at(bumper).points.at((i + 1) % path_builder.GetBumpers().at(bumper).points.size()),
-            {x, y},
-            radius});
+          from_index, to_index,
+          trajopt::LinePointConstraint{
+              path_builder.GetBumpers().at(bumper).points.at(i),
+              path_builder.GetBumpers().at(bumper).points.at(
+                  (i + 1) % path_builder.GetBumpers().at(bumper).points.size()),
+              {x, y},
+              radius});
     }
   }
 }
