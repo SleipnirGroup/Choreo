@@ -96,7 +96,7 @@ int main() {
     for (size_t i = 0; i < path.GetBumpers().at(0).points.size(); i++) {
       path.SgmtConstraint(0, 1,
                           trajopt::PointPointMinConstraint{
-                              path_builder.GetBumpers().at(0).points.at(i),
+                              path.GetBumpers().at(0).points.at(i),
                               obstacle.points.at(0), obstacle.safetyDistance});
       path.SgmtConstraint(
           0, 1,
