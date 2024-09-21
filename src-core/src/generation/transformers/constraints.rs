@@ -127,8 +127,8 @@ impl SwerveGenerationTransformer for ConstraintSetter {
                 }
                 ConstraintData::KeepOutCircle { x, y, r } => {
                     match to_opt {
-                        None => builder.sgmt_circle_obstacle(from, from, x, y, r),
-                        Some(to) => builder.sgmt_circle_obstacle(from, to, x, y, r),
+                        None => builder.sgmt_keep_out_circle(from, from, x, y, r),
+                        Some(to) => builder.sgmt_keep_out_circle(from, to, x, y, r),
                     }
                 },
             };
@@ -183,8 +183,8 @@ impl DiffyGenerationTransformer for ConstraintSetter {
                 }
                 ConstraintData::KeepOutCircle { x, y, r } => {
                     match to_opt {
-                        None => builder.sgmt_circle_obstacle(from, from, x, y, r),
-                        Some(to) => builder.sgmt_circle_obstacle(from, to, x, y, r),
+                        None => builder.sgmt_keep_out_circle(from, from, x, y, r),
+                        Some(to) => builder.sgmt_keep_out_circle(from, to, x, y, r),
                     }
                 },
             };

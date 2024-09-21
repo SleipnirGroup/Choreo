@@ -195,7 +195,7 @@ mod ffi {
             field_points_y: Vec<f64>,
         );
 
-        fn sgmt_circle_obstacle(
+        fn sgmt_keep_out_circle(
             self: Pin<&mut SwervePathBuilder>,
             from_index: usize,
             to_index: usize,
@@ -336,7 +336,7 @@ mod ffi {
             field_points_y: Vec<f64>,
         );
 
-        fn sgmt_circle_obstacle(
+        fn sgmt_keep_out_circle(
             self: Pin<&mut DifferentialPathBuilder>,
             from_index: usize,
             to_index: usize,
@@ -434,7 +434,7 @@ pub trait PathBuilder: Any {
         field_points_y: Vec<f64>,
     );
 
-    fn sgmt_circle_obstacle(
+    fn sgmt_keep_out_circle(
         &mut self,
         from_index: usize,
         to_index: usize,
@@ -730,7 +730,7 @@ impl PathBuilder for SwervePathBuilder {
         );
     }
 
-    fn sgmt_circle_obstacle(
+    fn sgmt_keep_out_circle(
         &mut self,
         from_index: usize,
         to_index: usize,
@@ -738,7 +738,7 @@ impl PathBuilder for SwervePathBuilder {
         y: f64,
         radius: f64,
     ) {
-        crate::ffi::SwervePathBuilder::sgmt_circle_obstacle(
+        crate::ffi::SwervePathBuilder::sgmt_keep_out_circle(
             self.path_builder.pin_mut(),
             from_index,
             to_index,
@@ -1040,7 +1040,7 @@ impl PathBuilder for DifferentialPathBuilder {
         );
     }
 
-    fn sgmt_circle_obstacle(
+    fn sgmt_keep_out_circle(
         &mut self,
         from_index: usize,
         to_index: usize,
@@ -1048,7 +1048,7 @@ impl PathBuilder for DifferentialPathBuilder {
         y: f64,
         radius: f64,
     ) {
-        crate::ffi::DifferentialPathBuilder::sgmt_circle_obstacle(
+        crate::ffi::DifferentialPathBuilder::sgmt_keep_out_circle(
             self.path_builder.pin_mut(),
             from_index,
             to_index,

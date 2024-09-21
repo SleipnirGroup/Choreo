@@ -233,7 +233,7 @@ void SwervePathBuilder::sgmt_keep_in_polygon(size_t from_index, size_t to_index,
   }
 }
 
-void SwervePathBuilder::sgmt_circle_obstacle(size_t from_index, size_t to_index,
+void SwervePathBuilder::sgmt_keep_out_circle(size_t from_index, size_t to_index,
                                              double x, double y,
                                              double radius) {
   for (size_t bumper = 0; bumper < path_builder.GetBumpers().size(); bumper++) {
@@ -528,7 +528,7 @@ void DifferentialPathBuilder::sgmt_keep_in_polygon(
   }
 }
 
-void DifferentialPathBuilder::sgmt_circle_obstacle(size_t from_index,
+void DifferentialPathBuilder::sgmt_keep_out_circle(size_t from_index,
                                                    size_t to_index, double x,
                                                    double y, double radius) {
   for (size_t bumper = 0; bumper < path_builder.GetBumpers().size(); bumper++) {
