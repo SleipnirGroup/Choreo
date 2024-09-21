@@ -11,7 +11,6 @@ import {
 } from "@mui/icons-material";
 import { ReactElement } from "react";
 import Waypoint from "../assets/Waypoint";
-import BetasConfigPanel from "../components/config/BetasConfigPanel";
 import ExportConfigPanel from "../components/config/ExportConfigPanel";
 import KeyboardShortcutsPanel from "../components/config/KeyboardShortcutsPanel";
 import RobotConfigPanel from "../components/config/robotconfig/RobotConfigPanel";
@@ -184,7 +183,6 @@ export const SETTINGS_TABS = [
   {
     name: "Controls",
     component: () => <KeyboardShortcutsPanel></KeyboardShortcutsPanel>
-  },
-  { name: "Betas", component: () => <BetasConfigPanel></BetasConfigPanel> }
+  }
 ] as const;
 export const NUM_SETTINGS_TABS = SETTINGS_TABS.length;

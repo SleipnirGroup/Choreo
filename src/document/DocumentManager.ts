@@ -244,7 +244,6 @@ export const doc = DocumentStore.create(
     type: "Swerve",
     pathlist: {},
     splitTrajectoriesAtStopPoints: false,
-    usesObstacles: false,
     name: "Untitled",
     //@ts-expect-error this is recommended, not sure why it doesn't work
     variables: castToReferenceSnapshot(variables),

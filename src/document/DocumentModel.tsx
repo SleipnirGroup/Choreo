@@ -56,7 +56,6 @@ export const DocumentStore = types
     robotConfig: RobotConfigStore,
     variables: Variables,
     splitTrajectoriesAtStopPoints: types.boolean,
-    usesObstacles: types.boolean,
     selectedSidebarItem: types.maybe(types.safeReference(SelectableItem)),
     hoveredSidebarItem: types.maybe(types.safeReference(SelectableItem))
   })
@@ -328,9 +327,6 @@ export const DocumentStore = types
     return {
       setSplitTrajectoriesAtStopPoints(split: boolean) {
         self.splitTrajectoriesAtStopPoints = split;
-      },
-      setUsesObstacles(uses: boolean) {
-        self.usesObstacles = uses;
       }
     };
   });
