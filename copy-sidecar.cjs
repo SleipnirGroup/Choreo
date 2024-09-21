@@ -20,10 +20,10 @@ if (fs.existsSync(oldPathNative)) {
   exit(1);
 }
 
-fs.rename(path, newPath, (err) => {
+fs.copyFile(path, newPath, (err) => {
   if (err) {
-    console.error(`Error renaming ${path} to ${newPath}: ${err}`);
+    console.error(`Error copying ${path} to ${newPath}: ${err}`);
     exit(1);
   }
-  console.log(`Renamed ${path} to ${newPath}`);
+  console.log(`Copied ${path} to ${newPath}`);
 });
