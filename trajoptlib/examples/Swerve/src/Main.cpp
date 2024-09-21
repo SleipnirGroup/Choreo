@@ -93,17 +93,17 @@ int main() {
     trajopt::Obstacle obstacle{// Radius of 0.1
                                .safetyDistance = 0.1,
                                .points = {{0.5, 0.5}}};
-    for (size_t i = 0; i < path.GetBumpers().at(bumper).points.size(); i++) {
+    for (size_t i = 0; i < path.GetBumpers().at(0).points.size(); i++) {
       path.SgmtConstraint(0, 1,
                           trajopt::PointPointMinConstraint{
-                              path_builder.GetBumpers().at(bumper).points.at(i),
+                              path_builder.GetBumpers().at(0).points.at(i),
                               obstacle.points.at(0), obstacle.safetyDistance});
       path.SgmtConstraint(
           0, 1,
           trajopt::LinePointConstraint{
-              path.GetBumpers().at(bumper).points.at(i),
-              path.GetBumpers().at(bumper).points.at(
-                  (i + 1) % path.GetBumpers().at(bumper).points.size()),
+              path.GetBumpers().at(0).points.at(i),
+              path.GetBumpers().at(0).points.at(
+                  (i + 1) % path.GetBumpers().at(0).points.size()),
               obstacle.points.at(0), obstacle.safetyDistance});
     }
 
