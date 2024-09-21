@@ -29,10 +29,12 @@ class Navbar extends Component<Props, State> {
                 }}
                 key={sectionIdx}
               >
-                {NavbarItemData.map(
+                {NavbarItemData
+                .map(
                   (item, index) =>
                     index <= endSplit &&
-                    index > (NavbarItemSectionEnds[sectionIdx - 1] ?? -1) && (
+                    index > (NavbarItemSectionEnds[sectionIdx - 1] ?? -1) &&
+                    !(item.name == "Keep Out Circle" && !(doc.usesObstacles ?? false)) && (
                       <Tooltip
                         disableInteractive
                         //@ts-expect-error needs a value prop for ToggleButtonGroup

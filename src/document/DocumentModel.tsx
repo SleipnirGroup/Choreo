@@ -328,6 +328,9 @@ export const DocumentStore = types
     return {
       setSplitTrajectoriesAtStopPoints(split: boolean) {
         self.splitTrajectoriesAtStopPoints = split;
+      },
+      setUsesObstacles(uses: boolean) {
+        self.usesObstacles = uses;
       }
     };
   });
