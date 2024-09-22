@@ -85,86 +85,64 @@ function createDataStore<
     data
   ) => {};
   // Iterate through each property. based on the type of its default value, add the correct infrastructure
-  Object.keys(def.properties).forEach(
-    (k) => {
-      const key = k as keyof D["props"] & string;
-      const defau = def.properties[key].defaultVal;
-      const settername = "set" + key[0].toUpperCase() + key.slice(1);
-      const oldSerialize = serialize;
-      const oldDeserialize = deserialize;
-      const oldDeserPartial = deserPartial;
-      if (
-        Array.isArray(defau) &&
-        typeof defau[0] === "string" &&
-        typeof defau[1] === "number" &&
-        defau.length === 2
-      ) {
+  Object.keys(def.properties).forEach((k) => {
+    const key = k as keyof D["props"] & string;
+    const defau = def.properties[key].defaultVal;
+    const settername = "set" + key[0].toUpperCase() + key.slice(1);
+    const oldSerialize = serialize;
+    const oldDeserialize = deserialize;
+    const oldDeserPartial = deserPartial;
+    if (
+      Array.isArray(defau) &&
+      typeof defau[0] === "string" &&
+      typeof defau[1] === "number" &&
+      defau.length === 2
+    ) {
+      //@ts-expect-error not assignable
+      props[key] = ExpressionStore as lookup<Expr>;
+      setters[settername] = (self: any) => (arg: Expr) => {
+        self[key] = arg;
+      };
+      serialize = (self) => {
+        const part = oldSerialize(self);
         //@ts-expect-error not assignable
-        props[key] = ExpressionStore as lookup<Expr>;
-        setters[settername] = (self: any) => (arg: Expr) => {
-          self[key] = arg;
-        };
-        serialize = (self) => {
-          const part = oldSerialize(self);
-          //@ts-expect-error not assignable
-          part[key] = (self[key] as IExpressionStore).serialize;
+        part[key] = (self[key] as IExpressionStore).serialize;
 
-          return part;
-        };
-        deserialize = (self, data) => {
-          oldDeserialize(self, data);
+        return part;
+      };
+      deserialize = (self, data) => {
+        oldDeserialize(self, data);
+        (self[key] as IExpressionStore).deserialize(data[key] as Expr);
+      };
+      deserPartial = (self, data) => {
+        oldDeserPartial(self, data);
+        if (data[key] !== undefined) {
           (self[key] as IExpressionStore).deserialize(data[key] as Expr);
-        };
-        deserPartial = (self, data) => {
-          oldDeserPartial(self, data);
-          if (data[key] !== undefined) {
-            (self[key] as IExpressionStore).deserialize(data[key] as Expr);
-          }
-        };
-      } else if (typeof defau === "boolean") {
-        //@ts-expect-error not assignable
-        props[key] = defau;
-        setters[settername] = (self: any) => (arg: boolean) => {
-          self[key] = arg;
-        };
-        serialize = (self) => {
-          const part = oldSerialize(self);
-          part[key] = self[key];
-          return part;
-        };
-        deserialize = (self, data) => {
-          oldDeserialize(self, data);
+        }
+      };
+    } else if (typeof defau === "boolean") {
+      //@ts-expect-error not assignable
+      props[key] = defau;
+      setters[settername] = (self: any) => (arg: boolean) => {
+        self[key] = arg;
+      };
+      serialize = (self) => {
+        const part = oldSerialize(self);
+        part[key] = self[key];
+        return part;
+      };
+      deserialize = (self, data) => {
+        oldDeserialize(self, data);
+        self[key] = data[key];
+      };
+      deserPartial = (self, data) => {
+        oldDeserPartial(self, data);
+        if (data[key] !== undefined) {
           self[key] = data[key];
-        };
-        deserPartial = (self, data) => {
-          oldDeserPartial(self, data);
-          if (data[key] !== undefined) {
-            self[key] = data[key];
-          }
-        };
-      }
+        }
+      };
     }
-    // //@ts-expect-error not assignable
-    // self.enabled = defau;
-    // setters[settername] = (self: any) => (arg: boolean) => {
-    //   self[key] = arg;
-    // };
-    // serialize = (self) => {
-    //   const part = oldSerialize(self);
-    //   part[key] = self[key];
-    //   return part;
-    // };
-    // deserialize = (self, data) => {
-    //   oldDeserialize(self, data);
-    //   self[key] = data[key];
-    // };
-    // deserPartial = (self, data) => {
-    //   oldDeserPartial(self, data);
-    //   if (data[key] !== undefined) {
-    //     self[key] = data[key];
-    //   }
-    // };
-  );
+  });
 
   const store = types
     .model(def.type, {
