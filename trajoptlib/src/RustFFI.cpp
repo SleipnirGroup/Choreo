@@ -153,6 +153,28 @@ void SwervePathBuilder::wpt_keep_in_polygon(size_t index,
   }
 }
 
+void SwervePathBuilder::wpt_keep_out_circle(size_t index, double x, double y,
+                                            double radius) {
+  for (size_t bumper = 0; bumper < path_builder.GetBumpers().size(); bumper++) {
+    for (size_t i = 0; i < path_builder.GetBumpers().at(bumper).points.size();
+         i++) {
+      path_builder.WptConstraint(
+          index, trajopt::PointPointMinConstraint{
+                     path_builder.GetBumpers().at(bumper).points.at(i),
+                     {x, y},
+                     radius});
+      path_builder.WptConstraint(
+          index,
+          trajopt::LinePointConstraint{
+              path_builder.GetBumpers().at(bumper).points.at(i),
+              path_builder.GetBumpers().at(bumper).points.at(
+                  (i + 1) % path_builder.GetBumpers().at(bumper).points.size()),
+              {x, y},
+              radius});
+    }
+  }
+}
+
 void SwervePathBuilder::sgmt_linear_velocity_direction(size_t from_index,
                                                        size_t to_index,
                                                        double angle) {
@@ -235,29 +257,28 @@ void SwervePathBuilder::sgmt_keep_in_polygon(size_t from_index, size_t to_index,
   }
 }
 
-void SwervePathBuilder::sgmt_circle_obstacle(size_t from_index, size_t to_index,
+void SwervePathBuilder::sgmt_keep_out_circle(size_t from_index, size_t to_index,
                                              double x, double y,
                                              double radius) {
-  path_builder.SgmtObstacle(from_index, to_index, {radius, {{x, y}}});
-}
-
-void SwervePathBuilder::sgmt_polygon_obstacle(size_t from_index,
-                                              size_t to_index,
-                                              const rust::Vec<double> x,
-                                              const rust::Vec<double> y,
-                                              double radius) {
-  if (x.size() != y.size()) [[unlikely]] {
-    return;
+  for (size_t bumper = 0; bumper < path_builder.GetBumpers().size(); bumper++) {
+    for (size_t i = 0; i < path_builder.GetBumpers().at(bumper).points.size();
+         i++) {
+      path_builder.SgmtConstraint(
+          from_index, to_index,
+          trajopt::PointPointMinConstraint{
+              path_builder.GetBumpers().at(bumper).points.at(i),
+              {x, y},
+              radius});
+      path_builder.SgmtConstraint(
+          from_index, to_index,
+          trajopt::LinePointConstraint{
+              path_builder.GetBumpers().at(bumper).points.at(i),
+              path_builder.GetBumpers().at(bumper).points.at(
+                  (i + 1) % path_builder.GetBumpers().at(bumper).points.size()),
+              {x, y},
+              radius});
+    }
   }
-
-  std::vector<trajopt::Translation2d> cppPoints;
-  for (size_t i = 0; i < x.size(); ++i) {
-    cppPoints.emplace_back(x.at(i), y.at(i));
-  }
-
-  path_builder.SgmtObstacle(from_index, to_index,
-                            trajopt::Obstacle{.safetyDistance = radius,
-                                              .points = std::move(cppPoints)});
 }
 
 SwerveTrajectory SwervePathBuilder::generate(bool diagnostics,
@@ -460,6 +481,28 @@ void DifferentialPathBuilder::wpt_keep_in_polygon(
   }
 }
 
+void DifferentialPathBuilder::wpt_keep_out_circle(size_t index, double x,
+                                                  double y, double radius) {
+  for (size_t bumper = 0; bumper < path_builder.GetBumpers().size(); bumper++) {
+    for (size_t i = 0; i < path_builder.GetBumpers().at(bumper).points.size();
+         i++) {
+      path_builder.WptConstraint(
+          index, trajopt::PointPointMinConstraint{
+                     path_builder.GetBumpers().at(bumper).points.at(i),
+                     {x, y},
+                     radius});
+      path_builder.WptConstraint(
+          index,
+          trajopt::LinePointConstraint{
+              path_builder.GetBumpers().at(bumper).points.at(i),
+              path_builder.GetBumpers().at(bumper).points.at(
+                  (i + 1) % path_builder.GetBumpers().at(bumper).points.size()),
+              {x, y},
+              radius});
+    }
+  }
+}
+
 void DifferentialPathBuilder::sgmt_linear_velocity_direction(size_t from_index,
                                                              size_t to_index,
                                                              double angle) {
@@ -532,29 +575,28 @@ void DifferentialPathBuilder::sgmt_keep_in_polygon(
   }
 }
 
-void DifferentialPathBuilder::sgmt_circle_obstacle(size_t from_index,
+void DifferentialPathBuilder::sgmt_keep_out_circle(size_t from_index,
                                                    size_t to_index, double x,
                                                    double y, double radius) {
-  path_builder.SgmtObstacle(from_index, to_index, {radius, {{x, y}}});
-}
-
-void DifferentialPathBuilder::sgmt_polygon_obstacle(size_t from_index,
-                                                    size_t to_index,
-                                                    const rust::Vec<double> x,
-                                                    const rust::Vec<double> y,
-                                                    double radius) {
-  if (x.size() != y.size()) [[unlikely]] {
-    return;
+  for (size_t bumper = 0; bumper < path_builder.GetBumpers().size(); bumper++) {
+    for (size_t i = 0; i < path_builder.GetBumpers().at(bumper).points.size();
+         i++) {
+      path_builder.SgmtConstraint(
+          from_index, to_index,
+          trajopt::PointPointMinConstraint{
+              path_builder.GetBumpers().at(bumper).points.at(i),
+              {x, y},
+              radius});
+      path_builder.SgmtConstraint(
+          from_index, to_index,
+          trajopt::LinePointConstraint{
+              path_builder.GetBumpers().at(bumper).points.at(i),
+              path_builder.GetBumpers().at(bumper).points.at(
+                  (i + 1) % path_builder.GetBumpers().at(bumper).points.size()),
+              {x, y},
+              radius});
+    }
   }
-
-  std::vector<trajopt::Translation2d> cppPoints;
-  for (size_t i = 0; i < x.size(); ++i) {
-    cppPoints.emplace_back(x.at(i), y.at(i));
-  }
-
-  path_builder.SgmtObstacle(from_index, to_index,
-                            trajopt::Obstacle{.safetyDistance = radius,
-                                              .points = std::move(cppPoints)});
 }
 
 DifferentialTrajectory DifferentialPathBuilder::generate(bool diagnostics,

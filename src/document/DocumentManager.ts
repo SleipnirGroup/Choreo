@@ -28,10 +28,6 @@ import {
   type Waypoint
 } from "./2025/DocumentTypes";
 import {
-  CircularObstacleStore,
-  ICircularObstacleStore
-} from "./CircularObstacleStore";
-import {
   ConstraintDataObjects,
   IConstraintDataStore,
   defineCreateConstraintData
@@ -87,11 +83,6 @@ type ConstraintDataConstructors = {
 export type EnvConstructors = {
   RobotConfigStore: (config: RobotConfig<Expr>) => IRobotConfigStore;
   WaypointStore: (config: Waypoint<Expr>) => IHolonomicWaypointStore;
-  ObstacleStore: (
-    x: number,
-    y: number,
-    radius: number
-  ) => ICircularObstacleStore;
   CommandStore: (
     command: PplibCommand<Expr> &
       (
@@ -196,18 +187,6 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         uuid: crypto.randomUUID()
       });
     },
-    ObstacleStore: (
-      x: number,
-      y: number,
-      radius: number
-    ): ICircularObstacleStore => {
-      return CircularObstacleStore.create({
-        x: vars().createExpression(x, "Length"),
-        y: vars().createExpression(y, "Length"),
-        radius: vars().createExpression(radius, "Length"),
-        uuid: crypto.randomUUID()
-      });
-    },
     CommandStore: createCommandStore,
     EventMarkerStore: (marker: PplibCommandMarker<Expr>): IEventMarkerStore => {
       return EventMarkerStore.create({
@@ -265,7 +244,6 @@ export const doc = DocumentStore.create(
     type: "Swerve",
     pathlist: {},
     splitTrajectoriesAtStopPoints: false,
-    usesObstacles: false,
     name: "Untitled",
     //@ts-expect-error this is recommended, not sure why it doesn't work
     variables: castToReferenceSnapshot(variables),
@@ -601,10 +579,6 @@ export async function setupEventListeners() {
     if (selectedConstraint) {
       doc.pathlist.activePath.params.deleteConstraint(selectedConstraint.uuid);
     }
-    const selectedObstacle = getSelectedObstacle();
-    if (selectedObstacle) {
-      doc.pathlist.activePath.params.deleteObstacle(selectedObstacle.uuid);
-    }
   });
 }
 
@@ -683,12 +657,6 @@ function getSelectedConstraint() {
   });
 }
 
-function getSelectedObstacle() {
-  const obstacles = doc.pathlist.activePath.params.obstacles;
-  return obstacles.find((o) => {
-    return o.selected;
-  });
-}
 export async function newProject() {
   applySnapshot(uiState, {
     settingsTab: 0,

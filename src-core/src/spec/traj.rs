@@ -147,6 +147,8 @@ pub enum ConstraintData<T: SnapshottableType> {
     KeepInCircle { x: T, y: T, r: T },
     /// A constraint to contain the bumpers within a rectangular region of the field
     KeepInRectangle { x: T, y: T, w: T, h: T },
+    /// A constraint to contain the bumpers outside a circlular region of the field
+    KeepOutCircle { x: T, y: T, r: T },
 }
 
 impl<T: SnapshottableType> ConstraintData<T> {
@@ -192,6 +194,11 @@ impl<T: SnapshottableType> ConstraintData<T> {
                 y: y.snapshot(),
                 w: w.snapshot(),
                 h: h.snapshot(),
+            },
+            ConstraintData::KeepOutCircle { x, y, r } => ConstraintData::KeepOutCircle {
+                x: x.snapshot(),
+                y: y.snapshot(),
+                r: r.snapshot(),
             },
         }
     }

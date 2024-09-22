@@ -12,10 +12,6 @@ import {
   SwerveSample,
   Traj
 } from "./2025/DocumentTypes";
-import {
-  CircularObstacleStore,
-  ICircularObstacleStore
-} from "./CircularObstacleStore";
 import { ConstraintStore, IConstraintStore } from "./ConstraintStore";
 import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
 import { Variables } from "./ExpressionStore";
@@ -31,7 +27,6 @@ import { tracing } from "./tauriTracing";
 export type SelectableItemTypes =
   | IHolonomicWaypointStore
   | IConstraintStore
-  | ICircularObstacleStore
   | IEventMarkerStore
   | undefined;
 export const SelectableItem = types.union(
@@ -42,14 +37,10 @@ export const SelectableItem = types.union(
       if (snapshot.from) {
         return ConstraintStore;
       }
-      if (snapshot.radius) {
-        return CircularObstacleStore;
-      }
       return HolonomicWaypointStore;
     }
   },
   HolonomicWaypointStore,
-  CircularObstacleStore,
   EventMarkerStore,
   ConstraintStore
 );
@@ -65,7 +56,6 @@ export const DocumentStore = types
     robotConfig: RobotConfigStore,
     variables: Variables,
     splitTrajectoriesAtStopPoints: types.boolean,
-    usesObstacles: types.boolean,
     selectedSidebarItem: types.maybe(types.safeReference(SelectableItem)),
     hoveredSidebarItem: types.maybe(types.safeReference(SelectableItem))
   })
@@ -85,17 +75,10 @@ export const DocumentStore = types
         Object.hasOwn(self.selectedSidebarItem, "from")
       );
     },
-    get isSidebarCircularObstacleSelected() {
-      return (
-        self.selectedSidebarItem !== undefined &&
-        Object.hasOwn(self.selectedSidebarItem, "radius")
-      );
-    },
     get isSidebarWaypointSelected() {
       return (
         self.selectedSidebarItem !== undefined &&
-        !this.isSidebarConstraintSelected &&
-        !this.isSidebarCircularObstacleSelected
+        !this.isSidebarConstraintSelected
       );
     },
     get isSidebarConstraintHovered() {
@@ -104,17 +87,10 @@ export const DocumentStore = types
         Object.hasOwn(self.hoveredSidebarItem, "from")
       );
     },
-    get isSidebarCircularObstacleHovered() {
-      return (
-        self.hoveredSidebarItem !== undefined &&
-        Object.hasOwn(self.hoveredSidebarItem, "radius")
-      );
-    },
     get isSidebarWaypointHovered() {
       return (
         self.hoveredSidebarItem !== undefined &&
-        !this.isSidebarConstraintHovered &&
-        !this.isSidebarCircularObstacleHovered
+        !this.isSidebarConstraintHovered
       );
     },
     get hoveredWaypointIndex() {
@@ -351,9 +327,6 @@ export const DocumentStore = types
     return {
       setSplitTrajectoriesAtStopPoints(split: boolean) {
         self.splitTrajectoriesAtStopPoints = split;
-      },
-      setUsesObstacles(usesObstacles: boolean) {
-        self.usesObstacles = usesObstacles;
       }
     };
   });

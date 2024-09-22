@@ -6,6 +6,7 @@ import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer";
 import KeepInCircleOverlay from "./KeepInCircleOverlay";
 import KeepInRectangleOverlay from "./KeepInRectangleOverlay";
 import PointAtOverlay from "./PointAtOverlay";
+import KeepOutCircleOverlay from "./KeepOutCircleOverlay";
 
 const overlays = {
   PointAt: (
@@ -40,6 +41,17 @@ const overlays = {
       end={constraint.getEndWaypoint()}
       lineColor={lineColor}
     ></KeepInRectangleOverlay>
+  ),
+  KeepOutCircle: (
+    constraint: IConstraintStoreKeyed<"KeepOutCircle">,
+    lineColor: string
+  ) => (
+    <KeepOutCircleOverlay
+      data={constraint.data}
+      start={constraint.getStartWaypoint()}
+      end={constraint.getEndWaypoint()}
+      lineColor={lineColor}
+    ></KeepOutCircleOverlay>
   ),
   StopPoint: (_c: IConstraintStoreKeyed<"StopPoint">) => <></>,
   MaxAcceleration: (_c: IConstraintStoreKeyed<"MaxAcceleration">) => <></>,
