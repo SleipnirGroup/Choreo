@@ -49,7 +49,7 @@ jobs:
         with:
           python-version: 3.12
 
-      - run: pip3 install wpiformat==2024.40
+      - run: pip3 install wpiformat==2024.41
 
       - run: pnpm run fmt
 
@@ -112,7 +112,7 @@ jobs:
         with:
           python-version: 3.12
 
-      - run: pip3 install wpiformat==2024.40
+      - run: pip3 install wpiformat==2024.41
 
       - name: Create compile_commands.json
         working-directory: choreolib
@@ -162,7 +162,7 @@ jobs:
           echo "CXX=clang++" >> $GITHUB_ENV
           echo "CXXFLAGS=-stdlib=libc++" >> $GITHUB_ENV
 
-      - run: pip3 install wpiformat==2024.40
+      - run: pip3 install wpiformat==2024.41
 
       - name: Create compile_commands.json
         run: cmake -B build -S . -DCMAKE_EXPORT_COMPILE_COMMANDS=YES

@@ -8,14 +8,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
-REQUIREMENTS = ["json", "tomlkit"]
-
-try:
-    import json
-    import tomlkit
-except ImportError:
-    raise ImportError(f"Please install the following packages: {REQUIREMENTS}")
-
 
 @dataclass(frozen=True, slots=True)
 class VersionLocation:

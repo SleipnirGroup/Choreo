@@ -2,6 +2,8 @@
 
 #include "choreo/lib/ChoreoTrajectory.h"
 
+#include <vector>
+
 #include <units/math.h>
 #include <wpi/json.h>
 

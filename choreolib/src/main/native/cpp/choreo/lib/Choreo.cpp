@@ -3,8 +3,11 @@
 #include "choreo/lib/Choreo.h"
 
 #include <filesystem>
+#include <memory>
 #include <numbers>
 #include <regex>
+#include <string>
+#include <vector>
 
 #include <fmt/format.h>
 #include <frc/DriverStation.h>
