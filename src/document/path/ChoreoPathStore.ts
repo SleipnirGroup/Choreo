@@ -95,8 +95,7 @@ export const ChoreoPathStore = types
     get serialize(): ChoreoPath<Expr> {
       return {
         waypoints: self.waypoints.map((w) => w.serialize),
-        constraints: self.constraints
-          .flatMap((constraint) => {
+        constraints: self.constraints.flatMap((constraint) => {
           const con = constraint;
           const from = self.waypointIdToSavedWaypointId(con.from)!;
           const to = self.waypointIdToSavedWaypointId(con.to);
@@ -119,7 +118,18 @@ export const ChoreoPathStore = types
       to?: IWaypointScope,
       data: Partial<DataMap[K]["props"]> = {}
     ): Instance<typeof ConstraintStore> | undefined {
-      console.log("key: ", key, "enabled: ", enabled, "from: ", from, "to: ", to, "data: ", data);
+      console.log(
+        "key: ",
+        key,
+        "enabled: ",
+        enabled,
+        "from: ",
+        from,
+        "to: ",
+        to,
+        "data: ",
+        data
+      );
       self.constraints.push(
         getEnv<Env>(self).create.ConstraintStore(key, data, enabled, from, to)
       );

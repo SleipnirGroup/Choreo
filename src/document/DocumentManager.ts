@@ -234,7 +234,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         uuid: crypto.randomUUID(),
         //@ts-expect-error more constraint stuff not quite working
         data: constraintDataConstructors[type](data),
-        enabled,
+        enabled
       });
       store.data.deserPartial(data);
       return store;
@@ -303,9 +303,8 @@ export function setup() {
   doc.history.clear();
   setupEventListeners()
     .then(() => newProject())
-    .then(() => uiState.updateWindowTitle())
-    // .then(() => openProjectFile())
-    ;
+    .then(() => uiState.updateWindowTitle());
+  // .then(() => openProjectFile())
 }
 setup();
 
