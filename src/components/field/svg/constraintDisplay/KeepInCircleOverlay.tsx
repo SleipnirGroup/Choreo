@@ -33,6 +33,9 @@ class KeepInCircleOverlay extends Component<Props<"KeepInCircle">, object> {
       d3.select<SVGCircleElement, undefined>(`#dragTarget-keepInCircle`).call(
         dragHandleDrag
       );
+      d3.select<SVGCircleElement, undefined>(`#dragTarget-keepInCircleDot`).call(
+        dragHandleDrag
+      );
       const radiusHandleDrag = d3
         .drag<SVGCircleElement, undefined>()
         .on("drag", (event) => this.dragPointRadius(event))
@@ -83,7 +86,7 @@ class KeepInCircleOverlay extends Component<Props<"KeepInCircle">, object> {
           r={r < DOT * 2 ? 0.0 : DOT}
           fill={"green"}
           fillOpacity={1.0}
-          id="dragTarget-keepInCircle"
+          id="dragTarget-keepInCircleDot"
         ></circle>
         {/* Radius Handle */}
         <circle

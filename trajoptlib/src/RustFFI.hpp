@@ -46,7 +46,7 @@ class SwervePathBuilder {
   void wpt_keep_in_polygon(size_t index, rust::Vec<double> field_points_x,
                            rust::Vec<double> field_points_y);
   void wpt_keep_out_circle(size_t index, double field_point_x,
-                          double field_point_y, double keep_in_radius);
+                           double field_point_y, double keep_in_radius);
 
   void sgmt_linear_velocity_direction(size_t from_index, size_t to_index,
                                       double angle);
@@ -110,7 +110,7 @@ class DifferentialPathBuilder {
   void wpt_keep_in_polygon(size_t index, rust::Vec<double> field_points_x,
                            rust::Vec<double> field_points_y);
   void wpt_keep_out_circle(size_t index, double field_point_x,
-                          double field_point_y, double keep_in_radius);
+                           double field_point_y, double keep_in_radius);
 
   void sgmt_linear_velocity_direction(size_t from_index, size_t to_index,
                                       double angle);

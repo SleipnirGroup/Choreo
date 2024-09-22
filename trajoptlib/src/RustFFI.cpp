@@ -151,18 +151,16 @@ void SwervePathBuilder::wpt_keep_in_polygon(size_t index,
   }
 }
 
-void SwervePathBuilder::wpt_keep_out_circle(size_t index,
-                                             double x, double y,
-                                             double radius) {
+void SwervePathBuilder::wpt_keep_out_circle(size_t index, double x, double y,
+                                            double radius) {
   for (size_t bumper = 0; bumper < path_builder.GetBumpers().size(); bumper++) {
     for (size_t i = 0; i < path_builder.GetBumpers().at(bumper).points.size();
          i++) {
       path_builder.WptConstraint(
-          index,
-          trajopt::PointPointMinConstraint{
-              path_builder.GetBumpers().at(bumper).points.at(i),
-              {x, y},
-              radius});
+          index, trajopt::PointPointMinConstraint{
+                     path_builder.GetBumpers().at(bumper).points.at(i),
+                     {x, y},
+                     radius});
       path_builder.WptConstraint(
           index,
           trajopt::LinePointConstraint{
@@ -481,18 +479,16 @@ void DifferentialPathBuilder::wpt_keep_in_polygon(
   }
 }
 
-void DifferentialPathBuilder::wpt_keep_out_circle(size_t index,
-                                             double x, double y,
-                                             double radius) {
+void DifferentialPathBuilder::wpt_keep_out_circle(size_t index, double x,
+                                                  double y, double radius) {
   for (size_t bumper = 0; bumper < path_builder.GetBumpers().size(); bumper++) {
     for (size_t i = 0; i < path_builder.GetBumpers().at(bumper).points.size();
          i++) {
       path_builder.WptConstraint(
-          index,
-          trajopt::PointPointMinConstraint{
-              path_builder.GetBumpers().at(bumper).points.at(i),
-              {x, y},
-              radius});
+          index, trajopt::PointPointMinConstraint{
+                     path_builder.GetBumpers().at(bumper).points.at(i),
+                     {x, y},
+                     radius});
       path_builder.WptConstraint(
           index,
           trajopt::LinePointConstraint{
