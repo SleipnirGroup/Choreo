@@ -20,6 +20,7 @@ static void trycatch(Try&& func, Fail&& fail) noexcept try {
 } catch (const std::exception& e) {
   fail(e.what());
 } catch (const sleipnir::SolverExitCondition& e) {
+  // TODO: Use std::to_underlying() from C++23
   fail(std::to_string(static_cast<uint8_t>(e)));
 }
 }  // namespace rust::behavior
