@@ -120,6 +120,12 @@ export const PathListStore = types
             } else {
               path.params.addConstraint("StopPoint", true, "first");
               path.params.addConstraint("StopPoint", true, "last");
+              path.params.addConstraint("KeepInRectangle", true, "first", "last", {
+                x: ["0 m", 0.0],
+                y: ["0 m", 0.0],
+                w: ["16.54 m", 16.54],
+                h: ["8.21 m", 8.21]
+              });
             }
 
             if (self.paths.size === 1 || select) {
