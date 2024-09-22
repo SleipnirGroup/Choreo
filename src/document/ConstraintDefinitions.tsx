@@ -6,7 +6,6 @@ import {
   SystemUpdateAlt
 } from "@mui/icons-material";
 import { JSXElementConstructor, ReactElement } from "react";
-import { ObjectTyped } from "../util/ObjectTyped";
 import { Expr } from "./2025/DocumentTypes";
 import { Dimension, DimensionName, Dimensions } from "./ExpressionStore";
 
@@ -243,4 +242,4 @@ export const ConstraintDefinitions: defs = {
 };
 
 export type ConstraintKey = keyof DataMap;
-export const consts = ObjectTyped.values(ConstraintDefinitions);
+export const consts = Object.values(ConstraintDefinitions);
