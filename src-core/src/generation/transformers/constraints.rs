@@ -183,7 +183,7 @@ impl DiffyGenerationTransformer for ConstraintSetter {
                 }
                 ConstraintData::KeepOutCircle { x, y, r } => {
                     match to_opt {
-                        None => builder.sgmt_keep_out_circle(from, from, x, y, r),
+                        None => builder.wpt_keep_out_circle(from, x, y, r),
                         Some(to) => builder.sgmt_keep_out_circle(from, to, x, y, r),
                     }
                 },
