@@ -59,7 +59,7 @@ pub fn guess_control_interval_count(
             let mut max_ang_vel = max_vel / max_wheel_position_radius;
 
             // Iterate through constraints to find applicable constraints
-            params.constraints.iter().for_each(|constraint| {
+            params.get_enabled_constraints().iter().for_each(|constraint| {
                 if let Some(to) = constraint
                     .to
                     .and_then(|id| id.get_idx(params.waypoints.len()))

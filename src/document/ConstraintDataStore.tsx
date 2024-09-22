@@ -142,7 +142,28 @@ function createDataStore<
         }
       };
     }
-  });
+  }
+  // //@ts-expect-error not assignable
+  // self.enabled = defau;
+  // setters[settername] = (self: any) => (arg: boolean) => {
+  //   self[key] = arg;
+  // };
+  // serialize = (self) => {
+  //   const part = oldSerialize(self);
+  //   part[key] = self[key];
+  //   return part;
+  // };
+  // deserialize = (self, data) => {
+  //   oldDeserialize(self, data);
+  //   self[key] = data[key];
+  // };
+  // deserPartial = (self, data) => {
+  //   oldDeserPartial(self, data);
+  //   if (data[key] !== undefined) {
+  //     self[key] = data[key];
+  //   }
+  // };
+  );
 
   const store = types
     .model(def.type, {

@@ -108,6 +108,7 @@ export type EnvConstructors = {
   ConstraintStore: <K extends ConstraintKey>(
     type: K,
     data: Partial<DataMap[K]["props"]>,
+    enabled: boolean,
     from: IWaypointScope,
     to?: IWaypointScope
   ) => IConstraintStore;
@@ -223,6 +224,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
     ConstraintStore: <K extends ConstraintKey>(
       type: K,
       data: Partial<DataMap[K]["props"]>,
+      enabled: boolean,
       from: IWaypointScope,
       to?: IWaypointScope
     ) => {
@@ -231,7 +233,8 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         to,
         uuid: crypto.randomUUID(),
         //@ts-expect-error more constraint stuff not quite working
-        data: constraintDataConstructors[type](data)
+        data: constraintDataConstructors[type](data),
+        enabled,
       });
       store.data.deserPartial(data);
       return store;
@@ -301,7 +304,8 @@ export function setup() {
   setupEventListeners()
     .then(() => newProject())
     .then(() => uiState.updateWindowTitle())
-    .then(() => openProjectFile());
+    // .then(() => openProjectFile())
+    ;
 }
 setup();
 

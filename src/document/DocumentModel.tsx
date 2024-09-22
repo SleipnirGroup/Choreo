@@ -178,7 +178,8 @@ export const DocumentStore = types
       }
       console.log(pathStore.serialize);
       const config = self.robotConfig.serialize;
-      pathStore.params.constraints.forEach((constraint) => {
+      pathStore.params.constraints.filter((constraint) => constraint.enabled)
+        .forEach((constraint) => {
         if (constraint.issues.length > 0) {
           throw constraint.issues.join(", ");
         }
