@@ -13,8 +13,7 @@
 #include "trajopt/SwerveTrajectoryGenerator.hpp"
 
 // override cxx try/catch so it catches thrown integers/exit conditions
-namespace rust {
-namespace behavior {
+namespace rust::behavior {
 template <typename Try, typename Fail>
 static void trycatch(Try&& func, Fail&& fail) noexcept try {
   func();
