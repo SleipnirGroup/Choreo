@@ -22,8 +22,7 @@ static void trycatch(Try&& func, Fail&& fail) noexcept try {
 } catch (const sleipnir::SolverExitCondition& e) {
   fail(std::to_string(static_cast<uint8_t>(e)));
 }
-}  // namespace behavior
-}  // namespace rust
+}  // namespace rust::behavior
 
 namespace trajopt::rsffi {
 
