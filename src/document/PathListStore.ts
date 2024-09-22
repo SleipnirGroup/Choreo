@@ -118,8 +118,8 @@ export const PathListStore = types
             if (contents !== undefined) {
               path.deserialize(contents);
             } else {
-              // path.params.addConstraint("StopPoint", true, "first");
-              // path.params.addConstraint("StopPoint", true, "last");
+              path.params.addConstraint("StopPoint", true, "first");
+              path.params.addConstraint("StopPoint", true, "last");
             }
 
             if (self.paths.size === 1 || select) {
