@@ -187,7 +187,6 @@ export const DimensionsExt = {
       </Tooltip>
     )
   }
-  // TODO add obstacle here
 } as const satisfies {
   [key in DimensionNameExt]: Dimension<key>;
 };

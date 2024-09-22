@@ -46,8 +46,7 @@ export const PathListStore = types
             name: "New Path",
             params: {
               constraints: [],
-              waypoints: [],
-              obstacles: []
+              waypoints: []
             },
             ui: {
               visibleWaypointsEnd: 0,
@@ -95,8 +94,7 @@ export const PathListStore = types
               name: usedName,
               params: {
                 constraints: [],
-                waypoints: [],
-                obstacles: []
+                waypoints: []
               },
               ui: {
                 visibleWaypointsEnd: 0,

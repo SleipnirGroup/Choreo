@@ -1,5 +1,5 @@
 import { Component } from "react";
-import { doc, uiState } from "../../document/DocumentManager";
+import { uiState } from "../../document/DocumentManager";
 import Tooltip from "@mui/material/Tooltip";
 import styles from "./Navbar.module.css";
 import { observer } from "mobx-react";
@@ -19,7 +19,7 @@ class Navbar extends Component<Props, State> {
       <div className={styles.Container}>
         {NavbarItemSectionEnds.map(
           (endSplit, sectionIdx) =>
-            (sectionIdx != 2 || doc.usesObstacles) && (
+            sectionIdx != 2 && (
               <ToggleButtonGroup
                 className={styles.ToggleGroup}
                 exclusive
