@@ -151,6 +151,30 @@ void SwervePathBuilder::wpt_keep_in_polygon(size_t index,
   }
 }
 
+void SwervePathBuilder::wpt_keep_out_circle(size_t index,
+                                             double x, double y,
+                                             double radius) {
+  for (size_t bumper = 0; bumper < path_builder.GetBumpers().size(); bumper++) {
+    for (size_t i = 0; i < path_builder.GetBumpers().at(bumper).points.size();
+         i++) {
+      path_builder.WptConstraint(
+          index,
+          trajopt::PointPointMinConstraint{
+              path_builder.GetBumpers().at(bumper).points.at(i),
+              {x, y},
+              radius});
+      path_builder.WptConstraint(
+          index,
+          trajopt::LinePointConstraint{
+              path_builder.GetBumpers().at(bumper).points.at(i),
+              path_builder.GetBumpers().at(bumper).points.at(
+                  (i + 1) % path_builder.GetBumpers().at(bumper).points.size()),
+              {x, y},
+              radius});
+    }
+  }
+}
+
 void SwervePathBuilder::sgmt_linear_velocity_direction(size_t from_index,
                                                        size_t to_index,
                                                        double angle) {
@@ -453,6 +477,30 @@ void DifferentialPathBuilder::wpt_keep_in_polygon(
                                        {field_points_x[i], field_points_y[i]},
                                        {field_points_x[j], field_points_y[j]}});
       }
+    }
+  }
+}
+
+void DifferentialPathBuilder::wpt_keep_out_circle(size_t index,
+                                             double x, double y,
+                                             double radius) {
+  for (size_t bumper = 0; bumper < path_builder.GetBumpers().size(); bumper++) {
+    for (size_t i = 0; i < path_builder.GetBumpers().at(bumper).points.size();
+         i++) {
+      path_builder.WptConstraint(
+          index,
+          trajopt::PointPointMinConstraint{
+              path_builder.GetBumpers().at(bumper).points.at(i),
+              {x, y},
+              radius});
+      path_builder.WptConstraint(
+          index,
+          trajopt::LinePointConstraint{
+              path_builder.GetBumpers().at(bumper).points.at(i),
+              path_builder.GetBumpers().at(bumper).points.at(
+                  (i + 1) % path_builder.GetBumpers().at(bumper).points.size()),
+              {x, y},
+              radius});
     }
   }
 }

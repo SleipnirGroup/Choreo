@@ -145,6 +145,13 @@ mod ffi {
             field_points_x: Vec<f64>,
             field_points_y: Vec<f64>,
         );
+        fn wpt_keep_out_circle(
+            self: Pin<&mut SwervePathBuilder>,
+            index: usize,
+            field_point_x: f64,
+            field_point_y: f64,
+            keep_in_radius: f64,
+        );
 
         fn sgmt_linear_velocity_direction(
             self: Pin<&mut SwervePathBuilder>,
@@ -295,6 +302,13 @@ mod ffi {
             field_points_x: Vec<f64>,
             field_points_y: Vec<f64>,
         );
+        fn wpt_keep_out_circle(
+            self: Pin<&mut DifferentialPathBuilder>,
+            index: usize,
+            field_point_x: f64,
+            field_point_y: f64,
+            keep_in_radius: f64,
+        );
 
         fn sgmt_linear_velocity_direction(
             self: Pin<&mut DifferentialPathBuilder>,
@@ -397,6 +411,13 @@ pub trait PathBuilder: Any {
         index: usize,
         field_points_x: Vec<f64>,
         field_points_y: Vec<f64>,
+    );
+    fn wpt_keep_out_circle(
+        &mut self,
+        index: usize,
+        field_point_x: f64,
+        field_point_y: f64,
+        keep_in_radius: f64,
     );
 
     fn sgmt_linear_velocity_direction(&mut self, from_index: usize, to_index: usize, angle: f64);
@@ -643,6 +664,22 @@ impl PathBuilder for SwervePathBuilder {
             field_points_x,
             field_points_y,
         );
+    }
+
+    fn wpt_keep_out_circle(
+        &mut self,
+        index: usize,
+        field_point_x: f64,
+        field_point_y: f64,
+        keep_in_radius: f64,
+    ) {
+        crate::ffi::SwervePathBuilder::wpt_keep_out_circle(
+            self.path_builder.pin_mut(),
+            index,
+            field_point_x,
+            field_point_y,
+            keep_in_radius,
+        )
     }
 
     fn sgmt_linear_velocity_direction(&mut self, from_index: usize, to_index: usize, angle: f64) {
@@ -953,6 +990,22 @@ impl PathBuilder for DifferentialPathBuilder {
             field_points_x,
             field_points_y,
         );
+    }
+
+    fn wpt_keep_out_circle(
+        &mut self,
+        index: usize,
+        field_point_x: f64,
+        field_point_y: f64,
+        keep_in_radius: f64,
+    ) {
+        crate::ffi::DifferentialPathBuilder::wpt_keep_out_circle(
+            self.path_builder.pin_mut(),
+            index,
+            field_point_x,
+            field_point_y,
+            keep_in_radius,
+        )
     }
 
     fn sgmt_linear_velocity_direction(&mut self, from_index: usize, to_index: usize, angle: f64) {
