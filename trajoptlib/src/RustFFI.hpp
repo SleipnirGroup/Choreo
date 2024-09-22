@@ -4,11 +4,27 @@
 
 #include <cstddef>
 #include <memory>
+#include <string>
 
 #include <rust/cxx.h>
+#include <sleipnir/optimization/SolverExitCondition.hpp>
 
 #include "trajopt/DifferentialTrajectoryGenerator.hpp"
 #include "trajopt/SwerveTrajectoryGenerator.hpp"
+
+// override cxx try/catch so it catches thrown integers/exit conditions
+namespace rust {
+namespace behavior {
+template <typename Try, typename Fail>
+static void trycatch(Try&& func, Fail&& fail) noexcept try {
+  func();
+} catch (const std::exception& e) {
+  fail(e.what());
+} catch (const sleipnir::SolverExitCondition& e) {
+  fail(std::to_string(static_cast<uint8_t>(e)));
+}
+}  // namespace behavior
+}  // namespace rust
 
 namespace trajopt::rsffi {
 
