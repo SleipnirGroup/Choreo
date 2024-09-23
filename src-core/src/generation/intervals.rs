@@ -52,10 +52,8 @@ pub fn guess_control_interval_count(
             let mut max_accel = (max_force * 4.0) / config.mass; // times 4 for 4 modules
 
             // find max wheel position radius for calculating max angular velocity
-            let max_wheel_position_radius = config
-                .modules
-                .iter()
-                .fold(0f64, |max, &module| max.max(module.x.hypot(module.y)));
+            let max_wheel_position_radius =
+                config.back_left.radius().max(config.front_left.radius());
             let mut max_ang_vel = max_vel / max_wheel_position_radius;
 
             // Iterate through constraints to find applicable constraints
@@ -115,18 +113,17 @@ pub fn guess_control_interval_count(
 
             // anti-tunneling used to find ceiling value of dt
             let mut min_width = f64::INFINITY;
-            for idx in 0..config.modules.len() {
-                let mod_a = config
-                    .modules
+            let translations = config.module_translations();
+            for idx in 0..translations.len() {
+                let mod_a = translations
                     .get(idx)
                     .expect("Module expected when finding minimum width.");
                 let mod_b_idx = if idx == 0 {
-                    config.modules.len() - 1
+                    translations.len() - 1
                 } else {
                     idx - 1
                 };
-                let mod_b = config
-                    .modules
+                let mod_b = translations
                     .get(mod_b_idx)
                     .expect("Module expected when finding minimum width.");
                 min_width = min_width.min(mod_a.x - mod_b.x).hypot(mod_a.y - mod_b.y);
