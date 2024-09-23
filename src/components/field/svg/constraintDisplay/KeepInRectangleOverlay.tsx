@@ -106,44 +106,44 @@ class KeepInRectangleOverlay extends Component<
   dragPointTranslate(event: any, xOffset: boolean, yOffset: boolean) {
     const data = this.props.data;
     console.log(xOffset, yOffset);
-    data.x.set(data.serialize.props.x[1] + event.dx * (xOffset ? 0.0 : 1.0));
-    data.y.set(data.serialize.props.y[1] + event.dy * (yOffset ? 0.0 : 1.0));
+    data.x.set(data.serialize.props.x.val + event.dx * (xOffset ? 0.0 : 1.0));
+    data.y.set(data.serialize.props.y.val + event.dy * (yOffset ? 0.0 : 1.0));
 
-    data.w.set(data.serialize.props.w[1] - event.dx * (xOffset ? -1.0 : 1.0));
-    data.h.set(data.serialize.props.h[1] - event.dy * (yOffset ? -1.0 : 1.0));
+    data.w.set(data.serialize.props.w.val - event.dx * (xOffset ? -1.0 : 1.0));
+    data.h.set(data.serialize.props.h.val - event.dy * (yOffset ? -1.0 : 1.0));
   }
 
   dragRegionTranslate(event: any) {
     const data = this.props.data;
 
-    data.x.set(data.serialize.props.x[1] + event.dx);
-    data.y.set(this.props.data.serialize.props.y[1] + event.dy);
+    data.x.set(data.serialize.props.x.val + event.dx);
+    data.y.set(this.props.data.serialize.props.y.val + event.dy);
   }
 
   fixWidthHeight() {
-    if (this.props.data.serialize.props.w[1] < 0.0) {
+    if (this.props.data.serialize.props.w.val < 0.0) {
       this.props.data.x.set(
-        this.props.data.serialize.props.x[1] +
-          this.props.data.serialize.props.w[1]
+        this.props.data.serialize.props.x.val +
+          this.props.data.serialize.props.w.val
       );
-      this.props.data.w.set(-this.props.data.serialize.props.w[1]);
+      this.props.data.w.set(-this.props.data.serialize.props.w.val);
     }
 
-    if (this.props.data.serialize.props.h[1] < 0.0) {
+    if (this.props.data.serialize.props.h.val < 0.0) {
       this.props.data.y.set(
-        this.props.data.serialize.props.y[1] +
-          this.props.data.serialize.props.h[1]
+        this.props.data.serialize.props.y.val +
+          this.props.data.serialize.props.h.val
       );
-      this.props.data.h.set(-this.props.data.serialize.props.h[1]);
+      this.props.data.h.set(-this.props.data.serialize.props.h.val);
     }
   }
 
   render() {
     const data = this.props.data.serialize as DataMap["KeepInRectangle"];
-    const x = data.props.x[1];
-    const y = data.props.y[1];
-    const w = data.props.w[1];
-    const h = data.props.h[1];
+    const x = data.props.x.val;
+    const y = data.props.y.val;
+    const w = data.props.w.val;
+    const h = data.props.h.val;
     return (
       <g ref={this.rootRef}>
         {/* Fill Rect*/}

@@ -105,7 +105,7 @@ export const ConstraintDefinitions: defs = {
         name: "Max Velocity",
         description: "Maximum linear velocity of robot chassis",
         dimension: Dimensions.LinVel,
-        defaultVal: ["0 m/s", 0]
+        defaultVal: { exp: "0 m/s", val: 0 }
       }
     },
     wptScope: true,
@@ -122,7 +122,7 @@ export const ConstraintDefinitions: defs = {
         name: "Max Acceleration",
         description: "Maximum Linear Acceleration of robot chassis",
         dimension: Dimensions.LinAcc,
-        defaultVal: ["10 m/s^2", 10]
+        defaultVal: { exp: "10 m/s^2", val: 0 }
       }
     },
     wptScope: true,
@@ -139,7 +139,7 @@ export const ConstraintDefinitions: defs = {
         name: "Max Angular Velocity",
         description: "Maximum Angular Velocity of robot chassis",
         dimension: Dimensions.AngVel,
-        defaultVal: ["0 rad/s", 0]
+        defaultVal: { exp: "0 rad/s", val: 0 }
       }
     },
     wptScope: true,
@@ -156,20 +156,20 @@ export const ConstraintDefinitions: defs = {
         name: "X",
         description: "The x coordinate of the point the robot should face",
         dimension: Dimensions.Length,
-        defaultVal: ["0 m", 0]
+        defaultVal: { exp: "0 m", val: 0 }
       },
       y: {
         name: "Y",
         description: "The y coordinate of the point the robot should face",
         dimension: Dimensions.Length,
-        defaultVal: ["0 m", 0]
+        defaultVal: { exp: "0 m", val: 0 }
       },
       tolerance: {
         name: "θ Tol.",
         description:
           "The allowable heading range relative to the direction to the point. Keep less than Pi.",
         dimension: Dimensions.Angle,
-        defaultVal: ["1 deg", Math.PI / 180.0]
+        defaultVal: { exp: "1 deg", val: Math.PI / 180.0 }
       },
       flip: {
         name: "Flip",
@@ -192,19 +192,19 @@ export const ConstraintDefinitions: defs = {
         name: "X",
         description: "The x coordinate of the center of the keep in zone",
         dimension: Dimensions.Length,
-        defaultVal: ["0 m", 0]
+        defaultVal: { exp: "0 m", val: 0 }
       },
       y: {
         name: "Y",
         description: "The y coordinate of the center of the keep in zone",
         dimension: Dimensions.Length,
-        defaultVal: ["0 m", 0]
+        defaultVal: { exp: "0 m", val: 0 }
       },
       r: {
         name: "R",
         description: "The radius of the keep in zone",
         dimension: Dimensions.Length,
-        defaultVal: ["1 m", 1]
+        defaultVal: { exp: "1 m", val: 1 }
       }
     },
     wptScope: true,
@@ -221,25 +221,25 @@ export const ConstraintDefinitions: defs = {
         name: "X",
         description: "The x coordinate of the bottom left of the keep in zone",
         dimension: Dimensions.Length,
-        defaultVal: ["0 m", 0]
+        defaultVal: { exp: "0 m", val: 0 }
       },
       y: {
         name: "Y",
         description: "The y coordinate of the bottom left of the keep in zone",
         dimension: Dimensions.Length,
-        defaultVal: ["0 m", 0]
+        defaultVal: { exp: "0 m", val: 0 }
       },
       w: {
         name: "W",
         description: "The width of the keep in zone",
         dimension: Dimensions.Length,
-        defaultVal: ["1 m", 1]
+        defaultVal: { exp: "1 m", val: 1 }
       },
       h: {
         name: "H",
         description: "The height of the keep in zone",
         dimension: Dimensions.Length,
-        defaultVal: ["1 m", 1]
+        defaultVal: { exp: "1 m", val: 1 }
       }
     },
     wptScope: true,
@@ -256,19 +256,19 @@ export const ConstraintDefinitions: defs = {
         name: "X",
         description: "The x coordinate of the center of the keep out zone",
         dimension: Dimensions.Length,
-        defaultVal: ["0 m", 0]
+        defaultVal: { exp: "0 m", val: 0 }
       },
       y: {
         name: "Y",
         description: "The y coordinate of the center of the keep out zone",
         dimension: Dimensions.Length,
-        defaultVal: ["0 m", 0]
+        defaultVal: { exp: "0 m", val: 0 }
       },
       r: {
         name: "R",
         description: "The radius of the keep out zone",
         dimension: Dimensions.Length,
-        defaultVal: ["1 m", 1]
+        defaultVal: { exp: "1 m", val: 1 }
       }
     },
     wptScope: true,

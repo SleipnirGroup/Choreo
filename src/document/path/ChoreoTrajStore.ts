@@ -102,7 +102,7 @@ export const ChoreoTrajStore = types
           target: "first",
           trajTargetIndex: undefined,
           targetTimestamp: undefined,
-          offset: ["0 s", 0],
+          offset: { exp: "0 s", val: 0 },
           command: {
             type: "named",
             data: {
