@@ -31,12 +31,11 @@ export const EXPR_DEFAULTS: RobotConfig<Expr> = {
     side: [`${halfBumper} in`, DEFAULT_BUMPER / 2],
     back: [`${halfBumper} in`, DEFAULT_BUMPER / 2]
   },
-  frontLeft: 
-  {
+  frontLeft: {
     x: [`${halfWheelbase} in`, DEFAULT_WHEELBASE / 2],
     y: [`${halfWheelbase} in`, DEFAULT_WHEELBASE / 2]
   },
-  backLeft:     {
+  backLeft: {
     x: [`${-halfWheelbase} in`, -DEFAULT_WHEELBASE / 2],
     y: [`${halfWheelbase} in`, DEFAULT_WHEELBASE / 2]
   },
@@ -140,7 +139,12 @@ export const RobotConfigStore = types
           diffTrackWidth: self.diffTrackWidth.serialize
         };
       },
-      get moduleTranslations() : [Module<number>, Module<number>, Module<number>, Module<number>] {
+      get moduleTranslations(): [
+        Module<number>,
+        Module<number>,
+        Module<number>,
+        Module<number>
+      ] {
         const fl = self.frontLeft.snapshot;
         const bl = self.backLeft.snapshot;
         const br = {
@@ -150,10 +154,8 @@ export const RobotConfigStore = types
         const fr = {
           x: fl.x,
           y: -fl.y
-        }
-        return [
-          fl,bl,br,fr
-        ]
+        };
+        return [fl, bl, br, fr];
       },
       get snapshot(): RobotConfig<number> {
         return {

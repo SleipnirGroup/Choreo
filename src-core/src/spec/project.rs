@@ -39,7 +39,7 @@ pub struct Variables {
 pub struct Bumper<T: SnapshottableType> {
     pub front: T,
     pub side: T,
-    pub back: T
+    pub back: T,
 }
 
 impl<T: SnapshottableType> Bumper<T> {
@@ -47,7 +47,7 @@ impl<T: SnapshottableType> Bumper<T> {
         Bumper {
             front: self.front.snapshot(),
             side: self.side.snapshot(),
-            back: self.back.snapshot()
+            back: self.back.snapshot(),
         }
     }
 }
@@ -133,7 +133,7 @@ impl RobotConfig<f64> {
             Translation2d {
                 x: self.front_left.x,
                 y: -self.front_left.y,
-            }
+            },
         ]
     }
 }
@@ -182,7 +182,7 @@ impl Default for ProjectFile {
                     x: Expr::new("11 in", 0.2794),
                     y: Expr::new("11 in", 0.2794),
                 },
-                back_left:                     Module {
+                back_left: Module {
                     x: Expr::new("-11 in", -0.2794),
                     y: Expr::new("11 in", 0.2794),
                 },

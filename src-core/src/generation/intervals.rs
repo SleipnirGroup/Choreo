@@ -52,7 +52,8 @@ pub fn guess_control_interval_count(
             let mut max_accel = (max_force * 4.0) / config.mass; // times 4 for 4 modules
 
             // find max wheel position radius for calculating max angular velocity
-            let max_wheel_position_radius = config.back_left.radius().max(config.front_left.radius());
+            let max_wheel_position_radius =
+                config.back_left.radius().max(config.front_left.radius());
             let mut max_ang_vel = max_vel / max_wheel_position_radius;
 
             // Iterate through constraints to find applicable constraints

@@ -32,8 +32,8 @@ export interface Module<T extends ExprOrNumber> {
 }
 
 export interface RobotConfig<T extends ExprOrNumber> {
-  frontLeft: Module<T>,
-  backLeft: Module<T>,
+  frontLeft: Module<T>;
+  backLeft: Module<T>;
   mass: T;
   inertia: T;
   gearing: T;
