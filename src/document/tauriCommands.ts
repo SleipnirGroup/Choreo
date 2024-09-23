@@ -101,10 +101,7 @@ export const Commands = {
    * @param traj The `Traj` to write.
    * @returns `void`
    */
-  writeTraj: (traj: Traj) => {
-    console.log(traj);
-    invoke("write_traj", { traj });
-  },
+  writeTraj: (traj: Traj) => invoke("write_traj", { traj }),
   /**
    * Renames the specified `Traj` to the specified name.
    *
