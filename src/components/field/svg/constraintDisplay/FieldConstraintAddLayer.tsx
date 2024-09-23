@@ -35,8 +35,10 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
       const constraintToAdd = uiState.getSelectedConstraintKey();
       const point1 = points[start];
       const point2 = end !== undefined ? points[end] : undefined;
+      console.log("start uuid: ", point1.uuid);
       const newConstraint = doc.pathlist.activePath.params.addConstraint(
         constraintToAdd,
+        true,
         { uuid: point1.uuid },
         point2 !== undefined ? { uuid: point2.uuid } : undefined
       );

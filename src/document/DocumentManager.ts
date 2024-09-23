@@ -28,10 +28,6 @@ import {
   type Waypoint
 } from "./2025/DocumentTypes";
 import {
-  CircularObstacleStore,
-  ICircularObstacleStore
-} from "./CircularObstacleStore";
-import {
   ConstraintDataObjects,
   IConstraintDataStore,
   defineCreateConstraintData
@@ -87,11 +83,6 @@ type ConstraintDataConstructors = {
 export type EnvConstructors = {
   RobotConfigStore: (config: RobotConfig<Expr>) => IRobotConfigStore;
   WaypointStore: (config: Waypoint<Expr>) => IHolonomicWaypointStore;
-  ObstacleStore: (
-    x: number,
-    y: number,
-    radius: number
-  ) => ICircularObstacleStore;
   CommandStore: (
     command: PplibCommand<Expr> &
       (
@@ -108,6 +99,7 @@ export type EnvConstructors = {
   ConstraintStore: <K extends ConstraintKey>(
     type: K,
     data: Partial<DataMap[K]["props"]>,
+    enabled: boolean,
     from: IWaypointScope,
     to?: IWaypointScope
   ) => IConstraintStore;
@@ -197,18 +189,6 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         uuid: crypto.randomUUID()
       });
     },
-    ObstacleStore: (
-      x: number,
-      y: number,
-      radius: number
-    ): ICircularObstacleStore => {
-      return CircularObstacleStore.create({
-        x: vars().createExpression(x, "Length"),
-        y: vars().createExpression(y, "Length"),
-        radius: vars().createExpression(radius, "Length"),
-        uuid: crypto.randomUUID()
-      });
-    },
     CommandStore: createCommandStore,
     EventMarkerStore: (marker: PplibCommandMarker<Expr>): IEventMarkerStore => {
       return EventMarkerStore.create({
@@ -224,6 +204,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
     ConstraintStore: <K extends ConstraintKey>(
       type: K,
       data: Partial<DataMap[K]["props"]>,
+      enabled: boolean,
       from: IWaypointScope,
       to?: IWaypointScope
     ) => {
@@ -232,7 +213,8 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         to,
         uuid: crypto.randomUUID(),
         //@ts-expect-error more constraint stuff not quite working
-        data: constraintDataConstructors[type](data)
+        data: constraintDataConstructors[type](data),
+        enabled
       });
       store.data.deserPartial(data);
       return store;
@@ -266,7 +248,6 @@ export const doc = DocumentStore.create(
     type: "Swerve",
     pathlist: {},
     splitTrajectoriesAtStopPoints: false,
-    usesObstacles: false,
     name: "Untitled",
     //@ts-expect-error this is recommended, not sure why it doesn't work
     variables: castToReferenceSnapshot(variables),
@@ -301,8 +282,8 @@ export function setup() {
   doc.history.clear();
   setupEventListeners()
     .then(() => newProject())
-    .then(() => uiState.updateWindowTitle())
-    .then(() => openProjectFile());
+    .then(() => uiState.updateWindowTitle());
+  // .then(() => openProjectFile())
 }
 setup();
 
@@ -602,10 +583,6 @@ export async function setupEventListeners() {
     if (selectedConstraint) {
       doc.pathlist.activePath.params.deleteConstraint(selectedConstraint.uuid);
     }
-    const selectedObstacle = getSelectedObstacle();
-    if (selectedObstacle) {
-      doc.pathlist.activePath.params.deleteObstacle(selectedObstacle.uuid);
-    }
   });
 }
 
@@ -684,12 +661,6 @@ function getSelectedConstraint() {
   });
 }
 
-function getSelectedObstacle() {
-  const obstacles = doc.pathlist.activePath.params.obstacles;
-  return obstacles.find((o) => {
-    return o.selected;
-  });
-}
 export async function newProject() {
   applySnapshot(uiState, {
     settingsTab: 0,

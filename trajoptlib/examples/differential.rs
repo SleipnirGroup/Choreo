@@ -21,7 +21,7 @@ fn main() {
 
     path.wpt_angular_velocity_max_magnitude(0, 0.0);
     path.wpt_angular_velocity_max_magnitude(1, 0.0);
-    path.sgmt_circle_obstacle(0, 1, 0.5, 0.1, 0.2);
+    path.sgmt_keep_out_circle(0, 1, 0.5, 0.1, 0.2);
 
     path.set_control_interval_counts(vec![40]);
 

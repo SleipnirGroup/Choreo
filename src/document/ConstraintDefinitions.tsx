@@ -1,12 +1,12 @@
 import {
   ArrowCircleDown,
+  DoNotDisturb,
   NearMe,
   StopCircleOutlined,
   SyncOutlined,
   SystemUpdateAlt
 } from "@mui/icons-material";
 import { JSXElementConstructor, ReactElement } from "react";
-import { ObjectTyped } from "../util/ObjectTyped";
 import { Expr } from "./2025/DocumentTypes";
 import { Dimension, DimensionName, Dimensions } from "./ExpressionStore";
 
@@ -67,6 +67,11 @@ export type ConstraintDataTypeMap = {
     y: Expr;
     w: Expr;
     h: Expr;
+  };
+  KeepOutCircle: {
+    x: Expr;
+    y: Expr;
+    r: Expr;
   };
 };
 export type DataMap = {
@@ -239,8 +244,37 @@ export const ConstraintDefinitions: defs = {
     },
     wptScope: true,
     sgmtScope: true
-  } satisfies ConstraintDefinition<"KeepInRectangle">
+  } satisfies ConstraintDefinition<"KeepInRectangle">,
+  KeepOutCircle: {
+    type: "KeepOutCircle" as const,
+    name: "Keep Out Circle",
+    shortName: "Keep Out Circle",
+    description: "Keep the robot's bumpers outside of a circular region",
+    icon: <DoNotDisturb />,
+    properties: {
+      x: {
+        name: "X",
+        description: "The x coordinate of the center of the keep out zone",
+        dimension: Dimensions.Length,
+        defaultVal: ["0 m", 0]
+      },
+      y: {
+        name: "Y",
+        description: "The y coordinate of the center of the keep out zone",
+        dimension: Dimensions.Length,
+        defaultVal: ["0 m", 0]
+      },
+      r: {
+        name: "R",
+        description: "The radius of the keep out zone",
+        dimension: Dimensions.Length,
+        defaultVal: ["1 m", 1]
+      }
+    },
+    wptScope: true,
+    sgmtScope: true
+  } satisfies ConstraintDefinition<"KeepOutCircle">
 };
 
 export type ConstraintKey = keyof DataMap;
-export const consts = ObjectTyped.values(ConstraintDefinitions);
+export const consts = Object.values(ConstraintDefinitions);

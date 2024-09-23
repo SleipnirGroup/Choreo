@@ -8,7 +8,11 @@ import { IConstraintStore } from "../../document/ConstraintStore";
 import { doc } from "../../document/DocumentManager";
 import styles from "./Sidebar.module.css";
 
-import { PriorityHigh } from "@mui/icons-material";
+import {
+  CheckBoxOutlineBlankOutlined,
+  CheckBoxOutlined,
+  PriorityHigh
+} from "@mui/icons-material";
 import { ChoreoPathStore } from "../../document/path/ChoreoPathStore";
 import { WaypointID } from "../../document/ConstraintDefinitions";
 
@@ -45,6 +49,7 @@ class SidebarConstraint extends Component<Props, State> {
         from!.uuid == to!.uuid) // zero-length segment
     )
       return waypointIDToText(from);
+    else if (from === "first" && to === "last") return "All";
     else {
       return `${waypointIDToText(from)}-${waypointIDToText(to)}`;
     }
@@ -70,11 +75,19 @@ class SidebarConstraint extends Component<Props, State> {
       >
         {React.cloneElement(this.props.constraint.data.def.icon, {
           className: styles.SidebarIcon,
-          htmlColor: selected ? "var(--select-yellow)" : "var(--accent-purple)"
+          htmlColor: selected
+            ? "var(--select-yellow)"
+            : this.props.constraint.enabled
+              ? "var(--accent-purple)"
+              : "gray"
         })}
         <span
           className={styles.SidebarLabel}
-          style={{ display: "grid", gridTemplateColumns: "1fr auto auto" }}
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr auto auto",
+            color: this.props.constraint.enabled ? "white" : "gray"
+          }}
         >
           <span>{this.props.constraint.data.def.shortName}</span>
           {issues.length !== 0 ? (
@@ -90,19 +103,37 @@ class SidebarConstraint extends Component<Props, State> {
 
           {this.getScopeText()}
         </span>
-        <Tooltip disableInteractive title="Delete Constraint">
-          <IconButton
-            className={styles.SidebarRightIcon}
-            onClick={(e) => {
-              e.stopPropagation();
-              doc.pathlist.activePath.params.deleteConstraint(
-                this.props.constraint?.uuid || ""
-              );
-            }}
-          >
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
+        <span>
+          <Tooltip disableInteractive title="Toggle Constraint">
+            <IconButton
+              className={styles.SidebarRightIcon}
+              onClick={(e) => {
+                e.stopPropagation();
+                this.props.constraint.setEnabled(
+                  !this.props.constraint.enabled
+                );
+              }}
+            >
+              {this.props.constraint.enabled && <CheckBoxOutlined />}
+              {!this.props.constraint.enabled && (
+                <CheckBoxOutlineBlankOutlined />
+              )}
+            </IconButton>
+          </Tooltip>
+          <Tooltip disableInteractive title="Delete Constraint">
+            <IconButton
+              className={styles.SidebarRightIcon}
+              onClick={(e) => {
+                e.stopPropagation();
+                doc.pathlist.activePath.params.deleteConstraint(
+                  this.props.constraint?.uuid || ""
+                );
+              }}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+        </span>
       </div>
     );
   }

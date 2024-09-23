@@ -71,6 +71,7 @@ export interface Constraint {
   from: WaypointID;
   to?: WaypointID;
   data: ConstraintData;
+  enabled: boolean;
 }
 
 export interface SwerveSample {
@@ -127,12 +128,6 @@ export interface Traj {
   traj: Output;
   events: EventMarker[];
   pplibCommands: PplibCommandMarker<number>[];
-}
-
-export interface CircleObstacle<T extends ExprOrNumber> {
-  x: T;
-  y: T;
-  r: T;
 }
 
 export type GroupCommand<T extends ExprOrNumber> = {

@@ -46,8 +46,7 @@ export const PathListStore = types
             name: "New Path",
             params: {
               constraints: [],
-              waypoints: [],
-              obstacles: []
+              waypoints: []
             },
             ui: {
               visibleWaypointsEnd: 0,
@@ -95,8 +94,7 @@ export const PathListStore = types
               name: usedName,
               params: {
                 constraints: [],
-                waypoints: [],
-                obstacles: []
+                waypoints: []
               },
               ui: {
                 visibleWaypointsEnd: 0,
@@ -118,14 +116,20 @@ export const PathListStore = types
             if (contents !== undefined) {
               path.deserialize(contents);
             } else {
-              path.params.addConstraint("StopPoint", "first");
-              path.params.addConstraint("StopPoint", "last");
-              path.params.addConstraint("KeepInRectangle", "first", "last", {
-                x: ["0 m", 0.0],
-                y: ["0 m", 0.0],
-                w: ["16.54 m", 16.54],
-                h: ["8.21 m", 8.21]
-              });
+              path.params.addConstraint("StopPoint", true, "first");
+              path.params.addConstraint("StopPoint", true, "last");
+              path.params.addConstraint(
+                "KeepInRectangle",
+                true,
+                "first",
+                "last",
+                {
+                  x: ["0 m", 0.0],
+                  y: ["0 m", 0.0],
+                  w: ["16.54 m", 16.54],
+                  h: ["8.21 m", 8.21]
+                }
+              );
             }
 
             if (self.paths.size === 1 || select) {
