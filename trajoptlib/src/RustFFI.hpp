@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <type_traits>
 
 #include <rust/cxx.h>
 #include <sleipnir/optimization/SolverExitCondition.hpp>
@@ -21,7 +22,9 @@ static void trycatch(Try&& func, Fail&& fail) noexcept try {
   fail(e.what());
 } catch (const sleipnir::SolverExitCondition& e) {
   // TODO: Use std::to_underlying() from C++23
-  fail(std::to_string(static_cast<uint8_t>(e)));
+  // numerical value of the enum, converted to string
+  fail(std::to_string(
+      static_cast<std::underlying_type_t<sleipnir::SolverExitCondition>>(e)));
 }
 }  // namespace rust::behavior
 

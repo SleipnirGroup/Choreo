@@ -31,9 +31,8 @@ export interface Variables {
 
 export interface Bumper<T extends ExprOrNumber> {
   front: T;
-  left: T;
   back: T;
-  right: T;
+  side: T;
 }
 
 export interface Module<T extends ExprOrNumber> {
@@ -42,7 +41,8 @@ export interface Module<T extends ExprOrNumber> {
 }
 
 export interface RobotConfig<T extends ExprOrNumber> {
-  modules: [Module<T>, Module<T>, Module<T>, Module<T>];
+  frontLeft: Module<T>;
+  backLeft: Module<T>;
   mass: T;
   inertia: T;
   gearing: T;

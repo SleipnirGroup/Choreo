@@ -162,16 +162,17 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         radius: vars().createExpression(config.radius, "Length"),
         bumper: {
           front: vars().createExpression(config.bumper.front, "Length"),
-          left: vars().createExpression(config.bumper.left, "Length"),
-          right: vars().createExpression(config.bumper.right, "Length"),
+          side: vars().createExpression(config.bumper.side, "Length"),
           back: vars().createExpression(config.bumper.back, "Length")
         },
-        modules: [0, 1, 2, 3].map((i) => {
-          return {
-            x: vars().createExpression(config.modules[i].x, "Length"),
-            y: vars().createExpression(config.modules[i].y, "Length")
-          };
-        }),
+        frontLeft: {
+          x: vars().createExpression(config.frontLeft.x, "Length"),
+          y: vars().createExpression(config.frontLeft.y, "Length")
+        },
+        backLeft: {
+          x: vars().createExpression(config.backLeft.x, "Length"),
+          y: vars().createExpression(config.backLeft.y, "Length")
+        },
         diffTrackWidth: vars().createExpression(
           config.diffTrackWidth,
           "Length"

@@ -36,7 +36,7 @@ class RobotConfigPanel extends Component<Props, State> {
           roundingPrecision={3}
           number={config.bumper.front}
           maxWidthCharacters={8}
-          titleTooltip="Width of robot with bumpers on"
+          titleTooltip="Distance from robot center to front bumper edge"
         />
 
         <ExpressionInput
@@ -45,95 +45,52 @@ class RobotConfigPanel extends Component<Props, State> {
           roundingPrecision={3}
           number={config.bumper.back}
           maxWidthCharacters={8}
-          titleTooltip="Length of robot with bumpers on"
+          titleTooltip="Distance from robot center to back bumper edge"
         />
 
         <ExpressionInput
-          title="Bumper Left"
+          title="Bumper Side"
           enabled={true}
           roundingPrecision={3}
-          number={config.bumper.left}
+          number={config.bumper.side}
           maxWidthCharacters={8}
-          titleTooltip="Width of robot with bumpers on"
+          titleTooltip="Distance from robot center to bumper side edge"
         />
         {doc.type === "Swerve" ? (
           <>
             <ExpressionInput
-              title="Bumper Right"
+              title="Front Mod X"
               enabled={true}
               roundingPrecision={3}
-              number={config.bumper.right}
+              number={config.frontLeft.x}
               maxWidthCharacters={8}
-              titleTooltip="Length of robot with bumpers on"
+              titleTooltip="X coordinate of front modules"
             />
 
             <ExpressionInput
-              title="FL.X"
+              title="Front Left Y"
               enabled={true}
               roundingPrecision={3}
-              number={config.modules[0].x}
+              number={config.frontLeft.y}
               maxWidthCharacters={8}
-              titleTooltip="Front-back distance between wheel centers"
+              titleTooltip="Y coordinate of front left module"
+            />
+            <ExpressionInput
+              title="Back Mod X"
+              enabled={true}
+              roundingPrecision={3}
+              number={config.backLeft.x}
+              maxWidthCharacters={8}
+              titleTooltip="X coordinate of back modules (negative)"
             />
 
             <ExpressionInput
-              title="FL.Y"
+              title="Back Left Y"
               enabled={true}
               roundingPrecision={3}
-              number={config.modules[0].y}
+              number={config.backLeft.y}
               maxWidthCharacters={8}
-              titleTooltip="Front-back distance between wheel centers"
-            />
-            <ExpressionInput
-              title="BL.X"
-              enabled={true}
-              roundingPrecision={3}
-              number={config.modules[1].x}
-              maxWidthCharacters={8}
-              titleTooltip="Front-back distance between wheel centers"
-            />
-
-            <ExpressionInput
-              title="BL.Y"
-              enabled={true}
-              roundingPrecision={3}
-              number={config.modules[1].y}
-              maxWidthCharacters={8}
-              titleTooltip="Front-back distance between wheel centers"
-            />
-            <ExpressionInput
-              title="BR.X"
-              enabled={true}
-              roundingPrecision={3}
-              number={config.modules[2].x}
-              maxWidthCharacters={8}
-              titleTooltip="Front-back distance between wheel centers"
-            />
-
-            <ExpressionInput
-              title="BR.Y"
-              enabled={true}
-              roundingPrecision={3}
-              number={config.modules[2].y}
-              maxWidthCharacters={8}
-              titleTooltip="Front-back distance between wheel centers"
-            />
-            <ExpressionInput
-              title="FR.X"
-              enabled={true}
-              roundingPrecision={3}
-              number={config.modules[3].x}
-              maxWidthCharacters={8}
-              titleTooltip="Front-back distance between wheel centers"
-            />
-
-            <ExpressionInput
-              title="FR.Y"
-              enabled={true}
-              roundingPrecision={3}
-              number={config.modules[3].y}
-              maxWidthCharacters={8}
-              titleTooltip="Front-back distance between wheel centers"
+              titleTooltip="Y coordinate of back left module"
             />
           </>
         ) : (
