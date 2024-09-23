@@ -28,52 +28,39 @@ export const EXPR_DEFAULTS: RobotConfig<Expr> = {
   radius: ["2 in", InToM(2)],
   bumper: {
     front: [`${halfBumper} in`, DEFAULT_BUMPER / 2],
-    left: [`${halfBumper} in`, DEFAULT_BUMPER / 2],
-    back: [`${halfBumper} in`, DEFAULT_BUMPER / 2],
-    right: [`${halfBumper} in`, DEFAULT_BUMPER / 2]
+    side: [`${halfBumper} in`, DEFAULT_BUMPER / 2],
+    back: [`${halfBumper} in`, DEFAULT_BUMPER / 2]
   },
-  modules: [
-    {
-      x: [`${halfWheelbase} in`, DEFAULT_WHEELBASE / 2],
-      y: [`${halfWheelbase} in`, DEFAULT_WHEELBASE / 2]
-    },
-    {
-      x: [`${-halfWheelbase} in`, -DEFAULT_WHEELBASE / 2],
-      y: [`${halfWheelbase} in`, DEFAULT_WHEELBASE / 2]
-    },
-    {
-      x: [`${-halfWheelbase} in`, -DEFAULT_WHEELBASE / 2],
-      y: [`${-halfWheelbase} in`, -DEFAULT_WHEELBASE / 2]
-    },
-    {
-      x: [`${halfWheelbase} in`, DEFAULT_WHEELBASE / 2],
-      y: [`${-halfWheelbase} in`, -DEFAULT_WHEELBASE / 2]
-    }
-  ],
+  frontLeft: 
+  {
+    x: [`${halfWheelbase} in`, DEFAULT_WHEELBASE / 2],
+    y: [`${halfWheelbase} in`, DEFAULT_WHEELBASE / 2]
+  },
+  backLeft:     {
+    x: [`${-halfWheelbase} in`, -DEFAULT_WHEELBASE / 2],
+    y: [`${halfWheelbase} in`, DEFAULT_WHEELBASE / 2]
+  },
   diffTrackWidth: [`${MToIn(DEFAULT_WHEELBASE)} in`, DEFAULT_WHEELBASE]
 };
 
 export const BumperStore = types
   .model("BumperStore", {
     front: ExpressionStore,
-    left: ExpressionStore,
-    right: ExpressionStore,
+    side: ExpressionStore,
     back: ExpressionStore
   })
   .views((self) => ({
     get serialize(): Bumper<Expr> {
       return {
         front: self.front.serialize,
-        left: self.left.serialize,
-        right: self.right.serialize,
+        side: self.side.serialize,
         back: self.back.serialize
       };
     },
-    snapshot(): Bumper<number> {
+    get snapshot(): Bumper<number> {
       return {
         front: self.front.value,
-        left: self.left.value,
-        right: self.right.value,
+        side: self.side.value,
         back: self.back.value
       };
     },
@@ -81,15 +68,14 @@ export const BumperStore = types
       return self.front.value + self.back.value;
     },
     get width() {
-      return self.left.value + self.right.value;
+      return self.side.value * 2;
     }
   }))
   .actions((self) => ({
     deserialize(ser: Bumper<Expr>) {
       self.front.deserialize(ser.front);
       self.back.deserialize(ser.back);
-      self.right.deserialize(ser.right);
-      self.left.deserialize(ser.left);
+      self.side.deserialize(ser.side);
     }
   }));
 
@@ -105,7 +91,7 @@ export const ModuleStore = types
         y: self.y.serialize
       };
     },
-    snapshot(): Module<number> {
+    get snapshot(): Module<number> {
       return {
         x: self.x.value,
         y: self.y.value
@@ -127,11 +113,8 @@ export const RobotConfigStore = types
     gearing: ExpressionStore,
     radius: ExpressionStore,
     bumper: BumperStore,
-    modules: types.refinement(
-      "Modules",
-      types.array(ModuleStore),
-      (snap) => snap?.length == 4
-    ),
+    frontLeft: ModuleStore,
+    backLeft: ModuleStore,
     diffTrackWidth: ExpressionStore,
     identifier: types.identifier
   })
@@ -152,12 +135,27 @@ export const RobotConfigStore = types
           gearing: self.gearing.serialize,
           radius: self.radius.serialize,
           bumper: self.bumper.serialize,
-          //@ts-expect-error can't encode fixed length array in mobx ts typing
-          modules: self.modules.map((mod) => mod.serialize),
+          frontLeft: self.frontLeft.serialize,
+          backLeft: self.backLeft.serialize,
           diffTrackWidth: self.diffTrackWidth.serialize
         };
       },
-      snapshot(): RobotConfig<number> {
+      get moduleTranslations() : [Module<number>, Module<number>, Module<number>, Module<number>] {
+        const fl = self.frontLeft.snapshot;
+        const bl = self.backLeft.snapshot;
+        const br = {
+          x: bl.x,
+          y: -bl.y
+        };
+        const fr = {
+          x: fl.x,
+          y: -fl.y
+        }
+        return [
+          fl,bl,br,fr
+        ]
+      },
+      get snapshot(): RobotConfig<number> {
         return {
           mass: self.mass.value,
           inertia: self.inertia.value,
@@ -165,9 +163,9 @@ export const RobotConfigStore = types
           vmax: self.vmax.value,
           gearing: self.gearing.value,
           radius: self.radius.value,
-          bumper: self.bumper.snapshot(),
-          //@ts-expect-error can't encode fixed length array in mobx ts typing
-          modules: self.modules.map((mod) => mod.snapshot()),
+          bumper: self.bumper.snapshot,
+          frontLeft: self.frontLeft.snapshot,
+          backLeft: self.backLeft.snapshot,
           diffTrackWidth: self.diffTrackWidth.value
         };
       }
@@ -183,7 +181,8 @@ export const RobotConfigStore = types
         self.gearing.deserialize(config.gearing);
         self.radius.deserialize(config.radius);
         self.bumper.deserialize(config.bumper);
-        self.modules.forEach((mod, i) => mod.deserialize(config.modules[i]));
+        self.frontLeft.deserialize(config.frontLeft);
+        self.backLeft.deserialize(config.backLeft);
         self.diffTrackWidth.deserialize(config.diffTrackWidth);
       }
     };
@@ -193,8 +192,8 @@ export const RobotConfigStore = types
       bumperSVGElement() {
         const front = self.bumper.front.value;
         const back = -self.bumper.back.value;
-        const left = self.bumper.left.value;
-        const right = -self.bumper.right.value;
+        const left = self.bumper.side.value;
+        const right = -self.bumper.side.value;
         return `M ${front} ${left}
                 L ${front} ${right}
                 L ${back} ${right}
@@ -204,8 +203,8 @@ export const RobotConfigStore = types
       dashedBumperSVGElement() {
         const front = self.bumper.front.value; //l/2
         const back = -self.bumper.back.value; //-l/2
-        const left = self.bumper.left.value;
-        const right = -self.bumper.right.value;
+        const left = self.bumper.side.value;
+        const right = -self.bumper.side.value;
         return `
             M ${front} ${left / 2}
             L ${front} ${left}

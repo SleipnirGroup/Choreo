@@ -38,18 +38,16 @@ pub struct Variables {
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Bumper<T: SnapshottableType> {
     pub front: T,
-    pub left: T,
-    pub back: T,
-    pub right: T,
+    pub side: T,
+    pub back: T
 }
 
 impl<T: SnapshottableType> Bumper<T> {
     pub fn snapshot(&self) -> Bumper<f64> {
         Bumper {
             front: self.front.snapshot(),
-            left: self.left.snapshot(),
-            back: self.back.snapshot(),
-            right: self.right.snapshot(),
+            side: self.side.snapshot(),
+            back: self.back.snapshot()
         }
     }
 }
@@ -75,11 +73,17 @@ impl Module<f64> {
             y: self.y,
         }
     }
+
+    pub fn radius(&self) -> f64 {
+        self.x.hypot(self.y)
+    }
 }
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 #[serde(rename_all = "camelCase")]
 pub struct RobotConfig<T: SnapshottableType> {
-    pub modules: [Module<T>; 4],
+    // front left
+    pub front_left: Module<T>,
+    pub back_left: Module<T>,
     pub mass: T,
     pub inertia: T,
     pub gearing: T,
@@ -95,7 +99,8 @@ pub struct RobotConfig<T: SnapshottableType> {
 impl<T: SnapshottableType> RobotConfig<T> {
     pub fn snapshot(&self) -> RobotConfig<f64> {
         RobotConfig {
-            modules: self.modules.clone().map(|modu: Module<T>| modu.snapshot()),
+            front_left: self.front_left.snapshot(),
+            back_left: self.back_left.snapshot(),
             mass: self.mass.snapshot(),
             inertia: self.inertia.snapshot(),
             gearing: self.gearing.snapshot(),
@@ -113,6 +118,23 @@ impl<T: SnapshottableType> RobotConfig<T> {
     }
     pub fn wheel_max_velocity(&self) -> f64 {
         self.vmax.snapshot() / self.gearing.snapshot()
+    }
+}
+impl RobotConfig<f64> {
+    pub fn module_translations(&self) -> Vec<Translation2d> {
+        // FL, BL, BR, FR
+        vec![
+            self.front_left.translation(),
+            self.back_left.translation(),
+            Translation2d {
+                x: self.back_left.x,
+                y: -self.back_left.y,
+            },
+            Translation2d {
+                x: self.front_left.x,
+                y: -self.front_left.y,
+            }
+        ]
     }
 }
 
@@ -156,31 +178,20 @@ impl Default for ProjectFile {
                 radius: Expr::new("2 in", 0.0508),
                 vmax: Expr::new("6000.0 RPM", (6000.0 / 60.0) * std::f64::consts::TAU),
                 tmax: Expr::new("1.2 N*m", 1.2),
-                modules: [
-                    Module {
-                        x: Expr::new("11 in", 0.2794),
-                        y: Expr::new("11 in", 0.2794),
-                    },
-                    Module {
-                        x: Expr::new("-11 in", -0.2794),
-                        y: Expr::new("11 in", 0.2794),
-                    },
-                    Module {
-                        x: Expr::new("-11 in", -0.2794),
-                        y: Expr::new("-11 in", -0.2794),
-                    },
-                    Module {
-                        x: Expr::new("11 in", 0.2794),
-                        y: Expr::new("-11 in", -0.2794),
-                    },
-                ],
+                front_left: Module {
+                    x: Expr::new("11 in", 0.2794),
+                    y: Expr::new("11 in", 0.2794),
+                },
+                back_left:                     Module {
+                    x: Expr::new("-11 in", -0.2794),
+                    y: Expr::new("11 in", 0.2794),
+                },
                 mass: Expr::new("150 lbs", 68.038_855_5),
                 inertia: Expr::new("6 kg m^2", 6.0),
                 bumper: Bumper {
                     front: Expr::new("16 in", 0.4064),
-                    left: Expr::new("16 in", 0.4064),
+                    side: Expr::new("16 in", 0.4064),
                     back: Expr::new("16 in", 0.4064),
-                    right: Expr::new("16 in", 0.4064),
                 },
                 diff_track_width: Expr::new("22 in", 0.2794 * 2.0),
             },

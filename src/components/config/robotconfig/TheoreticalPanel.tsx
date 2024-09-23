@@ -13,12 +13,12 @@ type State = object;
 class RobotConfigPanel extends Component<Props, State> {
   state = { selectedMotor: "NEO", currentLimit: 40 };
   render() {
-    const config = doc.robotConfig.snapshot();
+    const config = doc.robotConfig.snapshot;
     const floorSpeed = doc.robotConfig.wheelMaxVelocity * config.radius;
     const floorLinearForce =
       (4 * doc.robotConfig.wheelMaxTorque) / config.radius; // N
     const floorLinearAccel = floorLinearForce / config.mass;
-    const driveRadius = Math.hypot(config.modules[0].x, config.modules[0].y); // TODO proper sum of forces from four wheels
+    const driveRadius = Math.hypot(config.frontLeft.x, config.frontLeft.y); // TODO proper sum of forces from four wheels
     const chassisTorque = floorLinearForce * driveRadius; // N*m
     //N*m/(kg*m*m) = N/(kg*m) = (kg*m/s^2)/(kg*m)=1/s^2= rad/s^2
     const chassisAngularAccel = chassisTorque / config.inertia; //N*m/(kg*m*m) = N/(kg*m)
