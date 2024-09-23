@@ -23,7 +23,8 @@ static void trycatch(Try&& func, Fail&& fail) noexcept try {
 } catch (const sleipnir::SolverExitCondition& e) {
   // TODO: Use std::to_underlying() from C++23
   // numerical value of the enum, converted to string
-  fail(std::to_string(static_cast<std::underlying_type_t<decltype(e)>>(e)));
+  fail(std::to_string(
+      static_cast<std::underlying_type_t<sleipnir::SolverExitCondition>>(e)));
 }
 }  // namespace rust::behavior
 
