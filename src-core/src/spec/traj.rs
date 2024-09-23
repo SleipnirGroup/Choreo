@@ -215,6 +215,7 @@ pub struct Constraint<T: SnapshottableType> {
     pub to: Option<WaypointID>,
     /// The constraint to apply.
     pub data: ConstraintData<T>,
+    pub enabled: bool,
 }
 
 impl<T: SnapshottableType> Constraint<T> {
@@ -224,6 +225,7 @@ impl<T: SnapshottableType> Constraint<T> {
             from: self.from,
             to: self.to,
             data: self.data.snapshot(),
+            enabled: self.enabled,
         }
     }
 }
@@ -239,6 +241,7 @@ pub struct ConstraintIDX<T: SnapshottableType> {
     pub to: Option<usize>,
     /// The constraint to apply.
     pub data: ConstraintData<T>,
+    pub enabled: bool,
 }
 
 /// A sample of the robot's state at a point in time during the trajectory.
@@ -365,6 +368,12 @@ impl<T: SnapshottableType> Parameters<T> {
             waypoints: self.waypoints.iter().map(Waypoint::snapshot).collect(),
             constraints: self.constraints.iter().map(Constraint::snapshot).collect(),
         }
+    }
+}
+
+impl<T: SnapshottableType> Parameters<T> {
+    pub fn get_enabled_constraints(&self) -> Vec<&Constraint<T>> {
+        self.constraints.iter().filter(|c| c.enabled).collect()
     }
 }
 

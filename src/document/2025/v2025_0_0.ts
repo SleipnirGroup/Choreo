@@ -71,6 +71,7 @@ export interface Constraint {
   from: WaypointID;
   to?: WaypointID;
   data: ConstraintData;
+  enabled: boolean;
 }
 
 export interface SwerveSample {

@@ -99,6 +99,7 @@ export const ChoreoPathStore = types
           const to = self.waypointIdToSavedWaypointId(con.to);
           const toReturn: Constraint = {
             data: con.data.serialize,
+            enabled: con.enabled,
             from,
             to
           };
@@ -110,12 +111,13 @@ export const ChoreoPathStore = types
   .actions((self) => ({
     addConstraint<K extends ConstraintKey>(
       key: K,
+      enabled: boolean,
       from: IWaypointScope,
       to?: IWaypointScope,
       data: Partial<DataMap[K]["props"]> = {}
     ): Instance<typeof ConstraintStore> | undefined {
       self.constraints.push(
-        getEnv<Env>(self).create.ConstraintStore(key, data, from, to)
+        getEnv<Env>(self).create.ConstraintStore(key, data, enabled, from, to)
       );
       const store = self.constraints[self.constraints.length - 1];
       store.data.deserPartial(data);
@@ -279,7 +281,7 @@ export const ChoreoPathStore = types
         const to = self.savedWaypointIdToWaypointId(saved.to);
         self.addConstraint(
           saved.data.type,
-
+          saved.enabled,
           from,
           to,
           saved.data.props

@@ -26,6 +26,7 @@ export const ConstraintStore = types
   .model("ConstraintStore", {
     from: WaypointScope,
     to: types.maybe(WaypointScope),
+    enabled: types.boolean,
     data: types.union(...Object.values(ConstraintDataObjects)),
     uuid: types.identifier
   })
@@ -107,5 +108,8 @@ export const ConstraintStore = types
           )
         );
       }
+    },
+    setEnabled(enabled: boolean) {
+      self.enabled = enabled;
     }
   }));

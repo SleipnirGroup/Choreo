@@ -284,7 +284,7 @@ pub fn fix_constraint_indices(traj: &TrajFile) -> (Vec<usize>, Vec<ConstraintIDX
         .filter(|(_, w)| w.is_initial_guess && !w.fix_heading && !w.fix_translation)
         .for_each(|(idx, _)| guess_points.push(idx));
 
-    for constraint in &traj.params.constraints {
+    for constraint in &traj.params.get_enabled_constraints() {
         let from = constraint.from.get_idx(num_wpts);
         let to = constraint.to.as_ref().and_then(|id| id.get_idx(num_wpts));
         // from and to are None if they did not point to a valid waypoint.
@@ -317,6 +317,7 @@ pub fn fix_constraint_indices(traj: &TrajFile) -> (Vec<usize>, Vec<ConstraintIDX
                         from: fixed_from,
                         to: fixed_to,
                         data: constraint.data.snapshot(),
+                        enabled: constraint.enabled,
                     });
                 }
             }
