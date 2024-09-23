@@ -65,7 +65,7 @@ const AddVariablePanel = observer((props: AddVariablePanelProps) => {
             if (doc.variables.validateName(props.name, "")) {
               doc.variables.add(
                 props.name,
-                props.expr.serialize[0],
+                props.expr.serialize.exp,
                 props.expr.dimension
               );
               props.setName("");

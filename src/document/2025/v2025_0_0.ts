@@ -2,8 +2,17 @@ import { ConstraintData } from "../ConstraintDefinitions";
 import { Dimensions } from "../ExpressionStore";
 
 export const SAVE_FILE_VERSION = "v2025.0.0";
-export type Expr = [string, number];
+export type Expr = { exp: string; val: number };
 
+export function isExpr(arg: any): arg is Expr {
+  return (
+    typeof arg === "object" &&
+    Object.hasOwn(arg, "exp") &&
+    typeof arg["exp"] === "string" &&
+    Object.hasOwn(arg, "val") &&
+    typeof arg["val"] === "number"
+  );
+}
 export type ExprOrNumber = Expr | number;
 export interface Variable {
   dimension: keyof typeof Dimensions;

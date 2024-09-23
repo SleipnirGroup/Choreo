@@ -33,7 +33,8 @@ import Waypoint from "../assets/Waypoint";
 import {
   PoseVariable as DocPoseVariable,
   Variables as DocVariables,
-  Expr
+  Expr,
+  isExpr
 } from "./2025/DocumentTypes";
 import { Env } from "./DocumentManager";
 import { tracing } from "./tauriTracing";
@@ -230,8 +231,8 @@ export const ExpressionStore = types
       });
     },
     deserialize(serial: Expr) {
-      self.expr = math.parse(serial[0]);
-      self.value = serial[1];
+      self.expr = math.parse(serial.exp);
+      self.value = serial.val;
       return self;
     },
     // WARNING: should not be generally used. This is for cases
@@ -314,7 +315,10 @@ export const ExpressionStore = types
       return result;
     },
     get serialize(): Expr {
-      return [self.expr.toString(), self.value];
+      return {
+        exp: self.expr.toString(),
+        val: self.value
+      };
     }
   }))
   .views((self) => ({
@@ -558,10 +562,10 @@ export const Variables = types
             dimension
           });
         }
-      } else if (Array.isArray(expr)) {
+      } else if (isExpr(expr)) {
         // deserialize Expr
         store = ExpressionStore.create({
-          expr: math.parse(expr[0]),
+          expr: math.parse(expr.exp),
           dimension
         });
         store.deserialize(expr);
@@ -594,8 +598,6 @@ export const Variables = types
     },
     // criteria according to https://mathjs.org/docs/expressions/syntax.html#constants-and-variables
     validateName(name: string, selfName: string): boolean {
-      console.log(name.split(""));
-
       const notAlreadyExists =
         name === selfName ||
         (!self.poses.has(name) && !self.expressions.has(name));
