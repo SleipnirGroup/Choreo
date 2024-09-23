@@ -24,7 +24,6 @@ import FieldGeneratedLines from "./FieldGeneratedLines";
 import FieldGeneratedWaypoints from "./FieldGeneratedWaypoints";
 import FieldGrid from "./FieldGrid";
 import { DOMMatrixIdentity, FieldMatrixContext } from "./FieldMatrixContext";
-import FieldObstacle from "./FieldObstacles";
 import FieldPathLines from "./FieldPathLines";
 import FieldSamples from "./FieldSamples";
 import InterpolatedRobot from "./InterpolatedRobot";
@@ -244,7 +243,7 @@ class FieldOverlayRoot extends Component<Props, State> {
               </>
             )}
             {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
-            {/* Obstacle and waypoint mouse capture*/}
+            {/* Waypoint mouse capture*/}
 
             {uiState.contextMenuMouseSelection && (
               <Popover
@@ -315,26 +314,6 @@ class FieldOverlayRoot extends Component<Props, State> {
                   style={{ fill: "transparent" }}
                   onClick={(e) => this.createWaypointOnClick(e)}
                 ></circle>
-              )}
-            {layers[ViewLayers.Obstacles] &&
-              uiState.isNavbarObstacleSelected() && (
-                <circle
-                  cx={0}
-                  cy={0}
-                  r={10000}
-                  style={{ fill: "transparent" }}
-                  onClick={(e) => this.createObstacle(e)}
-                ></circle>
-              )}
-            {layers[ViewLayers.Obstacles] &&
-              doc.pathlist.activePath.params.obstacles.map(
-                (obstacle, index) => (
-                  <FieldObstacle
-                    obstacle={obstacle}
-                    index={index}
-                    key={obstacle.uuid}
-                  ></FieldObstacle>
-                )
               )}
             {/* Line paths */}
             {layers[ViewLayers.Waypoints] && <FieldPathLines></FieldPathLines>}
@@ -456,18 +435,6 @@ class FieldOverlayRoot extends Component<Props, State> {
         e as unknown as MouseEvent,
         uiState.selectedNavbarItem
       );
-    }
-  }
-  createObstacle(e: React.MouseEvent<SVGCircleElement, MouseEvent>): void {
-    if (e.currentTarget === e.target) {
-      const coords = this.screenSpaceToFieldSpace(this.svgRef?.current, {
-        x: e.clientX,
-        y: e.clientY
-      });
-      doc.history.startGroup(() => {
-        doc.pathlist.activePath.params.addObstacle(coords.x, coords.y, 0.5);
-      });
-      doc.history.stopGroup();
     }
   }
 }

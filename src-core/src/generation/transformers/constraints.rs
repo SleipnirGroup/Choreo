@@ -31,7 +31,7 @@ impl ConstraintSetter {
             .filter(|(_, w)| w.is_initial_guess && !w.fix_heading && !w.fix_translation)
             .for_each(|(idx, _)| guess_points.push(idx));
 
-        for constraint in &ctx.params.constraints {
+        for constraint in ctx.params.get_enabled_constraints() {
             let from = constraint.from.get_idx(num_wpts);
             let to = constraint.to.as_ref().and_then(|id| id.get_idx(num_wpts));
             // from and to are None if they did not point to a valid waypoint.
@@ -64,6 +64,7 @@ impl ConstraintSetter {
                             from: fixed_from,
                             to: fixed_to,
                             data: constraint.data,
+                            enabled: constraint.enabled
                         });
                     }
                 }
@@ -83,6 +84,7 @@ impl SwerveGenerationTransformer for ConstraintSetter {
     }
     fn transform(&self, builder: &mut trajoptlib::SwervePathBuilder) {
         for constraint in &self.constraint_idx {
+            println!("constraint: {:?}", constraint);
             let from = fix_scope(constraint.from, &self.guess_points);
             let to_opt = constraint.to.map(|idx| fix_scope(idx, &self.guess_points));
             match constraint.data {
@@ -125,6 +127,12 @@ impl SwerveGenerationTransformer for ConstraintSetter {
                         Some(to) => builder.sgmt_keep_in_polygon(from, to, xs, ys),
                     }
                 }
+                ConstraintData::KeepOutCircle { x, y, r } => {
+                    match to_opt {
+                        None => builder.wpt_keep_out_circle(from, x, y, r),
+                        Some(to) => builder.sgmt_keep_out_circle(from, to, x, y, r),
+                    }
+                },
             };
         }
     }
@@ -175,6 +183,12 @@ impl DiffyGenerationTransformer for ConstraintSetter {
                         Some(to) => builder.sgmt_keep_in_polygon(from, to, xs, ys),
                     }
                 }
+                ConstraintData::KeepOutCircle { x, y, r } => {
+                    match to_opt {
+                        None => builder.wpt_keep_out_circle(from, x, y, r),
+                        Some(to) => builder.sgmt_keep_out_circle(from, to, x, y, r),
+                    }
+                },
             };
         }
     }

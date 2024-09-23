@@ -37,6 +37,7 @@ function FieldConstraintsAddLayer() {
                     const constraintToAdd = selectedConstraint;
                     const newConstraint = activePath.params.addConstraint(
                       constraintToAdd,
+                      true,
                       { uuid: point.uuid }
                     );
 
@@ -91,6 +92,7 @@ function FieldConstraintsAddLayer() {
 
                       const newConstraint = activePath.params.addConstraint(
                         constraintToAdd,
+                        true,
                         { uuid: point1.uuid },
                         { uuid: point2.uuid }
                       );

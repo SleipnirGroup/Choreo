@@ -22,9 +22,8 @@ export interface Variables {
 
 export interface Bumper<T extends ExprOrNumber> {
   front: T;
-  left: T;
   back: T;
-  right: T;
+  side: T;
 }
 
 export interface Module<T extends ExprOrNumber> {
@@ -33,7 +32,8 @@ export interface Module<T extends ExprOrNumber> {
 }
 
 export interface RobotConfig<T extends ExprOrNumber> {
-  modules: [Module<T>, Module<T>, Module<T>, Module<T>];
+  frontLeft: Module<T>;
+  backLeft: Module<T>;
   mass: T;
   inertia: T;
   gearing: T;
@@ -71,6 +71,7 @@ export interface Constraint {
   from: WaypointID;
   to?: WaypointID;
   data: ConstraintData;
+  enabled: boolean;
 }
 
 export interface SwerveSample {
@@ -127,12 +128,6 @@ export interface Traj {
   traj: Output;
   events: EventMarker[];
   pplibCommands: PplibCommandMarker<number>[];
-}
-
-export interface CircleObstacle<T extends ExprOrNumber> {
-  x: T;
-  y: T;
-  r: T;
 }
 
 export type GroupCommand<T extends ExprOrNumber> = {

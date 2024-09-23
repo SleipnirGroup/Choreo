@@ -147,6 +147,8 @@ pub enum ConstraintData<T: SnapshottableType> {
     KeepInCircle { x: T, y: T, r: T },
     /// A constraint to contain the bumpers within a rectangular region of the field
     KeepInRectangle { x: T, y: T, w: T, h: T },
+    /// A constraint to contain the bumpers outside a circlular region of the field
+    KeepOutCircle { x: T, y: T, r: T },
 }
 
 impl<T: SnapshottableType> ConstraintData<T> {
@@ -193,6 +195,11 @@ impl<T: SnapshottableType> ConstraintData<T> {
                 w: w.snapshot(),
                 h: h.snapshot(),
             },
+            ConstraintData::KeepOutCircle { x, y, r } => ConstraintData::KeepOutCircle {
+                x: x.snapshot(),
+                y: y.snapshot(),
+                r: r.snapshot(),
+            },
         }
     }
 }
@@ -208,6 +215,7 @@ pub struct Constraint<T: SnapshottableType> {
     pub to: Option<WaypointID>,
     /// The constraint to apply.
     pub data: ConstraintData<T>,
+    pub enabled: bool,
 }
 
 impl<T: SnapshottableType> Constraint<T> {
@@ -217,6 +225,7 @@ impl<T: SnapshottableType> Constraint<T> {
             from: self.from,
             to: self.to,
             data: self.data.snapshot(),
+            enabled: self.enabled,
         }
     }
 }
@@ -232,6 +241,7 @@ pub struct ConstraintIDX<T: SnapshottableType> {
     pub to: Option<usize>,
     /// The constraint to apply.
     pub data: ConstraintData<T>,
+    pub enabled: bool,
 }
 
 /// A sample of the robot's state at a point in time during the trajectory.
@@ -358,6 +368,12 @@ impl<T: SnapshottableType> Parameters<T> {
             waypoints: self.waypoints.iter().map(Waypoint::snapshot).collect(),
             constraints: self.constraints.iter().map(Constraint::snapshot).collect(),
         }
+    }
+}
+
+impl<T: SnapshottableType> Parameters<T> {
+    pub fn get_enabled_constraints(&self) -> Vec<&Constraint<T>> {
+        self.constraints.iter().filter(|c| c.enabled).collect()
     }
 }
 

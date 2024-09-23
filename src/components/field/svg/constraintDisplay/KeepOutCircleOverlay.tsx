@@ -18,7 +18,7 @@ type Props<K extends ConstraintKey> = {
   end?: IHolonomicWaypointStore;
   lineColor: string;
 };
-class KeepInCircleOverlay extends Component<Props<"KeepInCircle">, object> {
+class KeepOutCircleOverlay extends Component<Props<"KeepOutCircle">, object> {
   rootRef: React.RefObject<SVGGElement> = React.createRef<SVGGElement>();
   componentDidMount() {
     if (this.rootRef.current) {
@@ -30,11 +30,11 @@ class KeepInCircleOverlay extends Component<Props<"KeepInCircle">, object> {
         })
         .on("end", (_event) => doc.history.stopGroup())
         .container(this.rootRef.current);
-      d3.select<SVGCircleElement, undefined>(`#dragTarget-keepInCircle`).call(
+      d3.select<SVGCircleElement, undefined>(`#dragTarget-keepOutCircle`).call(
         dragHandleDrag
       );
       d3.select<SVGCircleElement, undefined>(
-        `#dragTarget-keepInCircleDot`
+        `#dragTarget-keepOutCircleDot`
       ).call(dragHandleDrag);
       const radiusHandleDrag = d3
         .drag<SVGCircleElement, undefined>()
@@ -45,7 +45,7 @@ class KeepInCircleOverlay extends Component<Props<"KeepInCircle">, object> {
         .on("end", (_event) => doc.history.stopGroup())
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
-        `#dragRadiusTarget-keepInCircle`
+        `#dragRadiusTarget-keepOutCircle`
       ).call(radiusHandleDrag);
     }
   }
@@ -64,7 +64,7 @@ class KeepInCircleOverlay extends Component<Props<"KeepInCircle">, object> {
   }
 
   render() {
-    const data = this.props.data.serialize as DataMap["KeepInCircle"];
+    const data = this.props.data.serialize as DataMap["KeepOutCircle"];
     const x = data.props.x[1];
     const y = data.props.y[1];
     const r = data.props.r[1];
@@ -75,18 +75,18 @@ class KeepInCircleOverlay extends Component<Props<"KeepInCircle">, object> {
           cx={x}
           cy={y}
           r={r - STROKE / 2}
-          fill={"green"}
+          fill={"red"}
           fillOpacity={0.1}
-          id="dragTarget-keepInCircle"
+          id="dragTarget-keepOutCircle"
         ></circle>
         {/* Center Dot */}
         <circle
           cx={x}
           cy={y}
           r={r < DOT * 2 ? 0.0 : DOT}
-          fill={"green"}
+          fill={"red"}
           fillOpacity={1.0}
-          id="dragTarget-keepInCircleDot"
+          id="dragTarget-keepOutCircleDot"
         ></circle>
         {/* Radius Handle */}
         <circle
@@ -95,13 +95,13 @@ class KeepInCircleOverlay extends Component<Props<"KeepInCircle">, object> {
           r={r - STROKE / 2}
           fill={"transparent"}
           pointerEvents={"visibleStroke"}
-          stroke={"green"}
+          stroke={"red"}
           strokeWidth={STROKE}
           strokeOpacity={1.0}
-          id="dragRadiusTarget-keepInCircle"
+          id="dragRadiusTarget-keepOutCircle"
         ></circle>
       </g>
     );
   }
 }
-export default observer(KeepInCircleOverlay);
+export default observer(KeepOutCircleOverlay);

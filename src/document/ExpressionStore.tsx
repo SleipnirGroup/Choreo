@@ -187,7 +187,6 @@ export const DimensionsExt = {
       </Tooltip>
     )
   }
-  // TODO add obstacle here
 } as const satisfies {
   [key in DimensionNameExt]: Dimension<key>;
 };
@@ -455,7 +454,11 @@ export const ExpressionStore = types
             if (value !== undefined) {
               self.setValue(value);
             }
-          }
+          },
+          // do this calculation when setting up the reaction
+          // so value is populated (default is false but this causes issues
+          // when restoring ExpressionStores out of undo history)
+          { fireImmediately: true }
         );
       },
       beforeDestroy: () => {

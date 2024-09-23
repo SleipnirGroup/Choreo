@@ -28,10 +28,6 @@ import {
   type Waypoint
 } from "./2025/DocumentTypes";
 import {
-  CircularObstacleStore,
-  ICircularObstacleStore
-} from "./CircularObstacleStore";
-import {
   ConstraintDataObjects,
   IConstraintDataStore,
   defineCreateConstraintData
@@ -87,11 +83,6 @@ type ConstraintDataConstructors = {
 export type EnvConstructors = {
   RobotConfigStore: (config: RobotConfig<Expr>) => IRobotConfigStore;
   WaypointStore: (config: Waypoint<Expr>) => IHolonomicWaypointStore;
-  ObstacleStore: (
-    x: number,
-    y: number,
-    radius: number
-  ) => ICircularObstacleStore;
   CommandStore: (
     command: PplibCommand<Expr> &
       (
@@ -108,6 +99,7 @@ export type EnvConstructors = {
   ConstraintStore: <K extends ConstraintKey>(
     type: K,
     data: Partial<DataMap[K]["props"]>,
+    enabled: boolean,
     from: IWaypointScope,
     to?: IWaypointScope
   ) => IConstraintStore;
@@ -170,16 +162,17 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         radius: vars().createExpression(config.radius, "Length"),
         bumper: {
           front: vars().createExpression(config.bumper.front, "Length"),
-          left: vars().createExpression(config.bumper.left, "Length"),
-          right: vars().createExpression(config.bumper.right, "Length"),
+          side: vars().createExpression(config.bumper.side, "Length"),
           back: vars().createExpression(config.bumper.back, "Length")
         },
-        modules: [0, 1, 2, 3].map((i) => {
-          return {
-            x: vars().createExpression(config.modules[i].x, "Length"),
-            y: vars().createExpression(config.modules[i].y, "Length")
-          };
-        }),
+        frontLeft: {
+          x: vars().createExpression(config.frontLeft.x, "Length"),
+          y: vars().createExpression(config.frontLeft.y, "Length")
+        },
+        backLeft: {
+          x: vars().createExpression(config.backLeft.x, "Length"),
+          y: vars().createExpression(config.backLeft.y, "Length")
+        },
         diffTrackWidth: vars().createExpression(
           config.diffTrackWidth,
           "Length"
@@ -193,18 +186,6 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         x: vars().createExpression(waypoint.x, "Length"),
         y: vars().createExpression(waypoint.y, "Length"),
         heading: vars().createExpression(waypoint.heading, "Angle"),
-        uuid: crypto.randomUUID()
-      });
-    },
-    ObstacleStore: (
-      x: number,
-      y: number,
-      radius: number
-    ): ICircularObstacleStore => {
-      return CircularObstacleStore.create({
-        x: vars().createExpression(x, "Length"),
-        y: vars().createExpression(y, "Length"),
-        radius: vars().createExpression(radius, "Length"),
         uuid: crypto.randomUUID()
       });
     },
@@ -223,6 +204,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
     ConstraintStore: <K extends ConstraintKey>(
       type: K,
       data: Partial<DataMap[K]["props"]>,
+      enabled: boolean,
       from: IWaypointScope,
       to?: IWaypointScope
     ) => {
@@ -231,7 +213,8 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         to,
         uuid: crypto.randomUUID(),
         //@ts-expect-error more constraint stuff not quite working
-        data: constraintDataConstructors[type](data)
+        data: constraintDataConstructors[type](data),
+        enabled
       });
       store.data.deserPartial(data);
       return store;
@@ -265,7 +248,6 @@ export const doc = DocumentStore.create(
     type: "Swerve",
     pathlist: {},
     splitTrajectoriesAtStopPoints: false,
-    usesObstacles: false,
     name: "Untitled",
     //@ts-expect-error this is recommended, not sure why it doesn't work
     variables: castToReferenceSnapshot(variables),
@@ -300,8 +282,8 @@ export function setup() {
   doc.history.clear();
   setupEventListeners()
     .then(() => newProject())
-    .then(() => uiState.updateWindowTitle())
-    .then(() => openProjectFile());
+    .then(() => uiState.updateWindowTitle());
+  // .then(() => openProjectFile())
 }
 setup();
 
@@ -601,10 +583,6 @@ export async function setupEventListeners() {
     if (selectedConstraint) {
       doc.pathlist.activePath.params.deleteConstraint(selectedConstraint.uuid);
     }
-    const selectedObstacle = getSelectedObstacle();
-    if (selectedObstacle) {
-      doc.pathlist.activePath.params.deleteObstacle(selectedObstacle.uuid);
-    }
   });
 }
 
@@ -683,12 +661,6 @@ function getSelectedConstraint() {
   });
 }
 
-function getSelectedObstacle() {
-  const obstacles = doc.pathlist.activePath.params.obstacles;
-  return obstacles.find((o) => {
-    return o.selected;
-  });
-}
 export async function newProject() {
   applySnapshot(uiState, {
     settingsTab: 0,

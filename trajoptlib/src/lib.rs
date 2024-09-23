@@ -145,6 +145,13 @@ mod ffi {
             field_points_x: Vec<f64>,
             field_points_y: Vec<f64>,
         );
+        fn wpt_keep_out_circle(
+            self: Pin<&mut SwervePathBuilder>,
+            index: usize,
+            field_point_x: f64,
+            field_point_y: f64,
+            keep_in_radius: f64,
+        );
 
         fn sgmt_linear_velocity_direction(
             self: Pin<&mut SwervePathBuilder>,
@@ -195,21 +202,12 @@ mod ffi {
             field_points_y: Vec<f64>,
         );
 
-        fn sgmt_circle_obstacle(
+        fn sgmt_keep_out_circle(
             self: Pin<&mut SwervePathBuilder>,
             from_index: usize,
             to_index: usize,
             x: f64,
             y: f64,
-            radius: f64,
-        );
-
-        fn sgmt_polygon_obstacle(
-            self: Pin<&mut SwervePathBuilder>,
-            from_index: usize,
-            to_index: usize,
-            x: Vec<f64>,
-            y: Vec<f64>,
             radius: f64,
         );
 
@@ -304,6 +302,13 @@ mod ffi {
             field_points_x: Vec<f64>,
             field_points_y: Vec<f64>,
         );
+        fn wpt_keep_out_circle(
+            self: Pin<&mut DifferentialPathBuilder>,
+            index: usize,
+            field_point_x: f64,
+            field_point_y: f64,
+            keep_in_radius: f64,
+        );
 
         fn sgmt_linear_velocity_direction(
             self: Pin<&mut DifferentialPathBuilder>,
@@ -345,21 +350,12 @@ mod ffi {
             field_points_y: Vec<f64>,
         );
 
-        fn sgmt_circle_obstacle(
+        fn sgmt_keep_out_circle(
             self: Pin<&mut DifferentialPathBuilder>,
             from_index: usize,
             to_index: usize,
             x: f64,
             y: f64,
-            radius: f64,
-        );
-
-        fn sgmt_polygon_obstacle(
-            self: Pin<&mut DifferentialPathBuilder>,
-            from_index: usize,
-            to_index: usize,
-            x: Vec<f64>,
-            y: Vec<f64>,
             radius: f64,
         );
 
@@ -416,6 +412,13 @@ pub trait PathBuilder: Any {
         field_points_x: Vec<f64>,
         field_points_y: Vec<f64>,
     );
+    fn wpt_keep_out_circle(
+        &mut self,
+        index: usize,
+        field_point_x: f64,
+        field_point_y: f64,
+        keep_in_radius: f64,
+    );
 
     fn sgmt_linear_velocity_direction(&mut self, from_index: usize, to_index: usize, angle: f64);
     fn sgmt_linear_velocity_max_magnitude(
@@ -452,21 +455,12 @@ pub trait PathBuilder: Any {
         field_points_y: Vec<f64>,
     );
 
-    fn sgmt_circle_obstacle(
+    fn sgmt_keep_out_circle(
         &mut self,
         from_index: usize,
         to_index: usize,
         x: f64,
         y: f64,
-        radius: f64,
-    );
-
-    fn sgmt_polygon_obstacle(
-        &mut self,
-        from_index: usize,
-        to_index: usize,
-        x: Vec<f64>,
-        y: Vec<f64>,
         radius: f64,
     );
 }
@@ -672,6 +666,22 @@ impl PathBuilder for SwervePathBuilder {
         );
     }
 
+    fn wpt_keep_out_circle(
+        &mut self,
+        index: usize,
+        field_point_x: f64,
+        field_point_y: f64,
+        keep_in_radius: f64,
+    ) {
+        crate::ffi::SwervePathBuilder::wpt_keep_out_circle(
+            self.path_builder.pin_mut(),
+            index,
+            field_point_x,
+            field_point_y,
+            keep_in_radius,
+        )
+    }
+
     fn sgmt_linear_velocity_direction(&mut self, from_index: usize, to_index: usize, angle: f64) {
         crate::ffi::SwervePathBuilder::sgmt_linear_velocity_direction(
             self.path_builder.pin_mut(),
@@ -757,7 +767,7 @@ impl PathBuilder for SwervePathBuilder {
         );
     }
 
-    fn sgmt_circle_obstacle(
+    fn sgmt_keep_out_circle(
         &mut self,
         from_index: usize,
         to_index: usize,
@@ -765,25 +775,7 @@ impl PathBuilder for SwervePathBuilder {
         y: f64,
         radius: f64,
     ) {
-        crate::ffi::SwervePathBuilder::sgmt_circle_obstacle(
-            self.path_builder.pin_mut(),
-            from_index,
-            to_index,
-            x,
-            y,
-            radius,
-        );
-    }
-
-    fn sgmt_polygon_obstacle(
-        &mut self,
-        from_index: usize,
-        to_index: usize,
-        x: Vec<f64>,
-        y: Vec<f64>,
-        radius: f64,
-    ) {
-        crate::ffi::SwervePathBuilder::sgmt_polygon_obstacle(
+        crate::ffi::SwervePathBuilder::sgmt_keep_out_circle(
             self.path_builder.pin_mut(),
             from_index,
             to_index,
@@ -1000,6 +992,22 @@ impl PathBuilder for DifferentialPathBuilder {
         );
     }
 
+    fn wpt_keep_out_circle(
+        &mut self,
+        index: usize,
+        field_point_x: f64,
+        field_point_y: f64,
+        keep_in_radius: f64,
+    ) {
+        crate::ffi::DifferentialPathBuilder::wpt_keep_out_circle(
+            self.path_builder.pin_mut(),
+            index,
+            field_point_x,
+            field_point_y,
+            keep_in_radius,
+        )
+    }
+
     fn sgmt_linear_velocity_direction(&mut self, from_index: usize, to_index: usize, angle: f64) {
         crate::ffi::DifferentialPathBuilder::sgmt_linear_velocity_direction(
             self.path_builder.pin_mut(),
@@ -1085,7 +1093,7 @@ impl PathBuilder for DifferentialPathBuilder {
         );
     }
 
-    fn sgmt_circle_obstacle(
+    fn sgmt_keep_out_circle(
         &mut self,
         from_index: usize,
         to_index: usize,
@@ -1093,25 +1101,7 @@ impl PathBuilder for DifferentialPathBuilder {
         y: f64,
         radius: f64,
     ) {
-        crate::ffi::DifferentialPathBuilder::sgmt_circle_obstacle(
-            self.path_builder.pin_mut(),
-            from_index,
-            to_index,
-            x,
-            y,
-            radius,
-        );
-    }
-
-    fn sgmt_polygon_obstacle(
-        &mut self,
-        from_index: usize,
-        to_index: usize,
-        x: Vec<f64>,
-        y: Vec<f64>,
-        radius: f64,
-    ) {
-        crate::ffi::DifferentialPathBuilder::sgmt_polygon_obstacle(
+        crate::ffi::DifferentialPathBuilder::sgmt_keep_out_circle(
             self.path_builder.pin_mut(),
             from_index,
             to_index,

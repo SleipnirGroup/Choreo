@@ -4,11 +4,29 @@
 
 #include <cstddef>
 #include <memory>
+#include <string>
+#include <type_traits>
 
 #include <rust/cxx.h>
+#include <sleipnir/optimization/SolverExitCondition.hpp>
 
 #include "trajopt/DifferentialTrajectoryGenerator.hpp"
 #include "trajopt/SwerveTrajectoryGenerator.hpp"
+
+// override cxx try/catch so it catches thrown integers/exit conditions
+namespace rust::behavior {
+template <typename Try, typename Fail>
+static void trycatch(Try&& func, Fail&& fail) noexcept try {
+  func();
+} catch (const std::exception& e) {
+  fail(e.what());
+} catch (const sleipnir::SolverExitCondition& e) {
+  // TODO: Use std::to_underlying() from C++23
+  // numerical value of the enum, converted to string
+  fail(std::to_string(
+      static_cast<std::underlying_type_t<sleipnir::SolverExitCondition>>(e)));
+}
+}  // namespace rust::behavior
 
 namespace trajopt::rsffi {
 
@@ -45,6 +63,8 @@ class SwervePathBuilder {
                           double field_point_y, double keep_in_radius);
   void wpt_keep_in_polygon(size_t index, rust::Vec<double> field_points_x,
                            rust::Vec<double> field_points_y);
+  void wpt_keep_out_circle(size_t index, double field_point_x,
+                           double field_point_y, double keep_in_radius);
 
   void sgmt_linear_velocity_direction(size_t from_index, size_t to_index,
                                       double angle);
@@ -64,11 +84,8 @@ class SwervePathBuilder {
                             rust::Vec<double> field_points_x,
                             rust::Vec<double> field_points_y);
 
-  void sgmt_circle_obstacle(size_t from_index, size_t to_index, double x,
+  void sgmt_keep_out_circle(size_t from_index, size_t to_index, double x,
                             double y, double radius);
-  void sgmt_polygon_obstacle(size_t from_index, size_t to_index,
-                             rust::Vec<double> x, rust::Vec<double> y,
-                             double radius);
 
   // TODO: Return std::expected<SwerveTrajectory, sleipnir::SolverExitCondition>
   // instead of throwing exception, once cxx supports it
@@ -110,6 +127,8 @@ class DifferentialPathBuilder {
                           double field_point_y, double keep_in_radius);
   void wpt_keep_in_polygon(size_t index, rust::Vec<double> field_points_x,
                            rust::Vec<double> field_points_y);
+  void wpt_keep_out_circle(size_t index, double field_point_x,
+                           double field_point_y, double keep_in_radius);
 
   void sgmt_linear_velocity_direction(size_t from_index, size_t to_index,
                                       double angle);
@@ -127,11 +146,8 @@ class DifferentialPathBuilder {
                             rust::Vec<double> field_points_x,
                             rust::Vec<double> field_points_y);
 
-  void sgmt_circle_obstacle(size_t from_index, size_t to_index, double x,
+  void sgmt_keep_out_circle(size_t from_index, size_t to_index, double x,
                             double y, double radius);
-  void sgmt_polygon_obstacle(size_t from_index, size_t to_index,
-                             rust::Vec<double> x, rust::Vec<double> y,
-                             double radius);
 
   // TODO: Return std::expected<DifferentialTrajectory,
   // sleipnir::SolverExitCondition> instead of throwing exception, once cxx

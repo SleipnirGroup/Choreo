@@ -7,7 +7,6 @@ import {
   Waypoint,
   WaypointID
 } from "../2025/DocumentTypes";
-import { CircularObstacleStore } from "../CircularObstacleStore";
 import { ConstraintKey, DataMap } from "../ConstraintDefinitions";
 import {
   ConstraintStore,
@@ -24,8 +23,7 @@ import {
 export const ChoreoPathStore = types
   .model("ChoreoPathStore", {
     waypoints: types.array(HolonomicWaypointStore),
-    constraints: types.array(ConstraintStore),
-    obstacles: types.array(CircularObstacleStore)
+    constraints: types.array(ConstraintStore)
   })
   .views((self) => ({
     findUUIDIndex(uuid: string) {
@@ -101,6 +99,7 @@ export const ChoreoPathStore = types
           const to = self.waypointIdToSavedWaypointId(con.to);
           const toReturn: Constraint = {
             data: con.data.serialize,
+            enabled: con.enabled,
             from,
             to
           };
@@ -112,12 +111,13 @@ export const ChoreoPathStore = types
   .actions((self) => ({
     addConstraint<K extends ConstraintKey>(
       key: K,
+      enabled: boolean,
       from: IWaypointScope,
       to?: IWaypointScope,
       data: Partial<DataMap[K]["props"]> = {}
     ): Instance<typeof ConstraintStore> | undefined {
       self.constraints.push(
-        getEnv<Env>(self).create.ConstraintStore(key, data, from, to)
+        getEnv<Env>(self).create.ConstraintStore(key, data, enabled, from, to)
       );
       const store = self.constraints[self.constraints.length - 1];
       store.data.deserPartial(data);
@@ -263,29 +263,6 @@ export const ChoreoPathStore = types
         self.constraints[index + 1].setSelected(true);
       }
       destroy(self.constraints[index]);
-    },
-    deleteObstacle(id: string | number) {
-      let index = 0;
-      if (typeof id === "string") {
-        index = self.obstacles.findIndex((obstacle) => obstacle.uuid === id);
-        if (index == -1) return;
-      } else {
-        index = id;
-      }
-
-      getEnv<Env>(self).select(undefined);
-
-      if (self.obstacles.length === 1) {
-        // no-op
-      } else if (self.obstacles[index - 1]) {
-        self.obstacles[index - 1].setSelected(true);
-      } else if (self.obstacles[index + 1]) {
-        self.obstacles[index + 1].setSelected(true);
-      }
-      destroy(self.obstacles[index]);
-    },
-    addObstacle(x: number, y: number, radius: number) {
-      self.obstacles.push(getEnv<Env>(self).create.ObstacleStore(x, y, radius));
     }
   }))
   .actions((self) => ({
@@ -304,16 +281,12 @@ export const ChoreoPathStore = types
         const to = self.savedWaypointIdToWaypointId(saved.to);
         self.addConstraint(
           saved.data.type,
-
+          saved.enabled,
           from,
           to,
           saved.data.props
         );
       });
-      self.obstacles.clear();
-      // ser.circleObstacles.forEach((o) => {
-      //   this.addObstacle(o.x, o.y, o.radius);
-      // });
     }
   }));
 

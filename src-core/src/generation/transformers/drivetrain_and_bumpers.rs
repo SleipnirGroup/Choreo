@@ -1,6 +1,6 @@
 use trajoptlib::{DifferentialDrivetrain, PathBuilder, SwerveDrivetrain};
 
-use crate::spec::project::{Module, RobotConfig};
+use crate::spec::project::{RobotConfig};
 
 use super::{DiffyGenerationTransformer, FeatureLockedTransformer, GenerationContext, SwerveGenerationTransformer};
 
@@ -32,15 +32,13 @@ impl SwerveGenerationTransformer for DrivetrainAndBumpersSetter {
             wheel_max_angular_velocity: config.vmax / config.gearing,
             wheel_max_torque: config.tmax * config.gearing,
             modules: config
-                .modules
-                .map(|modu: Module<f64>| modu.translation())
-                .to_vec(),
+                .module_translations(),
         };
 
         builder.set_drivetrain(&drivetrain);
         builder.set_bumpers(
             config.bumper.back + config.bumper.front,
-            config.bumper.left + config.bumper.right,
+            config.bumper.side * 2.0,
         );
     }
 }
@@ -64,7 +62,7 @@ impl DiffyGenerationTransformer for DrivetrainAndBumpersSetter {
         builder.set_drivetrain(&drivetrain);
         builder.set_bumpers(
             config.bumper.back + config.bumper.front,
-            config.bumper.left + config.bumper.right,
+            config.bumper.side  * 2.0,
         );
     }
 }
