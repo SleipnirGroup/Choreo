@@ -4,6 +4,7 @@ Choreolib provides a higher level api to make it easier to create competitive an
 This is done by providing the `AutoFactory` class.
 
 ## Triggers vs Composition
+
 Composition is how most teams currently architect their auto routines.
 You start with 1 `SequentialCommandGroup` and add commands to it.
 This works for many use cases but can get unwieldy when you have branches,
@@ -15,6 +16,7 @@ that don't allocate `Subsystems` until they are needed. Triggers also allow a no
 branching supported in a first class manner.
 
 ## Monolithic vs Segmented Trajectories
+
 Monolithic trajectories are a single trajectory that is run from start to finish without stopping.
 This has the advantage of being simple to create and understand but can be limiting in complex autos that may require
 branching. Making a new auto with this method can be time consuming as you have to create a completely new trajectory
@@ -53,8 +55,8 @@ There is also a method to make a trigger that represents if the robot owns a not
 
 Also assume a `import static edu.wpi.first.wpilibj2.command.Commands.*` is in scope.
 
-
 ## Creating an auto routine with triggers and a segmented trajectory
+
 ```java
 public Command fivePieceAutoTriggerSeg(AutoFactory factory) {
   final AutoLoop loop = factory.newLoop("fivePieceAuto");
@@ -144,6 +146,7 @@ public Command fivePieceAutoTriggerSeg(AutoFactory factory) {
 ```
 
 ## Creating an auto routine with composition and a monolithic trajectory
+
 ```java
 public Command fivePieceAutoTriggerMono(AutoFactory factory) {
   final AutoLoop loop = factory.newLoop("fivePieceAuto");
@@ -186,6 +189,7 @@ public Command fivePieceAutoTriggerMono(AutoFactory factory) {
 ```
 
 ## Creating an auto routine with composition and a segmented trajectory
+
 ```java
 
 public Command fivePieceAutoCompositionSeg(AutoFactory factory) {
@@ -234,6 +238,7 @@ public Command fivePieceAutoCompositionSeg(AutoFactory factory) {
 ```
 
 ## Creating an auto routine with composition and a monolithic trajectory
+
 ```java
-  // please just dont do this
+// Don't do this
 ```
