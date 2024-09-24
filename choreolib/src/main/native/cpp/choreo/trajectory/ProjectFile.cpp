@@ -9,13 +9,13 @@
 using namespace choreo;
 
 void choreo::to_json(wpi::json& json, const Expression& exp) {
-  json = wpi::json{exp.exp, exp.val};
+  json = wpi::json{exp.expression, exp.val};
 }
 
 void choreo::from_json(const wpi::json& json, Expression& exp) {
   if (json.is_array() && json.size() == 2 && json[0].is_string() &&
       json[1].is_number()) {
-    exp.exp = json[0].get<std::string>();
+    exp.expression = json[0].get<std::string>();
     exp.val = json[1].get<double>();
   } else {
     throw std::runtime_error("Invalid measurement format");
