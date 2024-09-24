@@ -104,10 +104,11 @@ void ChoreoTrajectory::SetSamples(
   samples = newSamples;
 }
 
-void choreolib::to_json(wpi::json& json, const ChoreoTrajectory& traj) {
-  json = wpi::json{{"samples", traj.GetSamples()}};
+void choreolib::to_json(wpi::json& json, const ChoreoTrajectory& trajectory) {
+  json = wpi::json{{"samples", trajectory.GetSamples()}};
 }
 
-void choreolib::from_json(const wpi::json& json, ChoreoTrajectory& traj) {
-  traj.SetSamples(json.at("samples").get<std::vector<ChoreoTrajectoryState>>());
+void choreolib::from_json(const wpi::json& json, ChoreoTrajectory& trajectory) {
+  trajectory.SetSamples(
+      json.at("samples").get<std::vector<ChoreoTrajectoryState>>());
 }

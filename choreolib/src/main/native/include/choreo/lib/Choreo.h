@@ -25,32 +25,33 @@ class Choreo {
  public:
   /**
    * Load a trajectory from the deploy directory. ChoreoLib expects .traj files
-   *  to be placed in src/main/deploy/choreo/[trajName].traj .
+   *  to be placed in src/main/deploy/choreo/[trajectoryName].traj .
    *
-   * @param trajName the path name in Choreo, which matches the file name in the
-   *  deploy directory. Do not include ".traj" here.
+   * @param trajectoryName the path name in Choreo, which matches the file name
+   * in the deploy directory. Do not include ".traj" here.
    * @return the loaded trajectory, will throw runtime error if the file doesn't
    *  exist
    */
-  static ChoreoTrajectory GetTrajectory(std::string_view trajName);
+  static ChoreoTrajectory GetTrajectory(std::string_view trajectoryName);
 
   /**
    * Loads the split parts of the specified trajectory.
    *
    * ChoreoLib expects split .traj files to be placed in
-   * src/main/deploy/choreo/[trajName].[segmentNumber].traj.
+   * src/main/deploy/choreo/[trajectoryName].[segmentNumber].traj.
    *
    * This method determines the number of parts to load by counting the files
-   * that match the pattern "trajName.X.traj", where X is a string of digits.
-   * Let this count be N. It then attempts to load "trajName.1.traj" through
-   * "trajName.N.traj", consecutively counting up.
+   * that match the pattern "trajectoryName.X.traj", where X is a string of
+   * digits. Let this count be N. It then attempts to load
+   * "trajectoryName.1.traj" through "trajectoryName.N.traj", consecutively
+   * counting up.
    *
-   * @param trajName the path name in Choreo. Do not include ".traj" here.
+   * @param trajectoryName the path name in Choreo. Do not include ".traj" here.
    * @return The array of segments, in order.
    * @throws std::runtime_error If any files cannot be loaded.
    */
   static std::vector<ChoreoTrajectory> GetTrajectoryGroup(
-      std::string_view trajName);
+      std::string_view trajectoryName);
 
   /**
    * Creates a CommandPtr that commands your drivebase to follow a Choreo

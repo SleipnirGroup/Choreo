@@ -112,7 +112,7 @@ export interface DifferentialSample {
 }
 
 export interface ProgressUpdate {
-  type: "swerveTraj" | "differentialTraj";
+  type: "swerveTrajectory" | "differentialTrajectory";
   update: SwerveSample[] | DifferentialSample[] | string;
 }
 
@@ -129,12 +129,12 @@ export interface Output {
   forcesAvailable: boolean;
 }
 
-export interface Traj {
+export interface Trajectory {
   name: string;
   version: typeof SAVE_FILE_VERSION;
   params: ChoreoPath<Expr>;
   snapshot: ChoreoPath<number>;
-  traj: Output;
+  trajectory: Output;
   events: EventMarker[];
   pplibCommands: PplibCommandMarker<number>[];
 }
@@ -164,7 +164,7 @@ export type PplibCommand<T extends ExprOrNumber> =
 export interface PplibCommandMarker<T extends ExprOrNumber> {
   name: string;
   target: WaypointID;
-  trajTargetIndex: number | undefined;
+  trajectoryTargetIndex: number | undefined;
   offset: T;
   /**
    * The timestamp along the trajectory of the waypoint this marker targeted on the last generation.

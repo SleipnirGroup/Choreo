@@ -57,7 +57,7 @@ class ChoreoSwerveCommand
 
  private:
   frc::Timer m_timer;
-  ChoreoTrajectory m_traj;
+  ChoreoTrajectory m_trajectory;
   std::function<frc::Pose2d()> m_pose;
   ChoreoControllerFunction m_controller;
   std::function<void(frc::ChassisSpeeds)> m_outputChassisSpeeds;

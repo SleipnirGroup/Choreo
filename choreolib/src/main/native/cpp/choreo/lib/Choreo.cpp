@@ -21,32 +21,35 @@
 
 using namespace choreolib;
 
-ChoreoTrajectory Choreo::GetTrajectory(std::string_view trajName) {
-  std::string trajFileName = fmt::format(
-      "{}/choreo/{}.traj", frc::filesystem::GetDeployDirectory(), trajName);
+ChoreoTrajectory Choreo::GetTrajectory(std::string_view trajectoryName) {
+  std::string trajectoryFileName =
+      fmt::format("{}/choreo/{}.traj", frc::filesystem::GetDeployDirectory(),
+                  trajectoryName);
 
-  auto fileBuffer = wpi::MemoryBuffer::GetFile(trajFileName);
+  auto fileBuffer = wpi::MemoryBuffer::GetFile(trajectoryFileName);
   if (!fileBuffer) {
-    throw std::runtime_error(fmt::format("Cannot open file: {}", trajFileName));
+    throw std::runtime_error(
+        fmt::format("Cannot open file: {}", trajectoryFileName));
   }
 
   wpi::json json = wpi::json::parse(fileBuffer.value()->GetCharBuffer());
 
-  ChoreoTrajectory traj;
-  choreolib::from_json(json, traj);
-  return traj;
+  ChoreoTrajectory trajectory;
+  choreolib::from_json(json, trajectory);
+  return trajectory;
 }
 
 std::vector<ChoreoTrajectory> Choreo::GetTrajectoryGroup(
-    std::string_view trajName) {
-  const std::filesystem::path trajDir{
+    std::string_view trajectoryName) {
+  const std::filesystem::path trajectoryDir{
       fmt::format("{}/choreo", frc::filesystem::GetDeployDirectory())};
   int segmentCount = 0;
-  for (const auto& dir_entry : std::filesystem::directory_iterator{trajDir}) {
+  for (const auto& dir_entry :
+       std::filesystem::directory_iterator{trajectoryDir}) {
     if (dir_entry.is_regular_file() &&
         std::regex_match(
             dir_entry.path().filename().string(),
-            std::regex(fmt::format("{}\\.\\d+\\.traj", trajName)))) {
+            std::regex(fmt::format("{}\\.\\d+\\.traj", trajectoryName)))) {
       ++segmentCount;
     }
   }
@@ -54,10 +57,11 @@ std::vector<ChoreoTrajectory> Choreo::GetTrajectoryGroup(
   group.reserve(segmentCount);
   for (int i = 1; i <= segmentCount; ++i) {
     try {
-      group.push_back(Choreo::GetTrajectory(fmt::format("{}.{}", trajName, i)));
+      group.push_back(
+          Choreo::GetTrajectory(fmt::format("{}.{}", trajectoryName, i)));
     } catch (const std::exception&) {
       throw std::runtime_error(
-          fmt::format("Cannot open file: {}.{}.traj", trajName, i));
+          fmt::format("Cannot open file: {}.{}.traj", trajectoryName, i));
     }
   }
   return group;

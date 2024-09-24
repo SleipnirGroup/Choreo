@@ -9,7 +9,7 @@ use trajoptlib::{
 use crate::{
     spec::{
         project::ProjectFile,
-        traj::{DriveType, Parameters, Sample, TrajFile},
+        trajectory::{DriveType, Parameters, Sample, TrajectoryFile},
     },
     ChoreoResult,
 };
@@ -34,24 +34,24 @@ pub(super) struct GenerationContext {
     pub handle: i64,
 }
 
-pub(super) struct TrajFileGenerator {
+pub(super) struct TrajectoryFileGenerator {
     ctx: GenerationContext,
-    trajfile: TrajFile,
+    trajectory_file: TrajectoryFile,
     swerve_transformers: HashMap<String, Vec<Box<dyn InitializedSwerveGenerationTransformer>>>,
     differential_transformers:
         HashMap<String, Vec<Box<dyn InitializedDifferentialGenerationTransformer>>>,
 }
 
-impl TrajFileGenerator {
+impl TrajectoryFileGenerator {
     /// Create a new generator
-    pub fn new(project: ProjectFile, trajfile: TrajFile, handle: i64) -> Self {
+    pub fn new(project: ProjectFile, trajectory_file: TrajectoryFile, handle: i64) -> Self {
         Self {
             ctx: GenerationContext {
                 project,
-                params: trajfile.params.snapshot(),
+                params: trajectory_file.params.snapshot(),
                 handle,
             },
-            trajfile,
+            trajectory_file,
             swerve_transformers: HashMap::new(),
             differential_transformers: HashMap::new(),
         }
@@ -130,7 +130,7 @@ impl TrajFileGenerator {
     }
 
     /// Generate the trajectory file
-    pub fn generate(self) -> ChoreoResult<TrajFile> {
+    pub fn generate(self) -> ChoreoResult<TrajectoryFile> {
         let samples: Vec<Sample> = match &self.ctx.project.r#type {
             DriveType::Swerve => self
                 .generate_swerve(self.ctx.handle)?
@@ -148,10 +148,10 @@ impl TrajFileGenerator {
 
         let counts_vec = guess_control_interval_counts(
             &self.ctx.project.config.snapshot(),
-            &self.trajfile.params.snapshot(),
+            &self.trajectory_file.params.snapshot(),
         )?;
 
-        Ok(postprocess(&samples, self.trajfile, counts_vec))
+        Ok(postprocess(&samples, self.trajectory_file, counts_vec))
     }
 }
 
@@ -212,7 +212,11 @@ impl<T: DifferentialGenerationTransformer> InitializedDifferentialGenerationTran
     }
 }
 
-fn postprocess(result: &[Sample], mut path: TrajFile, counts_vec: Vec<usize>) -> TrajFile {
+fn postprocess(
+    result: &[Sample],
+    mut path: TrajectoryFile,
+    counts_vec: Vec<usize>,
+) -> TrajectoryFile {
     println!("Postprocessing");
 
     let mut snapshot = path.params.snapshot();
@@ -253,9 +257,9 @@ fn postprocess(result: &[Sample], mut path: TrajFile, counts_vec: Vec<usize>) ->
         .filter(|a| a.0) // filter by split flag
         .map(|a| a.1) // map to associate interval
         .collect::<Vec<usize>>();
-    path.traj.splits = splits;
-    path.traj.samples = result.to_vec();
-    path.traj.waypoints = waypoint_times;
+    path.trajectory.splits = splits;
+    path.trajectory.samples = result.to_vec();
+    path.trajectory.waypoints = waypoint_times;
     path.snapshot = Some(snapshot);
     path
 }

@@ -1,6 +1,6 @@
 use trajoptlib::PathBuilder;
 
-use crate::spec::traj::{ConstraintData, ConstraintIDX, ConstraintScope};
+use crate::spec::trajectory::{ConstraintData, ConstraintIDX, ConstraintScope};
 
 use super::{DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext, SwerveGenerationTransformer};
 

@@ -515,7 +515,7 @@ impl SwervePathBuilder {
         handle: i64,
     ) -> Result<SwerveTrajectory, TrajoptError> {
         match self.path_builder.generate(diagnostics, handle) {
-            Ok(traj) => Ok(traj),
+            Ok(trajectory) => Ok(trajectory),
             Err(msg) => {
                 let what = msg.what();
                 Err(TrajoptError::from(
@@ -828,7 +828,7 @@ impl DifferentialPathBuilder {
         handle: i64,
     ) -> Result<DifferentialTrajectory, TrajoptError> {
         match self.path_builder.generate(diagnostics, handle) {
-            Ok(traj) => Ok(traj),
+            Ok(trajectory) => Ok(trajectory),
             Err(msg) => {
                 let what = msg.what();
                 Err(TrajoptError::from(
