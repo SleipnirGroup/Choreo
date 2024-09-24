@@ -1,0 +1,120 @@
+// Copyright (c) Choreo contributors
+
+#pragma once
+
+#include <functional>
+#include <string>
+#include <unordered_map>
+#include <utility>
+
+#include "choreo/Choreo.h"
+#include "choreo/auto/AutoLoop.h"
+
+namespace choreo {
+
+class AutoBindings {
+ public:
+  AutoBindings() = default;
+  AutoBindings(const AutoBindings&) = delete;
+  AutoBindings& operator=(const AutoBindings&) = delete;
+  AutoBindings(AutoBindings&&) = default;
+  AutoBindings& operator=(AutoBindings&&) = default;
+
+  AutoBindings Bind(const std::string& name, frc2::CommandPtr cmd) && {
+    bindings.emplace(name, std::move(cmd));
+    return std::move(*this);
+  }
+  void Merge(AutoBindings&& other) {
+    for (auto& [key, value] : other.bindings) {
+      bindings.emplace(std::move(key), std::move(value));
+    }
+    other.bindings.clear();
+  }
+  const std::unordered_map<std::string, frc2::CommandPtr>& GetBindings() const {
+    return bindings;
+  }
+
+ private:
+  std::unordered_map<std::string, frc2::CommandPtr> bindings;
+};
+
+template <trajectory::TrajSample SampleType>
+class AutoFactory {
+ public:
+  AutoFactory(std::function<frc::Pose2d()> poseSupplier,
+              ChoreoControllerFunction<SampleType> controller,
+              std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds,
+              std::function<bool()> mirrorTrajectory,
+              const frc2::Subsystem& driveSubsystem, AutoBindings bindings,
+              std::optional<TrajectoryLogger> trajLogger)
+      : poseSupplier(poseSupplier),
+        controller(controller),
+        outputChassisSpeeds(outputChassisSpeeds),
+        mirrorTrajectory(mirrorTrajectory),
+        driveSubsystem(driveSubsystem),
+        autoBindings(bindings),
+        trajLogger(trajLogger) {}
+  AutoLoop<SampleType> NewLoop() const { return AutoLoop<SampleType>(); }
+  AutoTrajectory<SampleType> Traj(const std::string& trajName,
+                                  AutoLoop<SampleType> loop) const {
+    std::optional<choreo::trajectory::Trajectory<SampleType>> optTraj =
+        Choreo::LoadTrajectory<SampleType>(trajName);
+    choreo::trajectory::Trajectory<SampleType> traj;
+    if (optTraj.has_value()) {
+      traj = optTraj.value();
+    } else {
+      FRC_ReportError(frc::warn::Warning, "Could not load trajectory: {}",
+                      trajName);
+    }
+    AutoTrajectory<SampleType> autoTraj{trajName,
+                                        traj,
+                                        poseSupplier,
+                                        controller,
+                                        outputChassisSpeeds,
+                                        mirrorTrajectory,
+                                        trajLogger,
+                                        driveSubsystem,
+                                        loop.GetLoop(),
+                                        autoBindings,
+                                        loop.OnNewTrajectory};
+    loop.AddTrajectory(autoTraj);
+    return autoTraj;
+  }
+  AutoTrajectory<SampleType> Traj(const std::string& trajName, int splitIndex,
+                                  AutoLoop<SampleType> loop) const {
+    std::optional<choreo::trajectory::Trajectory<SampleType>> optTraj =
+        Choreo::LoadTrajectory<SampleType>(trajName);
+    choreo::trajectory::Trajectory<SampleType> traj;
+    if (optTraj.has_value()) {
+      traj = optTraj.value();
+    } else {
+      FRC_ReportError(frc::warn::Warning, "Could not load trajectory: {}",
+                      trajName);
+    }
+    return Traj(traj, loop);
+  }
+  AutoTrajectory<SampleType> Traj(
+      choreo::trajectory::Trajectory<SampleType> trajectory,
+      AutoLoop<SampleType> loop) const {
+    AutoTrajectory<SampleType> autoTraj{
+        trajectory.name, trajectory,          poseSupplier,
+        controller,      outputChassisSpeeds, mirrorTrajectory,
+        trajLogger,      driveSubsystem,      loop.GetLoop(),
+        autoBindings,    loop.OnNewTrajectory};
+    loop.AddTrajectory(autoTraj);
+    return autoTraj;
+  }
+  void Bind(const std::string& name, frc2::CommandPtr cmd) {
+    autoBindings = std::move(autoBindings).Bind(name, cmd);
+  }
+
+ private:
+  std::function<frc::Pose2d()> poseSupplier;
+  ChoreoControllerFunction<SampleType> controller;
+  std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds;
+  std::function<bool()> mirrorTrajectory;
+  const frc2::Subsystem& driveSubsystem;
+  AutoBindings autoBindings{};
+  std::optional<TrajectoryLogger> trajLogger;
+};
+}  // namespace choreo

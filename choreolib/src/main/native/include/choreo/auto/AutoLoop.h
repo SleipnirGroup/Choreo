@@ -1,0 +1,77 @@
+// Copyright (c) Choreo contributors
+
+#pragma once
+
+#include <functional>
+#include <vector>
+
+#include "choreo/auto/AutoTrajectory.h"
+
+namespace choreo {
+template <trajectory::TrajSample SampleType>
+class AutoLoop {
+ public:
+  AutoLoop() {}
+  explicit AutoLoop(frc::EventLoop loop) : loop(loop) {}
+  void Poll() {
+    if (!frc::DriverStation::IsAutonomousEnabled() || isKilled) {
+      isActive = false;
+      return;
+    }
+    loop.Poll();
+    isActive = true;
+  }
+  frc::EventLoop* GetLoop() { return &loop; }
+  void Reset() {
+    isActive = false;
+    OnNewTrajectory();
+  }
+  void Kill() {
+    frc2::CommandScheduler::GetInstance().CancelAll();
+    if (isKilled) {
+      return;
+    }
+    Reset();
+    FRC_ReportError(frc::warn::Warning, "Killed an Auto Loop");
+    isKilled = true;
+  }
+  frc2::CommandPtr Cmd() {
+    return frc2::cmd::Run([this] { Poll(); })
+        .FinallyDo([this] { Reset(); })
+        .Until([this] { return !frc::DriverStation::IsAutonomousEnabled(); })
+        .WithName("ChoreoAutoLoop");
+  }
+  frc2::CommandPtr Cmd(std::function<bool()> finishCondition) {
+    return frc2::cmd::Run([this] { Poll(); })
+        .FinallyDo([this] { Reset(); })
+        .Until([this, finishCondition] {
+          return !frc::DriverStation::IsAutonomousEnabled() ||
+                 finishCondition();
+        })
+        .WithName("ChoreoAutoLoop");
+  }
+
+ private:
+  void OnNewTrajectory() {
+    for (AutoTrajectory<SampleType> traj : trajectories) {
+      traj.OnNewTrajectory();
+    }
+  }
+
+  frc2::Trigger Enabled() {
+    return frc2::Trigger{loop, [this] {
+                           return isActive &&
+                                  frc::DriverStation::IsAutonomousEnabled();
+                         }};
+  }
+
+  void AddTrajectory(AutoTrajectory<SampleType> traj) {
+    trajectories.add(traj);
+  }
+
+  std::vector<AutoTrajectory<SampleType>> trajectories;
+  frc::EventLoop loop;
+  bool isActive{false};
+  bool isKilled{false};
+};
+}  // namespace choreo
