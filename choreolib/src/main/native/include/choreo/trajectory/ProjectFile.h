@@ -16,11 +16,12 @@ namespace choreo {
 class Expression {
  public:
   Expression() = default;
-  Expression(const std::string& exp, double val) : std::exp(exp), val(val) {}
-  std::string exp;
+  Expression(const std::string& expression, double val)
+      : expression(expression), val(val) {}
+  std::string expression;
   double val;
   bool operator==(const Expression& other) const {
-    return exp == other.exp && almost_equal(val, other.val);
+    return expression == other.expression && almost_equal(val, other.val);
   }
 };
 
