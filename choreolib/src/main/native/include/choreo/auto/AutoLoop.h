@@ -21,11 +21,14 @@ class AutoLoop {
     loop.Poll();
     isActive = true;
   }
+
   frc::EventLoop* GetLoop() { return &loop; }
+
   void Reset() {
     isActive = false;
     OnNewTrajectory();
   }
+
   void Kill() {
     frc2::CommandScheduler::GetInstance().CancelAll();
     if (isKilled) {
@@ -35,12 +38,14 @@ class AutoLoop {
     FRC_ReportError(frc::warn::Warning, "Killed an Auto Loop");
     isKilled = true;
   }
+
   frc2::CommandPtr Cmd() {
     return frc2::cmd::Run([this] { Poll(); })
         .FinallyDo([this] { Reset(); })
         .Until([this] { return !frc::DriverStation::IsAutonomousEnabled(); })
         .WithName("ChoreoAutoLoop");
   }
+
   frc2::CommandPtr Cmd(std::function<bool()> finishCondition) {
     return frc2::cmd::Run([this] { Poll(); })
         .FinallyDo([this] { Reset(); })

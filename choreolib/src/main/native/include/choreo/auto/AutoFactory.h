@@ -24,12 +24,14 @@ class AutoBindings {
     bindings.emplace(name, std::move(cmd));
     return std::move(*this);
   }
+
   void Merge(AutoBindings&& other) {
     for (auto& [key, value] : other.bindings) {
       bindings.emplace(std::move(key), std::move(value));
     }
     other.bindings.clear();
   }
+
   const std::unordered_map<std::string, frc2::CommandPtr>& GetBindings() const {
     return bindings;
   }
@@ -54,7 +56,9 @@ class AutoFactory {
         driveSubsystem(driveSubsystem),
         autoBindings(bindings),
         trajLogger(trajLogger) {}
+
   AutoLoop<SampleType> NewLoop() const { return AutoLoop<SampleType>(); }
+
   AutoTrajectory<SampleType> Trajectory(const std::string& trajName,
                                         AutoLoop<SampleType> loop) const {
     std::optional<choreo::Trajectory<SampleType>> optTraj =
@@ -74,6 +78,7 @@ class AutoFactory {
     loop.AddTrajectory(autoTraj);
     return autoTraj;
   }
+
   AutoTrajectory<SampleType> Trajectory(const std::string& trajName,
                                         int splitIndex,
                                         AutoLoop<SampleType> loop) const {
@@ -88,6 +93,7 @@ class AutoFactory {
     }
     return Trajectory(trajectory, loop);
   }
+
   AutoTrajectory<SampleType> Trajectory(
       choreo::Trajectory<SampleType> trajectory,
       AutoLoop<SampleType> loop) const {
@@ -99,6 +105,7 @@ class AutoFactory {
     loop.AddTrajectory(autoTraj);
     return autoTraj;
   }
+
   void Bind(const std::string& name, frc2::CommandPtr cmd) {
     autoBindings = std::move(autoBindings).Bind(name, cmd);
   }

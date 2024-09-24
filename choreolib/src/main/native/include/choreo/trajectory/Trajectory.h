@@ -24,18 +24,21 @@ class Trajectory {
              const std::vector<int>& splits,
              const std::vector<EventMarker>& events)
       : name{name}, samples{samples}, splits{splits}, events{events} {}
+
   std::optional<SampleType> GetInitialState() {
     if (samples.size() == 0) {
       return {};
     }
     return samples[0];
   }
+
   std::optional<SampleType> GetFinalSample() {
     if (samples.size() == 0) {
       return {};
     }
     return samples[samples.size() - 1];
   }
+
   template <int Year>
   std::optional<SampleType> SampleAt(units::second_t timestamp,
                                      bool mirrorForRedAlliance = false) {
@@ -54,6 +57,7 @@ class Trajectory {
       return {};
     }
   }
+
   template <int Year>
   std::optional<frc::Pose2d> GetInitialPose(bool mirrorForRedAlliance) {
     if (samples.size() == 0) {
@@ -64,6 +68,7 @@ class Trajectory {
     }
     return samples[0].GetPose();
   }
+
   template <int Year>
   std::optional<frc::Pose2d> GetFinalPose(bool mirrorForRedAlliance) {
     if (samples.size() == 0) {
@@ -74,12 +79,14 @@ class Trajectory {
     }
     return samples[samples.size() - 1].GetPose();
   }
+
   units::second_t GetTotalTime() {
     if (samples.size() == 0) {
       return 0_s;
     }
     return samples[samples.size() - 1].GetTimestamp();
   }
+
   std::vector<frc::Pose2d> GetPoses() {
     std::vector<frc::Pose2d> poses;
     for (const auto& sample : samples) {
@@ -87,6 +94,7 @@ class Trajectory {
     }
     return poses;
   }
+
   template <int Year>
   Trajectory<SampleType> Flipped() {
     std::vector<SampleType> flippedStates;
@@ -95,6 +103,7 @@ class Trajectory {
     }
     return Trajectory<SampleType>(name, flippedStates, splits, events);
   }
+
   std::vector<EventMarker> GetEvents(const std::string& eventName) {
     std::vector<EventMarker> matchingEvents;
     for (const auto& event : events) {
@@ -104,6 +113,7 @@ class Trajectory {
     }
     return matchingEvents;
   }
+
   std::optional<Trajectory<SampleType>> GetSplit(int splitIndex) const {
     if (splitIndex < 0 || splitIndex >= splits.size()) {
       return std::nullopt;

@@ -41,6 +41,10 @@ class DifferentialSample {
   units::second_t GetTimestamp() const;
   frc::Pose2d GetPose() const;
   frc::ChassisSpeeds GetChassisSpeeds() const;
+  DifferentialSample OffsetBy(units::second_t timeStampOffset) const;
+  DifferentialSample Interpolate(const DifferentialSample& endValue,
+                                 units::second_t t) const;
+
   template <int Year>
   DifferentialSample Flipped() const {
     static constexpr auto flipper = choreo::util::GetFlipperForYear<Year>();
@@ -54,9 +58,6 @@ class DifferentialSample {
                                 fr, fl);
     }
   }
-  DifferentialSample OffsetBy(units::second_t timeStampOffset) const;
-  DifferentialSample Interpolate(const DifferentialSample& endValue,
-                                 units::second_t t) const;
 
   units::second_t timestamp{0_s};
   units::meter_t x{0_m};

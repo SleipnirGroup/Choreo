@@ -54,6 +54,7 @@ class AutoTrajectory {
         loop(loop),
         newTrajCallback(newTrajCallback),
         offTrigger(loop, [] { return false; }) {}
+
   frc2::CommandPtr Cmd() const {
     if (trajectory.samples.size() == 0) {
       return frc2::cmd::RunOnce([] {
@@ -68,6 +69,7 @@ class AutoTrajectory {
                [this] { return CmdIsFinished(); }, {driveSubsystem})
         .WithName("Trajectory_" + name);
   }
+
   std::optional<frc::Pose2d> GetInitialPose() const {
     if (trajectory.samples.size() == 0) {
       return {};
@@ -75,6 +77,7 @@ class AutoTrajectory {
       return trajectory.GetInitialPose(mirrorTrajectory());
     }
   }
+
   std::optional<frc::Pose2d> GetFinalPose() const {
     if (trajectory.samples.size() == 0) {
       return {};
@@ -82,13 +85,17 @@ class AutoTrajectory {
       return trajectory.GetFinalPose(mirrorTrajectory());
     }
   }
+
   frc2::Trigger Active() {
     return frc2::Trigger(loop, [this] { return isActive; });
   }
+
   frc2::Trigger Inactive() { return Active().Negate(); }
+
   frc2::Trigger Done() {
     return frc2::Trigger(loop, [this] { return isDone; });
   }
+
   frc2::Trigger AtTime(units::second_t timeSinceStart) {
     if (timeSinceStart < 0_s) {
       FRC_ReportError(frc::warn::Warning,
@@ -113,6 +120,7 @@ class AutoTrajectory {
           return shouldTrigger;
         });
   }
+
   frc2::Trigger AtTime(const std::string& eventName) {
     bool foundEvent = false;
     frc2::Trigger trig = offTrigger;
@@ -129,6 +137,7 @@ class AutoTrajectory {
 
     return trig;
   }
+
   frc2::Trigger AtPose(const std::string& eventName,
                        units::meter_t tolerance = DEFAULT_TOLERANCE) {
     bool foundEvent = false;
@@ -149,6 +158,7 @@ class AutoTrajectory {
 
     return trig;
   }
+
   frc2::Trigger AtTimeAndPlace(const std::string& eventName,
                                units::meter_t tolerance = DEFAULT_TOLERANCE) {
     return frc2::Trigger{AtTime(eventName) && AtPose(eventName, tolerance)};
@@ -159,13 +169,17 @@ class AutoTrajectory {
     isDone = false;
     isActive = false;
   }
+
   units::second_t TimeIntoTraj() { return timer.Get() + timeOffset; }
+
   units::second_t TotalTime() { return trajectory.GetTotalTime(); }
+
   void LogTrajectory(bool starting) {
     if (trajLogger.has_value()) {
       trajLogger.value()(trajectory.GetPoses(), starting);
     }
   }
+
   void CmdInitiazlize() {
     newTrajCallback();
     timer.Restart();
@@ -174,6 +188,7 @@ class AutoTrajectory {
     timeOffset = 0.0;
     LogTrajectory(true);
   }
+
   void CmdExecute() {
     SampleType sample =
         trajectory.SampleAt<Year>(TimeIntoTraj(), mirrorTrajectory());
@@ -181,6 +196,7 @@ class AutoTrajectory {
     chassisSpeeds = controller(poseSupplier(), sample);
     outputChassisSpeeds(chassisSpeeds);
   }
+
   void CmdEnd(bool interrupted) {
     timer.Stop();
     if (interrupted) {
@@ -192,6 +208,7 @@ class AutoTrajectory {
     isActive = false;
     LogTrajectory(false);
   }
+
   bool CmdIsFinished() { return TimeIntoTraj() > TotalTime(); }
 
   frc2::Trigger AtPose(frc::Pose2d pose, units::meter_t tolerance) {
