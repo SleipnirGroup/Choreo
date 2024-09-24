@@ -321,18 +321,18 @@ impl From<SwerveTrajectorySample> for Sample {
 }
 
 impl From<&DifferentialTrajectorySample> for Sample {
-    fn from(diff_sample: &DifferentialTrajectorySample) -> Self {
+    fn from(differential_sample: &DifferentialTrajectorySample) -> Self {
         Sample::DifferentialDrive {
-            t: nudge_zero(diff_sample.timestamp),
-            x: nudge_zero(diff_sample.x),
-            y: nudge_zero(diff_sample.y),
-            heading: nudge_zero(diff_sample.heading),
-            vl: nudge_zero(diff_sample.velocity_l),
-            vr: nudge_zero(diff_sample.velocity_r),
-            al: nudge_zero(diff_sample.acceleration_l),
-            ar: nudge_zero(diff_sample.acceleration_r),
-            fl: nudge_zero(diff_sample.force_l),
-            fr: nudge_zero(diff_sample.force_r),
+            t: nudge_zero(differential_sample.timestamp),
+            x: nudge_zero(differential_sample.x),
+            y: nudge_zero(differential_sample.y),
+            heading: nudge_zero(differential_sample.heading),
+            vl: nudge_zero(differential_sample.velocity_l),
+            vr: nudge_zero(differential_sample.velocity_r),
+            al: nudge_zero(differential_sample.acceleration_l),
+            ar: nudge_zero(differential_sample.acceleration_r),
+            fl: nudge_zero(differential_sample.force_l),
+            fr: nudge_zero(differential_sample.force_r),
         }
     }
 }

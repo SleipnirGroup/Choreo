@@ -52,7 +52,7 @@ export interface RobotConfig<T extends ExprOrNumber> {
   /// motor N*m
   tmax: T; // N*m
   bumper: Bumper<T>;
-  diffTrackWidth: T;
+  differentialTrackWidth: T;
 }
 
 export interface Project {
@@ -112,7 +112,7 @@ export interface DifferentialSample {
 }
 
 export interface ProgressUpdate {
-  type: "swerveTraj" | "diffTraj";
+  type: "swerveTraj" | "differentialTraj";
   update: SwerveSample[] | DifferentialSample[] | string;
 }
 

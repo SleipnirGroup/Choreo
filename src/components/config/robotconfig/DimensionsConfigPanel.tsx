@@ -98,7 +98,7 @@ class RobotConfigPanel extends Component<Props, State> {
             title="Trackwidth"
             enabled={true}
             roundingPrecision={3}
-            number={config.diffTrackWidth}
+            number={config.differentialTrackWidth}
             maxWidthCharacters={8}
             titleTooltip="Distance between wheel sides"
           />

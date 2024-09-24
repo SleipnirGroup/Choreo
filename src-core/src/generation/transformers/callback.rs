@@ -22,7 +22,7 @@ fn swerve_status_callback(traj: SwerveTrajectory, handle: i64) {
     };
 }
 
-fn diff_status_callback(traj: DifferentialTrajectory, handle: i64) {
+fn differential_status_callback(traj: DifferentialTrajectory, handle: i64) {
     let tx_opt = PROGRESS_SENDER_LOCK.get();
     if let Some(tx) = tx_opt {
         tx.send(LocalProgressUpdate::from(traj).handled(handle))
@@ -44,6 +44,6 @@ impl DifferentialGenerationTransformer for CallbackSetter {
         Self::initialize(context)
     }
     fn transform(&self, builder: &mut trajoptlib::DifferentialPathBuilder) {
-        builder.add_progress_callback(diff_status_callback);
+        builder.add_progress_callback(differential_status_callback);
     }
 }
