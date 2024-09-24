@@ -8,8 +8,8 @@ import choreo.Choreo.ControlFunction;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.ext.TriggerExt;
 import choreo.trajectory.SwerveSample;
-import choreo.trajectory.TrajectorySample;
 import choreo.trajectory.Trajectory;
+import choreo.trajectory.TrajectorySample;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -160,7 +160,8 @@ public class AutoFactory {
     this.mirrorTrajectory = mirrorTrajectory;
     this.driveSubsystem = driveSubsystem;
     this.bindings.merge(bindings);
-    this.trajLogger = trajLogger.map(logger -> (TrajectoryLogger<? extends TrajectorySample<?>>) logger);
+    this.trajLogger =
+        trajLogger.map(logger -> (TrajectoryLogger<? extends TrajectorySample<?>>) logger);
   }
 
   /**

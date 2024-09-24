@@ -59,7 +59,7 @@ public class ProjectFile {
   public static class Config {
     /** The position of the front left module */
     public final XYExpression frontLeft;
-    
+
     /** The position of the back left module */
     public final XYExpression backLeft;
 

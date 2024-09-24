@@ -174,7 +174,7 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
               -this.alpha,
               // FL, BL, BR, FR
               // Flipped
-              // -FR, -BR, -BL, -FR 
+              // -FR, -BR, -BL, -FR
               new double[] {
                 -this.moduleForcesX[3],
                 -this.moduleForcesX[2],
@@ -183,7 +183,7 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
               },
               // FL, BL, BR, FR
               // Flipped
-              // FR, BR, BL, FR 
+              // FR, BR, BL, FR
               new double[] {
                 this.moduleForcesY[3],
                 this.moduleForcesY[2],
