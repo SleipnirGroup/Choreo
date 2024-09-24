@@ -178,9 +178,9 @@ class Trajectory {
   }
 };
 
-void to_json(wpi::json& json, const Trajectory<SwerveSample>& traj);
-void from_json(const wpi::json& json, Trajectory<SwerveSample>& traj);
+void to_json(wpi::json& json, const Trajectory<SwerveSample>& trajectory);
+void from_json(const wpi::json& json, Trajectory<SwerveSample>& trajectory);
 
-void to_json(wpi::json& json, const Trajectory<DifferentialSample>& traj);
-void from_json(const wpi::json& json, Trajectory<DifferentialSample>& traj);
+void to_json(wpi::json& json, const Trajectory<DifferentialSample>& trajectory);
+void from_json(const wpi::json& json, Trajectory<DifferentialSample>& trajectory);
 }  // namespace choreo

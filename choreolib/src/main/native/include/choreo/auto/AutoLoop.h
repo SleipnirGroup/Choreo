@@ -53,8 +53,8 @@ class AutoLoop {
 
  private:
   void OnNewTrajectory() {
-    for (AutoTrajectory<SampleType> traj : trajectories) {
-      traj.OnNewTrajectory();
+    for (AutoTrajectory<SampleType> trajectory : trajectories) {
+      trajectory.OnNewTrajectory();
     }
   }
 
@@ -65,8 +65,8 @@ class AutoLoop {
                          }};
   }
 
-  void AddTrajectory(AutoTrajectory<SampleType> traj) {
-    trajectories.add(traj);
+  void AddTrajectory(AutoTrajectory<SampleType> trajectory) {
+    trajectories.add(trajectory);
   }
 
   std::vector<AutoTrajectory<SampleType>> trajectories;

@@ -55,19 +55,19 @@ class AutoFactory {
         autoBindings(bindings),
         trajLogger(trajLogger) {}
   AutoLoop<SampleType> NewLoop() const { return AutoLoop<SampleType>(); }
-  AutoTrajectory<SampleType> Traj(const std::string& trajName,
+  AutoTrajectory<SampleType> Trajectory(const std::string& trajName,
                                   AutoLoop<SampleType> loop) const {
     std::optional<choreo::Trajectory<SampleType>> optTraj =
         Choreo::LoadTrajectory<SampleType>(trajName);
-    choreo::Trajectory<SampleType> traj;
+    choreo::Trajectory<SampleType> trajectory;
     if (optTraj.has_value()) {
-      traj = optTraj.value();
+      trajectory = optTraj.value();
     } else {
       FRC_ReportError(frc::warn::Warning, "Could not load trajectory: {}",
                       trajName);
     }
     AutoTrajectory<SampleType> autoTraj{trajName,
-                                        traj,
+                                        trajectory,
                                         poseSupplier,
                                         controller,
                                         outputChassisSpeeds,
@@ -80,20 +80,20 @@ class AutoFactory {
     loop.AddTrajectory(autoTraj);
     return autoTraj;
   }
-  AutoTrajectory<SampleType> Traj(const std::string& trajName, int splitIndex,
+  AutoTrajectory<SampleType> Trajectory(const std::string& trajName, int splitIndex,
                                   AutoLoop<SampleType> loop) const {
     std::optional<choreo::Trajectory<SampleType>> optTraj =
         Choreo::LoadTrajectory<SampleType>(trajName);
-    choreo::Trajectory<SampleType> traj;
+    choreo::Trajectory<SampleType> trajectory;
     if (optTraj.has_value()) {
-      traj = optTraj.value();
+      trajectory = optTraj.value();
     } else {
       FRC_ReportError(frc::warn::Warning, "Could not load trajectory: {}",
                       trajName);
     }
-    return Traj(traj, loop);
+    return Trajectory(trajectory, loop);
   }
-  AutoTrajectory<SampleType> Traj(
+  AutoTrajectory<SampleType> Trajectory(
       choreo::Trajectory<SampleType> trajectory,
       AutoLoop<SampleType> loop) const {
     AutoTrajectory<SampleType> autoTraj{

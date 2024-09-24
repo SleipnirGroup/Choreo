@@ -99,9 +99,9 @@ class Choreo {
   static std::optional<choreo::Trajectory<SampleType>>
   LoadTrajectoryString(const std::string& trajJsonString) {
     wpi::json json = wpi::json::parse(trajJsonString);
-    choreo::Trajectory<SampleType> traj;
-    choreo::from_json(json, traj);
-    return traj;
+    choreo::Trajectory<SampleType> trajectory;
+    choreo::from_json(json, trajectory);
+    return trajectory;
   }
 
   static std::string_view GetChoreoDir() { return CHOREO_DIR; }

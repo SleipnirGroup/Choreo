@@ -53,12 +53,11 @@ constexpr Map flipperMap{std::array{
 
 template <int Year>
 constexpr auto GetFlipperForYear() {
-  static_assert(Year != Year, "Year is: ");  // This should always fail and print the Year
+  static_assert(Year != Year, "Year is: ");
 
-  // Check if Year is in the flipperMap
-  constexpr bool yearInMap = []() {
+  constexpr bool yearInMap = [] {
     try {
-      (void)flipperMap.at(Year);  // attempt to access the year
+      [[maybe_unused]]flipperMap.at(Year);
       return true;
     } catch (...) {
       return false;
