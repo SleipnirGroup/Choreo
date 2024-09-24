@@ -38,13 +38,13 @@ from choreo.trajectory import SwerveSample
 ### Importing
 
 ```java
-import choreo.trajectory.DiffySample;
+import choreo.trajectory.DifferentialSample;
 ```
 ```python
-from choreo.trajectory import DiffySample
+from choreo.trajectory import DifferentialSample
 ```
 ```cpp
-#include <choreo/trajectory/DiffySample.h>
+#include <choreo/trajectory/DifferentialSample.h>
 ```
 
 ### Fields
