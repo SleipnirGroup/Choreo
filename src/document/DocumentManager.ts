@@ -686,7 +686,7 @@ export async function renamePath(uuid: string, newName: string) {
     if (traj) {
       tracing.debug("renamePath", uuid, "to", newName);
       await Commands.renameTraj(traj.serialize, newName)
-        .then(() => doc.pathlist.paths.get(uuid)?.setName(newName))
+        .finally(() => doc.pathlist.paths.get(uuid)?.setName(newName))
         .catch(tracing.error);
     }
   } else {
