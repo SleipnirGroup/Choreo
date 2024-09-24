@@ -6,6 +6,7 @@ import ExpressionInput from "../input/ExpressionInput";
 import ExpressionInputList from "../input/ExpressionInputList";
 import ScopeSlider from "./ScopeSlider";
 import styles from "./WaypointConfigPanel.module.css";
+import { isExpr } from "../../document/2025/DocumentTypes";
 
 type Props = { constraint: IConstraintStore };
 
@@ -68,7 +69,7 @@ class ConstraintsConfigPanel extends Component<Props, State> {
             const [key, propdef] = entry;
             const setterName =
               "set" + key.charAt(0).toUpperCase() + key.slice(1);
-            if (Array.isArray(propdef.defaultVal)) {
+            if (isExpr(propdef.defaultVal)) {
               return (
                 <ExpressionInput
                   key={key}

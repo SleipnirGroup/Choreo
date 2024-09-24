@@ -247,7 +247,6 @@ export const doc = DocumentStore.create(
     ),
     type: "Swerve",
     pathlist: {},
-    splitTrajectoriesAtStopPoints: false,
     name: "Untitled",
     //@ts-expect-error this is recommended, not sure why it doesn't work
     variables: castToReferenceSnapshot(variables),
@@ -687,7 +686,7 @@ export async function renamePath(uuid: string, newName: string) {
     if (traj) {
       tracing.debug("renamePath", uuid, "to", newName);
       await Commands.renameTraj(traj.serialize, newName)
-        .then(() => doc.pathlist.paths.get(uuid)?.setName(newName))
+        .finally(() => doc.pathlist.paths.get(uuid)?.setName(newName))
         .catch(tracing.error);
     }
   } else {

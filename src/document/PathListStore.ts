@@ -124,10 +124,10 @@ export const PathListStore = types
                 "first",
                 "last",
                 {
-                  x: ["0 m", 0.0],
-                  y: ["0 m", 0.0],
-                  w: ["16.54 m", 16.54],
-                  h: ["8.21 m", 8.21]
+                  x: { exp: "0 m", val: 0.0 },
+                  y: { exp: "0 m", val: 0.0 },
+                  w: { exp: "16.54 m", val: 16.54 },
+                  h: { exp: "8.21 m", val: 8.21 }
                 }
               );
             }

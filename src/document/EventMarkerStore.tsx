@@ -114,7 +114,7 @@ export const CommandStore = types
       const newCommand = getEnv<Env>(self).create.CommandStore({
         type: "named",
         data: {
-          waitTime: ["0 s", 0] as Expr,
+          waitTime: { exp: "0 s", val: 0 } as Expr,
           name: "",
           commands: []
         }

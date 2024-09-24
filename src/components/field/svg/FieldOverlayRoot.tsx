@@ -418,9 +418,9 @@ class FieldOverlayRoot extends Component<Props, State> {
       if (waypointType == NavbarLabels.EmptyWaypoint) {
         initial.fixTranslation = false;
       }
-      initial.x = [`${coords.x} m`, coords.x];
-      initial.y = [`${coords.y} m`, coords.y];
-      initial.heading = [`0 deg`, 0];
+      initial.x = { exp: `${coords.x} m`, val: coords.x };
+      initial.y = { exp: `${coords.y} m`, val: coords.y };
+      initial.heading = { exp: `0 deg`, val: 0 };
       const newPoint = doc.pathlist.activePath.params.addWaypoint(initial);
       newPoint.setSelected(true);
     });

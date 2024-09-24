@@ -14,32 +14,35 @@ const DEFAULT_WHEELBASE = DEFAULT_FRAME_SIZE - 2 * InToM(2.625); //SDS Mk4i cont
 const halfBumper = MToIn(DEFAULT_BUMPER / 2);
 const halfWheelbase = MToIn(DEFAULT_WHEELBASE / 2);
 export const EXPR_DEFAULTS: RobotConfig<Expr> = {
-  mass: ["150 lbs", LbsToKg(150)],
-  inertia: ["6 kg*m^2", 6],
-  vmax: [
-    `${(MotorCurves.KrakenX60.vmax * 0.8 * 60) / (2 * Math.PI)} rpm`,
-    MotorCurves.KrakenX60.vmax * 0.8
-  ],
-  tmax: [
-    `${maxTorqueCurrentLimited(MotorCurves.KrakenX60.kt, 60)} N*m`,
-    maxTorqueCurrentLimited(MotorCurves.KrakenX60.kt, 60)
-  ],
-  gearing: ["6.75", 6.75], // SDS L2 mk4/mk4i
-  radius: ["2 in", InToM(2)],
+  mass: { exp: "150 lbs", val: LbsToKg(150) },
+  inertia: { exp: "6 kg*m^2", val: 6 },
+  vmax: {
+    exp: `${(MotorCurves.KrakenX60.vmax * 0.8 * 60) / (2 * Math.PI)} rpm`,
+    val: MotorCurves.KrakenX60.vmax * 0.8
+  },
+  tmax: {
+    exp: `${maxTorqueCurrentLimited(MotorCurves.KrakenX60.kt, 60)} N*m`,
+    val: maxTorqueCurrentLimited(MotorCurves.KrakenX60.kt, 60)
+  },
+  gearing: { exp: "6.75", val: 6.75 }, // SDS L2 mk4/mk4i
+  radius: { exp: "2 in", val: InToM(2) },
   bumper: {
-    front: [`${halfBumper} in`, DEFAULT_BUMPER / 2],
-    side: [`${halfBumper} in`, DEFAULT_BUMPER / 2],
-    back: [`${halfBumper} in`, DEFAULT_BUMPER / 2]
+    front: { exp: `${halfBumper} in`, val: DEFAULT_BUMPER / 2 },
+    side: { exp: `${halfBumper} in`, val: DEFAULT_BUMPER / 2 },
+    back: { exp: `${halfBumper} in`, val: DEFAULT_BUMPER / 2 }
   },
   frontLeft: {
-    x: [`${halfWheelbase} in`, DEFAULT_WHEELBASE / 2],
-    y: [`${halfWheelbase} in`, DEFAULT_WHEELBASE / 2]
+    x: { exp: `${halfWheelbase} in`, val: DEFAULT_WHEELBASE / 2 },
+    y: { exp: `${halfWheelbase} in`, val: DEFAULT_WHEELBASE / 2 }
   },
   backLeft: {
-    x: [`${-halfWheelbase} in`, -DEFAULT_WHEELBASE / 2],
-    y: [`${halfWheelbase} in`, DEFAULT_WHEELBASE / 2]
+    x: { exp: `${-halfWheelbase} in`, val: -DEFAULT_WHEELBASE / 2 },
+    y: { exp: `${halfWheelbase} in`, val: DEFAULT_WHEELBASE / 2 }
   },
-  diffTrackWidth: [`${MToIn(DEFAULT_WHEELBASE)} in`, DEFAULT_WHEELBASE]
+  diffTrackWidth: {
+    exp: `${MToIn(DEFAULT_WHEELBASE)} in`,
+    val: DEFAULT_WHEELBASE
+  }
 };
 
 export const BumperStore = types
