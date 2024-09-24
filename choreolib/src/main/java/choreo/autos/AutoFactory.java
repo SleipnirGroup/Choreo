@@ -8,7 +8,7 @@ import choreo.Choreo.ControlFunction;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.ext.TriggerExt;
 import choreo.trajectory.SwerveSample;
-import choreo.trajectory.TrajSample;
+import choreo.trajectory.TrajectorySample;
 import choreo.trajectory.Trajectory;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -126,12 +126,12 @@ public class AutoFactory {
 
   private final ChoreoTrajCache trajCache = new ChoreoTrajCache();
   private final Supplier<Pose2d> poseSupplier;
-  private final ControlFunction<? extends TrajSample<?>> controller;
+  private final ControlFunction<? extends TrajectorySample<?>> controller;
   private final Consumer<ChassisSpeeds> outputChassisSpeeds;
   private final BooleanSupplier mirrorTrajectory;
   private final Subsystem driveSubsystem;
   private final ChoreoAutoBindings bindings = new ChoreoAutoBindings();
-  private final Optional<TrajectoryLogger<? extends TrajSample<?>>> trajLogger;
+  private final Optional<TrajectoryLogger<? extends TrajectorySample<?>>> trajLogger;
 
   /**
    * Its reccomended to use the {@link Choreo#createAutoFactory} to create a new instance of this
@@ -146,7 +146,7 @@ public class AutoFactory {
    * @param bindings {@link Choreo#createAutoFactory}
    * @param trajLogger {@link Choreo#createAutoFactory}
    */
-  public <SampleType extends TrajSample<SampleType>> AutoFactory(
+  public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
       Supplier<Pose2d> poseSupplier,
       ControlFunction<SampleType> controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
@@ -160,7 +160,7 @@ public class AutoFactory {
     this.mirrorTrajectory = mirrorTrajectory;
     this.driveSubsystem = driveSubsystem;
     this.bindings.merge(bindings);
-    this.trajLogger = trajLogger.map(logger -> (TrajectoryLogger<? extends TrajSample<?>>) logger);
+    this.trajLogger = trajLogger.map(logger -> (TrajectoryLogger<? extends TrajectorySample<?>>) logger);
   }
 
   /**
@@ -235,7 +235,7 @@ public class AutoFactory {
    * @return A new auto trajectory.
    */
   @SuppressWarnings("unchecked")
-  public <SampleType extends TrajSample<SampleType>> AutoTrajectory traj(
+  public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory traj(
       Trajectory<SampleType> trajectory, AutoLoop loop) {
     // type solidify everything
     final Trajectory<SampleType> solidTrajectory = trajectory;
@@ -308,7 +308,7 @@ public class AutoFactory {
    * @param trajectory The trajectory to use.
    * @return A new auto trajectory.
    */
-  public <SampleType extends TrajSample<SampleType>> Command trajCommand(
+  public <SampleType extends TrajectorySample<SampleType>> Command trajCommand(
       Trajectory<SampleType> trajectory) {
     return traj(trajectory, VOID_LOOP).cmd();
   }

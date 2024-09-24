@@ -12,7 +12,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 /** A single robot sample in a ChoreoTrajectory. */
-public class SwerveSample implements TrajSample<SwerveSample> {
+public class SwerveSample implements TrajectorySample<SwerveSample> {
   /** The timestamp of this sample, relative to the beginning of the trajectory. */
   public final double timestamp;
 
@@ -172,8 +172,24 @@ public class SwerveSample implements TrajSample<SwerveSample> {
               -this.ax,
               this.ay,
               -this.alpha,
-              Arrays.stream(this.moduleForcesX).map(x -> -x).toArray(),
-              this.moduleForcesY);
+              // FL, BL, BR, FR
+              // Flipped
+              // -FR, -BR, -BL, -FR 
+              new double[] {
+                -this.moduleForcesX[3],
+                -this.moduleForcesX[2],
+                -this.moduleForcesX[1],
+                -this.moduleForcesX[0]
+              },
+              // FL, BL, BR, FR
+              // Flipped
+              // FR, BR, BL, FR 
+              new double[] {
+                this.moduleForcesY[3],
+                this.moduleForcesY[2],
+                this.moduleForcesY[1],
+                this.moduleForcesY[0]
+              });
       case ROTATE_AROUND ->
           new SwerveSample(
               this.timestamp,

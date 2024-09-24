@@ -45,24 +45,23 @@ public class ProjectFile {
     /** The back bumper expression. */
     public final Expression back;
 
-    /** The left bumper expression. */
-    public final Expression left;
+    /** The side bumper expression. */
+    public final Expression side;
 
-    /** The right bumper expression. */
-    public final Expression right;
-
-    Bumpers(Expression front, Expression back, Expression left, Expression right) {
+    Bumpers(Expression front, Expression back, Expression side) {
       this.front = front;
       this.back = back;
-      this.left = left;
-      this.right = right;
+      this.side = side;
     }
   }
 
   /** The user configuration of the project. */
   public static class Config {
-    /** The positions of the modules. */
-    public final List<XYExpression> modules;
+    /** The position of the front left module */
+    public final XYExpression frontLeft;
+    
+    /** The position of the back left module */
+    public final XYExpression backLeft;
 
     /** The mass of the robot. (kg) */
     public final Expression mass;
@@ -89,7 +88,8 @@ public class ProjectFile {
     public final Expression diffTrackWidth;
 
     Config(
-        List<XYExpression> modules,
+        XYExpression frontLeft,
+        XYExpression backLeft,
         Expression mass,
         Expression inertia,
         Expression gearing,
@@ -98,7 +98,8 @@ public class ProjectFile {
         Expression tmax,
         Bumpers bumper,
         Expression diffTrackWidth) {
-      this.modules = modules;
+      this.frontLeft = frontLeft;
+      this.backLeft = backLeft;
       this.mass = mass;
       this.inertia = inertia;
       this.gearing = gearing;

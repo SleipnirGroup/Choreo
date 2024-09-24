@@ -12,7 +12,7 @@ import edu.wpi.first.util.struct.Struct;
 import java.nio.ByteBuffer;
 
 /** A single robot sample in a ChoreoTrajectory. */
-public class DiffySample implements TrajSample<DiffySample> {
+public class DiffySample implements TrajectorySample<DiffySample> {
   private static final double TRACK_WIDTH = Choreo.getProjectFile().config.diffTrackWidth.val;
 
   /** The timestamp of this sample, relative to the beginning of the trajectory. */

@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 /** A trajectory loaded from Choreo. */
-public class Trajectory<SampleType extends TrajSample<SampleType>> {
+public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
   private final String name;
   private final List<SampleType> samples;
   private final List<Integer> splits;

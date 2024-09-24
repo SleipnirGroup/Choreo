@@ -13,7 +13,7 @@ import choreo.trajectory.DiffySample;
 import choreo.trajectory.EventMarker;
 import choreo.trajectory.ProjectFile;
 import choreo.trajectory.SwerveSample;
-import choreo.trajectory.TrajSample;
+import choreo.trajectory.TrajectorySample;
 import choreo.trajectory.Trajectory;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -87,7 +87,7 @@ public final class Choreo {
    * {@link SampleType})-&gt;{@link ChassisSpeeds}, where the function returns robot-relative {@link
    * ChassisSpeeds} for the robot.
    */
-  public interface ControlFunction<SampleType extends TrajSample<SampleType>>
+  public interface ControlFunction<SampleType extends TrajectorySample<SampleType>>
       extends BiFunction<Pose2d, SampleType, ChassisSpeeds> {}
 
   /**
@@ -95,7 +95,7 @@ public final class Choreo {
    * Trajectory}, {@link Boolean})-&gt;void, where the function consumes a trajectory and a boolean
    * indicating whether the trajectory is starting or finishing.
    */
-  public interface TrajectoryLogger<SampleType extends TrajSample<SampleType>>
+  public interface TrajectoryLogger<SampleType extends TrajectorySample<SampleType>>
       extends BiConsumer<Trajectory<SampleType>, Boolean> {}
 
   /** Default constructor. */
@@ -113,7 +113,7 @@ public final class Choreo {
    * @return the loaded trajectory, or `Optional.empty()` if the trajectory could not be loaded.
    */
   @SuppressWarnings("unchecked")
-  public static <SampleType extends TrajSample<SampleType>>
+  public static <SampleType extends TrajectorySample<SampleType>>
       Optional<Trajectory<SampleType>> loadTrajectory(String trajName) {
     requireNonNullParam(trajName, "trajName", "Choreo.loadTrajectory");
 
@@ -138,7 +138,7 @@ public final class Choreo {
     return Optional.empty();
   }
 
-  static Trajectory<? extends TrajSample<?>> readTrajectoryString(
+  static Trajectory<? extends TrajectorySample<?>> readTrajectoryString(
       String str, ProjectFile projectFile) {
     JsonObject wholeTraj = GSON.fromJson(str, JsonObject.class);
     String name = wholeTraj.get("name").getAsString();
@@ -275,7 +275,7 @@ public final class Choreo {
    *     AutoTrajectory}.
    * @see AutoChooser using this factory with AutoChooser to generate auto routines.
    */
-  public static <SampleType extends TrajSample<SampleType>> AutoFactory createAutoFactory(
+  public static <SampleType extends TrajectorySample<SampleType>> AutoFactory createAutoFactory(
       Subsystem driveSubsystem,
       Supplier<Pose2d> poseSupplier,
       ControlFunction<SampleType> controller,
@@ -314,7 +314,7 @@ public final class Choreo {
    *     AutoTrajectory}.
    * @see AutoChooser using this factory with AutoChooser to generate auto routines.
    */
-  public static <SampleType extends TrajSample<SampleType>> AutoFactory createAutoFactory(
+  public static <SampleType extends TrajectorySample<SampleType>> AutoFactory createAutoFactory(
       Subsystem driveSubsystem,
       Supplier<Pose2d> poseSupplier,
       ControlFunction<SampleType> controller,

@@ -8,7 +8,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.util.struct.StructSerializable;
 
 /** The generic interface for a sample in a trajectory. */
-public interface TrajSample<Self extends TrajSample<Self>>
+public interface TrajectorySample<Self extends TrajectorySample<Self>>
     extends Interpolatable<Self>, StructSerializable {
   /**
    * Returns the timestamp of this sample.

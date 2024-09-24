@@ -9,7 +9,7 @@ import choreo.ext.CommandExt;
 import choreo.ext.TriggerExt;
 import choreo.trajectory.DiffySample;
 import choreo.trajectory.SwerveSample;
-import choreo.trajectory.TrajSample;
+import choreo.trajectory.TrajectorySample;
 import choreo.trajectory.Trajectory;
 import choreo.util.AllianceFlipUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -44,10 +44,10 @@ public class AutoTrajectory {
   private static final ChassisSpeeds DEFAULT_CHASSIS_SPEEDS = new ChassisSpeeds();
 
   private final String name;
-  private final Trajectory<? extends TrajSample<?>> trajectory;
-  private final TrajectoryLogger<? extends TrajSample<?>> trajLogger;
+  private final Trajectory<? extends TrajectorySample<?>> trajectory;
+  private final TrajectoryLogger<? extends TrajectorySample<?>> trajLogger;
   private final Supplier<Pose2d> poseSupplier;
-  private final ControlFunction<? extends TrajSample<?>> controller;
+  private final ControlFunction<? extends TrajectorySample<?>> controller;
   private final Consumer<ChassisSpeeds> outputChassisSpeeds;
   private final BooleanSupplier mirrorTrajectory;
   private final Timer timer = new Timer();
@@ -66,7 +66,7 @@ public class AutoTrajectory {
   /** The time that the previous trajectories took up */
   private double timeOffset = 0.0;
 
-  <SampleType extends TrajSample<SampleType>> AutoTrajectory(
+  <SampleType extends TrajectorySample<SampleType>> AutoTrajectory(
       String name,
       Trajectory<SampleType> trajectory,
       Supplier<Pose2d> poseSupplier,
@@ -116,7 +116,7 @@ public class AutoTrajectory {
 
   @SuppressWarnings("unchecked")
   private void logTrajectory(boolean starting) {
-    TrajSample<?> sample = trajectory.getInitialSample();
+    TrajectorySample<?> sample = trajectory.getInitialSample();
     if (sample == null) {
       return;
     } else if (sample instanceof SwerveSample) {
@@ -140,7 +140,7 @@ public class AutoTrajectory {
 
   @SuppressWarnings("unchecked")
   private void cmdExecute() {
-    TrajSample<?> sample =
+    TrajectorySample<?> sample =
         this.trajectory.sampleAt(timeIntoTraj(), mirrorTrajectory.getAsBoolean());
 
     ChassisSpeeds chassisSpeeds = DEFAULT_CHASSIS_SPEEDS;
