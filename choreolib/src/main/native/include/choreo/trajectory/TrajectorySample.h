@@ -30,7 +30,7 @@ concept TrajectorySample = requires(T t, units::second_t time, T tother, int yea
   { t.GetChassisSpeeds() } -> std::same_as<frc::ChassisSpeeds>;
   { t.OffsetBy(time) } -> std::same_as<T>;
   { t.Interpolate(tother, time) } -> std::same_as<T>;
-  //This is to get around gcc bug on roborio, so currently it can't be fully generic
+  // FIXME: This works around a roboRIO GCC internal compiler error; it can't be fully generic
   { t.template Flipped<2022>() } -> std::same_as<T>;
   { t.template Flipped<2023>() } -> std::same_as<T>;
   { t.template Flipped<2024>() } -> std::same_as<T>;
