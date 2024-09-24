@@ -7,7 +7,7 @@ import choreo.Choreo.TrajectoryLogger;
 import choreo.autos.AutoFactory.ChoreoAutoBindings;
 import choreo.ext.CommandExt;
 import choreo.ext.TriggerExt;
-import choreo.trajectory.DiffySample;
+import choreo.trajectory.DifferentialSample;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
@@ -123,9 +123,10 @@ public class AutoTrajectory {
       TrajectoryLogger<SwerveSample> swerveLogger = (TrajectoryLogger<SwerveSample>) trajLogger;
       Trajectory<SwerveSample> swerveTraj = (Trajectory<SwerveSample>) trajectory;
       swerveLogger.accept(swerveTraj, starting);
-    } else if (sample instanceof DiffySample) {
-      TrajectoryLogger<DiffySample> diffyLogger = (TrajectoryLogger<DiffySample>) trajLogger;
-      Trajectory<DiffySample> diffyTraj = (Trajectory<DiffySample>) trajectory;
+    } else if (sample instanceof DifferentialSample) {
+      TrajectoryLogger<DifferentialSample> diffyLogger =
+          (TrajectoryLogger<DifferentialSample>) trajLogger;
+      Trajectory<DifferentialSample> diffyTraj = (Trajectory<DifferentialSample>) trajectory;
       diffyLogger.accept(diffyTraj, starting);
     }
     ;
@@ -150,9 +151,10 @@ public class AutoTrajectory {
           (ControlFunction<SwerveSample>) this.controller;
       SwerveSample swerveSample = (SwerveSample) sample;
       chassisSpeeds = swerveController.apply(poseSupplier.get(), swerveSample);
-    } else if (sample instanceof DiffySample) {
-      ControlFunction<DiffySample> diffyController = (ControlFunction<DiffySample>) this.controller;
-      DiffySample diffySample = (DiffySample) sample;
+    } else if (sample instanceof DifferentialSample) {
+      ControlFunction<DifferentialSample> diffyController =
+          (ControlFunction<DifferentialSample>) this.controller;
+      DifferentialSample diffySample = (DifferentialSample) sample;
       chassisSpeeds = diffyController.apply(poseSupplier.get(), diffySample);
     }
 

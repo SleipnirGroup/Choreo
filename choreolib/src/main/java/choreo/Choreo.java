@@ -9,7 +9,7 @@ import choreo.autos.AutoFactory;
 import choreo.autos.AutoFactory.ChoreoAutoBindings;
 import choreo.autos.AutoLoop;
 import choreo.autos.AutoTrajectory;
-import choreo.trajectory.DiffySample;
+import choreo.trajectory.DifferentialSample;
 import choreo.trajectory.EventMarker;
 import choreo.trajectory.ProjectFile;
 import choreo.trajectory.SwerveSample;
@@ -149,8 +149,9 @@ public final class Choreo {
       SwerveSample[] samples = GSON.fromJson(trajObj.get("samples"), SwerveSample[].class);
       return new Trajectory<SwerveSample>(name, List.of(samples), List.of(splits), List.of(events));
     } else if (projectFile.type.equals("Differential")) {
-      DiffySample[] sampleArray = GSON.fromJson(trajObj.get("samples"), DiffySample[].class);
-      return new Trajectory<DiffySample>(
+      DifferentialSample[] sampleArray =
+          GSON.fromJson(trajObj.get("samples"), DifferentialSample[].class);
+      return new Trajectory<DifferentialSample>(
           name, List.of(sampleArray), List.of(splits), List.of(events));
     } else {
       throw new RuntimeException("Unknown project type: " + projectFile.type);

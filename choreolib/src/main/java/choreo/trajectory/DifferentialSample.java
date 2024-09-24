@@ -12,7 +12,7 @@ import edu.wpi.first.util.struct.Struct;
 import java.nio.ByteBuffer;
 
 /** A single robot sample in a ChoreoTrajectory. */
-public class DiffySample implements TrajectorySample<DiffySample> {
+public class DifferentialSample implements TrajectorySample<DifferentialSample> {
   private static final double TRACK_WIDTH = Choreo.getProjectFile().config.diffTrackWidth.val;
 
   /** The timestamp of this sample, relative to the beginning of the trajectory. */
@@ -46,7 +46,7 @@ public class DiffySample implements TrajectorySample<DiffySample> {
   public final double fr;
 
   /**
-   * Constructs a DiffySample with the specified parameters.
+   * Constructs a DifferentialSample with the specified parameters.
    *
    * @param timestamp The timestamp of this sample.
    * @param x The X position of the sample in meters.
@@ -59,7 +59,7 @@ public class DiffySample implements TrajectorySample<DiffySample> {
    * @param fl The force of the left side in Newtons.
    * @param fr The force of the right side in Newtons.
    */
-  public DiffySample(
+  public DifferentialSample(
       double timestamp,
       double x,
       double y,
@@ -104,11 +104,11 @@ public class DiffySample implements TrajectorySample<DiffySample> {
   }
 
   @Override
-  public DiffySample interpolate(DiffySample endValue, double timestamp) {
+  public DifferentialSample interpolate(DifferentialSample endValue, double timestamp) {
     double scale = (timestamp - this.timestamp) / (endValue.timestamp - this.timestamp);
     var interp_pose = getPose().interpolate(endValue.getPose(), scale);
 
-    return new DiffySample(
+    return new DifferentialSample(
         MathUtil.interpolate(this.timestamp, endValue.timestamp, scale),
         interp_pose.getX(),
         interp_pose.getY(),
@@ -121,10 +121,10 @@ public class DiffySample implements TrajectorySample<DiffySample> {
         MathUtil.interpolate(this.fr, endValue.fr, scale));
   }
 
-  public DiffySample flipped() {
+  public DifferentialSample flipped() {
     return switch (AllianceFlipUtil.getFlipper()) {
       case MIRRORED ->
-          new DiffySample(
+          new DifferentialSample(
               timestamp,
               AllianceFlipUtil.flipX(x),
               y,
@@ -136,7 +136,7 @@ public class DiffySample implements TrajectorySample<DiffySample> {
               fl,
               fr);
       case ROTATE_AROUND ->
-          new DiffySample(
+          new DifferentialSample(
               timestamp,
               AllianceFlipUtil.flipX(x),
               AllianceFlipUtil.flipY(y),
@@ -150,27 +150,28 @@ public class DiffySample implements TrajectorySample<DiffySample> {
     };
   }
 
-  public DiffySample offsetBy(double timestampOffset) {
-    return new DiffySample(timestamp + timestampOffset, x, y, heading, vl, vr, al, ar, fl, fr);
+  public DifferentialSample offsetBy(double timestampOffset) {
+    return new DifferentialSample(
+        timestamp + timestampOffset, x, y, heading, vl, vr, al, ar, fl, fr);
   }
 
   @Override
-  public DiffySample[] makeArray(int length) {
-    return new DiffySample[length];
+  public DifferentialSample[] makeArray(int length) {
+    return new DifferentialSample[length];
   }
 
-  /** The struct for the DiffySample class. */
-  public static final Struct<DiffySample> struct = new DiffySampleStruct();
+  /** The struct for the DifferentialSample class. */
+  public static final Struct<DifferentialSample> struct = new DifferentialSampleStruct();
 
-  private static final class DiffySampleStruct implements Struct<DiffySample> {
+  private static final class DifferentialSampleStruct implements Struct<DifferentialSample> {
     @Override
-    public Class<DiffySample> getTypeClass() {
-      return DiffySample.class;
+    public Class<DifferentialSample> getTypeClass() {
+      return DifferentialSample.class;
     }
 
     @Override
     public String getTypeName() {
-      return "DiffySample";
+      return "DifferentialSample";
     }
 
     @Override
@@ -196,8 +197,8 @@ public class DiffySample implements TrajectorySample<DiffySample> {
     }
 
     @Override
-    public DiffySample unpack(ByteBuffer bb) {
-      return new DiffySample(
+    public DifferentialSample unpack(ByteBuffer bb) {
+      return new DifferentialSample(
           bb.getDouble(),
           bb.getDouble(),
           bb.getDouble(),
@@ -211,7 +212,7 @@ public class DiffySample implements TrajectorySample<DiffySample> {
     }
 
     @Override
-    public void pack(ByteBuffer bb, DiffySample value) {
+    public void pack(ByteBuffer bb, DifferentialSample value) {
       bb.putDouble(value.timestamp);
       bb.putDouble(value.x);
       bb.putDouble(value.y);
