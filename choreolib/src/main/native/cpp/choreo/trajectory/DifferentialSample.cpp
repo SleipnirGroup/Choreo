@@ -27,13 +27,14 @@ frc::ChassisSpeeds DifferentialSample::GetChassisSpeeds() const {
           1_rad};
 }
 
-DifferentialSample DifferentialSample::OffsetBy(units::second_t timeStampOffset) const {
+DifferentialSample DifferentialSample::OffsetBy(
+    units::second_t timeStampOffset) const {
   return DifferentialSample{
       timestamp + timeStampOffset, x, y, heading, vl, vr, al, ar, fl, fr};
 }
 
-DifferentialSample DifferentialSample::Interpolate(const DifferentialSample& endValue,
-                                     units::second_t t) const {
+DifferentialSample DifferentialSample::Interpolate(
+    const DifferentialSample& endValue, units::second_t t) const {
   units::scalar_t scale = (t - timestamp) / (endValue.timestamp - timestamp);
   frc::Pose2d interpolatedPose =
       frc::Interpolate(GetPose(), endValue.GetPose(), scale.value());
@@ -53,7 +54,7 @@ DifferentialSample DifferentialSample::Interpolate(const DifferentialSample& end
 }
 
 void choreo::to_json(wpi::json& json,
-                                 const DifferentialSample& trajectorySample) {
+                     const DifferentialSample& trajectorySample) {
   json = wpi::json{{"t", trajectorySample.timestamp.value()},
                    {"x", trajectorySample.x.value()},
                    {"y", trajectorySample.y.value()},
@@ -67,7 +68,7 @@ void choreo::to_json(wpi::json& json,
 }
 
 void choreo::from_json(const wpi::json& json,
-                                   DifferentialSample& trajectorySample) {
+                       DifferentialSample& trajectorySample) {
   trajectorySample.timestamp = units::second_t{json.at("t").get<double>()};
   trajectorySample.x = units::meter_t{json.at("x").get<double>()};
   trajectorySample.y = units::meter_t{json.at("y").get<double>()};

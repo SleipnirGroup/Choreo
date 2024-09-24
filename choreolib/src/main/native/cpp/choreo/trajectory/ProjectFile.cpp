@@ -2,6 +2,8 @@
 
 #include "choreo/trajectory/ProjectFile.h"
 
+#include <string>
+
 #include <wpi/json.h>
 
 using namespace choreo;
@@ -79,8 +81,7 @@ void choreo::from_json(const wpi::json& json, Config& config) {
   json.at("bumper").get_to(config.bumpers);
 }
 
-void choreo::to_json(wpi::json& json,
-                                 const ProjectFile& projectFile) {
+void choreo::to_json(wpi::json& json, const ProjectFile& projectFile) {
   json = wpi::json{
       {"name", projectFile.name},
       {"version", projectFile.version},
@@ -91,8 +92,7 @@ void choreo::to_json(wpi::json& json,
       {"generationFeatures", wpi::json::array()}};
 }
 
-void choreo::from_json(const wpi::json& json,
-                                   ProjectFile& projectFile) {
+void choreo::from_json(const wpi::json& json, ProjectFile& projectFile) {
   json.at("name").get_to(projectFile.name);
   json.at("version").get_to(projectFile.version);
   json.at("type").get_to(projectFile.type);

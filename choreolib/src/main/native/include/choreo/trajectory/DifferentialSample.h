@@ -21,12 +21,13 @@ namespace choreo {
 class DifferentialSample {
  public:
   DifferentialSample() = default;
-  DifferentialSample(units::second_t timestamp, units::meter_t x, units::meter_t y,
-              units::radian_t heading, units::meters_per_second_t vl,
-              units::meters_per_second_t vr,
-              units::meters_per_second_squared_t al,
-              units::meters_per_second_squared_t ar, units::newton_t fl,
-              units::newton_t fr)
+  DifferentialSample(units::second_t timestamp, units::meter_t x,
+                     units::meter_t y, units::radian_t heading,
+                     units::meters_per_second_t vl,
+                     units::meters_per_second_t vr,
+                     units::meters_per_second_squared_t al,
+                     units::meters_per_second_squared_t ar, units::newton_t fl,
+                     units::newton_t fr)
       : timestamp(timestamp),
         x(x),
         y(y),
@@ -44,31 +45,18 @@ class DifferentialSample {
   DifferentialSample Flipped() const {
     static constexpr auto flipper = choreo::util::GetFlipperForYear<Year>();
     if constexpr (flipper.isMirrored) {
-        return DifferentialSample(timestamp,
-        flipper.FlipX(x),
-        y,
-        flipper.FlipHeading(heading),
-        vl,
-        vr,
-        al,
-        ar,
-        fl,
-        fr);
+      return DifferentialSample(timestamp, flipper.FlipX(x), y,
+                                flipper.FlipHeading(heading), vl, vr, al, ar,
+                                fl, fr);
     } else {
-        return DifferentialSample(timestamp,
-        flipper.FlipX(x),
-        flipper.FlipY(y),
-        flipper.FlipHeading(heading),
-        vr,
-        vl,
-        ar,
-        al,
-        fr,
-        fl);
+      return DifferentialSample(timestamp, flipper.FlipX(x), flipper.FlipY(y),
+                                flipper.FlipHeading(heading), vr, vl, ar, al,
+                                fr, fl);
     }
   }
   DifferentialSample OffsetBy(units::second_t timeStampOffset) const;
-  DifferentialSample Interpolate(const DifferentialSample& endValue, units::second_t t) const;
+  DifferentialSample Interpolate(const DifferentialSample& endValue,
+                                 units::second_t t) const;
 
   units::second_t timestamp = 0_s;
   units::meter_t x = 0_m;

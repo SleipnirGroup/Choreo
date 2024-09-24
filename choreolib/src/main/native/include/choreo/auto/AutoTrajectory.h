@@ -15,8 +15,8 @@
 #include <units/time.h>
 
 #include "choreo/trajectory/EventMarker.h"
-#include "choreo/trajectory/TrajectorySample.h"
 #include "choreo/trajectory/Trajectory.h"
+#include "choreo/trajectory/TrajectorySample.h"
 
 namespace choreo {
 
@@ -136,7 +136,8 @@ class AutoTrajectory {
 
     for (const auto& event : trajectory.GetEvents(eventName)) {
       frc::Pose2d pose =
-          trajectory.SampleAt<Year>(event.timestamp, mirrorTrajectory()).GetPose();
+          trajectory.SampleAt<Year>(event.timestamp, mirrorTrajectory())
+              .GetPose();
       trig = frc2::Trigger(trig || AtPose(pose, tolerance));
       foundEvent = true;
     }
@@ -174,7 +175,8 @@ class AutoTrajectory {
     LogTrajectory(true);
   }
   void CmdExecute() {
-    SampleType sample = trajectory.SampleAt<Year>(TimeIntoTraj(), mirrorTrajectory());
+    SampleType sample =
+        trajectory.SampleAt<Year>(TimeIntoTraj(), mirrorTrajectory());
     frc::ChassisSpeeds chassisSpeeds = DEFAULT_CHASSIS_SPEEDS;
     chassisSpeeds = controller(poseSupplier(), sample);
     outputChassisSpeeds(chassisSpeeds);

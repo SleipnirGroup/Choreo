@@ -56,7 +56,7 @@ class AutoFactory {
         trajLogger(trajLogger) {}
   AutoLoop<SampleType> NewLoop() const { return AutoLoop<SampleType>(); }
   AutoTrajectory<SampleType> Trajectory(const std::string& trajName,
-                                  AutoLoop<SampleType> loop) const {
+                                        AutoLoop<SampleType> loop) const {
     std::optional<choreo::Trajectory<SampleType>> optTraj =
         Choreo::LoadTrajectory<SampleType>(trajName);
     choreo::Trajectory<SampleType> trajectory;
@@ -66,22 +66,17 @@ class AutoFactory {
       FRC_ReportError(frc::warn::Warning, "Could not load trajectory: {}",
                       trajName);
     }
-    AutoTrajectory<SampleType> autoTraj{trajName,
-                                        trajectory,
-                                        poseSupplier,
-                                        controller,
-                                        outputChassisSpeeds,
-                                        mirrorTrajectory,
-                                        trajLogger,
-                                        driveSubsystem,
-                                        loop.GetLoop(),
-                                        autoBindings,
-                                        loop.OnNewTrajectory};
+    AutoTrajectory<SampleType> autoTraj{
+        trajName,     trajectory,          poseSupplier,
+        controller,   outputChassisSpeeds, mirrorTrajectory,
+        trajLogger,   driveSubsystem,      loop.GetLoop(),
+        autoBindings, loop.OnNewTrajectory};
     loop.AddTrajectory(autoTraj);
     return autoTraj;
   }
-  AutoTrajectory<SampleType> Trajectory(const std::string& trajName, int splitIndex,
-                                  AutoLoop<SampleType> loop) const {
+  AutoTrajectory<SampleType> Trajectory(const std::string& trajName,
+                                        int splitIndex,
+                                        AutoLoop<SampleType> loop) const {
     std::optional<choreo::Trajectory<SampleType>> optTraj =
         Choreo::LoadTrajectory<SampleType>(trajName);
     choreo::Trajectory<SampleType> trajectory;

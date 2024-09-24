@@ -49,31 +49,21 @@ class SwerveSample {
   SwerveSample Flipped() const {
     static constexpr auto flipper = choreo::util::GetFlipperForYear<Year>();
     if constexpr (flipper.isMirrored) {
-        return SwerveSample(timestamp,
-        flipper.FlipX(x),
-        flipper.FlipY(y),
-        flipper.FlipHeading(heading),
-        -vx,
-        vy,
-        -omega,
-        -ax,
-        ay,
-        -alpha,
-        {-moduleForcesX[3], -moduleForcesX[2], -moduleForcesX[1], -moduleForcesX[0]},
-        {moduleForcesY[3], moduleForcesY[2], moduleForcesY[1], moduleForcesY[0]});
+      return SwerveSample(timestamp, flipper.FlipX(x), flipper.FlipY(y),
+                          flipper.FlipHeading(heading), -vx, vy, -omega, -ax,
+                          ay, -alpha,
+                          {-moduleForcesX[3], -moduleForcesX[2],
+                           -moduleForcesX[1], -moduleForcesX[0]},
+                          {moduleForcesY[3], moduleForcesY[2], moduleForcesY[1],
+                           moduleForcesY[0]});
     } else {
-        return SwerveSample(timestamp,
-        flipper.FlipX(x),
-        flipper.FlipY(y),
-        flipper.FlipHeading(heading),
-        -vx,
-        -vy,
-        -omega,
-        -ax,
-        -ay,
-        -alpha,
-        {-moduleForcesX[0], -moduleForcesX[1], -moduleForcesX[2], -moduleForcesX[3]},
-        {-moduleForcesY[0], -moduleForcesY[1], -moduleForcesY[2], -moduleForcesY[3]});
+      return SwerveSample(timestamp, flipper.FlipX(x), flipper.FlipY(y),
+                          flipper.FlipHeading(heading), -vx, -vy, -omega, -ax,
+                          -ay, -alpha,
+                          {-moduleForcesX[0], -moduleForcesX[1],
+                           -moduleForcesX[2], -moduleForcesX[3]},
+                          {-moduleForcesY[0], -moduleForcesY[1],
+                           -moduleForcesY[2], -moduleForcesY[3]});
     }
   }
   SwerveSample OffsetBy(units::second_t timeStampOffset) const;

@@ -2,6 +2,8 @@
 
 #include "choreo/trajectory/SwerveSample.h"
 
+#include <algorithm>
+
 #include <wpi/MathExtras.h>
 #include <wpi/json.h>
 
@@ -65,8 +67,7 @@ SwerveSample SwerveSample::Interpolate(const SwerveSample& endValue,
                       interpolatedForcesY};
 }
 
-void choreo::to_json(wpi::json& json,
-                                 const SwerveSample& trajectorySample) {
+void choreo::to_json(wpi::json& json, const SwerveSample& trajectorySample) {
   std::array<double, 4> fx;
   std::transform(trajectorySample.moduleForcesX.begin(),
                  trajectorySample.moduleForcesX.end(), fx.begin(),
@@ -91,8 +92,7 @@ void choreo::to_json(wpi::json& json,
                    {"fy", fy}};
 }
 
-void choreo::from_json(const wpi::json& json,
-                                   SwerveSample& trajectorySample) {
+void choreo::from_json(const wpi::json& json, SwerveSample& trajectorySample) {
   trajectorySample.timestamp = units::second_t{json.at("t").get<double>()};
   trajectorySample.x = units::meter_t{json.at("x").get<double>()};
   trajectorySample.y = units::meter_t{json.at("y").get<double>()};

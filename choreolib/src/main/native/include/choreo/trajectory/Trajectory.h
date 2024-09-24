@@ -36,7 +36,7 @@ class Trajectory {
     }
     return samples[samples.size() - 1];
   }
-  template<int Year>
+  template <int Year>
   std::optional<SampleType> SampleAt(units::second_t timestamp,
                                      bool mirrorForRedAlliance = false) {
     std::optional<SampleType> state{};
@@ -47,14 +47,14 @@ class Trajectory {
     } else {
       state = SampleInternal(timestamp);
     }
-    if(state.has_value()) {
-      return mirrorForRedAlliance ? state.value().template Flipped<Year>() : state;
-    }
-    else {
+    if (state.has_value()) {
+      return mirrorForRedAlliance ? state.value().template Flipped<Year>()
+                                  : state;
+    } else {
       return {};
     }
   }
-  template<int Year>
+  template <int Year>
   std::optional<frc::Pose2d> GetInitialPose(bool mirrorForRedAlliance) {
     if (samples.size() == 0) {
       return {};
@@ -64,7 +64,7 @@ class Trajectory {
     }
     return samples[0].GetPose();
   }
-  template<int Year>
+  template <int Year>
   std::optional<frc::Pose2d> GetFinalPose(bool mirrorForRedAlliance) {
     if (samples.size() == 0) {
       return {};
@@ -87,7 +87,7 @@ class Trajectory {
     }
     return poses;
   }
-  template<int Year>
+  template <int Year>
   Trajectory<SampleType> Flipped() {
     std::vector<SampleType> flippedStates;
     for (const auto& state : samples) {
@@ -182,5 +182,6 @@ void to_json(wpi::json& json, const Trajectory<SwerveSample>& trajectory);
 void from_json(const wpi::json& json, Trajectory<SwerveSample>& trajectory);
 
 void to_json(wpi::json& json, const Trajectory<DifferentialSample>& trajectory);
-void from_json(const wpi::json& json, Trajectory<DifferentialSample>& trajectory);
+void from_json(const wpi::json& json,
+               Trajectory<DifferentialSample>& trajectory);
 }  // namespace choreo

@@ -51,8 +51,7 @@ class Choreo {
       }
 
       choreo::ProjectFile resultProjectFile;
-      choreo::from_json(fileBuffer.value()->GetCharBuffer(),
-                                    resultProjectFile);
+      choreo::from_json(fileBuffer.value()->GetCharBuffer(), resultProjectFile);
       LAZY_PROJECT_FILE = resultProjectFile;
     } catch (const std::filesystem::filesystem_error& e) {
       std::cout << e.what() << "\n";
@@ -65,8 +64,8 @@ class Choreo {
   }
 
   template <choreo::TrajectorySample SampleType>
-  static std::optional<choreo::Trajectory<SampleType>>
-  LoadTrajectory(std::string trajName) {
+  static std::optional<choreo::Trajectory<SampleType>> LoadTrajectory(
+      std::string trajName) {
     if (trajName.ends_with(TRAJECTORY_FILE_EXTENSION)) {
       trajName = trajName.substr(
           0, trajName.size() - TRAJECTORY_FILE_EXTENSION.size());
@@ -96,8 +95,8 @@ class Choreo {
   }
 
   template <choreo::TrajectorySample SampleType>
-  static std::optional<choreo::Trajectory<SampleType>>
-  LoadTrajectoryString(const std::string& trajJsonString) {
+  static std::optional<choreo::Trajectory<SampleType>> LoadTrajectoryString(
+      const std::string& trajJsonString) {
     wpi::json json = wpi::json::parse(trajJsonString);
     choreo::Trajectory<SampleType> trajectory;
     choreo::from_json(json, trajectory);
@@ -120,8 +119,8 @@ class Choreo {
 template <choreo::TrajectorySample SampleType>
 class ChoreoTrajCache {
  public:
-  static std::optional<choreo::Trajectory<SampleType>>
-  LoadTrajectory(const std::string& trajName) {
+  static std::optional<choreo::Trajectory<SampleType>> LoadTrajectory(
+      const std::string& trajName) {
     if (cache.contains(trajName)) {
       return cache[trajName];
     } else {
@@ -130,8 +129,8 @@ class ChoreoTrajCache {
     }
   }
 
-  static std::optional<choreo::Trajectory<SampleType>>
-  LoadTrajectory(const std::string& trajName, int splitIndex) {
+  static std::optional<choreo::Trajectory<SampleType>> LoadTrajectory(
+      const std::string& trajName, int splitIndex) {
     std::string key = trajName + ".:." + std::to_string(splitIndex);
     if (cache.contains(key)) {
       return cache[key];
@@ -151,8 +150,7 @@ class ChoreoTrajCache {
   static void Clear() { cache.clear(); }
 
  private:
-  static inline std::unordered_map<std::string,
-                                   choreo::Trajectory<SampleType>>
+  static inline std::unordered_map<std::string, choreo::Trajectory<SampleType>>
       cache;
 };
 }  // namespace choreo

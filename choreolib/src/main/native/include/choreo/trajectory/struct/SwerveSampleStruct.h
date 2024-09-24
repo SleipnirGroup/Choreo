@@ -18,8 +18,7 @@ struct wpi::Struct<choreo::SwerveSample> {
   }
 
   static choreo::SwerveSample Unpack(std::span<const uint8_t> data);
-  static void Pack(std::span<uint8_t> data,
-                   const choreo::SwerveSample& value);
+  static void Pack(std::span<uint8_t> data, const choreo::SwerveSample& value);
 };
 
 static_assert(wpi::StructSerializable<choreo::SwerveSample>);

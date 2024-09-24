@@ -17,8 +17,7 @@ constexpr size_t kFrOff = kFlOff + 8;
 
 using StructType = wpi::Struct<choreo::DifferentialSample>;
 
-choreo::DifferentialSample StructType::Unpack(
-    std::span<const uint8_t> data) {
+choreo::DifferentialSample StructType::Unpack(std::span<const uint8_t> data) {
   return choreo::DifferentialSample{
       units::second_t{wpi::UnpackStruct<double, kTimestampOff>(data)},
       units::meter_t{wpi::UnpackStruct<double, kXOff>(data)},

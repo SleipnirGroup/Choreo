@@ -25,8 +25,7 @@ constexpr size_t kMfY3Off = kMfY2Off + 8;
 
 using StructType = wpi::Struct<choreo::SwerveSample>;
 
-choreo::SwerveSample StructType::Unpack(
-    std::span<const uint8_t> data) {
+choreo::SwerveSample StructType::Unpack(std::span<const uint8_t> data) {
   return choreo::SwerveSample{
       units::second_t{wpi::UnpackStruct<double, kTimestampOff>(data)},
       units::meter_t{wpi::UnpackStruct<double, kXOff>(data)},

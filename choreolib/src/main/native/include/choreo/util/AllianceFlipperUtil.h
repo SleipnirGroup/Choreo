@@ -3,9 +3,11 @@
 #pragma once
 
 #include <numbers>
+
 #include <frc/geometry/Pose2d.h>
-#include "choreo/util/Map.h"
 #include <units/base.h>
+
+#include "choreo/util/Map.h"
 
 namespace choreo::util {
 
@@ -27,7 +29,6 @@ struct MirroredFlipper {
     return units::radian_t{std::numbers::pi} - heading;
   }
 };
-
 
 struct RotateAroundFlipper {
   static constexpr bool isMirrored = false;
@@ -57,7 +58,7 @@ constexpr auto GetFlipperForYear() {
 
   constexpr bool yearInMap = [] {
     try {
-      [[maybe_unused]]flipperMap.at(Year);
+      flipperMap.at(Year);
       return true;
     } catch (...) {
       return false;
@@ -73,9 +74,10 @@ constexpr auto GetFlipperForYear() {
     } else if constexpr (flipperType == FlipperType::Mirrored) {
       return MirroredFlipper{};
     } else {
-      static_assert(flipperType == FlipperType::RotateAround || flipperType == FlipperType::Mirrored, 
+      static_assert(flipperType == FlipperType::RotateAround ||
+                        flipperType == FlipperType::Mirrored,
                     "Invalid FlipperType in flipperMap");
     }
   }
 }
-}
+}  // namespace choreo::util

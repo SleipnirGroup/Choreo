@@ -16,7 +16,7 @@ namespace choreo {
 class Expression {
  public:
   Expression() = default;
-  Expression(const std::string& exp, double val) : exp(exp), val(val) {}
+  Expression(const std::string& exp, double val) : std::exp(exp), val(val) {}
   std::string exp;
   double val;
   bool operator==(const Expression& other) const {
