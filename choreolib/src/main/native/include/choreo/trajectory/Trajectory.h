@@ -23,7 +23,7 @@ class Trajectory {
   Trajectory(const std::string& name, const std::vector<SampleType>& samples,
              const std::vector<int>& splits,
              const std::vector<EventMarker>& events)
-      : name(name), samples(samples), splits(splits), events(events) {}
+      : name{name}, samples{samples}, splits{splits}, events{events} {}
   std::optional<SampleType> GetInitialState() {
     if (samples.size() == 0) {
       return {};

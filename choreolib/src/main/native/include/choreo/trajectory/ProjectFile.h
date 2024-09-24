@@ -17,9 +17,9 @@ class Expression {
  public:
   Expression() = default;
   Expression(const std::string& expression, double val)
-      : expression(expression), val(val) {}
+      : expression{expression}, val{val} {}
   std::string expression;
-  double val;
+  double val{0.0};
   bool operator==(const Expression& other) const {
     return expression == other.expression && almost_equal(val, other.val);
   }
@@ -28,7 +28,7 @@ class Expression {
 class XYExpression {
  public:
   XYExpression() = default;
-  XYExpression(const Expression& x, const Expression& y) : x(x), y(y) {}
+  XYExpression(const Expression& x, const Expression& y) : x{x}, y{y} {}
   Expression x;
   Expression y;
   bool operator==(const XYExpression& other) const {
@@ -39,7 +39,7 @@ class XYExpression {
 struct Pose {
   Pose() = default;
   Pose(const Expression& x, const Expression& y, const Expression& heading)
-      : x(x), y(y), heading(heading) {}
+      : x{x}, y{y}, heading{heading} {}
   Expression x;
   Expression y;
   Expression heading;
@@ -51,7 +51,7 @@ struct Pose {
 struct Variable {
   Variable() = default;
   Variable(const std::string& dimension, const Expression& var)
-      : dimension(dimension), var(var) {}
+      : dimension{dimension}, var{var} {}
   std::string dimension;
   Expression var;
   bool operator==(const Variable& other) const {
@@ -64,7 +64,7 @@ class Bumpers {
   Bumpers() = default;
   Bumpers(const Expression& front, const Expression& back,
           const Expression& left, const Expression& right)
-      : front(front), back(back), left(left), right(right) {}
+      : front{front}, back{back}, left{left}, right{right} {}
   Expression front;
   Expression back;
   Expression left;
@@ -83,15 +83,15 @@ class Config {
          const Expression& wheelRadius, const Expression& vmax,
          const Expression& tmax, const Bumpers& bumpers,
          const Expression& diffTrackWidth)
-      : modules(modules),
-        mass(mass),
-        inertia(inertia),
-        gearing(gearing),
-        wheelRadius(wheelRadius),
-        vmax(vmax),
-        tmax(tmax),
-        bumpers(bumpers),
-        diffTrackWidth(diffTrackWidth) {}
+      : modules{modules},
+        mass{mass},
+        inertia{inertia},
+        gearing{gearing},
+        wheelRadius{wheelRadius},
+        vmax{vmax},
+        tmax{tmax},
+        bumpers{bumpers},
+        diffTrackWidth{diffTrackWidth} {}
   std::vector<XYExpression> modules;
   Expression mass;
   Expression inertia;
@@ -119,13 +119,13 @@ class ProjectFile {
               const std::unordered_map<std::string, Pose>& poses,
               const Config& config,
               const std::vector<std::string>& generationFeatures)
-      : name(name),
-        version(version),
-        type(type),
-        expressions(expressions),
-        poses(poses),
-        config(config),
-        generationFeatures(generationFeatures) {}
+      : name{name},
+        version{version},
+        type{type},
+        expressions{expressions},
+        poses{poses},
+        config{config},
+        generationFeatures{generationFeatures} {}
   std::string name;
   std::string version;
   std::string type;
