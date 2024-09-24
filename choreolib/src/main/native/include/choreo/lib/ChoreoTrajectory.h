@@ -101,6 +101,6 @@ class ChoreoTrajectory {
   std::vector<ChoreoTrajectoryState> samples;
 };
 
-void to_json(wpi::json& json, const ChoreoTrajectory& traj);
-void from_json(const wpi::json& json, ChoreoTrajectory& traj);
+void to_json(wpi::json& json, const ChoreoTrajectory& trajectory);
+void from_json(const wpi::json& json, ChoreoTrajectory& trajectory);
 }  // namespace choreolib

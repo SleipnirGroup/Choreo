@@ -1,22 +1,22 @@
 import { invoke } from "@tauri-apps/api";
-import { Expr, Project, RobotConfig, Traj } from "./2025/DocumentTypes";
+import { Expr, Project, RobotConfig, Trajectory } from "./2025/DocumentTypes";
 import { OpenFilePayload } from "./DocumentManager";
 
 export const Commands = {
-  guessIntervals: (config: RobotConfig<Expr>, traj: Traj) =>
-    invoke<number[]>("guess_control_interval_counts", { config, traj }),
+  guessIntervals: (config: RobotConfig<Expr>, trajectory: Trajectory) =>
+    invoke<number[]>("guess_control_interval_counts", { config, trajectory }),
 
   /**
-   * Generates a `Traj` using the specified `Project` and `Traj`.
+   * Generates a `Trajectory` using the specified `Project` and `Trajectory`.
    *
    * @param project The `Project` to use for generation.
-   * @param traj The `Traj` to use for generation.
+   * @param trajectory The `Trajectory` to use for generation.
    * @param handle The handle of the generator to use.
    *
-   * @returns The generated `Traj`.
+   * @returns The generated `Trajectory`.
    */
-  generate: (project: Project, traj: Traj, handle: number) =>
-    invoke<Traj>("generate_remote", { project, traj, handle }),
+  generate: (project: Project, trajectory: Trajectory, handle: number) =>
+    invoke<Trajectory>("generate_remote", { project, trajectory, handle }),
 
   /**
    * Cancels all of the generators that are currently running.
@@ -83,41 +83,44 @@ export const Commands = {
     invoke<void>("write_project", { project }),
 
   /**
-   * Reads the `Traj` with the specified name from the deploy root directory.
+   * Reads the `Trajectory` with the specified name from the deploy root directory.
    *
-   * @param name The name of the `Traj` to read without the `.traj` extension.
-   * @returns The `Traj` that was read.
+   * @param name The name of the `Trajectory` to read without the `.traj` extension.
+   * @returns The `Trajectory` that was read.
    */
-  readTraj: (name: string) => invoke<Traj>("read_traj", { name }),
+  readTrajectory: (name: string) =>
+    invoke<Trajectory>("read_trajectory", { name }),
   /**
-   * Scans the deploy root directory for all of the `Traj` files and returns them.
+   * Scans the deploy root directory for all of the `Trajectory` files and returns them.
    *
-   * @returns All of the `Traj` files in the deploy root directory.
+   * @returns All of the `Trajectory` files in the deploy root directory.
    */
-  readAllTraj: () => invoke<Traj[]>("read_all_traj"),
+  readAllTrajectory: () => invoke<Trajectory[]>("read_all_trajectory"),
   /**
-   * Writes the specified `Traj` to the deploy root directory.
+   * Writes the specified `Trajectory` to the deploy root directory.
    *
-   * @param traj The `Traj` to write.
+   * @param trajectory The `Trajectory` to write.
    * @returns `void`
    */
-  writeTraj: (traj: Traj) => invoke("write_traj", { traj }),
+  writeTrajectory: (trajectory: Trajectory) =>
+    invoke("write_trajectory", { trajectory }),
   /**
-   * Renames the specified `Traj` to the specified name.
+   * Renames the specified `Trajectory` to the specified name.
    *
-   * @param oldTraj The `Traj` to rename.
-   * @param newName The new name for the `Traj`.
+   * @param oldTrajectory The `Trajectory` to rename.
+   * @param newName The new name for the `Trajectory`.
    * @returns `void`
    */
-  renameTraj: (oldTraj: Traj, newName: string) =>
-    invoke<void>("rename_traj", { oldTraj, newName }),
+  renameTrajectory: (oldTrajectory: Trajectory, newName: string) =>
+    invoke<void>("rename_trajectory", { oldTrajectory, newName }),
   /**
-   * Deletes the specified `Traj` from the deploy root directory.
+   * Deletes the specified `Trajectory` from the deploy root directory.
    *
-   * @param traj The `Traj` to delete.
+   * @param trajectory The `Trajectory` to delete.
    * @returns `void`
    */
-  deleteTraj: (traj: Traj) => invoke<void>("delete_traj", { traj }),
+  deleteTrajectory: (trajectory: Trajectory) =>
+    invoke<void>("delete_trajectory", { trajectory }),
 
   /**
    * If the application was opened via CLI and a file was specified, this will return the path of that file.
@@ -129,6 +132,6 @@ export const Commands = {
   /**
    * Opens the platforms file explorer to the directory holding a newly generated diagnostic zip file.
    */
-  openDiagnosticZip: (project: Project, trajs: Traj[]) =>
-    invoke<void>("open_diagnostic_file", { project, trajs })
+  openDiagnosticZip: (project: Project, trajectories: Trajectory[]) =>
+    invoke<void>("open_diagnostic_file", { project, trajectories })
 };

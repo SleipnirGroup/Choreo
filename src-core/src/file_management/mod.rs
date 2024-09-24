@@ -17,13 +17,13 @@ use crate::{ChoreoError, ChoreoResult, ResultExt};
 
 use dashmap::DashMap;
 
-use crate::spec::{project::ProjectFile, traj::TrajFile};
+use crate::spec::{project::ProjectFile, trajectory::TrajectoryFile};
 
-type TrajFileWriterPool = Arc<DashMap<String, UnboundedSender<TrajFile>>>;
+type TrajectoryFileWriterPool = Arc<DashMap<String, UnboundedSender<TrajectoryFile>>>;
 type DeployPath = Arc<Mutex<PathBuf>>;
 
 /// A name of a trajectory without the file extension.
-type TrajFileName = String;
+type TrajectoryFileName = String;
 
 mod diagnostics;
 mod formatter;
@@ -98,7 +98,7 @@ impl Default for ProjectUpdater {
 pub struct WritingResources {
     /// The project writer.
     pub project: Arc<ProjectUpdater>,
-    pub trajfile_pool: TrajFileWriterPool,
+    pub trajectory_file_pool: TrajectoryFileWriterPool,
     pub root: DeployPath,
 }
 
@@ -113,7 +113,7 @@ impl WritingResources {
     pub fn new() -> Self {
         let out = Self {
             project: Arc::new(ProjectUpdater::new()),
-            trajfile_pool: Arc::new(DashMap::new()),
+            trajectory_file_pool: Arc::new(DashMap::new()),
             root: Arc::new(Mutex::new(PathBuf::new())),
         };
         let root = out.root.clone();
@@ -157,122 +157,131 @@ pub async fn set_deploy_path(resources: &WritingResources, path: PathBuf) {
     tracing::debug!("Setting deploy path to {:?}", path);
     let mut root = resources.root.lock().await;
     *root = path;
-    resources.trajfile_pool.clear();
+    resources.trajectory_file_pool.clear();
 }
 
-pub async fn write_trajfile(resources: &WritingResources, trajfile: TrajFile) {
+pub async fn write_trajectory_file(resources: &WritingResources, trajectory_file: TrajectoryFile) {
     let file = resources
         .root
         .lock()
         .await
-        .join(&trajfile.name)
-        .with_extension(TrajFile::EXTENSION);
+        .join(&trajectory_file.name)
+        .with_extension(TrajectoryFile::EXTENSION);
 
-    tracing::debug!("Writing path {:} to {:}", trajfile.name, file.display());
+    tracing::debug!(
+        "Writing path {:} to {:}",
+        trajectory_file.name,
+        file.display()
+    );
 
     resources
-        .trajfile_pool
-        .entry(trajfile.name.clone())
+        .trajectory_file_pool
+        .entry(trajectory_file.name.clone())
         .or_insert_with(|| {
             let (sender, receiver) = unbounded_channel();
             spawn_writer_task(PathBuf::from(&file), receiver);
             sender
         })
-        .send(trajfile)
+        .send(trajectory_file)
         .trace_err();
 }
 
-pub async fn write_trajfile_immediately(
+pub async fn write_trajectory_file_immediately(
     resources: &WritingResources,
-    trajfile: TrajFile,
+    trajectory_file: TrajectoryFile,
 ) -> ChoreoResult<()> {
     let file = resources
         .get_deploy_path()
         .await?
-        .join(&trajfile.name)
-        .with_extension(TrajFile::EXTENSION);
+        .join(&trajectory_file.name)
+        .with_extension(TrajectoryFile::EXTENSION);
 
     tracing::debug!(
         "Writing path {:} to {:} immediately",
-        trajfile.name,
+        trajectory_file.name,
         file.display()
     );
 
-    write_serializable(trajfile, &file).await
+    write_serializable(trajectory_file, &file).await
 }
 
 /// Read a trajectory from a file.
 ///
 /// The name should not include the file extension.
-pub async fn read_trajfile(
+pub async fn read_trajectory_file(
     resources: &WritingResources,
-    name: TrajFileName,
-) -> ChoreoResult<TrajFile> {
+    name: TrajectoryFileName,
+) -> ChoreoResult<TrajectoryFile> {
     let path = resources
         .root
         .lock()
         .await
         .join(&name)
-        .with_extension(TrajFile::EXTENSION);
+        .with_extension(TrajectoryFile::EXTENSION);
     let contents = fs::read_to_string(&path).await?;
-    let mut path = TrajFile::from_content(&contents)?;
+    let mut path = TrajectoryFile::from_content(&contents)?;
     // this will keep the name of the `Path` in sync with the file name
     path.name = name;
     Ok(path)
 }
 
-pub async fn delete_trajfile(resources: &WritingResources, trajfile: TrajFile) -> ChoreoResult<()> {
-    tracing::debug!("Deleting trajectory {}", trajfile.name);
+pub async fn delete_trajectory_file(
+    resources: &WritingResources,
+    trajectory_file: TrajectoryFile,
+) -> ChoreoResult<()> {
+    tracing::debug!("Deleting trajectory {}", trajectory_file.name);
 
     let root_path = resources.get_deploy_path().await?;
-    let path = root_path.join(&trajfile.name).with_extension("traj");
+    let path = root_path.join(&trajectory_file.name).with_extension("traj");
     if !path.exists() {
         return Err(ChoreoError::FileNotFound(Some(path)));
     }
 
-    let _ = resources.trajfile_pool.remove(&trajfile.name);
+    let _ = resources.trajectory_file_pool.remove(&trajectory_file.name);
     fs::remove_file(&path).await?;
 
     tracing::info!(
         "Deleted trajectory {:}.traj at {:}",
-        trajfile.name,
+        trajectory_file.name,
         resources.get_deploy_path().await?.display()
     );
 
     Ok(())
 }
 
-pub async fn rename_trajfile(
+pub async fn rename_trajectory_file(
     resources: &WritingResources,
-    mut old_trajfile: TrajFile,
-    new_name: TrajFileName,
-) -> ChoreoResult<TrajFile> {
+    mut old_trajectory_file: TrajectoryFile,
+    new_name: TrajectoryFileName,
+) -> ChoreoResult<TrajectoryFile> {
     tracing::debug!(
         "Renaming trajectory {old_name}.traj to {new_name}.traj",
-        old_name = old_trajfile.name,
+        old_name = old_trajectory_file.name,
         new_name = new_name
     );
 
     let root_path = resources.get_deploy_path().await?;
-    let old_path = root_path.join(&old_trajfile.name).with_extension("traj");
+    let old_path = root_path
+        .join(&old_trajectory_file.name)
+        .with_extension("traj");
 
     if !old_path.exists() {
         return Err(ChoreoError::FileNotFound(Some(old_path)));
     }
 
-    delete_trajfile(resources, old_trajfile.clone()).await?;
+    delete_trajectory_file(resources, old_trajectory_file.clone()).await?;
 
-    let old_name = old_trajfile.name.clone();
-    old_trajfile.name.clone_from(&new_name);
+    let old_name = old_trajectory_file.name.clone();
+    old_trajectory_file.name.clone_from(&new_name);
 
-    write_trajfile(resources, old_trajfile.clone()).await;
+    write_trajectory_file(resources, old_trajectory_file.clone()).await;
 
     tracing::info!(
         "Renamed trajectory {old_name}.traj to {new_name}.traj at {:}",
         resources.get_deploy_path().await?.display()
     );
 
-    Ok(old_trajfile)
+    Ok(old_trajectory_file)
 }
 
 pub async fn write_projectfile(resources: &WritingResources, project: ProjectFile) {
@@ -311,8 +320,8 @@ pub async fn read_projectfile(
     Ok(project)
 }
 
-/// Find all traj files in the deploy directory.
-pub async fn find_all_traj(resources: &WritingResources) -> Vec<String> {
+/// Find all trajectory files in the deploy directory.
+pub async fn find_all_trajectories(resources: &WritingResources) -> Vec<String> {
     let deploy_dir = resources.root.lock().await.clone();
     let mut out = vec![];
     if let Ok(mut dir) = fs::read_dir(&deploy_dir).await {
@@ -328,7 +337,7 @@ pub async fn find_all_traj(resources: &WritingResources) -> Vec<String> {
         }
     }
     tracing::debug!(
-        "Found {:} traj files in {:}",
+        "Found {:} trajectory files in {:}",
         out.len(),
         deploy_dir.display()
     );

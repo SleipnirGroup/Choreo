@@ -7,8 +7,8 @@ import {
 import { Env } from "../DocumentManager";
 import { EventMarkerStore, IEventMarkerStore } from "../EventMarkerStore";
 
-export const ChoreoTrajStore = types
-  .model("ChoreoTrajStore", {
+export const ChoreoTrajectoryStore = types
+  .model("ChoreoTrajectoryStore", {
     waypoints: types.frozen<number[]>(),
     samples: types.frozen<SwerveSample[] | DifferentialSample[]>(),
     splits: types.frozen<number[]>(),
@@ -16,7 +16,7 @@ export const ChoreoTrajStore = types
     markers: types.array(EventMarkerStore)
   })
   .views((self) => ({
-    get fullTraj(): SwerveSample[] | DifferentialSample[] {
+    get fullTrajectory(): SwerveSample[] | DifferentialSample[] {
       return self.samples;
     },
     get isSwerve(): boolean {
@@ -37,7 +37,9 @@ export const ChoreoTrajStore = types
     // 5,2,1,
     // 6,2,2
     // the last interval of a section is considered the first interval of the next
-    getIdxOfFullTraj(indexRemaining: number): [number, number] | undefined {
+    getIdxOfFullTrajectory(
+      indexRemaining: number
+    ): [number, number] | undefined {
       if (self.samples.length === 0) {
         return undefined;
       }
@@ -100,7 +102,7 @@ export const ChoreoTrajStore = types
         marker = getEnv<Env>(self).create.EventMarkerStore({
           name: "Marker",
           target: "first",
-          trajTargetIndex: undefined,
+          trajectoryTargetIndex: undefined,
           targetTimestamp: undefined,
           offset: { exp: "0 s", val: 0 },
           command: {
@@ -128,4 +130,4 @@ export const ChoreoTrajStore = types
     }
   }));
 
-export type IChoreoTrajStore = Instance<typeof ChoreoTrajStore>;
+export type IChoreoTrajectoryStore = Instance<typeof ChoreoTrajectoryStore>;

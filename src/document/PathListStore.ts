@@ -1,5 +1,5 @@
 import { Instance, getEnv, types } from "mobx-state-tree";
-import { Traj } from "./2025/DocumentTypes";
+import { Trajectory } from "./2025/DocumentTypes";
 import { Env } from "./DocumentManager";
 import { HolonomicPathStore } from "./path/HolonomicPathStore";
 
@@ -56,7 +56,7 @@ export const PathListStore = types
               waypoints: [],
               constraints: []
             },
-            traj: {
+            trajectory: {
               waypoints: [],
               samples: [],
               splits: [],
@@ -83,7 +83,11 @@ export const PathListStore = types
           self.activePathUUID = uuid;
         }
       },
-      addPath(name: string, select: boolean = false, contents?: Traj): string {
+      addPath(
+        name: string,
+        select: boolean = false,
+        contents?: Trajectory
+      ): string {
         const usedName = this.disambiguateName(name);
         const newUUID = crypto.randomUUID();
         const env = getEnv<Env>(self);
@@ -104,7 +108,7 @@ export const PathListStore = types
                 waypoints: [],
                 constraints: []
               },
-              traj: {
+              trajectory: {
                 waypoints: [],
                 samples: [],
                 splits: [],

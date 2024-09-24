@@ -13,7 +13,7 @@ ChoreoSwerveCommand::ChoreoSwerveCommand(
     ChoreoControllerFunction controller,
     std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds,
     std::function<bool(void)> mirrorTrajectory, frc2::Requirements requirements)
-    : m_traj(std::move(trajectory)),
+    : m_trajectory(std::move(trajectory)),
       m_pose(std::move(poseSupplier)),
       m_controller(std::move(controller)),
       m_outputChassisSpeeds(std::move(outputChassisSpeeds)),
@@ -31,7 +31,7 @@ void ChoreoSwerveCommand::Execute() {
   units::second_t currentTrajTime = m_timer.Get();
   bool mirror = m_mirrorTrajectory();
   m_outputChassisSpeeds(
-      m_controller(m_pose(), m_traj.Sample(currentTrajTime, mirror)));
+      m_controller(m_pose(), m_trajectory.Sample(currentTrajTime, mirror)));
 }
 
 // Called once the command ends or is interrupted.
@@ -41,5 +41,5 @@ void ChoreoSwerveCommand::End(bool interrupted) {
 
 // Returns true when the command should end.
 bool ChoreoSwerveCommand::IsFinished() {
-  return m_timer.HasElapsed(m_traj.GetTotalTime());
+  return m_timer.HasElapsed(m_trajectory.GetTotalTime());
 }

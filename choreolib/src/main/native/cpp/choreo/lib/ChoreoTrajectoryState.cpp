@@ -92,45 +92,48 @@ ChoreoTrajectoryState ChoreoTrajectoryState::Flipped() const {
 }
 
 void choreolib::to_json(wpi::json& json,
-                        const ChoreoTrajectoryState& trajState) {
+                        const ChoreoTrajectoryState& trajectoryState) {
   // convert unit checked arrays to raw double arrays
   std::array<double, 4> fx;
-  std::transform(trajState.moduleForcesX.begin(), trajState.moduleForcesX.end(),
-                 fx.begin(), [](units::newton_t x) { return x.value(); });
+  std::transform(trajectoryState.moduleForcesX.begin(),
+                 trajectoryState.moduleForcesX.end(), fx.begin(),
+                 [](units::newton_t x) { return x.value(); });
 
   std::array<double, 4> fy;
-  std::transform(trajState.moduleForcesY.begin(), trajState.moduleForcesY.end(),
-                 fy.begin(), [](units::newton_t x) { return x.value(); });
+  std::transform(trajectoryState.moduleForcesY.begin(),
+                 trajectoryState.moduleForcesY.end(), fy.begin(),
+                 [](units::newton_t x) { return x.value(); });
 
-  json = wpi::json{{"timestamp", trajState.timestamp.value()},
-                   {"x", trajState.x.value()},
-                   {"y", trajState.y.value()},
-                   {"heading", trajState.heading.value()},
-                   {"velocityX", trajState.velocityX.value()},
-                   {"velocityY", trajState.velocityY.value()},
-                   {"angularVelocity", trajState.angularVelocity.value()},
+  json = wpi::json{{"timestamp", trajectoryState.timestamp.value()},
+                   {"x", trajectoryState.x.value()},
+                   {"y", trajectoryState.y.value()},
+                   {"heading", trajectoryState.heading.value()},
+                   {"velocityX", trajectoryState.velocityX.value()},
+                   {"velocityY", trajectoryState.velocityY.value()},
+                   {"angularVelocity", trajectoryState.angularVelocity.value()},
                    {"moduleForcesX", fx},
                    {"moduleForcesY", fy}};
 }
 
 void choreolib::from_json(const wpi::json& json,
-                          ChoreoTrajectoryState& trajState) {
-  trajState.timestamp = units::second_t{json.at("timestamp").get<double>()};
-  trajState.x = units::meter_t{json.at("x").get<double>()};
-  trajState.y = units::meter_t{json.at("y").get<double>()};
-  trajState.heading = units::radian_t{json.at("heading").get<double>()};
-  trajState.velocityX =
+                          ChoreoTrajectoryState& trajectoryState) {
+  trajectoryState.timestamp =
+      units::second_t{json.at("timestamp").get<double>()};
+  trajectoryState.x = units::meter_t{json.at("x").get<double>()};
+  trajectoryState.y = units::meter_t{json.at("y").get<double>()};
+  trajectoryState.heading = units::radian_t{json.at("heading").get<double>()};
+  trajectoryState.velocityX =
       units::meters_per_second_t{json.at("velocityX").get<double>()};
-  trajState.velocityY =
+  trajectoryState.velocityY =
       units::meters_per_second_t{json.at("velocityY").get<double>()};
-  trajState.angularVelocity =
+  trajectoryState.angularVelocity =
       units::radians_per_second_t{json.at("angularVelocity").get<double>()};
 
   // these probably get optimized out anyways, but wanted to reduce accesses
   const auto& fx = json.at("moduleForcesX");
   const auto& fy = json.at("moduleForcesY");
   for (int i = 0; i < 4; ++i) {
-    trajState.moduleForcesX[i] = units::newton_t{fx.at(i).get<double>()};
-    trajState.moduleForcesY[i] = units::newton_t{fy.at(i).get<double>()};
+    trajectoryState.moduleForcesX[i] = units::newton_t{fx.at(i).get<double>()};
+    trajectoryState.moduleForcesY[i] = units::newton_t{fy.at(i).get<double>()};
   }
 }

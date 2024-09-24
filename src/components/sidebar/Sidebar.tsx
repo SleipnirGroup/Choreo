@@ -154,7 +154,7 @@ class Sidebar extends Component<Props, State> {
             <span>MARKERS</span>
           </Divider>
           <div className={styles.WaypointList}>
-            {doc.pathlist.activePath.traj.markers.map(
+            {doc.pathlist.activePath.trajectory.markers.map(
               (marker: IEventMarkerStore, index: number) => {
                 return (
                   <SidebarEventMarker
@@ -166,7 +166,7 @@ class Sidebar extends Component<Props, State> {
               }
             )}
           </div>
-          {doc.pathlist.activePath.traj.markers.length == 0 && (
+          {doc.pathlist.activePath.trajectory.markers.length == 0 && (
             <div className={styles.SidebarItem + " " + styles.Noninteractible}>
               <span></span>
               <span style={{ color: "gray", fontStyle: "italic" }}>

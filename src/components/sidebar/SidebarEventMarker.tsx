@@ -7,7 +7,7 @@ import React, { Component } from "react";
 import { WaypointID } from "../../document/ConstraintDefinitions";
 import { doc } from "../../document/DocumentManager";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
-import { IChoreoTrajStore } from "../../document/path/ChoreoTrajStore";
+import { IChoreoTrajectoryStore } from "../../document/path/ChoreoTrajectoryStore";
 import { IHolonomicPathStore } from "../../document/path/HolonomicPathStore";
 import styles from "./Sidebar.module.css";
 
@@ -28,7 +28,7 @@ class SidebarMarker extends Component<Props, State> {
     if (id == "last") return "End";
     return (
       getParent<IHolonomicPathStore>(
-        getParent<IChoreoTrajStore>(
+        getParent<IChoreoTrajectoryStore>(
           getParent<IEventMarkerStore[]>(this.props.marker)
         )
       ).params.findUUIDIndex(id.uuid) + 1
@@ -102,7 +102,9 @@ class SidebarMarker extends Component<Props, State> {
             className={styles.SidebarRightIcon}
             onClick={(e) => {
               e.stopPropagation();
-              doc.pathlist.activePath.traj.deleteMarkerUUID(marker?.uuid || "");
+              doc.pathlist.activePath.trajectory.deleteMarkerUUID(
+                marker?.uuid || ""
+              );
             }}
           >
             <DeleteIcon />
