@@ -2,7 +2,7 @@ use trajoptlib::{DifferentialDrivetrain, PathBuilder, SwerveDrivetrain};
 
 use crate::spec::project::{RobotConfig};
 
-use super::{DiffyGenerationTransformer, FeatureLockedTransformer, GenerationContext, SwerveGenerationTransformer};
+use super::{DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext, SwerveGenerationTransformer};
 
 
 pub struct DrivetrainAndBumpersSetter {
@@ -10,7 +10,7 @@ pub struct DrivetrainAndBumpersSetter {
 }
 
 impl DrivetrainAndBumpersSetter {
-    // separately implement initialize to share between diffy and swerve
+    // separately implement initialize to share between differential and swerve
     fn initialize(ctx: &GenerationContext) -> FeatureLockedTransformer<Self> {
         FeatureLockedTransformer::always(Self {
             config: ctx.project.config.snapshot()
@@ -43,7 +43,7 @@ impl SwerveGenerationTransformer for DrivetrainAndBumpersSetter {
     }
 }
 
-impl DiffyGenerationTransformer for DrivetrainAndBumpersSetter {
+impl DifferentialGenerationTransformer for DrivetrainAndBumpersSetter {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
         Self::initialize(context)
     }

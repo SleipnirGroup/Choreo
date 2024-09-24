@@ -2,7 +2,7 @@ use trajoptlib::PathBuilder;
 
 use crate::spec::traj::{ConstraintData, ConstraintIDX, ConstraintScope};
 
-use super::{DiffyGenerationTransformer, FeatureLockedTransformer, GenerationContext, SwerveGenerationTransformer};
+use super::{DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext, SwerveGenerationTransformer};
 
 fn fix_scope(idx: usize, removed_idxs: &[usize]) -> usize {
     let mut to_subtract: usize = 0;
@@ -20,7 +20,7 @@ pub struct ConstraintSetter {
 }
 
 impl ConstraintSetter {
-    // separately implement initialize to share between diffy and swerve
+    // separately implement initialize to share between differential and swerve
     fn initialize(ctx: &GenerationContext) -> FeatureLockedTransformer<Self> {
         let mut guess_points: Vec<usize> = Vec::new();
         let mut constraint_idx = Vec::<ConstraintIDX<f64>>::new();
@@ -138,7 +138,7 @@ impl SwerveGenerationTransformer for ConstraintSetter {
     }
 }
 
-impl DiffyGenerationTransformer for ConstraintSetter {
+impl DifferentialGenerationTransformer for ConstraintSetter {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
         Self::initialize(context)
     }

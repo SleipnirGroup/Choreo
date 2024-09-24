@@ -38,7 +38,8 @@ pub(super) struct TrajFileGenerator {
     ctx: GenerationContext,
     trajfile: TrajFile,
     swerve_transformers: HashMap<String, Vec<Box<dyn InitializedSwerveGenerationTransformer>>>,
-    diffy_transformers: HashMap<String, Vec<Box<dyn InitializedDiffyGenerationTransformer>>>,
+    differential_transformers:
+        HashMap<String, Vec<Box<dyn InitializedDifferentialGenerationTransformer>>>,
 }
 
 impl TrajFileGenerator {
@@ -52,7 +53,7 @@ impl TrajFileGenerator {
             },
             trajfile,
             swerve_transformers: HashMap::new(),
-            diffy_transformers: HashMap::new(),
+            differential_transformers: HashMap::new(),
         }
     }
 
@@ -68,11 +69,11 @@ impl TrajFileGenerator {
     }
 
     /// Add a transformer to the generator that is only applied when generating a differential trajectory
-    pub fn add_diffy_transformer<T: DiffyGenerationTransformer + 'static>(&mut self) {
+    pub fn add_differential_transformer<T: DifferentialGenerationTransformer + 'static>(&mut self) {
         let featurelocked_transformer = T::initialize(&self.ctx);
         let feature = featurelocked_transformer.feature;
         let transformer = Box::new(featurelocked_transformer.inner);
-        self.diffy_transformers
+        self.differential_transformers
             .entry(feature)
             .or_default()
             .push(transformer);
@@ -80,12 +81,12 @@ impl TrajFileGenerator {
 
     /// Add a transformer to the generator that is applied when generating both swerve and differential trajectories
     pub fn add_omni_transformer<
-        T: SwerveGenerationTransformer + DiffyGenerationTransformer + 'static,
+        T: SwerveGenerationTransformer + DifferentialGenerationTransformer + 'static,
     >(
         &mut self,
     ) {
         self.add_swerve_transformer::<T>();
-        self.add_diffy_transformer::<T>();
+        self.add_differential_transformer::<T>();
     }
 
     fn generate_swerve(&self, handle: i64) -> ChoreoResult<SwerveTrajectory> {
@@ -108,17 +109,17 @@ impl TrajFileGenerator {
         builder.generate(true, handle).map_err(Into::into)
     }
 
-    fn generate_diffy(&self, handle: i64) -> ChoreoResult<DifferentialTrajectory> {
+    fn generate_differential(&self, handle: i64) -> ChoreoResult<DifferentialTrajectory> {
         let mut builder = DifferentialPathBuilder::new();
         let mut feature_set = HashSet::new();
         feature_set.extend(self.ctx.project.generation_features.clone());
         feature_set.insert("".to_string());
 
-        println!("Generating Diffy Trajectory");
+        println!("Generating Differential Trajectory");
         println!("Features: {:?}", feature_set);
 
         for feature in feature_set.iter() {
-            if let Some(transformers) = self.diffy_transformers.get(feature) {
+            if let Some(transformers) = self.differential_transformers.get(feature) {
                 for transformer in transformers.iter() {
                     transformer.trans(&mut builder);
                 }
@@ -138,7 +139,7 @@ impl TrajFileGenerator {
                 .map(Into::into)
                 .collect(),
             DriveType::Differential => self
-                .generate_diffy(self.ctx.handle)?
+                .generate_differential(self.ctx.handle)?
                 .samples
                 .into_iter()
                 .map(Into::into)
@@ -190,22 +191,22 @@ impl<T: SwerveGenerationTransformer> InitializedSwerveGenerationTransformer for 
     }
 }
 
-/// An object safe variant of the [`DiffyGenerationTransformer`] trait,
+/// An object safe variant of the [`DifferentialGenerationTransformer`] trait,
 ///
-/// Should not be implemented directly, instead implement [`DiffyGenerationTransformer`]
-pub(super) trait InitializedDiffyGenerationTransformer {
+/// Should not be implemented directly, instead implement [`DifferentialGenerationTransformer`]
+pub(super) trait InitializedDifferentialGenerationTransformer {
     fn trans(&self, builder: &mut DifferentialPathBuilder);
 }
 
 /// A trait for objects that can transform a [`DifferentialPathBuilder`]
-pub(super) trait DiffyGenerationTransformer:
-    InitializedDiffyGenerationTransformer + Sized
+pub(super) trait DifferentialGenerationTransformer:
+    InitializedDifferentialGenerationTransformer + Sized
 {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self>;
     fn transform(&self, builder: &mut DifferentialPathBuilder);
 }
 
-impl<T: DiffyGenerationTransformer> InitializedDiffyGenerationTransformer for T {
+impl<T: DifferentialGenerationTransformer> InitializedDifferentialGenerationTransformer for T {
     fn trans(&self, builder: &mut DifferentialPathBuilder) {
         self.transform(builder);
     }

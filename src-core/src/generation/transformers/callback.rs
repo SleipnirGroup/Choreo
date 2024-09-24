@@ -2,13 +2,13 @@ use trajoptlib::{DifferentialTrajectory, SwerveTrajectory};
 
 use crate::{generation::generate::{LocalProgressUpdate, PROGRESS_SENDER_LOCK}, ResultExt};
 
-use super::{DiffyGenerationTransformer, FeatureLockedTransformer, GenerationContext, SwerveGenerationTransformer};
+use super::{DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext, SwerveGenerationTransformer};
 
 
 pub struct CallbackSetter;
 
 impl CallbackSetter {
-    // separately implement initialize to share between diffy and swerve
+    // separately implement initialize to share between differential and swerve
     fn initialize(_: &GenerationContext) -> FeatureLockedTransformer<Self> {
         FeatureLockedTransformer::always(Self)
     }
@@ -39,7 +39,7 @@ impl SwerveGenerationTransformer for CallbackSetter {
     }
 }
 
-impl DiffyGenerationTransformer for CallbackSetter {
+impl DifferentialGenerationTransformer for CallbackSetter {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
         Self::initialize(context)
     }
