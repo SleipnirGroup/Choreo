@@ -1,40 +1,77 @@
+import edu.wpi.first.toolchain.*
+
 plugins {
     id 'cpp'
     id 'java'
+    id 'java-library'
     id 'google-test'
     id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2020.2'
-    id 'edu.wpi.first.NativeUtils' version '2024.7.2'
+    id 'edu.wpi.first.NativeUtils' version '2025.3.0'
     id 'edu.wpi.first.GradleJni' version '1.1.0'
     id 'edu.wpi.first.GradleVsCode' version '2.1.0'
     id 'com.diffplug.spotless' version '6.25.0'
     id 'jacoco'
 }
 
+ext.getCurrentArch = {
+    return NativePlatforms.desktop
+}
+
+def systemArch = getCurrentArch()
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
 repositories {
     mavenCentral()
 }
-// if (project.hasProperty('releaseMode')) {
-wpilibRepositories.addAllReleaseRepositories(project)
-// } else {
-//     wpilibRepositories.addAllDevelopmentRepositories(project)
-// }
+if (project.hasProperty('releaseMode')) {
+    wpilibRepositories.addAllReleaseRepositories(project)
+} else {
+    wpilibRepositories.addAllDevelopmentRepositories(project)
+}
 
 // Apply C++ configuration
 apply from: 'config.gradle'
 
 // Apply Java configuration
 dependencies {
-    implementation 'edu.wpi.first.wpilibj:wpilibj-java:2024.+'
-    implementation 'edu.wpi.first.wpiutil:wpiutil-java:2024.+'
-    implementation 'edu.wpi.first.wpimath:wpimath-java:2024.+'
-    implementation 'edu.wpi.first.wpilibNewCommands:wpilibNewCommands-java:2024.+'
-    implementation 'edu.wpi.first.wpiunits:wpiunits-java:2024.+'
+    implementation 'edu.wpi.first.wpilibj:wpilibj-java:2025.+'
+    implementation 'edu.wpi.first.wpiutil:wpiutil-java:2025.+'
+    implementation 'edu.wpi.first.wpimath:wpimath-java:2025.+'
+    implementation 'edu.wpi.first.wpilibNewCommands:wpilibNewCommands-java:2025.+'
+    implementation 'edu.wpi.first.wpiunits:wpiunits-java:2025.+'
+    implementation 'edu.wpi.first.ntcore:ntcore-java:2025.+'
+    implementation 'edu.wpi.first.ntcore:ntcore-jni:2025.+'
 
     implementation 'com.google.code.gson:gson:2.10.1'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.8.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    // This is needed to use wpilibj Filesystem class
+    testImplementation 'edu.wpi.first.cscore:cscore-java:2025.+'
+    testImplementation 'edu.wpi.first.cameraserver:cameraserver-java:2025.+'
+    testImplementation 'edu.wpi.first.hal:hal-java:2025.+'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+
+// Set up java tests
+test {
+    useJUnitPlatform()
+    systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true'
+    testLogging {
+        events "failed"
+        exceptionFormat "full"
+    }
+}
+
+if (project.hasProperty('onlylinuxathena') || project.hasProperty('onlylinuxarm32') || project.hasProperty('onlylinuxarm64') || project.hasProperty('onlywindowsarm64')) {
+    test.enabled = false
 }
 
 // Set up exports properly
@@ -98,6 +135,17 @@ model {
             }
 
             nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared", "googletest_static")
+
+            binaries.all {
+                def arch = it.targetPlatform.name
+                if (systemArch == arch && it.buildType.name == 'debug') {
+                    def filePath = it.tasks.install.installDirectory.get().toString() + File.separatorChar + 'lib'
+                    test.dependsOn it.tasks.install
+                    test.systemProperty 'java.library.path', filePath
+                    test.environment 'LD_LIBRARY_PATH', filePath
+                    test.workingDir filePath
+                }
+            }
         }
     }
 }

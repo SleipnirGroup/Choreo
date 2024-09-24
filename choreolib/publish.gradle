@@ -42,10 +42,10 @@ ext.addTaskToCopyAllOutputs = { task ->
     copyAllOutputs.from task.archiveFile
 }
 
-def artifactGroupId = 'com.choreo.lib'
+def artifactGroupId = 'choreo'
 def baseArtifactId = 'ChoreoLib'
-def zipBaseName = "_GROUP_com_choreo_lib_ID_${baseArtifactId}-cpp_CLS"
-def javaBaseName = "_GROUP_com_choreo_lib_ID_${baseArtifactId}-java_CLS"
+def zipBaseName = "_GROUP_choreo_ID_${baseArtifactId}-cpp_CLS"
+def javaBaseName = "_GROUP_choreo_ID_${baseArtifactId}-java_CLS"
 
 task cppHeadersZip(type: Zip) {
     destinationDirectory = outputsFolder
