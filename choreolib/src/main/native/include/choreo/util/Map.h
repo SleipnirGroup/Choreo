@@ -7,8 +7,7 @@
 #include <stdexcept>
 #include <utility>
 
-namespace choreo {
-namespace util {
+namespace choreo::util {
 template <typename Key, typename Value, size_t Size>
 class Map {
  public:
@@ -33,5 +32,4 @@ class Map {
 
 template <typename Key, typename Value, size_t Size>
 Map(const std::array<std::pair<Key, Value>, Size>&) -> Map<Key, Value, Size>;
-}  // namespace util
-}  // namespace choreo
+}  // namespace choreo::util

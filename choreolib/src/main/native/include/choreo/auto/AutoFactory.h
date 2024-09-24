@@ -38,7 +38,7 @@ class AutoBindings {
   std::unordered_map<std::string, frc2::CommandPtr> bindings;
 };
 
-template <trajectory::TrajSample SampleType>
+template <choreo::TrajectorySample SampleType>
 class AutoFactory {
  public:
   AutoFactory(std::function<frc::Pose2d()> poseSupplier,
@@ -57,9 +57,9 @@ class AutoFactory {
   AutoLoop<SampleType> NewLoop() const { return AutoLoop<SampleType>(); }
   AutoTrajectory<SampleType> Traj(const std::string& trajName,
                                   AutoLoop<SampleType> loop) const {
-    std::optional<choreo::trajectory::Trajectory<SampleType>> optTraj =
+    std::optional<choreo::Trajectory<SampleType>> optTraj =
         Choreo::LoadTrajectory<SampleType>(trajName);
-    choreo::trajectory::Trajectory<SampleType> traj;
+    choreo::Trajectory<SampleType> traj;
     if (optTraj.has_value()) {
       traj = optTraj.value();
     } else {
@@ -82,9 +82,9 @@ class AutoFactory {
   }
   AutoTrajectory<SampleType> Traj(const std::string& trajName, int splitIndex,
                                   AutoLoop<SampleType> loop) const {
-    std::optional<choreo::trajectory::Trajectory<SampleType>> optTraj =
+    std::optional<choreo::Trajectory<SampleType>> optTraj =
         Choreo::LoadTrajectory<SampleType>(trajName);
-    choreo::trajectory::Trajectory<SampleType> traj;
+    choreo::Trajectory<SampleType> traj;
     if (optTraj.has_value()) {
       traj = optTraj.value();
     } else {
@@ -94,7 +94,7 @@ class AutoFactory {
     return Traj(traj, loop);
   }
   AutoTrajectory<SampleType> Traj(
-      choreo::trajectory::Trajectory<SampleType> trajectory,
+      choreo::Trajectory<SampleType> trajectory,
       AutoLoop<SampleType> loop) const {
     AutoTrajectory<SampleType> autoTraj{
         trajectory.name, trajectory,          poseSupplier,

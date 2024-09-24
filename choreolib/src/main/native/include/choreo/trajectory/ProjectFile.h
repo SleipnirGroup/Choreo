@@ -13,8 +13,6 @@ inline bool almost_equal(double a, double b, double epsilon = 1e-6) {
 }
 
 namespace choreo {
-namespace trajectory {
-
 class Expression {
  public:
   Expression() = default;
@@ -162,5 +160,4 @@ void from_json(const wpi::json& json, Config& config);
 
 void to_json(wpi::json& json, const ProjectFile& projectFile);
 void from_json(const wpi::json& json, ProjectFile& projectFile);
-}  // namespace trajectory
 }  // namespace choreo

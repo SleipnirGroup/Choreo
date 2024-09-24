@@ -4,9 +4,9 @@
 
 #include <wpi/json.h>
 
-using namespace choreo::trajectory;
+using namespace choreo;
 
-void choreo::trajectory::to_json(wpi::json& json,
+void choreo::to_json(wpi::json& json,
                                  const Trajectory<SwerveSample>& traj) {
   json = wpi::json{{"name", traj.name},
                    {"samples", traj.samples},
@@ -14,7 +14,7 @@ void choreo::trajectory::to_json(wpi::json& json,
                    {"events", traj.events}};
 }
 
-void choreo::trajectory::from_json(const wpi::json& json,
+void choreo::from_json(const wpi::json& json,
                                    Trajectory<SwerveSample>& traj) {
   traj.name = json.at("name").get<std::string>();
   traj.samples = json.at("traj").at("samples").get<std::vector<SwerveSample>>();
@@ -22,7 +22,7 @@ void choreo::trajectory::from_json(const wpi::json& json,
   traj.events = json.at("events").get<std::vector<EventMarker>>();
 }
 
-void choreo::trajectory::to_json(wpi::json& json,
+void choreo::to_json(wpi::json& json,
                                  const Trajectory<DifferentialSample>& traj) {
   json = wpi::json{{"name", traj.name},
                    {"samples", traj.samples},
@@ -30,7 +30,7 @@ void choreo::trajectory::to_json(wpi::json& json,
                    {"events", traj.events}};
 }
 
-void choreo::trajectory::from_json(const wpi::json& json,
+void choreo::from_json(const wpi::json& json,
                                    Trajectory<DifferentialSample>& traj) {
   traj.samples = json.at("traj").at("samples").get<std::vector<DifferentialSample>>();
   traj.splits = json.at("traj").at("splits").get<std::vector<int>>();

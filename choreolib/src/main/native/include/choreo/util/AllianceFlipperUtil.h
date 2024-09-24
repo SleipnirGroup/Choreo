@@ -4,11 +4,10 @@
 
 #include <numbers>
 #include <frc/geometry/Pose2d.h>
-#include "choreo/util/ConstexprMap.h"
+#include "choreo/util/Map.h"
 #include <units/base.h>
 
-namespace choreo {
-namespace util {
+namespace choreo::util {
 
 static constexpr units::meter_t fieldLength = 16.5811_m;
 static constexpr units::meter_t fieldWidth = 8.19912_m;
@@ -47,8 +46,6 @@ struct RotateAroundFlipper {
 };
 
 constexpr Map flipperMap{std::array{
-    std::pair{2020, FlipperType::RotateAround},
-    std::pair{2021, FlipperType::RotateAround},
     std::pair{2022, FlipperType::RotateAround},
     std::pair{2023, FlipperType::Mirrored},
     std::pair{2024, FlipperType::Mirrored},
@@ -56,14 +53,30 @@ constexpr Map flipperMap{std::array{
 
 template <int Year>
 constexpr auto GetFlipperForYear() {
-  constexpr FlipperType flipperType = flipperMap.at(Year);
-  if constexpr (flipperType == FlipperType::RotateAround) {
-    return RotateAroundFlipper{};
-  } else if constexpr (flipperType == FlipperType::Mirrored) {
-    return MirroredFlipper{};
+  static_assert(Year != Year, "Year is: ");  // This should always fail and print the Year
+
+  // Check if Year is in the flipperMap
+  constexpr bool yearInMap = []() {
+    try {
+      (void)flipperMap.at(Year);  // attempt to access the year
+      return true;
+    } catch (...) {
+      return false;
+    }
+  }();
+
+  if constexpr (!yearInMap) {
+    static_assert(yearInMap, "Year not found in flipperMap");
   } else {
-    static_assert(sizeof(Year) == 0, "Unsupported FlipperType");
+    constexpr auto flipperType = flipperMap.at(Year);
+    if constexpr (flipperType == FlipperType::RotateAround) {
+      return RotateAroundFlipper{};
+    } else if constexpr (flipperType == FlipperType::Mirrored) {
+      return MirroredFlipper{};
+    } else {
+      static_assert(flipperType == FlipperType::RotateAround || flipperType == FlipperType::Mirrored, 
+                    "Invalid FlipperType in flipperMap");
+    }
   }
 }
-}  // namespace util
-}  // namespace choreo
+}

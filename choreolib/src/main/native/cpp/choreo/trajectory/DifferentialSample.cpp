@@ -6,9 +6,9 @@
 #include <wpi/json.h>
 
 #include "choreo/Choreo.h"
-#include "choreo/trajectory/TrajSample.h"
+#include "choreo/trajectory/TrajectorySample.h"
 
-using namespace choreo::trajectory;
+using namespace choreo;
 
 units::second_t DifferentialSample::GetTimestamp() const {
   return timestamp;
@@ -52,32 +52,32 @@ DifferentialSample DifferentialSample::Interpolate(const DifferentialSample& end
   };
 }
 
-void choreo::trajectory::to_json(wpi::json& json,
-                                 const DifferentialSample& trajSample) {
-  json = wpi::json{{"t", trajSample.timestamp.value()},
-                   {"x", trajSample.x.value()},
-                   {"y", trajSample.y.value()},
-                   {"heading", trajSample.heading.value()},
-                   {"vl", trajSample.vl.value()},
-                   {"vr", trajSample.vr.value()},
-                   {"al", trajSample.al.value()},
-                   {"ar", trajSample.ar.value()},
-                   {"fl", trajSample.fl.value()},
-                   {"fr", trajSample.fr.value()}};
+void choreo::to_json(wpi::json& json,
+                                 const DifferentialSample& trajectorySample) {
+  json = wpi::json{{"t", trajectorySample.timestamp.value()},
+                   {"x", trajectorySample.x.value()},
+                   {"y", trajectorySample.y.value()},
+                   {"heading", trajectorySample.heading.value()},
+                   {"vl", trajectorySample.vl.value()},
+                   {"vr", trajectorySample.vr.value()},
+                   {"al", trajectorySample.al.value()},
+                   {"ar", trajectorySample.ar.value()},
+                   {"fl", trajectorySample.fl.value()},
+                   {"fr", trajectorySample.fr.value()}};
 }
 
-void choreo::trajectory::from_json(const wpi::json& json,
-                                   DifferentialSample& trajSample) {
-  trajSample.timestamp = units::second_t{json.at("t").get<double>()};
-  trajSample.x = units::meter_t{json.at("x").get<double>()};
-  trajSample.y = units::meter_t{json.at("y").get<double>()};
-  trajSample.heading = units::radian_t{json.at("heading").get<double>()};
-  trajSample.vl = units::meters_per_second_t{json.at("vl").get<double>()};
-  trajSample.vr = units::meters_per_second_t{json.at("vr").get<double>()};
-  trajSample.al =
+void choreo::from_json(const wpi::json& json,
+                                   DifferentialSample& trajectorySample) {
+  trajectorySample.timestamp = units::second_t{json.at("t").get<double>()};
+  trajectorySample.x = units::meter_t{json.at("x").get<double>()};
+  trajectorySample.y = units::meter_t{json.at("y").get<double>()};
+  trajectorySample.heading = units::radian_t{json.at("heading").get<double>()};
+  trajectorySample.vl = units::meters_per_second_t{json.at("vl").get<double>()};
+  trajectorySample.vr = units::meters_per_second_t{json.at("vr").get<double>()};
+  trajectorySample.al =
       units::meters_per_second_squared_t{json.at("al").get<double>()};
-  trajSample.ar =
+  trajectorySample.ar =
       units::meters_per_second_squared_t{json.at("ar").get<double>()};
-  trajSample.fl = units::newton_t{json.at("fl").get<double>()};
-  trajSample.fr = units::newton_t{json.at("fr").get<double>()};
+  trajectorySample.fl = units::newton_t{json.at("fl").get<double>()};
+  trajectorySample.fr = units::newton_t{json.at("fr").get<double>()};
 }

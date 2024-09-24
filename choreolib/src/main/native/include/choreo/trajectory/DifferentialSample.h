@@ -14,11 +14,10 @@
 #include <units/velocity.h>
 #include <wpi/json_fwd.h>
 
-#include "choreo/trajectory/TrajSample.h"
+#include "choreo/trajectory/TrajectorySample.h"
 #include "choreo/util/AllianceFlipperUtil.h"
 
 namespace choreo {
-namespace trajectory {
 class DifferentialSample {
  public:
   DifferentialSample() = default;
@@ -83,9 +82,8 @@ class DifferentialSample {
   units::newton_t fr = 0_N;
 };
 
-void to_json(wpi::json& json, const DifferentialSample& trajSample);
-void from_json(const wpi::json& json, DifferentialSample& trajSample);
-}  // namespace trajectory
+void to_json(wpi::json& json, const DifferentialSample& trajectorySample);
+void from_json(const wpi::json& json, DifferentialSample& trajectorySample);
 }  // namespace choreo
 
 #include "choreo/trajectory/struct/DifferentialSampleStruct.h"

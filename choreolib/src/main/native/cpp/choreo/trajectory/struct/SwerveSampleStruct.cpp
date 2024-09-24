@@ -23,11 +23,11 @@ constexpr size_t kMfY2Off = kMfY1Off + 8;
 constexpr size_t kMfY3Off = kMfY2Off + 8;
 }  // namespace
 
-using StructType = wpi::Struct<choreo::trajectory::SwerveSample>;
+using StructType = wpi::Struct<choreo::SwerveSample>;
 
-choreo::trajectory::SwerveSample StructType::Unpack(
+choreo::SwerveSample StructType::Unpack(
     std::span<const uint8_t> data) {
-  return choreo::trajectory::SwerveSample{
+  return choreo::SwerveSample{
       units::second_t{wpi::UnpackStruct<double, kTimestampOff>(data)},
       units::meter_t{wpi::UnpackStruct<double, kXOff>(data)},
       units::meter_t{wpi::UnpackStruct<double, kYOff>(data)},
@@ -53,7 +53,7 @@ choreo::trajectory::SwerveSample StructType::Unpack(
 }
 
 void StructType::Pack(std::span<uint8_t> data,
-                      const choreo::trajectory::SwerveSample& value) {
+                      const choreo::SwerveSample& value) {
   wpi::PackStruct<kTimestampOff>(data, value.timestamp.value());
   wpi::PackStruct<kXOff>(data, value.x.value());
   wpi::PackStruct<kYOff>(data, value.y.value());

@@ -23,9 +23,8 @@ static constexpr frc::Pose2d Interpolate(const frc::Pose2d& startValue,
 }  // namespace frc
 
 namespace choreo {
-namespace trajectory {
 template <typename T>
-concept TrajSample = requires(T t, units::second_t time, T tother, int year) {
+concept TrajectorySample = requires(T t, units::second_t time, T tother, int year) {
   { t.GetTimestamp() } -> std::same_as<units::second_t>;
   { t.GetPose() } -> std::same_as<frc::Pose2d>;
   { t.GetChassisSpeeds() } -> std::same_as<frc::ChassisSpeeds>;
@@ -37,5 +36,4 @@ concept TrajSample = requires(T t, units::second_t time, T tother, int year) {
         };
     };
 };
-}  // namespace trajectory
 }  // namespace choreo

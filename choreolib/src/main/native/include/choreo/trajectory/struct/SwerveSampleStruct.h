@@ -8,7 +8,7 @@
 #include "choreo/trajectory/SwerveSample.h"
 
 template <>
-struct wpi::Struct<choreo::trajectory::SwerveSample> {
+struct wpi::Struct<choreo::SwerveSample> {
   static constexpr std::string_view GetTypeName() { return "SwerveSample"; }
   static constexpr size_t GetSize() { return 144; }
   static constexpr std::string_view GetSchema() {
@@ -17,9 +17,9 @@ struct wpi::Struct<choreo::trajectory::SwerveSample> {
            "moduleForcesX[4];double moduleForcesY[4];";
   }
 
-  static choreo::trajectory::SwerveSample Unpack(std::span<const uint8_t> data);
+  static choreo::SwerveSample Unpack(std::span<const uint8_t> data);
   static void Pack(std::span<uint8_t> data,
-                   const choreo::trajectory::SwerveSample& value);
+                   const choreo::SwerveSample& value);
 };
 
-static_assert(wpi::StructSerializable<choreo::trajectory::SwerveSample>);
+static_assert(wpi::StructSerializable<choreo::SwerveSample>);

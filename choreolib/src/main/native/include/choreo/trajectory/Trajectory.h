@@ -13,11 +13,10 @@
 #include "choreo/trajectory/DifferentialSample.h"
 #include "choreo/trajectory/EventMarker.h"
 #include "choreo/trajectory/SwerveSample.h"
-#include "choreo/trajectory/TrajSample.h"
+#include "choreo/trajectory/TrajectorySample.h"
 
 namespace choreo {
-namespace trajectory {
-template <TrajSample SampleType>
+template <TrajectorySample SampleType>
 class Trajectory {
  public:
   Trajectory() = default;
@@ -49,7 +48,7 @@ class Trajectory {
       state = SampleInternal(timestamp);
     }
     if(state.has_value()) {
-      return mirrorForRedAlliance ? state.value().Flipped<Year>() : state;
+      return mirrorForRedAlliance ? state.value().template Flipped<Year>() : state;
     }
     else {
       return {};
@@ -61,7 +60,7 @@ class Trajectory {
       return {};
     }
     if (mirrorForRedAlliance) {
-      return samples[0].Flipped<Year>().GetPose();
+      return samples[0].template Flipped<Year>().GetPose();
     }
     return samples[0].GetPose();
   }
@@ -71,7 +70,7 @@ class Trajectory {
       return {};
     }
     if (mirrorForRedAlliance) {
-      return samples[samples.size() - 1].Flipped<Year>().GetPose();
+      return samples[samples.size() - 1].template Flipped<Year>().GetPose();
     }
     return samples[samples.size() - 1].GetPose();
   }
@@ -92,7 +91,7 @@ class Trajectory {
   Trajectory<SampleType> Flipped() {
     std::vector<SampleType> flippedStates;
     for (const auto& state : samples) {
-      flippedStates.push_back(state.Flipped<Year>());
+      flippedStates.push_back(state.template Flipped<Year>());
     }
     return Trajectory<SampleType>(name, flippedStates, splits, events);
   }
@@ -184,5 +183,4 @@ void from_json(const wpi::json& json, Trajectory<SwerveSample>& traj);
 
 void to_json(wpi::json& json, const Trajectory<DifferentialSample>& traj);
 void from_json(const wpi::json& json, Trajectory<DifferentialSample>& traj);
-}  // namespace trajectory
 }  // namespace choreo

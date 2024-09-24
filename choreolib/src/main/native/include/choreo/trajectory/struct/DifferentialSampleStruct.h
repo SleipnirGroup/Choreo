@@ -8,7 +8,7 @@
 #include "choreo/trajectory/DifferentialSample.h"
 
 template <>
-struct wpi::Struct<choreo::trajectory::DifferentialSample> {
+struct wpi::Struct<choreo::DifferentialSample> {
   static constexpr std::string_view GetTypeName() { return "DifferentialSample"; }
   static constexpr size_t GetSize() { return 80; }
   static constexpr std::string_view GetSchema() {
@@ -16,9 +16,9 @@ struct wpi::Struct<choreo::trajectory::DifferentialSample> {
            "vr;double al;double ar;double fl;double fr;";
   }
 
-  static choreo::trajectory::DifferentialSample Unpack(std::span<const uint8_t> data);
+  static choreo::DifferentialSample Unpack(std::span<const uint8_t> data);
   static void Pack(std::span<uint8_t> data,
-                   const choreo::trajectory::DifferentialSample& value);
+                   const choreo::DifferentialSample& value);
 };
 
-static_assert(wpi::StructSerializable<choreo::trajectory::DifferentialSample>);
+static_assert(wpi::StructSerializable<choreo::DifferentialSample>);

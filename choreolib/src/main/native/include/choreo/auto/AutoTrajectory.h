@@ -15,12 +15,12 @@
 #include <units/time.h>
 
 #include "choreo/trajectory/EventMarker.h"
-#include "choreo/trajectory/TrajSample.h"
+#include "choreo/trajectory/TrajectorySample.h"
 #include "choreo/trajectory/Trajectory.h"
 
 namespace choreo {
 
-template <trajectory::TrajSample SampleType>
+template <choreo::TrajectorySample SampleType>
 using ChoreoControllerFunction =
     std::function<frc::ChassisSpeeds(frc::Pose2d, SampleType)>;
 
@@ -30,11 +30,11 @@ static constexpr units::meter_t DEFAULT_TOLERANCE = 3_in;
 static constexpr frc::ChassisSpeeds DEFAULT_CHASSIS_SPEEDS =
     frc::ChassisSpeeds{};
 
-template <trajectory::TrajSample SampleType>
+template <choreo::TrajectorySample SampleType, int Year>
 class AutoTrajectory {
  public:
   AutoTrajectory(const std::string& name,
-                 const trajectory::Trajectory<SampleType>& trajectory,
+                 const choreo::Trajectory<SampleType>& trajectory,
                  std::function<frc::Pose2d()> poseSupplier,
                  ChoreoControllerFunction<SampleType> controller,
                  std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds,
@@ -129,7 +129,6 @@ class AutoTrajectory {
 
     return trig;
   }
-  template <int Year>
   frc2::Trigger AtPose(const std::string& eventName,
                        units::meter_t tolerance = DEFAULT_TOLERANCE) {
     bool foundEvent = false;
@@ -137,7 +136,7 @@ class AutoTrajectory {
 
     for (const auto& event : trajectory.GetEvents(eventName)) {
       frc::Pose2d pose =
-          trajectory.SampleAt(event.timestamp, mirrorTrajectory()).GetPose();
+          trajectory.SampleAt<Year>(event.timestamp, mirrorTrajectory()).GetPose();
       trig = frc2::Trigger(trig || AtPose(pose, tolerance));
       foundEvent = true;
     }
@@ -175,7 +174,7 @@ class AutoTrajectory {
     LogTrajectory(true);
   }
   void CmdExecute() {
-    SampleType sample = trajectory.SampleAt(TimeIntoTraj(), mirrorTrajectory());
+    SampleType sample = trajectory.SampleAt<Year>(TimeIntoTraj(), mirrorTrajectory());
     frc::ChassisSpeeds chassisSpeeds = DEFAULT_CHASSIS_SPEEDS;
     chassisSpeeds = controller(poseSupplier(), sample);
     outputChassisSpeeds(chassisSpeeds);
@@ -207,7 +206,7 @@ class AutoTrajectory {
   }
 
   const std::string& name;
-  const trajectory::Trajectory<SampleType>& trajectory;
+  const choreo::Trajectory<SampleType>& trajectory;
   std::function<frc::Pose2d()> poseSupplier;
   ChoreoControllerFunction<SampleType> controller;
   std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds;

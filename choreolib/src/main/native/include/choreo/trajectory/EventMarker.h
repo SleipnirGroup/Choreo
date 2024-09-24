@@ -8,7 +8,6 @@
 #include <wpi/json_fwd.h>
 
 namespace choreo {
-namespace trajectory {
 struct EventMarker {
   units::second_t timestamp;
   std::string event;
@@ -20,5 +19,4 @@ struct EventMarker {
 
 void to_json(wpi::json& json, const EventMarker& event);
 void from_json(const wpi::json& json, EventMarker& event);
-}  // namespace trajectory
 }  // namespace choreo

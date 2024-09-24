@@ -20,7 +20,7 @@
 namespace choreo {
 class Choreo {
  public:
-  static trajectory::ProjectFile GetProjectFile() {
+  static choreo::ProjectFile GetProjectFile() {
     if (LAZY_PROJECT_FILE.has_value()) {
       return LAZY_PROJECT_FILE.value();
     }
@@ -50,8 +50,8 @@ class Choreo {
                         "Could not open choreo project file");
       }
 
-      trajectory::ProjectFile resultProjectFile;
-      choreo::trajectory::from_json(fileBuffer.value()->GetCharBuffer(),
+      choreo::ProjectFile resultProjectFile;
+      choreo::from_json(fileBuffer.value()->GetCharBuffer(),
                                     resultProjectFile);
       LAZY_PROJECT_FILE = resultProjectFile;
     } catch (const std::filesystem::filesystem_error& e) {
@@ -64,8 +64,8 @@ class Choreo {
     return LAZY_PROJECT_FILE.value();
   }
 
-  template <trajectory::TrajSample SampleType>
-  static std::optional<choreo::trajectory::Trajectory<SampleType>>
+  template <choreo::TrajectorySample SampleType>
+  static std::optional<choreo::Trajectory<SampleType>>
   LoadTrajectory(std::string trajName) {
     if (trajName.ends_with(TRAJECTORY_FILE_EXTENSION)) {
       trajName = trajName.substr(
@@ -95,23 +95,21 @@ class Choreo {
     return {};
   }
 
-  template <trajectory::TrajSample SampleType>
-  static std::optional<choreo::trajectory::Trajectory<SampleType>>
+  template <choreo::TrajectorySample SampleType>
+  static std::optional<choreo::Trajectory<SampleType>>
   LoadTrajectoryString(const std::string& trajJsonString) {
     wpi::json json = wpi::json::parse(trajJsonString);
-    choreo::trajectory::Trajectory<SampleType> traj;
-    choreo::trajectory::from_json(json, traj);
+    choreo::Trajectory<SampleType> traj;
+    choreo::from_json(json, traj);
     return traj;
   }
 
   static std::string_view GetChoreoDir() { return CHOREO_DIR; }
 
-  // template<trajectory::TrajSample SampleType>
-  // static ChoreoAutoFactory CreateAutoFactory();
  private:
   static constexpr std::string_view TRAJECTORY_FILE_EXTENSION = ".traj";
 
-  static inline std::optional<trajectory::ProjectFile> LAZY_PROJECT_FILE = {};
+  static inline std::optional<choreo::ProjectFile> LAZY_PROJECT_FILE = {};
 
   static inline const std::string CHOREO_DIR =
       frc::filesystem::GetDeployDirectory() + "/choreo";
@@ -119,10 +117,10 @@ class Choreo {
   Choreo();
 };
 
-template <trajectory::TrajSample SampleType>
+template <choreo::TrajectorySample SampleType>
 class ChoreoTrajCache {
  public:
-  static std::optional<choreo::trajectory::Trajectory<SampleType>>
+  static std::optional<choreo::Trajectory<SampleType>>
   LoadTrajectory(const std::string& trajName) {
     if (cache.contains(trajName)) {
       return cache[trajName];
@@ -132,7 +130,7 @@ class ChoreoTrajCache {
     }
   }
 
-  static std::optional<choreo::trajectory::Trajectory<SampleType>>
+  static std::optional<choreo::Trajectory<SampleType>>
   LoadTrajectory(const std::string& trajName, int splitIndex) {
     std::string key = trajName + ".:." + std::to_string(splitIndex);
     if (cache.contains(key)) {
@@ -154,7 +152,7 @@ class ChoreoTrajCache {
 
  private:
   static inline std::unordered_map<std::string,
-                                   trajectory::Trajectory<SampleType>>
+                                   choreo::Trajectory<SampleType>>
       cache;
 };
 }  // namespace choreo

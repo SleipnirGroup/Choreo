@@ -15,11 +15,10 @@
 #include <units/velocity.h>
 #include <wpi/json_fwd.h>
 
-#include "choreo/trajectory/TrajSample.h"
+#include "choreo/trajectory/TrajectorySample.h"
 #include "choreo/util/AllianceFlipperUtil.h"
 
 namespace choreo {
-namespace trajectory {
 class SwerveSample {
  public:
   SwerveSample() = default;
@@ -95,9 +94,8 @@ class SwerveSample {
   std::array<units::newton_t, 4> moduleForcesY{0_N, 0_N, 0_N, 0_N};
 };
 
-void to_json(wpi::json& json, const SwerveSample& trajSample);
-void from_json(const wpi::json& json, SwerveSample& trajSample);
-}  // namespace trajectory
+void to_json(wpi::json& json, const SwerveSample& TrajectorySample);
+void from_json(const wpi::json& json, SwerveSample& TrajectorySample);
 }  // namespace choreo
 
 #include "choreo/trajectory/struct/SwerveSampleStruct.h"

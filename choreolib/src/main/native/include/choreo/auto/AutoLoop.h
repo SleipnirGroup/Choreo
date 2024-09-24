@@ -8,7 +8,7 @@
 #include "choreo/auto/AutoTrajectory.h"
 
 namespace choreo {
-template <trajectory::TrajSample SampleType>
+template <choreo::TrajectorySample SampleType>
 class AutoLoop {
  public:
   AutoLoop() {}

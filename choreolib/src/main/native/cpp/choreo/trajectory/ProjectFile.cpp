@@ -4,13 +4,13 @@
 
 #include <wpi/json.h>
 
-using namespace choreo::trajectory;
+using namespace choreo;
 
-void choreo::trajectory::to_json(wpi::json& json, const Expression& exp) {
+void choreo::to_json(wpi::json& json, const Expression& exp) {
   json = wpi::json{exp.exp, exp.val};
 }
 
-void choreo::trajectory::from_json(const wpi::json& json, Expression& exp) {
+void choreo::from_json(const wpi::json& json, Expression& exp) {
   if (json.is_array() && json.size() == 2 && json[0].is_string() &&
       json[1].is_number()) {
     exp.exp = json[0].get<std::string>();
@@ -20,55 +20,55 @@ void choreo::trajectory::from_json(const wpi::json& json, Expression& exp) {
   }
 }
 
-void choreo::trajectory::to_json(wpi::json& json, const XYExpression& xyexp) {
+void choreo::to_json(wpi::json& json, const XYExpression& xyexp) {
   json = wpi::json{{"x", xyexp.x}, {"y", xyexp.y}};
 }
-void choreo::trajectory::from_json(const wpi::json& json, XYExpression& xyexp) {
+void choreo::from_json(const wpi::json& json, XYExpression& xyexp) {
   json.at("x").get_to(xyexp.x);
   json.at("y").get_to(xyexp.y);
 }
 
-void choreo::trajectory::to_json(wpi::json& json, const Pose& pose) {
+void choreo::to_json(wpi::json& json, const Pose& pose) {
   json = wpi::json{{"x", pose.x}, {"y", pose.y}, {"heading", pose.heading}};
 }
 
-void choreo::trajectory::from_json(const wpi::json& j, Pose& pose) {
+void choreo::from_json(const wpi::json& j, Pose& pose) {
   j.at("x").get_to(pose.x);
   j.at("y").get_to(pose.y);
   j.at("heading").get_to(pose.heading);
 }
 
-void choreo::trajectory::to_json(wpi::json& json, const Bumpers& bumpers) {
+void choreo::to_json(wpi::json& json, const Bumpers& bumpers) {
   json = wpi::json{{"front", bumpers.front},
                    {"left", bumpers.left},
                    {"back", bumpers.back},
                    {"right", bumpers.right}};
 }
 
-void choreo::trajectory::from_json(const wpi::json& json, Bumpers& bumpers) {
+void choreo::from_json(const wpi::json& json, Bumpers& bumpers) {
   json.at("front").get_to(bumpers.front);
   json.at("left").get_to(bumpers.left);
   json.at("back").get_to(bumpers.back);
   json.at("right").get_to(bumpers.right);
 }
 
-void choreo::trajectory::to_json(wpi::json& json, const Variable& var) {
+void choreo::to_json(wpi::json& json, const Variable& var) {
   json = wpi::json{{"dimension", var.dimension}, {"var", var.var}};
 }
 
-void choreo::trajectory::from_json(const wpi::json& json, Variable& var) {
+void choreo::from_json(const wpi::json& json, Variable& var) {
   json.at("dimension").get_to(var.dimension);
   json.at("var").get_to(var.var);
 }
 
-void choreo::trajectory::to_json(wpi::json& json, const Config& config) {
+void choreo::to_json(wpi::json& json, const Config& config) {
   json = wpi::json{{"modules", config.modules},    {"mass", config.mass},
                    {"inertia", config.inertia},    {"gearing", config.gearing},
                    {"radius", config.wheelRadius}, {"vmax", config.vmax},
                    {"tmax", config.tmax},          {"bumper", config.bumpers}};
 }
 
-void choreo::trajectory::from_json(const wpi::json& json, Config& config) {
+void choreo::from_json(const wpi::json& json, Config& config) {
   json.at("modules").get_to(config.modules);
   json.at("mass").get_to<Expression>(config.mass);
   json.at("inertia").get_to(config.inertia);
@@ -79,7 +79,7 @@ void choreo::trajectory::from_json(const wpi::json& json, Config& config) {
   json.at("bumper").get_to(config.bumpers);
 }
 
-void choreo::trajectory::to_json(wpi::json& json,
+void choreo::to_json(wpi::json& json,
                                  const ProjectFile& projectFile) {
   json = wpi::json{
       {"name", projectFile.name},
@@ -91,7 +91,7 @@ void choreo::trajectory::to_json(wpi::json& json,
       {"generationFeatures", wpi::json::array()}};
 }
 
-void choreo::trajectory::from_json(const wpi::json& json,
+void choreo::from_json(const wpi::json& json,
                                    ProjectFile& projectFile) {
   json.at("name").get_to(projectFile.name);
   json.at("version").get_to(projectFile.version);

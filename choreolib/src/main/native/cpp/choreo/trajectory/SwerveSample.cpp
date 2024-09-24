@@ -5,9 +5,9 @@
 #include <wpi/MathExtras.h>
 #include <wpi/json.h>
 
-#include "choreo/trajectory/TrajSample.h"
+#include "choreo/trajectory/TrajectorySample.h"
 
-using namespace choreo::trajectory;
+using namespace choreo;
 
 units::second_t SwerveSample::GetTimestamp() const {
   return timestamp;
@@ -65,54 +65,52 @@ SwerveSample SwerveSample::Interpolate(const SwerveSample& endValue,
                       interpolatedForcesY};
 }
 
-void choreo::trajectory::to_json(wpi::json& json,
-                                 const SwerveSample& trajSample) {
-  // convert unit checked arrays to raw double arrays
+void choreo::to_json(wpi::json& json,
+                                 const SwerveSample& trajectorySample) {
   std::array<double, 4> fx;
-  std::transform(trajSample.moduleForcesX.begin(),
-                 trajSample.moduleForcesX.end(), fx.begin(),
+  std::transform(trajectorySample.moduleForcesX.begin(),
+                 trajectorySample.moduleForcesX.end(), fx.begin(),
                  [](units::newton_t x) { return x.value(); });
 
   std::array<double, 4> fy;
-  std::transform(trajSample.moduleForcesY.begin(),
-                 trajSample.moduleForcesY.end(), fy.begin(),
+  std::transform(trajectorySample.moduleForcesY.begin(),
+                 trajectorySample.moduleForcesY.end(), fy.begin(),
                  [](units::newton_t x) { return x.value(); });
 
-  json = wpi::json{{"t", trajSample.timestamp.value()},
-                   {"x", trajSample.x.value()},
-                   {"y", trajSample.y.value()},
-                   {"heading", trajSample.heading.value()},
-                   {"vx", trajSample.vx.value()},
-                   {"vy", trajSample.vy.value()},
-                   {"omega", trajSample.omega.value()},
-                   {"ax", trajSample.ax.value()},
-                   {"ay", trajSample.ay.value()},
-                   {"alpha", trajSample.alpha.value()},
+  json = wpi::json{{"t", trajectorySample.timestamp.value()},
+                   {"x", trajectorySample.x.value()},
+                   {"y", trajectorySample.y.value()},
+                   {"heading", trajectorySample.heading.value()},
+                   {"vx", trajectorySample.vx.value()},
+                   {"vy", trajectorySample.vy.value()},
+                   {"omega", trajectorySample.omega.value()},
+                   {"ax", trajectorySample.ax.value()},
+                   {"ay", trajectorySample.ay.value()},
+                   {"alpha", trajectorySample.alpha.value()},
                    {"fx", fx},
                    {"fy", fy}};
 }
 
-void choreo::trajectory::from_json(const wpi::json& json,
-                                   SwerveSample& trajSample) {
-  trajSample.timestamp = units::second_t{json.at("t").get<double>()};
-  trajSample.x = units::meter_t{json.at("x").get<double>()};
-  trajSample.y = units::meter_t{json.at("y").get<double>()};
-  trajSample.heading = units::radian_t{json.at("heading").get<double>()};
-  trajSample.vx = units::meters_per_second_t{json.at("vx").get<double>()};
-  trajSample.vy = units::meters_per_second_t{json.at("vy").get<double>()};
-  trajSample.omega =
+void choreo::from_json(const wpi::json& json,
+                                   SwerveSample& trajectorySample) {
+  trajectorySample.timestamp = units::second_t{json.at("t").get<double>()};
+  trajectorySample.x = units::meter_t{json.at("x").get<double>()};
+  trajectorySample.y = units::meter_t{json.at("y").get<double>()};
+  trajectorySample.heading = units::radian_t{json.at("heading").get<double>()};
+  trajectorySample.vx = units::meters_per_second_t{json.at("vx").get<double>()};
+  trajectorySample.vy = units::meters_per_second_t{json.at("vy").get<double>()};
+  trajectorySample.omega =
       units::radians_per_second_t{json.at("omega").get<double>()};
-  trajSample.ax =
+  trajectorySample.ax =
       units::meters_per_second_squared_t{json.at("ax").get<double>()};
-  trajSample.ay =
+  trajectorySample.ay =
       units::meters_per_second_squared_t{json.at("ay").get<double>()};
-  trajSample.alpha =
+  trajectorySample.alpha =
       units::radians_per_second_squared_t{json.at("alpha").get<double>()};
-  // these probably get optimized out anyways, but wanted to reduce accesses
   const auto& fx = json.at("fx");
   const auto& fy = json.at("fy");
   for (int i = 0; i < 4; ++i) {
-    trajSample.moduleForcesX[i] = units::newton_t{fx.at(i).get<double>()};
-    trajSample.moduleForcesY[i] = units::newton_t{fy.at(i).get<double>()};
+    trajectorySample.moduleForcesX[i] = units::newton_t{fx.at(i).get<double>()};
+    trajectorySample.moduleForcesY[i] = units::newton_t{fy.at(i).get<double>()};
   }
 }
