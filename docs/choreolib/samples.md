@@ -59,4 +59,3 @@ from choreo.trajectory import DifferentialSample
 - `double ar` - acceleration of the right side in m/s^2
 - `double fl` - force of the left side in Newtons
 - `double fr` - force of the right side in Newtons
-
