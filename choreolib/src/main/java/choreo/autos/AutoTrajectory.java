@@ -101,7 +101,7 @@ public class AutoTrajectory {
    *
    * @return The time since the start of the current trajectory
    */
-  private double timeIntoTraj() {
+  private double timeIntoTrajectory() {
     return timer.get() + timeOffset;
   }
 
@@ -121,13 +121,14 @@ public class AutoTrajectory {
       return;
     } else if (sample instanceof SwerveSample) {
       TrajectoryLogger<SwerveSample> swerveLogger = (TrajectoryLogger<SwerveSample>) trajLogger;
-      Trajectory<SwerveSample> swerveTraj = (Trajectory<SwerveSample>) trajectory;
-      swerveLogger.accept(swerveTraj, starting);
+      Trajectory<SwerveSample> swerveTrajectory = (Trajectory<SwerveSample>) trajectory;
+      swerveLogger.accept(swerveTrajectory, starting);
     } else if (sample instanceof DifferentialSample) {
       TrajectoryLogger<DifferentialSample> differentialLogger =
           (TrajectoryLogger<DifferentialSample>) trajLogger;
-      Trajectory<DifferentialSample> differentialTraj = (Trajectory<DifferentialSample>) trajectory;
-      differentialLogger.accept(differentialTraj, starting);
+      Trajectory<DifferentialSample> differentialTrajectory =
+          (Trajectory<DifferentialSample>) trajectory;
+      differentialLogger.accept(differentialTrajectory, starting);
     }
     ;
   }
@@ -142,7 +143,7 @@ public class AutoTrajectory {
   @SuppressWarnings("unchecked")
   private void cmdExecute() {
     TrajectorySample<?> sample =
-        this.trajectory.sampleAt(timeIntoTraj(), mirrorTrajectory.getAsBoolean());
+        this.trajectory.sampleAt(timeIntoTrajectory(), mirrorTrajectory.getAsBoolean());
 
     ChassisSpeeds chassisSpeeds = DEFAULT_CHASSIS_SPEEDS;
 
@@ -173,7 +174,7 @@ public class AutoTrajectory {
   }
 
   private boolean cmdIsFinished() {
-    return timeIntoTraj() > totalTime();
+    return timeIntoTrajectory() > totalTime();
   }
 
   /**

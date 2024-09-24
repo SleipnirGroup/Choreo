@@ -10,7 +10,7 @@ import {
   SAVE_FILE_VERSION,
   SampleType,
   SwerveSample,
-  Traj
+  Trajectory
 } from "./2025/DocumentTypes";
 import { ConstraintStore, IConstraintStore } from "./ConstraintStore";
 import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
@@ -197,8 +197,8 @@ export const DocumentStore = types
             const event: Event<ProgressUpdate> =
               rawEvent as Event<ProgressUpdate>;
             if (
-              event.payload!.type === "swerveTraj" ||
-              event.payload!.type === "differentialTraj"
+              event.payload!.type === "swerveTrajectory" ||
+              event.payload!.type === "differentialTrajectory"
             ) {
               const samples = event.payload.update as
                 | SwerveSample[]
@@ -222,15 +222,15 @@ export const DocumentStore = types
           unlisten();
         })
         .then(
-          (rust_traj) => {
-            const result: Traj = rust_traj as Traj;
+          (rust_trajectory) => {
+            const result: Trajectory = rust_trajectory as Trajectory;
             console.log(result);
-            if (result.traj.samples.length == 0) throw "No traj";
+            if (result.trajectory.samples.length == 0) throw "No trajectory";
             self.history.startGroup(() => {
-              const newTraj = result.traj.samples;
-              pathStore.traj.setSamples(newTraj);
-              pathStore.traj.setSplits(result.traj.splits);
-              pathStore.traj.setWaypoints(result.traj.waypoints);
+              const newTrajectory = result.trajectory.samples;
+              pathStore.trajectory.setSamples(newTrajectory);
+              pathStore.trajectory.setSplits(result.trajectory.splits);
+              pathStore.trajectory.setWaypoints(result.trajectory.waypoints);
 
               pathStore.setSnapshot(result.snapshot);
               // set this within the group so it gets picked up in the autosave

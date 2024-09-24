@@ -14,7 +14,7 @@ class FieldSamples extends Component<Props, State> {
     const path = doc.pathlist.activePath;
     const trajectory = path.ui.generating
       ? path.ui.generationProgress
-      : path.traj.fullTraj;
+      : path.trajectory.fullTrajectory;
     // preserve the access of generationIterationNumber
     // to trigger rerenders when mutating the in-progress trajectory in place
     const _ = path.ui.generationIterationNumber;

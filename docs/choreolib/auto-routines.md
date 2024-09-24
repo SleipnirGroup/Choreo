@@ -4,6 +4,7 @@ Choreolib provides a higher level api to make it easier to create competitive an
 This is done by providing the `AutoFactory` class.
 
 ## Triggers vs Composition
+
 Composition is how most teams currently architect their auto routines.
 You start with 1 `SequentialCommandGroup` and add commands to it.
 This works for many use cases but can get unwieldy when you have branches,
@@ -15,6 +16,7 @@ that don't allocate `Subsystems` until they are needed. Triggers also allow a no
 branching supported in a first class manner.
 
 ## Monolithic vs Segmented Trajectories
+
 Monolithic trajectories are a single trajectory that is run from start to finish without stopping.
 This has the advantage of being simple to create and understand but can be limiting in complex autos that may require
 branching. Making a new auto with this method can be time consuming as you have to create a completely new trajectory
@@ -53,8 +55,8 @@ There is also a method to make a trigger that represents if the robot owns a not
 
 Also assume a `import static edu.wpi.first.wpilibj2.command.Commands.*` is in scope.
 
-
 ## Creating an auto routine with triggers and a segmented trajectory
+
 ```java
 public Command fivePieceAutoTriggerSeg(AutoFactory factory) {
   final AutoLoop loop = factory.newLoop("fivePieceAuto");
@@ -68,13 +70,13 @@ public Command fivePieceAutoTriggerSeg(AutoFactory factory) {
   // AMP, SUB, SRC: The 3 starting positions
 
   // Try to load all the trajectories we need
-  final AutoTrajectory ampToC1 = factory.traj("ampToC1", loop);
-  final AutoTrajectory c1ToM1 = factory.traj("c1ToM1", loop);
-  final AutoTrajectory m1ToS1 = factory.traj("m1ToS1", loop);
-  final AutoTrajectory m1ToM2 = factory.traj("m1ToM2", loop);
-  final AutoTrajectory m2ToS1 = factory.traj("m2ToS2", loop);
-  final AutoTrajectory s1ToC2 = factory.traj("s1ToC2", loop);
-  final AutoTrajectory c2ToC3 = factory.traj("c2ToC3", loop);
+  final AutoTrajectory ampToC1 = factory.trajectory("ampToC1", loop);
+  final AutoTrajectory c1ToM1 = factory.trajectory("c1ToM1", loop);
+  final AutoTrajectory m1ToS1 = factory.trajectory("m1ToS1", loop);
+  final AutoTrajectory m1ToM2 = factory.trajectory("m1ToM2", loop);
+  final AutoTrajectory m2ToS1 = factory.trajectory("m2ToS2", loop);
+  final AutoTrajectory s1ToC2 = factory.trajectory("s1ToC2", loop);
+  final AutoTrajectory c2ToC3 = factory.trajectory("c2ToC3", loop);
 
   // entry point for the auto
   // resets the odometry to the starting position,
@@ -144,11 +146,12 @@ public Command fivePieceAutoTriggerSeg(AutoFactory factory) {
 ```
 
 ## Creating an auto routine with composition and a monolithic trajectory
+
 ```java
 public Command fivePieceAutoTriggerMono(AutoFactory factory) {
   final AutoLoop loop = factory.newLoop("fivePieceAuto");
 
-  final AutoTrajectory traj = factory.traj("fivePieceAuto", loop);
+  final AutoTrajectory trajectory = factory.trajectory("fivePieceAuto", loop);
 
   // entry point for the auto
   // resets the odometry to the starting position,
@@ -157,28 +160,28 @@ public Command fivePieceAutoTriggerMono(AutoFactory factory) {
   loop.enabled()
       .onTrue(
           resetOdometry(
-                  traj.getInitialPose()
+                  trajectory.getInitialPose()
                       .orElseGet(
                           () -> {
                             loop.kill();
                             return new Pose2d();
                           }))
-              .andThen(autoAimAndShoot(), traj.cmd())
+              .andThen(autoAimAndShoot(), trajectory.cmd())
               .withName("fivePieceAuto entry point"));
 
   // spinnup the shooter while no other command is running
   loop.enabled().whileTrueDefault(spinnup());
 
   // extends the intake when the intake event marker is reached
-  traj.atTime("intake").onTrue(intake());
+  trajectory.atTime("intake").onTrue(intake());
   // shoots the note when the shoot event marker is reached
-  traj.atTime("shoot").onTrue(shootIfGp());
+  trajectory.atTime("shoot").onTrue(shootIfGp());
 
   // aims the shooter when the aim event marker is reached,
   // the aim command aims based on the next shoot event marker position
   final AtomicInteger shootIndex = new AtomicInteger(0);
-  final Pose2d[] shootPositions = traj.collectEventPoses("shoot");
-  traj.atTime("aim")
+  final Pose2d[] shootPositions = trajectory.collectEventPoses("shoot");
+  trajectory.atTime("aim")
       .onTrue(defer(() -> aimFor(shootPositions[shootIndex.getAndIncrement()]), Set.of(shooter)));
 
   return loop.cmd().beforeStarting(() -> shootIndex.set(0)).withName("fivePieceAuto");
@@ -186,6 +189,7 @@ public Command fivePieceAutoTriggerMono(AutoFactory factory) {
 ```
 
 ## Creating an auto routine with composition and a segmented trajectory
+
 ```java
 
 public Command fivePieceAutoCompositionSeg(AutoFactory factory) {
@@ -198,13 +202,13 @@ public Command fivePieceAutoCompositionSeg(AutoFactory factory) {
   // AMP, SUB, SRC: The 3 starting positions
 
   // Try to load all the trajectories we need
-  final AutoTrajectory ampToC1 = factory.traj("ampToC1", factory.voidLoop());
-  final Command c1ToM1 = factory.trajCommand("c1ToM1");
-  final Command m1ToS1 = factory.trajCommand("m1ToS1");
-  final Command m1ToM2 = factory.trajCommand("m1ToM2");
-  final Command m2ToS1 = factory.trajCommand("m2ToS2");
-  final Command s1ToC2 = factory.trajCommand("s1ToC2");
-  final Command c2ToC3 = factory.trajCommand("c2ToC3");
+  final AutoTrajectory ampToC1 = factory.trajectory("ampToC1", factory.voidLoop());
+  final Command c1ToM1 = factory.trajectoryCommand("c1ToM1");
+  final Command m1ToS1 = factory.trajectoryCommand("m1ToS1");
+  final Command m1ToM2 = factory.trajectoryCommand("m1ToM2");
+  final Command m2ToS1 = factory.trajectoryCommand("m2ToS2");
+  final Command s1ToC2 = factory.trajectoryCommand("s1ToC2");
+  final Command c2ToC3 = factory.trajectoryCommand("c2ToC3");
 
   Pose2d startingPose;
   if (ampToC1.getInitialPose().isPresent()) {
@@ -234,6 +238,7 @@ public Command fivePieceAutoCompositionSeg(AutoFactory factory) {
 ```
 
 ## Creating an auto routine with composition and a monolithic trajectory
+
 ```java
-  // please just dont do this
+// Don't do this
 ```

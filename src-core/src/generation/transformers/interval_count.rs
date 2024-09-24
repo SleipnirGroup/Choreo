@@ -1,6 +1,6 @@
 use trajoptlib::{PathBuilder, Pose2d};
 
-use crate::{generation::intervals::guess_control_interval_counts, spec::traj::Waypoint};
+use crate::{generation::intervals::guess_control_interval_counts, spec::trajectory::Waypoint};
 
 use super::{DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext, SwerveGenerationTransformer};
 

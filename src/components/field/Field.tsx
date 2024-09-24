@@ -63,7 +63,7 @@ export class Field extends Component<Props, State> {
           )}
         {selectedSidebar !== undefined &&
           "offset" in selectedSidebar &&
-          activePath.traj.markers.find(
+          activePath.trajectory.markers.find(
             (marker) =>
               marker.uuid == (selectedSidebar as IEventMarkerStore)!.uuid
           ) && (

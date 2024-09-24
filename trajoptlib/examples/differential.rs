@@ -12,7 +12,9 @@ fn main() {
 
     let mut path = DifferentialPathBuilder::new();
 
-    path.add_progress_callback(|traj, handle| println!("{:?}: handle {}", traj, handle));
+    path.add_progress_callback(|trajectory, handle| {
+        println!("{:?}: handle {}", trajectory, handle)
+    });
     path.set_drivetrain(&drivetrain);
     path.set_bumpers(1.3, 1.3);
 

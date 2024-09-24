@@ -98,6 +98,9 @@ public class AllianceFlipUtil {
 
   private static YearInfo activeYear = flipperMap.get(2024);
 
+  /** Default constructor. */
+  private AllianceFlipUtil() {}
+
   /**
    * Get the flipper that is currently active for flipping coordinates. It's reccomended not to
    * store this locally as the flipper may change.
