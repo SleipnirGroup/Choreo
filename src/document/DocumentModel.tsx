@@ -55,7 +55,6 @@ export const DocumentStore = types
     pathlist: PathListStore,
     robotConfig: RobotConfigStore,
     variables: Variables,
-    splitTrajectoriesAtStopPoints: types.boolean,
     selectedSidebarItem: types.maybe(types.safeReference(SelectableItem)),
     hoveredSidebarItem: types.maybe(types.safeReference(SelectableItem))
   })
@@ -322,13 +321,6 @@ export const DocumentStore = types
         window.dispatchEvent(
           new CustomEvent("center", { detail: { x, y, k } })
         );
-      }
-    };
-  })
-  .actions((self) => {
-    return {
-      setSplitTrajectoriesAtStopPoints(split: boolean) {
-        self.splitTrajectoriesAtStopPoints = split;
       }
     };
   });
