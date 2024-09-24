@@ -85,7 +85,7 @@ public class ProjectFile {
     public final Bumpers bumper;
 
     /** The width between the wheels of the robot. (m) */
-    public final Expression diffTrackWidth;
+    public final Expression differentialTrackWidth;
 
     Config(
         XYExpression frontLeft,
@@ -97,7 +97,7 @@ public class ProjectFile {
         Expression vmax,
         Expression tmax,
         Bumpers bumper,
-        Expression diffTrackWidth) {
+        Expression differentialTrackWidth) {
       this.frontLeft = frontLeft;
       this.backLeft = backLeft;
       this.mass = mass;
@@ -107,7 +107,7 @@ public class ProjectFile {
       this.vmax = vmax;
       this.tmax = tmax;
       this.bumper = bumper;
-      this.diffTrackWidth = diffTrackWidth;
+      this.differentialTrackWidth = differentialTrackWidth;
     }
   }
 

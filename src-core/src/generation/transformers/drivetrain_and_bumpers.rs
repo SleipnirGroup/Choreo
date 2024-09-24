@@ -56,7 +56,7 @@ impl DifferentialGenerationTransformer for DrivetrainAndBumpersSetter {
             // rad per sec
             wheel_max_angular_velocity: config.vmax / config.gearing,
             wheel_max_torque: config.tmax * config.gearing,
-            trackwidth: config.diff_track_width,
+            trackwidth: config.differential_track_width,
         };
 
         builder.set_drivetrain(&drivetrain);

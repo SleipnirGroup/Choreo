@@ -13,7 +13,8 @@ import java.nio.ByteBuffer;
 
 /** A single robot sample in a ChoreoTrajectory. */
 public class DifferentialSample implements TrajectorySample<DifferentialSample> {
-  private static final double TRACK_WIDTH = Choreo.getProjectFile().config.diffTrackWidth.val;
+  private static final double TRACK_WIDTH =
+      Choreo.getProjectFile().config.differentialTrackWidth.val;
 
   /** The timestamp of this sample, relative to the beginning of the trajectory. */
   public final double timestamp;

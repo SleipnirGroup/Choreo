@@ -39,7 +39,7 @@ export const EXPR_DEFAULTS: RobotConfig<Expr> = {
     x: { exp: `${-halfWheelbase} in`, val: -DEFAULT_WHEELBASE / 2 },
     y: { exp: `${halfWheelbase} in`, val: DEFAULT_WHEELBASE / 2 }
   },
-  diffTrackWidth: {
+  differentialTrackWidth: {
     exp: `${MToIn(DEFAULT_WHEELBASE)} in`,
     val: DEFAULT_WHEELBASE
   }
@@ -117,7 +117,7 @@ export const RobotConfigStore = types
     bumper: BumperStore,
     frontLeft: ModuleStore,
     backLeft: ModuleStore,
-    diffTrackWidth: ExpressionStore,
+    differentialTrackWidth: ExpressionStore,
     identifier: types.identifier
   })
   .views((self) => {
@@ -139,7 +139,7 @@ export const RobotConfigStore = types
           bumper: self.bumper.serialize,
           frontLeft: self.frontLeft.serialize,
           backLeft: self.backLeft.serialize,
-          diffTrackWidth: self.diffTrackWidth.serialize
+          differentialTrackWidth: self.differentialTrackWidth.serialize
         };
       },
       get moduleTranslations(): [
@@ -171,7 +171,7 @@ export const RobotConfigStore = types
           bumper: self.bumper.snapshot,
           frontLeft: self.frontLeft.snapshot,
           backLeft: self.backLeft.snapshot,
-          diffTrackWidth: self.diffTrackWidth.value
+          differentialTrackWidth: self.differentialTrackWidth.value
         };
       }
     };
@@ -188,7 +188,7 @@ export const RobotConfigStore = types
         self.bumper.deserialize(config.bumper);
         self.frontLeft.deserialize(config.frontLeft);
         self.backLeft.deserialize(config.backLeft);
-        self.diffTrackWidth.deserialize(config.diffTrackWidth);
+        self.differentialTrackWidth.deserialize(config.differentialTrackWidth);
       }
     };
   })

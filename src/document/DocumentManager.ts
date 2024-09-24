@@ -173,8 +173,8 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
           x: vars().createExpression(config.backLeft.x, "Length"),
           y: vars().createExpression(config.backLeft.y, "Length")
         },
-        diffTrackWidth: vars().createExpression(
-          config.diffTrackWidth,
+        differentialTrackWidth: vars().createExpression(
+          config.differentialTrackWidth,
           "Length"
         ),
         identifier: crypto.randomUUID()

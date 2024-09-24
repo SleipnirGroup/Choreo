@@ -198,7 +198,7 @@ export const DocumentStore = types
               rawEvent as Event<ProgressUpdate>;
             if (
               event.payload!.type === "swerveTraj" ||
-              event.payload!.type === "diffTraj"
+              event.payload!.type === "differentialTraj"
             ) {
               const samples = event.payload.update as
                 | SwerveSample[]
