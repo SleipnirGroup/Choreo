@@ -1,6 +1,6 @@
 // Copyright (c) Choreo contributors
 
-#include "choreo/trajectory/DiffySample.h"
+#include "choreo/trajectory/DifferentialSample.h"
 
 #include <wpi/MathExtras.h>
 #include <wpi/json.h>
@@ -10,15 +10,15 @@
 
 using namespace choreo::trajectory;
 
-units::second_t DiffySample::GetTimestamp() const {
+units::second_t DifferentialSample::GetTimestamp() const {
   return timestamp;
 }
 
-frc::Pose2d DiffySample::GetPose() const {
+frc::Pose2d DifferentialSample::GetPose() const {
   return frc::Pose2d{x, y, frc::Rotation2d{heading}};
 }
 
-frc::ChassisSpeeds DiffySample::GetChassisSpeeds() const {
+frc::ChassisSpeeds DifferentialSample::GetChassisSpeeds() const {
   return frc::ChassisSpeeds{
       (vl + vr) / 2.0, 0.0_mps,
       (vr - vl) /
@@ -27,18 +27,18 @@ frc::ChassisSpeeds DiffySample::GetChassisSpeeds() const {
           1_rad};
 }
 
-DiffySample DiffySample::OffsetBy(units::second_t timeStampOffset) const {
-  return DiffySample{
+DifferentialSample DifferentialSample::OffsetBy(units::second_t timeStampOffset) const {
+  return DifferentialSample{
       timestamp + timeStampOffset, x, y, heading, vl, vr, al, ar, fl, fr};
 }
 
-DiffySample DiffySample::Interpolate(const DiffySample& endValue,
+DifferentialSample DifferentialSample::Interpolate(const DifferentialSample& endValue,
                                      units::second_t t) const {
   units::scalar_t scale = (t - timestamp) / (endValue.timestamp - timestamp);
   frc::Pose2d interpolatedPose =
       frc::Interpolate(GetPose(), endValue.GetPose(), scale.value());
 
-  return DiffySample{
+  return DifferentialSample{
       wpi::Lerp(timestamp, endValue.timestamp, scale),
       interpolatedPose.X(),
       interpolatedPose.Y(),
@@ -53,7 +53,7 @@ DiffySample DiffySample::Interpolate(const DiffySample& endValue,
 }
 
 void choreo::trajectory::to_json(wpi::json& json,
-                                 const DiffySample& trajSample) {
+                                 const DifferentialSample& trajSample) {
   json = wpi::json{{"t", trajSample.timestamp.value()},
                    {"x", trajSample.x.value()},
                    {"y", trajSample.y.value()},
@@ -67,7 +67,7 @@ void choreo::trajectory::to_json(wpi::json& json,
 }
 
 void choreo::trajectory::from_json(const wpi::json& json,
-                                   DiffySample& trajSample) {
+                                   DifferentialSample& trajSample) {
   trajSample.timestamp = units::second_t{json.at("t").get<double>()};
   trajSample.x = units::meter_t{json.at("x").get<double>()};
   trajSample.y = units::meter_t{json.at("y").get<double>()};

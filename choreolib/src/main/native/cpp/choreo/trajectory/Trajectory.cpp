@@ -23,7 +23,7 @@ void choreo::trajectory::from_json(const wpi::json& json,
 }
 
 void choreo::trajectory::to_json(wpi::json& json,
-                                 const Trajectory<DiffySample>& traj) {
+                                 const Trajectory<DifferentialSample>& traj) {
   json = wpi::json{{"name", traj.name},
                    {"samples", traj.samples},
                    {"splits", traj.splits},
@@ -31,8 +31,8 @@ void choreo::trajectory::to_json(wpi::json& json,
 }
 
 void choreo::trajectory::from_json(const wpi::json& json,
-                                   Trajectory<DiffySample>& traj) {
-  traj.samples = json.at("traj").at("samples").get<std::vector<DiffySample>>();
+                                   Trajectory<DifferentialSample>& traj) {
+  traj.samples = json.at("traj").at("samples").get<std::vector<DifferentialSample>>();
   traj.splits = json.at("traj").at("splits").get<std::vector<int>>();
   traj.events = json.at("events").get<std::vector<EventMarker>>();
 }

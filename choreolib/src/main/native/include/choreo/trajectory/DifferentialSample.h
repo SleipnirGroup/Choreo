@@ -19,10 +19,10 @@
 
 namespace choreo {
 namespace trajectory {
-class DiffySample {
+class DifferentialSample {
  public:
-  DiffySample() = default;
-  DiffySample(units::second_t timestamp, units::meter_t x, units::meter_t y,
+  DifferentialSample() = default;
+  DifferentialSample(units::second_t timestamp, units::meter_t x, units::meter_t y,
               units::radian_t heading, units::meters_per_second_t vl,
               units::meters_per_second_t vr,
               units::meters_per_second_squared_t al,
@@ -42,10 +42,10 @@ class DiffySample {
   frc::Pose2d GetPose() const;
   frc::ChassisSpeeds GetChassisSpeeds() const;
   template <int Year>
-  DiffySample Flipped() const {
+  DifferentialSample Flipped() const {
     static constexpr auto flipper = choreo::util::GetFlipperForYear<Year>();
     if constexpr (flipper.isMirrored) {
-        return DiffySample(timestamp,
+        return DifferentialSample(timestamp,
         flipper.FlipX(x),
         y,
         flipper.FlipHeading(heading),
@@ -56,7 +56,7 @@ class DiffySample {
         fl,
         fr);
     } else {
-        return DiffySample(timestamp,
+        return DifferentialSample(timestamp,
         flipper.FlipX(x),
         flipper.FlipY(y),
         flipper.FlipHeading(heading),
@@ -68,8 +68,8 @@ class DiffySample {
         fl);
     }
   }
-  DiffySample OffsetBy(units::second_t timeStampOffset) const;
-  DiffySample Interpolate(const DiffySample& endValue, units::second_t t) const;
+  DifferentialSample OffsetBy(units::second_t timeStampOffset) const;
+  DifferentialSample Interpolate(const DifferentialSample& endValue, units::second_t t) const;
 
   units::second_t timestamp = 0_s;
   units::meter_t x = 0_m;
@@ -83,9 +83,9 @@ class DiffySample {
   units::newton_t fr = 0_N;
 };
 
-void to_json(wpi::json& json, const DiffySample& trajSample);
-void from_json(const wpi::json& json, DiffySample& trajSample);
+void to_json(wpi::json& json, const DifferentialSample& trajSample);
+void from_json(const wpi::json& json, DifferentialSample& trajSample);
 }  // namespace trajectory
 }  // namespace choreo
 
-#include "choreo/trajectory/struct/DiffySampleStruct.h"
+#include "choreo/trajectory/struct/DifferentialSampleStruct.h"

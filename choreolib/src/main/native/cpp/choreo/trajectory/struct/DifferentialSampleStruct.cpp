@@ -1,6 +1,6 @@
 // Copyright (c) Choreo contributors
 
-#include "choreo/trajectory/struct/DiffySampleStruct.h"
+#include "choreo/trajectory/struct/DifferentialSampleStruct.h"
 
 namespace {
 constexpr size_t kTimestampOff = 0;
@@ -15,11 +15,11 @@ constexpr size_t kFlOff = kArOff + 8;
 constexpr size_t kFrOff = kFlOff + 8;
 }  // namespace
 
-using StructType = wpi::Struct<choreo::trajectory::DiffySample>;
+using StructType = wpi::Struct<choreo::trajectory::DifferentialSample>;
 
-choreo::trajectory::DiffySample StructType::Unpack(
+choreo::trajectory::DifferentialSample StructType::Unpack(
     std::span<const uint8_t> data) {
-  return choreo::trajectory::DiffySample{
+  return choreo::trajectory::DifferentialSample{
       units::second_t{wpi::UnpackStruct<double, kTimestampOff>(data)},
       units::meter_t{wpi::UnpackStruct<double, kXOff>(data)},
       units::meter_t{wpi::UnpackStruct<double, kYOff>(data)},
@@ -35,7 +35,7 @@ choreo::trajectory::DiffySample StructType::Unpack(
 }
 
 void StructType::Pack(std::span<uint8_t> data,
-                      const choreo::trajectory::DiffySample& value) {
+                      const choreo::trajectory::DifferentialSample& value) {
   wpi::PackStruct<kTimestampOff>(data, value.timestamp.value());
   wpi::PackStruct<kXOff>(data, value.x.value());
   wpi::PackStruct<kYOff>(data, value.y.value());

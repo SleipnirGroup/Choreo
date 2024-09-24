@@ -10,7 +10,7 @@
 
 #include <wpi/json_fwd.h>
 
-#include "choreo/trajectory/DiffySample.h"
+#include "choreo/trajectory/DifferentialSample.h"
 #include "choreo/trajectory/EventMarker.h"
 #include "choreo/trajectory/SwerveSample.h"
 #include "choreo/trajectory/TrajSample.h"
@@ -182,7 +182,7 @@ class Trajectory {
 void to_json(wpi::json& json, const Trajectory<SwerveSample>& traj);
 void from_json(const wpi::json& json, Trajectory<SwerveSample>& traj);
 
-void to_json(wpi::json& json, const Trajectory<DiffySample>& traj);
-void from_json(const wpi::json& json, Trajectory<DiffySample>& traj);
+void to_json(wpi::json& json, const Trajectory<DifferentialSample>& traj);
+void from_json(const wpi::json& json, Trajectory<DifferentialSample>& traj);
 }  // namespace trajectory
 }  // namespace choreo
