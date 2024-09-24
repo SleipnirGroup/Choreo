@@ -112,7 +112,7 @@ public class ChoreoTests {
           + "     \"back\": {"
           + "       \"exp\": \"16 in\","
           + "       \"val\": 0.4064"
-          + "     },"
+          + "     }"
           + "   },"
           + "   \"differentialTrackWidth\": {"
           + "     \"exp\": \"24 in\","
