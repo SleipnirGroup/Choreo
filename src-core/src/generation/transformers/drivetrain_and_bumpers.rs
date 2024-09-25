@@ -1,6 +1,6 @@
 use trajoptlib::{DifferentialDrivetrain, PathBuilder, SwerveDrivetrain};
 
-use crate::spec::project::{RobotConfig};
+use crate::spec::project::RobotConfig;
 
 use super::{DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext, SwerveGenerationTransformer};
 

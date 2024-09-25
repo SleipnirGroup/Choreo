@@ -19,7 +19,7 @@ class Navbar extends Component<Props, State> {
       <div className={styles.Container}>
         {NavbarItemSectionEnds.map(
           (endSplit, sectionIdx) =>
-            sectionIdx != 2 && (
+            (
               <ToggleButtonGroup
                 className={styles.ToggleGroup}
                 exclusive

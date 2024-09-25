@@ -136,6 +136,7 @@ class Sidebar extends Component<Props, State> {
             {doc.pathlist.activePath.params.constraints.map((constraint) => {
               return (
                 <SidebarConstraint
+                  path={doc.pathlist.activePath}
                   key={constraint.uuid}
                   constraint={constraint}
                 ></SidebarConstraint>
@@ -154,19 +155,18 @@ class Sidebar extends Component<Props, State> {
             <span>MARKERS</span>
           </Divider>
           <div className={styles.WaypointList}>
-            {doc.pathlist.activePath.traj.markers.map(
+            {doc.pathlist.activePath.markers.map(
               (marker: IEventMarkerStore, index: number) => {
                 return (
                   <SidebarEventMarker
                     marker={marker}
-                    index={index}
                     key={marker.uuid}
                   ></SidebarEventMarker>
                 );
               }
             )}
           </div>
-          {doc.pathlist.activePath.traj.markers.length == 0 && (
+          {doc.pathlist.activePath.markers.length == 0 && (
             <div className={styles.SidebarItem + " " + styles.Noninteractible}>
               <span></span>
               <span style={{ color: "gray", fontStyle: "italic" }}>

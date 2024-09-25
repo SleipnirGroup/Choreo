@@ -396,6 +396,7 @@ pub struct Trajectory {
 
 /// A structure representing a `.traj` file.
 #[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct TrajFile {
     /// The name of the `.traj` file.
     /// Will always be in sync with the file name on disk.
@@ -410,12 +411,12 @@ pub struct TrajFile {
     pub traj: Trajectory,
     /// The choreo events.
     #[serde(default)]
-    pub events: Vec<EventMarker>,
+    pub events: Vec<ChoreolibEventMarker>,
     /// The pplib commands to execute.
     /// This is a compatibility layer for working with
     /// the path planner library.
     #[serde(default)]
-    pub pplib_commands: Vec<PplibCommandMarker>,
+    pub pplib_commands: Vec<PplibEventMarker>,
 }
 
 impl TrajFile {
@@ -433,13 +434,26 @@ impl TrajFile {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct PplibCommandMarker {
+pub struct EventMarkerData {
     pub name: String,
     pub target: Option<usize>,
     pub traj_target_index: Option<usize>,
     pub target_timestamp: Option<f64>,
-    pub offset: f64,
-    pub command: PplibCommand,
+    pub offset: Expr,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChoreolibEventMarker  {
+    data: EventMarkerData,
+    event: ChoreolibEvent
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PplibEventMarker  {
+    data: EventMarkerData,
+    event: PplibCommand
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -453,11 +467,9 @@ pub enum PplibCommand {
     Deadline { commands: Vec<PplibCommand> },
 }
 
+// single-case enum so that it matches the serialization from above
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct EventMarker {
-    /// The name of the event.
-    pub event: String,
-    /// The offset from the beginning of the trajectory.
-    pub timestamp: f64,
+#[serde(rename_all = "camelCase", tag = "type", content = "data")]
+pub enum ChoreolibEvent {
+    Choreolib { event: String }
 }

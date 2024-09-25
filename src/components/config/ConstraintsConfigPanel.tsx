@@ -7,8 +7,10 @@ import ExpressionInputList from "../input/ExpressionInputList";
 import ScopeSlider from "./ScopeSlider";
 import styles from "./WaypointConfigPanel.module.css";
 import { isExpr } from "../../document/2025/DocumentTypes";
+import { IHolonomicPathStore } from "../../document/path/HolonomicPathStore";
+import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 
-type Props = { constraint: IConstraintStore };
+type Props = { constraint: IConstraintStore, points: IHolonomicWaypointStore[] };
 
 type State = object;
 
@@ -18,9 +20,10 @@ class ConstraintsConfigPanel extends Component<Props, State> {
     const constraint = this.props.constraint;
     const definition = constraint.data.def;
     const isSegmentConstraint = definition.sgmtScope;
-    let startIndex = (this.props.constraint.getStartWaypointIndex() ?? 0) + 1;
-    let endIndex = (this.props.constraint.getEndWaypointIndex() ?? 0) + 1;
-    const points = this.props.constraint.getPath().params.waypoints;
+    const points = this.props.points;
+    let startIndex = (this.props.constraint.getStartWaypointIndex(points) ?? 0) + 1;
+    let endIndex = (this.props.constraint.getEndWaypointIndex(points) ?? 0) + 1;
+    
     const pointcount = points.length;
     if (this.props.constraint.from === "first") {
       startIndex = 0;

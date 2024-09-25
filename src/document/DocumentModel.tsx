@@ -25,9 +25,9 @@ import { Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
 
 export type SelectableItemTypes =
-  | IHolonomicWaypointStore
+  ((| IHolonomicWaypointStore
   | IConstraintStore
-  | IEventMarkerStore
+  | IEventMarkerStore) & {uuid: string})
   | undefined;
 export const SelectableItem = types.union(
   {
@@ -59,6 +59,12 @@ export const DocumentStore = types
     hoveredSidebarItem: types.maybe(types.safeReference(SelectableItem))
   })
   .views((self) => ({
+    selected(item: SelectableItemTypes) {
+      return self.selectedSidebarItem?.uuid === item?.uuid
+    },
+    hovered(item: SelectableItemTypes) {
+      return self.hoveredSidebarItem?.uuid === item?.uuid
+    },
     serializeChor(): Project {
       return {
         name: self.name,
@@ -148,16 +154,18 @@ export const DocumentStore = types
       if (pathStore === undefined) {
         throw "Path store is undefined";
       }
-      if (pathStore.params.waypoints.length < 2) {
+      const points = pathStore.params.waypoints;
+      if (points.length < 2) {
         return;
       }
+      
       console.log(pathStore.serialize);
       const config = self.robotConfig.serialize;
       pathStore.params.constraints
         .filter((constraint) => constraint.enabled)
         .forEach((constraint) => {
-          if (constraint.issues.length > 0) {
-            throw constraint.issues.join(", ");
+          if (constraint.issues(points).length > 0) {
+            throw constraint.issues(points).join(", ");
           }
         });
       pathStore.ui.setGenerating(true);

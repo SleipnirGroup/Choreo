@@ -15,6 +15,7 @@ type Props = {
   index: number;
   pathLength: number;
   issue: string | undefined;
+  delete: ()=>void
 };
 
 type State = { selected: boolean };
@@ -106,9 +107,7 @@ class SidebarWaypoint extends Component<Props, State> {
                 className={styles.SidebarRightIcon}
                 onClick={(e) => {
                   e.stopPropagation();
-                  doc.pathlist.activePath.params.deleteWaypoint(
-                    waypoint?.uuid || ""
-                  );
+                  this.props.delete();
                 }}
               >
                 <DeleteIcon />

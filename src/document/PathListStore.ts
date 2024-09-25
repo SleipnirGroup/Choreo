@@ -1,7 +1,8 @@
 import { Instance, getEnv, types } from "mobx-state-tree";
 import { Traj } from "./2025/DocumentTypes";
 import { Env } from "./DocumentManager";
-import { HolonomicPathStore } from "./path/HolonomicPathStore";
+import { HolonomicPathStore, IHolonomicPathStore } from "./path/HolonomicPathStore";
+import { IHolonomicWaypointStore } from "./HolonomicWaypointStore";
 
 export const PathListStore = types
   .model("PathListStore", {
@@ -37,33 +38,6 @@ export const PathListStore = types
 
       get pathUUIDs() {
         return Array.from(self.paths.keys());
-      },
-      get activePath() {
-        return (
-          self.paths.get(self.activePathUUID)! ||
-          HolonomicPathStore.create({
-            uuid: crypto.randomUUID(),
-            name: "New Path",
-            params: {
-              constraints: [],
-              waypoints: []
-            },
-            ui: {
-              visibleWaypointsEnd: 0,
-              visibleWaypointsStart: 0
-            },
-            snapshot: {
-              waypoints: [],
-              constraints: []
-            },
-            traj: {
-              waypoints: [],
-              samples: [],
-              splits: [],
-              markers: []
-            }
-          })
-        );
       }
     };
   })
@@ -85,8 +59,8 @@ export const PathListStore = types
       },
       addPath(name: string, select: boolean = false, contents?: Traj): string {
         const usedName = this.disambiguateName(name);
-        const newUUID = crypto.randomUUID();
         const env = getEnv<Env>(self);
+        const newUUID = crypto.randomUUID();
         env.startGroup(() => {
           try {
             const path = HolonomicPathStore.create({
@@ -107,15 +81,17 @@ export const PathListStore = types
               traj: {
                 waypoints: [],
                 samples: [],
-                splits: [],
-                markers: []
-              }
-            });
-            path.setExporter(self.getExporter());
+                splits: []
+              },
+              markers: []
+            }
+            );
             self.paths.put(path); //It's not ready yet but it needs to get the env injected
+            path.setExporter(self.getExporter());
             if (contents !== undefined) {
               path.deserialize(contents);
             } else {
+              path.setName(usedName);
               path.params.addConstraint("StopPoint", true, "first");
               path.params.addConstraint("StopPoint", true, "last");
               path.params.addConstraint(
@@ -133,7 +109,7 @@ export const PathListStore = types
             }
 
             if (self.paths.size === 1 || select) {
-              self.activePathUUID = newUUID;
+              self.activePathUUID = path.uuid;
             }
           } finally {
             env.stopGroup();
@@ -144,6 +120,16 @@ export const PathListStore = types
     };
     // The annoying thing we have to do to add the above actions to the object before we use them below
   })
+  .views(self=> ({
+    get activePath(): IHolonomicPathStore {
+      let path = self.paths.get(self.activePathUUID);
+      if (path === undefined) {
+        self.addPath("New Path", true)
+        path = self.paths.get(self.activePathUUID);
+      }
+      return path as IHolonomicPathStore;
+    }
+  }))
   .actions((self) => {
     return {
       deletePath(uuid: string) {

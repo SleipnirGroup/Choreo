@@ -366,6 +366,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             )}
             {doc.isSidebarConstraintSelected && (
               <FieldConstraintDisplayLayer
+                points={doc.pathlist.activePath.params.waypoints}
                 constraint={
                   doc.selectedSidebarItem as IConstraintStoreKeyed<ConstraintKey>
                 }
@@ -376,6 +377,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             {!doc.isSidebarConstraintSelected &&
               doc.isSidebarConstraintHovered && (
                 <FieldConstraintDisplayLayer
+                  points={doc.pathlist.activePath.params.waypoints}
                   constraint={
                     doc.hoveredSidebarItem as IConstraintStoreKeyed<ConstraintKey>
                   }

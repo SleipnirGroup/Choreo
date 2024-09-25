@@ -13,11 +13,13 @@ import {
   CheckBoxOutlined,
   PriorityHigh
 } from "@mui/icons-material";
-import { ChoreoPathStore } from "../../document/path/ChoreoPathStore";
-import { WaypointID } from "../../document/ConstraintDefinitions";
+import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
+import { IHolonomicPathStore, waypointIDToText } from "../../document/path/HolonomicPathStore";
+import { Env } from "../../document/DocumentManager";
 
 type Props = {
   constraint: IConstraintStore;
+  path: IHolonomicPathStore;
 };
 
 type State = object;
@@ -27,17 +29,10 @@ class SidebarConstraint extends Component<Props, State> {
   state = {};
 
   getScopeText() {
-    const waypointIDToText = (id: WaypointID) => {
-      if (id == "first") return "Start";
-      if (id == "last") return "End";
-      return (
-        getParent<Instance<typeof ChoreoPathStore>>(
-          getParent<IConstraintStore[]>(this.props.constraint)
-        ).findUUIDIndex(id.uuid) + 1
-      );
-    };
-    const from = this.props.constraint.from;
-    const to = this.props.constraint.to;
+    const constraint = this.props.constraint;
+    const points = this.props.path.params.waypoints;
+    const from = constraint.from;
+    const to = constraint.to;
     if (from === undefined && to === undefined) return "!";
     else if (
       to === undefined || // wpt constraint
@@ -48,18 +43,21 @@ class SidebarConstraint extends Component<Props, State> {
         Object.hasOwn(to, "uuid") &&
         from!.uuid == to!.uuid) // zero-length segment
     )
-      return waypointIDToText(from);
+      return waypointIDToText(from, points);
     else if (from === "first" && to === "last") return "All";
     else {
-      return `${waypointIDToText(from)}-${waypointIDToText(to)}`;
+      return `${waypointIDToText(from, points)}-${waypointIDToText(to, points)}`;
     }
   }
   render() {
     // apparently we have to dereference this here instead of inline in the class name
     // Otherwise the component won't rerender when it changes
-    const selected = this.props.constraint.selected;
-    const issues = this.props.constraint.issues;
-
+    
+    const {constraint, path} = this.props;
+    const points = path.params.waypoints;
+    const selected = constraint.selected;
+    const issues = constraint.issues(points);
+    
     return (
       <div
         className={styles.SidebarItem + (selected ? ` ${styles.Selected}` : "")}
@@ -73,11 +71,11 @@ class SidebarConstraint extends Component<Props, State> {
           doc.setHoveredSidebarItem(undefined);
         }}
       >
-        {React.cloneElement(this.props.constraint.data.def.icon, {
+        {React.cloneElement(constraint.data.def.icon, {
           className: styles.SidebarIcon,
           htmlColor: selected
             ? "var(--select-yellow)"
-            : this.props.constraint.enabled
+            : constraint.enabled
               ? "var(--accent-purple)"
               : "gray"
         })}
@@ -86,10 +84,10 @@ class SidebarConstraint extends Component<Props, State> {
           style={{
             display: "grid",
             gridTemplateColumns: "1fr auto auto",
-            color: this.props.constraint.enabled ? "white" : "gray"
+            color: constraint.enabled ? "white" : "gray"
           }}
         >
-          <span>{this.props.constraint.data.def.shortName}</span>
+          <span>{constraint.data.def.shortName}</span>
           {issues.length !== 0 ? (
             <Tooltip disableInteractive title={issues.join(", ")}>
               <PriorityHigh
@@ -109,13 +107,13 @@ class SidebarConstraint extends Component<Props, State> {
               className={styles.SidebarRightIcon}
               onClick={(e) => {
                 e.stopPropagation();
-                this.props.constraint.setEnabled(
-                  !this.props.constraint.enabled
+                constraint.setEnabled(
+                  !constraint.enabled
                 );
               }}
             >
-              {this.props.constraint.enabled && <CheckBoxOutlined />}
-              {!this.props.constraint.enabled && (
+              {constraint.enabled && <CheckBoxOutlined />}
+              {!constraint.enabled && (
                 <CheckBoxOutlineBlankOutlined />
               )}
             </IconButton>
@@ -125,8 +123,8 @@ class SidebarConstraint extends Component<Props, State> {
               className={styles.SidebarRightIcon}
               onClick={(e) => {
                 e.stopPropagation();
-                doc.pathlist.activePath.params.deleteConstraint(
-                  this.props.constraint?.uuid || ""
+                path.params.deleteConstraint(
+                  constraint?.uuid || ""
                 );
               }}
             >

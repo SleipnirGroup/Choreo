@@ -13,7 +13,7 @@ import {
   CommandType,
   CommandUIData,
   ICommandStore
-} from "../../../document/EventMarkerStore";
+} from "../../../document/CommandStore";
 import ExpressionInput from "../../input/ExpressionInput";
 import ExpressionInputList from "../../input/ExpressionInputList";
 
@@ -32,7 +32,8 @@ class CommandDraggable extends Component<Props, State> {
   state = { selected: false };
   nameInputRef: React.RefObject<HTMLInputElement> =
     React.createRef<HTMLInputElement>();
-
+  eventInputRef: React.RefObject<HTMLInputElement> =
+    React.createRef<HTMLInputElement>();
   getItemStyle(
     _isDragging: boolean,
     draggableStyle: DraggingStyle | NotDraggingStyle | undefined
@@ -90,13 +91,17 @@ class CommandDraggable extends Component<Props, State> {
             onClick={(e) => e.stopPropagation()}
             onChange={(e) => command.setType(e.target.value as CommandType)}
           >
-            {CommandUIData.map((data) => (
-              <MenuItem key={data.id} value={data.id}>
+            {CommandUIData.map((data) => {
+              if (data.id === "choreolib" && this.props.parent !== undefined) {
+                return undefined;
+              }
+            
+              return (<MenuItem key={data.id} value={data.id}>
                 {data.name}
-              </MenuItem>
-            ))}
+              </MenuItem>);
+              })}
           </Select>
-          {command.type === "named" && (
+          {command.isNamed && (
             <TextField
               inputRef={this.nameInputRef}
               sx={{
@@ -119,7 +124,30 @@ class CommandDraggable extends Component<Props, State> {
               }}
             ></TextField>
           )}
-          {command.type === "wait" && (
+          {command.isChoreolib && (
+            <TextField
+              inputRef={this.eventInputRef}
+              sx={{
+                marginLeft: "1ch",
+                ".MuiInput-input": {
+                  paddingBottom: "0px"
+                }
+              }}
+              fullWidth
+              variant="standard"
+              placeholder="Event"
+              value={command.event ?? ""}
+              size="small"
+              onClick={(e) => e.stopPropagation()}
+              onChange={(e) => command.setEvent(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key == "Enter") {
+                  this.eventInputRef.current?.blur();
+                }
+              }}
+            ></TextField>
+          )}
+          {command.isWait && (
             <ExpressionInputList style={{ flexGrow: 1 }}>
               <ExpressionInput
                 title={""}
@@ -128,10 +156,10 @@ class CommandDraggable extends Component<Props, State> {
               ></ExpressionInput>
             </ExpressionInputList>
           )}
-          {(command.isGroup() || !isRoot) && (
+          {(command.isGroup || !isRoot) && (
             <span style={{ flexGrow: 1 }}></span>
           )}
-          {command.isGroup() ? (
+          {command.isGroup ? (
             <IconButton
               onClick={() => this.props.command.addSubCommand()}
               size="small"
@@ -152,7 +180,7 @@ class CommandDraggable extends Component<Props, State> {
             </IconButton>
           )}
         </span>
-        {command.isGroup() && (
+        {command.isGroup && (
           <Droppable type={command.uuid} droppableId={command.uuid}>
             {(provided, snapshot) => (
               <div

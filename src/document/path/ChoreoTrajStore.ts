@@ -12,8 +12,8 @@ export const ChoreoTrajStore = types
     waypoints: types.frozen<number[]>(),
     samples: types.frozen<SwerveSample[] | DifferentialSample[]>(),
     splits: types.frozen<number[]>(),
-    forcesAvailable: false,
-    markers: types.array(EventMarkerStore)
+
+    forcesAvailable: false
   })
   .views((self) => ({
     get fullTraj(): SwerveSample[] | DifferentialSample[] {
@@ -81,38 +81,6 @@ export const ChoreoTrajStore = types
       self.samples = ser.samples;
 
       self.forcesAvailable = ser.forcesAvailable;
-    },
-    deleteMarkerUUID(uuid: string) {
-      const index = self.markers.findIndex((m) => m.uuid === uuid);
-      if (index >= 0 && index < self.markers.length) {
-        destroy(self.markers[index]);
-        if (self.markers.length === 0) {
-          return;
-        } else if (self.markers[index - 1]) {
-          self.markers[index - 1].setSelected(true);
-        } else if (self.markers[index + 1]) {
-          self.markers[index + 1].setSelected(true);
-        }
-      }
-    },
-    addEventMarker(marker?: IEventMarkerStore): IEventMarkerStore {
-      if (marker === undefined) {
-        marker = getEnv<Env>(self).create.EventMarkerStore({
-          name: "Marker",
-          target: "first",
-          trajTargetIndex: undefined,
-          targetTimestamp: undefined,
-          offset: { exp: "0 s", val: 0 },
-          command: {
-            type: "named",
-            data: {
-              name: ""
-            }
-          }
-        });
-      }
-      self.markers.push(marker as IEventMarkerStore);
-      return marker;
     },
     setSamples(samples: SwerveSample[] | DifferentialSample[]) {
       self.samples = samples;

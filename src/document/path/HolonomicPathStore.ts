@@ -1,4 +1,4 @@
-import { Instance, types, getEnv } from "mobx-state-tree";
+import { Instance, types, getEnv, destroy, IAnyStateTreeNode, getParentOfType } from "mobx-state-tree";
 import {
   DEFAULT_WAYPOINT,
   IHolonomicWaypointStore
@@ -9,19 +9,54 @@ import {
   type ChoreoPath,
   type Traj,
   Waypoint,
-  Expr
+  Expr,
+  PplibCommand,
+  EventMarker,
+  ChoreolibEvent,
+  Command,
+  WaypointIDX,
+  WaypointUUID
 } from "../2025/DocumentTypes";
 import { ChoreoPathStore } from "./ChoreoPathStore";
 import { ChoreoTrajStore } from "./ChoreoTrajStore";
 import { PathUIStore } from "./PathUIStore";
 import { Env } from "../DocumentManager";
-
+import { EventMarkerStore, IEventMarkerStore } from "../EventMarkerStore";
+import { commandIsChoreolib } from "../CommandStore";
+import { findUUIDIndex } from "./utils";
+export function waypointIDToText(id: WaypointUUID | undefined, points: IHolonomicWaypointStore[]) {
+  if (id == undefined) return "?";
+  if (id == "first") return "Start";
+  if (id == "last") return "End";
+  return (
+    findUUIDIndex(id.uuid, points) + 1
+  );
+}
+export const DEFAULT_EVENT_MARKER : EventMarker<PplibCommand> =
+{
+  data: {
+    name: "Marker",
+    target: undefined,
+    offset: {
+      exp: "0 s",
+      val: 0
+    },
+    targetTimestamp: undefined
+  },
+  event: {
+    type: "named",
+    data: {
+      name: ""
+    }
+  }
+} 
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
     snapshot: types.frozen<ChoreoPath<number>>(),
     params: ChoreoPathStore,
     traj: ChoreoTrajStore,
     ui: PathUIStore,
+    markers: types.array(EventMarkerStore),
     name: "",
     uuid: types.identifier,
     isTrajectoryStale: true,
@@ -39,14 +74,17 @@ export const HolonomicPathStore = types
         return self.traj.samples.length >= 2;
       },
       get serialize(): Traj {
+        const markers = self.markers.map(m=>m.serialize);
         return {
           name: self.name,
           version: SAVE_FILE_VERSION,
           params: self.params.serialize,
           traj: self.traj.serialize,
           snapshot: self.snapshot,
-          pplibCommands: [],
-          events: []
+          pplibCommands: markers.filter(m=>!commandIsChoreolib(m.event)) as 
+            EventMarker<PplibCommand>[],
+          events: markers.filter(m=>!commandIsChoreolib(m.event)) as 
+            EventMarker<ChoreolibEvent>[],
         };
       },
       lowestSelectedPoint(): IHolonomicWaypointStore | null {
@@ -54,7 +92,7 @@ export const HolonomicPathStore = types
           if (point.selected) return point;
         }
         return null;
-      }
+      },
     };
   })
   .views((self) => {
@@ -66,6 +104,27 @@ export const HolonomicPathStore = types
   })
   .actions((self) => {
     return {
+      deleteMarkerUUID(uuid: string) {
+        const index = self.markers.findIndex((m) => m.uuid === uuid);
+        if (index >= 0 && index < self.markers.length) {
+          destroy(self.markers[index]);
+          if (self.markers.length === 0) {
+            return;
+          } else if (self.markers[index - 1]) {
+            getEnv<Env>(self).select(self.markers[index - 1]);
+          } else if (self.markers[index + 1]) {
+            getEnv<Env>(self).select(self.markers[index + 1]);
+          }
+        }
+      },
+      addEventMarker(marker?: EventMarker<Command>): IEventMarkerStore {
+        const m = marker ?? DEFAULT_EVENT_MARKER;
+        let toAdd = getEnv<Env>(self).create.EventMarkerStore(m);
+      
+        self.markers.push(toAdd);
+        toAdd.deserialize(m);
+        return toAdd;
+      },
       setSnapshot(snap: ChoreoPath<number>) {
         self.snapshot = snap;
       },
@@ -116,6 +175,9 @@ export const HolonomicPathStore = types
         self.snapshot = ser.snapshot;
         self.params.deserialize(ser.params);
         self.traj.deserialize(ser.traj);
+        ser.events.forEach(m=>{
+          self.addEventMarker(m);
+        })
       }
     };
   })
@@ -156,3 +218,7 @@ export const HolonomicPathStore = types
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface IHolonomicPathStore
   extends Instance<typeof HolonomicPathStore> {}
+export function getPathStore(self: IAnyStateTreeNode): IHolonomicPathStore {
+  const path: IHolonomicPathStore = getParentOfType(self, HolonomicPathStore)
+  return path;
+}

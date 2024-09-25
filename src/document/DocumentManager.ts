@@ -16,8 +16,6 @@ import LocalStorageKeys from "../util/LocalStorageKeys";
 import { ObjectTyped } from "../util/ObjectTyped";
 import { safeGetIdentifier } from "../util/mobxutils";
 import {
-  PplibCommand,
-  PplibCommandMarker,
   GroupCommand,
   NamedCommand,
   Project,
@@ -25,7 +23,10 @@ import {
   WaitCommand,
   type Expr,
   type RobotConfig,
-  type Waypoint
+  type Waypoint,
+  Command,
+  EventMarker,
+  ChoreolibEvent
 } from "./2025/DocumentTypes";
 import {
   ConstraintDataObjects,
@@ -42,12 +43,6 @@ import {
   IConstraintStore,
   IWaypointScope
 } from "./ConstraintStore";
-import {
-  CommandStore,
-  EventMarkerStore,
-  ICommandStore,
-  IEventMarkerStore
-} from "./EventMarkerStore";
 import { IExpressionStore, IVariables, Variables } from "./ExpressionStore";
 import {
   IHolonomicWaypointStore,
@@ -62,6 +57,11 @@ import { ViewLayerDefaults } from "./UIData";
 import { UIStateStore } from "./UIStateStore";
 import { Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
+import { ICommandStore, CommandStore, commandIsChoreolib, commandIsGroup, commandIsNamed, commandIsWait } from "./CommandStore";
+import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
+import { HolonomicPathStore, IHolonomicPathStore, getPathStore } from "./path/HolonomicPathStore";
+import { findUUIDIndex } from "./path/utils";
+import { SelectAllRounded } from "@mui/icons-material";
 
 export type OpenFilePayload = {
   name: string;
@@ -84,17 +84,18 @@ export type EnvConstructors = {
   RobotConfigStore: (config: RobotConfig<Expr>) => IRobotConfigStore;
   WaypointStore: (config: Waypoint<Expr>) => IHolonomicWaypointStore;
   CommandStore: (
-    command: PplibCommand<Expr> &
+    command: Command &
       (
         | {
-            data: WaitCommand<Expr>["data"] &
-              GroupCommand<Expr>["data"] &
-              NamedCommand["data"];
+            data: WaitCommand["data"] &
+              GroupCommand["data"] &
+              NamedCommand["data"] & 
+              ChoreolibEvent["data"];
           }
         | object
       )
   ) => ICommandStore;
-  EventMarkerStore: (marker: PplibCommandMarker<Expr>) => IEventMarkerStore;
+  EventMarkerStore: (marker:EventMarker<Command>) => IEventMarkerStore;
   ConstraintData: ConstraintDataConstructors;
   ConstraintStore: <K extends ConstraintKey>(
     type: K,
@@ -105,22 +106,7 @@ export type EnvConstructors = {
   ) => IConstraintStore;
 };
 function getConstructors(vars: () => IVariables): EnvConstructors {
-  function commandIsNamed(
-    command: PplibCommand<Expr>
-  ): command is NamedCommand {
-    return Object.hasOwn(command.data, "name");
-  }
-  function commandIsGroup(
-    command: PplibCommand<Expr>
-  ): command is GroupCommand<Expr> {
-    return Object.hasOwn(command.data, "commands");
-  }
-  function commandIsTime(
-    command: PplibCommand<Expr>
-  ): command is WaitCommand<Expr> {
-    return Object.hasOwn(command.data, "time");
-  }
-  function createCommandStore(command: PplibCommand<Expr>): ICommandStore {
+  function createCommandStore(command: Command): ICommandStore {
     return CommandStore.create({
       type: command.type,
       name: commandIsNamed(command) ? command.data.name : "",
@@ -128,9 +114,10 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         ? command.data.commands.map((c) => createCommandStore(c))
         : [],
       time: vars().createExpression(
-        commandIsTime(command) ? command.data.waitTime : 0,
+        commandIsWait(command) ? command.data.waitTime : 0,
         "Time"
       ),
+      event: commandIsChoreolib(command) ? command.data.event : "",
       uuid: crypto.randomUUID()
     });
   }
@@ -181,24 +168,31 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
       });
     },
     WaypointStore: (waypoint: Waypoint<Expr>) => {
-      return WaypointStore.create({
+      let w = WaypointStore.create({
         ...waypoint,
         x: vars().createExpression(waypoint.x, "Length"),
         y: vars().createExpression(waypoint.y, "Length"),
         heading: vars().createExpression(waypoint.heading, "Angle"),
         uuid: crypto.randomUUID()
       });
+      return w;
     },
     CommandStore: createCommandStore,
-    EventMarkerStore: (marker: PplibCommandMarker<Expr>): IEventMarkerStore => {
-      return EventMarkerStore.create({
-        name: marker.name,
-        target: undefined,
-        trajTargetIndex: marker.trajTargetIndex,
-        offset: vars().createExpression(marker.offset, "Time"),
-        command: createCommandStore(marker.command),
+    EventMarkerStore: (marker: EventMarker<Command>): IEventMarkerStore => {
+      let m = EventMarkerStore.create({
+        data: {
+          uuid: crypto.randomUUID(),
+          name: marker.data.name,
+          target: undefined,
+          targetTimestamp: marker.data.targetTimestamp,
+          offset: vars().createExpression(marker.data.offset, "Time"),
+        },
+
+
+        event: createCommandStore(marker.event),
         uuid: crypto.randomUUID()
       });
+      return m;
     },
     ConstraintData: constraintDataConstructors,
     ConstraintStore: <K extends ConstraintKey>(
@@ -225,7 +219,11 @@ const variables = Variables.create({ expressions: {}, poses: {} });
 
 const env = {
   selectedSidebar: () => safeGetIdentifier(doc.selectedSidebarItem),
+  hoveredItem: () => safeGetIdentifier(doc.hoveredSidebarItem),
   select: (item: SelectableItemTypes) => select(item),
+  selected: (item: SelectableItemTypes) => doc.selected(item),
+  hover: (item: SelectableItemTypes) => hover(item),
+  hovered: (item: SelectableItemTypes) => doc.hovered(item),
   withoutUndo: (callback: any) => {
     withoutUndo(callback);
   },
@@ -235,6 +233,7 @@ const env = {
   stopGroup: () => {
     stopGroup();
   },
+  history: () => doc.history,
   vars: () => doc.variables,
   renameVariable: renameVariable,
   create: getConstructors(() => doc.variables)
@@ -350,8 +349,9 @@ export async function setupEventListeners() {
       if (savedObject.dataType === "choreo/waypoint") {
         let currentSelectedWaypointIdx = -1;
         if (doc.isSidebarWaypointSelected) {
-          const idx = activePath.params.findUUIDIndex(
-            (doc.selectedSidebarItem as IHolonomicWaypointStore).uuid
+          const idx = findUUIDIndex(
+            (doc.selectedSidebarItem as IHolonomicWaypointStore).uuid,
+            activePath.params.waypoints
           );
           if (idx != -1) {
             currentSelectedWaypointIdx = idx;
@@ -674,6 +674,9 @@ export async function newProject() {
 }
 export function select(item: SelectableItemTypes) {
   doc.setSelectedSidebarItem(item);
+}
+export function hover(item: SelectableItemTypes) {
+  doc.setHoveredSidebarItem(item);
 }
 
 export async function canSave(): Promise<boolean> {

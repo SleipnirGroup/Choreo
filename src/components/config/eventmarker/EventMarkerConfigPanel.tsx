@@ -4,7 +4,6 @@ import { resolveIdentifier } from "mobx-state-tree";
 import React, { Component } from "react";
 import { DragDropContext } from "@hello-pangea/dnd";
 import {
-  CommandStore,
   IEventMarkerStore
 } from "../../../document/EventMarkerStore";
 import ExpressionInput from "../../input/ExpressionInput";
@@ -13,8 +12,10 @@ import InputStyles from "../../input/InputList.module.css";
 import ScopeSlider from "../ScopeSlider";
 import styles from "../WaypointConfigPanel.module.css";
 import CommandDraggable from "./CommandDraggable";
+import { CommandStore } from "../../../document/CommandStore";
+import { IHolonomicWaypointStore } from "../../../document/HolonomicWaypointStore";
 
-type Props = { marker: IEventMarkerStore };
+type Props = { marker: IEventMarkerStore, points: IHolonomicWaypointStore[] };
 
 type State = object;
 
@@ -69,14 +70,14 @@ class EventMarkerConfigPanel extends Component<Props, State> {
   }
   render() {
     const marker = this.props.marker;
-
-    let startIndex = (marker.getTargetIndex() ?? -0.5) + 1;
-    const points = marker.getPath().params.waypoints;
+    const data = marker.data;
+    let startIndex = (data.getTargetIndex() ?? -0.5) + 1;
+    const points = this.props.points;
     const pointcount = points.length;
-    if (marker.target === "first") {
+    if (data.target === "first") {
       startIndex = 0;
     }
-    if (marker.target === "last") {
+    if (data.target === "last") {
       startIndex = pointcount + 1;
     }
 
@@ -97,17 +98,17 @@ class EventMarkerConfigPanel extends Component<Props, State> {
             const lastIdx = pointcount + 1;
             const idx = selection[0];
             if (idx == 0) {
-              marker.setTarget("first");
+              data.setTarget("first");
             } else if (idx == lastIdx) {
-              marker.setTarget("last");
+              data.setTarget("last");
             } else {
-              marker.setTarget({
+              data.setTarget({
                 uuid: points[idx - 1]?.uuid ?? ""
               });
             }
           }}
           sliderProps={{
-            color: marker.getTargetIndex() === undefined ? "error" : "primary"
+            color: data.getTargetIndex() === undefined ? "error" : "primary"
           }}
           points={points}
         ></ScopeSlider>
@@ -126,8 +127,8 @@ class EventMarkerConfigPanel extends Component<Props, State> {
 
           <TextField
             inputRef={this.nameInputRef}
-            value={marker.name}
-            onChange={(e) => marker.setName(e.target.value)}
+            value={data.name}
+            onChange={(e) => data.setName(e.target.value)}
             variant="standard"
             size="small"
             placeholder="Marker Name"
@@ -148,7 +149,7 @@ class EventMarkerConfigPanel extends Component<Props, State> {
             key={"offset"}
             title={"Offset"}
             enabled={true}
-            number={this.props.marker.offset}
+            number={data.offset}
             titleTooltip={
               "The marker's time offset before or after this waypoint"
             }
@@ -156,7 +157,7 @@ class EventMarkerConfigPanel extends Component<Props, State> {
         </ExpressionInputList>
         <DragDropContext onDragEnd={(result) => this.onDragEnd(result)}>
           <CommandDraggable
-            command={marker.command}
+            command={marker.event}
             index={0}
             isDraggable={false}
             isRoot

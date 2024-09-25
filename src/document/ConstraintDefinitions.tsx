@@ -36,8 +36,6 @@ export type ConstraintDefinition<
   properties: PropertyDefinitionList<D["props"]>;
 };
 
-export type WaypointID = "first" | "last" | { uuid: string };
-
 // Constraints
 interface IConstraintData<name, Props extends DataPropsList> {
   readonly type: name;
