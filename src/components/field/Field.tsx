@@ -63,7 +63,7 @@ export class Field extends Component<Props, State> {
             ></ConstraintsConfigPanel>
           )}
         {selectedSidebar !== undefined &&
-          "offset" in selectedSidebar &&
+          "event" in selectedSidebar &&
           activePath.markers.find(
             (marker) =>
               marker.uuid == (selectedSidebar as IEventMarkerStore)!.uuid

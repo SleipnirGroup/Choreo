@@ -62,7 +62,7 @@ import {
   export function commandIsChoreolib(
     command: Command
   ): command is ChoreolibEvent {
-    return Object.hasOwn(command.data, "time");
+    return command.type === "choreolib";
   }
   export const CommandStore = types
     .model("CommandStore", {

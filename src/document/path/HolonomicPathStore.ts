@@ -83,7 +83,7 @@ export const HolonomicPathStore = types
           snapshot: self.snapshot,
           pplibCommands: markers.filter(m=>!commandIsChoreolib(m.event)) as 
             EventMarker<PplibCommand>[],
-          events: markers.filter(m=>!commandIsChoreolib(m.event)) as 
+          events: markers.filter(m=>commandIsChoreolib(m.event)) as 
             EventMarker<ChoreolibEvent>[],
         };
       },
