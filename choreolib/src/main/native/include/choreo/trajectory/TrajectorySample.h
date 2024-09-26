@@ -23,8 +23,16 @@ static constexpr frc::Pose2d Interpolate(const frc::Pose2d& startValue,
 }  // namespace frc
 
 namespace choreo {
+
+template <typename T>
+concept EqualityComparable = requires(const T& a, const T& b) {
+  { a == b } -> std::convertible_to<bool>;
+  { a != b } -> std::convertible_to<bool>;
+};
+
 template <typename T>
 concept TrajectorySample =
+    EqualityComparable<T> &&
     requires(T t, units::second_t time, T tother, int year) {
       { t.GetTimestamp() } -> std::same_as<units::second_t>;
       { t.GetPose() } -> std::same_as<frc::Pose2d>;

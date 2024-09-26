@@ -84,6 +84,31 @@ class SwerveSample {
   SwerveSample Interpolate(const SwerveSample& endValue,
                            units::second_t t) const;
 
+  bool operator==(const SwerveSample& other) const {
+    const double epsilon = 1e-6;
+
+    auto compare_units = [epsilon](const auto& a, const auto& b) {
+      using UnitType =
+          std::remove_const_t<std::remove_reference_t<decltype(a)>>;
+      return units::math::abs(a - b) < UnitType(epsilon);
+    };
+
+    auto compare_arrays = [&compare_units](const auto& arr1, const auto& arr2) {
+      return std::equal(arr1.begin(), arr1.end(), arr2.begin(), compare_units);
+    };
+
+    return compare_units(timestamp, other.timestamp) &&
+           compare_units(x, other.x) && compare_units(y, other.y) &&
+           compare_units(heading, other.heading) &&
+           compare_units(vx, other.vx) && compare_units(vy, other.vy) &&
+           compare_units(omega, other.omega) && compare_units(ax, other.ax) &&
+           compare_units(ay, other.ay) && compare_units(alpha, other.alpha) &&
+           compare_arrays(moduleForcesX, other.moduleForcesX) &&
+           compare_arrays(moduleForcesY, other.moduleForcesY);
+  }
+
+  bool operator!=(const SwerveSample& other) const { return !(*this == other); }
+
   units::second_t timestamp{0_s};
   units::meter_t x{0_m};
   units::meter_t y{0_m};

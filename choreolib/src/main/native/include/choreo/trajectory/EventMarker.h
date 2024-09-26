@@ -15,6 +15,12 @@ struct EventMarker {
   EventMarker OffsetBy(units::second_t timestampOffset) {
     return EventMarker{timestamp + timestampOffset, event};
   }
+
+  bool operator==(const EventMarker& other) const {
+    return (timestamp == other.timestamp) && (event == other.event);
+  }
+
+  bool operator!=(const EventMarker& other) const { return !(*this == other); }
 };
 
 void to_json(wpi::json& json, const EventMarker& event);

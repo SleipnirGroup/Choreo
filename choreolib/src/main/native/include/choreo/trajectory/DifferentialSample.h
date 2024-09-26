@@ -59,6 +59,27 @@ class DifferentialSample {
     }
   }
 
+  bool operator==(const DifferentialSample& other) const {
+    constexpr double epsilon = 1e-6;
+
+    auto compare_units = [epsilon](const auto& a, const auto& b) {
+      using UnitType =
+          std::remove_const_t<std::remove_reference_t<decltype(a)>>;
+      return units::math::abs(a - b) < UnitType(epsilon);
+    };
+
+    return compare_units(timestamp, other.timestamp) &&
+           compare_units(x, other.x) && compare_units(y, other.y) &&
+           compare_units(heading, other.heading) &&
+           compare_units(vl, other.vl) && compare_units(vr, other.vr) &&
+           compare_units(al, other.al) && compare_units(ar, other.ar) &&
+           compare_units(fl, other.fl) && compare_units(fr, other.fr);
+  }
+
+  bool operator!=(const DifferentialSample& other) const {
+    return !(*this == other);
+  }
+
   units::second_t timestamp{0_s};
   units::meter_t x{0_m};
   units::meter_t y{0_m};

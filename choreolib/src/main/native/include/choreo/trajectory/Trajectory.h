@@ -147,6 +147,36 @@ class Trajectory {
         std::vector<EventMarker>(filteredEvents.begin(), filteredEvents.end())};
   }
 
+  bool operator==(const Trajectory<SampleType>& other) const {
+    if (name != other.name) {
+      return false;
+    }
+
+    if (samples.size() != other.samples.size()) {
+      return false;
+    }
+    if (!std::equal(samples.begin(), samples.end(), other.samples.begin())) {
+      return false;
+    }
+
+    if (splits != other.splits) {
+      return false;
+    }
+
+    if (events.size() != other.events.size()) {
+      return false;
+    }
+    if (!std::equal(events.begin(), events.end(), other.events.begin())) {
+      return false;
+    }
+
+    return true;
+  }
+
+  bool operator!=(const Trajectory<SampleType>& other) const {
+    return !(*this == other);
+  }
+
   std::string name;
   std::vector<SampleType> samples;
   std::vector<int> splits;
