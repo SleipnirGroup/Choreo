@@ -9,7 +9,7 @@
 
 template <>
 struct wpi::Struct<choreo::SwerveSample> {
-  static constexpr std::string_view GetTypeName() { return "SwerveSample"; }
+  static constexpr std::string_view GetTypeString() { return "SwerveSample"; }
   static constexpr size_t GetSize() { return 144; }
   static constexpr std::string_view GetSchema() {
     return "double timestamp;double x;double y;double heading;double vx;double "

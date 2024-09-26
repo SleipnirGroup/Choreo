@@ -55,14 +55,16 @@ class Choreo {
                         "Found multiple project files in deploy directory!");
       }
 
-      auto fileBuffer = wpi::MemoryBuffer::GetFile(matchingFiles[0].string());
-      if (!fileBuffer) {
+      std::error_code ec;
+      auto fileBuffer =
+          wpi::MemoryBuffer::GetFile(matchingFiles[0].string(), ec);
+      if (!fileBuffer || !ec) {
         FRC_ReportError(frc::warn::Warning,
                         "Could not open choreo project file");
       }
 
       choreo::ProjectFile resultProjectFile;
-      choreo::from_json(fileBuffer.value()->GetCharBuffer(), resultProjectFile);
+      choreo::from_json(fileBuffer->GetCharBuffer(), resultProjectFile);
       LAZY_PROJECT_FILE = resultProjectFile;
     } catch (const std::filesystem::filesystem_error&) {
       FRC_ReportError(frc::warn::Warning, "Error finding choreo directory!");
@@ -93,8 +95,9 @@ class Choreo {
     std::string trajectoryFileName = fmt::format(
         "{}/{}{}", CHOREO_DIR, trajectoryName, TRAJECTORY_FILE_EXTENSION);
 
-    auto fileBuffer = wpi::MemoryBuffer::GetFile(trajectoryFileName);
-    if (!fileBuffer) {
+    std::error_code ec;
+    auto fileBuffer = wpi::MemoryBuffer::GetFile(trajectoryFileName, ec);
+    if (!fileBuffer || !ec) {
       FRC_ReportError(frc::warn::Warning, "Could not find trajectory file: {}",
                       trajectoryName);
       return {};
@@ -102,8 +105,7 @@ class Choreo {
 
     try {
       return LoadTrajectoryString<SampleType>(
-          std::string{fileBuffer.value()->GetCharBuffer().data(),
-                      fileBuffer.value()->size()});
+          std::string{fileBuffer->GetCharBuffer().data(), fileBuffer->size()});
     } catch (wpi::json::parse_error& ex) {
       FRC_ReportError(frc::warn::Warning, "Could not parse trajectory file: {}",
                       trajectoryName);
