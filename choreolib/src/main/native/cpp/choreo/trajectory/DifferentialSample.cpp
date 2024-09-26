@@ -22,8 +22,8 @@ frc::ChassisSpeeds DifferentialSample::GetChassisSpeeds() const {
   return frc::ChassisSpeeds{
       (vl + vr) / 2.0, 0.0_mps,
       (vr - vl) /
-          units::meter_t{
-              choreo::Choreo::GetProjectFile().config.diffTrackWidth.val} *
+          units::meter_t{choreo::Choreo::GetProjectFile()
+                             .config.differentialTrackWidth.val} *
           1_rad};
 }
 

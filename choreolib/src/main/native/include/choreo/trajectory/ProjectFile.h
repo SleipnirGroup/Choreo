@@ -73,19 +73,16 @@ class Bumpers {
  public:
   Bumpers() = default;
   Bumpers(const Expression& front, const Expression& back,
-          const Expression& left, const Expression& right)
-      : front{front}, back{back}, left{left}, right{right} {}
+          const Expression& side)
+      : front{front}, back{back}, side{side} {}
   /** The front bumper expression. */
   Expression front;
   /** The back bumper expression. */
   Expression back;
-  /** The left bumper expression. */
-  Expression left;
-  /** The right bumper expression. */
-  Expression right;
+  /** The side bumper expression. */
+  Expression side;
   bool operator==(const Bumpers& other) const {
-    return front == other.front && back == other.back && left == other.left &&
-           right == other.right;
+    return front == other.front && back == other.back && side == other.side;
   }
 };
 
@@ -93,12 +90,13 @@ class Bumpers {
 class Config {
  public:
   Config() = default;
-  Config(const std::vector<XYExpression>& modules, const Expression& mass,
-         const Expression& inertia, const Expression& gearing,
-         const Expression& wheelRadius, const Expression& vmax,
-         const Expression& tmax, const Bumpers& bumpers,
-         const Expression& diffTrackWidth)
-      : modules{modules},
+  Config(const XYExpression& frontLeft, const XYExpression& backLeft,
+         const Expression& mass, const Expression& inertia,
+         const Expression& gearing, const Expression& wheelRadius,
+         const Expression& vmax, const Expression& tmax, const Bumpers& bumpers,
+         const Expression& differentialTrackWidth)
+      : frontLeft{frontLeft},
+        backLeft{backLeft},
         mass{mass},
         inertia{inertia},
         gearing{gearing},
@@ -106,9 +104,11 @@ class Config {
         vmax{vmax},
         tmax{tmax},
         bumpers{bumpers},
-        diffTrackWidth{diffTrackWidth} {}
-  /** The positions of the swerve modules in the order [FL, FR, BL, BR] */
-  std::vector<XYExpression> modules;
+        differentialTrackWidth{differentialTrackWidth} {}
+  /** The position of the front left swerve module */
+  XYExpression frontLeft;
+  /** The position of the back left swerve module */
+  XYExpression backLeft;
   /** The mass of the robot. (kg) */
   Expression mass;
   /** The inertia of the robot. (kg m^2) */
@@ -124,13 +124,14 @@ class Config {
   /** The bumpers of the robot. */
   Bumpers bumpers;
   /** The width between the wheels of the robot. (m) */
-  Expression diffTrackWidth;
+  Expression differentialTrackWidth;
   bool operator==(const Config& other) const {
-    return modules == other.modules && mass == other.mass &&
-           inertia == other.inertia && gearing == other.gearing &&
-           wheelRadius == other.wheelRadius && vmax == other.vmax &&
-           tmax == other.tmax && bumpers == other.bumpers &&
-           diffTrackWidth == other.diffTrackWidth;
+    return frontLeft == other.frontLeft && backLeft == other.backLeft &&
+           mass == other.mass && inertia == other.inertia &&
+           gearing == other.gearing && wheelRadius == other.wheelRadius &&
+           vmax == other.vmax && tmax == other.tmax &&
+           bumpers == other.bumpers &&
+           differentialTrackWidth == other.differentialTrackWidth;
   }
 };
 

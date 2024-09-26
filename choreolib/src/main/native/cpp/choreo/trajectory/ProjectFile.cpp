@@ -2,6 +2,7 @@
 
 #include "choreo/trajectory/ProjectFile.h"
 
+#include <iostream>
 #include <string>
 
 #include <wpi/json.h>
@@ -9,14 +10,14 @@
 using namespace choreo;
 
 void choreo::to_json(wpi::json& json, const Expression& exp) {
-  json = wpi::json{exp.expression, exp.val};
+  json = wpi::json{{"exp", exp.expression}, {"val", exp.val}};
 }
 
 void choreo::from_json(const wpi::json& json, Expression& exp) {
-  if (json.is_array() && json.size() == 2 && json[0].is_string() &&
-      json[1].is_number()) {
-    exp.expression = json[0].get<std::string>();
-    exp.val = json[1].get<double>();
+  if (json.is_object() && json.size() == 2 && json["exp"].is_string() &&
+      json["val"].is_number()) {
+    exp.expression = json["exp"].get<std::string>();
+    exp.val = json["val"].get<double>();
   } else {
     throw std::runtime_error("Invalid measurement format");
   }
@@ -41,17 +42,14 @@ void choreo::from_json(const wpi::json& j, Pose& pose) {
 }
 
 void choreo::to_json(wpi::json& json, const Bumpers& bumpers) {
-  json = wpi::json{{"front", bumpers.front},
-                   {"left", bumpers.left},
-                   {"back", bumpers.back},
-                   {"right", bumpers.right}};
+  json = wpi::json{
+      {"front", bumpers.front}, {"back", bumpers.back}, {"side", bumpers.side}};
 }
 
 void choreo::from_json(const wpi::json& json, Bumpers& bumpers) {
   json.at("front").get_to(bumpers.front);
-  json.at("left").get_to(bumpers.left);
   json.at("back").get_to(bumpers.back);
-  json.at("right").get_to(bumpers.right);
+  json.at("side").get_to(bumpers.side);
 }
 
 void choreo::to_json(wpi::json& json, const Variable& var) {
@@ -64,14 +62,21 @@ void choreo::from_json(const wpi::json& json, Variable& var) {
 }
 
 void choreo::to_json(wpi::json& json, const Config& config) {
-  json = wpi::json{{"modules", config.modules},    {"mass", config.mass},
-                   {"inertia", config.inertia},    {"gearing", config.gearing},
-                   {"radius", config.wheelRadius}, {"vmax", config.vmax},
-                   {"tmax", config.tmax},          {"bumper", config.bumpers}};
+  json = wpi::json{{"frontLeft", config.frontLeft},
+                   {"backLeft", config.backLeft},
+                   {"mass", config.mass},
+                   {"inertia", config.inertia},
+                   {"gearing", config.gearing},
+                   {"radius", config.wheelRadius},
+                   {"vmax", config.vmax},
+                   {"tmax", config.tmax},
+                   {"bumper", config.bumpers},
+                   {"differentialTrackWidth", config.differentialTrackWidth}};
 }
 
 void choreo::from_json(const wpi::json& json, Config& config) {
-  json.at("modules").get_to(config.modules);
+  json.at("frontLeft").get_to(config.frontLeft);
+  json.at("backLeft").get_to(config.backLeft);
   json.at("mass").get_to<Expression>(config.mass);
   json.at("inertia").get_to(config.inertia);
   json.at("gearing").get_to(config.gearing);
@@ -79,6 +84,7 @@ void choreo::from_json(const wpi::json& json, Config& config) {
   json.at("vmax").get_to(config.vmax);
   json.at("tmax").get_to(config.tmax);
   json.at("bumper").get_to(config.bumpers);
+  json.at("differentialTrackWidth").get_to(config.differentialTrackWidth);
 }
 
 void choreo::to_json(wpi::json& json, const ProjectFile& projectFile) {
@@ -88,7 +94,7 @@ void choreo::to_json(wpi::json& json, const ProjectFile& projectFile) {
       {"type", projectFile.type},
       {"variables", wpi::json{{"expressions", projectFile.expressions},
                               {"poses", projectFile.poses}}},
-      {"config", wpi::json{projectFile.config}},
+      {"config", projectFile.config},
       {"generationFeatures", wpi::json::array()}};
 }
 
