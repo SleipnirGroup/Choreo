@@ -115,7 +115,7 @@ class Choreo {
 
   template <choreo::TrajectorySample SampleType>
   static std::optional<choreo::Trajectory<SampleType>> LoadTrajectoryString(
-      const std::string& trajJsonString) {
+      std::string_view trajJsonString) {
     wpi::json json = wpi::json::parse(trajJsonString);
     choreo::Trajectory<SampleType> trajectory;
     choreo::from_json(json, trajectory);
@@ -153,10 +153,10 @@ class ChoreoTrajCache {
    * in the deploy directory, file extension is optional.
    * @return the loaded trajectory, or `empty std::optional` if the trajectory
    * could not be loaded.
-   * @see Choreo#LoadTrajectory(const std::string&)
+   * @see Choreo#LoadTrajectory(std::string_view)
    */
   static std::optional<choreo::Trajectory<SampleType>> LoadTrajectory(
-      const std::string& trajectoryName) {
+      std::string_view trajectoryName) {
     if (cache.contains(trajectoryName)) {
       return cache[trajectoryName];
     } else {
@@ -179,11 +179,12 @@ class ChoreoTrajCache {
    * @param splitIndex the index of the split trajectory to load
    * @return the loaded trajectory, or `empty std::optional` if the trajectory
    * could not be loaded.
-   * @see Choreo#LoadTrajectory(const std::string&)
+   * @see Choreo#LoadTrajectory(std::string_view)
    */
   static std::optional<choreo::Trajectory<SampleType>> LoadTrajectory(
-      const std::string& trajectoryName, int splitIndex) {
-    std::string key = trajectoryName + ".:." + std::to_string(splitIndex);
+      std::string_view trajectoryName, int splitIndex) {
+    std::string key =
+        std::string{trajectoryName} + ".:." + std::to_string(splitIndex);
     if (cache.contains(key)) {
       return cache[key];
     } else if (cache.contains(trajectoryName)) {

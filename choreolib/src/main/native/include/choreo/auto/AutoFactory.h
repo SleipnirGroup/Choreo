@@ -20,7 +20,7 @@ class AutoBindings {
   AutoBindings(AutoBindings&&) = default;
   AutoBindings& operator=(AutoBindings&&) = default;
 
-  AutoBindings Bind(const std::string& name, frc2::CommandPtr cmd) && {
+  AutoBindings Bind(std::string_view name, frc2::CommandPtr cmd) && {
     bindings.emplace(name, std::move(cmd));
     return std::move(*this);
   }
@@ -59,7 +59,7 @@ class AutoFactory {
 
   AutoLoop<SampleType> NewLoop() const { return AutoLoop<SampleType>(); }
 
-  AutoTrajectory<SampleType> Trajectory(const std::string& trajName,
+  AutoTrajectory<SampleType> Trajectory(std::string_view trajName,
                                         AutoLoop<SampleType> loop) const {
     std::optional<choreo::Trajectory<SampleType>> optTraj =
         Choreo::LoadTrajectory<SampleType>(trajName);
@@ -79,7 +79,7 @@ class AutoFactory {
     return autoTraj;
   }
 
-  AutoTrajectory<SampleType> Trajectory(const std::string& trajName,
+  AutoTrajectory<SampleType> Trajectory(std::string_view trajName,
                                         int splitIndex,
                                         AutoLoop<SampleType> loop) const {
     std::optional<choreo::Trajectory<SampleType>> optTraj =
@@ -106,7 +106,7 @@ class AutoFactory {
     return autoTraj;
   }
 
-  void Bind(const std::string& name, frc2::CommandPtr cmd) {
+  void Bind(std::string_view name, frc2::CommandPtr cmd) {
     autoBindings = std::move(autoBindings).Bind(name, cmd);
   }
 

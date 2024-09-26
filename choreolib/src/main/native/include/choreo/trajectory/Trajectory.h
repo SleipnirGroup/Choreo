@@ -36,7 +36,7 @@ class Trajectory {
    * @param splits The indices of the splits in the trajectory.
    * @param events The events in the trajectory.
    */
-  Trajectory(const std::string& name, const std::vector<SampleType>& samples,
+  Trajectory(std::string_view name, const std::vector<SampleType>& samples,
              const std::vector<int>& splits,
              const std::vector<EventMarker>& events)
       : name{name}, samples{samples}, splits{splits}, events{events} {}
@@ -189,7 +189,7 @@ class Trajectory {
    * @return A vector of all events with the given name in the trajectory, if no
    * events are found, an empty vector is returned.
    */
-  std::vector<EventMarker> GetEvents(const std::string& eventName) {
+  std::vector<EventMarker> GetEvents(std::string_view eventName) {
     std::vector<EventMarker> matchingEvents;
     for (const auto& event : events) {
       if (event.event == eventName) {

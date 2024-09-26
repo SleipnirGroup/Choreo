@@ -33,7 +33,7 @@ static constexpr frc::ChassisSpeeds DEFAULT_CHASSIS_SPEEDS =
 template <choreo::TrajectorySample SampleType, int Year>
 class AutoTrajectory {
  public:
-  AutoTrajectory(const std::string& name,
+  AutoTrajectory(std::string_view name,
                  const choreo::Trajectory<SampleType>& trajectory,
                  std::function<frc::Pose2d()> poseSupplier,
                  ChoreoControllerFunction<SampleType> controller,
@@ -121,7 +121,7 @@ class AutoTrajectory {
         });
   }
 
-  frc2::Trigger AtTime(const std::string& eventName) {
+  frc2::Trigger AtTime(std::string_view eventName) {
     bool foundEvent = false;
     frc2::Trigger trig = offTrigger;
 
@@ -138,7 +138,7 @@ class AutoTrajectory {
     return trig;
   }
 
-  frc2::Trigger AtPose(const std::string& eventName,
+  frc2::Trigger AtPose(std::string_view eventName,
                        units::meter_t tolerance = DEFAULT_TOLERANCE) {
     bool foundEvent = false;
     frc2::Trigger trig = offTrigger;
@@ -159,7 +159,7 @@ class AutoTrajectory {
     return trig;
   }
 
-  frc2::Trigger AtTimeAndPlace(const std::string& eventName,
+  frc2::Trigger AtTimeAndPlace(std::string_view eventName,
                                units::meter_t tolerance = DEFAULT_TOLERANCE) {
     return frc2::Trigger{AtTime(eventName) && AtPose(eventName, tolerance)};
   }
@@ -224,7 +224,7 @@ class AutoTrajectory {
         }};
   }
 
-  const std::string& name;
+  std::string_view name;
   const choreo::Trajectory<SampleType>& trajectory;
   std::function<frc::Pose2d()> poseSupplier;
   ChoreoControllerFunction<SampleType> controller;

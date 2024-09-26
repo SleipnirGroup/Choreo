@@ -17,7 +17,7 @@ namespace choreo {
 class Expression {
  public:
   Expression() = default;
-  Expression(const std::string& expression, double val)
+  Expression(std::string_view expression, double val)
       : expression{expression}, val{val} {}
   /** The equation. */
   std::string expression;
@@ -56,7 +56,7 @@ struct Pose {
 
 struct Variable {
   Variable() = default;
-  Variable(const std::string& dimension, const Expression& var)
+  Variable(std::string_view dimension, const Expression& var)
       : dimension{dimension}, var{var} {}
   std::string dimension;
   Expression var;
@@ -139,8 +139,8 @@ class Config {
 class ProjectFile {
  public:
   ProjectFile() = default;
-  ProjectFile(const std::string& name, const std::string& version,
-              const std::string& type,
+  ProjectFile(std::string_view name, std::string_view version,
+              std::string_view type,
               const std::unordered_map<std::string, Variable>& expressions,
               const std::unordered_map<std::string, Pose>& poses,
               const Config& config,
