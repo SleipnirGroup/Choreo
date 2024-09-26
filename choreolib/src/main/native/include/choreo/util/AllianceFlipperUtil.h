@@ -101,7 +101,8 @@ constexpr auto GetFlipperForYear() {
 
   constexpr bool yearInMap = [] {
     try {
-      flipperMap.at(Year);
+      [[maybe_unused]]
+      auto checked = flipperMap.at(Year);
       return true;
     } catch (...) {
       return false;
