@@ -3,16 +3,20 @@
 #pragma once
 
 #include <functional>
+#include <utility>
 #include <vector>
 
 #include "choreo/auto/AutoTrajectory.h"
 
 namespace choreo {
+
 template <choreo::TrajectorySample SampleType>
 class AutoLoop {
  public:
-  AutoLoop() {}
-  explicit AutoLoop(frc::EventLoop loop) : loop(loop) {}
+  AutoLoop() = default;
+
+  explicit AutoLoop(frc::EventLoop loop) : loop{std::move(loop)} {}
+
   void Poll() {
     if (!frc::DriverStation::IsAutonomousEnabled() || isKilled) {
       isActive = false;
@@ -71,12 +75,13 @@ class AutoLoop {
   }
 
   void AddTrajectory(AutoTrajectory<SampleType> trajectory) {
-    trajectories.add(trajectory);
+    trajectories.add(std::move(trajectory));
   }
 
   std::vector<AutoTrajectory<SampleType>> trajectories;
   frc::EventLoop loop;
-  bool isActive{false};
-  bool isKilled{false};
+  bool isActive = false;
+  bool isKilled = false;
 };
+
 }  // namespace choreo

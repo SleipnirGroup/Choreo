@@ -2,9 +2,8 @@
 
 #pragma once
 
-#include <iostream>
-#include <memory>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 
@@ -18,7 +17,10 @@
 #include "choreo/trajectory/Trajectory.h"
 
 namespace choreo {
-/// A class that handles loading choreo and caching choreo trajectories
+
+/**
+ * A class that handles loading choreo and caching choreo trajectories.
+ */
 class Choreo {
  public:
   /**
@@ -63,10 +65,8 @@ class Choreo {
       choreo::from_json(fileBuffer.value()->GetCharBuffer(), resultProjectFile);
       LAZY_PROJECT_FILE = resultProjectFile;
     } catch (const std::filesystem::filesystem_error& e) {
-      std::cout << e.what() << "\n";
       FRC_ReportError(frc::warn::Warning, "Error finding choreo directory!");
     } catch (const wpi::json::exception& e) {
-      std::cout << e.what() << "\n";
       FRC_ReportError(frc::warn::Warning, "Error parsing choreo project file!");
     }
     return LAZY_PROJECT_FILE.value();
@@ -84,7 +84,7 @@ class Choreo {
    */
   template <choreo::TrajectorySample SampleType>
   static std::optional<choreo::Trajectory<SampleType>> LoadTrajectory(
-      std::string trajectoryName) {
+      std::string_view trajectoryName) {
     if (trajectoryName.ends_with(TRAJECTORY_FILE_EXTENSION)) {
       trajectoryName = trajectoryName.substr(
           0, trajectoryName.size() - TRAJECTORY_FILE_EXTENSION.size());
@@ -115,8 +115,8 @@ class Choreo {
 
   template <choreo::TrajectorySample SampleType>
   static std::optional<choreo::Trajectory<SampleType>> LoadTrajectoryString(
-      std::string_view trajJsonString) {
-    wpi::json json = wpi::json::parse(trajJsonString);
+      std::string_view trajectoryJsonString) {
+    wpi::json json = wpi::json::parse(trajectoryJsonString);
     choreo::Trajectory<SampleType> trajectory;
     choreo::from_json(json, trajectory);
     return trajectory;
@@ -183,28 +183,32 @@ class ChoreoTrajCache {
    */
   static std::optional<choreo::Trajectory<SampleType>> LoadTrajectory(
       std::string_view trajectoryName, int splitIndex) {
-    std::string key =
-        std::string{trajectoryName} + ".:." + std::to_string(splitIndex);
-    if (cache.contains(key)) {
-      return cache[key];
-    } else if (cache.contains(trajectoryName)) {
-      cache[key] = cache[trajectoryName].GetSplit(splitIndex);
-      return cache[key];
-    } else {
-      auto possibleTrajectory = LoadTrajectory(trajectoryName);
-      cache[trajectoryName] = possibleTrajectory;
-      if (possibleTrajectory.has_value()) {
-        cache[key] = possibleTrajectory.value().GetSplit(splitIndex);
+    std::string key = fmt::format("{}.:.{}", trajectoryName, splitIndex);
+
+    if (!cache.contains(key)) {
+      if (cache.contains(trajectoryName)) {
+        cache[key] = cache[trajectoryName].GetSplit(splitIndex);
+      } else {
+        auto possibleTrajectory = LoadTrajectory(trajectoryName);
+        cache[trajectoryName] = possibleTrajectory;
+
+        if (possibleTrajectory.has_value()) {
+          cache[key] = possibleTrajectory.value().GetSplit(splitIndex);
+        }
       }
-      return cache[key];
     }
+
+    return cache[key];
   }
 
-  /// Clears the trajectory cache
+  /**
+   * Clears the trajectory cache.
+   */
   static void Clear() { cache.clear(); }
 
  private:
   static inline std::unordered_map<std::string, choreo::Trajectory<SampleType>>
       cache;
 };
+
 }  // namespace choreo

@@ -4,7 +4,10 @@
 
 #include <functional>
 #include <string>
+#include <string_view>
+#include <utility>
 
+#include <fmt/format.h>
 #include <frc/DriverStation.h>
 #include <frc/Timer.h>
 #include <frc/kinematics/ChassisSpeeds.h>
@@ -14,7 +17,6 @@
 #include <units/length.h>
 #include <units/time.h>
 
-#include "choreo/trajectory/EventMarker.h"
 #include "choreo/trajectory/Trajectory.h"
 #include "choreo/trajectory/TrajectorySample.h"
 
@@ -27,8 +29,7 @@ using ChoreoControllerFunction =
 using TrajectoryLogger = std::function<void(frc::Pose2d, bool)>;
 
 static constexpr units::meter_t DEFAULT_TOLERANCE = 3_in;
-static constexpr frc::ChassisSpeeds DEFAULT_CHASSIS_SPEEDS =
-    frc::ChassisSpeeds{};
+static constexpr frc::ChassisSpeeds DEFAULT_CHASSIS_SPEEDS;
 
 template <choreo::TrajectorySample SampleType, int Year>
 class AutoTrajectory {
@@ -39,27 +40,26 @@ class AutoTrajectory {
                  ChoreoControllerFunction<SampleType> controller,
                  std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds,
                  std::function<bool()> mirrorTrajectory,
-                 std::optional<TrajectoryLogger> trajLogger,
+                 std::optional<TrajectoryLogger> trajectoryLogger,
                  const frc2::Subsystem& driveSubsystem, frc::EventLoop* loop,
-                 // bindings,
-                 std::function<void()> newTrajCallback)
-      : name(name),
-        trajectory(trajectory),
-        poseSupplier(poseSupplier),
-        controller(controller),
-        outputChassisSpeeds(outputChassisSpeeds),
-        mirrorTrajectory(mirrorTrajectory),
-        trajLogger(trajLogger),
-        driveSubsystem(driveSubsystem),
+                 std::function<void()> newTrajectoryCallback)
+      : name{name},
+        trajectory{trajectory},
+        poseSupplier{std::move(poseSupplier)},
+        controller{controller},
+        outputChassisSpeeds{std::move(outputChassisSpeeds)},
+        mirrorTrajectory{std::move(mirrorTrajectory)},
+        trajectoryLogger{std::move(trajectoryLogger)},
+        driveSubsystem{driveSubsystem},
         loop(loop),
-        newTrajCallback(newTrajCallback),
+        newTrajectoryCallback{std::move(newTrajectoryCallback)},
         offTrigger(loop, [] { return false; }) {}
 
   frc2::CommandPtr Cmd() const {
     if (trajectory.samples.size() == 0) {
       return frc2::cmd::RunOnce([] {
                FRC_ReportError(frc::warn::Warning,
-                               "Trajectory " + name + " has no samples");
+                               fmt::format("Trajectory {} has no samples", name);
              })
           .WithName("Trajectory_" + name);
     }
@@ -175,13 +175,13 @@ class AutoTrajectory {
   units::second_t TotalTime() { return trajectory.GetTotalTime(); }
 
   void LogTrajectory(bool starting) {
-    if (trajLogger.has_value()) {
-      trajLogger.value()(trajectory.GetPoses(), starting);
+    if (trajectoryLogger.has_value()) {
+      trajectoryLogger.value()(trajectory.GetPoses(), starting);
     }
   }
 
   void CmdInitiazlize() {
-    newTrajCallback();
+    newTrajectoryCallback();
     timer.Restart();
     isDone = false;
     isActive = true;
@@ -224,22 +224,22 @@ class AutoTrajectory {
         }};
   }
 
-  std::string_view name;
+  std::string name;
   const choreo::Trajectory<SampleType>& trajectory;
   std::function<frc::Pose2d()> poseSupplier;
   ChoreoControllerFunction<SampleType> controller;
   std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds;
   std::function<bool()> mirrorTrajectory;
-  std::optional<TrajectoryLogger> trajLogger;
+  std::optional<TrajectoryLogger> trajectoryLogger;
   const frc2::Subsystem& driveSubsystem;
   frc::EventLoop* loop;
-  // bindings;
-  std::function<void()> newTrajCallback;
+  std::function<void()> newTrajectoryCallback;
 
   frc::Timer timer;
-  bool isDone{false};
-  bool isActive{false};
+  bool isDone = false;
+  bool isActive = false;
   units::second_t timeOffset = 0_s;
   frc2::Trigger offTrigger;
 };
+
 }  // namespace choreo

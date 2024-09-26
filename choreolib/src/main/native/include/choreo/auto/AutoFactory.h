@@ -4,6 +4,7 @@
 
 #include <functional>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <utility>
 
@@ -48,48 +49,48 @@ class AutoFactory {
               std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds,
               std::function<bool()> mirrorTrajectory,
               const frc2::Subsystem& driveSubsystem, AutoBindings bindings,
-              std::optional<TrajectoryLogger> trajLogger)
-      : poseSupplier(poseSupplier),
-        controller(controller),
-        outputChassisSpeeds(outputChassisSpeeds),
-        mirrorTrajectory(mirrorTrajectory),
-        driveSubsystem(driveSubsystem),
-        autoBindings(bindings),
-        trajLogger(trajLogger) {}
+              std::optional<TrajectoryLogger> trajectoryLogger)
+      : poseSupplier{std::move(poseSupplier)},
+        controller{controller},
+        outputChassisSpeeds{std::move(outputChassisSpeeds)},
+        mirrorTrajectory{std::move(mirrorTrajectory)},
+        driveSubsystem{driveSubsystem},
+        autoBindings{std::move(bindings)},
+        trajectoryLogger{std::move(trajectoryLogger)} {}
 
   AutoLoop<SampleType> NewLoop() const { return AutoLoop<SampleType>(); }
 
-  AutoTrajectory<SampleType> Trajectory(std::string_view trajName,
+  AutoTrajectory<SampleType> Trajectory(std::string_view trajectoryName,
                                         AutoLoop<SampleType> loop) const {
     std::optional<choreo::Trajectory<SampleType>> optTraj =
-        Choreo::LoadTrajectory<SampleType>(trajName);
+        Choreo::LoadTrajectory<SampleType>(trajectoryName);
     choreo::Trajectory<SampleType> trajectory;
     if (optTraj.has_value()) {
       trajectory = optTraj.value();
     } else {
       FRC_ReportError(frc::warn::Warning, "Could not load trajectory: {}",
-                      trajName);
+                      trajectoryName);
     }
     AutoTrajectory<SampleType> autoTraj{
-        trajName,     trajectory,          poseSupplier,
-        controller,   outputChassisSpeeds, mirrorTrajectory,
-        trajLogger,   driveSubsystem,      loop.GetLoop(),
-        autoBindings, loop.OnNewTrajectory};
+        trajectoryName,   trajectory,          poseSupplier,
+        controller,       outputChassisSpeeds, mirrorTrajectory,
+        trajectoryLogger, driveSubsystem,      loop.GetLoop(),
+        autoBindings,     loop.OnNewTrajectory};
     loop.AddTrajectory(autoTraj);
     return autoTraj;
   }
 
-  AutoTrajectory<SampleType> Trajectory(std::string_view trajName,
+  AutoTrajectory<SampleType> Trajectory(std::string_view trajectoryName,
                                         int splitIndex,
                                         AutoLoop<SampleType> loop) const {
     std::optional<choreo::Trajectory<SampleType>> optTraj =
-        Choreo::LoadTrajectory<SampleType>(trajName);
+        Choreo::LoadTrajectory<SampleType>(trajectoryName);
     choreo::Trajectory<SampleType> trajectory;
     if (optTraj.has_value()) {
       trajectory = optTraj.value();
     } else {
       FRC_ReportError(frc::warn::Warning, "Could not load trajectory: {}",
-                      trajName);
+                      trajectoryName);
     }
     return Trajectory(trajectory, loop);
   }
@@ -98,10 +99,10 @@ class AutoFactory {
       choreo::Trajectory<SampleType> trajectory,
       AutoLoop<SampleType> loop) const {
     AutoTrajectory<SampleType> autoTraj{
-        trajectory.name, trajectory,          poseSupplier,
-        controller,      outputChassisSpeeds, mirrorTrajectory,
-        trajLogger,      driveSubsystem,      loop.GetLoop(),
-        autoBindings,    loop.OnNewTrajectory};
+        trajectory.name,  trajectory,          poseSupplier,
+        controller,       outputChassisSpeeds, mirrorTrajectory,
+        trajectoryLogger, driveSubsystem,      loop.GetLoop(),
+        autoBindings,     loop.OnNewTrajectory};
     loop.AddTrajectory(autoTraj);
     return autoTraj;
   }
@@ -117,6 +118,7 @@ class AutoFactory {
   std::function<bool()> mirrorTrajectory;
   const frc2::Subsystem& driveSubsystem;
   AutoBindings autoBindings{};
-  std::optional<TrajectoryLogger> trajLogger;
+  std::optional<TrajectoryLogger> trajectoryLogger;
 };
+
 }  // namespace choreo

@@ -3,66 +3,78 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include <wpi/json_fwd.h>
 
-inline bool almost_equal(double a, double b, double epsilon = 1e-6) {
-  return std::abs(a - b) < epsilon;
-}
-
 namespace choreo {
-/** A representation of an expression. An equation and its value. */
+
+/**
+ * A representation of an expression. An equation and its value.
+ */
 class Expression {
  public:
   Expression() = default;
+
   Expression(std::string_view expression, double val)
       : expression{expression}, val{val} {}
-  /** The equation. */
+
+  /// The equation.
   std::string expression;
-  /** The value. */
-  double val{0.0};
+
+  /// The value.
+  double val = 0.0;
+
   bool operator==(const Expression& other) const {
-    return expression == other.expression && almost_equal(val, other.val);
+    return expression == other.expression && std::abs(val - other.val) < 1e-6;
   }
 };
 
-/** An xy pair of expressions. */
+/**
+ * An x-y pair of expressions.
+ */
 class XYExpression {
  public:
   XYExpression() = default;
-  XYExpression(const Expression& x, const Expression& y) : x{x}, y{y} {}
+
+  XYExpression(Expression x, Expression y) : x{std::move(x)}, y{std::move(y)} {}
+
   /** The x expression. */
   Expression x;
+
   /** The y expression. */
   Expression y;
-  bool operator==(const XYExpression& other) const {
-    return x == other.x && y == other.y;
-  }
+
+  bool operator==(const XYExpression&) const = default;
 };
 
 struct Pose {
   Pose() = default;
-  Pose(const Expression& x, const Expression& y, const Expression& heading)
-      : x{x}, y{y}, heading{heading} {}
+
+  Pose(Expression x, Expression y, Expression heading)
+      : x{std::move(x)}, y{std::move(y)}, heading{std::move(heading)} {}
+
   Expression x;
   Expression y;
   Expression heading;
-  bool operator==(const Pose& other) const {
-    return x == other.x && y == other.y && heading == other.heading;
-  }
+
+  bool operator==(const Pose&) const = default;
 };
 
 struct Variable {
   Variable() = default;
-  Variable(std::string_view dimension, const Expression& var)
-      : dimension{dimension}, var{var} {}
+
+  Variable(std::string_view dimension, Expression var)
+      : dimension{dimension}, var{std::move(var)} {}
+
   std::string dimension;
+
   Expression var;
-  bool operator==(const Variable& other) const {
-    return dimension == other.dimension && var == other.var;
-  }
+
+  bool operator==(const Variable&) const = default;
 };
 
 /**
@@ -72,106 +84,117 @@ struct Variable {
 class Bumpers {
  public:
   Bumpers() = default;
-  Bumpers(const Expression& front, const Expression& back,
-          const Expression& side)
-      : front{front}, back{back}, side{side} {}
+
+  Bumpers(Expression front, Expression back, Expression side)
+      : front{std::move(front)}, back{std::move(back)}, side{std::move(side)} {}
+
   /** The front bumper expression. */
   Expression front;
+
   /** The back bumper expression. */
   Expression back;
+
   /** The side bumper expression. */
   Expression side;
-  bool operator==(const Bumpers& other) const {
-    return front == other.front && back == other.back && side == other.side;
-  }
+
+  bool operator==(const Bumpers& other) const = default;
 };
 
 /** The user configuration of the project. */
 class Config {
  public:
   Config() = default;
-  Config(const XYExpression& frontLeft, const XYExpression& backLeft,
-         const Expression& mass, const Expression& inertia,
-         const Expression& gearing, const Expression& wheelRadius,
-         const Expression& vmax, const Expression& tmax, const Bumpers& bumpers,
-         const Expression& differentialTrackWidth)
-      : frontLeft{frontLeft},
-        backLeft{backLeft},
-        mass{mass},
-        inertia{inertia},
-        gearing{gearing},
-        wheelRadius{wheelRadius},
-        vmax{vmax},
-        tmax{tmax},
-        bumpers{bumpers},
-        differentialTrackWidth{differentialTrackWidth} {}
-  /** The position of the front left swerve module */
+
+  Config(XYExpression frontLeft, XYExpression backLeft, Expression mass,
+         Expression inertia, Expression gearing, Expression wheelRadius,
+         Expression vmax, Expression tmax, Bumpers bumpers,
+         Expression differentialTrackWidth)
+      : frontLeft{std::move(frontLeft)},
+        backLeft{std::move(backLeft)},
+        mass{std::move(mass)},
+        inertia{std::move(inertia)},
+        gearing{std::move(gearing)},
+        wheelRadius{std::move(wheelRadius)},
+        vmax{std::move(vmax)},
+        tmax{std::move(tmax)},
+        bumpers{std::move(bumpers)},
+        differentialTrackWidth{std::move(differentialTrackWidth)} {}
+
+  /// The position of the front left swerve module.
   XYExpression frontLeft;
-  /** The position of the back left swerve module */
+
+  /// The position of the back left swerve module.
   XYExpression backLeft;
-  /** The mass of the robot. (kg) */
+
+  /// The mass of the robot. (kg)
   Expression mass;
-  /** The inertia of the robot. (kg m^2) */
+
+  /// The inertia of the robot. (kg m^2)
   Expression inertia;
-  /** The gearing of the robot. */
+
+  /// The gearing of the robot.
   Expression gearing;
-  /** The radius of the wheel. (m) */
+
+  /// The radius of the wheel. (m)
   Expression wheelRadius;
-  /** The maximum velocity of the robot. (m/s) */
+
+  /// The maximum velocity of the robot. (m/s)
   Expression vmax;
-  /** The maximum torque of the robot. (N m) */
+
+  /// The maximum torque of the robot. (N m)
   Expression tmax;
-  /** The bumpers of the robot. */
+
+  /// The bumpers of the robot.
   Bumpers bumpers;
-  /** The width between the wheels of the robot. (m) */
+
+  /// The width between the wheels of the robot. (m)
   Expression differentialTrackWidth;
-  bool operator==(const Config& other) const {
-    return frontLeft == other.frontLeft && backLeft == other.backLeft &&
-           mass == other.mass && inertia == other.inertia &&
-           gearing == other.gearing && wheelRadius == other.wheelRadius &&
-           vmax == other.vmax && tmax == other.tmax &&
-           bumpers == other.bumpers &&
-           differentialTrackWidth == other.differentialTrackWidth;
-  }
+
+  bool operator==(const Config&) const = default;
 };
 
-/** A representation of a project file aka a .chor. */
+/**
+ * A representation of a project file aka a .chor.
+ */
 class ProjectFile {
  public:
   ProjectFile() = default;
+
   ProjectFile(std::string_view name, std::string_view version,
               std::string_view type,
-              const std::unordered_map<std::string, Variable>& expressions,
-              const std::unordered_map<std::string, Pose>& poses,
-              const Config& config,
-              const std::vector<std::string>& generationFeatures)
+              std::unordered_map<std::string, Variable> expressions,
+              std::unordered_map<std::string, Pose> poses, Config config,
+              std::vector<std::string> generationFeatures)
       : name{name},
         version{version},
         type{type},
-        expressions{expressions},
-        poses{poses},
-        config{config},
-        generationFeatures{generationFeatures} {}
-  /** The name of the project. */
+        expressions{std::move(expressions)},
+        poses{std::move(poses)},
+        config{std::move(config)},
+        generationFeatures{std::move(generationFeatures)} {}
+
+  /// The name of the project.
   std::string name;
-  /** The version of the project. */
+
+  /// The version of the project.
   std::string version;
-  /** The sample type for the project */
+
+  /// The sample type for the project.
   std::string type;
-  /** A map of expressions in the project. */
+
+  /// A map of expressions in the project.
   std::unordered_map<std::string, Variable> expressions;
-  /** A map of poses in the project. */
+
+  /// A map of poses in the project.
   std::unordered_map<std::string, Pose> poses;
-  /** The configuration of the project. */
+
+  /// The configuration of the project.
   Config config;
-  /** The generation features of the project. */
+
+  /// The generation features of the project.
   std::vector<std::string> generationFeatures;
-  bool operator==(const ProjectFile& other) const {
-    return name == other.name && version == other.version &&
-           type == other.type && expressions == other.expressions &&
-           poses == other.poses && config == other.config &&
-           generationFeatures == other.generationFeatures;
-  }
+
+  bool operator==(const ProjectFile& other) const = default;
 };
 
 void to_json(wpi::json& json, const Expression& exp);
@@ -194,4 +217,5 @@ void from_json(const wpi::json& json, Config& config);
 
 void to_json(wpi::json& json, const ProjectFile& projectFile);
 void from_json(const wpi::json& json, ProjectFile& projectFile);
+
 }  // namespace choreo

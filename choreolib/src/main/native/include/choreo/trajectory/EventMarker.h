@@ -8,11 +8,15 @@
 #include <wpi/json_fwd.h>
 
 namespace choreo {
-/** A marker for an event in a trajectory. */
+
+/**
+ * A marker for an event in a trajectory.
+ */
 struct EventMarker {
-  /** The timestamp of the event. */
+  /// The timestamp of the event.
   units::second_t timestamp;
-  /** The event. */
+
+  /// The event.
   std::string event;
 
   /**
@@ -27,14 +31,10 @@ struct EventMarker {
     return EventMarker{timestamp + timestampOffset, event};
   }
 
-  // Equality operators for EventMarkers
-  bool operator==(const EventMarker& other) const {
-    return (timestamp == other.timestamp) && (event == other.event);
-  }
-
-  bool operator!=(const EventMarker& other) const { return !(*this == other); }
+  bool operator==(const EventMarker&) const = default;
 };
 
 void to_json(wpi::json& json, const EventMarker& event);
 void from_json(const wpi::json& json, EventMarker& event);
+
 }  // namespace choreo

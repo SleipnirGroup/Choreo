@@ -9,12 +9,12 @@
 namespace frc {
 
 /**
-  Interpolates between two poses using a Twist
-
-  @param startValue the start pose
-  @param endValue the end pose
-  @param t how far along we want to interpolate between the two parameters
-*/
+ * Interpolates between two poses using a Twist
+ *
+ * @param startValue the start pose
+ * @param endValue the end pose
+ * @param t how far along we want to interpolate between the two parameters
+ */
 static constexpr frc::Pose2d Interpolate(const frc::Pose2d& startValue,
                                          const frc::Pose2d& endValue,
                                          double t) {
@@ -28,18 +28,23 @@ static constexpr frc::Pose2d Interpolate(const frc::Pose2d& startValue,
     return startValue.Exp(scaledTwist);
   }
 }
+
 }  // namespace frc
 
 namespace choreo {
 
-/// Enforce equality operators on trajectory sample types
+/**
+ * Enforce equality operators on trajectory sample types.
+ */
 template <typename T>
 concept EqualityComparable = requires(const T& a, const T& b) {
   { a == b } -> std::convertible_to<bool>;
   { a != b } -> std::convertible_to<bool>;
 };
 
-/// A concept representing a single robot sample in a Trajectory
+/**
+ * A concept representing a single robot sample in a Trajectory.
+ */
 template <typename T>
 concept TrajectorySample =
     EqualityComparable<T> &&
@@ -55,4 +60,5 @@ concept TrajectorySample =
       { t.template Flipped<2023>() } -> std::same_as<T>;
       { t.template Flipped<2024>() } -> std::same_as<T>;
     };
+
 }  // namespace choreo

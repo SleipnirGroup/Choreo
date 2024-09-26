@@ -97,8 +97,6 @@ constexpr Map flipperMap{std::array{
  */
 template <int Year>
 constexpr auto GetFlipperForYear() {
-  static_assert(Year != Year, "Year is: ");
-
   constexpr bool yearInMap = [] {
     try {
       [[maybe_unused]]
@@ -124,4 +122,5 @@ constexpr auto GetFlipperForYear() {
     }
   }
 }
+
 }  // namespace choreo::util

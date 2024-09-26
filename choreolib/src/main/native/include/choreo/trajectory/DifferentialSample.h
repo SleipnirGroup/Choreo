@@ -2,9 +2,7 @@
 
 #pragma once
 
-#include <array>
-#include <functional>
-
+#include <frc/kinematics/ChassisSpeeds.h>
 #include <units/acceleration.h>
 #include <units/angle.h>
 #include <units/angular_acceleration.h>
@@ -14,16 +12,17 @@
 #include <units/velocity.h>
 #include <wpi/json_fwd.h>
 
-#include "choreo/trajectory/TrajectorySample.h"
 #include "choreo/util/AllianceFlipperUtil.h"
 
 namespace choreo {
+
 class DifferentialSample {
  public:
   /**
    * Constructs a DifferentialSample that is defaulted.
    */
   DifferentialSample() = default;
+
   /**
    * Constructs a DifferentialSample with the specified parameters.
    *
@@ -56,12 +55,22 @@ class DifferentialSample {
         ar{ar},
         fl{fl},
         fr{fr} {}
-  /// Gets the timestamp of the DifferentialSample
+
+  /**
+   * Gets the timestamp of the DifferentialSample.
+   */
   units::second_t GetTimestamp() const;
-  /// Gets the Pose2d of the DifferentialSample
+
+  /**
+   * Gets the Pose2d of the DifferentialSample.
+   */
   frc::Pose2d GetPose() const;
-  /// Gets the field relative chassis speeds of the DifferentialSample
+
+  /**
+   * Gets the field relative chassis speeds of the DifferentialSample.
+   */
   frc::ChassisSpeeds GetChassisSpeeds() const;
+
   /**
    * Returns the current sample offset by a the time offset passed in.
    *
@@ -69,6 +78,7 @@ class DifferentialSample {
    * @returns DifferentialSample that is moved forward by the offset
    */
   DifferentialSample OffsetBy(units::second_t timeStampOffset) const;
+
   /**
    * Interpolates between endValue and this by t
    *
@@ -99,7 +109,9 @@ class DifferentialSample {
     }
   }
 
-  /// Comparison operators for differential samples
+  /**
+   * Comparison operators for differential samples.
+   */
   bool operator==(const DifferentialSample& other) const {
     constexpr double epsilon = 1e-6;
 
@@ -122,29 +134,39 @@ class DifferentialSample {
   }
 
   /// The timestamp of this sample, relative to the beginning of the trajectory.
-  units::second_t timestamp{0_s};
+  units::second_t timestamp = 0_s;
+
   /// The X position of the sample
-  units::meter_t x{0_m};
+  units::meter_t x = 0_m;
+
   /// The Y position of the sample
-  units::meter_t y{0_m};
+  units::meter_t y = 0_m;
+
   /// The heading of the sample, with 0 being in the +X direction
-  units::radian_t heading{0_rad};
+  units::radian_t heading = 0_rad;
+
   /// The velocity of the left wheels
-  units::meters_per_second_t vl{0_mps};
+  units::meters_per_second_t vl = 0_mps;
+
   /// The velocity of the right wheels
-  units::meters_per_second_t vr{0_mps};
+  units::meters_per_second_t vr = 0_mps;
+
   /// The acceleration of the left wheels
-  units::meters_per_second_squared_t al{0_mps_sq};
+  units::meters_per_second_squared_t al = 0_mps_sq;
+
   /// The acceleration of the right wheels
-  units::meters_per_second_squared_t ar{0_mps_sq};
+  units::meters_per_second_squared_t ar = 0_mps_sq;
+
   /// The force of the left wheels
-  units::newton_t fl{0_N};
+  units::newton_t fl = 0_N;
+
   /// The force of the right wheels
-  units::newton_t fr{0_N};
+  units::newton_t fr = 0_N;
 };
 
 void to_json(wpi::json& json, const DifferentialSample& trajectorySample);
 void from_json(const wpi::json& json, DifferentialSample& trajectorySample);
+
 }  // namespace choreo
 
 #include "choreo/trajectory/struct/DifferentialSampleStruct.h"

@@ -6,6 +6,8 @@
 #include <optional>
 #include <ranges>
 #include <string>
+#include <string_view>
+#include <utility>
 #include <vector>
 
 #include <wpi/json_fwd.h>
@@ -16,18 +18,20 @@
 #include "choreo/trajectory/TrajectorySample.h"
 
 namespace choreo {
-template <TrajectorySample SampleType>
+
 /**
  * A trajectory loaded from Choreo.
  *
  * @param <SampleType> DifferentialSample or SwerveSample.
  */
+template <TrajectorySample SampleType>
 class Trajectory {
  public:
   /**
    * Constructs a Trajectory with defaults
    */
   Trajectory() = default;
+
   /**
    * Constructs a Trajectory with the specified parameters.
    *
@@ -36,15 +40,17 @@ class Trajectory {
    * @param splits The indices of the splits in the trajectory.
    * @param events The events in the trajectory.
    */
-  Trajectory(std::string_view name, const std::vector<SampleType>& samples,
-             const std::vector<int>& splits,
-             const std::vector<EventMarker>& events)
-      : name{name}, samples{samples}, splits{splits}, events{events} {}
+  Trajectory(std::string_view name, std::vector<SampleType> samples,
+             std::vector<int> splits, std::vector<EventMarker> events)
+      : name{name},
+        samples{std::move(samples)},
+        splits{std::move(splits)},
+        events{std::move(events)} {}
 
   /**
    * Returns the first SampleType in the trajectory.
    *
-   * <p>Will return an empty optional if the trajectory is empty
+   * Will return an empty optional if the trajectory is empty
    *
    * @return The first sample in the trajectory.
    */
@@ -58,7 +64,7 @@ class Trajectory {
   /**
    * Returns the last SampleType in the trajectory.
    *
-   * <p>Will return an empty optional if the trajectory is empty
+   * Will return an empty optional if the trajectory is empty
    *
    * @return The last sample in the trajectory.
    */
@@ -72,7 +78,7 @@ class Trajectory {
   /**
    * Return an interpolated sample of the trajectory at the given timestamp.
    *
-   * <p>This function will return an empty optional if the trajectory is empty.
+   * This function will return an empty optional if the trajectory is empty.
    *
    * @param timestamp The timestamp of this sample relative to the beginning of
    * the trajectory.
@@ -101,7 +107,7 @@ class Trajectory {
   /**
    * Returns the first Pose in the trajectory.
    *
-   * <p>Will return an empty optional if the trajectory is empty
+   * Will return an empty optional if the trajectory is empty
    *
    * @param Year used to calculate proper mirrored pose based on field mirrored
    * type
@@ -122,7 +128,7 @@ class Trajectory {
   /**
    * Returns the last Pose in the trajectory.
    *
-   * <p>Will return an empty optional if the trajectory is empty
+   * Will return an empty optional if the trajectory is empty
    *
    * @param Year used to calculate proper mirrored pose based on field mirrored
    * type
@@ -273,10 +279,13 @@ class Trajectory {
 
   /// The name of the trajectory
   std::string name;
+
   /// The vector of samples in the trajectory
   std::vector<SampleType> samples;
+
   /// The waypoints indexes where the trajectory is split
   std::vector<int> splits;
+
   /// A vector of all of the events in the trajectory
   std::vector<EventMarker> events;
 
@@ -322,4 +331,5 @@ void from_json(const wpi::json& json, Trajectory<SwerveSample>& trajectory);
 void to_json(wpi::json& json, const Trajectory<DifferentialSample>& trajectory);
 void from_json(const wpi::json& json,
                Trajectory<DifferentialSample>& trajectory);
+
 }  // namespace choreo
