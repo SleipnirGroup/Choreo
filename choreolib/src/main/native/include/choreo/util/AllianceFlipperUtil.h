@@ -92,8 +92,8 @@ constexpr Map flipperMap{std::array{
  * A utility to standardize flipping of coordinate data based on the current
  * alliance across different years.
  *
- * <p>Grabs the instance of the flipper for the supplied template parameter
- * Will not compile if an invalid year is supplied
+ * Grabs the instance of the flipper for the supplied template parameter. Will
+ * not compile if an invalid year is supplied.
  */
 template <int Year>
 constexpr auto GetFlipperForYear() {

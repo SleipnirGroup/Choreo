@@ -1,0 +1,115 @@
+from enum import Enum
+import math
+from typing import *
+
+from wpimath.geometry import Pose2d
+
+FIELD_LENGTH = 16.5811
+FIELD_WIDTH = 8.19912
+
+
+class FlipperType(Enum):
+    MIRRORED = 0
+    ROTATE_AROUND = 1
+
+
+class MirroredFlipper:
+    IS_MIRRORED: bool = True
+
+    @staticmethod
+    def flip_x(x: float) -> float:
+        """
+        Flips the X coordinate.
+
+        Parameter ``x``:
+            The X coordinate to flip.
+        Returns:
+            The flipped X coordinate.
+        """
+        return FIELD_LENGTH - x
+
+    @staticmethod
+    def flip_y(y: float) -> float:
+        """
+        Flips the Y coordinate.
+
+        Parameter ``y``:
+            The Y coordinate to flip.
+        Returns:
+            The flipped Y coordinate.
+        """
+        return y
+
+    @staticmethod
+    def flip_heading(heading: float) -> float:
+        """
+        Flips the heading.
+
+        Parameter ``heading``:
+            The heading to flip.
+        Returns:
+            The flipped heading.
+        """
+        return math.pi - heading
+
+
+class RotateAroundFlipper:
+    IS_MIRRORED: bool = False
+
+    @staticmethod
+    def flip_x(x: float) -> float:
+        """
+        Flips the X coordinate.
+
+        Parameter ``x``:
+            The X coordinate to flip.
+        Returns:
+            The flipped X coordinate.
+        """
+        return FIELD_LENGTH - x
+
+    @staticmethod
+    def flip_y(y: float) -> float:
+        """
+        Flips the Y coordinate.
+
+        Parameter ``y``:
+            The Y coordinate to flip.
+        Returns:
+            The flipped Y coordinate.
+        """
+        return FIELD_WIDTH - y
+
+    @staticmethod
+    def flip_heading(heading: float) -> float:
+        """
+        Flips the heading.
+
+        Parameter ``heading``:
+            The heading to flip.
+        Returns:
+            The flipped heading.
+        """
+        return math.pi - heading
+
+
+FLIPPER_MAP: Dict[int, FlipperType] = {
+    2022: FlipperType.ROTATE_AROUND,
+    2023: FlipperType.MIRRORED,
+    2024: FlipperType.MIRRORED,
+}
+
+
+def get_flipper_for_year(year: int):
+    """
+    A utility to standardize flipping of coordinate data based on the current
+    alliance across different years.
+
+    Grabs the instance of the flipper for the supplied template parameter. Will
+    not compile if an invalid year is supplied
+    """
+    flipperType = FLIPPER_MAP[year]
+    if flipperType == FlipperType.ROTATE_AROUND:
+        return RotateAroundFlipper()
+    elif flipperType == FlipperType.MIRRORED:
+        return MirroredFlipper()
