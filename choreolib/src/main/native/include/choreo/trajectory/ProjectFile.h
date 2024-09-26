@@ -13,23 +13,29 @@ inline bool almost_equal(double a, double b, double epsilon = 1e-6) {
 }
 
 namespace choreo {
+/** A representation of an expression. An equation and its value. */
 class Expression {
  public:
   Expression() = default;
   Expression(const std::string& expression, double val)
       : expression{expression}, val{val} {}
+  /** The equation. */
   std::string expression;
+  /** The value. */
   double val{0.0};
   bool operator==(const Expression& other) const {
     return expression == other.expression && almost_equal(val, other.val);
   }
 };
 
+/** An xy pair of expressions. */
 class XYExpression {
  public:
   XYExpression() = default;
   XYExpression(const Expression& x, const Expression& y) : x{x}, y{y} {}
+  /** The x expression. */
   Expression x;
+  /** The y expression. */
   Expression y;
   bool operator==(const XYExpression& other) const {
     return x == other.x && y == other.y;
@@ -59,15 +65,23 @@ struct Variable {
   }
 };
 
+/**
+ * A collection of expressions representing the distance of the bumpers from the
+ * center of the robot.
+ */
 class Bumpers {
  public:
   Bumpers() = default;
   Bumpers(const Expression& front, const Expression& back,
           const Expression& left, const Expression& right)
       : front{front}, back{back}, left{left}, right{right} {}
+  /** The front bumper expression. */
   Expression front;
+  /** The back bumper expression. */
   Expression back;
+  /** The left bumper expression. */
   Expression left;
+  /** The right bumper expression. */
   Expression right;
   bool operator==(const Bumpers& other) const {
     return front == other.front && back == other.back && left == other.left &&
@@ -75,6 +89,7 @@ class Bumpers {
   }
 };
 
+/** The user configuration of the project. */
 class Config {
  public:
   Config() = default;
@@ -92,14 +107,23 @@ class Config {
         tmax{tmax},
         bumpers{bumpers},
         diffTrackWidth{diffTrackWidth} {}
+  /** The positions of the swerve modules in the order [FL, FR, BL, BR] */
   std::vector<XYExpression> modules;
+  /** The mass of the robot. (kg) */
   Expression mass;
+  /** The inertia of the robot. (kg m^2) */
   Expression inertia;
+  /** The gearing of the robot. */
   Expression gearing;
+  /** The radius of the wheel. (m) */
   Expression wheelRadius;
+  /** The maximum velocity of the robot. (m/s) */
   Expression vmax;
+  /** The maximum torque of the robot. (N m) */
   Expression tmax;
+  /** The bumpers of the robot. */
   Bumpers bumpers;
+  /** The width between the wheels of the robot. (m) */
   Expression diffTrackWidth;
   bool operator==(const Config& other) const {
     return modules == other.modules && mass == other.mass &&
@@ -110,6 +134,7 @@ class Config {
   }
 };
 
+/** A representation of a project file aka a .chor. */
 class ProjectFile {
  public:
   ProjectFile() = default;
@@ -126,12 +151,19 @@ class ProjectFile {
         poses{poses},
         config{config},
         generationFeatures{generationFeatures} {}
+  /** The name of the project. */
   std::string name;
+  /** The version of the project. */
   std::string version;
+  /** The sample type for the project */
   std::string type;
+  /** A map of expressions in the project. */
   std::unordered_map<std::string, Variable> expressions;
+  /** A map of poses in the project. */
   std::unordered_map<std::string, Pose> poses;
+  /** The configuration of the project. */
   Config config;
+  /** The generation features of the project. */
   std::vector<std::string> generationFeatures;
   bool operator==(const ProjectFile& other) const {
     return name == other.name && version == other.version &&

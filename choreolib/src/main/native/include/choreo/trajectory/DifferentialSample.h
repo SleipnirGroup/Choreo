@@ -20,7 +20,25 @@
 namespace choreo {
 class DifferentialSample {
  public:
+  /**
+   * Constructs a DifferentialSample that is defaulted.
+   */
   DifferentialSample() = default;
+  /**
+   * Constructs a DifferentialSample with the specified parameters.
+   *
+   * @param timestamp The timestamp of this sample, relative to the beginning of
+   * the trajectory.
+   * @param x The X position of the sample
+   * @param y The Y position of the sample
+   * @param heading The heading of the sample, with 0 being in the +X direction.
+   * @param vl The velocity of the left wheels
+   * @param vr The velocity of the right wheels
+   * @param al The acceleration of the left wheels
+   * @param ar The acceleration of the left wheels
+   * @param fl The force of the left wheels
+   * @param fr The force of the right wheels
+   */
   DifferentialSample(units::second_t timestamp, units::meter_t x,
                      units::meter_t y, units::radian_t heading,
                      units::meters_per_second_t vl,
@@ -38,13 +56,35 @@ class DifferentialSample {
         ar{ar},
         fl{fl},
         fr{fr} {}
+  /// Gets the timestamp of the DifferentialSample
   units::second_t GetTimestamp() const;
+  /// Gets the Pose2d of the DifferentialSample
   frc::Pose2d GetPose() const;
+  /// Gets the field relative chassis speeds of the DifferentialSample
   frc::ChassisSpeeds GetChassisSpeeds() const;
+  /**
+   * Returns the current sample offset by a the time offset passed in.
+   *
+   * @param timeStampOffset time to move sample by
+   * @returns DifferentialSample that is moved forward by the offset
+   */
   DifferentialSample OffsetBy(units::second_t timeStampOffset) const;
+  /**
+   * Interpolates between endValue and this by t
+   *
+   * @param endValue the end interpolated value
+   * @param t time to move sample by
+   * @returns the interpolated sample
+   */
   DifferentialSample Interpolate(const DifferentialSample& endValue,
                                  units::second_t t) const;
 
+  /**
+   * Returns the current sample flipped based on the field year.
+   *
+   * @param Year template argument representing the field year
+   * @returns DifferentialSample that is flipped based on the field layout
+   */
   template <int Year>
   DifferentialSample Flipped() const {
     static constexpr auto flipper = choreo::util::GetFlipperForYear<Year>();
@@ -59,6 +99,7 @@ class DifferentialSample {
     }
   }
 
+  /// Comparison operators for differential samples
   bool operator==(const DifferentialSample& other) const {
     constexpr double epsilon = 1e-6;
 
@@ -80,15 +121,25 @@ class DifferentialSample {
     return !(*this == other);
   }
 
+  /// The timestamp of this sample, relative to the beginning of the trajectory.
   units::second_t timestamp{0_s};
+  /// The X position of the sample
   units::meter_t x{0_m};
+  /// The Y position of the sample
   units::meter_t y{0_m};
+  /// The heading of the sample, with 0 being in the +X direction
   units::radian_t heading{0_rad};
+  /// The velocity of the left wheels
   units::meters_per_second_t vl{0_mps};
+  /// The velocity of the right wheels
   units::meters_per_second_t vr{0_mps};
+  /// The acceleration of the left wheels
   units::meters_per_second_squared_t al{0_mps_sq};
+  /// The acceleration of the right wheels
   units::meters_per_second_squared_t ar{0_mps_sq};
+  /// The force of the left wheels
   units::newton_t fl{0_N};
+  /// The force of the right wheels
   units::newton_t fr{0_N};
 };
 

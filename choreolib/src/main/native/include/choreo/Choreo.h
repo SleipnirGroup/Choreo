@@ -18,8 +18,17 @@
 #include "choreo/trajectory/Trajectory.h"
 
 namespace choreo {
+/// A class that handles loading choreo and caching choreo trajectories
 class Choreo {
  public:
+  /**
+   * Gets the project file from the deploy directory. Choreolib expects a .chor
+   * file to be placed in src/main/deploy/choreo.
+   *
+   * <p>The result is cached after the first call.
+   *
+   * @return the project file
+   */
   static choreo::ProjectFile GetProjectFile() {
     if (LAZY_PROJECT_FILE.has_value()) {
       return LAZY_PROJECT_FILE.value();
@@ -63,21 +72,31 @@ class Choreo {
     return LAZY_PROJECT_FILE.value();
   }
 
+  /**
+   * Load a trajectory from the deploy directory. Choreolib expects .traj files
+   * to be placed in src/main/deploy/choreo/[trajectoryName].traj.
+   *
+   * @param <SampleType> The type of samples in the trajectory.
+   * @param trajectoryName the path name in Choreo, which matches the file name
+   * in the deploy directory, file extension is optional.
+   * @return the loaded trajectory, or `empty std::optional` if the trajectory
+   * could not be loaded.
+   */
   template <choreo::TrajectorySample SampleType>
   static std::optional<choreo::Trajectory<SampleType>> LoadTrajectory(
-      std::string trajName) {
-    if (trajName.ends_with(TRAJECTORY_FILE_EXTENSION)) {
-      trajName = trajName.substr(
-          0, trajName.size() - TRAJECTORY_FILE_EXTENSION.size());
+      std::string trajectoryName) {
+    if (trajectoryName.ends_with(TRAJECTORY_FILE_EXTENSION)) {
+      trajectoryName = trajectoryName.substr(
+          0, trajectoryName.size() - TRAJECTORY_FILE_EXTENSION.size());
     }
 
-    std::string trajFileName =
-        fmt::format("{}/{}{}", CHOREO_DIR, trajName, TRAJECTORY_FILE_EXTENSION);
+    std::string trajectoryFileName = fmt::format(
+        "{}/{}{}", CHOREO_DIR, trajectoryName, TRAJECTORY_FILE_EXTENSION);
 
-    auto fileBuffer = wpi::MemoryBuffer::GetFile(trajFileName);
+    auto fileBuffer = wpi::MemoryBuffer::GetFile(trajectoryFileName);
     if (!fileBuffer) {
       FRC_ReportError(frc::warn::Warning, "Could not find trajectory file: {}",
-                      trajName);
+                      trajectoryName);
       return {};
     }
 
@@ -87,7 +106,7 @@ class Choreo {
                       fileBuffer.value()->size()});
     } catch (wpi::json::parse_error& ex) {
       FRC_ReportError(frc::warn::Warning, "Could not parse trajectory file: {}",
-                      trajName);
+                      trajectoryName);
       FRC_ReportError(frc::warn::Warning, "{}", ex.what());
       return {};
     }
@@ -116,37 +135,71 @@ class Choreo {
   Choreo();
 };
 
+/**
+ * A utility for caching loaded trajectories. This allows for loading
+ * trajectories only once, and then reusing them.
+ */
 template <choreo::TrajectorySample SampleType>
 class ChoreoTrajCache {
  public:
+  /**
+   * Load a trajectory from the deploy directory. Choreolib expects .traj files
+   * to be placed in src/main/deploy/choreo/[trajectoryName].traj.
+   *
+   * <p>This method will cache the loaded trajectory and reused it if it is
+   * requested again.
+   *
+   * @param trajectoryName the path name in Choreo, which matches the file name
+   * in the deploy directory, file extension is optional.
+   * @return the loaded trajectory, or `empty std::optional` if the trajectory
+   * could not be loaded.
+   * @see Choreo#LoadTrajectory(const std::string&)
+   */
   static std::optional<choreo::Trajectory<SampleType>> LoadTrajectory(
-      const std::string& trajName) {
-    if (cache.contains(trajName)) {
-      return cache[trajName];
+      const std::string& trajectoryName) {
+    if (cache.contains(trajectoryName)) {
+      return cache[trajectoryName];
     } else {
-      cache[trajName] = Choreo::LoadTrajectory<SampleType>(trajName);
-      return cache[trajName];
+      cache[trajectoryName] =
+          Choreo::LoadTrajectory<SampleType>(trajectoryName);
+      return cache[trajectoryName];
     }
   }
 
+  /**
+   * Load a section of a split trajectory from the deploy directory. Choreolib
+   * expects .traj files to be placed in
+   * src/main/deploy/choreo/[trajectoryName].traj.
+   *
+   * <p>This method will cache the loaded trajectory and reused it if it is
+   * requested again. The trajectory that is split off of will also be cached.
+   *
+   * @param trajectoryName the path name in Choreo, which matches the file name
+   * in the deploy directory, file extension is optional.
+   * @param splitIndex the index of the split trajectory to load
+   * @return the loaded trajectory, or `empty std::optional` if the trajectory
+   * could not be loaded.
+   * @see Choreo#LoadTrajectory(const std::string&)
+   */
   static std::optional<choreo::Trajectory<SampleType>> LoadTrajectory(
-      const std::string& trajName, int splitIndex) {
-    std::string key = trajName + ".:." + std::to_string(splitIndex);
+      const std::string& trajectoryName, int splitIndex) {
+    std::string key = trajectoryName + ".:." + std::to_string(splitIndex);
     if (cache.contains(key)) {
       return cache[key];
-    } else if (cache.contains(trajName)) {
-      cache[key] = cache[trajName].GetSplit(splitIndex);
+    } else if (cache.contains(trajectoryName)) {
+      cache[key] = cache[trajectoryName].GetSplit(splitIndex);
       return cache[key];
     } else {
-      auto possibleTraj = LoadTrajectory(trajName);
-      cache[trajName] = possibleTraj;
-      if (possibleTraj.has_value()) {
-        cache[key] = possibleTraj.value().GetSplit(splitIndex);
+      auto possibleTrajectory = LoadTrajectory(trajectoryName);
+      cache[trajectoryName] = possibleTrajectory;
+      if (possibleTrajectory.has_value()) {
+        cache[key] = possibleTrajectory.value().GetSplit(splitIndex);
       }
       return cache[key];
     }
   }
 
+  /// Clears the trajectory cache
   static void Clear() { cache.clear(); }
 
  private:

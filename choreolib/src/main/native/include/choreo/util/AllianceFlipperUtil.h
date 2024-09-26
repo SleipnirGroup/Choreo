@@ -19,12 +19,30 @@ enum class FlipperType { Mirrored, RotateAround };
 struct MirroredFlipper {
   static constexpr bool isMirrored = true;
 
+  /**
+   * Flips the X coordinate.
+   *
+   * @param x The X coordinate to flip.
+   * @return The flipped X coordinate.
+   */
   static constexpr units::meter_t FlipX(units::meter_t x) {
     return fieldLength - x;
   }
 
+  /**
+   * Flips the Y coordinate.
+   *
+   * @param y The Y coordinate to flip.
+   * @return The flipped Y coordinate.
+   */
   static constexpr units::meter_t FlipY(units::meter_t y) { return y; }
 
+  /**
+   * Flips the heading.
+   *
+   * @param heading The heading to flip.
+   * @return The flipped heading.
+   */
   static constexpr units::radian_t FlipHeading(units::radian_t heading) {
     return units::radian_t{std::numbers::pi} - heading;
   }
@@ -33,14 +51,32 @@ struct MirroredFlipper {
 struct RotateAroundFlipper {
   static constexpr bool isMirrored = false;
 
+  /**
+   * Flips the X coordinate.
+   *
+   * @param x The X coordinate to flip.
+   * @return The flipped X coordinate.
+   */
   static constexpr units::meter_t FlipX(units::meter_t x) {
     return fieldLength - x;
   }
 
+  /**
+   * Flips the Y coordinate.
+   *
+   * @param y The Y coordinate to flip.
+   * @return The flipped Y coordinate.
+   */
   static constexpr units::meter_t FlipY(units::meter_t y) {
     return fieldWidth - y;
   }
 
+  /**
+   * Flips the heading.
+   *
+   * @param heading The heading to flip.
+   * @return The flipped heading.
+   */
   static constexpr units::radian_t FlipHeading(units::radian_t heading) {
     return units::radian_t{std::numbers::pi} - heading;
   }
@@ -52,6 +88,13 @@ constexpr Map flipperMap{std::array{
     std::pair{2024, FlipperType::Mirrored},
 }};
 
+/**
+ * A utility to standardize flipping of coordinate data based on the current
+ * alliance across different years.
+ *
+ * <p>Grabs the instance of the flipper for the supplied template parameter
+ * Will not compile if an invalid year is supplied
+ */
 template <int Year>
 constexpr auto GetFlipperForYear() {
   static_assert(Year != Year, "Year is: ");

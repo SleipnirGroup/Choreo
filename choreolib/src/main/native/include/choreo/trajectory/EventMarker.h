@@ -8,14 +8,26 @@
 #include <wpi/json_fwd.h>
 
 namespace choreo {
+/** A marker for an event in a trajectory. */
 struct EventMarker {
+  /** The timestamp of the event. */
   units::second_t timestamp;
+  /** The event. */
   std::string event;
 
+  /**
+   * Returns a new EventMarker with the timestamp offset by the specified
+   * amount.
+   *
+   * @param timestampOffset The amount to offset the timestamp by.
+   * @return A new EventMarker with the timestamp offset by the specified
+   * amount.
+   */
   EventMarker OffsetBy(units::second_t timestampOffset) {
     return EventMarker{timestamp + timestampOffset, event};
   }
 
+  // Equality operators for EventMarkers
   bool operator==(const EventMarker& other) const {
     return (timestamp == other.timestamp) && (event == other.event);
   }

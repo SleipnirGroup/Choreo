@@ -17,14 +17,37 @@
 
 namespace choreo {
 template <TrajectorySample SampleType>
+/**
+ * A trajectory loaded from Choreo.
+ *
+ * @param <SampleType> DifferentialSample or SwerveSample.
+ */
 class Trajectory {
  public:
+  /**
+   * Constructs a Trajectory with defaults
+   */
   Trajectory() = default;
+  /**
+   * Constructs a Trajectory with the specified parameters.
+   *
+   * @param name The name of the trajectory.
+   * @param samples The samples of the trajectory.
+   * @param splits The indices of the splits in the trajectory.
+   * @param events The events in the trajectory.
+   */
   Trajectory(const std::string& name, const std::vector<SampleType>& samples,
              const std::vector<int>& splits,
              const std::vector<EventMarker>& events)
       : name{name}, samples{samples}, splits{splits}, events{events} {}
 
+  /**
+   * Returns the first SampleType in the trajectory.
+   *
+   * <p>Will return an empty optional if the trajectory is empty
+   *
+   * @return The first sample in the trajectory.
+   */
   std::optional<SampleType> GetInitialState() {
     if (samples.size() == 0) {
       return {};
@@ -32,6 +55,13 @@ class Trajectory {
     return samples[0];
   }
 
+  /**
+   * Returns the last SampleType in the trajectory.
+   *
+   * <p>Will return an empty optional if the trajectory is empty
+   *
+   * @return The last sample in the trajectory.
+   */
   std::optional<SampleType> GetFinalSample() {
     if (samples.size() == 0) {
       return {};
@@ -39,6 +69,16 @@ class Trajectory {
     return samples[samples.size() - 1];
   }
 
+  /**
+   * Return an interpolated sample of the trajectory at the given timestamp.
+   *
+   * <p>This function will return an empty optional if the trajectory is empty.
+   *
+   * @param timestamp The timestamp of this sample relative to the beginning of
+   * the trajectory.
+   * @param mirrorForRedAlliance whether or not to return the sample mirrored.
+   * @return The SampleType at the given time.
+   */
   template <int Year>
   std::optional<SampleType> SampleAt(units::second_t timestamp,
                                      bool mirrorForRedAlliance = false) {
@@ -58,6 +98,16 @@ class Trajectory {
     }
   }
 
+  /**
+   * Returns the first Pose in the trajectory.
+   *
+   * <p>Will return an empty optional if the trajectory is empty
+   *
+   * @param Year used to calculate proper mirrored pose based on field mirrored
+   * type
+   * @param mirrorForRedAlliance whether or not to return the Pose mirrored.
+   * @return The first Pose in the trajectory.
+   */
   template <int Year>
   std::optional<frc::Pose2d> GetInitialPose(bool mirrorForRedAlliance) {
     if (samples.size() == 0) {
@@ -69,6 +119,16 @@ class Trajectory {
     return samples[0].GetPose();
   }
 
+  /**
+   * Returns the last Pose in the trajectory.
+   *
+   * <p>Will return an empty optional if the trajectory is empty
+   *
+   * @param Year used to calculate proper mirrored pose based on field mirrored
+   * type
+   * @param mirrorForRedAlliance whether or not to return the Pose mirrored.
+   * @return The last Pose in the trajectory.
+   */
   template <int Year>
   std::optional<frc::Pose2d> GetFinalPose(bool mirrorForRedAlliance) {
     if (samples.size() == 0) {
@@ -80,6 +140,12 @@ class Trajectory {
     return samples[samples.size() - 1].GetPose();
   }
 
+  /**
+   * The total time the trajectory will take to follow
+   *
+   * @return The total time the trajectory will take to follow, if empty will
+   * return 0 seconds.
+   */
   units::second_t GetTotalTime() {
     if (samples.size() == 0) {
       return 0_s;
@@ -87,6 +153,11 @@ class Trajectory {
     return samples[samples.size() - 1].GetTimestamp();
   }
 
+  /**
+   * Returns the vector of poses corresponding to the trajectory.
+   *
+   * @return the vector of poses corresponding to the trajectory.
+   */
   std::vector<frc::Pose2d> GetPoses() {
     std::vector<frc::Pose2d> poses;
     for (const auto& sample : samples) {
@@ -95,6 +166,13 @@ class Trajectory {
     return poses;
   }
 
+  /**
+   * Returns this trajectory, mirrored across the field midline.
+   *
+   * @param Year used to calculate proper mirrored pose based on field mirrored
+   * type
+   * @return this trajectory, mirrored across the field midline.
+   */
   template <int Year>
   Trajectory<SampleType> Flipped() {
     std::vector<SampleType> flippedStates;
@@ -104,6 +182,13 @@ class Trajectory {
     return Trajectory<SampleType>(name, flippedStates, splits, events);
   }
 
+  /**
+   * Returns a vector of all events with the given name in the trajectory.
+   *
+   * @param eventName The name of the event.
+   * @return A vector of all events with the given name in the trajectory, if no
+   * events are found, an empty vector is returned.
+   */
   std::vector<EventMarker> GetEvents(const std::string& eventName) {
     std::vector<EventMarker> matchingEvents;
     for (const auto& event : events) {
@@ -114,6 +199,14 @@ class Trajectory {
     return matchingEvents;
   }
 
+  /**
+   * Returns a choreo trajectory that represents the split of the trajectory at
+   * the given index.
+   *
+   * @param splitIndex the index of the split trajectory to return.
+   * @return a choreo trajectory that represents the split of the trajectory at
+   * the given index.
+   */
   std::optional<Trajectory<SampleType>> GetSplit(int splitIndex) const {
     if (splitIndex < 0 || splitIndex >= splits.size()) {
       return std::nullopt;
@@ -147,6 +240,7 @@ class Trajectory {
         std::vector<EventMarker>(filteredEvents.begin(), filteredEvents.end())};
   }
 
+  // Equality operators for trajectories
   bool operator==(const Trajectory<SampleType>& other) const {
     if (name != other.name) {
       return false;
@@ -177,9 +271,13 @@ class Trajectory {
     return !(*this == other);
   }
 
+  /// The name of the trajectory
   std::string name;
+  /// The vector of samples in the trajectory
   std::vector<SampleType> samples;
+  /// The waypoints indexes where the trajectory is split
   std::vector<int> splits;
+  /// A vector of all of the events in the trajectory
   std::vector<EventMarker> events;
 
  private:
