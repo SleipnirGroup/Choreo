@@ -64,9 +64,9 @@ class Choreo {
       choreo::ProjectFile resultProjectFile;
       choreo::from_json(fileBuffer.value()->GetCharBuffer(), resultProjectFile);
       LAZY_PROJECT_FILE = resultProjectFile;
-    } catch (const std::filesystem::filesystem_error& e) {
+    } catch (const std::filesystem::filesystem_error&) {
       FRC_ReportError(frc::warn::Warning, "Error finding choreo directory!");
-    } catch (const wpi::json::exception& e) {
+    } catch (const wpi::json::exception&) {
       FRC_ReportError(frc::warn::Warning, "Error parsing choreo project file!");
     }
     return LAZY_PROJECT_FILE.value();
