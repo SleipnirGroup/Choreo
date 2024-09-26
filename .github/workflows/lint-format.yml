@@ -128,15 +128,15 @@ jobs:
 
       - name: List changed files
         working-directory: choreolib
-        run: wpiformat -list-changed-files
+        run: wpiformat -f . -list-changed-files
 
       - name: Run clang-tidy debug
         working-directory: choreolib
-        run: wpiformat -no-format -tidy-all -compile-commands=build/TargetedCompileCommands/linuxx86-64debug -vv
+        run: wpiformat -f . -no-format -tidy-all -compile-commands=build/TargetedCompileCommands/linuxx86-64debug -vv
 
       - name: Run clang-tidy release
         working-directory: choreolib
-        run: wpiformat -no-format -tidy-all -compile-commands=build/TargetedCompileCommands/linuxx86-64release -vv
+        run: wpiformat -f . -no-format -tidy-all -compile-commands=build/TargetedCompileCommands/linuxx86-64release -vv
 
   trajoptlib-tidy:
     name: "TrajoptLib clang-tidy"
@@ -174,9 +174,9 @@ jobs:
         working-directory: trajoptlib
 
       - name: List changed files
-        run: wpiformat -list-changed-files
+        run: wpiformat -f . -list-changed-files
         working-directory: trajoptlib
 
       - name: Run clang-tidy
-        run: wpiformat -no-format -tidy-all -compile-commands=build -tidy-extra-args std=c++23 -vv
+        run: wpiformat -f . -no-format -tidy-all -compile-commands=build -tidy-extra-args std=c++23 -vv
         working-directory: trajoptlib
