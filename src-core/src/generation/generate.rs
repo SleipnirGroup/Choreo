@@ -8,10 +8,10 @@ use trajoptlib::{DifferentialTrajectory, SwerveTrajectory};
 use super::heading::adjust_headings;
 use super::transformers::{
     CallbackSetter, ConstraintSetter, DrivetrainAndBumpersSetter, IntervalCountSetter,
-    TrajFileGenerator,
+    TrajectoryFileGenerator,
 };
 use crate::spec::project::ProjectFile;
-use crate::spec::traj::{ConstraintScope, Sample, TrajFile};
+use crate::spec::trajectory::{ConstraintScope, Sample, TrajectoryFile};
 use crate::ChoreoResult;
 
 /**
@@ -25,11 +25,11 @@ pub(super) static PROGRESS_SENDER_LOCK: OnceLock<Sender<HandledLocalProgressUpda
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum LocalProgressUpdate {
-    SwerveTraj {
+    SwerveTrajectory {
         // Swerve variant
         update: Vec<Sample>,
     },
-    DiffTraj {
+    DiffTrajectory {
         // Diff variant
         update: Vec<Sample>,
     },
@@ -48,17 +48,17 @@ impl LocalProgressUpdate {
 }
 
 impl From<SwerveTrajectory> for LocalProgressUpdate {
-    fn from(traj: SwerveTrajectory) -> Self {
-        LocalProgressUpdate::SwerveTraj {
-            update: traj.samples.iter().map(Sample::from).collect(),
+    fn from(trajectory: SwerveTrajectory) -> Self {
+        LocalProgressUpdate::SwerveTrajectory {
+            update: trajectory.samples.iter().map(Sample::from).collect(),
         }
     }
 }
 
 impl From<DifferentialTrajectory> for LocalProgressUpdate {
-    fn from(traj: DifferentialTrajectory) -> Self {
-        LocalProgressUpdate::DiffTraj {
-            update: traj.samples.iter().map(Sample::from).collect(),
+    fn from(trajectory: DifferentialTrajectory) -> Self {
+        LocalProgressUpdate::DiffTrajectory {
+            update: trajectory.samples.iter().map(Sample::from).collect(),
         }
     }
 }
@@ -74,16 +74,16 @@ pub fn setup_progress_sender() -> Receiver<HandledLocalProgressUpdate> {
     rx
 }
 
-fn set_initial_guess(traj: &mut TrajFile) {
-    fn not_initial_guess_wpt(traj: &mut TrajFile, idx: usize) {
-        let wpt = &mut traj.params.waypoints[idx];
+fn set_initial_guess(trajectory: &mut TrajectoryFile) {
+    fn not_initial_guess_wpt(trajectory: &mut TrajectoryFile, idx: usize) {
+        let wpt = &mut trajectory.params.waypoints[idx];
         wpt.is_initial_guess = false;
     }
-    let waypoint_count = traj.params.waypoints.len();
-    for waypoint in traj.params.waypoints.iter_mut() {
+    let waypoint_count = trajectory.params.waypoints.len();
+    for waypoint in trajectory.params.waypoints.iter_mut() {
         waypoint.is_initial_guess = true;
     }
-    for constraint in traj.params.snapshot().constraints {
+    for constraint in trajectory.params.snapshot().constraints {
         let from = constraint.from.get_idx(waypoint_count);
         let to = constraint
             .to
@@ -99,10 +99,10 @@ fn set_initial_guess(traj: &mut TrajFile) {
                 ConstraintScope::Segment => valid_sgmt,
                 ConstraintScope::Both => valid_wpt || valid_sgmt,
             } {
-                not_initial_guess_wpt(traj, from_idx);
+                not_initial_guess_wpt(trajectory, from_idx);
                 if let Some(to_idx) = to {
                     if to_idx != from_idx {
-                        not_initial_guess_wpt(traj, to_idx);
+                        not_initial_guess_wpt(trajectory, to_idx);
                     }
                 }
             }
@@ -110,11 +110,15 @@ fn set_initial_guess(traj: &mut TrajFile) {
     }
 }
 
-pub fn generate(chor: ProjectFile, mut trajfile: TrajFile, handle: i64) -> ChoreoResult<TrajFile> {
-    set_initial_guess(&mut trajfile);
-    adjust_headings(&mut trajfile)?;
+pub fn generate(
+    chor: ProjectFile,
+    mut trajectory_file: TrajectoryFile,
+    handle: i64,
+) -> ChoreoResult<TrajectoryFile> {
+    set_initial_guess(&mut trajectory_file);
+    adjust_headings(&mut trajectory_file)?;
 
-    let mut gen = TrajFileGenerator::new(chor, trajfile, handle);
+    let mut gen = TrajectoryFileGenerator::new(chor, trajectory_file, handle);
 
     gen.add_omni_transformer::<IntervalCountSetter>();
     gen.add_omni_transformer::<DrivetrainAndBumpersSetter>();

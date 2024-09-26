@@ -111,6 +111,6 @@ class ChoreoTrajectoryState {
   static constexpr units::meter_t fieldLength = 16.5410515_m;
 };
 
-void to_json(wpi::json& json, const ChoreoTrajectoryState& trajState);
-void from_json(const wpi::json& json, ChoreoTrajectoryState& trajState);
+void to_json(wpi::json& json, const ChoreoTrajectoryState& trajectoryState);
+void from_json(const wpi::json& json, ChoreoTrajectoryState& trajectoryState);
 }  // namespace choreolib

@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use serde::{Deserialize, Serialize};
 
 pub mod project;
-pub mod traj;
+pub mod trajectory;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct OpenFilePayload {
