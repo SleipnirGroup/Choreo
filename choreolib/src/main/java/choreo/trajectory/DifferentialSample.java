@@ -172,7 +172,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
 
     @Override
     public String getTypeString() {
-      return "DifferentialSample";
+      return "struct:DifferentialSample";
     }
 
     @Override

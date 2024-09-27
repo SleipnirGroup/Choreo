@@ -203,7 +203,7 @@ public final class Choreo {
       if (cache.containsKey(trajectoryName)) {
         return Optional.of(cache.get(trajectoryName));
       } else {
-        return loadTrajectory(trajectoryName)
+        return Choreo.loadTrajectory(trajectoryName)
             .map(
                 trajectory -> {
                   cache.put(trajectoryName, trajectory);
@@ -241,7 +241,7 @@ public final class Choreo {
                   return trajectory;
                 });
       } else {
-        return loadTrajectory(trajectoryName)
+        return Choreo.loadTrajectory(trajectoryName)
             .flatMap(
                 trajectory -> {
                   cache.put(trajectoryName, trajectory);

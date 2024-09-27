@@ -2,7 +2,6 @@
 
 package choreo.autos;
 
-import choreo.ext.TriggerExt;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -60,8 +59,8 @@ public class AutoLoop {
    *
    * @return A {@link Trigger} that is true while this autonomous loop is being polled.
    */
-  public TriggerExt enabled() {
-    return new TriggerExt(loop, () -> isActive && DriverStation.isAutonomousEnabled());
+  public Trigger enabled() {
+    return new Trigger(loop, () -> isActive && DriverStation.isAutonomousEnabled());
   }
 
   /** Polls the loop. Should be called in the autonomous periodic method. */

@@ -5,8 +5,6 @@ package choreo.autos;
 import choreo.Choreo.ControlFunction;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.autos.AutoFactory.ChoreoAutoBindings;
-import choreo.ext.CommandExt;
-import choreo.ext.TriggerExt;
 import choreo.trajectory.DifferentialSample;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
@@ -19,6 +17,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.event.EventLoop;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -45,7 +44,7 @@ public class AutoTrajectory {
 
   private final String name;
   private final Trajectory<? extends TrajectorySample<?>> trajectory;
-  private final TrajectoryLogger<? extends TrajectorySample<?>> trajectoryLogger;
+  private final TrajectoryLogger<? extends TrajectorySample<?>> trajLogger;
   private final Supplier<Pose2d> poseSupplier;
   private final ControlFunction<? extends TrajectorySample<?>> controller;
   private final Consumer<ChassisSpeeds> outputChassisSpeeds;
@@ -58,7 +57,7 @@ public class AutoTrajectory {
    * A way to create slightly less triggers for alot of actions. Not static as to not leak triggers
    * made here into another static EventLoop.
    */
-  private final TriggerExt offTrigger;
+  private final Trigger offTrigger;
 
   /** If this trajectory us currently running */
   private boolean isActive = false;
@@ -73,7 +72,7 @@ public class AutoTrajectory {
       ControlFunction<SampleType> controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
-      Optional<TrajectoryLogger<SampleType>> trajectoryLogger,
+      Optional<TrajectoryLogger<SampleType>> trajLogger,
       Subsystem driveSubsystem,
       EventLoop loop,
       ChoreoAutoBindings bindings) {
@@ -85,10 +84,10 @@ public class AutoTrajectory {
     this.mirrorTrajectory = mirrorTrajectory;
     this.driveSubsystem = driveSubsystem;
     this.loop = loop;
-    this.offTrigger = new TriggerExt(loop, () -> false);
-    this.trajectoryLogger =
-        trajectoryLogger.isPresent()
-            ? trajectoryLogger.get()
+    this.offTrigger = new Trigger(loop, () -> false);
+    this.trajLogger =
+        trajLogger.isPresent()
+            ? trajLogger.get()
             : new TrajectoryLogger<SampleType>() {
               public void accept(Trajectory<SampleType> t, Boolean u) {}
             };
@@ -120,13 +119,12 @@ public class AutoTrajectory {
     if (sample == null) {
       return;
     } else if (sample instanceof SwerveSample) {
-      TrajectoryLogger<SwerveSample> swerveLogger =
-          (TrajectoryLogger<SwerveSample>) trajectoryLogger;
+      TrajectoryLogger<SwerveSample> swerveLogger = (TrajectoryLogger<SwerveSample>) trajLogger;
       Trajectory<SwerveSample> swerveTrajectory = (Trajectory<SwerveSample>) trajectory;
       swerveLogger.accept(swerveTrajectory, starting);
     } else if (sample instanceof DifferentialSample) {
       TrajectoryLogger<DifferentialSample> differentialLogger =
-          (TrajectoryLogger<DifferentialSample>) trajectoryLogger;
+          (TrajectoryLogger<DifferentialSample>) trajLogger;
       Trajectory<DifferentialSample> differentialTrajectory =
           (Trajectory<DifferentialSample>) trajectory;
       differentialLogger.accept(differentialTrajectory, starting);
@@ -135,6 +133,7 @@ public class AutoTrajectory {
   }
 
   private void cmdInitialize() {
+    System.out.println("Starting trajectory " + name);
     timer.restart();
     isActive = true;
     timeOffset = 0.0;
@@ -184,25 +183,23 @@ public class AutoTrajectory {
    *
    * @return The command that will follow the trajectory
    */
-  public CommandExt cmd() {
+  public Command cmd() {
     // if the trajectory is empty, return a command that will print an error
     if (trajectory.samples().isEmpty()) {
-      return new CommandExt(
-          driveSubsystem
-              .runOnce(
-                  () -> {
-                    DriverStation.reportError("Trajectory " + name + " has no samples", false);
-                  })
-              .withName("Trajectory_" + name));
+      return driveSubsystem
+          .runOnce(
+              () -> {
+                DriverStation.reportError("Trajectory " + name + " has no samples", false);
+              })
+          .withName("Trajectory_" + name);
     }
-    return new CommandExt(
-        new FunctionalCommand(
-                this::cmdInitialize,
-                this::cmdExecute,
-                this::cmdEnd,
-                this::cmdIsFinished,
-                driveSubsystem)
-            .withName("Trajectory_" + name));
+    return new FunctionalCommand(
+            this::cmdInitialize,
+            this::cmdExecute,
+            this::cmdEnd,
+            this::cmdIsFinished,
+            driveSubsystem)
+        .withName("Trajectory_" + name);
   }
 
   /**
@@ -240,8 +237,8 @@ public class AutoTrajectory {
    *
    * @return A trigger that is true while the trajectory is scheduled.
    */
-  public TriggerExt active() {
-    return new TriggerExt(loop, () -> this.isActive);
+  public Trigger active() {
+    return new Trigger(loop, () -> this.isActive);
   }
 
   /**
@@ -251,8 +248,8 @@ public class AutoTrajectory {
    *
    * @return A trigger that is true while the command is not scheduled.
    */
-  public TriggerExt inactive() {
-    return TriggerExt.from(active().negate());
+  public Trigger inactive() {
+    return active().negate();
   }
 
   /**
@@ -265,8 +262,8 @@ public class AutoTrajectory {
    *
    * @return A trigger that is true when the command is finished.
    */
-  public TriggerExt done() {
-    return new TriggerExt(
+  public Trigger done() {
+    return new Trigger(
         loop,
         new BooleanSupplier() {
           boolean wasJustActive = false;
@@ -289,7 +286,7 @@ public class AutoTrajectory {
    * @param timeSinceStart The time since the command started in seconds.
    * @return A trigger that is true when timeSinceStart has elapsed.
    */
-  public TriggerExt atTime(double timeSinceStart) {
+  public Trigger atTime(double timeSinceStart) {
     // The timer shhould never be negative so report this as a warning
     if (timeSinceStart < 0) {
       DriverStation.reportWarning("Trigger time cannot be negative for " + name, true);
@@ -305,7 +302,7 @@ public class AutoTrajectory {
 
     // Make the trigger only be high for 1 cycle when the time has elapsed,
     // this is needed for better support of multi-time triggers for multi events
-    return new TriggerExt(
+    return new Trigger(
         loop,
         new BooleanSupplier() {
           double lastTimestamp = timer.get();
@@ -332,7 +329,7 @@ public class AutoTrajectory {
    * @return A trigger that is true when the event with the given name has been reached based on
    *     time.
    */
-  public TriggerExt atTime(String eventName) {
+  public Trigger atTime(String eventName) {
     boolean foundEvent = false;
     Trigger trig = offTrigger;
 
@@ -351,16 +348,16 @@ public class AutoTrajectory {
       DriverStation.reportWarning("Event \"" + eventName + "\" not found for " + name, true);
     }
 
-    return TriggerExt.from(trig);
+    return trig;
   }
 
   // private because this is a terrible way to schedule stuff
-  private TriggerExt atPose(Pose2d pose, double toleranceMeters) {
+  public Trigger atPose(Pose2d pose, double toleranceMeters) {
     Translation2d checkedTrans =
         mirrorTrajectory.getAsBoolean()
             ? AllianceFlipUtil.flip(pose.getTranslation())
             : pose.getTranslation();
-    return new TriggerExt(
+    return new Trigger(
         loop,
         () -> {
           Translation2d currentTrans = poseSupplier.get().getTranslation();
@@ -380,9 +377,9 @@ public class AutoTrajectory {
    * @return A trigger that is true when the robot is within toleranceMeters of the given events
    *     pose.
    */
-  public TriggerExt atPose(String eventName, double toleranceMeters) {
+  public Trigger atPose(String eventName, double toleranceMeters) {
     boolean foundEvent = false;
-    TriggerExt trig = offTrigger;
+    Trigger trig = offTrigger;
 
     for (var event : trajectory.getEvents(eventName)) {
       // This could create alot of objects, could be done a more efficient way
@@ -390,7 +387,7 @@ public class AutoTrajectory {
       // cycle or something like that.
       // If choreo starts proposing memory issues we can look into this.
       Pose2d pose = trajectory.sampleAt(event.timestamp, mirrorTrajectory.getAsBoolean()).getPose();
-      trig = TriggerExt.from(trig.or(atPose(pose, toleranceMeters)));
+      trig = trig.or(atPose(pose, toleranceMeters));
       foundEvent = true;
     }
 
@@ -412,7 +409,7 @@ public class AutoTrajectory {
    * @param eventName The name of the event.
    * @return A trigger that is true when the robot is within 3 inches of the given events pose.
    */
-  public TriggerExt atPose(String eventName) {
+  public Trigger atPose(String eventName) {
     return atPose(eventName, DEFAULT_TOLERANCE_METERS);
   }
 
@@ -428,8 +425,8 @@ public class AutoTrajectory {
    * @return A trigger that is true when the event with the given name has been reached based on
    *     time and the robot is within toleranceMeters of the given events pose.
    */
-  public TriggerExt atTimeAndPlace(String eventName, double toleranceMeters) {
-    return TriggerExt.from(atTime(eventName).and(atPose(eventName, toleranceMeters)));
+  public Trigger atTimeAndPlace(String eventName, double toleranceMeters) {
+    return atTime(eventName).and(atPose(eventName, toleranceMeters));
   }
 
   /**
@@ -443,7 +440,7 @@ public class AutoTrajectory {
    * @return A trigger that is true when the event with the given name has been reached based on
    *     time and the robot is within 3 inches of the given events pose.
    */
-  public TriggerExt atTimeAndPlace(String eventName) {
+  public Trigger atTimeAndPlace(String eventName) {
     return atTimeAndPlace(eventName, DEFAULT_TOLERANCE_METERS);
   }
 

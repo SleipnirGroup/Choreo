@@ -6,13 +6,13 @@ import choreo.Choreo;
 import choreo.Choreo.ChoreoTrajectoryCache;
 import choreo.Choreo.ControlFunction;
 import choreo.Choreo.TrajectoryLogger;
-import choreo.ext.TriggerExt;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -86,8 +86,8 @@ public class AutoFactory {
         public void reset() {}
 
         @Override
-        public TriggerExt enabled() {
-          return new TriggerExt(loop, () -> false);
+        public Trigger enabled() {
+          return new Trigger(loop, () -> false);
         }
       };
 
@@ -173,6 +173,9 @@ public class AutoFactory {
    * @see #voidLoop
    */
   public AutoLoop newLoop(String name) {
+    // causing a cache clear in simulation to allow a form of `hot-reloading`
+    // for trajectories in simulation
+    if (RobotBase.isSimulation()) clearCache();
     return new AutoLoop(name);
   }
 
