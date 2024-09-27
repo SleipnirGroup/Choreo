@@ -354,14 +354,14 @@ pub enum DriveType {
 
 /// The parameters used for generating a trajectory.
 #[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all="camelCase")]
+#[serde(rename_all = "camelCase")]
 pub struct Parameters<T: SnapshottableType> {
     /// The waypoints the robot will pass through or use for initial guess.
     pub waypoints: Vec<Waypoint<T>>,
     /// The constraints on the robot's motion.
     pub constraints: Vec<Constraint<T>>,
-    /// The target dt in seconds for the control interval algorithm
-    pub target_dt: T
+    /// The target dt in seconds for the control interval algorithm.
+    pub target_dt: T,
 }
 
 impl<T: SnapshottableType> Parameters<T> {
@@ -370,7 +370,7 @@ impl<T: SnapshottableType> Parameters<T> {
         Parameters {
             waypoints: self.waypoints.iter().map(Waypoint::snapshot).collect(),
             constraints: self.constraints.iter().map(Constraint::snapshot).collect(),
-            target_dt: self.target_dt.snapshot()
+            target_dt: self.target_dt.snapshot(),
         }
     }
 }

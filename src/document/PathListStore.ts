@@ -1,7 +1,10 @@
 import { Instance, getEnv, types } from "mobx-state-tree";
 import { Trajectory } from "./2025/DocumentTypes";
 import { Env } from "./DocumentManager";
-import { HolonomicPathStore, IHolonomicPathStore } from "./path/HolonomicPathStore";
+import {
+  HolonomicPathStore,
+  IHolonomicPathStore
+} from "./path/HolonomicPathStore";
 
 export const PathListStore = types
   .model("PathListStore", {
@@ -148,11 +151,11 @@ export const PathListStore = types
       }
     };
   })
-  .views(self=> ({
+  .views((self) => ({
     get activePath(): IHolonomicPathStore {
       let path = self.paths.get(self.activePathUUID);
       if (path === undefined) {
-        self.addPath("New Path", true)
+        self.addPath("New Path", true);
         path = self.paths.get(self.activePathUUID);
       }
       return path as IHolonomicPathStore;
