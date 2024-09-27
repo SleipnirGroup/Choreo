@@ -173,9 +173,11 @@ public class AutoFactory {
    * @see #voidLoop
    */
   public AutoLoop newLoop(String name) {
-    // causing a cache clear in simulation to allow a form of `hot-reloading`
-    // for trajectories in simulation
-    if (RobotBase.isSimulation()) clearCache();
+    // Clear cache in simulation to allow a form of "hot-reloading" trajectories
+    if (RobotBase.isSimulation()) {
+      clearCache();
+    }
+
     return new AutoLoop(name);
   }
 
