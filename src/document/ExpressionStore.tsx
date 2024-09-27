@@ -42,16 +42,16 @@ import { tracing } from "./tauriTracing";
 export const math = create(all, { predictable: true });
 
 function isSymbolNode(node: MathNode): node is SymbolNode {
-  return Object.hasOwn(node, "isSymbolNode");
+  return node.type==="SymbolNode";
 }
 function isFunctionNode(node: MathNode): node is FunctionNode {
-  return Object.hasOwn(node, "isFunctionNode");
+  return node.type==="FunctionNode";
 }
 function isAccessorNode(node: MathNode): node is AccessorNode {
-  return Object.hasOwn(node, "isAccessorNode");
+  return node.type==="AccessorNode";
 }
 function isConstantNode(node: MathNode): node is ConstantNode {
-  return Object.hasOwn(node, "isConstantNode");
+  return node.type==="ConstantNode";
 }
 
 function addUnitToExpression(
@@ -282,7 +282,7 @@ export const ExpressionStore = types
         if (
           isSymbolNode(innerNode) &&
           typeof scope.get(innerNode.name) === "function" &&
-          (!isFunctionNode(parent) || path !== "fn")
+          (parent === null || !isFunctionNode(parent) || path !== "fn")
         ) {
           return new math.FunctionNode(innerNode, []);
         }
@@ -308,9 +308,6 @@ export const ExpressionStore = types
         return innerNode;
       });
       let result = transformed.evaluate(scope) ?? undefined;
-      if (result?.["isNode"]) {
-        result = this.evaluator(result);
-      }
 
       return result;
     },
@@ -383,7 +380,7 @@ export const ExpressionStore = types
       try {
         newNumber = self.evaluator(newNode);
       } catch (e) {
-        tracing.error("failed to evaluate", e);
+        tracing.error("failed to evaluate", e, newNode);
         return undefined;
       }
       if (newNumber === undefined || newNumber === null) {
@@ -404,9 +401,16 @@ export const ExpressionStore = types
         return this.validate(newNumber);
       }
       if (!isUnit(newNumber)) {
+        tracing.error("not unit:", newNumber);
         return undefined;
       }
       // newNumber is Unit
+      // unit that's just a number
+      if (newNumber.dimensions.every(d=>d == 0)) {
+        if (self.defaultUnit !== undefined) {
+          return addUnitToExpression(newNode, self.defaultUnit.toString());
+        }
+      }
       const unit = self.defaultUnit;
       if (unit === undefined) {
         tracing.error(
