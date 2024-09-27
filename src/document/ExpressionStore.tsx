@@ -42,16 +42,16 @@ import { tracing } from "./tauriTracing";
 export const math = create(all, { predictable: true });
 
 function isSymbolNode(node: MathNode): node is SymbolNode {
-  return node.type==="SymbolNode";
+  return node.type === "SymbolNode";
 }
 function isFunctionNode(node: MathNode): node is FunctionNode {
-  return node.type==="FunctionNode";
+  return node.type === "FunctionNode";
 }
 function isAccessorNode(node: MathNode): node is AccessorNode {
-  return node.type==="AccessorNode";
+  return node.type === "AccessorNode";
 }
 function isConstantNode(node: MathNode): node is ConstantNode {
-  return node.type==="ConstantNode";
+  return node.type === "ConstantNode";
 }
 
 function addUnitToExpression(
@@ -307,7 +307,7 @@ export const ExpressionStore = types
         }
         return innerNode;
       });
-      let result = transformed.evaluate(scope) ?? undefined;
+      const result = transformed.evaluate(scope) ?? undefined;
 
       return result;
     },
@@ -406,7 +406,7 @@ export const ExpressionStore = types
       }
       // newNumber is Unit
       // unit that's just a number
-      if (newNumber.dimensions.every(d=>d == 0)) {
+      if (newNumber.dimensions.every((d) => d == 0)) {
         if (self.defaultUnit !== undefined) {
           return addUnitToExpression(newNode, self.defaultUnit.toString());
         }
