@@ -7,7 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/** A trajectory loaded from Choreo. */
+/**
+ * A trajectory loaded from Choreo.
+ *
+ * @param <SampleType> DifferentialSample or SwerveSample.
+ */
 public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
   private final String name;
   private final List<SampleType> samples;

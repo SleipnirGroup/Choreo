@@ -222,7 +222,7 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
     }
 
     @Override
-    public String getTypeName() {
+    public String getTypeString() {
       return "SwerveSample";
     }
 

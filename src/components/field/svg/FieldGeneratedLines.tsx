@@ -11,7 +11,7 @@ function FieldGeneratedLines() {
   let generatedPathString = "";
   const trajectory = path.ui.generating
     ? path.ui.generationProgress
-    : path.traj.fullTraj;
+    : path.trajectory.fullTrajectory;
   // preserve the access of generationIterationNumber
   // to trigger rerenders when mutating the in-progress trajectory in place
   const _ = path.ui.generationIterationNumber;
@@ -43,14 +43,16 @@ function FieldGeneratedLines() {
               return undefined;
             }
             const point2 = arr[i + 1];
-            const [sect, indexInSect] = path.traj.getIdxOfFullTraj(i) ?? [0, 0];
+            const [sect, indexInSect] = path.trajectory.getIdxOfFullTrajectory(
+              i
+            ) ?? [0, 0];
             const args: PathGradientArgs<any> = {
               point: point,
               prev: arr[i - 1],
               next: arr[i + 1],
               arr: path.ui.generating
                 ? path.ui.generationProgress
-                : path.traj.samples,
+                : path.trajectory.samples,
               total: arr.length,
               count: i,
               sect: path.ui.generating ? 0 : sect,

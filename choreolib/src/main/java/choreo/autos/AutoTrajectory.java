@@ -45,7 +45,7 @@ public class AutoTrajectory {
 
   private final String name;
   private final Trajectory<? extends TrajectorySample<?>> trajectory;
-  private final TrajectoryLogger<? extends TrajectorySample<?>> trajLogger;
+  private final TrajectoryLogger<? extends TrajectorySample<?>> trajectoryLogger;
   private final Supplier<Pose2d> poseSupplier;
   private final ControlFunction<? extends TrajectorySample<?>> controller;
   private final Consumer<ChassisSpeeds> outputChassisSpeeds;
@@ -73,7 +73,7 @@ public class AutoTrajectory {
       ControlFunction<SampleType> controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
-      Optional<TrajectoryLogger<SampleType>> trajLogger,
+      Optional<TrajectoryLogger<SampleType>> trajectoryLogger,
       Subsystem driveSubsystem,
       EventLoop loop,
       ChoreoAutoBindings bindings) {
@@ -86,9 +86,9 @@ public class AutoTrajectory {
     this.driveSubsystem = driveSubsystem;
     this.loop = loop;
     this.offTrigger = new TriggerExt(loop, () -> false);
-    this.trajLogger =
-        trajLogger.isPresent()
-            ? trajLogger.get()
+    this.trajectoryLogger =
+        trajectoryLogger.isPresent()
+            ? trajectoryLogger.get()
             : new TrajectoryLogger<SampleType>() {
               public void accept(Trajectory<SampleType> t, Boolean u) {}
             };
@@ -101,7 +101,7 @@ public class AutoTrajectory {
    *
    * @return The time since the start of the current trajectory
    */
-  private double timeIntoTraj() {
+  private double timeIntoTrajectory() {
     return timer.get() + timeOffset;
   }
 
@@ -120,14 +120,16 @@ public class AutoTrajectory {
     if (sample == null) {
       return;
     } else if (sample instanceof SwerveSample) {
-      TrajectoryLogger<SwerveSample> swerveLogger = (TrajectoryLogger<SwerveSample>) trajLogger;
-      Trajectory<SwerveSample> swerveTraj = (Trajectory<SwerveSample>) trajectory;
-      swerveLogger.accept(swerveTraj, starting);
+      TrajectoryLogger<SwerveSample> swerveLogger =
+          (TrajectoryLogger<SwerveSample>) trajectoryLogger;
+      Trajectory<SwerveSample> swerveTrajectory = (Trajectory<SwerveSample>) trajectory;
+      swerveLogger.accept(swerveTrajectory, starting);
     } else if (sample instanceof DifferentialSample) {
       TrajectoryLogger<DifferentialSample> differentialLogger =
-          (TrajectoryLogger<DifferentialSample>) trajLogger;
-      Trajectory<DifferentialSample> differentialTraj = (Trajectory<DifferentialSample>) trajectory;
-      differentialLogger.accept(differentialTraj, starting);
+          (TrajectoryLogger<DifferentialSample>) trajectoryLogger;
+      Trajectory<DifferentialSample> differentialTrajectory =
+          (Trajectory<DifferentialSample>) trajectory;
+      differentialLogger.accept(differentialTrajectory, starting);
     }
     ;
   }
@@ -142,7 +144,7 @@ public class AutoTrajectory {
   @SuppressWarnings("unchecked")
   private void cmdExecute() {
     TrajectorySample<?> sample =
-        this.trajectory.sampleAt(timeIntoTraj(), mirrorTrajectory.getAsBoolean());
+        this.trajectory.sampleAt(timeIntoTrajectory(), mirrorTrajectory.getAsBoolean());
 
     ChassisSpeeds chassisSpeeds = DEFAULT_CHASSIS_SPEEDS;
 
@@ -173,7 +175,7 @@ public class AutoTrajectory {
   }
 
   private boolean cmdIsFinished() {
-    return timeIntoTraj() > totalTime();
+    return timeIntoTrajectory() > totalTime();
   }
 
   /**

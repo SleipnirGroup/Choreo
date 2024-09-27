@@ -20,7 +20,7 @@ use crate::{
     generation::generate::{generate, LocalProgressUpdate},
     spec::{
         project::ProjectFile,
-        traj::{Sample, TrajFile, Trajectory},
+        trajectory::{Sample, Trajectory, TrajectoryFile},
     },
     ChoreoError, ChoreoResult, ResultExt,
 };
@@ -76,7 +76,7 @@ impl RemoteGenerationResources {
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct RemoteArgs {
     pub project: PathBuf,
-    pub traj: PathBuf,
+    pub trajectory: PathBuf,
     pub ipc: String,
 }
 
@@ -89,10 +89,10 @@ impl RemoteArgs {
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub enum RemoteProgressUpdate {
     // Swerve variant
-    IncompleteSwerveTraj(Vec<Sample>),
+    IncompleteSwerveTrajectory(Vec<Sample>),
     // Diff variant
-    IncompleteTankTraj(Vec<Sample>),
-    CompleteTraj(Trajectory),
+    IncompleteTankTrajectory(Vec<Sample>),
+    CompleteTrajectory(Trajectory),
     Error(ChoreoError),
 }
 
@@ -107,13 +107,17 @@ pub fn remote_generate_child(args: RemoteArgs) {
             for received in rx {
                 let ser_string = match received {
                     HandledLocalProgressUpdate {
-                        update: LocalProgressUpdate::SwerveTraj { update },
+                        update: LocalProgressUpdate::SwerveTrajectory { update },
                         ..
-                    } => serde_json::to_string(&RemoteProgressUpdate::IncompleteSwerveTraj(update)),
+                    } => serde_json::to_string(&RemoteProgressUpdate::IncompleteSwerveTrajectory(
+                        update,
+                    )),
                     HandledLocalProgressUpdate {
-                        update: LocalProgressUpdate::DiffTraj { update },
+                        update: LocalProgressUpdate::DiffTrajectory { update },
                         ..
-                    } => serde_json::to_string(&RemoteProgressUpdate::IncompleteTankTraj(update)),
+                    } => serde_json::to_string(&RemoteProgressUpdate::IncompleteTankTrajectory(
+                        update,
+                    )),
                     _ => continue,
                 }
                 .expect("Failed to serialize progress update");
@@ -124,17 +128,17 @@ pub fn remote_generate_child(args: RemoteArgs) {
         })
         .expect("Failed to spawn thread");
 
-    fn read_files(args: &RemoteArgs) -> ChoreoResult<(ProjectFile, TrajFile)> {
+    fn read_files(args: &RemoteArgs) -> ChoreoResult<(ProjectFile, TrajectoryFile)> {
         let project = ProjectFile::from_content(&fs::read_to_string(&args.project)?)?;
-        let traj = TrajFile::from_content(&fs::read_to_string(&args.traj)?)?;
+        let trajectory = TrajectoryFile::from_content(&fs::read_to_string(&args.trajectory)?)?;
         fs::remove_file(&args.project)?;
-        fs::remove_file(&args.traj)?;
+        fs::remove_file(&args.trajectory)?;
 
-        Ok((project, traj))
+        Ok((project, trajectory))
     }
 
-    let (project, traj) = match read_files(&args) {
-        Ok((project, traj)) => (project, traj),
+    let (project, trajectory) = match read_files(&args) {
+        Ok((project, trajectory)) => (project, trajectory),
         Err(e) => {
             let ser_string = serde_json::to_string(&RemoteProgressUpdate::Error(e))
                 .expect("Failed to serialize progress update");
@@ -146,13 +150,15 @@ pub fn remote_generate_child(args: RemoteArgs) {
 
     println!(
         "Generating trajectory {:} for {:} remotely",
-        traj.name, project.name
+        trajectory.name, project.name
     );
 
-    match generate(project, traj, 0i64) {
-        Ok(traj) => {
-            let ser_string = serde_json::to_string(&RemoteProgressUpdate::CompleteTraj(traj.traj))
-                .expect("Failed to serialize progress update");
+    match generate(project, trajectory, 0i64) {
+        Ok(trajectory) => {
+            let ser_string = serde_json::to_string(&RemoteProgressUpdate::CompleteTrajectory(
+                trajectory.trajectory,
+            ))
+            .expect("Failed to serialize progress update");
             ipc.send(ser_string)
                 .expect("Failed to send progress update");
         }
@@ -169,40 +175,40 @@ pub fn remote_generate_child(args: RemoteArgs) {
 pub async fn remote_generate_parent(
     remote_resources: &RemoteGenerationResources,
     project: ProjectFile,
-    trajfile: TrajFile,
+    trajectory_file: TrajectoryFile,
     handle: i64,
-) -> ChoreoResult<TrajFile> {
-    tracing::info!("Generating remote trajectory {}", trajfile.name);
+) -> ChoreoResult<TrajectoryFile> {
+    tracing::info!("Generating remote trajectory {}", trajectory_file.name);
 
-    // create temp file for project and traj
+    // create temp file for project and trajectory
     let mut builder = tempfile::Builder::new();
     builder.prefix("choreo-remote-").rand_bytes(5);
 
     let project_tmp = builder.suffix("project").tempfile()?;
-    let traj_tmp = builder.suffix("traj").tempfile()?;
+    let trajectory_tmp = builder.suffix("trajectory").tempfile()?;
 
     tracing::debug!("Created temp files for remote generation");
 
-    // write project and traj to temp files
+    // write project and trajectory to temp files
     let project_str = serde_json::to_string(&project).map_err(ChoreoError::remote)?;
-    let traj_str = serde_json::to_string(&trajfile).map_err(ChoreoError::remote)?;
+    let trajectory_str = serde_json::to_string(&trajectory_file).map_err(ChoreoError::remote)?;
 
     tokio::fs::write(project_tmp.path(), project_str).await?;
-    tokio::fs::write(traj_tmp.path(), traj_str).await?;
+    tokio::fs::write(trajectory_tmp.path(), trajectory_str).await?;
 
-    tracing::debug!("Wrote project and traj to temp files");
+    tracing::debug!("Wrote project and trajectory to temp files");
 
     let (server, server_name) =
         ipc::IpcOneShotServer::<String>::new().map_err(ChoreoError::remote)?;
 
     let remote_args = RemoteArgs {
         project: project_tmp.path().to_path_buf(),
-        traj: traj_tmp.path().to_path_buf(),
+        trajectory: trajectory_tmp.path().to_path_buf(),
         ipc: server_name,
     };
 
     forget(project_tmp);
-    forget(traj_tmp);
+    forget(trajectory_tmp);
 
     let mut child = Command::new(std::env::current_exe()?)
         .arg(serde_json::to_string(&remote_args)?)
@@ -264,12 +270,12 @@ pub async fn remote_generate_parent(
 
     // check if the solver has already completed
     let early_out = match serde_json::from_str::<RemoteProgressUpdate>(&o) {
-        Ok(RemoteProgressUpdate::CompleteTraj(traj)) => {
+        Ok(RemoteProgressUpdate::CompleteTrajectory(trajectory)) => {
             tracing::debug!("Remote generator completed (early return)");
-            Some(Ok(TrajFile {
-                traj,
-                snapshot: Some(trajfile.params.snapshot()),
-                ..trajfile.clone()
+            Some(Ok(TrajectoryFile {
+                trajectory,
+                snapshot: Some(trajectory_file.params.snapshot()),
+                ..trajectory_file.clone()
             }))
         }
         Ok(RemoteProgressUpdate::Error(e)) => Some(Err(ChoreoError::remote(e))),
@@ -291,32 +297,32 @@ pub async fn remote_generate_parent(
 
     let mut stream = rx.to_stream();
 
-    let out: ChoreoResult<TrajFile> = loop {
+    let out: ChoreoResult<TrajectoryFile> = loop {
         select! {
             update_res = stream.try_next() => {
                 match update_res {
                     Ok(Some(update_string)) => {
                         match serde_json::from_str(&update_string) {
-                            Ok(RemoteProgressUpdate::IncompleteSwerveTraj(traj)) => {
+                            Ok(RemoteProgressUpdate::IncompleteSwerveTrajectory(trajectory)) => {
                                 remote_resources.emit_progress(
-                                    LocalProgressUpdate::SwerveTraj {
-                                        update: traj
+                                    LocalProgressUpdate::SwerveTrajectory {
+                                        update: trajectory
                                     }.handled(handle)
                                 );
                             },
-                            Ok(RemoteProgressUpdate::IncompleteTankTraj(traj)) => {
+                            Ok(RemoteProgressUpdate::IncompleteTankTrajectory(trajectory)) => {
                                 remote_resources.emit_progress(
-                                    LocalProgressUpdate::DiffTraj {
-                                        update: traj
+                                    LocalProgressUpdate::DiffTrajectory {
+                                        update: trajectory
                                     }.handled(handle)
                                 );
                             },
-                            Ok(RemoteProgressUpdate::CompleteTraj(traj)) => {
+                            Ok(RemoteProgressUpdate::CompleteTrajectory(trajectory)) => {
                                 break Ok(
-                                    TrajFile {
-                                        traj,
-                                        snapshot: Some(trajfile.params.snapshot()),
-                                        .. trajfile
+                                    TrajectoryFile {
+                                        trajectory,
+                                        snapshot: Some(trajectory_file.params.snapshot()),
+                                        .. trajectory_file
                                     }
                                 );
                             },
