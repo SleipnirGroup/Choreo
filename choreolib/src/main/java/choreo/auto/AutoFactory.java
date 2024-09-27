@@ -1,6 +1,6 @@
 // Copyright (c) Choreo contributors
 
-package choreo.autos;
+package choreo.auto;
 
 import choreo.Choreo;
 import choreo.Choreo.ChoreoTrajectoryCache;

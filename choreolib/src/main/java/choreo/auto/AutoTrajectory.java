@@ -1,10 +1,10 @@
 // Copyright (c) Choreo contributors
 
-package choreo.autos;
+package choreo.auto;
 
 import choreo.Choreo.ControlFunction;
 import choreo.Choreo.TrajectoryLogger;
-import choreo.autos.AutoFactory.ChoreoAutoBindings;
+import choreo.auto.AutoFactory.ChoreoAutoBindings;
 import choreo.trajectory.DifferentialSample;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
