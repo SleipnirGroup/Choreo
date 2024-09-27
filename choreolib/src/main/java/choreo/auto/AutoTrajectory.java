@@ -72,7 +72,7 @@ public class AutoTrajectory {
       ControlFunction<SampleType> controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
-      Optional<TrajectoryLogger<SampleType>> trajLogger,
+      Optional<TrajectoryLogger<SampleType>> trajectoryLogger,
       Subsystem driveSubsystem,
       EventLoop loop,
       ChoreoAutoBindings bindings) {
@@ -86,8 +86,8 @@ public class AutoTrajectory {
     this.loop = loop;
     this.offTrigger = new Trigger(loop, () -> false);
     this.trajectoryLogger =
-        trajLogger.isPresent()
-            ? trajLogger.get()
+        trajectoryLogger.isPresent()
+            ? trajectoryLogger.get()
             : new TrajectoryLogger<SampleType>() {
               public void accept(Trajectory<SampleType> t, Boolean u) {}
             };
