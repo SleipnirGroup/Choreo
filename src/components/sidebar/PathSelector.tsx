@@ -1,14 +1,7 @@
-import {
-  KeyboardArrowDown,
-  PriorityHigh,
-  Route,
-  Settings
-} from "@mui/icons-material";
+import { Route } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
-  Checkbox,
   CircularProgress,
-  FormControlLabel,
   IconButton,
   TextField,
   Tooltip
@@ -18,8 +11,6 @@ import { observer } from "mobx-react";
 import React, { Component } from "react";
 import { toast } from "react-toastify";
 import { deletePath, doc, renamePath } from "../../document/DocumentManager";
-import Input from "../input/Input";
-import InputList from "../input/InputList";
 import styles from "./Sidebar.module.css";
 
 type Props = object;
@@ -179,7 +170,6 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
           }}
         ></TextField>
         <div>
-
           {/* <Tooltip disableInteractive title="Path Config">
             <IconButton
               className={styles.SidebarRightIcon}
