@@ -133,7 +133,6 @@ public class AutoTrajectory {
   }
 
   private void cmdInitialize() {
-    System.out.println("Starting trajectory " + name);
     timer.restart();
     isActive = true;
     timeOffset = 0.0;
