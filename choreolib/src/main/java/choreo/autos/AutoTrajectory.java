@@ -44,7 +44,7 @@ public class AutoTrajectory {
 
   private final String name;
   private final Trajectory<? extends TrajectorySample<?>> trajectory;
-  private final TrajectoryLogger<? extends TrajectorySample<?>> trajLogger;
+  private final TrajectoryLogger<? extends TrajectorySample<?>> trajectoryLogger;
   private final Supplier<Pose2d> poseSupplier;
   private final ControlFunction<? extends TrajectorySample<?>> controller;
   private final Consumer<ChassisSpeeds> outputChassisSpeeds;
@@ -85,7 +85,7 @@ public class AutoTrajectory {
     this.driveSubsystem = driveSubsystem;
     this.loop = loop;
     this.offTrigger = new Trigger(loop, () -> false);
-    this.trajLogger =
+    this.trajectoryLogger =
         trajLogger.isPresent()
             ? trajLogger.get()
             : new TrajectoryLogger<SampleType>() {
@@ -119,12 +119,12 @@ public class AutoTrajectory {
     if (sample == null) {
       return;
     } else if (sample instanceof SwerveSample) {
-      TrajectoryLogger<SwerveSample> swerveLogger = (TrajectoryLogger<SwerveSample>) trajLogger;
+      TrajectoryLogger<SwerveSample> swerveLogger = (TrajectoryLogger<SwerveSample>) trajectoryLogger;
       Trajectory<SwerveSample> swerveTrajectory = (Trajectory<SwerveSample>) trajectory;
       swerveLogger.accept(swerveTrajectory, starting);
     } else if (sample instanceof DifferentialSample) {
       TrajectoryLogger<DifferentialSample> differentialLogger =
-          (TrajectoryLogger<DifferentialSample>) trajLogger;
+          (TrajectoryLogger<DifferentialSample>) trajectoryLogger;
       Trajectory<DifferentialSample> differentialTrajectory =
           (Trajectory<DifferentialSample>) trajectory;
       differentialLogger.accept(differentialTrajectory, starting);
@@ -351,7 +351,16 @@ public class AutoTrajectory {
     return trig;
   }
 
-  // private because this is a terrible way to schedule stuff
+  /**
+   * Returns a trigger that is true when the robot is within toleranceMeters of the given pose.
+   * 
+   * <p>This position is mirrored based on the {@code mirrorTrajectory} boolean supplier in the
+   * factory used to make this trajectory.
+   * 
+   * @param pose The pose to check against
+   * @param toleranceMeters The tolerance in meters.
+   * @return A trigger that is true when the robot is within toleranceMeters of the given pose.
+   */
   public Trigger atPose(Pose2d pose, double toleranceMeters) {
     Translation2d checkedTrans =
         mirrorTrajectory.getAsBoolean()
