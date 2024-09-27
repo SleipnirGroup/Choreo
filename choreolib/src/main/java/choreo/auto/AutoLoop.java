@@ -1,6 +1,6 @@
 // Copyright (c) Choreo contributors
 
-package choreo.autos;
+package choreo.auto;
 
 import choreo.ext.TriggerExt;
 import edu.wpi.first.wpilibj.DriverStation;
