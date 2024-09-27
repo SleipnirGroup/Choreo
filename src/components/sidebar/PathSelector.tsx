@@ -1,4 +1,4 @@
-import { Route } from "@mui/icons-material";
+import { KeyboardArrowDown, Route, Settings } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
   CircularProgress,
@@ -12,6 +12,8 @@ import React, { Component } from "react";
 import { toast } from "react-toastify";
 import { deletePath, doc, renamePath } from "../../document/DocumentManager";
 import styles from "./Sidebar.module.css";
+import ExpressionInput from "../input/ExpressionInput";
+import ExpressionInputList from "../input/ExpressionInputList";
 
 type Props = object;
 
@@ -170,7 +172,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
           }}
         ></TextField>
         <div>
-          {/* <Tooltip disableInteractive title="Path Config">
+          <Tooltip disableInteractive title="Path Config">
             <IconButton
               className={styles.SidebarRightIcon}
               onClick={(e) => {
@@ -184,7 +186,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
                 <Settings></Settings>
               )}
             </IconButton>
-          </Tooltip> */}
+          </Tooltip>
           <Tooltip disableInteractive title="Delete Path">
             <IconButton
               className={styles.SidebarRightIcon}
@@ -204,13 +206,20 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
           </Tooltip>
         </div>
         {/* Settings part */}
-        {/* {this.state.settingsOpen && (
+        {this.state.settingsOpen && (
           <>
             <span className={styles.SidebarVerticalLine}></span>
-            <span>No Settings</span>
-            <span></span>
+            <span style={{ gridColumn: "2 / span 2" }}>
+              <ExpressionInputList>
+                <ExpressionInput
+                  title="dt"
+                  enabled={true}
+                  number={this.getPath().params.targetDt}
+                ></ExpressionInput>
+              </ExpressionInputList>
+            </span>
           </>
-        )} */}
+        )}
       </span>
     );
   }
