@@ -396,7 +396,7 @@ pub struct Trajectory {
 
 /// A structure representing a `.traj` file.
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct TrajFile {
+pub struct TrajectoryFile {
     /// The name of the `.traj` file.
     /// Will always be in sync with the file name on disk.
     pub name: String,
@@ -407,7 +407,7 @@ pub struct TrajFile {
     /// The parameters used for generating the trajectory.
     pub params: Parameters<Expr>,
     /// The trajectory the robot will follow.
-    pub traj: Trajectory,
+    pub trajectory: Trajectory,
     /// The choreo events.
     #[serde(default)]
     pub events: Vec<EventMarker>,
@@ -418,15 +418,15 @@ pub struct TrajFile {
     pub pplib_commands: Vec<PplibCommandMarker>,
 }
 
-impl TrajFile {
+impl TrajectoryFile {
     /// The file extension to use when writing this file to disk.
     pub const EXTENSION: &'static str = "traj";
 
-    /// Create a new `TrajFile` from a json string.
+    /// Create a new `TrajectoryFile` from a json string.
     ///
     /// # Errors
     /// - [`crate::ChoreoError::Json`] if the json string is invalid.
-    pub fn from_content(content: &str) -> crate::ChoreoResult<TrajFile> {
+    pub fn from_content(content: &str) -> crate::ChoreoResult<TrajectoryFile> {
         serde_json::from_str(content).map_err(Into::into)
     }
 }
@@ -436,7 +436,7 @@ impl TrajFile {
 pub struct PplibCommandMarker {
     pub name: String,
     pub target: Option<usize>,
-    pub traj_target_index: Option<usize>,
+    pub trajectory_target_index: Option<usize>,
     pub target_timestamp: Option<f64>,
     pub offset: f64,
     pub command: PplibCommand,

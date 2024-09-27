@@ -9,7 +9,7 @@ use std::{
 use zip;
 
 use crate::{
-    spec::{project::ProjectFile, traj::TrajFile},
+    spec::{project::ProjectFile, trajectory::TrajectoryFile},
     ChoreoError, ChoreoResult,
 };
 
@@ -30,7 +30,7 @@ fn tmpname(prefix: &str, suffix: &str, rand_len: usize) -> OsString {
 
 pub fn create_diagnostic_file(
     project: ProjectFile,
-    trajfiles: Vec<TrajFile>,
+    trajectory_files: Vec<TrajectoryFile>,
     logs: Vec<String>,
 ) -> ChoreoResult<PathBuf> {
     let dir = std::env::temp_dir().join("choreo-diagnostics");
@@ -46,10 +46,10 @@ pub fn create_diagnostic_file(
     zip.start_file("project.chor", options)?;
     serde_json::to_writer(&mut zip, &project)?;
 
-    for trajfile in trajfiles {
-        let trajfile_name = format!("{}.traj", trajfile.name);
-        zip.start_file(trajfile_name, options)?;
-        serde_json::to_writer(&mut zip, &trajfile)?;
+    for trajectory_file in trajectory_files {
+        let trajectory_file_name = format!("{}.traj", trajectory_file.name);
+        zip.start_file(trajectory_file_name, options)?;
+        serde_json::to_writer(&mut zip, &trajectory_file)?;
     }
 
     zip.start_file("log.txt", options)?;

@@ -32,11 +32,11 @@ class InterpolatedRobot extends Component<Props, State> {
   state = {};
 
   render() {
-    const traj = doc.pathlist.activePath.traj.fullTraj;
-    if (traj.length < 2) {
+    const trajectory = doc.pathlist.activePath.trajectory.fullTrajectory;
+    if (trajectory.length < 2) {
       return <></>;
     }
-    const pose1 = sample(this.props.timestamp, traj);
+    const pose1 = sample(this.props.timestamp, trajectory);
 
     const headingPointSideLength =
       targetSideLength *
