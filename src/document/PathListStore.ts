@@ -1,7 +1,7 @@
 import { Instance, getEnv, types } from "mobx-state-tree";
 import { Trajectory } from "./2025/DocumentTypes";
 import { Env } from "./DocumentManager";
-import { HolonomicPathStore } from "./path/HolonomicPathStore";
+import { HolonomicPathStore, IHolonomicPathStore } from "./path/HolonomicPathStore";
 
 export const PathListStore = types
   .model("PathListStore", {
@@ -37,33 +37,6 @@ export const PathListStore = types
 
       get pathUUIDs() {
         return Array.from(self.paths.keys());
-      },
-      get activePath() {
-        return (
-          self.paths.get(self.activePathUUID)! ||
-          HolonomicPathStore.create({
-            uuid: crypto.randomUUID(),
-            name: "New Path",
-            params: {
-              constraints: [],
-              waypoints: []
-            },
-            ui: {
-              visibleWaypointsEnd: 0,
-              visibleWaypointsStart: 0
-            },
-            snapshot: {
-              waypoints: [],
-              constraints: []
-            },
-            trajectory: {
-              waypoints: [],
-              samples: [],
-              splits: [],
-              markers: []
-            }
-          })
-        );
       }
     };
   })
@@ -98,7 +71,8 @@ export const PathListStore = types
               name: usedName,
               params: {
                 constraints: [],
-                waypoints: []
+                waypoints: [],
+                targetDt: env.vars().createExpression("0.1 s", "Time")
               },
               ui: {
                 visibleWaypointsEnd: 0,
@@ -106,7 +80,8 @@ export const PathListStore = types
               },
               snapshot: {
                 waypoints: [],
-                constraints: []
+                constraints: [],
+                targetDt: 0.1
               },
               trajectory: {
                 waypoints: [],
@@ -172,6 +147,16 @@ export const PathListStore = types
         }
       }
     };
-  });
+  })
+  .views(self=> ({
+    get activePath(): IHolonomicPathStore {
+      let path = self.paths.get(self.activePathUUID);
+      if (path === undefined) {
+        self.addPath("New Path", true)
+        path = self.paths.get(self.activePathUUID);
+      }
+      return path as IHolonomicPathStore;
+    }
+  }));
 
 export type IPathListStore = Instance<typeof PathListStore>;

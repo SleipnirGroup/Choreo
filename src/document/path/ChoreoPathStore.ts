@@ -19,11 +19,13 @@ import {
   HolonomicWaypointStore,
   IHolonomicWaypointStore
 } from "../HolonomicWaypointStore";
+import { ExpressionStore } from "../ExpressionStore";
 
 export const ChoreoPathStore = types
   .model("ChoreoPathStore", {
     waypoints: types.array(HolonomicWaypointStore),
-    constraints: types.array(ConstraintStore)
+    constraints: types.array(ConstraintStore),
+    targetDt: ExpressionStore
   })
   .views((self) => ({
     findUUIDIndex(uuid: string) {
@@ -104,7 +106,8 @@ export const ChoreoPathStore = types
             to
           };
           return toReturn;
-        })
+        }),
+        targetDt: self.targetDt.serialize
       };
     }
   }))
@@ -287,6 +290,7 @@ export const ChoreoPathStore = types
           saved.data.props
         );
       });
+      self.targetDt.deserialize(ser.targetDt);
     }
   }));
 

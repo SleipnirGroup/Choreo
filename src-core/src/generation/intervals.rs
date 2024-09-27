@@ -129,7 +129,7 @@ pub fn guess_control_interval_count(
                 min_width = min_width.min(mod_a.x - mod_b.x).hypot(mod_a.y - mod_b.y);
             }
             let dt_ceiling = min_width / (config.wheel_max_velocity() * config.radius);
-            let dt = dt_ceiling.min(0.1);
+            let dt = dt_ceiling.min(params.target_dt);
             let distance_at_cruise = distance - (max_vel * max_vel) / max_accel;
             let linear_time = if distance_at_cruise < 0.0 {
                 // triangle
