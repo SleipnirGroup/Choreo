@@ -23,11 +23,7 @@ export const HolonomicPathStore = types
     trajectory: ChoreoTrajectoryStore,
     ui: PathUIStore,
     name: "",
-    uuid: types.identifier,
-    isTrajectoryStale: true,
-    usesControlIntervalGuessing: true,
-    defaultControlIntervalCount: 40,
-    usesDefaultObstacles: true
+    uuid: types.identifier
   })
 
   .views((self) => {
@@ -69,21 +65,9 @@ export const HolonomicPathStore = types
       setSnapshot(snap: ChoreoPath<number>) {
         self.snapshot = snap;
       },
-      setIsTrajectoryStale(isTrajectoryStale: boolean) {
-        getEnv<Env>(self).withoutUndo(() => {
-          self.isTrajectoryStale = isTrajectoryStale;
-        });
-      },
-      setControlIntervalGuessing(value: boolean) {
-        self.usesControlIntervalGuessing = value;
-      },
-      setDefaultControlIntervalCounts(counts: number) {
-        self.defaultControlIntervalCount = counts;
-      },
       setName(name: string) {
         self.name = name;
       },
-
       addWaypoint(waypoint?: Partial<Waypoint<Expr>>): IHolonomicWaypointStore {
         self.params.waypoints.push(
           getEnv<Env>(self).create.WaypointStore(

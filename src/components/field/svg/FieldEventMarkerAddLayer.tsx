@@ -31,9 +31,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                 const newMarker = activePath.trajectory.addEventMarker();
 
                 newMarker.setTarget({ uuid: point.uuid });
-                if (!activePath.isTrajectoryStale) {
-                  newMarker.setTrajectoryTargetIndex(index);
-                }
+                // TODO Directly set target index if trajectory not stale
                 doc.setSelectedSidebarItem(newMarker);
               }}
             ></circle>
