@@ -152,8 +152,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
   }
 
   public DifferentialSample offsetBy(double timestampOffset) {
-    return new DifferentialSample(
-        t + timestampOffset, x, y, heading, vl, vr, al, ar, fl, fr);
+    return new DifferentialSample(t + timestampOffset, x, y, heading, vl, vr, al, ar, fl, fr);
   }
 
   @Override

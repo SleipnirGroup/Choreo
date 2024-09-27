@@ -119,7 +119,8 @@ public class AutoTrajectory {
     if (sample == null) {
       return;
     } else if (sample instanceof SwerveSample) {
-      TrajectoryLogger<SwerveSample> swerveLogger = (TrajectoryLogger<SwerveSample>) trajectoryLogger;
+      TrajectoryLogger<SwerveSample> swerveLogger =
+          (TrajectoryLogger<SwerveSample>) trajectoryLogger;
       Trajectory<SwerveSample> swerveTrajectory = (Trajectory<SwerveSample>) trajectory;
       swerveLogger.accept(swerveTrajectory, starting);
     } else if (sample instanceof DifferentialSample) {
@@ -352,10 +353,10 @@ public class AutoTrajectory {
 
   /**
    * Returns a trigger that is true when the robot is within toleranceMeters of the given pose.
-   * 
+   *
    * <p>This position is mirrored based on the {@code mirrorTrajectory} boolean supplier in the
    * factory used to make this trajectory.
-   * 
+   *
    * @param pose The pose to check against
    * @param toleranceMeters The tolerance in meters.
    * @return A trigger that is true when the robot is within toleranceMeters of the given pose.
