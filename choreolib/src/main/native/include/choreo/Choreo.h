@@ -27,7 +27,7 @@ class Choreo {
    * Gets the project file from the deploy directory. Choreolib expects a .chor
    * file to be placed in src/main/deploy/choreo.
    *
-   * <p>The result is cached after the first call.
+   * The result is cached after the first call.
    *
    * @return the project file
    */
@@ -142,13 +142,13 @@ class Choreo {
  * trajectories only once, and then reusing them.
  */
 template <choreo::TrajectorySample SampleType>
-class ChoreoTrajCache {
+class ChoreoTrajectoryCache {
  public:
   /**
    * Load a trajectory from the deploy directory. Choreolib expects .traj files
    * to be placed in src/main/deploy/choreo/[trajectoryName].traj.
    *
-   * <p>This method will cache the loaded trajectory and reused it if it is
+   * This method will cache the loaded trajectory and reused it if it is
    * requested again.
    *
    * @param trajectoryName the path name in Choreo, which matches the file name
@@ -173,7 +173,7 @@ class ChoreoTrajCache {
    * expects .traj files to be placed in
    * src/main/deploy/choreo/[trajectoryName].traj.
    *
-   * <p>This method will cache the loaded trajectory and reused it if it is
+   * This method will cache the loaded trajectory and reused it if it is
    * requested again. The trajectory that is split off of will also be cached.
    *
    * @param trajectoryName the path name in Choreo, which matches the file name
