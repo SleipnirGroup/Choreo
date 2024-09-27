@@ -4,11 +4,11 @@ package choreo;
 
 import static edu.wpi.first.util.ErrorMessages.requireNonNullParam;
 
-import choreo.autos.AutoChooser;
-import choreo.autos.AutoFactory;
-import choreo.autos.AutoFactory.ChoreoAutoBindings;
-import choreo.autos.AutoLoop;
-import choreo.autos.AutoTrajectory;
+import choreo.auto.AutoChooser;
+import choreo.auto.AutoFactory;
+import choreo.auto.AutoFactory.ChoreoAutoBindings;
+import choreo.auto.AutoLoop;
+import choreo.auto.AutoTrajectory;
 import choreo.trajectory.DifferentialSample;
 import choreo.trajectory.EventMarker;
 import choreo.trajectory.ProjectFile;
