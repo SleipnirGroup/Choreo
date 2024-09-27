@@ -233,8 +233,6 @@ export const DocumentStore = types
               pathStore.trajectory.setWaypoints(result.trajectory.waypoints);
 
               pathStore.setSnapshot(result.snapshot);
-              // set this within the group so it gets picked up in the autosave
-              pathStore.setIsTrajectoryStale(false);
               self.history.stopGroup();
             });
           },
@@ -246,7 +244,6 @@ export const DocumentStore = types
         .finally(() => {
           // none of the below should trigger autosave
           pathStore.ui.setGenerating(false);
-          pathStore.setIsTrajectoryStale(false);
         });
     }
   }))
