@@ -119,6 +119,7 @@ export interface ProgressUpdate {
 export interface ChoreoPath<T extends ExprOrNumber> {
   waypoints: Waypoint<T>[];
   constraints: Constraint[];
+  targetDt: T;
 }
 
 export type SampleType = "Swerve" | "Differential";

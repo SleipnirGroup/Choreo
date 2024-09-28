@@ -1,14 +1,7 @@
-import {
-  KeyboardArrowDown,
-  PriorityHigh,
-  Route,
-  Settings
-} from "@mui/icons-material";
+import { KeyboardArrowDown, Route, Settings } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
-  Checkbox,
   CircularProgress,
-  FormControlLabel,
   IconButton,
   TextField,
   Tooltip
@@ -18,9 +11,9 @@ import { observer } from "mobx-react";
 import React, { Component } from "react";
 import { toast } from "react-toastify";
 import { deletePath, doc, renamePath } from "../../document/DocumentManager";
-import Input from "../input/Input";
-import InputList from "../input/InputList";
 import styles from "./Sidebar.module.css";
+import ExpressionInput from "../input/ExpressionInput";
+import ExpressionInputList from "../input/ExpressionInputList";
 
 type Props = object;
 
@@ -112,18 +105,6 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             }}
             variant="indeterminate"
           ></CircularProgress>
-        ) : this.getPath().isTrajectoryStale ? (
-          <Tooltip
-            disableInteractive
-            title="Path features no longer match trajectory. Regenerate to be up-to-date."
-          >
-            <PriorityHigh
-              className={styles.SidebarIcon}
-              htmlColor={
-                selected ? "var(--select-yellow)" : "var(--accent-purple)"
-              }
-            ></PriorityHigh>
-          </Tooltip>
         ) : (
           <Route
             className={styles.SidebarIcon}
@@ -228,46 +209,14 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
         {this.state.settingsOpen && (
           <>
             <span className={styles.SidebarVerticalLine}></span>
-            <Tooltip
-              disableInteractive
-              title="Estimate needed resolution (# of samples) based on distance between waypoints"
-            >
-              <FormControlLabel
-                sx={{
-                  marginLeft: "0px",
-                  gridColumnStart: 2,
-                  gridColumnEnd: 4
-                }}
-                label="Guess Path Detail"
-                control={
-                  <Checkbox
-                    checked={this.getPath().usesControlIntervalGuessing}
-                    onChange={(e) => {
-                      this.getPath().setControlIntervalGuessing(
-                        e.target.checked
-                      );
-                    }}
-                  />
-                }
-              />
-            </Tooltip>
-            <span className={styles.SidebarVerticalLine}></span>
-            <span style={{ gridColumnStart: 2, gridColumnEnd: 4 }}>
-              <InputList noCheckbox>
-                <Input
-                  title="Default"
-                  suffix="per segment"
-                  showCheckbox={false}
-                  enabled={!this.getPath().usesControlIntervalGuessing}
-                  setEnabled={(_) => {}}
-                  roundingPrecision={0}
-                  number={this.getPath().defaultControlIntervalCount}
-                  setNumber={(count) => {
-                    this.getPath().setDefaultControlIntervalCounts(count);
-                  }}
-                  titleTooltip="When not guessing, how many samples to use?"
-                ></Input>
-              </InputList>
+            <span style={{ gridColumn: "2 / span 2" }}>
+              <ExpressionInputList>
+                <ExpressionInput
+                  title="dt"
+                  enabled={true}
+                  number={this.getPath().params.targetDt}
+                ></ExpressionInput>
+              </ExpressionInputList>
             </span>
           </>
         )}
