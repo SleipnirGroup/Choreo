@@ -92,8 +92,8 @@ class DifferentialSample {
   /**
    * Returns the current sample flipped based on the field year.
    *
-   * @param Year template argument representing the field year
-   * @returns DifferentialSample that is flipped based on the field layout
+   * @tparam Year The field year.
+   * @returns DifferentialSample that is flipped based on the field layout.
    */
   template <int Year>
   DifferentialSample Flipped() const {
