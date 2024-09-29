@@ -8,6 +8,8 @@
 #include <unordered_map>
 #include <utility>
 
+#include <frc/RobotBase.h>
+
 #include "choreo/Choreo.h"
 #include "choreo/auto/AutoLoop.h"
 
@@ -58,7 +60,14 @@ class AutoFactory {
         autoBindings{std::move(bindings)},
         trajectoryLogger{std::move(trajectoryLogger)} {}
 
-  AutoLoop<SampleType> NewLoop() const { return AutoLoop<SampleType>(); }
+  AutoLoop<SampleType> NewLoop() const {
+    // Clear cache in simulation to allow a form of "hot-reloading" trajectories
+    if (RobotBase::IsSimulation()) {
+      ClearCache();
+    }
+
+    return AutoLoop<SampleType>();
+  }
 
   AutoTrajectory<SampleType> Trajectory(std::string_view trajectoryName,
                                         AutoLoop<SampleType> loop) const {
