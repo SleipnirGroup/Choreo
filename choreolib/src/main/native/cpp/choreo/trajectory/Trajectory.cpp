@@ -20,8 +20,9 @@ void choreo::from_json(const wpi::json& json,
                        Trajectory<SwerveSample>& trajectory) {
   trajectory.name = json.at("name").get<std::string>();
   trajectory.samples =
-      json.at("traj").at("samples").get<std::vector<SwerveSample>>();
-  trajectory.splits = json.at("traj").at("splits").get<std::vector<int>>();
+      json.at("trajectory").at("samples").get<std::vector<SwerveSample>>();
+  trajectory.splits =
+      json.at("trajectory").at("splits").get<std::vector<int>>();
   trajectory.events = json.at("events").get<std::vector<EventMarker>>();
 }
 
@@ -37,6 +38,7 @@ void choreo::from_json(const wpi::json& json,
                        Trajectory<DifferentialSample>& trajectory) {
   trajectory.samples =
       json.at("traj").at("samples").get<std::vector<DifferentialSample>>();
-  trajectory.splits = json.at("traj").at("splits").get<std::vector<int>>();
+  trajectory.splits =
+      json.at("trajectory").at("splits").get<std::vector<int>>();
   trajectory.events = json.at("events").get<std::vector<EventMarker>>();
 }
