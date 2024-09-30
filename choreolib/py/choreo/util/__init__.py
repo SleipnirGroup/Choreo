@@ -108,14 +108,17 @@ def get_flipper_for_year(year: int = DEFAULT_YEAR):
     A utility to standardize flipping of coordinate data based on the current
     alliance across different years.
 
-    Grabs the instance of the flipper for the supplied template parameter. Will
-    not compile if an invalid year is supplied
+    If the provided year is invalid, the current year is used instead.
 
     Parameter ``year``:
         The field year (default: the current year).
     """
-    flipperType = FLIPPER_MAP[year]
-    if flipperType == FlipperType.ROTATE_AROUND:
+    try:
+        flipper_type = FLIPPER_MAP[year]
+    except KeyError:
+        flipper_type = DEFAULT_YEAR
+
+    if flipper_type == FlipperType.ROTATE_AROUND:
         return RotateAroundFlipper()
-    elif flipperType == FlipperType.MIRRORED:
+    elif flipper_type == FlipperType.MIRRORED:
         return MirroredFlipper()
