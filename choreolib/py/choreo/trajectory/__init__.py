@@ -92,7 +92,7 @@ class DifferentialSample:
             The left force on the swerve modules in Newtons.
 
         Parameter ``fr``:
-            The right force on the swerve modules in Netwons.
+            The right force on the swerve modules in Newtons.
         """
         self.timestamp = timestamp
         self.x = x
