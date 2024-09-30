@@ -366,10 +366,7 @@ void DifferentialPathBuilder::set_control_interval_counts(
 
 void DifferentialPathBuilder::set_bumpers(double front, double left,
                                           double right, double back) {
-  path_builder.AddBumpers(trajopt::Bumpers{
-      .safetyDistance = 0.01,
-      .points = {
-          {+front, +left}, {-back, +left}, {-back, -right}, {+front, -right}}});
+  path_builder.SetBumpers(front, left, right, back);
 }
 
 void DifferentialPathBuilder::pose_wpt(size_t index, double x, double y,
