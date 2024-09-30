@@ -112,7 +112,7 @@ def get_flipper_for_year(year: int = DEFAULT_YEAR):
     not compile if an invalid year is supplied
 
     Parameter ``year``:
-        The field year.
+        The field year (default: the current year).
     """
     flipperType = FLIPPER_MAP[year]
     if flipperType == FlipperType.ROTATE_AROUND:

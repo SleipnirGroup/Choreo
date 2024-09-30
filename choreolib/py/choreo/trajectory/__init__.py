@@ -164,7 +164,7 @@ class DifferentialSample:
         Returns the current sample flipped based on the field year.
 
         Parameter ``year``:
-            The field year.
+            The field year (default: the current year).
         """
         flipper = get_flipper_for_year(year)
         if flipper.IS_MIRRORED:
@@ -325,7 +325,7 @@ class DifferentialTrajectory:
         Returns this trajectory flipped based on the field year.
 
         Parameter ``year``:
-            The field year.
+            The field year (default: the current year).
         """
         return SwerveTrajectory(
             self.name, [x.flipped() for x in self.samples], self.splits, self.events
@@ -450,7 +450,7 @@ class SwerveSample:
         Returns the current sample flipped based on the field year.
 
         Parameter ``year``:
-            The field year.
+            The field year (default: the current year).
         """
         flipper = get_flipper_for_year(year)
         if flipper.IS_MIRRORED:
@@ -615,7 +615,7 @@ class SwerveTrajectory:
         Returns this trajectory flipped based on the field year.
 
         Parameter ``year``:
-            The field year.
+            The field year (default: the current year).
         """
         return SwerveTrajectory(
             self.name, [x.flipped() for x in self.samples], self.splits, self.events
