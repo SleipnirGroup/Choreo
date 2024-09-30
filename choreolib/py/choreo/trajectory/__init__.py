@@ -256,7 +256,7 @@ class DifferentialTrajectory:
         return behind_state.interpolate(ahead_state, timestamp)
 
     def sample_at(
-        self, timestamp: float, mirror_for_red_alliance: bool = False
+        self, timestamp: float, flip_for_red_alliance: bool = False
     ) -> SwerveSample:
         """
         Return an interpolated sample of the trajectory at the given timestamp.
@@ -265,7 +265,7 @@ class DifferentialTrajectory:
             The timestamp of this sample relative to the beginning of the
             trajectory.
 
-        Parameter ``mirror_for_red_alliance``:
+        Parameter ``flip_for_red_alliance``:
             Whether or not to return the sample as flipped for the current year.
 
         Returns:
@@ -273,7 +273,7 @@ class DifferentialTrajectory:
         """
         tmp = self.__sample_internal(timestamp)
 
-        return tmp.flipped() if mirror_for_red_alliance else tmp
+        return tmp.flipped() if flip_for_red_alliance else tmp
 
     def get_samples(self) -> list[SwerveSample]:
         """
@@ -281,29 +281,29 @@ class DifferentialTrajectory:
         """
         return self.samples
 
-    def get_initial_pose(self, mirror_for_red_alliance: bool = False) -> Pose2d:
+    def get_initial_pose(self, flip_for_red_alliance: bool = False) -> Pose2d:
         """
         Returns the initial pose of the trajectory.
 
-        Parameter ``mirror_for_red_alliance``:
-            Whether or not to return the Pose mirrored.
+        Parameter ``flip_for_red_alliance``:
+            Whether or not to return the Pose flipped.
         """
         return (
             self.samples[0].flipped().get_pose()
-            if mirror_for_red_alliance
+            if flip_for_red_alliance
             else self.samples[0].get_pose()
         )
 
-    def get_final_pose(self, mirror_for_red_alliance: bool = False) -> Pose2d:
+    def get_final_pose(self, flip_for_red_alliance: bool = False) -> Pose2d:
         """
         Returns the final pose of the trajectory.
 
-        Parameter ``mirror_for_red_alliance``:
-            Whether or not to return the Pose mirrored.
+        Parameter ``flip_for_red_alliance``:
+            Whether or not to return the Pose flipped.
         """
         return (
             self.samples[-1].flipped().get_pose()
-            if mirror_for_red_alliance
+            if flip_for_red_alliance
             else self.samples[-1].get_pose()
         )
 
@@ -546,7 +546,7 @@ class SwerveTrajectory:
         return behind_state.interpolate(ahead_state, timestamp)
 
     def sample_at(
-        self, timestamp: float, mirror_for_red_alliance: bool = False
+        self, timestamp: float, flip_for_red_alliance: bool = False
     ) -> SwerveSample:
         """
         Return an interpolated sample of the trajectory at the given timestamp.
@@ -555,7 +555,7 @@ class SwerveTrajectory:
             The timestamp of this sample relative to the beginning of the
             trajectory.
 
-        Parameter ``mirror_for_red_alliance``:
+        Parameter ``flip_for_red_alliance``:
             Whether or not to return the sample as flipped for the current year.
 
         Returns:
@@ -563,7 +563,7 @@ class SwerveTrajectory:
         """
         tmp = self.__sample_internal(timestamp)
 
-        return tmp.flipped() if mirror_for_red_alliance else tmp
+        return tmp.flipped() if flip_for_red_alliance else tmp
 
     def get_samples(self) -> list[SwerveSample]:
         """
@@ -571,29 +571,29 @@ class SwerveTrajectory:
         """
         return self.samples
 
-    def get_initial_pose(self, mirror_for_red_alliance: bool = False) -> Pose2d:
+    def get_initial_pose(self, flip_for_red_alliance: bool = False) -> Pose2d:
         """
         Returns the initial pose of the trajectory.
 
-        Parameter ``mirror_for_red_alliance``:
+        Parameter ``flip_for_red_alliance``:
             Whether or not to return the Pose flipped.
         """
         return (
             self.samples[0].flipped().get_pose()
-            if mirror_for_red_alliance
+            if flip_for_red_alliance
             else self.samples[0].get_pose()
         )
 
-    def get_final_pose(self, mirror_for_red_alliance: bool = False) -> Pose2d:
+    def get_final_pose(self, flip_for_red_alliance: bool = False) -> Pose2d:
         """
         Returns the final pose of the trajectory.
 
-        Parameter ``mirror_for_red_alliance``:
-            Whether or not to return the Pose mirrored.
+        Parameter ``flip_for_red_alliance``:
+            Whether or not to return the Pose flipped.
         """
         return (
             self.samples[-1].flipped().get_pose()
-            if mirror_for_red_alliance
+            if flip_for_red_alliance
             else self.samples[-1].get_pose()
         )
 
