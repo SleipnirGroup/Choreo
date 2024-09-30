@@ -94,6 +94,8 @@ constexpr Map flipperMap{std::array{
  *
  * Grabs the instance of the flipper for the supplied template parameter. Will
  * not compile if an invalid year is supplied.
+ *
+ * @tparam Year The field year.
  */
 template <int Year>
 constexpr auto GetFlipperForYear() {

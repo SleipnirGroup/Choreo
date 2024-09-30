@@ -6,7 +6,7 @@ import os
 from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.kinematics import ChassisSpeeds
 
-from choreo.util import get_flipper_for_year
+from choreo.util import DEFAULT_YEAR, get_flipper_for_year
 
 
 def lerp(a, b, t) -> float:
@@ -159,7 +159,7 @@ class DifferentialSample:
             [lerp(self.fr[i], end_value.fr[i], scale) for i in range(len(self.fr))],
         )
 
-    def flipped(self, year: int) -> DifferentialSample:
+    def flipped(self, year: int = DEFAULT_YEAR) -> DifferentialSample:
         """
         Returns the current sample flipped based on the field year.
 
@@ -320,7 +320,7 @@ class DifferentialTrajectory:
         """
         return [x.get_pose() for x in self.samples]
 
-    def flipped(self, year: int) -> SwerveTrajectory:
+    def flipped(self, year: int = DEFAULT_YEAR) -> SwerveTrajectory:
         """
         Returns this trajectory flipped based on the field year.
 
@@ -445,7 +445,7 @@ class SwerveSample:
             [lerp(self.fy[i], end_value.fy[i], scale) for i in range(len(self.fy))],
         )
 
-    def flipped(self, year: int) -> SwerveSample:
+    def flipped(self, year: int = DEFAULT_YEAR) -> SwerveSample:
         """
         Returns the current sample flipped based on the field year.
 
@@ -610,7 +610,7 @@ class SwerveTrajectory:
         """
         return [x.get_pose() for x in self.samples]
 
-    def flipped(self, year: int) -> SwerveTrajectory:
+    def flipped(self, year: int = DEFAULT_YEAR) -> SwerveTrajectory:
         """
         Returns this trajectory flipped based on the field year.
 

@@ -100,13 +100,19 @@ FLIPPER_MAP: Dict[int, FlipperType] = {
 }
 
 
-def get_flipper_for_year(year: int):
+DEFAULT_YEAR = 2024
+
+
+def get_flipper_for_year(year: int = DEFAULT_YEAR):
     """
     A utility to standardize flipping of coordinate data based on the current
     alliance across different years.
 
     Grabs the instance of the flipper for the supplied template parameter. Will
     not compile if an invalid year is supplied
+
+    Parameter ``year``:
+        The field year.
     """
     flipperType = FLIPPER_MAP[year]
     if flipperType == FlipperType.ROTATE_AROUND:
