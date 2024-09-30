@@ -143,7 +143,7 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
    * @param timestamp The timestamp of this sample relative to the beginning of the trajectory.
    * @param mirrorForRedAlliance whether or not to return the sample as mirrored across the field
    *     midline (as in 2023).
-   * @return The ChoreoTrajectoryState at the given time.
+   * @return The SampleType at the given time.
    */
   public SampleType sampleAt(double timestamp, boolean mirrorForRedAlliance) {
     SampleType state;

@@ -94,7 +94,7 @@ class SwerveSample {
     if constexpr (flipper.isMirrored) {
       return SwerveSample{timestamp,
                           flipper.FlipX(x),
-                          flipper.FlipY(y),
+                          y,
                           flipper.FlipHeading(heading),
                           -vx,
                           vy,

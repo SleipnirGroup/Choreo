@@ -71,7 +71,7 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
    * @param ay The acceleration of the sample in the Y direction in m/s^2.
    * @param alpha The angular acceleration of the sample in rad/s^2.
    * @param moduleForcesX The force on each swerve module in the X direction in Newtons.
-   * @param moduleForcesY The force on each swerve module in the Y direction in Netwons.
+   * @param moduleForcesY The force on each swerve module in the Y direction in Newtons.
    */
   public SwerveSample(
       double t,
