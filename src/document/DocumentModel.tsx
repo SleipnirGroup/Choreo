@@ -164,7 +164,7 @@ export const DocumentStore = types
       const handle = pathStore.uuid
         .split("")
         .reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) | 0, 0);
-      let unlisten: UnlistenFn;
+      let unlisten: UnlistenFn = () => {};
       pathStore.ui.setIterationNumber(0);
       await Commands.guessIntervals(config, pathStore.serialize)
         .catch((e) => {
