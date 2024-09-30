@@ -124,6 +124,23 @@ class TRAJOPT_DLLEXPORT PathBuilder {
   }
 
   /**
+   * Add a rectanglar bumper to a list used when applying
+   * obstacle constraints.
+   *
+   * @param front Distance in meters from center to front bumper edge
+   * @param left Distance in meters from center to left bumper edge
+   * @param right Distance in meters from center to right bumper edge
+   * @param back Distance in meters from center to back bumper edge
+   */
+  void SetBumpers(double front, double left, double right, double back) {
+    bumpers.emplace_back(trajopt::Bumpers{.safetyDistance = 0.01,
+                                          .points = {{+front, +left},
+                                                     {-back, +left},
+                                                     {-back, -right},
+                                                     {+front, -right}}});
+  }
+
+  /**
    * Apply a constraint at a waypoint.
    *
    * @param index Index of the waypoint.

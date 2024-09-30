@@ -79,7 +79,13 @@ mod ffi {
         type SwervePathBuilder;
 
         fn set_drivetrain(self: Pin<&mut SwervePathBuilder>, drivetrain: &SwerveDrivetrain);
-        fn set_bumpers(self: Pin<&mut SwervePathBuilder>, length: f64, width: f64);
+        fn set_bumpers(
+            self: Pin<&mut SwervePathBuilder>,
+            front: f64,
+            left: f64,
+            right: f64,
+            back: f64,
+        );
         fn set_control_interval_counts(self: Pin<&mut SwervePathBuilder>, counts: Vec<usize>);
 
         fn pose_wpt(self: Pin<&mut SwervePathBuilder>, index: usize, x: f64, y: f64, heading: f64);
@@ -230,7 +236,13 @@ mod ffi {
             self: Pin<&mut DifferentialPathBuilder>,
             drivetrain: &DifferentialDrivetrain,
         );
-        fn set_bumpers(self: Pin<&mut DifferentialPathBuilder>, length: f64, width: f64);
+        fn set_bumpers(
+            self: Pin<&mut DifferentialPathBuilder>,
+            front: f64,
+            left: f64,
+            right: f64,
+            back: f64,
+        );
         fn set_control_interval_counts(self: Pin<&mut DifferentialPathBuilder>, counts: Vec<usize>);
 
         fn pose_wpt(
@@ -377,7 +389,7 @@ mod ffi {
 }
 
 pub trait PathBuilder: Any {
-    fn set_bumpers(&mut self, length: f64, width: f64);
+    fn set_bumpers(&mut self, front: f64, left: f64, right: f64, back: f64);
     fn set_control_interval_counts(&mut self, counts: Vec<usize>);
 
     fn pose_wpt(&mut self, index: usize, x: f64, y: f64, heading: f64);
@@ -539,8 +551,14 @@ impl SwervePathBuilder {
     }
 }
 impl PathBuilder for SwervePathBuilder {
-    fn set_bumpers(&mut self, length: f64, width: f64) {
-        crate::ffi::SwervePathBuilder::set_bumpers(self.path_builder.pin_mut(), length, width);
+    fn set_bumpers(&mut self, front: f64, left: f64, right: f64, back: f64) {
+        crate::ffi::SwervePathBuilder::set_bumpers(
+            self.path_builder.pin_mut(),
+            front,
+            left,
+            right,
+            back,
+        );
     }
 
     fn set_control_interval_counts(&mut self, counts: Vec<usize>) {
@@ -855,11 +873,13 @@ impl DifferentialPathBuilder {
     }
 }
 impl PathBuilder for DifferentialPathBuilder {
-    fn set_bumpers(&mut self, length: f64, width: f64) {
+    fn set_bumpers(&mut self, front: f64, left: f64, right: f64, back: f64) {
         crate::ffi::DifferentialPathBuilder::set_bumpers(
             self.path_builder.pin_mut(),
-            length,
-            width,
+            front,
+            left,
+            right,
+            back,
         );
     }
 

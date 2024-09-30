@@ -21,7 +21,7 @@ fn main() {
         println!("{:?}: handle {}", trajectory, handle)
     });
     path.set_drivetrain(&drivetrain);
-    path.set_bumpers(1.3, 1.3);
+    path.set_bumpers(0.65, 0.65, 0.65, 0.65);
 
     path.pose_wpt(0, 0.0, 0.0, 0.0);
     path.pose_wpt(1, 1.0, 0.0, 0.0);

@@ -37,8 +37,10 @@ impl SwerveGenerationTransformer for DrivetrainAndBumpersSetter {
 
         builder.set_drivetrain(&drivetrain);
         builder.set_bumpers(
-            config.bumper.back + config.bumper.front,
-            config.bumper.side * 2.0,
+            config.bumper.front,
+            config.bumper.side,
+            config.bumper.side,
+            config.bumper.back
         );
     }
 }
@@ -61,8 +63,10 @@ impl DifferentialGenerationTransformer for DrivetrainAndBumpersSetter {
 
         builder.set_drivetrain(&drivetrain);
         builder.set_bumpers(
-            config.bumper.back + config.bumper.front,
-            config.bumper.side  * 2.0,
+            config.bumper.front,
+            config.bumper.side,
+            config.bumper.side,
+            config.bumper.back
         );
     }
 }
