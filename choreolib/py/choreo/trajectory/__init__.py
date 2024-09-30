@@ -266,8 +266,7 @@ class DifferentialTrajectory:
             trajectory.
 
         Parameter ``mirror_for_red_alliance``:
-            Whether or not to return the sample as mirrored across the field
-            midline (as in 2023).
+            Whether or not to return the sample as flipped for the current year.
 
         Returns:
             The Sample at the given time.
@@ -388,7 +387,7 @@ class SwerveSample:
             The force on the swerve modules in the X direction in Newtons.
 
         Parameter ``fy``:
-            The force on the swerve modules in the Y direction in Netwons.
+            The force on the swerve modules in the Y direction in Newtons.
         """
         self.timestamp = timestamp
         self.x = x
@@ -557,8 +556,7 @@ class SwerveTrajectory:
             trajectory.
 
         Parameter ``mirror_for_red_alliance``:
-            Whether or not to return the sample as mirrored across the field
-            midline (as in 2023).
+            Whether or not to return the sample as flipped for the current year.
 
         Returns:
             The Sample at the given time.
@@ -578,7 +576,7 @@ class SwerveTrajectory:
         Returns the initial pose of the trajectory.
 
         Parameter ``mirror_for_red_alliance``:
-            Whether or not to return the Pose mirrored.
+            Whether or not to return the Pose flipped.
         """
         return (
             self.samples[0].flipped().get_pose()
