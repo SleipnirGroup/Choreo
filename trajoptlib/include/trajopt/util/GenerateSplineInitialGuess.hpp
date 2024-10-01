@@ -83,24 +83,15 @@ inline Solution GenerateSplineInitialGuess(
   std::vector<trajopt::CubicHermitePoseSplineHolonomic> splines =
       splinesFromWaypoints(initialGuessPoints);
 
-  size_t guessPoints = 0;
-  for (const auto& guesses : initialGuessPoints) {
-    guessPoints += guesses.size();
-  }
   std::vector<std::vector<PoseWithCurvature>> sgmtPoints;
-  sgmtPoints.reserve(guessPoints);
-  for (size_t i = 0; i < guessPoints; ++i) {
-    sgmtPoints.push_back(std::vector<PoseWithCurvature>());
+  for (auto _i = 0; _i < initialGuessPoints.size(); ++_i) {
+    for (auto _j = 0; _j < initialGuessPoints.at(_i).size(); ++_j) {
+      sgmtPoints.push_back(std::vector<PoseWithCurvature>());
+    }
   }
 
   size_t trajIdx = 0;
-  std::printf("sgmt1\n");
   sgmtPoints.at(0).push_back(splines.at(trajIdx).GetPoint(0));
-  std::printf("ctrlCount: [");
-  for (auto count : controlIntervalCounts) {
-    std::printf("%zd,", count);
-  }
-  std::printf("]\n");
   for (size_t sgmtIdx = 1; sgmtIdx < initialGuessPoints.size(); ++sgmtIdx) {
     auto guessPointsSize = initialGuessPoints.at(sgmtIdx).size();
     auto samplesForSgmt = controlIntervalCounts.at(sgmtIdx - 1);
