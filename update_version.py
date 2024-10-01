@@ -49,7 +49,7 @@ LOCATIONS: list[VersionLocation] = [
         relative_path=Path("src-core/Cargo.toml"),
         version_path=["package", "version"],
         file_format="toml",
-    ),
+    )
 ]
 
 
