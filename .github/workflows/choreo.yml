@@ -151,7 +151,7 @@ jobs:
           unzip -o macOS-x86_64.zip
           mv Choreo Choreo-${{ github.ref_name }}-macOS-x86_64
           mv choreo-cli Choreo-CLI-${{ github.ref_name }}-macOS-x86_64
-          mv Choreo_*_aarch64.dmg Choreo-${{ github.ref_name }}-macOS-x86_64.dmg
+          mv Choreo_*_x86_64.dmg Choreo-${{ github.ref_name }}-macOS-x86_64.dmg
 
       - name: Rename macOS aarch64 artifacts
         working-directory: pkg/macOS-aarch64
