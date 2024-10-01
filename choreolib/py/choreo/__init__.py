@@ -5,6 +5,7 @@ from choreo.trajectory import DifferentialSample
 from choreo.trajectory import DifferentialTrajectory
 from choreo.trajectory import SwerveSample
 from choreo.trajectory import SwerveTrajectory
+from choreo.spec_version import SPEC_VERSION
 
 
 def load_differential_trajectory(trajectory_name: str) -> DifferentialTrajectory:
@@ -16,7 +17,11 @@ def load_differential_trajectory(trajectory_name: str) -> DifferentialTrajectory
     """
     with open(trajectory_name + ".traj", "r", encoding="utf-8") as trajectory_file:
         data = json.load(trajectory_file)
-
+    version = data["version"]
+    if version != SPEC_VERSION:
+        raise ValueError(
+            f"{trajectory_name}.traj: Wrong version {version}. Expected {SPEC_VERSION}"
+        )
     samples = [
         DifferentialSample(
             float(sample["t"]),
@@ -49,7 +54,11 @@ def load_swerve_trajectory(trajectory_name: str) -> SwerveTrajectory:
     """
     with open(trajectory_name + ".traj", "r", encoding="utf-8") as trajectory_file:
         data = json.load(trajectory_file)
-
+    version = data["version"]
+    if version != SPEC_VERSION:
+        raise ValueError(
+            f"{trajectory_name}.traj: Wrong version {version}. Expected {SPEC_VERSION}"
+        )
     samples = [
         SwerveSample(
             float(sample["t"]),

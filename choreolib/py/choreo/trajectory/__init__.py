@@ -7,6 +7,7 @@ from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.kinematics import ChassisSpeeds
 
 from choreo.util import DEFAULT_YEAR, get_flipper_for_year
+from choreo.spec_version import SPEC_VERSION
 
 
 def lerp(a, b, t) -> float:
@@ -122,6 +123,11 @@ class DifferentialSample:
 
         with open(chor, "r", encoding="utf-8") as project_file:
             data = json.load(project_file)
+        version = data["version"]
+        if version != SPEC_VERSION:
+            raise ValueError(
+                f".chor project file: Wrong version {version}. Expected {SPEC_VERSION}"
+            )
         trackwidth = float(data["config"]["differentialTrackWidth"]["val"])
 
         return ChassisSpeeds(

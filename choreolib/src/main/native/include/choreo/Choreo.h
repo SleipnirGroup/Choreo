@@ -13,6 +13,7 @@
 #include <wpi/MemoryBuffer.h>
 #include <wpi/json.h>
 
+#include "choreo/SpecVersion.h"
 #include "choreo/trajectory/ProjectFile.h"
 #include "choreo/trajectory/Trajectory.h"
 
@@ -63,8 +64,14 @@ class Choreo {
                         "Could not open choreo project file");
       }
 
+      wpi::json json = wpi::json::parse(fileBuffer->GetCharBuffer());
+      std::string version = json["version"];
+      if (kSpecVersion != version) {
+        throw fmt::format(".chor project file: Wrong version {}. Expected {}",
+                          version, kSpecVersion);
+      }
       choreo::ProjectFile resultProjectFile;
-      choreo::from_json(fileBuffer->GetCharBuffer(), resultProjectFile);
+      choreo::from_json(json, resultProjectFile);
       LAZY_PROJECT_FILE = resultProjectFile;
     } catch (const std::filesystem::filesystem_error&) {
       FRC_ReportError(frc::warn::Warning, "Error finding choreo directory!");
@@ -105,7 +112,8 @@ class Choreo {
 
     try {
       return LoadTrajectoryString<SampleType>(
-          std::string{fileBuffer->GetCharBuffer().data(), fileBuffer->size()});
+          std::string{fileBuffer->GetCharBuffer().data(), fileBuffer->size()},
+          trajectoryName);
     } catch (wpi::json::parse_error& ex) {
       FRC_ReportError(frc::warn::Warning, "Could not parse trajectory file: {}",
                       trajectoryName);
@@ -117,8 +125,13 @@ class Choreo {
 
   template <choreo::TrajectorySample SampleType>
   static std::optional<choreo::Trajectory<SampleType>> LoadTrajectoryString(
-      std::string_view trajectoryJsonString) {
+      std::string_view trajectoryJsonString, std::string_view trajectoryName) {
     wpi::json json = wpi::json::parse(trajectoryJsonString);
+    std::string version = json["version"];
+    if (kSpecVersion != version) {
+      throw fmt::format("{}.traj: Wrong version {}. Expected {}",
+                        trajectoryName, version, kSpecVersion);
+    }
     choreo::Trajectory<SampleType> trajectory;
     choreo::from_json(json, trajectory);
     return trajectory;
