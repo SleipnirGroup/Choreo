@@ -123,7 +123,7 @@ class DifferentialSample:
         with open(chor, "r", encoding="utf-8") as project_file:
             data = json.load(project_file)
         if data["version"] != SPEC_VERSION:
-            raise TypeError(f"Project file was wrong version {data["version"]}. This ChoreoLib reads {SPEC_VERSION}")
+            raise ValueError(f"Project file was wrong version {data["version"]}. This ChoreoLib reads {SPEC_VERSION}")
         trackwidth = float(data["config"]["differentialTrackWidth"]["val"])
 
         return ChassisSpeeds(
