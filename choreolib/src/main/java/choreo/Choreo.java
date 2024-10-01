@@ -78,8 +78,7 @@ public final class Choreo {
       if (!SPEC_VERSION.equals(json.get("version").getAsString())) {
         throw new RuntimeException("Project file had wrong version, should be " + SPEC_VERSION);
       }
-      LAZY_PROJECT_FILE =
-          Optional.of(GSON.fromJson(reader, ProjectFile.class));
+      LAZY_PROJECT_FILE = Optional.of(GSON.fromJson(reader, ProjectFile.class));
     } catch (JsonSyntaxException ex) {
       throw new RuntimeException("Could not parse project file", ex);
     } catch (FileNotFoundException ex) {
@@ -155,7 +154,8 @@ public final class Choreo {
     String name = wholeTrajectory.get("name").getAsString();
     String version = wholeTrajectory.get("version").getAsString();
     if (!SPEC_VERSION.equals(version)) {
-      throw new RuntimeException(name + ": Wrong trajectory version: " + version + ", expected " + SPEC_VERSION);
+      throw new RuntimeException(
+          name + ": Wrong trajectory version: " + version + ", expected " + SPEC_VERSION);
     }
     EventMarker[] events = GSON.fromJson(wholeTrajectory.get("events"), EventMarker[].class);
     JsonObject trajectoryObj = wholeTrajectory.getAsJsonObject("trajectory");
