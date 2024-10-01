@@ -155,7 +155,7 @@ public final class Choreo {
     String version = wholeTrajectory.get("version").getAsString();
     if (!SPEC_VERSION.equals(version)) {
       throw new RuntimeException(
-          name + ": Wrong trajectory version: " + version + ", expected " + SPEC_VERSION);
+          name + ": Wrong trajectory version: found " + version + ", expected " + SPEC_VERSION);
     }
     EventMarker[] events = GSON.fromJson(wholeTrajectory.get("events"), EventMarker[].class);
     JsonObject trajectoryObj = wholeTrajectory.getAsJsonObject("trajectory");
