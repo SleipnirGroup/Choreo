@@ -19,7 +19,7 @@ def get_version():
     else:
         match = re.search(
             r"""
-            ^v 
+            ^v
             ( [0-9]+\.[0-9]+\.[0-9]+ ) # group 1 semver
             ( -([0-9]+) )? # group 3 commits since last tag
             ( -([a-z\d]+) )? # group 5 commit hash (if group 2) or alpha or beta (if not group 2)
