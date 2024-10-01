@@ -126,7 +126,7 @@ class DifferentialSample:
         version = data["version"]
         if version != SPEC_VERSION:
             raise ValueError(
-                f"Project file was wrong version {version}. This ChoreoLib reads {SPEC_VERSION}"
+                f".chor project file: Wrong version {version}. Expected {SPEC_VERSION}"
             )
         trackwidth = float(data["config"]["differentialTrackWidth"]["val"])
 

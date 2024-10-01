@@ -67,7 +67,7 @@ class Choreo {
       wpi::json json = wpi::json::parse(fileBuffer->GetCharBuffer());
       if (kSpecVersion != json["version"]) {
         throw fmt::format(
-            "Project file has wrong version. Found {}, should be {}",
+            ".chor project file: Wrong version {}. Expected {}",
             json["version"], kSpecVersion);
       }
       choreo::ProjectFile resultProjectFile;
@@ -112,7 +112,7 @@ class Choreo {
 
     try {
       return LoadTrajectoryString<SampleType>(
-          std::string{fileBuffer->GetCharBuffer().data(), fileBuffer->size()});
+          std::string{fileBuffer->GetCharBuffer().data(), fileBuffer->size()}, trajectoryName);
     } catch (wpi::json::parse_error& ex) {
       FRC_ReportError(frc::warn::Warning, "Could not parse trajectory file: {}",
                       trajectoryName);
@@ -124,11 +124,11 @@ class Choreo {
 
   template <choreo::TrajectorySample SampleType>
   static std::optional<choreo::Trajectory<SampleType>> LoadTrajectoryString(
-      std::string_view trajectoryJsonString) {
+      std::string_view trajectoryJsonString, std::string_view trajectoryName) {
     wpi::json json = wpi::json::parse(trajectoryJsonString);
     if (kSpecVersion != json["version"]) {
-      throw fmt::format("Trajectory has wrong version. Found {}, should be {}",
-                        json["version"], kSpecVersion);
+      throw fmt::format("{}.traj: Wrong version {}. Expected {}",
+                        trajectoryName, json["version"], kSpecVersion);
     }
     choreo::Trajectory<SampleType> trajectory;
     choreo::from_json(json, trajectory);

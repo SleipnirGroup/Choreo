@@ -20,7 +20,7 @@ def load_differential_trajectory(trajectory_name: str) -> DifferentialTrajectory
     version = data["version"]
     if version != SPEC_VERSION:
         raise ValueError(
-            f"Trajectory {trajectory_name} was wrong version {version}. This ChoreoLib reads {SPEC_VERSION}"
+            f"{trajectory_name}.traj: Wrong version {version}. Expected {SPEC_VERSION}"
         )
     samples = [
         DifferentialSample(
@@ -57,7 +57,7 @@ def load_swerve_trajectory(trajectory_name: str) -> SwerveTrajectory:
     version = data["version"]
     if version != SPEC_VERSION:
         raise ValueError(
-            f"Trajectory {trajectory_name} was wrong version {version}. This ChoreoLib reads {SPEC_VERSION}"
+            f"{trajectory_name}.traj: Wrong version {version}. Expected {SPEC_VERSION}"
         )
     samples = [
         SwerveSample(
