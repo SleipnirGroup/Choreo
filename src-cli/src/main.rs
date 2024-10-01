@@ -24,7 +24,7 @@ enum CliAction {
 
 #[derive(Parser)]
 #[clap(
-    version = "2025.0.0-alpha",
+    version = env!("CARGO_PKG_VERSION"),
     author = "Choreo Contributors",
     about = "Choreo CLI",
     bin_name = "Choreo",
