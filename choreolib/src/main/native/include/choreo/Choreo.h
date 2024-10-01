@@ -63,8 +63,12 @@ class Choreo {
                         "Could not open choreo project file");
       }
 
+      wpi::json json = wpi::json::parse(fileBuffer->GetCharBuffer());
+      if (SPEC_VERSION != json["version"]) {
+        throw "Project file has wrong version, should be " + SPEC_VERSION;
+      }
       choreo::ProjectFile resultProjectFile;
-      choreo::from_json(fileBuffer->GetCharBuffer(), resultProjectFile);
+      choreo::from_json(json, resultProjectFile);
       LAZY_PROJECT_FILE = resultProjectFile;
     } catch (const std::filesystem::filesystem_error&) {
       FRC_ReportError(frc::warn::Warning, "Error finding choreo directory!");
@@ -119,6 +123,9 @@ class Choreo {
   static std::optional<choreo::Trajectory<SampleType>> LoadTrajectoryString(
       std::string_view trajectoryJsonString) {
     wpi::json json = wpi::json::parse(trajectoryJsonString);
+    if (SPEC_VERSION != json["version"]) {
+      throw "Trajectory has wrong version, should be " + SPEC_VERSION;
+    }
     choreo::Trajectory<SampleType> trajectory;
     choreo::from_json(json, trajectory);
     return trajectory;

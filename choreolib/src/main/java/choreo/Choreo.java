@@ -42,6 +42,7 @@ import java.util.function.Supplier;
 public final class Choreo {
   private static final Gson GSON = new Gson();
   private static final String TRAJECTORY_FILE_EXTENSION = ".traj";
+  private static final String SPEC_VERSION = "v2025.0.0";
 
   private static File CHOREO_DIR = new File(Filesystem.getDeployDirectory(), "choreo");
 
@@ -72,8 +73,13 @@ public final class Choreo {
       } else if (projectFiles.length > 1) {
         throw new RuntimeException("Found multiple project files in deploy directory");
       }
+      FileReader reader = new FileReader(projectFiles[0]);
+      JsonObject json = GSON.fromJson(reader, JsonObject.class);
+      if (!SPEC_VERSION.equals(json.get("version").getAsString())) {
+        throw new RuntimeException("Project file had wrong version, should be " + SPEC_VERSION);
+      }
       LAZY_PROJECT_FILE =
-          Optional.of(GSON.fromJson(new FileReader(projectFiles[0]), ProjectFile.class));
+          Optional.of(GSON.fromJson(reader, ProjectFile.class));
     } catch (JsonSyntaxException ex) {
       throw new RuntimeException("Could not parse project file", ex);
     } catch (FileNotFoundException ex) {
@@ -147,6 +153,10 @@ public final class Choreo {
       String str, ProjectFile projectFile) {
     JsonObject wholeTrajectory = GSON.fromJson(str, JsonObject.class);
     String name = wholeTrajectory.get("name").getAsString();
+    String version = wholeTrajectory.get("version").getAsString();
+    if (!SPEC_VERSION.equals(version)) {
+      throw new RuntimeException(name + ": Wrong trajectory version: " + version + ", expected " + SPEC_VERSION);
+    }
     EventMarker[] events = GSON.fromJson(wholeTrajectory.get("events"), EventMarker[].class);
     JsonObject trajectoryObj = wholeTrajectory.getAsJsonObject("trajectory");
     Integer[] splits = GSON.fromJson(trajectoryObj.get("splits"), Integer[].class);
