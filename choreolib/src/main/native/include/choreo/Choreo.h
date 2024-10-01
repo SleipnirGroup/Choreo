@@ -13,9 +13,9 @@
 #include <wpi/MemoryBuffer.h>
 #include <wpi/json.h>
 
+#include "choreo/SpecVersion.h"
 #include "choreo/trajectory/ProjectFile.h"
 #include "choreo/trajectory/Trajectory.h"
-#include "choreo/SpecVersion.h"
 
 namespace choreo {
 

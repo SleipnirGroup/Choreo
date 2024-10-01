@@ -77,7 +77,8 @@ public final class Choreo {
       JsonObject json = GSON.fromJson(reader, JsonObject.class);
       String version = json.get("version").getAsString();
       if (!SPEC_VERSION.equals(version)) {
-        throw new RuntimeException("Project file had wrong version. Found " + version + ", expected " + SPEC_VERSION);
+        throw new RuntimeException(
+            "Project file had wrong version. Found " + version + ", expected " + SPEC_VERSION);
       }
       LAZY_PROJECT_FILE = Optional.of(GSON.fromJson(reader, ProjectFile.class));
     } catch (JsonSyntaxException ex) {
