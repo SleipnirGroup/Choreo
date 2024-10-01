@@ -190,14 +190,15 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
 
       Translation2v a_n = WheelToChassisSpeeds(aL.at(index), aR.at(index));
 
-      problem.SubjectTo(x_n_1 + v_n * dt_sgmt == x_n);
-      problem.SubjectTo(v_n_1 + a_n * dt_sgmt == v_n);
-      problem.SubjectTo(theta_n_1 + omega_n * dt_sgmt == theta_n);
+      problem.SubjectTo(x_n_1 + v_n * dt_sgmt + a_n * 0.5 * dt_sgmt * dt_sgmt ==
+                        x_n);
 
-      auto lhs = theta_n - theta_n_1;
+      auto lhs = heading.at(index) - heading.at(index - 1);
       auto rhs = omega_n * dt_sgmt;
-      problem.SubjectTo(lhs.Cos() == slp::cos(rhs));
-      problem.SubjectTo(lhs.Sin() == slp::sin(rhs));
+      problem.SubjectTo(slp::cos(lhs) == slp::cos(rhs));
+      problem.SubjectTo(slp::sin(lhs) == slp::sin(rhs));
+
+      problem.SubjectTo(v_n_1 + a_n * dt_sgmt == v_n);
     }
   }
 
