@@ -65,8 +65,8 @@ class Choreo {
       }
 
       wpi::json json = wpi::json::parse(fileBuffer->GetCharBuffer());
-      if (SPEC_VERSION != json["version"]) {
-        throw "Project file has wrong version, should be " + SPEC_VERSION;
+      if (kSpecVersion != json["version"]) {
+        throw "Project file has wrong version, should be " + kSpecVersion;
       }
       choreo::ProjectFile resultProjectFile;
       choreo::from_json(json, resultProjectFile);
@@ -124,8 +124,8 @@ class Choreo {
   static std::optional<choreo::Trajectory<SampleType>> LoadTrajectoryString(
       std::string_view trajectoryJsonString) {
     wpi::json json = wpi::json::parse(trajectoryJsonString);
-    if (SPEC_VERSION != json["version"]) {
-      throw "Trajectory has wrong version, should be " + SPEC_VERSION;
+    if (kSpecVersion != json["version"]) {
+      throw "Trajectory has wrong version, should be " + kSpecVersion;
     }
     choreo::Trajectory<SampleType> trajectory;
     choreo::from_json(json, trajectory);
