@@ -250,6 +250,7 @@ export const doc = DocumentStore.create(
       defaultPath: undefined
     },
     name: "Untitled",
+    //@ts-expect-error this is recommended, not sure why it doesn't work
     variables: castToReferenceSnapshot(variables),
     selectedSidebarItem: undefined
   },
