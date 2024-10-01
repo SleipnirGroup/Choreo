@@ -15,6 +15,7 @@
 
 #include "choreo/trajectory/ProjectFile.h"
 #include "choreo/trajectory/Trajectory.h"
+#include "choreo/SpecVersion.h"
 
 namespace choreo {
 
