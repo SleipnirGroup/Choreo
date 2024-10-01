@@ -1,6 +1,6 @@
 {
   "name": "choreo",
-  "version": "2025.0.0-alpha1",
+  "version": "2025.0.0-alpha-1",
   "description": "A graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics Competition.",
   "homepage": "https://github.com/SleipnirGroup/Choreo",
   "bugs": {
