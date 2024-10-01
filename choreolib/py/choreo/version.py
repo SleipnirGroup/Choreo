@@ -37,5 +37,7 @@ def get_version():
         if match.group(2):
             version += f".dev{match.group(3)}"
         elif match.group(4):
-            version += match.group(5).replace("alpha", "a").replace("beta", "b")
+            version += match.group(5).replace("alpha", "a").replace(
+                "beta", "b"
+            ) + match.group(7)
         return version
