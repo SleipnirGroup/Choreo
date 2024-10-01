@@ -1,8 +1,8 @@
 // Copyright (c) Choreo contributors
 
 #pragma once
-#include <string_view>
+#include <string>
 
 namespace choreo {
-constexpr std::string_view SPEC_VERSION = "v2025.0.0";
+const std::string SPEC_VERSION = "v2025.0.0";
 }  // namespace choreo
