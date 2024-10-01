@@ -9,7 +9,8 @@ import {
 export const PathListStore = types
   .model("PathListStore", {
     paths: types.map(HolonomicPathStore),
-    activePathUUID: ""
+    activePathUUID: "",
+    defaultPath: types.maybe(HolonomicPathStore)
   })
   .actions((self) => {
     let pathExporter: (uuid: string) => void = (_uuid) => {};
@@ -58,6 +59,36 @@ export const PathListStore = types
         if (self.pathUUIDs.includes(uuid)) {
           self.activePathUUID = uuid;
         }
+      },
+      addDefaultPath() {
+        const usedName = "No Path";
+        const newUUID = crypto.randomUUID();
+        const env = getEnv<Env>(self);
+        const path = HolonomicPathStore.create({
+          uuid: newUUID,
+          name: usedName,
+          params: {
+            constraints: [],
+            waypoints: [],
+            targetDt: env.vars().createExpression("0.1 s", "Time")
+          },
+          ui: {
+            visibleWaypointsEnd: 0,
+            visibleWaypointsStart: 0
+          },
+          snapshot: {
+            waypoints: [],
+            constraints: [],
+            targetDt: 0.1
+          },
+          trajectory: {
+            waypoints: [],
+            samples: [],
+            splits: [],
+            markers: []
+          }
+        });
+        self.defaultPath = path;
       },
       addPath(
         name: string,
@@ -155,8 +186,7 @@ export const PathListStore = types
     get activePath(): IHolonomicPathStore {
       let path = self.paths.get(self.activePathUUID);
       if (path === undefined) {
-        self.addPath("New Path", true);
-        path = self.paths.get(self.activePathUUID);
+        path = self.defaultPath;
       }
       return path as IHolonomicPathStore;
     }

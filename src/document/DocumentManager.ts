@@ -246,14 +246,16 @@ export const doc = DocumentStore.create(
       EXPR_DEFAULTS
     ),
     type: "Swerve",
-    pathlist: {},
+    pathlist: {
+      defaultPath: undefined
+    },
     name: "Untitled",
-    //@ts-expect-error this is recommended, not sure why it doesn't work
     variables: castToReferenceSnapshot(variables),
     selectedSidebarItem: undefined
   },
   env
 );
+doc.pathlist.addDefaultPath();
 function withoutUndo(callback: any) {
   doc.history.withoutUndo(callback);
 }
@@ -610,6 +612,8 @@ export async function openProject(projectPath: OpenFilePayload) {
       throw "Internal error. Check console logs.";
     }
     doc.deserializeChor(project);
+    doc.pathlist.paths.clear();
+    console.log(trajectories);
     trajectories.forEach((trajectory) => {
       doc.pathlist.addPath(trajectory.name, true, trajectory);
     });
