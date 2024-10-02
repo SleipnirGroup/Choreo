@@ -28,6 +28,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,17 +74,21 @@ public final class Choreo {
       } else if (projectFiles.length > 1) {
         throw new RuntimeException("Found multiple project files in deploy directory");
       }
-      FileReader reader = new FileReader(projectFiles[0]);
-      JsonObject json = GSON.fromJson(reader, JsonObject.class);
+      BufferedReader reader = new BufferedReader(new FileReader(projectFiles[0]));
+      String str = reader.lines().reduce("", (a, b) -> a + b);
+      reader.close();
+      JsonObject json = GSON.fromJson(str, JsonObject.class);
       String version = json.get("version").getAsString();
       if (!SPEC_VERSION.equals(version)) {
         throw new RuntimeException(
             ".chor project file: Wrong version " + version + ". Expected " + SPEC_VERSION);
       }
-      LAZY_PROJECT_FILE = Optional.of(GSON.fromJson(reader, ProjectFile.class));
+      LAZY_PROJECT_FILE = Optional.of(GSON.fromJson(str, ProjectFile.class));
     } catch (JsonSyntaxException ex) {
       throw new RuntimeException("Could not parse project file", ex);
     } catch (FileNotFoundException ex) {
+      throw new RuntimeException("Could not find project file", ex);
+    } catch (IOException ex) {
       throw new RuntimeException("Could not find project file", ex);
     }
     return LAZY_PROJECT_FILE.get();
