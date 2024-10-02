@@ -77,12 +77,12 @@ export const ChoreoTrajectoryStore = types
     }
   }))
   .actions((self) => ({
-    deserialize(set: Output) {
-      self.waypoints = set.waypoints;
-      self.splits = set.splits;
-      self.samples = set.samples;
+    deserialize(ser: Output) {
+      self.waypoints = ser.waypoints;
+      self.splits = ser.splits;
+      self.samples = ser.samples;
 
-      self.forcesAvailable = set.forcesAvailable;
+      self.forcesAvailable = ser.forcesAvailable;
     },
     deleteMarkerUUID(uuid: string) {
       const index = self.markers.findIndex((m) => m.uuid === uuid);

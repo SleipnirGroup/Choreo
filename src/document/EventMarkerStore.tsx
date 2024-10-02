@@ -84,16 +84,16 @@ export const CommandStore = types
     }
   }))
   .actions((self) => ({
-    deserialize(set: PplibCommand<Expr>) {
+    deserialize(ser: PplibCommand<Expr>) {
       self.commands.clear();
       self.name = "";
-      self.type = set.type;
-      if (set.type === "named") {
-        self.name = set.data.name;
-      } else if (set.type === "wait") {
-        self.time.deserialize(set.data.waitTime);
+      self.type = ser.type;
+      if (ser.type === "named") {
+        self.name = ser.data.name;
+      } else if (ser.type === "wait") {
+        self.time.deserialize(ser.data.waitTime);
       } else {
-        set.data.commands.forEach((c) => {
+        ser.data.commands.forEach((c) => {
           const command: ICommandStore =
             getEnv<Env>(self).create.CommandStore(c);
           self.commands.push(command);
