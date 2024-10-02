@@ -1,7 +1,6 @@
 # Auto Routines
 
-Choreolib provides a higher level API to make it easier to create competitive and complex auto routines inside your robot code.
-This is done by providing the `AutoFactory` class.
+ChoreoLib provides the `AutoFactory` class as higher level API to make it easier to create competitive and complex auto routines inside your robot code.
 
 ## Triggers vs Composition
 

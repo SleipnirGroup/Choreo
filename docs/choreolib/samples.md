@@ -1,7 +1,6 @@
 # Samples
 
-Choreolib supports swerve and differential drive systems.
-The only usage difference between using swerve and differential is the type of the sample used.
+ChoreoLib supports swerve and differential drive systems. The only usage difference between using swerve and differential is the type of the sample used.
 
 ## Swerve Drive
 
