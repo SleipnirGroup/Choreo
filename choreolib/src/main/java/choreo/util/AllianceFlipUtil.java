@@ -102,7 +102,7 @@ public class AllianceFlipUtil {
   private AllianceFlipUtil() {}
 
   /**
-   * Get the flipper that is currently active for flipping coordinates. It's reccomended not to
+   * Get the flipper that is currently active for flipping coordinates. It's recommended not to
    * store this locally as the flipper may change.
    *
    * @return The active flipper.

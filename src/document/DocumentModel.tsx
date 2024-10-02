@@ -107,12 +107,12 @@ export const DocumentStore = types
     history: UndoManager.create({}, { targetStore: self })
   }))
   .actions((self) => ({
-    deserializeChor(ser: Project) {
-      self.name = ser.name;
-      self.variables.deserialize(ser.variables);
-      self.robotConfig.deserialize(ser.config);
+    deserializeChor(set: Project) {
+      self.name = set.name;
+      self.variables.deserialize(set.variables);
+      self.robotConfig.deserialize(set.config);
       self.pathlist.paths.clear();
-      self.type = ser.type;
+      self.type = set.type;
     },
     setName(name: string) {
       self.name = name;

@@ -269,14 +269,14 @@ export const ChoreoPathStore = types
     }
   }))
   .actions((self) => ({
-    deserialize(ser: ChoreoPath<Expr>) {
+    deserialize(set: ChoreoPath<Expr>) {
       self.waypoints.clear();
-      ser.waypoints.forEach((point: Waypoint<Expr>, _index: number): void => {
+      set.waypoints.forEach((point: Waypoint<Expr>, _index: number): void => {
         const waypoint = self.addWaypoint();
         waypoint.deserialize(point);
       });
       self.constraints.clear();
-      ser.constraints.forEach((saved: Constraint) => {
+      set.constraints.forEach((saved: Constraint) => {
         const from = self.savedWaypointIdToWaypointId(saved.from);
         if (from === undefined) {
           return;
@@ -290,7 +290,7 @@ export const ChoreoPathStore = types
           saved.data.props
         );
       });
-      self.targetDt.deserialize(ser.targetDt);
+      self.targetDt.deserialize(set.targetDt);
     }
   }));
 

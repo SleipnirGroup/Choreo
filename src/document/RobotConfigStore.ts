@@ -74,10 +74,10 @@ export const BumperStore = types
     }
   }))
   .actions((self) => ({
-    deserialize(ser: Bumper<Expr>) {
-      self.front.deserialize(ser.front);
-      self.back.deserialize(ser.back);
-      self.side.deserialize(ser.side);
+    deserialize(set: Bumper<Expr>) {
+      self.front.deserialize(set.front);
+      self.back.deserialize(set.back);
+      self.side.deserialize(set.side);
     }
   }));
 
@@ -101,9 +101,9 @@ export const ModuleStore = types
     }
   }))
   .actions((self) => ({
-    deserialize(ser: Module<Expr>) {
-      self.x.deserialize(ser.x);
-      self.y.deserialize(ser.y);
+    deserialize(set: Module<Expr>) {
+      self.x.deserialize(set.x);
+      self.y.deserialize(set.y);
     }
   }));
 export const RobotConfigStore = types

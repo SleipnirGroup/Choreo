@@ -95,11 +95,11 @@ export const HolonomicPathStore = types
   })
   .actions((self) => {
     return {
-      deserialize(ser: Trajectory) {
-        self.name = ser.name;
-        self.snapshot = ser.snapshot;
-        self.params.deserialize(ser.params);
-        self.trajectory.deserialize(ser.trajectory);
+      deserialize(set: Trajectory) {
+        self.name = set.name;
+        self.snapshot = set.snapshot;
+        self.params.deserialize(set.params);
+        self.trajectory.deserialize(set.trajectory);
       }
     };
   })

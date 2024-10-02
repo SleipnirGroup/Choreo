@@ -58,8 +58,8 @@ export type ConstraintDataStore<
   DataStoreProps<K>,
   ConstraintSetters<K> & {
     serialize: D;
-    deserialize: (ser: D) => void;
-    deserPartial: (ser: Partial<D["props"]>) => void;
+    deserialize: (set: D) => void;
+    deserPartial: (set: Partial<D["props"]>) => void;
   }
 >;
 
@@ -164,11 +164,11 @@ function createDataStore<
       }
     }))
     .actions((self) => ({
-      deserialize(ser: D) {
-        deserialize(self, ser.props);
+      deserialize(set: D) {
+        deserialize(self, set.props);
       },
-      deserPartial(ser: Partial<D["props"]>) {
-        deserPartial(self, ser);
+      deserPartial(set: Partial<D["props"]>) {
+        deserPartial(self, set);
       }
     }));
   //@ts-expect-error just force ts to acknowledge that it's correct

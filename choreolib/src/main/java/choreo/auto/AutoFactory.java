@@ -134,7 +134,7 @@ public class AutoFactory {
   private final Optional<TrajectoryLogger<? extends TrajectorySample<?>>> trajectoryLogger;
 
   /**
-   * Its reccomended to use the {@link Choreo#createAutoFactory} to create a new instance of this
+   * Its recommended to use the {@link Choreo#createAutoFactory} to create a new instance of this
    * class.
    *
    * @param <SampleType> {@link Choreo#createAutoFactory}

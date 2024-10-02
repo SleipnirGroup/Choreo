@@ -1737,7 +1737,7 @@ OBFUSCATE_EMAILS       = YES
 
 # If the HTML_FORMULA_FORMAT option is set to svg, doxygen will use the pdf2svg
 # tool (see https://github.com/dawbarton/pdf2svg) or inkscape (see
-# https://inkscape.org) to generate formulas as SVG images instead of PNGs for
+# https://inkscape.org) to generate formulas as SVG images instead of ONGs for
 # the HTML output. These images will generally look nicer at scaled resolutions.
 # Possible values are: png (the default) and svg (looks nicer but requires the
 # pdf2svg or inkscape tool).
