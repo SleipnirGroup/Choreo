@@ -56,7 +56,7 @@ export const PathListStore = types
         return usedName;
       },
       setActivePathUUID(uuid: string) {
-        if (self.pathUUIDs.includes(uuid)) {
+        if (self.pathUUIDs.includes(uuid) || uuid === self.defaultPath!.uuid) {
           self.activePathUUID = uuid;
         }
       },
@@ -88,7 +88,9 @@ export const PathListStore = types
             markers: []
           }
         });
+        path.setExporter((uuid) => {});
         self.defaultPath = path;
+        self.activePathUUID = path.uuid;
       },
       addPath(
         name: string,
@@ -160,12 +162,12 @@ export const PathListStore = types
   .actions((self) => {
     return {
       deletePath(uuid: string) {
-        self.paths.delete(uuid);
-        if (self.paths.size === 0) {
-          self.addPath("New Path", true);
+        if (self.paths.size === 1) {
+          self.setActivePathUUID(self.defaultPath!.uuid);
         } else if (self.activePathUUID === uuid) {
           self.setActivePathUUID(self.pathUUIDs[0]);
         }
+        self.paths.delete(uuid);
       },
       duplicatePath(uuid: string) {
         if (self.pathUUIDs.includes(uuid)) {
