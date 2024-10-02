@@ -124,7 +124,7 @@ class TRAJOPT_DLLEXPORT PathBuilder {
   }
 
   /**
-   * Add a rectanglar bumper to a list used when applying
+   * Add a rectangular bumper to a list used when applying
    * obstacle constraints.
    *
    * @param front Distance in meters from center to front bumper edge

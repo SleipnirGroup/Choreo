@@ -184,7 +184,7 @@ pub fn calculate_adjusted_headings(trajectory: &TrajectoryFile) -> ChoreoResult<
             if num_pose_wpts_in_zero_ang_vel_sgmt > 1 {
                 return Err(ChoreoError::HeadingConflict(
                     idx_mult_pose + 1,
-                    "Multiple Pose waypoints within 0 maxAngVel Contraints".to_string(),
+                    "Multiple Pose waypoints within 0 maxAngVel Constraints".to_string(),
                 ));
             }
         } else {

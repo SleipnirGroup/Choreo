@@ -134,7 +134,7 @@ public class AutoFactory {
   private final Optional<TrajectoryLogger<? extends TrajectorySample<?>>> trajectoryLogger;
 
   /**
-   * Its reccomended to use the {@link Choreo#createAutoFactory} to create a new instance of this
+   * Its recommended to use the {@link Choreo#createAutoFactory} to create a new instance of this
    * class.
    *
    * @param <SampleType> {@link Choreo#createAutoFactory}
@@ -271,7 +271,7 @@ public class AutoFactory {
    *
    * <p>{@link #trajectoryCommand} and {@link #trajectory} methods should not be mixed in the same
    * auto routine. {@link #trajectoryCommand} is used as an escape hatch for teams that don't need
-   * the benefits of the {@link #trajectory} method and its {@link Trigger} api. {@link
+   * the benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link
    * #trajectoryCommand} does not invoke bindings added via calling {@link #bind} or {@link
    * ChoreoAutoBindings} passed into the factory constructor.
    *
@@ -289,7 +289,7 @@ public class AutoFactory {
    *
    * <p>{@link #trajectoryCommand} and {@link #trajectory} methods should not be mixed in the same
    * auto routine. {@link #trajectoryCommand} is used as an escape hatch for teams that don't need
-   * the benefits of the {@link #trajectory} method and its {@link Trigger} api. {@link
+   * the benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link
    * #trajectoryCommand} does not invoke bindings added via calling {@link #bind} or {@link
    * ChoreoAutoBindings} passed into the factory constructor.
    *
@@ -308,7 +308,7 @@ public class AutoFactory {
    *
    * <p>{@link #trajectoryCommand} and {@link #trajectory} methods should not be mixed in the same
    * auto routine. {@link #trajectoryCommand} is used as an escape hatch for teams that don't need
-   * the benefits of the {@link #trajectory} method and its {@link Trigger} api. {@link
+   * the benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link
    * #trajectoryCommand} does not invoke bindings added via calling {@link #bind} or {@link
    * ChoreoAutoBindings} passed into the factory constructor.
    *
