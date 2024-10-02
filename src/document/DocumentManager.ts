@@ -614,7 +614,6 @@ export async function openProject(projectPath: OpenFilePayload) {
     }
     doc.deserializeChor(project);
     doc.pathlist.paths.clear();
-    console.log(trajectories);
     trajectories.forEach((trajectory) => {
       doc.pathlist.addPath(trajectory.name, true, trajectory);
     });
