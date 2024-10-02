@@ -19,7 +19,7 @@ import java.util.HashMap;
  * <p>If every vendor used this, the user would be able to specify the year and no matter the year
  * the vendor's code is from, the user would be able to flip as expected.
  *
- * <p>This api still allows vendors and users to match case against the flipping variant as a way to
+ * <p>This API still allows vendors and users to match case against the flipping variant as a way to
  * specially handle cases or throw errors if a variant is explicitly not supported.
  */
 public class AllianceFlipUtil {

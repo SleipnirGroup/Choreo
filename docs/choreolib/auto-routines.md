@@ -1,6 +1,6 @@
 # Auto Routines
 
-Choreolib provides a higher level api to make it easier to create competitive and complex auto routines inside your robot code.
+Choreolib provides a higher level API to make it easier to create competitive and complex auto routines inside your robot code.
 This is done by providing the `AutoFactory` class.
 
 ## Triggers vs Composition
@@ -227,7 +227,7 @@ public Command fivePieceAutoCompositionSeg(AutoFactory factory) {
           new ConditionalCommand(
               deadline(m1ToS1, aim()).andThen(shootIfGp()),
               deadline(m1ToM2, intake()).andThen(deadline(m2ToS1, aim()), shootIfGp()),
-              yeGp() // if you arent using the triggers api these wouldnt need a custom loop
+              yeGp() // if you aren't using the triggers API these wouldn't need a custom loop
               ),
           deadline(s1ToC2, intake(), aim()),
           shootIfGp(),

@@ -2,7 +2,7 @@
 
 Choreolib aims to support a wide range of use cases.
 Many teams like to use their own path following structure and this was somewhat encouraged in 2023.
-To not leave these teams behind, Choreolib provides a lower level api that allows you to directly load trajectories
+To not leave these teams behind, Choreolib provides a lower level API that allows you to directly load trajectories
 and use them in your own path following code.
 
 ``` { .java .select }
