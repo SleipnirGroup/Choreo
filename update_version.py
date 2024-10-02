@@ -9,11 +9,15 @@ from pathlib import Path
 import re
 from typing import Literal, Callable
 
-def default_version_string(v:str, count: str, hash: str, mod: str, num:str) :
+
+def default_version_string(v: str, count: str, hash: str, mod: str, num: str):
     return f"{v}-{mod}-{num}" if len(mod) > 0 else f"{v}-{count}-{hash}"
 
-def cargo_version_string(v:str, count: str, hash: str, mod: str, num:str) :
+
+def cargo_version_string(v: str, count: str, hash: str, mod: str, num: str):
     return f"{v}-{mod}.{num}" if len(mod) > 0 else v
+
+
 @dataclass(frozen=True, slots=True)
 class VersionLocation:
     relative_path: Path
@@ -22,7 +26,6 @@ class VersionLocation:
     function: Callable[[str, str, str, str, str], str] = default_version_string
     prefix: str = ""
     suffix: str = ""
-    
 
 
 LOCATIONS: list[VersionLocation] = [
@@ -46,20 +49,20 @@ LOCATIONS: list[VersionLocation] = [
         relative_path=Path("src-tauri/Cargo.toml"),
         version_path=["package", "version"],
         file_format="toml",
-        function=cargo_version_string
+        function=cargo_version_string,
     ),
     VersionLocation(
         relative_path=Path("src-cli/Cargo.toml"),
         version_path=["package", "version"],
         file_format="toml",
-        function=cargo_version_string
+        function=cargo_version_string,
     ),
     VersionLocation(
         relative_path=Path("src-core/Cargo.toml"),
         version_path=["package", "version"],
         file_format="toml",
-        function=cargo_version_string
-    )
+        function=cargo_version_string,
+    ),
 ]
 
 
@@ -72,7 +75,7 @@ def update_version(version: str) -> None:
     # v2025.0.0-beta-2
     m = re.search(
         r"""
-        ^v 
+        ^v
         ( [0-9]+\.[0-9]+\.[0-9]+ ) # group 1 semver
         ( -([0-9]+) )? # group 3 commits since last tag
         ( -([a-z\d]+) )? # group 5 commit hash (if group 2) or alpha or beta (if not group 2)
@@ -95,7 +98,11 @@ def update_version(version: str) -> None:
             with open(file_path, "r") as f:
                 data = json.load(f)
             og = data
-            version_str = location.prefix + location.function(version, count, hash, pre, num) + location.suffix
+            version_str = (
+                location.prefix
+                + location.function(version, count, hash, pre, num)
+                + location.suffix
+            )
             try:
                 for key in location.version_path[:-1]:
                     data = data[key]
@@ -113,7 +120,11 @@ def update_version(version: str) -> None:
             with open(file_path, "r") as f:
                 data = tomlkit.load(f)
             og = data
-            version_str = location.prefix + location.function(version, count, hash, pre, num) + location.suffix
+            version_str = (
+                location.prefix
+                + location.function(version, count, hash, pre, num)
+                + location.suffix
+            )
             try:
                 for key in location.version_path[:-1]:
                     data = data[key]
