@@ -162,7 +162,6 @@ export const PathListStore = types
   .actions((self) => {
     return {
       deletePath(uuid: string) {
-        console.log(self.paths);
         if (self.paths.size === 1) {
           self.setActivePathUUID(self.defaultPath!.uuid);
         } else if (self.activePathUUID === uuid) {
