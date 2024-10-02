@@ -674,7 +674,7 @@ export async function newProject() {
   const newChor = await Commands.defaultProject();
   doc.deserializeChor(newChor);
   uiState.loadPathGradientFromLocalStorage();
-  doc.pathlist.addPath("New Path");
+  //doc.pathlist.addPath("New Path");
   doc.history.clear();
 }
 export function select(item: SelectableItemTypes) {
