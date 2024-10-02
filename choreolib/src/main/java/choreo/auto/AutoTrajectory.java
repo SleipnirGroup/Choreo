@@ -342,7 +342,7 @@ public class AutoTrajectory {
       foundEvent = true;
     }
 
-    // The user probably expects an event to exist if theyre trying to do something at that event,
+    // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
     if (!foundEvent) {
       DriverStation.reportWarning("Event \"" + eventName + "\" not found for " + name, true);
@@ -392,7 +392,7 @@ public class AutoTrajectory {
 
     for (var event : trajectory.getEvents(eventName)) {
       // This could create alot of objects, could be done a more efficient way
-      // with having it all be 1 trigger that just has a list of posess and checks each one each
+      // with having it all be 1 trigger that just has a list of possess and checks each one each
       // cycle or something like that.
       // If choreo starts proposing memory issues we can look into this.
       Pose2d pose = trajectory.sampleAt(event.timestamp, mirrorTrajectory.getAsBoolean()).getPose();
@@ -400,7 +400,7 @@ public class AutoTrajectory {
       foundEvent = true;
     }
 
-    // The user probably expects an event to exist if theyre trying to do something at that event,
+    // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
     if (!foundEvent) {
       DriverStation.reportWarning("Event \"" + eventName + "\" not found for " + name, true);
