@@ -393,9 +393,6 @@ pub struct Trajectory {
     /// First and last samples are never in this list even if the split toggle is set
     /// for first or last waypoints
     pub splits: Vec<usize>,
-    /// Whether the forces are available to use in the samples.
-    #[serde(default)]
-    pub forces_available: bool,
 }
 
 /// A structure representing a `.traj` file.
