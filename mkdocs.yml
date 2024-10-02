@@ -94,7 +94,9 @@ nav:
       - Estimating Moment of Inertia: usage/estimating-moi.md
   - ChoreoLib:
       - Installation: choreolib/installation.md
-      - Usage: choreolib/usage.md
+      - Basic Usage: choreolib/basic-usage.md
+      - Samples: choreolib/samples.md
+      - Auto Routines: choreolib/auto-routines.md
       - Java API: api/choreolib/java/index.html
       - C++ API: api/choreolib/cpp/index.html
   - TrajoptLib:
