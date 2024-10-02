@@ -12,7 +12,6 @@ export const ChoreoTrajectoryStore = types
     waypoints: types.frozen<number[]>(),
     samples: types.frozen<SwerveSample[] | DifferentialSample[]>(),
     splits: types.frozen<number[]>(),
-    forcesAvailable: false,
     markers: types.array(EventMarkerStore)
   })
   .views((self) => ({
@@ -71,8 +70,7 @@ export const ChoreoTrajectoryStore = types
       return {
         waypoints: self.waypoints,
         samples: self.samples,
-        splits: self.splits,
-        forcesAvailable: self.forcesAvailable
+        splits: self.splits
       };
     }
   }))
@@ -81,8 +79,6 @@ export const ChoreoTrajectoryStore = types
       self.waypoints = ser.waypoints;
       self.splits = ser.splits;
       self.samples = ser.samples;
-
-      self.forcesAvailable = ser.forcesAvailable;
     },
     deleteMarkerUUID(uuid: string) {
       const index = self.markers.findIndex((m) => m.uuid === uuid);
@@ -124,9 +120,6 @@ export const ChoreoTrajectoryStore = types
     },
     setWaypoints(waypoints: number[]) {
       self.waypoints = waypoints;
-    },
-    setForcesAvailable(use: boolean) {
-      self.forcesAvailable = use;
     }
   }));
 

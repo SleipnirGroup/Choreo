@@ -127,7 +127,6 @@ export interface Output {
   waypoints: number[];
   samples: SwerveSample[] | DifferentialSample[];
   splits: number[];
-  forcesAvailable: boolean;
 }
 
 export interface Trajectory {

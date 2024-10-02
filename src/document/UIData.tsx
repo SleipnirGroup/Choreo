@@ -10,7 +10,6 @@ import {
 } from "@mui/icons-material";
 import { ReactElement } from "react";
 import Waypoint from "../assets/Waypoint";
-import ExportConfigPanel from "../components/config/ExportConfigPanel";
 import KeyboardShortcutsPanel from "../components/config/KeyboardShortcutsPanel";
 import RobotConfigPanel from "../components/config/robotconfig/RobotConfigPanel";
 import {
@@ -174,10 +173,6 @@ export const SETTINGS_TABS = [
   {
     name: "Robot Config",
     component: () => <RobotConfigPanel></RobotConfigPanel>
-  },
-  {
-    name: "Export Config",
-    component: () => <ExportConfigPanel></ExportConfigPanel>
   },
   {
     name: "Controls",
