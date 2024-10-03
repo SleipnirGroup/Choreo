@@ -102,7 +102,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   const double maxDrivetrainVelocity =
       path.drivetrain.wheelRadius * path.drivetrain.wheelMaxAngularVelocity;
   const auto maxAngVel = maxDrivetrainVelocity * 2 / path.drivetrain.trackwidth;
-  const auto maxAngAccel = maxAccel / path.drivetrain.trackwidth;
+  const auto maxAngAccel = maxAccel * 2 / path.drivetrain.trackwidth;
   for (size_t sgmtIndex = 0; sgmtIndex < Ns.size(); ++sgmtIndex) {
     auto& dt_sgmt = dts.at(sgmtIndex);
     auto N_sgmt = Ns.at(sgmtIndex);
@@ -159,14 +159,16 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
           (vR.at(index - 1) - vL.at(index - 1)) / path.drivetrain.trackwidth;
 
       Translation2v a_n = WheelToChassisSpeeds(aL.at(index), aR.at(index));
+      a_n = a_n.RotateBy(theta_n);
       Translation2v a_n_1 =
           WheelToChassisSpeeds(aL.at(index - 1), aR.at(index - 1));
+      a_n_1 = a_n_1.RotateBy(theta_n_1);
 
       problem.SubjectTo(
           x_n_1 + v_n_1 * dt_sgmt + a_n_1 * 0.5 * dt_sgmt * dt_sgmt == x_n);
 
       auto lhs = heading.at(index) - heading.at(index - 1);
-      auto rhs = omega_n * dt_sgmt;
+      auto rhs = omega_n_1 * dt_sgmt;
       problem.SubjectTo(slp::cos(lhs) == slp::cos(rhs));
       problem.SubjectTo(slp::sin(lhs) == slp::sin(rhs));
 
