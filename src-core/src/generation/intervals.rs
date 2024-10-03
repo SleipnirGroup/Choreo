@@ -126,12 +126,11 @@ pub fn guess_control_interval_count(
 
 fn calculate_trapezoidal_time(distance: f64, max_vel: f64, max_accel: f64) -> f64 {
     // accel + deccel distance = (max_linear_vel * max_linear_vel) / max_linear_accel
-    let time = if distance > (max_vel * max_vel) / max_accel {
+    if distance > (max_vel * max_vel) / max_accel {
         // trapezoid
         distance / max_vel + max_vel / max_accel
     } else {
         // triangle
         2.0 * ((distance * max_accel).sqrt() / max_accel)
-    };
-    time
+    }
 }
