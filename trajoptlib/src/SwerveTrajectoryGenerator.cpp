@@ -16,6 +16,20 @@
 #include "trajopt/util/Cancellation.hpp"
 #include "trajopt/util/TrajoptUtil.hpp"
 
+// Physics notation in this file:
+//
+//   x = linear position
+//   v = linear velocity
+//   a = linear acceleration
+//   θ = heading
+//   ω = angular velocity
+//   α = angular acceleration
+//   F = force
+//   τ = torque
+//   t = time
+//
+// A `d` prefix to one of these means delta.
+
 namespace trajopt {
 
 SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
@@ -49,18 +63,18 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
 
   x.reserve(sampTot);
   y.reserve(sampTot);
-  thetacos.reserve(sampTot);
-  thetasin.reserve(sampTot);
+  cosθ.reserve(sampTot);
+  sinθ.reserve(sampTot);
   vx.reserve(sampTot);
   vy.reserve(sampTot);
-  omega.reserve(sampTot);
+  ω.reserve(sampTot);
   ax.reserve(sampTot);
   ay.reserve(sampTot);
-  alpha.reserve(sampTot);
+  α.reserve(sampTot);
 
   Fx.reserve(sampTot);
   Fy.reserve(sampTot);
-  for (size_t sampIndex = 0; sampIndex < sampTot; ++sampIndex) {
+  for (size_t sampleIndex = 0; sampleIndex < sampTot; ++sampleIndex) {
     auto& _Fx = Fx.emplace_back();
     auto& _Fy = Fy.emplace_back();
     _Fx.reserve(moduleCnt);
@@ -72,14 +86,14 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   for (size_t index = 0; index < sampTot; ++index) {
     x.emplace_back(problem.DecisionVariable());
     y.emplace_back(problem.DecisionVariable());
-    thetacos.emplace_back(problem.DecisionVariable());
-    thetasin.emplace_back(problem.DecisionVariable());
+    cosθ.emplace_back(problem.DecisionVariable());
+    sinθ.emplace_back(problem.DecisionVariable());
     vx.emplace_back(problem.DecisionVariable());
     vy.emplace_back(problem.DecisionVariable());
-    omega.emplace_back(problem.DecisionVariable());
+    ω.emplace_back(problem.DecisionVariable());
     ax.emplace_back(problem.DecisionVariable());
     ay.emplace_back(problem.DecisionVariable());
-    alpha.emplace_back(problem.DecisionVariable());
+    α.emplace_back(problem.DecisionVariable());
 
     for (size_t moduleIndex = 0; moduleIndex < moduleCnt; ++moduleIndex) {
       Fx.at(index).emplace_back(problem.DecisionVariable());
@@ -119,75 +133,79 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   const auto maxAngVel = maxDrivetrainVelocity / maxWheelPositionRadius;
   const auto maxAngAccel = maxAccel / maxWheelPositionRadius;
   for (size_t sgmtIndex = 0; sgmtIndex < Ns.size(); ++sgmtIndex) {
-    auto& dt_sgmt = dts.at(sgmtIndex);
+    auto& dt = dts.at(sgmtIndex);
     auto N_sgmt = Ns.at(sgmtIndex);
-    auto T_sgmt = dt_sgmt * static_cast<int>(N_sgmt);
+    auto T_sgmt = dt * static_cast<int>(N_sgmt);
     T_tot += T_sgmt;
 
-    problem.SubjectTo(dt_sgmt >= 0);
+    problem.SubjectTo(dt >= 0);
 
-    // Use initialGuess and Ns to find the dx, dy, dtheta between wpts
+    // Use initialGuess and Ns to find the dx, dy, dθ between wpts
     const auto sgmt_start = GetIndex(Ns, sgmtIndex);
     const auto sgmt_end = GetIndex(Ns, sgmtIndex + 1);
     const auto dx = initialGuess.x.at(sgmt_end) - initialGuess.x.at(sgmt_start);
     const auto dy = initialGuess.y.at(sgmt_end) - initialGuess.y.at(sgmt_start);
     const auto dist = std::hypot(dx, dy);
-    const auto theta_0 = std::atan2(initialGuess.thetasin.at(sgmt_start),
-                                    initialGuess.thetacos.at(sgmt_start));
-    const auto theta_1 = std::atan2(initialGuess.thetasin.at(sgmt_end),
-                                    initialGuess.thetacos.at(sgmt_end));
-    const auto dtheta = std::abs(AngleModulus(theta_0 - theta_1));
+    const auto θ_0 = std::atan2(initialGuess.thetasin.at(sgmt_start),
+                                initialGuess.thetacos.at(sgmt_start));
+    const auto θ_1 = std::atan2(initialGuess.thetasin.at(sgmt_end),
+                                initialGuess.thetacos.at(sgmt_end));
+    const auto dθ = std::abs(AngleModulus(θ_0 - θ_1));
 
     auto maxLinearVel = maxDrivetrainVelocity;
 
     const auto angularTime =
-        CalculateTrapezoidalTime(dtheta, maxAngVel, maxAngAccel);
+        CalculateTrapezoidalTime(dθ, maxAngVel, maxAngAccel);
     maxLinearVel = std::min(maxLinearVel, dist / angularTime);
 
     const auto linearTime =
         CalculateTrapezoidalTime(dist, maxLinearVel, maxAccel);
     const double sgmtTime = angularTime + linearTime;
 
-    dt_sgmt.SetValue(sgmtTime / N_sgmt);
+    dt.SetValue(sgmtTime / N_sgmt);
   }
   problem.Minimize(std::move(T_tot));
 
   // Apply kinematics constraints
   for (size_t wptIndex = 0; wptIndex < wptCnt - 1; ++wptIndex) {
     size_t N_sgmt = Ns.at(wptIndex);
-    auto dt_sgmt = dts.at(wptIndex);
+    auto dt = dts.at(wptIndex);
 
-    for (size_t sampIndex = 1; sampIndex <= N_sgmt; ++sampIndex) {
-      size_t index = GetIndex(Ns, wptIndex, sampIndex);
+    for (size_t sampleIndex = 0; sampleIndex < N_sgmt; ++sampleIndex) {
+      size_t index = GetIndex(Ns, wptIndex, sampleIndex);
 
-      Translation2v x_n{x.at(index), y.at(index)};
-      Translation2v x_n_1{x.at(index - 1), y.at(index - 1)};
+      Translation2v x_k{x.at(index), y.at(index)};
+      Translation2v x_k_1{x.at(index + 1), y.at(index + 1)};
 
-      Rotation2v theta_n{thetacos.at(index), thetasin.at(index)};
-      Rotation2v theta_n_1{thetacos.at(index - 1), thetasin.at(index - 1)};
+      Rotation2v θ_k{cosθ.at(index), sinθ.at(index)};
+      Rotation2v θ_k_1{cosθ.at(index + 1), sinθ.at(index + 1)};
 
-      Translation2v v_n{vx.at(index), vy.at(index)};
-      Translation2v v_n_1{vx.at(index - 1), vy.at(index - 1)};
+      Translation2v v_k{vx.at(index), vy.at(index)};
+      Translation2v v_k_1{vx.at(index + 1), vy.at(index + 1)};
 
-      auto omega_n = omega.at(index);
-      auto omega_n_1 = omega.at(index - 1);
+      auto ω_k = ω.at(index);
+      auto ω_k_1 = ω.at(index + 1);
 
-      Translation2v a_n{ax.at(index), ay.at(index)};
-      Translation2v a_n_1{ax.at(index - 1), ay.at(index - 1)};
-      auto alpha_n = alpha.at(index);
-      auto alpha_n_1 = alpha.at(index - 1);
+      Translation2v a_k{ax.at(index), ay.at(index)};
+      Translation2v a_k_1{ax.at(index + 1), ay.at(index + 1)};
 
-      problem.SubjectTo(
-          x_n_1 + v_n_1 * dt_sgmt + a_n_1 * 0.5 * dt_sgmt * dt_sgmt == x_n);
-      problem.SubjectTo((theta_n - theta_n_1) == Rotation2v{omega_n * dt_sgmt});
-      problem.SubjectTo(v_n_1 + a_n_1 * dt_sgmt == v_n);
-      problem.SubjectTo(omega_n_1 + alpha_n_1 * dt_sgmt == omega_n);
+      auto α_k = α.at(index);
+      auto α_k_1 = α.at(index + 1);
+
+      // xₖ₊₁ = xₖ + vₖt + 1/2aₖt²
+      // θₖ₊₁ = θₖ + ωₖt
+      // vₖ₊₁ = vₖ + aₖt
+      // ωₖ₊₁ = ωₖ + αₖt
+      problem.SubjectTo(x_k_1 == x_k + v_k * dt + a_k * 0.5 * dt * dt);
+      problem.SubjectTo((θ_k_1 - θ_k) == Rotation2v{ω_k * dt});
+      problem.SubjectTo(v_k_1 == v_k + a_k * dt);
+      problem.SubjectTo(ω_k_1 == ω_k + α_k * dt);
     }
   }
 
   for (size_t index = 0; index < sampTot; ++index) {
-    Rotation2v theta{thetacos.at(index), thetasin.at(index)};
-    Translation2v v{vx.at(index), vy.at(index)};
+    Rotation2v θ_k{cosθ.at(index), sinθ.at(index)};
+    Translation2v v_k{vx.at(index), vy.at(index)};
 
     // Solve for net force
     auto Fx_net = std::accumulate(Fx.at(index).begin(), Fx.at(index).end(),
@@ -201,40 +219,48 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     const auto& wheelMaxTorque = path.drivetrain.wheelMaxTorque;
 
     // Solve for net torque
-    sleipnir::Variable tau_net = 0.0;
+    sleipnir::Variable τ_net = 0.0;
     for (size_t moduleIndex = 0; moduleIndex < path.drivetrain.modules.size();
          ++moduleIndex) {
       const auto& translation = path.drivetrain.modules.at(moduleIndex);
-      auto r = translation.RotateBy(theta);
+      auto r = translation.RotateBy(θ_k);
       Translation2v F{Fx.at(index).at(moduleIndex),
                       Fy.at(index).at(moduleIndex)};
 
-      tau_net += r.Cross(F);
+      τ_net += r.Cross(F);
     }
 
     // Apply module power constraints
-    auto vWrtRobot = v.RotateBy(-theta);
+    auto vWrtRobot = v_k.RotateBy(-θ_k);
     for (size_t moduleIndex = 0; moduleIndex < path.drivetrain.modules.size();
          ++moduleIndex) {
       const auto& translation = path.drivetrain.modules.at(moduleIndex);
 
       Translation2v vWheelWrtRobot{
-          vWrtRobot.X() - translation.Y() * omega.at(index),
-          vWrtRobot.Y() + translation.X() * omega.at(index)};
+          vWrtRobot.X() - translation.Y() * ω.at(index),
+          vWrtRobot.Y() + translation.X() * ω.at(index)};
       double maxWheelVelocity = wheelRadius * wheelMaxAngularVelocity;
+
+      // |v|₂² ≤ vₘₐₓ²
       problem.SubjectTo(vWheelWrtRobot.SquaredNorm() <=
                         maxWheelVelocity * maxWheelVelocity);
 
       Translation2v moduleF{Fx.at(index).at(moduleIndex),
                             Fy.at(index).at(moduleIndex)};
       double maxForce = wheelMaxTorque / wheelRadius;
+
+      // |F|₂² ≤ Fₘₐₓ²
       problem.SubjectTo(moduleF.SquaredNorm() <= maxForce * maxForce);
     }
 
     // Apply dynamics constraints
+    //
+    //   ΣF_xₖ = ma_xₖ
+    //   ΣF_yₖ = ma_yₖ
+    //   Στₖ = Jαₖ
     problem.SubjectTo(Fx_net == path.drivetrain.mass * ax.at(index));
     problem.SubjectTo(Fy_net == path.drivetrain.mass * ay.at(index));
-    problem.SubjectTo(tau_net == path.drivetrain.moi * alpha.at(index));
+    problem.SubjectTo(τ_net == path.drivetrain.moi * α.at(index));
   }
 
   for (size_t wptIndex = 0; wptIndex < wptCnt; ++wptIndex) {
@@ -242,18 +268,14 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       // First index of next wpt - 1
       size_t index = GetIndex(Ns, wptIndex, 0);
 
-      Pose2v pose{
-          x.at(index), y.at(index), {thetacos.at(index), thetasin.at(index)}};
-      Translation2v linearVelocity{vx.at(index), vy.at(index)};
-      auto angularVelocity = omega.at(index);
-      Translation2v linearAcceleration{ax.at(index), ay.at(index)};
-      auto angularAcceleration = alpha.at(index);
+      Pose2v pose_k{x.at(index), y.at(index), {cosθ.at(index), sinθ.at(index)}};
+      Translation2v v_k{vx.at(index), vy.at(index)};
+      auto ω_k = ω.at(index);
+      Translation2v a_k{ax.at(index), ay.at(index)};
+      auto α_k = α.at(index);
 
       std::visit(
-          [&](auto&& arg) {
-            arg.Apply(problem, pose, linearVelocity, angularVelocity,
-                      linearAcceleration, angularAcceleration);
-          },
+          [&](auto&& arg) { arg.Apply(problem, pose_k, v_k, ω_k, a_k, α_k); },
           constraint);
     }
   }
@@ -265,18 +287,15 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       size_t endIndex = GetIndex(Ns, sgmtIndex + 1, 0);
 
       for (size_t index = startIndex; index < endIndex; ++index) {
-        Pose2v pose{
-            x.at(index), y.at(index), {thetacos.at(index), thetasin.at(index)}};
-        Translation2v linearVelocity{vx.at(index), vy.at(index)};
-        auto angularVelocity = omega.at(index);
-        Translation2v linearAcceleration{ax.at(index), ay.at(index)};
-        auto angularAcceleration = alpha.at(index);
+        Pose2v pose_k{
+            x.at(index), y.at(index), {cosθ.at(index), sinθ.at(index)}};
+        Translation2v v_k{vx.at(index), vy.at(index)};
+        auto ω_k = ω.at(index);
+        Translation2v a_k{ax.at(index), ay.at(index)};
+        auto α_k = α.at(index);
 
         std::visit(
-            [&](auto&& arg) {
-              arg.Apply(problem, pose, linearVelocity, angularVelocity,
-                        linearAcceleration, angularAcceleration);
-            },
+            [&](auto&& arg) { arg.Apply(problem, pose_k, v_k, ω_k, a_k, α_k); },
             constraint);
       }
     }
@@ -313,16 +332,16 @@ void SwerveTrajectoryGenerator::ApplyInitialGuess(
   for (size_t sampleIndex = 0; sampleIndex < sampleTotal; ++sampleIndex) {
     x[sampleIndex].SetValue(solution.x[sampleIndex]);
     y[sampleIndex].SetValue(solution.y[sampleIndex]);
-    thetacos[sampleIndex].SetValue(solution.thetacos[sampleIndex]);
-    thetasin[sampleIndex].SetValue(solution.thetasin[sampleIndex]);
+    cosθ[sampleIndex].SetValue(solution.thetacos[sampleIndex]);
+    sinθ[sampleIndex].SetValue(solution.thetasin[sampleIndex]);
   }
 
   vx[0].SetValue(0.0);
   vy[0].SetValue(0.0);
-  omega[0].SetValue(0.0);
+  ω[0].SetValue(0.0);
   ax[0].SetValue(0.0);
   ay[0].SetValue(0.0);
-  alpha[0].SetValue(0.0);
+  α[0].SetValue(0.0);
 
   for (size_t sampleIndex = 1; sampleIndex < sampleTotal; ++sampleIndex) {
     vx[sampleIndex].SetValue(
@@ -332,16 +351,15 @@ void SwerveTrajectoryGenerator::ApplyInitialGuess(
         (solution.y[sampleIndex] - solution.y[sampleIndex - 1]) /
         solution.dt[sampleIndex]);
 
-    double thetacos = solution.thetacos[sampleIndex];
-    double thetasin = solution.thetasin[sampleIndex];
-    double last_thetacos = solution.thetacos[sampleIndex - 1];
-    double last_thetasin = solution.thetasin[sampleIndex - 1];
+    double cosθ = solution.thetacos[sampleIndex];
+    double sinθ = solution.thetasin[sampleIndex];
+    double last_cosθ = solution.thetacos[sampleIndex - 1];
+    double last_sinθ = solution.thetasin[sampleIndex - 1];
 
-    omega[sampleIndex].SetValue(
-        Rotation2d{thetacos, thetasin}
-            .RotateBy(-Rotation2d{last_thetacos, last_thetasin})
-            .Radians() /
-        solution.dt[sampleIndex]);
+    ω[sampleIndex].SetValue(Rotation2d{cosθ, sinθ}
+                                .RotateBy(-Rotation2d{last_cosθ, last_sinθ})
+                                .Radians() /
+                            solution.dt[sampleIndex]);
 
     ax[sampleIndex].SetValue(
         (vx[sampleIndex].Value() - vx[sampleIndex - 1].Value()) /
@@ -349,8 +367,8 @@ void SwerveTrajectoryGenerator::ApplyInitialGuess(
     ay[sampleIndex].SetValue(
         (vy[sampleIndex].Value() - vy[sampleIndex - 1].Value()) /
         solution.dt[sampleIndex]);
-    alpha[sampleIndex].SetValue(
-        (omega[sampleIndex].Value() - omega[sampleIndex - 1].Value()) /
+    α[sampleIndex].SetValue(
+        (ω[sampleIndex].Value() - ω[sampleIndex - 1].Value()) /
         solution.dt[sampleIndex]);
   }
 }
@@ -385,12 +403,11 @@ SwerveSolution SwerveTrajectoryGenerator::ConstructSwerveSolution() {
     return std::vector<std::vector<double>>{std::begin(view), std::end(view)};
   };
 
-  return SwerveSolution{
-      dtPerSample,           vectorValue(x),        vectorValue(y),
-      vectorValue(thetacos), vectorValue(thetasin), vectorValue(vx),
-      vectorValue(vy),       vectorValue(omega),    vectorValue(ax),
-      vectorValue(ay),       vectorValue(alpha),    matrixValue(Fx),
-      matrixValue(Fy)};
+  return SwerveSolution{dtPerSample,       vectorValue(x),    vectorValue(y),
+                        vectorValue(cosθ), vectorValue(sinθ), vectorValue(vx),
+                        vectorValue(vy),   vectorValue(ω),    vectorValue(ax),
+                        vectorValue(ay),   vectorValue(α),    matrixValue(Fx),
+                        matrixValue(Fy)};
 }
 
 }  // namespace trajopt
