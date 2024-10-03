@@ -3,8 +3,8 @@
 package choreo.auto;
 
 import choreo.Choreo;
-import choreo.Choreo.ChoreoTrajectoryCache;
 import choreo.Choreo.ControlFunction;
+import choreo.Choreo.TrajectoryCache;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
@@ -33,18 +33,18 @@ import java.util.function.Supplier;
  * <h2>Example using <code>Trigger</code>s</h2>
  *
  * <pre><code>
- * public Command shootThenMove(ChoreoAutoFactory factory) {
- *   // create a new auto loop to return
+ * public Command shootThenMove(AutoFactory factory) {
+ *   // Create a new auto loop to return
  *   var loop = factory.newLoop();
  *
- *   // create a trajectory that moves the robot 2 meters
- *   ChoreoAutoTrajectory trajectory = factory.trajectory("move2meters", loop);
+ *   // Create a trajectory that moves the robot 2 meters
+ *   AutoTrajectory trajectory = factory.trajectory("move2meters", loop);
  *
- *   // will automatically run the shoot command when the auto loop is first polled
+ *   // Will automatically run the shoot command when the auto loop is first polled
  *   loop.enabled().onTrue(shooter.shoot());
  *
- *   // gets a trigger from the shooter to if the shooter has a note,
- *   // and will run the trajectory command when the shooter does not have a note
+ *   // Gets a trigger from the shooter to if the shooter has a note, and will run the trajectory
+ *   // command when the shooter does not have a note
  *   loop.enabled().and(shooter.hasNote()).onFalse(trajectory.cmd());
  *
  *   return loopcmd().withName("ShootThenMove");
@@ -54,8 +54,8 @@ import java.util.function.Supplier;
  * <h2>Example using <code>CommandGroup</code>s</h2>
  *
  * <pre><code>
- * public Command shootThenMove(ChoreoAutoFactory factory) {
- *   // create a trajectory that moves the robot 2 meters
+ * public Command shootThenMove(AutoFactory factory) {
+ *   // Create a trajectory that moves the robot 2 meters
  *   Command trajectory = factory.trajectoryCommand("move2meters");
  *
  *   return shooter.shoot()
@@ -92,11 +92,11 @@ public class AutoFactory {
       };
 
   /** A class used to bind commands to events in all trajectories created by this factory. */
-  public static class ChoreoAutoBindings {
+  public static class AutoBindings {
     private HashMap<String, Command> bindings = new HashMap<>();
 
     /** Default constructor. */
-    public ChoreoAutoBindings() {}
+    public AutoBindings() {}
 
     /**
      * Binds a command to an event in all trajectories created by the factory using this bindings.
@@ -105,12 +105,12 @@ public class AutoFactory {
      * @param cmd The command to bind to the event.
      * @return The bindings object for chaining.
      */
-    public ChoreoAutoBindings bind(String name, Command cmd) {
+    public AutoBindings bind(String name, Command cmd) {
       bindings.put(name, cmd);
       return this;
     }
 
-    private void merge(ChoreoAutoBindings other) {
+    private void merge(AutoBindings other) {
       bindings.putAll(other.bindings);
     }
 
@@ -124,13 +124,13 @@ public class AutoFactory {
     }
   }
 
-  private final ChoreoTrajectoryCache trajectoryCache = new ChoreoTrajectoryCache();
+  private final TrajectoryCache trajectoryCache = new TrajectoryCache();
   private final Supplier<Pose2d> poseSupplier;
   private final ControlFunction<? extends TrajectorySample<?>> controller;
   private final Consumer<ChassisSpeeds> outputChassisSpeeds;
   private final BooleanSupplier mirrorTrajectory;
   private final Subsystem driveSubsystem;
-  private final ChoreoAutoBindings bindings = new ChoreoAutoBindings();
+  private final AutoBindings bindings = new AutoBindings();
   private final Optional<TrajectoryLogger<? extends TrajectorySample<?>>> trajectoryLogger;
 
   /**
@@ -152,7 +152,7 @@ public class AutoFactory {
       Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
       Subsystem driveSubsystem,
-      ChoreoAutoBindings bindings,
+      AutoBindings bindings,
       Optional<TrajectoryLogger<SampleType>> trajectoryLogger) {
     this.poseSupplier = poseSupplier;
     this.controller = controller;
@@ -273,7 +273,7 @@ public class AutoFactory {
    * auto routine. {@link #trajectoryCommand} is used as an escape hatch for teams that don't need
    * the benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link
    * #trajectoryCommand} does not invoke bindings added via calling {@link #bind} or {@link
-   * ChoreoAutoBindings} passed into the factory constructor.
+   * AutoBindings} passed into the factory constructor.
    *
    * @param trajectoryName The name of the trajectory to use.
    * @return A new auto trajectory.
@@ -291,7 +291,7 @@ public class AutoFactory {
    * auto routine. {@link #trajectoryCommand} is used as an escape hatch for teams that don't need
    * the benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link
    * #trajectoryCommand} does not invoke bindings added via calling {@link #bind} or {@link
-   * ChoreoAutoBindings} passed into the factory constructor.
+   * AutoBindings} passed into the factory constructor.
    *
    * @param trajectoryName The name of the trajectory to use.
    * @param splitIndex The index of the split trajectory to use.
@@ -310,7 +310,7 @@ public class AutoFactory {
    * auto routine. {@link #trajectoryCommand} is used as an escape hatch for teams that don't need
    * the benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link
    * #trajectoryCommand} does not invoke bindings added via calling {@link #bind} or {@link
-   * ChoreoAutoBindings} passed into the factory constructor.
+   * AutoBindings} passed into the factory constructor.
    *
    * @param <SampleType> The type of the trajectory samples.
    * @param trajectory The trajectory to use.
@@ -332,10 +332,10 @@ public class AutoFactory {
   }
 
   /**
-   * The {@link AutoFactory} caches trajectories with a {@link ChoreoTrajectoryCache} to avoid
-   * reloading the same trajectory multiple times. This can have the side effect of keeping a single
-   * copy of every trajectory ever loaded in memory aslong as the factory is loaded. This method
-   * clears the cache of all trajectories.
+   * The {@link AutoFactory} caches trajectories with a {@link TrajectoryCache} to avoid reloading
+   * the same trajectory multiple times. This can have the side effect of keeping a single copy of
+   * every trajectory ever loaded in memory aslong as the factory is loaded. This method clears the
+   * cache of all trajectories.
    *
    * <p><b>Usage Note:</b>
    *
