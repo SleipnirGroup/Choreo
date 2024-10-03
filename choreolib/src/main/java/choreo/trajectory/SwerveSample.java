@@ -11,7 +11,7 @@ import edu.wpi.first.util.struct.Struct;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-/** A single robot sample in a ChoreoTrajectory. */
+/** A single robot sample in a Choreo Trajectory. */
 public class SwerveSample implements TrajectorySample<SwerveSample> {
   private static final double[] EMPTY_MODULE_FORCES = new double[] {0, 0, 0, 0};
 

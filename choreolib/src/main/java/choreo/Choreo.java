@@ -6,7 +6,7 @@ import static edu.wpi.first.util.ErrorMessages.requireNonNullParam;
 
 import choreo.auto.AutoChooser;
 import choreo.auto.AutoFactory;
-import choreo.auto.AutoFactory.ChoreoAutoBindings;
+import choreo.auto.AutoFactory.AutoBindings;
 import choreo.auto.AutoLoop;
 import choreo.auto.AutoTrajectory;
 import choreo.trajectory.DifferentialSample;
@@ -184,23 +184,23 @@ public final class Choreo {
    * A utility for caching loaded trajectories. This allows for loading trajectories only once, and
    * then reusing them.
    */
-  public static class ChoreoTrajectoryCache {
+  public static class TrajectoryCache {
     private final Map<String, Trajectory<?>> cache;
 
-    /** Creates a new ChoreoTrajectoryCache with a normal {@link HashMap} as the cache. */
-    public ChoreoTrajectoryCache() {
+    /** Creates a new TrajectoryCache with a normal {@link HashMap} as the cache. */
+    public TrajectoryCache() {
       cache = new HashMap<>();
     }
 
     /**
-     * Creates a new ChoreoTrajectoryCache with a custom cache.
+     * Creates a new TrajectoryCache with a custom cache.
      *
      * <p>this could be useful if you want to use a concurrent map or a map with a maximum size.
      *
      * @param cache The cache to use.
      */
-    public ChoreoTrajectoryCache(Map<String, Trajectory<?>> cache) {
-      requireNonNullParam(cache, "cache", "ChoreoTrajectoryCache.<init>");
+    public TrajectoryCache(Map<String, Trajectory<?>> cache) {
+      requireNonNullParam(cache, "cache", "TrajectoryCache.<init>");
       this.cache = cache;
     }
 
@@ -216,7 +216,7 @@ public final class Choreo {
      * @see Choreo#loadTrajectory(String)
      */
     public Optional<? extends Trajectory<?>> loadTrajectory(String trajectoryName) {
-      requireNonNullParam(trajectoryName, "trajectoryName", "ChoreoTrajectoryCache.loadTrajectory");
+      requireNonNullParam(trajectoryName, "trajectoryName", "TrajectoryCache.loadTrajectory");
       if (cache.containsKey(trajectoryName)) {
         return Optional.of(cache.get(trajectoryName));
       } else {
@@ -243,7 +243,7 @@ public final class Choreo {
      * @see Choreo#loadTrajectory(String)
      */
     public Optional<? extends Trajectory<?>> loadTrajectory(String trajectoryName, int splitIndex) {
-      requireNonNullParam(trajectoryName, "trajectoryName", "ChoreoTrajectoryCache.loadTrajectory");
+      requireNonNullParam(trajectoryName, "trajectoryName", "TrajectoryCache.loadTrajectory");
       // make the key something that could never possibly be a valid trajectory name
       String key = trajectoryName + ".:." + splitIndex;
       if (cache.containsKey(key)) {
@@ -305,7 +305,7 @@ public final class Choreo {
       ControlFunction<SampleType> controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
-      ChoreoAutoBindings bindings) {
+      AutoBindings bindings) {
     return new AutoFactory(
         requireNonNullParam(poseSupplier, "poseSupplier", "Choreo.createAutoFactory"),
         requireNonNullParam(controller, "controller", "Choreo.createAutoFactory"),
@@ -344,7 +344,7 @@ public final class Choreo {
       ControlFunction<SampleType> controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
-      ChoreoAutoBindings bindings,
+      AutoBindings bindings,
       TrajectoryLogger<SampleType> trajectoryLogger) {
     return new AutoFactory(
         requireNonNullParam(poseSupplier, "poseSupplier", "Choreo.createAutoFactory"),
