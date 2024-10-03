@@ -65,6 +65,18 @@ When a constraint is selected in the sidebar, circles and dashed lines will show
 
 Some constraints have field points or regions associated with them. When these constraints are selected, the field will display movable points and shapes to define these regions.
 
+### Constraint Types
+
+In left-right order on the navbar:
+
+- **Stop Point** (Waypoint) Constrains the robot to have 0 linear and 0 angular velocity at the waypoint.
+- **Max Velocity** (Waypoint, Segment) Constrains the maximum linear velocity magnitude of the chassis.
+  - NOTE: Zero max velocity on a segment will cause generation to fail.
+- **Max Acceleration** (Waypoint, Segment) Constrains the maximum linear acceleration magnitude of the chassis.
+  - NOTE: Zero max acceleration on a segment will likely cause generation to fail, especially if velocity is constrained to zero somewhere in the segment.
+- **Max Angular Velocity** (Waypoint, Segment) Constrains the maximum linear acceleration magnitude of the chassis.
+  - NOTE: Zero max acceleration on a segment will likely cause generation to fail, especially if velocity is constrained to zero somewhere in the segment.
+
 ## Obstacles
 
 Obstacles force the robot to avoid a certain area of the field throughout the path. For example, in the 2023 Charged Up game, you might want to avoid crashing into the charge station. Obstacles makes it easy to define where you want the robot to start and end without unnecessary (and performance-impacting) intermediary waypoints.
