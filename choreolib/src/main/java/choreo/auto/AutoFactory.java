@@ -10,7 +10,6 @@ import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.event.EventLoop;
@@ -22,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -127,7 +125,6 @@ public class AutoFactory {
   private final TrajectoryCache trajectoryCache = new TrajectoryCache();
   private final Supplier<Pose2d> poseSupplier;
   private final ControlFunction<? extends TrajectorySample<?>> controller;
-  private final Consumer<ChassisSpeeds> outputChassisSpeeds;
   private final BooleanSupplier mirrorTrajectory;
   private final Subsystem driveSubsystem;
   private final AutoBindings bindings = new AutoBindings();
@@ -140,7 +137,6 @@ public class AutoFactory {
    * @param <SampleType> {@link Choreo#createAutoFactory}
    * @param poseSupplier {@link Choreo#createAutoFactory}
    * @param controller {@link Choreo#createAutoFactory}
-   * @param outputChassisSpeeds {@link Choreo#createAutoFactory}
    * @param mirrorTrajectory {@link Choreo#createAutoFactory}
    * @param driveSubsystem {@link Choreo#createAutoFactory}
    * @param bindings {@link Choreo#createAutoFactory}
@@ -149,14 +145,12 @@ public class AutoFactory {
   public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
       Supplier<Pose2d> poseSupplier,
       ControlFunction<SampleType> controller,
-      Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
       Subsystem driveSubsystem,
       AutoBindings bindings,
       Optional<TrajectoryLogger<SampleType>> trajectoryLogger) {
     this.poseSupplier = poseSupplier;
     this.controller = controller;
-    this.outputChassisSpeeds = outputChassisSpeeds;
     this.mirrorTrajectory = mirrorTrajectory;
     this.driveSubsystem = driveSubsystem;
     this.bindings.merge(bindings);
@@ -256,7 +250,6 @@ public class AutoFactory {
         solidTrajectory,
         poseSupplier,
         solidController,
-        outputChassisSpeeds,
         mirrorTrajectory,
         solidLogger,
         driveSubsystem,
