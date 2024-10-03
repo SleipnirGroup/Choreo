@@ -43,16 +43,7 @@ inline std::vector<double> AngleLinspace(double startValue, double endValue,
                                          size_t numSamples) {
   auto diff = endValue - startValue;
   // angleModulus
-  const double modulus = 2 * std::numbers::pi;
-  const double minimumInput = -std::numbers::pi;
-  const double maximumInput = std::numbers::pi;
-  // Wrap input if it's above the maximum input
-  const double numMax = std::trunc((diff - minimumInput) / modulus);
-  diff -= numMax * modulus;
-
-  // Wrap input if it's below the minimum input
-  const double numMin = std::trunc((diff - maximumInput) / modulus);
-  diff -= numMin * modulus;
+  diff = AngleModulus(diff);
 
   return Linspace(startValue, startValue + diff, numSamples);
 }
@@ -78,7 +69,7 @@ inline double InputModulus(double input, double max, double min) {
 
   // Wrap input if it's below the minimum input
   const double numMin = std::trunc((val - max) / modulus);
-  val += numMax * modulus;
+  val += numMin * modulus;
 
   return val;
 }
