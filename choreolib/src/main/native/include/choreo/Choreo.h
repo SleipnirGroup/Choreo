@@ -155,7 +155,7 @@ class Choreo {
  * trajectories only once, and then reusing them.
  */
 template <choreo::TrajectorySample SampleType>
-class ChoreoTrajectoryCache {
+class TrajectoryCache {
  public:
   /**
    * Load a trajectory from the deploy directory. Choreolib expects .traj files

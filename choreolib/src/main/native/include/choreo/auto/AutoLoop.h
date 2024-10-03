@@ -47,7 +47,7 @@ class AutoLoop {
     return frc2::cmd::Run([this] { Poll(); })
         .FinallyDo([this] { Reset(); })
         .Until([this] { return !frc::DriverStation::IsAutonomousEnabled(); })
-        .WithName("ChoreoAutoLoop");
+        .WithName("AutoLoop");
   }
 
   frc2::CommandPtr Cmd(std::function<bool()> finishCondition) {
@@ -57,7 +57,7 @@ class AutoLoop {
           return !frc::DriverStation::IsAutonomousEnabled() ||
                  finishCondition();
         })
-        .WithName("ChoreoAutoLoop");
+        .WithName("AutoLoop");
   }
 
  private:

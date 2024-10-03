@@ -4,7 +4,7 @@ package choreo.auto;
 
 import choreo.Choreo.ControlFunction;
 import choreo.Choreo.TrajectoryLogger;
-import choreo.auto.AutoFactory.ChoreoAutoBindings;
+import choreo.auto.AutoFactory.AutoBindings;
 import choreo.trajectory.DifferentialSample;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
@@ -75,7 +75,7 @@ public class AutoTrajectory {
       Optional<TrajectoryLogger<SampleType>> trajectoryLogger,
       Subsystem driveSubsystem,
       EventLoop loop,
-      ChoreoAutoBindings bindings) {
+      AutoBindings bindings) {
     this.name = name;
     this.trajectory = trajectory;
     this.poseSupplier = poseSupplier;
