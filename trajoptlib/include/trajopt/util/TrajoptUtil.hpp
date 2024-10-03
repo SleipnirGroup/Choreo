@@ -14,18 +14,16 @@ namespace trajopt {
  * sample point ("dt" does not, "x" does).
  *
  * @param N The control interval counts of each segment, in order.
- * @param wptIndex The waypoint index (1 + segment index).
- * @param sampIndex The sample index within the segment.
+ * @param wptIndex The waypoint index, 0 indexed.
+ * @param sampIndex The sample index within the segment, 0 indexed.
  * @return The index in the array.
  */
 inline size_t GetIndex(const std::vector<size_t>& N, size_t wptIndex,
                        size_t sampIndex = 0) {
   size_t index = 0;
-  if (wptIndex > 0) {
-    ++index;
-  }
-  for (size_t _wptIndex = 1; _wptIndex < wptIndex; ++_wptIndex) {
-    index += N.at(_wptIndex - 1);
+
+  for (size_t _wptIndex = 0; _wptIndex < wptIndex; ++_wptIndex) {
+    index += N.at(_wptIndex);
   }
   index += sampIndex;
   return index;
