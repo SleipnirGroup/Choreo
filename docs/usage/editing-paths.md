@@ -2,6 +2,8 @@ Choreo finds the [mathematically optimal](https://en.wikipedia.org/wiki/Mathemat
 
 ## Waypoints
 
+![pose, translation, and empty waypoints](../media/waypoint-types.png)
+
 Waypoints are an ordered position that you'd like to hit on your path. There are multiple types of waypoints based on what you'd like to constrain in your path.
 
 To add a waypoint, select the type of waypoint from the waypoints navbar on the top to get started, then click on the field where you want it. Your waypoints will show up on the sidebar. A yellow dot represents the currently selected waypoint, green for the starting waypoint, and red for the ending waypoint.
@@ -10,54 +12,58 @@ To add a waypoint, select the type of waypoint from the waypoints navbar on the 
 
 ### Pose Waypoints
 
-![pose waypoint](../media/pose_waypoint.png)
+Pose Waypoint is the first button on the waypoints navbar and consists of a translation **and** a rotation. Drag the little yellow triangle to change the heading.
 
-Pose Waypoint is the first button on the waypoints navbar and consists of a translation **and** a rotation. Drag the little yellow circle (outlined in black) to change the heading.
-
-- **X and Y**: position in meters from the bottom left (origin)
-- **θ**: Angular offset in radians -π to π, 0 to right
+- **X and Y**: position from the bottom left corner of the field (origin)
+- **θ**: Robot heading, with 0 to the right (towards the positive field X)
 
 ### Translation Waypoints
 
-![translation waypoint](../media/translation_waypoint.png)
+Translation Waypoint is the second button on the waypoints navbar and consists of a translation but not a rotation. 
 
-Translation Waypoint is the second button on the waypoints navbar and consists of a translation but not a rotation. The UI still includes the yellow circle, but is only stored to be able to convert later into a Pose Waypoint. However, rotation is still used as part of the initial guess.
-
-- **X and Y**: position in meters from the bottom left (origin)
+- **X and Y**: position from the origin
 
 ### Empty Waypoint
 
-![empty waypoint](../media/empty_waypoint.png)
+Empty Waypoint is the third button on the waypoints navbar. It does not directly constrain translation or rotation. However, other constraints such as Keep-In or Point-At can apply to it. It is also used to form the initial shape of the path.
 
-Empty Waypoint allows you to apply a constraint somewhere along a segment without putting a position or heading constraint at that waypoint, similar to constraints.
-
-## Initial Guess Point
-
-The initial guess waypoint just affects the straight-line-between-waypoints gray line, which is used as the starting point for optimization. (Until obstacles are added, this doesn’t have much effect.)
+- **X and Y**: position from the origin
 
 ## Constraints
 
-Constraints are limitations that the optimizer needs to respect while generating a path. Different constraints can be applied in different scopes or ranges.
+Constraints are limitations that the optimizer needs to respect while generating a path.
 
-### Waypoint Scope
+### Scopes
 
-Applies this constraint between at that specific waypoint.
+Different constraints can be applied in different scopes or ranges.
 
-### Segment Scope
+#### Waypoint Scope
 
-Applies this constraint between waypoints. Intuitively, this constrains your trajectory to be a straight line between two waypoints.
+Applies this constraint at the selected waypoint.
 
-### Waypoint + Segment Scope
+#### Segment Scope
 
-Like a segment scope, but including segments (intuitive example: think of zero angular velocity)
+Applies this constraint to the range of the trajectory between two waypoints. 
 
-| Name                        | Description                                                                                                                                                                                                                                          | Waypoint Scope | Segment Scope |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------- |
-| Waypoint Velocity Direction | Constrains the robot's direction of travel at a waypoint.                                                                                                                                                                                            | Yes            | No            |
-| Waypoint Zero Velocity      | Stop at a certain point                                                                                                                                                                                                                              | Yes            | No            |
-| Max Velocity                | Constrains the max velocity to a specific value throughout multiple waypoints/segments This generally refers to the Maximum Velocity of robot chassis in m/s. A default value can be defined in Robot Config ([Getting Started](../document-settings/robot-configuration.md)) | Yes            | Yes           |
-| Zero Angular Velocity       | Ensures zero angular velocity through the waypoint and/or segment scope.                                                                                                                                                                             | Yes            | Yes           |
-| Straight Line               | Tells the solver to draw a straight line as the path between two immediate waypoints.                                                                                                                                                                | No             | Yes           |
+#### Waypoint + Segment Scope
+
+Some constraints can be applied to both individual waypoints and segments.
+
+### Adding Constraints
+
+TODO: video
+
+To add a constraint, select it from the top navbar. Click the waypoint at one end of the constraint's range. For Segment scope constraints, a dashed line will follow your cursor. If you hover over another waypoint, the line will go through all the waypoints in the range. Click the second waypoint to add the constraint.
+
+> NOTE: If adding a Waypoint + Segment scope constraint to a single waypoint, you will have to click the same waypoint twice.
+
+### Constraint Display
+
+When a constraint is selected in the sidebar, circles and dashed lines will show the range of waypoints under the constraint. 
+
+![Display of the scope of a constraint](../media/constraint-scope-line.png)
+
+Some constraints have field points or regions associated with them. When these constraints are selected, the field will display movable points and shapes to define these regions.
 
 ## Obstacles
 
