@@ -108,7 +108,7 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   // Minimize total time
   sleipnir::Variable T_tot = 0;
   const double maxForce =
-      path.drivetrain.wheelMaxTorque / path.drivetrain.wheelRadius;
+      path.drivetrain.wheelMaxTorque * 4 / path.drivetrain.wheelRadius;
   const auto maxAccel = maxForce / path.drivetrain.mass;
   const double maxDrivetrainVelocity =
       path.drivetrain.wheelRadius * path.drivetrain.wheelMaxAngularVelocity;
@@ -137,25 +137,17 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     const auto theta_1 = std::atan2(initialGuess.thetasin.at(sgmt_end),
                                     initialGuess.thetacos.at(sgmt_end));
     const auto dtheta = std::abs(AngleModulus(theta_0 - theta_1));
+
     auto maxLinearVel = maxDrivetrainVelocity;
 
     const auto angularTime =
         CalculateTrapezoidalTime(dtheta, maxAngVel, maxAngAccel);
-    std::printf("sin0: %f, cos0: %f, sin1: %f, cos1: %f\n",
-                initialGuess.thetasin.at(sgmt_start),
-                initialGuess.thetacos.at(sgmt_start),
-                initialGuess.thetasin.at(sgmt_end),
-                initialGuess.thetacos.at(sgmt_end));
-    std::printf(
-        "ang time: %f, t0: %f, t1: %f, dtheta: %f, maxAngVel: %f, maxAngAccel: "
-        "%f\n",
-        angularTime, theta_0, theta_1, dtheta, maxAngVel, maxAngAccel);
-
     maxLinearVel = std::min(maxLinearVel, dist / angularTime);
+
     const auto linearTime =
         CalculateTrapezoidalTime(dist, maxLinearVel, maxAccel);
     const double sgmtTime = angularTime + linearTime;
-    std::printf("linear time: %f - ang time: %f\n", linearTime, angularTime);
+
     dt_sgmt.SetValue(sgmtTime / N_sgmt);
   }
   problem.Minimize(std::move(T_tot));

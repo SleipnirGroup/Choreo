@@ -97,11 +97,12 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   // Minimize total time
   sleipnir::Variable T_tot = 0;
   const double maxForce =
-      path.drivetrain.wheelMaxTorque / path.drivetrain.wheelRadius;
+      path.drivetrain.wheelMaxTorque * 2 / path.drivetrain.wheelRadius;
   const auto maxAccel = maxForce / path.drivetrain.mass;
   const double maxDrivetrainVelocity =
       path.drivetrain.wheelRadius * path.drivetrain.wheelMaxAngularVelocity;
   const auto maxAngVel = maxDrivetrainVelocity * 2 / path.drivetrain.trackwidth;
+  const auto maxAngAccel = maxAccel / path.drivetrain.trackwidth;
   for (size_t sgmtIndex = 0; sgmtIndex < Ns.size(); ++sgmtIndex) {
     auto& dt_sgmt = dts.at(sgmtIndex);
     auto N_sgmt = Ns.at(sgmtIndex);
@@ -115,52 +116,20 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     const auto dx = initialGuess.x.at(sgmt_end) - initialGuess.x.at(sgmt_start);
     const auto dy = initialGuess.y.at(sgmt_end) - initialGuess.y.at(sgmt_start);
     const auto dist = std::hypot(dx, dy);
-    const auto cos_0 = std::cos(initialGuess.heading.at(sgmt_start));
-    const auto sin_0 = std::sin(initialGuess.heading.at(sgmt_start));
-    const auto cos_1 = std::cos(initialGuess.heading.at(sgmt_end));
-    const auto sin_1 = std::sin(initialGuess.heading.at(sgmt_end));
-    const auto dtheta = std::abs(std::atan2(cos_0 * sin_1 - sin_0 * cos_1,
-                                            cos_0 * sin_1 + sin_0 * cos_1));
+    const auto theta_0 = initialGuess.heading.at(sgmt_start);
+    const auto theta_1 = initialGuess.heading.at(sgmt_end);
+    const auto dtheta = std::abs(AngleModulus(theta_0 - theta_1));
+
     auto maxLinearVel = maxDrivetrainVelocity;
 
-    // Proof for T = 1.5 * θ / ω:
-    //
-    // The position function of a cubic Hermite spline
-    // where t∈[0, 1] and θ∈[0, dtheta]:
-    // x(t) = (-2t^3 +3t^2)θ
-    //
+    const auto angularTime =
+        CalculateTrapezoidalTime(dtheta, maxAngVel, maxAngAccel);
+    maxLinearVel = std::min(maxLinearVel, dist / angularTime);
 
-    // The velocity function derived from the cubic Hermite spline is:
-    // v(t) = (-6t^2 + 6t)θ.
-    //
-    // The peak velocity occurs at t = 0.5, where t∈[0, 1] :
-    // v(0.5) = 1.5*θ, which is the max angular velocity during the motion.
-    //
-    // To ensure this peak velocity does not exceed ω, max_ang_vel, we set:
-    // 1.5 * θ = ω.
-    //
-    // The total time T needed to reach the final θ and
-    // not exceed ω is thus derived as:
-    // T = θ / (ω / 1.5) = 1.5 * θ / ω.
-    //
-    // This calculation ensures the peak velocity meets but does not exceed ω,
-    // extending the time proportionally to meet this requirement.
-    // This is an alternative estimation method to finding the trapezoidal or
-    // triangular profile for the change heading.
-    const auto angular_time = (1.5 * dtheta) / maxAngVel;
-    maxLinearVel = std::min(maxLinearVel, dist / angular_time);
+    const auto linearTime =
+        CalculateTrapezoidalTime(dist, maxLinearVel, maxAccel);
+    const double sgmtTime = angularTime + linearTime;
 
-    const auto distanceAtCruise =
-        dist - (maxLinearVel * maxLinearVel) / maxAccel;
-
-    double sgmtTime = angular_time;
-    if (distanceAtCruise < 0) {
-      // triangle
-      sgmtTime += 2.0 * (std::sqrt(dist * maxAccel) / maxAccel);
-    } else {
-      // trapezoid
-      sgmtTime += dist / maxLinearVel + maxLinearVel / maxAccel;
-    }
     dt_sgmt.SetValue(sgmtTime / N_sgmt);
   }
   problem.Minimize(std::move(T_tot));
