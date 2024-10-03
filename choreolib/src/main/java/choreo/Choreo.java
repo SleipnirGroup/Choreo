@@ -124,9 +124,9 @@ public final class Choreo {
    * src/main/deploy/choreo/[trajectoryName].traj.
    *
    * @param <SampleType> The type of samples in the trajectory.
-   * @param trajectoryName the path name in Choreo, which matches the file name in the deploy
+   * @param trajectoryName The path name in Choreo, which matches the file name in the deploy
    *     directory, file extension is optional.
-   * @return the loaded trajectory, or `Optional.empty()` if the trajectory could not be loaded.
+   * @return The loaded trajectory, or `Optional.empty()` if the trajectory could not be loaded.
    */
   @SuppressWarnings("unchecked")
   public static <SampleType extends TrajectorySample<SampleType>>
@@ -143,7 +143,7 @@ public final class Choreo {
       String str = reader.lines().reduce("", (a, b) -> a + b);
       reader.close();
       Trajectory<SampleType> trajectory =
-          (Trajectory<SampleType>) readTrajectoryString(str, getProjectFile());
+          (Trajectory<SampleType>) loadTrajectoryString(str, getProjectFile());
       return Optional.of(trajectory);
     } catch (FileNotFoundException ex) {
       DriverStation.reportError("Could not find trajectory file: " + trajectoryFile, false);
@@ -155,9 +155,17 @@ public final class Choreo {
     return Optional.empty();
   }
 
-  static Trajectory<? extends TrajectorySample<?>> readTrajectoryString(
-      String str, ProjectFile projectFile) {
-    JsonObject wholeTrajectory = GSON.fromJson(str, JsonObject.class);
+  /**
+   * Load a trajectory from a string.
+   *
+   * @param trajectoryJsonString The JSON string.
+   * @param trajectoryName The path name in Choreo, which matches the file name in the deploy
+   *     directory, file extension is optional.
+   * @return The loaded trajectory, or `empty std::optional` if the trajectory could not be loaded.
+   */
+  static Trajectory<? extends TrajectorySample<?>> loadTrajectoryString(
+      String trajectoryJsonString, ProjectFile projectFile) {
+    JsonObject wholeTrajectory = GSON.fromJson(trajectoryJsonString, JsonObject.class);
     String name = wholeTrajectory.get("name").getAsString();
     String version = wholeTrajectory.get("version").getAsString();
     if (!SPEC_VERSION.equals(version)) {

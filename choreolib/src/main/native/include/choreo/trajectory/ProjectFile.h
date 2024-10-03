@@ -3,9 +3,7 @@
 #pragma once
 
 #include <string>
-#include <string_view>
 #include <unordered_map>
-#include <utility>
 #include <vector>
 
 #include <wpi/json_fwd.h>
@@ -15,19 +13,19 @@ namespace choreo {
 /**
  * A representation of an expression. An equation and its value.
  */
-class Expression {
- public:
-  Expression() = default;
-
-  Expression(std::string_view expression, double val)
-      : expression{expression}, val{val} {}
-
+struct Expression {
   /// The equation.
   std::string expression;
 
   /// The value.
   double val = 0.0;
 
+  /**
+   * Expression equality operator.
+   *
+   * @param other The other expression.
+   * @return True on equality.
+   */
   bool operator==(const Expression& other) const {
     return expression == other.expression && std::abs(val - other.val) < 1e-6;
   }
@@ -36,44 +34,57 @@ class Expression {
 /**
  * An x-y pair of expressions.
  */
-class XYExpression {
- public:
-  XYExpression() = default;
-
-  XYExpression(Expression x, Expression y) : x{std::move(x)}, y{std::move(y)} {}
-
-  /** The x expression. */
+struct XYExpression {
+  /// The x expression.
   Expression x;
 
-  /** The y expression. */
+  /// The y expression.
   Expression y;
 
+  /**
+   * XYExpression equality operator.
+   *
+   * @return True on equality.
+   */
   bool operator==(const XYExpression&) const = default;
 };
 
+/**
+ * Expressions comprising a pose.
+ */
 struct Pose {
-  Pose() = default;
-
-  Pose(Expression x, Expression y, Expression heading)
-      : x{std::move(x)}, y{std::move(y)}, heading{std::move(heading)} {}
-
+  /// The x expression.
   Expression x;
+
+  /// The y expression.
   Expression y;
+
+  /// The heading expression.
   Expression heading;
 
+  /**
+   * Pose equality operator.
+   *
+   * @return True for equality.
+   */
   bool operator==(const Pose&) const = default;
 };
 
+/**
+ * A variable expression.
+ */
 struct Variable {
-  Variable() = default;
-
-  Variable(std::string_view dimension, Expression var)
-      : dimension{dimension}, var{std::move(var)} {}
-
+  /// The variable's dimension.
   std::string dimension;
 
+  /// The variable's expression.
   Expression var;
 
+  /**
+   * Variable equality operator.
+   *
+   * @return True on equality.
+   */
   bool operator==(const Variable&) const = default;
 };
 
@@ -81,45 +92,28 @@ struct Variable {
  * A collection of expressions representing the distance of the bumpers from the
  * center of the robot.
  */
-class Bumpers {
- public:
-  Bumpers() = default;
-
-  Bumpers(Expression front, Expression back, Expression side)
-      : front{std::move(front)}, back{std::move(back)}, side{std::move(side)} {}
-
-  /** The front bumper expression. */
+struct Bumpers {
+  /// The front bumper expression.
   Expression front;
 
-  /** The back bumper expression. */
+  /// The back bumper expression.
   Expression back;
 
-  /** The side bumper expression. */
+  /// The side bumper expression.
   Expression side;
 
-  bool operator==(const Bumpers& other) const = default;
+  /**
+   * Bumpers equality operator.
+   *
+   * @return True on equality.
+   */
+  bool operator==(const Bumpers&) const = default;
 };
 
-/** The user configuration of the project. */
-class Config {
- public:
-  Config() = default;
-
-  Config(XYExpression frontLeft, XYExpression backLeft, Expression mass,
-         Expression inertia, Expression gearing, Expression wheelRadius,
-         Expression vmax, Expression tmax, Bumpers bumpers,
-         Expression differentialTrackWidth)
-      : frontLeft{std::move(frontLeft)},
-        backLeft{std::move(backLeft)},
-        mass{std::move(mass)},
-        inertia{std::move(inertia)},
-        gearing{std::move(gearing)},
-        wheelRadius{std::move(wheelRadius)},
-        vmax{std::move(vmax)},
-        tmax{std::move(tmax)},
-        bumpers{std::move(bumpers)},
-        differentialTrackWidth{std::move(differentialTrackWidth)} {}
-
+/**
+ * The user configuration of the project.
+ */
+struct Config {
   /// The position of the front left swerve module.
   XYExpression frontLeft;
 
@@ -150,29 +144,18 @@ class Config {
   /// The width between the wheels of the robot. (m)
   Expression differentialTrackWidth;
 
+  /**
+   * Config equality operator.
+   *
+   * @return True on equality.
+   */
   bool operator==(const Config&) const = default;
 };
 
 /**
  * A representation of a project file aka a .chor.
  */
-class ProjectFile {
- public:
-  ProjectFile() = default;
-
-  ProjectFile(std::string_view name, std::string_view version,
-              std::string_view type,
-              std::unordered_map<std::string, Variable> expressions,
-              std::unordered_map<std::string, Pose> poses, Config config,
-              std::vector<std::string> generationFeatures)
-      : name{name},
-        version{version},
-        type{type},
-        expressions{std::move(expressions)},
-        poses{std::move(poses)},
-        config{std::move(config)},
-        generationFeatures{std::move(generationFeatures)} {}
-
+struct ProjectFile {
   /// The name of the project.
   std::string name;
 
@@ -194,7 +177,12 @@ class ProjectFile {
   /// The generation features of the project.
   std::vector<std::string> generationFeatures;
 
-  bool operator==(const ProjectFile& other) const = default;
+  /**
+   * ProjectFile equality operator.
+   *
+   * @return True on equality.
+   */
+  bool operator==(const ProjectFile&) const = default;
 };
 
 void to_json(wpi::json& json, const Expression& exp);

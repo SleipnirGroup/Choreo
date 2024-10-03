@@ -85,11 +85,11 @@ class Choreo {
    * Load a trajectory from the deploy directory. Choreolib expects .traj files
    * to be placed in src/main/deploy/choreo/[trajectoryName].traj.
    *
-   * @param <SampleType> The type of samples in the trajectory.
-   * @param trajectoryName the path name in Choreo, which matches the file name
-   * in the deploy directory, file extension is optional.
-   * @return the loaded trajectory, or `empty std::optional` if the trajectory
-   * could not be loaded.
+   * @tparam SampleType The type of samples in the trajectory.
+   * @param trajectoryName The path name in Choreo, which matches the file name
+   *   in the deploy directory, file extension is optional.
+   * @return The loaded trajectory, or `empty std::optional` if the trajectory
+   *   could not be loaded.
    */
   template <choreo::TrajectorySample SampleType>
   static std::optional<choreo::Trajectory<SampleType>> LoadTrajectory(
@@ -123,6 +123,16 @@ class Choreo {
     return {};
   }
 
+  /**
+   * Load a trajectory from a string.
+   *
+   * @tparam SampleType The type of samples in the trajectory.
+   * @param trajectoryJsonString The JSON string.
+   * @param trajectoryName The path name in Choreo, which matches the file name
+   *   in the deploy directory, file extension is optional.
+   * @return The loaded trajectory, or `empty std::optional` if the trajectory
+   *   could not be loaded.
+   */
   template <choreo::TrajectorySample SampleType>
   static std::optional<choreo::Trajectory<SampleType>> LoadTrajectoryString(
       std::string_view trajectoryJsonString, std::string_view trajectoryName) {
@@ -136,8 +146,6 @@ class Choreo {
     choreo::from_json(json, trajectory);
     return trajectory;
   }
-
-  static std::string_view GetChoreoDir() { return CHOREO_DIR; }
 
  private:
   static constexpr std::string_view TRAJECTORY_FILE_EXTENSION = ".traj";
