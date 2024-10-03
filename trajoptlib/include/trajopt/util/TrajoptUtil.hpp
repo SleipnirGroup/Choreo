@@ -39,6 +39,25 @@ inline std::vector<double> Linspace(double startValue, double endValue,
   return result;
 }
 
+inline double InputModulus(double input, double max, double min) {
+  double val = input;
+  const double modulus = max - min;
+
+  // Wrap input if it's above the maximum input
+  const double numMax = std::trunc((val - min) / modulus);
+  val -= numMax * modulus;
+
+  // Wrap input if it's below the minimum input
+  const double numMin = std::trunc((val - max) / modulus);
+  val += numMin * modulus;
+
+  return val;
+}
+
+inline double AngleModulus(double radians) {
+  return InputModulus(radians, std::numbers::pi, -std::numbers::pi);
+}
+
 inline std::vector<double> AngleLinspace(double startValue, double endValue,
                                          size_t numSamples) {
   auto diff = endValue - startValue;
@@ -57,25 +76,6 @@ inline double CalculateTrapezoidalTime(double distance, double velocity,
     // triangle
     return 2.0 * (std::sqrt(distance * acceleration) / acceleration);
   }
-}
-
-inline double InputModulus(double input, double max, double min) {
-  double val = input;
-  const double modulus = max - min;
-
-  // Wrap input if it's above the maximum input
-  const double numMax = std::trunc((val - min) / modulus);
-  val -= numMax * modulus;
-
-  // Wrap input if it's below the minimum input
-  const double numMin = std::trunc((val - max) / modulus);
-  val += numMin * modulus;
-
-  return val;
-}
-
-inline double AngleModulus(double radians) {
-  return InputModulus(radians, std::numbers::pi, -std::numbers::pi);
 }
 
 }  // namespace trajopt
