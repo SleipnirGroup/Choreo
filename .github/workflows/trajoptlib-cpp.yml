@@ -58,7 +58,7 @@ jobs:
         # sccache doesn't work with MSBuild
         if: ${{ !startsWith(matrix.os, 'windows') }}
 
-      - run: cmake --preset with-examples-sccache ${{ matrix.cmake-args }}
+      - run: cmake --preset with-examples-and-sccache ${{ matrix.cmake-args }}
         if: ${{ !startsWith(matrix.os, 'windows') }}
         working-directory: trajoptlib
       - run: cmake -B build -S . -DBUILD_EXAMPLES=ON ${{ matrix.cmake-args }}
