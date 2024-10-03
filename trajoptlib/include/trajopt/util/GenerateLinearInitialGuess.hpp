@@ -25,7 +25,7 @@ inline Solution GenerateLinearInitialGuess(
     const std::vector<std::vector<Pose2d>>& initialGuessPoints,
     const std::vector<size_t> controlIntervalCounts) {
   size_t wptCnt = controlIntervalCounts.size() + 1;
-  size_t sampTot = GetIndex(controlIntervalCounts, wptCnt, 0);
+  size_t sampTot = GetIndex(controlIntervalCounts, wptCnt - 1, 0) + 1;
 
   Solution initialGuess;
 
