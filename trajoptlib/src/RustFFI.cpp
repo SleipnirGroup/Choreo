@@ -11,10 +11,13 @@
 #include <vector>
 
 #include "trajopt/constraint/AngularVelocityMaxMagnitudeConstraint.hpp"
+#include "trajopt/constraint/LaneConstraint.hpp"
 #include "trajopt/constraint/LinearAccelerationMaxMagnitudeConstraint.hpp"
 #include "trajopt/constraint/LinearVelocityDirectionConstraint.hpp"
 #include "trajopt/constraint/LinearVelocityMaxMagnitudeConstraint.hpp"
 #include "trajopt/constraint/PointAtConstraint.hpp"
+#include "trajopt/constraint/PointLineRegionConstraint.hpp"
+#include "trajopt/geometry/Translation2.hpp"
 #include "trajopt/util/Cancellation.hpp"
 #include "trajoptlib/src/lib.rs.h"
 
@@ -136,15 +139,34 @@ void SwervePathBuilder::wpt_keep_in_polygon(size_t index,
                                trajopt::PointLineRegionConstraint{
                                    {0.0, 0.0},
                                    {field_points_x[i], field_points_y[i]},
-                                   {field_points_x[j], field_points_y[j]}});
+                                   {field_points_x[j], field_points_y[j]},
+                                   Side::Above});
     for (const auto& bumper : path_builder.GetBumpers()) {
       for (const auto& corner : bumper.points) {
         path_builder.WptConstraint(index,
                                    trajopt::PointLineRegionConstraint{
                                        corner,
                                        {field_points_x[i], field_points_y[i]},
-                                       {field_points_x[j], field_points_y[j]}});
+                                       {field_points_x[j], field_points_y[j]},
+                                       Side::Above});
       }
+    }
+  }
+}
+
+void SwervePathBuilder::wpt_keep_in_lane(
+    size_t index, double topLineStartX, double topLineStartY,
+    double topLineEndX, double topLineEndY, double bottomLineStartX,
+    double bottomLineStartY, double bottomLineEndX, double bottomLineEndY) {
+  for (const auto& bumper : path_builder.GetBumpers()) {
+    for (const auto& corner : bumper.points) {
+      path_builder.WptConstraint(
+          index,
+          trajopt::LaneConstraint{
+              corner, trajopt::Translation2d{topLineStartX, topLineStartY},
+              trajopt::Translation2d{topLineEndX, topLineEndY},
+              trajopt::Translation2d{bottomLineStartX, bottomLineStartY},
+              trajopt::Translation2d{bottomLineEndX, bottomLineEndY}});
     }
   }
 }
@@ -239,16 +261,35 @@ void SwervePathBuilder::sgmt_keep_in_polygon(size_t from_index, size_t to_index,
                                 trajopt::PointLineRegionConstraint{
                                     {0.0, 0.0},
                                     {field_points_x[i], field_points_y[i]},
-                                    {field_points_x[j], field_points_y[j]}});
+                                    {field_points_x[j], field_points_y[j]},
+                                    Side::Above});
     for (const auto& bumper : path_builder.GetBumpers()) {
       for (const auto& corner : bumper.points) {
-        path_builder.SgmtConstraint(
-            from_index, to_index,
-            trajopt::PointLineRegionConstraint{
-                corner,
-                {field_points_x[i], field_points_y[i]},
-                {field_points_x[j], field_points_y[j]}});
+        path_builder.SgmtConstraint(from_index, to_index,
+                                    trajopt::PointLineRegionConstraint{
+                                        corner,
+                                        {field_points_x[i], field_points_y[i]},
+                                        {field_points_x[j], field_points_y[j]},
+                                        Side::Above});
       }
+    }
+  }
+}
+
+void SwervePathBuilder::sgmt_keep_in_lane(
+    size_t from_index, size_t to_index, double topLineStartX,
+    double topLineStartY, double topLineEndX, double topLineEndY,
+    double bottomLineStartX, double bottomLineStartY, double bottomLineEndX,
+    double bottomLineEndY) {
+  for (const auto& bumper : path_builder.GetBumpers()) {
+    for (const auto& corner : bumper.points) {
+      path_builder.SgmtConstraint(
+          from_index, to_index,
+          trajopt::LaneConstraint{
+              corner, trajopt::Translation2d{topLineStartX, topLineStartY},
+              trajopt::Translation2d{topLineEndX, topLineEndY},
+              trajopt::Translation2d{bottomLineStartX, bottomLineStartY},
+              trajopt::Translation2d{bottomLineEndX, bottomLineEndY}});
     }
   }
 }
@@ -460,15 +501,34 @@ void DifferentialPathBuilder::wpt_keep_in_polygon(
                                trajopt::PointLineRegionConstraint{
                                    {0.0, 0.0},
                                    {field_points_x[i], field_points_y[i]},
-                                   {field_points_x[j], field_points_y[j]}});
+                                   {field_points_x[j], field_points_y[j]},
+                                   Side::Above});
     for (const auto& bumper : path_builder.GetBumpers()) {
       for (const auto& corner : bumper.points) {
         path_builder.WptConstraint(index,
                                    trajopt::PointLineRegionConstraint{
                                        corner,
                                        {field_points_x[i], field_points_y[i]},
-                                       {field_points_x[j], field_points_y[j]}});
+                                       {field_points_x[j], field_points_y[j]},
+                                       Side::Above});
       }
+    }
+  }
+}
+
+void DifferentialPathBuilder::wpt_keep_in_lane(
+    size_t index, double topLineStartX, double topLineStartY,
+    double topLineEndX, double topLineEndY, double bottomLineStartX,
+    double bottomLineStartY, double bottomLineEndX, double bottomLineEndY) {
+  for (const auto& bumper : path_builder.GetBumpers()) {
+    for (const auto& corner : bumper.points) {
+      path_builder.WptConstraint(
+          index,
+          trajopt::LaneConstraint{
+              corner, trajopt::Translation2d{topLineStartX, topLineStartY},
+              trajopt::Translation2d{topLineEndX, topLineEndY},
+              trajopt::Translation2d{bottomLineStartX, bottomLineStartY},
+              trajopt::Translation2d{bottomLineEndX, bottomLineEndY}});
     }
   }
 }
@@ -553,16 +613,35 @@ void DifferentialPathBuilder::sgmt_keep_in_polygon(
                                 trajopt::PointLineRegionConstraint{
                                     {0.0, 0.0},
                                     {field_points_x[i], field_points_y[i]},
-                                    {field_points_x[j], field_points_y[j]}});
+                                    {field_points_x[j], field_points_y[j]},
+                                    Side::Above});
     for (const auto& bumper : path_builder.GetBumpers()) {
       for (const auto& corner : bumper.points) {
-        path_builder.SgmtConstraint(
-            from_index, to_index,
-            trajopt::PointLineRegionConstraint{
-                corner,
-                {field_points_x[i], field_points_y[i]},
-                {field_points_x[j], field_points_y[j]}});
+        path_builder.SgmtConstraint(from_index, to_index,
+                                    trajopt::PointLineRegionConstraint{
+                                        corner,
+                                        {field_points_x[i], field_points_y[i]},
+                                        {field_points_x[j], field_points_y[j]},
+                                        Side::Above});
       }
+    }
+  }
+}
+
+void DifferentialPathBuilder::sgmt_keep_in_lane(
+    size_t from_index, size_t to_index, double topLineStartX,
+    double topLineStartY, double topLineEndX, double topLineEndY,
+    double bottomLineStartX, double bottomLineStartY, double bottomLineEndX,
+    double bottomLineEndY) {
+  for (const auto& bumper : path_builder.GetBumpers()) {
+    for (const auto& corner : bumper.points) {
+      path_builder.SgmtConstraint(
+          from_index, to_index,
+          trajopt::LaneConstraint{
+              corner, trajopt::Translation2d{topLineStartX, topLineStartY},
+              trajopt::Translation2d{topLineEndX, topLineEndY},
+              trajopt::Translation2d{bottomLineStartX, bottomLineStartY},
+              trajopt::Translation2d{bottomLineEndX, bottomLineEndY}});
     }
   }
 }
