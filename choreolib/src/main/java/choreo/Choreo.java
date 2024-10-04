@@ -295,7 +295,7 @@ public final class Choreo {
    * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
    *     robot.
    * @param controller A {@link ControlFunction} to follow the current {@link Trajectory}&lt;{@link
-   *     SampleType}&gt;. ChassisSpeeds} and commands them to the robot.
+   *     SampleType}&gt;.
    * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
    *     while keeping the same coordinate system origin. This will be called every loop during the
    *     command.
