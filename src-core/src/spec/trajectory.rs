@@ -438,7 +438,6 @@ impl TrajectoryFile {
 pub struct EventMarkerData {
     pub name: String,
     pub target: Option<usize>,
-    pub trajectory_target_index: Option<usize>,
     pub target_timestamp: Option<f64>,
     pub offset: Expr,
 }

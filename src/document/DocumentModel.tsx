@@ -168,6 +168,10 @@ export const DocumentStore = types
             throw constraint.issues(points).join(", ");
           }
         });
+
+      pathStore.markers.forEach(m=>{
+        m.data.setTrajectoryTargetIndex(m.data.getTargetIndex())
+      })
       pathStore.ui.setGenerating(true);
       const handle = pathStore.uuid
         .split("")
@@ -239,7 +243,15 @@ export const DocumentStore = types
               pathStore.trajectory.setSamples(newTrajectory);
               pathStore.trajectory.setSplits(result.trajectory.splits);
               pathStore.trajectory.setWaypoints(result.trajectory.waypoints);
-
+              pathStore.markers.forEach(m=>{
+                const index = m.data.trajectoryTargetIndex;
+                if (index === undefined) {
+                  m.data.setTargetTimestamp(undefined);
+                } else {
+                  m.data.setTargetTimestamp(result.trajectory.waypoints[index])
+                }
+                
+              })
               pathStore.setSnapshot(result.snapshot);
               self.history.stopGroup();
             });

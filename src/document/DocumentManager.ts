@@ -184,7 +184,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
           uuid: crypto.randomUUID(),
           name: marker.data.name,
           target: undefined,
-          targetTimestamp: marker.data.targetTimestamp,
+          targetTimestamp: marker.data.targetTimestamp ?? undefined,
           offset: vars().createExpression(marker.data.offset, "Time"),
         },
         event: createCommandStore(marker.event),

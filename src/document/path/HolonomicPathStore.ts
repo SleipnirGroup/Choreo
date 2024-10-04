@@ -161,6 +161,9 @@ export const HolonomicPathStore = types
         self.trajectory.deserialize(ser.trajectory);
         ser.events.forEach(m=>{
           self.addEventMarker(m);
+        });
+        ser.pplibCommands.forEach(m=>{
+          self.addEventMarker(m);
         })
       }
     };

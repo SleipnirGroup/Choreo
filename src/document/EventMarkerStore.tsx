@@ -28,6 +28,10 @@ export const EventMarkerDataStore = types
     offset: ExpressionStore,
     uuid: types.identifier
   })
+  .volatile(self=>({
+    /** Just used to preserve the index of the target during generation */
+    trajectoryTargetIndex: undefined as (number | undefined)
+  }))
   .views((self) => ({
     getPath(): IHolonomicPathStore {
       const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
@@ -70,9 +74,9 @@ export const EventMarkerDataStore = types
     deserialize(ser: EventMarkerData) {
       const points = self.getPath().params.waypoints;
       self.name = ser.name;
-      self.target = getByWaypointID(
-        savedWaypointIdToWaypointId(ser.target, points), points),
-      self.targetTimestamp = self.targetTimestamp;
+      self.target = 
+        savedWaypointIdToWaypointId(ser.target, points);
+      self.targetTimestamp = self.targetTimestamp ?? undefined;
       self.offset.deserialize(ser.offset);
     },
     setTarget(target: WaypointUUID) {
@@ -81,8 +85,11 @@ export const EventMarkerDataStore = types
     setName(name: string) {
       self.name = name;
     },
-    setTargetTimestamp(timestamp: number) {
+    setTargetTimestamp(timestamp: number| undefined) {
       self.targetTimestamp = timestamp;
+    },
+    setTrajectoryTargetIndex(index: number | undefined) {
+      self.trajectoryTargetIndex = index;
     }
   }))
   .views((self) => ({
