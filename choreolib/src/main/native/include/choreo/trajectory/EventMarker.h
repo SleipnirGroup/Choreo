@@ -31,6 +31,11 @@ struct EventMarker {
     return EventMarker{timestamp + timestampOffset, event};
   }
 
+  /**
+   * EventMarker equality operator.
+   *
+   * @return True for equality.
+   */
   bool operator==(const EventMarker&) const = default;
 };
 

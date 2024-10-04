@@ -63,6 +63,19 @@ public class AutoTrajectory {
 
   private TrajectorySample<?> currentSample;
 
+  /**
+   * Constructs an AutoTrajectory.
+   *
+   * @param name The trajectory name.
+   * @param trajectory The trajectory samples.
+   * @param poseSupplier The pose supplier.
+   * @param controller The controller function.
+   * @param mirrorTrajectory Getter that determines whether to mirror trajectory.
+   * @param trajectoryLogger Optional trajectory logger.
+   * @param driveSubsystem Drive subsystem.
+   * @param loop Event loop.
+   * @param bindings {@link Choreo#createAutoFactory}
+   */
   <SampleType extends TrajectorySample<SampleType>> AutoTrajectory(
       String name,
       Trajectory<SampleType> trajectory,

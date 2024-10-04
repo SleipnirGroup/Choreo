@@ -47,6 +47,10 @@ dependencies {
     implementation 'edu.wpi.first.ntcore:ntcore-java:2024.+'
     implementation 'edu.wpi.first.ntcore:ntcore-jni:2024.+'
 
+    api "com.fasterxml.jackson.core:jackson-annotations:2.15.2"
+    api "com.fasterxml.jackson.core:jackson-core:2.15.2"
+    api "com.fasterxml.jackson.core:jackson-databind:2.15.2"
+
     implementation 'com.google.code.gson:gson:2.10.1'
 
     // This is needed to use wpilibj Filesystem class
@@ -185,10 +189,21 @@ spotless {
 }
 
 javadoc {
-    exclude 'org/json/simple/**'
-    options {
-        links 'https://docs.oracle.com/en/java/javase/17/docs/api/', 'https://github.wpilib.org/allwpilib/docs/release/java/'
-    }
+    options.links("https://docs.oracle.com/en/java/javase/17/docs/api/")
+    options.links("https://github.wpilib.org/allwpilib/docs/release/java/")
+    options.addBooleanOption("Xdoclint:html,missing,reference,syntax", true)
+    options.addBooleanOption('html5', true)
+    options.linkSource(true)
+    failOnError = true
+
+    title = "ChoreoLib API"
+
+    // Treat javadoc warnings as errors.
+    //
+    // The second argument '-quiet' is a hack. The one parameter
+    // addStringOption() doesn't work, so we add '-quiet', which is added
+    // anyway by gradle. See https://github.com/gradle/gradle/issues/2354.
+    options.addStringOption('Werror', '-quiet')
 }
 
 jacocoTestReport {

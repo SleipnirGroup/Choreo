@@ -69,16 +69,22 @@ class SwerveSample {
 
   /**
    * Gets the timestamp of the SwerveSample.
+   *
+   * @return The timestamp.
    */
   units::second_t GetTimestamp() const;
 
   /**
    * Gets the Pose2d of the SwerveSample.
+   *
+   * @return The pose.
    */
   frc::Pose2d GetPose() const;
 
   /**
-   * Gets the field relative chassis speeds of the SwerveSample.
+   * Gets the field-relative chassis speeds of the SwerveSample.
+   *
+   * @return The field-relative chassis speeds.
    */
   frc::ChassisSpeeds GetChassisSpeeds() const;
 
@@ -86,7 +92,7 @@ class SwerveSample {
    * Returns the current sample flipped based on the field year.
    *
    * @tparam Year The field year.
-   * @returns SwerveSample that is flipped based on the field layout.
+   * @return SwerveSample that is flipped based on the field layout.
    */
   template <int Year>
   SwerveSample Flipped() const {
@@ -128,7 +134,7 @@ class SwerveSample {
    * Returns the current sample offset by a the time offset passed in.
    *
    * @param timeStampOffset time to move sample by
-   * @returns SwerveSample that is moved forward by the offset
+   * @return SwerveSample that is moved forward by the offset
    */
   SwerveSample OffsetBy(units::second_t timeStampOffset) const;
 
@@ -137,13 +143,16 @@ class SwerveSample {
    *
    * @param endValue the end interpolated value
    * @param t time to move sample by
-   * @returns the interpolated sample
+   * @return the interpolated sample
    */
   SwerveSample Interpolate(const SwerveSample& endValue,
                            units::second_t t) const;
 
   /**
-   * Comparison operators for swerve samples.
+   * SwerveSample equality operator.
+   *
+   * @param other The other SwerveSample.
+   * @return True for equality.
    */
   bool operator==(const SwerveSample& other) const {
     constexpr double epsilon = 1e-6;
@@ -167,8 +176,6 @@ class SwerveSample {
            compare_arrays(moduleForcesX, other.moduleForcesX) &&
            compare_arrays(moduleForcesY, other.moduleForcesY);
   }
-
-  bool operator!=(const SwerveSample& other) const { return !(*this == other); }
 
   /// The timestamp of this sample, relative to the beginning of the trajectory.
   units::second_t timestamp = 0_s;
