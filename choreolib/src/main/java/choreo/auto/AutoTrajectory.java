@@ -158,12 +158,12 @@ public class AutoTrajectory {
       ControlFunction<SwerveSample> swerveController =
           (ControlFunction<SwerveSample>) this.controller;
       SwerveSample swerveSample = (SwerveSample) sample;
-      swerveController.apply(poseSupplier.get(), swerveSample);
+      swerveController.accept(poseSupplier.get(), swerveSample);
     } else if (sample instanceof DifferentialSample) {
       ControlFunction<DifferentialSample> differentialController =
           (ControlFunction<DifferentialSample>) this.controller;
       DifferentialSample differentialSample = (DifferentialSample) sample;
-      differentialController.apply(poseSupplier.get(), differentialSample);
+      differentialController.accept(poseSupplier.get(), differentialSample);
     }
 
     currentSample = sample;
@@ -176,12 +176,12 @@ public class AutoTrajectory {
         ControlFunction<SwerveSample> swerveController =
             (ControlFunction<SwerveSample>) this.controller;
         SwerveSample swerveSample = (SwerveSample) currentSample;
-        swerveController.apply(currentSample.getPose(), swerveSample);
+        swerveController.accept(currentSample.getPose(), swerveSample);
       } else if (currentSample instanceof DifferentialSample) {
         ControlFunction<DifferentialSample> differentialController =
             (ControlFunction<DifferentialSample>) this.controller;
         DifferentialSample differentialSample = (DifferentialSample) currentSample;
-        differentialController.apply(currentSample.getPose(), differentialSample);
+        differentialController.accept(currentSample.getPose(), differentialSample);
       }
     } else {
       TrajectorySample<?> sample = this.trajectory.getFinalSample();
@@ -190,12 +190,12 @@ public class AutoTrajectory {
         ControlFunction<SwerveSample> swerveController =
             (ControlFunction<SwerveSample>) this.controller;
         SwerveSample swerveSample = (SwerveSample) sample;
-        swerveController.apply(poseSupplier.get(), swerveSample);
+        swerveController.accept(poseSupplier.get(), swerveSample);
       } else if (sample instanceof DifferentialSample) {
         ControlFunction<DifferentialSample> differentialController =
             (ControlFunction<DifferentialSample>) this.controller;
         DifferentialSample differentialSample = (DifferentialSample) sample;
-        differentialController.apply(poseSupplier.get(), differentialSample);
+        differentialController.accept(poseSupplier.get(), differentialSample);
       }
     }
     isActive = false;

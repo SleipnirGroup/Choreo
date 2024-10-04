@@ -10,7 +10,6 @@
 #include <fmt/format.h>
 #include <frc/DriverStation.h>
 #include <frc/Timer.h>
-#include <frc/kinematics/ChassisSpeeds.h>
 #include <frc2/command/Command.h>
 #include <frc2/command/Commands.h>
 #include <frc2/command/button/Trigger.h>
@@ -23,13 +22,11 @@
 namespace choreo {
 
 template <choreo::TrajectorySample SampleType>
-using ChoreoControllerFunction =
-    std::function<frc::ChassisSpeeds(frc::Pose2d, SampleType)>;
+using ChoreoControllerFunction = std::function<void(frc::Pose2d, SampleType)>;
 
 using TrajectoryLogger = std::function<void(frc::Pose2d, bool)>;
 
 static constexpr units::meter_t DEFAULT_TOLERANCE = 3_in;
-static constexpr frc::ChassisSpeeds DEFAULT_CHASSIS_SPEEDS;
 
 /**
  * A class that represents a trajectory that can be used in an autonomous
@@ -299,7 +296,6 @@ class AutoTrajectory {
   void CmdExecute() {
     SampleType sample =
         trajectory.SampleAt<Year>(TimeIntoTraj(), mirrorTrajectory());
-    frc::ChassisSpeeds chassisSpeeds = DEFAULT_CHASSIS_SPEEDS;
     controller(poseSupplier(), sample);
     currentSample = sample;
   }
