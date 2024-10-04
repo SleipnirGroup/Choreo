@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <stdint.h>
+
 #include <cassert>
 #include <utility>
 
@@ -17,13 +19,13 @@ namespace trajopt {
 /**
  * The side of the line to stay on.
  */
-enum Side {
+enum class Side : uint8_t {
   /* Stay above the line. */
-  Above,
+  kAbove,
   /* Stay below the line. */
-  Below,
+  kBelow,
   /* Stay on the line. */
-  On,
+  kOn,
 };
 
 /**
@@ -49,13 +51,6 @@ class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
         m_fieldLineStart{std::move(fieldLineStart)},
         m_fieldLineEnd{std::move(fieldLineEnd)},
         m_side{side} {}
-
-  /**
-   * Sets the side to constrain.
-   *
-   * @param side The side to constrain to.
-   */
-  void SetSide(Side side) { m_side = side; }
 
   /**
    * Applies this constraint to the given problem.
@@ -99,17 +94,18 @@ class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
     auto b = m_fieldLineEnd.X() - m_fieldLineStart.X();
 
     switch (m_side) {
-      case Above:
+      case Side::kAbove:
         problem.SubjectTo(a * bumperCorner.X() + b * bumperCorner.Y() >
                           a * m_fieldLineStart.X() + b * m_fieldLineStart.Y());
         break;
-      case Below:
+      case Side::kBelow:
         problem.SubjectTo(a * bumperCorner.X() + b * bumperCorner.Y() <
                           a * m_fieldLineStart.X() + b * m_fieldLineStart.Y());
         break;
-      case On:
+      case Side::kOn:
         problem.SubjectTo(a * bumperCorner.X() + b * bumperCorner.Y() ==
                           a * m_fieldLineStart.X() + b * m_fieldLineStart.Y());
+        break;
     }
   }
 

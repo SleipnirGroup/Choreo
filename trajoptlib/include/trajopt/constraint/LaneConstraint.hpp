@@ -2,9 +2,11 @@
 
 #pragma once
 
+#include <cmath>
 #include <optional>
 
 #include "trajopt/constraint/PointLineRegionConstraint.hpp"
+#include "trajopt/geometry/Rotation2.hpp"
 #include "trajopt/geometry/Translation2.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 
@@ -21,29 +23,44 @@ class TRAJOPT_DLLEXPORT LaneConstraint {
    * Constructs a LaneConstraint.
    *
    * @param robotPoint Robot point.
-   * @param topLineStart Start point of the top line.
-   * @param topLineEnd End point of the top line.
-   * @param bottomLineStart Start point of the bottom line.
-   * @param bottomLineEnd End point of the bottom line.
+   * @param centerLineStart Start point of the center line.
+   * @param centerLineEnd End point of the center line.
+   * @param tolerance Distance from center line to lane edge. Passing zero
+   *   creates a line constraint.
    */
-  explicit LaneConstraint(Translation2d robotPoint, Translation2d topLineStart,
-                          Translation2d topLineEnd,
-                          Translation2d bottomLineStart,
-                          Translation2d bottomLineEnd)
-      : m_topLine{robotPoint, topLineStart, topLineEnd, Side::Below},
-        m_bottomLine{std::make_optional(PointLineRegionConstraint{
-            robotPoint, bottomLineStart, bottomLineEnd, Side::Above})} {}
+  LaneConstraint(Translation2d robotPoint, Translation2d centerLineStart,
+                 Translation2d centerLineEnd, double tolerance)
+      : m_topLine{[&] {
+          if (tolerance != 0.0) {
+            double dx = centerLineEnd.X() - centerLineStart.X();
+            double dy = centerLineEnd.Y() - centerLineStart.Y();
+            double dist = std::hypot(dx, dy);
+            auto offset = Translation2d{tolerance, 0.0}.RotateBy(
+                Rotation2d{dx / dist, dy / dist});
 
-  /**
-   * Constructs a LaneConstraint.
-   *
-   * @param robotPoint Robot point.
-   * @param lineStart Start point of the line.
-   * @param lineEnd End point of the line.
-   */
-  explicit LaneConstraint(Translation2d robotPoint, Translation2d lineStart,
-                          Translation2d lineEnd)
-      : m_topLine{robotPoint, lineStart, lineEnd, Side::On} {}
+            return PointLineRegionConstraint{
+                robotPoint, centerLineStart + offset, centerLineEnd + offset,
+                Side::kBelow};
+          } else {
+            return PointLineRegionConstraint{robotPoint, centerLineStart,
+                                             centerLineEnd, Side::kOn};
+          }
+        }()},
+        m_bottomLine{[&]() -> std::optional<PointLineRegionConstraint> {
+          if (tolerance != 0.0) {
+            double dx = centerLineEnd.X() - centerLineStart.X();
+            double dy = centerLineEnd.Y() - centerLineStart.Y();
+            double dist = std::hypot(dx, dy);
+            auto offset = Translation2d{tolerance, 0.0}.RotateBy(
+                Rotation2d{dx / dist, dy / dist});
+
+            return PointLineRegionConstraint{
+                robotPoint, centerLineStart - offset, centerLineEnd - offset,
+                Side::kAbove};
+          } else {
+            return std::nullopt;
+          }
+        }()} {}
 
   /**
    * Applies this constraint to the given problem.
@@ -60,14 +77,11 @@ class TRAJOPT_DLLEXPORT LaneConstraint {
              const sleipnir::Variable& angularVelocity,
              const Translation2v& linearAcceleration,
              const sleipnir::Variable& angularAcceleration) {
+    m_topLine.Apply(problem, pose, linearVelocity, angularVelocity,
+                    linearAcceleration, angularAcceleration);
     if (m_bottomLine.has_value()) {
-      m_topLine.Apply(problem, pose, linearVelocity, angularVelocity,
-                      linearAcceleration, angularAcceleration);
       m_bottomLine.value().Apply(problem, pose, linearVelocity, angularVelocity,
                                  linearAcceleration, angularAcceleration);
-    } else {
-      m_topLine.Apply(problem, pose, linearVelocity, angularVelocity,
-                      linearAcceleration, angularAcceleration);
     }
   }
 
