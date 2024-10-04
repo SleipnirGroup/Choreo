@@ -133,6 +133,7 @@ jobs:
         working-directory: pkg/Windows-x86_64
         run: |
           unzip -o Windows-x86_64.zip
+          rm Windows-x86_64.zip
           mv choreo.exe Choreo-${{ github.ref_name }}-Windows-x86_64.exe
           mv choreo-cli.exe Choreo-CLI-${{ github.ref_name }}-Windows-x86_64.exe
           mv Choreo_*_x64-setup.exe Choreo-${{ github.ref_name }}-Windows-x86_64-setup.exe
@@ -141,6 +142,7 @@ jobs:
         working-directory: pkg/Windows-aarch64
         run: |
           unzip -o Windows-aarch64.zip
+          rm Windows-aarch64.zip
           mv choreo.exe Choreo-${{ github.ref_name }}-Windows-aarch64.exe
           mv choreo-cli.exe Choreo-CLI-${{ github.ref_name }}-Windows-aarch64.exe
           mv Choreo_*_arm64-setup.exe Choreo-${{ github.ref_name }}-Windows-aarch64-setup.exe
@@ -149,14 +151,16 @@ jobs:
         working-directory: pkg/macOS-x86_64
         run: |
           unzip -o macOS-x86_64.zip
+          rm macOS-x86_64.zip
           mv Choreo Choreo-${{ github.ref_name }}-macOS-x86_64
           mv choreo-cli Choreo-CLI-${{ github.ref_name }}-macOS-x86_64
-          mv Choreo_*_aarch64.dmg Choreo-${{ github.ref_name }}-macOS-x86_64.dmg
+          mv Choreo_*_x64.dmg Choreo-${{ github.ref_name }}-macOS-x86_64.dmg
 
       - name: Rename macOS aarch64 artifacts
         working-directory: pkg/macOS-aarch64
         run: |
           unzip -o macOS-aarch64.zip
+          rm macOS-aarch64.zip
           mv Choreo Choreo-${{ github.ref_name }}-macOS-aarch64
           mv choreo-cli Choreo-CLI-${{ github.ref_name }}-macOS-aarch64
           mv Choreo_*_aarch64.dmg Choreo-${{ github.ref_name }}-macOS-aarch64.dmg
@@ -165,6 +169,7 @@ jobs:
         working-directory: pkg/Linux-x86_64
         run: |
           unzip -o Linux-x86_64.zip
+          rm Linux-x86_64.zip
           mv choreo Choreo-${{ github.ref_name }}-Linux-x86_64
           mv choreo-cli Choreo-CLI-${{ github.ref_name }}-Linux-x86_64
           mv choreo_*_amd64.AppImage Choreo-${{ github.ref_name }}-Linux-x86_64.AppImage
@@ -178,6 +183,6 @@ jobs:
         with:
           name: Choreo ${{ github.ref_name }}
           tag: ${{ github.ref_name }}
-          artifacts: "pkg/**/*.AppImage,pkg/**/*.deb,pkg/**/*.dmg,pkg/**/*.exe,pkg/**/*.rpm,pkg/**/Choreo,pkg/**/choreo,pkg/**/choreo-cli"
+          artifacts: "pkg/**/*"
           draft: true
           prerelease: true

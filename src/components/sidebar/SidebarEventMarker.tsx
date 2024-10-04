@@ -6,7 +6,7 @@ import { getParent } from "mobx-state-tree";
 import React, { Component } from "react";
 import { doc } from "../../document/DocumentManager";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
-import { IChoreoTrajStore } from "../../document/path/ChoreoTrajStore";
+import { IChoreoTrajectoryStore } from "../../document/path/ChoreoTrajectoryStore";
 import { IHolonomicPathStore, waypointIDToText } from "../../document/path/HolonomicPathStore";
 import styles from "./Sidebar.module.css";
 import { WaypointUUID } from "../../document/2025/DocumentTypes";

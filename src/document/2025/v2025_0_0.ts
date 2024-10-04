@@ -114,13 +114,14 @@ export interface DifferentialSample {
 }
 
 export interface ProgressUpdate {
-  type: "swerveTraj" | "differentialTraj";
+  type: "swerveTrajectory" | "differentialTrajectory";
   update: SwerveSample[] | DifferentialSample[] | string;
 }
 
 export interface ChoreoPath<T extends ExprOrNumber> {
   waypoints: Waypoint<T>[];
   constraints: Constraint[];
+  targetDt: T;
 }
 
 export type SampleType = "Swerve" | "Differential";
@@ -128,15 +129,14 @@ export interface Output {
   waypoints: number[];
   samples: SwerveSample[] | DifferentialSample[];
   splits: number[];
-  forcesAvailable: boolean;
 }
 
-export interface Traj {
+export interface Trajectory {
   name: string;
   version: typeof SAVE_FILE_VERSION;
   params: ChoreoPath<Expr>;
   snapshot: ChoreoPath<number>;
-  traj: Output;
+  trajectory: Output;
   events: EventMarker<ChoreolibEvent>[];
   pplibCommands: EventMarker<PplibCommand>[];
 }

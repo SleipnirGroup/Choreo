@@ -13,8 +13,6 @@ import {
   import { WaypointScope } from "./ConstraintStore";
   import { Env } from "./DocumentManager";
   import { ExpressionStore } from "./ExpressionStore";
-  import { IChoreoTrajStore } from "./path/ChoreoTrajStore";
-  import { IHolonomicPathStore } from "./path/HolonomicPathStore";
   
   export type CommandGroupType =
   | "sequential"

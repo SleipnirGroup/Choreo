@@ -1,6 +1,6 @@
 [package]
 name = "choreo"
-version = "2025.0.0-beta"
+version = "2025.0.0-beta.2"
 edition = "2021"
 description = """\
   A graphical tool for planning time-optimized trajectories for autonomous \

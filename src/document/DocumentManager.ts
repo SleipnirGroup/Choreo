@@ -19,7 +19,7 @@ import {
   GroupCommand,
   NamedCommand,
   Project,
-  Traj,
+  Trajectory,
   WaitCommand,
   type Expr,
   type RobotConfig,
@@ -187,8 +187,6 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
           targetTimestamp: marker.data.targetTimestamp,
           offset: vars().createExpression(marker.data.offset, "Time"),
         },
-
-
         event: createCommandStore(marker.event),
         uuid: crypto.randomUUID()
       });
@@ -245,7 +243,9 @@ export const doc = DocumentStore.create(
       EXPR_DEFAULTS
     ),
     type: "Swerve",
-    pathlist: {},
+    pathlist: {
+      defaultPath: undefined
+    },
     name: "Untitled",
     //@ts-expect-error this is recommended, not sure why it doesn't work
     variables: castToReferenceSnapshot(variables),
@@ -253,6 +253,7 @@ export const doc = DocumentStore.create(
   },
   env
 );
+doc.pathlist.addDefaultPath();
 function withoutUndo(callback: any) {
   doc.history.withoutUndo(callback);
 }
@@ -590,17 +591,17 @@ export async function openProject(projectPath: OpenFilePayload) {
     const dir = projectPath.dir;
     const name = projectPath.name.split(".")[0];
     let project: Project | undefined = undefined;
-    const trajs: Traj[] = [];
+    const trajectories: Trajectory[] = [];
     await Commands.cancelAll();
     await Commands.setDeployRoot(dir);
     await Promise.allSettled([
       Commands.readProject(name)
         .then((p) => (project = p))
         .catch(tracing.error),
-      Commands.readAllTraj()
+      Commands.readAllTrajectory()
         .then((paths) =>
           paths.forEach((path) => {
-            trajs.push(path);
+            trajectories.push(path);
           })
         )
         .catch(tracing.error)
@@ -610,8 +611,9 @@ export async function openProject(projectPath: OpenFilePayload) {
       throw "Internal error. Check console logs.";
     }
     doc.deserializeChor(project);
-    trajs.forEach((traj) => {
-      doc.pathlist.addPath(traj.name, true, traj);
+    doc.pathlist.paths.clear();
+    trajectories.forEach((trajectory) => {
+      doc.pathlist.addPath(trajectory.name, true, trajectory);
     });
     uiState.setSaveFileDir(dir);
     uiState.setProjectName(name);
@@ -685,10 +687,10 @@ export async function canSave(): Promise<boolean> {
 
 export async function renamePath(uuid: string, newName: string) {
   if (uiState.hasSaveLocation) {
-    const traj = doc.pathlist.paths.get(uuid);
-    if (traj) {
+    const trajectory = doc.pathlist.paths.get(uuid);
+    if (trajectory) {
       tracing.debug("renamePath", uuid, "to", newName);
-      await Commands.renameTraj(traj.serialize, newName)
+      await Commands.renameTrajectory(trajectory.serialize, newName)
         .finally(() => doc.pathlist.paths.get(uuid)?.setName(newName))
         .catch(tracing.error);
     }
@@ -699,9 +701,9 @@ export async function renamePath(uuid: string, newName: string) {
 
 export async function deletePath(uuid: string) {
   if (uiState.hasSaveLocation) {
-    const traj = doc.pathlist.paths.get(uuid);
-    if (traj) {
-      await Commands.deleteTraj(traj.serialize)
+    const trajectory = doc.pathlist.paths.get(uuid);
+    if (trajectory) {
+      await Commands.deleteTrajectory(trajectory.serialize)
         .finally(() => doc.pathlist.deletePath(uuid))
         .catch(tracing.error);
     }
@@ -712,11 +714,11 @@ export async function deletePath(uuid: string) {
 
 export async function writeTrajectory(uuid: string) {
   if (await canSave()) {
-    const traj = doc.pathlist.paths.get(uuid);
-    if (traj === undefined) {
+    const trajectory = doc.pathlist.paths.get(uuid);
+    if (trajectory === undefined) {
       throw `Tried to export trajectory with unknown uuid ${uuid}`;
     }
-    await Commands.writeTraj(traj.serialize);
+    await Commands.writeTrajectory(trajectory.serialize);
   } else {
     tracing.warn("Can't save trajectory, skipping");
   }
@@ -791,9 +793,9 @@ export async function saveProjectDialog() {
 
 export async function openDiagnosticZipWithInfo() {
   const project = doc.serializeChor();
-  const trajs: Traj[] = [];
+  const trajectories: Trajectory[] = [];
   doc.pathlist.paths.forEach((path) => {
-    trajs.push(path.serialize);
+    trajectories.push(path.serialize);
   });
-  await Commands.openDiagnosticZip(project, trajs);
+  await Commands.openDiagnosticZip(project, trajectories);
 }

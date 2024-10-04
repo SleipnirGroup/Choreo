@@ -1,6 +1,6 @@
 {
   "name": "choreo",
-  "version": "2025.0.0-beta",
+  "version": "2025.0.0-beta-2",
   "description": "A graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics Competition.",
   "homepage": "https://github.com/SleipnirGroup/Choreo",
   "bugs": {
@@ -14,7 +14,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "fmtCpp": "wpiformat -f choreolib && wpiformat -f trajoptlib",
+    "fmtCpp": "wpiformat",
     "fmtJava": "cd choreolib && bash ./gradlew spotlessApply",
     "fmtJs": "prettier --write .",
     "fmtRs": "cargo fmt",

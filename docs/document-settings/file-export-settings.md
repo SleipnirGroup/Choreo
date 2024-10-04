@@ -15,7 +15,7 @@ to design one Choreo path for an entire autonomous routine, then load and follow
 in your robot code's autonomous sequence.
 
 Whether or not the switch is turned on, Choreo will export a `.traj` file containing the whole path, as `PathName.traj`.
-When the switch is on, Choreo will also export the split parts as `PathName.1.traj, PathName.2.traj` etc. When the switch is turned off, Choreo will export the whole path as a second `.traj` file `PathName.1.traj`. This allows ChoreoLib's `Choreo.getTrajectoryGroup(String trajName)` (Java) and `Choreo::GetTrajectoryGroup(std::string_view trajName)` (C++) to work with projects that do not split at stop points.
+When the switch is on, Choreo will also export the split parts as `PathName.1.traj, PathName.2.traj` etc. When the switch is turned off, Choreo will export the whole path as a second `.traj` file `PathName.1.traj`. This allows ChoreoLib's `Choreo.getTrajectoryGroup(String trajectoryName)` (Java) and `Choreo::GetTrajectoryGroup(std::string_view trajectoryName)` (C++) to work with projects that do not split at stop points.
 
 This switch should also be turned on when using Choreo to generate paths for the PathPlanner GUI's auto builder. The individual segments will be visible in PathPlanner, and can be used separately when making autos.
 

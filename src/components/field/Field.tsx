@@ -32,6 +32,12 @@ export class Field extends Component<Props, State> {
     const selectedSidebar = doc.selectedSidebarItem;
     const activePath = doc.pathlist.activePath;
     const activePathUUID = doc.pathlist.activePathUUID;
+    if (
+      activePathUUID === doc.pathlist.defaultPath!.uuid ||
+      activePath === undefined
+    ) {
+      return <></>;
+    }
     let indexIfWaypoint = -1;
     if (selectedSidebar !== undefined && "heading" in selectedSidebar) {
       indexIfWaypoint = activePath.params.waypoints.findIndex(

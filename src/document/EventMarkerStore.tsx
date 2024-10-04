@@ -14,7 +14,7 @@ import { Command, EventMarker, EventMarkerData, WaypointUUID } from "./2025/Docu
 import { WaypointScope } from "./ConstraintStore";
 import { Env } from "./DocumentManager";
 import { ExpressionStore } from "./ExpressionStore";
-import { IChoreoTrajStore } from "./path/ChoreoTrajStore";
+import { IChoreoTrajectoryStore } from "./path/ChoreoTrajectoryStore";
 import { IHolonomicPathStore } from "./path/HolonomicPathStore";
 import { CommandStore } from "./CommandStore";
 import { findUUIDIndex, getByWaypointID, savedWaypointIdToWaypointId, waypointIdToSavedWaypointId } from "./path/utils";
@@ -31,7 +31,7 @@ export const EventMarkerDataStore = types
   .views((self) => ({
     getPath(): IHolonomicPathStore {
       const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
-        getParent<IChoreoTrajStore>(getParent<IEventMarkerStore[]>(self))
+        getParent<IChoreoTrajectoryStore>(getParent<IEventMarkerStore[]>(self))
       );
       return path;
     },
@@ -91,7 +91,7 @@ export const EventMarkerDataStore = types
      * @returns Returns undefined if the marker does not have both a timestamp and a target timestamp.
      * Otherwise, returns whether the target waypoint and the marker timestamp are on the same split part.
      */
-    isInSameSegment(traj: IChoreoTrajStore): boolean | undefined {
+    isInSameSegment(traj: IChoreoTrajectoryStore): boolean | undefined {
       let retVal: boolean | undefined = true;
       const targetTimestamp = self.targetTimestamp;
       const timestamp = self.timestamp;

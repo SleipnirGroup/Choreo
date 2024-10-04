@@ -52,9 +52,10 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
       callback(soln, handle);
     }
   });
-  size_t wptCnt = 1 + Ns.size();
-  size_t sgmtCnt = Ns.size();
-  size_t sampTot = GetIndex(Ns, wptCnt, 0);
+
+  size_t wptCnt = path.waypoints.size();
+  size_t sgmtCnt = path.waypoints.size() - 1;
+  size_t sampTot = GetIndex(Ns, wptCnt - 1, 0) + 1;
 
   x.reserve(sampTot);
   y.reserve(sampTot);
@@ -165,11 +166,11 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   problem.Minimize(std::move(T_tot));
 
   // Apply kinematics constraints
-  for (size_t wptIndex = 1; wptIndex < wptCnt; ++wptIndex) {
-    size_t N_sgmt = Ns.at(wptIndex - 1);
-    auto dt_sgmt = dts.at(wptIndex - 1);
+  for (size_t wptIndex = 0; wptIndex < wptCnt - 1; ++wptIndex) {
+    size_t N_sgmt = Ns.at(wptIndex);
+    auto dt_sgmt = dts.at(wptIndex);
 
-    for (size_t sampIndex = 0; sampIndex < N_sgmt; ++sampIndex) {
+    for (size_t sampIndex = 1; sampIndex <= N_sgmt; ++sampIndex) {
       size_t index = GetIndex(Ns, wptIndex, sampIndex);
 
       Translation2v x_n{x.at(index), y.at(index)};
@@ -189,15 +190,18 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
           (vR.at(index - 1) - vL.at(index - 1)) / path.drivetrain.trackwidth;
 
       Translation2v a_n = WheelToChassisSpeeds(aL.at(index), aR.at(index));
+      Translation2v a_n_1 =
+          WheelToChassisSpeeds(aL.at(index - 1), aR.at(index - 1));
 
-      problem.SubjectTo(x_n_1 + v_n * dt_sgmt == x_n);
-      problem.SubjectTo(v_n_1 + a_n * dt_sgmt == v_n);
-      problem.SubjectTo(theta_n_1 + omega_n * dt_sgmt == theta_n);
+      problem.SubjectTo(
+          x_n_1 + v_n_1 * dt_sgmt + a_n_1 * 0.5 * dt_sgmt * dt_sgmt == x_n);
 
-      auto lhs = theta_n - theta_n_1;
+      auto lhs = heading.at(index) - heading.at(index - 1);
       auto rhs = omega_n * dt_sgmt;
-      problem.SubjectTo(lhs.Cos() == slp::cos(rhs));
-      problem.SubjectTo(lhs.Sin() == slp::sin(rhs));
+      problem.SubjectTo(slp::cos(lhs) == slp::cos(rhs));
+      problem.SubjectTo(slp::sin(lhs) == slp::sin(rhs));
+
+      problem.SubjectTo(v_n_1 + a_n_1 * dt_sgmt == v_n);
     }
   }
 
@@ -247,7 +251,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   for (size_t wptIndex = 0; wptIndex < wptCnt; ++wptIndex) {
     for (auto& constraint : path.waypoints.at(wptIndex).waypointConstraints) {
       // First index of next wpt - 1
-      size_t index = GetIndex(Ns, wptIndex + 1, 0) - 1;
+      size_t index = GetIndex(Ns, wptIndex, 0);
 
       Pose2v pose{x.at(index), y.at(index), {heading.at(index)}};
 
@@ -275,8 +279,8 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   for (size_t sgmtIndex = 0; sgmtIndex < sgmtCnt; ++sgmtIndex) {
     for (auto& constraint :
          path.waypoints.at(sgmtIndex + 1).segmentConstraints) {
-      size_t startIndex = GetIndex(Ns, sgmtIndex + 1, 0);
-      size_t endIndex = GetIndex(Ns, sgmtIndex + 2, 0);
+      size_t startIndex = GetIndex(Ns, sgmtIndex, 0);
+      size_t endIndex = GetIndex(Ns, sgmtIndex + 1, 0);
 
       for (size_t index = startIndex; index < endIndex; ++index) {
         Pose2v pose{x.at(index), y.at(index), {heading.at(index)}};

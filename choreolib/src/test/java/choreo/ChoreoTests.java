@@ -14,11 +14,11 @@ import org.junit.jupiter.api.Test;
 // import org.junit.jupiter.api.Test;
 
 public class ChoreoTests {
-  public static final String TRAJ =
+  public static final String TRAJECTORY =
       "{"
           + "  \"name\":\"New Path (1)\","
           + "  \"version\":\"v2025.0.0\","
-          + "  \"traj\":{"
+          + "  \"trajectory\":{"
           + "   \"waypoints\":[0.0,1.5256324024471957],"
           + "   \"samples\":["
           + "      {\"t\":0.0, \"x\":4.060854911804199, \"y\":5.9335150718688965, \"heading\":0.0, \"vx\":0.0, \"vy\":0.0, \"omega\":0.0, \"ax\":0.0, \"ay\":0.0, \"alpha\":0.0, \"fx\":[0.0,0.0,0.0,0.0], \"fy\":[0.0,0.0,0.0,0.0]},"
@@ -128,6 +128,6 @@ public class ChoreoTests {
   public void testChoreo() {
     ProjectFile projectFile = GSON.fromJson(PROJ, ProjectFile.class);
     System.out.println(projectFile.name);
-    System.out.println(Choreo.readTrajectoryString(TRAJ, projectFile).name());
+    System.out.println(Choreo.readTrajectoryString(TRAJECTORY, projectFile).name());
   }
 }

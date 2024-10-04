@@ -1,6 +1,6 @@
 [package]
 name = "choreo-cli"
-version = "2025.0.0-beta"
+version = "2025.0.0-beta.2"
 edition = "2021"
 homepage = "https://github.com/SleipnirGroup/Choreo"
 repository = "https://github.com/SleipnirGroup/Choreo.git"

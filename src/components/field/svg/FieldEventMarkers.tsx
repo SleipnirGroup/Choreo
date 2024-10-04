@@ -52,7 +52,7 @@ class FieldEventMarkers extends Component<Props, State> {
       if (marker.data.timestamp === undefined) {
         return [];
       }
-      const marked = sample(marker.data.timestamp, path.traj.fullTraj);
+      const marked = sample(marker.data.timestamp, path.trajectory.samples);
       return (
         <FieldEventMarker
           key={marker.uuid}

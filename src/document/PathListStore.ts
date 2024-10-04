@@ -1,5 +1,5 @@
 import { Instance, getEnv, types } from "mobx-state-tree";
-import { Traj } from "./2025/DocumentTypes";
+import { Trajectory } from "./2025/DocumentTypes";
 import { Env } from "./DocumentManager";
 import { HolonomicPathStore, IHolonomicPathStore } from "./path/HolonomicPathStore";
 import { IHolonomicWaypointStore } from "./HolonomicWaypointStore";
@@ -7,7 +7,8 @@ import { IHolonomicWaypointStore } from "./HolonomicWaypointStore";
 export const PathListStore = types
   .model("PathListStore", {
     paths: types.map(HolonomicPathStore),
-    activePathUUID: ""
+    activePathUUID: "",
+    defaultPath: types.maybe(HolonomicPathStore)
   })
   .actions((self) => {
     let pathExporter: (uuid: string) => void = (_uuid) => {};
@@ -53,11 +54,48 @@ export const PathListStore = types
         return usedName;
       },
       setActivePathUUID(uuid: string) {
-        if (self.pathUUIDs.includes(uuid)) {
+        if (self.pathUUIDs.includes(uuid) || uuid === self.defaultPath!.uuid) {
           self.activePathUUID = uuid;
         }
       },
-      addPath(name: string, select: boolean = false, contents?: Traj): string {
+      addDefaultPath() {
+        const usedName = "No Path";
+        const newUUID = crypto.randomUUID();
+        const env = getEnv<Env>(self);
+        const path = HolonomicPathStore.create({
+          uuid: newUUID,
+          name: usedName,
+          params: {
+            constraints: [],
+            waypoints: [],
+            targetDt: env.vars().createExpression("0.1 s", "Time")
+          },
+          ui: {
+            visibleWaypointsEnd: 0,
+            visibleWaypointsStart: 0
+          },
+          snapshot: {
+            waypoints: [],
+            constraints: [],
+            targetDt: 0.1
+          },
+          trajectory: {
+            waypoints: [],
+            samples: [],
+            splits: [],
+          },
+          markers: [],
+
+        });
+        path.setExporter((uuid) => {});
+        self.defaultPath = path;
+        self.activePathUUID = path.uuid;
+      },
+      addPath(
+        name: string,
+        select: boolean = false,
+        contents?: Trajectory
+      ): string {
         const usedName = this.disambiguateName(name);
         const env = getEnv<Env>(self);
         const newUUID = crypto.randomUUID();
@@ -68,7 +106,8 @@ export const PathListStore = types
               name: usedName,
               params: {
                 constraints: [],
-                waypoints: []
+                waypoints: [],
+                targetDt: env.vars().createExpression("0.1 s", "Time")
               },
               ui: {
                 visibleWaypointsEnd: 0,
@@ -76,9 +115,10 @@ export const PathListStore = types
               },
               snapshot: {
                 waypoints: [],
-                constraints: []
+                constraints: [],
+                targetDt: 0.1
               },
-              traj: {
+              trajectory: {
                 waypoints: [],
                 samples: [],
                 splits: []
@@ -133,12 +173,12 @@ export const PathListStore = types
   .actions((self) => {
     return {
       deletePath(uuid: string) {
-        self.paths.delete(uuid);
-        if (self.paths.size === 0) {
-          self.addPath("New Path", true);
+        if (self.paths.size === 1) {
+          self.setActivePathUUID(self.defaultPath!.uuid);
         } else if (self.activePathUUID === uuid) {
           self.setActivePathUUID(self.pathUUIDs[0]);
         }
+        self.paths.delete(uuid);
       },
       duplicatePath(uuid: string) {
         if (self.pathUUIDs.includes(uuid)) {
@@ -154,6 +194,15 @@ export const PathListStore = types
         }
       }
     };
-  });
+  })
+  .views((self) => ({
+    get activePath(): IHolonomicPathStore {
+      let path = self.paths.get(self.activePathUUID);
+      if (path === undefined) {
+        path = self.defaultPath;
+      }
+      return path as IHolonomicPathStore;
+    }
+  }));
 
 export type IPathListStore = Instance<typeof PathListStore>;

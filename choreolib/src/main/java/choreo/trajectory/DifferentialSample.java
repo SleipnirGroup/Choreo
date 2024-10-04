@@ -11,13 +11,13 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.util.struct.Struct;
 import java.nio.ByteBuffer;
 
-/** A single robot sample in a ChoreoTrajectory. */
+/** A single robot sample in a Choreo Trajectory. */
 public class DifferentialSample implements TrajectorySample<DifferentialSample> {
   private static final double TRACK_WIDTH =
       Choreo.getProjectFile().config.differentialTrackWidth.val;
 
   /** The timestamp of this sample, relative to the beginning of the trajectory. */
-  public final double timestamp;
+  public final double t;
 
   /** The X position of the sample in meters. */
   public final double x;
@@ -71,7 +71,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
       double ar,
       double fl,
       double fr) {
-    this.timestamp = timestamp;
+    this.t = timestamp;
     this.x = x;
     this.y = y;
     this.heading = heading;
@@ -85,7 +85,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
 
   @Override
   public double getTimestamp() {
-    return timestamp;
+    return t;
   }
 
   @Override
@@ -106,11 +106,11 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
 
   @Override
   public DifferentialSample interpolate(DifferentialSample endValue, double timestamp) {
-    double scale = (timestamp - this.timestamp) / (endValue.timestamp - this.timestamp);
+    double scale = (timestamp - this.t) / (endValue.t - this.t);
     var interp_pose = getPose().interpolate(endValue.getPose(), scale);
 
     return new DifferentialSample(
-        MathUtil.interpolate(this.timestamp, endValue.timestamp, scale),
+        MathUtil.interpolate(this.t, endValue.t, scale),
         interp_pose.getX(),
         interp_pose.getY(),
         interp_pose.getRotation().getRadians(),
@@ -126,7 +126,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
     return switch (AllianceFlipUtil.getFlipper()) {
       case MIRRORED ->
           new DifferentialSample(
-              timestamp,
+              t,
               AllianceFlipUtil.flipX(x),
               y,
               AllianceFlipUtil.flipHeading(heading),
@@ -138,7 +138,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
               fr);
       case ROTATE_AROUND ->
           new DifferentialSample(
-              timestamp,
+              t,
               AllianceFlipUtil.flipX(x),
               AllianceFlipUtil.flipY(y),
               AllianceFlipUtil.flipHeading(heading),
@@ -152,8 +152,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
   }
 
   public DifferentialSample offsetBy(double timestampOffset) {
-    return new DifferentialSample(
-        timestamp + timestampOffset, x, y, heading, vl, vr, al, ar, fl, fr);
+    return new DifferentialSample(t + timestampOffset, x, y, heading, vl, vr, al, ar, fl, fr);
   }
 
   @Override
@@ -171,8 +170,8 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
     }
 
     @Override
-    public String getTypeName() {
-      return "DifferentialSample";
+    public String getTypeString() {
+      return "struct:DifferentialSample";
     }
 
     @Override
@@ -214,7 +213,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
 
     @Override
     public void pack(ByteBuffer bb, DifferentialSample value) {
-      bb.putDouble(value.timestamp);
+      bb.putDouble(value.t);
       bb.putDouble(value.x);
       bb.putDouble(value.y);
       bb.putDouble(value.heading);

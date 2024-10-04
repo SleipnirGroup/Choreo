@@ -7,7 +7,7 @@ import { IReactionDisposer, reaction } from "mobx";
 import {
   SAVE_FILE_VERSION,
   type ChoreoPath,
-  type Traj,
+  type Trajectory,
   Waypoint,
   Expr,
   PplibCommand,
@@ -18,7 +18,7 @@ import {
   WaypointUUID
 } from "../2025/DocumentTypes";
 import { ChoreoPathStore } from "./ChoreoPathStore";
-import { ChoreoTrajStore } from "./ChoreoTrajStore";
+import { ChoreoTrajectoryStore } from "./ChoreoTrajectoryStore";
 import { PathUIStore } from "./PathUIStore";
 import { Env } from "../DocumentManager";
 import { EventMarkerStore, IEventMarkerStore } from "../EventMarkerStore";
@@ -54,15 +54,11 @@ export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
     snapshot: types.frozen<ChoreoPath<number>>(),
     params: ChoreoPathStore,
-    traj: ChoreoTrajStore,
+    trajectory: ChoreoTrajectoryStore,
     ui: PathUIStore,
     markers: types.array(EventMarkerStore),
     name: "",
-    uuid: types.identifier,
-    isTrajectoryStale: true,
-    usesControlIntervalGuessing: true,
-    defaultControlIntervalCount: 40,
-    usesDefaultObstacles: true
+    uuid: types.identifier
   })
 
   .views((self) => {
@@ -71,15 +67,15 @@ export const HolonomicPathStore = types
         return self.params.waypoints.length >= 2 && !self.ui.generating;
       },
       canExport(): boolean {
-        return self.traj.samples.length >= 2;
+        return self.trajectory.samples.length >= 2;
       },
-      get serialize(): Traj {
+      get serialize(): Trajectory {
         const markers = self.markers.map(m=>m.serialize);
         return {
           name: self.name,
           version: SAVE_FILE_VERSION,
           params: self.params.serialize,
-          traj: self.traj.serialize,
+          trajectory: self.trajectory.serialize,
           snapshot: self.snapshot,
           pplibCommands: markers.filter(m=>!commandIsChoreolib(m.event)) as 
             EventMarker<PplibCommand>[],
@@ -98,7 +94,7 @@ export const HolonomicPathStore = types
   .views((self) => {
     return {
       waypointTimestamps(): number[] {
-        return self.traj.waypoints;
+        return self.trajectory.waypoints;
       }
     };
   })
@@ -128,21 +124,9 @@ export const HolonomicPathStore = types
       setSnapshot(snap: ChoreoPath<number>) {
         self.snapshot = snap;
       },
-      setIsTrajectoryStale(isTrajectoryStale: boolean) {
-        getEnv<Env>(self).withoutUndo(() => {
-          self.isTrajectoryStale = isTrajectoryStale;
-        });
-      },
-      setControlIntervalGuessing(value: boolean) {
-        self.usesControlIntervalGuessing = value;
-      },
-      setDefaultControlIntervalCounts(counts: number) {
-        self.defaultControlIntervalCount = counts;
-      },
       setName(name: string) {
         self.name = name;
       },
-
       addWaypoint(waypoint?: Partial<Waypoint<Expr>>): IHolonomicWaypointStore {
         self.params.waypoints.push(
           getEnv<Env>(self).create.WaypointStore(
@@ -170,11 +154,11 @@ export const HolonomicPathStore = types
   })
   .actions((self) => {
     return {
-      deserialize(ser: Traj) {
+      deserialize(ser: Trajectory) {
         self.name = ser.name;
         self.snapshot = ser.snapshot;
         self.params.deserialize(ser.params);
-        self.traj.deserialize(ser.traj);
+        self.trajectory.deserialize(ser.trajectory);
         ser.events.forEach(m=>{
           self.addEventMarker(m);
         })

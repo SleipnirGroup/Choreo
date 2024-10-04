@@ -31,9 +31,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
                 const newMarker = activePath.addEventMarker();
 
                 newMarker.data.setTarget({ uuid: point.uuid });
-                if (!activePath.isTrajectoryStale) {
-                  newMarker.data.setTargetTimestamp(activePath.traj.waypoints[index]);
-                }
+                // TODO set direct timestamp if trajectory not stale
                 doc.setSelectedSidebarItem(newMarker);
               }}
             ></circle>

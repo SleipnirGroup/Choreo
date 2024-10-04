@@ -7,7 +7,11 @@ import edu.wpi.first.math.interpolation.Interpolatable;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.util.struct.StructSerializable;
 
-/** The generic interface for a sample in a trajectory. */
+/**
+ * The generic interface for a sample in a trajectory.
+ *
+ * @param <Self> Derived sample type.
+ */
 public interface TrajectorySample<Self extends TrajectorySample<Self>>
     extends Interpolatable<Self>, StructSerializable {
   /**

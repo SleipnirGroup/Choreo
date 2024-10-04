@@ -4,11 +4,11 @@ package choreo;
 
 import static edu.wpi.first.util.ErrorMessages.requireNonNullParam;
 
-import choreo.autos.AutoChooser;
-import choreo.autos.AutoFactory;
-import choreo.autos.AutoFactory.ChoreoAutoBindings;
-import choreo.autos.AutoLoop;
-import choreo.autos.AutoTrajectory;
+import choreo.auto.AutoChooser;
+import choreo.auto.AutoFactory;
+import choreo.auto.AutoFactory.AutoBindings;
+import choreo.auto.AutoLoop;
+import choreo.auto.AutoTrajectory;
 import choreo.trajectory.DifferentialSample;
 import choreo.trajectory.EventMarker;
 import choreo.trajectory.ProjectFile;
@@ -28,6 +28,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,7 @@ import java.util.function.Supplier;
 public final class Choreo {
   private static final Gson GSON = new Gson();
   private static final String TRAJECTORY_FILE_EXTENSION = ".traj";
+  private static final String SPEC_VERSION = "v2025.0.0";
 
   private static File CHOREO_DIR = new File(Filesystem.getDeployDirectory(), "choreo");
 
@@ -72,11 +74,21 @@ public final class Choreo {
       } else if (projectFiles.length > 1) {
         throw new RuntimeException("Found multiple project files in deploy directory");
       }
-      LAZY_PROJECT_FILE =
-          Optional.of(GSON.fromJson(new FileReader(projectFiles[0]), ProjectFile.class));
+      BufferedReader reader = new BufferedReader(new FileReader(projectFiles[0]));
+      String str = reader.lines().reduce("", (a, b) -> a + b);
+      reader.close();
+      JsonObject json = GSON.fromJson(str, JsonObject.class);
+      String version = json.get("version").getAsString();
+      if (!SPEC_VERSION.equals(version)) {
+        throw new RuntimeException(
+            ".chor project file: Wrong version " + version + ". Expected " + SPEC_VERSION);
+      }
+      LAZY_PROJECT_FILE = Optional.of(GSON.fromJson(str, ProjectFile.class));
     } catch (JsonSyntaxException ex) {
       throw new RuntimeException("Could not parse project file", ex);
     } catch (FileNotFoundException ex) {
+      throw new RuntimeException("Could not find project file", ex);
+    } catch (IOException ex) {
       throw new RuntimeException("Could not find project file", ex);
     }
     return LAZY_PROJECT_FILE.get();
@@ -86,6 +98,8 @@ public final class Choreo {
    * This interface exists as a type alias. A ControlFunction has a signature of ({@link Pose2d},
    * {@link SampleType})-&gt;{@link ChassisSpeeds}, where the function returns robot-relative {@link
    * ChassisSpeeds} for the robot.
+   *
+   * @param <SampleType> DifferentialSample or SwerveSample.
    */
   public interface ControlFunction<SampleType extends TrajectorySample<SampleType>>
       extends BiFunction<Pose2d, SampleType, ChassisSpeeds> {}
@@ -94,6 +108,8 @@ public final class Choreo {
    * This interface exists as a type alias. A TrajectoryLogger has a signature of ({@link
    * Trajectory}, {@link Boolean})-&gt;void, where the function consumes a trajectory and a boolean
    * indicating whether the trajectory is starting or finishing.
+   *
+   * @param <SampleType> DifferentialSample or SwerveSample.
    */
   public interface TrajectoryLogger<SampleType extends TrajectorySample<SampleType>>
       extends BiConsumer<Trajectory<SampleType>, Boolean> {}
@@ -105,33 +121,34 @@ public final class Choreo {
 
   /**
    * Load a trajectory from the deploy directory. Choreolib expects .traj files to be placed in
-   * src/main/deploy/choreo/[trajName].traj.
+   * src/main/deploy/choreo/[trajectoryName].traj.
    *
    * @param <SampleType> The type of samples in the trajectory.
-   * @param trajName the path name in Choreo, which matches the file name in the deploy directory,
-   *     file extension is optional.
+   * @param trajectoryName the path name in Choreo, which matches the file name in the deploy
+   *     directory, file extension is optional.
    * @return the loaded trajectory, or `Optional.empty()` if the trajectory could not be loaded.
    */
   @SuppressWarnings("unchecked")
   public static <SampleType extends TrajectorySample<SampleType>>
-      Optional<Trajectory<SampleType>> loadTrajectory(String trajName) {
-    requireNonNullParam(trajName, "trajName", "Choreo.loadTrajectory");
+      Optional<Trajectory<SampleType>> loadTrajectory(String trajectoryName) {
+    requireNonNullParam(trajectoryName, "trajectoryName", "Choreo.loadTrajectory");
 
-    if (trajName.endsWith(TRAJECTORY_FILE_EXTENSION)) {
-      trajName = trajName.substring(0, trajName.length() - TRAJECTORY_FILE_EXTENSION.length());
+    if (trajectoryName.endsWith(TRAJECTORY_FILE_EXTENSION)) {
+      trajectoryName =
+          trajectoryName.substring(0, trajectoryName.length() - TRAJECTORY_FILE_EXTENSION.length());
     }
-    File trajFile = new File(CHOREO_DIR, trajName + TRAJECTORY_FILE_EXTENSION);
+    File trajectoryFile = new File(CHOREO_DIR, trajectoryName + TRAJECTORY_FILE_EXTENSION);
     try {
-      var reader = new BufferedReader(new FileReader(trajFile));
+      var reader = new BufferedReader(new FileReader(trajectoryFile));
       String str = reader.lines().reduce("", (a, b) -> a + b);
       reader.close();
-      Trajectory<SampleType> traj =
+      Trajectory<SampleType> trajectory =
           (Trajectory<SampleType>) readTrajectoryString(str, getProjectFile());
-      return Optional.of(traj);
+      return Optional.of(trajectory);
     } catch (FileNotFoundException ex) {
-      DriverStation.reportError("Could not find trajectory file: " + trajFile, false);
+      DriverStation.reportError("Could not find trajectory file: " + trajectoryFile, false);
     } catch (JsonSyntaxException ex) {
-      DriverStation.reportError("Could not parse trajectory file: " + trajFile, false);
+      DriverStation.reportError("Could not parse trajectory file: " + trajectoryFile, false);
     } catch (Exception ex) {
       DriverStation.reportError(ex.getMessage(), ex.getStackTrace());
     }
@@ -140,17 +157,22 @@ public final class Choreo {
 
   static Trajectory<? extends TrajectorySample<?>> readTrajectoryString(
       String str, ProjectFile projectFile) {
-    JsonObject wholeTraj = GSON.fromJson(str, JsonObject.class);
-    String name = wholeTraj.get("name").getAsString();
-    EventMarker[] events = GSON.fromJson(wholeTraj.get("events"), EventMarker[].class);
-    JsonObject trajObj = wholeTraj.getAsJsonObject("traj");
-    Integer[] splits = GSON.fromJson(trajObj.get("splits"), Integer[].class);
+    JsonObject wholeTrajectory = GSON.fromJson(str, JsonObject.class);
+    String name = wholeTrajectory.get("name").getAsString();
+    String version = wholeTrajectory.get("version").getAsString();
+    if (!SPEC_VERSION.equals(version)) {
+      throw new RuntimeException(
+          name + ".traj: Wrong version: " + version + ". Expected " + SPEC_VERSION);
+    }
+    EventMarker[] events = GSON.fromJson(wholeTrajectory.get("events"), EventMarker[].class);
+    JsonObject trajectoryObj = wholeTrajectory.getAsJsonObject("trajectory");
+    Integer[] splits = GSON.fromJson(trajectoryObj.get("splits"), Integer[].class);
     if (projectFile.type.equals("Swerve")) {
-      SwerveSample[] samples = GSON.fromJson(trajObj.get("samples"), SwerveSample[].class);
+      SwerveSample[] samples = GSON.fromJson(trajectoryObj.get("samples"), SwerveSample[].class);
       return new Trajectory<SwerveSample>(name, List.of(samples), List.of(splits), List.of(events));
     } else if (projectFile.type.equals("Differential")) {
       DifferentialSample[] sampleArray =
-          GSON.fromJson(trajObj.get("samples"), DifferentialSample[].class);
+          GSON.fromJson(trajectoryObj.get("samples"), DifferentialSample[].class);
       return new Trajectory<DifferentialSample>(
           name, List.of(sampleArray), List.of(splits), List.of(events));
     } else {
@@ -162,85 +184,86 @@ public final class Choreo {
    * A utility for caching loaded trajectories. This allows for loading trajectories only once, and
    * then reusing them.
    */
-  public static class ChoreoTrajCache {
+  public static class TrajectoryCache {
     private final Map<String, Trajectory<?>> cache;
 
-    /** Creates a new ChoreoTrajCache with a normal {@link HashMap} as the cache. */
-    public ChoreoTrajCache() {
+    /** Creates a new TrajectoryCache with a normal {@link HashMap} as the cache. */
+    public TrajectoryCache() {
       cache = new HashMap<>();
     }
 
     /**
-     * Creates a new ChoreoTrajCache with a custom cache.
+     * Creates a new TrajectoryCache with a custom cache.
      *
      * <p>this could be useful if you want to use a concurrent map or a map with a maximum size.
      *
      * @param cache The cache to use.
      */
-    public ChoreoTrajCache(Map<String, Trajectory<?>> cache) {
-      requireNonNullParam(cache, "cache", "ChoreoTrajCache.<init>");
+    public TrajectoryCache(Map<String, Trajectory<?>> cache) {
+      requireNonNullParam(cache, "cache", "TrajectoryCache.<init>");
       this.cache = cache;
     }
 
     /**
      * Load a trajectory from the deploy directory. Choreolib expects .traj files to be placed in
-     * src/main/deploy/choreo/[trajName].traj.
+     * src/main/deploy/choreo/[trajectoryName].traj.
      *
      * <p>This method will cache the loaded trajectory and reused it if it is requested again.
      *
-     * @param trajName the path name in Choreo, which matches the file name in the deploy directory,
-     *     file extension is optional.
+     * @param trajectoryName the path name in Choreo, which matches the file name in the deploy
+     *     directory, file extension is optional.
      * @return the loaded trajectory, or `Optional.empty()` if the trajectory could not be loaded.
      * @see Choreo#loadTrajectory(String)
      */
-    public Optional<? extends Trajectory<?>> loadTrajectory(String trajName) {
-      requireNonNullParam(trajName, "trajName", "ChoreoTrajCache.loadTrajectory");
-      if (cache.containsKey(trajName)) {
-        return Optional.of(cache.get(trajName));
+    public Optional<? extends Trajectory<?>> loadTrajectory(String trajectoryName) {
+      requireNonNullParam(trajectoryName, "trajectoryName", "TrajectoryCache.loadTrajectory");
+      if (cache.containsKey(trajectoryName)) {
+        return Optional.of(cache.get(trajectoryName));
       } else {
-        return loadTrajectory(trajName)
+        return Choreo.loadTrajectory(trajectoryName)
             .map(
-                traj -> {
-                  cache.put(trajName, traj);
-                  return traj;
+                trajectory -> {
+                  cache.put(trajectoryName, trajectory);
+                  return trajectory;
                 });
       }
     }
 
     /**
      * Load a section of a split trajectory from the deploy directory. Choreolib expects .traj files
-     * to be placed in src/main/deploy/choreo/[trajName].traj.
+     * to be placed in src/main/deploy/choreo/[trajectoryName].traj.
      *
      * <p>This method will cache the loaded trajectory and reused it if it is requested again. The
      * trajectory that is split off of will also be cached.
      *
-     * @param trajName the path name in Choreo, which matches the file name in the deploy directory,
-     *     file extension is optional.
+     * @param trajectoryName the path name in Choreo, which matches the file name in the deploy
+     *     directory, file extension is optional.
      * @param splitIndex the index of the split trajectory to load
      * @return the loaded trajectory, or `Optional.empty()` if the trajectory could not be loaded.
      * @see Choreo#loadTrajectory(String)
      */
-    public Optional<? extends Trajectory<?>> loadTrajectory(String trajName, int splitIndex) {
-      requireNonNullParam(trajName, "trajName", "ChoreoTrajCache.loadTrajectory");
+    public Optional<? extends Trajectory<?>> loadTrajectory(String trajectoryName, int splitIndex) {
+      requireNonNullParam(trajectoryName, "trajectoryName", "TrajectoryCache.loadTrajectory");
       // make the key something that could never possibly be a valid trajectory name
-      String key = trajName + ".:." + splitIndex;
+      String key = trajectoryName + ".:." + splitIndex;
       if (cache.containsKey(key)) {
         return Optional.of(cache.get(key));
-      } else if (cache.containsKey(trajName)) {
+      } else if (cache.containsKey(trajectoryName)) {
         return cache
-            .get(trajName)
+            .get(trajectoryName)
             .getSplit(splitIndex)
             .map(
-                traj -> {
-                  cache.put(key, traj);
-                  return traj;
+                trajectory -> {
+                  cache.put(key, trajectory);
+                  return trajectory;
                 });
       } else {
-        return loadTrajectory(trajName)
+        return Choreo.loadTrajectory(trajectoryName)
             .flatMap(
-                traj -> {
-                  cache.put(trajName, traj);
-                  return traj.getSplit(splitIndex)
+                trajectory -> {
+                  cache.put(trajectoryName, trajectory);
+                  return trajectory
+                      .getSplit(splitIndex)
                       .map(
                           split -> {
                             cache.put(key, split);
@@ -282,7 +305,7 @@ public final class Choreo {
       ControlFunction<SampleType> controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
-      ChoreoAutoBindings bindings) {
+      AutoBindings bindings) {
     return new AutoFactory(
         requireNonNullParam(poseSupplier, "poseSupplier", "Choreo.createAutoFactory"),
         requireNonNullParam(controller, "controller", "Choreo.createAutoFactory"),
@@ -309,7 +332,7 @@ public final class Choreo {
    *     while keeping the same coordinate system origin. This will be called every loop during the
    *     command.
    * @param bindings Universal trajectory event bindings.
-   * @param trajLogger A {@link TrajectoryLogger} to log {@link Trajectory} as they start and
+   * @param trajectoryLogger A {@link TrajectoryLogger} to log {@link Trajectory} as they start and
    *     finish.
    * @return An {@link AutoFactory} that can be used to create {@link AutoLoop} and {@link
    *     AutoTrajectory}.
@@ -321,8 +344,8 @@ public final class Choreo {
       ControlFunction<SampleType> controller,
       Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
-      ChoreoAutoBindings bindings,
-      TrajectoryLogger<SampleType> trajLogger) {
+      AutoBindings bindings,
+      TrajectoryLogger<SampleType> trajectoryLogger) {
     return new AutoFactory(
         requireNonNullParam(poseSupplier, "poseSupplier", "Choreo.createAutoFactory"),
         requireNonNullParam(controller, "controller", "Choreo.createAutoFactory"),
@@ -330,6 +353,6 @@ public final class Choreo {
         requireNonNullParam(mirrorTrajectory, "mirrorTrajectory", "Choreo.createAutoFactory"),
         requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory"),
         requireNonNullParam(bindings, "bindings", "Choreo.createAutoFactory"),
-        Optional.of(trajLogger));
+        Optional.of(trajectoryLogger));
   }
 }
