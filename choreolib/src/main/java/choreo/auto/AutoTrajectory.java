@@ -65,6 +65,20 @@ public class AutoTrajectory {
   /** The time that the previous trajectories took up */
   private double timeOffset = 0.0;
 
+  /**
+   * Constructs an AutoTrajectory.
+   *
+   * @param name The trajectory name.
+   * @param trajectory The trajectory samples.
+   * @param poseSupplier The pose supplier.
+   * @param controller The controller function.
+   * @param outputChassisSpeeds ChassisSpeeds setter.
+   * @param mirrorTrajectory Getter that determines whether to mirror trajectory.
+   * @param trajectoryLogger Optional trajectory logger.
+   * @param driveSubsystem Drive subsystem.
+   * @param loop Event loop.
+   * @param newTrajectoryCallback New trajectory callback.
+   */
   <SampleType extends TrajectorySample<SampleType>> AutoTrajectory(
       String name,
       Trajectory<SampleType> trajectory,

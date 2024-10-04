@@ -11,7 +11,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.util.struct.Struct;
 import java.nio.ByteBuffer;
 
-/** A single robot sample in a Choreo Trajectory. */
+/** A single differential drive robot sample in a Trajectory. */
 public class DifferentialSample implements TrajectorySample<DifferentialSample> {
   private static final double TRACK_WIDTH =
       Choreo.getProjectFile().config.differentialTrackWidth.val;

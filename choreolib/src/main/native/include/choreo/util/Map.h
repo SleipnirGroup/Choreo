@@ -9,12 +9,31 @@
 
 namespace choreo::util {
 
+/**
+ * A compile-time associative container.
+ *
+ * @tparam Key The key type.
+ * @tparam Value The value type.
+ * @tparam Size The number of elements in the container.
+ */
 template <typename Key, typename Value, size_t Size>
 class Map {
  public:
+  /**
+   * Construct the map from an array of key-value pairs.
+   *
+   * @param data The key-value pairs.
+   */
   explicit constexpr Map(const std::array<std::pair<Key, Value>, Size>& data)
       : data{data} {}
 
+  /**
+   * Returns the value associated with the given key.
+   *
+   * @param key The key.
+   * @return The value.
+   * @throws std::range_error if the key wasn't found.
+   */
   [[nodiscard]]
   constexpr const Value& at(const Key& key) const {
     if (const auto it =
