@@ -22,8 +22,7 @@
 namespace choreo {
 
 template <choreo::TrajectorySample SampleType>
-using ChoreoControllerFunction =
-    std::function<void(frc::Pose2d, SampleType)>;
+using ChoreoControllerFunction = std::function<void(frc::Pose2d, SampleType)>;
 
 using TrajectoryLogger = std::function<void(frc::Pose2d, bool)>;
 
