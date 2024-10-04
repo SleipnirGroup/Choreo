@@ -170,4 +170,8 @@ sleipnir::EqualityConstraints operator==(const Rotation2<T>& lhs,
   return sleipnir::EqualityConstraints{constraints};
 }
 
+inline bool operator==(const Rotation2d& lhs, const Rotation2d& rhs) {
+  return lhs.Cos() == rhs.Cos() && lhs.Sin() == rhs.Sin();
+}
+
 }  // namespace trajopt
