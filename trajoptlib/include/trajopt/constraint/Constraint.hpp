@@ -3,7 +3,6 @@
 #pragma once
 
 #include <concepts>
-#include <type_traits>
 #include <variant>
 
 #include <sleipnir/autodiff/Variable.hpp>
@@ -65,11 +64,21 @@ static_assert(ConstraintType<PoseEqualityConstraint>);
 static_assert(ConstraintType<TranslationEqualityConstraint>);
 
 using Constraint = std::variant<
-    AngularVelocityMaxMagnitudeConstraint, LinePointConstraint,
-    LinearAccelerationMaxMagnitudeConstraint, LinearVelocityDirectionConstraint,
-    LinearVelocityMaxMagnitudeConstraint, PointAtConstraint,
-    PointLineConstraint, PointPointMinConstraint, PointPointMaxConstraint,
-    PoseEqualityConstraint, TranslationEqualityConstraint,
-    PointLineRegionConstraint, LaneConstraint>;
+    // clang-format off
+    AngularVelocityMaxMagnitudeConstraint,
+    LaneConstraint,
+    LinePointConstraint,
+    LinearAccelerationMaxMagnitudeConstraint,
+    LinearVelocityDirectionConstraint,
+    LinearVelocityMaxMagnitudeConstraint,
+    PointAtConstraint,
+    PointLineConstraint,
+    PointLineRegionConstraint,
+    PointPointMaxConstraint,
+    PointPointMinConstraint,
+    PoseEqualityConstraint,
+    TranslationEqualityConstraint
+    // clang-format on
+    >;
 
 }  // namespace trajopt
