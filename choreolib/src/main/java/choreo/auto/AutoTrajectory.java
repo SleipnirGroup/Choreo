@@ -12,7 +12,6 @@ import choreo.trajectory.TrajectorySample;
 import choreo.util.AllianceFlipUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
@@ -23,7 +22,6 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -40,14 +38,12 @@ public class AutoTrajectory {
 
   // did inches to meters like this to keep final
   private static final double DEFAULT_TOLERANCE_METERS = Units.inchesToMeters(3);
-  private static final ChassisSpeeds DEFAULT_CHASSIS_SPEEDS = new ChassisSpeeds();
 
   private final String name;
   private final Trajectory<? extends TrajectorySample<?>> trajectory;
   private final TrajectoryLogger<? extends TrajectorySample<?>> trajectoryLogger;
   private final Supplier<Pose2d> poseSupplier;
   private final ControlFunction<? extends TrajectorySample<?>> controller;
-  private final Consumer<ChassisSpeeds> outputChassisSpeeds;
   private final BooleanSupplier mirrorTrajectory;
   private final Timer timer = new Timer();
   private final Subsystem driveSubsystem;
@@ -65,12 +61,26 @@ public class AutoTrajectory {
   /** The time that the previous trajectories took up */
   private double timeOffset = 0.0;
 
+  private TrajectorySample<?> currentSample;
+
+  /**
+   * Constructs an AutoTrajectory.
+   *
+   * @param name The trajectory name.
+   * @param trajectory The trajectory samples.
+   * @param poseSupplier The pose supplier.
+   * @param controller The controller function.
+   * @param mirrorTrajectory Getter that determines whether to mirror trajectory.
+   * @param trajectoryLogger Optional trajectory logger.
+   * @param driveSubsystem Drive subsystem.
+   * @param loop Event loop.
+   * @param bindings {@link Choreo#createAutoFactory}
+   */
   <SampleType extends TrajectorySample<SampleType>> AutoTrajectory(
       String name,
       Trajectory<SampleType> trajectory,
       Supplier<Pose2d> poseSupplier,
       ControlFunction<SampleType> controller,
-      Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
       Optional<TrajectoryLogger<SampleType>> trajectoryLogger,
       Subsystem driveSubsystem,
@@ -80,7 +90,6 @@ public class AutoTrajectory {
     this.trajectory = trajectory;
     this.poseSupplier = poseSupplier;
     this.controller = controller;
-    this.outputChassisSpeeds = outputChassisSpeeds;
     this.mirrorTrajectory = mirrorTrajectory;
     this.driveSubsystem = driveSubsystem;
     this.loop = loop;
@@ -145,29 +154,49 @@ public class AutoTrajectory {
     TrajectorySample<?> sample =
         this.trajectory.sampleAt(timeIntoTrajectory(), mirrorTrajectory.getAsBoolean());
 
-    ChassisSpeeds chassisSpeeds = DEFAULT_CHASSIS_SPEEDS;
-
     if (sample instanceof SwerveSample) {
       ControlFunction<SwerveSample> swerveController =
           (ControlFunction<SwerveSample>) this.controller;
       SwerveSample swerveSample = (SwerveSample) sample;
-      chassisSpeeds = swerveController.apply(poseSupplier.get(), swerveSample);
+      swerveController.accept(poseSupplier.get(), swerveSample);
     } else if (sample instanceof DifferentialSample) {
       ControlFunction<DifferentialSample> differentialController =
           (ControlFunction<DifferentialSample>) this.controller;
       DifferentialSample differentialSample = (DifferentialSample) sample;
-      chassisSpeeds = differentialController.apply(poseSupplier.get(), differentialSample);
+      differentialController.accept(poseSupplier.get(), differentialSample);
     }
 
-    outputChassisSpeeds.accept(chassisSpeeds);
+    currentSample = sample;
   }
 
   private void cmdEnd(boolean interrupted) {
     timer.stop();
     if (interrupted) {
-      outputChassisSpeeds.accept(new ChassisSpeeds());
+      if (currentSample instanceof SwerveSample) {
+        ControlFunction<SwerveSample> swerveController =
+            (ControlFunction<SwerveSample>) this.controller;
+        SwerveSample swerveSample = (SwerveSample) currentSample;
+        swerveController.accept(currentSample.getPose(), swerveSample);
+      } else if (currentSample instanceof DifferentialSample) {
+        ControlFunction<DifferentialSample> differentialController =
+            (ControlFunction<DifferentialSample>) this.controller;
+        DifferentialSample differentialSample = (DifferentialSample) currentSample;
+        differentialController.accept(currentSample.getPose(), differentialSample);
+      }
     } else {
-      outputChassisSpeeds.accept(trajectory.getFinalSample().getChassisSpeeds());
+      TrajectorySample<?> sample = this.trajectory.getFinalSample();
+
+      if (sample instanceof SwerveSample) {
+        ControlFunction<SwerveSample> swerveController =
+            (ControlFunction<SwerveSample>) this.controller;
+        SwerveSample swerveSample = (SwerveSample) sample;
+        swerveController.accept(poseSupplier.get(), swerveSample);
+      } else if (sample instanceof DifferentialSample) {
+        ControlFunction<DifferentialSample> differentialController =
+            (ControlFunction<DifferentialSample>) this.controller;
+        DifferentialSample differentialSample = (DifferentialSample) sample;
+        differentialController.accept(poseSupplier.get(), differentialSample);
+      }
     }
     isActive = false;
     logTrajectory(false);

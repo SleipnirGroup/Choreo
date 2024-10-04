@@ -15,7 +15,7 @@
       "cacheVariables": {}
     },
     {
-      "name": "sccache",
+      "name": "with-sccache",
       "displayName": "",
       "description": "Ninja config with sccache",
       "generator": "Ninja",
@@ -36,14 +36,13 @@
       }
     },
     {
-      "name": "with-examples-sccache",
+      "name": "with-examples-and-sccache",
       "displayName": "",
       "description": "Ninja config with sccache",
       "generator": "Ninja",
       "binaryDir": "build",
+      "inherits": "with-sccache",
       "cacheVariables": {
-        "CMAKE_C_COMPILER_LAUNCHER": "sccache",
-        "CMAKE_CXX_COMPILER_LAUNCHER": "sccache",
         "BUILD_EXAMPLES": "ON"
       }
     }

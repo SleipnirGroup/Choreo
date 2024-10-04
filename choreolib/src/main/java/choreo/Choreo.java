@@ -19,7 +19,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -34,9 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /** Utilities to load and follow Choreo Trajectories */
@@ -96,13 +93,12 @@ public final class Choreo {
 
   /**
    * This interface exists as a type alias. A ControlFunction has a signature of ({@link Pose2d},
-   * {@link SampleType})-&gt;{@link ChassisSpeeds}, where the function returns robot-relative {@link
-   * ChassisSpeeds} for the robot.
+   * {@link SampleType}).
    *
    * @param <SampleType> DifferentialSample or SwerveSample.
    */
   public interface ControlFunction<SampleType extends TrajectorySample<SampleType>>
-      extends BiFunction<Pose2d, SampleType, ChassisSpeeds> {}
+      extends BiConsumer<Pose2d, SampleType> {}
 
   /**
    * This interface exists as a type alias. A TrajectoryLogger has a signature of ({@link
@@ -124,9 +120,9 @@ public final class Choreo {
    * src/main/deploy/choreo/[trajectoryName].traj.
    *
    * @param <SampleType> The type of samples in the trajectory.
-   * @param trajectoryName the path name in Choreo, which matches the file name in the deploy
+   * @param trajectoryName The path name in Choreo, which matches the file name in the deploy
    *     directory, file extension is optional.
-   * @return the loaded trajectory, or `Optional.empty()` if the trajectory could not be loaded.
+   * @return The loaded trajectory, or `Optional.empty()` if the trajectory could not be loaded.
    */
   @SuppressWarnings("unchecked")
   public static <SampleType extends TrajectorySample<SampleType>>
@@ -143,7 +139,7 @@ public final class Choreo {
       String str = reader.lines().reduce("", (a, b) -> a + b);
       reader.close();
       Trajectory<SampleType> trajectory =
-          (Trajectory<SampleType>) readTrajectoryString(str, getProjectFile());
+          (Trajectory<SampleType>) loadTrajectoryString(str, getProjectFile());
       return Optional.of(trajectory);
     } catch (FileNotFoundException ex) {
       DriverStation.reportError("Could not find trajectory file: " + trajectoryFile, false);
@@ -155,9 +151,17 @@ public final class Choreo {
     return Optional.empty();
   }
 
-  static Trajectory<? extends TrajectorySample<?>> readTrajectoryString(
-      String str, ProjectFile projectFile) {
-    JsonObject wholeTrajectory = GSON.fromJson(str, JsonObject.class);
+  /**
+   * Load a trajectory from a string.
+   *
+   * @param trajectoryJsonString The JSON string.
+   * @param trajectoryName The path name in Choreo, which matches the file name in the deploy
+   *     directory, file extension is optional.
+   * @return The loaded trajectory, or `empty std::optional` if the trajectory could not be loaded.
+   */
+  static Trajectory<? extends TrajectorySample<?>> loadTrajectoryString(
+      String trajectoryJsonString, ProjectFile projectFile) {
+    JsonObject wholeTrajectory = GSON.fromJson(trajectoryJsonString, JsonObject.class);
     String name = wholeTrajectory.get("name").getAsString();
     String version = wholeTrajectory.get("version").getAsString();
     if (!SPEC_VERSION.equals(version)) {
@@ -289,8 +293,6 @@ public final class Choreo {
    *     robot.
    * @param controller A {@link ControlFunction} to follow the current {@link Trajectory}&lt;{@link
    *     SampleType}&gt;.
-   * @param outputChassisSpeeds A function that consumes the target robot-relative {@link
-   *     ChassisSpeeds} and commands them to the robot.
    * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
    *     while keeping the same coordinate system origin. This will be called every loop during the
    *     command.
@@ -303,13 +305,11 @@ public final class Choreo {
       Subsystem driveSubsystem,
       Supplier<Pose2d> poseSupplier,
       ControlFunction<SampleType> controller,
-      Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
       AutoBindings bindings) {
     return new AutoFactory(
         requireNonNullParam(poseSupplier, "poseSupplier", "Choreo.createAutoFactory"),
         requireNonNullParam(controller, "controller", "Choreo.createAutoFactory"),
-        requireNonNullParam(outputChassisSpeeds, "outputChassisSpeeds", "Choreo.createAutoFactory"),
         requireNonNullParam(mirrorTrajectory, "mirrorTrajectory", "Choreo.createAutoFactory"),
         requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory"),
         requireNonNullParam(bindings, "bindings", "Choreo.createAutoFactory"),
@@ -326,8 +326,6 @@ public final class Choreo {
    *     robot.
    * @param controller A {@link ControlFunction} to follow the current {@link Trajectory}&lt;{@link
    *     SampleType}&gt;.
-   * @param outputChassisSpeeds A function that consumes the target robot-relative {@link
-   *     ChassisSpeeds} and commands them to the robot.
    * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
    *     while keeping the same coordinate system origin. This will be called every loop during the
    *     command.
@@ -342,14 +340,12 @@ public final class Choreo {
       Subsystem driveSubsystem,
       Supplier<Pose2d> poseSupplier,
       ControlFunction<SampleType> controller,
-      Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
       AutoBindings bindings,
       TrajectoryLogger<SampleType> trajectoryLogger) {
     return new AutoFactory(
         requireNonNullParam(poseSupplier, "poseSupplier", "Choreo.createAutoFactory"),
         requireNonNullParam(controller, "controller", "Choreo.createAutoFactory"),
-        requireNonNullParam(outputChassisSpeeds, "outputChassisSpeeds", "Choreo.createAutoFactory"),
         requireNonNullParam(mirrorTrajectory, "mirrorTrajectory", "Choreo.createAutoFactory"),
         requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory"),
         requireNonNullParam(bindings, "bindings", "Choreo.createAutoFactory"),

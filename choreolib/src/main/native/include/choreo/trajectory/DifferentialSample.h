@@ -16,6 +16,9 @@
 
 namespace choreo {
 
+/**
+ * A single differential drive robot sample in a Trajectory.
+ */
 class DifferentialSample {
  public:
   /**
@@ -58,16 +61,22 @@ class DifferentialSample {
 
   /**
    * Gets the timestamp of the DifferentialSample.
+   *
+   * @return The timestamp.
    */
   units::second_t GetTimestamp() const;
 
   /**
    * Gets the Pose2d of the DifferentialSample.
+   *
+   * @return The pose.
    */
   frc::Pose2d GetPose() const;
 
   /**
-   * Gets the field relative chassis speeds of the DifferentialSample.
+   * Gets the field-relative chassis speeds of the DifferentialSample.
+   *
+   * @return The field-relative chassis speeds.
    */
   frc::ChassisSpeeds GetChassisSpeeds() const;
 
@@ -75,7 +84,7 @@ class DifferentialSample {
    * Returns the current sample offset by a the time offset passed in.
    *
    * @param timeStampOffset time to move sample by
-   * @returns DifferentialSample that is moved forward by the offset
+   * @return DifferentialSample that is moved forward by the offset
    */
   DifferentialSample OffsetBy(units::second_t timeStampOffset) const;
 
@@ -84,7 +93,7 @@ class DifferentialSample {
    *
    * @param endValue the end interpolated value
    * @param t time to move sample by
-   * @returns the interpolated sample
+   * @return the interpolated sample
    */
   DifferentialSample Interpolate(const DifferentialSample& endValue,
                                  units::second_t t) const;
@@ -93,7 +102,7 @@ class DifferentialSample {
    * Returns the current sample flipped based on the field year.
    *
    * @tparam Year The field year.
-   * @returns DifferentialSample that is flipped based on the field layout.
+   * @return DifferentialSample that is flipped based on the field layout.
    */
   template <int Year>
   DifferentialSample Flipped() const {
@@ -110,7 +119,10 @@ class DifferentialSample {
   }
 
   /**
-   * Comparison operators for differential samples.
+   * DifferentialSample equality operator.
+   *
+   * @param other The other DifferentialSample.
+   * @return True for equality.
    */
   bool operator==(const DifferentialSample& other) const {
     constexpr double epsilon = 1e-6;
@@ -127,10 +139,6 @@ class DifferentialSample {
            compare_units(vl, other.vl) && compare_units(vr, other.vr) &&
            compare_units(al, other.al) && compare_units(ar, other.ar) &&
            compare_units(fl, other.fl) && compare_units(fr, other.fr);
-  }
-
-  bool operator!=(const DifferentialSample& other) const {
-    return !(*this == other);
   }
 
   /// The timestamp of this sample, relative to the beginning of the trajectory.
