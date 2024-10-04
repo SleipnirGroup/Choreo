@@ -261,6 +261,13 @@ class TRAJOPT_DLLEXPORT SwerveTrajectoryGenerator {
   std::vector<std::vector<sleipnir::Variable>> Fx;
   std::vector<std::vector<sleipnir::Variable>> Fy;
 
+  std::vector<std::vector<sleipnir::Variable>> F;
+  std::vector<std::vector<sleipnir::Variable>> Fric;
+  /// Robot-relative
+  std::vector<std::vector<sleipnir::Variable>> mcos;
+  /// Robot-relative
+  std::vector<std::vector<sleipnir::Variable>> msin;
+
   /// Time Variables
   std::vector<sleipnir::Variable> dts;
 

@@ -74,11 +74,24 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
 
   Fx.reserve(sampTot);
   Fy.reserve(sampTot);
+  F.reserve(sampTot);
+  Fric.reserve(sampTot);
+  
+  mcos.reserve(sampTot);
+  msin.reserve(sampTot);
   for (size_t sampleIndex = 0; sampleIndex < sampTot; ++sampleIndex) {
     auto& _Fx = Fx.emplace_back();
     auto& _Fy = Fy.emplace_back();
+    auto& _F = F.emplace_back();
+    auto& _Fric = Fric.emplace_back();
+    auto& _mcos = mcos.emplace_back();
+    auto& _msin = msin.emplace_back();
     _Fx.reserve(moduleCnt);
     _Fy.reserve(moduleCnt);
+    _F.reserve(moduleCnt);
+    _Fric.reserve(moduleCnt);
+    _mcos.reserve(moduleCnt);
+    _msin.reserve(moduleCnt);
   }
 
   dts.reserve(sgmtCnt);
@@ -96,8 +109,12 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     α.emplace_back(problem.DecisionVariable());
 
     for (size_t moduleIndex = 0; moduleIndex < moduleCnt; ++moduleIndex) {
-      Fx.at(index).emplace_back(problem.DecisionVariable());
-      Fy.at(index).emplace_back(problem.DecisionVariable());
+      F.at(index).emplace_back(problem.DecisionVariable());
+      Fric.at(index).emplace_back(problem.DecisionVariable());
+      mcos.at(index).emplace_back();
+      msin.at(index).emplace_back();
+      Fx.at(index).emplace_back();
+      Fy.at(index).emplace_back();
     }
   }
 
@@ -207,12 +224,28 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     Rotation2v θ_k{cosθ.at(index), sinθ.at(index)};
     Translation2v v_k{vx.at(index), vy.at(index)};
 
+    // Set up constraints on Fx, Fy to make them depend on 
+    auto Fx_i = Fx.at(index);
+    auto Fy_i = Fy.at(index);
+    auto F_i = F.at(index);
+    auto Fric_i = F.at(index);
+    for (size_t moduleIndex = 0; moduleIndex < moduleCnt; ++moduleIndex) {
+      Rotation2v θ_k_m{mcos.at(index).at(moduleIndex), msin.at(index).at(moduleIndex)};
+      // heading, rotated by θ_k_m = field-relative heading of positive wheel direction
+      Rotation2v θ_k_m_field = θ_k.RotateBy(θ_k_m);
+      Translation2v F_wheel{F_i.at(moduleIndex), Fric_i.at(moduleIndex)};
+      Translation2v F_field = F_wheel.RotateBy(-θ_k_m_field);
+      Fx_i.at(moduleIndex) = F_field.X();
+      Fy_i.at(moduleIndex) = F_field.Y();
+    }
     // Solve for net force
     auto Fx_net = std::accumulate(Fx.at(index).begin(), Fx.at(index).end(),
                                   sleipnir::Variable{0.0});
     auto Fy_net = std::accumulate(Fy.at(index).begin(), Fy.at(index).end(),
                                   sleipnir::Variable{0.0});
 
+    const auto& mass = path.drivetrain.mass;
+    const double mu = 1.0;
     const auto& wheelRadius = path.drivetrain.wheelRadius;
     const auto& wheelMaxAngularVelocity =
         path.drivetrain.wheelMaxAngularVelocity;
@@ -235,22 +268,28 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     for (size_t moduleIndex = 0; moduleIndex < path.drivetrain.modules.size();
          ++moduleIndex) {
       const auto& translation = path.drivetrain.modules.at(moduleIndex);
-
+      // mcos and msin are the components of the wheel velocity vector relative to the robot.
       Translation2v vWheelWrtRobot{
           vWrtRobot.X() - translation.Y() * ω.at(index),
           vWrtRobot.Y() + translation.X() * ω.at(index)};
+      Rotation2v θ_k_m{mcos.at(index).at(moduleIndex), msin.at(index).at(moduleIndex)};
+      problem.SubjectTo(vWheelWrtRobot.X() * θ_k_m.Sin() - vWheelWrtRobot.Y() * θ_k_m.Cos() ==
+                           0.0);
       double maxWheelVelocity = wheelRadius * wheelMaxAngularVelocity;
+
 
       // |v|₂² ≤ vₘₐₓ²
       problem.SubjectTo(vWheelWrtRobot.SquaredNorm() <=
                         maxWheelVelocity * maxWheelVelocity);
 
-      Translation2v moduleF{Fx.at(index).at(moduleIndex),
-                            Fy.at(index).at(moduleIndex)};
+      auto force = F.at(index).at(moduleIndex);
+      auto fric = Fric.at(index).at(moduleIndex);
       double maxForce = wheelMaxTorque / wheelRadius;
+      double maxFriction = mass * mu;
 
       // |F|₂² ≤ Fₘₐₓ²
-      problem.SubjectTo(moduleF.SquaredNorm() <= maxForce * maxForce);
+      problem.SubjectTo(force*force <= maxForce * maxForce);
+      problem.SubjectTo(fric*fric<=maxFriction*maxFriction);
     }
 
     // Apply dynamics constraints
