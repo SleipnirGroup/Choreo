@@ -46,6 +46,41 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     : path(pathbuilder.GetPath()), Ns(pathbuilder.GetControlIntervalCounts()) {
   namespace slp = sleipnir;
 
+  // See equations just before (12.35) and (12.36) in
+  // https://controls-in-frc.link/ for wheel acceleration equations.
+  //
+  //   dx/dt = v cosθ
+  //   dy/dt = v sinθ
+  //   dθ/dt = ω
+  //   dvₗ/dt = (1/m + r_b²/J) Fₗ + (1/m - r_b²/J) Fᵣ
+  //   dvᵣ/dt = (1/m - r_b²/J) Fₗ + (1/m + r_b²/J) Fᵣ
+  //
+  // where
+  //
+  //   v = (vₗ + vᵣ) / 2
+  //   ω = (vᵣ - vₗ) / (2r_b)
+
+  auto f = [this](const slp::VariableMatrix& x,
+                  const slp::VariableMatrix& u) -> slp::VariableMatrix {
+    slp::VariableMatrix xdot{5};
+
+    const auto& m = path.drivetrain.mass;
+    double r_b = path.drivetrain.trackwidth / 2;
+    const auto& J = path.drivetrain.moi;
+
+    Eigen::Matrix<double, 2, 2> B{
+        {1.0 / m + r_b * r_b / J, 1.0 / m - r_b * r_b / J},
+        {1.0 / m - r_b * r_b / J, 1.0 / m + r_b * r_b / J}};
+
+    auto v = (x(3) + x(4)) / 2.0;
+    xdot(0) = v * cos(x(2));  // NOLINT
+    xdot(1) = v * sin(x(2));  // NOLINT
+    xdot(2) = (x(4) - x(3)) / path.drivetrain.trackwidth;
+    xdot.Segment(3, 2) = B * u;
+
+    return xdot;
+  };
+
   auto initialGuess = pathbuilder.CalculateInitialGuess();
 
   callbacks.emplace_back([this, handle = handle] {
@@ -148,7 +183,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   }
   problem.Minimize(std::move(T_tot));
 
-  // Apply kinematics constraints
+  // Apply dynamics constraints
   for (size_t wptIndex = 0; wptIndex < wptCnt - 1; ++wptIndex) {
     size_t N_sgmt = Ns.at(wptIndex);
     auto dt = dts.at(wptIndex);
@@ -156,93 +191,56 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     for (size_t sampleIndex = 0; sampleIndex < N_sgmt; ++sampleIndex) {
       size_t index = GetIndex(Ns, wptIndex, sampleIndex);
 
-      Translation2v x_k{x.at(index), y.at(index)};
-      Translation2v x_k_1{x.at(index + 1), y.at(index + 1)};
+      slp::VariableMatrix x_k{{x.at(index)},
+                              {y.at(index)},
+                              {θ.at(index)},
+                              {vl.at(index)},
+                              {vr.at(index)}};
+      slp::VariableMatrix u_k{{Fl.at(index)}, {Fr.at(index)}};
 
-      Rotation2v θ_k{θ.at(index)};
-      Rotation2v θ_k_1{θ.at(index + 1)};
+      slp::VariableMatrix x_k_1{{x.at(index + 1)},
+                                {y.at(index + 1)},
+                                {θ.at(index + 1)},
+                                {vl.at(index + 1)},
+                                {vr.at(index + 1)}};
 
-      Translation2v v_k = WheelToChassisSpeeds(vl.at(index), vr.at(index));
-      v_k = v_k.RotateBy(θ_k);
-      Translation2v v_k_1 =
-          WheelToChassisSpeeds(vl.at(index + 1), vr.at(index + 1));
-      v_k_1 = v_k_1.RotateBy(θ_k_1);
+      // Dynamics constraints - RK4
+      slp::VariableMatrix k1 = f(x_k, u_k);
+      slp::VariableMatrix k2 = f(x_k + dt * 0.5 * k1, u_k);
+      slp::VariableMatrix k3 = f(x_k + dt * 0.5 * k2, u_k);
+      slp::VariableMatrix k4 = f(x_k + dt * k3, u_k);
+      problem.SubjectTo(x_k_1 ==
+                        x_k + dt / 6.0 * (k1 + 2.0 * k2 + 2.0 * k3 + k4));
 
-      auto ω_k = (vr.at(index) - vl.at(index)) / path.drivetrain.trackwidth;
-      auto ω_k_1 =
-          (vr.at(index + 1) - vl.at(index + 1)) / path.drivetrain.trackwidth;
-
-      Translation2v a_k = WheelToChassisSpeeds(al.at(index), ar.at(index));
-      a_k = a_k.RotateBy(θ_k);
-      Translation2v a_k_1 =
-          WheelToChassisSpeeds(al.at(index + 1), ar.at(index + 1));
-      a_k_1 = a_k_1.RotateBy(θ_k_1);
-
-      // xₖ₊₁ = xₖ + vₖt + 1/2aₖt²
-      problem.SubjectTo(x_k_1 == x_k + v_k * dt + a_k * 0.5 * dt * dt);
-
-      // θₖ₊₁ = θₖ + ωₖt
-      // θₖ₊₁ − θₖ = ωₖt
-      auto lhs = θ.at(index + 1) - θ.at(index);
-      auto rhs = ω_k * dt;
-      problem.SubjectTo(slp::cos(lhs) == slp::cos(rhs));
-      problem.SubjectTo(slp::sin(lhs) == slp::sin(rhs));
-
-      // vₖ₊₁ = vₖ + aₖt
-      problem.SubjectTo(v_k_1 == v_k + a_k * dt);
+      auto dx_dt = k1;
+      problem.SubjectTo(al.at(index) == dx_dt(3));
+      problem.SubjectTo(ar.at(index) == dx_dt(4));
     }
   }
 
+  // Apply wheel power constraints
   for (size_t index = 0; index < sampTot; ++index) {
-    Translation2v v_k = WheelToChassisSpeeds(vl.at(index), vr.at(index));
-    Rotation2v θ_k{θ.at(index)};
-    auto ω_k = (vr.at(index) - vl.at(index)) / path.drivetrain.trackwidth;
+    double maxWheelVelocity =
+        path.drivetrain.wheelRadius * path.drivetrain.wheelMaxAngularVelocity;
 
-    // Solve for net force
-    auto F_net = Fl.at(index) + Fr.at(index);
+    // −vₘₐₓ < vₗ < vₘₐₓ
+    problem.SubjectTo(-maxWheelVelocity < vl.at(index));
+    problem.SubjectTo(vl.at(index) < maxWheelVelocity);
 
-    // Solve for net torque
-    double r = path.drivetrain.trackwidth / 2.0;
-    auto τ_net = r * Fr.at(index) - r * Fr.at(index);
+    // −vₘₐₓ < vᵣ < vₘₐₓ
+    problem.SubjectTo(-maxWheelVelocity < vr.at(index));
+    problem.SubjectTo(vr.at(index) < maxWheelVelocity);
 
-    // Apply wheel power constraints
-    {
-      auto vWrtRobot = v_k.RotateBy(-θ_k);
-      const auto& wheelRadius = path.drivetrain.wheelRadius;
-      const auto& wheelMaxAngularVelocity =
-          path.drivetrain.wheelMaxAngularVelocity;
-      const auto& wheelMaxTorque = path.drivetrain.wheelMaxTorque;
+    double maxForce =
+        path.drivetrain.wheelMaxTorque / path.drivetrain.wheelRadius;
 
-      Translation2v vWheelWrtRobot{
-          vWrtRobot.X() - path.drivetrain.trackwidth / 2.0 * ω_k,
-          vWrtRobot.Y()};
-      double maxWheelVelocity = wheelRadius * wheelMaxAngularVelocity;
+    // −Fₘₐₓ < Fₗ < Fₘₐₓ
+    problem.SubjectTo(-maxForce < Fl.at(index));
+    problem.SubjectTo(Fl.at(index) < maxForce);
 
-      // |v|₂² ≤ vₘₐₓ²
-      problem.SubjectTo(vWheelWrtRobot.SquaredNorm() <=
-                        maxWheelVelocity * maxWheelVelocity);
-
-      double maxForce = wheelMaxTorque / wheelRadius;
-
-      // −Fₘₐₓ < Fₗ < Fₘₐₓ
-      problem.SubjectTo(-maxForce < Fl.at(index));
-      problem.SubjectTo(Fl.at(index) < maxForce);
-
-      // −Fₘₐₓ < Fᵣ < Fₘₐₓ
-      problem.SubjectTo(-maxForce < Fr.at(index));
-      problem.SubjectTo(Fr.at(index) < maxForce);
-
-      auto a_k = (al.at(index) + ar.at(index)) / 2.0;
-      auto α_k = (ar.at(index) - al.at(index)) / path.drivetrain.trackwidth;
-
-      // Apply dynamics constraints
-      //
-      //   ΣFₖ = maₖ
-      //   Στₖ = Jαₖ
-      problem.SubjectTo(Fl.at(index) + Fr.at(index) ==
-                        path.drivetrain.mass * a_k);
-      problem.SubjectTo(τ_net == path.drivetrain.moi * α_k);
-    }
+    // −Fₘₐₓ < Fᵣ < Fₘₐₓ
+    problem.SubjectTo(-maxForce < Fr.at(index));
+    problem.SubjectTo(Fr.at(index) < maxForce);
   }
 
   for (size_t wptIndex = 0; wptIndex < wptCnt; ++wptIndex) {

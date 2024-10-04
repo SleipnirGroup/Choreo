@@ -213,11 +213,6 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     auto Fy_net = std::accumulate(Fy.at(index).begin(), Fy.at(index).end(),
                                   sleipnir::Variable{0.0});
 
-    const auto& wheelRadius = path.drivetrain.wheelRadius;
-    const auto& wheelMaxAngularVelocity =
-        path.drivetrain.wheelMaxAngularVelocity;
-    const auto& wheelMaxTorque = path.drivetrain.wheelMaxTorque;
-
     // Solve for net torque
     sleipnir::Variable τ_net = 0.0;
     for (size_t moduleIndex = 0; moduleIndex < path.drivetrain.modules.size();
@@ -239,7 +234,8 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       Translation2v vWheelWrtRobot{
           vWrtRobot.X() - translation.Y() * ω.at(index),
           vWrtRobot.Y() + translation.X() * ω.at(index)};
-      double maxWheelVelocity = wheelRadius * wheelMaxAngularVelocity;
+      double maxWheelVelocity =
+          path.drivetrain.wheelRadius * path.drivetrain.wheelMaxAngularVelocity;
 
       // |v|₂² ≤ vₘₐₓ²
       problem.SubjectTo(vWheelWrtRobot.SquaredNorm() <=
@@ -247,7 +243,8 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
 
       Translation2v moduleF{Fx.at(index).at(moduleIndex),
                             Fy.at(index).at(moduleIndex)};
-      double maxForce = wheelMaxTorque / wheelRadius;
+      double maxForce =
+          path.drivetrain.wheelMaxTorque / path.drivetrain.wheelRadius;
 
       // |F|₂² ≤ Fₘₐₓ²
       problem.SubjectTo(moduleF.SquaredNorm() <= maxForce * maxForce);
