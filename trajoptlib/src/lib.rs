@@ -20,10 +20,10 @@ mod ffi {
     struct DifferentialDrivetrain {
         mass: f64,
         moi: f64,
-        trackwidth: f64,
         wheel_radius: f64,
         wheel_max_angular_velocity: f64,
         wheel_max_torque: f64,
+        trackwidth: f64,
     }
 
     #[derive(Debug, Deserialize, Serialize, Clone)]
