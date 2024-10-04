@@ -19,7 +19,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -34,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
@@ -95,13 +93,12 @@ public final class Choreo {
 
   /**
    * This interface exists as a type alias. A ControlFunction has a signature of ({@link Pose2d},
-   * {@link SampleType})-&gt;{@link ChassisSpeeds}, where the function returns robot-relative {@link
-   * ChassisSpeeds} for the robot.
+   * {@link SampleType}).
    *
    * @param <SampleType> DifferentialSample or SwerveSample.
    */
   public interface ControlFunction<SampleType extends TrajectorySample<SampleType>>
-      extends BiFunction<Pose2d, SampleType, ChassisSpeeds> {}
+      extends BiConsumer<Pose2d, SampleType> {}
 
   /**
    * This interface exists as a type alias. A TrajectoryLogger has a signature of ({@link
