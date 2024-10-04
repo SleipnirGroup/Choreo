@@ -125,7 +125,6 @@ class AutoFactory {
    *
    * @param poseSupplier Choreo::CreateAutoFactory()
    * @param controller Choreo::CreateAutoFactory()
-   * @param outputChassisSpeeds Choreo::CreateAutoFactory()
    * @param mirrorTrajectory Choreo::CreateAutoFactory()
    * @param driveSubsystem Choreo::CreateAutoFactory()
    * @param bindings Choreo::CreateAutoFactory()
