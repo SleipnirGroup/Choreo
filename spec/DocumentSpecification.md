@@ -40,10 +40,10 @@ A version `v0.0.0` **Document** must fit this template:
         "mass": <positive-number>,
         "rotationalInertia": <positive-number>,
         "wheelbase": <positive-number>,
-        "trackWidth": <positive-number>,
         "wheelRadius": <positive-number>,
         "wheelMaxVelocity": <positive-number>,
-        "wheelMaxTorque": <positive-number>
+        "wheelMaxTorque": <positive-number>,
+        "trackWidth": <positive-number>
     }
 }
 ```
