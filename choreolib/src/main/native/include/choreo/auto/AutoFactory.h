@@ -125,7 +125,6 @@ class AutoFactory {
    *
    * @param poseSupplier Choreo::CreateAutoFactory()
    * @param controller Choreo::CreateAutoFactory()
-   * @param outputChassisSpeeds Choreo::CreateAutoFactory()
    * @param mirrorTrajectory Choreo::CreateAutoFactory()
    * @param driveSubsystem Choreo::CreateAutoFactory()
    * @param bindings Choreo::CreateAutoFactory()
@@ -133,13 +132,11 @@ class AutoFactory {
    */
   AutoFactory(std::function<frc::Pose2d()> poseSupplier,
               ChoreoControllerFunction<SampleType> controller,
-              std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds,
               std::function<bool()> mirrorTrajectory,
               const frc2::Subsystem& driveSubsystem, AutoBindings bindings,
               std::optional<TrajectoryLogger> trajectoryLogger)
       : poseSupplier{std::move(poseSupplier)},
         controller{controller},
-        outputChassisSpeeds{std::move(outputChassisSpeeds)},
         mirrorTrajectory{std::move(mirrorTrajectory)},
         driveSubsystem{driveSubsystem},
         autoBindings{std::move(bindings)},
@@ -179,9 +176,8 @@ class AutoFactory {
                       trajectoryName);
     }
     AutoTrajectory<SampleType> autoTraj{
-        trajectoryName,   trajectory,          poseSupplier,
-        controller,       outputChassisSpeeds, mirrorTrajectory,
-        trajectoryLogger, driveSubsystem,      loop.GetLoop(),
+        trajectoryName,   trajectory,          poseSupplier,   controller,
+        mirrorTrajectory, trajectoryLogger,    driveSubsystem, loop.GetLoop(),
         autoBindings,     loop.OnNewTrajectory};
     loop.AddTrajectory(autoTraj);
     return autoTraj;
@@ -221,9 +217,8 @@ class AutoFactory {
       choreo::Trajectory<SampleType> trajectory,
       AutoLoop<SampleType> loop) const {
     AutoTrajectory<SampleType> autoTraj{
-        trajectory.name,  trajectory,          poseSupplier,
-        controller,       outputChassisSpeeds, mirrorTrajectory,
-        trajectoryLogger, driveSubsystem,      loop.GetLoop(),
+        trajectory.name,  trajectory,          poseSupplier,   controller,
+        mirrorTrajectory, trajectoryLogger,    driveSubsystem, loop.GetLoop(),
         autoBindings,     loop.OnNewTrajectory};
     loop.AddTrajectory(autoTraj);
     return autoTraj;
@@ -242,7 +237,6 @@ class AutoFactory {
  private:
   std::function<frc::Pose2d()> poseSupplier;
   ChoreoControllerFunction<SampleType> controller;
-  std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds;
   std::function<bool()> mirrorTrajectory;
   const frc2::Subsystem& driveSubsystem;
   AutoBindings autoBindings{};

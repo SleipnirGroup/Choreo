@@ -36,7 +36,6 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /** Utilities to load and follow Choreo Trajectories */
@@ -297,8 +296,6 @@ public final class Choreo {
    *     robot.
    * @param controller A {@link ControlFunction} to follow the current {@link Trajectory}&lt;{@link
    *     SampleType}&gt;.
-   * @param outputChassisSpeeds A function that consumes the target robot-relative {@link
-   *     ChassisSpeeds} and commands them to the robot.
    * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
    *     while keeping the same coordinate system origin. This will be called every loop during the
    *     command.
@@ -311,13 +308,11 @@ public final class Choreo {
       Subsystem driveSubsystem,
       Supplier<Pose2d> poseSupplier,
       ControlFunction<SampleType> controller,
-      Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
       AutoBindings bindings) {
     return new AutoFactory(
         requireNonNullParam(poseSupplier, "poseSupplier", "Choreo.createAutoFactory"),
         requireNonNullParam(controller, "controller", "Choreo.createAutoFactory"),
-        requireNonNullParam(outputChassisSpeeds, "outputChassisSpeeds", "Choreo.createAutoFactory"),
         requireNonNullParam(mirrorTrajectory, "mirrorTrajectory", "Choreo.createAutoFactory"),
         requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory"),
         requireNonNullParam(bindings, "bindings", "Choreo.createAutoFactory"),
@@ -334,8 +329,6 @@ public final class Choreo {
    *     robot.
    * @param controller A {@link ControlFunction} to follow the current {@link Trajectory}&lt;{@link
    *     SampleType}&gt;.
-   * @param outputChassisSpeeds A function that consumes the target robot-relative {@link
-   *     ChassisSpeeds} and commands them to the robot.
    * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
    *     while keeping the same coordinate system origin. This will be called every loop during the
    *     command.
@@ -350,14 +343,12 @@ public final class Choreo {
       Subsystem driveSubsystem,
       Supplier<Pose2d> poseSupplier,
       ControlFunction<SampleType> controller,
-      Consumer<ChassisSpeeds> outputChassisSpeeds,
       BooleanSupplier mirrorTrajectory,
       AutoBindings bindings,
       TrajectoryLogger<SampleType> trajectoryLogger) {
     return new AutoFactory(
         requireNonNullParam(poseSupplier, "poseSupplier", "Choreo.createAutoFactory"),
         requireNonNullParam(controller, "controller", "Choreo.createAutoFactory"),
-        requireNonNullParam(outputChassisSpeeds, "outputChassisSpeeds", "Choreo.createAutoFactory"),
         requireNonNullParam(mirrorTrajectory, "mirrorTrajectory", "Choreo.createAutoFactory"),
         requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory"),
         requireNonNullParam(bindings, "bindings", "Choreo.createAutoFactory"),

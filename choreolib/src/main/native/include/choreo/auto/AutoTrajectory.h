@@ -48,7 +48,6 @@ class AutoTrajectory {
    * @param trajectory The trajectory samples.
    * @param poseSupplier The pose supplier.
    * @param controller The controller function.
-   * @param outputChassisSpeeds ChassisSpeeds setter.
    * @param mirrorTrajectory Getter that determines whether to mirror
    *   trajectory.
    * @param trajectoryLogger Optional trajectory logger.
@@ -60,7 +59,6 @@ class AutoTrajectory {
                  const choreo::Trajectory<SampleType>& trajectory,
                  std::function<frc::Pose2d()> poseSupplier,
                  ChoreoControllerFunction<SampleType> controller,
-                 std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds,
                  std::function<bool()> mirrorTrajectory,
                  std::optional<TrajectoryLogger> trajectoryLogger,
                  const frc2::Subsystem& driveSubsystem, frc::EventLoop* loop,
@@ -69,7 +67,6 @@ class AutoTrajectory {
         trajectory{trajectory},
         poseSupplier{std::move(poseSupplier)},
         controller{controller},
-        outputChassisSpeeds{std::move(outputChassisSpeeds)},
         mirrorTrajectory{std::move(mirrorTrajectory)},
         trajectoryLogger{std::move(trajectoryLogger)},
         driveSubsystem{driveSubsystem},
@@ -303,16 +300,16 @@ class AutoTrajectory {
     SampleType sample =
         trajectory.SampleAt<Year>(TimeIntoTraj(), mirrorTrajectory());
     frc::ChassisSpeeds chassisSpeeds = DEFAULT_CHASSIS_SPEEDS;
-    chassisSpeeds = controller(poseSupplier(), sample);
-    outputChassisSpeeds(chassisSpeeds);
+    controller(poseSupplier(), sample);
+    currentSample = sample;
   }
 
   void CmdEnd(bool interrupted) {
     timer.Stop();
     if (interrupted) {
-      outputChassisSpeeds(frc::ChassisSpeeds{});
+      controller(currentSample.GetPose(), currentSample);
     } else {
-      outputChassisSpeeds(trajectory.GetFinalSample().GetChassisSpeeds());
+      controller(poseSupplier(), trajectory.GetFinalSample());
     }
     isDone = true;
     isActive = false;
@@ -338,12 +335,12 @@ class AutoTrajectory {
   const choreo::Trajectory<SampleType>& trajectory;
   std::function<frc::Pose2d()> poseSupplier;
   ChoreoControllerFunction<SampleType> controller;
-  std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds;
   std::function<bool()> mirrorTrajectory;
   std::optional<TrajectoryLogger> trajectoryLogger;
   const frc2::Subsystem& driveSubsystem;
   frc::EventLoop* loop;
   std::function<void()> newTrajectoryCallback;
+  SampleType currentSample;
 
   frc::Timer timer;
   bool isDone = false;
