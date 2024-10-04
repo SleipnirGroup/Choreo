@@ -128,6 +128,6 @@ public class ChoreoTests {
   public void testChoreo() {
     ProjectFile projectFile = GSON.fromJson(PROJ, ProjectFile.class);
     System.out.println(projectFile.name);
-    System.out.println(Choreo.readTrajectoryString(TRAJECTORY, projectFile).name());
+    System.out.println(Choreo.loadTrajectoryString(TRAJECTORY, projectFile).name());
   }
 }

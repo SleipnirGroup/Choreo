@@ -16,7 +16,12 @@ static constexpr units::meter_t fieldWidth = 8.19912_m;
 
 enum class FlipperType { Mirrored, RotateAround };
 
+/**
+ * X becomes fieldLength - x, leaves the y coordinate unchanged, and heading
+ * becomes pi - heading.
+ */
 struct MirroredFlipper {
+  /// Whether pose should be mirrored.
   static constexpr bool isMirrored = true;
 
   /**
@@ -48,7 +53,12 @@ struct MirroredFlipper {
   }
 };
 
+/**
+ * X becomes fieldLength - x, Y becomes fieldWidth - y, and heading becomes pi -
+ * heading.
+ */
 struct RotateAroundFlipper {
+  /// Whether pose should be mirrored.
   static constexpr bool isMirrored = false;
 
   /**

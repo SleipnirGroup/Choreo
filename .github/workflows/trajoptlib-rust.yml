@@ -1,4 +1,4 @@
-name: TrajoptLib / Build C++
+name: TrajoptLib / Build Rust
 
 on: [pull_request, push]
 
@@ -14,16 +14,12 @@ jobs:
       matrix:
         include:
           - artifact-name: Windows x86_64
-            cmake-args: "-DCMAKE_GENERATOR_PLATFORM=x64"
             os: windows-2022
           - artifact-name: Windows aarch64
-            cmake-args: "-DCMAKE_GENERATOR_PLATFORM=ARM64 -DBUILD_TESTING=OFF"
             os: windows-2022
           - artifact-name: macOS universal
-            cmake-args: -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
             os: macOS-14
           - artifact-name: Linux x86_64
-            cmake-args:
             os: ubuntu-24.04
 
     name: "${{ matrix.artifact-name }}"
@@ -58,22 +54,9 @@ jobs:
         # sccache doesn't work with MSBuild
         if: ${{ !startsWith(matrix.os, 'windows') }}
 
-      - run: cmake --preset with-examples-and-sccache ${{ matrix.cmake-args }}
+      - run: cargo build
         if: ${{ !startsWith(matrix.os, 'windows') }}
-        working-directory: trajoptlib
-      - run: cmake -B build -S . -DBUILD_EXAMPLES=ON ${{ matrix.cmake-args }}
-        if: startsWith(matrix.os, 'windows')
-        working-directory: trajoptlib
-      - run: cmake --build build --config RelWithDebInfo --parallel 4
         working-directory: trajoptlib
         env:
           SCCACHE_GHA_ENABLED: "true"
-      - run: ctest --test-dir build -C RelWithDebInfo --output-on-failure
-        working-directory: trajoptlib
-      - run: cmake --install build --config RelWithDebInfo --prefix pkg
-        working-directory: trajoptlib
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact-name }}
-          path: trajoptlib/pkg
+          RUSTC_WRAPPER: "sccache"

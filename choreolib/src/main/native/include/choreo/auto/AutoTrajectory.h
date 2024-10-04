@@ -10,7 +10,6 @@
 #include <fmt/format.h>
 #include <frc/DriverStation.h>
 #include <frc/Timer.h>
-#include <frc/kinematics/ChassisSpeeds.h>
 #include <frc2/command/Command.h>
 #include <frc2/command/Commands.h>
 #include <frc2/command/button/Trigger.h>
@@ -23,22 +22,40 @@
 namespace choreo {
 
 template <choreo::TrajectorySample SampleType>
-using ChoreoControllerFunction =
-    std::function<frc::ChassisSpeeds(frc::Pose2d, SampleType)>;
+using ChoreoControllerFunction = std::function<void(frc::Pose2d, SampleType)>;
 
 using TrajectoryLogger = std::function<void(frc::Pose2d, bool)>;
 
 static constexpr units::meter_t DEFAULT_TOLERANCE = 3_in;
-static constexpr frc::ChassisSpeeds DEFAULT_CHASSIS_SPEEDS;
 
+/**
+ * A class that represents a trajectory that can be used in an autonomous
+ * routine and have triggers based off of it.
+ *
+ * @tparam SampleType The type of samples in the trajectory.
+ * @tparam Year The field year.
+ */
 template <choreo::TrajectorySample SampleType, int Year>
 class AutoTrajectory {
  public:
+  /**
+   * Constructs an AutoTrajectory.
+   *
+   * @param name The trajectory name.
+   * @param trajectory The trajectory samples.
+   * @param poseSupplier The pose supplier.
+   * @param controller The controller function.
+   * @param mirrorTrajectory Getter that determines whether to mirror
+   *   trajectory.
+   * @param trajectoryLogger Optional trajectory logger.
+   * @param driveSubsystem Drive subsystem.
+   * @param loop Event loop.
+   * @param newTrajectoryCallback New trajectory callback.
+   */
   AutoTrajectory(std::string_view name,
                  const choreo::Trajectory<SampleType>& trajectory,
                  std::function<frc::Pose2d()> poseSupplier,
                  ChoreoControllerFunction<SampleType> controller,
-                 std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds,
                  std::function<bool()> mirrorTrajectory,
                  std::optional<TrajectoryLogger> trajectoryLogger,
                  const frc2::Subsystem& driveSubsystem, frc::EventLoop* loop,
@@ -47,7 +64,6 @@ class AutoTrajectory {
         trajectory{trajectory},
         poseSupplier{std::move(poseSupplier)},
         controller{controller},
-        outputChassisSpeeds{std::move(outputChassisSpeeds)},
         mirrorTrajectory{std::move(mirrorTrajectory)},
         trajectoryLogger{std::move(trajectoryLogger)},
         driveSubsystem{driveSubsystem},
@@ -55,6 +71,12 @@ class AutoTrajectory {
         newTrajectoryCallback{std::move(newTrajectoryCallback)},
         offTrigger(loop, [] { return false; }) {}
 
+  /**
+   * Creates a command that allocates the drive subsystem and follows the
+   * trajectory using the factories control function
+   *
+   * @return The command that will follow the trajectory
+   */
   frc2::CommandPtr Cmd() const {
     if (trajectory.samples.size() == 0) {
       return frc2::cmd::RunOnce([] {
@@ -70,6 +92,14 @@ class AutoTrajectory {
         .WithName("Trajectory_" + name);
   }
 
+  /**
+   * Will get the starting pose of the trajectory.
+   *
+   * This position is mirrored based on the mirrorTrajectory boolean supplier in
+   * the factory used to make this trajectory
+   *
+   * @return The starting pose
+   */
   std::optional<frc::Pose2d> GetInitialPose() const {
     if (trajectory.samples.size() == 0) {
       return {};
@@ -78,6 +108,14 @@ class AutoTrajectory {
     }
   }
 
+  /**
+   * Will get the ending pose of the trajectory.
+   *
+   * This position is mirrored based on the mirrorTrajectory boolean supplier in
+   * the factory used to make this trajectory
+   *
+   * @return The starting pose
+   */
   std::optional<frc::Pose2d> GetFinalPose() const {
     if (trajectory.samples.size() == 0) {
       return {};
@@ -86,16 +124,45 @@ class AutoTrajectory {
     }
   }
 
+  /**
+   * Returns a trigger that is true while the trajectory is scheduled.
+   *
+   * @return A trigger that is true while the trajectory is scheduled.
+   */
   frc2::Trigger Active() {
     return frc2::Trigger(loop, [this] { return isActive; });
   }
 
+  /**
+   * Returns a trigger that is true while the command is not scheduled.
+   *
+   * The same as calling <code>Active().Negate()</code>.
+   *
+   * @return A trigger that is true while the command is not scheduled.
+   */
   frc2::Trigger Inactive() { return Active().Negate(); }
 
+  /**
+   * Returns a trigger that has a rising edge when the command finishes, this
+   * edge will fall again the next cycle.
+   *
+   * This is not a substitute for the Inactive() trigger, inactive will stay
+   * true until the trajectory is scheduled again and will also be true if thus
+   * trajectory has never been scheduled.
+   *
+   * @return A trigger that is true when the command is finished.
+   */
   frc2::Trigger Done() {
     return frc2::Trigger(loop, [this] { return isDone; });
   }
 
+  /**
+   * Returns a trigger that will go true for 1 cycle when the desired time has
+   * elapsed
+   *
+   * @param timeSinceStart The time since the command started in seconds.
+   * @return A trigger that is true when timeSinceStart has elapsed.
+   */
   frc2::Trigger AtTime(units::second_t timeSinceStart) {
     if (timeSinceStart < 0_s) {
       FRC_ReportError(frc::warn::Warning,
@@ -121,6 +188,17 @@ class AutoTrajectory {
         });
   }
 
+  /**
+   * Returns a trigger that is true when the event with the given name has been
+   * reached based on time.
+   *
+   * A warning will be printed to the DriverStation if the event is not found
+   * and the trigger will always be false.
+   *
+   * @param eventName The name of the event.
+   * @return A trigger that is true when the event with the given name has been
+   * reached based on time.
+   */
   frc2::Trigger AtTime(std::string_view eventName) {
     bool foundEvent = false;
     frc2::Trigger trig = offTrigger;
@@ -138,6 +216,18 @@ class AutoTrajectory {
     return trig;
   }
 
+  /**
+   * Returns a trigger that is true when the robot is within toleranceMeters of
+   * the given events pose.
+   *
+   * A warning will be printed to the DriverStation if the event is not found
+   * and the trigger will always be false.
+   *
+   * @param eventName The name of the event.
+   * @param tolerance The tolerance in meters.
+   * @return A trigger that is true when the robot is within toleranceMeters of
+   *   the given events pose.
+   */
   frc2::Trigger AtPose(std::string_view eventName,
                        units::meter_t tolerance = DEFAULT_TOLERANCE) {
     bool foundEvent = false;
@@ -159,6 +249,20 @@ class AutoTrajectory {
     return trig;
   }
 
+  /**
+   * Returns a trigger that is true when the event with the given name has been
+   * reached based on time and the robot is within toleranceMeters of the given
+   * events pose.
+   *
+   * A warning will be printed to the DriverStation if the event is not found
+   * and the trigger will always be false.
+   *
+   * @param eventName The name of the event.
+   * @param tolerance The tolerance in meters.
+   * @return A trigger that is true when the event with the given name has been
+   *   reached based on time and the robot is within toleranceMeters of the
+   *   given events pose.
+   */
   frc2::Trigger AtTimeAndPlace(std::string_view eventName,
                                units::meter_t tolerance = DEFAULT_TOLERANCE) {
     return frc2::Trigger{AtTime(eventName) && AtPose(eventName, tolerance)};
@@ -192,17 +296,16 @@ class AutoTrajectory {
   void CmdExecute() {
     SampleType sample =
         trajectory.SampleAt<Year>(TimeIntoTraj(), mirrorTrajectory());
-    frc::ChassisSpeeds chassisSpeeds = DEFAULT_CHASSIS_SPEEDS;
-    chassisSpeeds = controller(poseSupplier(), sample);
-    outputChassisSpeeds(chassisSpeeds);
+    controller(poseSupplier(), sample);
+    currentSample = sample;
   }
 
   void CmdEnd(bool interrupted) {
     timer.Stop();
     if (interrupted) {
-      outputChassisSpeeds(frc::ChassisSpeeds{});
+      controller(currentSample.GetPose(), currentSample);
     } else {
-      outputChassisSpeeds(trajectory.GetFinalSample().GetChassisSpeeds());
+      controller(poseSupplier(), trajectory.GetFinalSample());
     }
     isDone = true;
     isActive = false;
@@ -228,12 +331,12 @@ class AutoTrajectory {
   const choreo::Trajectory<SampleType>& trajectory;
   std::function<frc::Pose2d()> poseSupplier;
   ChoreoControllerFunction<SampleType> controller;
-  std::function<void(frc::ChassisSpeeds)> outputChassisSpeeds;
   std::function<bool()> mirrorTrajectory;
   std::optional<TrajectoryLogger> trajectoryLogger;
   const frc2::Subsystem& driveSubsystem;
   frc::EventLoop* loop;
   std::function<void()> newTrajectoryCallback;
+  SampleType currentSample;
 
   frc::Timer timer;
   bool isDone = false;

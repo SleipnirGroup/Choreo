@@ -2,5 +2,4 @@
     "rust-analyzer.check.overrideCommand": [
         "cargo", "clippy", "--target-dir", "./target/clippy"
     ],
-    "cmake.sourceDirectory": "/home/lseiden/Documents/frc/Choreo/trajoptlib",
 }

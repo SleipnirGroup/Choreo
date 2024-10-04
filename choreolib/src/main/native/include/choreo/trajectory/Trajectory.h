@@ -245,7 +245,12 @@ class Trajectory {
         std::vector<EventMarker>(filteredEvents.begin(), filteredEvents.end())};
   }
 
-  // Equality operators for trajectories
+  /**
+   * Trajectory equality operator.
+   *
+   * @param other The other trajectory.
+   * @return True for equality.
+   */
   bool operator==(const Trajectory<SampleType>& other) const {
     if (name != other.name) {
       return false;
@@ -270,10 +275,6 @@ class Trajectory {
     }
 
     return true;
-  }
-
-  bool operator!=(const Trajectory<SampleType>& other) const {
-    return !(*this == other);
   }
 
   /// The name of the trajectory
