@@ -3,7 +3,6 @@ import { Component } from "react";
 import { doc } from "../../../document/DocumentManager";
 
 import { sample } from "../../../util/MathUtil";
-import { toJS } from "mobx";
 
 type MarkerProps = {
   x: number;
@@ -50,7 +49,6 @@ class FieldEventMarkers extends Component<Props, State> {
   render() {
     const path = doc.pathlist.activePath;
     const markers = path.markers;
-    console.log(toJS(markers));
     return markers.flatMap((marker) => {
       if (marker.data.timestamp === undefined) {
         return [];
