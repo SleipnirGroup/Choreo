@@ -20,11 +20,11 @@ namespace trajopt {
  * The side of the line to stay on.
  */
 enum class Side : uint8_t {
-  /* Stay above the line. */
+  /// Stay above the line.
   kAbove,
-  /* Stay below the line. */
+  /// Stay below the line.
   kBelow,
-  /* Stay on the line. */
+  /// Stay on the line.
   kOn,
 };
 
