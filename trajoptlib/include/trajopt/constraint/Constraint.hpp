@@ -9,6 +9,7 @@
 #include <sleipnir/optimization/OptimizationProblem.hpp>
 
 #include "trajopt/constraint/AngularVelocityMaxMagnitudeConstraint.hpp"
+#include "trajopt/constraint/LaneConstraint.hpp"
 #include "trajopt/constraint/LinePointConstraint.hpp"
 #include "trajopt/constraint/LinearAccelerationMaxMagnitudeConstraint.hpp"
 #include "trajopt/constraint/LinearVelocityDirectionConstraint.hpp"
@@ -49,6 +50,7 @@ concept ConstraintType =
     };
 
 static_assert(ConstraintType<AngularVelocityMaxMagnitudeConstraint>);
+static_assert(ConstraintType<LaneConstraint>);
 static_assert(ConstraintType<LinePointConstraint>);
 static_assert(ConstraintType<LinearAccelerationMaxMagnitudeConstraint>);
 static_assert(ConstraintType<LinearVelocityDirectionConstraint>);
@@ -64,6 +66,7 @@ static_assert(ConstraintType<TranslationEqualityConstraint>);
 using Constraint = std::variant<
     // clang-format off
     AngularVelocityMaxMagnitudeConstraint,
+    LaneConstraint,
     LinePointConstraint,
     LinearAccelerationMaxMagnitudeConstraint,
     LinearVelocityDirectionConstraint,
