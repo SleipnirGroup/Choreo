@@ -2,6 +2,8 @@
 
 package choreo.trajectory;
 
+import choreo.trajectory.ProjectFile.Expression;
+
 // /** A marker for an event in a trajectory. */
 // public record EventMarker(double timestamp, String event) {
 //   /**
@@ -17,11 +19,31 @@ package choreo.trajectory;
 
 /** A marker for an event in a trajectory. */
 public class EventMarker {
+  private class EventMarkerData {
+    public final double timestamp;
+    public EventMarkerData(double target_timestamp, Expression offset) {
+      timestamp = target_timestamp + offset.val;
+    }
+  }
+
+  private class ChoreolibEvent {
+    public final String event;
+    public ChoreolibEvent(String event) {
+      this.event = event;
+    }
+  }
+
   /** The timestamp of the event. */
   public final double timestamp;
 
   /** The event. */
   public final String event;
+
+
+  public EventMarker(EventMarkerData data, ChoreolibEvent event) {
+    this.timestamp = data.timestamp;
+    this.event = event.event;
+  }
 
   /**
    * Constructs an EventMarker with the specified parameters.
