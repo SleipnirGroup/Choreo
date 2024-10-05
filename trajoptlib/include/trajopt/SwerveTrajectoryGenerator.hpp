@@ -80,10 +80,10 @@ struct TRAJOPT_DLLEXPORT SwerveSolution {
   std::vector<double> alpha;
 
   /// The x forces for each module.
-  std::vector<std::vector<double>> moduleFX;
+  std::vector<std::vector<double>> moduleFx;
 
   /// The y forces for each module.
-  std::vector<std::vector<double>> moduleFY;
+  std::vector<std::vector<double>> moduleFy;
 };
 
 /**
@@ -196,7 +196,7 @@ class TRAJOPT_DLLEXPORT SwerveTrajectory {
           std::atan2(solution.thetasin[sample], solution.thetacos[sample]),
           solution.vx[sample], solution.vy[sample], solution.omega[sample],
           solution.ax[sample], solution.ay[sample], solution.alpha[sample],
-          solution.moduleFX[sample], solution.moduleFY[sample]);
+          solution.moduleFx[sample], solution.moduleFy[sample]);
       ts += solution.dt[sample];
     }
   }
@@ -248,14 +248,14 @@ class TRAJOPT_DLLEXPORT SwerveTrajectoryGenerator {
   /// State Variables
   std::vector<sleipnir::Variable> x;
   std::vector<sleipnir::Variable> y;
-  std::vector<sleipnir::Variable> thetacos;
-  std::vector<sleipnir::Variable> thetasin;
+  std::vector<sleipnir::Variable> cosθ;
+  std::vector<sleipnir::Variable> sinθ;
   std::vector<sleipnir::Variable> vx;
   std::vector<sleipnir::Variable> vy;
-  std::vector<sleipnir::Variable> omega;
+  std::vector<sleipnir::Variable> ω;
   std::vector<sleipnir::Variable> ax;
   std::vector<sleipnir::Variable> ay;
-  std::vector<sleipnir::Variable> alpha;
+  std::vector<sleipnir::Variable> α;
 
   /// Input Variables
   std::vector<std::vector<sleipnir::Variable>> Fx;

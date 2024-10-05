@@ -11,10 +11,13 @@
 #include <vector>
 
 #include "trajopt/constraint/AngularVelocityMaxMagnitudeConstraint.hpp"
+#include "trajopt/constraint/LaneConstraint.hpp"
 #include "trajopt/constraint/LinearAccelerationMaxMagnitudeConstraint.hpp"
 #include "trajopt/constraint/LinearVelocityDirectionConstraint.hpp"
 #include "trajopt/constraint/LinearVelocityMaxMagnitudeConstraint.hpp"
 #include "trajopt/constraint/PointAtConstraint.hpp"
+#include "trajopt/constraint/PointLineRegionConstraint.hpp"
+#include "trajopt/geometry/Translation2.hpp"
 #include "trajopt/util/Cancellation.hpp"
 #include "trajoptlib/src/lib.rs.h"
 
@@ -136,15 +139,32 @@ void SwervePathBuilder::wpt_keep_in_polygon(size_t index,
                                trajopt::PointLineRegionConstraint{
                                    {0.0, 0.0},
                                    {field_points_x[i], field_points_y[i]},
-                                   {field_points_x[j], field_points_y[j]}});
+                                   {field_points_x[j], field_points_y[j]},
+                                   Side::kAbove});
     for (const auto& bumper : path_builder.GetBumpers()) {
       for (const auto& corner : bumper.points) {
         path_builder.WptConstraint(index,
                                    trajopt::PointLineRegionConstraint{
                                        corner,
                                        {field_points_x[i], field_points_y[i]},
-                                       {field_points_x[j], field_points_y[j]}});
+                                       {field_points_x[j], field_points_y[j]},
+                                       Side::kAbove});
       }
+    }
+  }
+}
+
+void SwervePathBuilder::wpt_keep_in_lane(
+    size_t index, double center_line_start_x, double center_line_start_y,
+    double center_line_end_x, double center_line_end_y, double tolerance) {
+  for (const auto& bumper : path_builder.GetBumpers()) {
+    for (const auto& corner : bumper.points) {
+      path_builder.WptConstraint(
+          index,
+          trajopt::LaneConstraint{corner,
+                                  {center_line_start_x, center_line_start_y},
+                                  {center_line_end_x, center_line_end_y},
+                                  tolerance});
     }
   }
 }
@@ -239,16 +259,35 @@ void SwervePathBuilder::sgmt_keep_in_polygon(size_t from_index, size_t to_index,
                                 trajopt::PointLineRegionConstraint{
                                     {0.0, 0.0},
                                     {field_points_x[i], field_points_y[i]},
-                                    {field_points_x[j], field_points_y[j]}});
+                                    {field_points_x[j], field_points_y[j]},
+                                    Side::kAbove});
     for (const auto& bumper : path_builder.GetBumpers()) {
       for (const auto& corner : bumper.points) {
-        path_builder.SgmtConstraint(
-            from_index, to_index,
-            trajopt::PointLineRegionConstraint{
-                corner,
-                {field_points_x[i], field_points_y[i]},
-                {field_points_x[j], field_points_y[j]}});
+        path_builder.SgmtConstraint(from_index, to_index,
+                                    trajopt::PointLineRegionConstraint{
+                                        corner,
+                                        {field_points_x[i], field_points_y[i]},
+                                        {field_points_x[j], field_points_y[j]},
+                                        Side::kAbove});
       }
+    }
+  }
+}
+
+void SwervePathBuilder::sgmt_keep_in_lane(size_t from_index, size_t to_index,
+                                          double center_line_start_x,
+                                          double center_line_start_y,
+                                          double center_line_end_x,
+                                          double center_line_end_y,
+                                          double tolerance) {
+  for (const auto& bumper : path_builder.GetBumpers()) {
+    for (const auto& corner : bumper.points) {
+      path_builder.SgmtConstraint(
+          from_index, to_index,
+          trajopt::LaneConstraint{corner,
+                                  {center_line_start_x, center_line_start_y},
+                                  {center_line_end_x, center_line_end_y},
+                                  tolerance});
     }
   }
 }
@@ -349,9 +388,9 @@ std::unique_ptr<SwervePathBuilder> swerve_path_builder_new() {
 void DifferentialPathBuilder::set_drivetrain(
     const DifferentialDrivetrain& drivetrain) {
   path_builder.SetDrivetrain(trajopt::DifferentialDrivetrain{
-      drivetrain.mass, drivetrain.moi, drivetrain.trackwidth,
-      drivetrain.wheel_radius, drivetrain.wheel_max_angular_velocity,
-      drivetrain.wheel_max_torque});
+      drivetrain.mass, drivetrain.moi, drivetrain.wheel_radius,
+      drivetrain.wheel_max_angular_velocity, drivetrain.wheel_max_torque,
+      drivetrain.trackwidth});
 }
 
 void DifferentialPathBuilder::set_control_interval_counts(
@@ -460,15 +499,32 @@ void DifferentialPathBuilder::wpt_keep_in_polygon(
                                trajopt::PointLineRegionConstraint{
                                    {0.0, 0.0},
                                    {field_points_x[i], field_points_y[i]},
-                                   {field_points_x[j], field_points_y[j]}});
+                                   {field_points_x[j], field_points_y[j]},
+                                   Side::kAbove});
     for (const auto& bumper : path_builder.GetBumpers()) {
       for (const auto& corner : bumper.points) {
         path_builder.WptConstraint(index,
                                    trajopt::PointLineRegionConstraint{
                                        corner,
                                        {field_points_x[i], field_points_y[i]},
-                                       {field_points_x[j], field_points_y[j]}});
+                                       {field_points_x[j], field_points_y[j]},
+                                       Side::kAbove});
       }
+    }
+  }
+}
+
+void DifferentialPathBuilder::wpt_keep_in_lane(
+    size_t index, double center_line_start_x, double center_line_start_y,
+    double center_line_end_x, double center_line_end_y, double tolerance) {
+  for (const auto& bumper : path_builder.GetBumpers()) {
+    for (const auto& corner : bumper.points) {
+      path_builder.WptConstraint(
+          index,
+          trajopt::LaneConstraint{corner,
+                                  {center_line_start_x, center_line_start_y},
+                                  {center_line_end_x, center_line_end_y},
+                                  tolerance});
     }
   }
 }
@@ -553,16 +609,33 @@ void DifferentialPathBuilder::sgmt_keep_in_polygon(
                                 trajopt::PointLineRegionConstraint{
                                     {0.0, 0.0},
                                     {field_points_x[i], field_points_y[i]},
-                                    {field_points_x[j], field_points_y[j]}});
+                                    {field_points_x[j], field_points_y[j]},
+                                    Side::kAbove});
     for (const auto& bumper : path_builder.GetBumpers()) {
       for (const auto& corner : bumper.points) {
-        path_builder.SgmtConstraint(
-            from_index, to_index,
-            trajopt::PointLineRegionConstraint{
-                corner,
-                {field_points_x[i], field_points_y[i]},
-                {field_points_x[j], field_points_y[j]}});
+        path_builder.SgmtConstraint(from_index, to_index,
+                                    trajopt::PointLineRegionConstraint{
+                                        corner,
+                                        {field_points_x[i], field_points_y[i]},
+                                        {field_points_x[j], field_points_y[j]},
+                                        Side::kAbove});
       }
+    }
+  }
+}
+
+void DifferentialPathBuilder::sgmt_keep_in_lane(
+    size_t from_index, size_t to_index, double center_line_start_x,
+    double center_line_start_y, double center_line_end_x,
+    double center_line_end_y, double tolerance) {
+  for (const auto& bumper : path_builder.GetBumpers()) {
+    for (const auto& corner : bumper.points) {
+      path_builder.SgmtConstraint(
+          from_index, to_index,
+          trajopt::LaneConstraint{corner,
+                                  {center_line_start_x, center_line_start_y},
+                                  {center_line_end_x, center_line_end_y},
+                                  tolerance});
     }
   }
 }

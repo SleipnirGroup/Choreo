@@ -29,7 +29,7 @@ pub fn calculate_adjusted_headings(trajectory: &TrajectoryFile) -> ChoreoResult<
     let mut sgmt_has_0_ang_vel = vec![0u8; num_wpts];
     let mut headings_from_constraints = vec![None; num_wpts];
 
-    let (guess_point_idxs, constraints_idx) = fix_constraint_indices(trajectory);
+    let (_, constraints_idx) = fix_constraint_indices(trajectory);
 
     // find pose waypoints
     for (w, maybe_h) in waypoints.iter().zip(headings_from_constraints.iter_mut()) {
@@ -38,18 +38,8 @@ pub fn calculate_adjusted_headings(trajectory: &TrajectoryFile) -> ChoreoResult<
         }
     }
 
-    let constraints_fixed_scope: Vec<_> = constraints_idx
-        .iter()
-        .map(|c| {
-            let mut cc = c.to_owned();
-            cc.from = fix_scope(c.from, &guess_point_idxs);
-            cc.to = c.to.map(|idx| fix_scope(idx, &guess_point_idxs));
-            cc
-        })
-        .collect();
-
     // count constraint references
-    for constraint in &constraints_fixed_scope {
+    for constraint in &constraints_idx {
         let from = constraint.from;
         let to_opt = constraint.to;
         match constraint.data {

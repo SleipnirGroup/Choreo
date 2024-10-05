@@ -229,6 +229,10 @@ sleipnir::EqualityConstraints operator==(const Translation2<T>& lhs,
          sleipnir::VariableMatrix{{rhs.X()}, {rhs.Y()}};
 }
 
+inline bool operator==(const Translation2d& lhs, const Translation2d& rhs) {
+  return lhs.X() == rhs.X() && lhs.Y() == rhs.Y();
+}
+
 }  // namespace trajopt
 
 namespace std {

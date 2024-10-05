@@ -63,6 +63,10 @@ class SwervePathBuilder {
                           double field_point_y, double keep_in_radius);
   void wpt_keep_in_polygon(size_t index, rust::Vec<double> field_points_x,
                            rust::Vec<double> field_points_y);
+  void wpt_keep_in_lane(size_t index, double center_line_start_x,
+                        double center_line_start_y, double center_line_end_x,
+                        double center_line_end_y, double tolerance);
+
   void wpt_keep_out_circle(size_t index, double field_point_x,
                            double field_point_y, double keep_in_radius);
 
@@ -83,6 +87,10 @@ class SwervePathBuilder {
   void sgmt_keep_in_polygon(size_t from_index, size_t to_index,
                             rust::Vec<double> field_points_x,
                             rust::Vec<double> field_points_y);
+  void sgmt_keep_in_lane(size_t from_index, size_t to_index,
+                         double center_line_start_x, double center_line_start_y,
+                         double center_line_end_x, double center_line_end_y,
+                         double tolerance);
 
   void sgmt_keep_out_circle(size_t from_index, size_t to_index, double x,
                             double y, double radius);
@@ -127,6 +135,10 @@ class DifferentialPathBuilder {
                           double field_point_y, double keep_in_radius);
   void wpt_keep_in_polygon(size_t index, rust::Vec<double> field_points_x,
                            rust::Vec<double> field_points_y);
+  void wpt_keep_in_lane(size_t index, double center_line_start_x,
+                        double center_line_start_y, double center_line_end_x,
+                        double center_line_end_y, double tolerance);
+
   void wpt_keep_out_circle(size_t index, double field_point_x,
                            double field_point_y, double keep_in_radius);
 
@@ -145,6 +157,10 @@ class DifferentialPathBuilder {
   void sgmt_keep_in_polygon(size_t from_index, size_t to_index,
                             rust::Vec<double> field_points_x,
                             rust::Vec<double> field_points_y);
+  void sgmt_keep_in_lane(size_t from_index, size_t to_index,
+                         double center_line_start_x, double center_line_start_y,
+                         double center_line_end_x, double center_line_end_y,
+                         double tolerance);
 
   void sgmt_keep_out_circle(size_t from_index, size_t to_index, double x,
                             double y, double radius);
