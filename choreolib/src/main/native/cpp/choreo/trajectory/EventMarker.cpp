@@ -2,6 +2,8 @@
 
 #include "choreo/trajectory/EventMarker.h"
 
+#include <string>
+
 #include <wpi/json.h>
 
 using namespace choreo;
