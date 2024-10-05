@@ -1,24 +1,22 @@
+import { Instance, getEnv, getParent, isAlive, types } from "mobx-state-tree";
 import {
-  IAnyStateTreeNode,
-  IAnyType,
-  Instance,
-  destroy,
-  detach,
-  getEnv,
-  getParent,
-  isAlive,
-  types
-} from "mobx-state-tree";
-import { moveItem } from "mobx-utils";
-import { Command, EventMarker, EventMarkerData, WaypointUUID } from "./2025/DocumentTypes";
+  Command,
+  EventMarker,
+  EventMarkerData,
+  WaypointUUID
+} from "./2025/DocumentTypes";
+import { CommandStore } from "./CommandStore";
 import { WaypointScope } from "./ConstraintStore";
 import { Env } from "./DocumentManager";
 import { ExpressionStore } from "./ExpressionStore";
 import { IChoreoTrajectoryStore } from "./path/ChoreoTrajectoryStore";
 import { IHolonomicPathStore } from "./path/HolonomicPathStore";
-import { CommandStore } from "./CommandStore";
-import { findUUIDIndex, getByWaypointID, savedWaypointIdToWaypointId, waypointIdToSavedWaypointId } from "./path/utils";
-import { IHolonomicWaypointStore } from "./HolonomicWaypointStore";
+import {
+  findUUIDIndex,
+  getByWaypointID,
+  savedWaypointIdToWaypointId,
+  waypointIdToSavedWaypointId
+} from "./path/utils";
 
 export const EventMarkerDataStore = types
   .model("EventMarkerData", {
@@ -28,9 +26,9 @@ export const EventMarkerDataStore = types
     offset: ExpressionStore,
     uuid: types.identifier
   })
-  .volatile(self=>({
+  .volatile((self) => ({
     /** Just used to preserve the index of the target during generation */
-    trajectoryTargetIndex: undefined as (number | undefined)
+    trajectoryTargetIndex: undefined as number | undefined
   }))
   .views((self) => ({
     getPath(): IHolonomicPathStore {
@@ -59,23 +57,22 @@ export const EventMarkerDataStore = types
       return findUUIDIndex(waypoint.uuid, path.params.waypoints);
     }
   }))
-  .views((self)=> ({
-    get serialize() : EventMarkerData {
+  .views((self) => ({
+    get serialize(): EventMarkerData {
       const points = self.getPath().params.waypoints;
       return {
         name: self.name,
         target: waypointIdToSavedWaypointId(self.target, points),
         offset: self.offset.serialize,
         targetTimestamp: self.targetTimestamp
-      }
+      };
     }
   }))
   .actions((self) => ({
     deserialize(ser: EventMarkerData) {
       const points = self.getPath().params.waypoints;
       self.name = ser.name;
-      self.target = 
-        savedWaypointIdToWaypointId(ser.target, points);
+      self.target = savedWaypointIdToWaypointId(ser.target, points);
       self.targetTimestamp = self.targetTimestamp ?? undefined;
       self.offset.deserialize(ser.offset);
     },
@@ -85,7 +82,7 @@ export const EventMarkerDataStore = types
     setName(name: string) {
       self.name = name;
     },
-    setTargetTimestamp(timestamp: number| undefined) {
+    setTargetTimestamp(timestamp: number | undefined) {
       self.targetTimestamp = timestamp;
     },
     setTrajectoryTargetIndex(index: number | undefined) {
@@ -108,9 +105,7 @@ export const EventMarkerDataStore = types
       } else if (self.offset.value == 0) {
         return true;
       } else {
-        const splitTimes = traj.splits.map(
-          (idx) => traj.samples[idx]?.t
-        );
+        const splitTimes = traj.splits.map((idx) => traj.samples[idx]?.t);
         [0, ...splitTimes, traj.getTotalTimeSeconds()].forEach(
           (stopTimestamp) => {
             if (
@@ -126,41 +121,39 @@ export const EventMarkerDataStore = types
     }
   }));
 
-export const EventMarkerStore = types.model(
-  "GeneralMarker", {
+export const EventMarkerStore = types
+  .model("GeneralMarker", {
     data: EventMarkerDataStore,
     uuid: types.identifier,
     event: CommandStore
-  }
-)
-.views(self=>({
-  get serialize() : EventMarker<Command> {
-    return {
-      data: self.data.serialize,
-      event: self.event.serialize
+  })
+  .views((self) => ({
+    get serialize(): EventMarker<Command> {
+      return {
+        data: self.data.serialize,
+        event: self.event.serialize
+      };
+    },
+    get selected(): boolean {
+      if (!isAlive(self)) {
+        return false;
+      }
+      return self.uuid === getEnv<Env>(self).selectedSidebar();
     }
-  },
-  get selected(): boolean {
-    if (!isAlive(self)) {
-      return false;
+  }))
+  .actions((self) => ({
+    deserialize(ser: EventMarker<Command>) {
+      self.data.deserialize(ser.data);
+      self.event.deserialize(ser.event);
+    },
+    setSelected(selected: boolean) {
+      if (selected && !self.selected) {
+        getEnv<Env>(self).select(
+          getParent<IEventMarkerStore[]>(self)?.find(
+            (point) => self.uuid == point.uuid
+          )
+        );
+      }
     }
-    return self.uuid === getEnv<Env>(self).selectedSidebar();
-  },
-
-}))
-.actions(self=>({
-  deserialize(ser: EventMarker<Command>) {
-    self.data.deserialize(ser.data);
-    self.event.deserialize(ser.event);
-  },
-  setSelected(selected: boolean) {
-    if (selected && !self.selected) {
-      getEnv<Env>(self).select(
-        getParent<IEventMarkerStore[]>(self)?.find(
-          (point) => self.uuid == point.uuid
-        )
-      );
-    }
-  },
-}));
+  }));
 export type IEventMarkerStore = Instance<typeof EventMarkerStore>;

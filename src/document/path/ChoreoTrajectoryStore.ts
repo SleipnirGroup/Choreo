@@ -1,17 +1,15 @@
-import { Instance, destroy, getEnv, types } from "mobx-state-tree";
+import { Instance, types } from "mobx-state-tree";
 import {
   DifferentialSample,
   Output,
   type SwerveSample
 } from "../2025/DocumentTypes";
-import { Env } from "../DocumentManager";
-import { EventMarkerStore, IEventMarkerStore } from "../EventMarkerStore";
 
 export const ChoreoTrajectoryStore = types
   .model("ChoreoTrajectoryStore", {
     waypoints: types.frozen<number[]>(),
     samples: types.frozen<SwerveSample[] | DifferentialSample[]>(),
-    splits: types.frozen<number[]>(),
+    splits: types.frozen<number[]>()
   })
   .views((self) => ({
     get fullTrajectory(): SwerveSample[] | DifferentialSample[] {

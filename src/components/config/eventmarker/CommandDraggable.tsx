@@ -95,11 +95,13 @@ class CommandDraggable extends Component<Props, State> {
               if (data.id === "choreolib" && this.props.parent !== undefined) {
                 return undefined;
               }
-            
-              return (<MenuItem key={data.id} value={data.id}>
-                {data.name}
-              </MenuItem>);
-              })}
+
+              return (
+                <MenuItem key={data.id} value={data.id}>
+                  {data.name}
+                </MenuItem>
+              );
+            })}
           </Select>
           {command.isNamed && (
             <TextField

@@ -1,4 +1,4 @@
-import { IAnyStateTreeNode, Instance, getEnv, getParent, isAlive, types } from "mobx-state-tree";
+import { Instance, getEnv, getParent, isAlive, types } from "mobx-state-tree";
 import {
   ConstraintDataObjects,
   IConstraintDataStore
@@ -47,17 +47,23 @@ export const ConstraintStore = types
     }
   }))
   .views((self) => ({
-    getStartWaypoint(points: IHolonomicWaypointStore[]): IHolonomicWaypointStore | undefined {
+    getStartWaypoint(
+      points: IHolonomicWaypointStore[]
+    ): IHolonomicWaypointStore | undefined {
       const startScope = self.from;
       return getByWaypointID(startScope, points);
     },
-    getEndWaypoint(points: IHolonomicWaypointStore[]): IHolonomicWaypointStore | undefined {
+    getEndWaypoint(
+      points: IHolonomicWaypointStore[]
+    ): IHolonomicWaypointStore | undefined {
       const scope = self.to ?? self.from;
       return getByWaypointID(scope, points);
     }
   }))
   .views((self) => ({
-    getStartWaypointIndex(points: IHolonomicWaypointStore[]): number | undefined {
+    getStartWaypointIndex(
+      points: IHolonomicWaypointStore[]
+    ): number | undefined {
       const waypoint = self.getStartWaypoint(points);
       if (waypoint === undefined) return undefined;
       return findUUIDIndex(waypoint.uuid, points);

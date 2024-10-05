@@ -163,8 +163,8 @@ export type ChoreolibEvent = {
   type: "choreolib";
   data: {
     event: string | null;
-  }
-}
+  };
+};
 
 export type EventMarkerData = {
   name: string;
@@ -174,13 +174,9 @@ export type EventMarkerData = {
    * The timestamp along the trajectory of the waypoint this marker targeted on the last generation.
    */
   targetTimestamp: number | undefined;
-}
-export type PplibCommand =
-  | WaitCommand
-  | GroupCommand
-  | NamedCommand;
-export type Command = 
-  PplibCommand | ChoreolibEvent
+};
+export type PplibCommand = WaitCommand | GroupCommand | NamedCommand;
+export type Command = PplibCommand | ChoreolibEvent;
 export interface EventMarker<C extends Command> {
   data: EventMarkerData;
   event: C;

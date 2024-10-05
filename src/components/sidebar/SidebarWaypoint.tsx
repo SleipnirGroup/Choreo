@@ -15,7 +15,7 @@ type Props = {
   index: number;
   pathLength: number;
   issue: string | undefined;
-  delete: ()=>void
+  delete: () => void;
 };
 
 type State = { selected: boolean };

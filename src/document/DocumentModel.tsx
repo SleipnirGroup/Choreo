@@ -25,9 +25,9 @@ import { Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
 
 export type SelectableItemTypes =
-  ((| IHolonomicWaypointStore
-  | IConstraintStore
-  | IEventMarkerStore) & {uuid: string})
+  | ((IHolonomicWaypointStore | IConstraintStore | IEventMarkerStore) & {
+      uuid: string;
+    })
   | undefined;
 export const SelectableItem = types.union(
   {
@@ -60,10 +60,10 @@ export const DocumentStore = types
   })
   .views((self) => ({
     selected(item: SelectableItemTypes) {
-      return self.selectedSidebarItem?.uuid === item?.uuid
+      return self.selectedSidebarItem?.uuid === item?.uuid;
     },
     hovered(item: SelectableItemTypes) {
-      return self.hoveredSidebarItem?.uuid === item?.uuid
+      return self.hoveredSidebarItem?.uuid === item?.uuid;
     },
     serializeChor(): Project {
       return {
@@ -158,7 +158,7 @@ export const DocumentStore = types
       if (points.length < 2) {
         return;
       }
-      
+
       console.log(pathStore.serialize);
       const config = self.robotConfig.serialize;
       pathStore.params.constraints
@@ -169,9 +169,9 @@ export const DocumentStore = types
           }
         });
 
-      pathStore.markers.forEach(m=>{
-        m.data.setTrajectoryTargetIndex(m.data.getTargetIndex())
-      })
+      pathStore.markers.forEach((m) => {
+        m.data.setTrajectoryTargetIndex(m.data.getTargetIndex());
+      });
       pathStore.ui.setGenerating(true);
       const handle = pathStore.uuid
         .split("")
@@ -243,15 +243,14 @@ export const DocumentStore = types
               pathStore.trajectory.setSamples(newTrajectory);
               pathStore.trajectory.setSplits(result.trajectory.splits);
               pathStore.trajectory.setWaypoints(result.trajectory.waypoints);
-              pathStore.markers.forEach(m=>{
+              pathStore.markers.forEach((m) => {
                 const index = m.data.trajectoryTargetIndex;
                 if (index === undefined) {
                   m.data.setTargetTimestamp(undefined);
                 } else {
-                  m.data.setTargetTimestamp(result.trajectory.waypoints[index])
+                  m.data.setTargetTimestamp(result.trajectory.waypoints[index]);
                 }
-                
-              })
+              });
               pathStore.setSnapshot(result.snapshot);
               self.history.stopGroup();
             });

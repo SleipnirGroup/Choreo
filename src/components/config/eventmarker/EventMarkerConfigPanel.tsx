@@ -3,9 +3,7 @@ import { observer } from "mobx-react";
 import { resolveIdentifier } from "mobx-state-tree";
 import React, { Component } from "react";
 import { DragDropContext } from "@hello-pangea/dnd";
-import {
-  IEventMarkerStore
-} from "../../../document/EventMarkerStore";
+import { IEventMarkerStore } from "../../../document/EventMarkerStore";
 import ExpressionInput from "../../input/ExpressionInput";
 import ExpressionInputList from "../../input/ExpressionInputList";
 import InputStyles from "../../input/InputList.module.css";
@@ -15,7 +13,7 @@ import CommandDraggable from "./CommandDraggable";
 import { CommandStore } from "../../../document/CommandStore";
 import { IHolonomicWaypointStore } from "../../../document/HolonomicWaypointStore";
 
-type Props = { marker: IEventMarkerStore, points: IHolonomicWaypointStore[] };
+type Props = { marker: IEventMarkerStore; points: IHolonomicWaypointStore[] };
 
 type State = object;
 

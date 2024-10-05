@@ -1,5 +1,8 @@
 import { observer } from "mobx-react";
-import { ConstraintDataTypeMap, ConstraintKey } from "../../../../document/ConstraintDefinitions";
+import {
+  ConstraintDataTypeMap,
+  ConstraintKey
+} from "../../../../document/ConstraintDefinitions";
 import { IConstraintStoreKeyed } from "../../../../document/ConstraintStore";
 import { doc } from "../../../../document/DocumentManager";
 import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer";
@@ -10,13 +13,13 @@ import KeepOutCircleOverlay from "./KeepOutCircleOverlay";
 import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
 
 export type OverlayProps<K extends keyof ConstraintDataTypeMap> = {
-  data:IConstraintStoreKeyed<K>,
-  start: IHolonomicWaypointStore,
-  end: IHolonomicWaypointStore,
-  lineColor: string
-}
+  data: IConstraintStoreKeyed<K>;
+  start: IHolonomicWaypointStore;
+  end: IHolonomicWaypointStore;
+  lineColor: string;
+};
 const overlays = {
-  PointAt: ( props: OverlayProps<"PointAt">) => (
+  PointAt: (props: OverlayProps<"PointAt">) => (
     <PointAtOverlay
       data={props.data.data}
       start={props.start}
@@ -24,7 +27,7 @@ const overlays = {
       lineColor={props.lineColor}
     ></PointAtOverlay>
   ),
-  KeepInCircle: ( props: OverlayProps<"KeepInCircle">) => (
+  KeepInCircle: (props: OverlayProps<"KeepInCircle">) => (
     <KeepInCircleOverlay
       data={props.data.data}
       start={props.start}
@@ -32,7 +35,7 @@ const overlays = {
       lineColor={props.lineColor}
     ></KeepInCircleOverlay>
   ),
-  KeepInRectangle: ( props: OverlayProps<"KeepInRectangle">) => (
+  KeepInRectangle: (props: OverlayProps<"KeepInRectangle">) => (
     <KeepInRectangleOverlay
       data={props.data.data}
       start={props.start}
@@ -40,7 +43,7 @@ const overlays = {
       lineColor={props.lineColor}
     ></KeepInRectangleOverlay>
   ),
-  KeepOutCircle: ( props: OverlayProps<"KeepOutCircle">) => (
+  KeepOutCircle: (props: OverlayProps<"KeepOutCircle">) => (
     <KeepOutCircleOverlay
       data={props.data.data}
       start={props.start}
@@ -53,8 +56,7 @@ const overlays = {
   MaxVelocity: () => <></>,
   MaxAngularVelocity: () => <></>
 } satisfies {
-  [K in ConstraintKey]: (props: OverlayProps<K>
-  ) => JSX.Element;
+  [K in ConstraintKey]: (props: OverlayProps<K>) => JSX.Element;
 };
 type Props = {
   constraint?: IConstraintStoreKeyed<ConstraintKey>;
@@ -73,7 +75,7 @@ function FieldConstraintDisplayLayer(props: Props) {
     start: constraint.getStartWaypoint(props.points),
     end: constraint.getEndWaypoint(props.points),
     lineColor: props.lineColor
-  }
+  };
   if (startIndex === undefined) {
     return <></>;
   }
@@ -88,7 +90,8 @@ function FieldConstraintDisplayLayer(props: Props) {
       ></FieldConstraintRangeLayer>
       {overlays[constraint.data.type](
         // @ts-expect-error can't cast the constraint as the proper type.
-        overlayProps)}
+        overlayProps
+      )}
     </g>
   );
 }

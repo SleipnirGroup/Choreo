@@ -1,15 +1,17 @@
-import { PriorityHigh, Room } from "@mui/icons-material";
+import { Room } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { IconButton, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import { getParent } from "mobx-state-tree";
 import React, { Component } from "react";
+import { WaypointUUID } from "../../document/2025/DocumentTypes";
 import { doc } from "../../document/DocumentManager";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
-import { IChoreoTrajectoryStore } from "../../document/path/ChoreoTrajectoryStore";
-import { IHolonomicPathStore, waypointIDToText } from "../../document/path/HolonomicPathStore";
+import {
+  IHolonomicPathStore,
+  waypointIDToText
+} from "../../document/path/HolonomicPathStore";
 import styles from "./Sidebar.module.css";
-import { WaypointUUID } from "../../document/2025/DocumentTypes";
 
 type Props = {
   marker: IEventMarkerStore;
@@ -23,9 +25,8 @@ class SidebarMarker extends Component<Props, State> {
   waypointIDToText(id: WaypointUUID | undefined) {
     const points = getParent<IHolonomicPathStore>(
       getParent<IEventMarkerStore[]>(this.props.marker)
-  ).params.waypoints;
-      return waypointIDToText(id, points)
-
+    ).params.waypoints;
+    return waypointIDToText(id, points);
   }
 
   render() {
@@ -62,9 +63,7 @@ class SidebarMarker extends Component<Props, State> {
             <span></span>
           )} */}
           <span>
-            <span>
-             {this.waypointIDToText(this.props.marker.data.target)}{" "}
-            </span>
+            <span>{this.waypointIDToText(this.props.marker.data.target)} </span>
             <span style={{}}>
               (
               {(this.props.marker.data.offset.value < 0 ? "" : "+") +

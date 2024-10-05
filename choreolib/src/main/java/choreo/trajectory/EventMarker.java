@@ -19,15 +19,32 @@ import choreo.trajectory.ProjectFile.Expression;
 
 /** A marker for an event in a trajectory. */
 public class EventMarker {
+  /** The "data" component of the marker serialization */
   private class EventMarkerData {
+    /** The timestamp of the marker. */
     public final double timestamp;
+
+    /**
+     * Constructor
+     *
+     * @param target_timestamp The timestamp of the waypoint the marker is attached to.
+     * @param offset The time offset from target_timestamp.
+     */
     public EventMarkerData(double target_timestamp, Expression offset) {
       timestamp = target_timestamp + offset.val;
     }
   }
 
+  /** The "event" component of the marker serialization */
   private class ChoreolibEvent {
+    /** The event string */
     public final String event;
+
+    /**
+     * Constructor
+     *
+     * @param event The event string
+     */
     public ChoreolibEvent(String event) {
       this.event = event;
     }
@@ -39,7 +56,12 @@ public class EventMarker {
   /** The event. */
   public final String event;
 
-
+  /**
+   * Construct an Event Marker from deserialized components
+   *
+   * @param data the data component
+   * @param event the event component
+   */
   public EventMarker(EventMarkerData data, ChoreolibEvent event) {
     this.timestamp = data.timestamp;
     this.event = event.event;

@@ -1,39 +1,45 @@
-import { Instance, types, getEnv, destroy, IAnyStateTreeNode, getParentOfType } from "mobx-state-tree";
+import { IReactionDisposer, reaction } from "mobx";
+import {
+  IAnyStateTreeNode,
+  Instance,
+  destroy,
+  getEnv,
+  getParentOfType,
+  types
+} from "mobx-state-tree";
+import {
+  ChoreolibEvent,
+  Command,
+  EventMarker,
+  Expr,
+  PplibCommand,
+  SAVE_FILE_VERSION,
+  Waypoint,
+  WaypointUUID,
+  type ChoreoPath,
+  type Trajectory
+} from "../2025/DocumentTypes";
+import { commandIsChoreolib } from "../CommandStore";
+import { Env } from "../DocumentManager";
+import { EventMarkerStore, IEventMarkerStore } from "../EventMarkerStore";
 import {
   DEFAULT_WAYPOINT,
   IHolonomicWaypointStore
 } from "../HolonomicWaypointStore";
-import { IReactionDisposer, reaction } from "mobx";
-import {
-  SAVE_FILE_VERSION,
-  type ChoreoPath,
-  type Trajectory,
-  Waypoint,
-  Expr,
-  PplibCommand,
-  EventMarker,
-  ChoreolibEvent,
-  Command,
-  WaypointIDX,
-  WaypointUUID
-} from "../2025/DocumentTypes";
 import { ChoreoPathStore } from "./ChoreoPathStore";
 import { ChoreoTrajectoryStore } from "./ChoreoTrajectoryStore";
 import { PathUIStore } from "./PathUIStore";
-import { Env } from "../DocumentManager";
-import { EventMarkerStore, IEventMarkerStore } from "../EventMarkerStore";
-import { commandIsChoreolib } from "../CommandStore";
 import { findUUIDIndex } from "./utils";
-export function waypointIDToText(id: WaypointUUID | undefined, points: IHolonomicWaypointStore[]) {
+export function waypointIDToText(
+  id: WaypointUUID | undefined,
+  points: IHolonomicWaypointStore[]
+) {
   if (id == undefined) return "?";
   if (id == "first") return "Start";
   if (id == "last") return "End";
-  return (
-    findUUIDIndex(id.uuid, points) + 1
-  );
+  return findUUIDIndex(id.uuid, points) + 1;
 }
-export const DEFAULT_EVENT_MARKER : EventMarker<PplibCommand> =
-{
+export const DEFAULT_EVENT_MARKER: EventMarker<PplibCommand> = {
   data: {
     name: "Marker",
     target: undefined,
@@ -49,7 +55,7 @@ export const DEFAULT_EVENT_MARKER : EventMarker<PplibCommand> =
       name: ""
     }
   }
-} 
+};
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
     snapshot: types.frozen<ChoreoPath<number>>(),
@@ -70,17 +76,19 @@ export const HolonomicPathStore = types
         return self.trajectory.samples.length >= 2;
       },
       get serialize(): Trajectory {
-        const markers = self.markers.map(m=>m.serialize);
+        const markers = self.markers.map((m) => m.serialize);
         return {
           name: self.name,
           version: SAVE_FILE_VERSION,
           params: self.params.serialize,
           trajectory: self.trajectory.serialize,
           snapshot: self.snapshot,
-          pplibCommands: markers.filter(m=>!commandIsChoreolib(m.event)) as 
-            EventMarker<PplibCommand>[],
-          events: markers.filter(m=>commandIsChoreolib(m.event)) as 
-            EventMarker<ChoreolibEvent>[],
+          pplibCommands: markers.filter(
+            (m) => !commandIsChoreolib(m.event)
+          ) as EventMarker<PplibCommand>[],
+          events: markers.filter((m) =>
+            commandIsChoreolib(m.event)
+          ) as EventMarker<ChoreolibEvent>[]
         };
       },
       lowestSelectedPoint(): IHolonomicWaypointStore | null {
@@ -88,7 +96,7 @@ export const HolonomicPathStore = types
           if (point.selected) return point;
         }
         return null;
-      },
+      }
     };
   })
   .views((self) => {
@@ -115,8 +123,8 @@ export const HolonomicPathStore = types
       },
       addEventMarker(marker?: EventMarker<Command>): IEventMarkerStore {
         const m = marker ?? DEFAULT_EVENT_MARKER;
-        let toAdd = getEnv<Env>(self).create.EventMarkerStore(m);
-      
+        const toAdd = getEnv<Env>(self).create.EventMarkerStore(m);
+
         self.markers.push(toAdd);
         toAdd.deserialize(m);
         return toAdd;
@@ -159,12 +167,12 @@ export const HolonomicPathStore = types
         self.snapshot = ser.snapshot;
         self.params.deserialize(ser.params);
         self.trajectory.deserialize(ser.trajectory);
-        ser.events.forEach(m=>{
+        ser.events.forEach((m) => {
           self.addEventMarker(m);
         });
-        ser.pplibCommands.forEach(m=>{
+        ser.pplibCommands.forEach((m) => {
           self.addEventMarker(m);
-        })
+        });
       }
     };
   })
@@ -206,6 +214,6 @@ export const HolonomicPathStore = types
 export interface IHolonomicPathStore
   extends Instance<typeof HolonomicPathStore> {}
 export function getPathStore(self: IAnyStateTreeNode): IHolonomicPathStore {
-  const path: IHolonomicPathStore = getParentOfType(self, HolonomicPathStore)
+  const path: IHolonomicPathStore = getParentOfType(self, HolonomicPathStore);
   return path;
 }

@@ -16,6 +16,9 @@ import LocalStorageKeys from "../util/LocalStorageKeys";
 import { ObjectTyped } from "../util/ObjectTyped";
 import { safeGetIdentifier } from "../util/mobxutils";
 import {
+  ChoreolibEvent,
+  Command,
+  EventMarker,
   GroupCommand,
   NamedCommand,
   Project,
@@ -23,11 +26,16 @@ import {
   WaitCommand,
   type Expr,
   type RobotConfig,
-  type Waypoint,
-  Command,
-  EventMarker,
-  ChoreolibEvent
+  type Waypoint
 } from "./2025/DocumentTypes";
+import {
+  CommandStore,
+  ICommandStore,
+  commandIsChoreolib,
+  commandIsGroup,
+  commandIsNamed,
+  commandIsWait
+} from "./CommandStore";
 import {
   ConstraintDataObjects,
   IConstraintDataStore,
@@ -43,6 +51,7 @@ import {
   IConstraintStore,
   IWaypointScope
 } from "./ConstraintStore";
+import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
 import { IExpressionStore, IVariables, Variables } from "./ExpressionStore";
 import {
   IHolonomicWaypointStore,
@@ -55,13 +64,9 @@ import {
 } from "./RobotConfigStore";
 import { ViewLayerDefaults } from "./UIData";
 import { UIStateStore } from "./UIStateStore";
+import { findUUIDIndex } from "./path/utils";
 import { Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
-import { ICommandStore, CommandStore, commandIsChoreolib, commandIsGroup, commandIsNamed, commandIsWait } from "./CommandStore";
-import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
-import { HolonomicPathStore, IHolonomicPathStore, getPathStore } from "./path/HolonomicPathStore";
-import { findUUIDIndex } from "./path/utils";
-import { SelectAllRounded } from "@mui/icons-material";
 
 export type OpenFilePayload = {
   name: string;
@@ -89,13 +94,13 @@ export type EnvConstructors = {
         | {
             data: WaitCommand["data"] &
               GroupCommand["data"] &
-              NamedCommand["data"] & 
+              NamedCommand["data"] &
               ChoreolibEvent["data"];
           }
         | object
       )
   ) => ICommandStore;
-  EventMarkerStore: (marker:EventMarker<Command>) => IEventMarkerStore;
+  EventMarkerStore: (marker: EventMarker<Command>) => IEventMarkerStore;
   ConstraintData: ConstraintDataConstructors;
   ConstraintStore: <K extends ConstraintKey>(
     type: K,
@@ -168,7 +173,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
       });
     },
     WaypointStore: (waypoint: Waypoint<Expr>) => {
-      let w = WaypointStore.create({
+      const w = WaypointStore.create({
         ...waypoint,
         x: vars().createExpression(waypoint.x, "Length"),
         y: vars().createExpression(waypoint.y, "Length"),
@@ -179,13 +184,13 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
     },
     CommandStore: createCommandStore,
     EventMarkerStore: (marker: EventMarker<Command>): IEventMarkerStore => {
-      let m = EventMarkerStore.create({
+      const m = EventMarkerStore.create({
         data: {
           uuid: crypto.randomUUID(),
           name: marker.data.name,
           target: undefined,
           targetTimestamp: marker.data.targetTimestamp ?? undefined,
-          offset: vars().createExpression(marker.data.offset, "Time"),
+          offset: vars().createExpression(marker.data.offset, "Time")
         },
         event: createCommandStore(marker.event),
         uuid: crypto.randomUUID()

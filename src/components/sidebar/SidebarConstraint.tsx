@@ -2,7 +2,6 @@ import { IconButton, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 
 import DeleteIcon from "@mui/icons-material/Delete";
-import { Instance, getParent } from "mobx-state-tree";
 import React, { Component } from "react";
 import { IConstraintStore } from "../../document/ConstraintStore";
 import { doc } from "../../document/DocumentManager";
@@ -13,9 +12,10 @@ import {
   CheckBoxOutlined,
   PriorityHigh
 } from "@mui/icons-material";
-import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
-import { IHolonomicPathStore, waypointIDToText } from "../../document/path/HolonomicPathStore";
-import { Env } from "../../document/DocumentManager";
+import {
+  IHolonomicPathStore,
+  waypointIDToText
+} from "../../document/path/HolonomicPathStore";
 
 type Props = {
   constraint: IConstraintStore;
@@ -52,12 +52,12 @@ class SidebarConstraint extends Component<Props, State> {
   render() {
     // apparently we have to dereference this here instead of inline in the class name
     // Otherwise the component won't rerender when it changes
-    
-    const {constraint, path} = this.props;
+
+    const { constraint, path } = this.props;
     const points = path.params.waypoints;
     const selected = constraint.selected;
     const issues = constraint.issues(points);
-    
+
     return (
       <div
         className={styles.SidebarItem + (selected ? ` ${styles.Selected}` : "")}
@@ -107,15 +107,11 @@ class SidebarConstraint extends Component<Props, State> {
               className={styles.SidebarRightIcon}
               onClick={(e) => {
                 e.stopPropagation();
-                constraint.setEnabled(
-                  !constraint.enabled
-                );
+                constraint.setEnabled(!constraint.enabled);
               }}
             >
               {constraint.enabled && <CheckBoxOutlined />}
-              {!constraint.enabled && (
-                <CheckBoxOutlineBlankOutlined />
-              )}
+              {!constraint.enabled && <CheckBoxOutlineBlankOutlined />}
             </IconButton>
           </Tooltip>
           <Tooltip disableInteractive title="Delete Constraint">
@@ -123,9 +119,7 @@ class SidebarConstraint extends Component<Props, State> {
               className={styles.SidebarRightIcon}
               onClick={(e) => {
                 e.stopPropagation();
-                path.params.deleteConstraint(
-                  constraint?.uuid || ""
-                );
+                path.params.deleteConstraint(constraint?.uuid || "");
               }}
             >
               <DeleteIcon />

@@ -1,12 +1,6 @@
 import { Instance, destroy, getEnv, types } from "mobx-state-tree";
 import { moveItem } from "mobx-utils";
-import {
-  ChoreoPath,
-  Constraint,
-  Expr,
-  Waypoint,
-  WaypointIDX
-} from "../2025/DocumentTypes";
+import { ChoreoPath, Constraint, Expr, Waypoint } from "../2025/DocumentTypes";
 import { ConstraintKey, DataMap } from "../ConstraintDefinitions";
 import {
   ConstraintStore,
@@ -14,21 +8,23 @@ import {
   IWaypointScope
 } from "../ConstraintStore";
 import { Env } from "../DocumentManager";
+import { ExpressionStore } from "../ExpressionStore";
 import {
   DEFAULT_WAYPOINT,
   HolonomicWaypointStore,
   IHolonomicWaypointStore
 } from "../HolonomicWaypointStore";
-import { EventMarkerStore, IEventMarkerStore } from "../EventMarkerStore";
-import { savedWaypointIdToWaypointId, waypointIdToSavedWaypointId } from "./utils";
-import { ExpressionStore } from "../ExpressionStore";
+import {
+  savedWaypointIdToWaypointId,
+  waypointIdToSavedWaypointId
+} from "./utils";
 
 export const ChoreoPathStore = types
   .model("ChoreoPathStore", {
     waypoints: types.array(HolonomicWaypointStore),
     constraints: types.array(ConstraintStore),
     targetDt: ExpressionStore
-  })   
+  })
   .views((self) => ({
     get nonGuessPoints() {
       return self.waypoints.filter((waypoint) => !(waypoint.type == 2));

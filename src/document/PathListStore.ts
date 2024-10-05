@@ -1,8 +1,10 @@
 import { Instance, getEnv, types } from "mobx-state-tree";
 import { Trajectory } from "./2025/DocumentTypes";
 import { Env } from "./DocumentManager";
-import { HolonomicPathStore, IHolonomicPathStore } from "./path/HolonomicPathStore";
-import { IHolonomicWaypointStore } from "./HolonomicWaypointStore";
+import {
+  HolonomicPathStore,
+  IHolonomicPathStore
+} from "./path/HolonomicPathStore";
 
 export const PathListStore = types
   .model("PathListStore", {
@@ -82,10 +84,9 @@ export const PathListStore = types
           trajectory: {
             waypoints: [],
             samples: [],
-            splits: [],
+            splits: []
           },
-          markers: [],
-
+          markers: []
         });
         path.setExporter((uuid) => {});
         self.defaultPath = path;
@@ -124,8 +125,7 @@ export const PathListStore = types
                 splits: []
               },
               markers: []
-            }
-            );
+            });
             self.paths.put(path); //It's not ready yet but it needs to get the env injected
             path.setExporter(self.getExporter());
             if (contents !== undefined) {
@@ -160,11 +160,11 @@ export const PathListStore = types
     };
     // The annoying thing we have to do to add the above actions to the object before we use them below
   })
-  .views(self=> ({
+  .views((self) => ({
     get activePath(): IHolonomicPathStore {
       let path = self.paths.get(self.activePathUUID);
       if (path === undefined) {
-        self.addPath("New Path", true)
+        self.addPath("New Path", true);
         path = self.paths.get(self.activePathUUID);
       }
       return path as IHolonomicPathStore;

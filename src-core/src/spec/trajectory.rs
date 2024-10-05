@@ -444,33 +444,45 @@ pub struct EventMarkerData {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ChoreolibEventMarker  {
+pub struct ChoreolibEventMarker {
     data: EventMarkerData,
-    event: ChoreolibEvent
+    event: ChoreolibEvent,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct PplibEventMarker  {
+pub struct PplibEventMarker {
     data: EventMarkerData,
-    event: PplibCommand
+    event: PplibCommand,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "type", content = "data")]
 pub enum PplibCommand {
-    Named { name: String },
+    Named {
+        name: String,
+    },
     #[serde(rename_all = "camelCase")]
-    Wait { wait_time: Expr },
-    Sequential { commands: Vec<PplibCommand> },
-    Parallel { commands: Vec<PplibCommand> },
-    Race { commands: Vec<PplibCommand> },
-    Deadline { commands: Vec<PplibCommand> },
+    Wait {
+        wait_time: Expr,
+    },
+    Sequential {
+        commands: Vec<PplibCommand>,
+    },
+    Parallel {
+        commands: Vec<PplibCommand>,
+    },
+    Race {
+        commands: Vec<PplibCommand>,
+    },
+    Deadline {
+        commands: Vec<PplibCommand>,
+    },
 }
 
 // single-case enum so that it matches the serialization from above
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "type", content = "data")]
 pub enum ChoreolibEvent {
-    Choreolib { event: String }
+    Choreolib { event: String },
 }
