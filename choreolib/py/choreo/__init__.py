@@ -39,7 +39,7 @@ def load_differential_trajectory(trajectory_name: str) -> DifferentialTrajectory
     ]
     splits = [int(split) for split in data["trajectory"]["splits"]]
     events = [
-        EventMarker(int(event["timestamp"]), event["event"]) for event in data["events"]
+        EventMarker(float(event["data"]["timestamp"]["val"]), event["event"]["event"]) for event in data["events"]
     ]
 
     return DifferentialTrajectory(data["name"], samples, splits, events)
@@ -78,7 +78,7 @@ def load_swerve_trajectory(trajectory_name: str) -> SwerveTrajectory:
     ]
     splits = [int(split) for split in data["trajectory"]["splits"]]
     events = [
-        EventMarker(int(event["timestamp"]), event["event"]) for event in data["events"]
+                EventMarker(float(event["data"]["timestamp"]["val"]), event["event"]["event"]) for event in data["events"]
     ]
 
     return SwerveTrajectory(data["name"], samples, splits, events)
