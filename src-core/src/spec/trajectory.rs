@@ -460,7 +460,8 @@ pub struct PplibEventMarker  {
 #[serde(rename_all = "camelCase", tag = "type", content = "data")]
 pub enum PplibCommand {
     Named { name: String },
-    Wait { wait_time: f64 },
+    #[serde(rename_all = "camelCase")]
+    Wait { wait_time: Expr },
     Sequential { commands: Vec<PplibCommand> },
     Parallel { commands: Vec<PplibCommand> },
     Race { commands: Vec<PplibCommand> },
