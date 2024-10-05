@@ -2,18 +2,31 @@
 
 #pragma once
 
+#include <stdint.h>
+
 #include <cassert>
 #include <utility>
 
 #include <sleipnir/autodiff/Variable.hpp>
 #include <sleipnir/optimization/OptimizationProblem.hpp>
 
-#include "trajopt/constraint/detail/LinePointDistance.hpp"
 #include "trajopt/geometry/Pose2.hpp"
 #include "trajopt/geometry/Translation2.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 
 namespace trajopt {
+
+/**
+ * The side of the line to stay on.
+ */
+enum class Side : uint8_t {
+  /// Stay above the line.
+  kAbove,
+  /// Stay below the line.
+  kBelow,
+  /// Stay on the line.
+  kOn,
+};
 
 /**
  * Point-line region constraint.
@@ -29,13 +42,15 @@ class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
    * @param robotPoint Robot point.
    * @param fieldLineStart Field line start.
    * @param fieldLineEnd Field line end.
+   * @param side The side to constrain the robot to.
    */
   explicit PointLineRegionConstraint(Translation2d robotPoint,
                                      Translation2d fieldLineStart,
-                                     Translation2d fieldLineEnd)
+                                     Translation2d fieldLineEnd, Side side)
       : m_robotPoint{std::move(robotPoint)},
         m_fieldLineStart{std::move(fieldLineStart)},
-        m_fieldLineEnd{std::move(fieldLineEnd)} {}
+        m_fieldLineEnd{std::move(fieldLineEnd)},
+        m_side{side} {}
 
   /**
    * Applies this constraint to the given problem.
@@ -78,14 +93,27 @@ class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
     auto a = m_fieldLineStart.Y() - m_fieldLineEnd.Y();
     auto b = m_fieldLineEnd.X() - m_fieldLineStart.X();
 
-    problem.SubjectTo(a * bumperCorner.X() + b * bumperCorner.Y() >
-                      a * m_fieldLineStart.X() + b * m_fieldLineStart.Y());
+    switch (m_side) {
+      case Side::kAbove:
+        problem.SubjectTo(a * bumperCorner.X() + b * bumperCorner.Y() >
+                          a * m_fieldLineStart.X() + b * m_fieldLineStart.Y());
+        break;
+      case Side::kBelow:
+        problem.SubjectTo(a * bumperCorner.X() + b * bumperCorner.Y() <
+                          a * m_fieldLineStart.X() + b * m_fieldLineStart.Y());
+        break;
+      case Side::kOn:
+        problem.SubjectTo(a * bumperCorner.X() + b * bumperCorner.Y() ==
+                          a * m_fieldLineStart.X() + b * m_fieldLineStart.Y());
+        break;
+    }
   }
 
  private:
   Translation2d m_robotPoint;
   Translation2d m_fieldLineStart;
   Translation2d m_fieldLineEnd;
+  Side m_side;
 };
 
 }  // namespace trajopt
