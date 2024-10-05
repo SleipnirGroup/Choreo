@@ -77,21 +77,21 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   F.reserve(sampTot);
   Fric.reserve(sampTot);
   
-  mcos.reserve(sampTot);
-  msin.reserve(sampTot);
+  m_v_x.reserve(sampTot);
+  m_v_y.reserve(sampTot);
   for (size_t sampleIndex = 0; sampleIndex < sampTot; ++sampleIndex) {
     auto& _Fx = Fx.emplace_back();
     auto& _Fy = Fy.emplace_back();
     auto& _F = F.emplace_back();
     auto& _Fric = Fric.emplace_back();
-    auto& _mcos = mcos.emplace_back();
-    auto& _msin = msin.emplace_back();
+    auto& _m_v_x = m_v_x.emplace_back();
+    auto& _m_v_y = m_v_y.emplace_back();
     _Fx.reserve(moduleCnt);
     _Fy.reserve(moduleCnt);
     _F.reserve(moduleCnt);
     _Fric.reserve(moduleCnt);
-    _mcos.reserve(moduleCnt);
-    _msin.reserve(moduleCnt);
+    _m_v_x.reserve(moduleCnt);
+    _m_v_y.reserve(moduleCnt);
   }
 
   dts.reserve(sgmtCnt);
@@ -111,10 +111,10 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     for (size_t moduleIndex = 0; moduleIndex < moduleCnt; ++moduleIndex) {
       F.at(index).emplace_back(problem.DecisionVariable());
       Fric.at(index).emplace_back(problem.DecisionVariable());
-      mcos.at(index).emplace_back();
-      msin.at(index).emplace_back();
-      Fx.at(index).emplace_back();
-      Fy.at(index).emplace_back();
+      m_v_x.at(index).emplace_back();
+      m_v_y.at(index).emplace_back();
+      Fx.at(index).emplace_back(problem.DecisionVariable());
+      Fy.at(index).emplace_back(problem.DecisionVariable());
     }
   }
 
@@ -223,20 +223,34 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   for (size_t index = 0; index < sampTot; ++index) {
     Rotation2v θ_k{cosθ.at(index), sinθ.at(index)};
     Translation2v v_k{vx.at(index), vy.at(index)};
+    auto vWrtRobot = v_k.RotateBy(-θ_k);
+    for (size_t moduleIndex = 0; moduleIndex < path.drivetrain.modules.size();
+         ++moduleIndex) {
+      const auto& translation = path.drivetrain.modules.at(moduleIndex).RotateBy(θ_k);
+      m_v_x.at(index).at(moduleIndex) = vx.at(index) - translation.Y() * ω.at(index);
+      m_v_y.at(index).at(moduleIndex) = vy.at(index) + translation.X() * ω.at(index);
+    }
 
-    // Set up constraints on Fx, Fy to make them depend on 
+
     auto Fx_i = Fx.at(index);
     auto Fy_i = Fy.at(index);
     auto F_i = F.at(index);
-    auto Fric_i = F.at(index);
+    auto Fric_i = Fric.at(index);
     for (size_t moduleIndex = 0; moduleIndex < moduleCnt; ++moduleIndex) {
-      Rotation2v θ_k_m{mcos.at(index).at(moduleIndex), msin.at(index).at(moduleIndex)};
+      auto Fx_i_m = Fx_i.at(moduleIndex);
+      auto Fy_i_m = Fy_i.at(moduleIndex);
+      auto F_i_m = F_i.at(moduleIndex);
+      auto Fric_i_m = Fric_i.at(moduleIndex);
+      auto vx_i_m = m_v_x.at(index).at(moduleIndex);
+      auto vy_i_m = m_v_y.at(index).at(moduleIndex);
+      // module velocity in robot frame
+      Translation2v v_k_m{vx_i_m, vy_i_m};
+      Translation2v v_k_m_perp{-vy_i_m, vx_i_m};
       // heading, rotated by θ_k_m = field-relative heading of positive wheel direction
-      Rotation2v θ_k_m_field = θ_k.RotateBy(θ_k_m);
-      Translation2v F_wheel{F_i.at(moduleIndex), Fric_i.at(moduleIndex)};
-      Translation2v F_field = F_wheel.RotateBy(-θ_k_m_field);
-      Fx_i.at(moduleIndex) = F_field.X();
-      Fy_i.at(moduleIndex) = F_field.Y();
+      Translation2v F{Fx_i_m, Fy_i_m};
+      // module force in module frame * velocity magnitude
+      problem.SubjectTo(F_i_m * v_k_m.Norm() == Fx_i_m * vx_i_m + Fy_i_m * vy_i_m);
+      problem.SubjectTo(Fric_i_m * v_k_m.Norm() == Fx_i_m * -vy_i_m + Fy_i_m * vx_i_m);
     }
     // Solve for net force
     auto Fx_net = std::accumulate(Fx.at(index).begin(), Fx.at(index).end(),
@@ -264,17 +278,13 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     }
 
     // Apply module power constraints
-    auto vWrtRobot = v_k.RotateBy(-θ_k);
     for (size_t moduleIndex = 0; moduleIndex < path.drivetrain.modules.size();
          ++moduleIndex) {
       const auto& translation = path.drivetrain.modules.at(moduleIndex);
-      // mcos and msin are the components of the wheel velocity vector relative to the robot.
+      // m_v_x and m_v_y are the components of the wheel velocity vector relative to the robot.
       Translation2v vWheelWrtRobot{
           vWrtRobot.X() - translation.Y() * ω.at(index),
           vWrtRobot.Y() + translation.X() * ω.at(index)};
-      Rotation2v θ_k_m{mcos.at(index).at(moduleIndex), msin.at(index).at(moduleIndex)};
-      problem.SubjectTo(vWheelWrtRobot.X() * θ_k_m.Sin() - vWheelWrtRobot.Y() * θ_k_m.Cos() ==
-                           0.0);
       double maxWheelVelocity = wheelRadius * wheelMaxAngularVelocity;
 
 
@@ -288,8 +298,11 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       double maxFriction = mass * mu;
 
       // |F|₂² ≤ Fₘₐₓ²
-      problem.SubjectTo(force*force <= maxForce * maxForce);
-      problem.SubjectTo(fric*fric<=maxFriction*maxFriction);
+      
+      Translation2v moduleF{Fx.at(index).at(moduleIndex),
+                            Fy.at(index).at(moduleIndex)};
+      // problem.SubjectTo(force*force <= maxForce * maxForce);
+      problem.SubjectTo(fric*fric + force*force<=maxForce*maxForce);
     }
 
     // Apply dynamics constraints
