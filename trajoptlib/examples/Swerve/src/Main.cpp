@@ -33,7 +33,7 @@ int main() {
     path.PoseWpt(1, 1.0, 0.0, 0.0);
     path.WptConstraint(0, zeroLinearVelocity);
     path.WptConstraint(1, zeroLinearVelocity);
-    path.ControlIntervalCounts({40});
+    path.SetControlIntervalCounts({40});
 
     trajopt::SwerveTrajectoryGenerator generator{path};
     [[maybe_unused]]
@@ -48,7 +48,7 @@ int main() {
     path.PoseWpt(1, 2.0, 0.0, 0.0);
     path.WptConstraint(0, zeroLinearVelocity);
     path.WptConstraint(1, zeroLinearVelocity);
-    path.ControlIntervalCounts({40});
+    path.SetControlIntervalCounts({40});
 
     trajopt::SwerveTrajectoryGenerator generator{path};
     [[maybe_unused]]
@@ -64,7 +64,7 @@ int main() {
     path.PoseWpt(2, 2.0, 0.0, std::numbers::pi / 2);
     path.WptConstraint(0, zeroLinearVelocity);
     path.WptConstraint(1, zeroLinearVelocity);
-    path.ControlIntervalCounts({40, 40});
+    path.SetControlIntervalCounts({40, 40});
 
     trajopt::SwerveTrajectoryGenerator generator{path};
     [[maybe_unused]]
@@ -78,7 +78,7 @@ int main() {
     path.PoseWpt(0, 0.0, 0.0, 0.0);
     path.PoseWpt(1, 0.0, 1.0, 0.0);
     path.WptConstraint(0, zeroLinearVelocity);
-    path.ControlIntervalCounts({40});
+    path.SetControlIntervalCounts({40});
 
     trajopt::SwerveTrajectoryGenerator generator{path};
     [[maybe_unused]]
@@ -110,7 +110,7 @@ int main() {
     path.PoseWpt(1, 1.0, 0.0, 0.0);
     path.WptConstraint(0, zeroLinearVelocity);
     path.WptConstraint(1, zeroLinearVelocity);
-    path.ControlIntervalCounts({40});
+    path.SetControlIntervalCounts({40});
 
     trajopt::SwerveTrajectoryGenerator generator{path};
     [[maybe_unused]]
@@ -146,7 +146,7 @@ int main() {
 
     path.WptConstraint(0, zeroLinearVelocity);
     path.WptConstraint(4, zeroLinearVelocity);
-    path.ControlIntervalCounts({40, 30, 30, 40});
+    path.SetControlIntervalCounts({40, 30, 30, 40});
 
     trajopt::SwerveTrajectoryGenerator generator{path};
     [[maybe_unused]]
@@ -177,7 +177,7 @@ int main() {
 
     path.WptConstraint(0, zeroLinearVelocity);
     path.WptConstraint(1, zeroLinearVelocity);
-    path.ControlIntervalCounts({30});
+    path.SetControlIntervalCounts({30});
 
     trajopt::SwerveTrajectoryGenerator generator{path};
     [[maybe_unused]]
