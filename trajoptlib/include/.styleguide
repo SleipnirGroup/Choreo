@@ -14,5 +14,6 @@ modifiableFileExclude {
 
 includeOtherLibs {
   ^Eigen/
+  ^frc/
   ^sleipnir/
 }
