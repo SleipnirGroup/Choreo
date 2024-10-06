@@ -68,6 +68,16 @@ export type ConstraintDataTypeMap = {
     w: Expr;
     h: Expr;
   };
+  KeepInLane: {
+    below_start_x: Expr;
+    below_start_y: Expr;
+    below_end_x: Expr;
+    below_end_y: Expr;
+    above_start_x: Expr;
+    above_start_y: Expr;
+    above_end_x: Expr;
+    above_end_y: Expr;
+  };
   KeepOutCircle: {
     x: Expr;
     y: Expr;
@@ -245,6 +255,65 @@ export const ConstraintDefinitions: defs = {
     wptScope: true,
     sgmtScope: true
   } satisfies ConstraintDefinition<"KeepInRectangle">,
+  KeepInLane: {
+    type: "KeepInLane" as const,
+    name: "Keep In Lane",
+    shortName: "Keep In Lane",
+    description: "Keep the robot's bumpers within a lane",
+    icon: <SystemUpdateAlt />, // TODO
+    properties: {
+      below_start_x: {
+        name: "Below Start X",
+        description: "The start of the blow lines X value",
+        dimension: Dimensions.Length,
+        defaultVal: { exp: "0 m", val: 1 }
+      },
+      below_start_y: {
+        name: "Below Start Y",
+        description: "The start of the blow lines Y value",
+        dimension: Dimensions.Length,
+        defaultVal: { exp: "0 m", val: 1 }
+      },
+      below_end_x: {
+        name: "Below End X",
+        description: "The end of the blow lines X value",
+        dimension: Dimensions.Length,
+        defaultVal: { exp: "0 m", val: 1 }
+      },
+      below_end_y: {
+        name: "Below End Y",
+        description: "The end of the blow lines Y value",
+        dimension: Dimensions.Length,
+        defaultVal: { exp: "0 m", val: 1 }
+      },
+      above_start_x: {
+        name: "Above Start X",
+        description: "The above of the blow lines X value",
+        dimension: Dimensions.Length,
+        defaultVal: { exp: "0 m", val: 1 }
+      },
+      above_start_y: {
+        name: "Above Start Y",
+        description: "The above of the blow lines Y value",
+        dimension: Dimensions.Length,
+        defaultVal: { exp: "0 m", val: 1 }
+      },
+      above_end_x: {
+        name: "Above End X",
+        description: "The above of the blow lines X value",
+        dimension: Dimensions.Length,
+        defaultVal: { exp: "0 m", val: 1 }
+      },
+      above_end_y: {
+        name: "Above End Y",
+        description: "The above of the blow lines Y value",
+        dimension: Dimensions.Length,
+        defaultVal: { exp: "0 m", val: 1 }
+      }
+    },
+    wptScope: true,
+    sgmtScope: true
+  } satisfies ConstraintDefinition<"KeepInLane">,
   KeepOutCircle: {
     type: "KeepOutCircle" as const,
     name: "Keep Out Circle",

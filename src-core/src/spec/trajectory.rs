@@ -147,6 +147,17 @@ pub enum ConstraintData<T: SnapshottableType> {
     KeepInCircle { x: T, y: T, r: T },
     /// A constraint to contain the bumpers within a rectangular region of the field
     KeepInRectangle { x: T, y: T, w: T, h: T },
+    /// A constraint to contain the bumpers within two line
+    KeepInLane {
+        below_start_x: T,
+        below_start_y: T,
+        below_end_x: T,
+        below_end_y: T,
+        above_start_x: T,
+        above_start_y: T,
+        above_end_x: T,
+        above_end_y: T,
+    },
     /// A constraint to contain the bumpers outside a circlular region of the field
     KeepOutCircle { x: T, y: T, r: T },
 }
@@ -194,6 +205,25 @@ impl<T: SnapshottableType> ConstraintData<T> {
                 y: y.snapshot(),
                 w: w.snapshot(),
                 h: h.snapshot(),
+            },
+            ConstraintData::KeepInLane {
+                below_start_x,
+                below_start_y,
+                below_end_x,
+                below_end_y,
+                above_start_x,
+                above_start_y,
+                above_end_x,
+                above_end_y,
+            } => ConstraintData::KeepInLane {
+                below_start_x: below_start_x.snapshot(),
+                below_start_y: below_start_y.snapshot(),
+                below_end_x: below_end_x.snapshot(),
+                below_end_y: below_end_y.snapshot(),
+                above_start_x: above_start_x.snapshot(),
+                above_start_y: above_start_y.snapshot(),
+                above_end_x: above_end_x.snapshot(),
+                above_end_y: above_end_y.snapshot(),
             },
             ConstraintData::KeepOutCircle { x, y, r } => ConstraintData::KeepOutCircle {
                 x: x.snapshot(),

@@ -7,6 +7,7 @@ import KeepInCircleOverlay from "./KeepInCircleOverlay";
 import KeepInRectangleOverlay from "./KeepInRectangleOverlay";
 import PointAtOverlay from "./PointAtOverlay";
 import KeepOutCircleOverlay from "./KeepOutCircleOverlay";
+import KeepInLaneOverlay from "./KeepInLaneOverlay";
 
 const overlays = {
   PointAt: (
@@ -41,6 +42,13 @@ const overlays = {
       end={constraint.getEndWaypoint()}
       lineColor={lineColor}
     ></KeepInRectangleOverlay>
+  ),
+  KeepInLane: (constraint: IConstraintStoreKeyed<"KeepInLane">) => (
+    <KeepInLaneOverlay
+      data={constraint.data}
+      start={constraint.getStartWaypoint()}
+      end={constraint.getEndWaypoint()}
+    ></KeepInLaneOverlay>
   ),
   KeepOutCircle: (
     constraint: IConstraintStoreKeyed<"KeepOutCircle">,

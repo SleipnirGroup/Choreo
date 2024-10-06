@@ -2,7 +2,10 @@ use trajoptlib::PathBuilder;
 
 use crate::spec::trajectory::{ConstraintData, ConstraintIDX, ConstraintScope};
 
-use super::{DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext, SwerveGenerationTransformer};
+use super::{
+    DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext,
+    SwerveGenerationTransformer,
+};
 
 fn fix_scope(idx: usize, removed_idxs: &[usize]) -> usize {
     let mut to_subtract: usize = 0;
@@ -16,7 +19,7 @@ fn fix_scope(idx: usize, removed_idxs: &[usize]) -> usize {
 
 pub struct ConstraintSetter {
     guess_points: Vec<usize>,
-    constraint_idx: Vec<ConstraintIDX<f64>>
+    constraint_idx: Vec<ConstraintIDX<f64>>,
 }
 
 impl ConstraintSetter {
@@ -26,7 +29,9 @@ impl ConstraintSetter {
         let mut constraint_idx = Vec::<ConstraintIDX<f64>>::new();
         let num_wpts = ctx.params.waypoints.len();
 
-        ctx.params.waypoints.iter()
+        ctx.params
+            .waypoints
+            .iter()
             .enumerate()
             .filter(|(_, w)| w.is_initial_guess && !w.fix_heading && !w.fix_translation)
             .for_each(|(idx, _)| guess_points.push(idx));
@@ -64,7 +69,7 @@ impl ConstraintSetter {
                             from: fixed_from,
                             to: fixed_to,
                             data: constraint.data,
-                            enabled: constraint.enabled
+                            enabled: constraint.enabled,
                         });
                     }
                 }
@@ -73,7 +78,7 @@ impl ConstraintSetter {
 
         FeatureLockedTransformer::always(Self {
             guess_points,
-            constraint_idx
+            constraint_idx,
         })
     }
 }
@@ -95,7 +100,7 @@ impl SwerveGenerationTransformer for ConstraintSetter {
                     flip,
                 } => match to_opt {
                     None => builder.wpt_point_at(from, x, y, tolerance, flip),
-                    Some(to) => builder.sgmt_point_at(from, to, x, y, tolerance, flip)
+                    Some(to) => builder.sgmt_point_at(from, to, x, y, tolerance, flip),
                 },
                 ConstraintData::MaxVelocity { max } => match to_opt {
                     None => builder.wpt_linear_velocity_max_magnitude(from, max),
@@ -114,7 +119,7 @@ impl SwerveGenerationTransformer for ConstraintSetter {
                         builder.wpt_linear_velocity_max_magnitude(from, 0.0f64);
                         builder.wpt_angular_velocity_max_magnitude(from, 0.0f64);
                     }
-                },
+                }
                 ConstraintData::KeepInCircle { x, y, r } => match to_opt {
                     None => builder.wpt_keep_in_circle(from, x, y, r),
                     Some(to) => builder.sgmt_keep_in_circle(from, to, x, y, r),
@@ -127,11 +132,45 @@ impl SwerveGenerationTransformer for ConstraintSetter {
                         Some(to) => builder.sgmt_keep_in_polygon(from, to, xs, ys),
                     }
                 }
-                ConstraintData::KeepOutCircle { x, y, r } => {
+                ConstraintData::KeepInLane {
+                    below_start_x,
+                    below_start_y,
+                    below_end_x,
+                    below_end_y,
+                    above_start_x,
+                    above_start_y,
+                    above_end_x,
+                    above_end_y,
+                } => {
+                    let center_line_start_x = (below_start_x + above_start_x) / 2.0;
+                    let center_line_start_y = (below_start_y + above_start_y) / 2.0;
+                    let center_line_end_x = (below_end_x + above_end_x) / 2.0;
+                    let center_line_end_y = (below_end_y + above_end_y) / 2.0;
+                    let tolerance = 1.0; // TODO how
+
                     match to_opt {
-                        None => builder.wpt_keep_out_circle(from, x, y, r),
-                        Some(to) => builder.sgmt_keep_out_circle(from, to, x, y, r),
+                        None => builder.wpt_keep_in_lane(
+                            from,
+                            center_line_start_x,
+                            center_line_start_y,
+                            center_line_end_x,
+                            center_line_end_y,
+                            tolerance,
+                        ),
+                        Some(to) => builder.sgmt_keep_in_lane(
+                            from,
+                            to,
+                            center_line_start_x,
+                            center_line_start_y,
+                            center_line_end_x,
+                            center_line_end_y,
+                            tolerance,
+                        ),
                     }
+                }
+                ConstraintData::KeepOutCircle { x, y, r } => match to_opt {
+                    None => builder.wpt_keep_out_circle(from, x, y, r),
+                    Some(to) => builder.sgmt_keep_out_circle(from, to, x, y, r),
                 },
             };
         }
@@ -152,7 +191,11 @@ impl DifferentialGenerationTransformer for ConstraintSetter {
                     y,
                     tolerance,
                     flip,
-                } => if to_opt.is_none() { builder.wpt_point_at(from, x, y, tolerance, flip) },
+                } => {
+                    if to_opt.is_none() {
+                        builder.wpt_point_at(from, x, y, tolerance, flip)
+                    }
+                }
                 ConstraintData::MaxVelocity { max } => match to_opt {
                     None => builder.wpt_linear_velocity_max_magnitude(from, max),
                     Some(to) => builder.sgmt_linear_velocity_max_magnitude(from, to, max),
@@ -170,7 +213,7 @@ impl DifferentialGenerationTransformer for ConstraintSetter {
                         builder.wpt_linear_velocity_max_magnitude(from, 0.0f64);
                         builder.wpt_angular_velocity_max_magnitude(from, 0.0f64);
                     }
-                },
+                }
                 ConstraintData::KeepInCircle { x, y, r } => match to_opt {
                     None => builder.wpt_keep_in_circle(from, x, y, r),
                     Some(to) => builder.sgmt_keep_in_circle(from, to, x, y, r),
@@ -183,11 +226,45 @@ impl DifferentialGenerationTransformer for ConstraintSetter {
                         Some(to) => builder.sgmt_keep_in_polygon(from, to, xs, ys),
                     }
                 }
-                ConstraintData::KeepOutCircle { x, y, r } => {
+                ConstraintData::KeepInLane {
+                    below_start_x,
+                    below_start_y,
+                    below_end_x,
+                    below_end_y,
+                    above_start_x,
+                    above_start_y,
+                    above_end_x,
+                    above_end_y,
+                } => {
+                    let center_line_start_x = (below_start_x + above_start_x) / 2.0;
+                    let center_line_start_y = (below_start_y + above_start_y) / 2.0;
+                    let center_line_end_x = (below_end_x + above_end_x) / 2.0;
+                    let center_line_end_y = (below_end_y + above_end_y) / 2.0;
+                    let tolerance = 1.0; // TODO how
+
                     match to_opt {
-                        None => builder.wpt_keep_out_circle(from, x, y, r),
-                        Some(to) => builder.sgmt_keep_out_circle(from, to, x, y, r),
+                        None => builder.wpt_keep_in_lane(
+                            from,
+                            center_line_start_x,
+                            center_line_start_y,
+                            center_line_end_x,
+                            center_line_end_y,
+                            tolerance,
+                        ),
+                        Some(to) => builder.sgmt_keep_in_lane(
+                            from,
+                            to,
+                            center_line_start_x,
+                            center_line_start_y,
+                            center_line_end_x,
+                            center_line_end_y,
+                            tolerance,
+                        ),
                     }
+                }
+                ConstraintData::KeepOutCircle { x, y, r } => match to_opt {
+                    None => builder.wpt_keep_out_circle(from, x, y, r),
+                    Some(to) => builder.sgmt_keep_out_circle(from, to, x, y, r),
                 },
             };
         }
