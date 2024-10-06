@@ -151,6 +151,15 @@ mod ffi {
             field_points_x: Vec<f64>,
             field_points_y: Vec<f64>,
         );
+        fn wpt_keep_in_lane(
+            self: Pin<&mut SwervePathBuilder>,
+            index: usize,
+            center_line_start_x: f64,
+            center_line_start_y: f64,
+            center_line_end_x: f64,
+            center_line_end_y: f64,
+            tolerance: f64,
+        );
         fn wpt_keep_out_circle(
             self: Pin<&mut SwervePathBuilder>,
             index: usize,
@@ -207,7 +216,17 @@ mod ffi {
             field_points_x: Vec<f64>,
             field_points_y: Vec<f64>,
         );
-
+        #[allow(clippy::too_many_arguments)]
+        fn sgmt_keep_in_lane(
+            self: Pin<&mut SwervePathBuilder>,
+            from_index: usize,
+            to_index: usize,
+            center_line_start_x: f64,
+            center_line_start_y: f64,
+            center_line_end_x: f64,
+            center_line_end_y: f64,
+            tolerance: f64,
+        );
         fn sgmt_keep_out_circle(
             self: Pin<&mut SwervePathBuilder>,
             from_index: usize,
@@ -314,6 +333,15 @@ mod ffi {
             field_points_x: Vec<f64>,
             field_points_y: Vec<f64>,
         );
+        fn wpt_keep_in_lane(
+            self: Pin<&mut DifferentialPathBuilder>,
+            index: usize,
+            center_line_start_x: f64,
+            center_line_start_y: f64,
+            center_line_end_x: f64,
+            center_line_end_y: f64,
+            tolerance: f64,
+        );
         fn wpt_keep_out_circle(
             self: Pin<&mut DifferentialPathBuilder>,
             index: usize,
@@ -360,6 +388,17 @@ mod ffi {
             to_index: usize,
             field_points_x: Vec<f64>,
             field_points_y: Vec<f64>,
+        );
+        #[allow(clippy::too_many_arguments)]
+        fn sgmt_keep_in_lane(
+            self: Pin<&mut DifferentialPathBuilder>,
+            from_index: usize,
+            to_index: usize,
+            center_line_start_x: f64,
+            center_line_start_y: f64,
+            center_line_end_x: f64,
+            center_line_end_y: f64,
+            tolerance: f64,
         );
 
         fn sgmt_keep_out_circle(
@@ -424,6 +463,15 @@ pub trait PathBuilder: Any {
         field_points_x: Vec<f64>,
         field_points_y: Vec<f64>,
     );
+    fn wpt_keep_in_lane(
+        &mut self,
+        index: usize,
+        center_line_start_x: f64,
+        center_line_start_y: f64,
+        center_line_end_x: f64,
+        center_line_end_y: f64,
+        tolerance: f64,
+    );
     fn wpt_keep_out_circle(
         &mut self,
         index: usize,
@@ -465,6 +513,17 @@ pub trait PathBuilder: Any {
         to_index: usize,
         field_points_x: Vec<f64>,
         field_points_y: Vec<f64>,
+    );
+    #[allow(clippy::too_many_arguments)]
+    fn sgmt_keep_in_lane(
+        &mut self,
+        from_index: usize,
+        to_index: usize,
+        center_line_start_x: f64,
+        center_line_start_y: f64,
+        center_line_end_x: f64,
+        center_line_end_y: f64,
+        tolerance: f64,
     );
 
     fn sgmt_keep_out_circle(
@@ -683,6 +742,25 @@ impl PathBuilder for SwervePathBuilder {
             field_points_y,
         );
     }
+    fn wpt_keep_in_lane(
+        &mut self,
+        index: usize,
+        center_line_start_x: f64,
+        center_line_start_y: f64,
+        center_line_end_x: f64,
+        center_line_end_y: f64,
+        tolerance: f64,
+    ) {
+        crate::ffi::SwervePathBuilder::wpt_keep_in_lane(
+            self.path_builder.pin_mut(),
+            index,
+            center_line_start_x,
+            center_line_start_y,
+            center_line_end_x,
+            center_line_end_y,
+            tolerance,
+        );
+    }
 
     fn wpt_keep_out_circle(
         &mut self,
@@ -783,6 +861,28 @@ impl PathBuilder for SwervePathBuilder {
             field_points_x,
             field_points_y,
         );
+    }
+    #[allow(clippy::too_many_arguments)]
+    fn sgmt_keep_in_lane(
+        &mut self,
+        from_index: usize,
+        to_index: usize,
+        center_line_start_x: f64,
+        center_line_start_y: f64,
+        center_line_end_x: f64,
+        center_line_end_y: f64,
+        tolerance: f64,
+    ) {
+        crate::ffi::SwervePathBuilder::sgmt_keep_in_lane(
+            self.path_builder.pin_mut(),
+            from_index,
+            to_index,
+            center_line_start_x,
+            center_line_start_y,
+            center_line_end_x,
+            center_line_end_y,
+            tolerance,
+        )
     }
 
     fn sgmt_keep_out_circle(
@@ -1011,6 +1111,25 @@ impl PathBuilder for DifferentialPathBuilder {
             field_points_y,
         );
     }
+    fn wpt_keep_in_lane(
+        &mut self,
+        index: usize,
+        center_line_start_x: f64,
+        center_line_start_y: f64,
+        center_line_end_x: f64,
+        center_line_end_y: f64,
+        tolerance: f64,
+    ) {
+        crate::ffi::DifferentialPathBuilder::wpt_keep_in_lane(
+            self.path_builder.pin_mut(),
+            index,
+            center_line_start_x,
+            center_line_start_y,
+            center_line_end_x,
+            center_line_end_y,
+            tolerance,
+        );
+    }
 
     fn wpt_keep_out_circle(
         &mut self,
@@ -1111,6 +1230,28 @@ impl PathBuilder for DifferentialPathBuilder {
             field_points_x,
             field_points_y,
         );
+    }
+    #[allow(clippy::too_many_arguments)]
+    fn sgmt_keep_in_lane(
+        &mut self,
+        from_index: usize,
+        to_index: usize,
+        center_line_start_x: f64,
+        center_line_start_y: f64,
+        center_line_end_x: f64,
+        center_line_end_y: f64,
+        tolerance: f64,
+    ) {
+        crate::ffi::DifferentialPathBuilder::sgmt_keep_in_lane(
+            self.path_builder.pin_mut(),
+            from_index,
+            to_index,
+            center_line_start_x,
+            center_line_start_y,
+            center_line_end_x,
+            center_line_end_y,
+            tolerance,
+        )
     }
 
     fn sgmt_keep_out_circle(
