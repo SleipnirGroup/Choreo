@@ -1,4 +1,4 @@
-use core::f64;
+use std::f64;
 
 use trajoptlib::{DifferentialDrivetrain, DifferentialPathBuilder, PathBuilder};
 
