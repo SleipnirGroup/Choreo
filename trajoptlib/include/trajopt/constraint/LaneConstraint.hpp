@@ -28,8 +28,8 @@ class TRAJOPT_DLLEXPORT LaneConstraint {
    * @param tolerance Distance from center line to lane edge. Passing zero
    *   creates a line constraint.
    */
-  LaneConstraint(Translation2d robotPoint, Translation2d centerLineStart,
-                 Translation2d centerLineEnd, double tolerance)
+  LaneConstraint(Translation2d centerLineStart, Translation2d centerLineEnd,
+                 double tolerance)
       : m_topLine{[&] {
           if (tolerance != 0.0) {
             double dx = centerLineEnd.X() - centerLineStart.X();
@@ -38,9 +38,10 @@ class TRAJOPT_DLLEXPORT LaneConstraint {
             auto offset = Translation2d{0.0, tolerance}.RotateBy(
                 Rotation2d{dx / dist, dy / dist});
 
-            return PointLineRegionConstraint{
-                robotPoint, centerLineStart + offset, centerLineEnd + offset,
-                Side::kBelow};
+            return PointLineRegionConstraint{{0.0, 0.0},
+                                             centerLineStart + offset,
+                                             centerLineEnd + offset,
+                                             Side::kBelow};
           } else {
             return PointLineRegionConstraint{robotPoint, centerLineStart,
                                              centerLineEnd, Side::kOn};
@@ -54,9 +55,10 @@ class TRAJOPT_DLLEXPORT LaneConstraint {
             auto offset = Translation2d{0.0, tolerance}.RotateBy(
                 Rotation2d{dx / dist, dy / dist});
 
-            return PointLineRegionConstraint{
-                robotPoint, centerLineStart - offset, centerLineEnd - offset,
-                Side::kAbove};
+            return PointLineRegionConstraint{{0.0, 0.0},
+                                             centerLineStart - offset,
+                                             centerLineEnd - offset,
+                                             Side::kAbove};
           } else {
             return std::nullopt;
           }

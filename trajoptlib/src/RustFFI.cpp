@@ -163,8 +163,7 @@ void SwerveTrajectoryGenerator::wpt_keep_in_lane(
     size_t index, double center_line_start_x, double center_line_start_y,
     double center_line_end_x, double center_line_end_y, double tolerance) {
   path_builder.WptConstraint(
-      index, trajopt::LaneConstraint{{0.0, 0.0},
-                                     {center_line_start_x, center_line_start_y},
+      index, trajopt::LaneConstraint{{center_line_start_x, center_line_start_y},
                                      {center_line_end_x, center_line_end_y},
                                      tolerance});
 }
@@ -278,8 +277,7 @@ void SwerveTrajectoryGenerator::sgmt_keep_in_lane(
     double center_line_end_y, double tolerance) {
   path_builder.SgmtConstraint(
       from_index, to_index,
-      trajopt::LaneConstraint{{0.0, 0.0},
-                              {center_line_start_x, center_line_start_y},
+      trajopt::LaneConstraint{{center_line_start_x, center_line_start_y},
                               {center_line_end_x, center_line_end_y},
                               tolerance});
 }
@@ -503,8 +501,7 @@ void DifferentialTrajectoryGenerator::wpt_keep_in_lane(
     size_t index, double center_line_start_x, double center_line_start_y,
     double center_line_end_x, double center_line_end_y, double tolerance) {
   path_builder.WptConstraint(
-      index, trajopt::LaneConstraint{{0.0, 0.0},
-                                     {center_line_start_x, center_line_start_y},
+      index, trajopt::LaneConstraint{{center_line_start_x, center_line_start_y},
                                      {center_line_end_x, center_line_end_y},
                                      tolerance});
 }
@@ -608,8 +605,7 @@ void DifferentialTrajectoryGenerator::sgmt_keep_in_lane(
     double center_line_end_y, double tolerance) {
   path_builder.SgmtConstraint(
       from_index, to_index,
-      trajopt::LaneConstraint{{0.0, 0.0},
-                              {center_line_start_x, center_line_start_y},
+      trajopt::LaneConstraint{{center_line_start_x, center_line_start_y},
                               {center_line_end_x, center_line_end_y},
                               tolerance});
 }

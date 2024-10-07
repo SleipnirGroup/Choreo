@@ -71,16 +71,16 @@ class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
     // Determine which side of the start-end field line bumperCorner is on.
     // The cross product a x b gives ||a|| ||b|| std::sin(θ), for a and b
     // vectors with the same tail. If a x b > 0, b is to the left of a
-    //   b
-    //  ^
-    // /
+    // b
+    // ^
+    // |
     // -----> a
     //
     // If a x b < 0, b is to the right of a
     // -----> a
-    // \
-    //  v
-    //   b
+    // |
+    // v
+    // b
     //
     // If a = the field line, start->end
     // and b = start->point, then:
