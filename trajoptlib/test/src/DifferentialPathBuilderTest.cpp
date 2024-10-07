@@ -18,7 +18,7 @@ TEST_CASE("DifferentialPathBuilder - Linear initial guess",
 
   path.WptInitialGuessPoint(2, Pose2d{5.0, 0.0, 0.0});  // at 2
 
-  path.ControlIntervalCounts({3, 2});
+  path.SetControlIntervalCounts({3, 2});
 
   std::vector<double> result = path.CalculateInitialGuess().x;
   std::vector<double> expected = {0.0, 1.0, 2.0, 1.0, 3.0, 5.0};

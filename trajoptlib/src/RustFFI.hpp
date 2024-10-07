@@ -36,21 +36,20 @@ struct Pose2d;
 struct SwerveDrivetrain;
 struct DifferentialDrivetrain;
 
-class SwervePathBuilder {
+class SwerveTrajectoryGenerator {
  public:
-  SwervePathBuilder() = default;
+  SwerveTrajectoryGenerator() = default;
 
   void set_drivetrain(const SwerveDrivetrain& drivetrain);
   void set_bumpers(double front, double left, double right, double back);
   void set_control_interval_counts(const rust::Vec<size_t> counts);
+  void sgmt_initial_guess_points(size_t from_index,
+                                 const rust::Vec<Pose2d>& guess_points);
 
   void pose_wpt(size_t index, double x, double y, double heading);
   void translation_wpt(size_t index, double x, double y, double heading_guess);
   void empty_wpt(size_t index, double x_guess, double y_guess,
                  double heading_guess);
-
-  void sgmt_initial_guess_points(size_t from_index,
-                                 const rust::Vec<Pose2d>& guess_points);
 
   void wpt_linear_velocity_direction(size_t index, double angle);
   void wpt_linear_velocity_max_magnitude(size_t index, double magnitude);
@@ -66,7 +65,6 @@ class SwervePathBuilder {
   void wpt_keep_in_lane(size_t index, double center_line_start_x,
                         double center_line_start_y, double center_line_end_x,
                         double center_line_end_y, double tolerance);
-
   void wpt_keep_out_circle(size_t index, double field_point_x,
                            double field_point_y, double keep_in_radius);
 
@@ -91,9 +89,19 @@ class SwervePathBuilder {
                          double center_line_start_x, double center_line_start_y,
                          double center_line_end_x, double center_line_end_y,
                          double tolerance);
-
   void sgmt_keep_out_circle(size_t from_index, size_t to_index, double x,
                             double y, double radius);
+
+  /**
+   * Add a callback that will be called on each iteration of the solver.
+   *
+   * @param callback A `fn` (not a closure) to be executed. The callback's first
+   *   parameter will be a `trajopt::SwerveTrajectory`, and the second parameter
+   *   will be an `i64` equal to the handle passed in `generate()`.
+   *
+   * This function can be called multiple times to add multiple callbacks.
+   */
+  void add_callback(rust::Fn<void(SwerveTrajectory, int64_t)> callback);
 
   // TODO: Return std::expected<SwerveTrajectory, sleipnir::SolverExitCondition>
   // instead of throwing exception, once cxx supports it
@@ -101,28 +109,24 @@ class SwervePathBuilder {
   // https://github.com/dtolnay/cxx/issues/1052
   SwerveTrajectory generate(bool diagnostics = false, int64_t handle = 0) const;
 
-  void add_progress_callback(
-      rust::Fn<void(SwerveTrajectory, int64_t)> callback);
-
  private:
   trajopt::SwervePathBuilder path_builder;
 };
 
-class DifferentialPathBuilder {
+class DifferentialTrajectoryGenerator {
  public:
-  DifferentialPathBuilder() = default;
+  DifferentialTrajectoryGenerator() = default;
 
   void set_drivetrain(const DifferentialDrivetrain& drivetrain);
   void set_bumpers(double front, double left, double right, double back);
   void set_control_interval_counts(const rust::Vec<size_t> counts);
+  void sgmt_initial_guess_points(size_t from_index,
+                                 const rust::Vec<Pose2d>& guess_points);
 
   void pose_wpt(size_t index, double x, double y, double heading);
   void translation_wpt(size_t index, double x, double y, double heading_guess);
   void empty_wpt(size_t index, double x_guess, double y_guess,
                  double heading_guess);
-
-  void sgmt_initial_guess_points(size_t from_index,
-                                 const rust::Vec<Pose2d>& guess_points);
 
   void wpt_linear_velocity_direction(size_t index, double angle);
   void wpt_linear_velocity_max_magnitude(size_t index, double magnitude);
@@ -165,6 +169,17 @@ class DifferentialPathBuilder {
   void sgmt_keep_out_circle(size_t from_index, size_t to_index, double x,
                             double y, double radius);
 
+  /**
+   * Add a callback that will be called on each iteration of the solver.
+   *
+   * @param callback A `fn` (not a closure) to be executed. The callback's first
+   *   parameter will be a `trajopt::DifferentialTrajectory`, and the second
+   *   parameter will be an `i64` equal to the handle passed in `generate()`.
+   *
+   * This function can be called multiple times to add multiple callbacks.
+   */
+  void add_callback(rust::Fn<void(DifferentialTrajectory, int64_t)> callback);
+
   // TODO: Return std::expected<DifferentialTrajectory,
   // sleipnir::SolverExitCondition> instead of throwing exception, once cxx
   // supports it
@@ -173,16 +188,14 @@ class DifferentialPathBuilder {
   DifferentialTrajectory generate(bool diagnostics = false,
                                   int64_t handle = 0) const;
 
-  void add_progress_callback(
-      rust::Fn<void(DifferentialTrajectory, int64_t)> callback);
-
  private:
   trajopt::DifferentialPathBuilder path_builder;
 };
 
-std::unique_ptr<SwervePathBuilder> swerve_path_builder_new();
+std::unique_ptr<SwerveTrajectoryGenerator> swerve_trajectory_generator_new();
 
-std::unique_ptr<DifferentialPathBuilder> differential_path_builder_new();
+std::unique_ptr<DifferentialTrajectoryGenerator>
+differential_trajectory_generator_new();
 
 void cancel_all();
 
