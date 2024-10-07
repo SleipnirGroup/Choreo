@@ -3,6 +3,7 @@
 #pragma once
 
 #include <functional>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -17,23 +18,54 @@ namespace choreo {
  * This loop should **not** be shared across multiple autonomous routines.
  *
  * @tparam SampleType The type of samples in the trajectory.
+ * @tparam The field year (default: the current year).
  */
-template <choreo::TrajectorySample SampleType>
+template <choreo::TrajectorySample SampleType, int Year>
 class AutoLoop {
  public:
-  AutoLoop() = default;
+  /**
+   * Creates a new loop with a specific name
+   *
+   * @param name The name of the loop
+   * @see AutoFactory#newLoop Creating a loop from a AutoFactory
+   */
+  explicit AutoLoop(std::string_view name)
+      : loop{frc::EventLoop{}}, name{name} {}
 
   /**
    * A constructor to be used when inhereting this class to instantiate a custom
    * inner loop
    *
-   * @param loop The inner EventLoop
+   * @param name The name of the loop
+   * @param loop The inner {@link EventLoop}
    */
-  explicit AutoLoop(frc::EventLoop loop) : loop{std::move(loop)} {}
+  AutoLoop(std::string_view name, frc::EventLoop&& loop)
+      : loop{std::move(loop)}, name{name} {}
+
+  AutoLoop(const AutoLoop&) = delete;
+  AutoLoop& operator=(const AutoLoop&) = delete;
+
+  AutoLoop(AutoLoop&& other) noexcept = default;
+  AutoLoop& operator=(AutoLoop&& other) noexcept = default;
 
   /**
-   * Polls the loop. Should be called in the autonomous periodic method.
+   * Returns a frc2::Trigger that is true while this autonomous loop is being
+   * polled.
+   *
+   * Using a frc2::Trigger.OnFalse() will do nothing as when this is false the
+   * loop is not being polled anymore.
+   *
+   * @return A frc2::Trigger that is true while this autonomous loop is being
+   * polled.
    */
+  frc2::Trigger Enabled() {
+    return frc2::Trigger{&loop, [this] {
+                           return isActive &&
+                                  frc::DriverStation::IsAutonomousEnabled();
+                         }};
+  }
+
+  /// Polls the loop. Should be called in the autonomous periodic method.
   void Poll() {
     if (!frc::DriverStation::IsAutonomousEnabled() || isKilled) {
       isActive = false;
@@ -55,10 +87,7 @@ class AutoLoop {
    * reset the loop incase you run it again. If this is called on a loop that
    * doesn't need to be reset it will do nothing.
    */
-  void Reset() {
-    isActive = false;
-    OnNewTrajectory();
-  }
+  void Reset() { isActive = false; }
 
   /**
    * Kills the loop and prevents it from running again.
@@ -111,25 +140,8 @@ class AutoLoop {
   }
 
  private:
-  void OnNewTrajectory() {
-    for (AutoTrajectory<SampleType> trajectory : trajectories) {
-      trajectory.OnNewTrajectory();
-    }
-  }
-
-  frc2::Trigger Enabled() {
-    return frc2::Trigger{loop, [this] {
-                           return isActive &&
-                                  frc::DriverStation::IsAutonomousEnabled();
-                         }};
-  }
-
-  void AddTrajectory(AutoTrajectory<SampleType> trajectory) {
-    trajectories.add(std::move(trajectory));
-  }
-
-  std::vector<AutoTrajectory<SampleType>> trajectories;
   frc::EventLoop loop;
+  std::string name;
   bool isActive = false;
   bool isKilled = false;
 };

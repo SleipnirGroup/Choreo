@@ -3,9 +3,11 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 #include <fmt/format.h>
 #include <frc/DriverStation.h>
@@ -16,6 +18,7 @@
 #include <units/length.h>
 #include <units/time.h>
 
+#include "choreo/auto/AutoBindings.h"
 #include "choreo/trajectory/Trajectory.h"
 #include "choreo/trajectory/TrajectorySample.h"
 
@@ -24,9 +27,17 @@ namespace choreo {
 template <choreo::TrajectorySample SampleType>
 using ChoreoControllerFunction = std::function<void(frc::Pose2d, SampleType)>;
 
-using TrajectoryLogger = std::function<void(frc::Pose2d, bool)>;
+template <choreo::TrajectorySample SampleType>
+using TrajectoryLogger = std::function<void(Trajectory<SampleType>, bool)>;
 
 static constexpr units::meter_t DEFAULT_TOLERANCE = 3_in;
+
+struct ScheduledEvent {
+  units::second_t triggerTime;
+  std::string name;
+  frc2::CommandPtr command;
+  bool hasTriggered = false;
+};
 
 /**
  * A class that represents a trajectory that can be used in an autonomous
@@ -38,6 +49,14 @@ static constexpr units::meter_t DEFAULT_TOLERANCE = 3_in;
 template <choreo::TrajectorySample SampleType, int Year>
 class AutoTrajectory {
  public:
+  AutoTrajectory() = default;
+
+  AutoTrajectory(const AutoTrajectory&) = delete;
+  AutoTrajectory& operator=(const AutoTrajectory&) = delete;
+
+  AutoTrajectory(AutoTrajectory&&) = default;
+  AutoTrajectory& operator=(AutoTrajectory&&) = default;
+
   /**
    * Constructs an AutoTrajectory.
    *
@@ -50,26 +69,28 @@ class AutoTrajectory {
    * @param trajectoryLogger Optional trajectory logger.
    * @param driveSubsystem Drive subsystem.
    * @param loop Event loop.
-   * @param newTrajectoryCallback New trajectory callback.
    */
   AutoTrajectory(std::string_view name,
                  const choreo::Trajectory<SampleType>& trajectory,
                  std::function<frc::Pose2d()> poseSupplier,
                  ChoreoControllerFunction<SampleType> controller,
                  std::function<bool()> mirrorTrajectory,
-                 std::optional<TrajectoryLogger> trajectoryLogger,
-                 const frc2::Subsystem& driveSubsystem, frc::EventLoop* loop,
-                 std::function<void()> newTrajectoryCallback)
+                 std::optional<TrajectoryLogger<SampleType>> trajectoryLogger,
+                 frc2::Requirements drivebaseRequirements, frc::EventLoop* loop,
+                 std::shared_ptr<AutoBindings> autoBindings)
       : name{name},
         trajectory{trajectory},
         poseSupplier{std::move(poseSupplier)},
         controller{controller},
         mirrorTrajectory{std::move(mirrorTrajectory)},
         trajectoryLogger{std::move(trajectoryLogger)},
-        driveSubsystem{driveSubsystem},
+        drivebaseRequirements{drivebaseRequirements},
         loop(loop),
-        newTrajectoryCallback{std::move(newTrajectoryCallback)},
-        offTrigger(loop, [] { return false; }) {}
+        offTrigger(loop, [] { return false; }) {
+    for (const auto& [key, cmdFactory] : autoBindings->GetBindings()) {
+      AddScheduledEvent(key, cmdFactory());
+    }
+  }
 
   /**
    * Creates a command that allocates the drive subsystem and follows the
@@ -77,18 +98,22 @@ class AutoTrajectory {
    *
    * @return The command that will follow the trajectory
    */
-  frc2::CommandPtr Cmd() const {
+  frc2::CommandPtr Cmd() {
     if (trajectory.samples.size() == 0) {
-      return frc2::cmd::RunOnce([] {
+      return frc2::cmd::RunOnce([this] {
                FRC_ReportError(frc::warn::Warning,
-                               fmt::format("Trajectory {} has no samples", name);
+                               "Trajectory {} has no samples", name);
              })
           .WithName("Trajectory_" + name);
     }
     return frc2::FunctionalCommand(
-               [this] { return CmdInitiazlize(); },
-               [this] { return CmdExecute(); }, [this] { return CmdEnd(); },
-               [this] { return CmdIsFinished(); }, {driveSubsystem})
+               [this] { return CmdInitialize(); },
+               [this] {
+                 CmdExecute();
+                 CheckAndTriggerEvents();
+               },
+               [this](bool interrupted) { return CmdEnd(interrupted); },
+               [this] { return CmdIsFinished(); }, drivebaseRequirements)
         .WithName("Trajectory_" + name);
   }
 
@@ -153,7 +178,16 @@ class AutoTrajectory {
    * @return A trigger that is true when the command is finished.
    */
   frc2::Trigger Done() {
-    return frc2::Trigger(loop, [this] { return isDone; });
+    return frc2::Trigger(loop, [this] {
+      if (isActive) {
+        wasJustActive = true;
+        return false;
+      } else if (wasJustActive) {
+        wasJustActive = false;
+        return true;
+      }
+      return false;
+    });
   }
 
   /**
@@ -166,26 +200,30 @@ class AutoTrajectory {
   frc2::Trigger AtTime(units::second_t timeSinceStart) {
     if (timeSinceStart < 0_s) {
       FRC_ReportError(frc::warn::Warning,
-                      "Trigger time cannot be negative for" + name);
+                      "Trigger time cannot be negative for {}", name);
       return offTrigger;
     }
 
     if (timeSinceStart > TotalTime()) {
       FRC_ReportError(
           frc::warn::Warning,
-          "Trigger time cannout be greater than total trajectory time for " +
-              name);
+          "Trigger time cannout be greater than total trajectory time for {}",
+          name);
       return offTrigger;
     }
 
-    return frc2::Trigger(
-        loop, [this, timeSinceStart, lastTimestamp = timer.Get()]() mutable {
-          units::second_t nowTimestamp = timer.Get();
-          bool shouldTrigger =
-              lastTimestamp < nowTimestamp && nowTimestamp >= timeSinceStart;
-          lastTimestamp = nowTimestamp;
-          return shouldTrigger;
-        });
+    return frc2::Trigger(loop,
+                         [this, timeSinceStart, triggered = false]() mutable {
+                           if (!isActive)
+                             return false;
+                           if (triggered)
+                             return false;
+                           if (TimeIntoTraj() >= timeSinceStart) {
+                             triggered = true;
+                             return true;
+                           }
+                           return false;
+                         });
   }
 
   /**
@@ -204,7 +242,7 @@ class AutoTrajectory {
     frc2::Trigger trig = offTrigger;
 
     for (const auto& event : trajectory.GetEvents(eventName)) {
-      trig = frc2::Trigger(trig || AtTime(event.timestamp));
+      trig = frc2::Trigger{trig || AtTime(event.timestamp)};
       foundEvent = true;
     }
 
@@ -269,35 +307,33 @@ class AutoTrajectory {
   }
 
  private:
-  void OnNewTrajectory() {
-    isDone = false;
-    isActive = false;
-  }
+  units::second_t TimeIntoTraj() const { return timer.Get() + timeOffset; }
 
-  units::second_t TimeIntoTraj() { return timer.Get() + timeOffset; }
-
-  units::second_t TotalTime() { return trajectory.GetTotalTime(); }
+  units::second_t TotalTime() const { return trajectory.GetTotalTime(); }
 
   void LogTrajectory(bool starting) {
     if (trajectoryLogger.has_value()) {
-      trajectoryLogger.value()(trajectory.GetPoses(), starting);
+      trajectoryLogger.value()(
+          mirrorTrajectory() ? trajectory.Flipped<Year>() : trajectory,
+          starting);
     }
   }
 
-  void CmdInitiazlize() {
-    newTrajectoryCallback();
+  void CmdInitialize() {
     timer.Restart();
-    isDone = false;
     isActive = true;
-    timeOffset = 0.0;
+    timeOffset = 0.0_s;
+    for (auto& event : scheduledEvents) {
+      event.hasTriggered = false;
+    }
     LogTrajectory(true);
   }
 
   void CmdExecute() {
-    SampleType sample =
+    auto sampleOpt =
         trajectory.SampleAt<Year>(TimeIntoTraj(), mirrorTrajectory());
-    controller(poseSupplier(), sample);
-    currentSample = sample;
+    controller(poseSupplier(), sampleOpt.value());
+    currentSample = sampleOpt.value();
   }
 
   void CmdEnd(bool interrupted) {
@@ -305,9 +341,8 @@ class AutoTrajectory {
     if (interrupted) {
       controller(currentSample.GetPose(), currentSample);
     } else {
-      controller(poseSupplier(), trajectory.GetFinalSample());
+      controller(poseSupplier(), trajectory.GetFinalSample().value());
     }
-    isDone = true;
     isActive = false;
     LogTrajectory(false);
   }
@@ -327,20 +362,37 @@ class AutoTrajectory {
         }};
   }
 
+  void AddScheduledEvent(std::string_view eventName, frc2::CommandPtr cmd) {
+    for (const auto& event : trajectory.GetEvents(eventName)) {
+      scheduledEvents.push_back(
+          {event.timestamp, std::string(eventName), std::move(cmd), false});
+    }
+  }
+
+  void CheckAndTriggerEvents() {
+    auto currentTime = TimeIntoTraj();
+    for (auto& event : scheduledEvents) {
+      if (!event.hasTriggered && isActive && currentTime >= event.triggerTime) {
+        event.hasTriggered = true;
+        event.command.Schedule();
+      }
+    }
+  }
+
   std::string name;
-  const choreo::Trajectory<SampleType>& trajectory;
+  choreo::Trajectory<SampleType> trajectory;
   std::function<frc::Pose2d()> poseSupplier;
   ChoreoControllerFunction<SampleType> controller;
   std::function<bool()> mirrorTrajectory;
-  std::optional<TrajectoryLogger> trajectoryLogger;
-  const frc2::Subsystem& driveSubsystem;
+  std::optional<TrajectoryLogger<SampleType>> trajectoryLogger;
+  frc2::Requirements drivebaseRequirements;
   frc::EventLoop* loop;
-  std::function<void()> newTrajectoryCallback;
+  std::vector<ScheduledEvent> scheduledEvents;
   SampleType currentSample;
 
   frc::Timer timer;
-  bool isDone = false;
   bool isActive = false;
+  bool wasJustActive = false;
   units::second_t timeOffset = 0_s;
   frc2::Trigger offTrigger;
 };
