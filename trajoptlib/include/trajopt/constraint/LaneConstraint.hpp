@@ -42,8 +42,8 @@ class TRAJOPT_DLLEXPORT LaneConstraint {
                                              centerLineEnd + offset,
                                              Side::kBelow};
           } else {
-            return PointLineRegionConstraint{{0.0, 0.0}, centerLineStart,
-                                             centerLineEnd, Side::kOn};
+            return PointLineRegionConstraint{
+                {0.0, 0.0}, centerLineStart, centerLineEnd, Side::kOn};
           }
         }()},
         m_bottomLine{[&]() -> std::optional<PointLineRegionConstraint> {

@@ -68,25 +68,31 @@ class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
              [[maybe_unused]] const Translation2v& linearAcceleration,
              [[maybe_unused]] const sleipnir::Variable& angularAcceleration) {
     auto point = pose.Translation() + m_robotPoint.RotateBy(pose.Rotation());
-    // Determine which side of the start-end field line bumperCorner is on.
-    // The cross product a x b gives ||a|| ||b|| std::sin(θ), for a and b
-    // vectors with the same tail. If a x b > 0, b is to the left of a
-    // b
-    // ^
-    // |
-    // -----> a
+
+    // Determine which side of the start-end field line a point is on.
     //
-    // If a x b < 0, b is to the right of a
-    // -----> a
-    // |
-    // v
-    // b
+    // The cross product a x b = |a|₂|b|₂sinθ for a and b vectors with the same
+    // tail. If a x b > 0, b is to the left of a.
     //
-    // If a = the field line, start->end
-    // and b = start->point, then:
-    // cross > 0 means point is to the left of line (above)
-    // cross = 0 means point is on line
-    // cross < 0 means point is to the right of line (below)
+    //   b
+    //   ^
+    //   |
+    //   -----> a
+    //
+    //
+    // If a x b < 0, b is to the right of a.
+    //
+    //   -----> a
+    //   |
+    //   v
+    //   b
+    //
+    // Let a be the field line start -> end and let b be the point start ->
+    // point.
+    //
+    //   cross > 0 means point is left of line (above)
+    //   cross = 0 means point is on line
+    //   cross < 0 means point is right of line (below)
     auto line = m_fieldLineEnd - m_fieldLineStart;
     auto startToPoint = point - m_fieldLineStart;
     auto cross = line.Cross(startToPoint);
