@@ -22,7 +22,6 @@ class TRAJOPT_DLLEXPORT LaneConstraint {
   /**
    * Constructs a LaneConstraint.
    *
-   * @param robotPoint Robot point.
    * @param centerLineStart Start point of the center line.
    * @param centerLineEnd End point of the center line.
    * @param tolerance Distance from center line to lane edge. Passing zero
@@ -43,7 +42,7 @@ class TRAJOPT_DLLEXPORT LaneConstraint {
                                              centerLineEnd + offset,
                                              Side::kBelow};
           } else {
-            return PointLineRegionConstraint{robotPoint, centerLineStart,
+            return PointLineRegionConstraint{{0.0, 0.0}, centerLineStart,
                                              centerLineEnd, Side::kOn};
           }
         }()},
