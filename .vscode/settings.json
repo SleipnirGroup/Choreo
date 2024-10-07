@@ -1,5 +1,5 @@
 {
     "rust-analyzer.check.overrideCommand": [
         "cargo", "clippy", "--target-dir", "./target/clippy"
-    ]
+    ],
 }
