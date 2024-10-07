@@ -38,7 +38,7 @@ impl ConstraintSetter {
                     // filtered out, save the index
                     guess_points.push(idx);
                 } else {
-                    waypoint_idx.push(w.clone());
+                    waypoint_idx.push(*w);
                 }
             });
 
