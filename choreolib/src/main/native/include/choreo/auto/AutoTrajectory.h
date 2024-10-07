@@ -22,7 +22,7 @@
 namespace choreo {
 
 template <choreo::TrajectorySample SampleType>
-using ChoreoControllerFunction = std::function<void(frc::Pose2d, SampleType)>;
+using ControllerFunction = std::function<void(frc::Pose2d, SampleType)>;
 
 using TrajectoryLogger = std::function<void(frc::Pose2d, bool)>;
 
@@ -55,7 +55,7 @@ class AutoTrajectory {
   AutoTrajectory(std::string_view name,
                  const choreo::Trajectory<SampleType>& trajectory,
                  std::function<frc::Pose2d()> poseSupplier,
-                 ChoreoControllerFunction<SampleType> controller,
+                 ControllerFunction<SampleType> controller,
                  std::function<bool()> mirrorTrajectory,
                  std::optional<TrajectoryLogger> trajectoryLogger,
                  const frc2::Subsystem& driveSubsystem, frc::EventLoop* loop,
@@ -330,7 +330,7 @@ class AutoTrajectory {
   std::string name;
   const choreo::Trajectory<SampleType>& trajectory;
   std::function<frc::Pose2d()> poseSupplier;
-  ChoreoControllerFunction<SampleType> controller;
+  ControllerFunction<SampleType> controller;
   std::function<bool()> mirrorTrajectory;
   std::optional<TrajectoryLogger> trajectoryLogger;
   const frc2::Subsystem& driveSubsystem;
