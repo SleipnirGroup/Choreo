@@ -93,18 +93,22 @@ class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
     auto a = m_fieldLineStart.Y() - m_fieldLineEnd.Y();
     auto b = m_fieldLineEnd.X() - m_fieldLineStart.X();
 
+    auto line = m_fieldLineEnd - m_fieldLineStart;
+    auto startToPoint = bumperCorner - m_fieldLineStart;
+    auto cross = startToPoint.Cross(line);
+    // cross > 0, startToPoint is left of line
+    // cross = 0, startToPoint is on line
+    // cross < 0, startToPoint is right of line
+
     switch (m_side) {
       case Side::kAbove:
-        problem.SubjectTo(a * bumperCorner.X() + b * bumperCorner.Y() >
-                          a * m_fieldLineStart.X() + b * m_fieldLineStart.Y());
+        problem.SubjectTo(cross < 0);
         break;
       case Side::kBelow:
-        problem.SubjectTo(a * bumperCorner.X() + b * bumperCorner.Y() <
-                          a * m_fieldLineStart.X() + b * m_fieldLineStart.Y());
+        problem.SubjectTo(cross > 0);
         break;
       case Side::kOn:
-        problem.SubjectTo(a * bumperCorner.X() + b * bumperCorner.Y() ==
-                          a * m_fieldLineStart.X() + b * m_fieldLineStart.Y());
+        problem.SubjectTo(cross == 0);
         break;
     }
   }

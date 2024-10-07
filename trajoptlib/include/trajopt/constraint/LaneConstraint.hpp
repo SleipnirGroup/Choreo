@@ -35,7 +35,7 @@ class TRAJOPT_DLLEXPORT LaneConstraint {
             double dx = centerLineEnd.X() - centerLineStart.X();
             double dy = centerLineEnd.Y() - centerLineStart.Y();
             double dist = std::hypot(dx, dy);
-            auto offset = Translation2d{tolerance, 0.0}.RotateBy(
+            auto offset = Translation2d{0.0, tolerance}.RotateBy(
                 Rotation2d{dx / dist, dy / dist});
 
             return PointLineRegionConstraint{
@@ -51,7 +51,7 @@ class TRAJOPT_DLLEXPORT LaneConstraint {
             double dx = centerLineEnd.X() - centerLineStart.X();
             double dy = centerLineEnd.Y() - centerLineStart.Y();
             double dist = std::hypot(dx, dy);
-            auto offset = Translation2d{tolerance, 0.0}.RotateBy(
+            auto offset = Translation2d{0.0, tolerance}.RotateBy(
                 Rotation2d{dx / dist, dy / dist});
 
             return PointLineRegionConstraint{

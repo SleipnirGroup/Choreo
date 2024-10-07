@@ -1,4 +1,5 @@
 import {
+  AddRoad,
   ArrowCircleDown,
   DoNotDisturb,
   NearMe,
@@ -9,6 +10,7 @@ import {
 import { JSXElementConstructor, ReactElement } from "react";
 import { Expr } from "./2025/DocumentTypes";
 import { Dimension, DimensionName, Dimensions } from "./ExpressionStore";
+import KeepInLane from "../assets/KeepInLane";
 
 export type ConstraintPropertyType = Expr | boolean;
 
@@ -69,14 +71,7 @@ export type ConstraintDataTypeMap = {
     h: Expr;
   };
   KeepInLane: {
-    below_start_x: Expr;
-    below_start_y: Expr;
-    below_end_x: Expr;
-    below_end_y: Expr;
-    above_start_x: Expr;
-    above_start_y: Expr;
-    above_end_x: Expr;
-    above_end_y: Expr;
+    tolerance: Expr;
   };
   KeepOutCircle: {
     x: Expr;
@@ -259,59 +254,17 @@ export const ConstraintDefinitions: defs = {
     type: "KeepInLane" as const,
     name: "Keep In Lane",
     shortName: "Keep In Lane",
-    description: "Keep the robot's bumpers within a lane",
-    icon: <SystemUpdateAlt />, // TODO
+    description: "Keep the robot's center within a lane",
+    icon: <KeepInLane />,
     properties: {
-      below_start_x: {
-        name: "Below Start X",
-        description: "The start of the blow lines X value",
+      tolerance: {
+        name: "Tolerance",
+        description: "Robot center max distance from line between waypoints",
         dimension: Dimensions.Length,
-        defaultVal: { exp: "0 m", val: 1 }
-      },
-      below_start_y: {
-        name: "Below Start Y",
-        description: "The start of the blow lines Y value",
-        dimension: Dimensions.Length,
-        defaultVal: { exp: "0 m", val: 1 }
-      },
-      below_end_x: {
-        name: "Below End X",
-        description: "The end of the blow lines X value",
-        dimension: Dimensions.Length,
-        defaultVal: { exp: "0 m", val: 1 }
-      },
-      below_end_y: {
-        name: "Below End Y",
-        description: "The end of the blow lines Y value",
-        dimension: Dimensions.Length,
-        defaultVal: { exp: "0 m", val: 1 }
-      },
-      above_start_x: {
-        name: "Above Start X",
-        description: "The above of the blow lines X value",
-        dimension: Dimensions.Length,
-        defaultVal: { exp: "0 m", val: 1 }
-      },
-      above_start_y: {
-        name: "Above Start Y",
-        description: "The above of the blow lines Y value",
-        dimension: Dimensions.Length,
-        defaultVal: { exp: "0 m", val: 1 }
-      },
-      above_end_x: {
-        name: "Above End X",
-        description: "The above of the blow lines X value",
-        dimension: Dimensions.Length,
-        defaultVal: { exp: "0 m", val: 1 }
-      },
-      above_end_y: {
-        name: "Above End Y",
-        description: "The above of the blow lines Y value",
-        dimension: Dimensions.Length,
-        defaultVal: { exp: "0 m", val: 1 }
+        defaultVal: { exp: "0.01 m", val: 0.01 }
       }
     },
-    wptScope: true,
+    wptScope: false,
     sgmtScope: true
   } satisfies ConstraintDefinition<"KeepInLane">,
   KeepOutCircle: {
