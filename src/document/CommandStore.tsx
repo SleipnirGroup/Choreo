@@ -110,7 +110,7 @@ export const CommandStore = types
         return {
           type: self.type as CommandGroupType,
           data: {
-            commands: self.commands.map((c) => c.serialize())
+            commands: self.commands.map((c) => c.serialize)
           }
         };
       }
