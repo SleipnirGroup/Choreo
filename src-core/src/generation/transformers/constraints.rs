@@ -146,7 +146,7 @@ impl SwerveGenerationTransformer for ConstraintSetter {
                     let center_line_start_y = (below_start_y + above_start_y) / 2.0;
                     let center_line_end_x = (below_end_x + above_end_x) / 2.0;
                     let center_line_end_y = (below_end_y + above_end_y) / 2.0;
-                    let tolerance = 1.0; // TODO how
+                    let tolerance = (above_start_x - below_start_x).hypot(above_start_y - below_start_y) / 2.0;
 
                     match to_opt {
                         None => builder.wpt_keep_in_lane(
