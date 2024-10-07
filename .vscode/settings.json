@@ -1,18 +1,5 @@
 {
     "rust-analyzer.check.overrideCommand": [
         "cargo", "clippy", "--target-dir", "./target/clippy"
-    ],
-    "files.associations": {
-        "*.traj": "json",
-        "format": "cpp",
-        "future": "cpp",
-        "istream": "cpp",
-        "memory": "cpp",
-        "type_traits": "cpp",
-        "xlocmes": "cpp",
-        "xlocmon": "cpp",
-        "xlocnum": "cpp",
-        "xloctime": "cpp",
-        "expected": "cpp"
-    },
+    ]
 }
