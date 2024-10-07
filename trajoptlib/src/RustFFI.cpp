@@ -162,16 +162,10 @@ void SwerveTrajectoryGenerator::wpt_keep_in_polygon(
 void SwerveTrajectoryGenerator::wpt_keep_in_lane(
     size_t index, double center_line_start_x, double center_line_start_y,
     double center_line_end_x, double center_line_end_y, double tolerance) {
-  for (const auto& bumper : path_builder.GetBumpers()) {
-    for (const auto& corner : bumper.points) {
-      path_builder.WptConstraint(
-          index,
-          trajopt::LaneConstraint{corner,
-                                  {center_line_start_x, center_line_start_y},
-                                  {center_line_end_x, center_line_end_y},
-                                  tolerance});
-    }
-  }
+  path_builder.WptConstraint(
+      index, trajopt::LaneConstraint{{center_line_start_x, center_line_start_y},
+                                     {center_line_end_x, center_line_end_y},
+                                     tolerance});
 }
 
 void SwerveTrajectoryGenerator::wpt_keep_out_circle(size_t index, double x,
@@ -281,16 +275,11 @@ void SwerveTrajectoryGenerator::sgmt_keep_in_lane(
     size_t from_index, size_t to_index, double center_line_start_x,
     double center_line_start_y, double center_line_end_x,
     double center_line_end_y, double tolerance) {
-  for (const auto& bumper : path_builder.GetBumpers()) {
-    for (const auto& corner : bumper.points) {
-      path_builder.SgmtConstraint(
-          from_index, to_index,
-          trajopt::LaneConstraint{corner,
-                                  {center_line_start_x, center_line_start_y},
-                                  {center_line_end_x, center_line_end_y},
-                                  tolerance});
-    }
-  }
+  path_builder.SgmtConstraint(
+      from_index, to_index,
+      trajopt::LaneConstraint{{center_line_start_x, center_line_start_y},
+                              {center_line_end_x, center_line_end_y},
+                              tolerance});
 }
 
 void SwerveTrajectoryGenerator::sgmt_keep_out_circle(size_t from_index,
@@ -511,16 +500,10 @@ void DifferentialTrajectoryGenerator::wpt_keep_in_polygon(
 void DifferentialTrajectoryGenerator::wpt_keep_in_lane(
     size_t index, double center_line_start_x, double center_line_start_y,
     double center_line_end_x, double center_line_end_y, double tolerance) {
-  for (const auto& bumper : path_builder.GetBumpers()) {
-    for (const auto& corner : bumper.points) {
-      path_builder.WptConstraint(
-          index,
-          trajopt::LaneConstraint{corner,
-                                  {center_line_start_x, center_line_start_y},
-                                  {center_line_end_x, center_line_end_y},
-                                  tolerance});
-    }
-  }
+  path_builder.WptConstraint(
+      index, trajopt::LaneConstraint{{center_line_start_x, center_line_start_y},
+                                     {center_line_end_x, center_line_end_y},
+                                     tolerance});
 }
 
 void DifferentialTrajectoryGenerator::wpt_keep_out_circle(size_t index,
@@ -620,16 +603,11 @@ void DifferentialTrajectoryGenerator::sgmt_keep_in_lane(
     size_t from_index, size_t to_index, double center_line_start_x,
     double center_line_start_y, double center_line_end_x,
     double center_line_end_y, double tolerance) {
-  for (const auto& bumper : path_builder.GetBumpers()) {
-    for (const auto& corner : bumper.points) {
-      path_builder.SgmtConstraint(
-          from_index, to_index,
-          trajopt::LaneConstraint{corner,
-                                  {center_line_start_x, center_line_start_y},
-                                  {center_line_end_x, center_line_end_y},
-                                  tolerance});
-    }
-  }
+  path_builder.SgmtConstraint(
+      from_index, to_index,
+      trajopt::LaneConstraint{{center_line_start_x, center_line_start_y},
+                              {center_line_end_x, center_line_end_y},
+                              tolerance});
 }
 
 void DifferentialTrajectoryGenerator::sgmt_keep_out_circle(size_t from_index,

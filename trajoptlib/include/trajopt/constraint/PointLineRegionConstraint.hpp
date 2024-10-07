@@ -67,44 +67,45 @@ class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
              [[maybe_unused]] const sleipnir::Variable& angularVelocity,
              [[maybe_unused]] const Translation2v& linearAcceleration,
              [[maybe_unused]] const sleipnir::Variable& angularAcceleration) {
-    auto bumperCorner =
-        pose.Translation() + m_robotPoint.RotateBy(pose.Rotation());
+    auto point = pose.Translation() + m_robotPoint.RotateBy(pose.Rotation());
 
-    // Rearrange y − y₀ = m(x − x₀) where m = (y₁ − y₀)/(x₁ − x₀) into ax + by =
-    // c form.
-
-    // y − y₀ = m(x − x₀)
-    // y − y₀ = (y₁ − y₀)/(x₁ − x₀)(x − x₀)
-    // (x₁ − x₀)(y − y₀) = (y₁ − y₀)(x − x₀)
-    // (x₁ − x₀)y − (x₁ − x₀)y₀ = (y₁ − y₀)x − (y₁ − y₀)x₀
-    // (y₀ − y₁)x + (x₁ − x₀)y = −(y₁ − y₀)x₀ + (x₁ − x₀)y₀
-    // (y₀ − y₁)x + (x₁ − x₀)y = (y₀ − y₁)x₀ + (x₁ − x₀)y₀
-
-    // ax + by = c where
-    //   a = y₀ − y₁
-    //   b = x₁ − x₀
-    //   c = (y₀ − y₁)x₀ + (x₁ − x₀)y₀
-    //     = ax₀ + by₀
-
-    // ax + by = ax₀ + by₀ where
-    //   a = y₀ − y₁
-    //   b = x₁ − x₀
-
-    auto a = m_fieldLineStart.Y() - m_fieldLineEnd.Y();
-    auto b = m_fieldLineEnd.X() - m_fieldLineStart.X();
+    // Determine which side of the start-end field line a point is on.
+    //
+    // The cross product a x b = |a|₂|b|₂sinθ for a and b vectors with the same
+    // tail. If a x b > 0, b is to the left of a.
+    //
+    //   b
+    //   ^
+    //   |
+    //   -----> a
+    //
+    //
+    // If a x b < 0, b is to the right of a.
+    //
+    //   -----> a
+    //   |
+    //   v
+    //   b
+    //
+    // Let a be the field line start -> end and let b be the point start ->
+    // point.
+    //
+    //   cross > 0 means point is left of line (above)
+    //   cross = 0 means point is on line
+    //   cross < 0 means point is right of line (below)
+    auto line = m_fieldLineEnd - m_fieldLineStart;
+    auto startToPoint = point - m_fieldLineStart;
+    auto cross = line.Cross(startToPoint);
 
     switch (m_side) {
       case Side::kAbove:
-        problem.SubjectTo(a * bumperCorner.X() + b * bumperCorner.Y() >
-                          a * m_fieldLineStart.X() + b * m_fieldLineStart.Y());
+        problem.SubjectTo(cross > 0);
         break;
       case Side::kBelow:
-        problem.SubjectTo(a * bumperCorner.X() + b * bumperCorner.Y() <
-                          a * m_fieldLineStart.X() + b * m_fieldLineStart.Y());
+        problem.SubjectTo(cross < 0);
         break;
       case Side::kOn:
-        problem.SubjectTo(a * bumperCorner.X() + b * bumperCorner.Y() ==
-                          a * m_fieldLineStart.X() + b * m_fieldLineStart.Y());
+        problem.SubjectTo(cross == 0);
         break;
     }
   }
