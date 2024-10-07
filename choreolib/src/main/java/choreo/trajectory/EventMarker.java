@@ -37,10 +37,12 @@ public class EventMarker {
 
   private class ChoreolibEvent {
     public ChoreolibEventData data;
-    public ChoreolibEvent(ChoreolibEventData data){
+
+    public ChoreolibEvent(ChoreolibEventData data) {
       this.data = data;
     }
   }
+
   /** The "data" component of the marker serialization */
   private class ChoreolibEventData {
     /** The event string */

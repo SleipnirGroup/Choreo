@@ -83,7 +83,9 @@ def load_swerve_trajectory(trajectory_name: str) -> SwerveTrajectory:
     ]
     splits = [int(split) for split in data["trajectory"]["splits"]]
     events = [
-        EventMarker(float(event["data"]["timestamp"]["val"]), event["event"]["data"]["event"])
+        EventMarker(
+            float(event["data"]["timestamp"]["val"]), event["event"]["data"]["event"]
+        )
         for event in data["events"]
     ]
 
