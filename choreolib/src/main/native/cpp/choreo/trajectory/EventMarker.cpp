@@ -17,5 +17,5 @@ void choreo::from_json(const wpi::json& json, EventMarker& event) {
   event.timestamp =
       units::second_t{json.at("data").at("offset").at("val").get<double>() +
                       json.at("data").at("target_timestamp").get<double>()};
-  event.event = json.at("event").at("event").get<std::string>();
+  event.event = json.at("event").at("data").at("event").get<std::string>();
 }

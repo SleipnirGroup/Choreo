@@ -42,7 +42,7 @@ def load_differential_trajectory(trajectory_name: str) -> DifferentialTrajectory
         EventMarker(
             float(event["data"]["offset"]["val"])
             + float(event["data"]["target_timestamp"]),
-            event["event"]["event"],
+            event["event"]["data"]["event"],
         )
         for event in data["events"]
     ]
@@ -83,7 +83,7 @@ def load_swerve_trajectory(trajectory_name: str) -> SwerveTrajectory:
     ]
     splits = [int(split) for split in data["trajectory"]["splits"]]
     events = [
-        EventMarker(float(event["data"]["timestamp"]["val"]), event["event"]["event"])
+        EventMarker(float(event["data"]["timestamp"]["val"]), event["event"]["data"]["event"])
         for event in data["events"]
     ]
 

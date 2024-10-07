@@ -35,8 +35,14 @@ public class EventMarker {
     }
   }
 
-  /** The "event" component of the marker serialization */
   private class ChoreolibEvent {
+    public ChoreolibEventData data;
+    public ChoreolibEvent(ChoreolibEventData data){
+      this.data = data;
+    }
+  }
+  /** The "data" component of the marker serialization */
+  private class ChoreolibEventData {
     /** The event string */
     public final String event;
 
@@ -45,7 +51,7 @@ public class EventMarker {
      *
      * @param event The event string
      */
-    public ChoreolibEvent(String event) {
+    public ChoreolibEventData(String event) {
       this.event = event;
     }
   }
@@ -64,7 +70,7 @@ public class EventMarker {
    */
   public EventMarker(EventMarkerData data, ChoreolibEvent event) {
     this.timestamp = data.timestamp;
-    this.event = event.event;
+    this.event = event.data.event;
   }
 
   /**
