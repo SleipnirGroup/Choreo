@@ -10,7 +10,6 @@
 
 #include "trajopt/constraint/Constraint.hpp"
 #include "trajopt/obstacle/Bumpers.hpp"
-#include "trajopt/obstacle/Obstacle.hpp"
 #include "trajopt/path/Path.hpp"
 #include "trajopt/util/GenerateLinearInitialGuess.hpp"
 #include "trajopt/util/SymbolExports.hpp"
@@ -36,11 +35,21 @@ class TRAJOPT_DLLEXPORT PathBuilder {
   }
 
   /**
-   * Get the DifferentialPath being constructed
+   * Add a rectangular bumper to a list used when applying
+   * obstacle constraints.
    *
-   * @return the path
+   * @param front Distance in meters from center to front bumper edge
+   * @param left Distance in meters from center to left bumper edge
+   * @param right Distance in meters from center to right bumper edge
+   * @param back Distance in meters from center to back bumper edge
    */
-  Path<Drivetrain, Solution>& GetPath() { return path; }
+  void SetBumpers(double front, double left, double right, double back) {
+    bumpers.emplace_back(trajopt::Bumpers{.safetyDistance = 0.01,
+                                          .points = {{+front, +left},
+                                                     {-back, +left},
+                                                     {-back, -right},
+                                                     {+front, -right}}});
+  }
 
   /**
    * Get all bumpers currently added to the path builder
@@ -48,6 +57,57 @@ class TRAJOPT_DLLEXPORT PathBuilder {
    * @return a list of bumpers applied to the builder.
    */
   std::vector<Bumpers>& GetBumpers() { return bumpers; }
+
+  /**
+   * If using a discrete algorithm, specify the number of discrete
+   * samples for every segment of the trajectory
+   *
+   * @param counts the sequence of control interval counts per segment, length
+   * is number of waypoints - 1
+   */
+  void SetControlIntervalCounts(std::vector<size_t>&& counts) {
+    controlIntervalCounts = std::move(counts);
+  }
+
+  /**
+   * Get the Control Interval Counts object
+   *
+   * @return const std::vector<size_t>&
+   */
+  const std::vector<size_t>& GetControlIntervalCounts() const {
+    return controlIntervalCounts;
+  }
+
+  /**
+   * Provide a guess of the instantaneous pose of the robot at a waypoint.
+   *
+   * @param wptIndex the waypoint to apply the guess to
+   * @param poseGuess the guess of the robot's pose
+   */
+  void WptInitialGuessPoint(size_t wptIndex, const Pose2d& poseGuess) {
+    NewWpts(wptIndex);
+    initialGuessPoints.at(wptIndex).back() = poseGuess;
+  }
+
+  /**
+   * Add a sequence of initial guess points between two waypoints. The points
+   * are inserted between the waypoints at fromIndex and fromIndex + 1. Linear
+   * interpolation between the waypoint initial guess points and these segment
+   * initial guess points is used as the initial guess of the robot's pose over
+   * the trajectory.
+   *
+   * @param fromIndex index of the waypoint the initial guess point
+   *                 comes immediately after
+   * @param sgmtPoseGuess the sequence of initial guess points
+   */
+  void SgmtInitialGuessPoints(size_t fromIndex,
+                              const std::vector<Pose2d>& sgmtPoseGuess) {
+    NewWpts(fromIndex + 1);
+    std::vector<Pose2d>& toInitialGuessPoints =
+        initialGuessPoints.at(fromIndex + 1);
+    toInitialGuessPoints.insert(toInitialGuessPoints.begin(),
+                                sgmtPoseGuess.begin(), sgmtPoseGuess.end());
+  }
 
   /**
    * Create a pose waypoint constraint on the waypoint at the provided
@@ -83,64 +143,6 @@ class TRAJOPT_DLLEXPORT PathBuilder {
   }
 
   /**
-   * Provide a guess of the instantaneous pose of the robot at a waypoint.
-   *
-   * @param wptIndex the waypoint to apply the guess to
-   * @param poseGuess the guess of the robot's pose
-   */
-  void WptInitialGuessPoint(size_t wptIndex, const Pose2d& poseGuess) {
-    NewWpts(wptIndex);
-    initialGuessPoints.at(wptIndex).back() = poseGuess;
-  }
-
-  /**
-   * Add a sequence of initial guess points between two waypoints. The points
-   * are inserted between the waypoints at fromIndex and fromIndex + 1. Linear
-   * interpolation between the waypoint initial guess points and these segment
-   * initial guess points is used as the initial guess of the robot's pose over
-   * the trajectory.
-   *
-   * @param fromIndex index of the waypoint the initial guess point
-   *                 comes immediately after
-   * @param sgmtPoseGuess the sequence of initial guess points
-   */
-  void SgmtInitialGuessPoints(size_t fromIndex,
-                              const std::vector<Pose2d>& sgmtPoseGuess) {
-    NewWpts(fromIndex + 1);
-    std::vector<Pose2d>& toInitialGuessPoints =
-        initialGuessPoints.at(fromIndex + 1);
-    toInitialGuessPoints.insert(toInitialGuessPoints.begin(),
-                                sgmtPoseGuess.begin(), sgmtPoseGuess.end());
-  }
-
-  /**
-   * Add polygon or circle shaped bumpers to a list used when applying
-   * obstacle constraints.
-   *
-   * @param newBumpers bumpers to add
-   */
-  void AddBumpers(Bumpers&& newBumpers) {
-    bumpers.emplace_back(std::move(newBumpers));
-  }
-
-  /**
-   * Add a rectangular bumper to a list used when applying
-   * obstacle constraints.
-   *
-   * @param front Distance in meters from center to front bumper edge
-   * @param left Distance in meters from center to left bumper edge
-   * @param right Distance in meters from center to right bumper edge
-   * @param back Distance in meters from center to back bumper edge
-   */
-  void SetBumpers(double front, double left, double right, double back) {
-    bumpers.emplace_back(trajopt::Bumpers{.safetyDistance = 0.01,
-                                          .points = {{+front, +left},
-                                                     {-back, +left},
-                                                     {-back, -right},
-                                                     {+front, -right}}});
-  }
-
-  /**
    * Apply a constraint at a waypoint.
    *
    * @param index Index of the waypoint.
@@ -171,24 +173,26 @@ class TRAJOPT_DLLEXPORT PathBuilder {
   }
 
   /**
-   * If using a discrete algorithm, specify the number of discrete
-   * samples for every segment of the trajectory
+   * Add a callback to retrieve the state of the solver as a Solution.
    *
-   * @param counts the sequence of control interval counts per segment, length
-   * is number of waypoints - 1
+   * This callback will run on every iteration of the solver.
+   *
+   * @param callback A callback whose first parameter is the Solution based on
+   *     the solver's state at that iteration, and second parameter is the
+   *     handle passed into Generate().
+   *
    */
-  void ControlIntervalCounts(std::vector<size_t>&& counts) {
-    controlIntervalCounts = std::move(counts);
+  void AddCallback(
+      const std::function<void(Solution& solution, int64_t handle)> callback) {
+    path.callbacks.push_back(callback);
   }
 
   /**
-   * Get the Control Interval Counts object
+   * Get the DifferentialPath being constructed
    *
-   * @return const std::vector<size_t>&
+   * @return the path
    */
-  const std::vector<size_t>& GetControlIntervalCounts() const {
-    return controlIntervalCounts;
-  }
+  Path<Drivetrain, Solution>& GetPath() { return path; }
 
   /**
    * Calculate a discrete, linear initial guess of the x, y, and heading
@@ -199,21 +203,6 @@ class TRAJOPT_DLLEXPORT PathBuilder {
   Solution CalculateInitialGuess() const {
     return GenerateLinearInitialGuess<Solution>(initialGuessPoints,
                                                 controlIntervalCounts);
-  }
-
-  /**
-   * Add a callback to retrieve the state of the solver as a Solution.
-   *
-   * This callback will run on every iteration of the solver.
-   *
-   * @param callback A callback whose first parameter is the Solution based on
-   *     the solver's state at that iteration, and second parameter is the
-   *     handle passed into Generate().
-   *
-   */
-  void AddIntermediateCallback(
-      const std::function<void(Solution& solution, int64_t handle)> callback) {
-    path.callbacks.push_back(callback);
   }
 
  protected:
