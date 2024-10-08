@@ -9,6 +9,7 @@ import {
 import { JSXElementConstructor, ReactElement } from "react";
 import { Expr } from "./2025/DocumentTypes";
 import { Dimension, DimensionName, Dimensions } from "./ExpressionStore";
+import KeepInLane from "../assets/KeepInLane";
 
 export type ConstraintPropertyType = Expr | boolean;
 
@@ -67,6 +68,9 @@ export type ConstraintDataTypeMap = {
     y: Expr;
     w: Expr;
     h: Expr;
+  };
+  KeepInLane: {
+    tolerance: Expr;
   };
   KeepOutCircle: {
     x: Expr;
@@ -245,6 +249,23 @@ export const ConstraintDefinitions: defs = {
     wptScope: true,
     sgmtScope: true
   } satisfies ConstraintDefinition<"KeepInRectangle">,
+  KeepInLane: {
+    type: "KeepInLane" as const,
+    name: "Keep In Lane",
+    shortName: "Keep In Lane",
+    description: "Keep the robot's center within a lane",
+    icon: <KeepInLane />,
+    properties: {
+      tolerance: {
+        name: "Tolerance",
+        description: "Robot center max distance from line between waypoints",
+        dimension: Dimensions.Length,
+        defaultVal: { exp: "0.01 m", val: 0.01 }
+      }
+    },
+    wptScope: false,
+    sgmtScope: true
+  } satisfies ConstraintDefinition<"KeepInLane">,
   KeepOutCircle: {
     type: "KeepOutCircle" as const,
     name: "Keep Out Circle",

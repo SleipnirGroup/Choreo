@@ -74,7 +74,7 @@ class AutoFactory {
    * @param trajectoryLogger Choreo::CreateAutoFactory()
    */
   AutoFactory(std::function<frc::Pose2d()> poseSupplier,
-              ChoreoControllerFunction<SampleType> controller,
+              std::function<void(frc::Pose2d, SampleType)> controller,
               std::function<bool()> mirrorTrajectory,
               frc2::Requirements drivebaseRequirements,
               std::optional<TrajectoryLogger<SampleType>> trajectoryLogger)
@@ -184,7 +184,7 @@ class AutoFactory {
 
  private:
   std::function<frc::Pose2d()> poseSupplier;
-  ChoreoControllerFunction<SampleType> controller;
+  std::function<void(frc::Pose2d, SampleType)> controller;
   std::function<bool()> mirrorTrajectory;
   frc2::Requirements drivebaseRequirements;
   std::shared_ptr<AutoBindings> autoBindings;

@@ -22,28 +22,28 @@ class TRAJOPT_DLLEXPORT LaneConstraint {
   /**
    * Constructs a LaneConstraint.
    *
-   * @param robotPoint Robot point.
    * @param centerLineStart Start point of the center line.
    * @param centerLineEnd End point of the center line.
    * @param tolerance Distance from center line to lane edge. Passing zero
    *   creates a line constraint.
    */
-  LaneConstraint(Translation2d robotPoint, Translation2d centerLineStart,
-                 Translation2d centerLineEnd, double tolerance)
+  LaneConstraint(Translation2d centerLineStart, Translation2d centerLineEnd,
+                 double tolerance)
       : m_topLine{[&] {
           if (tolerance != 0.0) {
             double dx = centerLineEnd.X() - centerLineStart.X();
             double dy = centerLineEnd.Y() - centerLineStart.Y();
             double dist = std::hypot(dx, dy);
-            auto offset = Translation2d{tolerance, 0.0}.RotateBy(
+            auto offset = Translation2d{0.0, tolerance}.RotateBy(
                 Rotation2d{dx / dist, dy / dist});
 
-            return PointLineRegionConstraint{
-                robotPoint, centerLineStart + offset, centerLineEnd + offset,
-                Side::kBelow};
+            return PointLineRegionConstraint{{0.0, 0.0},
+                                             centerLineStart + offset,
+                                             centerLineEnd + offset,
+                                             Side::kBelow};
           } else {
-            return PointLineRegionConstraint{robotPoint, centerLineStart,
-                                             centerLineEnd, Side::kOn};
+            return PointLineRegionConstraint{
+                {0.0, 0.0}, centerLineStart, centerLineEnd, Side::kOn};
           }
         }()},
         m_bottomLine{[&]() -> std::optional<PointLineRegionConstraint> {
@@ -51,12 +51,13 @@ class TRAJOPT_DLLEXPORT LaneConstraint {
             double dx = centerLineEnd.X() - centerLineStart.X();
             double dy = centerLineEnd.Y() - centerLineStart.Y();
             double dist = std::hypot(dx, dy);
-            auto offset = Translation2d{tolerance, 0.0}.RotateBy(
+            auto offset = Translation2d{0.0, tolerance}.RotateBy(
                 Rotation2d{dx / dist, dy / dist});
 
-            return PointLineRegionConstraint{
-                robotPoint, centerLineStart - offset, centerLineEnd - offset,
-                Side::kAbove};
+            return PointLineRegionConstraint{{0.0, 0.0},
+                                             centerLineStart - offset,
+                                             centerLineEnd - offset,
+                                             Side::kAbove};
           } else {
             return std::nullopt;
           }

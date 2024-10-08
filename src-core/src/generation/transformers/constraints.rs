@@ -1,6 +1,9 @@
-use crate::spec::trajectory::{ConstraintData, ConstraintIDX, ConstraintScope};
+use crate::spec::trajectory::{ConstraintData, ConstraintIDX, ConstraintScope, Waypoint};
 
-use super::{DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext, SwerveGenerationTransformer};
+use super::{
+    DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext,
+    SwerveGenerationTransformer,
+};
 
 fn fix_scope(idx: usize, removed_idxs: &[usize]) -> usize {
     let mut to_subtract: usize = 0;
@@ -14,19 +17,30 @@ fn fix_scope(idx: usize, removed_idxs: &[usize]) -> usize {
 
 pub struct ConstraintSetter {
     guess_points: Vec<usize>,
-    constraint_idx: Vec<ConstraintIDX<f64>>
+    constraint_idx: Vec<ConstraintIDX<f64>>,
+    /// A vector of remaining waypoints matching the indexing scheme of constraint_idx
+    waypoint_idx: Vec<Waypoint<f64>>
 }
 
 impl ConstraintSetter {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
         let mut guess_points: Vec<usize> = Vec::new();
         let mut constraint_idx = Vec::<ConstraintIDX<f64>>::new();
+        let mut waypoint_idx = Vec::<Waypoint<f64>>::new();
         let num_wpts = context.params.waypoints.len();
 
-        context.params.waypoints.iter()
+        context.params
+            .waypoints
+            .iter()
             .enumerate()
-            .filter(|(_, w)| w.is_initial_guess && !w.fix_heading && !w.fix_translation)
-            .for_each(|(idx, _)| guess_points.push(idx));
+            .for_each(|(idx, w)| {
+                if w.is_initial_guess && !w.fix_heading && !w.fix_translation {
+                    // filtered out, save the index
+                    guess_points.push(idx);
+                } else {
+                    waypoint_idx.push(*w);
+                }
+            });
 
         for constraint in context.params.get_enabled_constraints() {
             let from = constraint.from.get_idx(num_wpts);
@@ -61,7 +75,7 @@ impl ConstraintSetter {
                             from: fixed_from,
                             to: fixed_to,
                             data: constraint.data,
-                            enabled: constraint.enabled
+                            enabled: constraint.enabled,
                         });
                     }
                 }
@@ -70,7 +84,8 @@ impl ConstraintSetter {
 
         FeatureLockedTransformer::always(Self {
             guess_points,
-            constraint_idx
+            constraint_idx,
+            waypoint_idx
         })
     }
 }
@@ -92,7 +107,7 @@ impl SwerveGenerationTransformer for ConstraintSetter {
                     flip,
                 } => match to_opt {
                     None => generator.wpt_point_at(from, x, y, tolerance, flip),
-                    Some(to) => generator.sgmt_point_at(from, to, x, y, tolerance, flip)
+                    Some(to) => generator.sgmt_point_at(from, to, x, y, tolerance, flip),
                 },
                 ConstraintData::MaxVelocity { max } => match to_opt {
                     None => generator.wpt_linear_velocity_max_magnitude(from, max),
@@ -123,12 +138,29 @@ impl SwerveGenerationTransformer for ConstraintSetter {
                         None => generator.wpt_keep_in_polygon(from, xs, ys),
                         Some(to) => generator.sgmt_keep_in_polygon(from, to, xs, ys),
                     }
-                }
-                ConstraintData::KeepOutCircle { x, y, r } => {
-                    match to_opt {
-                        None => generator.wpt_keep_out_circle(from, x, y, r),
-                        Some(to) => generator.sgmt_keep_out_circle(from, to, x, y, r),
+                },
+                ConstraintData::KeepInLane {
+                    tolerance
+                } => {
+                    if let Some(idx_to) = to_opt {
+                      if let Some(wpt_to) = self.waypoint_idx.get(idx_to) {
+                      if let Some(wpt_from) = self.waypoint_idx.get(from) {
+                        generator.sgmt_keep_in_lane(
+                            from,
+                            idx_to,
+                            wpt_from.x,
+                            wpt_from.y,
+                            wpt_to.x,
+                            wpt_to.y,
+                            tolerance,
+                        );
                     }
+                }
+                    }
+                },
+                ConstraintData::KeepOutCircle { x, y, r } => match to_opt {
+                    None => generator.wpt_keep_out_circle(from, x, y, r),
+                    Some(to) => generator.sgmt_keep_out_circle(from, to, x, y, r),
                 },
             };
         }
@@ -150,7 +182,11 @@ impl DifferentialGenerationTransformer for ConstraintSetter {
                     y,
                     tolerance,
                     flip,
-                } => if to_opt.is_none() { generator.wpt_point_at(from, x, y, tolerance, flip) },
+                } => {
+                    if to_opt.is_none() {
+                        generator.wpt_point_at(from, x, y, tolerance, flip)
+                    }
+                }
                 ConstraintData::MaxVelocity { max } => match to_opt {
                     None => generator.wpt_linear_velocity_max_magnitude(from, max),
                     Some(to) => generator.sgmt_linear_velocity_max_magnitude(from, to, max),
@@ -168,7 +204,7 @@ impl DifferentialGenerationTransformer for ConstraintSetter {
                         generator.wpt_linear_velocity_max_magnitude(from, 0.0f64);
                         generator.wpt_angular_velocity_max_magnitude(from, 0.0f64);
                     }
-                },
+                }
                 ConstraintData::KeepInCircle { x, y, r } => match to_opt {
                     None => generator.wpt_keep_in_circle(from, x, y, r),
                     Some(to) => generator.sgmt_keep_in_circle(from, to, x, y, r),
@@ -180,12 +216,29 @@ impl DifferentialGenerationTransformer for ConstraintSetter {
                         None => generator.wpt_keep_in_polygon(from, xs, ys),
                         Some(to) => generator.sgmt_keep_in_polygon(from, to, xs, ys),
                     }
-                }
-                ConstraintData::KeepOutCircle { x, y, r } => {
-                    match to_opt {
-                        None => generator.wpt_keep_out_circle(from, x, y, r),
-                        Some(to) => generator.sgmt_keep_out_circle(from, to, x, y, r),
+                },
+                ConstraintData::KeepInLane {
+                    tolerance
+                } => {
+                    if let Some(idx_to) = to_opt {
+                      if let Some(wpt_to) = self.waypoint_idx.get(idx_to) {
+                      if let Some(wpt_from) = self.waypoint_idx.get(from) {
+                        generator.sgmt_keep_in_lane(
+                            from,
+                            idx_to,
+                            wpt_from.x,
+                            wpt_from.y,
+                            wpt_to.x,
+                            wpt_to.y,
+                            tolerance,
+                        );
+                      }
                     }
+                    }
+                },
+                ConstraintData::KeepOutCircle { x, y, r } => match to_opt {
+                    None => generator.wpt_keep_out_circle(from, x, y, r),
+                    Some(to) => generator.sgmt_keep_out_circle(from, to, x, y, r),
                 },
             };
         }
