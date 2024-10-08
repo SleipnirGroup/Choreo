@@ -2,18 +2,16 @@
 
 package choreo;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import choreo.trajectory.EventMarker;
 import choreo.trajectory.ProjectFile;
+import choreo.trajectory.SwerveSample;
+import choreo.trajectory.Trajectory;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.util.List;
 import org.junit.jupiter.api.Test;
-
-// import static org.junit.jupiter.api.Assertions.*;
-
-// import choreo.trajectory.SwerveSample;
-// import com.google.gson.Gson;
-// import org.junit.jupiter.api.BeforeAll;
-// import org.junit.jupiter.api.Test;
 
 public class ChoreoTests {
   public static final String TRAJECTORY =
@@ -129,10 +127,43 @@ public class ChoreoTests {
           .registerTypeAdapter(EventMarker.class, new EventMarker.Deserializer())
           .create();
 
+  private Trajectory<SwerveSample> CORRECT_SWERVE_TRAJECTORY =
+      new Trajectory<SwerveSample>(
+          "New Path",
+          List.of(
+              new SwerveSample(
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  new double[] {0.0, 0.0, 0.0, 0.0},
+                  new double[] {0.0, 0.0, 0.0, 0.0}),
+              new SwerveSample(
+                  1.0,
+                  0.5,
+                  0.1,
+                  0.2,
+                  3.0,
+                  3.0,
+                  10.0,
+                  20.0,
+                  20.0,
+                  30.0,
+                  new double[] {100.0, 200.0, 300.0, 400.0},
+                  new double[] {-100.0, -200.0, -300.0, -400.0})),
+          List.of(),
+          List.of(new EventMarker(0.0, "testEvent")));
+
   @Test
   public void testChoreo() {
     ProjectFile projectFile = GSON.fromJson(PROJ, ProjectFile.class);
-    System.out.println(projectFile.name);
-    System.out.println(Choreo.loadTrajectoryString(TRAJECTORY, projectFile).name());
+    var deserializedSwerveTrajectory = Choreo.loadTrajectoryString(TRAJECTORY, projectFile);
+    assertEquals(CORRECT_SWERVE_TRAJECTORY, deserializedSwerveTrajectory);
   }
 }

@@ -25,6 +25,9 @@ import java.lang.reflect.Type;
 public class EventMarker {
   /** GSON deserializer for choreolib event markers */
   public static class Deserializer implements JsonDeserializer<EventMarker> {
+    /** Default constructor. */
+    public Deserializer() {}
+
     public EventMarker deserialize(
         JsonElement json, Type typeOfT, JsonDeserializationContext context)
         throws JsonParseException {
