@@ -20,7 +20,15 @@ class AutoBindings {
   AutoBindings() = default;
   AutoBindings(const AutoBindings&) = delete;
   AutoBindings& operator=(const AutoBindings&) = delete;
+
+  /**
+   * The default move constructor
+   */
   AutoBindings(AutoBindings&&) = default;
+
+  /**
+   * The default move assignment operator
+   */
   AutoBindings& operator=(AutoBindings&&) = default;
 
   /**
@@ -29,6 +37,8 @@ class AutoBindings {
    *
    * @param name The name of the event to bind the command to
    * @param cmd A function that returns a CommandPtr that you want to bind.
+   * @return a reference to itself because we need to keep track of our moved
+   * binds (and function chaining)
    */
   AutoBindings& Bind(std::string_view name,
                      std::function<frc2::CommandPtr()> cmd) & {
@@ -38,6 +48,8 @@ class AutoBindings {
 
   /**
    * Gets a read-only reference to the underlying map of events -> Commands
+   *
+   * @return the underlying map of event names to command factories
    */
   const std::unordered_map<std::string, std::function<frc2::CommandPtr()>>&
   GetBindings() const {

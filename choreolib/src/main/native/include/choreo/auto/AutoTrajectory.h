@@ -32,10 +32,27 @@ using TrajectoryLogger = std::function<void(Trajectory<SampleType>, bool)>;
 
 static constexpr units::meter_t DEFAULT_TOLERANCE = 3_in;
 
+/**
+ * A struct to hold CommandsPtrs and keep track if they were triggered along the
+ * path
+ *
+ */
 struct ScheduledEvent {
+  /**
+   * The time through the path the command is supposed to be triggered
+   */
   units::second_t triggerTime;
+  /**
+   * The name of the event marker
+   */
   std::string name;
+  /**
+   * The CommandPtr to run
+   */
   frc2::CommandPtr command;
+  /**
+   * If the event has been triggered yet
+   */
   bool hasTriggered = false;
 };
 
@@ -67,8 +84,10 @@ class AutoTrajectory {
    * @param mirrorTrajectory Getter that determines whether to mirror
    *   trajectory.
    * @param trajectoryLogger Optional trajectory logger.
-   * @param driveSubsystem Drive subsystem.
+   * @param drivebaseRequirements Requirements for the drivebase subsystem
    * @param loop Event loop.
+   * @param autoBindings A shared pointer to mapped choreolib markers to
+   * CommandPtr factories
    */
   AutoTrajectory(std::string_view name,
                  const choreo::Trajectory<SampleType>& trajectory,

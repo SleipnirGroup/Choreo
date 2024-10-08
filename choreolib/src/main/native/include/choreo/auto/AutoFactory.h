@@ -69,8 +69,7 @@ class AutoFactory {
    * @param poseSupplier Choreo::CreateAutoFactory()
    * @param controller Choreo::CreateAutoFactory()
    * @param mirrorTrajectory Choreo::CreateAutoFactory()
-   * @param driveSubsystem Choreo::CreateAutoFactory()
-   * @param bindings Choreo::CreateAutoFactory()
+   * @param drivebaseRequirements Choreo::CreateAutoFactory()
    * @param trajectoryLogger Choreo::CreateAutoFactory()
    */
   AutoFactory(std::function<frc::Pose2d()> poseSupplier,
@@ -173,13 +172,16 @@ class AutoFactory {
    * Binds a command to an event in all trajectories created after this point.
    *
    * @param name The name of the trajectory to bind the command to.
-   * @param cmd The command to bind to the trajectory.
+   * @param cmdFactory A function that retuns a CommandPtr to bind
    */
   void Bind(std::string_view name,
             std::function<frc2::CommandPtr()> cmdFactory) {
     autoBindings->Bind(name, std::move(cmdFactory));
   }
 
+  /**
+   * Empties the interal trajecectory cache
+   */
   void ClearCache() { trajectoryCache.Clear(); }
 
  private:

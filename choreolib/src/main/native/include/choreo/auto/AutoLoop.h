@@ -45,7 +45,14 @@ class AutoLoop {
   AutoLoop(const AutoLoop&) = delete;
   AutoLoop& operator=(const AutoLoop&) = delete;
 
+  /**
+   * The default move constructor
+   */
   AutoLoop(AutoLoop&& other) noexcept = default;
+
+  /**
+   * The default move assignment operator
+   */
   AutoLoop& operator=(AutoLoop&& other) noexcept = default;
 
   /**
