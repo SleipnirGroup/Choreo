@@ -8,19 +8,20 @@ from choreo.trajectory import SwerveTrajectory
 from choreo.spec_version import SPEC_VERSION
 
 
-def load_differential_trajectory(trajectory_name: str) -> DifferentialTrajectory:
-    """Load a differential trajectory from a file.
+def load_differential_trajectory_string(
+    trajectory_json_string: str,
+) -> DifferentialTrajectory:
+    """Load a differential trajectory from a string.
 
-    Parameter ``trajectory_name``:
-        The path name in Choreo, which matches the file name in the deploy
-        directory. Do not include ".traj" here.
+    Parameter ``trajectory_json_string``:
+        The JSON string.
     """
-    with open(trajectory_name + ".traj", "r", encoding="utf-8") as trajectory_file:
-        data = json.load(trajectory_file)
+    data = json.loads(trajectory_json_string)
+    name = data["name"]
     version = data["version"]
     if version != SPEC_VERSION:
         raise ValueError(
-            f"{trajectory_name}.traj: Wrong version {version}. Expected {SPEC_VERSION}"
+            f"{name}.traj: Wrong version {version}. Expected {SPEC_VERSION}"
         )
     samples = [
         DifferentialSample(
@@ -50,19 +51,30 @@ def load_differential_trajectory(trajectory_name: str) -> DifferentialTrajectory
     return DifferentialTrajectory(data["name"], samples, splits, events)
 
 
-def load_swerve_trajectory(trajectory_name: str) -> SwerveTrajectory:
-    """Load a swerve trajectory from a file.
+def load_differential_trajectory(trajectory_name: str) -> DifferentialTrajectory:
+    """Load a differential trajectory from a file.
 
     Parameter ``trajectory_name``:
         The path name in Choreo, which matches the file name in the deploy
         directory. Do not include ".traj" here.
     """
     with open(trajectory_name + ".traj", "r", encoding="utf-8") as trajectory_file:
-        data = json.load(trajectory_file)
+        data = trajectory_file.read()
+    return load_differential_trajectory_string(data)
+
+
+def load_swerve_trajectory_string(trajectory_json_string: str) -> SwerveTrajectory:
+    """Load a swerve trajectory from a string.
+
+    Parameter ``trajectory_json_string``:
+        The JSON string.
+    """
+    data = json.loads(trajectory_json_string)
+    name = data["name"]
     version = data["version"]
     if version != SPEC_VERSION:
         raise ValueError(
-            f"{trajectory_name}.traj: Wrong version {version}. Expected {SPEC_VERSION}"
+            f"{name}.traj: Wrong version {version}. Expected {SPEC_VERSION}"
         )
     samples = [
         SwerveSample(
@@ -92,3 +104,15 @@ def load_swerve_trajectory(trajectory_name: str) -> SwerveTrajectory:
     ]
 
     return SwerveTrajectory(data["name"], samples, splits, events)
+
+
+def load_swerve_trajectory(trajectory_name: str) -> SwerveTrajectory:
+    """Load a swerve trajectory from a file.
+
+    Parameter ``trajectory_name``:
+        The path name in Choreo, which matches the file name in the deploy
+        directory. Do not include ".traj" here.
+    """
+    with open(trajectory_name + ".traj", "r", encoding="utf-8") as trajectory_file:
+        data = trajectory_file.read()
+    return load_swerve_trajectory_string(data)

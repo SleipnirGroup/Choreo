@@ -172,7 +172,7 @@ public class ChoreoTests {
           List.of(new EventMarker(0.0, "testEvent")));
 
   @Test
-  public void testChoreo() {
+  public void testDeserializeSwerveTrajectory() {
     ProjectFile projectFile = GSON.fromJson(PROJ, ProjectFile.class);
     var deserializedSwerveTrajectory = Choreo.loadTrajectoryString(TRAJECTORY, projectFile);
     assertEquals(CORRECT_SWERVE_TRAJECTORY, deserializedSwerveTrajectory);

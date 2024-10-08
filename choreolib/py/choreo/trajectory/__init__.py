@@ -45,6 +45,9 @@ class EventMarker:
         """
         return EventMarker(self.timestamp + timestamp_offset, self.event)
 
+    def __eq__(self, other: EventMarker) -> bool:
+        return self.timestamp == other.timestamp and self.event == other.event
+
 
 class DifferentialSample:
     def __init__(
@@ -200,12 +203,26 @@ class DifferentialSample:
                 self.fl,
             )
 
+    def __eq__(self, other: DifferentialSample) -> bool:
+        return (
+            self.timestamp == other.timestamp
+            and self.x == other.x
+            and self.y == other.y
+            and self.heading == other.heading
+            and self.vl == other.vl
+            and self.vr == other.vr
+            and self.al == other.al
+            and self.ar == other.ar
+            and self.fl == other.fl
+            and self.fr == other.fr
+        )
+
 
 class DifferentialTrajectory:
     def __init__(
         self,
         name: str,
-        samples: list[SwerveSample],
+        samples: list[DifferentialSample],
         splits: list[int],
         events: list[EventMarker],
     ):
@@ -229,7 +246,7 @@ class DifferentialTrajectory:
         self.splits = splits
         self.events = events
 
-    def __sample_internal(self, timestamp: float) -> SwerveSample:
+    def __sample_internal(self, timestamp: float) -> DifferentialSample:
         # Handle timestamps outside the trajectory range
         if timestamp < self.samples[0].timestamp:
             return self.samples[0]
@@ -263,7 +280,7 @@ class DifferentialTrajectory:
 
     def sample_at(
         self, timestamp: float, flip_for_red_alliance: bool = False
-    ) -> SwerveSample:
+    ) -> DifferentialSample:
         """
         Return an interpolated sample of the trajectory at the given timestamp.
 
@@ -281,7 +298,7 @@ class DifferentialTrajectory:
 
         return tmp.flipped() if flip_for_red_alliance else tmp
 
-    def get_samples(self) -> list[SwerveSample]:
+    def get_samples(self) -> list[DifferentialSample]:
         """
         Returns the list of states for this trajectory.
         """
@@ -326,15 +343,23 @@ class DifferentialTrajectory:
         """
         return [x.get_pose() for x in self.samples]
 
-    def flipped(self, year: int = DEFAULT_YEAR) -> SwerveTrajectory:
+    def flipped(self, year: int = DEFAULT_YEAR) -> DifferentialTrajectory:
         """
         Returns this trajectory flipped based on the field year.
 
         Parameter ``year``:
             The field year (default: the current year).
         """
-        return SwerveTrajectory(
+        return DifferentialTrajectory(
             self.name, [x.flipped() for x in self.samples], self.splits, self.events
+        )
+
+    def __eq__(self, other: DifferentialTrajectory) -> bool:
+        return (
+            self.name == other.name
+            and self.samples == other.samples
+            and self.splits == other.splits
+            and self.events == other.events
         )
 
 
@@ -490,6 +515,22 @@ class SwerveSample:
                 [-y for y in self.fy],
             )
 
+    def __eq__(self, other: SwerveSample) -> bool:
+        return (
+            self.timestamp == other.timestamp
+            and self.x == other.x
+            and self.y == other.y
+            and self.heading == other.heading
+            and self.vx == other.vx
+            and self.vy == other.vy
+            and self.omega == other.omega
+            and self.ax == other.ax
+            and self.ay == other.ay
+            and self.alpha == other.alpha
+            and self.fx == other.fx
+            and self.fy == other.fy
+        )
+
 
 class SwerveTrajectory:
     def __init__(
@@ -625,4 +666,12 @@ class SwerveTrajectory:
         """
         return SwerveTrajectory(
             self.name, [x.flipped() for x in self.samples], self.splits, self.events
+        )
+
+    def __eq__(self, other: SwerveTrajectory) -> bool:
+        return (
+            self.name == other.name
+            and self.samples == other.samples
+            and self.splits == other.splits
+            and self.events == other.events
         )

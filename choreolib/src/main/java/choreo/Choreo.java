@@ -150,8 +150,7 @@ public final class Choreo {
    * Load a trajectory from a string.
    *
    * @param trajectoryJsonString The JSON string.
-   * @param trajectoryName The path name in Choreo, which matches the file name in the deploy
-   *     directory, file extension is optional.
+   * @param projectFile The project file.
    * @return The loaded trajectory, or `empty std::optional` if the trajectory could not be loaded.
    */
   static Trajectory<? extends TrajectorySample<?>> loadTrajectoryString(
