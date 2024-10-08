@@ -84,9 +84,9 @@ export const PathListStore = types
           trajectory: {
             waypoints: [],
             samples: [],
-            splits: [],
-            markers: []
-          }
+            splits: []
+          },
+          markers: []
         });
         path.setExporter((uuid) => {});
         self.defaultPath = path;
@@ -98,8 +98,8 @@ export const PathListStore = types
         contents?: Trajectory
       ): string {
         const usedName = this.disambiguateName(name);
-        const newUUID = crypto.randomUUID();
         const env = getEnv<Env>(self);
+        const newUUID = crypto.randomUUID();
         env.startGroup(() => {
           try {
             const path = HolonomicPathStore.create({
@@ -122,15 +122,16 @@ export const PathListStore = types
               trajectory: {
                 waypoints: [],
                 samples: [],
-                splits: [],
-                markers: []
-              }
+                splits: []
+              },
+              markers: []
             });
-            path.setExporter(self.getExporter());
             self.paths.put(path); //It's not ready yet but it needs to get the env injected
+            path.setExporter(self.getExporter());
             if (contents !== undefined) {
               path.deserialize(contents);
             } else {
+              path.setName(usedName);
               path.params.addConstraint("StopPoint", true, "first");
               path.params.addConstraint("StopPoint", true, "last");
               path.params.addConstraint(
@@ -148,7 +149,7 @@ export const PathListStore = types
             }
 
             if (self.paths.size === 1 || select) {
-              self.activePathUUID = newUUID;
+              self.activePathUUID = path.uuid;
             }
           } finally {
             env.stopGroup();
@@ -159,6 +160,16 @@ export const PathListStore = types
     };
     // The annoying thing we have to do to add the above actions to the object before we use them below
   })
+  .views((self) => ({
+    get activePath(): IHolonomicPathStore {
+      let path = self.paths.get(self.activePathUUID);
+      if (path === undefined) {
+        self.addPath("New Path", true);
+        path = self.paths.get(self.activePathUUID);
+      }
+      return path as IHolonomicPathStore;
+    }
+  }))
   .actions((self) => {
     return {
       deletePath(uuid: string) {

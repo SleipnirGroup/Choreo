@@ -1,12 +1,6 @@
 import { Instance, destroy, getEnv, types } from "mobx-state-tree";
 import { moveItem } from "mobx-utils";
-import {
-  ChoreoPath,
-  Constraint,
-  Expr,
-  Waypoint,
-  WaypointID
-} from "../2025/DocumentTypes";
+import { ChoreoPath, Constraint, Expr, Waypoint } from "../2025/DocumentTypes";
 import { ConstraintKey, DataMap } from "../ConstraintDefinitions";
 import {
   ConstraintStore,
@@ -14,12 +8,16 @@ import {
   IWaypointScope
 } from "../ConstraintStore";
 import { Env } from "../DocumentManager";
+import { ExpressionStore } from "../ExpressionStore";
 import {
   DEFAULT_WAYPOINT,
   HolonomicWaypointStore,
   IHolonomicWaypointStore
 } from "../HolonomicWaypointStore";
-import { ExpressionStore } from "../ExpressionStore";
+import {
+  savedWaypointIdToWaypointId,
+  waypointIdToSavedWaypointId
+} from "./utils";
 
 export const ChoreoPathStore = types
   .model("ChoreoPathStore", {
@@ -28,62 +26,6 @@ export const ChoreoPathStore = types
     targetDt: ExpressionStore
   })
   .views((self) => ({
-    findUUIDIndex(uuid: string) {
-      return self.waypoints.findIndex((wpt) => wpt.uuid === uuid);
-    }
-  }))
-  .views((self) => ({
-    waypointIdToSavedWaypointId(
-      waypointId: IWaypointScope | undefined
-    ): "first" | "last" | number | undefined {
-      if (waypointId === null || waypointId === undefined) {
-        return undefined;
-      }
-      if (typeof waypointId !== "string") {
-        const scopeIndex = self.findUUIDIndex(waypointId.uuid);
-        if (scopeIndex == -1) {
-          return undefined; // don't try to save this constraint
-        }
-        return scopeIndex;
-      } else {
-        return waypointId;
-      }
-    },
-    savedWaypointIdToWaypointId(
-      savedId: WaypointID | undefined
-    ): IWaypointScope | undefined {
-      if (savedId === null || savedId === undefined) {
-        return undefined;
-      }
-
-      if (savedId === "first") {
-        return "first";
-      }
-      if (savedId === "last") {
-        return "last";
-      }
-      if (savedId < 0 || savedId >= self.waypoints.length) {
-        return undefined;
-      }
-      if (!Number.isInteger(savedId)) {
-        return undefined;
-      } else {
-        return { uuid: self.waypoints[savedId]?.uuid as string };
-      }
-    }
-  }))
-  .views((self) => ({
-    getByWaypointID(id: IWaypointScope) {
-      if (id === "first") {
-        return self.waypoints[0];
-      }
-      if (id === "last") {
-        return self.waypoints[self.waypoints.length - 1];
-      }
-      if (typeof id.uuid === "string") {
-        return self.waypoints[self.findUUIDIndex(id.uuid)];
-      }
-    },
     get nonGuessPoints() {
       return self.waypoints.filter((waypoint) => !(waypoint.type == 2));
     },
@@ -97,8 +39,8 @@ export const ChoreoPathStore = types
         waypoints: self.waypoints.map((w) => w.serialize),
         constraints: self.constraints.flatMap((constraint) => {
           const con = constraint;
-          const from = self.waypointIdToSavedWaypointId(con.from)!;
-          const to = self.waypointIdToSavedWaypointId(con.to);
+          const from = waypointIdToSavedWaypointId(con.from, self.waypoints)!;
+          const to = waypointIdToSavedWaypointId(con.to, self.waypoints);
           const toReturn: Constraint = {
             data: con.data.serialize,
             enabled: con.enabled,
@@ -180,8 +122,8 @@ export const ChoreoPathStore = types
               from instanceof Object && Object.hasOwn(from, "uuid");
             const secondIsUUID =
               to instanceof Object && Object.hasOwn(to, "uuid");
-            let startIndex = constraint.getStartWaypointIndex();
-            let endIndex = constraint.getEndWaypointIndex();
+            let startIndex = constraint.getStartWaypointIndex(self.waypoints);
+            let endIndex = constraint.getEndWaypointIndex(self.waypoints);
             // start/end index being undefined, given that scope is length2, means that
             // the constraint refers to an already-missing waypoint. Skip these and let the user
             // retarget them.
@@ -277,11 +219,11 @@ export const ChoreoPathStore = types
       });
       self.constraints.clear();
       ser.constraints.forEach((saved: Constraint) => {
-        const from = self.savedWaypointIdToWaypointId(saved.from);
+        const from = savedWaypointIdToWaypointId(saved.from, self.waypoints);
         if (from === undefined) {
           return;
         }
-        const to = self.savedWaypointIdToWaypointId(saved.to);
+        const to = savedWaypointIdToWaypointId(saved.to, self.waypoints);
         self.addConstraint(
           saved.data.type,
           saved.enabled,

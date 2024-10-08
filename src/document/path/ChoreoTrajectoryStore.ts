@@ -1,18 +1,15 @@
-import { Instance, destroy, getEnv, types } from "mobx-state-tree";
+import { Instance, types } from "mobx-state-tree";
 import {
   DifferentialSample,
   Output,
   type SwerveSample
 } from "../2025/DocumentTypes";
-import { Env } from "../DocumentManager";
-import { EventMarkerStore, IEventMarkerStore } from "../EventMarkerStore";
 
 export const ChoreoTrajectoryStore = types
   .model("ChoreoTrajectoryStore", {
     waypoints: types.frozen<number[]>(),
     samples: types.frozen<SwerveSample[] | DifferentialSample[]>(),
-    splits: types.frozen<number[]>(),
-    markers: types.array(EventMarkerStore)
+    splits: types.frozen<number[]>()
   })
   .views((self) => ({
     get fullTrajectory(): SwerveSample[] | DifferentialSample[] {
@@ -79,38 +76,6 @@ export const ChoreoTrajectoryStore = types
       self.waypoints = ser.waypoints;
       self.splits = ser.splits;
       self.samples = ser.samples;
-    },
-    deleteMarkerUUID(uuid: string) {
-      const index = self.markers.findIndex((m) => m.uuid === uuid);
-      if (index >= 0 && index < self.markers.length) {
-        destroy(self.markers[index]);
-        if (self.markers.length === 0) {
-          return;
-        } else if (self.markers[index - 1]) {
-          self.markers[index - 1].setSelected(true);
-        } else if (self.markers[index + 1]) {
-          self.markers[index + 1].setSelected(true);
-        }
-      }
-    },
-    addEventMarker(marker?: IEventMarkerStore): IEventMarkerStore {
-      if (marker === undefined) {
-        marker = getEnv<Env>(self).create.EventMarkerStore({
-          name: "Marker",
-          target: "first",
-          trajectoryTargetIndex: undefined,
-          targetTimestamp: undefined,
-          offset: { exp: "0 s", val: 0 },
-          command: {
-            type: "named",
-            data: {
-              name: ""
-            }
-          }
-        });
-      }
-      self.markers.push(marker as IEventMarkerStore);
-      return marker;
     },
     setSamples(samples: SwerveSample[] | DifferentialSample[]) {
       self.samples = samples;

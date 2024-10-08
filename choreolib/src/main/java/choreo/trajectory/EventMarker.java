@@ -2,6 +2,12 @@
 
 package choreo.trajectory;
 
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import java.lang.reflect.Type;
+
 // /** A marker for an event in a trajectory. */
 // public record EventMarker(double timestamp, String event) {
 //   /**
@@ -17,6 +23,45 @@ package choreo.trajectory;
 
 /** A marker for an event in a trajectory. */
 public class EventMarker {
+  /** GSON deserializer for choreolib event markers */
+  public static class Deserializer implements JsonDeserializer<EventMarker> {
+    /** Default constructor. */
+    public Deserializer() {}
+
+    public EventMarker deserialize(
+        JsonElement json, Type typeOfT, JsonDeserializationContext context)
+        throws JsonParseException {
+      try {
+        var targetTimestamp =
+            json.getAsJsonObject()
+                .get("data")
+                .getAsJsonObject()
+                .get("targetTimestamp")
+                .getAsDouble();
+        var offset =
+            json.getAsJsonObject()
+                .get("data")
+                .getAsJsonObject()
+                .get("offset")
+                .getAsJsonObject()
+                .get("val")
+                .getAsDouble();
+        var event =
+            json.getAsJsonObject()
+                .get("event")
+                .getAsJsonObject()
+                .get("data")
+                .getAsJsonObject()
+                .get("event")
+                .getAsString();
+
+        return new EventMarker(targetTimestamp + offset, event);
+      } catch (IllegalStateException e) {
+        return new EventMarker(0, "");
+      }
+    }
+  }
+
   /** The timestamp of the event. */
   public final double timestamp;
 
@@ -42,5 +87,15 @@ public class EventMarker {
    */
   public EventMarker offsetBy(double timestampOffset) {
     return new EventMarker(timestamp + timestampOffset, event);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof EventMarker)) {
+      return false;
+    }
+
+    var other = (EventMarker) obj;
+    return this.timestamp == other.timestamp && this.event.equals(other.event);
   }
 }

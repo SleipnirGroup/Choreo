@@ -74,11 +74,13 @@ export interface Waypoint<T extends ExprOrNumber> {
   overrideIntervals: boolean;
 }
 
-export type WaypointID = number | "first" | "last";
+export type WaypointIDX = number | "first" | "last";
+
+export type WaypointUUID = "first" | "last" | { uuid: string };
 
 export interface Constraint {
-  from: WaypointID;
-  to?: WaypointID;
+  from: WaypointIDX;
+  to?: WaypointIDX;
   data: ConstraintData;
   enabled: boolean;
 }
@@ -135,20 +137,20 @@ export interface Trajectory {
   params: ChoreoPath<Expr>;
   snapshot: ChoreoPath<number>;
   trajectory: Output;
-  events: EventMarker[];
-  pplibCommands: PplibCommandMarker<number>[];
+  events: EventMarker<ChoreolibEvent>[];
+  pplibCommands: EventMarker<PplibCommand>[];
 }
 
-export type GroupCommand<T extends ExprOrNumber> = {
+export type GroupCommand = {
   type: "deadline" | "parallel" | "race" | "sequential";
   data: {
-    commands: PplibCommand<T>[];
+    commands: PplibCommand[];
   };
 };
-export type WaitCommand<T extends ExprOrNumber> = {
+export type WaitCommand = {
   type: "wait";
   data: {
-    waitTime: T;
+    waitTime: Expr;
   };
 };
 export type NamedCommand = {
@@ -157,22 +159,25 @@ export type NamedCommand = {
     name: string | null;
   };
 };
-export type PplibCommand<T extends ExprOrNumber> =
-  | WaitCommand<T>
-  | GroupCommand<T>
-  | NamedCommand;
-export interface PplibCommandMarker<T extends ExprOrNumber> {
+export type ChoreolibEvent = {
+  type: "choreolib";
+  data: {
+    event: string | null;
+  };
+};
+
+export type EventMarkerData = {
   name: string;
-  target: WaypointID;
-  trajectoryTargetIndex: number | undefined;
-  offset: T;
+  target: WaypointIDX | undefined;
+  offset: Expr;
   /**
    * The timestamp along the trajectory of the waypoint this marker targeted on the last generation.
    */
   targetTimestamp: number | undefined;
-  command: PplibCommand<T>;
-}
-export interface EventMarker {
-  event: string;
-  timestamp: number;
+};
+export type PplibCommand = WaitCommand | GroupCommand | NamedCommand;
+export type Command = PplibCommand | ChoreolibEvent;
+export interface EventMarker<C extends Command> {
+  data: EventMarkerData;
+  event: C;
 }

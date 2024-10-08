@@ -277,4 +277,17 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
                 .map(e -> e.offsetBy(-startTime))
                 .toList()));
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof Trajectory<?>)) {
+      return false;
+    }
+
+    var other = (Trajectory<?>) obj;
+    return this.name.equals(other.name)
+        && this.samples.equals(other.samples)
+        && this.splits.equals(other.splits)
+        && this.events.equals(other.events);
+  }
 }

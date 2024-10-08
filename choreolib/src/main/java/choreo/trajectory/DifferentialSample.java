@@ -225,4 +225,23 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
       bb.putDouble(value.fr);
     }
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof DifferentialSample)) {
+      return false;
+    }
+
+    var other = (DifferentialSample) obj;
+    return this.t == other.t
+        && this.x == other.x
+        && this.y == other.y
+        && this.heading == other.heading
+        && this.vl == other.vl
+        && this.vr == other.vr
+        && this.al == other.al
+        && this.ar == other.ar
+        && this.fl == other.fl
+        && this.fr == other.fr;
+  }
 }
