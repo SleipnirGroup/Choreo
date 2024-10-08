@@ -41,7 +41,7 @@ def load_differential_trajectory(trajectory_name: str) -> DifferentialTrajectory
     events = [
         EventMarker(
             float(event["data"]["offset"]["val"])
-            + float(event["data"]["target_timestamp"]),
+            + float(event["data"]["targetTimestamp"]),
             event["event"]["data"]["event"],
         )
         for event in data["events"]

@@ -16,6 +16,7 @@ import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -38,7 +39,7 @@ import java.util.function.Supplier;
 
 /** Utilities to load and follow Choreo Trajectories */
 public final class Choreo {
-  private static final Gson GSON = new Gson();
+  private static final Gson GSON = new GsonBuilder().registerTypeAdapter(EventMarker.class, new EventMarker.Deserializer()).create();
   private static final String TRAJECTORY_FILE_EXTENSION = ".traj";
   private static final String SPEC_VERSION = "v2025.0.0";
 
