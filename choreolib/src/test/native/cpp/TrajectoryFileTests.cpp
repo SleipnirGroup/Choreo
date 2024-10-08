@@ -46,7 +46,9 @@ constexpr std::string_view swerveTrajectoryString =
   "splits":[],
   "forcesAvailable":false
  },
- "events":[],
+ "events":[
+  {"data":{"name":"Marker", "target":0, "targetTimestamp":0, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"choreolib", "data":{"event":"testEvent"}}}
+ ],
  "pplib_commands":[]
 })";
 
@@ -79,7 +81,7 @@ const Trajectory<SwerveSample> correctSwerveTrajectory{
       {100_N, 200_N, 300_N, 400_N},
       {-100_N, -200_N, -300_N, -400_N}}},
     {},
-    {}};
+    {{0_s, "testEvent"}}};
 
 TEST(TrajectoryFileTest, DeserializeSwerveTrajectory) {
   try {
