@@ -6,8 +6,7 @@ import {
 import { ConstraintKey } from "./ConstraintDefinitions";
 import { Env } from "./DocumentManager";
 import { IHolonomicWaypointStore } from "./HolonomicWaypointStore";
-import { IChoreoPathStore } from "./path/ChoreoPathStore";
-import { IHolonomicPathStore } from "./path/HolonomicPathStore";
+import { findUUIDIndex, getByWaypointID } from "./path/utils";
 
 export const WaypointScope = types.union(
   types.literal("first"),
@@ -45,39 +44,39 @@ export const ConstraintStore = types
         return false;
       }
       return self.uuid === getEnv<Env>(self).selectedSidebar();
-    },
-    getPath(): IHolonomicPathStore {
-      const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
-        getParent<IChoreoPathStore>(getParent<IConstraintStore[]>(self))
-      );
-      return path;
     }
   }))
   .views((self) => ({
-    getStartWaypoint(): IHolonomicWaypointStore | undefined {
+    getStartWaypoint(
+      points: IHolonomicWaypointStore[]
+    ): IHolonomicWaypointStore | undefined {
       const startScope = self.from;
-      return self.getPath().params.getByWaypointID(startScope);
+      return getByWaypointID(startScope, points);
     },
-    getEndWaypoint(): IHolonomicWaypointStore | undefined {
+    getEndWaypoint(
+      points: IHolonomicWaypointStore[]
+    ): IHolonomicWaypointStore | undefined {
       const scope = self.to ?? self.from;
-      return self.getPath().params.getByWaypointID(scope);
+      return getByWaypointID(scope, points);
     }
   }))
   .views((self) => ({
-    getStartWaypointIndex(): number | undefined {
-      const waypoint = self.getStartWaypoint();
+    getStartWaypointIndex(
+      points: IHolonomicWaypointStore[]
+    ): number | undefined {
+      const waypoint = self.getStartWaypoint(points);
       if (waypoint === undefined) return undefined;
-      return self.getPath().params.findUUIDIndex(waypoint.uuid);
+      return findUUIDIndex(waypoint.uuid, points);
     },
-    getEndWaypointIndex(): number | undefined {
-      const waypoint = self.getEndWaypoint();
+    getEndWaypointIndex(points: IHolonomicWaypointStore[]): number | undefined {
+      const waypoint = self.getEndWaypoint(points);
       if (waypoint === undefined) return undefined;
-      return self.getPath().params.findUUIDIndex(waypoint.uuid);
+      return findUUIDIndex(waypoint.uuid, points);
     },
 
-    get issues() {
-      const startWaypoint = self.getStartWaypoint();
-      const endWaypoint = self.getEndWaypoint();
+    issues(points: IHolonomicWaypointStore[]) {
+      const startWaypoint = self.getStartWaypoint(points);
+      const endWaypoint = self.getEndWaypoint(points);
       const issueText = [];
 
       if (self.to !== undefined) {

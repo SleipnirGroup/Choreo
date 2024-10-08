@@ -48,11 +48,12 @@ class FieldEventMarkers extends Component<Props, State> {
 
   render() {
     const path = doc.pathlist.activePath;
-    return path.trajectory.markers.flatMap((marker) => {
-      if (marker.timestamp === undefined) {
+    const markers = path.markers;
+    return markers.flatMap((marker) => {
+      if (marker.data.timestamp === undefined) {
         return [];
       }
-      const marked = sample(marker.timestamp, path.trajectory.fullTrajectory);
+      const marked = sample(marker.data.timestamp, path.trajectory.samples);
       return (
         <FieldEventMarker
           key={marker.uuid}

@@ -315,4 +315,25 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
       }
     }
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof SwerveSample)) {
+      return false;
+    }
+
+    var other = (SwerveSample) obj;
+    return this.t == other.t
+        && this.x == other.x
+        && this.y == other.y
+        && this.heading == other.heading
+        && this.vx == other.vx
+        && this.vy == other.vy
+        && this.omega == other.omega
+        && this.ax == other.ax
+        && this.ay == other.ay
+        && this.alpha == other.alpha
+        && Arrays.equals(this.fx, other.fx)
+        && Arrays.equals(this.fy, other.fy);
+  }
 }

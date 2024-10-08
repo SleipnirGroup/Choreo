@@ -68,33 +68,31 @@ class PathAnimationSlider extends Component<Props, State> {
                     ];
                   })
                   .concat(
-                    activePath.trajectory.markers.flatMap(
-                      (marker: IEventMarkerStore) => {
-                        if (marker.timestamp === undefined) {
-                          return [];
-                        }
-                        return {
-                          value: marker.timestamp,
-                          label: (
-                            <span>
-                              <Room
-                                htmlColor={
-                                  marker.selected
-                                    ? "var(--select-yellow)"
-                                    : "white"
-                                }
-                                stroke="black"
-                                strokeWidth="0.5"
-                                fontSize="large"
-                                style={{
-                                  transform: "translateY(calc(-3px - 50%))"
-                                }}
-                              ></Room>
-                            </span>
-                          )
-                        };
+                    activePath.markers.flatMap((marker: IEventMarkerStore) => {
+                      if (marker.data.timestamp === undefined) {
+                        return [];
                       }
-                    )
+                      return {
+                        value: marker.data.timestamp,
+                        label: (
+                          <span>
+                            <Room
+                              htmlColor={
+                                marker.selected
+                                  ? "var(--select-yellow)"
+                                  : "white"
+                              }
+                              stroke="black"
+                              strokeWidth="0.5"
+                              fontSize="large"
+                              style={{
+                                transform: "translateY(calc(-3px - 50%))"
+                              }}
+                            ></Room>
+                          </span>
+                        )
+                      };
+                    })
                   )
               : false
           }

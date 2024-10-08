@@ -16,6 +16,7 @@ import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -38,7 +39,10 @@ import java.util.function.Supplier;
 
 /** Utilities to load and follow Choreo Trajectories */
 public final class Choreo {
-  private static final Gson GSON = new Gson();
+  private static final Gson GSON =
+      new GsonBuilder()
+          .registerTypeAdapter(EventMarker.class, new EventMarker.Deserializer())
+          .create();
   private static final String TRAJECTORY_FILE_EXTENSION = ".traj";
   private static final String SPEC_VERSION = "v2025.0.0";
 
@@ -146,8 +150,7 @@ public final class Choreo {
    * Load a trajectory from a string.
    *
    * @param trajectoryJsonString The JSON string.
-   * @param trajectoryName The path name in Choreo, which matches the file name in the deploy
-   *     directory, file extension is optional.
+   * @param projectFile The project file.
    * @return The loaded trajectory, or `empty std::optional` if the trajectory could not be loaded.
    */
   static Trajectory<? extends TrajectorySample<?>> loadTrajectoryString(
