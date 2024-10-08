@@ -2,14 +2,11 @@
 
 package choreo.trajectory;
 
-import java.lang.reflect.Type;
-
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
-
-import choreo.trajectory.ProjectFile.Expression;
+import java.lang.reflect.Type;
 
 // /** A marker for an event in a trajectory. */
 // public record EventMarker(double timestamp, String event) {
@@ -28,29 +25,39 @@ import choreo.trajectory.ProjectFile.Expression;
 public class EventMarker {
   /** GSON deserializer for choreolib event markers */
   public static class Deserializer implements JsonDeserializer<EventMarker> {
-  public EventMarker deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-      throws JsonParseException {
-    try {
-      var targetTimestamp = json.getAsJsonObject()
-      .get("data").getAsJsonObject()
-      .get("targetTimestamp").getAsDouble();
-    var offset = json.getAsJsonObject()
-      .get("data").getAsJsonObject()
-      .get("offset").getAsJsonObject()
-      .get("val").getAsDouble();
-    var event = json.getAsJsonObject()
-    .get("event").getAsJsonObject()
-    .get("data").getAsJsonObject()
-    .get("event").getAsString();
+    public EventMarker deserialize(
+        JsonElement json, Type typeOfT, JsonDeserializationContext context)
+        throws JsonParseException {
+      try {
+        var targetTimestamp =
+            json.getAsJsonObject()
+                .get("data")
+                .getAsJsonObject()
+                .get("targetTimestamp")
+                .getAsDouble();
+        var offset =
+            json.getAsJsonObject()
+                .get("data")
+                .getAsJsonObject()
+                .get("offset")
+                .getAsJsonObject()
+                .get("val")
+                .getAsDouble();
+        var event =
+            json.getAsJsonObject()
+                .get("event")
+                .getAsJsonObject()
+                .get("data")
+                .getAsJsonObject()
+                .get("event")
+                .getAsString();
 
-    return new EventMarker(targetTimestamp + offset, event);
+        return new EventMarker(targetTimestamp + offset, event);
+      } catch (IllegalStateException e) {
+        return new EventMarker(0, "");
+      }
     }
-    catch (IllegalStateException e) {
-      return new EventMarker(0, "");
-    }
-
   }
-}
 
   /** The timestamp of the event. */
   public final double timestamp;

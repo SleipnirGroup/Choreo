@@ -6,7 +6,6 @@ import choreo.trajectory.EventMarker;
 import choreo.trajectory.ProjectFile;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import org.junit.jupiter.api.Test;
 
 // import static org.junit.jupiter.api.Assertions.*;
@@ -125,7 +124,10 @@ public class ChoreoTests {
           + " \"generationFeatures\": []"
           + "}";
 
-  private static final Gson GSON = new GsonBuilder().registerTypeAdapter(EventMarker.class, new EventMarker.Deserializer()).create();
+  private static final Gson GSON =
+      new GsonBuilder()
+          .registerTypeAdapter(EventMarker.class, new EventMarker.Deserializer())
+          .create();
 
   @Test
   public void testChoreo() {

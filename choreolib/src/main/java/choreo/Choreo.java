@@ -39,7 +39,10 @@ import java.util.function.Supplier;
 
 /** Utilities to load and follow Choreo Trajectories */
 public final class Choreo {
-  private static final Gson GSON = new GsonBuilder().registerTypeAdapter(EventMarker.class, new EventMarker.Deserializer()).create();
+  private static final Gson GSON =
+      new GsonBuilder()
+          .registerTypeAdapter(EventMarker.class, new EventMarker.Deserializer())
+          .create();
   private static final String TRAJECTORY_FILE_EXTENSION = ".traj";
   private static final String SPEC_VERSION = "v2025.0.0";
 
