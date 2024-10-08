@@ -88,4 +88,14 @@ public class EventMarker {
   public EventMarker offsetBy(double timestampOffset) {
     return new EventMarker(timestamp + timestampOffset, event);
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof EventMarker)) {
+      return false;
+    }
+
+    var other = (EventMarker) obj;
+    return this.timestamp == other.timestamp && this.event.equals(other.event);
+  }
 }
