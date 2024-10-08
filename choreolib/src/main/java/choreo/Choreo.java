@@ -92,15 +92,6 @@ public final class Choreo {
   }
 
   /**
-   * This interface exists as a type alias. A ControlFunction has a signature of ({@link Pose2d},
-   * {@link SampleType}).
-   *
-   * @param <SampleType> DifferentialSample or SwerveSample.
-   */
-  public interface ControlFunction<SampleType extends TrajectorySample<SampleType>>
-      extends BiConsumer<Pose2d, SampleType> {}
-
-  /**
    * This interface exists as a type alias. A TrajectoryLogger has a signature of ({@link
    * Trajectory}, {@link Boolean})-&gt;void, where the function consumes a trajectory and a boolean
    * indicating whether the trajectory is starting or finishing.
@@ -291,7 +282,7 @@ public final class Choreo {
    *     Command}s.
    * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
    *     robot.
-   * @param controller A {@link ControlFunction} to follow the current {@link Trajectory}&lt;{@link
+   * @param controller A {@link BiConsumer} to follow the current {@link Trajectory}&lt;{@link
    *     SampleType}&gt;.
    * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
    *     while keeping the same coordinate system origin. This will be called every loop during the
@@ -304,7 +295,7 @@ public final class Choreo {
   public static <SampleType extends TrajectorySample<SampleType>> AutoFactory createAutoFactory(
       Subsystem driveSubsystem,
       Supplier<Pose2d> poseSupplier,
-      ControlFunction<SampleType> controller,
+      BiConsumer<Pose2d, SampleType> controller,
       BooleanSupplier mirrorTrajectory,
       AutoBindings bindings) {
     return new AutoFactory(
@@ -324,7 +315,7 @@ public final class Choreo {
    *     Command}s.
    * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
    *     robot.
-   * @param controller A {@link ControlFunction} to follow the current {@link Trajectory}&lt;{@link
+   * @param controller A {@link BiConsumer} to follow the current {@link Trajectory}&lt;{@link
    *     SampleType}&gt;.
    * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
    *     while keeping the same coordinate system origin. This will be called every loop during the
@@ -339,7 +330,7 @@ public final class Choreo {
   public static <SampleType extends TrajectorySample<SampleType>> AutoFactory createAutoFactory(
       Subsystem driveSubsystem,
       Supplier<Pose2d> poseSupplier,
-      ControlFunction<SampleType> controller,
+      BiConsumer<Pose2d, SampleType> controller,
       BooleanSupplier mirrorTrajectory,
       AutoBindings bindings,
       TrajectoryLogger<SampleType> trajectoryLogger) {

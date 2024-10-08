@@ -40,18 +40,17 @@ inline std::vector<double> Linspace(double startValue, double endValue,
 }
 
 inline double InputModulus(double input, double max, double min) {
-  double val = input;
   const double modulus = max - min;
 
   // Wrap input if it's above the maximum input
-  const double numMax = std::trunc((val - min) / modulus);
-  val -= numMax * modulus;
+  const double numMax = std::trunc((input - min) / modulus);
+  input -= numMax * modulus;
 
   // Wrap input if it's below the minimum input
-  const double numMin = std::trunc((val - max) / modulus);
-  val += numMin * modulus;
+  const double numMin = std::trunc((input - max) / modulus);
+  input -= numMin * modulus;
 
-  return val;
+  return input;
 }
 
 inline double AngleModulus(double radians) {
@@ -61,6 +60,7 @@ inline double AngleModulus(double radians) {
 inline std::vector<double> AngleLinspace(double startValue, double endValue,
                                          size_t numSamples) {
   auto diff = endValue - startValue;
+
   // angleModulus
   diff = AngleModulus(diff);
 

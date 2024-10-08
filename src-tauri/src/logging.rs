@@ -106,7 +106,7 @@ where
         _ctx: &tracing_subscriber::fmt::FmtContext<'_, S, N>,
         mut writer: tracing_subscriber::fmt::format::Writer<'_>,
         event: &tracing::Event<'_>,
-    ) -> core::fmt::Result {
+    ) -> std::fmt::Result {
         let meta = event.metadata();
 
         let mut visitor = MetaVisitor::default();
@@ -220,7 +220,7 @@ where
         _ctx: &tracing_subscriber::fmt::FmtContext<'_, S, N>,
         mut writer: tracing_subscriber::fmt::format::Writer<'_>,
         event: &tracing::Event<'_>,
-    ) -> core::fmt::Result {
+    ) -> std::fmt::Result {
         let meta = event.metadata();
 
         let mut visitor = MetaVisitor::default();

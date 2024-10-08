@@ -2,7 +2,6 @@
 
 package choreo.auto;
 
-import choreo.Choreo.ControlFunction;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoFactory.AutoBindings;
 import choreo.trajectory.DifferentialSample;
@@ -21,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
@@ -43,7 +43,7 @@ public class AutoTrajectory {
   private final Trajectory<? extends TrajectorySample<?>> trajectory;
   private final TrajectoryLogger<? extends TrajectorySample<?>> trajectoryLogger;
   private final Supplier<Pose2d> poseSupplier;
-  private final ControlFunction<? extends TrajectorySample<?>> controller;
+  private final BiConsumer<Pose2d, ? extends TrajectorySample<?>> controller;
   private final BooleanSupplier mirrorTrajectory;
   private final Timer timer = new Timer();
   private final Subsystem driveSubsystem;
@@ -80,7 +80,7 @@ public class AutoTrajectory {
       String name,
       Trajectory<SampleType> trajectory,
       Supplier<Pose2d> poseSupplier,
-      ControlFunction<SampleType> controller,
+      BiConsumer<Pose2d, SampleType> controller,
       BooleanSupplier mirrorTrajectory,
       Optional<TrajectoryLogger<SampleType>> trajectoryLogger,
       Subsystem driveSubsystem,
@@ -155,13 +155,13 @@ public class AutoTrajectory {
         this.trajectory.sampleAt(timeIntoTrajectory(), mirrorTrajectory.getAsBoolean());
 
     if (sample instanceof SwerveSample) {
-      ControlFunction<SwerveSample> swerveController =
-          (ControlFunction<SwerveSample>) this.controller;
+      BiConsumer<Pose2d, SwerveSample> swerveController =
+          (BiConsumer<Pose2d, SwerveSample>) this.controller;
       SwerveSample swerveSample = (SwerveSample) sample;
       swerveController.accept(poseSupplier.get(), swerveSample);
     } else if (sample instanceof DifferentialSample) {
-      ControlFunction<DifferentialSample> differentialController =
-          (ControlFunction<DifferentialSample>) this.controller;
+      BiConsumer<Pose2d, DifferentialSample> differentialController =
+          (BiConsumer<Pose2d, DifferentialSample>) this.controller;
       DifferentialSample differentialSample = (DifferentialSample) sample;
       differentialController.accept(poseSupplier.get(), differentialSample);
     }
@@ -173,13 +173,13 @@ public class AutoTrajectory {
     timer.stop();
     if (interrupted) {
       if (currentSample instanceof SwerveSample) {
-        ControlFunction<SwerveSample> swerveController =
-            (ControlFunction<SwerveSample>) this.controller;
+        BiConsumer<Pose2d, SwerveSample> swerveController =
+            (BiConsumer<Pose2d, SwerveSample>) this.controller;
         SwerveSample swerveSample = (SwerveSample) currentSample;
         swerveController.accept(currentSample.getPose(), swerveSample);
       } else if (currentSample instanceof DifferentialSample) {
-        ControlFunction<DifferentialSample> differentialController =
-            (ControlFunction<DifferentialSample>) this.controller;
+        BiConsumer<Pose2d, DifferentialSample> differentialController =
+            (BiConsumer<Pose2d, DifferentialSample>) this.controller;
         DifferentialSample differentialSample = (DifferentialSample) currentSample;
         differentialController.accept(currentSample.getPose(), differentialSample);
       }
@@ -187,13 +187,13 @@ public class AutoTrajectory {
       TrajectorySample<?> sample = this.trajectory.getFinalSample();
 
       if (sample instanceof SwerveSample) {
-        ControlFunction<SwerveSample> swerveController =
-            (ControlFunction<SwerveSample>) this.controller;
+        BiConsumer<Pose2d, SwerveSample> swerveController =
+            (BiConsumer<Pose2d, SwerveSample>) this.controller;
         SwerveSample swerveSample = (SwerveSample) sample;
         swerveController.accept(poseSupplier.get(), swerveSample);
       } else if (sample instanceof DifferentialSample) {
-        ControlFunction<DifferentialSample> differentialController =
-            (ControlFunction<DifferentialSample>) this.controller;
+        BiConsumer<Pose2d, DifferentialSample> differentialController =
+            (BiConsumer<Pose2d, DifferentialSample>) this.controller;
         DifferentialSample differentialSample = (DifferentialSample) sample;
         differentialController.accept(poseSupplier.get(), differentialSample);
       }

@@ -13,7 +13,6 @@ import {
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import LocalStorageKeys from "../util/LocalStorageKeys";
-import { ObjectTyped } from "../util/ObjectTyped";
 import { safeGetIdentifier } from "../util/mobxutils";
 import {
   PplibCommand,
@@ -135,7 +134,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
     });
   }
 
-  const keys = ObjectTyped.keys(ConstraintDefinitions);
+  const keys = Object.keys(ConstraintDefinitions) as ConstraintKey[];
   const constraintDataConstructors = Object.fromEntries(
     keys.map(
       <K extends ConstraintKey>(key: K) =>
