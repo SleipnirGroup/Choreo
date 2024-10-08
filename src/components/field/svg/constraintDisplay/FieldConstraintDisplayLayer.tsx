@@ -11,6 +11,7 @@ import KeepInRectangleOverlay from "./KeepInRectangleOverlay";
 import PointAtOverlay from "./PointAtOverlay";
 import KeepOutCircleOverlay from "./KeepOutCircleOverlay";
 import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
+import KeepInLaneOverlay from "./KeepInLaneOverlay";
 
 export type OverlayProps<K extends keyof ConstraintDataTypeMap> = {
   data: IConstraintStoreKeyed<K>;
@@ -42,6 +43,13 @@ const overlays = {
       end={props.end}
       lineColor={props.lineColor}
     ></KeepInRectangleOverlay>
+  ),
+  KeepInLane: (props: OverlayProps<"KeepInLane">) => (
+    <KeepInLaneOverlay
+      data={props.data.data}
+      start={props.start}
+      end={props.end}
+    ></KeepInLaneOverlay>
   ),
   KeepOutCircle: (props: OverlayProps<"KeepOutCircle">) => (
     <KeepOutCircleOverlay

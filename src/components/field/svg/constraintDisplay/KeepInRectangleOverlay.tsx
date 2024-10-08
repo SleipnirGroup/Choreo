@@ -117,7 +117,7 @@ class KeepInRectangleOverlay extends Component<
     const data = this.props.data;
 
     data.x.set(data.serialize.props.x.val + event.dx);
-    data.y.set(this.props.data.serialize.props.y.val + event.dy);
+    data.y.set(data.serialize.props.y.val + event.dy);
   }
 
   fixWidthHeight() {

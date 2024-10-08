@@ -3,7 +3,6 @@
 package choreo.auto;
 
 import choreo.Choreo;
-import choreo.Choreo.ControlFunction;
 import choreo.Choreo.TrajectoryCache;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.trajectory.SwerveSample;
@@ -20,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
@@ -124,7 +124,7 @@ public class AutoFactory {
 
   private final TrajectoryCache trajectoryCache = new TrajectoryCache();
   private final Supplier<Pose2d> poseSupplier;
-  private final ControlFunction<? extends TrajectorySample<?>> controller;
+  private final BiConsumer<Pose2d, ? extends TrajectorySample<?>> controller;
   private final BooleanSupplier mirrorTrajectory;
   private final Subsystem driveSubsystem;
   private final AutoBindings bindings = new AutoBindings();
@@ -144,7 +144,7 @@ public class AutoFactory {
    */
   public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
       Supplier<Pose2d> poseSupplier,
-      ControlFunction<SampleType> controller,
+      BiConsumer<Pose2d, SampleType> controller,
       BooleanSupplier mirrorTrajectory,
       Subsystem driveSubsystem,
       AutoBindings bindings,
@@ -241,8 +241,8 @@ public class AutoFactory {
       Trajectory<SampleType> trajectory, AutoLoop loop) {
     // type solidify everything
     final Trajectory<SampleType> solidTrajectory = trajectory;
-    final ControlFunction<SampleType> solidController =
-        (ControlFunction<SampleType>) this.controller;
+    final BiConsumer<Pose2d, SampleType> solidController =
+        (BiConsumer<Pose2d, SampleType>) this.controller;
     final Optional<TrajectoryLogger<SampleType>> solidLogger =
         this.trajectoryLogger.map(logger -> (TrajectoryLogger<SampleType>) logger);
     return new AutoTrajectory(

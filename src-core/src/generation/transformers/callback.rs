@@ -7,13 +7,6 @@ use super::{DifferentialGenerationTransformer, FeatureLockedTransformer, Generat
 
 pub struct CallbackSetter;
 
-impl CallbackSetter {
-    // separately implement initialize to share between differential and swerve
-    fn initialize(_: &GenerationContext) -> FeatureLockedTransformer<Self> {
-        FeatureLockedTransformer::always(Self)
-    }
-}
-
 fn swerve_status_callback(trajectory: SwerveTrajectory, handle: i64) {
     let tx_opt = PROGRESS_SENDER_LOCK.get();
     if let Some(tx) = tx_opt {
@@ -31,19 +24,21 @@ fn differential_status_callback(trajectory: DifferentialTrajectory, handle: i64)
 }
 
 impl SwerveGenerationTransformer for CallbackSetter {
-    fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
-        Self::initialize(context)
+    fn initialize(_: &GenerationContext) -> FeatureLockedTransformer<Self> {
+        FeatureLockedTransformer::always(Self)
     }
-    fn transform(&self, builder: &mut trajoptlib::SwervePathBuilder) {
-        builder.add_progress_callback(swerve_status_callback);
+
+    fn transform(&self, generator: &mut trajoptlib::SwerveTrajectoryGenerator) {
+        generator.add_callback(swerve_status_callback);
     }
 }
 
 impl DifferentialGenerationTransformer for CallbackSetter {
-    fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
-        Self::initialize(context)
+    fn initialize(_: &GenerationContext) -> FeatureLockedTransformer<Self> {
+        FeatureLockedTransformer::always(Self)
     }
-    fn transform(&self, builder: &mut trajoptlib::DifferentialPathBuilder) {
-        builder.add_progress_callback(differential_status_callback);
+
+    fn transform(&self, generator: &mut trajoptlib::DifferentialTrajectoryGenerator) {
+        generator.add_callback(differential_status_callback);
     }
 }
