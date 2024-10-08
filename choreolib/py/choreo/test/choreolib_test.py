@@ -92,8 +92,6 @@ def test_basic_parse():
 
 def test_deserialize_swerve_trajectory():
     trajectory = choreo.load_swerve_trajectory_string(TRAJECTORY)
-    print("expected=", CORRECT_SWERVE_TRAJECTORY)
-    print("actual=", trajectory)
     assert trajectory == CORRECT_SWERVE_TRAJECTORY
 
 
