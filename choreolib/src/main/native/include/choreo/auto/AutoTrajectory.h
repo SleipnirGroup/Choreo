@@ -67,7 +67,16 @@ class AutoTrajectory {
   AutoTrajectory(const AutoTrajectory&) = delete;
   AutoTrajectory& operator=(const AutoTrajectory&) = delete;
 
+  /**
+   * The move constructor for an auto trajectory
+   */
   AutoTrajectory(AutoTrajectory&&) = default;
+
+  /**
+   * The move assignment operator for an auto trajectory
+   *
+   * @return the moved trajectory
+   */
   AutoTrajectory& operator=(AutoTrajectory&&) = default;
 
   /**

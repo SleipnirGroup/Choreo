@@ -28,6 +28,8 @@ class AutoBindings {
 
   /**
    * The default move assignment operator
+   *
+   * @return the moved autobindings
    */
   AutoBindings& operator=(AutoBindings&&) = default;
 
