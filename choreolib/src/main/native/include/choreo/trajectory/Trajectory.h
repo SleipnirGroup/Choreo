@@ -16,7 +16,6 @@
 #include "choreo/trajectory/EventMarker.h"
 #include "choreo/trajectory/SwerveSample.h"
 #include "choreo/trajectory/TrajectorySample.h"
-#include "choreo/util/AllianceFlipperUtil.h"
 
 namespace choreo {
 
@@ -55,7 +54,7 @@ class Trajectory {
    *
    * @return The first sample in the trajectory.
    */
-  std::optional<SampleType> GetInitialState() {
+  std::optional<SampleType> GetInitialState() const {
     if (samples.size() == 0) {
       return {};
     }
@@ -69,7 +68,7 @@ class Trajectory {
    *
    * @return The last sample in the trajectory.
    */
-  std::optional<SampleType> GetFinalSample() {
+  std::optional<SampleType> GetFinalSample() const {
     if (samples.size() == 0) {
       return {};
     }
@@ -89,7 +88,7 @@ class Trajectory {
    */
   template <int Year = util::kDefaultYear>
   std::optional<SampleType> SampleAt(units::second_t timestamp,
-                                     bool mirrorForRedAlliance = false) {
+                                     bool mirrorForRedAlliance = false) const {
     std::optional<SampleType> state{};
     if (samples.size() == 0) {
       return {};
@@ -116,7 +115,7 @@ class Trajectory {
    * @return The first Pose in the trajectory.
    */
   template <int Year = util::kDefaultYear>
-  std::optional<frc::Pose2d> GetInitialPose(bool mirrorForRedAlliance) {
+  std::optional<frc::Pose2d> GetInitialPose(bool mirrorForRedAlliance) const {
     if (samples.size() == 0) {
       return {};
     }
@@ -136,7 +135,7 @@ class Trajectory {
    * @return The last Pose in the trajectory.
    */
   template <int Year = util::kDefaultYear>
-  std::optional<frc::Pose2d> GetFinalPose(bool mirrorForRedAlliance) {
+  std::optional<frc::Pose2d> GetFinalPose(bool mirrorForRedAlliance) const {
     if (samples.size() == 0) {
       return {};
     }
@@ -152,7 +151,7 @@ class Trajectory {
    * @return The total time the trajectory will take to follow, if empty will
    * return 0 seconds.
    */
-  units::second_t GetTotalTime() {
+  units::second_t GetTotalTime() const {
     if (samples.size() == 0) {
       return 0_s;
     }
@@ -164,7 +163,7 @@ class Trajectory {
    *
    * @return the vector of poses corresponding to the trajectory.
    */
-  std::vector<frc::Pose2d> GetPoses() {
+  std::vector<frc::Pose2d> GetPoses() const {
     std::vector<frc::Pose2d> poses;
     for (const auto& sample : samples) {
       poses.push_back(sample.GetPose());
@@ -179,7 +178,7 @@ class Trajectory {
    * @return this trajectory, mirrored across the field midline.
    */
   template <int Year = util::kDefaultYear>
-  Trajectory<SampleType> Flipped() {
+  Trajectory<SampleType> Flipped() const {
     std::vector<SampleType> flippedStates;
     for (const auto& state : samples) {
       flippedStates.push_back(state.template Flipped<Year>());
@@ -194,7 +193,7 @@ class Trajectory {
    * @return A vector of all events with the given name in the trajectory, if no
    * events are found, an empty vector is returned.
    */
-  std::vector<EventMarker> GetEvents(std::string_view eventName) {
+  std::vector<EventMarker> GetEvents(std::string_view eventName) const {
     std::vector<EventMarker> matchingEvents;
     for (const auto& event : events) {
       if (event.event == eventName) {
@@ -290,7 +289,7 @@ class Trajectory {
   std::vector<EventMarker> events;
 
  private:
-  std::optional<SampleType> SampleInternal(units::second_t timestamp) {
+  std::optional<SampleType> SampleInternal(units::second_t timestamp) const {
     if (timestamp < samples[0].GetTimestamp()) {
       return GetInitialState();
     }
