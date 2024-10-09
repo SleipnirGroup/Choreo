@@ -3,11 +3,17 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
-#include "choreo/auto/AutoTrajectory.h"
+#include <frc/DriverStation.h>
+#include <frc/event/EventLoop.h>
+#include <frc2/command/Commands.h>
+#include <frc2/command/button/Trigger.h>
+
+#include "choreo/trajectory/TrajectorySample.h"
+#include "choreo/util/AllianceFlipperUtil.h"
 
 namespace choreo {
 
@@ -20,7 +26,7 @@ namespace choreo {
  * @tparam SampleType The type of samples in the trajectory.
  * @tparam The field year (default: the current year).
  */
-template <choreo::TrajectorySample SampleType, int Year>
+template <choreo::TrajectorySample SampleType, int Year = util::kDefaultYear>
 class AutoLoop {
  public:
   /**
@@ -30,7 +36,7 @@ class AutoLoop {
    * @see AutoFactory#newLoop Creating a loop from a AutoFactory
    */
   explicit AutoLoop(std::string_view name)
-      : loop{frc::EventLoop{}}, name{name} {}
+      : loop{std::make_unique<frc::EventLoop>()}, name{name} {}
 
   /**
    * A constructor to be used when inhereting this class to instantiate a custom
@@ -40,7 +46,7 @@ class AutoLoop {
    * @param loop The inner EventLoop
    */
   AutoLoop(std::string_view name, frc::EventLoop&& loop)
-      : loop{std::move(loop)}, name{name} {}
+      : loop{std::make_unique<frc::EventLoop>(std::move(loop))}, name{name} {}
 
   AutoLoop(const AutoLoop&) = delete;
   AutoLoop& operator=(const AutoLoop&) = delete;
@@ -83,7 +89,7 @@ class AutoLoop {
       isActive = false;
       return;
     }
-    loop.Poll();
+    loop->Poll();
     isActive = true;
   }
 
@@ -92,7 +98,7 @@ class AutoLoop {
    *
    * @return The event loop that this loop is using.
    */
-  frc::EventLoop* GetLoop() { return &loop; }
+  frc::EventLoop* GetLoop() { return loop.get(); }
 
   /**
    * Resets the loop. This can either be called on auto init or auto end to
@@ -152,7 +158,7 @@ class AutoLoop {
   }
 
  private:
-  frc::EventLoop loop;
+  std::unique_ptr<frc::EventLoop> loop;
   std::string name;
   bool isActive = false;
   bool isKilled = false;

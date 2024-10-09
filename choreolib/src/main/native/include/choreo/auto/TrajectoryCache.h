@@ -5,6 +5,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "choreo/Choreo.h"
+#include "choreo/trajectory/Trajectory.h"
 #include "choreo/trajectory/TrajectorySample.h"
 
 namespace choreo {

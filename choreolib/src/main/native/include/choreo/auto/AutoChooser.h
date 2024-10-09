@@ -21,6 +21,7 @@
 #include <frc2/command/Commands.h>
 
 #include "choreo/auto/AutoFactory.h"
+#include "choreo/util/AllianceFlipperUtil.h"
 #include "networktables/Topic.h"
 
 namespace choreo {
@@ -44,7 +45,7 @@ namespace choreo {
  * @tparam SampleType The type of samples in the trajectory.
  * @tparam Year The field year.
  */
-template <choreo::TrajectorySample SampleType, int Year>
+template <choreo::TrajectorySample SampleType, int Year = util::kDefaultYear>
 class AutoChooser {
  public:
   /**
@@ -96,7 +97,7 @@ class AutoChooser {
                         "Selected an auto that isn't an option!");
       }
       lastAutoRoutineName = selectedString;
-      lastAutoRoutine = autoRoutines[lastAutoRoutineName]();
+      lastAutoRoutine = autoRoutines[lastAutoRoutineName](factory);
       active.Set(lastAutoRoutineName);
     }
   }
@@ -116,10 +117,10 @@ class AutoChooser {
    * @param name The name of the auto routine.
    * @param generator The function that generates the auto routine.
    */
-  void AddAutoRoutine(std::string name,
-                      std::function<frc2::CommandPtr(
-                          const AutoFactory<SampleType, Year>& factory)>
-                          generator) {
+  void AddAutoRoutine(
+      std::string name,
+      std::function<frc2::CommandPtr(AutoFactory<SampleType, Year>& factory)>
+          generator) {
     autoRoutines[name] = generator;
 
     std::vector<std::string> keys;
@@ -151,9 +152,8 @@ class AutoChooser {
 
  private:
   static inline std::string NONE_NAME = "Nothing";
-  std::unordered_map<std::string,
-                     std::function<frc2::CommandPtr(
-                         const AutoFactory<SampleType, Year>& factory)>>
+  std::unordered_map<std::string, std::function<frc2::CommandPtr(
+                                      AutoFactory<SampleType, Year>& factory)>>
       autoRoutines;
 
   nt::StringEntry selected;

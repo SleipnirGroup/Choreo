@@ -21,10 +21,12 @@
 #include "choreo/auto/AutoBindings.h"
 #include "choreo/trajectory/Trajectory.h"
 #include "choreo/trajectory/TrajectorySample.h"
+#include "choreo/util/AllianceFlipperUtil.h"
 
 namespace choreo {
 
-using TrajectoryLogger = std::function<void(frc::Pose2d, bool)>;
+template <choreo::TrajectorySample SampleType>
+using TrajectoryLogger = std::function<void(Trajectory<SampleType>, bool)>;
 
 static constexpr units::meter_t DEFAULT_TOLERANCE = 3_in;
 
@@ -59,7 +61,7 @@ struct ScheduledEvent {
  * @tparam SampleType The type of samples in the trajectory.
  * @tparam Year The field year.
  */
-template <choreo::TrajectorySample SampleType, int Year>
+template <choreo::TrajectorySample SampleType, int Year = util::kDefaultYear>
 class AutoTrajectory {
  public:
   AutoTrajectory() = default;
@@ -238,10 +240,12 @@ class AutoTrajectory {
 
     return frc2::Trigger(loop,
                          [this, timeSinceStart, triggered = false]() mutable {
-                           if (!isActive)
+                           if (!isActive) {
                              return false;
-                           if (triggered)
+                           }
+                           if (triggered) {
                              return false;
+                           }
                            if (TimeIntoTraj() >= timeSinceStart) {
                              triggered = true;
                              return true;
@@ -338,7 +342,7 @@ class AutoTrajectory {
   void LogTrajectory(bool starting) {
     if (trajectoryLogger.has_value()) {
       trajectoryLogger.value()(
-          mirrorTrajectory() ? trajectory.Flipped<Year>() : trajectory,
+          mirrorTrajectory() ? trajectory.template Flipped<Year>() : trajectory,
           starting);
     }
   }
@@ -376,8 +380,8 @@ class AutoTrajectory {
   frc2::Trigger AtPose(frc::Pose2d pose, units::meter_t tolerance) {
     frc::Translation2d checkedTrans =
         mirrorTrajectory()
-            ? frc::Translation2d{16.5410515_m - pose.Translation().X(),
-                                 pose.Translation().Y}
+            ? frc::Translation2d{util::fieldLength - pose.Translation().X(),
+                                 pose.Translation().Y()}
             : pose.Translation();
     return frc2::Trigger{
         loop, [this, checkedTrans, tolerance] {
