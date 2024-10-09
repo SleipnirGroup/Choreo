@@ -72,6 +72,10 @@ jobs:
         working-directory: trajoptlib
       - run: cmake --install build --config RelWithDebInfo --prefix pkg
         working-directory: trajoptlib
+      - run: ./build/Swerve
+        working-directory: trajoptlib
+      - run: ./build/Differential
+        working-directory: trajoptlib
 
       - uses: actions/upload-artifact@v4
         with:
