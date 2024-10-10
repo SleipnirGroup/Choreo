@@ -47,9 +47,9 @@ class SidebarMarker extends Component<Props, State> {
           className={styles.SidebarLabel}
           style={{ display: "grid", gridTemplateColumns: "1fr auto auto" }}
         >
-          <Tooltip disableInteractive title={this.props.marker.data.name}>
+          <Tooltip disableInteractive title={this.props.marker.name}>
             <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
-              {this.props.marker.data.name}
+              {this.props.marker.name}
             </span>
           </Tooltip>
           {/* {!isInSameSegment || marker.data.getTargetIndex() === undefined ? (
@@ -63,11 +63,11 @@ class SidebarMarker extends Component<Props, State> {
             <span></span>
           )} */}
           <span>
-            <span>{this.waypointIDToText(this.props.marker.data.target)} </span>
+            <span>{this.waypointIDToText(this.props.marker.from.target)} </span>
             <span style={{}}>
               (
-              {(this.props.marker.data.offset.value < 0 ? "" : "+") +
-                this.props.marker.data.offset.value.toFixed(2) +
+              {(this.props.marker.from.offset.value < 0 ? "" : "+") +
+                this.props.marker.from.offset.value.toFixed(2) +
                 " s"}
               )
             </span>

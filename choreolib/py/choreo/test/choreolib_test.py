@@ -38,9 +38,8 @@ TRAJECTORY = """
   "forcesAvailable":false
  },
  "events":[
-  {"data":{"name":"Marker", "target":0, "targetTimestamp":0, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"choreolib", "data":{"event":"testEvent"}}}
- ],
- "pplib_commands":[]
+  {"name":"testEvent", "from":{"target":0, "targetTimestamp":0, "offset":{"exp":"0 s", "val":0.0}}, "event":null}
+ ]
 }
 """
 

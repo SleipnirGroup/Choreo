@@ -41,9 +41,9 @@ def load_differential_trajectory_string(
     splits = [int(split) for split in data["trajectory"]["splits"]]
     events = [
         EventMarker(
-            float(event["data"]["offset"]["val"])
-            + float(event["data"]["targetTimestamp"]),
-            event["event"]["data"]["event"],
+            float(event["from"]["offset"]["val"])
+            + float(event["from"]["targetTimestamp"]),
+            event["name"],
         )
         for event in data["events"]
     ]
@@ -96,9 +96,9 @@ def load_swerve_trajectory_string(trajectory_json_string: str) -> SwerveTrajecto
     splits = [int(split) for split in data["trajectory"]["splits"]]
     events = [
         EventMarker(
-            float(event["data"]["offset"]["val"])
-            + float(event["data"]["targetTimestamp"]),
-            event["event"]["data"]["event"],
+            float(event["from"]["offset"]["val"])
+            + float(event["from"]["targetTimestamp"]),
+            event["name"],
         )
         for event in data["events"]
     ]

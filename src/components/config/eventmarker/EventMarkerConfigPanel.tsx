@@ -68,7 +68,7 @@ class EventMarkerConfigPanel extends Component<Props, State> {
   }
   render() {
     const marker = this.props.marker;
-    const data = marker.data;
+    const data = marker.from;
     let startIndex = (data.getTargetIndex() ?? -0.5) + 1;
     const points = this.props.points;
     const pointcount = points.length;
@@ -125,8 +125,8 @@ class EventMarkerConfigPanel extends Component<Props, State> {
 
           <TextField
             inputRef={this.nameInputRef}
-            value={data.name}
-            onChange={(e) => data.setName(e.target.value)}
+            value={marker.name}
+            onChange={(e) => marker.setName(e.target.value)}
             variant="standard"
             size="small"
             placeholder="Marker Name"

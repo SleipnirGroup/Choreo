@@ -47,6 +47,6 @@
   "splits":[],
   "forcesAvailable":false
  },
- "events":[{"data":{"name":"Marker", "target":1, "targetTimestamp":1.3926677138988457, "offset":{"exp":"-1 s", "val":-1.0}}, "event":{"type":"choreolib", "data":{"event":"testEvent"}}}],
+ "events":[{"name":"testEvent", "from":{"target":1, "targetTimestamp":1.3926677138988457, "offset":{"exp":"-1 s", "val":-1.0}}, "event":null}],
  "pplib_commands":[]
 }

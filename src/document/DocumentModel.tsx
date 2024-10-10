@@ -170,7 +170,7 @@ export const DocumentStore = types
         });
 
       pathStore.markers.forEach((m) => {
-        m.data.setTrajectoryTargetIndex(m.data.getTargetIndex());
+        m.from.setTrajectoryTargetIndex(m.from.getTargetIndex());
       });
       pathStore.ui.setGenerating(true);
       const handle = pathStore.uuid
@@ -244,11 +244,11 @@ export const DocumentStore = types
               pathStore.trajectory.setSplits(result.trajectory.splits);
               pathStore.trajectory.setWaypoints(result.trajectory.waypoints);
               pathStore.markers.forEach((m) => {
-                const index = m.data.trajectoryTargetIndex;
+                const index = m.from.trajectoryTargetIndex;
                 if (index === undefined) {
-                  m.data.setTargetTimestamp(undefined);
+                  m.from.setTargetTimestamp(undefined);
                 } else {
-                  m.data.setTargetTimestamp(result.trajectory.waypoints[index]);
+                  m.from.setTargetTimestamp(result.trajectory.waypoints[index]);
                 }
               });
               pathStore.setSnapshot(result.snapshot);
