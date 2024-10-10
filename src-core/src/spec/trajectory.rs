@@ -418,12 +418,7 @@ pub struct TrajectoryFile {
     pub trajectory: Trajectory,
     /// The choreo events.
     #[serde(default)]
-    pub events: Vec<ChoreolibEventMarker>,
-    /// The pplib commands to execute.
-    /// This is a compatibility layer for working with
-    /// the path planner library.
-    #[serde(default)]
-    pub pplib_commands: Vec<PplibEventMarker>,
+    pub events: Vec<EventMarker>,
 }
 
 impl TrajectoryFile {
@@ -442,7 +437,6 @@ impl TrajectoryFile {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EventMarkerData {
-    pub name: String,
     pub target: Option<usize>,
     pub target_timestamp: Option<f64>,
     pub offset: Expr,
@@ -450,16 +444,10 @@ pub struct EventMarkerData {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ChoreolibEventMarker {
-    data: EventMarkerData,
-    event: ChoreolibEvent,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct PplibEventMarker {
-    data: EventMarkerData,
-    event: PplibCommand,
+pub struct EventMarker {
+    pub name: String,
+    pub from: EventMarkerData,
+    pub event: Option<PplibCommand>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -484,11 +472,4 @@ pub enum PplibCommand {
     Deadline {
         commands: Vec<PplibCommand>,
     },
-}
-
-// single-case enum so that it matches the serialization from above
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", tag = "type", content = "data")]
-pub enum ChoreolibEvent {
-    Choreolib { event: String },
 }

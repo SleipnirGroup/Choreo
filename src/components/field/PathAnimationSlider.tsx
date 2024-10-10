@@ -69,11 +69,11 @@ class PathAnimationSlider extends Component<Props, State> {
                   })
                   .concat(
                     activePath.markers.flatMap((marker: IEventMarkerStore) => {
-                      if (marker.data.timestamp === undefined) {
+                      if (marker.from.timestamp === undefined) {
                         return [];
                       }
                       return {
-                        value: marker.data.timestamp,
+                        value: marker.from.timestamp,
                         label: (
                           <span>
                             <Room

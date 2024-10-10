@@ -137,8 +137,7 @@ export interface Trajectory {
   params: ChoreoPath<Expr>;
   snapshot: ChoreoPath<number>;
   trajectory: Output;
-  events: EventMarker<ChoreolibEvent>[];
-  pplibCommands: EventMarker<PplibCommand>[];
+  events: EventMarker[];
 }
 
 export type GroupCommand = {
@@ -159,15 +158,8 @@ export type NamedCommand = {
     name: string | null;
   };
 };
-export type ChoreolibEvent = {
-  type: "choreolib";
-  data: {
-    event: string | null;
-  };
-};
 
 export type EventMarkerData = {
-  name: string;
   target: WaypointIDX | undefined;
   offset: Expr;
   /**
@@ -176,8 +168,9 @@ export type EventMarkerData = {
   targetTimestamp: number | undefined;
 };
 export type PplibCommand = WaitCommand | GroupCommand | NamedCommand;
-export type Command = PplibCommand | ChoreolibEvent;
-export interface EventMarker<C extends Command> {
-  data: EventMarkerData;
-  event: C;
+export type Command = PplibCommand | undefined;
+export interface EventMarker {
+  name: string;
+  from: EventMarkerData;
+  event: Command;
 }

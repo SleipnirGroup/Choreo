@@ -30,7 +30,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
               onClick={() => {
                 const newMarker = activePath.addEventMarker();
 
-                newMarker.data.setTarget({ uuid: point.uuid });
+                newMarker.from.setTarget({ uuid: point.uuid });
                 // TODO set direct timestamp if trajectory not stale
                 doc.setSelectedSidebarItem(newMarker);
               }}
