@@ -250,8 +250,8 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
     }
 
     @Override
-    public String getTypeString() {
-      return "struct:SwerveSample";
+    public String getTypeName() {
+      return "SwerveSample";
     }
 
     @Override
