@@ -44,6 +44,23 @@ export const SelectableItem = types.union(
   EventMarkerStore,
   ConstraintStore
 );
+function itemType(
+  item: SelectableItemTypes
+): "marker" | "constraint" | "waypoint" | undefined {
+  if (item === undefined) {
+    return undefined;
+  }
+  if (Object.hasOwn(item, "name")) {
+    return "marker";
+  }
+  if (Object.hasOwn(item, "from")) {
+    return "constraint";
+  }
+  if (Object.hasOwn(item, "fixTranslation")) {
+    return "waypoint";
+  }
+  return undefined;
+}
 export const ISampleType = types.enumeration<SampleType>([
   "Swerve",
   "Differential"
@@ -74,29 +91,23 @@ export const DocumentStore = types
         config: self.robotConfig.serialize
       };
     },
+    get isSidebarMarkerSelected() {
+      return itemType(self.selectedSidebarItem) === "marker";
+    },
     get isSidebarConstraintSelected() {
-      return (
-        self.selectedSidebarItem !== undefined &&
-        Object.hasOwn(self.selectedSidebarItem, "from")
-      );
+      return itemType(self.selectedSidebarItem) === "constraint";
     },
     get isSidebarWaypointSelected() {
-      return (
-        self.selectedSidebarItem !== undefined &&
-        !this.isSidebarConstraintSelected
-      );
+      return itemType(self.selectedSidebarItem) === "waypoint";
+    },
+    get isSidebarMarkerHovered() {
+      return itemType(self.hoveredSidebarItem) === "marker";
     },
     get isSidebarConstraintHovered() {
-      return (
-        self.hoveredSidebarItem !== undefined &&
-        Object.hasOwn(self.hoveredSidebarItem, "from")
-      );
+      return itemType(self.hoveredSidebarItem) === "constraint";
     },
     get isSidebarWaypointHovered() {
-      return (
-        self.hoveredSidebarItem !== undefined &&
-        !this.isSidebarConstraintHovered
-      );
+      return itemType(self.hoveredSidebarItem) === "waypoint";
     },
     get hoveredWaypointIndex() {
       if (this.isSidebarWaypointHovered) {
@@ -170,7 +181,7 @@ export const DocumentStore = types
         });
 
       pathStore.markers.forEach((m) => {
-        m.data.setTrajectoryTargetIndex(m.data.getTargetIndex());
+        m.from.setTrajectoryTargetIndex(m.from.getTargetIndex());
       });
       pathStore.ui.setGenerating(true);
       const handle = pathStore.uuid
@@ -244,11 +255,11 @@ export const DocumentStore = types
               pathStore.trajectory.setSplits(result.trajectory.splits);
               pathStore.trajectory.setWaypoints(result.trajectory.waypoints);
               pathStore.markers.forEach((m) => {
-                const index = m.data.trajectoryTargetIndex;
+                const index = m.from.trajectoryTargetIndex;
                 if (index === undefined) {
-                  m.data.setTargetTimestamp(undefined);
+                  m.from.setTargetTimestamp(undefined);
                 } else {
-                  m.data.setTargetTimestamp(result.trajectory.waypoints[index]);
+                  m.from.setTargetTimestamp(result.trajectory.waypoints[index]);
                 }
               });
               pathStore.setSnapshot(result.snapshot);

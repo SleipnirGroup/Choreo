@@ -92,7 +92,7 @@ class CommandDraggable extends Component<Props, State> {
             onChange={(e) => command.setType(e.target.value as CommandType)}
           >
             {CommandUIData.map((data) => {
-              if (data.id === "choreolib" && this.props.parent !== undefined) {
+              if (data.id === "none" && this.props.parent !== undefined) {
                 return undefined;
               }
 
@@ -122,29 +122,6 @@ class CommandDraggable extends Component<Props, State> {
               onKeyDown={(e) => {
                 if (e.key == "Enter") {
                   this.nameInputRef.current?.blur();
-                }
-              }}
-            ></TextField>
-          )}
-          {command.isChoreolib && (
-            <TextField
-              inputRef={this.eventInputRef}
-              sx={{
-                marginLeft: "1ch",
-                ".MuiInput-input": {
-                  paddingBottom: "0px"
-                }
-              }}
-              fullWidth
-              variant="standard"
-              placeholder="Event"
-              value={command.event ?? ""}
-              size="small"
-              onClick={(e) => e.stopPropagation()}
-              onChange={(e) => command.setEvent(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key == "Enter") {
-                  this.eventInputRef.current?.blur();
                 }
               }}
             ></TextField>
