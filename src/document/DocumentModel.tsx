@@ -44,11 +44,21 @@ export const SelectableItem = types.union(
   EventMarkerStore,
   ConstraintStore
 );
-function itemType(item: SelectableItemTypes) : "marker" | "constraint" | "waypoint" | undefined {
-  if (item === undefined) {return undefined;}
-  if (Object.hasOwn(item, "name")) {return "marker";}
-  if (Object.hasOwn(item, "from")) {return "constraint";}
-  if (Object.hasOwn(item, "fixTranslation")) {return "waypoint";}
+function itemType(
+  item: SelectableItemTypes
+): "marker" | "constraint" | "waypoint" | undefined {
+  if (item === undefined) {
+    return undefined;
+  }
+  if (Object.hasOwn(item, "name")) {
+    return "marker";
+  }
+  if (Object.hasOwn(item, "from")) {
+    return "constraint";
+  }
+  if (Object.hasOwn(item, "fixTranslation")) {
+    return "waypoint";
+  }
   return undefined;
 }
 export const ISampleType = types.enumeration<SampleType>([
