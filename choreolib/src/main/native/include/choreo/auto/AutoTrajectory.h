@@ -59,7 +59,7 @@ struct ScheduledEvent {
  * routine and have triggers based off of it.
  *
  * @tparam SampleType The type of samples in the trajectory.
- * @tparam Year The field year.
+ * @tparam Year The field year. Defaults to the current year.
  */
 template <choreo::TrajectorySample SampleType, int Year = util::kDefaultYear>
 class AutoTrajectory {
