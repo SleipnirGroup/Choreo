@@ -56,7 +56,7 @@ namespace choreo {
  * </code></pre>
  *
  * @tparam SampleType The type of samples in the trajectory.
- * @tparam Year The field year.
+ * @tparam Year The field year. Defaults to the current year.
  */
 template <choreo::TrajectorySample SampleType, int Year = util::kDefaultYear>
 class AutoFactory {
