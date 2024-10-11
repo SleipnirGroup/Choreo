@@ -24,7 +24,7 @@ namespace choreo {
  * This loop should **not** be shared across multiple autonomous routines.
  *
  * @tparam SampleType The type of samples in the trajectory.
- * @tparam The field year (default: the current year).
+ * @tparam The field year. Defaults to the current year.
  */
 template <choreo::TrajectorySample SampleType, int Year = util::kDefaultYear>
 class AutoLoop {

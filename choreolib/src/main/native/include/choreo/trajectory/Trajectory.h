@@ -80,7 +80,7 @@ class Trajectory {
    *
    * This function will return an empty optional if the trajectory is empty.
    *
-   * @tparam Year The field year (default: the current year).
+   * @tparam Year The field year. Defaults to the current year.
    * @param timestamp The timestamp of this sample relative to the beginning of
    * the trajectory.
    * @param mirrorForRedAlliance whether or not to return the sample mirrored.
@@ -110,7 +110,7 @@ class Trajectory {
    *
    * Will return an empty optional if the trajectory is empty
    *
-   * @tparam Year The field year (default: the current year).
+   * @tparam Year The field year. Defaults to the current year.
    * @param mirrorForRedAlliance whether or not to return the Pose mirrored.
    * @return The first Pose in the trajectory.
    */
@@ -130,7 +130,7 @@ class Trajectory {
    *
    * Will return an empty optional if the trajectory is empty
    *
-   * @tparam Year The field year (default: the current year).
+   * @tparam Year The field year. Defaults to the current year.
    * @param mirrorForRedAlliance whether or not to return the Pose mirrored.
    * @return The last Pose in the trajectory.
    */
@@ -174,7 +174,7 @@ class Trajectory {
   /**
    * Returns this trajectory, mirrored across the field midline.
    *
-   * @tparam Year The field year (default: the current year).
+   * @tparam Year The field year. Defaults to the current year.
    * @return this trajectory, mirrored across the field midline.
    */
   template <int Year = util::kDefaultYear>

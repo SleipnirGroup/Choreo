@@ -107,7 +107,7 @@ inline constexpr int kDefaultYear = 2024;
  * Grabs the instance of the flipper for the supplied template parameter. Will
  * not compile if an invalid year is supplied.
  *
- * @tparam Year The field year (default: the current year).
+ * @tparam Year The field year. Defaults to the current year.
  */
 template <int Year = kDefaultYear>
 constexpr auto GetFlipperForYear() {
