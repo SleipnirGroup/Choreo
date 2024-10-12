@@ -29,6 +29,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -162,7 +164,14 @@ public final class Choreo {
       throw new RuntimeException(
           name + ".traj: Wrong version: " + version + ". Expected " + SPEC_VERSION);
     }
-    EventMarker[] events = GSON.fromJson(wholeTrajectory.get("events"), EventMarker[].class);
+    // Filter out markers with negative timestamps or empty names
+    List<EventMarker> unfilteredEvents =
+        new ArrayList<EventMarker>(
+            Arrays.asList(GSON.fromJson(wholeTrajectory.get("events"), EventMarker[].class)));
+    unfilteredEvents.removeIf(marker -> marker.timestamp < 0 || marker.event.length() == 0);
+    EventMarker[] events = new EventMarker[unfilteredEvents.size()];
+    unfilteredEvents.toArray(events);
+
     JsonObject trajectoryObj = wholeTrajectory.getAsJsonObject("trajectory");
     Integer[] splits = GSON.fromJson(trajectoryObj.get("splits"), Integer[].class);
     if (projectFile.type.equals("Swerve")) {

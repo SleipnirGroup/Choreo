@@ -49,8 +49,11 @@ public class EventMarker {
         var event = json.getAsJsonObject().get("name").getAsString();
 
         return new EventMarker(targetTimestamp + offset, event);
-      } catch (IllegalStateException e) {
-        return new EventMarker(0, "");
+      } catch (IllegalStateException
+          | UnsupportedOperationException
+          | NullPointerException
+          | NumberFormatException e) {
+        return new EventMarker(-1, "");
       }
     }
   }
