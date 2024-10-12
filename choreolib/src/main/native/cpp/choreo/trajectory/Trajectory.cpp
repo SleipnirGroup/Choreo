@@ -27,7 +27,13 @@ void choreo::from_json(const wpi::json& json,
   if (trajectory.splits.size() == 0 || trajectory.splits.at(0) != 0) {
     trajectory.splits.insert(trajectory.splits.begin(), 0);
   }
-  trajectory.events = json.at("events").get<std::vector<EventMarker>>();
+  auto events = json.at("events").get<std::vector<EventMarker>>();
+  trajectory.events.clear();
+  for (EventMarker event : events) {
+    if (event.timestamp >= units::second_t{0} || event.event.size() == 0) {
+      trajectory.events.push_back(event);
+    }
+  }
 }
 
 void choreo::to_json(wpi::json& json,
@@ -49,5 +55,11 @@ void choreo::from_json(const wpi::json& json,
   if (trajectory.splits.size() == 0 || trajectory.splits.at(0) != 0) {
     trajectory.splits.insert(trajectory.splits.begin(), 0);
   }
-  trajectory.events = json.at("events").get<std::vector<EventMarker>>();
+  auto events = json.at("events").get<std::vector<EventMarker>>();
+  trajectory.events.clear();
+  for (EventMarker event : events) {
+    if (event.timestamp >= units::second_t{0} || event.event.size() == 0) {
+      trajectory.events.push_back(event);
+    }
+  }
 }
