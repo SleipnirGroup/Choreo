@@ -14,8 +14,14 @@ void choreo::to_json(wpi::json& json, const EventMarker& event) {
 }
 
 void choreo::from_json(const wpi::json& json, EventMarker& event) {
-  event.timestamp =
-      units::second_t{json.at("data").at("offset").at("val").get<double>() +
-                      json.at("data").at("targetTimestamp").get<double>()};
-  event.event = json.at("event").at("data").at("event").get<std::string>();
+  auto targetTimestamp = json.at("from").at("targetTimestamp");
+  if (!targetTimestamp.is_number()) {
+    event.timestamp = units::second_t{-1};
+    event.event = "";
+  } else {
+    event.timestamp =
+        units::second_t{json.at("from").at("offset").at("val").get<double>() +
+                        targetTimestamp.get<double>()};
+    event.event = json.at("name").get<std::string>();
+  }
 }

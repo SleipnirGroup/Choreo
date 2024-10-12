@@ -43,13 +43,12 @@ constexpr std::string_view swerveTrajectoryString =
     {"t":0.0, "x":0.0, "y":0.0, "heading":0.0, "vx":0.0, "vy":0.0, "omega":0.0, "ax":0.0, "ay":0.0, "alpha":0.0, "fx":[0.0,0.0,0.0,0.0], "fy":[0.0,0.0,0.0,0.0]},
     {"t":1.0, "x":0.5, "y":0.1, "heading":0.2, "vx":3.0, "vy":3.0, "omega":10.0, "ax":20.0, "ay":20.0, "alpha":30.0, "fx":[100.0,200.0,300.0,400.0], "fy":[-100.0,-200.0,-300.0,-400.0]}
   ],
-  "splits":[],
+  "splits":[0],
   "forcesAvailable":false
  },
  "events":[
-  {"data":{"name":"Marker", "target":0, "targetTimestamp":0, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"choreolib", "data":{"event":"testEvent"}}}
- ],
- "pplib_commands":[]
+  {"name":"testEvent", "from":{"target":0, "targetTimestamp":0, "offset":{"exp":"0 s", "val":0.0}}, "event":null}
+ ]
 })";
 
 const wpi::json swerveTrajectoryJson = wpi::json::parse(swerveTrajectoryString);
@@ -80,7 +79,7 @@ const Trajectory<SwerveSample> correctSwerveTrajectory{
       30_rad_per_s_sq,
       {100_N, 200_N, 300_N, 400_N},
       {-100_N, -200_N, -300_N, -400_N}}},
-    {},
+    {0},
     {{0_s, "testEvent"}}};
 
 TEST(TrajectoryFileTest, DeserializeSwerveTrajectory) {

@@ -1,5 +1,6 @@
 import json
 
+from choreo.trajectory import load_event_marker
 from choreo.trajectory import EventMarker
 from choreo.trajectory import DifferentialSample
 from choreo.trajectory import DifferentialTrajectory
@@ -39,14 +40,15 @@ def load_differential_trajectory_string(
         for sample in data["trajectory"]["samples"]
     ]
     splits = [int(split) for split in data["trajectory"]["splits"]]
-    events = [
-        EventMarker(
-            float(event["data"]["offset"]["val"])
-            + float(event["data"]["targetTimestamp"]),
-            event["event"]["data"]["event"],
+    # Add 0 as the first split index
+    if len(splits) == 0 or splits[0] != 0:
+        splits.insert(0, 0)
+    events = list(
+        filter(
+            lambda marker: marker is not None,
+            [load_event_marker(event) for event in data["events"]],
         )
-        for event in data["events"]
-    ]
+    )
 
     return DifferentialTrajectory(data["name"], samples, splits, events)
 
@@ -94,14 +96,15 @@ def load_swerve_trajectory_string(trajectory_json_string: str) -> SwerveTrajecto
         for sample in data["trajectory"]["samples"]
     ]
     splits = [int(split) for split in data["trajectory"]["splits"]]
-    events = [
-        EventMarker(
-            float(event["data"]["offset"]["val"])
-            + float(event["data"]["targetTimestamp"]),
-            event["event"]["data"]["event"],
+    # Add 0 as the first split index
+    if len(splits) == 0 or splits[0] != 0:
+        splits.insert(0, 0)
+    events = list(
+        filter(
+            lambda marker: marker is not None,
+            [load_event_marker(event) for event in data["events"]],
         )
-        for event in data["events"]
-    ]
+    )
 
     return SwerveTrajectory(data["name"], samples, splits, events)
 

@@ -34,30 +34,26 @@ public class EventMarker {
       try {
         var targetTimestamp =
             json.getAsJsonObject()
-                .get("data")
+                .get("from")
                 .getAsJsonObject()
                 .get("targetTimestamp")
                 .getAsDouble();
         var offset =
             json.getAsJsonObject()
-                .get("data")
+                .get("from")
                 .getAsJsonObject()
                 .get("offset")
                 .getAsJsonObject()
                 .get("val")
                 .getAsDouble();
-        var event =
-            json.getAsJsonObject()
-                .get("event")
-                .getAsJsonObject()
-                .get("data")
-                .getAsJsonObject()
-                .get("event")
-                .getAsString();
+        var event = json.getAsJsonObject().get("name").getAsString();
 
         return new EventMarker(targetTimestamp + offset, event);
-      } catch (IllegalStateException e) {
-        return new EventMarker(0, "");
+      } catch (IllegalStateException
+          | UnsupportedOperationException
+          | NullPointerException
+          | NumberFormatException e) {
+        return new EventMarker(-1, "");
       }
     }
   }

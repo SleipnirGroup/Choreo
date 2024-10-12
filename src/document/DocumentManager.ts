@@ -15,7 +15,6 @@ import "react-toastify/dist/ReactToastify.min.css";
 import LocalStorageKeys from "../util/LocalStorageKeys";
 import { safeGetIdentifier } from "../util/mobxutils";
 import {
-  ChoreolibEvent,
   Command,
   EventMarker,
   GroupCommand,
@@ -30,7 +29,6 @@ import {
 import {
   CommandStore,
   ICommandStore,
-  commandIsChoreolib,
   commandIsGroup,
   commandIsNamed,
   commandIsWait
@@ -93,13 +91,12 @@ export type EnvConstructors = {
         | {
             data: WaitCommand["data"] &
               GroupCommand["data"] &
-              NamedCommand["data"] &
-              ChoreolibEvent["data"];
+              NamedCommand["data"];
           }
         | object
       )
   ) => ICommandStore;
-  EventMarkerStore: (marker: EventMarker<Command>) => IEventMarkerStore;
+  EventMarkerStore: (marker: EventMarker) => IEventMarkerStore;
   ConstraintData: ConstraintDataConstructors;
   ConstraintStore: <K extends ConstraintKey>(
     type: K,
@@ -112,7 +109,7 @@ export type EnvConstructors = {
 function getConstructors(vars: () => IVariables): EnvConstructors {
   function createCommandStore(command: Command): ICommandStore {
     return CommandStore.create({
-      type: command.type,
+      type: command?.type ?? "none",
       name: commandIsNamed(command) ? command.data.name : "",
       commands: commandIsGroup(command)
         ? command.data.commands.map((c) => createCommandStore(c))
@@ -121,7 +118,6 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         commandIsWait(command) ? command.data.waitTime : 0,
         "Time"
       ),
-      event: commandIsChoreolib(command) ? command.data.event : "",
       uuid: crypto.randomUUID()
     });
   }
@@ -182,14 +178,15 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
       return w;
     },
     CommandStore: createCommandStore,
-    EventMarkerStore: (marker: EventMarker<Command>): IEventMarkerStore => {
+    EventMarkerStore: (marker: EventMarker): IEventMarkerStore => {
       const m = EventMarkerStore.create({
-        data: {
+        name: marker.name,
+        from: {
           uuid: crypto.randomUUID(),
-          name: marker.data.name,
+
           target: undefined,
-          targetTimestamp: marker.data.targetTimestamp ?? undefined,
-          offset: vars().createExpression(marker.data.offset, "Time")
+          targetTimestamp: marker.from.targetTimestamp ?? undefined,
+          offset: vars().createExpression(marker.from.offset, "Time")
         },
         event: createCommandStore(marker.event),
         uuid: crypto.randomUUID()
@@ -285,8 +282,8 @@ export function setup() {
   doc.history.clear();
   setupEventListeners()
     .then(() => newProject())
-    .then(() => uiState.updateWindowTitle());
-  // .then(() => openProjectFile())
+    .then(() => uiState.updateWindowTitle())
+    .then(() => openProjectFile());
 }
 setup();
 

@@ -2,4 +2,13 @@
     "rust-analyzer.check.overrideCommand": [
         "cargo", "clippy", "--target-dir", "./target/clippy"
     ],
+    "files.associations": {
+        "*.traj": "json",
+        "vector": "cpp",
+        "array": "cpp",
+        "deque": "cpp",
+        "map": "cpp",
+        "unordered_map": "cpp",
+        "xstring": "cpp"
+    },
 }

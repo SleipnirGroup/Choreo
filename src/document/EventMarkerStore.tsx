@@ -1,6 +1,5 @@
 import { Instance, getEnv, getParent, isAlive, types } from "mobx-state-tree";
 import {
-  Command,
   EventMarker,
   EventMarkerData,
   WaypointUUID
@@ -20,7 +19,6 @@ import {
 
 export const EventMarkerDataStore = types
   .model("EventMarkerData", {
-    name: types.string,
     target: types.maybe(WaypointScope),
     targetTimestamp: types.maybe(types.number),
     offset: ExpressionStore,
@@ -61,7 +59,6 @@ export const EventMarkerDataStore = types
     get serialize(): EventMarkerData {
       const points = self.getPath().params.waypoints;
       return {
-        name: self.name,
         target: waypointIdToSavedWaypointId(self.target, points),
         offset: self.offset.serialize,
         targetTimestamp: self.targetTimestamp
@@ -71,16 +68,12 @@ export const EventMarkerDataStore = types
   .actions((self) => ({
     deserialize(ser: EventMarkerData) {
       const points = self.getPath().params.waypoints;
-      self.name = ser.name;
       self.target = savedWaypointIdToWaypointId(ser.target, points);
       self.targetTimestamp = self.targetTimestamp ?? undefined;
       self.offset.deserialize(ser.offset);
     },
     setTarget(target: WaypointUUID) {
       self.target = target;
-    },
-    setName(name: string) {
-      self.name = name;
     },
     setTargetTimestamp(timestamp: number | undefined) {
       self.targetTimestamp = timestamp;
@@ -123,14 +116,16 @@ export const EventMarkerDataStore = types
 
 export const EventMarkerStore = types
   .model("GeneralMarker", {
-    data: EventMarkerDataStore,
+    name: types.string,
+    from: EventMarkerDataStore,
     uuid: types.identifier,
     event: CommandStore
   })
   .views((self) => ({
-    get serialize(): EventMarker<Command> {
+    get serialize(): EventMarker {
       return {
-        data: self.data.serialize,
+        name: self.name,
+        from: self.from.serialize,
         event: self.event.serialize
       };
     },
@@ -142,8 +137,12 @@ export const EventMarkerStore = types
     }
   }))
   .actions((self) => ({
-    deserialize(ser: EventMarker<Command>) {
-      self.data.deserialize(ser.data);
+    setName(name: string) {
+      self.name = name;
+    },
+    deserialize(ser: EventMarker) {
+      self.name = ser.name;
+      self.from.deserialize(ser.from);
       self.event.deserialize(ser.event);
     },
     setSelected(selected: boolean) {

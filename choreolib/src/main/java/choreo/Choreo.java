@@ -29,6 +29,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -162,9 +164,22 @@ public final class Choreo {
       throw new RuntimeException(
           name + ".traj: Wrong version: " + version + ". Expected " + SPEC_VERSION);
     }
-    EventMarker[] events = GSON.fromJson(wholeTrajectory.get("events"), EventMarker[].class);
+    // Filter out markers with negative timestamps or empty names
+    List<EventMarker> unfilteredEvents =
+        new ArrayList<EventMarker>(
+            Arrays.asList(GSON.fromJson(wholeTrajectory.get("events"), EventMarker[].class)));
+    unfilteredEvents.removeIf(marker -> marker.timestamp < 0 || marker.event.length() == 0);
+    EventMarker[] events = new EventMarker[unfilteredEvents.size()];
+    unfilteredEvents.toArray(events);
+
     JsonObject trajectoryObj = wholeTrajectory.getAsJsonObject("trajectory");
     Integer[] splits = GSON.fromJson(trajectoryObj.get("splits"), Integer[].class);
+    if (splits.length == 0 || splits[0] != 0) {
+      Integer[] newArray = new Integer[splits.length + 1];
+      newArray[0] = 0;
+      System.arraycopy(splits, 0, newArray, 1, splits.length);
+      splits = newArray;
+    }
     if (projectFile.type.equals("Swerve")) {
       SwerveSample[] samples = GSON.fromJson(trajectoryObj.get("samples"), SwerveSample[].class);
       return new Trajectory<SwerveSample>(name, List.of(samples), List.of(splits), List.of(events));

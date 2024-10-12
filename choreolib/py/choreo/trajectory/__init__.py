@@ -49,6 +49,18 @@ class EventMarker:
         return self.timestamp == other.timestamp and self.event == other.event
 
 
+def load_event_marker(event) -> EventMarker | None:
+    try:
+        offset = float(event["from"]["offset"]["val"])
+        target_timestamp = float(event["from"]["targetTimestamp"])
+        name = event["name"]
+        if target_timestamp + offset < 0 or len(name) == 0:
+            return None
+        return EventMarker(target_timestamp + offset, name)
+    except TypeError:
+        return None
+
+
 class DifferentialSample:
     def __init__(
         self,

@@ -23,7 +23,17 @@ void choreo::from_json(const wpi::json& json,
       json.at("trajectory").at("samples").get<std::vector<SwerveSample>>();
   trajectory.splits =
       json.at("trajectory").at("splits").get<std::vector<int>>();
-  trajectory.events = json.at("events").get<std::vector<EventMarker>>();
+  // Add 0 as the first split index.
+  if (trajectory.splits.size() == 0 || trajectory.splits.at(0) != 0) {
+    trajectory.splits.insert(trajectory.splits.begin(), 0);
+  }
+  auto events = json.at("events").get<std::vector<EventMarker>>();
+  trajectory.events.clear();
+  for (EventMarker event : events) {
+    if (event.timestamp >= units::second_t{0} || event.event.size() == 0) {
+      trajectory.events.push_back(event);
+    }
+  }
 }
 
 void choreo::to_json(wpi::json& json,
@@ -41,5 +51,15 @@ void choreo::from_json(const wpi::json& json,
                            .get<std::vector<DifferentialSample>>();
   trajectory.splits =
       json.at("trajectory").at("splits").get<std::vector<int>>();
-  trajectory.events = json.at("events").get<std::vector<EventMarker>>();
+  // Add 0 as the first split index.
+  if (trajectory.splits.size() == 0 || trajectory.splits.at(0) != 0) {
+    trajectory.splits.insert(trajectory.splits.begin(), 0);
+  }
+  auto events = json.at("events").get<std::vector<EventMarker>>();
+  trajectory.events.clear();
+  for (EventMarker event : events) {
+    if (event.timestamp >= units::second_t{0} || event.event.size() == 0) {
+      trajectory.events.push_back(event);
+    }
+  }
 }
