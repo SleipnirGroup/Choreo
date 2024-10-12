@@ -183,6 +183,7 @@ class ViewOptionsPanel extends Component<Props, State> {
         {uiState.variablesPanelOpen && (
           <div
             style={{
+              maxHeight: "30vh",
               overflowY: "scroll",
               position: "absolute",
               top: "0",
