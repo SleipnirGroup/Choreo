@@ -24,8 +24,8 @@ void choreo::from_json(const wpi::json& json,
   trajectory.splits =
       json.at("trajectory").at("splits").get<std::vector<int>>();
   // Add 0 as the first split index.
-  if (trajectory.splits.size() == 0) {
-    trajectory.splits.push_back(0);
+  if (trajectory.splits.size() == 0 || trajectory.splits.at(0) != 0) {
+    trajectory.splits.push_front(0);
   }
   trajectory.events = json.at("events").get<std::vector<EventMarker>>();
 }
