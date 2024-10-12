@@ -94,6 +94,9 @@ def load_swerve_trajectory_string(trajectory_json_string: str) -> SwerveTrajecto
         for sample in data["trajectory"]["samples"]
     ]
     splits = [int(split) for split in data["trajectory"]["splits"]]
+    # Add 0 as the first split index
+    if len(splits) == 0 or splits[0] != 0:
+        splits.insert(0, 0)
     events = [
         EventMarker(
             float(event["from"]["offset"]["val"])

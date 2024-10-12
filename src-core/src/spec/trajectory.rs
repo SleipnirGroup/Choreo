@@ -396,8 +396,8 @@ pub struct Trajectory {
     /// The samples of the trajectory.
     pub samples: Vec<Sample>,
     /// The indices of samples which are associated with split waypoints.
-    /// First and last samples are never in this list even if the split toggle is set
-    /// for first or last waypoints
+    /// This includes 0, but the index of the last sample is never in this list even if the split toggle is set
+    /// for the last waypoint
     pub splits: Vec<usize>,
 }
 
