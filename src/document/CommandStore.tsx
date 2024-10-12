@@ -30,9 +30,9 @@ export const CommandTypeNames = {
 };
 export const CommandUIData = Object.values(CommandTypeNames);
 export function commandIsNamed(command: Command): command is NamedCommand {
-  return command !== undefined && command.type === "named";
+  return command?.type === "named";
 }
-export function commandTypeIsGroup(type: CommandType) {
+export function commandTypeIsGroup(type: CommandType | undefined | null) {
   return (
     type === "deadline" ||
     type === "race" ||
@@ -41,10 +41,10 @@ export function commandTypeIsGroup(type: CommandType) {
   );
 }
 export function commandIsGroup(command: Command): command is GroupCommand {
-  return command !== undefined && commandTypeIsGroup(command.type);
+  return commandTypeIsGroup(command?.type);
 }
 export function commandIsWait(command: Command): command is WaitCommand {
-  return command !== undefined && command.type === "wait";
+  return command?.type === "wait";
 }
 export const CommandStore = types
   .model("CommandStore", {
@@ -108,7 +108,7 @@ export const CommandStore = types
     deserialize(ser: Command) {
       self.commands.clear();
       self.name = "";
-      if (ser === undefined) {
+      if (ser === undefined || ser === null) {
         self.type = "none";
         return;
       }

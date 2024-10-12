@@ -168,7 +168,7 @@ export type EventMarkerData = {
   targetTimestamp: number | undefined;
 };
 export type PplibCommand = WaitCommand | GroupCommand | NamedCommand;
-export type Command = PplibCommand | undefined;
+export type Command = PplibCommand | undefined | null;
 export interface EventMarker {
   name: string;
   from: EventMarkerData;
