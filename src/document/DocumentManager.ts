@@ -282,8 +282,8 @@ export function setup() {
   doc.history.clear();
   setupEventListeners()
     .then(() => newProject())
-    .then(() => uiState.updateWindowTitle());
-  // .then(() => openProjectFile())
+    .then(() => uiState.updateWindowTitle())
+    .then(() => openProjectFile());
 }
 setup();
 
