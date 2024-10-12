@@ -174,6 +174,12 @@ public final class Choreo {
 
     JsonObject trajectoryObj = wholeTrajectory.getAsJsonObject("trajectory");
     Integer[] splits = GSON.fromJson(trajectoryObj.get("splits"), Integer[].class);
+    if (splits.length == 0 || splits[0] != 0) {
+      Integer[] newArray = new Integer[splits.length + 1];
+      newArray[0] = 0;
+      System.arraycopy(splits, 0, newArray, 1, splits.length);
+      splits = newArray;
+    }
     if (projectFile.type.equals("Swerve")) {
       SwerveSample[] samples = GSON.fromJson(trajectoryObj.get("samples"), SwerveSample[].class);
       return new Trajectory<SwerveSample>(name, List.of(samples), List.of(splits), List.of(events));
