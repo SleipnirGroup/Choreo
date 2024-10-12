@@ -9,7 +9,7 @@
   },
   "package": {
     "productName": "Choreo",
-    "version": "2025.0.0-beta-2"
+    "version": "2025.0.0-beta-3"
   },
   "tauri": {
     "allowlist": {
@@ -40,7 +40,13 @@
     },
     "bundle": {
       "active": true,
-      "targets": ["appimage", "deb", "dmg", "nsis", "rpm"],
+      "targets": [
+        "appimage",
+        "deb",
+        "dmg",
+        "nsis",
+        "rpm"
+      ],
       "identifier": "org.sleipnirgroup",
       "shortDescription": "Choreo",
       "icon": [
@@ -54,7 +60,9 @@
         "minimumSystemVersion": "13.3",
         "signingIdentity": "-"
       },
-      "externalBin": ["../target/choreo-cli"]
+      "externalBin": [
+        "../target/choreo-cli"
+      ]
     },
     "security": {
       "csp": null
@@ -63,7 +71,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "Choreo v2025.0.0-beta-2",
+        "title": "Choreo v2025.0.0-beta-3",
         "width": 1200,
         "height": 800
       }
