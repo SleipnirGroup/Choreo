@@ -57,7 +57,7 @@ def load_event_marker(event) -> EventMarker | None:
         if target_timestamp + offset < 0 or len(name) == 0:
             return None
         return EventMarker(target_timestamp + offset, name)
-    except TypeError as e:
+    except TypeError:
         return None
 
 
