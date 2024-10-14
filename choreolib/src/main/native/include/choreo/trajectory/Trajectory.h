@@ -222,12 +222,12 @@ class Trajectory {
 
     auto sublist =
         std::vector<SampleType>(samples.begin() + start, samples.begin() + end);
-    double startTime = sublist.front().GetTimestamp();
-    double endTime = sublist.back().GetTimestamp();
+    units::second_t startTime = sublist.front().GetTimestamp();
+    units::second_t endTime = sublist.back().GetTimestamp();
 
     auto offsetSamples =
-        sublist | std::views::transform([startTime](const auto& s) {
-          return s.offsetBy(-startTime);
+        sublist | std::views::transform([startTime](const SampleType& s) {
+          return s.OffsetBy(-startTime);
         });
 
     auto filteredEvents =
@@ -235,7 +235,7 @@ class Trajectory {
           return e.timestamp >= startTime && e.timestamp <= endTime;
         }) |
         std::views::transform(
-            [startTime](const auto& e) { return e.offsetBy(-startTime); });
+            [startTime](const auto& e) { return e.OffsetBy(-startTime); });
 
     return Trajectory<SampleType>{
         name + "[" + std::to_string(splitIndex) + "]",
