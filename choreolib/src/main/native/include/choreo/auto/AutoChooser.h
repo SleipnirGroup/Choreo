@@ -65,11 +65,19 @@ class AutoChooser {
         nt::NetworkTableInstance::GetDefault().GetTable(path);
 
     selected = table->GetStringTopic("selected").GetEntry(NONE_NAME);
-    table->GetStringTopic(".type").Publish().Set("String Chooser");
-    table->GetStringTopic("default").Publish().SetDefault(NONE_NAME);
+
+    metaType = table->GetStringTopic(".type").Publish();
+    metaType.Set("String Chooser");
+
+    defaultChoice = table->GetStringTopic("default").Publish();
+    defaultChoice.Set(NONE_NAME);
+
     active = table->GetStringTopic("active").GetEntry(NONE_NAME);
 
     std::vector<std::string> keys;
+
+    AddAutoRoutine(NONE_NAME, [] { return frc2::cmd::None(); });
+
     for (const auto& pair : autoRoutines) {
       keys.push_back(pair.first);
     }
@@ -97,7 +105,6 @@ class AutoChooser {
                         "Selected an auto that isn't an option!");
       }
       lastAutoRoutineName = selectedString;
-      lastAutoRoutine = autoRoutines[lastAutoRoutineName]();
       active.Set(lastAutoRoutineName);
     }
   }
@@ -145,7 +152,7 @@ class AutoChooser {
    * @return The currently selected auto routine.
    */
   frc2::CommandPtr GetSelectedAutoRoutine() {
-    return std::move(lastAutoRoutine);
+    return autoRoutines[lastAutoRoutineName]();
   }
 
  private:
@@ -155,6 +162,9 @@ class AutoChooser {
 
   nt::StringEntry selected;
   nt::StringEntry active;
+
+  nt::StringPublisher metaType;
+  nt::StringPublisher defaultChoice;
 
   nt::StringArrayEntry options;
 
