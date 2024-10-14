@@ -77,7 +77,7 @@ class AutoLoop {
    * polled.
    */
   frc2::Trigger Enabled() {
-    return frc2::Trigger{&loop, [this] {
+    return frc2::Trigger{loop.get(), [this] {
                            return isActive &&
                                   frc::DriverStation::IsAutonomousEnabled();
                          }};

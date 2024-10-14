@@ -97,7 +97,7 @@ class AutoChooser {
                         "Selected an auto that isn't an option!");
       }
       lastAutoRoutineName = selectedString;
-      lastAutoRoutine = autoRoutines[lastAutoRoutineName](factory);
+      lastAutoRoutine = autoRoutines[lastAutoRoutineName]();
       active.Set(lastAutoRoutineName);
     }
   }
@@ -117,10 +117,8 @@ class AutoChooser {
    * @param name The name of the auto routine.
    * @param generator The function that generates the auto routine.
    */
-  void AddAutoRoutine(
-      std::string name,
-      std::function<frc2::CommandPtr(AutoFactory<SampleType, Year>& factory)>
-          generator) {
+  void AddAutoRoutine(std::string name,
+                      std::function<frc2::CommandPtr()> generator) {
     autoRoutines[name] = generator;
 
     std::vector<std::string> keys;
@@ -152,8 +150,7 @@ class AutoChooser {
 
  private:
   static inline std::string NONE_NAME = "Nothing";
-  std::unordered_map<std::string, std::function<frc2::CommandPtr(
-                                      AutoFactory<SampleType, Year>& factory)>>
+  std::unordered_map<std::string, std::function<frc2::CommandPtr()>>
       autoRoutines;
 
   nt::StringEntry selected;
