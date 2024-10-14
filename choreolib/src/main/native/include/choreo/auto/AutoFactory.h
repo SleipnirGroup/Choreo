@@ -3,77 +3,18 @@
 #pragma once
 
 #include <functional>
-#include <string>
+#include <memory>
 #include <string_view>
-#include <unordered_map>
 #include <utility>
 
 #include <frc/RobotBase.h>
 
-#include "choreo/Choreo.h"
 #include "choreo/auto/AutoLoop.h"
+#include "choreo/auto/AutoTrajectory.h"
+#include "choreo/auto/TrajectoryCache.h"
+#include "choreo/util/AllianceFlipperUtil.h"
 
 namespace choreo {
-
-/**
- * A class used to bind commands to events in all trajectories created by this
- * factory.
- */
-class AutoBindings {
- public:
-  /**
-   * Default constructor.
-   */
-  AutoBindings() = default;
-
-  AutoBindings(const AutoBindings&) = delete;
-  AutoBindings& operator=(const AutoBindings&) = delete;
-
-  /**
-   * Move constructor.
-   */
-  AutoBindings(AutoBindings&&) = default;
-
-  /**
-   * Move assignment operator.
-   *
-   * @return This.
-   */
-  AutoBindings& operator=(AutoBindings&&) = default;
-
-  /**
-   * Binds a command to an event in all trajectories created by the factory
-   * using this bindings.
-   *
-   * @param name The name of the event to bind the command to.
-   * @param cmd The command to bind to the event.
-   * @return The bindings object for chaining.
-   */
-  AutoBindings Bind(std::string_view name, frc2::CommandPtr cmd) && {
-    bindings.emplace(name, std::move(cmd));
-    return std::move(*this);
-  }
-
- private:
-  std::unordered_map<std::string, frc2::CommandPtr> bindings;
-
-  void Merge(AutoBindings&& other) {
-    for (auto& [key, value] : other.bindings) {
-      bindings.emplace(std::move(key), std::move(value));
-    }
-    other.bindings.clear();
-  }
-
-  /**
-   * Gets the bindings map.
-   *
-   * @return The bindings map.
-   */
-  const std::unordered_map<std::string, frc2::CommandPtr>& GetBindings() const {
-    return bindings;
-  }
-};
-
 /**
  * A factory used to create autonomous routines.
  *
@@ -115,8 +56,9 @@ class AutoBindings {
  * </code></pre>
  *
  * @tparam SampleType The type of samples in the trajectory.
+ * @tparam Year The field year. Defaults to the current year.
  */
-template <choreo::TrajectorySample SampleType>
+template <choreo::TrajectorySample SampleType, int Year = util::kDefaultYear>
 class AutoFactory {
  public:
   /**
@@ -126,35 +68,35 @@ class AutoFactory {
    * @param poseSupplier Choreo::CreateAutoFactory()
    * @param controller Choreo::CreateAutoFactory()
    * @param mirrorTrajectory Choreo::CreateAutoFactory()
-   * @param driveSubsystem Choreo::CreateAutoFactory()
-   * @param bindings Choreo::CreateAutoFactory()
+   * @param drivebaseRequirements Choreo::CreateAutoFactory()
    * @param trajectoryLogger Choreo::CreateAutoFactory()
    */
   AutoFactory(std::function<frc::Pose2d()> poseSupplier,
               std::function<void(frc::Pose2d, SampleType)> controller,
               std::function<bool()> mirrorTrajectory,
-              const frc2::Subsystem& driveSubsystem, AutoBindings bindings,
-              std::optional<TrajectoryLogger> trajectoryLogger)
+              frc2::Requirements drivebaseRequirements,
+              std::optional<TrajectoryLogger<SampleType>> trajectoryLogger)
       : poseSupplier{std::move(poseSupplier)},
         controller{controller},
         mirrorTrajectory{std::move(mirrorTrajectory)},
-        driveSubsystem{driveSubsystem},
-        autoBindings{std::move(bindings)},
+        drivebaseRequirements{drivebaseRequirements},
+        autoBindings{std::make_shared<AutoBindings>()},
         trajectoryLogger{std::move(trajectoryLogger)} {}
 
   /**
    * Creates a new auto loop to be used to make an auto routine.
    *
+   * @param name The name of the event loop.
    * @return A new auto loop.
    * @see AutoLoop
    */
-  AutoLoop<SampleType> NewLoop() const {
+  AutoLoop<SampleType, Year> NewLoop(std::string_view name) {
     // Clear cache in simulation to allow a form of "hot-reloading" trajectories
-    if (RobotBase::IsSimulation()) {
+    if (frc::RobotBase::IsSimulation()) {
       ClearCache();
     }
 
-    return AutoLoop<SampleType>();
+    return AutoLoop<SampleType, Year>(name);
   }
 
   /**
@@ -164,10 +106,10 @@ class AutoFactory {
    * @param loop The auto loop to use as the triggers polling context.
    * @return A new auto trajectory.
    */
-  AutoTrajectory<SampleType> Trajectory(std::string_view trajectoryName,
-                                        AutoLoop<SampleType> loop) const {
+  AutoTrajectory<SampleType, Year> Trajectory(
+      std::string_view trajectoryName, AutoLoop<SampleType, Year>& loop) const {
     std::optional<choreo::Trajectory<SampleType>> optTraj =
-        Choreo::LoadTrajectory<SampleType>(trajectoryName);
+        trajectoryCache.LoadTrajectory(trajectoryName);
     choreo::Trajectory<SampleType> trajectory;
     if (optTraj.has_value()) {
       trajectory = optTraj.value();
@@ -175,11 +117,12 @@ class AutoFactory {
       FRC_ReportError(frc::warn::Warning, "Could not load trajectory: {}",
                       trajectoryName);
     }
-    AutoTrajectory<SampleType> autoTraj{
-        trajectoryName,   trajectory,          poseSupplier,   controller,
-        mirrorTrajectory, trajectoryLogger,    driveSubsystem, loop.GetLoop(),
-        autoBindings,     loop.OnNewTrajectory};
-    loop.AddTrajectory(autoTraj);
+    AutoTrajectory<SampleType, Year> autoTraj{
+        trajectoryName,        trajectory,
+        poseSupplier,          controller,
+        mirrorTrajectory,      trajectoryLogger,
+        drivebaseRequirements, loop.GetLoop(),
+        autoBindings};
     return autoTraj;
   }
 
@@ -191,11 +134,11 @@ class AutoFactory {
    * @param loop The auto loop to use as the triggers polling context.
    * @return A new auto trajectory.
    */
-  AutoTrajectory<SampleType> Trajectory(std::string_view trajectoryName,
-                                        int splitIndex,
-                                        AutoLoop<SampleType> loop) const {
+  AutoTrajectory<SampleType, Year> Trajectory(
+      std::string_view trajectoryName, int splitIndex,
+      AutoLoop<SampleType, Year>& loop) const {
     std::optional<choreo::Trajectory<SampleType>> optTraj =
-        Choreo::LoadTrajectory<SampleType>(trajectoryName);
+        trajectoryCache.LoadTrajectory(trajectoryName);
     choreo::Trajectory<SampleType> trajectory;
     if (optTraj.has_value()) {
       trajectory = optTraj.value();
@@ -213,14 +156,14 @@ class AutoFactory {
    * @param loop The auto loop to use as the triggers polling context.
    * @return A new auto trajectory.
    */
-  AutoTrajectory<SampleType> Trajectory(
+  AutoTrajectory<SampleType, Year> Trajectory(
       choreo::Trajectory<SampleType> trajectory,
-      AutoLoop<SampleType> loop) const {
-    AutoTrajectory<SampleType> autoTraj{
-        trajectory.name,  trajectory,          poseSupplier,   controller,
-        mirrorTrajectory, trajectoryLogger,    driveSubsystem, loop.GetLoop(),
-        autoBindings,     loop.OnNewTrajectory};
-    loop.AddTrajectory(autoTraj);
+      AutoLoop<SampleType, Year>& loop) const {
+    AutoTrajectory<SampleType> autoTraj{trajectory.name,       trajectory,
+                                        poseSupplier,          controller,
+                                        mirrorTrajectory,      trajectoryLogger,
+                                        drivebaseRequirements, loop.GetLoop(),
+                                        autoBindings};
     return autoTraj;
   }
 
@@ -228,19 +171,26 @@ class AutoFactory {
    * Binds a command to an event in all trajectories created after this point.
    *
    * @param name The name of the trajectory to bind the command to.
-   * @param cmd The command to bind to the trajectory.
+   * @param cmdFactory A function that retuns a CommandPtr to bind
    */
-  void Bind(std::string_view name, frc2::CommandPtr cmd) {
-    autoBindings = std::move(autoBindings).Bind(name, cmd);
+  void Bind(std::string_view name,
+            std::function<frc2::CommandPtr()> cmdFactory) {
+    autoBindings->Bind(name, std::move(cmdFactory));
   }
+
+  /**
+   * Empties the interal trajecectory cache
+   */
+  void ClearCache() { trajectoryCache.Clear(); }
 
  private:
   std::function<frc::Pose2d()> poseSupplier;
   std::function<void(frc::Pose2d, SampleType)> controller;
   std::function<bool()> mirrorTrajectory;
-  const frc2::Subsystem& driveSubsystem;
-  AutoBindings autoBindings{};
-  std::optional<TrajectoryLogger> trajectoryLogger;
+  frc2::Requirements drivebaseRequirements;
+  std::shared_ptr<AutoBindings> autoBindings;
+  std::optional<TrajectoryLogger<SampleType>> trajectoryLogger;
+  TrajectoryCache<SampleType> trajectoryCache;
 };
 
 }  // namespace choreo
