@@ -138,7 +138,7 @@ class AutoFactory {
       std::string_view trajectoryName, int splitIndex,
       AutoLoop<SampleType, Year>& loop) const {
     std::optional<choreo::Trajectory<SampleType>> optTraj =
-        trajectoryCache.LoadTrajectory(trajectoryName);
+        trajectoryCache.LoadTrajectory(trajectoryName, splitIndex);
     choreo::Trajectory<SampleType> trajectory;
     if (optTraj.has_value()) {
       trajectory = optTraj.value();

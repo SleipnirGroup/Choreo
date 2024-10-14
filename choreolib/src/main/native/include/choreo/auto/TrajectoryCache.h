@@ -62,7 +62,8 @@ class TrajectoryCache {
 
     if (!cache.contains(key)) {
       if (cache.contains(std::string{trajectoryName})) {
-        cache[key] = cache[std::string{trajectoryName}].GetSplit(splitIndex);
+        cache[key] =
+            cache[std::string{trajectoryName}].value().GetSplit(splitIndex);
       } else {
         auto possibleTrajectory = LoadTrajectory(trajectoryName);
         cache[std::string{trajectoryName}] = possibleTrajectory;

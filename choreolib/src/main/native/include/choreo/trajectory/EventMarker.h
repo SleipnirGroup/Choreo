@@ -27,7 +27,7 @@ struct EventMarker {
    * @return A new EventMarker with the timestamp offset by the specified
    * amount.
    */
-  EventMarker OffsetBy(units::second_t timestampOffset) {
+  EventMarker OffsetBy(units::second_t timestampOffset) const {
     return EventMarker{timestamp + timestampOffset, event};
   }
 
