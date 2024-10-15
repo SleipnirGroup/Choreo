@@ -55,15 +55,13 @@ class Choreo {
                         "Found multiple project files in deploy directory!");
       }
 
-      std::error_code ec;
-      auto fileBuffer =
-          wpi::MemoryBuffer::GetFile(matchingFiles[0].string(), ec);
-      if (!fileBuffer || ec) {
+      auto fileBuffer = wpi::MemoryBuffer::GetFile(matchingFiles[0].string());
+      if (!fileBuffer) {
         FRC_ReportError(frc::warn::Warning,
                         "Could not open choreo project file");
       }
 
-      wpi::json json = wpi::json::parse(fileBuffer->GetCharBuffer());
+      wpi::json json = wpi::json::parse(fileBuffer.value()->GetCharBuffer());
       std::string version = json["version"];
       if (kSpecVersion != version) {
         throw fmt::format(".chor project file: Wrong version {}. Expected {}",
@@ -101,9 +99,8 @@ class Choreo {
     std::string trajectoryFileName = fmt::format(
         "{}/{}{}", CHOREO_DIR, trajectoryName, TRAJECTORY_FILE_EXTENSION);
 
-    std::error_code ec;
-    auto fileBuffer = wpi::MemoryBuffer::GetFile(trajectoryFileName, ec);
-    if (!fileBuffer || ec) {
+    auto fileBuffer = wpi::MemoryBuffer::GetFile(trajectoryFileName);
+    if (!fileBuffer) {
       FRC_ReportError(frc::warn::Warning, "Could not find trajectory file: {}",
                       trajectoryName);
       return {};
@@ -111,7 +108,8 @@ class Choreo {
 
     try {
       return LoadTrajectoryString<SampleType>(
-          std::string{fileBuffer->GetCharBuffer().data(), fileBuffer->size()},
+          std::string{fileBuffer.value()->GetCharBuffer().data(),
+                      fileBuffer.value()->size()},
           trajectoryName);
     } catch (wpi::json::parse_error& ex) {
       FRC_ReportError(frc::warn::Warning, "Could not parse trajectory file: {}",
