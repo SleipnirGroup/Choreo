@@ -85,25 +85,33 @@ jobs:
 
       - name: Package artifacts (Windows x86_64)
         if: matrix.artifact-name == 'Windows-x86_64'
-        run: Compress-Archive -DestinationPath ${{ matrix.artifact-name }}.zip -Path target/x86_64-pc-windows-msvc/release/choreo.exe,target/x86_64-pc-windows-msvc/release/choreo-cli.exe,target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
+        run: |
+          Compress-Archive -DestinationPath ${{ matrix.artifact-name }}-standalone.zip -Path target/x86_64-pc-windows-msvc/release/choreo.exe,target/x86_64-pc-windows-msvc/release/choreo-cli.exe
+          Compress-Archive -DestinationPath ${{ matrix.artifact-name }}.zip -Path ${{ matrix.artifact-name }}-standalone.zip,target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
 
       - name: Package artifacts (Windows aarch64)
         if: matrix.artifact-name == 'Windows-aarch64'
-        run: Compress-Archive -DestinationPath ${{ matrix.artifact-name }}.zip -Path target/aarch64-pc-windows-msvc/release/choreo.exe,target/aarch64-pc-windows-msvc/release/choreo-cli.exe,target/aarch64-pc-windows-msvc/release/bundle/nsis/*.exe
+        run: |
+          Compress-Archive -DestinationPath ${{ matrix.artifact-name }}-standalone.zip -Path target/aarch64-pc-windows-msvc/release/choreo.exe,target/aarch64-pc-windows-msvc/release/choreo-cli.exe
+          Compress-Archive -DestinationPath ${{ matrix.artifact-name }}.zip -Path ${{ matrix.artifact-name }}-standalone.zip,target/aarch64-pc-windows-msvc/release/bundle/nsis/*.exe
 
       - name: Package artifacts (macOS x86_64)
         if: matrix.artifact-name == 'macOS-x86_64'
         run: |
-          zip -j ${{ matrix.artifact-name }}.zip target/x86_64-apple-darwin/release/Choreo target/x86_64-apple-darwin/release/choreo-cli target/x86_64-apple-darwin/release/bundle/dmg/*.dmg
+          zip -j ${{ matrix.artifact-name }}-standalone.zip target/x86_64-apple-darwin/release/Choreo target/x86_64-apple-darwin/release/choreo-cli
+          zip -j ${{ matrix.artifact-name }}.zip ${{ matrix.artifact-name }}-standalone.zip target/x86_64-apple-darwin/release/bundle/dmg/*.dmg
 
       - name: Package artifacts (macOS aarch64)
         if: matrix.artifact-name == 'macOS-aarch64'
         run: |
-          zip -j ${{ matrix.artifact-name }}.zip target/aarch64-apple-darwin/release/Choreo target/aarch64-apple-darwin/release/choreo-cli target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
+          zip -j ${{ matrix.artifact-name }}-standalone.zip target/aarch64-apple-darwin/release/Choreo target/aarch64-apple-darwin/release/choreo-cli
+          zip -j ${{ matrix.artifact-name }}.zip ${{ matrix.artifact-name }}-standalone.zip target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
 
       - name: Package artifacts (Linux x86_64)
         if: matrix.artifact-name == 'Linux-x86_64'
-        run: zip -j ${{ matrix.artifact-name }}.zip target/x86_64-unknown-linux-gnu/release/choreo target/x86_64-unknown-linux-gnu/release/choreo-cli target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.AppImage target/x86_64-unknown-linux-gnu/release/bundle/deb/*.deb target/x86_64-unknown-linux-gnu/release/bundle/rpm/*.rpm
+        run: |
+          zip -j ${{ matrix.artifact-name }}-standalone.zip target/x86_64-unknown-linux-gnu/release/choreo target/x86_64-unknown-linux-gnu/release/choreo-cli
+          zip -j ${{ matrix.artifact-name }}.zip ${{ matrix.artifact-name }}-standalone.zip target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.AppImage target/x86_64-unknown-linux-gnu/release/bundle/deb/*.deb target/x86_64-unknown-linux-gnu/release/bundle/rpm/*.rpm
 
       # Zipping manually works around upload-artifact stripping execute
       # permissions from files
@@ -134,8 +142,7 @@ jobs:
         run: |
           unzip -o Windows-x86_64.zip
           rm Windows-x86_64.zip
-          mv choreo.exe Choreo-${{ github.ref_name }}-Windows-x86_64.exe
-          mv choreo-cli.exe Choreo-CLI-${{ github.ref_name }}-Windows-x86_64.exe
+          mv Windows-x86_64-standalone.zip Choreo-${{ github.ref_name }}-Windows-x86_64-standalone.zip
           mv Choreo_*_x64-setup.exe Choreo-${{ github.ref_name }}-Windows-x86_64-setup.exe
 
       - name: Rename Windows aarch64 artifacts
@@ -143,8 +150,7 @@ jobs:
         run: |
           unzip -o Windows-aarch64.zip
           rm Windows-aarch64.zip
-          mv choreo.exe Choreo-${{ github.ref_name }}-Windows-aarch64.exe
-          mv choreo-cli.exe Choreo-CLI-${{ github.ref_name }}-Windows-aarch64.exe
+          mv Windows-aarch64-standalone.zip Choreo-${{ github.ref_name }}-Windows-aarch64-standalone.zip
           mv Choreo_*_arm64-setup.exe Choreo-${{ github.ref_name }}-Windows-aarch64-setup.exe
 
       - name: Rename macOS x86_64 artifacts
@@ -152,8 +158,7 @@ jobs:
         run: |
           unzip -o macOS-x86_64.zip
           rm macOS-x86_64.zip
-          mv Choreo Choreo-${{ github.ref_name }}-macOS-x86_64
-          mv choreo-cli Choreo-CLI-${{ github.ref_name }}-macOS-x86_64
+          mv macOS-x86_64-standalone.zip Choreo-${{ github.ref_name }}-macOS-x86_64-standalone.zip
           mv Choreo_*_x64.dmg Choreo-${{ github.ref_name }}-macOS-x86_64.dmg
 
       - name: Rename macOS aarch64 artifacts
@@ -161,8 +166,7 @@ jobs:
         run: |
           unzip -o macOS-aarch64.zip
           rm macOS-aarch64.zip
-          mv Choreo Choreo-${{ github.ref_name }}-macOS-aarch64
-          mv choreo-cli Choreo-CLI-${{ github.ref_name }}-macOS-aarch64
+          mv macOS-aarch64-standalone.zip Choreo-${{ github.ref_name }}-macOS-aarch64-standalone.zip
           mv Choreo_*_aarch64.dmg Choreo-${{ github.ref_name }}-macOS-aarch64.dmg
 
       - name: Rename Linux x86_64 artifacts
@@ -170,8 +174,7 @@ jobs:
         run: |
           unzip -o Linux-x86_64.zip
           rm Linux-x86_64.zip
-          mv choreo Choreo-${{ github.ref_name }}-Linux-x86_64
-          mv choreo-cli Choreo-CLI-${{ github.ref_name }}-Linux-x86_64
+          mv Linux-x86_64-standalone.zip Choreo-${{ github.ref_name }}-Linux-x86_64-standalone.zip
           mv choreo_*_amd64.AppImage Choreo-${{ github.ref_name }}-Linux-x86_64.AppImage
           mv choreo_*_amd64.deb Choreo-${{ github.ref_name }}-Linux-x86_64.deb
           mv choreo-*.x86_64.rpm Choreo-${{ github.ref_name }}-Linux-x86_64.rpm
