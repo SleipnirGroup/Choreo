@@ -104,3 +104,4 @@ nav:
   - Contributing:
       - Building: contributing/building-choreo.md
       - Contributing Guide: contributing/contributing-guide.md
+      - Release Process: contributing/release-process.md
