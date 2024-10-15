@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 A utility script to update the version in multiple files.
 
