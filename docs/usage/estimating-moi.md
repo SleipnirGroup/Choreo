@@ -12,7 +12,9 @@ If thorough System Identification has been performed, the system's MoI can be ca
 
 $$ I = \text{mass} * \dfrac{trackwidth}{2} * \dfrac{kA_\text{angular}}{kA_\text{linear}} $$
 
-where $kA_\text{angular}$ is the angular acceleration feedforward constant of the drivetrain and $kA_\text{linear}$ is the linear acceleration feedforward constant.
+where $trackwidth$ is the largest distance between the robot's wheel centers, $kA_\text{angular}$ is the angular acceleration feedforward constant of the drivetrain in units of input per angular acceleration (e.g., V/(rad/s²)), and $kA_\text{linear}$ is the linear acceleration feedforward constant in units of input per linear acceleration (e.g., V/(m/s²)).
+
+You can use [SysId](https://docs.wpilib.org/en/stable/docs/software/advanced-controls/system-identification/introduction.html) to measure $kA_\text{angular}$ by spinning the robot in place and $kA_\text{linear}$ by driving the robot in a straight line.
 
 ## Assuming a simplified mass distribution
 
