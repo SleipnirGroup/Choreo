@@ -50,7 +50,7 @@ dependencies {
     api "com.fasterxml.jackson.core:jackson-core:2.15.2"
     api "com.fasterxml.jackson.core:jackson-databind:2.15.2"
 
-    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'com.google.code.gson:gson:2.11.0'
 
     // This is needed to use wpilibj Filesystem class
     testImplementation 'edu.wpi.first.cscore:cscore-java:2025.+'
