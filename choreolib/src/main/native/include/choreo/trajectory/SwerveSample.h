@@ -44,7 +44,9 @@ class SwerveSample {
    * @param ay The acceleration of the sample in the Y direction.
    * @param alpha The angular acceleration of the sample.
    * @param moduleForcesX The force on each swerve module in the X direction.
+   *   Module forces appear in the following order: [FL, FR, BL, BR].
    * @param moduleForcesY The force on each swerve module in the Y direction.
+   *   Module forces appear in the following order: [FL, FR, BL, BR].
    */
   SwerveSample(units::second_t timestamp, units::meter_t x, units::meter_t y,
                units::radian_t heading, units::meters_per_second_t vx,
@@ -108,10 +110,16 @@ class SwerveSample {
                           -ax,
                           ay,
                           -alpha,
-                          {-moduleForcesX[3], -moduleForcesX[2],
-                           -moduleForcesX[1], -moduleForcesX[0]},
-                          {moduleForcesY[3], moduleForcesY[2], moduleForcesY[1],
-                           moduleForcesY[0]}};
+                          // FL, FR, BL, BR
+                          // Mirrored
+                          // -FR, -FL, -BR, -BL
+                          {-moduleForcesX[1], -moduleForcesX[0],
+                           -moduleForcesX[3], -moduleForcesX[2]},
+                          // FL, FR, BL, BR
+                          // Mirrored
+                          // -FR, -FL, -BR, -BL
+                          {moduleForcesY[1], moduleForcesY[0], moduleForcesY[3],
+                           moduleForcesY[2]}};
     } else {
       return SwerveSample{timestamp,
                           flipper.FlipX(x),
