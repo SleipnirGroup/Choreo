@@ -70,7 +70,7 @@ export const PathListStore = types
           params: {
             constraints: [],
             waypoints: [],
-            targetDt: env.vars().createExpression("0.1 s", "Time")
+            targetDt: env.vars().createExpression("0.05 s", "Time")
           },
           ui: {
             visibleWaypointsEnd: 0,
@@ -79,7 +79,7 @@ export const PathListStore = types
           snapshot: {
             waypoints: [],
             constraints: [],
-            targetDt: 0.1
+            targetDt: 0.05
           },
           trajectory: {
             waypoints: [],
@@ -108,7 +108,7 @@ export const PathListStore = types
               params: {
                 constraints: [],
                 waypoints: [],
-                targetDt: env.vars().createExpression("0.1 s", "Time")
+                targetDt: env.vars().createExpression("0.05 s", "Time")
               },
               ui: {
                 visibleWaypointsEnd: 0,
@@ -117,7 +117,7 @@ export const PathListStore = types
               snapshot: {
                 waypoints: [],
                 constraints: [],
-                targetDt: 0.1
+                targetDt: 0.05
               },
               trajectory: {
                 waypoints: [],
