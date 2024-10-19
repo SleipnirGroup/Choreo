@@ -31,13 +31,14 @@ public class AutoRoutine {
   /** A boolean that is true when the loop is killed */
   protected boolean isKilled = false;
 
+  /** The most recent trajectory that was run */
   protected AutoTrajectory recentTrajectory = null;
 
   /**
    * Creates a new loop with a specific name
    *
    * @param name The name of the loop
-   * @see AutoFactory#newLoop Creating a loop from a AutoFactory
+   * @see AutoFactory#newRoutine Creating a loop from a AutoFactory
    */
   public AutoRoutine(String name) {
     this.loop = new EventLoop();

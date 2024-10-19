@@ -288,9 +288,9 @@ public class AutoTrajectory {
    *
    * <p>This is different from inactive() in a few ways.
    * <ul>
-   * <li>This will never be true if the trajectory is interupted<\li>
-   * <li>This will never be true before the trajectory is run<\li>
-   * <li>This will fall when another trajectory is run<\li>
+   * <li>This will never be true if the trajectory is interupted</li>
+   * <li>This will never be true before the trajectory is run</li>
+   * <li>This will fall when another trajectory is run</li>
    * </ul>
    * 
    * <p>Why does the trigger fall when a new trajecory is scheduled?

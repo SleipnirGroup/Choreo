@@ -32,21 +32,21 @@ import java.util.function.Supplier;
  * <h2>Example using <code>Trigger</code>s</h2>
  *
  * <pre><code>
- * public Command shootThenMove(AutoFactory factory) {
- *   // Create a new auto loop to return
- *   var loop = factory.newLoop();
+ * public AutoRoutine shootThenMove(AutoFactory factory) {
+ *   // Create a new auto routine to return
+ *   var routine = factory.newRoutine();
  *
  *   // Create a trajectory that moves the robot 2 meters
- *   AutoTrajectory trajectory = factory.trajectory("move2meters", loop);
+ *   AutoTrajectory trajectory = factory.trajectory("move2meters", routine);
  *
- *   // Will automatically run the shoot command when the auto loop is first polled
- *   loop.enabled().onTrue(shooter.shoot());
+ *   // Will automatically run the shoot command when the auto routine is first polled
+ *   routine.enabled().onTrue(shooter.shoot());
  *
  *   // Gets a trigger from the shooter to if the shooter has a note, and will run the trajectory
  *   // command when the shooter does not have a note
- *   loop.enabled().and(shooter.hasNote()).onFalse(trajectory.cmd());
+ *   routine.enabled().and(shooter.hasNote()).onFalse(trajectory.cmd());
  *
- *   return loopcmd().withName("ShootThenMove");
+ *   return routine;
  * }
  * </code></pre>
  *
