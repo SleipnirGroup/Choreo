@@ -8,8 +8,6 @@ import edu.wpi.first.networktables.StringArrayEntry;
 import edu.wpi.first.networktables.StringEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobotBase;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -26,14 +24,14 @@ import java.util.function.Function;
  * chooser has to be updated every cycle by calling the {@link #update()} method in your {@link
  * IterativeRobotBase#robotPeriodic()}.
  *
- * <p>You can retrieve the auto routine {@link Command} that is currently selected by calling the
+ * <p>You can retrieve the {@link AutoRoutine} that is currently selected by calling the
  * {@link #getSelectedAutoRoutine()} method.
  */
 public class AutoChooser {
-  /** A function that generates an auto routine {@link Command} from an {@link AutoFactory}. */
-  public static interface AutoRoutineGenerator extends Function<AutoFactory, Command> {
-    /** A generator that returns a command that does nothing */
-    static final AutoRoutineGenerator NONE = factory -> Commands.none().withName("Do Nothing Auto");
+  /** A function that generates an {@link AutoRoutine} from an {@link AutoFactory}. */
+  public static interface AutoRoutineGenerator extends Function<AutoFactory, AutoRoutine> {
+    /** A generator that returns an auto routine that does nothing */
+    static final AutoRoutineGenerator NONE = factory -> AutoFactory.VOID_ROUTINE;
   }
 
   private static final String NONE_NAME = "Nothing";
@@ -47,7 +45,7 @@ public class AutoChooser {
   private final AutoFactory factory;
 
   private String lastAutoRoutineName = NONE_NAME;
-  private Command lastAutoRoutine = AutoRoutineGenerator.NONE.apply(null);
+  private AutoRoutine lastAutoRoutine = AutoRoutineGenerator.NONE.apply(null);
 
   /**
    * Create a new auto chooser.
@@ -110,21 +108,11 @@ public class AutoChooser {
   }
 
   /**
-   * Choose an auto routine by name.
-   *
-   * @param choice The name of the auto routine to choose.
-   */
-  public void choose(String choice) {
-    selected.set(choice);
-    update();
-  }
-
-  /**
    * Get the currently selected auto routine.
    *
    * @return The currently selected auto routine.
    */
-  public Command getSelectedAutoRoutine() {
+  public AutoRoutine getSelectedAutoRoutine() {
     return lastAutoRoutine;
   }
 }

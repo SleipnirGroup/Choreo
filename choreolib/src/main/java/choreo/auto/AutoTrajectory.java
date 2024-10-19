@@ -14,7 +14,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -47,7 +46,7 @@ public class AutoTrajectory {
   private final BooleanSupplier mirrorTrajectory;
   private final Timer timer = new Timer();
   private final Subsystem driveSubsystem;
-  private final EventLoop loop;
+  private final AutoRoutine routine;
 
   /**
    * A way to create slightly less triggers for alot of actions. Not static as to not leak triggers
@@ -73,7 +72,7 @@ public class AutoTrajectory {
    * @param mirrorTrajectory Getter that determines whether to mirror trajectory.
    * @param trajectoryLogger Optional trajectory logger.
    * @param driveSubsystem Drive subsystem.
-   * @param loop Event loop.
+   * @param routine Event loop.
    * @param bindings {@link Choreo#createAutoFactory}
    */
   <SampleType extends TrajectorySample<SampleType>> AutoTrajectory(
@@ -84,7 +83,7 @@ public class AutoTrajectory {
       BooleanSupplier mirrorTrajectory,
       Optional<TrajectoryLogger<SampleType>> trajectoryLogger,
       Subsystem driveSubsystem,
-      EventLoop loop,
+      AutoRoutine routine,
       AutoBindings bindings) {
     this.name = name;
     this.trajectory = trajectory;
@@ -92,8 +91,8 @@ public class AutoTrajectory {
     this.controller = controller;
     this.mirrorTrajectory = mirrorTrajectory;
     this.driveSubsystem = driveSubsystem;
-    this.loop = loop;
-    this.offTrigger = new Trigger(loop, () -> false);
+    this.routine = routine;
+    this.offTrigger = new Trigger(routine.loop(), () -> false);
     this.trajectoryLogger =
         trajectoryLogger.isPresent()
             ? trajectoryLogger.get()
@@ -147,6 +146,7 @@ public class AutoTrajectory {
     isActive = true;
     timeOffset = 0.0;
     logTrajectory(true);
+    routine.recentTrajectory = this;
   }
 
   @SuppressWarnings("unchecked")
@@ -169,6 +169,7 @@ public class AutoTrajectory {
     currentSample = sample;
   }
 
+  @SuppressWarnings("unchecked")
   private void cmdEnd(boolean interrupted) {
     timer.stop();
     if (interrupted) {
@@ -267,7 +268,7 @@ public class AutoTrajectory {
    * @return A trigger that is true while the trajectory is scheduled.
    */
   public Trigger active() {
-    return new Trigger(loop, () -> this.isActive);
+    return new Trigger(routine.loop(), () -> this.isActive);
   }
 
   /**
@@ -282,31 +283,40 @@ public class AutoTrajectory {
   }
 
   /**
-   * Returns a trigger that has a rising edge when the command finishes, this edge will fall again
-   * the next cycle.
+   * Returns a trigger that rises to true when the trajectory ends and falls
+   * when another trajectory is run.
    *
-   * <p>This is not a substitute for the {@link #inactive()} trigger, inactive will stay true until
-   * the trajectory is scheduled again and will also be true if thus trajectory has never been
-   * scheduled.
-   *
-   * @return A trigger that is true when the command is finished.
+   * <p>This is different from inactive() in a few ways.
+   * <ul>
+   * <li>This will never be true if the trajectory is interupted<\li>
+   * <li>This will never be true before the trajectory is run<\li>
+   * <li>This will fall when another trajectory is run<\li>
+   * </ul>
+   * 
+   * <p>Why does the trigger fall when a new trajecory is scheduled?
+   * <pre><code>
+   * //Lets say we had this code segment
+   * Trigger hasGamepiece = ...;
+   * Trigger noGamepiece = hasGamepiece.negate();
+   * 
+   * AutoTrajectory rushMidTraj = ...;
+   * AutoTrajectory goShootGamepiece = ...;
+   * AutoTrajectory pickupAnotherGamepiece = ...;
+   * 
+   * routine.enabled().onTrue(rushMidTraj.cmd());
+   * 
+   * rushMidTraj.done().and(noGamepiece).onTrue(pickupAnotherGamepiece.cmd());
+   * rushMidTraj.done().and(hasGamepiece).onTrue(goShootGamepiece.cmd());
+   * 
+   * // If done never falls when a new trajectory is scheduled
+   * // then these triggers leak into the next trajectory, causing the next note pickup
+   * // to trigger goShootGamepiece.cmd() even if we no longer care about these checks
+   * </code></pre>
+   * 
+   * @return A trigger that is true when the trajectoy is finished.
    */
   public Trigger done() {
-    return new Trigger(
-        loop,
-        new BooleanSupplier() {
-          boolean wasJustActive = false;
-
-          public boolean getAsBoolean() {
-            if (isActive) {
-              wasJustActive = true;
-            } else if (wasJustActive) {
-              wasJustActive = false;
-              return true;
-            }
-            return false;
-          }
-        });
+    return inactive().and(new Trigger(routine.loop(), () -> routine.isMostRecentTrajectory(this)));
   }
 
   /**
@@ -332,7 +342,7 @@ public class AutoTrajectory {
     // Make the trigger only be high for 1 cycle when the time has elapsed,
     // this is needed for better support of multi-time triggers for multi events
     return new Trigger(
-        loop,
+        routine.loop(),
         new BooleanSupplier() {
           double lastTimestamp = timer.get();
 
@@ -396,7 +406,7 @@ public class AutoTrajectory {
             ? AllianceFlipUtil.flip(pose.getTranslation())
             : pose.getTranslation();
     return new Trigger(
-        loop,
+        routine.loop(),
         () -> {
           Translation2d currentTrans = poseSupplier.get().getTranslation();
           return currentTrans.getDistance(checkedTrans) < toleranceMeters;
@@ -505,5 +515,14 @@ public class AutoTrajectory {
       poses[i] = trajectory.sampleAt(times[i], mirrorTrajectory.getAsBoolean()).getPose();
     }
     return poses;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof AutoTrajectory) {
+      AutoTrajectory other = (AutoTrajectory) obj;
+      return this.name.equals(other.name);
+    }
+    return false;
   }
 }
