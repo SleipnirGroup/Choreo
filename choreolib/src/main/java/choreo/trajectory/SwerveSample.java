@@ -70,8 +70,10 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
    * @param ax The acceleration of the sample in the X direction in m/s^2.
    * @param ay The acceleration of the sample in the Y direction in m/s^2.
    * @param alpha The angular acceleration of the sample in rad/s^2.
-   * @param moduleForcesX The force on each swerve module in the X direction in Newtons.
-   * @param moduleForcesY The force on each swerve module in the Y direction in Newtons.
+   * @param moduleForcesX The force on each swerve module in the X direction in Newtons. Module
+   *     forces appear in the following order: [FL, FR, BL, BR].
+   * @param moduleForcesY The force on each swerve module in the Y direction in Newtons. Module
+   *     forces appear in the following order: [FL, FR, BL, BR].
    */
   public SwerveSample(
       double t,
@@ -200,23 +202,23 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
               -this.ax,
               this.ay,
               -this.alpha,
-              // FL, BL, BR, FR
-              // Flipped
-              // -FR, -BR, -BL, -FR
+              // FL, FR, BL, BR
+              // Mirrored
+              // -FR, -FL, -BR, -BL
               new double[] {
-                -this.moduleForcesX()[3],
-                -this.moduleForcesX()[2],
                 -this.moduleForcesX()[1],
-                -this.moduleForcesX()[0]
+                -this.moduleForcesX()[0],
+                -this.moduleForcesX()[3],
+                -this.moduleForcesX()[2]
               },
-              // FL, BL, BR, FR
-              // Flipped
-              // FR, BR, BL, FR
+              // FL, FR, BL, BR
+              // Mirrored
+              // FR, FL, BR, BL
               new double[] {
-                this.moduleForcesY()[3],
-                this.moduleForcesY()[2],
                 this.moduleForcesY()[1],
-                this.moduleForcesY()[0]
+                this.moduleForcesY()[0],
+                this.moduleForcesY()[3],
+                this.moduleForcesY()[2]
               });
       case ROTATE_AROUND ->
           new SwerveSample(
