@@ -15,7 +15,7 @@ import java.util.function.BooleanSupplier;
  *
  * <p>This loop is used to handle autonomous trigger logic and schedule commands. This loop should
  * **not** be shared across multiple autonomous routines.
- * 
+ *
  * @see AutoFactory#newRoutine Creating a routine from a AutoFactory
  */
 public class AutoRoutine {
@@ -108,9 +108,9 @@ public class AutoRoutine {
 
   /**
    * Returns if the the given trajectory is the most recently run trajectory.
-   * 
+   *
    * <p>This will return true if the given trajectory is currently running aswell.
-   * 
+   *
    * @param trajectory The trajectory to check
    * @return If the given trajectory is the most recently run trajectory
    */

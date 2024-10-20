@@ -292,27 +292,27 @@ public class AutoTrajectory {
    * <li>This will never be true before the trajectory is run</li>
    * <li>This will fall when another trajectory is run</li>
    * </ul>
-   * 
+   *
    * <p>Why does the trigger fall when a new trajecory is scheduled?
    * <pre><code>
    * //Lets say we had this code segment
    * Trigger hasGamepiece = ...;
    * Trigger noGamepiece = hasGamepiece.negate();
-   * 
+   *
    * AutoTrajectory rushMidTraj = ...;
    * AutoTrajectory goShootGamepiece = ...;
    * AutoTrajectory pickupAnotherGamepiece = ...;
-   * 
+   *
    * routine.enabled().onTrue(rushMidTraj.cmd());
-   * 
+   *
    * rushMidTraj.done().and(noGamepiece).onTrue(pickupAnotherGamepiece.cmd());
    * rushMidTraj.done().and(hasGamepiece).onTrue(goShootGamepiece.cmd());
-   * 
+   *
    * // If done never falls when a new trajectory is scheduled
    * // then these triggers leak into the next trajectory, causing the next note pickup
    * // to trigger goShootGamepiece.cmd() even if we no longer care about these checks
    * </code></pre>
-   * 
+   *
    * @return A trigger that is true when the trajectoy is finished.
    */
   public Trigger done() {
