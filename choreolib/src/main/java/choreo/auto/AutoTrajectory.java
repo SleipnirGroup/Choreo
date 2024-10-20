@@ -204,7 +204,7 @@ public class AutoTrajectory {
   }
 
   private boolean cmdIsFinished() {
-    return timeIntoTrajectory() > totalTime();
+    return timeIntoTrajectory() > totalTime() || !routine.isActive;
   }
 
   /**
@@ -268,7 +268,7 @@ public class AutoTrajectory {
    * @return A trigger that is true while the trajectory is scheduled.
    */
   public Trigger active() {
-    return new Trigger(routine.loop(), () -> this.isActive);
+    return new Trigger(routine.loop(), () -> this.isActive && routine.isActive);
   }
 
   /**
@@ -283,17 +283,19 @@ public class AutoTrajectory {
   }
 
   /**
-   * Returns a trigger that rises to true when the trajectory ends and falls
-   * when another trajectory is run.
+   * Returns a trigger that rises to true when the trajectory ends and falls when another trajectory
+   * is run.
    *
    * <p>This is different from inactive() in a few ways.
+   *
    * <ul>
-   * <li>This will never be true if the trajectory is interupted</li>
-   * <li>This will never be true before the trajectory is run</li>
-   * <li>This will fall when another trajectory is run</li>
+   *   <li>This will never be true if the trajectory is interupted
+   *   <li>This will never be true before the trajectory is run
+   *   <li>This will fall when another trajectory is run
    * </ul>
    *
    * <p>Why does the trigger fall when a new trajecory is scheduled?
+   *
    * <pre><code>
    * //Lets say we had this code segment
    * Trigger hasGamepiece = ...;
@@ -316,7 +318,10 @@ public class AutoTrajectory {
    * @return A trigger that is true when the trajectoy is finished.
    */
   public Trigger done() {
-    return inactive().and(new Trigger(routine.loop(), () -> routine.isMostRecentTrajectory(this)));
+    return inactive()
+        .and(
+            new Trigger(
+                routine.loop(), () -> routine.isMostRecentTrajectory(this) && routine.isActive));
   }
 
   /**

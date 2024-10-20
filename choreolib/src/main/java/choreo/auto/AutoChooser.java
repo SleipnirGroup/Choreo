@@ -24,8 +24,8 @@ import java.util.function.Function;
  * chooser has to be updated every cycle by calling the {@link #update()} method in your {@link
  * IterativeRobotBase#robotPeriodic()}.
  *
- * <p>You can retrieve the {@link AutoRoutine} that is currently selected by calling the
- * {@link #getSelectedAutoRoutine()} method.
+ * <p>You can retrieve the {@link AutoRoutine} that is currently selected by calling the {@link
+ * #getSelectedAutoRoutine()} method.
  */
 public class AutoChooser {
   /** A function that generates an {@link AutoRoutine} from an {@link AutoFactory}. */
