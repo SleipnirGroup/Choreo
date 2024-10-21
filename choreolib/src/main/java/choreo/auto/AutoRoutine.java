@@ -59,8 +59,8 @@ public class AutoRoutine {
   /**
    * Returns a {@link Trigger} that is true while this autonomous routine is being polled.
    *
-   * <p>Using a {@link Trigger#onFalse(Command)} will do nothing as when this is false the routine is
-   * not being polled anymore.
+   * <p>Using a {@link Trigger#onFalse(Command)} will do nothing as when this is false the routine
+   * is not being polled anymore.
    *
    * @return A {@link Trigger} that is true while this autonomous routine is being polled.
    */
@@ -88,8 +88,9 @@ public class AutoRoutine {
   }
 
   /**
-   * Resets the routine. This can either be called on auto init or auto end to reset the routine incase
-   * you run it again. If this is called on a routine that doesn't need to be reset it will do nothing.
+   * Resets the routine. This can either be called on auto init or auto end to reset the routine
+   * incase you run it again. If this is called on a routine that doesn't need to be reset it will
+   * do nothing.
    */
   public void reset() {
     isActive = false;

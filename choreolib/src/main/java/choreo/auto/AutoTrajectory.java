@@ -283,17 +283,19 @@ public class AutoTrajectory {
   }
 
   /**
-   * Returns a trigger that rises to true when the trajectory ends and falls
-   * when another trajectory is run.
+   * Returns a trigger that rises to true when the trajectory ends and falls when another trajectory
+   * is run.
    *
    * <p>This is different from inactive() in a few ways.
+   *
    * <ul>
-   * <li>This will never be true if the trajectory is interupted</li>
-   * <li>This will never be true before the trajectory is run</li>
-   * <li>This will fall when another trajectory is run</li>
+   *   <li>This will never be true if the trajectory is interupted
+   *   <li>This will never be true before the trajectory is run
+   *   <li>This will fall when another trajectory is run
    * </ul>
    *
    * <p>Why does the trigger fall when a new trajecory is scheduled?
+   *
    * <pre><code>
    * //Given this code segment
    * Trigger hasGamepiece = ...;
@@ -367,7 +369,8 @@ public class AutoTrajectory {
    * @param eventName The name of the event.
    * @return A trigger that is true when the event with the given name has been reached based on
    *     time.
-   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event Markers in the GUI</a>
+   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event
+   *     Markers in the GUI</a>
    */
   public Trigger atTime(String eventName) {
     boolean foundEvent = false;
@@ -385,7 +388,8 @@ public class AutoTrajectory {
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
     if (!foundEvent) {
-      DriverStation.reportWarning("[Choreo] Event \"" + eventName + "\" not found for " + name, true);
+      DriverStation.reportWarning(
+          "[Choreo] Event \"" + eventName + "\" not found for " + name, true);
     }
 
     return trig;
@@ -425,7 +429,8 @@ public class AutoTrajectory {
    * @param toleranceMeters The tolerance in meters.
    * @return A trigger that is true when the robot is within toleranceMeters of the given events
    *     pose.
-   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event Markers in the GUI</a>
+   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event
+   *     Markers in the GUI</a>
    */
   public Trigger atPose(String eventName, double toleranceMeters) {
     boolean foundEvent = false;
@@ -444,7 +449,8 @@ public class AutoTrajectory {
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
     if (!foundEvent) {
-      DriverStation.reportWarning("[Choreo] Event \"" + eventName + "\" not found for " + name, true);
+      DriverStation.reportWarning(
+          "[Choreo] Event \"" + eventName + "\" not found for " + name, true);
     }
 
     return trig;
@@ -458,7 +464,8 @@ public class AutoTrajectory {
    *
    * @param eventName The name of the event.
    * @return A trigger that is true when the robot is within 3 inches of the given events pose.
-   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event Markers in the GUI</a>
+   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event
+   *     Markers in the GUI</a>
    */
   public Trigger atPose(String eventName) {
     return atPose(eventName, DEFAULT_TOLERANCE_METERS);
@@ -475,7 +482,8 @@ public class AutoTrajectory {
    * @param toleranceMeters The tolerance in meters.
    * @return A trigger that is true when the event with the given name has been reached based on
    *     time and the robot is within toleranceMeters of the given events pose.
-   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event Markers in the GUI</a>
+   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event
+   *     Markers in the GUI</a>
    */
   public Trigger atTimeAndPlace(String eventName, double toleranceMeters) {
     return atTime(eventName).and(atPose(eventName, toleranceMeters));
@@ -491,7 +499,8 @@ public class AutoTrajectory {
    * @param eventName The name of the event.
    * @return A trigger that is true when the event with the given name has been reached based on
    *     time and the robot is within 3 inches of the given events pose.
-   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event Markers in the GUI</a>
+   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event
+   *     Markers in the GUI</a>
    */
   public Trigger atTimeAndPlace(String eventName) {
     return atTimeAndPlace(eventName, DEFAULT_TOLERANCE_METERS);
@@ -502,7 +511,8 @@ public class AutoTrajectory {
    *
    * @param eventName The name of the event.
    * @return An array of all the timestamps of the events with the given name.
-   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event Markers in the GUI</a>
+   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event
+   *     Markers in the GUI</a>
    */
   public double[] collectEventTimes(String eventName) {
     return trajectory.getEvents(eventName).stream().mapToDouble(e -> e.timestamp).toArray();
@@ -513,7 +523,8 @@ public class AutoTrajectory {
    *
    * @param eventName The name of the event.
    * @return An array of all the poses of the events with the given name.
-   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event Markers in the GUI</a>
+   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event
+   *     Markers in the GUI</a>
    */
   public Pose2d[] collectEventPoses(String eventName) {
     var times = collectEventTimes(eventName);

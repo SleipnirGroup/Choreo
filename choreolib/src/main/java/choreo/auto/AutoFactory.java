@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -27,7 +26,8 @@ import java.util.function.Supplier;
 /**
  * A factory used to create {@link AutoRoutine}s and {@link AutoTrajectory}s.
  *
- * @see <a href="https://sleipnirgroup.github.io/Choreo/choreolib/auto-routines">Auto Routine Docs</a>
+ * @see <a href="https://sleipnirgroup.github.io/Choreo/choreolib/auto-routines">Auto Routine
+ *     Docs</a>
  */
 public class AutoFactory {
   static final AutoRoutine VOID_ROUTINE =
@@ -150,8 +150,8 @@ public class AutoFactory {
   }
 
   /**
-   * An {@link AutoRoutine} that cannot have any side-effects, it stores no state and does nothing when
-   * polled.
+   * An {@link AutoRoutine} that cannot have any side-effects, it stores no state and does nothing
+   * when polled.
    *
    * @return A void {@link AutoRoutine}.
    * @see #newRoutine
@@ -188,7 +188,8 @@ public class AutoFactory {
    * @param routine The {@link AutoRoutine} to register this trajectory under.
    * @return A new {@link AutoTrajectory}.
    */
-  public AutoTrajectory trajectory(String trajectoryName, final int splitIndex, AutoRoutine routine) {
+  public AutoTrajectory trajectory(
+      String trajectoryName, final int splitIndex, AutoRoutine routine) {
     Optional<? extends Trajectory<?>> optTrajectory =
         trajectoryCache.loadTrajectory(trajectoryName, splitIndex);
     Trajectory<?> trajectory;
@@ -288,9 +289,8 @@ public class AutoFactory {
   }
 
   /**
-   * Creates an {@link AutoRoutine} with the name of the command.
-   * The command is the bound to the routine's enabled trigger.
-   * This is useful for adding a {@link Command} composition based auto
+   * Creates an {@link AutoRoutine} with the name of the command. The command is the bound to the
+   * routine's enabled trigger. This is useful for adding a {@link Command} composition based auto
    * to the {@link choreo.auto.AutoChooser}.
    *
    * @param cmd The command to bind to the routine.
