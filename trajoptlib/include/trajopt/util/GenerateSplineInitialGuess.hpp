@@ -105,8 +105,8 @@ template <typename Solution>
 inline Solution GenerateSplineInitialGuess(
     const std::vector<std::vector<Pose2d>>& initialGuessPoints,
     const std::vector<size_t> controlIntervalCounts) {
-  auto splines = splinesFromWaypoints<Solution>(initialGuessPoints);
-
+  std::vector<frc::CubicHermitePoseSplineHolonomic> splines =
+      splinesFromWaypoints<Solution>(initialGuessPoints);
   std::vector<std::vector<PoseWithCurvature>> sgmtPoints;
   for (auto _i = 0; _i < initialGuessPoints.size(); ++_i) {
     for (auto _j = 0; _j < initialGuessPoints.at(_i).size(); ++_j) {
@@ -147,7 +147,7 @@ inline Solution GenerateSplineInitialGuess(
   }
 
   size_t wptCnt = controlIntervalCounts.size() + 1;
-  size_t sampTot = GetIndex(controlIntervalCounts, wptCnt, 0);
+  size_t sampTot = GetIndex(controlIntervalCounts, wptCnt - 1, 0) + 1;
 
   Solution initialGuess;
 
@@ -159,6 +159,7 @@ inline Solution GenerateSplineInitialGuess(
     initialGuess.thetacos.reserve(sampTot);
     initialGuess.thetasin.reserve(sampTot);
   }
+
   initialGuess.dt.reserve(sampTot);
   for (size_t i = 0; i < sampTot; ++i) {
     initialGuess.dt.push_back((wptCnt * 5.0) / sampTot);
