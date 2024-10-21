@@ -140,6 +140,24 @@ inline Solution GenerateLinearInitialGuess(
     }
   }
 
+  if constexpr (std::same_as<Solution, DifferentialSolution>) {
+    std::printf("\nx: [");
+    for (auto x_ : initialGuess.x) {
+      std::printf("%.2f, ", x_);
+    }
+    std::printf("]\n");
+    std::printf("\ny: [");
+    for (auto y_ : initialGuess.y) {
+      std::printf("%.2f, ", y_);
+    }
+    std::printf("]\n");
+    std::printf("\nh: [");
+    for (auto h_ : initialGuess.heading) {
+      std::printf("%.2f, ", h_);
+    }
+    std::printf("]\n");
+  }
+
   return initialGuess;
 }
 
