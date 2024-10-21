@@ -109,18 +109,6 @@ public class AutoRoutine {
   }
 
   /**
-   * Returns if the the given trajectory is the most recently run trajectory.
-   *
-   * <p>This will return true if the given trajectory is currently running aswell.
-   *
-   * @param trajectory The trajectory to check
-   * @return If the given trajectory is the most recently run trajectory
-   */
-  public boolean isMostRecentTrajectory(AutoTrajectory trajectory) {
-    return recentTrajectory.equals(trajectory);
-  }
-
-  /**
    * Creates a command that will poll this event loop and reset it when it is cancelled.
    *
    * @return A command that will poll this event loop and reset it when it is cancelled.

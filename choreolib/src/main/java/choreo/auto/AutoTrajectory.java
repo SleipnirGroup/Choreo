@@ -35,7 +35,6 @@ public class AutoTrajectory {
   // code. This also makes the places with generics exposed to users few
   // and far between. This helps with more novice users
 
-  // did inches to meters like this to keep final
   private static final double DEFAULT_TOLERANCE_METERS = Units.inchesToMeters(3);
 
   private final String name;
@@ -283,45 +282,31 @@ public class AutoTrajectory {
   }
 
   /**
-   * Returns a trigger that rises to true when the trajectory ends and falls when another trajectory
-   * is run.
+   * Returns a trigger that has a rising edge when the command finishes, this edge will fall again
+   * the next cycle.
    *
-   * <p>This is different from inactive() in a few ways.
+   * <p>This is not a substitute for the {@link #inactive()} trigger, inactive will stay true until
+   * the trajectory is scheduled again and will also be true if thus trajectory has never been
+   * scheduled.
    *
-   * <ul>
-   *   <li>This will never be true if the trajectory is interupted
-   *   <li>This will never be true before the trajectory is run
-   *   <li>This will fall when another trajectory is run
-   * </ul>
-   *
-   * <p>Why does the trigger fall when a new trajecory is scheduled?
-   *
-   * <pre><code>
-   * //Lets say we had this code segment
-   * Trigger hasGamepiece = ...;
-   * Trigger noGamepiece = hasGamepiece.negate();
-   *
-   * AutoTrajectory rushMidTraj = ...;
-   * AutoTrajectory goShootGamepiece = ...;
-   * AutoTrajectory pickupAnotherGamepiece = ...;
-   *
-   * routine.enabled().onTrue(rushMidTraj.cmd());
-   *
-   * rushMidTraj.done().and(noGamepiece).onTrue(pickupAnotherGamepiece.cmd());
-   * rushMidTraj.done().and(hasGamepiece).onTrue(goShootGamepiece.cmd());
-   *
-   * // If done never falls when a new trajectory is scheduled
-   * // then these triggers leak into the next trajectory, causing the next note pickup
-   * // to trigger goShootGamepiece.cmd() even if we no longer care about these checks
-   * </code></pre>
-   *
-   * @return A trigger that is true when the trajectoy is finished.
+   * @return A trigger that is true when the command is finished.
    */
   public Trigger done() {
-    return inactive()
-        .and(
-            new Trigger(
-                routine.loop(), () -> routine.isMostRecentTrajectory(this) && routine.isActive));
+    return new Trigger(
+        routine.loop(),
+        new BooleanSupplier() {
+          boolean wasJustActive = false;
+
+          public boolean getAsBoolean() {
+            if (isActive) {
+              wasJustActive = true;
+            } else if (wasJustActive) {
+              wasJustActive = false;
+              return true;
+            }
+            return false;
+          }
+        });
   }
 
   /**
