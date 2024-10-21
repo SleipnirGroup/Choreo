@@ -84,6 +84,11 @@ public class AutoFactory {
         public void reset() {}
 
         @Override
+        public boolean isMostRecentTrajectory(AutoTrajectory trajectory) {
+          return false;
+        }
+
+        @Override
         public Trigger enabled() {
           return new Trigger(loop, () -> false);
         }
