@@ -165,11 +165,14 @@ inline Solution GenerateSplineInitialGuess(
     initialGuess.dt.push_back((wptCnt * 5.0) / sampTot);
   }
 
+  std::printf("* sgmtPoints *\n");
   for (auto sgmt : sgmtPoints) {
     for (auto pt : sgmt) {
+      std::printf("x %.2f - y %.2f - ", pt.first.X(), pt.first.Y());
       initialGuess.x.push_back(pt.first.X());
       initialGuess.y.push_back(pt.first.Y());
       if constexpr (std::same_as<Solution, DifferentialSolution>) {
+        std::printf("h %.2f\n", pt.first.Rotation().Radians());
         initialGuess.heading.push_back(pt.first.Rotation().Radians());
       } else {
         initialGuess.thetacos.push_back(pt.first.Rotation().Cos());
