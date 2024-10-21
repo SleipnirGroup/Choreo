@@ -76,9 +76,13 @@ public class AutoChooser {
    *
    * <p>This method should be called every cycle in the {@link IterativeRobotBase#robotPeriodic()}.
    * It will check if the selected auto routine has changed and update the active auto routine.
+   * 
+   * <p>The auto routine can only be updated when the robot is disabled.
+   * If the chooser in your dashboard says {@code BAD} the {@link AutoChooser}
+   * has not responded to the selection yet and you need to disable the robot to update it.
    */
   public void update() {
-    if (DriverStation.isDisabled() || IterativeRobotBase.isSimulation()) {
+    if (DriverStation.isDisabled()) {
       String selectStr = selected.get();
       if (selectStr.equals(lastAutoRoutineName)) return;
       if (!autoRoutines.containsKey(selectStr)) {
@@ -95,12 +99,28 @@ public class AutoChooser {
   /**
    * Add an auto routine to the chooser.
    *
-   * <p>An auto routine is a function that takes an AutoFactory and returns a Command. These
-   * functions can be static, a lambda or belong to a local variable.
+   * <p>An auto routine is a function that takes an {@link AutoFactory} and returns a {@link AutoRoutine}.
+   * These functions can be static, a lambda or belong to a local variable.
    *
-   * <p>A good paradigm is making an `AutoRoutines` class that has a reference to all your
-   * subsystems and has helper methods for auto commands inside it. Then you crate methods inside
-   * that class that take an `AutoFactory` and return a `Command`.
+   * <p>A good paradigm is making an `Autos` class that all of your subsystems/resources are
+   * {@link <a href="https://en.wikipedia.org/wiki/Dependency_injection">dependency injected</a>} into.
+   * Then you crate methods inside that class that take an {@link AutoFactory} and return a {@link AutoRoutine}.
+   * You can also have the `Autos` class extend an `AutoHelpers` class that has helper methods that don't clutter
+   * your routines.
+   * 
+   * <p><h3>Example:</h3>
+   * <pre><code>
+   * AutoChooser chooser;
+   *
+   * Robot() {
+   *   chooser = new AutoChooser(Choreo.createAutoFactory(...), "/Choosers");
+   *   Autos autos = new Autos(swerve, shooter, intake, feeder);
+   *   chooser.addAutoRoutine("4 Piece right", autos::fourPieceRight);
+   *   chooser.addAutoRoutine("4 Piece Left", autos::fourPieceLeft);
+   *   chooser.addAutoRoutine("3 Piece Close", autos::threePieceClose);
+   *   chooser.addAutoRoutine("Just Shoot", factory -> factory.commandAsAutoRoutine(shooter.shoot()));
+   * }
+   * </code></pre>
    *
    * @param name The name of the auto routine.
    * @param generator The function that generates the auto routine.
@@ -112,6 +132,34 @@ public class AutoChooser {
 
   /**
    * Get the currently selected {@link AutoRoutine}.
+   *
+   * <h3>Recommended Usage</h3>
+   * Scheduling it as a command.
+   * <pre><code>
+   * AutoChooser chooser = ...;
+   *
+   * public void autonomousInit() {
+   *   CommandScheduler.getInstance().schedule(chooser.getSelectedAutoRoutine().cmd());
+   * }
+   * </code></pre>
+   *
+   * Polling it yourself.
+   * <pre><code>
+   * AutoChooser chooser = ...;
+   * AutoRoutine routine = chooser.getSelectedAutoRoutine();
+   *
+   * public void autonomousInit() {
+   *   routine = chooser.getSelectedAutoRoutine();
+   * }
+   *
+   * public void autonomousPeriodic() {
+   *  routine.poll();
+   * }
+   *
+   * public void autonomousExit() {
+   *   routine.reset();
+   * }
+   * </code></pre>
    *
    * @return The currently selected {@link AutoRoutine}.
    */

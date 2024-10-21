@@ -18,6 +18,7 @@ if (trajectory.isPresent()) {
     // If the trajectory is not found, ChoreoLib already prints to DriverStation
 }
 ```
+
 ``` { .py .select }
 import choreo
 
@@ -31,6 +32,7 @@ except ValueError:
     # If the trajectory is not found, ChoreoLib already prints to DriverStation
     pass
 ```
+
 ``` { .cpp .select }
 #include <choreo/Choreo.h>
 

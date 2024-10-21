@@ -1,6 +1,8 @@
-Install ChoreoLib to your robot project by copy pasting the following link into the vendor library installation dialog:
+# Installation Methods
 
-```
+## Vendor Dependencies
+
+```json
 https://sleipnirgroup.github.io/ChoreoLib/dep/ChoreoLib.json
 ```
 

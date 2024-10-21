@@ -25,43 +25,9 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 /**
- * A factory used to create autonomous routines.
+ * A factory used to create {@link AutoRoutine}s and {@link AutoTrajectory}s.
  *
- * <p>Here is an example of how to use this class to create an auto routine:
- *
- * <h2>Example using <code>Trigger</code>s</h2>
- *
- * <pre><code>
- * public AutoRoutine shootThenMove(AutoFactory factory) {
- *   // Create a new auto routine to return
- *   var routine = factory.newRoutine();
- *
- *   // Create a trajectory that moves the robot 2 meters
- *   AutoTrajectory trajectory = factory.trajectory("move2meters", routine);
- *
- *   // Will automatically run the shoot command when the auto routine is first polled
- *   routine.enabled().onTrue(shooter.shoot());
- *
- *   // Gets a trigger from the shooter to if the shooter has a note, and will run the trajectory
- *   // command when the shooter does not have a note
- *   routine.enabled().and(shooter.hasNote()).onFalse(trajectory.cmd());
- *
- *   return routine;
- * }
- * </code></pre>
- *
- * <h2>Example using <code>CommandGroup</code>s</h2>
- *
- * <pre><code>
- * public Command shootThenMove(AutoFactory factory) {
- *   // Create a trajectory that moves the robot 2 meters
- *   Command trajectory = factory.trajectoryCommand("move2meters");
- *
- *   return shooter.shoot()
- *      .andThen(trajectory)
- *      .withName("ShootThenMove");
- * }
- * </code></pre>
+ * @see <a href="https://sleipnirgroup.github.io/Choreo/choreolib/auto-routines">Auto Routine Docs</a>
  */
 public class AutoFactory {
   static final AutoRoutine VOID_ROUTINE =

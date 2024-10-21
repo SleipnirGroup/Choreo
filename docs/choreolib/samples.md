@@ -1,6 +1,6 @@
 # Samples
 
-ChoreoLib supports swerve and differential drive systems. The only usage difference between using swerve and differential is the type of the sample used.
+ChoreoLib supports swerve and differential drive systems. The only usage difference between using swerve and differential is the type of sample used.
 
 ## Swerve Drive
 
@@ -9,9 +9,11 @@ ChoreoLib supports swerve and differential drive systems. The only usage differe
 ```java
 import choreo.trajectory.SwerveSample;
 ```
+
 ```python
 from choreo.trajectory import SwerveSample
 ```
+
 ```cpp
 #include <choreo/trajectory/SwerveSample.h>
 ```
@@ -31,7 +33,6 @@ from choreo.trajectory import SwerveSample
 - `double[] moduleForcesX` - force on each swerve module in the x direction
 - `double[] moduleForcesY` - force on each swerve module in the y direction
 
-
 ## Differential Drive
 
 ### Importing
@@ -39,9 +40,11 @@ from choreo.trajectory import SwerveSample
 ```java
 import choreo.trajectory.DifferentialSample;
 ```
+
 ```python
 from choreo.trajectory import DifferentialSample
 ```
+
 ```cpp
 #include <choreo/trajectory/DifferentialSample.h>
 ```

@@ -11,8 +11,17 @@ want your subsystem default command to run during an auto
 or want to have concurrent command groups running independently that might handoff `Subsystems` to each other.
 
 Triggers aim to solve these problems by providing a way to define a control flow based on reactions to state
-that don't allocate `Subsystems` until they are needed. Triggers also allow a non-linear control flow with
-branching supported in a first class manner.
+that don't allocate `Subsystems` until they are needed.
+
+Triggers and composition can be used together to create complex auto routines.
+Both paradigms also support branching in their own way.
+
+!!! warning
+    Triggers can have "hygiene" issues if not used correctly.
+    Triggers that are polled by the `CommandScheduler` should never
+    be on the left hand side of a `and`/`or` method call.
+    This will leak the trigger outside of the auto routine and can cause
+    unexpected behavior.
 
 ## Monolithic vs Segmented Trajectories
 
@@ -155,7 +164,7 @@ public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
 }
 ```
 
-## Creating an auto routine with composition and a monolithic trajectory
+## Creating an auto routine with triggers and a monolithic trajectory
 
 ```java
 public AutoRoutine fivePieceAutoTriggerMono(AutoFactory factory) {
@@ -235,11 +244,11 @@ public AutoRoutine fivePieceAutoCompositionSeg(AutoFactory factory) {
               ampToC1.cmd(), intake(), aimFor(ampToC1.getFinalPose().orElseGet(Pose2d::new))),
           shootIfGp(),
           deadline(c1ToM1, waitSeconds(0.35).andThen(intake())),
-          new ConditionalCommand(
+          either(
               deadline(m1ToS1, aim()).andThen(shootIfGp()),
               deadline(m1ToM2, intake()).andThen(deadline(m2ToS1, aim()), shootIfGp()),
               yeGp() // if you aren't using the triggers API these wouldn't need a custom routine
-              ),
+          ),
           deadline(s1ToC2, intake(), aim()),
           shootIfGp(),
           deadline(c2ToC3, intake(), spinnup()),
