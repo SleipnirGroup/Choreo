@@ -13,13 +13,15 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * An auto chooser that allows for the selection of auto routines at runtime.
+ * An Choreo specific {@code SendableChooser} that allows for the selection of {@link AutoRoutine}s at runtime
+ * via a {@link <a href="https://docs.wpilib.org/en/stable/docs/software/dashboards/index.html#dashboards">Dashboard</a>}.
  *
- * <p>This chooser takes a lazy loading approach to auto routines, only generating the auto routine
+ * <p>This chooser takes a {@link <a href="https://en.wikipedia.org/wiki/Lazy_loading">lazy loading</a>}
+ * approach to {@link AutoRoutine}s, only generating the {@link AutoRoutine}
  * when it is selected. This approach has the benefit of not loading all autos on startup, but also
  * not loading the auto during auto start causing a delay.
  *
- * <p>Once the {@link AutoChooser} is made you can add auto routines to it using the {@link
+ * <p>Once the {@link AutoChooser} is made you can add {@link AutoRoutine}s to it using the {@link
  * #addAutoRoutine(String, AutoRoutineGenerator)} method. Unlike {@code SendableChooser} this
  * chooser has to be updated every cycle by calling the {@link #update()} method in your {@link
  * IterativeRobotBase#robotPeriodic()}.
@@ -48,15 +50,16 @@ public class AutoChooser {
   private AutoRoutine lastAutoRoutine = AutoRoutineGenerator.NONE.apply(null);
 
   /**
-   * Create a new auto chooser.
+   * Constructs a new {@link AutoChooser}.
    *
    * @param factory The auto factory to use for auto routine generation.
    * @param tableName The name of the network table to use for the chooser, passing in an empty
-   *     string will put this chooser at the root of the network tables.
+   *     string or null will put this chooser at the root of the network tables.
    */
   public AutoChooser(AutoFactory factory, String tableName) {
     this.factory = factory;
 
+    if (tableName == null) tableName = "";
     String path = NetworkTable.normalizeKey(tableName, true) + "/AutoChooser";
     NetworkTable table = NetworkTableInstance.getDefault().getTable(path);
 
@@ -108,9 +111,9 @@ public class AutoChooser {
   }
 
   /**
-   * Get the currently selected auto routine.
+   * Get the currently selected {@link AutoRoutine}.
    *
-   * @return The currently selected auto routine.
+   * @return The currently selected {@link AutoRoutine}.
    */
   public AutoRoutine getSelectedAutoRoutine() {
     return lastAutoRoutine;

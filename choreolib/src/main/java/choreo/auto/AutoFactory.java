@@ -172,7 +172,6 @@ public class AutoFactory {
    *
    * @param name The name of the {@link AutoRoutine}.
    * @return A new {@link AutoRoutine}.
-   * @see AutoRoutine
    * @see #voidRoutine
    */
   public AutoRoutine newRoutine(String name) {
@@ -196,11 +195,11 @@ public class AutoFactory {
   }
 
   /**
-   * Creates a new auto trajectory to be used in an auto routine.
+   * Creates a new {@link AutoTrajectory} to be used in an auto routine.
    *
    * @param trajectoryName The name of the trajectory to use.
    * @param routine The {@link AutoRoutine} to register this trajectory under.
-   * @return A new auto trajectory.
+   * @return A new {@link AutoTrajectory}.
    */
   public AutoTrajectory trajectory(String trajectoryName, AutoRoutine routine) {
     Optional<? extends Trajectory<?>> optTrajectory =
@@ -216,12 +215,12 @@ public class AutoFactory {
   }
 
   /**
-   * Creates a new auto trajectory to be used in an auto routine.
+   * Creates a new {@link AutoTrajectory} to be used in an auto routine.
    *
    * @param trajectoryName The name of the trajectory to use.
    * @param splitIndex The index of the split trajectory to use.
    * @param routine The {@link AutoRoutine} to register this trajectory under.
-   * @return A new auto trajectory.
+   * @return A new {@link AutoTrajectory}.
    */
   public AutoTrajectory trajectory(String trajectoryName, final int splitIndex, AutoRoutine routine) {
     Optional<? extends Trajectory<?>> optTrajectory =
@@ -237,12 +236,12 @@ public class AutoFactory {
   }
 
   /**
-   * Creates a new auto trajectory to be used in an auto routine.
+   * Creates a new {@link AutoTrajectory} to be used in an auto routine.
    *
    * @param <SampleType> The type of the trajectory samples.
    * @param trajectory The trajectory to use.
    * @param routine The {@link AutoRoutine} to register this trajectory under.
-   * @return A new auto trajectory.
+   * @return A new {@link AutoTrajectory}.
    */
   @SuppressWarnings("unchecked")
   public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory trajectory(
@@ -266,7 +265,7 @@ public class AutoFactory {
   }
 
   /**
-   * Creates a new auto trajectory command to be used in an auto routine.
+   * Creates a new {@link AutoTrajectory} command to be used in an auto routine.
    *
    * <p><b>Important </b>
    *
@@ -277,14 +276,14 @@ public class AutoFactory {
    * AutoBindings} passed into the factory constructor.
    *
    * @param trajectoryName The name of the trajectory to use.
-   * @return A new auto trajectory.
+   * @return A new {@link AutoTrajectory}.
    */
   public Command trajectoryCommand(String trajectoryName) {
     return trajectory(trajectoryName, VOID_ROUTINE).cmd();
   }
 
   /**
-   * Creates a new auto trajectory command to be used in an auto routine.
+   * Creates a new {@link AutoTrajectory} command to be used in an auto routine.
    *
    * <p><b>Important </b>
    *
@@ -296,14 +295,14 @@ public class AutoFactory {
    *
    * @param trajectoryName The name of the trajectory to use.
    * @param splitIndex The index of the split trajectory to use.
-   * @return A new auto trajectory.
+   * @return A new {@link AutoTrajectory}.
    */
   public Command trajectoryCommand(String trajectoryName, final int splitIndex) {
     return trajectory(trajectoryName, splitIndex, VOID_ROUTINE).cmd();
   }
 
   /**
-   * Creates a new auto trajectory command to be used in an auto routine.
+   * Creates a new {@link AutoTrajectory} command to be used in an auto routine.
    *
    * <p><b>Important </b>
    *
@@ -315,7 +314,7 @@ public class AutoFactory {
    *
    * @param <SampleType> The type of the trajectory samples.
    * @param trajectory The trajectory to use.
-   * @return A new auto trajectory.
+   * @return A new {@link AutoTrajectory}.
    */
   public <SampleType extends TrajectorySample<SampleType>> Command trajectoryCommand(
       Trajectory<SampleType> trajectory) {

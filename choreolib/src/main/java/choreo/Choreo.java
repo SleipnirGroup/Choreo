@@ -92,7 +92,7 @@ public final class Choreo {
     } catch (FileNotFoundException ex) {
       throw new RuntimeException("Could not find project file", ex);
     } catch (IOException ex) {
-      throw new RuntimeException("Could not find project file", ex);
+      throw new RuntimeException("Could not close the project file", ex);
     }
     return LAZY_PROJECT_FILE.get();
   }

@@ -219,7 +219,7 @@ public class AutoTrajectory {
       return driveSubsystem
           .runOnce(
               () -> {
-                DriverStation.reportError("Trajectory " + name + " has no samples", false);
+                DriverStation.reportError("[Choreo] Trajectory " + name + " has no samples", false);
               })
           .withName("Trajectory_" + name);
     }
@@ -295,7 +295,7 @@ public class AutoTrajectory {
    *
    * <p>Why does the trigger fall when a new trajecory is scheduled?
    * <pre><code>
-   * //Lets say we had this code segment
+   * //Given this code segment
    * Trigger hasGamepiece = ...;
    * Trigger noGamepiece = hasGamepiece.negate();
    *
@@ -328,14 +328,14 @@ public class AutoTrajectory {
   public Trigger atTime(double timeSinceStart) {
     // The timer shhould never be negative so report this as a warning
     if (timeSinceStart < 0) {
-      DriverStation.reportWarning("Trigger time cannot be negative for " + name, true);
+      DriverStation.reportWarning("[Choreo] Trigger time cannot be negative for " + name, true);
       return offTrigger;
     }
 
     // The timer should never exceed the total trajectory time so report this as a warning
     if (timeSinceStart > totalTime()) {
       DriverStation.reportWarning(
-          "Trigger time cannot be greater than total trajectory time for " + name, true);
+          "[Choreo] Trigger time cannot be greater than total trajectory time for " + name, true);
       return offTrigger;
     }
 
@@ -384,7 +384,7 @@ public class AutoTrajectory {
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
     if (!foundEvent) {
-      DriverStation.reportWarning("Event \"" + eventName + "\" not found for " + name, true);
+      DriverStation.reportWarning("[Choreo] Event \"" + eventName + "\" not found for " + name, true);
     }
 
     return trig;
@@ -442,7 +442,7 @@ public class AutoTrajectory {
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
     if (!foundEvent) {
-      DriverStation.reportWarning("Event \"" + eventName + "\" not found for " + name, true);
+      DriverStation.reportWarning("[Choreo] Event \"" + eventName + "\" not found for " + name, true);
     }
 
     return trig;
