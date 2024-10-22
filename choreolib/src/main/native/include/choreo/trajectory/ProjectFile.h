@@ -123,7 +123,7 @@ struct Config {
   /// The mass of the robot. (kg)
   Expression mass;
 
-  /// The inertia of the robot. (kg m^2)
+  /// The inertia of the robot. (kg-m²)
   Expression inertia;
 
   /// The gearing of the robot.
@@ -135,7 +135,7 @@ struct Config {
   /// The maximum velocity of the robot. (m/s)
   Expression vmax;
 
-  /// The maximum torque of the robot. (N m)
+  /// The maximum torque of the robot. (N-m)
   Expression tmax;
 
   /// The bumpers of the robot.
