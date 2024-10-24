@@ -11,12 +11,14 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.function.BooleanSupplier;
 
 /**
- * A loop that represents an autonomous routine.
+ * An object that represents an autonomous routine.
  *
  * <p>This loop is used to handle autonomous trigger logic and schedule commands. This loop should
  * **not** be shared across multiple autonomous routines.
+ *
+ * @see AutoFactory#newRoutine Creating a routine from a AutoFactory
  */
-public class AutoLoop {
+public class AutoRoutine {
   /** The underlying {@link EventLoop} that triggers are bound to and polled */
   protected final EventLoop loop;
 
@@ -29,13 +31,16 @@ public class AutoLoop {
   /** A boolean that is true when the loop is killed */
   protected boolean isKilled = false;
 
+  /** The most recent trajectory that was run */
+  protected AutoTrajectory recentTrajectory = null;
+
   /**
    * Creates a new loop with a specific name
    *
    * @param name The name of the loop
-   * @see AutoFactory#newLoop Creating a loop from a AutoFactory
+   * @see AutoFactory#newRoutine Creating a loop from a AutoFactory
    */
-  public AutoLoop(String name) {
+  public AutoRoutine(String name) {
     this.loop = new EventLoop();
     this.name = name;
   }
@@ -46,24 +51,24 @@ public class AutoLoop {
    * @param name The name of the loop
    * @param loop The inner {@link EventLoop}
    */
-  protected AutoLoop(String name, EventLoop loop) {
+  protected AutoRoutine(String name, EventLoop loop) {
     this.loop = loop;
     this.name = name;
   }
 
   /**
-   * Returns a {@link Trigger} that is true while this autonomous loop is being polled.
+   * Returns a {@link Trigger} that is true while this autonomous routine is being polled.
    *
-   * <p>Using a {@link Trigger#onFalse(Command)} will do nothing as when this is false the loop is
-   * not being polled anymore.
+   * <p>Using a {@link Trigger#onFalse(Command)} will do nothing as when this is false the routine
+   * is not being polled anymore.
    *
-   * @return A {@link Trigger} that is true while this autonomous loop is being polled.
+   * @return A {@link Trigger} that is true while this autonomous routine is being polled.
    */
   public Trigger enabled() {
     return new Trigger(loop, () -> isActive && DriverStation.isAutonomousEnabled());
   }
 
-  /** Polls the loop. Should be called in the autonomous periodic method. */
+  /** Polls the routine. Should be called in the autonomous periodic method. */
   public void poll() {
     if (!DriverStation.isAutonomousEnabled() || isKilled) {
       isActive = false;
@@ -74,19 +79,21 @@ public class AutoLoop {
   }
 
   /**
-   * Gets the event loop that this loop is using.
+   * Gets the event loop that this routine is using.
    *
-   * @return The event loop that this loop is using.
+   * @return The event loop that this routine is using.
    */
-  public EventLoop getLoop() {
+  public EventLoop loop() {
     return loop;
   }
 
   /**
-   * Resets the loop. This can either be called on auto init or auto end to reset the loop incase
-   * you run it again. If this is called on a loop that doesn't need to be reset it will do nothing.
+   * Resets the routine. This can either be called on auto init or auto end to reset the routine
+   * incase you run it again. If this is called on a routine that doesn't need to be reset it will
+   * do nothing.
    */
   public void reset() {
+    recentTrajectory = null;
     isActive = false;
   }
 
