@@ -63,6 +63,7 @@ option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS FALSE)
 
 option(BUILD_EXAMPLES "Build examples" OFF)
+option(BUILD_PYTHON "Build python" OFF)
 
 include(CompilerFlags)
 
@@ -82,6 +83,8 @@ target_compile_definitions(TrajoptLib PRIVATE TRAJOPT_EXPORTS)
 
 include(CTest)
 include(FetchContent)
+
+option(USE_SYSTEM_NANOBIND "Use system nanobind" OFF)
 
 if(BUILD_TESTING)
     # Catch2 dependency
@@ -241,4 +244,90 @@ if(BUILD_EXAMPLES)
             endif()
         endif()
     endforeach()
+endif()
+
+if(BUILD_PYTHON)
+    find_package(Python REQUIRED COMPONENTS Interpreter Development)
+    if(DEFINED PY_BUILD_CMAKE_MODULE_NAME)
+        set(PY_DEST ${PY_BUILD_CMAKE_MODULE_NAME})
+    else()
+        set(PY_DEST lib/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR})
+    endif()
+
+    # nanobind dependency
+    if(NOT USE_SYSTEM_NANOBIND)
+        fetchcontent_declare(
+            nanobind
+            GIT_REPOSITORY https://github.com/wjakob/nanobind.git
+            GIT_TAG v2.1.0
+        )
+        fetchcontent_makeavailable(nanobind)
+    else()
+        find_package(nanobind CONFIG REQUIRED)
+    endif()
+
+    file(GLOB_RECURSE trajoptlibpy_src py/cpp/*.cpp)
+
+    # Build Trajoptlib dependency directly into the wheel to avoid having to
+    # configure RPATHs
+    nanobind_add_module(_trajoptlib ${trajoptlibpy_src} ${TrajoptLib_src})
+    compiler_flags(_trajoptlib)
+    target_compile_definitions(_trajoptlib PRIVATE TRAJOPTLIB=1)
+    target_include_directories(
+        _trajoptlib
+        PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/src
+            ${CMAKE_CURRENT_SOURCE_DIR}/include
+            ${CMAKE_CURRENT_SOURCE_DIR}/py/cpp
+    )
+    target_link_libraries(_trajoptlib PUBLIC Sleipnir)
+
+    # Suppress compiler warnings in nanobind
+    if(${CMAKE_CXX_COMPILER_ID} STREQUAL "AppleClang")
+        target_compile_options(nanobind-static PRIVATE "-Wno-array-bounds")
+    endif()
+
+    install(
+        TARGETS _trajoptlib
+        COMPONENT python_modules
+        LIBRARY
+        DESTINATION ${PY_DEST}
+    )
+
+    nanobind_add_stub(
+        _trajoptlib_stub
+        INSTALL_TIME
+        MARKER_FILE py/py.typed
+        MODULE _trajoptlib
+        OUTPUT trajoptlib/py/__init__.pyi
+        PYTHON_PATH $<TARGET_FILE_DIR:_trajoptlib>
+        DEPENDS _trajoptlib
+        COMPONENT python_modules
+    )
+
+    # # pybind11_mkdoc doesn't support Windows
+    # if(NOT WIN32 AND NOT CMAKE_CROSSCOMPILING)
+    #     # pybind11_mkdoc dependency
+    #     fetchcontent_declare(
+    #         pybind11_mkdoc
+    #         GIT_REPOSITORY https://github.com/pybind/pybind11_mkdoc.git
+    #         GIT_TAG master
+    #         GIT_SUBMODULES ""
+    #     )
+    #     fetchcontent_makeavailable(pybind11_mkdoc)
+    #
+    #     file(
+    #         GLOB_RECURSE trajoptlib_headers
+    #         include/trajopt/*.hpp
+    #         include/trajopt/path/*.hpp
+    #         include/trajopt/geometry/*.hpp
+    #         include/trajopt/constraint/*.hpp
+    #         include/trajopt/util/*.hpp
+    #     )
+    #
+    #     # Generate docs for the Python module
+    #     include(cmake/modules/Pybind11Mkdoc.cmake)
+    #     pybind11_mkdoc(_trajoptlib "${trajoptlib_headers}")
+    #     add_dependencies(_trajoptlib _trajoptlib_docstrings)
+    # endif()
 endif()
