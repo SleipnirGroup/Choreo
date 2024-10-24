@@ -7,7 +7,7 @@ import static edu.wpi.first.util.ErrorMessages.requireNonNullParam;
 import choreo.auto.AutoChooser;
 import choreo.auto.AutoFactory;
 import choreo.auto.AutoFactory.AutoBindings;
-import choreo.auto.AutoLoop;
+import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
 import choreo.trajectory.DifferentialSample;
 import choreo.trajectory.EventMarker;
@@ -293,7 +293,7 @@ public final class Choreo {
   }
 
   /**
-   * Create a factory that can be used to create {@link AutoLoop} and {@link AutoTrajectory}.
+   * Create a factory that can be used to create {@link AutoRoutine} and {@link AutoTrajectory}.
    *
    * @param <SampleType> The type of samples in the trajectory.
    * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
@@ -306,7 +306,7 @@ public final class Choreo {
    *     while keeping the same coordinate system origin. This will be called every loop during the
    *     command.
    * @param bindings Universal trajectory event bindings.
-   * @return An {@link AutoFactory} that can be used to create {@link AutoLoop} and {@link
+   * @return An {@link AutoFactory} that can be used to create {@link AutoRoutine} and {@link
    *     AutoTrajectory}.
    * @see AutoChooser using this factory with AutoChooser to generate auto routines.
    */
@@ -326,7 +326,7 @@ public final class Choreo {
   }
 
   /**
-   * Create a factory that can be used to create {@link AutoLoop} and {@link AutoTrajectory}.
+   * Create a factory that can be used to create {@link AutoRoutine} and {@link AutoTrajectory}.
    *
    * @param <SampleType> The type of samples in the trajectory.
    * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
@@ -341,7 +341,7 @@ public final class Choreo {
    * @param bindings Universal trajectory event bindings.
    * @param trajectoryLogger A {@link TrajectoryLogger} to log {@link Trajectory} as they start and
    *     finish.
-   * @return An {@link AutoFactory} that can be used to create {@link AutoLoop} and {@link
+   * @return An {@link AutoFactory} that can be used to create {@link AutoRoutine} and {@link
    *     AutoTrajectory}.
    * @see AutoChooser using this factory with AutoChooser to generate auto routines.
    */
