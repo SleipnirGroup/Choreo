@@ -185,42 +185,42 @@ class SwerveSample {
            compare_arrays(moduleForcesY, other.moduleForcesY);
   }
 
-  /// The timestamp of this sample, relative to the beginning of the trajectory.
+  /// The timestamp of this sample relative to the beginning of the trajectory.
   units::second_t timestamp = 0_s;
 
-  /// The X position of the sample
+  /// The X position of the sample relative to the blue alliance wall origin.
   units::meter_t x = 0_m;
 
-  /// The Y position of the sample
+  /// The Y position of the sample relative to the blue alliance wall origin.
   units::meter_t y = 0_m;
 
-  /// The heading of the sample, with 0 being in the +X direction
+  /// The heading of the sample, with 0 being in the +X direction.
   units::radian_t heading = 0_rad;
 
-  /// The velocity of the sample in the X direction
+  /// The velocity of the sample in the X direction.
   units::meters_per_second_t vx = 0_mps;
 
-  /// The velocity of the sample in the Y direction
+  /// The velocity of the sample in the Y direction.
   units::meters_per_second_t vy = 0_mps;
 
-  /// The angular velocity of the sample
+  /// The angular velocity of the sample.
   units::radians_per_second_t omega = 0_rad_per_s;
 
-  /// The acceleration of the in the X direction
+  /// The acceleration of the in the X direction.
   units::meters_per_second_squared_t ax = 0_mps_sq;
 
-  /// The acceleration of the in the Y direction
+  /// The acceleration of the in the Y direction.
   units::meters_per_second_squared_t ay = 0_mps_sq;
 
-  /// The angular acceleration of the sample
+  /// The angular acceleration of the sample.
   units::radians_per_second_squared_t alpha = 0_rad_per_s_sq;
 
-  /// The force on each swerve module in the X direction Module forces appear in
-  /// the following order: [FL, FR, BL, BR]
+  /// The force on each swerve module in the X direction. Module forces appear
+  /// in the following order: [FL, FR, BL, BR].
   std::array<units::newton_t, 4> moduleForcesX{0_N, 0_N, 0_N, 0_N};
 
-  /// The force on each swerve module in the Y direction Module forces appear in
-  /// the following order: [FL, FR, BL, BR]
+  /// The force on each swerve module in the Y direction. Module forces appear
+  /// in the following order: [FL, FR, BL, BR].
   std::array<units::newton_t, 4> moduleForcesY{0_N, 0_N, 0_N, 0_N};
 };
 
