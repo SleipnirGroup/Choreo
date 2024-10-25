@@ -117,7 +117,7 @@ public class AutoRoutine {
    * @return If the given trajectory is the most recently run trajectory
    */
   public boolean isMostRecentTrajectory(AutoTrajectory trajectory) {
-    return recentTrajectory.equals(trajectory);
+    return recentTrajectory != null && recentTrajectory.equals(trajectory);
   }
 
   /**
