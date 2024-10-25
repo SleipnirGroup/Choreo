@@ -109,7 +109,7 @@ public class AutoChooser {
    * AutoRoutine}. You can also have the `Autos` class extend an `AutoHelpers` class that has helper
    * methods that don't clutter your routines.
    *
-   * <p><h3>Example:</h3>
+   * <h3>Example:</h3>
    *
    * <pre><code>
    * AutoChooser chooser;
