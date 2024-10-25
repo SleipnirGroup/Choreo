@@ -509,10 +509,6 @@ public class AutoTrajectory {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj instanceof AutoTrajectory) {
-      AutoTrajectory other = (AutoTrajectory) obj;
-      return this.name.equals(other.name);
-    }
-    return false;
+    return obj instanceof AutoTrajectory traj && name.equals(traj.name);
   }
 }
