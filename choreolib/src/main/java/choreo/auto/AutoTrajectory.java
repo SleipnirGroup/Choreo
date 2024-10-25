@@ -35,7 +35,6 @@ public class AutoTrajectory {
   // code. This also makes the places with generics exposed to users few
   // and far between. This helps with more novice users
 
-  // did inches to meters like this to keep final
   private static final double DEFAULT_TOLERANCE_METERS = Units.inchesToMeters(3);
 
   private final String name;
@@ -204,7 +203,7 @@ public class AutoTrajectory {
   }
 
   private boolean cmdIsFinished() {
-    return timeIntoTrajectory() > totalTime();
+    return timeIntoTrajectory() > totalTime() || !routine.isActive;
   }
 
   /**
@@ -537,10 +536,6 @@ public class AutoTrajectory {
 
   @Override
   public boolean equals(Object obj) {
-    if (obj instanceof AutoTrajectory) {
-      AutoTrajectory other = (AutoTrajectory) obj;
-      return this.name.equals(other.name);
-    }
-    return false;
+    return obj instanceof AutoTrajectory traj && name.equals(traj.name);
   }
 }

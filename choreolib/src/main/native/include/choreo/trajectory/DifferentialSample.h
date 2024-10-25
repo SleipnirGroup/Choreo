@@ -141,34 +141,34 @@ class DifferentialSample {
            compare_units(fl, other.fl) && compare_units(fr, other.fr);
   }
 
-  /// The timestamp of this sample, relative to the beginning of the trajectory.
+  /// The timestamp of this sample relative to the beginning of the trajectory.
   units::second_t timestamp = 0_s;
 
-  /// The X position of the sample
+  /// The X position of the sample relative to the blue alliance wall origin.
   units::meter_t x = 0_m;
 
-  /// The Y position of the sample
+  /// The Y position of the sample relative to the blue alliance wall origin.
   units::meter_t y = 0_m;
 
-  /// The heading of the sample, with 0 being in the +X direction
+  /// The heading of the sample, with 0 being in the +X direction.
   units::radian_t heading = 0_rad;
 
-  /// The velocity of the left wheels
+  /// The velocity of the left wheels.
   units::meters_per_second_t vl = 0_mps;
 
-  /// The velocity of the right wheels
+  /// The velocity of the right wheels.
   units::meters_per_second_t vr = 0_mps;
 
-  /// The acceleration of the left wheels
+  /// The acceleration of the left wheels.
   units::meters_per_second_squared_t al = 0_mps_sq;
 
-  /// The acceleration of the right wheels
+  /// The acceleration of the right wheels.
   units::meters_per_second_squared_t ar = 0_mps_sq;
 
-  /// The force of the left wheels
+  /// The force of the left wheels.
   units::newton_t fl = 0_N;
 
-  /// The force of the right wheels
+  /// The force of the right wheels.
   units::newton_t fr = 0_N;
 };
 

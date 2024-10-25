@@ -252,8 +252,8 @@ public AutoRoutine fivePieceAutoCompositionSeg(AutoFactory factory) {
           deadline(s1ToC2, intake(), aim()),
           shootIfGp(),
           deadline(c2ToC3, intake(), spinnup()),
-          shootIfGp())
-      .withName("fivePieceAuto");
+          shootIfGp()
+  ).withName("fivePieceAuto");
 
   return factory.commandAsAutoRoutine(ret);
 }

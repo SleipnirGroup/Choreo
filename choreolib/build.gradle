@@ -192,6 +192,9 @@ javadoc {
     options.links("https://github.wpilib.org/allwpilib/docs/release/java/")
     options.addBooleanOption("Xdoclint:html,missing,reference,syntax", true)
     options.addBooleanOption('html5', true)
+    options.addStringOption("charset", "utf-8")
+    options.addStringOption("docencoding", "utf-8")
+    options.addStringOption("encoding", "utf-8")
     options.linkSource(true)
     failOnError = true
 

@@ -66,7 +66,7 @@ public class ProjectFile {
     /** The mass of the robot. (kg) */
     public final Expression mass;
 
-    /** The inertia of the robot. (kg m^2) */
+    /** The inertia of the robot. (kg-m²) */
     public final Expression inertia;
 
     /** The gearing of the robot. */
@@ -78,7 +78,7 @@ public class ProjectFile {
     /** The maximum velocity of the robot. (m/s) */
     public final Expression vmax;
 
-    /** The maximum torque of the robot. (N m) */
+    /** The maximum torque of the robot. (N-m) */
     public final Expression tmax;
 
     /** The bumpers of the robot. */

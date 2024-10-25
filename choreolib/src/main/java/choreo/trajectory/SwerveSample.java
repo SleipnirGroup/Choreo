@@ -18,10 +18,10 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
   /** The timestamp of this sample, relative to the beginning of the trajectory. */
   public final double t;
 
-  /** The X position of the sample in meters. */
+  /** The X position of the sample relative to the blue alliance wall origin in meters. */
   public final double x;
 
-  /** The Y position of the sample in meters. */
+  /** The Y position of the sample relative to the blue alliance wall origin in meters. */
   public final double y;
 
   /** The heading of the sample in radians, with 0 being in the +X direction. */
@@ -36,13 +36,13 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
   /** The angular velocity of the sample in rad/s. */
   public final double omega;
 
-  /** The acceleration of the in the X direction in m/s^2 */
+  /** The acceleration of the in the X direction in m/s². */
   public final double ax;
 
-  /** The acceleration of the in the Y direction in m/s^2 */
+  /** The acceleration of the in the Y direction in m/s². */
   public final double ay;
 
-  /** The angular acceleration of the sample in rad/s^2 */
+  /** The angular acceleration of the sample in rad/s². */
   public final double alpha;
 
   /**
@@ -67,9 +67,9 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
    * @param vx The velocity of the sample in the X direction in m/s.
    * @param vy The velocity of the sample in the Y direction in m/s.
    * @param omega The angular velocity of the sample in rad/s.
-   * @param ax The acceleration of the sample in the X direction in m/s^2.
-   * @param ay The acceleration of the sample in the Y direction in m/s^2.
-   * @param alpha The angular acceleration of the sample in rad/s^2.
+   * @param ax The acceleration of the sample in the X direction in m/s².
+   * @param ay The acceleration of the sample in the Y direction in m/s².
+   * @param alpha The angular acceleration of the sample in rad/s².
    * @param moduleForcesX The force on each swerve module in the X direction in Newtons. Module
    *     forces appear in the following order: [FL, FR, BL, BR].
    * @param moduleForcesY The force on each swerve module in the Y direction in Newtons. Module

@@ -95,11 +95,10 @@ nav:
   - ChoreoLib:
       - Installation: choreolib/installation.md
       - Basic Usage: choreolib/basic-usage.md
-      - Samples: choreolib/samples.md
       - Auto Routines: choreolib/auto-routines.md
       - Java API: api/choreolib/java/index.html
       - C++ API: api/choreolib/cpp/index.html
-  - TrajoptLib:
+  - TrajoptLib (Internal API):
       - C++ API: api/trajoptlib/cpp/index.html
   - Contributing:
       - Building: contributing/building-choreo.md

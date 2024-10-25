@@ -93,6 +93,7 @@ public class AutoRoutine {
    * do nothing.
    */
   public void reset() {
+    recentTrajectory = null;
     isActive = false;
   }
 
