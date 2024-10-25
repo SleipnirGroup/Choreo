@@ -66,7 +66,7 @@ public class ProjectFile {
     /** The mass of the robot. (kg) */
     public final Expression mass;
 
-    /** The inertia of the robot. (kg-m²) */
+    /** The inertia of the robot. (kg-m^2) */
     public final Expression inertia;
 
     /** The gearing of the robot. */
