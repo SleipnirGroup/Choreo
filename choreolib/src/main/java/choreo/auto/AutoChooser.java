@@ -14,11 +14,11 @@ import java.util.function.Function;
 
 /**
  * An Choreo specific {@code SendableChooser} that allows for the selection of {@link AutoRoutine}s
- * at runtime via a {@link <a
- * href="https://docs.wpilib.org/en/stable/docs/software/dashboards/index.html#dashboards">Dashboard</a>}.
+ * at runtime via a 
+ * <a href="https://docs.wpilib.org/en/stable/docs/software/dashboards/index.html#dashboards">Dashboard</a>.
  *
- * <p>This chooser takes a {@link <a href="https://en.wikipedia.org/wiki/Lazy_loading">lazy
- * loading</a>} approach to {@link AutoRoutine}s, only generating the {@link AutoRoutine} when it is
+ * <p>This chooser takes a <a href="https://en.wikipedia.org/wiki/Lazy_loading">lazy loading</a>
+ * approach to {@link AutoRoutine}s, only generating the {@link AutoRoutine} when it is
  * selected. This approach has the benefit of not loading all autos on startup, but also not loading
  * the auto during auto start causing a delay.
  *
@@ -103,8 +103,8 @@ public class AutoChooser {
    * <p>An auto routine is a function that takes an {@link AutoFactory} and returns a {@link
    * AutoRoutine}. These functions can be static, a lambda or belong to a local variable.
    *
-   * <p>A good paradigm is making an `Autos` class that all of your subsystems/resources are {@link
-   * <a href="https://en.wikipedia.org/wiki/Dependency_injection">dependency injected</a>} into.
+   * <p>A good paradigm is making an `Autos` class that all of your subsystems/resources are
+   * <a href="https://en.wikipedia.org/wiki/Dependency_injection">dependency injected</a> into.
    * Then you crate methods inside that class that take an {@link AutoFactory} and return a {@link
    * AutoRoutine}. You can also have the `Autos` class extend an `AutoHelpers` class that has helper
    * methods that don't clutter your routines.
