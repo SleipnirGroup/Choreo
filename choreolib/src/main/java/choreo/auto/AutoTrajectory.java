@@ -14,7 +14,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -36,7 +35,6 @@ public class AutoTrajectory {
   // code. This also makes the places with generics exposed to users few
   // and far between. This helps with more novice users
 
-  // did inches to meters like this to keep final
   private static final double DEFAULT_TOLERANCE_METERS = Units.inchesToMeters(3);
 
   private final String name;
@@ -47,7 +45,7 @@ public class AutoTrajectory {
   private final BooleanSupplier mirrorTrajectory;
   private final Timer timer = new Timer();
   private final Subsystem driveSubsystem;
-  private final EventLoop loop;
+  private final AutoRoutine routine;
 
   /**
    * A way to create slightly less triggers for alot of actions. Not static as to not leak triggers
@@ -73,7 +71,7 @@ public class AutoTrajectory {
    * @param mirrorTrajectory Getter that determines whether to mirror trajectory.
    * @param trajectoryLogger Optional trajectory logger.
    * @param driveSubsystem Drive subsystem.
-   * @param loop Event loop.
+   * @param routine Event loop.
    * @param bindings {@link Choreo#createAutoFactory}
    */
   <SampleType extends TrajectorySample<SampleType>> AutoTrajectory(
@@ -84,7 +82,7 @@ public class AutoTrajectory {
       BooleanSupplier mirrorTrajectory,
       Optional<TrajectoryLogger<SampleType>> trajectoryLogger,
       Subsystem driveSubsystem,
-      EventLoop loop,
+      AutoRoutine routine,
       AutoBindings bindings) {
     this.name = name;
     this.trajectory = trajectory;
@@ -92,8 +90,8 @@ public class AutoTrajectory {
     this.controller = controller;
     this.mirrorTrajectory = mirrorTrajectory;
     this.driveSubsystem = driveSubsystem;
-    this.loop = loop;
-    this.offTrigger = new Trigger(loop, () -> false);
+    this.routine = routine;
+    this.offTrigger = new Trigger(routine.loop(), () -> false);
     this.trajectoryLogger =
         trajectoryLogger.isPresent()
             ? trajectoryLogger.get()
@@ -147,6 +145,7 @@ public class AutoTrajectory {
     isActive = true;
     timeOffset = 0.0;
     logTrajectory(true);
+    routine.recentTrajectory = this;
   }
 
   @SuppressWarnings("unchecked")
@@ -169,6 +168,7 @@ public class AutoTrajectory {
     currentSample = sample;
   }
 
+  @SuppressWarnings("unchecked")
   private void cmdEnd(boolean interrupted) {
     timer.stop();
     if (interrupted) {
@@ -203,7 +203,7 @@ public class AutoTrajectory {
   }
 
   private boolean cmdIsFinished() {
-    return timeIntoTrajectory() > totalTime();
+    return timeIntoTrajectory() > totalTime() || !routine.isActive;
   }
 
   /**
@@ -267,7 +267,7 @@ public class AutoTrajectory {
    * @return A trigger that is true while the trajectory is scheduled.
    */
   public Trigger active() {
-    return new Trigger(loop, () -> this.isActive);
+    return new Trigger(routine.loop(), () -> this.isActive && routine.isActive);
   }
 
   /**
@@ -293,7 +293,7 @@ public class AutoTrajectory {
    */
   public Trigger done() {
     return new Trigger(
-        loop,
+        routine.loop(),
         new BooleanSupplier() {
           boolean wasJustActive = false;
 
@@ -332,7 +332,7 @@ public class AutoTrajectory {
     // Make the trigger only be high for 1 cycle when the time has elapsed,
     // this is needed for better support of multi-time triggers for multi events
     return new Trigger(
-        loop,
+        routine.loop(),
         new BooleanSupplier() {
           double lastTimestamp = timer.get();
 
@@ -396,7 +396,7 @@ public class AutoTrajectory {
             ? AllianceFlipUtil.flip(pose.getTranslation())
             : pose.getTranslation();
     return new Trigger(
-        loop,
+        routine.loop(),
         () -> {
           Translation2d currentTrans = poseSupplier.get().getTranslation();
           return currentTrans.getDistance(checkedTrans) < toleranceMeters;
@@ -505,5 +505,10 @@ public class AutoTrajectory {
       poses[i] = trajectory.sampleAt(times[i], mirrorTrajectory.getAsBoolean()).getPose();
     }
     return poses;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return obj instanceof AutoTrajectory traj && name.equals(traj.name);
   }
 }

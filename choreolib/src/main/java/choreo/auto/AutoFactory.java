@@ -31,21 +31,21 @@ import java.util.function.Supplier;
  * <h2>Example using <code>Trigger</code>s</h2>
  *
  * <pre><code>
- * public Command shootThenMove(AutoFactory factory) {
- *   // Create a new auto loop to return
- *   var loop = factory.newLoop();
+ * public AutoRoutine shootThenMove(AutoFactory factory) {
+ *   // Create a new auto routine to return
+ *   var routine = factory.newRoutine();
  *
  *   // Create a trajectory that moves the robot 2 meters
- *   AutoTrajectory trajectory = factory.trajectory("move2meters", loop);
+ *   AutoTrajectory trajectory = factory.trajectory("move2meters", routine);
  *
- *   // Will automatically run the shoot command when the auto loop is first polled
- *   loop.enabled().onTrue(shooter.shoot());
+ *   // Will automatically run the shoot command when the auto routine is first polled
+ *   routine.enabled().onTrue(shooter.shoot());
  *
  *   // Gets a trigger from the shooter to if the shooter has a note, and will run the trajectory
  *   // command when the shooter does not have a note
- *   loop.enabled().and(shooter.hasNote()).onFalse(trajectory.cmd());
+ *   routine.enabled().and(shooter.hasNote()).onFalse(trajectory.cmd());
  *
- *   return loopcmd().withName("ShootThenMove");
+ *   return routine;
  * }
  * </code></pre>
  *
@@ -63,18 +63,18 @@ import java.util.function.Supplier;
  * </code></pre>
  */
 public class AutoFactory {
-  private static final AutoLoop VOID_LOOP =
-      new AutoLoop("VOID-LOOP") {
+  static final AutoRoutine VOID_ROUTINE =
+      new AutoRoutine("VOID-ROUTINE") {
         private final EventLoop loop = new EventLoop();
 
         @Override
         public Command cmd() {
-          return Commands.none().withName("VoidLoop:" + name);
+          return Commands.none().withName("VoidAutoRoutine");
         }
 
         @Override
-        public Command cmd(BooleanSupplier finishCondition) {
-          return Commands.none().withName("VoidLoop:" + name);
+        public Command cmd(BooleanSupplier _finishCondition) {
+          return cmd();
         }
 
         @Override
@@ -109,6 +109,9 @@ public class AutoFactory {
     }
 
     private void merge(AutoBindings other) {
+      if (other == null) {
+        return;
+      }
       bindings.putAll(other.bindings);
     }
 
@@ -159,42 +162,41 @@ public class AutoFactory {
   }
 
   /**
-   * Creates a new auto loop to be used to make an auto routine.
+   * Creates a new {@link AutoRoutine}.
    *
-   * @param name The name of the auto loop.
-   * @return A new auto loop.
-   * @see AutoLoop
-   * @see #voidLoop
+   * @param name The name of the {@link AutoRoutine}.
+   * @return A new {@link AutoRoutine}.
+   * @see AutoRoutine
+   * @see #voidRoutine
    */
-  public AutoLoop newLoop(String name) {
+  public AutoRoutine newRoutine(String name) {
     // Clear cache in simulation to allow a form of "hot-reloading" trajectories
     if (RobotBase.isSimulation()) {
       clearCache();
     }
 
-    return new AutoLoop(name);
+    return new AutoRoutine(name);
   }
 
   /**
-   * An Auto Loop that cannot have any side-effects, it stores no state and does nothing when
-   * polled.
+   * An {@link AutoRoutine} that cannot have any side-effects, it stores no state and does nothing
+   * when polled.
    *
-   * @return A void auto loop.
-   * @see AutoLoop
-   * @see #newLoop
+   * @return A void {@link AutoRoutine}.
+   * @see #newRoutine
    */
-  public AutoLoop voidLoop() {
-    return VOID_LOOP;
+  public AutoRoutine voidRoutine() {
+    return VOID_ROUTINE;
   }
 
   /**
    * Creates a new auto trajectory to be used in an auto routine.
    *
    * @param trajectoryName The name of the trajectory to use.
-   * @param loop The auto loop to use as the triggers polling context.
+   * @param routine The {@link AutoRoutine} to register this trajectory under.
    * @return A new auto trajectory.
    */
-  public AutoTrajectory trajectory(String trajectoryName, AutoLoop loop) {
+  public AutoTrajectory trajectory(String trajectoryName, AutoRoutine routine) {
     Optional<? extends Trajectory<?>> optTrajectory =
         trajectoryCache.loadTrajectory(trajectoryName);
     Trajectory<?> trajectory;
@@ -204,7 +206,7 @@ public class AutoFactory {
       DriverStation.reportError("Could not load trajectory: " + trajectoryName, false);
       trajectory = new Trajectory<SwerveSample>(trajectoryName, List.of(), List.of(), List.of());
     }
-    return trajectory(trajectory, loop);
+    return trajectory(trajectory, routine);
   }
 
   /**
@@ -212,10 +214,11 @@ public class AutoFactory {
    *
    * @param trajectoryName The name of the trajectory to use.
    * @param splitIndex The index of the split trajectory to use.
-   * @param loop The auto loop to use as the triggers polling context.
+   * @param routine The {@link AutoRoutine} to register this trajectory under.
    * @return A new auto trajectory.
    */
-  public AutoTrajectory trajectory(String trajectoryName, final int splitIndex, AutoLoop loop) {
+  public AutoTrajectory trajectory(
+      String trajectoryName, final int splitIndex, AutoRoutine routine) {
     Optional<? extends Trajectory<?>> optTrajectory =
         trajectoryCache.loadTrajectory(trajectoryName, splitIndex);
     Trajectory<?> trajectory;
@@ -225,7 +228,7 @@ public class AutoFactory {
       DriverStation.reportError("Could not load trajectory: " + trajectoryName, false);
       trajectory = new Trajectory<SwerveSample>(trajectoryName, List.of(), List.of(), List.of());
     }
-    return trajectory(trajectory, loop);
+    return trajectory(trajectory, routine);
   }
 
   /**
@@ -233,12 +236,12 @@ public class AutoFactory {
    *
    * @param <SampleType> The type of the trajectory samples.
    * @param trajectory The trajectory to use.
-   * @param loop The auto loop to use as the triggers polling context.
+   * @param routine The {@link AutoRoutine} to register this trajectory under.
    * @return A new auto trajectory.
    */
   @SuppressWarnings("unchecked")
   public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory trajectory(
-      Trajectory<SampleType> trajectory, AutoLoop loop) {
+      Trajectory<SampleType> trajectory, AutoRoutine routine) {
     // type solidify everything
     final Trajectory<SampleType> solidTrajectory = trajectory;
     final BiConsumer<Pose2d, SampleType> solidController =
@@ -253,7 +256,7 @@ public class AutoFactory {
         mirrorTrajectory,
         solidLogger,
         driveSubsystem,
-        loop.getLoop(),
+        routine,
         bindings);
   }
 
@@ -272,7 +275,7 @@ public class AutoFactory {
    * @return A new auto trajectory.
    */
   public Command trajectoryCommand(String trajectoryName) {
-    return trajectory(trajectoryName, VOID_LOOP).cmd();
+    return trajectory(trajectoryName, VOID_ROUTINE).cmd();
   }
 
   /**
@@ -291,7 +294,7 @@ public class AutoFactory {
    * @return A new auto trajectory.
    */
   public Command trajectoryCommand(String trajectoryName, final int splitIndex) {
-    return trajectory(trajectoryName, splitIndex, VOID_LOOP).cmd();
+    return trajectory(trajectoryName, splitIndex, VOID_ROUTINE).cmd();
   }
 
   /**
@@ -311,7 +314,21 @@ public class AutoFactory {
    */
   public <SampleType extends TrajectorySample<SampleType>> Command trajectoryCommand(
       Trajectory<SampleType> trajectory) {
-    return trajectory(trajectory, VOID_LOOP).cmd();
+    return trajectory(trajectory, VOID_ROUTINE).cmd();
+  }
+
+  /**
+   * Creates an {@link AutoRoutine} with the name of the command. The command is the bound to the
+   * routine's enabled trigger. This is useful for adding a {@link Command} composition based auto
+   * to the {@link choreo.auto.AutoChooser}.
+   *
+   * @param cmd The command to bind to the routine.
+   * @return A new auto routine.
+   */
+  public AutoRoutine commandAsAutoRoutine(Command cmd) {
+    AutoRoutine routine = newRoutine(cmd.getName());
+    routine.enabled().onTrue(cmd);
+    return routine;
   }
 
   /**
