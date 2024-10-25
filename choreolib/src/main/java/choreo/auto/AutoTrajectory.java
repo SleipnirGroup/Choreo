@@ -267,7 +267,7 @@ public class AutoTrajectory {
    * @return A trigger that is true while the trajectory is scheduled.
    */
   public Trigger active() {
-    return new Trigger(routine.loop(), () -> this.isActive);
+    return new Trigger(routine.loop(), () -> this.isActive && routine.isActive);
   }
 
   /**
@@ -317,7 +317,10 @@ public class AutoTrajectory {
    * @return A trigger that is true when the trajectoy is finished.
    */
   public Trigger done() {
-    return inactive().and(new Trigger(routine.loop(), () -> routine.isMostRecentTrajectory(this)));
+    return inactive()
+        .and(
+            new Trigger(
+                routine.loop(), () -> routine.isMostRecentTrajectory(this) && routine.isActive));
   }
 
   /**
