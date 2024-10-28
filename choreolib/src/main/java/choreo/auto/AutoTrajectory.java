@@ -2,6 +2,7 @@
 
 package choreo.auto;
 
+import choreo.Choreo;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoFactory.AutoBindings;
 import choreo.trajectory.DifferentialSample;
@@ -9,6 +10,7 @@ import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
 import choreo.util.AllianceFlipUtil;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
@@ -306,6 +308,51 @@ public class AutoTrajectory {
    *
    * routine.enabled().onTrue(rushMidTraj.cmd());
    *
+   * rushMidTraj.done(0.2).and(noGamepiece).onTrue(pickupAnotherGamepiece.cmd());
+   * rushMidTraj.done(0.2).and(hasGamepiece).onTrue(goShootGamepiece.cmd());
+   *
+   * // If done never falls when a new trajectory is scheduled
+   * // then these triggers leak into the next trajectory, causing the next note pickup
+   * // to trigger goShootGamepiece.cmd() even if we no longer care about these checks
+   * </code></pre>
+   *
+   * @param delay The delay in seconds to wait before the trigger goes true after the trajectory is
+   *    finished.
+   * @return A trigger that is true when the trajectoy is finished.
+   */
+  public Trigger done(double delay) {
+    Debouncer debouncer = new Debouncer(delay);
+    return inactive()
+        .and(
+            new Trigger(
+                routine.loop(), () -> debouncer.calculate(routine.isMostRecentTrajectory(this))));
+  }
+
+  /**
+   * Returns a trigger that rises to true when the trajectory ends and falls when another trajectory
+   * is run.
+   *
+   * <p>This is different from inactive() in a few ways.
+   *
+   * <ul>
+   *   <li>This will never be true if the trajectory is interupted
+   *   <li>This will never be true before the trajectory is run
+   *   <li>This will fall when another trajectory is run
+   * </ul>
+   *
+   * <p>Why does the trigger fall when a new trajecory is scheduled?
+   *
+   * <pre><code>
+   * //Lets say we had this code segment
+   * Trigger hasGamepiece = ...;
+   * Trigger noGamepiece = hasGamepiece.negate();
+   *
+   * AutoTrajectory rushMidTraj = ...;
+   * AutoTrajectory goShootGamepiece = ...;
+   * AutoTrajectory pickupAnotherGamepiece = ...;
+   *
+   * routine.enabled().onTrue(rushMidTraj.cmd());
+   *
    * rushMidTraj.done().and(noGamepiece).onTrue(pickupAnotherGamepiece.cmd());
    * rushMidTraj.done().and(hasGamepiece).onTrue(goShootGamepiece.cmd());
    *
@@ -315,12 +362,13 @@ public class AutoTrajectory {
    * </code></pre>
    *
    * @return A trigger that is true when the trajectoy is finished.
+   * @see #done(double) Using a delay
    */
   public Trigger done() {
     return inactive()
         .and(
             new Trigger(
-                routine.loop(), () -> routine.isMostRecentTrajectory(this) && routine.isActive));
+                routine.loop(), () -> routine.isMostRecentTrajectory(this)));
   }
 
   /**
