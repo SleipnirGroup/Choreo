@@ -155,7 +155,7 @@ public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
 }
 ```
 
-## Creating an auto routine with composition and a monolithic trajectory
+## Creating an auto routine with triggers and a monolithic trajectory
 
 ```java
 public AutoRoutine fivePieceAutoTriggerMono(AutoFactory factory) {
