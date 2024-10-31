@@ -60,9 +60,6 @@ public class AutoTrajectory {
   /** If the trajectory ran to completion */
   private boolean isCompleted = false;
 
-  /** The time that the previous trajectories took up */
-  private double timeOffset = 0.0;
-
   /**
    * Constructs an AutoTrajectory.
    *
@@ -110,7 +107,7 @@ public class AutoTrajectory {
    * @return The time since the start of the current trajectory
    */
   private double timeIntoTrajectory() {
-    return timer.get() + timeOffset;
+    return timer.get();
   }
 
   /**
@@ -145,7 +142,6 @@ public class AutoTrajectory {
   private void cmdInitialize() {
     timer.restart();
     isActive = true;
-    timeOffset = 0.0;
     isCompleted = false;
     logTrajectory(true);
   }
