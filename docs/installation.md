@@ -1,5 +1,7 @@
 # Installation
 
+- **note**: if you have already installed WPILib you should have Choreo installed.
+
 Start by downloading Choreo from **[Releases](https://github.com/SleipnirGroup/Choreo/releases)**
 
 ## Supported Systems

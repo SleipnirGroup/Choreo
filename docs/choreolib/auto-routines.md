@@ -87,7 +87,7 @@ public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
   // resets the odometry to the starting position,
   // then shoots the starting note,
   // then runs the trajectory to the first close note while extending the intake
-  routine.enabled()
+  routine.running()
       .onTrue(
           resetOdometry(
                   ampToC1
@@ -107,7 +107,7 @@ public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
 
   // spinnup the shooter while no other command is using the shooter
   subsystemsAvailable(routine, spinnup().getRequirements())
-      .and(routine.enabled()).onTrue(spinnup());
+      .and(routine.running()).onTrue(spinnup());
 
   // shoots the note if the robot has it, then runs the trajectory to the first middle note
   ampToC1.done().onTrue(shootIfGp()).onTrue(
@@ -155,7 +155,7 @@ public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
 }
 ```
 
-## Creating an auto routine with composition and a monolithic trajectory
+## Creating an auto routine with triggers and a monolithic trajectory
 
 ```java
 public AutoRoutine fivePieceAutoTriggerMono(AutoFactory factory) {
@@ -167,7 +167,7 @@ public AutoRoutine fivePieceAutoTriggerMono(AutoFactory factory) {
   // resets the odometry to the starting position,
   // then shoots the starting note,
   // then runs the trajectory to the first close note while extending the intake
-  routine.enabled()
+  routine.running()
       .onTrue(
           resetOdometry(
                   trajectory.getInitialPose()
@@ -181,7 +181,7 @@ public AutoRoutine fivePieceAutoTriggerMono(AutoFactory factory) {
 
   // spinnup the shooter while no other command is running
   subsystemsAvailable(routine, spinnup().getRequirements())
-      .and(routine.enabled()).onTrue(spinnup());
+      .and(routine.running()).onTrue(spinnup());
 
   // extends the intake when the intake event marker is reached
   trajectory.atTime("intake").onTrue(intake());

@@ -27,7 +27,7 @@ namespace choreo {
  * @tparam The field year. Defaults to the current year.
  */
 template <choreo::TrajectorySample SampleType, int Year = util::kDefaultYear>
-class AutoLoop {
+class AutoRoutine {
  public:
   /**
    * Creates a new loop with a specific name
@@ -35,7 +35,7 @@ class AutoLoop {
    * @param name The name of the loop
    * @see AutoFactory#newLoop Creating a loop from a AutoFactory
    */
-  explicit AutoLoop(std::string_view name)
+  explicit AutoRoutine(std::string_view name)
       : loop{std::make_unique<frc::EventLoop>()}, name{name} {}
 
   /**
@@ -45,26 +45,26 @@ class AutoLoop {
    * @param name The name of the loop
    * @param loop The inner EventLoop
    */
-  AutoLoop(std::string_view name, frc::EventLoop&& loop)
+  AutoRoutine(std::string_view name, frc::EventLoop&& loop)
       : loop{std::make_unique<frc::EventLoop>(std::move(loop))}, name{name} {}
 
-  AutoLoop(const AutoLoop&) = delete;
-  AutoLoop& operator=(const AutoLoop&) = delete;
+  AutoRoutine(const AutoRoutine&) = delete;
+  AutoRoutine& operator=(const AutoRoutine&) = delete;
 
   /**
    * The default move constructor
    *
-   * @param other the AutoLoop to move into the instance
+   * @param other the AutoRoutine to move into the instance
    */
-  AutoLoop(AutoLoop&& other) noexcept = default;
+  AutoRoutine(AutoRoutine&& other) noexcept = default;
 
   /**
    * The default move assignment operator
    *
-   * @param other the AutoLoop to move into the instance
-   * @return the moved AutoLoop
+   * @param other the AutoRoutine to move into the instance
+   * @return the moved AutoRoutine
    */
-  AutoLoop& operator=(AutoLoop&& other) noexcept = default;
+  AutoRoutine& operator=(AutoRoutine&& other) noexcept = default;
 
   /**
    * Returns a frc2::Trigger that is true while this autonomous loop is being
@@ -76,7 +76,7 @@ class AutoLoop {
    * @return A frc2::Trigger that is true while this autonomous loop is being
    * polled.
    */
-  frc2::Trigger Enabled() {
+  frc2::Trigger Running() {
     return frc2::Trigger{loop.get(), [this] {
                            return isActive &&
                                   frc::DriverStation::IsAutonomousEnabled();
@@ -116,7 +116,7 @@ class AutoLoop {
       return;
     }
     Reset();
-    FRC_ReportError(frc::warn::Warning, "Killed an Auto Loop");
+    FRC_ReportError(frc::warn::Warning, "Killed an Auto Routine");
     isKilled = true;
   }
 
@@ -133,7 +133,7 @@ class AutoLoop {
     return frc2::cmd::Run([this] { Poll(); })
         .FinallyDo([this] { Reset(); })
         .Until([this] { return !frc::DriverStation::IsAutonomousEnabled(); })
-        .WithName("AutoLoop");
+        .WithName("AutoRoutine");
   }
 
   /**
@@ -154,7 +154,7 @@ class AutoLoop {
           return !frc::DriverStation::IsAutonomousEnabled() ||
                  finishCondition();
         })
-        .WithName("AutoLoop");
+        .WithName("AutoRoutine");
   }
 
  private:
