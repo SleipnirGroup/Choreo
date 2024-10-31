@@ -149,6 +149,19 @@ class AutoTrajectory {
   }
 
   /**
+   * Will get the underlying {@link Trajectory} object.
+   *
+   * <b>WARNING:</b> This method is not type safe and should be used with
+   * caution. The sample type of the trajectory should be known before calling
+   * this method.
+   *
+   * @return The underlying {@link Trajectory} object.
+   */
+  const TrajectorySample<SampleType>& GetRawTrajectory() const {
+    return trajectory;
+  }
+
+  /**
    * Will get the starting pose of the trajectory.
    *
    * This position is mirrored based on the mirrorTrajectory boolean supplier in
