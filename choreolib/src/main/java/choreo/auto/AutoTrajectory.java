@@ -60,9 +60,6 @@ public class AutoTrajectory {
   /** If the trajectory ran to completion */
   private boolean isCompleted = false;
 
-  /** The time that the previous trajectories took up */
-  private double timeOffset = 0.0;
-
   /**
    * Constructs an AutoTrajectory.
    *
@@ -104,27 +101,9 @@ public class AutoTrajectory {
     bindings.getBindings().forEach((key, value) -> active().and(atTime(key)).onTrue(value));
   }
 
-  /**
-   * Returns the time since the start of the current trajectory
-   *
-   * @return The time since the start of the current trajectory
-   */
-  private double timeIntoTrajectory() {
-    return timer.get() + timeOffset;
-  }
-
-  /**
-   * Returns the total time of all the trajectories
-   *
-   * @return The total time of all the trajectories
-   */
-  private double totalTime() {
-    return trajectory.getTotalTime();
-  }
-
   @SuppressWarnings("unchecked")
   private void logTrajectory(boolean starting) {
-    TrajectorySample<?> sample = trajectory.getInitialSample();
+    TrajectorySample<?> sample = trajectory.getInitialSample(false);
     if (sample == null) {
       return;
     } else if (sample instanceof SwerveSample) {
@@ -145,14 +124,13 @@ public class AutoTrajectory {
   private void cmdInitialize() {
     timer.restart();
     isActive = true;
-    timeOffset = 0.0;
     isCompleted = false;
     logTrajectory(true);
   }
 
   @SuppressWarnings("unchecked")
   private void cmdExecute() {
-    var sample = trajectory.sampleAt(timeIntoTrajectory(), mirrorTrajectory.getAsBoolean());
+    var sample = trajectory.sampleAt(timer.get(), mirrorTrajectory.getAsBoolean());
     if (sample instanceof SwerveSample swerveSample) {
       var swerveController = (BiConsumer<Pose2d, SwerveSample>) this.controller;
       swerveController.accept(poseSupplier.get(), swerveSample);
@@ -171,7 +149,7 @@ public class AutoTrajectory {
   }
 
   private boolean cmdIsFinished() {
-    return timeIntoTrajectory() > totalTime() || !routine.isActive;
+    return timer.get() > trajectory.getTotalTime() || !routine.isActive;
   }
 
   /**
@@ -197,6 +175,21 @@ public class AutoTrajectory {
             this::cmdIsFinished,
             driveSubsystem)
         .withName("Trajectory_" + name);
+  }
+
+  /**
+   * Will get the underlying {@link Trajectory} object.
+   *
+   * <p><b>WARNING:</b> This method is not type safe and should be used with caution. The sample
+   * type of the trajectory should be known before calling this method.
+   *
+   * @param <SampleType> The type of the trajectory samples.
+   * @return The underlying {@link Trajectory} object.
+   */
+  @SuppressWarnings("unchecked")
+  public <SampleType extends TrajectorySample<SampleType>>
+      Trajectory<SampleType> getRawTrajectory() {
+    return (Trajectory<SampleType>) trajectory;
   }
 
   /**
@@ -367,7 +360,7 @@ public class AutoTrajectory {
     }
 
     // The timer should never exceed the total trajectory time so report this as a warning
-    if (timeSinceStart > totalTime()) {
+    if (timeSinceStart > trajectory.getTotalTime()) {
       DriverStation.reportWarning(
           "Trigger time cannot be greater than total trajectory time for " + name, true);
       return offTrigger;
@@ -507,7 +500,7 @@ public class AutoTrajectory {
    * @return A trigger that is true when the event with the given name has been reached based on
    *     time and the robot is within toleranceMeters of the given events pose.
    */
-  public Trigger atTimeAndPlace(String eventName, double toleranceMeters) {
+  public Trigger atTimeAndPose(String eventName, double toleranceMeters) {
     return atTime(eventName).and(atPose(eventName, toleranceMeters));
   }
 
@@ -522,8 +515,8 @@ public class AutoTrajectory {
    * @return A trigger that is true when the event with the given name has been reached based on
    *     time and the robot is within 3 inches of the given events pose.
    */
-  public Trigger atTimeAndPlace(String eventName) {
-    return atTimeAndPlace(eventName, DEFAULT_TOLERANCE_METERS);
+  public Trigger atTimeAndPose(String eventName) {
+    return atTimeAndPose(eventName, DEFAULT_TOLERANCE_METERS);
   }
 
   /**
