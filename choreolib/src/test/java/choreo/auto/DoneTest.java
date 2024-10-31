@@ -63,12 +63,14 @@ public class DoneTest {
     assertTrue(traj.inactive());
 
     assertTrue(done);
+    assertTrue(done);
     assertFalse(doneDelayed);
     scheduler.run();
     assertFalse(done);
     assertFalse(doneDelayed);
     scheduler.run();
     assertFalse(done);
+    assertTrue(doneDelayed);
     assertTrue(doneDelayed);
 
     SimHooks.resumeTiming();
