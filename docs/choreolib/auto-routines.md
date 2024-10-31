@@ -1,6 +1,91 @@
 # Auto Routines
 
+## Setup
+
+### AutoFactory
+
 ChoreoLib provides the `AutoFactory` class as higher level API to make it easier to create competitive and complex auto routines inside your robot code.
+
+You can setup the `AutoFactory` by calling `Choreo.createAutoFactory`
+
+```java
+// The most basic usage of the AutoFactory
+class Robot extends TimedRobot {
+  /** A swerve drive subsystem */
+  private final Drive drive = ...;
+  /** An object that manages information about robot position */
+  private final Localizer localizer = ...;
+  private final AutoFactory autoFactory;
+
+  public Robot() {
+    autoFactory = Choreo.createAutoFactory(
+      drive,
+      localizer::pose,
+      (p, sample) -> drive.drive(new ChassisSpeeds(sample.vx, sample.vy, sample.omega)),
+      () -> DriverStation.getAlliance().orElseGet(() -> Alliance.Blue).equals(Alliance.Red),
+      new AutoBindings()
+    );
+  }
+
+  public void autonomousInit() {
+    // Running just the movement of a specific trajectory
+    autoFactory.trajectoryCommand("myTrajectory").schedule();
+  }
+}
+```
+
+### AutoChooser, AutoRoutine, and AutoTrajectory
+
+The `AutoFactory` can create `AutoRoutine` and `AutoTrajectory` objects that can be used to create complex auto routines.
+The `AutoChooser` provides a simple api to structure your auto routine generation in the most performant way.
+`AutoChooser` only creates the `AutoRoutine` on dashbaord chooser selection, this prevents loading all routines on bootup
+increasing startup times and also prevents the routines from being generated on auto start causing a delay.
+
+```java
+// Picking up where the last example left off
+public Robot extends TimedRobot {
+  ... //fields from previous example
+  /** A subsystem that controls the intake */
+  private final Intake intake = ...;
+  /** A subsystem that controls the shooter */
+  private final Shooter shooter = ...;
+  private final AutoChooser autoChooser;
+
+  public Robot() {
+    ... //code from previous example
+    autoChooser = new AutoChooser(autoFactory, "");
+    autoChooser.addRoutine("twoPieceAuto", this::twoPieceAuto);
+  }
+
+  // this would normally be in a separate file
+  private AutoRoutine twoPieceAuto(AutoFactory factory) {
+    final AutoRoutine routine = factory.newRoutine("twoPieceAuto");
+
+    final AutoTrajectory trajectory = factory.trajectory("twoPieceAuto", routine);
+
+    routine.running()
+        .onTrue(
+            drive.resetOdometry(
+                    trajectory.getInitialPose()
+                        .orElseGet(
+                            () -> {
+                              routine.kill();
+                              return new Pose2d();
+                            }))
+                .andThen(trajectory.cmd())
+                .withName("twoPieceAuto entry point"));
+
+    trajectory.atTime("intake").onTrue(intake.extend());
+    trajectory.atTime("shoot").onTrue(shooter.launch());
+
+    return routine;
+  }
+
+  public void autonomousInit() {
+    autoChooser.getSelectedAutoRoutine().schedule();
+  }
+}
+```
 
 ## Triggers vs Composition
 
@@ -69,7 +154,7 @@ There is also a helpful trigger that represents if subsystems are available to b
 
 Also assume a `import static edu.wpi.first.wpilibj2.command.Commands.*` is in scope.
 
-## Creating an auto routine with triggers and a segmented trajectory
+### Creating an auto routine with triggers and a segmented trajectory
 
 ```java
 public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
@@ -164,7 +249,7 @@ public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
 }
 ```
 
-## Creating an auto routine with triggers and a monolithic trajectory
+### Creating an auto routine with triggers and a monolithic trajectory
 
 ```java
 public AutoRoutine fivePieceAutoTriggerMono(AutoFactory factory) {
@@ -208,7 +293,7 @@ public AutoRoutine fivePieceAutoTriggerMono(AutoFactory factory) {
 }
 ```
 
-## Creating an auto routine with composition and a segmented trajectory
+### Creating an auto routine with composition and a segmented trajectory
 
 ```java
 
@@ -259,8 +344,8 @@ public AutoRoutine fivePieceAutoCompositionSeg(AutoFactory factory) {
 }
 ```
 
-## Creating an auto routine with composition and a monolithic trajectory
+### Creating an auto routine with composition and a monolithic trajectory
 
 ```java
-// Don't do this
+// This is not recommended for complex autos
 ```

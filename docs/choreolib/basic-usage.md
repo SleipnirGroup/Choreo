@@ -1,6 +1,7 @@
 # Basic Usage
 
 Teams that want to use their own path following structure can load trajectories directly with the following code.
+For the majority of teams the [AutoRoutine](./auto-routines.md) API is recommended, as it provides a more user-friendly, batteries included experience.
 
 ``` { .java .select }
 import java.util.Optional;
