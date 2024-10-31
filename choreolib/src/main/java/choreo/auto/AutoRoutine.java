@@ -31,8 +31,8 @@ public class AutoRoutine {
   /** A boolean that is true when the loop is killed */
   protected boolean isKilled = false;
 
-  /** The most recent trajectory that was run */
-  protected AutoTrajectory recentTrajectory = null;
+  /** The amount of times the routine has been polled */
+  protected int pollCount = 0;
 
   /**
    * Creates a new loop with a specific name
@@ -74,6 +74,7 @@ public class AutoRoutine {
       isActive = false;
       return;
     }
+    pollCount++;
     loop.poll();
     isActive = true;
   }
@@ -88,12 +89,21 @@ public class AutoRoutine {
   }
 
   /**
+   * Gets the poll count of the routine.
+   * 
+   * @return The poll count of the routine.
+   */
+  int pollCount() {
+    return pollCount;
+  }
+
+  /**
    * Resets the routine. This can either be called on auto init or auto end to reset the routine
    * incase you run it again. If this is called on a routine that doesn't need to be reset it will
    * do nothing.
    */
   public void reset() {
-    recentTrajectory = null;
+    pollCount = 0;
     isActive = false;
   }
 
@@ -106,18 +116,6 @@ public class AutoRoutine {
     reset();
     DriverStation.reportWarning("Killed An Auto Loop", true);
     isKilled = true;
-  }
-
-  /**
-   * Returns if the the given trajectory is the most recently run trajectory.
-   *
-   * <p>This will return true if the given trajectory is currently running aswell.
-   *
-   * @param trajectory The trajectory to check
-   * @return If the given trajectory is the most recently run trajectory
-   */
-  public boolean isMostRecentTrajectory(AutoTrajectory trajectory) {
-    return recentTrajectory != null && recentTrajectory.equals(trajectory);
   }
 
   /**

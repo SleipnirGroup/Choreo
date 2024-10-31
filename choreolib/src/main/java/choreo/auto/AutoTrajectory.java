@@ -10,7 +10,6 @@ import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
 import choreo.util.AllianceFlipUtil;
-import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
@@ -57,11 +56,11 @@ public class AutoTrajectory {
 
   /** If this trajectory us currently running */
   private boolean isActive = false;
+  /** If the trajectory ran to completion */
+  private boolean isCompleted = false;
 
   /** The time that the previous trajectories took up */
   private double timeOffset = 0.0;
-
-  private TrajectorySample<?> currentSample;
 
   /**
    * Constructs an AutoTrajectory.
@@ -146,61 +145,27 @@ public class AutoTrajectory {
     timer.restart();
     isActive = true;
     timeOffset = 0.0;
+    isCompleted = false;
     logTrajectory(true);
-    routine.recentTrajectory = this;
   }
 
   @SuppressWarnings("unchecked")
   private void cmdExecute() {
-    TrajectorySample<?> sample =
-        this.trajectory.sampleAt(timeIntoTrajectory(), mirrorTrajectory.getAsBoolean());
-
-    if (sample instanceof SwerveSample) {
-      BiConsumer<Pose2d, SwerveSample> swerveController =
-          (BiConsumer<Pose2d, SwerveSample>) this.controller;
-      SwerveSample swerveSample = (SwerveSample) sample;
+    var sample = trajectory.sampleAt(timeIntoTrajectory(), mirrorTrajectory.getAsBoolean());
+    if (sample instanceof SwerveSample swerveSample) {
+      var swerveController = (BiConsumer<Pose2d, SwerveSample>) this.controller;
       swerveController.accept(poseSupplier.get(), swerveSample);
-    } else if (sample instanceof DifferentialSample) {
-      BiConsumer<Pose2d, DifferentialSample> differentialController =
-          (BiConsumer<Pose2d, DifferentialSample>) this.controller;
-      DifferentialSample differentialSample = (DifferentialSample) sample;
+    } else if (sample instanceof DifferentialSample differentialSample) {
+      var differentialController = (BiConsumer<Pose2d, DifferentialSample>) this.controller;
       differentialController.accept(poseSupplier.get(), differentialSample);
     }
-
-    currentSample = sample;
   }
 
-  @SuppressWarnings("unchecked")
   private void cmdEnd(boolean interrupted) {
     timer.stop();
-    if (interrupted) {
-      if (currentSample instanceof SwerveSample) {
-        BiConsumer<Pose2d, SwerveSample> swerveController =
-            (BiConsumer<Pose2d, SwerveSample>) this.controller;
-        SwerveSample swerveSample = (SwerveSample) currentSample;
-        swerveController.accept(currentSample.getPose(), swerveSample);
-      } else if (currentSample instanceof DifferentialSample) {
-        BiConsumer<Pose2d, DifferentialSample> differentialController =
-            (BiConsumer<Pose2d, DifferentialSample>) this.controller;
-        DifferentialSample differentialSample = (DifferentialSample) currentSample;
-        differentialController.accept(currentSample.getPose(), differentialSample);
-      }
-    } else {
-      TrajectorySample<?> sample = this.trajectory.getFinalSample();
-
-      if (sample instanceof SwerveSample) {
-        BiConsumer<Pose2d, SwerveSample> swerveController =
-            (BiConsumer<Pose2d, SwerveSample>) this.controller;
-        SwerveSample swerveSample = (SwerveSample) sample;
-        swerveController.accept(poseSupplier.get(), swerveSample);
-      } else if (sample instanceof DifferentialSample) {
-        BiConsumer<Pose2d, DifferentialSample> differentialController =
-            (BiConsumer<Pose2d, DifferentialSample>) this.controller;
-        DifferentialSample differentialSample = (DifferentialSample) sample;
-        differentialController.accept(poseSupplier.get(), differentialSample);
-      }
-    }
     isActive = false;
+    isCompleted = !interrupted;
+    cmdExecute(); // will force the controller to be fed the final sample
     logTrajectory(false);
   }
 
@@ -245,7 +210,7 @@ public class AutoTrajectory {
     if (trajectory.samples().isEmpty()) {
       return Optional.empty();
     }
-    return Optional.of(trajectory.getInitialPose(mirrorTrajectory.getAsBoolean()));
+    return Optional.ofNullable(trajectory.getInitialPose(mirrorTrajectory.getAsBoolean()));
   }
 
   /**
@@ -260,7 +225,7 @@ public class AutoTrajectory {
     if (trajectory.samples().isEmpty()) {
       return Optional.empty();
     }
-    return Optional.of(trajectory.getFinalPose(mirrorTrajectory.getAsBoolean()));
+    return Optional.ofNullable(trajectory.getFinalPose(mirrorTrajectory.getAsBoolean()));
   }
 
   /**
@@ -292,10 +257,10 @@ public class AutoTrajectory {
    * <ul>
    *   <li>This will never be true if the trajectory is interupted
    *   <li>This will never be true before the trajectory is run
-   *   <li>This will fall when another trajectory is run
+   *   <li>This will fall the next cycle after the trajectory ends
    * </ul>
    *
-   * <p>Why does the trigger fall when a new trajecory is scheduled?
+   * <p>Why does the trigger need to fall?
    *
    * <pre><code>
    * //Lets say we had this code segment
@@ -308,24 +273,43 @@ public class AutoTrajectory {
    *
    * routine.enabled().onTrue(rushMidTraj.cmd());
    *
-   * rushMidTraj.done(0.2).and(noGamepiece).onTrue(pickupAnotherGamepiece.cmd());
-   * rushMidTraj.done(0.2).and(hasGamepiece).onTrue(goShootGamepiece.cmd());
+   * rushMidTraj.done(10).and(noGamepiece).onTrue(pickupAnotherGamepiece.cmd());
+   * rushMidTraj.done(10).and(hasGamepiece).onTrue(goShootGamepiece.cmd());
    *
    * // If done never falls when a new trajectory is scheduled
    * // then these triggers leak into the next trajectory, causing the next note pickup
    * // to trigger goShootGamepiece.cmd() even if we no longer care about these checks
    * </code></pre>
    *
-   * @param delay The delay in seconds to wait before the trigger goes true after the trajectory is
-   *    finished.
+   * @param cyclesToDelay The number of cycles to delay the trigger from rising to true.
    * @return A trigger that is true when the trajectoy is finished.
    */
-  public Trigger done(double delay) {
-    Debouncer debouncer = new Debouncer(delay);
+  public Trigger done(int cyclesToDelay) {
+    BooleanSupplier checker = new BooleanSupplier() {
+      /** The last used value for trajectory completeness */
+      boolean lastCompleteness = false;
+      /** The cycle to be true for */
+      int cycleTarget = -1;
+
+      @Override
+      public boolean getAsBoolean() {
+        if (!isCompleted) {
+          // update last seen value
+          lastCompleteness = false;
+          return false;
+        }
+        if (!lastCompleteness && isCompleted) {
+          // if just flipped to completed update last seen value
+          // and store the cycleTarget based of the current cycle
+          lastCompleteness = true;
+          cycleTarget = routine.pollCount() + cyclesToDelay;
+        }
+        // finally if check the cycle matches the target
+        return routine.pollCount() == cycleTarget;
+      }
+    };
     return inactive()
-        .and(
-            new Trigger(
-                routine.loop(), () -> debouncer.calculate(routine.isMostRecentTrajectory(this))));
+        .and(new Trigger(routine.loop(), checker));
   }
 
   /**
@@ -337,10 +321,10 @@ public class AutoTrajectory {
    * <ul>
    *   <li>This will never be true if the trajectory is interupted
    *   <li>This will never be true before the trajectory is run
-   *   <li>This will fall when another trajectory is run
+   *   <li>This will fall the next cycle after the trajectory ends
    * </ul>
    *
-   * <p>Why does the trigger fall when a new trajecory is scheduled?
+   * <p>Why does the trigger need to fall?
    *
    * <pre><code>
    * //Lets say we had this code segment
@@ -362,13 +346,9 @@ public class AutoTrajectory {
    * </code></pre>
    *
    * @return A trigger that is true when the trajectoy is finished.
-   * @see #done(double) Using a delay
    */
   public Trigger done() {
-    return inactive()
-        .and(
-            new Trigger(
-                routine.loop(), () -> routine.isMostRecentTrajectory(this)));
+    return done(0);
   }
 
   /**
