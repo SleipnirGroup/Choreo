@@ -18,3 +18,5 @@ The built library will be located in the respective operating system's m2 folder
 
 - Unix/Mac OS X - `~/.m2/repository`
 - Windows – `C:\Users\{your-username}\.m2\repository`
+
+To use a custom built version you'll need to update your ChoreoLib.json file to point to the local repository and version.

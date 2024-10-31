@@ -51,12 +51,7 @@ public class AutoFactory {
         public void reset() {}
 
         @Override
-        public boolean isMostRecentTrajectory(AutoTrajectory trajectory) {
-          return false;
-        }
-
-        @Override
-        public Trigger enabled() {
+        public Trigger running() {
           return new Trigger(loop, () -> false);
         }
       };
@@ -298,7 +293,7 @@ public class AutoFactory {
    */
   public AutoRoutine commandAsAutoRoutine(Command cmd) {
     AutoRoutine routine = newRoutine(cmd.getName());
-    routine.enabled().onTrue(cmd);
+    routine.running().onTrue(cmd);
     return routine;
   }
 

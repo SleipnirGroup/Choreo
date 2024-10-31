@@ -2,6 +2,7 @@
 
 package choreo.auto;
 
+import choreo.Choreo;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoFactory.AutoBindings;
 import choreo.trajectory.DifferentialSample;
@@ -56,10 +57,8 @@ public class AutoTrajectory {
   /** If this trajectory us currently running */
   private boolean isActive = false;
 
-  /** The time that the previous trajectories took up */
-  private double timeOffset = 0.0;
-
-  private TrajectorySample<?> currentSample;
+  /** If the trajectory ran to completion */
+  private boolean isCompleted = false;
 
   /**
    * Constructs an AutoTrajectory.
@@ -102,27 +101,9 @@ public class AutoTrajectory {
     bindings.getBindings().forEach((key, value) -> active().and(atTime(key)).onTrue(value));
   }
 
-  /**
-   * Returns the time since the start of the current trajectory
-   *
-   * @return The time since the start of the current trajectory
-   */
-  private double timeIntoTrajectory() {
-    return timer.get() + timeOffset;
-  }
-
-  /**
-   * Returns the total time of all the trajectories
-   *
-   * @return The total time of all the trajectories
-   */
-  private double totalTime() {
-    return trajectory.getTotalTime();
-  }
-
   @SuppressWarnings("unchecked")
   private void logTrajectory(boolean starting) {
-    TrajectorySample<?> sample = trajectory.getInitialSample();
+    TrajectorySample<?> sample = trajectory.getInitialSample(false);
     if (sample == null) {
       return;
     } else if (sample instanceof SwerveSample) {
@@ -143,67 +124,32 @@ public class AutoTrajectory {
   private void cmdInitialize() {
     timer.restart();
     isActive = true;
-    timeOffset = 0.0;
+    isCompleted = false;
     logTrajectory(true);
-    routine.recentTrajectory = this;
   }
 
   @SuppressWarnings("unchecked")
   private void cmdExecute() {
-    TrajectorySample<?> sample =
-        this.trajectory.sampleAt(timeIntoTrajectory(), mirrorTrajectory.getAsBoolean());
-
-    if (sample instanceof SwerveSample) {
-      BiConsumer<Pose2d, SwerveSample> swerveController =
-          (BiConsumer<Pose2d, SwerveSample>) this.controller;
-      SwerveSample swerveSample = (SwerveSample) sample;
+    var sample = trajectory.sampleAt(timer.get(), mirrorTrajectory.getAsBoolean());
+    if (sample instanceof SwerveSample swerveSample) {
+      var swerveController = (BiConsumer<Pose2d, SwerveSample>) this.controller;
       swerveController.accept(poseSupplier.get(), swerveSample);
-    } else if (sample instanceof DifferentialSample) {
-      BiConsumer<Pose2d, DifferentialSample> differentialController =
-          (BiConsumer<Pose2d, DifferentialSample>) this.controller;
-      DifferentialSample differentialSample = (DifferentialSample) sample;
+    } else if (sample instanceof DifferentialSample differentialSample) {
+      var differentialController = (BiConsumer<Pose2d, DifferentialSample>) this.controller;
       differentialController.accept(poseSupplier.get(), differentialSample);
     }
-
-    currentSample = sample;
   }
 
-  @SuppressWarnings("unchecked")
   private void cmdEnd(boolean interrupted) {
     timer.stop();
-    if (interrupted) {
-      if (currentSample instanceof SwerveSample) {
-        BiConsumer<Pose2d, SwerveSample> swerveController =
-            (BiConsumer<Pose2d, SwerveSample>) this.controller;
-        SwerveSample swerveSample = (SwerveSample) currentSample;
-        swerveController.accept(currentSample.getPose(), swerveSample);
-      } else if (currentSample instanceof DifferentialSample) {
-        BiConsumer<Pose2d, DifferentialSample> differentialController =
-            (BiConsumer<Pose2d, DifferentialSample>) this.controller;
-        DifferentialSample differentialSample = (DifferentialSample) currentSample;
-        differentialController.accept(currentSample.getPose(), differentialSample);
-      }
-    } else {
-      TrajectorySample<?> sample = this.trajectory.getFinalSample();
-
-      if (sample instanceof SwerveSample) {
-        BiConsumer<Pose2d, SwerveSample> swerveController =
-            (BiConsumer<Pose2d, SwerveSample>) this.controller;
-        SwerveSample swerveSample = (SwerveSample) sample;
-        swerveController.accept(poseSupplier.get(), swerveSample);
-      } else if (sample instanceof DifferentialSample) {
-        BiConsumer<Pose2d, DifferentialSample> differentialController =
-            (BiConsumer<Pose2d, DifferentialSample>) this.controller;
-        DifferentialSample differentialSample = (DifferentialSample) sample;
-        differentialController.accept(poseSupplier.get(), differentialSample);
-      }
-    }
     isActive = false;
+    isCompleted = !interrupted;
+    cmdExecute(); // will force the controller to be fed the final sample
     logTrajectory(false);
   }
 
   private boolean cmdIsFinished() {
-    return timeIntoTrajectory() > totalTime() || !routine.isActive;
+    return timer.get() > trajectory.getTotalTime() || !routine.isActive;
   }
 
   /**
@@ -232,6 +178,21 @@ public class AutoTrajectory {
   }
 
   /**
+   * Will get the underlying {@link Trajectory} object.
+   *
+   * <p><b>WARNING:</b> This method is not type safe and should be used with caution. The sample
+   * type of the trajectory should be known before calling this method.
+   *
+   * @param <SampleType> The type of the trajectory samples.
+   * @return The underlying {@link Trajectory} object.
+   */
+  @SuppressWarnings("unchecked")
+  public <SampleType extends TrajectorySample<SampleType>>
+      Trajectory<SampleType> getRawTrajectory() {
+    return (Trajectory<SampleType>) trajectory;
+  }
+
+  /**
    * Will get the starting pose of the trajectory.
    *
    * <p>This position is mirrored based on the {@code mirrorTrajectory} boolean supplier in the
@@ -243,7 +204,7 @@ public class AutoTrajectory {
     if (trajectory.samples().isEmpty()) {
       return Optional.empty();
     }
-    return Optional.of(trajectory.getInitialPose(mirrorTrajectory.getAsBoolean()));
+    return Optional.ofNullable(trajectory.getInitialPose(mirrorTrajectory.getAsBoolean()));
   }
 
   /**
@@ -258,7 +219,7 @@ public class AutoTrajectory {
     if (trajectory.samples().isEmpty()) {
       return Optional.empty();
     }
-    return Optional.of(trajectory.getFinalPose(mirrorTrajectory.getAsBoolean()));
+    return Optional.ofNullable(trajectory.getFinalPose(mirrorTrajectory.getAsBoolean()));
   }
 
   /**
@@ -290,13 +251,78 @@ public class AutoTrajectory {
    * <ul>
    *   <li>This will never be true if the trajectory is interupted
    *   <li>This will never be true before the trajectory is run
-   *   <li>This will fall when another trajectory is run
+   *   <li>This will fall the next cycle after the trajectory ends
    * </ul>
    *
-   * <p>Why does the trigger fall when a new trajecory is scheduled?
+   * <p>Why does the trigger need to fall?
    *
    * <pre><code>
-   * //Given this code segment
+   * //Lets say we had this code segment
+   * Trigger hasGamepiece = ...;
+   * Trigger noGamepiece = hasGamepiece.negate();
+   *
+   * AutoTrajectory rushMidTraj = ...;
+   * AutoTrajectory goShootGamepiece = ...;
+   * AutoTrajectory pickupAnotherGamepiece = ...;
+   *
+   * routine.enabled().onTrue(rushMidTraj.cmd());
+   *
+   * rushMidTraj.done(10).and(noGamepiece).onTrue(pickupAnotherGamepiece.cmd());
+   * rushMidTraj.done(10).and(hasGamepiece).onTrue(goShootGamepiece.cmd());
+   *
+   * // If done never falls when a new trajectory is scheduled
+   * // then these triggers leak into the next trajectory, causing the next note pickup
+   * // to trigger goShootGamepiece.cmd() even if we no longer care about these checks
+   * </code></pre>
+   *
+   * @param cyclesToDelay The number of cycles to delay the trigger from rising to true.
+   * @return A trigger that is true when the trajectoy is finished.
+   */
+  public Trigger done(int cyclesToDelay) {
+    BooleanSupplier checker =
+        new BooleanSupplier() {
+          /** The last used value for trajectory completeness */
+          boolean lastCompleteness = false;
+
+          /** The cycle to be true for */
+          int cycleTarget = -1;
+
+          @Override
+          public boolean getAsBoolean() {
+            if (!isCompleted) {
+              // update last seen value
+              lastCompleteness = false;
+              return false;
+            }
+            if (!lastCompleteness && isCompleted) {
+              // if just flipped to completed update last seen value
+              // and store the cycleTarget based of the current cycle
+              lastCompleteness = true;
+              cycleTarget = routine.pollCount() + cyclesToDelay;
+            }
+            // finally if check the cycle matches the target
+            return routine.pollCount() == cycleTarget;
+          }
+        };
+    return inactive().and(new Trigger(routine.loop(), checker));
+  }
+
+  /**
+   * Returns a trigger that rises to true when the trajectory ends and falls when another trajectory
+   * is run.
+   *
+   * <p>This is different from inactive() in a few ways.
+   *
+   * <ul>
+   *   <li>This will never be true if the trajectory is interupted
+   *   <li>This will never be true before the trajectory is run
+   *   <li>This will fall the next cycle after the trajectory ends
+   * </ul>
+   *
+   * <p>Why does the trigger need to fall?
+   *
+   * <pre><code>
+   * //Lets say we had this code segment
    * Trigger hasGamepiece = ...;
    * Trigger noGamepiece = hasGamepiece.negate();
    *
@@ -317,10 +343,7 @@ public class AutoTrajectory {
    * @return A trigger that is true when the trajectoy is finished.
    */
   public Trigger done() {
-    return inactive()
-        .and(
-            new Trigger(
-                routine.loop(), () -> routine.isMostRecentTrajectory(this) && routine.isActive));
+    return done(0);
   }
 
   /**
@@ -337,7 +360,7 @@ public class AutoTrajectory {
     }
 
     // The timer should never exceed the total trajectory time so report this as a warning
-    if (timeSinceStart > totalTime()) {
+    if (timeSinceStart > trajectory.getTotalTime()) {
       DriverStation.reportWarning(
           "[Choreo] Trigger time cannot be greater than total trajectory time for " + name, true);
       return offTrigger;
@@ -487,7 +510,7 @@ public class AutoTrajectory {
    * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event
    *     Markers in the GUI</a>
    */
-  public Trigger atTimeAndPlace(String eventName, double toleranceMeters) {
+  public Trigger atTimeAndPose(String eventName, double toleranceMeters) {
     return atTime(eventName).and(atPose(eventName, toleranceMeters));
   }
 
@@ -504,8 +527,8 @@ public class AutoTrajectory {
    * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event
    *     Markers in the GUI</a>
    */
-  public Trigger atTimeAndPlace(String eventName) {
-    return atTimeAndPlace(eventName, DEFAULT_TOLERANCE_METERS);
+  public Trigger atTimeAndPose(String eventName) {
+    return atTimeAndPose(eventName, DEFAULT_TOLERANCE_METERS);
   }
 
   /**
