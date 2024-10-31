@@ -82,8 +82,7 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
     if (samples.isEmpty()) {
       return null;
     }
-    final var sample = samples.get(0);
-    return mirrorForRedAlliance ? sample.flipped() : sample;
+    return mirrorForRedAlliance ? samples.get(0).flipped() : samples.get(0);
   }
 
   /**
@@ -98,8 +97,9 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
     if (samples.isEmpty()) {
       return null;
     }
-    final var sample = samples.get(samples.size() - 1);
-    return mirrorForRedAlliance ? sample.flipped() : sample;
+    return mirrorForRedAlliance
+        ? samples.get(samples.size() - 1).flipped()
+        : samples.get(samples.size() - 1);
   }
 
   private SampleType sampleInternal(double timestamp) {

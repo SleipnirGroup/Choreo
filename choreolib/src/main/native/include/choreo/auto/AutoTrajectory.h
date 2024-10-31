@@ -235,7 +235,7 @@ class AutoTrajectory {
       return offTrigger;
     }
 
-    if (timeSinceStart > TotalTime()) {
+    if (timeSinceStart > trajectory.GetTotalTime()) {
       FRC_ReportError(
           frc::warn::Warning,
           "Trigger time cannout be greater than total trajectory time for {}",
@@ -335,16 +335,12 @@ class AutoTrajectory {
    *   reached based on time and the robot is within toleranceMeters of the
    *   given events pose.
    */
-  frc2::Trigger AtTimeAndPlace(std::string_view eventName,
-                               units::meter_t tolerance = DEFAULT_TOLERANCE) {
+  frc2::Trigger AtTimeAndPose(std::string_view eventName,
+                              units::meter_t tolerance = DEFAULT_TOLERANCE) {
     return frc2::Trigger{AtTime(eventName) && AtPose(eventName, tolerance)};
   }
 
  private:
-  units::second_t TimeIntoTraj() const { return timer.Get() + timeOffset; }
-
-  units::second_t TotalTime() const { return trajectory.GetTotalTime(); }
-
   void LogTrajectory(bool starting) {
     if (trajectoryLogger.has_value()) {
       trajectoryLogger.value()(
@@ -356,7 +352,6 @@ class AutoTrajectory {
   void CmdInitialize() {
     timer.Restart();
     isActive = true;
-    timeOffset = 0.0_s;
     for (auto& event : scheduledEvents) {
       event.hasTriggered = false;
     }
@@ -365,7 +360,7 @@ class AutoTrajectory {
 
   void CmdExecute() {
     auto sampleOpt =
-        trajectory.template SampleAt<Year>(TimeIntoTraj(), mirrorTrajectory());
+        trajectory.template SampleAt<Year>(timer.Get(), mirrorTrajectory());
     controller(poseSupplier(), sampleOpt.value());
     currentSample = sampleOpt.value();
   }
@@ -381,7 +376,7 @@ class AutoTrajectory {
     LogTrajectory(false);
   }
 
-  bool CmdIsFinished() { return TimeIntoTraj() > TotalTime(); }
+  bool CmdIsFinished() { return timer.Get() > trajectory.GetTotalTime(); }
 
   frc2::Trigger AtPose(frc::Pose2d pose, units::meter_t tolerance) {
     frc::Translation2d checkedTrans =
@@ -429,7 +424,6 @@ class AutoTrajectory {
   frc::Timer timer;
   bool isActive = false;
   bool wasJustActive = false;
-  units::second_t timeOffset = 0_s;
   frc2::Trigger offTrigger;
 };
 
