@@ -77,11 +77,12 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
    *
    * @return The first {@link SampleType} in the trajectory.
    */
-  public SampleType getInitialSample() {
+  public SampleType getInitialSample(boolean mirrorForRedAlliance) {
     if (samples.isEmpty()) {
       return null;
     }
-    return samples.get(0);
+    final var sample = samples.get(0);
+    return mirrorForRedAlliance ? sample.flipped() : sample;
   }
 
   /**
@@ -89,23 +90,25 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
    *
    * <p><b>NULL SAFETY:</b> This function will return null if the trajectory is empty.
    *
+   * @param mirrorForRedAlliance whether or not to return the sample as mirrored across the field
    * @return The last {@link SampleType} in the trajectory.
    */
-  public SampleType getFinalSample() {
+  public SampleType getFinalSample(boolean mirrorForRedAlliance) {
     if (samples.isEmpty()) {
       return null;
     }
-    return samples.get(samples.size() - 1);
+    final var sample = samples.get(samples.size() - 1);
+    return mirrorForRedAlliance ? sample.flipped() : sample;
   }
 
   private SampleType sampleInternal(double timestamp) {
     if (timestamp < samples.get(0).getTimestamp()) {
       // timestamp oob, return the initial state
-      return getInitialSample();
+      return getInitialSample(false);
     }
     if (timestamp >= getTotalTime()) {
       // timestamp oob, return the final state
-      return getFinalSample();
+      return getFinalSample(false);
     }
 
     // binary search to find the sample before and ahead of the timestamp
@@ -169,10 +172,7 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
     if (samples.isEmpty()) {
       return null;
     }
-    if (mirrorForRedAlliance) {
-      return samples.get(0).flipped().getPose();
-    }
-    return samples.get(0).getPose();
+    return getInitialSample(mirrorForRedAlliance).getPose();
   }
 
   /**
@@ -187,10 +187,7 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
     if (samples.isEmpty()) {
       return null;
     }
-    if (mirrorForRedAlliance) {
-      return samples.get(samples.size() - 1).flipped().getPose();
-    }
-    return samples.get(samples.size() - 1).getPose();
+    return getFinalSample(mirrorForRedAlliance).getPose();
   }
 
   /**
@@ -202,7 +199,7 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
     if (samples.isEmpty()) {
       return 0;
     }
-    return samples.get(samples.size() - 1).getTimestamp();
+    return getFinalSample(false).getTimestamp();
   }
 
   /**
