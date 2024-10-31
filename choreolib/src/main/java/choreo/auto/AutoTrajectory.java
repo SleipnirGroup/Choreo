@@ -179,15 +179,16 @@ public class AutoTrajectory {
 
   /**
    * Will get the underlying {@link Trajectory} object.
-   * 
-   * <p><b>WARNING:</b> This method is not type safe and should be used with caution.
-   * The sample type of the trajectory should be known before calling this method.
-   * 
+   *
+   * <p><b>WARNING:</b> This method is not type safe and should be used with caution. The sample
+   * type of the trajectory should be known before calling this method.
+   *
    * @param <SampleType> The type of the trajectory samples.
    * @return The underlying {@link Trajectory} object.
    */
   @SuppressWarnings("unchecked")
-  public <SampleType extends TrajectorySample<SampleType>> Trajectory<SampleType> getRawTrajectory() {
+  public <SampleType extends TrajectorySample<SampleType>>
+      Trajectory<SampleType> getRawTrajectory() {
     return (Trajectory<SampleType>) trajectory;
   }
 
