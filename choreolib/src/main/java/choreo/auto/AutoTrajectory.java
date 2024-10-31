@@ -56,6 +56,7 @@ public class AutoTrajectory {
 
   /** If this trajectory us currently running */
   private boolean isActive = false;
+
   /** If the trajectory ran to completion */
   private boolean isCompleted = false;
 
@@ -285,31 +286,32 @@ public class AutoTrajectory {
    * @return A trigger that is true when the trajectoy is finished.
    */
   public Trigger done(int cyclesToDelay) {
-    BooleanSupplier checker = new BooleanSupplier() {
-      /** The last used value for trajectory completeness */
-      boolean lastCompleteness = false;
-      /** The cycle to be true for */
-      int cycleTarget = -1;
+    BooleanSupplier checker =
+        new BooleanSupplier() {
+          /** The last used value for trajectory completeness */
+          boolean lastCompleteness = false;
 
-      @Override
-      public boolean getAsBoolean() {
-        if (!isCompleted) {
-          // update last seen value
-          lastCompleteness = false;
-          return false;
-        }
-        if (!lastCompleteness && isCompleted) {
-          // if just flipped to completed update last seen value
-          // and store the cycleTarget based of the current cycle
-          lastCompleteness = true;
-          cycleTarget = routine.pollCount() + cyclesToDelay;
-        }
-        // finally if check the cycle matches the target
-        return routine.pollCount() == cycleTarget;
-      }
-    };
-    return inactive()
-        .and(new Trigger(routine.loop(), checker));
+          /** The cycle to be true for */
+          int cycleTarget = -1;
+
+          @Override
+          public boolean getAsBoolean() {
+            if (!isCompleted) {
+              // update last seen value
+              lastCompleteness = false;
+              return false;
+            }
+            if (!lastCompleteness && isCompleted) {
+              // if just flipped to completed update last seen value
+              // and store the cycleTarget based of the current cycle
+              lastCompleteness = true;
+              cycleTarget = routine.pollCount() + cyclesToDelay;
+            }
+            // finally if check the cycle matches the target
+            return routine.pollCount() == cycleTarget;
+          }
+        };
+    return inactive().and(new Trigger(routine.loop(), checker));
   }
 
   /**

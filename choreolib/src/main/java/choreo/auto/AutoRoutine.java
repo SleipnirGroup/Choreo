@@ -90,7 +90,7 @@ public class AutoRoutine {
 
   /**
    * Gets the poll count of the routine.
-   * 
+   *
    * @return The poll count of the routine.
    */
   int pollCount() {
