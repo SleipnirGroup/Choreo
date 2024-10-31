@@ -75,6 +75,7 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
    *
    * <p><b>NULL SAFETY:</b> This function will return null if the trajectory is empty.
    *
+   * @param mirrorForRedAlliance whether or not to return the sample as mirrored across the field
    * @return The first {@link SampleType} in the trajectory.
    */
   public SampleType getInitialSample(boolean mirrorForRedAlliance) {
