@@ -11,4 +11,5 @@
         "unordered_map": "cpp",
         "xstring": "cpp"
     },
+    "java.configuration.updateBuildConfiguration": "interactive",
 }
