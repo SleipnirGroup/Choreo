@@ -20,12 +20,12 @@ import java.util.function.BooleanSupplier;
  */
 public class AutoRoutine {
   /** The underlying {@link EventLoop} that triggers are bound to and polled */
-  protected final EventLoop loop;
+  protected EventLoop loop;
 
   /** The name of the auto routine this loop is associated with */
   protected final String name;
 
-  /** A boolean utilized in {@link #running()} to resolve trueness */
+  /** A boolean utilized in {@link #running} to resolve trueness */
   protected boolean isActive = false;
 
   /** A boolean that is true when the loop is killed */
@@ -43,6 +43,8 @@ public class AutoRoutine {
   public AutoRoutine(String name) {
     this.loop = new EventLoop();
     this.name = name;
+    // initialize triggers
+    this.running = new Trigger(loop, () -> isActive && DriverStation.isAutonomousEnabled());
   }
 
   /**
@@ -54,6 +56,8 @@ public class AutoRoutine {
   protected AutoRoutine(String name, EventLoop loop) {
     this.loop = loop;
     this.name = name;
+    // initialize triggers
+    this.running = new Trigger(loop, () -> isActive && DriverStation.isAutonomousEnabled());
   }
 
   /**
@@ -61,12 +65,8 @@ public class AutoRoutine {
    *
    * <p>Using a {@link Trigger#onFalse(Command)} will do nothing as when this is false the routine
    * is not being polled anymore.
-   *
-   * @return A {@link Trigger} that is true while this autonomous routine is being polled.
    */
-  public Trigger running() {
-    return new Trigger(loop, () -> isActive && DriverStation.isAutonomousEnabled());
-  }
+  public final Trigger running;
 
   /** Polls the routine. Should be called in the autonomous periodic method. */
   public void poll() {
@@ -144,4 +144,7 @@ public class AutoRoutine {
         .until(() -> !DriverStation.isAutonomousEnabled() || finishCondition.getAsBoolean())
         .withName(name);
   }
+
+  /** @deprecated Use the public property {@link #running} instead. */
+  @Deprecated(forRemoval = true) public Trigger running() { return this.running; }
 }

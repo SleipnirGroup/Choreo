@@ -35,7 +35,7 @@ public class DoneTest {
     AutoRoutine routine = factory.newRoutine("test");
     AutoTrajectory traj = factory.trajectory(trajectory, routine);
 
-    BooleanSupplier done = traj.done();
+    BooleanSupplier done = traj.done;
     BooleanSupplier doneDelayed = traj.done(2);
 
     SimHooks.pauseTiming();
@@ -52,7 +52,7 @@ public class DoneTest {
     scheduler.run();
 
     assertTrue(routine.isActive);
-    assertTrue(traj.active());
+    assertTrue(traj.active);
 
     SimHooks.stepTiming(1.0);
     scheduler.run();
@@ -60,7 +60,7 @@ public class DoneTest {
     scheduler.run();
     SimHooks.stepTiming(1.05);
     scheduler.run();
-    assertTrue(traj.inactive());
+    assertTrue(traj.inactive);
 
     assertTrue(done);
     assertTrue(done);

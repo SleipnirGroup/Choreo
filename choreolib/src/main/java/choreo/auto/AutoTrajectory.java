@@ -101,7 +101,12 @@ public class AutoTrajectory {
               public void accept(Trajectory<SampleType> t, Boolean u) {}
             };
 
-    bindings.getBindings().forEach((key, value) -> active().and(atTime(key)).onTrue(value));
+    // initialize triggers
+    this.active = new Trigger(routine.loop(), () -> this.isActive && routine.isActive);
+    this.inactive = this.active.negate();
+    this.done = done(0);
+
+    bindings.getBindings().forEach((key, value) -> active.and(atTime(key)).onTrue(value));
   }
 
   /**
@@ -231,29 +236,21 @@ public class AutoTrajectory {
 
   /**
    * Returns a trigger that is true while the trajectory is scheduled.
-   *
-   * @return A trigger that is true while the trajectory is scheduled.
    */
-  public Trigger active() {
-    return new Trigger(routine.loop(), () -> this.isActive && routine.isActive);
-  }
+  public final Trigger active;
 
   /**
    * Returns a trigger that is true while the command is not scheduled.
    *
-   * <p>The same as calling <code>active().negate()</code>.
-   *
-   * @return A trigger that is true while the command is not scheduled.
+   * <p>The same as calling <code>active.negate()</code>.
    */
-  public Trigger inactive() {
-    return active().negate();
-  }
+  public final Trigger inactive;
 
   /**
    * Returns a trigger that rises to true when the trajectory ends and falls when another trajectory
    * is run.
    *
-   * <p>This is different from inactive() in a few ways.
+   * <p>This is different from <code>traj.inactive</code> in a few ways.
    *
    * <ul>
    *   <li>This will never be true if the trajectory is interupted
@@ -311,14 +308,14 @@ public class AutoTrajectory {
             return routine.pollCount() == cycleTarget;
           }
         };
-    return inactive().and(new Trigger(routine.loop(), checker));
+    return inactive.and(new Trigger(routine.loop(), checker));
   }
 
   /**
    * Returns a trigger that rises to true when the trajectory ends and falls when another trajectory
    * is run.
    *
-   * <p>This is different from inactive() in a few ways.
+   * <p>This is different from <code>traj.inactive</code> in a few ways.
    *
    * <ul>
    *   <li>This will never be true if the trajectory is interupted
@@ -339,19 +336,15 @@ public class AutoTrajectory {
    *
    * routine.enabled().onTrue(rushMidTraj.cmd());
    *
-   * rushMidTraj.done().and(noGamepiece).onTrue(pickupAnotherGamepiece.cmd());
-   * rushMidTraj.done().and(hasGamepiece).onTrue(goShootGamepiece.cmd());
+   * rushMidTraj.done.and(noGamepiece).onTrue(pickupAnotherGamepiece.cmd());
+   * rushMidTraj.done.and(hasGamepiece).onTrue(goShootGamepiece.cmd());
    *
    * // If done never falls when a new trajectory is scheduled
    * // then these triggers leak into the next trajectory, causing the next note pickup
    * // to trigger goShootGamepiece.cmd() even if we no longer care about these checks
    * </code></pre>
-   *
-   * @return A trigger that is true when the trajectoy is finished.
    */
-  public Trigger done() {
-    return done(0);
-  }
+  public final Trigger done;
 
   /**
    * Returns a trigger that will go true for 1 cycle when the desired time has elapsed
@@ -550,6 +543,13 @@ public class AutoTrajectory {
     }
     return poses;
   }
+
+  /** @deprecated Use the public property {@link #done} instead. */
+  @Deprecated(forRemoval = true) public Trigger done() { return this.done; }
+  /** @deprecated Use the public property {@link #active} instead. */
+  @Deprecated(forRemoval = true) public Trigger active() { return this.active; }
+  /** @deprecated Use the public property {@link #inactive} instead. */
+  @Deprecated(forRemoval = true) public Trigger inactive() { return this.done; }
 
   @Override
   public boolean equals(Object obj) {

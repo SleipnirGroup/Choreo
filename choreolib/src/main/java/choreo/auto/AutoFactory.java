@@ -82,11 +82,6 @@ public class AutoFactory {
 
         @Override
         public void reset() {}
-
-        @Override
-        public Trigger running() {
-          return new Trigger(loop, () -> false);
-        }
       };
 
   /** A class used to bind commands to events in all trajectories created by this factory. */
@@ -327,7 +322,7 @@ public class AutoFactory {
    */
   public AutoRoutine commandAsAutoRoutine(Command cmd) {
     AutoRoutine routine = newRoutine(cmd.getName());
-    routine.running().onTrue(cmd);
+    routine.running.onTrue(cmd);
     return routine;
   }
 
