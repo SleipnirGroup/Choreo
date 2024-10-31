@@ -25,7 +25,7 @@ public class AutoRoutine {
   /** The name of the auto routine this loop is associated with */
   protected final String name;
 
-  /** A boolean utilized in {@link #enabled()} to resolve trueness */
+  /** A boolean utilized in {@link #running()} to resolve trueness */
   protected boolean isActive = false;
 
   /** A boolean that is true when the loop is killed */
@@ -64,7 +64,7 @@ public class AutoRoutine {
    *
    * @return A {@link Trigger} that is true while this autonomous routine is being polled.
    */
-  public Trigger enabled() {
+  public Trigger running() {
     return new Trigger(loop, () -> isActive && DriverStation.isAutonomousEnabled());
   }
 
