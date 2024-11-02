@@ -6,10 +6,10 @@ A utility script to update the version in multiple files.
 simply run `python update_version.py <version>` to update the version in the files.
 """
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
-import re
-from typing import Literal, Callable
+from typing import Callable, Literal
 
 
 def default_version_string(v: str, count: str, hash: str, mod: str, num: str):
