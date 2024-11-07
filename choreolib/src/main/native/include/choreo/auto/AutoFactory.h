@@ -107,7 +107,8 @@ class AutoFactory {
    * @return A new auto trajectory.
    */
   AutoTrajectory<SampleType, Year> Trajectory(
-      std::string_view trajectoryName, AutoRoutine<SampleType, Year>& loop) const {
+      std::string_view trajectoryName,
+      AutoRoutine<SampleType, Year>& loop) const {
     std::optional<choreo::Trajectory<SampleType>> optTraj =
         trajectoryCache.LoadTrajectory(trajectoryName);
     choreo::Trajectory<SampleType> trajectory;

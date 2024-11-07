@@ -157,9 +157,7 @@ class AutoTrajectory {
    *
    * @return The underlying {@link Trajectory} object.
    */
-  const Trajectory<SampleType>& GetRawTrajectory() const {
-    return trajectory;
-  }
+  const Trajectory<SampleType>& GetRawTrajectory() const { return trajectory; }
 
   /**
    * Will get the starting pose of the trajectory.
