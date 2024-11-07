@@ -96,7 +96,7 @@ want your subsystem default command to run during an auto
 or want to have concurrent command groups running independently that might handoff `Subsystems` to each other.
 
 Triggers aim to solve these problems by providing a way to define a control flow based on reactions to state
-that don't allocate `Subsystems` until they are needed.
+that don't require `Subsystems` until they are needed.
 
 Triggers and composition can be used together to create complex auto routines.
 Both paradigms also support branching in their own way.
