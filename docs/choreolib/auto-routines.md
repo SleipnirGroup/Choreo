@@ -106,7 +106,8 @@ Both paradigms also support branching in their own way.
     Triggers that are polled by the `CommandScheduler` should never
     be on the left hand side of a `and`/`or` method call.
     This will leak the trigger outside of the auto routine and can cause
-    unexpected behavior.
+    unexpected behavior. For example this can cause a check for intaking
+    a gamepiece during an auto to also be checked and reacted to during teleop.
 
 ## Monolithic vs Segmented Trajectories
 

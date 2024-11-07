@@ -14,13 +14,13 @@ import java.util.function.Function;
 
 /**
  * An Choreo specific {@code SendableChooser} that allows for the selection of {@link AutoRoutine}s
- * at runtime via a 
- * <a href="https://docs.wpilib.org/en/stable/docs/software/dashboards/index.html#dashboards">Dashboard</a>.
+ * at runtime via a <a
+ * href="https://docs.wpilib.org/en/stable/docs/software/dashboards/index.html#dashboards">Dashboard</a>.
  *
  * <p>This chooser takes a <a href="https://en.wikipedia.org/wiki/Lazy_loading">lazy loading</a>
- * approach to {@link AutoRoutine}s, only generating the {@link AutoRoutine} when it is
- * selected. This approach has the benefit of not loading all autos on startup, but also not loading
- * the auto during auto start causing a delay.
+ * approach to {@link AutoRoutine}s, only generating the {@link AutoRoutine} when it is selected.
+ * This approach has the benefit of not loading all autos on startup, but also not loading the auto
+ * during auto start causing a delay.
  *
  * <p>Once the {@link AutoChooser} is made you can add {@link AutoRoutine}s to it using the {@link
  * #addAutoRoutine(String, AutoRoutineGenerator)} method. Unlike {@code SendableChooser} this
@@ -60,7 +60,9 @@ public class AutoChooser {
   public AutoChooser(AutoFactory factory, String tableName) {
     this.factory = factory;
 
-    if (tableName == null) tableName = "";
+    if (tableName == null) {
+      tableName = "";
+    }
     String path = NetworkTable.normalizeKey(tableName, true) + "/AutoChooser";
     NetworkTable table = NetworkTableInstance.getDefault().getTable(path);
 
@@ -103,9 +105,9 @@ public class AutoChooser {
    * <p>An auto routine is a function that takes an {@link AutoFactory} and returns a {@link
    * AutoRoutine}. These functions can be static, a lambda or belong to a local variable.
    *
-   * <p>A good paradigm is making an `Autos` class that all of your subsystems/resources are
-   * <a href="https://en.wikipedia.org/wiki/Dependency_injection">dependency injected</a> into.
-   * Then you crate methods inside that class that take an {@link AutoFactory} and return a {@link
+   * <p>A good paradigm is making an `Autos` class that all of your subsystems/resources are <a
+   * href="https://en.wikipedia.org/wiki/Dependency_injection">dependency injected</a> into. Then
+   * you crate methods inside that class that take an {@link AutoFactory} and return a {@link
    * AutoRoutine}. You can also have the `Autos` class extend an `AutoHelpers` class that has helper
    * methods that don't clutter your routines.
    *
