@@ -9,7 +9,7 @@
 
 #include <frc/RobotBase.h>
 
-#include "choreo/auto/AutoLoop.h"
+#include "choreo/auto/AutoRoutine.h"
 #include "choreo/auto/AutoTrajectory.h"
 #include "choreo/auto/TrajectoryCache.h"
 #include "choreo/util/AllianceFlipperUtil.h"
@@ -88,15 +88,15 @@ class AutoFactory {
    *
    * @param name The name of the event loop.
    * @return A new auto loop.
-   * @see AutoLoop
+   * @see AutoRoutine
    */
-  AutoLoop<SampleType, Year> NewLoop(std::string_view name) {
+  AutoRoutine<SampleType, Year> NewLoop(std::string_view name) {
     // Clear cache in simulation to allow a form of "hot-reloading" trajectories
     if (frc::RobotBase::IsSimulation()) {
       ClearCache();
     }
 
-    return AutoLoop<SampleType, Year>(name);
+    return AutoRoutine<SampleType, Year>(name);
   }
 
   /**
@@ -107,7 +107,7 @@ class AutoFactory {
    * @return A new auto trajectory.
    */
   AutoTrajectory<SampleType, Year> Trajectory(
-      std::string_view trajectoryName, AutoLoop<SampleType, Year>& loop) const {
+      std::string_view trajectoryName, AutoRoutine<SampleType, Year>& loop) const {
     std::optional<choreo::Trajectory<SampleType>> optTraj =
         trajectoryCache.LoadTrajectory(trajectoryName);
     choreo::Trajectory<SampleType> trajectory;
@@ -136,7 +136,7 @@ class AutoFactory {
    */
   AutoTrajectory<SampleType, Year> Trajectory(
       std::string_view trajectoryName, int splitIndex,
-      AutoLoop<SampleType, Year>& loop) const {
+      AutoRoutine<SampleType, Year>& loop) const {
     std::optional<choreo::Trajectory<SampleType>> optTraj =
         trajectoryCache.LoadTrajectory(trajectoryName, splitIndex);
     choreo::Trajectory<SampleType> trajectory;
@@ -158,7 +158,7 @@ class AutoFactory {
    */
   AutoTrajectory<SampleType, Year> Trajectory(
       choreo::Trajectory<SampleType> trajectory,
-      AutoLoop<SampleType, Year>& loop) const {
+      AutoRoutine<SampleType, Year>& loop) const {
     AutoTrajectory<SampleType> autoTraj{trajectory.name,       trajectory,
                                         poseSupplier,          controller,
                                         mirrorTrajectory,      trajectoryLogger,

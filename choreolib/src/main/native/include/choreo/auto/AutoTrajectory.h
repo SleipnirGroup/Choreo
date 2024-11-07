@@ -157,7 +157,7 @@ class AutoTrajectory {
    *
    * @return The underlying {@link Trajectory} object.
    */
-  const TrajectorySample<SampleType>& GetRawTrajectory() const {
+  const Trajectory<SampleType>& GetRawTrajectory() const {
     return trajectory;
   }
 
@@ -264,7 +264,7 @@ class AutoTrajectory {
                            if (triggered) {
                              return false;
                            }
-                           if (TimeIntoTraj() >= timeSinceStart) {
+                           if (timer.Get() >= timeSinceStart) {
                              triggered = true;
                              return true;
                            }
@@ -413,7 +413,7 @@ class AutoTrajectory {
   }
 
   void CheckAndTriggerEvents() {
-    auto currentTime = TimeIntoTraj();
+    auto currentTime = timer.Get();
     for (auto& event : scheduledEvents) {
       if (!event.hasTriggered && isActive && currentTime >= event.triggerTime) {
         event.hasTriggered = true;
