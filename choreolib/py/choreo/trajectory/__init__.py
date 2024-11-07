@@ -1,13 +1,13 @@
 from __future__ import annotations
+
 import json
 import math
 import os
 
+from choreo.spec_version import SPEC_VERSION
+from choreo.util import DEFAULT_YEAR, get_flipper_for_year
 from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.kinematics import ChassisSpeeds
-
-from choreo.util import DEFAULT_YEAR, get_flipper_for_year
-from choreo.spec_version import SPEC_VERSION
 
 
 def lerp(a, b, t) -> float:
