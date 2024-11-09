@@ -36,7 +36,7 @@ struct TRAJOPT_DLLEXPORT SwerveDrivetrain {
   /// Maximum torque applied to wheel (N−m).
   double wheelMaxTorque;
 
-  /// The Coefficient of Friction (CoF) for the wheels.
+  /// The Coefficient of Friction (CoF) of the wheels.
   double wheelCoF;
 
   /// Translation of each swerve module from the origin of the robot coordinate
