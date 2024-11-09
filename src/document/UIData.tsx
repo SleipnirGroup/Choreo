@@ -1,4 +1,5 @@
 import {
+  BorderOuter,
   Circle,
   CircleOutlined,
   CropFree,
@@ -147,6 +148,12 @@ export const ViewData = {
     index: 5,
     name: "Focus",
     icon: <CropFree />,
+    default: false
+  },
+  FieldOverlays: {
+    index: 6,
+    name: "FieldOverlays",
+    icon: <BorderOuter />,
     default: false
   }
 };

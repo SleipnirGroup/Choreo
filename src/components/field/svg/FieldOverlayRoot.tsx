@@ -242,6 +242,18 @@ class FieldOverlayRoot extends Component<Props, State> {
                 <FieldImage2024 />
               </>
             )}
+
+            {layers[ViewLayers.FieldOverlays] && doc.pathlist.activePath.params.constraints.map(c => {
+              return (
+                <FieldConstraintDisplayLayer
+                  points={doc.pathlist.activePath.params.waypoints}
+                  constraint={
+                    c as IConstraintStoreKeyed<ConstraintKey>
+                  }
+                  lineColor="transparent"
+                ></FieldConstraintDisplayLayer>
+                )
+            })}
             {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
             {/* Waypoint mouse capture*/}
 
@@ -373,7 +385,6 @@ class FieldOverlayRoot extends Component<Props, State> {
                 lineColor="var(--select-yellow)"
               ></FieldConstraintDisplayLayer>
             )}
-
             {!doc.isSidebarConstraintSelected &&
               doc.isSidebarConstraintHovered && (
                 <FieldConstraintDisplayLayer

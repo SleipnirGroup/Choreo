@@ -16,7 +16,6 @@ type Props<K extends ConstraintKey> = {
   data: IConstraintDataStore<K>;
   start?: IHolonomicWaypointStore;
   end?: IHolonomicWaypointStore;
-  lineColor: string;
 };
 class KeepOutCircleOverlay extends Component<Props<"KeepOutCircle">, object> {
   rootRef: React.RefObject<SVGGElement> = React.createRef<SVGGElement>();

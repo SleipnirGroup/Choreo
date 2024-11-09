@@ -8,6 +8,7 @@ import {
 } from "../../../../document/ConstraintDefinitions";
 import { doc } from "../../../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
+import { randomUUID } from "crypto";
 
 const STROKE = 0.1;
 const DOT = 0.1;
@@ -16,7 +17,7 @@ type Props<K extends ConstraintKey> = {
   data: IConstraintDataStore<K>;
   start?: IHolonomicWaypointStore;
   end?: IHolonomicWaypointStore;
-  lineColor: string;
+  id: string;
 };
 class KeepInCircleOverlay extends Component<Props<"KeepInCircle">, object> {
   rootRef: React.RefObject<SVGGElement> = React.createRef<SVGGElement>();
@@ -30,11 +31,11 @@ class KeepInCircleOverlay extends Component<Props<"KeepInCircle">, object> {
         })
         .on("end", (_event) => doc.history.stopGroup())
         .container(this.rootRef.current);
-      d3.select<SVGCircleElement, undefined>(`#dragTarget-keepInCircle`).call(
+      d3.select<SVGCircleElement, undefined>(`#dragTarget-keepInCircle` + this.props.id).call(
         dragHandleDrag
       );
       d3.select<SVGCircleElement, undefined>(
-        `#dragTarget-keepInCircleDot`
+        `#dragTarget-keepInCircleDot` + this.props.id
       ).call(dragHandleDrag);
       const radiusHandleDrag = d3
         .drag<SVGCircleElement, undefined>()
@@ -45,7 +46,7 @@ class KeepInCircleOverlay extends Component<Props<"KeepInCircle">, object> {
         .on("end", (_event) => doc.history.stopGroup())
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
-        `#dragRadiusTarget-keepInCircle`
+        `#dragRadiusTarget-keepInCircle` + this.props.id
       ).call(radiusHandleDrag);
     }
   }
@@ -77,7 +78,7 @@ class KeepInCircleOverlay extends Component<Props<"KeepInCircle">, object> {
           r={r - STROKE / 2}
           fill={"green"}
           fillOpacity={0.1}
-          id="dragTarget-keepInCircle"
+          id={"dragTarget-keepInCircle" + this.props.id}
         ></circle>
         {/* Center Dot */}
         <circle
@@ -86,7 +87,7 @@ class KeepInCircleOverlay extends Component<Props<"KeepInCircle">, object> {
           r={r < DOT * 2 ? 0.0 : DOT}
           fill={"green"}
           fillOpacity={1.0}
-          id="dragTarget-keepInCircleDot"
+          id={"dragTarget-keepInCircleDot" + this.props.id}
         ></circle>
         {/* Radius Handle */}
         <circle
@@ -98,7 +99,7 @@ class KeepInCircleOverlay extends Component<Props<"KeepInCircle">, object> {
           stroke={"green"}
           strokeWidth={STROKE}
           strokeOpacity={1.0}
-          id="dragRadiusTarget-keepInCircle"
+          id={"dragRadiusTarget-keepInCircle" + this.props.id}
         ></circle>
       </g>
     );
