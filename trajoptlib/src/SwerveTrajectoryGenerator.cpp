@@ -243,10 +243,13 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
 
       Translation2v moduleF{Fx.at(index).at(moduleIndex),
                             Fy.at(index).at(moduleIndex)};
+
       // τ = r x F
+      // F = τ/r
       double maxWheelForce =
           path.drivetrain.wheelMaxTorque / path.drivetrain.wheelRadius;
-      // τ = μmg
+
+      // friction = μmg
       double maxFrictionForce =
           path.drivetrain.wheelCoF * path.drivetrain.mass * 9.8;
 
