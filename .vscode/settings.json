@@ -10,7 +10,6 @@
         "deque": "cpp",
         "map": "cpp",
         "unordered_map": "cpp",
-        "xstring": "cpp",
         "type_traits": "cpp"
     },
     "java.configuration.updateBuildConfiguration": "interactive",
