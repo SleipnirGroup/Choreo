@@ -33,7 +33,7 @@ void SwerveTrajectoryGenerator::set_drivetrain(
   path_builder.SetDrivetrain(trajopt::SwerveDrivetrain{
       drivetrain.mass, drivetrain.moi, drivetrain.wheel_radius,
       drivetrain.wheel_max_angular_velocity, drivetrain.wheel_max_torque,
-      std::move(cppModules)});
+      drivetrain.wheel_cof, std::move(cppModules)});
 }
 
 void SwerveTrajectoryGenerator::set_bumpers(double front, double left,

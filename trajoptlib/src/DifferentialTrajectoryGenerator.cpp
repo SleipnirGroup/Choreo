@@ -231,8 +231,16 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     problem.SubjectTo(-maxWheelVelocity < vr.at(index));
     problem.SubjectTo(vr.at(index) < maxWheelVelocity);
 
-    double maxForce =
+    // τ = r x F
+    // F = τ/r
+    double maxWheelForce =
         path.drivetrain.wheelMaxTorque / path.drivetrain.wheelRadius;
+
+    // friction = μmg
+    double maxFrictionForce =
+        path.drivetrain.wheelCoF * path.drivetrain.mass * 9.8;
+
+    double maxForce = std::min(maxWheelForce, maxFrictionForce);
 
     // −Fₘₐₓ < Fₗ < Fₘₐₓ
     problem.SubjectTo(-maxForce < Fl.at(index));
