@@ -245,9 +245,14 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
                             Fy.at(index).at(moduleIndex)};
       double maxForce =
           path.drivetrain.wheelMaxTorque / path.drivetrain.wheelRadius;
+      double mgCof = path.drivetrain.mass * 9.8 * path.drivetrain.wheelCof;
 
+      double forceToConstrainTo = std::min(maxForce, mgCof);
+
+      // |F|₂ ≤ mg * cof
+      // or
       // |F|₂² ≤ Fₘₐₓ²
-      problem.SubjectTo(moduleF.SquaredNorm() <= maxForce * maxForce);
+      problem.SubjectTo(moduleF.SquaredNorm() <= forceToConstrainTo * forceToConstrainTo);
     }
 
     // Apply dynamics constraints

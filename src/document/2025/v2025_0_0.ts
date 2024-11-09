@@ -51,6 +51,7 @@ export interface RobotConfig<T extends ExprOrNumber> {
   vmax: T;
   /// motor N*m
   tmax: T; // N*m
+  cof: T;
   bumper: Bumper<T>;
   differentialTrackWidth: T;
 }

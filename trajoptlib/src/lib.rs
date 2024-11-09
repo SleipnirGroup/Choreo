@@ -13,6 +13,7 @@ mod ffi {
         wheel_radius: f64,
         wheel_max_angular_velocity: f64,
         wheel_max_torque: f64,
+        wheel_cof: f64,
         modules: Vec<Translation2d>,
     }
 
