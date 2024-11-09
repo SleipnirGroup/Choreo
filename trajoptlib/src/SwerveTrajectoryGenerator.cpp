@@ -255,9 +255,7 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
 
       double maxForce = std::min(maxWheelForce, maxFrictionForce);
 
-      // |F|₂² ≤ (μmg)²
-      // or
-      // |F|₂² ≤ F_wheel,ₘₐₓ²
+      // |F|₂² ≤ Fₘₐₓ²
       problem.SubjectTo(moduleF.SquaredNorm() <= maxForce * maxForce);
     }
 
