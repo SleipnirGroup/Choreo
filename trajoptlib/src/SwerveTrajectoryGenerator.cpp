@@ -252,7 +252,8 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       // |F|₂ ≤ mg * cof
       // or
       // |F|₂² ≤ Fₘₐₓ²
-      problem.SubjectTo(moduleF.SquaredNorm() <= forceToConstrainTo * forceToConstrainTo);
+      problem.SubjectTo(moduleF.SquaredNorm() <=
+                        forceToConstrainTo * forceToConstrainTo);
     }
 
     // Apply dynamics constraints
