@@ -1,5 +1,5 @@
-from enum import Enum
 import math
+from enum import Enum
 from typing import *
 
 from wpimath.geometry import Pose2d
