@@ -138,6 +138,9 @@ struct Config {
   /// The maximum torque of the robot. (N-m)
   Expression tmax;
 
+  /// The Coefficient of Friction (CoF) of the wheels.
+  Expression cof;
+
   /// The bumpers of the robot.
   Bumpers bumpers;
 
