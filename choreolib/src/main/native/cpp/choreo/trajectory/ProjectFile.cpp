@@ -69,6 +69,7 @@ void choreo::to_json(wpi::json& json, const Config& config) {
                    {"radius", config.wheelRadius},
                    {"vmax", config.vmax},
                    {"tmax", config.tmax},
+                   {"cof", config.cof},
                    {"bumper", config.bumpers},
                    {"differentialTrackWidth", config.differentialTrackWidth}};
 }
@@ -82,6 +83,7 @@ void choreo::from_json(const wpi::json& json, Config& config) {
   json.at("radius").get_to(config.wheelRadius);
   json.at("vmax").get_to(config.vmax);
   json.at("tmax").get_to(config.tmax);
+  json.at("cof").get_to(config.cof);
   json.at("bumper").get_to(config.bumpers);
   json.at("differentialTrackWidth").get_to(config.differentialTrackWidth);
 }
