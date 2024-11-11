@@ -146,8 +146,12 @@ class KeepInRectangleOverlay extends Component<
     const y = data.props.y.val;
     const w = data.props.w.val;
     const h = data.props.h.val;
-    const color = (uiState.layers[ViewLayers.Waypoints] &&
-      uiState.isNavbarWaypointSelected()) && !this.props.selected ? "darkseagreen": "green";
+    const color =
+      uiState.layers[ViewLayers.Waypoints] &&
+      uiState.isNavbarWaypointSelected() &&
+      !this.props.selected
+        ? "darkseagreen"
+        : "green";
     return (
       <g ref={this.rootRef}>
         {/* Fill Rect*/}

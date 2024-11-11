@@ -9,7 +9,6 @@ import {
 import { doc, uiState } from "../../../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
 import { ViewLayers } from "../../../../document/UIData";
-import { IConstraintStoreKeyed } from "../../../../document/ConstraintStore";
 
 const STROKE = 0.1;
 const DOT = 0.1;
@@ -33,9 +32,9 @@ class KeepOutCircleOverlay extends Component<Props<"KeepOutCircle">, object> {
         })
         .on("end", (_event) => doc.history.stopGroup())
         .container(this.rootRef.current);
-      d3.select<SVGCircleElement, undefined>(`#dragTarget-keepOutCircle` + this.id).call(
-        dragHandleDrag
-      );
+      d3.select<SVGCircleElement, undefined>(
+        `#dragTarget-keepOutCircle` + this.id
+      ).call(dragHandleDrag);
       d3.select<SVGCircleElement, undefined>(
         `#dragTarget-keepOutCircleDot` + this.id
       ).call(dragHandleDrag);
@@ -71,9 +70,13 @@ class KeepOutCircleOverlay extends Component<Props<"KeepOutCircle">, object> {
     const x = data.props.x.val;
     const y = data.props.y.val;
     const r = data.props.r.val;
-    console.log(doc.selectedSidebarItem)
-    const color = (uiState.layers[ViewLayers.Waypoints] &&
-      uiState.isNavbarWaypointSelected()) && !this.props.selected ? "rosybrown": "red";
+    console.log(doc.selectedSidebarItem);
+    const color =
+      uiState.layers[ViewLayers.Waypoints] &&
+      uiState.isNavbarWaypointSelected() &&
+      !this.props.selected
+        ? "rosybrown"
+        : "red";
     return (
       <g ref={this.rootRef}>
         {/* Main Circle */}

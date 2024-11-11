@@ -32,9 +32,9 @@ class KeepInCircleOverlay extends Component<Props<"KeepInCircle">, object> {
         })
         .on("end", (_event) => doc.history.stopGroup())
         .container(this.rootRef.current);
-      d3.select<SVGCircleElement, undefined>(`#dragTarget-keepInCircle` + this.id).call(
-        dragHandleDrag
-      );
+      d3.select<SVGCircleElement, undefined>(
+        `#dragTarget-keepInCircle` + this.id
+      ).call(dragHandleDrag);
       d3.select<SVGCircleElement, undefined>(
         `#dragTarget-keepInCircleDot` + this.id
       ).call(dragHandleDrag);
@@ -70,8 +70,12 @@ class KeepInCircleOverlay extends Component<Props<"KeepInCircle">, object> {
     const x = data.props.x.val;
     const y = data.props.y.val;
     const r = data.props.r.val;
-    const color = uiState.layers[ViewLayers.Waypoints] &&
-      uiState.isNavbarWaypointSelected() && !this.props.selected ? "darkseagreen": "green";
+    const color =
+      uiState.layers[ViewLayers.Waypoints] &&
+      uiState.isNavbarWaypointSelected() &&
+      !this.props.selected
+        ? "darkseagreen"
+        : "green";
     return (
       <g ref={this.rootRef}>
         {/* Main Circle */}

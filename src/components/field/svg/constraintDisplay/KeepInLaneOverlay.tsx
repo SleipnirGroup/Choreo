@@ -97,8 +97,12 @@ class KeepInLaneOverlay extends Component<Props<"KeepInLane">, object> {
       (endBelowX + startBelowX) / 2,
       (endBelowY + startBelowY) / 2
     ];
-    const color = uiState.layers[ViewLayers.Waypoints] &&
-      uiState.isNavbarWaypointSelected() && !this.props.selected ? "darkseagreen": "green";
+    const color =
+      uiState.layers[ViewLayers.Waypoints] &&
+      uiState.isNavbarWaypointSelected() &&
+      !this.props.selected
+        ? "darkseagreen"
+        : "green";
     return (
       <g ref={this.rootRef}>
         {/* Lines */}
