@@ -6,8 +6,9 @@ import {
   ConstraintKey,
   DataMap
 } from "../../../../document/ConstraintDefinitions";
-import { doc } from "../../../../document/DocumentManager";
+import { doc, uiState } from "../../../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
+import { ViewLayers } from "../../../../document/UIData";
 
 const STROKE = 0.1;
 const DOT = 0.1;
@@ -16,11 +17,13 @@ type Props<K extends ConstraintKey> = {
   data: IConstraintDataStore<K>;
   start?: IHolonomicWaypointStore;
   end?: IHolonomicWaypointStore;
+  selected: boolean;
 };
 class KeepInRectangleOverlay extends Component<
   Props<"KeepInRectangle">,
   object
 > {
+  id = crypto.randomUUID();
   rootRef: React.RefObject<SVGGElement> = React.createRef<SVGGElement>();
   componentDidMount() {
     if (this.rootRef.current) {
@@ -37,7 +40,7 @@ class KeepInRectangleOverlay extends Component<
         })
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
-        `#dragTarget-keepInRectangle`
+        `#dragTarget-keepInRectangle` + this.id
       ).call(dragHandleDrag);
 
       const dragHandleDragW = d3
@@ -52,7 +55,7 @@ class KeepInRectangleOverlay extends Component<
         })
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
-        `#dragTarget-keepInRectangleW`
+        `#dragTarget-keepInRectangleW` + this.id
       ).call(dragHandleDragW);
 
       const dragHandleDragWH = d3
@@ -67,7 +70,7 @@ class KeepInRectangleOverlay extends Component<
         })
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
-        `#dragTarget-keepInRectangleWH`
+        `#dragTarget-keepInRectangleWH` + this.id
       ).call(dragHandleDragWH);
 
       const dragHandleDragH = d3
@@ -82,7 +85,7 @@ class KeepInRectangleOverlay extends Component<
         })
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
-        `#dragTarget-keepInRectangleH`
+        `#dragTarget-keepInRectangleH` + this.id
       ).call(dragHandleDragH);
 
       const dragHandleRegion = d3
@@ -97,7 +100,7 @@ class KeepInRectangleOverlay extends Component<
         })
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
-        `#dragTarget-keepInRectangleRegion`
+        `#dragTarget-keepInRectangleRegion` + this.id
       ).call(dragHandleRegion);
     }
   }
@@ -143,6 +146,8 @@ class KeepInRectangleOverlay extends Component<
     const y = data.props.y.val;
     const w = data.props.w.val;
     const h = data.props.h.val;
+    const color = (uiState.layers[ViewLayers.Waypoints] &&
+      uiState.isNavbarWaypointSelected()) && !this.props.selected ? "darkseagreen": "green";
     return (
       <g ref={this.rootRef}>
         {/* Fill Rect*/}
@@ -151,9 +156,9 @@ class KeepInRectangleOverlay extends Component<
           y={h >= 0 ? y : y + h}
           width={Math.abs(w)}
           height={Math.abs(h)}
-          fill={"green"}
+          fill={color}
           fillOpacity={0.1}
-          id="dragTarget-keepInRectangleRegion"
+          id={"dragTarget-keepInRectangleRegion" + this.id}
         ></rect>
         {/*Border Rect*/}
         <rect
@@ -163,43 +168,43 @@ class KeepInRectangleOverlay extends Component<
           height={Math.abs(h)}
           fill={"transparent"}
           pointerEvents={"visibleStroke"}
-          stroke={"green"}
+          stroke={color}
           strokeWidth={STROKE}
           strokeOpacity={1.0}
-          id="dragTarget-keepInRectangleRegion"
+          id={"dragTarget-keepInRectangleRegion" + this.id}
         ></rect>
         {/* Corners */}
         <circle
           cx={x}
           cy={y}
           r={DOT}
-          fill={"green"}
+          fill={color}
           fillOpacity={1.0}
-          id="dragTarget-keepInRectangle"
+          id={"dragTarget-keepInRectangle" + this.id}
         ></circle>
         <circle
           cx={x + w}
           cy={y}
           r={DOT}
-          fill={"green"}
+          fill={color}
           fillOpacity={1.0}
-          id="dragTarget-keepInRectangleW"
+          id={"dragTarget-keepInRectangleW" + this.id}
         ></circle>
         <circle
           cx={x + w}
           cy={y + h}
           r={DOT}
-          fill={"green"}
+          fill={color}
           fillOpacity={1.0}
-          id="dragTarget-keepInRectangleWH"
+          id={"dragTarget-keepInRectangleWH" + this.id}
         ></circle>
         <circle
           cx={x}
           cy={y + h}
           r={DOT}
-          fill={"green"}
+          fill={color}
           fillOpacity={1.0}
-          id="dragTarget-keepInRectangleH"
+          id={"dragTarget-keepInRectangleH" + this.id}
         ></circle>
       </g>
     );

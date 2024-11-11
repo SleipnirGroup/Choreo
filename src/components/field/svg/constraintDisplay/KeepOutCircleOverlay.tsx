@@ -6,8 +6,10 @@ import {
   ConstraintKey,
   DataMap
 } from "../../../../document/ConstraintDefinitions";
-import { doc } from "../../../../document/DocumentManager";
+import { doc, uiState } from "../../../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
+import { ViewLayers } from "../../../../document/UIData";
+import { IConstraintStoreKeyed } from "../../../../document/ConstraintStore";
 
 const STROKE = 0.1;
 const DOT = 0.1;
@@ -16,8 +18,10 @@ type Props<K extends ConstraintKey> = {
   data: IConstraintDataStore<K>;
   start?: IHolonomicWaypointStore;
   end?: IHolonomicWaypointStore;
+  selected: boolean;
 };
 class KeepOutCircleOverlay extends Component<Props<"KeepOutCircle">, object> {
+  id = crypto.randomUUID();
   rootRef: React.RefObject<SVGGElement> = React.createRef<SVGGElement>();
   componentDidMount() {
     if (this.rootRef.current) {
@@ -29,11 +33,11 @@ class KeepOutCircleOverlay extends Component<Props<"KeepOutCircle">, object> {
         })
         .on("end", (_event) => doc.history.stopGroup())
         .container(this.rootRef.current);
-      d3.select<SVGCircleElement, undefined>(`#dragTarget-keepOutCircle`).call(
+      d3.select<SVGCircleElement, undefined>(`#dragTarget-keepOutCircle` + this.id).call(
         dragHandleDrag
       );
       d3.select<SVGCircleElement, undefined>(
-        `#dragTarget-keepOutCircleDot`
+        `#dragTarget-keepOutCircleDot` + this.id
       ).call(dragHandleDrag);
       const radiusHandleDrag = d3
         .drag<SVGCircleElement, undefined>()
@@ -44,7 +48,7 @@ class KeepOutCircleOverlay extends Component<Props<"KeepOutCircle">, object> {
         .on("end", (_event) => doc.history.stopGroup())
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
-        `#dragRadiusTarget-keepOutCircle`
+        `#dragRadiusTarget-keepOutCircle` + this.id
       ).call(radiusHandleDrag);
     }
   }
@@ -67,6 +71,9 @@ class KeepOutCircleOverlay extends Component<Props<"KeepOutCircle">, object> {
     const x = data.props.x.val;
     const y = data.props.y.val;
     const r = data.props.r.val;
+    console.log(doc.selectedSidebarItem)
+    const color = (uiState.layers[ViewLayers.Waypoints] &&
+      uiState.isNavbarWaypointSelected()) && !this.props.selected ? "rosybrown": "red";
     return (
       <g ref={this.rootRef}>
         {/* Main Circle */}
@@ -74,18 +81,18 @@ class KeepOutCircleOverlay extends Component<Props<"KeepOutCircle">, object> {
           cx={x}
           cy={y}
           r={r - STROKE / 2}
-          fill={"red"}
+          fill={color}
           fillOpacity={0.1}
-          id="dragTarget-keepOutCircle"
+          id={"dragTarget-keepOutCircle" + this.id}
         ></circle>
         {/* Center Dot */}
         <circle
           cx={x}
           cy={y}
           r={r < DOT * 2 ? 0.0 : DOT}
-          fill={"red"}
+          fill={color}
           fillOpacity={1.0}
-          id="dragTarget-keepOutCircleDot"
+          id={"dragTarget-keepOutCircleDot" + this.id}
         ></circle>
         {/* Radius Handle */}
         <circle
@@ -94,10 +101,10 @@ class KeepOutCircleOverlay extends Component<Props<"KeepOutCircle">, object> {
           r={r - STROKE / 2}
           fill={"transparent"}
           pointerEvents={"visibleStroke"}
-          stroke={"red"}
+          stroke={color}
           strokeWidth={STROKE}
           strokeOpacity={1.0}
-          id="dragRadiusTarget-keepOutCircle"
+          id={"dragRadiusTarget-keepOutCircle" + this.id}
         ></circle>
       </g>
     );

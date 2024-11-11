@@ -12,7 +12,6 @@ import PointAtOverlay from "./PointAtOverlay";
 import KeepOutCircleOverlay from "./KeepOutCircleOverlay";
 import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
 import KeepInLaneOverlay from "./KeepInLaneOverlay";
-import { randomUUID } from "crypto";
 
 export type OverlayProps<K extends keyof ConstraintDataTypeMap> = {
   data: IConstraintStoreKeyed<K>;
@@ -34,7 +33,7 @@ const overlays = {
       data={props.data.data}
       start={props.start}
       end={props.end}
-      id={randomUUID()}
+      selected={props.data.selected}
     ></KeepInCircleOverlay>
   ),
   KeepInRectangle: (props: OverlayProps<"KeepInRectangle">) => (
@@ -42,6 +41,7 @@ const overlays = {
       data={props.data.data}
       start={props.start}
       end={props.end}
+      selected={props.data.selected}
     ></KeepInRectangleOverlay>
   ),
   KeepInLane: (props: OverlayProps<"KeepInLane">) => (
@@ -49,6 +49,7 @@ const overlays = {
       data={props.data.data}
       start={props.start}
       end={props.end}
+      selected={props.data.selected}
     ></KeepInLaneOverlay>
   ),
   KeepOutCircle: (props: OverlayProps<"KeepOutCircle">) => (
@@ -56,6 +57,7 @@ const overlays = {
       data={props.data.data}
       start={props.start}
       end={props.end}
+      selected={props.data.selected}
     ></KeepOutCircleOverlay>
   ),
   StopPoint: () => <></>,
@@ -94,7 +96,6 @@ function FieldConstraintDisplayLayer(props: Props) {
         end={endIndex}
         lineColor={props.lineColor}
         id="display"
-        uuid=
       ></FieldConstraintRangeLayer>
       {overlays[constraint.data.type](
         // @ts-expect-error can't cast the constraint as the proper type.

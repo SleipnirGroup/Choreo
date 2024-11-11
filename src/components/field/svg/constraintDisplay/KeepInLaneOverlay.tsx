@@ -7,7 +7,8 @@ import {
 import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
 import * as d3 from "d3";
 import { observer } from "mobx-react";
-import { doc } from "../../../../document/DocumentManager";
+import { doc, uiState } from "../../../../document/DocumentManager";
+import { ViewLayers } from "../../../../document/UIData";
 
 const STROKE = 0.02;
 const DOT = 0.1;
@@ -16,8 +17,10 @@ type Props<K extends ConstraintKey> = {
   data: IConstraintDataStore<K>;
   start?: IHolonomicWaypointStore;
   end?: IHolonomicWaypointStore;
+  selected: boolean;
 };
 class KeepInLaneOverlay extends Component<Props<"KeepInLane">, object> {
+  id = crypto.randomUUID();
   rootRef: React.RefObject<SVGGElement> = React.createRef<SVGGElement>();
   componentDidMount() {
     if (this.rootRef.current) {
@@ -32,10 +35,10 @@ class KeepInLaneOverlay extends Component<Props<"KeepInLane">, object> {
         })
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
-        `#dragTarget-keepInLaneAbove`
+        `#dragTarget-keepInLaneAbove` + this.id
       ).call(dragHandleDrag);
       d3.select<SVGCircleElement, undefined>(
-        `#dragTarget-keepInLaneBelow`
+        `#dragTarget-keepInLaneBelow` + this.id
       ).call(dragHandleDrag);
     }
   }
@@ -94,6 +97,8 @@ class KeepInLaneOverlay extends Component<Props<"KeepInLane">, object> {
       (endBelowX + startBelowX) / 2,
       (endBelowY + startBelowY) / 2
     ];
+    const color = uiState.layers[ViewLayers.Waypoints] &&
+      uiState.isNavbarWaypointSelected() && !this.props.selected ? "darkseagreen": "green";
     return (
       <g ref={this.rootRef}>
         {/* Lines */}
@@ -103,7 +108,7 @@ class KeepInLaneOverlay extends Component<Props<"KeepInLane">, object> {
           x2={endAboveX}
           y1={startAboveY}
           y2={endAboveY}
-          stroke="green"
+          stroke={color}
           strokeWidth={STROKE}
           strokeOpacity={1.0}
           id="line-keepInLaneAbove"
@@ -113,7 +118,7 @@ class KeepInLaneOverlay extends Component<Props<"KeepInLane">, object> {
           x2={endBelowX}
           y1={startBelowY}
           y2={endBelowY}
-          stroke="green"
+          stroke={color}
           strokeWidth={STROKE}
           strokeOpacity={1.0}
           id="line-keepInLaneBelow"
@@ -122,19 +127,19 @@ class KeepInLaneOverlay extends Component<Props<"KeepInLane">, object> {
           cx={midAboveX}
           cy={midAboveY}
           r={DOT}
-          fill={"green"}
+          fill={color}
           fillOpacity={1.0}
           pointerEvents={"visible"}
-          id="dragTarget-keepInLaneAbove"
+          id={"dragTarget-keepInLaneAbove" + this.id}
         ></circle>
         <circle
           cx={midBelowX}
           cy={midBelowY}
           r={DOT}
-          fill={"green"}
+          fill={color}
           fillOpacity={1.0}
           pointerEvents={"visible"}
-          id="dragTarget-keepInLaneBelow"
+          id={"dragTarget-keepInLaneBelow" + this.id}
         ></circle>
       </g>
     );
