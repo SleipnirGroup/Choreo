@@ -154,7 +154,7 @@ export const ViewData = {
     index: 6,
     name: "FieldOverlays",
     icon: <BorderOuter />,
-    default: false
+    default: true
   }
 };
 
