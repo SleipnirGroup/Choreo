@@ -10,6 +10,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -45,7 +46,7 @@ namespace choreo {
  * @tparam SampleType The type of samples in the trajectory.
  * @tparam Year The field year. Defaults to the current year.
  */
-template <choreo::TrajectorySample SampleType, int Year = util::kDefaultYear>
+template <TrajectorySample SampleType, int Year = util::kDefaultYear>
 class AutoChooser {
  public:
   /**
@@ -173,4 +174,5 @@ class AutoChooser {
   std::string lastAutoRoutineName = NONE_NAME;
   frc2::CommandPtr lastAutoRoutine{frc2::cmd::None()};
 };
+
 }  // namespace choreo

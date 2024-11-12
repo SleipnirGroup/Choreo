@@ -69,4 +69,5 @@ class AutoBindings {
 
   std::unordered_map<std::string, std::function<frc2::CommandPtr()>> bindings;
 };
+
 }  // namespace choreo
