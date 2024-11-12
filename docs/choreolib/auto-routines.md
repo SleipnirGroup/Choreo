@@ -21,7 +21,7 @@ class Robot extends TimedRobot {
     autoFactory = Choreo.createAutoFactory(
       drive,
       localizer::pose,
-      (p, sample) -> drive.drive(new ChassisSpeeds(sample.vx, sample.vy, sample.omega)),
+      drive::choreoController
       () -> DriverStation.getAlliance().orElseGet(() -> Alliance.Blue).equals(Alliance.Red),
       new AutoBindings()
     );
