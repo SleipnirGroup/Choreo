@@ -5,10 +5,12 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include <frc/DriverStation.h>
 #include <frc/event/EventLoop.h>
+#include <frc2/command/CommandPtr.h>
 #include <frc2/command/Commands.h>
 #include <frc2/command/button/Trigger.h>
 
@@ -26,14 +28,14 @@ namespace choreo {
  * @tparam SampleType The type of samples in the trajectory.
  * @tparam The field year. Defaults to the current year.
  */
-template <choreo::TrajectorySample SampleType, int Year = util::kDefaultYear>
+template <TrajectorySample SampleType, int Year = util::kDefaultYear>
 class AutoRoutine {
  public:
   /**
    * Creates a new loop with a specific name
    *
    * @param name The name of the loop
-   * @see AutoFactory#newLoop Creating a loop from a AutoFactory
+   * @see AutoFactory#NewRoutine Creating a loop from a AutoFactory
    */
   explicit AutoRoutine(std::string_view name)
       : loop{std::make_unique<frc::EventLoop>()}, name{name} {}
