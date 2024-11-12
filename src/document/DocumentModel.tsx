@@ -263,6 +263,7 @@ export const DocumentStore = types
                 }
               });
               pathStore.setSnapshot(result.snapshot);
+              pathStore.ui.setUpToDate(true);
               self.history.stopGroup();
             });
           },

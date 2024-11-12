@@ -123,6 +123,13 @@ export const Commands = {
     invoke<void>("delete_trajectory", { trajectory }),
 
   /**
+   * Returns if the `Trajectory` parameters and snapshot are equivalent.
+   * @param trajectory The `Trajectory` to check
+   * @returns true if the parameters and snapshots are equivalent, false if not.
+   */
+  trajectoryUpToDate: (trajectory: Trajectory) => 
+    invoke<boolean>("trajectory_up_to_date", { trajectory }),
+  /**
    * If the application was opened via CLI and a file was specified, this will return the path of that file.
    *
    * @returns The path of the file that was opened via CLI, or `null` if no file was specified.
