@@ -243,8 +243,10 @@ class FieldOverlayRoot extends Component<Props, State> {
               </>
             )}
 
-            {layers[ViewLayers.FieldOverlays] &&
-              doc.pathlist.activePath.params.constraints.map((c) => {
+            {layers[ViewLayers.Zones] &&
+              doc.pathlist.activePath.params.constraints
+              .filter((c) => c.enabled && !c.selected)
+              .map((c) => {
                 return (
                   <FieldConstraintDisplayLayer
                     points={doc.pathlist.activePath.params.waypoints}

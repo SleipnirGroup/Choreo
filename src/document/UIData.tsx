@@ -150,9 +150,9 @@ export const ViewData = {
     icon: <CropFree />,
     default: false
   },
-  FieldOverlays: {
+  Zones: {
     index: 6,
-    name: "FieldOverlays",
+    name: "Zones",
     icon: <BorderOuter />,
     default: true
   }
