@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <numbers>
+#include <numeric>
 #include <vector>
 
 namespace trajopt {
@@ -20,61 +21,91 @@ namespace trajopt {
  */
 inline size_t GetIndex(const std::vector<size_t>& N, size_t wptIndex,
                        size_t sampleIndex = 0) {
-  size_t index = 0;
-
-  for (size_t _wptIndex = 0; _wptIndex < wptIndex; ++_wptIndex) {
-    index += N.at(_wptIndex);
-  }
-  index += sampleIndex;
-  return index;
+  return std::accumulate(N.begin(), N.begin() + wptIndex, size_t{0}) +
+         sampleIndex;
 }
 
-inline std::vector<double> Linspace(double startValue, double endValue,
+/**
+ * Returns a vector of linearly spaced elements between start exclusive and end
+ * inclusive.
+ *
+ * @param start The initial value exclusive.
+ * @param end The final value exclusive.
+ * @param numSamples The number of samples in the vector.
+ * @return A vector of linearly spaced elements between start exclusive and end
+ *     inclusive.
+ */
+inline std::vector<double> Linspace(double start, double end,
                                     size_t numSamples) {
   std::vector<double> result;
-  double delta = (endValue - startValue) / numSamples;
-  for (size_t index = 1; index <= numSamples; ++index) {
-    result.push_back(startValue + index * delta);
+  double delta = (end - start) / numSamples;
+  for (size_t i = 1; i <= numSamples; ++i) {
+    result.push_back(start + i * delta);
   }
   return result;
 }
 
-inline double InputModulus(double input, double max, double min) {
-  const double modulus = max - min;
+/**
+ * Returns modulus of input.
+ *
+ * @param input        Input value to wrap.
+ * @param minimumInput The minimum value expected from the input.
+ * @param maximumInput The maximum value expected from the input.
+ */
+constexpr double InputModulus(double input, double max, double min) {
+  double modulus = max - min;
 
   // Wrap input if it's above the maximum input
-  const double numMax = std::trunc((input - min) / modulus);
+  int numMax = (input - min) / modulus;
   input -= numMax * modulus;
 
   // Wrap input if it's below the minimum input
-  const double numMin = std::trunc((input - max) / modulus);
+  int numMin = (input - max) / modulus;
   input -= numMin * modulus;
 
   return input;
 }
 
-inline double AngleModulus(double radians) {
-  return InputModulus(radians, std::numbers::pi, -std::numbers::pi);
+/**
+ * Wraps an angle to the range -π to π radians (-180 to 180 degrees).
+ *
+ * @param angle Angle to wrap in radians.
+ */
+constexpr double AngleModulus(double angle) {
+  return InputModulus(angle, std::numbers::pi, -std::numbers::pi);
 }
 
-inline std::vector<double> AngleLinspace(double startValue, double endValue,
+/**
+ * Returns a vector of linearly spaced angles between start exclusive and end
+ * inclusive.
+ *
+ * @param start The initial value exclusive.
+ * @param end The final value exclusive.
+ * @param numSamples The number of samples in the vector.
+ * @return A vector of linearly spaced elements between start exclusive and end
+ *     inclusive.
+ */
+inline std::vector<double> AngleLinspace(double start, double end,
                                          size_t numSamples) {
-  auto diff = endValue - startValue;
-
-  // angleModulus
-  diff = AngleModulus(diff);
-
-  return Linspace(startValue, startValue + diff, numSamples);
+  return Linspace(start, start + AngleModulus(end - start), numSamples);
 }
 
+/**
+ * Returns the time a trapezoid profile takes to travel a given distance from
+ * rest to rest.
+ *
+ * @param distance The distance to travel.
+ * @param velocity The profile's maximum velocity.
+ * @param acceleration The profile's maximum acceleration.
+ */
 inline double CalculateTrapezoidalTime(double distance, double velocity,
                                        double acceleration) {
   if (distance > ((velocity * velocity) / acceleration)) {
-    // trapezoid
+    // Velocity profile is shaped like a trapezoid
     return distance / velocity + velocity / acceleration;
   } else {
-    // triangle
-    return 2.0 * (std::sqrt(distance * acceleration) / acceleration);
+    // Velocity profile is shaped like a triangle
+    return 2.0 * std::sqrt(distance * acceleration) / acceleration;
   }
 }
 
