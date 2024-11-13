@@ -87,7 +87,7 @@ class Input extends Component<Props, State> {
     }
     if (!prevProps.number.expr.equals(this.props.number.expr)) {
       // if the value has changed from the outside, make sure it is no longer
-      // focused so concise precision is shown.
+      // focused.
       this.unfocusedMode();
     }
     if (_prevState.resetCounter !== this.state.resetCounter) {
