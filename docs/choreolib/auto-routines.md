@@ -4,7 +4,7 @@
 
 ### AutoFactory
 
-ChoreoLib provides the `AutoFactory` class as higher level API to make it easier to create competitive and complex auto routines inside your robot code.
+ChoreoLib provides the `AutoFactory` class as a higher level API to make it easier to create complex auto routines inside your robot code.
 
 You can setup the `AutoFactory` by calling `Choreo.createAutoFactory`
 
