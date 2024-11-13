@@ -4,7 +4,6 @@
 
 #include <stdint.h>
 
-#include <cassert>
 #include <utility>
 
 #include <sleipnir/autodiff/Variable.hpp>
