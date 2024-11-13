@@ -37,7 +37,7 @@ class Robot extends TimedRobot {
 ### AutoChooser, AutoRoutine, and AutoTrajectory
 
 The `AutoFactory` can create `AutoRoutine` and `AutoTrajectory` objects that can be used to create complex auto routines.
-The `AutoChooser` provides a simple api to structure your auto routine generation in the most performant way.
+The `AutoChooser` provides a simple API to structure your auto routine creation in the most performant way.
 `AutoChooser` only creates the `AutoRoutine` on dashbaord chooser selection, this prevents loading all routines on bootup
 increasing startup times and also prevents the routines from being generated on auto start causing a delay.
 
