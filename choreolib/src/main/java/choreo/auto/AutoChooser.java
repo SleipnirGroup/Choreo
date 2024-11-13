@@ -53,7 +53,7 @@ public class AutoChooser {
   /**
    * Constructs a new {@link AutoChooser}.
    *
-   * @param factory The auto factory to use for auto routine generation.
+   * @param factory The auto factory to use for AutoRoutine creation.
    * @param tableName The name of the network table to use for the chooser, passing in an empty
    *     string or null will put this chooser at the root of the network tables.
    */
@@ -78,9 +78,9 @@ public class AutoChooser {
    * Update the auto chooser.
    *
    * <p>This method should be called every cycle in the {@link IterativeRobotBase#robotPeriodic()}.
-   * It will check if the selected auto routine has changed and update the active auto routine.
+   * It will check if the selected auto routine has changed and update the active AutoRoutine.
    *
-   * <p>The auto routine can only be updated when the robot is disabled. If the chooser in your
+   * <p>The AutoRoutine can only be updated when the robot is disabled. If the chooser in your
    * dashboard says {@code BAD} the {@link AutoChooser} has not responded to the selection yet and
    * you need to disable the robot to update it.
    */
@@ -100,25 +100,27 @@ public class AutoChooser {
   }
 
   /**
-   * Add an auto routine to the chooser.
+   * Add an AutoRoutine to the chooser.
+   * 
+   * <p>The options of the chooser are actually of type {@link AutoRoutineGenerator}. This is
+   * a function that takes an {@link AutoFactory} and returns a {@link AutoRoutine}. These
+   * functions can be static, a lambda or belong to a local variable.</p>
+   * 
+   * <p> This is done to load AutoRoutines when and only when they are selected, in order to save
+   * memory and file loading time for unused AutoRoutines.</p>
    *
-   * <p>An auto routine is a function that takes an {@link AutoFactory} and returns a {@link
-   * AutoRoutine}. These functions can be static, a lambda or belong to a local variable.
-   *
-   * <p>A good paradigm is making an `Autos` class that all of your subsystems/resources are <a
+   * <p>One way to keep this clean is to make an `Autos` class that all of your subsystems/resources are <a
    * href="https://en.wikipedia.org/wiki/Dependency_injection">dependency injected</a> into. Then
-   * you crate methods inside that class that take an {@link AutoFactory} and return a {@link
-   * AutoRoutine}. You can also have the `Autos` class extend an `AutoHelpers` class that has helper
-   * methods that don't clutter your routines.
+   * create methods inside that class that take an {@link AutoFactory} and return an {@link
+   * AutoRoutine}.
    *
    * <h3>Example:</h3>
    *
    * <pre><code>
    * AutoChooser chooser;
-   *
+   * Autos autos = new Autos(swerve, shooter, intake, feeder);
    * Robot() {
    *   chooser = new AutoChooser(Choreo.createAutoFactory(...), "/Choosers");
-   *   Autos autos = new Autos(swerve, shooter, intake, feeder);
    *   chooser.addAutoRoutine("4 Piece right", autos::fourPieceRight);
    *   chooser.addAutoRoutine("4 Piece Left", autos::fourPieceLeft);
    *   chooser.addAutoRoutine("3 Piece Close", autos::threePieceClose);
@@ -138,7 +140,7 @@ public class AutoChooser {
    * Get the currently selected {@link AutoRoutine}.
    *
    * <h3>Recommended Usage</h3>
-   *
+   * 
    * Scheduling it as a command.
    *
    * <pre><code>
