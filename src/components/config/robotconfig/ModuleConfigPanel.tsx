@@ -22,6 +22,14 @@ class RobotConfigPanel extends Component<Props, State> {
           titleTooltip="Radius of swerve wheels"
         />
         <ExpressionInput
+          title="Wheel COF"
+          enabled={true}
+          roundingPrecision={3}
+          number={config.cof}
+          maxWidthCharacters={8}
+          titleTooltip="Coefficient of friction between wheel and ground"
+        />
+        <ExpressionInput
           title="Motor Rev/Wheel Rev"
           enabled={true}
           roundingPrecision={3}

@@ -2,21 +2,32 @@
 
 #pragma once
 
+#include <functional>
+#include <optional>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 #include <vector>
 
 #include <fmt/format.h>
 #include <frc/Errors.h>
 #include <frc/Filesystem.h>
+#include <frc/geometry/Pose2d.h>
+#include <frc2/command/Subsystem.h>
 #include <wpi/MemoryBuffer.h>
 #include <wpi/json.h>
 
 #include "choreo/SpecVersion.h"
+#include "choreo/auto/AutoTrajectory.h"
 #include "choreo/trajectory/ProjectFile.h"
 #include "choreo/trajectory/Trajectory.h"
+#include "choreo/trajectory/TrajectorySample.h"
+#include "choreo/util/AllianceFlipperUtil.h"
 
 namespace choreo {
+
+template <TrajectorySample SampleType, int Year>
+class AutoFactory;
 
 /**
  * A class that handles loading choreo and caching choreo trajectories.
@@ -31,7 +42,7 @@ class Choreo {
    *
    * @return the project file
    */
-  static choreo::ProjectFile GetProjectFile() {
+  static ProjectFile GetProjectFile() {
     if (LAZY_PROJECT_FILE.has_value()) {
       return LAZY_PROJECT_FILE.value();
     }
@@ -67,8 +78,8 @@ class Choreo {
         throw fmt::format(".chor project file: Wrong version {}. Expected {}",
                           version, kSpecVersion);
       }
-      choreo::ProjectFile resultProjectFile;
-      choreo::from_json(json, resultProjectFile);
+      ProjectFile resultProjectFile;
+      from_json(json, resultProjectFile);
       LAZY_PROJECT_FILE = resultProjectFile;
     } catch (const std::filesystem::filesystem_error&) {
       FRC_ReportError(frc::warn::Warning, "Error finding choreo directory!");
@@ -88,8 +99,8 @@ class Choreo {
    * @return The loaded trajectory, or `empty std::optional` if the trajectory
    *   could not be loaded.
    */
-  template <choreo::TrajectorySample SampleType>
-  static std::optional<choreo::Trajectory<SampleType>> LoadTrajectory(
+  template <TrajectorySample SampleType>
+  static std::optional<Trajectory<SampleType>> LoadTrajectory(
       std::string_view trajectoryName) {
     if (trajectoryName.ends_with(TRAJECTORY_FILE_EXTENSION)) {
       trajectoryName = trajectoryName.substr(
@@ -130,8 +141,8 @@ class Choreo {
    * @return The loaded trajectory, or `empty std::optional` if the trajectory
    *   could not be loaded.
    */
-  template <choreo::TrajectorySample SampleType>
-  static std::optional<choreo::Trajectory<SampleType>> LoadTrajectoryString(
+  template <TrajectorySample SampleType>
+  static std::optional<Trajectory<SampleType>> LoadTrajectoryString(
       std::string_view trajectoryJsonString, std::string_view trajectoryName) {
     wpi::json json = wpi::json::parse(trajectoryJsonString);
     std::string version = json["version"];
@@ -139,19 +150,212 @@ class Choreo {
       throw fmt::format("{}.traj: Wrong version {}. Expected {}",
                         trajectoryName, version, kSpecVersion);
     }
-    choreo::Trajectory<SampleType> trajectory;
-    choreo::from_json(json, trajectory);
+    Trajectory<SampleType> trajectory;
+    from_json(json, trajectory);
     return trajectory;
   }
+
+  /**
+   * A utility for caching loaded trajectories. This allows for loading
+   * trajectories only once, and then reusing them.
+   */
+  template <TrajectorySample SampleType>
+  class TrajectoryCache {
+   public:
+    /**
+     * Load a trajectory from the deploy directory. Choreolib expects .traj
+     * files to be placed in src/main/deploy/choreo/[trajectoryName].traj.
+     *
+     * This method will cache the loaded trajectory and reused it if it is
+     * requested again.
+     *
+     * @param trajectoryName the path name in Choreo, which matches the file
+     *     name in the deploy directory, file extension is optional.
+     * @return the loaded trajectory, or `empty std::optional` if the trajectory
+     *     could not be loaded.
+     * @see Choreo#LoadTrajectory(std::string_view)
+     */
+    static std::optional<Trajectory<SampleType>> LoadTrajectory(
+        std::string_view trajectoryName) {
+      if (cache.contains(std::string{trajectoryName})) {
+        return cache[std::string{trajectoryName}];
+      } else {
+        cache[std::string{trajectoryName}] =
+            Choreo::LoadTrajectory<SampleType>(trajectoryName);
+        return cache[std::string{trajectoryName}];
+      }
+    }
+
+    /**
+     * Load a section of a split trajectory from the deploy directory. Choreolib
+     * expects .traj files to be placed in
+     * src/main/deploy/choreo/[trajectoryName].traj.
+     *
+     * This method will cache the loaded trajectory and reused it if it is
+     * requested again. The trajectory that is split off of will also be cached.
+     *
+     * @param trajectoryName the path name in Choreo, which matches the file
+     *     name in the deploy directory, file extension is optional.
+     * @param splitIndex the index of the split trajectory to load
+     * @return the loaded trajectory, or `empty std::optional` if the trajectory
+     *     could not be loaded.
+     * @see Choreo#LoadTrajectory(std::string_view)
+     */
+    static std::optional<Trajectory<SampleType>> LoadTrajectory(
+        std::string_view trajectoryName, int splitIndex) {
+      std::string key = fmt::format("{}.:.{}", trajectoryName, splitIndex);
+
+      if (!cache.contains(key)) {
+        if (cache.contains(std::string{trajectoryName})) {
+          cache[key] =
+              cache[std::string{trajectoryName}].value().GetSplit(splitIndex);
+        } else {
+          auto possibleTrajectory = LoadTrajectory(trajectoryName);
+          cache[std::string{trajectoryName}] = possibleTrajectory;
+
+          if (possibleTrajectory.has_value()) {
+            cache[key] = possibleTrajectory.value().GetSplit(splitIndex);
+          }
+        }
+      }
+
+      return cache[key];
+    }
+
+    /**
+     * Clears the trajectory cache.
+     */
+    static void Clear() { cache.clear(); }
+
+   private:
+    static inline std::unordered_map<std::string,
+                                     std::optional<Trajectory<SampleType>>>
+        cache;
+  };
+
+  /**
+   * Create a factory that can be used to create AutoRoutine and AutoTrajectory.
+   *
+   * @tparam SampleType The type of samples in the trajectory.
+   * @tparam Year The field year. Defaults to the current year.
+   * @param poseSupplier A function that returns the current field-relative
+   *     Pose2d of the robot.
+   * @param controller A function for following the current trajectory.
+   * @param mirrorTrajectory If this returns true, the path will be mirrored to
+   *     the opposite side, while keeping the same coordinate system origin.
+   *     This will be called every loop during the command.
+   * @param driveSubsystem The drive Subsystem to require for AutoTrajectory
+   *     Commands.
+   * @return An AutoFactory that can be used to create AutoRoutines and
+   *     AutoTrajectories.
+   * @see AutoChooser using this factory with AutoChooser to generate auto
+   *     routines.
+   */
+  template <TrajectorySample SampleType, int Year = util::kDefaultYear>
+  static AutoFactory<SampleType, Year> CreateAutoFactory(
+      std::function<frc::Pose2d()> poseSupplier,
+      std::function<void(frc::Pose2d, SampleType)> controller,
+      std::function<bool()> mirrorTrajectory, frc2::Subsystem driveSubsystem);
+
+  /**
+   * Create a factory that can be used to create AutoRoutines and
+   * AutoTrajectories.
+   *
+   * @tparam SampleType The type of samples in the trajectory.
+   * @tparam Year The field year. Defaults to the current year.
+   * @param poseSupplier A function that returns the current field-relative
+   *     Pose2d of the robot.
+   * @param controller A function for following the current trajectory.
+   * @param mirrorTrajectory If this returns true, the path will be mirrored to
+   *     the opposite side, while keeping the same coordinate system origin.
+   *     This will be called every loop during the command.
+   * @param driveSubsystem The drive Subsystem to require for AutoTrajectory
+   *     Commands.
+   * @param trajectoryLogger A TrajectoryLogger to log trajectories as they
+   *     start and finish.
+   * @return An AutoFactory that can be used to create AutoRoutines and
+   *     AutoTrajectories.
+   * @see AutoChooser using this factory with AutoChooser to generate auto
+   *     routines.
+   */
+  template <TrajectorySample SampleType, int Year = util::kDefaultYear>
+  static AutoFactory<SampleType, Year> CreateAutoFactory(
+      std::function<frc::Pose2d()> poseSupplier,
+      std::function<void(frc::Pose2d, SampleType)> controller,
+      std::function<bool()> mirrorTrajectory, frc2::Subsystem driveSubsystem,
+      TrajectoryLogger<SampleType> trajectoryLogger);
 
  private:
   static constexpr std::string_view TRAJECTORY_FILE_EXTENSION = ".traj";
 
-  static inline std::optional<choreo::ProjectFile> LAZY_PROJECT_FILE = {};
+  static inline std::optional<ProjectFile> LAZY_PROJECT_FILE = {};
 
   static inline const std::string CHOREO_DIR =
       frc::filesystem::GetDeployDirectory() + "/choreo";
 
   Choreo();
 };
+
+}  // namespace choreo
+
+#include "choreo/auto/AutoFactory.h"
+
+namespace choreo {
+
+/**
+ * Create a factory that can be used to create AutoRoutine and AutoTrajectory.
+ *
+ * @tparam SampleType The type of samples in the trajectory.
+ * @param poseSupplier A function that returns the current field-relative
+ *     Pose2d of the robot.
+ * @param controller A function for following the current trajectory.
+ * @param mirrorTrajectory If this returns true, the path will be mirrored to
+ *     the opposite side, while keeping the same coordinate system origin.
+ *     This will be called every loop during the command.
+ * @param driveSubsystem The drive Subsystem to require for AutoTrajectory
+ *     Commands.
+ * @return An AutoFactory that can be used to create AutoRoutines and
+ *     AutoTrajectories.
+ * @see AutoChooser using this factory with AutoChooser to generate auto
+ *     routines.
+ */
+template <TrajectorySample SampleType>
+static AutoFactory<SampleType> CreateAutoFactory(
+    std::function<frc::Pose2d()> poseSupplier,
+    std::function<void(frc::Pose2d, SampleType)> controller,
+    std::function<bool()> mirrorTrajectory, frc2::Subsystem driveSubsystem) {
+  return AutoFactory{poseSupplier, controller, mirrorTrajectory, driveSubsystem,
+                     std::nullopt};
+}
+
+/**
+ * Create a factory that can be used to create AutoRoutines and
+ * AutoTrajectories.
+ *
+ * @tparam SampleType The type of samples in the trajectory.
+ * @param poseSupplier A function that returns the current field-relative
+ *     Pose2d of the robot.
+ * @param controller A function for following the current trajectory.
+ * @param mirrorTrajectory If this returns true, the path will be mirrored to
+ *     the opposite side, while keeping the same coordinate system origin.
+ *     This will be called every loop during the command.
+ * @param driveSubsystem The drive Subsystem to require for AutoTrajectory
+ *     Commands.
+ * @param trajectoryLogger A TrajectoryLogger to log trajectories as they
+ *     start and finish.
+ * @return An AutoFactory that can be used to create AutoRoutines and
+ *     AutoTrajectories.
+ * @see AutoChooser using this factory with AutoChooser to generate auto
+ *     routines.
+ */
+template <TrajectorySample SampleType>
+static AutoFactory<SampleType> CreateAutoFactory(
+    std::function<frc::Pose2d()> poseSupplier,
+    std::function<void(frc::Pose2d, SampleType)> controller,
+    std::function<bool()> mirrorTrajectory, frc2::Subsystem driveSubsystem,
+    TrajectoryLogger<SampleType> trajectoryLogger) {
+  return AutoFactory{poseSupplier, controller, mirrorTrajectory, driveSubsystem,
+                     trajectoryLogger};
+}
+
 }  // namespace choreo
