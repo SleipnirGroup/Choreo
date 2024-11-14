@@ -245,16 +245,16 @@ class FieldOverlayRoot extends Component<Props, State> {
 
             {layers[ViewLayers.Zones] &&
               doc.pathlist.activePath.params.constraints
-              .filter((c) => c.enabled && !c.selected)
-              .map((c) => {
-                return (
-                  <FieldConstraintDisplayLayer
-                    points={doc.pathlist.activePath.params.waypoints}
-                    constraint={c as IConstraintStoreKeyed<ConstraintKey>}
-                    lineColor="transparent"
-                  ></FieldConstraintDisplayLayer>
-                );
-              })}
+                .filter((c) => c.enabled && !c.selected)
+                .map((c) => {
+                  return (
+                    <FieldConstraintDisplayLayer
+                      points={doc.pathlist.activePath.params.waypoints}
+                      constraint={c as IConstraintStoreKeyed<ConstraintKey>}
+                      lineColor="transparent"
+                    ></FieldConstraintDisplayLayer>
+                  );
+                })}
             {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
             {/* Waypoint mouse capture*/}
 
