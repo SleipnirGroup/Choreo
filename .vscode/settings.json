@@ -1,6 +1,6 @@
 {
     "rust-analyzer.check.overrideCommand": [
-        "cargo", "clippy", "--target-dir", "./target/clippy"
+        "cargo", "clippy", "--target-dir", "./target/clippy", "--message-format=json"
     ],
     "files.associations": {
         "*.traj": "json",
