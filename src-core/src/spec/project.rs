@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use trajoptlib::Translation2d;
 
-use super::{trajectory::DriveType, Expr, SnapshottableType};
+use super::{trajectory::DriveType, upgraders::upgrade_project_file, Expr, SnapshottableType};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum Dimension {
@@ -161,7 +161,8 @@ impl ProjectFile {
     /// # Errors
     /// - [`crate::ChoreoError::Json`] if the json string is invalid.
     pub fn from_content(content: &str) -> crate::ChoreoResult<ProjectFile> {
-        serde_json::from_str(content).map_err(Into::into)
+        let val = upgrade_project_file(serde_json::from_str(content)?)?;
+        serde_json::from_value(val).map_err(Into::into)
     }
 }
 

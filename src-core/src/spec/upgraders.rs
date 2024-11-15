@@ -5,7 +5,7 @@ use crate::ChoreoResult;
 mod traj_file {
     use std::sync::LazyLock;
 
-    use crate::{file_management::upgrader::{Editor, Upgrader}, spec::Expr, ChoreoResult};
+    use crate::{file_management::upgrader::{Editor, Upgrader}, ChoreoResult};
 
     pub(super) static TRAJ_UPGRADER: LazyLock<Upgrader> = LazyLock::new(make_upgrader);
 
@@ -18,7 +18,7 @@ mod traj_file {
 
     fn beta_to_one(editor: &mut Editor) -> ChoreoResult<()> {
         if editor.has_path("trajectory") {
-            editor.set_path_serialize("trajectory.trackwidth", Expr::new("1 m", 1.0))
+            editor.set_path("trajectory.trackwidth", 1.0)
         } else {
             Ok(())
         }

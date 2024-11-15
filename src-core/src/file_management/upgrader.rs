@@ -152,6 +152,7 @@ impl Upgrader {
         for action in &self.actions[version as usize..] {
             action.upgrade(&mut editor)?;
         }
+        editor.set_path("version", self.actions.len() as u64)?;
         Ok(editor.jdata)
     }
 }
