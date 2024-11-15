@@ -4,17 +4,23 @@
 
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string_view>
 #include <utility>
 
 #include <frc/RobotBase.h>
+#include <frc/geometry/Pose2d.h>
+#include <frc2/command/CommandPtr.h>
 
-#include "choreo/auto/AutoLoop.h"
+#include "choreo/auto/AutoRoutine.h"
 #include "choreo/auto/AutoTrajectory.h"
-#include "choreo/auto/TrajectoryCache.h"
 #include "choreo/util/AllianceFlipperUtil.h"
 
 namespace choreo {
+
+template <TrajectorySample SampleType>
+class TrajectoryCache;
+
 /**
  * A factory used to create autonomous routines.
  *
@@ -25,7 +31,7 @@ namespace choreo {
  * <pre><code>
  * frc::CommandPtr ShootThenMove(const AutoFactory& factory) {
  *   // Create a new auto loop to return
- *   auto loop = factory.NewLoop();
+ *   auto loop = factory.NewRoutine();
  *
  *   // Create a trajectory that moves the robot 2 meters
  *   AutoTrajectory trajectory = factory.Trajectory("move2meters", loop);
@@ -65,38 +71,43 @@ class AutoFactory {
    * Its recommended to use the Choreo::CreateAutoFactory() to create a new
    * instance of this class.
    *
-   * @param poseSupplier Choreo::CreateAutoFactory()
-   * @param controller Choreo::CreateAutoFactory()
-   * @param mirrorTrajectory Choreo::CreateAutoFactory()
-   * @param drivebaseRequirements Choreo::CreateAutoFactory()
-   * @param trajectoryLogger Choreo::CreateAutoFactory()
+   * @param poseSupplier A function that returns the current field-relative
+   *     Pose2d of the robot.
+   * @param controller A function for following the current trajectory.
+   * @param mirrorTrajectory If this returns true, the path will be mirrored to
+   *     the opposite side, while keeping the same coordinate system origin.
+   *     This will be called every loop during the command.
+   * @param driveSubsystem The drive Subsystem to require for AutoTrajectory
+   *     Commands.
+   * @param trajectoryLogger A TrajectoryLogger to log Trajectories as they
+   *     start and finish.
    */
   AutoFactory(std::function<frc::Pose2d()> poseSupplier,
               std::function<void(frc::Pose2d, SampleType)> controller,
               std::function<bool()> mirrorTrajectory,
-              frc2::Requirements drivebaseRequirements,
+              frc2::Requirements driveSubsystem,
               std::optional<TrajectoryLogger<SampleType>> trajectoryLogger)
       : poseSupplier{std::move(poseSupplier)},
         controller{controller},
         mirrorTrajectory{std::move(mirrorTrajectory)},
-        drivebaseRequirements{drivebaseRequirements},
+        driveSubsystem{driveSubsystem},
         autoBindings{std::make_shared<AutoBindings>()},
         trajectoryLogger{std::move(trajectoryLogger)} {}
 
   /**
-   * Creates a new auto loop to be used to make an auto routine.
+   * Creates a new auto routine.
    *
    * @param name The name of the event loop.
-   * @return A new auto loop.
-   * @see AutoLoop
+   * @return A new auto routine.
+   * @see AutoRoutine
    */
-  AutoLoop<SampleType, Year> NewLoop(std::string_view name) {
+  AutoRoutine<SampleType, Year> NewRoutine(std::string_view name) {
     // Clear cache in simulation to allow a form of "hot-reloading" trajectories
     if (frc::RobotBase::IsSimulation()) {
       ClearCache();
     }
 
-    return AutoLoop<SampleType, Year>(name);
+    return AutoRoutine<SampleType, Year>(name);
   }
 
   /**
@@ -107,7 +118,8 @@ class AutoFactory {
    * @return A new auto trajectory.
    */
   AutoTrajectory<SampleType, Year> Trajectory(
-      std::string_view trajectoryName, AutoLoop<SampleType, Year>& loop) const {
+      std::string_view trajectoryName,
+      AutoRoutine<SampleType, Year>& loop) const {
     std::optional<choreo::Trajectory<SampleType>> optTraj =
         trajectoryCache.LoadTrajectory(trajectoryName);
     choreo::Trajectory<SampleType> trajectory;
@@ -118,11 +130,9 @@ class AutoFactory {
                       trajectoryName);
     }
     AutoTrajectory<SampleType, Year> autoTraj{
-        trajectoryName,        trajectory,
-        poseSupplier,          controller,
-        mirrorTrajectory,      trajectoryLogger,
-        drivebaseRequirements, loop.GetLoop(),
-        autoBindings};
+        trajectoryName, trajectory,       poseSupplier,
+        controller,     mirrorTrajectory, trajectoryLogger,
+        driveSubsystem, loop.GetLoop(),   autoBindings};
     return autoTraj;
   }
 
@@ -136,7 +146,7 @@ class AutoFactory {
    */
   AutoTrajectory<SampleType, Year> Trajectory(
       std::string_view trajectoryName, int splitIndex,
-      AutoLoop<SampleType, Year>& loop) const {
+      AutoRoutine<SampleType, Year>& loop) const {
     std::optional<choreo::Trajectory<SampleType>> optTraj =
         trajectoryCache.LoadTrajectory(trajectoryName, splitIndex);
     choreo::Trajectory<SampleType> trajectory;
@@ -158,12 +168,11 @@ class AutoFactory {
    */
   AutoTrajectory<SampleType, Year> Trajectory(
       choreo::Trajectory<SampleType> trajectory,
-      AutoLoop<SampleType, Year>& loop) const {
-    AutoTrajectory<SampleType> autoTraj{trajectory.name,       trajectory,
-                                        poseSupplier,          controller,
-                                        mirrorTrajectory,      trajectoryLogger,
-                                        drivebaseRequirements, loop.GetLoop(),
-                                        autoBindings};
+      AutoRoutine<SampleType, Year>& loop) const {
+    AutoTrajectory<SampleType> autoTraj{
+        trajectory.name, trajectory,       poseSupplier,
+        controller,      mirrorTrajectory, trajectoryLogger,
+        driveSubsystem,  loop.GetLoop(),   autoBindings};
     return autoTraj;
   }
 
@@ -187,10 +196,12 @@ class AutoFactory {
   std::function<frc::Pose2d()> poseSupplier;
   std::function<void(frc::Pose2d, SampleType)> controller;
   std::function<bool()> mirrorTrajectory;
-  frc2::Requirements drivebaseRequirements;
+  frc2::Requirements driveSubsystem;
   std::shared_ptr<AutoBindings> autoBindings;
   std::optional<TrajectoryLogger<SampleType>> trajectoryLogger;
   TrajectoryCache<SampleType> trajectoryCache;
 };
 
 }  // namespace choreo
+
+#include "choreo/Choreo.h"

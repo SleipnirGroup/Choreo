@@ -20,6 +20,7 @@ int main() {
       .wheelRadius = 0.08,
       .wheelMaxAngularVelocity = 70,
       .wheelMaxTorque = 5,
+      .wheelCoF = 1.5,
       .trackwidth = 0.6};
 
   trajopt::LinearVelocityMaxMagnitudeConstraint zeroLinearVelocity{0.0};

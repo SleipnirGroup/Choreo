@@ -92,6 +92,7 @@ pub struct RobotConfig<T: SnapshottableType> {
     pub vmax: T, // motor rad/s
     /// motor N*m
     pub tmax: T, // N*m
+    pub cof: T,
     pub bumper: Bumper<T>,
     pub differential_track_width: T,
 }
@@ -107,6 +108,7 @@ impl<T: SnapshottableType> RobotConfig<T> {
             radius: self.radius.snapshot(),
             vmax: self.vmax.snapshot(),
             tmax: self.tmax.snapshot(),
+            cof: self.cof.snapshot(),
             bumper: self.bumper.snapshot(),
             differential_track_width: self.differential_track_width.snapshot(),
         }
@@ -188,6 +190,7 @@ impl Default for ProjectFile {
                 },
                 mass: Expr::new("150 lbs", 68.038_855_5),
                 inertia: Expr::new("6 kg m^2", 6.0),
+                cof: Expr::new("1.5", 1.5),
                 bumper: Bumper {
                     front: Expr::new("16 in", 0.4064),
                     side: Expr::new("16 in", 0.4064),

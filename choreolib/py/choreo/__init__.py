@@ -1,12 +1,14 @@
 import json
 
-from choreo.trajectory import load_event_marker
-from choreo.trajectory import EventMarker
-from choreo.trajectory import DifferentialSample
-from choreo.trajectory import DifferentialTrajectory
-from choreo.trajectory import SwerveSample
-from choreo.trajectory import SwerveTrajectory
 from choreo.spec_version import SPEC_VERSION
+from choreo.trajectory import (
+    DifferentialSample,
+    DifferentialTrajectory,
+    EventMarker,
+    SwerveSample,
+    SwerveTrajectory,
+    load_event_marker,
+)
 
 
 def load_differential_trajectory_string(
