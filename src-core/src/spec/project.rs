@@ -142,7 +142,7 @@ impl RobotConfig<f64> {
 #[serde(rename_all = "camelCase")]
 pub struct ProjectFile {
     pub name: String,
-    pub version: String,
+    pub version: u32,
     #[serde(rename = "type", default)]
     pub r#type: DriveType,
     pub variables: Variables,
@@ -167,7 +167,7 @@ impl Default for ProjectFile {
     fn default() -> Self {
         ProjectFile {
             name: "New Project".to_string(),
-            version: "v2025.0.0".to_string(),
+            version: super::PROJECT_SCHEMA_VERSION,
             r#type: DriveType::Swerve,
             variables: Variables {
                 expressions: HashMap::new(),

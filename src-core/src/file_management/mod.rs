@@ -25,6 +25,7 @@ type DeployPath = Arc<Mutex<PathBuf>>;
 /// A name of a trajectory without the file extension.
 type TrajectoryFileName = String;
 
+pub mod upgrader;
 mod diagnostics;
 mod formatter;
 
