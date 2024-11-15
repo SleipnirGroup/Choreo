@@ -164,7 +164,7 @@ pub fn remote_generate_child(args: RemoteArgs) {
         }
         Err(e) => {
             tracing::warn!("Failed to generate trajectory {:}", e);
-            let ser_string = serde_json::to_string(&RemoteProgressUpdate::Error(e))
+            let ser_string: String = serde_json::to_string(&RemoteProgressUpdate::Error(e))
                 .expect("Failed to serialize progress update");
             ipc.send(ser_string)
                 .expect("Failed to send progress update");

@@ -1,7 +1,7 @@
 import { ConstraintData } from "../ConstraintDefinitions";
 import { Dimensions } from "../ExpressionStore";
 
-export const SAVE_FILE_VERSION = "v2025.0.0";
+export const SAVE_FILE_VERSION = 1;
 export type Expr = { exp: string; val: number };
 
 export function isExpr(arg: any): arg is Expr {
@@ -130,6 +130,7 @@ export interface Output {
   waypoints: number[];
   samples: SwerveSample[] | DifferentialSample[];
   splits: number[];
+  trackwidth: number;
 }
 
 export interface Trajectory {

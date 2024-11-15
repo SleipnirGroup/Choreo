@@ -67,7 +67,8 @@ export const ChoreoTrajectoryStore = types
       return {
         waypoints: self.waypoints,
         samples: self.samples,
-        splits: self.splits
+        splits: self.splits,
+        trackwidth: 1.0 //TODO: trackwidth
       };
     }
   }))
