@@ -63,7 +63,6 @@ class Input extends Component<Props, State> {
       editedValue: this.props.number.toString()
     });
     this.inputElemRef.current!.value = this.props.number.toString();
-    this.inputElemRef.current!.select();
   }
 
   editingMode() {
