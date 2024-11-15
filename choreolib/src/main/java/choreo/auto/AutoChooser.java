@@ -101,17 +101,17 @@ public class AutoChooser {
 
   /**
    * Add an AutoRoutine to the chooser.
-   * 
-   * <p>The options of the chooser are actually of type {@link AutoRoutineGenerator}. This is
-   * a function that takes an {@link AutoFactory} and returns a {@link AutoRoutine}. These
-   * functions can be static, a lambda or belong to a local variable.</p>
-   * 
-   * <p> This is done to load AutoRoutines when and only when they are selected, in order to save
-   * memory and file loading time for unused AutoRoutines.</p>
    *
-   * <p>One way to keep this clean is to make an `Autos` class that all of your subsystems/resources are <a
-   * href="https://en.wikipedia.org/wiki/Dependency_injection">dependency injected</a> into. Then
-   * create methods inside that class that take an {@link AutoFactory} and return an {@link
+   * <p>The options of the chooser are actually of type {@link AutoRoutineGenerator}. This is a
+   * function that takes an {@link AutoFactory} and returns a {@link AutoRoutine}. These functions
+   * can be static, a lambda or belong to a local variable.
+   *
+   * <p>This is done to load AutoRoutines when and only when they are selected, in order to save
+   * memory and file loading time for unused AutoRoutines.
+   *
+   * <p>One way to keep this clean is to make an `Autos` class that all of your subsystems/resources
+   * are <a href="https://en.wikipedia.org/wiki/Dependency_injection">dependency injected</a> into.
+   * Then create methods inside that class that take an {@link AutoFactory} and return an {@link
    * AutoRoutine}.
    *
    * <h3>Example:</h3>
@@ -140,7 +140,7 @@ public class AutoChooser {
    * Get the currently selected {@link AutoRoutine}.
    *
    * <h3>Recommended Usage</h3>
-   * 
+   *
    * Scheduling it as a command.
    *
    * <pre><code>
