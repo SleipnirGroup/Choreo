@@ -36,13 +36,13 @@ them in different ways. This can be more complex to create but can be more power
 
 For the following examples we will be working on a 2024 robot similar to [1678 2024](https://www.statbotics.io/team/1678/2024).
 
-There are already some helper methods in scope to allow us to use commands easier.
+There are already some helper methods in scope that return commands for utility:
 
 - `intake` - Extends the intake, ends when a note is acquired and automatically retracts when the command ends.
 Uses the `Intake` `Subsystem`.
 - `retractIntake` - Retracts the intake.
 Uses the `Intake` `Subsystem`.
-- `shootIfGp` - Shoots the note if the robot has one.
+- `shootIfNoteOwned` - Shoots the note if the robot owns a note.
 Uses the `Shooter` `Subsystem`.
 - `aimFor(Pose2d pose)` - Aims the shooter for a specific position, also keeps the wheels spun up.
 Uses the `Shooter` `Subsystem`.
@@ -55,12 +55,12 @@ Uses the `Drive` `Subsystem`.
 - `autoAimAndShoot` - Aims the shooter and rotates the robot to the correct angle to shoot and then shoots.
 Uses the `Shooter` and `Drive` `Subsystem`.
 
-There is also a method to make a trigger that represents if the robot owns a note.
+There are also two methods that return a trigger that represents if the robot owns a note:
 
-- `yeGp(AutoRoutine routine)` - Returns a trigger that is true if the robot owns a note.
-- `noGp(AutoRoutine routine)` - Returns a trigger that is true if the robot does not own a note.
+- `noteOwned(AutoRoutine routine)` - Returns a trigger that is true if the robot owns a note.
+- `noteNotOwned(AutoRoutine routine)` - Returns a trigger that is true if the robot does not own a note.
 
-There is also a helpful trigger that represents if subsystems are available to be scheduled on.
+There is also a trigger that represents if subsystems are available to be scheduled on:
 
 - `subsystemsAvailable(AutoRoutine routine, Set<Subsystem> subsystems)` - Returns a trigger that is true if the subsystems are available to be scheduled on.
 
@@ -116,21 +116,21 @@ public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
       .and(routine.running()).onTrue(spinnup());
 
   // shoots the note if the robot has it, then runs the trajectory to the first middle note
-  ampToC1.done().onTrue(shootIfGp()).onTrue(
-      c1ToM1.cmd().beforeStarting(waitUntil(noGp(routine))));
+  ampToC1.done().onTrue(shootIfNoteOwned()).onTrue(
+      c1ToM1.cmd().beforeStarting(waitUntil(noteNotOwned(routine))));
 
   // extends the intake while traveling towards the first middle note
   // if the robot has the note, it goes back to shoot it,
   // otherwise it goes to the next middle note
   c1ToM1.atTime("intake").onTrue(intake());
-  c1ToM1.done().and(yeGp(routine)).onTrue(m1ToS1.cmd());
-  c1ToM1.done().and(noGp(routine)).onTrue(m1ToM2.cmd());
+  c1ToM1.done().and(noteOwned(routine)).onTrue(m1ToS1.cmd());
+  c1ToM1.done().and(noteNotOwned(routine)).onTrue(m1ToM2.cmd());
 
   // aims the shooter while traveling to shoot
   m1ToS1.active().whileTrue(aimFor(m1ToS1.getFinalPose().orElseGet(Pose2d::new)));
-  m1ToS1.done().onTrue(shootIfGp());
+  m1ToS1.done().onTrue(shootIfNoteOwned());
   m1ToS1.done().onTrue(m1ToM2.cmd()
-      .beforeStarting(waitUntil(noGp(routine))));
+      .beforeStarting(waitUntil(noteNotOwned(routine))));
 
   // extends the intake while traveling towards the second middle note
   // go back to shoot no matter what
@@ -139,23 +139,23 @@ public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
 
   // aims the shooter while traveling to shoot
   m2ToS1.active().whileTrue(aimFor(m2ToS1.getFinalPose().orElseGet(Pose2d::new)));
-  m2ToS1.done().onTrue(shootIfGp());
+  m2ToS1.done().onTrue(shootIfNoteOwned());
   m2ToS1.done().onTrue(s1ToC2.cmd()
-      .beforeStarting(waitUntil(noGp(routine))));
+      .beforeStarting(waitUntil(noteNotOwned(routine))));
 
   // extends the intake while traveling towards the second close note
   // if the robot has the note, it shoots it
   // otherwise it goes to the third close note
   s1ToC2.active().whileTrue(intake());
   s1ToC2.active().whileTrue(aimFor(s1ToC2.getFinalPose().orElseGet(Pose2d::new)));
-  s1ToC2.done().onTrue(shootIfGp());
+  s1ToC2.done().onTrue(shootIfNoteOwned());
   s1ToC2.done().onTrue(c2ToC3.cmd()
-      .beforeStarting(waitUntil(noGp(routine))));
+      .beforeStarting(waitUntil(noteNotOwned(routine))));
 
   // extends the intake while traveling towards the third close note
   // if the robot has the note, it shoots it
   c2ToC3.active().whileTrue(intake());
-  c2ToC3.done().onTrue(shootIfGp());
+  c2ToC3.done().onTrue(shootIfNoteOwned());
 
   return routine;
 }
@@ -192,7 +192,7 @@ public Command fivePieceAutoTriggerMono(AutoFactory factory) {
   // extends the intake when the intake event marker is reached
   trajectory.atTime("intake").onTrue(intake());
   // shoots the note when the shoot event marker is reached
-  trajectory.atTime("shoot").onTrue(shootIfGp());
+  trajectory.atTime("shoot").onTrue(shootIfNoteOwned());
 
   // aims the shooter when the aim event marker is reached,
   // the aim command aims based on the next shoot event marker position
@@ -227,29 +227,29 @@ public AutoRoutine fivePieceAutoCompositionSeg(AutoFactory factory) {
   final Command s1ToC2 = factory.trajectoryCommand("s1ToC2");
   final Command c2ToC3 = factory.trajectoryCommand("c2ToC3");
 
-  Pose2d startingPose;
+  Pose2d startinNoteOwnedose;
   if (ampToC1.getInitialPose().isPresent()) {
-    startingPose = ampToC1.getInitialPose().get();
+    startinNoteOwnedose = ampToC1.getInitialPose().get();
   } else {
     return none();
   }
 
   Command ret = sequence(
-          resetOdometry(startingPose),
+          resetOdometry(startinNoteOwnedose),
           autoAimAndShoot(),
           deadline(
               ampToC1.cmd(), intake(), aimFor(ampToC1.getFinalPose().orElseGet(Pose2d::new))),
-          shootIfGp(),
+          shootIfNoteOwned(),
           deadline(c1ToM1, waitSeconds(0.35).andThen(intake())),
           either(
-              deadline(m1ToS1, aim()).andThen(shootIfGp()),
-              deadline(m1ToM2, intake()).andThen(deadline(m2ToS1, aim()), shootIfGp()),
-              yeGp() // if you aren't using the triggers API these wouldn't need a custom routine
+              deadline(m1ToS1, aim()).andThen(shootIfNoteOwned()),
+              deadline(m1ToM2, intake()).andThen(deadline(m2ToS1, aim()), shootIfNoteOwned()),
+              noteOwned() // if you aren't using the triggers API these wouldn't need a custom routine
           ),
           deadline(s1ToC2, intake(), aim()),
-          shootIfGp(),
+          shootIfNoteOwned(),
           deadline(c2ToC3, intake(), spinnup()),
-          shootIfGp()
+          shootIfNoteOwned()
   ).withName("fivePieceAuto");
 
   return factory.commandAsAutoRoutine(ret);
