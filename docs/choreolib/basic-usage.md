@@ -1,8 +1,11 @@
-# Basic Usage
+# Getting Started
 
+## Auto Factory API
 !!! tip 
-      For the majority of teams the [AutoRoutine](./auto-routines.md) API is recommended, as it provides a more user-friendly, batteries included experience.
+      This API is recommended for most teams as it provides a more user-friendly, batteries included experience.
+The `AutoFactory` class provides a high level API that simplifies the creation of complex autonomous routines in your robot code. Read [the documentation page](./auto-factory.md) for more information.
 
+## Basic Trajectory API
 Teams that want to use their own path following structure can load trajectories directly with the following code.
 
 === "Java"
