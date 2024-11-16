@@ -3,10 +3,10 @@
 ## Triggers vs Composition
 
 Composition is how most teams currently architect their auto routines.
-You start with 1 `SequentialCommandGroup` and add commands to it.
+You start with one `SequentialCommandGroup` and add commands to it.
 This works for many use cases but can get unwieldy when you have branches,
-want your subsystem default command to run during an auto
-or want to have concurrent command groups running independently that might handoff `Subsystems` to each other.
+want your subsystem default command to run during an auto, or want to have 
+concurrent command groups running independently that might handoff `Subsystems` to each other.
 
 Triggers aim to solve these problems by providing a way to define a control flow based on reactions to state
 that don't require `Subsystems` until they are needed.
@@ -17,22 +17,20 @@ Both paradigms also support branching in their own way.
 !!! warning
     Triggers can have "hygiene" issues if not used correctly.
     Triggers that are polled by the `CommandScheduler` should never
-    be on the left hand side of a `and`/`or` method call.
+    be on the left-hand side of a `and`/`or` method call.
     This will leak the trigger outside of the auto routine and can cause
-    unexpected behavior. For example this can cause a check for intaking
-    a gamepiece during an auto to also be checked and reacted to during teleop.
+    unexpected behavior. For example, this can cause a check intended for intaking
+    a game piece during an auto to also be checked and reacted to during teleop.
 
 ## Monolithic vs Segmented Trajectories
 
-Monolithic trajectories are a single trajectory that is run from start to finish without stopping.
-This has the advantage of being simple to create and understand but can be limiting in complex autos that may require
-branching. Making a new auto with this method can be time consuming as you have to create a completely new trajectory
-for each new auto and are likely repeating yourself.
+Monolithic trajectories are based around a single trajectory that is run from start to finish without stopping.
+This strategy is simpler to create and understand but can be limiting in complex autos that may require
+branching. Making a new auto with this method can be time-consuming as you have to create a completely new trajectory
+for each new auto and likely repeat yourself for each trajectory.
 
-Segmented trajectories are a series of smaller trajectories that have defined handoff positions to smoothly transition
-between them. This allows for more complex autos to be created by reusing smaller pieces of trajectories and combining
-them in different ways. This can be more complex to create but can be more powerful and flexible in the long run. If every
-command is named aswell it is easier to debug and understand what is happening in the auto opposed to a monolithic command group.
+Segmented trajectories break down complex autonomous routines into smaller, reusable trajectories with defined transition points between them. This method allows for more complex autos to be created by reusing smaller pieces of trajectories and combining
+them in different ways. This can be more complex to create but can be more powerful and flexible in the long run. In addition, if  each command is clearly named, it is easier to debug and understand what is happening in the auto as opposed to a monolithic command group.
 
 ## Example Preamble
 
@@ -66,7 +64,7 @@ There is also a helpful trigger that represents if subsystems are available to b
 
 - `subsystemsAvailable(AutoRoutine routine, Set<Subsystem> subsystems)` - Returns a trigger that is true if the subsystems are available to be scheduled on.
 
-Also assume a `import static edu.wpi.first.wpilibj2.command.Commands.*` is in scope.
+These examples also assume that a `import static edu.wpi.first.wpilibj2.command.Commands.*` is in scope.
 
 ### Creating an auto routine with triggers and a segmented trajectory
 

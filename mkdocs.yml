@@ -96,6 +96,8 @@ nav:
       - Installation: choreolib/installation.md
       - Basic Usage: choreolib/basic-usage.md
       - Auto Routines: choreolib/auto-routines.md
+      - Auto Factory: choreolib/auto-factory.md
+      - Auto Controller: choreolib/auto-controller.md
       - Java API: api/choreolib/java/index.html
       - C++ API: api/choreolib/cpp/index.html
   - TrajoptLib (Internal API):

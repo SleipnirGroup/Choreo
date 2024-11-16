@@ -6,7 +6,7 @@
 https://sleipnirgroup.github.io/ChoreoLib/dep/ChoreoLib.json
 ```
 
-The installation method is the same as CTRE, PathPlanner, and more. Read more on Vendor Dependencies and their installation (VSCode —> install new library (online)) [here](https://docs.wpilib.org/en/stable/docs/software/vscode-overview/3rd-party-libraries.html#installing-libraries).
+The installation method is the same as CTRE, PathPlanner, and more. Read more on Vendor Dependencies and their installation (VSCode → install new library (online)) [here](https://docs.wpilib.org/en/stable/docs/software/vscode-overview/3rd-party-libraries.html#installing-libraries).
 
 ## Building Manually
 
