@@ -45,8 +45,8 @@ You can learn more about `drive::choreoController` in the [AutoController](./aut
 
 The `AutoFactory` can create `AutoRoutine` and `AutoTrajectory` objects that can be used to create complex auto routines.
 The `AutoChooser` provides a simple API to structure your auto routine creation in the most performant way.
-`AutoChooser` only creates the `AutoRoutine` on dashbaord chooser selection, this prevents loading all routines on bootup
-increasing startup times and also prevents the routines from being generated on auto start causing a delay.
+`AutoChooser` only creates the `AutoRoutine` on dashboard chooser selection, which prevents loading all routines on boot,
+increasing startup times and preventing the routines from being generated on auto start causing a delay.
 
 For a more advanced example of creating `AutoRoutine` see the [AutoRoutine](./auto-routines.md) documentation.
 
@@ -98,7 +98,7 @@ public Robot extends TimedRobot {
 
 ## AutoBindings
 
-The `AutoBindings` is used to bind event markers in trajectories made by the `AutoFactory` to commands.
+`AutoBindings` is used to bind event markers in trajectories made by the `AutoFactory` to commands.
 This is useful if you have simpler actions that you want to trigger at specific points in a trajectory
 without much thought from the user code side.
 

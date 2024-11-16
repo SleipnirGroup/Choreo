@@ -5,45 +5,51 @@
 
 Teams that want to use their own path following structure can load trajectories directly with the following code.
 
-``` { .java .select }
-import java.util.Optional;
+=== "Java"
 
-import choreo.Choreo;
-import choreo.trajectory.ChoreoTrajectory;
-import choreo.trajectory.SwerveSample;
+      ```java
+      import java.util.Optional;
 
-// Loading a trajectory from a file, returns an optional if the file does not exist or is invalid
-var trajectory = Choreo.loadTrajectory("myTrajectory");
-if (trajectory.isPresent()) {
-    // Do something with the trajectory
-    drive.followTrajectory(trajectory.get()).schedule();
-} else {
-    // If the trajectory is not found, ChoreoLib already prints to DriverStation
-}
-```
+      import choreo.Choreo;
+      import choreo.trajectory.ChoreoTrajectory;
+      import choreo.trajectory.SwerveSample;
 
-``` { .py .select }
-import choreo
+      // Loading a trajectory from a file, returns an optional if the file does not exist or is invalid
+      var trajectory = Choreo.loadTrajectory("myTrajectory");
+      if (trajectory.isPresent()) {
+         // Do something with the trajectory
+         drive.followTrajectory(trajectory.get()).schedule();
+      } else {
+         // If the trajectory is not found, ChoreoLib already prints to DriverStation
+      }
+      ```
 
-# Loading a trajectory from a file, throwing ValueError if the file does not exist or is invalid
-try:
-    trajectory = choreo.load_swerve_trajectory("myTrajectory")
+=== "Python"
+      ```py
+      import choreo
 
-    # Do something with the trajectory
-    drive.followTrajectory(trajectory).schedule()
-except ValueError:
-    # If the trajectory is not found, ChoreoLib already prints to DriverStation
-    pass
-```
+      # Loading a trajectory from a file, throwing ValueError if the file does not exist or is invalid
+      try:
+      trajectory = choreo.load_swerve_trajectory("myTrajectory")
 
-``` { .cpp .select }
-#include <choreo/Choreo.h>
+      # Do something with the trajectory
+      drive.followTrajectory(trajectory).schedule()
+      except ValueError:
+      # If the trajectory is not found, ChoreoLib already prints to DriverStation
+      pass
+      ```
 
-// Loading a trajectory from a file, returns an optional if the file does not exist or is invalid
-if (auto trajectory = choreo::LoadTrajectory("myTrajectory")) {
-    // Do something with the trajectory
-    drive.followTrajectory(trajectory.value()).schedule();
-} else {
-    // If the trajectory is not found, ChoreoLib already prints to DriverStation
-}
-```
+=== "C++"
+
+      ```cpp
+      #include <choreo/Choreo.h>
+
+      // Loading a trajectory from a file, returns an optional if the file does not exist or is invalid
+      if (auto trajectory = choreo::LoadTrajectory("myTrajectory")) {
+         // Do something with the trajectory
+         drive.followTrajectory(trajectory.value()).schedule();
+      } else {
+         // If the trajectory is not found, ChoreoLib already prints to DriverStation
+      }
+      ```
+

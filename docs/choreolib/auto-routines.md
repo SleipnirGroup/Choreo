@@ -6,7 +6,7 @@ Composition is how most teams currently architect their auto routines.
 You start with one `SequentialCommandGroup` and add commands to it.
 This works for many use cases but can get unwieldy when you have branches,
 want your subsystem default command to run during an auto, or want to have 
-concurrent command groups running independently that might handoff `Subsystems` to each other.
+concurrent command groups running independently that might hand off `Subsystems` to each other.
 
 Triggers aim to solve these problems by providing a way to define a control flow based on reactions to state
 that don't require `Subsystems` until they are needed.
@@ -44,7 +44,7 @@ Uses the `Intake` `Subsystem`.
 Uses the `Intake` `Subsystem`.
 - `shootIfGp` - Shoots the note if the robot has one.
 Uses the `Shooter` `Subsystem`.
-- `aimFor(Pose2d pose)` - Aims the shooter for a specific position, also keeps the wheels spunup.
+- `aimFor(Pose2d pose)` - Aims the shooter for a specific position, also keeps the wheels spun up.
 Uses the `Shooter` `Subsystem`.
 - `spinnup` - Spins up the shooter wheels.
 Uses the `Shooter` `Subsystem`.
@@ -164,7 +164,7 @@ public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
 ### Creating an auto routine with triggers and a monolithic trajectory
 
 ```java
-public AutoRoutine fivePieceAutoTriggerMono(AutoFactory factory) {
+public Command fivePieceAutoTriggerMono(AutoFactory factory) {
   final AutoRoutine routine = factory.newRoutine("fivePieceAuto");
 
   final AutoTrajectory trajectory = factory.trajectory("fivePieceAuto", routine);
