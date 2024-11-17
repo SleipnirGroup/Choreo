@@ -8,7 +8,7 @@
 #include "choreo/Choreo.h"
 #include "choreo/trajectory/TrajectorySample.h"
 
-using namespace choreo;
+namespace choreo {
 
 units::second_t DifferentialSample::GetTimestamp() const {
   return timestamp;
@@ -53,8 +53,7 @@ DifferentialSample DifferentialSample::Interpolate(
   };
 }
 
-void choreo::to_json(wpi::json& json,
-                     const DifferentialSample& trajectorySample) {
+void to_json(wpi::json& json, const DifferentialSample& trajectorySample) {
   json = wpi::json{{"t", trajectorySample.timestamp.value()},
                    {"x", trajectorySample.x.value()},
                    {"y", trajectorySample.y.value()},
@@ -67,8 +66,7 @@ void choreo::to_json(wpi::json& json,
                    {"fr", trajectorySample.fr.value()}};
 }
 
-void choreo::from_json(const wpi::json& json,
-                       DifferentialSample& trajectorySample) {
+void from_json(const wpi::json& json, DifferentialSample& trajectorySample) {
   trajectorySample.timestamp = units::second_t{json.at("t").get<double>()};
   trajectorySample.x = units::meter_t{json.at("x").get<double>()};
   trajectorySample.y = units::meter_t{json.at("y").get<double>()};
@@ -82,3 +80,5 @@ void choreo::from_json(const wpi::json& json,
   trajectorySample.fl = units::newton_t{json.at("fl").get<double>()};
   trajectorySample.fr = units::newton_t{json.at("fr").get<double>()};
 }
+
+}  // namespace choreo

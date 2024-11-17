@@ -81,6 +81,9 @@ public class ProjectFile {
     /** The maximum torque of the robot. (N-m) */
     public final Expression tmax;
 
+    /** The Coefficient of Friction (CoF) of the wheels. */
+    public final Expression cof;
+
     /** The bumpers of the robot. */
     public final Bumpers bumper;
 
@@ -96,6 +99,7 @@ public class ProjectFile {
         Expression wheelRadius,
         Expression vmax,
         Expression tmax,
+        Expression cof,
         Bumpers bumper,
         Expression differentialTrackWidth) {
       this.frontLeft = frontLeft;
@@ -106,6 +110,7 @@ public class ProjectFile {
       this.wheelRadius = wheelRadius;
       this.vmax = vmax;
       this.tmax = tmax;
+      this.cof = cof;
       this.bumper = bumper;
       this.differentialTrackWidth = differentialTrackWidth;
     }

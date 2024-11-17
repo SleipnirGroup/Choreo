@@ -38,6 +38,9 @@ struct TRAJOPT_DLLEXPORT DifferentialDrivetrain {
   /// Maximum torque applied to wheel (N−m).
   double wheelMaxTorque;
 
+  /// The Coefficient of Friction (CoF) of the wheels.
+  double wheelCoF;
+
   /// Distance between the two driverails (m).
   double trackwidth;
 };

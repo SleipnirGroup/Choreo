@@ -296,8 +296,6 @@ public final class Choreo {
    * Create a factory that can be used to create {@link AutoRoutine} and {@link AutoTrajectory}.
    *
    * @param <SampleType> The type of samples in the trajectory.
-   * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
-   *     Command}s.
    * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
    *     robot.
    * @param controller A {@link BiConsumer} to follow the current {@link Trajectory}&lt;{@link
@@ -305,16 +303,18 @@ public final class Choreo {
    * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
    *     while keeping the same coordinate system origin. This will be called every loop during the
    *     command.
+   * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
+   *     Command}s.
    * @param bindings Universal trajectory event bindings.
    * @return An {@link AutoFactory} that can be used to create {@link AutoRoutine} and {@link
    *     AutoTrajectory}.
    * @see AutoChooser using this factory with AutoChooser to generate auto routines.
    */
   public static <SampleType extends TrajectorySample<SampleType>> AutoFactory createAutoFactory(
-      Subsystem driveSubsystem,
       Supplier<Pose2d> poseSupplier,
       BiConsumer<Pose2d, SampleType> controller,
       BooleanSupplier mirrorTrajectory,
+      Subsystem driveSubsystem,
       AutoBindings bindings) {
     return new AutoFactory(
         requireNonNullParam(poseSupplier, "poseSupplier", "Choreo.createAutoFactory"),
@@ -329,8 +329,6 @@ public final class Choreo {
    * Create a factory that can be used to create {@link AutoRoutine} and {@link AutoTrajectory}.
    *
    * @param <SampleType> The type of samples in the trajectory.
-   * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
-   *     Command}s.
    * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
    *     robot.
    * @param controller A {@link BiConsumer} to follow the current {@link Trajectory}&lt;{@link
@@ -338,6 +336,8 @@ public final class Choreo {
    * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
    *     while keeping the same coordinate system origin. This will be called every loop during the
    *     command.
+   * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
+   *     Command}s.
    * @param bindings Universal trajectory event bindings.
    * @param trajectoryLogger A {@link TrajectoryLogger} to log {@link Trajectory} as they start and
    *     finish.
@@ -346,10 +346,10 @@ public final class Choreo {
    * @see AutoChooser using this factory with AutoChooser to generate auto routines.
    */
   public static <SampleType extends TrajectorySample<SampleType>> AutoFactory createAutoFactory(
-      Subsystem driveSubsystem,
       Supplier<Pose2d> poseSupplier,
       BiConsumer<Pose2d, SampleType> controller,
       BooleanSupplier mirrorTrajectory,
+      Subsystem driveSubsystem,
       AutoBindings bindings,
       TrajectoryLogger<SampleType> trajectoryLogger) {
     return new AutoFactory(

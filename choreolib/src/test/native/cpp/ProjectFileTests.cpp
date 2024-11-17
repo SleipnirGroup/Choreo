@@ -87,6 +87,10 @@ constexpr std::string_view projectJsonString = R"({
    "exp":"1.2 N * m",
    "val":1.2
   },
+  "cof":{
+    "exp":"1.5",
+    "val":1.5
+  },
   "bumper":{
    "front":{
     "exp":"16 in",
@@ -124,6 +128,7 @@ const ProjectFile correctProjFile{
         Expression{"150 lbs", 68.0388555}, Expression{"6 kg m ^ 2", 6.0},
         Expression{"6.5", 6.5}, Expression{"2 in", 0.0508},
         Expression{"6000 RPM", 628.3185307179587}, Expression{"1.2 N * m", 1.2},
+        Expression{"1.5", 1.5},
         Bumpers{
             Expression{"16 in", 0.4064},
             Expression{"16 in", 0.4064},

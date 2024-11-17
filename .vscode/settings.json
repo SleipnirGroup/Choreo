@@ -3,13 +3,14 @@
         "cargo", "clippy", "--target-dir", "./target/clippy"
     ],
     "files.associations": {
+        "*.py": "python",
         "*.traj": "json",
         "vector": "cpp",
         "array": "cpp",
         "deque": "cpp",
         "map": "cpp",
         "unordered_map": "cpp",
-        "xstring": "cpp"
+        "type_traits": "cpp"
     },
     "java.configuration.updateBuildConfiguration": "interactive",
 }

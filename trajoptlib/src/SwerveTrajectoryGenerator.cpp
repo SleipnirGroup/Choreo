@@ -243,8 +243,17 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
 
       Translation2v moduleF{Fx.at(index).at(moduleIndex),
                             Fy.at(index).at(moduleIndex)};
-      double maxForce =
+
+      // τ = r x F
+      // F = τ/r
+      double maxWheelForce =
           path.drivetrain.wheelMaxTorque / path.drivetrain.wheelRadius;
+
+      // friction = μmg
+      double maxFrictionForce =
+          path.drivetrain.wheelCoF * path.drivetrain.mass * 9.8;
+
+      double maxForce = std::min(maxWheelForce, maxFrictionForce);
 
       // |F|₂² ≤ Fₘₐₓ²
       problem.SubjectTo(moduleF.SquaredNorm() <= maxForce * maxForce);
