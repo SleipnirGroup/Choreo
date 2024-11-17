@@ -6,7 +6,7 @@
 https://sleipnirgroup.github.io/ChoreoLib/dep/ChoreoLib.json
 ```
 
-The installation method is the same as CTRE, PathPlanner, and more. Read more on Vendor Dependencies and their installation (VSCode —> install new library (online)) [here](https://docs.wpilib.org/en/stable/docs/software/vscode-overview/3rd-party-libraries.html#installing-libraries).
+The installation method is the same as CTRE, PathPlanner, and more. Read more on Vendor Dependencies and their installation (VSCode → install new library (online)) [here](https://docs.wpilib.org/en/stable/docs/software/vscode-overview/3rd-party-libraries.html#installing-libraries).
 
 ## Building Manually
 
@@ -19,4 +19,4 @@ The built library will be located in the respective operating system's m2 folder
 - Unix/Mac OS X - `~/.m2/repository`
 - Windows – `C:\Users\{your-username}\.m2\repository`
 
-To use a custom built version you'll need to update your ChoreoLib.json file to point to the local repository and version.
+To use a custom-built version you'll need to update your ChoreoLib.json file to point to the local repository and version.

@@ -1,20 +1,20 @@
 # Auto Controller
 
-Choreo trajectory samples contain a lot of information, due to this complexity the
+Choreo trajectory samples contain a lot of information. Due to this complexity, the
 task of implementing how to follow these samples is left up to the user.
 
-The "Auto Controller" is a function that consumes a `Pose2d` aswell as a sample (`SwerveSample` or `DifferentialSample` depending on drive base).
+The "Auto Controller" is a function that consumes a `Pose2d` as well as a sample (`SwerveSample` or `DifferentialSample` depending on drive base).
 The controller should capture your drive subsystem to directly control it.
 
 ## Basic PID Controller
 
-The most basic implementation of an auto controller that is indifferent to vendors is a PID controller based one.
+The most basic implementation of a vendor-independent auto controller is a PID controller.
 This controller will take the base requested velocity from the sample and add the output of the PID controller to it.
 The PID controller output is based on how far the robot is from the desired position.
 
 ```java
 public class AutoController implements BiConsumer<Pose2d, SwerveSample> {
-    private final Swerve swerve;
+    private final Swerve swerve; // Swerve subsystem
     private final PIDController xController = new PIDController(
         kAuto.kTranslation.kP,
         0.0,
@@ -54,13 +54,13 @@ public class AutoController implements BiConsumer<Pose2d, SwerveSample> {
             pose.getRotation()
         );
 
-        swerve.drive(out, false);
+        swerve.drive(out);
     }
 }
 ```
 
 ## Advanced Controllers
-
-More examples are coming soon.
-A good tip is using the acceleration from the sample to implement feedforward.
-You can also use the forces from the sample with CTRE swerve or a custom implementation to respect the model even better.
+!!! tip "Coming soon"
+      More examples are coming soon.
+      
+As a more advanced control strategy, you can utilize the acceleration from the sample to implement feedforward. You can also use the forces from the sample with the CTRE Swerve API or a custom implementation to better adhere to the model.
