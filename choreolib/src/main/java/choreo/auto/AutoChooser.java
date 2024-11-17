@@ -54,7 +54,7 @@ public class AutoChooser {
    * Constructs a new {@link AutoChooser}.
    *
    * @param factory The auto factory to use for AutoRoutine creation.
-   * @param tableName The name of the network table to use for the chooser, passing in an empty
+   * @param tableName The name of the network table to use for the chooser. Passing in an empty
    *     string or null will put this chooser at the root of the network tables.
    */
   public AutoChooser(AutoFactory factory, String tableName) {
