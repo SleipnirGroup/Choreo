@@ -34,10 +34,10 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
   /** The velocity of the right side in m/s. */
   public final double vr;
 
-  /** The acceleration of the left side in m/s^2. */
+  /** The acceleration of the left side in m/s². */
   public final double al;
 
-  /** The acceleration of the right side in m/s^2. */
+  /** The acceleration of the right side in m/s². */
   public final double ar;
 
   /** The force of the left side in Newtons. */
@@ -55,8 +55,8 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
    * @param heading The heading of the sample in radians, with 0 being in the +X direction.
    * @param vl The velocity of the left side in m/s.
    * @param vr The velocity of the right side in m/s.
-   * @param al The acceleration of the left side in m/s^2.
-   * @param ar The acceleration of the right side in m/s^2.
+   * @param al The acceleration of the left side in m/s².
+   * @param ar The acceleration of the right side in m/s².
    * @param fl The force of the left side in Newtons.
    * @param fr The force of the right side in Newtons.
    */

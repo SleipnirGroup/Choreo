@@ -62,5 +62,5 @@ public class AutoController implements BiConsumer<Pose2d, SwerveSample> {
 ## Advanced Controllers
 !!! tip "Coming soon"
       More examples are coming soon.
-      
+
 As a more advanced control strategy, you can utilize the acceleration from the sample to implement feedforward. You can also use the forces from the sample with the CTRE Swerve API or a custom implementation to better adhere to the model.

@@ -1,7 +1,7 @@
 # Getting Started
 
 ## Auto Factory API
-!!! tip 
+!!! tip
       This API is recommended for most teams as it provides a more user-friendly, batteries included experience.
 The `AutoFactory` class provides a high level API that simplifies the creation of complex autonomous routines in your robot code. Read [the documentation page](./auto-factory.md) for more information.
 
@@ -55,4 +55,3 @@ Teams that want to use their own path following structure can load trajectories 
          // If the trajectory is not found, ChoreoLib already prints to DriverStation
       }
       ```
-

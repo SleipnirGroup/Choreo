@@ -5,7 +5,7 @@
 Composition is how most teams currently architect their auto routines.
 You start with one `SequentialCommandGroup` and add commands to it.
 This works for many use cases but can get unwieldy when you have branches,
-want your subsystem default command to run during an auto, or want to have 
+want your subsystem default command to run during an auto, or want to have
 concurrent command groups running independently that might hand off `Subsystems` to each other.
 
 Triggers aim to solve these problems by providing a way to define a control flow based on reactions to state
