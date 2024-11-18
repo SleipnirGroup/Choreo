@@ -6,8 +6,6 @@
 
 #include <wpi/json.h>
 
-using namespace choreo;
-
 void choreo::to_json(wpi::json& json, const Expression& exp) {
   json = wpi::json{{"exp", exp.expression}, {"val", exp.val}};
 }
