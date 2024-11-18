@@ -18,7 +18,6 @@
 #include <wpi/json.h>
 
 #include "choreo/SpecVersion.h"
-#include "choreo/auto/AutoTrajectory.h"
 #include "choreo/trajectory/ProjectFile.h"
 #include "choreo/trajectory/Trajectory.h"
 #include "choreo/trajectory/TrajectorySample.h"
@@ -257,34 +256,6 @@ class Choreo {
       std::function<void(frc::Pose2d, SampleType)> controller,
       std::function<bool()> mirrorTrajectory, frc2::Subsystem driveSubsystem);
 
-  /**
-   * Create a factory that can be used to create AutoRoutines and
-   * AutoTrajectories.
-   *
-   * @tparam SampleType The type of samples in the trajectory.
-   * @tparam Year The field year. Defaults to the current year.
-   * @param poseSupplier A function that returns the current field-relative
-   *     Pose2d of the robot.
-   * @param controller A function for following the current trajectory.
-   * @param mirrorTrajectory If this returns true, the path will be mirrored to
-   *     the opposite side, while keeping the same coordinate system origin.
-   *     This will be called every loop during the command.
-   * @param driveSubsystem The drive Subsystem to require for AutoTrajectory
-   *     Commands.
-   * @param trajectoryLogger A TrajectoryLogger to log trajectories as they
-   *     start and finish.
-   * @return An AutoFactory that can be used to create AutoRoutines and
-   *     AutoTrajectories.
-   * @see AutoChooser using this factory with AutoChooser to generate auto
-   *     routines.
-   */
-  template <TrajectorySample SampleType, int Year = util::kDefaultYear>
-  static AutoFactory<SampleType, Year> CreateAutoFactory(
-      std::function<frc::Pose2d()> poseSupplier,
-      std::function<void(frc::Pose2d, SampleType)> controller,
-      std::function<bool()> mirrorTrajectory, frc2::Subsystem driveSubsystem,
-      TrajectoryLogger<SampleType> trajectoryLogger);
-
  private:
   static constexpr std::string_view TRAJECTORY_FILE_EXTENSION = ".traj";
 
@@ -295,67 +266,5 @@ class Choreo {
 
   Choreo();
 };
-
-}  // namespace choreo
-
-#include "choreo/auto/AutoFactory.h"
-
-namespace choreo {
-
-/**
- * Create a factory that can be used to create AutoRoutine and AutoTrajectory.
- *
- * @tparam SampleType The type of samples in the trajectory.
- * @param poseSupplier A function that returns the current field-relative
- *     Pose2d of the robot.
- * @param controller A function for following the current trajectory.
- * @param mirrorTrajectory If this returns true, the path will be mirrored to
- *     the opposite side, while keeping the same coordinate system origin.
- *     This will be called every loop during the command.
- * @param driveSubsystem The drive Subsystem to require for AutoTrajectory
- *     Commands.
- * @return An AutoFactory that can be used to create AutoRoutines and
- *     AutoTrajectories.
- * @see AutoChooser using this factory with AutoChooser to generate auto
- *     routines.
- */
-template <TrajectorySample SampleType>
-static AutoFactory<SampleType> CreateAutoFactory(
-    std::function<frc::Pose2d()> poseSupplier,
-    std::function<void(frc::Pose2d, SampleType)> controller,
-    std::function<bool()> mirrorTrajectory, frc2::Subsystem driveSubsystem) {
-  return AutoFactory{poseSupplier, controller, mirrorTrajectory, driveSubsystem,
-                     std::nullopt};
-}
-
-/**
- * Create a factory that can be used to create AutoRoutines and
- * AutoTrajectories.
- *
- * @tparam SampleType The type of samples in the trajectory.
- * @param poseSupplier A function that returns the current field-relative
- *     Pose2d of the robot.
- * @param controller A function for following the current trajectory.
- * @param mirrorTrajectory If this returns true, the path will be mirrored to
- *     the opposite side, while keeping the same coordinate system origin.
- *     This will be called every loop during the command.
- * @param driveSubsystem The drive Subsystem to require for AutoTrajectory
- *     Commands.
- * @param trajectoryLogger A TrajectoryLogger to log trajectories as they
- *     start and finish.
- * @return An AutoFactory that can be used to create AutoRoutines and
- *     AutoTrajectories.
- * @see AutoChooser using this factory with AutoChooser to generate auto
- *     routines.
- */
-template <TrajectorySample SampleType>
-static AutoFactory<SampleType> CreateAutoFactory(
-    std::function<frc::Pose2d()> poseSupplier,
-    std::function<void(frc::Pose2d, SampleType)> controller,
-    std::function<bool()> mirrorTrajectory, frc2::Subsystem driveSubsystem,
-    TrajectoryLogger<SampleType> trajectoryLogger) {
-  return AutoFactory{poseSupplier, controller, mirrorTrajectory, driveSubsystem,
-                     trajectoryLogger};
-}
 
 }  // namespace choreo
