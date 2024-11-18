@@ -113,9 +113,8 @@ class AutoChooser {
   /**
    * Add an auto routine to the chooser.
    *
-   * An auto routine is a function that takes an AutoFactory and returns a
-   * CommandPtr. These functions can be static, a lambda or belong to a local
-   * variable.
+   * An auto routine is a function that takes nothing and returns a CommandPtr.
+   * These functions can be static, a lambda or belong to a local variable.
    *
    * A good paradigm is making an `AutoRoutines` class that has a reference
    * to all your subsystems and has helper methods for auto commands inside it.
