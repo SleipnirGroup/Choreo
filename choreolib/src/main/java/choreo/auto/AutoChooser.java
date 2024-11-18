@@ -92,7 +92,7 @@ public class AutoChooser {
   /**
    * Add an auto routine to the chooser.
    *
-   * <p>An auto routine is a function that takes an AutoFactory and returns a Command. These
+   * <p>An auto routine is a function that takes an AutoFactory and returns a AutoRoutine. These
    * functions can be static, a lambda or belong to a local variable.
    *
    * <p>A good paradigm is making an `AutoRoutines` class that has a reference to all your
