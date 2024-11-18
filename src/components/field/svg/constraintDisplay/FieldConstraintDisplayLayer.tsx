@@ -12,12 +12,23 @@ import PointAtOverlay from "./PointAtOverlay";
 import KeepOutCircleOverlay from "./KeepOutCircleOverlay";
 import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
 import KeepInLaneOverlay from "./KeepInLaneOverlay";
+import { IConstraintDataStore } from "../../../../document/ConstraintDataStore";
 
 export type OverlayProps<K extends keyof ConstraintDataTypeMap> = {
   data: IConstraintStoreKeyed<K>;
   start: IHolonomicWaypointStore;
   end: IHolonomicWaypointStore;
   lineColor: string;
+  select: ()=>void;
+  clickable: boolean;
+};
+export type OverlayElementProps<K extends keyof ConstraintDataTypeMap> = {
+  data: IConstraintDataStore<K>;
+  start?: IHolonomicWaypointStore;
+  end?: IHolonomicWaypointStore;
+  selected: boolean;
+  select: ()=>void;
+  clickable: boolean;
 };
 const overlays = {
   PointAt: (props: OverlayProps<"PointAt">) => (
@@ -26,6 +37,9 @@ const overlays = {
       start={props.start}
       end={props.end}
       lineColor={props.lineColor}
+      selected={props.data.selected}
+      select={()=>{props.data.setSelected(true)}}
+      clickable={props.clickable}
     ></PointAtOverlay>
   ),
   KeepInCircle: (props: OverlayProps<"KeepInCircle">) => (
@@ -34,6 +48,8 @@ const overlays = {
       start={props.start}
       end={props.end}
       selected={props.data.selected}
+      select={()=>{props.data.setSelected(true)}}
+      clickable={props.clickable}
     ></KeepInCircleOverlay>
   ),
   KeepInRectangle: (props: OverlayProps<"KeepInRectangle">) => (
@@ -42,6 +58,8 @@ const overlays = {
       start={props.start}
       end={props.end}
       selected={props.data.selected}
+      select={()=>{props.data.setSelected(true)}}
+      clickable={props.clickable}
     ></KeepInRectangleOverlay>
   ),
   KeepInLane: (props: OverlayProps<"KeepInLane">) => (
@@ -50,6 +68,8 @@ const overlays = {
       start={props.start}
       end={props.end}
       selected={props.data.selected}
+      select={()=>{props.data.setSelected(true)}}
+      clickable={props.clickable}
     ></KeepInLaneOverlay>
   ),
   KeepOutCircle: (props: OverlayProps<"KeepOutCircle">) => (
@@ -58,6 +78,8 @@ const overlays = {
       start={props.start}
       end={props.end}
       selected={props.data.selected}
+      select={()=>{props.data.setSelected(true)}}
+      clickable={props.clickable}
     ></KeepOutCircleOverlay>
   ),
   StopPoint: () => <></>,
@@ -71,6 +93,7 @@ type Props = {
   constraint?: IConstraintStoreKeyed<ConstraintKey>;
   points: IHolonomicWaypointStore[];
   lineColor: string;
+  clickable: boolean;
 };
 function FieldConstraintDisplayLayer(props: Props) {
   const constraint = props.constraint;
@@ -83,19 +106,20 @@ function FieldConstraintDisplayLayer(props: Props) {
     data: constraint,
     start: constraint.getStartWaypoint(props.points),
     end: constraint.getEndWaypoint(props.points),
-    lineColor: props.lineColor
+    lineColor: props.lineColor,
+    clickable: props.clickable
   };
   if (startIndex === undefined) {
     return <></>;
   }
   return (
-    <g>
+    <g key={props.constraint?.uuid ?? "undef"} style={{zIndex: constraint.selected ? "999" : undefined}}>
       <FieldConstraintRangeLayer
         points={doc.pathlist.activePath.params.waypoints}
         start={startIndex}
         end={endIndex}
         lineColor={props.lineColor}
-        id="display"
+        id={"display"+props.constraint?.uuid ?? "undef"}
       ></FieldConstraintRangeLayer>
       {overlays[constraint.data.type](
         // @ts-expect-error can't cast the constraint as the proper type.

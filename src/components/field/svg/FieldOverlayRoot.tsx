@@ -243,18 +243,7 @@ class FieldOverlayRoot extends Component<Props, State> {
               </>
             )}
 
-            {layers[ViewLayers.Zones] &&
-              doc.pathlist.activePath.params.constraints
-                .filter((c) => c.enabled && !c.selected)
-                .map((c) => {
-                  return (
-                    <FieldConstraintDisplayLayer
-                      points={doc.pathlist.activePath.params.waypoints}
-                      constraint={c as IConstraintStoreKeyed<ConstraintKey>}
-                      lineColor="transparent"
-                    ></FieldConstraintDisplayLayer>
-                  );
-                })}
+
             {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
             {/* Waypoint mouse capture*/}
 
@@ -317,7 +306,6 @@ class FieldOverlayRoot extends Component<Props, State> {
                 </div>
               </Popover>
             )}
-
             {layers[ViewLayers.Waypoints] &&
               uiState.isNavbarWaypointSelected() && (
                 <circle
@@ -339,6 +327,43 @@ class FieldOverlayRoot extends Component<Props, State> {
             {layers[ViewLayers.Samples] && layers[ViewLayers.Trajectory] && (
               <FieldGeneratedWaypoints></FieldGeneratedWaypoints>
             )}
+                        {/* Display field zones */}
+                        {layers[ViewLayers.Zones] &&
+              doc.pathlist.activePath.params.constraints
+                .filter((c) => c.enabled)
+                .map((c) => {
+                  return (
+                    <FieldConstraintDisplayLayer
+                      points={doc.pathlist.activePath.params.waypoints}
+                      constraint={c as IConstraintStoreKeyed<ConstraintKey>}
+                      lineColor={c.selected ? "var(--select-yellow)":"transparent"}
+                      clickable= {c.selected || !(uiState.layers[ViewLayers.Waypoints] &&
+                      uiState.isNavbarWaypointSelected())}
+                    ></FieldConstraintDisplayLayer>
+                  );
+                })} 
+
+            {!layers[ViewLayers.Zones] && doc.isSidebarConstraintSelected && (
+              <FieldConstraintDisplayLayer
+                points={doc.pathlist.activePath.params.waypoints}
+                constraint={
+                  doc.selectedSidebarItem as IConstraintStoreKeyed<ConstraintKey>
+                }
+                lineColor="var(--select-yellow)"
+                clickable={true}
+              ></FieldConstraintDisplayLayer>
+            )}
+            {!doc.isSidebarConstraintSelected &&
+              doc.isSidebarConstraintHovered && (
+                <FieldConstraintDisplayLayer
+                  points={doc.pathlist.activePath.params.waypoints}
+                  constraint={
+                    doc.hoveredSidebarItem as IConstraintStoreKeyed<ConstraintKey>
+                  }
+                  lineColor="white"
+                  clickable={false}
+                ></FieldConstraintDisplayLayer>
+              )}
             <FieldEventMarkers></FieldEventMarkers>
             {layers[ViewLayers.Waypoints] &&
               doc.pathlist.activePath.params.waypoints
@@ -377,25 +402,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             {eventMarkerSelected && (
               <FieldEventMarkerAddLayer></FieldEventMarkerAddLayer>
             )}
-            {doc.isSidebarConstraintSelected && (
-              <FieldConstraintDisplayLayer
-                points={doc.pathlist.activePath.params.waypoints}
-                constraint={
-                  doc.selectedSidebarItem as IConstraintStoreKeyed<ConstraintKey>
-                }
-                lineColor="var(--select-yellow)"
-              ></FieldConstraintDisplayLayer>
-            )}
-            {!doc.isSidebarConstraintSelected &&
-              doc.isSidebarConstraintHovered && (
-                <FieldConstraintDisplayLayer
-                  points={doc.pathlist.activePath.params.waypoints}
-                  constraint={
-                    doc.hoveredSidebarItem as IConstraintStoreKeyed<ConstraintKey>
-                  }
-                  lineColor="white"
-                ></FieldConstraintDisplayLayer>
-              )}
+
             {layers[ViewLayers.Trajectory] && (
               <InterpolatedRobot
                 timestamp={uiState.pathAnimationTimestamp}
