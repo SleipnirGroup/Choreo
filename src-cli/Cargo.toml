@@ -9,6 +9,6 @@ license = "BSD-3-Clause"
 
 [dependencies]
 choreo-core = { path = "../src-core" }
-clap = { version = "4.5.17", features = ["derive"] }
+clap = { version = "4.5.21", features = ["derive"] }
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["ansi", "fmt", "std", "json"] }
