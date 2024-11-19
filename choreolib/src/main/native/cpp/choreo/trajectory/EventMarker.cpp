@@ -6,8 +6,6 @@
 
 #include <wpi/json.h>
 
-using namespace choreo;
-
 void choreo::to_json(wpi::json& json, const EventMarker& event) {
   json = wpi::json{{"data", wpi::json{{"t", event.timestamp.value()}}},
                    {"event", wpi::json{{"name", event.event}}}};

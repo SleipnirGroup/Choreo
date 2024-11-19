@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <frc/geometry/Pose2d.h>
 #include <frc/kinematics/ChassisSpeeds.h>
 #include <units/acceleration.h>
 #include <units/angle.h>
@@ -10,8 +11,10 @@
 #include <units/force.h>
 #include <units/length.h>
 #include <units/velocity.h>
+#include <wpi/MathExtras.h>
 #include <wpi/json_fwd.h>
 
+#include "choreo/trajectory/TrajectorySample.h"
 #include "choreo/util/AllianceFlipperUtil.h"
 
 namespace choreo {
@@ -24,7 +27,7 @@ class DifferentialSample {
   /**
    * Constructs a DifferentialSample that is defaulted.
    */
-  DifferentialSample() = default;
+  constexpr DifferentialSample() = default;
 
   /**
    * Constructs a DifferentialSample with the specified parameters.
@@ -41,13 +44,13 @@ class DifferentialSample {
    * @param fl The force of the left wheels
    * @param fr The force of the right wheels
    */
-  DifferentialSample(units::second_t timestamp, units::meter_t x,
-                     units::meter_t y, units::radian_t heading,
-                     units::meters_per_second_t vl,
-                     units::meters_per_second_t vr,
-                     units::meters_per_second_squared_t al,
-                     units::meters_per_second_squared_t ar, units::newton_t fl,
-                     units::newton_t fr)
+  constexpr DifferentialSample(units::second_t timestamp, units::meter_t x,
+                               units::meter_t y, units::radian_t heading,
+                               units::meters_per_second_t vl,
+                               units::meters_per_second_t vr,
+                               units::meters_per_second_squared_t al,
+                               units::meters_per_second_squared_t ar,
+                               units::newton_t fl, units::newton_t fr)
       : timestamp{timestamp},
         x{x},
         y{y},
@@ -64,14 +67,16 @@ class DifferentialSample {
    *
    * @return The timestamp.
    */
-  units::second_t GetTimestamp() const;
+  units::second_t GetTimestamp() const { return timestamp; }
 
   /**
    * Gets the Pose2d of the DifferentialSample.
    *
    * @return The pose.
    */
-  frc::Pose2d GetPose() const;
+  constexpr frc::Pose2d GetPose() const {
+    return frc::Pose2d{x, y, frc::Rotation2d{heading}};
+  }
 
   /**
    * Gets the field-relative chassis speeds of the DifferentialSample.
@@ -86,7 +91,10 @@ class DifferentialSample {
    * @param timeStampOffset time to move sample by
    * @return DifferentialSample that is moved forward by the offset
    */
-  DifferentialSample OffsetBy(units::second_t timeStampOffset) const;
+  constexpr DifferentialSample OffsetBy(units::second_t timeStampOffset) const {
+    return DifferentialSample{
+        timestamp + timeStampOffset, x, y, heading, vl, vr, al, ar, fl, fr};
+  }
 
   /**
    * Interpolates between endValue and this by t
@@ -95,8 +103,25 @@ class DifferentialSample {
    * @param t time to move sample by
    * @return the interpolated sample
    */
-  DifferentialSample Interpolate(const DifferentialSample& endValue,
-                                 units::second_t t) const;
+  constexpr DifferentialSample Interpolate(const DifferentialSample& endValue,
+                                           units::second_t t) const {
+    units::scalar_t scale = (t - timestamp) / (endValue.timestamp - timestamp);
+    frc::Pose2d interpolatedPose =
+        frc::Interpolate(GetPose(), endValue.GetPose(), scale.value());
+
+    return DifferentialSample{
+        wpi::Lerp(timestamp, endValue.timestamp, scale),
+        interpolatedPose.X(),
+        interpolatedPose.Y(),
+        interpolatedPose.Rotation().Radians(),
+        wpi::Lerp(vl, endValue.vl, scale),
+        wpi::Lerp(vr, endValue.vr, scale),
+        wpi::Lerp(al, endValue.al, scale),
+        wpi::Lerp(ar, endValue.ar, scale),
+        wpi::Lerp(fl, endValue.fl, scale),
+        wpi::Lerp(fr, endValue.fr, scale),
+    };
+  }
 
   /**
    * Returns the current sample flipped based on the field year.
@@ -105,8 +130,8 @@ class DifferentialSample {
    * @return DifferentialSample that is flipped based on the field layout.
    */
   template <int Year>
-  DifferentialSample Flipped() const {
-    static constexpr auto flipper = choreo::util::GetFlipperForYear<Year>();
+  constexpr DifferentialSample Flipped() const {
+    constexpr auto flipper = choreo::util::GetFlipperForYear<Year>();
     if constexpr (flipper.isMirrored) {
       return DifferentialSample(timestamp, flipper.FlipX(x), y,
                                 flipper.FlipHeading(heading), vl, vr, al, ar,
@@ -124,7 +149,7 @@ class DifferentialSample {
    * @param other The other DifferentialSample.
    * @return True for equality.
    */
-  bool operator==(const DifferentialSample& other) const {
+  constexpr bool operator==(const DifferentialSample& other) const {
     constexpr double epsilon = 1e-6;
 
     auto compare_units = [epsilon](const auto& a, const auto& b) {
