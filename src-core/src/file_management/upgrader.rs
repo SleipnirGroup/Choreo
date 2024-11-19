@@ -1,4 +1,3 @@
-
 use crate::{ChoreoError, ChoreoResult};
 use serde_json::Value as JsonValue;
 
@@ -70,44 +69,60 @@ impl Editor {
     }
 
     pub fn get_path<T: serde::de::DeserializeOwned>(&self, path: impl JsonPath) -> ChoreoResult<T> {
-        let jdata = self.get_path_raw(path)
+        let jdata = self
+            .get_path_raw(path)
             .ok_or(ChoreoError::Json("Invalid JSON path".to_string()))?;
         serde_json::from_value(jdata.clone()).map_err(Into::into)
     }
 
     /// Set the value of a JSON path. If the path does not exist, it will be created.
-    /// 
+    ///
     /// # Arguments
     /// - `path`: The JSON path to set the value of.
     /// - `value`: The value to set.
-    pub fn set_path(&mut self, path: impl JsonPath, value: impl Into<JsonValue>) -> ChoreoResult<()> {
+    pub fn set_path(
+        &mut self,
+        path: impl JsonPath,
+        value: impl Into<JsonValue>,
+    ) -> ChoreoResult<()> {
         let mut jdata = &mut self.jdata;
-        let keys = path.try_as_json_path()
-            .ok_or(ChoreoError::Json(format!("Invalid JSON path of {:?}", path)))?;
+        let keys = path.try_as_json_path().ok_or(ChoreoError::Json(format!(
+            "Invalid JSON path of {:?}",
+            path
+        )))?;
         if keys.is_empty() {
             return Err(ChoreoError::Json("Empty JSON path".to_string()));
         }
         for key in keys.iter().take(keys.len() - 1) {
             if let Some(obj) = jdata.as_object_mut() {
-                jdata = obj.entry(key.to_string()).or_insert(JsonValue::Object(Default::default()));
+                jdata = obj
+                    .entry(key.to_string())
+                    .or_insert(JsonValue::Object(Default::default()));
             } else {
-                return Err(ChoreoError::Json(
-                    format!("Invalid JSON path of {:?}, {:?} is already assigned to a non object value", path, key)
-                ));
+                return Err(ChoreoError::Json(format!(
+                    "Invalid JSON path of {:?}, {:?} is already assigned to a non object value",
+                    path, key
+                )));
             }
         }
         if let Some(obj) = jdata.as_object_mut() {
             obj.insert(keys.last().unwrap().to_string(), value.into());
         } else {
-            return Err(ChoreoError::Json(
-                format!("Invalid JSON path of {:?}, {:?} is already assigned to a non object value", path, keys.last().unwrap())
-            ));
+            return Err(ChoreoError::Json(format!(
+                "Invalid JSON path of {:?}, {:?} is already assigned to a non object value",
+                path,
+                keys.last().unwrap()
+            )));
         }
 
         Ok(())
     }
 
-    pub fn set_path_serialize<T: serde::Serialize>(&mut self, path: impl JsonPath, value: T) -> ChoreoResult<()> {
+    pub fn set_path_serialize<T: serde::Serialize>(
+        &mut self,
+        path: impl JsonPath,
+        value: T,
+    ) -> ChoreoResult<()> {
         self.set_path(path, serde_json::to_value(value)?)
     }
 }
@@ -138,7 +153,9 @@ pub struct Upgrader {
 
 impl Upgrader {
     pub fn new() -> Self {
-        Self { actions: Vec::new() }
+        Self {
+            actions: Vec::new(),
+        }
     }
 
     pub fn add_version_action(&mut self, action: UpgradeFn) {
@@ -146,8 +163,8 @@ impl Upgrader {
     }
 
     pub fn upgrade(&self, jdata: JsonValue) -> ChoreoResult<JsonValue> {
-        let version = get_version(&jdata)
-            .ok_or(ChoreoError::Json("Invalid JSON version".to_string()))?;
+        let version =
+            get_version(&jdata).ok_or(ChoreoError::Json("Invalid JSON version".to_string()))?;
         let mut editor = Editor::new(jdata);
         for action in &self.actions[version as usize..] {
             action.upgrade(&mut editor)?;

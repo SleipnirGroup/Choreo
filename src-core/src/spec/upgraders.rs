@@ -5,7 +5,10 @@ use crate::ChoreoResult;
 mod traj_file {
     use std::sync::LazyLock;
 
-    use crate::{file_management::upgrader::{Editor, Upgrader}, ChoreoResult};
+    use crate::{
+        file_management::upgrader::{Editor, Upgrader},
+        ChoreoResult,
+    };
 
     pub(super) static TRAJ_UPGRADER: LazyLock<Upgrader> = LazyLock::new(make_upgrader);
 
@@ -28,7 +31,11 @@ mod traj_file {
 mod project_file {
     use std::sync::LazyLock;
 
-    use crate::{file_management::upgrader::{Editor, Upgrader}, spec::Expr, ChoreoResult};
+    use crate::{
+        file_management::upgrader::{Editor, Upgrader},
+        spec::Expr,
+        ChoreoResult,
+    };
 
     pub(super) static PROJECT_UPGRADER: LazyLock<Upgrader> = LazyLock::new(make_upgrader);
 

@@ -25,9 +25,9 @@ type DeployPath = Arc<Mutex<PathBuf>>;
 /// A name of a trajectory without the file extension.
 type TrajectoryFileName = String;
 
-pub mod upgrader;
 mod diagnostics;
 mod formatter;
+pub mod upgrader;
 
 pub use diagnostics::{create_diagnostic_file, get_log_lines};
 
