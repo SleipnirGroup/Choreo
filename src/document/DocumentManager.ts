@@ -405,7 +405,7 @@ export async function setupEventListeners() {
       });
     });
   const autoSaveUnlisten = reaction(
-    () => doc.history.undoIdx,
+    () => doc.serializeChor(),
     () => {
       if (uiState.hasSaveLocation) {
         saveProject();
