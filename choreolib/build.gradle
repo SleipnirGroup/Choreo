@@ -156,6 +156,10 @@ model {
     }
 }
 
+compileJava {
+    options.encoding = 'UTF-8'
+}
+
 spotless {
     java {
         target fileTree('.') {
