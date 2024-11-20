@@ -86,26 +86,26 @@ int main() {
     auto solution = generator.Generate(true);
   }
 
-  // Example 5: Differential, circle obstacle
+  // Example 5: Differential, keep-out circle
   {
     trajopt::DifferentialPathBuilder path;
     path.SetDrivetrain(differentialDrivetrain);
     path.PoseWpt(0, 0.0, 0.0, 0.0);
-    trajopt::Obstacle obstacle{// Radius of 0.1
-                               .safetyDistance = 0.1,
-                               .points = {{0.5, 0.5}}};
+    trajopt::KeepOutRegion keepOut{// Radius of 0.1
+                                   .safetyDistance = 0.1,
+                                   .points = {{0.5, 0.5}}};
     for (size_t i = 0; i < path.GetBumpers().at(0).points.size(); i++) {
       path.SgmtConstraint(0, 1,
                           trajopt::PointPointMinConstraint{
                               path.GetBumpers().at(0).points.at(i),
-                              obstacle.points.at(0), obstacle.safetyDistance});
+                              keepOut.points.at(0), keepOut.safetyDistance});
       path.SgmtConstraint(
           0, 1,
           trajopt::LinePointConstraint{
               path.GetBumpers().at(0).points.at(i),
               path.GetBumpers().at(0).points.at(
                   (i + 1) % path.GetBumpers().at(0).points.size()),
-              obstacle.points.at(0), obstacle.safetyDistance});
+              keepOut.points.at(0), keepOut.safetyDistance});
     }
     path.PoseWpt(1, 1.0, 0.0, 0.0);
     path.WptConstraint(0, zeroLinearVelocity);
