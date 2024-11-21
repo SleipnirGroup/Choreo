@@ -192,19 +192,19 @@ export const ConstraintDefinitions: defs = {
     properties: {
       x: {
         name: "X",
-        description: "The x coordinate of the center of the keep in zone",
+        description: "The x coordinate of the center of the keep-in region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "0 m", val: 0 }
       },
       y: {
         name: "Y",
-        description: "The y coordinate of the center of the keep in zone",
+        description: "The y coordinate of the center of the keep-in region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "0 m", val: 0 }
       },
       r: {
         name: "R",
-        description: "The radius of the keep in zone",
+        description: "The radius of the keep-in region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "1 m", val: 1 }
       }
@@ -221,25 +221,27 @@ export const ConstraintDefinitions: defs = {
     properties: {
       x: {
         name: "X",
-        description: "The x coordinate of the bottom left of the keep in zone",
+        description:
+          "The x coordinate of the bottom left of the keep-in region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "0 m", val: 0 }
       },
       y: {
         name: "Y",
-        description: "The y coordinate of the bottom left of the keep in zone",
+        description:
+          "The y coordinate of the bottom left of the keep-in region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "0 m", val: 0 }
       },
       w: {
         name: "W",
-        description: "The width of the keep in zone",
+        description: "The width of the keep-in region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "1 m", val: 1 }
       },
       h: {
         name: "H",
-        description: "The height of the keep in zone",
+        description: "The height of the keep-in region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "1 m", val: 1 }
       }
@@ -273,19 +275,19 @@ export const ConstraintDefinitions: defs = {
     properties: {
       x: {
         name: "X",
-        description: "The x coordinate of the center of the keep out zone",
+        description: "The x coordinate of the center of the keep-out region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "0 m", val: 0 }
       },
       y: {
         name: "Y",
-        description: "The y coordinate of the center of the keep out zone",
+        description: "The y coordinate of the center of the keep-out region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "0 m", val: 0 }
       },
       r: {
         name: "R",
-        description: "The radius of the keep out zone",
+        description: "The radius of the keep-out region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "1 m", val: 1 }
       }

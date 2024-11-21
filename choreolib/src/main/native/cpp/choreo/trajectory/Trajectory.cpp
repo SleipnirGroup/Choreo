@@ -6,8 +6,6 @@
 
 #include <wpi/json.h>
 
-using namespace choreo;
-
 void choreo::to_json(wpi::json& json,
                      const Trajectory<SwerveSample>& trajectory) {
   json = wpi::json{{"name", trajectory.name},
