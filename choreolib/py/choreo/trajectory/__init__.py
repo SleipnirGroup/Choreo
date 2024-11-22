@@ -4,7 +4,6 @@ import json
 import math
 import os
 
-from choreo.spec_version import SPEC_VERSION
 from choreo.util import DEFAULT_YEAR, get_flipper_for_year
 from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.kinematics import ChassisSpeeds
@@ -131,6 +130,7 @@ class DifferentialSample:
         """
         Returns the field-relative chassis speeds of this state.
         """
+        from choreo import SPEC_VERSION
         from wpilib import getDeployDirectory
 
         # Get only .chor file in deploy directory

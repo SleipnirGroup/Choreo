@@ -1,6 +1,5 @@
 import json
 
-from choreo.spec_version import SPEC_VERSION
 from choreo.trajectory import (
     DifferentialSample,
     DifferentialTrajectory,
@@ -9,6 +8,8 @@ from choreo.trajectory import (
     SwerveTrajectory,
     load_event_marker,
 )
+
+SPEC_VERSION = "v2025.0.0"
 
 
 def load_differential_trajectory_string(
