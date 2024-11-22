@@ -17,13 +17,14 @@
 #include <wpi/MemoryBuffer.h>
 #include <wpi/json.h>
 
-#include "choreo/SpecVersion.h"
 #include "choreo/trajectory/ProjectFile.h"
 #include "choreo/trajectory/Trajectory.h"
 #include "choreo/trajectory/TrajectorySample.h"
 #include "choreo/util/AllianceFlipperUtil.h"
 
 namespace choreo {
+
+inline constexpr std::string_view kSpecVersion = "v2025.0.0";
 
 template <TrajectorySample SampleType, int Year>
 class AutoFactory;
