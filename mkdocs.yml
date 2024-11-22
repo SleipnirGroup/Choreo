@@ -73,6 +73,11 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
 
 extra_javascript:
   - js/mathjax.js
@@ -94,8 +99,10 @@ nav:
       - Estimating Moment of Inertia: usage/estimating-moi.md
   - ChoreoLib:
       - Installation: choreolib/installation.md
-      - Basic Usage: choreolib/basic-usage.md
+      - Getting Started: choreolib/basic-usage.md
+      - Auto Factory: choreolib/auto-factory.md
       - Auto Routines: choreolib/auto-routines.md
+      - Auto Controller: choreolib/auto-controller.md
       - Java API: api/choreolib/java/index.html
       - C++ API: api/choreolib/cpp/index.html
   - TrajoptLib (Internal API):

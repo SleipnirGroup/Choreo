@@ -3,7 +3,6 @@
 #include <gtest/gtest.h>
 
 #include "choreo/Choreo.h"
-#include "choreo/SpecVersion.h"
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);

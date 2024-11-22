@@ -137,7 +137,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   for (size_t sgmtIndex = 0; sgmtIndex < sgmtCnt; ++sgmtIndex) {
     dts.emplace_back(problem.DecisionVariable());
 
-    // Prevent drivetrain tunneling through obstacles
+    // Prevent drivetrain tunneling through keep-out regions
     problem.SubjectTo(dts.at(sgmtIndex) * path.drivetrain.wheelRadius *
                           path.drivetrain.wheelMaxAngularVelocity <=
                       minWidth);
