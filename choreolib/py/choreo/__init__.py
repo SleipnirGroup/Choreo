@@ -76,7 +76,7 @@ def load_swerve_trajectory_string(trajectory_json_string: str) -> SwerveTrajecto
     """
     data = json.loads(trajectory_json_string)
     name = data["name"]
-    version = data["version"]
+    version = int(data["version"])
     if version != SPEC_VERSION:
         raise ValueError(
             f"{name}.traj: Wrong version {version}. Expected {SPEC_VERSION}"

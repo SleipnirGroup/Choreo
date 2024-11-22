@@ -138,7 +138,7 @@ class DifferentialSample:
 
         with open(chor, "r", encoding="utf-8") as project_file:
             data = json.load(project_file)
-        version = data["version"]
+        version = int(data["version"])
         if version != SPEC_VERSION:
             raise ValueError(
                 f".chor project file: Wrong version {version}. Expected {SPEC_VERSION}"
