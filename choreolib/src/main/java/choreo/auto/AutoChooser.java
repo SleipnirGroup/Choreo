@@ -13,13 +13,16 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * An auto chooser that allows for the selection of auto routines at runtime.
+ * An Choreo specific {@code SendableChooser} that allows for the selection of {@link AutoRoutine}s
+ * at runtime via a <a
+ * href="https://docs.wpilib.org/en/stable/docs/software/dashboards/index.html#dashboards">Dashboard</a>.
  *
- * <p>This chooser takes a lazy loading approach to auto routines, only generating the auto routine
- * when it is selected. This approach has the benefit of not loading all autos on startup, but also
- * not loading the auto during auto start causing a delay.
+ * <p>This chooser takes a <a href="https://en.wikipedia.org/wiki/Lazy_loading">lazy loading</a>
+ * approach to {@link AutoRoutine}s, only generating the {@link AutoRoutine} when it is selected.
+ * This approach has the benefit of not loading all autos on startup, but also not loading the auto
+ * during auto start causing a delay.
  *
- * <p>Once the {@link AutoChooser} is made you can add auto routines to it using the {@link
+ * <p>Once the {@link AutoChooser} is made you can add {@link AutoRoutine}s to it using the {@link
  * #addAutoRoutine(String, AutoRoutineGenerator)} method. Unlike {@code SendableChooser} this
  * chooser has to be updated every cycle by calling the {@link #update()} method in your {@link
  * IterativeRobotBase#robotPeriodic()}.
@@ -48,15 +51,18 @@ public class AutoChooser {
   private AutoRoutine lastAutoRoutine = AutoRoutineGenerator.NONE.apply(null);
 
   /**
-   * Create a new auto chooser.
+   * Constructs a new {@link AutoChooser}.
    *
-   * @param factory The auto factory to use for auto routine generation.
-   * @param tableName The name of the network table to use for the chooser, passing in an empty
-   *     string will put this chooser at the root of the network tables.
+   * @param factory The auto factory to use for AutoRoutine creation.
+   * @param tableName The name of the network table to use for the chooser. Passing in an empty
+   *     string or null will put this chooser at the root of the network tables.
    */
   public AutoChooser(AutoFactory factory, String tableName) {
     this.factory = factory;
 
+    if (tableName == null) {
+      tableName = "";
+    }
     String path = NetworkTable.normalizeKey(tableName, true) + "/AutoChooser";
     NetworkTable table = NetworkTableInstance.getDefault().getTable(path);
 
@@ -72,10 +78,14 @@ public class AutoChooser {
    * Update the auto chooser.
    *
    * <p>This method should be called every cycle in the {@link IterativeRobotBase#robotPeriodic()}.
-   * It will check if the selected auto routine has changed and update the active auto routine.
+   * It will check if the selected auto routine has changed and update the active AutoRoutine.
+   *
+   * <p>The AutoRoutine can only be updated when the robot is disabled. If the chooser in your
+   * dashboard says {@code BAD} the {@link AutoChooser} has not responded to the selection yet and
+   * you need to disable the robot to update it.
    */
   public void update() {
-    if (DriverStation.isDisabled() || IterativeRobotBase.isSimulation()) {
+    if (DriverStation.isDisabled()) {
       String selectStr = selected.get();
       if (selectStr.equals(lastAutoRoutineName)) return;
       if (!autoRoutines.containsKey(selectStr)) {
@@ -90,14 +100,33 @@ public class AutoChooser {
   }
 
   /**
-   * Add an auto routine to the chooser.
+   * Add an AutoRoutine to the chooser.
    *
-   * <p>An auto routine is a function that takes an AutoFactory and returns a AutoRoutine. These
-   * functions can be static, a lambda or belong to a local variable.
+   * <p>The options of the chooser are actually of type {@link AutoRoutineGenerator}. This is a
+   * function that takes an {@link AutoFactory} and returns a {@link AutoRoutine}. These functions
+   * can be static, a lambda or belong to a local variable.
    *
-   * <p>A good paradigm is making an `AutoRoutines` class that has a reference to all your
-   * subsystems and has helper methods for auto commands inside it. Then you crate methods inside
-   * that class that take an `AutoFactory` and return a `Command`.
+   * <p>This is done to load AutoRoutines when and only when they are selected, in order to save
+   * memory and file loading time for unused AutoRoutines.
+   *
+   * <p>One way to keep this clean is to make an `Autos` class that all of your subsystems/resources
+   * are <a href="https://en.wikipedia.org/wiki/Dependency_injection">dependency injected</a> into.
+   * Then create methods inside that class that take an {@link AutoFactory} and return an {@link
+   * AutoRoutine}.
+   *
+   * <h3>Example:</h3>
+   *
+   * <pre><code>
+   * AutoChooser chooser;
+   * Autos autos = new Autos(swerve, shooter, intake, feeder);
+   * Robot() {
+   *   chooser = new AutoChooser(Choreo.createAutoFactory(...), "/Choosers");
+   *   chooser.addAutoRoutine("4 Piece right", autos::fourPieceRight);
+   *   chooser.addAutoRoutine("4 Piece Left", autos::fourPieceLeft);
+   *   chooser.addAutoRoutine("3 Piece Close", autos::threePieceClose);
+   *   chooser.addAutoRoutine("Just Shoot", factory -> factory.commandAsAutoRoutine(shooter.shoot()));
+   * }
+   * </code></pre>
    *
    * @param name The name of the auto routine.
    * @param generator The function that generates the auto routine.
@@ -108,9 +137,40 @@ public class AutoChooser {
   }
 
   /**
-   * Get the currently selected auto routine.
+   * Get the currently selected {@link AutoRoutine}.
    *
-   * @return The currently selected auto routine.
+   * <h3>Recommended Usage</h3>
+   *
+   * Scheduling it as a command.
+   *
+   * <pre><code>
+   * AutoChooser chooser = ...;
+   *
+   * public void autonomousInit() {
+   *   CommandScheduler.getInstance().schedule(chooser.getSelectedAutoRoutine().cmd());
+   * }
+   * </code></pre>
+   *
+   * Polling it yourself.
+   *
+   * <pre><code>
+   * AutoChooser chooser = ...;
+   * AutoRoutine routine = chooser.getSelectedAutoRoutine();
+   *
+   * public void autonomousInit() {
+   *   routine = chooser.getSelectedAutoRoutine();
+   * }
+   *
+   * public void autonomousPeriodic() {
+   *  routine.poll();
+   * }
+   *
+   * public void autonomousExit() {
+   *   routine.reset();
+   * }
+   * </code></pre>
+   *
+   * @return The currently selected {@link AutoRoutine}.
    */
   public AutoRoutine getSelectedAutoRoutine() {
     return lastAutoRoutine;
