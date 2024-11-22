@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use std::{path::PathBuf, process::exit};
+use std::{path::PathBuf, process::exit, thread::{self, JoinHandle}};
 
 use choreo_core::{
     file_management::{self, WritingResources},
@@ -170,6 +170,8 @@ impl Cli {
             return;
         }
 
+        let mut thread_handles: Vec<JoinHandle<()>> = Vec::new();
+
         // generate trajectories
         for (i, trajectory_name) in trajectory_names.iter().enumerate() {
             tracing::info!(
@@ -183,33 +185,53 @@ impl Cli {
                     .await
                     .expect("Failed to read trajectory file");
 
-            match generate(project.clone(), trajectory, i as i64) {
-                Ok(new_trajectory) => {
-                    match file_management::write_trajectory_file_immediately(
-                        &resources,
-                        new_trajectory,
-                    )
-                    .await
-                    {
-                        Ok(_) => {
-                            tracing::info!(
-                                "Successfully generated trajectory {:} for {:}",
-                                trajectory_name,
-                                project.name
-                            );
-                        }
-                        Err(e) => {
-                            tracing::error!(
-                                "Failed to write trajectory {:} for {:}: {:}",
-                                trajectory_name,
-                                project.name,
-                                e
-                            );
+            let cln_project = project.clone();
+            let cln_resources = resources.clone();
+            let cln_trajectory_name = trajectory_name.clone();
+            let handle = thread::spawn(move || {
+                match generate(cln_project.clone(), trajectory, i as i64) {
+                    Ok(new_trajectory) => {
+                        let runtime = choreo_core::tokio::runtime::Builder::new_current_thread()
+                            .enable_all()
+                            .build()
+                            .expect("Failed to build tokio runtime");
+                        let write_result = runtime.block_on(
+                            file_management::write_trajectory_file_immediately(
+                                &cln_resources,
+                                new_trajectory,
+                            ));
+                        match write_result {
+                            Ok(_) => {
+                                tracing::info!(
+                                    "Successfully generated trajectory {:} for {:}",
+                                    cln_trajectory_name,
+                                    cln_project.name
+                                );
+                            }
+                            Err(e) => {
+                                tracing::error!(
+                                    "Failed to write trajectory {:} for {:}: {:}",
+                                    cln_trajectory_name,
+                                    cln_project.name,
+                                    e
+                                );
+                            }
                         }
                     }
+                    Err(e) => {
+                        tracing::error!("Failed to generate trajectory {:}: {:}", cln_trajectory_name, e);
+                    }
                 }
+            });
+
+            thread_handles.push(handle);
+        }
+
+        for handle in thread_handles {
+            match handle.join() {
+                Ok(_) => {}
                 Err(e) => {
-                    tracing::error!("Failed to generate trajectory {:}: {:}", trajectory_name, e);
+                    tracing::error!("Failed to join thread: {:?}", e);
                 }
             }
         }
