@@ -22,10 +22,15 @@ def load_differential_trajectory_string(
     """
     data = json.loads(trajectory_json_string)
     name = data["name"]
-    version = int(data["version"])
-    if version != SPEC_VERSION:
+    try:
+        version = int(data["version"])
+        if version != SPEC_VERSION:
+            raise ValueError(
+                f"{name}.traj: Wrong version {version}. Expected {SPEC_VERSION}"
+            )
+    except ValueError:
         raise ValueError(
-            f"{name}.traj: Wrong version {version}. Expected {SPEC_VERSION}"
+            f"{name}.traj: Wrong version {data['version']}. Expected {SPEC_VERSION}"
         )
     samples = [
         DifferentialSample(
@@ -76,10 +81,15 @@ def load_swerve_trajectory_string(trajectory_json_string: str) -> SwerveTrajecto
     """
     data = json.loads(trajectory_json_string)
     name = data["name"]
-    version = int(data["version"])
-    if version != SPEC_VERSION:
+    try:
+        version = int(data["version"])
+        if version != SPEC_VERSION:
+            raise ValueError(
+                f"{name}.traj: Wrong version {version}. Expected {SPEC_VERSION}"
+            )
+    except ValueError:
         raise ValueError(
-            f"{name}.traj: Wrong version {version}. Expected {SPEC_VERSION}"
+            f"{name}.traj: Wrong version {data['version']}. Expected {SPEC_VERSION}"
         )
     samples = [
         SwerveSample(

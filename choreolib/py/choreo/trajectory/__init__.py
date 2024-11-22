@@ -138,10 +138,15 @@ class DifferentialSample:
 
         with open(chor, "r", encoding="utf-8") as project_file:
             data = json.load(project_file)
-        version = int(data["version"])
-        if version != SPEC_VERSION:
+        try:
+            version = int(data["version"])
+            if version != SPEC_VERSION:
+                raise ValueError(
+                    f".chor project file: Wrong version {version}. Expected {SPEC_VERSION}"
+                )
+        except ValueError:
             raise ValueError(
-                f".chor project file: Wrong version {version}. Expected {SPEC_VERSION}"
+                f".chor project file: Wrong version {data['version']}. Expected {SPEC_VERSION}"
             )
         trackwidth = float(data["config"]["differentialTrackWidth"]["val"])
 

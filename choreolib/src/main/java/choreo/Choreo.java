@@ -81,10 +81,19 @@ public final class Choreo {
       String str = reader.lines().reduce("", (a, b) -> a + b);
       reader.close();
       JsonObject json = GSON.fromJson(str, JsonObject.class);
-      int version = json.get("version").getAsInt();
-      if (version != SPEC_VERSION) {
+      int version;
+      try {
+        version = json.get("version").getAsInt();
+        if (version != SPEC_VERSION) {
+          throw new RuntimeException(
+              ".chor project file: Wrong version " + version + ". Expected " + SPEC_VERSION);
+        }
+      } catch (ClassCastException e) {
         throw new RuntimeException(
-            ".chor project file: Wrong version " + version + ". Expected " + SPEC_VERSION);
+            ".chor project file: Wrong version "
+                + json.get("version").getAsString()
+                + ". Expected "
+                + SPEC_VERSION);
       }
       LAZY_PROJECT_FILE = Optional.of(GSON.fromJson(str, ProjectFile.class));
     } catch (JsonSyntaxException ex) {
@@ -159,10 +168,20 @@ public final class Choreo {
       String trajectoryJsonString, ProjectFile projectFile) {
     JsonObject wholeTrajectory = GSON.fromJson(trajectoryJsonString, JsonObject.class);
     String name = wholeTrajectory.get("name").getAsString();
-    int version = wholeTrajectory.get("version").getAsInt();
-    if (version != SPEC_VERSION) {
+    int version;
+    try {
+      version = wholeTrajectory.get("version").getAsInt();
+      if (version != SPEC_VERSION) {
+        throw new RuntimeException(
+            name + ".traj: Wrong version: " + version + ". Expected " + SPEC_VERSION);
+      }
+    } catch (ClassCastException e) {
       throw new RuntimeException(
-          name + ".traj: Wrong version: " + version + ". Expected " + SPEC_VERSION);
+          name
+              + ".traj: Wrong version: "
+              + wholeTrajectory.get("version").getAsString()
+              + ". Expected "
+              + SPEC_VERSION);
     }
     // Filter out markers with negative timestamps or empty names
     List<EventMarker> unfilteredEvents =
