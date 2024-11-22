@@ -13,14 +13,12 @@ The `AutoFactory` is recommended to be created in the robot class constructor in
 class Robot extends TimedRobot {
   /** A swerve drive subsystem */
   private final Drive drive = ...;
-  /** An object that manages information about robot position */
-  private final Localizer localizer = ...;
   private final AutoFactory autoFactory;
 
   public Robot() {
     autoFactory = Choreo.createAutoFactory(
       drive, // The drive subsystem
-      localizer::pose, // A function that returns the current robot pose
+      drive::getPose, // A function that returns the current robot pose
       drive::choreoController, // The controller for the drive subsystem
       this::isRedAlliance, // A function that returns true if the robot is on the red alliance
       new AutoBindings() // An empty `AutoBindings` object, you can learn more below
