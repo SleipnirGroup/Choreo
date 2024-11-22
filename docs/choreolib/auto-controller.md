@@ -25,7 +25,7 @@ public class AutoController implements BiConsumer<Pose2d, SwerveSample> {
         0.0,
         kAuto.kTranslation.kD
     );
-    private final PIDController rController = new PIDController(
+    private final PIDController headingController = new PIDController(
         kAuto.kRotation.kP,
         0.0,
         kAuto.kRotation.kD
@@ -33,7 +33,7 @@ public class AutoController implements BiConsumer<Pose2d, SwerveSample> {
 
     public AutoController(Swerve swerve) {
         this.swerve = swerve;
-        rController.enableContinuousInput(-Math.PI, Math.PI);
+        headingController.enableContinuousInput(-Math.PI, Math.PI);
     }
 
     @Override
@@ -44,7 +44,7 @@ public class AutoController implements BiConsumer<Pose2d, SwerveSample> {
 
         double xFeedback = xController.calculate(pose.getX(), referenceState.x);
         double yFeedback = yController.calculate(pose.getY(), referenceState.y);
-        double rotationFeedback = rController.calculate(pose.getRotation().getRadians(),
+        double rotationFeedback = headingController.calculate(pose.getRotation().getRadians(),
             referenceState.heading);
 
         ChassisSpeeds out = ChassisSpeeds.fromFieldRelativeSpeeds(
