@@ -63,7 +63,8 @@ public class AutoChooser {
     if (tableName == null) {
       tableName = "";
     }
-    String path = NetworkTable.normalizeKey(tableName, true) + "/AutoChooser";
+    String path =
+        (tableName.isEmpty()) ? NetworkTable.normalizeKey(tableName, true) : "" + "/AutoChooser";
     NetworkTable table = NetworkTableInstance.getDefault().getTable(path);
 
     selected = table.getStringTopic("selected").getEntry(NONE_NAME);
