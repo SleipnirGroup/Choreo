@@ -60,7 +60,10 @@ public class AutoController implements BiConsumer<Pose2d, SwerveSample> {
 ```
 
 ## Advanced Controllers
-!!! tip "Coming soon"
-      More examples are coming soon.
 
 As a more advanced control strategy, you can utilize the acceleration from the sample to implement feedforward. You can also use the forces from the sample with the CTRE Swerve API or a custom implementation to better adhere to the model.
+
+Examples:
+
+* [Phoenix 6 swerve with ChoreoLib](https://github.com/CrossTheRoadElec/Phoenix6-Examples/blob/main/java/SwerveWithChoreo/src/main/java/frc/robot/subsystems/CommandSwerveDrivetrain.java#L196-L215)
+* [Phoenix 6 swerve with PathPlannerLib](https://github.com/CrossTheRoadElec/Phoenix6-Examples/blob/main/java/SwerveWithPathPlanner/src/main/java/frc/robot/subsystems/CommandSwerveDrivetrain.java#L182-L200)
