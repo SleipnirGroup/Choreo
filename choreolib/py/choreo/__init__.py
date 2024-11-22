@@ -9,7 +9,7 @@ from choreo.trajectory import (
     load_event_marker,
 )
 
-SPEC_VERSION = "v2025.0.0"
+SPEC_VERSION = 1
 
 
 def load_differential_trajectory_string(
@@ -22,7 +22,7 @@ def load_differential_trajectory_string(
     """
     data = json.loads(trajectory_json_string)
     name = data["name"]
-    version = data["version"]
+    version = int(data["version"])
     if version != SPEC_VERSION:
         raise ValueError(
             f"{name}.traj: Wrong version {version}. Expected {SPEC_VERSION}"

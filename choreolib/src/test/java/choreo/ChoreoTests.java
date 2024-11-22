@@ -18,7 +18,7 @@ public class ChoreoTests {
       """
 {
  "name":"New Path",
- "version":"v2025.0.0",
+ "version":1,
  "snapshot":{
   "waypoints":[
     {"x":0.0, "y":0.0, "heading":0.0, "intervals":9, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
@@ -59,7 +59,7 @@ public class ChoreoTests {
   public static final String PROJ =
       "{"
           + " \"name\": \"idk\","
-          + " \"version\": \"v2025.0.0\","
+          + " \"version\": 1,"
           + " \"type\": \"Swerve\","
           + " \"variables\": {"
           + "   \"expressions\": {},"

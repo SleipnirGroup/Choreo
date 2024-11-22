@@ -46,7 +46,7 @@ public final class Choreo {
           .registerTypeAdapter(EventMarker.class, new EventMarker.Deserializer())
           .create();
   private static final String TRAJECTORY_FILE_EXTENSION = ".traj";
-  private static final String SPEC_VERSION = "v2025.0.0";
+  private static final int SPEC_VERSION = 1;
 
   private static File CHOREO_DIR = new File(Filesystem.getDeployDirectory(), "choreo");
 
@@ -81,8 +81,8 @@ public final class Choreo {
       String str = reader.lines().reduce("", (a, b) -> a + b);
       reader.close();
       JsonObject json = GSON.fromJson(str, JsonObject.class);
-      String version = json.get("version").getAsString();
-      if (!SPEC_VERSION.equals(version)) {
+      int version = json.get("version").getAsInt();
+      if (version != SPEC_VERSION) {
         throw new RuntimeException(
             ".chor project file: Wrong version " + version + ". Expected " + SPEC_VERSION);
       }
@@ -159,8 +159,8 @@ public final class Choreo {
       String trajectoryJsonString, ProjectFile projectFile) {
     JsonObject wholeTrajectory = GSON.fromJson(trajectoryJsonString, JsonObject.class);
     String name = wholeTrajectory.get("name").getAsString();
-    String version = wholeTrajectory.get("version").getAsString();
-    if (!SPEC_VERSION.equals(version)) {
+    int version = wholeTrajectory.get("version").getAsInt();
+    if (version != SPEC_VERSION) {
       throw new RuntimeException(
           name + ".traj: Wrong version: " + version + ". Expected " + SPEC_VERSION);
     }
