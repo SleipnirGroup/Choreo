@@ -13,11 +13,13 @@ popd
 pushd trajoptlib
 mkdir -p build/docs
 doxygen docs/Doxyfile
+cargo doc
 popd
 
 mkdir -p site/api/{choreolib,trajoptlib}
 cp -r choreolib/build/docs/javadoc site/api/choreolib/java
 cp -r choreolib/build/docs/cpp/html site/api/choreolib/cpp
 cp -r trajoptlib/build/docs/html site/api/trajoptlib/cpp
+cp -r target/docs/trajoptlib site/api/trajoptlib/rs
 
 mkdocs build --dirty

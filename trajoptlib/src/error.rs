@@ -1,27 +1,37 @@
 use thiserror::Error;
 
 #[derive(Debug, Error)]
-// messages taken from https://github.com/SleipnirGroup/Sleipnir/blob/main/include/sleipnir/optimization/SolverExitCondition.hpp#L47-L78
+/// Represents an error returned by Trajoptlib. Primarily exposes the Sleipnir [Solver Exit
+/// Condition](https://github.com/SleipnirGroup/Sleipnir/blob/main/include/sleipnir/optimization/SolverExitCondition.hpp#L47-L78)
 pub enum TrajoptError {
     #[error("The solver determined the problem to be overconstrained and gave up")]
+    /// The solver determined the problem to be overconstrained and gave up
     TooFewDOF,
     #[error("The solver determined the problem to be locally infeasible and gave up")]
+    /// The solver determined the problem to be locally infeasible and gave up
     LocallyInfeasible,
     #[error("The solver failed to reach the desired tolerance, and feasibility restoration failed to converge")]
+    /// The solver failed to reach the desired tolerance, and feasibility restoration failed to converge
     FeasibilityRestorationFailed,
     #[error("The solver encountered nonfinite initial cost or constraints and gave up")]
+    /// The solver encountered nonfinite initial cost or constraints and gave up
     NonfiniteInitialCostOrConstraints,
     #[error("The solver encountered diverging primal iterates xₖ and/or sₖ and gave up")]
+    /// The solver encountered diverging primal iterates xₖ and/or sₖ and gave up
     DivergingIterates,
     #[error(
         "The solver returned its solution so far after exceeding the maximum number of iterations"
     )]
+    /// The solver returned its solution so far after exceeding the maximum number of iterations
     MaxIterationsExceeded,
     #[error("The solver returned its solution so far after exceeding the maximum elapsed wall clock time")]
+    /// The solver returned its solution so far after exceeding the maximum elapsed wall clock time
     Timeout,
     #[error("The solver returned an unparsable error code: {0}")]
+    /// The solver returned an unparsable error code
     Unparsable(Box<str>),
     #[error("Unknown error: {0:?}")]
+    /// Unknown error type
     Unknown(i8),
 }
 

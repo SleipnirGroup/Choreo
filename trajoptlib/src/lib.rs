@@ -1,77 +1,133 @@
+#![deny(missing_docs)]
+#![doc = include_str!("../README.md")]
+
 #[cxx::bridge(namespace = "trajopt::rsffi")]
 mod ffi {
     #[derive(Debug, Deserialize, Serialize, Clone)]
+    /// Represents a translation in 2D space.
     struct Translation2d {
+        /// The x component of the translation.
         x: f64,
+        /// The y component of the translation.
         y: f64,
     }
 
     #[derive(Debug, Deserialize, Serialize, Clone)]
+    /// Represents a 2D pose with translation and rotation.
+    struct Pose2d {
+        /// The x component of the translational component of the pose.
+        x: f64,
+        /// The y component of the translational component of the pose.
+        y: f64,
+        /// The rotational component of the pose.
+        heading: f64,
+    }
+
+    #[derive(Debug, Deserialize, Serialize, Clone)]
+    /// A swerve drivetrain physical model.
     struct SwerveDrivetrain {
+        /// The mass of the robot (kg).
         mass: f64,
+        /// The moment of inertia of the robot about the origin (kg−m²).
         moi: f64,
+        /// Radius of the wheels (m).
         wheel_radius: f64,
+        /// Maximum angular velocity of each wheel (rad/s).
         wheel_max_angular_velocity: f64,
+        /// Maximum torque applied to each wheel (N−m).
         wheel_max_torque: f64,
+        /// The Coefficient of Friction (CoF) of the wheels.
         wheel_cof: f64,
+        /// Translation of each swerve module from the origin of the robot coordinate
+        /// system to the center of the module (m). There's usually one in each
+        /// corner.
         modules: Vec<Translation2d>,
     }
 
     #[derive(Debug, Deserialize, Serialize, Clone)]
-    struct DifferentialDrivetrain {
-        mass: f64,
-        moi: f64,
-        wheel_radius: f64,
-        wheel_max_angular_velocity: f64,
-        wheel_max_torque: f64,
-        wheel_cof: f64,
-        trackwidth: f64,
-    }
-
-    #[derive(Debug, Deserialize, Serialize, Clone)]
-    struct Pose2d {
-        x: f64,
-        y: f64,
-        heading: f64,
-    }
-
-    #[derive(Debug, Deserialize, Serialize, Clone)]
+    /// Swerve trajectory sample.
     struct SwerveTrajectorySample {
+        /// The timestamp.
         timestamp: f64,
+        /// The x coordinate.
         x: f64,
+        /// The y coordinate.
         y: f64,
+        /// The heading.
         heading: f64,
+        /// The velocity's x component.
         velocity_x: f64,
+        /// The velocity's y component.
         velocity_y: f64,
+        /// The angular velocity.
         angular_velocity: f64,
+        /// The acceleration's x component.
         acceleration_x: f64,
+        /// The acceleration's y component.
         acceleration_y: f64,
+        /// The angular acceleration.
         angular_acceleration: f64,
+        /// The force on each module in the X direction.
         module_forces_x: Vec<f64>,
+        /// The force on each module in the Y direction.
         module_forces_y: Vec<f64>,
     }
 
     #[derive(Debug, Deserialize, Serialize, Clone)]
+    /// Swerve trajectory.
     struct SwerveTrajectory {
+        /// The samples that make up the trajectory.
         samples: Vec<SwerveTrajectorySample>,
     }
 
     #[derive(Debug, Deserialize, Serialize, Clone)]
+    /// A differential drivetrain physical model.
+    struct DifferentialDrivetrain {
+        /// The mass of the robot (kg).
+        mass: f64,
+        /// The moment of inertia of the robot about the origin (kg−m²).
+        moi: f64,
+        /// Radius of the wheels (m).
+        wheel_radius: f64,
+        /// Maximum angular velocity of the wheels (rad/s).
+        wheel_max_angular_velocity: f64,
+        /// Maximum torque applied to the wheels (N−m).
+        wheel_max_torque: f64,
+        /// The Coefficient of Friction (CoF) of the wheels.
+        wheel_cof: f64,
+        /// Distance between the two driverails (m).
+        trackwidth: f64,
+    }
+
+    #[derive(Debug, Deserialize, Serialize, Clone)]
+    /// Differential trajectory sample.
     struct DifferentialTrajectorySample {
+        /// The timestamp.
         timestamp: f64,
+        /// The x coordinate.
         x: f64,
+        /// The y coordinate.
         y: f64,
+        /// The heading.
         heading: f64,
+        /// The left wheel's velocity.
         velocity_l: f64,
+        /// The right wheel's velocity.
         velocity_r: f64,
+        /// The left wheel's acceleration.
         acceleration_l: f64,
+        /// The right wheel's acceleration.
         acceleration_r: f64,
+        /// The left wheel's force.
         force_l: f64,
+        /// The right wheel's force.
         force_r: f64,
     }
 
     #[derive(Debug, Deserialize, Serialize, Clone)]
+    /// Differential trajectory.
     struct DifferentialTrajectory {
+        /// The samples that make up the trajectory.
         samples: Vec<DifferentialTrajectorySample>,
     }
 
@@ -501,6 +557,8 @@ mod ffi {
     }
 }
 
+/// This trajectory generator class contains functions to generate
+/// time-optimal trajectories for several drivetrain types.
 pub struct SwerveTrajectoryGenerator {
     generator: cxx::UniquePtr<crate::ffi::SwerveTrajectoryGenerator>,
 }
@@ -512,16 +570,25 @@ impl Default for SwerveTrajectoryGenerator {
 }
 
 impl SwerveTrajectoryGenerator {
+    /// Construct a new swerve trajectory optimization problem.
     pub fn new() -> SwerveTrajectoryGenerator {
         SwerveTrajectoryGenerator {
             generator: crate::ffi::swerve_trajectory_generator_new(),
         }
     }
 
+    /// Set the Drivetrain object.
     pub fn set_drivetrain(&mut self, drivetrain: &crate::ffi::SwerveDrivetrain) {
         crate::ffi::SwerveTrajectoryGenerator::set_drivetrain(self.generator.pin_mut(), drivetrain);
     }
 
+    /// Add a rectangular bumper to a list used when applying
+    /// keep-out constraints.
+    ///
+    /// * `front` - Distance in meters from center to front bumper edge
+    /// * `left` - Distance in meters from center to left bumper edge
+    /// * `right` - Distance in meters from center to right bumper edge
+    /// * `back` - Distance in meters from center to back bumper edge
     pub fn set_bumpers(&mut self, front: f64, left: f64, right: f64, back: f64) {
         crate::ffi::SwerveTrajectoryGenerator::set_bumpers(
             self.generator.pin_mut(),
@@ -532,6 +599,11 @@ impl SwerveTrajectoryGenerator {
         );
     }
 
+    /// If using a discrete algorithm, specify the number of discrete
+    /// samples for every segment of the trajectory
+    ///
+    /// * `counts` - the sequence of control interval counts per segment, length
+    /// is number of waypoints - 1
     pub fn set_control_interval_counts(&mut self, counts: Vec<usize>) {
         crate::ffi::SwerveTrajectoryGenerator::set_control_interval_counts(
             self.generator.pin_mut(),
@@ -541,6 +613,15 @@ impl SwerveTrajectoryGenerator {
 
     // Constraints with waypoint scope
 
+    /// Create a pose waypoint constraint on the waypoint at the provided
+    /// index, and add an initial guess with the same pose This specifies that the
+    /// position and heading of the robot at the waypoint must be fixed at the
+    /// values provided.
+    ///
+    /// * `index` - index of the pose waypoint
+    /// * `x` - the x
+    /// * `y` - the y
+    /// * `heading` - the heading
     pub fn pose_wpt(&mut self, index: usize, x: f64, y: f64, heading: f64) {
         crate::ffi::SwerveTrajectoryGenerator::pose_wpt(
             self.generator.pin_mut(),
@@ -551,6 +632,15 @@ impl SwerveTrajectoryGenerator {
         );
     }
 
+    /// Create a translation waypoint constraint on the waypoint at the
+    /// provided index, and add an initial guess point with the same translation.
+    /// This specifies that the position of the robot at the waypoint must be fixed
+    /// at the value provided.
+    ///
+    /// * `index` - index of the pose waypoint
+    /// * `x` - the x
+    /// * `y` - the y
+    /// * `headingGuess` - optionally, an initial guess of the heading
     pub fn translation_wpt(&mut self, index: usize, x: f64, y: f64, heading_guess: f64) {
         crate::ffi::SwerveTrajectoryGenerator::translation_wpt(
             self.generator.pin_mut(),
@@ -856,10 +946,9 @@ impl SwerveTrajectoryGenerator {
         )
     }
 
-    ///
     /// Add a callback that will be called on each iteration of the solver.
     ///
-    /// * callback: a `fn` (not a closure) to be executed. The callback's first
+    /// * `callback` - a `fn` (not a closure) to be executed. The callback's first
     ///   parameter will be a `trajopt::SwerveTrajectory`, and the second
     ///   parameter will be an `i64` equal to the handle passed in `generate()`
     ///
@@ -868,12 +957,11 @@ impl SwerveTrajectoryGenerator {
         crate::ffi::SwerveTrajectoryGenerator::add_callback(self.generator.pin_mut(), callback);
     }
 
-    ///
     /// Generate the trajectory;
     ///
-    /// * diagnostics: If true, prints per-iteration details of the solver to
+    /// * `diagnostics` - If true, prints per-iteration details of the solver to
     ///   stdout.
-    /// * handle: A number used to identify results from this generation in the
+    /// * `handle` - A number used to identify results from this generation in the
     ///   `add_callback` callback. If `add_callback` has not been called, this
     ///   value has no significance.
     ///
@@ -897,6 +985,8 @@ impl SwerveTrajectoryGenerator {
     }
 }
 
+/// This trajectory generator class contains functions to generate
+/// time-optimal trajectories for differential drivetrain types.
 pub struct DifferentialTrajectoryGenerator {
     generator: cxx::UniquePtr<crate::ffi::DifferentialTrajectoryGenerator>,
 }
@@ -908,12 +998,14 @@ impl Default for DifferentialTrajectoryGenerator {
 }
 
 impl DifferentialTrajectoryGenerator {
+    /// Construct a new differential trajectory optimization problem.
     pub fn new() -> DifferentialTrajectoryGenerator {
         DifferentialTrajectoryGenerator {
             generator: crate::ffi::differential_trajectory_generator_new(),
         }
     }
 
+    /// Set the Drivetrain object.
     pub fn set_drivetrain(&mut self, drivetrain: &crate::ffi::DifferentialDrivetrain) {
         crate::ffi::DifferentialTrajectoryGenerator::set_drivetrain(
             self.generator.pin_mut(),
@@ -921,6 +1013,13 @@ impl DifferentialTrajectoryGenerator {
         );
     }
 
+    /// Add a rectangular bumper to a list used when applying
+    /// keep-out constraints.
+    ///
+    /// * `front` - Distance in meters from center to front bumper edge
+    /// * `left` - Distance in meters from center to left bumper edge
+    /// * `right` - Distance in meters from center to right bumper edge
+    /// * `back` - Distance in meters from center to back bumper edge
     pub fn set_bumpers(&mut self, front: f64, left: f64, right: f64, back: f64) {
         crate::ffi::DifferentialTrajectoryGenerator::set_bumpers(
             self.generator.pin_mut(),
@@ -931,6 +1030,11 @@ impl DifferentialTrajectoryGenerator {
         );
     }
 
+    /// If using a discrete algorithm, specify the number of discrete
+    /// samples for every segment of the trajectory
+    ///
+    /// * `counts` - the sequence of control interval counts per segment, length
+    /// is number of waypoints - 1
     pub fn set_control_interval_counts(&mut self, counts: Vec<usize>) {
         crate::ffi::DifferentialTrajectoryGenerator::set_control_interval_counts(
             self.generator.pin_mut(),
@@ -940,6 +1044,15 @@ impl DifferentialTrajectoryGenerator {
 
     // Pose constraints
 
+    /// Create a pose waypoint constraint on the waypoint at the provided
+    /// index, and add an initial guess with the same pose This specifies that the
+    /// position and heading of the robot at the waypoint must be fixed at the
+    /// values provided.
+    ///
+    /// * `index` - index of the pose waypoint
+    /// * `x` - the x
+    /// * `y` - the y
+    /// * `heading` - the heading
     pub fn pose_wpt(&mut self, index: usize, x: f64, y: f64, heading: f64) {
         crate::ffi::DifferentialTrajectoryGenerator::pose_wpt(
             self.generator.pin_mut(),
@@ -950,6 +1063,15 @@ impl DifferentialTrajectoryGenerator {
         );
     }
 
+    /// Create a translation waypoint constraint on the waypoint at the
+    /// provided index, and add an initial guess point with the same translation.
+    /// This specifies that the position of the robot at the waypoint must be fixed
+    /// at the value provided.
+    ///
+    /// * `index` - index of the pose waypoint
+    /// * `x` - the x
+    /// * `y` - the y
+    /// * `headingGuess` - optionally, an initial guess of the heading
     pub fn translation_wpt(&mut self, index: usize, x: f64, y: f64, heading_guess: f64) {
         crate::ffi::DifferentialTrajectoryGenerator::translation_wpt(
             self.generator.pin_mut(),
@@ -1235,10 +1357,9 @@ impl DifferentialTrajectoryGenerator {
         );
     }
 
-    ///
     /// Add a callback that will be called on each iteration of the solver.
     ///
-    /// * callback: a `fn` (not a closure) to be executed. The callback's first
+    /// * `callback` - a `fn` (not a closure) to be executed. The callback's first
     ///   parameter will be a `trajopt::DifferentialTrajectory`, and the second
     ///   parameter will be an `i64` equal to the handle passed in `generate()`
     ///
@@ -1250,12 +1371,11 @@ impl DifferentialTrajectoryGenerator {
         );
     }
 
-    ///
     /// Generate the trajectory;
     ///
-    /// * diagnostics: If true, prints per-iteration details of the solver to
+    /// * `diagnostics` - If true, prints per-iteration details of the solver to
     ///   stdout.
-    /// * handle: A number used to identify results from this generation in the
+    /// * `handle` - A number used to identify results from this generation in the
     ///   `add_callback` callback. If `add_callback` has not been called, this
     ///   value has no significance.
     ///
@@ -1280,6 +1400,7 @@ impl DifferentialTrajectoryGenerator {
     }
 }
 
+/// Cancels all running generations.
 pub fn cancel_all() {
     crate::ffi::cancel_all();
 }
@@ -1294,4 +1415,5 @@ pub use ffi::SwerveTrajectory;
 pub use ffi::SwerveTrajectorySample;
 pub use ffi::Translation2d;
 
+/// Solver error types.
 pub mod error;

@@ -29,13 +29,13 @@ struct TRAJOPT_DLLEXPORT DifferentialDrivetrain {
   /// The moment of inertia of the robot about the origin (kg−m²).
   double moi;
 
-  /// Radius of wheel (m).
+  /// Radius of the wheels (m).
   double wheelRadius;
 
-  /// Maximum angular velocity of wheel (rad/s).
+  /// Maximum angular velocity of the wheels (rad/s).
   double wheelMaxAngularVelocity;
 
-  /// Maximum torque applied to wheel (N−m).
+  /// Maximum torque applied to the wheels (N−m).
   double wheelMaxTorque;
 
   /// The Coefficient of Friction (CoF) of the wheels.
@@ -97,22 +97,22 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
   /// The heading.
   double heading = 0.0;
 
-  /// The left wheel velocity.
+  /// The left wheel's velocity.
   double velocityL = 0.0;
 
-  /// The right wheel velocity.
+  /// The right wheel's velocity.
   double velocityR = 0.0;
 
-  /// The left wheel acceleration.
+  /// The left wheel's acceleration.
   double accelerationL = 0.0;
 
-  /// The right wheel acceleration.
+  /// The right wheel's acceleration.
   double accelerationR = 0.0;
 
-  /// The left wheel force.
+  /// The left wheel's force.
   double forceL = 0.0;
 
-  /// The right wheel force.
+  /// The right wheel's force.
   double forceR = 0.0;
 
   DifferentialTrajectorySample() = default;
@@ -152,7 +152,7 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
  */
 class TRAJOPT_DLLEXPORT DifferentialTrajectory {
  public:
-  /// Trajectory samples.
+  /// The samples that make up the trajectory.
   std::vector<DifferentialTrajectorySample> samples;
 
   DifferentialTrajectory() = default;
@@ -160,7 +160,7 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectory {
   /**
    * Construct a DifferentialTrajectory from samples.
    *
-   * @param samples The samples.
+   * @param samples The samples that make up the trajectory.
    */
   explicit DifferentialTrajectory(
       std::vector<DifferentialTrajectorySample> samples)
