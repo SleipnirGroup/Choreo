@@ -40,6 +40,10 @@ jobs:
           cache: "pnpm"
 
       - run: pnpm install prettier@3.8.1
+
+      - name: Install Rust nightly
+        run: rustup toolchain install nightly --profile minimal --component clippy,rustfmt
+
       - name: Update version
         run: |
           ./update_version.py ${{ github.event.inputs.tag }}

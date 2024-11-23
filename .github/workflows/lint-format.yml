@@ -63,6 +63,9 @@ jobs:
 
       - run: pip install wpiformat==2026.71
 
+      - name: Install Rust nightly
+        run: rustup toolchain install nightly --profile minimal --component clippy,rustfmt
+
       - run: pnpm run fmt
 
       - run: cargo clippy -- -D warnings

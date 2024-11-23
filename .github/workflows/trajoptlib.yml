@@ -114,6 +114,9 @@ jobs:
       - name: Set up sccache
         uses: mozilla-actions/sccache-action@v0.0.11
 
+      - name: Install Rust nightly
+        run: rustup toolchain install nightly --profile minimal --component clippy,rustfmt
+
       - run: cargo build
         working-directory: trajoptlib
         env:

@@ -76,6 +76,9 @@ jobs:
         run: pnpm install
         continue-on-error: true
 
+      - name: Install Rust nightly
+        run: rustup toolchain install nightly --profile minimal --component clippy,rustfmt
+
       - name: Set up Windows aarch64 Rust compiler
         if: matrix.artifact-name == 'Windows-aarch64'
         run: rustup target install aarch64-pc-windows-msvc
