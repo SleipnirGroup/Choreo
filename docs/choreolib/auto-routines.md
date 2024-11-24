@@ -89,7 +89,7 @@ public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
   final AutoTrajectory s1ToC2 = factory.trajectory("s1ToC2", routine);
   final AutoTrajectory c2ToC3 = factory.trajectory("c2ToC3", routine);
 
-  final var initialPose = ampToC1.getInitialPose();
+  final Optional<Pose2d> initialPose = ampToC1.getInitialPose();
   if (initialPose.isEmpty()) {
       new Alert("Error: 5 piece auto has no starting pose", AlertType.kError)
           .set(true);
@@ -169,7 +169,7 @@ public Command fivePieceAutoTriggerMono(AutoFactory factory) {
 
   final AutoTrajectory trajectory = factory.trajectory("fivePieceAuto", routine);
   
-  final var initialPose = trajectory.getInitialPose();
+  final Optional<Pose2d> initialPose = trajectory.getInitialPose();
   if (initialPose.isEmpty()) {
       new Alert("Error: FivePieceAuto has no starting pose", AlertType.kError)
           .set(true);
@@ -228,7 +228,7 @@ public AutoRoutine fivePieceAutoCompositionSeg(AutoFactory factory) {
   final Command s1ToC2 = factory.trajectoryCommand("s1ToC2");
   final Command c2ToC3 = factory.trajectoryCommand("c2ToC3");
 
-  final var initialPose = ampToC1.getInitialPose();
+  final Optional<Pose2d> initialPose = ampToC1.getInitialPose();
   if (initialPose.isEmpty()) {
       new Alert("Error: 5 piece auto has no starting pose", AlertType.kError)
           .set(true);
