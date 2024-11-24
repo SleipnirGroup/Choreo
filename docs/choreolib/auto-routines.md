@@ -89,26 +89,26 @@ public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
   final AutoTrajectory s1ToC2 = factory.trajectory("s1ToC2", routine);
   final AutoTrajectory c2ToC3 = factory.trajectory("c2ToC3", routine);
 
+  final var initialPose = ampToC1.getInitialPose();
+  if (initialPose.isEmpty()) {
+      new Alert("Error: 5 piece auto has no starting pose", AlertType.kError)
+          .set(true);
+      return factory.voidRoutine();
+  }
+
   // entry point for the auto
   // resets the odometry to the starting position,
   // then shoots the starting note,
   // then runs the trajectory to the first close note while extending the intake
   routine.running()
       .onTrue(
-          resetOdometry(
-                  ampToC1
-                      .getInitialPose()
-                      .orElseGet(
-                          () -> {
-                            routine.kill();
-                            return new Pose2d();
-                          }))
+          resetOdometry(initialPose.get())
               .andThen(
                   autoAimAndShoot(),
                   race(
                       intake(),
                       ampToC1.cmd(),
-                      aimFor(ampToC1.getFinalPose().orElseGet(Pose2d::new))))
+                      aimFor(ampToC1.getFinalPose().orElse(new Pose2d()))))
               .withName("fivePieceAuto entry point"));
 
   // spinnup the shooter while no other command is using the shooter
@@ -168,6 +168,13 @@ public Command fivePieceAutoTriggerMono(AutoFactory factory) {
   final AutoRoutine routine = factory.newRoutine("fivePieceAuto");
 
   final AutoTrajectory trajectory = factory.trajectory("fivePieceAuto", routine);
+  
+  final var initialPose = trajectory.getInitialPose();
+  if (initialPose.isEmpty()) {
+      new Alert("Error: FivePieceAuto has no starting pose", AlertType.kError)
+          .set(true);
+      return factory.voidRoutine();
+  }
 
   // entry point for the auto
   // resets the odometry to the starting position,
@@ -175,13 +182,7 @@ public Command fivePieceAutoTriggerMono(AutoFactory factory) {
   // then runs the trajectory to the first close note while extending the intake
   routine.running()
       .onTrue(
-          resetOdometry(
-                  trajectory.getInitialPose()
-                      .orElseGet(
-                          () -> {
-                            routine.kill();
-                            return new Pose2d();
-                          }))
+          resetOdometry(initialPose.get())
               .andThen(autoAimAndShoot(), trajectory.cmd())
               .withName("fivePieceAuto entry point"));
 
@@ -227,15 +228,15 @@ public AutoRoutine fivePieceAutoCompositionSeg(AutoFactory factory) {
   final Command s1ToC2 = factory.trajectoryCommand("s1ToC2");
   final Command c2ToC3 = factory.trajectoryCommand("c2ToC3");
 
-  Pose2d startinNoteOwnedose;
-  if (ampToC1.getInitialPose().isPresent()) {
-    startinNoteOwnedose = ampToC1.getInitialPose().get();
-  } else {
-    return none();
+  final var initialPose = ampToC1.getInitialPose();
+  if (initialPose.isEmpty()) {
+      new Alert("Error: 5 piece auto has no starting pose", AlertType.kError)
+          .set(true);
+      return factory.voidRoutine();
   }
 
   Command ret = sequence(
-          resetOdometry(startinNoteOwnedose),
+          resetOdometry(initialPose.get()),
           autoAimAndShoot(),
           deadline(
               ampToC1.cmd(), intake(), aimFor(ampToC1.getFinalPose().orElseGet(Pose2d::new))),
