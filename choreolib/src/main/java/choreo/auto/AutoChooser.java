@@ -8,8 +8,12 @@ import edu.wpi.first.networktables.StringArrayEntry;
 import edu.wpi.first.networktables.StringEntry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobotBase;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -23,7 +27,7 @@ import java.util.function.Function;
  * during auto start causing a delay.
  *
  * <p>Once the {@link AutoChooser} is made you can add {@link AutoRoutine}s to it using the {@link
- * #addAutoRoutine(String, AutoRoutineGenerator)} method. Unlike {@code SendableChooser} this
+ * #addAutoRoutine(String, AutoRoutineCreator)} method. Unlike {@code SendableChooser} this
  * chooser has to be updated every cycle by calling the {@link #update()} method in your {@link
  * IterativeRobotBase#robotPeriodic()}.
  *
@@ -31,16 +35,25 @@ import java.util.function.Function;
  * #getSelectedAutoRoutine()} method.
  */
 public class AutoChooser {
-  /** A function that generates an {@link AutoRoutine} from an {@link AutoFactory}. */
-  public static interface AutoRoutineGenerator extends Function<AutoFactory, AutoRoutine> {
+  /**
+   * A function that generates an {@link AutoRoutine} from an {@link AutoFactory}.
+   * Equivalent to a <code>{@literal Function<AutoFactory, AutoRoutine>}</code>.
+   */
+  public interface AutoRoutineCreator extends Function<AutoFactory, AutoRoutine> {
     /** A generator that returns an auto routine that does nothing */
-    static final AutoRoutineGenerator NONE = factory -> AutoFactory.VOID_ROUTINE;
+    static final AutoRoutineCreator NONE = factory -> AutoFactory.VOID_ROUTINE;
   }
+
+  /**
+   * A function that generates a {@link Command} from an {@link AutoFactory}.
+   * Equivalent to a <code>{@literal Function<AutoFactory, Command>}</code>.
+   */
+  public interface CommandCreator extends Function<AutoFactory, Command> {}
 
   private static final String NONE_NAME = "Nothing";
 
-  private final HashMap<String, AutoRoutineGenerator> autoRoutines =
-      new HashMap<>(Map.of(NONE_NAME, AutoRoutineGenerator.NONE));
+  private final HashMap<String, AutoRoutineCreator> autoRoutines =
+      new HashMap<>(Map.of(NONE_NAME, AutoRoutineCreator.NONE));
 
   private final StringEntry selected, active;
   private final StringArrayEntry options;
@@ -48,7 +61,7 @@ public class AutoChooser {
   private final AutoFactory factory;
 
   private String lastAutoRoutineName = NONE_NAME;
-  private AutoRoutine lastAutoRoutine = AutoRoutineGenerator.NONE.apply(null);
+  private AutoRoutine lastAutoRoutine = AutoRoutineCreator.NONE.apply(null);
 
   /**
    * Constructs a new {@link AutoChooser}.
@@ -103,7 +116,7 @@ public class AutoChooser {
   /**
    * Add an AutoRoutine to the chooser.
    *
-   * <p>The options of the chooser are actually of type {@link AutoRoutineGenerator}. This is a
+   * <p>The options of the chooser are actually of type {@link AutoRoutineCreator}. This is a
    * function that takes an {@link AutoFactory} and returns a {@link AutoRoutine}. These functions
    * can be static, a lambda or belong to a local variable.
    *
@@ -132,9 +145,42 @@ public class AutoChooser {
    * @param name The name of the auto routine.
    * @param generator The function that generates the auto routine.
    */
-  public void addAutoRoutine(String name, AutoRoutineGenerator generator) {
+  public void addAutoRoutine(String name, AutoRoutineCreator generator) {
     autoRoutines.put(name, generator);
     options.set(autoRoutines.keySet().toArray(new String[0]));
+  }
+
+  /**
+   * Adds a Command to the auto chooser.
+   *
+   * <p>The options of the chooser are actually of type {@link CommandCreator}. This is a
+   * function that takes an {@link AutoFactory} and returns a {@link Command}. These functions
+   * can be static, a lambda or belong to a local variable.
+   *
+   * <p>This is done to load autonomous commands when and only when they are selected,
+   * in order to save memory and file loading time for unused autonomous commands.
+   *
+   * <h3>Example:</h3>
+   *
+   * <pre><code>
+   * AutoChooser chooser;
+   * Autos autos = new Autos(swerve, shooter, intake, feeder);
+   * Robot() {
+   *   chooser = new AutoChooser(Choreo.createAutoFactory(...), "/Choosers");
+   *   chooser.addAutoCmd("4 Piece right", autos::fourPieceRight);
+   *   chooser.addAutoCmd("Just Shoot", factory -> shooter.shoot());
+   * }
+   * </code></pre>
+   *
+   * @param name The name of the autonomous command.
+   * @param commandGenerator The function that generates an autonomous command.
+   * @see AutoChooser#addAutoRoutine
+   */
+  public void addAuto(String name, CommandCreator commandGenerator) {
+    addAutoRoutine(
+      name,
+      ignored -> factory.commandAsAutoRoutine(commandGenerator.apply(factory))
+    );
   }
 
   /**
@@ -175,5 +221,22 @@ public class AutoChooser {
    */
   public AutoRoutine getSelectedAutoRoutine() {
     return lastAutoRoutine;
+  }
+
+  /**
+   * Gets a Command that runs the latest selected auto routine,
+   * stopping when the selected routine finishes.
+   * This Command can directly be bound to a trigger, like so:
+   * <pre><code>
+   *     AutoChooser chooser = ...;
+   *
+   *     public Robot() {
+   *         autonomous().whileTrue(chooser.autoCmd());
+   *     }
+   * </code></pre>
+   * @return A command that runs the selected {@link AutoRoutine}
+   */
+  public Command autoCmd() {
+    return Commands.defer(() -> getSelectedAutoRoutine().cmd(), Set.of());
   }
 }
