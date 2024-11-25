@@ -26,8 +26,7 @@ import java.util.function.Supplier;
 /**
  * A factory used to create {@link AutoRoutine}s and {@link AutoTrajectory}s.
  *
- * @see <a href="https://choreo.autos/choreolib/auto-routines">Auto Routine
- *     Docs</a>
+ * @see <a href="https://choreo.autos/choreolib/auto-routines">Auto Routine Docs</a>
  */
 public class AutoFactory {
   static final AutoRoutine VOID_ROUTINE =
