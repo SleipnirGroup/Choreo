@@ -138,7 +138,7 @@ public class AutoFactory {
   public AutoRoutine newRoutine(String name) {
     // Clear cache in simulation to allow a form of "hot-reloading" trajectories
     if (RobotBase.isSimulation()) {
-      clearCache();
+      trajectoryCache.clear();
     }
 
     return new AutoRoutine(name);
@@ -309,15 +309,11 @@ public class AutoFactory {
 
   /**
    * The {@link AutoFactory} caches trajectories with a {@link TrajectoryCache} to avoid reloading
-   * the same trajectory multiple times. This can have the side effect of keeping a single copy of
-   * every trajectory ever loaded in memory aslong as the factory is loaded. This method clears the
-   * cache of all trajectories.
+   * the same trajectory multiple times.
    *
-   * <p><b>Usage Note:</b>
-   *
-   * <p>Never clearing the cache is unlikely to have an impact on the robots performance on a rio 2
+   * @return The trajectory cache.
    */
-  public void clearCache() {
-    trajectoryCache.clear();
+  public TrajectoryCache cache() {
+    return trajectoryCache;
   }
 }

@@ -213,20 +213,6 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
   }
 
   /**
-   * Returns an array of samples
-   *
-   * @return an array of samples
-   */
-  @SuppressWarnings("unchecked")
-  public SampleType[] sampleArray() {
-    if (!samples.isEmpty()) {
-      return samples.toArray(samples.get(0).makeArray(samples.size()));
-    } else {
-      return (SampleType[]) new Object[0];
-    }
-  }
-
-  /**
    * Returns this trajectory, mirrored across the field midline.
    *
    * @return this trajectory, mirrored across the field midline.
