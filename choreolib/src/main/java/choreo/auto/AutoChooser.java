@@ -28,11 +28,11 @@ import java.util.function.Function;
  *
  * <p>Once the {@link AutoChooser} is made you can add {@link AutoRoutine}s to it using the {@link
  * #addAutoRoutine(String, AutoRoutineCreator)} method. Unlike {@code SendableChooser} this
- * chooser has to be updated every cycle by calling the {@link #update()} method in your {@link
- * IterativeRobotBase#robotPeriodic()}.
+ * chooser has to be updated every cycle through an addPeriodic call in your Robot constructor,
+ * like so: <code>addPeriodic(autoChooser::update, 0.02);</code>
  *
- * <p>You can retrieve the {@link AutoRoutine} that is currently selected by calling the {@link
- * #getSelectedAutoRoutine()} method.
+ * <p>You can set the Robot's autonomous command to the chooser's chosen auto routine via
+ * <code>RobotModeTriggers.autonomous.whileTrue(chooser.autoCmd());</code>
  */
 public class AutoChooser {
   /**
@@ -133,12 +133,13 @@ public class AutoChooser {
    * <pre><code>
    * AutoChooser chooser;
    * Autos autos = new Autos(swerve, shooter, intake, feeder);
-   * Robot() {
+   * public Robot() {
    *   chooser = new AutoChooser(Choreo.createAutoFactory(...), "/Choosers");
+   *   addPeriodic(chooser::update, 0.02); // chooser must be updated every loop
+   *   // fourPieceRight is a method that accepts an AutoFactory and returns an AutoRoutine.
    *   chooser.addAutoRoutine("4 Piece right", autos::fourPieceRight);
    *   chooser.addAutoRoutine("4 Piece Left", autos::fourPieceLeft);
    *   chooser.addAutoRoutine("3 Piece Close", autos::threePieceClose);
-   *   chooser.addAutoRoutine("Just Shoot", factory -> factory.commandAsAutoRoutine(shooter.shoot()));
    * }
    * </code></pre>
    *
@@ -165,9 +166,11 @@ public class AutoChooser {
    * <pre><code>
    * AutoChooser chooser;
    * Autos autos = new Autos(swerve, shooter, intake, feeder);
-   * Robot() {
+   * public Robot() {
    *   chooser = new AutoChooser(Choreo.createAutoFactory(...), "/Choosers");
-   *   chooser.addAutoCmd("4 Piece right", autos::fourPieceRight);
+   *   addPeriodic(chooser::update, 0.02); // chooser must be updated every loop
+   *   // fourPieceLeft is a method that accepts an AutoFactory and returns a command.
+   *   chooser.addAutoCmd("4 Piece left", autos::fourPieceLeft);
    *   chooser.addAutoCmd("Just Shoot", factory -> shooter.shoot());
    * }
    * </code></pre>
