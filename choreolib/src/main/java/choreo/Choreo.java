@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /** Utilities to load and follow Choreo Trajectories */
@@ -298,8 +299,8 @@ public final class Choreo {
    * @param <SampleType> The type of samples in the trajectory.
    * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
    *     robot.
-   * @param controller A {@link BiConsumer} to follow the current {@link Trajectory}&lt;{@link
-   *     SampleType}&gt;.
+   * @param controller A function that receives the current {@link SampleType} and controls the
+   *     robot.
    * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
    *     while keeping the same coordinate system origin. This will be called every loop during the
    *     command.
@@ -312,7 +313,7 @@ public final class Choreo {
    */
   public static <SampleType extends TrajectorySample<SampleType>> AutoFactory createAutoFactory(
       Supplier<Pose2d> poseSupplier,
-      BiConsumer<Pose2d, SampleType> controller,
+      Consumer<SampleType> controller,
       BooleanSupplier mirrorTrajectory,
       Subsystem driveSubsystem,
       AutoBindings bindings) {
@@ -331,8 +332,8 @@ public final class Choreo {
    * @param <SampleType> The type of samples in the trajectory.
    * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
    *     robot.
-   * @param controller A {@link BiConsumer} to follow the current {@link Trajectory}&lt;{@link
-   *     SampleType}&gt;.
+   * @param controller A function that receives the current {@link SampleType} and controls the
+   *     robot.
    * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
    *     while keeping the same coordinate system origin. This will be called every loop during the
    *     command.
@@ -347,7 +348,7 @@ public final class Choreo {
    */
   public static <SampleType extends TrajectorySample<SampleType>> AutoFactory createAutoFactory(
       Supplier<Pose2d> poseSupplier,
-      BiConsumer<Pose2d, SampleType> controller,
+      Consumer<SampleType> controller,
       BooleanSupplier mirrorTrajectory,
       Subsystem driveSubsystem,
       AutoBindings bindings,

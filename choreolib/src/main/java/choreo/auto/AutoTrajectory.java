@@ -20,8 +20,8 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -42,7 +42,7 @@ public class AutoTrajectory {
   private final Trajectory<? extends TrajectorySample<?>> trajectory;
   private final TrajectoryLogger<? extends TrajectorySample<?>> trajectoryLogger;
   private final Supplier<Pose2d> poseSupplier;
-  private final BiConsumer<Pose2d, ? extends TrajectorySample<?>> controller;
+  private final Consumer<? extends TrajectorySample<?>> controller;
   private final BooleanSupplier mirrorTrajectory;
   private final Timer timer = new Timer();
   private final Subsystem driveSubsystem;
@@ -77,7 +77,7 @@ public class AutoTrajectory {
       String name,
       Trajectory<SampleType> trajectory,
       Supplier<Pose2d> poseSupplier,
-      BiConsumer<Pose2d, SampleType> controller,
+      Consumer<SampleType> controller,
       BooleanSupplier mirrorTrajectory,
       Optional<TrajectoryLogger<SampleType>> trajectoryLogger,
       Subsystem driveSubsystem,
@@ -132,11 +132,11 @@ public class AutoTrajectory {
   private void cmdExecute() {
     var sample = trajectory.sampleAt(timer.get(), mirrorTrajectory.getAsBoolean());
     if (sample instanceof SwerveSample swerveSample) {
-      var swerveController = (BiConsumer<Pose2d, SwerveSample>) this.controller;
-      swerveController.accept(poseSupplier.get(), swerveSample);
+      var swerveController = (Consumer<SwerveSample>) this.controller;
+      swerveController.accept(swerveSample);
     } else if (sample instanceof DifferentialSample differentialSample) {
-      var differentialController = (BiConsumer<Pose2d, DifferentialSample>) this.controller;
-      differentialController.accept(poseSupplier.get(), differentialSample);
+      var differentialController = (Consumer<DifferentialSample>) this.controller;
+      differentialController.accept(differentialSample);
     }
   }
 
