@@ -394,7 +394,7 @@ public class AutoTrajectory {
    * @param eventName The name of the event.
    * @return A trigger that is true when the event with the given name has been reached based on
    *     time.
-   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event
+   * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event
    *     Markers in the GUI</a>
    */
   public Trigger atTime(String eventName) {
@@ -454,7 +454,7 @@ public class AutoTrajectory {
    * @param toleranceMeters The tolerance in meters.
    * @return A trigger that is true when the robot is within toleranceMeters of the given events
    *     pose.
-   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event
+   * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event
    *     Markers in the GUI</a>
    */
   public Trigger atPose(String eventName, double toleranceMeters) {
@@ -489,7 +489,7 @@ public class AutoTrajectory {
    *
    * @param eventName The name of the event.
    * @return A trigger that is true when the robot is within 3 inches of the given events pose.
-   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event
+   * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event
    *     Markers in the GUI</a>
    */
   public Trigger atPose(String eventName) {
@@ -507,7 +507,7 @@ public class AutoTrajectory {
    * @param toleranceMeters The tolerance in meters.
    * @return A trigger that is true when the event with the given name has been reached based on
    *     time and the robot is within toleranceMeters of the given events pose.
-   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event
+   * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event
    *     Markers in the GUI</a>
    */
   public Trigger atTimeAndPose(String eventName, double toleranceMeters) {
@@ -524,7 +524,7 @@ public class AutoTrajectory {
    * @param eventName The name of the event.
    * @return A trigger that is true when the event with the given name has been reached based on
    *     time and the robot is within 3 inches of the given events pose.
-   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event
+   * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event
    *     Markers in the GUI</a>
    */
   public Trigger atTimeAndPose(String eventName) {
@@ -536,7 +536,7 @@ public class AutoTrajectory {
    *
    * @param eventName The name of the event.
    * @return An array of all the timestamps of the events with the given name.
-   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event
+   * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event
    *     Markers in the GUI</a>
    */
   public double[] collectEventTimes(String eventName) {
@@ -548,7 +548,7 @@ public class AutoTrajectory {
    *
    * @param eventName The name of the event.
    * @return An array of all the poses of the events with the given name.
-   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event
+   * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event
    *     Markers in the GUI</a>
    */
   public Pose2d[] collectEventPoses(String eventName) {
