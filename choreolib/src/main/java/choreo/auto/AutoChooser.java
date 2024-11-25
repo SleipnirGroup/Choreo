@@ -176,4 +176,14 @@ public class AutoChooser {
   public AutoRoutine getSelectedAutoRoutine() {
     return lastAutoRoutine;
   }
+
+
+  /**
+   * Get the {@link AutoFactory} used by this chooser.
+   * 
+   * @return The {@link AutoFactory} used by this chooser.
+   */
+  public AutoFactory factory() {
+    return factory;
+  }
 }
