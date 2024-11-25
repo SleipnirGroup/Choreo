@@ -108,7 +108,7 @@ public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
                   race(
                       intake(),
                       ampToC1.cmd(),
-                      aimFor(ampToC1.getFinalPose().orElse(new Pose2d()))))
+                      aimFor(ampToC1.getFinalPose().orElseGet(Pose2d::new))))
               .withName("fivePieceAuto entry point"));
 
   // spinnup the shooter while no other command is using the shooter
