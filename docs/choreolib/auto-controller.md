@@ -55,7 +55,7 @@ public class AutoController implements Consumer<SwerveSample> {
             pose.getRotation()
         );
 
-        swerve.drive(out);
+        drive.drive(out);
     }
 }
 ```
