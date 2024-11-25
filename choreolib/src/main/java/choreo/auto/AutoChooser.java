@@ -240,6 +240,8 @@ public class AutoChooser {
    * @return A command that runs the selected {@link AutoRoutine}
    */
   public Command autoCmd() {
+    // .asProxy() not needed; requirements are dynamically allocated
+    // via triggers, and are not part of the routine command itself
     return Commands.defer(() -> getSelectedAutoRoutine().cmd(), Set.of());
   }
 }
