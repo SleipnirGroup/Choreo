@@ -38,7 +38,6 @@ class Robot extends TimedRobot {
 
 You can learn more about `drive::choreoController` in the [AutoController](./auto-controller.md) documentation.
 
-
 ## Using AutoChooser, AutoRoutine, and AutoTrajectory
 
 The `AutoFactory` can create `AutoRoutine` and `AutoTrajectory` objects that can be used to create complex auto routines.

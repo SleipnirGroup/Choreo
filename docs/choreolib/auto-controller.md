@@ -13,8 +13,8 @@ This controller will take the base requested velocity from the sample and add th
 The PID controller output is based on how far the robot is from the desired position.
 
 ```java
-public class AutoController implements BiConsumer<Pose2d, SwerveSample> {
-    private final Swerve swerve; // Swerve subsystem
+public class AutoController implements Consumer<SwerveSample> {
+    private final Drive drive; // drive subsystem
     private final PIDController xController = new PIDController(
         kAuto.kTranslation.kP,
         0.0,
@@ -31,13 +31,14 @@ public class AutoController implements BiConsumer<Pose2d, SwerveSample> {
         kAuto.kRotation.kD
     );
 
-    public AutoController(Swerve swerve) {
-        this.swerve = swerve;
+    public AutoController(Drive drive) {
+        this.drive = drive;
         headingController.enableContinuousInput(-Math.PI, Math.PI);
     }
 
     @Override
-    public void accept(Pose2d pose, SwerveSample referenceState) {
+    public void accept(SwerveSample referenceState) {
+        Pose2d pose = drive.getPose();
         double xFF = referenceState.vx;
         double yFF = referenceState.vy;
         double rotationFF = referenceState.omega;

@@ -19,8 +19,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -94,7 +94,7 @@ public class AutoFactory {
 
   private final TrajectoryCache trajectoryCache = new TrajectoryCache();
   private final Supplier<Pose2d> poseSupplier;
-  private final BiConsumer<Pose2d, ? extends TrajectorySample<?>> controller;
+  private final Consumer<? extends TrajectorySample<?>> controller;
   private final BooleanSupplier mirrorTrajectory;
   private final Subsystem driveSubsystem;
   private final AutoBindings bindings = new AutoBindings();
@@ -114,7 +114,7 @@ public class AutoFactory {
    */
   public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
       Supplier<Pose2d> poseSupplier,
-      BiConsumer<Pose2d, SampleType> controller,
+      Consumer<SampleType> controller,
       BooleanSupplier mirrorTrajectory,
       Subsystem driveSubsystem,
       AutoBindings bindings,
@@ -210,8 +210,8 @@ public class AutoFactory {
       Trajectory<SampleType> trajectory, AutoRoutine routine) {
     // type solidify everything
     final Trajectory<SampleType> solidTrajectory = trajectory;
-    final BiConsumer<Pose2d, SampleType> solidController =
-        (BiConsumer<Pose2d, SampleType>) this.controller;
+    final Consumer<SampleType> solidController =
+        (Consumer<SampleType>) this.controller;
     final Optional<TrajectoryLogger<SampleType>> solidLogger =
         this.trajectoryLogger.map(logger -> (TrajectoryLogger<SampleType>) logger);
     return new AutoTrajectory(
