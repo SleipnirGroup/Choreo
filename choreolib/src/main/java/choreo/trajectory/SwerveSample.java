@@ -237,11 +237,6 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
     };
   }
 
-  @Override
-  public SwerveSample[] makeArray(int length) {
-    return new SwerveSample[length];
-  }
-
   /** The struct for the SwerveSample class. */
   public static final Struct<SwerveSample> struct = new SwerveSampleStruct();
 

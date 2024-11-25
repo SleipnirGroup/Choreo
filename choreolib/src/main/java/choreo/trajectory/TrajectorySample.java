@@ -49,12 +49,4 @@ public interface TrajectorySample<Self extends TrajectorySample<Self>>
    * @return this sample, offset by the given timestamp.
    */
   Self offsetBy(double timestampOffset);
-
-  /**
-   * For internal use only.
-   *
-   * @param length the length of the array to create.
-   * @return the created array.
-   */
-  Self[] makeArray(int length);
 }

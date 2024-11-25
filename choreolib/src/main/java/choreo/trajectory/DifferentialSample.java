@@ -155,11 +155,6 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
     return new DifferentialSample(t + timestampOffset, x, y, heading, vl, vr, al, ar, fl, fr);
   }
 
-  @Override
-  public DifferentialSample[] makeArray(int length) {
-    return new DifferentialSample[length];
-  }
-
   /** The struct for the DifferentialSample class. */
   public static final Struct<DifferentialSample> struct = new DifferentialSampleStruct();
 
