@@ -210,8 +210,7 @@ public class AutoFactory {
       Trajectory<SampleType> trajectory, AutoRoutine routine) {
     // type solidify everything
     final Trajectory<SampleType> solidTrajectory = trajectory;
-    final Consumer<SampleType> solidController =
-        (Consumer<SampleType>) this.controller;
+    final Consumer<SampleType> solidController = (Consumer<SampleType>) this.controller;
     final Optional<TrajectoryLogger<SampleType>> solidLogger =
         this.trajectoryLogger.map(logger -> (TrajectoryLogger<SampleType>) logger);
     return new AutoTrajectory(
