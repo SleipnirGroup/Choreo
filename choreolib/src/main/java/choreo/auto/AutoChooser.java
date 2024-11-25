@@ -177,10 +177,9 @@ public class AutoChooser {
     return lastAutoRoutine;
   }
 
-
   /**
    * Get the {@link AutoFactory} used by this chooser.
-   * 
+   *
    * @return The {@link AutoFactory} used by this chooser.
    */
   public AutoFactory factory() {

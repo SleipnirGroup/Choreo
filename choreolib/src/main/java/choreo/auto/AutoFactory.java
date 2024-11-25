@@ -310,7 +310,7 @@ public class AutoFactory {
   /**
    * The {@link AutoFactory} caches trajectories with a {@link TrajectoryCache} to avoid reloading
    * the same trajectory multiple times.
-   * 
+   *
    * @return The trajectory cache.
    */
   public TrajectoryCache cache() {
