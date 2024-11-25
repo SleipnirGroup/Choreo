@@ -231,7 +231,7 @@ public class AutoChooser {
    *     AutoChooser chooser = ...;
    *
    *     public Robot() {
-   *         autonomous().whileTrue(chooser.autoCmd());
+   *         RobotModeTriggers.autonomous().whileTrue(chooser.autoCmd());
    *     }
    * </code></pre>
    * @return A command that runs the selected {@link AutoRoutine}
