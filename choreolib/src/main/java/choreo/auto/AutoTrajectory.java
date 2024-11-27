@@ -43,6 +43,7 @@ public class AutoTrajectory {
   private final TrajectoryLogger<? extends TrajectorySample<?>> trajectoryLogger;
   private final Supplier<Pose2d> poseSupplier;
   private final Consumer<? extends TrajectorySample<?>> controller;
+  private final BooleanSupplier allianceKnown;
   private final BooleanSupplier mirrorTrajectory;
   private final Timer timer = new Timer();
   private final Subsystem driveSubsystem;
@@ -79,6 +80,7 @@ public class AutoTrajectory {
       Supplier<Pose2d> poseSupplier,
       Consumer<SampleType> controller,
       BooleanSupplier mirrorTrajectory,
+      BooleanSupplier allianceKnown,
       Optional<TrajectoryLogger<SampleType>> trajectoryLogger,
       Subsystem driveSubsystem,
       AutoRoutine routine,
@@ -88,6 +90,7 @@ public class AutoTrajectory {
     this.poseSupplier = poseSupplier;
     this.controller = controller;
     this.mirrorTrajectory = mirrorTrajectory;
+    this.allianceKnown = allianceKnown;
     this.driveSubsystem = driveSubsystem;
     this.routine = routine;
     this.offTrigger = new Trigger(routine.loop(), () -> false);
@@ -122,6 +125,10 @@ public class AutoTrajectory {
   }
 
   private void cmdInitialize() {
+    if (!allianceKnown.getAsBoolean()) {
+      DriverStation.reportError("[Choreo] Alliance not known when starting " + name, false);
+      return;
+    }
     timer.restart();
     isActive = true;
     isCompleted = false;
@@ -130,6 +137,7 @@ public class AutoTrajectory {
 
   @SuppressWarnings("unchecked")
   private void cmdExecute() {
+    if (!isActive) { return; }
     var sample = trajectory.sampleAt(timer.get(), mirrorTrajectory.getAsBoolean());
     if (sample instanceof SwerveSample swerveSample) {
       var swerveController = (Consumer<SwerveSample>) this.controller;
@@ -141,6 +149,7 @@ public class AutoTrajectory {
   }
 
   private void cmdEnd(boolean interrupted) {
+    if (!isActive) { return; }
     timer.stop();
     isActive = false;
     isCompleted = !interrupted;
@@ -149,7 +158,9 @@ public class AutoTrajectory {
   }
 
   private boolean cmdIsFinished() {
-    return timer.get() > trajectory.getTotalTime() || !routine.isActive;
+    return timer.get() > trajectory.getTotalTime()
+      || routine.isKilled
+      || !isActive;
   }
 
   /**

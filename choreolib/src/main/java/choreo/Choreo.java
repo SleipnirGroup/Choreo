@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -301,9 +300,10 @@ public final class Choreo {
    *     robot.
    * @param controller A function that receives the current {@link SampleType} and controls the
    *     robot.
-   * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
-   *     while keeping the same coordinate system origin. This will be called every loop during the
-   *     command.
+   * @param mirrorTrajectory If this returns empty your auto routines and trajectories will do nothing,
+   *     if this returns true then path will be mirrored to the opposite side,
+   *     while keeping the same coordinate system origin. This will be called multiple times
+   *     every loop while auto routines are running.
    * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
    *     Command}s.
    * @param bindings Universal trajectory event bindings.
@@ -314,7 +314,7 @@ public final class Choreo {
   public static <SampleType extends TrajectorySample<SampleType>> AutoFactory createAutoFactory(
       Supplier<Pose2d> poseSupplier,
       Consumer<SampleType> controller,
-      BooleanSupplier mirrorTrajectory,
+      Supplier<Optional<Boolean>> mirrorTrajectory,
       Subsystem driveSubsystem,
       AutoBindings bindings) {
     return new AutoFactory(
@@ -349,7 +349,7 @@ public final class Choreo {
   public static <SampleType extends TrajectorySample<SampleType>> AutoFactory createAutoFactory(
       Supplier<Pose2d> poseSupplier,
       Consumer<SampleType> controller,
-      BooleanSupplier mirrorTrajectory,
+      Supplier<Optional<Boolean>> mirrorTrajectory,
       Subsystem driveSubsystem,
       AutoBindings bindings,
       TrajectoryLogger<SampleType> trajectoryLogger) {

@@ -30,7 +30,7 @@ import java.util.function.Supplier;
  */
 public class AutoFactory {
   static final AutoRoutine VOID_ROUTINE =
-      new AutoRoutine("VOID-ROUTINE") {
+      new AutoRoutine("VOID-ROUTINE", () -> false) {
         private final EventLoop loop = new EventLoop();
 
         @Override
@@ -94,6 +94,7 @@ public class AutoFactory {
   private final TrajectoryCache trajectoryCache = new TrajectoryCache();
   private final Supplier<Pose2d> poseSupplier;
   private final Consumer<? extends TrajectorySample<?>> controller;
+  private final BooleanSupplier allianceKnown;
   private final BooleanSupplier mirrorTrajectory;
   private final Subsystem driveSubsystem;
   private final AutoBindings bindings = new AutoBindings();
@@ -106,7 +107,7 @@ public class AutoFactory {
    * @param <SampleType> {@link Choreo#createAutoFactory}
    * @param poseSupplier {@link Choreo#createAutoFactory}
    * @param controller {@link Choreo#createAutoFactory}
-   * @param mirrorTrajectory {@link Choreo#createAutoFactory}
+   * @param isRedAlliance {@link Choreo#createAutoFactory}
    * @param driveSubsystem {@link Choreo#createAutoFactory}
    * @param bindings {@link Choreo#createAutoFactory}
    * @param trajectoryLogger {@link Choreo#createAutoFactory}
@@ -114,13 +115,14 @@ public class AutoFactory {
   public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
       Supplier<Pose2d> poseSupplier,
       Consumer<SampleType> controller,
-      BooleanSupplier mirrorTrajectory,
+      Supplier<Optional<Boolean>> isRedAlliance,
       Subsystem driveSubsystem,
       AutoBindings bindings,
       Optional<TrajectoryLogger<SampleType>> trajectoryLogger) {
     this.poseSupplier = poseSupplier;
     this.controller = controller;
-    this.mirrorTrajectory = mirrorTrajectory;
+    this.allianceKnown = () -> isRedAlliance.get().isPresent();
+    this.mirrorTrajectory = () -> isRedAlliance.get().orElse(false);
     this.driveSubsystem = driveSubsystem;
     this.bindings.merge(bindings);
     this.trajectoryLogger =
@@ -140,7 +142,7 @@ public class AutoFactory {
       trajectoryCache.clear();
     }
 
-    return new AutoRoutine(name);
+    return new AutoRoutine(name, allianceKnown);
   }
 
   /**
@@ -210,14 +212,14 @@ public class AutoFactory {
     // type solidify everything
     final Trajectory<SampleType> solidTrajectory = trajectory;
     final Consumer<SampleType> solidController = (Consumer<SampleType>) this.controller;
-    final Optional<TrajectoryLogger<SampleType>> solidLogger =
-        this.trajectoryLogger.map(logger -> (TrajectoryLogger<SampleType>) logger);
+    final Optional<TrajectoryLogger<SampleType>> solidLogger = this.trajectoryLogger.map(logger -> (TrajectoryLogger<SampleType>) logger);
     return new AutoTrajectory(
         trajectory.name(),
         solidTrajectory,
         poseSupplier,
         solidController,
         mirrorTrajectory,
+        allianceKnown,
         solidLogger,
         driveSubsystem,
         routine,

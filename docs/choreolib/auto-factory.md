@@ -30,8 +30,8 @@ class Robot extends TimedRobot {
     autoFactory.trajectoryCommand("myTrajectory").schedule();
   }
 
-  private boolean isRedAlliance() {
-    return DriverStation.getAlliance().orElseGet(() -> Alliance.Blue).equals(Alliance.Red);
+  private Optional<Boolean> isRedAlliance() {
+    return DriverStation.getAlliance().map(alliance -> alliance.equals(Alliance.Red));
   }
 }
 ```

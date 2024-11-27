@@ -25,6 +25,9 @@ public class AutoRoutine {
   /** The name of the auto routine this loop is associated with */
   protected final String name;
 
+  /** A supplier that returns if choreo has been made properly aware of the alliance */
+  protected final BooleanSupplier allianceKnown;
+
   /** A boolean utilized in {@link #running()} to resolve trueness */
   protected boolean isActive = false;
 
@@ -40,9 +43,10 @@ public class AutoRoutine {
    * @param name The name of the loop
    * @see AutoFactory#newRoutine Creating a loop from a AutoFactory
    */
-  public AutoRoutine(String name) {
+  public AutoRoutine(String name, BooleanSupplier allianceKnown) {
     this.loop = new EventLoop();
     this.name = name;
+    this.allianceKnown = allianceKnown;
   }
 
   /**
@@ -51,9 +55,10 @@ public class AutoRoutine {
    * @param name The name of the loop
    * @param loop The inner {@link EventLoop}
    */
-  protected AutoRoutine(String name, EventLoop loop) {
+  protected AutoRoutine(String name, EventLoop loop, BooleanSupplier allianceKnown) {
     this.loop = loop;
     this.name = name;
+    this.allianceKnown = allianceKnown;
   }
 
   /**
@@ -114,7 +119,7 @@ public class AutoRoutine {
       return;
     }
     reset();
-    DriverStation.reportWarning("Killed An Auto Loop", true);
+    DriverStation.reportWarning("[Choreo] Killed An Auto Loop", true);
     isKilled = true;
   }
 
@@ -125,6 +130,10 @@ public class AutoRoutine {
    * @see #cmd(BooleanSupplier) A version of this method that takes a condition to finish the loop.
    */
   public Command cmd() {
+    if (!allianceKnown.getAsBoolean()) {
+      DriverStation.reportWarning("[Choreo] Alliance not known when starting routine", false);
+      kill();
+    }
     return Commands.run(this::poll)
         .finallyDo(this::reset)
         .until(() -> !DriverStation.isAutonomousEnabled())
@@ -139,6 +148,10 @@ public class AutoRoutine {
    * @see #cmd() A version of this method that doesn't take a condition and never finishes.
    */
   public Command cmd(BooleanSupplier finishCondition) {
+    if (!allianceKnown.getAsBoolean()) {
+      DriverStation.reportWarning("[Choreo] Alliance not known when starting routine", false);
+      kill();
+    }
     return Commands.run(this::poll)
         .finallyDo(this::reset)
         .until(() -> !DriverStation.isAutonomousEnabled() || finishCondition.getAsBoolean())
