@@ -300,10 +300,10 @@ public final class Choreo {
    *     robot.
    * @param controller A function that receives the current {@link SampleType} and controls the
    *     robot.
-   * @param mirrorTrajectory If this returns empty your auto routines and trajectories will do nothing,
-   *     if this returns true then path will be mirrored to the opposite side,
-   *     while keeping the same coordinate system origin. This will be called multiple times
-   *     every loop while auto routines are running.
+   * @param mirrorTrajectory If this returns empty your auto routines and trajectories will do
+   *     nothing, if this returns true then path will be mirrored to the opposite side, while
+   *     keeping the same coordinate system origin. This will be called multiple times every loop
+   *     while auto routines are running.
    * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
    *     Command}s.
    * @param bindings Universal trajectory event bindings.

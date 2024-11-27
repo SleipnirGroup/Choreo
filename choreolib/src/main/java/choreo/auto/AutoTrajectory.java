@@ -137,7 +137,9 @@ public class AutoTrajectory {
 
   @SuppressWarnings("unchecked")
   private void cmdExecute() {
-    if (!isActive) { return; }
+    if (!isActive) {
+      return;
+    }
     var sample = trajectory.sampleAt(timer.get(), mirrorTrajectory.getAsBoolean());
     if (sample instanceof SwerveSample swerveSample) {
       var swerveController = (Consumer<SwerveSample>) this.controller;
@@ -149,7 +151,9 @@ public class AutoTrajectory {
   }
 
   private void cmdEnd(boolean interrupted) {
-    if (!isActive) { return; }
+    if (!isActive) {
+      return;
+    }
     timer.stop();
     isActive = false;
     isCompleted = !interrupted;
@@ -158,9 +162,7 @@ public class AutoTrajectory {
   }
 
   private boolean cmdIsFinished() {
-    return timer.get() > trajectory.getTotalTime()
-      || routine.isKilled
-      || !isActive;
+    return timer.get() > trajectory.getTotalTime() || routine.isKilled || !isActive;
   }
 
   /**

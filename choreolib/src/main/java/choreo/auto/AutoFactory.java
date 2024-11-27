@@ -212,7 +212,8 @@ public class AutoFactory {
     // type solidify everything
     final Trajectory<SampleType> solidTrajectory = trajectory;
     final Consumer<SampleType> solidController = (Consumer<SampleType>) this.controller;
-    final Optional<TrajectoryLogger<SampleType>> solidLogger = this.trajectoryLogger.map(logger -> (TrajectoryLogger<SampleType>) logger);
+    final Optional<TrajectoryLogger<SampleType>> solidLogger =
+        this.trajectoryLogger.map(logger -> (TrajectoryLogger<SampleType>) logger);
     return new AutoTrajectory(
         trajectory.name(),
         solidTrajectory,
