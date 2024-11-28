@@ -1,0 +1,1 @@
+The same file, updated to each version as the expected output of the document upgrader
