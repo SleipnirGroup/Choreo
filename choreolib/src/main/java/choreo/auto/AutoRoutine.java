@@ -25,7 +25,7 @@ public class AutoRoutine {
   /** The name of the auto routine this loop is associated with */
   protected final String name;
 
-  /** A supplier that returns if choreo has been made properly aware of the alliance */
+  /** A supplier that returns if Choreo has been made properly aware of the alliance */
   protected final BooleanSupplier allianceKnown;
 
   /** A boolean utilized in {@link #running()} to resolve trueness */
@@ -41,6 +41,8 @@ public class AutoRoutine {
    * Creates a new loop with a specific name
    *
    * @param name The name of the loop
+   * @param allianceKnown A supplier that returns if Choreo has been made properly aware
+   * of the alliance
    * @see AutoFactory#newRoutine Creating a loop from a AutoFactory
    */
   public AutoRoutine(String name, BooleanSupplier allianceKnown) {
@@ -54,6 +56,8 @@ public class AutoRoutine {
    *
    * @param name The name of the loop
    * @param loop The inner {@link EventLoop}
+   * @param allianceKnown A supplier that returns if Choreo has been made properly aware
+   * of the alliance
    */
   protected AutoRoutine(String name, EventLoop loop, BooleanSupplier allianceKnown) {
     this.loop = loop;
