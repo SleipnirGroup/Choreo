@@ -16,23 +16,23 @@ jobs:
         include:
           - artifact-name: Windows-x86_64
             os: windows-2022
-            tauri-build-flags: --target x86_64-pc-windows-msvc -v -- --workspace
+            tauri-build-flags: --target x86_64-pc-windows-msvc -v -- --workspace --timings
 
           - artifact-name: Windows-aarch64
             os: windows-2022
-            tauri-build-flags: --target aarch64-pc-windows-msvc -v -- --workspace
+            tauri-build-flags: --target aarch64-pc-windows-msvc -v -- --workspace --timings
 
           - artifact-name: macOS-x86_64
             os: macOS-14
-            tauri-build-flags: --target x86_64-apple-darwin -v -- --workspace
+            tauri-build-flags: --target x86_64-apple-darwin -v -- --workspace --timings
 
           - artifact-name: macOS-aarch64
             os: macOS-14
-            tauri-build-flags: --target aarch64-apple-darwin -v -- --workspace
+            tauri-build-flags: --target aarch64-apple-darwin -v -- --workspace --timings
 
           - artifact-name: Linux-x86_64
             os: ubuntu-22.04
-            tauri-build-flags: --target x86_64-unknown-linux-gnu -v -- --workspace
+            tauri-build-flags: --target x86_64-unknown-linux-gnu -v -- --workspace --timings
 
     name: "${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
@@ -118,6 +118,11 @@ jobs:
         run: |
           zip -j ${{ matrix.artifact-name }}-standalone.zip target/x86_64-unknown-linux-gnu/release/choreo target/x86_64-unknown-linux-gnu/release/choreo-cli
           zip -j ${{ matrix.artifact-name }}.zip ${{ matrix.artifact-name }}-standalone.zip target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.AppImage target/x86_64-unknown-linux-gnu/release/bundle/deb/*.deb target/x86_64-unknown-linux-gnu/release/bundle/rpm/*.rpm
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}-cargo-timing.html
+          path: target/cargo-timings/cargo-timing.html
 
       # Zipping manually works around upload-artifact stripping execute
       # permissions from files
