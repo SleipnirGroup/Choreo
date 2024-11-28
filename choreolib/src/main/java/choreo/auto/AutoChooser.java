@@ -82,7 +82,7 @@ public class AutoChooser {
    * It will check if the selected auto routine has changed and update the active AutoRoutine.
    *
    * <p>The AutoRoutine can only be updated when the robot is disabled and connected to
-   * driverstation. If the chooser in your dashboard says {@code BAD} the {@link AutoChooser} has
+   * DriverStation. If the chooser in your dashboard says {@code BAD} the {@link AutoChooser} has
    * not responded to the selection yet and you need to disable the robot to update it.
    */
   public void update() {
