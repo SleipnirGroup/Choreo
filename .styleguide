@@ -19,6 +19,7 @@ includeOtherLibs {
   ^frc/
   ^frc2/
   ^gtest/
+  ^hal/
   ^units/
   ^wpi/
 }
