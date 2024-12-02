@@ -20,8 +20,8 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -42,7 +42,7 @@ public class AutoTrajectory {
   private final Trajectory<? extends TrajectorySample<?>> trajectory;
   private final TrajectoryLogger<? extends TrajectorySample<?>> trajectoryLogger;
   private final Supplier<Pose2d> poseSupplier;
-  private final BiConsumer<Pose2d, ? extends TrajectorySample<?>> controller;
+  private final Consumer<? extends TrajectorySample<?>> controller;
   private final BooleanSupplier mirrorTrajectory;
   private final Timer timer = new Timer();
   private final Subsystem driveSubsystem;
@@ -77,7 +77,7 @@ public class AutoTrajectory {
       String name,
       Trajectory<SampleType> trajectory,
       Supplier<Pose2d> poseSupplier,
-      BiConsumer<Pose2d, SampleType> controller,
+      Consumer<SampleType> controller,
       BooleanSupplier mirrorTrajectory,
       Optional<TrajectoryLogger<SampleType>> trajectoryLogger,
       Subsystem driveSubsystem,
@@ -132,11 +132,11 @@ public class AutoTrajectory {
   private void cmdExecute() {
     var sample = trajectory.sampleAt(timer.get(), mirrorTrajectory.getAsBoolean());
     if (sample instanceof SwerveSample swerveSample) {
-      var swerveController = (BiConsumer<Pose2d, SwerveSample>) this.controller;
-      swerveController.accept(poseSupplier.get(), swerveSample);
+      var swerveController = (Consumer<SwerveSample>) this.controller;
+      swerveController.accept(swerveSample);
     } else if (sample instanceof DifferentialSample differentialSample) {
-      var differentialController = (BiConsumer<Pose2d, DifferentialSample>) this.controller;
-      differentialController.accept(poseSupplier.get(), differentialSample);
+      var differentialController = (Consumer<DifferentialSample>) this.controller;
+      differentialController.accept(differentialSample);
     }
   }
 
@@ -394,8 +394,8 @@ public class AutoTrajectory {
    * @param eventName The name of the event.
    * @return A trigger that is true when the event with the given name has been reached based on
    *     time.
-   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event
-   *     Markers in the GUI</a>
+   * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
+   *     GUI</a>
    */
   public Trigger atTime(String eventName) {
     boolean foundEvent = false;
@@ -454,8 +454,8 @@ public class AutoTrajectory {
    * @param toleranceMeters The tolerance in meters.
    * @return A trigger that is true when the robot is within toleranceMeters of the given events
    *     pose.
-   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event
-   *     Markers in the GUI</a>
+   * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
+   *     GUI</a>
    */
   public Trigger atPose(String eventName, double toleranceMeters) {
     boolean foundEvent = false;
@@ -489,8 +489,8 @@ public class AutoTrajectory {
    *
    * @param eventName The name of the event.
    * @return A trigger that is true when the robot is within 3 inches of the given events pose.
-   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event
-   *     Markers in the GUI</a>
+   * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
+   *     GUI</a>
    */
   public Trigger atPose(String eventName) {
     return atPose(eventName, DEFAULT_TOLERANCE_METERS);
@@ -507,8 +507,8 @@ public class AutoTrajectory {
    * @param toleranceMeters The tolerance in meters.
    * @return A trigger that is true when the event with the given name has been reached based on
    *     time and the robot is within toleranceMeters of the given events pose.
-   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event
-   *     Markers in the GUI</a>
+   * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
+   *     GUI</a>
    */
   public Trigger atTimeAndPose(String eventName, double toleranceMeters) {
     return atTime(eventName).and(atPose(eventName, toleranceMeters));
@@ -524,8 +524,8 @@ public class AutoTrajectory {
    * @param eventName The name of the event.
    * @return A trigger that is true when the event with the given name has been reached based on
    *     time and the robot is within 3 inches of the given events pose.
-   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event
-   *     Markers in the GUI</a>
+   * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
+   *     GUI</a>
    */
   public Trigger atTimeAndPose(String eventName) {
     return atTimeAndPose(eventName, DEFAULT_TOLERANCE_METERS);
@@ -536,8 +536,8 @@ public class AutoTrajectory {
    *
    * @param eventName The name of the event.
    * @return An array of all the timestamps of the events with the given name.
-   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event
-   *     Markers in the GUI</a>
+   * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
+   *     GUI</a>
    */
   public double[] collectEventTimes(String eventName) {
     return trajectory.getEvents(eventName).stream().mapToDouble(e -> e.timestamp).toArray();
@@ -548,8 +548,8 @@ public class AutoTrajectory {
    *
    * @param eventName The name of the event.
    * @return An array of all the poses of the events with the given name.
-   * @see <a href="https://sleipnirgroup.github.io/Choreo/usage/editing-paths/#event-markers">Event
-   *     Markers in the GUI</a>
+   * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
+   *     GUI</a>
    */
   public Pose2d[] collectEventPoses(String eventName) {
     var times = collectEventTimes(eventName);

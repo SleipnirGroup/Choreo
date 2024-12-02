@@ -1,6 +1,6 @@
 # Project information
 site_name: Choreo Documentation
-site_url: https://sleipnirgroup.github.io/Choreo/
+site_url: https://choreo.autos/
 site_description: A graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics Competition.
 
 # Repository
@@ -32,7 +32,7 @@ theme:
   font:
     text: Roboto
     code: Roboto Mono
-  icon: media/icon1024x1024.png
+  logo: media/icon1024x1024.png
   favicon: media/icon1024x1024.png
   features:
     - content.code.copy
