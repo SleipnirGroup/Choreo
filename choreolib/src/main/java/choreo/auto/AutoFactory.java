@@ -8,6 +8,8 @@ import choreo.Choreo.TrajectoryLogger;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
+import edu.wpi.first.hal.FRCNetComm.tResourceType;
+import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -125,6 +127,7 @@ public class AutoFactory {
     this.bindings.merge(bindings);
     this.trajectoryLogger =
         trajectoryLogger.map(logger -> (TrajectoryLogger<? extends TrajectorySample<?>>) logger);
+    HAL.report(tResourceType.kResourceType_ChoreoTrigger, 1);
   }
 
   /**
