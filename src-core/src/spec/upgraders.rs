@@ -3,13 +3,13 @@ use serde_json::Value as JsonValue;
 use crate::ChoreoResult;
 
 mod traj_file {
-    use std::sync::LazyLock;
     #[allow(unused_imports)] // Remove when an upgrader function is added
     use crate::{
         file_management::upgrader::{Editor, Upgrader},
         spec::TRAJ_SCHEMA_VERSION,
         ChoreoResult,
     };
+    use std::sync::LazyLock;
 
     pub(super) static TRAJ_UPGRADER: LazyLock<Upgrader> = LazyLock::new(make_upgrader);
 
