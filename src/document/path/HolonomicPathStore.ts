@@ -10,7 +10,7 @@ import {
 import {
   EventMarker,
   Expr,
-  SAVE_FILE_VERSION,
+  TRAJ_SCHEMA_VERSION,
   Waypoint,
   WaypointUUID,
   type ChoreoPath,
@@ -70,7 +70,7 @@ export const HolonomicPathStore = types
         const markers = self.markers.map((m) => m.serialize);
         return {
           name: self.name,
-          version: SAVE_FILE_VERSION,
+          version: TRAJ_SCHEMA_VERSION,
           params: self.params.serialize,
           trajectory: self.trajectory.serialize,
           snapshot: self.snapshot,

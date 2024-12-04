@@ -1,8 +1,9 @@
 # Changing the Choreo Data Objects
 
-Occasionally it is necessary to add something to the Choreo data objects. This document serves as a checklist to ensure no areas are missed when making these changes.
+Occasionally it is necessary to add something to the Choreo data objects. This document serves as a checklist for defining a new schema version.
 
-
+> This document only discusses adding new fields to the existing objects. For example, adding new constraints uses a system not entirely described by this document.
+This document is also not meant to capture every place that depends on a given struct. 
 
 ## Capturing .chor and .traj from before the change
 
@@ -75,3 +76,26 @@ Create unit tests that load the files previously captured in `test-jsons` and up
 * Run tests to ensure the upgrader is working correctly.
 
 ## src (Typescript UI source)
+
+### Make changes to the data objects in `src/document/2025/DocumentTypes.ts`
+
+There is a mirror for every Rust struct that gets serialized. Note again that in TS, the fields are in `camelCase`. 
+
+### Update any usages of those objects in the Typescript source
+
+Some objects have default values stored throughout the code. 
+
+### Update the relevant schema version in `src/document/2025/DocumentTypes.ts`
+
+### Update the Mobx store for the modified data struct.
+
+These are in `src/document/`.
+
+#### Properties
+Each store has a `.model` section showing the properties of the Mobx object. Usually these should match the data objects, but this is up to the needs of the implementation.
+
+#### `get serialize()`
+Each store has a `get serialize()` computed property. This needs to be updated to populate the data struct with the new field.
+
+### `deserialize()`
+Each store has a `deserialize()` which populates the Mobx store from a data object.
