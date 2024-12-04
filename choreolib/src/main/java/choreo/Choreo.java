@@ -49,7 +49,8 @@ public final class Choreo {
           .registerTypeAdapter(EventMarker.class, new EventMarker.Deserializer())
           .create();
   private static final String TRAJECTORY_FILE_EXTENSION = ".traj";
-  private static final String SPEC_VERSION = "v2025.0.0";
+  private static final int TRAJ_SCHEMA_VERSION = 0;
+  private static final int PROJECT_SCHEMA_VERSION = 1;
 
   private static File CHOREO_DIR = new File(Filesystem.getDeployDirectory(), "choreo");
 
@@ -84,10 +85,22 @@ public final class Choreo {
       String str = reader.lines().reduce("", (a, b) -> a + b);
       reader.close();
       JsonObject json = GSON.fromJson(str, JsonObject.class);
-      String version = json.get("version").getAsString();
-      if (!SPEC_VERSION.equals(version)) {
+      int version;
+      try {
+        version = json.get("version").getAsInt();
+        if (version != PROJECT_SCHEMA_VERSION) {
+          throw new RuntimeException(
+              ".chor project file: Wrong version "
+                  + version
+                  + ". Expected "
+                  + PROJECT_SCHEMA_VERSION);
+        }
+      } catch (ClassCastException e) {
         throw new RuntimeException(
-            ".chor project file: Wrong version " + version + ". Expected " + SPEC_VERSION);
+            ".chor project file: Wrong version "
+                + json.get("version").getAsString()
+                + ". Expected "
+                + PROJECT_SCHEMA_VERSION);
       }
       LAZY_PROJECT_FILE = Optional.of(GSON.fromJson(str, ProjectFile.class));
     } catch (JsonSyntaxException ex) {
@@ -162,10 +175,20 @@ public final class Choreo {
       String trajectoryJsonString, ProjectFile projectFile) {
     JsonObject wholeTrajectory = GSON.fromJson(trajectoryJsonString, JsonObject.class);
     String name = wholeTrajectory.get("name").getAsString();
-    String version = wholeTrajectory.get("version").getAsString();
-    if (!SPEC_VERSION.equals(version)) {
+    int version;
+    try {
+      version = wholeTrajectory.get("version").getAsInt();
+      if (version != TRAJ_SCHEMA_VERSION) {
+        throw new RuntimeException(
+            name + ".traj: Wrong version: " + version + ". Expected " + TRAJ_SCHEMA_VERSION);
+      }
+    } catch (ClassCastException e) {
       throw new RuntimeException(
-          name + ".traj: Wrong version: " + version + ". Expected " + SPEC_VERSION);
+          name
+              + ".traj: Wrong version: "
+              + wholeTrajectory.get("version").getAsString()
+              + ". Expected "
+              + TRAJ_SCHEMA_VERSION);
     }
     // Filter out markers with negative timestamps or empty names
     List<EventMarker> unfilteredEvents =

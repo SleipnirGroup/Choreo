@@ -28,7 +28,7 @@
 
 namespace choreo {
 
-inline constexpr std::string_view kSpecVersion = "v2025.0.0";
+inline constexpr uint32_t kSpecVersion = 1;
 
 template <TrajectorySample SampleType, int Year>
 class AutoFactory;
@@ -77,7 +77,7 @@ class Choreo {
       }
 
       wpi::json json = wpi::json::parse(fileBuffer.value()->GetCharBuffer());
-      std::string version = json["version"];
+      uint32_t version = json["version"];
       if (kSpecVersion != version) {
         throw fmt::format(".chor project file: Wrong version {}. Expected {}",
                           version, kSpecVersion);
@@ -155,8 +155,8 @@ class Choreo {
     }
 
     wpi::json json = wpi::json::parse(trajectoryJsonString);
-    std::string version = json["version"];
-    if (kSpecVersion != version) {
+    uint32_t version = json["version"];
+    if (version != kSpecVersion) {
       throw fmt::format("{}.traj: Wrong version {}. Expected {}",
                         trajectoryName, version, kSpecVersion);
     }
