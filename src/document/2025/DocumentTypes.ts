@@ -1,7 +1,7 @@
 import { ConstraintData } from "../ConstraintDefinitions";
 import { Dimensions } from "../ExpressionStore";
 
-export const TRAJ_SCHEMA_VERSION = 1;
+export const TRAJ_SCHEMA_VERSION = 0;
 export const PROJECT_SCHEMA_VERSION = 1;
 export type Expr = { exp: string; val: number };
 

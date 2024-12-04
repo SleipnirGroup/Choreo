@@ -9,7 +9,7 @@ from choreo.trajectory import (
     load_event_marker,
 )
 
-TRAJ_SCHEMA_VERSION = 1
+TRAJ_SCHEMA_VERSION = 0
 PROJECT_SCHEMA_VERSION = 1
 
 

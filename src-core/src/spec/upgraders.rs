@@ -4,7 +4,7 @@ use crate::ChoreoResult;
 
 mod traj_file {
     use std::sync::LazyLock;
-
+    #[allow(unused_imports)] // Remove when an upgrader function is added
     use crate::{
         file_management::upgrader::{Editor, Upgrader},
         spec::TRAJ_SCHEMA_VERSION,
@@ -14,21 +14,21 @@ mod traj_file {
     pub(super) static TRAJ_UPGRADER: LazyLock<Upgrader> = LazyLock::new(make_upgrader);
 
     fn make_upgrader() -> Upgrader {
+        #[allow(unused_mut)] // Remove once an upgrade function is added
         let mut upgrader = Upgrader::new(TRAJ_SCHEMA_VERSION);
-        upgrader.add_version_action(up_0_1);
+        // upgrader.add_version_action(up_0_1);
         // Ensure the new upgrader is added here
         upgrader
     }
 
-    // Naming convention: up_[old version]_[new_version]
-    // the up prefix lets version numerals be used
-    fn up_0_1(editor: &mut Editor) -> ChoreoResult<()> {
-        if editor.has_path("trajectory") {
-            editor.set_path("trajectory.trackwidth", 1.0)
-        } else {
-            Ok(())
-        }
-    }
+    // EXAMPLE: Delete this once a real upgrade function is added
+    // fn up_0_1(editor: &mut Editor) -> ChoreoResult<()> {
+    //     if editor.has_path("trajectory") {
+    //         editor.set_path("trajectory.trackwidth", 1.0)
+    //     } else {
+    //         Ok(())
+    //     }
+    // }
 
     #[cfg(test)]
     mod tests {

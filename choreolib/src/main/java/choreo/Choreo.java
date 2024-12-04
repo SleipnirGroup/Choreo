@@ -49,7 +49,7 @@ public final class Choreo {
           .registerTypeAdapter(EventMarker.class, new EventMarker.Deserializer())
           .create();
   private static final String TRAJECTORY_FILE_EXTENSION = ".traj";
-  private static final int TRAJ_SCHEMA_VERSION = 1;
+  private static final int TRAJ_SCHEMA_VERSION = 0;
   private static final int PROJECT_SCHEMA_VERSION = 1;
 
   private static File CHOREO_DIR = new File(Filesystem.getDeployDirectory(), "choreo");
