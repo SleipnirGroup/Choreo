@@ -120,7 +120,7 @@ public class ProjectFile {
   public final String name;
 
   /** The version of the project. */
-  public final String version;
+  public final int version;
 
   /** The sample type for the project */
   public final String type;
@@ -132,7 +132,7 @@ public class ProjectFile {
   public final List<String> generationFeatures;
 
   ProjectFile(
-      String name, String version, String type, Config config, List<String> generationFeatures) {
+      String name, int version, String type, Config config, List<String> generationFeatures) {
     this.name = name;
     this.version = version;
     this.type = type;

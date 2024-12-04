@@ -163,7 +163,7 @@ struct ProjectFile {
   std::string name;
 
   /// The version of the project.
-  std::string version;
+  uint32_t version;
 
   /// The sample type for the project.
   std::string type;

@@ -17,6 +17,9 @@ import {
   waypointIdToSavedWaypointId
 } from "./path/utils";
 
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
 export const EventMarkerDataStore = types
   .model("EventMarkerData", {
     target: types.maybe(WaypointScope),
@@ -113,7 +116,9 @@ export const EventMarkerDataStore = types
       return retVal;
     }
   }));
-
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
 export const EventMarkerStore = types
   .model("GeneralMarker", {
     name: types.string,

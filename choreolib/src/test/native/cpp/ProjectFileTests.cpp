@@ -13,7 +13,7 @@ using namespace choreo;
 
 constexpr std::string_view projectJsonString = R"({
  "name":"test",
- "version":"v2025.0.0",
+ "version":1,
  "type":"Swerve",
  "variables":{
   "expressions":{
@@ -116,7 +116,7 @@ const wpi::json projectJson = wpi::json::parse(projectJsonString);
 
 const ProjectFile correctProjFile{
     "test",
-    "v2025.0.0",
+    1,
     "Swerve",
     {{"test", Variable{"Number", Expression{"2", 2.0}}}},
     {{"test2", Pose{Expression{"2 m", 2.0}, Expression{"3 m", 3.0},
