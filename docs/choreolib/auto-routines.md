@@ -51,8 +51,7 @@ Uses the `Shooter` `Subsystem`.
 - `aim` - Aims the shooter based on the current odometry position.
 Uses the `Shooter` `Subsystem`.
 - `resetOdometry(Supplier<Pose2d> pose)` - Resets the odometry to a specific position.
-Uses the `Drive` `Subsystem`, and accepts a `Supplier` to ensure that the initial pose is fetched 
-after the robot code knows the current alliance.
+Uses the `Drive` `Subsystem`, and accepts a `Supplier` to ensure that the initial pose is fetched after the robot code knows the current alliance.
 - `autoAimAndShoot` - Aims the shooter and rotates the robot to the correct angle to shoot and then shoots.
 Uses the `Shooter` and `Drive` `Subsystem`.
 
