@@ -8,6 +8,8 @@ import choreo.Choreo.TrajectoryLogger;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
+import edu.wpi.first.hal.FRCNetComm.tResourceType;
+import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -130,6 +132,7 @@ public class AutoFactory {
     this.trajectoryLogger =
         trajectoryLogger.map(logger -> (TrajectoryLogger<? extends TrajectorySample<?>>) logger);
     this.alliance = alliance;
+    HAL.report(tResourceType.kResourceType_ChoreoTrigger, 1);
   }
 
   /**
@@ -152,14 +155,14 @@ public class AutoFactory {
     AutoBindings bindings,
     Optional<TrajectoryLogger<SampleType>> trajectoryLogger
   ) {
-  this.poseSupplier = poseSupplier;
-  this.controller = controller;
-  this.mirrorTrajectory = mirrorTrajectory;
-  this.driveSubsystem = driveSubsystem;
-  this.bindings.merge(bindings);
-  this.trajectoryLogger =
-      trajectoryLogger.map(logger -> (TrajectoryLogger<? extends TrajectorySample<?>>) logger);
-  this.alliance = DriverStation::getAlliance;
+  this(
+    poseSupplier,
+    controller,
+    mirrorTrajectory,
+    driveSubsystem,
+    bindings,
+    trajectoryLogger,
+    DriverStation::getAlliance);
 }
 
   /**
