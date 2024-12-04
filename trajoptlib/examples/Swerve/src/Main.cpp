@@ -15,12 +15,19 @@
 
 int main() {
   trajopt::SwerveDrivetrain swerveDrivetrain{
+      // kg
       .mass = 45,
+      // kg-m²
       .moi = 6,
+      // m
       .wheelRadius = 0.04,
+      // rad/s
       .wheelMaxAngularVelocity = 70,
+      // N-m
       .wheelMaxTorque = 2,
+      // unitless
       .wheelCoF = 1.5,
+      // m
       .modules = {{+0.6, +0.6}, {+0.6, -0.6}, {-0.6, +0.6}, {-0.6, -0.6}}};
 
   trajopt::LinearVelocityMaxMagnitudeConstraint zeroLinearVelocity{0.0};
