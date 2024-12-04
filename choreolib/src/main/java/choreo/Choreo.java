@@ -19,6 +19,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
+import edu.wpi.first.hal.FRCNetComm.tResourceType;
+import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -37,6 +39,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /** Utilities to load and follow Choreo Trajectories */
@@ -181,9 +184,13 @@ public final class Choreo {
       splits = newArray;
     }
     if (projectFile.type.equals("Swerve")) {
+      HAL.report(tResourceType.kResourceType_ChoreoTrajectory, 1);
+
       SwerveSample[] samples = GSON.fromJson(trajectoryObj.get("samples"), SwerveSample[].class);
       return new Trajectory<SwerveSample>(name, List.of(samples), List.of(splits), List.of(events));
     } else if (projectFile.type.equals("Differential")) {
+      HAL.report(tResourceType.kResourceType_ChoreoTrajectory, 2);
+
       DifferentialSample[] sampleArray =
           GSON.fromJson(trajectoryObj.get("samples"), DifferentialSample[].class);
       return new Trajectory<DifferentialSample>(
@@ -298,8 +305,8 @@ public final class Choreo {
    * @param <SampleType> The type of samples in the trajectory.
    * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
    *     robot.
-   * @param controller A {@link BiConsumer} to follow the current {@link Trajectory}&lt;{@link
-   *     SampleType}&gt;.
+   * @param controller A function that receives the current {@link SampleType} and controls the
+   *     robot.
    * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
    *     while keeping the same coordinate system origin. This will be called every loop during the
    *     command.
@@ -312,7 +319,7 @@ public final class Choreo {
    */
   public static <SampleType extends TrajectorySample<SampleType>> AutoFactory createAutoFactory(
       Supplier<Pose2d> poseSupplier,
-      BiConsumer<Pose2d, SampleType> controller,
+      Consumer<SampleType> controller,
       BooleanSupplier mirrorTrajectory,
       Subsystem driveSubsystem,
       AutoBindings bindings) {
@@ -331,8 +338,8 @@ public final class Choreo {
    * @param <SampleType> The type of samples in the trajectory.
    * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
    *     robot.
-   * @param controller A {@link BiConsumer} to follow the current {@link Trajectory}&lt;{@link
-   *     SampleType}&gt;.
+   * @param controller A function that receives the current {@link SampleType} and controls the
+   *     robot.
    * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
    *     while keeping the same coordinate system origin. This will be called every loop during the
    *     command.
@@ -347,7 +354,7 @@ public final class Choreo {
    */
   public static <SampleType extends TrajectorySample<SampleType>> AutoFactory createAutoFactory(
       Supplier<Pose2d> poseSupplier,
-      BiConsumer<Pose2d, SampleType> controller,
+      Consumer<SampleType> controller,
       BooleanSupplier mirrorTrajectory,
       Subsystem driveSubsystem,
       AutoBindings bindings,

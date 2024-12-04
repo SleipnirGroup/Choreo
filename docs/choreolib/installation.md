@@ -4,10 +4,10 @@
 
 ```
 # Release
-https://sleipnirgroup.github.io/ChoreoLib/dep/ChoreoLib.json
+https://lib.choreo.autos/dep/ChoreoLib.json
 
 # Pre-season beta
-https://sleipnirgroup.github.io/ChoreoLib/dep/ChoreoLib2025Beta.json
+https://lib.choreo.autos/dep/ChoreoLib2025Beta.json
 ```
 
 The installation method is the same as CTRE, PathPlanner, and more. Read more on Vendor Dependencies and their installation (VSCode → install new library (online)) [here](https://docs.wpilib.org/en/stable/docs/software/vscode-overview/3rd-party-libraries.html#installing-libraries).

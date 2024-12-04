@@ -45,6 +45,7 @@ dependencies {
     implementation 'edu.wpi.first.wpiunits:wpiunits-java:2025.+'
     implementation 'edu.wpi.first.ntcore:ntcore-java:2025.+'
     implementation 'edu.wpi.first.ntcore:ntcore-jni:2025.+'
+    implementation 'edu.wpi.first.hal:hal-java:2025.+'
 
     api "com.fasterxml.jackson.core:jackson-annotations:2.15.2"
     api "com.fasterxml.jackson.core:jackson-core:2.15.2"
