@@ -8,7 +8,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
+import java.util.Optional;
 
 /**
  * An object that represents an autonomous routine.
@@ -33,7 +36,8 @@ public class AutoRoutine {
 
   /** The amount of times the routine has been polled */
   protected int pollCount = 0;
-
+  /** The supplier of the current alliance */
+  protected Supplier<Optional<Alliance>> alliance = DriverStation::getAlliance;
   /**
    * Creates a new loop with a specific name
    *
@@ -43,6 +47,19 @@ public class AutoRoutine {
   public AutoRoutine(String name) {
     this.loop = new EventLoop();
     this.name = name;
+  }
+
+  /**
+   * Creates a new loop with a specific name and a custom alliance supplier.
+   *
+   * @param name The name of the loop
+   * @param alliance The alliance supplier.
+   * @see AutoFactory#newRoutine Creating a loop from a AutoFactory
+   */
+  public AutoRoutine(String name, Supplier<Optional<Alliance>> alliance) {
+    this.loop = new EventLoop();
+    this.name = name;
+    this.alliance = alliance;
   }
 
   /**
@@ -70,7 +87,7 @@ public class AutoRoutine {
 
   /** Polls the routine. Should be called in the autonomous periodic method. */
   public void poll() {
-    if (!DriverStation.isAutonomousEnabled() || DriverStation.getAlliance().isEmpty() || isKilled) {
+    if (!DriverStation.isAutonomousEnabled() || alliance.get().isEmpty() || isKilled) {
       isActive = false;
       return;
     }
@@ -120,6 +137,9 @@ public class AutoRoutine {
 
   /**
    * Creates a command that will poll this event loop and reset it when it is cancelled.
+   * 
+   * The command will end instantly and kill the routine if the alliance supplier returns an empty optional
+   * when the command is scheduled.
    *
    * @return A command that will poll this event loop and reset it when it is cancelled.
    * @see #cmd(BooleanSupplier) A version of this method that takes a condition to finish the loop.
@@ -131,9 +151,13 @@ public class AutoRoutine {
   /**
    * Creates a command that will poll this event loop and reset it when it is finished or canceled.
    *
+   * The command will end instantly and kill the routine if the alliance supplier returns an empty optional
+   * when the command is scheduled.
+   * 
    * @param finishCondition A condition that will finish the loop when it is true.
    * @return A command that will poll this event loop and reset it when it is finished or canceled.
-   * @see #cmd() A version of this method that doesn't take a condition and never finishes.
+   * @see #cmd() A version of this method that doesn't take a condition and never finishes except if 
+   *    the alliance supplier returns an empty optional when scheduled. 
    */
   public Command cmd(BooleanSupplier finishCondition) {
     return Commands.either(
@@ -147,6 +171,6 @@ public class AutoRoutine {
                   "[Choreo] Alliance not known when starting routine", false);
               kill();
             }),
-        () -> DriverStation.getAlliance().isPresent());
+        () -> alliance.get().isPresent());
   }
 }

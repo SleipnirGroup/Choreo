@@ -11,6 +11,7 @@ import choreo.trajectory.TrajectorySample;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -94,13 +95,45 @@ public class AutoFactory {
   private final TrajectoryCache trajectoryCache = new TrajectoryCache();
   private final Supplier<Pose2d> poseSupplier;
   private final Consumer<? extends TrajectorySample<?>> controller;
+  private final Supplier<Optional<Alliance>> alliance;
   private final BooleanSupplier mirrorTrajectory;
   private final Subsystem driveSubsystem;
   private final AutoBindings bindings = new AutoBindings();
   private final Optional<TrajectoryLogger<? extends TrajectorySample<?>>> trajectoryLogger;
 
   /**
-   * Its recommended to use the {@link Choreo#createAutoFactory} to create a new instance of this
+   * It is recommended to use the {@link Choreo#createAutoFactory} to create a new instance of this
+   * class.
+   *
+   * @param <SampleType> {@link Choreo#createAutoFactory}
+   * @param poseSupplier {@link Choreo#createAutoFactory}
+   * @param controller {@link Choreo#createAutoFactory}
+   * @param mirrorTrajectory {@link Choreo#createAutoFactory}
+   * @param driveSubsystem {@link Choreo#createAutoFactory}
+   * @param bindings {@link Choreo#createAutoFactory}
+   * @param trajectoryLogger {@link Choreo#createAutoFactory}
+   * @param alliance {@link Choreo#createAutoFactory}
+   */
+  public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
+      Supplier<Pose2d> poseSupplier,
+      Consumer<SampleType> controller,
+      BooleanSupplier mirrorTrajectory,
+      Subsystem driveSubsystem,
+      AutoBindings bindings,
+      Optional<TrajectoryLogger<SampleType>> trajectoryLogger,
+      Supplier<Optional<Alliance>> alliance) {
+    this.poseSupplier = poseSupplier;
+    this.controller = controller;
+    this.mirrorTrajectory = mirrorTrajectory;
+    this.driveSubsystem = driveSubsystem;
+    this.bindings.merge(bindings);
+    this.trajectoryLogger =
+        trajectoryLogger.map(logger -> (TrajectoryLogger<? extends TrajectorySample<?>>) logger);
+    this.alliance = alliance;
+  }
+
+  /**
+   * It is recommended to use the {@link Choreo#createAutoFactory} to create a new instance of this
    * class.
    *
    * @param <SampleType> {@link Choreo#createAutoFactory}
@@ -112,20 +145,22 @@ public class AutoFactory {
    * @param trajectoryLogger {@link Choreo#createAutoFactory}
    */
   public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
-      Supplier<Pose2d> poseSupplier,
-      Consumer<SampleType> controller,
-      BooleanSupplier mirrorTrajectory,
-      Subsystem driveSubsystem,
-      AutoBindings bindings,
-      Optional<TrajectoryLogger<SampleType>> trajectoryLogger) {
-    this.poseSupplier = poseSupplier;
-    this.controller = controller;
-    this.mirrorTrajectory = mirrorTrajectory;
-    this.driveSubsystem = driveSubsystem;
-    this.bindings.merge(bindings);
-    this.trajectoryLogger =
-        trajectoryLogger.map(logger -> (TrajectoryLogger<? extends TrajectorySample<?>>) logger);
-  }
+    Supplier<Pose2d> poseSupplier,
+    Consumer<SampleType> controller,
+    BooleanSupplier mirrorTrajectory,
+    Subsystem driveSubsystem,
+    AutoBindings bindings,
+    Optional<TrajectoryLogger<SampleType>> trajectoryLogger
+  ) {
+  this.poseSupplier = poseSupplier;
+  this.controller = controller;
+  this.mirrorTrajectory = mirrorTrajectory;
+  this.driveSubsystem = driveSubsystem;
+  this.bindings.merge(bindings);
+  this.trajectoryLogger =
+      trajectoryLogger.map(logger -> (TrajectoryLogger<? extends TrajectorySample<?>>) logger);
+  this.alliance = DriverStation::getAlliance;
+}
 
   /**
    * Creates a new {@link AutoRoutine}.
@@ -140,7 +175,7 @@ public class AutoFactory {
       trajectoryCache.clear();
     }
 
-    return new AutoRoutine(name);
+    return new AutoRoutine(name, alliance);
   }
 
   /**

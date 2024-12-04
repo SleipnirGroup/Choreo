@@ -46,7 +46,7 @@ public class DoneTest {
     DriverStationSim.notifyNewData();
     DriverStation.refreshData();
     assertTrue(DriverStation.isAutonomousEnabled());
-
+    // System.out.println(routine.alliance.get().get());
     scheduler.schedule(routine.cmd());
     scheduler.schedule(traj.cmd());
     scheduler.run();
