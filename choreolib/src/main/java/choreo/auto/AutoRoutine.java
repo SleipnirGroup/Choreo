@@ -70,7 +70,7 @@ public class AutoRoutine {
 
   /** Polls the routine. Should be called in the autonomous periodic method. */
   public void poll() {
-    if (!DriverStation.isAutonomousEnabled() || isKilled) {
+    if (!DriverStation.isAutonomousEnabled() || DriverStation.getAlliance().isEmpty() || isKilled) {
       isActive = false;
       return;
     }
@@ -125,10 +125,7 @@ public class AutoRoutine {
    * @see #cmd(BooleanSupplier) A version of this method that takes a condition to finish the loop.
    */
   public Command cmd() {
-    return Commands.run(this::poll)
-        .finallyDo(this::reset)
-        .until(() -> !DriverStation.isAutonomousEnabled())
-        .withName(name);
+    return cmd(()->false);
   }
 
   /**
@@ -139,9 +136,14 @@ public class AutoRoutine {
    * @see #cmd() A version of this method that doesn't take a condition and never finishes.
    */
   public Command cmd(BooleanSupplier finishCondition) {
-    return Commands.run(this::poll)
-        .finallyDo(this::reset)
-        .until(() -> !DriverStation.isAutonomousEnabled() || finishCondition.getAsBoolean())
-        .withName(name);
+    return Commands.either(
+      Commands.run(this::poll)
+          .finallyDo(this::reset)
+          .until(() -> !DriverStation.isAutonomousEnabled() || finishCondition.getAsBoolean())
+          .withName(name),
+      Commands.runOnce(()->{
+        DriverStation.reportWarning("[Choreo] Alliance not known when starting routine", false);
+        kill();
+      }), ()->DriverStation.getAlliance().isPresent());
   }
 }
