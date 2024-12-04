@@ -111,3 +111,4 @@ nav:
       - Building: contributing/building-choreo.md
       - Contributing Guide: contributing/contributing-guide.md
       - Release Process: contributing/release-process.md
+      - Upgrading File Schemas: contributing/schema-upgrade.md
