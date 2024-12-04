@@ -130,7 +130,7 @@ class DifferentialSample:
         """
         Returns the field-relative chassis speeds of this state.
         """
-        from choreo import SPEC_VERSION
+        from choreo import PROJECT_SCHEMA_VERSION
         from wpilib import getDeployDirectory
 
         # Get only .chor file in deploy directory
@@ -140,13 +140,13 @@ class DifferentialSample:
             data = json.load(project_file)
         try:
             version = int(data["version"])
-            if version != SPEC_VERSION:
+            if version != PROJECT_SCHEMA_VERSION:
                 raise ValueError(
-                    f".chor project file: Wrong version {version}. Expected {SPEC_VERSION}"
+                    f".chor project file: Wrong version {version}. Expected {PROJECT_SCHEMA_VERSION}"
                 )
         except ValueError:
             raise ValueError(
-                f".chor project file: Wrong version {data['version']}. Expected {SPEC_VERSION}"
+                f".chor project file: Wrong version {data['version']}. Expected {PROJECT_SCHEMA_VERSION}"
             )
         trackwidth = float(data["config"]["differentialTrackWidth"]["val"])
 

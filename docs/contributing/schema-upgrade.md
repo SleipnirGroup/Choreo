@@ -3,7 +3,7 @@
 Occasionally it is necessary to add something to the Choreo data objects. This document serves as a checklist for defining a new schema version.
 
 > This document only discusses adding new fields to the existing objects. For example, adding new constraints uses a system not entirely described by this document.
-This document is also not meant to capture every place that depends on a given struct. 
+This document is also not meant to capture every place that depends on a given struct.
 
 ## Capturing .chor and .traj from before the change
 
@@ -22,7 +22,7 @@ test-jsons/
         n/
             differential.traj
             swerve.traj
-                
+
 ```
 The contents of these files should include enough of Choreo's features to test the upgrader thoroughly, since version upgrade changes that don't apply to the test file don't get well-tested. The trajectories should be generated.
 
@@ -60,7 +60,7 @@ fn up_0_1(editor: &mut Editor) -> ChoreoResult<()> {
 }
 ```
 
-Ensure that any errors returned from the `Editor` calls are returned from the upgrader function before proceeding with the rest of the function. 
+Ensure that any errors returned from the `Editor` calls are returned from the upgrader function before proceeding with the rest of the function.
 ### Add the upgrader function to the upgrader
 
 In `upgraders.rs`, after adding the new upgrader function, add a line like
@@ -79,11 +79,11 @@ Create unit tests that load the files previously captured in `test-jsons` and up
 
 ### Make changes to the data objects in `src/document/2025/DocumentTypes.ts`
 
-There is a mirror for every Rust struct that gets serialized. Note again that in TS, the fields are in `camelCase`. 
+There is a mirror for every Rust struct that gets serialized. Note again that in TS, the fields are in `camelCase`.
 
 ### Update any usages of those objects in the Typescript source
 
-Some objects have default values stored throughout the code. 
+Some objects have default values stored throughout the code.
 
 ### Update the relevant schema version in `src/document/2025/DocumentTypes.ts`
 
@@ -97,5 +97,14 @@ Each store has a `.model` section showing the properties of the Mobx object. Usu
 #### `get serialize()`
 Each store has a `get serialize()` computed property. This needs to be updated to populate the data struct with the new field. Usually this is a straightforward assignment operator for primitive fields or a call of `serialize()` on child stores, but some stores have more bespoke serialization.
 
-### `deserialize()`
+#### `deserialize()`
 Each store has a `deserialize()` which populates the Mobx store from a data object.
+
+## choreolib
+
+Update TRAJ_SCHEMA_VERSION and PROJECT_SCHEMA_VERSION in the following:
+* Python: `choreolib/py/choreo/__init__.py`
+* Java: `choreolib/src/main/java/choreo/Choreo.java`
+* C++ currently does not do version validation.
+
+Make any functional changes to the trajectory classes and loading methods in all three languages, according to the schema change being made.

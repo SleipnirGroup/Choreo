@@ -177,4 +177,3 @@ export interface EventMarker {
   from: EventMarkerData;
   event: Command;
 }
-

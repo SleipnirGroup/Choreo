@@ -9,7 +9,8 @@ from choreo.trajectory import (
     load_event_marker,
 )
 
-SPEC_VERSION = 1
+TRAJ_SCHEMA_VERSION = 1
+PROJECT_SCHEMA_VERSION = 1
 
 
 def load_differential_trajectory_string(
@@ -24,13 +25,13 @@ def load_differential_trajectory_string(
     name = data["name"]
     try:
         version = int(data["version"])
-        if version != SPEC_VERSION:
+        if version != TRAJ_SCHEMA_VERSION:
             raise ValueError(
-                f"{name}.traj: Wrong version {version}. Expected {SPEC_VERSION}"
+                f"{name}.traj: Wrong version {version}. Expected {TRAJ_SCHEMA_VERSION}"
             )
     except ValueError:
         raise ValueError(
-            f"{name}.traj: Wrong version {data['version']}. Expected {SPEC_VERSION}"
+            f"{name}.traj: Wrong version {data['version']}. Expected {TRAJ_SCHEMA_VERSION}"
         )
     samples = [
         DifferentialSample(
@@ -83,13 +84,13 @@ def load_swerve_trajectory_string(trajectory_json_string: str) -> SwerveTrajecto
     name = data["name"]
     try:
         version = int(data["version"])
-        if version != SPEC_VERSION:
+        if version != TRAJ_SCHEMA_VERSION:
             raise ValueError(
-                f"{name}.traj: Wrong version {version}. Expected {SPEC_VERSION}"
+                f"{name}.traj: Wrong version {version}. Expected {TRAJ_SCHEMA_VERSION}"
             )
     except ValueError:
         raise ValueError(
-            f"{name}.traj: Wrong version {data['version']}. Expected {SPEC_VERSION}"
+            f"{name}.traj: Wrong version {data['version']}. Expected {TRAJ_SCHEMA_VERSION}"
         )
     samples = [
         SwerveSample(
