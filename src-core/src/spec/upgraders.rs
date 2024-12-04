@@ -66,8 +66,7 @@ mod testing_shared {
     use std::{fs, path::PathBuf, str::FromStr};
     pub enum FileType {
         Project,
-        Trajectory
-
+        Trajectory,
     }
     impl FileType {
         pub fn directory(&self) -> &str {
@@ -94,7 +93,8 @@ mod testing_shared {
         let file = test_json_dir
             .join(file_type.directory())
             .join(version)
-            .join(file_name).with_extension(file_type.extension());
+            .join(file_name)
+            .with_extension(file_type.extension());
         println!("{}", file.display());
         fs::read_to_string(file).unwrap()
     }
