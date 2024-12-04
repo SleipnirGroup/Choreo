@@ -6,25 +6,65 @@ mod traj_file {
     use std::sync::LazyLock;
 
     use crate::{
-        file_management::upgrader::{Editor, Upgrader},
-        ChoreoResult,
+        file_management::upgrader::{Editor, Upgrader}, spec::TRAJ_SCHEMA_VERSION, ChoreoResult
     };
 
     pub(super) static TRAJ_UPGRADER: LazyLock<Upgrader> = LazyLock::new(make_upgrader);
 
     fn make_upgrader() -> Upgrader {
-        let mut upgrader = Upgrader::new();
-        upgrader.add_version_action(beta_to_one);
-
+        let mut upgrader = Upgrader::new(TRAJ_SCHEMA_VERSION);
+        upgrader.add_version_action(up_beta_1);
+        // Ensure the new upgrader is added here
         upgrader
     }
-
-    fn beta_to_one(editor: &mut Editor) -> ChoreoResult<()> {
+    
+    // Naming convention: up_[old version]_[new_version]
+    // the up prefix lets version numerals be used 
+    fn up_beta_1(editor: &mut Editor) -> ChoreoResult<()> {
         if editor.has_path("trajectory") {
             editor.set_path("trajectory.trackwidth", 1.0)
         } else {
             Ok(())
         }
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use crate::spec::upgraders::testing_shared::get_contents;
+        use crate::spec::TRAJ_SCHEMA_VERSION;
+        use crate::ChoreoResult;
+
+        use crate::spec::trajectory::TrajectoryFile;
+        #[test]
+        pub fn test_beta6_differential() -> ChoreoResult<()> {
+            test_trajectory("beta6", "differential", "differential.traj")
+        }
+        #[test]
+        pub fn test_beta6_swerve() -> ChoreoResult<()> {
+            test_trajectory("beta6", "swerve", "swerve.traj")
+        }
+        
+        /// Tests that the file upgrades to the current version and deserializes properly.
+        fn test_trajectory(version: &str, drive_type: &str, file_name: &str) -> ChoreoResult<()> {
+            let contents = get_contents(version, drive_type, file_name);
+            let file = TrajectoryFile::from_content(&(contents))?;
+            assert!(file.version == TRAJ_SCHEMA_VERSION,
+                "Upgrader set wrong Trajectory File Version {}, should be {}", file.version, TRAJ_SCHEMA_VERSION);
+            Ok(())
+        }
+    }
+}
+
+#[cfg(test)]
+mod testing_shared { 
+    use std::{fs, path::PathBuf, str::FromStr};
+    /// Get the contents of a testing json
+    /// SAFETY: Panics if the file does not exist. Only for use in test cases.
+    pub fn get_contents(version: &str, drive_type: &str, file_name: &str) -> String {
+        let test_json_dir : PathBuf = PathBuf::from_str(env!("CARGO_MANIFEST_DIR")).unwrap().parent().unwrap().join("test-jsons");
+        let file = test_json_dir.join(version).join(drive_type).join(file_name);
+        println!("{}", file.display());
+        fs::read_to_string(file).unwrap()
     }
 }
 
@@ -33,21 +73,50 @@ mod project_file {
 
     use crate::{
         file_management::upgrader::{Editor, Upgrader},
-        spec::Expr,
+        spec::{Expr, PROJECT_SCHEMA_VERSION},
         ChoreoResult,
     };
 
     pub(super) static PROJECT_UPGRADER: LazyLock<Upgrader> = LazyLock::new(make_upgrader);
 
     fn make_upgrader() -> Upgrader {
-        let mut upgrader = Upgrader::new();
-        upgrader.add_version_action(beta_to_one);
+        let mut upgrader = Upgrader::new(PROJECT_SCHEMA_VERSION);
+        upgrader.add_version_action(up_beta_1);
 
         upgrader
     }
-
-    fn beta_to_one(editor: &mut Editor) -> ChoreoResult<()> {
+    // Naming convention: up_[old version]_[new_version]
+    // the up prefix lets version numerals be used 
+    fn up_beta_1(editor: &mut Editor) -> ChoreoResult<()> {
         editor.set_path_serialize("config.cof", Expr::new("1.5", 1.5))
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use crate::spec::upgraders::testing_shared::get_contents;
+        use crate::spec::PROJECT_SCHEMA_VERSION;
+        use crate::ChoreoResult;
+
+        use crate::spec::project::ProjectFile;
+
+        /// Tests that the file upgrades to the current version and deserializes properly.
+        fn test_project(version: &str, drive_type: &str, file_name: &str) -> ChoreoResult<()> {
+            let contents = get_contents(version, drive_type, file_name);
+            let file = ProjectFile::from_content(&(contents))?;
+            assert!(file.version == PROJECT_SCHEMA_VERSION,
+                "Upgrader set wrong Project File Version {}, should be {}", file.version, PROJECT_SCHEMA_VERSION);
+            Ok(())
+        }
+        // TODO: macroize this to one line per test
+        #[test]
+        pub fn test_beta6_differential() -> ChoreoResult<()> {
+            test_project("beta6", "differential", "differential.chor")
+        }
+        #[test]
+        pub fn test_beta6_swerve() -> ChoreoResult<()> {
+            test_project("beta6", "swerve", "swerve.chor")
+        }
+
     }
 }
 

@@ -149,12 +149,14 @@ type UpgradeFn = fn(&mut Editor) -> ChoreoResult<()>;
 #[derive(Debug, Clone)]
 pub struct Upgrader {
     actions: Vec<UpgradeFn>,
+    current_version: u32,
 }
 
 impl Upgrader {
-    pub fn new() -> Self {
+    pub fn new(current_version: u32) -> Self {
         Self {
             actions: Vec::new(),
+            current_version
         }
     }
 
@@ -169,14 +171,8 @@ impl Upgrader {
         for action in &self.actions[version as usize..] {
             action.upgrade(&mut editor)?;
         }
-        editor.set_path("version", self.actions.len() as u64)?;
+        editor.set_path("version", self.current_version)?;
         Ok(editor.jdata)
-    }
-}
-
-impl Default for Upgrader {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
