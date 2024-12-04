@@ -47,6 +47,9 @@ export const DEFAULT_EVENT_MARKER: EventMarker = {
   },
   event: undefined
 };
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
     snapshot: types.frozen<ChoreoPath<number>>(),

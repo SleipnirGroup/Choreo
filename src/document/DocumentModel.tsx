@@ -65,6 +65,10 @@ export const ISampleType = types.enumeration<SampleType>([
   "Swerve",
   "Differential"
 ]);
+
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
 export const DocumentStore = types
   .model("DocumentStore", {
     name: types.string,

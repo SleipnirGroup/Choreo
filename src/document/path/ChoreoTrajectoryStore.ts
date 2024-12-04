@@ -5,6 +5,9 @@ import {
   type SwerveSample
 } from "../2025/DocumentTypes";
 
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
 export const ChoreoTrajectoryStore = types
   .model("ChoreoTrajectoryStore", {
     waypoints: types.frozen<number[]>(),

@@ -95,7 +95,7 @@ These are in `src/document/`.
 Each store has a `.model` section showing the properties of the Mobx object. Usually these should match the data objects, but this is up to the needs of the implementation.
 
 #### `get serialize()`
-Each store has a `get serialize()` computed property. This needs to be updated to populate the data struct with the new field.
+Each store has a `get serialize()` computed property. This needs to be updated to populate the data struct with the new field. Usually this is a straightforward assignment operator for primitive fields or a call of `serialize()` on child stores, but some stores have more bespoke serialization.
 
 ### `deserialize()`
 Each store has a `deserialize()` which populates the Mobx store from a data object.

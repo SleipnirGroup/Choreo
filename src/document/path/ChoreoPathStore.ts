@@ -19,6 +19,9 @@ import {
   waypointIdToSavedWaypointId
 } from "./utils";
 
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
 export const ChoreoPathStore = types
   .model("ChoreoPathStore", {
     waypoints: types.array(HolonomicWaypointStore),
