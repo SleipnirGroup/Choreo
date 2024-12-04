@@ -76,7 +76,8 @@ jobs:
 
       - name: Set up sccache
         uses: mozilla-actions/sccache-action@v0.0.5
-
+      - name: Cargo test
+        run: cargo test
       - name: Build package
         run: pnpm run tauri build ${{ matrix.tauri-build-flags }}
         env:
