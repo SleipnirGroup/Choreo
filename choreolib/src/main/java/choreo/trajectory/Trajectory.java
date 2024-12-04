@@ -162,14 +162,14 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
   /**
    * Returns the initial pose of the trajectory.
    *
-   * <p><b>NULL SAFETY:</b> This function will return null if the trajectory is empty.
+   * This function will return an empty Optional if the trajectory is empty.
    *
    * @param mirrorForRedAlliance whether or not to return the pose as mirrored across the field
    * @return the initial pose of the trajectory.
    */
   public Optional<Pose2d> getInitialPose(boolean mirrorForRedAlliance) {
     if (samples.isEmpty()) {
-      return null;
+      return Optional.empty();
     }
     return getInitialSample(mirrorForRedAlliance).map(SampleType::getPose);
   }
@@ -177,7 +177,7 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
   /**
    * Returns the final pose of the trajectory.
    *
-   * This function will return an empty optional if the trajectory is empty.
+   * This function will return an empty Optional if the trajectory is empty.
    *
    * @param mirrorForRedAlliance whether or not to return the pose as mirrored across the field
    * @return the final pose of the trajectory.
@@ -190,7 +190,8 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
   }
 
   /**
-   * Returns the total time of the trajectory (the timestamp of the last sample)
+   * Returns the total time of the trajectory (the timestamp of the last sample).
+   * This will return 0 if the trajectory is empty.
    *
    * @return the total time of the trajectory (the timestamp of the last sample)
    */
