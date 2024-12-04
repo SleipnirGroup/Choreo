@@ -19,11 +19,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.ArrayList;
 
 /**
  * A class that represents a trajectory that can be used in an autonomous routine and have triggers
@@ -467,7 +467,10 @@ public class AutoTrajectory {
       // with having it all be 1 trigger that just has a list of possess and checks each one each
       // cycle or something like that.
       // If choreo starts proposing memory issues we can look into this.
-      Optional<Pose2d> poseOpt = trajectory.sampleAt(event.timestamp, mirrorTrajectory.getAsBoolean()).map(TrajectorySample::getPose);
+      Optional<Pose2d> poseOpt =
+          trajectory
+              .sampleAt(event.timestamp, mirrorTrajectory.getAsBoolean())
+              .map(TrajectorySample::getPose);
       if (poseOpt.isPresent()) {
         trig = trig.or(atPose(poseOpt.get(), toleranceMeters));
         foundEvent = true;
@@ -558,8 +561,10 @@ public class AutoTrajectory {
     var times = collectEventTimes(eventName);
     ArrayList<Pose2d> poses = new ArrayList<Pose2d>();
     for (int i = 0; i < times.length; i++) {
-      trajectory.sampleAt(times[i], mirrorTrajectory.getAsBoolean()).map(TrajectorySample::getPose)
-      .ifPresent(poses::add);
+      trajectory
+          .sampleAt(times[i], mirrorTrajectory.getAsBoolean())
+          .map(TrajectorySample::getPose)
+          .ifPresent(poses::add);
     }
     return poses.toArray(Pose2d[]::new);
   }
