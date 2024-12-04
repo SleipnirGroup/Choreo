@@ -64,5 +64,3 @@ impl SnapshottableType for Expr {
         }
     }
 }
-
-

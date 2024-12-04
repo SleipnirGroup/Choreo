@@ -156,7 +156,7 @@ impl Upgrader {
     pub fn new(current_version: u32) -> Self {
         Self {
             actions: Vec::new(),
-            current_version
+            current_version,
         }
     }
 
