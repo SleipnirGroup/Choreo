@@ -125,7 +125,7 @@ public class AutoRoutine {
    * @see #cmd(BooleanSupplier) A version of this method that takes a condition to finish the loop.
    */
   public Command cmd() {
-    return cmd(()->false);
+    return cmd(() -> false);
   }
 
   /**
@@ -137,13 +137,16 @@ public class AutoRoutine {
    */
   public Command cmd(BooleanSupplier finishCondition) {
     return Commands.either(
-      Commands.run(this::poll)
-          .finallyDo(this::reset)
-          .until(() -> !DriverStation.isAutonomousEnabled() || finishCondition.getAsBoolean())
-          .withName(name),
-      Commands.runOnce(()->{
-        DriverStation.reportWarning("[Choreo] Alliance not known when starting routine", false);
-        kill();
-      }), ()->DriverStation.getAlliance().isPresent());
+        Commands.run(this::poll)
+            .finallyDo(this::reset)
+            .until(() -> !DriverStation.isAutonomousEnabled() || finishCondition.getAsBoolean())
+            .withName(name),
+        Commands.runOnce(
+            () -> {
+              DriverStation.reportWarning(
+                  "[Choreo] Alliance not known when starting routine", false);
+              kill();
+            }),
+        () -> DriverStation.getAlliance().isPresent());
   }
 }
