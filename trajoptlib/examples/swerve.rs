@@ -7,6 +7,7 @@ fn main() {
         wheel_radius: 0.04,
         wheel_max_angular_velocity: 70.0,
         wheel_max_torque: 2.0,
+        wheel_cof: 1.5,
         modules: vec![
             Translation2d { x: 0.6, y: 0.6 },
             Translation2d { x: 0.6, y: -0.6 },
