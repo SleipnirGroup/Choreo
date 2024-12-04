@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.ArrayList;
 
 /**
  * A class that represents a trajectory that can be used in an autonomous routine and have triggers
@@ -103,10 +104,12 @@ public class AutoTrajectory {
 
   @SuppressWarnings("unchecked")
   private void logTrajectory(boolean starting) {
-    TrajectorySample<?> sample = trajectory.getInitialSample(false);
-    if (sample == null) {
+    var sampleOpt = trajectory.getInitialSample(false);
+    if (sampleOpt.isEmpty()) {
       return;
-    } else if (sample instanceof SwerveSample) {
+    }
+    var sample = sampleOpt.get();
+    if (sample instanceof SwerveSample) {
       TrajectoryLogger<SwerveSample> swerveLogger =
           (TrajectoryLogger<SwerveSample>) trajectoryLogger;
       Trajectory<SwerveSample> swerveTrajectory = (Trajectory<SwerveSample>) trajectory;
@@ -130,7 +133,11 @@ public class AutoTrajectory {
 
   @SuppressWarnings("unchecked")
   private void cmdExecute() {
-    var sample = trajectory.sampleAt(timer.get(), mirrorTrajectory.getAsBoolean());
+    var sampleOpt = trajectory.sampleAt(timer.get(), mirrorTrajectory.getAsBoolean());
+    if (sampleOpt.isEmpty()) {
+      return;
+    }
+    var sample = sampleOpt.get();
     if (sample instanceof SwerveSample swerveSample) {
       var swerveController = (Consumer<SwerveSample>) this.controller;
       swerveController.accept(swerveSample);
@@ -201,10 +208,7 @@ public class AutoTrajectory {
    * @return The starting pose
    */
   public Optional<Pose2d> getInitialPose() {
-    if (trajectory.samples().isEmpty()) {
-      return Optional.empty();
-    }
-    return Optional.ofNullable(trajectory.getInitialPose(mirrorTrajectory.getAsBoolean()));
+    return trajectory.getInitialPose(mirrorTrajectory.getAsBoolean());
   }
 
   /**
@@ -216,10 +220,7 @@ public class AutoTrajectory {
    * @return The starting pose
    */
   public Optional<Pose2d> getFinalPose() {
-    if (trajectory.samples().isEmpty()) {
-      return Optional.empty();
-    }
-    return Optional.ofNullable(trajectory.getFinalPose(mirrorTrajectory.getAsBoolean()));
+    return trajectory.getFinalPose(mirrorTrajectory.getAsBoolean());
   }
 
   /**
@@ -466,9 +467,11 @@ public class AutoTrajectory {
       // with having it all be 1 trigger that just has a list of possess and checks each one each
       // cycle or something like that.
       // If choreo starts proposing memory issues we can look into this.
-      Pose2d pose = trajectory.sampleAt(event.timestamp, mirrorTrajectory.getAsBoolean()).getPose();
-      trig = trig.or(atPose(pose, toleranceMeters));
-      foundEvent = true;
+      Optional<Pose2d> poseOpt = trajectory.sampleAt(event.timestamp, mirrorTrajectory.getAsBoolean()).map(TrajectorySample::getPose);
+      if (poseOpt.isPresent()) {
+        trig = trig.or(atPose(poseOpt.get(), toleranceMeters));
+        foundEvent = true;
+      }
     }
 
     // The user probably expects an event to exist if they're trying to do something at that event,
@@ -553,11 +556,12 @@ public class AutoTrajectory {
    */
   public Pose2d[] collectEventPoses(String eventName) {
     var times = collectEventTimes(eventName);
-    var poses = new Pose2d[times.length];
+    ArrayList<Pose2d> poses = new ArrayList<Pose2d>();
     for (int i = 0; i < times.length; i++) {
-      poses[i] = trajectory.sampleAt(times[i], mirrorTrajectory.getAsBoolean()).getPose();
+      trajectory.sampleAt(times[i], mirrorTrajectory.getAsBoolean()).map(TrajectorySample::getPose)
+      .ifPresent(poses::add);
     }
-    return poses;
+    return poses.toArray(Pose2d[]::new);
   }
 
   @Override
