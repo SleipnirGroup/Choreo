@@ -15,12 +15,19 @@
 
 int main() {
   trajopt::DifferentialDrivetrain differentialDrivetrain{
+      // kg
       .mass = 45,
+      // kg-m²
       .moi = 6,
+      // m
       .wheelRadius = 0.08,
+      // rad/s
       .wheelMaxAngularVelocity = 70,
+      // N-m
       .wheelMaxTorque = 5,
+      // unitless
       .wheelCoF = 1.5,
+      // m
       .trackwidth = 0.6};
 
   trajopt::LinearVelocityMaxMagnitudeConstraint zeroLinearVelocity{0.0};

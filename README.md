@@ -12,7 +12,7 @@ Grab the latest release for your platform on the [releases](https://github.com/S
 
 ## Usage and Documentation
 
-Check out the [Docs](https://sleipnirgroup.github.io/Choreo), which covers installation, usage, building, and ChoreoLib.
+Check out the [Docs](https://choreo.autos), which covers installation, usage, building, and ChoreoLib.
 
 ## Robot code integration
 
@@ -26,7 +26,7 @@ An example project using Choreo is available [here](https://github.com/SleipnirG
 - [src-core](src-core) - Rust code shared between the app and the CLI
 - [choreolib](choreolib) - ChoreoLib: robot-side library for loading and following Choreo paths
 - [trajoptlib](trajoptlib) - TrajoptLib: library used by Choreo to generate time-optimal trajectories for FRC robots
-- [docs](docs) - Source for the [documentation](https://sleipnirgroup.github.io/Choreo)
+- [docs](docs) - Source for the [documentation](https://choreo.autos)
 
 ## Authors
 

@@ -8,6 +8,8 @@ import choreo.Choreo.TrajectoryLogger;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
+import edu.wpi.first.hal.FRCNetComm.tResourceType;
+import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -19,15 +21,14 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
  * A factory used to create {@link AutoRoutine}s and {@link AutoTrajectory}s.
  *
- * @see <a href="https://sleipnirgroup.github.io/Choreo/choreolib/auto-routines">Auto Routine
- *     Docs</a>
+ * @see <a href="https://choreo.autos/choreolib/auto-routines">Auto Routine Docs</a>
  */
 public class AutoFactory {
   static final AutoRoutine VOID_ROUTINE =
@@ -94,7 +95,7 @@ public class AutoFactory {
 
   private final TrajectoryCache trajectoryCache = new TrajectoryCache();
   private final Supplier<Pose2d> poseSupplier;
-  private final BiConsumer<Pose2d, ? extends TrajectorySample<?>> controller;
+  private final Consumer<? extends TrajectorySample<?>> controller;
   private final BooleanSupplier mirrorTrajectory;
   private final Subsystem driveSubsystem;
   private final AutoBindings bindings = new AutoBindings();
@@ -114,7 +115,7 @@ public class AutoFactory {
    */
   public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
       Supplier<Pose2d> poseSupplier,
-      BiConsumer<Pose2d, SampleType> controller,
+      Consumer<SampleType> controller,
       BooleanSupplier mirrorTrajectory,
       Subsystem driveSubsystem,
       AutoBindings bindings,
@@ -126,6 +127,7 @@ public class AutoFactory {
     this.bindings.merge(bindings);
     this.trajectoryLogger =
         trajectoryLogger.map(logger -> (TrajectoryLogger<? extends TrajectorySample<?>>) logger);
+    HAL.report(tResourceType.kResourceType_ChoreoTrigger, 1);
   }
 
   /**
@@ -210,8 +212,7 @@ public class AutoFactory {
       Trajectory<SampleType> trajectory, AutoRoutine routine) {
     // type solidify everything
     final Trajectory<SampleType> solidTrajectory = trajectory;
-    final BiConsumer<Pose2d, SampleType> solidController =
-        (BiConsumer<Pose2d, SampleType>) this.controller;
+    final Consumer<SampleType> solidController = (Consumer<SampleType>) this.controller;
     final Optional<TrajectoryLogger<SampleType>> solidLogger =
         this.trajectoryLogger.map(logger -> (TrajectoryLogger<SampleType>) logger);
     return new AutoTrajectory(

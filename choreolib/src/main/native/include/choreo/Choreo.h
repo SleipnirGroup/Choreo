@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <concepts>
 #include <functional>
 #include <optional>
 #include <string>
@@ -14,10 +15,13 @@
 #include <frc/Filesystem.h>
 #include <frc/geometry/Pose2d.h>
 #include <frc2/command/Subsystem.h>
+#include <hal/FRCUsageReporting.h>
 #include <wpi/MemoryBuffer.h>
 #include <wpi/json.h>
 
+#include "choreo/trajectory/DifferentialSample.h"
 #include "choreo/trajectory/ProjectFile.h"
+#include "choreo/trajectory/SwerveSample.h"
 #include "choreo/trajectory/Trajectory.h"
 #include "choreo/trajectory/TrajectorySample.h"
 #include "choreo/util/AllianceFlipperUtil.h"
@@ -144,6 +148,12 @@ class Choreo {
   template <TrajectorySample SampleType>
   static std::optional<Trajectory<SampleType>> LoadTrajectoryString(
       std::string_view trajectoryJsonString, std::string_view trajectoryName) {
+    if constexpr (std::same_as<SampleType, SwerveSample>) {
+      HAL_Report(HALUsageReporting::kResourceType_ChoreoTrajectory, 1);
+    } else if constexpr (std::same_as<SampleType, DifferentialSample>) {
+      HAL_Report(HALUsageReporting::kResourceType_ChoreoTrajectory, 2);
+    }
+
     wpi::json json = wpi::json::parse(trajectoryJsonString);
     std::string version = json["version"];
     if (kSpecVersion != version) {
