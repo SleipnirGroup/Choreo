@@ -398,10 +398,7 @@ pub struct Trajectory {
     /// The indices of samples which are associated with split waypoints.
     /// This includes 0, but the index of the last sample is never in this list even if the split toggle is set
     /// for the last waypoint
-    pub splits: Vec<usize>,
-    /// The trackwidth of the robot,
-    /// used in robot code for differential drive calculations
-    pub trackwidth: f64,
+    pub splits: Vec<usize>
 }
 
 /// A structure representing a `.traj` file.

@@ -5,7 +5,7 @@ import choreo
 TRAJECTORY = """
 {
  "name":"New Path",
- "version":1,
+ "version":0,
  "snapshot":{
   "waypoints":[
     {"x":0.0, "y":0.0, "heading":0.0, "intervals":9, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},

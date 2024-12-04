@@ -1,6 +1,6 @@
 {
  "name":"test",
- "version":1,
+ "version":0,
  "snapshot":{
   "waypoints":[
     {"x":2.6185336112976074, "y":6.034867286682129, "heading":0.0, "intervals":16, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
