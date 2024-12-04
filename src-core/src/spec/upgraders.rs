@@ -15,14 +15,14 @@ mod traj_file {
 
     fn make_upgrader() -> Upgrader {
         let mut upgrader = Upgrader::new(TRAJ_SCHEMA_VERSION);
-        upgrader.add_version_action(up_beta_1);
+        upgrader.add_version_action(up_0_1);
         // Ensure the new upgrader is added here
         upgrader
     }
 
     // Naming convention: up_[old version]_[new_version]
     // the up prefix lets version numerals be used
-    fn up_beta_1(editor: &mut Editor) -> ChoreoResult<()> {
+    fn up_0_1(editor: &mut Editor) -> ChoreoResult<()> {
         if editor.has_path("trajectory") {
             editor.set_path("trajectory.trackwidth", 1.0)
         } else {
@@ -38,12 +38,12 @@ mod traj_file {
 
         use crate::spec::trajectory::TrajectoryFile;
         #[test]
-        pub fn test_beta6_differential() -> ChoreoResult<()> {
-            test_trajectory("beta6", "differential")
+        pub fn test_0_differential() -> ChoreoResult<()> {
+            test_trajectory("0", "differential")
         }
         #[test]
-        pub fn test_beta6_swerve() -> ChoreoResult<()> {
-            test_trajectory("beta6", "swerve")
+        pub fn test_0_swerve() -> ChoreoResult<()> {
+            test_trajectory("0", "swerve")
         }
 
         /// Tests that the file upgrades to the current version and deserializes properly.
@@ -113,13 +113,13 @@ mod project_file {
 
     fn make_upgrader() -> Upgrader {
         let mut upgrader = Upgrader::new(PROJECT_SCHEMA_VERSION);
-        upgrader.add_version_action(up_beta_1);
+        upgrader.add_version_action(up_0_1);
 
         upgrader
     }
     // Naming convention: up_[old version]_[new_version]
     // the up prefix lets version numerals be used
-    fn up_beta_1(editor: &mut Editor) -> ChoreoResult<()> {
+    fn up_0_1(editor: &mut Editor) -> ChoreoResult<()> {
         editor.set_path_serialize("config.cof", Expr::new("1.5", 1.5))
     }
 
@@ -145,12 +145,12 @@ mod project_file {
         }
         // TODO: macroize this to one line per test
         #[test]
-        pub fn test_beta6_differential() -> ChoreoResult<()> {
-            test_project("beta6", "differential")
+        pub fn test_0_differential() -> ChoreoResult<()> {
+            test_project("0", "differential")
         }
         #[test]
-        pub fn test_beta6_swerve() -> ChoreoResult<()> {
-            test_project("beta6", "swerve")
+        pub fn test_0_swerve() -> ChoreoResult<()> {
+            test_project("0", "swerve")
         }
     }
 }
