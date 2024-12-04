@@ -258,7 +258,11 @@ class DifferentialTrajectory:
         self.splits = splits
         self.events = events
 
-    def __sample_internal(self, timestamp: float) -> DifferentialSample:
+    def __sample_internal(self, timestamp: float) -> DifferentialSample | None:
+        if len(self.samples) == 0:
+            return None
+        if len(self.samples) == 1:
+            return self.samples[0]
         # Handle timestamps outside the trajectory range
         if timestamp < self.samples[0].timestamp:
             return self.samples[0]
@@ -292,7 +296,7 @@ class DifferentialTrajectory:
 
     def sample_at(
         self, timestamp: float, flip_for_red_alliance: bool = False
-    ) -> DifferentialSample:
+    ) -> DifferentialSample | None:
         """
         Return an interpolated sample of the trajectory at the given timestamp.
 
@@ -307,7 +311,8 @@ class DifferentialTrajectory:
             The Sample at the given time.
         """
         tmp = self.__sample_internal(timestamp)
-
+        if tmp is None:
+            return None
         return tmp.flipped() if flip_for_red_alliance else tmp
 
     def get_samples(self) -> list[DifferentialSample]:
@@ -316,26 +321,31 @@ class DifferentialTrajectory:
         """
         return self.samples
 
-    def get_initial_pose(self, flip_for_red_alliance: bool = False) -> Pose2d:
+    def get_initial_pose(self, flip_for_red_alliance: bool = False) -> Pose2d | None:
         """
         Returns the initial pose of the trajectory.
 
         Parameter ``flip_for_red_alliance``:
             Whether or not to return the Pose flipped.
         """
+
+        if len(self.samples) == 0:
+            return None
         return (
             self.samples[0].flipped().get_pose()
             if flip_for_red_alliance
             else self.samples[0].get_pose()
         )
 
-    def get_final_pose(self, flip_for_red_alliance: bool = False) -> Pose2d:
+    def get_final_pose(self, flip_for_red_alliance: bool = False) -> Pose2d | None:
         """
         Returns the final pose of the trajectory.
 
         Parameter ``flip_for_red_alliance``:
             Whether or not to return the Pose flipped.
         """
+        if len(self.samples) == 0:
+            return None
         return (
             self.samples[-1].flipped().get_pose()
             if flip_for_red_alliance
@@ -347,6 +357,8 @@ class DifferentialTrajectory:
         Returns the total time of the trajectory (the timestamp of the last
         sample).
         """
+        if len(self.samples) == 0:
+            return 0.0
         return self.samples[-1].timestamp
 
     def get_poses(self) -> list[Pose2d]:
@@ -572,7 +584,11 @@ class SwerveTrajectory:
         self.splits = splits
         self.events = events
 
-    def __sample_internal(self, timestamp: float) -> SwerveSample:
+    def __sample_internal(self, timestamp: float) -> SwerveSample | None:
+        if len(self.samples) == 0:
+            return None
+        if len(self.samples) == 1:
+            return self.samples[0]
         # Handle timestamps outside the trajectory range
         if timestamp < self.samples[0].timestamp:
             return self.samples[0]
@@ -606,7 +622,7 @@ class SwerveTrajectory:
 
     def sample_at(
         self, timestamp: float, flip_for_red_alliance: bool = False
-    ) -> SwerveSample:
+    ) -> SwerveSample | None:
         """
         Return an interpolated sample of the trajectory at the given timestamp.
 
@@ -621,7 +637,8 @@ class SwerveTrajectory:
             The Sample at the given time.
         """
         tmp = self.__sample_internal(timestamp)
-
+        if tmp is None:
+            return None
         return tmp.flipped() if flip_for_red_alliance else tmp
 
     def get_samples(self) -> list[SwerveSample]:
@@ -630,26 +647,32 @@ class SwerveTrajectory:
         """
         return self.samples
 
-    def get_initial_pose(self, flip_for_red_alliance: bool = False) -> Pose2d:
+    def get_initial_pose(self, flip_for_red_alliance: bool = False) -> Pose2d | None:
         """
         Returns the initial pose of the trajectory.
 
         Parameter ``flip_for_red_alliance``:
             Whether or not to return the Pose flipped.
         """
+
+        if len(self.samples) == 0:
+            return None
         return (
             self.samples[0].flipped().get_pose()
             if flip_for_red_alliance
             else self.samples[0].get_pose()
         )
 
-    def get_final_pose(self, flip_for_red_alliance: bool = False) -> Pose2d:
+    def get_final_pose(self, flip_for_red_alliance: bool = False) -> Pose2d | None:
         """
         Returns the final pose of the trajectory.
 
         Parameter ``flip_for_red_alliance``:
             Whether or not to return the Pose flipped.
         """
+
+        if len(self.samples) == 0:
+            return None
         return (
             self.samples[-1].flipped().get_pose()
             if flip_for_red_alliance
@@ -661,6 +684,9 @@ class SwerveTrajectory:
         Returns the total time of the trajectory (the timestamp of the last
         sample).
         """
+
+        if len(self.samples) == 0:
+            return 0.0
         return self.samples[-1].timestamp
 
     def get_poses(self) -> list[Pose2d]:
