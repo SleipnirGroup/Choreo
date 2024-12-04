@@ -4,12 +4,16 @@ use serde::{Deserialize, Serialize};
 
 pub mod project;
 pub mod trajectory;
+pub mod upgraders;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct OpenFilePayload {
     pub dir: String,
     pub name: String,
 }
+
+pub const PROJECT_SCHEMA_VERSION: u32 = 1;
+pub const TRAJ_SCHEMA_VERSION: u32 = 0;
 
 /// A trait for types that can be snapshotted.
 /// This allows for the type to be converted to a f64.

@@ -10,7 +10,7 @@ import {
 import {
   EventMarker,
   Expr,
-  SAVE_FILE_VERSION,
+  TRAJ_SCHEMA_VERSION,
   Waypoint,
   WaypointUUID,
   type ChoreoPath,
@@ -47,6 +47,9 @@ export const DEFAULT_EVENT_MARKER: EventMarker = {
   },
   event: undefined
 };
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
 export const HolonomicPathStore = types
   .model("HolonomicPathStore", {
     snapshot: types.frozen<ChoreoPath<number>>(),
@@ -70,7 +73,7 @@ export const HolonomicPathStore = types
         const markers = self.markers.map((m) => m.serialize);
         return {
           name: self.name,
-          version: SAVE_FILE_VERSION,
+          version: TRAJ_SCHEMA_VERSION,
           params: self.params.serialize,
           trajectory: self.trajectory.serialize,
           snapshot: self.snapshot,

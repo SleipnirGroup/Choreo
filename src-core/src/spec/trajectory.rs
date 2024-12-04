@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use trajoptlib::{DifferentialTrajectorySample, SwerveTrajectorySample};
 
-use super::{Expr, SnapshottableType};
+use super::{upgraders::upgrade_traj_file, Expr, SnapshottableType};
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -409,7 +409,7 @@ pub struct TrajectoryFile {
     /// Will always be in sync with the file name on disk.
     pub name: String,
     /// The version of the `.traj` file spec.
-    pub version: String,
+    pub version: u32,
     /// The snapshot of the parameters at the time of the last generation.
     pub snapshot: Option<Parameters<f64>>,
     /// The parameters used for generating the trajectory.
@@ -430,7 +430,8 @@ impl TrajectoryFile {
     /// # Errors
     /// - [`crate::ChoreoError::Json`] if the json string is invalid.
     pub fn from_content(content: &str) -> crate::ChoreoResult<TrajectoryFile> {
-        serde_json::from_str(content).map_err(Into::into)
+        let val = upgrade_traj_file(serde_json::from_str(content)?)?;
+        serde_json::from_value(val).map_err(Into::into)
     }
 }
 
