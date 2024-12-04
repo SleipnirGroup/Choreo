@@ -95,8 +95,7 @@ class Trajectory {
   template <int Year = util::kDefaultYear>
   std::optional<SampleType> SampleAt(units::second_t timestamp,
                                      bool mirrorForRedAlliance = false) const {
-    std::optional<SampleType> state = SampleInternal(timestamp);
-    if (state.has_value()) {
+    if (auto state = SampleInternal(timestamp)) {
       return mirrorForRedAlliance ? state.value().template Flipped<Year>()
                                   : state;
     } else {
