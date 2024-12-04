@@ -32,23 +32,23 @@ mod traj_file {
 
     #[cfg(test)]
     mod tests {
-        use crate::spec::upgraders::testing_shared::get_contents;
+        use crate::spec::upgraders::testing_shared::{get_contents, FileType};
         use crate::spec::TRAJ_SCHEMA_VERSION;
         use crate::ChoreoResult;
 
         use crate::spec::trajectory::TrajectoryFile;
         #[test]
         pub fn test_beta6_differential() -> ChoreoResult<()> {
-            test_trajectory("beta6", "differential", "differential.traj")
+            test_trajectory("beta6", "differential")
         }
         #[test]
         pub fn test_beta6_swerve() -> ChoreoResult<()> {
-            test_trajectory("beta6", "swerve", "swerve.traj")
+            test_trajectory("beta6", "swerve")
         }
 
         /// Tests that the file upgrades to the current version and deserializes properly.
-        fn test_trajectory(version: &str, drive_type: &str, file_name: &str) -> ChoreoResult<()> {
-            let contents = get_contents(version, drive_type, file_name);
+        fn test_trajectory(version: &str, file_name: &str) -> ChoreoResult<()> {
+            let contents = get_contents(FileType::Trajectory, version, file_name);
             let file = TrajectoryFile::from_content(&(contents))?;
             assert!(
                 file.version == TRAJ_SCHEMA_VERSION,
@@ -64,15 +64,37 @@ mod traj_file {
 #[cfg(test)]
 mod testing_shared {
     use std::{fs, path::PathBuf, str::FromStr};
+    pub enum FileType {
+        Project,
+        Trajectory
+
+    }
+    impl FileType {
+        pub fn directory(&self) -> &str {
+            match self {
+                FileType::Project => "project",
+                FileType::Trajectory => "trajectory",
+            }
+        }
+        pub fn extension(&self) -> &str {
+            match self {
+                FileType::Project => "chor",
+                FileType::Trajectory => "traj",
+            }
+        }
+    }
     /// Get the contents of a testing json
     /// SAFETY: Panics if the file does not exist. Only for use in test cases.
-    pub fn get_contents(version: &str, drive_type: &str, file_name: &str) -> String {
+    pub fn get_contents(file_type: FileType, version: &str, file_name: &str) -> String {
         let test_json_dir: PathBuf = PathBuf::from_str(env!("CARGO_MANIFEST_DIR"))
             .unwrap()
             .parent()
             .unwrap()
             .join("test-jsons");
-        let file = test_json_dir.join(version).join(drive_type).join(file_name);
+        let file = test_json_dir
+            .join(file_type.directory())
+            .join(version)
+            .join(file_name).with_extension(file_type.extension());
         println!("{}", file.display());
         fs::read_to_string(file).unwrap()
     }
@@ -103,15 +125,15 @@ mod project_file {
 
     #[cfg(test)]
     mod tests {
-        use crate::spec::upgraders::testing_shared::get_contents;
+        use crate::spec::upgraders::testing_shared::{get_contents, FileType};
         use crate::spec::PROJECT_SCHEMA_VERSION;
         use crate::ChoreoResult;
 
         use crate::spec::project::ProjectFile;
 
         /// Tests that the file upgrades to the current version and deserializes properly.
-        fn test_project(version: &str, drive_type: &str, file_name: &str) -> ChoreoResult<()> {
-            let contents = get_contents(version, drive_type, file_name);
+        fn test_project(version: &str, file_name: &str) -> ChoreoResult<()> {
+            let contents = get_contents(FileType::Project, version, file_name);
             let file = ProjectFile::from_content(&(contents))?;
             assert!(
                 file.version == PROJECT_SCHEMA_VERSION,
@@ -124,11 +146,11 @@ mod project_file {
         // TODO: macroize this to one line per test
         #[test]
         pub fn test_beta6_differential() -> ChoreoResult<()> {
-            test_project("beta6", "differential", "differential.chor")
+            test_project("beta6", "differential")
         }
         #[test]
         pub fn test_beta6_swerve() -> ChoreoResult<()> {
-            test_project("beta6", "swerve", "swerve.chor")
+            test_project("beta6", "swerve")
         }
     }
 }
