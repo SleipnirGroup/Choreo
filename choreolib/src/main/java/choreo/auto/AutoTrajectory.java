@@ -237,6 +237,23 @@ public class AutoTrajectory {
   }
 
   /**
+   * Will get the starting pose of the trajectory as a Supplier
+   *
+   * <p>This position is flipped when alliance flipping is enabled and the alliance supplier returns Red.
+   * 
+   * <p>This Supplier returns an empty Optional if the trajectory is empty. This method returns an empty Optional
+   * if alliance flipping is enabled and the alliance supplier returns an empty Optional.
+   *
+   * @return The starting pose as a Supplier that will flipp
+   */
+  public Supplier<Optional<Pose2d>> getInitialPoseSupplier() {
+    return AllianceFlipUtil.optionalFlipped(
+      trajectory.getInitialPose(false),
+      routine.alliance,
+      useAllianceFlipping);
+  }
+
+  /**
    * Will get the ending pose of the trajectory.
    *
    * <p>This position is flipped if alliance flipping is enabled and the alliance supplier returns Red.
@@ -251,6 +268,23 @@ public class AutoTrajectory {
       return Optional.empty();
     }
     return trajectory.getFinalPose(doFlip());
+  }
+
+  /**
+   * Will get the ending pose of the trajectory as a Supplier
+   *
+   * <p>This position is flipped when alliance flipping is enabled and the alliance supplier returns Red.
+   * 
+   * <p>This Supplier returns an empty Optional if the trajectory is empty. This method returns an empty Optional
+   * if alliance flipping is enabled and the alliance supplier returns an empty Optional.
+   *
+   * @return The ending pose as a Supplier that will flipp
+   */
+  public Supplier<Optional<Pose2d>> getFinalPoseSupplier() {
+    return AllianceFlipUtil.optionalFlipped(
+      trajectory.getFinalPose(false),
+      routine.alliance,
+      useAllianceFlipping);
   }
 
   /**
@@ -455,37 +489,46 @@ public class AutoTrajectory {
    * Returns a trigger that is true when the robot is within toleranceMeters of the given pose.
    *
    * <p>The pose is flipped if alliance flipping is enabled and the alliance supplier returns Red.
+   * 
+   * While alliance flipping is enabled and the alliance supplier returns empty, the trigger will return false.
    *
-   * @param pose The pose to check against
+   * @param pose The pose to check against, unflipped.
+   * @param toleranceMeters The tolerance in meters.
+   * @return A trigger that is true when the robot is within toleranceMeters of the given pose.
+   */
+  public Trigger atPose(Optional<Pose2d> pose, double toleranceMeters) {
+    Supplier<Optional<Pose2d>> checkedPoseOptSup = optionalFlipped(pose);
+    return new Trigger(
+        routine.loop(),
+        () -> {
+          Optional<Pose2d> checkedPoseOpt = checkedPoseOptSup.get();
+          return checkedPoseOpt.map(
+            (checkedPose)->{
+              Translation2d currentTrans = poseSupplier.get().getTranslation();
+              return currentTrans.getDistance(checkedPose.getTranslation()) < toleranceMeters;
+            }
+          ).orElse(false);
+
+        });
+  }
+
+    /**
+   * Returns a trigger that is true when the robot is within toleranceMeters of the given pose.
+   *
+   * <p>The pose is flipped if alliance flipping is enabled and the alliance supplier returns Red.
+   * 
+   * While alliance flipping is enabled and the alliance supplier returns empty, the trigger will return false.
+   *
+   * @param pose The pose to check against, unflipped.
    * @param toleranceMeters The tolerance in meters.
    * @return A trigger that is true when the robot is within toleranceMeters of the given pose.
    */
   public Trigger atPose(Pose2d pose, double toleranceMeters) {
-    return atPose(()->pose, toleranceMeters);
+    return atPose(Optional.of(pose), toleranceMeters);
   }
-  /**
-   * Returns a trigger that is true when the robot is within toleranceMeters of the given pose.
-   *
-   * <p>The pose is flipped if alliance flipping is enabled and the alliance supplier returns Red.
-   *
-   * @param pose The pose to check against, 
-   * @param toleranceMeters The tolerance in meters.
-   * @return A trigger that is true when the robot is within toleranceMeters of the given pose.
-   */
-  public Trigger atPose(Supplier<Pose2d> pose, double toleranceMeters) {
-    Supplier<Translation2d > checkedTrans = ()-> {
-      Pose2d checkedPose = pose.get();
-      return doFlip()
-      ? AllianceFlipUtil.flip(checkedPose.getTranslation())
-      : checkedPose.getTranslation();
-    };
-        
-    return new Trigger(
-        routine.loop(),
-        () -> {
-          Translation2d currentTrans = poseSupplier.get().getTranslation();
-          return currentTrans.getDistance(checkedTrans.get()) < toleranceMeters;
-        });
+
+  private Supplier<Optional<Pose2d>> optionalFlipped(Optional<Pose2d> pose) {
+    return AllianceFlipUtil.optionalFlipped(pose, routine.alliance, useAllianceFlipping);
   }
 
   /**
@@ -507,10 +550,10 @@ public class AutoTrajectory {
     Trigger trig = offTrigger;
 
     for (var event : trajectory.getEvents(eventName)) {
-      // This could create alot of objects, could be done a more efficient way
+      // This could create a lot of objects, could be done a more efficient way
       // with having it all be 1 trigger that just has a list of possess and checks each one each
       // cycle or something like that.
-      // If choreo starts proposing memory issues we can look into this.
+      // If choreo starts showing memory issues we can look into this.
       Optional<Pose2d> poseOpt =
           trajectory
               // don't mirror here because the poses are mirrored themselves
@@ -518,7 +561,7 @@ public class AutoTrajectory {
               .sampleAt(event.timestamp, false)
               .map(TrajectorySample::getPose);
       if (poseOpt.isPresent()) {
-        trig = trig.or(atPose(poseOpt.get(), toleranceMeters));
+        trig = trig.or(atPose(poseOpt, toleranceMeters));
         foundEvent = true;
       }
     }
