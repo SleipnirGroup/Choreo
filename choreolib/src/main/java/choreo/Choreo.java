@@ -379,8 +379,8 @@ public final class Choreo {
    * @param bindings Universal trajectory event bindings.
    * @param trajectoryLogger A {@link TrajectoryLogger} to log {@link Trajectory} as they start and
    *     finish.
-   * @param alliance A custom supplier of the current alliance to use instead of
-   *     {@link DriverStation#getAlliance}.
+   * @param alliance A custom supplier of the current alliance to use instead of {@link
+   *     DriverStation#getAlliance}.
    * @return An {@link AutoFactory} that can be used to create {@link AutoRoutine} and {@link
    *     AutoTrajectory}.
    * @see AutoChooser using this factory with AutoChooser to generate auto routines.
