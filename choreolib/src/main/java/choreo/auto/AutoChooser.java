@@ -81,12 +81,14 @@ public class AutoChooser {
    * <p>This method should be called every cycle in the {@link IterativeRobotBase#robotPeriodic()}.
    * It will check if the selected auto routine has changed and update the active AutoRoutine.
    *
-   * <p>The AutoRoutine can only be updated when the robot is disabled. If the chooser in your
-   * dashboard says {@code BAD} the {@link AutoChooser} has not responded to the selection yet and
-   * you need to disable the robot to update it.
+   * <p>The AutoRoutine can only be updated when the robot is disabled and connected to
+   * DriverStation. If the chooser in your dashboard says {@code BAD} the {@link AutoChooser} has
+   * not responded to the selection yet and you need to disable the robot to update it.
    */
   public void update() {
-    if (DriverStation.isDisabled()) {
+    if (DriverStation.isDisabled()
+        && DriverStation.isDSAttached()
+        && DriverStation.getAlliance().isPresent()) {
       String selectStr = selected.get();
       if (selectStr.equals(lastAutoRoutineName)) return;
       if (!autoRoutines.containsKey(selectStr)) {

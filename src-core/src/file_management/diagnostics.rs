@@ -79,16 +79,14 @@ pub fn get_log_lines(log_dir: Option<PathBuf>) -> Vec<String> {
                 });
                 let log_file = log_files.last().ok_or(ChoreoError::FileNotFound(None));
                 match log_file {
-                    Ok(log_file) => {
-                        return std::fs::read_to_string(log_file.path())
-                            .unwrap_or_else(|e| {
-                                tracing::error!("{e}");
-                                String::new()
-                            })
-                            .lines()
-                            .map(|line| format!("{:}\n", line))
-                            .collect::<Vec<String>>()
-                    }
+                    Ok(log_file) => std::fs::read_to_string(log_file.path())
+                        .unwrap_or_else(|e| {
+                            tracing::error!("{e}");
+                            String::new()
+                        })
+                        .lines()
+                        .map(|line| format!("{:}\n", line))
+                        .collect::<Vec<String>>(),
                     Err(e) => {
                         tracing::error!("{e}");
                         Vec::new()

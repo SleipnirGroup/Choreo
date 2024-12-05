@@ -7,7 +7,7 @@ import {
   DifferentialSample,
   ProgressUpdate,
   Project,
-  SAVE_FILE_VERSION,
+  PROJECT_SCHEMA_VERSION,
   SampleType,
   SwerveSample,
   Trajectory
@@ -65,6 +65,10 @@ export const ISampleType = types.enumeration<SampleType>([
   "Swerve",
   "Differential"
 ]);
+
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
 export const DocumentStore = types
   .model("DocumentStore", {
     name: types.string,
@@ -85,7 +89,7 @@ export const DocumentStore = types
     serializeChor(): Project {
       return {
         name: self.name,
-        version: SAVE_FILE_VERSION,
+        version: PROJECT_SCHEMA_VERSION,
         type: self.type,
         variables: self.variables.serialize,
         config: self.robotConfig.serialize
