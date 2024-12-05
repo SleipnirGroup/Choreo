@@ -39,7 +39,7 @@ public class AutoRoutine {
 
   /** The supplier of the current alliance */
   protected Supplier<Optional<Alliance>> alliance = DriverStation::getAlliance;
-
+  
   /**
    * Creates a new loop with a specific name
    *

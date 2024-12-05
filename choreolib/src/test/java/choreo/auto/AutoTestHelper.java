@@ -16,8 +16,8 @@ public class AutoTestHelper {
     return new AutoFactory(
         () -> pose.get(),
         sample -> pose.set(sample.getPose()),
-        () -> redAlliance,
         new Subsystem() {},
+        () -> true,
         new AutoBindings(),
         Optional.empty(),
         alliance);

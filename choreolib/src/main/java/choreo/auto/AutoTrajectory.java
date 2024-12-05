@@ -15,6 +15,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -44,7 +45,7 @@ public class AutoTrajectory {
   private final TrajectoryLogger<? extends TrajectorySample<?>> trajectoryLogger;
   private final Supplier<Pose2d> poseSupplier;
   private final Consumer<? extends TrajectorySample<?>> controller;
-  private final BooleanSupplier mirrorTrajectory;
+  private final BooleanSupplier useAllianceFlipping;
   private final Timer timer = new Timer();
   private final Subsystem driveSubsystem;
   private final AutoRoutine routine;
@@ -79,7 +80,7 @@ public class AutoTrajectory {
       Trajectory<SampleType> trajectory,
       Supplier<Pose2d> poseSupplier,
       Consumer<SampleType> controller,
-      BooleanSupplier mirrorTrajectory,
+      BooleanSupplier useAllianceFlipping,
       Optional<TrajectoryLogger<SampleType>> trajectoryLogger,
       Subsystem driveSubsystem,
       AutoRoutine routine,
@@ -88,7 +89,7 @@ public class AutoTrajectory {
     this.trajectory = trajectory;
     this.poseSupplier = poseSupplier;
     this.controller = controller;
-    this.mirrorTrajectory = mirrorTrajectory;
+    this.useAllianceFlipping = useAllianceFlipping;
     this.driveSubsystem = driveSubsystem;
     this.routine = routine;
     this.offTrigger = new Trigger(routine.loop(), () -> false);
@@ -100,6 +101,25 @@ public class AutoTrajectory {
             };
 
     bindings.getBindings().forEach((key, value) -> active().and(atTime(key)).onTrue(value));
+  }
+
+  /**
+   * Returns true if alliance flipping is enabled and the alliance optional is present.
+   * Also returns true if alliance flipping is disabled.
+   */
+  private boolean allowSampling() {
+    if (useAllianceFlipping.getAsBoolean()) {
+      return routine.alliance.get().isPresent();
+    }
+    return true;
+  }
+
+  /**
+   * Returns true if alliance flipping is enabled and the alliance is red.
+   * @return
+   */
+  private boolean doFlip() {
+    return useAllianceFlipping.getAsBoolean() && routine.alliance.get().map(a->a==Alliance.Red).orElse(false);
   }
 
   @SuppressWarnings("unchecked")
@@ -133,7 +153,7 @@ public class AutoTrajectory {
 
   @SuppressWarnings("unchecked")
   private void cmdExecute() {
-    var sampleOpt = trajectory.sampleAt(timer.get(), mirrorTrajectory.getAsBoolean());
+    var sampleOpt = trajectory.sampleAt(timer.get(), doFlip());
     if (sampleOpt.isEmpty()) {
       return;
     }
@@ -202,25 +222,35 @@ public class AutoTrajectory {
   /**
    * Will get the starting pose of the trajectory.
    *
-   * <p>This position is mirrored based on the {@code mirrorTrajectory} boolean supplier in the
-   * factory used to make this trajectory
+   * <p>This position is flipped if alliance flipping is enabled and the alliance supplier returns Red.
+   * 
+   * <p>This method returns an empty Optional if the trajectory is empty. This method returns an empty Optional
+   * if alliance flipping is enabled and the alliance supplier returns an empty Optional.
    *
    * @return The starting pose
    */
   public Optional<Pose2d> getInitialPose() {
-    return trajectory.getInitialPose(mirrorTrajectory.getAsBoolean());
+    if (!allowSampling()) {
+      return Optional.empty();
+    }
+    return trajectory.getInitialPose(doFlip());
   }
 
   /**
    * Will get the ending pose of the trajectory.
    *
-   * <p>This position is mirrored based on the {@code mirrorTrajectory} boolean supplier in the
-   * factory used to make this trajectory
+   * <p>This position is flipped if alliance flipping is enabled and the alliance supplier returns Red.
+   * 
+   * <p>This method returns an empty Optional if the trajectory is empty. This method returns an empty Optional
+   * if alliance flipping is enabled and the alliance supplier returns an empty Optional.
    *
    * @return The starting pose
    */
   public Optional<Pose2d> getFinalPose() {
-    return trajectory.getFinalPose(mirrorTrajectory.getAsBoolean());
+    if (!allowSampling()) {
+      return Optional.empty();
+    }
+    return trajectory.getFinalPose(doFlip());
   }
 
   /**
@@ -424,23 +454,37 @@ public class AutoTrajectory {
   /**
    * Returns a trigger that is true when the robot is within toleranceMeters of the given pose.
    *
-   * <p>This position is mirrored based on the {@code mirrorTrajectory} boolean supplier in the
-   * factory used to make this trajectory.
+   * <p>The pose is flipped if alliance flipping is enabled and the alliance supplier returns Red.
    *
    * @param pose The pose to check against
    * @param toleranceMeters The tolerance in meters.
    * @return A trigger that is true when the robot is within toleranceMeters of the given pose.
    */
   public Trigger atPose(Pose2d pose, double toleranceMeters) {
-    Translation2d checkedTrans =
-        mirrorTrajectory.getAsBoolean()
-            ? AllianceFlipUtil.flip(pose.getTranslation())
-            : pose.getTranslation();
+    return atPose(()->pose, toleranceMeters);
+  }
+  /**
+   * Returns a trigger that is true when the robot is within toleranceMeters of the given pose.
+   *
+   * <p>The pose is flipped if alliance flipping is enabled and the alliance supplier returns Red.
+   *
+   * @param pose The pose to check against, 
+   * @param toleranceMeters The tolerance in meters.
+   * @return A trigger that is true when the robot is within toleranceMeters of the given pose.
+   */
+  public Trigger atPose(Supplier<Pose2d> pose, double toleranceMeters) {
+    Supplier<Translation2d > checkedTrans = ()-> {
+      Pose2d checkedPose = pose.get();
+      return doFlip()
+      ? AllianceFlipUtil.flip(checkedPose.getTranslation())
+      : checkedPose.getTranslation();
+    };
+        
     return new Trigger(
         routine.loop(),
         () -> {
           Translation2d currentTrans = poseSupplier.get().getTranslation();
-          return currentTrans.getDistance(checkedTrans) < toleranceMeters;
+          return currentTrans.getDistance(checkedTrans.get()) < toleranceMeters;
         });
   }
 
@@ -469,7 +513,9 @@ public class AutoTrajectory {
       // If choreo starts proposing memory issues we can look into this.
       Optional<Pose2d> poseOpt =
           trajectory
-              .sampleAt(event.timestamp, mirrorTrajectory.getAsBoolean())
+              // don't mirror here because the poses are mirrored themselves
+              // this also lets atPose be called before the alliance is ready
+              .sampleAt(event.timestamp, false)
               .map(TrajectorySample::getPose);
       if (poseOpt.isPresent()) {
         trig = trig.or(atPose(poseOpt.get(), toleranceMeters));
@@ -547,26 +593,6 @@ public class AutoTrajectory {
    */
   public double[] collectEventTimes(String eventName) {
     return trajectory.getEvents(eventName).stream().mapToDouble(e -> e.timestamp).toArray();
-  }
-
-  /**
-   * Returns an array of all the poses of the events with the given name.
-   *
-   * @param eventName The name of the event.
-   * @return An array of all the poses of the events with the given name.
-   * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
-   *     GUI</a>
-   */
-  public Pose2d[] collectEventPoses(String eventName) {
-    var times = collectEventTimes(eventName);
-    ArrayList<Pose2d> poses = new ArrayList<Pose2d>();
-    for (int i = 0; i < times.length; i++) {
-      trajectory
-          .sampleAt(times[i], mirrorTrajectory.getAsBoolean())
-          .map(TrajectorySample::getPose)
-          .ifPresent(poses::add);
-    }
-    return poses.toArray(Pose2d[]::new);
   }
 
   @Override

@@ -196,14 +196,7 @@ public Command fivePieceAutoTriggerMono(AutoFactory factory) {
   // shoots the note when the shoot event marker is reached
   trajectory.atTime("shoot").onTrue(shootIfNoteOwned());
 
-  // aims the shooter when the aim event marker is reached,
-  // the aim command aims based on the next shoot event marker position
-  final AtomicInteger shootIndex = new AtomicInteger(0);
-  final Pose2d[] shootPositions = trajectory.collectEventPoses("shoot");
-  trajectory.atTime("aim")
-      .onTrue(defer(() -> aimFor(shootPositions[shootIndex.getAndIncrement()]), Set.of(shooter)));
-
-  return routine.cmd().beforeStarting(() -> shootIndex.set(0)).withName("fivePieceAuto");
+  return routine.cmd().withName("fivePieceAuto");
 }
 ```
 

@@ -98,7 +98,7 @@ public class AutoFactory {
   private final Supplier<Pose2d> poseSupplier;
   private final Consumer<? extends TrajectorySample<?>> controller;
   private final Supplier<Optional<Alliance>> alliance;
-  private final BooleanSupplier mirrorTrajectory;
+  private final BooleanSupplier useAllianceFlipping;
   private final Subsystem driveSubsystem;
   private final AutoBindings bindings = new AutoBindings();
   private final Optional<TrajectoryLogger<? extends TrajectorySample<?>>> trajectoryLogger;
@@ -110,8 +110,8 @@ public class AutoFactory {
    * @param <SampleType> {@link Choreo#createAutoFactory}
    * @param poseSupplier {@link Choreo#createAutoFactory}
    * @param controller {@link Choreo#createAutoFactory}
-   * @param mirrorTrajectory {@link Choreo#createAutoFactory}
    * @param driveSubsystem {@link Choreo#createAutoFactory}
+   * @param useAllianceFlipping {@link Choreo#createAutoFactory}
    * @param bindings {@link Choreo#createAutoFactory}
    * @param trajectoryLogger {@link Choreo#createAutoFactory}
    * @param alliance {@link Choreo#createAutoFactory}
@@ -119,15 +119,15 @@ public class AutoFactory {
   public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
       Supplier<Pose2d> poseSupplier,
       Consumer<SampleType> controller,
-      BooleanSupplier mirrorTrajectory,
       Subsystem driveSubsystem,
+      BooleanSupplier useAllianceFlipping,
       AutoBindings bindings,
       Optional<TrajectoryLogger<SampleType>> trajectoryLogger,
       Supplier<Optional<Alliance>> alliance) {
     this.poseSupplier = poseSupplier;
     this.controller = controller;
-    this.mirrorTrajectory = mirrorTrajectory;
     this.driveSubsystem = driveSubsystem;
+    this.useAllianceFlipping = useAllianceFlipping;
     this.bindings.merge(bindings);
     this.trajectoryLogger =
         trajectoryLogger.map(logger -> (TrajectoryLogger<? extends TrajectorySample<?>>) logger);
@@ -142,23 +142,23 @@ public class AutoFactory {
    * @param <SampleType> {@link Choreo#createAutoFactory}
    * @param poseSupplier {@link Choreo#createAutoFactory}
    * @param controller {@link Choreo#createAutoFactory}
-   * @param mirrorTrajectory {@link Choreo#createAutoFactory}
    * @param driveSubsystem {@link Choreo#createAutoFactory}
+   * @param useAllianceFlipping {@link Choreo#createAutoFactory}
    * @param bindings {@link Choreo#createAutoFactory}
    * @param trajectoryLogger {@link Choreo#createAutoFactory}
    */
   public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
       Supplier<Pose2d> poseSupplier,
       Consumer<SampleType> controller,
-      BooleanSupplier mirrorTrajectory,
       Subsystem driveSubsystem,
+      BooleanSupplier useAllianceFlipping,
       AutoBindings bindings,
       Optional<TrajectoryLogger<SampleType>> trajectoryLogger) {
     this(
         poseSupplier,
         controller,
-        mirrorTrajectory,
         driveSubsystem,
+        useAllianceFlipping,
         bindings,
         trajectoryLogger,
         DriverStation::getAlliance);
@@ -254,7 +254,7 @@ public class AutoFactory {
         solidTrajectory,
         poseSupplier,
         solidController,
-        mirrorTrajectory,
+        useAllianceFlipping,
         solidLogger,
         driveSubsystem,
         routine,
