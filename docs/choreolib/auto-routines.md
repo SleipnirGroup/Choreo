@@ -213,7 +213,8 @@ public AutoRoutine fivePieceAutoCompositionSeg(AutoFactory factory) {
   // value
   // AMP, SUB, SRC: The 3 starting positions
   // Try to load all the trajectories we need
-  final AutoTrajectory ampToC1 = factory.voidRoutine().trajectory("ampToC1");
+  final Trajectory<SwerveSample> rawAmpToC1 = factory.cache().loadTrajectory("ampToC1");
+  final Command ampToC1 = factory.trajectoryCommand(rawAmpToC1);
   final Command c1ToM1 = factory.trajectoryCommand("c1ToM1");
   final Command m1ToS1 = factory.trajectoryCommand("m1ToS1");
   final Command m1ToM2 = factory.trajectoryCommand("m1ToM2");
@@ -222,14 +223,17 @@ public AutoRoutine fivePieceAutoCompositionSeg(AutoFactory factory) {
   final Command c2ToC3 = factory.trajectoryCommand("c2ToC3");
   final Alert noStartingPoseErr = new Alert("Error: 5 piece auto has no starting pose", AlertType.kError);
 
+  AtomicBoolean hasInitialPose = new AtomicBoolean(true);
+
   Command ret = sequence(
           resetOdometry(() -> {
-              final Optional<Pose2d> initialPose = ampToC1.getInitialPose();
+              final Optional<Pose2d> initialPose = rawAmpToC1.getInitialPose();
               if (initialPose.isPresent()) return initialPose.get();
               noStartingPoseErr.set(true);
-              routine.kill();
+              hasInitialPose.set(false);
               return new Pose2d();
           }),
+          waitUntil(hasInitialPose::get),
           autoAimAndShoot(),
           deadline(
               ampToC1.cmd(), intake(), aimFor(()->ampToC1.getFinalPose().orElseGet(Pose2d::new))),
