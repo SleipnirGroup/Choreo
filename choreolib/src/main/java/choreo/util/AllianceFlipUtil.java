@@ -231,11 +231,11 @@ public class AllianceFlipUtil {
   }
 
   /**
-   * Creates a Supplier<Optional<Pose2d>> based on a Supplier<Optional<Alliance>> and original
-   * Optional<Pose2d>
+   * Creates a Supplier&lt;Optional&lt;Pose2d&gt;&gt; based on a Supplier&lt;Optional&lt;Alliance&gt;&gt; and original
+   * Optional&lt;Pose2d&gt;
    *
-   * @param pose The pose to flip
-   * @param alliance The current alliance
+   * @param poseOpt The pose to flip
+   * @param allianceOpt The current alliance
    * @param doFlip Returns true if flipping based on the alliance should be done
    * @return empty if the alliance is empty; the original pose optional if the alliance is blue or
    *     doFlip is false; the flipped pose optional if the alliance is red and doFlip is true
@@ -251,8 +251,8 @@ public class AllianceFlipUtil {
   }
 
   /**
-   * Creates a Supplier<Optional<Pose2d>> based on a Supplier<Optional<Alliance>> and original
-   * Optional<Pose2d>
+   * Creates a Supplier&lt;Optional&lt;Pose2d&gt;&gt; based on a Supplier&lt;Optional&lt;Alliance&gt;&gt; and original
+   * Optional&lt;Pose2d&gt;
    *
    * @param pose The pose to flip
    * @param alliance The current alliance
