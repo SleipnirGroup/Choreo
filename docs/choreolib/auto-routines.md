@@ -213,7 +213,7 @@ public AutoRoutine fivePieceAutoCompositionSeg(AutoFactory factory) {
   // value
   // AMP, SUB, SRC: The 3 starting positions
   // Try to load all the trajectories we need
-  final AutoTrajectory ampToC1 = routine.trajectory("ampToC1", factory.voidRoutine());
+  final AutoTrajectory ampToC1 = factory.voidRoutine().trajectory("ampToC1");
   final Command c1ToM1 = factory.trajectoryCommand("c1ToM1");
   final Command m1ToS1 = factory.trajectoryCommand("m1ToS1");
   final Command m1ToM2 = factory.trajectoryCommand("m1ToM2");
