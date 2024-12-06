@@ -12,6 +12,7 @@ import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -96,38 +97,71 @@ public class AutoFactory {
   private final TrajectoryCache trajectoryCache = new TrajectoryCache();
   private final Supplier<Pose2d> poseSupplier;
   private final Consumer<? extends TrajectorySample<?>> controller;
-  private final BooleanSupplier mirrorTrajectory;
+  private final Supplier<Optional<Alliance>> alliance;
+  private final BooleanSupplier useAllianceFlipping;
   private final Subsystem driveSubsystem;
   private final AutoBindings bindings = new AutoBindings();
   private final Optional<TrajectoryLogger<? extends TrajectorySample<?>>> trajectoryLogger;
 
   /**
-   * Its recommended to use the {@link Choreo#createAutoFactory} to create a new instance of this
+   * It is recommended to use the {@link Choreo#createAutoFactory} to create a new instance of this
    * class.
    *
    * @param <SampleType> {@link Choreo#createAutoFactory}
    * @param poseSupplier {@link Choreo#createAutoFactory}
    * @param controller {@link Choreo#createAutoFactory}
-   * @param mirrorTrajectory {@link Choreo#createAutoFactory}
    * @param driveSubsystem {@link Choreo#createAutoFactory}
+   * @param useAllianceFlipping {@link Choreo#createAutoFactory}
+   * @param bindings {@link Choreo#createAutoFactory}
+   * @param trajectoryLogger {@link Choreo#createAutoFactory}
+   * @param alliance {@link Choreo#createAutoFactory}
+   */
+  public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
+      Supplier<Pose2d> poseSupplier,
+      Consumer<SampleType> controller,
+      Subsystem driveSubsystem,
+      BooleanSupplier useAllianceFlipping,
+      AutoBindings bindings,
+      Optional<TrajectoryLogger<SampleType>> trajectoryLogger,
+      Supplier<Optional<Alliance>> alliance) {
+    this.poseSupplier = poseSupplier;
+    this.controller = controller;
+    this.driveSubsystem = driveSubsystem;
+    this.useAllianceFlipping = useAllianceFlipping;
+    this.bindings.merge(bindings);
+    this.trajectoryLogger =
+        trajectoryLogger.map(logger -> (TrajectoryLogger<? extends TrajectorySample<?>>) logger);
+    this.alliance = alliance;
+    HAL.report(tResourceType.kResourceType_ChoreoTrigger, 1);
+  }
+
+  /**
+   * It is recommended to use the {@link Choreo#createAutoFactory} to create a new instance of this
+   * class.
+   *
+   * @param <SampleType> {@link Choreo#createAutoFactory}
+   * @param poseSupplier {@link Choreo#createAutoFactory}
+   * @param controller {@link Choreo#createAutoFactory}
+   * @param driveSubsystem {@link Choreo#createAutoFactory}
+   * @param useAllianceFlipping {@link Choreo#createAutoFactory}
    * @param bindings {@link Choreo#createAutoFactory}
    * @param trajectoryLogger {@link Choreo#createAutoFactory}
    */
   public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
       Supplier<Pose2d> poseSupplier,
       Consumer<SampleType> controller,
-      BooleanSupplier mirrorTrajectory,
       Subsystem driveSubsystem,
+      BooleanSupplier useAllianceFlipping,
       AutoBindings bindings,
       Optional<TrajectoryLogger<SampleType>> trajectoryLogger) {
-    this.poseSupplier = poseSupplier;
-    this.controller = controller;
-    this.mirrorTrajectory = mirrorTrajectory;
-    this.driveSubsystem = driveSubsystem;
-    this.bindings.merge(bindings);
-    this.trajectoryLogger =
-        trajectoryLogger.map(logger -> (TrajectoryLogger<? extends TrajectorySample<?>>) logger);
-    HAL.report(tResourceType.kResourceType_ChoreoTrigger, 1);
+    this(
+        poseSupplier,
+        controller,
+        driveSubsystem,
+        useAllianceFlipping,
+        bindings,
+        trajectoryLogger,
+        DriverStation::getAlliance);
   }
 
   /**
@@ -143,7 +177,11 @@ public class AutoFactory {
       trajectoryCache.clear();
     }
 
-    return new AutoRoutine(name);
+    return new AutoRoutine(name, this::allianceKnownOrIgnored);
+  }
+
+  private boolean allianceKnownOrIgnored() {
+    return !useAllianceFlipping.getAsBoolean() || alliance.get().isPresent();
   }
 
   /**
@@ -220,7 +258,8 @@ public class AutoFactory {
         solidTrajectory,
         poseSupplier,
         solidController,
-        mirrorTrajectory,
+        useAllianceFlipping,
+        alliance,
         solidLogger,
         driveSubsystem,
         routine,

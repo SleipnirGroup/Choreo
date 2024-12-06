@@ -23,6 +23,7 @@ import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -330,11 +331,11 @@ public final class Choreo {
    *     robot.
    * @param controller A function that receives the current {@link SampleType} and controls the
    *     robot.
-   * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
-   *     while keeping the same coordinate system origin. This will be called every loop during the
-   *     command.
    * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
    *     Command}s.
+   * @param useAllianceFlipping If this returns true, when on the red alliance, the path will be
+   *     mirrored to the opposite side, while keeping the same coordinate system origin. This will
+   *     be called every loop during the command.
    * @param bindings Universal trajectory event bindings.
    * @return An {@link AutoFactory} that can be used to create {@link AutoRoutine} and {@link
    *     AutoTrajectory}.
@@ -343,14 +344,14 @@ public final class Choreo {
   public static <SampleType extends TrajectorySample<SampleType>> AutoFactory createAutoFactory(
       Supplier<Pose2d> poseSupplier,
       Consumer<SampleType> controller,
-      BooleanSupplier mirrorTrajectory,
+      BooleanSupplier useAllianceFlipping,
       Subsystem driveSubsystem,
       AutoBindings bindings) {
     return new AutoFactory(
         requireNonNullParam(poseSupplier, "poseSupplier", "Choreo.createAutoFactory"),
         requireNonNullParam(controller, "controller", "Choreo.createAutoFactory"),
-        requireNonNullParam(mirrorTrajectory, "mirrorTrajectory", "Choreo.createAutoFactory"),
         requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory"),
+        requireNonNullParam(useAllianceFlipping, "useAllianceFlipping", "Choreo.createAutoFactory"),
         requireNonNullParam(bindings, "bindings", "Choreo.createAutoFactory"),
         Optional.empty());
   }
@@ -363,11 +364,11 @@ public final class Choreo {
    *     robot.
    * @param controller A function that receives the current {@link SampleType} and controls the
    *     robot.
-   * @param mirrorTrajectory If this returns true, the path will be mirrored to the opposite side,
-   *     while keeping the same coordinate system origin. This will be called every loop during the
-   *     command.
    * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
    *     Command}s.
+   * @param useAllianceFlipping If this returns true, when on the red alliance, the path will be
+   *     mirrored to the opposite side, while keeping the same coordinate system origin. This will
+   *     be called every loop during the command.
    * @param bindings Universal trajectory event bindings.
    * @param trajectoryLogger A {@link TrajectoryLogger} to log {@link Trajectory} as they start and
    *     finish.
@@ -378,16 +379,56 @@ public final class Choreo {
   public static <SampleType extends TrajectorySample<SampleType>> AutoFactory createAutoFactory(
       Supplier<Pose2d> poseSupplier,
       Consumer<SampleType> controller,
-      BooleanSupplier mirrorTrajectory,
+      BooleanSupplier useAllianceFlipping,
       Subsystem driveSubsystem,
       AutoBindings bindings,
       TrajectoryLogger<SampleType> trajectoryLogger) {
     return new AutoFactory(
         requireNonNullParam(poseSupplier, "poseSupplier", "Choreo.createAutoFactory"),
         requireNonNullParam(controller, "controller", "Choreo.createAutoFactory"),
-        requireNonNullParam(mirrorTrajectory, "mirrorTrajectory", "Choreo.createAutoFactory"),
         requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory"),
+        requireNonNullParam(useAllianceFlipping, "useAllianceFlipping", "Choreo.createAutoFactory"),
         requireNonNullParam(bindings, "bindings", "Choreo.createAutoFactory"),
         Optional.of(trajectoryLogger));
+  }
+
+  /**
+   * Create a factory that can be used to create {@link AutoRoutine} and {@link AutoTrajectory}.
+   *
+   * @param <SampleType> The type of samples in the trajectory.
+   * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
+   *     robot.
+   * @param controller A function that receives the current {@link SampleType} and controls the
+   *     robot.
+   * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
+   *     Command}s.
+   * @param useAllianceFlipping If this returns true, when on the red alliance, the path will be
+   *     mirrored to the opposite side, while keeping the same coordinate system origin. This will
+   *     be called every loop during the command.
+   * @param bindings Universal trajectory event bindings.
+   * @param trajectoryLogger A {@link TrajectoryLogger} to log {@link Trajectory} as they start and
+   *     finish.
+   * @param alliance A custom supplier of the current alliance to use instead of {@link
+   *     DriverStation#getAlliance}.
+   * @return An {@link AutoFactory} that can be used to create {@link AutoRoutine} and {@link
+   *     AutoTrajectory}.
+   * @see AutoChooser using this factory with AutoChooser to generate auto routines.
+   */
+  public static <SampleType extends TrajectorySample<SampleType>> AutoFactory createAutoFactory(
+      Supplier<Pose2d> poseSupplier,
+      Consumer<SampleType> controller,
+      Subsystem driveSubsystem,
+      BooleanSupplier useAllianceFlipping,
+      AutoBindings bindings,
+      TrajectoryLogger<SampleType> trajectoryLogger,
+      Supplier<Optional<Alliance>> alliance) {
+    return new AutoFactory(
+        requireNonNullParam(poseSupplier, "poseSupplier", "Choreo.createAutoFactory"),
+        requireNonNullParam(controller, "controller", "Choreo.createAutoFactory"),
+        requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory"),
+        requireNonNullParam(useAllianceFlipping, "useAllianceFlipping", "Choreo.createAutoFactory"),
+        requireNonNullParam(bindings, "bindings", "Choreo.createAutoFactory"),
+        Optional.of(trajectoryLogger),
+        requireNonNullParam(alliance, "alliance", "Choreo.createAutoFactory"));
   }
 }
