@@ -33,9 +33,7 @@ import java.util.function.Supplier;
  */
 public class AutoFactory {
   static final AutoRoutine VOID_ROUTINE =
-      new AutoRoutine("VOID-ROUTINE") {
-        private final EventLoop loop = new EventLoop();
-
+      new AutoRoutine(null, "VOID-ROUTINE", new EventLoop()) {
         @Override
         public Command cmd() {
           return Commands.none().withName("VoidAutoRoutine");
@@ -177,7 +175,7 @@ public class AutoFactory {
       trajectoryCache.clear();
     }
 
-    return new AutoRoutine(name, this::allianceKnownOrIgnored);
+    return new AutoRoutine(this, name, this::allianceKnownOrIgnored);
   }
 
   private boolean allianceKnownOrIgnored() {
@@ -196,13 +194,11 @@ public class AutoFactory {
   }
 
   /**
-   * Creates a new {@link AutoTrajectory} to be used in an auto routine.
-   *
-   * @param trajectoryName The name of the trajectory to use.
-   * @param routine The {@link AutoRoutine} to register this trajectory under.
-   * @return A new {@link AutoTrajectory}.
+   * A package protected method to create a new {@link AutoTrajectory} to be used in an {@link AutoRoutine}.
+   * 
+   * @see AutoRoutine#trajectory(String)
    */
-  public AutoTrajectory trajectory(String trajectoryName, AutoRoutine routine) {
+  AutoTrajectory trajectory(String trajectoryName, AutoRoutine routine) {
     Optional<? extends Trajectory<?>> optTrajectory =
         trajectoryCache.loadTrajectory(trajectoryName);
     Trajectory<?> trajectory;
@@ -216,15 +212,11 @@ public class AutoFactory {
   }
 
   /**
-   * Creates a new {@link AutoTrajectory} to be used in an auto routine.
-   *
-   * @param trajectoryName The name of the trajectory to use.
-   * @param splitIndex The index of the split trajectory to use.
-   * @param routine The {@link AutoRoutine} to register this trajectory under.
-   * @return A new {@link AutoTrajectory}.
+   * A package protected method to create a new {@link AutoTrajectory} to be used in an {@link AutoRoutine}.
+   * 
+   * @see AutoRoutine#trajectory(String, int)
    */
-  public AutoTrajectory trajectory(
-      String trajectoryName, final int splitIndex, AutoRoutine routine) {
+  AutoTrajectory trajectory(String trajectoryName, final int splitIndex, AutoRoutine routine) {
     Optional<? extends Trajectory<?>> optTrajectory =
         trajectoryCache.loadTrajectory(trajectoryName, splitIndex);
     Trajectory<?> trajectory;
@@ -238,21 +230,17 @@ public class AutoFactory {
   }
 
   /**
-   * Creates a new {@link AutoTrajectory} to be used in an auto routine.
-   *
-   * @param <SampleType> The type of the trajectory samples.
-   * @param trajectory The trajectory to use.
-   * @param routine The {@link AutoRoutine} to register this trajectory under.
-   * @return A new {@link AutoTrajectory}.
+   * A package protected method to create a new {@link AutoTrajectory} to be used in an {@link AutoRoutine}.
+   * 
+   * @see AutoRoutine#trajectory(Trajectory)
    */
   @SuppressWarnings("unchecked")
-  public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory trajectory(
-      Trajectory<SampleType> trajectory, AutoRoutine routine) {
+  public <ST extends TrajectorySample<ST>> AutoTrajectory trajectory(Trajectory<ST> trajectory, AutoRoutine routine) {
     // type solidify everything
-    final Trajectory<SampleType> solidTrajectory = trajectory;
-    final Consumer<SampleType> solidController = (Consumer<SampleType>) this.controller;
-    final Optional<TrajectoryLogger<SampleType>> solidLogger =
-        this.trajectoryLogger.map(logger -> (TrajectoryLogger<SampleType>) logger);
+    final Trajectory<ST> solidTrajectory = trajectory;
+    final Consumer<ST> solidController = (Consumer<ST>) this.controller;
+    final Optional<TrajectoryLogger<ST>> solidLogger =
+        this.trajectoryLogger.map(logger -> (TrajectoryLogger<ST>) logger);
     return new AutoTrajectory(
         trajectory.name(),
         solidTrajectory,
