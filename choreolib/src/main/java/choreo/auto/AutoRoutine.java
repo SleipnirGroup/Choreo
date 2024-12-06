@@ -2,6 +2,8 @@
 
 package choreo.auto;
 
+import choreo.trajectory.Trajectory;
+import choreo.trajectory.TrajectorySample;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -19,6 +21,12 @@ import java.util.function.BooleanSupplier;
  * @see AutoFactory#newRoutine Creating a routine from a AutoFactory
  */
 public class AutoRoutine {
+  /**
+   * The factory that created this loop. This is used to create commands that are associated with
+   * this loop.
+   */
+  protected final AutoFactory factory;
+
   /** The underlying {@link EventLoop} that triggers are bound to and polled */
   protected final EventLoop loop;
 
@@ -38,39 +46,41 @@ public class AutoRoutine {
   protected BooleanSupplier allianceKnownOrIgnored = () -> true;
 
   /**
+   * A constructor to be used when inhereting this class to instantiate a custom inner loop
+   *
+   * @param factory The factory that created this loop
+   * @param name The name of the loop
+   * @param loop The inner {@link EventLoop}
+   */
+  protected AutoRoutine(AutoFactory factory, String name, EventLoop loop) {
+    this.factory = factory;
+    this.loop = loop;
+    this.name = name;
+  }
+
+  /**
    * Creates a new loop with a specific name
    *
+   * @param factory The factory that created this loop
    * @param name The name of the loop
    * @see AutoFactory#newRoutine Creating a loop from a AutoFactory
    */
-  public AutoRoutine(String name) {
-    this.loop = new EventLoop();
-    this.name = name;
+  protected AutoRoutine(AutoFactory factory, String name) {
+    this(factory, name, new EventLoop());
   }
 
   /**
    * Creates a new loop with a specific name and a custom alliance supplier.
    *
+   * @param factory The factory that created this loop
    * @param name The name of the loop
    * @param allianceKnownOrIgnored Returns true if the alliance is known or is irrelevant (i.e.
    *     flipping is not being done).
    * @see AutoFactory#newRoutine Creating a loop from a AutoFactory
    */
-  public AutoRoutine(String name, BooleanSupplier allianceKnownOrIgnored) {
-    this.loop = new EventLoop();
-    this.name = name;
+  protected AutoRoutine(AutoFactory factory, String name, BooleanSupplier allianceKnownOrIgnored) {
+    this(factory, name);
     this.allianceKnownOrIgnored = allianceKnownOrIgnored;
-  }
-
-  /**
-   * A constructor to be used when inheriting this class to instantiate a custom inner loop
-   *
-   * @param name The name of the loop
-   * @param loop The inner {@link EventLoop}
-   */
-  protected AutoRoutine(String name, EventLoop loop) {
-    this.loop = loop;
-    this.name = name;
   }
 
   /**
@@ -135,6 +145,39 @@ public class AutoRoutine {
     reset();
     DriverStation.reportWarning("Killed An Auto Loop", true);
     isKilled = true;
+  }
+
+  /**
+   * Creates a new {@link AutoTrajectory} to be used in an auto routine.
+   *
+   * @param trajectoryName The name of the trajectory to use.
+   * @return A new {@link AutoTrajectory}.
+   */
+  public AutoTrajectory trajectory(String trajectoryName) {
+    return factory.trajectory(trajectoryName, this);
+  }
+
+  /**
+   * Creates a new {@link AutoTrajectory} to be used in an auto routine.
+   *
+   * @param trajectoryName The name of the trajectory to use.
+   * @param splitIndex The index of the split trajectory to use.
+   * @return A new {@link AutoTrajectory}.
+   */
+  public AutoTrajectory trajectory(String trajectoryName, final int splitIndex) {
+    return factory.trajectory(trajectoryName, splitIndex, this);
+  }
+
+  /**
+   * Creates a new {@link AutoTrajectory} to be used in an auto routine.
+   *
+   * @param <SampleType> The type of the trajectory samples.
+   * @param trajectory The trajectory to use.
+   * @return A new {@link AutoTrajectory}.
+   */
+  public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory trajectory(
+      Trajectory<SampleType> trajectory) {
+    return factory.trajectory(trajectory, this);
   }
 
   /**
