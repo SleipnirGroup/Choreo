@@ -113,7 +113,7 @@ public class AutoRoutine {
    * @param condition The condition represented by the trigger.
    * @return A {@link Trigger} that is {@code true} when the condition is satisfied.
    */
-  public Trigger listen(BooleanSupplier condition) {
+  public Trigger observe(BooleanSupplier condition) {
     return new Trigger(loop, condition);
   }
 
