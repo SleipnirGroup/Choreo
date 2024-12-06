@@ -2,10 +2,12 @@
 
 #pragma once
 
+#include <array>
 #include <numbers>
+#include <utility>
 
-#include <frc/geometry/Pose2d.h>
-#include <units/base.h>
+#include <units/angle.h>
+#include <units/length.h>
 
 #include "choreo/util/Map.h"
 
