@@ -67,7 +67,7 @@ public Robot extends TimedRobot {
   private AutoRoutine twoPieceAuto(AutoFactory factory) {
     final AutoRoutine routine = factory.newRoutine("twoPieceAuto");
 
-    final AutoTrajectory trajectory = factory.trajectory("twoPieceAuto", routine);
+    final AutoTrajectory trajectory = routine.trajectory("twoPieceAuto");
 
     routine.running()
         .onTrue(
