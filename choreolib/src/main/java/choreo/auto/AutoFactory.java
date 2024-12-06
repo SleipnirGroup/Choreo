@@ -167,7 +167,6 @@ public class AutoFactory {
    *
    * @param name The name of the {@link AutoRoutine}.
    * @return A new {@link AutoRoutine}.
-   * @see #voidRoutine
    */
   public AutoRoutine newRoutine(String name) {
     // Clear cache in simulation to allow a form of "hot-reloading" trajectories
@@ -180,17 +179,6 @@ public class AutoFactory {
 
   private boolean allianceKnownOrIgnored() {
     return !useAllianceFlipping.getAsBoolean() || alliance.get().isPresent();
-  }
-
-  /**
-   * An {@link AutoRoutine} that cannot have any side-effects, it stores no state and does nothing
-   * when polled.
-   *
-   * @return A void {@link AutoRoutine}.
-   * @see #newRoutine
-   */
-  public AutoRoutine voidRoutine() {
-    return VOID_ROUTINE;
   }
 
   /**
