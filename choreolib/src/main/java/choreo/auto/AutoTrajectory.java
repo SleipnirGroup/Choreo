@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -490,31 +491,54 @@ public class AutoTrajectory {
   }
 
   /**
-   * Returns a trigger that is true when the robot is within toleranceMeters of the given pose.
-   *
-   * <p>The pose is flipped if alliance flipping is enabled and the alliance supplier returns Red.
-   *
-   * <p>While alliance flipping is enabled and the alliance supplier returns empty, the trigger will
-   * return false.
-   *
-   * @param pose The pose to check against, unflipped.
-   * @param toleranceMeters The tolerance in meters.
-   * @return A trigger that is true when the robot is within toleranceMeters of the given pose.
+   * @param pose The pose to flip. If this is an empty Optional, the returned Supplier will always return an empty Optional.
+   * @return a Supplier<Optional<Pose2d>> flipping the provided pose according to the alliance flipping settings.
    */
-  public Trigger atPose(Optional<Pose2d> pose, double toleranceMeters) {
-    Supplier<Optional<Pose2d>> checkedPoseOptSup = optionalFlipped(pose);
+  public Supplier<Optional<Pose2d>> allianceFlipped(Optional<Pose2d> pose) {
+    return AllianceFlipUtil.optionalFlipped(pose, alliance, useAllianceFlipping);
+  }
+
+  /**
+   * @param pose The pose to flip.
+   * @return a Supplier<Optional<Pose2d>> flipping the provided pose according to the alliance flipping settings.
+   */
+  public Supplier<Optional<Pose2d>> allianceFlipped(Pose2d pose) {
+    return allianceFlipped(Optional.of(pose));
+  }
+
+  private Trigger poseCheck(Supplier<Optional<Pose2d>> checkedPoseOptSup, Function<Pose2d, Boolean> check) {
     return new Trigger(
         routine.loop(),
         () -> {
           Optional<Pose2d> checkedPoseOpt = checkedPoseOptSup.get();
           return checkedPoseOpt
-              .map(
-                  (checkedPose) -> {
+              .map(check)
+              .orElse(false)
+              && isActive;
+  
+        });
+  }
+
+  /**
+   * Returns a trigger that is true when the robot is within toleranceMeters of the given pose
+   * and the trajectory is currently active.
+   * 
+   * <p>Use {@link allianceFlipped(Pose2d)} or {@link allianceFlipped(Optional<Pose2d>)} to get an
+   * alliance-dependent Supplier&gt;Optional&gt;Pose2d&lt;&lt; for this method.
+   *
+   * <p>If the Supplier returns an empty Optional, the trigger returns false.
+   * <p>The pose is not flipped within this method.
+   *
+   * @param pose The pose to retrieve and compare against every time this Trigger is checked.
+   * @param toleranceMeters The tolerance in meters.
+   * @return A trigger that is true when the robot is within toleranceMeters of the given pose and the 
+   */
+  public Trigger atTranslation(Supplier<Optional<Pose2d>> pose, double toleranceMeters) {
+    
+    return poseCheck(pose, (checkedPose) -> {
                     Translation2d currentTrans = poseSupplier.get().getTranslation();
                     return currentTrans.getDistance(checkedPose.getTranslation()) < toleranceMeters;
-                  })
-              .orElse(false);
-        });
+                  }).and(active());
   }
 
   /**
@@ -529,16 +553,12 @@ public class AutoTrajectory {
    * @param toleranceMeters The tolerance in meters.
    * @return A trigger that is true when the robot is within toleranceMeters of the given pose.
    */
-  public Trigger atPose(Pose2d pose, double toleranceMeters) {
-    return atPose(Optional.of(pose), toleranceMeters);
-  }
-
-  private Supplier<Optional<Pose2d>> optionalFlipped(Optional<Pose2d> pose) {
-    return AllianceFlipUtil.optionalFlipped(pose, alliance, useAllianceFlipping);
+  public Trigger atTranslationFlipped(Pose2d pose, double toleranceMeters) {
+    return atTranslation(allianceFlipped(pose), toleranceMeters);
   }
 
   /**
-   * Returns a trigger that is true when the robot is within toleranceMeters of the given events
+   * Returns a trigger that is true when the robot is within toleranceMeters of the given event's
    * pose.
    *
    * <p>A warning will be printed to the DriverStation if the event is not found and the trigger
@@ -551,25 +571,17 @@ public class AutoTrajectory {
    * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
    *     GUI</a>
    */
-  public Trigger atPose(String eventName, double toleranceMeters) {
+  public Trigger atTranslation(String eventName, double toleranceMeters) {
     boolean foundEvent = false;
     Trigger trig = offTrigger;
 
-    for (var event : trajectory.getEvents(eventName)) {
+    for (var poseOptSup : collectEventPoses(eventName)) {
       // This could create a lot of objects, could be done a more efficient way
       // with having it all be 1 trigger that just has a list of possess and checks each one each
       // cycle or something like that.
       // If choreo starts showing memory issues we can look into this.
-      Optional<Pose2d> poseOpt =
-          trajectory
-              // don't mirror here because the poses are mirrored themselves
-              // this also lets atPose be called before the alliance is ready
-              .sampleAt(event.timestamp, false)
-              .map(TrajectorySample::getPose);
-      if (poseOpt.isPresent()) {
-        trig = trig.or(atPose(poseOpt, toleranceMeters));
+        trig = trig.or(atTranslation(poseOptSup, toleranceMeters));
         foundEvent = true;
-      }
     }
 
     // The user probably expects an event to exist if they're trying to do something at that event,
@@ -593,8 +605,8 @@ public class AutoTrajectory {
    * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
    *     GUI</a>
    */
-  public Trigger atPose(String eventName) {
-    return atPose(eventName, DEFAULT_TOLERANCE_METERS);
+  public Trigger atTranslation(String eventName) {
+    return atTranslation(eventName, DEFAULT_TOLERANCE_METERS);
   }
 
   /**
@@ -611,8 +623,8 @@ public class AutoTrajectory {
    * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
    *     GUI</a>
    */
-  public Trigger atTimeAndPose(String eventName, double toleranceMeters) {
-    return atTime(eventName).and(atPose(eventName, toleranceMeters));
+  public Trigger atTimeAndTranslation(String eventName, double toleranceMeters) {
+    return atTime(eventName).and(atTranslation(eventName, toleranceMeters));
   }
 
   /**
@@ -628,8 +640,8 @@ public class AutoTrajectory {
    * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
    *     GUI</a>
    */
-  public Trigger atTimeAndPose(String eventName) {
-    return atTimeAndPose(eventName, DEFAULT_TOLERANCE_METERS);
+  public Trigger atTimeAndTranslation(String eventName) {
+    return atTimeAndTranslation(eventName, DEFAULT_TOLERANCE_METERS);
   }
 
   /**
@@ -659,7 +671,7 @@ public class AutoTrajectory {
       trajectory
           .sampleAt(times[i], false)
           .map(TrajectorySample::getPose)
-          .ifPresent(pose -> poses.add(optionalFlipped(Optional.of(pose))));
+          .ifPresent(pose -> poses.add(allianceFlipped(Optional.of(pose))));
     }
     return poses;
   }
