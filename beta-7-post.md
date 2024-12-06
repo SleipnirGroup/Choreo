@@ -6,6 +6,8 @@ DELETE ME: https://github.com/SleipnirGroup/Choreo/compare/aec56d57fb78254fc9a85
 
 Please read through the post entirely, since many breaking changes have been made.
 
+This release focuses on internal infrastructure and breaking API improvements in ChoreoLib.
+
 # https://choreo.autos : New Docs Domain
 
 We recently registered the domain `choreo.autos` to replace `sleipnirgroup.github.io/Choreo`. We have set up the latter to redirect to the former.  
