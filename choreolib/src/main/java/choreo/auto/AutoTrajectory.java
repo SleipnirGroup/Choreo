@@ -52,7 +52,7 @@ public class AutoTrajectory {
   private final AutoRoutine routine;
 
   /**
-   * A way to create slightly less triggers for alot of actions. Not static as to not leak triggers
+   * A way to create slightly less triggers for many actions. Not static as to not leak triggers
    * made here into another static EventLoop.
    */
   private final Trigger offTrigger;
@@ -250,7 +250,7 @@ public class AutoTrajectory {
    * empty Optional if alliance flipping is enabled and the alliance supplier returns an empty
    * Optional.
    *
-   * @return The starting pose as a Supplier that will flipp
+   * @return The starting pose as a Supplier that will flip
    */
   public Supplier<Optional<Pose2d>> getInitialPoseSupplier() {
     return AllianceFlipUtil.optionalFlipped(
@@ -286,7 +286,7 @@ public class AutoTrajectory {
    * empty Optional if alliance flipping is enabled and the alliance supplier returns an empty
    * Optional.
    *
-   * @return The ending pose as a Supplier that will flipp
+   * @return The ending pose as a Supplier that will flip
    */
   public Supplier<Optional<Pose2d>> getFinalPoseSupplier() {
     return AllianceFlipUtil.optionalFlipped(
@@ -346,7 +346,7 @@ public class AutoTrajectory {
    * </code></pre>
    *
    * @param cyclesToDelay The number of cycles to delay the trigger from rising to true.
-   * @return A trigger that is true when the trajectoy is finished.
+   * @return A trigger that is true when the trajectory is finished.
    */
   public Trigger done(int cyclesToDelay) {
     BooleanSupplier checker =
@@ -409,7 +409,7 @@ public class AutoTrajectory {
    * // to trigger goShootGamepiece.cmd() even if we no longer care about these checks
    * </code></pre>
    *
-   * @return A trigger that is true when the trajectoy is finished.
+   * @return A trigger that is true when the trajectory is finished.
    */
   public Trigger done() {
     return done(0);
@@ -422,7 +422,7 @@ public class AutoTrajectory {
    * @return A trigger that is true when timeSinceStart has elapsed.
    */
   public Trigger atTime(double timeSinceStart) {
-    // The timer shhould never be negative so report this as a warning
+    // The timer should never be negative so report this as a warning
     if (timeSinceStart < 0) {
       DriverStation.reportWarning("[Choreo] Trigger time cannot be negative for " + name, true);
       return offTrigger;
@@ -471,7 +471,7 @@ public class AutoTrajectory {
     Trigger trig = offTrigger;
 
     for (var event : trajectory.getEvents(eventName)) {
-      // This could create alot of objects, could be done a more efficient way
+      // This could create a lot of objects, could be done a more efficient way
       // with having it all be 1 trigger that just has a list of times and checks each one each
       // cycle
       // or something like that. If choreo starts proposing memory issues we can look into this.

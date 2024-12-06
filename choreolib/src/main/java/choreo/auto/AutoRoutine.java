@@ -63,7 +63,7 @@ public class AutoRoutine {
   }
 
   /**
-   * A constructor to be used when inhereting this class to instantiate a custom inner loop
+   * A constructor to be used when inheriting this class to instantiate a custom inner loop
    *
    * @param name The name of the loop
    * @param loop The inner {@link EventLoop}
