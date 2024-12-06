@@ -118,6 +118,16 @@ public class AutoRoutine {
   }
 
   /**
+   * Creates a {@link Trigger} that is bound to the routine's {@link EventLoop}.
+   *
+   * @param condition The condition represented by the trigger.
+   * @return A {@link Trigger} that mirrors the state of the provided {@code condition}
+   */
+  public Trigger observe(BooleanSupplier condition) {
+    return new Trigger(loop, condition);
+  }
+
+  /**
    * Gets the poll count of the routine.
    *
    * @return The poll count of the routine.
