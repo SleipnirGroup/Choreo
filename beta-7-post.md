@@ -26,7 +26,7 @@ The three ChoreoLib languages will not automatically upgrade old trajectories wh
 
 Unfortunately, we found many severe bugs in our port of the Java AutoFactory API to C++, and decided to delete that attempt. We apologize for the inconvenience. 
 
-# Breaking ChoreoLib Changes
+# ChoreoLib Changes (Mostly Breaking)
 
 See below for details on these changes.
 
@@ -41,10 +41,12 @@ See below for details on these changes.
 ### ProjectFile
 The `cof` constructor parameter has been added, representing the wheel coefficient of friction.
 ## Java Auto API
+
+The `AutoRoutine.trajectory(String name)` has been added and is the new recommended way to load `AutoTrajectories`, instead of `AutoFactory.trajectory(String name, AutoRoutine routine)`.
 ### AutoLoop
 * `choreo.auto.AutoLoop` is now `choreo.auto.AutoRoutine`.
     * `AutoFactory.newLoop()` and `voidLoop()` were renamed to `newRoutine()` and `voidRoutine()`.
-* `AutoRoutine.cmd()` will end immediately with a warning if alliance flipping is enabled and the alliance is not known on command initialize.
+* `AutoRoutine.cmd()` will end immediately with a console warning if alliance flipping is enabled and the alliance is not known on command initialize.
 * `AutoLoop.enabled()` was replaces with `AutoRoutine.running()`.
 * `AutoLoop.poll()` will return immediately if the alliance is needed for flipping and not known. This is the same behavior as if `poll()` is called on a killed routine, or not while enabled and in autonomous.
 ### AutoTrajectory
