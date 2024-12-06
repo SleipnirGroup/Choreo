@@ -43,8 +43,9 @@ See below for details on these changes.
 ### ProjectFile
 The `cof` constructor parameter has been added, representing the wheel coefficient of friction.
 ## Java Auto API
-
-The `AutoRoutine.trajectory(String name)` has been added and is the new recommended way to load `AutoTrajectories`, instead of `AutoFactory.trajectory(String name, AutoRoutine routine)`.
+## New Recommended Practices
+* The `AutoRoutine.trajectory(String name)` has been added and is the new recommended way to load `AutoTrajectories`, instead of `AutoFactory.trajectory(String name, AutoRoutine routine)`.
+* `Trigger AutoRoutine.observe(BooleanSupplier condition)` has been added. This can be used to create Triggers that are part of the `AutoRoutine` and will only be polled during the routine. It can also be used to "sanitize" Triggers that are used elsewhere. See below for details on why this is necessary.
 ### AutoLoop
 * `choreo.auto.AutoLoop` is now `choreo.auto.AutoRoutine`.
     * `AutoFactory.newLoop()` and `voidLoop()` were renamed to `newRoutine()` and `voidRoutine()`.
@@ -71,6 +72,36 @@ Several issues were identified with the way ChoreoLib, especially the Java highe
 
 * The higher-level API now uses `Optional<Pose2d>` and `Supplier<Optional<Pose2d>>` instead of `Pose2d` in many places, to better represent poses that depend on the currently selected alliance.
 * `AutoFactory`/`Choreo.createAutoFactory` no longer take a `BooleanSupplier mirrorTrajectory` that returns true when trajectories should be flipped. Instead they take a `BooleanSupplier useAllianceFlipping` to enable alliance-based flipping in general and a separate `Supplier<Optional<Alliance>>` that defaults to `DriverStation::getAlliance()`. The BooleanSupplier was moved elsewhere in the parameter list to force a compiler error.
+
+# Trigger Sanitization
+
+`AutoRoutine.observe` was added to help prevent problems where a Trigger on the default CommandScheduler loop is used when creating an `AutoRoutine`. This is especially easy to mess up when that Trigger is combined with a Trigger on the `AutoRoutine` event loop, using decorators like `.and()`, `.or()`, etc.
+
+Combined Triggers are polled on the first Trigger's loop. Thus if the default-loop Trigger is first in a combination, the combined trigger will be polled every loop, even if the auto routine is not running and has not been run.
+
+Example: 
+```java
+Pose2d shotLocation = ...;
+// trajectory.atPose(...) is only polled during the AutoRoutine.
+Trigger atShotLocation = trajectory.atPose("shoot", 0.5);
+// shooter has a public static Trigger hasGamepiece.
+// This is on the default loop
+Trigger hasGamepiece = shooter.hasGamepiece;
+// Compare:
+// This is polled every loop during auto and teleop!
+// If the robot is at any "shoot" marker's location during teleop, the game piece will be shot.
+hasGamepiece.and(atShotLocation).onTrue(shooter.shoot()); // BAD
+
+// RECOMMENDED:
+// To fix this, use AutoRoutine.observe() to make a hasGamepiece condition that is routine-specific:
+Trigger hasGamepiece = routine.observe(shooter.hasGamepiece)
+
+// ALTERNATIVES:
+// Put the AutoRoutine-specific Trigger first:
+atShotLocation.and(hasGamepiece).onTrue(shooter.shoot());
+// Or, access the routine's EventLoop directly to create a new Trigger
+shooter.hasGamepiece(routine.loop()).and(atShotLocation).onTrue(shooter.shoot());
+```
 
 # File Schema Changes
 **.TRAJ SCHEMA VERSION:** 0
