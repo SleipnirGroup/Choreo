@@ -1,3 +1,5 @@
+// Copyright (c) Choreo contributors
+
 package choreo.auto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
