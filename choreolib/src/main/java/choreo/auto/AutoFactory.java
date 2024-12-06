@@ -238,7 +238,7 @@ public class AutoFactory {
    * @see AutoRoutine#trajectory(Trajectory)
    */
   @SuppressWarnings("unchecked")
-  public <ST extends TrajectorySample<ST>> AutoTrajectory trajectory(
+  <ST extends TrajectorySample<ST>> AutoTrajectory trajectory(
       Trajectory<ST> trajectory, AutoRoutine routine) {
     // type solidify everything
     final Trajectory<ST> solidTrajectory = trajectory;

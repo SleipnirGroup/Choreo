@@ -48,6 +48,7 @@ public class AutoRoutine {
   /**
    * A constructor to be used when inhereting this class to instantiate a custom inner loop
    *
+   * @param factory The factory that created this loop
    * @param name The name of the loop
    * @param loop The inner {@link EventLoop}
    */
@@ -71,6 +72,7 @@ public class AutoRoutine {
   /**
    * Creates a new loop with a specific name and a custom alliance supplier.
    *
+   * @param factory The factory that created this loop
    * @param name The name of the loop
    * @param allianceKnownOrIgnored Returns true if the alliance is known or is irrelevant (i.e.
    *     flipping is not being done).
