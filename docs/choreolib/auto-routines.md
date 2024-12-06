@@ -44,14 +44,14 @@ Uses the `Intake` `Subsystem`.
 Uses the `Intake` `Subsystem`.
 - `shootIfNoteOwned` - Shoots the note if the robot owns a note.
 Uses the `Shooter` `Subsystem`.
-- `aimFor(Pose2d pose)` - Aims the shooter for a specific position, also keeps the wheels spun up.
+- `aimFor(Supplier<Pose2d> pose)` - Aims the shooter for a specific robot position. Also keeps the wheels spun up.
 Uses the `Shooter` `Subsystem`.
 - `spinnup` - Spins up the shooter wheels.
 Uses the `Shooter` `Subsystem`.
 - `aim` - Aims the shooter based on the current odometry position.
 Uses the `Shooter` `Subsystem`.
-- `resetOdometry(Pose2d pose)` - Resets the odometry to a specific position.
-Uses the `Drive` `Subsystem`.
+- `resetOdometry(Supplier<Pose2d> pose)` - Resets the odometry to a specific position.
+Uses the `Drive` `Subsystem`, and accepts a `Supplier` to ensure that the initial pose is fetched after the robot code knows the current alliance.
 - `autoAimAndShoot` - Aims the shooter and rotates the robot to the correct angle to shoot and then shoots.
 Uses the `Shooter` and `Drive` `Subsystem`.
 
@@ -71,6 +71,7 @@ These examples also assume that a `import static edu.wpi.first.wpilibj2.command.
 ```java
 public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
   final AutoRoutine routine = factory.newRoutine("fivePieceAuto");
+  final Alert noStartingPoseErr = new Alert("Error: 5 piece auto has no starting pose", AlertType.kError);
 
   // This uses segments that all have predefined handoff points.
   // These handoff points follow a naming convention
@@ -95,21 +96,21 @@ public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
   // then runs the trajectory to the first close note while extending the intake
   routine.running()
       .onTrue(
-          resetOdometry(
-                  ampToC1
-                      .getInitialPose()
-                      .orElseGet(
-                          () -> {
-                            routine.kill();
-                            return new Pose2d();
-                          }))
-              .andThen(
-                  autoAimAndShoot(),
-                  race(
-                      intake(),
-                      ampToC1.cmd(),
-                      aimFor(ampToC1.getFinalPose().orElseGet(Pose2d::new))))
-              .withName("fivePieceAuto entry point"));
+          resetOdometry(() -> {
+              final Optional<Pose2d> initialPose = ampToC1.getInitialPose();
+              if (initialPose.isPresent()) return initialPose.get();
+              noStartingPoseErr.set(true);
+              routine.kill();
+              return new Pose2d();
+          }).andThen(
+              autoAimAndShoot(),
+              race(
+                  intake(),
+                  ampToC1.cmd(),
+                  aimFor(()->ampToC1.getFinalPose().orElseGet(Pose2d::new))
+              )
+          ).withName("fivePieceAuto entry point")
+      );
 
   // spinnup the shooter while no other command is using the shooter
   subsystemsAvailable(routine, spinnup().getRequirements())
@@ -127,7 +128,7 @@ public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
   c1ToM1.done().and(noteNotOwned(routine)).onTrue(m1ToM2.cmd());
 
   // aims the shooter while traveling to shoot
-  m1ToS1.active().whileTrue(aimFor(m1ToS1.getFinalPose().orElseGet(Pose2d::new)));
+  m1ToS1.active().whileTrue(aimFor(()->m1ToS1.getFinalPose().orElseGet(Pose2d::new)));
   m1ToS1.done().onTrue(shootIfNoteOwned());
   m1ToS1.done().onTrue(m1ToM2.cmd()
       .beforeStarting(waitUntil(noteNotOwned(routine))));
@@ -138,7 +139,7 @@ public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
   m1ToM2.done().onTrue(m2ToS1.cmd());
 
   // aims the shooter while traveling to shoot
-  m2ToS1.active().whileTrue(aimFor(m2ToS1.getFinalPose().orElseGet(Pose2d::new)));
+  m2ToS1.active().whileTrue(aimFor(()->m2ToS1.getFinalPose().orElseGet(Pose2d::new)));
   m2ToS1.done().onTrue(shootIfNoteOwned());
   m2ToS1.done().onTrue(s1ToC2.cmd()
       .beforeStarting(waitUntil(noteNotOwned(routine))));
@@ -147,7 +148,7 @@ public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
   // if the robot has the note, it shoots it
   // otherwise it goes to the third close note
   s1ToC2.active().whileTrue(intake());
-  s1ToC2.active().whileTrue(aimFor(s1ToC2.getFinalPose().orElseGet(Pose2d::new)));
+  s1ToC2.active().whileTrue(aimFor(()->s1ToC2.getFinalPose().orElseGet(Pose2d::new)));
   s1ToC2.done().onTrue(shootIfNoteOwned());
   s1ToC2.done().onTrue(c2ToC3.cmd()
       .beforeStarting(waitUntil(noteNotOwned(routine))));
@@ -166,7 +167,7 @@ public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
 ```java
 public Command fivePieceAutoTriggerMono(AutoFactory factory) {
   final AutoRoutine routine = factory.newRoutine("fivePieceAuto");
-
+  final Alert noStartingPoseErr = new Alert("Error: 5 piece auto has no starting pose", AlertType.kError);
   final AutoTrajectory trajectory = factory.trajectory("fivePieceAuto", routine);
 
   // entry point for the auto
@@ -175,16 +176,17 @@ public Command fivePieceAutoTriggerMono(AutoFactory factory) {
   // then runs the trajectory to the first close note while extending the intake
   routine.running()
       .onTrue(
-          resetOdometry(
-                  trajectory.getInitialPose()
-                      .orElseGet(
-                          () -> {
-                            routine.kill();
-                            return new Pose2d();
-                          }))
-              .andThen(autoAimAndShoot(), trajectory.cmd())
-              .withName("fivePieceAuto entry point"));
-
+          resetOdometry(() -> {
+              final Optional<Pose2d> initialPose = ampToC1.getInitialPose();
+              if (initialPose.isPresent()) return initialPose.get();
+              noStartingPoseErr.set(true);
+              routine.kill();
+              return new Pose2d();
+          })
+          .andThen(autoAimAndShoot(), trajectory.cmd())
+          .withName("fivePieceAuto entry point")
+      );
+  trajectory.running().onTrue(aim());
   // spinnup the shooter while no other command is running
   subsystemsAvailable(routine, spinnup().getRequirements())
       .and(routine.running()).onTrue(spinnup());
@@ -192,16 +194,9 @@ public Command fivePieceAutoTriggerMono(AutoFactory factory) {
   // extends the intake when the intake event marker is reached
   trajectory.atTime("intake").onTrue(intake());
   // shoots the note when the shoot event marker is reached
-  trajectory.atTime("shoot").onTrue(shootIfNoteOwned());
+  trajectory.atTime("shoot").onTrue(shootIfNoteOwned().andThen(new ScheduleCommand(aim())));
 
-  // aims the shooter when the aim event marker is reached,
-  // the aim command aims based on the next shoot event marker position
-  final AtomicInteger shootIndex = new AtomicInteger(0);
-  final Pose2d[] shootPositions = trajectory.collectEventPoses("shoot");
-  trajectory.atTime("aim")
-      .onTrue(defer(() -> aimFor(shootPositions[shootIndex.getAndIncrement()]), Set.of(shooter)));
-
-  return routine.cmd().beforeStarting(() -> shootIndex.set(0)).withName("fivePieceAuto");
+  return routine.cmd().withName("fivePieceAuto");
 }
 ```
 
@@ -217,7 +212,6 @@ public AutoRoutine fivePieceAutoCompositionSeg(AutoFactory factory) {
   // S1, S2, S3: 3 arbitrary shooting positions that are near the stage, S1 having the greatest y
   // value
   // AMP, SUB, SRC: The 3 starting positions
-
   // Try to load all the trajectories we need
   final AutoTrajectory ampToC1 = factory.trajectory("ampToC1", factory.voidLoop());
   final Command c1ToM1 = factory.trajectoryCommand("c1ToM1");
@@ -226,19 +220,19 @@ public AutoRoutine fivePieceAutoCompositionSeg(AutoFactory factory) {
   final Command m2ToS1 = factory.trajectoryCommand("m2ToS2");
   final Command s1ToC2 = factory.trajectoryCommand("s1ToC2");
   final Command c2ToC3 = factory.trajectoryCommand("c2ToC3");
-
-  Pose2d startinNoteOwnedose;
-  if (ampToC1.getInitialPose().isPresent()) {
-    startinNoteOwnedose = ampToC1.getInitialPose().get();
-  } else {
-    return none();
-  }
+  final Alert noStartingPoseErr = new Alert("Error: 5 piece auto has no starting pose", AlertType.kError);
 
   Command ret = sequence(
-          resetOdometry(startinNoteOwnedose),
+          resetOdometry(() -> {
+              final Optional<Pose2d> initialPose = ampToC1.getInitialPose();
+              if (initialPose.isPresent()) return initialPose.get();
+              noStartingPoseErr.set(true);
+              routine.kill();
+              return new Pose2d();
+          }),
           autoAimAndShoot(),
           deadline(
-              ampToC1.cmd(), intake(), aimFor(ampToC1.getFinalPose().orElseGet(Pose2d::new))),
+              ampToC1.cmd(), intake(), aimFor(()->ampToC1.getFinalPose().orElseGet(Pose2d::new))),
           shootIfNoteOwned(),
           deadline(c1ToM1, waitSeconds(0.35).andThen(intake())),
           either(

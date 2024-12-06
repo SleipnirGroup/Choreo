@@ -34,6 +34,9 @@ public class AutoRoutine {
   /** The amount of times the routine has been polled */
   protected int pollCount = 0;
 
+  /** Returns true if the alliance is known or is irrelevant (i.e. flipping is not being done) */
+  protected BooleanSupplier allianceKnownOrIgnored = () -> true;
+
   /**
    * Creates a new loop with a specific name
    *
@@ -46,7 +49,21 @@ public class AutoRoutine {
   }
 
   /**
-   * A constructor to be used when inhereting this class to instantiate a custom inner loop
+   * Creates a new loop with a specific name and a custom alliance supplier.
+   *
+   * @param name The name of the loop
+   * @param allianceKnownOrIgnored Returns true if the alliance is known or is irrelevant (i.e.
+   *     flipping is not being done).
+   * @see AutoFactory#newRoutine Creating a loop from a AutoFactory
+   */
+  public AutoRoutine(String name, BooleanSupplier allianceKnownOrIgnored) {
+    this.loop = new EventLoop();
+    this.name = name;
+    this.allianceKnownOrIgnored = allianceKnownOrIgnored;
+  }
+
+  /**
+   * A constructor to be used when inheriting this class to instantiate a custom inner loop
    *
    * @param name The name of the loop
    * @param loop The inner {@link EventLoop}
@@ -70,7 +87,9 @@ public class AutoRoutine {
 
   /** Polls the routine. Should be called in the autonomous periodic method. */
   public void poll() {
-    if (!DriverStation.isAutonomousEnabled() || isKilled) {
+    if (!DriverStation.isAutonomousEnabled()
+        || !allianceKnownOrIgnored.getAsBoolean()
+        || isKilled) {
       isActive = false;
       return;
     }
@@ -121,27 +140,39 @@ public class AutoRoutine {
   /**
    * Creates a command that will poll this event loop and reset it when it is cancelled.
    *
+   * <p>The command will end instantly and kill the routine if the alliance supplier returns an
+   * empty optional when the command is scheduled.
+   *
    * @return A command that will poll this event loop and reset it when it is cancelled.
    * @see #cmd(BooleanSupplier) A version of this method that takes a condition to finish the loop.
    */
   public Command cmd() {
-    return Commands.run(this::poll)
-        .finallyDo(this::reset)
-        .until(() -> !DriverStation.isAutonomousEnabled())
-        .withName(name);
+    return cmd(() -> false);
   }
 
   /**
    * Creates a command that will poll this event loop and reset it when it is finished or canceled.
    *
+   * <p>The command will end instantly and kill the routine if the alliance supplier returns an
+   * empty optional when the command is scheduled.
+   *
    * @param finishCondition A condition that will finish the loop when it is true.
    * @return A command that will poll this event loop and reset it when it is finished or canceled.
-   * @see #cmd() A version of this method that doesn't take a condition and never finishes.
+   * @see #cmd() A version of this method that doesn't take a condition and never finishes except if
+   *     the alliance supplier returns an empty optional when scheduled.
    */
   public Command cmd(BooleanSupplier finishCondition) {
-    return Commands.run(this::poll)
-        .finallyDo(this::reset)
-        .until(() -> !DriverStation.isAutonomousEnabled() || finishCondition.getAsBoolean())
-        .withName(name);
+    return Commands.either(
+        Commands.run(this::poll)
+            .finallyDo(this::reset)
+            .until(() -> !DriverStation.isAutonomousEnabled() || finishCondition.getAsBoolean())
+            .withName(name),
+        Commands.runOnce(
+            () -> {
+              DriverStation.reportWarning(
+                  "[Choreo] Alliance not known when starting routine", false);
+              kill();
+            }),
+        allianceKnownOrIgnored);
   }
 }

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <concepts>
+
 #include <frc/geometry/Pose2d.h>
 #include <frc/kinematics/ChassisSpeeds.h>
 #include <units/time.h>

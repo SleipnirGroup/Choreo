@@ -3,7 +3,7 @@
 #pragma once
 
 #include <concepts>
-#include <functional>
+#include <filesystem>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -13,7 +13,6 @@
 #include <fmt/format.h>
 #include <frc/Errors.h>
 #include <frc/Filesystem.h>
-#include <frc/geometry/Pose2d.h>
 #include <frc2/command/Subsystem.h>
 #include <hal/FRCUsageReporting.h>
 #include <wpi/MemoryBuffer.h>
@@ -28,10 +27,8 @@
 
 namespace choreo {
 
-inline constexpr std::string_view kSpecVersion = "v2025.0.0";
-
-template <TrajectorySample SampleType, int Year>
-class AutoFactory;
+inline constexpr uint32_t kTrajSpecVersion = 0;
+inline constexpr uint32_t kChorSpecVersion = 1;
 
 /**
  * A class that handles loading choreo and caching choreo trajectories.
@@ -77,10 +74,10 @@ class Choreo {
       }
 
       wpi::json json = wpi::json::parse(fileBuffer.value()->GetCharBuffer());
-      std::string version = json["version"];
-      if (kSpecVersion != version) {
+      uint32_t version = json["version"];
+      if (kChorSpecVersion != version) {
         throw fmt::format(".chor project file: Wrong version {}. Expected {}",
-                          version, kSpecVersion);
+                          version, kChorSpecVersion);
       }
       ProjectFile resultProjectFile;
       from_json(json, resultProjectFile);
@@ -155,10 +152,10 @@ class Choreo {
     }
 
     wpi::json json = wpi::json::parse(trajectoryJsonString);
-    std::string version = json["version"];
-    if (kSpecVersion != version) {
+    uint32_t version = json["version"];
+    if (version != kTrajSpecVersion) {
       throw fmt::format("{}.traj: Wrong version {}. Expected {}",
-                        trajectoryName, version, kSpecVersion);
+                        trajectoryName, version, kTrajSpecVersion);
     }
     Trajectory<SampleType> trajectory;
     from_json(json, trajectory);
@@ -242,30 +239,6 @@ class Choreo {
                                      std::optional<Trajectory<SampleType>>>
         cache;
   };
-
-  /**
-   * Create a factory that can be used to create AutoRoutine and AutoTrajectory.
-   *
-   * @tparam SampleType The type of samples in the trajectory.
-   * @tparam Year The field year. Defaults to the current year.
-   * @param poseSupplier A function that returns the current field-relative
-   *     Pose2d of the robot.
-   * @param controller A function for following the current trajectory.
-   * @param mirrorTrajectory If this returns true, the path will be mirrored to
-   *     the opposite side, while keeping the same coordinate system origin.
-   *     This will be called every loop during the command.
-   * @param driveSubsystem The drive Subsystem to require for AutoTrajectory
-   *     Commands.
-   * @return An AutoFactory that can be used to create AutoRoutines and
-   *     AutoTrajectories.
-   * @see AutoChooser using this factory with AutoChooser to generate auto
-   *     routines.
-   */
-  template <TrajectorySample SampleType, int Year = util::kDefaultYear>
-  static AutoFactory<SampleType, Year> CreateAutoFactory(
-      std::function<frc::Pose2d()> poseSupplier,
-      std::function<void(frc::Pose2d, SampleType)> controller,
-      std::function<bool()> mirrorTrajectory, frc2::Subsystem driveSubsystem);
 
  private:
   static constexpr std::string_view TRAJECTORY_FILE_EXTENSION = ".traj";
