@@ -20,6 +20,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -644,6 +646,27 @@ public class AutoTrajectory {
   public double[] collectEventTimes(String eventName) {
     return trajectory.getEvents(eventName).stream().mapToDouble(e -> e.timestamp).toArray();
   }
+
+    /**
+   * Returns an array of all the poses of the events with the given name.
+   *
+   * @param eventName The name of the event.
+   * @return An array of all the poses of the events with the given name.
+   * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
+   *     GUI</a>
+   */
+  public ArrayList<Supplier<Optional<Pose2d>>> collectEventPoses(String eventName) {
+    var times = collectEventTimes(eventName);
+    ArrayList<Supplier<Optional<Pose2d>>> poses = new ArrayList<>();
+    for (int i = 0; i < times.length; i++) {
+      trajectory
+          .sampleAt(times[i], false)
+          .map(TrajectorySample::getPose)
+          .ifPresent(pose->poses.add(optionalFlipped(Optional.of(pose))));
+    }
+    return poses;
+  }
+
 
   @Override
   public boolean equals(Object obj) {
