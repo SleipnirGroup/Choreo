@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -27,33 +27,18 @@ import java.util.function.Function;
  * during auto start causing a delay.
  *
  * <p>Once the {@link AutoChooser} is made you can add {@link AutoRoutine}s to it using the {@link
- * #addAutoRoutine(String, AutoRoutineCreator)} method. Unlike {@code SendableChooser} this
- * chooser has to be updated every cycle through an addPeriodic call in your Robot constructor,
- * like so: <code>addPeriodic(autoChooser::update, 0.02);</code>
+ * #addAutoRoutine(String, AutoRoutineCreator)} method. Unlike {@code SendableChooser} this chooser
+ * has to be updated every cycle through an addPeriodic call in your Robot constructor, like so:
+ * <code>addPeriodic(autoChooser::update, 0.02);</code>
  *
- * <p>You can set the Robot's autonomous command to the chooser's chosen auto routine via
- * <code>RobotModeTriggers.autonomous.whileTrue(chooser.autoCmd());</code>
+ * <p>You can set the Robot's autonomous command to the chooser's chosen auto routine via <code>
+ * RobotModeTriggers.autonomous.whileTrue(chooser.autoCmd());</code>
  */
 public class AutoChooser {
-  /**
-   * A function that generates an {@link AutoRoutine} from an {@link AutoFactory}.
-   * Equivalent to a <code>{@literal Function<AutoFactory, AutoRoutine>}</code>.
-   */
-  public interface AutoRoutineCreator extends Function<AutoFactory, AutoRoutine> {
-    /** A generator that returns an auto routine that does nothing */
-    static final AutoRoutineCreator NONE = factory -> AutoFactory.VOID_ROUTINE;
-  }
+  static final String NONE_NAME = "Nothing";
 
-  /**
-   * A function that generates a {@link Command} from an {@link AutoFactory}.
-   * Equivalent to a <code>{@literal Function<AutoFactory, Command>}</code>.
-   */
-  public interface CommandCreator extends Function<AutoFactory, Command> {}
-
-  private static final String NONE_NAME = "Nothing";
-
-  private final HashMap<String, AutoRoutineCreator> autoRoutines =
-      new HashMap<>(Map.of(NONE_NAME, AutoRoutineCreator.NONE));
+  private final HashMap<String, Function<AutoFactory, AutoRoutine>> autoRoutines =
+      new HashMap<>(Map.of(NONE_NAME, factory -> AutoFactory.VOID_ROUTINE));
 
   private final StringEntry selected, active;
   private final StringArrayEntry options;
@@ -61,7 +46,7 @@ public class AutoChooser {
   private final AutoFactory factory;
 
   private String lastAutoRoutineName = NONE_NAME;
-  private AutoRoutine lastAutoRoutine = AutoRoutineCreator.NONE.apply(null);
+  private AutoRoutine lastAutoRoutine = AutoFactory.VOID_ROUTINE;
 
   /**
    * Constructs a new {@link AutoChooser}.
@@ -76,9 +61,8 @@ public class AutoChooser {
     if (tableName == null) {
       tableName = "";
     }
-    String path =
-        (tableName.isEmpty()) ? NetworkTable.normalizeKey(tableName, true) : "" + "/AutoChooser";
-    NetworkTable table = NetworkTableInstance.getDefault().getTable(path);
+    String path = tableName.isEmpty() ? NetworkTable.normalizeKey(tableName, true) : "";
+    NetworkTable table = NetworkTableInstance.getDefault().getTable(path + "/AutoChooser");
 
     selected = table.getStringTopic("selected").getEntry(NONE_NAME);
     table.getStringTopic(".type").publish().set("String Chooser");
@@ -148,7 +132,7 @@ public class AutoChooser {
    * @param name The name of the auto routine.
    * @param generator The function that generates the auto routine.
    */
-  public void addAutoRoutine(String name, AutoRoutineCreator generator) {
+  public void addAutoRoutine(String name, Function<AutoFactory, AutoRoutine> generator) {
     autoRoutines.put(name, generator);
     options.set(autoRoutines.keySet().toArray(new String[0]));
   }
@@ -156,12 +140,12 @@ public class AutoChooser {
   /**
    * Adds a Command to the auto chooser.
    *
-   * <p>The options of the chooser are actually of type {@link CommandCreator}. This is a
-   * function that takes an {@link AutoFactory} and returns a {@link Command}. These functions
-   * can be static, a lambda or belong to a local variable.
+   * <p>The options of the chooser are actually of type {@link AutoCommandCreator}. This is a
+   * function that takes an {@link AutoFactory} and returns a {@link Command}. These functions can
+   * be static, a lambda or belong to a local variable.
    *
-   * <p>This is done to load autonomous commands when and only when they are selected,
-   * in order to save memory and file loading time for unused autonomous commands.
+   * <p>This is done to load autonomous commands when and only when they are selected, in order to
+   * save memory and file loading time for unused autonomous commands.
    *
    * <h3>Example:</h3>
    *
@@ -181,11 +165,8 @@ public class AutoChooser {
    * @param commandGenerator The function that generates an autonomous command.
    * @see AutoChooser#addAutoRoutine
    */
-  public void addAuto(String name, CommandCreator commandGenerator) {
-    addAutoRoutine(
-      name,
-      ignored -> factory.commandAsAutoRoutine(commandGenerator.apply(factory))
-    );
+  public void addAutoCmd(String name, Function<AutoFactory, Command> commandGenerator) {
+    addAutoRoutine(name, ignored -> factory.commandAsAutoRoutine(commandGenerator.apply(factory)));
   }
 
   /**
@@ -229,24 +210,25 @@ public class AutoChooser {
   }
 
   /**
-   * Gets a Command that runs the latest selected auto routine,
-   * stopping when the selected routine finishes.
-   * This Command can directly be bound to a trigger, like so:
+   * Gets a Command that schedules the selected auto routine. This Command finishes immediately as
+   * it simply schedules another Command. This Command can directly be bound to a trigger, like so:
+   *
    * <pre><code>
    *     AutoChooser chooser = ...;
    *
    *     public Robot() {
-   *         RobotModeTriggers.autonomous().whileTrue(chooser.autoCmd());
+   *         RobotModeTriggers.autonomous().onTrue(chooser.autoCmd());
    *     }
    * </code></pre>
+   *
    * @return A command that runs the selected {@link AutoRoutine}
    */
-  public Command autoCmd() {
+  public Command autoSchedulingCmd() {
     // .asProxy() not needed; requirements are dynamically allocated
     // via triggers, and are not part of the routine command itself
-    return Commands.defer(() -> getSelectedAutoRoutine().cmd(), Set.of());
+    return Commands.defer(() -> new ScheduleCommand(getSelectedAutoRoutine().cmd()), Set.of());
   }
-  
+
   /**
    * Get the {@link AutoFactory} used by this chooser.
    *

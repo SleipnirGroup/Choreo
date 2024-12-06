@@ -331,9 +331,9 @@ public class AutoFactory {
    * @param cmd The command to bind to the routine.
    * @return A new auto routine.
    */
-  public AutoRoutine commandAsAutoRoutine(Command cmd) {
+  AutoRoutine commandAsAutoRoutine(Command cmd) {
     AutoRoutine routine = newRoutine(cmd.getName());
-    routine.running().onTrue(cmd);
+    routine.running().whileTrue(cmd);
     return routine;
   }
 
