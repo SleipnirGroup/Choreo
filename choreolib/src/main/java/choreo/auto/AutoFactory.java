@@ -194,8 +194,9 @@ public class AutoFactory {
   }
 
   /**
-   * A package protected method to create a new {@link AutoTrajectory} to be used in an {@link AutoRoutine}.
-   * 
+   * A package protected method to create a new {@link AutoTrajectory} to be used in an {@link
+   * AutoRoutine}.
+   *
    * @see AutoRoutine#trajectory(String)
    */
   AutoTrajectory trajectory(String trajectoryName, AutoRoutine routine) {
@@ -212,8 +213,9 @@ public class AutoFactory {
   }
 
   /**
-   * A package protected method to create a new {@link AutoTrajectory} to be used in an {@link AutoRoutine}.
-   * 
+   * A package protected method to create a new {@link AutoTrajectory} to be used in an {@link
+   * AutoRoutine}.
+   *
    * @see AutoRoutine#trajectory(String, int)
    */
   AutoTrajectory trajectory(String trajectoryName, final int splitIndex, AutoRoutine routine) {
@@ -230,12 +232,14 @@ public class AutoFactory {
   }
 
   /**
-   * A package protected method to create a new {@link AutoTrajectory} to be used in an {@link AutoRoutine}.
-   * 
+   * A package protected method to create a new {@link AutoTrajectory} to be used in an {@link
+   * AutoRoutine}.
+   *
    * @see AutoRoutine#trajectory(Trajectory)
    */
   @SuppressWarnings("unchecked")
-  public <ST extends TrajectorySample<ST>> AutoTrajectory trajectory(Trajectory<ST> trajectory, AutoRoutine routine) {
+  public <ST extends TrajectorySample<ST>> AutoTrajectory trajectory(
+      Trajectory<ST> trajectory, AutoRoutine routine) {
     // type solidify everything
     final Trajectory<ST> solidTrajectory = trajectory;
     final Consumer<ST> solidController = (Consumer<ST>) this.controller;

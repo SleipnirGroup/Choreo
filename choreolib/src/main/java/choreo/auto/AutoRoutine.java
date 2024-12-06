@@ -2,6 +2,8 @@
 
 package choreo.auto;
 
+import choreo.trajectory.Trajectory;
+import choreo.trajectory.TrajectorySample;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -9,9 +11,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.function.BooleanSupplier;
-
-import choreo.trajectory.Trajectory;
-import choreo.trajectory.TrajectorySample;
 
 /**
  * An object that represents an autonomous routine.
@@ -174,7 +173,8 @@ public class AutoRoutine {
    * @param trajectory The trajectory to use.
    * @return A new {@link AutoTrajectory}.
    */
-  public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory trajectory(Trajectory<SampleType> trajectory) {
+  public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory trajectory(
+      Trajectory<SampleType> trajectory) {
     return factory.trajectory(trajectory, this);
   }
 
