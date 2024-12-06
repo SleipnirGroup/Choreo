@@ -27,7 +27,8 @@
 
 namespace choreo {
 
-inline constexpr uint32_t kSpecVersion = 1;
+inline constexpr uint32_t kTrajSpecVersion = 0;
+inline constexpr uint32_t kChorSpecVersion = 1;
 
 /**
  * A class that handles loading choreo and caching choreo trajectories.
@@ -74,9 +75,9 @@ class Choreo {
 
       wpi::json json = wpi::json::parse(fileBuffer.value()->GetCharBuffer());
       uint32_t version = json["version"];
-      if (kSpecVersion != version) {
+      if (kChorSpecVersion != version) {
         throw fmt::format(".chor project file: Wrong version {}. Expected {}",
-                          version, kSpecVersion);
+                          version, kChorSpecVersion);
       }
       ProjectFile resultProjectFile;
       from_json(json, resultProjectFile);
@@ -152,9 +153,9 @@ class Choreo {
 
     wpi::json json = wpi::json::parse(trajectoryJsonString);
     uint32_t version = json["version"];
-    if (version != kSpecVersion) {
+    if (version != kTrajSpecVersion) {
       throw fmt::format("{}.traj: Wrong version {}. Expected {}",
-                        trajectoryName, version, kSpecVersion);
+                        trajectoryName, version, kTrajSpecVersion);
     }
     Trajectory<SampleType> trajectory;
     from_json(json, trajectory);

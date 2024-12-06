@@ -100,11 +100,11 @@ Each store has a `get serialize()` computed property. This needs to be updated t
 #### `deserialize()`
 Each store has a `deserialize()` which populates the Mobx store from a data object.
 
-## choreolib
+## Choreolib
 
 Update TRAJ_SCHEMA_VERSION and PROJECT_SCHEMA_VERSION in the following:
 * Python: `choreolib/py/choreo/__init__.py`
 * Java: `choreolib/src/main/java/choreo/Choreo.java`
-* C++ currently does not do version validation.
+* C++: `choreolib/src/main/native/include/choreo/Choreo.h`
 
 Make any functional changes to the trajectory classes and loading methods in all three languages, according to the schema change being made.
