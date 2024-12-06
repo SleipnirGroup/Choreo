@@ -6,11 +6,11 @@ DELETE ME: https://github.com/SleipnirGroup/Choreo/compare/aec56d57fb78254fc9a85
 
 Please read through the post entirely, since many breaking changes have been made.
 
-## https://choreo.autos : New Docs Domain
+# https://choreo.autos : New Docs Domain
 
 We recently registered the domain `choreo.autos` to replace `sleipnirgroup.github.io/Choreo`. We have set up the latter to redirect to the former.  
 
-## Document Schemas and Auto Upgrade
+# Document Schemas and Auto Upgrade
 
 The version control in the .chor and .traj schemas is no longer a semver string. It is now an integer, starting at 1, and is different for .traj and .chor. A string in the `version` key is interpreted as version 0.
 
@@ -22,17 +22,17 @@ For contributors, a guide to defining new schema versions has been added [here](
 
 The three ChoreoLib languages will not automatically upgrade old trajectories when reading them.
 
-## Removal of C++ AutoFactory API
+# Removal of C++ AutoFactory API
 
 Unfortunately, we found many severe bugs in our port of the Java AutoFactory API to C++, and decided to delete that attempt. We apologize for the inconvenience. 
 
-## Breaking ChoreoLib Changes
+# Breaking ChoreoLib Changes
 
 See below for details on these changes.
 
-### General
+## General
 * Changes to how Choreo handles alliance flipping. See below.
-### Raw API
+## Raw API
 ### Trajectory
 * [Java] `Trajectory.getInitialSample()`, `getFinalSample()`, `getInitialPose()`, `getFinalPose()`, `sampleAt()` now return `Optional<Pose2d>` instead of a potentially null `Pose2d`. This matches prior behavior of the other two languages (C++ with `std::optional` and Python with returning `None`)
 * [C++] `Trajectory::GetInitialState()` is now `GetInitialSample()`.
@@ -40,6 +40,7 @@ See below for details on these changes.
 * [Java] `Trajectory.sampleArray()` has been removed due to causing runtime crashes and being type-unsafe.
 ### ProjectFile
 The `cof` constructor parameter has been added, representing the wheel coefficient of friction.
+## Java Auto API
 ### AutoLoop
 * `choreo.auto.AutoLoop` is now `choreo.auto.AutoRoutine`.
     * `AutoFactory.newLoop()` and `voidLoop()` were renamed to `newRoutine()` and `voidRoutine()`.
@@ -67,4 +68,20 @@ Several issues were identified with the way ChoreoLib, especially the Java highe
 * The higher-level API now uses `Optional<Pose2d>` and `Supplier<Optional<Pose2d>>` instead of `Pose2d` in many places, to better represent poses that depend on the currently selected alliance.
 * `AutoFactory`/`Choreo.createAutoFactory` no longer take a `BooleanSupplier mirrorTrajectory` that returns true when trajectories should be flipped. Instead they take a `BooleanSupplier useAllianceFlipping` to enable alliance-based flipping in general and a separate `Supplier<Optional<Alliance>>` that defaults to `DriverStation::getAlliance()`. The BooleanSupplier was moved elsewhere in the parameter list to force a compiler error.
 
+# File Schema Changes
+**.TRAJ SCHEMA VERSION:** 0
 
+No changes except the "version" key being replaced with a 0 instead of a string. This does mean beta-6 ChoreoLib will not read beta-7 trajectories.
+
+**.CHOR SCHEMA VERSION:** 1
+
+Added wheel coefficient of friction `cof` as a robot configuration option. This helps constrain robot acceleration.
+
+# Choreo Changes
+* Files written by Choreo now end with a newline, as required by formatters like wpiformat.
+* Fixed a bug with control interval guessing between two translation waypoints
+* Added wheel coefficient of friction as a robot configuration option. This helps constrain robot acceleration.
+* Reimplemented expression input boxes to fix bugs with undo histories
+* Expression input and non-expression numerical input boxes no longer select all the contents when being edited.
+* Changed "zone" to "region" in the text relating to keep-in and keep-out regions.
+* Fixed a bug with .chor file saving that prevented some changes from triggering resaves, even though the file contents would have changed.
