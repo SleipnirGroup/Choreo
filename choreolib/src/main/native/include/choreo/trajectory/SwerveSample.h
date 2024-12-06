@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <array>
+#include <type_traits>
 
 #include <frc/kinematics/ChassisSpeeds.h>
 #include <units/acceleration.h>
@@ -12,6 +13,7 @@
 #include <units/angular_velocity.h>
 #include <units/force.h>
 #include <units/length.h>
+#include <units/time.h>
 #include <units/velocity.h>
 #include <wpi/MathExtras.h>
 #include <wpi/json_fwd.h>

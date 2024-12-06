@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <cmath>
 #include <string>
 #include <unordered_map>
 #include <vector>
