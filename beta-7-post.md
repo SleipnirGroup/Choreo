@@ -43,7 +43,7 @@ See below for details on these changes.
 ### ProjectFile
 The `cof` constructor parameter has been added, representing the wheel coefficient of friction.
 ## Java Auto API
-## New Recommended Practices
+### New Recommended Practices
 * The `AutoRoutine.trajectory(String name)` has been added and is the new recommended way to load `AutoTrajectories`, instead of `AutoFactory.trajectory(String name, AutoRoutine routine)`.
 * `Trigger AutoRoutine.observe(BooleanSupplier condition)` has been added. This can be used to create Triggers that are part of the `AutoRoutine` and will only be polled during the routine. It can also be used to "sanitize" Triggers that are used elsewhere. See below for details on why this is necessary.
 ### AutoLoop
@@ -66,14 +66,14 @@ The `cof` constructor parameter has been added, representing the wheel coefficie
 * `AutoChooser`'s options are now functions that consume an `AutoFactory` and return an `AutoRoutine`, not a `Command`. Similarly, `AutoChooser.getSelectedAutoRoutine()` now returns an `AutoRoutine` instead of a `Command`. You can now use `AutoFactory.commandAsAutoRoutine(Command cmd)` as a utility method to return commands in the AutoChooser
 * `AutoChooser` will only update if the DriverStation is connected (so that the alliance is known).
 
-### Changes to alliance-based trajectory flipping
+## Changes to alliance-based trajectory flipping
 
 Several issues were identified with the way ChoreoLib, especially the Java higher-level API, handled alliance flipping, given that the alliance can change after auto routines are created, and the alliance can be unknown before the call of `autonmousInit`.
 
 * The higher-level API now uses `Optional<Pose2d>` and `Supplier<Optional<Pose2d>>` instead of `Pose2d` in many places, to better represent poses that depend on the currently selected alliance.
 * `AutoFactory`/`Choreo.createAutoFactory` no longer take a `BooleanSupplier mirrorTrajectory` that returns true when trajectories should be flipped. Instead they take a `BooleanSupplier useAllianceFlipping` to enable alliance-based flipping in general and a separate `Supplier<Optional<Alliance>>` that defaults to `DriverStation::getAlliance()`. The BooleanSupplier was moved elsewhere in the parameter list to force a compiler error.
 
-# Trigger Sanitization
+## Trigger Sanitization
 
 `AutoRoutine.observe` was added to help prevent problems where a Trigger on the default CommandScheduler loop is used when creating an `AutoRoutine`. This is especially easy to mess up when that Trigger is combined with a Trigger on the `AutoRoutine` event loop, using decorators like `.and()`, `.or()`, etc.
 
@@ -114,7 +114,7 @@ Added wheel coefficient of friction `cof` as a robot configuration option. This 
 
 # Choreo Changes
 * Files written by Choreo now end with a newline, as required by formatters like wpiformat.
-* Fixed a bug with control interval guessing between two translation waypoints
+* Fixed a bug with control interval guessing between two translation waypoints.
 * Added wheel coefficient of friction as a robot configuration option. This helps constrain robot acceleration.
 * Reimplemented expression input boxes to fix bugs with undo histories
 * Expression input and non-expression numerical input boxes no longer select all the contents when being edited.
