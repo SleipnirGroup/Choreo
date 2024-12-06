@@ -194,7 +194,7 @@ public Command fivePieceAutoTriggerMono(AutoFactory factory) {
   // extends the intake when the intake event marker is reached
   trajectory.atTime("intake").onTrue(intake());
   // shoots the note when the shoot event marker is reached
-  trajectory.atTime("shoot").onTrue(shootIfNoteOwned());
+  trajectory.atTime("shoot").onTrue(shootIfNoteOwned().andThen(new ScheduleCommand(aim())));
 
   return routine.cmd().withName("fivePieceAuto");
 }
