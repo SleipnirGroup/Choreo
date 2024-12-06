@@ -44,7 +44,7 @@ Uses the `Intake` `Subsystem`.
 Uses the `Intake` `Subsystem`.
 - `shootIfNoteOwned` - Shoots the note if the robot owns a note.
 Uses the `Shooter` `Subsystem`.
-- `aimFor(Pose2d pose)` - Aims the shooter for a specific position, also keeps the wheels spun up.
+- `aimFor(Supplier<Pose2d> pose)` - Aims the shooter for a specific robot position. Also keeps the wheels spun up.
 Uses the `Shooter` `Subsystem`.
 - `spinnup` - Spins up the shooter wheels.
 Uses the `Shooter` `Subsystem`.
@@ -107,7 +107,7 @@ public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
               race(
                   intake(),
                   ampToC1.cmd(),
-                  aimFor(ampToC1.getFinalPose().orElseGet(Pose2d::new))
+                  aimFor(()->ampToC1.getFinalPose().orElseGet(Pose2d::new))
               )
           ).withName("fivePieceAuto entry point")
       );
@@ -128,7 +128,7 @@ public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
   c1ToM1.done().and(noteNotOwned(routine)).onTrue(m1ToM2.cmd());
 
   // aims the shooter while traveling to shoot
-  m1ToS1.active().whileTrue(aimFor(m1ToS1.getFinalPose().orElseGet(Pose2d::new)));
+  m1ToS1.active().whileTrue(aimFor(()->m1ToS1.getFinalPose().orElseGet(Pose2d::new)));
   m1ToS1.done().onTrue(shootIfNoteOwned());
   m1ToS1.done().onTrue(m1ToM2.cmd()
       .beforeStarting(waitUntil(noteNotOwned(routine))));
@@ -139,7 +139,7 @@ public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
   m1ToM2.done().onTrue(m2ToS1.cmd());
 
   // aims the shooter while traveling to shoot
-  m2ToS1.active().whileTrue(aimFor(m2ToS1.getFinalPose().orElseGet(Pose2d::new)));
+  m2ToS1.active().whileTrue(aimFor(()->m2ToS1.getFinalPose().orElseGet(Pose2d::new)));
   m2ToS1.done().onTrue(shootIfNoteOwned());
   m2ToS1.done().onTrue(s1ToC2.cmd()
       .beforeStarting(waitUntil(noteNotOwned(routine))));
@@ -148,7 +148,7 @@ public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
   // if the robot has the note, it shoots it
   // otherwise it goes to the third close note
   s1ToC2.active().whileTrue(intake());
-  s1ToC2.active().whileTrue(aimFor(s1ToC2.getFinalPose().orElseGet(Pose2d::new)));
+  s1ToC2.active().whileTrue(aimFor(()->s1ToC2.getFinalPose().orElseGet(Pose2d::new)));
   s1ToC2.done().onTrue(shootIfNoteOwned());
   s1ToC2.done().onTrue(c2ToC3.cmd()
       .beforeStarting(waitUntil(noteNotOwned(routine))));
@@ -186,7 +186,7 @@ public Command fivePieceAutoTriggerMono(AutoFactory factory) {
           .andThen(autoAimAndShoot(), trajectory.cmd())
           .withName("fivePieceAuto entry point")
       );
-
+  trajectory.running().onTrue(aim());
   // spinnup the shooter while no other command is running
   subsystemsAvailable(routine, spinnup().getRequirements())
       .and(routine.running()).onTrue(spinnup());
@@ -232,7 +232,7 @@ public AutoRoutine fivePieceAutoCompositionSeg(AutoFactory factory) {
           }),
           autoAimAndShoot(),
           deadline(
-              ampToC1.cmd(), intake(), aimFor(ampToC1.getFinalPose().orElseGet(Pose2d::new))),
+              ampToC1.cmd(), intake(), aimFor(()->ampToC1.getFinalPose().orElseGet(Pose2d::new))),
           shootIfNoteOwned(),
           deadline(c1ToM1, waitSeconds(0.35).andThen(intake())),
           either(
