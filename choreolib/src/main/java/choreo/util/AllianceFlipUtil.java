@@ -231,8 +231,8 @@ public class AllianceFlipUtil {
   }
 
   /**
-   * Creates a Supplier&lt;Optional&lt;Pose2d&gt;&gt; based on a Supplier&lt;Optional&lt;Alliance&gt;&gt; and original
-   * Optional&lt;Pose2d&gt;
+   * Creates a Supplier&lt;Optional&lt;Pose2d&gt;&gt; based on a
+   * Supplier&lt;Optional&lt;Alliance&gt;&gt; and original Optional&lt;Pose2d&gt;
    *
    * @param poseOpt The pose to flip
    * @param allianceOpt The current alliance
@@ -251,8 +251,8 @@ public class AllianceFlipUtil {
   }
 
   /**
-   * Creates a Supplier&lt;Optional&lt;Pose2d&gt;&gt; based on a Supplier&lt;Optional&lt;Alliance&gt;&gt; and original
-   * Optional&lt;Pose2d&gt;
+   * Creates a Supplier&lt;Optional&lt;Pose2d&gt;&gt; based on a
+   * Supplier&lt;Optional&lt;Alliance&gt;&gt; and original Optional&lt;Pose2d&gt;
    *
    * @param pose The pose to flip
    * @param alliance The current alliance
