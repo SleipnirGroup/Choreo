@@ -333,9 +333,9 @@ public final class Choreo {
    *     robot.
    * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
    *     Command}s.
-   * @param useAllianceFlipping If this returns true, when on the red alliance, the path will be mirrored to the opposite side,
-   *     while keeping the same coordinate system origin. This will be called every loop during the
-   *     command.
+   * @param useAllianceFlipping If this returns true, when on the red alliance, the path will be
+   *     mirrored to the opposite side, while keeping the same coordinate system origin. This will
+   *     be called every loop during the command.
    * @param bindings Universal trajectory event bindings.
    * @return An {@link AutoFactory} that can be used to create {@link AutoRoutine} and {@link
    *     AutoTrajectory}.
@@ -366,9 +366,9 @@ public final class Choreo {
    *     robot.
    * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
    *     Command}s.
-   * @param useAllianceFlipping If this returns true, when on the red alliance, the path will be mirrored to the opposite side,
-   *     while keeping the same coordinate system origin. This will be called every loop during the
-   *     command.
+   * @param useAllianceFlipping If this returns true, when on the red alliance, the path will be
+   *     mirrored to the opposite side, while keeping the same coordinate system origin. This will
+   *     be called every loop during the command.
    * @param bindings Universal trajectory event bindings.
    * @param trajectoryLogger A {@link TrajectoryLogger} to log {@link Trajectory} as they start and
    *     finish.
@@ -402,9 +402,9 @@ public final class Choreo {
    *     robot.
    * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
    *     Command}s.
-   * @param useAllianceFlipping If this returns true, when on the red alliance, the path will be mirrored to the opposite side,
-   *     while keeping the same coordinate system origin. This will be called every loop during the
-   *     command.
+   * @param useAllianceFlipping If this returns true, when on the red alliance, the path will be
+   *     mirrored to the opposite side, while keeping the same coordinate system origin. This will
+   *     be called every loop during the command.
    * @param bindings Universal trajectory event bindings.
    * @param trajectoryLogger A {@link TrajectoryLogger} to log {@link Trajectory} as they start and
    *     finish.

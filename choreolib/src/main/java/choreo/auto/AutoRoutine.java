@@ -3,15 +3,12 @@
 package choreo.auto;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import java.util.Optional;
 import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
 
 /**
  * An object that represents an autonomous routine.
@@ -37,9 +34,9 @@ public class AutoRoutine {
   /** The amount of times the routine has been polled */
   protected int pollCount = 0;
 
-  /** The supplier of the current alliance */
-  protected Supplier<Optional<Alliance>> alliance = DriverStation::getAlliance;
-  
+  /** Returns true if the alliance is known or is irrelevant (i.e. flipping is not being done) */
+  protected BooleanSupplier allianceKnownOrIgnored = () -> true;
+
   /**
    * Creates a new loop with a specific name
    *
@@ -55,13 +52,14 @@ public class AutoRoutine {
    * Creates a new loop with a specific name and a custom alliance supplier.
    *
    * @param name The name of the loop
-   * @param alliance The alliance supplier.
+   * @param allianceKnownOrIgnored Returns true if the alliance is known or is irrelevant (i.e.
+   *     flipping is not being done).
    * @see AutoFactory#newRoutine Creating a loop from a AutoFactory
    */
-  public AutoRoutine(String name, Supplier<Optional<Alliance>> alliance) {
+  public AutoRoutine(String name, BooleanSupplier allianceKnownOrIgnored) {
     this.loop = new EventLoop();
     this.name = name;
-    this.alliance = alliance;
+    this.allianceKnownOrIgnored = allianceKnownOrIgnored;
   }
 
   /**
@@ -89,7 +87,9 @@ public class AutoRoutine {
 
   /** Polls the routine. Should be called in the autonomous periodic method. */
   public void poll() {
-    if (!DriverStation.isAutonomousEnabled() || alliance.get().isEmpty() || isKilled) {
+    if (!DriverStation.isAutonomousEnabled()
+        || !allianceKnownOrIgnored.getAsBoolean()
+        || isKilled) {
       isActive = false;
       return;
     }
@@ -173,6 +173,6 @@ public class AutoRoutine {
                   "[Choreo] Alliance not known when starting routine", false);
               kill();
             }),
-        () -> alliance.get().isPresent());
+        allianceKnownOrIgnored);
   }
 }

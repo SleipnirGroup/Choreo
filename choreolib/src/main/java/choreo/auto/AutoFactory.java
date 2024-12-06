@@ -177,7 +177,11 @@ public class AutoFactory {
       trajectoryCache.clear();
     }
 
-    return new AutoRoutine(name, alliance);
+    return new AutoRoutine(name, this::allianceKnownOrIgnored);
+  }
+
+  private boolean allianceKnownOrIgnored() {
+    return !useAllianceFlipping.getAsBoolean() || alliance.get().isPresent();
   }
 
   /**
@@ -255,6 +259,7 @@ public class AutoFactory {
         poseSupplier,
         solidController,
         useAllianceFlipping,
+        alliance,
         solidLogger,
         driveSubsystem,
         routine,

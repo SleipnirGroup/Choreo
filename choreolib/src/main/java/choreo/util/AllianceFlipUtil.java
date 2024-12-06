@@ -11,9 +11,9 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.HashMap;
-import java.util.function.Supplier;
-import java.util.function.BooleanSupplier;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 
 /**
  * A utility to standardize flipping of coordinate data based on the current alliance across
@@ -231,29 +231,36 @@ public class AllianceFlipUtil {
   }
 
   /**
-   * Creates a Supplier<Optional<Pose2d>> based on a Supplier<Optional<Alliance>> and original Optional<Pose2d>
+   * Creates a Supplier<Optional<Pose2d>> based on a Supplier<Optional<Alliance>> and original
+   * Optional<Pose2d>
+   *
    * @param pose The pose to flip
    * @param alliance The current alliance
    * @param doFlip Returns true if flipping based on the alliance should be done
-   * @return empty if the alliance is empty;
-   *  the original pose if the alliance is blue or doFlip is false;
-   *  the flipped pose if the alliance is red and doFlip is true
+   * @return empty if the alliance is empty; the original pose optional if the alliance is blue or
+   *     doFlip is false; the flipped pose optional if the alliance is red and doFlip is true
    */
-  public static Supplier<Optional<Pose2d>> optionalFlipped(Optional<Pose2d> poseOpt, Supplier<Optional<Alliance>> allianceOpt, BooleanSupplier doFlip) {
-    return ()->allianceOpt.get().flatMap(
-      (ally)-> 
-       (poseOpt.map((pose) -> (doFlip.getAsBoolean() && ally == Alliance.Red) ? flip(pose) : pose)));
+  public static Supplier<Optional<Pose2d>> optionalFlipped(
+      Optional<Pose2d> poseOpt, Supplier<Optional<Alliance>> allianceOpt, BooleanSupplier doFlip) {
+    return () ->
+        doFlip.getAsBoolean()
+            ? allianceOpt
+                .get()
+                .flatMap(ally -> poseOpt.map(pose -> ally == Alliance.Red ? flip(pose) : pose))
+            : poseOpt;
   }
 
   /**
-   * Creates a Supplier<Optional<Pose2d>> based on a Supplier<Optional<Alliance>> and original Optional<Pose2d>
+   * Creates a Supplier<Optional<Pose2d>> based on a Supplier<Optional<Alliance>> and original
+   * Optional<Pose2d>
+   *
    * @param pose The pose to flip
    * @param alliance The current alliance
-   * @return empty if the alliance is empty;
-   *  the original pose if the alliance is blue;
-   *  the flipped pose if the alliance is red
+   * @return empty if the alliance is empty; the original pose if the alliance is blue; the flipped
+   *     pose if the alliance is red
    */
-  public static Supplier<Optional<Pose2d>> optionalFlipped(Optional<Pose2d> pose, Supplier<Optional<Alliance>> alliance) {
-    return optionalFlipped(pose, alliance, ()->true);
+  public static Supplier<Optional<Pose2d>> optionalFlipped(
+      Optional<Pose2d> pose, Supplier<Optional<Alliance>> alliance) {
+    return optionalFlipped(pose, alliance, () -> true);
   }
 }

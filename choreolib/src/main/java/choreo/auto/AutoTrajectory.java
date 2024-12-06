@@ -14,13 +14,12 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -46,6 +45,7 @@ public class AutoTrajectory {
   private final Supplier<Pose2d> poseSupplier;
   private final Consumer<? extends TrajectorySample<?>> controller;
   private final BooleanSupplier useAllianceFlipping;
+  private final Supplier<Optional<Alliance>> alliance;
   private final Timer timer = new Timer();
   private final Subsystem driveSubsystem;
   private final AutoRoutine routine;
@@ -81,6 +81,7 @@ public class AutoTrajectory {
       Supplier<Pose2d> poseSupplier,
       Consumer<SampleType> controller,
       BooleanSupplier useAllianceFlipping,
+      Supplier<Optional<Alliance>> alliance,
       Optional<TrajectoryLogger<SampleType>> trajectoryLogger,
       Subsystem driveSubsystem,
       AutoRoutine routine,
@@ -90,6 +91,7 @@ public class AutoTrajectory {
     this.poseSupplier = poseSupplier;
     this.controller = controller;
     this.useAllianceFlipping = useAllianceFlipping;
+    this.alliance = alliance;
     this.driveSubsystem = driveSubsystem;
     this.routine = routine;
     this.offTrigger = new Trigger(routine.loop(), () -> false);
@@ -104,22 +106,21 @@ public class AutoTrajectory {
   }
 
   /**
-   * Returns true if alliance flipping is enabled and the alliance optional is present.
-   * Also returns true if alliance flipping is disabled.
+   * Returns true if alliance flipping is enabled and the alliance optional is present. Also returns
+   * true if alliance flipping is disabled.
    */
   private boolean allowSampling() {
-    if (useAllianceFlipping.getAsBoolean()) {
-      return routine.alliance.get().isPresent();
-    }
-    return true;
+    return routine.allianceKnownOrIgnored.getAsBoolean();
   }
 
   /**
    * Returns true if alliance flipping is enabled and the alliance is red.
+   *
    * @return
    */
   private boolean doFlip() {
-    return useAllianceFlipping.getAsBoolean() && routine.alliance.get().map(a->a==Alliance.Red).orElse(false);
+    return useAllianceFlipping.getAsBoolean()
+        && alliance.get().map(a -> a == Alliance.Red).orElse(false);
   }
 
   @SuppressWarnings("unchecked")
@@ -222,10 +223,12 @@ public class AutoTrajectory {
   /**
    * Will get the starting pose of the trajectory.
    *
-   * <p>This position is flipped if alliance flipping is enabled and the alliance supplier returns Red.
-   * 
-   * <p>This method returns an empty Optional if the trajectory is empty. This method returns an empty Optional
-   * if alliance flipping is enabled and the alliance supplier returns an empty Optional.
+   * <p>This position is flipped if alliance flipping is enabled and the alliance supplier returns
+   * Red.
+   *
+   * <p>This method returns an empty Optional if the trajectory is empty. This method returns an
+   * empty Optional if alliance flipping is enabled and the alliance supplier returns an empty
+   * Optional.
    *
    * @return The starting pose
    */
@@ -239,27 +242,29 @@ public class AutoTrajectory {
   /**
    * Will get the starting pose of the trajectory as a Supplier
    *
-   * <p>This position is flipped when alliance flipping is enabled and the alliance supplier returns Red.
-   * 
-   * <p>This Supplier returns an empty Optional if the trajectory is empty. This method returns an empty Optional
-   * if alliance flipping is enabled and the alliance supplier returns an empty Optional.
+   * <p>This position is flipped when alliance flipping is enabled and the alliance supplier returns
+   * Red.
+   *
+   * <p>This Supplier returns an empty Optional if the trajectory is empty. This method returns an
+   * empty Optional if alliance flipping is enabled and the alliance supplier returns an empty
+   * Optional.
    *
    * @return The starting pose as a Supplier that will flipp
    */
   public Supplier<Optional<Pose2d>> getInitialPoseSupplier() {
     return AllianceFlipUtil.optionalFlipped(
-      trajectory.getInitialPose(false),
-      routine.alliance,
-      useAllianceFlipping);
+        trajectory.getInitialPose(false), alliance, useAllianceFlipping);
   }
 
   /**
    * Will get the ending pose of the trajectory.
    *
-   * <p>This position is flipped if alliance flipping is enabled and the alliance supplier returns Red.
-   * 
-   * <p>This method returns an empty Optional if the trajectory is empty. This method returns an empty Optional
-   * if alliance flipping is enabled and the alliance supplier returns an empty Optional.
+   * <p>This position is flipped if alliance flipping is enabled and the alliance supplier returns
+   * Red.
+   *
+   * <p>This method returns an empty Optional if the trajectory is empty. This method returns an
+   * empty Optional if alliance flipping is enabled and the alliance supplier returns an empty
+   * Optional.
    *
    * @return The starting pose
    */
@@ -273,18 +278,18 @@ public class AutoTrajectory {
   /**
    * Will get the ending pose of the trajectory as a Supplier
    *
-   * <p>This position is flipped when alliance flipping is enabled and the alliance supplier returns Red.
-   * 
-   * <p>This Supplier returns an empty Optional if the trajectory is empty. This method returns an empty Optional
-   * if alliance flipping is enabled and the alliance supplier returns an empty Optional.
+   * <p>This position is flipped when alliance flipping is enabled and the alliance supplier returns
+   * Red.
+   *
+   * <p>This Supplier returns an empty Optional if the trajectory is empty. This method returns an
+   * empty Optional if alliance flipping is enabled and the alliance supplier returns an empty
+   * Optional.
    *
    * @return The ending pose as a Supplier that will flipp
    */
   public Supplier<Optional<Pose2d>> getFinalPoseSupplier() {
     return AllianceFlipUtil.optionalFlipped(
-      trajectory.getFinalPose(false),
-      routine.alliance,
-      useAllianceFlipping);
+        trajectory.getFinalPose(false), alliance, useAllianceFlipping);
   }
 
   /**
@@ -489,8 +494,9 @@ public class AutoTrajectory {
    * Returns a trigger that is true when the robot is within toleranceMeters of the given pose.
    *
    * <p>The pose is flipped if alliance flipping is enabled and the alliance supplier returns Red.
-   * 
-   * While alliance flipping is enabled and the alliance supplier returns empty, the trigger will return false.
+   *
+   * <p>While alliance flipping is enabled and the alliance supplier returns empty, the trigger will
+   * return false.
    *
    * @param pose The pose to check against, unflipped.
    * @param toleranceMeters The tolerance in meters.
@@ -502,22 +508,23 @@ public class AutoTrajectory {
         routine.loop(),
         () -> {
           Optional<Pose2d> checkedPoseOpt = checkedPoseOptSup.get();
-          return checkedPoseOpt.map(
-            (checkedPose)->{
-              Translation2d currentTrans = poseSupplier.get().getTranslation();
-              return currentTrans.getDistance(checkedPose.getTranslation()) < toleranceMeters;
-            }
-          ).orElse(false);
-
+          return checkedPoseOpt
+              .map(
+                  (checkedPose) -> {
+                    Translation2d currentTrans = poseSupplier.get().getTranslation();
+                    return currentTrans.getDistance(checkedPose.getTranslation()) < toleranceMeters;
+                  })
+              .orElse(false);
         });
   }
 
-    /**
+  /**
    * Returns a trigger that is true when the robot is within toleranceMeters of the given pose.
    *
    * <p>The pose is flipped if alliance flipping is enabled and the alliance supplier returns Red.
-   * 
-   * While alliance flipping is enabled and the alliance supplier returns empty, the trigger will return false.
+   *
+   * <p>While alliance flipping is enabled and the alliance supplier returns empty, the trigger will
+   * return false.
    *
    * @param pose The pose to check against, unflipped.
    * @param toleranceMeters The tolerance in meters.
@@ -528,7 +535,7 @@ public class AutoTrajectory {
   }
 
   private Supplier<Optional<Pose2d>> optionalFlipped(Optional<Pose2d> pose) {
-    return AllianceFlipUtil.optionalFlipped(pose, routine.alliance, useAllianceFlipping);
+    return AllianceFlipUtil.optionalFlipped(pose, alliance, useAllianceFlipping);
   }
 
   /**
