@@ -314,13 +314,12 @@ public class AutoTrajectory {
   }
 
   /**
-   * Returns a trigger that rises to true when the trajectory ends and falls when another trajectory
-   * is run.
+   * Returns a trigger that rises to true when the trajectory ends and falls after one pulse.
    *
    * <p>This is different from inactive() in a few ways.
    *
    * <ul>
-   *   <li>This will never be true if the trajectory is interupted
+   *   <li>This will never be true if the trajectory is interrupted
    *   <li>This will never be true before the trajectory is run
    *   <li>This will fall the next cycle after the trajectory ends
    * </ul>
@@ -379,13 +378,12 @@ public class AutoTrajectory {
   }
 
   /**
-   * Returns a trigger that rises to true when the trajectory ends and falls when another trajectory
-   * is run.
+   * Returns a trigger that rises to true when the trajectory ends and falls after one pulse.
    *
    * <p>This is different from inactive() in a few ways.
    *
    * <ul>
-   *   <li>This will never be true if the trajectory is interupted
+   *   <li>This will never be true if the trajectory is interrupted
    *   <li>This will never be true before the trajectory is run
    *   <li>This will fall the next cycle after the trajectory ends
    * </ul>
