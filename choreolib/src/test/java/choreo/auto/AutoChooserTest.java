@@ -48,6 +48,7 @@ public class AutoChooserTest {
   private void assertNTOptions(String testFuncName, String... expected) {
     String[] options =
         table(testFuncName).getEntry("options").getStringArray(new String[0]);
+
     assertEquals(expected.length, options.length);
     for (int i = 0; i < expected.length; i++) {
       assertEquals(expected[i], options[i]);
