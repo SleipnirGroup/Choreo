@@ -19,39 +19,35 @@ public class AutoChooserTest {
     return "/Test/AutoChooser/" + testFuncName;
   }
 
-  private String tablePath(String testFuncName) {
-    return chooserPath(testFuncName) + "/AutoChooser";
-  }
-
   private NetworkTable table(String testFuncName) {
     // i'm unsure if this is needed but it won't hurt
     NetworkTableInstance.getDefault().flushLocal();
-    return NetworkTableInstance.getDefault().getTable(tablePath(testFuncName));
+    return NetworkTableInstance.getDefault().getTable(chooserPath(testFuncName) + "/AutoChooser");
   }
 
   private void assertNTType(String testFuncName) {
-    String type = table(tablePath(testFuncName)).getEntry("type").getString("");
+    String type = table(testFuncName).getEntry("type").getString("");
     assertEquals("String Chooser", type);
   }
 
   private void assertNTSelected(String testFuncName, String expected) {
-    String type = table(tablePath(testFuncName)).getEntry("selected").getString("");
+    String type = table(testFuncName).getEntry("selected").getString("");
     assertEquals(expected, type);
   }
 
   private void assertNTActive(String testFuncName, String expected) {
-    String type = table(tablePath(testFuncName)).getEntry("active").getString("");
+    String type = table(testFuncName).getEntry("active").getString("");
     assertEquals(expected, type);
   }
 
   private void assertNTDefault(String testFuncName) {
-    String type = table(tablePath(testFuncName)).getEntry("default").getString("");
+    String type = table(testFuncName).getEntry("default").getString("");
     assertEquals(NONE_NAME, type);
   }
 
   private void assertNTOptions(String testFuncName, String... expected) {
     String[] options =
-        table(tablePath(testFuncName)).getEntry("options").getStringArray(new String[0]);
+        table(testFuncName).getEntry("options").getStringArray(new String[0]);
     assertEquals(expected.length, options.length);
     for (int i = 0; i < expected.length; i++) {
       assertEquals(expected[i], options[i]);
@@ -59,7 +55,7 @@ public class AutoChooserTest {
   }
 
   private void selectNT(String testFuncName, String value) {
-    table(tablePath(testFuncName)).getEntry("selected").setString(value);
+    table(testFuncName).getEntry("selected").setString(value);
   }
 
   @Test
