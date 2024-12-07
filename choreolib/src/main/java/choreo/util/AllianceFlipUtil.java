@@ -264,23 +264,29 @@ public class AllianceFlipUtil {
     return optionalFlippedPose2d(pose, alliance, () -> true);
   }
 
-    /**
+  /**
    * Creates a Supplier&lt;Optional&lt;Translation2d&gt;&gt; based on a
    * Supplier&lt;Optional&lt;Alliance&gt;&gt; and original Optional&lt;Translation2d&gt;
    *
    * @param translationOpt The translation to flip
    * @param allianceOpt The current alliance
    * @param doFlip Returns true if flipping based on the alliance should be done
-   * @return empty if the alliance is empty; the original translation optional if the alliance is blue or
-   *     doFlip is false; the flipped translation optional if the alliance is red and doFlip is true
+   * @return empty if the alliance is empty; the original translation optional if the alliance is
+   *     blue or doFlip is false; the flipped translation optional if the alliance is red and doFlip
+   *     is true
    */
   public static Supplier<Optional<Translation2d>> optionalFlippedTranslation2d(
-      Optional<Translation2d> translationOpt, Supplier<Optional<Alliance>> allianceOpt, BooleanSupplier doFlip) {
+      Optional<Translation2d> translationOpt,
+      Supplier<Optional<Alliance>> allianceOpt,
+      BooleanSupplier doFlip) {
     return () ->
         doFlip.getAsBoolean()
             ? allianceOpt
                 .get()
-                .flatMap(ally -> translationOpt.map(translation -> ally == Alliance.Red ? flip(translation) : translation))
+                .flatMap(
+                    ally ->
+                        translationOpt.map(
+                            translation -> ally == Alliance.Red ? flip(translation) : translation))
             : translationOpt;
   }
 
@@ -290,8 +296,8 @@ public class AllianceFlipUtil {
    *
    * @param translation The translation to flip
    * @param alliance The current alliance
-   * @return empty if the alliance is empty; the original translation if the alliance is blue; the flipped
-   *     translation if the alliance is red
+   * @return empty if the alliance is empty; the original translation if the alliance is blue; the
+   *     flipped translation if the alliance is red
    */
   public static Supplier<Optional<Translation2d>> optionalFlippedTranslation2d(
       Optional<Translation2d> translation, Supplier<Optional<Alliance>> alliance) {

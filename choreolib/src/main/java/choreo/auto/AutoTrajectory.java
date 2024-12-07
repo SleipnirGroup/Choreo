@@ -460,22 +460,27 @@ public class AutoTrajectory {
     return trig;
   }
 
-  private Trigger atPose(Supplier<Optional<Pose2d>> pose, double toleranceMeters, double toleranceRadians) {
+  private Trigger atPose(
+      Supplier<Optional<Pose2d>> pose, double toleranceMeters, double toleranceRadians) {
     return new Trigger(
-      routine.loop(),
-      () -> {
-        Optional<Pose2d> checkedPoseOpt = pose.get();
-        return checkedPoseOpt
-            .map(
-                (checkedPose) -> {
-                  Translation2d currentTrans = poseSupplier.get().getTranslation();
-                  Rotation2d currentRot = poseSupplier.get().getRotation();
-                  return currentTrans.getDistance(checkedPose.getTranslation()) < toleranceMeters
-                    && Math.abs(currentRot.minus(checkedPose.getRotation()).getRadians()) < toleranceRadians;
-                })
-            .orElse(false);
-      });
+            routine.loop(),
+            () -> {
+              Optional<Pose2d> checkedPoseOpt = pose.get();
+              return checkedPoseOpt
+                  .map(
+                      (checkedPose) -> {
+                        Translation2d currentTrans = poseSupplier.get().getTranslation();
+                        Rotation2d currentRot = poseSupplier.get().getRotation();
+                        return currentTrans.getDistance(checkedPose.getTranslation())
+                                < toleranceMeters
+                            && Math.abs(currentRot.minus(checkedPose.getRotation()).getRadians())
+                                < toleranceRadians;
+                      })
+                  .orElse(false);
+            })
+        .and(active());
   }
+
   /**
    * Returns a trigger that is true when the robot is within toleranceMeters of the given pose.
    *
@@ -490,8 +495,10 @@ public class AutoTrajectory {
    * @return A trigger that is true when the robot is within toleranceMeters of the given pose.
    */
   public Trigger atPose(Optional<Pose2d> pose, double toleranceMeters, double toleranceRadians) {
-    return atPose(AllianceFlipUtil.optionalFlippedPose2d(pose, alliance, useAllianceFlipping),
-      toleranceMeters, toleranceRadians);
+    return atPose(
+        AllianceFlipUtil.optionalFlippedPose2d(pose, alliance, useAllianceFlipping),
+        toleranceMeters,
+        toleranceRadians);
   }
 
   /**
@@ -512,8 +519,8 @@ public class AutoTrajectory {
   }
 
   /**
-   * Returns a trigger that is true when the robot is within toleranceMeters and toleranceRadians of the given event's
-   * pose.
+   * Returns a trigger that is true when the robot is within toleranceMeters and toleranceRadians of
+   * the given event's pose.
    *
    * <p>A warning will be printed to the DriverStation if the event is not found and the trigger
    * will always be false.
@@ -541,7 +548,8 @@ public class AutoTrajectory {
               // this also lets atPose be called before the alliance is ready
               .sampleAt(event.timestamp, false)
               .map(TrajectorySample::getPose);
-      if (poseOpt.isPresent()) { // atPose accepts empty optionals but it would just be a false trigger
+      if (poseOpt
+          .isPresent()) { // atPose accepts empty optionals but it would just be a false trigger
         trig = trig.or(atPose(poseOpt, toleranceMeters, toleranceRadians));
         foundEvent = true;
       }
@@ -558,13 +566,15 @@ public class AutoTrajectory {
   }
 
   /**
-   * Returns a trigger that is true when the robot is within 3 inches and 3 degrees of the given event's pose. 
+   * Returns a trigger that is true when the robot is within 3 inches and 3 degrees of the given
+   * event's pose.
    *
    * <p>A warning will be printed to the DriverStation if the event is not found and the trigger
    * will always be false.
    *
    * @param eventName The name of the event.
-   * @return A trigger that is true when the robot is within 3 inches and 3 degrees of the given event's pose.
+   * @return A trigger that is true when the robot is within 3 inches and 3 degrees of the given
+   *     event's pose.
    * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
    *     GUI</a>
    */
@@ -572,62 +582,72 @@ public class AutoTrajectory {
     return atPose(eventName, DEFAULT_TOLERANCE_METERS, DEFAULT_TOLERANCE_RADIANS);
   }
 
-  private Trigger atTranslation(Supplier<Optional<Translation2d>> translation, double toleranceMeters) {
+  private Trigger atTranslation(
+      Supplier<Optional<Translation2d>> translation, double toleranceMeters) {
     return new Trigger(
-      routine.loop(),
-      () -> {
-        Optional<Translation2d> checkedTranslationOpt = translation.get();
-        return checkedTranslationOpt
-            .map(
-                (checkedTranslation) -> {
-                  Translation2d currentTrans = poseSupplier.get().getTranslation();
-                  return currentTrans.getDistance(checkedTranslation) < toleranceMeters;
-                })
-            .orElse(false);
-      });
-  }
-  /**
-   * Returns a trigger that is true when the robot is within toleranceMeters of the given translation.
-   *
-   * <p>The translation is flipped if alliance flipping is enabled and the alliance supplier returns Red.
-   *
-   * <p>While alliance flipping is enabled and the alliance supplier returns empty, the trigger will
-   * return false.
-   *
-   * @param translation The translation to check against, unflipped.
-   * @param toleranceMeters The tolerance in meters.
-   * @return A trigger that is true when the robot is within toleranceMeters of the given translation.
-   */
-  public Trigger atTranslation(Optional<Translation2d> translation, double toleranceMeters) {
-    return atTranslation(AllianceFlipUtil.optionalFlippedTranslation2d(translation, alliance, useAllianceFlipping), toleranceMeters);
+            routine.loop(),
+            () -> {
+              Optional<Translation2d> checkedTranslationOpt = translation.get();
+              return checkedTranslationOpt
+                  .map(
+                      (checkedTranslation) -> {
+                        Translation2d currentTrans = poseSupplier.get().getTranslation();
+                        return currentTrans.getDistance(checkedTranslation) < toleranceMeters;
+                      })
+                  .orElse(false);
+            })
+        .and(active());
   }
 
   /**
-   * Returns a trigger that is true when the robot is within toleranceMeters of the given translation.
+   * Returns a trigger that is true when the robot is within toleranceMeters of the given
+   * translation.
    *
-   * <p>The translation is flipped if alliance flipping is enabled and the alliance supplier returns Red.
+   * <p>The translation is flipped if alliance flipping is enabled and the alliance supplier returns
+   * Red.
    *
    * <p>While alliance flipping is enabled and the alliance supplier returns empty, the trigger will
    * return false.
    *
    * @param translation The translation to check against, unflipped.
    * @param toleranceMeters The tolerance in meters.
-   * @return A trigger that is true when the robot is within toleranceMeters of the given translation.
+   * @return A trigger that is true when the robot is within toleranceMeters of the given
+   *     translation.
+   */
+  public Trigger atTranslation(Optional<Translation2d> translation, double toleranceMeters) {
+    return atTranslation(
+        AllianceFlipUtil.optionalFlippedTranslation2d(translation, alliance, useAllianceFlipping),
+        toleranceMeters);
+  }
+
+  /**
+   * Returns a trigger that is true when the robot is within toleranceMeters of the given
+   * translation.
+   *
+   * <p>The translation is flipped if alliance flipping is enabled and the alliance supplier returns
+   * Red.
+   *
+   * <p>While alliance flipping is enabled and the alliance supplier returns empty, the trigger will
+   * return false.
+   *
+   * @param translation The translation to check against, unflipped.
+   * @param toleranceMeters The tolerance in meters.
+   * @return A trigger that is true when the robot is within toleranceMeters of the given
+   *     translation.
    */
   public Trigger atTranslation(Translation2d translation, double toleranceMeters) {
     return atTranslation(Optional.of(translation), toleranceMeters);
   }
 
   /**
-   * Returns a trigger that is true when the robot is within toleranceMeters and toleranceRadians of the given event's
-   * translation.
+   * Returns a trigger that is true when the robot is within toleranceMeters and toleranceRadians of
+   * the given event's translation.
    *
    * <p>A warning will be printed to the DriverStation if the event is not found and the trigger
    * will always be false.
    *
    * @param eventName The name of the event.
    * @param toleranceMeters The tolerance in meters.
-   * @param toleranceRadians The heading tolerance in radians.
    * @return A trigger that is true when the robot is within toleranceMeters of the given events
    *     translation.
    * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
@@ -647,8 +667,11 @@ public class AutoTrajectory {
               // don't mirror here because the translations are mirrored themselves
               // this also lets atTranslation be called before the alliance is ready
               .sampleAt(event.timestamp, false)
-              .map(TrajectorySample::getPose).map(Pose2d::getTranslation);
-      if (translationOpt.isPresent()) { // atTranslation accepts empty optionals but it would just be a false trigger
+              .map(TrajectorySample::getPose)
+              .map(Pose2d::getTranslation);
+      if (translationOpt
+          .isPresent()) { // atTranslation accepts empty optionals but it would just be a false
+        // trigger
         trig = trig.or(atTranslation(translationOpt, toleranceMeters));
         foundEvent = true;
       }
@@ -665,13 +688,15 @@ public class AutoTrajectory {
   }
 
   /**
-   * Returns a trigger that is true when the robot is within 3 inches and 3 degrees of the given event's translation. 
+   * Returns a trigger that is true when the robot is within 3 inches and 3 degrees of the given
+   * event's translation.
    *
    * <p>A warning will be printed to the DriverStation if the event is not found and the trigger
    * will always be false.
    *
    * @param eventName The name of the event.
-   * @return A trigger that is true when the robot is within 3 inches and 3 degrees of the given event's translation.
+   * @return A trigger that is true when the robot is within 3 inches and 3 degrees of the given
+   *     event's translation.
    * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
    *     GUI</a>
    */
