@@ -26,11 +26,10 @@ import java.util.function.Function;
  * This approach has the benefit of not loading all autos on startup, but also not loading the auto
  * during auto start causing a delay.
  *
- * <p>Once the {@link AutoChooser} is made you can add {@link AutoRoutine}s to it using {@link #addAutoRoutine}
- * or {@link #addAutoCmd}. Unlike {@code SendableChooser} this chooser
- * has to be updated every cycle.
- * This can be done using an `addPeriodic` call in the robot's constructor like so:
- * <code>addPeriodic(autoChooser::update, 0.02);</code>
+ * <p>Once the {@link AutoChooser} is made you can add {@link AutoRoutine}s to it using {@link
+ * #addAutoRoutine} or {@link #addAutoCmd}. Unlike {@code SendableChooser} this chooser has to be
+ * updated every cycle. This can be done using an `addPeriodic` call in the robot's constructor like
+ * so: <code>addPeriodic(autoChooser::update, 0.02);</code>
  *
  * <p>You can set the Robot's autonomous command to the chooser's chosen auto routine via <code>
  * RobotModeTriggers.autonomous.whileTrue(chooser.autoCmd());</code>
@@ -103,9 +102,9 @@ public class AutoChooser {
   /**
    * Add an AutoRoutine to the chooser.
    *
-   * <p>The options of the chooser are actually a
-   * function that takes an {@link AutoFactory} and returns a {@link AutoRoutine}. These functions
-   * can be static, a lambda or belong to a local variable.
+   * <p>The options of the chooser are actually a function that takes an {@link AutoFactory} and
+   * returns a {@link AutoRoutine}. These functions can be static, a lambda or belong to a local
+   * variable.
    *
    * <p>This is done to load AutoRoutines when and only when they are selected, in order to save
    * memory and file loading time for unused AutoRoutines.
