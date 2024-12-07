@@ -12,11 +12,11 @@ jobs:
             artifact-name: Athena
             build-options: -Ponlylinuxathena
 
-          - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04
+          - container: wpilib/raspbian-cross-ubuntu:bookworm-22.04
             artifact-name: Linux-arm32
             build-options: -Ponlylinuxarm32
 
-          - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04
+          - container: wpilib/aarch64-cross-ubuntu:bookworm-22.04
             artifact-name: Linux-arm64
             build-options: -Ponlylinuxarm64
 
