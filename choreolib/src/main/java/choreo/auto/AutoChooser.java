@@ -26,9 +26,10 @@ import java.util.function.Function;
  * This approach has the benefit of not loading all autos on startup, but also not loading the auto
  * during auto start causing a delay.
  *
- * <p>Once the {@link AutoChooser} is made you can add {@link AutoRoutine}s to it using the {@link
- * #addAutoRoutine(String, AutoRoutineCreator)} method. Unlike {@code SendableChooser} this chooser
- * has to be updated every cycle through an addPeriodic call in your Robot constructor, like so:
+ * <p>Once the {@link AutoChooser} is made you can add {@link AutoRoutine}s to it using {@link #addAutoRoutine}
+ * or {@link #addAutoCmd}. Unlike {@code SendableChooser} this chooser
+ * has to be updated every cycle.
+ * This can be done using an `addPeriodic` call in the robot's constructor like so:
  * <code>addPeriodic(autoChooser::update, 0.02);</code>
  *
  * <p>You can set the Robot's autonomous command to the chooser's chosen auto routine via <code>
@@ -102,7 +103,7 @@ public class AutoChooser {
   /**
    * Add an AutoRoutine to the chooser.
    *
-   * <p>The options of the chooser are actually of type {@link AutoRoutineCreator}. This is a
+   * <p>The options of the chooser are actually a
    * function that takes an {@link AutoFactory} and returns a {@link AutoRoutine}. These functions
    * can be static, a lambda or belong to a local variable.
    *
@@ -140,10 +141,6 @@ public class AutoChooser {
   /**
    * Adds a Command to the auto chooser.
    *
-   * <p>The options of the chooser are actually of type {@link AutoCommandCreator}. This is a
-   * function that takes an {@link AutoFactory} and returns a {@link Command}. These functions can
-   * be static, a lambda or belong to a local variable.
-   *
    * <p>This is done to load autonomous commands when and only when they are selected, in order to
    * save memory and file loading time for unused autonomous commands.
    *
@@ -162,11 +159,11 @@ public class AutoChooser {
    * </code></pre>
    *
    * @param name The name of the autonomous command.
-   * @param commandGenerator The function that generates an autonomous command.
+   * @param generator The function that generates an autonomous command.
    * @see AutoChooser#addAutoRoutine
    */
-  public void addAutoCmd(String name, Function<AutoFactory, Command> commandGenerator) {
-    addAutoRoutine(name, ignored -> factory.commandAsAutoRoutine(commandGenerator.apply(factory)));
+  public void addAutoCmd(String name, Function<AutoFactory, Command> generator) {
+    addAutoRoutine(name, ignored -> factory.commandAsAutoRoutine(generator.apply(factory)));
   }
 
   /**
