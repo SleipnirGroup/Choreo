@@ -27,12 +27,13 @@ import java.util.function.Function;
  * during auto start causing a delay.
  *
  * <p>Once the {@link AutoChooser} is made you can add {@link AutoRoutine}s to it using {@link
- * #addAutoRoutine} or {@link #addAutoCmd}. Unlike {@code SendableChooser} this chooser has to be
- * updated every cycle. This can be done using an `addPeriodic` call in the robot's constructor like
- * so: <code>addPeriodic(autoChooser::update, 0.02);</code>
+ * #addAutoRoutine} or add {@link Command}s to it using {@link #addAutoCmd}.
+ * Unlike {@code SendableChooser} this chooser has to beupdated every cycle. This can be done 
+ * using an `addPeriodic` call in the robot's constructor like so:
+ * <code>addPeriodic(autoChooser::update, 0.02);</code>
  *
  * <p>You can set the Robot's autonomous command to the chooser's chosen auto routine via <code>
- * RobotModeTriggers.autonomous.whileTrue(chooser.autoCmd());</code>
+ * RobotModeTriggers.autonomous.whileTrue(chooser.autoSchedulingCmd());</code>
  */
 public class AutoChooser {
   static final String NONE_NAME = "Nothing";
