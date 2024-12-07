@@ -27,11 +27,13 @@ java {
 repositories {
     mavenCentral()
 }
-if (project.hasProperty('releaseMode')) {
-    wpilibRepositories.addAllReleaseRepositories(project)
-} else {
-    wpilibRepositories.addAllDevelopmentRepositories(project)
-}
+// TODO: revert once WPILib releases 2025.1.1-beta-3
+wpilibRepositories.addAllDevelopmentRepositories(project)
+// if (project.hasProperty('releaseMode')) {
+//     wpilibRepositories.addAllReleaseRepositories(project)
+// } else {
+//     wpilibRepositories.addAllDevelopmentRepositories(project)
+// }
 
 // Apply C++ configuration
 apply from: 'config.gradle'
