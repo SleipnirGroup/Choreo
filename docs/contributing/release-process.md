@@ -29,11 +29,11 @@ pushd Choreo
 # Bump versions
 ./update_version.py TAG
 
-# Format files updated by update_version.py
-pnpm run fmt
+# Format .json files updated by update_version.py
+pnpm run fmtJs
 
 # Update Cargo.lock
-pnpm tauri build
+cargo update -w
 
 # Commit and push
 git commit -a -m "Bump version to TAG"
