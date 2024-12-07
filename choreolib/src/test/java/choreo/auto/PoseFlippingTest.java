@@ -91,8 +91,7 @@ public class PoseFlippingTest {
     AutoTrajectory autoTrajectory =
         factory.trajectory(trajectory, factory.newRoutine("testroutine"));
     testPoseProperlyFlipped(start, startFlipped, autoTrajectory::getInitialPose);
-    testPoseProperlyFlipped(start, startFlipped, autoTrajectory.getInitialPoseSupplier());
     testPoseProperlyFlipped(end, endFlipped, autoTrajectory::getFinalPose);
-    testPoseProperlyFlipped(end, endFlipped, autoTrajectory.getFinalPoseSupplier());
+
   }
 }

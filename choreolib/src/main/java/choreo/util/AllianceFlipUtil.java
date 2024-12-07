@@ -251,21 +251,7 @@ public class AllianceFlipUtil {
   }
 
   /**
-   * Creates a Supplier&lt;Optional&lt;Pose2d&gt;&gt; based on a
-   * Supplier&lt;Optional&lt;Alliance&gt;&gt; and original Optional&lt;Pose2d&gt;
-   *
-   * @param pose The pose to flip
-   * @param alliance The current alliance
-   * @return empty if the alliance is empty; the original pose if the alliance is blue; the flipped
-   *     pose if the alliance is red
-   */
-  public static Supplier<Optional<Pose2d>> optionalFlippedPose2d(
-      Optional<Pose2d> pose, Supplier<Optional<Alliance>> alliance) {
-    return optionalFlippedPose2d(pose, alliance, () -> true);
-  }
-
-  /**
-   * Creates a Supplier&lt;Optional&lt;Translation2d&gt;&gt; based on a
+   * Creates a Supplier&lt;Optional&lt;Translation2d&gt;&gt; that is flipped based on a
    * Supplier&lt;Optional&lt;Alliance&gt;&gt; and original Optional&lt;Translation2d&gt;
    *
    * @param translationOpt The translation to flip
@@ -288,19 +274,5 @@ public class AllianceFlipUtil {
                         translationOpt.map(
                             translation -> ally == Alliance.Red ? flip(translation) : translation))
             : translationOpt;
-  }
-
-  /**
-   * Creates a Supplier&lt;Optional&lt;Translation2d&gt;&gt; based on a
-   * Supplier&lt;Optional&lt;Alliance&gt;&gt; and original Optional&lt;Translation2d&gt;
-   *
-   * @param translation The translation to flip
-   * @param alliance The current alliance
-   * @return empty if the alliance is empty; the original translation if the alliance is blue; the
-   *     flipped translation if the alliance is red
-   */
-  public static Supplier<Optional<Translation2d>> optionalFlippedTranslation2d(
-      Optional<Translation2d> translation, Supplier<Optional<Alliance>> alliance) {
-    return optionalFlippedTranslation2d(translation, alliance, () -> true);
   }
 }

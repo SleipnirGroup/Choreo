@@ -481,20 +481,7 @@ public class AutoTrajectory {
         .and(active());
   }
 
-  /**
-   * Returns a trigger that is true when the robot is within toleranceMeters of the given pose.
-   *
-   * <p>The pose is flipped if alliance flipping is enabled and the alliance supplier returns Red.
-   *
-   * <p>While alliance flipping is enabled and the alliance supplier returns empty, the trigger will
-   * return false.
-   *
-   * @param pose The pose to check against, unflipped.
-   * @param toleranceMeters The tolerance in meters.
-   * @param toleranceRadians The heading tolerance in radians.
-   * @return A trigger that is true when the robot is within toleranceMeters of the given pose.
-   */
-  public Trigger atPose(Optional<Pose2d> pose, double toleranceMeters, double toleranceRadians) {
+  private Trigger atPose(Optional<Pose2d> pose, double toleranceMeters, double toleranceRadians) {
     return atPose(
         AllianceFlipUtil.optionalFlippedPose2d(pose, alliance, useAllianceFlipping),
         toleranceMeters,
@@ -599,22 +586,7 @@ public class AutoTrajectory {
         .and(active());
   }
 
-  /**
-   * Returns a trigger that is true when the robot is within toleranceMeters of the given
-   * translation.
-   *
-   * <p>The translation is flipped if alliance flipping is enabled and the alliance supplier returns
-   * Red.
-   *
-   * <p>While alliance flipping is enabled and the alliance supplier returns empty, the trigger will
-   * return false.
-   *
-   * @param translation The translation to check against, unflipped.
-   * @param toleranceMeters The tolerance in meters.
-   * @return A trigger that is true when the robot is within toleranceMeters of the given
-   *     translation.
-   */
-  public Trigger atTranslation(Optional<Translation2d> translation, double toleranceMeters) {
+  private Trigger atTranslation(Optional<Translation2d> translation, double toleranceMeters) {
     return atTranslation(
         AllianceFlipUtil.optionalFlippedTranslation2d(translation, alliance, useAllianceFlipping),
         toleranceMeters);
