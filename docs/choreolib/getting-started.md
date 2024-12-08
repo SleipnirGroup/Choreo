@@ -2,7 +2,7 @@
 
 ## Installing ChoreoLib
 
-To use ChoreoLib in your robot code, it must first be installed as a vendor library. For more information about installing vendor libraries, see [WPILib's documentation](https://docs.wpilib.org/en/stable/docs/software/vscode-overview/3rd-party-libraries.html#installing-libraries) about installing in online mode. 
+To use ChoreoLib in your robot code, it must first be installed as a vendor library. For more information about installing vendor libraries, see [WPILib's documentation](https://docs.wpilib.org/en/stable/docs/software/vscode-overview/3rd-party-libraries.html#installing-libraries) about installing in online mode.
 
 Use the following JSON URL to install ChoreoLib:
 
