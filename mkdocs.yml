@@ -98,11 +98,9 @@ nav:
       - View Options Panel: usage/view-options-panel.md
       - Estimating Moment of Inertia: usage/estimating-moi.md
   - ChoreoLib:
-      - Installation: choreolib/installation.md
-      - Getting Started: choreolib/basic-usage.md
+      - Getting Started: choreolib/getting-started.md
       - Auto Factory: choreolib/auto-factory.md
-      - Auto Routines: choreolib/auto-routines.md
-      - Auto Controller: choreolib/auto-controller.md
+      - Trajectory API: choreolib/trajectory-api.md
       - Java API: api/choreolib/java/index.html
       - C++ API: api/choreolib/cpp/index.html
   - TrajoptLib (Internal API):
