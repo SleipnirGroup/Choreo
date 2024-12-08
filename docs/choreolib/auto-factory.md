@@ -93,6 +93,23 @@ The "entrance" to all routines is the `AutoRoutine.running()` trigger. You shoul
 routine.running().onTrue(Commands.print("Started the routine!"));
 ```
 
+Traditional triggers can also be used in conjunction with an auto routine. However, they will experience "hygiene" issues if not used correctly, causing them to be active even when the routine is not. You must either:
+
+- Use `AutoRoutine.observe()` to ensure the trigger is only active when the routine is running
+- Conjoin a trigger to one created by `AutoRoutine` or `AutoTrajectory`
+
+```java
+Trigger myTrigger = new Trigger(() -> condition);
+
+// Safe
+routine.observe(myTrigger).onTrue(Commands.print("Foo"));
+routine.running().and(myTrigger).onTrue(Commands.print("Bar"));
+
+// Unsafe
+myTrigger.onTrue(Commands.print("Foo"));
+myTrigger.and(routine.running()).onTrue(Commands.print("Bar"));
+```
+
 Trajectories can be loaded using `AutoRoutine.trajectory()`, which will return an `AutoTrajectory` ([Java](/api/choreolib/java/choreo/auto/AutoTrajectory.html)). The `AutoTrajectory` class exposes multiple triggers for you to attach reactive logic to, as well as `AutoTrajectory.cmd()` for scheduling the trajectory.
 
 ```java
@@ -181,7 +198,7 @@ public AutoRoutine branching2024Auto() {
 The `AutoChooser` ([Java](/api/choreolib/java/choreo/auto/AutoChooser.html)) class allows you to send a list of your autonomous routines to a driver dashboard for selection before a match. It is meant to be a more efficient alternative to `SendableChooser`, taking a [lazy loading](https://en.wikipedia.org/wiki/Lazy_loading) approach to generating command compositions or an `AutoRoutine`. This approach has the benefit of not loading all autos on startup, but also not loading the auto after the match starts, which may cause a delay when using many or large trajectories.
 
 ```java
-// TODO Pending https://github.com/SleipnirGroup/Choreo/pull/949    
+// TODO Pending https://github.com/SleipnirGroup/Choreo/pull/949
 ```
 
 ## AutoBindings
