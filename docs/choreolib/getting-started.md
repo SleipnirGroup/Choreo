@@ -81,7 +81,7 @@ In general, trajectory followers accept trajectory "samples" that represent the 
                     sample.vy + xController.calculate(pose.getX(), sample.y),
                     sample.omega + xController.calculate(pose.getRotation().getRadians(), sample.heading)
                 );
-    
+
                 // Apply the generated speeds
                 driveFieldRelative(speeds);
             }

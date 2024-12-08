@@ -1,5 +1,5 @@
 
-# Auto Factory (Java Only)
+# AutoFactory (Java Only)
 
 ChoreoLib provides the `AutoFactory` ([Java](/api/choreolib/java/choreo/auto/AutoFactory.html)) class as a higher level API to make it easier to create complex auto routines inside your robot code.
 
