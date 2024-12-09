@@ -464,7 +464,9 @@ public class AutoTrajectory {
 
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
-    if (!foundEvent) eventNotFound.setInfringement(name);
+    if (!foundEvent) {
+      eventNotFound.setInfringement(name);
+    }
 
     return trig;
   }
@@ -553,7 +555,9 @@ public class AutoTrajectory {
 
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
-    if (!foundEvent) eventNotFound.setInfringement(name);
+    if (!foundEvent) {
+      eventNotFound.setInfringement(name);
+    }
 
     return trig;
   }
@@ -657,7 +661,9 @@ public class AutoTrajectory {
 
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
-    if (!foundEvent) eventNotFound.setInfringement(name);
+    if (!foundEvent) {
+      eventNotFound.setInfringement(name);
+    }
 
     return trig;
   }
