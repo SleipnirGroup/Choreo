@@ -74,7 +74,7 @@ public Command pickupAndScoreAuto() {
 }
 ```
 
-1. Throughout this documentation, we assume you are using [command factory methods](https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#instance-command-factory-methods) in your subsystems. For the uninitiated, this is WPILib's recommended alternative to [command subclasses](https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#writing-command-classes) (i.e. `new IntakeCommand()`).
+1. Throughout this documentation, we assume you are using [command factory methods](https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#instance-command-factory-methods) in your subsystems, which is a more concise alternative to command classes (i.e. `new IntakeCommand()`).
 
 ## Using AutoRoutine
 
