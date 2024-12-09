@@ -437,17 +437,30 @@ public final class Choreo {
         requireNonNullParam(alliance, "alliance", "Choreo.createAutoFactory"));
   }
 
+  /**
+   * Creates an alert under the "Choreo" group.
+   * @param name The name of the alert
+   * @param type The type of alert
+   * @return an Alert published under the "Choreo" group
+   */
   public static Alert alert(String name, Alert.AlertType type) {
     return new Alert("Choreo", name, type);
   }
 
+  /**
+   * Creates a {@link MultiAlert} under the "Choreo" group.
+   * @param textGenerator A function that accepts a list of infringements
+   *                      and returns an alert message
+   * @param type The type of alert
+   * @return a MultiAlert published under the "Choreo" group
+   */
   public static MultiAlert multiAlert(Function<List<String>, String> textGenerator, Alert.AlertType type) {
     return new MultiAlert(textGenerator, type);
   }
 
   /**
    * An alert that allows multiple "infringements", or error scenarios.
-   * Used to reduce clutter within the alerts tab.
+   * Effectively, it merges multiple similar alert blurbs into one.
    */
   public static class MultiAlert extends Alert {
     private final Function<List<String>, String> textGenerator;
@@ -458,6 +471,12 @@ public final class Choreo {
       this.textGenerator = textGenerator;
     }
 
+    /**
+     * Adds an "infringement" to the list of infringements
+     * in this alert, and pushes the alert to networktables
+     * (if it is not already present).
+     * @param name The name of the infringement
+     */
     public void setInfringement(String name) {
       infringement.add(name);
       setText(textGenerator.apply(infringement));
