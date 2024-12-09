@@ -2,6 +2,8 @@
 
 package choreo.auto;
 
+import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
+
 import choreo.Choreo;
 import choreo.Choreo.MultiAlert;
 import choreo.Choreo.TrajectoryLogger;
@@ -15,8 +17,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -28,8 +28,6 @@ import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
-import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
 
 /**
  * A class that represents a trajectory that can be used in an autonomous routine and have triggers
@@ -43,18 +41,19 @@ public class AutoTrajectory {
   // code. This also makes the places with generics exposed to users few
   // and far between. This helps with more novice users
 
-  private static final MultiAlert triggerTimeNegative = Choreo.multiAlert(
-    infringements -> "Trigger time cannot be negative for " + infringements, kError
-  );
-  private static final MultiAlert triggerTimeAboveMax = Choreo.multiAlert(
-    infringements -> "Trigger time cannot be greater than total trajectory time for " + infringements, kError
-  );
-  private static final MultiAlert eventNotFound = Choreo.multiAlert(
-    infringements -> "Event Markers " + infringements + " not found.", kError
-  );
-  private static final MultiAlert noSamples = Choreo.multiAlert(
-    infringements -> "Trajectories " + infringements + " have no samples.", kError
-  );
+  private static final MultiAlert triggerTimeNegative =
+      Choreo.multiAlert(
+          infringements -> "Trigger time cannot be negative for " + infringements, kError);
+  private static final MultiAlert triggerTimeAboveMax =
+      Choreo.multiAlert(
+          infringements ->
+              "Trigger time cannot be greater than total trajectory time for " + infringements,
+          kError);
+  private static final MultiAlert eventNotFound =
+      Choreo.multiAlert(infringements -> "Event Markers " + infringements + " not found.", kError);
+  private static final MultiAlert noSamples =
+      Choreo.multiAlert(
+          infringements -> "Trajectories " + infringements + " have no samples.", kError);
   private static final double DEFAULT_TOLERANCE_METERS = Units.inchesToMeters(3);
   private static final double DEFAULT_TOLERANCE_RADIANS = Units.degreesToRadians(3);
   private final String name;
@@ -87,7 +86,8 @@ public class AutoTrajectory {
    * @param trajectory The trajectory samples.
    * @param poseSupplier The pose supplier.
    * @param controller The controller function.
-   * @param useAllianceFlipping Getter that determines whether to mirror trajectory based off alliance.
+   * @param useAllianceFlipping Getter that determines whether to mirror trajectory based off
+   *     alliance.
    * @param trajectoryLogger Optional trajectory logger.
    * @param driveSubsystem Drive subsystem.
    * @param routine Event loop.

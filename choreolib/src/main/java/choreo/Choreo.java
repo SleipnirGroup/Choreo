@@ -51,12 +51,10 @@ public final class Choreo {
   private static final String TRAJECTORY_FILE_EXTENSION = ".traj";
   private static final int TRAJ_SCHEMA_VERSION = 0;
   private static final int PROJECT_SCHEMA_VERSION = 1;
-  private static final MultiAlert cantFindTrajectory = multiAlert(
-    infringements -> "Could not find trajectory files: " + infringements, kError
-  );
-  private static final MultiAlert cantParseTrajectory = multiAlert(
-    infringements -> "Could not parse trajectory files: " + infringements, kError
-  );
+  private static final MultiAlert cantFindTrajectory =
+      multiAlert(infringements -> "Could not find trajectory files: " + infringements, kError);
+  private static final MultiAlert cantParseTrajectory =
+      multiAlert(infringements -> "Could not parse trajectory files: " + infringements, kError);
 
   private static File CHOREO_DIR = new File(Filesystem.getDeployDirectory(), "choreo");
 
@@ -439,6 +437,7 @@ public final class Choreo {
 
   /**
    * Creates an alert under the "Choreo" group.
+   *
    * @param name The name of the alert
    * @param type The type of alert
    * @return an Alert published under the "Choreo" group
@@ -449,18 +448,20 @@ public final class Choreo {
 
   /**
    * Creates a {@link MultiAlert} under the "Choreo" group.
-   * @param textGenerator A function that accepts a list of infringements
-   *                      and returns an alert message
+   *
+   * @param textGenerator A function that accepts a list of infringements and returns an alert
+   *     message
    * @param type The type of alert
    * @return a MultiAlert published under the "Choreo" group
    */
-  public static MultiAlert multiAlert(Function<List<String>, String> textGenerator, Alert.AlertType type) {
+  public static MultiAlert multiAlert(
+      Function<List<String>, String> textGenerator, Alert.AlertType type) {
     return new MultiAlert(textGenerator, type);
   }
 
   /**
-   * An alert that allows multiple "infringements", or error scenarios.
-   * Effectively, it merges multiple similar alert blurbs into one.
+   * An alert that allows multiple "infringements", or error scenarios. Effectively, it merges
+   * multiple similar alert blurbs into one.
    */
   public static class MultiAlert extends Alert {
     private final Function<List<String>, String> textGenerator;
@@ -472,9 +473,9 @@ public final class Choreo {
     }
 
     /**
-     * Adds an "infringement" to the list of infringements
-     * in this alert, and pushes the alert to networktables
-     * (if it is not already present).
+     * Adds an "infringement" to the list of infringements in this alert, and pushes the alert to
+     * networktables (if it is not already present).
+     *
      * @param name The name of the infringement
      */
     public void setInfringement(String name) {
