@@ -130,6 +130,10 @@ In general, trajectory followers accept trajectory "samples" that represent the 
 
                 // Apply the generated speeds
                 drive(speeds);
+
+                // Or, if you don't drive via ChassisSpeeds
+                DifferentialDriveWheelSpeeds wheelSpeeds = kinematics.toWheelSpeeds(speeds);
+                drive(wheelSpeeds.leftMetersPerSecond, wheelSpeeds.rightMetersPerSecond);
             }
         }
         ```
