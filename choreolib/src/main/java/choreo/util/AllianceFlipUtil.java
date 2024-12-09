@@ -240,7 +240,7 @@ public class AllianceFlipUtil {
    * @return empty if the alliance is empty; the original pose optional if the alliance is blue or
    *     doFlip is false; the flipped pose optional if the alliance is red and doFlip is true
    */
-  public static Supplier<Optional<Pose2d>> optionalFlipped(
+  public static Supplier<Optional<Pose2d>> optionalFlippedPose2d(
       Optional<Pose2d> poseOpt, Supplier<Optional<Alliance>> allianceOpt, BooleanSupplier doFlip) {
     return () ->
         doFlip.getAsBoolean()
@@ -251,16 +251,28 @@ public class AllianceFlipUtil {
   }
 
   /**
-   * Creates a Supplier&lt;Optional&lt;Pose2d&gt;&gt; based on a
-   * Supplier&lt;Optional&lt;Alliance&gt;&gt; and original Optional&lt;Pose2d&gt;
+   * Creates a Supplier&lt;Optional&lt;Translation2d&gt;&gt; that is flipped based on a
+   * Supplier&lt;Optional&lt;Alliance&gt;&gt; and original Optional&lt;Translation2d&gt;
    *
-   * @param pose The pose to flip
-   * @param alliance The current alliance
-   * @return empty if the alliance is empty; the original pose if the alliance is blue; the flipped
-   *     pose if the alliance is red
+   * @param translationOpt The translation to flip
+   * @param allianceOpt The current alliance
+   * @param doFlip Returns true if flipping based on the alliance should be done
+   * @return empty if the alliance is empty; the original translation optional if the alliance is
+   *     blue or doFlip is false; the flipped translation optional if the alliance is red and doFlip
+   *     is true
    */
-  public static Supplier<Optional<Pose2d>> optionalFlipped(
-      Optional<Pose2d> pose, Supplier<Optional<Alliance>> alliance) {
-    return optionalFlipped(pose, alliance, () -> true);
+  public static Supplier<Optional<Translation2d>> optionalFlippedTranslation2d(
+      Optional<Translation2d> translationOpt,
+      Supplier<Optional<Alliance>> allianceOpt,
+      BooleanSupplier doFlip) {
+    return () ->
+        doFlip.getAsBoolean()
+            ? allianceOpt
+                .get()
+                .flatMap(
+                    ally ->
+                        translationOpt.map(
+                            translation -> ally == Alliance.Red ? flip(translation) : translation))
+            : translationOpt;
   }
 }
