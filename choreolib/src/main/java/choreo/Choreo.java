@@ -329,6 +329,8 @@ public final class Choreo {
    * @param <SampleType> The type of samples in the trajectory.
    * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
    *     robot.
+   * @param resetOdometry A function that receives a field-relative {@link Pose2d} to reset the
+   *     robot's odometry to.
    * @param controller A function that receives the current {@link SampleType} and controls the
    *     robot.
    * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
@@ -343,12 +345,14 @@ public final class Choreo {
    */
   public static <SampleType extends TrajectorySample<SampleType>> AutoFactory createAutoFactory(
       Supplier<Pose2d> poseSupplier,
+      Consumer<Pose2d> resetOdometry,
       Consumer<SampleType> controller,
       BooleanSupplier useAllianceFlipping,
       Subsystem driveSubsystem,
       AutoBindings bindings) {
     return new AutoFactory(
         requireNonNullParam(poseSupplier, "poseSupplier", "Choreo.createAutoFactory"),
+        requireNonNullParam(resetOdometry, "resetOdometry", "Choreo.createAutoFactory"),
         requireNonNullParam(controller, "controller", "Choreo.createAutoFactory"),
         requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory"),
         requireNonNullParam(useAllianceFlipping, "useAllianceFlipping", "Choreo.createAutoFactory"),
@@ -362,6 +366,8 @@ public final class Choreo {
    * @param <SampleType> The type of samples in the trajectory.
    * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
    *     robot.
+   * @param resetOdometry A function that receives a field-relative {@link Pose2d} to reset the
+   *     robot's odometry to.
    * @param controller A function that receives the current {@link SampleType} and controls the
    *     robot.
    * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
@@ -378,6 +384,7 @@ public final class Choreo {
    */
   public static <SampleType extends TrajectorySample<SampleType>> AutoFactory createAutoFactory(
       Supplier<Pose2d> poseSupplier,
+      Consumer<Pose2d> resetOdometry,
       Consumer<SampleType> controller,
       BooleanSupplier useAllianceFlipping,
       Subsystem driveSubsystem,
@@ -385,6 +392,7 @@ public final class Choreo {
       TrajectoryLogger<SampleType> trajectoryLogger) {
     return new AutoFactory(
         requireNonNullParam(poseSupplier, "poseSupplier", "Choreo.createAutoFactory"),
+        requireNonNullParam(resetOdometry, "resetOdometry", "Choreo.createAutoFactory"),
         requireNonNullParam(controller, "controller", "Choreo.createAutoFactory"),
         requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory"),
         requireNonNullParam(useAllianceFlipping, "useAllianceFlipping", "Choreo.createAutoFactory"),
@@ -398,6 +406,8 @@ public final class Choreo {
    * @param <SampleType> The type of samples in the trajectory.
    * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
    *     robot.
+   * @param resetOdometry A function that receives a field-relative {@link Pose2d} to reset the
+   *     robot's odometry to.
    * @param controller A function that receives the current {@link SampleType} and controls the
    *     robot.
    * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
@@ -416,6 +426,7 @@ public final class Choreo {
    */
   public static <SampleType extends TrajectorySample<SampleType>> AutoFactory createAutoFactory(
       Supplier<Pose2d> poseSupplier,
+      Consumer<Pose2d> resetOdometry,
       Consumer<SampleType> controller,
       Subsystem driveSubsystem,
       BooleanSupplier useAllianceFlipping,
@@ -424,6 +435,7 @@ public final class Choreo {
       Supplier<Optional<Alliance>> alliance) {
     return new AutoFactory(
         requireNonNullParam(poseSupplier, "poseSupplier", "Choreo.createAutoFactory"),
+        requireNonNullParam(resetOdometry, "resetOdometry", "Choreo.createAutoFactory"),
         requireNonNullParam(controller, "controller", "Choreo.createAutoFactory"),
         requireNonNullParam(driveSubsystem, "driveSubsystem", "Choreo.createAutoFactory"),
         requireNonNullParam(useAllianceFlipping, "useAllianceFlipping", "Choreo.createAutoFactory"),
