@@ -3,6 +3,7 @@
 package choreo.auto;
 
 import choreo.Choreo;
+import choreo.Choreo.MultiAlert;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoFactory.AutoBindings;
 import choreo.trajectory.DifferentialSample;
@@ -14,6 +15,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
@@ -27,6 +29,8 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
+
 /**
  * A class that represents a trajectory that can be used in an autonomous routine and have triggers
  * based off of it.
@@ -39,6 +43,18 @@ public class AutoTrajectory {
   // code. This also makes the places with generics exposed to users few
   // and far between. This helps with more novice users
 
+  private static final MultiAlert triggerTimeNegative = Choreo.multiAlert(
+    infringements -> "Trigger time cannot be negative for " + infringements, kError
+  );
+  private static final MultiAlert triggerTimeAboveMax = Choreo.multiAlert(
+    infringements -> "Trigger time cannot be greater than total trajectory time for " + infringements, kError
+  );
+  private static final MultiAlert eventNotFound = Choreo.multiAlert(
+    infringements -> "Event Markers " + infringements + " not found.", kError
+  );
+  private static final MultiAlert noSamples = Choreo.multiAlert(
+    infringements -> "Trajectories " + infringements + " have no samples.", kError
+  );
   private static final double DEFAULT_TOLERANCE_METERS = Units.inchesToMeters(3);
   private static final double DEFAULT_TOLERANCE_RADIANS = Units.degreesToRadians(3);
   private final String name;
@@ -71,7 +87,7 @@ public class AutoTrajectory {
    * @param trajectory The trajectory samples.
    * @param poseSupplier The pose supplier.
    * @param controller The controller function.
-   * @param mirrorTrajectory Getter that determines whether to mirror trajectory.
+   * @param useAllianceFlipping Getter that determines whether to mirror trajectory based off alliance.
    * @param trajectoryLogger Optional trajectory logger.
    * @param driveSubsystem Drive subsystem.
    * @param routine Event loop.
@@ -192,10 +208,7 @@ public class AutoTrajectory {
     // if the trajectory is empty, return a command that will print an error
     if (trajectory.samples().isEmpty()) {
       return driveSubsystem
-          .runOnce(
-              () -> {
-                DriverStation.reportError("[Choreo] Trajectory " + name + " has no samples", false);
-              })
+          .runOnce(() -> noSamples.setInfringement(name))
           .withName("Trajectory_" + name);
     }
     return new FunctionalCommand(
@@ -395,14 +408,13 @@ public class AutoTrajectory {
   public Trigger atTime(double timeSinceStart) {
     // The timer should never be negative so report this as a warning
     if (timeSinceStart < 0) {
-      DriverStation.reportWarning("[Choreo] Trigger time cannot be negative for " + name, true);
+      triggerTimeNegative.setInfringement(name);
       return offTrigger;
     }
 
     // The timer should never exceed the total trajectory time so report this as a warning
     if (timeSinceStart > trajectory.getTotalTime()) {
-      DriverStation.reportWarning(
-          "[Choreo] Trigger time cannot be greater than total trajectory time for " + name, true);
+      triggerTimeAboveMax.setInfringement(name);
       return offTrigger;
     }
 
@@ -452,10 +464,7 @@ public class AutoTrajectory {
 
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
-    if (!foundEvent) {
-      DriverStation.reportWarning(
-          "[Choreo] Event \"" + eventName + "\" not found for " + name, true);
-    }
+    if (!foundEvent) eventNotFound.setInfringement(name);
 
     return trig;
   }
@@ -544,10 +553,7 @@ public class AutoTrajectory {
 
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
-    if (!foundEvent) {
-      DriverStation.reportWarning(
-          "[Choreo] Event \"" + eventName + "\" not found for " + name, true);
-    }
+    if (!foundEvent) eventNotFound.setInfringement(name);
 
     return trig;
   }
@@ -651,10 +657,7 @@ public class AutoTrajectory {
 
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
-    if (!foundEvent) {
-      DriverStation.reportWarning(
-          "[Choreo] Event \"" + eventName + "\" not found for " + name, true);
-    }
+    if (!foundEvent) eventNotFound.setInfringement(name);
 
     return trig;
   }

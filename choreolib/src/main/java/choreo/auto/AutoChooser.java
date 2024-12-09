@@ -2,15 +2,19 @@
 
 package choreo.auto;
 
+import choreo.Choreo;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringArrayEntry;
 import edu.wpi.first.networktables.StringEntry;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobotBase;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+
+import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
 
 /**
  * An Choreo specific {@code SendableChooser} that allows for the selection of {@link AutoRoutine}s
@@ -94,7 +98,7 @@ public class AutoChooser {
       if (!autoRoutines.containsKey(selectStr)) {
         selected.set(NONE_NAME);
         selectStr = NONE_NAME;
-        DriverStation.reportError("Selected an auto that isn't an option", false);
+        Choreo.alert("Selected an auto that isn't an option", kError).set(true);
       }
       lastAutoRoutineName = selectStr;
       lastAutoRoutine = autoRoutines.get(lastAutoRoutineName).apply(this.factory);

@@ -194,7 +194,6 @@ public class AutoFactory {
     if (optTrajectory.isPresent()) {
       trajectory = optTrajectory.get();
     } else {
-      DriverStation.reportError("Could not load trajectory: " + trajectoryName, false);
       trajectory = new Trajectory<SwerveSample>(trajectoryName, List.of(), List.of(), List.of());
     }
     return trajectory(trajectory, routine);
@@ -213,7 +212,6 @@ public class AutoFactory {
     if (optTrajectory.isPresent()) {
       trajectory = optTrajectory.get();
     } else {
-      DriverStation.reportError("Could not load trajectory: " + trajectoryName, false);
       trajectory = new Trajectory<SwerveSample>(trajectoryName, List.of(), List.of(), List.of());
     }
     return trajectory(trajectory, routine);

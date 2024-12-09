@@ -2,8 +2,10 @@
 
 package choreo.auto;
 
+import choreo.Choreo;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -11,6 +13,8 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.function.BooleanSupplier;
+
+import static edu.wpi.first.wpilibj.Alert.AlertType.kWarning;
 
 /**
  * An object that represents an autonomous routine.
@@ -153,7 +157,7 @@ public class AutoRoutine {
       return;
     }
     reset();
-    DriverStation.reportWarning("Killed An Auto Loop", true);
+    Choreo.alert("Killed an auto loop", kWarning).set(true);
     isKilled = true;
   }
 
@@ -222,8 +226,7 @@ public class AutoRoutine {
             .withName(name),
         Commands.runOnce(
             () -> {
-              DriverStation.reportWarning(
-                  "[Choreo] Alliance not known when starting routine", false);
+              Choreo.alert("Alliance not known when starting routine", kWarning).set(true);
               kill();
             }),
         allianceKnownOrIgnored);

@@ -3,6 +3,7 @@
 package choreo;
 
 import static edu.wpi.first.util.ErrorMessages.requireNonNullParam;
+import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
 
 import choreo.auto.AutoChooser;
 import choreo.auto.AutoFactory;
@@ -22,6 +23,7 @@ import com.google.gson.JsonSyntaxException;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -38,10 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 /** Utilities to load and follow Choreo Trajectories */
 public final class Choreo {
@@ -52,6 +51,12 @@ public final class Choreo {
   private static final String TRAJECTORY_FILE_EXTENSION = ".traj";
   private static final int TRAJ_SCHEMA_VERSION = 0;
   private static final int PROJECT_SCHEMA_VERSION = 1;
+  private static final MultiAlert cantFindTrajectory = multiAlert(
+    infringements -> "Could not find trajectory files: " + infringements, kError
+  );
+  private static final MultiAlert cantParseTrajectory = multiAlert(
+    infringements -> "Could not parse trajectory files: " + infringements, kError
+  );
 
   private static File CHOREO_DIR = new File(Filesystem.getDeployDirectory(), "choreo");
 
@@ -156,9 +161,9 @@ public final class Choreo {
           (Trajectory<SampleType>) loadTrajectoryString(str, getProjectFile());
       return Optional.of(trajectory);
     } catch (FileNotFoundException ex) {
-      DriverStation.reportError("Could not find trajectory file: " + trajectoryFile, false);
+      cantFindTrajectory.setInfringement(trajectoryFile.toString());
     } catch (JsonSyntaxException ex) {
-      DriverStation.reportError("Could not parse trajectory file: " + trajectoryFile, false);
+      cantParseTrajectory.setInfringement(trajectoryFile.toString());
     } catch (Exception ex) {
       DriverStation.reportError(ex.getMessage(), ex.getStackTrace());
     }
@@ -430,5 +435,33 @@ public final class Choreo {
         requireNonNullParam(bindings, "bindings", "Choreo.createAutoFactory"),
         Optional.of(trajectoryLogger),
         requireNonNullParam(alliance, "alliance", "Choreo.createAutoFactory"));
+  }
+
+  public static Alert alert(String name, Alert.AlertType type) {
+    return new Alert("Choreo", name, type);
+  }
+
+  public static MultiAlert multiAlert(Function<List<String>, String> textGenerator, Alert.AlertType type) {
+    return new MultiAlert(textGenerator, type);
+  }
+
+  /**
+   * An alert that allows multiple "infringements", or error scenarios.
+   * Used to reduce clutter within the alerts tab.
+   */
+  public static class MultiAlert extends Alert {
+    private final Function<List<String>, String> textGenerator;
+    private final List<String> infringement = new ArrayList<>();
+
+    MultiAlert(Function<List<String>, String> textGenerator, AlertType type) {
+      super("Choreo", textGenerator.apply(List.of()), type);
+      this.textGenerator = textGenerator;
+    }
+
+    public void setInfringement(String name) {
+      infringement.add(name);
+      setText(textGenerator.apply(infringement));
+      set(true);
+    }
   }
 }
