@@ -42,18 +42,16 @@ public class AutoTrajectory {
   // and far between. This helps with more novice users
 
   private static final MultiAlert triggerTimeNegative =
-      Choreo.multiAlert(
-          infringements -> "Trigger time cannot be negative for " + infringements, kError);
+      Choreo.multiAlert(causes -> "Trigger time cannot be negative for " + causes, kError);
   private static final MultiAlert triggerTimeAboveMax =
       Choreo.multiAlert(
-          infringements ->
-              "Trigger time cannot be greater than total trajectory time for " + infringements,
+          causes -> "Trigger time cannot be greater than total trajectory time for " + causes,
           kError);
   private static final MultiAlert eventNotFound =
-      Choreo.multiAlert(infringements -> "Event Markers " + infringements + " not found.", kError);
+      Choreo.multiAlert(causes -> "Event Markers " + causes + " not found.", kError);
   private static final MultiAlert noSamples =
-      Choreo.multiAlert(
-          infringements -> "Trajectories " + infringements + " have no samples.", kError);
+      Choreo.multiAlert(causes -> "Trajectories " + causes + " have no samples.", kError);
+
   private static final double DEFAULT_TOLERANCE_METERS = Units.inchesToMeters(3);
   private static final double DEFAULT_TOLERANCE_RADIANS = Units.degreesToRadians(3);
   private final String name;
@@ -207,9 +205,7 @@ public class AutoTrajectory {
   public Command cmd() {
     // if the trajectory is empty, return a command that will print an error
     if (trajectory.samples().isEmpty()) {
-      return driveSubsystem
-          .runOnce(() -> noSamples.setInfringement(name))
-          .withName("Trajectory_" + name);
+      return driveSubsystem.runOnce(() -> noSamples.addCause(name)).withName("Trajectory_" + name);
     }
     return new FunctionalCommand(
             this::cmdInitialize,
@@ -408,13 +404,13 @@ public class AutoTrajectory {
   public Trigger atTime(double timeSinceStart) {
     // The timer should never be negative so report this as a warning
     if (timeSinceStart < 0) {
-      triggerTimeNegative.setInfringement(name);
+      triggerTimeNegative.addCause(name);
       return offTrigger;
     }
 
     // The timer should never exceed the total trajectory time so report this as a warning
     if (timeSinceStart > trajectory.getTotalTime()) {
-      triggerTimeAboveMax.setInfringement(name);
+      triggerTimeAboveMax.addCause(name);
       return offTrigger;
     }
 
@@ -465,7 +461,7 @@ public class AutoTrajectory {
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
     if (!foundEvent) {
-      eventNotFound.setInfringement(name);
+      eventNotFound.addCause(name);
     }
 
     return trig;
@@ -556,7 +552,7 @@ public class AutoTrajectory {
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
     if (!foundEvent) {
-      eventNotFound.setInfringement(name);
+      eventNotFound.addCause(name);
     }
 
     return trig;
@@ -662,7 +658,7 @@ public class AutoTrajectory {
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
     if (!foundEvent) {
-      eventNotFound.setInfringement(name);
+      eventNotFound.addCause(name);
     }
 
     return trig;

@@ -52,9 +52,9 @@ public final class Choreo {
   private static final int TRAJ_SCHEMA_VERSION = 0;
   private static final int PROJECT_SCHEMA_VERSION = 1;
   private static final MultiAlert cantFindTrajectory =
-      multiAlert(infringements -> "Could not find trajectory files: " + infringements, kError);
+      multiAlert(causes -> "Could not find trajectory files: " + causes, kError);
   private static final MultiAlert cantParseTrajectory =
-      multiAlert(infringements -> "Could not parse trajectory files: " + infringements, kError);
+      multiAlert(causes -> "Could not parse trajectory files: " + causes, kError);
 
   private static File CHOREO_DIR = new File(Filesystem.getDeployDirectory(), "choreo");
 
@@ -159,9 +159,9 @@ public final class Choreo {
           (Trajectory<SampleType>) loadTrajectoryString(str, getProjectFile());
       return Optional.of(trajectory);
     } catch (FileNotFoundException ex) {
-      cantFindTrajectory.setInfringement(trajectoryFile.toString());
+      cantFindTrajectory.addCause(trajectoryFile.toString());
     } catch (JsonSyntaxException ex) {
-      cantParseTrajectory.setInfringement(trajectoryFile.toString());
+      cantParseTrajectory.addCause(trajectoryFile.toString());
     } catch (Exception ex) {
       DriverStation.reportError(ex.getMessage(), ex.getStackTrace());
     }
@@ -449,8 +449,7 @@ public final class Choreo {
   /**
    * Creates a {@link MultiAlert} under the "Choreo" group.
    *
-   * @param textGenerator A function that accepts a list of infringements and returns an alert
-   *     message
+   * @param textGenerator A function that accepts a list of causes and returns an alert message
    * @param type The type of alert
    * @return a MultiAlert published under the "Choreo" group
    */
@@ -460,12 +459,12 @@ public final class Choreo {
   }
 
   /**
-   * An alert that allows multiple "infringements", or error scenarios. Effectively, it merges
-   * multiple similar alert blurbs into one.
+   * An alert that can have multiple causes. Utilizes a function to generate an error message from a
+   * list of causes.
    */
   public static class MultiAlert extends Alert {
     private final Function<List<String>, String> textGenerator;
-    private final List<String> infringement = new ArrayList<>();
+    private final List<String> causes = new ArrayList<>();
 
     MultiAlert(Function<List<String>, String> textGenerator, AlertType type) {
       super("Choreo", textGenerator.apply(List.of()), type);
@@ -473,14 +472,14 @@ public final class Choreo {
     }
 
     /**
-     * Adds an "infringement" to the list of infringements in this alert, and pushes the alert to
-     * networktables (if it is not already present).
+     * Adds an error causer to this alert, and pushes the alert to networktables if it is not
+     * already present.
      *
-     * @param name The name of the infringement
+     * @param name The name of the error causer
      */
-    public void setInfringement(String name) {
-      infringement.add(name);
-      setText(textGenerator.apply(infringement));
+    public void addCause(String name) {
+      causes.add(name);
+      setText(textGenerator.apply(causes));
       set(true);
     }
   }
