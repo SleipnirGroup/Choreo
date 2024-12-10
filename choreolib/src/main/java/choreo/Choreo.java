@@ -40,7 +40,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.*;
+import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /** Utilities to load and follow Choreo Trajectories */
 public final class Choreo {
@@ -163,6 +167,10 @@ public final class Choreo {
     } catch (JsonSyntaxException ex) {
       cantParseTrajectory.addCause(trajectoryFile.toString());
     } catch (Exception ex) {
+      Choreo.alert(
+              "Unknown error when parsing " + trajectoryFile + "; check console for more details",
+              kError)
+          .set(true);
       DriverStation.reportError(ex.getMessage(), ex.getStackTrace());
     }
     return Optional.empty();
