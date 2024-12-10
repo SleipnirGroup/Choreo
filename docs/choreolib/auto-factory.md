@@ -232,6 +232,6 @@ The `AutoBindings` ([Java](/api/choreolib/java/choreo/auto/AutoFactory.AutoBindi
 
 ```java
 AutoBindings bindings = new AutoBindings()
-    .bind("intake", intakeSubsystem::intake)
-    .bind("score", scoringSubsystem::score);
+    .bind("intake", intakeSubsystem.intake())
+    .bind("score", scoringSubsystem.score());
 ```
