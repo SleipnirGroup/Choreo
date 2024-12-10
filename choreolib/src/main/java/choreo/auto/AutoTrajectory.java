@@ -20,6 +20,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -58,6 +59,7 @@ public class AutoTrajectory {
   private final Trajectory<? extends TrajectorySample<?>> trajectory;
   private final TrajectoryLogger<? extends TrajectorySample<?>> trajectoryLogger;
   private final Supplier<Pose2d> poseSupplier;
+  private final Consumer<Pose2d> resetOdometry;
   private final Consumer<? extends TrajectorySample<?>> controller;
   private final BooleanSupplier useAllianceFlipping;
   private final Supplier<Optional<Alliance>> alliance;
@@ -95,6 +97,7 @@ public class AutoTrajectory {
       String name,
       Trajectory<SampleType> trajectory,
       Supplier<Pose2d> poseSupplier,
+      Consumer<Pose2d> resetOdometry,
       Consumer<SampleType> controller,
       BooleanSupplier useAllianceFlipping,
       Supplier<Optional<Alliance>> alliance,
@@ -105,6 +108,7 @@ public class AutoTrajectory {
     this.name = name;
     this.trajectory = trajectory;
     this.poseSupplier = poseSupplier;
+    this.resetOdometry = resetOdometry;
     this.controller = controller;
     this.useAllianceFlipping = useAllianceFlipping;
     this.alliance = alliance;
@@ -267,6 +271,28 @@ public class AutoTrajectory {
       return Optional.empty();
     }
     return trajectory.getFinalPose(doFlip());
+  }
+
+  /**
+   * Creates a command that resets the robot's odometry to the start of this trajectory.
+   *
+   * @return A command that resets the robot's odometry.
+   */
+  public Command resetOdometry() {
+    return Commands.either(
+            Commands.runOnce(() -> resetOdometry.accept(getInitialPose().get()), driveSubsystem),
+            Commands.runOnce(
+                    () -> {
+                      DriverStation.reportError(
+                          "[Choreo] Unable to retrieve initial pose from trajectory \""
+                              + name
+                              + "\"",
+                          false);
+                      routine.kill();
+                    })
+                .andThen(Commands.idle()),
+            () -> getInitialPose().isPresent())
+        .withName("Trajectory_ResetOdometry_" + name);
   }
 
   /**

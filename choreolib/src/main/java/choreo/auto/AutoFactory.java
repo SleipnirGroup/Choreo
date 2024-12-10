@@ -94,6 +94,7 @@ public class AutoFactory {
 
   private final TrajectoryCache trajectoryCache = new TrajectoryCache();
   private final Supplier<Pose2d> poseSupplier;
+  private final Consumer<Pose2d> resetOdometry;
   private final Consumer<? extends TrajectorySample<?>> controller;
   private final Supplier<Optional<Alliance>> alliance;
   private final BooleanSupplier useAllianceFlipping;
@@ -107,6 +108,7 @@ public class AutoFactory {
    *
    * @param <SampleType> {@link Choreo#createAutoFactory}
    * @param poseSupplier {@link Choreo#createAutoFactory}
+   * @param resetOdometry {@link Choreo#createAutoFactory}
    * @param controller {@link Choreo#createAutoFactory}
    * @param driveSubsystem {@link Choreo#createAutoFactory}
    * @param useAllianceFlipping {@link Choreo#createAutoFactory}
@@ -116,6 +118,7 @@ public class AutoFactory {
    */
   public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
       Supplier<Pose2d> poseSupplier,
+      Consumer<Pose2d> resetOdometry,
       Consumer<SampleType> controller,
       Subsystem driveSubsystem,
       BooleanSupplier useAllianceFlipping,
@@ -123,6 +126,7 @@ public class AutoFactory {
       Optional<TrajectoryLogger<SampleType>> trajectoryLogger,
       Supplier<Optional<Alliance>> alliance) {
     this.poseSupplier = poseSupplier;
+    this.resetOdometry = resetOdometry;
     this.controller = controller;
     this.driveSubsystem = driveSubsystem;
     this.useAllianceFlipping = useAllianceFlipping;
@@ -139,6 +143,7 @@ public class AutoFactory {
    *
    * @param <SampleType> {@link Choreo#createAutoFactory}
    * @param poseSupplier {@link Choreo#createAutoFactory}
+   * @param resetOdometry {@link Choreo#createAutoFactory}
    * @param controller {@link Choreo#createAutoFactory}
    * @param driveSubsystem {@link Choreo#createAutoFactory}
    * @param useAllianceFlipping {@link Choreo#createAutoFactory}
@@ -147,6 +152,7 @@ public class AutoFactory {
    */
   public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
       Supplier<Pose2d> poseSupplier,
+      Consumer<Pose2d> resetOdometry,
       Consumer<SampleType> controller,
       Subsystem driveSubsystem,
       BooleanSupplier useAllianceFlipping,
@@ -154,6 +160,7 @@ public class AutoFactory {
       Optional<TrajectoryLogger<SampleType>> trajectoryLogger) {
     this(
         poseSupplier,
+        resetOdometry,
         controller,
         driveSubsystem,
         useAllianceFlipping,
@@ -235,6 +242,7 @@ public class AutoFactory {
         trajectory.name(),
         solidTrajectory,
         poseSupplier,
+        resetOdometry,
         solidController,
         useAllianceFlipping,
         alliance,
@@ -299,6 +307,39 @@ public class AutoFactory {
   public <SampleType extends TrajectorySample<SampleType>> Command trajectoryCommand(
       Trajectory<SampleType> trajectory) {
     return trajectory(trajectory, VOID_ROUTINE).cmd();
+  }
+
+  /**
+   * Creates a command that resets the robot's odometry to the start of a trajectory.
+   *
+   * @param trajectoryName The name of the trajectory to use.
+   * @return A command that resets the robot's odometry.
+   */
+  public Command resetOdometry(String trajectoryName) {
+    return trajectory(trajectoryName, VOID_ROUTINE).resetOdometry();
+  }
+
+  /**
+   * Creates a command that resets the robot's odometry to the start of a trajectory.
+   *
+   * @param trajectoryName The name of the trajectory to use.
+   * @param splitIndex The index of the split trajectory to use.
+   * @return A command that resets the robot's odometry.
+   */
+  public Command resetOdometry(String trajectoryName, final int splitIndex) {
+    return trajectory(trajectoryName, splitIndex, VOID_ROUTINE).resetOdometry();
+  }
+
+  /**
+   * Creates a command that resets the robot's odometry to the start of a trajectory.
+   *
+   * @param <SampleType> The type of the trajectory samples.
+   * @param trajectory The trajectory to use.
+   * @return A command that resets the robot's odometry.
+   */
+  public <SampleType extends TrajectorySample<SampleType>> Command resetOdometry(
+      Trajectory<SampleType> trajectory) {
+    return trajectory(trajectory, VOID_ROUTINE).resetOdometry();
   }
 
   /**
