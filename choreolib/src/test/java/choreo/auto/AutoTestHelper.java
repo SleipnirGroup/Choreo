@@ -17,6 +17,7 @@ public class AutoTestHelper {
     AtomicReference<Pose2d> pose = new AtomicReference<>(new Pose2d());
     return new AutoFactory(
         () -> pose.get(),
+        newPose -> pose.set(newPose),
         sample -> pose.set(sample.getPose()),
         new Subsystem() {},
         useAllianceFlipping,
