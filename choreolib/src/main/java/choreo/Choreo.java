@@ -16,6 +16,9 @@ import choreo.trajectory.ProjectFile;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
+import choreo.util.AlertUtil;
+import choreo.util.AlertUtil.*;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -23,7 +26,6 @@ import com.google.gson.JsonSyntaxException;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Filesystem;
@@ -43,7 +45,6 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /** Utilities to load and follow Choreo Trajectories */
@@ -56,9 +57,9 @@ public final class Choreo {
   private static final int TRAJ_SCHEMA_VERSION = 0;
   private static final int PROJECT_SCHEMA_VERSION = 1;
   private static final MultiAlert cantFindTrajectory =
-      multiAlert(causes -> "Could not find trajectory files: " + causes, kError);
+      AlertUtil.multiAlert(causes -> "Could not find trajectory files: " + causes, kError);
   private static final MultiAlert cantParseTrajectory =
-      multiAlert(causes -> "Could not parse trajectory files: " + causes, kError);
+      AlertUtil.multiAlert(causes -> "Could not parse trajectory files: " + causes, kError);
 
   private static File CHOREO_DIR = new File(Filesystem.getDeployDirectory(), "choreo");
 
@@ -167,7 +168,7 @@ public final class Choreo {
     } catch (JsonSyntaxException ex) {
       cantParseTrajectory.addCause(trajectoryFile.toString());
     } catch (Exception ex) {
-      Choreo.alert(
+      AlertUtil.alert(
               "Unknown error when parsing " + trajectoryFile + "; check console for more details",
               kError)
           .set(true);
@@ -453,54 +454,5 @@ public final class Choreo {
         requireNonNullParam(bindings, "bindings", "Choreo.createAutoFactory"),
         Optional.of(trajectoryLogger),
         requireNonNullParam(alliance, "alliance", "Choreo.createAutoFactory"));
-  }
-
-  /**
-   * Creates an alert under the "Choreo" group.
-   *
-   * @param name The name of the alert
-   * @param type The type of alert
-   * @return an Alert published under the "Choreo" group
-   */
-  public static Alert alert(String name, Alert.AlertType type) {
-    return new Alert("Choreo", name, type);
-  }
-
-  /**
-   * Creates a {@link MultiAlert} under the "Choreo" group.
-   *
-   * @param textGenerator A function that accepts a list of causes and returns an alert message
-   * @param type The type of alert
-   * @return a MultiAlert published under the "Choreo" group
-   */
-  public static MultiAlert multiAlert(
-      Function<List<String>, String> textGenerator, Alert.AlertType type) {
-    return new MultiAlert(textGenerator, type);
-  }
-
-  /**
-   * An alert that can have multiple causes. Utilizes a function to generate an error message from a
-   * list of causes.
-   */
-  public static class MultiAlert extends Alert {
-    private final Function<List<String>, String> textGenerator;
-    private final List<String> causes = new ArrayList<>();
-
-    MultiAlert(Function<List<String>, String> textGenerator, AlertType type) {
-      super("Choreo", textGenerator.apply(List.of()), type);
-      this.textGenerator = textGenerator;
-    }
-
-    /**
-     * Adds an error causer to this alert, and pushes the alert to networktables if it is not
-     * already present.
-     *
-     * @param name The name of the error causer
-     */
-    public void addCause(String name) {
-      causes.add(name);
-      setText(textGenerator.apply(causes));
-      set(true);
-    }
   }
 }
