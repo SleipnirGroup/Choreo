@@ -203,7 +203,7 @@ The `AutoChooser` ([Java](/api/choreolib/java/choreo/auto/AutoChooser.html)) cla
 
 ## AutoBindings
 
-The `AutoBindings` ([Java](/api/choreolib/java/choreo/auto/AutoFactory.AutoBindings.html)) class is used to bind event markers in trajectories made by the `AutoFactory` to commands. This is useful if you have simpler actions that you want to trigger at specific points in a trajectory without much thought.
+The `AutoBindings` ([Java](/api/choreolib/java/choreo/auto/AutoFactory.AutoBindings.html)) class is used to bind event markers in trajectories made by the `AutoFactory` to commands. Commands added to `AutoBindings` exhibit the same behavior as those bound to `AutoTrajectory.atTime(String)`, except they are applied globally across all routines. This is useful if you have simpler actions that you want to trigger in any trajectory without much thought.
 
 ```java
 AutoBindings bindings = new AutoBindings();
