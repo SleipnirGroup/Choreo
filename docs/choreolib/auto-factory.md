@@ -197,6 +197,9 @@ public AutoRoutine branching2024Auto() {
 
 The `AutoChooser` ([Java](/api/choreolib/java/choreo/auto/AutoChooser.html)) class allows you to send a list of your autonomous routines to a driver dashboard for selection before a match. It is meant to be a more efficient alternative to `SendableChooser`, taking a [lazy loading](https://en.wikipedia.org/wiki/Lazy_loading) approach to generating command compositions or an `AutoRoutine`. This approach has the benefit of not loading all autos on startup, but also not loading the auto after the match starts, which may cause a delay when using many or large trajectories.
 
+!!! tip
+    Due to its performance implications and first-class support for `AutoRoutine`, using `AutoChooser` is the recommended pattern for auto selection, instead of `SendableChooser` or other alternatives.
+
 ```java
 // TODO Pending https://github.com/SleipnirGroup/Choreo/pull/949
 ```
