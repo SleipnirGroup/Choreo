@@ -4,9 +4,9 @@ package choreo.auto;
 
 import static edu.wpi.first.wpilibj.Alert.AlertType.kWarning;
 
-import choreo.Choreo;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
+import choreo.util.AlertUtil;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -156,7 +156,7 @@ public class AutoRoutine {
       return;
     }
     reset();
-    Choreo.alert("Killed an auto loop", kWarning).set(true);
+    AlertUtil.alert("Killed an auto loop", kWarning).set(true);
     isKilled = true;
   }
 
@@ -225,7 +225,7 @@ public class AutoRoutine {
             .withName(name),
         Commands.runOnce(
             () -> {
-              Choreo.alert("Alliance not known when starting routine", kWarning).set(true);
+              AlertUtil.alert("Alliance not known when starting routine", kWarning).set(true);
               kill();
             }),
         allianceKnownOrIgnored);
