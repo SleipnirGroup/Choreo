@@ -17,6 +17,7 @@ public class Robot extends TimedRobot {
         autoFactory = Choreo.createAutoFactory(
             driveSubsystem::getPose, // A function that returns the current robot pose
             driveSubsystem::followTrajectory, // The drive subsystem trajectory follower (1)
+            driveSubsystem::resetOdometry // A function that resets the current robot pose to the provided Pose2d
             () -> true, // If alliance flipping should be enabled (2)
             driveSubsystem, // The drive subsystem
             new AutoBindings() // An empty AutoBindings object (3)
@@ -60,10 +61,10 @@ You can then combine trajectory commands with other functions of your robot to c
 ```java
 public Command pickupAndScoreAuto() {
     return Commands.sequence(
-        // TODO Reset Odometry (Pending API change)
+        autoFactory.resetOdometry("pickupGamepiece"), // (1)
         Commands.deadline(
             autoFactory.trajectoryCommand("pickupGamepiece"),
-            intakeSubsystem.intake() // (1)
+            intakeSubsystem.intake() // (2)
         ),
         Commands.parallel(
             autoFactory.trajectoryCommand("scoreGamepiece"),
@@ -74,7 +75,8 @@ public Command pickupAndScoreAuto() {
 }
 ```
 
-1. Throughout this documentation, we assume you are using [command factory methods](https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#instance-command-factory-methods) in your subsystems, which is a more concise alternative to command classes (i.e. `new IntakeCommand()`).
+1. You should always reset your robot's odometry to the start of the first trajectory being followed in an autonomous routine. `AutoFactory.resetOdometry()` will accomplish this, setting the robot's pose to the start of the specified trajectory.
+2. Throughout this documentation, we assume you are using [command factory methods](https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#instance-command-factory-methods) in your subsystems, which is a more concise alternative to command classes (i.e. `new IntakeCommand()`).
 
 ## Using AutoRoutine
 
@@ -120,8 +122,8 @@ public AutoRoutine pickupAndScoreAuto() {
     AutoTrajectory pickupTraj = routine.trajectory("pickupGamepiece");
     AutoTrajectory scoreTraj = routine.trajectory("scoreGamepiece");
 
-    // When the routine begins, start the first trajectory
-    routine.running().onTrue(pickupTraj.cmd()); // TODO Reset Odometry (Pending API change)
+    // When the routine begins, reset odometry and start the first trajectory (1)
+    routine.running().onTrue(pickupTraj.resetOdometry().andThen(pickupTraj.cmd()));
 
     // Starting at the event marker named "intake", run the intake
     pickupTraj.atPose("intake").onTrue(intakeSubsystem.intake());
@@ -138,6 +140,8 @@ public AutoRoutine pickupAndScoreAuto() {
     return routine;
 }
 ```
+
+1. You should always reset your robot's odometry to the start of the first trajectory being followed in an autonomous routine. `AutoTrajectory.resetOdometry()` will accomplish this, setting the robot's pose to the start of the trajectory.
 
 Sometimes, you may want to implement a "branching auto": an autonomous routine that changes behavior based on the state of the robot. An excellent example for the need of branching autos is the [2024 season](https://youtu.be/9keeDyFxzY4), where robots would race to the midline to grab a gamepiece. If another robot beat yours to the midline, or your robot missed a game piece, a common strategy was to go directly to the next gamepiece on the midline, instead of coming back to score.
 
@@ -161,8 +165,14 @@ public AutoRoutine branching2024Auto() {
     AutoTrajectory scoreToM2 = routine.trajectory("scoreToM2");
     AutoTrajectory scoreToM3 = routine.trajectory("scoreToM3");
 
-    // When the routine starts, shoot the first gamepiece, then go to the "C2" location
-    routine.running().onTrue(shooterSubsystem.shoot().andThen(startToC2.cmd()));
+    // When the routine starts, reset odometry, shoot the first gamepiece, then go to the "C2" location
+    routine.running().onTrue(
+        Commands.sequence(
+            startToC2.resetOdometry(),
+            shooterSubsystem.shoot(),
+            startToC2.cmd()
+        )
+    );
 
     // Pick up and shoot the gamepiece at the "C2" location, then go to the "M1" location
     startToC2.active().whileTrue(intakeSubsystem.intake());
