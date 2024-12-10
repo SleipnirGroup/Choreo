@@ -193,17 +193,20 @@ public AutoRoutine branching2024Auto() {
     // If we didn't pick up the gamepiece, go directly to the next midline location
 
     // M1
-    C2toM1.done().and(shooterSubsystem::noGamepiece).onTrue(M1toM2.cmd());
-    C2toM1.done().and(shooterSubsystem::hasGamepiece).onTrue(M1toScore.cmd());
+    Trigger atM1 = C2toM1.done();
+    atM1.and(shooterSubsystem::noGamepiece).onTrue(M1toM2.cmd());
+    atM1.and(shooterSubsystem::hasGamepiece).onTrue(M1toScore.cmd());
     M1toScore.done().onTrue(shooterSubsystem.shoot().andThen(scoreToM2.cmd()));
 
     // M2
-    scoreToM2.done().and(shooterSubsystem::noGamepiece).onTrue(M2toM3.cmd());
-    scoreToM2.done().and(shooterSubsystem::hasGamepiece).onTrue(M2toScore.cmd());
+    Trigger atM2 = scoreToM2.done().or(M1toM2.done());
+    atM2.and(shooterSubsystem::noGamepiece).onTrue(M2toM3.cmd());
+    atM2.and(shooterSubsystem::hasGamepiece).onTrue(M2toScore.cmd());
     M2toScore.done().onTrue(shooterSubsystem.shoot().andThen(scoreToM3.cmd()));
 
     // M3
-    scoreToM3.done().and(shooterSubsystem::hasGamepiece).onTrue(M3toScore.cmd());
+    Trigger atM3 = scoreToM3.done().or(M2toM3.done());
+    atM3.and(shooterSubsystem::hasGamepiece).onTrue(M3toScore.cmd());
     M3toScore.done().onTrue(shooterSubsystem.shoot());
 
     return routine;
