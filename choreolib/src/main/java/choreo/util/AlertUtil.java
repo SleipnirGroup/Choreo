@@ -1,11 +1,12 @@
-package choreo.util;
+// Copyright (c) Choreo contributors
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
+package choreo.util;
 
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
 
 public class AlertUtil {
   /**
