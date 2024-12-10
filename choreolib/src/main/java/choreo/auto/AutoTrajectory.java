@@ -46,12 +46,15 @@ public class AutoTrajectory {
       Choreo.multiAlert(causes -> "Trigger time cannot be negative for " + causes, kError);
   private static final MultiAlert triggerTimeAboveMax =
       Choreo.multiAlert(
-          causes -> "Trigger time cannot be greater than total trajectory time for " + causes,
+          causes -> "Trigger time cannot be greater than total trajectory time for " + causes + ".",
           kError);
   private static final MultiAlert eventNotFound =
       Choreo.multiAlert(causes -> "Event Markers " + causes + " not found.", kError);
   private static final MultiAlert noSamples =
       Choreo.multiAlert(causes -> "Trajectories " + causes + " have no samples.", kError);
+  private static final MultiAlert noInitialPose =
+      Choreo.multiAlert(
+          causes -> "Unable to get initial pose for trajectories " + causes + ".", kError);
 
   private static final double DEFAULT_TOLERANCE_METERS = Units.inchesToMeters(3);
   private static final double DEFAULT_TOLERANCE_RADIANS = Units.degreesToRadians(3);
@@ -283,11 +286,7 @@ public class AutoTrajectory {
             Commands.runOnce(() -> resetOdometry.accept(getInitialPose().get()), driveSubsystem),
             Commands.runOnce(
                     () -> {
-                      DriverStation.reportError(
-                          "[Choreo] Unable to retrieve initial pose from trajectory \""
-                              + name
-                              + "\"",
-                          false);
+                      noInitialPose.addCause(name);
                       routine.kill();
                     })
                 .andThen(Commands.idle()),
