@@ -158,7 +158,7 @@ In general, trajectory followers accept trajectory "samples" that represent the 
 
     ---
 
-    Create advanced auto routines utilizing triggers and command compositions.
+    Load and follow trajectories utilizing triggers and command compositions to create advanced autonomous routines
 
 -   __[:octicons-arrow-right-24: Trajectory API](./trajectory-api.md)__
 
