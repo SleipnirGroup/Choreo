@@ -80,7 +80,7 @@ public Command pickupAndScoreAuto() {
 
 ## Using AutoRoutine
 
-While command compositions may be an effective architecture in most cases, it has a tendency to become unwieldy if your autonomous routine has branches, if your subsystems use default commands, or if you want your subsystems to run independently and "hand off" actions to each other. The `AutoRoutine` ([Java](/api/choreolib/java/choreo/auto/AutoRoutine.html)) class aims to solve these problems, using WPILib's [Trigger](https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/wpilibj2/command/button/Trigger.html) to define a control flow based on reactions to state that don't require subsystems until they are needed.
+While command compositions may be an effective architecture in many cases, it has a tendency to become unwieldy if your autonomous routine has branches, if your subsystems use default commands, or if you want your subsystems to run independently and "hand off" actions to each other. The `AutoRoutine` ([Java](/api/choreolib/java/choreo/auto/AutoRoutine.html)) class aims to solve these problems, using WPILib's [Trigger](https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/wpilibj2/command/button/Trigger.html) to define a control flow based on reactions to state that don't require subsystems until they are needed.
 
 To get started, create a new routine using `AutoFactory.newRoutine()`:
 
@@ -145,7 +145,10 @@ public AutoRoutine pickupAndScoreAuto() {
 
 Sometimes, you may want to implement a "branching auto": an autonomous routine that changes behavior based on the state of the robot. An excellent example for the need of branching autos is the [2024 season](https://youtu.be/9keeDyFxzY4), where robots would race to the midline to grab a gamepiece. If another robot beat yours to the midline, or your robot missed a game piece, a common strategy was to go directly to the next gamepiece on the midline, instead of coming back to score.
 
-Below is an example auto routine from the 2024 season:
+Below is an example auto routine from the 2024 season, taking advantage of the `AutoRoutine` paradigm:
+
+!!! note
+    Be careful when using `Commands.either()` to achieve branching behavior. The resulting composition will require subsystems from both the `onTrue` and `onFalse` commands, which may block default commands that would otherwise be expected to run. As shown in the example below, chaining triggers is the recommended pattern for creating a branching auto.
 
 ```java
 public AutoRoutine branching2024Auto() {
@@ -186,22 +189,28 @@ public AutoRoutine branching2024Auto() {
         .or(M2toM3.active())
         .whileTrue(intakeSubsystem.intake());
 
-    // If we picked up the gamepiece, go to the "Score" location
-    // If we didn't pick up the gamepiece, go to the next midline location
-    C2toM1.done().onTrue(either(M1toScore.cmd(), M1toM2.cmd(), shooterSubsystem::hasGamepiece));
-    scoreToM2.done().or(M1toM2.done()).onTrue(either(M2toScore.cmd(), M2toM3.cmd(), shooterSubsystem::hasGamepiece));
-    scoreToM3.done().or(M2toM3.done()).onTrue(either(M3toScore.cmd(), Commands.none(), shooterSubsystem::hasGamepiece));
+    // If we picked up the gamepiece, go score, then go to the next midline location
+    // If we didn't pick up the gamepiece, go directly to the next midline location
 
-    // After we go to score, shoot then go to the next available midline location
+    // M1
+    C2toM1.done().and(shooterSubsystem::noGamepiece).onTrue(M1toM2.cmd());
+    C2toM1.done().and(shooterSubsystem::hasGamepiece).onTrue(M1toScore.cmd());
     M1toScore.done().onTrue(shooterSubsystem.shoot().andThen(scoreToM2.cmd()));
+
+    // M2
+    scoreToM2.done().and(shooterSubsystem::noGamepiece).onTrue(M2toM3.cmd());
+    scoreToM2.done().and(shooterSubsystem::hasGamepiece).onTrue(M2toScore.cmd());
     M2toScore.done().onTrue(shooterSubsystem.shoot().andThen(scoreToM3.cmd()));
+
+    // M3
+    scoreToM3.done().and(shooterSubsystem::hasGamepiece).onTrue(M3toScore.cmd());
     M3toScore.done().onTrue(shooterSubsystem.shoot());
 
     return routine;
 }
 ```
 
-1. ![Samples view layer showing ](../media/choreolib-branching-auto.png)
+1. ![Branching Auto Map](../media/choreolib-branching-auto.png)
 
 ## AutoChooser
 
