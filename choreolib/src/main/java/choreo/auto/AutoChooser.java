@@ -2,10 +2,12 @@
 
 package choreo.auto;
 
+import choreo.Choreo;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringArrayEntry;
 import edu.wpi.first.networktables.StringEntry;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -15,6 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+
+import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
 
 /**
  * An Choreo specific {@code SendableChooser} that allows for the selection of {@link AutoRoutine}s
@@ -37,6 +41,8 @@ import java.util.function.Function;
  */
 public class AutoChooser {
   static final String NONE_NAME = "Nothing";
+  private static final Alert selectedNonexistentAuto =
+      Choreo.alert("Selected an auto that isn't an option", kError);
 
   private final HashMap<String, Function<AutoFactory, AutoRoutine>> autoRoutines =
       new HashMap<>(Map.of(NONE_NAME, factory -> AutoFactory.VOID_ROUTINE));
@@ -92,7 +98,9 @@ public class AutoChooser {
       if (!autoRoutines.containsKey(selectStr)) {
         selected.set(NONE_NAME);
         selectStr = NONE_NAME;
-        DriverStation.reportError("Selected an auto that isn't an option", false);
+        selectedNonexistentAuto.set(true);
+      } else {
+        selectedNonexistentAuto.set(false);
       }
       lastAutoRoutineName = selectStr;
       lastAutoRoutine = autoRoutines.get(lastAutoRoutineName).apply(this.factory);
