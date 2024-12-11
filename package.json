@@ -15,7 +15,7 @@
   "type": "module",
   "scripts": {
     "fmtCpp": "wpiformat",
-    "fmtJava": "cd choreolib && bash ./gradlew spotlessApply",
+    "fmtJava": "cd choreolib && gradlew spotlessApply",
     "fmtJs": "prettier --write .",
     "fmtRs": "cargo fmt",
     "lintJs": "eslint --fix src",
