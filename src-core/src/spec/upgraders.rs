@@ -40,11 +40,11 @@ mod traj_file {
         // beta6 is technically the same spec as 0, but with a string version number
         #[test]
         pub fn test_beta6_differential() -> ChoreoResult<()> {
-            test_trajectory("0", "differential")
+            test_trajectory("beta-6", "differential")
         }
         #[test]
         pub fn test_beta6_swerve() -> ChoreoResult<()> {
-            test_trajectory("0", "swerve")
+            test_trajectory("beta-6", "swerve")
         }
         #[test]
         pub fn test_0_differential() -> ChoreoResult<()> {
@@ -154,12 +154,28 @@ mod project_file {
         }
         // TODO: macroize this to one line per test
         #[test]
+        pub fn test_beta6_differential() -> ChoreoResult<()> {
+            test_project("beta-6", "differential")
+        }
+        #[test]
+        pub fn test_beta6_swerve() -> ChoreoResult<()> {
+            test_project("beta-6", "swerve")
+        }
+        #[test]
         pub fn test_0_differential() -> ChoreoResult<()> {
             test_project("0", "differential")
         }
         #[test]
         pub fn test_0_swerve() -> ChoreoResult<()> {
             test_project("0", "swerve")
+        }
+        #[test]
+        pub fn test_1_differential() -> ChoreoResult<()> {
+            test_project("1", "differential")
+        }
+        #[test]
+        pub fn test_1_swerve() -> ChoreoResult<()> {
+            test_project("1", "swerve")
         }
     }
 }

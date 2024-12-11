@@ -10,27 +10,40 @@ mod generate {
         file_management::{self, WritingResources},
         generation::generate::generate,
     };
+    
+    #[tokio::test]
+    async fn test_0_swerve() {
+        test_generate("swerve", "0").await;
+    }
 
     #[tokio::test]
-    async fn test_generate() {
-        let original_chor: PathBuf = "../test-jsons/project/0/swerve.chor".into();
-        let test_chor: PathBuf = "./test-tmp/swerve.chor".into();
-        let original_traj: PathBuf = "../test-jsons/trajectory/0/swerve.traj".into();
-        let test_traj: PathBuf = "./test-tmp/swerve.traj".into();
-        let _ = fs::create_dir("./test-tmp"); //this could fail if the directory exists; this is fine
+    async fn test_0_differential() {
+        test_generate("differential", "0").await;
+    }
+
+    async fn test_generate(drive_type: &str, version: &str) {
+        let test_dir : PathBuf = format!("./test-tmp-{version}-{drive_type}").into();
+        let original_chor: PathBuf = format!("../test-jsons/project/{version}/{drive_type}.chor").into();
+        let test_chor: PathBuf = test_dir.join(format!("{drive_type}.chor"));
+        let original_traj: PathBuf = format!("../test-jsons/trajectory/{version}/{drive_type}.traj").into();
+        let test_traj: PathBuf = test_dir.join(format!("{drive_type}.traj"));
+        let _ = fs::create_dir(test_dir.clone()).or_else(|_|fs::remove_dir(test_dir));
                                               // don't modify the original files
         fs::copy(original_chor.clone(), test_chor.clone()).unwrap();
         fs::copy(original_traj.clone(), test_traj.clone()).unwrap();
         let resources = WritingResources::new();
         // if this succeeds, modified generated .traj is written to test_traj
-        generate_trajectories(&resources, &test_chor.clone(), vec!["swerve".to_string()]).await;
+        generate_trajectories(&resources, &test_chor.clone(), vec![drive_type.to_string()]).await;
         // Generation should be identical IF on the same platform
         // so we compare before/after the second generation
         // this also checks that the first one produced a loadable .traj
-        let after_first = fs::read_to_string(test_traj.clone()).unwrap();
-        generate_trajectories(&resources, &test_chor.clone(), vec!["swerve".to_string()]).await;
-        let after_second = fs::read_to_string(test_traj.clone()).unwrap();
-        assert!(after_first == after_second);
+        let traj_after_first = fs::read_to_string(test_traj.clone()).unwrap();
+        let chor_after_first = fs::read_to_string(test_chor.clone()).unwrap();
+        generate_trajectories(&resources, &test_chor.clone(), vec![drive_type.to_string()]).await;
+        let traj_after_second = fs::read_to_string(test_traj.clone()).unwrap();
+        let chor_after_second = fs::read_to_string(test_chor.clone()).unwrap();
+        assert!(traj_after_first == traj_after_second);
+        assert!(chor_after_first == chor_after_second);
     }
     // Copied from src-cli
     #[allow(clippy::cast_possible_wrap)]
@@ -60,6 +73,8 @@ mod generate {
         )
         .await
         .expect("Failed to read project file");
+        // ADDED: Cli doesn't write the upgraded project, but we want to test the project file writing
+        file_management::write_projectfile(&resources, project.clone()).await;
 
         if trajectory_names.is_empty() {
             trajectory_names = file_management::find_all_trajectories(&resources).await;

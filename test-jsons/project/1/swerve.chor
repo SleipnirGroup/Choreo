@@ -1,7 +1,7 @@
 {
- "name":"differential",
- "version":0,
- "type":"Differential",
+ "name":"swerve",
+ "version":1,
+ "type":"Swerve",
  "variables":{
   "expressions":{
    "num":{
@@ -73,6 +73,10 @@
   "tmax":{
    "exp":"1.2 N * m",
    "val":1.2
+  },
+  "cof":{
+   "exp":"1.5",
+   "val":1.5
   },
   "bumper":{
    "front":{
