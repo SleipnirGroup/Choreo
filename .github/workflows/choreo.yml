@@ -16,22 +16,27 @@ jobs:
         include:
           - artifact-name: Windows-x86_64
             os: windows-2022
+            env: RUST_TOOLCHAIN=x86_64-pc-windows-msvc 
             tauri-build-flags: --target x86_64-pc-windows-msvc -v -- --workspace --timings
 
           - artifact-name: Windows-aarch64
             os: windows-2022
+            env: RUST_TOOLCHAIN=aarch64-pc-windows-msvc
             tauri-build-flags: --target aarch64-pc-windows-msvc -v -- --workspace --timings
 
           - artifact-name: macOS-x86_64
             os: macOS-14
+            env: RUST_TOOLCHAIN=x86_64-apple-darwin
             tauri-build-flags: --target x86_64-apple-darwin -v -- --workspace --timings
 
           - artifact-name: macOS-aarch64
             os: macOS-14
+            env: RUST_TOOLCHAIN=aarch64-apple-darwin
             tauri-build-flags: --target aarch64-apple-darwin -v -- --workspace --timings
 
           - artifact-name: Linux-x86_64
             os: ubuntu-22.04
+            env: RUST_TOOLCHAIN=x86_64-unknown-linux-gnu
             tauri-build-flags: --target x86_64-unknown-linux-gnu -v -- --workspace --timings
 
     name: "${{ matrix.artifact-name }}"
