@@ -17,7 +17,7 @@ public class Robot extends TimedRobot {
         autoFactory = Choreo.createAutoFactory(
             driveSubsystem::getPose, // A function that returns the current robot pose
             driveSubsystem::followTrajectory, // The drive subsystem trajectory follower (1)
-            driveSubsystem::resetOdometry // A function that resets the current robot pose to the provided Pose2d
+            driveSubsystem::resetOdometry, // A function that resets the current robot pose to the provided Pose2d
             () -> true, // If alliance flipping should be enabled (2)
             driveSubsystem, // The drive subsystem
             new AutoBindings() // An empty AutoBindings object (3)
@@ -33,7 +33,7 @@ public class Robot extends TimedRobot {
 There are two ways to create autos with an `AutoFactory`: [command compositions](#using-command-compositions) or the [`AutoRoutine`](#using-autoroutine) class. For short and simple autos, command compositions may be the best choice for you. However, if your auto includes many segments, complex logic, or branching behavior, `AutoRoutine` is likely the best option.
 
 !!! tip
-    The following examples use "segmented trajectories": multiple reusable small trajectories that can be combined to create an entire autonomous sequence. You may be used to the more traditional approach of "monolithic trajectories", which is a single trajectory that spans the entire autonomous period, running from start to finish without stopping.
+    The following examples use "segmented" trajectories: multiple reusable small trajectories that can be combined to create an entire autonomous sequence. You may be used to the more traditional approach of "monolithic" trajectories, which is a single trajectory that spans the entire autonomous period, running from start to finish without stopping.
 
     Monolithic trajectories may be more cumbersome in some scenarios (*especially* for branching autos), and you may find it more difficult to inject logic in-between points of interest along a trajectory.
 
