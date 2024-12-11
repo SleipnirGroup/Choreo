@@ -37,6 +37,15 @@ mod traj_file {
         use crate::ChoreoResult;
 
         use crate::spec::trajectory::TrajectoryFile;
+        // beta6 is technically the same spec as 0, but with a string version number
+        #[test]
+        pub fn test_beta6_differential() -> ChoreoResult<()> {
+            test_trajectory("0", "differential")
+        }
+        #[test]
+        pub fn test_beta6_swerve() -> ChoreoResult<()> {
+            test_trajectory("0", "swerve")
+        }
         #[test]
         pub fn test_0_differential() -> ChoreoResult<()> {
             test_trajectory("0", "differential")
