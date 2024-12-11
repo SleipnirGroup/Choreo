@@ -57,8 +57,7 @@ public class AutoTrajectory {
           causes -> "Unable to get initial pose for trajectories " + causes + ".", kError);
 
   /**
-   * Creates a trigger that produces a rising edge
-   * when any of the trajectories are finished.
+   * Creates a trigger that produces a rising edge when any of the trajectories are finished.
    *
    * @param trajectories the trajectories to watch
    * @return a trigger that determines if any of the trajectories are finished
@@ -68,8 +67,7 @@ public class AutoTrajectory {
   }
 
   /**
-   * Creates a trigger that produces a rising edge
-   * when any of the trajectories are finished.
+   * Creates a trigger that produces a rising edge when any of the trajectories are finished.
    *
    * @param cyclesToDelay The number of cycles to delay.
    * @param trajectories the trajectories to watch
@@ -84,8 +82,7 @@ public class AutoTrajectory {
   }
 
   /**
-   * Creates a trigger that returns true when
-   * any of the trajectories given are active.
+   * Creates a trigger that returns true when any of the trajectories given are active.
    *
    * @param trajectories the trajectories to watch
    * @return a trigger that determines if any of the trajectories are active
