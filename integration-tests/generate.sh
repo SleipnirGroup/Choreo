@@ -1,4 +1,3 @@
-pnpm run build
 pnpm run build-cli
 mkdir test-tmp
 cp ./test-jsons/project/0/swerve.chor ./test-tmp/swerve.chor
