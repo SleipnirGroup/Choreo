@@ -52,3 +52,6 @@ CMakeUserPresets.json
 
 build/
 cli/
+
+# python
+trajoptlib/.py-build-cmake_cache/
