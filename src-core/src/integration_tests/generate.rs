@@ -10,7 +10,7 @@ mod generate {
         file_management::{self, WritingResources},
         generation::generate::generate,
     };
-    
+
     #[tokio::test]
     async fn test_0_swerve() {
         test_generate("swerve", "0").await;
@@ -22,13 +22,15 @@ mod generate {
     }
 
     async fn test_generate(drive_type: &str, version: &str) {
-        let test_dir : PathBuf = format!("./test-tmp-{version}-{drive_type}").into();
-        let original_chor: PathBuf = format!("../test-jsons/project/{version}/{drive_type}.chor").into();
+        let test_dir: PathBuf = format!("./test-tmp-{version}-{drive_type}").into();
+        let original_chor: PathBuf =
+            format!("../test-jsons/project/{version}/{drive_type}.chor").into();
         let test_chor: PathBuf = test_dir.join(format!("{drive_type}.chor"));
-        let original_traj: PathBuf = format!("../test-jsons/trajectory/{version}/{drive_type}.traj").into();
+        let original_traj: PathBuf =
+            format!("../test-jsons/trajectory/{version}/{drive_type}.traj").into();
         let test_traj: PathBuf = test_dir.join(format!("{drive_type}.traj"));
-        let _ = fs::create_dir(test_dir.clone()).or_else(|_|fs::remove_dir(test_dir));
-                                              // don't modify the original files
+        let _ = fs::create_dir(test_dir.clone()).or_else(|_| fs::remove_dir(test_dir));
+        // don't modify the original files
         fs::copy(original_chor.clone(), test_chor.clone()).unwrap();
         fs::copy(original_traj.clone(), test_traj.clone()).unwrap();
         let resources = WritingResources::new();
