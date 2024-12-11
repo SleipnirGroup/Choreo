@@ -32,6 +32,7 @@ mod generate {
         let after_second = fs::read_to_string(test_traj.clone()).unwrap();
         assert!(after_first == after_second);
     }
+    // Copied from src-cli
     #[allow(clippy::cast_possible_wrap)]
     async fn generate_trajectories(
         resources: &WritingResources,
