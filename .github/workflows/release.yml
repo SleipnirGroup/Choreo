@@ -4,13 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag Name'
+        description: "Tag Name"
         required: true
-        default: 'v0.0.0-test'
+        default: "v0.0.0-test"
 
 jobs:
   update-version:
-
     name: "Update Version"
     runs-on: ubuntu-22.04
     container: ${{ matrix.container }}
@@ -21,7 +20,7 @@ jobs:
           fetch-depth: 0
       - name: Install Python dependencies
         run: pip install tomlkit
-        
+
       - uses: pnpm/action-setup@v4
         with:
           version: 9
@@ -49,4 +48,3 @@ jobs:
               ref: 'refs/tags/<tagname>',
               sha: context.sha
             })
-
