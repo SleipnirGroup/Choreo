@@ -56,22 +56,6 @@ public class AutoTrajectory {
       Choreo.multiAlert(
           causes -> "Unable to get initial pose for trajectories " + causes + ".", kError);
 
-  public static Trigger anyDone(AutoTrajectory... trajectories) {
-    var trigger = trajectories[0].done();
-    for (int i = 1; i < trajectories.length; i++) {
-      trigger = trigger.or(trajectories[i].done());
-    }
-    return trigger;
-  }
-
-  public static Trigger allDone(AutoTrajectory... trajectories) {
-    var trigger = trajectories[0].done();
-    for (int i = 1; i < trajectories.length; i++) {
-      trigger = trigger.and(trajectories[i].done());
-    }
-    return trigger;
-  }
-
   private static final double DEFAULT_TOLERANCE_METERS = Units.inchesToMeters(3);
   private static final double DEFAULT_TOLERANCE_RADIANS = Units.degreesToRadians(3);
   private final String name;
