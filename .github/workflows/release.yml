@@ -4,26 +4,40 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag Name'
+        description: "Tag Name"
         required: true
-        default: 'v0.0.0-test'
+        default: "v0.0.0-test"
 
 jobs:
   update-version:
-
     name: "Update Version"
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     container: ${{ matrix.container }}
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
           fetch-depth: 0
+          token: ${{ secrets.CHOREO_RELEASE_PAT }}
+      - name: Install Python dependencies
+        run: pip install tomlkit
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+          cache: "pnpm"
+
+      - run: pnpm install prettier@3.3.3
       - name: Update version
         run: |
-          ./update_version.py ${{ github.event.inputs.environment }}
+          ./update_version.py ${{ github.event.inputs.tag }}
           pnpm run fmtJs
           cargo update -w
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
-
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Update version numbers to ${{ github.event.inputs.tag }}
+          tagging_message: ${{ github.event.inputs.tag }}
