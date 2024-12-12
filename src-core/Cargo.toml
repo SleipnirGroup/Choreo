@@ -1,6 +1,6 @@
 [package]
 name = "choreo-core"
-version = "0.0.0-test.3"
+version = "0.0.0-test.4"
 edition = "2021"
 homepage = "https://github.com/SleipnirGroup/Choreo"
 repository = "https://github.com/SleipnirGroup/Choreo.git"
