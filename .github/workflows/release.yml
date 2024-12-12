@@ -19,6 +19,8 @@ jobs:
         with:
           submodules: true
           fetch-depth: 0
+      - name: Install Python dependencies
+        run: pip install tomlkit
       - name: Update version
         run: |
           ./update_version.py ${{ github.event.inputs.tag }}
