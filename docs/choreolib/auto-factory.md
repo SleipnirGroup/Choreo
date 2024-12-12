@@ -16,7 +16,7 @@ class Robot extends TimedRobot {
   private final AutoFactory autoFactory;
 
   public Robot() {
-    autoFactory = Choreo.createAutoFactory(
+    autoFactory = new AutoFactory(
       drive, // The drive subsystem
       drive::getPose, // A function that returns the current robot pose
       drive::choreoController, // The controller for the drive subsystem

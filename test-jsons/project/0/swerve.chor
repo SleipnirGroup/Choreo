@@ -1,6 +1,6 @@
 {
  "name":"swerve",
- "version":"v2025.0.0",
+ "version":0,
  "type":"Swerve",
  "variables":{
   "expressions":{
