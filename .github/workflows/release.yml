@@ -40,16 +40,4 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Update version numbers to ${{ github.event.inputs.tag }}
-
-      - name: Create tag
-        uses: actions/github-script@v5
-        with:
-          script: |
-            github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: 'refs/tags/${{ github.event.inputs.tag }}',
-              sha: context.sha
-            })
-      - name: Push tags
-        run: git push --tags
+          tagging_message: ${{ github.event.inputs.tag }}
