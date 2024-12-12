@@ -51,5 +51,5 @@ jobs:
               ref: 'refs/tags/${{ github.event.inputs.tag }}',
               sha: context.sha
             })
-      -  name: Push tags
-         run: git push --tags
+      - name: Push tags
+        run: git push --tags
