@@ -36,8 +36,10 @@ jobs:
           ./update_version.py ${{ github.event.inputs.tag }}
           pnpm run fmtJs
           cargo update -w
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Update version numbers to ${{ github.event.inputs.tag }}
+
       - name: Create tag
         uses: actions/github-script@v5
         with:
@@ -45,6 +47,6 @@ jobs:
             github.rest.git.createRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: 'refs/tags/<tagname>',
+              ref: 'refs/tags/${{ github.event.inputs.tag }}',
               sha: context.sha
             })
