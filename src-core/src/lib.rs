@@ -20,6 +20,7 @@
 )]
 
 mod error;
+mod integration_tests;
 
 pub use error::ChoreoError;
 

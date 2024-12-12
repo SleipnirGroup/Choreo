@@ -145,6 +145,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: pkg
+          pattern: "!*-cargo-timing.html"
 
       - name: Display structure of downloaded files
         run: ls -R
