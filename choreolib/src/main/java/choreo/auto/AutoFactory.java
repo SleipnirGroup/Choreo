@@ -2,7 +2,8 @@
 
 package choreo.auto;
 
-import choreo.Choreo;
+import static edu.wpi.first.util.ErrorMessages.requireNonNullParam;
+
 import choreo.Choreo.TrajectoryCache;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.trajectory.SwerveSample;
@@ -94,71 +95,135 @@ public class AutoFactory {
 
   private final TrajectoryCache trajectoryCache = new TrajectoryCache();
   private final Supplier<Pose2d> poseSupplier;
+  private final Consumer<Pose2d> resetOdometry;
   private final Consumer<? extends TrajectorySample<?>> controller;
   private final Supplier<Optional<Alliance>> alliance;
   private final BooleanSupplier useAllianceFlipping;
   private final Subsystem driveSubsystem;
   private final AutoBindings bindings = new AutoBindings();
-  private final Optional<TrajectoryLogger<? extends TrajectorySample<?>>> trajectoryLogger;
+  private final TrajectoryLogger<? extends TrajectorySample<?>> trajectoryLogger;
 
   /**
-   * It is recommended to use the {@link Choreo#createAutoFactory} to create a new instance of this
-   * class.
+   * Create a factory that can be used to create {@link AutoRoutine} and {@link AutoTrajectory}.
    *
-   * @param <SampleType> {@link Choreo#createAutoFactory}
-   * @param poseSupplier {@link Choreo#createAutoFactory}
-   * @param controller {@link Choreo#createAutoFactory}
-   * @param driveSubsystem {@link Choreo#createAutoFactory}
-   * @param useAllianceFlipping {@link Choreo#createAutoFactory}
-   * @param bindings {@link Choreo#createAutoFactory}
-   * @param trajectoryLogger {@link Choreo#createAutoFactory}
-   * @param alliance {@link Choreo#createAutoFactory}
+   * @param <SampleType> The type of samples in the trajectory.
+   * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
+   *     robot.
+   * @param resetOdometry A function that receives a field-relative {@link Pose2d} to reset the
+   *     robot's odometry to.
+   * @param controller A function that receives the current {@link SampleType} and controls the
+   *     robot.
+   * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
+   *     Command}s.
+   * @param useAllianceFlipping If this returns true, when on the red alliance, the path will be
+   *     mirrored to the opposite side, while keeping the same coordinate system origin. This will
+   *     be called every loop during the command.
+   * @param bindings Universal trajectory event bindings.
+   * @param trajectoryLogger A {@link TrajectoryLogger} to log {@link Trajectory} as they start and
+   *     finish.
+   * @param alliance A custom supplier of the current alliance to use instead of {@link
+   *     DriverStation#getAlliance}.
+   * @see AutoChooser using this factory with AutoChooser to generate auto routines.
    */
   public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
       Supplier<Pose2d> poseSupplier,
+      Consumer<Pose2d> resetOdometry,
       Consumer<SampleType> controller,
-      Subsystem driveSubsystem,
       BooleanSupplier useAllianceFlipping,
+      Subsystem driveSubsystem,
       AutoBindings bindings,
-      Optional<TrajectoryLogger<SampleType>> trajectoryLogger,
+      TrajectoryLogger<SampleType> trajectoryLogger,
       Supplier<Optional<Alliance>> alliance) {
+    requireNonNullParam(poseSupplier, "poseSupplier", "AutoFactory");
+    requireNonNullParam(resetOdometry, "resetOdometry", "AutoFactory");
+    requireNonNullParam(controller, "controller", "AutoFactory");
+    requireNonNullParam(driveSubsystem, "driveSubsystem", "AutoFactory");
+    requireNonNullParam(useAllianceFlipping, "useAllianceFlipping", "AutoFactory");
+    requireNonNullParam(bindings, "bindings", "AutoFactory");
+
     this.poseSupplier = poseSupplier;
+    this.resetOdometry = resetOdometry;
     this.controller = controller;
     this.driveSubsystem = driveSubsystem;
     this.useAllianceFlipping = useAllianceFlipping;
     this.bindings.merge(bindings);
-    this.trajectoryLogger =
-        trajectoryLogger.map(logger -> (TrajectoryLogger<? extends TrajectorySample<?>>) logger);
+    this.trajectoryLogger = trajectoryLogger;
     this.alliance = alliance;
     HAL.report(tResourceType.kResourceType_ChoreoTrigger, 1);
   }
 
   /**
-   * It is recommended to use the {@link Choreo#createAutoFactory} to create a new instance of this
-   * class.
+   * Create a factory that can be used to create {@link AutoRoutine} and {@link AutoTrajectory}.
    *
-   * @param <SampleType> {@link Choreo#createAutoFactory}
-   * @param poseSupplier {@link Choreo#createAutoFactory}
-   * @param controller {@link Choreo#createAutoFactory}
-   * @param driveSubsystem {@link Choreo#createAutoFactory}
-   * @param useAllianceFlipping {@link Choreo#createAutoFactory}
-   * @param bindings {@link Choreo#createAutoFactory}
-   * @param trajectoryLogger {@link Choreo#createAutoFactory}
+   * @param <SampleType> The type of samples in the trajectory.
+   * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
+   *     robot.
+   * @param resetOdometry A function that receives a field-relative {@link Pose2d} to reset the
+   *     robot's odometry to.
+   * @param controller A function that receives the current {@link SampleType} and controls the
+   *     robot.
+   * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
+   *     Command}s.
+   * @param useAllianceFlipping If this returns true, when on the red alliance, the path will be
+   *     mirrored to the opposite side, while keeping the same coordinate system origin. This will
+   *     be called every loop during the command.
+   * @param bindings Universal trajectory event bindings.
+   * @param trajectoryLogger A {@link TrajectoryLogger} to log {@link Trajectory} as they start and
+   *     finish.
+   * @see AutoChooser using this factory with AutoChooser to generate auto routines.
    */
   public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
       Supplier<Pose2d> poseSupplier,
+      Consumer<Pose2d> resetOdometry,
       Consumer<SampleType> controller,
-      Subsystem driveSubsystem,
       BooleanSupplier useAllianceFlipping,
+      Subsystem driveSubsystem,
       AutoBindings bindings,
-      Optional<TrajectoryLogger<SampleType>> trajectoryLogger) {
+      TrajectoryLogger<SampleType> trajectoryLogger) {
     this(
         poseSupplier,
+        resetOdometry,
         controller,
-        driveSubsystem,
         useAllianceFlipping,
+        driveSubsystem,
         bindings,
         trajectoryLogger,
+        DriverStation::getAlliance);
+  }
+
+  /**
+   * Create a factory that can be used to create {@link AutoRoutine} and {@link AutoTrajectory}.
+   *
+   * @param <SampleType> The type of samples in the trajectory.
+   * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
+   *     robot.
+   * @param resetOdometry A function that receives a field-relative {@link Pose2d} to reset the
+   *     robot's odometry to.
+   * @param controller A function that receives the current {@link SampleType} and controls the
+   *     robot.
+   * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
+   *     Command}s.
+   * @param useAllianceFlipping If this returns true, when on the red alliance, the path will be
+   *     mirrored to the opposite side, while keeping the same coordinate system origin. This will
+   *     be called every loop during the command.
+   * @param bindings Universal trajectory event bindings.
+   * @see AutoChooser using this factory with AutoChooser to generate auto routines.
+   */
+  public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
+      Supplier<Pose2d> poseSupplier,
+      Consumer<Pose2d> resetOdometry,
+      Consumer<SampleType> controller,
+      BooleanSupplier useAllianceFlipping,
+      Subsystem driveSubsystem,
+      AutoBindings bindings) {
+    this(
+        poseSupplier,
+        resetOdometry,
+        controller,
+        useAllianceFlipping,
+        driveSubsystem,
+        bindings,
+        (sample, isStart) -> {},
         DriverStation::getAlliance);
   }
 
@@ -194,7 +259,6 @@ public class AutoFactory {
     if (optTrajectory.isPresent()) {
       trajectory = optTrajectory.get();
     } else {
-      DriverStation.reportError("Could not load trajectory: " + trajectoryName, false);
       trajectory = new Trajectory<SwerveSample>(trajectoryName, List.of(), List.of(), List.of());
     }
     return trajectory(trajectory, routine);
@@ -213,7 +277,6 @@ public class AutoFactory {
     if (optTrajectory.isPresent()) {
       trajectory = optTrajectory.get();
     } else {
-      DriverStation.reportError("Could not load trajectory: " + trajectoryName, false);
       trajectory = new Trajectory<SwerveSample>(trajectoryName, List.of(), List.of(), List.of());
     }
     return trajectory(trajectory, routine);
@@ -231,16 +294,15 @@ public class AutoFactory {
     // type solidify everything
     final Trajectory<ST> solidTrajectory = trajectory;
     final Consumer<ST> solidController = (Consumer<ST>) this.controller;
-    final Optional<TrajectoryLogger<ST>> solidLogger =
-        this.trajectoryLogger.map(logger -> (TrajectoryLogger<ST>) logger);
     return new AutoTrajectory(
         trajectory.name(),
         solidTrajectory,
         poseSupplier,
+        resetOdometry,
         solidController,
         useAllianceFlipping,
         alliance,
-        solidLogger,
+        (TrajectoryLogger<ST>) trajectoryLogger,
         driveSubsystem,
         routine,
         bindings);
@@ -301,6 +363,39 @@ public class AutoFactory {
   public <SampleType extends TrajectorySample<SampleType>> Command trajectoryCommand(
       Trajectory<SampleType> trajectory) {
     return trajectory(trajectory, VOID_ROUTINE).cmd();
+  }
+
+  /**
+   * Creates a command that resets the robot's odometry to the start of a trajectory.
+   *
+   * @param trajectoryName The name of the trajectory to use.
+   * @return A command that resets the robot's odometry.
+   */
+  public Command resetOdometry(String trajectoryName) {
+    return trajectory(trajectoryName, VOID_ROUTINE).resetOdometry();
+  }
+
+  /**
+   * Creates a command that resets the robot's odometry to the start of a trajectory.
+   *
+   * @param trajectoryName The name of the trajectory to use.
+   * @param splitIndex The index of the split trajectory to use.
+   * @return A command that resets the robot's odometry.
+   */
+  public Command resetOdometry(String trajectoryName, final int splitIndex) {
+    return trajectory(trajectoryName, splitIndex, VOID_ROUTINE).resetOdometry();
+  }
+
+  /**
+   * Creates a command that resets the robot's odometry to the start of a trajectory.
+   *
+   * @param <SampleType> The type of the trajectory samples.
+   * @param trajectory The trajectory to use.
+   * @return A command that resets the robot's odometry.
+   */
+  public <SampleType extends TrajectorySample<SampleType>> Command resetOdometry(
+      Trajectory<SampleType> trajectory) {
+    return trajectory(trajectory, VOID_ROUTINE).resetOdometry();
   }
 
   /**

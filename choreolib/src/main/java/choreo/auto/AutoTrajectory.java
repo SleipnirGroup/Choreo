@@ -2,7 +2,10 @@
 
 package choreo.auto;
 
+import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
+
 import choreo.Choreo;
+import choreo.Choreo.MultiAlert;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoFactory.AutoBindings;
 import choreo.trajectory.DifferentialSample;
@@ -14,10 +17,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -39,12 +42,27 @@ public class AutoTrajectory {
   // code. This also makes the places with generics exposed to users few
   // and far between. This helps with more novice users
 
+  private static final MultiAlert triggerTimeNegative =
+      Choreo.multiAlert(causes -> "Trigger time cannot be negative for " + causes, kError);
+  private static final MultiAlert triggerTimeAboveMax =
+      Choreo.multiAlert(
+          causes -> "Trigger time cannot be greater than total trajectory time for " + causes + ".",
+          kError);
+  private static final MultiAlert eventNotFound =
+      Choreo.multiAlert(causes -> "Event Markers " + causes + " not found.", kError);
+  private static final MultiAlert noSamples =
+      Choreo.multiAlert(causes -> "Trajectories " + causes + " have no samples.", kError);
+  private static final MultiAlert noInitialPose =
+      Choreo.multiAlert(
+          causes -> "Unable to get initial pose for trajectories " + causes + ".", kError);
+
   private static final double DEFAULT_TOLERANCE_METERS = Units.inchesToMeters(3);
   private static final double DEFAULT_TOLERANCE_RADIANS = Units.degreesToRadians(3);
   private final String name;
   private final Trajectory<? extends TrajectorySample<?>> trajectory;
   private final TrajectoryLogger<? extends TrajectorySample<?>> trajectoryLogger;
   private final Supplier<Pose2d> poseSupplier;
+  private final Consumer<Pose2d> resetOdometry;
   private final Consumer<? extends TrajectorySample<?>> controller;
   private final BooleanSupplier useAllianceFlipping;
   private final Supplier<Optional<Alliance>> alliance;
@@ -71,38 +89,36 @@ public class AutoTrajectory {
    * @param trajectory The trajectory samples.
    * @param poseSupplier The pose supplier.
    * @param controller The controller function.
-   * @param mirrorTrajectory Getter that determines whether to mirror trajectory.
+   * @param useAllianceFlipping Getter that determines whether to mirror trajectory based off
+   *     alliance.
    * @param trajectoryLogger Optional trajectory logger.
    * @param driveSubsystem Drive subsystem.
    * @param routine Event loop.
-   * @param bindings {@link Choreo#createAutoFactory}
+   * @param bindings {@link AutoFactory}
    */
   <SampleType extends TrajectorySample<SampleType>> AutoTrajectory(
       String name,
       Trajectory<SampleType> trajectory,
       Supplier<Pose2d> poseSupplier,
+      Consumer<Pose2d> resetOdometry,
       Consumer<SampleType> controller,
       BooleanSupplier useAllianceFlipping,
       Supplier<Optional<Alliance>> alliance,
-      Optional<TrajectoryLogger<SampleType>> trajectoryLogger,
+      TrajectoryLogger<SampleType> trajectoryLogger,
       Subsystem driveSubsystem,
       AutoRoutine routine,
       AutoBindings bindings) {
     this.name = name;
     this.trajectory = trajectory;
     this.poseSupplier = poseSupplier;
+    this.resetOdometry = resetOdometry;
     this.controller = controller;
     this.useAllianceFlipping = useAllianceFlipping;
     this.alliance = alliance;
     this.driveSubsystem = driveSubsystem;
     this.routine = routine;
     this.offTrigger = new Trigger(routine.loop(), () -> false);
-    this.trajectoryLogger =
-        trajectoryLogger.isPresent()
-            ? trajectoryLogger.get()
-            : new TrajectoryLogger<SampleType>() {
-              public void accept(Trajectory<SampleType> t, Boolean u) {}
-            };
+    this.trajectoryLogger = trajectoryLogger;
 
     bindings.getBindings().forEach((key, value) -> active().and(atTime(key)).onTrue(value));
   }
@@ -191,12 +207,7 @@ public class AutoTrajectory {
   public Command cmd() {
     // if the trajectory is empty, return a command that will print an error
     if (trajectory.samples().isEmpty()) {
-      return driveSubsystem
-          .runOnce(
-              () -> {
-                DriverStation.reportError("[Choreo] Trajectory " + name + " has no samples", false);
-              })
-          .withName("Trajectory_" + name);
+      return driveSubsystem.runOnce(() -> noSamples.addCause(name)).withName("Trajectory_" + name);
     }
     return new FunctionalCommand(
             this::cmdInitialize,
@@ -258,6 +269,24 @@ public class AutoTrajectory {
       return Optional.empty();
     }
     return trajectory.getFinalPose(doFlip());
+  }
+
+  /**
+   * Creates a command that resets the robot's odometry to the start of this trajectory.
+   *
+   * @return A command that resets the robot's odometry.
+   */
+  public Command resetOdometry() {
+    return Commands.either(
+            Commands.runOnce(() -> resetOdometry.accept(getInitialPose().get()), driveSubsystem),
+            Commands.runOnce(
+                    () -> {
+                      noInitialPose.addCause(name);
+                      routine.kill();
+                    })
+                .andThen(Commands.idle()),
+            () -> getInitialPose().isPresent())
+        .withName("Trajectory_ResetOdometry_" + name);
   }
 
   /**
@@ -395,14 +424,13 @@ public class AutoTrajectory {
   public Trigger atTime(double timeSinceStart) {
     // The timer should never be negative so report this as a warning
     if (timeSinceStart < 0) {
-      DriverStation.reportWarning("[Choreo] Trigger time cannot be negative for " + name, true);
+      triggerTimeNegative.addCause(name);
       return offTrigger;
     }
 
     // The timer should never exceed the total trajectory time so report this as a warning
     if (timeSinceStart > trajectory.getTotalTime()) {
-      DriverStation.reportWarning(
-          "[Choreo] Trigger time cannot be greater than total trajectory time for " + name, true);
+      triggerTimeAboveMax.addCause(name);
       return offTrigger;
     }
 
@@ -453,8 +481,7 @@ public class AutoTrajectory {
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
     if (!foundEvent) {
-      DriverStation.reportWarning(
-          "[Choreo] Event \"" + eventName + "\" not found for " + name, true);
+      eventNotFound.addCause(name);
     }
 
     return trig;
@@ -545,8 +572,7 @@ public class AutoTrajectory {
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
     if (!foundEvent) {
-      DriverStation.reportWarning(
-          "[Choreo] Event \"" + eventName + "\" not found for " + name, true);
+      eventNotFound.addCause(name);
     }
 
     return trig;
@@ -652,8 +678,7 @@ public class AutoTrajectory {
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
     if (!foundEvent) {
-      DriverStation.reportWarning(
-          "[Choreo] Event \"" + eventName + "\" not found for " + name, true);
+      eventNotFound.addCause(name);
     }
 
     return trig;
