@@ -1,12 +1,10 @@
 
 # AutoFactory (Java Only)
 
-ChoreoLib provides the `AutoFactory` ([Java](/api/choreolib/java/choreo/auto/AutoFactory.html)) class as a higher level API to make it easier to create complex auto routines inside your robot code.
-
 !!! note
     This API is only available for Java. C++ and Python users should instead utilize the [Trajectory API](./trajectory-api.md).
 
-Creating an `AutoFactory` can be done using `Choreo.createAutoFactory()`. It is recommended for your `AutoFactory` to be created at the Robot scope (e.g. in the `Robot` or `RobotContainer` constructor), not in the drive subsystem.
+ChoreoLib provides the `AutoFactory` ([Java](/api/choreolib/java/choreo/auto/AutoFactory.html)) class as a higher level API to make it easier to create complex auto routines inside your robot code.
 
 ```java title="Robot.java"
 public class Robot extends TimedRobot {
@@ -14,10 +12,10 @@ public class Robot extends TimedRobot {
     private final AutoFactory autoFactory;
 
     public Robot() {
-        autoFactory = Choreo.createAutoFactory(
+        autoFactory = new AutoFactory(
             driveSubsystem::getPose, // A function that returns the current robot pose
-            driveSubsystem::followTrajectory, // The drive subsystem trajectory follower (1)
             driveSubsystem::resetOdometry, // A function that resets the current robot pose to the provided Pose2d
+            driveSubsystem::followTrajectory, // The drive subsystem trajectory follower (1)
             () -> true, // If alliance flipping should be enabled (2)
             driveSubsystem, // The drive subsystem
             new AutoBindings() // An empty AutoBindings object (3)
@@ -30,9 +28,12 @@ public class Robot extends TimedRobot {
 2. It is recommended for trajectories to be created only on the blue side of the field in the Choreo application. Enabling alliance flipping will automatically mirror trajectories to the red side of the field if the robot is on the red alliance.
 3. More information about setting up `AutoBindings` can be found in the [AutoBindings](#autobindings) section of this page.
 
-There are two ways to create autos with an `AutoFactory`: [command compositions](#using-command-compositions) or the [`AutoRoutine`](#using-autoroutine) class. For short and simple autos, command compositions may be the best choice for you. However, if your auto includes many segments, complex logic, or branching behavior, `AutoRoutine` is likely the best option.
-
 !!! tip
+    It is recommended for your `AutoFactory` to be created at the Robot scope (e.g. in the `Robot` or `RobotContainer` constructor), not in the drive subsystem. Some teams may opt to create a separate class (ex `Autos.java`) that is given the robot's subsystems, and contains all code relevant to constructing autonomous routines.
+
+There are two ways to create autos with an `AutoFactory`: [command compositions](#using-command-compositions) or the [`AutoRoutine`](#using-autoroutine) class. For short and simple autos, command compositions may be the best choice for you. However, if your auto includes many segments, complex logic, or branching behavior, utilizing `AutoRoutine` is likely the best option.
+
+!!! note
     The following examples use "segmented" trajectories: multiple reusable small trajectories that can be combined to create an entire autonomous sequence. You may be used to the more traditional approach of "monolithic" trajectories, which is a single trajectory that spans the entire autonomous period, running from start to finish without stopping.
 
     Monolithic trajectories may be more cumbersome in some scenarios (*especially* for branching autos), and you may find it more difficult to inject logic in-between points of interest along a trajectory.
@@ -80,7 +81,7 @@ public Command pickupAndScoreAuto() {
 
 ## Using AutoRoutine
 
-While command compositions may be an effective architecture in many cases, it has a tendency to become unwieldy if your autonomous routine has branches, if your subsystems use default commands, or if you want your subsystems to run independently and "hand off" actions to each other. The `AutoRoutine` ([Java](/api/choreolib/java/choreo/auto/AutoRoutine.html)) class aims to solve these problems, using WPILib's [Trigger](https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/wpilibj2/command/button/Trigger.html) to define a control flow based on reactions to state that don't require subsystems until they are needed.
+While command compositions may be an effective architecture in many cases, it has a tendency to become unwieldy if your autonomous routine has branches, if your subsystems use default commands, or if you want your subsystems to run independently and "hand off" actions to each other. The `AutoRoutine` ([Java](/api/choreolib/java/choreo/auto/AutoRoutine.html)) class aims to solve these problems, using WPILib's [`Trigger`](https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/wpilibj2/command/button/Trigger.html) class to define a control flow based on reactions to state that don't require subsystems until they are needed.
 
 To get started, create a new routine using `AutoFactory.newRoutine()`:
 
@@ -220,7 +221,7 @@ public AutoRoutine branching2024Auto() {
 The `AutoChooser` ([Java](/api/choreolib/java/choreo/auto/AutoChooser.html)) class allows you to send a list of your autonomous routines to a driver dashboard for selection before a match. It is meant to be a more efficient alternative to `SendableChooser`, taking a [lazy loading](https://en.wikipedia.org/wiki/Lazy_loading) approach to generating command compositions or an `AutoRoutine`. This approach has the benefit of not loading all autos on startup, but also not loading the auto after the match starts, which may cause a delay when using many or large trajectories.
 
 !!! tip
-    Due to its performance implications and first-class support for `AutoRoutine`, using `AutoChooser` is the recommended pattern for auto selection, instead of `SendableChooser` or other alternatives.
+    Due to its performance implications and support for `AutoRoutine`, using `AutoChooser` is the recommended pattern for auto selection, instead of `SendableChooser` or other alternatives.
 
 ```java
 // TODO Pending https://github.com/SleipnirGroup/Choreo/pull/949
