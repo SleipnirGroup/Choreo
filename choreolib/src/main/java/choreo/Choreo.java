@@ -5,7 +5,6 @@ package choreo;
 import static edu.wpi.first.util.ErrorMessages.requireNonNullParam;
 import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
 
-import choreo.auto.AutoFactory;
 import choreo.trajectory.DifferentialSample;
 import choreo.trajectory.EventMarker;
 import choreo.trajectory.ProjectFile;
