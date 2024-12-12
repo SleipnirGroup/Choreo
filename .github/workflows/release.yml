@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 0
       - name: Update version
         run: |
-          ./update_version.py ${{ github.event.inputs.environment }}
+          ./update_version.py ${{ github.event.inputs.tag }}
           pnpm run fmtJs
           cargo update -w
       - name: Create Pull Request
