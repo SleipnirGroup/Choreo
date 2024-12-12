@@ -38,8 +38,6 @@ async fn write_serializable<T: Serialize + Send>(contents: T, file: &Path) -> Ch
         .ok_or_else(|| ChoreoError::FileWrite(file.to_path_buf()))?;
     fs::create_dir_all(parent).await?;
     fs::write(file, json).await?;
-    // end with a blank line to make e.g. wpiformat happy
-    fs::write(file, "\n").await?;
     Ok(())
 }
 
