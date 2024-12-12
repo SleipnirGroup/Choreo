@@ -324,15 +324,6 @@ public final class Choreo {
   }
 
   /**
-   * @Deprecated Use ```new AutoFactory()``` instead.
-   */
-  @Deprecated(forRemoval = true)
-  public static <SampleType extends TrajectorySample<SampleType>> AutoFactory createAutoFactory() {
-    throw new RuntimeException(
-        "Choreo.createAutoFactory is no longer supported; use new AutoFactory() instead.");
-  }
-
-  /**
    * Creates an alert under the "Choreo" group.
    *
    * @param name The name of the alert
