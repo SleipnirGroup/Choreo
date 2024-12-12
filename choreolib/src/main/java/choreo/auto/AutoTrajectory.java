@@ -94,7 +94,7 @@ public class AutoTrajectory {
    * @param trajectoryLogger Optional trajectory logger.
    * @param driveSubsystem Drive subsystem.
    * @param routine Event loop.
-   * @param bindings {@link Choreo#createAutoFactory}
+   * @param bindings {@link AutoFactory}
    */
   <SampleType extends TrajectorySample<SampleType>> AutoTrajectory(
       String name,
@@ -104,7 +104,7 @@ public class AutoTrajectory {
       Consumer<SampleType> controller,
       BooleanSupplier useAllianceFlipping,
       Supplier<Optional<Alliance>> alliance,
-      Optional<TrajectoryLogger<SampleType>> trajectoryLogger,
+      TrajectoryLogger<SampleType> trajectoryLogger,
       Subsystem driveSubsystem,
       AutoRoutine routine,
       AutoBindings bindings) {
@@ -118,12 +118,7 @@ public class AutoTrajectory {
     this.driveSubsystem = driveSubsystem;
     this.routine = routine;
     this.offTrigger = new Trigger(routine.loop(), () -> false);
-    this.trajectoryLogger =
-        trajectoryLogger.isPresent()
-            ? trajectoryLogger.get()
-            : new TrajectoryLogger<SampleType>() {
-              public void accept(Trajectory<SampleType> t, Boolean u) {}
-            };
+    this.trajectoryLogger = trajectoryLogger;
 
     bindings.getBindings().forEach((key, value) -> active().and(atTime(key)).onTrue(value));
   }
