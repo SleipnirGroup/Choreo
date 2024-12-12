@@ -5,11 +5,13 @@ package choreo.auto;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import edu.wpi.first.hal.AllianceStationID;
+import edu.wpi.first.hal.HAL;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.Commands;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class AutoChooserTest {
@@ -26,7 +28,7 @@ public class AutoChooserTest {
   }
 
   private void assertNTType(String testFuncName) {
-    String type = table(testFuncName).getEntry("type").getString("");
+    String type = table(testFuncName).getEntry(".type").getString("");
     assertEquals("String Chooser", type);
   }
 
@@ -56,6 +58,11 @@ public class AutoChooserTest {
 
   private void selectNT(String testFuncName, String value) {
     table(testFuncName).getEntry("selected").setString(value);
+  }
+
+  @BeforeEach
+  public void setup() {
+    assert HAL.initialize(500, 0);
   }
 
   @Test
@@ -97,6 +104,7 @@ public class AutoChooserTest {
     assertNTActive(fnName, NONE_NAME);
 
     DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
+    DriverStationSim.setEnabled(false);
     DriverStationSim.setDsAttached(true);
     DriverStationSim.notifyNewData();
     DriverStation.refreshData();

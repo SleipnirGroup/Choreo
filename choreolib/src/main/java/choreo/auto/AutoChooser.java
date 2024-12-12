@@ -40,7 +40,7 @@ import java.util.function.Function;
  * RobotModeTriggers.autonomous.whileTrue(chooser.autoSchedulingCmd());</code>
  */
 public class AutoChooser {
-  static final String NONE_NAME = "Nothing";
+  static final String NONE_NAME = "__Nothing__";
   private static final Alert selectedNonexistentAuto =
       Choreo.alert("Selected an auto that isn't an option", kError);
 
@@ -68,15 +68,21 @@ public class AutoChooser {
     if (tableName == null) {
       tableName = "";
     }
-    String path = tableName.isEmpty() ? NetworkTable.normalizeKey(tableName, true) : "";
+    String path = tableName.isEmpty() ? "" : NetworkTable.normalizeKey(tableName, true);
     NetworkTable table = NetworkTableInstance.getDefault().getTable(path + "/AutoChooser");
 
-    selected = table.getStringTopic("selected").getEntry(NONE_NAME);
+    selected = table.getStringTopic("selected").getEntry("");
+    selected.set(NONE_NAME);
+
     table.getStringTopic(".type").publish().set("String Chooser");
     table.getStringTopic("default").publish().set(NONE_NAME);
+
     active = table.getStringTopic("active").getEntry(NONE_NAME);
-    options =
-        table.getStringArrayTopic("options").getEntry(autoRoutines.keySet().toArray(new String[0]));
+    active.set(NONE_NAME);
+
+    var defaultOptions = autoRoutines.keySet().toArray(new String[0]);
+    options = table.getStringArrayTopic("options").getEntry(defaultOptions);
+    options.set(defaultOptions);
   }
 
   /**
@@ -86,7 +92,7 @@ public class AutoChooser {
    * It will check if the selected auto routine has changed and update the active AutoRoutine.
    *
    * <p>The AutoRoutine can only be updated when the robot is disabled and connected to
-   * DriverStation. If the chooser in your dashboard says {@code BAD} the {@link AutoChooser} has
+   * DriverStation. If the .chooser in your dashboard says {@code BAD} the {@link AutoChooser} has
    * not responded to the selection yet and you need to disable the robot to update it.
    */
   public void update() {
@@ -95,7 +101,7 @@ public class AutoChooser {
         && DriverStation.getAlliance().isPresent()) {
       String selectStr = selected.get();
       if (selectStr.equals(lastAutoRoutineName)) return;
-      if (!autoRoutines.containsKey(selectStr)) {
+      if (!autoRoutines.containsKey(selectStr) && !selectStr.equals(NONE_NAME)) {
         selected.set(NONE_NAME);
         selectStr = NONE_NAME;
         selectedNonexistentAuto.set(true);
