@@ -1,5 +1,5 @@
 name: TrajoptLib / Sanitizers
-
+:
 on: [pull_request, push]
 
 concurrency:

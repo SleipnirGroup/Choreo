@@ -1,5 +1,5 @@
 name: TrajoptLib / Build C++
-
+:
 on: [pull_request, push]
 
 concurrency:
