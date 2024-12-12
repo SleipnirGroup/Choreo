@@ -2,6 +2,8 @@
 
 package choreo.auto;
 
+import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
+
 import choreo.Choreo;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -18,8 +20,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
-
 /**
  * An Choreo specific {@code SendableChooser} that allows for the selection of {@link AutoRoutine}s
  * at runtime via a <a
@@ -31,10 +31,10 @@ import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
  * during auto start causing a delay.
  *
  * <p>Once the {@link AutoChooser} is made you can add {@link AutoRoutine}s to it using {@link
- * #addAutoRoutine} or add {@link Command}s to it using {@link #addAutoCmd}.
- * Unlike {@code SendableChooser} this chooser has to beupdated every cycle. This can be done 
- * using an `addPeriodic` call in the robot's constructor like so:
- * <code>addPeriodic(autoChooser::update, 0.02);</code>
+ * #addAutoRoutine} or add {@link Command}s to it using {@link #addAutoCmd}. Unlike {@code
+ * SendableChooser} this chooser has to beupdated every cycle. This can be done using an
+ * `addPeriodic` call in the robot's constructor like so: <code>
+ * addPeriodic(autoChooser::update, 0.02);</code>
  *
  * <p>You can set the Robot's autonomous command to the chooser's chosen auto routine via <code>
  * RobotModeTriggers.autonomous.whileTrue(chooser.autoSchedulingCmd());</code>
