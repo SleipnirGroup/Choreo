@@ -1,5 +1,5 @@
 name: ChoreoLib
-:
+
 on: [push, pull_request]
 
 jobs:
