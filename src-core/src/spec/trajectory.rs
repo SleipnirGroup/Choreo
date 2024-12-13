@@ -284,38 +284,41 @@ pub enum Sample {
         fr: f64,
     },
 }
-fn nudge_zero(f: f64) -> f64 {
-    if f.abs() < 1e-12 {
-        0.0
+fn nudge_zero_and_round(input: f64) -> f64 {
+    let f: f64;
+    if input.abs() < 1e-12 {
+        f = 0.0;
     } else {
-        f
+        f = input;
     }
+    let factor = 100_000.0;
+    (f * factor).round() / factor
 }
 
 impl From<&SwerveTrajectorySample> for Sample {
     fn from(swerve_sample: &SwerveTrajectorySample) -> Self {
         Sample::Swerve {
-            t: nudge_zero(swerve_sample.timestamp),
-            x: nudge_zero(swerve_sample.x),
-            y: nudge_zero(swerve_sample.y),
-            vx: nudge_zero(swerve_sample.velocity_x),
-            vy: nudge_zero(swerve_sample.velocity_y),
-            heading: nudge_zero(swerve_sample.heading),
-            omega: nudge_zero(swerve_sample.angular_velocity),
-            ax: nudge_zero(swerve_sample.acceleration_x),
-            ay: nudge_zero(swerve_sample.acceleration_y),
-            alpha: nudge_zero(swerve_sample.angular_acceleration),
+            t: nudge_zero_and_round(swerve_sample.timestamp),
+            x: nudge_zero_and_round(swerve_sample.x),
+            y: nudge_zero_and_round(swerve_sample.y),
+            vx: nudge_zero_and_round(swerve_sample.velocity_x),
+            vy: nudge_zero_and_round(swerve_sample.velocity_y),
+            heading: nudge_zero_and_round(swerve_sample.heading),
+            omega: nudge_zero_and_round(swerve_sample.angular_velocity),
+            ax: nudge_zero_and_round(swerve_sample.acceleration_x),
+            ay: nudge_zero_and_round(swerve_sample.acceleration_y),
+            alpha: nudge_zero_and_round(swerve_sample.angular_acceleration),
             fx: [
-                nudge_zero(swerve_sample.module_forces_x[0]),
-                nudge_zero(swerve_sample.module_forces_x[1]),
-                nudge_zero(swerve_sample.module_forces_x[2]),
-                nudge_zero(swerve_sample.module_forces_x[3]),
+                nudge_zero_and_round(swerve_sample.module_forces_x[0]),
+                nudge_zero_and_round(swerve_sample.module_forces_x[1]),
+                nudge_zero_and_round(swerve_sample.module_forces_x[2]),
+                nudge_zero_and_round(swerve_sample.module_forces_x[3]),
             ],
             fy: [
-                nudge_zero(swerve_sample.module_forces_y[0]),
-                nudge_zero(swerve_sample.module_forces_y[1]),
-                nudge_zero(swerve_sample.module_forces_y[2]),
-                nudge_zero(swerve_sample.module_forces_y[3]),
+                nudge_zero_and_round(swerve_sample.module_forces_y[0]),
+                nudge_zero_and_round(swerve_sample.module_forces_y[1]),
+                nudge_zero_and_round(swerve_sample.module_forces_y[2]),
+                nudge_zero_and_round(swerve_sample.module_forces_y[3]),
             ],
         }
     }
@@ -329,16 +332,16 @@ impl From<SwerveTrajectorySample> for Sample {
 impl From<&DifferentialTrajectorySample> for Sample {
     fn from(differential_sample: &DifferentialTrajectorySample) -> Self {
         Sample::DifferentialDrive {
-            t: nudge_zero(differential_sample.timestamp),
-            x: nudge_zero(differential_sample.x),
-            y: nudge_zero(differential_sample.y),
-            heading: nudge_zero(differential_sample.heading),
-            vl: nudge_zero(differential_sample.velocity_l),
-            vr: nudge_zero(differential_sample.velocity_r),
-            al: nudge_zero(differential_sample.acceleration_l),
-            ar: nudge_zero(differential_sample.acceleration_r),
-            fl: nudge_zero(differential_sample.force_l),
-            fr: nudge_zero(differential_sample.force_r),
+            t: nudge_zero_and_round(differential_sample.timestamp),
+            x: nudge_zero_and_round(differential_sample.x),
+            y: nudge_zero_and_round(differential_sample.y),
+            heading: nudge_zero_and_round(differential_sample.heading),
+            vl: nudge_zero_and_round(differential_sample.velocity_l),
+            vr: nudge_zero_and_round(differential_sample.velocity_r),
+            al: nudge_zero_and_round(differential_sample.acceleration_l),
+            ar: nudge_zero_and_round(differential_sample.acceleration_r),
+            fl: nudge_zero_and_round(differential_sample.force_l),
+            fr: nudge_zero_and_round(differential_sample.force_r),
         }
     }
 }
