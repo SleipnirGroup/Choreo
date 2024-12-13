@@ -21,34 +21,38 @@ public class AutoChooserTest {
     return "/Test/AutoChooser/" + testFuncName;
   }
 
-  private NetworkTable table(String testFuncName) {
+  private NetworkTable table(String testFuncName, NetworkTableInstance ntInstance) {
     // i'm unsure if this is needed but it won't hurt
-    NetworkTableInstance.getDefault().flushLocal();
-    return NetworkTableInstance.getDefault().getTable(chooserPath(testFuncName) + "/AutoChooser");
+    ntInstance.flushLocal();
+    return ntInstance.getTable(chooserPath(testFuncName) + "/AutoChooser");
   }
 
-  private void assertNTType(String testFuncName) {
-    String type = table(testFuncName).getEntry(".type").getString("");
+  private void assertNTType(String testFuncName, NetworkTableInstance ntInstance) {
+    String type = table(testFuncName, ntInstance).getEntry(".type").getString("");
     assertEquals("String Chooser", type);
   }
 
-  private void assertNTSelected(String testFuncName, String expected) {
-    String type = table(testFuncName).getEntry("selected").getString("");
+  private void assertNTSelected(
+      String testFuncName, String expected, NetworkTableInstance ntInstance) {
+    String type = table(testFuncName, ntInstance).getEntry("selected").getString("");
     assertEquals(expected, type);
   }
 
-  private void assertNTActive(String testFuncName, String expected) {
-    String type = table(testFuncName).getEntry("active").getString("");
+  private void assertNTActive(
+      String testFuncName, String expected, NetworkTableInstance ntInstance) {
+    String type = table(testFuncName, ntInstance).getEntry("active").getString("");
     assertEquals(expected, type);
   }
 
-  private void assertNTDefault(String testFuncName) {
-    String type = table(testFuncName).getEntry("default").getString("");
+  private void assertNTDefault(String testFuncName, NetworkTableInstance ntInstance) {
+    String type = table(testFuncName, ntInstance).getEntry("default").getString("");
     assertEquals(NONE_NAME, type);
   }
 
-  private void assertNTOptions(String testFuncName, String... expected) {
-    String[] options = table(testFuncName).getEntry("options").getStringArray(new String[0]);
+  private void assertNTOptions(
+      String testFuncName, NetworkTableInstance ntInstance, String... expected) {
+    String[] options =
+        table(testFuncName, ntInstance).getEntry("options").getStringArray(new String[0]);
 
     assertEquals(expected.length, options.length);
     for (int i = 0; i < expected.length; i++) {
@@ -56,8 +60,8 @@ public class AutoChooserTest {
     }
   }
 
-  private void selectNT(String testFuncName, String value) {
-    table(testFuncName).getEntry("selected").setString(value);
+  private void selectNT(String testFuncName, String value, NetworkTableInstance ntInstance) {
+    table(testFuncName, ntInstance).getEntry("selected").setString(value);
   }
 
   @BeforeEach
@@ -69,54 +73,60 @@ public class AutoChooserTest {
   public void initializeTest() {
     final String fnName = "initializeTest";
     AutoFactory factory = AutoTestHelper.factory();
-    new AutoChooser(factory, chooserPath(fnName));
-    assertNTType(fnName);
-    assertNTSelected(fnName, NONE_NAME);
-    assertNTActive(fnName, NONE_NAME);
-    assertNTDefault(fnName);
-    assertNTOptions(fnName, NONE_NAME);
+    try (var ntInstance = NetworkTableInstance.create()) {
+      new AutoChooser(factory, chooserPath(fnName), ntInstance);
+      assertNTType(fnName, ntInstance);
+      assertNTSelected(fnName, NONE_NAME, ntInstance);
+      assertNTActive(fnName, NONE_NAME, ntInstance);
+      assertNTDefault(fnName, ntInstance);
+      assertNTOptions(fnName, ntInstance, NONE_NAME);
+    }
   }
 
   @Test
   public void addAutoTest() {
     final String fnName = "addAutoTest";
     AutoFactory factory = AutoTestHelper.factory();
-    AutoChooser chooser = new AutoChooser(factory, chooserPath(fnName));
-    chooser.addAutoCmd("AddAutoTestCommand", f -> Commands.none().withName("AddAutoTestCommand"));
-    chooser.addAutoRoutine("AddAutoTestRoutine", f -> f.newRoutine("AddAutoTestRoutine"));
-    assertNTOptions(fnName, NONE_NAME, "AddAutoTestCommand", "AddAutoTestRoutine");
+    try (var ntInstance = NetworkTableInstance.create()) {
+      AutoChooser chooser = new AutoChooser(factory, chooserPath(fnName), ntInstance);
+      chooser.addAutoCmd("AddAutoTestCommand", f -> Commands.none().withName("AddAutoTestCommand"));
+      chooser.addAutoRoutine("AddAutoTestRoutine", f -> f.newRoutine("AddAutoTestRoutine"));
+      assertNTOptions(fnName, ntInstance, NONE_NAME, "AddAutoTestCommand", "AddAutoTestRoutine");
+    }
   }
 
   @Test
   public void selectTest() {
     final String fnName = "selectTest";
     AutoFactory factory = AutoTestHelper.factory();
-    AutoChooser chooser = new AutoChooser(factory, chooserPath(fnName));
-    chooser.addAutoCmd("SelectTestCommand", f -> Commands.none().withName("SelectTestCommand"));
-    chooser.addAutoRoutine("SelectTestRoutine", f -> f.newRoutine("SelectTestRoutine"));
-    selectNT(fnName, "SelectTestRoutine");
-    assertNTSelected(fnName, "SelectTestRoutine");
-    assertNTActive(fnName, NONE_NAME);
+    try (var ntInstance = NetworkTableInstance.create()) {
+      AutoChooser chooser = new AutoChooser(factory, chooserPath(fnName), ntInstance);
+      chooser.addAutoCmd("SelectTestCommand", f -> Commands.none().withName("SelectTestCommand"));
+      chooser.addAutoRoutine("SelectTestRoutine", f -> f.newRoutine("SelectTestRoutine"));
+      selectNT(fnName, "SelectTestRoutine", ntInstance);
+      assertNTSelected(fnName, "SelectTestRoutine", ntInstance);
+      assertNTActive(fnName, NONE_NAME, ntInstance);
 
-    chooser.update();
+      chooser.update();
 
-    // DriverStation should report disconnected causing the active to not update
-    assertNTActive(fnName, NONE_NAME);
+      // DriverStation should report disconnected causing the active to not update
+      assertNTActive(fnName, NONE_NAME, ntInstance);
 
-    DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
-    DriverStationSim.setEnabled(false);
-    DriverStationSim.setDsAttached(true);
-    DriverStationSim.notifyNewData();
-    DriverStation.refreshData();
+      DriverStationSim.setAllianceStationId(AllianceStationID.Blue1);
+      DriverStationSim.setEnabled(false);
+      DriverStationSim.setDsAttached(true);
+      DriverStationSim.notifyNewData();
+      DriverStation.refreshData();
 
-    chooser.update();
+      chooser.update();
 
-    assertNTActive(fnName, "SelectTestRoutine");
+      assertNTActive(fnName, "SelectTestRoutine", ntInstance);
 
-    assertEquals(chooser.getSelectedAutoRoutine().name, "SelectTestRoutine");
+      assertEquals(chooser.getSelectedAutoRoutine().name, "SelectTestRoutine");
 
-    DriverStationSim.setAllianceStationId(AllianceStationID.Unknown);
-    DriverStationSim.setDsAttached(false);
-    DriverStationSim.notifyNewData();
+      DriverStationSim.setAllianceStationId(AllianceStationID.Unknown);
+      DriverStationSim.setDsAttached(false);
+      DriverStationSim.notifyNewData();
+    }
   }
 }

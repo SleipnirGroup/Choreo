@@ -63,13 +63,17 @@ public class AutoChooser {
    *     string or null will put this chooser at the root of the network tables.
    */
   public AutoChooser(AutoFactory factory, String tableName) {
+    this(factory, tableName, NetworkTableInstance.getDefault());
+  }
+
+  AutoChooser(AutoFactory factory, String tableName, NetworkTableInstance ntInstance) {
     this.factory = factory;
 
     if (tableName == null) {
       tableName = "";
     }
     String path = tableName.isEmpty() ? "" : NetworkTable.normalizeKey(tableName, true);
-    NetworkTable table = NetworkTableInstance.getDefault().getTable(path + "/AutoChooser");
+    NetworkTable table = ntInstance.getTable(path + "/AutoChooser");
 
     selected = table.getStringTopic("selected").getEntry("");
     selected.set(NONE_NAME);
