@@ -284,7 +284,7 @@ pub enum Sample {
         fr: f64,
     },
 }
-fn nudge_zero_and_round(mut input: f64) -> f64 {;
+fn nudge_zero_and_round(mut input: f64) -> f64 {
     if input.abs() < 1e-6 {
         input = 0.0;
     }
