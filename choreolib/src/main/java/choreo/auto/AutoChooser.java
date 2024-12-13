@@ -232,7 +232,7 @@ public class AutoChooser {
    *     AutoChooser chooser = ...;
    *
    *     public Robot() {
-   *         RobotModeTriggers.autonomous().onTrue(chooser.autoCmd());
+   *         RobotModeTriggers.autonomous().onTrue(chooser.autoSchedulingCmd());
    *     }
    * </code></pre>
    *
