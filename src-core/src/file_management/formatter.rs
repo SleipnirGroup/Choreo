@@ -2,7 +2,6 @@ use std::io;
 
 use serde::Serialize;
 use serde_json::error::Result;
-use serde_json::ser::CompactFormatter;
 use serde_json::{ser::Formatter, Serializer};
 
 /// This structure pretty prints a JSON value to make it human readable.
@@ -40,8 +39,6 @@ impl Default for PrettyFormatter<'_> {
         PrettyFormatter::new()
     }
 }
-
-const FLOAT_SIG_FIGS: usize = 5;
 
 impl Formatter for PrettyFormatter<'_> {
     #[inline]
@@ -152,28 +149,6 @@ impl Formatter for PrettyFormatter<'_> {
     {
         self.has_value = true;
         Ok(())
-    }
-
-    fn write_f32<W>(&mut self, writer: &mut W, value: f32) -> io::Result<()>
-        where
-            W: ?Sized + io::Write, {
-        // round to the 5th significant figure to reduce slight variations on reruns
-        let sig_fig_scalar = 10.0_f32.powi(FLOAT_SIG_FIGS as i32);
-        let rounded = (value * sig_fig_scalar).round() / sig_fig_scalar;
-        // compact formatter uses iota, a very efficient way to write floats,
-        // i don't want to pull that dependency in here, so i'll just use the compact formatter
-        CompactFormatter.write_f32(writer, rounded)
-    }
-
-    fn write_f64<W>(&mut self, writer: &mut W, value: f64) -> io::Result<()>
-        where
-            W: ?Sized + io::Write, {
-        // round to the 5th significant figure to reduce slight variations on reruns
-        let sig_fig_scalar = 10.0_f64.powi(FLOAT_SIG_FIGS as i32);
-        let rounded = (value * sig_fig_scalar).round() / sig_fig_scalar;
-        // compact formatter uses iota, a very efficient way to write floats,
-        // i don't want to pull that dependency in here, so i'll just use the compact formatter
-        CompactFormatter.write_f64(writer, rounded)
     }
 }
 
