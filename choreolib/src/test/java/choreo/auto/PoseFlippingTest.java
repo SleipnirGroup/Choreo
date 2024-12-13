@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.util.AllianceFlipUtil;
+import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -24,6 +25,7 @@ public class PoseFlippingTest {
 
   @BeforeEach
   void setup() {
+    assert HAL.initialize(500, 0);
     factory = AutoTestHelper.factory(() -> alliance, () -> useAllianceFlipping);
   }
 
