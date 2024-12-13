@@ -24,6 +24,10 @@ public class AutoChooserTest {
   public void setup() {
     assert HAL.initialize(500, 0);
     ntInstance = NetworkTableInstance.create();
+
+    ntInstance.stopClient();
+    ntInstance.stopServer();
+    ntInstance.startLocal();
   }
 
   @AfterEach
