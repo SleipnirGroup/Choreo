@@ -284,15 +284,12 @@ pub enum Sample {
         fr: f64,
     },
 }
-fn nudge_zero_and_round(input: f64) -> f64 {
-    let f: f64;
-    if input.abs() < 1e-12 {
-        f = 0.0;
-    } else {
-        f = input;
+fn nudge_zero_and_round(mut input: f64) -> f64 {;
+    if input.abs() < 1e-6 {
+        input = 0.0;
     }
     let factor = 100_000.0;
-    (f * factor).round() / factor
+    (input * factor).round() / factor
 }
 
 impl From<&SwerveTrajectorySample> for Sample {
