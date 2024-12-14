@@ -31,9 +31,9 @@ import java.util.function.Supplier;
  * during auto start causing a delay.
  *
  * <p>Once the {@link AutoChooser} is made you can add {@link AutoRoutine}s to it using {@link
- * #addRoutine} or add {@link Command}s to it using {@link #addCmd}. Unlike {@code
- * SendableChooser} this chooser has to be updated every cycle. This can be done using an
- * `addPeriodic` call in the robot's constructor like so: <code>
+ * #addRoutine} or add {@link Command}s to it using {@link #addCmd}. Unlike {@code SendableChooser}
+ * this chooser has to be updated every cycle. This can be done using an `addPeriodic` call in the
+ * robot's constructor like so: <code>
  * addPeriodic(autoChooser::update, 0.02);</code>
  *
  * <p>You can set the Robot's autonomous command to the chooser's chosen auto routine via <code>
