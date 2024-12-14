@@ -223,8 +223,38 @@ The `AutoChooser` ([Java](/api/choreolib/java/choreo/auto/AutoChooser.html)) cla
 !!! tip
     Due to its performance implications and support for `AutoRoutine`, using `AutoChooser` is the recommended pattern for auto selection, instead of `SendableChooser` or other alternatives.
 
-```java
-// TODO Pending https://github.com/SleipnirGroup/Choreo/pull/949
+```java title="Robot.java"
+public class Robot extends TimedRobot {
+    private final AutoFactory autoFactory;
+    private final AutoChooser autoChooser;
+
+    public Robot() {
+        // Other robot initialization code
+        // ...
+
+        // Create the auto chooser
+        autoChooser = new AutoChooser(autoFactory, "");
+
+        // Add options to the chooser
+        autoChooser.addAutoRoutine("Example Routine", this::exampleRoutine);
+        autoChooser.addAutoCmd("Example Auto Command", this::exampleAutoCommand);
+    }
+
+    @Override
+    public void robotPeriodic() {
+        // You must call AutoChooser.update() periodically
+        // in order for the class to function.
+        autoChooser.update();
+    }
+
+    private AutoRoutine exampleRoutine(AutoFactory autoFactory) {
+        // ...
+    }
+
+    private Command exampleAutoCommand(AutoFactory autoFactory) {
+        // ...
+    }
+}
 ```
 
 ## AutoBindings
