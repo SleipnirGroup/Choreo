@@ -194,16 +194,14 @@ public class AutoChooser {
    *     AutoChooser chooser = ...;
    *
    *     public Robot() {
-   *         RobotModeTriggers.autonomous().onTrue(chooser.selectedCommandScheduler());
+   *         RobotModeTriggers.autonomous().whileTrue(chooser.selectedCommandScheduler());
    *     }
    * </code></pre>
    *
    * @return A command that runs the selected {@link AutoRoutine}
    */
   public Command selectedCommandScheduler() {
-    // .asProxy() not needed; requirements are dynamically allocated
-    // via triggers, and are not part of the routine command itself
-    return Commands.defer(() -> new ScheduleCommand(this.lastCommand), Set.of());
+    return Commands.defer(() -> this.lastCommand.asProxy(), Set.of());
   }
 
   /**
