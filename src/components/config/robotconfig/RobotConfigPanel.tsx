@@ -1,5 +1,4 @@
-import { ArrowDropDown, ArrowDropUp } from "@mui/icons-material";
-import { Divider, FormHelperText, IconButton, Switch } from "@mui/material";
+import { Divider, FormHelperText, Switch } from "@mui/material";
 import { observer } from "mobx-react";
 import { Component } from "react";
 import inputStyles from "../../input/InputList.module.css";
