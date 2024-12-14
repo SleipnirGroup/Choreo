@@ -27,7 +27,7 @@ class Robot extends TimedRobot {
 
   public void autonomousInit() {
     // Running just the movement of a specific trajectory
-    autoFactory.trajectoryCommand("myTrajectory").schedule();
+    autoFactory.trajectoryCmd("myTrajectory").schedule();
   }
 
   private boolean isRedAlliance() {
