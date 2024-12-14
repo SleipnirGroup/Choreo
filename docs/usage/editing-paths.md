@@ -75,7 +75,7 @@ To add a keep out circle:
 1. Select the keep out circle from the navbar (looks like a circle with a slash through it).
 2. Select anywhere on the field to add an obstacle. You can click on the ends of the circle to resize them. You can also use the info panel on top left of the field to edit the center x, center y, and circle radius.
 
-![Keep out constraints](../media/obstacles.png)
+![Keep out constraints](../media/keep-out-constraints.png)
 
 ## Event Markers
 
