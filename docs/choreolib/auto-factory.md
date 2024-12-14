@@ -59,13 +59,13 @@ public Robot extends TimedRobot {
 
   public Robot() {
     ... //code from previous example
-    autoChooser = new AutoChooser(autoFactory, "");
+    autoChooser = new AutoChooser();
     autoChooser.addRoutine("twoPieceAuto", this::twoPieceAuto);
   }
 
   // this would normally be in a separate file
-  private AutoRoutine twoPieceAuto(AutoFactory factory) {
-    final AutoRoutine routine = factory.newRoutine("twoPieceAuto");
+  private AutoRoutine twoPieceAuto() {
+    final AutoRoutine routine = autoFactory.newRoutine("twoPieceAuto");
 
     final AutoTrajectory trajectory = routine.trajectory("twoPieceAuto");
 
@@ -88,7 +88,7 @@ public Robot extends TimedRobot {
   }
 
   public void autonomousInit() {
-    autoChooser.getSelectedAutoRoutine().schedule();
+    autoChooser.selectedCommand().schedule();
   }
 }
 ```
