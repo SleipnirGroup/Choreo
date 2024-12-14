@@ -69,7 +69,7 @@ public Robot extends TimedRobot {
 
     final AutoTrajectory trajectory = routine.trajectory("twoPieceAuto");
 
-    routine.running()
+    routine.active()
         .onTrue(
             drive.resetOdometry(
                     trajectory.getInitialPose()
