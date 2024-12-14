@@ -81,8 +81,7 @@ public class AutoChooserTest {
   @Test
   public void initializeTest() {
     final String fnName = "initializeTest";
-    AutoFactory factory = AutoTestHelper.factory();
-    new AutoChooser(factory, chooserPath(fnName), ntInstance);
+    new AutoChooser(chooserPath(fnName), ntInstance);
     assertNTType(fnName);
     assertNTSelected(fnName, NONE_NAME);
     assertNTActive(fnName, NONE_NAME);
@@ -94,9 +93,9 @@ public class AutoChooserTest {
   public void addAutoTest() {
     final String fnName = "addAutoTest";
     AutoFactory factory = AutoTestHelper.factory();
-    AutoChooser chooser = new AutoChooser(factory, chooserPath(fnName), ntInstance);
-    chooser.addAutoCmd("AddAutoTestCommand", f -> Commands.none().withName("AddAutoTestCommand"));
-    chooser.addAutoRoutine("AddAutoTestRoutine", f -> f.newRoutine("AddAutoTestRoutine"));
+    AutoChooser chooser = new AutoChooser(chooserPath(fnName), ntInstance);
+    chooser.addAutoCmd("AddAutoTestCommand", () -> Commands.none().withName("AddAutoTestCommand"));
+    chooser.addAutoRoutine("AddAutoTestRoutine", () -> factory.newRoutine("AddAutoTestRoutine"));
     assertNTOptions(fnName, NONE_NAME, "AddAutoTestCommand", "AddAutoTestRoutine");
   }
 
@@ -104,9 +103,9 @@ public class AutoChooserTest {
   public void selectTest() {
     final String fnName = "selectTest";
     AutoFactory factory = AutoTestHelper.factory();
-    AutoChooser chooser = new AutoChooser(factory, chooserPath(fnName), ntInstance);
-    chooser.addAutoCmd("SelectTestCommand", f -> Commands.none().withName("SelectTestCommand"));
-    chooser.addAutoRoutine("SelectTestRoutine", f -> f.newRoutine("SelectTestRoutine"));
+    AutoChooser chooser = new AutoChooser(chooserPath(fnName), ntInstance);
+    chooser.addAutoCmd("SelectTestCommand", () -> Commands.none().withName("SelectTestCommand"));
+    chooser.addAutoRoutine("SelectTestRoutine", () -> factory.newRoutine("SelectTestRoutine"));
     selectNT(fnName, "SelectTestRoutine");
     assertNTSelected(fnName, "SelectTestRoutine");
     assertNTActive(fnName, NONE_NAME);
@@ -126,7 +125,7 @@ public class AutoChooserTest {
 
     assertNTActive(fnName, "SelectTestRoutine");
 
-    assertEquals(chooser.getSelectedAutoRoutine().name, "SelectTestRoutine");
+    assertEquals(chooser.selectedCommand().getName(), "SelectTestRoutine");
 
     DriverStationSim.setAllianceStationId(AllianceStationID.Unknown);
     DriverStationSim.setDsAttached(false);
