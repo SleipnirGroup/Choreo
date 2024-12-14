@@ -244,25 +244,24 @@ public class Robot extends TimedRobot {
         // ...
 
         // Create the auto chooser
-        autoChooser = new AutoChooser(autoFactory, "");
+        autoChooser = new AutoChooser();
 
         // Add options to the chooser
-        autoChooser.addAutoRoutine("Example Routine", this::exampleRoutine);
-        autoChooser.addAutoCmd("Example Auto Command", this::exampleAutoCommand);
+        autoChooser.addRoutine("Example Routine", this::exampleRoutine);
+        autoChooser.addCmd("Example Auto Command", this::exampleAutoCommand);
+
+        // AutoChooser.update() must be invoked periodically for the class to function
+        addPeriodic(autoChooser::update, kDefaultPeriod);
+
+        // Schedule the selected auto during the autonomous period
+        RobotModeTriggers.autonomous().whileTrue(autoChooser.selectedCommandScheduler());
     }
 
-    @Override
-    public void robotPeriodic() {
-        // You must call AutoChooser.update() periodically
-        // in order for the class to function.
-        autoChooser.update();
-    }
-
-    private AutoRoutine exampleRoutine(AutoFactory autoFactory) {
+    private AutoRoutine exampleRoutine() {
         // ...
     }
 
-    private Command exampleAutoCommand(AutoFactory autoFactory) {
+    private Command exampleAutoCommand() {
         // ...
     }
 }
