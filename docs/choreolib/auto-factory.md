@@ -127,7 +127,7 @@ public AutoRoutine pickupAndScoreAuto() {
     routine.running().onTrue(pickupTraj.resetOdometry().andThen(pickupTraj.cmd()));
 
     // Starting at the event marker named "intake", run the intake
-    pickupTraj.atPose("intake").onTrue(intakeSubsystem.intake());
+    pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake()); // (2)
 
     // When the trajectory is done, start the next trajectory
     pickupTraj.done().onTrue(scoreTraj.cmd());
@@ -143,6 +143,7 @@ public AutoRoutine pickupAndScoreAuto() {
 ```
 
 1. You should always reset your robot's odometry to the start of the first trajectory being followed in an autonomous routine. `AutoTrajectory.resetOdometry()` will accomplish this, setting the robot's pose to the start of the trajectory.
+2. Alternatively, you can use `AutoTrajectory.atPose()` for utilizing event markers. See the [Java reference documentation](/api/choreolib/java/choreo/auto/AutoTrajectory.html#atPose(java.lang.String,double,double)) for more information about behavior.
 
 Sometimes, you may want to implement a "branching auto": an autonomous routine that changes behavior based on the state of the robot. An excellent example for the need of branching autos is the [2024 season](https://youtu.be/9keeDyFxzY4), where robots would race to the midline to grab a gamepiece. If another robot beat yours to the midline, or your robot missed a game piece, a common strategy was to go directly to the next gamepiece on the midline, instead of coming back to score. As an example, [this match](https://youtu.be/_gcezRaGP5A?t=6) from the 2024 championship shows both 254 and 3339 running branching autos.
 
