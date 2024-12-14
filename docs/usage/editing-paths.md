@@ -19,7 +19,7 @@ Pose Waypoint is the first button on the waypoints navbar and consists of a tran
 
 ### Translation Waypoints
 
-Translation Waypoint is the second button on the waypoints navbar and consists of a translation but not a rotation. 
+Translation Waypoint is the second button on the waypoints navbar and consists of a translation but not a rotation.
 
 - **X and Y**: position from the origin
 
@@ -43,7 +43,7 @@ Applies this constraint at the selected waypoint.
 
 #### Segment Scope
 
-Applies this constraint to the range of the trajectory between two waypoints. 
+Applies this constraint to the range of the trajectory between two waypoints.
 
 #### Waypoint + Segment Scope
 
@@ -59,22 +59,23 @@ To add a constraint, select it from the top navbar. Click the waypoint at one en
 
 ### Constraint Display
 
-When a constraint is selected in the sidebar, circles and dashed lines will show the range of waypoints under the constraint. 
+When a constraint is selected in the sidebar, circles and dashed lines will show the range of waypoints under the constraint.
 
 ![Display of the scope of a constraint](../media/constraint-scope-line.png)
 
 Some constraints have field points or regions associated with them. When these constraints are selected, the field will display movable points and shapes to define these regions.
 
-## Obstacles
+## Keep Out Constraints
 
-Obstacles force the robot to avoid a certain area of the field throughout the path. For example, in the 2023 Charged Up game, you might want to avoid crashing into the charge station. Obstacles makes it easy to define where you want the robot to start and end without unnecessary (and performance-impacting) intermediary waypoints.
+Keep out constraints force the robot to avoid a certain area of the field throughout the path. For example, in the 2023 Charged Up game, you might want to avoid crashing into the charge station. Keep out constraints makes it easy to define where you want the robot to start and end without unnecessary (and performance-impacting) intermediary waypoints.
+!!! warning keep out constraints can cause weird behaviours when generating paths due to known issues with the numerical solver used for Choreo. This can be avoided using intermediary waypoints.
 
-To add a circle obstacle:
+To add a keep out circle:
 
-1. Select the circle obstacle from the navbar (looks like a circle with a slash through it).
+1. Select the keep out circle from the navbar (looks like a circle with a slash through it).
 2. Select anywhere on the field to add an obstacle. You can click on the ends of the circle to resize them. You can also use the info panel on top left of the field to edit the center x, center y, and circle radius.
 
-![Obstacles](../media/obstacles.png)
+![Keep out constraints](../media/obstacles.png)
 
 ## Event Markers
 
