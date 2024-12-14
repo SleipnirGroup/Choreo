@@ -106,7 +106,8 @@ nav:
   - TrajoptLib (Internal API):
       - C++ API: api/trajoptlib/cpp/index.html
   - Contributing:
-      - Building: contributing/building-choreo.md
+      - Building Choreo: contributing/building-choreo.md
+      - Building ChoreoLib: contributing/building-choreolib.md
       - Contributing Guide: contributing/contributing-guide.md
       - Release Process: contributing/release-process.md
       - Upgrading File Schemas: contributing/schema-upgrade.md

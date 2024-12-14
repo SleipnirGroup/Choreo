@@ -18,32 +18,6 @@ Use the following JSON URL to install ChoreoLib:
     https://lib.choreo.autos/dep/ChoreoLib2025Beta.json
     ```
 
-??? abstract "(Advanced) Building Manually"
-
-    !!! warning
-        This is not recommended for most users.
-
-    Maven artifacts for ChoreoLib can be built using `./gradlew publish` or `./gradlew publishToMavenLocal` for local library access.
-
-    The built library will be located in the respective operating system's m2 folder. By default, Maven local repository is defaulted to the `${user.home}/.m2/repository` folder:
-
-    === "Windows"
-
-        ```
-        %HOMEPATH%\.m2\repository
-        ```
-
-    === "macOS/UNIX"
-
-        ```
-        ~/.m2/repository
-        ```
-
-    To use your build, update `vendordeps/ChoreoLib.json` to point to the local repository and version.
-
-    !!! danger
-        If you attempt to work with this project in VSCode with WPILib plugins, it will ask you if you want to import the project. Click no. This will change the project into a robot code project and break everything.
-
 ## Setting up the Drive Subsystem
 
 Across all of ChoreoLib's APIs, your robot's drive subsystem is expected to be set up to handle trajectory following. Due to its complexity, the task of implementing how to follow a trajectory is left up to the user. This approach allows you to implement hooks for telemetry, vendor specific features such as [wheel force feedforwards](https://github.com/CrossTheRoadElec/Phoenix6-Examples/blob/main/java/SwerveWithChoreo/src/main/java/frc/robot/subsystems/CommandSwerveDrivetrain.java#L196-L215) with CTRE's swerve API, or additional feedback from external systems like vision-based game piece detection.
