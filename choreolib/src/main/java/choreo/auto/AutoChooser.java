@@ -63,9 +63,7 @@ public class AutoChooser {
     this(tableName, NetworkTableInstance.getDefault());
   }
 
-  /**
-   * Constructs a new {@link AutoChooser}.
-   */
+  /** Constructs a new {@link AutoChooser}. */
   public AutoChooser() {
     this("", NetworkTableInstance.getDefault());
   }
@@ -95,8 +93,8 @@ public class AutoChooser {
    * Update the auto chooser.
    *
    * <p>This method should be called every cycle in the {@link IterativeRobotBase#robotPeriodic()}
-   * or by adding a periodic to {@link TimedRobot}.
-   * It will check if the selected auto routine has changed and update the active AutoRoutine.
+   * or by adding a periodic to {@link TimedRobot}. It will check if the selected auto routine has
+   * changed and update the active AutoRoutine.
    *
    * <p>The AutoRoutine can only be updated when the robot is disabled and connected to
    * DriverStation. If the .chooser in your dashboard says {@code BAD} the {@link AutoChooser} has
@@ -210,10 +208,10 @@ public class AutoChooser {
 
   /**
    * Returns the currently selected command.
-   * 
-   * <p> If you plan on using this {@link Command} in a {@link Trigger}
-   * it is recommended to use {@link #autoSchedulingCmd()} instead.
-   * 
+   *
+   * <p>If you plan on using this {@link Command} in a {@link Trigger} it is recommended to use
+   * {@link #autoSchedulingCmd()} instead.
+   *
    * @return The currently selected command.
    */
   public Command selectedCommand() {
