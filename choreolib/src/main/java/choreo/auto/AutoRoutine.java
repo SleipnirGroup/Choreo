@@ -194,6 +194,16 @@ public class AutoRoutine {
   }
 
   /**
+   * Creates a command that resets the robot's odometry to the start of a trajectory.
+   *
+   * @param trajectory The trajectory to use.
+   * @return A command that resets the robot's odometry.
+   */
+  public Command resetOdometry(AutoTrajectory trajectory) {
+    return trajectory.resetOdometry();
+  }
+
+  /**
    * Creates a command that will poll this event loop and reset it when it is cancelled.
    *
    * <p>The command will end instantly and kill the routine if the alliance supplier returns an
