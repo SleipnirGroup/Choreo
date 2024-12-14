@@ -219,6 +219,24 @@ public class AutoTrajectory {
   }
 
   /**
+   * Creates a command that resets the robot's odometry to the start of this trajectory.
+   *
+   * @return A command that resets the robot's odometry.
+   */
+  Command resetOdometry() {
+    return Commands.either(
+            Commands.runOnce(() -> resetOdometry.accept(getInitialPose().get()), driveSubsystem),
+            Commands.runOnce(
+                    () -> {
+                      noInitialPose.addCause(name);
+                      routine.kill();
+                    })
+                .andThen(Commands.idle()),
+            () -> getInitialPose().isPresent())
+        .withName("Trajectory_ResetOdometry_" + name);
+  }
+
+  /**
    * Will get the underlying {@link Trajectory} object.
    *
    * <p><b>WARNING:</b> This method is not type safe and should be used with caution. The sample
@@ -269,24 +287,6 @@ public class AutoTrajectory {
       return Optional.empty();
     }
     return trajectory.getFinalPose(doFlip());
-  }
-
-  /**
-   * Creates a command that resets the robot's odometry to the start of this trajectory.
-   *
-   * @return A command that resets the robot's odometry.
-   */
-  public Command resetOdometry() {
-    return Commands.either(
-            Commands.runOnce(() -> resetOdometry.accept(getInitialPose().get()), driveSubsystem),
-            Commands.runOnce(
-                    () -> {
-                      noInitialPose.addCause(name);
-                      routine.kill();
-                    })
-                .andThen(Commands.idle()),
-            () -> getInitialPose().isPresent())
-        .withName("Trajectory_ResetOdometry_" + name);
   }
 
   /**
