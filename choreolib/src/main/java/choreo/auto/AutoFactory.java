@@ -399,20 +399,6 @@ public class AutoFactory {
   }
 
   /**
-   * Creates an {@link AutoRoutine} with the name of the command. The command is the bound to the
-   * routine's enabled trigger. This is useful for adding a {@link Command} composition based auto
-   * to the {@link choreo.auto.AutoChooser}.
-   *
-   * @param cmd The command to bind to the routine.
-   * @return A new auto routine.
-   */
-  AutoRoutine commandAsAutoRoutine(Command cmd) {
-    AutoRoutine routine = newRoutine(cmd.getName());
-    routine.running().whileTrue(cmd);
-    return routine;
-  }
-
-  /**
    * Binds a command to an event in all trajectories created after this point.
    *
    * @param name The name of the trajectory to bind the command to.
