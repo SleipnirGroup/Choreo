@@ -43,15 +43,12 @@ class RobotConfigPanel extends Component<Props, State> {
             DRIVE MOTOR
           </Divider>
           <ModuleConfigPanel rowGap={this.rowGap}></ModuleConfigPanel>
-
-          
-
         </div>
         {/* Right Column */}
         <div
           style={{
             gridColumn: 3,
-            gridRow: 1,
+            gridRow: 1
           }}
         >
           <Divider sx={{ color: "gray", marginBottom: `${this.rowGap}px` }}>
@@ -72,7 +69,11 @@ class RobotConfigPanel extends Component<Props, State> {
 
             <Switch
               size="small"
-              sx={{ gridColumn: 2, ".MuiSwitch-track": {backgroundColor: "black"}, ".Mui-checked+.MuiSwitch-track": {backgroundColor: "black"}, }}
+              sx={{
+                gridColumn: 2,
+                ".MuiSwitch-track": { backgroundColor: "black" },
+                ".Mui-checked+.MuiSwitch-track": { backgroundColor: "black" }
+              }}
               checked={doc.type === "Differential"}
               onChange={(_e, checked) =>
                 doc.setType(checked ? "Differential" : "Swerve")
@@ -81,18 +82,20 @@ class RobotConfigPanel extends Component<Props, State> {
             <span className={inputStyles.Title} style={{ gridColumn: "1" }}>
               Differential
             </span>
-          
           </div>
-          {doc.type === "Differential" ? 
-            (<DifferentialConfigPanel rowGap={this.rowGap}></DifferentialConfigPanel>) :
-            (<SwerveConfigPanel rowGap={this.rowGap}></SwerveConfigPanel>)}
+          {doc.type === "Differential" ? (
+            <DifferentialConfigPanel
+              rowGap={this.rowGap}
+            ></DifferentialConfigPanel>
+          ) : (
+            <SwerveConfigPanel rowGap={this.rowGap}></SwerveConfigPanel>
+          )}
         </div>
         {/* Theoreticals */}
         <div
           style={{
             gridColumn: "1 / 4",
-            gridRow: 2,
-
+            gridRow: 2
           }}
         >
           <Divider sx={{ color: "gray" }}>THEORETICAL</Divider>
@@ -104,12 +107,11 @@ class RobotConfigPanel extends Component<Props, State> {
           >
             Calculated robot metrics, for reference and validation.
           </FormHelperText>
-
         </div>
         <TheoreticalPanel
-            rowGap={this.rowGap}
-            imperial={imp}
-          ></TheoreticalPanel>
+          rowGap={this.rowGap}
+          imperial={imp}
+        ></TheoreticalPanel>
       </div>
     );
   }

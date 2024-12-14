@@ -13,14 +13,14 @@ class SwerveConfigPanel extends Component<Props, State> {
     const config = doc.robotConfig;
     return (
       <ExpressionInputList rowGap={this.props.rowGap}>
-          <ExpressionInput
-            title="Trackwidth"
-            enabled={true}
-            roundingPrecision={3}
-            number={config.differentialTrackWidth}
-            maxWidthCharacters={8}
-            titleTooltip="Distance between wheel sides"
-          />
+        <ExpressionInput
+          title="Trackwidth"
+          enabled={true}
+          roundingPrecision={3}
+          number={config.differentialTrackWidth}
+          maxWidthCharacters={8}
+          titleTooltip="Distance between wheel sides"
+        />
       </ExpressionInputList>
     );
   }

@@ -132,7 +132,11 @@ class Input extends Component<Props, State> {
             styles.Number +
             (showNumberWhenDisabled ? " " + styles.ShowWhenDisabled : "")
           }
-          style={this.props.maxWidthCharacters !== undefined ? { maxWidth: `${characters}ch` }: {}}
+          style={
+            this.props.maxWidthCharacters !== undefined
+              ? { maxWidth: `${characters}ch` }
+              : {}
+          }
           disabled={!this.props.enabled}
           // The below is needed to make inputs on CommandDraggables work
           onClick={(e) => e.stopPropagation()}
