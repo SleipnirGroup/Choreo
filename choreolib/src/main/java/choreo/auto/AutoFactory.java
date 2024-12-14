@@ -52,7 +52,7 @@ public class AutoFactory {
         public void reset() {}
 
         @Override
-        public Trigger running() {
+        public Trigger active() {
           return new Trigger(loop, () -> false);
         }
       };
@@ -408,7 +408,7 @@ public class AutoFactory {
    */
   AutoRoutine commandAsAutoRoutine(Command cmd) {
     AutoRoutine routine = newRoutine(cmd.getName());
-    routine.running().whileTrue(cmd);
+    routine.active().whileTrue(cmd);
     return routine;
   }
 
