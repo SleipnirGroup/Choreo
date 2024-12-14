@@ -216,6 +216,16 @@ public AutoRoutine branching2024Auto() {
 
 1. ![Branching Auto Map](../media/choreolib-branching-auto.png)
 
+## AutoBindings
+
+The `AutoBindings` ([Java](/api/choreolib/java/choreo/auto/AutoFactory.AutoBindings.html)) class is used to bind event markers in trajectories made by the `AutoFactory` to commands. Commands added to `AutoBindings` exhibit the same behavior as those bound to `AutoTrajectory.atTime(String)`, except they are applied globally across all routines. This is useful if you have simpler actions that you want to trigger in any trajectory without much thought.
+
+```java
+AutoBindings bindings = new AutoBindings()
+    .bind("intake", intakeSubsystem.intake())
+    .bind("score", scoringSubsystem.score());
+```
+
 ## AutoChooser
 
 The `AutoChooser` ([Java](/api/choreolib/java/choreo/auto/AutoChooser.html)) class allows you to send a list of your autonomous routines to a driver dashboard for selection before a match. It is meant to be a more efficient alternative to `SendableChooser`, taking a [lazy loading](https://en.wikipedia.org/wiki/Lazy_loading) approach to generating command compositions or an `AutoRoutine`. This approach has the benefit of not loading all autos on startup, but also not loading the auto after the match starts, which may cause a delay when using many or large trajectories.
@@ -255,14 +265,4 @@ public class Robot extends TimedRobot {
         // ...
     }
 }
-```
-
-## AutoBindings
-
-The `AutoBindings` ([Java](/api/choreolib/java/choreo/auto/AutoFactory.AutoBindings.html)) class is used to bind event markers in trajectories made by the `AutoFactory` to commands. Commands added to `AutoBindings` exhibit the same behavior as those bound to `AutoTrajectory.atTime(String)`, except they are applied globally across all routines. This is useful if you have simpler actions that you want to trigger in any trajectory without much thought.
-
-```java
-AutoBindings bindings = new AutoBindings()
-    .bind("intake", intakeSubsystem.intake())
-    .bind("score", scoringSubsystem.score());
 ```
