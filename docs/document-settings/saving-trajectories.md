@@ -1,12 +1,12 @@
 # Saving your .chor file
 
-Once trajectories are created by choreo, they must be saved within your robot project.
+Once trajectories are created by Choreo, they must be saved within your robot project.
 
 Choreo has 2 different kinds of files: 
 a .chor file which stores general configs for your project,
 and multiple .traj files which describe individually generated trajectories.
 
-Once a .chor file is saved to a directory(folder), saving your project will
+Once a .chor file is saved to a directory (folder), saving your project will
 automatically update the .traj files in the same directory.
 
 However, all of your .traj files must be saved within the deploy/choreo
@@ -21,4 +21,4 @@ you just created.
 
 !!! warning
     Your .chor file must be placed within the deploy/choreo folder of your robot project.
-    Not doing so will result in ChoreoLib(and PathPlannerLib) being unable to parse your project.
+    Not doing so will result in ChoreoLib (and PathPlannerLib) being unable to parse your project.
