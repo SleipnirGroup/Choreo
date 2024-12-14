@@ -90,15 +90,15 @@ To get started, create a new routine using `AutoFactory.newRoutine()`:
 AutoRoutine routine = autoFactory.newRoutine("exampleRoutine");
 ```
 
-The "entrance" to all routines is the `AutoRoutine.running()` trigger. You should bind the first command you want to execute to this trigger.
+The "entrance" to all routines is the `AutoRoutine.active()` trigger. You should bind the first command you want to execute to this trigger.
 
 ```java
-routine.running().onTrue(Commands.print("Started the routine!"));
+routine.active().onTrue(Commands.print("Started the routine!"));
 ```
 
 Traditional triggers can also be used in conjunction with an auto routine. However, they will experience "hygiene" issues if not used correctly, causing them to be active even when the routine is not. You must either:
 
-- Use `AutoRoutine.observe()` to ensure the trigger is only active when the routine is running
+- Use `AutoRoutine.observe()` to ensure the trigger is only active when the routine is active
 - Conjoin a trigger to one created by `AutoRoutine` or `AutoTrajectory`
 
 ```java
@@ -106,11 +106,11 @@ Trigger myTrigger = new Trigger(() -> condition);
 
 // Safe
 routine.observe(myTrigger).onTrue(Commands.print("Foo"));
-routine.running().and(myTrigger).onTrue(Commands.print("Bar"));
+routine.active().and(myTrigger).onTrue(Commands.print("Bar"));
 
 // Unsafe
 myTrigger.onTrue(Commands.print("Foo"));
-myTrigger.and(routine.running()).onTrue(Commands.print("Bar"));
+myTrigger.and(routine.active()).onTrue(Commands.print("Bar"));
 ```
 
 Trajectories can be loaded using `AutoRoutine.trajectory()`, which will return an `AutoTrajectory` ([Java](/api/choreolib/java/choreo/auto/AutoTrajectory.html)). The `AutoTrajectory` class exposes multiple triggers for you to attach reactive logic to, as well as `AutoTrajectory.cmd()` for scheduling the trajectory.
@@ -124,7 +124,7 @@ public AutoRoutine pickupAndScoreAuto() {
     AutoTrajectory scoreTraj = routine.trajectory("scoreGamepiece");
 
     // When the routine begins, reset odometry and start the first trajectory (1)
-    routine.running().onTrue(pickupTraj.resetOdometry().andThen(pickupTraj.cmd()));
+    routine.active().onTrue(pickupTraj.resetOdometry().andThen(pickupTraj.cmd()));
 
     // Starting at the event marker named "intake", run the intake
     pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake()); // (2)
@@ -171,7 +171,7 @@ public AutoRoutine branching2024Auto() {
     AutoTrajectory scoreToM3 = routine.trajectory("scoreToM3");
 
     // When the routine starts, reset odometry, shoot the first gamepiece, then go to the "C2" location
-    routine.running().onTrue(
+    routine.active().onTrue(
         Commands.sequence(
             startToC2.resetOdometry(),
             shooterSubsystem.shoot(),
