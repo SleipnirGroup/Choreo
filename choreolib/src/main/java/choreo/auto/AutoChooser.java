@@ -152,7 +152,7 @@ public class AutoChooser {
    * @param name The name of the auto routine.
    * @param generator The function that generates the auto routine.
    */
-  public void addAutoRoutine(String name, Supplier<AutoRoutine> generator) {
+  public void addRoutine(String name, Supplier<AutoRoutine> generator) {
     autoRoutines.put(name, () -> generator.get().cmd());
     options.set(autoRoutines.keySet().toArray(new String[0]));
   }
@@ -181,7 +181,7 @@ public class AutoChooser {
    * @param generator The function that generates an autonomous command.
    * @see AutoChooser#addAutoRoutine
    */
-  public void addAutoCmd(String name, Supplier<Command> generator) {
+  public void addCmd(String name, Supplier<Command> generator) {
     autoRoutines.put(name, generator);
     options.set(autoRoutines.keySet().toArray(new String[0]));
   }
@@ -200,7 +200,7 @@ public class AutoChooser {
    *
    * @return A command that runs the selected {@link AutoRoutine}
    */
-  public Command autoSchedulingCmd() {
+  public Command selectedCommandScheduler() {
     // .asProxy() not needed; requirements are dynamically allocated
     // via triggers, and are not part of the routine command itself
     return Commands.defer(() -> new ScheduleCommand(this.lastCommand), Set.of());
@@ -210,7 +210,7 @@ public class AutoChooser {
    * Returns the currently selected command.
    *
    * <p>If you plan on using this {@link Command} in a {@link Trigger} it is recommended to use
-   * {@link #autoSchedulingCmd()} instead.
+   * {@link #selectedCommandScheduler()} instead.
    *
    * @return The currently selected command.
    */

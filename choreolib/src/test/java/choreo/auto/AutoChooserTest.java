@@ -94,8 +94,8 @@ public class AutoChooserTest {
     final String fnName = "addAutoTest";
     AutoFactory factory = AutoTestHelper.factory();
     AutoChooser chooser = new AutoChooser(chooserPath(fnName), ntInstance);
-    chooser.addAutoCmd("AddAutoTestCommand", () -> Commands.none().withName("AddAutoTestCommand"));
-    chooser.addAutoRoutine("AddAutoTestRoutine", () -> factory.newRoutine("AddAutoTestRoutine"));
+    chooser.addCmd("AddAutoTestCommand", () -> Commands.none().withName("AddAutoTestCommand"));
+    chooser.addRoutine("AddAutoTestRoutine", () -> factory.newRoutine("AddAutoTestRoutine"));
     assertNTOptions(fnName, NONE_NAME, "AddAutoTestCommand", "AddAutoTestRoutine");
   }
 
@@ -104,8 +104,8 @@ public class AutoChooserTest {
     final String fnName = "selectTest";
     AutoFactory factory = AutoTestHelper.factory();
     AutoChooser chooser = new AutoChooser(chooserPath(fnName), ntInstance);
-    chooser.addAutoCmd("SelectTestCommand", () -> Commands.none().withName("SelectTestCommand"));
-    chooser.addAutoRoutine("SelectTestRoutine", () -> factory.newRoutine("SelectTestRoutine"));
+    chooser.addCmd("SelectTestCommand", () -> Commands.none().withName("SelectTestCommand"));
+    chooser.addRoutine("SelectTestRoutine", () -> factory.newRoutine("SelectTestRoutine"));
     selectNT(fnName, "SelectTestRoutine");
     assertNTSelected(fnName, "SelectTestRoutine");
     assertNTActive(fnName, NONE_NAME);
