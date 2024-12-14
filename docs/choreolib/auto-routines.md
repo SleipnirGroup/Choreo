@@ -94,7 +94,7 @@ public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
   // resets the odometry to the starting position,
   // then shoots the starting note,
   // then runs the trajectory to the first close note while extending the intake
-  routine.running()
+  routine.active()
       .onTrue(
           resetOdometry(() -> {
               final Optional<Pose2d> initialPose = ampToC1.getInitialPose();
@@ -114,7 +114,7 @@ public AutoRoutine fivePieceAutoTriggerSeg(AutoFactory factory) {
 
   // spinnup the shooter while no other command is using the shooter
   subsystemsAvailable(routine, spinnup().getRequirements())
-      .and(routine.running()).onTrue(spinnup());
+      .and(routine.active()).onTrue(spinnup());
 
   // shoots the note if the robot has it, then runs the trajectory to the first middle note
   ampToC1.done().onTrue(shootIfNoteOwned()).onTrue(
@@ -174,7 +174,7 @@ public Command fivePieceAutoTriggerMono(AutoFactory factory) {
   // resets the odometry to the starting position,
   // then shoots the starting note,
   // then runs the trajectory to the first close note while extending the intake
-  routine.running()
+  routine.active()
       .onTrue(
           resetOdometry(() -> {
               final Optional<Pose2d> initialPose = ampToC1.getInitialPose();
@@ -186,10 +186,10 @@ public Command fivePieceAutoTriggerMono(AutoFactory factory) {
           .andThen(autoAimAndShoot(), trajectory.cmd())
           .withName("fivePieceAuto entry point")
       );
-  trajectory.running().onTrue(aim());
+  trajectory.active().onTrue(aim());
   // spinnup the shooter while no other command is running
   subsystemsAvailable(routine, spinnup().getRequirements())
-      .and(routine.running()).onTrue(spinnup());
+      .and(routine.active()).onTrue(spinnup());
 
   // extends the intake when the intake event marker is reached
   trajectory.atTime("intake").onTrue(intake());

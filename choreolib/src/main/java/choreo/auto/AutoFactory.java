@@ -52,7 +52,7 @@ public class AutoFactory {
         public void reset() {}
 
         @Override
-        public Trigger running() {
+        public Trigger active() {
           return new Trigger(loop, () -> false);
         }
       };
