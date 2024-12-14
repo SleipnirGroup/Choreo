@@ -31,7 +31,7 @@ import java.util.function.Supplier;
  * during auto start causing a delay.
  *
  * <p>Once the {@link AutoChooser} is made you can add {@link AutoRoutine}s to it using {@link
- * #addAutoRoutine} or add {@link Command}s to it using {@link #addAutoCmd}. Unlike {@code
+ * #addRoutine} or add {@link Command}s to it using {@link #addCmd}. Unlike {@code
  * SendableChooser} this chooser has to be updated every cycle. This can be done using an
  * `addPeriodic` call in the robot's constructor like so: <code>
  * addPeriodic(autoChooser::update, 0.02);</code>
@@ -93,7 +93,7 @@ public class AutoChooser {
    * Update the auto chooser.
    *
    * <p>This method should be called every cycle in the {@link IterativeRobotBase#robotPeriodic()}
-   * or by adding a periodic to {@link TimedRobot}. It will check if the selected auto routine has
+   * or by adding a periodic to {@code TimedRobot}. It will check if the selected auto routine has
    * changed and update the active AutoRoutine.
    *
    * <p>The AutoRoutine can only be updated when the robot is disabled and connected to
@@ -143,9 +143,9 @@ public class AutoChooser {
    *   chooser = new AutoChooser("/Choosers");
    *   addPeriodic(chooser::update, 0.02); // chooser must be updated every loop
    *   // fourPieceRight is a method that accepts an AutoFactory and returns an AutoRoutine.
-   *   chooser.addAutoRoutine("4 Piece right", autos::fourPieceRight);
-   *   chooser.addAutoRoutine("4 Piece Left", autos::fourPieceLeft);
-   *   chooser.addAutoRoutine("3 Piece Close", autos::threePieceClose);
+   *   chooser.addRoutine("4 Piece right", autos::fourPieceRight);
+   *   chooser.addRoutine("4 Piece Left", autos::fourPieceLeft);
+   *   chooser.addRoutine("3 Piece Close", autos::threePieceClose);
    * }
    * </code></pre>
    *
@@ -172,14 +172,14 @@ public class AutoChooser {
    *   chooser = new AutoChooser("/Choosers");
    *   addPeriodic(chooser::update, 0.02); // chooser must be updated every loop
    *   // fourPieceLeft is a method that accepts an AutoFactory and returns a command.
-   *   chooser.addAutoCmd("4 Piece left", autos::fourPieceLeft);
-   *   chooser.addAutoCmd("Just Shoot", shooter::shoot);
+   *   chooser.addCmd("4 Piece left", autos::fourPieceLeft);
+   *   chooser.addCmd("Just Shoot", shooter::shoot);
    * }
    * </code></pre>
    *
    * @param name The name of the autonomous command.
    * @param generator The function that generates an autonomous command.
-   * @see AutoChooser#addAutoRoutine
+   * @see AutoChooser#addRoutine
    */
   public void addCmd(String name, Supplier<Command> generator) {
     autoRoutines.put(name, generator);
@@ -209,7 +209,7 @@ public class AutoChooser {
   /**
    * Returns the currently selected command.
    *
-   * <p>If you plan on using this {@link Command} in a {@link Trigger} it is recommended to use
+   * <p>If you plan on using this {@link Command} in a {@code Trigger} it is recommended to use
    * {@link #selectedCommandScheduler()} instead.
    *
    * @return The currently selected command.
