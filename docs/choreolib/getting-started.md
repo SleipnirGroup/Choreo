@@ -68,6 +68,7 @@ In general, trajectory followers accept trajectory "samples" that represent the 
             public Drive() {
                 // Other subsystem initialization code
                 // ...
+
                 headingController.enableContinuousInput(-Math.PI, Math.PI);
             }
 
