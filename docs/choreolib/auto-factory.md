@@ -47,11 +47,11 @@ Command compositions is how most teams architect their autonomous routines. Typi
 
 1. Your team may use a `SequentialCommandGroup` subclass
 
-The `AutoFactory` class provides the `trajectoryCommand()` method, which creates a command that will follow the specified trajectory.
+The `AutoFactory` class provides the `trajectoryCmd()` method, which creates a command that will follow the specified trajectory.
 
 ```java
 // Follows deploy/choreo/myTrajectory.traj
-Command myTrajectory = autoFactory.trajectoryCommand("myTrajectory");
+Command myTrajectory = autoFactory.trajectoryCmd("myTrajectory");
 ```
 
 !!! warning
@@ -64,11 +64,11 @@ public Command pickupAndScoreAuto() {
     return Commands.sequence(
         autoFactory.resetOdometry("pickupGamepiece"), // (1)
         Commands.deadline(
-            autoFactory.trajectoryCommand("pickupGamepiece"),
+            autoFactory.trajectoryCmd("pickupGamepiece"),
             intakeSubsystem.intake() // (2)
         ),
         Commands.parallel(
-            autoFactory.trajectoryCommand("scoreGamepiece"),
+            autoFactory.trajectoryCmd("scoreGamepiece"),
             scoringSubsystem.getReady()
         )
         scoringSubsystem.score()
