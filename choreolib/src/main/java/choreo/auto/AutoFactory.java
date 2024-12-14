@@ -313,11 +313,11 @@ public class AutoFactory {
    *
    * <p><b>Important </b>
    *
-   * <p>{@link #trajectoryCmd} and {@link #trajectory} methods should not be mixed in the same
-   * auto routine. {@link #trajectoryCmd} is used as an escape hatch for teams that don't need
-   * the benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link
-   * #trajectoryCmd} does not invoke bindings added via calling {@link #bind} or {@link
-   * AutoBindings} passed into the factory constructor.
+   * <p>{@link #trajectoryCmd} and {@link #trajectory} methods should not be mixed in the same auto
+   * routine. {@link #trajectoryCmd} is used as an escape hatch for teams that don't need the
+   * benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link #trajectoryCmd}
+   * does not invoke bindings added via calling {@link #bind} or {@link AutoBindings} passed into
+   * the factory constructor.
    *
    * @param trajectoryName The name of the trajectory to use.
    * @return A new {@link AutoTrajectory}.
@@ -331,11 +331,11 @@ public class AutoFactory {
    *
    * <p><b>Important </b>
    *
-   * <p>{@link #trajectoryCmd} and {@link #trajectory} methods should not be mixed in the same
-   * auto routine. {@link #trajectoryCmd} is used as an escape hatch for teams that don't need
-   * the benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link
-   * #trajectoryCmd} does not invoke bindings added via calling {@link #bind} or {@link
-   * AutoBindings} passed into the factory constructor.
+   * <p>{@link #trajectoryCmd} and {@link #trajectory} methods should not be mixed in the same auto
+   * routine. {@link #trajectoryCmd} is used as an escape hatch for teams that don't need the
+   * benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link #trajectoryCmd}
+   * does not invoke bindings added via calling {@link #bind} or {@link AutoBindings} passed into
+   * the factory constructor.
    *
    * @param trajectoryName The name of the trajectory to use.
    * @param splitIndex The index of the split trajectory to use.
@@ -350,11 +350,11 @@ public class AutoFactory {
    *
    * <p><b>Important </b>
    *
-   * <p>{@link #trajectoryCmd} and {@link #trajectory} methods should not be mixed in the same
-   * auto routine. {@link #trajectoryCmd} is used as an escape hatch for teams that don't need
-   * the benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link
-   * #trajectoryCmd} does not invoke bindings added via calling {@link #bind} or {@link
-   * AutoBindings} passed into the factory constructor.
+   * <p>{@link #trajectoryCmd} and {@link #trajectory} methods should not be mixed in the same auto
+   * routine. {@link #trajectoryCmd} is used as an escape hatch for teams that don't need the
+   * benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link #trajectoryCmd}
+   * does not invoke bindings added via calling {@link #bind} or {@link AutoBindings} passed into
+   * the factory constructor.
    *
    * @param <SampleType> The type of the trajectory samples.
    * @param trajectory The trajectory to use.
