@@ -200,7 +200,7 @@ public class AutoChooser {
    * @return A command that runs the selected {@link AutoRoutine}
    */
   public Command selectedCommandScheduler() {
-    return Commands.defer(() -> this.lastCommand.asProxy(), Set.of());
+    return Commands.defer(() -> lastCommand.asProxy(), Set.of());
   }
 
   /**
