@@ -370,12 +370,10 @@ DifferentialTrajectoryGenerator::ConstructDifferentialSolution() {
     auto view = row | std::views::transform(getValue);
     return std::vector<double>{std::begin(view), std::end(view)};
   };
-  auto trackwidth = path.drivetrain.trackwidth;
-  auto vlValue = vectorValue(vl);
-  auto vrValue = vectorValue(vr);
-  std::vector<double> omega;
-  for (size_t sample = 0; sample < vlValue.size(); ++sample) {
-    omega.push_back((vrValue.at(sample) - vlValue.at(sample)) / trackwidth);
+  const auto& trackwidth = path.drivetrain.trackwidth;
+  std::vector<double> ω;
+  for (size_t sample = 0; sample < vl.size(); ++sample) {
+    ω.push_back((vr.at(sample).Value() - vl.at(sample).Value()) / trackwidth);
   }
   return DifferentialSolution{
       dtPerSample,     vectorValue(x),  vectorValue(y),  vectorValue(θ),
