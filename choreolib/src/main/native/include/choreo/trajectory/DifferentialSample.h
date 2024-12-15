@@ -42,6 +42,7 @@ class DifferentialSample {
    * @param heading The heading of the sample, with 0 being in the +X direction.
    * @param vl The velocity of the left wheels
    * @param vr The velocity of the right wheels
+   * @param omega The chassis angular velocity
    * @param al The acceleration of the left wheels
    * @param ar The acceleration of the left wheels
    * @param fl The force of the left wheels
@@ -51,6 +52,7 @@ class DifferentialSample {
                                units::meter_t y, units::radian_t heading,
                                units::meters_per_second_t vl,
                                units::meters_per_second_t vr,
+                               units::radians_per_second_t omega,
                                units::meters_per_second_squared_t al,
                                units::meters_per_second_squared_t ar,
                                units::newton_t fl, units::newton_t fr)
@@ -60,6 +62,7 @@ class DifferentialSample {
         heading{heading},
         vl{vl},
         vr{vr},
+        omega{omega},
         al{al},
         ar{ar},
         fl{fl},
@@ -96,7 +99,7 @@ class DifferentialSample {
    */
   constexpr DifferentialSample OffsetBy(units::second_t timeStampOffset) const {
     return DifferentialSample{
-        timestamp + timeStampOffset, x, y, heading, vl, vr, al, ar, fl, fr};
+        timestamp + timeStampOffset, x, y, heading, vl, vr, omega, al, ar, fl, fr};
   }
 
   /**
@@ -119,6 +122,7 @@ class DifferentialSample {
         interpolatedPose.Rotation().Radians(),
         wpi::Lerp(vl, endValue.vl, scale),
         wpi::Lerp(vr, endValue.vr, scale),
+        wpi::Lerp(omega, endValue.omega, scale),
         wpi::Lerp(al, endValue.al, scale),
         wpi::Lerp(ar, endValue.ar, scale),
         wpi::Lerp(fl, endValue.fl, scale),
@@ -137,11 +141,11 @@ class DifferentialSample {
     constexpr auto flipper = choreo::util::GetFlipperForYear<Year>();
     if constexpr (flipper.isMirrored) {
       return DifferentialSample(timestamp, flipper.FlipX(x), y,
-                                flipper.FlipHeading(heading), vl, vr, al, ar,
+                                flipper.FlipHeading(heading), vl, vr, -omega, al, ar,
                                 fl, fr);
     } else {
       return DifferentialSample(timestamp, flipper.FlipX(x), flipper.FlipY(y),
-                                flipper.FlipHeading(heading), vr, vl, ar, al,
+                                flipper.FlipHeading(heading), vr, vl, omega, ar, al,
                                 fr, fl);
     }
   }
@@ -165,6 +169,7 @@ class DifferentialSample {
            compare_units(x, other.x) && compare_units(y, other.y) &&
            compare_units(heading, other.heading) &&
            compare_units(vl, other.vl) && compare_units(vr, other.vr) &&
+           compare_units(omega, other.omega) &&
            compare_units(al, other.al) && compare_units(ar, other.ar) &&
            compare_units(fl, other.fl) && compare_units(fr, other.fr);
   }
@@ -186,6 +191,9 @@ class DifferentialSample {
 
   /// The velocity of the right wheels.
   units::meters_per_second_t vr = 0_mps;
+
+  /// The chassis angular velocity
+  units::radians_per_second_t omega = 0_rad_per_s;
 
   /// The acceleration of the left wheels.
   units::meters_per_second_squared_t al = 0_mps_sq;
