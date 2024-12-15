@@ -334,13 +334,13 @@ void DifferentialTrajectoryGenerator::ApplyInitialGuess(
     double heading = solution.heading[sampleIndex];
     double last_heading = solution.heading[sampleIndex - 1];
 
-    double omega =
+    double ω =
         Rotation2d{heading}.RotateBy(-Rotation2d{last_heading}).Radians() /
         solution.dt[sampleIndex];
     vl[sampleIndex].SetValue(
-        (linearVelocity - path.drivetrain.trackwidth / 2 * omega));
+        (linearVelocity - path.drivetrain.trackwidth / 2 * ω));
     vr[sampleIndex].SetValue(
-        (linearVelocity + path.drivetrain.trackwidth / 2 * omega));
+        (linearVelocity + path.drivetrain.trackwidth / 2 * ω));
     al[sampleIndex].SetValue(
         (vl[sampleIndex].Value() - vl[sampleIndex - 1].Value()) /
         solution.dt[sampleIndex]);

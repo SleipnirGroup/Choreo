@@ -333,7 +333,7 @@ impl From<&DifferentialTrajectorySample> for Sample {
             heading: round(differential_sample.heading),
             vl: round(differential_sample.velocity_l),
             vr: round(differential_sample.velocity_r),
-            omega: round(differential_sample.omega),
+            omega: round(differential_sample.angular_velocity),
             al: round(differential_sample.acceleration_l),
             ar: round(differential_sample.acceleration_r),
             fl: round(differential_sample.force_l),
