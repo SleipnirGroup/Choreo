@@ -13,7 +13,7 @@ pub struct OpenFilePayload {
 }
 
 pub const PROJECT_SCHEMA_VERSION: u32 = 1;
-pub const TRAJ_SCHEMA_VERSION: u32 = 0;
+pub const TRAJ_SCHEMA_VERSION: u32 = 1;
 
 /// A trait for types that can be snapshotted.
 /// This allows for the type to be converted to a f64.
