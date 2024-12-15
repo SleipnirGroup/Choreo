@@ -68,7 +68,7 @@ struct TRAJOPT_DLLEXPORT DifferentialSolution {
   std::vector<double> vr;
 
   /// The chassis angular velocity, which can be derived as ω = (vᵣ −
-  /// vₗ)/trackwidth)
+  /// vₗ)/trackwidth
   std::vector<double> angularVelocity;
 
   /// The left accelerations.
