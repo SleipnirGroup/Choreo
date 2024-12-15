@@ -8,56 +8,47 @@ type Props = { rowGap: number };
 
 type State = object;
 
-class RobotConfigPanel extends Component<Props, State> {
-  state = { selectedMotor: "NEO", currentLimit: 40 };
+class SwerveConfigPanel extends Component<Props, State> {
   render() {
     const config = doc.robotConfig;
     return (
       <ExpressionInputList rowGap={this.props.rowGap}>
         <ExpressionInput
-          title="Mass"
-          enabled={true}
-          number={config.mass}
-          maxWidthCharacters={8}
-          titleTooltip={"Total robot mass"}
-        />
-
-        <ExpressionInput
-          title="MOI"
-          enabled={true}
-          number={config.inertia}
-          maxWidthCharacters={8}
-          titleTooltip={"Robot moment of inertia around center vertical axis"}
-        />
-
-        <ExpressionInput
-          title="Bumper Front"
+          title="Front Mod X"
           enabled={true}
           roundingPrecision={3}
-          number={config.bumper.front}
+          number={config.frontLeft.x}
           maxWidthCharacters={8}
-          titleTooltip="Distance from robot center to front bumper edge"
+          titleTooltip="X coordinate of front modules"
         />
 
         <ExpressionInput
-          title="Bumper Back"
+          title="Front Left Y"
           enabled={true}
           roundingPrecision={3}
-          number={config.bumper.back}
+          number={config.frontLeft.y}
           maxWidthCharacters={8}
-          titleTooltip="Distance from robot center to back bumper edge"
+          titleTooltip="Y coordinate of front left module"
+        />
+        <ExpressionInput
+          title="Back Mod X"
+          enabled={true}
+          roundingPrecision={3}
+          number={config.backLeft.x}
+          maxWidthCharacters={8}
+          titleTooltip="X coordinate of back modules (negative)"
         />
 
         <ExpressionInput
-          title="Bumper Side"
+          title="Back Left Y"
           enabled={true}
           roundingPrecision={3}
-          number={config.bumper.side}
+          number={config.backLeft.y}
           maxWidthCharacters={8}
-          titleTooltip="Distance from robot center to bumper side edge"
+          titleTooltip="Y coordinate of back left module"
         />
       </ExpressionInputList>
     );
   }
 }
-export default observer(RobotConfigPanel);
+export default observer(SwerveConfigPanel);
