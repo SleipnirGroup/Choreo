@@ -3,7 +3,6 @@
 #pragma once
 
 #include <concepts>
-#include <filesystem>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -19,7 +18,6 @@
 #include <wpi/json.h>
 
 #include "choreo/trajectory/DifferentialSample.h"
-#include "choreo/trajectory/ProjectFile.h"
 #include "choreo/trajectory/SwerveSample.h"
 #include "choreo/trajectory/Trajectory.h"
 #include "choreo/trajectory/TrajectorySample.h"
@@ -28,68 +26,12 @@
 namespace choreo {
 
 inline constexpr uint32_t kTrajSpecVersion = 0;
-inline constexpr uint32_t kChorSpecVersion = 1;
 
 /**
  * A class that handles loading choreo and caching choreo trajectories.
  */
 class Choreo {
  public:
-  /**
-   * Gets the project file from the deploy directory. Choreolib expects a .chor
-   * file to be placed in src/main/deploy/choreo.
-   *
-   * The result is cached after the first call.
-   *
-   * @return the project file
-   */
-  static ProjectFile GetProjectFile() {
-    if (LAZY_PROJECT_FILE.has_value()) {
-      return LAZY_PROJECT_FILE.value();
-    }
-
-    std::vector<std::filesystem::path> matchingFiles;
-
-    try {
-      for (const auto& entry :
-           std::filesystem::directory_iterator(CHOREO_DIR)) {
-        if (std::filesystem::is_regular_file(entry) &&
-            entry.path().extension() == TRAJECTORY_FILE_EXTENSION) {
-          matchingFiles.push_back(entry.path());
-        }
-      }
-
-      if (matchingFiles.size() == 0) {
-        FRC_ReportError(frc::warn::Warning,
-                        "Could not find file in deploy directory!");
-      } else if (matchingFiles.size() > 1) {
-        FRC_ReportError(frc::warn::Warning,
-                        "Found multiple project files in deploy directory!");
-      }
-
-      auto fileBuffer = wpi::MemoryBuffer::GetFile(matchingFiles[0].string());
-      if (!fileBuffer) {
-        FRC_ReportError(frc::warn::Warning,
-                        "Could not open choreo project file");
-      }
-
-      wpi::json json = wpi::json::parse(fileBuffer.value()->GetCharBuffer());
-      uint32_t version = json["version"];
-      if (kChorSpecVersion != version) {
-        throw fmt::format(".chor project file: Wrong version {}. Expected {}",
-                          version, kChorSpecVersion);
-      }
-      ProjectFile resultProjectFile;
-      from_json(json, resultProjectFile);
-      LAZY_PROJECT_FILE = resultProjectFile;
-    } catch (const std::filesystem::filesystem_error&) {
-      FRC_ReportError(frc::warn::Warning, "Error finding choreo directory!");
-    } catch (const wpi::json::exception&) {
-      FRC_ReportError(frc::warn::Warning, "Error parsing choreo project file!");
-    }
-    return LAZY_PROJECT_FILE.value();
-  }
-
   /**
    * Load a trajectory from the deploy directory. Choreolib expects .traj files
    * to be placed in src/main/deploy/choreo/[trajectoryName].traj.
@@ -242,8 +184,6 @@ class Choreo {
 
  private:
   static constexpr std::string_view TRAJECTORY_FILE_EXTENSION = ".traj";
-
-  static inline std::optional<ProjectFile> LAZY_PROJECT_FILE = {};
 
   static inline const std::string CHOREO_DIR =
       frc::filesystem::GetDeployDirectory() + "/choreo";
