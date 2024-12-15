@@ -4,12 +4,6 @@
 
 #include <wpi/json.h>
 
-#include "choreo/Choreo.h"
-
-frc::ChassisSpeeds choreo::DifferentialSample::GetChassisSpeeds() const {
-  return frc::ChassisSpeeds{(vl + vr) / 2.0, 0_mps, omega};
-}
-
 void choreo::to_json(wpi::json& json,
                      const DifferentialSample& trajectorySample) {
   json = wpi::json{{"t", trajectorySample.timestamp.value()},

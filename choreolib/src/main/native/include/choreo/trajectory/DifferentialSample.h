@@ -17,7 +17,6 @@
 #include <wpi/MathExtras.h>
 #include <wpi/json_fwd.h>
 
-#include "choreo/trajectory/TrajectorySample.h"
 #include "choreo/util/AllianceFlipperUtil.h"
 
 namespace choreo {
@@ -89,7 +88,9 @@ class DifferentialSample {
    *
    * @return The field-relative chassis speeds.
    */
-  frc::ChassisSpeeds GetChassisSpeeds() const;
+  constexpr frc::ChassisSpeeds GetChassisSpeeds() const {
+    return frc::ChassisSpeeds{(vl + vr) / 2.0, 0_mps, omega};
+  }
 
   /**
    * Returns the current sample offset by a the time offset passed in.
@@ -122,7 +123,7 @@ class DifferentialSample {
                                            units::second_t t) const {
     units::scalar_t scale = (t - timestamp) / (endValue.timestamp - timestamp);
     frc::Pose2d interpolatedPose =
-        frc::Interpolate(GetPose(), endValue.GetPose(), scale.value());
+        GetPose().Exp(GetPose().Log(endValue.GetPose()) * scale.value());
 
     return DifferentialSample{
         wpi::Lerp(timestamp, endValue.timestamp, scale),
