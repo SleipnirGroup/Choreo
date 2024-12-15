@@ -96,23 +96,6 @@ The "entrance" to all routines is the `AutoRoutine.active()` trigger. You should
 routine.active().onTrue(Commands.print("Started the routine!"));
 ```
 
-Traditional triggers can also be used in conjunction with an auto routine. However, they will experience "hygiene" issues if not used correctly, causing them to be active even when the routine is not. You must either:
-
-- Use `AutoRoutine.observe()` to ensure the trigger is only active when the routine is active
-- Conjoin a trigger to one created by `AutoRoutine` or `AutoTrajectory`
-
-```java
-Trigger myTrigger = new Trigger(() -> condition);
-
-// Safe
-routine.observe(myTrigger).onTrue(Commands.print("Foo"));
-routine.active().and(myTrigger).onTrue(Commands.print("Bar"));
-
-// Unsafe
-myTrigger.onTrue(Commands.print("Foo"));
-myTrigger.and(routine.active()).onTrue(Commands.print("Bar"));
-```
-
 Trajectories can be loaded using `AutoRoutine.trajectory()`, which will return an `AutoTrajectory` ([Java](/api/choreolib/java/choreo/auto/AutoTrajectory.html)). The `AutoTrajectory` class exposes multiple triggers for you to attach reactive logic to, as well as `AutoTrajectory.cmd()` for scheduling the trajectory.
 
 ```java
@@ -124,10 +107,15 @@ public AutoRoutine pickupAndScoreAuto() {
     AutoTrajectory scoreTraj = routine.trajectory("scoreGamepiece");
 
     // When the routine begins, reset odometry and start the first trajectory (1)
-    routine.active().onTrue(routine.resetOdometry(pickupTraj).andThen(pickupTraj.cmd()));
+    routine.active().onTrue(
+        Commands.sequence(
+            routine.resetOdometry(pickupTraj),
+            pickupTraj.cmd()
+        )
+    );
 
-    // Starting at the event marker named "intake", run the intake
-    pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake()); // (2)
+    // Starting at the event marker named "intake", run the intake (2)
+    pickupTraj.atTime("intake").onTrue(intakeSubsystem.intake());
 
     // When the trajectory is done, start the next trajectory
     pickupTraj.done().onTrue(scoreTraj.cmd());
@@ -144,6 +132,26 @@ public AutoRoutine pickupAndScoreAuto() {
 
 1. You should always reset your robot's odometry to the start of the first trajectory being followed in an autonomous routine. `AutoRoutine.resetOdometry()` will accomplish this, setting the robot's pose to the start of the trajectory.
 2. Alternatively, you can use `AutoTrajectory.atPose()` for utilizing event markers. See the [Java reference documentation](/api/choreolib/java/choreo/auto/AutoTrajectory.html#atPose(java.lang.String,double,double)) for more information about behavior.
+
+!!! warning
+    The `AutoTrajectory.done()` trigger is only `true` for one cycle of the command scheduler after the trajectory is finished, meaning that using bindings such as `Trigger.whileTrue()` may not produce the desired behavior. Instead, use bindings such as `Trigger.onTrue()`.
+
+Traditional triggers can also be used in conjunction with an auto routine. However, they will experience "hygiene" issues if not used correctly, causing them to be active even when the routine is not. You must either:
+
+- Use `AutoRoutine.observe()` to ensure the trigger is only active when the routine is active
+- Conjoin a trigger to one created by `AutoRoutine` or `AutoTrajectory`
+
+```java
+Trigger myTrigger = new Trigger(() -> condition);
+
+// Safe
+routine.observe(myTrigger).onTrue(Commands.print("Foo"));
+routine.active().and(myTrigger).onTrue(Commands.print("Bar"));
+
+// Unsafe
+myTrigger.onTrue(Commands.print("Foo"));
+myTrigger.and(routine.active()).onTrue(Commands.print("Bar"));
+```
 
 Sometimes, you may want to implement a "branching auto": an autonomous routine that changes behavior based on the state of the robot. An excellent example for the need of branching autos is the [2024 season](https://youtu.be/9keeDyFxzY4), where robots would race to the midline to grab a gamepiece. If another robot beat yours to the midline, or your robot missed a game piece, a common strategy was to go directly to the next gamepiece on the midline, instead of coming back to score. As an example, [this match](https://youtu.be/_gcezRaGP5A?t=6) from the 2024 championship shows both 254 and 3339 running branching autos.
 
