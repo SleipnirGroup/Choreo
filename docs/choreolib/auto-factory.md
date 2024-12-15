@@ -84,7 +84,7 @@ public Command pickupAndScoreAuto() {
 
 ## Using AutoRoutine
 
-While command compositions may be an effective architecture in many cases, it has a tendency to become unwieldy if your autonomous routine has branches, if your subsystems use default commands, or if you want your subsystems to run independently and "hand off" actions to each other. The `AutoRoutine` ([Java](/api/choreolib/java/choreo/auto/AutoRoutine.html)) class aims to solve these problems, using WPILib's [`Trigger`](https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/wpilibj2/command/button/Trigger.html) class to define a control flow based on reactions to state that don't require subsystems until they are needed.
+While command compositions may be an effective architecture in many cases, it has a tendency to become unwieldy if your autonomous routine has branches, if your subsystems use default commands, or if you want your subsystems to run independently and "hand off" actions to each other. The `AutoRoutine` ([Java](/api/choreolib/java/choreo/auto/AutoRoutine.html)) class aims to solve these problems, using WPILib's [`Trigger`](https://docs.wpilib.org/en/stable/docs/software/commandbased/binding-commands-to-triggers.html) class to define a control flow based on reactions to state that don't require subsystems until they are needed.
 
 To get started, create a new routine using `AutoFactory.newRoutine()`:
 
