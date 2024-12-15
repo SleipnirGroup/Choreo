@@ -77,6 +77,9 @@ public Command pickupAndScoreAuto() {
 ```
 
 1. You should always reset your robot's odometry to the start of the first trajectory being followed in an autonomous routine. `AutoFactory.resetOdometry()` will accomplish this, setting the robot's pose to the start of the specified trajectory.
+
+    Advanced users may use vision to get the robot's starting position, however this is not recommended for most teams.
+
 2. Throughout this documentation, we assume you are using [command factory methods](https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#instance-command-factory-methods) in your subsystems, which is a more concise alternative to command classes (i.e. `new IntakeCommand()`).
 
 ## Using AutoRoutine
@@ -130,7 +133,10 @@ public AutoRoutine pickupAndScoreAuto() {
 }
 ```
 
-1. You should always reset your robot's odometry to the start of the first trajectory being followed in an autonomous routine. `AutoRoutine.resetOdometry()` will accomplish this, setting the robot's pose to the start of the trajectory.
+1. You should always reset your robot's odometry to the start of the first trajectory being followed in an autonomous routine. `AutoRoutine.resetOdometry()` will accomplish this, setting the robot's pose to the start of the specified trajectory.
+
+    Advanced users may use vision to get the robot's starting position, however this is not recommended for most teams.
+
 2. Alternatively, you can use `AutoTrajectory.atPose()` for utilizing event markers. See the [Java reference documentation](/api/choreolib/java/choreo/auto/AutoTrajectory.html#atPose(java.lang.String,double,double)) for more information about behavior.
 
 !!! warning
