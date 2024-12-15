@@ -7,7 +7,6 @@ import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
 
 import choreo.trajectory.DifferentialSample;
 import choreo.trajectory.EventMarker;
-import choreo.trajectory.ProjectFile;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
@@ -41,8 +40,7 @@ public final class Choreo {
           .registerTypeAdapter(EventMarker.class, new EventMarker.Deserializer())
           .create();
   private static final String TRAJECTORY_FILE_EXTENSION = ".traj";
-  private static final int TRAJ_SCHEMA_VERSION = 0;
-  private static final int PROJECT_SCHEMA_VERSION = 1;
+  private static final int TRAJ_SCHEMA_VERSION = 1;
   private static final MultiAlert cantFindTrajectory =
       multiAlert(causes -> "Could not find trajectory files: " + causes, kError);
   private static final MultiAlert cantParseTrajectory =
@@ -50,63 +48,10 @@ public final class Choreo {
 
   private static File CHOREO_DIR = new File(Filesystem.getDeployDirectory(), "choreo");
 
-  private static Optional<ProjectFile> LAZY_PROJECT_FILE = Optional.empty();
 
   /** This should only be used for unit testing. */
   static void setChoreoDir(File choreoDir) {
     CHOREO_DIR = choreoDir;
-  }
-
-  /**
-   * Gets the project file from the deploy directory. Choreolib expects a .chor file to be placed in
-   * src/main/deploy/choreo.
-   *
-   * <p>The result is cached after the first call.
-   *
-   * @return the project file
-   */
-  public static ProjectFile getProjectFile() {
-    if (LAZY_PROJECT_FILE.isPresent()) {
-      return LAZY_PROJECT_FILE.get();
-    }
-    try {
-      // find the first file that ends with a .chor extension
-      File[] projectFiles = CHOREO_DIR.listFiles((dir, name) -> name.endsWith(".chor"));
-      if (projectFiles.length == 0) {
-        throw new RuntimeException("Could not find project file in deploy directory");
-      } else if (projectFiles.length > 1) {
-        throw new RuntimeException("Found multiple project files in deploy directory");
-      }
-      BufferedReader reader = new BufferedReader(new FileReader(projectFiles[0]));
-      String str = reader.lines().reduce("", (a, b) -> a + b);
-      reader.close();
-      JsonObject json = GSON.fromJson(str, JsonObject.class);
-      int version;
-      try {
-        version = json.get("version").getAsInt();
-        if (version != PROJECT_SCHEMA_VERSION) {
-          throw new RuntimeException(
-              ".chor project file: Wrong version "
-                  + version
-                  + ". Expected "
-                  + PROJECT_SCHEMA_VERSION);
-        }
-      } catch (ClassCastException e) {
-        throw new RuntimeException(
-            ".chor project file: Wrong version "
-                + json.get("version").getAsString()
-                + ". Expected "
-                + PROJECT_SCHEMA_VERSION);
-      }
-      LAZY_PROJECT_FILE = Optional.of(GSON.fromJson(str, ProjectFile.class));
-    } catch (JsonSyntaxException ex) {
-      throw new RuntimeException("Could not parse project file", ex);
-    } catch (FileNotFoundException ex) {
-      throw new RuntimeException("Could not find project file", ex);
-    } catch (IOException ex) {
-      throw new RuntimeException("Could not close the project file", ex);
-    }
-    return LAZY_PROJECT_FILE.get();
   }
 
   /**
@@ -148,7 +93,7 @@ public final class Choreo {
       String str = reader.lines().reduce("", (a, b) -> a + b);
       reader.close();
       Trajectory<SampleType> trajectory =
-          (Trajectory<SampleType>) loadTrajectoryString(str, getProjectFile());
+          (Trajectory<SampleType>) loadTrajectoryString(str);
       return Optional.of(trajectory);
     } catch (FileNotFoundException ex) {
       cantFindTrajectory.addCause(trajectoryFile.toString());
@@ -168,11 +113,10 @@ public final class Choreo {
    * Load a trajectory from a string.
    *
    * @param trajectoryJsonString The JSON string.
-   * @param projectFile The project file.
    * @return The loaded trajectory, or `empty std::optional` if the trajectory could not be loaded.
    */
   static Trajectory<? extends TrajectorySample<?>> loadTrajectoryString(
-      String trajectoryJsonString, ProjectFile projectFile) {
+      String trajectoryJsonString) {
     JsonObject wholeTrajectory = GSON.fromJson(trajectoryJsonString, JsonObject.class);
     String name = wholeTrajectory.get("name").getAsString();
     int version;
@@ -206,12 +150,13 @@ public final class Choreo {
       System.arraycopy(splits, 0, newArray, 1, splits.length);
       splits = newArray;
     }
-    if (projectFile.type.equals("Swerve")) {
+    String sampleType = trajectoryObj.get("sampleType").getAsString();
+    if (sampleType.equals("Swerve")) {
       HAL.report(tResourceType.kResourceType_ChoreoTrajectory, 1);
 
       SwerveSample[] samples = GSON.fromJson(trajectoryObj.get("samples"), SwerveSample[].class);
       return new Trajectory<SwerveSample>(name, List.of(samples), List.of(splits), List.of(events));
-    } else if (projectFile.type.equals("Differential")) {
+    } else if (sampleType.equals("Differential")) {
       HAL.report(tResourceType.kResourceType_ChoreoTrajectory, 2);
 
       DifferentialSample[] sampleArray =
@@ -219,7 +164,7 @@ public final class Choreo {
       return new Trajectory<DifferentialSample>(
           name, List.of(sampleArray), List.of(splits), List.of(events));
     } else {
-      throw new RuntimeException("Unknown project type: " + projectFile.type);
+      throw new RuntimeException("Unknown drive type: " + sampleType);
     }
   }
 
