@@ -100,7 +100,7 @@ class DifferentialSample:
 
         Parameter ``omega``:
             The chassis angular velocity of the state in rad/s.
-        
+
         Parameter ``al``:
             The left linear acceleration of the state in m/s².
 
@@ -136,9 +136,7 @@ class DifferentialSample:
         Returns the field-relative chassis speeds of this state.
         """
 
-        return ChassisSpeeds(
-            (self.vl + self.vr) / 2.0, 0.0, self.omega
-        )
+        return ChassisSpeeds((self.vl + self.vr) / 2.0, 0.0, self.omega)
 
     def interpolate(
         self, end_value: DifferentialSample, t: float

@@ -375,12 +375,12 @@ DifferentialTrajectoryGenerator::ConstructDifferentialSolution() {
   auto vrValue = vectorValue(vr);
   std::vector<double> omega;
   for (size_t sample = 0; sample < vlValue.size(); ++sample) {
-    omega.push_back((vrValue.at(sample) - vlValue.at(sample))/trackwidth);
+    omega.push_back((vrValue.at(sample) - vlValue.at(sample)) / trackwidth);
   }
   return DifferentialSolution{
       dtPerSample,     vectorValue(x),  vectorValue(y),  vectorValue(θ),
-      vectorValue(vl), vectorValue(vr), omega, vectorValue(al), vectorValue(ar),
-      vectorValue(Fl), vectorValue(Fr),
+      vectorValue(vl), vectorValue(vr), omega,           vectorValue(al),
+      vectorValue(ar), vectorValue(Fl), vectorValue(Fr),
   };
 }
 

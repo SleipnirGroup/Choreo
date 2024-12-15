@@ -2,7 +2,6 @@
 
 package choreo.trajectory;
 
-import choreo.Choreo;
 import choreo.util.AllianceFlipUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -158,7 +157,8 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
   }
 
   public DifferentialSample offsetBy(double timestampOffset) {
-    return new DifferentialSample(t + timestampOffset, x, y, heading, vl, vr, omega, al, ar, fl, fr);
+    return new DifferentialSample(
+        t + timestampOffset, x, y, heading, vl, vr, omega, al, ar, fl, fr);
   }
 
   /** The struct for the DifferentialSample class. */

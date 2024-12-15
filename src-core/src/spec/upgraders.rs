@@ -21,15 +21,17 @@ mod traj_file {
         upgrader
     }
 
-
     fn up_0_1(editor: &mut Editor) -> ChoreoResult<()> {
         // Clear generated output
-        editor.set_path_serialize("trajectory", Trajectory {
-            sample_type: None,
-            waypoints: vec![],
-            samples: vec![],
-            splits: vec![],
-        })
+        editor.set_path_serialize(
+            "trajectory",
+            Trajectory {
+                sample_type: None,
+                waypoints: vec![],
+                samples: vec![],
+                splits: vec![],
+            },
+        )
     }
 
     #[cfg(test)]

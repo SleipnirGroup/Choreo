@@ -23,7 +23,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -47,7 +46,6 @@ public final class Choreo {
       multiAlert(causes -> "Could not parse trajectory files: " + causes, kError);
 
   private static File CHOREO_DIR = new File(Filesystem.getDeployDirectory(), "choreo");
-
 
   /** This should only be used for unit testing. */
   static void setChoreoDir(File choreoDir) {
@@ -92,8 +90,7 @@ public final class Choreo {
       var reader = new BufferedReader(new FileReader(trajectoryFile));
       String str = reader.lines().reduce("", (a, b) -> a + b);
       reader.close();
-      Trajectory<SampleType> trajectory =
-          (Trajectory<SampleType>) loadTrajectoryString(str);
+      Trajectory<SampleType> trajectory = (Trajectory<SampleType>) loadTrajectoryString(str);
       return Optional.of(trajectory);
     } catch (FileNotFoundException ex) {
       cantFindTrajectory.addCause(trajectoryFile.toString());

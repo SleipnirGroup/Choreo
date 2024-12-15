@@ -146,7 +146,12 @@ impl TrajectoryFileGenerator {
             &self.trajectory_file.params.snapshot(),
         )?;
 
-        Ok(postprocess(&samples, self.trajectory_file, self.ctx.project, counts_vec))
+        Ok(postprocess(
+            &samples,
+            self.trajectory_file,
+            self.ctx.project,
+            counts_vec,
+        ))
     }
 }
 

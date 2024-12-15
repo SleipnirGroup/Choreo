@@ -67,7 +67,8 @@ struct TRAJOPT_DLLEXPORT DifferentialSolution {
   /// The right velocities.
   std::vector<double> vr;
 
-  /// The chassis angular velocity, which can be derived as ω = (vᵣ − vₗ)/trackwidth)
+  /// The chassis angular velocity, which can be derived as ω = (vᵣ −
+  /// vₗ)/trackwidth)
   std::vector<double> omega;
 
   /// The left accelerations.
@@ -139,9 +140,9 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
    */
   DifferentialTrajectorySample(double timestamp, double x, double y,
                                double heading, double velocityL,
-                               double velocityR, double omega, double accelerationL,
-                               double accelerationR, double forceL,
-                               double forceR)
+                               double velocityR, double omega,
+                               double accelerationL, double accelerationR,
+                               double forceL, double forceR)
       : timestamp{timestamp},
         x{x},
         y{y},
@@ -182,10 +183,11 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectory {
   explicit DifferentialTrajectory(const DifferentialSolution& solution) {
     double ts = 0.0;
     for (size_t sample = 0; sample < solution.x.size(); ++sample) {
-      samples.emplace_back(
-          ts, solution.x[sample], solution.y[sample], solution.heading[sample],
-          solution.vl[sample], solution.vr[sample], solution.omega[sample], solution.al[sample],
-          solution.ar[sample], solution.Fl[sample], solution.Fr[sample]);
+      samples.emplace_back(ts, solution.x[sample], solution.y[sample],
+                           solution.heading[sample], solution.vl[sample],
+                           solution.vr[sample], solution.omega[sample],
+                           solution.al[sample], solution.ar[sample],
+                           solution.Fl[sample], solution.Fr[sample]);
       ts += solution.dt[sample];
     }
   }

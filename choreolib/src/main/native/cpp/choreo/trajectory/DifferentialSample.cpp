@@ -7,8 +7,7 @@
 #include "choreo/Choreo.h"
 
 frc::ChassisSpeeds choreo::DifferentialSample::GetChassisSpeeds() const {
-  return frc::ChassisSpeeds{
-      (vl + vr) / 2.0, 0_mps, omega};
+  return frc::ChassisSpeeds{(vl + vr) / 2.0, 0_mps, omega};
 }
 
 void choreo::to_json(wpi::json& json,
@@ -34,7 +33,8 @@ void choreo::from_json(const wpi::json& json,
   trajectorySample.heading = units::radian_t{json.at("heading").get<double>()};
   trajectorySample.vl = units::meters_per_second_t{json.at("vl").get<double>()};
   trajectorySample.vr = units::meters_per_second_t{json.at("vr").get<double>()};
-  trajectorySample.omega = units::radians_per_second_t{json.at("omega").get<double>()};
+  trajectorySample.omega =
+      units::radians_per_second_t{json.at("omega").get<double>()};
   trajectorySample.al =
       units::meters_per_second_squared_t{json.at("al").get<double>()};
   trajectorySample.ar =

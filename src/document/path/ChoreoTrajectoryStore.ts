@@ -73,7 +73,7 @@ export const ChoreoTrajectoryStore = types
         sampleType: self.sampleType,
         waypoints: self.waypoints,
         samples: self.samples,
-        splits: self.splits,
+        splits: self.splits
       };
     }
   }))

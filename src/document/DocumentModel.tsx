@@ -257,9 +257,13 @@ export const DocumentStore = types
             self.history.startGroup(() => {
               const newTrajectory = result.trajectory.samples;
               if (inputDriveType === "Differential") {
-                pathStore.trajectory.setDifferentialSamples(newTrajectory as DifferentialSample[]);
+                pathStore.trajectory.setDifferentialSamples(
+                  newTrajectory as DifferentialSample[]
+                );
               } else {
-                pathStore.trajectory.setSwerveSamples(newTrajectory as SwerveSample[]);
+                pathStore.trajectory.setSwerveSamples(
+                  newTrajectory as SwerveSample[]
+                );
               }
               pathStore.trajectory.setSplits(result.trajectory.splits);
               pathStore.trajectory.setWaypoints(result.trajectory.waypoints);

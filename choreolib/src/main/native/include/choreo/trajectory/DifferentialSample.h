@@ -98,8 +98,17 @@ class DifferentialSample {
    * @return DifferentialSample that is moved forward by the offset
    */
   constexpr DifferentialSample OffsetBy(units::second_t timeStampOffset) const {
-    return DifferentialSample{
-        timestamp + timeStampOffset, x, y, heading, vl, vr, omega, al, ar, fl, fr};
+    return DifferentialSample{timestamp + timeStampOffset,
+                              x,
+                              y,
+                              heading,
+                              vl,
+                              vr,
+                              omega,
+                              al,
+                              ar,
+                              fl,
+                              fr};
   }
 
   /**
@@ -141,12 +150,12 @@ class DifferentialSample {
     constexpr auto flipper = choreo::util::GetFlipperForYear<Year>();
     if constexpr (flipper.isMirrored) {
       return DifferentialSample(timestamp, flipper.FlipX(x), y,
-                                flipper.FlipHeading(heading), vl, vr, -omega, al, ar,
-                                fl, fr);
+                                flipper.FlipHeading(heading), vl, vr, -omega,
+                                al, ar, fl, fr);
     } else {
       return DifferentialSample(timestamp, flipper.FlipX(x), flipper.FlipY(y),
-                                flipper.FlipHeading(heading), vr, vl, omega, ar, al,
-                                fr, fl);
+                                flipper.FlipHeading(heading), vr, vl, omega, ar,
+                                al, fr, fl);
     }
   }
 
@@ -169,9 +178,9 @@ class DifferentialSample {
            compare_units(x, other.x) && compare_units(y, other.y) &&
            compare_units(heading, other.heading) &&
            compare_units(vl, other.vl) && compare_units(vr, other.vr) &&
-           compare_units(omega, other.omega) &&
-           compare_units(al, other.al) && compare_units(ar, other.ar) &&
-           compare_units(fl, other.fl) && compare_units(fr, other.fr);
+           compare_units(omega, other.omega) && compare_units(al, other.al) &&
+           compare_units(ar, other.ar) && compare_units(fl, other.fl) &&
+           compare_units(fr, other.fr);
   }
 
   /// The timestamp of this sample relative to the beginning of the trajectory.

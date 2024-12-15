@@ -11,6 +11,7 @@ from choreo.trajectory import (
 
 TRAJ_SCHEMA_VERSION = 1
 
+
 def load_differential_trajectory_string(
     trajectory_json_string: str,
 ) -> DifferentialTrajectory:
