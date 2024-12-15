@@ -9,8 +9,7 @@ from choreo.trajectory import (
     load_event_marker,
 )
 
-TRAJ_SCHEMA_VERSION = 0
-PROJECT_SCHEMA_VERSION = 1
+TRAJ_SCHEMA_VERSION = 1
 
 
 def load_differential_trajectory_string(
@@ -41,6 +40,7 @@ def load_differential_trajectory_string(
             float(sample["heading"]),
             float(sample["vl"]),
             float(sample["vr"]),
+            float(sample["omega"]),
             float(sample["al"]),
             float(sample["ar"]),
             [float(x) for x in sample["fl"]],

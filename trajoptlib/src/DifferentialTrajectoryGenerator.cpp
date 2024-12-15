@@ -334,13 +334,13 @@ void DifferentialTrajectoryGenerator::ApplyInitialGuess(
     double heading = solution.heading[sampleIndex];
     double last_heading = solution.heading[sampleIndex - 1];
 
-    double omega =
+    double ω =
         Rotation2d{heading}.RotateBy(-Rotation2d{last_heading}).Radians() /
         solution.dt[sampleIndex];
     vl[sampleIndex].SetValue(
-        (linearVelocity - path.drivetrain.trackwidth / 2 * omega));
+        (linearVelocity - path.drivetrain.trackwidth / 2 * ω));
     vr[sampleIndex].SetValue(
-        (linearVelocity + path.drivetrain.trackwidth / 2 * omega));
+        (linearVelocity + path.drivetrain.trackwidth / 2 * ω));
     al[sampleIndex].SetValue(
         (vl[sampleIndex].Value() - vl[sampleIndex - 1].Value()) /
         solution.dt[sampleIndex]);
@@ -370,11 +370,23 @@ DifferentialTrajectoryGenerator::ConstructDifferentialSolution() {
     auto view = row | std::views::transform(getValue);
     return std::vector<double>{std::begin(view), std::end(view)};
   };
-
+  const auto& trackwidth = path.drivetrain.trackwidth;
+  std::vector<double> ω;
+  for (size_t sample = 0; sample < vl.size(); ++sample) {
+    ω.push_back((vr.at(sample).Value() - vl.at(sample).Value()) / trackwidth);
+  }
   return DifferentialSolution{
-      dtPerSample,     vectorValue(x),  vectorValue(y),  vectorValue(θ),
-      vectorValue(vl), vectorValue(vr), vectorValue(al), vectorValue(ar),
-      vectorValue(Fl), vectorValue(Fr),
+      dtPerSample,
+      vectorValue(x),
+      vectorValue(y),
+      vectorValue(θ),
+      vectorValue(vl),
+      vectorValue(vr),
+      ω,
+      vectorValue(al),
+      vectorValue(ar),
+      vectorValue(Fl),
+      vectorValue(Fr),
   };
 }
 

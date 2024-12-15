@@ -2,7 +2,6 @@
 
 package choreo.trajectory;
 
-import choreo.Choreo;
 import choreo.util.AllianceFlipUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -13,9 +12,6 @@ import java.nio.ByteBuffer;
 
 /** A single differential drive robot sample in a Trajectory. */
 public class DifferentialSample implements TrajectorySample<DifferentialSample> {
-  private static final double TRACK_WIDTH =
-      Choreo.getProjectFile().config.differentialTrackWidth.val;
-
   /** The timestamp of this sample relative to the beginning of the trajectory. */
   public final double t;
 
@@ -33,6 +29,9 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
 
   /** The velocity of the right side in m/s. */
   public final double vr;
+
+  /** The chassis angular velocity in rad/s. */
+  public final double omega;
 
   /** The acceleration of the left side in m/s². */
   public final double al;
@@ -55,6 +54,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
    * @param heading The heading of the sample in radians, with 0 being in the +X direction.
    * @param vl The velocity of the left side in m/s.
    * @param vr The velocity of the right side in m/s.
+   * @param omega The chassis angular velocity in rad/s.
    * @param al The acceleration of the left side in m/s².
    * @param ar The acceleration of the right side in m/s².
    * @param fl The force of the left side in Newtons.
@@ -67,6 +67,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
       double heading,
       double vl,
       double vr,
+      double omega,
       double al,
       double ar,
       double fl,
@@ -77,6 +78,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
     this.heading = heading;
     this.vl = vl;
     this.vr = vr;
+    this.omega = omega;
     this.al = al;
     this.ar = ar;
     this.fl = fl;
@@ -101,7 +103,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
    */
   @Override
   public ChassisSpeeds getChassisSpeeds() {
-    return new ChassisSpeeds((vl + vr) / 2, 0, (vr - vl) / TRACK_WIDTH);
+    return new ChassisSpeeds((vl + vr) / 2, 0, omega);
   }
 
   @Override
@@ -116,6 +118,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
         interp_pose.getRotation().getRadians(),
         MathUtil.interpolate(this.vl, endValue.vl, scale),
         MathUtil.interpolate(this.vr, endValue.vr, scale),
+        MathUtil.interpolate(this.omega, endValue.omega, scale),
         MathUtil.interpolate(this.al, endValue.al, scale),
         MathUtil.interpolate(this.ar, endValue.ar, scale),
         MathUtil.interpolate(this.fl, endValue.fl, scale),
@@ -132,6 +135,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
               AllianceFlipUtil.flipHeading(heading),
               vl,
               vr,
+              -omega,
               al,
               ar,
               fl,
@@ -144,6 +148,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
               AllianceFlipUtil.flipHeading(heading),
               vr,
               vl,
+              omega,
               ar,
               al,
               fr,
@@ -152,7 +157,8 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
   }
 
   public DifferentialSample offsetBy(double timestampOffset) {
-    return new DifferentialSample(t + timestampOffset, x, y, heading, vl, vr, al, ar, fl, fr);
+    return new DifferentialSample(
+        t + timestampOffset, x, y, heading, vl, vr, omega, al, ar, fl, fr);
   }
 
   /** The struct for the DifferentialSample class. */
@@ -180,6 +186,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
           + "Pose2d pose;"
           + "double vl;"
           + "double vr;"
+          + "double omega;"
           + "double al;"
           + "double ar;"
           + "double fl;"
@@ -203,6 +210,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
           bb.getDouble(),
           bb.getDouble(),
           bb.getDouble(),
+          bb.getDouble(),
           bb.getDouble());
     }
 
@@ -214,6 +222,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
       bb.putDouble(value.heading);
       bb.putDouble(value.vl);
       bb.putDouble(value.vr);
+      bb.putDouble(value.omega);
       bb.putDouble(value.al);
       bb.putDouble(value.ar);
       bb.putDouble(value.fl);
@@ -234,6 +243,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
         && this.heading == other.heading
         && this.vl == other.vl
         && this.vr == other.vr
+        && this.omega == other.omega
         && this.al == other.al
         && this.ar == other.ar
         && this.fl == other.fl

@@ -109,6 +109,7 @@ export interface DifferentialSample {
   heading: number;
   vl: number;
   vr: number;
+  omega: number;
   al: number;
   ar: number;
   fl: number;
@@ -128,10 +129,10 @@ export interface ChoreoPath<T extends ExprOrNumber> {
 
 export type SampleType = "Swerve" | "Differential";
 export interface Output {
+  sampleType: SampleType | undefined;
   waypoints: number[];
   samples: SwerveSample[] | DifferentialSample[];
   splits: number[];
-  trackwidth: number;
 }
 
 export interface Trajectory {
