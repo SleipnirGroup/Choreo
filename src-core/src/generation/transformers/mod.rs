@@ -146,7 +146,7 @@ impl TrajectoryFileGenerator {
             &self.trajectory_file.params.snapshot(),
         )?;
 
-        Ok(postprocess(&samples, self.trajectory_file, counts_vec))
+        Ok(postprocess(&samples, self.trajectory_file, self.ctx.project, counts_vec))
     }
 }
 
@@ -210,6 +210,7 @@ impl<T: DifferentialGenerationTransformer> InitializedDifferentialGenerationTran
 fn postprocess(
     result: &[Sample],
     mut path: TrajectoryFile,
+    project: ProjectFile,
     counts_vec: Vec<usize>,
 ) -> TrajectoryFile {
     let mut snapshot = path.params.snapshot();
@@ -250,6 +251,7 @@ fn postprocess(
         .filter(|a| a.0) // filter by split flag
         .map(|a| a.1) // map to associate interval
         .collect::<Vec<usize>>();
+    path.trajectory.sample_type = Some(project.r#type);
     path.trajectory.splits = splits;
     path.trajectory.samples = result.to_vec();
     path.trajectory.waypoints = waypoint_times;

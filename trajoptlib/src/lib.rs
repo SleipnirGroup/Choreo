@@ -64,6 +64,7 @@ mod ffi {
         heading: f64,
         velocity_l: f64,
         velocity_r: f64,
+        omega: f64,
         acceleration_l: f64,
         acceleration_r: f64,
         force_l: f64,

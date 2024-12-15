@@ -1,8 +1,9 @@
 import { Instance, types } from "mobx-state-tree";
 import {
   DifferentialSample,
-  Output,
-  type SwerveSample
+  SampleType,
+  type SwerveSample,
+  Output
 } from "../2025/DocumentTypes";
 
 // When adding new fields, consult
@@ -10,6 +11,7 @@ import {
 // to see all the places that change with every schema upgrade.
 export const ChoreoTrajectoryStore = types
   .model("ChoreoTrajectoryStore", {
+    sampleType: types.maybe(types.frozen<SampleType>()),
     waypoints: types.frozen<number[]>(),
     samples: types.frozen<SwerveSample[] | DifferentialSample[]>(),
     splits: types.frozen<number[]>()
@@ -19,10 +21,10 @@ export const ChoreoTrajectoryStore = types
       return self.samples;
     },
     get isSwerve(): boolean {
-      return self.samples.length === 0 || Object.hasOwn(self.samples[0], "vx");
+      return self.sampleType === "Swerve";
     },
     get isDifferential(): boolean {
-      return self.samples.length === 0 || Object.hasOwn(self.samples[0], "vl");
+      return self.sampleType === "Differential";
     },
     // 01234567
     // ...
@@ -68,20 +70,26 @@ export const ChoreoTrajectoryStore = types
     },
     get serialize(): Output {
       return {
+        sampleType: self.sampleType,
         waypoints: self.waypoints,
         samples: self.samples,
         splits: self.splits,
-        trackwidth: 1.0 //TODO: trackwidth
       };
     }
   }))
   .actions((self) => ({
     deserialize(ser: Output) {
+      self.sampleType = ser.sampleType;
       self.waypoints = ser.waypoints;
       self.splits = ser.splits;
       self.samples = ser.samples;
     },
-    setSamples(samples: SwerveSample[] | DifferentialSample[]) {
+    setSwerveSamples(samples: SwerveSample[]) {
+      self.sampleType = "Swerve";
+      self.samples = samples;
+    },
+    setDifferentialSamples(samples: DifferentialSample[]) {
+      self.sampleType = "Differential";
       self.samples = samples;
     },
     setSplits(splits: number[]) {

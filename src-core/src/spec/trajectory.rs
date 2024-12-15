@@ -278,6 +278,7 @@ pub enum Sample {
         heading: f64,
         vl: f64,
         vr: f64,
+        omega: f64,
         al: f64,
         ar: f64,
         fl: f64,
@@ -335,6 +336,7 @@ impl From<&DifferentialTrajectorySample> for Sample {
             heading: nudge_zero(differential_sample.heading),
             vl: nudge_zero(differential_sample.velocity_l),
             vr: nudge_zero(differential_sample.velocity_r),
+            omega: nudge_zero(differential_sample.omega),
             al: nudge_zero(differential_sample.acceleration_l),
             ar: nudge_zero(differential_sample.acceleration_r),
             fl: nudge_zero(differential_sample.force_l),
@@ -391,6 +393,10 @@ impl<T: SnapshottableType> Parameters<T> {
 #[serde(rename_all = "camelCase")]
 /// The trajectory the robot will follow.
 pub struct Trajectory {
+    /// The sample type of this trajectory.
+    /// Must match the type in samples if that list is non-empty
+    /// Only None if trajectory was never generated.
+    pub sample_type: Option<DriveType>,
     /// The times at which the robot will reach each waypoint.
     pub waypoints: Vec<f64>,
     /// The samples of the trajectory.

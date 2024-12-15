@@ -67,6 +67,9 @@ struct TRAJOPT_DLLEXPORT DifferentialSolution {
   /// The right velocities.
   std::vector<double> vr;
 
+  /// The chassis angular velocity, which can be derived as ω = (vᵣ − vₗ)/trackwidth)
+  std::vector<double> omega;
+
   /// The left accelerations.
   std::vector<double> al;
 
@@ -103,6 +106,9 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
   /// The right wheel velocity.
   double velocityR = 0.0;
 
+  /// The chassis angular velocity.
+  double omega = 0.0;
+
   /// The left wheel acceleration.
   double accelerationL = 0.0;
 
@@ -125,6 +131,7 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
    * @param heading The heading.
    * @param velocityL The left wheel velocity.
    * @param velocityR The right wheel velocity.
+   * @param omega The chassis angular velocity.
    * @param accelerationL The left wheel acceleration.
    * @param accelerationR The right wheel acceleration.
    * @param forceL The left wheel force.
@@ -132,7 +139,7 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
    */
   DifferentialTrajectorySample(double timestamp, double x, double y,
                                double heading, double velocityL,
-                               double velocityR, double accelerationL,
+                               double velocityR, double omega, double accelerationL,
                                double accelerationR, double forceL,
                                double forceR)
       : timestamp{timestamp},
@@ -141,6 +148,7 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
         heading{heading},
         velocityL{velocityL},
         velocityR{velocityR},
+        omega{omega},
         accelerationL{accelerationL},
         accelerationR{accelerationR},
         forceL{forceL},
@@ -176,7 +184,7 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectory {
     for (size_t sample = 0; sample < solution.x.size(); ++sample) {
       samples.emplace_back(
           ts, solution.x[sample], solution.y[sample], solution.heading[sample],
-          solution.vl[sample], solution.vr[sample], solution.al[sample],
+          solution.vl[sample], solution.vr[sample], solution.omega[sample], solution.al[sample],
           solution.ar[sample], solution.Fl[sample], solution.Fr[sample]);
       ts += solution.dt[sample];
     }
