@@ -84,16 +84,13 @@ In general, trajectory followers accept trajectory "samples" that represent the 
         ```java title="Drive.java"
         public class Drive extends SubsystemBase {
             private final LTVUnicycleController controller = new LTVUnicycleController(0.02);
-            private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(0.7);
 
             public void followTrajectory(DifferentialSample sample) {
                 // Get the current pose of the robot
                 Pose2d pose = getPose();
 
-                // Calculate the velocity feedforward specified by the sample
-                ChassisSpeeds ff = kinematics.toChassisSpeeds(
-                    new DifferentialDriveWheelSpeeds(sample.vl, sample.vr)
-                );
+                // Get the velocity feedforward specified by the sample
+                ChassisSpeeds ff = sample.getChassisSpeeds();
 
                 // Generate the next speeds for the robot
                 ChassisSpeeds speeds = controller.calculate(
@@ -107,11 +104,13 @@ In general, trajectory followers accept trajectory "samples" that represent the 
                 drive(speeds);
 
                 // Or, if you don't drive via ChassisSpeeds
-                DifferentialDriveWheelSpeeds wheelSpeeds = kinematics.toWheelSpeeds(speeds);
+                DifferentialDriveWheelSpeeds wheelSpeeds = kinematics.toWheelSpeeds(speeds); // (1)
                 drive(wheelSpeeds.leftMetersPerSecond, wheelSpeeds.rightMetersPerSecond);
             }
         }
         ```
+
+        1. For more information about differential drive kinematics, see [WPILib's documentation](https://docs.wpilib.org/en/stable/docs/software/kinematics-and-odometry/differential-drive-kinematics.html). In this example, we assume you have created an instance of `DifferentialDriveKinematics`, named `kinematics`.
 
     === "C++"
 
