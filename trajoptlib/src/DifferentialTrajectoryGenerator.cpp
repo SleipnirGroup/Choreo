@@ -377,7 +377,7 @@ DifferentialTrajectoryGenerator::ConstructDifferentialSolution() {
   }
   return DifferentialSolution{
       dtPerSample,     vectorValue(x),  vectorValue(y),  vectorValue(θ),
-      vectorValue(vl), vectorValue(vr), omega,           vectorValue(al),
+      vectorValue(vl), vectorValue(vr), ω,           vectorValue(al),
       vectorValue(ar), vectorValue(Fl), vectorValue(Fr),
   };
 }
