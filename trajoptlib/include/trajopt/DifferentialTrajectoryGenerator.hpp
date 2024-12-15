@@ -183,11 +183,11 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectory {
   explicit DifferentialTrajectory(const DifferentialSolution& solution) {
     double ts = 0.0;
     for (size_t sample = 0; sample < solution.x.size(); ++sample) {
-      samples.emplace_back(ts, solution.x[sample], solution.y[sample],
-                           solution.heading[sample], solution.vl[sample],
-                           solution.vr[sample], solution.angularVelocity[sample],
-                           solution.al[sample], solution.ar[sample],
-                           solution.Fl[sample], solution.Fr[sample]);
+      samples.emplace_back(
+          ts, solution.x[sample], solution.y[sample], solution.heading[sample],
+          solution.vl[sample], solution.vr[sample],
+          solution.angularVelocity[sample], solution.al[sample],
+          solution.ar[sample], solution.Fl[sample], solution.Fr[sample]);
       ts += solution.dt[sample];
     }
   }

@@ -376,9 +376,17 @@ DifferentialTrajectoryGenerator::ConstructDifferentialSolution() {
     ω.push_back((vr.at(sample).Value() - vl.at(sample).Value()) / trackwidth);
   }
   return DifferentialSolution{
-      dtPerSample,     vectorValue(x),  vectorValue(y),  vectorValue(θ),
-      vectorValue(vl), vectorValue(vr), ω,           vectorValue(al),
-      vectorValue(ar), vectorValue(Fl), vectorValue(Fr),
+      dtPerSample,
+      vectorValue(x),
+      vectorValue(y),
+      vectorValue(θ),
+      vectorValue(vl),
+      vectorValue(vr),
+      ω,
+      vectorValue(al),
+      vectorValue(ar),
+      vectorValue(Fl),
+      vectorValue(Fr),
   };
 }
 

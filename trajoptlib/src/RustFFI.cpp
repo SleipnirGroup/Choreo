@@ -645,9 +645,9 @@ void DifferentialTrajectoryGenerator::add_callback(
         for (const auto& cppSample : cppTrajectory.samples) {
           rustSamples.push_back(DifferentialTrajectorySample{
               cppSample.timestamp, cppSample.x, cppSample.y, cppSample.heading,
-              cppSample.velocityL, cppSample.velocityR, cppSample.angularVelocity,
-              cppSample.accelerationL, cppSample.accelerationR,
-              cppSample.forceL, cppSample.forceR});
+              cppSample.velocityL, cppSample.velocityR,
+              cppSample.angularVelocity, cppSample.accelerationL,
+              cppSample.accelerationR, cppSample.forceL, cppSample.forceR});
         }
 
         callback(DifferentialTrajectory{rustSamples}, handle);
