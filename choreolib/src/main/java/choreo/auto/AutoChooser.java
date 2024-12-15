@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -194,16 +193,14 @@ public class AutoChooser {
    *     AutoChooser chooser = ...;
    *
    *     public Robot() {
-   *         RobotModeTriggers.autonomous().onTrue(chooser.selectedCommandScheduler());
+   *         RobotModeTriggers.autonomous().whileTrue(chooser.selectedCommandScheduler());
    *     }
    * </code></pre>
    *
    * @return A command that runs the selected {@link AutoRoutine}
    */
   public Command selectedCommandScheduler() {
-    // .asProxy() not needed; requirements are dynamically allocated
-    // via triggers, and are not part of the routine command itself
-    return Commands.defer(() -> new ScheduleCommand(this.lastCommand), Set.of());
+    return Commands.defer(() -> lastCommand.asProxy(), Set.of());
   }
 
   /**
