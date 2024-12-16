@@ -204,6 +204,51 @@ public class AutoRoutine {
   }
 
   /**
+   * Creates a trigger that produces a rising edge when any of the trajectories are finished.
+   *
+   * @param trajectory The first trajectory to watch.
+   * @param trajectories The other trajectories to watch
+   * @return a trigger that determines if any of the trajectories are finished
+   * @see #anyDone(int, AutoTrajectory, AutoTrajectory...) A version of this method that takes a
+   *     delay in cycles before the trigger is true.
+   */
+  public Trigger anyDone(AutoTrajectory trajectory, AutoTrajectory... trajectories) {
+    return anyDone(0, trajectory, trajectories);
+  }
+
+  /**
+   * Creates a trigger that produces a rising edge when any of the trajectories are finished.
+   *
+   * @param cyclesToDelay The number of cycles to delay.
+   * @param trajectory The first trajectory to watch.
+   * @param trajectories The other trajectories to watch
+   * @return a trigger that determines if any of the trajectories are finished
+   */
+  public Trigger anyDone(
+      int cyclesToDelay, AutoTrajectory trajectory, AutoTrajectory... trajectories) {
+    var trigger = trajectory.done(cyclesToDelay);
+    for (int i = 0; i < trajectories.length; i++) {
+      trigger = trigger.or(trajectories[i].done(cyclesToDelay));
+    }
+    return trigger.and(this.active());
+  }
+
+  /**
+   * Creates a trigger that returns true when any of the trajectories given are active.
+   *
+   * @param trajectory The first trajectory to watch.
+   * @param trajectories The other trajectories to watch
+   * @return a trigger that determines if any of the trajectories are active
+   */
+  public Trigger anyActive(AutoTrajectory trajectory, AutoTrajectory... trajectories) {
+    var trigger = trajectory.active();
+    for (int i = 0; i < trajectories.length; i++) {
+      trigger = trigger.or(trajectories[i].active());
+    }
+    return trigger.and(this.active());
+  }
+
+  /**
    * Creates a command that will poll this event loop and reset it when it is cancelled.
    *
    * <p>The command will end instantly and kill the routine if the alliance supplier returns an
