@@ -181,7 +181,7 @@ class DifferentialSample:
             return DifferentialSample(
                 self.timestamp,
                 flipper.flip_x(self.x),
-                flipper.flip_y(self.y), # No-op for mirroring
+                flipper.flip_y(self.y),  # No-op for mirroring
                 flipper.flip_heading(self.heading),
                 self.vr,
                 self.vl,
