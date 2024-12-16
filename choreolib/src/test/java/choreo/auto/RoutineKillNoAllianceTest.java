@@ -2,6 +2,7 @@
 
 package choreo.auto;
 
+import static choreo.auto.AutoTestHelper.setAlliance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -15,17 +16,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class RoutineKillNoAllianceTest {
-  Optional<Alliance> alliance;
-  boolean useAllianceFlipping;
-  AutoFactory factory = AutoTestHelper.factory(() -> alliance, () -> useAllianceFlipping);
+  AutoFactory factoryFlip;
+  AutoFactory factoryNoFlip;
   CommandScheduler scheduler = SchedulerMaker.make();
-  Supplier<AutoRoutine> routine = () -> factory.newRoutine("testRoutineKill");
+  Supplier<AutoRoutine> routineFlip = () -> factoryFlip.newRoutine("testRoutineKill");
+  Supplier<AutoRoutine> routineNoFlip = () -> factoryNoFlip.newRoutine("testRoutineKill");
 
   @BeforeEach
   void setup() {
     assert HAL.initialize(500, 0);
     scheduler.cancelAll();
-    factory = AutoTestHelper.factory(() -> alliance, () -> useAllianceFlipping);
+    factoryFlip = AutoTestHelper.factory(true);
+    factoryNoFlip = AutoTestHelper.factory(false);
   }
 
   void testRoutineKill(
@@ -39,44 +41,38 @@ public class RoutineKillNoAllianceTest {
   }
 
   @Test
-  void testDisabledEmpty() {
-    useAllianceFlipping = false;
-    alliance = Optional.empty();
-    testRoutineKill(scheduler, routine, false);
+  void testUnFlippedEmpty() {
+    setAlliance(Optional.empty());
+    testRoutineKill(scheduler, routineNoFlip, false);
   }
 
   @Test
-  void testDisabledBlue() {
-    useAllianceFlipping = false;
-    alliance = Optional.of(Alliance.Blue);
-    testRoutineKill(scheduler, routine, false);
+  void testUnFlippedBlue() {
+    setAlliance((Optional.of(Alliance.Blue)));
+    testRoutineKill(scheduler, routineNoFlip, false);
   }
 
   @Test
-  void testDisabledRed() {
-    useAllianceFlipping = false;
-    alliance = Optional.of(Alliance.Red);
-    testRoutineKill(scheduler, routine, false);
+  void testUnFlippedRed() {
+    setAlliance(Optional.of(Alliance.Red));
+    testRoutineKill(scheduler, routineNoFlip, false);
   }
 
   @Test
-  void testEnabledEmpty() {
-    useAllianceFlipping = true;
-    alliance = Optional.empty();
-    testRoutineKill(scheduler, routine, true);
+  void testFlippedEmpty() {
+    setAlliance(Optional.empty());
+    testRoutineKill(scheduler, routineFlip, true);
   }
 
   @Test
-  void testEnabledBlue() {
-    useAllianceFlipping = true;
-    alliance = Optional.of(Alliance.Blue);
-    testRoutineKill(scheduler, routine, false);
+  void testFlippedBlue() {
+    setAlliance(Optional.of(Alliance.Blue));
+    testRoutineKill(scheduler, routineFlip, false);
   }
 
   @Test
-  void testEnabledRed() {
-    useAllianceFlipping = true;
-    alliance = Optional.of(Alliance.Red);
-    testRoutineKill(scheduler, routine, false);
+  void testFlippedRed() {
+    setAlliance(Optional.of(Alliance.Red));
+    testRoutineKill(scheduler, routineFlip, false);
   }
 }
