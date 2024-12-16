@@ -156,11 +156,11 @@ See [Getting Started](./getting-started.md/#setting-up-the-drive-subsystem) for 
             self.timer = wpilib.Timer()
 
         def autonomousInit(self):
-            if self.trajectory is not None:
+            if self.trajectory:
                 # Get the initial pose of the trajectory
                 initial_pose = self.trajectory.get_initial_pose(self.is_red_alliance())
 
-                if initial_pose is not None:
+                if initial_pose:
                     # Reset odometry to the start of the trajectory
                     self.drive_subsystem.reset_odometry(initial_pose)
 
@@ -168,11 +168,11 @@ See [Getting Started](./getting-started.md/#setting-up-the-drive-subsystem) for 
             self.timer.restart()
 
         def autonomousPeriodic(self):
-            if self.trajectory is not None:
+            if self.trajectory:
                 # Sample the trajectory at the current time into the autonomous period
                 sample = self.trajectory.sample_at(self.timer.get(), self.is_red_alliance())
 
-                if sample is not None:
+                if sample:
                     self.drive_subsystem.follow_trajectory(sample)
 
         def is_red_alliance(self):
