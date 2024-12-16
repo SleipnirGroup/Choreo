@@ -10,6 +10,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
+import edu.wpi.first.wpilibj.smartdashboard.SendableBuilderImpl;
 import edu.wpi.first.wpilibj2.command.Commands;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,12 +19,14 @@ import org.junit.jupiter.api.Test;
 public class AutoChooserTest {
   private static final String NONE_NAME = AutoChooser.NONE_NAME;
 
+  private SendableBuilderImpl builder;
   private NetworkTableInstance ntInstance;
 
   @BeforeEach
   public void setup() {
     assert HAL.initialize(500, 0);
     ntInstance = NetworkTableInstance.create();
+    builder = new SendableBuilderImpl();
 
     ntInstance.stopClient();
     ntInstance.stopServer();
@@ -81,7 +84,9 @@ public class AutoChooserTest {
   @Test
   public void initializeTest() {
     final String fnName = "initializeTest";
-    new AutoChooser(chooserPath(fnName), ntInstance);
+    builder.setTable(table(fnName));
+    new AutoChooser().initSendable(builder);
+    builder.update();
     assertNTType(fnName);
     assertNTSelected(fnName, NONE_NAME);
     assertNTActive(fnName, NONE_NAME);
@@ -92,25 +97,35 @@ public class AutoChooserTest {
   @Test
   public void addAutoTest() {
     final String fnName = "addAutoTest";
+    builder.setTable(table(fnName));
     AutoFactory factory = AutoTestHelper.factory();
-    AutoChooser chooser = new AutoChooser(chooserPath(fnName), ntInstance);
+    AutoChooser chooser = new AutoChooser();
+    chooser.initSendable(builder);
     chooser.addCmd("AddAutoTestCommand", () -> Commands.none().withName("AddAutoTestCommand"));
     chooser.addRoutine("AddAutoTestRoutine", () -> factory.newRoutine("AddAutoTestRoutine"));
+
+    builder.update();
+
     assertNTOptions(fnName, NONE_NAME, "AddAutoTestCommand", "AddAutoTestRoutine");
   }
 
   @Test
   public void selectTest() {
     final String fnName = "selectTest";
+    builder.setTable(table(fnName));
     AutoFactory factory = AutoTestHelper.factory();
-    AutoChooser chooser = new AutoChooser(chooserPath(fnName), ntInstance);
+    AutoChooser chooser = new AutoChooser();
+    chooser.initSendable(builder);
     chooser.addCmd("SelectTestCommand", () -> Commands.none().withName("SelectTestCommand"));
     chooser.addRoutine("SelectTestRoutine", () -> factory.newRoutine("SelectTestRoutine"));
+
+    builder.update();
+
     selectNT(fnName, "SelectTestRoutine");
     assertNTSelected(fnName, "SelectTestRoutine");
     assertNTActive(fnName, NONE_NAME);
 
-    chooser.update();
+    builder.update();
 
     // DriverStation should report disconnected causing the active to not update
     assertNTActive(fnName, NONE_NAME);
@@ -121,7 +136,8 @@ public class AutoChooserTest {
     DriverStationSim.notifyNewData();
     DriverStation.refreshData();
 
-    chooser.update();
+    builder.update();
+    builder.update();
 
     assertNTActive(fnName, "SelectTestRoutine");
 
@@ -130,5 +146,6 @@ public class AutoChooserTest {
     DriverStationSim.setAllianceStationId(AllianceStationID.Unknown);
     DriverStationSim.setDsAttached(false);
     DriverStationSim.notifyNewData();
+    DriverStation.refreshData();
   }
 }
