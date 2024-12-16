@@ -6,6 +6,9 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
+
+import edu.wpi.first.math.MathUtil;
+
 import java.lang.reflect.Type;
 
 // /** A marker for an event in a trajectory. */
@@ -92,6 +95,6 @@ public class EventMarker {
     }
 
     var other = (EventMarker) obj;
-    return this.timestamp == other.timestamp && this.event.equals(other.event);
+    return MathUtil.isNear(this.timestamp, other.timestamp, 1E-9) && this.event.equals(other.event);
   }
 }

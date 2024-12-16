@@ -237,16 +237,17 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
     }
 
     var other = (DifferentialSample) obj;
-    return this.t == other.t
-        && this.x == other.x
-        && this.y == other.y
-        && this.heading == other.heading
-        && this.vl == other.vl
-        && this.vr == other.vr
-        && this.omega == other.omega
-        && this.al == other.al
-        && this.ar == other.ar
-        && this.fl == other.fl
-        && this.fr == other.fr;
+    return 
+           MathUtil.isNear(this.t       , other.t, 1E-9)
+        && MathUtil.isNear(this.x       , other.x, 1E-9)
+        && MathUtil.isNear(this.y       , other.y, 1E-9)
+        && MathUtil.isNear(this.heading , other.heading, 1E-9)
+        && MathUtil.isNear(this.vl      , other.vl, 1E-9)
+        && MathUtil.isNear(this.vr      , other.vr, 1E-9)
+        && MathUtil.isNear(this.omega   , other.omega, 1E-9)
+        && MathUtil.isNear(this.al      , other.al, 1E-9)
+        && MathUtil.isNear(this.ar      , other.ar, 1E-9)
+        && MathUtil.isNear(this.fl      , other.fl, 1E-9)
+        && MathUtil.isNear(this.fr      , other.fr, 1E-9);
   }
 }

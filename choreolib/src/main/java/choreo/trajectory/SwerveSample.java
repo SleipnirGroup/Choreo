@@ -320,17 +320,40 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
     }
 
     var other = (SwerveSample) obj;
-    return this.t == other.t
-        && this.x == other.x
-        && this.y == other.y
-        && this.heading == other.heading
-        && this.vx == other.vx
-        && this.vy == other.vy
-        && this.omega == other.omega
-        && this.ax == other.ax
-        && this.ay == other.ay
-        && this.alpha == other.alpha
-        && Arrays.equals(this.fx, other.fx)
-        && Arrays.equals(this.fy, other.fy);
+    var fxBothNull = (this.fx == null && other.fx == null);
+    var fxNeitherNull = (this.fx != null && other.fx != null);
+    var fyBothNull = (this.fy == null && other.fy == null);
+    var fyNeitherNull = (this.fy != null && other.fy != null);
+    var equal = MathUtil.isNear(this.t       , other.t, 1E-9)
+    && MathUtil.isNear(this.x       , other.x, 1E-9)
+    && MathUtil.isNear(this.y       , other.y, 1E-9)
+    && MathUtil.isNear(this.heading , other.heading, 1E-9)
+    && MathUtil.isNear(this.vx      , other.vx, 1E-9)
+    && MathUtil.isNear(this.vy      , other.vy, 1E-9)
+    && MathUtil.isNear(this.omega   , other.omega, 1E-9)
+    && MathUtil.isNear(this.ax      , other.ax, 1E-9)
+    && MathUtil.isNear(this.ay      , other.ay, 1E-9)
+    && MathUtil.isNear(this.alpha      , other.alpha, 1E-9);
+    if (!equal) return false;
+    if (!fxBothNull) {
+      if (!fxNeitherNull) return false;
+      equal &= (this.fx.length == other.fx.length);
+      if (!equal) return false;
+      for (int i = 0; i < this.fx.length; ++i) {
+        equal &= MathUtil.isNear(this.fx[i], other.fx[i], 1E-9);
+        if (!equal) return false;
+      }
+    }
+    if (!fyBothNull) {
+      if (!fyNeitherNull) return false;
+      equal &= (this.fy.length == other.fy.length);
+      if (!equal) return false;
+      for (int i = 0; i < this.fy.length; ++i) {
+        equal &= MathUtil.isNear(this.fy[i], other.fy[i], 1E-9);
+        if (!equal) return false;
+      }
+    }
+
+    return equal;
   }
 }
