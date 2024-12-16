@@ -261,8 +261,8 @@ public class Robot extends TimedRobot {
         autoChooser.addRoutine("Example Routine", this::exampleRoutine);
         autoChooser.addCmd("Example Auto Command", this::exampleAutoCommand);
 
-        // AutoChooser.update() must be invoked periodically for the class to function
-        addPeriodic(autoChooser::update, kDefaultPeriod);
+        // Put the auto chooser on the dashboard
+        SmartDashboard.putData(autoChooser);
 
         // Schedule the selected auto during the autonomous period
         RobotModeTriggers.autonomous().whileTrue(autoChooser.selectedCommandScheduler());
