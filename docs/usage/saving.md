@@ -18,7 +18,7 @@ to be stored within the deploy/choreo directory. To do so:
    you just created.
 4. Name your .chor file whatever you want.
 
-## Sidebar Navigation 
+## Sidebar Navigation
 
 To access the sidebar, click the hamburger icon in the upper left corner.
 
@@ -27,7 +27,7 @@ To access the sidebar, click the hamburger icon in the upper left corner.
 General Info:
 
 !!! note
-    Choreo’s file saving mechanism ties into a WPILib robot root directory, wherein a single `.chor` file lives in the project’s root folder.
+Choreo’s file saving mechanism ties into a WPILib robot root directory, wherein a single `.chor` file lives in the project’s root folder.
 
 In the sidebar, there are five actions related to saving your project, along with your project's current save location.
 
