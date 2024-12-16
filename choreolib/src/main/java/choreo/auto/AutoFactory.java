@@ -120,8 +120,6 @@ public class AutoFactory {
    * @param bindings Universal trajectory event bindings.
    * @param trajectoryLogger A {@link TrajectoryLogger} to log {@link Trajectory} as they start and
    *     finish.
-   * @param alliance A custom supplier of the current alliance to use instead of {@link
-   *     DriverStation#getAlliance}.
    * @see AutoChooser using this factory with AutoChooser to generate auto routines.
    */
   public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
