@@ -65,9 +65,48 @@ In general, trajectory followers accept trajectory "samples" that represent the 
 
     === "C++"
 
-        ```cpp
-        // TODO
-        ```
+        === "Source"
+
+            ```cpp title="Drive.cpp"
+            Drive::Drive() {
+                headingController.EnableContinuousInput(-M_PI, M_PI);
+            };
+
+            void Drive::FollowTrajectory(const choreo::SwerveSample& sample) {
+                // Get the current pose of the robot
+                frc::Pose2d pose = GetPose();
+
+                // Calculate feedback velocities
+                units::meters_per_second_t xFeedback{xController.Calculate(pose.X().value(), sample.x.value())};
+                units::meters_per_second_t yFeedback{yController.Calculate(pose.Y().value(), sample.y.value())};
+                units::radians_per_second_t headingFeedback{
+                    headingController.Calculate(pose.Rotation().Radians().value(), sample.heading.value())
+                };
+
+                // Generate the next speeds for the robot
+                frc::ChassisSpeeds speeds{
+                    sample.vx + xFeedback,
+                    sample.vy + yFeedback,
+                    sample.heading + headingFeedback
+                };
+
+                DriveFieldRelative(speeds);
+            };
+            ```
+
+        === "Header"
+
+            ```cpp title="Drive.h"
+            class Drive : public frc2::SubsystemBase {
+                public:
+                    void FollowTrajectory(const choreo::SwerveSample& sample);
+
+                private:
+                    frc::PIDController xController{10.0, 0.0, 0.0};
+                    frc::PIDController yController{10.0, 0.0, 0.0};
+                    frc::PIDController headingController{7.5, 0.0, 0.0};
+            };
+            ```
 
     === "Python"
 
@@ -114,9 +153,46 @@ In general, trajectory followers accept trajectory "samples" that represent the 
 
     === "C++"
 
-        ```cpp
-        // TODO
-        ```
+        === "Source"
+
+            ```cpp title="Drive.cpp"
+            void Drive::FollowTrajectory(const choreo::DifferentialSample& sample) {
+                // Get the current pose of the robot
+                frc::Pose2d pose = GetPose();
+
+                // Get the velocity feedforward specified by the sample
+                frc::ChassisSpeeds ff = sample.GetChassisSpeeds();
+
+                // Generate the next speeds for the robot
+                frc::ChassisSpeeds speeds = controller.Calculate(
+                    pose,
+                    sample.GetPose(),
+                    ff.vx,
+                    ff.vy
+                );
+
+                // Apply the generated speeds
+                Drive(speeds);
+
+                // Or, if you don't drive via ChassisSpeeds
+                frc::DifferentialDriveWheelSpeeds wheelSpeeds = kinematics.ToWheelSpeeds(speeds); // (1)
+                Drive(wheelSpeeds.left, wheelSpeeds.right);
+            };
+            ```
+
+            1. For more information about differential drive kinematics, see [WPILib's documentation](https://docs.wpilib.org/en/stable/docs/software/kinematics-and-odometry/differential-drive-kinematics.html). In this example, we assume you have created an instance of `DifferentialDriveKinematics`, named `kinematics`.
+
+        === "Header"
+
+            ```cpp title="Drive.h"
+            class Drive : public frc2::SubsystemBase {
+                public:
+                    void FollowTrajectory(const choreo::DifferentialSample& sample);
+
+                private:
+                    frc::LTVUnicycleController controller{0.02_s};
+            };
+            ```
 
     === "Python"
 

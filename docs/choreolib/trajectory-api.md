@@ -18,8 +18,10 @@ To begin utilizing trajectories created by Choreo, you must first load a `Trajec
     ```cpp
     // Loads from deploy/choreo/myTrajectory.traj
     // std::nullopt is returned if the file does not exist or is invalid
-    auto trajectory = choreo::LoadTrajectory("myTrajectory")
+    auto trajectory = choreo::Choreo::LoadTrajectory<choreo::SwerveSample>("myTrajectory") // (1)
     ```
+
+    1. Use `DifferentialSample` instead of `SwerveSample` if the robot uses a differential (tank) drive
 
 === "Python"
 
@@ -58,7 +60,7 @@ See [Getting Started](./getting-started.md/#setting-up-the-drive-subsystem) for 
 
                 if (initialPose.isPresent()) {
                     // Reset odometry to the start of the trajectory
-                    driveSubsystem.resetOdometry(trajectory.getInitialPose().get());
+                    driveSubsystem.resetOdometry(initialPose.get());
                 }
             }
 
@@ -86,9 +88,58 @@ See [Getting Started](./getting-started.md/#setting-up-the-drive-subsystem) for 
 
 === "C++"
 
-    ```cpp
-    // TODO
-    ```
+    === "Source"
+
+        ```cpp title="Robot.cpp"
+        void Robot::AutonomousInit() {
+            if (trajectory.has_value()) {
+                // Get the initial pose of the trajectory
+                std::optional<frc::Pose2d> initialPose = trajectory.value().GetInitialPose(IsRedAlliance());
+
+                if (initialPose.has_value()) {
+                    // Reset odometry to the start of the trajectory
+                    driveSubsystem.ResetOdometry(initialPose.value());
+                }
+            }
+
+            // Reset and start the timer when the autonomous period begins
+            timer.Restart();
+        }
+
+        void Robot::AutonomousPeriodic() {
+            if (trajectory.has_value()) {
+                // Sample the trajectory at the current time into the autonomous period
+                std::optional<choreo::SwerveSample> sample = trajectory.value().SampleAt(timer.Get(), IsRedAlliance());
+
+                if (sample.has_value()) {
+                    driveSubsystem.FollowTrajectory(sample.value());
+                }
+            }
+        }
+
+        bool Robot::IsRedAlliance() {
+            auto alliance = frc::DriverStation::GetAlliance().value_or(frc::DriverStation::kBlue);
+            return alliance == frc::DriverStation::kRed;
+        }
+        ```
+
+    === "Header"
+
+        ```cpp title="Robot.h"
+        class Robot : public frc::TimedRobot {
+            public:
+                void AutonomousInit() override;
+                void AutonomousPeriodic() override;
+
+            private:
+                // Loads a swerve trajectory, alternatively use DifferentialSample if the robot is tank drive
+                std::optional<choreo::Trajectory<choreo::SwerveSample>> trajectory =
+                    choreo::Choreo::LoadTrajectory<choreo::SwerveSample>("myTrajectory");
+
+                Drive drive;
+                frc::Timer timer;
+        };
+        ```
 
 === "Python"
 
