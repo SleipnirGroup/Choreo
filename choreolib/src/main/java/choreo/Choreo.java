@@ -10,8 +10,8 @@ import choreo.trajectory.EventMarker;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
-import choreo.util.AlertUtil;
-import choreo.util.AlertUtil.*;
+import choreo.util.ChoreoAlert;
+import choreo.util.ChoreoAlert.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -41,9 +41,9 @@ public final class Choreo {
   private static final String TRAJECTORY_FILE_EXTENSION = ".traj";
   private static final int TRAJ_SCHEMA_VERSION = 1;
   private static final MultiAlert cantFindTrajectory =
-      AlertUtil.multiAlert(causes -> "Could not find trajectory files: " + causes, kError);
+      ChoreoAlert.multiAlert(causes -> "Could not find trajectory files: " + causes, kError);
   private static final MultiAlert cantParseTrajectory =
-      AlertUtil.multiAlert(causes -> "Could not parse trajectory files: " + causes, kError);
+      ChoreoAlert.multiAlert(causes -> "Could not parse trajectory files: " + causes, kError);
 
   private static File CHOREO_DIR = new File(Filesystem.getDeployDirectory(), "choreo");
 
@@ -97,7 +97,7 @@ public final class Choreo {
     } catch (JsonSyntaxException ex) {
       cantParseTrajectory.addCause(trajectoryFile.toString());
     } catch (Exception ex) {
-      AlertUtil.alert(
+      ChoreoAlert.alert(
               "Unknown error when parsing " + trajectoryFile + "; check console for more details",
               kError)
           .set(true);

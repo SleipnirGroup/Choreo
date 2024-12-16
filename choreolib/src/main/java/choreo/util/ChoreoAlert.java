@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-public class AlertUtil {
+public class ChoreoAlert {
   /**
    * Creates an alert under the "Choreo" group.
    *
@@ -17,7 +17,7 @@ public class AlertUtil {
    * @return an Alert published under the "Choreo" group
    */
   public static Alert alert(String name, AlertType type) {
-    return new Alert("Choreo", name, type);
+    return new Alert("ChoreoAlert", name, type);
   }
 
   /**
@@ -41,7 +41,7 @@ public class AlertUtil {
     private final List<String> causes = new ArrayList<>();
 
     MultiAlert(Function<List<String>, String> textGenerator, AlertType type) {
-      super("Choreo", textGenerator.apply(List.of()), type);
+      super("ChoreoAlert", textGenerator.apply(List.of()), type);
       this.textGenerator = textGenerator;
     }
 
