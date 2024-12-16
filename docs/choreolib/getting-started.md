@@ -4,19 +4,25 @@
 
 To use ChoreoLib in your robot code, it must first be installed as a vendor library. For more information about installing vendor libraries, see [WPILib's documentation](https://docs.wpilib.org/en/stable/docs/software/vscode-overview/3rd-party-libraries.html#installing-libraries) about installing in online mode.
 
-Use the following JSON URL to install ChoreoLib:
+=== "Java/C++"
 
-=== "Release"
+    Use the following JSON URL to install ChoreoLib:
 
-    ```
-    https://lib.choreo.autos/dep/ChoreoLib.json
-    ```
+    === "Release"
 
-=== "2025 Beta"
+        ```
+        https://lib.choreo.autos/dep/ChoreoLib.json
+        ```
 
-    ```
-    https://lib.choreo.autos/dep/ChoreoLib2025Beta.json
-    ```
+    === "2025 Beta"
+
+        ```
+        https://lib.choreo.autos/dep/ChoreoLib2025Beta.json
+        ```
+
+=== "Python"
+
+    PyPI package: `sleipnirgroup-choreolib`
 
 ## Setting up the Drive Subsystem
 
@@ -110,8 +116,33 @@ In general, trajectory followers accept trajectory "samples" that represent the 
 
     === "Python"
 
-        ```python
-        # TODO
+        ```python title="drive.py"
+        class Drive(Subsystem):
+            def __init__(self):
+                super().__init__()
+
+                # Other subsystem initialization code
+                # ...
+
+                self.x_controller = PIDController(10.0, 0.0, 0.0)
+                self.y_controller = PIDController(10.0, 0.0, 0.0)
+                self.heading_controller = PIDController(7.5, 0.0, 0.0)
+
+                self.heading_controller.enableContinuousInput(-math.pi, math.pi)
+
+            def follow_trajectory(self, sample):
+                # Get the current pose of the robot
+                pose = self.get_pose()
+
+                # Generate the next speeds for the robot
+                speeds = ChassisSpeeds(
+                    sample.vx + self.x_controller.calculate(pose.X(), sample.x),
+                    sample.vy + self.y_controller.calculate(pose.Y(), sample.y),
+                    sample.omega + self.heading_controller.calculate(pose.rotation().radians(), sample.heading)
+                )
+
+                # Apply the generated speeds
+                self.drive_field_relative(speeds)
         ```
 
 === "Differential (Tank)"
@@ -196,9 +227,40 @@ In general, trajectory followers accept trajectory "samples" that represent the 
 
     === "Python"
 
-        ```python
-        # TODO
+        ```python title="drive.py"
+        class Drive(Subsystem):
+            def __init__(self):
+                super().__init__()
+
+                # Other subsystem initialization code
+                # ...
+
+                self.controller = LTVUnicycleController(0.02)
+
+            def follow_trajectory(self, sample):
+                # Get the current pose of the robot
+                pose = self.get_pose()
+
+                # Get the velocity feedforward specified by the sample
+                ff = sample.get_chassis_speeds()
+
+                # Generate the next speeds for the robot
+                speeds = self.controller.calculate(
+                    pose,
+                    sample.get_pose(),
+                    ff.vx,
+                    ff.omega
+                )
+
+                # Apply the generated speeds
+                self.drive(speeds)
+
+                # Or, if you don't drive via ChassisSpeeds
+                wheelSpeeds = self.kinematics.toWheelSpeeds(speeds) # (1)
+                self.drive(wheelSpeeds.left, wheelSpeeds.right)
         ```
+
+        1. For more information about differential drive kinematics, see [WPILib's documentation](https://docs.wpilib.org/en/stable/docs/software/kinematics-and-odometry/differential-drive-kinematics.html). In this example, we assume you have created an instance of `DifferentialDriveKinematics`, named `kinematics`.
 
 ## Next Steps
 

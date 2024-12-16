@@ -144,5 +144,37 @@ See [Getting Started](./getting-started.md/#setting-up-the-drive-subsystem) for 
 === "Python"
 
     ```py
-    # TODO
+    class MyRobot(wpilib.TimedRobot):
+        def robotInit(self):
+            # Loads a swerve trajectory, alternatively use load_differential_trajectory if the robot is tank drive
+            try:
+                self.trajectory = choreo.load_swerve_trajectory("myTrajectory") # (1)
+            except ValueError:
+                self.trajectory = None
+
+            self.drive_subsystem = Drive()
+            self.timer = wpilib.Timer()
+
+        def autonomousInit(self):
+            if self.trajectory is not None:
+                # Get the initial pose of the trajectory
+                initial_pose = self.trajectory.get_initial_pose(self.is_red_alliance())
+
+                if initial_pose is not None:
+                    # Reset odometry to the start of the trajectory
+                    self.drive_subsystem.reset_odometry(initial_pose)
+
+            # Reset and start the timer when the autonomous period begins
+            self.timer.restart()
+
+        def autonomousPeriodic(self):
+            if self.trajectory is not None:
+                # Sample the trajectory at the current time into the autonomous period
+                sample = self.trajectory.sample_at(self.timer.get(), self.is_red_alliance())
+
+                if sample is not None:
+                    self.drive_subsystem.follow_trajectory(sample)
+
+        def is_red_alliance(self):
+            return wpilib.DriverStation.getAlliance() == wpilib.DriverStation.Alliance.kRed
     ```
