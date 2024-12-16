@@ -4,7 +4,7 @@ package choreo.auto;
 
 import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
 
-import choreo.Choreo;
+import choreo.util.ChoreoAlert;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringArrayEntry;
@@ -41,7 +41,7 @@ import java.util.function.Supplier;
 public class AutoChooser {
   static final String NONE_NAME = "__Nothing__";
   private static final Alert selectedNonexistentAuto =
-      Choreo.alert("Selected an auto that isn't an option", kError);
+      ChoreoAlert.alert("Selected an auto that isn't an option", kError);
 
   private final HashMap<String, Supplier<Command>> autoRoutines =
       new HashMap<>(Map.of(NONE_NAME, Commands::none));
