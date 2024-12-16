@@ -33,11 +33,12 @@ In the sidebar, there are five actions related to saving your project, along wit
 
 ## Open File
 
-This opens the system’s file select dialog to select the robot’s `.chor` file. This should already be in your robot project root folder.
+This opens the system’s file select dialog to select the robot’s `.chor` file. This .chor file should be under the folders "src/main/deploy/choreo"
+in your robot project.
 
 ## Save File
 
-This opens the system’s file save dialog to select where to save the robot’s `.chor` file. Choreo strongly recommends saving this file in your robot project root folder.
+This opens the system’s file save dialog to select where to save the robot’s `.chor` file. Choreo strongly recommends saving this file in your deploy/choreo folder within your project.
 
 ## New File
 
@@ -58,8 +59,6 @@ If you have saved your choreo file correctly, you should see the following:
 ![Project Info](../media/project_info.png)
 
 Below "Project saved at", you can see the directory in which the saved `.chor` file lives. You can also copy this path or open it in your system's file explorer.
-
-If you see "Gradle project detected," then there is a `.gradle` file as well as a `src/main/deploy` directory in which to save trajectories.
 
 !!! warning
 
