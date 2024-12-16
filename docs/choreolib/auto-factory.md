@@ -16,7 +16,7 @@ public class Robot extends TimedRobot {
             driveSubsystem::getPose, // A function that returns the current robot pose
             driveSubsystem::resetOdometry, // A function that resets the current robot pose to the provided Pose2d
             driveSubsystem::followTrajectory, // The drive subsystem trajectory follower (1)
-            () -> true, // If alliance flipping should be enabled (2)
+            true, // If alliance flipping should be enabled (2)
             driveSubsystem, // The drive subsystem
             new AutoBindings() // An empty AutoBindings object (3)
         );
@@ -198,11 +198,7 @@ public AutoRoutine branching2024Auto() {
     startToC2.done().onTrue(shooterSubsystem.shoot().andThen(C2toM1.cmd()));
 
     // Run the intake when we are approaching a gamepiece
-    C2toM1.active()
-        .or(scoreToM2.active())
-        .or(scoreToM3.active())
-        .or(M1toM2.active())
-        .or(M2toM3.active())
+    routine.anyActive(C2toM1, scoreToM2, scoreToM3, M1toM2, M2toM3) // (2)
         .whileTrue(intakeSubsystem.intake());
 
     // If we picked up the gamepiece, go score, then go to the next midline location
@@ -215,13 +211,13 @@ public AutoRoutine branching2024Auto() {
     M1toScore.done().onTrue(shooterSubsystem.shoot().andThen(scoreToM2.cmd()));
 
     // M2
-    Trigger atM2 = scoreToM2.done().or(M1toM2.done());
+    Trigger atM2 = routine.anyDone(scoreToM2, M1toM2);
     atM2.and(shooterSubsystem::noGamepiece).onTrue(M2toM3.cmd());
     atM2.and(shooterSubsystem::hasGamepiece).onTrue(M2toScore.cmd());
     M2toScore.done().onTrue(shooterSubsystem.shoot().andThen(scoreToM3.cmd()));
 
     // M3
-    Trigger atM3 = scoreToM3.done().or(M2toM3.done());
+    Trigger atM3 = routine.anyDone(scoreToM3, M2toM3);
     atM3.and(shooterSubsystem::hasGamepiece).onTrue(M3toScore.cmd());
     M3toScore.done().onTrue(shooterSubsystem.shoot());
 
@@ -230,6 +226,7 @@ public AutoRoutine branching2024Auto() {
 ```
 
 1. ![Branching Auto Map](../media/choreolib-branching-auto.png)
+2. `AutoRoutine.anyActive()` can be used as a shorthand for checking if any of many trajectories are active. You can also check if any trajectories are done using `AutoRoutine.anyDone()`.
 
 ## AutoBindings
 
