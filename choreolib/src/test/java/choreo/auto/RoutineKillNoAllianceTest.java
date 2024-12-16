@@ -5,6 +5,7 @@ package choreo.auto;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SchedulerMaker;
@@ -22,6 +23,7 @@ public class RoutineKillNoAllianceTest {
 
   @BeforeEach
   void setup() {
+    assert HAL.initialize(500, 0);
     scheduler.cancelAll();
     factory = AutoTestHelper.factory(() -> alliance, () -> useAllianceFlipping);
   }

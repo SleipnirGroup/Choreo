@@ -16,7 +16,7 @@ class Robot extends TimedRobot {
   private final AutoFactory autoFactory;
 
   public Robot() {
-    autoFactory = Choreo.createAutoFactory(
+    autoFactory = new AutoFactory(
       drive, // The drive subsystem
       drive::getPose, // A function that returns the current robot pose
       drive::choreoController, // The controller for the drive subsystem
@@ -27,7 +27,7 @@ class Robot extends TimedRobot {
 
   public void autonomousInit() {
     // Running just the movement of a specific trajectory
-    autoFactory.trajectoryCommand("myTrajectory").schedule();
+    autoFactory.trajectoryCmd("myTrajectory").schedule();
   }
 
   private boolean isRedAlliance() {
@@ -59,17 +59,17 @@ public Robot extends TimedRobot {
 
   public Robot() {
     ... //code from previous example
-    autoChooser = new AutoChooser(autoFactory, "");
+    autoChooser = new AutoChooser();
     autoChooser.addRoutine("twoPieceAuto", this::twoPieceAuto);
   }
 
   // this would normally be in a separate file
-  private AutoRoutine twoPieceAuto(AutoFactory factory) {
-    final AutoRoutine routine = factory.newRoutine("twoPieceAuto");
+  private AutoRoutine twoPieceAuto() {
+    final AutoRoutine routine = autoFactory.newRoutine("twoPieceAuto");
 
     final AutoTrajectory trajectory = routine.trajectory("twoPieceAuto");
 
-    routine.running()
+    routine.active()
         .onTrue(
             drive.resetOdometry(
                     trajectory.getInitialPose()
@@ -88,7 +88,7 @@ public Robot extends TimedRobot {
   }
 
   public void autonomousInit() {
-    autoChooser.getSelectedAutoRoutine().schedule();
+    autoChooser.selectedCommand().schedule();
   }
 }
 ```

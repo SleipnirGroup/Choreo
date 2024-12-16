@@ -2,7 +2,6 @@
 
 package choreo.auto;
 
-import choreo.auto.AutoFactory.AutoBindings;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -19,10 +18,10 @@ public class AutoTestHelper {
         () -> pose.get(),
         newPose -> pose.set(newPose),
         sample -> pose.set(sample.getPose()),
-        new Subsystem() {},
         useAllianceFlipping,
-        new AutoBindings(),
-        Optional.empty(),
+        new Subsystem() {},
+        new AutoFactory.AutoBindings(),
+        (sample, isStart) -> {},
         alliance);
   }
 
