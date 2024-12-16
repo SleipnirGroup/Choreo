@@ -16,16 +16,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class RoutineKillNoAllianceTest {
-  AutoFactory factoryFlip = AutoTestHelper.factory(true);
-  AutoFactory factoryNoFlip = AutoTestHelper.factory(false);
+  AutoFactory factoryFlip;
+  AutoFactory factoryNoFlip;
   CommandScheduler scheduler = SchedulerMaker.make();
-  Supplier<AutoRoutine> routineFlip = () -> factoryNoFlip.newRoutine("testRoutineKill");
-  Supplier<AutoRoutine> routineNoFlip = () -> factoryFlip.newRoutine("testRoutineKill");
+  Supplier<AutoRoutine> routineFlip = () -> factoryFlip.newRoutine("testRoutineKill");
+  Supplier<AutoRoutine> routineNoFlip = () -> factoryNoFlip.newRoutine("testRoutineKill");
 
   @BeforeEach
   void setup() {
     assert HAL.initialize(500, 0);
     scheduler.cancelAll();
+    factoryFlip = AutoTestHelper.factory(true);
+    factoryNoFlip = AutoTestHelper.factory(false);
   }
 
   void testRoutineKill(
@@ -39,37 +41,37 @@ public class RoutineKillNoAllianceTest {
   }
 
   @Test
-  void testDisabledEmpty() {
+  void testUnFlippedEmpty() {
     setAlliance(Optional.empty());
     testRoutineKill(scheduler, routineNoFlip, false);
   }
 
   @Test
-  void testDisabledBlue() {
+  void testUnFlippedBlue() {
     setAlliance((Optional.of(Alliance.Blue)));
     testRoutineKill(scheduler, routineNoFlip, false);
   }
 
   @Test
-  void testDisabledRed() {
+  void testUnFlippedRed() {
     setAlliance(Optional.of(Alliance.Red));
     testRoutineKill(scheduler, routineNoFlip, false);
   }
 
   @Test
-  void testEnabledEmpty() {
+  void testFlippedEmpty() {
     setAlliance(Optional.empty());
     testRoutineKill(scheduler, routineFlip, true);
   }
 
   @Test
-  void testEnabledBlue() {
+  void testFlippedBlue() {
     setAlliance(Optional.of(Alliance.Blue));
     testRoutineKill(scheduler, routineFlip, false);
   }
 
   @Test
-  void testEnabledRed() {
+  void testFlippedRed() {
     setAlliance(Optional.of(Alliance.Red));
     testRoutineKill(scheduler, routineFlip, false);
   }

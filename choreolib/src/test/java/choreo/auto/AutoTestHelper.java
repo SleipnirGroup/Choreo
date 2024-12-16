@@ -4,6 +4,7 @@ package choreo.auto;
 
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -41,5 +42,6 @@ public class AutoTestHelper {
             .orElse(AllianceStationID.Unknown);
     DriverStationSim.setAllianceStationId(id);
     DriverStationSim.notifyNewData();
+    DriverStation.refreshData();
   }
 }

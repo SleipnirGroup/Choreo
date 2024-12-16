@@ -197,6 +197,11 @@ public class AutoFactory {
     return new AutoRoutine(this, name, this::allianceKnownOrIgnored);
   }
 
+  /**
+   * Returns true if the alliance is known or alliance flipping is disabled.
+   *
+   * @return True if the alliance is known or alliance flipping is disabled.
+   */
   private boolean allianceKnownOrIgnored() {
     return !useAllianceFlipping.getAsBoolean() || alliance.get().isPresent();
   }
