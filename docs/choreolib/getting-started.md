@@ -96,6 +96,7 @@ In general, trajectory followers accept trajectory "samples" that represent the 
                     sample.heading + headingFeedback
                 };
 
+                // Apply the generated speeds
                 DriveFieldRelative(speeds);
             };
             ```
