@@ -203,7 +203,6 @@ public class AutoRoutine {
     return trajectory.resetOdometry();
   }
 
-  
   /**
    * Creates a trigger that produces a rising edge when any of the trajectories are finished.
    *
@@ -221,7 +220,8 @@ public class AutoRoutine {
    * @param trajectories the trajectories to watch
    * @return a trigger that determines if any of the trajectories are finished
    */
-  public Trigger anyDone(int cyclesToDelay, AutoTrajectory trajectory, AutoTrajectory... trajectories) {
+  public Trigger anyDone(
+      int cyclesToDelay, AutoTrajectory trajectory, AutoTrajectory... trajectories) {
     var trigger = trajectory.done(cyclesToDelay);
     for (int i = 0; i < trajectories.length; i++) {
       trigger = trigger.or(trajectories[i].done(cyclesToDelay));
