@@ -115,9 +115,8 @@ public class AutoFactory {
    *     robot.
    * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
    *     Command}s.
-   * @param useAllianceFlipping If this returns true, when on the red alliance, the path will be
-   *     mirrored to the opposite side, while keeping the same coordinate system origin. This will
-   *     be called every loop during the command.
+   * @param useAllianceFlipping If this is true, when on the red alliance, the path will be mirrored
+   *     to the opposite side, while keeping the same coordinate system origin.
    * @param bindings Universal trajectory event bindings.
    * @param trajectoryLogger A {@link TrajectoryLogger} to log {@link Trajectory} as they start and
    *     finish.
@@ -129,7 +128,7 @@ public class AutoFactory {
       Supplier<Pose2d> poseSupplier,
       Consumer<Pose2d> resetOdometry,
       Consumer<SampleType> controller,
-      BooleanSupplier useAllianceFlipping,
+      boolean useAllianceFlipping,
       Subsystem driveSubsystem,
       AutoBindings bindings,
       TrajectoryLogger<SampleType> trajectoryLogger,
@@ -145,7 +144,7 @@ public class AutoFactory {
     this.resetOdometry = resetOdometry;
     this.controller = controller;
     this.driveSubsystem = driveSubsystem;
-    this.useAllianceFlipping = useAllianceFlipping;
+    this.useAllianceFlipping = () -> useAllianceFlipping;
     this.bindings.merge(bindings);
     this.trajectoryLogger = trajectoryLogger;
     this.alliance = alliance;
@@ -164,9 +163,8 @@ public class AutoFactory {
    *     robot.
    * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
    *     Command}s.
-   * @param useAllianceFlipping If this returns true, when on the red alliance, the path will be
-   *     mirrored to the opposite side, while keeping the same coordinate system origin. This will
-   *     be called every loop during the command.
+   * @param useAllianceFlipping If this is true, when on the red alliance, the path will be mirrored
+   *     to the opposite side, while keeping the same coordinate system origin.
    * @param bindings Universal trajectory event bindings.
    * @param trajectoryLogger A {@link TrajectoryLogger} to log {@link Trajectory} as they start and
    *     finish.
@@ -176,7 +174,7 @@ public class AutoFactory {
       Supplier<Pose2d> poseSupplier,
       Consumer<Pose2d> resetOdometry,
       Consumer<SampleType> controller,
-      BooleanSupplier useAllianceFlipping,
+      boolean useAllianceFlipping,
       Subsystem driveSubsystem,
       AutoBindings bindings,
       TrajectoryLogger<SampleType> trajectoryLogger) {
@@ -204,8 +202,7 @@ public class AutoFactory {
    * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
    *     Command}s.
    * @param useAllianceFlipping If this returns true, when on the red alliance, the path will be
-   *     mirrored to the opposite side, while keeping the same coordinate system origin. This will
-   *     be called every loop during the command.
+   *     mirrored to the opposite side, while keeping the same coordinate system origin.
    * @param bindings Universal trajectory event bindings.
    * @see AutoChooser using this factory with AutoChooser to generate auto routines.
    */
@@ -213,7 +210,7 @@ public class AutoFactory {
       Supplier<Pose2d> poseSupplier,
       Consumer<Pose2d> resetOdometry,
       Consumer<SampleType> controller,
-      BooleanSupplier useAllianceFlipping,
+      boolean useAllianceFlipping,
       Subsystem driveSubsystem,
       AutoBindings bindings) {
     this(

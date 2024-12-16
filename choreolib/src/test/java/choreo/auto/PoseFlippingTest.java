@@ -26,7 +26,7 @@ public class PoseFlippingTest {
   @BeforeEach
   void setup() {
     assert HAL.initialize(500, 0);
-    factory = AutoTestHelper.factory(() -> alliance, () -> useAllianceFlipping);
+    factory = AutoTestHelper.factory(() -> alliance, useAllianceFlipping);
   }
 
   /**

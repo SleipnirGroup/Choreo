@@ -7,12 +7,11 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 public class AutoTestHelper {
   public static AutoFactory factory(
-      Supplier<Optional<Alliance>> alliance, BooleanSupplier useAllianceFlipping) {
+      Supplier<Optional<Alliance>> alliance, boolean useAllianceFlipping) {
     AtomicReference<Pose2d> pose = new AtomicReference<>(new Pose2d());
     return new AutoFactory(
         () -> pose.get(),
@@ -26,6 +25,6 @@ public class AutoTestHelper {
   }
 
   public static AutoFactory factory() {
-    return factory(() -> Optional.of(Alliance.Blue), () -> false);
+    return factory(() -> Optional.of(Alliance.Blue), false);
   }
 }

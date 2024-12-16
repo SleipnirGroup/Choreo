@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 public class RoutineKillNoAllianceTest {
   Optional<Alliance> alliance;
   boolean useAllianceFlipping;
-  AutoFactory factory = AutoTestHelper.factory(() -> alliance, () -> useAllianceFlipping);
+  AutoFactory factory = AutoTestHelper.factory(() -> alliance, useAllianceFlipping);
   CommandScheduler scheduler = SchedulerMaker.make();
   Supplier<AutoRoutine> routine = () -> factory.newRoutine("testRoutineKill");
 
@@ -25,7 +25,7 @@ public class RoutineKillNoAllianceTest {
   void setup() {
     assert HAL.initialize(500, 0);
     scheduler.cancelAll();
-    factory = AutoTestHelper.factory(() -> alliance, () -> useAllianceFlipping);
+    factory = AutoTestHelper.factory(() -> alliance, useAllianceFlipping);
   }
 
   void testRoutineKill(
