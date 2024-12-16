@@ -206,8 +206,12 @@ public class AutoRoutine {
   /**
    * Creates a trigger that produces a rising edge when any of the trajectories are finished.
    *
-   * @param trajectories the trajectories to watch
+   * @param trajectory The first trajectory to watch.
+   * @param trajectories The other trajectories to watch
    * @return a trigger that determines if any of the trajectories are finished
+   * 
+   * @see #anyDone(int, AutoTrajectory, AutoTrajectory...) A version of this method that takes a
+   *    delay in cycles before the trigger is true.
    */
   public Trigger anyDone(AutoTrajectory trajectory, AutoTrajectory... trajectories) {
     return anyDone(0, trajectory, trajectories);
@@ -217,7 +221,8 @@ public class AutoRoutine {
    * Creates a trigger that produces a rising edge when any of the trajectories are finished.
    *
    * @param cyclesToDelay The number of cycles to delay.
-   * @param trajectories the trajectories to watch
+   * @param trajectory The first trajectory to watch.
+   * @param trajectories The other trajectories to watch
    * @return a trigger that determines if any of the trajectories are finished
    */
   public Trigger anyDone(
@@ -232,7 +237,8 @@ public class AutoRoutine {
   /**
    * Creates a trigger that returns true when any of the trajectories given are active.
    *
-   * @param trajectories the trajectories to watch
+   * @param trajectory The first trajectory to watch.
+   * @param trajectories The other trajectories to watch
    * @return a trigger that determines if any of the trajectories are active
    */
   public Trigger anyActive(AutoTrajectory trajectory, AutoTrajectory... trajectories) {
