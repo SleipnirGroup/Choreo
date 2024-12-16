@@ -18,7 +18,7 @@ To begin utilizing trajectories created by Choreo, you must first load a `Trajec
     ```cpp
     // Loads from deploy/choreo/myTrajectory.traj
     // std::nullopt is returned if the file does not exist or is invalid
-    auto trajectory = choreo::Choreo::LoadTrajectory<choreo::SwerveSample>("myTrajectory") // (1)
+    auto trajectory = choreo::Choreo::LoadTrajectory<choreo::SwerveSample>("myTrajectory"); // (1)
     ```
 
     1. Use `DifferentialSample` instead of `SwerveSample` if the robot uses a differential (tank) drive
