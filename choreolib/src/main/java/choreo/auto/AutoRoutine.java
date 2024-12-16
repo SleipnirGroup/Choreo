@@ -4,9 +4,9 @@ package choreo.auto;
 
 import static edu.wpi.first.wpilibj.Alert.AlertType.kWarning;
 
-import choreo.Choreo;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
+import choreo.util.ChoreoAlert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -36,7 +36,7 @@ public class AutoRoutine {
   /** The name of the auto routine this loop is associated with */
   protected final String name;
 
-  /** A boolean utilized in {@link #running()} to resolve trueness */
+  /** A boolean utilized in {@link #active()} to resolve trueness */
   protected boolean isActive = false;
 
   /** A boolean that is true when the loop is killed */
@@ -94,7 +94,7 @@ public class AutoRoutine {
    *
    * @return A {@link Trigger} that is true while this autonomous routine is being polled.
    */
-  public Trigger running() {
+  public Trigger active() {
     return new Trigger(loop, () -> isActive && DriverStation.isAutonomousEnabled());
   }
 
@@ -156,7 +156,7 @@ public class AutoRoutine {
       return;
     }
     reset();
-    Choreo.alert("Killed an auto loop", kWarning).set(true);
+    ChoreoAlert.alert("Killed an auto loop", kWarning).set(true);
     isKilled = true;
   }
 
@@ -194,6 +194,16 @@ public class AutoRoutine {
   }
 
   /**
+   * Creates a command that resets the robot's odometry to the start of a trajectory.
+   *
+   * @param trajectory The trajectory to use.
+   * @return A command that resets the robot's odometry.
+   */
+  public Command resetOdometry(AutoTrajectory trajectory) {
+    return trajectory.resetOdometry();
+  }
+
+  /**
    * Creates a command that will poll this event loop and reset it when it is cancelled.
    *
    * <p>The command will end instantly and kill the routine if the alliance supplier returns an
@@ -225,7 +235,7 @@ public class AutoRoutine {
             .withName(name),
         Commands.runOnce(
             () -> {
-              Choreo.alert("Alliance not known when starting routine", kWarning).set(true);
+              ChoreoAlert.alert("Alliance not known when starting routine", kWarning).set(true);
               kill();
             }),
         allianceKnownOrIgnored);

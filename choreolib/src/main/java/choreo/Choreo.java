@@ -7,24 +7,23 @@ import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
 
 import choreo.trajectory.DifferentialSample;
 import choreo.trajectory.EventMarker;
-import choreo.trajectory.ProjectFile;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
+import choreo.util.ChoreoAlert;
+import choreo.util.ChoreoAlert.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
-import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 /** Utilities to load and follow Choreo Trajectories */
 public final class Choreo {
@@ -41,72 +39,17 @@ public final class Choreo {
           .registerTypeAdapter(EventMarker.class, new EventMarker.Deserializer())
           .create();
   private static final String TRAJECTORY_FILE_EXTENSION = ".traj";
-  private static final int TRAJ_SCHEMA_VERSION = 0;
-  private static final int PROJECT_SCHEMA_VERSION = 1;
+  private static final int TRAJ_SCHEMA_VERSION = 1;
   private static final MultiAlert cantFindTrajectory =
-      multiAlert(causes -> "Could not find trajectory files: " + causes, kError);
+      ChoreoAlert.multiAlert(causes -> "Could not find trajectory files: " + causes, kError);
   private static final MultiAlert cantParseTrajectory =
-      multiAlert(causes -> "Could not parse trajectory files: " + causes, kError);
+      ChoreoAlert.multiAlert(causes -> "Could not parse trajectory files: " + causes, kError);
 
   private static File CHOREO_DIR = new File(Filesystem.getDeployDirectory(), "choreo");
-
-  private static Optional<ProjectFile> LAZY_PROJECT_FILE = Optional.empty();
 
   /** This should only be used for unit testing. */
   static void setChoreoDir(File choreoDir) {
     CHOREO_DIR = choreoDir;
-  }
-
-  /**
-   * Gets the project file from the deploy directory. Choreolib expects a .chor file to be placed in
-   * src/main/deploy/choreo.
-   *
-   * <p>The result is cached after the first call.
-   *
-   * @return the project file
-   */
-  public static ProjectFile getProjectFile() {
-    if (LAZY_PROJECT_FILE.isPresent()) {
-      return LAZY_PROJECT_FILE.get();
-    }
-    try {
-      // find the first file that ends with a .chor extension
-      File[] projectFiles = CHOREO_DIR.listFiles((dir, name) -> name.endsWith(".chor"));
-      if (projectFiles.length == 0) {
-        throw new RuntimeException("Could not find project file in deploy directory");
-      } else if (projectFiles.length > 1) {
-        throw new RuntimeException("Found multiple project files in deploy directory");
-      }
-      BufferedReader reader = new BufferedReader(new FileReader(projectFiles[0]));
-      String str = reader.lines().reduce("", (a, b) -> a + b);
-      reader.close();
-      JsonObject json = GSON.fromJson(str, JsonObject.class);
-      int version;
-      try {
-        version = json.get("version").getAsInt();
-        if (version != PROJECT_SCHEMA_VERSION) {
-          throw new RuntimeException(
-              ".chor project file: Wrong version "
-                  + version
-                  + ". Expected "
-                  + PROJECT_SCHEMA_VERSION);
-        }
-      } catch (ClassCastException e) {
-        throw new RuntimeException(
-            ".chor project file: Wrong version "
-                + json.get("version").getAsString()
-                + ". Expected "
-                + PROJECT_SCHEMA_VERSION);
-      }
-      LAZY_PROJECT_FILE = Optional.of(GSON.fromJson(str, ProjectFile.class));
-    } catch (JsonSyntaxException ex) {
-      throw new RuntimeException("Could not parse project file", ex);
-    } catch (FileNotFoundException ex) {
-      throw new RuntimeException("Could not find project file", ex);
-    } catch (IOException ex) {
-      throw new RuntimeException("Could not close the project file", ex);
-    }
-    return LAZY_PROJECT_FILE.get();
   }
 
   /**
@@ -147,15 +90,14 @@ public final class Choreo {
       var reader = new BufferedReader(new FileReader(trajectoryFile));
       String str = reader.lines().reduce("", (a, b) -> a + b);
       reader.close();
-      Trajectory<SampleType> trajectory =
-          (Trajectory<SampleType>) loadTrajectoryString(str, getProjectFile());
+      Trajectory<SampleType> trajectory = (Trajectory<SampleType>) loadTrajectoryString(str);
       return Optional.of(trajectory);
     } catch (FileNotFoundException ex) {
       cantFindTrajectory.addCause(trajectoryFile.toString());
     } catch (JsonSyntaxException ex) {
       cantParseTrajectory.addCause(trajectoryFile.toString());
     } catch (Exception ex) {
-      Choreo.alert(
+      ChoreoAlert.alert(
               "Unknown error when parsing " + trajectoryFile + "; check console for more details",
               kError)
           .set(true);
@@ -168,11 +110,10 @@ public final class Choreo {
    * Load a trajectory from a string.
    *
    * @param trajectoryJsonString The JSON string.
-   * @param projectFile The project file.
    * @return The loaded trajectory, or `empty std::optional` if the trajectory could not be loaded.
    */
   static Trajectory<? extends TrajectorySample<?>> loadTrajectoryString(
-      String trajectoryJsonString, ProjectFile projectFile) {
+      String trajectoryJsonString) {
     JsonObject wholeTrajectory = GSON.fromJson(trajectoryJsonString, JsonObject.class);
     String name = wholeTrajectory.get("name").getAsString();
     int version;
@@ -206,12 +147,13 @@ public final class Choreo {
       System.arraycopy(splits, 0, newArray, 1, splits.length);
       splits = newArray;
     }
-    if (projectFile.type.equals("Swerve")) {
+    String sampleType = trajectoryObj.get("sampleType").getAsString();
+    if (sampleType.equals("Swerve")) {
       HAL.report(tResourceType.kResourceType_ChoreoTrajectory, 1);
 
       SwerveSample[] samples = GSON.fromJson(trajectoryObj.get("samples"), SwerveSample[].class);
       return new Trajectory<SwerveSample>(name, List.of(samples), List.of(splits), List.of(events));
-    } else if (projectFile.type.equals("Differential")) {
+    } else if (sampleType.equals("Differential")) {
       HAL.report(tResourceType.kResourceType_ChoreoTrajectory, 2);
 
       DifferentialSample[] sampleArray =
@@ -219,7 +161,7 @@ public final class Choreo {
       return new Trajectory<DifferentialSample>(
           name, List.of(sampleArray), List.of(splits), List.of(events));
     } else {
-      throw new RuntimeException("Unknown project type: " + projectFile.type);
+      throw new RuntimeException("Unknown drive type: " + sampleType);
     }
   }
 
@@ -319,55 +261,6 @@ public final class Choreo {
     /** Clear the cache. */
     public void clear() {
       cache.clear();
-    }
-  }
-
-  /**
-   * Creates an alert under the "Choreo" group.
-   *
-   * @param name The name of the alert
-   * @param type The type of alert
-   * @return an Alert published under the "Choreo" group
-   */
-  public static Alert alert(String name, Alert.AlertType type) {
-    return new Alert("Choreo", name, type);
-  }
-
-  /**
-   * Creates a {@link MultiAlert} under the "Choreo" group.
-   *
-   * @param textGenerator A function that accepts a list of causes and returns an alert message
-   * @param type The type of alert
-   * @return a MultiAlert published under the "Choreo" group
-   */
-  public static MultiAlert multiAlert(
-      Function<List<String>, String> textGenerator, Alert.AlertType type) {
-    return new MultiAlert(textGenerator, type);
-  }
-
-  /**
-   * An alert that can have multiple causes. Utilizes a function to generate an error message from a
-   * list of causes.
-   */
-  public static class MultiAlert extends Alert {
-    private final Function<List<String>, String> textGenerator;
-    private final List<String> causes = new ArrayList<>();
-
-    MultiAlert(Function<List<String>, String> textGenerator, AlertType type) {
-      super("Choreo", textGenerator.apply(List.of()), type);
-      this.textGenerator = textGenerator;
-    }
-
-    /**
-     * Adds an error causer to this alert, and pushes the alert to networktables if it is not
-     * already present.
-     *
-     * @param name The name of the error causer
-     */
-    public void addCause(String name) {
-      causes.add(name);
-      setText(textGenerator.apply(causes));
-      set(true);
     }
   }
 }
