@@ -18,7 +18,6 @@
 #include <wpi/MathExtras.h>
 #include <wpi/json_fwd.h>
 
-#include "choreo/trajectory/TrajectorySample.h"
 #include "choreo/util/AllianceFlipperUtil.h"
 
 namespace choreo {
@@ -180,7 +179,7 @@ class SwerveSample {
                                      units::second_t t) const {
     units::scalar_t scale = (t - timestamp) / (endValue.timestamp - timestamp);
     frc::Pose2d interpolatedPose =
-        frc::Interpolate(GetPose(), endValue.GetPose(), scale.value());
+        GetPose().Exp(GetPose().Log(endValue.GetPose()) * scale.value());
 
     std::array<units::newton_t, 4> interpolatedForcesX;
     std::array<units::newton_t, 4> interpolatedForcesY;
@@ -273,8 +272,8 @@ class SwerveSample {
   std::array<units::newton_t, 4> moduleForcesY{0_N, 0_N, 0_N, 0_N};
 };
 
-void to_json(wpi::json& json, const SwerveSample& TrajectorySample);
-void from_json(const wpi::json& json, SwerveSample& TrajectorySample);
+void to_json(wpi::json& json, const SwerveSample& trajectorySample);
+void from_json(const wpi::json& json, SwerveSample& trajectorySample);
 
 }  // namespace choreo
 
