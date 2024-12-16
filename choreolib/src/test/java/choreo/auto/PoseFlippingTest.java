@@ -2,6 +2,7 @@
 
 package choreo.auto;
 
+import static choreo.auto.AutoTestHelper.setAlliance;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -15,19 +16,12 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class PoseFlippingTest {
   Optional<Alliance> alliance;
-  boolean useAllianceFlipping;
-  AutoFactory factory;
-
-  @BeforeEach
-  void setup() {
-    assert HAL.initialize(500, 0);
-    factory = AutoTestHelper.factory(() -> alliance, () -> useAllianceFlipping);
-  }
+  AutoFactory factoryFlip;
+  AutoFactory factoryNoFlip;
 
   /**
    * Test for a pose that flips when flipping is enabled and alliance is red, is unflipped whenever
@@ -35,24 +29,28 @@ public class PoseFlippingTest {
    */
   void testPoseProperlyFlipped(
       Pose2d unflipped, Pose2d flipped, Supplier<Optional<Pose2d>> poseToTest) {
-    alliance = Optional.empty();
-    useAllianceFlipping = true;
+    setAlliance(Optional.empty());
     assertTrue(poseToTest.get().isEmpty());
-    alliance = Optional.of(Alliance.Blue);
+    setAlliance(Optional.of(Alliance.Blue));
     assertEquals(poseToTest.get(), Optional.of(unflipped));
-    alliance = Optional.of(Alliance.Red);
+    setAlliance(Optional.of(Alliance.Red));
     assertEquals(poseToTest.get(), Optional.of(flipped));
-    // initial pose is the unflipped pose if flipping is disabled, for all three alliances
-    useAllianceFlipping = false;
+  }
+
+  void testPoseProperlyNoFlipped(
+      Pose2d unflipped, Pose2d flipped, Supplier<Optional<Pose2d>> poseToTest) {
     assertEquals(poseToTest.get(), Optional.of(unflipped));
-    alliance = Optional.of(Alliance.Blue);
+    setAlliance(Optional.of(Alliance.Blue));
     assertEquals(poseToTest.get(), Optional.of(unflipped));
-    alliance = Optional.of(Alliance.Red);
+    setAlliance(Optional.of(Alliance.Red));
     assertEquals(poseToTest.get(), Optional.of(unflipped));
   }
 
   @Test
   void testGetEndPose() {
+    assert HAL.initialize(500, 0);
+    factoryFlip = AutoTestHelper.factory(true);
+    factoryNoFlip = AutoTestHelper.factory(false);
     Pose2d start = Pose2d.kZero;
     Pose2d end = new Pose2d(1, 1, Rotation2d.fromRadians(1));
     Pose2d startFlipped = AllianceFlipUtil.flip(start);
@@ -90,9 +88,12 @@ public class PoseFlippingTest {
             List.of(),
             List.of());
 
-    AutoTrajectory autoTrajectory =
-        factory.trajectory(trajectory, factory.newRoutine("testroutine"));
-    testPoseProperlyFlipped(start, startFlipped, autoTrajectory::getInitialPose);
-    testPoseProperlyFlipped(end, endFlipped, autoTrajectory::getFinalPose);
+    AutoTrajectory autoTrajFlipped = factoryFlip.newRoutine("testroutine").trajectory(trajectory);
+    testPoseProperlyFlipped(start, startFlipped, autoTrajFlipped::getInitialPose);
+    testPoseProperlyFlipped(end, endFlipped, autoTrajFlipped::getFinalPose);
+
+    AutoTrajectory autoTrajNoFlip = factoryNoFlip.newRoutine("testroutine").trajectory(trajectory);
+    testPoseProperlyNoFlipped(start, startFlipped, autoTrajNoFlip::getInitialPose);
+    testPoseProperlyNoFlipped(end, endFlipped, autoTrajNoFlip::getFinalPose);
   }
 }
