@@ -3,6 +3,7 @@
 package choreo.auto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.hal.HAL;
@@ -12,6 +13,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.smartdashboard.SendableBuilderImpl;
 import edu.wpi.first.wpilibj2.command.Commands;
+import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +29,7 @@ public class AutoChooserTest {
     assert HAL.initialize(500, 0);
     ntInstance = NetworkTableInstance.create();
     builder = new SendableBuilderImpl();
+    builder.startListeners();
 
     ntInstance.stopClient();
     ntInstance.stopServer();
@@ -36,6 +39,9 @@ public class AutoChooserTest {
   @AfterEach
   public void tearDown() {
     ntInstance.close();
+    builder.close();
+    builder.clearProperties();
+    builder.stopListeners();
   }
 
   private String chooserPath(String testFuncName) {
@@ -69,11 +75,12 @@ public class AutoChooserTest {
   }
 
   private void assertNTOptions(String testFuncName, String... expected) {
-    String[] options = table(testFuncName).getEntry("options").getStringArray(new String[0]);
+    Set<String> options =
+        Set.of(table(testFuncName).getEntry("options").getStringArray(new String[0]));
 
-    assertEquals(expected.length, options.length);
+    assertEquals(expected.length, options.size());
     for (int i = 0; i < expected.length; i++) {
-      assertEquals(expected[i], options[i]);
+      assertTrue(options.contains(expected[i]), "Missing option: " + expected[i]);
     }
   }
 

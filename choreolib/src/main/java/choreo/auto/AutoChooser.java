@@ -36,7 +36,7 @@ import java.util.function.Supplier;
  * RobotModeTriggers.autonomous.whileTrue(chooser.autoSchedulingCmd());</code>
  */
 public class AutoChooser implements Sendable {
-  static final String NONE_NAME = "__Nothing__";
+  static final String NONE_NAME = "Nothing";
   private static final Alert selectedNonexistentAuto =
       ChoreoAlert.alert("Selected an auto that isn't an option", kError);
 
@@ -45,11 +45,11 @@ public class AutoChooser implements Sendable {
 
   // private final StringEntry selected, active;
   // private final StringArrayEntry options;
-  private String selected = NONE_NAME, active = NONE_NAME;
+  private String selected = NONE_NAME;
   private String[] options = new String[] {NONE_NAME};
 
-  private String lastCommandName = NONE_NAME;
-  private Command lastCommand = Commands.none();
+  private String activeCommandName = NONE_NAME;
+  private Command selectedCommand = Commands.none();
 
   /** Constructs a new {@link AutoChooser}. */
   public AutoChooser() {}
@@ -63,23 +63,21 @@ public class AutoChooser implements Sendable {
    * @return The name of the selected option.
    */
   public String select(String selectStr) {
+    selected = selectStr;
     if (DriverStation.isDisabled()
         && DriverStation.isDSAttached()
         && DriverStation.getAlliance().isPresent()) {
-      selected = selectStr;
-      if (selectStr.equals(lastCommandName)) return active;
-      if (!autoRoutines.containsKey(selectStr) && !selectStr.equals(NONE_NAME)) {
+      if (selected.equals(activeCommandName)) return activeCommandName;
+      if (!autoRoutines.containsKey(selected) && !selected.equals(NONE_NAME)) {
         selected = NONE_NAME;
-        selectStr = NONE_NAME;
         selectedNonexistentAuto.set(true);
       } else {
         selectedNonexistentAuto.set(false);
       }
-      lastCommandName = selectStr;
-      lastCommand = autoRoutines.get(lastCommandName).get();
-      active = lastCommandName;
+      activeCommandName = selected;
     }
-    return active;
+    selectedCommand = autoRoutines.get(activeCommandName).get();
+    return activeCommandName;
   }
 
   /**
@@ -164,7 +162,7 @@ public class AutoChooser implements Sendable {
    * @return A command that runs the selected {@link AutoRoutine}
    */
   public Command selectedCommandScheduler() {
-    return Commands.defer(() -> lastCommand.asProxy(), Set.of());
+    return Commands.defer(() -> selectedCommand.asProxy(), Set.of());
   }
 
   /**
@@ -176,12 +174,13 @@ public class AutoChooser implements Sendable {
    * @return The currently selected command.
    */
   public Command selectedCommand() {
-    return lastCommand.withName(lastCommandName);
+    return selectedCommand.withName(activeCommandName);
   }
 
   @Override
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("String Chooser");
+    builder.publishConstBoolean(".controllable", true);
     builder.publishConstString("default", NONE_NAME);
     builder.addStringArrayProperty("options", () -> options, null);
     builder.addStringProperty("selected", () -> selected, this::select);
