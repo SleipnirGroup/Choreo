@@ -54,11 +54,6 @@ public class ChoreoTests {
 }
 """;
 
-  // private static final Gson GSON =
-  //     new GsonBuilder()
-  //         .registerTypeAdapter(EventMarker.class, new EventMarker.Deserializer())
-  //         .create();
-
   private Trajectory<SwerveSample> CORRECT_SWERVE_TRAJECTORY =
       new Trajectory<SwerveSample>(
           "New Path",
