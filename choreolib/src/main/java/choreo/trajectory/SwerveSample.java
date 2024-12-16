@@ -3,6 +3,7 @@
 package choreo.trajectory;
 
 import choreo.util.AllianceFlipUtil;
+import choreo.util.ArrayUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -320,10 +321,6 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
     }
 
     var other = (SwerveSample) obj;
-    var fxBothNull = (this.fx == null && other.fx == null);
-    var fxNeitherNull = (this.fx != null && other.fx != null);
-    var fyBothNull = (this.fy == null && other.fy == null);
-    var fyNeitherNull = (this.fy != null && other.fy != null);
     var equal = MathUtil.isNear(this.t       , other.t, 1E-9)
     && MathUtil.isNear(this.x       , other.x, 1E-9)
     && MathUtil.isNear(this.y       , other.y, 1E-9)
@@ -333,26 +330,9 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
     && MathUtil.isNear(this.omega   , other.omega, 1E-9)
     && MathUtil.isNear(this.ax      , other.ax, 1E-9)
     && MathUtil.isNear(this.ay      , other.ay, 1E-9)
-    && MathUtil.isNear(this.alpha      , other.alpha, 1E-9);
-    if (!equal) return false;
-    if (!fxBothNull) {
-      if (!fxNeitherNull) return false;
-      equal &= (this.fx.length == other.fx.length);
-      if (!equal) return false;
-      for (int i = 0; i < this.fx.length; ++i) {
-        equal &= MathUtil.isNear(this.fx[i], other.fx[i], 1E-9);
-        if (!equal) return false;
-      }
-    }
-    if (!fyBothNull) {
-      if (!fyNeitherNull) return false;
-      equal &= (this.fy.length == other.fy.length);
-      if (!equal) return false;
-      for (int i = 0; i < this.fy.length; ++i) {
-        equal &= MathUtil.isNear(this.fy[i], other.fy[i], 1E-9);
-        if (!equal) return false;
-      }
-    }
+    && MathUtil.isNear(this.alpha      , other.alpha, 1E-9)
+    && ArrayUtil.zipEquals(this.fx, other.fx, (a, b)->MathUtil.isNear(a, b, 1E-9))
+    && ArrayUtil.zipEquals(this.fy, other.fy, (a, b)->MathUtil.isNear(a, b, 1E-9));
 
     return equal;
   }
