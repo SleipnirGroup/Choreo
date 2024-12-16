@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+/**
+ * A utility class for creating alerts under the "ChoreoAlert" group.
+ */
 public class ChoreoAlert {
   /**
    * Creates an alert under the "Choreo" group.
