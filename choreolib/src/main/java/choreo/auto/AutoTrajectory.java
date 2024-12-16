@@ -56,45 +56,6 @@ public class AutoTrajectory {
       ChoreoAlert.multiAlert(
           causes -> "Unable to get initial pose for trajectories " + causes + ".", kError);
 
-  /**
-   * Creates a trigger that produces a rising edge when any of the trajectories are finished.
-   *
-   * @param trajectories the trajectories to watch
-   * @return a trigger that determines if any of the trajectories are finished
-   */
-  public static Trigger anyDone(AutoTrajectory... trajectories) {
-    return anyDone(0, trajectories);
-  }
-
-  /**
-   * Creates a trigger that produces a rising edge when any of the trajectories are finished.
-   *
-   * @param cyclesToDelay The number of cycles to delay.
-   * @param trajectories the trajectories to watch
-   * @return a trigger that determines if any of the trajectories are finished
-   */
-  public static Trigger anyDone(int cyclesToDelay, AutoTrajectory... trajectories) {
-    var trigger = trajectories[0].done(cyclesToDelay);
-    for (int i = 1; i < trajectories.length; i++) {
-      trigger = trigger.or(trajectories[0].done(cyclesToDelay));
-    }
-    return trigger;
-  }
-
-  /**
-   * Creates a trigger that returns true when any of the trajectories given are active.
-   *
-   * @param trajectories the trajectories to watch
-   * @return a trigger that determines if any of the trajectories are active
-   */
-  public static Trigger anyActive(AutoTrajectory... trajectories) {
-    var trigger = trajectories[0].active();
-    for (int i = 1; i < trajectories.length; i++) {
-      trigger = trigger.or(trajectories[0].active());
-    }
-    return trigger;
-  }
-
   private static final double DEFAULT_TOLERANCE_METERS = Units.inchesToMeters(3);
   private static final double DEFAULT_TOLERANCE_RADIANS = Units.degreesToRadians(3);
   private final String name;
