@@ -18,4 +18,5 @@ vx = 1 | vx = -1 | vx = -1
 vy = 1 | vy = -1 | vy = 1
 ω,α > 0 | ω,α > 0 | ω,α < 0 | Mirroring a CCW-spinning robot gives a CW-spinning robot.
 vl = -1, vr = 1 | unchanged | vl = 1, vr = -1 | Derived from above.
+fx, fy          | both negated | x negated
 force left side | unchanged | flips to right side (FR, BR) | and vice versa left side, right side
