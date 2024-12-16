@@ -94,9 +94,7 @@ See [Getting Started](./getting-started.md/#setting-up-the-drive-subsystem) for 
         void Robot::AutonomousInit() {
             if (trajectory.has_value()) {
                 // Get the initial pose of the trajectory
-                std::optional<frc::Pose2d> initialPose = trajectory.value().GetInitialPose(IsRedAlliance());
-
-                if (initialPose.has_value()) {
+                if (auto initialPose = trajectory.value().GetInitialPose(IsRedAlliance())) {
                     // Reset odometry to the start of the trajectory
                     driveSubsystem.ResetOdometry(initialPose.value());
                 }
@@ -109,9 +107,7 @@ See [Getting Started](./getting-started.md/#setting-up-the-drive-subsystem) for 
         void Robot::AutonomousPeriodic() {
             if (trajectory.has_value()) {
                 // Sample the trajectory at the current time into the autonomous period
-                std::optional<choreo::SwerveSample> sample = trajectory.value().SampleAt(timer.Get(), IsRedAlliance());
-
-                if (sample.has_value()) {
+                if (auto sample = trajectory.value().SampleAt(timer.Get(), IsRedAlliance())) {
                     driveSubsystem.FollowTrajectory(sample.value());
                 }
             }
