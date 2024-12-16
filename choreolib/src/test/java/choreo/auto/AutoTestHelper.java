@@ -2,16 +2,16 @@
 
 package choreo.auto;
 
+import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 
 public class AutoTestHelper {
-  public static AutoFactory factory(
-      Supplier<Optional<Alliance>> alliance, boolean useAllianceFlipping) {
+  public static AutoFactory factory(boolean useAllianceFlipping) {
     AtomicReference<Pose2d> pose = new AtomicReference<>(new Pose2d());
     return new AutoFactory(
         () -> pose.get(),
@@ -20,11 +20,26 @@ public class AutoTestHelper {
         useAllianceFlipping,
         new Subsystem() {},
         new AutoFactory.AutoBindings(),
-        (sample, isStart) -> {},
-        alliance);
+        (sample, isStart) -> {});
   }
 
   public static AutoFactory factory() {
-    return factory(() -> Optional.of(Alliance.Blue), false);
+    return factory(false);
+  }
+
+  public static void setAlliance(Optional<Alliance> alliance) {
+    var id =
+        alliance
+            .map(
+                all -> {
+                  if (all.equals(Alliance.Blue)) {
+                    return AllianceStationID.Blue1;
+                  } else {
+                    return AllianceStationID.Red1;
+                  }
+                })
+            .orElse(AllianceStationID.Unknown);
+    DriverStationSim.setAllianceStationId(id);
+    DriverStationSim.notifyNewData();
   }
 }

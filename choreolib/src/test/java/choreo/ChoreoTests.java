@@ -7,8 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import choreo.trajectory.EventMarker;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -56,10 +54,10 @@ public class ChoreoTests {
 }
 """;
 
-  private static final Gson GSON =
-      new GsonBuilder()
-          .registerTypeAdapter(EventMarker.class, new EventMarker.Deserializer())
-          .create();
+  // private static final Gson GSON =
+  //     new GsonBuilder()
+  //         .registerTypeAdapter(EventMarker.class, new EventMarker.Deserializer())
+  //         .create();
 
   private Trajectory<SwerveSample> CORRECT_SWERVE_TRAJECTORY =
       new Trajectory<SwerveSample>(

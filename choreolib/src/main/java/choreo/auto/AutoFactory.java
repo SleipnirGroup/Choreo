@@ -131,8 +131,7 @@ public class AutoFactory {
       boolean useAllianceFlipping,
       Subsystem driveSubsystem,
       AutoBindings bindings,
-      TrajectoryLogger<SampleType> trajectoryLogger,
-      Supplier<Optional<Alliance>> alliance) {
+      TrajectoryLogger<SampleType> trajectoryLogger) {
     requireNonNullParam(poseSupplier, "poseSupplier", "AutoFactory");
     requireNonNullParam(resetOdometry, "resetOdometry", "AutoFactory");
     requireNonNullParam(controller, "controller", "AutoFactory");
@@ -147,46 +146,8 @@ public class AutoFactory {
     this.useAllianceFlipping = () -> useAllianceFlipping;
     this.bindings.merge(bindings);
     this.trajectoryLogger = trajectoryLogger;
-    this.alliance = alliance;
+    this.alliance = DriverStation::getAlliance;
     HAL.report(tResourceType.kResourceType_ChoreoTrigger, 1);
-  }
-
-  /**
-   * Create a factory that can be used to create {@link AutoRoutine} and {@link AutoTrajectory}.
-   *
-   * @param <SampleType> The type of samples in the trajectory.
-   * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
-   *     robot.
-   * @param resetOdometry A function that receives a field-relative {@link Pose2d} to reset the
-   *     robot's odometry to.
-   * @param controller A function that receives the current {@link SampleType} and controls the
-   *     robot.
-   * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
-   *     Command}s.
-   * @param useAllianceFlipping If this is true, when on the red alliance, the path will be mirrored
-   *     to the opposite side, while keeping the same coordinate system origin.
-   * @param bindings Universal trajectory event bindings.
-   * @param trajectoryLogger A {@link TrajectoryLogger} to log {@link Trajectory} as they start and
-   *     finish.
-   * @see AutoChooser using this factory with AutoChooser to generate auto routines.
-   */
-  public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
-      Supplier<Pose2d> poseSupplier,
-      Consumer<Pose2d> resetOdometry,
-      Consumer<SampleType> controller,
-      boolean useAllianceFlipping,
-      Subsystem driveSubsystem,
-      AutoBindings bindings,
-      TrajectoryLogger<SampleType> trajectoryLogger) {
-    this(
-        poseSupplier,
-        resetOdometry,
-        controller,
-        useAllianceFlipping,
-        driveSubsystem,
-        bindings,
-        trajectoryLogger,
-        DriverStation::getAlliance);
   }
 
   /**
@@ -220,8 +181,7 @@ public class AutoFactory {
         useAllianceFlipping,
         driveSubsystem,
         bindings,
-        (sample, isStart) -> {},
-        DriverStation::getAlliance);
+        (sample, isStart) -> {});
   }
 
   /**
