@@ -211,7 +211,7 @@ public AutoRoutine branching2024Auto() {
     M1toScore.done().onTrue(shooterSubsystem.shoot().andThen(scoreToM2.cmd()));
 
     // M2
-    Trigger atM2 = routine.anyDone(scoreToM2, M1toM2);
+    Trigger atM2 = routine.anyDone(scoreToM2, M1toM2); // (3)
     atM2.and(shooterSubsystem::noGamepiece).onTrue(M2toM3.cmd());
     atM2.and(shooterSubsystem::hasGamepiece).onTrue(M2toScore.cmd());
     M2toScore.done().onTrue(shooterSubsystem.shoot().andThen(scoreToM3.cmd()));
@@ -226,7 +226,8 @@ public AutoRoutine branching2024Auto() {
 ```
 
 1. ![Branching Auto Map](../media/choreolib-branching-auto.png)
-2. `AutoRoutine.anyActive()` can be used as a shorthand for checking if any of many trajectories are active. You can also check if any trajectories are done using `AutoRoutine.anyDone()`.
+2. `AutoRoutine.anyActive()` can be used as a shorthand for checking if any trajectories in a set are active.
+3. Similar to `AutoRoutine.anyActive()`, `AutoRoutine.anyDone()` can be used as a shorthand for checking if any trajectories in a set are done.
 
 ## AutoBindings
 
