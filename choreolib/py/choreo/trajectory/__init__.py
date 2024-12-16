@@ -504,7 +504,7 @@ class SwerveSample:
             return SwerveSample(
                 self.timestamp,
                 flipper.flip_x(self.x),
-                self.y,
+                flipper.flip_y(self.y),
                 flipper.flip_heading(self.heading),
                 -self.vx,
                 self.vy,
@@ -512,8 +512,8 @@ class SwerveSample:
                 -self.ax,
                 self.ay,
                 -self.alpha,
-                [-x for x in self.fx[::-1]],
-                [y for y in self.fy[::-1]],
+                [-self.fx[1], -self.fx[0], -self.fx[3], -self.fx[2]],
+                [self.fy[1], self.fy[0], self.fy[3], self.fy[2]],
             )
         else:
             return SwerveSample(
@@ -523,10 +523,10 @@ class SwerveSample:
                 flipper.flip_heading(self.heading),
                 -self.vx,
                 -self.vy,
-                -self.omega,
+                self.omega,
                 -self.ax,
                 -self.ay,
-                -self.alpha,
+                self.alpha,
                 [-x for x in self.fx],
                 [-y for y in self.fy],
             )

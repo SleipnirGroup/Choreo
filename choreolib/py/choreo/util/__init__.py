@@ -90,7 +90,7 @@ class RotateAroundFlipper:
         Returns:
             The flipped heading.
         """
-        return math.pi - heading
+        return math.pi + heading
 
 
 FLIPPER_MAP: Dict[int, FlipperType] = {
