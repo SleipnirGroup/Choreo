@@ -181,15 +181,15 @@ class DifferentialSample:
             return DifferentialSample(
                 self.timestamp,
                 flipper.flip_x(self.x),
-                self.y,
+                flipper.flip_y(self.y), # No-op for mirroring
                 flipper.flip_heading(self.heading),
-                self.vl,
                 self.vr,
+                self.vl,
                 -self.omega,
-                self.al,
                 self.ar,
-                self.fl,
+                self.al,
                 self.fr,
+                self.fl,
             )
         else:
             return DifferentialSample(
@@ -197,13 +197,13 @@ class DifferentialSample:
                 flipper.flip_x(self.x),
                 flipper.flip_y(self.y),
                 flipper.flip_heading(self.heading),
-                self.vr,
                 self.vl,
+                self.vr,
                 self.omega,
-                self.ar,
                 self.al,
-                self.fr,
+                self.ar,
                 self.fl,
+                self.fr,
             )
 
     def __eq__(self, other: DifferentialSample) -> bool:

@@ -131,28 +131,28 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
           new DifferentialSample(
               t,
               AllianceFlipUtil.flipX(x),
-              y,
+              AllianceFlipUtil.flipY(y), // No-op for mirroring
               AllianceFlipUtil.flipHeading(heading),
-              vl,
               vr,
+              vl,
               -omega,
-              al,
               ar,
-              fl,
-              fr);
+              al,
+              fr,
+              fl);
       case ROTATE_AROUND ->
           new DifferentialSample(
               t,
               AllianceFlipUtil.flipX(x),
               AllianceFlipUtil.flipY(y),
               AllianceFlipUtil.flipHeading(heading),
-              vr,
               vl,
+              vr,
               omega,
-              ar,
               al,
-              fr,
-              fl);
+              ar,
+              fl,
+              fr);
     };
   }
 
