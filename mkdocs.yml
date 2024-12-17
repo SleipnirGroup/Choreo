@@ -111,3 +111,4 @@ nav:
       - Contributing Guide: contributing/contributing-guide.md
       - Release Process: contributing/release-process.md
       - Upgrading File Schemas: contributing/schema-upgrade.md
+      - Sample Flipping Logic: contributing/sample-flipping.md
