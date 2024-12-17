@@ -131,6 +131,7 @@ def update_version(version: str) -> None:
                 raise e
             with open(file_path, "w") as f:
                 json.dump(og, f, indent=int(location.file_format[-1]))
+                f.write("\n")
         elif location.file_format == "toml":
             import tomlkit
 
