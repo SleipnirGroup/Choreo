@@ -2,21 +2,28 @@
 
 Once trajectories are created by Choreo, they must be saved within your robot project.
 
-Choreo has 2 different kinds of files:
-a .chor file which stores general configs for your project,
-and multiple .traj files which describe individually generated trajectories.
+Choreo has 2 different kinds of files: a .chor file which stores general configs for your project,
+and multiple .traj files which store individual trajectories. Choreo generates and updates .traj files
+in the same directory(or folder) that your .chor file is stored in.
 
 ## Saving your .chor file
 
-Libraries such as ChoreoLib and PathPlannerLib require the project's .chor file
-to be stored within the deploy/choreo directory. To do so:
+Path following libraries, such as ChoreoLib and PathPlannerLib, require your .traj files to be located
+in a specific directory so that they can be read. For Java and C++ teams, .traj files must be placed under
+the deploy/choreo directory; for python teams, they must be placed in the root directory.
+
+### For Java and C++ teams:
 
 1. Create a "choreo" folder within the "deploy" folder of your robot project.
-   The deploy folder can be found within "src/main".
+   The deploy folder can be found under "src/main".
 2. Open the choreo sidebar and click "save project"(see "Sidebar Navigation" for more details).
-3. Navigate to your robot project's folder, then find(and select) the "choreo" folder
-   you just created.
+3. Navigate to the location of your robot project and find the "src/main/deploy/choreo" folder within it.
 4. Name your .chor file whatever you want.
+
+### For Python teams:
+
+1. Open the choreo sidebar and click "save project"(see "Sidebar Navigation" for more details).
+2. Navigate to the location of your robot project and place your .chor file there.
 
 ## Sidebar Navigation
 
