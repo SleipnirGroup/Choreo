@@ -3,6 +3,7 @@
 package choreo.trajectory;
 
 import choreo.util.AllianceFlipUtil;
+import choreo.util.ArrayUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -330,7 +331,7 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
         && this.ax == other.ax
         && this.ay == other.ay
         && this.alpha == other.alpha
-        && Arrays.equals(this.fx, other.fx)
-        && Arrays.equals(this.fy, other.fy);
+        && ArrayUtil.zipEquals(this.fx, other.fx, (a, b)->a.doubleValue()==b.doubleValue())
+        && ArrayUtil.zipEquals(this.fy, other.fy, (a, b)->a.doubleValue()==b.doubleValue());
   }
 }
