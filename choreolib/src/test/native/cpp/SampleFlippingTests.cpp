@@ -57,7 +57,6 @@ TEST(SampleFlippingTest, ZeroSwerveSample) {
     std::cerr << "Error: " << e.what() << std::endl;
     FAIL();
   }
-  SUCCEED();
 }
 
 TEST(SampleFlippingTest, SwerveSample) {
@@ -105,7 +104,6 @@ TEST(SampleFlippingTest, SwerveSample) {
     std::cerr << "Error: " << e.what() << std::endl;
     FAIL();
   }
-  SUCCEED();
 }
 
 TEST(SampleFlippingTest, ZeroDifferentialSample) {
@@ -138,7 +136,6 @@ TEST(SampleFlippingTest, ZeroDifferentialSample) {
     std::cerr << "Error: " << e.what() << std::endl;
     FAIL();
   }
-  SUCCEED();
 }
 
 TEST(SampleFlippingTest, DifferentialSample) {
@@ -171,5 +168,4 @@ TEST(SampleFlippingTest, DifferentialSample) {
     std::cerr << "Error: " << e.what() << std::endl;
     FAIL();
   }
-  SUCCEED();
 }
