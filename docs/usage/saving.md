@@ -4,25 +4,25 @@ Once trajectories are created by Choreo, they must be saved within your robot pr
 
 Choreo has 2 different kinds of files: a .chor file which stores general configs for your project,
 and multiple .traj files which store individual trajectories. Choreo generates and updates .traj files
-in the same directory(or folder) that your .chor file is stored in.
+in the same directory (or folder) that your .chor file is stored in.
 
 ## Saving your .chor file
 
 Path following libraries, such as ChoreoLib and PathPlannerLib, require your .traj files to be located
 in a specific directory so that they can be read. For Java and C++ teams, .traj files must be placed under
-the deploy/choreo directory; for python teams, they must be placed in the root directory.
+the `deploy/choreo` directory; for Python teams, they must be placed in the root directory.
 
 ### For Java and C++ teams:
 
-1. Create a "choreo" folder within the "deploy" folder of your robot project.
-   The deploy folder can be found under "src/main".
-2. Open the choreo sidebar and click "save project"(see "Sidebar Navigation" for more details).
-3. Navigate to the location of your robot project and find the "src/main/deploy/choreo" folder within it.
+1. Create a `choreo` folder within the `deploy` folder of your robot project.
+   The deploy folder can be found under `src/main`.
+2. Open the Choreo sidebar and click "Save Project"(see "Sidebar Navigation" for more details).
+3. Navigate to the location of your robot project and find the `src/main/deploy/choreo` folder within it.
 4. Name your .chor file whatever you want.
 
 ### For Python teams:
 
-1. Open the choreo sidebar and click "save project"(see "Sidebar Navigation" for more details).
+1. Open the Choreo sidebar and click "Save Project"(see "Sidebar Navigation" for more details).
 2. Navigate to the location of your robot project and place your .chor file there.
 
 ## Sidebar Navigation
@@ -40,12 +40,12 @@ In the sidebar, there are five actions related to saving your project, along wit
 
 ## Open File
 
-This opens the system’s file select dialog to select the robot’s `.chor` file. This .chor file should be under the folders "src/main/deploy/choreo"
+This opens the system’s file select dialog to select the robot’s `.chor` file. This .chor file should be under the folders `src/main/deploy/choreo`
 in your robot project.
 
 ## Save File
 
-This opens the system’s file save dialog to select where to save the robot’s `.chor` file. Choreo strongly recommends saving this file in your deploy/choreo folder within your project.
+This opens the system’s file save dialog to select where to save the robot’s `.chor` file. Choreo strongly recommends saving this file in your `deploy/choreo` folder within your project.
 
 ## New File
 
