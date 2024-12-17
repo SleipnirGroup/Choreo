@@ -150,13 +150,13 @@ class DifferentialSample {
   constexpr DifferentialSample Flipped() const {
     constexpr auto flipper = choreo::util::GetFlipperForYear<Year>();
     if constexpr (flipper.isMirrored) {
-      return DifferentialSample(timestamp, flipper.FlipX(x), y,
-                                flipper.FlipHeading(heading), vl, vr, -omega,
-                                al, ar, fl, fr);
+      return DifferentialSample(timestamp, flipper.FlipX(x), flipper.FlipY(y),
+                                flipper.FlipHeading(heading), vr, vl, -omega,
+                                ar, al, fr, fl);
     } else {
       return DifferentialSample(timestamp, flipper.FlipX(x), flipper.FlipY(y),
-                                flipper.FlipHeading(heading), vr, vl, omega, ar,
-                                al, fr, fl);
+                                flipper.FlipHeading(heading), vl, vr, omega, al,
+                                ar, fl, fr);
     }
   }
 

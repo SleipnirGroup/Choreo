@@ -40,7 +40,7 @@ Choreo (Constraint-Honoring Omnidirectional Route Editor and Optimizer, pronounc
     Different types of **waypoints**, **constraints**, and **obstacles** along the path.
 
 
--   :material-library-shelves:{ .lg .middle } [__Vendor Installation__](./choreolib/installation.md)
+-   :material-library-shelves:{ .lg .middle } [__ChoreoLib Installation__](./choreolib/getting-started.md)
 
     ---
 

@@ -182,6 +182,10 @@ if(BUILD_TESTING)
         TrajoptLibTest
         PRIVATE TrajoptLib Catch2::Catch2WithMain
     )
+    catch_discover_tests(
+        TrajoptLibTest
+        DL_PATHS ${Sleipnir_BINARY_DIR}/$<${IS_MULTI_CONFIG}:$<CONFIG>>
+    )
 endif()
 
 # Build examples and example tests
@@ -222,6 +226,13 @@ if(BUILD_EXAMPLES)
                 ${example}Test
                 PRIVATE TrajoptLib Catch2::Catch2WithMain
             )
+            if(NOT CMAKE_TOOLCHAIN_FILE)
+                catch_discover_tests(
+                    ${example}Test
+                    DL_PATHS
+                        ${Sleipnir_BINARY_DIR}/$<${IS_MULTI_CONFIG}:$<CONFIG>>
+                )
+            endif()
         endif()
     endforeach()
 endif()
