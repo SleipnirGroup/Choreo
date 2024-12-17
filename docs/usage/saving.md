@@ -34,7 +34,6 @@ To access the sidebar, click the hamburger icon in the upper left corner.
 General Info:
 
 !!! note
-Choreo’s file saving mechanism ties into a WPILib robot root directory, wherein a single `.chor` file lives in the project’s root folder.
 
 In the sidebar, there are five actions related to saving your project, along with your project's current save location.
 
