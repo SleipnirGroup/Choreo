@@ -9,7 +9,8 @@ constexpr size_t kYOff = kXOff + 8;
 constexpr size_t kHeadingOff = kYOff + 8;
 constexpr size_t kVlOff = kHeadingOff + 8;
 constexpr size_t kVrOff = kVlOff + 8;
-constexpr size_t kAlOff = kVrOff + 8;
+constexpr size_t kOmegaOff = kVrOff + 8;
+constexpr size_t kAlOff = kOmegaOff + 8;
 constexpr size_t kArOff = kAlOff + 8;
 constexpr size_t kFlOff = kArOff + 8;
 constexpr size_t kFrOff = kFlOff + 8;
@@ -25,6 +26,7 @@ choreo::DifferentialSample StructType::Unpack(std::span<const uint8_t> data) {
       units::radian_t{wpi::UnpackStruct<double, kHeadingOff>(data)},
       units::meters_per_second_t{wpi::UnpackStruct<double, kVlOff>(data)},
       units::meters_per_second_t{wpi::UnpackStruct<double, kVrOff>(data)},
+      units::radians_per_second_t{wpi::UnpackStruct<double, kOmegaOff>(data)},
       units::meters_per_second_squared_t{
           wpi::UnpackStruct<double, kAlOff>(data)},
       units::meters_per_second_squared_t{
@@ -41,6 +43,7 @@ void StructType::Pack(std::span<uint8_t> data,
   wpi::PackStruct<kHeadingOff>(data, value.heading.value());
   wpi::PackStruct<kVlOff>(data, value.vl.value());
   wpi::PackStruct<kVrOff>(data, value.vr.value());
+  wpi::PackStruct<kOmegaOff>(data, value.omega.value());
   wpi::PackStruct<kAlOff>(data, value.al.value());
   wpi::PackStruct<kArOff>(data, value.ar.value());
   wpi::PackStruct<kFlOff>(data, value.fl.value());

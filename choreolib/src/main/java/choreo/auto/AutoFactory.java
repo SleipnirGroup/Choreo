@@ -52,7 +52,7 @@ public class AutoFactory {
         public void reset() {}
 
         @Override
-        public Trigger running() {
+        public Trigger active() {
           return new Trigger(loop, () -> false);
         }
       };
@@ -115,25 +115,21 @@ public class AutoFactory {
    *     robot.
    * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
    *     Command}s.
-   * @param useAllianceFlipping If this returns true, when on the red alliance, the path will be
-   *     mirrored to the opposite side, while keeping the same coordinate system origin. This will
-   *     be called every loop during the command.
+   * @param useAllianceFlipping If this is true, when on the red alliance, the path will be mirrored
+   *     to the opposite side, while keeping the same coordinate system origin.
    * @param bindings Universal trajectory event bindings.
    * @param trajectoryLogger A {@link TrajectoryLogger} to log {@link Trajectory} as they start and
    *     finish.
-   * @param alliance A custom supplier of the current alliance to use instead of {@link
-   *     DriverStation#getAlliance}.
    * @see AutoChooser using this factory with AutoChooser to generate auto routines.
    */
   public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
       Supplier<Pose2d> poseSupplier,
       Consumer<Pose2d> resetOdometry,
       Consumer<SampleType> controller,
-      BooleanSupplier useAllianceFlipping,
+      boolean useAllianceFlipping,
       Subsystem driveSubsystem,
       AutoBindings bindings,
-      TrajectoryLogger<SampleType> trajectoryLogger,
-      Supplier<Optional<Alliance>> alliance) {
+      TrajectoryLogger<SampleType> trajectoryLogger) {
     requireNonNullParam(poseSupplier, "poseSupplier", "AutoFactory");
     requireNonNullParam(resetOdometry, "resetOdometry", "AutoFactory");
     requireNonNullParam(controller, "controller", "AutoFactory");
@@ -145,10 +141,10 @@ public class AutoFactory {
     this.resetOdometry = resetOdometry;
     this.controller = controller;
     this.driveSubsystem = driveSubsystem;
-    this.useAllianceFlipping = useAllianceFlipping;
+    this.useAllianceFlipping = () -> useAllianceFlipping;
     this.bindings.merge(bindings);
     this.trajectoryLogger = trajectoryLogger;
-    this.alliance = alliance;
+    this.alliance = DriverStation::getAlliance;
     HAL.report(tResourceType.kResourceType_ChoreoTrigger, 1);
   }
 
@@ -165,47 +161,7 @@ public class AutoFactory {
    * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
    *     Command}s.
    * @param useAllianceFlipping If this returns true, when on the red alliance, the path will be
-   *     mirrored to the opposite side, while keeping the same coordinate system origin. This will
-   *     be called every loop during the command.
-   * @param bindings Universal trajectory event bindings.
-   * @param trajectoryLogger A {@link TrajectoryLogger} to log {@link Trajectory} as they start and
-   *     finish.
-   * @see AutoChooser using this factory with AutoChooser to generate auto routines.
-   */
-  public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
-      Supplier<Pose2d> poseSupplier,
-      Consumer<Pose2d> resetOdometry,
-      Consumer<SampleType> controller,
-      BooleanSupplier useAllianceFlipping,
-      Subsystem driveSubsystem,
-      AutoBindings bindings,
-      TrajectoryLogger<SampleType> trajectoryLogger) {
-    this(
-        poseSupplier,
-        resetOdometry,
-        controller,
-        useAllianceFlipping,
-        driveSubsystem,
-        bindings,
-        trajectoryLogger,
-        DriverStation::getAlliance);
-  }
-
-  /**
-   * Create a factory that can be used to create {@link AutoRoutine} and {@link AutoTrajectory}.
-   *
-   * @param <SampleType> The type of samples in the trajectory.
-   * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
-   *     robot.
-   * @param resetOdometry A function that receives a field-relative {@link Pose2d} to reset the
-   *     robot's odometry to.
-   * @param controller A function that receives the current {@link SampleType} and controls the
-   *     robot.
-   * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
-   *     Command}s.
-   * @param useAllianceFlipping If this returns true, when on the red alliance, the path will be
-   *     mirrored to the opposite side, while keeping the same coordinate system origin. This will
-   *     be called every loop during the command.
+   *     mirrored to the opposite side, while keeping the same coordinate system origin.
    * @param bindings Universal trajectory event bindings.
    * @see AutoChooser using this factory with AutoChooser to generate auto routines.
    */
@@ -213,7 +169,7 @@ public class AutoFactory {
       Supplier<Pose2d> poseSupplier,
       Consumer<Pose2d> resetOdometry,
       Consumer<SampleType> controller,
-      BooleanSupplier useAllianceFlipping,
+      boolean useAllianceFlipping,
       Subsystem driveSubsystem,
       AutoBindings bindings) {
     this(
@@ -223,8 +179,7 @@ public class AutoFactory {
         useAllianceFlipping,
         driveSubsystem,
         bindings,
-        (sample, isStart) -> {},
-        DriverStation::getAlliance);
+        (sample, isStart) -> {});
   }
 
   /**
@@ -242,6 +197,11 @@ public class AutoFactory {
     return new AutoRoutine(this, name, this::allianceKnownOrIgnored);
   }
 
+  /**
+   * Returns true if the alliance is known or alliance flipping is disabled.
+   *
+   * @return True if the alliance is known or alliance flipping is disabled.
+   */
   private boolean allianceKnownOrIgnored() {
     return !useAllianceFlipping.getAsBoolean() || alliance.get().isPresent();
   }
@@ -313,16 +273,16 @@ public class AutoFactory {
    *
    * <p><b>Important </b>
    *
-   * <p>{@link #trajectoryCommand} and {@link #trajectory} methods should not be mixed in the same
-   * auto routine. {@link #trajectoryCommand} is used as an escape hatch for teams that don't need
-   * the benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link
-   * #trajectoryCommand} does not invoke bindings added via calling {@link #bind} or {@link
-   * AutoBindings} passed into the factory constructor.
+   * <p>{@link #trajectoryCmd} and {@link #trajectory} methods should not be mixed in the same auto
+   * routine. {@link #trajectoryCmd} is used as an escape hatch for teams that don't need the
+   * benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link #trajectoryCmd}
+   * does not invoke bindings added via calling {@link #bind} or {@link AutoBindings} passed into
+   * the factory constructor.
    *
    * @param trajectoryName The name of the trajectory to use.
    * @return A new {@link AutoTrajectory}.
    */
-  public Command trajectoryCommand(String trajectoryName) {
+  public Command trajectoryCmd(String trajectoryName) {
     return trajectory(trajectoryName, VOID_ROUTINE).cmd();
   }
 
@@ -331,17 +291,17 @@ public class AutoFactory {
    *
    * <p><b>Important </b>
    *
-   * <p>{@link #trajectoryCommand} and {@link #trajectory} methods should not be mixed in the same
-   * auto routine. {@link #trajectoryCommand} is used as an escape hatch for teams that don't need
-   * the benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link
-   * #trajectoryCommand} does not invoke bindings added via calling {@link #bind} or {@link
-   * AutoBindings} passed into the factory constructor.
+   * <p>{@link #trajectoryCmd} and {@link #trajectory} methods should not be mixed in the same auto
+   * routine. {@link #trajectoryCmd} is used as an escape hatch for teams that don't need the
+   * benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link #trajectoryCmd}
+   * does not invoke bindings added via calling {@link #bind} or {@link AutoBindings} passed into
+   * the factory constructor.
    *
    * @param trajectoryName The name of the trajectory to use.
    * @param splitIndex The index of the split trajectory to use.
    * @return A new {@link AutoTrajectory}.
    */
-  public Command trajectoryCommand(String trajectoryName, final int splitIndex) {
+  public Command trajectoryCmd(String trajectoryName, final int splitIndex) {
     return trajectory(trajectoryName, splitIndex, VOID_ROUTINE).cmd();
   }
 
@@ -350,17 +310,17 @@ public class AutoFactory {
    *
    * <p><b>Important </b>
    *
-   * <p>{@link #trajectoryCommand} and {@link #trajectory} methods should not be mixed in the same
-   * auto routine. {@link #trajectoryCommand} is used as an escape hatch for teams that don't need
-   * the benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link
-   * #trajectoryCommand} does not invoke bindings added via calling {@link #bind} or {@link
-   * AutoBindings} passed into the factory constructor.
+   * <p>{@link #trajectoryCmd} and {@link #trajectory} methods should not be mixed in the same auto
+   * routine. {@link #trajectoryCmd} is used as an escape hatch for teams that don't need the
+   * benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link #trajectoryCmd}
+   * does not invoke bindings added via calling {@link #bind} or {@link AutoBindings} passed into
+   * the factory constructor.
    *
    * @param <SampleType> The type of the trajectory samples.
    * @param trajectory The trajectory to use.
    * @return A new {@link AutoTrajectory}.
    */
-  public <SampleType extends TrajectorySample<SampleType>> Command trajectoryCommand(
+  public <SampleType extends TrajectorySample<SampleType>> Command trajectoryCmd(
       Trajectory<SampleType> trajectory) {
     return trajectory(trajectory, VOID_ROUTINE).cmd();
   }
@@ -396,20 +356,6 @@ public class AutoFactory {
   public <SampleType extends TrajectorySample<SampleType>> Command resetOdometry(
       Trajectory<SampleType> trajectory) {
     return trajectory(trajectory, VOID_ROUTINE).resetOdometry();
-  }
-
-  /**
-   * Creates an {@link AutoRoutine} with the name of the command. The command is the bound to the
-   * routine's enabled trigger. This is useful for adding a {@link Command} composition based auto
-   * to the {@link choreo.auto.AutoChooser}.
-   *
-   * @param cmd The command to bind to the routine.
-   * @return A new auto routine.
-   */
-  public AutoRoutine commandAsAutoRoutine(Command cmd) {
-    AutoRoutine routine = newRoutine(cmd.getName());
-    routine.running().onTrue(cmd);
-    return routine;
   }
 
   /**

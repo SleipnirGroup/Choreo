@@ -194,8 +194,8 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
           new SwerveSample(
               this.t,
               AllianceFlipUtil.flipX(this.x),
-              this.y,
-              Math.PI - this.heading,
+              AllianceFlipUtil.flipY(this.y),
+              AllianceFlipUtil.flipHeading(this.heading),
               -this.vx,
               this.vy,
               -this.omega,
@@ -225,13 +225,13 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
               this.t,
               AllianceFlipUtil.flipX(this.x),
               AllianceFlipUtil.flipY(this.y),
-              Math.PI - this.heading,
+              AllianceFlipUtil.flipHeading(this.heading),
               -this.vx,
               -this.vy,
-              -this.omega,
+              this.omega,
               -this.ax,
               -this.ay,
-              -this.alpha,
+              this.alpha,
               Arrays.stream(this.moduleForcesX()).map(x -> -x).toArray(),
               Arrays.stream(this.moduleForcesY()).map(y -> -y).toArray());
     };

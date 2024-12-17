@@ -1,13 +1,13 @@
-import { ArrowDropDown, ArrowDropUp } from "@mui/icons-material";
-import { Divider, FormHelperText, IconButton, Switch } from "@mui/material";
+import { Divider, FormHelperText, Switch } from "@mui/material";
 import { observer } from "mobx-react";
 import { Component } from "react";
 import inputStyles from "../../input/InputList.module.css";
 import DimensionsConfigPanel from "./DimensionsConfigPanel";
 import ModuleConfigPanel from "./ModuleConfigPanel";
-import MotorCalculatorPanel from "./MotorCalculatorPanel";
 import TheoreticalPanel from "./TheoreticalPanel";
 import { doc } from "../../../document/DocumentManager";
+import DifferentialConfigPanel from "./DifferentialConfigPanel";
+import SwerveConfigPanel from "./SwerveConfigPanel";
 
 type Props = object;
 
@@ -22,56 +22,79 @@ class RobotConfigPanel extends Component<Props, State> {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(2, minmax(300px, 1fr))",
+          gridTemplateColumns: "repeat(3, minmax(275px, 1fr))",
           gridGap: `${2 * this.rowGap}px`,
-          rowGap: `${0 * this.rowGap}px`,
+          rowGap: `${1 * this.rowGap}px`,
           fontSize: "2rem",
           margin: `${1 * this.rowGap}px`
         }}
       >
+        {/* Left Column */}
         <div style={{ gridRow: 1, gridColumn: 1 }}>
           <Divider sx={{ color: "gray", marginBottom: `${this.rowGap}px` }}>
             DIMENSIONS
           </Divider>
           <DimensionsConfigPanel rowGap={this.rowGap}></DimensionsConfigPanel>
         </div>
+        {/* Middle Column */}
         <div style={{ gridRow: 1, gridColumn: 2 }}>
-          <Divider sx={{ color: "gray", marginBlock: `${this.rowGap}px` }}>
+          <Divider sx={{ color: "gray", marginBottom: `${this.rowGap}px` }}>
             DRIVE MOTOR
           </Divider>
           <ModuleConfigPanel rowGap={this.rowGap}></ModuleConfigPanel>
-
+        </div>
+        {/* Right Column */}
+        <div
+          style={{
+            gridColumn: 3,
+            gridRow: 1
+          }}
+        >
           <Divider sx={{ color: "gray", marginBottom: `${this.rowGap}px` }}>
-            DISPLAY
+            DRIVE TYPE
           </Divider>
           <div
             style={{
               height: 24,
               display: "flex",
               flexDirection: "row",
-              justifyContent: "space-around"
+              justifyContent: "space-evenly",
+              marginBottom: `${this.rowGap}px`
             }}
           >
             <span className={inputStyles.Title} style={{ gridColumn: "1" }}>
-              Differential
+              Swerve
             </span>
 
             <Switch
               size="small"
-              sx={{ gridColumn: 2 }}
+              sx={{
+                gridColumn: 2,
+                ".MuiSwitch-track": { backgroundColor: "black" },
+                ".Mui-checked+.MuiSwitch-track": { backgroundColor: "black" }
+              }}
               checked={doc.type === "Differential"}
               onChange={(_e, checked) =>
                 doc.setType(checked ? "Differential" : "Swerve")
               }
             ></Switch>
+            <span className={inputStyles.Title} style={{ gridColumn: "1" }}>
+              Differential
+            </span>
           </div>
+          {doc.type === "Differential" ? (
+            <DifferentialConfigPanel
+              rowGap={this.rowGap}
+            ></DifferentialConfigPanel>
+          ) : (
+            <SwerveConfigPanel rowGap={this.rowGap}></SwerveConfigPanel>
+          )}
         </div>
-        {/* Left label divider when calculator is open */}
+        {/* Theoreticals */}
         <div
           style={{
-            gridColumn: 1,
-            gridRow: 2,
-            display: this.state.bottomHalf ? "block" : "block"
+            gridColumn: "1 / 4",
+            gridRow: 2
           }}
         >
           <Divider sx={{ color: "gray" }}>THEORETICAL</Divider>
@@ -84,85 +107,10 @@ class RobotConfigPanel extends Component<Props, State> {
             Calculated robot metrics, for reference and validation.
           </FormHelperText>
         </div>
-        {/* Right label divider when calculator is open */}
-        <div
-          style={{
-            gridColumn: 2,
-            gridRow: 2,
-            display: this.state.bottomHalf ? "block" : "block"
-          }}
-        >
-          <Divider sx={{ color: "gray" }}>MOTOR CALCULATOR</Divider>
-          <FormHelperText
-            sx={{
-              textAlign: "center",
-              display: this.state.bottomHalf ? "block" : "none"
-            }}
-          >
-            Select motor and current limit, then apply calculated motor
-            parameters.
-          </FormHelperText>
-        </div>
-        {/* Button to close calculator when calculator is open */}
-        <div
-          style={{
-            gridColumn: "1/3",
-            gridRow: 2,
-            display: this.state.bottomHalf ? "flex" : "flex",
-            justifyContent: "center"
-          }}
-        >
-          <span style={{ height: "48px" }}>
-            <IconButton
-              sx={{
-                transform: "translate(0%, calc(-50% + 12px))"
-              }}
-              onClick={() =>
-                this.setState({ bottomHalf: !this.state.bottomHalf })
-              }
-            >
-              {this.state.bottomHalf ? (
-                <ArrowDropUp sx={{ fontSize: "3rem" }}></ArrowDropUp>
-              ) : (
-                <ArrowDropDown sx={{ fontSize: "3rem" }}></ArrowDropDown>
-              )}
-            </IconButton>
-          </span>
-        </div>
-        {/* Motor Calculator */}
-        <div
-          style={{
-            gridColumn: 2,
-            gridRow: 3,
-            display: this.state.bottomHalf ? "block" : "none"
-          }}
-        >
-          <MotorCalculatorPanel rowGap={this.rowGap}></MotorCalculatorPanel>
-        </div>
-        <div
-          style={{
-            gridRow: 3,
-            gridColumn: 1,
-            pointerEvents: "none",
-            display: this.state.bottomHalf ? "block" : "none",
-            transform: `translate(${this.rowGap}px)`
-          }}
-        >
-          <Divider orientation="vertical"></Divider>
-        </div>
-        {/* Theoreticals */}
-        <div
-          style={{
-            gridColumn: 1,
-            gridRow: 3,
-            display: this.state.bottomHalf ? "block" : "none"
-          }}
-        >
-          <TheoreticalPanel
-            rowGap={this.rowGap}
-            imperial={imp}
-          ></TheoreticalPanel>
-        </div>
+        <TheoreticalPanel
+          rowGap={this.rowGap}
+          imperial={imp}
+        ></TheoreticalPanel>
       </div>
     );
   }

@@ -90,7 +90,7 @@ struct RotateAroundFlipper {
    * @return The flipped heading.
    */
   static constexpr units::radian_t FlipHeading(units::radian_t heading) {
-    return units::radian_t{std::numbers::pi} - heading;
+    return units::radian_t{std::numbers::pi} + heading;
   }
 };
 
