@@ -1,6 +1,6 @@
 {
  "name":"differential",
- "version":"v2025.0.0",
+ "version":0,
  "type":"Differential",
  "variables":{
   "expressions":{

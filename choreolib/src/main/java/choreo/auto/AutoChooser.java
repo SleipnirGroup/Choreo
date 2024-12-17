@@ -4,17 +4,17 @@ package choreo.auto;
 
 import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
 
-import choreo.Choreo;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StringArrayEntry;
-import edu.wpi.first.networktables.StringEntry;
+import choreo.util.ChoreoAlert;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.IterativeRobotBase;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * An Choreo specific {@code SendableChooser} that allows for the selection of {@link AutoRoutine}s
@@ -26,97 +26,66 @@ import java.util.function.Function;
  * This approach has the benefit of not loading all autos on startup, but also not loading the auto
  * during auto start causing a delay.
  *
- * <p>Once the {@link AutoChooser} is made you can add {@link AutoRoutine}s to it using the {@link
- * #addAutoRoutine(String, AutoRoutineGenerator)} method. Unlike {@code SendableChooser} this
- * chooser has to be updated every cycle by calling the {@link #update()} method in your {@link
- * IterativeRobotBase#robotPeriodic()}.
+ * <p>Once the {@link AutoChooser} is made you can add {@link AutoRoutine}s to it using {@link
+ * #addRoutine} or add {@link Command}s to it using {@link #addCmd}. Similar to {@code
+ * SendableChooser} this chooser can be added to the {@link
+ * edu.wpi.first.wpilibj.smartdashboard.SmartDashboard} using {@code
+ * SmartDashboard.putData(Sendable)}.
  *
- * <p>You can retrieve the {@link AutoRoutine} that is currently selected by calling the {@link
- * #getSelectedAutoRoutine()} method.
+ * <p>You can set the Robot's autonomous command to the chooser's chosen auto routine via <code>
+ * RobotModeTriggers.autonomous.whileTrue(chooser.autoSchedulingCmd());</code>
  */
-public class AutoChooser {
-  /** A function that generates an {@link AutoRoutine} from an {@link AutoFactory}. */
-  public static interface AutoRoutineGenerator extends Function<AutoFactory, AutoRoutine> {
-    /** A generator that returns an auto routine that does nothing */
-    static final AutoRoutineGenerator NONE = factory -> AutoFactory.VOID_ROUTINE;
-  }
+public class AutoChooser implements Sendable {
+  static final String NONE_NAME = "Nothing";
+  private static final Alert selectedNonexistentAuto =
+      ChoreoAlert.alert("Selected an auto that isn't an option", kError);
 
-  private static final String NONE_NAME = "Nothing";
+  private final HashMap<String, Supplier<Command>> autoRoutines =
+      new HashMap<>(Map.of(NONE_NAME, Commands::none));
 
-  private static final Alert notAnOption =
-      Choreo.alert("Selected an auto that isn't an option", kError);
+  // private final StringEntry selected, active;
+  // private final StringArrayEntry options;
+  private String selected = NONE_NAME;
+  private String[] options = new String[] {NONE_NAME};
 
-  private final HashMap<String, AutoRoutineGenerator> autoRoutines =
-      new HashMap<>(Map.of(NONE_NAME, AutoRoutineGenerator.NONE));
+  private String activeCommandName = NONE_NAME;
+  private Command selectedCommand = Commands.none();
 
-  private final StringEntry selected, active;
-  private final StringArrayEntry options;
-
-  private final AutoFactory factory;
-
-  private String lastAutoRoutineName = NONE_NAME;
-  private AutoRoutine lastAutoRoutine = AutoRoutineGenerator.NONE.apply(null);
+  /** Constructs a new {@link AutoChooser}. */
+  public AutoChooser() {}
 
   /**
-   * Constructs a new {@link AutoChooser}.
+   * Select a new option in the chooser.
    *
-   * @param factory The auto factory to use for AutoRoutine creation.
-   * @param tableName The name of the network table to use for the chooser. Passing in an empty
-   *     string or null will put this chooser at the root of the network tables.
+   * <p>This method is called automatically when published as a sendable.
+   *
+   * @param selectStr The name of the option to select.
+   * @return The name of the selected option.
    */
-  public AutoChooser(AutoFactory factory, String tableName) {
-    this.factory = factory;
-
-    if (tableName == null) {
-      tableName = "";
-    }
-    String path =
-        (tableName.isEmpty()) ? NetworkTable.normalizeKey(tableName, true) : "" + "/AutoChooser";
-    NetworkTable table = NetworkTableInstance.getDefault().getTable(path);
-
-    selected = table.getStringTopic("selected").getEntry(NONE_NAME);
-    table.getStringTopic(".type").publish().set("String Chooser");
-    table.getStringTopic("default").publish().set(NONE_NAME);
-    active = table.getStringTopic("active").getEntry(NONE_NAME);
-    options =
-        table.getStringArrayTopic("options").getEntry(autoRoutines.keySet().toArray(new String[0]));
-  }
-
-  /**
-   * Update the auto chooser.
-   *
-   * <p>This method should be called every cycle in the {@link IterativeRobotBase#robotPeriodic()}.
-   * It will check if the selected auto routine has changed and update the active AutoRoutine.
-   *
-   * <p>The AutoRoutine can only be updated when the robot is disabled and connected to
-   * DriverStation. If the chooser in your dashboard says {@code BAD} the {@link AutoChooser} has
-   * not responded to the selection yet and you need to disable the robot to update it.
-   */
-  public void update() {
+  public String select(String selectStr) {
+    selected = selectStr;
     if (DriverStation.isDisabled()
         && DriverStation.isDSAttached()
         && DriverStation.getAlliance().isPresent()) {
-      String selectStr = selected.get();
-      if (selectStr.equals(lastAutoRoutineName)) return;
-      if (!autoRoutines.containsKey(selectStr)) {
-        selected.set(NONE_NAME);
-        selectStr = NONE_NAME;
-        notAnOption.set(true);
+      if (selected.equals(activeCommandName)) return activeCommandName;
+      if (!autoRoutines.containsKey(selected) && !selected.equals(NONE_NAME)) {
+        selected = NONE_NAME;
+        selectedNonexistentAuto.set(true);
       } else {
-        notAnOption.set(false);
+        selectedNonexistentAuto.set(false);
       }
-      lastAutoRoutineName = selectStr;
-      lastAutoRoutine = autoRoutines.get(lastAutoRoutineName).apply(this.factory);
-      active.set(lastAutoRoutineName);
+      activeCommandName = selected;
     }
+    selectedCommand = autoRoutines.get(activeCommandName).get();
+    return activeCommandName;
   }
 
   /**
    * Add an AutoRoutine to the chooser.
    *
-   * <p>The options of the chooser are actually of type {@link AutoRoutineGenerator}. This is a
-   * function that takes an {@link AutoFactory} and returns a {@link AutoRoutine}. These functions
-   * can be static, a lambda or belong to a local variable.
+   * <p>The options of the chooser are actually a function that takes an {@link AutoFactory} and
+   * returns a {@link AutoRoutine}. These functions can be static, a lambda or belong to a local
+   * variable.
    *
    * <p>This is done to load AutoRoutines when and only when they are selected, in order to save
    * memory and file loading time for unused AutoRoutines.
@@ -131,69 +100,90 @@ public class AutoChooser {
    * <pre><code>
    * AutoChooser chooser;
    * Autos autos = new Autos(swerve, shooter, intake, feeder);
-   * Robot() {
-   *   chooser = new AutoChooser(Choreo.createAutoFactory(...), "/Choosers");
-   *   chooser.addAutoRoutine("4 Piece right", autos::fourPieceRight);
-   *   chooser.addAutoRoutine("4 Piece Left", autos::fourPieceLeft);
-   *   chooser.addAutoRoutine("3 Piece Close", autos::threePieceClose);
-   *   chooser.addAutoRoutine("Just Shoot", factory -> factory.commandAsAutoRoutine(shooter.shoot()));
+   * public Robot() {
+   *   chooser = new AutoChooser("/Choosers");
+   *   SmartDashboard.putData(chooser);
+   *   // fourPieceRight is a method that accepts an AutoFactory and returns an AutoRoutine.
+   *   chooser.addRoutine("4 Piece right", autos::fourPieceRight);
+   *   chooser.addRoutine("4 Piece Left", autos::fourPieceLeft);
+   *   chooser.addRoutine("3 Piece Close", autos::threePieceClose);
    * }
    * </code></pre>
    *
    * @param name The name of the auto routine.
    * @param generator The function that generates the auto routine.
    */
-  public void addAutoRoutine(String name, AutoRoutineGenerator generator) {
+  public void addRoutine(String name, Supplier<AutoRoutine> generator) {
+    autoRoutines.put(name, () -> generator.get().cmd());
+    options = autoRoutines.keySet().toArray(new String[0]);
+  }
+
+  /**
+   * Adds a Command to the auto chooser.
+   *
+   * <p>This is done to load autonomous commands when and only when they are selected, in order to
+   * save memory and file loading time for unused autonomous commands.
+   *
+   * <h3>Example:</h3>
+   *
+   * <pre><code>
+   * AutoChooser chooser;
+   * Autos autos = new Autos(swerve, shooter, intake, feeder);
+   * public Robot() {
+   *   chooser = new AutoChooser("/Choosers");
+   *   SmartDashboard.putData(chooser);
+   *   // fourPieceLeft is a method that accepts an AutoFactory and returns a command.
+   *   chooser.addCmd("4 Piece left", autos::fourPieceLeft);
+   *   chooser.addCmd("Just Shoot", shooter::shoot);
+   * }
+   * </code></pre>
+   *
+   * @param name The name of the autonomous command.
+   * @param generator The function that generates an autonomous command.
+   * @see AutoChooser#addRoutine
+   */
+  public void addCmd(String name, Supplier<Command> generator) {
     autoRoutines.put(name, generator);
-    options.set(autoRoutines.keySet().toArray(new String[0]));
+    options = autoRoutines.keySet().toArray(new String[0]);
   }
 
   /**
-   * Get the currently selected {@link AutoRoutine}.
-   *
-   * <h3>Recommended Usage</h3>
-   *
-   * Scheduling it as a command.
+   * Gets a Command that schedules the selected auto routine. This Command finishes immediately as
+   * it simply schedules another Command. This Command can directly be bound to a trigger, like so:
    *
    * <pre><code>
-   * AutoChooser chooser = ...;
+   *     AutoChooser chooser = ...;
    *
-   * public void autonomousInit() {
-   *   CommandScheduler.getInstance().schedule(chooser.getSelectedAutoRoutine().cmd());
-   * }
+   *     public Robot() {
+   *         RobotModeTriggers.autonomous().whileTrue(chooser.selectedCommandScheduler());
+   *     }
    * </code></pre>
    *
-   * Polling it yourself.
-   *
-   * <pre><code>
-   * AutoChooser chooser = ...;
-   * AutoRoutine routine = chooser.getSelectedAutoRoutine();
-   *
-   * public void autonomousInit() {
-   *   routine = chooser.getSelectedAutoRoutine();
-   * }
-   *
-   * public void autonomousPeriodic() {
-   *  routine.poll();
-   * }
-   *
-   * public void autonomousExit() {
-   *   routine.reset();
-   * }
-   * </code></pre>
-   *
-   * @return The currently selected {@link AutoRoutine}.
+   * @return A command that runs the selected {@link AutoRoutine}
    */
-  public AutoRoutine getSelectedAutoRoutine() {
-    return lastAutoRoutine;
+  public Command selectedCommandScheduler() {
+    return Commands.defer(() -> selectedCommand.asProxy(), Set.of());
   }
 
   /**
-   * Get the {@link AutoFactory} used by this chooser.
+   * Returns the currently selected command.
    *
-   * @return The {@link AutoFactory} used by this chooser.
+   * <p>If you plan on using this {@link Command} in a {@code Trigger} it is recommended to use
+   * {@link #selectedCommandScheduler()} instead.
+   *
+   * @return The currently selected command.
    */
-  public AutoFactory factory() {
-    return factory;
+  public Command selectedCommand() {
+    return selectedCommand.withName(activeCommandName);
+  }
+
+  @Override
+  public void initSendable(SendableBuilder builder) {
+    builder.setSmartDashboardType("String Chooser");
+    builder.publishConstBoolean(".controllable", true);
+    builder.publishConstString("default", NONE_NAME);
+    builder.addStringArrayProperty("options", () -> options, null);
+    builder.addStringProperty("selected", () -> selected, this::select);
+    builder.addStringProperty("active", () -> select(selected), null);
   }
 }

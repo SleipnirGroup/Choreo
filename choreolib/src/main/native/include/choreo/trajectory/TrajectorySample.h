@@ -8,31 +8,6 @@
 #include <frc/kinematics/ChassisSpeeds.h>
 #include <units/time.h>
 
-namespace frc {
-
-/**
- * Interpolates between two poses using a Twist
- *
- * @param startValue the start pose
- * @param endValue the end pose
- * @param t how far along we want to interpolate between the two parameters
- */
-static constexpr frc::Pose2d Interpolate(const frc::Pose2d& startValue,
-                                         const frc::Pose2d& endValue,
-                                         double t) {
-  if (t < 0) {
-    return startValue;
-  } else if (t >= 1) {
-    return endValue;
-  } else {
-    frc::Twist2d twist{startValue.Log(endValue)};
-    frc::Twist2d scaledTwist = twist * t;
-    return startValue.Exp(scaledTwist);
-  }
-}
-
-}  // namespace frc
-
 namespace choreo {
 
 /**

@@ -3,6 +3,7 @@ use serde_json::Value as JsonValue;
 use crate::ChoreoResult;
 
 mod traj_file {
+    use crate::spec::trajectory::Trajectory;
     #[allow(unused_imports)] // Remove when an upgrader function is added
     use crate::{
         file_management::upgrader::{Editor, Upgrader},
@@ -14,21 +15,24 @@ mod traj_file {
     pub(super) static TRAJ_UPGRADER: LazyLock<Upgrader> = LazyLock::new(make_upgrader);
 
     fn make_upgrader() -> Upgrader {
-        #[allow(unused_mut)] // Remove once an upgrade function is added
         let mut upgrader = Upgrader::new(TRAJ_SCHEMA_VERSION);
-        // upgrader.add_version_action(up_0_1);
+        upgrader.add_version_action(up_0_1);
         // Ensure the new upgrader is added here
         upgrader
     }
 
-    // EXAMPLE: Delete this once a real upgrade function is added
-    // fn up_0_1(editor: &mut Editor) -> ChoreoResult<()> {
-    //     if editor.has_path("trajectory") {
-    //         editor.set_path("trajectory.trackwidth", 1.0)
-    //     } else {
-    //         Ok(())
-    //     }
-    // }
+    fn up_0_1(editor: &mut Editor) -> ChoreoResult<()> {
+        // Clear generated output
+        editor.set_path_serialize(
+            "trajectory",
+            Trajectory {
+                sample_type: None,
+                waypoints: vec![],
+                samples: vec![],
+                splits: vec![],
+            },
+        )
+    }
 
     #[cfg(test)]
     mod tests {
@@ -37,6 +41,15 @@ mod traj_file {
         use crate::ChoreoResult;
 
         use crate::spec::trajectory::TrajectoryFile;
+        // beta6 is technically the same spec as 0, but with a string version number
+        #[test]
+        pub fn test_beta6_differential() -> ChoreoResult<()> {
+            test_trajectory("beta-6", "differential")
+        }
+        #[test]
+        pub fn test_beta6_swerve() -> ChoreoResult<()> {
+            test_trajectory("beta-6", "swerve")
+        }
         #[test]
         pub fn test_0_differential() -> ChoreoResult<()> {
             test_trajectory("0", "differential")
@@ -44,6 +57,15 @@ mod traj_file {
         #[test]
         pub fn test_0_swerve() -> ChoreoResult<()> {
             test_trajectory("0", "swerve")
+        }
+
+        #[test]
+        pub fn test_1_differential() -> ChoreoResult<()> {
+            test_trajectory("1", "differential")
+        }
+        #[test]
+        pub fn test_1_swerve() -> ChoreoResult<()> {
+            test_trajectory("1", "swerve")
         }
 
         /// Tests that the file upgrades to the current version and deserializes properly.
@@ -145,12 +167,28 @@ mod project_file {
         }
         // TODO: macroize this to one line per test
         #[test]
+        pub fn test_beta6_differential() -> ChoreoResult<()> {
+            test_project("beta-6", "differential")
+        }
+        #[test]
+        pub fn test_beta6_swerve() -> ChoreoResult<()> {
+            test_project("beta-6", "swerve")
+        }
+        #[test]
         pub fn test_0_differential() -> ChoreoResult<()> {
             test_project("0", "differential")
         }
         #[test]
         pub fn test_0_swerve() -> ChoreoResult<()> {
             test_project("0", "swerve")
+        }
+        #[test]
+        pub fn test_1_differential() -> ChoreoResult<()> {
+            test_project("1", "differential")
+        }
+        #[test]
+        pub fn test_1_swerve() -> ChoreoResult<()> {
+            test_project("1", "swerve")
         }
     }
 }

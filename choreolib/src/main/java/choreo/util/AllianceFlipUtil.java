@@ -56,7 +56,7 @@ public class AllianceFlipUtil {
       }
 
       public double flipHeading(double heading) {
-        return Math.PI - heading;
+        return Math.PI + heading;
       }
     };
 

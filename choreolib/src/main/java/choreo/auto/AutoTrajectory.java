@@ -4,8 +4,6 @@ package choreo.auto;
 
 import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
 
-import choreo.Choreo;
-import choreo.Choreo.MultiAlert;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.auto.AutoFactory.AutoBindings;
 import choreo.trajectory.DifferentialSample;
@@ -13,6 +11,8 @@ import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
 import choreo.util.AllianceFlipUtil;
+import choreo.util.ChoreoAlert;
+import choreo.util.ChoreoAlert.MultiAlert;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -43,17 +43,17 @@ public class AutoTrajectory {
   // and far between. This helps with more novice users
 
   private static final MultiAlert triggerTimeNegative =
-      Choreo.multiAlert(causes -> "Trigger time cannot be negative for " + causes, kError);
+      ChoreoAlert.multiAlert(causes -> "Trigger time cannot be negative for " + causes, kError);
   private static final MultiAlert triggerTimeAboveMax =
-      Choreo.multiAlert(
+      ChoreoAlert.multiAlert(
           causes -> "Trigger time cannot be greater than total trajectory time for " + causes + ".",
           kError);
   private static final MultiAlert eventNotFound =
-      Choreo.multiAlert(causes -> "Event Markers " + causes + " not found.", kError);
+      ChoreoAlert.multiAlert(causes -> "Event Markers " + causes + " not found.", kError);
   private static final MultiAlert noSamples =
-      Choreo.multiAlert(causes -> "Trajectories " + causes + " have no samples.", kError);
+      ChoreoAlert.multiAlert(causes -> "Trajectories " + causes + " have no samples.", kError);
   private static final MultiAlert noInitialPose =
-      Choreo.multiAlert(
+      ChoreoAlert.multiAlert(
           causes -> "Unable to get initial pose for trajectories " + causes + ".", kError);
 
   private static final double DEFAULT_TOLERANCE_METERS = Units.inchesToMeters(3);
@@ -94,7 +94,7 @@ public class AutoTrajectory {
    * @param trajectoryLogger Optional trajectory logger.
    * @param driveSubsystem Drive subsystem.
    * @param routine Event loop.
-   * @param bindings {@link Choreo#createAutoFactory}
+   * @param bindings {@link AutoFactory}
    */
   <SampleType extends TrajectorySample<SampleType>> AutoTrajectory(
       String name,
@@ -104,7 +104,7 @@ public class AutoTrajectory {
       Consumer<SampleType> controller,
       BooleanSupplier useAllianceFlipping,
       Supplier<Optional<Alliance>> alliance,
-      Optional<TrajectoryLogger<SampleType>> trajectoryLogger,
+      TrajectoryLogger<SampleType> trajectoryLogger,
       Subsystem driveSubsystem,
       AutoRoutine routine,
       AutoBindings bindings) {
@@ -118,12 +118,7 @@ public class AutoTrajectory {
     this.driveSubsystem = driveSubsystem;
     this.routine = routine;
     this.offTrigger = new Trigger(routine.loop(), () -> false);
-    this.trajectoryLogger =
-        trajectoryLogger.isPresent()
-            ? trajectoryLogger.get()
-            : new TrajectoryLogger<SampleType>() {
-              public void accept(Trajectory<SampleType> t, Boolean u) {}
-            };
+    this.trajectoryLogger = trajectoryLogger;
 
     bindings.getBindings().forEach((key, value) -> active().and(atTime(key)).onTrue(value));
   }
@@ -224,6 +219,24 @@ public class AutoTrajectory {
   }
 
   /**
+   * Creates a command that resets the robot's odometry to the start of this trajectory.
+   *
+   * @return A command that resets the robot's odometry.
+   */
+  Command resetOdometry() {
+    return Commands.either(
+            Commands.runOnce(() -> resetOdometry.accept(getInitialPose().get()), driveSubsystem),
+            Commands.runOnce(
+                    () -> {
+                      noInitialPose.addCause(name);
+                      routine.kill();
+                    })
+                .andThen(Commands.idle()),
+            () -> getInitialPose().isPresent())
+        .withName("Trajectory_ResetOdometry_" + name);
+  }
+
+  /**
    * Will get the underlying {@link Trajectory} object.
    *
    * <p><b>WARNING:</b> This method is not type safe and should be used with caution. The sample
@@ -274,24 +287,6 @@ public class AutoTrajectory {
       return Optional.empty();
     }
     return trajectory.getFinalPose(doFlip());
-  }
-
-  /**
-   * Creates a command that resets the robot's odometry to the start of this trajectory.
-   *
-   * @return A command that resets the robot's odometry.
-   */
-  public Command resetOdometry() {
-    return Commands.either(
-            Commands.runOnce(() -> resetOdometry.accept(getInitialPose().get()), driveSubsystem),
-            Commands.runOnce(
-                    () -> {
-                      noInitialPose.addCause(name);
-                      routine.kill();
-                    })
-                .andThen(Commands.idle()),
-            () -> getInitialPose().isPresent())
-        .withName("Trajectory_ResetOdometry_" + name);
   }
 
   /**

@@ -100,9 +100,9 @@ Each store has a `get serialize()` computed property. This needs to be updated t
 #### `deserialize()`
 Each store has a `deserialize()` which populates the Mobx store from a data object.
 
-## Choreolib
+## Choreolib (.traj schema changes only)
 
-Update TRAJ_SCHEMA_VERSION and PROJECT_SCHEMA_VERSION in the following:
+Update TRAJ_SCHEMA_VERSION in the following:
 * Python: `choreolib/py/choreo/__init__.py`
 * Java: `choreolib/src/main/java/choreo/Choreo.java`
 * C++: `choreolib/src/main/native/include/choreo/Choreo.h`
