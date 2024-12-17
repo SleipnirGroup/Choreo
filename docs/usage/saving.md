@@ -75,5 +75,5 @@ Below "Project saved at", you can see the directory in which the saved `.chor` f
 
 # Folder Structure Example
 
-- Choreo file lives at: `~/Development/FRC/Roboto/src/main/deploy/choreo/Choreo.chor`
+- Choreo file lives at: `~/Development/FRC/Roboto/src/main/deploy/choreo/ChoreoProject.chor`
 - Trajectories (`.traj`) live in: `~/Development/FRC/Roboto/src/main/deploy/choreo/...`
