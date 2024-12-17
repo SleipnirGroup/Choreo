@@ -33,7 +33,6 @@ To access the sidebar, click the hamburger icon in the upper left corner.
 
 General Info:
 
-!!! note
 
 In the sidebar, there are five actions related to saving your project, along with your project's current save location.
 
