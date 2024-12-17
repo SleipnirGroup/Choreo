@@ -4,13 +4,17 @@ package choreo.util;
 
 import java.util.function.BiFunction;
 
+/** A Choreo Internal utility class for array operations. */
 public class ArrayUtil {
   /**
    * Checks two <code>double</code> arrays for equality with the given function. This returns true
    * if:
-   * <li>Either both arrays are null, or
-   * <li>Neither is null, the arrays are the same length, and the given function returns true for
-   *     all same-index pairs of elements in the arrays.</>
+   *
+   * <ul>
+   *   <li>Either both arrays are null, or
+   *   <li>Neither is null, the arrays are the same length, and the given function returns true for
+   *       all same-index pairs of elements in the arrays.
+   * </ul>
    *
    * @param arr1 The first array
    * @param arr2 The second array
