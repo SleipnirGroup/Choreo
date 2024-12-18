@@ -145,7 +145,7 @@ jobs:
 
       - name: Checkout ChoreoLib repository
         uses: actions/checkout@v4
-        with: 
+        with:
           repository: shueja/ChoreoLib
           path: ChoreoLib
       - uses: actions/download-artifact@v4
@@ -167,16 +167,8 @@ jobs:
         run: ./gradlew publish -Pthirdparty
         working-directory: combiner
 
-
-
       - name: Transfer ChoreoLib Artifacts
         run: |
-          git config --global user.name "GitHub Actions Bot"
-          git config --global user.email "<>"
-          echo "ls ./ChoreoLib"
-          ls ChoreoLib
-          echo "ls ./ChoreoLib/dep"
-          ls ChoreoLib/dep
           cp -r ~/releases/maven/development/choreo/* ChoreoLib/dep/choreo
           pushd ./ChoreoLib
 
@@ -185,6 +177,10 @@ jobs:
         with:
           token: ${{ secrets.CHOREO_RELEASE_PAT }}
           path: ./ChoreoLib
+          title: Add ChoreoLib v${GITHUB_REF##*v}
+          body:
+          branch-name: publish/v${GITHUB_REF##*v}
+
       - uses: actions/upload-artifact@v4
         with:
           name: ChoreoLib-Maven
