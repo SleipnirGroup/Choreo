@@ -149,6 +149,7 @@ jobs:
         working-directory: combiner
 
       - name: Checkout ChoreoLib repository
+        uses: actions/checkout@v4
         with: 
           repository: SleipnirGroup/ChoreoLib
           path: ../ChoreoLib
