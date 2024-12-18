@@ -151,7 +151,7 @@ jobs:
       - name: Checkout ChoreoLib repository
         uses: actions/checkout@v4
         with: 
-          repository: SleipnirGroup/ChoreoLib
+          repository: shueja/ChoreoLib
           path: ChoreoLib
 
       - name: Transfer ChoreoLib Artifacts
