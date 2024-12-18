@@ -148,6 +148,19 @@ jobs:
         run: ./gradlew publish -Pthirdparty
         working-directory: combiner
 
+      - name: Checkout ChoreoLib repository
+        with: 
+          repository: SleipnirGroup/ChoreoLib
+          path: ../ChoreoLib
+
+      - name: Transfer ChoreoLib Artifacts
+        run: |
+          cp -r ~/releases/maven/development/choreo/* ../ChoreoLib/dep/choreo
+          popd
+          pushd ChoreoLib
+          git commit -a -m "Add ChoreoLib {{github.ref}}"
+          gh pr create --fill --head
+
       - uses: actions/upload-artifact@v4
         with:
           name: ChoreoLib-Maven
