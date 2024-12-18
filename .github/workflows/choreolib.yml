@@ -146,7 +146,7 @@ jobs:
       - name: Checkout ChoreoLib repository
         uses: actions/checkout@v4
         with:
-          repository: S/ChoreoLib
+          repository: SleipnirGroup/ChoreoLib
           path: ChoreoLib
       - uses: actions/download-artifact@v4
         with:
