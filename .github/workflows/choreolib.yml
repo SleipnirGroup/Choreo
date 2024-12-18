@@ -177,10 +177,10 @@ jobs:
         with:
           token: ${{ secrets.CHOREO_RELEASE_PAT }}
           path: ./ChoreoLib
-          title: "Add ChoreoLib v${GITHUB_REF##*v}"
-          commit-message: "Add ChoreoLib v${GITHUB_REF##*v}"
+          title: "Add ChoreoLib ${GITHUB_REF}"
+          commit-message: "Add ChoreoLib ${GITHUB_REF}"
           body:
-          branch-name: "publish/v${GITHUB_REF##*v}"
+          branch: "publish/${GITHUB_REF}"
 
       - uses: actions/upload-artifact@v4
         with:
