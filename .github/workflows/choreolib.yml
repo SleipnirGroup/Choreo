@@ -123,6 +123,17 @@ jobs:
           name: ${{ matrix.artifact-name }}
           path: choreolib/build/allOutputs
 
+  vendordep:
+    name: Upload vendordep JSON
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ChoreoLib-json
+          path: choreolib/ChoreoLib2025Beta.json
+
   combine:
     name: Combine
     needs: [build-docker, build-host]
@@ -147,7 +158,6 @@ jobs:
       - name: Combine
         run: ./gradlew publish -Pthirdparty
         working-directory: combiner
-
       - uses: actions/upload-artifact@v4
         with:
           name: ChoreoLib-Maven
