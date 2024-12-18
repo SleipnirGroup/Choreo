@@ -143,10 +143,18 @@ jobs:
         with:
           repository: wpilibsuite/build-tools
 
+      - name: Checkout ChoreoLib repository
+        uses: actions/checkout@v4
+        with: 
+          repository: shueja/ChoreoLib
+          path: ChoreoLib
       - uses: actions/download-artifact@v4
         with:
           path: combiner/products/build/allOutputs
-
+      - name: Copy ChoreoLib JSON
+        run: |
+          ls combiner/products/build/allOutputs/
+          mv combiner/products/build/allOutputs/ChoreoLib2025Beta.json ChoreoLib/dep/ChoreoLib2025Beta.json
       - name: Flatten Artifacts
         run: rsync -a --delete combiner/products/build/allOutputs/*/* combiner/products/build/allOutputs
 
@@ -159,11 +167,7 @@ jobs:
         run: ./gradlew publish -Pthirdparty
         working-directory: combiner
 
-      - name: Checkout ChoreoLib repository
-        uses: actions/checkout@v4
-        with: 
-          repository: shueja/ChoreoLib
-          path: ChoreoLib
+
 
       - name: Transfer ChoreoLib Artifacts
         run: |
