@@ -156,15 +156,19 @@ jobs:
           private-key: ${{ secrets.CHOREOLIB_RELEASE_APP_PRIVATE_KEY }}
       
       - name: Checkout ChoreoLib repository
+        # if: startsWith(github.ref, 'refs/tags/v')
         uses: actions/checkout@v4
         with:
           repository: SleipnirGroup/ChoreoLib
           path: ChoreoLib
           token: ${{ steps.generate-token.outputs.token }}
+
       - name: Copy ChoreoLib JSON
+        # if: startsWith(github.ref, 'refs/tags/v')
         run: |
           ls combiner/products/build/allOutputs/
           mv combiner/products/build/allOutputs/ChoreoLib-json/ChoreoLib2025Beta.json ChoreoLib/dep/ChoreoLib2025Beta.json
+      
       - name: Flatten Artifacts
         run: rsync -a --delete combiner/products/build/allOutputs/*/* combiner/products/build/allOutputs
 
@@ -182,14 +186,6 @@ jobs:
         run: |
           cp -r ~/releases/maven/development/choreo/* ChoreoLib/dep/choreo
           pushd ./ChoreoLib
-
-      - name: Generate a token
-        # if: startsWith(github.ref, 'refs/tags/v')
-        id: generate-token
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: ${{ secrets.CHOREOLIB_RELEASE_APP_ID }}
-          private-key: ${{ secrets.CHOREOLIB_RELEASE_APP_PRIVATE_KEY }}
       
       - name: Create Pull Request
         # if: startsWith(github.ref, 'refs/tags/v')
