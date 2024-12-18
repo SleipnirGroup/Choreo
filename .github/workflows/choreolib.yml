@@ -152,12 +152,11 @@ jobs:
         uses: actions/checkout@v4
         with: 
           repository: SleipnirGroup/ChoreoLib
-          path: ../ChoreoLib
+          path: ChoreoLib
 
       - name: Transfer ChoreoLib Artifacts
         run: |
-          cp -r ~/releases/maven/development/choreo/* ../ChoreoLib/dep/choreo
-          popd
+          cp -r ~/releases/maven/development/choreo/* ~/ChoreoLib/dep/choreo
           pushd ChoreoLib
           git commit -a -m "Add ChoreoLib {{github.ref}}"
           gh pr create --fill --head
