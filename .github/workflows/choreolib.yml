@@ -164,8 +164,8 @@ jobs:
           ls ChoreoLib/dep
           cp -r ~/releases/maven/development/choreo/* ChoreoLib/dep/choreo
           pushd ./ChoreoLib
-          git commit -a -m "Add ChoreoLib {{github.ref}}"
-          gh pr create --fill --head
+          git commit -a -m "Add ChoreoLib ${{github.ref}}"
+          gh pr create --fill --head main
         env:
           GH_TOKEN: ${{ secrets.CHOREO_RELEASE_PAT }}
       - uses: actions/upload-artifact@v4
