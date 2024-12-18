@@ -164,10 +164,12 @@ jobs:
           ls ChoreoLib/dep
           cp -r ~/releases/maven/development/choreo/* ChoreoLib/dep/choreo
           pushd ./ChoreoLib
-          git commit -a -m "Add ChoreoLib ${{github.ref}}"
-          gh pr create --fill --head main
-        env:
-          GH_TOKEN: ${{ secrets.CHOREO_RELEASE_PAT }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.CHOREO_RELEASE_PAT }}
+          path: ./ChoreoLib
       - uses: actions/upload-artifact@v4
         with:
           name: ChoreoLib-Maven
