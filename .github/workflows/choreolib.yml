@@ -143,14 +143,24 @@ jobs:
         with:
           repository: wpilibsuite/build-tools
 
+      
+      - uses: actions/download-artifact@v4
+        with:
+          path: combiner/products/build/allOutputs
+      - name: Generate a token
+        # if: startsWith(github.ref, 'refs/tags/v')
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.CHOREOLIB_RELEASE_APP_ID }}
+          private-key: ${{ secrets.CHOREOLIB_RELEASE_APP_PRIVATE_KEY }}
+      
       - name: Checkout ChoreoLib repository
         uses: actions/checkout@v4
         with:
           repository: SleipnirGroup/ChoreoLib
           path: ChoreoLib
-      - uses: actions/download-artifact@v4
-        with:
-          path: combiner/products/build/allOutputs
+          token: ${{ steps.generate-token.outputs.token }}
       - name: Copy ChoreoLib JSON
         run: |
           ls combiner/products/build/allOutputs/
