@@ -130,7 +130,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ChoreoLib2025Beta
+          name: ChoreoLib-json
           path: choreolib/ChoreoLib2025Beta.json
 
   combine:
