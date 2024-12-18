@@ -156,8 +156,8 @@ jobs:
 
       - name: Transfer ChoreoLib Artifacts
         run: |
-          git config user.name "GitHub Actions Bot"
-          git config user.email "<>"
+          git config --global user.name "GitHub Actions Bot"
+          git config --global user.email "<>"
           echo "ls ./ChoreoLib"
           ls ChoreoLib
           echo "ls ./ChoreoLib/dep"
