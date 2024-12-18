@@ -2,7 +2,8 @@
 *.md
 dist/
 public/
-choreolib/
+choreolib/*
+!choreolib/ChoreoLib2025Beta.json
 src-tauri/target/
 docs/
 
