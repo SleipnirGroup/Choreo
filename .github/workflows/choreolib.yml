@@ -154,7 +154,7 @@ jobs:
       - name: Copy ChoreoLib JSON
         run: |
           ls combiner/products/build/allOutputs/
-          mv combiner/products/build/allOutputs/ChoreoLib2025Beta.json ChoreoLib/dep/ChoreoLib2025Beta.json
+          mv combiner/products/build/allOutputs/ChoreoLib-json/ChoreoLib2025Beta.json ChoreoLib/dep/ChoreoLib2025Beta.json
       - name: Flatten Artifacts
         run: rsync -a --delete combiner/products/build/allOutputs/*/* combiner/products/build/allOutputs
 
