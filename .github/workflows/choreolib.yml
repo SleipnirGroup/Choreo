@@ -156,8 +156,8 @@ jobs:
 
       - name: Transfer ChoreoLib Artifacts
         run: |
-          cp -r ~/releases/maven/development/choreo/* ~/ChoreoLib/dep/choreo
-          pushd ChoreoLib
+          cp -r ~/releases/maven/development/choreo/* ../ChoreoLib/dep/choreo
+          pushd ../ChoreoLib
           git commit -a -m "Add ChoreoLib {{github.ref}}"
           gh pr create --fill --head
 
