@@ -122,6 +122,7 @@ jobs:
         with:
           name: ${{ matrix.artifact-name }}
           path: choreolib/build/allOutputs
+
   vendordep:
     name: Upload vendordep JSON
     runs-on: ubuntu-24.04
