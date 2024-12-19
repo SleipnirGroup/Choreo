@@ -108,6 +108,7 @@ nav:
   - Contributing:
       - Building Choreo: contributing/building-choreo.md
       - Building ChoreoLib: contributing/building-choreolib.md
+      - Building Documentation: contributing/building-docs.md
       - Contributing Guide: contributing/contributing-guide.md
       - Release Process: contributing/release-process.md
       - Upgrading File Schemas: contributing/schema-upgrade.md
