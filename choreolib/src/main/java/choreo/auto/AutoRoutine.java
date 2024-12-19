@@ -18,8 +18,8 @@ import java.util.function.BooleanSupplier;
 /**
  * An object that represents an autonomous routine.
  *
- * <p>This loop is used to handle autonomous trigger logic and schedule commands. This loop should
- * **not** be shared across multiple autonomous routines.
+ * <p>This routine is used to handle autonomous trigger logic and schedule commands. This routine
+ * should **not** be shared across multiple autonomous routines.
  *
  * @see AutoFactory#newRoutine Creating a routine from a AutoFactory
  */
@@ -36,6 +36,9 @@ public class AutoRoutine {
   /** The name of the auto routine this loop is associated with */
   protected final String name;
 
+  /** Returns true if the alliance is known or is irrelevant (i.e. flipping is not being done) */
+  protected final BooleanSupplier allianceKnownOrIgnored;
+
   /** A boolean utilized in {@link #active()} to resolve trueness */
   protected boolean isActive = false;
 
@@ -45,31 +48,22 @@ public class AutoRoutine {
   /** The amount of times the routine has been polled */
   protected int pollCount = 0;
 
-  /** Returns true if the alliance is known or is irrelevant (i.e. flipping is not being done) */
-  protected BooleanSupplier allianceKnownOrIgnored = () -> true;
-
   /**
    * A constructor to be used when inhereting this class to instantiate a custom inner loop
    *
    * @param factory The factory that created this loop
    * @param name The name of the loop
    * @param loop The inner {@link EventLoop}
+   * @param allianceKnownOrIgnored Returns true if the alliance is known or is irrelevant (i.e.
+   *     flipping is not being done).
+   * @see AutoFactory#newRoutine Creating a loop from a AutoFactory
    */
-  protected AutoRoutine(AutoFactory factory, String name, EventLoop loop) {
+  protected AutoRoutine(
+      AutoFactory factory, String name, EventLoop loop, BooleanSupplier allianceKnownOrIgnored) {
     this.factory = factory;
     this.loop = loop;
     this.name = name;
-  }
-
-  /**
-   * Creates a new loop with a specific name
-   *
-   * @param factory The factory that created this loop
-   * @param name The name of the loop
-   * @see AutoFactory#newRoutine Creating a loop from a AutoFactory
-   */
-  protected AutoRoutine(AutoFactory factory, String name) {
-    this(factory, name, new EventLoop());
+    this.allianceKnownOrIgnored = allianceKnownOrIgnored;
   }
 
   /**
@@ -82,8 +76,7 @@ public class AutoRoutine {
    * @see AutoFactory#newRoutine Creating a loop from a AutoFactory
    */
   protected AutoRoutine(AutoFactory factory, String name, BooleanSupplier allianceKnownOrIgnored) {
-    this(factory, name);
-    this.allianceKnownOrIgnored = allianceKnownOrIgnored;
+    this(factory, name, new EventLoop(), allianceKnownOrIgnored);
   }
 
   /**
@@ -191,16 +184,6 @@ public class AutoRoutine {
   public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory trajectory(
       Trajectory<SampleType> trajectory) {
     return factory.trajectory(trajectory, this);
-  }
-
-  /**
-   * Creates a command that resets the robot's odometry to the start of a trajectory.
-   *
-   * @param trajectory The trajectory to use.
-   * @return A command that resets the robot's odometry.
-   */
-  public Command resetOdometry(AutoTrajectory trajectory) {
-    return trajectory.resetOdometry();
   }
 
   /**
