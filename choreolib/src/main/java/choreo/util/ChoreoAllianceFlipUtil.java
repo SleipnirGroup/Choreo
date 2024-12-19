@@ -25,6 +25,9 @@ import java.util.function.Supplier;
  * specially handle cases or throw errors if a variant is explicitly not supported.
  */
 public class ChoreoAllianceFlipUtil {
+  /**
+   * An alias for {@code Supplier<Optional<Alliance>>}
+   */
   @FunctionalInterface
   public interface AllianceSupplier extends Supplier<Optional<Alliance>> {}
 

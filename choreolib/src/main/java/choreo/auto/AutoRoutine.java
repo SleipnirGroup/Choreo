@@ -54,6 +54,9 @@ public class AutoRoutine {
    * @param factory The factory that created this loop
    * @param name The name of the loop
    * @param loop The inner {@link EventLoop}
+   * @param allianceKnownOrIgnored Returns true if the alliance is known or is irrelevant (i.e.
+   *    flipping is not being done).
+   * @see AutoFactory#newRoutine Creating a loop from a AutoFactory
    */
   protected AutoRoutine(
       AutoFactory factory, String name, EventLoop loop, BooleanSupplier allianceKnownOrIgnored) {
