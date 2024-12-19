@@ -34,7 +34,7 @@ jobs:
       - name: Set up sccache
         uses: mozilla-actions/sccache-action@v0.0.5
       - name: Cargo test Generate latest
-        run: cargo test -- integration_tests::generate::generate::generate_latest
+        run: cargo test --include-ignored -- integration_tests::generate::generate::generate_latest
       - uses: actions/upload-artifact@v4
         with:
           name: swerve.traj
