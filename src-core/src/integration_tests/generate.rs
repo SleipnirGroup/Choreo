@@ -6,6 +6,7 @@ mod generate {
         thread::{self, JoinHandle},
     };
 
+    use crate::spec::TRAJ_SCHEMA_VERSION;
     use crate::{
         file_management::{self, WritingResources},
         generation::generate::generate,
@@ -20,16 +21,25 @@ mod generate {
     async fn test_0_differential() {
         test_generate("differential", "0").await;
     }
+    #[tokio::test]
+    #[ignore]
+    async fn generate_latest() {
+        test_generate_dir("./test-tmp-latest/differential".into(), "differential", format!("{TRAJ_SCHEMA_VERSION}").as_str()).await;
+        test_generate_dir("./test-tmp-latest/swerve".into(), "swerve", format!("{TRAJ_SCHEMA_VERSION}").as_str()).await;
+    }
 
     async fn test_generate(drive_type: &str, version: &str) {
         let test_dir: PathBuf = format!("./test-tmp-{version}-{drive_type}").into();
+        test_generate_dir(test_dir, drive_type, version).await;
+    }
+    async fn test_generate_dir(test_dir: PathBuf, drive_type: &str, version: &str) {
         let original_chor: PathBuf =
             format!("../test-jsons/project/{version}/{drive_type}.chor").into();
         let test_chor: PathBuf = test_dir.join(format!("{drive_type}.chor"));
         let original_traj: PathBuf =
             format!("../test-jsons/trajectory/{version}/{drive_type}.traj").into();
         let test_traj: PathBuf = test_dir.join(format!("{drive_type}.traj"));
-        let _ = fs::create_dir(test_dir.clone()).or_else(|_| fs::remove_dir(test_dir));
+        let _ = fs::create_dir_all(test_dir.clone()).or_else(|_| fs::remove_dir(test_dir));
         // don't modify the original files
         fs::copy(original_chor.clone(), test_chor.clone()).unwrap();
         fs::copy(original_traj.clone(), test_traj.clone()).unwrap();
