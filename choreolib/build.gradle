@@ -75,6 +75,9 @@ test {
         events "failed"
         exceptionFormat "full"
     }
+    if (System.properties['profile'] != 'integration') {
+    exclude '**/IntegrationTest*'
+   }
 }
 
 if (project.hasProperty('onlylinuxathena') || project.hasProperty('onlylinuxarm32') || project.hasProperty('onlylinuxarm64') || project.hasProperty('onlywindowsarm64')) {
