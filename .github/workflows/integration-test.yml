@@ -1,4 +1,4 @@
-name: Choreo / Build
+name: Choreo -> ChoreoLib Integration Test
 
 on: [pull_request, push]
 
