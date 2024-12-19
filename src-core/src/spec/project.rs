@@ -94,7 +94,7 @@ pub struct RobotConfig<T: SnapshottableType> {
     pub tmax: T, // N*m
     pub cof: T,
     pub bumper: Bumper<T>,
-    pub differential_track_width: T,
+    pub differential_trackwidth: T,
 }
 
 impl<T: SnapshottableType> RobotConfig<T> {
@@ -110,7 +110,7 @@ impl<T: SnapshottableType> RobotConfig<T> {
             tmax: self.tmax.snapshot(),
             cof: self.cof.snapshot(),
             bumper: self.bumper.snapshot(),
-            differential_track_width: self.differential_track_width.snapshot(),
+            differential_trackwidth: self.differential_trackwidth.snapshot(),
         }
     }
 }
@@ -197,7 +197,7 @@ impl Default for ProjectFile {
                     side: Expr::new("16 in", 0.4064),
                     back: Expr::new("16 in", 0.4064),
                 },
-                differential_track_width: Expr::new("22 in", 0.2794 * 2.0),
+                differential_trackwidth: Expr::new("22 in", 0.2794 * 2.0),
             },
             generation_features: Vec::new(),
         }
