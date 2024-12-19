@@ -5,7 +5,7 @@ package choreo.util;
 import java.util.function.BiFunction;
 
 /** A Choreo Internal utility class for array operations. */
-public class ArrayUtil {
+public class ChoreoArrayUtil {
   /**
    * Checks two <code>double</code> arrays for equality with the given function. This returns true
    * if:

@@ -10,21 +10,21 @@ import choreo.trajectory.DifferentialSample;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
-import choreo.util.AllianceFlipUtil;
+import choreo.util.ChoreoAllianceFlipUtil;
 import choreo.util.ChoreoAlert;
 import choreo.util.ChoreoAlert.MultiAlert;
+import choreo.util.ChoreoAllianceFlipUtil.AllianceSupplier;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -55,16 +55,16 @@ public class AutoTrajectory {
   private static final MultiAlert noInitialPose =
       ChoreoAlert.multiAlert(
           causes -> "Unable to get initial pose for trajectories " + causes + ".", kError);
+  private static final Alert allianceNotReady =
+      ChoreoAlert.alert("Alliance used but not ready", kError);
 
-  private static final double DEFAULT_TOLERANCE_METERS = Units.inchesToMeters(3);
-  private static final double DEFAULT_TOLERANCE_RADIANS = Units.degreesToRadians(3);
   private final String name;
   private final Trajectory<? extends TrajectorySample<?>> trajectory;
   private final TrajectoryLogger<? extends TrajectorySample<?>> trajectoryLogger;
   private final Supplier<Pose2d> poseSupplier;
   private final Consumer<Pose2d> resetOdometry;
   private final Consumer<? extends TrajectorySample<?>> controller;
-  private final BooleanSupplier useAllianceFlipping;
+  private final boolean useAllianceFlipping;
   private final Supplier<Optional<Alliance>> alliance;
   private final Timer timer = new Timer();
   private final Subsystem driveSubsystem;
@@ -102,8 +102,8 @@ public class AutoTrajectory {
       Supplier<Pose2d> poseSupplier,
       Consumer<Pose2d> resetOdometry,
       Consumer<SampleType> controller,
-      BooleanSupplier useAllianceFlipping,
-      Supplier<Optional<Alliance>> alliance,
+      boolean useAllianceFlipping,
+      AllianceSupplier alliance,
       TrajectoryLogger<SampleType> trajectoryLogger,
       Subsystem driveSubsystem,
       AutoRoutine routine,
@@ -127,7 +127,7 @@ public class AutoTrajectory {
    * Returns true if alliance flipping is enabled and the alliance optional is present. Also returns
    * true if alliance flipping is disabled.
    */
-  private boolean allowSampling() {
+  private boolean allianceKnownOrIgnored() {
     return routine.allianceKnownOrIgnored.getAsBoolean();
   }
 
@@ -137,7 +137,7 @@ public class AutoTrajectory {
    * @return
    */
   private boolean doFlip() {
-    return useAllianceFlipping.getAsBoolean()
+    return useAllianceFlipping
         && alliance.get().map(a -> a == Alliance.Red).orElse(false);
   }
 
@@ -264,7 +264,8 @@ public class AutoTrajectory {
    * @return The starting pose
    */
   public Optional<Pose2d> getInitialPose() {
-    if (!allowSampling()) {
+    if (!allianceKnownOrIgnored()) {
+      allianceNotReady.set(true);
       return Optional.empty();
     }
     return trajectory.getInitialPose(doFlip());
@@ -283,7 +284,8 @@ public class AutoTrajectory {
    * @return The starting pose
    */
   public Optional<Pose2d> getFinalPose() {
-    if (!allowSampling()) {
+    if (!allianceKnownOrIgnored()) {
+      allianceNotReady.set(true);
       return Optional.empty();
     }
     return trajectory.getFinalPose(doFlip());
@@ -411,10 +413,6 @@ public class AutoTrajectory {
     return done(0);
   }
 
-  private Supplier<Optional<Pose2d>> optionalFlipped(Optional<Pose2d> pose) {
-    return AllianceFlipUtil.optionalFlippedPose2d(pose, alliance, useAllianceFlipping);
-  }
-
   /**
    * Returns a trigger that will go true for 1 cycle when the desired time has elapsed
    *
@@ -487,32 +485,10 @@ public class AutoTrajectory {
     return trig;
   }
 
-  private Trigger atPose(
-      Supplier<Optional<Pose2d>> pose, double toleranceMeters, double toleranceRadians) {
-    return new Trigger(
-            routine.loop(),
-            () -> {
-              Optional<Pose2d> checkedPoseOpt = pose.get();
-              return checkedPoseOpt
-                  .map(
-                      (checkedPose) -> {
-                        Translation2d currentTrans = poseSupplier.get().getTranslation();
-                        Rotation2d currentRot = poseSupplier.get().getRotation();
-                        return currentTrans.getDistance(checkedPose.getTranslation())
-                                < toleranceMeters
-                            && Math.abs(currentRot.minus(checkedPose.getRotation()).getRadians())
-                                < toleranceRadians;
-                      })
-                  .orElse(false);
-            })
-        .and(active());
-  }
-
-  private Trigger atPose(Optional<Pose2d> pose, double toleranceMeters, double toleranceRadians) {
-    return atPose(
-        AllianceFlipUtil.optionalFlippedPose2d(pose, alliance, useAllianceFlipping),
-        toleranceMeters,
-        toleranceRadians);
+  private boolean withinTolerance(Rotation2d lhs, Rotation2d rhs, double toleranceRadians) {
+    double dot = lhs.getCos() * rhs.getCos() + lhs.getSin() * rhs.getSin();
+    double sinTolerance = Math.sin(toleranceRadians);
+    return dot > 1 - sinTolerance;
   }
 
   /**
@@ -529,7 +505,29 @@ public class AutoTrajectory {
    * @return A trigger that is true when the robot is within toleranceMeters of the given pose.
    */
   public Trigger atPose(Pose2d pose, double toleranceMeters, double toleranceRadians) {
-    return atPose(Optional.of(pose), toleranceMeters, toleranceRadians);
+    Pose2d flippedPose = ChoreoAllianceFlipUtil.flip(pose);
+    return new Trigger(
+            routine.loop(),
+            () -> {
+              if (allianceKnownOrIgnored()) {
+                final Pose2d currentPose = poseSupplier.get();
+                if (doFlip()) {
+                  boolean transValid = currentPose.getTranslation()
+                      .getDistance(flippedPose.getTranslation()) < toleranceMeters;
+                  boolean rotValid = withinTolerance(currentPose.getRotation(),
+                      flippedPose.getRotation(), toleranceRadians);
+                  return transValid && rotValid;
+                } else {
+                  boolean transValid = currentPose.getTranslation()
+                      .getDistance(pose.getTranslation()) < toleranceMeters;
+                  boolean rotValid = withinTolerance(currentPose.getRotation(),
+                      pose.getRotation(), toleranceRadians);
+                  return transValid && rotValid;
+                }
+              } else {
+                allianceNotReady.set(true);
+                return false;
+              }}).and(active());
   }
 
   /**
@@ -562,9 +560,8 @@ public class AutoTrajectory {
               // this also lets atPose be called before the alliance is ready
               .sampleAt(event.timestamp, false)
               .map(TrajectorySample::getPose);
-      if (poseOpt
-          .isPresent()) { // atPose accepts empty optionals but it would just be a false trigger
-        trig = trig.or(atPose(poseOpt, toleranceMeters, toleranceRadians));
+      if (poseOpt.isPresent()) {
+        trig = trig.or(atPose(poseOpt.get(), toleranceMeters, toleranceRadians));
         foundEvent = true;
       }
     }
@@ -576,46 +573,6 @@ public class AutoTrajectory {
     }
 
     return trig;
-  }
-
-  /**
-   * Returns a trigger that is true when the robot is within 3 inches and 3 degrees of the given
-   * event's pose.
-   *
-   * <p>A warning will be printed to the DriverStation if the event is not found and the trigger
-   * will always be false.
-   *
-   * @param eventName The name of the event.
-   * @return A trigger that is true when the robot is within 3 inches and 3 degrees of the given
-   *     event's pose.
-   * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
-   *     GUI</a>
-   */
-  public Trigger atPose(String eventName) {
-    return atPose(eventName, DEFAULT_TOLERANCE_METERS, DEFAULT_TOLERANCE_RADIANS);
-  }
-
-  private Trigger atTranslation(
-      Supplier<Optional<Translation2d>> translation, double toleranceMeters) {
-    return new Trigger(
-            routine.loop(),
-            () -> {
-              Optional<Translation2d> checkedTranslationOpt = translation.get();
-              return checkedTranslationOpt
-                  .map(
-                      (checkedTranslation) -> {
-                        Translation2d currentTrans = poseSupplier.get().getTranslation();
-                        return currentTrans.getDistance(checkedTranslation) < toleranceMeters;
-                      })
-                  .orElse(false);
-            })
-        .and(active());
-  }
-
-  private Trigger atTranslation(Optional<Translation2d> translation, double toleranceMeters) {
-    return atTranslation(
-        AllianceFlipUtil.optionalFlippedTranslation2d(translation, alliance, useAllianceFlipping),
-        toleranceMeters);
   }
 
   /**
@@ -634,7 +591,22 @@ public class AutoTrajectory {
    *     translation.
    */
   public Trigger atTranslation(Translation2d translation, double toleranceMeters) {
-    return atTranslation(Optional.of(translation), toleranceMeters);
+    Translation2d flippedTranslation = ChoreoAllianceFlipUtil.flip(translation);
+    return new Trigger(
+      routine.loop(),
+      () -> {
+        if (allianceKnownOrIgnored()) {
+          final Translation2d currentTrans = poseSupplier.get().getTranslation();
+          if (doFlip()) {
+            return currentTrans.getDistance(flippedTranslation) < toleranceMeters;
+          } else {
+            return currentTrans.getDistance(translation) < toleranceMeters;
+          }
+        } else {
+          allianceNotReady.set(true);
+          return false;
+        }
+      }).and(active());
   }
 
   /**
@@ -657,7 +629,7 @@ public class AutoTrajectory {
 
     for (var event : trajectory.getEvents(eventName)) {
       // This could create a lot of objects, could be done a more efficient way
-      // with having it all be 1 trigger that just has a list of possess and checks each one each
+      // with having it all be 1 trigger that just has a list of posess and checks each one each
       // cycle or something like that.
       // If choreo starts showing memory issues we can look into this.
       Optional<Translation2d> translationOpt =
@@ -667,10 +639,8 @@ public class AutoTrajectory {
               .sampleAt(event.timestamp, false)
               .map(TrajectorySample::getPose)
               .map(Pose2d::getTranslation);
-      if (translationOpt
-          .isPresent()) { // atTranslation accepts empty optionals but it would just be a false
-        // trigger
-        trig = trig.or(atTranslation(translationOpt, toleranceMeters));
+      if (translationOpt.isPresent()) {
+        trig = trig.or(atTranslation(translationOpt.get(), toleranceMeters));
         foundEvent = true;
       }
     }
@@ -685,23 +655,6 @@ public class AutoTrajectory {
   }
 
   /**
-   * Returns a trigger that is true when the robot is within 3 inches and 3 degrees of the given
-   * event's translation.
-   *
-   * <p>A warning will be printed to the DriverStation if the event is not found and the trigger
-   * will always be false.
-   *
-   * @param eventName The name of the event.
-   * @return A trigger that is true when the robot is within 3 inches and 3 degrees of the given
-   *     event's translation.
-   * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
-   *     GUI</a>
-   */
-  public Trigger atTranslation(String eventName) {
-    return atTranslation(eventName, DEFAULT_TOLERANCE_METERS);
-  }
-
-  /**
    * Returns an array of all the timestamps of the events with the given name.
    *
    * @param eventName The name of the event.
@@ -710,25 +663,38 @@ public class AutoTrajectory {
    *     GUI</a>
    */
   public double[] collectEventTimes(String eventName) {
-    return trajectory.getEvents(eventName).stream().mapToDouble(e -> e.timestamp).toArray();
+    double[] times = trajectory.getEvents(eventName).stream()
+        .filter(e -> e.timestamp >= 0 && e.timestamp <= trajectory.getTotalTime())
+        .mapToDouble(e -> e.timestamp)
+        .toArray();
+
+    if (times.length == 0) {
+      eventNotFound.addCause("collectEvents(" + eventName + ")");
+    }
+
+    return times;
   }
 
   /**
    * Returns an array of all the poses of the events with the given name.
+   * 
+   * <p> The returned poses are always unflipped. If you use them in a trigger like `atPose` or `atTranslation`,
+   * the library will automatically flip them if necessary. If you intend using them in a different context,
+   * you can use {@link ChoreoAllianceFlipUtil#flip} to flip them.
    *
    * @param eventName The name of the event.
    * @return An array of all the poses of the events with the given name.
    * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
    *     GUI</a>
    */
-  public ArrayList<Supplier<Optional<Pose2d>>> collectEventPoses(String eventName) {
-    var times = collectEventTimes(eventName);
-    ArrayList<Supplier<Optional<Pose2d>>> poses = new ArrayList<>();
+  public Pose2d[] collectEventPoses(String eventName) {
+    double[] times = collectEventTimes(eventName);
+    Pose2d[] poses = new Pose2d[times.length];
     for (int i = 0; i < times.length; i++) {
-      trajectory
-          .sampleAt(times[i], false)
+      Pose2d pose = trajectory.sampleAt(times[i], false)
           .map(TrajectorySample::getPose)
-          .ifPresent(pose -> poses.add(optionalFlipped(Optional.of(pose))));
+          .get(); // the event times are guaranteed to be valid
+      poses[i] = pose;
     }
     return poses;
   }

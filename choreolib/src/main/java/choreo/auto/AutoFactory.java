@@ -9,11 +9,11 @@ import choreo.Choreo.TrajectoryLogger;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
+import choreo.util.ChoreoAllianceFlipUtil.AllianceSupplier;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -34,7 +34,7 @@ import java.util.function.Supplier;
  */
 public class AutoFactory {
   static final AutoRoutine VOID_ROUTINE =
-      new AutoRoutine(null, "VOID-ROUTINE", new EventLoop()) {
+      new AutoRoutine(null, "VOID-ROUTINE", new EventLoop(), () -> true) {
         @Override
         public Command cmd() {
           return Commands.none().withName("VoidAutoRoutine");
@@ -97,8 +97,8 @@ public class AutoFactory {
   private final Supplier<Pose2d> poseSupplier;
   private final Consumer<Pose2d> resetOdometry;
   private final Consumer<? extends TrajectorySample<?>> controller;
-  private final Supplier<Optional<Alliance>> alliance;
-  private final BooleanSupplier useAllianceFlipping;
+  private final AllianceSupplier alliance;
+  private final boolean useAllianceFlipping;
   private final Subsystem driveSubsystem;
   private final AutoBindings bindings = new AutoBindings();
   private final TrajectoryLogger<? extends TrajectorySample<?>> trajectoryLogger;
@@ -141,7 +141,7 @@ public class AutoFactory {
     this.resetOdometry = resetOdometry;
     this.controller = controller;
     this.driveSubsystem = driveSubsystem;
-    this.useAllianceFlipping = () -> useAllianceFlipping;
+    this.useAllianceFlipping = useAllianceFlipping;
     this.bindings.merge(bindings);
     this.trajectoryLogger = trajectoryLogger;
     this.alliance = DriverStation::getAlliance;
@@ -203,7 +203,7 @@ public class AutoFactory {
    * @return True if the alliance is known or alliance flipping is disabled.
    */
   private boolean allianceKnownOrIgnored() {
-    return !useAllianceFlipping.getAsBoolean() || alliance.get().isPresent();
+    return !useAllianceFlipping || alliance.get().isPresent();
   }
 
   /**

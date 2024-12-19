@@ -4,7 +4,7 @@ package choreo.trajectory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import choreo.util.AllianceFlipUtil;
+import choreo.util.ChoreoAllianceFlipUtil;
 import org.junit.jupiter.api.Test;
 
 public class SampleFlippingTest {
@@ -46,9 +46,9 @@ public class SampleFlippingTest {
             0,
             new double[] {-0.0, -0.0, -0.0, -0.0},
             new double[] {-0.0, -0.0, -0.0, -0.0});
-    AllianceFlipUtil.setYear(2024);
+    ChoreoAllianceFlipUtil.setYear(2024);
     assertEquals(sample.flipped(), mirrored2024);
-    AllianceFlipUtil.setYear(2022);
+    ChoreoAllianceFlipUtil.setYear(2022);
     assertEquals(sample.flipped(), rotated2022);
   }
 
@@ -96,9 +96,9 @@ public class SampleFlippingTest {
             9.0,
             new double[] {-10.0, -11.0, -12.0, -13.0},
             new double[] {-14.0, -15.0, -16.0, -17.0});
-    AllianceFlipUtil.setYear(2024);
+    ChoreoAllianceFlipUtil.setYear(2024);
     assertEquals(sample.flipped(), mirrored2024);
-    AllianceFlipUtil.setYear(2022);
+    ChoreoAllianceFlipUtil.setYear(2022);
     assertEquals(sample.flipped(), rotated2022);
   }
 
@@ -111,9 +111,9 @@ public class SampleFlippingTest {
     DifferentialSample rotated2022 =
         new DifferentialSample(
             0.0, FIELD_LENGTH_2022, FIELD_WIDTH_2022, Math.PI, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-    AllianceFlipUtil.setYear(2024);
+    ChoreoAllianceFlipUtil.setYear(2024);
     assertEquals(sample.flipped(), mirrored2024);
-    AllianceFlipUtil.setYear(2022);
+    ChoreoAllianceFlipUtil.setYear(2022);
     assertEquals(sample.flipped(), rotated2022);
   }
 
@@ -137,9 +137,9 @@ public class SampleFlippingTest {
             8.0,
             9.0,
             10.0);
-    AllianceFlipUtil.setYear(2024);
+    ChoreoAllianceFlipUtil.setYear(2024);
     assertEquals(sample.flipped(), mirrored2024);
-    AllianceFlipUtil.setYear(2022);
+    ChoreoAllianceFlipUtil.setYear(2022);
     assertEquals(sample.flipped(), rotated2022);
   }
 }

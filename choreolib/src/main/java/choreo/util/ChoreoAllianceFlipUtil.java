@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.HashMap;
 import java.util.Optional;
-import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 /**
@@ -25,7 +24,10 @@ import java.util.function.Supplier;
  * <p>This API still allows vendors and users to match case against the flipping variant as a way to
  * specially handle cases or throw errors if a variant is explicitly not supported.
  */
-public class AllianceFlipUtil {
+public class ChoreoAllianceFlipUtil {
+  @FunctionalInterface
+  public interface AllianceSupplier extends Supplier<Optional<Alliance>> {}
+
   /** The flipper to use for flipping coordinates. */
   public static enum Flipper {
     /**
@@ -102,7 +104,7 @@ public class AllianceFlipUtil {
   private static YearInfo activeYear = flipperMap.get(2024);
 
   /** Default constructor. */
-  private AllianceFlipUtil() {}
+  private ChoreoAllianceFlipUtil() {}
 
   /**
    * Get the flipper that is currently active for flipping coordinates. It's recommended not to
@@ -241,9 +243,9 @@ public class AllianceFlipUtil {
    *     doFlip is false; the flipped pose optional if the alliance is red and doFlip is true
    */
   public static Supplier<Optional<Pose2d>> optionalFlippedPose2d(
-      Optional<Pose2d> poseOpt, Supplier<Optional<Alliance>> allianceOpt, BooleanSupplier doFlip) {
+      Optional<Pose2d> poseOpt, Supplier<Optional<Alliance>> allianceOpt, boolean doFlip) {
     return () ->
-        doFlip.getAsBoolean()
+        doFlip
             ? allianceOpt
                 .get()
                 .flatMap(ally -> poseOpt.map(pose -> ally == Alliance.Red ? flip(pose) : pose))
@@ -264,9 +266,9 @@ public class AllianceFlipUtil {
   public static Supplier<Optional<Translation2d>> optionalFlippedTranslation2d(
       Optional<Translation2d> translationOpt,
       Supplier<Optional<Alliance>> allianceOpt,
-      BooleanSupplier doFlip) {
+      boolean doFlip) {
     return () ->
-        doFlip.getAsBoolean()
+        doFlip
             ? allianceOpt
                 .get()
                 .flatMap(
