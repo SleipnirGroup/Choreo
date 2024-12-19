@@ -154,7 +154,7 @@ jobs:
         with:
           app-id: ${{ secrets.CHOREOLIB_RELEASE_APP_ID }}
           private-key: ${{ secrets.CHOREOLIB_RELEASE_APP_PRIVATE_KEY }}
-          skip-token-revoke: true
+          owner: ${{ github.repository_owner }}
       
       - name: Checkout ChoreoLib repository
         # if: startsWith(github.ref, 'refs/tags/v')
