@@ -163,6 +163,7 @@ jobs:
           repository: SleipnirGroup/ChoreoLib
           path: ChoreoLib
           token: ${{ steps.generate-token.outputs.token }}
+          persist-credentials: false
 
       - name: Copy ChoreoLib JSON
         # if: startsWith(github.ref, 'refs/tags/v')
