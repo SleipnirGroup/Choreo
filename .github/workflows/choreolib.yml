@@ -187,9 +187,7 @@ jobs:
 
       - name: Transfer ChoreoLib Artifacts
         if: startsWith(github.ref, 'refs/tags/v')
-        run: |
-          cp -r ~/releases/maven/development/choreo/* ChoreoLib/dep/choreo
-          pushd ./ChoreoLib
+        run: cp -r ~/releases/maven/development/choreo/* ChoreoLib/dep/choreo
 
       - name: Create Pull Request
         if: startsWith(github.ref, 'refs/tags/v')
