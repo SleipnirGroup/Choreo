@@ -8,9 +8,7 @@ nativeUtils.withCrossLinuxArm64()
 nativeUtils {
     wpi {
         configureDependencies {
-            // TODO: Revert once WPILib releases 2025.1.1-beta-3
-            wpiVersion = "2025.1.1-beta-2-36-g882233b"
-            // wpiVersion = "2025.+"
+            wpiVersion = "2025.+"
             niLibVersion = "2025.0.0"
         }
     }

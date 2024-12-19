@@ -37,6 +37,21 @@ LOCATIONS: list[VersionLocation] = [
         file_format="json2",
     ),
     VersionLocation(
+        relative_path=Path("choreolib/ChoreoLib2025Beta.json"),
+        version_path=["version"],
+        file_format="json2",
+    ),
+    VersionLocation(
+        relative_path=Path("choreolib/ChoreoLib2025Beta.json"),
+        version_path=["javaDependencies", 0, "version"],
+        file_format="json2",
+    ),
+    VersionLocation(
+        relative_path=Path("choreolib/ChoreoLib2025Beta.json"),
+        version_path=["cppDependencies", 0, "version"],
+        file_format="json2",
+    ),
+    VersionLocation(
         relative_path=Path("src-tauri/tauri.conf.json"),
         version_path=["package", "version"],
         file_format="json2",
@@ -116,6 +131,7 @@ def update_version(version: str) -> None:
                 raise e
             with open(file_path, "w") as f:
                 json.dump(og, f, indent=int(location.file_format[-1]))
+                f.write("\n")
         elif location.file_format == "toml":
             import tomlkit
 
