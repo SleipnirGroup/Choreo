@@ -17,7 +17,7 @@ class SwerveConfigPanel extends Component<Props, State> {
           title="Trackwidth"
           enabled={true}
           roundingPrecision={3}
-          number={config.differentialTrackWidth}
+          number={config.differentialTrackwidth}
           maxWidthCharacters={8}
           titleTooltip="Distance between wheel sides"
         />

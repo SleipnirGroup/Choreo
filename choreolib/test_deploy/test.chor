@@ -24,7 +24,7 @@
    "back":["16 in",0.4064],
    "right":["16 in",0.4064]
   },
-  "differentialTrackWidth":["24 in",0.6096],
+  "differentialTrackwidth":["24 in",0.6096],
  },
  "generationFeatures":[]
 }
