@@ -10,15 +10,15 @@ import choreo.trajectory.DifferentialSample;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
-import choreo.util.ChoreoAllianceFlipUtil;
 import choreo.util.ChoreoAlert;
 import choreo.util.ChoreoAlert.MultiAlert;
+import choreo.util.ChoreoAllianceFlipUtil;
 import choreo.util.ChoreoAllianceFlipUtil.AllianceSupplier;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -137,8 +137,7 @@ public class AutoTrajectory {
    * @return
    */
   private boolean doFlip() {
-    return useAllianceFlipping
-        && alliance.get().map(a -> a == Alliance.Red).orElse(false);
+    return useAllianceFlipping && alliance.get().map(a -> a == Alliance.Red).orElse(false);
   }
 
   @SuppressWarnings("unchecked")
@@ -223,7 +222,7 @@ public class AutoTrajectory {
    *
    * @return A command that resets the robot's odometry.
    */
-  Command resetOdometry() {
+  public Command resetOdometry() {
     return Commands.either(
             Commands.runOnce(() -> resetOdometry.accept(getInitialPose().get()), driveSubsystem),
             Commands.runOnce(
@@ -231,7 +230,7 @@ public class AutoTrajectory {
                       noInitialPose.addCause(name);
                       routine.kill();
                     })
-                .andThen(Commands.idle()),
+                .andThen(driveSubsystem.run(() -> {})),
             () -> getInitialPose().isPresent())
         .withName("Trajectory_ResetOdometry_" + name);
   }
@@ -512,22 +511,28 @@ public class AutoTrajectory {
               if (allianceKnownOrIgnored()) {
                 final Pose2d currentPose = poseSupplier.get();
                 if (doFlip()) {
-                  boolean transValid = currentPose.getTranslation()
-                      .getDistance(flippedPose.getTranslation()) < toleranceMeters;
-                  boolean rotValid = withinTolerance(currentPose.getRotation(),
-                      flippedPose.getRotation(), toleranceRadians);
+                  boolean transValid =
+                      currentPose.getTranslation().getDistance(flippedPose.getTranslation())
+                          < toleranceMeters;
+                  boolean rotValid =
+                      withinTolerance(
+                          currentPose.getRotation(), flippedPose.getRotation(), toleranceRadians);
                   return transValid && rotValid;
                 } else {
-                  boolean transValid = currentPose.getTranslation()
-                      .getDistance(pose.getTranslation()) < toleranceMeters;
-                  boolean rotValid = withinTolerance(currentPose.getRotation(),
-                      pose.getRotation(), toleranceRadians);
+                  boolean transValid =
+                      currentPose.getTranslation().getDistance(pose.getTranslation())
+                          < toleranceMeters;
+                  boolean rotValid =
+                      withinTolerance(
+                          currentPose.getRotation(), pose.getRotation(), toleranceRadians);
                   return transValid && rotValid;
                 }
               } else {
                 allianceNotReady.set(true);
                 return false;
-              }}).and(active());
+              }
+            })
+        .and(active());
   }
 
   /**
@@ -593,20 +598,21 @@ public class AutoTrajectory {
   public Trigger atTranslation(Translation2d translation, double toleranceMeters) {
     Translation2d flippedTranslation = ChoreoAllianceFlipUtil.flip(translation);
     return new Trigger(
-      routine.loop(),
-      () -> {
-        if (allianceKnownOrIgnored()) {
-          final Translation2d currentTrans = poseSupplier.get().getTranslation();
-          if (doFlip()) {
-            return currentTrans.getDistance(flippedTranslation) < toleranceMeters;
-          } else {
-            return currentTrans.getDistance(translation) < toleranceMeters;
-          }
-        } else {
-          allianceNotReady.set(true);
-          return false;
-        }
-      }).and(active());
+            routine.loop(),
+            () -> {
+              if (allianceKnownOrIgnored()) {
+                final Translation2d currentTrans = poseSupplier.get().getTranslation();
+                if (doFlip()) {
+                  return currentTrans.getDistance(flippedTranslation) < toleranceMeters;
+                } else {
+                  return currentTrans.getDistance(translation) < toleranceMeters;
+                }
+              } else {
+                allianceNotReady.set(true);
+                return false;
+              }
+            })
+        .and(active());
   }
 
   /**
@@ -663,10 +669,11 @@ public class AutoTrajectory {
    *     GUI</a>
    */
   public double[] collectEventTimes(String eventName) {
-    double[] times = trajectory.getEvents(eventName).stream()
-        .filter(e -> e.timestamp >= 0 && e.timestamp <= trajectory.getTotalTime())
-        .mapToDouble(e -> e.timestamp)
-        .toArray();
+    double[] times =
+        trajectory.getEvents(eventName).stream()
+            .filter(e -> e.timestamp >= 0 && e.timestamp <= trajectory.getTotalTime())
+            .mapToDouble(e -> e.timestamp)
+            .toArray();
 
     if (times.length == 0) {
       eventNotFound.addCause("collectEvents(" + eventName + ")");
@@ -677,10 +684,10 @@ public class AutoTrajectory {
 
   /**
    * Returns an array of all the poses of the events with the given name.
-   * 
-   * <p> The returned poses are always unflipped. If you use them in a trigger like `atPose` or `atTranslation`,
-   * the library will automatically flip them if necessary. If you intend using them in a different context,
-   * you can use {@link ChoreoAllianceFlipUtil#flip} to flip them.
+   *
+   * <p>The returned poses are always unflipped. If you use them in a trigger like `atPose` or
+   * `atTranslation`, the library will automatically flip them if necessary. If you intend using
+   * them in a different context, you can use {@link ChoreoAllianceFlipUtil#flip} to flip them.
    *
    * @param eventName The name of the event.
    * @return An array of all the poses of the events with the given name.
@@ -691,9 +698,11 @@ public class AutoTrajectory {
     double[] times = collectEventTimes(eventName);
     Pose2d[] poses = new Pose2d[times.length];
     for (int i = 0; i < times.length; i++) {
-      Pose2d pose = trajectory.sampleAt(times[i], false)
-          .map(TrajectorySample::getPose)
-          .get(); // the event times are guaranteed to be valid
+      Pose2d pose =
+          trajectory
+              .sampleAt(times[i], false)
+              .map(TrajectorySample::getPose)
+              .get(); // the event times are guaranteed to be valid
       poses[i] = pose;
     }
     return poses;

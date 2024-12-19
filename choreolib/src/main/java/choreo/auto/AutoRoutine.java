@@ -18,8 +18,8 @@ import java.util.function.BooleanSupplier;
 /**
  * An object that represents an autonomous routine.
  *
- * <p>This loop is used to handle autonomous trigger logic and schedule commands. This loop should
- * **not** be shared across multiple autonomous routines.
+ * <p>This routine is used to handle autonomous trigger logic and schedule commands. This routine
+ * should **not** be shared across multiple autonomous routines.
  *
  * @see AutoFactory#newRoutine Creating a routine from a AutoFactory
  */
@@ -55,7 +55,8 @@ public class AutoRoutine {
    * @param name The name of the loop
    * @param loop The inner {@link EventLoop}
    */
-  protected AutoRoutine(AutoFactory factory, String name, EventLoop loop, BooleanSupplier allianceKnownOrIgnored) {
+  protected AutoRoutine(
+      AutoFactory factory, String name, EventLoop loop, BooleanSupplier allianceKnownOrIgnored) {
     this.factory = factory;
     this.loop = loop;
     this.name = name;
@@ -180,16 +181,6 @@ public class AutoRoutine {
   public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory trajectory(
       Trajectory<SampleType> trajectory) {
     return factory.trajectory(trajectory, this);
-  }
-
-  /**
-   * Creates a command that resets the robot's odometry to the start of a trajectory.
-   *
-   * @param trajectory The trajectory to use.
-   * @return A command that resets the robot's odometry.
-   */
-  public Command resetOdometry(AutoTrajectory trajectory) {
-    return trajectory.resetOdometry();
   }
 
   /**

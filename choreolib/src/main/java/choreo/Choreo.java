@@ -107,6 +107,26 @@ public final class Choreo {
   }
 
   /**
+   * Fetches the names of all available trajectories in the deploy directory.
+   *
+   * @return A list of all available trajectory names.
+   */
+  public static String[] availableTrajectories() {
+    List<String> trajectories = new ArrayList<>();
+    File[] files = CHOREO_DIR.listFiles();
+    if (files != null) {
+      for (File file : files) {
+        if (file.getName().endsWith(TRAJECTORY_FILE_EXTENSION)) {
+          trajectories.add(
+              file.getName()
+                  .substring(0, file.getName().length() - TRAJECTORY_FILE_EXTENSION.length()));
+        }
+      }
+    }
+    return trajectories.toArray(new String[0]);
+  }
+
+  /**
    * Load a trajectory from a string.
    *
    * @param trajectoryJsonString The JSON string.

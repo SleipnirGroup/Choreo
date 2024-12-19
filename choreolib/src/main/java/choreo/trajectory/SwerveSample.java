@@ -331,7 +331,9 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
         && this.ax == other.ax
         && this.ay == other.ay
         && this.alpha == other.alpha
-        && ChoreoArrayUtil.zipEquals(this.fx, other.fx, (a, b) -> a.doubleValue() == b.doubleValue())
-        && ChoreoArrayUtil.zipEquals(this.fy, other.fy, (a, b) -> a.doubleValue() == b.doubleValue());
+        && ChoreoArrayUtil.zipEquals(
+            this.fx, other.fx, (a, b) -> a.doubleValue() == b.doubleValue())
+        && ChoreoArrayUtil.zipEquals(
+            this.fy, other.fy, (a, b) -> a.doubleValue() == b.doubleValue());
   }
 }
