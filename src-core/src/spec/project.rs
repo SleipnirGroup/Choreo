@@ -3,7 +3,10 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use trajoptlib::Translation2d;
 
-use super::{trajectory::DriveType, upgraders::upgrade_project_file, Expr, SnapshottableType, project_schema_version};
+use super::{
+    project_schema_version, trajectory::DriveType, upgraders::upgrade_project_file, Expr,
+    SnapshottableType,
+};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum Dimension {
@@ -144,7 +147,7 @@ impl RobotConfig<f64> {
 #[serde(rename_all = "camelCase")]
 pub struct ProjectFile {
     pub name: String,
-    #[serde(default="project_schema_version")]
+    #[serde(default = "project_schema_version")]
     pub version: u32,
     #[serde(rename = "type", default)]
     pub r#type: DriveType,

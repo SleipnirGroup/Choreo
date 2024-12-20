@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use trajoptlib::{DifferentialTrajectorySample, SwerveTrajectorySample};
 
-use super::{upgraders::upgrade_traj_file, Expr, SnapshottableType, traj_schema_version};
+use super::{traj_schema_version, upgraders::upgrade_traj_file, Expr, SnapshottableType};
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -412,7 +412,7 @@ pub struct TrajectoryFile {
     /// Will always be in sync with the file name on disk.
     pub name: String,
     /// The version of the `.traj` file spec.
-    #[serde(default="traj_schema_version")]
+    #[serde(default = "traj_schema_version")]
     pub version: u32,
     /// The snapshot of the parameters at the time of the last generation.
     pub snapshot: Option<Parameters<f64>>,
