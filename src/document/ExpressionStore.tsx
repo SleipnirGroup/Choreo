@@ -647,6 +647,8 @@ export const Variables = types
       self.expressions.set(key, self.createExpression(expr, defaultUnit));
     },
     deserialize(vars: DocVariables) {
+      self.expressions.clear();
+      self.poses.clear();
       for (const entry of Object.entries(vars.expressions)) {
         this.add(entry[0], entry[1].var, entry[1].dimension);
       }
