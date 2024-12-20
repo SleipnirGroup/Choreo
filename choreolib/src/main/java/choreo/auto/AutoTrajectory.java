@@ -5,6 +5,7 @@ package choreo.auto;
 import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
 
 import choreo.Choreo.TrajectoryLogger;
+import choreo.auto.AutoFactory.AllianceContext;
 import choreo.auto.AutoFactory.AutoBindings;
 import choreo.trajectory.DifferentialSample;
 import choreo.trajectory.SwerveSample;
@@ -13,12 +14,10 @@ import choreo.trajectory.TrajectorySample;
 import choreo.util.ChoreoAlert;
 import choreo.util.ChoreoAlert.MultiAlert;
 import choreo.util.ChoreoAllianceFlipUtil;
-import choreo.util.ChoreoAllianceFlipUtil.AllianceSupplier;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -64,8 +63,7 @@ public class AutoTrajectory {
   private final Supplier<Pose2d> poseSupplier;
   private final Consumer<Pose2d> resetOdometry;
   private final Consumer<? extends TrajectorySample<?>> controller;
-  private final boolean useAllianceFlipping;
-  private final Supplier<Optional<Alliance>> alliance;
+  private final AllianceContext allianceCtx;
   private final Timer timer = new Timer();
   private final Subsystem driveSubsystem;
   private final AutoRoutine routine;
@@ -102,8 +100,7 @@ public class AutoTrajectory {
       Supplier<Pose2d> poseSupplier,
       Consumer<Pose2d> resetOdometry,
       Consumer<SampleType> controller,
-      boolean useAllianceFlipping,
-      AllianceSupplier alliance,
+      AllianceContext allianceCtx,
       TrajectoryLogger<SampleType> trajectoryLogger,
       Subsystem driveSubsystem,
       AutoRoutine routine,
@@ -113,31 +110,13 @@ public class AutoTrajectory {
     this.poseSupplier = poseSupplier;
     this.resetOdometry = resetOdometry;
     this.controller = controller;
-    this.useAllianceFlipping = useAllianceFlipping;
-    this.alliance = alliance;
+    this.allianceCtx = allianceCtx;
     this.driveSubsystem = driveSubsystem;
     this.routine = routine;
     this.offTrigger = new Trigger(routine.loop(), () -> false);
     this.trajectoryLogger = trajectoryLogger;
 
     bindings.getBindings().forEach((key, value) -> active().and(atTime(key)).onTrue(value));
-  }
-
-  /**
-   * Returns true if alliance flipping is enabled and the alliance optional is present. Also returns
-   * true if alliance flipping is disabled.
-   */
-  private boolean allianceKnownOrIgnored() {
-    return routine.allianceKnownOrIgnored.getAsBoolean();
-  }
-
-  /**
-   * Returns true if alliance flipping is enabled and the alliance is red.
-   *
-   * @return
-   */
-  private boolean doFlip() {
-    return useAllianceFlipping && alliance.get().map(a -> a == Alliance.Red).orElse(false);
   }
 
   @SuppressWarnings("unchecked")
@@ -171,7 +150,11 @@ public class AutoTrajectory {
 
   @SuppressWarnings("unchecked")
   private void cmdExecute() {
-    var sampleOpt = trajectory.sampleAt(timer.get(), doFlip());
+    if (!allianceCtx.allianceKnownOrIgnored()) {
+      allianceNotReady.set(true);
+      return;
+    }
+    var sampleOpt = trajectory.sampleAt(timer.get(), allianceCtx.doFlip());
     if (sampleOpt.isEmpty()) {
       return;
     }
@@ -194,7 +177,7 @@ public class AutoTrajectory {
   }
 
   private boolean cmdIsFinished() {
-    return timer.get() > trajectory.getTotalTime() || !routine.isActive;
+    return timer.get() > trajectory.getTotalTime() || !routine.active().getAsBoolean();
   }
 
   /**
@@ -263,11 +246,11 @@ public class AutoTrajectory {
    * @return The starting pose
    */
   public Optional<Pose2d> getInitialPose() {
-    if (!allianceKnownOrIgnored()) {
+    if (!allianceCtx.allianceKnownOrIgnored()) {
       allianceNotReady.set(true);
       return Optional.empty();
     }
-    return trajectory.getInitialPose(doFlip());
+    return trajectory.getInitialPose(allianceCtx.doFlip());
   }
 
   /**
@@ -283,11 +266,11 @@ public class AutoTrajectory {
    * @return The starting pose
    */
   public Optional<Pose2d> getFinalPose() {
-    if (!allianceKnownOrIgnored()) {
+    if (!allianceCtx.allianceKnownOrIgnored()) {
       allianceNotReady.set(true);
       return Optional.empty();
     }
-    return trajectory.getFinalPose(doFlip());
+    return trajectory.getFinalPose(allianceCtx.doFlip());
   }
 
   /**
@@ -296,7 +279,7 @@ public class AutoTrajectory {
    * @return A trigger that is true while the trajectory is scheduled.
    */
   public Trigger active() {
-    return new Trigger(routine.loop(), () -> this.isActive && routine.isActive);
+    return new Trigger(routine.loop(), () -> this.isActive && routine.active().getAsBoolean());
   }
 
   /**
@@ -508,9 +491,9 @@ public class AutoTrajectory {
     return new Trigger(
             routine.loop(),
             () -> {
-              if (allianceKnownOrIgnored()) {
+              if (allianceCtx.allianceKnownOrIgnored()) {
                 final Pose2d currentPose = poseSupplier.get();
-                if (doFlip()) {
+                if (allianceCtx.doFlip()) {
                   boolean transValid =
                       currentPose.getTranslation().getDistance(flippedPose.getTranslation())
                           < toleranceMeters;
@@ -600,9 +583,9 @@ public class AutoTrajectory {
     return new Trigger(
             routine.loop(),
             () -> {
-              if (allianceKnownOrIgnored()) {
+              if (allianceCtx.allianceKnownOrIgnored()) {
                 final Translation2d currentTrans = poseSupplier.get().getTranslation();
-                if (doFlip()) {
+                if (allianceCtx.doFlip()) {
                   return currentTrans.getDistance(flippedTranslation) < toleranceMeters;
                 } else {
                   return currentTrans.getDistance(translation) < toleranceMeters;

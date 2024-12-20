@@ -4,6 +4,7 @@ package choreo.auto;
 
 import static edu.wpi.first.wpilibj.Alert.AlertType.kWarning;
 
+import choreo.auto.AutoFactory.AllianceContext;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
 import choreo.util.ChoreoAlert;
@@ -31,13 +32,13 @@ public class AutoRoutine {
   protected final AutoFactory factory;
 
   /** The underlying {@link EventLoop} that triggers are bound to and polled */
-  protected final EventLoop loop;
+  protected final EventLoop loop = new EventLoop();
 
   /** The name of the auto routine this loop is associated with */
   protected final String name;
 
-  /** Returns true if the alliance is known or is irrelevant (i.e. flipping is not being done) */
-  protected final BooleanSupplier allianceKnownOrIgnored;
+  /** The alliance helper that is used to determine flipping logic */
+  protected final AllianceContext allianceCtx;
 
   /** A boolean utilized in {@link #active()} to resolve trueness */
   protected boolean isActive = false;
@@ -49,34 +50,16 @@ public class AutoRoutine {
   protected int pollCount = 0;
 
   /**
-   * A constructor to be used when inhereting this class to instantiate a custom inner loop
-   *
-   * @param factory The factory that created this loop
-   * @param name The name of the loop
-   * @param loop The inner {@link EventLoop}
-   * @param allianceKnownOrIgnored Returns true if the alliance is known or is irrelevant (i.e.
-   *     flipping is not being done).
-   * @see AutoFactory#newRoutine Creating a loop from a AutoFactory
-   */
-  protected AutoRoutine(
-      AutoFactory factory, String name, EventLoop loop, BooleanSupplier allianceKnownOrIgnored) {
-    this.factory = factory;
-    this.loop = loop;
-    this.name = name;
-    this.allianceKnownOrIgnored = allianceKnownOrIgnored;
-  }
-
-  /**
    * Creates a new loop with a specific name and a custom alliance supplier.
    *
    * @param factory The factory that created this loop
    * @param name The name of the loop
-   * @param allianceKnownOrIgnored Returns true if the alliance is known or is irrelevant (i.e.
-   *     flipping is not being done).
    * @see AutoFactory#newRoutine Creating a loop from a AutoFactory
    */
-  protected AutoRoutine(AutoFactory factory, String name, BooleanSupplier allianceKnownOrIgnored) {
-    this(factory, name, new EventLoop(), allianceKnownOrIgnored);
+  protected AutoRoutine(AutoFactory factory, String name, AllianceContext allianceHelper) {
+    this.factory = factory;
+    this.name = name;
+    this.allianceCtx = allianceHelper;
   }
 
   /**
@@ -93,9 +76,7 @@ public class AutoRoutine {
 
   /** Polls the routine. Should be called in the autonomous periodic method. */
   public void poll() {
-    if (!DriverStation.isAutonomousEnabled()
-        || !allianceKnownOrIgnored.getAsBoolean()
-        || isKilled) {
+    if (!DriverStation.isAutonomousEnabled() || !allianceCtx.allianceKnownOrIgnored() || isKilled) {
       isActive = false;
       return;
     }
@@ -266,6 +247,6 @@ public class AutoRoutine {
               ChoreoAlert.alert("Alliance not known when starting routine", kWarning).set(true);
               kill();
             }),
-        allianceKnownOrIgnored);
+        allianceCtx::allianceKnownOrIgnored);
   }
 }
