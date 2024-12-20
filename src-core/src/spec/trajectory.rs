@@ -287,7 +287,12 @@ pub enum Sample {
 }
 fn round(input: f64) -> f64 {
     let factor = 100_000.0;
-    (input * factor).round() / factor
+    let result = (input * factor).round() / factor;
+    if result == -0.0 {
+        0.0
+    } else {
+        result
+    }
 }
 
 impl From<&SwerveTrajectorySample> for Sample {
