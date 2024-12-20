@@ -181,9 +181,10 @@ public class AutoChooser implements Sendable {
   public void initSendable(SendableBuilder builder) {
     builder.setSmartDashboardType("String Chooser");
     builder.publishConstBoolean(".controllable", true);
+    builder.publishConstInteger(".instance", 0);
     builder.publishConstString("default", NONE_NAME);
     builder.addStringArrayProperty("options", () -> options, null);
-    builder.addStringProperty("selected", () -> selected, this::select);
+    builder.addStringProperty("selected", null, this::select);
     builder.addStringProperty("active", () -> select(selected), null);
   }
 }
