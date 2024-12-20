@@ -49,7 +49,7 @@ public class AutoChooser implements Sendable {
   private String[] options = new String[] {NONE_NAME};
 
   private String activeCommandName = NONE_NAME;
-  private Command selectedCommand = Commands.none();
+  private Command activeCommand = Commands.none();
 
   /** Constructs a new {@link AutoChooser}. */
   public AutoChooser() {}
@@ -64,10 +64,10 @@ public class AutoChooser implements Sendable {
    */
   public String select(String selectStr) {
     selected = selectStr;
+    if (selected.equals(activeCommandName)) return activeCommandName;
     if (DriverStation.isDisabled()
         && DriverStation.isDSAttached()
         && DriverStation.getAlliance().isPresent()) {
-      if (selected.equals(activeCommandName)) return activeCommandName;
       if (!autoRoutines.containsKey(selected) && !selected.equals(NONE_NAME)) {
         selected = NONE_NAME;
         selectedNonexistentAuto.set(true);
@@ -75,8 +75,8 @@ public class AutoChooser implements Sendable {
         selectedNonexistentAuto.set(false);
       }
       activeCommandName = selected;
+      activeCommand = autoRoutines.get(activeCommandName).get();
     }
-    selectedCommand = autoRoutines.get(activeCommandName).get();
     return activeCommandName;
   }
 
@@ -162,7 +162,7 @@ public class AutoChooser implements Sendable {
    * @return A command that runs the selected {@link AutoRoutine}
    */
   public Command selectedCommandScheduler() {
-    return Commands.defer(() -> selectedCommand.asProxy(), Set.of());
+    return Commands.defer(() -> activeCommand.asProxy(), Set.of());
   }
 
   /**
@@ -174,7 +174,7 @@ public class AutoChooser implements Sendable {
    * @return The currently selected command.
    */
   public Command selectedCommand() {
-    return selectedCommand.withName(activeCommandName);
+    return activeCommand.withName(activeCommandName);
   }
 
   @Override
