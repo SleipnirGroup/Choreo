@@ -85,14 +85,13 @@ class Input extends Component<Props, State> {
     if (!isAlive(this.props.number)) {
       return;
     }
-    if (!prevProps.number.expr.equals(this.props.number.expr)) {
-      // if the value has changed from the outside, make sure it is no longer
-      // focused.
-      this.unfocusedMode();
-    }
-    if (_prevState.resetCounter !== this.state.resetCounter) {
+    if (
+      _prevState.resetCounter !== this.state.resetCounter ||
+      !prevProps.number.expr.equals(this.props.number.expr)
+    ) {
       this.inputElemRef.current!.defaultValue = this.getRoundedStr();
       this.updateValid();
+      this.unfocusedMode();
     }
   }
 
