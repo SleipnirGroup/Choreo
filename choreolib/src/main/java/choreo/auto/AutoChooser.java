@@ -99,12 +99,11 @@ public class AutoChooser implements Sendable {
   /**
    * Add an AutoRoutine to the chooser.
    *
-   * <p>The options of the chooser are actually a function that takes an {@link AutoFactory} and
-   * returns a {@link AutoRoutine}. These functions can be static, a lambda or belong to a local
-   * variable.
-   *
    * <p>This is done to load AutoRoutines when and only when they are selected, in order to save
    * memory and file loading time for unused AutoRoutines.
+   * 
+   * <p> The generators are only run when the DriverStation is disabled and the alliance
+   * is known.
    *
    * <p>One way to keep this clean is to make an `Autos` class that all of your subsystems/resources
    * are <a href="https://en.wikipedia.org/wiki/Dependency_injection">dependency injected</a> into.
@@ -137,8 +136,11 @@ public class AutoChooser implements Sendable {
   /**
    * Adds a Command to the auto chooser.
    *
-   * <p>This is done to load autonomous commands when and only when they are selected, in order to
+   * <p> This is done to load autonomous commands when and only when they are selected, in order to
    * save memory and file loading time for unused autonomous commands.
+   * 
+   * <p> The generators are only run when the DriverStation is disabled and the alliance
+   * is known.
    *
    * <h3>Example:</h3>
    *
@@ -164,8 +166,9 @@ public class AutoChooser implements Sendable {
   }
 
   /**
-   * Gets a Command that schedules the selected auto routine. This Command finishes immediately as
-   * it simply schedules another Command. This Command can directly be bound to a trigger, like so:
+   * Gets a Command that schedules the selected auto routine. This Command 
+   * shares the lifetime of the scheduled Command.
+   * This Command can directly be bound to a trigger, like so:
    *
    * <pre><code>
    *     AutoChooser chooser = ...;
