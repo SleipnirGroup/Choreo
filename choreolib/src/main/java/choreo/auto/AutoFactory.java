@@ -92,7 +92,7 @@ public class AutoFactory {
   private final Supplier<Pose2d> poseSupplier;
   private final Consumer<Pose2d> resetOdometry;
   private final Consumer<? extends TrajectorySample<?>> controller;
-  private final AllianceContext allianceHelper;
+  private final AllianceContext allianceCtx;
   private final Subsystem driveSubsystem;
   private final AutoBindings bindings = new AutoBindings();
   private final TrajectoryLogger<? extends TrajectorySample<?>> trajectoryLogger;
@@ -136,13 +136,13 @@ public class AutoFactory {
     this.resetOdometry = resetOdometry;
     this.controller = controller;
     this.driveSubsystem = driveSubsystem;
-    this.allianceHelper = new AllianceContext(useAllianceFlipping, DriverStation::getAlliance);
+    this.allianceCtx = new AllianceContext(useAllianceFlipping, DriverStation::getAlliance);
     this.bindings.merge(bindings);
     this.trajectoryLogger = trajectoryLogger;
     HAL.report(tResourceType.kResourceType_ChoreoTrigger, 1);
 
     voidRoutine =
-        new AutoRoutine(this, "VOID-ROUTINE", allianceHelper) {
+        new AutoRoutine(this, "VOID-ROUTINE", allianceCtx) {
           @Override
           public Command cmd() {
             return Commands.none().withName("VoidAutoRoutine");
@@ -161,7 +161,7 @@ public class AutoFactory {
 
           @Override
           public Trigger active() {
-            return new Trigger(loop, () -> false);
+            return new Trigger(this.loop(), () -> false);
           }
         };
   }
@@ -211,7 +211,7 @@ public class AutoFactory {
       trajectoryCache.clear();
     }
 
-    return new AutoRoutine(this, name, allianceHelper);
+    return new AutoRoutine(this, name, allianceCtx);
   }
 
   /**
@@ -268,7 +268,7 @@ public class AutoFactory {
         poseSupplier,
         resetOdometry,
         solidController,
-        allianceHelper,
+        allianceCtx,
         (TrajectoryLogger<ST>) trajectoryLogger,
         driveSubsystem,
         routine,

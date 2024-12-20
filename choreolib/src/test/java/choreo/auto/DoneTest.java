@@ -55,7 +55,7 @@ public class DoneTest {
     scheduler.schedule(traj.cmd());
     scheduler.run();
 
-    assertTrue(routine.isActive);
+    assertTrue(routine.active().getAsBoolean());
     assertTrue(traj.active());
 
     SimHooks.stepTiming(1.0);

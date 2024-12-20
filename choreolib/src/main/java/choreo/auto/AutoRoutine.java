@@ -29,34 +29,35 @@ public class AutoRoutine {
    * The factory that created this loop. This is used to create commands that are associated with
    * this loop.
    */
-  protected final AutoFactory factory;
+  private final AutoFactory factory;
 
   /** The underlying {@link EventLoop} that triggers are bound to and polled */
-  protected final EventLoop loop = new EventLoop();
+  private final EventLoop loop = new EventLoop();
 
   /** The name of the auto routine this loop is associated with */
-  protected final String name;
+  private final String name;
 
   /** The alliance helper that is used to determine flipping logic */
-  protected final AllianceContext allianceCtx;
+  private final AllianceContext allianceCtx;
 
   /** A boolean utilized in {@link #active()} to resolve trueness */
-  protected boolean isActive = false;
+  private boolean isActive = false;
 
   /** A boolean that is true when the loop is killed */
-  protected boolean isKilled = false;
+  boolean isKilled = false;
 
   /** The amount of times the routine has been polled */
-  protected int pollCount = 0;
+  private int pollCount = 0;
 
   /**
    * Creates a new loop with a specific name and a custom alliance supplier.
    *
    * @param factory The factory that created this loop
    * @param name The name of the loop
+   * @param allianceHelper The alliance helper that is used to determine flipping logic
    * @see AutoFactory#newRoutine Creating a loop from a AutoFactory
    */
-  protected AutoRoutine(AutoFactory factory, String name, AllianceContext allianceHelper) {
+  AutoRoutine(AutoFactory factory, String name, AllianceContext allianceHelper) {
     this.factory = factory;
     this.name = name;
     this.allianceCtx = allianceHelper;

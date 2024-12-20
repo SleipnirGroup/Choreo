@@ -87,8 +87,7 @@ public class AutoTrajectory {
    * @param trajectory The trajectory samples.
    * @param poseSupplier The pose supplier.
    * @param controller The controller function.
-   * @param useAllianceFlipping Getter that determines whether to mirror trajectory based off
-   *     alliance.
+   * @param allianceCtx The alliance context.
    * @param trajectoryLogger Optional trajectory logger.
    * @param driveSubsystem Drive subsystem.
    * @param routine Event loop.
