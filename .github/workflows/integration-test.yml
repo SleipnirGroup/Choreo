@@ -86,7 +86,7 @@ jobs:
       - name: Fetch all history and metadata
         run: |
           git config --global --add safe.directory /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
-      -
+          
       - name: Test with Gradle
         working-directory: choreolib
         run: ./gradlew test -Dprofile=integration ${{ matrix.build-options }} -PreleaseMode
