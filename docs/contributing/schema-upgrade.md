@@ -85,8 +85,6 @@ There is a mirror for every Rust struct that gets serialized. Note again that in
 
 Some objects have default values stored throughout the code.
 
-### Update the relevant schema version in `src/document/2025/DocumentTypes.ts`
-
 ### Update the Mobx store for the modified data struct.
 
 These are in `src/document/`.

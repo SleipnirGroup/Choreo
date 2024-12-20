@@ -7,7 +7,6 @@ import {
   DifferentialSample,
   ProgressUpdate,
   Project,
-  PROJECT_SCHEMA_VERSION,
   SampleType,
   SwerveSample,
   Trajectory
@@ -89,7 +88,6 @@ export const DocumentStore = types
     serializeChor(): Project {
       return {
         name: self.name,
-        version: PROJECT_SCHEMA_VERSION,
         type: self.type,
         variables: self.variables.serialize,
         config: self.robotConfig.serialize
