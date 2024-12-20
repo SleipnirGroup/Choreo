@@ -43,3 +43,127 @@ jobs:
         with:
           name: differential.traj
           path: ./src-core/test-tmp-latest/differential/differential.traj
+
+
+jobs:
+  build-docker:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - container: wpilib/roborio-cross-ubuntu:2025-22.04
+            artifact-name: Athena
+            build-options: -Ponlylinuxathena
+
+          - container: wpilib/raspbian-cross-ubuntu:bookworm-22.04
+            artifact-name: Linux-arm32
+            build-options: -Ponlylinuxarm32
+
+          - container: wpilib/aarch64-cross-ubuntu:bookworm-22.04
+            artifact-name: Linux-arm64
+            build-options: -Ponlylinuxarm64
+
+          - container: wpilib/ubuntu-base:22.04
+            artifact-name: Linux-x86_64
+            build-options:
+
+    name: "Test C++ and Java / ${{ matrix.artifact-name }}"
+    runs-on: ubuntu-24.04
+    container: ${{ matrix.container }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+          persist-credentials: false
+          token: ${{secrets.GITHUB_TOKEN}}
+      - name: Download trajectories
+        uses: actions/download-artifact@v4
+        with:
+          path: ./choreolib/src/main/resources
+          pattern: "*.traj"
+
+      - name: Fetch all history and metadata
+        run: |
+          git config --global --add safe.directory /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
+      -
+      - name: Test with Gradle
+        working-directory: choreolib
+        run: ./gradlew test -Dprofile=integration ${{ matrix.build-options }} -PreleaseMode
+
+  build-host:
+    env:
+      MACOSX_DEPLOYMENT_TARGET: 13.3
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            artifact-name: Windows-x86_64
+            build-options:
+
+          # FIXME: Link failure on commands library
+          # - os: windows-2022
+          #   artifact-name: Windows-aarch64
+          #   build-options: -Pbuildwinarm64 -Ponlywindowsarm64
+
+          - os: macOS-13
+            artifact-name: macOS-x86_64
+            build-options:
+
+          - os: macOS-14
+            artifact-name: macOS-arm64
+            build-options:
+
+    name: "Build C++ and Java / ${{ matrix.artifact-name }}"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          persist-credentials: false
+          token: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Fetch all history and metadata
+        run: git fetch --prune --unshallow
+      
+      - name: Download trajectories
+        uses: actions/download-artifact@v4
+        with:
+          path: ./choreolib/src/main/resources
+          pattern: "*.traj"
+      
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: 17
+
+      - name: Test with Gradle
+        working-directory: choreolib
+        run: ./gradlew test -Dprofile=integration ${{ matrix.build-options }}
+
+  build-python:
+    name: "Build Python"
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          token: ${{secrets.GITHUB_TOKEN}}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - run: pip3 install build wheel pytest
+
+      - run: python3 -m build
+        working-directory: ./choreolib/py
+      - run: pip3 install --no-cache-dir dist/*.whl
+        working-directory: ./choreolib/py
+      - run: pytest
+        working-directory: ./choreolib/py
+
+
+    
