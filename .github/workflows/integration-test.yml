@@ -51,18 +51,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - container: wpilib/roborio-cross-ubuntu:2025-22.04
-            artifact-name: Athena
-            build-options: -Ponlylinuxathena
-
-          - container: wpilib/raspbian-cross-ubuntu:bookworm-22.04
-            artifact-name: Linux-arm32
-            build-options: -Ponlylinuxarm32
-
-          - container: wpilib/aarch64-cross-ubuntu:bookworm-22.04
-            artifact-name: Linux-arm64
-            build-options: -Ponlylinuxarm64
-
           - container: wpilib/ubuntu-base:22.04
             artifact-name: Linux-x86_64
             build-options:
@@ -80,18 +68,18 @@ jobs:
       - name: Download trajectories
         uses: actions/download-artifact@v4
         with:
-          path: ./choreolib/src/main/resources
+          path: ./choreolib/src/test/resources
           pattern: "*.traj"
 
       - name: Fetch all history and metadata
         run: |
           git config --global --add safe.directory /__w/${{ github.event.repository.name }}/${{ github.event.repository.name }}
-          
+
       - name: Test with Gradle
         working-directory: choreolib
         run: ./gradlew test -Dprofile=integration ${{ matrix.build-options }} -PreleaseMode
 
-  build-host:
+  test-host:
     needs: [generate]
     env:
       MACOSX_DEPLOYMENT_TARGET: 13.3
@@ -116,7 +104,7 @@ jobs:
             artifact-name: macOS-arm64
             build-options:
 
-    name: "Build C++ and Java / ${{ matrix.artifact-name }}"
+    name: "Test C++ and Java / ${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -131,7 +119,7 @@ jobs:
       - name: Download trajectories
         uses: actions/download-artifact@v4
         with:
-          path: ./choreolib/src/main/resources
+          path: ./choreolib/src/test/resources
           pattern: "*.traj"
       
       - uses: actions/setup-java@v4
@@ -143,8 +131,8 @@ jobs:
         working-directory: choreolib
         run: ./gradlew test -Dprofile=integration ${{ matrix.build-options }}
 
-  build-python:
-    name: "Build Python"
+  test-python:
+    name: "Test Python"
     needs: [generate]
     runs-on: ubuntu-24.04
     steps:
