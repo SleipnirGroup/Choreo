@@ -37,7 +37,7 @@ import java.util.function.Supplier;
  * RobotModeTriggers.autonomous.whileTrue(chooser.autoSchedulingCmd());</code>
  */
 public class AutoChooser implements Sendable {
-static final String NONE_NAME = "Nothing";
+  static final String NONE_NAME = "Nothing";
   private static final Alert selectedNonexistentAuto =
       ChoreoAlert.alert("Selected an auto that isn't an option", kError);
 
@@ -55,9 +55,7 @@ static final String NONE_NAME = "Nothing";
   public AutoChooser() {}
 
   private int fetchAllianceId() {
-    return DriverStation.getAlliance()
-      .map(alliance -> alliance.ordinal())
-      .orElse(-1);
+    return DriverStation.getAlliance().map(alliance -> alliance.ordinal()).orElse(-1);
   }
 
   /**
@@ -78,9 +76,8 @@ static final String NONE_NAME = "Nothing";
       // early return if the selected auto matches the active auto
       return activeCommandName;
     }
-    boolean dsValid = DriverStation.isDisabled()
-        && DriverStation.isDSAttached()
-        && fetchAllianceId() != -1;
+    boolean dsValid =
+        DriverStation.isDisabled() && DriverStation.isDSAttached() && fetchAllianceId() != -1;
     if (dsValid || force) {
       if (!autoRoutines.containsKey(selected) && !selected.equals(NONE_NAME)) {
         selected = NONE_NAME;
@@ -90,8 +87,7 @@ static final String NONE_NAME = "Nothing";
       }
       allianceId = fetchAllianceId();
       activeCommandName = selected;
-      activeCommand = autoRoutines.get(activeCommandName)
-          .get().withName(activeCommandName);
+      activeCommand = autoRoutines.get(activeCommandName).get().withName(activeCommandName);
     } else {
       allianceId = -1;
       activeCommandName = NONE_NAME;
