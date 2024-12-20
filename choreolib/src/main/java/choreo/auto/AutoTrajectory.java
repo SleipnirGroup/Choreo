@@ -618,7 +618,7 @@ public class AutoTrajectory {
 
     for (var event : trajectory.getEvents(eventName)) {
       // This could create a lot of objects, could be done a more efficient way
-      // with having it all be 1 trigger that just has a list of posess and checks each one each
+      // with having it all be 1 trigger that just has a list of poses and checks each one each
       // cycle or something like that.
       // If choreo starts showing memory issues we can look into this.
       Optional<Translation2d> translationOpt =
