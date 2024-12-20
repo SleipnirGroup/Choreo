@@ -117,7 +117,7 @@ export interface DifferentialSample {
 }
 
 export interface ProgressUpdate {
-  type: "swerveTrajectory" | "diffTrajectory";
+  type: "swerveTrajectory" | "differentialTrajectory";
   update: SwerveSample[] | DifferentialSample[] | string;
 }
 
