@@ -7,7 +7,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  generate:
     name: "Generate trajectories for integration test"
     runs-on: ubuntu-22.04
 
@@ -45,8 +45,8 @@ jobs:
           path: ./src-core/test-tmp-latest/differential/differential.traj
 
 
-jobs:
   build-docker:
+    needs: [generate]
     strategy:
       fail-fast: false
       matrix:
@@ -92,6 +92,7 @@ jobs:
         run: ./gradlew test -Dprofile=integration ${{ matrix.build-options }} -PreleaseMode
 
   build-host:
+    needs: [generate]
     env:
       MACOSX_DEPLOYMENT_TARGET: 13.3
     strategy:
@@ -144,6 +145,7 @@ jobs:
 
   build-python:
     name: "Build Python"
+    needs: [generate]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
