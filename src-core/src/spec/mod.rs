@@ -14,6 +14,14 @@ pub struct OpenFilePayload {
 
 pub const PROJECT_SCHEMA_VERSION: u32 = 1;
 pub const TRAJ_SCHEMA_VERSION: u32 = 1;
+/// Mostly for serde default, which needs a function
+fn traj_schema_version() -> u32 {
+    TRAJ_SCHEMA_VERSION
+}
+
+fn project_schema_version() -> u32 {
+    PROJECT_SCHEMA_VERSION
+}
 
 /// A trait for types that can be snapshotted.
 /// This allows for the type to be converted to a f64.

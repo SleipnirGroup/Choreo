@@ -1,8 +1,6 @@
 import { ConstraintData } from "../ConstraintDefinitions";
 import { Dimensions } from "../ExpressionStore";
 
-export const TRAJ_SCHEMA_VERSION = 1;
-export const PROJECT_SCHEMA_VERSION = 1;
 export type Expr = { exp: string; val: number };
 
 export function isExpr(arg: any): arg is Expr {
@@ -60,7 +58,6 @@ export interface RobotConfig<T extends ExprOrNumber> {
 export interface Project {
   name: string;
   type: SampleType;
-  version: typeof PROJECT_SCHEMA_VERSION;
   variables: Variables;
   config: RobotConfig<Expr>;
 }
@@ -137,7 +134,6 @@ export interface Output {
 
 export interface Trajectory {
   name: string;
-  version: typeof TRAJ_SCHEMA_VERSION;
   params: ChoreoPath<Expr>;
   snapshot: ChoreoPath<number>;
   trajectory: Output;
