@@ -176,7 +176,6 @@ export const DocumentStore = types
 
       console.log(pathStore.serialize);
       const config = self.robotConfig.serialize;
-      const inputDriveType = self.type;
       pathStore.params.constraints
         .filter((constraint) => constraint.enabled)
         .forEach((constraint) => {
