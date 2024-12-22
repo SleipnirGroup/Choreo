@@ -388,7 +388,6 @@ export const ExpressionStore = types
         tracing.error("evaluated to undefined or null");
         return undefined;
       }
-      console.log(newNumber);
       // numbers are only valid on dimensionless expressions.
       if (typeof newNumber === "number") {
         if (self.defaultUnit !== undefined) {
