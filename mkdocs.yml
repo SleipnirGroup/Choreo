@@ -97,6 +97,7 @@ nav:
       - Saving: usage/saving.md
       - View Options Panel: usage/view-options-panel.md
       - Estimating Moment of Inertia: usage/estimating-moi.md
+      - Expressions and Variables: usage/expressions-variables.md
   - ChoreoLib:
       - Getting Started: choreolib/getting-started.md
       - Auto Factory: choreolib/auto-factory.md
