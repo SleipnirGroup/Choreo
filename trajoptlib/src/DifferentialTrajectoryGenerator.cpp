@@ -293,6 +293,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
 
 expected<DifferentialSolution, sleipnir::SolverExitCondition>
 DifferentialTrajectoryGenerator::Generate(bool diagnostics) {
+  GetCancellationFlag() = 0;
   problem.Callback([this](const sleipnir::SolverIterationInfo&) -> bool {
     for (auto& callback : callbacks) {
       callback();

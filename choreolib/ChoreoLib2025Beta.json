@@ -1,7 +1,7 @@
 {
   "fileName": "ChoreoLib2025Beta.json",
   "name": "ChoreoLib",
-  "version": "2025.0.0-beta-8",
+  "version": "2025.0.0-beta-9",
   "uuid": "b5e23f0a-dac9-4ad2-8dd6-02767c520aca",
   "frcYear": "2025",
   "mavenUrls": [
@@ -13,7 +13,7 @@
     {
       "groupId": "choreo",
       "artifactId": "ChoreoLib-java",
-      "version": "2025.0.0-beta-8"
+      "version": "2025.0.0-beta-9"
     },
     {
       "groupId": "com.google.code.gson",
@@ -26,7 +26,7 @@
     {
       "groupId": "choreo",
       "artifactId": "ChoreoLib-cpp",
-      "version": "2025.0.0-beta-8",
+      "version": "2025.0.0-beta-9",
       "libName": "ChoreoLib",
       "headerClassifier": "headers",
       "sharedLibrary": false,
