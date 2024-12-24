@@ -12,8 +12,6 @@ public class SampleFlippingTest {
   private static final double FIELD_LENGTH_2024 = 16.5811;
   private static final double FIELD_WIDTH_2022 = 8.19912;
 
-  //   private static final double FIELD_WIDTH_2024 = 8.19912;
-
   @Test
   void testZeroSwerveSample() {
     SwerveSample sample =
