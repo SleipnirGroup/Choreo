@@ -9,15 +9,15 @@ import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
-import java.util.Optional;
 
 /**
  * An Choreo specific {@code SendableChooser} that allows for the selection of {@link AutoRoutine}s
@@ -57,12 +57,8 @@ public class AutoChooser implements Sendable {
   public AutoChooser() {}
 
   private boolean allianceAtGenerationMatchesAlliance() {
-    int current = DriverStation.getAlliance()
-        .map(alliance -> alliance.ordinal())
-        .orElse(-1);
-    int atGeneration = allianceAtGeneration
-        .map(alliance -> alliance.ordinal())
-        .orElse(-1);
+    int current = DriverStation.getAlliance().map(alliance -> alliance.ordinal()).orElse(-1);
+    int atGeneration = allianceAtGeneration.map(alliance -> alliance.ordinal()).orElse(-1);
     return current == atGeneration;
   }
 
@@ -84,8 +80,7 @@ public class AutoChooser implements Sendable {
       // early return if the selected auto matches the active auto
       return nameAtGeneration;
     }
-    boolean dsValid =
-        DriverStation.isDisabled() && DriverStation.getAlliance().isPresent();
+    boolean dsValid = DriverStation.isDisabled() && DriverStation.getAlliance().isPresent();
     if (dsValid || force) {
       if (!autoRoutines.containsKey(selected) && !selected.equals(NONE_NAME)) {
         selected = NONE_NAME;
