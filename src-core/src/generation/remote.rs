@@ -113,7 +113,7 @@ pub fn remote_generate_child(args: RemoteArgs) {
                         update,
                     )),
                     HandledLocalProgressUpdate {
-                        update: LocalProgressUpdate::DiffTrajectory { update },
+                        update: LocalProgressUpdate::DifferentialTrajectory { update },
                         ..
                     } => serde_json::to_string(&RemoteProgressUpdate::IncompleteTankTrajectory(
                         update,
@@ -312,7 +312,7 @@ pub async fn remote_generate_parent(
                             },
                             Ok(RemoteProgressUpdate::IncompleteTankTrajectory(trajectory)) => {
                                 remote_resources.emit_progress(
-                                    LocalProgressUpdate::DiffTrajectory {
+                                    LocalProgressUpdate::DifferentialTrajectory {
                                         update: trajectory
                                     }.handled(handle)
                                 );
