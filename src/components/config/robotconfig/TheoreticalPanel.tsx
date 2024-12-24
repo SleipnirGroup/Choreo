@@ -44,7 +44,7 @@ class RobotConfigPanel extends Component<Props, State> {
           <InputList noCheckbox rowGap={this.props.rowGap}>
             <Input
               title="Traction Accel Limit"
-              suffix={`${MetersOrFeet(imp)}/s`}
+              suffix={`${MetersOrFeet(imp)}/s^2`}
               enabled={false}
               setEnabled={(_) => null}
               roundingPrecision={3}
