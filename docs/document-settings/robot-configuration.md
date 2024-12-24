@@ -6,8 +6,6 @@ The trajectory optimizer depends upon the following user-specified parameters, w
 
     While more precision is always better, you'll most likely get diminishing returns after 3-4 significant figures.
 
-![Document Settings](../media/document-settings.png)
-
 !!! tip "Saving Robot Config"
     Saving a copy of the robot config somewhere safe, like the root of a robot project, is highly recommended. This is so you can correlate that robot project to your robot's specifications, and thus your paths.
 
