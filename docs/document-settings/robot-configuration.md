@@ -34,7 +34,7 @@ This panel asks for details about the drive motors used to propel the robot arou
 
 ### Motor performance properties
 
-These values can be pre-filled using the [Motor Calculator](#motor-calculator) panel:
+These values should be determined by consulting the motor's documentation.
 
 - **Motor Max Speed** $[\text{RPM}]$: The maximum speed of each drive motor
 
@@ -46,7 +46,7 @@ These values can be pre-filled using the [Motor Calculator](#motor-calculator) p
 
 !!! tip "Choosing a Max Torque"
 
-    A reasonable choice of Max Torque is that corresponding to a current draw of approximately `1.5 * BreakerValue` experienced at the drive motor(s). Although your motors have more torque available, this headroom helps ensure that your robot is able to close any errors and return to the planned trajectory. Use the [Motor Calculator](#motor-calculator) to help select an appropriate value.
+    A reasonable choice of Max Torque is that corresponding to a current draw of approximately `1.5 * BreakerValue` experienced at the drive motor(s). Although your motors have more torque available, this headroom helps ensure that your robot is able to close any errors and return to the planned trajectory. Use the motor's manual or published performance curves to determine an appropriate value.
 
 ## Theoretical
 
@@ -58,32 +58,3 @@ This panel displays calculated metrics about your robot, for reference and valid
 - **Floor Accel** $[m/s^2]$: The maximum acceleration reached by the robot when driving in a straight line and not rotating
 - **Ang Speed** $[rad/s]$: The robot's maximum angular speed when spinning in place
 - **Ang Accel** $[rad/s^2]$: The robot's maximum angular acceleration when spinning in place
-
-## Motor Calculator
-
-This panel helps you select appropriate drive motor parameters, using motor performance data from [reca.lc/motors](https://reca.lc/motors).
-
-![robot-config-motor-calculator](../media/robot-config-motor-calculator.png)
-
-Choose a motor, then enter a current limit in Amps. The calculator displays the following preview values:
-
-- **Preview Max Speed** $[\text{RPM}]$: Estimated speed under load (~80% of free speed)
-- **Preview Max Torque** $[N * m]$: Motor torque at the given current limit
-
-Pressing APPLY will apply these preview values to the [Drive Motor](#drive-motor) panel above.
-
-!!! warning
-
-    Make sure to press the APPLY button, or else your values will not save. Don't worry, you can always hit undo at any time to revert.
-
-### Supported motors
-
-The following motors are supported by the calculator:
-
-- Falcon 500
-- Falcon 500 with FOC
-- NEO
-- NEO Vortex
-- Kraken X60
-- Kraken X60 with FOC
-- CIM
