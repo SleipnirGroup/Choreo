@@ -26,4 +26,3 @@ pip install -r docs/requirements.txt
 ```console
 mkdocs serve
 ```
-
