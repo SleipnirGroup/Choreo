@@ -169,7 +169,7 @@ public class AutoFactory {
   /**
    * Create a factory that can be used to create {@link AutoRoutine} and {@link AutoTrajectory}.
    *
-   * @param <ST> The type of samples in the trajectory.
+   * @param <ST> The type of samples in the trajectory, either {@link DifferentialSample} or {@link SwerveSample}
    * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
    *     robot.
    * @param resetOdometry A function that receives a field-relative {@link Pose2d} to reset the
