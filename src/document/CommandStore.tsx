@@ -46,6 +46,10 @@ export function commandIsGroup(command: Command): command is GroupCommand {
 export function commandIsWait(command: Command): command is WaitCommand {
   return command?.type === "wait";
 }
+
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
 export const CommandStore = types
   .model("CommandStore", {
     type: types.union(

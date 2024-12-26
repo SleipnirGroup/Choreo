@@ -7,7 +7,7 @@ import {
   DifferentialSample,
   ProgressUpdate,
   Project,
-  SAVE_FILE_VERSION,
+  PROJECT_SCHEMA_VERSION,
   SampleType,
   SwerveSample,
   Trajectory
@@ -65,6 +65,10 @@ export const ISampleType = types.enumeration<SampleType>([
   "Swerve",
   "Differential"
 ]);
+
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
 export const DocumentStore = types
   .model("DocumentStore", {
     name: types.string,
@@ -85,7 +89,7 @@ export const DocumentStore = types
     serializeChor(): Project {
       return {
         name: self.name,
-        version: SAVE_FILE_VERSION,
+        version: PROJECT_SCHEMA_VERSION,
         type: self.type,
         variables: self.variables.serialize,
         config: self.robotConfig.serialize
@@ -249,22 +253,7 @@ export const DocumentStore = types
             const result: Trajectory = rust_trajectory as Trajectory;
             console.log(result);
             if (result.trajectory.samples.length == 0) throw "No trajectory";
-            self.history.startGroup(() => {
-              const newTrajectory = result.trajectory.samples;
-              pathStore.trajectory.setSamples(newTrajectory);
-              pathStore.trajectory.setSplits(result.trajectory.splits);
-              pathStore.trajectory.setWaypoints(result.trajectory.waypoints);
-              pathStore.markers.forEach((m) => {
-                const index = m.from.trajectoryTargetIndex;
-                if (index === undefined) {
-                  m.from.setTargetTimestamp(undefined);
-                } else {
-                  m.from.setTargetTimestamp(result.trajectory.waypoints[index]);
-                }
-              });
-              pathStore.setSnapshot(result.snapshot);
-              self.history.stopGroup();
-            });
+            pathStore.processGenerationResult(result);
           },
           (e) => {
             tracing.error("generatePathPost:", e);

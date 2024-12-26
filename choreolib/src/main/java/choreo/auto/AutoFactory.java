@@ -2,14 +2,18 @@
 
 package choreo.auto;
 
-import choreo.Choreo;
+import static edu.wpi.first.util.ErrorMessages.requireNonNullParam;
+
 import choreo.Choreo.TrajectoryCache;
 import choreo.Choreo.TrajectoryLogger;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
+import edu.wpi.first.hal.FRCNetComm.tResourceType;
+import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -19,54 +23,18 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
- * A factory used to create autonomous routines.
+ * A factory used to create {@link AutoRoutine}s and {@link AutoTrajectory}s.
  *
- * <p>Here is an example of how to use this class to create an auto routine:
- *
- * <h2>Example using <code>Trigger</code>s</h2>
- *
- * <pre><code>
- * public AutoRoutine shootThenMove(AutoFactory factory) {
- *   // Create a new auto routine to return
- *   var routine = factory.newRoutine();
- *
- *   // Create a trajectory that moves the robot 2 meters
- *   AutoTrajectory trajectory = factory.trajectory("move2meters", routine);
- *
- *   // Will automatically run the shoot command when the auto routine is first polled
- *   routine.enabled().onTrue(shooter.shoot());
- *
- *   // Gets a trigger from the shooter to if the shooter has a note, and will run the trajectory
- *   // command when the shooter does not have a note
- *   routine.enabled().and(shooter.hasNote()).onFalse(trajectory.cmd());
- *
- *   return routine;
- * }
- * </code></pre>
- *
- * <h2>Example using <code>CommandGroup</code>s</h2>
- *
- * <pre><code>
- * public Command shootThenMove(AutoFactory factory) {
- *   // Create a trajectory that moves the robot 2 meters
- *   Command trajectory = factory.trajectoryCommand("move2meters");
- *
- *   return shooter.shoot()
- *      .andThen(trajectory)
- *      .withName("ShootThenMove");
- * }
- * </code></pre>
+ * @see <a href="https://choreo.autos/choreolib/auto-routines">Auto Routine Docs</a>
  */
 public class AutoFactory {
   static final AutoRoutine VOID_ROUTINE =
-      new AutoRoutine("VOID-ROUTINE") {
-        private final EventLoop loop = new EventLoop();
-
+      new AutoRoutine(null, "VOID-ROUTINE", new EventLoop()) {
         @Override
         public Command cmd() {
           return Commands.none().withName("VoidAutoRoutine");
@@ -84,7 +52,7 @@ public class AutoFactory {
         public void reset() {}
 
         @Override
-        public Trigger running() {
+        public Trigger active() {
           return new Trigger(loop, () -> false);
         }
       };
@@ -127,38 +95,91 @@ public class AutoFactory {
 
   private final TrajectoryCache trajectoryCache = new TrajectoryCache();
   private final Supplier<Pose2d> poseSupplier;
-  private final BiConsumer<Pose2d, ? extends TrajectorySample<?>> controller;
-  private final BooleanSupplier mirrorTrajectory;
+  private final Consumer<Pose2d> resetOdometry;
+  private final Consumer<? extends TrajectorySample<?>> controller;
+  private final Supplier<Optional<Alliance>> alliance;
+  private final BooleanSupplier useAllianceFlipping;
   private final Subsystem driveSubsystem;
   private final AutoBindings bindings = new AutoBindings();
-  private final Optional<TrajectoryLogger<? extends TrajectorySample<?>>> trajectoryLogger;
+  private final TrajectoryLogger<? extends TrajectorySample<?>> trajectoryLogger;
 
   /**
-   * Its recommended to use the {@link Choreo#createAutoFactory} to create a new instance of this
-   * class.
+   * Create a factory that can be used to create {@link AutoRoutine} and {@link AutoTrajectory}.
    *
-   * @param <SampleType> {@link Choreo#createAutoFactory}
-   * @param poseSupplier {@link Choreo#createAutoFactory}
-   * @param controller {@link Choreo#createAutoFactory}
-   * @param mirrorTrajectory {@link Choreo#createAutoFactory}
-   * @param driveSubsystem {@link Choreo#createAutoFactory}
-   * @param bindings {@link Choreo#createAutoFactory}
-   * @param trajectoryLogger {@link Choreo#createAutoFactory}
+   * @param <SampleType> The type of samples in the trajectory.
+   * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
+   *     robot.
+   * @param resetOdometry A function that receives a field-relative {@link Pose2d} to reset the
+   *     robot's odometry to.
+   * @param controller A function that receives the current {@link SampleType} and controls the
+   *     robot.
+   * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
+   *     Command}s.
+   * @param useAllianceFlipping If this is true, when on the red alliance, the path will be mirrored
+   *     to the opposite side, while keeping the same coordinate system origin.
+   * @param bindings Universal trajectory event bindings.
+   * @param trajectoryLogger A {@link TrajectoryLogger} to log {@link Trajectory} as they start and
+   *     finish.
+   * @see AutoChooser using this factory with AutoChooser to generate auto routines.
    */
   public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
       Supplier<Pose2d> poseSupplier,
-      BiConsumer<Pose2d, SampleType> controller,
-      BooleanSupplier mirrorTrajectory,
+      Consumer<Pose2d> resetOdometry,
+      Consumer<SampleType> controller,
+      boolean useAllianceFlipping,
       Subsystem driveSubsystem,
       AutoBindings bindings,
-      Optional<TrajectoryLogger<SampleType>> trajectoryLogger) {
+      TrajectoryLogger<SampleType> trajectoryLogger) {
+    requireNonNullParam(poseSupplier, "poseSupplier", "AutoFactory");
+    requireNonNullParam(resetOdometry, "resetOdometry", "AutoFactory");
+    requireNonNullParam(controller, "controller", "AutoFactory");
+    requireNonNullParam(driveSubsystem, "driveSubsystem", "AutoFactory");
+    requireNonNullParam(useAllianceFlipping, "useAllianceFlipping", "AutoFactory");
+    requireNonNullParam(bindings, "bindings", "AutoFactory");
+
     this.poseSupplier = poseSupplier;
+    this.resetOdometry = resetOdometry;
     this.controller = controller;
-    this.mirrorTrajectory = mirrorTrajectory;
     this.driveSubsystem = driveSubsystem;
+    this.useAllianceFlipping = () -> useAllianceFlipping;
     this.bindings.merge(bindings);
-    this.trajectoryLogger =
-        trajectoryLogger.map(logger -> (TrajectoryLogger<? extends TrajectorySample<?>>) logger);
+    this.trajectoryLogger = trajectoryLogger;
+    this.alliance = DriverStation::getAlliance;
+    HAL.report(tResourceType.kResourceType_ChoreoTrigger, 1);
+  }
+
+  /**
+   * Create a factory that can be used to create {@link AutoRoutine} and {@link AutoTrajectory}.
+   *
+   * @param <SampleType> The type of samples in the trajectory.
+   * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
+   *     robot.
+   * @param resetOdometry A function that receives a field-relative {@link Pose2d} to reset the
+   *     robot's odometry to.
+   * @param controller A function that receives the current {@link SampleType} and controls the
+   *     robot.
+   * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
+   *     Command}s.
+   * @param useAllianceFlipping If this returns true, when on the red alliance, the path will be
+   *     mirrored to the opposite side, while keeping the same coordinate system origin.
+   * @param bindings Universal trajectory event bindings.
+   * @see AutoChooser using this factory with AutoChooser to generate auto routines.
+   */
+  public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
+      Supplier<Pose2d> poseSupplier,
+      Consumer<Pose2d> resetOdometry,
+      Consumer<SampleType> controller,
+      boolean useAllianceFlipping,
+      Subsystem driveSubsystem,
+      AutoBindings bindings) {
+    this(
+        poseSupplier,
+        resetOdometry,
+        controller,
+        useAllianceFlipping,
+        driveSubsystem,
+        bindings,
+        (sample, isStart) -> {});
   }
 
   /**
@@ -166,169 +187,175 @@ public class AutoFactory {
    *
    * @param name The name of the {@link AutoRoutine}.
    * @return A new {@link AutoRoutine}.
-   * @see AutoRoutine
-   * @see #voidRoutine
    */
   public AutoRoutine newRoutine(String name) {
     // Clear cache in simulation to allow a form of "hot-reloading" trajectories
     if (RobotBase.isSimulation()) {
-      clearCache();
+      trajectoryCache.clear();
     }
 
-    return new AutoRoutine(name);
+    return new AutoRoutine(this, name, this::allianceKnownOrIgnored);
   }
 
   /**
-   * An {@link AutoRoutine} that cannot have any side-effects, it stores no state and does nothing
-   * when polled.
+   * Returns true if the alliance is known or alliance flipping is disabled.
    *
-   * @return A void {@link AutoRoutine}.
-   * @see #newRoutine
+   * @return True if the alliance is known or alliance flipping is disabled.
    */
-  public AutoRoutine voidRoutine() {
-    return VOID_ROUTINE;
+  private boolean allianceKnownOrIgnored() {
+    return !useAllianceFlipping.getAsBoolean() || alliance.get().isPresent();
   }
 
   /**
-   * Creates a new auto trajectory to be used in an auto routine.
+   * A package protected method to create a new {@link AutoTrajectory} to be used in an {@link
+   * AutoRoutine}.
    *
-   * @param trajectoryName The name of the trajectory to use.
-   * @param routine The {@link AutoRoutine} to register this trajectory under.
-   * @return A new auto trajectory.
+   * @see AutoRoutine#trajectory(String)
    */
-  public AutoTrajectory trajectory(String trajectoryName, AutoRoutine routine) {
+  AutoTrajectory trajectory(String trajectoryName, AutoRoutine routine) {
     Optional<? extends Trajectory<?>> optTrajectory =
         trajectoryCache.loadTrajectory(trajectoryName);
     Trajectory<?> trajectory;
     if (optTrajectory.isPresent()) {
       trajectory = optTrajectory.get();
     } else {
-      DriverStation.reportError("Could not load trajectory: " + trajectoryName, false);
       trajectory = new Trajectory<SwerveSample>(trajectoryName, List.of(), List.of(), List.of());
     }
     return trajectory(trajectory, routine);
   }
 
   /**
-   * Creates a new auto trajectory to be used in an auto routine.
+   * A package protected method to create a new {@link AutoTrajectory} to be used in an {@link
+   * AutoRoutine}.
    *
-   * @param trajectoryName The name of the trajectory to use.
-   * @param splitIndex The index of the split trajectory to use.
-   * @param routine The {@link AutoRoutine} to register this trajectory under.
-   * @return A new auto trajectory.
+   * @see AutoRoutine#trajectory(String, int)
    */
-  public AutoTrajectory trajectory(
-      String trajectoryName, final int splitIndex, AutoRoutine routine) {
+  AutoTrajectory trajectory(String trajectoryName, final int splitIndex, AutoRoutine routine) {
     Optional<? extends Trajectory<?>> optTrajectory =
         trajectoryCache.loadTrajectory(trajectoryName, splitIndex);
     Trajectory<?> trajectory;
     if (optTrajectory.isPresent()) {
       trajectory = optTrajectory.get();
     } else {
-      DriverStation.reportError("Could not load trajectory: " + trajectoryName, false);
       trajectory = new Trajectory<SwerveSample>(trajectoryName, List.of(), List.of(), List.of());
     }
     return trajectory(trajectory, routine);
   }
 
   /**
-   * Creates a new auto trajectory to be used in an auto routine.
+   * A package protected method to create a new {@link AutoTrajectory} to be used in an {@link
+   * AutoRoutine}.
    *
-   * @param <SampleType> The type of the trajectory samples.
-   * @param trajectory The trajectory to use.
-   * @param routine The {@link AutoRoutine} to register this trajectory under.
-   * @return A new auto trajectory.
+   * @see AutoRoutine#trajectory(Trajectory)
    */
   @SuppressWarnings("unchecked")
-  public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory trajectory(
-      Trajectory<SampleType> trajectory, AutoRoutine routine) {
+  <ST extends TrajectorySample<ST>> AutoTrajectory trajectory(
+      Trajectory<ST> trajectory, AutoRoutine routine) {
     // type solidify everything
-    final Trajectory<SampleType> solidTrajectory = trajectory;
-    final BiConsumer<Pose2d, SampleType> solidController =
-        (BiConsumer<Pose2d, SampleType>) this.controller;
-    final Optional<TrajectoryLogger<SampleType>> solidLogger =
-        this.trajectoryLogger.map(logger -> (TrajectoryLogger<SampleType>) logger);
+    final Trajectory<ST> solidTrajectory = trajectory;
+    final Consumer<ST> solidController = (Consumer<ST>) this.controller;
     return new AutoTrajectory(
         trajectory.name(),
         solidTrajectory,
         poseSupplier,
+        resetOdometry,
         solidController,
-        mirrorTrajectory,
-        solidLogger,
+        useAllianceFlipping,
+        alliance,
+        (TrajectoryLogger<ST>) trajectoryLogger,
         driveSubsystem,
         routine,
         bindings);
   }
 
   /**
-   * Creates a new auto trajectory command to be used in an auto routine.
+   * Creates a new {@link AutoTrajectory} command to be used in an auto routine.
    *
    * <p><b>Important </b>
    *
-   * <p>{@link #trajectoryCommand} and {@link #trajectory} methods should not be mixed in the same
-   * auto routine. {@link #trajectoryCommand} is used as an escape hatch for teams that don't need
-   * the benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link
-   * #trajectoryCommand} does not invoke bindings added via calling {@link #bind} or {@link
-   * AutoBindings} passed into the factory constructor.
+   * <p>{@link #trajectoryCmd} and {@link #trajectory} methods should not be mixed in the same auto
+   * routine. {@link #trajectoryCmd} is used as an escape hatch for teams that don't need the
+   * benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link #trajectoryCmd}
+   * does not invoke bindings added via calling {@link #bind} or {@link AutoBindings} passed into
+   * the factory constructor.
    *
    * @param trajectoryName The name of the trajectory to use.
-   * @return A new auto trajectory.
+   * @return A new {@link AutoTrajectory}.
    */
-  public Command trajectoryCommand(String trajectoryName) {
+  public Command trajectoryCmd(String trajectoryName) {
     return trajectory(trajectoryName, VOID_ROUTINE).cmd();
   }
 
   /**
-   * Creates a new auto trajectory command to be used in an auto routine.
+   * Creates a new {@link AutoTrajectory} command to be used in an auto routine.
    *
    * <p><b>Important </b>
    *
-   * <p>{@link #trajectoryCommand} and {@link #trajectory} methods should not be mixed in the same
-   * auto routine. {@link #trajectoryCommand} is used as an escape hatch for teams that don't need
-   * the benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link
-   * #trajectoryCommand} does not invoke bindings added via calling {@link #bind} or {@link
-   * AutoBindings} passed into the factory constructor.
+   * <p>{@link #trajectoryCmd} and {@link #trajectory} methods should not be mixed in the same auto
+   * routine. {@link #trajectoryCmd} is used as an escape hatch for teams that don't need the
+   * benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link #trajectoryCmd}
+   * does not invoke bindings added via calling {@link #bind} or {@link AutoBindings} passed into
+   * the factory constructor.
    *
    * @param trajectoryName The name of the trajectory to use.
    * @param splitIndex The index of the split trajectory to use.
-   * @return A new auto trajectory.
+   * @return A new {@link AutoTrajectory}.
    */
-  public Command trajectoryCommand(String trajectoryName, final int splitIndex) {
+  public Command trajectoryCmd(String trajectoryName, final int splitIndex) {
     return trajectory(trajectoryName, splitIndex, VOID_ROUTINE).cmd();
   }
 
   /**
-   * Creates a new auto trajectory command to be used in an auto routine.
+   * Creates a new {@link AutoTrajectory} command to be used in an auto routine.
    *
    * <p><b>Important </b>
    *
-   * <p>{@link #trajectoryCommand} and {@link #trajectory} methods should not be mixed in the same
-   * auto routine. {@link #trajectoryCommand} is used as an escape hatch for teams that don't need
-   * the benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link
-   * #trajectoryCommand} does not invoke bindings added via calling {@link #bind} or {@link
-   * AutoBindings} passed into the factory constructor.
+   * <p>{@link #trajectoryCmd} and {@link #trajectory} methods should not be mixed in the same auto
+   * routine. {@link #trajectoryCmd} is used as an escape hatch for teams that don't need the
+   * benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link #trajectoryCmd}
+   * does not invoke bindings added via calling {@link #bind} or {@link AutoBindings} passed into
+   * the factory constructor.
    *
    * @param <SampleType> The type of the trajectory samples.
    * @param trajectory The trajectory to use.
-   * @return A new auto trajectory.
+   * @return A new {@link AutoTrajectory}.
    */
-  public <SampleType extends TrajectorySample<SampleType>> Command trajectoryCommand(
+  public <SampleType extends TrajectorySample<SampleType>> Command trajectoryCmd(
       Trajectory<SampleType> trajectory) {
     return trajectory(trajectory, VOID_ROUTINE).cmd();
   }
 
   /**
-   * Creates an {@link AutoRoutine} with the name of the command. The command is the bound to the
-   * routine's enabled trigger. This is useful for adding a {@link Command} composition based auto
-   * to the {@link choreo.auto.AutoChooser}.
+   * Creates a command that resets the robot's odometry to the start of a trajectory.
    *
-   * @param cmd The command to bind to the routine.
-   * @return A new auto routine.
+   * @param trajectoryName The name of the trajectory to use.
+   * @return A command that resets the robot's odometry.
    */
-  public AutoRoutine commandAsAutoRoutine(Command cmd) {
-    AutoRoutine routine = newRoutine(cmd.getName());
-    routine.running().onTrue(cmd);
-    return routine;
+  public Command resetOdometry(String trajectoryName) {
+    return trajectory(trajectoryName, VOID_ROUTINE).resetOdometry();
+  }
+
+  /**
+   * Creates a command that resets the robot's odometry to the start of a trajectory.
+   *
+   * @param trajectoryName The name of the trajectory to use.
+   * @param splitIndex The index of the split trajectory to use.
+   * @return A command that resets the robot's odometry.
+   */
+  public Command resetOdometry(String trajectoryName, final int splitIndex) {
+    return trajectory(trajectoryName, splitIndex, VOID_ROUTINE).resetOdometry();
+  }
+
+  /**
+   * Creates a command that resets the robot's odometry to the start of a trajectory.
+   *
+   * @param <SampleType> The type of the trajectory samples.
+   * @param trajectory The trajectory to use.
+   * @return A command that resets the robot's odometry.
+   */
+  public <SampleType extends TrajectorySample<SampleType>> Command resetOdometry(
+      Trajectory<SampleType> trajectory) {
+    return trajectory(trajectory, VOID_ROUTINE).resetOdometry();
   }
 
   /**
@@ -343,15 +370,11 @@ public class AutoFactory {
 
   /**
    * The {@link AutoFactory} caches trajectories with a {@link TrajectoryCache} to avoid reloading
-   * the same trajectory multiple times. This can have the side effect of keeping a single copy of
-   * every trajectory ever loaded in memory aslong as the factory is loaded. This method clears the
-   * cache of all trajectories.
+   * the same trajectory multiple times.
    *
-   * <p><b>Usage Note:</b>
-   *
-   * <p>Never clearing the cache is unlikely to have an impact on the robots performance on a rio 2
+   * @return The trajectory cache.
    */
-  public void clearCache() {
-    trajectoryCache.clear();
+  public TrajectoryCache cache() {
+    return trajectoryCache;
   }
 }

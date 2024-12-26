@@ -46,6 +46,9 @@ export const EXPR_DEFAULTS: RobotConfig<Expr> = {
   }
 };
 
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
 export const BumperStore = types
   .model("BumperStore", {
     front: ExpressionStore,
@@ -82,6 +85,9 @@ export const BumperStore = types
     }
   }));
 
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
 export const ModuleStore = types
   .model("ModuleStore", {
     x: ExpressionStore,
@@ -107,6 +113,10 @@ export const ModuleStore = types
       self.y.deserialize(ser.y);
     }
   }));
+
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
 export const RobotConfigStore = types
   .model("RobotConfigStore", {
     mass: ExpressionStore,

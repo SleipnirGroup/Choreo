@@ -3,6 +3,7 @@
 package choreo.trajectory;
 
 import choreo.util.AllianceFlipUtil;
+import choreo.util.ArrayUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -194,8 +195,8 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
           new SwerveSample(
               this.t,
               AllianceFlipUtil.flipX(this.x),
-              this.y,
-              Math.PI - this.heading,
+              AllianceFlipUtil.flipY(this.y),
+              AllianceFlipUtil.flipHeading(this.heading),
               -this.vx,
               this.vy,
               -this.omega,
@@ -225,21 +226,16 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
               this.t,
               AllianceFlipUtil.flipX(this.x),
               AllianceFlipUtil.flipY(this.y),
-              Math.PI - this.heading,
+              AllianceFlipUtil.flipHeading(this.heading),
               -this.vx,
               -this.vy,
-              -this.omega,
+              this.omega,
               -this.ax,
               -this.ay,
-              -this.alpha,
+              this.alpha,
               Arrays.stream(this.moduleForcesX()).map(x -> -x).toArray(),
               Arrays.stream(this.moduleForcesY()).map(y -> -y).toArray());
     };
-  }
-
-  @Override
-  public SwerveSample[] makeArray(int length) {
-    return new SwerveSample[length];
   }
 
   /** The struct for the SwerveSample class. */
@@ -335,7 +331,7 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
         && this.ax == other.ax
         && this.ay == other.ay
         && this.alpha == other.alpha
-        && Arrays.equals(this.fx, other.fx)
-        && Arrays.equals(this.fy, other.fy);
+        && ArrayUtil.zipEquals(this.fx, other.fx, (a, b) -> a.doubleValue() == b.doubleValue())
+        && ArrayUtil.zipEquals(this.fy, other.fy, (a, b) -> a.doubleValue() == b.doubleValue());
   }
 }

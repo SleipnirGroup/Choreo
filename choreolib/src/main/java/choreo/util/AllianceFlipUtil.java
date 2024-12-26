@@ -11,6 +11,9 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.HashMap;
+import java.util.Optional;
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 
 /**
  * A utility to standardize flipping of coordinate data based on the current alliance across
@@ -53,7 +56,7 @@ public class AllianceFlipUtil {
       }
 
       public double flipHeading(double heading) {
-        return Math.PI - heading;
+        return Math.PI + heading;
       }
     };
 
@@ -225,5 +228,51 @@ public class AllianceFlipUtil {
    */
   public static Pose3d flip(Pose3d pose) {
     return new Pose3d(flip(pose.getTranslation()), flip(pose.getRotation()));
+  }
+
+  /**
+   * Creates a Supplier&lt;Optional&lt;Pose2d&gt;&gt; based on a
+   * Supplier&lt;Optional&lt;Alliance&gt;&gt; and original Optional&lt;Pose2d&gt;
+   *
+   * @param poseOpt The pose to flip
+   * @param allianceOpt The current alliance
+   * @param doFlip Returns true if flipping based on the alliance should be done
+   * @return empty if the alliance is empty; the original pose optional if the alliance is blue or
+   *     doFlip is false; the flipped pose optional if the alliance is red and doFlip is true
+   */
+  public static Supplier<Optional<Pose2d>> optionalFlippedPose2d(
+      Optional<Pose2d> poseOpt, Supplier<Optional<Alliance>> allianceOpt, BooleanSupplier doFlip) {
+    return () ->
+        doFlip.getAsBoolean()
+            ? allianceOpt
+                .get()
+                .flatMap(ally -> poseOpt.map(pose -> ally == Alliance.Red ? flip(pose) : pose))
+            : poseOpt;
+  }
+
+  /**
+   * Creates a Supplier&lt;Optional&lt;Translation2d&gt;&gt; that is flipped based on a
+   * Supplier&lt;Optional&lt;Alliance&gt;&gt; and original Optional&lt;Translation2d&gt;
+   *
+   * @param translationOpt The translation to flip
+   * @param allianceOpt The current alliance
+   * @param doFlip Returns true if flipping based on the alliance should be done
+   * @return empty if the alliance is empty; the original translation optional if the alliance is
+   *     blue or doFlip is false; the flipped translation optional if the alliance is red and doFlip
+   *     is true
+   */
+  public static Supplier<Optional<Translation2d>> optionalFlippedTranslation2d(
+      Optional<Translation2d> translationOpt,
+      Supplier<Optional<Alliance>> allianceOpt,
+      BooleanSupplier doFlip) {
+    return () ->
+        doFlip.getAsBoolean()
+            ? allianceOpt
+                .get()
+                .flatMap(
+                    ally ->
+                        translationOpt.map(
+                            translation -> ally == Alliance.Red ? flip(translation) : translation))
+            : translationOpt;
   }
 }
