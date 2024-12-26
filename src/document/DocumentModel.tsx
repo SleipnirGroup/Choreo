@@ -92,7 +92,8 @@ export const DocumentStore = types
         version: PROJECT_SCHEMA_VERSION,
         type: self.type,
         variables: self.variables.serialize,
-        config: self.robotConfig.serialize
+        config: self.robotConfig.serialize,
+        generationFeatures: []
       };
     },
     get isSidebarMarkerSelected() {
