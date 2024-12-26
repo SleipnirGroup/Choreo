@@ -5,6 +5,6 @@ by clicking "Document Settings" in Choreo's main menu.
 
 ![Document Settings option in the main menu](./media/document-settings-menu.png)
 
-See the page below for an explanations of how to use the Document Settings panel.
+See the page below for an explanation of how to use the Document Settings panel.
 
 [Robot Configuration](./document-settings/robot-configuration.md)
