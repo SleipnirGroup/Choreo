@@ -1,7 +1,7 @@
 use std::{
     mem::forget,
     path::PathBuf,
-    sync::{mpsc, Arc},
+    sync::{mpsc::{self, channel}, Arc},
     thread,
 };
 
@@ -25,7 +25,7 @@ use crate::{
     ChoreoError, ChoreoResult, ResultExt,
 };
 
-use super::generate::{setup_progress_sender, HandledLocalProgressUpdate, PROGRESS_SENDER_LOCK};
+use super::generate::HandledLocalProgressUpdate;
 
 #[derive(Clone)]
 #[allow(missing_debug_implementations)]
@@ -39,9 +39,9 @@ impl RemoteGenerationResources {
      * Should be called after [`setup_progress_sender`] to ensure that the sender is initialized.
      */
     #[allow(clippy::new_without_default)]
-    pub fn new() -> Self {
+    pub fn new(frontend_emitter: Option<mpsc::Sender<HandledLocalProgressUpdate>>) -> Self {
         Self {
-            frontend_emitter: PROGRESS_SENDER_LOCK.get().cloned(),
+            frontend_emitter,
             kill_map: Arc::new(DashMap::new()),
         }
     }
@@ -91,13 +91,14 @@ pub enum RemoteProgressUpdate {
     // Swerve variant
     IncompleteSwerveTrajectory(Vec<Sample>),
     // Diff variant
-    IncompleteTankTrajectory(Vec<Sample>),
+    IncompleteDifferentialTrajectory(Vec<Sample>),
     CompleteTrajectory(Trajectory),
     Error(ChoreoError),
 }
 
 pub fn remote_generate_child(args: RemoteArgs) {
-    let rx = setup_progress_sender();
+    //setup_progress_sender
+    let (tx, rx) = channel::<HandledLocalProgressUpdate>();
     let ipc =
         IpcSender::<String>::connect(args.ipc.clone()).expect("Failed to deserialize IPC handle");
     let cln_ipc: IpcSender<String> = ipc.clone();
@@ -115,7 +116,7 @@ pub fn remote_generate_child(args: RemoteArgs) {
                     HandledLocalProgressUpdate {
                         update: LocalProgressUpdate::DifferentialTrajectory { update },
                         ..
-                    } => serde_json::to_string(&RemoteProgressUpdate::IncompleteTankTrajectory(
+                    } => serde_json::to_string(&RemoteProgressUpdate::IncompleteDifferentialTrajectory(
                         update,
                     )),
                     _ => continue,
@@ -153,7 +154,7 @@ pub fn remote_generate_child(args: RemoteArgs) {
         trajectory.name, project.name
     );
 
-    match generate(project, trajectory, 0i64) {
+    match generate(project, trajectory, 0i64, tx) {
         Ok(trajectory) => {
             let ser_string = serde_json::to_string(&RemoteProgressUpdate::CompleteTrajectory(
                 trajectory.trajectory,
@@ -310,7 +311,7 @@ pub async fn remote_generate_parent(
                                     }.handled(handle)
                                 );
                             },
-                            Ok(RemoteProgressUpdate::IncompleteTankTrajectory(trajectory)) => {
+                            Ok(RemoteProgressUpdate::IncompleteDifferentialTrajectory(trajectory)) => {
                                 remote_resources.emit_progress(
                                     LocalProgressUpdate::DifferentialTrajectory {
                                         update: trajectory

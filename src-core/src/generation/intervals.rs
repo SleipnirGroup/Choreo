@@ -1,8 +1,44 @@
-use super::angle_modulus;
+
 use crate::error::ChoreoError;
 use crate::spec::project::RobotConfig;
-use crate::spec::trajectory::{ConstraintData, Parameters, Waypoint};
-use crate::ChoreoResult;
+use crate::spec::trajectory::{ConstraintData, ConstraintScope, Parameters, Waypoint};
+use crate::{angle_modulus, ChoreoResult};
+
+
+pub fn initial_guess_waypoints(params: &Parameters<f64>) -> Vec<bool> {
+    let waypoint_count = params.waypoints.len();
+    let mut guess_points = vec![true; params.waypoints.len()];
+
+
+    for constraint in &params.constraints {
+        let from = constraint.from.get_idx(waypoint_count);
+        let to = constraint
+            .to
+            .as_ref()
+            .and_then(|id| id.get_idx(waypoint_count));
+
+        if let Some(from_idx) = from {
+            let valid_wpt = to.is_none();
+            let valid_sgmt = to.is_some();
+            // Check for valid scope
+            if match constraint.data.scope() {
+                ConstraintScope::Waypoint => valid_wpt,
+                ConstraintScope::Segment => valid_sgmt,
+                ConstraintScope::Both => valid_wpt || valid_sgmt,
+            } {
+                guess_points[from_idx] = false;
+                match to {
+                    Some(to_idx) if to_idx != from_idx => {
+                        guess_points[to_idx] = false;
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+
+    guess_points
+}
 
 pub fn guess_control_interval_counts(
     config: &RobotConfig<f64>,

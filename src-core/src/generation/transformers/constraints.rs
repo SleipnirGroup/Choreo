@@ -1,11 +1,12 @@
-use crate::spec::trajectory::{ConstraintData, ConstraintIDX, ConstraintScope, Waypoint};
+use crate::{generation::{constraints::fix_constraint_indices, intervals::initial_guess_waypoints}, spec::trajectory::{ConstraintData, ConstraintIDX, Waypoint}};
 
 use super::{
     DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext,
     SwerveGenerationTransformer,
 };
 
-fn fix_scope(idx: usize, removed_idxs: &[usize]) -> usize {
+/// Retruns an index of a constraint as if the removed indexes were never present.
+fn skip_removed_indexes(idx: usize, removed_idxs: &[usize]) -> usize {
     let mut to_subtract: usize = 0;
     for removed in removed_idxs {
         if *removed < idx {
@@ -25,16 +26,16 @@ pub struct ConstraintSetter {
 impl ConstraintSetter {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
         let mut guess_points: Vec<usize> = Vec::new();
-        let mut constraint_idx = Vec::<ConstraintIDX<f64>>::new();
         let mut waypoint_idx = Vec::<Waypoint<f64>>::new();
-        let num_wpts = context.params.waypoints.len();
+
+        let initial_guess_indexes = initial_guess_waypoints(&context.params);
 
         context.params
             .waypoints
             .iter()
             .enumerate()
             .for_each(|(idx, w)| {
-                if w.is_initial_guess && !w.fix_heading && !w.fix_translation {
+                if initial_guess_indexes[idx] && !w.fix_heading && !w.fix_translation {
                     // filtered out, save the index
                     guess_points.push(idx);
                 } else {
@@ -42,49 +43,9 @@ impl ConstraintSetter {
                 }
             });
 
-        for constraint in context.params.get_enabled_constraints() {
-            let from = constraint.from.get_idx(num_wpts);
-            let to = constraint.to.as_ref().and_then(|id| id.get_idx(num_wpts));
-            // from and to are None if they did not point to a valid waypoint.
-            match from {
-                None => {}
-                Some(from_idx) => {
-                    let valid_wpt = to.is_none();
-                    let valid_sgmt = to.is_some();
-                    // Check for valid scope
-                    if match constraint.data.scope() {
-                        ConstraintScope::Waypoint => valid_wpt,
-                        ConstraintScope::Segment => valid_sgmt,
-                        ConstraintScope::Both => valid_wpt || valid_sgmt,
-                    } {
-                        let mut fixed_to = to;
-                        let mut fixed_from = from_idx;
-                        if let Some(to_idx) = to {
-                            if to_idx < from_idx {
-                                fixed_to = Some(from_idx);
-                                fixed_from = to_idx;
-                            }
-                            if to_idx == from_idx {
-                                if constraint.data.scope() == ConstraintScope::Segment {
-                                    continue;
-                                }
-                                fixed_to = None;
-                            }
-                        }
-                        constraint_idx.push(ConstraintIDX {
-                            from: fixed_from,
-                            to: fixed_to,
-                            data: constraint.data,
-                            enabled: constraint.enabled,
-                        });
-                    }
-                }
-            };
-        }
-
         FeatureLockedTransformer::always(Self {
             guess_points,
-            constraint_idx,
+            constraint_idx: fix_constraint_indices(&context.params),
             waypoint_idx
         })
     }
@@ -97,8 +58,8 @@ impl SwerveGenerationTransformer for ConstraintSetter {
 
     fn transform(&self, generator: &mut trajoptlib::SwerveTrajectoryGenerator) {
         for constraint in &self.constraint_idx {
-            let from = fix_scope(constraint.from, &self.guess_points);
-            let to_opt = constraint.to.map(|idx| fix_scope(idx, &self.guess_points));
+            let from = skip_removed_indexes(constraint.from, &self.guess_points);
+            let to_opt = constraint.to.map(|idx| skip_removed_indexes(idx, &self.guess_points));
             match constraint.data {
                 ConstraintData::PointAt {
                     x,
@@ -143,19 +104,19 @@ impl SwerveGenerationTransformer for ConstraintSetter {
                     tolerance
                 } => {
                     if let Some(idx_to) = to_opt {
-                      if let Some(wpt_to) = self.waypoint_idx.get(idx_to) {
-                      if let Some(wpt_from) = self.waypoint_idx.get(from) {
-                        generator.sgmt_keep_in_lane(
-                            from,
-                            idx_to,
-                            wpt_from.x,
-                            wpt_from.y,
-                            wpt_to.x,
-                            wpt_to.y,
-                            tolerance,
-                        );
-                    }
-                }
+                        if let Some(wpt_to) = self.waypoint_idx.get(idx_to) {
+                            if let Some(wpt_from) = self.waypoint_idx.get(from) {
+                                generator.sgmt_keep_in_lane(
+                                    from,
+                                    idx_to,
+                                    wpt_from.x,
+                                    wpt_from.y,
+                                    wpt_to.x,
+                                    wpt_to.y,
+                                    tolerance,
+                                );
+                            }
+                        }
                     }
                 },
                 ConstraintData::KeepOutCircle { x, y, r } => match to_opt {
@@ -174,8 +135,8 @@ impl DifferentialGenerationTransformer for ConstraintSetter {
 
     fn transform(&self, generator: &mut trajoptlib::DifferentialTrajectoryGenerator) {
         for constraint in &self.constraint_idx {
-            let from = fix_scope(constraint.from, &self.guess_points);
-            let to_opt = constraint.to.map(|idx| fix_scope(idx, &self.guess_points));
+            let from = skip_removed_indexes(constraint.from, &self.guess_points);
+            let to_opt = constraint.to.map(|idx| skip_removed_indexes(idx, &self.guess_points));
             match constraint.data {
                 ConstraintData::PointAt {
                     x,
@@ -221,19 +182,19 @@ impl DifferentialGenerationTransformer for ConstraintSetter {
                     tolerance
                 } => {
                     if let Some(idx_to) = to_opt {
-                      if let Some(wpt_to) = self.waypoint_idx.get(idx_to) {
-                      if let Some(wpt_from) = self.waypoint_idx.get(from) {
-                        generator.sgmt_keep_in_lane(
-                            from,
-                            idx_to,
-                            wpt_from.x,
-                            wpt_from.y,
-                            wpt_to.x,
-                            wpt_to.y,
-                            tolerance,
-                        );
-                      }
-                    }
+                        if let Some(wpt_to) = self.waypoint_idx.get(idx_to) {
+                            if let Some(wpt_from) = self.waypoint_idx.get(from) {
+                                generator.sgmt_keep_in_lane(
+                                    from,
+                                    idx_to,
+                                    wpt_from.x,
+                                    wpt_from.y,
+                                    wpt_to.x,
+                                    wpt_to.y,
+                                    tolerance,
+                                );
+                            }
+                        }
                     }
                 },
                 ConstraintData::KeepOutCircle { x, y, r } => match to_opt {

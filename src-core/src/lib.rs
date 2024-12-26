@@ -20,7 +20,6 @@
 )]
 
 mod error;
-mod integration_tests;
 
 pub use error::ChoreoError;
 
@@ -30,7 +29,7 @@ pub mod file_management;
 pub mod generation;
 /// An implementation of the `Choreo Document Specification`.
 pub mod spec;
-
+// A re-export of the `tokio` crate.
 pub use tokio;
 
 use std::error::Error;
@@ -85,5 +84,46 @@ impl<T, E: Error> ResultExt<T, E> for Result<T, E> {
             tracing::warn!("{}", e);
         }
         self.map(|_| f())
+    }
+}
+
+/**
+ * A port of `WPILib`'s MathUtil.inputModulus
+ */
+#[must_use]
+pub fn input_modulus(input: f64, maximum_input: f64, minimum_input: f64) -> f64 {
+    let mut val = input;
+    let modulus = maximum_input - minimum_input;
+
+    // Wrap input if it's above the maximum input
+    let num_max = ((val - minimum_input) / modulus).trunc();
+    val -= num_max * modulus;
+
+    // Wrap input if it's below the minimum input
+    let num_min = ((val - maximum_input) / modulus).trunc();
+    val -= num_min * modulus;
+
+    val
+}
+
+/**
+ * A port of `WPILib`'s MathUtil.angleModulus
+ */
+#[must_use]
+pub fn angle_modulus(input: f64) -> f64 {
+    use std::f64::consts::PI;
+    input_modulus(input, PI, -PI)
+}
+
+/**
+ * Rounds to the fith decimal place.
+ */
+fn round(input: f64) -> f64 {
+    let factor = 100_000.0;
+    let result = (input * factor).round() / factor;
+    if result == -0.0 {
+        0.0
+    } else {
+        result
     }
 }

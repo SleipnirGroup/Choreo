@@ -1,13 +1,11 @@
 #![allow(dead_code)]
 use std::{
-    path::PathBuf,
-    process::exit,
-    thread::{self, JoinHandle},
+    path::PathBuf, process::exit, sync::mpsc::channel, thread::{self, JoinHandle}
 };
 
 use choreo_core::{
     file_management::{self, WritingResources},
-    generation::generate::generate,
+    generation::generate::{generate, HandledLocalProgressUpdate},
     ChoreoError,
 };
 use clap::Parser;
@@ -153,7 +151,7 @@ impl Cli {
         .await;
 
         // read the project file
-        let project = file_management::read_projectfile(
+        let project = file_management::read_project_file(
             &resources,
             project_path
                 .file_stem()
@@ -189,12 +187,14 @@ impl Cli {
                     .await
                     .expect("Failed to read trajectory file");
 
+            let (tx, _) = channel::<HandledLocalProgressUpdate>();
+
             let cln_project = project.clone();
             let cln_resources = resources.clone();
             let cln_trajectory_name = trajectory_name.clone();
             let handle =
                 thread::spawn(
-                    move || match generate(cln_project.clone(), trajectory, i as i64) {
+                    move || match generate(cln_project.clone(), trajectory, i as i64, tx) {
                         Ok(new_trajectory) => {
                             let runtime =
                                 choreo_core::tokio::runtime::Builder::new_current_thread()
@@ -202,7 +202,7 @@ impl Cli {
                                     .build()
                                     .expect("Failed to build tokio runtime");
                             let write_result = runtime.block_on(
-                                file_management::write_trajectory_file_immediately(
+                                file_management::write_trajectory_file(
                                     &cln_resources,
                                     new_trajectory,
                                 ),

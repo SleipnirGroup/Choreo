@@ -1,9 +1,8 @@
-use std::collections::HashMap;
-
+use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use trajoptlib::Translation2d;
 
-use super::{trajectory::DriveType, upgraders::upgrade_project_file, Expr, SnapshottableType};
+use super::{trajectory::DriveType, version_handlers::upgrade_project_file, Expr, SnapshottableType};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum Dimension {
@@ -32,8 +31,8 @@ pub struct PoseVariable {
 }
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Variables {
-    pub expressions: HashMap<String, Variable>,
-    pub poses: HashMap<String, PoseVariable>,
+    pub expressions: IndexMap<String, Variable>,
+    pub poses: IndexMap<String, PoseVariable>,
 }
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Bumper<T: SnapshottableType> {
@@ -144,12 +143,11 @@ impl RobotConfig<f64> {
 #[serde(rename_all = "camelCase")]
 pub struct ProjectFile {
     pub name: String,
-    pub version: u32,
-    #[serde(rename = "type", default)]
+    pub version: u64,
+    #[serde(rename = "type")]
     pub r#type: DriveType,
     pub variables: Variables,
     pub config: RobotConfig<Expr>,
-    #[serde(default)]
     pub generation_features: Vec<String>,
 }
 
@@ -173,8 +171,8 @@ impl Default for ProjectFile {
             version: super::PROJECT_SCHEMA_VERSION,
             r#type: DriveType::Swerve,
             variables: Variables {
-                expressions: HashMap::new(),
-                poses: HashMap::new(),
+                expressions: IndexMap::new(),
+                poses: IndexMap::new(),
             },
             config: RobotConfig {
                 gearing: Expr::new("6.5", 6.5),

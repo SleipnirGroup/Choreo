@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
 use trajoptlib::{DifferentialTrajectorySample, SwerveTrajectorySample};
 
-use super::{upgraders::upgrade_traj_file, Expr, SnapshottableType};
+use crate::round;
+
+use super::{version_handlers::upgrade_traj_file, Expr, SnapshottableType};
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -23,16 +25,12 @@ pub struct Waypoint<T: SnapshottableType> {
     pub intervals: usize,
     /// Whether to split the trajectory at this waypoint.
     pub split: bool,
-    /// TODO
+    /// The waypoints translation is constraining the generated trajectory.
     pub fix_translation: bool,
-    /// TODO
+    /// The waypoints heading is constraining the generated trajectory.
     pub fix_heading: bool,
     /// Whether to override the intervals. Not an Option because unused overrides still get persisted to file.
     pub override_intervals: bool,
-    /// Whether this waypoint is an initial guess,
-    /// completely invisible to the frontend.
-    #[serde(skip, default)]
-    pub is_initial_guess: bool,
 }
 
 #[allow(missing_docs)]
@@ -46,8 +44,7 @@ impl<T: SnapshottableType> Waypoint<T> {
             split: self.split,
             fix_translation: self.fix_translation,
             fix_heading: self.fix_heading,
-            override_intervals: self.override_intervals,
-            is_initial_guess: self.is_initial_guess,
+            override_intervals: self.override_intervals
         }
     }
 }
@@ -221,6 +218,7 @@ pub struct Constraint<T: SnapshottableType> {
     pub to: Option<WaypointID>,
     /// The constraint to apply.
     pub data: ConstraintData<T>,
+    /// Whether the constraint is enabled.
     pub enabled: bool,
 }
 
@@ -247,6 +245,7 @@ pub struct ConstraintIDX<T: SnapshottableType> {
     pub to: Option<usize>,
     /// The constraint to apply.
     pub data: ConstraintData<T>,
+    /// Whether the constraint is enabled.
     pub enabled: bool,
 }
 
@@ -284,15 +283,6 @@ pub enum Sample {
         fl: f64,
         fr: f64,
     },
-}
-fn round(input: f64) -> f64 {
-    let factor = 100_000.0;
-    let result = (input * factor).round() / factor;
-    if result == -0.0 {
-        0.0
-    } else {
-        result
-    }
 }
 
 impl From<&SwerveTrajectorySample> for Sample {
@@ -353,10 +343,9 @@ impl From<DifferentialTrajectorySample> for Sample {
 }
 
 /// The type of samples in a trajectory.
-#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum DriveType {
     /// The variant for [`Sample::Swerve`].
-    #[default]
     Swerve,
     /// The variant for [`Sample::DifferentialDrive`].
     Differential,
@@ -425,7 +414,6 @@ pub struct TrajectoryFile {
     /// The trajectory the robot will follow.
     pub trajectory: Trajectory,
     /// The choreo events.
-    #[serde(default)]
     pub events: Vec<EventMarker>,
 }
 

@@ -16,27 +16,27 @@ mod traj_file {
 
     fn make_upgrader() -> Upgrader {
         let mut upgrader = Upgrader::new(TRAJ_SCHEMA_VERSION);
-        upgrader.add_version_action(up_0_1);
+        upgrader.add_upgrade_hook(clear_generated_output);
         // Ensure the new upgrader is added here
         upgrader
     }
 
-    fn up_0_1(editor: &mut Editor) -> ChoreoResult<()> {
+    fn clear_generated_output(editor: &mut Editor) -> ChoreoResult<()> {
         // Clear generated output
-        editor.set_path_serialize(
+        editor.set(
             "trajectory",
             Trajectory {
                 sample_type: None,
-                waypoints: vec![],
-                samples: vec![],
-                splits: vec![],
+                waypoints: Vec::new(),
+                samples: Vec::new(),
+                splits: Vec::new(),
             },
         )
     }
 
     #[cfg(test)]
     mod tests {
-        use crate::spec::upgraders::testing_shared::{get_contents, FileType};
+        use crate::spec::version_handlers::testing_shared::{get_contents, FileType};
         use crate::spec::TRAJ_SCHEMA_VERSION;
         use crate::ChoreoResult;
 
@@ -83,45 +83,6 @@ mod traj_file {
     }
 }
 
-#[cfg(test)]
-mod testing_shared {
-    use std::{fs, path::PathBuf, str::FromStr};
-    pub enum FileType {
-        Project,
-        Trajectory,
-    }
-    impl FileType {
-        pub fn directory(&self) -> &str {
-            match self {
-                FileType::Project => "project",
-                FileType::Trajectory => "trajectory",
-            }
-        }
-        pub fn extension(&self) -> &str {
-            match self {
-                FileType::Project => "chor",
-                FileType::Trajectory => "traj",
-            }
-        }
-    }
-    /// Get the contents of a testing json
-    /// SAFETY: Panics if the file does not exist. Only for use in test cases.
-    pub fn get_contents(file_type: FileType, version: &str, file_name: &str) -> String {
-        let test_json_dir: PathBuf = PathBuf::from_str(env!("CARGO_MANIFEST_DIR"))
-            .unwrap()
-            .parent()
-            .unwrap()
-            .join("test-jsons");
-        let file = test_json_dir
-            .join(file_type.directory())
-            .join(version)
-            .join(file_name)
-            .with_extension(file_type.extension());
-        println!("{}", file.display());
-        fs::read_to_string(file).unwrap()
-    }
-}
-
 mod project_file {
     use std::sync::LazyLock;
 
@@ -135,19 +96,19 @@ mod project_file {
 
     fn make_upgrader() -> Upgrader {
         let mut upgrader = Upgrader::new(PROJECT_SCHEMA_VERSION);
-        upgrader.add_version_action(up_0_1);
+        upgrader.add_version_action(up_0_to_1);
 
         upgrader
     }
     // Naming convention: up_[old version]_[new_version]
     // the up prefix lets version numerals be used
-    fn up_0_1(editor: &mut Editor) -> ChoreoResult<()> {
-        editor.set_path_serialize("config.cof", Expr::new("1.5", 1.5))
+    fn up_0_to_1(editor: &mut Editor) -> ChoreoResult<()> {
+        editor.set("config.cof", Expr::new("1.5", 1.5))
     }
 
     #[cfg(test)]
     mod tests {
-        use crate::spec::upgraders::testing_shared::{get_contents, FileType};
+        use crate::spec::version_handlers::testing_shared::{get_contents, FileType};
         use crate::spec::PROJECT_SCHEMA_VERSION;
         use crate::ChoreoResult;
 
@@ -190,6 +151,46 @@ mod project_file {
         pub fn test_1_swerve() -> ChoreoResult<()> {
             test_project("1", "swerve")
         }
+    }
+}
+
+
+#[cfg(test)]
+mod testing_shared {
+    use std::{fs, path::PathBuf, str::FromStr};
+    pub enum FileType {
+        Project,
+        Trajectory,
+    }
+    impl FileType {
+        pub fn directory(&self) -> &str {
+            match self {
+                FileType::Project => "project",
+                FileType::Trajectory => "trajectory",
+            }
+        }
+        pub fn extension(&self) -> &str {
+            match self {
+                FileType::Project => "chor",
+                FileType::Trajectory => "traj",
+            }
+        }
+    }
+    /// Get the contents of a testing json
+    /// SAFETY: Panics if the file does not exist. Only for use in test cases.
+    fn get_contents(file_type: FileType, version: &str, file_name: &str) -> String {
+        let test_json_dir: PathBuf = PathBuf::from_str(env!("CARGO_MANIFEST_DIR"))
+            .unwrap()
+            .parent()
+            .unwrap()
+            .join("test-jsons");
+        let file = test_json_dir
+            .join(file_type.directory())
+            .join(version)
+            .join(file_name)
+            .with_extension(file_type.extension());
+        println!("{}", file.display());
+        fs::read_to_string(file).unwrap()
     }
 }
 

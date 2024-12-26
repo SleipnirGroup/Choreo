@@ -1,25 +1,18 @@
 use std::{
     path::{Path, PathBuf},
-    sync::Arc,
-    thread,
+    sync::Arc
 };
 
 use serde::Serialize;
 use tokio::{
     fs,
-    sync::{
-        mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender},
-        Mutex, Notify,
-    },
+    sync::Mutex,
 };
 
-use crate::{ChoreoError, ChoreoResult, ResultExt};
-
-use dashmap::DashMap;
+use crate::{ChoreoError, ChoreoResult};
 
 use crate::spec::{project::ProjectFile, trajectory::TrajectoryFile};
 
-type TrajectoryFileWriterPool = Arc<DashMap<String, UnboundedSender<TrajectoryFile>>>;
 type DeployPath = Arc<Mutex<PathBuf>>;
 
 /// A name of a trajectory without the file extension.
@@ -41,66 +34,13 @@ async fn write_serializable<T: Serialize + Send>(contents: T, file: &Path) -> Ch
     Ok(())
 }
 
-#[allow(unused_results)]
-fn spawn_writer_task<T: Serialize + Send + Sync + 'static>(
-    file: PathBuf,
-    mut receiver: UnboundedReceiver<T>,
-) {
-    tokio::spawn(async move {
-        while let Some(mut contents) = receiver.recv().await {
-            write_serializable(&mut contents, &file).await?;
-        }
-        Ok::<(), ChoreoError>(())
-    });
-}
-
-#[allow(missing_debug_implementations)]
-pub struct ProjectUpdater {
-    project: Mutex<Option<ProjectFile>>,
-    notifier: Notify,
-}
-
-impl ProjectUpdater {
-    #[must_use]
-    pub fn new() -> Self {
-        Self {
-            project: Mutex::new(None),
-            notifier: Notify::new(),
-        }
-    }
-
-    pub async fn update(&self, project: ProjectFile) {
-        let mut lock = self.project.lock().await;
-        *lock = Some(project);
-        self.notifier.notify_one();
-    }
-
-    pub async fn wait_for(&self) -> ProjectFile {
-        self.notifier.notified().await;
-        self.project
-            .lock()
-            .await
-            .take()
-            .expect("Project should be updated before waiting for it")
-    }
-}
-
-impl Default for ProjectUpdater {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 /// A collection of resources for writing to files.
 ///
 /// All members support interior mutability.
 #[allow(missing_debug_implementations)]
 #[derive(Clone)]
 pub struct WritingResources {
-    /// The project writer.
-    pub project: Arc<ProjectUpdater>,
-    pub trajectory_file_pool: TrajectoryFileWriterPool,
-    pub root: DeployPath,
+    root: DeployPath,
 }
 
 impl WritingResources {
@@ -112,32 +52,9 @@ impl WritingResources {
     #[must_use]
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
-        let out = Self {
-            project: Arc::new(ProjectUpdater::new()),
-            trajectory_file_pool: Arc::new(DashMap::new()),
+        Self {
             root: Arc::new(Mutex::new(PathBuf::new())),
-        };
-        let root = out.root.clone();
-        let project_updater = out.project.clone();
-        thread::Builder::new()
-            .name("Project Writer".to_string())
-            .spawn(move || {
-                tokio::runtime::Builder::new_current_thread()
-                    .enable_all()
-                    .build()
-                    .expect("Failed to build tokio runtime")
-                    .block_on(async move {
-                        loop {
-                            let proj = project_updater.wait_for().await;
-                            let root = root.lock().await;
-                            let path = root.join(&proj.name).with_extension("chor");
-                            write_serializable(proj, &path).await.trace_err();
-                            tracing::debug!("Wrote project to {:?}", path);
-                        }
-                    });
-            })
-            .expect("Failed to spawn project writer thread");
-        out
+        }
     }
 
     /// Get the deploy path.
@@ -154,40 +71,14 @@ impl WritingResources {
     }
 }
 
+/// Set the deploy path in the passed resources.
 pub async fn set_deploy_path(resources: &WritingResources, path: PathBuf) {
     tracing::debug!("Setting deploy path to {:?}", path);
     let mut root = resources.root.lock().await;
     *root = path;
-    resources.trajectory_file_pool.clear();
 }
 
-pub async fn write_trajectory_file(resources: &WritingResources, trajectory_file: TrajectoryFile) {
-    let file = resources
-        .root
-        .lock()
-        .await
-        .join(&trajectory_file.name)
-        .with_extension(TrajectoryFile::EXTENSION);
-
-    tracing::debug!(
-        "Writing path {:} to {:}",
-        trajectory_file.name,
-        file.display()
-    );
-
-    resources
-        .trajectory_file_pool
-        .entry(trajectory_file.name.clone())
-        .or_insert_with(|| {
-            let (sender, receiver) = unbounded_channel();
-            spawn_writer_task(PathBuf::from(&file), receiver);
-            sender
-        })
-        .send(trajectory_file)
-        .trace_err();
-}
-
-pub async fn write_trajectory_file_immediately(
+pub async fn write_trajectory_file(
     resources: &WritingResources,
     trajectory_file: TrajectoryFile,
 ) -> ChoreoResult<()> {
@@ -214,9 +105,8 @@ pub async fn read_trajectory_file(
     name: TrajectoryFileName,
 ) -> ChoreoResult<TrajectoryFile> {
     let path = resources
-        .root
-        .lock()
-        .await
+        .get_deploy_path()
+        .await?
         .join(&name)
         .with_extension(TrajectoryFile::EXTENSION);
     let contents = fs::read_to_string(&path).await?;
@@ -238,7 +128,6 @@ pub async fn delete_trajectory_file(
         return Err(ChoreoError::FileNotFound(Some(path)));
     }
 
-    let _ = resources.trajectory_file_pool.remove(&trajectory_file.name);
     fs::remove_file(&path).await?;
 
     tracing::info!(
@@ -275,7 +164,7 @@ pub async fn rename_trajectory_file(
     let old_name = old_trajectory_file.name.clone();
     old_trajectory_file.name.clone_from(&new_name);
 
-    write_trajectory_file(resources, old_trajectory_file.clone()).await;
+    write_trajectory_file(resources, old_trajectory_file.clone()).await?;
 
     tracing::info!(
         "Renamed trajectory {old_name}.traj to {new_name}.traj at {:}",
@@ -285,22 +174,24 @@ pub async fn rename_trajectory_file(
     Ok(old_trajectory_file)
 }
 
-pub async fn write_projectfile(resources: &WritingResources, project: ProjectFile) {
+pub async fn write_project_file(resources: &WritingResources, project: ProjectFile) -> ChoreoResult<()> {
     tracing::debug!(
         "Writing project {:} to {:}",
         project.name,
-        resources
-            .root
-            .lock()
-            .await
-            .join(&project.name)
-            .with_extension("chor")
-            .display()
+        resources.get_deploy_path().await?.display()
     );
-    resources.project.update(project).await;
+
+    let path = resources
+        .get_deploy_path()
+        .await?
+        .join(&project.name)
+        .with_extension("chor");
+
+    write_serializable(project, &path).await
 }
 
-pub async fn read_projectfile(
+/// Read the project file based on the name and deploy path
+pub async fn read_project_file(
     resources: &WritingResources,
     name: String,
 ) -> ChoreoResult<ProjectFile> {
@@ -310,9 +201,8 @@ pub async fn read_projectfile(
     );
 
     let path = resources
-        .root
-        .lock()
-        .await
+        .get_deploy_path()
+        .await?
         .join(&name)
         .with_extension("chor");
     let contents = fs::read_to_string(&path).await?;
@@ -323,8 +213,14 @@ pub async fn read_projectfile(
 
 /// Find all trajectory files in the deploy directory.
 pub async fn find_all_trajectories(resources: &WritingResources) -> Vec<String> {
-    let deploy_dir = resources.root.lock().await.clone();
-    let mut out = vec![];
+    let deploy_dir = match resources.get_deploy_path().await {
+        Ok(p) => p,
+        Err(e) => {
+            tracing::error!("Failed to get deploy path: {:?}", e);
+            return Vec::new();
+        }
+    };
+    let mut out = Vec::new();
     if let Ok(mut dir) = fs::read_dir(&deploy_dir).await {
         while let Ok(Some(entry)) = dir.next_entry().await {
             let path = entry.path();

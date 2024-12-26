@@ -34,8 +34,8 @@ pub enum ChoreoError {
     TrajOpt(String),
     #[error("No Deploy Path error")]
     NoDeployPath,
-    #[error("Heading Conflict error: waypoint {0} - {1}")]
-    HeadingConflict(usize, String),
+    #[error("Constraint Conflict error: waypoint {0} - {1}")]
+    ConstraintConflict(usize, String),
     #[error("Remote Generation Error: {0}")]
     RemoteGenerationError(Box<ChoreoError>),
 }

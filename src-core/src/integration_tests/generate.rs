@@ -47,6 +47,7 @@ mod generate {
         assert!(traj_after_first == traj_after_second);
         assert!(chor_after_first == chor_after_second);
     }
+
     // Copied from src-cli
     #[allow(clippy::cast_possible_wrap)]
     async fn generate_trajectories(
@@ -64,7 +65,7 @@ mod generate {
         .await;
 
         // read the project file
-        let project = file_management::read_projectfile(
+        let project = file_management::read_project_file(
             &resources,
             project_path
                 .file_stem()
@@ -76,7 +77,7 @@ mod generate {
         .await
         .expect("Failed to read project file");
         // ADDED: Cli doesn't write the upgraded project, but we want to test the project file writing
-        file_management::write_projectfile(&resources, project.clone()).await;
+        file_management::write_project_file(&resources, project.clone()).await;
 
         if trajectory_names.is_empty() {
             trajectory_names = file_management::find_all_trajectories(&resources).await;
@@ -114,7 +115,7 @@ mod generate {
                                 .build()
                                 .expect("Failed to build tokio runtime");
                             let write_result = runtime.block_on(
-                                file_management::write_trajectory_file_immediately(
+                                file_management::write_trajectory_file(
                                     &cln_resources,
                                     new_trajectory,
                                 ),

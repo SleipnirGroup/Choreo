@@ -1,36 +1,25 @@
-#![allow(clippy::missing_errors_doc)]
 
-use std::sync::mpsc::{channel, Receiver, Sender};
-use std::sync::OnceLock;
+use std::sync::mpsc::Sender;
 
 use trajoptlib::{DifferentialTrajectory, SwerveTrajectory};
 
+use super::constraints::check_constraint_conflicts;
 use super::heading::adjust_headings;
 use super::transformers::{
     CallbackSetter, ConstraintSetter, DrivetrainAndBumpersSetter, IntervalCountSetter,
     TrajectoryFileGenerator,
 };
 use crate::spec::project::ProjectFile;
-use crate::spec::trajectory::{ConstraintScope, Sample, TrajectoryFile};
+use crate::spec::trajectory::{Sample, TrajectoryFile};
 use crate::ChoreoResult;
-
-/**
- * A [`OnceLock`] is a synchronization primitive that can be written to
- * once. Used here to create a read-only static reference to the sender,
- * even though the sender can't be constructed in a static context.
- */
-pub(super) static PROGRESS_SENDER_LOCK: OnceLock<Sender<HandledLocalProgressUpdate>> =
-    OnceLock::new();
 
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum LocalProgressUpdate {
     SwerveTrajectory {
-        // Swerve variant
         update: Vec<Sample>,
     },
     DifferentialTrajectory {
-        // Diff variant
         update: Vec<Sample>,
     },
     DiagnosticText {
@@ -68,62 +57,45 @@ pub struct HandledLocalProgressUpdate {
     pub update: LocalProgressUpdate,
 }
 
-pub fn setup_progress_sender() -> Receiver<HandledLocalProgressUpdate> {
-    let (tx, rx) = channel::<HandledLocalProgressUpdate>();
-    let _ = PROGRESS_SENDER_LOCK.get_or_init(move || tx);
-    rx
-}
-
-fn set_initial_guess(trajectory: &mut TrajectoryFile) {
-    fn not_initial_guess_wpt(trajectory: &mut TrajectoryFile, idx: usize) {
-        let wpt = &mut trajectory.params.waypoints[idx];
-        wpt.is_initial_guess = false;
-    }
-    let waypoint_count = trajectory.params.waypoints.len();
-    for waypoint in trajectory.params.waypoints.iter_mut() {
-        waypoint.is_initial_guess = true;
-    }
-    for constraint in trajectory.params.snapshot().constraints {
-        let from = constraint.from.get_idx(waypoint_count);
-        let to = constraint
-            .to
-            .as_ref()
-            .and_then(|id| id.get_idx(waypoint_count));
-
-        if let Some(from_idx) = from {
-            let valid_wpt = to.is_none();
-            let valid_sgmt = to.is_some();
-            // Check for valid scope
-            if match constraint.data.scope() {
-                ConstraintScope::Waypoint => valid_wpt,
-                ConstraintScope::Segment => valid_sgmt,
-                ConstraintScope::Both => valid_wpt || valid_sgmt,
-            } {
-                not_initial_guess_wpt(trajectory, from_idx);
-                if let Some(to_idx) = to {
-                    if to_idx != from_idx {
-                        not_initial_guess_wpt(trajectory, to_idx);
-                    }
-                }
-            }
-        }
-    }
-}
+// pub fn setup_progress_sender() -> Receiver<HandledLocalProgressUpdate> {
+//     // let (tx, rx) = channel::<HandledLocalProgressUpdate>();
+//     // let _ = PROGRESS_SENDER_LOCK.get_or_init(move || tx);
+//     // rx
+//     if PROGRESS_SENDER_LOCK.get().is_none() {
+//         let (tx, rx) = channel::<HandledLocalProgressUpdate>();
+//         PROGRESS_SENDER_LOCK.
+//         rx
+//     } else {
+//         PROGRESS_SENDER_LOCK.get().unwrap().clone()
+//     }
+// }
 
 pub fn generate(
     chor: ProjectFile,
     mut trajectory_file: TrajectoryFile,
     handle: i64,
+    progress_updater: Sender<HandledLocalProgressUpdate>
 ) -> ChoreoResult<TrajectoryFile> {
-    set_initial_guess(&mut trajectory_file);
+    let mut original = trajectory_file.clone();
+
+    // these two functions can make changes to the trajectory file
+    check_constraint_conflicts(&trajectory_file)?;
     adjust_headings(&mut trajectory_file)?;
 
-    let mut gen = TrajectoryFileGenerator::new(chor, trajectory_file, handle);
+    let mut gen = TrajectoryFileGenerator::new(
+        chor,
+        trajectory_file,
+        handle,
+        progress_updater
+    );
 
     gen.add_omni_transformer::<IntervalCountSetter>();
     gen.add_omni_transformer::<DrivetrainAndBumpersSetter>();
     gen.add_omni_transformer::<ConstraintSetter>();
     gen.add_omni_transformer::<CallbackSetter>();
 
-    gen.generate()
+    let new_traj = gen.generate()?;
+    original.trajectory = new_traj.trajectory;
+
+    Ok(original)
 }
