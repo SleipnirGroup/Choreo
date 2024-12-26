@@ -1,13 +1,10 @@
 use std::{
     path::{Path, PathBuf},
-    sync::Arc
+    sync::Arc,
 };
 
 use serde::Serialize;
-use tokio::{
-    fs,
-    sync::Mutex,
-};
+use tokio::{fs, sync::Mutex};
 
 use crate::{ChoreoError, ChoreoResult};
 
@@ -174,7 +171,10 @@ pub async fn rename_trajectory_file(
     Ok(old_trajectory_file)
 }
 
-pub async fn write_project_file(resources: &WritingResources, project: ProjectFile) -> ChoreoResult<()> {
+pub async fn write_project_file(
+    resources: &WritingResources,
+    project: ProjectFile,
+) -> ChoreoResult<()> {
     tracing::debug!(
         "Writing project {:} to {:}",
         project.name,

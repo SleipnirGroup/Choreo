@@ -1,14 +1,14 @@
-
-use crate::{round, spec::{trajectory::{ConstraintIDX, ConstraintScope, Parameters, TrajectoryFile}, Expr}, ChoreoError, ChoreoResult};
 use crate::spec::trajectory::ConstraintData;
+use crate::{
+    round,
+    spec::{
+        trajectory::{ConstraintIDX, ConstraintScope, Parameters, TrajectoryFile},
+        Expr,
+    },
+    ChoreoError, ChoreoResult,
+};
 
-
-
-
-
-pub fn fix_constraint_indices(
-    params: &Parameters<f64>,
-) -> Vec<ConstraintIDX<f64>> {
+pub fn fix_constraint_indices(params: &Parameters<f64>) -> Vec<ConstraintIDX<f64>> {
     let mut constraint_idx = Vec::<ConstraintIDX<f64>>::new();
     let num_wpts = params.waypoints.len();
 
@@ -54,7 +54,6 @@ pub fn fix_constraint_indices(
 
     constraint_idx
 }
-
 
 // taken from itertools crate
 macro_rules! izip {
@@ -121,9 +120,7 @@ pub fn check_constraint_conflicts(trajectory: &TrajectoryFile) -> ChoreoResult<(
                     wpt_has_0_ang_vel[from] += 1;
                 }
             }
-            ConstraintData::PointAt {
-                ..
-            } => {
+            ConstraintData::PointAt { .. } => {
                 let to = to_opt.unwrap_or(from);
                 for wpt_idx in from..=to {
                     wpt_has_point_at[wpt_idx] += 1;

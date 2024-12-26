@@ -2,7 +2,9 @@ use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use trajoptlib::Translation2d;
 
-use super::{trajectory::DriveType, version_handlers::upgrade_project_file, Expr, SnapshottableType};
+use super::{
+    trajectory::DriveType, version_handlers::upgrade_project_file, Expr, SnapshottableType,
+};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum Dimension {

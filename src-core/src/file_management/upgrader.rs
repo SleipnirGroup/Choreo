@@ -55,7 +55,7 @@ impl Editor {
 
     /**
      * Get the value of a JSON path as a raw JSON value.
-     * 
+     *
      * # Arguments
      * - `path`: The JSON path to get the value of.
      */
@@ -73,7 +73,7 @@ impl Editor {
 
     /**
      * Get the value of a JSON path as a deserialized value.
-     * 
+     *
      * # Arguments
      * - `path`: The JSON path to get the value of.
      */
@@ -131,22 +131,18 @@ impl Editor {
     /**
      * Set the value of a JSON path to a serializable value.
      * If the path does not exist, it will be created.
-     * 
+     *
      * # Arguments
      * - `path`: The JSON path to set the value of.
      * - `value`: The value to set.
      */
-    pub fn set<T: serde::Serialize>(
-        &mut self,
-        path: impl JsonPath,
-        value: T,
-    ) -> ChoreoResult<()> {
+    pub fn set<T: serde::Serialize>(&mut self, path: impl JsonPath, value: T) -> ChoreoResult<()> {
         self.set_raw(path, serde_json::to_value(value)?)
     }
 
     /**
      * Delete a JSON path.
-     * 
+     *
      * # Arguments
      * - `path`: The JSON path to delete.
      */
@@ -186,13 +182,15 @@ impl Editor {
 
     /**
      * Rename a JSON path.
-     * 
+     *
      * # Arguments
      * - `old_path`: The old JSON path.
      * - `new_path`: The new JSON path.
      */
     pub fn rename(&mut self, old_path: impl JsonPath, new_path: impl JsonPath) -> ChoreoResult<()> {
-        let value = self.get_raw(old_path.clone()).ok_or(ChoreoError::Json("Invalid JSON path".to_string()))?;
+        let value = self
+            .get_raw(old_path.clone())
+            .ok_or(ChoreoError::Json("Invalid JSON path".to_string()))?;
         self.set_raw(new_path, value.clone())?;
         self.delete(old_path)?;
         Ok(())
@@ -250,9 +248,9 @@ impl Upgrader {
         // or if the version is newer than the current version
         match version {
             v if v == self.current_version => return Ok(jdata),
-            v if v > self.current_version => return Err(
-                ChoreoError::Json("JSON version newer than app".to_string())
-            ),
+            v if v > self.current_version => {
+                return Err(ChoreoError::Json("JSON version newer than app".to_string()))
+            }
             _ => {}
         }
 

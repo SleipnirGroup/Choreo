@@ -93,7 +93,9 @@ pub async fn read_project(app_handle: tauri::AppHandle, name: String) -> TauriRe
 #[tauri::command]
 pub async fn write_project(app_handle: tauri::AppHandle, project: ProjectFile) -> TauriResult<()> {
     let resources = app_handle.state::<WritingResources>();
-    file_management::write_project_file(&resources, project).await.map_err(Into::into)
+    file_management::write_project_file(&resources, project)
+        .await
+        .map_err(Into::into)
 }
 
 #[tauri::command]
@@ -119,7 +121,7 @@ pub async fn read_all_trajectory(app_handle: tauri::AppHandle) -> Vec<Trajectory
                     .await
                     .expect("Failed to write trajectory file after upgrading");
                 out.push(trajectory)
-            },
+            }
             Err(e) => tracing::error!("{e}"),
         }
     }
@@ -127,9 +129,14 @@ pub async fn read_all_trajectory(app_handle: tauri::AppHandle) -> Vec<Trajectory
 }
 
 #[tauri::command]
-pub async fn write_trajectory(app_handle: tauri::AppHandle, trajectory: TrajectoryFile) -> TauriResult<()> {
+pub async fn write_trajectory(
+    app_handle: tauri::AppHandle,
+    trajectory: TrajectoryFile,
+) -> TauriResult<()> {
     let resources = app_handle.state::<WritingResources>();
-    file_management::write_trajectory_file(&resources, trajectory).await.map_err(Into::into)
+    file_management::write_trajectory_file(&resources, trajectory)
+        .await
+        .map_err(Into::into)
 }
 
 #[tauri::command]

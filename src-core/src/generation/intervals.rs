@@ -1,14 +1,11 @@
-
 use crate::error::ChoreoError;
 use crate::spec::project::RobotConfig;
 use crate::spec::trajectory::{ConstraintData, ConstraintScope, Parameters, Waypoint};
 use crate::{angle_modulus, ChoreoResult};
 
-
 pub fn initial_guess_waypoints(params: &Parameters<f64>) -> Vec<bool> {
     let waypoint_count = params.waypoints.len();
     let mut guess_points = vec![true; params.waypoints.len()];
-
 
     for constraint in &params.constraints {
         let from = constraint.from.get_idx(waypoint_count);

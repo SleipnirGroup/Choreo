@@ -1,4 +1,3 @@
-
 use std::f64::consts::PI;
 
 use crate::generation::constraints::fix_constraint_indices;
@@ -41,13 +40,8 @@ pub fn calculate_adjusted_headings(trajectory: &TrajectoryFile) -> ChoreoResult<
                         .iter_mut()
                         .for_each(|count| *count += 1);
                 }
-            },
-            ConstraintData::PointAt {
-                x,
-                y,
-                flip,
-                ..
-            } => {
+            }
+            ConstraintData::PointAt { x, y, flip, .. } => {
                 let to = to_opt.unwrap_or(from);
                 for wpt_idx in from..=to {
                     let new_x = x - waypoints[wpt_idx].x.val;

@@ -1,4 +1,3 @@
-
 use std::sync::mpsc::Sender;
 
 use trajoptlib::{DifferentialTrajectory, SwerveTrajectory};
@@ -16,15 +15,9 @@ use crate::ChoreoResult;
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase", tag = "type")]
 pub enum LocalProgressUpdate {
-    SwerveTrajectory {
-        update: Vec<Sample>,
-    },
-    DifferentialTrajectory {
-        update: Vec<Sample>,
-    },
-    DiagnosticText {
-        update: String,
-    },
+    SwerveTrajectory { update: Vec<Sample> },
+    DifferentialTrajectory { update: Vec<Sample> },
+    DiagnosticText { update: String },
 }
 
 impl LocalProgressUpdate {
@@ -74,7 +67,7 @@ pub fn generate(
     chor: ProjectFile,
     mut trajectory_file: TrajectoryFile,
     handle: i64,
-    progress_updater: Sender<HandledLocalProgressUpdate>
+    progress_updater: Sender<HandledLocalProgressUpdate>,
 ) -> ChoreoResult<TrajectoryFile> {
     let mut original = trajectory_file.clone();
 
@@ -82,12 +75,7 @@ pub fn generate(
     check_constraint_conflicts(&trajectory_file)?;
     adjust_headings(&mut trajectory_file)?;
 
-    let mut gen = TrajectoryFileGenerator::new(
-        chor,
-        trajectory_file,
-        handle,
-        progress_updater
-    );
+    let mut gen = TrajectoryFileGenerator::new(chor, trajectory_file, handle, progress_updater);
 
     gen.add_omni_transformer::<IntervalCountSetter>();
     gen.add_omni_transformer::<DrivetrainAndBumpersSetter>();

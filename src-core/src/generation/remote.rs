@@ -1,7 +1,10 @@
 use std::{
     mem::forget,
     path::PathBuf,
-    sync::{mpsc::{self, channel}, Arc},
+    sync::{
+        mpsc::{self, channel},
+        Arc,
+    },
     thread,
 };
 
@@ -116,9 +119,9 @@ pub fn remote_generate_child(args: RemoteArgs) {
                     HandledLocalProgressUpdate {
                         update: LocalProgressUpdate::DifferentialTrajectory { update },
                         ..
-                    } => serde_json::to_string(&RemoteProgressUpdate::IncompleteDifferentialTrajectory(
-                        update,
-                    )),
+                    } => serde_json::to_string(
+                        &RemoteProgressUpdate::IncompleteDifferentialTrajectory(update),
+                    ),
                     _ => continue,
                 }
                 .expect("Failed to serialize progress update");

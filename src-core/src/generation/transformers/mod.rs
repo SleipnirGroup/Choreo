@@ -1,6 +1,9 @@
 #![allow(dead_code)]
 
-use std::{collections::{HashMap, HashSet}, sync::mpsc::Sender};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::mpsc::Sender,
+};
 
 use trajoptlib::{
     DifferentialTrajectory, DifferentialTrajectoryGenerator, SwerveTrajectory,
@@ -33,7 +36,7 @@ pub(super) struct GenerationContext {
     pub project: ProjectFile,
     pub params: Parameters<f64>,
     pub handle: i64,
-    pub progress_updater: Sender<HandledLocalProgressUpdate>
+    pub progress_updater: Sender<HandledLocalProgressUpdate>,
 }
 
 pub(super) struct TrajectoryFileGenerator {
@@ -46,13 +49,18 @@ pub(super) struct TrajectoryFileGenerator {
 
 impl TrajectoryFileGenerator {
     /// Create a new generator
-    pub fn new(project: ProjectFile, trajectory_file: TrajectoryFile, handle: i64, progress_updater: Sender<HandledLocalProgressUpdate>) -> Self {
+    pub fn new(
+        project: ProjectFile,
+        trajectory_file: TrajectoryFile,
+        handle: i64,
+        progress_updater: Sender<HandledLocalProgressUpdate>,
+    ) -> Self {
         Self {
             ctx: GenerationContext {
                 project,
                 params: trajectory_file.params.snapshot(),
                 handle,
-                progress_updater
+                progress_updater,
             },
             trajectory_file,
             swerve_transformers: HashMap::new(),

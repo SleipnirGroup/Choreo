@@ -44,7 +44,7 @@ impl<T: SnapshottableType> Waypoint<T> {
             split: self.split,
             fix_translation: self.fix_translation,
             fix_heading: self.fix_heading,
-            override_intervals: self.override_intervals
+            override_intervals: self.override_intervals,
         }
     }
 }
