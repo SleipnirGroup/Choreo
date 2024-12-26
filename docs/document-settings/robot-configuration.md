@@ -55,6 +55,6 @@ This panel displays calculated metrics about your robot, for reference and valid
 - **Traction Accel Limit**  $[m/s^2]$: The robot's maximum acceleration before wheels begin slipping
 - **Motor Accel Limit** $[m/s^2]$: The robot's maximum acceleration based on motor torque
 - **Floor Speed** $[m/s]$: The maximum speed reached by the robot when driving in a straight line and not rotating
-- **Floor Accel** $[m/s^2]$: The maximum acceleration reached by the robot when driving in a straight line and not rotating
+- **Floor Accel** $[m/s^2]$: The maximum acceleration reached by the robot when driving in a straight line and not rotating. The minimum of traction and motor limits.
 - **Ang Speed** $[rad/s]$: The robot's maximum angular speed when spinning in place
 - **Ang Accel** $[rad/s^2]$: The robot's maximum angular acceleration when spinning in place
