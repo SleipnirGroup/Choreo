@@ -99,8 +99,8 @@ export interface SwerveSample {
   ax: number;
   ay: number;
   alpha: number;
-  fx?: [number, number, number, number];
-  fy?: [number, number, number, number];
+  fx: [number, number, number, number];
+  fy: [number, number, number, number];
 }
 
 export interface DifferentialSample {
