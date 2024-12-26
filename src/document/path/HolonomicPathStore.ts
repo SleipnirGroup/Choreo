@@ -151,11 +151,24 @@ export const HolonomicPathStore = types
   })
   .actions((self) => {
     return {
+      processGenerationResult(ser: Trajectory) {
+        self.trajectory.deserialize(ser.trajectory);
+        self.markers.forEach((m) => {
+          const index = m.from.trajectoryTargetIndex;
+          if (index === undefined) {
+            m.from.setTargetTimestamp(undefined);
+          } else {
+            m.from.setTargetTimestamp(ser.trajectory.waypoints[index]);
+          }
+        });
+        self.setSnapshot(ser.snapshot);
+      },
       deserialize(ser: Trajectory) {
         self.name = ser.name;
         self.snapshot = ser.snapshot;
         self.params.deserialize(ser.params);
         self.trajectory.deserialize(ser.trajectory);
+        self.markers.clear();
         ser.events.forEach((m) => {
           self.addEventMarker(m);
         });
