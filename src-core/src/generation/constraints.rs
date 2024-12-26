@@ -1,6 +1,6 @@
 use crate::spec::trajectory::ConstraintData;
 use crate::{
-    round,
+    round5,
     spec::{
         trajectory::{ConstraintIDX, ConstraintScope, Parameters, TrajectoryFile},
         Expr,
@@ -108,7 +108,7 @@ pub fn check_constraint_conflicts(trajectory: &TrajectoryFile) -> ChoreoResult<(
         let from = constraint.from;
         let to_opt = constraint.to;
         match constraint.data {
-            ConstraintData::MaxAngularVelocity { max } if round(max) == 0.0 => {
+            ConstraintData::MaxAngularVelocity { max } if round5(max) == 0.0 => {
                 if let Some(to) = to_opt {
                     wpt_has_0_ang_vel[from..=to]
                         .iter_mut()

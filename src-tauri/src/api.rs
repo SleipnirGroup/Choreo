@@ -44,7 +44,7 @@ pub fn guess_control_interval_counts(
     debug_result!(
         choreo_core::generation::intervals::guess_control_interval_counts(
             &config.snapshot(),
-            &trajectory.params.snapshot(),
+            &trajectory.params.snapshot().round(),
         )
     );
 }
@@ -134,7 +134,7 @@ pub async fn write_trajectory(
     trajectory: TrajectoryFile,
 ) -> TauriResult<()> {
     let resources = app_handle.state::<WritingResources>();
-    file_management::write_trajectory_file(&resources, trajectory)
+    file_management::write_trajectory_file(&resources, trajectory.round())
         .await
         .map_err(Into::into)
 }
@@ -191,7 +191,7 @@ pub async fn generate_remote(
 ) -> TauriResult<TrajectoryFile> {
     let remote_resources = app_handle.state::<RemoteGenerationResources>();
     use choreo_core::generation::remote::remote_generate_parent;
-    debug_result!(remote_generate_parent(&remote_resources, project, trajectory, handle).await);
+    debug_result!(remote_generate_parent(&remote_resources, project, trajectory.round(), handle).await);
 }
 
 #[tauri::command]

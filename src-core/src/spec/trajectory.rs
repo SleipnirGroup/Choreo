@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use trajoptlib::{DifferentialTrajectorySample, SwerveTrajectorySample};
 
-use crate::round;
+use crate::round5;
 
 use super::{version_handlers::upgrade_traj_file, Expr, SnapshottableType};
 
@@ -40,6 +40,21 @@ impl<T: SnapshottableType> Waypoint<T> {
             x: self.x.snapshot(),
             y: self.y.snapshot(),
             heading: self.heading.snapshot(),
+            intervals: self.intervals,
+            split: self.split,
+            fix_translation: self.fix_translation,
+            fix_heading: self.fix_heading,
+            override_intervals: self.override_intervals,
+        }
+    }
+}
+
+impl Waypoint<f64> {
+    pub fn round(&self) -> Waypoint<f64> {
+        Waypoint {
+            x: round5(self.x),
+            y: round5(self.y),
+            heading: round5(self.heading),
             intervals: self.intervals,
             split: self.split,
             fix_translation: self.fix_translation,
@@ -207,6 +222,53 @@ impl<T: SnapshottableType> ConstraintData<T> {
     }
 }
 
+impl ConstraintData<f64> {
+    pub fn round(&self) -> ConstraintData<f64> {
+        match self {
+            ConstraintData::MaxVelocity { max } => ConstraintData::MaxVelocity {
+                max: round5(*max),
+            },
+            ConstraintData::MaxAngularVelocity { max } => ConstraintData::MaxAngularVelocity {
+                max: round5(*max),
+            },
+            ConstraintData::PointAt {
+                x,
+                y,
+                tolerance,
+                flip,
+            } => ConstraintData::PointAt {
+                x: round5(*x),
+                y: round5(*y),
+                tolerance: round5(*tolerance),
+                flip: *flip,
+            },
+            ConstraintData::MaxAcceleration { max } => ConstraintData::MaxAcceleration {
+                max: round5(*max),
+            },
+            ConstraintData::StopPoint {} => ConstraintData::StopPoint {},
+            ConstraintData::KeepInCircle { x, y, r } => ConstraintData::KeepInCircle {
+                x: round5(*x),
+                y: round5(*y),
+                r: round5(*r),
+            },
+            ConstraintData::KeepInRectangle { x, y, w, h } => ConstraintData::KeepInRectangle {
+                x: round5(*x),
+                y: round5(*y),
+                w: round5(*w),
+                h: round5(*h),
+            },
+            ConstraintData::KeepInLane { tolerance } => ConstraintData::KeepInLane {
+                tolerance: round5(*tolerance),
+            },
+            ConstraintData::KeepOutCircle { x, y, r } => ConstraintData::KeepOutCircle {
+                x: round5(*x),
+                y: round5(*y),
+                r: round5(*r),
+            },
+        }
+    }
+}
+
 /// A constraint on the robot's motion and where it applies.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct Constraint<T: SnapshottableType> {
@@ -229,6 +291,17 @@ impl<T: SnapshottableType> Constraint<T> {
             from: self.from,
             to: self.to,
             data: self.data.snapshot(),
+            enabled: self.enabled,
+        }
+    }
+}
+
+impl Constraint<f64> {
+    pub fn round(&self) -> Constraint<f64> {
+        Constraint::<f64> {
+            from: self.from,
+            to: self.to,
+            data: self.data.round(),
             enabled: self.enabled,
         }
     }
@@ -288,27 +361,27 @@ pub enum Sample {
 impl From<&SwerveTrajectorySample> for Sample {
     fn from(swerve_sample: &SwerveTrajectorySample) -> Self {
         Sample::Swerve {
-            t: round(swerve_sample.timestamp),
-            x: round(swerve_sample.x),
-            y: round(swerve_sample.y),
-            vx: round(swerve_sample.velocity_x),
-            vy: round(swerve_sample.velocity_y),
-            heading: round(swerve_sample.heading),
-            omega: round(swerve_sample.angular_velocity),
-            ax: round(swerve_sample.acceleration_x),
-            ay: round(swerve_sample.acceleration_y),
-            alpha: round(swerve_sample.angular_acceleration),
+            t: round5(swerve_sample.timestamp),
+            x: round5(swerve_sample.x),
+            y: round5(swerve_sample.y),
+            vx: round5(swerve_sample.velocity_x),
+            vy: round5(swerve_sample.velocity_y),
+            heading: round5(swerve_sample.heading),
+            omega: round5(swerve_sample.angular_velocity),
+            ax: round5(swerve_sample.acceleration_x),
+            ay: round5(swerve_sample.acceleration_y),
+            alpha: round5(swerve_sample.angular_acceleration),
             fx: [
-                round(swerve_sample.module_forces_x[0]),
-                round(swerve_sample.module_forces_x[1]),
-                round(swerve_sample.module_forces_x[2]),
-                round(swerve_sample.module_forces_x[3]),
+                round5(swerve_sample.module_forces_x[0]),
+                round5(swerve_sample.module_forces_x[1]),
+                round5(swerve_sample.module_forces_x[2]),
+                round5(swerve_sample.module_forces_x[3]),
             ],
             fy: [
-                round(swerve_sample.module_forces_y[0]),
-                round(swerve_sample.module_forces_y[1]),
-                round(swerve_sample.module_forces_y[2]),
-                round(swerve_sample.module_forces_y[3]),
+                round5(swerve_sample.module_forces_y[0]),
+                round5(swerve_sample.module_forces_y[1]),
+                round5(swerve_sample.module_forces_y[2]),
+                round5(swerve_sample.module_forces_y[3]),
             ],
         }
     }
@@ -322,23 +395,92 @@ impl From<SwerveTrajectorySample> for Sample {
 impl From<&DifferentialTrajectorySample> for Sample {
     fn from(differential_sample: &DifferentialTrajectorySample) -> Self {
         Sample::DifferentialDrive {
-            t: round(differential_sample.timestamp),
-            x: round(differential_sample.x),
-            y: round(differential_sample.y),
-            heading: round(differential_sample.heading),
-            vl: round(differential_sample.velocity_l),
-            vr: round(differential_sample.velocity_r),
-            omega: round(differential_sample.angular_velocity),
-            al: round(differential_sample.acceleration_l),
-            ar: round(differential_sample.acceleration_r),
-            fl: round(differential_sample.force_l),
-            fr: round(differential_sample.force_r),
+            t: round5(differential_sample.timestamp),
+            x: round5(differential_sample.x),
+            y: round5(differential_sample.y),
+            heading: round5(differential_sample.heading),
+            vl: round5(differential_sample.velocity_l),
+            vr: round5(differential_sample.velocity_r),
+            omega: round5(differential_sample.angular_velocity),
+            al: round5(differential_sample.acceleration_l),
+            ar: round5(differential_sample.acceleration_r),
+            fl: round5(differential_sample.force_l),
+            fr: round5(differential_sample.force_r),
         }
     }
 }
 impl From<DifferentialTrajectorySample> for Sample {
     fn from(value: DifferentialTrajectorySample) -> Self {
         Self::from(&value)
+    }
+}
+
+impl Sample {
+    pub fn round(&self) -> Sample {
+        match self {
+            Sample::Swerve {
+                t,
+                x,
+                y,
+                heading,
+                vx,
+                vy,
+                omega,
+                ax,
+                ay,
+                alpha,
+                fx,
+                fy,
+            } => Sample::Swerve {
+                t: round5(*t),
+                x: round5(*x),
+                y: round5(*y),
+                heading: round5(*heading),
+                vx: round5(*vx),
+                vy: round5(*vy),
+                omega: round5(*omega),
+                ax: round5(*ax),
+                ay: round5(*ay),
+                alpha: round5(*alpha),
+                fx: [
+                    round5(fx[0]),
+                    round5(fx[1]),
+                    round5(fx[2]),
+                    round5(fx[3]),
+                ],
+                fy: [
+                    round5(fy[0]),
+                    round5(fy[1]),
+                    round5(fy[2]),
+                    round5(fy[3]),
+                ],
+            },
+            Sample::DifferentialDrive {
+                t,
+                x,
+                y,
+                heading,
+                vl,
+                vr,
+                omega,
+                al,
+                ar,
+                fl,
+                fr,
+            } => Sample::DifferentialDrive {
+                t: round5(*t),
+                x: round5(*x),
+                y: round5(*y),
+                heading: round5(*heading),
+                vl: round5(*vl),
+                vr: round5(*vr),
+                omega: round5(*omega),
+                al: round5(*al),
+                ar: round5(*ar),
+                fl: round5(*fl),
+                fr: round5(*fr),
+            },
+        }
     }
 }
 
@@ -370,13 +512,23 @@ impl<T: SnapshottableType> Parameters<T> {
             waypoints: self.waypoints.iter().map(Waypoint::snapshot).collect(),
             constraints: self.constraints.iter().map(Constraint::snapshot).collect(),
             target_dt: self.target_dt.snapshot(),
-        }
+        }.round()
     }
 }
 
 impl<T: SnapshottableType> Parameters<T> {
     pub fn get_enabled_constraints(&self) -> Vec<&Constraint<T>> {
         self.constraints.iter().filter(|c| c.enabled).collect()
+    }
+}
+
+impl Parameters<f64> {
+    pub fn round(&self) -> Parameters<f64> {
+        Parameters {
+            waypoints: self.waypoints.iter().map(Waypoint::round).collect(),
+            constraints: self.constraints.iter().map(Constraint::round).collect(),
+            target_dt: round5(self.target_dt),
+        }
     }
 }
 
@@ -396,6 +548,17 @@ pub struct Trajectory {
     /// This includes 0, but the index of the last sample is never in this list even if the split toggle is set
     /// for the last waypoint
     pub splits: Vec<usize>,
+}
+
+impl Trajectory {
+    pub fn round(&self) -> Trajectory {
+        Trajectory {
+            sample_type: self.sample_type,
+            waypoints: self.waypoints.iter().map(|&x| round5(x)).collect(),
+            samples: self.samples.iter().map(Sample::round).collect(),
+            splits: self.splits.clone(),
+        }
+    }
 }
 
 /// A structure representing a `.traj` file.
@@ -427,7 +590,19 @@ impl TrajectoryFile {
     /// - [`crate::ChoreoError::Json`] if the json string is invalid.
     pub fn from_content(content: &str) -> crate::ChoreoResult<TrajectoryFile> {
         let val = upgrade_traj_file(serde_json::from_str(content)?)?;
-        serde_json::from_value(val).map_err(Into::into)
+        let tf: TrajectoryFile = serde_json::from_value(val)?;
+        Ok(tf.round())
+    }
+
+    pub fn round(&self) -> TrajectoryFile {
+        TrajectoryFile {
+            name: self.name.clone(),
+            version: self.version,
+            snapshot: self.snapshot.as_ref().map(|s| s.round()),
+            params: self.params.clone(),
+            trajectory: self.trajectory.round(),
+            events: self.events.clone(),
+        }
     }
 }
 

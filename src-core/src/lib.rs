@@ -118,7 +118,7 @@ pub fn angle_modulus(input: f64) -> f64 {
 /**
  * Rounds to the fith decimal place.
  */
-fn round(input: f64) -> f64 {
+fn round5(input: f64) -> f64 {
     let factor = 100_000.0;
     let result = (input * factor).round() / factor;
     if result == -0.0 {

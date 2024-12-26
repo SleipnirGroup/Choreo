@@ -2,6 +2,8 @@ use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use trajoptlib::Translation2d;
 
+use crate::round5;
+
 use super::{
     trajectory::DriveType, version_handlers::upgrade_project_file, Expr, SnapshottableType,
 };
@@ -52,6 +54,17 @@ impl<T: SnapshottableType> Bumper<T> {
         }
     }
 }
+
+impl Bumper<f64> {
+    pub fn round(&self) -> Bumper<f64> {
+        Bumper {
+            front: round5(self.front),
+            side: round5(self.side),
+            back: round5(self.back),
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Module<T: SnapshottableType> {
     pub x: T,
@@ -78,7 +91,15 @@ impl Module<f64> {
     pub fn radius(&self) -> f64 {
         self.x.hypot(self.y)
     }
+
+    pub fn round(&self) -> Module<f64> {
+        Module {
+            x: round5(self.x),
+            y: round5(self.y),
+        }
+    }
 }
+
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 #[serde(rename_all = "camelCase")]
 pub struct RobotConfig<T: SnapshottableType> {
@@ -112,9 +133,10 @@ impl<T: SnapshottableType> RobotConfig<T> {
             cof: self.cof.snapshot(),
             bumper: self.bumper.snapshot(),
             differential_track_width: self.differential_track_width.snapshot(),
-        }
+        }.round()
     }
 }
+
 impl<T: SnapshottableType> RobotConfig<T> {
     pub fn wheel_max_torque(&self) -> f64 {
         self.tmax.snapshot() * self.gearing.snapshot()
@@ -123,6 +145,7 @@ impl<T: SnapshottableType> RobotConfig<T> {
         self.vmax.snapshot() / self.gearing.snapshot()
     }
 }
+
 impl RobotConfig<f64> {
     pub fn module_translations(&self) -> Vec<Translation2d> {
         // FL, BL, BR, FR
@@ -138,6 +161,22 @@ impl RobotConfig<f64> {
                 y: -self.front_left.y,
             },
         ]
+    }
+
+    pub fn round(&self) -> RobotConfig<f64> {
+        RobotConfig {
+            front_left: self.front_left.round(),
+            back_left: self.back_left.round(),
+            mass: round5(self.mass),
+            inertia: round5(self.inertia),
+            gearing: round5(self.gearing),
+            radius: round5(self.radius),
+            vmax: round5(self.vmax),
+            tmax: round5(self.tmax),
+            cof: round5(self.cof),
+            bumper: self.bumper.round(),
+            differential_track_width: round5(self.differential_track_width),
+        }
     }
 }
 
