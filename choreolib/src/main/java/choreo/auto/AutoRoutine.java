@@ -19,8 +19,8 @@ import java.util.function.BooleanSupplier;
 /**
  * An object that represents an autonomous routine.
  *
- * <p>This object is used to handle autonomous trigger logic and schedule commands for a single autonomous routine. This object
- * should **not** be shared across multiple autonomous routines.
+ * <p>This object is used to handle autonomous trigger logic and schedule commands for a single
+ * autonomous routine. This object should **not** be shared across multiple autonomous routines.
  *
  * @see AutoFactory#newRoutine Creating a routine from a AutoFactory
  */
