@@ -56,12 +56,6 @@ public class AutoChooser implements Sendable {
   /** Constructs a new {@link AutoChooser}. */
   public AutoChooser() {}
 
-  private boolean allianceAtGenerationMatchesAlliance() {
-    int current = DriverStation.getAlliance().map(alliance -> alliance.ordinal()).orElse(-1);
-    int atGeneration = allianceAtGeneration.map(alliance -> alliance.ordinal()).orElse(-1);
-    return current == atGeneration;
-  }
-
   /**
    * Select a new option in the chooser.
    *
@@ -76,7 +70,8 @@ public class AutoChooser implements Sendable {
 
   private String select(String selectStr, boolean force) {
     selected = selectStr;
-    if (selected.equals(nameAtGeneration) && allianceAtGenerationMatchesAlliance()) {
+    if (selected.equals(nameAtGeneration)
+        && allianceAtGeneration.equals(DriverStation.getAlliance())) {
       // early return if the selected auto matches the active auto
       return nameAtGeneration;
     }
