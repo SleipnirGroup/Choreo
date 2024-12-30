@@ -18,7 +18,6 @@ public class Robot extends TimedRobot {
             driveSubsystem::followTrajectory, // The drive subsystem trajectory follower (1)
             true, // If alliance flipping should be enabled (2)
             driveSubsystem, // The drive subsystem
-            new AutoBindings() // An empty AutoBindings object (3)
         );
     }
 }
@@ -26,7 +25,6 @@ public class Robot extends TimedRobot {
 
 1. See [Getting Started](./getting-started.md/#setting-up-the-drive-subsystem) for more details on how to implement a trajectory follower in your drive subsystem.
 2. It is recommended for trajectories to be created only on the blue side of the field in the Choreo application. Enabling alliance flipping will automatically mirror trajectories to the red side of the field if the robot is on the red alliance.
-3. More information about setting up `AutoBindings` can be found in the [AutoBindings](#autobindings) section of this page.
 
 !!! tip
     It is recommended for your `AutoFactory` to be created at the Robot scope (e.g. in the `Robot` or `RobotContainer` constructor), not in the drive subsystem. Some teams may opt to create a separate class (ex `Autos.java`) that is given the robot's subsystems, and contains all code relevant to constructing autonomous routines.
@@ -229,14 +227,14 @@ public AutoRoutine branching2024Auto() {
 2. `AutoRoutine.anyActive()` can be used as a shorthand for checking if any trajectories in a set are active.
 3. Similar to `AutoRoutine.anyActive()`, `AutoRoutine.anyDone()` can be used as a shorthand for checking if any trajectories in a set are done.
 
-## AutoBindings
+## Auto Bindings
 
-The `AutoBindings` ([Java](/api/choreolib/java/choreo/auto/AutoFactory.AutoBindings.html)) class is used to bind event markers in trajectories made by the `AutoFactory` to commands. Commands added to `AutoBindings` exhibit the same behavior as those bound to `AutoTrajectory.atTime(String)`, except they are applied globally across all routines. This is useful if you have simpler actions that you want to trigger in any trajectory without much thought.
+Auto bindings are used to bind event markers in trajectories made by the `AutoFactory` to commands. Commands added to the `AutoFactory` using `bind` exhibit the same behavior as those bound to `AutoTrajectory.atTime(String)`, except they are applied globally across all routines. This is useful if you have simpler actions that you want to trigger in any trajectory without much thought.
 
 ```java
-AutoBindings bindings = new AutoBindings()
-    .bind("intake", intakeSubsystem.intake())
-    .bind("score", scoringSubsystem.score());
+    autoFactory
+      .bind("intake", intakeSubsystem.intake())
+      .bind("score", scoringSubsystem.score());
 ```
 
 ## AutoChooser

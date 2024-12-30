@@ -53,7 +53,7 @@ public class AutoFactory {
   }
 
   /** A class used to bind commands to events in all trajectories created by this factory. */
-  public static class AutoBindings {
+  static class AutoBindings {
     private HashMap<String, Command> bindings = new HashMap<>();
 
     /** Default constructor. */
@@ -69,13 +69,6 @@ public class AutoFactory {
     public AutoBindings bind(String name, Command cmd) {
       bindings.put(name, cmd);
       return this;
-    }
-
-    private void merge(AutoBindings other) {
-      if (other == null) {
-        return;
-      }
-      bindings.putAll(other.bindings);
     }
 
     /**
@@ -112,7 +105,6 @@ public class AutoFactory {
    *     Command}s.
    * @param useAllianceFlipping If this is true, when on the red alliance, the path will be mirrored
    *     to the opposite side, while keeping the same coordinate system origin.
-   * @param bindings Universal trajectory event bindings.
    * @param trajectoryLogger A {@link TrajectoryLogger} to log {@link Trajectory} as they start and
    *     finish.
    * @see AutoChooser using this factory with AutoChooser to generate auto routines.
@@ -123,21 +115,18 @@ public class AutoFactory {
       Consumer<SampleType> controller,
       boolean useAllianceFlipping,
       Subsystem driveSubsystem,
-      AutoBindings bindings,
       TrajectoryLogger<SampleType> trajectoryLogger) {
     requireNonNullParam(poseSupplier, "poseSupplier", "AutoFactory");
     requireNonNullParam(resetOdometry, "resetOdometry", "AutoFactory");
     requireNonNullParam(controller, "controller", "AutoFactory");
     requireNonNullParam(driveSubsystem, "driveSubsystem", "AutoFactory");
     requireNonNullParam(useAllianceFlipping, "useAllianceFlipping", "AutoFactory");
-    requireNonNullParam(bindings, "bindings", "AutoFactory");
 
     this.poseSupplier = poseSupplier;
     this.resetOdometry = resetOdometry;
     this.controller = controller;
     this.driveSubsystem = driveSubsystem;
     this.allianceCtx = new AllianceContext(useAllianceFlipping, DriverStation::getAlliance);
-    this.bindings.merge(bindings);
     this.trajectoryLogger = trajectoryLogger;
     HAL.report(tResourceType.kResourceType_ChoreoTrigger, 1);
 
@@ -180,7 +169,6 @@ public class AutoFactory {
    *     Command}s.
    * @param useAllianceFlipping If this returns true, when on the red alliance, the path will be
    *     mirrored to the opposite side, while keeping the same coordinate system origin.
-   * @param bindings Universal trajectory event bindings.
    * @see AutoChooser using this factory with AutoChooser to generate auto routines.
    */
   public <ST extends TrajectorySample<ST>> AutoFactory(
@@ -188,15 +176,13 @@ public class AutoFactory {
       Consumer<Pose2d> resetOdometry,
       Consumer<ST> controller,
       boolean useAllianceFlipping,
-      Subsystem driveSubsystem,
-      AutoBindings bindings) {
+      Subsystem driveSubsystem) {
     this(
         poseSupplier,
         resetOdometry,
         controller,
         useAllianceFlipping,
         driveSubsystem,
-        bindings,
         (sample, isStart) -> {});
   }
 
@@ -371,9 +357,11 @@ public class AutoFactory {
    *
    * @param name The name of the trajectory to bind the command to.
    * @param cmd The command to bind to the trajectory.
+   * @return The AutoFactory the method was called from.
    */
-  public void bind(String name, Command cmd) {
+  public AutoFactory bind(String name, Command cmd) {
     bindings.bind(name, cmd);
+    return this;
   }
 
   /**
