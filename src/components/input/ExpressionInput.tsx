@@ -25,8 +25,8 @@ type Props = {
 
 type State = {
   focused: boolean;
-  editing: boolean;
   editedValue: string;
+  resetCounter: number;
 };
 
 class Input extends Component<Props, State> {
@@ -35,8 +35,8 @@ class Input extends Component<Props, State> {
     super(props);
     this.state = {
       focused: false,
-      editing: false,
-      editedValue: this.props.number.expr.toString()
+      editedValue: this.props.number.expr.toString(),
+      resetCounter: 0
     };
     this.inputElemRef = React.createRef<HTMLInputElement>();
   }
@@ -44,36 +44,24 @@ class Input extends Component<Props, State> {
   unfocusedMode() {
     this.setState({
       focused: false,
-      editing: false,
-      editedValue: this.props.number.expr.toString()
+      editedValue: this.props.number.expr.toString(),
+      resetCounter: this.state.resetCounter+1
     });
   }
 
   focusedMode() {
     this.setState({
       focused: true,
-      editing: false,
-      editedValue: this.props.number.expr.toString()
+      editedValue: this.props.number.expr.toString(),
     });
     this.inputElemRef.current!.value = this.props.number.expr.toString();
   }
-
-  editingMode() {
-    this.setState({
-      focused: true,
-      editing: true
-    });
-  }
-
+  
   getDisplayStr(): string {
-    if (this.state.editing) {
+    if (this.state.focused) {
       return this.state.editedValue;
     } else {
-      if (this.state.focused) {
-        return this.props.number.expr.toString();
-      } else {
-        return this.getRoundedStr();
-      }
+      return this.getRoundedStr();
     }
   }
 
@@ -83,7 +71,7 @@ class Input extends Component<Props, State> {
 
   getValid(): boolean {
     try {
-      if (this.state.editing) {
+      if (this.state.focused) {
         const newNode = this.props.number.validate(
           math.parse(this.state.editedValue)
         );
@@ -105,7 +93,7 @@ class Input extends Component<Props, State> {
     }
     if (!prevProps.number.expr.equals(this.props.number.expr)) {
       // if the value has changed from the outside, make sure it is no longer
-      // focused so concise precision is shown.
+      // focused.
       this.unfocusedMode();
     }
   }
@@ -145,7 +133,7 @@ class Input extends Component<Props, State> {
         )}
         {this.props.title instanceof Function && this.props.title()}
         <input
-          key={this.props.number.expr.toString()}
+          key={this.state.resetCounter}
           ref={this.inputElemRef}
           type="text"
           className={
@@ -170,11 +158,14 @@ class Input extends Component<Props, State> {
             if (newNode !== undefined) {
               this.props.number.set(newNode);
             }
+            // Increment the reset counter to trigger a re-creation of the input
+            // and clear its internal 
+            this.setState((prev)=>({resetCounter: prev.resetCounter + 1}));
             this.unfocusedMode();
           }}
           onChange={(e) => {
-            if (!this.state.editing) {
-              this.editingMode();
+            if (!this.state.focused) {
+              this.focusedMode();
             }
             this.setState({
               editedValue: e.target.value
@@ -184,11 +175,6 @@ class Input extends Component<Props, State> {
           onKeyDown={(e) => {
             if (e.key == "Enter") {
               this.inputElemRef.current?.blur();
-              // let newNumber = parseFloat(this.state.editedValue);
-              // if (!Number.isNaN(newNumber)) {
-              //   this.props.setNumber(newNumber);
-              // }
-              // this.unfocusedMode();
             }
           }}
           value={this.getDisplayStr()}
