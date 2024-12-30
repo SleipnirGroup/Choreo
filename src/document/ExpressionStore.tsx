@@ -181,11 +181,7 @@ export const DimensionsExt = {
     type: "Pose",
     name: "Pose",
     unit: undefined,
-    icon: () => (
-      <Tooltip disableInteractive title="Pose">
-        <Waypoint></Waypoint>
-      </Tooltip>
-    )
+    icon: () => <Waypoint></Waypoint>
   }
 } as const satisfies {
   [key in DimensionNameExt]: Dimension<key>;
