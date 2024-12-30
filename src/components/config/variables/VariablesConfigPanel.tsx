@@ -1,7 +1,7 @@
 import { Add, Delete } from "@mui/icons-material";
-import { MenuItem, Select, SelectChangeEvent, Tooltip, TooltipProps } from "@mui/material";
+import { MenuItem, Select, SelectChangeEvent, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
-import { ReactElement, forwardRef, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { doc } from "../../../document/DocumentManager";
 import {
   DimensionName,
@@ -115,7 +115,7 @@ export const GeneralVariableAddPanel = observer(() => {
     >
       {DimensionNamesExt.map((entry) => (
         <MenuItem value={entry}>
-            {DimensionsExt[entry].icon()}
+          {DimensionsExt[entry].icon()}
           <span style={{ width: "4px" }}></span>
           {DimensionsExt[entry].name}
         </MenuItem>
