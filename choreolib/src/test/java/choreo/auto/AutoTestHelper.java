@@ -20,7 +20,6 @@ public class AutoTestHelper {
         sample -> pose.set(sample.getPose()),
         useAllianceFlipping,
         new Subsystem() {},
-        new AutoFactory.AutoBindings(),
         (sample, isStart) -> {});
   }
 
