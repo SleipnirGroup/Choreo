@@ -467,9 +467,13 @@ public class AutoTrajectory {
   }
 
   private boolean withinTolerance(Rotation2d lhs, Rotation2d rhs, double toleranceRadians) {
+    if (Math.abs(toleranceRadians) > Math.PI) {
+      return true;
+    }
     double dot = lhs.getCos() * rhs.getCos() + lhs.getSin() * rhs.getSin();
-    double sinTolerance = Math.sin(toleranceRadians);
-    return dot > 1 - sinTolerance;
+    // cos(θ) >= cos(tolerance) means |θ| <= tolerance, for tolerance in [-pi, pi], as pre-checked
+    // above.
+    return dot > Math.cos(toleranceRadians);
   }
 
   /**
