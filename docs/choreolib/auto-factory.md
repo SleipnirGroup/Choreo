@@ -231,6 +231,9 @@ public AutoRoutine branching2024Auto() {
 
 Auto bindings are used to bind event markers in trajectories made by the `AutoFactory` to commands. Commands added to the `AutoFactory` using `bind` exhibit the same behavior as those bound to `AutoTrajectory.atTime(String)`, except they are applied globally across all routines. This is useful if you have simpler actions that you want to trigger in any trajectory without much thought.
 
+!!! warning
+Even if a marker is bound individually in an `AutoTrajectory.atTime(String)` trigger, the global binding will still run, and cannot be disabled for a single marker.
+
 ```java
     autoFactory
       .bind("intake", intakeSubsystem.intake())
