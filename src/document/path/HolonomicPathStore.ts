@@ -177,7 +177,6 @@ export const HolonomicPathStore = types
   })
   .actions((self) => {
     let autosaveDisposer: IReactionDisposer;
-    let exporter: (uuid: string) => void;
     const afterCreate = () => {
       // Anything accessed in here will cause the trajectory to be marked stale
       // this is a reaction, not an autorun so that the effect does not happen
@@ -192,19 +191,15 @@ export const HolonomicPathStore = types
           return self.serialize;
         },
         (_value) => {
-          exporter(self.uuid);
+          getEnv(self)?.exporter(self.uuid);
         }
       );
-    };
-    const setExporter = (exportFunction: (uuid: string) => void) => {
-      exporter = exportFunction;
     };
     const beforeDestroy = () => {
       autosaveDisposer();
     };
     return {
       afterCreate,
-      setExporter,
       beforeDestroy
     };
   });
