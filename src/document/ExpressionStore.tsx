@@ -23,7 +23,7 @@ import {
   isUnit
 } from "mathjs";
 import { IReactionDisposer, reaction, untracked } from "mobx";
-import { Instance, detach, getEnv, types } from "mobx-state-tree";
+import { Instance, detach, getEnv, hasEnv, types } from "mobx-state-tree";
 import Angle from "../assets/Angle";
 import Mass from "../assets/Mass";
 import MoI from "../assets/MoI";
@@ -203,6 +203,10 @@ export const ExpressionStore = types
     value: 0,
     getScope: () => {
       // intentionally not typing it here, so that there's not a circular type dependency
+      if (!hasEnv(self)) {
+        tracing.error("Evaluating without environment!", self.toString());
+        return new Map<string, any>();
+      }
       const env = getEnv(self);
       if (env.vars === undefined) {
         tracing.error("Evaluating without variables!", self.toString());
@@ -449,6 +453,7 @@ export const ExpressionStore = types
     let recalcDispose: IReactionDisposer;
     return {
       afterCreate: () => {
+        self.setScopeGetter(() => variables.scope);
         recalcDispose = reaction(
           () => {
             if (!self.tempDisableRecalc) {
@@ -587,7 +592,6 @@ export const Variables = types
           dimension
         });
       }
-      store.setScopeGetter(() => self.scope);
 
       return store;
     },
@@ -666,3 +670,7 @@ export const Variables = types
     }
   }));
 export type IVariables = Instance<typeof Variables>;
+
+// A global store of variables for all ExpressionStores to share.
+// Defined here to avoid circular imports, but is attached under the DocumentModel tree.
+export const variables = Variables.create({ expressions: {}, poses: {} });
