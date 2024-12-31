@@ -172,6 +172,10 @@ export const PathListStore = types
   }))
   .actions((self) => {
     return {
+      deleteAll() {
+        self.activePathUUID = self.defaultPath!.uuid;
+        self.paths.clear();
+      },
       deletePath(uuid: string) {
         if (self.paths.size === 1) {
           self.setActivePathUUID(self.defaultPath!.uuid);
@@ -201,6 +205,7 @@ export const PathListStore = types
       if (path === undefined) {
         path = self.defaultPath;
       }
+      console.log(path?.uuid, self.activePathUUID);
       return path as IHolonomicPathStore;
     }
   }));
