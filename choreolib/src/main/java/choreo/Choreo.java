@@ -57,10 +57,11 @@ public final class Choreo {
    * Trajectory}, {@link Boolean})-&gt;void, where the function consumes a trajectory and a boolean
    * indicating whether the trajectory is starting or finishing.
    *
-   * @param <SampleType> DifferentialSample or SwerveSample.
+   * @param <ST> {@link choreo.trajectory.DifferentialSample} or {@link
+   *     choreo.trajectory.SwerveSample}
    */
-  public interface TrajectoryLogger<SampleType extends TrajectorySample<SampleType>>
-      extends BiConsumer<Trajectory<SampleType>, Boolean> {}
+  public interface TrajectoryLogger<ST extends TrajectorySample<ST>>
+      extends BiConsumer<Trajectory<ST>, Boolean> {}
 
   /** Default constructor. */
   private Choreo() {
@@ -104,6 +105,26 @@ public final class Choreo {
       DriverStation.reportError(ex.getMessage(), ex.getStackTrace());
     }
     return Optional.empty();
+  }
+
+  /**
+   * Fetches the names of all available trajectories in the deploy directory.
+   *
+   * @return A list of all available trajectory names.
+   */
+  public static String[] availableTrajectories() {
+    List<String> trajectories = new ArrayList<>();
+    File[] files = CHOREO_DIR.listFiles();
+    if (files != null) {
+      for (File file : files) {
+        if (file.getName().endsWith(TRAJECTORY_FILE_EXTENSION)) {
+          trajectories.add(
+              file.getName()
+                  .substring(0, file.getName().length() - TRAJECTORY_FILE_EXTENSION.length()));
+        }
+      }
+    }
+    return trajectories.toArray(new String[0]);
   }
 
   /**

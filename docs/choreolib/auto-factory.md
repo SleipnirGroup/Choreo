@@ -112,7 +112,7 @@ public AutoRoutine pickupAndScoreAuto() {
     // When the routine begins, reset odometry and start the first trajectory (1)
     routine.active().onTrue(
         Commands.sequence(
-            routine.resetOdometry(pickupTraj),
+            pickupTraj.resetOdometry(),
             pickupTraj.cmd()
         )
     );
@@ -133,7 +133,7 @@ public AutoRoutine pickupAndScoreAuto() {
 }
 ```
 
-1. You should always reset your robot's odometry to the start of the first trajectory being followed in an autonomous routine. `AutoRoutine.resetOdometry()` will accomplish this, setting the robot's pose to the start of the specified trajectory.
+1. You should always reset your robot's odometry to the start of the first trajectory being followed in an autonomous routine. `AutoTrajectory.resetOdometry()` will accomplish this, setting the robot's pose to the start of the specified trajectory.
 
     Advanced users may use vision to get the robot's starting position, however this is not recommended for most teams.
 
@@ -187,7 +187,7 @@ public AutoRoutine branching2024Auto() {
     // When the routine starts, reset odometry, shoot the first gamepiece, then go to the "C2" location
     routine.active().onTrue(
         Commands.sequence(
-            routine.resetOdometry(startToC2),
+            startToC2.resetOdometry(),
             shooterSubsystem.shoot(),
             startToC2.cmd()
         )
