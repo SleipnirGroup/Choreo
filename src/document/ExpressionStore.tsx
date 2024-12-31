@@ -201,19 +201,13 @@ export const ExpressionStore = types
   .volatile((self) => ({
     tempDisableRecalc: false,
     value: 0,
+    // To avoid circular initialization, we set the correct scope getter in afterCreate
     getScope: () => {
-      // intentionally not typing it here, so that there's not a circular type dependency
-      if (!hasEnv(self)) {
-        tracing.error("Evaluating without environment!", self.toString());
-        return new Map<string, any>();
-      }
-      const env = getEnv(self);
-      if (env.vars === undefined) {
-        tracing.error("Evaluating without variables!", self.toString());
-        return new Map<string, any>();
-      }
-      const scope = env.vars().scope;
-      return scope;
+      tracing.error(
+        "ExpressionStore did not set its scope getter!",
+        self.toString()
+      );
+      return new Map<string, any>();
     }
   }))
   .views((self) => ({
