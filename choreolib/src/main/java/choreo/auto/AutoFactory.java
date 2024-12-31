@@ -169,8 +169,8 @@ public class AutoFactory {
   /**
    * Create a factory that can be used to create {@link AutoRoutine} and {@link AutoTrajectory}.
    *
-   * @param <ST> The type of samples in the trajectory, either {@link DifferentialSample} or {@link
-   *     SwerveSample}
+   * @param <ST> {@link choreo.trajectory.DifferentialSample} or {@link
+   *     choreo.trajectory.SwerveSample}
    * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
    *     robot.
    * @param resetOdometry A function that receives a field-relative {@link Pose2d} to reset the
@@ -324,7 +324,8 @@ public class AutoFactory {
    * does not invoke bindings added via calling {@link #bind} or {@link AutoBindings} passed into
    * the factory constructor.
    *
-   * @param <ST> The type of the trajectory samples.
+   * @param <ST> {@link choreo.trajectory.DifferentialSample} or {@link
+   *     choreo.trajectory.SwerveSample}
    * @param trajectory The trajectory to use.
    * @return A new {@link AutoTrajectory}.
    */
@@ -356,7 +357,8 @@ public class AutoFactory {
   /**
    * Creates a command that resets the robot's odometry to the start of a trajectory.
    *
-   * @param <ST> The type of the trajectory samples.
+   * @param <ST> {@link choreo.trajectory.DifferentialSample} or {@link
+   *     choreo.trajectory.SwerveSample}
    * @param trajectory The trajectory to use.
    * @return A command that resets the robot's odometry.
    */

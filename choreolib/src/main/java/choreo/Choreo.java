@@ -57,7 +57,8 @@ public final class Choreo {
    * Trajectory}, {@link Boolean})-&gt;void, where the function consumes a trajectory and a boolean
    * indicating whether the trajectory is starting or finishing.
    *
-   * @param <ST> DifferentialSample or SwerveSample.
+   * @param <ST> {@link choreo.trajectory.DifferentialSample} or {@link
+   *     choreo.trajectory.SwerveSample}
    */
   public interface TrajectoryLogger<ST extends TrajectorySample<ST>>
       extends BiConsumer<Trajectory<ST>, Boolean> {}
