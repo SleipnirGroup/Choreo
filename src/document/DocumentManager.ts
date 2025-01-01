@@ -589,14 +589,14 @@ export async function setupEventListeners() {
 }
 
 export async function openProject(projectPath: OpenFilePayload) {
-  // Capture the state prior to the 
+  // Capture the state prior to the deserialization
   let originalRoot = await Commands.getDeployRoot();
   let originalSnapshot = getSnapshot(doc);
   let originalUiState = getSnapshot(uiState);
   let originalHistory = getSnapshot(doc.history);
   let originalLastOpenedItem = localStorage.getItem(
-    LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
-    );
+    LocalStorageKeys.LAST_OPENED_FILE_LOCATION
+  );
   try {
     const dir = projectPath.dir;
     const name = projectPath.name.split(".")[0];
@@ -631,14 +631,13 @@ export async function openProject(projectPath: OpenFilePayload) {
       LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
       JSON.stringify({ dir, name })
     );
-    
   } catch (e) {
     await Commands.setDeployRoot(originalRoot);
     if (originalLastOpenedItem != null) {
-    localStorage.setItem(
-      LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
-      originalLastOpenedItem
-    );
+      localStorage.setItem(
+        LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
+        originalLastOpenedItem
+      );
     }
     applySnapshot(doc, originalSnapshot);
     applySnapshot(uiState, originalUiState);
