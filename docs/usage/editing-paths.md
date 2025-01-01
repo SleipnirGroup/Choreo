@@ -68,8 +68,24 @@ From left to right:
 2. **Max Velocity** (Both): Limits the maximum chassis velocity throughout the scope.
     * Max Velocity equal to 0 on a segment will cause a generation failure.
 3. **Max Acceleration** (Both): Limits the maximum chassis acceleration throughout the scope.
-4. **Max Angular Velocity** ()
+4. **Max Angular Velocity** (Both): Limits the maximum chassis angular velocity throughout the scope.
+    * Max Angular Velocity equal to 0 with multiple Pose waypoints in the scope will fail with a warning, even if the Pose headings are identical
+    * Max Angular Velocity equal to 0 with one Pose waypoint and some Translation or Empty waypoints can be used instead.
 
+The following 5 constraints all have draggable shapes on the field tied to their configuration, which are visible when the constraint is selected in the sidebar. These shapes generally appear in the lower left corner of the field when the constraint is added.
+
+5. **Point At** (Both): Forces the the robot to face its front or back to a given point, within a given tolerance.
+    * When added, a target shape appears at (0,0) and can be moved to the desired facing point.
+    * Any Pose waypoint within the scope of this constraint will fail with a warning.
+6. **Keep In Circle** (Both): Keeps all corners of the bumpers inside the circle. 
+    * Be mindful of small regions or waypoints close to the edge of the region, as they can easily cause constraint conflicts.
+7. **Keep In Rectangle** (Both): Keeps all corners of the bumpers inside the rectangle.
+    * A Keep In Rectangle matching the field wall dimensions is added by default on every new path.
+8. **Keep In Lane** (Segment): Keeps the **center** of the robot within a given distance of the line between the two end waypoints.
+    * This is used primarily to make the robot go in a mostly straight line.
+    * If there are intermediate waypoints, the lane still goes straight between the start and end of the constraint range.
+9. **Keep Out Circle** (Both): Keep all portions of the bumper outside of the circle.
+    * See "Keep Out Regions" below.
 
 ### Adding Constraints
 
