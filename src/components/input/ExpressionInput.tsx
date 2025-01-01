@@ -4,7 +4,7 @@ import { isAlive } from "mobx-state-tree";
 import React, { Component } from "react";
 import { IExpressionStore, math } from "../../document/ExpressionStore";
 import styles from "./InputList.module.css";
-import { tracing } from "../../document/tauriTracing";
+import { IReactionDisposer, reaction } from "mobx";
 
 type Props = {
   /** The text to show before the number */
@@ -24,43 +24,45 @@ type Props = {
 };
 
 type State = {
-  focused: boolean;
-  valid: boolean;
+  editedValue: string;
+  matchesProp: boolean;
   resetCounter: number;
 };
 
 class Input extends Component<Props, State> {
   inputElemRef: React.RefObject<HTMLInputElement>;
+  unsubscriber: IReactionDisposer | undefined;
   constructor(props: Props) {
     super(props);
     this.state = {
-      focused: false,
-      valid: true,
+      matchesProp: true,
+      editedValue: this.props.number.expr.toString(),
       resetCounter: 0
     };
     this.inputElemRef = React.createRef<HTMLInputElement>();
   }
 
-  unfocusedMode() {
+  // Increment the reset counter state to trigger a re-render that fully recreates the input.
+  // This clears the input's own undo history.
+  // Should be used when submitting a new value.
+  triggerInputRecreate() {
     this.setState({
-      focused: false
+      resetCounter: this.state.resetCounter + 1
     });
   }
 
-  focusedMode() {
-    this.setState({
-      focused: true
-    });
-  }
-
-  getRoundedStr(): string {
+  // Return the string of the expression prop.
+  getExprStr(): string {
     return this.props.number.expr.toString();
   }
+
+  // If the internal state is marked as matching the prop, use the prop's validity
+  // Otherwise, validate the internal state.
   getValid(): boolean {
     try {
-      if (this.state.focused) {
+      if (!this.state.matchesProp) {
         const newNode = this.props.number.validate(
-          math.parse(this.inputElemRef.current!.value)
+          math.parse(this.state.editedValue)
         );
         return newNode !== undefined;
       } else {
@@ -70,51 +72,50 @@ class Input extends Component<Props, State> {
       return false;
     }
   }
-  updateValid(): void {
-    this.setState({ valid: this.getValid() });
+  // Reset the input to the prop and remove focus if currently focused.
+  // This does not re-run onBlur if the input is not already focused.
+  revert() {
+    this.setState({
+      editedValue: this.getExprStr(),
+      matchesProp: true
+    });
+    this.inputElemRef.current?.blur();
   }
-  componentDidMount(): void {
-    this.inputElemRef.current!.defaultValue = this.getRoundedStr();
-    this.updateValid();
+  // Update the internal state to a new value.
+  update(newVal: string) {
+    this.setState({
+      editedValue: newVal,
+      matchesProp: false
+    });
   }
-  componentDidUpdate(
-    prevProps: Readonly<Props>,
-    _prevState: Readonly<State>,
-    _snapshot?: any
-  ): void {
-    if (!isAlive(this.props.number)) {
-      return;
-    }
-    if (!prevProps.number.expr.equals(this.props.number.expr)) {
-      // if the value has changed from the outside, make sure it is no longer
-      // focused.
-      this.unfocusedMode();
-    }
-    if (_prevState.resetCounter !== this.state.resetCounter) {
-      this.inputElemRef.current!.defaultValue = this.getRoundedStr();
-      this.updateValid();
-    }
-  }
+  // Set up a listener for the string of the prop-supplied expression
+  // This updates the component internal state, forcing a re-render
+  // whenever the string changes externally. If the
 
+  componentDidMount(): void {
+    this.unsubscriber = reaction(
+      () => this.getExprStr(),
+      (_) => this.revert()
+    );
+  }
+  // Immediately before destroying the component, clean up the listener
+  componentWillUnmount(): void {
+    this.unsubscriber?.();
+  }
   render() {
     if (!isAlive(this.props.number)) {
       return <></>;
     }
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      this.props.number.expr;
-    } catch (e) {
-      tracing.error(e);
-      throw e;
-    }
     const showNumberWhenDisabled = this.props.showNumberWhenDisabled ?? true;
-    let characters = this.getRoundedStr().length + 3;
+    let characters = this.getExprStr().length + 3;
     if (this.props.maxWidthCharacters !== undefined) {
       characters = Math.min(characters, this.props.maxWidthCharacters);
     }
     return (
       <>
-        {!(this.props.title instanceof Function) && (
+        {this.props.title instanceof Function ? (
+          this.props.title()
+        ) : (
           <Tooltip disableInteractive title={this.props.titleTooltip ?? ""}>
             <span
               className={
@@ -129,17 +130,14 @@ class Input extends Component<Props, State> {
             </span>
           </Tooltip>
         )}
-        {this.props.title instanceof Function && this.props.title()}
         <input
-          // Remove and re-mount the input component to clear its undo history
-          // every time this updates
           key={this.state.resetCounter}
           ref={this.inputElemRef}
           type="text"
           className={
             styles.Number +
             (showNumberWhenDisabled ? " " + styles.ShowWhenDisabled : "") +
-            (this.state.valid ? " " : " " + styles.Invalid)
+            (this.getValid() ? " " : " " + styles.Invalid)
           }
           style={{
             minWidth: `${characters}ch`,
@@ -148,27 +146,32 @@ class Input extends Component<Props, State> {
           disabled={!this.props.enabled}
           // The below is needed to make inputs on CommandDraggables work
           onClick={(e) => e.stopPropagation()}
-          onFocus={(_e) => {
-            this.focusedMode();
-          }}
           onBlur={(_e) => {
             const newNode = this.props.number.validate(
-              math.parse(this.inputElemRef.current!.value)
+              math.parse(this.state.editedValue)
             );
-            if (newNode !== undefined) {
+            if (
+              newNode !== undefined &&
+              !newNode.equals(this.props.number.expr)
+            ) {
               this.props.number.set(newNode);
+            } else {
+              this.revert();
             }
-            this.setState((prev) => ({
-              resetCounter: prev.resetCounter + 1,
-              focused: false
-            }));
+            // Increment the reset counter to trigger a re-creation of the input
+            // and clear its internal undo history
+            this.triggerInputRecreate();
           }}
-          onChange={() => this.updateValid()}
+          onChange={(e) => {
+            this.update(e.target.value);
+            e.preventDefault();
+          }}
           onKeyDown={(e) => {
             if (e.key == "Enter") {
               this.inputElemRef.current?.blur();
             }
           }}
+          value={this.state.editedValue}
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="off"
