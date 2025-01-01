@@ -29,7 +29,7 @@ pub enum LocalProgressUpdate {
         // Swerve variant
         update: Vec<Sample>,
     },
-    DiffTrajectory {
+    DifferentialTrajectory {
         // Diff variant
         update: Vec<Sample>,
     },
@@ -57,7 +57,7 @@ impl From<SwerveTrajectory> for LocalProgressUpdate {
 
 impl From<DifferentialTrajectory> for LocalProgressUpdate {
     fn from(trajectory: DifferentialTrajectory) -> Self {
-        LocalProgressUpdate::DiffTrajectory {
+        LocalProgressUpdate::DifferentialTrajectory {
             update: trajectory.samples.iter().map(Sample::from).collect(),
         }
     }

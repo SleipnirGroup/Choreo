@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 
 public class AutoChooserTest {
   private static final String NONE_NAME = AutoChooser.NONE_NAME;
+  private static final String NOT_FOUND = "__NOT_FOUND__";
 
   private SendableBuilderImpl builder;
   private NetworkTableInstance ntInstance;
@@ -55,22 +56,22 @@ public class AutoChooserTest {
   }
 
   private void assertNTType(String testFuncName) {
-    String type = table(testFuncName).getEntry(".type").getString("");
+    String type = table(testFuncName).getEntry(".type").getString(NOT_FOUND);
     assertEquals("String Chooser", type);
   }
 
   private void assertNTSelected(String testFuncName, String expected) {
-    String type = table(testFuncName).getEntry("selected").getString("");
+    String type = table(testFuncName).getEntry("selected").getString(NOT_FOUND);
     assertEquals(expected, type);
   }
 
   private void assertNTActive(String testFuncName, String expected) {
-    String type = table(testFuncName).getEntry("active").getString("");
+    String type = table(testFuncName).getEntry("active").getString(NOT_FOUND);
     assertEquals(expected, type);
   }
 
   private void assertNTDefault(String testFuncName) {
-    String type = table(testFuncName).getEntry("default").getString("");
+    String type = table(testFuncName).getEntry("default").getString(NOT_FOUND);
     assertEquals(NONE_NAME, type);
   }
 
@@ -95,7 +96,7 @@ public class AutoChooserTest {
     new AutoChooser().initSendable(builder);
     builder.update();
     assertNTType(fnName);
-    assertNTSelected(fnName, NONE_NAME);
+    assertNTSelected(fnName, NOT_FOUND);
     assertNTActive(fnName, NONE_NAME);
     assertNTDefault(fnName);
     assertNTOptions(fnName, NONE_NAME);
