@@ -623,6 +623,7 @@ export async function openProject(projectPath: OpenFilePayload) {
       LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
       JSON.stringify({ dir, name })
     );
+    doc.history.clear();
   } catch (e) {
     await Commands.setDeployRoot("");
     throw e;

@@ -176,7 +176,6 @@ export const DocumentStore = types
 
       console.log(pathStore.serialize);
       const config = self.robotConfig.serialize;
-      const inputDriveType = self.type;
       pathStore.params.constraints
         .filter((constraint) => constraint.enabled)
         .forEach((constraint) => {
@@ -254,30 +253,7 @@ export const DocumentStore = types
             const result: Trajectory = rust_trajectory as Trajectory;
             console.log(result);
             if (result.trajectory.samples.length == 0) throw "No trajectory";
-            self.history.startGroup(() => {
-              const newTrajectory = result.trajectory.samples;
-              if (inputDriveType === "Differential") {
-                pathStore.trajectory.setDifferentialSamples(
-                  newTrajectory as DifferentialSample[]
-                );
-              } else {
-                pathStore.trajectory.setSwerveSamples(
-                  newTrajectory as SwerveSample[]
-                );
-              }
-              pathStore.trajectory.setSplits(result.trajectory.splits);
-              pathStore.trajectory.setWaypoints(result.trajectory.waypoints);
-              pathStore.markers.forEach((m) => {
-                const index = m.from.trajectoryTargetIndex;
-                if (index === undefined) {
-                  m.from.setTargetTimestamp(undefined);
-                } else {
-                  m.from.setTargetTimestamp(result.trajectory.waypoints[index]);
-                }
-              });
-              pathStore.setSnapshot(result.snapshot);
-              self.history.stopGroup();
-            });
+            pathStore.processGenerationResult(result);
           },
           (e) => {
             tracing.error("generatePathPost:", e);

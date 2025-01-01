@@ -2,7 +2,7 @@
 
 package choreo.trajectory;
 
-import choreo.util.AllianceFlipUtil;
+import choreo.util.ChoreoAllianceFlipUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -126,13 +126,13 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
   }
 
   public DifferentialSample flipped() {
-    return switch (AllianceFlipUtil.getFlipper()) {
+    return switch (ChoreoAllianceFlipUtil.getFlipper()) {
       case MIRRORED ->
           new DifferentialSample(
               t,
-              AllianceFlipUtil.flipX(x),
-              AllianceFlipUtil.flipY(y), // No-op for mirroring
-              AllianceFlipUtil.flipHeading(heading),
+              ChoreoAllianceFlipUtil.flipX(x),
+              ChoreoAllianceFlipUtil.flipY(y), // No-op for mirroring
+              ChoreoAllianceFlipUtil.flipHeading(heading),
               vr,
               vl,
               -omega,
@@ -143,9 +143,9 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
       case ROTATE_AROUND ->
           new DifferentialSample(
               t,
-              AllianceFlipUtil.flipX(x),
-              AllianceFlipUtil.flipY(y),
-              AllianceFlipUtil.flipHeading(heading),
+              ChoreoAllianceFlipUtil.flipX(x),
+              ChoreoAllianceFlipUtil.flipY(y),
+              ChoreoAllianceFlipUtil.flipHeading(heading),
               vl,
               vr,
               omega,

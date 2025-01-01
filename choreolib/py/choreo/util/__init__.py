@@ -2,10 +2,8 @@ import math
 from enum import Enum
 from typing import *
 
+from choreo.util.field_dimensions import FIELD_LENGTH, FIELD_WIDTH
 from wpimath.geometry import Pose2d
-
-FIELD_LENGTH = 16.5811
-FIELD_WIDTH = 8.19912
 
 
 class FlipperType(Enum):
