@@ -23,7 +23,7 @@ import {
   isUnit
 } from "mathjs";
 import { IReactionDisposer, reaction, untracked } from "mobx";
-import { Instance, detach, getEnv, hasEnv, types } from "mobx-state-tree";
+import { Instance, detach, getEnv, types } from "mobx-state-tree";
 import Angle from "../assets/Angle";
 import Mass from "../assets/Mass";
 import MoI from "../assets/MoI";
