@@ -7,7 +7,6 @@ import {
   SyncOutlined,
   TimerOutlined
 } from "@mui/icons-material";
-import { Tooltip } from "@mui/material";
 import {
   AccessorNode,
   ConstantNode,
@@ -19,7 +18,6 @@ import {
   Unit,
   all,
   create,
-  isNode,
   isNull,
   isUnit
 } from "mathjs";
@@ -182,11 +180,7 @@ export const DimensionsExt = {
     type: "Pose",
     name: "Pose",
     unit: undefined,
-    icon: () => (
-      <Tooltip disableInteractive title="Pose">
-        <Waypoint></Waypoint>
-      </Tooltip>
-    )
+    icon: () => <Waypoint></Waypoint>
   }
 } as const satisfies {
   [key in DimensionNameExt]: Dimension<key>;
@@ -376,10 +370,12 @@ export const ExpressionStore = types
       return defaultUnit?.toNumber(self.defaultUnit!.toString());
     },
     validate(newNode: MathNode): MathNode | undefined {
+      // number | BigNumber | bigint | Fraction | Complex | Unit
       let newNumber: MathType;
       try {
         newNumber = self.evaluator(newNode);
       } catch (e) {
+        // Syntax errors, primarily
         tracing.error("failed to evaluate", e, newNode);
         return undefined;
       }
@@ -387,43 +383,49 @@ export const ExpressionStore = types
         tracing.error("evaluated to undefined or null");
         return undefined;
       }
+      // numbers are only valid on dimensionless expressions.
       if (typeof newNumber === "number") {
+        if (self.defaultUnit !== undefined) {
+          tracing.error("failed to evaluate: ", newNumber, "was dimensionless");
+          return undefined;
+        }
         if (!isFinite(newNumber)) {
           tracing.error("failed to evaluate: ", newNumber, "is infinite");
           return undefined;
         }
-        if (self.defaultUnit !== undefined) {
-          return addUnitToExpression(newNode, self.defaultUnit.toString());
-        }
+        // number is finite and on a dimensionless expression.
         return newNode;
       }
-      if (isNode(newNumber)) {
-        return this.validate(newNumber);
-      }
+      // Anything past this (BigNumber | bigint | Fraction | Complex) isn't supported
       if (!isUnit(newNumber)) {
         tracing.error("not unit:", newNumber);
         return undefined;
       }
       // newNumber is Unit
-      // unit that's just a number
-      if (newNumber.dimensions.every((d) => d == 0)) {
-        if (self.defaultUnit !== undefined) {
-          return addUnitToExpression(newNode, self.defaultUnit.toString());
-        }
-      }
+      // Checking dimension matching
       const unit = self.defaultUnit;
-      if (unit === undefined) {
+      const numberIsDimensionless = newNumber.dimensions.every((d) => d == 0);
+      if (unit !== undefined) {
+        if (numberIsDimensionless) {
+          // unit that's just a number (usually from units cancelling)
+
+          tracing.error("failed to evaluate: ", newNumber, "was dimensionless");
+          return undefined;
+        } else {
+          if (!newNumber.equalBase(unit)) {
+            tracing.error("unit mismatch", unit);
+            return undefined;
+          }
+        }
+      } else if (unit === undefined && !numberIsDimensionless) {
         tracing.error(
           "failed to evaluate: ",
           newNumber,
-          "is unit on unitless expr"
+          "is unit on dimensionless expr"
         );
         return undefined;
       }
-      if (!newNumber.equalBase(unit)) {
-        tracing.error("unit mismatch", unit);
-        return undefined;
-      }
+
       if (isNull(newNumber.value)) {
         tracing.error("valueless unit", unit);
         return undefined;
