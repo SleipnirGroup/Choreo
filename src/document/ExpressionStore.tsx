@@ -7,7 +7,6 @@ import {
   SyncOutlined,
   TimerOutlined
 } from "@mui/icons-material";
-import { Tooltip } from "@mui/material";
 import {
   AccessorNode,
   ConstantNode,
@@ -181,11 +180,7 @@ export const DimensionsExt = {
     type: "Pose",
     name: "Pose",
     unit: undefined,
-    icon: () => (
-      <Tooltip disableInteractive title="Pose">
-        <Waypoint></Waypoint>
-      </Tooltip>
-    )
+    icon: () => <Waypoint></Waypoint>
   }
 } as const satisfies {
   [key in DimensionNameExt]: Dimension<key>;
