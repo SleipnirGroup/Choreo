@@ -8,7 +8,7 @@ Waypoints are an ordered position that you'd like to hit on your path. There are
 
 To add a waypoint, select the type of waypoint from the waypoints navbar on the top to get started, then click on the field where you want it. Your waypoints will show up on the sidebar. A yellow dot represents the currently selected waypoint, green for the starting waypoint, and red for the ending waypoint.
 
-To change the type of an existing waypoint, use the options on the waypoint configuration panel, under the X, Y, and θ 
+To change the type of an existing waypoint, use the options on the waypoint configuration panel, under the X, Y, and θ
 !!! tip
     Use the keys `1`, `2`, and `3` to select the pose, translation, and empty waypoints for adding.
 
@@ -16,7 +16,7 @@ To change the type of an existing waypoint, use the options on the waypoint conf
 
 ### Pose Waypoints
 
-Pose Waypoint is the first button on the waypoints navbar and consists of a translation **and** a rotation. This signifies that at this waypoint, the robot's translation and heading exactly match the waypoint. 
+Pose Waypoint is the first button on the waypoints navbar and consists of a translation **and** a rotation. This signifies that at this waypoint, the robot's translation and heading exactly match the waypoint.
 
 Drag the little triangle to change the heading. The robot faces in the direction the triangle is pointing.
 
@@ -36,6 +36,24 @@ Empty Waypoint is the third button on the waypoints navbar. It does not directly
 
 - **X and Y**: position from the origin
 - **θ**: Not used, but shows the heading as if the waypoint was a Pose Waypoint.
+
+!!! note
+    Empty waypoints cannot be the endpoint of a path.
+
+### Waypoint Configuration Panel
+
+![Waypoint Configuration Panel](../media/waypoint_config_panel.png)
+
+This panel appears in the top left corner of the field when a waypoint is selected.
+
+The checkbox next to the "Samples" input enables an override for the number of samples between this waypoint and the next.
+
+The "Split" checkbox splits the path at this waypoint. Split sections can be accessed individually in ChoreoLib.
+
+The waypoint type selector changes the type of this waypoint.
+
+!!! tip
+    Use `Shift+1`, `Shift+2`, `Shift+3` to change the type of the currently selected waypoint.
 
 ## Constraints
 
@@ -59,6 +77,9 @@ Applies this constraint to the range of the trajectory between two waypoints, in
 
 Some constraints can be applied to both individual waypoints and segments.
 
+#### Targets
+The endpoints of any given scope can be tied to a particular waypoint (and follow that waypoint as it's reordered), the first waypoint in the path, or the last waypoint in the path.
+
 ### List of Constraints
 
 ![Constraint navbar](../media/constraint_navbar.png)
@@ -77,7 +98,7 @@ The following 5 constraints all have draggable shapes on the field tied to their
 5. **Point At** (Both): Forces the the robot to face its front or back to a given point, within a given tolerance.
     * When added, a target shape appears at (0,0) and can be moved to the desired facing point.
     * Any Pose waypoint within the scope of this constraint will fail with a warning.
-6. **Keep In Circle** (Both): Keeps all corners of the bumpers inside the circle. 
+6. **Keep In Circle** (Both): Keeps all corners of the bumpers inside the circle.
     * Be mindful of small regions or waypoints close to the edge of the region, as they can easily cause constraint conflicts.
 7. **Keep In Rectangle** (Both): Keeps all corners of the bumpers inside the rectangle.
     * A Keep In Rectangle matching the field wall dimensions is added by default on every new path.
@@ -91,7 +112,8 @@ The following 5 constraints all have draggable shapes on the field tied to their
 
 To add a constraint, select it from the top navbar. Click the waypoint at one end of the constraint's range. For Segment scope constraints, a dashed line will follow your cursor. If you hover over another waypoint, the line will go through all the waypoints in the range. Click the second waypoint to add the constraint.
 
-> NOTE: If adding a Waypoint + Segment scope constraint to a single waypoint, you will have to click the same waypoint twice.
+!!! note
+    If adding a Waypoint + Segment scope constraint to a single waypoint, you will have to click the same waypoint twice.
 
 ### Constraint Display
 
@@ -101,21 +123,27 @@ When a constraint is selected in the sidebar, circles and dashed lines will show
 
 Some constraints have field points or regions associated with them. When these constraints are selected, the field will display movable points and shapes to define these regions.
 
+### Constraint Configuration Panel
+
+The constraint configuration panel appears in the top left of the field when a constraint is selected.
+
+![Constraint config panel](../media/constraint_config_panel.png)
+
+All constraints will have a scope slider at the top. Use this to change the scope of the constraint.
+
+Below the scope slider are various inputs specific to each constraint. Read the tooltips by hovering over the title of each input to learn more.
+
 ## Keep Out Regions
 
-Keep out regions force the robot to avoid a certain area of the field throughout the path. For example, in the 2023 Charged Up game, you might want to avoid crashing into the charge station. Keep out constraints makes it easy to define where you want the robot to start and end without unnecessary (and performance-impacting) intermediary waypoints.
+Keep out regions force the robot to avoid a certain area of the field throughout the path. For example, in the 2024 Charged Up game, you might want to avoid crashing into the stage pillars. Keep out constraints define a region instead of a path, and let the optimizer find the best path around the region.
 
 !!! warning
-    Keep Out Regions can cause weird behaviours when generating paths due to known issues with the numerical solver used for Choreo. This can be avoided using intermediary waypoints, and/or by scoping the constraint to only the portion of the trajectory that might collide.
+    Keep Out Regions can cause weird behaviours when generating paths due to known issues with the numerical solver used for Choreo. See the tips below for best results.
 
-To add a keep out circle:
-
-1. Select the keep out circle from the navbar (looks like a circle with a slash through it).
-
-![Keep out circle icon](../media/keep_out_circle_icon.png)
-
-2. Add the constraint to the desired range. After selecting the endpoints, a red circle will appear in the lower left corner of the field.
-3. Move and resize the circle to the desired location. Drag the center dot to move it, and drag the outer edge to resize it. You can also use the constraint configuration panel on the top left of the field to edit the center x, center y, and circle radius.
+!!! tip
+    1. Use empty waypoints to make the initial shape of the path avoid the keep-out-region.
+    2. Drag the empty waypoints farther away from the region. This gives the path more detail and an initial shape that has room to shrink towards the boundary.
+    3. Minimize use of the keep-out region. Don't add every obstacle on the field to every path. If possible, restrict the constraint to only the portion of the trajectory that might collide.
 
 ![Keep out constraints](../media/keep_out_circle.png)
 
