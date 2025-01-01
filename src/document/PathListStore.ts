@@ -205,7 +205,6 @@ export const PathListStore = types
       if (path === undefined) {
         path = self.defaultPath;
       }
-      console.log(path?.uuid, self.activePathUUID);
       return path as IHolonomicPathStore;
     }
   }));
