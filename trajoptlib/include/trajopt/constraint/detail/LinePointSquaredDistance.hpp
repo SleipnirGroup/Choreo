@@ -10,9 +10,9 @@ namespace trajopt::detail {
 
 // https://www.desmos.com/calculator/cqmc1tjtsv
 template <typename T, typename U>
-decltype(auto) LinePointDistance(const Translation2<T>& lineStart,
-                                 const Translation2<T>& lineEnd,
-                                 const Translation2<U>& point) {
+decltype(auto) LinePointSquaredDistance(const Translation2<T>& lineStart,
+                                        const Translation2<T>& lineEnd,
+                                        const Translation2<U>& point) {
   using R = decltype(std::declval<T>() + std::declval<U>());
 
   auto max = [](R a, R b) {
