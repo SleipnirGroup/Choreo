@@ -162,6 +162,7 @@ export const HolonomicPathStore = types
           }
         });
         self.setSnapshot(ser.snapshot);
+        self.ui.setUpToDate(true);
       },
       deserialize(ser: Trajectory) {
         self.name = ser.name;
