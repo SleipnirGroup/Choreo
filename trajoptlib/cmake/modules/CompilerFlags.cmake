@@ -11,6 +11,17 @@ macro(compiler_flags target)
         target_compile_options(${target} PRIVATE /wd4244 /wd4251 /WX)
     endif()
 
+    # Disable warning false positives in Eigen
+    if(
+        ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU"
+        AND ${CMAKE_CXX_COMPILER_VERSION} VERSION_GREATER_EQUAL "12"
+    )
+        target_compile_options(
+            ${target}
+            PRIVATE -Wno-array-bounds -Wno-stringop-overflow
+        )
+    endif()
+
     target_compile_features(${target} PUBLIC cxx_std_20)
     if(MSVC)
         target_compile_options(${target} PUBLIC /MP /Zf /utf-8 /bigobj)
