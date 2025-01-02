@@ -48,8 +48,8 @@ diff --git a/cmake/modules/CompilerFlags.cmake b/cmake/modules/CompilerFlags.cma
 index 9f3fad1ce359897d6e87d5c37efae51d55bcf160..4331baf9394a7f27bde51906c9dd14b8543e4af4 100644
 --- a/cmake/modules/CompilerFlags.cmake
 +++ b/cmake/modules/CompilerFlags.cmake
-@@ -11,7 +11,7 @@ macro(compiler_flags target)
-         target_compile_options(${target} PRIVATE /wd4244 /wd4251 /WX)
+@@ -22,7 +22,7 @@ macro(compiler_flags target)
+         )
      endif()
  
 -    target_compile_features(${target} PUBLIC cxx_std_23)
