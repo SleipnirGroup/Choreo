@@ -15,7 +15,9 @@ export const PathUIStore = types
   })
   .actions((self) => ({
     setUpToDate(upToDate: boolean) {
-      self.upToDate = upToDate;
+      getEnv<Env>(self).withoutUndo(() => {
+        self.upToDate = upToDate;
+      });
     },
     setVisibleWaypointsStart(start: number) {
       if (start <= self.visibleWaypointsEnd) {
