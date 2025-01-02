@@ -1,6 +1,5 @@
 import json
 
-from choreo.spec_version import SPEC_VERSION
 from choreo.trajectory import (
     DifferentialSample,
     DifferentialTrajectory,
@@ -9,6 +8,8 @@ from choreo.trajectory import (
     SwerveTrajectory,
     load_event_marker,
 )
+
+TRAJ_SCHEMA_VERSION = 1
 
 
 def load_differential_trajectory_string(
@@ -21,10 +22,15 @@ def load_differential_trajectory_string(
     """
     data = json.loads(trajectory_json_string)
     name = data["name"]
-    version = data["version"]
-    if version != SPEC_VERSION:
+    try:
+        version = int(data["version"])
+        if version != TRAJ_SCHEMA_VERSION:
+            raise ValueError(
+                f"{name}.traj: Wrong version {version}. Expected {TRAJ_SCHEMA_VERSION}"
+            )
+    except ValueError:
         raise ValueError(
-            f"{name}.traj: Wrong version {version}. Expected {SPEC_VERSION}"
+            f"{name}.traj: Wrong version {data['version']}. Expected {TRAJ_SCHEMA_VERSION}"
         )
     samples = [
         DifferentialSample(
@@ -34,6 +40,7 @@ def load_differential_trajectory_string(
             float(sample["heading"]),
             float(sample["vl"]),
             float(sample["vr"]),
+            float(sample["omega"]),
             float(sample["al"]),
             float(sample["ar"]),
             [float(x) for x in sample["fl"]],
@@ -75,10 +82,15 @@ def load_swerve_trajectory_string(trajectory_json_string: str) -> SwerveTrajecto
     """
     data = json.loads(trajectory_json_string)
     name = data["name"]
-    version = data["version"]
-    if version != SPEC_VERSION:
+    try:
+        version = int(data["version"])
+        if version != TRAJ_SCHEMA_VERSION:
+            raise ValueError(
+                f"{name}.traj: Wrong version {version}. Expected {TRAJ_SCHEMA_VERSION}"
+            )
+    except ValueError:
         raise ValueError(
-            f"{name}.traj: Wrong version {version}. Expected {SPEC_VERSION}"
+            f"{name}.traj: Wrong version {data['version']}. Expected {TRAJ_SCHEMA_VERSION}"
         )
     samples = [
         SwerveSample(

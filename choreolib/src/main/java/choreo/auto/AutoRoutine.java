@@ -2,6 +2,12 @@
 
 package choreo.auto;
 
+import static edu.wpi.first.wpilibj.Alert.AlertType.kWarning;
+
+import choreo.auto.AutoFactory.AllianceContext;
+import choreo.trajectory.Trajectory;
+import choreo.trajectory.TrajectorySample;
+import choreo.util.ChoreoAlert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -13,47 +19,48 @@ import java.util.function.BooleanSupplier;
 /**
  * An object that represents an autonomous routine.
  *
- * <p>This loop is used to handle autonomous trigger logic and schedule commands. This loop should
- * **not** be shared across multiple autonomous routines.
+ * <p>This object is used to handle autonomous trigger logic and schedule commands for a single
+ * autonomous routine. This object should **not** be shared across multiple autonomous routines.
  *
  * @see AutoFactory#newRoutine Creating a routine from a AutoFactory
  */
 public class AutoRoutine {
+  /**
+   * The factory that created this loop. This is used to create commands that are associated with
+   * this loop.
+   */
+  private final AutoFactory factory;
+
   /** The underlying {@link EventLoop} that triggers are bound to and polled */
-  protected final EventLoop loop;
+  private final EventLoop loop = new EventLoop();
 
   /** The name of the auto routine this loop is associated with */
-  protected final String name;
+  private final String name;
 
-  /** A boolean utilized in {@link #running()} to resolve trueness */
-  protected boolean isActive = false;
+  /** The alliance helper that is used to determine flipping logic */
+  private final AllianceContext allianceCtx;
+
+  /** A boolean utilized in {@link #active()} to resolve trueness */
+  private boolean isActive = false;
 
   /** A boolean that is true when the loop is killed */
-  protected boolean isKilled = false;
+  boolean isKilled = false;
 
   /** The amount of times the routine has been polled */
-  protected int pollCount = 0;
+  private int pollCount = 0;
 
   /**
-   * Creates a new loop with a specific name
+   * Creates a new loop with a specific name and a custom alliance supplier.
    *
+   * @param factory The factory that created this loop
    * @param name The name of the loop
+   * @param allianceHelper The alliance helper that is used to determine flipping logic
    * @see AutoFactory#newRoutine Creating a loop from a AutoFactory
    */
-  public AutoRoutine(String name) {
-    this.loop = new EventLoop();
+  AutoRoutine(AutoFactory factory, String name, AllianceContext allianceHelper) {
+    this.factory = factory;
     this.name = name;
-  }
-
-  /**
-   * A constructor to be used when inhereting this class to instantiate a custom inner loop
-   *
-   * @param name The name of the loop
-   * @param loop The inner {@link EventLoop}
-   */
-  protected AutoRoutine(String name, EventLoop loop) {
-    this.loop = loop;
-    this.name = name;
+    this.allianceCtx = allianceHelper;
   }
 
   /**
@@ -64,13 +71,13 @@ public class AutoRoutine {
    *
    * @return A {@link Trigger} that is true while this autonomous routine is being polled.
    */
-  public Trigger running() {
+  public Trigger active() {
     return new Trigger(loop, () -> isActive && DriverStation.isAutonomousEnabled());
   }
 
   /** Polls the routine. Should be called in the autonomous periodic method. */
   public void poll() {
-    if (!DriverStation.isAutonomousEnabled() || isKilled) {
+    if (!DriverStation.isAutonomousEnabled() || !allianceCtx.allianceKnownOrIgnored() || isKilled) {
       isActive = false;
       return;
     }
@@ -86,6 +93,16 @@ public class AutoRoutine {
    */
   public EventLoop loop() {
     return loop;
+  }
+
+  /**
+   * Creates a {@link Trigger} that is bound to the routine's {@link EventLoop}.
+   *
+   * @param condition The condition represented by the trigger.
+   * @return A {@link Trigger} that mirrors the state of the provided {@code condition}
+   */
+  public Trigger observe(BooleanSupplier condition) {
+    return new Trigger(loop, condition);
   }
 
   /**
@@ -114,34 +131,123 @@ public class AutoRoutine {
       return;
     }
     reset();
-    DriverStation.reportWarning("Killed An Auto Loop", true);
+    ChoreoAlert.alert("Killed an auto loop", kWarning).set(true);
     isKilled = true;
+  }
+
+  /**
+   * Creates a new {@link AutoTrajectory} to be used in an auto routine.
+   *
+   * @param trajectoryName The name of the trajectory to use.
+   * @return A new {@link AutoTrajectory}.
+   */
+  public AutoTrajectory trajectory(String trajectoryName) {
+    return factory.trajectory(trajectoryName, this);
+  }
+
+  /**
+   * Creates a new {@link AutoTrajectory} to be used in an auto routine.
+   *
+   * @param trajectoryName The name of the trajectory to use.
+   * @param splitIndex The index of the split trajectory to use.
+   * @return A new {@link AutoTrajectory}.
+   */
+  public AutoTrajectory trajectory(String trajectoryName, final int splitIndex) {
+    return factory.trajectory(trajectoryName, splitIndex, this);
+  }
+
+  /**
+   * Creates a new {@link AutoTrajectory} to be used in an auto routine.
+   *
+   * @param <SampleType> The type of the trajectory samples.
+   * @param trajectory The trajectory to use.
+   * @return A new {@link AutoTrajectory}.
+   */
+  public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory trajectory(
+      Trajectory<SampleType> trajectory) {
+    return factory.trajectory(trajectory, this);
+  }
+
+  /**
+   * Creates a trigger that produces a rising edge when any of the trajectories are finished.
+   *
+   * @param trajectory The first trajectory to watch.
+   * @param trajectories The other trajectories to watch
+   * @return a trigger that determines if any of the trajectories are finished
+   * @see #anyDone(int, AutoTrajectory, AutoTrajectory...) A version of this method that takes a
+   *     delay in cycles before the trigger is true.
+   */
+  public Trigger anyDone(AutoTrajectory trajectory, AutoTrajectory... trajectories) {
+    return anyDone(0, trajectory, trajectories);
+  }
+
+  /**
+   * Creates a trigger that produces a rising edge when any of the trajectories are finished.
+   *
+   * @param cyclesToDelay The number of cycles to delay.
+   * @param trajectory The first trajectory to watch.
+   * @param trajectories The other trajectories to watch
+   * @return a trigger that determines if any of the trajectories are finished
+   */
+  public Trigger anyDone(
+      int cyclesToDelay, AutoTrajectory trajectory, AutoTrajectory... trajectories) {
+    var trigger = trajectory.done(cyclesToDelay);
+    for (int i = 0; i < trajectories.length; i++) {
+      trigger = trigger.or(trajectories[i].done(cyclesToDelay));
+    }
+    return trigger.and(this.active());
+  }
+
+  /**
+   * Creates a trigger that returns true when any of the trajectories given are active.
+   *
+   * @param trajectory The first trajectory to watch.
+   * @param trajectories The other trajectories to watch
+   * @return a trigger that determines if any of the trajectories are active
+   */
+  public Trigger anyActive(AutoTrajectory trajectory, AutoTrajectory... trajectories) {
+    var trigger = trajectory.active();
+    for (int i = 0; i < trajectories.length; i++) {
+      trigger = trigger.or(trajectories[i].active());
+    }
+    return trigger.and(this.active());
   }
 
   /**
    * Creates a command that will poll this event loop and reset it when it is cancelled.
    *
+   * <p>The command will end instantly and kill the routine if the alliance supplier returns an
+   * empty optional when the command is scheduled.
+   *
    * @return A command that will poll this event loop and reset it when it is cancelled.
    * @see #cmd(BooleanSupplier) A version of this method that takes a condition to finish the loop.
    */
   public Command cmd() {
-    return Commands.run(this::poll)
-        .finallyDo(this::reset)
-        .until(() -> !DriverStation.isAutonomousEnabled())
-        .withName(name);
+    return cmd(() -> false);
   }
 
   /**
    * Creates a command that will poll this event loop and reset it when it is finished or canceled.
    *
+   * <p>The command will end instantly and kill the routine if the alliance supplier returns an
+   * empty optional when the command is scheduled.
+   *
    * @param finishCondition A condition that will finish the loop when it is true.
    * @return A command that will poll this event loop and reset it when it is finished or canceled.
-   * @see #cmd() A version of this method that doesn't take a condition and never finishes.
+   * @see #cmd() A version of this method that doesn't take a condition and never finishes except if
+   *     the alliance supplier returns an empty optional when scheduled.
    */
   public Command cmd(BooleanSupplier finishCondition) {
-    return Commands.run(this::poll)
-        .finallyDo(this::reset)
-        .until(() -> !DriverStation.isAutonomousEnabled() || finishCondition.getAsBoolean())
-        .withName(name);
+    return Commands.either(
+        Commands.run(this::poll)
+            .finallyDo(this::reset)
+            .until(() -> !DriverStation.isAutonomousEnabled() || finishCondition.getAsBoolean())
+            .withName(name),
+        Commands.runOnce(
+            () -> {
+              ChoreoAlert.alert("Alliance not known when starting routine", kWarning).set(true);
+              kill();
+            }),
+        allianceCtx::allianceKnownOrIgnored);
   }
 }

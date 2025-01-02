@@ -1,1 +1,0 @@
-SPEC_VERSION = "v2025.0.0"

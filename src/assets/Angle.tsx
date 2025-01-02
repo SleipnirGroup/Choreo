@@ -34,7 +34,9 @@ const Angle: React.FunctionComponent<SvgIconProps> = (props) => {
         y2={cornerY - length * Math.sin(angle)}
       ></line>
       <path
-        d={`M ${cornerX + r} ${cornerY} A ${r} ${r} 0 0 0 ${cornerX + r * Math.cos(angle)} ${cornerY - r * Math.sin(angle)}`}
+        d={`M ${cornerX + r} ${cornerY} A ${r} ${r} 0 0 0 ${
+          cornerX + r * Math.cos(angle)
+        } ${cornerY - r * Math.sin(angle)}`}
       ></path>
     </SvgIcon>
   );

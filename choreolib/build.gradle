@@ -5,8 +5,8 @@ plugins {
     id 'java'
     id 'java-library'
     id 'google-test'
-    id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2020.2'
-    id 'edu.wpi.first.NativeUtils' version '2025.3.0'
+    id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2025.0'
+    id 'edu.wpi.first.NativeUtils' version '2025.9.0'
     id 'edu.wpi.first.GradleJni' version '1.1.0'
     id 'edu.wpi.first.GradleVsCode' version '2.1.0'
     id 'com.diffplug.spotless' version '6.25.0'
@@ -45,6 +45,7 @@ dependencies {
     implementation 'edu.wpi.first.wpiunits:wpiunits-java:2025.+'
     implementation 'edu.wpi.first.ntcore:ntcore-java:2025.+'
     implementation 'edu.wpi.first.ntcore:ntcore-jni:2025.+'
+    implementation 'edu.wpi.first.hal:hal-java:2025.+'
 
     api "com.fasterxml.jackson.core:jackson-annotations:2.15.2"
     api "com.fasterxml.jackson.core:jackson-core:2.15.2"
@@ -156,6 +157,10 @@ model {
     }
 }
 
+compileJava {
+    options.encoding = 'UTF-8'
+}
+
 spotless {
     java {
         target fileTree('.') {
@@ -228,5 +233,5 @@ test {
 apply from: 'publish.gradle'
 
 wrapper {
-    gradleVersion '8.5'
+    gradleVersion '8.11'
 }

@@ -2,11 +2,19 @@ use trajoptlib::{SwerveDrivetrain, SwerveTrajectoryGenerator, Translation2d};
 
 fn main() {
     let drivetrain = SwerveDrivetrain {
+        // kg
         mass: 45.0,
+        // kg-m²
         moi: 6.0,
+        // m
         wheel_radius: 0.04,
+        // rad/s
         wheel_max_angular_velocity: 70.0,
+        // N-m
         wheel_max_torque: 2.0,
+        // unitless
+        wheel_cof: 1.5,
+        // m
         modules: vec![
             Translation2d { x: 0.6, y: 0.6 },
             Translation2d { x: 0.6, y: -0.6 },

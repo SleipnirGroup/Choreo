@@ -6,8 +6,6 @@ The trajectory optimizer depends upon the following user-specified parameters, w
 
     While more precision is always better, you'll most likely get diminishing returns after 3-4 significant figures.
 
-![Document Settings](../media/document-settings.png)
-
 !!! tip "Saving Robot Config"
     Saving a copy of the robot config somewhere safe, like the root of a robot project, is highly recommended. This is so you can correlate that robot project to your robot's specifications, and thus your paths.
 
@@ -34,19 +32,19 @@ This panel asks for details about the drive motors used to propel the robot arou
 
 ### Motor performance properties
 
-These values can be pre-filled using the [Motor Calculator](#motor-calculator) panel:
+These values should be determined by consulting the motor's documentation.
 
 - **Motor Max Speed** $[\text{RPM}]$: The maximum speed of each drive motor
 
 !!! tip "Choosing a Motor Max Speed"
 
-    A reasonable choice of Motor Max Speed is ~80% of the free speed of the drive motor(s). Although your motors have more speed available, this headroom helps ensure that your robot is able to close any errors and return to the planned trajectory. Use the [Motor Calculator](#motor-calculator) to help select an appropriate value.
+    A reasonable choice of Motor Max Speed is ~80% of the free speed of the drive motor(s). Although your motors have more speed available, this headroom helps ensure that your robot is able to close any errors and return to the planned trajectory.
 
 - **Motor Max Torque** $[N * m]$: The maximum torque applied by each drive motor
 
 !!! tip "Choosing a Max Torque"
 
-    A reasonable choice of Max Torque is that corresponding to a current draw of approximately `1.5 * BreakerValue` experienced at the drive motor(s). Although your motors have more torque available, this headroom helps ensure that your robot is able to close any errors and return to the planned trajectory. Use the [Motor Calculator](#motor-calculator) to help select an appropriate value.
+    A reasonable choice of Max Torque is that corresponding to a current draw of approximately `1.5 * BreakerValue` experienced at the drive motor(s). Although your motors have more torque available, this headroom helps ensure that your robot is able to close any errors and return to the planned trajectory. Use the motor's manual or published performance curves to determine an appropriate value.
 
 ## Theoretical
 
@@ -54,36 +52,9 @@ This panel displays calculated metrics about your robot, for reference and valid
 
 ![robot-config-theoretical.png](../media/robot-config-theoretical.png)
 
+- **Traction Accel Limit**  $[m/s^2]$: The robot's maximum acceleration before wheels begin slipping
+- **Motor Accel Limit** $[m/s^2]$: The robot's maximum acceleration based on motor torque
 - **Floor Speed** $[m/s]$: The maximum speed reached by the robot when driving in a straight line and not rotating
-- **Floor Accel** $[m/s^2]$: The maximum acceleration reached by the robot when driving in a straight line and not rotating
+- **Floor Accel** $[m/s^2]$: The maximum acceleration reached by the robot when driving in a straight line and not rotating. The minimum of traction and motor limits.
 - **Ang Speed** $[rad/s]$: The robot's maximum angular speed when spinning in place
 - **Ang Accel** $[rad/s^2]$: The robot's maximum angular acceleration when spinning in place
-
-## Motor Calculator
-
-This panel helps you select appropriate drive motor parameters, using motor performance data from [reca.lc/motors](https://reca.lc/motors).
-
-![robot-config-motor-calculator](../media/robot-config-motor-calculator.png)
-
-Choose a motor, then enter a current limit in Amps. The calculator displays the following preview values:
-
-- **Preview Max Speed** $[\text{RPM}]$: Estimated speed under load (~80% of free speed)
-- **Preview Max Torque** $[N * m]$: Motor torque at the given current limit
-
-Pressing APPLY will apply these preview values to the [Drive Motor](#drive-motor) panel above.
-
-!!! warning
-
-    Make sure to press the APPLY button, or else your values will not save. Don't worry, you can always hit undo at any time to revert.
-
-### Supported motors
-
-The following motors are supported by the calculator:
-
-- Falcon 500
-- Falcon 500 with FOC
-- NEO
-- NEO Vortex
-- Kraken X60
-- Kraken X60 with FOC
-- CIM

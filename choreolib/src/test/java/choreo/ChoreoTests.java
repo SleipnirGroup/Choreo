@@ -5,11 +5,8 @@ package choreo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import choreo.trajectory.EventMarker;
-import choreo.trajectory.ProjectFile;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +15,7 @@ public class ChoreoTests {
       """
 {
  "name":"New Path",
- "version":"v2025.0.0",
+ "version":1,
  "snapshot":{
   "waypoints":[
     {"x":0.0, "y":0.0, "heading":0.0, "intervals":9, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
@@ -42,6 +39,7 @@ public class ChoreoTests {
     {"from":1, "to":2, "data":{"type":"PointAt", "props":{"x":["1.5 m",1.5], "y":["4 m",4.0], "tolerance":["1 deg",0.017453292519943295], "flip":false}}}]
  },
  "trajectory":{
+  "sampleType":"Swerve",
   "waypoints":[0.0,0.1,0.2,0.3],
   "samples":[
     {"t":0.0, "x":0.0, "y":0.0, "heading":0.0, "vx":0.0, "vy":0.0, "omega":0.0, "ax":0.0, "ay":0.0, "alpha":0.0, "fx":[0.0,0.0,0.0,0.0], "fy":[0.0,0.0,0.0,0.0]},
@@ -55,91 +53,6 @@ public class ChoreoTests {
  ]
 }
 """;
-
-  public static final String PROJ =
-      "{"
-          + " \"name\": \"idk\","
-          + " \"version\": \"v2025.0.0\","
-          + " \"type\": \"Swerve\","
-          + " \"variables\": {"
-          + "   \"expressions\": {},"
-          + "   \"poses\": {}"
-          + " },"
-          + " \"config\": {"
-          + "   frontLeft: {"
-          + "     \"x\": {"
-          + "       \"exp\": \"11 in\","
-          + "       \"val\": \"0.2794\""
-          + "     },"
-          + "     \"y\": {"
-          + "       \"exp\": \"11 in\","
-          + "       \"val\": \"0.2794\""
-          + "     }"
-          + "   },"
-          + "   backLeft: {"
-          + "     \"x\": {"
-          + "       \"exp\": \"-11 in\","
-          + "       \"val\": \"-0.2794\""
-          + "     },"
-          + "     \"y\": {"
-          + "       \"exp\": \"11 in\","
-          + "       \"val\": \"0.2794\""
-          + "     }"
-          + "   },"
-          + "   \"mass\": {"
-          + "     \"exp\": \"150 lbs\","
-          + "     \"val\": 68.0388555"
-          + "   },"
-          + "   \"inertia\": {"
-          + "     \"exp\": \"6 kg m ^ 2\","
-          + "     \"val\": 6.0"
-          + "   },"
-          + "   \"gearing\": {"
-          + "     \"exp\": \"6.5\","
-          + "     \"val\": 6.5"
-          + "   },"
-          + "   \"radius\": {"
-          + "     \"exp\": \"2 in\","
-          + "     \"val\": 0.0508"
-          + "   },"
-          + "   \"vmax\": {"
-          + "     \"exp\": \"6000 RPM\","
-          + "     \"val\": 628.318530717"
-          + "   },"
-          + "   \"tmax\": {"
-          + "     \"exp\": \"1.2 N * m\","
-          + "     \"val\": 1.2"
-          + "   },"
-          + "   \"cof\": {"
-          + "     \"exp\": \"1.5\","
-          + "     \"val\": 1.5"
-          + "   },"
-          + "   \"bumper\": {"
-          + "     \"front\": {"
-          + "       \"exp\": \"16 in\","
-          + "       \"val\": 0.4064"
-          + "     },"
-          + "     \"side\": {"
-          + "       \"exp\": \"16 in\","
-          + "       \"val\": 0.4064"
-          + "     },"
-          + "     \"back\": {"
-          + "       \"exp\": \"16 in\","
-          + "       \"val\": 0.4064"
-          + "     }"
-          + "   },"
-          + "   \"differentialTrackWidth\": {"
-          + "     \"exp\": \"24 in\","
-          + "     \"val\": 0.6096"
-          + "   }"
-          + " },"
-          + " \"generationFeatures\": []"
-          + "}";
-
-  private static final Gson GSON =
-      new GsonBuilder()
-          .registerTypeAdapter(EventMarker.class, new EventMarker.Deserializer())
-          .create();
 
   private Trajectory<SwerveSample> CORRECT_SWERVE_TRAJECTORY =
       new Trajectory<SwerveSample>(
@@ -176,8 +89,7 @@ public class ChoreoTests {
 
   @Test
   public void testDeserializeSwerveTrajectory() {
-    ProjectFile projectFile = GSON.fromJson(PROJ, ProjectFile.class);
-    var deserializedSwerveTrajectory = Choreo.loadTrajectoryString(TRAJECTORY, projectFile);
+    var deserializedSwerveTrajectory = Choreo.loadTrajectoryString(TRAJECTORY);
     assertEquals(CORRECT_SWERVE_TRAJECTORY, deserializedSwerveTrajectory);
   }
 }

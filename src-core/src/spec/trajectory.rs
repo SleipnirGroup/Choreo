@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use trajoptlib::{DifferentialTrajectorySample, SwerveTrajectorySample};
 
-use super::{Expr, SnapshottableType};
+use super::{upgraders::upgrade_traj_file, Expr, SnapshottableType};
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -278,44 +278,47 @@ pub enum Sample {
         heading: f64,
         vl: f64,
         vr: f64,
+        omega: f64,
         al: f64,
         ar: f64,
         fl: f64,
         fr: f64,
     },
 }
-fn nudge_zero(f: f64) -> f64 {
-    if f.abs() < 1e-12 {
+fn round(input: f64) -> f64 {
+    let factor = 100_000.0;
+    let result = (input * factor).round() / factor;
+    if result == -0.0 {
         0.0
     } else {
-        f
+        result
     }
 }
 
 impl From<&SwerveTrajectorySample> for Sample {
     fn from(swerve_sample: &SwerveTrajectorySample) -> Self {
         Sample::Swerve {
-            t: nudge_zero(swerve_sample.timestamp),
-            x: nudge_zero(swerve_sample.x),
-            y: nudge_zero(swerve_sample.y),
-            vx: nudge_zero(swerve_sample.velocity_x),
-            vy: nudge_zero(swerve_sample.velocity_y),
-            heading: nudge_zero(swerve_sample.heading),
-            omega: nudge_zero(swerve_sample.angular_velocity),
-            ax: nudge_zero(swerve_sample.acceleration_x),
-            ay: nudge_zero(swerve_sample.acceleration_y),
-            alpha: nudge_zero(swerve_sample.angular_acceleration),
+            t: round(swerve_sample.timestamp),
+            x: round(swerve_sample.x),
+            y: round(swerve_sample.y),
+            vx: round(swerve_sample.velocity_x),
+            vy: round(swerve_sample.velocity_y),
+            heading: round(swerve_sample.heading),
+            omega: round(swerve_sample.angular_velocity),
+            ax: round(swerve_sample.acceleration_x),
+            ay: round(swerve_sample.acceleration_y),
+            alpha: round(swerve_sample.angular_acceleration),
             fx: [
-                nudge_zero(swerve_sample.module_forces_x[0]),
-                nudge_zero(swerve_sample.module_forces_x[1]),
-                nudge_zero(swerve_sample.module_forces_x[2]),
-                nudge_zero(swerve_sample.module_forces_x[3]),
+                round(swerve_sample.module_forces_x[0]),
+                round(swerve_sample.module_forces_x[1]),
+                round(swerve_sample.module_forces_x[2]),
+                round(swerve_sample.module_forces_x[3]),
             ],
             fy: [
-                nudge_zero(swerve_sample.module_forces_y[0]),
-                nudge_zero(swerve_sample.module_forces_y[1]),
-                nudge_zero(swerve_sample.module_forces_y[2]),
-                nudge_zero(swerve_sample.module_forces_y[3]),
+                round(swerve_sample.module_forces_y[0]),
+                round(swerve_sample.module_forces_y[1]),
+                round(swerve_sample.module_forces_y[2]),
+                round(swerve_sample.module_forces_y[3]),
             ],
         }
     }
@@ -329,16 +332,17 @@ impl From<SwerveTrajectorySample> for Sample {
 impl From<&DifferentialTrajectorySample> for Sample {
     fn from(differential_sample: &DifferentialTrajectorySample) -> Self {
         Sample::DifferentialDrive {
-            t: nudge_zero(differential_sample.timestamp),
-            x: nudge_zero(differential_sample.x),
-            y: nudge_zero(differential_sample.y),
-            heading: nudge_zero(differential_sample.heading),
-            vl: nudge_zero(differential_sample.velocity_l),
-            vr: nudge_zero(differential_sample.velocity_r),
-            al: nudge_zero(differential_sample.acceleration_l),
-            ar: nudge_zero(differential_sample.acceleration_r),
-            fl: nudge_zero(differential_sample.force_l),
-            fr: nudge_zero(differential_sample.force_r),
+            t: round(differential_sample.timestamp),
+            x: round(differential_sample.x),
+            y: round(differential_sample.y),
+            heading: round(differential_sample.heading),
+            vl: round(differential_sample.velocity_l),
+            vr: round(differential_sample.velocity_r),
+            omega: round(differential_sample.angular_velocity),
+            al: round(differential_sample.acceleration_l),
+            ar: round(differential_sample.acceleration_r),
+            fl: round(differential_sample.force_l),
+            fr: round(differential_sample.force_r),
         }
     }
 }
@@ -391,6 +395,10 @@ impl<T: SnapshottableType> Parameters<T> {
 #[serde(rename_all = "camelCase")]
 /// The trajectory the robot will follow.
 pub struct Trajectory {
+    /// The sample type of this trajectory.
+    /// Must match the type in samples if that list is non-empty
+    /// Only None if trajectory was never generated.
+    pub sample_type: Option<DriveType>,
     /// The times at which the robot will reach each waypoint.
     pub waypoints: Vec<f64>,
     /// The samples of the trajectory.
@@ -409,7 +417,7 @@ pub struct TrajectoryFile {
     /// Will always be in sync with the file name on disk.
     pub name: String,
     /// The version of the `.traj` file spec.
-    pub version: String,
+    pub version: u32,
     /// The snapshot of the parameters at the time of the last generation.
     pub snapshot: Option<Parameters<f64>>,
     /// The parameters used for generating the trajectory.
@@ -430,7 +438,8 @@ impl TrajectoryFile {
     /// # Errors
     /// - [`crate::ChoreoError::Json`] if the json string is invalid.
     pub fn from_content(content: &str) -> crate::ChoreoResult<TrajectoryFile> {
-        serde_json::from_str(content).map_err(Into::into)
+        let val = upgrade_traj_file(serde_json::from_str(content)?)?;
+        serde_json::from_value(val).map_err(Into::into)
     }
 
     pub fn up_to_date(&self) -> bool {
