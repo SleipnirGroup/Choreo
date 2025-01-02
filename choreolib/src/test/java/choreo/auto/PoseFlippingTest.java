@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
-import choreo.util.AllianceFlipUtil;
+import choreo.util.ChoreoAllianceFlipUtil;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -53,8 +53,8 @@ public class PoseFlippingTest {
     factoryNoFlip = AutoTestHelper.factory(false);
     Pose2d start = Pose2d.kZero;
     Pose2d end = new Pose2d(1, 1, Rotation2d.fromRadians(1));
-    Pose2d startFlipped = AllianceFlipUtil.flip(start);
-    Pose2d endFlipped = AllianceFlipUtil.flip(end);
+    Pose2d startFlipped = ChoreoAllianceFlipUtil.flip(start);
+    Pose2d endFlipped = ChoreoAllianceFlipUtil.flip(end);
     Trajectory<SwerveSample> trajectory =
         new Trajectory<>(
             "test",

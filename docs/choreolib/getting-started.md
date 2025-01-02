@@ -59,8 +59,8 @@ In general, trajectory followers accept trajectory "samples" that represent the 
                 // Generate the next speeds for the robot
                 ChassisSpeeds speeds = new ChassisSpeeds(
                     sample.vx + xController.calculate(pose.getX(), sample.x),
-                    sample.vy + xController.calculate(pose.getX(), sample.y),
-                    sample.omega + xController.calculate(pose.getRotation().getRadians(), sample.heading)
+                    sample.vy + yController.calculate(pose.getY(), sample.y),
+                    sample.omega + headingController.calculate(pose.getRotation().getRadians(), sample.heading)
                 );
 
                 // Apply the generated speeds

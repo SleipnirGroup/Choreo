@@ -3,26 +3,34 @@
 ## Dependencies
 
 - [Python](https://www.python.org/downloads/)
+- [Doxygen](https://www.doxygen.nl/manual/install.html)
 
+## Run MkDocs Development Server
 
-## Build Documentation
-
-Install mkdocs
+Install MkDocs
 ```console
 pip install -r docs/requirements.txt
 ```
 
+Run the development server
+```console
+mkdocs serve
+```
+
+## Build MkDocs Documentation
+
+Install MkDocs
+```console
+pip install -r docs/requirements.txt
+```
+
+Build
 ```console
 mkdocs build
 ```
 
-## Run Live Server
-
-Install mkdocs
-```console
-pip install -r docs/requirements.txt
-```
+## Build API Documentation
 
 ```console
-mkdocs serve
+./make-docs.sh
 ```

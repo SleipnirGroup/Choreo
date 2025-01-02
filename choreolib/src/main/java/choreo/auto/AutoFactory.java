@@ -15,7 +15,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -33,32 +32,28 @@ import java.util.function.Supplier;
  * @see <a href="https://choreo.autos/choreolib/auto-routines">Auto Routine Docs</a>
  */
 public class AutoFactory {
-  static final AutoRoutine VOID_ROUTINE =
-      new AutoRoutine(null, "VOID-ROUTINE", new EventLoop()) {
-        @Override
-        public Command cmd() {
-          return Commands.none().withName("VoidAutoRoutine");
-        }
+  static record AllianceContext(
+      boolean useAllianceFlipping, Supplier<Optional<Alliance>> allianceGetter) {
+    boolean allianceKnownOrIgnored() {
+      return allianceGetter.get().isPresent() || !useAllianceFlipping;
+    }
 
-        @Override
-        public Command cmd(BooleanSupplier _finishCondition) {
-          return cmd();
-        }
+    boolean doFlip() {
+      return useAllianceFlipping
+          && allianceGetter
+              .get()
+              .orElseThrow(
+                  () -> new RuntimeException("Flip check was called with an unknown alliance"))
+              .equals(Alliance.Red);
+    }
 
-        @Override
-        public void poll() {}
-
-        @Override
-        public void reset() {}
-
-        @Override
-        public Trigger active() {
-          return new Trigger(loop, () -> false);
-        }
-      };
+    Optional<Alliance> alliance() {
+      return allianceGetter.get();
+    }
+  }
 
   /** A class used to bind commands to events in all trajectories created by this factory. */
-  public static class AutoBindings {
+  static class AutoBindings {
     private HashMap<String, Command> bindings = new HashMap<>();
 
     /** Default constructor. */
@@ -76,13 +71,6 @@ public class AutoFactory {
       return this;
     }
 
-    private void merge(AutoBindings other) {
-      if (other == null) {
-        return;
-      }
-      bindings.putAll(other.bindings);
-    }
-
     /**
      * Gets the bindings map.
      *
@@ -97,11 +85,11 @@ public class AutoFactory {
   private final Supplier<Pose2d> poseSupplier;
   private final Consumer<Pose2d> resetOdometry;
   private final Consumer<? extends TrajectorySample<?>> controller;
-  private final Supplier<Optional<Alliance>> alliance;
-  private final BooleanSupplier useAllianceFlipping;
+  private final AllianceContext allianceCtx;
   private final Subsystem driveSubsystem;
   private final AutoBindings bindings = new AutoBindings();
   private final TrajectoryLogger<? extends TrajectorySample<?>> trajectoryLogger;
+  private final AutoRoutine voidRoutine;
 
   /**
    * Create a factory that can be used to create {@link AutoRoutine} and {@link AutoTrajectory}.
@@ -117,7 +105,6 @@ public class AutoFactory {
    *     Command}s.
    * @param useAllianceFlipping If this is true, when on the red alliance, the path will be mirrored
    *     to the opposite side, while keeping the same coordinate system origin.
-   * @param bindings Universal trajectory event bindings.
    * @param trajectoryLogger A {@link TrajectoryLogger} to log {@link Trajectory} as they start and
    *     finish.
    * @see AutoChooser using this factory with AutoChooser to generate auto routines.
@@ -128,57 +115,74 @@ public class AutoFactory {
       Consumer<SampleType> controller,
       boolean useAllianceFlipping,
       Subsystem driveSubsystem,
-      AutoBindings bindings,
       TrajectoryLogger<SampleType> trajectoryLogger) {
     requireNonNullParam(poseSupplier, "poseSupplier", "AutoFactory");
     requireNonNullParam(resetOdometry, "resetOdometry", "AutoFactory");
     requireNonNullParam(controller, "controller", "AutoFactory");
     requireNonNullParam(driveSubsystem, "driveSubsystem", "AutoFactory");
     requireNonNullParam(useAllianceFlipping, "useAllianceFlipping", "AutoFactory");
-    requireNonNullParam(bindings, "bindings", "AutoFactory");
 
     this.poseSupplier = poseSupplier;
     this.resetOdometry = resetOdometry;
     this.controller = controller;
     this.driveSubsystem = driveSubsystem;
-    this.useAllianceFlipping = () -> useAllianceFlipping;
-    this.bindings.merge(bindings);
+    this.allianceCtx = new AllianceContext(useAllianceFlipping, DriverStation::getAlliance);
     this.trajectoryLogger = trajectoryLogger;
-    this.alliance = DriverStation::getAlliance;
     HAL.report(tResourceType.kResourceType_ChoreoTrigger, 1);
+
+    voidRoutine =
+        new AutoRoutine(this, "VOID-ROUTINE", allianceCtx) {
+          @Override
+          public Command cmd() {
+            return Commands.none().withName("VoidAutoRoutine");
+          }
+
+          @Override
+          public Command cmd(BooleanSupplier _finishCondition) {
+            return cmd();
+          }
+
+          @Override
+          public void poll() {}
+
+          @Override
+          public void reset() {}
+
+          @Override
+          public Trigger active() {
+            return new Trigger(this.loop(), () -> false);
+          }
+        };
   }
 
   /**
    * Create a factory that can be used to create {@link AutoRoutine} and {@link AutoTrajectory}.
    *
-   * @param <SampleType> The type of samples in the trajectory.
+   * @param <ST> {@link choreo.trajectory.DifferentialSample} or {@link
+   *     choreo.trajectory.SwerveSample}
    * @param poseSupplier A function that returns the current field-relative {@link Pose2d} of the
    *     robot.
    * @param resetOdometry A function that receives a field-relative {@link Pose2d} to reset the
    *     robot's odometry to.
-   * @param controller A function that receives the current {@link SampleType} and controls the
-   *     robot.
+   * @param controller A function that receives the current {@link ST} and controls the robot.
    * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
    *     Command}s.
    * @param useAllianceFlipping If this returns true, when on the red alliance, the path will be
    *     mirrored to the opposite side, while keeping the same coordinate system origin.
-   * @param bindings Universal trajectory event bindings.
    * @see AutoChooser using this factory with AutoChooser to generate auto routines.
    */
-  public <SampleType extends TrajectorySample<SampleType>> AutoFactory(
+  public <ST extends TrajectorySample<ST>> AutoFactory(
       Supplier<Pose2d> poseSupplier,
       Consumer<Pose2d> resetOdometry,
-      Consumer<SampleType> controller,
+      Consumer<ST> controller,
       boolean useAllianceFlipping,
-      Subsystem driveSubsystem,
-      AutoBindings bindings) {
+      Subsystem driveSubsystem) {
     this(
         poseSupplier,
         resetOdometry,
         controller,
         useAllianceFlipping,
         driveSubsystem,
-        bindings,
         (sample, isStart) -> {});
   }
 
@@ -194,16 +198,7 @@ public class AutoFactory {
       trajectoryCache.clear();
     }
 
-    return new AutoRoutine(this, name, this::allianceKnownOrIgnored);
-  }
-
-  /**
-   * Returns true if the alliance is known or alliance flipping is disabled.
-   *
-   * @return True if the alliance is known or alliance flipping is disabled.
-   */
-  private boolean allianceKnownOrIgnored() {
-    return !useAllianceFlipping.getAsBoolean() || alliance.get().isPresent();
+    return new AutoRoutine(this, name, allianceCtx);
   }
 
   /**
@@ -260,8 +255,7 @@ public class AutoFactory {
         poseSupplier,
         resetOdometry,
         solidController,
-        useAllianceFlipping,
-        alliance,
+        allianceCtx,
         (TrajectoryLogger<ST>) trajectoryLogger,
         driveSubsystem,
         routine,
@@ -283,7 +277,7 @@ public class AutoFactory {
    * @return A new {@link AutoTrajectory}.
    */
   public Command trajectoryCmd(String trajectoryName) {
-    return trajectory(trajectoryName, VOID_ROUTINE).cmd();
+    return trajectory(trajectoryName, voidRoutine).cmd();
   }
 
   /**
@@ -302,7 +296,7 @@ public class AutoFactory {
    * @return A new {@link AutoTrajectory}.
    */
   public Command trajectoryCmd(String trajectoryName, final int splitIndex) {
-    return trajectory(trajectoryName, splitIndex, VOID_ROUTINE).cmd();
+    return trajectory(trajectoryName, splitIndex, voidRoutine).cmd();
   }
 
   /**
@@ -316,13 +310,13 @@ public class AutoFactory {
    * does not invoke bindings added via calling {@link #bind} or {@link AutoBindings} passed into
    * the factory constructor.
    *
-   * @param <SampleType> The type of the trajectory samples.
+   * @param <ST> {@link choreo.trajectory.DifferentialSample} or {@link
+   *     choreo.trajectory.SwerveSample}
    * @param trajectory The trajectory to use.
    * @return A new {@link AutoTrajectory}.
    */
-  public <SampleType extends TrajectorySample<SampleType>> Command trajectoryCmd(
-      Trajectory<SampleType> trajectory) {
-    return trajectory(trajectory, VOID_ROUTINE).cmd();
+  public <ST extends TrajectorySample<ST>> Command trajectoryCmd(Trajectory<ST> trajectory) {
+    return trajectory(trajectory, voidRoutine).cmd();
   }
 
   /**
@@ -332,7 +326,7 @@ public class AutoFactory {
    * @return A command that resets the robot's odometry.
    */
   public Command resetOdometry(String trajectoryName) {
-    return trajectory(trajectoryName, VOID_ROUTINE).resetOdometry();
+    return trajectory(trajectoryName, voidRoutine).resetOdometry();
   }
 
   /**
@@ -343,19 +337,19 @@ public class AutoFactory {
    * @return A command that resets the robot's odometry.
    */
   public Command resetOdometry(String trajectoryName, final int splitIndex) {
-    return trajectory(trajectoryName, splitIndex, VOID_ROUTINE).resetOdometry();
+    return trajectory(trajectoryName, splitIndex, voidRoutine).resetOdometry();
   }
 
   /**
    * Creates a command that resets the robot's odometry to the start of a trajectory.
    *
-   * @param <SampleType> The type of the trajectory samples.
+   * @param <ST> {@link choreo.trajectory.DifferentialSample} or {@link
+   *     choreo.trajectory.SwerveSample}
    * @param trajectory The trajectory to use.
    * @return A command that resets the robot's odometry.
    */
-  public <SampleType extends TrajectorySample<SampleType>> Command resetOdometry(
-      Trajectory<SampleType> trajectory) {
-    return trajectory(trajectory, VOID_ROUTINE).resetOdometry();
+  public <ST extends TrajectorySample<ST>> Command resetOdometry(Trajectory<ST> trajectory) {
+    return trajectory(trajectory, voidRoutine).resetOdometry();
   }
 
   /**
@@ -363,9 +357,11 @@ public class AutoFactory {
    *
    * @param name The name of the trajectory to bind the command to.
    * @param cmd The command to bind to the trajectory.
+   * @return The AutoFactory the method was called from.
    */
-  public void bind(String name, Command cmd) {
+  public AutoFactory bind(String name, Command cmd) {
     bindings.bind(name, cmd);
+    return this;
   }
 
   /**

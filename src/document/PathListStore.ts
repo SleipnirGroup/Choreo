@@ -5,6 +5,7 @@ import {
   HolonomicPathStore,
   IHolonomicPathStore
 } from "./path/HolonomicPathStore";
+import * as FieldDimensions from "../components/field/svg/fields/FieldDimensions";
 
 export const PathListStore = types
   .model("PathListStore", {
@@ -142,8 +143,14 @@ export const PathListStore = types
                 {
                   x: { exp: "0 m", val: 0.0 },
                   y: { exp: "0 m", val: 0.0 },
-                  w: { exp: "16.54 m", val: 16.54 },
-                  h: { exp: "8.21 m", val: 8.21 }
+                  w: {
+                    exp: `${FieldDimensions.FIELD_LENGTH} m`,
+                    val: FieldDimensions.FIELD_LENGTH
+                  },
+                  h: {
+                    exp: `${FieldDimensions.FIELD_WIDTH} m`,
+                    val: FieldDimensions.FIELD_WIDTH
+                  }
                 }
               );
             }
@@ -172,6 +179,10 @@ export const PathListStore = types
   }))
   .actions((self) => {
     return {
+      deleteAll() {
+        self.activePathUUID = self.defaultPath!.uuid;
+        self.paths.clear();
+      },
       deletePath(uuid: string) {
         if (self.paths.size === 1) {
           self.setActivePathUUID(self.defaultPath!.uuid);

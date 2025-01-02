@@ -133,7 +133,6 @@ export const DocumentStore = types
       self.name = ser.name;
       self.variables.deserialize(ser.variables);
       self.robotConfig.deserialize(ser.config);
-      self.pathlist.paths.clear();
       self.type = ser.type;
     },
     setName(name: string) {
