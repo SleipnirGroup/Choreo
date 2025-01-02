@@ -3,7 +3,7 @@
 Once trajectories are created by Choreo, they must be saved within your robot project.
 
 Choreo has 2 different kinds of files: a .chor file which stores general configs for your project,
-and multiple .traj files which store individual trajectories. Choreo generates and updates .traj files
+and multiple .traj files which store individual path information. Each .traj file correlates to one path in Choreo. Choreo generates and updates .traj files
 in the same directory (or folder) that your .chor file is stored in.
 
 ## Saving your .chor file
@@ -33,29 +33,23 @@ To access the sidebar, click the hamburger icon in the upper left corner.
 
 General Info:
 
+In the sidebar, there are four actions related to saving your project, along with your project's current save location.
 
-In the sidebar, there are five actions related to saving your project, along with your project's current save location.
+## Open Project
 
-## Open File
+This opens the system’s file select dialog to select the robot’s `.chor` file.
 
-This opens the system’s file select dialog to select the robot’s `.chor` file. This .chor file should be under the folders `src/main/deploy/choreo`
-in your robot project.
+## Save Project/Save Project As
 
-## Save File
+This opens the system’s file save dialog to select where to save the robot’s `.chor` file.
 
-This opens the system’s file save dialog to select where to save the robot’s `.chor` file. Choreo strongly recommends saving this file in your `deploy/choreo` folder within your project.
+## New Project
 
-## New File
+Creates a new unsaved project.
 
-Creates a new file in memory, essentially clearing all trajectories. If you have unsaved changes, Choreo will ask before clearing them.
+## Export Diagnostic Report
 
-## Export Trajectory
-
-Exports the trajectory as a file individually to the path you select in the UI. This is not tied with the robot project structure, so you can place the trajectory file anywhere you like.
-
-## Save All Trajectories
-
-This saves all the trajectories into the folder structure described below.
+This exports a .zip file with your project `.chor` and `.traj` files, as well as some logs. Choreo support may ask for this report when trying to help you.
 
 ## Project Details
 
@@ -63,11 +57,11 @@ If you have saved your choreo file correctly, you should see the following:
 
 ![Project Info](../media/project_info.png)
 
-Below "Project saved at", you can see the directory in which the saved `.chor` file lives. You can also copy this path or open it in your system's file explorer.
+Below "Project saved at", you can see the directory in which the project files live. You can also copy this path or open it in your system's file explorer.
 
 !!! warning
 
-    If you get the below, it means you have not saved the file yet
+    If you get the below, it means you have not saved the file yet.
 
      ![Project not saved](../media/project_not_saved.png){: style="height:60px;"}
 
@@ -75,8 +69,8 @@ Below "Project saved at", you can see the directory in which the saved `.chor` f
 
 For C++ and Java teams:
 
-- Choreo file lives at: `~/Development/FRC/Roboto/src/main/deploy/choreo/ChoreoProject.chor`
-- Trajectories (`.traj`) live in: `~/Development/FRC/Roboto/src/main/deploy/choreo/...`
+- Choreo file lives at: `~/Development/FRC/Robot/src/main/deploy/choreo/ChoreoProject.chor`
+- Trajectories (`.traj`) live in: `~/Development/FRC/Robot/src/main/deploy/choreo/...`
 
 For Python teams:
 
