@@ -115,9 +115,7 @@ export const GeneralVariableAddPanel = observer(() => {
     >
       {DimensionNamesExt.map((entry) => (
         <MenuItem value={entry}>
-          <Tooltip disableInteractive title={DimensionsExt[entry].name}>
-            {DimensionsExt[entry].icon()}
-          </Tooltip>
+          {DimensionsExt[entry].icon()}
           <span style={{ width: "4px" }}></span>
           {DimensionsExt[entry].name}
         </MenuItem>

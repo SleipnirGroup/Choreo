@@ -2,7 +2,8 @@
 
 package choreo.trajectory;
 
-import choreo.util.AllianceFlipUtil;
+import choreo.util.ChoreoAllianceFlipUtil;
+import choreo.util.ChoreoArrayUtil;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -18,10 +19,10 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
   /** The timestamp of this sample, relative to the beginning of the trajectory. */
   public final double t;
 
-  /** The X position of the sample in meters. */
+  /** The X position of the sample relative to the blue alliance wall origin in meters. */
   public final double x;
 
-  /** The Y position of the sample in meters. */
+  /** The Y position of the sample relative to the blue alliance wall origin in meters. */
   public final double y;
 
   /** The heading of the sample in radians, with 0 being in the +X direction. */
@@ -36,13 +37,13 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
   /** The angular velocity of the sample in rad/s. */
   public final double omega;
 
-  /** The acceleration of the in the X direction in m/s^2 */
+  /** The acceleration of the in the X direction in m/s². */
   public final double ax;
 
-  /** The acceleration of the in the Y direction in m/s^2 */
+  /** The acceleration of the in the Y direction in m/s². */
   public final double ay;
 
-  /** The angular acceleration of the sample in rad/s^2 */
+  /** The angular acceleration of the sample in rad/s². */
   public final double alpha;
 
   /**
@@ -67,9 +68,9 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
    * @param vx The velocity of the sample in the X direction in m/s.
    * @param vy The velocity of the sample in the Y direction in m/s.
    * @param omega The angular velocity of the sample in rad/s.
-   * @param ax The acceleration of the sample in the X direction in m/s^2.
-   * @param ay The acceleration of the sample in the Y direction in m/s^2.
-   * @param alpha The angular acceleration of the sample in rad/s^2.
+   * @param ax The acceleration of the sample in the X direction in m/s².
+   * @param ay The acceleration of the sample in the Y direction in m/s².
+   * @param alpha The angular acceleration of the sample in rad/s².
    * @param moduleForcesX The force on each swerve module in the X direction in Newtons. Module
    *     forces appear in the following order: [FL, FR, BL, BR].
    * @param moduleForcesY The force on each swerve module in the Y direction in Newtons. Module
@@ -189,13 +190,13 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
 
   @Override
   public SwerveSample flipped() {
-    return switch (AllianceFlipUtil.getFlipper()) {
+    return switch (ChoreoAllianceFlipUtil.getFlipper()) {
       case MIRRORED ->
           new SwerveSample(
               this.t,
-              AllianceFlipUtil.flipX(this.x),
-              this.y,
-              Math.PI - this.heading,
+              ChoreoAllianceFlipUtil.flipX(this.x),
+              ChoreoAllianceFlipUtil.flipY(this.y),
+              ChoreoAllianceFlipUtil.flipHeading(this.heading),
               -this.vx,
               this.vy,
               -this.omega,
@@ -223,23 +224,18 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
       case ROTATE_AROUND ->
           new SwerveSample(
               this.t,
-              AllianceFlipUtil.flipX(this.x),
-              AllianceFlipUtil.flipY(this.y),
-              Math.PI - this.heading,
+              ChoreoAllianceFlipUtil.flipX(this.x),
+              ChoreoAllianceFlipUtil.flipY(this.y),
+              ChoreoAllianceFlipUtil.flipHeading(this.heading),
               -this.vx,
               -this.vy,
-              -this.omega,
+              this.omega,
               -this.ax,
               -this.ay,
-              -this.alpha,
+              this.alpha,
               Arrays.stream(this.moduleForcesX()).map(x -> -x).toArray(),
               Arrays.stream(this.moduleForcesY()).map(y -> -y).toArray());
     };
-  }
-
-  @Override
-  public SwerveSample[] makeArray(int length) {
-    return new SwerveSample[length];
   }
 
   /** The struct for the SwerveSample class. */
@@ -335,7 +331,9 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
         && this.ax == other.ax
         && this.ay == other.ay
         && this.alpha == other.alpha
-        && Arrays.equals(this.fx, other.fx)
-        && Arrays.equals(this.fy, other.fy);
+        && ChoreoArrayUtil.zipEquals(
+            this.fx, other.fx, (a, b) -> a.doubleValue() == b.doubleValue())
+        && ChoreoArrayUtil.zipEquals(
+            this.fy, other.fy, (a, b) -> a.doubleValue() == b.doubleValue());
   }
 }

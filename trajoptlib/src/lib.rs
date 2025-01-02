@@ -13,6 +13,7 @@ mod ffi {
         wheel_radius: f64,
         wheel_max_angular_velocity: f64,
         wheel_max_torque: f64,
+        wheel_cof: f64,
         modules: Vec<Translation2d>,
     }
 
@@ -23,6 +24,7 @@ mod ffi {
         wheel_radius: f64,
         wheel_max_angular_velocity: f64,
         wheel_max_torque: f64,
+        wheel_cof: f64,
         trackwidth: f64,
     }
 
@@ -62,6 +64,7 @@ mod ffi {
         heading: f64,
         velocity_l: f64,
         velocity_r: f64,
+        angular_velocity: f64,
         acceleration_l: f64,
         acceleration_r: f64,
         force_l: f64,

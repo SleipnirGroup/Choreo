@@ -52,13 +52,16 @@ class Trajectory {
    *
    * Will return an empty optional if the trajectory is empty
    *
+   * @param mirrorForRedAlliance whether or not to return the sample as mirrored
+   *   across the field
    * @return The first sample in the trajectory.
    */
-  std::optional<SampleType> GetInitialState() const {
+  std::optional<SampleType> GetInitialSample(
+      bool mirrorForRedAlliance = false) const {
     if (samples.size() == 0) {
       return {};
     }
-    return samples[0];
+    return mirrorForRedAlliance ? samples.front().Flipped() : samples.front();
   }
 
   /**
@@ -66,13 +69,16 @@ class Trajectory {
    *
    * Will return an empty optional if the trajectory is empty
    *
+   * @param mirrorForRedAlliance whether or not to return the sample as mirrored
+   *   across the field
    * @return The last sample in the trajectory.
    */
-  std::optional<SampleType> GetFinalSample() const {
+  std::optional<SampleType> GetFinalSample(
+      bool mirrorForRedAlliance = false) const {
     if (samples.size() == 0) {
       return {};
     }
-    return samples[samples.size() - 1];
+    return mirrorForRedAlliance ? samples.back().Flipped() : samples.back();
   }
 
   /**
@@ -89,15 +95,7 @@ class Trajectory {
   template <int Year = util::kDefaultYear>
   std::optional<SampleType> SampleAt(units::second_t timestamp,
                                      bool mirrorForRedAlliance = false) const {
-    std::optional<SampleType> state{};
-    if (samples.size() == 0) {
-      return {};
-    } else if (samples.size() == 1) {
-      return samples[0];
-    } else {
-      state = SampleInternal(timestamp);
-    }
-    if (state.has_value()) {
+    if (auto state = SampleInternal(timestamp)) {
       return mirrorForRedAlliance ? state.value().template Flipped<Year>()
                                   : state;
     } else {
@@ -115,14 +113,16 @@ class Trajectory {
    * @return The first Pose in the trajectory.
    */
   template <int Year = util::kDefaultYear>
-  std::optional<frc::Pose2d> GetInitialPose(bool mirrorForRedAlliance) const {
+  std::optional<frc::Pose2d> GetInitialPose(
+      bool mirrorForRedAlliance = false) const {
     if (samples.size() == 0) {
       return {};
     }
     if (mirrorForRedAlliance) {
-      return samples[0].template Flipped<Year>().GetPose();
+      return samples.front().template Flipped<Year>().GetPose();
+    } else {
+      return samples.front().GetPose();
     }
-    return samples[0].GetPose();
   }
 
   /**
@@ -135,14 +135,16 @@ class Trajectory {
    * @return The last Pose in the trajectory.
    */
   template <int Year = util::kDefaultYear>
-  std::optional<frc::Pose2d> GetFinalPose(bool mirrorForRedAlliance) const {
+  std::optional<frc::Pose2d> GetFinalPose(
+      bool mirrorForRedAlliance = false) const {
     if (samples.size() == 0) {
       return {};
     }
     if (mirrorForRedAlliance) {
-      return samples[samples.size() - 1].template Flipped<Year>().GetPose();
+      return samples.back().template Flipped<Year>().GetPose();
+    } else {
+      return samples.back().GetPose();
     }
-    return samples[samples.size() - 1].GetPose();
   }
 
   /**
@@ -155,7 +157,7 @@ class Trajectory {
     if (samples.size() == 0) {
       return 0_s;
     }
-    return samples[samples.size() - 1].GetTimestamp();
+    return GetFinalSample().GetTimestamp();
   }
 
   /**
@@ -290,8 +292,14 @@ class Trajectory {
 
  private:
   std::optional<SampleType> SampleInternal(units::second_t timestamp) const {
+    if (samples.size() == 0) {
+      return {};
+    }
+    if (samples.size() == 1) {
+      return samples[0];
+    }
     if (timestamp < samples[0].GetTimestamp()) {
-      return GetInitialState();
+      return GetInitialSample();
     }
     if (timestamp >= GetTotalTime()) {
       return GetFinalSample();

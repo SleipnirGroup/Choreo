@@ -1,13 +1,12 @@
 from __future__ import annotations
+
 import json
 import math
 import os
 
+from choreo.util import DEFAULT_YEAR, get_flipper_for_year
 from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.kinematics import ChassisSpeeds
-
-from choreo.util import DEFAULT_YEAR, get_flipper_for_year
-from choreo.spec_version import SPEC_VERSION
 
 
 def lerp(a, b, t) -> float:
@@ -70,6 +69,7 @@ class DifferentialSample:
         heading: float,
         vl: float,
         vr: float,
+        omega: float,
         al: float,
         ar: float,
         fl: list[float],
@@ -98,6 +98,9 @@ class DifferentialSample:
         Parameter ``vr``:
             The right linear velocity of the state in m/s.
 
+        Parameter ``omega``:
+            The chassis angular velocity of the state in rad/s.
+
         Parameter ``al``:
             The left linear acceleration of the state in m/s².
 
@@ -116,6 +119,7 @@ class DifferentialSample:
         self.heading = heading
         self.vl = vl
         self.vr = vr
+        self.omega = omega
         self.al = al
         self.ar = ar
         self.fl = fl
@@ -131,23 +135,8 @@ class DifferentialSample:
         """
         Returns the field-relative chassis speeds of this state.
         """
-        from wpilib import getDeployDirectory
 
-        # Get only .chor file in deploy directory
-        chor = [f for f in os.listdir(getDeployDirectory()) if f.endswith(".chor")][0]
-
-        with open(chor, "r", encoding="utf-8") as project_file:
-            data = json.load(project_file)
-        version = data["version"]
-        if version != SPEC_VERSION:
-            raise ValueError(
-                f".chor project file: Wrong version {version}. Expected {SPEC_VERSION}"
-            )
-        trackwidth = float(data["config"]["differentialTrackWidth"]["val"])
-
-        return ChassisSpeeds(
-            (self.vl + self.vr) / 2.0, 0.0, (self.vr - self.vl) / trackwidth
-        )
+        return ChassisSpeeds((self.vl + self.vr) / 2.0, 0.0, self.omega)
 
     def interpolate(
         self, end_value: DifferentialSample, t: float
@@ -192,14 +181,15 @@ class DifferentialSample:
             return DifferentialSample(
                 self.timestamp,
                 flipper.flip_x(self.x),
-                self.y,
+                flipper.flip_y(self.y),  # No-op for mirroring
                 flipper.flip_heading(self.heading),
-                self.vl,
                 self.vr,
-                self.al,
+                self.vl,
+                -self.omega,
                 self.ar,
-                self.fl,
+                self.al,
                 self.fr,
+                self.fl,
             )
         else:
             return DifferentialSample(
@@ -207,12 +197,13 @@ class DifferentialSample:
                 flipper.flip_x(self.x),
                 flipper.flip_y(self.y),
                 flipper.flip_heading(self.heading),
-                self.vr,
                 self.vl,
-                self.ar,
+                self.vr,
+                self.omega,
                 self.al,
-                self.fr,
+                self.ar,
                 self.fl,
+                self.fr,
             )
 
     def __eq__(self, other: DifferentialSample) -> bool:
@@ -223,6 +214,7 @@ class DifferentialSample:
             and self.heading == other.heading
             and self.vl == other.vl
             and self.vr == other.vr
+            and self.omega == other.omega
             and self.al == other.al
             and self.ar == other.ar
             and self.fl == other.fl
@@ -258,7 +250,11 @@ class DifferentialTrajectory:
         self.splits = splits
         self.events = events
 
-    def __sample_internal(self, timestamp: float) -> DifferentialSample:
+    def __sample_internal(self, timestamp: float) -> DifferentialSample | None:
+        if len(self.samples) == 0:
+            return None
+        if len(self.samples) == 1:
+            return self.samples[0]
         # Handle timestamps outside the trajectory range
         if timestamp < self.samples[0].timestamp:
             return self.samples[0]
@@ -292,7 +288,7 @@ class DifferentialTrajectory:
 
     def sample_at(
         self, timestamp: float, flip_for_red_alliance: bool = False
-    ) -> DifferentialSample:
+    ) -> DifferentialSample | None:
         """
         Return an interpolated sample of the trajectory at the given timestamp.
 
@@ -307,7 +303,8 @@ class DifferentialTrajectory:
             The Sample at the given time.
         """
         tmp = self.__sample_internal(timestamp)
-
+        if tmp is None:
+            return None
         return tmp.flipped() if flip_for_red_alliance else tmp
 
     def get_samples(self) -> list[DifferentialSample]:
@@ -316,26 +313,31 @@ class DifferentialTrajectory:
         """
         return self.samples
 
-    def get_initial_pose(self, flip_for_red_alliance: bool = False) -> Pose2d:
+    def get_initial_pose(self, flip_for_red_alliance: bool = False) -> Pose2d | None:
         """
         Returns the initial pose of the trajectory.
 
         Parameter ``flip_for_red_alliance``:
             Whether or not to return the Pose flipped.
         """
+
+        if len(self.samples) == 0:
+            return None
         return (
             self.samples[0].flipped().get_pose()
             if flip_for_red_alliance
             else self.samples[0].get_pose()
         )
 
-    def get_final_pose(self, flip_for_red_alliance: bool = False) -> Pose2d:
+    def get_final_pose(self, flip_for_red_alliance: bool = False) -> Pose2d | None:
         """
         Returns the final pose of the trajectory.
 
         Parameter ``flip_for_red_alliance``:
             Whether or not to return the Pose flipped.
         """
+        if len(self.samples) == 0:
+            return None
         return (
             self.samples[-1].flipped().get_pose()
             if flip_for_red_alliance
@@ -347,6 +349,8 @@ class DifferentialTrajectory:
         Returns the total time of the trajectory (the timestamp of the last
         sample).
         """
+        if len(self.samples) == 0:
+            return 0.0
         return self.samples[-1].timestamp
 
     def get_poses(self) -> list[Pose2d]:
@@ -500,7 +504,7 @@ class SwerveSample:
             return SwerveSample(
                 self.timestamp,
                 flipper.flip_x(self.x),
-                self.y,
+                flipper.flip_y(self.y),
                 flipper.flip_heading(self.heading),
                 -self.vx,
                 self.vy,
@@ -508,8 +512,8 @@ class SwerveSample:
                 -self.ax,
                 self.ay,
                 -self.alpha,
-                [-x for x in self.fx[::-1]],
-                [y for y in self.fy[::-1]],
+                [-self.fx[1], -self.fx[0], -self.fx[3], -self.fx[2]],
+                [self.fy[1], self.fy[0], self.fy[3], self.fy[2]],
             )
         else:
             return SwerveSample(
@@ -519,10 +523,10 @@ class SwerveSample:
                 flipper.flip_heading(self.heading),
                 -self.vx,
                 -self.vy,
-                -self.omega,
+                self.omega,
                 -self.ax,
                 -self.ay,
-                -self.alpha,
+                self.alpha,
                 [-x for x in self.fx],
                 [-y for y in self.fy],
             )
@@ -572,7 +576,11 @@ class SwerveTrajectory:
         self.splits = splits
         self.events = events
 
-    def __sample_internal(self, timestamp: float) -> SwerveSample:
+    def __sample_internal(self, timestamp: float) -> SwerveSample | None:
+        if len(self.samples) == 0:
+            return None
+        if len(self.samples) == 1:
+            return self.samples[0]
         # Handle timestamps outside the trajectory range
         if timestamp < self.samples[0].timestamp:
             return self.samples[0]
@@ -606,7 +614,7 @@ class SwerveTrajectory:
 
     def sample_at(
         self, timestamp: float, flip_for_red_alliance: bool = False
-    ) -> SwerveSample:
+    ) -> SwerveSample | None:
         """
         Return an interpolated sample of the trajectory at the given timestamp.
 
@@ -621,7 +629,8 @@ class SwerveTrajectory:
             The Sample at the given time.
         """
         tmp = self.__sample_internal(timestamp)
-
+        if tmp is None:
+            return None
         return tmp.flipped() if flip_for_red_alliance else tmp
 
     def get_samples(self) -> list[SwerveSample]:
@@ -630,26 +639,32 @@ class SwerveTrajectory:
         """
         return self.samples
 
-    def get_initial_pose(self, flip_for_red_alliance: bool = False) -> Pose2d:
+    def get_initial_pose(self, flip_for_red_alliance: bool = False) -> Pose2d | None:
         """
         Returns the initial pose of the trajectory.
 
         Parameter ``flip_for_red_alliance``:
             Whether or not to return the Pose flipped.
         """
+
+        if len(self.samples) == 0:
+            return None
         return (
             self.samples[0].flipped().get_pose()
             if flip_for_red_alliance
             else self.samples[0].get_pose()
         )
 
-    def get_final_pose(self, flip_for_red_alliance: bool = False) -> Pose2d:
+    def get_final_pose(self, flip_for_red_alliance: bool = False) -> Pose2d | None:
         """
         Returns the final pose of the trajectory.
 
         Parameter ``flip_for_red_alliance``:
             Whether or not to return the Pose flipped.
         """
+
+        if len(self.samples) == 0:
+            return None
         return (
             self.samples[-1].flipped().get_pose()
             if flip_for_red_alliance
@@ -661,6 +676,9 @@ class SwerveTrajectory:
         Returns the total time of the trajectory (the timestamp of the last
         sample).
         """
+
+        if len(self.samples) == 0:
+            return 0.0
         return self.samples[-1].timestamp
 
     def get_poses(self) -> list[Pose2d]:

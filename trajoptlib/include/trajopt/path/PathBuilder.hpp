@@ -4,18 +4,34 @@
 
 #include <stdint.h>
 
+#include <cassert>
 #include <functional>
 #include <utility>
 #include <vector>
 
 #include "trajopt/constraint/Constraint.hpp"
-#include "trajopt/obstacle/Bumpers.hpp"
+#include "trajopt/geometry/Translation2.hpp"
 #include "trajopt/path/Path.hpp"
 #include "trajopt/util/GenerateLinearInitialGuess.hpp"
 #include "trajopt/util/GenerateSplineInitialGuess.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 
 namespace trajopt {
+
+/**
+ * Represents a physical keep-out region that the robot must avoid by a certain
+ * distance. Arbitrary polygons can be expressed with this class, and keep-out
+ * circles can also be created by only using one point with a safety distance.
+ *
+ * Keep-out points must be wound either clockwise or counterclockwise.
+ */
+struct TRAJOPT_DLLEXPORT KeepOutRegion {
+  /// Minimum distance from the keep-out region the robot must maintain.
+  double safetyDistance;
+
+  /// The list of points that make up this keep-out region.
+  std::vector<Translation2d> points;
+};
 
 /**
  * Path builder.
@@ -37,7 +53,7 @@ class TRAJOPT_DLLEXPORT PathBuilder {
 
   /**
    * Add a rectangular bumper to a list used when applying
-   * obstacle constraints.
+   * keep-out constraints.
    *
    * @param front Distance in meters from center to front bumper edge
    * @param left Distance in meters from center to left bumper edge
@@ -45,11 +61,11 @@ class TRAJOPT_DLLEXPORT PathBuilder {
    * @param back Distance in meters from center to back bumper edge
    */
   void SetBumpers(double front, double left, double right, double back) {
-    bumpers.emplace_back(trajopt::Bumpers{.safetyDistance = 0.01,
-                                          .points = {{+front, +left},
-                                                     {-back, +left},
-                                                     {-back, -right},
-                                                     {+front, -right}}});
+    bumpers.emplace_back(trajopt::KeepOutRegion{.safetyDistance = 0.01,
+                                                .points = {{+front, +left},
+                                                           {-back, +left},
+                                                           {-back, -right},
+                                                           {+front, -right}}});
   }
 
   /**
@@ -57,7 +73,7 @@ class TRAJOPT_DLLEXPORT PathBuilder {
    *
    * @return a list of bumpers applied to the builder.
    */
-  std::vector<Bumpers>& GetBumpers() { return bumpers; }
+  std::vector<KeepOutRegion>& GetBumpers() { return bumpers; }
 
   /**
    * If using a discrete algorithm, specify the number of discrete
@@ -216,7 +232,7 @@ class TRAJOPT_DLLEXPORT PathBuilder {
   Path<Drivetrain, Solution> path;
 
   /// The list of bumpers.
-  std::vector<Bumpers> bumpers;
+  std::vector<KeepOutRegion> bumpers;
 
   /// The initial guess points.
   std::vector<std::vector<Pose2d>> initialGuessPoints;

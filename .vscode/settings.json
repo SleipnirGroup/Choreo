@@ -1,8 +1,9 @@
 {
     "rust-analyzer.check.overrideCommand": [
-        "cargo", "clippy", "--target-dir", "./target/clippy"
+        "cargo", "clippy", "--target-dir", "./target/clippy", "--message-format=json"
     ],
     "files.associations": {
+        "*.py": "python",
         "*.traj": "json",
         "vector": "cpp",
         "array": "cpp",
@@ -97,4 +98,5 @@
         "xtr1common": "cpp",
         "xtree": "cpp"
     },
+    "java.configuration.updateBuildConfiguration": "interactive",
 }

@@ -13,7 +13,7 @@ dependencies = [ "robotpy-wpimath" ]
   name = "Choreo Development Team"
 
   [project.urls]
-  Documentation = "https://sleipnirgroup.github.io/Choreo/"
+  Documentation = "https://choreo.autos/"
 
 [build-system]
 requires = [

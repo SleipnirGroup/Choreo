@@ -14,7 +14,7 @@ using namespace choreo;
 constexpr std::string_view swerveTrajectoryString =
     R"({
  "name":"New Path",
- "version":"v2025.0.0",
+ "version":0,
  "snapshot":{
   "waypoints":[
     {"x":0.0, "y":0.0, "heading":0.0, "intervals":9, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
@@ -38,6 +38,7 @@ constexpr std::string_view swerveTrajectoryString =
     {"from":1, "to":2, "data":{"type":"PointAt", "props":{"x":["1.5 m",1.5], "y":["4 m",4.0], "tolerance":["1 deg",0.017453292519943295], "flip":false}}}]
  },
  "trajectory":{
+  "sampleType":"Swerve",
   "waypoints":[0.0,0.1,0.2,0.3],
   "samples":[
     {"t":0.0, "x":0.0, "y":0.0, "heading":0.0, "vx":0.0, "vy":0.0, "omega":0.0, "ax":0.0, "ay":0.0, "alpha":0.0, "fx":[0.0,0.0,0.0,0.0], "fy":[0.0,0.0,0.0,0.0]},

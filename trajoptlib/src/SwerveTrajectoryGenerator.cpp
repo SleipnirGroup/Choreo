@@ -115,7 +115,7 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   for (size_t sgmtIndex = 0; sgmtIndex < sgmtCnt; ++sgmtIndex) {
     dts.emplace_back(problem.DecisionVariable());
 
-    // Prevent drivetrain tunneling through obstacles
+    // Prevent drivetrain tunneling through keep-out regions
     problem.SubjectTo(dts.at(sgmtIndex) * path.drivetrain.wheelRadius *
                           path.drivetrain.wheelMaxAngularVelocity <=
                       minWidth);
@@ -245,8 +245,17 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
 
       Translation2v moduleF{Fx.at(index).at(moduleIndex),
                             Fy.at(index).at(moduleIndex)};
-      double maxForce =
+
+      // τ = r x F
+      // F = τ/r
+      double maxWheelForce =
           path.drivetrain.wheelMaxTorque / path.drivetrain.wheelRadius;
+
+      // friction = μmg
+      double maxFrictionForce =
+          path.drivetrain.wheelCoF * path.drivetrain.mass * 9.8;
+
+      double maxForce = std::min(maxWheelForce, maxFrictionForce);
 
       // |F|₂² ≤ Fₘₐₓ²
       problem.SubjectTo(moduleF.SquaredNorm() <= maxForce * maxForce);

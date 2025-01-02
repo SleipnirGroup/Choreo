@@ -2,17 +2,17 @@
 
 #pragma once
 
+#include <array>
 #include <numbers>
+#include <utility>
 
-#include <frc/geometry/Pose2d.h>
-#include <units/base.h>
+#include <units/angle.h>
+#include <units/length.h>
 
+#include "choreo/util/FieldDimensions.h"
 #include "choreo/util/Map.h"
 
 namespace choreo::util {
-
-static constexpr units::meter_t fieldLength = 16.5811_m;
-static constexpr units::meter_t fieldWidth = 8.19912_m;
 
 enum class FlipperType { Mirrored, RotateAround };
 
@@ -88,7 +88,7 @@ struct RotateAroundFlipper {
    * @return The flipped heading.
    */
   static constexpr units::radian_t FlipHeading(units::radian_t heading) {
-    return units::radian_t{std::numbers::pi} - heading;
+    return units::radian_t{std::numbers::pi} + heading;
   }
 };
 

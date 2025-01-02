@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use trajoptlib::Translation2d;
 
-use super::{trajectory::DriveType, Expr, SnapshottableType};
+use super::{trajectory::DriveType, upgraders::upgrade_project_file, Expr, SnapshottableType};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum Dimension {
@@ -92,6 +92,7 @@ pub struct RobotConfig<T: SnapshottableType> {
     pub vmax: T, // motor rad/s
     /// motor N*m
     pub tmax: T, // N*m
+    pub cof: T,
     pub bumper: Bumper<T>,
     pub differential_track_width: T,
 }
@@ -107,6 +108,7 @@ impl<T: SnapshottableType> RobotConfig<T> {
             radius: self.radius.snapshot(),
             vmax: self.vmax.snapshot(),
             tmax: self.tmax.snapshot(),
+            cof: self.cof.snapshot(),
             bumper: self.bumper.snapshot(),
             differential_track_width: self.differential_track_width.snapshot(),
         }
@@ -142,7 +144,7 @@ impl RobotConfig<f64> {
 #[serde(rename_all = "camelCase")]
 pub struct ProjectFile {
     pub name: String,
-    pub version: String,
+    pub version: u32,
     #[serde(rename = "type", default)]
     pub r#type: DriveType,
     pub variables: Variables,
@@ -159,7 +161,8 @@ impl ProjectFile {
     /// # Errors
     /// - [`crate::ChoreoError::Json`] if the json string is invalid.
     pub fn from_content(content: &str) -> crate::ChoreoResult<ProjectFile> {
-        serde_json::from_str(content).map_err(Into::into)
+        let val = upgrade_project_file(serde_json::from_str(content)?)?;
+        serde_json::from_value(val).map_err(Into::into)
     }
 }
 
@@ -167,7 +170,7 @@ impl Default for ProjectFile {
     fn default() -> Self {
         ProjectFile {
             name: "New Project".to_string(),
-            version: "v2025.0.0".to_string(),
+            version: super::PROJECT_SCHEMA_VERSION,
             r#type: DriveType::Swerve,
             variables: Variables {
                 expressions: HashMap::new(),
@@ -188,6 +191,7 @@ impl Default for ProjectFile {
                 },
                 mass: Expr::new("150 lbs", 68.038_855_5),
                 inertia: Expr::new("6 kg m^2", 6.0),
+                cof: Expr::new("1.5", 1.5),
                 bumper: Bumper {
                     front: Expr::new("16 in", 0.4064),
                     side: Expr::new("16 in", 0.4064),

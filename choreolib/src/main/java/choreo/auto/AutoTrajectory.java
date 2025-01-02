@@ -2,26 +2,31 @@
 
 package choreo.auto;
 
+import static edu.wpi.first.wpilibj.Alert.AlertType.kError;
+
 import choreo.Choreo.TrajectoryLogger;
+import choreo.auto.AutoFactory.AllianceContext;
 import choreo.auto.AutoFactory.AutoBindings;
 import choreo.trajectory.DifferentialSample;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
-import choreo.util.AllianceFlipUtil;
+import choreo.util.ChoreoAlert;
+import choreo.util.ChoreoAlert.MultiAlert;
+import choreo.util.ChoreoAllianceFlipUtil;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -36,21 +41,35 @@ public class AutoTrajectory {
   // code. This also makes the places with generics exposed to users few
   // and far between. This helps with more novice users
 
-  // did inches to meters like this to keep final
-  private static final double DEFAULT_TOLERANCE_METERS = Units.inchesToMeters(3);
+  private static final MultiAlert triggerTimeNegative =
+      ChoreoAlert.multiAlert(causes -> "Trigger time cannot be negative for " + causes, kError);
+  private static final MultiAlert triggerTimeAboveMax =
+      ChoreoAlert.multiAlert(
+          causes -> "Trigger time cannot be greater than total trajectory time for " + causes + ".",
+          kError);
+  private static final MultiAlert eventNotFound =
+      ChoreoAlert.multiAlert(causes -> "Event Markers " + causes + " not found.", kError);
+  private static final MultiAlert noSamples =
+      ChoreoAlert.multiAlert(causes -> "Trajectories " + causes + " have no samples.", kError);
+  private static final MultiAlert noInitialPose =
+      ChoreoAlert.multiAlert(
+          causes -> "Unable to get initial pose for trajectories " + causes + ".", kError);
+  private static final Alert allianceNotReady =
+      ChoreoAlert.alert("Alliance used but not ready", kError);
 
   private final String name;
   private final Trajectory<? extends TrajectorySample<?>> trajectory;
   private final TrajectoryLogger<? extends TrajectorySample<?>> trajectoryLogger;
   private final Supplier<Pose2d> poseSupplier;
-  private final BiConsumer<Pose2d, ? extends TrajectorySample<?>> controller;
-  private final BooleanSupplier mirrorTrajectory;
+  private final Consumer<Pose2d> resetOdometry;
+  private final Consumer<? extends TrajectorySample<?>> controller;
+  private final AllianceContext allianceCtx;
   private final Timer timer = new Timer();
   private final Subsystem driveSubsystem;
-  private final EventLoop loop;
+  private final AutoRoutine routine;
 
   /**
-   * A way to create slightly less triggers for alot of actions. Not static as to not leak triggers
+   * A way to create slightly less triggers for many actions. Not static as to not leak triggers
    * made here into another static EventLoop.
    */
   private final Trigger offTrigger;
@@ -58,10 +77,8 @@ public class AutoTrajectory {
   /** If this trajectory us currently running */
   private boolean isActive = false;
 
-  /** The time that the previous trajectories took up */
-  private double timeOffset = 0.0;
-
-  private TrajectorySample<?> currentSample;
+  /** If the trajectory ran to completion */
+  private boolean isCompleted = false;
 
   /**
    * Constructs an AutoTrajectory.
@@ -70,64 +87,45 @@ public class AutoTrajectory {
    * @param trajectory The trajectory samples.
    * @param poseSupplier The pose supplier.
    * @param controller The controller function.
-   * @param mirrorTrajectory Getter that determines whether to mirror trajectory.
+   * @param allianceCtx The alliance context.
    * @param trajectoryLogger Optional trajectory logger.
    * @param driveSubsystem Drive subsystem.
-   * @param loop Event loop.
-   * @param bindings {@link Choreo#createAutoFactory}
+   * @param routine Event loop.
+   * @param bindings {@link AutoFactory}
    */
   <SampleType extends TrajectorySample<SampleType>> AutoTrajectory(
       String name,
       Trajectory<SampleType> trajectory,
       Supplier<Pose2d> poseSupplier,
-      BiConsumer<Pose2d, SampleType> controller,
-      BooleanSupplier mirrorTrajectory,
-      Optional<TrajectoryLogger<SampleType>> trajectoryLogger,
+      Consumer<Pose2d> resetOdometry,
+      Consumer<SampleType> controller,
+      AllianceContext allianceCtx,
+      TrajectoryLogger<SampleType> trajectoryLogger,
       Subsystem driveSubsystem,
-      EventLoop loop,
+      AutoRoutine routine,
       AutoBindings bindings) {
     this.name = name;
     this.trajectory = trajectory;
     this.poseSupplier = poseSupplier;
+    this.resetOdometry = resetOdometry;
     this.controller = controller;
-    this.mirrorTrajectory = mirrorTrajectory;
+    this.allianceCtx = allianceCtx;
     this.driveSubsystem = driveSubsystem;
-    this.loop = loop;
-    this.offTrigger = new Trigger(loop, () -> false);
-    this.trajectoryLogger =
-        trajectoryLogger.isPresent()
-            ? trajectoryLogger.get()
-            : new TrajectoryLogger<SampleType>() {
-              public void accept(Trajectory<SampleType> t, Boolean u) {}
-            };
+    this.routine = routine;
+    this.offTrigger = new Trigger(routine.loop(), () -> false);
+    this.trajectoryLogger = trajectoryLogger;
 
     bindings.getBindings().forEach((key, value) -> active().and(atTime(key)).onTrue(value));
   }
 
-  /**
-   * Returns the time since the start of the current trajectory
-   *
-   * @return The time since the start of the current trajectory
-   */
-  private double timeIntoTrajectory() {
-    return timer.get() + timeOffset;
-  }
-
-  /**
-   * Returns the total time of all the trajectories
-   *
-   * @return The total time of all the trajectories
-   */
-  private double totalTime() {
-    return trajectory.getTotalTime();
-  }
-
   @SuppressWarnings("unchecked")
   private void logTrajectory(boolean starting) {
-    TrajectorySample<?> sample = trajectory.getInitialSample();
-    if (sample == null) {
+    var sampleOpt = trajectory.getInitialSample(false);
+    if (sampleOpt.isEmpty()) {
       return;
-    } else if (sample instanceof SwerveSample) {
+    }
+    var sample = sampleOpt.get();
+    if (sample instanceof SwerveSample) {
       TrajectoryLogger<SwerveSample> swerveLogger =
           (TrajectoryLogger<SwerveSample>) trajectoryLogger;
       Trajectory<SwerveSample> swerveTrajectory = (Trajectory<SwerveSample>) trajectory;
@@ -145,65 +143,40 @@ public class AutoTrajectory {
   private void cmdInitialize() {
     timer.restart();
     isActive = true;
-    timeOffset = 0.0;
+    isCompleted = false;
     logTrajectory(true);
   }
 
   @SuppressWarnings("unchecked")
   private void cmdExecute() {
-    TrajectorySample<?> sample =
-        this.trajectory.sampleAt(timeIntoTrajectory(), mirrorTrajectory.getAsBoolean());
-
-    if (sample instanceof SwerveSample) {
-      BiConsumer<Pose2d, SwerveSample> swerveController =
-          (BiConsumer<Pose2d, SwerveSample>) this.controller;
-      SwerveSample swerveSample = (SwerveSample) sample;
-      swerveController.accept(poseSupplier.get(), swerveSample);
-    } else if (sample instanceof DifferentialSample) {
-      BiConsumer<Pose2d, DifferentialSample> differentialController =
-          (BiConsumer<Pose2d, DifferentialSample>) this.controller;
-      DifferentialSample differentialSample = (DifferentialSample) sample;
-      differentialController.accept(poseSupplier.get(), differentialSample);
+    if (!allianceCtx.allianceKnownOrIgnored()) {
+      allianceNotReady.set(true);
+      return;
     }
-
-    currentSample = sample;
+    var sampleOpt = trajectory.sampleAt(timer.get(), allianceCtx.doFlip());
+    if (sampleOpt.isEmpty()) {
+      return;
+    }
+    var sample = sampleOpt.get();
+    if (sample instanceof SwerveSample swerveSample) {
+      var swerveController = (Consumer<SwerveSample>) this.controller;
+      swerveController.accept(swerveSample);
+    } else if (sample instanceof DifferentialSample differentialSample) {
+      var differentialController = (Consumer<DifferentialSample>) this.controller;
+      differentialController.accept(differentialSample);
+    }
   }
 
   private void cmdEnd(boolean interrupted) {
     timer.stop();
-    if (interrupted) {
-      if (currentSample instanceof SwerveSample) {
-        BiConsumer<Pose2d, SwerveSample> swerveController =
-            (BiConsumer<Pose2d, SwerveSample>) this.controller;
-        SwerveSample swerveSample = (SwerveSample) currentSample;
-        swerveController.accept(currentSample.getPose(), swerveSample);
-      } else if (currentSample instanceof DifferentialSample) {
-        BiConsumer<Pose2d, DifferentialSample> differentialController =
-            (BiConsumer<Pose2d, DifferentialSample>) this.controller;
-        DifferentialSample differentialSample = (DifferentialSample) currentSample;
-        differentialController.accept(currentSample.getPose(), differentialSample);
-      }
-    } else {
-      TrajectorySample<?> sample = this.trajectory.getFinalSample();
-
-      if (sample instanceof SwerveSample) {
-        BiConsumer<Pose2d, SwerveSample> swerveController =
-            (BiConsumer<Pose2d, SwerveSample>) this.controller;
-        SwerveSample swerveSample = (SwerveSample) sample;
-        swerveController.accept(poseSupplier.get(), swerveSample);
-      } else if (sample instanceof DifferentialSample) {
-        BiConsumer<Pose2d, DifferentialSample> differentialController =
-            (BiConsumer<Pose2d, DifferentialSample>) this.controller;
-        DifferentialSample differentialSample = (DifferentialSample) sample;
-        differentialController.accept(poseSupplier.get(), differentialSample);
-      }
-    }
     isActive = false;
+    isCompleted = !interrupted;
+    cmdExecute(); // will force the controller to be fed the final sample
     logTrajectory(false);
   }
 
   private boolean cmdIsFinished() {
-    return timeIntoTrajectory() > totalTime();
+    return timer.get() > trajectory.getTotalTime() || !routine.active().getAsBoolean();
   }
 
   /**
@@ -215,12 +188,7 @@ public class AutoTrajectory {
   public Command cmd() {
     // if the trajectory is empty, return a command that will print an error
     if (trajectory.samples().isEmpty()) {
-      return driveSubsystem
-          .runOnce(
-              () -> {
-                DriverStation.reportError("Trajectory " + name + " has no samples", false);
-              })
-          .withName("Trajectory_" + name);
+      return driveSubsystem.runOnce(() -> noSamples.addCause(name)).withName("Trajectory_" + name);
     }
     return new FunctionalCommand(
             this::cmdInitialize,
@@ -232,33 +200,76 @@ public class AutoTrajectory {
   }
 
   /**
+   * Creates a command that resets the robot's odometry to the start of this trajectory.
+   *
+   * @return A command that resets the robot's odometry.
+   */
+  public Command resetOdometry() {
+    return Commands.either(
+            Commands.runOnce(() -> resetOdometry.accept(getInitialPose().get()), driveSubsystem),
+            Commands.runOnce(
+                    () -> {
+                      noInitialPose.addCause(name);
+                      routine.kill();
+                    })
+                .andThen(driveSubsystem.run(() -> {})),
+            () -> getInitialPose().isPresent())
+        .withName("Trajectory_ResetOdometry_" + name);
+  }
+
+  /**
+   * Will get the underlying {@link Trajectory} object.
+   *
+   * <p><b>WARNING:</b> This method is not type safe and should be used with caution. The sample
+   * type of the trajectory should be known before calling this method.
+   *
+   * @param <SampleType> The type of the trajectory samples.
+   * @return The underlying {@link Trajectory} object.
+   */
+  @SuppressWarnings("unchecked")
+  public <SampleType extends TrajectorySample<SampleType>>
+      Trajectory<SampleType> getRawTrajectory() {
+    return (Trajectory<SampleType>) trajectory;
+  }
+
+  /**
    * Will get the starting pose of the trajectory.
    *
-   * <p>This position is mirrored based on the {@code mirrorTrajectory} boolean supplier in the
-   * factory used to make this trajectory
+   * <p>This position is flipped if alliance flipping is enabled and the alliance supplier returns
+   * Red.
+   *
+   * <p>This method returns an empty Optional if the trajectory is empty. This method returns an
+   * empty Optional if alliance flipping is enabled and the alliance supplier returns an empty
+   * Optional.
    *
    * @return The starting pose
    */
   public Optional<Pose2d> getInitialPose() {
-    if (trajectory.samples().isEmpty()) {
+    if (!allianceCtx.allianceKnownOrIgnored()) {
+      allianceNotReady.set(true);
       return Optional.empty();
     }
-    return Optional.of(trajectory.getInitialPose(mirrorTrajectory.getAsBoolean()));
+    return trajectory.getInitialPose(allianceCtx.doFlip());
   }
 
   /**
    * Will get the ending pose of the trajectory.
    *
-   * <p>This position is mirrored based on the {@code mirrorTrajectory} boolean supplier in the
-   * factory used to make this trajectory
+   * <p>This position is flipped if alliance flipping is enabled and the alliance supplier returns
+   * Red.
+   *
+   * <p>This method returns an empty Optional if the trajectory is empty. This method returns an
+   * empty Optional if alliance flipping is enabled and the alliance supplier returns an empty
+   * Optional.
    *
    * @return The starting pose
    */
   public Optional<Pose2d> getFinalPose() {
-    if (trajectory.samples().isEmpty()) {
+    if (!allianceCtx.allianceKnownOrIgnored()) {
+      allianceNotReady.set(true);
       return Optional.empty();
     }
-    return Optional.of(trajectory.getFinalPose(mirrorTrajectory.getAsBoolean()));
+    return trajectory.getFinalPose(allianceCtx.doFlip());
   }
 
   /**
@@ -267,7 +278,7 @@ public class AutoTrajectory {
    * @return A trigger that is true while the trajectory is scheduled.
    */
   public Trigger active() {
-    return new Trigger(loop, () -> this.isActive);
+    return new Trigger(routine.loop(), () -> this.isActive && routine.active().getAsBoolean());
   }
 
   /**
@@ -282,31 +293,105 @@ public class AutoTrajectory {
   }
 
   /**
-   * Returns a trigger that has a rising edge when the command finishes, this edge will fall again
-   * the next cycle.
+   * Returns a trigger that rises to true when the trajectory ends and falls after one pulse.
    *
-   * <p>This is not a substitute for the {@link #inactive()} trigger, inactive will stay true until
-   * the trajectory is scheduled again and will also be true if thus trajectory has never been
-   * scheduled.
+   * <p>This is different from inactive() in a few ways.
    *
-   * @return A trigger that is true when the command is finished.
+   * <ul>
+   *   <li>This will never be true if the trajectory is interrupted
+   *   <li>This will never be true before the trajectory is run
+   *   <li>This will fall the next cycle after the trajectory ends
+   * </ul>
+   *
+   * <p>Why does the trigger need to fall?
+   *
+   * <pre><code>
+   * //Lets say we had this code segment
+   * Trigger hasGamepiece = ...;
+   * Trigger noGamepiece = hasGamepiece.negate();
+   *
+   * AutoTrajectory rushMidTraj = ...;
+   * AutoTrajectory goShootGamepiece = ...;
+   * AutoTrajectory pickupAnotherGamepiece = ...;
+   *
+   * routine.enabled().onTrue(rushMidTraj.cmd());
+   *
+   * rushMidTraj.done(10).and(noGamepiece).onTrue(pickupAnotherGamepiece.cmd());
+   * rushMidTraj.done(10).and(hasGamepiece).onTrue(goShootGamepiece.cmd());
+   *
+   * // If done never falls when a new trajectory is scheduled
+   * // then these triggers leak into the next trajectory, causing the next note pickup
+   * // to trigger goShootGamepiece.cmd() even if we no longer care about these checks
+   * </code></pre>
+   *
+   * @param cyclesToDelay The number of cycles to delay the trigger from rising to true.
+   * @return A trigger that is true when the trajectory is finished.
+   */
+  public Trigger done(int cyclesToDelay) {
+    BooleanSupplier checker =
+        new BooleanSupplier() {
+          /** The last used value for trajectory completeness */
+          boolean lastCompleteness = false;
+
+          /** The cycle to be true for */
+          int cycleTarget = -1;
+
+          @Override
+          public boolean getAsBoolean() {
+            if (!isCompleted) {
+              // update last seen value
+              lastCompleteness = false;
+              return false;
+            }
+            if (!lastCompleteness && isCompleted) {
+              // if just flipped to completed update last seen value
+              // and store the cycleTarget based of the current cycle
+              lastCompleteness = true;
+              cycleTarget = routine.pollCount() + cyclesToDelay;
+            }
+            // finally if check the cycle matches the target
+            return routine.pollCount() == cycleTarget;
+          }
+        };
+    return inactive().and(new Trigger(routine.loop(), checker));
+  }
+
+  /**
+   * Returns a trigger that rises to true when the trajectory ends and falls after one pulse.
+   *
+   * <p>This is different from inactive() in a few ways.
+   *
+   * <ul>
+   *   <li>This will never be true if the trajectory is interrupted
+   *   <li>This will never be true before the trajectory is run
+   *   <li>This will fall the next cycle after the trajectory ends
+   * </ul>
+   *
+   * <p>Why does the trigger need to fall?
+   *
+   * <pre><code>
+   * //Lets say we had this code segment
+   * Trigger hasGamepiece = ...;
+   * Trigger noGamepiece = hasGamepiece.negate();
+   *
+   * AutoTrajectory rushMidTraj = ...;
+   * AutoTrajectory goShootGamepiece = ...;
+   * AutoTrajectory pickupAnotherGamepiece = ...;
+   *
+   * routine.enabled().onTrue(rushMidTraj.cmd());
+   *
+   * rushMidTraj.done().and(noGamepiece).onTrue(pickupAnotherGamepiece.cmd());
+   * rushMidTraj.done().and(hasGamepiece).onTrue(goShootGamepiece.cmd());
+   *
+   * // If done never falls when a new trajectory is scheduled
+   * // then these triggers leak into the next trajectory, causing the next note pickup
+   * // to trigger goShootGamepiece.cmd() even if we no longer care about these checks
+   * </code></pre>
+   *
+   * @return A trigger that is true when the trajectory is finished.
    */
   public Trigger done() {
-    return new Trigger(
-        loop,
-        new BooleanSupplier() {
-          boolean wasJustActive = false;
-
-          public boolean getAsBoolean() {
-            if (isActive) {
-              wasJustActive = true;
-            } else if (wasJustActive) {
-              wasJustActive = false;
-              return true;
-            }
-            return false;
-          }
-        });
+    return done(0);
   }
 
   /**
@@ -316,23 +401,22 @@ public class AutoTrajectory {
    * @return A trigger that is true when timeSinceStart has elapsed.
    */
   public Trigger atTime(double timeSinceStart) {
-    // The timer shhould never be negative so report this as a warning
+    // The timer should never be negative so report this as a warning
     if (timeSinceStart < 0) {
-      DriverStation.reportWarning("Trigger time cannot be negative for " + name, true);
+      triggerTimeNegative.addCause(name);
       return offTrigger;
     }
 
     // The timer should never exceed the total trajectory time so report this as a warning
-    if (timeSinceStart > totalTime()) {
-      DriverStation.reportWarning(
-          "Trigger time cannot be greater than total trajectory time for " + name, true);
+    if (timeSinceStart > trajectory.getTotalTime()) {
+      triggerTimeAboveMax.addCause(name);
       return offTrigger;
     }
 
     // Make the trigger only be high for 1 cycle when the time has elapsed,
     // this is needed for better support of multi-time triggers for multi events
     return new Trigger(
-        loop,
+        routine.loop(),
         new BooleanSupplier() {
           double lastTimestamp = timer.get();
 
@@ -357,13 +441,15 @@ public class AutoTrajectory {
    * @param eventName The name of the event.
    * @return A trigger that is true when the event with the given name has been reached based on
    *     time.
+   * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
+   *     GUI</a>
    */
   public Trigger atTime(String eventName) {
     boolean foundEvent = false;
     Trigger trig = offTrigger;
 
     for (var event : trajectory.getEvents(eventName)) {
-      // This could create alot of objects, could be done a more efficient way
+      // This could create a lot of objects, could be done a more efficient way
       // with having it all be 1 trigger that just has a list of times and checks each one each
       // cycle
       // or something like that. If choreo starts proposing memory issues we can look into this.
@@ -374,38 +460,150 @@ public class AutoTrajectory {
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
     if (!foundEvent) {
-      DriverStation.reportWarning("Event \"" + eventName + "\" not found for " + name, true);
+      eventNotFound.addCause(name);
+    }
+
+    return trig;
+  }
+
+  private boolean withinTolerance(Rotation2d lhs, Rotation2d rhs, double toleranceRadians) {
+    if (Math.abs(toleranceRadians) > Math.PI) {
+      return true;
+    }
+    double dot = lhs.getCos() * rhs.getCos() + lhs.getSin() * rhs.getSin();
+    // cos(θ) >= cos(tolerance) means |θ| <= tolerance, for tolerance in [-pi, pi], as pre-checked
+    // above.
+    return dot > Math.cos(toleranceRadians);
+  }
+
+  /**
+   * Returns a trigger that is true when the robot is within toleranceMeters of the given pose.
+   *
+   * <p>The pose is flipped if alliance flipping is enabled and the alliance supplier returns Red.
+   *
+   * <p>While alliance flipping is enabled and the alliance supplier returns empty, the trigger will
+   * return false.
+   *
+   * @param pose The pose to check against, unflipped.
+   * @param toleranceMeters The tolerance in meters.
+   * @param toleranceRadians The heading tolerance in radians.
+   * @return A trigger that is true when the robot is within toleranceMeters of the given pose.
+   */
+  public Trigger atPose(Pose2d pose, double toleranceMeters, double toleranceRadians) {
+    Pose2d flippedPose = ChoreoAllianceFlipUtil.flip(pose);
+    return new Trigger(
+            routine.loop(),
+            () -> {
+              if (allianceCtx.allianceKnownOrIgnored()) {
+                final Pose2d currentPose = poseSupplier.get();
+                if (allianceCtx.doFlip()) {
+                  boolean transValid =
+                      currentPose.getTranslation().getDistance(flippedPose.getTranslation())
+                          < toleranceMeters;
+                  boolean rotValid =
+                      withinTolerance(
+                          currentPose.getRotation(), flippedPose.getRotation(), toleranceRadians);
+                  return transValid && rotValid;
+                } else {
+                  boolean transValid =
+                      currentPose.getTranslation().getDistance(pose.getTranslation())
+                          < toleranceMeters;
+                  boolean rotValid =
+                      withinTolerance(
+                          currentPose.getRotation(), pose.getRotation(), toleranceRadians);
+                  return transValid && rotValid;
+                }
+              } else {
+                allianceNotReady.set(true);
+                return false;
+              }
+            })
+        .and(active());
+  }
+
+  /**
+   * Returns a trigger that is true when the robot is within toleranceMeters and toleranceRadians of
+   * the given event's pose.
+   *
+   * <p>A warning will be printed to the DriverStation if the event is not found and the trigger
+   * will always be false.
+   *
+   * @param eventName The name of the event.
+   * @param toleranceMeters The tolerance in meters.
+   * @param toleranceRadians The heading tolerance in radians.
+   * @return A trigger that is true when the robot is within toleranceMeters of the given events
+   *     pose.
+   * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
+   *     GUI</a>
+   */
+  public Trigger atPose(String eventName, double toleranceMeters, double toleranceRadians) {
+    boolean foundEvent = false;
+    Trigger trig = offTrigger;
+
+    for (var event : trajectory.getEvents(eventName)) {
+      // This could create a lot of objects, could be done a more efficient way
+      // with having it all be 1 trigger that just has a list of possess and checks each one each
+      // cycle or something like that.
+      // If choreo starts showing memory issues we can look into this.
+      Optional<Pose2d> poseOpt =
+          trajectory
+              // don't mirror here because the poses are mirrored themselves
+              // this also lets atPose be called before the alliance is ready
+              .sampleAt(event.timestamp, false)
+              .map(TrajectorySample::getPose);
+      if (poseOpt.isPresent()) {
+        trig = trig.or(atPose(poseOpt.get(), toleranceMeters, toleranceRadians));
+        foundEvent = true;
+      }
+    }
+
+    // The user probably expects an event to exist if they're trying to do something at that event,
+    // report the missing event.
+    if (!foundEvent) {
+      eventNotFound.addCause(name);
     }
 
     return trig;
   }
 
   /**
-   * Returns a trigger that is true when the robot is within toleranceMeters of the given pose.
+   * Returns a trigger that is true when the robot is within toleranceMeters of the given
+   * translation.
    *
-   * <p>This position is mirrored based on the {@code mirrorTrajectory} boolean supplier in the
-   * factory used to make this trajectory.
+   * <p>The translation is flipped if alliance flipping is enabled and the alliance supplier returns
+   * Red.
    *
-   * @param pose The pose to check against
+   * <p>While alliance flipping is enabled and the alliance supplier returns empty, the trigger will
+   * return false.
+   *
+   * @param translation The translation to check against, unflipped.
    * @param toleranceMeters The tolerance in meters.
-   * @return A trigger that is true when the robot is within toleranceMeters of the given pose.
+   * @return A trigger that is true when the robot is within toleranceMeters of the given
+   *     translation.
    */
-  public Trigger atPose(Pose2d pose, double toleranceMeters) {
-    Translation2d checkedTrans =
-        mirrorTrajectory.getAsBoolean()
-            ? AllianceFlipUtil.flip(pose.getTranslation())
-            : pose.getTranslation();
+  public Trigger atTranslation(Translation2d translation, double toleranceMeters) {
+    Translation2d flippedTranslation = ChoreoAllianceFlipUtil.flip(translation);
     return new Trigger(
-        loop,
-        () -> {
-          Translation2d currentTrans = poseSupplier.get().getTranslation();
-          return currentTrans.getDistance(checkedTrans) < toleranceMeters;
-        });
+            routine.loop(),
+            () -> {
+              if (allianceCtx.allianceKnownOrIgnored()) {
+                final Translation2d currentTrans = poseSupplier.get().getTranslation();
+                if (allianceCtx.doFlip()) {
+                  return currentTrans.getDistance(flippedTranslation) < toleranceMeters;
+                } else {
+                  return currentTrans.getDistance(translation) < toleranceMeters;
+                }
+              } else {
+                allianceNotReady.set(true);
+                return false;
+              }
+            })
+        .and(active());
   }
 
   /**
-   * Returns a trigger that is true when the robot is within toleranceMeters of the given events
-   * pose.
+   * Returns a trigger that is true when the robot is within toleranceMeters and toleranceRadians of
+   * the given event's translation.
    *
    * <p>A warning will be printed to the DriverStation if the event is not found and the trigger
    * will always be false.
@@ -413,73 +611,39 @@ public class AutoTrajectory {
    * @param eventName The name of the event.
    * @param toleranceMeters The tolerance in meters.
    * @return A trigger that is true when the robot is within toleranceMeters of the given events
-   *     pose.
+   *     translation.
+   * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
+   *     GUI</a>
    */
-  public Trigger atPose(String eventName, double toleranceMeters) {
+  public Trigger atTranslation(String eventName, double toleranceMeters) {
     boolean foundEvent = false;
     Trigger trig = offTrigger;
 
     for (var event : trajectory.getEvents(eventName)) {
-      // This could create alot of objects, could be done a more efficient way
-      // with having it all be 1 trigger that just has a list of possess and checks each one each
+      // This could create a lot of objects, could be done a more efficient way
+      // with having it all be 1 trigger that just has a list of poses and checks each one each
       // cycle or something like that.
-      // If choreo starts proposing memory issues we can look into this.
-      Pose2d pose = trajectory.sampleAt(event.timestamp, mirrorTrajectory.getAsBoolean()).getPose();
-      trig = trig.or(atPose(pose, toleranceMeters));
-      foundEvent = true;
+      // If choreo starts showing memory issues we can look into this.
+      Optional<Translation2d> translationOpt =
+          trajectory
+              // don't mirror here because the translations are mirrored themselves
+              // this also lets atTranslation be called before the alliance is ready
+              .sampleAt(event.timestamp, false)
+              .map(TrajectorySample::getPose)
+              .map(Pose2d::getTranslation);
+      if (translationOpt.isPresent()) {
+        trig = trig.or(atTranslation(translationOpt.get(), toleranceMeters));
+        foundEvent = true;
+      }
     }
 
     // The user probably expects an event to exist if they're trying to do something at that event,
     // report the missing event.
     if (!foundEvent) {
-      DriverStation.reportWarning("Event \"" + eventName + "\" not found for " + name, true);
+      eventNotFound.addCause(name);
     }
 
     return trig;
-  }
-
-  /**
-   * Returns a trigger that is true when the robot is within 3 inches of the given events pose.
-   *
-   * <p>A warning will be printed to the DriverStation if the event is not found and the trigger
-   * will always be false.
-   *
-   * @param eventName The name of the event.
-   * @return A trigger that is true when the robot is within 3 inches of the given events pose.
-   */
-  public Trigger atPose(String eventName) {
-    return atPose(eventName, DEFAULT_TOLERANCE_METERS);
-  }
-
-  /**
-   * Returns a trigger that is true when the event with the given name has been reached based on
-   * time and the robot is within toleranceMeters of the given events pose.
-   *
-   * <p>A warning will be printed to the DriverStation if the event is not found and the trigger
-   * will always be false.
-   *
-   * @param eventName The name of the event.
-   * @param toleranceMeters The tolerance in meters.
-   * @return A trigger that is true when the event with the given name has been reached based on
-   *     time and the robot is within toleranceMeters of the given events pose.
-   */
-  public Trigger atTimeAndPlace(String eventName, double toleranceMeters) {
-    return atTime(eventName).and(atPose(eventName, toleranceMeters));
-  }
-
-  /**
-   * Returns a trigger that is true when the event with the given name has been reached based on
-   * time and the robot is within 3 inches of the given events pose.
-   *
-   * <p>A warning will be printed to the DriverStation if the event is not found and the trigger
-   * will always be false.
-   *
-   * @param eventName The name of the event.
-   * @return A trigger that is true when the event with the given name has been reached based on
-   *     time and the robot is within 3 inches of the given events pose.
-   */
-  public Trigger atTimeAndPlace(String eventName) {
-    return atTimeAndPlace(eventName, DEFAULT_TOLERANCE_METERS);
   }
 
   /**
@@ -487,23 +651,51 @@ public class AutoTrajectory {
    *
    * @param eventName The name of the event.
    * @return An array of all the timestamps of the events with the given name.
+   * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
+   *     GUI</a>
    */
   public double[] collectEventTimes(String eventName) {
-    return trajectory.getEvents(eventName).stream().mapToDouble(e -> e.timestamp).toArray();
+    double[] times =
+        trajectory.getEvents(eventName).stream()
+            .filter(e -> e.timestamp >= 0 && e.timestamp <= trajectory.getTotalTime())
+            .mapToDouble(e -> e.timestamp)
+            .toArray();
+
+    if (times.length == 0) {
+      eventNotFound.addCause("collectEvents(" + eventName + ")");
+    }
+
+    return times;
   }
 
   /**
    * Returns an array of all the poses of the events with the given name.
    *
+   * <p>The returned poses are always unflipped. If you use them in a trigger like `atPose` or
+   * `atTranslation`, the library will automatically flip them if necessary. If you intend using
+   * them in a different context, you can use {@link ChoreoAllianceFlipUtil#flip} to flip them.
+   *
    * @param eventName The name of the event.
    * @return An array of all the poses of the events with the given name.
+   * @see <a href="https://choreo.autos/usage/editing-paths/#event-markers">Event Markers in the
+   *     GUI</a>
    */
   public Pose2d[] collectEventPoses(String eventName) {
-    var times = collectEventTimes(eventName);
-    var poses = new Pose2d[times.length];
+    double[] times = collectEventTimes(eventName);
+    Pose2d[] poses = new Pose2d[times.length];
     for (int i = 0; i < times.length; i++) {
-      poses[i] = trajectory.sampleAt(times[i], mirrorTrajectory.getAsBoolean()).getPose();
+      Pose2d pose =
+          trajectory
+              .sampleAt(times[i], false)
+              .map(TrajectorySample::getPose)
+              .get(); // the event times are guaranteed to be valid
+      poses[i] = pose;
     }
     return poses;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return obj instanceof AutoTrajectory traj && name.equals(traj.name);
   }
 }

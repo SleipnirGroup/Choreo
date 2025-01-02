@@ -73,39 +73,48 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
   /**
    * Returns the first {@link SampleType} in the trajectory.
    *
-   * <p><b>NULL SAFETY:</b> This function will return null if the trajectory is empty.
+   * <p>This function will return an empty Optional if the trajectory is empty.
    *
+   * @param mirrorForRedAlliance whether or not to return the sample as mirrored across the field
    * @return The first {@link SampleType} in the trajectory.
    */
-  public SampleType getInitialSample() {
+  public Optional<SampleType> getInitialSample(boolean mirrorForRedAlliance) {
     if (samples.isEmpty()) {
-      return null;
+      return Optional.empty();
     }
-    return samples.get(0);
+    final var sample = samples.get(0);
+    return Optional.of(mirrorForRedAlliance ? sample.flipped() : sample);
   }
 
   /**
    * Returns the last {@link SampleType} in the trajectory.
    *
-   * <p><b>NULL SAFETY:</b> This function will return null if the trajectory is empty.
+   * <p>This function will return an empty Optional if the trajectory is empty.
    *
+   * @param mirrorForRedAlliance whether or not to return the sample as mirrored across the field
    * @return The last {@link SampleType} in the trajectory.
    */
-  public SampleType getFinalSample() {
+  public Optional<SampleType> getFinalSample(boolean mirrorForRedAlliance) {
     if (samples.isEmpty()) {
-      return null;
+      return Optional.empty();
     }
-    return samples.get(samples.size() - 1);
+    final var sample = samples.get(samples.size() - 1);
+    return Optional.of(mirrorForRedAlliance ? sample.flipped() : sample);
   }
 
-  private SampleType sampleInternal(double timestamp) {
+  private Optional<SampleType> sampleInternal(double timestamp) {
+    if (samples.isEmpty()) {
+      return Optional.empty();
+    } else if (samples.size() == 1) {
+      return Optional.of(samples.get(0));
+    }
     if (timestamp < samples.get(0).getTimestamp()) {
       // timestamp oob, return the initial state
-      return getInitialSample();
+      return getInitialSample(false);
     }
     if (timestamp >= getTotalTime()) {
       // timestamp oob, return the final state
-      return getFinalSample();
+      return getFinalSample(false);
     }
 
     // binary search to find the sample before and ahead of the timestamp
@@ -122,87 +131,72 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
     }
 
     if (low == 0) {
-      return samples.get(low);
+      return Optional.of(samples.get(low));
     }
 
     var behindState = samples.get(low - 1);
     var aheadState = samples.get(low);
 
     if ((aheadState.getTimestamp() - behindState.getTimestamp()) < 1e-6) {
-      return aheadState;
+      return Optional.of(aheadState);
     }
 
-    return behindState.interpolate(aheadState, timestamp);
+    return Optional.of(behindState.interpolate(aheadState, timestamp));
   }
 
   /**
    * Return an interpolated sample of the trajectory at the given timestamp.
    *
-   * <p><b>NULL SAFETY:</b> This function will return null if the trajectory is empty.
+   * <p>This function will return an empty Optional if the trajectory is empty.
    *
    * @param timestamp The timestamp of this sample relative to the beginning of the trajectory.
    * @param mirrorForRedAlliance whether or not to return the sample as mirrored across the field
    *     midline (as in 2023).
    * @return The SampleType at the given time.
    */
-  public SampleType sampleAt(double timestamp, boolean mirrorForRedAlliance) {
-    SampleType state;
-    if (samples.isEmpty()) {
-      return null;
-    } else if (samples.size() == 1) {
-      state = samples.get(0);
-    } else {
-      state = sampleInternal(timestamp);
-    }
-    return mirrorForRedAlliance ? state.flipped() : state;
+  public Optional<SampleType> sampleAt(double timestamp, boolean mirrorForRedAlliance) {
+    Optional<SampleType> state = sampleInternal(timestamp);
+    return mirrorForRedAlliance ? state.map(SampleType::flipped) : state;
   }
 
   /**
    * Returns the initial pose of the trajectory.
    *
-   * <p><b>NULL SAFETY:</b> This function will return null if the trajectory is empty.
+   * <p>This function will return an empty Optional if the trajectory is empty.
    *
    * @param mirrorForRedAlliance whether or not to return the pose as mirrored across the field
    * @return the initial pose of the trajectory.
    */
-  public Pose2d getInitialPose(boolean mirrorForRedAlliance) {
+  public Optional<Pose2d> getInitialPose(boolean mirrorForRedAlliance) {
     if (samples.isEmpty()) {
-      return null;
+      return Optional.empty();
     }
-    if (mirrorForRedAlliance) {
-      return samples.get(0).flipped().getPose();
-    }
-    return samples.get(0).getPose();
+    return getInitialSample(mirrorForRedAlliance).map(SampleType::getPose);
   }
 
   /**
    * Returns the final pose of the trajectory.
    *
-   * <p><b>NULL SAFETY:</b> This function will return null if the trajectory is empty.
+   * <p>This function will return an empty Optional if the trajectory is empty.
    *
    * @param mirrorForRedAlliance whether or not to return the pose as mirrored across the field
    * @return the final pose of the trajectory.
    */
-  public Pose2d getFinalPose(boolean mirrorForRedAlliance) {
+  public Optional<Pose2d> getFinalPose(boolean mirrorForRedAlliance) {
     if (samples.isEmpty()) {
-      return null;
+      return Optional.empty();
     }
-    if (mirrorForRedAlliance) {
-      return samples.get(samples.size() - 1).flipped().getPose();
-    }
-    return samples.get(samples.size() - 1).getPose();
+    return getFinalSample(mirrorForRedAlliance).map(SampleType::getPose);
   }
 
   /**
-   * Returns the total time of the trajectory (the timestamp of the last sample)
+   * Returns the total time of the trajectory (the timestamp of the last sample). This will return 0
+   * if the trajectory is empty.
    *
    * @return the total time of the trajectory (the timestamp of the last sample)
    */
   public double getTotalTime() {
-    if (samples.isEmpty()) {
-      return 0;
-    }
-    return samples.get(samples.size() - 1).getTimestamp();
+    return getFinalSample(false).map(SampleType::getTimestamp).orElse(0.0);
   }
 
   /**
@@ -212,20 +206,6 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
    */
   public Pose2d[] getPoses() {
     return samples.stream().map(SampleType::getPose).toArray(Pose2d[]::new);
-  }
-
-  /**
-   * Returns an array of samples
-   *
-   * @return an array of samples
-   */
-  @SuppressWarnings("unchecked")
-  public SampleType[] sampleArray() {
-    if (!samples.isEmpty()) {
-      return samples.toArray(samples.get(0).makeArray(samples.size()));
-    } else {
-      return (SampleType[]) new Object[0];
-    }
   }
 
   /**

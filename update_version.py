@@ -6,10 +6,10 @@ A utility script to update the version in multiple files.
 simply run `python update_version.py <version>` to update the version in the files.
 """
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
-import re
-from typing import Literal, Callable
+from typing import Callable, Literal
 
 
 def default_version_string(v: str, count: str, hash: str, mod: str, num: str):
@@ -34,6 +34,21 @@ LOCATIONS: list[VersionLocation] = [
     VersionLocation(
         relative_path=Path("package.json"),
         version_path=["version"],
+        file_format="json2",
+    ),
+    VersionLocation(
+        relative_path=Path("choreolib/ChoreoLib2025Beta.json"),
+        version_path=["version"],
+        file_format="json2",
+    ),
+    VersionLocation(
+        relative_path=Path("choreolib/ChoreoLib2025Beta.json"),
+        version_path=["javaDependencies", 0, "version"],
+        file_format="json2",
+    ),
+    VersionLocation(
+        relative_path=Path("choreolib/ChoreoLib2025Beta.json"),
+        version_path=["cppDependencies", 0, "version"],
         file_format="json2",
     ),
     VersionLocation(
@@ -116,6 +131,7 @@ def update_version(version: str) -> None:
                 raise e
             with open(file_path, "w") as f:
                 json.dump(og, f, indent=int(location.file_format[-1]))
+                f.write("\n")
         elif location.file_format == "toml":
             import tomlkit
 
