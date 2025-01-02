@@ -49,7 +49,7 @@ import {
   IWaypointScope
 } from "./ConstraintStore";
 import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
-import { IExpressionStore, IVariables, Variables } from "./ExpressionStore";
+import { IExpressionStore, IVariables, variables } from "./ExpressionStore";
 import {
   IHolonomicWaypointStore,
   HolonomicWaypointStore as WaypointStore
@@ -215,7 +215,6 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
     }
   };
 }
-const variables = Variables.create({ expressions: {}, poses: {} });
 
 const env = {
   selectedSidebar: () => safeGetIdentifier(doc.selectedSidebarItem),
@@ -621,7 +620,7 @@ export async function openProject(projectPath: OpenFilePayload) {
       throw "Internal error. Check console logs.";
     }
     doc.deserializeChor(project);
-    doc.pathlist.paths.clear();
+    doc.pathlist.deleteAll();
     trajectories.forEach((trajectory) => {
       doc.pathlist.addPath(trajectory.name, true, trajectory);
     });

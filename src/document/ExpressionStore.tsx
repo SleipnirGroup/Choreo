@@ -196,15 +196,13 @@ export const ExpressionStore = types
   .volatile((self) => ({
     tempDisableRecalc: false,
     value: 0,
+    // To avoid circular initialization, we set the correct scope getter in afterCreate
     getScope: () => {
-      // intentionally not typing it here, so that there's not a circular type dependency
-      const env = getEnv(self);
-      if (env.vars === undefined) {
-        tracing.error("Evaluating without variables!", self.toString());
-        return new Map<string, any>();
-      }
-      const scope = env.vars().scope;
-      return scope;
+      tracing.error(
+        "ExpressionStore did not set its scope getter!",
+        self.toString()
+      );
+      return new Map<string, any>();
     }
   }))
   .views((self) => ({
@@ -444,6 +442,7 @@ export const ExpressionStore = types
     let recalcDispose: IReactionDisposer;
     return {
       afterCreate: () => {
+        self.setScopeGetter(() => variables.scope);
         recalcDispose = reaction(
           () => {
             if (!self.tempDisableRecalc) {
@@ -582,7 +581,6 @@ export const Variables = types
           dimension
         });
       }
-      store.setScopeGetter(() => self.scope);
 
       return store;
     },
@@ -661,3 +659,7 @@ export const Variables = types
     }
   }));
 export type IVariables = Instance<typeof Variables>;
+
+// A global store of variables for all ExpressionStores to share.
+// Defined here to avoid circular imports, but is attached under the DocumentModel tree.
+export const variables = Variables.create({ expressions: {}, poses: {} });
