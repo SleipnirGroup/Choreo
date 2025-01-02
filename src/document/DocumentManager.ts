@@ -590,11 +590,11 @@ export async function setupEventListeners() {
 
 export async function openProject(projectPath: OpenFilePayload) {
   // Capture the state prior to the deserialization
-  let originalRoot = await Commands.getDeployRoot();
-  let originalSnapshot = getSnapshot(doc);
-  let originalUiState = getSnapshot(uiState);
-  let originalHistory = getSnapshot(doc.history);
-  let originalLastOpenedItem = localStorage.getItem(
+  const originalRoot = await Commands.getDeployRoot();
+  const originalSnapshot = getSnapshot(doc);
+  const originalUiState = getSnapshot(uiState);
+  const originalHistory = getSnapshot(doc.history);
+  const originalLastOpenedItem = localStorage.getItem(
     LocalStorageKeys.LAST_OPENED_FILE_LOCATION
   );
   try {
