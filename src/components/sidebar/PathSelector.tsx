@@ -1,4 +1,9 @@
-import { KeyboardArrowDown, Route, Settings } from "@mui/icons-material";
+import {
+  KeyboardArrowDown,
+  Route,
+  Settings,
+  ShapeLine
+} from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
   CircularProgress,
@@ -83,6 +88,7 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     this.searchForName("");
     const selected = this.props.uuid == doc.pathlist.activePathUUID;
     const name = this.getPath().name;
+    const upToDate = this.getPath().ui.upToDate;
     if (name != this.state.name && !this.state.renaming) {
       this.state.name = name;
     }
@@ -105,13 +111,29 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             }}
             variant="indeterminate"
           ></CircularProgress>
-        ) : (
+        ) : upToDate ? (
           <Route
             className={styles.SidebarIcon}
             htmlColor={
               selected ? "var(--select-yellow)" : "var(--accent-purple)"
             }
           />
+        ) : (
+          <IconButton
+            className={styles.SidebarIcon}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              doc.generatePath(this.getPath().uuid);
+            }}
+          >
+            <ShapeLine
+              className={styles.SidebarIcon}
+              htmlColor={
+                selected ? "var(--select-yellow)" : "var(--accent-purple)"
+              }
+            ></ShapeLine>
+          </IconButton>
         )}
 
         <TextField
