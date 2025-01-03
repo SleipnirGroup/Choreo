@@ -235,6 +235,13 @@ const env = {
   history: () => doc.history,
   vars: () => doc.variables,
   renameVariable: renameVariable,
+  exporter: (uuid: string) => {
+    try {
+      writeTrajectory(uuid);
+    } catch (e) {
+      tracing.error(e);
+    }
+  },
   create: getConstructors(() => doc.variables)
 };
 export type Env = typeof env;
@@ -272,13 +279,6 @@ function renameVariable(find: string, replace: string) {
   });
 }
 export function setup() {
-  doc.pathlist.setExporter((uuid) => {
-    try {
-      writeTrajectory(uuid);
-    } catch (e) {
-      tracing.error(e);
-    }
-  });
   doc.history.clear();
   setupEventListeners()
     .then(() => newProject())
@@ -588,6 +588,14 @@ export async function setupEventListeners() {
 }
 
 export async function openProject(projectPath: OpenFilePayload) {
+  // Capture the state prior to the deserialization
+  const originalRoot = await Commands.getDeployRoot();
+  const originalSnapshot = getSnapshot(doc);
+  const originalUiState = getSnapshot(uiState);
+  const originalHistory = getSnapshot(doc.history);
+  const originalLastOpenedItem = localStorage.getItem(
+    LocalStorageKeys.LAST_OPENED_FILE_LOCATION
+  );
   try {
     const dir = projectPath.dir;
     const name = projectPath.name.split(".")[0];
@@ -624,7 +632,16 @@ export async function openProject(projectPath: OpenFilePayload) {
     );
     doc.history.clear();
   } catch (e) {
-    await Commands.setDeployRoot("");
+    await Commands.setDeployRoot(originalRoot);
+    if (originalLastOpenedItem != null) {
+      localStorage.setItem(
+        LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
+        originalLastOpenedItem
+      );
+    }
+    applySnapshot(doc, originalSnapshot);
+    applySnapshot(uiState, originalUiState);
+    applySnapshot(doc.history, originalHistory);
     throw e;
   }
 }
