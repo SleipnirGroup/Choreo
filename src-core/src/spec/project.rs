@@ -1,9 +1,12 @@
-use std::collections::HashMap;
-
+use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use trajoptlib::Translation2d;
 
-use super::{trajectory::DriveType, upgraders::upgrade_project_file, Expr, SnapshottableType};
+use crate::round5;
+
+use super::{
+    trajectory::DriveType, version_handlers::upgrade_project_file, Expr, SnapshottableType,
+};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub enum Dimension {
@@ -32,8 +35,8 @@ pub struct PoseVariable {
 }
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Variables {
-    pub expressions: HashMap<String, Variable>,
-    pub poses: HashMap<String, PoseVariable>,
+    pub expressions: IndexMap<String, Variable>,
+    pub poses: IndexMap<String, PoseVariable>,
 }
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Bumper<T: SnapshottableType> {
@@ -51,6 +54,17 @@ impl<T: SnapshottableType> Bumper<T> {
         }
     }
 }
+
+impl Bumper<f64> {
+    pub fn round(&self) -> Bumper<f64> {
+        Bumper {
+            front: round5(self.front),
+            side: round5(self.side),
+            back: round5(self.back),
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Module<T: SnapshottableType> {
     pub x: T,
@@ -77,7 +91,15 @@ impl Module<f64> {
     pub fn radius(&self) -> f64 {
         self.x.hypot(self.y)
     }
+
+    pub fn round(&self) -> Module<f64> {
+        Module {
+            x: round5(self.x),
+            y: round5(self.y),
+        }
+    }
 }
+
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 #[serde(rename_all = "camelCase")]
 pub struct RobotConfig<T: SnapshottableType> {
@@ -111,9 +133,10 @@ impl<T: SnapshottableType> RobotConfig<T> {
             cof: self.cof.snapshot(),
             bumper: self.bumper.snapshot(),
             differential_track_width: self.differential_track_width.snapshot(),
-        }
+        }.round()
     }
 }
+
 impl<T: SnapshottableType> RobotConfig<T> {
     pub fn wheel_max_torque(&self) -> f64 {
         self.tmax.snapshot() * self.gearing.snapshot()
@@ -122,6 +145,7 @@ impl<T: SnapshottableType> RobotConfig<T> {
         self.vmax.snapshot() / self.gearing.snapshot()
     }
 }
+
 impl RobotConfig<f64> {
     pub fn module_translations(&self) -> Vec<Translation2d> {
         // FL, BL, BR, FR
@@ -138,18 +162,33 @@ impl RobotConfig<f64> {
             },
         ]
     }
+
+    pub fn round(&self) -> RobotConfig<f64> {
+        RobotConfig {
+            front_left: self.front_left.round(),
+            back_left: self.back_left.round(),
+            mass: round5(self.mass),
+            inertia: round5(self.inertia),
+            gearing: round5(self.gearing),
+            radius: round5(self.radius),
+            vmax: round5(self.vmax),
+            tmax: round5(self.tmax),
+            cof: round5(self.cof),
+            bumper: self.bumper.round(),
+            differential_track_width: round5(self.differential_track_width),
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ProjectFile {
     pub name: String,
-    pub version: u32,
-    #[serde(rename = "type", default)]
+    pub version: u64,
+    #[serde(rename = "type")]
     pub r#type: DriveType,
     pub variables: Variables,
     pub config: RobotConfig<Expr>,
-    #[serde(default)]
     pub generation_features: Vec<String>,
 }
 
@@ -173,8 +212,8 @@ impl Default for ProjectFile {
             version: super::PROJECT_SCHEMA_VERSION,
             r#type: DriveType::Swerve,
             variables: Variables {
-                expressions: HashMap::new(),
-                poses: HashMap::new(),
+                expressions: IndexMap::new(),
+                poses: IndexMap::new(),
             },
             config: RobotConfig {
                 gearing: Expr::new("6.5", 6.5),

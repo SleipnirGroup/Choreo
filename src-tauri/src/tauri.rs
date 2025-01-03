@@ -1,12 +1,14 @@
 use crate::built::BuildInfo;
 use crate::{api::*, logging};
 use choreo_core::file_management::WritingResources;
-use choreo_core::generation::{generate::setup_progress_sender, remote::RemoteGenerationResources};
+use choreo_core::generation::generate::HandledLocalProgressUpdate;
+use choreo_core::generation::remote::RemoteGenerationResources;
 use choreo_core::spec::OpenFilePayload;
 use choreo_core::ChoreoError;
 use logging::now_str;
 use std::io::Write;
 use std::path::PathBuf;
+use std::sync::mpsc::channel;
 use std::sync::OnceLock;
 use std::{fs, thread};
 use tauri::Manager;
@@ -176,8 +178,8 @@ pub fn run_tauri(project: Option<PathBuf>) {
             .expect("requested file should be set");
     }
 
-    let rx = setup_progress_sender();
-    let remote_resources = RemoteGenerationResources::new();
+    let (tx, rx) = channel::<HandledLocalProgressUpdate>();
+    let remote_resources = RemoteGenerationResources::new(Some(tx));
     let writing_resources = WritingResources::new();
 
     tauri::Builder::default()

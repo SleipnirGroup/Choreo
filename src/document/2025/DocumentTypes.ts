@@ -63,6 +63,7 @@ export interface Project {
   version: typeof PROJECT_SCHEMA_VERSION;
   variables: Variables;
   config: RobotConfig<Expr>;
+  generationFeatures: string[];
 }
 
 export interface Waypoint<T extends ExprOrNumber> {
@@ -70,10 +71,10 @@ export interface Waypoint<T extends ExprOrNumber> {
   y: T;
   heading: T;
   intervals: number;
+  overrideIntervals: boolean;
   split: boolean;
   fixTranslation: boolean;
   fixHeading: boolean;
-  overrideIntervals: boolean;
 }
 
 export type WaypointIDX = number | "first" | "last";
@@ -98,8 +99,8 @@ export interface SwerveSample {
   ax: number;
   ay: number;
   alpha: number;
-  fx?: [number, number, number, number];
-  fy?: [number, number, number, number];
+  fx: [number, number, number, number];
+  fy: [number, number, number, number];
 }
 
 export interface DifferentialSample {

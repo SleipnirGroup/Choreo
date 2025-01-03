@@ -2,12 +2,13 @@
 use std::{
     path::PathBuf,
     process::exit,
+    sync::mpsc::channel,
     thread::{self, JoinHandle},
 };
 
 use choreo_core::{
     file_management::{self, WritingResources},
-    generation::generate::generate,
+    generation::generate::{generate, HandledLocalProgressUpdate},
     ChoreoError,
 };
 use clap::Parser;
@@ -153,7 +154,7 @@ impl Cli {
         .await;
 
         // read the project file
-        let project = file_management::read_projectfile(
+        let project = file_management::read_project_file(
             &resources,
             project_path
                 .file_stem()
@@ -189,51 +190,48 @@ impl Cli {
                     .await
                     .expect("Failed to read trajectory file");
 
+            let (tx, _) = channel::<HandledLocalProgressUpdate>();
+
             let cln_project = project.clone();
             let cln_resources = resources.clone();
             let cln_trajectory_name = trajectory_name.clone();
-            let handle =
-                thread::spawn(
-                    move || match generate(cln_project.clone(), trajectory, i as i64) {
-                        Ok(new_trajectory) => {
-                            let runtime =
-                                choreo_core::tokio::runtime::Builder::new_current_thread()
-                                    .enable_all()
-                                    .build()
-                                    .expect("Failed to build tokio runtime");
-                            let write_result = runtime.block_on(
-                                file_management::write_trajectory_file_immediately(
-                                    &cln_resources,
-                                    new_trajectory,
-                                ),
-                            );
-                            match write_result {
-                                Ok(_) => {
-                                    tracing::info!(
-                                        "Successfully generated trajectory {:} for {:}",
-                                        cln_trajectory_name,
-                                        cln_project.name
-                                    );
-                                }
-                                Err(e) => {
-                                    tracing::error!(
-                                        "Failed to write trajectory {:} for {:}: {:}",
-                                        cln_trajectory_name,
-                                        cln_project.name,
-                                        e
-                                    );
-                                }
+            let handle = thread::spawn(move || {
+                match generate(cln_project.clone(), trajectory, i as i64, tx) {
+                    Ok(new_trajectory) => {
+                        let runtime = choreo_core::tokio::runtime::Builder::new_current_thread()
+                            .enable_all()
+                            .build()
+                            .expect("Failed to build tokio runtime");
+                        let write_result = runtime.block_on(
+                            file_management::write_trajectory_file(&cln_resources, new_trajectory),
+                        );
+                        match write_result {
+                            Ok(_) => {
+                                tracing::info!(
+                                    "Successfully generated trajectory {:} for {:}",
+                                    cln_trajectory_name,
+                                    cln_project.name
+                                );
+                            }
+                            Err(e) => {
+                                tracing::error!(
+                                    "Failed to write trajectory {:} for {:}: {:}",
+                                    cln_trajectory_name,
+                                    cln_project.name,
+                                    e
+                                );
                             }
                         }
-                        Err(e) => {
-                            tracing::error!(
-                                "Failed to generate trajectory {:}: {:}",
-                                cln_trajectory_name,
-                                e
-                            );
-                        }
-                    },
-                );
+                    }
+                    Err(e) => {
+                        tracing::error!(
+                            "Failed to generate trajectory {:}: {:}",
+                            cln_trajectory_name,
+                            e
+                        );
+                    }
+                }
+            });
 
             thread_handles.push(handle);
         }
