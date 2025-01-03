@@ -268,29 +268,75 @@ export const ExpressionStore = types
           tracing.error("Evaluating without variables!");
           return undefined;
         }) as Evaluator);
+      // Depend on the keys list of the scope, to re-evaluate when the variables list changes
       scope.keys();
       // turn symbol variables into function variables if they're found in scope
       const transformed = node.transform((innerNode, path, parent) => {
+        // Match standalone symbols, turn them into FunctionNode(symbol)
         if (
-          isSymbolNode(innerNode) &&
+          isSymbolNode(innerNode) && // Match symbols (string literals in the expression),
+          //that are names of functions in our scope (just the standalone variables)
           typeof scope.get(innerNode.name) === "function" &&
-          (parent === null || !isFunctionNode(parent) || path !== "fn")
+          // The below avoids transforming `variable()` to `variable()()`
+          !(
+            // ...and ignoring those symbol nodes
+            (
+              parent !== null && // with a non-null parent
+              isFunctionNode(parent) && // that is a function node
+              path == "fn"
+            ) // where the symbol is already the name of the function
+          )
         ) {
           return new math.FunctionNode(innerNode, []);
         }
+
+        // Replace [pose].x (and .y, .heading) with [pose].x(), etc
+        // This works for other objects in scope with children that are functions
+
+        /*
+          Replace [pose].x (and .y, .heading) with [pose].x(), etc
+          This works for other objects in scope with children that are functions
+          "[objectName].[childName]" parses to
+           AccessorNode {
+            object: SymbolNode {
+              name: objectName
+            },
+            index: IndexNode {
+              dimensions : [
+                ConstantNode {
+                  value: childName
+                }
+              ]
+            }
+          }
+
+            "[objectName].[childName]()" parses to
+            FunctionNode {
+              args: []
+              fn: ...the parse of [objectName].[childName] above
+            }
+            So if we match [objectName].[childName], but it's already within a function node, don't transform it
+          */
+
         if (isAccessorNode(innerNode)) {
-          if (!isFunctionNode(parent) || path !== "fn") {
+          // filter out accessors within function nodes.
+          if (!(parent !== null && isFunctionNode(parent) && path == "fn")) {
             const accessorNode = innerNode;
             const { object, index } = accessorNode;
             if (isSymbolNode(object) && index.isIndexNode) {
               const symbol = object as SymbolNode;
               const idx = index as IndexNode;
-              if (isConstantNode(idx.dimensions[0])) {
+              if (
+                idx.dimensions[0] !== undefined &&
+                isConstantNode(idx.dimensions[0])
+              ) {
                 const constant = idx.dimensions[0];
+                // We now know that innerNode was [symbol.name].[constant.value]
                 if (
                   typeof scope.get(symbol.name) === "object" &&
                   typeof scope.get(symbol.name)?.[constant.value] === "function"
                 ) {
+                  // if the symbols are in fact things in our scope, replace `innerNode` with `innerNode()`
                   return new FunctionNode(innerNode, []);
                 }
               }
