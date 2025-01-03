@@ -4,13 +4,7 @@
     ],
     "files.associations": {
         "*.py": "python",
-        "*.traj": "json",
-        "vector": "cpp",
-        "array": "cpp",
-        "deque": "cpp",
-        "map": "cpp",
-        "unordered_map": "cpp",
-        "type_traits": "cpp"
+        "*.traj": "json"
     },
-    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.configuration.updateBuildConfiguration": "interactive"
 }
