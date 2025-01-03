@@ -6,19 +6,44 @@
 
 namespace trajopt {
 
+/**
+ * 1D spline.
+ */
 class TRAJOPT_DLLEXPORT Spline1d {
  public:
-  virtual ~Spline1d() {}
+  virtual ~Spline1d() = default;
 
-  virtual double getPosition(double t) const = 0;
+  /**
+   * Return the position at point t.
+   *
+   * @param t The point t
+   * @return The position at point t.
+   */
+  virtual double GetPosition(double t) const = 0;
 
-  // ds/dt
-  virtual double getVelocity(double t) const = 0;
+  /**
+   * Return the velocity at point t.
+   *
+   * @param t The point t
+   * @return The velocity at point t.
+   */
+  virtual double GetVelocity(double t) const = 0;
 
-  // ds²/dt
-  virtual double getAcceleration(double t) const = 0;
+  /**
+   * Return the acceleration at point t.
+   *
+   * @param t The point t
+   * @return The acceleration at point t.
+   */
+  virtual double GetAcceleration(double t) const = 0;
 
-  // ds³/dt
-  virtual double getJerk(double t) const = 0;
+  /**
+   * Return the jerk at point t.
+   *
+   * @param t The point t
+   * @return The jerk at point t.
+   */
+  virtual double GetJerk(double t) const = 0;
 };
+
 }  // namespace trajopt

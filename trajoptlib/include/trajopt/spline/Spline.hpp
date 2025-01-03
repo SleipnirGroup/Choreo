@@ -19,15 +19,8 @@ namespace frc {
 template <int Degree>
 class Spline {
  public:
+  /// Pose2d with curvature
   using PoseWithCurvature = std::pair<trajopt::Pose2d, double>;
-
-  Spline() = default;
-
-  Spline(const Spline&) = default;
-  Spline& operator=(const Spline&) = default;
-
-  Spline(Spline&&) = default;
-  Spline& operator=(Spline&&) = default;
 
   virtual ~Spline() = default;
 

@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cmath>
 #include <ranges>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -298,6 +299,7 @@ DifferentialTrajectoryGenerator::Generate(bool diagnostics) {
     for (auto& callback : callbacks) {
       callback();
     }
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     return trajopt::GetCancellationFlag();
   });
 

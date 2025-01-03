@@ -222,6 +222,12 @@ class TRAJOPT_DLLEXPORT PathBuilder {
                                                 controlIntervalCounts);
   }
 
+  /**
+   * Calculate a discrete, spline initial guess of the x, y, and heading of the
+   * robot that goes through each segment.
+   *
+   * @return the initial guess, as a solution
+   */
   Solution CalculateSplineInitialGuess() const {
     return GenerateSplineInitialGuess<Solution>(initialGuessPoints,
                                                 controlIntervalCounts);
