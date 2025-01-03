@@ -38,7 +38,7 @@ TEST_CASE("SwervePathBuilder - Spline initial guess", "[SwervePathBuilder]") {
   path.SgmtInitialGuessPoints(1, {Pose2d{3.0, 0.0, 0.0}});  // from 1 to 2
   path.WptInitialGuessPoint(2, Pose2d{5.0, 0.0, 0.0});      // at 2
 
-  path.ControlIntervalCounts({3, 2});
+  path.SetControlIntervalCounts({3, 2});
 
   std::vector<double> result = path.CalculateSplineInitialGuess().x;
   std::vector<double> expected = {0.0, 1.0, 2.0, 1.0, 3.0, 5.0};
