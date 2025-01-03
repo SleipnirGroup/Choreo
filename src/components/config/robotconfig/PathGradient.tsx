@@ -81,7 +81,7 @@ class PathGradientFunctions {
   }: PathGradientArgs<any>): string {
     const sample = samples[index];
 
-    // Calculate velocity magnitude
+    // Linear velocity magnitude
     let v = 0;
     if (sample.vl !== undefined) {
       v = Math.abs(sample.vl + sample.vr) / 2;
@@ -93,7 +93,7 @@ class PathGradientFunctions {
       documentModel.robotConfig.wheelMaxVelocity *
       documentModel.robotConfig.radius.value;
 
-    // Divide by floor speed to scale velocity to [0, 1], then scale to
+    // Divide by floor speed to scale linear velocity to [0, 1], then scale to
     // red-green hue [0, 100]
     return `hsl(${100 * (v / floorSpeed)}, 100%, 50%)`;
   }
@@ -121,7 +121,7 @@ class PathGradientFunctions {
   static linearAcceleration({ samples, index }: PathGradientArgs<any>): string {
     const sample = samples[index];
 
-    // Acceleration magnitude
+    // Linear acceleration magnitude
     let acceleration = 0;
     if (sample.vl !== undefined) {
       acceleration = Math.abs(sample.al + sample.ar) / 2;
@@ -129,8 +129,8 @@ class PathGradientFunctions {
       acceleration = Math.hypot(sample.ax, sample.ay);
     }
 
-    // Divide by 10 to scale acceleration to [0, 1], invert range, then scale to
-    // red-green hue [0, 100]
+    // Divide by 10 to scale linear acceleration to [0, 1], invert range, then
+    // scale to red-green hue [0, 100]
     return `hsl(${100 * (1 - acceleration / 10)}, 100%, 50%)`;
   }
 
@@ -155,9 +155,9 @@ class PathGradientFunctions {
    * @returns The color value in HSL format.
    */
   static angularVelocity({ samples, index }: PathGradientArgs<any>): string {
-    // Scale angular velocity magnitude to [0, 1] using artificial 2 rad/s max,
+    // Scale angular velocity magnitude to [0, 1] using artificial 2π rad/s max,
     // then normalize to red-green hue [0, 100]
-    return `hsl(${100 * (Math.abs(samples[index].omega) / 2)}, 100%, 50%)`;
+    return `hsl(${100 * (Math.abs(samples[index].omega) / (2 * Math.PI))}, 100%, 50%)`;
   }
 
   /**
@@ -192,7 +192,7 @@ export const PathGradients: Record<string, PathGradient> = {
   LinearVelocity: {
     name: "LinearVelocity",
     localizedDescription: "Linear Velocity",
-    description: "Faster robot velocity is shown as green.",
+    description: "Faster robot linear velocity is shown as green.",
     function: PathGradientFunctions.linearVelocity
   },
   Progress: {
