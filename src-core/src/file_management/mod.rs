@@ -26,7 +26,8 @@ type DeployPath = Arc<Mutex<PathBuf>>;
 type TrajectoryFileName = String;
 
 mod diagnostics;
-mod formatter;
+
+pub mod formatter;
 pub mod upgrader;
 
 pub use diagnostics::{create_diagnostic_file, get_log_lines};

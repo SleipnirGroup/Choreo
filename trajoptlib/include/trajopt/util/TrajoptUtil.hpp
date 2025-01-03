@@ -52,15 +52,16 @@ inline std::vector<double> Linspace(double start, double end,
  * @param minimumInput The minimum value expected from the input.
  * @param maximumInput The maximum value expected from the input.
  */
-constexpr double InputModulus(double input, double max, double min) {
-  double modulus = max - min;
+constexpr double InputModulus(double input, double minimumInput,
+                              double maximumInput) {
+  double modulus = maximumInput - minimumInput;
 
   // Wrap input if it's above the maximum input
-  int numMax = (input - min) / modulus;
+  int numMax = (input - minimumInput) / modulus;
   input -= numMax * modulus;
 
   // Wrap input if it's below the minimum input
-  int numMin = (input - max) / modulus;
+  int numMin = (input - maximumInput) / modulus;
   input -= numMin * modulus;
 
   return input;
@@ -72,7 +73,7 @@ constexpr double InputModulus(double input, double max, double min) {
  * @param angle Angle to wrap in radians.
  */
 constexpr double AngleModulus(double angle) {
-  return InputModulus(angle, std::numbers::pi, -std::numbers::pi);
+  return InputModulus(angle, -std::numbers::pi, std::numbers::pi);
 }
 
 /**

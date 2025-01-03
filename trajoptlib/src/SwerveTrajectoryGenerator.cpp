@@ -152,7 +152,7 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
                                 initialGuess.thetacos.at(sgmt_start));
     const auto θ_1 = std::atan2(initialGuess.thetasin.at(sgmt_end),
                                 initialGuess.thetacos.at(sgmt_end));
-    const auto dθ = std::abs(AngleModulus(θ_0 - θ_1));
+    const auto dθ = std::abs(AngleModulus(θ_1 - θ_0));
 
     auto maxLinearVel = maxDrivetrainVelocity;
 

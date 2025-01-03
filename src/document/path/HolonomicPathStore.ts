@@ -26,6 +26,7 @@ import { ChoreoPathStore } from "./ChoreoPathStore";
 import { ChoreoTrajectoryStore } from "./ChoreoTrajectoryStore";
 import { PathUIStore } from "./PathUIStore";
 import { findUUIDIndex } from "./utils";
+import { Commands } from "../tauriCommands";
 export function waypointIDToText(
   id: WaypointUUID | undefined,
   points: IHolonomicWaypointStore[]
@@ -60,7 +61,6 @@ export const HolonomicPathStore = types
     name: "",
     uuid: types.identifier
   })
-
   .views((self) => {
     return {
       canGenerate(): boolean {
@@ -162,6 +162,7 @@ export const HolonomicPathStore = types
           }
         });
         self.setSnapshot(ser.snapshot);
+        self.ui.setUpToDate(true);
       },
       deserialize(ser: Trajectory) {
         self.name = ser.name;
@@ -191,7 +192,10 @@ export const HolonomicPathStore = types
         () => {
           return self.serialize;
         },
-        (_value) => {
+        (ser) => {
+          Commands.trajectoryUpToDate(ser).then((upToDate) =>
+            self.ui.setUpToDate(upToDate)
+          );
           exporter(self.uuid);
         }
       );

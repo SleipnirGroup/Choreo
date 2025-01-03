@@ -179,6 +179,10 @@ export const PathListStore = types
   }))
   .actions((self) => {
     return {
+      deleteAll() {
+        self.activePathUUID = self.defaultPath!.uuid;
+        self.paths.clear();
+      },
       deletePath(uuid: string) {
         if (self.paths.size === 1) {
           self.setActivePathUUID(self.defaultPath!.uuid);
