@@ -444,12 +444,11 @@ impl TrajectoryFile {
 
     pub fn up_to_date(&self) -> bool {
         // Can't use is_some_and due to its move semantics.
-        let params_equal = if let Some(snap) = &self.snapshot {
+        if let Some(snap) = &self.snapshot {
             snap == &self.params.snapshot()
         } else {
             false
-        };
-        params_equal
+        }
     }
 }
 
@@ -495,30 +494,38 @@ pub enum PplibCommand {
 
 #[cfg(test)]
 mod tests {
+    use crate::spec::TRAJ_SCHEMA_VERSION;
+
     use super::*;
-    fn test_trajectory() ->TrajectoryFile {
+    fn test_trajectory() -> TrajectoryFile {
         let parameters = Parameters::<Expr> {
-            waypoints: vec![
-                Waypoint::<Expr> {
-                    x:Expr::fill_in_value(0.0, "m"),
-                    y:Expr::fill_in_value(0.0, "m"),
-                    heading:Expr::fill_in_value(0.0, "rad"),
-                    intervals: 20,
-                    split: false,
-                    fix_translation: false,
-                    fix_heading: false,
-                    override_intervals: false,
-                    is_initial_guess: false }
-            ],
+            waypoints: vec![Waypoint::<Expr> {
+                x: Expr::fill_in_value(0.0, "m"),
+                y: Expr::fill_in_value(0.0, "m"),
+                heading: Expr::fill_in_value(0.0, "rad"),
+                intervals: 20,
+                split: false,
+                fix_translation: false,
+                fix_heading: false,
+                override_intervals: false,
+                is_initial_guess: false,
+            }],
             constraints: vec![],
             target_dt: Expr::fill_in_value(0.05, "s"),
         };
         TrajectoryFile {
             name: "Test".to_string(),
-            version: "2025.0.0".to_string(),
-            snapshot: Some(parameters.snapshot()), params: parameters,
-            trajectory: Trajectory { waypoints: Vec::new(), samples: Vec::new(), splits: Vec::new() },
-            events: Vec::new() }
+            version: TRAJ_SCHEMA_VERSION,
+            snapshot: Some(parameters.snapshot()),
+            params: parameters,
+            trajectory: Trajectory {
+                sample_type: Some(DriveType::Swerve),
+                waypoints: Vec::new(),
+                samples: Vec::new(),
+                splits: Vec::new(),
+            },
+            events: Vec::new(),
+        }
     }
     #[test]
     fn snapshot_equality() {

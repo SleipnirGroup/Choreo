@@ -193,9 +193,10 @@ export const HolonomicPathStore = types
           return self.serialize;
         },
         (ser) => {
-          Commands.trajectoryUpToDate(ser).then((upToDate)=>self.ui.setUpToDate(upToDate));
+          Commands.trajectoryUpToDate(ser).then((upToDate) =>
+            self.ui.setUpToDate(upToDate)
+          );
           exporter(self.uuid);
-
         }
       );
     };

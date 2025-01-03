@@ -1,4 +1,9 @@
-import { KeyboardArrowDown, Route, Settings, ShapeLine } from "@mui/icons-material";
+import {
+  KeyboardArrowDown,
+  Route,
+  Settings,
+  ShapeLine
+} from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
   CircularProgress,
@@ -106,22 +111,29 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             }}
             variant="indeterminate"
           ></CircularProgress>
-        ) : (upToDate ? (
+        ) : upToDate ? (
           <Route
             className={styles.SidebarIcon}
             htmlColor={
               selected ? "var(--select-yellow)" : "var(--accent-purple)"
             }
-          /> ) : (
-            <IconButton className={styles.SidebarIcon} onClick={(e)=>{
+          />
+        ) : (
+          <IconButton
+            className={styles.SidebarIcon}
+            onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              doc.generatePath(this.getPath().uuid)}}>
-              <ShapeLine className={styles.SidebarIcon} htmlColor={
-              selected ? "var(--select-yellow)" : "var(--accent-purple)"
-            }></ShapeLine>
-            </IconButton>
-          )
+              doc.generatePath(this.getPath().uuid);
+            }}
+          >
+            <ShapeLine
+              className={styles.SidebarIcon}
+              htmlColor={
+                selected ? "var(--select-yellow)" : "var(--accent-purple)"
+              }
+            ></ShapeLine>
+          </IconButton>
         )}
 
         <TextField

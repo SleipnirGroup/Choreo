@@ -127,7 +127,7 @@ export const Commands = {
    * @param trajectory The `Trajectory` to check
    * @returns true if the parameters and snapshots are equivalent, false if not.
    */
-  trajectoryUpToDate: (trajectory: Trajectory) => 
+  trajectoryUpToDate: (trajectory: Trajectory) =>
     invoke<boolean>("trajectory_up_to_date", { trajectory }),
   /**
    * If the application was opened via CLI and a file was specified, this will return the path of that file.
