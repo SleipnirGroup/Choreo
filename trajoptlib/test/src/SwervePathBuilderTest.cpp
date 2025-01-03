@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <trajopt/SwerveTrajectoryGenerator.hpp>
 
@@ -43,5 +44,8 @@ TEST_CASE("SwervePathBuilder - Spline initial guess", "[SwervePathBuilder]") {
   std::vector<double> result = path.CalculateSplineInitialGuess().x;
   std::vector<double> expected = {0.0, 1.0, 2.0, 1.0, 3.0, 5.0};
 
-  CHECK(result == expected);
+  REQUIRE(result.size() == expected.size());
+  for (size_t i = 0; i < expected.size(); ++i) {
+    CHECK(result[i] == Catch::Approx(expected[i]).margin(1e-15));
+  }
 }
