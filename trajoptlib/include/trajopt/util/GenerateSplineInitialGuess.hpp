@@ -59,7 +59,7 @@ inline std::vector<frc::CubicHermitePoseSplineHolonomic> splinesFromWaypoints(
               {}, Pose2d{flatTranslationPoints.at(i), flatHeadings.at(i)});
       const auto s = frc::SplineHelper::CubicSplinesFromControlVectors(
           splineControlVectors.front(), {}, splineControlVectors.back());
-      for (const auto _s : s) {
+      for (const auto& _s : s) {
         splines_temp.push_back(_s);
       }
     }
@@ -84,7 +84,7 @@ inline std::vector<frc::CubicHermitePoseSplineHolonomic> splinesFromWaypoints(
     const auto s = frc::SplineHelper::CubicSplinesFromControlVectors(
         splineControlVectors.front(), interiorPoints,
         splineControlVectors.back());
-    for (const auto _s : s) {
+    for (const auto& _s : s) {
       splines_temp.push_back(_s);
     }
   }
@@ -108,8 +108,10 @@ inline Solution GenerateSplineInitialGuess(
   std::vector<frc::CubicHermitePoseSplineHolonomic> splines =
       splinesFromWaypoints<Solution>(initialGuessPoints);
   std::vector<std::vector<PoseWithCurvature>> sgmtPoints;
-  for (auto _i = 0; _i < initialGuessPoints.size(); ++_i) {
-    for (auto _j = 0; _j < initialGuessPoints.at(_i).size(); ++_j) {
+  for (size_t i = 0; i < initialGuessPoints.size(); ++i) {
+    for ([[maybe_unused]]
+         size_t j = 0;
+         j < initialGuessPoints.at(i).size(); ++j) {
       sgmtPoints.push_back(std::vector<PoseWithCurvature>());
     }
   }
@@ -138,9 +140,6 @@ inline Solution GenerateSplineInitialGuess(
           const auto state = splines.at(trajIdx).GetPoint(t, false).value();
           sgmtPoints.at(trajIdx + 1).push_back(state);
         }
-        // std::printf("%zd, x: %f, y: %f, t: %f\n",
-        //               sampleIdx, state.pose.X().value(),
-        //               state.pose.Y().value(), t.value());
       }
       ++trajIdx;
     }
@@ -165,14 +164,11 @@ inline Solution GenerateSplineInitialGuess(
     initialGuess.dt.push_back((wptCnt * 5.0) / sampTot);
   }
 
-  std::printf("* sgmtPoints *\n");
   for (auto sgmt : sgmtPoints) {
     for (auto pt : sgmt) {
-      std::printf("x %.2f - y %.2f - ", pt.first.X(), pt.first.Y());
       initialGuess.x.push_back(pt.first.X());
       initialGuess.y.push_back(pt.first.Y());
       if constexpr (std::same_as<Solution, DifferentialSolution>) {
-        std::printf("h %.2f\n", pt.first.Rotation().Radians());
         initialGuess.heading.push_back(pt.first.Rotation().Radians());
       } else {
         initialGuess.thetacos.push_back(pt.first.Rotation().Cos());

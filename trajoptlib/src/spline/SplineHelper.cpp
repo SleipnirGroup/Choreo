@@ -3,6 +3,7 @@
 #include "trajopt/spline/SplineHelper.hpp"
 
 #include <cstddef>
+#include <vector>
 
 using namespace frc;
 

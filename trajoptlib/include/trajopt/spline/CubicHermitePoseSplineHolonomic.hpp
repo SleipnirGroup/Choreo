@@ -28,10 +28,10 @@ class TRAJOPT_DLLEXPORT CubicHermitePoseSplineHolonomic : CubicHermiteSpline {
                                   wpi::array<double, 2> yFinalControlVector,
                                   trajopt::Rotation2d r0,
                                   trajopt::Rotation2d r1)
-      : r0(r0),
-        theta(0.0, (-r0).RotateBy(r1).Radians(), 0, 0),
-        CubicHermiteSpline(xInitialControlVector, xFinalControlVector,
-                           yInitialControlVector, yFinalControlVector) {}
+      : CubicHermiteSpline(xInitialControlVector, xFinalControlVector,
+                           yInitialControlVector, yFinalControlVector),
+        r0(r0),
+        theta(0.0, (-r0).RotateBy(r1).Radians(), 0, 0) {}
 
   trajopt::Rotation2d getCourse(double t) const {
     const PoseWithCurvature splinePoint =
