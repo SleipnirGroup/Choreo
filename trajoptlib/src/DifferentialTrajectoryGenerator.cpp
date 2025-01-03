@@ -167,7 +167,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     const auto dist = std::hypot(dx, dy);
     const auto θ_0 = initialGuess.heading.at(sgmt_start);
     const auto θ_1 = initialGuess.heading.at(sgmt_end);
-    const auto dθ = std::abs(AngleModulus(θ_0 - θ_1));
+    const auto dθ = std::abs(AngleModulus(θ_1 - θ_0));
 
     auto maxLinearVel = maxDrivetrainVelocity;
 
