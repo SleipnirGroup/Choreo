@@ -5,8 +5,9 @@
 #include <optional>
 #include <utility>
 
+#include <Eigen/Core>
+
 #include "trajopt/geometry/Pose2.hpp"
-#include "trajopt/spline/EigenCore.hpp"
 #include "trajopt/spline/array.hpp"
 
 namespace frc {
@@ -46,7 +47,7 @@ class Spline {
    * @return The pose and curvature at that point.
    */
   std::optional<PoseWithCurvature> GetPoint(double t) const {
-    Vectord<Degree + 1> polynomialBases;
+    Eigen::Vector<double, Degree + 1> polynomialBases;
 
     // Populate the polynomial bases
     for (int i = 0; i <= Degree; i++) {
@@ -55,7 +56,7 @@ class Spline {
 
     // This simply multiplies by the coefficients. We need to divide out t some
     // n number of times where n is the derivative we want to take.
-    Vectord<6> combined = Coefficients() * polynomialBases;
+    Eigen::Vector<double, 6> combined = Coefficients() * polynomialBases;
 
     double dx, dy, ddx, ddy;
 
@@ -94,7 +95,7 @@ class Spline {
    *
    * @return The coefficients of the spline.
    */
-  virtual Matrixd<6, Degree + 1> Coefficients() const = 0;
+  virtual Eigen::Matrix<double, 6, Degree + 1> Coefficients() const = 0;
 
   /**
    * Returns the initial control vector that created this spline.

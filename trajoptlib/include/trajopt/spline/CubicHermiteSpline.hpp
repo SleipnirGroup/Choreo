@@ -2,12 +2,14 @@
 
 #pragma once
 
-#include "trajopt/spline/EigenCore.hpp"
+#include <Eigen/Core>
+
 #include "trajopt/spline/Spline.hpp"
 #include "trajopt/spline/array.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 
 namespace frc {
+
 /**
  * Represents a hermite spline of degree 3.
  */
@@ -36,7 +38,9 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline : public Spline<3> {
    * Returns the coefficients matrix.
    * @return The coefficients matrix.
    */
-  Matrixd<6, 3 + 1> Coefficients() const override { return m_coefficients; }
+  Eigen::Matrix<double, 6, 3 + 1> Coefficients() const override {
+    return m_coefficients;
+  }
 
   /**
    * Returns the initial control vector that created this spline.
@@ -57,7 +61,8 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline : public Spline<3> {
   }
 
  private:
-  Matrixd<6, 4> m_coefficients = Matrixd<6, 4>::Zero();
+  Eigen::Matrix<double, 6, 4> m_coefficients =
+      Eigen::Matrix<double, 6, 4>::Zero();
 
   ControlVector m_initialControlVector;
   ControlVector m_finalControlVector;
@@ -110,4 +115,5 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline : public Spline<3> {
                            finalVector[1]};
   }
 };
+
 }  // namespace frc
