@@ -12,7 +12,7 @@
 #include "trajopt/spline/CubicHermiteSpline1d.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 
-namespace frc {
+namespace trajopt {
 
 /**
  * Represents a cubic pose spline, which is a specific implementation of a cubic
@@ -21,7 +21,7 @@ namespace frc {
 class TRAJOPT_DLLEXPORT CubicHermitePoseSplineHolonomic : CubicHermiteSpline {
  public:
   /// Pose2d with curvature.
-  using PoseWithCurvature = std::pair<trajopt::Pose2d, double>;
+  using PoseWithCurvature = std::pair<Pose2d, double>;
 
   /**
    * Constructs a cubic pose spline.
@@ -41,8 +41,7 @@ class TRAJOPT_DLLEXPORT CubicHermitePoseSplineHolonomic : CubicHermiteSpline {
                                   std::array<double, 2> xFinalControlVector,
                                   std::array<double, 2> yInitialControlVector,
                                   std::array<double, 2> yFinalControlVector,
-                                  trajopt::Rotation2d r0,
-                                  trajopt::Rotation2d r1)
+                                  Rotation2d r0, Rotation2d r1)
       : CubicHermiteSpline(xInitialControlVector, xFinalControlVector,
                            yInitialControlVector, yFinalControlVector),
         r0(r0),
@@ -54,7 +53,7 @@ class TRAJOPT_DLLEXPORT CubicHermitePoseSplineHolonomic : CubicHermiteSpline {
    * @param t The point t
    * @return The course at point t.
    */
-  trajopt::Rotation2d GetCourse(double t) const {
+  Rotation2d GetCourse(double t) const {
     const PoseWithCurvature splinePoint =
         CubicHermiteSpline::GetPoint(t).value();
     return splinePoint.first.Rotation();
@@ -66,8 +65,8 @@ class TRAJOPT_DLLEXPORT CubicHermitePoseSplineHolonomic : CubicHermiteSpline {
    * @param t The point t
    * @return The heading at point t.
    */
-  trajopt::Rotation2d GetHeading(double t) const {
-    return r0.RotateBy(trajopt::Rotation2d(theta.GetPosition(t)));
+  Rotation2d GetHeading(double t) const {
+    return r0.RotateBy(Rotation2d{theta.GetPosition(t)});
   }
 
   /**
@@ -97,8 +96,8 @@ class TRAJOPT_DLLEXPORT CubicHermitePoseSplineHolonomic : CubicHermiteSpline {
   }
 
  private:
-  trajopt::Rotation2d r0;
-  trajopt::CubicHermiteSpline1d theta;
+  Rotation2d r0;
+  CubicHermiteSpline1d theta;
 };
 
-}  // namespace frc
+}  // namespace trajopt

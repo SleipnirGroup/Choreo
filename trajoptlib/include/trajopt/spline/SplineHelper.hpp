@@ -11,7 +11,8 @@
 #include "trajopt/spline/CubicHermiteSpline.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 
-namespace frc {
+namespace trajopt {
+
 /**
  * Helper class that is used to generate cubic and quintic splines from user
  * provided waypoints.
@@ -29,9 +30,8 @@ class TRAJOPT_DLLEXPORT SplineHelper {
    */
   static std::array<Spline<3>::ControlVector, 2>
   CubicControlVectorsFromWaypoints(
-      const trajopt::Pose2d& start,
-      const std::vector<trajopt::Translation2d>& interiorWaypoints,
-      const trajopt::Pose2d& end) {
+      const Pose2d& start, const std::vector<Translation2d>& interiorWaypoints,
+      const Pose2d& end) {
     double scalar;
     if (interiorWaypoints.empty()) {
       scalar = 1.2 * start.Translation().Distance(end.Translation());
@@ -65,7 +65,7 @@ class TRAJOPT_DLLEXPORT SplineHelper {
    */
   static std::vector<CubicHermiteSpline> CubicSplinesFromControlVectors(
       const Spline<3>::ControlVector& start,
-      std::vector<trajopt::Translation2d> waypoints,
+      std::vector<Translation2d> waypoints,
       const Spline<3>::ControlVector& end) {
     std::vector<CubicHermiteSpline> splines;
 
@@ -76,8 +76,8 @@ class TRAJOPT_DLLEXPORT SplineHelper {
 
     if (waypoints.size() > 1) {
       waypoints.emplace(waypoints.begin(),
-                        trajopt::Translation2d{xInitial[0], yInitial[0]});
-      waypoints.emplace_back(trajopt::Translation2d{xFinal[0], yFinal[0]});
+                        Translation2d{xInitial[0], yInitial[0]});
+      waypoints.emplace_back(Translation2d{xFinal[0], yFinal[0]});
 
       // Populate tridiagonal system for clamped cubic
       /* See:
@@ -167,8 +167,8 @@ class TRAJOPT_DLLEXPORT SplineHelper {
   }
 
  private:
-  static Spline<3>::ControlVector CubicControlVector(
-      double scalar, const trajopt::Pose2d& point) {
+  static Spline<3>::ControlVector CubicControlVector(double scalar,
+                                                     const Pose2d& point) {
     return {{point.X(), scalar * point.Rotation().Cos()},
             {point.Y(), scalar * point.Rotation().Sin()}};
   }
@@ -217,4 +217,5 @@ class TRAJOPT_DLLEXPORT SplineHelper {
     }
   }
 };
-}  // namespace frc
+
+}  // namespace trajopt

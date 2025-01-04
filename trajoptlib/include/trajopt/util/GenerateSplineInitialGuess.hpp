@@ -4,7 +4,6 @@
 
 #include <cmath>
 #include <concepts>
-#include <span>
 #include <utility>
 #include <vector>
 
@@ -27,7 +26,7 @@ struct DifferentialSolution;
 using PoseWithCurvature = std::pair<Pose2d, double>;
 
 template <typename Solution>
-inline std::vector<frc::CubicHermitePoseSplineHolonomic> splinesFromWaypoints(
+inline std::vector<CubicHermitePoseSplineHolonomic> splinesFromWaypoints(
     const std::vector<std::vector<Pose2d>> initialGuessPoints) {
   size_t totalGuessPoints = 0;
   for (const auto& points : initialGuessPoints) {
@@ -48,16 +47,16 @@ inline std::vector<frc::CubicHermitePoseSplineHolonomic> splinesFromWaypoints(
     }
   }
 
-  std::vector<frc::CubicHermiteSpline> splines_temp;
+  std::vector<CubicHermiteSpline> splines_temp;
   splines_temp.reserve(totalGuessPoints);
 
   if constexpr (std::same_as<Solution, DifferentialSolution>) {
     for (size_t i = 1; i < flatTranslationPoints.size(); ++i) {
       const auto splineControlVectors =
-          frc::SplineHelper::CubicControlVectorsFromWaypoints(
+          SplineHelper::CubicControlVectorsFromWaypoints(
               Pose2d{flatTranslationPoints.at(i - 1), flatHeadings.at(i - 1)},
               {}, Pose2d{flatTranslationPoints.at(i), flatHeadings.at(i)});
-      const auto s = frc::SplineHelper::CubicSplinesFromControlVectors(
+      const auto s = SplineHelper::CubicSplinesFromControlVectors(
           splineControlVectors.front(), {}, splineControlVectors.back());
       for (const auto& _s : s) {
         splines_temp.push_back(_s);
@@ -79,9 +78,9 @@ inline std::vector<frc::CubicHermitePoseSplineHolonomic> splinesFromWaypoints(
                                               flatTranslationPoints.end() - 1};
 
     const auto splineControlVectors =
-        frc::SplineHelper::CubicControlVectorsFromWaypoints(
-            start, interiorPoints, end);
-    const auto s = frc::SplineHelper::CubicSplinesFromControlVectors(
+        SplineHelper::CubicControlVectorsFromWaypoints(start, interiorPoints,
+                                                       end);
+    const auto s = SplineHelper::CubicSplinesFromControlVectors(
         splineControlVectors.front(), interiorPoints,
         splineControlVectors.back());
     for (const auto& _s : s) {
@@ -89,7 +88,7 @@ inline std::vector<frc::CubicHermitePoseSplineHolonomic> splinesFromWaypoints(
     }
   }
 
-  std::vector<frc::CubicHermitePoseSplineHolonomic> splines;
+  std::vector<CubicHermitePoseSplineHolonomic> splines;
   splines.reserve(splines_temp.size());
   for (size_t i = 1; i <= splines_temp.size(); ++i) {
     splines.emplace_back(splines_temp.at(i - 1).GetInitialControlVector().x,
@@ -105,7 +104,7 @@ template <typename Solution>
 inline Solution GenerateSplineInitialGuess(
     const std::vector<std::vector<Pose2d>>& initialGuessPoints,
     const std::vector<size_t> controlIntervalCounts) {
-  std::vector<frc::CubicHermitePoseSplineHolonomic> splines =
+  std::vector<CubicHermitePoseSplineHolonomic> splines =
       splinesFromWaypoints<Solution>(initialGuessPoints);
   std::vector<std::vector<PoseWithCurvature>> sgmtPoints;
   for (size_t i = 0; i < initialGuessPoints.size(); ++i) {

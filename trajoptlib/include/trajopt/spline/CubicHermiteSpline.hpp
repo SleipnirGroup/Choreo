@@ -9,7 +9,7 @@
 #include "trajopt/spline/Spline.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 
-namespace frc {
+namespace trajopt {
 
 /**
  * Represents a hermite spline of degree 3.
@@ -149,4 +149,4 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline : public Spline<3> {
   }
 };
 
-}  // namespace frc
+}  // namespace trajopt

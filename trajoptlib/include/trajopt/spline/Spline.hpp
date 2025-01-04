@@ -10,7 +10,8 @@
 
 #include "trajopt/geometry/Pose2.hpp"
 
-namespace frc {
+namespace trajopt {
+
 /**
  * Represents a two-dimensional parametric spline that interpolates between two
  * points.
@@ -21,7 +22,7 @@ template <int Degree>
 class Spline {
  public:
   /// Pose2d with curvature
-  using PoseWithCurvature = std::pair<trajopt::Pose2d, double>;
+  using PoseWithCurvature = std::pair<Pose2d, double>;
 
   virtual ~Spline() = default;
 
@@ -85,9 +86,9 @@ class Spline {
     const auto curvature =
         (dx * ddy - ddx * dy) / ((dx * dx + dy * dy) * std::hypot(dx, dy));
 
-    return PoseWithCurvature{{FromVector(combined.template block<2, 1>(0, 0)),
-                              trajopt::Rotation2d{dx, dy}},
-                             curvature};
+    return PoseWithCurvature{
+        {FromVector(combined.template block<2, 1>(0, 0)), Rotation2d{dx, dy}},
+        curvature};
   }
 
   /**
@@ -118,7 +119,7 @@ class Spline {
    * @param translation The Translation2d to convert.
    * @return The vector.
    */
-  static Eigen::Vector2d ToVector(const trajopt::Translation2d& translation) {
+  static Eigen::Vector2d ToVector(const Translation2d& translation) {
     return Eigen::Vector2d{translation.X(), translation.Y()};
   }
 
@@ -128,8 +129,9 @@ class Spline {
    * @param vector The vector to convert.
    * @return The Translation2d.
    */
-  static trajopt::Translation2d FromVector(const Eigen::Vector2d& vector) {
-    return trajopt::Translation2d{vector(0), vector(1)};
+  static Translation2d FromVector(const Eigen::Vector2d& vector) {
+    return Translation2d{vector(0), vector(1)};
   }
 };
-}  // namespace frc
+
+}  // namespace trajopt
