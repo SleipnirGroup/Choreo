@@ -39,7 +39,7 @@ struct TRAJOPT_DLLEXPORT Path {
 
   /// A vector of callbacks to be called with the intermediate solution and a
   /// user-specified handle at every iteration of the solver.
-  std::vector<std::function<void(Solution& solution, int64_t handle)>>
+  std::vector<std::function<void(const Solution& solution, int64_t handle)>>
       callbacks;
 };
 
