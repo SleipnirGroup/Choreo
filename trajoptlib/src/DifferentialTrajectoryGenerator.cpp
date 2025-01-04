@@ -81,7 +81,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     return xdot;
   };
 
-  auto initialGuess = pathbuilder.CalculateInitialGuess();
+  auto initialGuess = pathbuilder.CalculateSplineInitialGuess();
 
   callbacks.emplace_back([this, handle = handle] {
     constexpr int fps = 60;
