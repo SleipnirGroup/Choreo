@@ -64,7 +64,7 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline : public Spline<3> {
                                     {+1.0, +0.0, +0.0, +0.0}};
 
     Eigen::Vector4d x{m_initialControlVector.x[0], m_initialControlVector.x[1],
-                      m_finalControlVector.x[0], m_finalControlVector.y[1]};
+                      m_finalControlVector.x[0], m_finalControlVector.x[1]};
     Eigen::Vector4d y{m_initialControlVector.y[0], m_initialControlVector.y[1],
                       m_finalControlVector.y[0], m_finalControlVector.y[1]};
 
