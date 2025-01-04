@@ -63,17 +63,16 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline : public Spline<3> {
                                     {+0.0, +1.0, +0.0, +0.0},
                                     {+1.0, +0.0, +0.0, +0.0}};
 
-    const auto x =
-        ControlVectorFromArrays(xInitialControlVector, xFinalControlVector);
-    const auto y =
-        ControlVectorFromArrays(yInitialControlVector, yFinalControlVector);
+    Eigen::Vector4d x{m_initialControlVector.x[0], m_initialControlVector.x[1],
+                      m_finalControlVector.x[0], m_finalControlVector.y[1]};
+    Eigen::Vector4d y{m_initialControlVector.y[0], m_initialControlVector.y[1],
+                      m_finalControlVector.y[0], m_finalControlVector.y[1]};
 
-    // Populate first two rows with coefficients.
+    // Populate rows 0 and 1 with coefficients
     m_coefficients.template block<1, 4>(0, 0) = basis * x;
     m_coefficients.template block<1, 4>(1, 0) = basis * y;
 
-    // Populate Row 2 and Row 3 with the derivatives of the equations above.
-    // Then populate row 4 and 5 with the second derivatives.
+    // Populate rows 2 and 3 with the derivatives of the equations above
     for (int i = 0; i < 4; i++) {
       // Here, we are multiplying by (3 - i) to manually take the derivative.
       // The power of the term in index 0 is 3, index 1 is 2 and so on. To find
@@ -83,6 +82,7 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline : public Spline<3> {
           m_coefficients.template block<2, 1>(0, i) * (3 - i);
     }
 
+    // Populate rows 4 and 5 with the second derivatives
     for (int i = 0; i < 3; i++) {
       // Here, we are multiplying by (2 - i) to manually take the derivative.
       // The power of the term in index 0 is 2, index 1 is 1 and so on. To find
@@ -95,6 +95,7 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline : public Spline<3> {
 
   /**
    * Returns the coefficients matrix.
+   *
    * @return The coefficients matrix.
    */
   const Eigen::Matrix<double, 6, 3 + 1>& Coefficients() const override {
@@ -120,26 +121,10 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline : public Spline<3> {
   }
 
  private:
-  Eigen::Matrix<double, 6, 4> m_coefficients =
-      Eigen::Matrix<double, 6, 4>::Zero();
+  Eigen::Matrix<double, 6, 4> m_coefficients;
 
   ControlVector m_initialControlVector;
   ControlVector m_finalControlVector;
-
-  /**
-   * Returns the control vector for each dimension as a matrix from the
-   * user-provided arrays in the constructor.
-   *
-   * @param initialVector The control vector for the initial point.
-   * @param finalVector The control vector for the final point.
-   *
-   * @return The control vector matrix for a dimension.
-   */
-  static Eigen::Vector4d ControlVectorFromArrays(
-      std::array<double, 2> initialVector, std::array<double, 2> finalVector) {
-    return Eigen::Vector4d{initialVector[0], initialVector[1], finalVector[0],
-                           finalVector[1]};
-  }
 };
 
 }  // namespace trajopt
