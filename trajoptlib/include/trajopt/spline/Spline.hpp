@@ -87,7 +87,7 @@ class Spline {
         (dx * ddy - ddx * dy) / ((dx * dx + dy * dy) * std::hypot(dx, dy));
 
     return PoseWithCurvature{
-        {FromVector(combined.template block<2, 1>(0, 0)), Rotation2d{dx, dy}},
+        {Translation2d{combined(0), combined(1)}, Rotation2d{dx, dy}},
         curvature};
   }
 
@@ -121,16 +121,6 @@ class Spline {
    */
   static Eigen::Vector2d ToVector(const Translation2d& translation) {
     return Eigen::Vector2d{translation.X(), translation.Y()};
-  }
-
-  /**
-   * Converts an Eigen vector into a Translation2d.
-   *
-   * @param vector The vector to convert.
-   * @return The Translation2d.
-   */
-  static Translation2d FromVector(const Eigen::Vector2d& vector) {
-    return Translation2d{vector(0), vector(1)};
   }
 };
 
