@@ -18,6 +18,7 @@
 #include "trajopt/constraint/PointAtConstraint.hpp"
 #include "trajopt/constraint/PointLineRegionConstraint.hpp"
 #include "trajopt/geometry/Translation2.hpp"
+#include "trajopt/spline/Spline.hpp"
 #include "trajopt/util/Cancellation.hpp"
 #include "trajoptlib/src/lib.rs.h"
 
