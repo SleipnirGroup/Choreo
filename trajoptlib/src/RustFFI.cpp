@@ -309,7 +309,7 @@ void SwerveTrajectoryGenerator::sgmt_keep_out_circle(size_t from_index,
 
 void SwerveTrajectoryGenerator::add_callback(
     rust::Fn<void(SwerveTrajectory, int64_t)> callback) {
-  path_builder.AddCallback([=](trajopt::SwerveSolution& solution,
+  path_builder.AddCallback([=](const trajopt::SwerveSolution& solution,
                                int64_t handle) {
     trajopt::SwerveTrajectory cppTrajectory{solution};
 
@@ -639,7 +639,7 @@ void DifferentialTrajectoryGenerator::sgmt_keep_out_circle(size_t from_index,
 void DifferentialTrajectoryGenerator::add_callback(
     rust::Fn<void(DifferentialTrajectory, int64_t)> callback) {
   path_builder.AddCallback(
-      [=](trajopt::DifferentialSolution& solution, int64_t handle) {
+      [=](const trajopt::DifferentialSolution& solution, int64_t handle) {
         trajopt::DifferentialTrajectory cppTrajectory{solution};
 
         rust::Vec<DifferentialTrajectorySample> rustSamples;
