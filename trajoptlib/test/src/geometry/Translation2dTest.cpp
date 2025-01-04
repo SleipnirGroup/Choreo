@@ -75,8 +75,17 @@ TEST_CASE("Translation2d - Angle", "[Translation2d]") {
   const trajopt::Translation2d one{1.0, 3.0};
   const trajopt::Translation2d two{2.0, 5.0};
 
-  CHECK(one.Angle().Radians() == std::atan2(3.0, 1.0));
-  CHECK(two.Angle().Radians() == std::atan2(5.0, 2.0));
+  const auto oneAngle = one.Angle();
+  CHECK(oneAngle.Cos() == Catch::Approx(1.0 / std::sqrt(10.0)).margin(1e-15));
+  CHECK(oneAngle.Sin() == Catch::Approx(3.0 / std::sqrt(10.0)).margin(1e-15));
+  CHECK(oneAngle.Radians() ==
+        Catch::Approx(std::atan2(3.0, 1.0)).margin(1e-15));
+
+  const auto twoAngle = two.Angle();
+  CHECK(twoAngle.Cos() == Catch::Approx(2.0 / std::sqrt(29.0)).margin(1e-15));
+  CHECK(twoAngle.Sin() == Catch::Approx(5.0 / std::sqrt(29.0)).margin(1e-15));
+  CHECK(twoAngle.Radians() ==
+        Catch::Approx(std::atan2(5.0, 2.0)).margin(1e-15));
 }
 
 TEST_CASE("Translation2d - Dot", "[Translation2d]") {
