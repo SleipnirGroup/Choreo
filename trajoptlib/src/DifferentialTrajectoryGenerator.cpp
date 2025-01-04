@@ -132,15 +132,8 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     Fr.emplace_back(problem.DecisionVariable());
   }
 
-  double minWidth = path.drivetrain.trackwidth;
-
   for (size_t sgmtIndex = 0; sgmtIndex < sgmtCnt; ++sgmtIndex) {
     dts.emplace_back(problem.DecisionVariable());
-
-    // Prevent drivetrain tunneling through keep-out regions
-    problem.SubjectTo(dts.at(sgmtIndex) * path.drivetrain.wheelRadius *
-                          path.drivetrain.wheelMaxAngularVelocity <=
-                      minWidth);
   }
 
   // Minimize total time

@@ -101,22 +101,8 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     }
   }
 
-  double minWidth = INFINITY;
-  for (size_t i = 0; i < path.drivetrain.modules.size(); ++i) {
-    auto mod_a = path.drivetrain.modules.at(i);
-    size_t mod_b_idx = i == 0 ? path.drivetrain.modules.size() - 1 : i - 1;
-    auto mod_b = path.drivetrain.modules.at(mod_b_idx);
-    minWidth = std::min(
-        minWidth, std::hypot(mod_a.X() - mod_b.X(), mod_a.Y() - mod_b.Y()));
-  }
-
   for (size_t sgmtIndex = 0; sgmtIndex < sgmtCnt; ++sgmtIndex) {
     dts.emplace_back(problem.DecisionVariable());
-
-    // Prevent drivetrain tunneling through keep-out regions
-    problem.SubjectTo(dts.at(sgmtIndex) * path.drivetrain.wheelRadius *
-                          path.drivetrain.wheelMaxAngularVelocity <=
-                      minWidth);
   }
 
   // Minimize total time
