@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <array>
 #include <utility>
 
 #include "trajopt/geometry/Pose2.hpp"
@@ -36,10 +37,10 @@ class TRAJOPT_DLLEXPORT CubicHermitePoseSplineHolonomic : CubicHermiteSpline {
    * @param r0 Initial heading.
    * @param r1 Final heading.
    */
-  CubicHermitePoseSplineHolonomic(wpi::array<double, 2> xInitialControlVector,
-                                  wpi::array<double, 2> xFinalControlVector,
-                                  wpi::array<double, 2> yInitialControlVector,
-                                  wpi::array<double, 2> yFinalControlVector,
+  CubicHermitePoseSplineHolonomic(std::array<double, 2> xInitialControlVector,
+                                  std::array<double, 2> xFinalControlVector,
+                                  std::array<double, 2> yInitialControlVector,
+                                  std::array<double, 2> yFinalControlVector,
                                   trajopt::Rotation2d r0,
                                   trajopt::Rotation2d r1)
       : CubicHermiteSpline(xInitialControlVector, xFinalControlVector,

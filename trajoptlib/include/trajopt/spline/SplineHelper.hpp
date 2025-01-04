@@ -2,13 +2,12 @@
 
 #pragma once
 
-#include <utility>
+#include <array>
 #include <vector>
 
 #include "trajopt/geometry/Pose2.hpp"
 #include "trajopt/geometry/Translation2.hpp"
 #include "trajopt/spline/CubicHermiteSpline.hpp"
-#include "trajopt/spline/array.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 
 namespace frc {
@@ -27,7 +26,7 @@ class TRAJOPT_DLLEXPORT SplineHelper {
    * @param end               The ending pose.
    * @return 2 cubic control vectors.
    */
-  static wpi::array<Spline<3>::ControlVector, 2>
+  static std::array<Spline<3>::ControlVector, 2>
   CubicControlVectorsFromWaypoints(
       const trajopt::Pose2d& start,
       const std::vector<trajopt::Translation2d>& interiorWaypoints,

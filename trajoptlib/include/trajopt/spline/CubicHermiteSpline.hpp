@@ -2,10 +2,11 @@
 
 #pragma once
 
+#include <array>
+
 #include <Eigen/Core>
 
 #include "trajopt/spline/Spline.hpp"
-#include "trajopt/spline/array.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 
 namespace frc {
@@ -29,10 +30,10 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline : public Spline<3> {
    * @param yFinalControlVector The control vector for the final point in
    * the y dimension.
    */
-  CubicHermiteSpline(wpi::array<double, 2> xInitialControlVector,
-                     wpi::array<double, 2> xFinalControlVector,
-                     wpi::array<double, 2> yInitialControlVector,
-                     wpi::array<double, 2> yFinalControlVector);
+  CubicHermiteSpline(std::array<double, 2> xInitialControlVector,
+                     std::array<double, 2> xFinalControlVector,
+                     std::array<double, 2> yInitialControlVector,
+                     std::array<double, 2> yFinalControlVector);
 
   /**
    * Returns the coefficients matrix.
@@ -110,7 +111,7 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline : public Spline<3> {
    * @return The control vector matrix for a dimension.
    */
   static Eigen::Vector4d ControlVectorFromArrays(
-      wpi::array<double, 2> initialVector, wpi::array<double, 2> finalVector) {
+      std::array<double, 2> initialVector, std::array<double, 2> finalVector) {
     return Eigen::Vector4d{initialVector[0], initialVector[1], finalVector[0],
                            finalVector[1]};
   }

@@ -2,13 +2,13 @@
 
 #pragma once
 
+#include <array>
 #include <optional>
 #include <utility>
 
 #include <Eigen/Core>
 
 #include "trajopt/geometry/Pose2.hpp"
-#include "trajopt/spline/array.hpp"
 
 namespace frc {
 /**
@@ -34,10 +34,10 @@ class Spline {
    */
   struct ControlVector {
     /// The x components of the control vector.
-    wpi::array<double, (Degree + 1) / 2> x;
+    std::array<double, (Degree + 1) / 2> x;
 
     /// The y components of the control vector.
-    wpi::array<double, (Degree + 1) / 2> y;
+    std::array<double, (Degree + 1) / 2> y;
   };
 
   /**
