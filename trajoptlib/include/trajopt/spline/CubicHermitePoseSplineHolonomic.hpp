@@ -75,7 +75,7 @@ class TRAJOPT_DLLEXPORT CubicHermitePoseSplineHolonomic : CubicHermiteSpline {
    * @param t The point t
    * @return The heading rate at point t.
    */
-  double getDHeading(double t) const { return theta.GetVelocity(t); }
+  double GetHeadingRate(double t) const { return theta.GetVelocity(t); }
 
   /**
    * Gets the pose and curvature at some point t on the spline.

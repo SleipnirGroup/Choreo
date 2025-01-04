@@ -4,7 +4,6 @@
 
 #include <cmath>
 
-#include "trajopt/spline/Spline1d.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 
 namespace trajopt {
@@ -12,7 +11,7 @@ namespace trajopt {
 /**
  * 1D cubic hermite spline.
  */
-class TRAJOPT_DLLEXPORT CubicHermiteSpline1d : public Spline1d {
+class TRAJOPT_DLLEXPORT CubicHermiteSpline1d {
  public:
   /**
    * Constructs a 1D cubic hermite spline.
@@ -28,17 +27,41 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline1d : public Spline1d {
         c(v0),
         d(p0) {}
 
-  double GetPosition(double t) const override {
+  /**
+   * Return the position at point t.
+   *
+   * @param t The point t
+   * @return The position at point t.
+   */
+  double GetPosition(double t) const {
     return a * std::pow(t, 3) + b * std::pow(t, 2) + c * t + d;
   }
 
-  double GetVelocity(double t) const override {
+  /**
+   * Return the velocity at point t.
+   *
+   * @param t The point t
+   * @return The velocity at point t.
+   */
+  double GetVelocity(double t) const {
     return 3 * a * std::pow(t, 2) + 2 * b * t + c;
   }
 
-  double GetAcceleration(double t) const override { return 6 * a * t + 2 * b; }
+  /**
+   * Return the acceleration at point t.
+   *
+   * @param t The point t
+   * @return The acceleration at point t.
+   */
+  double GetAcceleration(double t) const { return 6 * a * t + 2 * b; }
 
-  double GetJerk([[maybe_unused]] double t) const override { return 6 * a; }
+  /**
+   * Return the jerk at point t.
+   *
+   * @param t The point t
+   * @return The jerk at point t.
+   */
+  double GetJerk([[maybe_unused]] double t) const { return 6 * a; }
 
  private:
   // Coefficients of the cubic polynomial
