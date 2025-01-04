@@ -199,7 +199,8 @@ class TRAJOPT_DLLEXPORT PathBuilder {
    *
    */
   void AddCallback(
-      const std::function<void(Solution& solution, int64_t handle)> callback) {
+      const std::function<void(const Solution& solution, int64_t handle)>
+          callback) {
     path.callbacks.push_back(callback);
   }
 
