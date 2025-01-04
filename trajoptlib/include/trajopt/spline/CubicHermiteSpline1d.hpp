@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <cmath>
-
 #include "trajopt/util/SymbolExports.hpp"
 
 namespace trajopt {
@@ -21,11 +19,11 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline1d {
    * @param v0 The initial velocity.
    * @param v1 The final velocity.
    */
-  CubicHermiteSpline1d(double p0, double p1, double v0, double v1)
-      : a(v0 + v1 + 2 * p0 - 2 * p1),
-        b(-2 * v0 - v1 - 3 * p0 + 3 * p1),
-        c(v0),
-        d(p0) {}
+  constexpr CubicHermiteSpline1d(double p0, double p1, double v0, double v1)
+      : a{v0 + v1 + 2 * p0 - 2 * p1},
+        b{-2 * v0 - v1 - 3 * p0 + 3 * p1},
+        c{v0},
+        d{p0} {}
 
   /**
    * Return the position at point t.
@@ -33,8 +31,10 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline1d {
    * @param t The point t
    * @return The position at point t.
    */
-  double GetPosition(double t) const {
-    return a * std::pow(t, 3) + b * std::pow(t, 2) + c * t + d;
+  constexpr double GetPosition(double t) const {
+    double t2 = t * t;
+    double t3 = t2 * t;
+    return a * t3 + b * t2 + c * t + d;
   }
 
   /**
@@ -43,8 +43,8 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline1d {
    * @param t The point t
    * @return The velocity at point t.
    */
-  double GetVelocity(double t) const {
-    return 3 * a * std::pow(t, 2) + 2 * b * t + c;
+  constexpr double GetVelocity(double t) const {
+    return 3 * a * t * t + 2 * b * t + c;
   }
 
   /**
@@ -53,7 +53,7 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline1d {
    * @param t The point t
    * @return The acceleration at point t.
    */
-  double GetAcceleration(double t) const { return 6 * a * t + 2 * b; }
+  constexpr double GetAcceleration(double t) const { return 6 * a * t + 2 * b; }
 
   /**
    * Return the jerk at point t.
@@ -61,7 +61,7 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline1d {
    * @param t The point t
    * @return The jerk at point t.
    */
-  double GetJerk([[maybe_unused]] double t) const { return 6 * a; }
+  constexpr double GetJerk([[maybe_unused]] double t) const { return 6 * a; }
 
  private:
   // Coefficients of the cubic polynomial
