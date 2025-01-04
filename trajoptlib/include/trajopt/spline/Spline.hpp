@@ -62,7 +62,7 @@ class Spline {
     double dx, dy, ddx, ddy;
 
     // If t = 0, all other terms in the equation cancel out to zero. We can use
-    // the last x^0 term in the equation.
+    // the last x⁰ term in the equation.
     if (t == 0.0) {
       dx = Coefficients()(2, Degree - 1);
       dy = Coefficients()(3, Degree - 1);

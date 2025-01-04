@@ -20,7 +20,6 @@
 
 namespace trajopt {
 
-/// TODO: implement for diffy drive
 struct DifferentialSolution;
 
 using PoseWithCurvature = std::pair<Pose2d, double>;
