@@ -95,7 +95,7 @@ FLIPPER_MAP: Dict[int, FlipperType] = {
     2022: FlipperType.ROTATE_AROUND,
     2023: FlipperType.MIRRORED,
     2024: FlipperType.MIRRORED,
-    2025: FlipperType.MIRRORED
+    2025: FlipperType.ROTATE_AROUND
 }
 
 

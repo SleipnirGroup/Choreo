@@ -98,7 +98,7 @@ public class ChoreoAllianceFlipUtil {
           put(2022, new YearInfo(Flipper.ROTATE_AROUND, 16.5811, 8.19912));
           put(2023, new YearInfo(Flipper.MIRRORED, 16.5811, 8.19912));
           put(2024, new YearInfo(Flipper.MIRRORED, 16.5811, 8.19912));
-          put(2025, new YearInfo(Flipper.MIRRORED, FIELD_LENGTH, FIELD_WIDTH));
+          put(2025, new YearInfo(Flipper.ROTATE_AROUND, FIELD_LENGTH, FIELD_WIDTH));
         }
       };
 
