@@ -36,15 +36,41 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline : public Spline<3> {
                      std::array<double, 2> yFinalControlVector)
       : m_initialControlVector{xInitialControlVector, yInitialControlVector},
         m_finalControlVector{xFinalControlVector, yFinalControlVector} {
-    const auto hermite = MakeHermiteBasis();
+    // Calculate the basis matrix for cubic Hermite spline interpolation.
+    //
+    // Given P(i), P'(i), P(i+1), P'(i+1), the control vectors, we want to find
+    // the coefficients of the spline P(t) = a₃t³ + a₂t² + a₁t + a₀.
+    //
+    // P(i)    = P(0)  = a₀
+    // P'(i)   = P'(0) = a₁
+    // P(i+1)  = P(1)  = a₃ + a₂ + a₁ + a₀
+    // P'(i+1) = P'(1) = 3a₃ + 2a₂ + a₁
+    //
+    // [P(i)   ] = [0 0 0 1][a₃]
+    // [P'(i)  ] = [0 0 1 0][a₂]
+    // [P(i+1) ] = [1 1 1 1][a₁]
+    // [P'(i+1)] = [3 2 1 0][a₀]
+    //
+    // To solve for the coefficients, we can invert the 4x4 matrix and move it
+    // to the other side of the equation.
+    //
+    // [a₃] = [ 2  1 -2  1][P(i)   ]
+    // [a₂] = [-3 -2  3 -1][P'(i)  ]
+    // [a₁] = [ 0  1  0  0][P(i+1) ]
+    // [a₀] = [ 1  0  0  0][P'(i+1)]
+    constexpr Eigen::Matrix4d basis{{+2.0, +1.0, -2.0, +1.0},
+                                    {-3.0, -2.0, +3.0, -1.0},
+                                    {+0.0, +1.0, +0.0, +0.0},
+                                    {+1.0, +0.0, +0.0, +0.0}};
+
     const auto x =
         ControlVectorFromArrays(xInitialControlVector, xFinalControlVector);
     const auto y =
         ControlVectorFromArrays(yInitialControlVector, yFinalControlVector);
 
     // Populate first two rows with coefficients.
-    m_coefficients.template block<1, 4>(0, 0) = hermite * x;
-    m_coefficients.template block<1, 4>(1, 0) = hermite * y;
+    m_coefficients.template block<1, 4>(0, 0) = basis * x;
+    m_coefficients.template block<1, 4>(1, 0) = basis * y;
 
     // Populate Row 2 and Row 3 with the derivatives of the equations above.
     // Then populate row 4 and 5 with the second derivatives.
@@ -71,7 +97,7 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline : public Spline<3> {
    * Returns the coefficients matrix.
    * @return The coefficients matrix.
    */
-  Eigen::Matrix<double, 6, 3 + 1> Coefficients() const override {
+  const Eigen::Matrix<double, 6, 3 + 1>& Coefficients() const override {
     return m_coefficients;
   }
 
@@ -99,39 +125,6 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline : public Spline<3> {
 
   ControlVector m_initialControlVector;
   ControlVector m_finalControlVector;
-
-  /**
-   * Returns the hermite basis matrix for cubic hermite spline interpolation.
-   * @return The hermite basis matrix for cubic hermite spline interpolation.
-   */
-  static Eigen::Matrix4d MakeHermiteBasis() {
-    // Given P(i), P'(i), P(i+1), P'(i+1), the control vectors, we want to find
-    // the coefficients of the spline P(t) = a₃t³ + a₂t² + a₁t + a₀.
-    //
-    // P(i)    = P(0)  = a₀
-    // P'(i)   = P'(0) = a₁
-    // P(i+1)  = P(1)  = a₃ + a₂ + a₁ + a₀
-    // P'(i+1) = P'(1) = 3a₃ + 2a₂ + a₁
-    //
-    // [P(i)   ] = [0 0 0 1][a₃]
-    // [P'(i)  ] = [0 0 1 0][a₂]
-    // [P(i+1) ] = [1 1 1 1][a₁]
-    // [P'(i+1)] = [3 2 1 0][a₀]
-    //
-    // To solve for the coefficients, we can invert the 4x4 matrix and move it
-    // to the other side of the equation.
-    //
-    // [a₃] = [ 2  1 -2  1][P(i)   ]
-    // [a₂] = [-3 -2  3 -1][P'(i)  ]
-    // [a₁] = [ 0  1  0  0][P(i+1) ]
-    // [a₀] = [ 1  0  0  0][P'(i+1)]
-
-    static const Eigen::Matrix4d basis{{+2.0, +1.0, -2.0, +1.0},
-                                       {-3.0, -2.0, +3.0, -1.0},
-                                       {+0.0, +1.0, +0.0, +0.0},
-                                       {+1.0, +0.0, +0.0, +0.0}};
-    return basis;
-  }
 
   /**
    * Returns the control vector for each dimension as a matrix from the

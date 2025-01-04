@@ -96,7 +96,7 @@ class Spline {
    *
    * @return The coefficients of the spline.
    */
-  virtual Eigen::Matrix<double, 6, Degree + 1> Coefficients() const = 0;
+  virtual const Eigen::Matrix<double, 6, Degree + 1>& Coefficients() const = 0;
 
   /**
    * Returns the initial control vector that created this spline.
@@ -111,17 +111,6 @@ class Spline {
    * @return The final control vector that created this spline.
    */
   virtual const ControlVector& GetFinalControlVector() const = 0;
-
- protected:
-  /**
-   * Converts a Translation2d into a vector that is compatible with Eigen.
-   *
-   * @param translation The Translation2d to convert.
-   * @return The vector.
-   */
-  static Eigen::Vector2d ToVector(const Translation2d& translation) {
-    return Eigen::Vector2d{translation.X(), translation.Y()};
-  }
 };
 
 }  // namespace trajopt
