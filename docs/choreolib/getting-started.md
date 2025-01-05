@@ -263,6 +263,13 @@ In general, trajectory followers accept trajectory "samples" that represent the 
 
         1. For more information about differential drive kinematics, see [WPILib's documentation](https://docs.wpilib.org/en/stable/docs/software/kinematics-and-odometry/differential-drive-kinematics.html). In this example, we assume you have created an instance of `DifferentialDriveKinematics`, named `kinematics`.
 
+## Choreo-Specific Alerts
+Choreo primarily uses WPILib's Alerts api to warn users of error(or warning) conditions. These alerts
+can be found under the SmartDashboard/ChoreoAlert section within networktables. 
+
+To visualize these alerts on a dashboard or advantagescope, simply drag the ChoreoAlert group 
+outwards onto the "discrete fields" section in advantagescope or the main dashboard panel. 
+
 ## Next Steps
 
 <div class="grid cards" markdown>
