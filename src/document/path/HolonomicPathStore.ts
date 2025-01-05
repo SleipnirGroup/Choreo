@@ -178,15 +178,12 @@ export const HolonomicPathStore = types
   })
   .actions((self) => {
     let autosaveDisposer: IReactionDisposer;
-    let exporter: (uuid: string) => void;
+    let exporter: (uuid: string) => void = (uuid) =>
+      getEnv(self)?.exporter(uuid);
     const afterCreate = () => {
       // Anything accessed in here will cause the trajectory to be marked stale
       // this is a reaction, not an autorun so that the effect does not happen
       // when mobx first runs it to determine dependencies.
-      // staleDisposer = reaction(
-      //   () => {
-      //     // Reaction needs the return value to change,
-      //     // so we can't just access the values and do nothing with them
 
       autosaveDisposer = reaction(
         () => {
