@@ -32,7 +32,7 @@ import FieldConstraintAddLayer from "./constraintDisplay/FieldConstraintAddLayer
 import FieldConstraintDisplayLayer from "./constraintDisplay/FieldConstraintDisplayLayer";
 import FieldImage2025 from "./fields/FieldImage2025";
 import * as FieldDimensions from "./fields/FieldDimensions"
-import JSONFieldImage from "./fields/JSONFieldImage";
+// import JSONFieldImage from "./fields/JSONFieldImage";
 
 type Props = object;
 
@@ -241,7 +241,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             {/* Background */}
             {layers[ViewLayers.Field] && (
               <>
-                <JSONFieldImage opacity={100} imageHeightPx={642} imageWidthPx={1576}></JSONFieldImage>
+                {/* <JSONFieldImage opacity={50} imageHeightPx={642} imageWidthPx={1576}></JSONFieldImage> */}
                 <FieldImage2025 />
               </>
             )}
