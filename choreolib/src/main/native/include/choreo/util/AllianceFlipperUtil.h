@@ -92,12 +92,11 @@ struct RotateAroundFlipper {
   }
 };
 
-inline constexpr Map flipperMap{std::array{
-    std::pair{2022, FlipperType::RotateAround},
-    std::pair{2023, FlipperType::Mirrored},
-    std::pair{2024, FlipperType::Mirrored},
-    std::pair{2025, FlipperType::RotateAround}
-}};
+inline constexpr Map flipperMap{
+    std::array{std::pair{2022, FlipperType::RotateAround},
+               std::pair{2023, FlipperType::Mirrored},
+               std::pair{2024, FlipperType::Mirrored},
+               std::pair{2025, FlipperType::RotateAround}}};
 
 inline constexpr int kDefaultYear = 2025;
 
