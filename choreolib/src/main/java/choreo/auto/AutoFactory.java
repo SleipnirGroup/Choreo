@@ -305,12 +305,6 @@ public class AutoFactory {
     return routine.cmd().until(trajectory.done());
   }
 
-  private Command routineTrajectoryCmd(AutoTrajectory trajectory) {
-    AutoRoutine routine = newRoutine("Routine");
-    routine.active().onTrue(trajectory.cmd());
-    return routine.cmd().until(trajectory.done());
-  }
-
   /**
    * Creates a new {@link AutoTrajectory} command to be used in an auto routine.
    *
