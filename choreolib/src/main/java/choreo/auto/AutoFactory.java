@@ -277,7 +277,10 @@ public class AutoFactory {
    * @return A new {@link AutoTrajectory}.
    */
   public Command trajectoryCmd(String trajectoryName) {
-    return trajectory(trajectoryName, voidRoutine).cmd();
+    AutoRoutine routine = newRoutine("Routine");
+    AutoTrajectory trajectory = routine.trajectory(trajectoryName);
+    routine.active().onTrue(trajectory.cmd());
+    return routine.cmd().until(trajectory.done());
   }
 
   /**
@@ -296,7 +299,10 @@ public class AutoFactory {
    * @return A new {@link AutoTrajectory}.
    */
   public Command trajectoryCmd(String trajectoryName, final int splitIndex) {
-    return trajectory(trajectoryName, splitIndex, voidRoutine).cmd();
+    AutoRoutine routine = newRoutine("Routine");
+    AutoTrajectory trajectory = routine.trajectory(trajectoryName, splitIndex);
+    routine.active().onTrue(trajectory.cmd());
+    return routine.cmd().until(trajectory.done());
   }
 
   /**
