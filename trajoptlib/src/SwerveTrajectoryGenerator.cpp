@@ -256,16 +256,16 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   }
 
   for (size_t wptIndex = 0; wptIndex < wptCnt; ++wptIndex) {
+    // First index of next wpt - 1
+    size_t index = GetIndex(Ns, wptIndex, 0);
+
+    Pose2v pose_k{x.at(index), y.at(index), {cosθ.at(index), sinθ.at(index)}};
+    Translation2v v_k{vx.at(index), vy.at(index)};
+    auto ω_k = ω.at(index);
+    Translation2v a_k{ax.at(index), ay.at(index)};
+    auto α_k = α.at(index);
+
     for (auto& constraint : path.waypoints.at(wptIndex).waypointConstraints) {
-      // First index of next wpt - 1
-      size_t index = GetIndex(Ns, wptIndex, 0);
-
-      Pose2v pose_k{x.at(index), y.at(index), {cosθ.at(index), sinθ.at(index)}};
-      Translation2v v_k{vx.at(index), vy.at(index)};
-      auto ω_k = ω.at(index);
-      Translation2v a_k{ax.at(index), ay.at(index)};
-      auto α_k = α.at(index);
-
       std::visit(
           [&](auto&& arg) { arg.Apply(problem, pose_k, v_k, ω_k, a_k, α_k); },
           constraint);
@@ -273,19 +273,18 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   }
 
   for (size_t sgmtIndex = 0; sgmtIndex < sgmtCnt; ++sgmtIndex) {
-    for (auto& constraint :
-         path.waypoints.at(sgmtIndex + 1).segmentConstraints) {
-      size_t startIndex = GetIndex(Ns, sgmtIndex, 0);
-      size_t endIndex = GetIndex(Ns, sgmtIndex + 1, 0);
+    size_t startIndex = GetIndex(Ns, sgmtIndex, 0);
+    size_t endIndex = GetIndex(Ns, sgmtIndex + 1, 0);
 
-      for (size_t index = startIndex; index < endIndex; ++index) {
-        Pose2v pose_k{
-            x.at(index), y.at(index), {cosθ.at(index), sinθ.at(index)}};
-        Translation2v v_k{vx.at(index), vy.at(index)};
-        auto ω_k = ω.at(index);
-        Translation2v a_k{ax.at(index), ay.at(index)};
-        auto α_k = α.at(index);
+    for (size_t index = startIndex; index < endIndex; ++index) {
+      Pose2v pose_k{x.at(index), y.at(index), {cosθ.at(index), sinθ.at(index)}};
+      Translation2v v_k{vx.at(index), vy.at(index)};
+      auto ω_k = ω.at(index);
+      Translation2v a_k{ax.at(index), ay.at(index)};
+      auto α_k = α.at(index);
 
+      for (auto& constraint :
+           path.waypoints.at(sgmtIndex + 1).segmentConstraints) {
         std::visit(
             [&](auto&& arg) { arg.Apply(problem, pose_k, v_k, ω_k, a_k, α_k); },
             constraint);
