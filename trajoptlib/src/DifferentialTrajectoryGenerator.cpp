@@ -42,8 +42,8 @@ inline Translation2v WheelToChassisSpeeds(sleipnir::Variable vl,
 }
 
 DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
-    DifferentialPathBuilder pathbuilder, int64_t handle)
-    : path(pathbuilder.GetPath()), Ns(pathbuilder.GetControlIntervalCounts()) {
+    DifferentialPathBuilder pathBuilder, int64_t handle)
+    : path(pathBuilder.GetPath()), Ns(pathBuilder.GetControlIntervalCounts()) {
   namespace slp = sleipnir;
 
   // See equations just before (12.35) and (12.36) in
@@ -81,7 +81,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     return xdot;
   };
 
-  auto initialGuess = pathbuilder.CalculateInitialGuess();
+  auto initialGuess = pathBuilder.CalculateInitialGuess();
 
   callbacks.emplace_back([this, handle = handle] {
     constexpr int fps = 60;
@@ -248,16 +248,16 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   }
 
   for (size_t wptIndex = 0; wptIndex < wptCnt; ++wptIndex) {
+    // First index of next wpt - 1
+    size_t index = GetIndex(Ns, wptIndex, 0);
+
+    Pose2v pose_k{x.at(index), y.at(index), {θ.at(index)}};
+    Translation2v v_k = WheelToChassisSpeeds(vl.at(index), vr.at(index));
+    auto ω_k = (vr.at(index) - vl.at(index)) / path.drivetrain.trackwidth;
+    Translation2v a_k = WheelToChassisSpeeds(al.at(index), ar.at(index));
+    auto α_k = (ar.at(index) - al.at(index)) / path.drivetrain.trackwidth;
+
     for (auto& constraint : path.waypoints.at(wptIndex).waypointConstraints) {
-      // First index of next wpt - 1
-      size_t index = GetIndex(Ns, wptIndex, 0);
-
-      Pose2v pose_k{x.at(index), y.at(index), {θ.at(index)}};
-      Translation2v v_k = WheelToChassisSpeeds(vl.at(index), vr.at(index));
-      auto ω_k = (vr.at(index) - vl.at(index)) / path.drivetrain.trackwidth;
-      Translation2v a_k = WheelToChassisSpeeds(al.at(index), ar.at(index));
-      auto α_k = (ar.at(index) - al.at(index)) / path.drivetrain.trackwidth;
-
       std::visit(
           [&](auto&& arg) { arg.Apply(problem, pose_k, v_k, ω_k, a_k, α_k); },
           constraint);
@@ -265,18 +265,18 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   }
 
   for (size_t sgmtIndex = 0; sgmtIndex < sgmtCnt; ++sgmtIndex) {
-    for (auto& constraint :
-         path.waypoints.at(sgmtIndex + 1).segmentConstraints) {
-      size_t startIndex = GetIndex(Ns, sgmtIndex, 0);
-      size_t endIndex = GetIndex(Ns, sgmtIndex + 1, 0);
+    size_t startIndex = GetIndex(Ns, sgmtIndex, 0);
+    size_t endIndex = GetIndex(Ns, sgmtIndex + 1, 0);
 
-      for (size_t index = startIndex; index < endIndex; ++index) {
-        Pose2v pose_k{x.at(index), y.at(index), {θ.at(index)}};
-        Translation2v v_k = WheelToChassisSpeeds(vl.at(index), vr.at(index));
-        auto ω_k = (vr.at(index) - vl.at(index)) / path.drivetrain.trackwidth;
-        Translation2v a_k = WheelToChassisSpeeds(al.at(index), ar.at(index));
-        auto α_k = (ar.at(index) - al.at(index)) / path.drivetrain.trackwidth;
+    for (size_t index = startIndex; index < endIndex; ++index) {
+      Pose2v pose_k{x.at(index), y.at(index), {θ.at(index)}};
+      Translation2v v_k = WheelToChassisSpeeds(vl.at(index), vr.at(index));
+      auto ω_k = (vr.at(index) - vl.at(index)) / path.drivetrain.trackwidth;
+      Translation2v a_k = WheelToChassisSpeeds(al.at(index), ar.at(index));
+      auto α_k = (ar.at(index) - al.at(index)) / path.drivetrain.trackwidth;
 
+      for (auto& constraint :
+           path.waypoints.at(sgmtIndex + 1).segmentConstraints) {
         std::visit(
             [&](auto&& arg) { arg.Apply(problem, pose_k, v_k, ω_k, a_k, α_k); },
             constraint);
