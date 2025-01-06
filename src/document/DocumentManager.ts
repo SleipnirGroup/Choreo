@@ -690,6 +690,7 @@ export async function newProject() {
   const newChor = await Commands.defaultProject();
   doc.deserializeChor(newChor);
   uiState.loadPathGradientFromLocalStorage();
+  doc.pathlist.deleteAll();
   doc.pathlist.addPath("New Path");
   doc.history.clear();
 }
