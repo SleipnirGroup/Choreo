@@ -733,6 +733,7 @@ export async function deletePath(uuid: string) {
 }
 
 export async function writeTrajectory(uuid: string) {
+  console.log("saving", uuid);
   if (await canSave()) {
     const trajectory = doc.pathlist.paths.get(uuid);
     if (trajectory === undefined) {

@@ -13,18 +13,6 @@ export const PathListStore = types
     activePathUUID: "",
     defaultPath: types.maybe(HolonomicPathStore)
   })
-  .actions((self) => {
-    let pathExporter: (uuid: string) => void = (_uuid) => {};
-    return {
-      setExporter(exportFunction: (uuid: string) => void) {
-        pathExporter = exportFunction;
-        self.paths.forEach((p) => p.setExporter(pathExporter));
-      },
-      getExporter(): (uuid: string) => void {
-        return pathExporter;
-      }
-    };
-  })
   .views((self) => {
     return {
       toJSON(): any {
@@ -89,7 +77,7 @@ export const PathListStore = types
           },
           markers: []
         });
-        path.setExporter((uuid) => {});
+        path.disableExport();
         self.defaultPath = path;
         self.activePathUUID = path.uuid;
       },
@@ -128,7 +116,6 @@ export const PathListStore = types
               markers: []
             });
             self.paths.put(path); //It's not ready yet but it needs to get the env injected
-            path.setExporter(self.getExporter());
             if (contents !== undefined) {
               path.deserialize(contents);
             } else {

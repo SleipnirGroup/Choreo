@@ -197,15 +197,16 @@ export const HolonomicPathStore = types
         }
       );
     };
-    const setExporter = (exportFunction: (uuid: string) => void) => {
-      exporter = exportFunction;
+    /**Only to be used on the default path*/
+    const disableExport = () => {
+      exporter = () => {};
     };
     const beforeDestroy = () => {
       autosaveDisposer();
     };
     return {
       afterCreate,
-      setExporter,
+      disableExport,
       beforeDestroy
     };
   });
