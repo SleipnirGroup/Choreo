@@ -17,7 +17,7 @@ type SharedGraphLine = SwerveGraphLine & DifferentialGraphLine;
 type OnlySwerveGraphLine = Exclude<SwerveGraphLine, SharedGraphLine>
 type OnlyDiffGraphLine = Exclude<DifferentialGraphLine, SharedGraphLine>
 type ExtraGraphLine = "absVel"
-    | "accel";
+    | "accel" | "dt";
 type GraphLine = SwerveGraphLine | DifferentialGraphLine | ExtraGraphLine;
 type State = {
     views: Record<GraphLine, boolean>,
@@ -136,6 +136,12 @@ const extraColors: Record<ExtraGraphLine, Color> = {
         defaultView: true,
         dimension: "LinAcc"
     },
+    dt: {
+        name: "dt",
+        color: "white",
+        defaultView: true,
+        dimension: "Time"
+    },
 
 } as const;
 
@@ -149,7 +155,7 @@ const defaultViews = Object.fromEntries(
     Object.entries(colors).map(entry => [entry[0], entry[1].defaultView])
 ) as Record<GraphLine, boolean>;
 type Data = Array<[number, number]>;
-type DimensionNameInSample = Exclude<DimensionName, "Mass" | "Torque" | "MoI" | "Number" | "Time">;
+type DimensionNameInSample = Exclude<DimensionName, "Mass" | "Torque" | "MoI" | "Number">;
 type D3Ranges = Record<DimensionNameInSample, {
     scale: d3.ScaleLinear<number, number, never>,
     line: d3.Line<[number, number]>
@@ -164,6 +170,7 @@ const defaultRanges: Ranges = {
     AngVel: [0, 0],
     AngAcc: [0, 0],
     Force: [0, 0],
+    Time: [0,0]
     
 };
 const AXIS_WIDTH = 50;
@@ -197,7 +204,7 @@ class GraphPanel extends Component<Props, State> {
         ExtraGraphLine, Data> = {
             absVel: [],
             accel: [],
-
+            dt: []
         };
     ranges = defaultRanges;
 
@@ -228,6 +235,7 @@ class GraphPanel extends Component<Props, State> {
         AngVel: () => false,
         AngAcc: () => false,
         Force: () => false,
+        Time: ()=> false
     };
     constructor(props: Props) {
         super(props);
@@ -330,7 +338,11 @@ class GraphPanel extends Component<Props, State> {
                 const dim = sharedColors[k].dimension;
                 this.sharedData[k] = generated.map(samp => [samp.t, samp[k]]);
             });
-
+            this.extraData.dt = generated.map((samp, i, samples)=>{
+                if (i == samples.length-1) return [samp.t, 0];
+                let nextSample = samples[i+1];
+                return [samp.t, nextSample.t - samp.t];
+            })
             if (diff) {
                 Object.keys(this.diffData).forEach(key => {
                     const k = key as OnlyDiffGraphLine;
@@ -340,6 +352,7 @@ class GraphPanel extends Component<Props, State> {
                 });
                 this.extraData.absVel = (generated as DifferentialSample[]).map(samp => [samp.t, (samp.vl + samp.vr) / 2.0]);
                 this.extraData.accel = (generated as DifferentialSample[]).map(samp => [samp.t, (samp.al + samp.ar) / 2.0]);
+                
             }
             if (swerve) {
                 Object.keys(this.swerveData).forEach(key => {
