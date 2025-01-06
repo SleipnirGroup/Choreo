@@ -6,7 +6,7 @@ import { line, tickFormat } from "d3";
 import { pathToFileURL } from "url";
 import { Checkbox, FormControlLabel, FormGroup } from "@mui/material";
 import { blue, deepOrange, green, red, yellow } from "@mui/material/colors";
-import { DifferentialSample, SwerveSample } from "../../../document/2025/v2025_0_0";
+import { DifferentialSample, SwerveSample } from "../../../document/2025/DocumentTypes";
 import { DimensionName, Dimensions } from "../../../document/ExpressionStore";
 import { doc, uiState } from "../../../document/DocumentManager";
 
@@ -43,6 +43,12 @@ const sharedColors: Record<SharedGraphLine, Color> = {
         defaultView: true,
         dimension: "Angle"
     },
+    omega: {
+        name: "Angular Vel",
+        color: blue["A100"],
+        defaultView: true,
+        dimension: "AngVel"
+    },
 } as const;
 const swerveColors: Record<OnlySwerveGraphLine, Color> = {
     vx: {
@@ -56,12 +62,6 @@ const swerveColors: Record<OnlySwerveGraphLine, Color> = {
         color: green["A100"],
         defaultView: false,
         dimension: "LinVel"
-    },
-    omega: {
-        name: "Angular Vel",
-        color: blue["A100"],
-        defaultView: true,
-        dimension: "AngVel"
     },
     ax: {
         name: "X Accel",
@@ -144,10 +144,10 @@ const colors: Record<GraphLine, Color> = {
     ...swerveColors,
     ...diffColors,
     ...extraColors
-}
-let defaultViews = Object.fromEntries(
+};
+const defaultViews = Object.fromEntries(
     Object.entries(colors).map(entry => [entry[0], entry[1].defaultView])
-) as Record<GraphLine, boolean>
+) as Record<GraphLine, boolean>;
 type Data = Array<[number, number]>;
 type DimensionNameInSample = Exclude<DimensionName, "Mass" | "Torque" | "MoI" | "Number" | "Time">;
 type D3Ranges = Record<DimensionNameInSample, {
@@ -165,7 +165,7 @@ const defaultRanges: Ranges = {
     AngAcc: [0, 0],
     Force: [0, 0],
     
-}
+};
 const AXIS_WIDTH = 50;
 const PLOT_COUNT_X = 3;
 const PLOT_COUNT_Y = 2;
@@ -176,11 +176,11 @@ class GraphPanel extends Component<Props, State> {
         x: [],
         y: [],
         heading: [],
+        omega: [],
     };
     swerveData: Record<OnlySwerveGraphLine, Data> = {
         vx: [],
         vy: [],
-        omega: [],
         ax: [],
         ay: [],
         alpha: []
@@ -203,14 +203,14 @@ class GraphPanel extends Component<Props, State> {
 
     d3Ranges = this.updateD3Ranges();
     updateD3Ranges() {
-        let ranges = Object.fromEntries(
+        const ranges = Object.fromEntries(
             Object.keys(this.ranges).map(key => {
-                let k = key as DimensionNameInSample;
-                let range = this.ranges[k] ?? [0, 0];
-                let scale = d3.scaleLinear().domain(range).range([this.plotHeight, 0]);
-                let line = d3.line()
+                const k = key as DimensionNameInSample;
+                const range = this.ranges[k] ?? [0, 0];
+                const scale = d3.scaleLinear().domain(range).range([this.plotHeight, 0]);
+                const line = d3.line()
                     .x((d) => { return this.x(d[0]); })
-                    .y((d) => { return scale(d[1]); })
+                    .y((d) => { return scale(d[1]); });
                 return [k, {
                     scale,
                     line
@@ -228,34 +228,38 @@ class GraphPanel extends Component<Props, State> {
         AngVel: () => false,
         AngAcc: () => false,
         Force: () => false,
-    }
+    };
     constructor(props: Props) {
         super(props);
-        this.handleUpdate();
+        this.handleUpdate(doc.pathlist.activePath.trajectory.samples);
 
         Object.keys(colors).forEach(key => {
-            let k = key as GraphLine;
-            let dim = colors[k].dimension;
-            let oldView = this.dimView[dim];
+            const k = key as GraphLine;
+            const dim = colors[k].dimension;
+            const oldView = this.dimView[dim];
             this.dimView[dim] = () => oldView() || this.state.views[k];
-        })
+        });
     }
     margin = { top: 20, right: 20, bottom: 30, left: 40 };
     width = 460 - this.margin.left - this.margin.right;
     height = 400 - this.margin.top - this.margin.bottom;
-    get plotHeight() { return 150 }
-    get plotWidth() { return 200 }
+    get plotHeight() { return 150; }
+    get plotWidth() { return 200; }
     x = d3.scaleLinear()
         .domain([0, 10])
         .range([0, this.plotWidth]);
     componentDidMount() {
 
         this.redrawUnlisten = reaction(()=>{
-            return doc.pathlist.activePath.traj.samples;
+            let path = doc.pathlist.activePath;
+            if (path.ui.generating) {
+                return path.ui.generationProgress;
+            }
+            return path.trajectory.samples;
         },
         (val) => {
-            this.handleUpdate()
-        })
+            this.handleUpdate(val);
+        });
     }
     componentWillUnmount(): void {
         if (this.redrawUnlisten != null) {
@@ -271,14 +275,13 @@ class GraphPanel extends Component<Props, State> {
             this.ranges[dim][0] = val;
         }
     }
-    handleUpdate() {
+    handleUpdate(generated:SwerveSample[] | DifferentialSample[]) {
         console.log("update graph");
-        var path = doc.pathlist.activePath
-        var generated = path.traj.fullTraj;
+        const path = doc.pathlist.activePath;
         if (generated.length < 2) {
             return;
         }
-        this.x.domain([0, generated[generated.length - 1].t])
+        this.x.domain([0, generated[generated.length - 1].t]);
         // set the dimensions and margins of the graph
 
         // append the svg object to the body of the page
@@ -319,106 +322,106 @@ class GraphPanel extends Component<Props, State> {
 
         // color palette
         if (generated.length > 0) {
-            const diff = path.traj.isDifferential;
+            const diff = path.trajectory.isDifferential;
 
-            const swerve = path.traj.isSwerve;
+            const swerve = path.trajectory.isSwerve;
             Object.keys(this.sharedData).forEach(key => {
-                let k = key as SharedGraphLine;
-                let dim = sharedColors[k].dimension;
+                const k = key as SharedGraphLine;
+                const dim = sharedColors[k].dimension;
                 this.sharedData[k] = generated.map(samp => [samp.t, samp[k]]);
-            })
+            });
 
             if (diff) {
                 Object.keys(this.diffData).forEach(key => {
-                    let k = key as OnlyDiffGraphLine;
+                    const k = key as OnlyDiffGraphLine;
 
-                    let dim = diffColors[k].dimension;
+                    const dim = diffColors[k].dimension;
                     this.diffData[k] = (generated as DifferentialSample[]).map(samp => [samp.t, samp[k]]);
-                })
+                });
                 this.extraData.absVel = (generated as DifferentialSample[]).map(samp => [samp.t, (samp.vl + samp.vr) / 2.0]);
                 this.extraData.accel = (generated as DifferentialSample[]).map(samp => [samp.t, (samp.al + samp.ar) / 2.0]);
             }
             if (swerve) {
                 Object.keys(this.swerveData).forEach(key => {
-                    let k = key as OnlySwerveGraphLine;
+                    const k = key as OnlySwerveGraphLine;
                     this.swerveData[k] = (generated as SwerveSample[]).map(samp => [samp.t, samp[k]]);
-                })
+                });
                 this.extraData.absVel = (generated as SwerveSample[]).map(samp => [samp.t, Math.hypot(samp.vx, samp.vy)]);
                 this.extraData.accel = (generated as SwerveSample[]).map(samp => [samp.t, Math.hypot(samp.ax, samp.ay)]);
             }
             // Set ranges
             this.ranges = defaultRanges; // 0s
             Object.keys(this.sharedData).forEach(key => {
-                let k = key as SharedGraphLine;
-                let dim = sharedColors[k].dimension;
+                const k = key as SharedGraphLine;
+                const dim = sharedColors[k].dimension;
                 this.sharedData[k].forEach(val => {
                     this.expandRange(val[1], dim);
-                })
-            })
+                });
+            });
             Object.keys(this.swerveData).forEach(key => {
-                let k = key as OnlySwerveGraphLine;
-                let dim = swerveColors[k].dimension;
+                const k = key as OnlySwerveGraphLine;
+                const dim = swerveColors[k].dimension;
                 this.swerveData[k].forEach(val => {
                     this.expandRange(val[1], dim);
-                })
-            })
+                });
+            });
             Object.keys(this.diffData).forEach(key => {
-                let k = key as OnlyDiffGraphLine;
-                let dim = diffColors[k].dimension;
+                const k = key as OnlyDiffGraphLine;
+                const dim = diffColors[k].dimension;
                 this.diffData[k].forEach(val => {
                     this.expandRange(val[1], dim);
-                })
-            })
+                });
+            });
             Object.keys(this.extraData).forEach(key => {
-                let k = key as ExtraGraphLine;
-                let dim = extraColors[k].dimension;
+                const k = key as ExtraGraphLine;
+                const dim = extraColors[k].dimension;
                 this.extraData[k].forEach(val => {
                     this.expandRange(val[1], dim);
-                })
-            })
+                });
+            });
             
             this.d3Ranges = this.updateD3Ranges();
             
             Object.entries(this.d3Ranges).forEach((entry, i) => {
-                var svg = d3.select(`#${entry[0]}rootGroup`);
-                var plot = svg.select<SVGGElement>(`#${entry[0]}Plot`)
-                var yAxis = svg.select<SVGGElement>(`#${entry[0]}Axis`)
-                    .attr("transform", `translate(${0},0)`)
+                const svg = d3.select(`#${entry[0]}rootGroup`);
+                const plot = svg.select<SVGGElement>(`#${entry[0]}Plot`);
+                const yAxis = svg.select<SVGGElement>(`#${entry[0]}Axis`)
+                    .attr("transform", `translate(${0},0)`);
                 yAxis.selectChildren().remove();
                 yAxis.call(d3.axisLeft(entry[1].scale).ticks(10));
-                yAxis.selectAll("text").attr("fill", "white")
-                yAxis.selectAll(":is(line, path)").attr("stroke", "white")
+                yAxis.selectAll("text").attr("fill", "white");
+                yAxis.selectAll(":is(line, path)").attr("stroke", "white");
 
-                var xAxis = svg.select<SVGGElement>(`#${entry[0]}xAxis`)
+                const xAxis = svg.select<SVGGElement>(`#${entry[0]}xAxis`);
                 xAxis.selectChildren().remove();
                 xAxis.call(d3.axisBottom(this.x).ticks(5));
-                xAxis.selectAll("text").attr("fill", "white")
-                xAxis.selectAll(":is(line, path)").attr("stroke", "white")
+                xAxis.selectAll("text").attr("fill", "white");
+                xAxis.selectAll(":is(line, path)").attr("stroke", "white");
 
-                xAxis.selectAll(":is(line, path)").attr("stroke", "white")
+                xAxis.selectAll(":is(line, path)").attr("stroke", "white");
                 console.log(yAxis);
-            })
+            });
         }
     }
     lines<K extends GraphLine>(colors: Record<K, Color>, data: Record<K, Data>, dimension: DimensionNameInSample) {
         return Object.entries(colors).map(entry => {
-            let [k, v] = entry;
-            let key = k as K;
-            let val = v as Color;
-            let d = this.d3Ranges[val.dimension].line(data[key]);
+            const [k, v] = entry;
+            const key = k as K;
+            const val = v as Color;
+            const d = this.d3Ranges[val.dimension].line(data[key]);
             if (dimension !== val.dimension) {
                 return undefined;
             }
             return (
                 <path id={`${key}Line`} fill="none" stroke={val.color} strokeWidth={1}
                     d={d ?? undefined} visibility={this.state.views[key] ? "visible" : "hidden"}></path>
-            )
+            );
 
-        })
+        });
     }
     checkboxes<K extends GraphLine>(colors: Record<K, Color>, dimension: DimensionNameInSample) {
         return Object.entries(colors).map(entry => {
-            var [k, value] = entry as [K, Color];
+            const [k, value] = entry as [K, Color];
             const key = k;
             if (dimension !== value.dimension) {
                 return undefined;
@@ -428,7 +431,7 @@ class GraphPanel extends Component<Props, State> {
                     onChange={
                         e => {
                             this.state.views[key] = e.target.checked;
-                            this.setState({ x: this.state.x })
+                            this.setState({ views: this.state.views });
                         }
                     }
                     sx={{
@@ -440,12 +443,12 @@ class GraphPanel extends Component<Props, State> {
                 />
                 <span>{value.name}</span>
                 <span>{0}</span>
-            </>)
-        })
+            </>);
+        });
     }
     plot(dimension: DimensionNameInSample) {
-        var path = doc.pathlist.activePath;
-        let time = uiState.pathAnimationTimestamp;
+        const path = doc.pathlist.activePath;
+        const time = uiState.pathAnimationTimestamp;
         return <div style={{display: "flex", flexDirection:"column"}}>
                         <svg
                     width={this.plotWidth+this.margin.left+this.margin.right}
@@ -460,8 +463,8 @@ class GraphPanel extends Component<Props, State> {
                             <g id={`${dimension}xAxis`} transform={"translate(0," + this.plotHeight + ")"}></g>
 
                             {this.lines(sharedColors, this.sharedData, dimension)}
-                            {path.traj.isSwerve && this.lines(swerveColors, this.swerveData, dimension)}
-                            {path.traj.isDifferential && this.lines(diffColors, this.diffData, dimension)}
+                            {path.trajectory.isSwerve && this.lines(swerveColors, this.swerveData, dimension)}
+                            {path.trajectory.isDifferential && this.lines(diffColors, this.diffData, dimension)}
                             {this.lines(extraColors, this.extraData, dimension)}
                             <rect x={this.x(time)} width={1} y1={0} height={this.plotHeight}
                                 fill="gray"></rect>
@@ -472,12 +475,12 @@ class GraphPanel extends Component<Props, State> {
         <div style={{ display: "grid", gap: "8px", gridTemplateColumns: "min-content max-content min-content", overflowY: "scroll", height: "min-content"}}>
                     <>
                         {this.checkboxes(sharedColors, dimension)}
-                        {path.traj.isSwerve && this.checkboxes(swerveColors, dimension)}
-                        {path.traj.isDifferential && this.checkboxes(diffColors, dimension)}
+                        {path.trajectory.isSwerve && this.checkboxes(swerveColors, dimension)}
+                        {path.trajectory.isDifferential && this.checkboxes(diffColors, dimension)}
                         {this.checkboxes(extraColors, dimension)}
                     </>
                 </div>
-</div>
+</div>;
         
         
 
@@ -486,20 +489,20 @@ class GraphPanel extends Component<Props, State> {
         const {
             height, width, margin
         } = this;
-        var time = uiState.pathAnimationTimestamp;
-        var path = doc.pathlist.activePath;
-        var _ = path.ui.generationIterationNumber;
+        const time = uiState.pathAnimationTimestamp;
+        const path = doc.pathlist.activePath;
+        const _ = path.ui.generationIterationNumber;
         const marginLeft = Object.keys(this.d3Ranges).length * AXIS_WIDTH;
         return (
             <div id="my_dataviz" style={{ backgroundColor: "var(--background-dark-gray)", color: "white", display: "grid", gridTemplateColumns:"repeat(8, max-content)", overflowX:"scroll" }}>
 
 
                         {
-                            Object.entries(this.d3Ranges).map(entry => this.plot(entry[0]))
+                            Object.entries(this.d3Ranges).map(entry => this.plot(entry[0] as DimensionNameInSample))
                         }
 
-            </div >)
+            </div >);
     }
 
 }
-export default observer(GraphPanel)
+export default observer(GraphPanel);
