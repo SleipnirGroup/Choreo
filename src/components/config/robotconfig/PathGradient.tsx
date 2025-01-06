@@ -182,7 +182,7 @@ class PathGradientFunctions {
  *
  * This links a gradient's user-facing description to its corresponding function.'
  */
-export const PathGradients: Record<string, PathGradient> = {
+export const PathGradients = {
   None: {
     name: "None",
     localizedDescription: "None",
@@ -226,4 +226,4 @@ export const PathGradients: Record<string, PathGradient> = {
       "Split trajectories on stop points are shown in different colors.",
     function: PathGradientFunctions.splitTrajectories
   }
-};
+} as const;
