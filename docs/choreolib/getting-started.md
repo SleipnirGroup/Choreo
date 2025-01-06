@@ -265,10 +265,10 @@ In general, trajectory followers accept trajectory "samples" that represent the 
 
 ## Choreo-Specific Alerts
 Choreo primarily uses the WPILib Alerts API to provide users with internal warnings, errors or information. These alerts
-can be found under the SmartDashboard/ChoreoAlert section within networktables. 
+can be found under the SmartDashboard/ChoreoAlert section within networktables.
 
-To visualize these alerts in a dashboard such as AdvantageScope simply drag the ChoreoAlert group 
-outwards onto the "discrete fields" section in advantagescope or the main dashboard panel. 
+To visualize these alerts in a dashboard such as AdvantageScope simply drag the ChoreoAlert group
+outwards onto the "discrete fields" section in advantagescope or the main dashboard panel.
 
 ## Next Steps
 
