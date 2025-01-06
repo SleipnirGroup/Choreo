@@ -125,7 +125,6 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     T_tot += T_sgmt;
 
     problem.SubjectTo(dt >= 0);
-    problem.SubjectTo(dt <= 0.1);
 
     // Use initialGuess and Ns to find the dx, dy, dθ between wpts
     const auto sgmt_start = GetIndex(Ns, sgmtIndex);
