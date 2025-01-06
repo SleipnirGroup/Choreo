@@ -4,25 +4,12 @@ package choreo.util;
 
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.DriverStation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
 /** A utility class for creating alerts under the "ChoreoAlert" group. */
 public class ChoreoAlert {
-  private static boolean firstAlertTriggered = false;
-
-  private static void warnOnFirstTrigger() {
-    if (firstAlertTriggered) {
-      return;
-    }
-    firstAlertTriggered = true;
-    DriverStation.reportWarning(
-        "ChoreoLib has encountered an error: check SmartDashboard/ChoreoAlert for more details.",
-        false);
-  }
-
   /**
    * Creates an alert under the "Choreo" group.
    *
@@ -31,13 +18,7 @@ public class ChoreoAlert {
    * @return an Alert published under the "Choreo" group
    */
   public static Alert alert(String name, AlertType type) {
-    return new Alert("ChoreoAlert", name, type) {
-      @Override
-      public void set(boolean active) {
-        super.set(active);
-        warnOnFirstTrigger();
-      }
-    };
+    return new Alert("ChoreoAlert", name, type);
   }
 
   /**
@@ -75,12 +56,6 @@ public class ChoreoAlert {
       causes.add(name);
       setText(textGenerator.apply(causes));
       set(true);
-    }
-
-    @Override
-    public void set(boolean active) {
-      super.set(active);
-      warnOnFirstTrigger();
     }
   }
 }
