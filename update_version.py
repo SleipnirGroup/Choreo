@@ -13,7 +13,11 @@ from typing import Callable, Literal
 
 
 def default_version_string(v: str, count: str, hash: str, mod: str, num: str):
-    return f"{v}-{mod}-{num}" if len(mod) > 0 else f"{v}-{count}-{hash}"
+    mod = f"-{mod}" if len(mod) > 0 else ""
+    num = f"-{num}" if len(num) > 0 else ""
+    count = f"-{count}" if len(count) > 0 else ""
+    hash = f"-{hash}" if len(hash) > 0 else ""
+    return f"{v}{mod}{num}" if len(mod) > 0 else f"{v}{count}{hash}"
 
 
 def cargo_version_string(v: str, count: str, hash: str, mod: str, num: str):
