@@ -15,11 +15,19 @@
 
 int main() {
   trajopt::SwerveDrivetrain swerveDrivetrain{
+      // kg
       .mass = 45,
+      // kg-m²
       .moi = 6,
+      // m
       .wheelRadius = 0.04,
+      // rad/s
       .wheelMaxAngularVelocity = 70,
+      // N-m
       .wheelMaxTorque = 2,
+      // unitless
+      .wheelCoF = 1.5,
+      // m
       .modules = {{+0.6, +0.6}, {+0.6, -0.6}, {-0.6, +0.6}, {-0.6, -0.6}}};
 
   trajopt::LinearVelocityMaxMagnitudeConstraint zeroLinearVelocity{0.0};
@@ -33,7 +41,7 @@ int main() {
     path.PoseWpt(1, 1.0, 0.0, 0.0);
     path.WptConstraint(0, zeroLinearVelocity);
     path.WptConstraint(1, zeroLinearVelocity);
-    path.ControlIntervalCounts({40});
+    path.SetControlIntervalCounts({40});
 
     trajopt::SwerveTrajectoryGenerator generator{path};
     [[maybe_unused]]
@@ -48,7 +56,7 @@ int main() {
     path.PoseWpt(1, 2.0, 0.0, 0.0);
     path.WptConstraint(0, zeroLinearVelocity);
     path.WptConstraint(1, zeroLinearVelocity);
-    path.ControlIntervalCounts({40});
+    path.SetControlIntervalCounts({40});
 
     trajopt::SwerveTrajectoryGenerator generator{path};
     [[maybe_unused]]
@@ -64,7 +72,7 @@ int main() {
     path.PoseWpt(2, 2.0, 0.0, std::numbers::pi / 2);
     path.WptConstraint(0, zeroLinearVelocity);
     path.WptConstraint(1, zeroLinearVelocity);
-    path.ControlIntervalCounts({40, 40});
+    path.SetControlIntervalCounts({40, 40});
 
     trajopt::SwerveTrajectoryGenerator generator{path};
     [[maybe_unused]]
@@ -78,26 +86,39 @@ int main() {
     path.PoseWpt(0, 0.0, 0.0, 0.0);
     path.PoseWpt(1, 0.0, 1.0, 0.0);
     path.WptConstraint(0, zeroLinearVelocity);
-    path.ControlIntervalCounts({40});
+    path.SetControlIntervalCounts({40});
 
     trajopt::SwerveTrajectoryGenerator generator{path};
     [[maybe_unused]]
     auto solution = generator.Generate(true);
   }
 
-  // Example 5: Swerve, circle obstacle
+  // Example 5: Swerve, keep-out circle
   {
     trajopt::SwervePathBuilder path;
     path.SetDrivetrain(swerveDrivetrain);
     path.PoseWpt(0, 0.0, 0.0, 0.0);
-    trajopt::Obstacle obstacle{// Radius of 0.1
-                               .safetyDistance = 0.1,
-                               .points = {{0.5, 0.5}}};
-    path.SgmtObstacle(0, 1, obstacle);
+    trajopt::KeepOutRegion keepOut{// Radius of 0.1
+                                   .safetyDistance = 0.1,
+                                   .points = {{0.5, 0.5}}};
+    for (size_t i = 0; i < path.GetBumpers().at(0).points.size(); i++) {
+      path.SgmtConstraint(0, 1,
+                          trajopt::PointPointMinConstraint{
+                              path.GetBumpers().at(0).points.at(i),
+                              keepOut.points.at(0), keepOut.safetyDistance});
+      path.SgmtConstraint(
+          0, 1,
+          trajopt::LinePointConstraint{
+              path.GetBumpers().at(0).points.at(i),
+              path.GetBumpers().at(0).points.at(
+                  (i + 1) % path.GetBumpers().at(0).points.size()),
+              keepOut.points.at(0), keepOut.safetyDistance});
+    }
+
     path.PoseWpt(1, 1.0, 0.0, 0.0);
     path.WptConstraint(0, zeroLinearVelocity);
     path.WptConstraint(1, zeroLinearVelocity);
-    path.ControlIntervalCounts({40});
+    path.SetControlIntervalCounts({40});
 
     trajopt::SwerveTrajectoryGenerator generator{path};
     [[maybe_unused]]
@@ -133,7 +154,7 @@ int main() {
 
     path.WptConstraint(0, zeroLinearVelocity);
     path.WptConstraint(4, zeroLinearVelocity);
-    path.ControlIntervalCounts({40, 30, 30, 40});
+    path.SetControlIntervalCounts({40, 30, 30, 40});
 
     trajopt::SwerveTrajectoryGenerator generator{path};
     [[maybe_unused]]
@@ -148,14 +169,14 @@ int main() {
     path.SetDrivetrain(swerveDrivetrain);
 
     path.PoseWpt(0, 0.0, 0.0, 0.0);
-    path.SgmtConstraint(
-        0, 1,
-        trajopt::PointPointConstraint{// Robot point -- center of robot
-                                      {0.0, 0.0},
-                                      // Field point around which to orbit
-                                      {1.0, 0.0},
-                                      // Stay 1 m away to force circular motion
-                                      1.0});
+    path.SgmtConstraint(0, 1,
+                        trajopt::PointPointMinConstraint{
+                            // Robot point -- center of robot
+                            {0.0, 0.0},
+                            // Field point around which to orbit
+                            {1.0, 0.0},
+                            // Stay 1 m away to force circular motion
+                            1.0});
 
     // Tell optimizer to go in +y direction rather than -y
     path.WptInitialGuessPoint(0, {0.0, 0.0, 0.0});
@@ -164,7 +185,7 @@ int main() {
 
     path.WptConstraint(0, zeroLinearVelocity);
     path.WptConstraint(1, zeroLinearVelocity);
-    path.ControlIntervalCounts({30});
+    path.SetControlIntervalCounts({30});
 
     trajopt::SwerveTrajectoryGenerator generator{path};
     [[maybe_unused]]

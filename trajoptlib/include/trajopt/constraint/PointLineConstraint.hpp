@@ -8,7 +8,7 @@
 #include <sleipnir/autodiff/Variable.hpp>
 #include <sleipnir/optimization/OptimizationProblem.hpp>
 
-#include "trajopt/constraint/detail/LinePointDistance.hpp"
+#include "trajopt/constraint/detail/LinePointSquaredDistance.hpp"
 #include "trajopt/geometry/Pose2.hpp"
 #include "trajopt/geometry/Translation2.hpp"
 #include "trajopt/util/SymbolExports.hpp"
@@ -58,9 +58,9 @@ class TRAJOPT_DLLEXPORT PointLineConstraint {
              [[maybe_unused]] const Translation2v& linearAcceleration,
              [[maybe_unused]] const sleipnir::Variable& angularAcceleration) {
     auto point = pose.Translation() + m_robotPoint.RotateBy(pose.Rotation());
-    auto dist =
-        detail::LinePointDistance(m_fieldLineStart, m_fieldLineEnd, point);
-    problem.SubjectTo(dist * dist >= m_minDistance * m_minDistance);
+    auto squaredDistance = detail::LinePointSquaredDistance(
+        m_fieldLineStart, m_fieldLineEnd, point);
+    problem.SubjectTo(squaredDistance >= m_minDistance * m_minDistance);
   }
 
  private:

@@ -37,7 +37,7 @@ To maintain a consistent codebase, we follow a set of code style guidelines. Ple
 - Follow the project's indentation and formatting conventions.
 - Keep lines of code within a reasonable length.
 - Remove any unnecessary code or comments.
-- Make sure to run `npm run fmt` before comitting!
+- Make sure to run `npm run fmt` before committing!
 
 ## License
 

@@ -148,7 +148,7 @@ class ViewOptionsPanel extends Component<Props, State> {
               orientation="vertical"
               className={styles.ToggleGroup}
               value={uiState.visibleLayersOnly().map((i: number) => `${i}`)}
-              onChange={(e, newSelection) => {
+              onChange={(_e, newSelection) => {
                 uiState.setVisibleLayers(
                   newSelection.map((i: string) => Number.parseInt(i) ?? -1)
                 );
@@ -183,6 +183,7 @@ class ViewOptionsPanel extends Component<Props, State> {
         {uiState.variablesPanelOpen && (
           <div
             style={{
+              maxHeight: "30vh",
               overflowY: "scroll",
               position: "absolute",
               top: "0",

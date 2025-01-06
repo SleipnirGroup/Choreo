@@ -90,12 +90,6 @@ export const UIStateStore = types
       isEventMarkerSelected() {
         return self.selectedNavbarItem == NavbarData.EventMarker.index;
       },
-      isNavbarObstacleSelected() {
-        return (
-          self.selectedNavbarItem > NavbarItemSectionEnds[1] &&
-          self.selectedNavbarItem <= NavbarItemSectionEnds[2]
-        );
-      },
       visibleLayersOnly() {
         return self.layers.flatMap((visible: boolean, index: number) => {
           if (visible) {
@@ -182,7 +176,7 @@ export const UIStateStore = types
     loadPathGradientFromLocalStorage() {
       self.selectedPathGradient =
         localStorage.getItem(LocalStorageKeys.PATH_GRADIENT) ??
-        PathGradients.Velocity.name;
+        PathGradients.LinearVelocity.name;
     },
     setContextMenuSelectedWaypoint(waypointIndex: number | undefined) {
       self.contextMenuSelectedWaypoint = waypointIndex;

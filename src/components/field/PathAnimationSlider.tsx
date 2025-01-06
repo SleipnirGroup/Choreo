@@ -15,7 +15,7 @@ class PathAnimationSlider extends Component<Props, State> {
   totalTime = 0;
   render() {
     const activePath = doc.pathlist.activePath;
-    this.totalTime = activePath.traj.getTotalTimeSeconds();
+    this.totalTime = activePath.trajectory.getTotalTimeSeconds();
     return (
       <>
         <Slider
@@ -24,7 +24,7 @@ class PathAnimationSlider extends Component<Props, State> {
           min={0}
           max={this.totalTime}
           marks={
-            activePath.traj.fullTraj.length > 0
+            activePath.trajectory.fullTrajectory.length > 0
               ? activePath.snapshot.waypoints
                   .flatMap((point, idx) => {
                     let type = 0;
@@ -50,7 +50,7 @@ class PathAnimationSlider extends Component<Props, State> {
                     }
                     return [
                       {
-                        value: activePath.traj.waypoints[idx],
+                        value: activePath.trajectory.waypoints[idx],
                         label: (
                           <Tooltip
                             disableInteractive
@@ -68,33 +68,31 @@ class PathAnimationSlider extends Component<Props, State> {
                     ];
                   })
                   .concat(
-                    activePath.traj.markers.flatMap(
-                      (marker: IEventMarkerStore) => {
-                        if (marker.timestamp === undefined) {
-                          return [];
-                        }
-                        return {
-                          value: marker.timestamp,
-                          label: (
-                            <span>
-                              <Room
-                                htmlColor={
-                                  marker.selected
-                                    ? "var(--select-yellow)"
-                                    : "white"
-                                }
-                                stroke="black"
-                                strokeWidth="0.5"
-                                fontSize="large"
-                                style={{
-                                  transform: "translateY(calc(-3px - 50%))"
-                                }}
-                              ></Room>
-                            </span>
-                          )
-                        };
+                    activePath.markers.flatMap((marker: IEventMarkerStore) => {
+                      if (marker.from.timestamp === undefined) {
+                        return [];
                       }
-                    )
+                      return {
+                        value: marker.from.timestamp,
+                        label: (
+                          <span>
+                            <Room
+                              htmlColor={
+                                marker.selected
+                                  ? "var(--select-yellow)"
+                                  : "white"
+                              }
+                              stroke="black"
+                              strokeWidth="0.5"
+                              fontSize="large"
+                              style={{
+                                transform: "translateY(calc(-3px - 50%))"
+                              }}
+                            ></Room>
+                          </span>
+                        )
+                      };
+                    })
                   )
               : false
           }
@@ -102,7 +100,7 @@ class PathAnimationSlider extends Component<Props, State> {
           valueLabelDisplay="auto"
           valueLabelFormat={(x: number) => x.toFixed(2)}
           value={uiState.pathAnimationTimestamp}
-          onChange={(e, newVal) =>
+          onChange={(_e, newVal) =>
             uiState.setPathAnimationTimestamp(newVal as number)
           }
           sx={{

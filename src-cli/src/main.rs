@@ -1,5 +1,9 @@
 #![allow(dead_code)]
-use std::{path::PathBuf, process::exit};
+use std::{
+    path::PathBuf,
+    process::exit,
+    thread::{self, JoinHandle},
+};
 
 use choreo_core::{
     file_management::{self, WritingResources},
@@ -17,14 +21,14 @@ const ACTION_OPTIONS: &str = "Action Options";
 enum CliAction {
     Generate {
         project_path: PathBuf,
-        traj_names: Vec<String>,
+        trajectory_names: Vec<String>,
     },
     Error(String),
 }
 
 #[derive(Parser)]
 #[clap(
-    version = "2025.0.0-alpha",
+    version = env!("CARGO_PKG_VERSION"),
     author = "Choreo Contributors",
     about = "Choreo CLI",
     bin_name = "Choreo",
@@ -46,21 +50,21 @@ pub struct Cli {
 
     #[arg(
         long,
-        value_name = "trajName1,trajName2",
+        value_name = "trajectoryName1,trajectoryName2",
         help_heading = FILE_OPTIONS,
         value_delimiter = ',',
-        conflicts_with = "all_traj",
+        conflicts_with = "all_trajectory",
         help = "Adds trajectories to be used by cli actions (names not paths)"
     )]
-    pub traj: Vec<String>,
+    pub trajectory: Vec<String>,
 
     #[arg(
         long,
         help_heading = FILE_OPTIONS,
-        conflicts_with = "traj",
-        help = "The same as doing --traj for all trajectories in the project"
+        conflicts_with = "trajectory",
+        help = "The same as doing --trajectory for all trajectories in the project"
     )]
-    pub all_traj: bool,
+    pub all_trajectory: bool,
 
     #[arg(
         long,
@@ -88,14 +92,14 @@ impl Cli {
 
         if self.generate {
             if let Some(project_path) = self.chor {
-                if self.traj.is_empty() && !self.all_traj {
+                if self.trajectory.is_empty() && !self.all_trajectory {
                     return CliAction::Error(
                         "Trajectories must be provided for generation.".to_string(),
                     );
                 }
                 return CliAction::Generate {
                     project_path,
-                    traj_names: self.traj,
+                    trajectory_names: self.trajectory,
                 };
             }
             CliAction::Error("Choreo file must be provided for generation.".to_string())
@@ -112,14 +116,18 @@ impl Cli {
         match action {
             CliAction::Generate {
                 project_path,
-                traj_names,
+                trajectory_names,
             } => {
                 tracing::info!("CLIAction is Generate");
                 choreo_core::tokio::runtime::Builder::new_current_thread()
                     .enable_all()
                     .build()
                     .expect("Failed to build tokio runtime")
-                    .block_on(Self::generate_trajs(resources, project_path, traj_names));
+                    .block_on(Self::generate_trajectories(
+                        resources,
+                        project_path,
+                        trajectory_names,
+                    ));
             }
             CliAction::Error(e) => {
                 tracing::error!("{}", e);
@@ -129,10 +137,10 @@ impl Cli {
     }
 
     #[allow(clippy::cast_possible_wrap)]
-    async fn generate_trajs(
+    async fn generate_trajectories(
         resources: WritingResources,
         project_path: PathBuf,
-        mut traj_names: Vec<String>,
+        mut trajectory_names: Vec<String>,
     ) {
         // set the deploy path to the project directory
         file_management::set_deploy_path(
@@ -157,45 +165,84 @@ impl Cli {
         .await
         .expect("Failed to read project file");
 
-        if traj_names.is_empty() {
-            traj_names = file_management::find_all_traj(&resources).await;
+        if trajectory_names.is_empty() {
+            trajectory_names = file_management::find_all_trajectories(&resources).await;
         }
 
-        if traj_names.is_empty() {
+        if trajectory_names.is_empty() {
             tracing::error!("No trajectories found in the project directory");
             return;
         }
 
+        let mut thread_handles: Vec<JoinHandle<()>> = Vec::new();
+
         // generate trajectories
-        for (i, traj_name) in traj_names.iter().enumerate() {
-            tracing::info!("Generating trajectory {:} for {:}", traj_name, project.name);
+        for (i, trajectory_name) in trajectory_names.iter().enumerate() {
+            tracing::info!(
+                "Generating trajectory {:} for {:}",
+                trajectory_name,
+                project.name
+            );
 
-            let traj = file_management::read_trajfile(&resources, traj_name.to_string())
-                .await
-                .expect("Failed to read trajectory file");
+            let trajectory =
+                file_management::read_trajectory_file(&resources, trajectory_name.to_string())
+                    .await
+                    .expect("Failed to read trajectory file");
 
-            match generate(project.clone(), traj, i as i64) {
-                Ok(new_traj) => {
-                    match file_management::write_trajfile_immediately(&resources, new_traj).await {
-                        Ok(_) => {
-                            tracing::info!(
-                                "Successfully generated trajectory {:} for {:}",
-                                traj_name,
-                                project.name
+            let cln_project = project.clone();
+            let cln_resources = resources.clone();
+            let cln_trajectory_name = trajectory_name.clone();
+            let handle =
+                thread::spawn(
+                    move || match generate(cln_project.clone(), trajectory, i as i64) {
+                        Ok(new_trajectory) => {
+                            let runtime =
+                                choreo_core::tokio::runtime::Builder::new_current_thread()
+                                    .enable_all()
+                                    .build()
+                                    .expect("Failed to build tokio runtime");
+                            let write_result = runtime.block_on(
+                                file_management::write_trajectory_file_immediately(
+                                    &cln_resources,
+                                    new_trajectory,
+                                ),
                             );
+                            match write_result {
+                                Ok(_) => {
+                                    tracing::info!(
+                                        "Successfully generated trajectory {:} for {:}",
+                                        cln_trajectory_name,
+                                        cln_project.name
+                                    );
+                                }
+                                Err(e) => {
+                                    tracing::error!(
+                                        "Failed to write trajectory {:} for {:}: {:}",
+                                        cln_trajectory_name,
+                                        cln_project.name,
+                                        e
+                                    );
+                                }
+                            }
                         }
                         Err(e) => {
                             tracing::error!(
-                                "Failed to write trajectory {:} for {:}: {:}",
-                                traj_name,
-                                project.name,
+                                "Failed to generate trajectory {:}: {:}",
+                                cln_trajectory_name,
                                 e
                             );
                         }
-                    }
-                }
+                    },
+                );
+
+            thread_handles.push(handle);
+        }
+
+        for handle in thread_handles {
+            match handle.join() {
+                Ok(_) => {}
                 Err(e) => {
-                    tracing::error!("Failed to generate trajectory {:}: {:}", traj_name, e);
+                    tracing::error!("Failed to join thread: {:?}", e);
                 }
             }
         }

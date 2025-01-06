@@ -2,7 +2,6 @@ import {
   Circle,
   CircleOutlined,
   CropFree,
-  DoNotDisturb,
   Grid4x4,
   Room,
   Route,
@@ -11,8 +10,6 @@ import {
 } from "@mui/icons-material";
 import { ReactElement } from "react";
 import Waypoint from "../assets/Waypoint";
-import BetasConfigPanel from "../components/config/BetasConfigPanel";
-import ExportConfigPanel from "../components/config/ExportConfigPanel";
 import KeyboardShortcutsPanel from "../components/config/KeyboardShortcutsPanel";
 import RobotConfigPanel from "../components/config/robotconfig/RobotConfigPanel";
 import {
@@ -66,7 +63,7 @@ export const navbarIndexToConstraintKey: {
 } = {};
 {
   let constraintsOffset = Object.keys(NavbarData).length;
-  Object.entries(ConstraintDefinitions).forEach(([key, data], index) => {
+  Object.entries(ConstraintDefinitions).forEach(([key, data], _index) => {
     NavbarData[key] = {
       index: constraintsOffset,
       name: data.name,
@@ -79,29 +76,6 @@ export const navbarIndexToConstraintKey: {
   });
 }
 const constraintNavbarCount = Object.keys(ConstraintDefinitions).length;
-export const ObstacleData: {
-  [key: string]: {
-    index: number;
-    name: string;
-    icon: ReactElement;
-  };
-} = {
-  CircleObstacle: {
-    index: Object.keys(NavbarData).length,
-    name: "Circular Obstacle",
-    icon: <DoNotDisturb />
-  }
-};
-let obstacleNavbarCount = 0;
-obstacleNavbarCount = Object.keys(ObstacleData).length;
-Object.entries(ObstacleData).forEach(([name, data]) => {
-  const obstaclesOffset = Object.keys(NavbarData).length;
-  NavbarData[name] = {
-    index: obstaclesOffset,
-    name: data.name,
-    icon: data.icon
-  };
-});
 
 const eventMarkerCount = 1;
 NavbarData.EventMarker = {
@@ -113,7 +87,7 @@ NavbarData.EventMarker = {
 /** An map of  */
 export const NavbarLabels = (() => {
   const x: { [key: string]: number } = {};
-  Object.entries(NavbarData).forEach(([key, data], index) => {
+  Object.entries(NavbarData).forEach(([key, _data], index) => {
     x[key] = index;
   });
   return x;
@@ -122,17 +96,16 @@ export const NavbarLabels = (() => {
 /** An array of name-and-icon objects for the navbar */
 export const NavbarItemData = (() => {
   const x: Array<{ name: string; icon: any }> = [];
-  Object.entries(NavbarData).forEach(([key, data], index) => {
+  Object.entries(NavbarData).forEach(([_key, data], _index) => {
     x[data.index] = { name: data.name, icon: data.icon };
   });
   return x;
 })();
 
 const NavbarItemSections = [waypointNavbarCount, constraintNavbarCount];
-NavbarItemSections.push(obstacleNavbarCount);
 NavbarItemSections.push(eventMarkerCount);
 
-export const NavbarItemSectionEnds = NavbarItemSections.map((s, idx) =>
+export const NavbarItemSectionEnds = NavbarItemSections.map((_s, idx) =>
   NavbarItemSections.slice(0, idx + 1).reduce((prev, cur) => prev + cur, -1)
 );
 
@@ -170,14 +143,8 @@ export const ViewData = {
     icon: <Waypoint />,
     default: true
   },
-  Obstacles: {
-    index: 5,
-    name: "Obstacles",
-    icon: <DoNotDisturb />,
-    default: true
-  },
   Focus: {
-    index: 6,
+    index: 5,
     name: "Focus",
     icon: <CropFree />,
     default: false
@@ -186,7 +153,7 @@ export const ViewData = {
 
 export const ViewLayers = (() => {
   const x: { [key: string]: number } = {};
-  Object.entries(ViewData).forEach(([key, data], index) => {
+  Object.entries(ViewData).forEach(([key, _data], index) => {
     x[key] = index;
   });
   return x;
@@ -194,7 +161,7 @@ export const ViewLayers = (() => {
 
 export const ViewItemData = (() => {
   const x: Array<{ name: string; icon: any; default: boolean }> = [];
-  Object.entries(ViewData).forEach(([key, data], index) => {
+  Object.entries(ViewData).forEach(([_key, data], _index) => {
     x[data.index] = { name: data.name, icon: data.icon, default: data.default };
   });
   return x;
@@ -208,13 +175,8 @@ export const SETTINGS_TABS = [
     component: () => <RobotConfigPanel></RobotConfigPanel>
   },
   {
-    name: "Export Config",
-    component: () => <ExportConfigPanel></ExportConfigPanel>
-  },
-  {
     name: "Controls",
     component: () => <KeyboardShortcutsPanel></KeyboardShortcutsPanel>
-  },
-  { name: "Betas", component: () => <BetasConfigPanel></BetasConfigPanel> }
+  }
 ] as const;
 export const NUM_SETTINGS_TABS = SETTINGS_TABS.length;

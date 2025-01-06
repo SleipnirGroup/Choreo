@@ -11,12 +11,6 @@ const SvgIcon = styled(MuiSvgIcon, {
   strokeWidth: "2.25px"
 }));
 
-SvgIcon.defaultProps = {
-  viewBox: "0 0 24 24",
-  focusable: "false",
-  "aria-hidden": "true",
-  pointerEvents: "all"
-};
 const Angle: React.FunctionComponent<SvgIconProps> = (props) => {
   const cornerX = 4;
   const cornerY = 18;
@@ -25,7 +19,13 @@ const Angle: React.FunctionComponent<SvgIconProps> = (props) => {
   const angle = Math.PI / 3;
   const r = 10;
   return (
-    <SvgIcon {...props}>
+    <SvgIcon
+      viewBox="0 0 24 24"
+      focusable="false"
+      aria-hidden="true"
+      pointerEvents="all"
+      {...props}
+    >
       <line x1={cornerX} y1={cornerY} x2={endX} y2={cornerY}></line>
       <line
         x1={cornerX}
@@ -34,7 +34,9 @@ const Angle: React.FunctionComponent<SvgIconProps> = (props) => {
         y2={cornerY - length * Math.sin(angle)}
       ></line>
       <path
-        d={`M ${cornerX + r} ${cornerY} A ${r} ${r} 0 0 0 ${cornerX + r * Math.cos(angle)} ${cornerY - r * Math.sin(angle)}`}
+        d={`M ${cornerX + r} ${cornerY} A ${r} ${r} 0 0 0 ${
+          cornerX + r * Math.cos(angle)
+        } ${cornerY - r * Math.sin(angle)}`}
       ></path>
     </SvgIcon>
   );

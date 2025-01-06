@@ -1,6 +1,6 @@
 [package]
 name = "choreo"
-version = "2025.0.0-beta"
+version = "2025.0.0"
 edition = "2021"
 description = """\
   A graphical tool for planning time-optimized trajectories for autonomous \
@@ -13,21 +13,20 @@ authors = ["Sleipnir Group"]
 license = "BSD-3-Clause"
 
 [build-dependencies]
-tauri-build = { version = "1.5.2", features = [] }
-built = { version = "0.7.4", features = ["chrono", "git2"] }
+built = { version = "0.7.5", features = ["chrono", "git2"] }
+tauri-build = { version = "1.5.5", features = [] }
 
 [dependencies]
 choreo-core = { path = "../src-core" }
-tauri = { version = "1.6.6", features = ["devtools", "dialog", "dialog-ask", "dialog-confirm", "dialog-open", "dialog-save", "fs-all", "os-all", "path-all", "shell-open", "window-close", "window-set-title"] }
-open = "5.3.0"
-tracing = "0.1.40"
-tracing-subscriber = { version = "0.3.18", features = ["ansi", "fmt", "std"] }
-nu-ansi-term = "0.50.1"
-tracing-appender = "0.2.3"
 current_platform = "0.2.0"
 dirs = "5.0.1"
-serde = "1.0.209"
+nu-ansi-term = "0.50.1"
+open = "5.3.1"
+serde = "1.0"
+tauri = { version = "1.7.2", features = ["devtools", "dialog", "dialog-ask", "dialog-confirm", "dialog-open", "dialog-save", "fs-all", "os-all", "path-all", "shell-open", "window-close", "window-set-title"] }
+tracing = "0.1.40"
+tracing-appender = "0.2.3"
+tracing-subscriber = { version = "0.3.18", features = ["ansi", "fmt", "std"] }
 
 [features]
-default = ["tauri/tracing"]
 custom-protocol = ["tauri/custom-protocol"]

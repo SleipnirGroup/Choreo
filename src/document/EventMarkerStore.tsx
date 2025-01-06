@@ -1,172 +1,48 @@
+import { Instance, getEnv, getParent, isAlive, types } from "mobx-state-tree";
 import {
-  IAnyType,
-  Instance,
-  destroy,
-  detach,
-  getEnv,
-  getParent,
-  isAlive,
-  types
-} from "mobx-state-tree";
-import { moveItem } from "mobx-utils";
-import { Command, Expr } from "./2025/DocumentTypes";
-import { WaypointID } from "./ConstraintDefinitions";
+  EventMarker,
+  EventMarkerData,
+  WaypointUUID
+} from "./2025/DocumentTypes";
+import { CommandStore } from "./CommandStore";
 import { WaypointScope } from "./ConstraintStore";
 import { Env } from "./DocumentManager";
 import { ExpressionStore } from "./ExpressionStore";
-import { IChoreoTrajStore } from "./path/ChoreoTrajStore";
+import { IChoreoTrajectoryStore } from "./path/ChoreoTrajectoryStore";
 import { IHolonomicPathStore } from "./path/HolonomicPathStore";
+import {
+  findUUIDIndex,
+  getByWaypointID,
+  savedWaypointIdToWaypointId,
+  waypointIdToSavedWaypointId
+} from "./path/utils";
 
-export type CommandType =
-  | "sequential"
-  | "parallel"
-  | "deadline"
-  | "race"
-  | "wait"
-  | "named";
-export const CommandTypeNames = {
-  sequential: { id: "sequential", name: "Sequence" },
-  parallel: { id: "parallel", name: "Parallel" },
-  deadline: { id: "deadline", name: "Deadline" },
-  race: { id: "race", name: "Race" },
-  wait: { id: "wait", name: "Wait" },
-  named: { id: "named", name: "Named" }
-};
-export const CommandUIData = Object.values(CommandTypeNames);
-
-export const CommandStore = types
-  .model("CommandStore", {
-    type: types.union(
-      types.literal("parallel"),
-      types.literal("sequential"),
-      types.literal("deadline"),
-      types.literal("race"),
-      types.literal("wait"),
-      types.literal("named")
-    ),
-    commands: types.array(types.late((): IAnyType => CommandStore)),
-    time: ExpressionStore,
-    name: types.maybeNull(types.string),
-    uuid: types.identifier
-  })
-  .views((self) => ({
-    isGroup(): boolean {
-      return (
-        self.type === "deadline" ||
-        self.type === "race" ||
-        self.type === "parallel" ||
-        self.type === "sequential"
-      );
-    },
-    get serialize(): Command<Expr> {
-      if (self.type === "named") {
-        return {
-          type: "named",
-          data: {
-            name: self.name
-          }
-        };
-      } else if (self.type === "wait") {
-        return {
-          type: "wait",
-          data: {
-            waitTime: self.time.serialize
-          }
-        };
-      } else {
-        return {
-          type: self.type,
-          data: {
-            commands: self.commands.map((c) => c.serialize())
-          }
-        };
-      }
-    }
-  }))
-  .actions((self) => ({
-    deserialize(ser: Command<Expr>) {
-      self.commands.clear();
-      self.name = "";
-      self.type = ser.type;
-      if (ser.type === "named") {
-        self.name = ser.data.name;
-      } else if (ser.type === "wait") {
-        self.time.deserialize(ser.data.waitTime);
-      } else {
-        ser.data.commands.forEach((c) => {
-          const command: ICommandStore =
-            getEnv<Env>(self).create.CommandStore(c);
-          self.commands.push(command);
-        });
-      }
-    },
-    reorderCommands(startIndex: number, endIndex: number) {
-      moveItem(self.commands, startIndex, endIndex);
-    },
-    setType(type: CommandType) {
-      self.type = type;
-    },
-    setName(name: string) {
-      self.name = name;
-    },
-    addSubCommand() {
-      // TODO add subcommand
-      const newCommand = getEnv<Env>(self).create.CommandStore({
-        type: "named",
-        data: {
-          waitTime: ["0 s", 0] as Expr,
-          name: "",
-          commands: []
-        }
-      });
-      self.commands.push(newCommand);
-      return undefined;
-    },
-    pushCommand(subcommand: ICommandStore) {
-      self.commands.push(subcommand);
-    },
-    detachCommand(index: number) {
-      return detach(self.commands[index]);
-    },
-    deleteSubCommand(uuid: string) {
-      const toDelete = self.commands.find((c) => c.uuid === uuid);
-      if (toDelete !== undefined) {
-        destroy(toDelete);
-      }
-    }
-  }));
-
-export type ICommandStore = Instance<typeof CommandStore>;
-export const EventMarkerStore = types
-  .model("EventMarker", {
-    name: types.string,
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
+export const EventMarkerDataStore = types
+  .model("EventMarkerData", {
     target: types.maybe(WaypointScope),
-    trajTargetIndex: types.maybe(types.number),
+    targetTimestamp: types.maybe(types.number),
     offset: ExpressionStore,
-    command: CommandStore,
     uuid: types.identifier
   })
+  .volatile((self) => ({
+    /** Just used to preserve the index of the target during generation */
+    trajectoryTargetIndex: undefined as number | undefined
+  }))
   .views((self) => ({
-    get selected(): boolean {
-      if (!isAlive(self)) {
-        return false;
-      }
-      return self.uuid === getEnv<Env>(self).selectedSidebar();
-    },
-    setSelected(selected: boolean) {
-      if (selected && !this.selected) {
-        getEnv<Env>(self).select(
-          getParent<IEventMarkerStore[]>(self)?.find(
-            (point) => self.uuid == point.uuid
-          )
-        );
-      }
-    },
     getPath(): IHolonomicPathStore {
       const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
-        getParent<IChoreoTrajStore>(getParent<IEventMarkerStore[]>(self))
+        getParent<IChoreoTrajectoryStore>(getParent<IEventMarkerStore[]>(self))
       );
       return path;
+    },
+    get timestamp(): number | undefined {
+      if (self.targetTimestamp === undefined) {
+        return undefined;
+      }
+      return self.targetTimestamp + self.offset.value;
     },
     getTargetIndex(): number | undefined {
       const path: IHolonomicPathStore = this.getPath();
@@ -177,38 +53,36 @@ export const EventMarkerStore = types
       if (startScope === undefined) {
         return undefined;
       }
-      const waypoint = path.params.getByWaypointID(startScope);
+      const waypoint = getByWaypointID(startScope, path.params.waypoints);
       if (waypoint === undefined) return undefined;
-      return path.params.findUUIDIndex(waypoint.uuid);
+      return findUUIDIndex(waypoint.uuid, path.params.waypoints);
     }
   }))
   .views((self) => ({
-    get targetTimestamp(): number | undefined {
-      const path = self.getPath();
-      if (self.trajTargetIndex === undefined) return undefined;
-      return (path as IHolonomicPathStore).traj.waypoints[self.trajTargetIndex];
-    },
-    get timestamp(): number | undefined {
-      if (this.targetTimestamp === undefined) {
-        return undefined;
-      }
-      return this.targetTimestamp + self.offset.value;
+    get serialize(): EventMarkerData {
+      const points = self.getPath().params.waypoints;
+      return {
+        target: waypointIdToSavedWaypointId(self.target, points),
+        offset: self.offset.serialize,
+        targetTimestamp: self.targetTimestamp
+      };
     }
   }))
   .actions((self) => ({
-    setTrajTargetIndex(index: number | undefined) {
-      if (index !== undefined) {
-        self.trajTargetIndex = index;
-      }
+    deserialize(ser: EventMarkerData) {
+      const points = self.getPath().params.waypoints;
+      self.target = savedWaypointIdToWaypointId(ser.target, points);
+      self.targetTimestamp = self.targetTimestamp ?? undefined;
+      self.offset.deserialize(ser.offset);
     },
-    updateTargetIndex() {
-      this.setTrajTargetIndex(self.getTargetIndex());
-    },
-    setTarget(target: WaypointID) {
+    setTarget(target: WaypointUUID) {
       self.target = target;
     },
-    setName(name: string) {
-      self.name = name;
+    setTargetTimestamp(timestamp: number | undefined) {
+      self.targetTimestamp = timestamp;
+    },
+    setTrajectoryTargetIndex(index: number | undefined) {
+      self.trajectoryTargetIndex = index;
     }
   }))
   .views((self) => ({
@@ -217,8 +91,7 @@ export const EventMarkerStore = types
      * @returns Returns undefined if the marker does not have both a timestamp and a target timestamp.
      * Otherwise, returns whether the target waypoint and the marker timestamp are on the same split part.
      */
-    isInSameSegment(): boolean | undefined {
-      const path = self.getPath();
+    isInSameSegment(traj: IChoreoTrajectoryStore): boolean | undefined {
       let retVal: boolean | undefined = true;
       const targetTimestamp = self.targetTimestamp;
       const timestamp = self.timestamp;
@@ -228,18 +101,63 @@ export const EventMarkerStore = types
       } else if (self.offset.value == 0) {
         return true;
       } else {
-        const splitTimes = path.traj.samples.map((sect) => sect[0]?.t);
-        splitTimes.forEach((stopTimestamp) => {
-          if (
-            (targetTimestamp < stopTimestamp && timestamp > stopTimestamp) ||
-            (targetTimestamp > stopTimestamp && timestamp < stopTimestamp)
-          ) {
-            retVal = false;
+        const splitTimes = traj.splits.map((idx) => traj.samples[idx]?.t);
+        [0, ...splitTimes, traj.getTotalTimeSeconds()].forEach(
+          (stopTimestamp) => {
+            if (
+              (targetTimestamp < stopTimestamp && timestamp > stopTimestamp) ||
+              (targetTimestamp > stopTimestamp && timestamp < stopTimestamp)
+            ) {
+              retVal = false;
+            }
           }
-        });
+        );
       }
       return retVal;
     }
   }));
-
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
+export const EventMarkerStore = types
+  .model("GeneralMarker", {
+    name: types.string,
+    from: EventMarkerDataStore,
+    uuid: types.identifier,
+    event: CommandStore
+  })
+  .views((self) => ({
+    get serialize(): EventMarker {
+      return {
+        name: self.name,
+        from: self.from.serialize,
+        event: self.event.serialize
+      };
+    },
+    get selected(): boolean {
+      if (!isAlive(self)) {
+        return false;
+      }
+      return self.uuid === getEnv<Env>(self).selectedSidebar();
+    }
+  }))
+  .actions((self) => ({
+    setName(name: string) {
+      self.name = name;
+    },
+    deserialize(ser: EventMarker) {
+      self.name = ser.name;
+      self.from.deserialize(ser.from);
+      self.event.deserialize(ser.event);
+    },
+    setSelected(selected: boolean) {
+      if (selected && !self.selected) {
+        getEnv<Env>(self).select(
+          getParent<IEventMarkerStore[]>(self)?.find(
+            (point) => self.uuid == point.uuid
+          )
+        );
+      }
+    }
+  }));
 export type IEventMarkerStore = Instance<typeof EventMarkerStore>;

@@ -9,36 +9,39 @@ concurrency:
 jobs:
   build:
     env:
-      MACOSX_DEPLOYMENT_TARGET: 13
+      MACOSX_DEPLOYMENT_TARGET: 13.3
     strategy:
       fail-fast: false
       matrix:
         include:
           - artifact-name: Windows-x86_64
             os: windows-2022
-            tauri-build-flags: --target x86_64-pc-windows-msvc
+            tauri-build-flags: --target x86_64-pc-windows-msvc -v -- --workspace --timings
 
           - artifact-name: Windows-aarch64
             os: windows-2022
-            tauri-build-flags: --target aarch64-pc-windows-msvc
+            tauri-build-flags: --target aarch64-pc-windows-msvc -v -- --workspace --timings
 
           - artifact-name: macOS-x86_64
             os: macOS-14
-            tauri-build-flags: --target x86_64-apple-darwin
+            tauri-build-flags: --target x86_64-apple-darwin -v -- --workspace --timings
 
-          - artifact-name: macOS-arm64
+          - artifact-name: macOS-aarch64
             os: macOS-14
-            tauri-build-flags: --target aarch64-apple-darwin
+            tauri-build-flags: --target aarch64-apple-darwin -v -- --workspace --timings
 
           - artifact-name: Linux-x86_64
             os: ubuntu-22.04
-            tauri-build-flags: --target x86_64-unknown-linux-gnu
+            tauri-build-flags: --target x86_64-unknown-linux-gnu -v -- --workspace --timings
 
     name: "${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          token: ${{secrets.GITHUB_TOKEN}}
 
       - uses: pnpm/action-setup@v4
         with:
@@ -76,55 +79,66 @@ jobs:
 
       - name: Set up sccache
         uses: mozilla-actions/sccache-action@v0.0.5
-
+      - name: Cargo test
+        run: cargo test
       - name: Build package
         run: pnpm run tauri build ${{ matrix.tauri-build-flags }}
         env:
           RUSTC_WRAPPER: sccache
           SCCACHE_GHA_ENABLED: true
 
-      - name: Upload bundle (Windows x86)
+      - name: Package artifacts (Windows x86_64)
         if: matrix.artifact-name == 'Windows-x86_64'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact-name }}
-          path: target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
+        run: |
+          Compress-Archive -DestinationPath ${{ matrix.artifact-name }}-standalone.zip -Path target/x86_64-pc-windows-msvc/release/choreo.exe,target/x86_64-pc-windows-msvc/release/choreo-cli.exe
+          Compress-Archive -DestinationPath ${{ matrix.artifact-name }}.zip -Path ${{ matrix.artifact-name }}-standalone.zip,target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
 
-      - name: Upload bundle (Windows ARM)
+      - name: Package artifacts (Windows aarch64)
         if: matrix.artifact-name == 'Windows-aarch64'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact-name }}
-          path: target/aarch64-pc-windows-msvc/release/bundle/nsis/*.exe
+        run: |
+          Compress-Archive -DestinationPath ${{ matrix.artifact-name }}-standalone.zip -Path target/aarch64-pc-windows-msvc/release/choreo.exe,target/aarch64-pc-windows-msvc/release/choreo-cli.exe
+          Compress-Archive -DestinationPath ${{ matrix.artifact-name }}.zip -Path ${{ matrix.artifact-name }}-standalone.zip,target/aarch64-pc-windows-msvc/release/bundle/nsis/*.exe
 
-      - name: Upload bundle (macOS x86)
+      - name: Package artifacts (macOS x86_64)
         if: matrix.artifact-name == 'macOS-x86_64'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact-name }}
-          path: target/x86_64-apple-darwin/release/bundle/dmg/*.dmg
+        # Tauri incorrectly capitalizes the executable name on macOS, so we
+        # manually rename it
+        run: |
+          cp target/x86_64-apple-darwin/release/Choreo choreo
+          zip -j ${{ matrix.artifact-name }}-standalone.zip choreo target/x86_64-apple-darwin/release/choreo-cli
+          zip -j ${{ matrix.artifact-name }}.zip ${{ matrix.artifact-name }}-standalone.zip target/x86_64-apple-darwin/release/bundle/dmg/*.dmg
 
-      - name: Upload bundle (macOS ARM)
-        if: matrix.artifact-name == 'macOS-arm64'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact-name }}
-          path: target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
+      - name: Package artifacts (macOS aarch64)
+        if: matrix.artifact-name == 'macOS-aarch64'
+        # Tauri incorrectly capitalizes the executable name on macOS, so we
+        # manually rename it
+        run: |
+          cp target/aarch64-apple-darwin/release/Choreo choreo
+          zip -j ${{ matrix.artifact-name }}-standalone.zip choreo target/aarch64-apple-darwin/release/choreo-cli
+          zip -j ${{ matrix.artifact-name }}.zip ${{ matrix.artifact-name }}-standalone.zip target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
 
-      - name: Upload bundle (Linux)
+      - name: Package artifacts (Linux x86_64)
         if: matrix.artifact-name == 'Linux-x86_64'
-        uses: actions/upload-artifact@v4
+        run: |
+          zip -j ${{ matrix.artifact-name }}-standalone.zip target/x86_64-unknown-linux-gnu/release/choreo target/x86_64-unknown-linux-gnu/release/choreo-cli
+          zip -j ${{ matrix.artifact-name }}.zip ${{ matrix.artifact-name }}-standalone.zip target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.AppImage target/x86_64-unknown-linux-gnu/release/bundle/deb/*.deb target/x86_64-unknown-linux-gnu/release/bundle/rpm/*.rpm
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}-cargo-timing.html
+          path: target/cargo-timings/cargo-timing.html
+
+      # Zipping manually works around upload-artifact stripping execute
+      # permissions from files
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}
-          path: |
-            target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.AppImage
-            target/x86_64-unknown-linux-gnu/release/bundle/deb/*.deb
-            target/x86_64-unknown-linux-gnu/release/bundle/rpm/*.rpm
+          path: ${{ matrix.artifact-name }}.zip
 
   release:
     name: Create draft release
     needs: [build]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     if: |
       github.repository_owner == 'SleipnirGroup' &&
       startsWith(github.ref, 'refs/tags/v')
@@ -134,37 +148,52 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: pkg
+          pattern: "!*-cargo-timing.html"
 
       - name: Display structure of downloaded files
         run: ls -R
 
-      - name: Rename Windows x86_64 bundle
+      - name: Rename Windows x86_64 artifacts
         working-directory: pkg/Windows-x86_64
-        run: mv *.exe Choreo-${{ github.ref_name }}-Windows-x86_64.exe
+        run: |
+          unzip -o Windows-x86_64.zip
+          rm Windows-x86_64.zip
+          mv Windows-x86_64-standalone.zip Choreo-${{ github.ref_name }}-Windows-x86_64-standalone.zip
+          mv Choreo_*_x64-setup.exe Choreo-${{ github.ref_name }}-Windows-x86_64-setup.exe
 
-      - name: Rename Windows aarch64 bundle
+      - name: Rename Windows aarch64 artifacts
         working-directory: pkg/Windows-aarch64
-        run: mv *.exe Choreo-${{ github.ref_name }}-Windows-aarch64.exe
+        run: |
+          unzip -o Windows-aarch64.zip
+          rm Windows-aarch64.zip
+          mv Windows-aarch64-standalone.zip Choreo-${{ github.ref_name }}-Windows-aarch64-standalone.zip
+          mv Choreo_*_arm64-setup.exe Choreo-${{ github.ref_name }}-Windows-aarch64-setup.exe
 
-      - name: Rename macOS x86_64 bundle
+      - name: Rename macOS x86_64 artifacts
         working-directory: pkg/macOS-x86_64
-        run: mv *.dmg Choreo-${{ github.ref_name }}-macOS-x86_64.dmg
+        run: |
+          unzip -o macOS-x86_64.zip
+          rm macOS-x86_64.zip
+          mv macOS-x86_64-standalone.zip Choreo-${{ github.ref_name }}-macOS-x86_64-standalone.zip
+          mv Choreo_*_x64.dmg Choreo-${{ github.ref_name }}-macOS-x86_64.dmg
 
-      - name: Rename macOS arm64 bundle
-        working-directory: pkg/macOS-arm64
-        run: mv *.dmg Choreo-${{ github.ref_name }}-macOS-arm64.dmg
+      - name: Rename macOS aarch64 artifacts
+        working-directory: pkg/macOS-aarch64
+        run: |
+          unzip -o macOS-aarch64.zip
+          rm macOS-aarch64.zip
+          mv macOS-aarch64-standalone.zip Choreo-${{ github.ref_name }}-macOS-aarch64-standalone.zip
+          mv Choreo_*_aarch64.dmg Choreo-${{ github.ref_name }}-macOS-aarch64.dmg
 
-      - name: Rename Linux x86_64 file (.AppImage)
-        working-directory: pkg/Linux-x86_64/appimage
-        run: mv *.AppImage Choreo-${{ github.ref_name }}-Linux-x86_64.AppImage
-
-      - name: Rename Linux x86_64 file (.deb)
-        working-directory: pkg/Linux-x86_64/deb
-        run: mv *.deb Choreo-${{ github.ref_name }}-Linux-x86_64.deb
-
-      - name: Rename Linux x86_64 file (.rpm)
-        working-directory: pkg/Linux-x86_64/rpm
-        run: mv *.rpm Choreo-${{ github.ref_name }}-Linux-x86_64.rpm
+      - name: Rename Linux x86_64 artifacts
+        working-directory: pkg/Linux-x86_64
+        run: |
+          unzip -o Linux-x86_64.zip
+          rm Linux-x86_64.zip
+          mv Linux-x86_64-standalone.zip Choreo-${{ github.ref_name }}-Linux-x86_64-standalone.zip
+          mv choreo_*_amd64.AppImage Choreo-${{ github.ref_name }}-Linux-x86_64.AppImage
+          mv choreo_*_amd64.deb Choreo-${{ github.ref_name }}-Linux-x86_64.deb
+          mv choreo-*.x86_64.rpm Choreo-${{ github.ref_name }}-Linux-x86_64.rpm
 
       - name: Display structure of renamed files
         run: ls -R
@@ -173,6 +202,6 @@ jobs:
         with:
           name: Choreo ${{ github.ref_name }}
           tag: ${{ github.ref_name }}
-          artifacts: "pkg/**/*.AppImage,pkg/**/*.deb,pkg/**/*.dmg,pkg/**/*.exe,pkg/**/*.rpm"
+          artifacts: "pkg/**/*"
           draft: true
           prerelease: true

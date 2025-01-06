@@ -39,7 +39,28 @@ class Rotation2 {
    * @param sin The sine component of the rotation.
    */
   constexpr Rotation2(T cos, T sin)
+    requires(!std::same_as<T, double>)
       : m_cos{std::move(cos)}, m_sin{std::move(sin)} {}
+
+  /**
+   * Constructs a rotation with the given x and y components. The x and y don't
+   * have to be normalized.
+   *
+   * @param x The x component of the rotation.
+   * @param y The y component of the rotation.
+   */
+  constexpr Rotation2(double x, double y)
+    requires std::same_as<T, double>
+  {
+    double magnitude = std::hypot(x, y);
+    if (magnitude > 1e-6) {
+      m_cos = x / magnitude;
+      m_sin = y / magnitude;
+    } else {
+      m_cos = 1.0;
+      m_sin = 0.0;
+    }
+  }
 
   /**
    * Coerces one rotation type into another.
@@ -168,6 +189,10 @@ sleipnir::EqualityConstraints operator==(const Rotation2<T>& lhs,
   }
 
   return sleipnir::EqualityConstraints{constraints};
+}
+
+inline bool operator==(const Rotation2d& lhs, const Rotation2d& rhs) {
+  return lhs.Cos() == rhs.Cos() && lhs.Sin() == rhs.Sin();
 }
 
 }  // namespace trajopt

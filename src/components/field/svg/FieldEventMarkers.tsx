@@ -35,7 +35,7 @@ class FieldEventMarker extends Component<MarkerProps, MarkerState> {
                 : "var(--darker-purple)"
             }
             pointerEvents="visible"
-            onClick={(e) => this.props.onSelect()}
+            onClick={(_e) => this.props.onSelect()}
           />
         </g>
       </g>
@@ -48,11 +48,12 @@ class FieldEventMarkers extends Component<Props, State> {
 
   render() {
     const path = doc.pathlist.activePath;
-    return path.traj.markers.flatMap((marker) => {
-      if (marker.timestamp === undefined) {
+    const markers = path.markers;
+    return markers.flatMap((marker) => {
+      if (marker.from.timestamp === undefined) {
         return [];
       }
-      const marked = sample(marker.timestamp, path.traj.fullTraj);
+      const marked = sample(marker.from.timestamp, path.trajectory.samples);
       return (
         <FieldEventMarker
           key={marker.uuid}

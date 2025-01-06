@@ -35,8 +35,10 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
       const constraintToAdd = uiState.getSelectedConstraintKey();
       const point1 = points[start];
       const point2 = end !== undefined ? points[end] : undefined;
+      console.log("start uuid: ", point1.uuid);
       const newConstraint = doc.pathlist.activePath.params.addConstraint(
         constraintToAdd,
+        true,
         { uuid: point1.uuid },
         point2 !== undefined ? { uuid: point2.uuid } : undefined
       );
@@ -120,7 +122,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
               coords = coords.matrixTransform(this.context.inverse());
               this.setState({ mouseX: coords.x, mouseY: coords.y });
             }}
-            onMouseLeave={(e) =>
+            onMouseLeave={(_e) =>
               this.setState({ mouseX: undefined, mouseY: undefined })
             }
           ></circle>
@@ -165,7 +167,7 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
               );
             }}
             onCircleMouseOver={(id) => doc.setHoveredSidebarItem(waypoints[id])}
-            onCircleMouseOff={(id) => doc.setHoveredSidebarItem(undefined)}
+            onCircleMouseOff={(_id) => doc.setHoveredSidebarItem(undefined)}
           ></FieldConstraintRangeLayer>
         </>
       );

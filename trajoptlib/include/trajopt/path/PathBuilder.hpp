@@ -4,18 +4,33 @@
 
 #include <stdint.h>
 
+#include <cassert>
 #include <functional>
 #include <utility>
 #include <vector>
 
 #include "trajopt/constraint/Constraint.hpp"
-#include "trajopt/obstacle/Bumpers.hpp"
-#include "trajopt/obstacle/Obstacle.hpp"
+#include "trajopt/geometry/Translation2.hpp"
 #include "trajopt/path/Path.hpp"
 #include "trajopt/util/GenerateLinearInitialGuess.hpp"
 #include "trajopt/util/SymbolExports.hpp"
 
 namespace trajopt {
+
+/**
+ * Represents a physical keep-out region that the robot must avoid by a certain
+ * distance. Arbitrary polygons can be expressed with this class, and keep-out
+ * circles can also be created by only using one point with a safety distance.
+ *
+ * Keep-out points must be wound either clockwise or counterclockwise.
+ */
+struct TRAJOPT_DLLEXPORT KeepOutRegion {
+  /// Minimum distance from the keep-out region the robot must maintain.
+  double safetyDistance;
+
+  /// The list of points that make up this keep-out region.
+  std::vector<Translation2d> points;
+};
 
 /**
  * Path builder.
@@ -36,11 +51,79 @@ class TRAJOPT_DLLEXPORT PathBuilder {
   }
 
   /**
-   * Get the DifferentialPath being constructed
+   * Add a rectangular bumper to a list used when applying
+   * keep-out constraints.
    *
-   * @return the path
+   * @param front Distance in meters from center to front bumper edge
+   * @param left Distance in meters from center to left bumper edge
+   * @param right Distance in meters from center to right bumper edge
+   * @param back Distance in meters from center to back bumper edge
    */
-  Path<Drivetrain, Solution>& GetPath() { return path; }
+  void SetBumpers(double front, double left, double right, double back) {
+    bumpers.emplace_back(trajopt::KeepOutRegion{.safetyDistance = 0.01,
+                                                .points = {{+front, +left},
+                                                           {-back, +left},
+                                                           {-back, -right},
+                                                           {+front, -right}}});
+  }
+
+  /**
+   * Get all bumpers currently added to the path builder
+   *
+   * @return a list of bumpers applied to the builder.
+   */
+  std::vector<KeepOutRegion>& GetBumpers() { return bumpers; }
+
+  /**
+   * If using a discrete algorithm, specify the number of discrete
+   * samples for every segment of the trajectory
+   *
+   * @param counts the sequence of control interval counts per segment, length
+   * is number of waypoints - 1
+   */
+  void SetControlIntervalCounts(std::vector<size_t>&& counts) {
+    controlIntervalCounts = std::move(counts);
+  }
+
+  /**
+   * Get the Control Interval Counts object
+   *
+   * @return const std::vector<size_t>&
+   */
+  const std::vector<size_t>& GetControlIntervalCounts() const {
+    return controlIntervalCounts;
+  }
+
+  /**
+   * Provide a guess of the instantaneous pose of the robot at a waypoint.
+   *
+   * @param wptIndex the waypoint to apply the guess to
+   * @param poseGuess the guess of the robot's pose
+   */
+  void WptInitialGuessPoint(size_t wptIndex, const Pose2d& poseGuess) {
+    NewWpts(wptIndex);
+    initialGuessPoints.at(wptIndex).back() = poseGuess;
+  }
+
+  /**
+   * Add a sequence of initial guess points between two waypoints. The points
+   * are inserted between the waypoints at fromIndex and fromIndex + 1. Linear
+   * interpolation between the waypoint initial guess points and these segment
+   * initial guess points is used as the initial guess of the robot's pose over
+   * the trajectory.
+   *
+   * @param fromIndex index of the waypoint the initial guess point
+   *                 comes immediately after
+   * @param sgmtPoseGuess the sequence of initial guess points
+   */
+  void SgmtInitialGuessPoints(size_t fromIndex,
+                              const std::vector<Pose2d>& sgmtPoseGuess) {
+    NewWpts(fromIndex + 1);
+    std::vector<Pose2d>& toInitialGuessPoints =
+        initialGuessPoints.at(fromIndex + 1);
+    toInitialGuessPoints.insert(toInitialGuessPoints.begin(),
+                                sgmtPoseGuess.begin(), sgmtPoseGuess.end());
+  }
 
   /**
    * Create a pose waypoint constraint on the waypoint at the provided
@@ -76,188 +159,6 @@ class TRAJOPT_DLLEXPORT PathBuilder {
   }
 
   /**
-   * Provide a guess of the instantaneous pose of the robot at a waypoint.
-   *
-   * @param wptIndex the waypoint to apply the guess to
-   * @param poseGuess the guess of the robot's pose
-   */
-  void WptInitialGuessPoint(size_t wptIndex, const Pose2d& poseGuess) {
-    NewWpts(wptIndex);
-    initialGuessPoints.at(wptIndex).back() = poseGuess;
-  }
-
-  /**
-   * Add a sequence of initial guess points between two waypoints. The points
-   * are inserted between the waypoints at fromIndex and fromIndex + 1. Linear
-   * interpolation between the waypoint initial guess points and these segment
-   * initial guess points is used as the initial guess of the robot's pose over
-   * the trajectory.
-   *
-   * @param fromIndex index of the waypoint the initial guess point
-   *                 comes immediately after
-   * @param sgmtPoseGuess the sequence of initial guess points
-   */
-  void SgmtInitialGuessPoints(size_t fromIndex,
-                              const std::vector<Pose2d>& sgmtPoseGuess) {
-    NewWpts(fromIndex + 1);
-    std::vector<Pose2d>& toInitialGuessPoints =
-        initialGuessPoints.at(fromIndex + 1);
-    toInitialGuessPoints.insert(toInitialGuessPoints.begin(),
-                                sgmtPoseGuess.begin(), sgmtPoseGuess.end());
-  }
-
-  /**
-   * Add polygon or circle shaped bumpers to a list used when applying
-   * obstacle constraints.
-   *
-   * @param newBumpers bumpers to add
-   */
-  void AddBumpers(Bumpers&& newBumpers) {
-    bumpers.emplace_back(std::move(newBumpers));
-  }
-
-  /**
-   * Apply an obstacle constraint to a waypoint.
-   *
-   * @param index index of the waypoint
-   * @param obstacle the obstacle
-   */
-  void WptObstacle(size_t index, const Obstacle& obstacle) {
-    for (auto& _bumpers : bumpers) {
-      auto minDistance = _bumpers.safetyDistance + obstacle.safetyDistance;
-
-      size_t bumperCornerCount = _bumpers.points.size();
-      size_t obstacleCornerCount = obstacle.points.size();
-      if (bumperCornerCount == 1 && obstacleCornerCount == 1) {
-        // if the bumpers and obstacle are only one point
-        WptConstraint(index,
-                      PointPointConstraint{_bumpers.points.at(0),
-                                           obstacle.points.at(0), minDistance});
-        return;
-      }
-
-      // robot bumper edge to obstacle point constraints
-      for (auto& obstaclePoint : obstacle.points) {
-        // First apply constraint for all but last edge
-        for (size_t bumperCornerIndex = 0;
-             bumperCornerIndex < bumperCornerCount - 1; ++bumperCornerIndex) {
-          WptConstraint(index, LinePointConstraint{
-                                   _bumpers.points.at(bumperCornerIndex),
-                                   _bumpers.points.at(bumperCornerIndex + 1),
-                                   obstaclePoint, minDistance});
-        }
-        // apply to last edge: the edge connecting the last point to the first
-        // must have at least three points to need this
-        if (bumperCornerCount >= 3) {
-          WptConstraint(index,
-                        LinePointConstraint{
-                            _bumpers.points.at(bumperCornerCount - 1),
-                            _bumpers.points.at(0), obstaclePoint, minDistance});
-        }
-      }
-
-      // obstacle edge to bumper corner constraints
-      for (auto& bumperCorner : _bumpers.points) {
-        if (obstacleCornerCount > 1) {
-          for (size_t obstacleCornerIndex = 0;
-               obstacleCornerIndex < obstacleCornerCount - 1;
-               ++obstacleCornerIndex) {
-            WptConstraint(
-                index,
-                PointLineConstraint{
-                    bumperCorner, obstacle.points.at(obstacleCornerIndex),
-                    obstacle.points.at(obstacleCornerIndex + 1), minDistance});
-          }
-          if (obstacleCornerCount >= 3) {
-            WptConstraint(index, PointLineConstraint{
-                                     bumperCorner,
-                                     obstacle.points.at(bumperCornerCount - 1),
-                                     obstacle.points.at(0), minDistance});
-          }
-        } else {
-          WptConstraint(
-              index, PointPointConstraint{bumperCorner, obstacle.points.at(0),
-                                          minDistance});
-        }
-      }
-    }
-  }
-
-  /**
-   * Apply an obstacle constraint to the continuum of state between two
-   * waypoints.
-   *
-   * @param fromIndex index of the waypoint at the beginning of the continuum
-   * @param toIndex index of the waypoint at the end of the continuum
-   * @param obstacle the obstacle
-   */
-  void SgmtObstacle(size_t fromIndex, size_t toIndex,
-                    const Obstacle& obstacle) {
-    for (auto& _bumpers : bumpers) {
-      auto minDistance = _bumpers.safetyDistance + obstacle.safetyDistance;
-
-      size_t bumperCornerCount = _bumpers.points.size();
-      size_t obstacleCornerCount = obstacle.points.size();
-      if (bumperCornerCount == 1 && obstacleCornerCount == 1) {
-        // if the bumpers and obstacle are only one point
-        SgmtConstraint(
-            fromIndex, toIndex,
-            PointPointConstraint{_bumpers.points.at(0), obstacle.points.at(0),
-                                 minDistance});
-        return;
-      }
-
-      // robot bumper edge to obstacle point constraints
-      for (auto& obstaclePoint : obstacle.points) {
-        // First apply constraint for all but last edge
-        for (size_t bumperCornerIndex = 0;
-             bumperCornerIndex < bumperCornerCount - 1; ++bumperCornerIndex) {
-          SgmtConstraint(
-              fromIndex, toIndex,
-              LinePointConstraint{_bumpers.points.at(bumperCornerIndex),
-                                  _bumpers.points.at(bumperCornerIndex + 1),
-                                  obstaclePoint, minDistance});
-        }
-        // apply to last edge: the edge connecting the last point to the first
-        // must have at least three points to need this
-        if (bumperCornerCount >= 3) {
-          SgmtConstraint(
-              fromIndex, toIndex,
-              LinePointConstraint{_bumpers.points.at(bumperCornerCount - 1),
-                                  _bumpers.points.at(0), obstaclePoint,
-                                  minDistance});
-        }
-      }
-
-      // obstacle edge to bumper corner constraints
-      for (auto& bumperCorner : _bumpers.points) {
-        if (obstacleCornerCount > 1) {
-          for (size_t obstacleCornerIndex = 0;
-               obstacleCornerIndex < obstacleCornerCount - 1;
-               ++obstacleCornerIndex) {
-            SgmtConstraint(
-                fromIndex, toIndex,
-                PointLineConstraint{
-                    bumperCorner, obstacle.points.at(obstacleCornerIndex),
-                    obstacle.points.at(obstacleCornerIndex + 1), minDistance});
-          }
-          if (obstacleCornerCount >= 3) {
-            SgmtConstraint(
-                fromIndex, toIndex,
-                PointLineConstraint{bumperCorner,
-                                    obstacle.points.at(bumperCornerCount - 1),
-                                    obstacle.points.at(0), minDistance});
-          }
-        } else {
-          SgmtConstraint(fromIndex, toIndex,
-                         PointPointConstraint{
-                             bumperCorner, obstacle.points.at(0), minDistance});
-        }
-      }
-    }
-  }
-
-  /**
    * Apply a constraint at a waypoint.
    *
    * @param index Index of the waypoint.
@@ -288,24 +189,27 @@ class TRAJOPT_DLLEXPORT PathBuilder {
   }
 
   /**
-   * If using a discrete algorithm, specify the number of discrete
-   * samples for every segment of the trajectory
+   * Add a callback to retrieve the state of the solver as a Solution.
    *
-   * @param counts the sequence of control interval counts per segment, length
-   * is number of waypoints - 1
+   * This callback will run on every iteration of the solver.
+   *
+   * @param callback A callback whose first parameter is the Solution based on
+   *     the solver's state at that iteration, and second parameter is the
+   *     handle passed into Generate().
+   *
    */
-  void ControlIntervalCounts(std::vector<size_t>&& counts) {
-    controlIntervalCounts = std::move(counts);
+  void AddCallback(
+      const std::function<void(const Solution& solution, int64_t handle)>
+          callback) {
+    path.callbacks.push_back(callback);
   }
 
   /**
-   * Get the Control Interval Counts object
+   * Get the DifferentialPath being constructed
    *
-   * @return const std::vector<size_t>&
+   * @return the path
    */
-  const std::vector<size_t>& GetControlIntervalCounts() const {
-    return controlIntervalCounts;
-  }
+  Path<Drivetrain, Solution>& GetPath() { return path; }
 
   /**
    * Calculate a discrete, linear initial guess of the x, y, and heading
@@ -318,27 +222,12 @@ class TRAJOPT_DLLEXPORT PathBuilder {
                                                 controlIntervalCounts);
   }
 
-  /**
-   * Add a callback to retrieve the state of the solver as a Solution.
-   *
-   * This callback will run on every iteration of the solver.
-   *
-   * @param callback A callback whose first parameter is the Solution based on
-   *     the solver's state at that iteration, and second parameter is the
-   *     handle passed into Generate().
-   *
-   */
-  void AddIntermediateCallback(
-      const std::function<void(Solution& solution, int64_t handle)> callback) {
-    path.callbacks.push_back(callback);
-  }
-
  protected:
   /// The path.
   Path<Drivetrain, Solution> path;
 
   /// The list of bumpers.
-  std::vector<Bumpers> bumpers;
+  std::vector<KeepOutRegion> bumpers;
 
   /// The initial guess points.
   std::vector<std::vector<Pose2d>> initialGuessPoints;

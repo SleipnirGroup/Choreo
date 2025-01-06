@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import React, { Component } from "react";
+import { Component } from "react";
 import { doc, uiState } from "../../document/DocumentManager";
 import PathAnimationSlider from "./PathAnimationSlider";
 import IconButton from "@mui/material/IconButton";
@@ -29,7 +29,7 @@ class PathAnimationPanel extends Component<Props, State> {
   onStart() {
     this.then = Date.now();
     this.setState({ running: true });
-    if (Math.abs(this.totalTime - uiState.pathAnimationTimestamp) < 0.1) {
+    if (Math.abs(this.totalTime - uiState.pathAnimationTimestamp) < 0.05) {
       uiState.setPathAnimationTimestamp(0);
     }
     window.cancelAnimationFrame(this.timerId);
@@ -67,14 +67,13 @@ class PathAnimationPanel extends Component<Props, State> {
       }
     });
     autorun(() => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const activePath = doc.pathlist.activePathUUID;
+      const _ = doc.pathlist.activePathUUID;
       this.onStop();
     });
   }
   render() {
     const activePath = doc.pathlist.activePath;
-    this.totalTime = doc.pathlist.activePath.traj.getTotalTimeSeconds();
+    this.totalTime = doc.pathlist.activePath.trajectory.getTotalTimeSeconds();
     return (
       <div
         style={{
@@ -92,7 +91,10 @@ class PathAnimationPanel extends Component<Props, State> {
       >
         <span
           style={{
-            display: activePath.traj.fullTraj.length >= 2 ? "flex" : "none",
+            display:
+              activePath.trajectory.fullTrajectory.length >= 2
+                ? "flex"
+                : "none",
             flexDirection: "row",
             width: "100%",
             height: "100%",

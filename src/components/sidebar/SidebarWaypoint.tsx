@@ -15,6 +15,7 @@ type Props = {
   index: number;
   pathLength: number;
   issue: string | undefined;
+  delete: () => void;
 };
 
 type State = { selected: boolean };
@@ -24,14 +25,10 @@ class SidebarWaypoint extends Component<Props, State> {
   state = { selected: false };
 
   getItemStyle(
-    isDragging: boolean,
+    _isDragging: boolean,
     draggableStyle: DraggingStyle | NotDraggingStyle | undefined
   ): CSSProperties {
     return {
-      // change background colour if dragging
-      //background: isDragging ? "lightgreen" : "revert",
-
-      // styles we need to apply on draggables
       ...draggableStyle
     };
   }
@@ -110,9 +107,7 @@ class SidebarWaypoint extends Component<Props, State> {
                 className={styles.SidebarRightIcon}
                 onClick={(e) => {
                   e.stopPropagation();
-                  doc.pathlist.activePath.params.deleteWaypoint(
-                    waypoint?.uuid || ""
-                  );
+                  this.props.delete();
                 }}
               >
                 <DeleteIcon />

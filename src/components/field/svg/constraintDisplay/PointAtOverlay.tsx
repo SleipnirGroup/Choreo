@@ -25,7 +25,7 @@ class PointAtOverlay extends Component<Props<"PointAt">, object> {
         .on("start", () => {
           doc.history.startGroup(() => {});
         })
-        .on("end", (event) => doc.history.stopGroup())
+        .on("end", (_event) => doc.history.stopGroup())
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(`#dragTarget-pointat`).call(
         dragHandleDrag
@@ -44,8 +44,8 @@ class PointAtOverlay extends Component<Props<"PointAt">, object> {
     return (
       <g ref={this.rootRef}>
         <circle
-          cx={data.props.x[1]}
-          cy={data.props.y[1]}
+          cx={data.props.x.val}
+          cy={data.props.y.val}
           r={0.1}
           stroke={this.props.lineColor}
           strokeWidth={0.02}
@@ -53,8 +53,8 @@ class PointAtOverlay extends Component<Props<"PointAt">, object> {
         ></circle>
         <circle
           id="dragTarget-pointat"
-          cx={data.props.x[1]}
-          cy={data.props.y[1]}
+          cx={data.props.x.val}
+          cy={data.props.y.val}
           r={0.2}
           stroke={this.props.lineColor}
           strokeWidth={0.02}

@@ -13,7 +13,7 @@ dependencies = [ "robotpy-wpimath" ]
   name = "Choreo Development Team"
 
   [project.urls]
-  Documentation = "https://sleipnirgroup.github.io/Choreo/"
+  Documentation = "https://choreo.autos/"
 
 [build-system]
 requires = [
@@ -25,8 +25,8 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools-git-versioning]
 enabled = true
-version_callback = "choreolib.version:get_version"
+version_callback = "choreo.version:get_version"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-testpaths = [ "choreolib/test" ]
+testpaths = [ "choreo/test" ]

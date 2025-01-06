@@ -24,14 +24,14 @@ import FieldGeneratedLines from "./FieldGeneratedLines";
 import FieldGeneratedWaypoints from "./FieldGeneratedWaypoints";
 import FieldGrid from "./FieldGrid";
 import { DOMMatrixIdentity, FieldMatrixContext } from "./FieldMatrixContext";
-import FieldObstacle from "./FieldObstacles";
 import FieldPathLines from "./FieldPathLines";
 import FieldSamples from "./FieldSamples";
 import InterpolatedRobot from "./InterpolatedRobot";
 import OverlayWaypoint from "./OverlayWaypoint";
 import FieldConstraintAddLayer from "./constraintDisplay/FieldConstraintAddLayer";
 import FieldConstraintDisplayLayer from "./constraintDisplay/FieldConstraintDisplayLayer";
-import FieldImage2024 from "./fields/FieldImage2024";
+import FieldImage2025 from "./fields/FieldImage2025";
+import * as FieldDimensions from "./fields/FieldDimensions";
 
 type Props = object;
 
@@ -43,8 +43,6 @@ type State = {
 };
 
 class FieldOverlayRoot extends Component<Props, State> {
-  private static instance: FieldOverlayRoot | null = null;
-
   state = {
     xPan: 0,
     yPan: 0,
@@ -206,8 +204,8 @@ class FieldOverlayRoot extends Component<Props, State> {
     });
   }
   render() {
-    this.canvasHeightMeters = FieldImage2024.WIDTH_M + 1;
-    this.canvasWidthMeters = FieldImage2024.LENGTH_M + 1;
+    this.canvasHeightMeters = FieldDimensions.FIELD_WIDTH + 1;
+    this.canvasWidthMeters = FieldDimensions.FIELD_LENGTH + 1;
     const layers = uiState.layers;
     const constraintSelected = uiState.isConstraintSelected();
     const eventMarkerSelected = uiState.isEventMarkerSelected();
@@ -242,11 +240,11 @@ class FieldOverlayRoot extends Component<Props, State> {
             {/* Background */}
             {layers[ViewLayers.Field] && (
               <>
-                <FieldImage2024 />
+                <FieldImage2025 />
               </>
             )}
             {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
-            {/* Obstacle and waypoint mouse capture*/}
+            {/* Waypoint mouse capture*/}
 
             {uiState.contextMenuMouseSelection && (
               <Popover
@@ -318,26 +316,6 @@ class FieldOverlayRoot extends Component<Props, State> {
                   onClick={(e) => this.createWaypointOnClick(e)}
                 ></circle>
               )}
-            {layers[ViewLayers.Obstacles] &&
-              uiState.isNavbarObstacleSelected() && (
-                <circle
-                  cx={0}
-                  cy={0}
-                  r={10000}
-                  style={{ fill: "transparent" }}
-                  onClick={(e) => this.createObstacle(e)}
-                ></circle>
-              )}
-            {layers[ViewLayers.Obstacles] &&
-              doc.pathlist.activePath.params.obstacles.map(
-                (obstacle, index) => (
-                  <FieldObstacle
-                    obstacle={obstacle}
-                    index={index}
-                    key={obstacle.uuid}
-                  ></FieldObstacle>
-                )
-              )}
             {/* Line paths */}
             {layers[ViewLayers.Waypoints] && <FieldPathLines></FieldPathLines>}
             {layers[ViewLayers.Trajectory] && (
@@ -389,6 +367,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             )}
             {doc.isSidebarConstraintSelected && (
               <FieldConstraintDisplayLayer
+                points={doc.pathlist.activePath.params.waypoints}
                 constraint={
                   doc.selectedSidebarItem as IConstraintStoreKeyed<ConstraintKey>
                 }
@@ -399,6 +378,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             {!doc.isSidebarConstraintSelected &&
               doc.isSidebarConstraintHovered && (
                 <FieldConstraintDisplayLayer
+                  points={doc.pathlist.activePath.params.waypoints}
                   constraint={
                     doc.hoveredSidebarItem as IConstraintStoreKeyed<ConstraintKey>
                   }
@@ -441,9 +421,9 @@ class FieldOverlayRoot extends Component<Props, State> {
       if (waypointType == NavbarLabels.EmptyWaypoint) {
         initial.fixTranslation = false;
       }
-      initial.x = [`${coords.x} m`, coords.x];
-      initial.y = [`${coords.y} m`, coords.y];
-      initial.heading = [`0 deg`, 0];
+      initial.x = { exp: `${coords.x} m`, val: coords.x };
+      initial.y = { exp: `${coords.y} m`, val: coords.y };
+      initial.heading = { exp: `0 deg`, val: 0 };
       const newPoint = doc.pathlist.activePath.params.addWaypoint(initial);
       newPoint.setSelected(true);
     });
@@ -458,18 +438,6 @@ class FieldOverlayRoot extends Component<Props, State> {
         e as unknown as MouseEvent,
         uiState.selectedNavbarItem
       );
-    }
-  }
-  createObstacle(e: React.MouseEvent<SVGCircleElement, MouseEvent>): void {
-    if (e.currentTarget === e.target) {
-      const coords = this.screenSpaceToFieldSpace(this.svgRef?.current, {
-        x: e.clientX,
-        y: e.clientY
-      });
-      doc.history.startGroup(() => {
-        doc.pathlist.activePath.params.addObstacle(coords.x, coords.y, 0.5);
-      });
-      doc.history.stopGroup();
     }
   }
 }

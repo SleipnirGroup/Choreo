@@ -1,28 +1,22 @@
-use trajoptlib::{DifferentialDrivetrain, PathBuilder, SwerveDrivetrain};
+use trajoptlib::{DifferentialDrivetrain, SwerveDrivetrain};
 
-use crate::spec::project::{Module, RobotConfig};
+use crate::spec::project::RobotConfig;
 
-use super::{DiffyGenerationTransformer, FeatureLockedTransformer, GenerationContext, SwerveGenerationTransformer};
+use super::{DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext, SwerveGenerationTransformer};
 
 
 pub struct DrivetrainAndBumpersSetter {
     config: RobotConfig<f64>
 }
 
-impl DrivetrainAndBumpersSetter {
-    // separately implement initialize to share between diffy and swerve
-    fn initialize(ctx: &GenerationContext) -> FeatureLockedTransformer<Self> {
-        FeatureLockedTransformer::always(Self {
-            config: ctx.project.config.snapshot()
-        })
-    }
-}
-
 impl SwerveGenerationTransformer for DrivetrainAndBumpersSetter {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
-        Self::initialize(context)
+        FeatureLockedTransformer::always(Self {
+            config: context.project.config.snapshot()
+        })
     }
-    fn transform(&self, builder: &mut trajoptlib::SwervePathBuilder) {
+
+    fn transform(&self, generator: &mut trajoptlib::SwerveTrajectoryGenerator) {
         let config = &self.config;
         let drivetrain = SwerveDrivetrain {
             mass: config.mass,
@@ -31,25 +25,29 @@ impl SwerveGenerationTransformer for DrivetrainAndBumpersSetter {
             // rad per sec
             wheel_max_angular_velocity: config.vmax / config.gearing,
             wheel_max_torque: config.tmax * config.gearing,
+            wheel_cof: config.cof,
             modules: config
-                .modules
-                .map(|modu: Module<f64>| modu.translation())
-                .to_vec(),
+                .module_translations(),
         };
 
-        builder.set_drivetrain(&drivetrain);
-        builder.set_bumpers(
-            config.bumper.back + config.bumper.front,
-            config.bumper.left + config.bumper.right,
+        generator.set_drivetrain(&drivetrain);
+        generator.set_bumpers(
+            config.bumper.front,
+            config.bumper.side,
+            config.bumper.side,
+            config.bumper.back
         );
     }
 }
 
-impl DiffyGenerationTransformer for DrivetrainAndBumpersSetter {
+impl DifferentialGenerationTransformer for DrivetrainAndBumpersSetter {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
-        Self::initialize(context)
+        FeatureLockedTransformer::always(Self {
+            config: context.project.config.snapshot()
+        })
     }
-    fn transform(&self, builder: &mut trajoptlib::DifferentialPathBuilder) {
+
+    fn transform(&self, generator: &mut trajoptlib::DifferentialTrajectoryGenerator) {
         let config = &self.config;
         let drivetrain = DifferentialDrivetrain {
             mass: config.mass,
@@ -58,13 +56,16 @@ impl DiffyGenerationTransformer for DrivetrainAndBumpersSetter {
             // rad per sec
             wheel_max_angular_velocity: config.vmax / config.gearing,
             wheel_max_torque: config.tmax * config.gearing,
-            trackwidth: config.modules[1].y * 2.0,
+            wheel_cof: config.cof,
+            trackwidth: config.differential_track_width,
         };
 
-        builder.set_drivetrain(&drivetrain);
-        builder.set_bumpers(
-            config.bumper.back + config.bumper.front,
-            config.bumper.left + config.bumper.right,
+        generator.set_drivetrain(&drivetrain);
+        generator.set_bumpers(
+            config.bumper.front,
+            config.bumper.side,
+            config.bumper.side,
+            config.bumper.back
         );
     }
 }

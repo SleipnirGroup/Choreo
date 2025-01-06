@@ -13,7 +13,6 @@ import {
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import LocalStorageKeys from "../util/LocalStorageKeys";
-import { ObjectTyped } from "../util/ObjectTyped";
 import { safeGetIdentifier } from "../util/mobxutils";
 import {
   Command,
@@ -21,16 +20,19 @@ import {
   GroupCommand,
   NamedCommand,
   Project,
-  Traj,
+  Trajectory,
   WaitCommand,
   type Expr,
   type RobotConfig,
   type Waypoint
 } from "./2025/DocumentTypes";
 import {
-  CircularObstacleStore,
-  ICircularObstacleStore
-} from "./CircularObstacleStore";
+  CommandStore,
+  ICommandStore,
+  commandIsGroup,
+  commandIsNamed,
+  commandIsWait
+} from "./CommandStore";
 import {
   ConstraintDataObjects,
   IConstraintDataStore,
@@ -46,13 +48,8 @@ import {
   IConstraintStore,
   IWaypointScope
 } from "./ConstraintStore";
-import {
-  CommandStore,
-  EventMarkerStore,
-  ICommandStore,
-  IEventMarkerStore
-} from "./EventMarkerStore";
-import { IExpressionStore, IVariables, Variables } from "./ExpressionStore";
+import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
+import { IExpressionStore, IVariables, variables } from "./ExpressionStore";
 import {
   IHolonomicWaypointStore,
   HolonomicWaypointStore as WaypointStore
@@ -64,6 +61,7 @@ import {
 } from "./RobotConfigStore";
 import { ViewLayerDefaults } from "./UIData";
 import { UIStateStore } from "./UIStateStore";
+import { findUUIDIndex } from "./path/utils";
 import { Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
 
@@ -87,59 +85,44 @@ type ConstraintDataConstructors = {
 export type EnvConstructors = {
   RobotConfigStore: (config: RobotConfig<Expr>) => IRobotConfigStore;
   WaypointStore: (config: Waypoint<Expr>) => IHolonomicWaypointStore;
-  ObstacleStore: (
-    x: number,
-    y: number,
-    radius: number
-  ) => ICircularObstacleStore;
   CommandStore: (
-    command: Command<Expr> &
+    command: Command &
       (
         | {
-            data: WaitCommand<Expr>["data"] &
-              GroupCommand<Expr>["data"] &
+            data: WaitCommand["data"] &
+              GroupCommand["data"] &
               NamedCommand["data"];
           }
         | object
       )
   ) => ICommandStore;
-  EventMarkerStore: (marker: EventMarker<Expr>) => IEventMarkerStore;
+  EventMarkerStore: (marker: EventMarker) => IEventMarkerStore;
   ConstraintData: ConstraintDataConstructors;
   ConstraintStore: <K extends ConstraintKey>(
     type: K,
     data: Partial<DataMap[K]["props"]>,
+    enabled: boolean,
     from: IWaypointScope,
     to?: IWaypointScope
   ) => IConstraintStore;
 };
 function getConstructors(vars: () => IVariables): EnvConstructors {
-  function commandIsNamed(command: Command<Expr>): command is NamedCommand {
-    return Object.hasOwn(command.data, "name");
-  }
-  function commandIsGroup(
-    command: Command<Expr>
-  ): command is GroupCommand<Expr> {
-    return Object.hasOwn(command.data, "commands");
-  }
-  function commandIsTime(command: Command<Expr>): command is WaitCommand<Expr> {
-    return Object.hasOwn(command.data, "time");
-  }
-  function createCommandStore(command: Command<Expr>): ICommandStore {
+  function createCommandStore(command: Command): ICommandStore {
     return CommandStore.create({
-      type: command.type,
+      type: command?.type ?? "none",
       name: commandIsNamed(command) ? command.data.name : "",
       commands: commandIsGroup(command)
         ? command.data.commands.map((c) => createCommandStore(c))
         : [],
       time: vars().createExpression(
-        commandIsTime(command) ? command.data.waitTime : 0,
+        commandIsWait(command) ? command.data.waitTime : 0,
         "Time"
       ),
       uuid: crypto.randomUUID()
     });
   }
 
-  const keys = ObjectTyped.keys(ConstraintDefinitions);
+  const keys = Object.keys(ConstraintDefinitions) as ConstraintKey[];
   const constraintDataConstructors = Object.fromEntries(
     keys.map(
       <K extends ConstraintKey>(key: K) =>
@@ -161,60 +144,61 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         mass: vars().createExpression(config.mass, "Mass"),
         inertia: vars().createExpression(config.inertia, "MoI"),
         tmax: vars().createExpression(config.tmax, "Torque"),
+        cof: vars().createExpression(config.cof, "Number"),
         vmax: vars().createExpression(config.vmax, "AngVel"),
         gearing: vars().createExpression(config.gearing, "Number"),
         radius: vars().createExpression(config.radius, "Length"),
         bumper: {
           front: vars().createExpression(config.bumper.front, "Length"),
-          left: vars().createExpression(config.bumper.left, "Length"),
-          right: vars().createExpression(config.bumper.right, "Length"),
+          side: vars().createExpression(config.bumper.side, "Length"),
           back: vars().createExpression(config.bumper.back, "Length")
         },
-        modules: [0, 1, 2, 3].map((i) => {
-          return {
-            x: vars().createExpression(config.modules[i].x, "Length"),
-            y: vars().createExpression(config.modules[i].y, "Length")
-          };
-        }),
+        frontLeft: {
+          x: vars().createExpression(config.frontLeft.x, "Length"),
+          y: vars().createExpression(config.frontLeft.y, "Length")
+        },
+        backLeft: {
+          x: vars().createExpression(config.backLeft.x, "Length"),
+          y: vars().createExpression(config.backLeft.y, "Length")
+        },
+        differentialTrackWidth: vars().createExpression(
+          config.differentialTrackWidth,
+          "Length"
+        ),
         identifier: crypto.randomUUID()
       });
     },
     WaypointStore: (waypoint: Waypoint<Expr>) => {
-      return WaypointStore.create({
+      const w = WaypointStore.create({
         ...waypoint,
         x: vars().createExpression(waypoint.x, "Length"),
         y: vars().createExpression(waypoint.y, "Length"),
         heading: vars().createExpression(waypoint.heading, "Angle"),
         uuid: crypto.randomUUID()
       });
-    },
-    ObstacleStore: (
-      x: number,
-      y: number,
-      radius: number
-    ): ICircularObstacleStore => {
-      return CircularObstacleStore.create({
-        x: vars().createExpression(x, "Length"),
-        y: vars().createExpression(y, "Length"),
-        radius: vars().createExpression(radius, "Length"),
-        uuid: crypto.randomUUID()
-      });
+      return w;
     },
     CommandStore: createCommandStore,
-    EventMarkerStore: (marker: EventMarker<Expr>): IEventMarkerStore => {
-      return EventMarkerStore.create({
+    EventMarkerStore: (marker: EventMarker): IEventMarkerStore => {
+      const m = EventMarkerStore.create({
         name: marker.name,
-        target: undefined,
-        trajTargetIndex: marker.trajTargetIndex,
-        offset: vars().createExpression(marker.offset, "Time"),
-        command: createCommandStore(marker.command),
+        from: {
+          uuid: crypto.randomUUID(),
+
+          target: undefined,
+          targetTimestamp: marker.from.targetTimestamp ?? undefined,
+          offset: vars().createExpression(marker.from.offset, "Time")
+        },
+        event: createCommandStore(marker.event),
         uuid: crypto.randomUUID()
       });
+      return m;
     },
     ConstraintData: constraintDataConstructors,
     ConstraintStore: <K extends ConstraintKey>(
       type: K,
       data: Partial<DataMap[K]["props"]>,
+      enabled: boolean,
       from: IWaypointScope,
       to?: IWaypointScope
     ) => {
@@ -223,18 +207,22 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         to,
         uuid: crypto.randomUUID(),
         //@ts-expect-error more constraint stuff not quite working
-        data: constraintDataConstructors[type](data)
+        data: constraintDataConstructors[type](data),
+        enabled
       });
       store.data.deserPartial(data);
       return store;
     }
   };
 }
-const variables = Variables.create({ expressions: {}, poses: {} });
 
 const env = {
   selectedSidebar: () => safeGetIdentifier(doc.selectedSidebarItem),
+  hoveredItem: () => safeGetIdentifier(doc.hoveredSidebarItem),
   select: (item: SelectableItemTypes) => select(item),
+  selected: (item: SelectableItemTypes) => doc.selected(item),
+  hover: (item: SelectableItemTypes) => hover(item),
+  hovered: (item: SelectableItemTypes) => doc.hovered(item),
   withoutUndo: (callback: any) => {
     withoutUndo(callback);
   },
@@ -244,8 +232,16 @@ const env = {
   stopGroup: () => {
     stopGroup();
   },
+  history: () => doc.history,
   vars: () => doc.variables,
   renameVariable: renameVariable,
+  exporter: (uuid: string) => {
+    try {
+      writeTrajectory(uuid);
+    } catch (e) {
+      tracing.error(e);
+    }
+  },
   create: getConstructors(() => doc.variables)
 };
 export type Env = typeof env;
@@ -255,9 +251,9 @@ export const doc = DocumentStore.create(
       EXPR_DEFAULTS
     ),
     type: "Swerve",
-    pathlist: {},
-    splitTrajectoriesAtStopPoints: false,
-    usesObstacles: false,
+    pathlist: {
+      defaultPath: undefined
+    },
     name: "Untitled",
     //@ts-expect-error this is recommended, not sure why it doesn't work
     variables: castToReferenceSnapshot(variables),
@@ -265,6 +261,7 @@ export const doc = DocumentStore.create(
   },
   env
 );
+doc.pathlist.addDefaultPath();
 function withoutUndo(callback: any) {
   doc.history.withoutUndo(callback);
 }
@@ -282,13 +279,6 @@ function renameVariable(find: string, replace: string) {
   });
 }
 export function setup() {
-  doc.pathlist.setExporter((uuid) => {
-    try {
-      writeTrajectory(uuid);
-    } catch (e) {
-      tracing.error(e);
-    }
-  });
   doc.history.clear();
   setupEventListeners()
     .then(() => newProject())
@@ -361,8 +351,9 @@ export async function setupEventListeners() {
       if (savedObject.dataType === "choreo/waypoint") {
         let currentSelectedWaypointIdx = -1;
         if (doc.isSidebarWaypointSelected) {
-          const idx = activePath.params.findUUIDIndex(
-            (doc.selectedSidebarItem as IHolonomicWaypointStore).uuid
+          const idx = findUUIDIndex(
+            (doc.selectedSidebarItem as IHolonomicWaypointStore).uuid,
+            activePath.params.waypoints
           );
           if (idx != -1) {
             currentSelectedWaypointIdx = idx;
@@ -413,7 +404,7 @@ export async function setupEventListeners() {
       });
     });
   const autoSaveUnlisten = reaction(
-    () => doc.history.undoIdx,
+    () => doc.serializeChor(),
     () => {
       if (uiState.hasSaveLocation) {
         saveProject();
@@ -593,29 +584,33 @@ export async function setupEventListeners() {
     if (selectedConstraint) {
       doc.pathlist.activePath.params.deleteConstraint(selectedConstraint.uuid);
     }
-    const selectedObstacle = getSelectedObstacle();
-    if (selectedObstacle) {
-      doc.pathlist.activePath.params.deleteObstacle(selectedObstacle.uuid);
-    }
   });
 }
 
 export async function openProject(projectPath: OpenFilePayload) {
+  // Capture the state prior to the deserialization
+  const originalRoot = await Commands.getDeployRoot();
+  const originalSnapshot = getSnapshot(doc);
+  const originalUiState = getSnapshot(uiState);
+  const originalHistory = getSnapshot(doc.history);
+  const originalLastOpenedItem = localStorage.getItem(
+    LocalStorageKeys.LAST_OPENED_FILE_LOCATION
+  );
   try {
     const dir = projectPath.dir;
     const name = projectPath.name.split(".")[0];
     let project: Project | undefined = undefined;
-    const trajs: Traj[] = [];
+    const trajectories: Trajectory[] = [];
     await Commands.cancelAll();
     await Commands.setDeployRoot(dir);
     await Promise.allSettled([
       Commands.readProject(name)
         .then((p) => (project = p))
         .catch(tracing.error),
-      Commands.readAllTraj()
+      Commands.readAllTrajectory()
         .then((paths) =>
           paths.forEach((path) => {
-            trajs.push(path);
+            trajectories.push(path);
           })
         )
         .catch(tracing.error)
@@ -625,8 +620,9 @@ export async function openProject(projectPath: OpenFilePayload) {
       throw "Internal error. Check console logs.";
     }
     doc.deserializeChor(project);
-    trajs.forEach((traj) => {
-      doc.pathlist.addPath(traj.name, true, traj);
+    doc.pathlist.deleteAll();
+    trajectories.forEach((trajectory) => {
+      doc.pathlist.addPath(trajectory.name, true, trajectory);
     });
     uiState.setSaveFileDir(dir);
     uiState.setProjectName(name);
@@ -634,8 +630,18 @@ export async function openProject(projectPath: OpenFilePayload) {
       LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
       JSON.stringify({ dir, name })
     );
+    doc.history.clear();
   } catch (e) {
-    await Commands.setDeployRoot("");
+    await Commands.setDeployRoot(originalRoot);
+    if (originalLastOpenedItem != null) {
+      localStorage.setItem(
+        LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
+        originalLastOpenedItem
+      );
+    }
+    applySnapshot(doc, originalSnapshot);
+    applySnapshot(uiState, originalUiState);
+    applySnapshot(doc.history, originalHistory);
     throw e;
   }
 }
@@ -675,12 +681,6 @@ function getSelectedConstraint() {
   });
 }
 
-function getSelectedObstacle() {
-  const obstacles = doc.pathlist.activePath.params.obstacles;
-  return obstacles.find((o) => {
-    return o.selected;
-  });
-}
 export async function newProject() {
   applySnapshot(uiState, {
     settingsTab: 0,
@@ -690,11 +690,15 @@ export async function newProject() {
   const newChor = await Commands.defaultProject();
   doc.deserializeChor(newChor);
   uiState.loadPathGradientFromLocalStorage();
-  doc.pathlist.addPath("NewPath");
+  doc.pathlist.deleteAll();
+  doc.pathlist.addPath("New Path");
   doc.history.clear();
 }
 export function select(item: SelectableItemTypes) {
   doc.setSelectedSidebarItem(item);
+}
+export function hover(item: SelectableItemTypes) {
+  doc.setHoveredSidebarItem(item);
 }
 
 export async function canSave(): Promise<boolean> {
@@ -703,11 +707,11 @@ export async function canSave(): Promise<boolean> {
 
 export async function renamePath(uuid: string, newName: string) {
   if (uiState.hasSaveLocation) {
-    const traj = doc.pathlist.paths.get(uuid);
-    if (traj) {
+    const trajectory = doc.pathlist.paths.get(uuid);
+    if (trajectory) {
       tracing.debug("renamePath", uuid, "to", newName);
-      await Commands.renameTraj(traj.serialize, newName)
-        .then(() => doc.pathlist.paths.get(uuid)?.setName(newName))
+      await Commands.renameTrajectory(trajectory.serialize, newName)
+        .finally(() => doc.pathlist.paths.get(uuid)?.setName(newName))
         .catch(tracing.error);
     }
   } else {
@@ -717,10 +721,10 @@ export async function renamePath(uuid: string, newName: string) {
 
 export async function deletePath(uuid: string) {
   if (uiState.hasSaveLocation) {
-    const traj = doc.pathlist.paths.get(uuid);
-    if (traj) {
-      await Commands.deleteTraj(traj.serialize)
-        .then(() => doc.pathlist.deletePath(uuid))
+    const trajectory = doc.pathlist.paths.get(uuid);
+    if (trajectory) {
+      await Commands.deleteTrajectory(trajectory.serialize)
+        .finally(() => doc.pathlist.deletePath(uuid))
         .catch(tracing.error);
     }
   } else {
@@ -730,11 +734,11 @@ export async function deletePath(uuid: string) {
 
 export async function writeTrajectory(uuid: string) {
   if (await canSave()) {
-    const traj = doc.pathlist.paths.get(uuid);
-    if (traj === undefined) {
+    const trajectory = doc.pathlist.paths.get(uuid);
+    if (trajectory === undefined) {
       throw `Tried to export trajectory with unknown uuid ${uuid}`;
     }
-    await Commands.writeTraj(traj.serialize);
+    await Commands.writeTrajectory(trajectory.serialize);
   } else {
     tracing.warn("Can't save trajectory, skipping");
   }
@@ -809,9 +813,9 @@ export async function saveProjectDialog() {
 
 export async function openDiagnosticZipWithInfo() {
   const project = doc.serializeChor();
-  const trajs: Traj[] = [];
+  const trajectories: Trajectory[] = [];
   doc.pathlist.paths.forEach((path) => {
-    trajs.push(path.serialize);
+    trajectories.push(path.serialize);
   });
-  await Commands.openDiagnosticZip(project, trajs);
+  await Commands.openDiagnosticZip(project, trajectories);
 }

@@ -35,7 +35,7 @@ index e9668b53d6a0317cf2367b212f5013cbb2aa7ad5..1db191b6492a5f10b657c42c7959a73e
 +fetchcontent_declare(
 +    fmt
 +    GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-+    GIT_TAG 11.0.2
++    GIT_TAG 11.1.1
 +)
 +fetchcontent_makeavailable(fmt)
 +
@@ -48,8 +48,8 @@ diff --git a/cmake/modules/CompilerFlags.cmake b/cmake/modules/CompilerFlags.cma
 index 9f3fad1ce359897d6e87d5c37efae51d55bcf160..4331baf9394a7f27bde51906c9dd14b8543e4af4 100644
 --- a/cmake/modules/CompilerFlags.cmake
 +++ b/cmake/modules/CompilerFlags.cmake
-@@ -11,7 +11,7 @@ macro(compiler_flags target)
-         target_compile_options(${target} PRIVATE /wd4244 /wd4251 /WX)
+@@ -22,7 +22,7 @@ macro(compiler_flags target)
+         )
      endif()
  
 -    target_compile_features(${target} PUBLIC cxx_std_23)
@@ -71,10 +71,11 @@ diff --git a/include/sleipnir/util/Print.hpp b/include/sleipnir/util/Print.hpp
 index 339320bce6d017ca85025060ba445b2f025bb225..fcf2e69bfb5a081cd915bdded3caa80cd9c38518 100644
 --- a/include/sleipnir/util/Print.hpp
 +++ b/include/sleipnir/util/Print.hpp
-@@ -2,52 +2,53 @@
+@@ -2,53 +2,54 @@
  
  #pragma once
  
+ #include <cstdio>
 -#include <print>
  #include <system_error>
  #include <utility>

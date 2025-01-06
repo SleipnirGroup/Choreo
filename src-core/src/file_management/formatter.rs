@@ -1,4 +1,4 @@
-use std::io;
+use std::io::{self, Write};
 
 use serde::Serialize;
 use serde_json::error::Result;
@@ -196,6 +196,7 @@ where
 {
     let mut writer = Vec::with_capacity(128);
     to_writer_pretty(&mut writer, value)?;
+    let _ = writer.write_all("\n".as_bytes());
     Ok(writer)
 }
 

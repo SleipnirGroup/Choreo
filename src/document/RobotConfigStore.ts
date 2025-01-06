@@ -14,65 +14,59 @@ const DEFAULT_WHEELBASE = DEFAULT_FRAME_SIZE - 2 * InToM(2.625); //SDS Mk4i cont
 const halfBumper = MToIn(DEFAULT_BUMPER / 2);
 const halfWheelbase = MToIn(DEFAULT_WHEELBASE / 2);
 export const EXPR_DEFAULTS: RobotConfig<Expr> = {
-  mass: ["150 lbs", LbsToKg(150)],
-  inertia: ["6 kg*m^2", 6],
-  vmax: [
-    `${(MotorCurves.KrakenX60.vmax * 0.8 * 60) / (2 * Math.PI)} rpm`,
-    MotorCurves.KrakenX60.vmax * 0.8
-  ],
-  tmax: [
-    `${maxTorqueCurrentLimited(MotorCurves.KrakenX60.kt, 60)} N*m`,
-    maxTorqueCurrentLimited(MotorCurves.KrakenX60.kt, 60)
-  ],
-  gearing: ["6.75", 6.75], // SDS L2 mk4/mk4i
-  radius: ["2 in", InToM(2)],
-  bumper: {
-    front: [`${halfBumper} in`, DEFAULT_BUMPER / 2],
-    left: [`${halfBumper} in`, DEFAULT_BUMPER / 2],
-    back: [`${halfBumper} in`, DEFAULT_BUMPER / 2],
-    right: [`${halfBumper} in`, DEFAULT_BUMPER / 2]
+  mass: { exp: "150 lbs", val: LbsToKg(150) },
+  inertia: { exp: "6 kg*m^2", val: 6 },
+  vmax: {
+    exp: `${(MotorCurves.KrakenX60.vmax * 0.8 * 60) / (2 * Math.PI)} rpm`,
+    val: MotorCurves.KrakenX60.vmax * 0.8
   },
-  modules: [
-    {
-      x: [`${halfWheelbase} in`, DEFAULT_WHEELBASE / 2],
-      y: [`${halfWheelbase} in`, DEFAULT_WHEELBASE / 2]
-    },
-    {
-      x: [`${-halfWheelbase} in`, -DEFAULT_WHEELBASE / 2],
-      y: [`${halfWheelbase} in`, DEFAULT_WHEELBASE / 2]
-    },
-    {
-      x: [`${-halfWheelbase} in`, -DEFAULT_WHEELBASE / 2],
-      y: [`${-halfWheelbase} in`, -DEFAULT_WHEELBASE / 2]
-    },
-    {
-      x: [`${halfWheelbase} in`, DEFAULT_WHEELBASE / 2],
-      y: [`${-halfWheelbase} in`, -DEFAULT_WHEELBASE / 2]
-    }
-  ]
+  tmax: {
+    exp: `${maxTorqueCurrentLimited(MotorCurves.KrakenX60.kt, 60)} N*m`,
+    val: maxTorqueCurrentLimited(MotorCurves.KrakenX60.kt, 60)
+  },
+  cof: { exp: "1.5", val: 1.5 },
+  gearing: { exp: "6.75", val: 6.75 }, // SDS L2 mk4/mk4i
+  radius: { exp: "2 in", val: InToM(2) },
+  bumper: {
+    front: { exp: `${halfBumper} in`, val: DEFAULT_BUMPER / 2 },
+    side: { exp: `${halfBumper} in`, val: DEFAULT_BUMPER / 2 },
+    back: { exp: `${halfBumper} in`, val: DEFAULT_BUMPER / 2 }
+  },
+  frontLeft: {
+    x: { exp: `${halfWheelbase} in`, val: DEFAULT_WHEELBASE / 2 },
+    y: { exp: `${halfWheelbase} in`, val: DEFAULT_WHEELBASE / 2 }
+  },
+  backLeft: {
+    x: { exp: `${-halfWheelbase} in`, val: -DEFAULT_WHEELBASE / 2 },
+    y: { exp: `${halfWheelbase} in`, val: DEFAULT_WHEELBASE / 2 }
+  },
+  differentialTrackWidth: {
+    exp: `${MToIn(DEFAULT_WHEELBASE)} in`,
+    val: DEFAULT_WHEELBASE
+  }
 };
 
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
 export const BumperStore = types
   .model("BumperStore", {
     front: ExpressionStore,
-    left: ExpressionStore,
-    right: ExpressionStore,
+    side: ExpressionStore,
     back: ExpressionStore
   })
   .views((self) => ({
     get serialize(): Bumper<Expr> {
       return {
         front: self.front.serialize,
-        left: self.left.serialize,
-        right: self.right.serialize,
+        side: self.side.serialize,
         back: self.back.serialize
       };
     },
-    snapshot(): Bumper<number> {
+    get snapshot(): Bumper<number> {
       return {
         front: self.front.value,
-        left: self.left.value,
-        right: self.right.value,
+        side: self.side.value,
         back: self.back.value
       };
     },
@@ -80,18 +74,20 @@ export const BumperStore = types
       return self.front.value + self.back.value;
     },
     get width() {
-      return self.left.value + self.right.value;
+      return self.side.value * 2;
     }
   }))
   .actions((self) => ({
     deserialize(ser: Bumper<Expr>) {
       self.front.deserialize(ser.front);
       self.back.deserialize(ser.back);
-      self.right.deserialize(ser.right);
-      self.left.deserialize(ser.left);
+      self.side.deserialize(ser.side);
     }
   }));
 
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
 export const ModuleStore = types
   .model("ModuleStore", {
     x: ExpressionStore,
@@ -104,7 +100,7 @@ export const ModuleStore = types
         y: self.y.serialize
       };
     },
-    snapshot(): Module<number> {
+    get snapshot(): Module<number> {
       return {
         x: self.x.value,
         y: self.y.value
@@ -117,20 +113,23 @@ export const ModuleStore = types
       self.y.deserialize(ser.y);
     }
   }));
+
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
 export const RobotConfigStore = types
   .model("RobotConfigStore", {
     mass: ExpressionStore,
     inertia: ExpressionStore,
     vmax: ExpressionStore,
     tmax: ExpressionStore,
+    cof: ExpressionStore,
     gearing: ExpressionStore,
     radius: ExpressionStore,
     bumper: BumperStore,
-    modules: types.refinement(
-      "Modules",
-      types.array(ModuleStore),
-      (snap) => snap?.length == 4
-    ),
+    frontLeft: ModuleStore,
+    backLeft: ModuleStore,
+    differentialTrackWidth: ExpressionStore,
     identifier: types.identifier
   })
   .views((self) => {
@@ -146,25 +145,47 @@ export const RobotConfigStore = types
           mass: self.mass.serialize,
           inertia: self.inertia.serialize,
           tmax: self.tmax.serialize,
+          cof: self.cof.serialize,
           vmax: self.vmax.serialize,
           gearing: self.gearing.serialize,
           radius: self.radius.serialize,
           bumper: self.bumper.serialize,
-          //@ts-expect-error can't encode fixed length array in mobx ts typing
-          modules: self.modules.map((mod) => mod.serialize)
+          frontLeft: self.frontLeft.serialize,
+          backLeft: self.backLeft.serialize,
+          differentialTrackWidth: self.differentialTrackWidth.serialize
         };
       },
-      snapshot(): RobotConfig<number> {
+      get moduleTranslations(): [
+        Module<number>,
+        Module<number>,
+        Module<number>,
+        Module<number>
+      ] {
+        const fl = self.frontLeft.snapshot;
+        const bl = self.backLeft.snapshot;
+        const br = {
+          x: bl.x,
+          y: -bl.y
+        };
+        const fr = {
+          x: fl.x,
+          y: -fl.y
+        };
+        return [fl, bl, br, fr];
+      },
+      get snapshot(): RobotConfig<number> {
         return {
           mass: self.mass.value,
           inertia: self.inertia.value,
           tmax: self.tmax.value,
+          cof: self.cof.value,
           vmax: self.vmax.value,
           gearing: self.gearing.value,
           radius: self.radius.value,
-          bumper: self.bumper.snapshot(),
-          //@ts-expect-error can't encode fixed length array in mobx ts typing
-          modules: self.modules.map((mod) => mod.snapshot())
+          bumper: self.bumper.snapshot,
+          frontLeft: self.frontLeft.snapshot,
+          backLeft: self.backLeft.snapshot,
+          differentialTrackWidth: self.differentialTrackWidth.value
         };
       }
     };
@@ -176,10 +197,13 @@ export const RobotConfigStore = types
         self.inertia.deserialize(config.inertia);
         self.vmax.deserialize(config.vmax);
         self.tmax.deserialize(config.tmax);
+        self.cof.deserialize(config.cof);
         self.gearing.deserialize(config.gearing);
         self.radius.deserialize(config.radius);
         self.bumper.deserialize(config.bumper);
-        self.modules.forEach((mod, i) => mod.deserialize(config.modules[i]));
+        self.frontLeft.deserialize(config.frontLeft);
+        self.backLeft.deserialize(config.backLeft);
+        self.differentialTrackWidth.deserialize(config.differentialTrackWidth);
       }
     };
   })
@@ -188,8 +212,8 @@ export const RobotConfigStore = types
       bumperSVGElement() {
         const front = self.bumper.front.value;
         const back = -self.bumper.back.value;
-        const left = self.bumper.left.value;
-        const right = -self.bumper.right.value;
+        const left = self.bumper.side.value;
+        const right = -self.bumper.side.value;
         return `M ${front} ${left}
                 L ${front} ${right}
                 L ${back} ${right}
@@ -199,8 +223,8 @@ export const RobotConfigStore = types
       dashedBumperSVGElement() {
         const front = self.bumper.front.value; //l/2
         const back = -self.bumper.back.value; //-l/2
-        const left = self.bumper.left.value;
-        const right = -self.bumper.right.value;
+        const left = self.bumper.side.value;
+        const right = -self.bumper.side.value;
         return `
             M ${front} ${left / 2}
             L ${front} ${left}

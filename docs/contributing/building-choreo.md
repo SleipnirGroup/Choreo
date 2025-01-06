@@ -1,3 +1,5 @@
+# Building Choreo
+
 ## Dependencies
 
 ### Requirements for Windows
@@ -31,7 +33,7 @@ pnpm install
 Build an NSIS `.exe` installer on Windows, `.dmg` bundle on macOS, or `.deb` package on Linux.
 
 ```console
-pnpm run tauri build
+pnpm build
 ```
 
 ## Development Server
@@ -45,7 +47,7 @@ pnpm install
 Start development server (debug).
 
 ```console
-pnpm run tauri dev
+pnpm dev
 ```
 
 Start development server (release).
@@ -79,7 +81,7 @@ target = "<target>"
 - ⚛️ [React](https://react.dev/): Frontend UI framework (TypeScript)
 - ⚡️ [Vite](https://vitejs.dev/): Frontend build system (TypeScript)
 - 🖥️ [Tauri](https://tauri.app/): Desktop application framework and backend (Rust)
-- 🚗 [TrajoptLib](trajoptlib): Generates trajectories with Sleipnir (C++, Rust)
+- 🚗 [TrajoptLib](https://github.com/SleipnirGroup/Choreo/tree/main/trajoptlib): Generates trajectories with Sleipnir (C++, Rust)
 - 📈 [Sleipnir](https://github.com/SleipnirGroup/Sleipnir): Numerical optimizer (C++)
 
 ### Formatters/linters

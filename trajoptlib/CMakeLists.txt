@@ -88,7 +88,7 @@ if(BUILD_TESTING)
     fetchcontent_declare(
         Catch2
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG v3.6.0
+        GIT_TAG v3.7.1
         CMAKE_ARGS
     )
     fetchcontent_makeavailable(Catch2)
@@ -102,9 +102,9 @@ set(BUILD_EXAMPLES OFF)
 
 fetchcontent_declare(
     Sleipnir
-    GIT_REPOSITORY https://github.com/SleipnirGroup/Sleipnir.git
-    # main on 2024-08-03
-    GIT_TAG fe36908596cab4afbce3ddf6ced37b01982dd317
+    GIT_REPOSITORY https://github.com/SleipnirGroup/Sleipnir
+    # main on 2025-01-02
+    GIT_TAG 5af8519f268a8075e245bb7cd411a81e1598f521
     PATCH_COMMAND
         git apply ${CMAKE_CURRENT_SOURCE_DIR}/cmake/0001-Downgrade-to-C-20.patch
     UPDATE_DISCONNECTED 1
@@ -182,14 +182,10 @@ if(BUILD_TESTING)
         TrajoptLibTest
         PRIVATE TrajoptLib Catch2::Catch2WithMain
     )
-    if(NOT CMAKE_TOOLCHAIN_FILE)
-        # https://github.com/catchorg/Catch2/issues/2873
-        catch_discover_tests(
-            TrajoptLibTest
-            PROPERTIES SKIP_RETURN_CODE 4
-            DL_PATHS ${Sleipnir_BINARY_DIR}/$<${IS_MULTI_CONFIG}:$<CONFIG>>
-        )
-    endif()
+    catch_discover_tests(
+        TrajoptLibTest
+        DL_PATHS ${Sleipnir_BINARY_DIR}/$<${IS_MULTI_CONFIG}:$<CONFIG>>
+    )
 endif()
 
 # Build examples and example tests
@@ -231,10 +227,8 @@ if(BUILD_EXAMPLES)
                 PRIVATE TrajoptLib Catch2::Catch2WithMain
             )
             if(NOT CMAKE_TOOLCHAIN_FILE)
-                # https://github.com/catchorg/Catch2/issues/2873
                 catch_discover_tests(
                     ${example}Test
-                    PROPERTIES SKIP_RETURN_CODE 4
                     DL_PATHS
                         ${Sleipnir_BINARY_DIR}/$<${IS_MULTI_CONFIG}:$<CONFIG>>
                 )

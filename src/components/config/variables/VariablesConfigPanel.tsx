@@ -29,7 +29,6 @@ const VariablePanel = observer(
         <ExpressionInput
           key={`${entry[0]}-expr`}
           enabled
-          // title={entry[0]}
           title={() => (
             <VariableRenamingInput
               validateName={(name) => props.validateName(name)}
@@ -66,7 +65,7 @@ const AddVariablePanel = observer((props: AddVariablePanelProps) => {
             if (doc.variables.validateName(props.name, "")) {
               doc.variables.add(
                 props.name,
-                props.expr.serialize[0],
+                props.expr.serialize.exp,
                 props.expr.dimension
               );
               props.setName("");
@@ -116,9 +115,7 @@ export const GeneralVariableAddPanel = observer(() => {
     >
       {DimensionNamesExt.map((entry) => (
         <MenuItem value={entry}>
-          <Tooltip disableInteractive title={DimensionsExt[entry].name}>
-            {DimensionsExt[entry].icon()}
-          </Tooltip>
+          {DimensionsExt[entry].icon()}
           <span style={{ width: "4px" }}></span>
           {DimensionsExt[entry].name}
         </MenuItem>

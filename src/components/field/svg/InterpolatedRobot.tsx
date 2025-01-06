@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import React, { Component } from "react";
+import { Component } from "react";
 import { doc, uiState } from "../../../document/DocumentManager";
 import { sample } from "../../../util/MathUtil";
 
@@ -32,11 +32,11 @@ class InterpolatedRobot extends Component<Props, State> {
   state = {};
 
   render() {
-    const traj = doc.pathlist.activePath.traj.fullTraj;
-    if (traj.length < 2) {
+    const trajectory = doc.pathlist.activePath.trajectory.fullTrajectory;
+    if (trajectory.length < 2) {
       return <></>;
     }
-    const pose1 = sample(this.props.timestamp, traj);
+    const pose1 = sample(this.props.timestamp, trajectory);
 
     const headingPointSideLength =
       targetSideLength *
@@ -80,11 +80,11 @@ class InterpolatedRobot extends Component<Props, State> {
           }
         ></polygon>
         {/* Wheel locations */}
-        {doc.robotConfig.modules.map((mod, idx) => (
+        {doc.robotConfig.moduleTranslations.map((mod, idx) => (
           <circle
             key={idx}
-            cx={mod.x.value}
-            cy={mod.y.value}
+            cx={mod.x}
+            cy={mod.y}
             r={doc.robotConfig.radius.value}
             fill="white"
           ></circle>

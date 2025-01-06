@@ -1,34 +1,74 @@
 import { observer } from "mobx-react";
-import { ConstraintKey } from "../../../../document/ConstraintDefinitions";
+import {
+  ConstraintDataTypeMap,
+  ConstraintKey
+} from "../../../../document/ConstraintDefinitions";
 import { IConstraintStoreKeyed } from "../../../../document/ConstraintStore";
 import { doc } from "../../../../document/DocumentManager";
 import FieldConstraintRangeLayer from "./FieldConstraintRangeLayer";
+import KeepInCircleOverlay from "./KeepInCircleOverlay";
+import KeepInRectangleOverlay from "./KeepInRectangleOverlay";
 import PointAtOverlay from "./PointAtOverlay";
+import KeepOutCircleOverlay from "./KeepOutCircleOverlay";
+import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
+import KeepInLaneOverlay from "./KeepInLaneOverlay";
 
+export type OverlayProps<K extends keyof ConstraintDataTypeMap> = {
+  data: IConstraintStoreKeyed<K>;
+  start: IHolonomicWaypointStore;
+  end: IHolonomicWaypointStore;
+  lineColor: string;
+};
 const overlays = {
-  PointAt: (
-    constraint: IConstraintStoreKeyed<"PointAt">,
-    lineColor: string
-  ) => (
+  PointAt: (props: OverlayProps<"PointAt">) => (
     <PointAtOverlay
-      data={constraint.data}
-      start={constraint.getStartWaypoint()}
-      end={constraint.getEndWaypoint()}
-      lineColor={lineColor}
+      data={props.data.data}
+      start={props.start}
+      end={props.end}
+      lineColor={props.lineColor}
     ></PointAtOverlay>
   ),
-  StopPoint: (c: IConstraintStoreKeyed<"StopPoint">) => <></>,
-  MaxAcceleration: (c: IConstraintStoreKeyed<"MaxAcceleration">) => <></>,
-  MaxVelocity: (c: IConstraintStoreKeyed<"MaxVelocity">) => <></>,
-  MaxAngularVelocity: (c: IConstraintStoreKeyed<"MaxAngularVelocity">) => <></>
+  KeepInCircle: (props: OverlayProps<"KeepInCircle">) => (
+    <KeepInCircleOverlay
+      data={props.data.data}
+      start={props.start}
+      end={props.end}
+      lineColor={props.lineColor}
+    ></KeepInCircleOverlay>
+  ),
+  KeepInRectangle: (props: OverlayProps<"KeepInRectangle">) => (
+    <KeepInRectangleOverlay
+      data={props.data.data}
+      start={props.start}
+      end={props.end}
+      lineColor={props.lineColor}
+    ></KeepInRectangleOverlay>
+  ),
+  KeepInLane: (props: OverlayProps<"KeepInLane">) => (
+    <KeepInLaneOverlay
+      data={props.data.data}
+      start={props.start}
+      end={props.end}
+    ></KeepInLaneOverlay>
+  ),
+  KeepOutCircle: (props: OverlayProps<"KeepOutCircle">) => (
+    <KeepOutCircleOverlay
+      data={props.data.data}
+      start={props.start}
+      end={props.end}
+      lineColor={props.lineColor}
+    ></KeepOutCircleOverlay>
+  ),
+  StopPoint: () => <></>,
+  MaxAcceleration: () => <></>,
+  MaxVelocity: () => <></>,
+  MaxAngularVelocity: () => <></>
 } satisfies {
-  [K in ConstraintKey]: (
-    constraint: IConstraintStoreKeyed<K>,
-    lineColor: string
-  ) => JSX.Element;
+  [K in ConstraintKey]: (props: OverlayProps<K>) => JSX.Element;
 };
 type Props = {
   constraint?: IConstraintStoreKeyed<ConstraintKey>;
+  points: IHolonomicWaypointStore[];
   lineColor: string;
 };
 function FieldConstraintDisplayLayer(props: Props) {
@@ -36,8 +76,14 @@ function FieldConstraintDisplayLayer(props: Props) {
   if (constraint === undefined) {
     return <></>;
   }
-  const startIndex = constraint.getStartWaypointIndex();
-  const endIndex = constraint.getEndWaypointIndex();
+  const startIndex = constraint.getStartWaypointIndex(props.points);
+  const endIndex = constraint.getEndWaypointIndex(props.points);
+  const overlayProps = {
+    data: constraint,
+    start: constraint.getStartWaypoint(props.points),
+    end: constraint.getEndWaypoint(props.points),
+    lineColor: props.lineColor
+  };
   if (startIndex === undefined) {
     return <></>;
   }
@@ -52,8 +98,7 @@ function FieldConstraintDisplayLayer(props: Props) {
       ></FieldConstraintRangeLayer>
       {overlays[constraint.data.type](
         // @ts-expect-error can't cast the constraint as the proper type.
-        constraint,
-        props.lineColor
+        overlayProps
       )}
     </g>
   );

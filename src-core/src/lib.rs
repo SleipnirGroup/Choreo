@@ -20,12 +20,13 @@
 )]
 
 mod error;
+mod integration_tests;
 
 pub use error::ChoreoError;
 
-/// The api for managing choreo files.
+/// The API for managing choreo files.
 pub mod file_management;
-/// The api for generating trajectories.
+/// The API for generating trajectories.
 pub mod generation;
 /// An implementation of the `Choreo Document Specification`.
 pub mod spec;

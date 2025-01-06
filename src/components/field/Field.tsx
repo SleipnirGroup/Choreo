@@ -12,12 +12,10 @@ import { CircularProgress, Tooltip } from "@mui/material";
 import Box from "@mui/material/Box/Box";
 import IconButton from "@mui/material/IconButton";
 import "react-toastify/dist/ReactToastify.min.css";
-import { ICircularObstacleStore } from "../../document/CircularObstacleStore";
 import { IConstraintStore } from "../../document/ConstraintStore";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
 import { Commands } from "../../document/tauriCommands";
-import CircularObstacleConfigPanel from "../config/CircularObstacleConfigPanel";
 import ConstraintsConfigPanel from "../config/ConstraintsConfigPanel";
 import ViewOptionsPanel from "../config/ViewOptionsPanel";
 import WaypointVisibilityPanel from "../config/WaypointVisibilityPanel";
@@ -34,6 +32,12 @@ export class Field extends Component<Props, State> {
     const selectedSidebar = doc.selectedSidebarItem;
     const activePath = doc.pathlist.activePath;
     const activePathUUID = doc.pathlist.activePathUUID;
+    if (
+      activePathUUID === doc.pathlist.defaultPath!.uuid ||
+      activePath === undefined
+    ) {
+      return <></>;
+    }
     let indexIfWaypoint = -1;
     if (selectedSidebar !== undefined && "heading" in selectedSidebar) {
       indexIfWaypoint = activePath.params.waypoints.findIndex(
@@ -60,26 +64,18 @@ export class Field extends Component<Props, State> {
               constraint.uuid == (selectedSidebar as IConstraintStore)!.uuid
           ) && (
             <ConstraintsConfigPanel
+              points={activePath.params.waypoints}
               constraint={selectedSidebar as IConstraintStore}
             ></ConstraintsConfigPanel>
           )}
         {selectedSidebar !== undefined &&
-          "radius" in selectedSidebar &&
-          activePath.params.obstacles.find(
-            (obstacle) =>
-              obstacle.uuid == (selectedSidebar as ICircularObstacleStore)!.uuid
-          ) && (
-            <CircularObstacleConfigPanel
-              obstacle={selectedSidebar as ICircularObstacleStore}
-            ></CircularObstacleConfigPanel>
-          )}
-        {selectedSidebar !== undefined &&
-          "offset" in selectedSidebar &&
-          activePath.traj.markers.find(
+          "event" in selectedSidebar &&
+          activePath.markers.find(
             (marker) =>
               marker.uuid == (selectedSidebar as IEventMarkerStore)!.uuid
           ) && (
             <EventMarkerConfigPanel
+              points={activePath.params.waypoints}
               marker={selectedSidebar as IEventMarkerStore}
             ></EventMarkerConfigPanel>
           )}
@@ -129,7 +125,7 @@ export class Field extends Component<Props, State> {
                   backgroundColor: "darkred"
                 }
               }}
-              onClick={(event) => {
+              onClick={(_event) => {
                 Commands.cancel(
                   activePath.uuid
                     .split("")

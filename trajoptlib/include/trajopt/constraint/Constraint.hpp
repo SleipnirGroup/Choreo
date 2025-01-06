@@ -3,20 +3,22 @@
 #pragma once
 
 #include <concepts>
-#include <type_traits>
 #include <variant>
 
 #include <sleipnir/autodiff/Variable.hpp>
 #include <sleipnir/optimization/OptimizationProblem.hpp>
 
 #include "trajopt/constraint/AngularVelocityMaxMagnitudeConstraint.hpp"
+#include "trajopt/constraint/LaneConstraint.hpp"
 #include "trajopt/constraint/LinePointConstraint.hpp"
 #include "trajopt/constraint/LinearAccelerationMaxMagnitudeConstraint.hpp"
 #include "trajopt/constraint/LinearVelocityDirectionConstraint.hpp"
 #include "trajopt/constraint/LinearVelocityMaxMagnitudeConstraint.hpp"
 #include "trajopt/constraint/PointAtConstraint.hpp"
 #include "trajopt/constraint/PointLineConstraint.hpp"
-#include "trajopt/constraint/PointPointConstraint.hpp"
+#include "trajopt/constraint/PointLineRegionConstraint.hpp"
+#include "trajopt/constraint/PointPointMaxConstraint.hpp"
+#include "trajopt/constraint/PointPointMinConstraint.hpp"
 #include "trajopt/constraint/PoseEqualityConstraint.hpp"
 #include "trajopt/constraint/TranslationEqualityConstraint.hpp"
 #include "trajopt/geometry/Pose2.hpp"
@@ -48,22 +50,35 @@ concept ConstraintType =
     };
 
 static_assert(ConstraintType<AngularVelocityMaxMagnitudeConstraint>);
+static_assert(ConstraintType<LaneConstraint>);
 static_assert(ConstraintType<LinePointConstraint>);
 static_assert(ConstraintType<LinearAccelerationMaxMagnitudeConstraint>);
 static_assert(ConstraintType<LinearVelocityDirectionConstraint>);
 static_assert(ConstraintType<LinearVelocityMaxMagnitudeConstraint>);
 static_assert(ConstraintType<PointAtConstraint>);
 static_assert(ConstraintType<PointLineConstraint>);
-static_assert(ConstraintType<PointPointConstraint>);
+static_assert(ConstraintType<PointLineRegionConstraint>);
+static_assert(ConstraintType<PointPointMaxConstraint>);
+static_assert(ConstraintType<PointPointMinConstraint>);
 static_assert(ConstraintType<PoseEqualityConstraint>);
 static_assert(ConstraintType<TranslationEqualityConstraint>);
 
-using Constraint =
-    std::variant<AngularVelocityMaxMagnitudeConstraint, LinePointConstraint,
-                 LinearAccelerationMaxMagnitudeConstraint,
-                 LinearVelocityDirectionConstraint,
-                 LinearVelocityMaxMagnitudeConstraint, PointAtConstraint,
-                 PointLineConstraint, PointPointConstraint,
-                 PoseEqualityConstraint, TranslationEqualityConstraint>;
+using Constraint = std::variant<
+    // clang-format off
+    AngularVelocityMaxMagnitudeConstraint,
+    LaneConstraint,
+    LinePointConstraint,
+    LinearAccelerationMaxMagnitudeConstraint,
+    LinearVelocityDirectionConstraint,
+    LinearVelocityMaxMagnitudeConstraint,
+    PointAtConstraint,
+    PointLineConstraint,
+    PointLineRegionConstraint,
+    PointPointMaxConstraint,
+    PointPointMinConstraint,
+    PoseEqualityConstraint,
+    TranslationEqualityConstraint
+    // clang-format on
+    >;
 
 }  // namespace trajopt

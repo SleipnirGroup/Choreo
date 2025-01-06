@@ -1,35 +1,8 @@
+use super::angle_modulus;
 use crate::error::ChoreoError;
 use crate::spec::project::RobotConfig;
-use crate::spec::traj::{ConstraintData, Parameters, Waypoint};
+use crate::spec::trajectory::{ConstraintData, Parameters, Waypoint};
 use crate::ChoreoResult;
-
-/**
- * A port of `WPILib`'s MathUtil.inputModulus
- */
-#[must_use]
-pub fn input_modulus(input: f64, maximum_input: f64, minimum_input: f64) -> f64 {
-    let mut val = input;
-    let modulus = maximum_input - minimum_input;
-
-    // Wrap input if it's above the maximum input
-    let num_max = ((val - minimum_input) / modulus).trunc();
-    val -= num_max * modulus;
-
-    // Wrap input if it's below the minimum input
-    let num_min = ((val - maximum_input) / modulus).trunc();
-    val -= num_min * modulus;
-
-    val
-}
-
-/**
- * A port of `WPILib`'s MathUtil.angleModulus
- */
-#[must_use]
-pub fn angle_modulus(input: f64) -> f64 {
-    use std::f64::consts::PI;
-    input_modulus(input, PI, -PI)
-}
 
 pub fn guess_control_interval_counts(
     config: &RobotConfig<f64>,
@@ -75,108 +48,89 @@ pub fn guess_control_interval_count(
             let max_force = config.wheel_max_torque() / config.radius;
 
             // Default to robotConfig's max velocity and acceleration
-            let mut max_vel = config.wheel_max_velocity() * config.radius;
-            let mut max_accel = (max_force * 4.0) / config.mass; // times 4 for 4 modules
+            let mut max_linear_vel = config.wheel_max_velocity() * config.radius;
+            let mut max_linear_accel = (max_force * 4.0) / config.mass; // times 4 for 4 modules
 
             // find max wheel position radius for calculating max angular velocity
-            let max_wheel_position_radius = config
-                .modules
-                .iter()
-                .fold(0f64, |max, &module| max.max(module.x.hypot(module.y)));
-            let mut max_ang_vel = max_vel / max_wheel_position_radius;
+            let max_wheel_position_radius =
+                config.back_left.radius().max(config.front_left.radius());
+            let mut max_ang_vel = max_linear_vel / max_wheel_position_radius;
+            let max_ang_accel = max_linear_accel / max_wheel_position_radius;
 
             // Iterate through constraints to find applicable constraints
-            params.constraints.iter().for_each(|constraint| {
-                if let Some(to) = constraint
-                    .to
-                    .and_then(|id| id.get_idx(params.waypoints.len()))
-                {
-                    if let Some(from) = constraint.from.get_idx(params.waypoints.len()) {
-                        if i < to && i >= from {
-                            match constraint.data {
-                                ConstraintData::MaxVelocity { max } => {
-                                    max_vel = max_vel.min(max);
-                                }
-                                ConstraintData::MaxAcceleration { max } => {
-                                    max_accel = max_accel.min(max);
-                                }
-                                ConstraintData::MaxAngularVelocity { max } => {
-                                    // Proof for T = 1.5 * θ / ω:
-                                    //
-                                    // The position function of a cubic Hermite spline
-                                    // where t∈[0, 1] and θ∈[0, dtheta]:
-                                    // x(t) = (-2t^3 +3t^2)θ
-                                    //
-                                    // The velocity function derived from the cubic Hermite spline is:
-                                    // v(t) = (-6t^2 + 6t)θ.
-                                    //
-                                    // The peak velocity occurs at t = 0.5, where t∈[0, 1] :
-                                    // v(0.5) = 1.5*θ, which is the max angular velocity during the motion.
-                                    //
-                                    // To ensure this peak velocity does not exceed ω, max_ang_vel, we set:
-                                    // 1.5 * θ = ω.
-                                    //
-                                    // The total time T needed to reach the final θ and
-                                    // not exceed ω is thus derived as:
-                                    // T = θ / (ω / 1.5) = 1.5 * θ / ω.
-                                    //
-                                    // This calculation ensures the peak velocity meets but does not exceed ω,
-                                    // extending the time proportionally to meet this requirement.
-                                    // This is an alternative estimation method to finding the trapezoidal or
-                                    // triangular profile for the change heading.
-                                    if max >= 0.1 {
-                                        let time = (1.5 * dtheta) / max;
-                                        max_vel = max_vel.min(distance / time);
+            params
+                .get_enabled_constraints()
+                .iter()
+                .for_each(|constraint| {
+                    if let Some(to) = constraint
+                        .to
+                        .and_then(|id| id.get_idx(params.waypoints.len()))
+                    {
+                        if let Some(from) = constraint.from.get_idx(params.waypoints.len()) {
+                            if i < to && i >= from {
+                                match constraint.data {
+                                    ConstraintData::MaxVelocity { max } => {
+                                        max_linear_vel = max_linear_vel.min(max);
                                     }
-                                    max_ang_vel = max_ang_vel.min(max);
-                                }
-                                _ => {}
-                            };
+                                    ConstraintData::MaxAcceleration { max } => {
+                                        max_linear_accel = max_linear_accel.min(max);
+                                    }
+                                    ConstraintData::MaxAngularVelocity { max } => {
+                                        max_ang_vel = max_ang_vel.min(max);
+
+                                        let time = calculate_trapezoidal_time(
+                                            dtheta,
+                                            max_ang_vel,
+                                            max_ang_accel,
+                                        );
+                                        max_linear_vel = max_linear_vel.min(distance / time);
+                                    }
+                                    _ => {}
+                                };
+                            }
                         }
                     }
-                }
-            });
+                });
 
             // anti-tunneling used to find ceiling value of dt
             let mut min_width = f64::INFINITY;
-            for idx in 0..config.modules.len() {
-                let mod_a = config
-                    .modules
+            let translations = config.module_translations();
+            for idx in 0..translations.len() {
+                let mod_a = translations
                     .get(idx)
                     .expect("Module expected when finding minimum width.");
                 let mod_b_idx = if idx == 0 {
-                    config.modules.len() - 1
+                    translations.len() - 1
                 } else {
                     idx - 1
                 };
-                let mod_b = config
-                    .modules
+                let mod_b = translations
                     .get(mod_b_idx)
                     .expect("Module expected when finding minimum width.");
                 min_width = min_width.min(mod_a.x - mod_b.x).hypot(mod_a.y - mod_b.y);
             }
             let dt_ceiling = min_width / (config.wheel_max_velocity() * config.radius);
-            let dt = dt_ceiling.min(0.1);
-            let distance_at_cruise = distance - (max_vel * max_vel) / max_accel;
-            let linear_time = if distance_at_cruise < 0.0 {
-                // triangle
-                2.0 * ((distance * max_accel).sqrt() / max_accel)
-            } else {
-                // trapezoid
-                distance / max_vel + max_vel / max_accel
-            };
-
-            // avoid divide by 0
-            let angular_time = if max_ang_vel >= 0.1 {
-                // see note above for math reasoning
-                (1.5 * dtheta) / max_ang_vel
-            } else {
-                0.0f64
-            }
-            .max(0.2); // keep some time allocated for rotating
+            let dt = dt_ceiling.min(params.target_dt);
+            let linear_time =
+                calculate_trapezoidal_time(distance, max_linear_vel, max_linear_accel);
+            let angular_time = calculate_trapezoidal_time(dtheta, max_ang_vel, max_ang_accel);
+            tracing::debug!(
+                "ang time: {angular_time}, dtheta: {dtheta}, maxAngVel: {max_ang_vel}, maxAngAccel: {max_ang_accel}"
+            );
             let total_time = linear_time + angular_time;
             tracing::debug!("dt estimate: {dt} - total time estimate: {total_time}");
             (total_time / dt).ceil() as usize
         }
+    }
+}
+
+fn calculate_trapezoidal_time(distance: f64, max_vel: f64, max_accel: f64) -> f64 {
+    // accel + deccel distance = (max_linear_vel * max_linear_vel) / max_linear_accel
+    if distance > (max_vel * max_vel) / max_accel {
+        // trapezoid
+        distance / max_vel + max_vel / max_accel
+    } else {
+        // triangle
+        2.0 * ((distance * max_accel).sqrt() / max_accel)
     }
 }

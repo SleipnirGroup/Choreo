@@ -5,9 +5,6 @@ import { observer } from "mobx-react";
 import { ViewLayers } from "../../../document/UIData";
 
 function FieldConstraintsAddLayer() {
-  // state = {};
-
-  // render() {
   const layers = uiState.layers;
   const activePath = doc.pathlist.activePath;
   const selectedConstraint = uiState.getSelectedConstraintKey();
@@ -40,6 +37,7 @@ function FieldConstraintsAddLayer() {
                     const constraintToAdd = selectedConstraint;
                     const newConstraint = activePath.params.addConstraint(
                       constraintToAdd,
+                      true,
                       { uuid: point.uuid }
                     );
 
@@ -94,6 +92,7 @@ function FieldConstraintsAddLayer() {
 
                       const newConstraint = activePath.params.addConstraint(
                         constraintToAdd,
+                        true,
                         { uuid: point1.uuid },
                         { uuid: point2.uuid }
                       );

@@ -64,6 +64,11 @@ class WaypointList extends Component<Props, State> {
         }
         return (
           <SidebarWaypoint
+            delete={() => {
+              doc.pathlist.activePath.params.deleteWaypoint(
+                holonomicWaypoint.uuid
+              );
+            }}
             waypoint={holonomicWaypoint}
             index={index}
             issue={issue}

@@ -3,13 +3,14 @@
 use std::collections::{HashMap, HashSet};
 
 use trajoptlib::{
-    DifferentialPathBuilder, DifferentialTrajectory, SwervePathBuilder, SwerveTrajectory,
+    DifferentialTrajectory, DifferentialTrajectoryGenerator, SwerveTrajectory,
+    SwerveTrajectoryGenerator,
 };
 
 use crate::{
     spec::{
         project::ProjectFile,
-        traj::{DriveType, Parameters, Sample, TrajFile},
+        trajectory::{DriveType, Parameters, Sample, TrajectoryFile},
     },
     ChoreoResult,
 };
@@ -34,25 +35,26 @@ pub(super) struct GenerationContext {
     pub handle: i64,
 }
 
-pub(super) struct TrajFileGenerator {
+pub(super) struct TrajectoryFileGenerator {
     ctx: GenerationContext,
-    trajfile: TrajFile,
+    trajectory_file: TrajectoryFile,
     swerve_transformers: HashMap<String, Vec<Box<dyn InitializedSwerveGenerationTransformer>>>,
-    diffy_transformers: HashMap<String, Vec<Box<dyn InitializedDiffyGenerationTransformer>>>,
+    differential_transformers:
+        HashMap<String, Vec<Box<dyn InitializedDifferentialGenerationTransformer>>>,
 }
 
-impl TrajFileGenerator {
+impl TrajectoryFileGenerator {
     /// Create a new generator
-    pub fn new(project: ProjectFile, trajfile: TrajFile, handle: i64) -> Self {
+    pub fn new(project: ProjectFile, trajectory_file: TrajectoryFile, handle: i64) -> Self {
         Self {
             ctx: GenerationContext {
                 project,
-                params: trajfile.params.snapshot(),
+                params: trajectory_file.params.snapshot(),
                 handle,
             },
-            trajfile,
+            trajectory_file,
             swerve_transformers: HashMap::new(),
-            diffy_transformers: HashMap::new(),
+            differential_transformers: HashMap::new(),
         }
     }
 
@@ -68,11 +70,11 @@ impl TrajFileGenerator {
     }
 
     /// Add a transformer to the generator that is only applied when generating a differential trajectory
-    pub fn add_diffy_transformer<T: DiffyGenerationTransformer + 'static>(&mut self) {
+    pub fn add_differential_transformer<T: DifferentialGenerationTransformer + 'static>(&mut self) {
         let featurelocked_transformer = T::initialize(&self.ctx);
         let feature = featurelocked_transformer.feature;
         let transformer = Box::new(featurelocked_transformer.inner);
-        self.diffy_transformers
+        self.differential_transformers
             .entry(feature)
             .or_default()
             .push(transformer);
@@ -80,56 +82,50 @@ impl TrajFileGenerator {
 
     /// Add a transformer to the generator that is applied when generating both swerve and differential trajectories
     pub fn add_omni_transformer<
-        T: SwerveGenerationTransformer + DiffyGenerationTransformer + 'static,
+        T: SwerveGenerationTransformer + DifferentialGenerationTransformer + 'static,
     >(
         &mut self,
     ) {
         self.add_swerve_transformer::<T>();
-        self.add_diffy_transformer::<T>();
+        self.add_differential_transformer::<T>();
     }
 
     fn generate_swerve(&self, handle: i64) -> ChoreoResult<SwerveTrajectory> {
-        let mut builder = SwervePathBuilder::new();
+        let mut generator = SwerveTrajectoryGenerator::new();
         let mut feature_set = HashSet::new();
         feature_set.extend(self.ctx.project.generation_features.clone());
         feature_set.insert("".to_string());
-
-        println!("Generating Swerve Trajectory");
-        println!("Features: {:?}", feature_set);
 
         for feature in feature_set.iter() {
             if let Some(transformers) = self.swerve_transformers.get(feature) {
                 for transformer in transformers.iter() {
-                    transformer.trans(&mut builder);
+                    transformer.trans(&mut generator);
                 }
             }
         }
 
-        builder.generate(true, handle).map_err(Into::into)
+        generator.generate(true, handle).map_err(Into::into)
     }
 
-    fn generate_diffy(&self, handle: i64) -> ChoreoResult<DifferentialTrajectory> {
-        let mut builder = DifferentialPathBuilder::new();
+    fn generate_differential(&self, handle: i64) -> ChoreoResult<DifferentialTrajectory> {
+        let mut generator = DifferentialTrajectoryGenerator::new();
         let mut feature_set = HashSet::new();
         feature_set.extend(self.ctx.project.generation_features.clone());
         feature_set.insert("".to_string());
 
-        println!("Generating Diffy Trajectory");
-        println!("Features: {:?}", feature_set);
-
         for feature in feature_set.iter() {
-            if let Some(transformers) = self.diffy_transformers.get(feature) {
+            if let Some(transformers) = self.differential_transformers.get(feature) {
                 for transformer in transformers.iter() {
-                    transformer.trans(&mut builder);
+                    transformer.trans(&mut generator);
                 }
             }
         }
 
-        builder.generate(true, handle).map_err(Into::into)
+        generator.generate(true, handle).map_err(Into::into)
     }
 
     /// Generate the trajectory file
-    pub fn generate(self) -> ChoreoResult<TrajFile> {
+    pub fn generate(self) -> ChoreoResult<TrajectoryFile> {
         let samples: Vec<Sample> = match &self.ctx.project.r#type {
             DriveType::Swerve => self
                 .generate_swerve(self.ctx.handle)?
@@ -138,7 +134,7 @@ impl TrajFileGenerator {
                 .map(Into::into)
                 .collect(),
             DriveType::Differential => self
-                .generate_diffy(self.ctx.handle)?
+                .generate_differential(self.ctx.handle)?
                 .samples
                 .into_iter()
                 .map(Into::into)
@@ -147,10 +143,15 @@ impl TrajFileGenerator {
 
         let counts_vec = guess_control_interval_counts(
             &self.ctx.project.config.snapshot(),
-            &self.trajfile.params.snapshot(),
+            &self.trajectory_file.params.snapshot(),
         )?;
 
-        Ok(postprocess(&samples, self.trajfile, counts_vec))
+        Ok(postprocess(
+            &samples,
+            self.trajectory_file,
+            self.ctx.project,
+            counts_vec,
+        ))
     }
 }
 
@@ -173,47 +174,50 @@ impl<T> FeatureLockedTransformer<T> {
 ///
 /// Should not be implemented directly, instead implement [`SwerveGenerationTransformer`]
 pub(super) trait InitializedSwerveGenerationTransformer {
-    fn trans(&self, builder: &mut SwervePathBuilder);
+    fn trans(&self, generator: &mut SwerveTrajectoryGenerator);
 }
 
-/// A trait for objects that can transform a [`SwervePathBuilder`]
+/// A trait for objects that can transform a [`SwerveTrajectoryGenerator`]
 pub(super) trait SwerveGenerationTransformer:
     InitializedSwerveGenerationTransformer + Sized
 {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self>;
-    fn transform(&self, builder: &mut SwervePathBuilder);
+    fn transform(&self, generator: &mut SwerveTrajectoryGenerator);
 }
 
 impl<T: SwerveGenerationTransformer> InitializedSwerveGenerationTransformer for T {
-    fn trans(&self, builder: &mut SwervePathBuilder) {
-        self.transform(builder);
+    fn trans(&self, generator: &mut SwerveTrajectoryGenerator) {
+        self.transform(generator);
     }
 }
 
-/// An object safe variant of the [`DiffyGenerationTransformer`] trait,
+/// An object safe variant of the [`DifferentialGenerationTransformer`] trait,
 ///
-/// Should not be implemented directly, instead implement [`DiffyGenerationTransformer`]
-pub(super) trait InitializedDiffyGenerationTransformer {
-    fn trans(&self, builder: &mut DifferentialPathBuilder);
+/// Should not be implemented directly, instead implement [`DifferentialGenerationTransformer`]
+pub(super) trait InitializedDifferentialGenerationTransformer {
+    fn trans(&self, generator: &mut DifferentialTrajectoryGenerator);
 }
 
-/// A trait for objects that can transform a [`DifferentialPathBuilder`]
-pub(super) trait DiffyGenerationTransformer:
-    InitializedDiffyGenerationTransformer + Sized
+/// A trait for objects that can transform a [`DifferentialTrajectoryGenerator`]
+pub(super) trait DifferentialGenerationTransformer:
+    InitializedDifferentialGenerationTransformer + Sized
 {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self>;
-    fn transform(&self, builder: &mut DifferentialPathBuilder);
+    fn transform(&self, generator: &mut DifferentialTrajectoryGenerator);
 }
 
-impl<T: DiffyGenerationTransformer> InitializedDiffyGenerationTransformer for T {
-    fn trans(&self, builder: &mut DifferentialPathBuilder) {
-        self.transform(builder);
+impl<T: DifferentialGenerationTransformer> InitializedDifferentialGenerationTransformer for T {
+    fn trans(&self, generator: &mut DifferentialTrajectoryGenerator) {
+        self.transform(generator);
     }
 }
 
-fn postprocess(result: &[Sample], mut path: TrajFile, counts_vec: Vec<usize>) -> TrajFile {
-    println!("Postprocessing");
-
+fn postprocess(
+    result: &[Sample],
+    mut path: TrajectoryFile,
+    project: ProjectFile,
+    counts_vec: Vec<usize>,
+) -> TrajectoryFile {
     let mut snapshot = path.params.snapshot();
     path.params
         .waypoints
@@ -235,7 +239,7 @@ fn postprocess(result: &[Sample], mut path: TrajFile, counts_vec: Vec<usize>) ->
             let total_intervals = interval;
             interval += pt.1.intervals;
             (
-                pt.1.split || pt.0 == 0 || pt.0 == snapshot.waypoints.len() - 1,
+                pt.0 == 0 || (pt.1.split && pt.0 != snapshot.waypoints.len() - 1),
                 total_intervals,
                 result.get(total_intervals).map_or(0.0, |s| match s {
                     Sample::Swerve { t, .. } => *t,
@@ -252,17 +256,10 @@ fn postprocess(result: &[Sample], mut path: TrajFile, counts_vec: Vec<usize>) ->
         .filter(|a| a.0) // filter by split flag
         .map(|a| a.1) // map to associate interval
         .collect::<Vec<usize>>();
-    path.traj.samples = splits
-        .windows(2) // get adjacent pairs of interval counts
-        .filter_map(|window| {
-            result
-                // grab the range including both endpoints,
-                // there are no bounds checks on this slice so be weary of crashes
-                .get((window[0])..=(window[1]))
-                .map(|slice| slice.to_vec())
-        })
-        .collect::<Vec<Vec<Sample>>>();
-    path.traj.waypoints = waypoint_times;
+    path.trajectory.sample_type = Some(project.r#type);
+    path.trajectory.splits = splits;
+    path.trajectory.samples = result.to_vec();
+    path.trajectory.waypoints = waypoint_times;
     path.snapshot = Some(snapshot);
     path
 }

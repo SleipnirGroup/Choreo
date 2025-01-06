@@ -89,7 +89,7 @@ class WaypointPanel extends Component<Props, State> {
               size="small"
               exclusive
               value={waypointType}
-              onChange={(e, newSelection) => {
+              onChange={(_e, newSelection) => {
                 waypoint?.setType(newSelection);
               }}
             >

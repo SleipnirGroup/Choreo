@@ -6,115 +6,7 @@ import {
 import { ConstraintKey } from "./ConstraintDefinitions";
 import { Env } from "./DocumentManager";
 import { IHolonomicWaypointStore } from "./HolonomicWaypointStore";
-import { IChoreoPathStore } from "./path/ChoreoPathStore";
-import { IHolonomicPathStore } from "./path/HolonomicPathStore";
-
-// export const constraints = {
-//   WptVelocityDirection: {
-//     name: "Waypoint Velocity Direction",
-//     shortName: "Wpt Velo Dir",
-//     description: "Direction of travel through waypoint",
-//     icon: <Explore />,
-//     properties: {
-//       direction: {
-//         name: "Direction",
-//         description: "The direction of velocity",
-//         units: Units.Radian
-//       }
-//     },
-//     wptScope: true,
-//     sgmtScope: false
-//   },
-//   StopPoint: {
-//     name: "Stop Point",
-//     shortName: "Stop Point",
-//     description: "Zero linear and angular velocity at waypoint",
-//     icon: <StopCircleOutlined></StopCircleOutlined>,
-//     properties: {},
-//     wptScope: true,
-//     sgmtScope: false
-//   },
-//   MaxVelocity: {
-//     name: "Max Velocity",
-//     shortName: "Max Velo",
-//     description: "Maximum Velocity",
-//     icon: <KeyboardDoubleArrowRight />,
-//     properties: {
-//       max: {
-//         name: "Max Velocity",
-//         description: "Maximum Velocity of robot chassis",
-//         units: Units.MeterPerSecond
-//       }
-//     },
-//     wptScope: true,
-//     sgmtScope: true
-//   },
-//   MaxAngularVelocity: {
-//     name: "Max Angular Velocity",
-//     shortName: "Max Ang Velo",
-//     description: "Maximum Angular Velocity",
-//     icon: <SyncOutlined />,
-//     properties: {
-//       max: {
-//         name: "Max Angular Velocity",
-//         description: "Maximum Angular Velocity of robot chassis",
-//         units: Units.RadianPerSecond
-//       }
-//     },
-//     wptScope: true,
-//     sgmtScope: true
-//   },
-//   MaxAcceleration: {
-//     name: "Max Acceleration",
-//     shortName: "Max Acc",
-//     description: "Maximum Linear Acceleration",
-//     icon: <TextRotationNoneOutlined />,
-//     properties: {
-//       max: {
-//         name: "Max Acceleration",
-//         description: "Maximum Linear Acceleration of robot chassis",
-//         units: Units.MeterPerSecondSquared
-//       }
-//     },
-//     wptScope: true,
-//     sgmtScope: true
-//   },
-//   StraightLine: {
-//     name: "Straight Line",
-//     shortName: "Straight Line",
-//     description: "Follow straight lines between waypoints",
-//     icon: <Timeline></Timeline>,
-//     properties: {},
-//     wptScope: false,
-//     sgmtScope: true
-//   },
-//   PointAt: {
-//     name: "Point At",
-//     shortName: "Point At",
-//     description: "Face a specified point",
-//     icon: <NearMe />,
-//     properties: {
-//       x: {
-//         name: "X",
-//         description: "The x coordinate of the point the robot should face",
-//         units: Units.Meter
-//       },
-//       y: {
-//         name: "Y",
-//         description: "The y coordinate of the point the robot should face",
-//         units: Units.Meter
-//       },
-//       tolerance: {
-//         name: "Heading Tolerance",
-//         description:
-//           "The allowable heading range relative to the direction to the point. Keep less than Pi.",
-//         units: Units.Radian
-//       }
-//     },
-//     wptScope: true,
-//     sgmtScope: true
-//   }
-// } satisfies { [key: string]: ConstraintDefinition };
+import { findUUIDIndex, getByWaypointID } from "./path/utils";
 
 export const WaypointScope = types.union(
   types.literal("first"),
@@ -133,6 +25,7 @@ export const ConstraintStore = types
   .model("ConstraintStore", {
     from: WaypointScope,
     to: types.maybe(WaypointScope),
+    enabled: types.boolean,
     data: types.union(...Object.values(ConstraintDataObjects)),
     uuid: types.identifier
   })
@@ -151,39 +44,39 @@ export const ConstraintStore = types
         return false;
       }
       return self.uuid === getEnv<Env>(self).selectedSidebar();
-    },
-    getPath(): IHolonomicPathStore {
-      const path: IHolonomicPathStore = getParent<IHolonomicPathStore>(
-        getParent<IChoreoPathStore>(getParent<IConstraintStore[]>(self))
-      );
-      return path;
     }
   }))
   .views((self) => ({
-    getStartWaypoint(): IHolonomicWaypointStore | undefined {
+    getStartWaypoint(
+      points: IHolonomicWaypointStore[]
+    ): IHolonomicWaypointStore | undefined {
       const startScope = self.from;
-      return self.getPath().params.getByWaypointID(startScope);
+      return getByWaypointID(startScope, points);
     },
-    getEndWaypoint(): IHolonomicWaypointStore | undefined {
+    getEndWaypoint(
+      points: IHolonomicWaypointStore[]
+    ): IHolonomicWaypointStore | undefined {
       const scope = self.to ?? self.from;
-      return self.getPath().params.getByWaypointID(scope);
+      return getByWaypointID(scope, points);
     }
   }))
   .views((self) => ({
-    getStartWaypointIndex(): number | undefined {
-      const waypoint = self.getStartWaypoint();
+    getStartWaypointIndex(
+      points: IHolonomicWaypointStore[]
+    ): number | undefined {
+      const waypoint = self.getStartWaypoint(points);
       if (waypoint === undefined) return undefined;
-      return self.getPath().params.findUUIDIndex(waypoint.uuid);
+      return findUUIDIndex(waypoint.uuid, points);
     },
-    getEndWaypointIndex(): number | undefined {
-      const waypoint = self.getEndWaypoint();
+    getEndWaypointIndex(points: IHolonomicWaypointStore[]): number | undefined {
+      const waypoint = self.getEndWaypoint(points);
       if (waypoint === undefined) return undefined;
-      return self.getPath().params.findUUIDIndex(waypoint.uuid);
+      return findUUIDIndex(waypoint.uuid, points);
     },
 
-    get issues() {
-      const startWaypoint = self.getStartWaypoint();
-      const endWaypoint = self.getEndWaypoint();
+    issues(points: IHolonomicWaypointStore[]) {
+      const startWaypoint = self.getStartWaypoint(points);
+      const endWaypoint = self.getEndWaypoint(points);
       const issueText = [];
 
       if (self.to !== undefined) {
@@ -214,13 +107,8 @@ export const ConstraintStore = types
           )
         );
       }
+    },
+    setEnabled(enabled: boolean) {
+      self.enabled = enabled;
     }
   }));
-// const constraintsStores: Partial<Record<ConstraintKey, typeof ConstraintStore>> = {};
-// Object.entries(constraints).forEach((entry) => {
-//   let key = entry[0] as ConstraintKey;
-//   constraintsStores[key] = defineConstraintStore(key, entry[1]);
-// });
-// Export constraint stores down here
-// export const ConstraintStores: Record<ConstraintKey, typeof ConstraintStore> =
-//   constraintsStores;

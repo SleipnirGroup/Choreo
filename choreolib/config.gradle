@@ -2,16 +2,14 @@ import org.gradle.internal.os.OperatingSystem
 
 nativeUtils.addWpiNativeUtils()
 nativeUtils.withCrossRoboRIO()
+nativeUtils.withCrossLinuxArm32()
+nativeUtils.withCrossLinuxArm64()
 
 nativeUtils {
     wpi {
         configureDependencies {
-            wpiVersion = "2024.+"
-            opencvYear = "frc2024"
-            googleTestYear = "frc2024"
-            niLibVersion = "2024.2.1"
-            opencvVersion = "4.8.0-2"
-            googleTestVersion = "1.14.0-1"
+            wpiVersion = "2025.+"
+            niLibVersion = "2025.0.0"
         }
     }
 }
@@ -27,12 +25,6 @@ nativeUtils.wpi.getVendorDeps().getNativeVendor().initializeNativeDependencies()
 nativeUtils.wpi.getVendorDeps().addVendorReposToMaven(false)
 
 model {
-    // Uncomment this, and remove lines below it to enable builds for just roborio
-    // components {
-    //     all {
-    //         targetPlatform nativeUtils.wpi.platforms.roborio
-    //     }
-    // }
     components {
         all {
             nativeUtils.useAllPlatforms(it)

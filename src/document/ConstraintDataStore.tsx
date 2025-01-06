@@ -6,7 +6,7 @@ import {
   ModelPropertiesDeclarationToProperties,
   types
 } from "mobx-state-tree";
-import { Expr } from "./2025/DocumentTypes";
+import { Expr, isExpr } from "./2025/DocumentTypes";
 import {
   ConstraintData,
   ConstraintDefinition,
@@ -78,8 +78,8 @@ function createDataStore<
   type PropertySetter = Setter<ConstraintPropertyType>;
   const setters: { [key: string]: PropertySetter } = {};
   // The function to serialize into a data object
-  let serialize: (self: any) => Partial<D["props"]> = (self) => ({});
-  let deserialize: (self: any, data: D["props"]) => void = (self, data) => {};
+  let serialize: (self: any) => Partial<D["props"]> = (_self) => ({});
+  let deserialize: (self: any, data: D["props"]) => void = (_self, _data) => {};
   let deserPartial: (self: any, data: Partial<D["props"]>) => void = (
     self,
     data
@@ -92,12 +92,7 @@ function createDataStore<
     const oldSerialize = serialize;
     const oldDeserialize = deserialize;
     const oldDeserPartial = deserPartial;
-    if (
-      Array.isArray(defau) &&
-      typeof defau[0] === "string" &&
-      typeof defau[1] === "number" &&
-      defau.length === 2
-    ) {
+    if (isExpr(defau)) {
       //@ts-expect-error not assignable
       props[key] = ExpressionStore as lookup<Expr>;
       setters[settername] = (self: any) => (arg: Expr) => {
@@ -205,7 +200,7 @@ export function defineCreateConstraintData<
         def.properties[
           key as keyof PropertyDefinitionList<DataMap[K]["props"]>
         ];
-      if (Array.isArray(prop.defaultVal)) {
+      if (isExpr(prop.defaultVal)) {
         const exprProp = prop as ConstraintPropertyDefinition<Expr>;
         snapshot[key as keyof P] = vars().createExpression(
           exprProp.defaultVal,

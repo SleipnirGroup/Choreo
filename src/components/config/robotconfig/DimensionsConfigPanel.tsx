@@ -36,7 +36,7 @@ class RobotConfigPanel extends Component<Props, State> {
           roundingPrecision={3}
           number={config.bumper.front}
           maxWidthCharacters={8}
-          titleTooltip="Width of robot with bumpers on"
+          titleTooltip="Distance from robot center to front bumper edge"
         />
 
         <ExpressionInput
@@ -45,107 +45,17 @@ class RobotConfigPanel extends Component<Props, State> {
           roundingPrecision={3}
           number={config.bumper.back}
           maxWidthCharacters={8}
-          titleTooltip="Length of robot with bumpers on"
+          titleTooltip="Distance from robot center to back bumper edge"
         />
 
         <ExpressionInput
-          title="Bumper Left"
+          title="Bumper Side"
           enabled={true}
           roundingPrecision={3}
-          number={config.bumper.left}
+          number={config.bumper.side}
           maxWidthCharacters={8}
-          titleTooltip="Width of robot with bumpers on"
+          titleTooltip="Distance from robot center to bumper side edge"
         />
-        {doc.type === "Swerve" ? (
-          <>
-            <ExpressionInput
-              title="Bumper Right"
-              enabled={true}
-              roundingPrecision={3}
-              number={config.bumper.right}
-              maxWidthCharacters={8}
-              titleTooltip="Length of robot with bumpers on"
-            />
-
-            <ExpressionInput
-              title="FL.X"
-              enabled={true}
-              roundingPrecision={3}
-              number={config.modules[0].x}
-              maxWidthCharacters={8}
-              titleTooltip="Front-back distance between wheel centers"
-            />
-
-            <ExpressionInput
-              title="FL.Y"
-              enabled={true}
-              roundingPrecision={3}
-              number={config.modules[0].y}
-              maxWidthCharacters={8}
-              titleTooltip="Front-back distance between wheel centers"
-            />
-            <ExpressionInput
-              title="BL.X"
-              enabled={true}
-              roundingPrecision={3}
-              number={config.modules[1].x}
-              maxWidthCharacters={8}
-              titleTooltip="Front-back distance between wheel centers"
-            />
-
-            <ExpressionInput
-              title="BL.Y"
-              enabled={true}
-              roundingPrecision={3}
-              number={config.modules[1].y}
-              maxWidthCharacters={8}
-              titleTooltip="Front-back distance between wheel centers"
-            />
-            <ExpressionInput
-              title="BR.X"
-              enabled={true}
-              roundingPrecision={3}
-              number={config.modules[2].x}
-              maxWidthCharacters={8}
-              titleTooltip="Front-back distance between wheel centers"
-            />
-
-            <ExpressionInput
-              title="BR.Y"
-              enabled={true}
-              roundingPrecision={3}
-              number={config.modules[2].y}
-              maxWidthCharacters={8}
-              titleTooltip="Front-back distance between wheel centers"
-            />
-            <ExpressionInput
-              title="FR.X"
-              enabled={true}
-              roundingPrecision={3}
-              number={config.modules[3].x}
-              maxWidthCharacters={8}
-              titleTooltip="Front-back distance between wheel centers"
-            />
-
-            <ExpressionInput
-              title="FR.Y"
-              enabled={true}
-              roundingPrecision={3}
-              number={config.modules[3].y}
-              maxWidthCharacters={8}
-              titleTooltip="Front-back distance between wheel centers"
-            />
-          </>
-        ) : (
-          <ExpressionInput
-            title="Half Trackwidth"
-            enabled={true}
-            roundingPrecision={3}
-            number={config.modules[1].y}
-            maxWidthCharacters={8}
-            titleTooltip="Distance from robot center to one wheel row"
-          />
-        )}
       </ExpressionInputList>
     );
   }

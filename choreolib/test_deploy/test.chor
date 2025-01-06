@@ -1,0 +1,30 @@
+{
+ "name":"idk",
+ "version":"v2025.0.0",
+ "type":"Swerve",
+ "variables":{
+  "expressions":{},
+  "poses":{}
+ },
+ "config":{
+  "modules":[
+    {"x":["11 in",0.2794], "y":["11 in",0.2794]},
+    {"x":["-11 in",-0.2794], "y":["11 in",0.2794]},
+    {"x":["-11 in",-0.2794], "y":["-11 in",-0.2794]},
+    {"x":["11 in",0.2794], "y":["-11 in",-0.2794]}],
+  "mass":["150 lbs",68.0388555],
+  "inertia":["6 kg m ^ 2",6.0],
+  "gearing":["6.5",6.5],
+  "radius":["2 in",0.0508],
+  "vmax":["6000 RPM",628.3185307179587],
+  "tmax":["1.2 N * m",1.2],
+  "bumper":{
+   "front":["16 in",0.4064],
+   "left":["16 in",0.4064],
+   "back":["16 in",0.4064],
+   "right":["16 in",0.4064]
+  },
+  "differentialTrackWidth":["24 in",0.6096],
+ },
+ "generationFeatures":[]
+}

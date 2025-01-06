@@ -1,14 +1,15 @@
 {
   "build": {
-    "beforeDevCommand": "node build_cli.cjs && pnpm run dev",
-    "beforeBuildCommand": "node build_cli.cjs && pnpm run build",
+    "beforeDevCommand": "vite",
+    "beforeBuildCommand": "vite build",
+    "beforeBundleCommand": "node copy-sidecar.cjs choreo-cli ./target",
     "devPath": "http://localhost:1420",
     "distDir": "../dist",
     "withGlobalTauri": false
   },
   "package": {
     "productName": "Choreo",
-    "version": "2025.0.0-beta"
+    "version": "2025.0.0"
   },
   "tauri": {
     "allowlist": {
@@ -53,7 +54,7 @@
         "minimumSystemVersion": "13.3",
         "signingIdentity": "-"
       },
-      "externalBin": ["../cli/choreo-cli"]
+      "externalBin": ["../target/choreo-cli"]
     },
     "security": {
       "csp": null
@@ -62,7 +63,7 @@
       {
         "fullscreen": false,
         "resizable": true,
-        "title": "Choreo v2025.0.0-beta",
+        "title": "Choreo v2025.0.0",
         "width": 1200,
         "height": 800
       }
