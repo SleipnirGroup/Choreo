@@ -1,10 +1,12 @@
 from math import pi
 
 from choreo.trajectory import DifferentialSample, SwerveSample
+from choreo.util import field_dimensions
 
-FIELD_LENGTH_2022 = 16.5811
-FIELD_LENGTH_2024 = 16.5811
-FIELD_WIDTH_2022 = 8.19912
+# Not accurate, but ChoreoLib doesn't actually keep old field dimensions
+FIELD_LENGTH_2022 = field_dimensions.FIELD_LENGTH
+FIELD_LENGTH_2024 = field_dimensions.FIELD_LENGTH
+FIELD_WIDTH_2022 = field_dimensions.FIELD_WIDTH
 
 
 def test_swerve_sample():

@@ -2,6 +2,9 @@
 
 package choreo.util;
 
+import static choreo.util.FieldDimensions.FIELD_LENGTH;
+import static choreo.util.FieldDimensions.FIELD_WIDTH;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -95,10 +98,11 @@ public class ChoreoAllianceFlipUtil {
           put(2022, new YearInfo(Flipper.ROTATE_AROUND, 16.5811, 8.19912));
           put(2023, new YearInfo(Flipper.MIRRORED, 16.5811, 8.19912));
           put(2024, new YearInfo(Flipper.MIRRORED, 16.5811, 8.19912));
+          put(2025, new YearInfo(Flipper.ROTATE_AROUND, FIELD_LENGTH, FIELD_WIDTH));
         }
       };
 
-  private static YearInfo activeYear = flipperMap.get(2024);
+  private static YearInfo activeYear = flipperMap.get(2025);
 
   /** Default constructor. */
   private ChoreoAllianceFlipUtil() {}
