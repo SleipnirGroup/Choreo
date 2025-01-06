@@ -32,22 +32,10 @@ export default class FieldImage2024 extends Component<Props, State> {
         >
           <g id="Field-Tape">
             <g transform="matrix(0.294118,0,0,1.35781,1045.71,-416.354)">
-              <rect
-                x="1582"
-                y="302"
-                width="34"
-                height="1195"
-                fill={gray}
-              />
+              <rect x="1582" y="302" width="34" height="1195" fill={gray} />
             </g>
             <g transform="matrix(0.294118,0,0,1.35781,1523.71,-416.354)">
-              <rect
-                x="1582"
-                y="302"
-                width="34"
-                height="1195"
-                fill={gray}
-              />
+              <rect x="1582" y="302" width="34" height="1195" fill={gray} />
             </g>
           </g>
           <g id="Blue-Barge">
@@ -86,13 +74,7 @@ export default class FieldImage2024 extends Component<Props, State> {
             id="Barge-Truss"
             transform="matrix(1.17172,0,0,1.17172,-301.949,-139.99)"
           >
-            <rect
-              x="1706"
-              y="757"
-              width="99"
-              height="99"
-              fill={gray}
-            />
+            <rect x="1706" y="757" width="99" height="99" fill={gray} />
             <path
               d="M1805,757L1805,856L1706,856L1706,757L1805,757ZM1766.46,795.539C1766.46,795.539 1744.54,795.539 1744.54,795.539C1744.54,795.539 1744.54,817.461 1744.54,817.461C1744.54,817.461 1766.46,817.461 1766.46,817.461L1766.46,795.539Z"
               fill={gray}
@@ -132,22 +114,10 @@ export default class FieldImage2024 extends Component<Props, State> {
           </g>
           <g id="Field-Outline">
             <g transform="matrix(0.474266,-0.344575,0.172878,0.237946,-94.6479,227.074)">
-              <rect
-                x="101"
-                y="220"
-                width="739"
-                height="34"
-                fill={white}
-              />
+              <rect x="101" y="220" width="739" height="34" fill={white} />
             </g>
             <g transform="matrix(0.465208,-0.337993,0.172878,0.237946,3072.24,1577.47)">
-              <rect
-                x="101"
-                y="284"
-                width="739"
-                height="34"
-                fill={white}
-              />
+              <rect x="101" y="284" width="739" height="34" fill={white} />
             </g>
             {/* blue wall */}
             <g transform="matrix(0.24541,0,0,1.37423,-33.3757,-227.979)">
@@ -170,98 +140,38 @@ export default class FieldImage2024 extends Component<Props, State> {
               />
             </g>
             <g transform="matrix(2.03376,0,0,0.142857,-2053.87,1446.71)">
-              <rect
-                x="1175"
-                y="1143"
-                width="1396"
-                height="70"
-                fill={white}
-              />
+              <rect x="1175" y="1143" width="1396" height="70" fill={white} />
             </g>
             <g transform="matrix(2.02514,0,0,0.142857,-2037.72,-153.286)">
-              <rect
-                x="1175"
-                y="1003"
-                width="1396"
-                height="70"
-                fill={white}
-              />
+              <rect x="1175" y="1003" width="1396" height="70" fill={white} />
             </g>
             <g transform="matrix(-0.473797,-0.344234,0.172878,-0.237946,3510.9,355.756)">
-              <rect
-                x="101"
-                y="284"
-                width="739"
-                height="34"
-                fill={white}
-              />
+              <rect x="101" y="284" width="739" height="34" fill={white} />
             </g>
             <g transform="matrix(-0.466225,-0.338733,0.172878,-0.237946,344.914,1707.06)">
-              <rect
-                x="103"
-                y="220"
-                width="735"
-                height="34"
-                fill={white}
-              />
+              <rect x="103" y="220" width="735" height="34" fill={white} />
             </g>
           </g>
           <g id="Blue-Algae">
             <g transform="matrix(0.911111,0,0,1.01235,-0.177778,46.2469)">
-              <ellipse
-                cx="268"
-                cy="749.5"
-                rx="45"
-                ry="40.5"
-                fill={green}
-              />
+              <ellipse cx="268" cy="749.5" rx="45" ry="40.5" fill={green} />
             </g>
             <g transform="matrix(0.911111,0,0,1.01235,-0.177778,412.247)">
-              <ellipse
-                cx="268"
-                cy="749.5"
-                rx="45"
-                ry="40.5"
-                fill={green}
-              />
+              <ellipse cx="268" cy="749.5" rx="45" ry="40.5" fill={green} />
             </g>
             <g transform="matrix(0.911111,0,0,1.01235,-0.177778,-319.753)">
-              <ellipse
-                cx="268"
-                cy="749.5"
-                rx="45"
-                ry="40.5"
-                fill={green}
-              />
+              <ellipse cx="268" cy="749.5" rx="45" ry="40.5" fill={green} />
             </g>
           </g>
           <g id="Red-Algae" transform="matrix(1,0,0,1,3022,5.68434e-14)">
             <g transform="matrix(0.911111,0,0,1.01235,-0.177778,46.2469)">
-              <ellipse
-                cx="268"
-                cy="749.5"
-                rx="45"
-                ry="40.5"
-                fill={green}
-              />
+              <ellipse cx="268" cy="749.5" rx="45" ry="40.5" fill={green} />
             </g>
             <g transform="matrix(0.911111,0,0,1.01235,-0.177778,412.247)">
-              <ellipse
-                cx="268"
-                cy="749.5"
-                rx="45"
-                ry="40.5"
-                fill={green}
-              />
+              <ellipse cx="268" cy="749.5" rx="45" ry="40.5" fill={green} />
             </g>
             <g transform="matrix(0.911111,0,0,1.01235,-0.177778,-319.753)">
-              <ellipse
-                cx="268"
-                cy="749.5"
-                rx="45"
-                ry="40.5"
-                fill={green}
-              />
+              <ellipse cx="268" cy="749.5" rx="45" ry="40.5" fill={green} />
             </g>
           </g>
           <g id="Blue-Reef">
@@ -287,13 +197,7 @@ export default class FieldImage2024 extends Component<Props, State> {
             </g>
             <g id="Reef-Algae">
               <g transform="matrix(0.911111,0,0,1.01235,790.222,46.2469)">
-                <ellipse
-                  cx="268"
-                  cy="749.5"
-                  rx="45"
-                  ry="40.5"
-                  fill={green}
-                />
+                <ellipse cx="268" cy="749.5" rx="45" ry="40.5" fill={green} />
               </g>
               <g transform="matrix(1.16667,0,0,1,-173.267,-2)">
                 <path
@@ -310,13 +214,7 @@ export default class FieldImage2024 extends Component<Props, State> {
             </g>
             <g id="Reef-Algae1">
               <g transform="matrix(0.911111,0,0,1.01235,516.422,46.2469)">
-                <ellipse
-                  cx="268"
-                  cy="749.5"
-                  rx="45"
-                  ry="40.5"
-                  fill={green}
-                />
+                <ellipse cx="268" cy="749.5" rx="45" ry="40.5" fill={green} />
               </g>
               <g transform="matrix(1.16667,0,0,1,-435.067,-2)">
                 <path
@@ -336,13 +234,7 @@ export default class FieldImage2024 extends Component<Props, State> {
               transform="matrix(0.5,-0.866025,0.866025,0.5,-248.4,1179.76)"
             >
               <g transform="matrix(0.911111,0,0,1.01235,790.222,46.2469)">
-                <ellipse
-                  cx="268"
-                  cy="749.5"
-                  rx="45"
-                  ry="40.5"
-                  fill={green}
-                />
+                <ellipse cx="268" cy="749.5" rx="45" ry="40.5" fill={green} />
               </g>
               <g transform="matrix(1.16667,0,0,1,-173.267,-2)">
                 <path
@@ -362,13 +254,7 @@ export default class FieldImage2024 extends Component<Props, State> {
               transform="matrix(0.5,-0.866025,0.866025,0.5,-248.4,1179.76)"
             >
               <g transform="matrix(0.911111,0,0,1.01235,516.422,46.2469)">
-                <ellipse
-                  cx="268"
-                  cy="749.5"
-                  rx="45"
-                  ry="40.5"
-                  fill={green}
-                />
+                <ellipse cx="268" cy="749.5" rx="45" ry="40.5" fill={green} />
               </g>
               <g transform="matrix(1.16667,0,0,1,-435.067,-2)">
                 <path
@@ -388,13 +274,7 @@ export default class FieldImage2024 extends Component<Props, State> {
               transform="matrix(0.5,0.866025,-0.866025,0.5,1145.9,-374.758)"
             >
               <g transform="matrix(0.911111,0,0,1.01235,790.222,46.2469)">
-                <ellipse
-                  cx="268"
-                  cy="749.5"
-                  rx="45"
-                  ry="40.5"
-                  fill={green}
-                />
+                <ellipse cx="268" cy="749.5" rx="45" ry="40.5" fill={green} />
               </g>
               <g transform="matrix(1.16667,0,0,1,-173.267,-2)">
                 <path
@@ -414,13 +294,7 @@ export default class FieldImage2024 extends Component<Props, State> {
               transform="matrix(0.5,0.866025,-0.866025,0.5,1145.9,-374.758)"
             >
               <g transform="matrix(0.911111,0,0,1.01235,516.422,46.2469)">
-                <ellipse
-                  cx="268"
-                  cy="749.5"
-                  rx="45"
-                  ry="40.5"
-                  fill={green}
-                />
+                <ellipse cx="268" cy="749.5" rx="45" ry="40.5" fill={green} />
               </g>
               <g transform="matrix(1.16667,0,0,1,-435.067,-2)">
                 <path
@@ -459,13 +333,7 @@ export default class FieldImage2024 extends Component<Props, State> {
             </g>
             <g id="Reef-Algae6">
               <g transform="matrix(0.911111,0,0,1.01235,790.222,46.2469)">
-                <ellipse
-                  cx="268"
-                  cy="749.5"
-                  rx="45"
-                  ry="40.5"
-                  fill={green}
-                />
+                <ellipse cx="268" cy="749.5" rx="45" ry="40.5" fill={green} />
               </g>
               <g transform="matrix(1.16667,0,0,1,-173.267,-2)">
                 <path
@@ -482,13 +350,7 @@ export default class FieldImage2024 extends Component<Props, State> {
             </g>
             <g id="Reef-Algae7">
               <g transform="matrix(0.911111,0,0,1.01235,516.422,46.2469)">
-                <ellipse
-                  cx="268"
-                  cy="749.5"
-                  rx="45"
-                  ry="40.5"
-                  fill={green}
-                />
+                <ellipse cx="268" cy="749.5" rx="45" ry="40.5" fill={green} />
               </g>
               <g transform="matrix(1.16667,0,0,1,-435.067,-2)">
                 <path
@@ -508,13 +370,7 @@ export default class FieldImage2024 extends Component<Props, State> {
               transform="matrix(0.5,-0.866025,0.866025,0.5,-248.4,1179.76)"
             >
               <g transform="matrix(0.911111,0,0,1.01235,790.222,46.2469)">
-                <ellipse
-                  cx="268"
-                  cy="749.5"
-                  rx="45"
-                  ry="40.5"
-                  fill={green}
-                />
+                <ellipse cx="268" cy="749.5" rx="45" ry="40.5" fill={green} />
               </g>
               <g transform="matrix(1.16667,0,0,1,-173.267,-2)">
                 <path
@@ -534,13 +390,7 @@ export default class FieldImage2024 extends Component<Props, State> {
               transform="matrix(0.5,-0.866025,0.866025,0.5,-248.4,1179.76)"
             >
               <g transform="matrix(0.911111,0,0,1.01235,516.422,46.2469)">
-                <ellipse
-                  cx="268"
-                  cy="749.5"
-                  rx="45"
-                  ry="40.5"
-                  fill={green}
-                />
+                <ellipse cx="268" cy="749.5" rx="45" ry="40.5" fill={green} />
               </g>
               <g transform="matrix(1.16667,0,0,1,-435.067,-2)">
                 <path
@@ -560,13 +410,7 @@ export default class FieldImage2024 extends Component<Props, State> {
               transform="matrix(0.5,0.866025,-0.866025,0.5,1145.9,-374.758)"
             >
               <g transform="matrix(0.911111,0,0,1.01235,790.222,46.2469)">
-                <ellipse
-                  cx="268"
-                  cy="749.5"
-                  rx="45"
-                  ry="40.5"
-                  fill={green}
-                />
+                <ellipse cx="268" cy="749.5" rx="45" ry="40.5" fill={green} />
               </g>
               <g transform="matrix(1.16667,0,0,1,-173.267,-2)">
                 <path
@@ -586,13 +430,7 @@ export default class FieldImage2024 extends Component<Props, State> {
               transform="matrix(0.5,0.866025,-0.866025,0.5,1145.9,-374.758)"
             >
               <g transform="matrix(0.911111,0,0,1.01235,516.422,46.2469)">
-                <ellipse
-                  cx="268"
-                  cy="749.5"
-                  rx="45"
-                  ry="40.5"
-                  fill={green}
-                />
+                <ellipse cx="268" cy="749.5" rx="45" ry="40.5" fill={green} />
               </g>
               <g transform="matrix(1.16667,0,0,1,-435.067,-2)">
                 <path
@@ -610,22 +448,10 @@ export default class FieldImage2024 extends Component<Props, State> {
           </g>
           <g id="Processors">
             <g transform="matrix(0.265918,0,0,0.322581,1661.81,-9.03226)">
-              <rect
-                x="2148"
-                y="29"
-                width="534"
-                height="31"
-                fill={gray}
-              />
+              <rect x="2148" y="29" width="534" height="31" fill={gray} />
             </g>
             <g transform="matrix(0.265918,0,0,0.322581,625.809,1570.97)">
-              <rect
-                x="2148"
-                y="90"
-                width="534"
-                height="31"
-                fill={gray}
-              />
+              <rect x="2148" y="90" width="534" height="31" fill={gray} />
             </g>
           </g>{" "}
           <use
