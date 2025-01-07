@@ -19,7 +19,6 @@ import { deletePath, doc, renamePath } from "../../document/DocumentManager";
 import styles from "./Sidebar.module.css";
 import ExpressionInput from "../input/ExpressionInput";
 import ExpressionInputList from "../input/ExpressionInputList";
-import { IPathUIStore } from "../../document/path/PathUIStore";
 
 type Props = object;
 
@@ -102,8 +101,8 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
   }
   completeRename() {
     if (!this.checkName()) {
-      let newName = this.nameInputRef.current!.value;
-      if (newName !== this.getPath().name || true) {
+      const newName = this.nameInputRef.current!.value;
+      if (newName !== this.getPath().name) {
         renamePath(this.props.uuid, newName);
       }
     }
