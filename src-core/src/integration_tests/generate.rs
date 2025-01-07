@@ -1,9 +1,7 @@
 #[cfg(test)]
 mod generate {
     use std::fs;
-    use std::{
-        path::PathBuf
-    };
+    use std::path::PathBuf;
 
     use crate::{
         file_management::{self, WritingResources},
@@ -34,13 +32,17 @@ mod generate {
         fs::copy(original_traj.clone(), test_traj.clone()).unwrap();
         let resources = WritingResources::new();
         // if this succeeds, modified generated .traj is written to test_traj
-        assert!(generate_trajectories(&resources, &test_chor.clone(), drive_type.to_string()).await);
+        assert!(
+            generate_trajectories(&resources, &test_chor.clone(), drive_type.to_string()).await
+        );
         // Generation should be identical IF on the same platform
         // so we compare before/after the second generation
         // this also checks that the first one produced a loadable .traj
         let traj_after_first = fs::read_to_string(test_traj.clone()).unwrap();
         let chor_after_first = fs::read_to_string(test_chor.clone()).unwrap();
-        assert!(generate_trajectories(&resources, &test_chor.clone(), drive_type.to_string()).await);
+        assert!(
+            generate_trajectories(&resources, &test_chor.clone(), drive_type.to_string()).await
+        );
         let traj_after_second = fs::read_to_string(test_traj.clone()).unwrap();
         let chor_after_second = fs::read_to_string(test_chor.clone()).unwrap();
         assert!(traj_after_first == traj_after_second);
@@ -52,7 +54,7 @@ mod generate {
         resources: &WritingResources,
         project_path: &PathBuf,
         trajectory_name: String,
-    )-> bool {
+    ) -> bool {
         file_management::set_deploy_path(
             &resources,
             project_path
@@ -94,43 +96,41 @@ mod generate {
             let cln_resources = resources.clone();
             let cln_trajectory_name = trajectory_name.clone();
             match generate(cln_project.clone(), trajectory, 0) {
-                        Ok(new_trajectory) => {
-                            let write_result =
-                                file_management::write_trajectory_file_immediately(
-                                    &cln_resources,
-                                    new_trajectory,
-                                ).await
-                            ;
-                            let ok = write_result.is_ok();
-                            match write_result {
-                                Ok(_) => {
-                                    tracing::info!(
-                                        "Successfully generated trajectory {:} for {:}",
-                                        cln_trajectory_name,
-                                        cln_project.name
-                                    );
-                                }
-                                Err(e) => {
-                                    tracing::error!(
-                                        "Failed to write trajectory {:} for {:}: {:}",
-                                        cln_trajectory_name,
-                                        cln_project.name,
-                                        e
-                                    );
-                                }
-                            }
-                            ok
-                            
+                Ok(new_trajectory) => {
+                    let write_result = file_management::write_trajectory_file_immediately(
+                        &cln_resources,
+                        new_trajectory,
+                    )
+                    .await;
+                    let ok = write_result.is_ok();
+                    match write_result {
+                        Ok(_) => {
+                            tracing::info!(
+                                "Successfully generated trajectory {:} for {:}",
+                                cln_trajectory_name,
+                                cln_project.name
+                            );
                         }
                         Err(e) => {
                             tracing::error!(
-                                "Failed to generate trajectory {:}: {:}",
+                                "Failed to write trajectory {:} for {:}: {:}",
                                 cln_trajectory_name,
+                                cln_project.name,
                                 e
                             );
-                            false
                         }
                     }
+                    ok
+                }
+                Err(e) => {
+                    tracing::error!(
+                        "Failed to generate trajectory {:}: {:}",
+                        cln_trajectory_name,
+                        e
+                    );
+                    false
+                }
+            }
+        }
     }
-}
 }
