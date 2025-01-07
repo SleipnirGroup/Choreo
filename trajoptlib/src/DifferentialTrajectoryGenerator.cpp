@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <cmath>
 #include <ranges>
-#include <utility>
 #include <vector>
 
 #include <sleipnir/autodiff/Variable.hpp>
@@ -120,7 +119,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   Fl.reserve(sampTot);
   Fr.reserve(sampTot);
 
-  dts.reserve(sgmtCnt);
+  dts.reserve(sampTot);
 
   for (size_t index = 0; index < sampTot; ++index) {
     x.emplace_back(problem.DecisionVariable());
@@ -133,14 +132,11 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
 
     Fl.emplace_back(problem.DecisionVariable());
     Fr.emplace_back(problem.DecisionVariable());
-  }
 
-  for (size_t sgmtIndex = 0; sgmtIndex < sgmtCnt; ++sgmtIndex) {
     dts.emplace_back(problem.DecisionVariable());
   }
 
   // Minimize total time
-  sleipnir::Variable T_tot = 0;
   const double maxForce =
       path.drivetrain.wheelMaxTorque * 2 / path.drivetrain.wheelRadius;
   const auto maxAccel = maxForce / path.drivetrain.mass;
@@ -149,21 +145,16 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   const auto maxAngVel = maxDrivetrainVelocity * 2 / path.drivetrain.trackwidth;
   const auto maxAngAccel = maxAccel * 2 / path.drivetrain.trackwidth;
   for (size_t sgmtIndex = 0; sgmtIndex < Ns.size(); ++sgmtIndex) {
-    auto& dt = dts.at(sgmtIndex);
     auto N_sgmt = Ns.at(sgmtIndex);
-    auto T_sgmt = dt * static_cast<int>(N_sgmt);
-    T_tot += T_sgmt;
+    const auto sgmt_start = GetIndex(Ns, sgmtIndex);
+    const auto sgmt_end = GetIndex(Ns, sgmtIndex + 1);
 
-    problem.SubjectTo(dt >= 0);
-    problem.SubjectTo(dt * path.drivetrain.wheelRadius *
-                          path.drivetrain.wheelMaxAngularVelocity <=
-                      path.drivetrain.trackwidth);
     if (N_sgmt == 0) {
-      dt.SetValue(0);
+      for (size_t index = sgmt_start; index < sgmt_end + 1; ++index) {
+        dts.at(index).SetValue(0.0);
+      }
     } else {
       // Use initialGuess and Ns to find the dx, dy, dθ between wpts
-      const auto sgmt_start = GetIndex(Ns, sgmtIndex);
-      const auto sgmt_end = GetIndex(Ns, sgmtIndex + 1);
       const auto dx =
           initialGuess.x.at(sgmt_end) - initialGuess.x.at(sgmt_start);
       const auto dy =
@@ -183,15 +174,20 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
           CalculateTrapezoidalTime(dist, maxLinearVel, maxAccel);
       const double sgmtTime = angularTime + linearTime;
 
-      dt.SetValue(sgmtTime / N_sgmt);
+      for (size_t index = sgmt_start; index < sgmt_end + 1; ++index) {
+        auto& dt = dts.at(index);
+        problem.SubjectTo(dt >= 0);
+        problem.SubjectTo(dt <= 3);
+        dt.SetValue(sgmtTime / N_sgmt);
+      }
     }
   }
-  problem.Minimize(std::move(T_tot));
+  problem.Minimize(
+      std::accumulate(dts.begin(), dts.end(), sleipnir::Variable{0.0}));
 
   // Apply dynamics constraints
   for (size_t wptIndex = 0; wptIndex < wptCnt - 1; ++wptIndex) {
     size_t N_sgmt = Ns.at(wptIndex);
-    auto dt = dts.at(wptIndex);
 
     for (size_t sampleIndex = 0; sampleIndex < N_sgmt; ++sampleIndex) {
       size_t index = GetIndex(Ns, wptIndex, sampleIndex);
@@ -210,13 +206,20 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
                                 {vr.at(index + 1)}};
       slp::VariableMatrix u_k_1{{Fl.at(index + 1)}, {Fr.at(index + 1)}};
 
+      auto dt_k = dts.at(index);
+      if (sampleIndex < N_sgmt - 1) {
+        auto dt_k_1 = dts.at(index + 1);
+        problem.SubjectTo(dt_k_1 == dt_k);
+      }
+
       // Dynamics constraints - direct collocation
       // (https://mec560sbu.github.io/2016/09/30/direct_collocation/)
       auto xdot_k = f(x_k, u_k);
       auto xdot_k_1 = f(x_k_1, u_k_1);
-      auto xdot_c = -3 / (2 * dt) * (x_k - x_k_1) - 0.25 * (xdot_k + xdot_k_1);
+      auto xdot_c =
+          -3 / (2 * dt_k) * (x_k - x_k_1) - 0.25 * (xdot_k + xdot_k_1);
 
-      auto x_c = 0.5 * (x_k + x_k_1) + dt / 8 * (xdot_k - xdot_k_1);
+      auto x_c = 0.5 * (x_k + x_k_1) + dt_k / 8 * (xdot_k - xdot_k_1);
       auto u_c = 0.5 * (u_k + u_k_1);
 
       problem.SubjectTo(xdot_c == f(x_c, u_c));
@@ -355,17 +358,6 @@ void DifferentialTrajectoryGenerator::ApplyInitialGuess(
 
 DifferentialSolution
 DifferentialTrajectoryGenerator::ConstructDifferentialSolution() {
-  std::vector<double> dtPerSample;
-  for (size_t sgmtIndex = 0; sgmtIndex < Ns.size(); ++sgmtIndex) {
-    auto N = Ns.at(sgmtIndex);
-    auto dt = dts.at(sgmtIndex);
-
-    double dt_value = dt.Value();
-    for (size_t i = 0; i < N; ++i) {
-      dtPerSample.push_back(dt_value);
-    }
-  }
-
   auto getValue = [](auto& var) { return var.Value(); };
 
   // TODO: Use std::ranges::to() from C++23
@@ -379,7 +371,7 @@ DifferentialTrajectoryGenerator::ConstructDifferentialSolution() {
     ω.push_back((vr.at(sample).Value() - vl.at(sample).Value()) / trackwidth);
   }
   return DifferentialSolution{
-      dtPerSample,
+      vectorValue(dts),
       vectorValue(x),
       vectorValue(y),
       vectorValue(θ),
