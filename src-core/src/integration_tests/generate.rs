@@ -2,8 +2,7 @@
 mod generate {
     use std::fs;
     use std::{
-        path::PathBuf,
-        thread::{self, JoinHandle},
+        path::PathBuf
     };
 
     use crate::{
@@ -35,13 +34,13 @@ mod generate {
         fs::copy(original_traj.clone(), test_traj.clone()).unwrap();
         let resources = WritingResources::new();
         // if this succeeds, modified generated .traj is written to test_traj
-        generate_trajectories(&resources, &test_chor.clone(), vec![drive_type.to_string()]).await;
+        assert!(generate_trajectories(&resources, &test_chor.clone(), drive_type.to_string()).await);
         // Generation should be identical IF on the same platform
         // so we compare before/after the second generation
         // this also checks that the first one produced a loadable .traj
         let traj_after_first = fs::read_to_string(test_traj.clone()).unwrap();
         let chor_after_first = fs::read_to_string(test_chor.clone()).unwrap();
-        generate_trajectories(&resources, &test_chor.clone(), vec![drive_type.to_string()]).await;
+        assert!(generate_trajectories(&resources, &test_chor.clone(), drive_type.to_string()).await);
         let traj_after_second = fs::read_to_string(test_traj.clone()).unwrap();
         let chor_after_second = fs::read_to_string(test_chor.clone()).unwrap();
         assert!(traj_after_first == traj_after_second);
@@ -52,8 +51,8 @@ mod generate {
     async fn generate_trajectories(
         resources: &WritingResources,
         project_path: &PathBuf,
-        mut trajectory_names: Vec<String>,
-    ) {
+        trajectory_name: String,
+    )-> bool {
         file_management::set_deploy_path(
             &resources,
             project_path
@@ -78,19 +77,8 @@ mod generate {
         // ADDED: Cli doesn't write the upgraded project, but we want to test the project file writing
         file_management::write_projectfile(&resources, project.clone()).await;
 
-        if trajectory_names.is_empty() {
-            trajectory_names = file_management::find_all_trajectories(&resources).await;
-        }
-
-        if trajectory_names.is_empty() {
-            tracing::error!("No trajectories found in the project directory");
-            return;
-        }
-
-        let mut thread_handles: Vec<JoinHandle<()>> = Vec::new();
-
         // generate trajectories
-        for (i, trajectory_name) in trajectory_names.iter().enumerate() {
+        {
             tracing::info!(
                 "Generating trajectory {:} for {:}",
                 trajectory_name,
@@ -105,20 +93,15 @@ mod generate {
             let cln_project = project.clone();
             let cln_resources = resources.clone();
             let cln_trajectory_name = trajectory_name.clone();
-            let handle =
-                thread::spawn(
-                    move || match generate(cln_project.clone(), trajectory, i as i64) {
+            match generate(cln_project.clone(), trajectory, 0) {
                         Ok(new_trajectory) => {
-                            let runtime = crate::tokio::runtime::Builder::new_current_thread()
-                                .enable_all()
-                                .build()
-                                .expect("Failed to build tokio runtime");
-                            let write_result = runtime.block_on(
+                            let write_result =
                                 file_management::write_trajectory_file_immediately(
                                     &cln_resources,
                                     new_trajectory,
-                                ),
-                            );
+                                ).await
+                            ;
+                            let ok = write_result.is_ok();
                             match write_result {
                                 Ok(_) => {
                                     tracing::info!(
@@ -136,6 +119,8 @@ mod generate {
                                     );
                                 }
                             }
+                            ok
+                            
                         }
                         Err(e) => {
                             tracing::error!(
@@ -143,20 +128,9 @@ mod generate {
                                 cln_trajectory_name,
                                 e
                             );
+                            false
                         }
-                    },
-                );
-
-            thread_handles.push(handle);
-        }
-
-        for handle in thread_handles {
-            match handle.join() {
-                Ok(_) => {}
-                Err(e) => {
-                    tracing::error!("Failed to join thread: {:?}", e);
-                }
-            }
-        }
+                    }
     }
+}
 }
