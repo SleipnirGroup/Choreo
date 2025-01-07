@@ -105,6 +105,15 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     dts.emplace_back(problem.DecisionVariable());
   }
 
+  double minWidth = INFINITY;
+  for (size_t i = 0; i < path.drivetrain.modules.size(); ++i) {
+    auto mod_a = path.drivetrain.modules.at(i);
+    size_t mod_b_idx = i == 0 ? path.drivetrain.modules.size() - 1 : i - 1;
+    auto mod_b = path.drivetrain.modules.at(mod_b_idx);
+    minWidth = std::min(
+        minWidth, std::hypot(mod_a.X() - mod_b.X(), mod_a.Y() - mod_b.Y()));
+  }
+
   // Minimize total time
   sleipnir::Variable T_tot = 0;
   const double maxForce =
@@ -125,7 +134,9 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     T_tot += T_sgmt;
 
     problem.SubjectTo(dt >= 0);
-    problem.SubjectTo(dt <= 0.075);
+    problem.SubjectTo(dt * path.drivetrain.wheelRadius *
+                          path.drivetrain.wheelMaxAngularVelocity <=
+                      minWidth);
 
     // Use initialGuess and Ns to find the dx, dy, dθ between wpts
     const auto sgmt_start = GetIndex(Ns, sgmtIndex);

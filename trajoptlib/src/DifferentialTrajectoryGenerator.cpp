@@ -152,7 +152,9 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     T_tot += T_sgmt;
 
     problem.SubjectTo(dt >= 0);
-    problem.SubjectTo(dt <= 0.075);
+    problem.SubjectTo(dt * path.drivetrain.wheelRadius *
+                          path.drivetrain.wheelMaxAngularVelocity <=
+                      path.drivetrain.trackwidth);
 
     // Use initialGuess and Ns to find the dx, dy, dθ between wpts
     const auto sgmt_start = GetIndex(Ns, sgmtIndex);
