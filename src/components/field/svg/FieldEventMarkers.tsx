@@ -54,7 +54,7 @@ class FieldEventMarkers extends Component<Props, State> {
         return [];
       }
       const marked = sample(marker.from.timestamp, path.trajectory.samples);
-      if (marked == undefined) {
+      if (marked === undefined) {
         return <></>;
       }
       return (

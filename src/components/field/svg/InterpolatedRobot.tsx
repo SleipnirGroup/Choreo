@@ -37,7 +37,7 @@ class InterpolatedRobot extends Component<Props, State> {
       return <></>;
     }
     const pose1 = sample(this.props.timestamp, trajectory);
-    if (pose1 == undefined) return <></>;
+    if (pose1 === undefined) return <></>;
     const headingPointSideLength =
       targetSideLength *
       Math.min(doc.robotConfig.bumper.length, doc.robotConfig.bumper.width);
