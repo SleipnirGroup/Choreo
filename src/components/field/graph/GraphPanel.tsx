@@ -1,7 +1,7 @@
 import { Component } from "react";
 import * as d3 from "d3";
 import { observer } from "mobx-react";
-import { autorun, IReactionDisposer, reaction } from "mobx";
+import { autorun, IReactionDisposer, reaction, untracked } from "mobx";
 import { line, tickFormat } from "d3";
 import { pathToFileURL } from "url";
 import { Checkbox, FormControlLabel, FormGroup } from "@mui/material";
@@ -169,8 +169,9 @@ const defaultRanges: Ranges = {
     Angle: [0, 0],
     AngVel: [0, 0],
     AngAcc: [0, 0],
+    Time: [0,0],
     Force: [0, 0],
-    Time: [0,0]
+
     
 };
 const AXIS_WIDTH = 50;
@@ -258,16 +259,13 @@ class GraphPanel extends Component<Props, State> {
         .range([0, this.plotWidth]);
     componentDidMount() {
 
-        this.redrawUnlisten = reaction(()=>{
+        this.redrawUnlisten = autorun(()=>{
             let path = doc.pathlist.activePath;
-            if (path.ui.generating) {
-                return path.ui.generationProgress;
-            }
-            return path.trajectory.samples;
-        },
-        (val) => {
-            this.handleUpdate(val);
-        });
+            path.ui.generating;
+            let trajectory = path.ui.generating ? path.ui.generationProgress : path.trajectory.samples;
+            console.log(path.ui.generating);
+            untracked(()=>this.handleUpdate(trajectory));
+    });
     }
     componentWillUnmount(): void {
         if (this.redrawUnlisten != null) {
@@ -412,7 +410,6 @@ class GraphPanel extends Component<Props, State> {
                 xAxis.selectAll(":is(line, path)").attr("stroke", "white");
 
                 xAxis.selectAll(":is(line, path)").attr("stroke", "white");
-                console.log(yAxis);
             });
         }
     }
