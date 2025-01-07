@@ -141,10 +141,7 @@ impl TrajectoryFileGenerator {
                 .collect(),
         };
 
-        let counts_vec = guess_control_interval_counts(
-            &self.ctx.project.config.snapshot(),
-            &self.trajectory_file.params.snapshot(),
-        )?;
+        let counts_vec = guess_control_interval_counts(&self.trajectory_file.params.snapshot())?;
 
         Ok(postprocess(
             &samples,

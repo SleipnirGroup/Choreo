@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <cmath>
 #include <numbers>
 #include <numeric>
 #include <vector>
@@ -89,25 +88,6 @@ constexpr double AngleModulus(double angle) {
 inline std::vector<double> AngleLinspace(double start, double end,
                                          size_t numSamples) {
   return Linspace(start, start + AngleModulus(end - start), numSamples);
-}
-
-/**
- * Returns the time a trapezoid profile takes to travel a given distance from
- * rest to rest.
- *
- * @param distance The distance to travel.
- * @param velocity The profile's maximum velocity.
- * @param acceleration The profile's maximum acceleration.
- */
-inline double CalculateTrapezoidalTime(double distance, double velocity,
-                                       double acceleration) {
-  if (distance > ((velocity * velocity) / acceleration)) {
-    // Velocity profile is shaped like a trapezoid
-    return distance / velocity + velocity / acceleration;
-  } else {
-    // Velocity profile is shaped like a triangle
-    return 2.0 * std::sqrt(distance * acceleration) / acceleration;
-  }
 }
 
 }  // namespace trajopt

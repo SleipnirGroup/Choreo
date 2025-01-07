@@ -6,11 +6,7 @@ use crate::tauri::TauriResult;
 use choreo_core::{
     file_management::{self, create_diagnostic_file, get_log_lines, WritingResources},
     generation::remote::RemoteGenerationResources,
-    spec::{
-        project::{ProjectFile, RobotConfig},
-        trajectory::TrajectoryFile,
-        Expr, OpenFilePayload,
-    },
+    spec::{project::ProjectFile, trajectory::TrajectoryFile, OpenFilePayload},
     ChoreoError,
 };
 use tauri::{api::dialog::blocking::FileDialogBuilder, Manager};
@@ -37,13 +33,9 @@ macro_rules! debug_result (
 );
 
 #[tauri::command]
-pub fn guess_control_interval_counts(
-    config: RobotConfig<Expr>,
-    trajectory: TrajectoryFile,
-) -> TauriResult<Vec<usize>> {
+pub fn guess_control_interval_counts(trajectory: TrajectoryFile) -> TauriResult<Vec<usize>> {
     debug_result!(
         choreo_core::generation::intervals::guess_control_interval_counts(
-            &config.snapshot(),
             &trajectory.params.snapshot(),
         )
     );

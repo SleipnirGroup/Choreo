@@ -7,14 +7,12 @@
 #include <algorithm>
 #include <chrono>
 #include <ranges>
-#include <utility>
 #include <vector>
 
 #include <sleipnir/optimization/OptimizationProblem.hpp>
 #include <sleipnir/optimization/SolverExitCondition.hpp>
 
 #include "trajopt/util/Cancellation.hpp"
-#include "trajopt/util/TrajoptUtil.hpp"
 
 // Physics notation in this file:
 //
@@ -81,7 +79,7 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     _Fy.reserve(moduleCnt);
   }
 
-  dts.reserve(sgmtCnt);
+  dts.reserve(sampTot);
 
   for (size_t index = 0; index < sampTot; ++index) {
     x.emplace_back(problem.DecisionVariable());
@@ -99,9 +97,7 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       Fx.at(index).emplace_back(problem.DecisionVariable());
       Fy.at(index).emplace_back(problem.DecisionVariable());
     }
-  }
 
-  for (size_t sgmtIndex = 0; sgmtIndex < sgmtCnt; ++sgmtIndex) {
     dts.emplace_back(problem.DecisionVariable());
   }
 
@@ -115,59 +111,17 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   }
 
   // Minimize total time
-  sleipnir::Variable T_tot = 0;
-  const double maxForce =
-      path.drivetrain.wheelMaxTorque * 4 / path.drivetrain.wheelRadius;
-  const auto maxAccel = maxForce / path.drivetrain.mass;
-  const double maxDrivetrainVelocity =
-      path.drivetrain.wheelRadius * path.drivetrain.wheelMaxAngularVelocity;
-  auto maxWheelPositionRadius = 0.0;
-  for (auto module : path.drivetrain.modules) {
-    maxWheelPositionRadius = std::max(maxWheelPositionRadius, module.Norm());
-  }
-  const auto maxAngVel = maxDrivetrainVelocity / maxWheelPositionRadius;
-  const auto maxAngAccel = maxAccel / maxWheelPositionRadius;
-  for (size_t sgmtIndex = 0; sgmtIndex < Ns.size(); ++sgmtIndex) {
-    auto& dt = dts.at(sgmtIndex);
-    auto N_sgmt = Ns.at(sgmtIndex);
-    auto T_sgmt = dt * static_cast<int>(N_sgmt);
-    T_tot += T_sgmt;
-
+  for (auto& dt : dts) {
+    dt.SetValue(0.05);
     problem.SubjectTo(dt >= 0);
-    problem.SubjectTo(dt * path.drivetrain.wheelRadius *
-                          path.drivetrain.wheelMaxAngularVelocity <=
-                      minWidth);
-
-    // Use initialGuess and Ns to find the dx, dy, dθ between wpts
-    const auto sgmt_start = GetIndex(Ns, sgmtIndex);
-    const auto sgmt_end = GetIndex(Ns, sgmtIndex + 1);
-    const auto dx = initialGuess.x.at(sgmt_end) - initialGuess.x.at(sgmt_start);
-    const auto dy = initialGuess.y.at(sgmt_end) - initialGuess.y.at(sgmt_start);
-    const auto dist = std::hypot(dx, dy);
-    const auto θ_0 = std::atan2(initialGuess.thetasin.at(sgmt_start),
-                                initialGuess.thetacos.at(sgmt_start));
-    const auto θ_1 = std::atan2(initialGuess.thetasin.at(sgmt_end),
-                                initialGuess.thetacos.at(sgmt_end));
-    const auto dθ = std::abs(AngleModulus(θ_1 - θ_0));
-
-    auto maxLinearVel = maxDrivetrainVelocity;
-
-    const auto angularTime =
-        CalculateTrapezoidalTime(dθ, maxAngVel, maxAngAccel);
-    maxLinearVel = std::min(maxLinearVel, dist / angularTime);
-
-    const auto linearTime =
-        CalculateTrapezoidalTime(dist, maxLinearVel, maxAccel);
-    const double sgmtTime = angularTime + linearTime;
-
-    dt.SetValue(sgmtTime / N_sgmt);
+    problem.SubjectTo(dt <= 3);
   }
-  problem.Minimize(std::move(T_tot));
+  problem.Minimize(
+      std::accumulate(dts.begin(), dts.end(), sleipnir::Variable{0.0}));
 
   // Apply kinematics constraints
   for (size_t wptIndex = 0; wptIndex < wptCnt - 1; ++wptIndex) {
     size_t N_sgmt = Ns.at(wptIndex);
-    auto dt = dts.at(wptIndex);
 
     for (size_t sampleIndex = 0; sampleIndex < N_sgmt; ++sampleIndex) {
       size_t index = GetIndex(Ns, wptIndex, sampleIndex);
@@ -190,14 +144,20 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       auto α_k = α.at(index);
       auto α_k_1 = α.at(index + 1);
 
+      auto dt_k = dts.at(index);
+      if (sampleIndex < N_sgmt - 1) {
+        auto dt_k_1 = dts.at(index + 1);
+        problem.SubjectTo(dt_k_1 == dt_k);
+      }
+
       // xₖ₊₁ = xₖ + vₖt + 1/2aₖt²
       // θₖ₊₁ = θₖ + ωₖt
       // vₖ₊₁ = vₖ + aₖt
       // ωₖ₊₁ = ωₖ + αₖt
-      problem.SubjectTo(x_k_1 == x_k + v_k * dt + a_k * 0.5 * dt * dt);
-      problem.SubjectTo((θ_k_1 - θ_k) == Rotation2v{ω_k * dt});
-      problem.SubjectTo(v_k_1 == v_k + a_k * dt);
-      problem.SubjectTo(ω_k_1 == ω_k + α_k * dt);
+      problem.SubjectTo(x_k_1 == x_k + v_k * dt_k + a_k * 0.5 * dt_k * dt_k);
+      problem.SubjectTo((θ_k_1 - θ_k) == Rotation2v{ω_k * dt_k});
+      problem.SubjectTo(v_k_1 == v_k + a_k * dt_k);
+      problem.SubjectTo(ω_k_1 == ω_k + α_k * dt_k);
     }
   }
 
@@ -377,17 +337,6 @@ void SwerveTrajectoryGenerator::ApplyInitialGuess(
 }
 
 SwerveSolution SwerveTrajectoryGenerator::ConstructSwerveSolution() {
-  std::vector<double> dtPerSample;
-  for (size_t sgmtIndex = 0; sgmtIndex < Ns.size(); ++sgmtIndex) {
-    auto N = Ns.at(sgmtIndex);
-    auto dt = dts.at(sgmtIndex);
-
-    double dt_value = dt.Value();
-    for (size_t i = 0; i < N; ++i) {
-      dtPerSample.push_back(dt_value);
-    }
-  }
-
   auto getValue = [](auto& var) { return var.Value(); };
 
   // TODO: Use std::ranges::to() from C++23
@@ -406,7 +355,7 @@ SwerveSolution SwerveTrajectoryGenerator::ConstructSwerveSolution() {
     return std::vector<std::vector<double>>{std::begin(view), std::end(view)};
   };
 
-  return SwerveSolution{dtPerSample,       vectorValue(x),    vectorValue(y),
+  return SwerveSolution{vectorValue(dts),  vectorValue(x),    vectorValue(y),
                         vectorValue(cosθ), vectorValue(sinθ), vectorValue(vx),
                         vectorValue(vy),   vectorValue(ω),    vectorValue(ax),
                         vectorValue(ay),   vectorValue(α),    matrixValue(Fx),
