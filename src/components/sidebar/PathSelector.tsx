@@ -19,6 +19,7 @@ import { deletePath, doc, renamePath } from "../../document/DocumentManager";
 import styles from "./Sidebar.module.css";
 import ExpressionInput from "../input/ExpressionInput";
 import ExpressionInputList from "../input/ExpressionInputList";
+import { IPathUIStore } from "../../document/path/PathUIStore";
 
 type Props = object;
 
@@ -32,6 +33,55 @@ type OptionState = {
   settingsOpen: boolean;
 };
 
+class PathSelectorIcon extends Component<
+  {
+    generating: boolean;
+    selected: boolean;
+    upToDate: boolean;
+    onGenerate: () => void;
+  },
+  object
+> {
+  render() {
+    return this.props.generating ? (
+      <CircularProgress
+        size={20}
+        sx={{
+          color: this.props.selected
+            ? "var(--select-yellow)"
+            : "var(--accent-purple)",
+          marginInline: "2px"
+        }}
+        variant="indeterminate"
+      ></CircularProgress>
+    ) : this.props.upToDate ? (
+      <Route
+        className={styles.SidebarIcon}
+        htmlColor={
+          this.props.selected ? "var(--select-yellow)" : "var(--accent-purple)"
+        }
+      />
+    ) : (
+      <IconButton
+        className={styles.SidebarIcon}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this.props.onGenerate();
+        }}
+      >
+        <ShapeLine
+          className={styles.SidebarIcon}
+          htmlColor={
+            this.props.selected
+              ? "var(--select-yellow)"
+              : "var(--accent-purple)"
+          }
+        ></ShapeLine>
+      </IconButton>
+    );
+  }
+}
 class PathSelectorOption extends Component<OptionProps, OptionState> {
   state = {
     renaming: false,
@@ -52,7 +102,10 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
   }
   completeRename() {
     if (!this.checkName()) {
-      renamePath(this.props.uuid, this.nameInputRef.current!.value);
+      let newName = this.nameInputRef.current!.value;
+      if (newName !== this.getPath().name || true) {
+        renamePath(this.props.uuid, newName);
+      }
     }
     this.escapeRename();
   }
@@ -88,7 +141,6 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
     this.searchForName("");
     const selected = this.props.uuid == doc.pathlist.activePathUUID;
     const name = this.getPath().name;
-    const upToDate = this.getPath().ui.upToDate;
     if (name != this.state.name && !this.state.renaming) {
       this.state.name = name;
     }
@@ -102,39 +154,14 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
           doc.pathlist.setActivePathUUID(this.props.uuid);
         }}
       >
-        {this.getPath().ui.generating ? (
-          <CircularProgress
-            size={20}
-            sx={{
-              color: selected ? "var(--select-yellow)" : "var(--accent-purple)",
-              marginInline: "2px"
-            }}
-            variant="indeterminate"
-          ></CircularProgress>
-        ) : upToDate ? (
-          <Route
-            className={styles.SidebarIcon}
-            htmlColor={
-              selected ? "var(--select-yellow)" : "var(--accent-purple)"
-            }
-          />
-        ) : (
-          <IconButton
-            className={styles.SidebarIcon}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              doc.generatePath(this.getPath().uuid);
-            }}
-          >
-            <ShapeLine
-              className={styles.SidebarIcon}
-              htmlColor={
-                selected ? "var(--select-yellow)" : "var(--accent-purple)"
-              }
-            ></ShapeLine>
-          </IconButton>
-        )}
+        {/* This is a separate component so that the whole PathSelectorOption
+            doesn't have to re-render after generation */}
+        <PathSelectorIcon
+          selected={this.getSelected()}
+          upToDate={this.getPath().ui.upToDate}
+          onGenerate={() => doc.generatePath(this.props.uuid)}
+          generating={this.getPath().ui.generating}
+        ></PathSelectorIcon>
 
         <TextField
           className={styles.SidebarLabel}
