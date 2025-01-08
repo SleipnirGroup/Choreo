@@ -430,18 +430,7 @@ export async function setupEventListeners() {
     uiState.setSelectedNavbarItem(-1);
   });
   hotkeys("ctrl+o,command+o", () => {
-    dialog
-      .confirm("You may lose unsaved or not generated changes. Continue?", {
-        title: "Choreo",
-        type: "warning"
-      })
-      .then((proceed) => {
-        if (proceed) {
-          Commands.openProjectDialog().then((filepath) =>
-            openProject(filepath)
-          );
-        }
-      });
+    openProjectSelectFeedback();
   });
   hotkeys("f5,ctrl+shift+r,ctrl+r", function (event, _handler) {
     event.preventDefault();
@@ -585,6 +574,28 @@ export async function setupEventListeners() {
       doc.pathlist.activePath.params.deleteConstraint(selectedConstraint.uuid);
     }
   });
+}
+
+export async function openProjectSelectFeedback() {
+  dialog
+    .confirm("You may lose unsaved or not generated changes. Continue?", {
+      title: "Choreo",
+      type: "warning"
+    })
+    .then((proceed) => {
+      if (proceed) {
+        Commands.openProjectDialog().then((filepath) =>
+          openProject(filepath).catch((err) => {
+            tracing.error(
+              `Failed to open Choreo file '${filepath.name}': ${err}`
+            );
+            toast.error(
+              `Failed to open Choreo file '${filepath.name}': ${err}`
+            );
+          })
+        );
+      }
+    });
 }
 
 export async function openProject(projectPath: OpenFilePayload) {
