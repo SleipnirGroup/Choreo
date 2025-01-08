@@ -109,6 +109,7 @@ export const AddPoseVariablePanel = observer(
         setName={(name) => props.setName(name)}
         actionButton={() => (
           <Add
+            sx={{ color: "var(--accent-purple)" }}
             onClick={(_) => {
               if (doc.variables.validateName(props.name, "")) {
                 const pose = {

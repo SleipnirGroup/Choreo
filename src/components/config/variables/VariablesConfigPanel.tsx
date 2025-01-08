@@ -61,6 +61,7 @@ const AddVariablePanel = observer((props: AddVariablePanelProps) => {
       validateName={(name) => doc.variables.validateName(name, "")}
       actionButton={() => (
         <Add
+          sx={{ color: "var(--accent-purple)" }}
           onClick={(_) => {
             if (doc.variables.validateName(props.name, "")) {
               doc.variables.add(
