@@ -24,10 +24,10 @@ import { Component } from "react";
 import { toast } from "react-toastify";
 import {
   newProject,
-  openProject,
   saveProjectDialog,
   uiState,
-  openDiagnosticZipWithInfo
+  openDiagnosticZipWithInfo,
+  openProjectSelectFeedback
 } from "./document/DocumentManager";
 
 import SettingsModal from "./components/config/SettingsModal";
@@ -136,16 +136,7 @@ class AppMenu extends Component<Props, State> {
             {/* Open Project */}
             <ListItemButton
               onClick={async () => {
-                if (
-                  await dialog.confirm(
-                    "You may lose unsaved changes. Continue?",
-                    { title: "Choreo", type: "warning" }
-                  )
-                ) {
-                  await Commands.openProjectDialog().then((filepath) =>
-                    openProject(filepath)
-                  );
-                }
+                openProjectSelectFeedback();
               }}
             >
               <ListItemIcon>
