@@ -115,7 +115,7 @@ export const HolonomicPathStore = types
         const toAdd = getEnv<Env>(self).create.EventMarkerStore(m);
 
         self.markers.push(toAdd);
-        toAdd.deserialize(m);
+        toAdd.deserialize(m, getEnv<Env>(self).create.CommandStore);
         return toAdd;
       },
       setSnapshot(snap: ChoreoPath<number>) {

@@ -6,7 +6,7 @@ import {
 } from "./2025/DocumentTypes";
 import { CommandStore } from "./CommandStore";
 import { WaypointScope } from "./ConstraintStore";
-import { Env } from "./DocumentManager";
+import { Env, EnvConstructors } from "./DocumentManager";
 import { ExpressionStore } from "./ExpressionStore";
 import { IChoreoTrajectoryStore } from "./path/ChoreoTrajectoryStore";
 import { IHolonomicPathStore } from "./path/HolonomicPathStore";
@@ -145,10 +145,13 @@ export const EventMarkerStore = types
     setName(name: string) {
       self.name = name;
     },
-    deserialize(ser: EventMarker) {
+    deserialize(
+      ser: EventMarker,
+      commandConstructor: EnvConstructors["CommandStore"]
+    ) {
       self.name = ser.name;
       self.from.deserialize(ser.from);
-      self.event.deserialize(ser.event);
+      self.event.deserialize(ser.event, commandConstructor);
     },
     setSelected(selected: boolean) {
       if (selected && !self.selected) {
