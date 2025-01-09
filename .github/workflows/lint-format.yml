@@ -50,7 +50,7 @@ jobs:
           node-version: 18.x
           cache: "pnpm"
 
-      - run: pnpm install prettier@3.3.3
+      - run: pnpm install prettier@3.4.2
 
       - uses: actions/setup-python@v5
         with:
