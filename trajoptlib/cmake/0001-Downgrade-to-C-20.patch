@@ -1,6 +1,6 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Tyler Veness <calcmogul@gmail.com>
-Date: Wed, 8 Jan 2025 23:39:34 -0800
+Date: Thu, 9 Jan 2025 22:23:08 -0800
 Subject: [PATCH] Downgrade to C++20
 
 ---
@@ -10,7 +10,8 @@ Subject: [PATCH] Downgrade to C++20
  include/.styleguide                      |  1 +
  include/sleipnir/autodiff/Expression.hpp | 57 +++++++++++-------------
  include/sleipnir/util/Print.hpp          | 27 +++++------
- 6 files changed, 53 insertions(+), 45 deletions(-)
+ include/sleipnir/util/Spy.hpp            |  8 +++-
+ 7 files changed, 60 insertions(+), 46 deletions(-)
 
 diff --git a/.styleguide b/.styleguide
 index 2cf272a115102886134455a87ea5c7dcf7188283..76e25473e77ab7838509eaeeefa7170a06507f8c 100644
@@ -368,3 +369,30 @@ index a746cb77b70f095bb15f4c493295cb925bc74cd3..484d1b2bec7148c5b9affccbf554c7df
    } catch (const std::system_error&) {
    }
  }
+diff --git a/include/sleipnir/util/Spy.hpp b/include/sleipnir/util/Spy.hpp
+index 1abeb469a43d3d644efc1ad0e06e43928149ed0a..ae112430d7609356748b81d5dc4d0b5a7bac0ca1 100644
+--- a/include/sleipnir/util/Spy.hpp
++++ b/include/sleipnir/util/Spy.hpp
+@@ -4,7 +4,10 @@
+ 
+ #include <stdint.h>
+ 
++#include <algorithm>
++#include <array>
+ #include <bit>
++#include <cstddef>
+ #include <fstream>
+ #include <string>
+ #include <string_view>
+@@ -112,7 +115,10 @@ class SLEIPNIR_DLLEXPORT Spy {
+    */
+   void Write32le(int32_t num) {
+     if constexpr (std::endian::native != std::endian::little) {
+-      num = std::byteswap(num);
++      auto value_representation =
++          std::bit_cast<std::array<std::byte, sizeof(int32_t)>>(num);
++      std::ranges::reverse(value_representation);
++      num = std::bit_cast<int32_t>(value_representation);
+     }
+     m_file.write(reinterpret_cast<char*>(&num), sizeof(num));
+   }
