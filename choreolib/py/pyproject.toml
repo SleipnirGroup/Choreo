@@ -17,7 +17,7 @@ dependencies = [ "robotpy-wpimath", "wpilib" ]
 
 [build-system]
 requires = [
-  "robotpy-wpimath",
+  "wpilib",
   "setuptools>=61.0",
   "setuptools-git-versioning"
 ]
