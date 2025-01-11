@@ -177,7 +177,7 @@ mod testing_shared {
     }
     /// Get the contents of a testing json
     /// SAFETY: Panics if the file does not exist. Only for use in test cases.
-    fn get_contents(file_type: FileType, version: &str, file_name: &str) -> String {
+    pub(crate) fn get_contents(file_type: FileType, version: &str, file_name: &str) -> String {
         let test_json_dir: PathBuf = PathBuf::from_str(env!("CARGO_MANIFEST_DIR"))
             .unwrap()
             .parent()
