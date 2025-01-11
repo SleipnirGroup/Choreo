@@ -52,11 +52,11 @@ Split trajectories on stop points are shown in different colors. In other words,
 
 ### Field
 
-Shows the field svg overlay.
+Shows the field background layer.
 
 ### Grid
 
-Shows the grid overlay
+Shows a 1 meter grid layer.
 
 ### Trajectory
 
@@ -65,14 +65,15 @@ Shows the grid overlay
 ### Samples
 
 ![samples](../media/samples.png)
+![Mini waypoints](../media/samples-mini-waypoints.png)
+
+Shows a dot at every sample along the path, and mini waypoints at the locations of the waypoints that generated the trajectory.
 
 ### Waypoints
 
 ![waypoints](../media/waypoints.png)
 
-### Obstacles
-
-Shows the obstacles in the path.
+Shows or hides the editable waypoints.
 
 ### Focus
 

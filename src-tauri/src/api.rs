@@ -163,6 +163,11 @@ pub async fn delete_trajectory(
 }
 
 #[tauri::command]
+pub async fn trajectory_up_to_date(trajectory: TrajectoryFile) -> bool {
+    trajectory.up_to_date()
+}
+
+#[tauri::command]
 pub async fn set_deploy_root(app_handle: tauri::AppHandle, dir: String) {
     let resources = app_handle.state::<WritingResources>();
     file_management::set_deploy_path(&resources, PathBuf::from(dir)).await;

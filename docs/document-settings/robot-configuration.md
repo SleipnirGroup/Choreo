@@ -38,7 +38,7 @@ These values should be determined by consulting the motor's documentation.
 
 !!! tip "Choosing a Motor Max Speed"
 
-    A reasonable choice of Motor Max Speed is ~80% of the free speed of the drive motor(s). Although your motors have more speed available, this headroom helps ensure that your robot is able to close any errors and return to the planned trajectory. Use the [Motor Calculator](#motor-calculator) to help select an appropriate value.
+    A reasonable choice of Motor Max Speed is ~80% of the free speed of the drive motor(s). Although your motors have more speed available, this headroom helps ensure that your robot is able to close any errors and return to the planned trajectory.
 
 - **Motor Max Torque** $[N * m]$: The maximum torque applied by each drive motor
 

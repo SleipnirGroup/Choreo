@@ -176,7 +176,7 @@ export const UIStateStore = types
     loadPathGradientFromLocalStorage() {
       self.selectedPathGradient =
         localStorage.getItem(LocalStorageKeys.PATH_GRADIENT) ??
-        PathGradients.Velocity.name;
+        PathGradients.LinearVelocity.name;
     },
     setContextMenuSelectedWaypoint(waypointIndex: number | undefined) {
       self.contextMenuSelectedWaypoint = waypointIndex;

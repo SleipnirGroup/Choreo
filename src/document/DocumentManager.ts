@@ -235,6 +235,13 @@ const env = {
   history: () => doc.history,
   vars: () => doc.variables,
   renameVariable: renameVariable,
+  exporter: (uuid: string) => {
+    try {
+      writeTrajectory(uuid);
+    } catch (e) {
+      tracing.error(e);
+    }
+  },
   create: getConstructors(() => doc.variables)
 };
 export type Env = typeof env;
@@ -272,13 +279,6 @@ function renameVariable(find: string, replace: string) {
   });
 }
 export function setup() {
-  doc.pathlist.setExporter((uuid) => {
-    try {
-      writeTrajectory(uuid);
-    } catch (e) {
-      tracing.error(e);
-    }
-  });
   doc.history.clear();
   setupEventListeners()
     .then(() => newProject())
@@ -430,18 +430,7 @@ export async function setupEventListeners() {
     uiState.setSelectedNavbarItem(-1);
   });
   hotkeys("ctrl+o,command+o", () => {
-    dialog
-      .confirm("You may lose unsaved or not generated changes. Continue?", {
-        title: "Choreo",
-        type: "warning"
-      })
-      .then((proceed) => {
-        if (proceed) {
-          Commands.openProjectDialog().then((filepath) =>
-            openProject(filepath)
-          );
-        }
-      });
+    openProjectSelectFeedback();
   });
   hotkeys("f5,ctrl+shift+r,ctrl+r", function (event, _handler) {
     event.preventDefault();
@@ -587,7 +576,37 @@ export async function setupEventListeners() {
   });
 }
 
+export async function openProjectSelectFeedback() {
+  dialog
+    .confirm("You may lose unsaved or not generated changes. Continue?", {
+      title: "Choreo",
+      type: "warning"
+    })
+    .then((proceed) => {
+      if (proceed) {
+        Commands.openProjectDialog().then((filepath) =>
+          openProject(filepath).catch((err) => {
+            tracing.error(
+              `Failed to open Choreo file '${filepath.name}': ${err}`
+            );
+            toast.error(
+              `Failed to open Choreo file '${filepath.name}': ${err}`
+            );
+          })
+        );
+      }
+    });
+}
+
 export async function openProject(projectPath: OpenFilePayload) {
+  // Capture the state prior to the deserialization
+  const originalRoot = await Commands.getDeployRoot();
+  const originalSnapshot = getSnapshot(doc);
+  const originalUiState = getSnapshot(uiState);
+  const originalHistory = getSnapshot(doc.history);
+  const originalLastOpenedItem = localStorage.getItem(
+    LocalStorageKeys.LAST_OPENED_FILE_LOCATION
+  );
   try {
     const dir = projectPath.dir;
     const name = projectPath.name.split(".")[0];
@@ -624,7 +643,16 @@ export async function openProject(projectPath: OpenFilePayload) {
     );
     doc.history.clear();
   } catch (e) {
-    await Commands.setDeployRoot("");
+    await Commands.setDeployRoot(originalRoot);
+    if (originalLastOpenedItem != null) {
+      localStorage.setItem(
+        LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
+        originalLastOpenedItem
+      );
+    }
+    applySnapshot(doc, originalSnapshot);
+    applySnapshot(uiState, originalUiState);
+    applySnapshot(doc.history, originalHistory);
     throw e;
   }
 }
@@ -673,6 +701,7 @@ export async function newProject() {
   const newChor = await Commands.defaultProject();
   doc.deserializeChor(newChor);
   uiState.loadPathGradientFromLocalStorage();
+  doc.pathlist.deleteAll();
   doc.pathlist.addPath("New Path");
   doc.history.clear();
 }

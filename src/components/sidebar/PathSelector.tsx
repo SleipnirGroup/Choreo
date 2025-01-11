@@ -1,4 +1,9 @@
-import { KeyboardArrowDown, Route, Settings } from "@mui/icons-material";
+import {
+  KeyboardArrowDown,
+  Route,
+  Settings,
+  ShapeLine
+} from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import {
   CircularProgress,
@@ -27,6 +32,55 @@ type OptionState = {
   settingsOpen: boolean;
 };
 
+class PathSelectorIcon extends Component<
+  {
+    generating: boolean;
+    selected: boolean;
+    upToDate: boolean;
+    onGenerate: () => void;
+  },
+  object
+> {
+  render() {
+    return this.props.generating ? (
+      <CircularProgress
+        size={20}
+        sx={{
+          color: this.props.selected
+            ? "var(--select-yellow)"
+            : "var(--accent-purple)",
+          marginInline: "2px"
+        }}
+        variant="indeterminate"
+      ></CircularProgress>
+    ) : this.props.upToDate ? (
+      <Route
+        className={styles.SidebarIcon}
+        htmlColor={
+          this.props.selected ? "var(--select-yellow)" : "var(--accent-purple)"
+        }
+      />
+    ) : (
+      <IconButton
+        className={styles.SidebarIcon}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this.props.onGenerate();
+        }}
+      >
+        <ShapeLine
+          className={styles.SidebarIcon}
+          htmlColor={
+            this.props.selected
+              ? "var(--select-yellow)"
+              : "var(--accent-purple)"
+          }
+        ></ShapeLine>
+      </IconButton>
+    );
+  }
+}
 class PathSelectorOption extends Component<OptionProps, OptionState> {
   state = {
     renaming: false,
@@ -47,7 +101,10 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
   }
   completeRename() {
     if (!this.checkName()) {
-      renamePath(this.props.uuid, this.nameInputRef.current!.value);
+      const newName = this.nameInputRef.current!.value;
+      if (newName !== this.getPath().name) {
+        renamePath(this.props.uuid, newName);
+      }
     }
     this.escapeRename();
   }
@@ -96,23 +153,14 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
           doc.pathlist.setActivePathUUID(this.props.uuid);
         }}
       >
-        {this.getPath().ui.generating ? (
-          <CircularProgress
-            size={20}
-            sx={{
-              color: selected ? "var(--select-yellow)" : "var(--accent-purple)",
-              marginInline: "2px"
-            }}
-            variant="indeterminate"
-          ></CircularProgress>
-        ) : (
-          <Route
-            className={styles.SidebarIcon}
-            htmlColor={
-              selected ? "var(--select-yellow)" : "var(--accent-purple)"
-            }
-          />
-        )}
+        {/* This is a separate component so that the whole PathSelectorOption
+            doesn't have to re-render after generation */}
+        <PathSelectorIcon
+          selected={this.getSelected()}
+          upToDate={this.getPath().ui.upToDate}
+          onGenerate={() => doc.generatePath(this.props.uuid)}
+          generating={this.getPath().ui.generating}
+        ></PathSelectorIcon>
 
         <TextField
           className={styles.SidebarLabel}

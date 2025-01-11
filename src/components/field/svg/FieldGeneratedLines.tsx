@@ -15,8 +15,8 @@ function FieldGeneratedLines() {
   // preserve the access of generationIterationNumber
   // to trigger rerenders when mutating the in-progress trajectory in place
   const _ = path.ui.generationIterationNumber;
-  trajectory.forEach((point) => {
-    generatedPathString += `${point.x},${point.y} `;
+  trajectory.forEach((sample) => {
+    generatedPathString += `${sample.x},${sample.y} `;
   });
   const key = uiState.selectedPathGradient as keyof typeof PathGradients;
   const pathGradient = PathGradients[key];
@@ -38,35 +38,30 @@ function FieldGeneratedLines() {
     <>
       <g>
         {trajectory.length > 1 &&
-          trajectory.map((point, i, arr) => {
-            if (i == arr.length - 1) {
+          trajectory.map((sample, i, samples) => {
+            if (i == samples.length - 1) {
               return undefined;
             }
-            const point2 = arr[i + 1];
-            const [sect, indexInSect] = path.trajectory.getIdxOfFullTrajectory(
-              i
-            ) ?? [0, 0];
+            const nextSample = samples[i + 1];
+
             const args: PathGradientArgs<any> = {
-              point: point,
-              prev: arr[i - 1],
-              next: arr[i + 1],
-              arr: path.ui.generating
+              samples: path.ui.generating
                 ? path.ui.generationProgress
                 : path.trajectory.samples,
-              total: arr.length,
-              count: i,
-              sect: path.ui.generating ? 0 : sect,
-              idxInSect: path.ui.generating ? 0 : indexInSect,
+              index: i,
+              section: path.ui.generating
+                ? 0
+                : (path.trajectory.getIdxOfFullTrajectory(i) ?? [0, 0])[0],
               documentModel: doc
             };
             // 0 t = red, 1 t = green
             return (
               <line
                 key={i}
-                x1={point.x}
-                y1={point.y}
-                x2={point2.x}
-                y2={point2.y}
+                x1={sample.x}
+                y1={sample.y}
+                x2={nextSample.x}
+                y2={nextSample.y}
                 strokeWidth={0.05}
                 stroke={pathGradient.function(args)}
               ></line>

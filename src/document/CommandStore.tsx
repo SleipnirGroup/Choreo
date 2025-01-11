@@ -14,7 +14,7 @@ import {
   NamedCommand,
   WaitCommand
 } from "./2025/DocumentTypes";
-import { Env } from "./DocumentManager";
+import { Env, EnvConstructors } from "./DocumentManager";
 import { ExpressionStore } from "./ExpressionStore";
 
 export type CommandGroupType = "sequential" | "parallel" | "deadline" | "race";
@@ -109,7 +109,7 @@ export const CommandStore = types
     }
   }))
   .actions((self) => ({
-    deserialize(ser: Command) {
+    deserialize(ser: Command, constructor: EnvConstructors["CommandStore"]) {
       self.commands.clear();
       self.name = "";
       if (ser === undefined || ser === null) {
@@ -123,9 +123,8 @@ export const CommandStore = types
         self.time.deserialize(ser.data.waitTime);
       } else {
         ser.data.commands.forEach((c) => {
-          const command: ICommandStore =
-            getEnv<Env>(self).create.CommandStore(c);
-          command.deserialize(c);
+          const command: ICommandStore = constructor(c);
+          command.deserialize(c, constructor);
           self.commands.push(command);
         });
       }

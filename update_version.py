@@ -13,7 +13,11 @@ from typing import Callable, Literal
 
 
 def default_version_string(v: str, count: str, hash: str, mod: str, num: str):
-    return f"{v}-{mod}-{num}" if len(mod) > 0 else f"{v}-{count}-{hash}"
+    mod = f"-{mod}" if len(mod) > 0 else ""
+    num = f"-{num}" if len(num) > 0 else ""
+    count = f"-{count}" if len(count) > 0 else ""
+    hash = f"-{hash}" if len(hash) > 0 else ""
+    return f"{v}{mod}{num}" if len(mod) > 0 else f"{v}{count}{hash}"
 
 
 def cargo_version_string(v: str, count: str, hash: str, mod: str, num: str):
@@ -37,17 +41,17 @@ LOCATIONS: list[VersionLocation] = [
         file_format="json2",
     ),
     VersionLocation(
-        relative_path=Path("choreolib/ChoreoLib2025Beta.json"),
+        relative_path=Path("choreolib/ChoreoLib2025.json"),
         version_path=["version"],
         file_format="json2",
     ),
     VersionLocation(
-        relative_path=Path("choreolib/ChoreoLib2025Beta.json"),
+        relative_path=Path("choreolib/ChoreoLib2025.json"),
         version_path=["javaDependencies", 0, "version"],
         file_format="json2",
     ),
     VersionLocation(
-        relative_path=Path("choreolib/ChoreoLib2025Beta.json"),
+        relative_path=Path("choreolib/ChoreoLib2025.json"),
         version_path=["cppDependencies", 0, "version"],
         file_format="json2",
     ),

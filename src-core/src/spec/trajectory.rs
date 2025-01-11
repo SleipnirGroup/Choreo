@@ -5,7 +5,7 @@ use crate::round5;
 
 use super::{version_handlers::upgrade_traj_file, Expr, SnapshottableType};
 
-#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 /// A waypoint parameter.
 pub struct Waypoint<T: SnapshottableType> {
@@ -65,7 +65,7 @@ impl Waypoint<f64> {
 }
 
 /// A waypoint identifier.
-#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum WaypointID {
     /// The first waypoint.
@@ -118,7 +118,7 @@ pub enum ConstraintScope {
 }
 
 /// A constraint on the robot's motion.
-#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 #[serde(tag = "type", content = "props")]
 pub enum ConstraintData<T: SnapshottableType> {
     /// A constraint on the maximum velocity.
@@ -270,7 +270,7 @@ impl ConstraintData<f64> {
 }
 
 /// A constraint on the robot's motion and where it applies.
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 pub struct Constraint<T: SnapshottableType> {
     /// The waypoint the constraint starts at.
     pub from: WaypointID,
@@ -308,7 +308,7 @@ impl Constraint<f64> {
 }
 
 /// A constraint on the robot's motion and where it applies.
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 pub struct ConstraintIDX<T: SnapshottableType> {
     /// The index of the waypoint the constraint starts at.
     pub from: usize,
@@ -324,7 +324,7 @@ pub struct ConstraintIDX<T: SnapshottableType> {
 
 /// A sample of the robot's state at a point in time during the trajectory.
 #[allow(missing_docs)]
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
 pub enum Sample {
     /// A sample for a swerve drive.
@@ -484,7 +484,7 @@ pub enum DriveType {
 }
 
 /// The parameters used for generating a trajectory.
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Parameters<T: SnapshottableType> {
     /// The waypoints the robot will pass through or use for initial guess.
@@ -595,6 +595,15 @@ impl TrajectoryFile {
             events: self.events.clone(),
         }
     }
+
+    pub fn up_to_date(&self) -> bool {
+        // Can't use is_some_and due to its move semantics.
+        if let Some(snap) = &self.snapshot {
+            snap == &self.params.snapshot()
+        } else {
+            false
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -635,4 +644,55 @@ pub enum PplibCommand {
     Deadline {
         commands: Vec<PplibCommand>,
     },
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::spec::TRAJ_SCHEMA_VERSION;
+
+    use super::*;
+    fn test_trajectory() -> TrajectoryFile {
+        let parameters = Parameters::<Expr> {
+            waypoints: vec![Waypoint::<Expr> {
+                x: Expr::fill_in_value(0.0, "m"),
+                y: Expr::fill_in_value(0.0, "m"),
+                heading: Expr::fill_in_value(0.0, "rad"),
+                intervals: 20,
+                split: false,
+                fix_translation: false,
+                fix_heading: false,
+                override_intervals: false,
+                is_initial_guess: false,
+            }],
+            constraints: vec![],
+            target_dt: Expr::fill_in_value(0.05, "s"),
+        };
+        TrajectoryFile {
+            name: "Test".to_string(),
+            version: TRAJ_SCHEMA_VERSION,
+            snapshot: Some(parameters.snapshot()),
+            params: parameters,
+            trajectory: Trajectory {
+                sample_type: Some(DriveType::Swerve),
+                waypoints: Vec::new(),
+                samples: Vec::new(),
+                splits: Vec::new(),
+            },
+            events: Vec::new(),
+        }
+    }
+    #[test]
+    fn snapshot_equality() {
+        assert!(test_trajectory().up_to_date());
+    }
+
+    #[test]
+    fn snapshot_equality_through_serde() -> serde_json::Result<()> {
+        use crate::file_management::formatter;
+        let trajectory = test_trajectory();
+        let serde_trajectory = formatter::to_string_pretty(&trajectory)?;
+        let deser_trajectory = TrajectoryFile::from_content(serde_trajectory.as_str());
+        assert!(deser_trajectory.is_ok_and(|t| t.up_to_date()));
+        Ok(())
+    }
 }

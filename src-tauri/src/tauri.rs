@@ -209,6 +209,7 @@ pub fn run_tauri(project: Option<PathBuf>) {
             open_project_dialog,
             read_trajectory,
             rename_trajectory,
+            trajectory_up_to_date,
             set_deploy_root,
             get_deploy_root,
             requested_file,

@@ -37,10 +37,10 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
   /** The angular velocity of the sample in rad/s. */
   public final double omega;
 
-  /** The acceleration of the in the X direction in m/s². */
+  /** The acceleration of the sample in the X direction in m/s². */
   public final double ax;
 
-  /** The acceleration of the in the Y direction in m/s². */
+  /** The acceleration of the sample in the Y direction in m/s². */
   public final double ay;
 
   /** The angular acceleration of the sample in rad/s². */

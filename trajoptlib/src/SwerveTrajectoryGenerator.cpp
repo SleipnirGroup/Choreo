@@ -101,6 +101,10 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     }
   }
 
+  for (size_t sgmtIndex = 0; sgmtIndex < sgmtCnt; ++sgmtIndex) {
+    dts.emplace_back(problem.DecisionVariable());
+  }
+
   double minWidth = INFINITY;
   for (size_t i = 0; i < path.drivetrain.modules.size(); ++i) {
     auto mod_a = path.drivetrain.modules.at(i);
@@ -108,15 +112,6 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     auto mod_b = path.drivetrain.modules.at(mod_b_idx);
     minWidth = std::min(
         minWidth, std::hypot(mod_a.X() - mod_b.X(), mod_a.Y() - mod_b.Y()));
-  }
-
-  for (size_t sgmtIndex = 0; sgmtIndex < sgmtCnt; ++sgmtIndex) {
-    dts.emplace_back(problem.DecisionVariable());
-
-    // Prevent drivetrain tunneling through keep-out regions
-    problem.SubjectTo(dts.at(sgmtIndex) * path.drivetrain.wheelRadius *
-                          path.drivetrain.wheelMaxAngularVelocity <=
-                      minWidth);
   }
 
   // Minimize total time
@@ -139,6 +134,9 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     T_tot += T_sgmt;
 
     problem.SubjectTo(dt >= 0);
+    problem.SubjectTo(dt * path.drivetrain.wheelRadius *
+                          path.drivetrain.wheelMaxAngularVelocity <=
+                      minWidth);
 
     // Use initialGuess and Ns to find the dx, dy, dθ between wpts
     const auto sgmt_start = GetIndex(Ns, sgmtIndex);
@@ -150,7 +148,7 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
                                 initialGuess.thetacos.at(sgmt_start));
     const auto θ_1 = std::atan2(initialGuess.thetasin.at(sgmt_end),
                                 initialGuess.thetacos.at(sgmt_end));
-    const auto dθ = std::abs(AngleModulus(θ_0 - θ_1));
+    const auto dθ = std::abs(AngleModulus(θ_1 - θ_0));
 
     auto maxLinearVel = maxDrivetrainVelocity;
 
@@ -270,16 +268,16 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   }
 
   for (size_t wptIndex = 0; wptIndex < wptCnt; ++wptIndex) {
+    // First index of next wpt - 1
+    size_t index = GetIndex(Ns, wptIndex, 0);
+
+    Pose2v pose_k{x.at(index), y.at(index), {cosθ.at(index), sinθ.at(index)}};
+    Translation2v v_k{vx.at(index), vy.at(index)};
+    auto ω_k = ω.at(index);
+    Translation2v a_k{ax.at(index), ay.at(index)};
+    auto α_k = α.at(index);
+
     for (auto& constraint : path.waypoints.at(wptIndex).waypointConstraints) {
-      // First index of next wpt - 1
-      size_t index = GetIndex(Ns, wptIndex, 0);
-
-      Pose2v pose_k{x.at(index), y.at(index), {cosθ.at(index), sinθ.at(index)}};
-      Translation2v v_k{vx.at(index), vy.at(index)};
-      auto ω_k = ω.at(index);
-      Translation2v a_k{ax.at(index), ay.at(index)};
-      auto α_k = α.at(index);
-
       std::visit(
           [&](auto&& arg) { arg.Apply(problem, pose_k, v_k, ω_k, a_k, α_k); },
           constraint);
@@ -287,19 +285,18 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   }
 
   for (size_t sgmtIndex = 0; sgmtIndex < sgmtCnt; ++sgmtIndex) {
-    for (auto& constraint :
-         path.waypoints.at(sgmtIndex + 1).segmentConstraints) {
-      size_t startIndex = GetIndex(Ns, sgmtIndex, 0);
-      size_t endIndex = GetIndex(Ns, sgmtIndex + 1, 0);
+    size_t startIndex = GetIndex(Ns, sgmtIndex, 0);
+    size_t endIndex = GetIndex(Ns, sgmtIndex + 1, 0);
 
-      for (size_t index = startIndex; index < endIndex; ++index) {
-        Pose2v pose_k{
-            x.at(index), y.at(index), {cosθ.at(index), sinθ.at(index)}};
-        Translation2v v_k{vx.at(index), vy.at(index)};
-        auto ω_k = ω.at(index);
-        Translation2v a_k{ax.at(index), ay.at(index)};
-        auto α_k = α.at(index);
+    for (size_t index = startIndex; index < endIndex; ++index) {
+      Pose2v pose_k{x.at(index), y.at(index), {cosθ.at(index), sinθ.at(index)}};
+      Translation2v v_k{vx.at(index), vy.at(index)};
+      auto ω_k = ω.at(index);
+      Translation2v a_k{ax.at(index), ay.at(index)};
+      auto α_k = α.at(index);
 
+      for (auto& constraint :
+           path.waypoints.at(sgmtIndex + 1).segmentConstraints) {
         std::visit(
             [&](auto&& arg) { arg.Apply(problem, pose_k, v_k, ω_k, a_k, α_k); },
             constraint);
