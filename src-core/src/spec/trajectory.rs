@@ -661,8 +661,7 @@ mod tests {
                 split: false,
                 fix_translation: false,
                 fix_heading: false,
-                override_intervals: false,
-                is_initial_guess: false,
+                override_intervals: false
             }],
             constraints: vec![],
             target_dt: Expr::fill_in_value(0.05, "s"),
