@@ -4,7 +4,7 @@ description = "Robot-side library for parsing and following Choreo paths."
 dynamic = [ "version" ]
 readme = "README.md"
 requires-python = ">=3.9"
-dependencies = [ "robotpy-wpimath" ]
+dependencies = [ "robotpy-wpimath", "wpilib" ]
 
   [project.license]
   text = "BSD-3-Clause"
