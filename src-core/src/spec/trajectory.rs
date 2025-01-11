@@ -569,7 +569,7 @@ pub struct TrajectoryFile {
     /// Will always be in sync with the file name on disk.
     pub name: String,
     /// The version of the `.traj` file spec.
-    pub version: u32,
+    pub version: u64,
     /// The snapshot of the parameters at the time of the last generation.
     pub snapshot: Option<Parameters<f64>>,
     /// The parameters used for generating the trajectory.
