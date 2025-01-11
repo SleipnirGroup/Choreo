@@ -225,12 +225,12 @@ impl<T: SnapshottableType> ConstraintData<T> {
 impl ConstraintData<f64> {
     pub fn round(&self) -> ConstraintData<f64> {
         match self {
-            ConstraintData::MaxVelocity { max } => ConstraintData::MaxVelocity {
-                max: round5(*max),
-            },
-            ConstraintData::MaxAngularVelocity { max } => ConstraintData::MaxAngularVelocity {
-                max: round5(*max),
-            },
+            ConstraintData::MaxVelocity { max } => {
+                ConstraintData::MaxVelocity { max: round5(*max) }
+            }
+            ConstraintData::MaxAngularVelocity { max } => {
+                ConstraintData::MaxAngularVelocity { max: round5(*max) }
+            }
             ConstraintData::PointAt {
                 x,
                 y,
@@ -242,9 +242,9 @@ impl ConstraintData<f64> {
                 tolerance: round5(*tolerance),
                 flip: *flip,
             },
-            ConstraintData::MaxAcceleration { max } => ConstraintData::MaxAcceleration {
-                max: round5(*max),
-            },
+            ConstraintData::MaxAcceleration { max } => {
+                ConstraintData::MaxAcceleration { max: round5(*max) }
+            }
             ConstraintData::StopPoint {} => ConstraintData::StopPoint {},
             ConstraintData::KeepInCircle { x, y, r } => ConstraintData::KeepInCircle {
                 x: round5(*x),
@@ -442,18 +442,8 @@ impl Sample {
                 ax: round5(*ax),
                 ay: round5(*ay),
                 alpha: round5(*alpha),
-                fx: [
-                    round5(fx[0]),
-                    round5(fx[1]),
-                    round5(fx[2]),
-                    round5(fx[3]),
-                ],
-                fy: [
-                    round5(fy[0]),
-                    round5(fy[1]),
-                    round5(fy[2]),
-                    round5(fy[3]),
-                ],
+                fx: [round5(fx[0]), round5(fx[1]), round5(fx[2]), round5(fx[3])],
+                fy: [round5(fy[0]), round5(fy[1]), round5(fy[2]), round5(fy[3])],
             },
             Sample::DifferentialDrive {
                 t,
@@ -512,7 +502,8 @@ impl<T: SnapshottableType> Parameters<T> {
             waypoints: self.waypoints.iter().map(Waypoint::snapshot).collect(),
             constraints: self.constraints.iter().map(Constraint::snapshot).collect(),
             target_dt: self.target_dt.snapshot(),
-        }.round()
+        }
+        .round()
     }
 }
 

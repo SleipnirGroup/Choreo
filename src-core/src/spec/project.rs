@@ -133,7 +133,8 @@ impl<T: SnapshottableType> RobotConfig<T> {
             cof: self.cof.snapshot(),
             bumper: self.bumper.snapshot(),
             differential_track_width: self.differential_track_width.snapshot(),
-        }.round()
+        }
+        .round()
     }
 }
 
