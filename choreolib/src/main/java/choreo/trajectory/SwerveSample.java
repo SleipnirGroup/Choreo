@@ -158,23 +158,28 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
     // Integrate the field speeds to get the pose for this interpolated state, since linearly
     // interpolating the pose gives an inaccurate result if the speeds are changing between states
     double lerpedTimestamp = timestamp;
+    double lerpedVXPos = vx;
+    double lerpedVYPos = vy;
     double lerpedXPos = x;
     double lerpedYPos = y;
     double intTime = t + 0.01;
+
     while (true) {
       double intT = (intTime - getTimestamp()) / (lerpedTimestamp - getTimestamp());
-      double intVX = MathUtil.interpolate(vx, endValue.vx, intT);
-      double intVY = MathUtil.interpolate(vy, endValue.vx, intT);
+      double intAX = MathUtil.interpolate(ax, endValue.ax, intT);
+      double intAY = MathUtil.interpolate(ay, endValue.ax, intT);
 
       if (intTime >= lerpedTimestamp - 0.01) {
         double dt = lerpedTimestamp - intTime;
-        lerpedXPos += intVX * dt;
-        lerpedYPos += intVY * dt;
+        lerpedVXPos += intAX * dt;
+        lerpedVYPos += intAY * dt;
+        lerpedXPos += lerpedVXPos * dt;
+        lerpedYPos += lerpedVYPos * dt;
         break;
       }
 
-      lerpedXPos += intVX * 0.01;
-      lerpedYPos += intVY * 0.01;
+      lerpedVXPos += intAX * 0.01;
+      lerpedVYPos += intAY * 0.01;
 
       intTime += 0.01;
     }
