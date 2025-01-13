@@ -145,7 +145,6 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
   @Override
   public SwerveSample interpolate(SwerveSample endValue, double timestamp) {
     double scale = (timestamp - this.t) / (endValue.t - this.t);
-    var interp_pose = getPose().interpolate(endValue.getPose(), scale);
 
     double[] interp_fx = new double[4];
     double[] interp_fy = new double[4];
@@ -156,11 +155,35 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
           MathUtil.interpolate(this.moduleForcesY()[i], endValue.moduleForcesY()[i], scale);
     }
 
+    // Integrate the field speeds to get the pose for this interpolated state, since linearly
+    // interpolating the pose gives an inaccurate result if the speeds are changing between states
+    double lerpedTimestamp = timestamp;
+    double lerpedXPos = x;
+    double lerpedYPos = y;
+    double intTime = t + 0.01;
+    while (true) {
+      double intT = (intTime - getTimestamp()) / (lerpedTimestamp - getTimestamp());
+      double intVX = MathUtil.interpolate(vx, endValue.vx, intT);
+      double intVY = MathUtil.interpolate(vy, endValue.vx, intT);
+
+      if (intTime >= lerpedTimestamp - 0.01) {
+        double dt = lerpedTimestamp - intTime;
+        lerpedXPos += intVX * dt;
+        lerpedYPos += intVY * dt;
+        break;
+      }
+
+      lerpedXPos += intVX * 0.01;
+      lerpedYPos += intVY * 0.01;
+
+      intTime += 0.01;
+    }
+
     return new SwerveSample(
         MathUtil.interpolate(this.t, endValue.t, scale),
-        interp_pose.getX(),
-        interp_pose.getY(),
-        interp_pose.getRotation().getRadians(),
+        lerpedXPos,
+        lerpedYPos,
+        MathUtil.interpolate(heading, endValue.heading, t),
         MathUtil.interpolate(this.vx, endValue.vx, scale),
         MathUtil.interpolate(this.vy, endValue.vy, scale),
         MathUtil.interpolate(this.omega, endValue.omega, scale),
