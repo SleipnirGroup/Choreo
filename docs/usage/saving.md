@@ -21,7 +21,7 @@ in a specific directory so that they can be read. Choreo will place .traj files 
 ### For Python teams:
 
 1. Create a `deploy/choreo` folder within the root folder of your robot project.
-2. Open the Choreo sidebar and click "Save Project"(see "Sidebar Navigation" for more details).
+2. Open the Choreo sidebar and click "Save Project" (see "Sidebar Navigation" for more details).
 3. Navigate to the location of your robot project and find the `deploy/choreo` folder within it.
 4. Name your .chor file whatever you want.
 
