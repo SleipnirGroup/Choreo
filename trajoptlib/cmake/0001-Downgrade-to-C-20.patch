@@ -36,7 +36,7 @@ index 46a2e975b631269b552c3ab5963168a6813a1f5f..77bcfdd55b93f1d779b08f35974c2a84
 +fetchcontent_declare(
 +    fmt
 +    GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-+    GIT_TAG 11.1.1
++    GIT_TAG 11.1.2
 +)
 +fetchcontent_makeavailable(fmt)
 +
