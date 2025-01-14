@@ -4,13 +4,14 @@ Date: Sat, 11 Jan 2025 17:45:42 -0800
 Subject: [PATCH] Downgrade to C++20
 
 ---
- .styleguide                       |  1 +
- CMakeLists.txt                    | 10 ++++++++++
- cmake/modules/CompilerFlags.cmake |  2 +-
- include/.styleguide               |  1 +
- include/sleipnir/util/Print.hpp   | 27 ++++++++++++++-------------
- include/sleipnir/util/Spy.hpp     |  8 +++++++-
- 6 files changed, 34 insertions(+), 15 deletions(-)
+ .styleguide                            |  1 +
+ CMakeLists.txt                         | 10 ++++++++++
+ cmake/modules/CompilerFlags.cmake      |  2 +-
+ include/.styleguide                    |  1 +
+ include/sleipnir/util/Print.hpp        | 27 +++++++++++++-------------
+ include/sleipnir/util/Spy.hpp          |  8 +++++++-
+ src/util/PrintIterationDiagnostics.hpp |  3 +--
+ 7 files changed, 35 insertions(+), 17 deletions(-)
 
 diff --git a/.styleguide b/.styleguide
 index 2cf272a115102886134455a87ea5c7dcf7188283..76e25473e77ab7838509eaeeefa7170a06507f8c 100644
@@ -25,7 +26,7 @@ index 2cf272a115102886134455a87ea5c7dcf7188283..76e25473e77ab7838509eaeeefa7170a
    ^sleipnir/
  }
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 46a2e975b631269b552c3ab5963168a6813a1f5f..77bcfdd55b93f1d779b08f35974c2a8438bdac3b 100644
+index 46a2e975b631269b552c3ab5963168a6813a1f5f..fe6158309e606583438d4aa22d00780f817e38f1 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -114,6 +114,16 @@ endif()
@@ -166,3 +167,24 @@ index 1abeb469a43d3d644efc1ad0e06e43928149ed0a..ae112430d7609356748b81d5dc4d0b5a
      }
      m_file.write(reinterpret_cast<char*>(&num), sizeof(num));
    }
+diff --git a/src/util/PrintIterationDiagnostics.hpp b/src/util/PrintIterationDiagnostics.hpp
+index 7b46202169d3d90eda16e76f3aff7f862e694079..44f5f9a31221397697638dd42b2968dca55c25e9 100644
+--- a/src/util/PrintIterationDiagnostics.hpp
++++ b/src/util/PrintIterationDiagnostics.hpp
+@@ -8,7 +8,6 @@
+ #include <cmath>
+ #include <ranges>
+ #include <string>
+-#include <utility>
+ 
+ #include "sleipnir/util/Print.hpp"
+ #include "sleipnir/util/small_vector.hpp"
+@@ -54,7 +53,7 @@ void PrintIterationDiagnostics(int iterations, IterationMode mode,
+ 
+   constexpr const char* kIterationModes[] = {" ", "s", "r"};
+   sleipnir::print("{:4}{}  {:9.3f}  {:13e}  {:13e}  {:13e}  ", iterations,
+-                  kIterationModes[std::to_underlying(mode)],
++                  kIterationModes[static_cast<uint8_t>(mode)],
+                   ToMilliseconds(time), error, cost, infeasibility);
+ 
+   // Print regularization
