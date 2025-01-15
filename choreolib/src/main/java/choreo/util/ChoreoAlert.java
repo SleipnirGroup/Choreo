@@ -58,4 +58,7 @@ public class ChoreoAlert {
       set(true);
     }
   }
+
+  /** Factory class. */
+  private ChoreoAlert() {}
 }
