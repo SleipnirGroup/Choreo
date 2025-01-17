@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include <units/time.h>
 #include <wpi/json_fwd.h>
 
 #include "choreo/trajectory/DifferentialSample.h"
@@ -157,7 +158,7 @@ class Trajectory {
     if (samples.size() == 0) {
       return 0_s;
     }
-    return GetFinalSample().GetTimestamp();
+    return GetFinalSample().value().GetTimestamp();
   }
 
   /**
