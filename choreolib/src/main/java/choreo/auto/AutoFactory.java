@@ -269,7 +269,7 @@ public class AutoFactory {
    *
    * <p>This method sets up an {@link AutoRoutine} and {@link AutoTrajectory} internally, and ends
    * when the trajectory completes. Commands bound with {@link #bind} will still run.
-   * 
+   *
    * <p>{@link #trajectoryCmd} and {@link #trajectory} methods should not be mixed in the same auto
    * routine. {@link #trajectoryCmd} is used as an escape hatch for teams that don't need the
    * benefits of the {@link #trajectory} method and its {@link Trigger} API.
@@ -291,7 +291,7 @@ public class AutoFactory {
    *
    * <p>This method sets up an {@link AutoRoutine} and {@link AutoTrajectory} internally, and ends
    * when the trajectory completes. Commands bound with {@link #bind} will still run.
-   * 
+   *
    * <p>{@link #trajectoryCmd} and {@link #trajectory} methods should not be mixed in the same auto
    * routine. {@link #trajectoryCmd} is used as an escape hatch for teams that don't need the
    * benefits of the {@link #trajectory} method and its {@link Trigger} API.
@@ -314,7 +314,7 @@ public class AutoFactory {
    *
    * <p>This method sets up an {@link AutoRoutine} and {@link AutoTrajectory} internally, and ends
    * when the trajectory completes. Commands bound with {@link #bind} will still run.
-   * 
+   *
    * <p>{@link #trajectoryCmd} and {@link #trajectory} methods should not be mixed in the same auto
    * routine. {@link #trajectoryCmd} is used as an escape hatch for teams that don't need the
    * benefits of the {@link #trajectory} method and its {@link Trigger} API.
