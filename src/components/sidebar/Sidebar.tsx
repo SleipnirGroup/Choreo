@@ -92,9 +92,7 @@ class Sidebar extends Component<Props, State> {
                   float: "right"
                 }}
                 disabled={Object.keys(doc.pathlist.paths).length == 0}
-                onClick={() =>
-                  doc.generateAllOutdated()
-                }
+                onClick={() => doc.generateAllOutdated()}
               >
                 <ShapeLine fontSize="small"></ShapeLine>
               </IconButton>

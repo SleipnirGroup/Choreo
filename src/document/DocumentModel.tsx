@@ -164,7 +164,7 @@ export const DocumentStore = types
       }
     },
     async generateAllOutdated() {
-      let uuidsToGenerate: string[] = []
+      const uuidsToGenerate: string[] = [];
       self.pathlist.paths.forEach((pathStore) => {
         if (!pathStore.ui.upToDate) {
           uuidsToGenerate.push(pathStore.uuid);
