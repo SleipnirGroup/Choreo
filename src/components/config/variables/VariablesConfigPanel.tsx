@@ -147,7 +147,9 @@ const VariablesConfigPanel = observer(() => {
   doc.variables.expressions.keys();
   return (
     <>
-      {Array.from(doc.variables.expressions.entries()).map((entry) => (
+      {Array.from(doc.variables.expressions.entries())
+      .sort((a, b)=> a[0].toLocaleUpperCase() > b[0].toLocaleUpperCase() ? 1 : -1)
+      .map((entry) => (
         <VariablePanel
           validateName={(name) => doc.variables.validateName(name, entry[0])}
           logo={() => (
