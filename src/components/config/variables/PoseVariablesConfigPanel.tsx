@@ -133,17 +133,21 @@ const PoseVariablesConfigPanel = observer(() => {
   return (
     <>
       {Array.from(doc.variables.poses.entries())
-      .sort((a, b)=> a[0].toLocaleUpperCase() > b[0].toLocaleUpperCase() ? 1 : -1)
-      .map((entry) => (
-        <OpenablePoseVariablePanel
-          entry={entry}
-          setName={(name) => doc.variables.renamePose(entry[0], name)}
-          validateName={(name) => doc.variables.validateName(name, entry[0])}
-          actionButton={() => (
-            <Delete onClick={() => doc.variables.deletePose(entry[0])}></Delete>
-          )}
-        ></OpenablePoseVariablePanel>
-      ))}
+        .sort((a, b) =>
+          a[0].toLocaleUpperCase() > b[0].toLocaleUpperCase() ? 1 : -1
+        )
+        .map((entry) => (
+          <OpenablePoseVariablePanel
+            entry={entry}
+            setName={(name) => doc.variables.renamePose(entry[0], name)}
+            validateName={(name) => doc.variables.validateName(name, entry[0])}
+            actionButton={() => (
+              <Delete
+                onClick={() => doc.variables.deletePose(entry[0])}
+              ></Delete>
+            )}
+          ></OpenablePoseVariablePanel>
+        ))}
     </>
   );
 });
