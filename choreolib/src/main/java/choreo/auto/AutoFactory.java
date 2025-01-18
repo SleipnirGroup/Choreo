@@ -267,14 +267,15 @@ public class AutoFactory {
    *
    * <p><b>Important </b>
    *
+   * <p>This method sets up an {@link AutoRoutine} and {@link AutoTrajectory} internally, and ends
+   * when the trajectory completes. Commands bound with {@link #bind} will still run.
+   * 
    * <p>{@link #trajectoryCmd} and {@link #trajectory} methods should not be mixed in the same auto
    * routine. {@link #trajectoryCmd} is used as an escape hatch for teams that don't need the
-   * benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link #trajectoryCmd}
-   * does not invoke bindings added via calling {@link #bind} or {@link AutoBindings} passed into
-   * the factory constructor.
+   * benefits of the {@link #trajectory} method and its {@link Trigger} API.
    *
    * @param trajectoryName The name of the trajectory to use.
-   * @return A new {@link AutoTrajectory}.
+   * @return A new {@link Command}.
    */
   public Command trajectoryCmd(String trajectoryName) {
     AutoRoutine routine = newRoutine("Routine");
@@ -288,15 +289,16 @@ public class AutoFactory {
    *
    * <p><b>Important </b>
    *
+   * <p>This method sets up an {@link AutoRoutine} and {@link AutoTrajectory} internally, and ends
+   * when the trajectory completes. Commands bound with {@link #bind} will still run.
+   * 
    * <p>{@link #trajectoryCmd} and {@link #trajectory} methods should not be mixed in the same auto
    * routine. {@link #trajectoryCmd} is used as an escape hatch for teams that don't need the
-   * benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link #trajectoryCmd}
-   * does not invoke bindings added via calling {@link #bind} or {@link AutoBindings} passed into
-   * the factory constructor.
+   * benefits of the {@link #trajectory} method and its {@link Trigger} API.
    *
    * @param trajectoryName The name of the trajectory to use.
    * @param splitIndex The index of the split trajectory to use.
-   * @return A new {@link AutoTrajectory}.
+   * @return A new {@link Command}.
    */
   public Command trajectoryCmd(String trajectoryName, final int splitIndex) {
     AutoRoutine routine = newRoutine("Routine");
@@ -310,19 +312,23 @@ public class AutoFactory {
    *
    * <p><b>Important </b>
    *
+   * <p>This method sets up an {@link AutoRoutine} and {@link AutoTrajectory} internally, and ends
+   * when the trajectory completes. Commands bound with {@link #bind} will still run.
+   * 
    * <p>{@link #trajectoryCmd} and {@link #trajectory} methods should not be mixed in the same auto
    * routine. {@link #trajectoryCmd} is used as an escape hatch for teams that don't need the
-   * benefits of the {@link #trajectory} method and its {@link Trigger} API. {@link #trajectoryCmd}
-   * does not invoke bindings added via calling {@link #bind} or {@link AutoBindings} passed into
-   * the factory constructor.
+   * benefits of the {@link #trajectory} method and its {@link Trigger} API.
    *
    * @param <ST> {@link choreo.trajectory.DifferentialSample} or {@link
    *     choreo.trajectory.SwerveSample}
    * @param trajectory The trajectory to use.
-   * @return A new {@link AutoTrajectory}.
+   * @return A new {@link Command}.
    */
   public <ST extends TrajectorySample<ST>> Command trajectoryCmd(Trajectory<ST> trajectory) {
-    return trajectory(trajectory, voidRoutine).cmd();
+    AutoRoutine routine = newRoutine("Routine");
+    AutoTrajectory autoTrajectory = routine.trajectory(trajectory);
+    routine.active().onTrue(autoTrajectory.cmd());
+    return routine.cmd().until(autoTrajectory.done());
   }
 
   /**
