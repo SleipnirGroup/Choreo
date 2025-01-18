@@ -13,7 +13,7 @@ pub struct IntervalCountSetter {
 impl SwerveGenerationTransformer for IntervalCountSetter {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
         FeatureLockedTransformer::always(Self {
-            counts: guess_control_interval_counts(&context.project.config.snapshot(), &context.params).unwrap_or_default(),
+            counts: guess_control_interval_counts(&context.params).unwrap_or_default(),
             waypoints: context.params.waypoints.clone()
         })
     }
@@ -62,7 +62,7 @@ impl SwerveGenerationTransformer for IntervalCountSetter {
 impl DifferentialGenerationTransformer for IntervalCountSetter {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
         FeatureLockedTransformer::always(Self {
-            counts: guess_control_interval_counts(&context.project.config.snapshot(), &context.params).unwrap_or_default(),
+            counts: guess_control_interval_counts(&context.params).unwrap_or_default(),
             waypoints: context.params.waypoints.clone()
         })
     }
