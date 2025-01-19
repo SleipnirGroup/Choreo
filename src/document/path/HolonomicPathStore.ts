@@ -173,6 +173,9 @@ export const HolonomicPathStore = types
         ser.events.forEach((m) => {
           self.addEventMarker(m);
         });
+        Commands.trajectoryUpToDate(self.serialize).then((upToDate) =>
+          self.ui.setUpToDate(upToDate)
+        );
       }
     };
   })
