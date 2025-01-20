@@ -101,6 +101,36 @@ Trajectories can be loaded using `AutoRoutine.trajectory()`, which will return a
 
 ```java
 public AutoRoutine pickupAndScoreAuto() {
+    AutoRoutine routine = autoFactory.newRoutine("taxi");
+
+    // Load the routine's trajectories
+    AutoTrajectory driveToMiddle = routine.trajectory("driveToMiddle");
+
+    // When the routine begins, reset odometry and start the first trajectory (1)
+    routine.active().onTrue(
+        Commands.sequence(
+            driveToMiddle.resetOdometry(),
+            driveToMiddle.cmd()
+        )
+    );
+
+    return routine;
+}
+```
+
+AuoTrajectories have a variety of triggers that can be used to attach logic to the trajectory, these include:
+
+- `active()` - Triggered when the trajectory is active
+- `inactive()` - Triggered when the trajectory is inactive, equivalent to `active().negate()`
+- `atTime(String)` / `atTime(double)` - Triggered when the trajectory reaches a specific time based on a value or event marker
+- `atPose(String, double, double)` / `atPose(Pose2d, double, double)` - Triggered when the robot reaches a specific pose based on a value or event marker
+- `done()` - Triggered for 1 cycle after the trajectory is finished
+- `doneDelay(int)` - Triggered for 1 cycle `n` cycles after the trajectory is finished
+- `doneFor(int)` - Triggered for `n` cycles after the trajectory is finished
+- `recentlyDone()` - Triggered after the trajectory is finished until another trajectory is started
+
+```java
+public AutoRoutine pickupAndScoreAuto() {
     AutoRoutine routine = autoFactory.newRoutine("pickupAndScore");
 
     // Load the routine's trajectories
