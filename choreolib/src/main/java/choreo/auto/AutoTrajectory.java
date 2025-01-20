@@ -176,7 +176,7 @@ public class AutoTrajectory {
   }
 
   private boolean cmdIsFinished() {
-    return timer.get() > trajectory.getTotalTime() || !routine.active().getAsBoolean();
+    return timer.get() > trajectory.getTotalTime() || !routine.isActive;
   }
 
   /**

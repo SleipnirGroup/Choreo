@@ -150,7 +150,7 @@ public class AutoFactory {
 
           @Override
           public Trigger active() {
-            return new Trigger(this.loop(), () -> false);
+            return new Trigger(this.loop(), () -> true);
           }
         };
   }
@@ -207,7 +207,7 @@ public class AutoFactory {
    *
    * @see AutoRoutine#trajectory(String)
    */
-  AutoTrajectory trajectory(String trajectoryName, AutoRoutine routine) {
+  AutoTrajectory trajectory(String trajectoryName, AutoRoutine routine, boolean useBindings) {
     Optional<? extends Trajectory<?>> optTrajectory =
         trajectoryCache.loadTrajectory(trajectoryName);
     Trajectory<?> trajectory;
@@ -216,7 +216,7 @@ public class AutoFactory {
     } else {
       trajectory = new Trajectory<SwerveSample>(trajectoryName, List.of(), List.of(), List.of());
     }
-    return trajectory(trajectory, routine);
+    return trajectory(trajectory, routine, useBindings);
   }
 
   /**
@@ -225,7 +225,8 @@ public class AutoFactory {
    *
    * @see AutoRoutine#trajectory(String, int)
    */
-  AutoTrajectory trajectory(String trajectoryName, final int splitIndex, AutoRoutine routine) {
+  AutoTrajectory trajectory(
+      String trajectoryName, final int splitIndex, AutoRoutine routine, boolean useBindings) {
     Optional<? extends Trajectory<?>> optTrajectory =
         trajectoryCache.loadTrajectory(trajectoryName, splitIndex);
     Trajectory<?> trajectory;
@@ -234,7 +235,7 @@ public class AutoFactory {
     } else {
       trajectory = new Trajectory<SwerveSample>(trajectoryName, List.of(), List.of(), List.of());
     }
-    return trajectory(trajectory, routine);
+    return trajectory(trajectory, routine, useBindings);
   }
 
   /**
@@ -245,7 +246,7 @@ public class AutoFactory {
    */
   @SuppressWarnings("unchecked")
   <ST extends TrajectorySample<ST>> AutoTrajectory trajectory(
-      Trajectory<ST> trajectory, AutoRoutine routine) {
+      Trajectory<ST> trajectory, AutoRoutine routine, boolean useBindings) {
     // type solidify everything
     final Trajectory<ST> solidTrajectory = trajectory;
     final Consumer<ST> solidController = (Consumer<ST>) this.controller;
@@ -259,7 +260,7 @@ public class AutoFactory {
         (TrajectoryLogger<ST>) trajectoryLogger,
         driveSubsystem,
         routine,
-        bindings);
+        useBindings ? bindings : new AutoBindings());
   }
 
   /**
@@ -277,10 +278,7 @@ public class AutoFactory {
    * @return A new {@link AutoTrajectory}.
    */
   public Command trajectoryCmd(String trajectoryName) {
-    AutoRoutine routine = newRoutine("Routine");
-    AutoTrajectory trajectory = routine.trajectory(trajectoryName);
-    routine.active().onTrue(trajectory.cmd());
-    return routine.cmd().until(trajectory.done());
+    return trajectory(trajectoryName, voidRoutine, false).cmd();
   }
 
   /**
@@ -299,10 +297,7 @@ public class AutoFactory {
    * @return A new {@link AutoTrajectory}.
    */
   public Command trajectoryCmd(String trajectoryName, final int splitIndex) {
-    AutoRoutine routine = newRoutine("Routine");
-    AutoTrajectory trajectory = routine.trajectory(trajectoryName, splitIndex);
-    routine.active().onTrue(trajectory.cmd());
-    return routine.cmd().until(trajectory.done());
+    return trajectory(trajectoryName, splitIndex, voidRoutine, false).cmd();
   }
 
   /**
@@ -322,7 +317,7 @@ public class AutoFactory {
    * @return A new {@link AutoTrajectory}.
    */
   public <ST extends TrajectorySample<ST>> Command trajectoryCmd(Trajectory<ST> trajectory) {
-    return trajectory(trajectory, voidRoutine).cmd();
+    return trajectory(trajectory, voidRoutine, false).cmd();
   }
 
   /**
@@ -332,7 +327,7 @@ public class AutoFactory {
    * @return A command that resets the robot's odometry.
    */
   public Command resetOdometry(String trajectoryName) {
-    return trajectory(trajectoryName, voidRoutine).resetOdometry();
+    return trajectory(trajectoryName, voidRoutine, false).resetOdometry();
   }
 
   /**
@@ -343,7 +338,7 @@ public class AutoFactory {
    * @return A command that resets the robot's odometry.
    */
   public Command resetOdometry(String trajectoryName, final int splitIndex) {
-    return trajectory(trajectoryName, splitIndex, voidRoutine).resetOdometry();
+    return trajectory(trajectoryName, splitIndex, voidRoutine, false).resetOdometry();
   }
 
   /**
@@ -355,7 +350,7 @@ public class AutoFactory {
    * @return A command that resets the robot's odometry.
    */
   public <ST extends TrajectorySample<ST>> Command resetOdometry(Trajectory<ST> trajectory) {
-    return trajectory(trajectory, voidRoutine).resetOdometry();
+    return trajectory(trajectory, voidRoutine, false).resetOdometry();
   }
 
   /**
