@@ -311,13 +311,14 @@ public class AutoTrajectory {
    * Returns a trigger that rises to true a number of cycles after the trajectory ends and falls
    * after one pulse.
    *
-   * @param cyclesToDelay The number of cycles to delay the trigger from rising to true.
+   * @param cycles The number of cycles to delay the trigger from rising to true.
    * @return A trigger that is true when the trajectory is finished.
-   * @see #doneDelay(int)
+   * @see #doneDelayed(int)
+   * @deprecated Use {@link #doneDelayed(int)} instead.
    */
   @Deprecated(forRemoval = true, since = "2025")
-  public Trigger done(int cyclesToDelay) {
-    return done(cyclesToDelay);
+  public Trigger done(int cycles) {
+    return done(cycles);
   }
 
   /**
@@ -345,18 +346,18 @@ public class AutoTrajectory {
    *
    * routine.enabled().onTrue(rushMidTraj.cmd());
    *
-   * rushMidTraj.doneDelay(10).and(noGamepiece).onTrue(pickupAnotherGamepiece.cmd());
-   * rushMidTraj.doneDelay(10).and(hasGamepiece).onTrue(goShootGamepiece.cmd());
+   * rushMidTraj.doneDelayed(10).and(noGamepiece).onTrue(pickupAnotherGamepiece.cmd());
+   * rushMidTraj.doneDelayed(10).and(hasGamepiece).onTrue(goShootGamepiece.cmd());
    *
    * // If done never falls when a new trajectory is scheduled
    * // then these triggers leak into the next trajectory, causing the next note pickup
    * // to trigger goShootGamepiece.cmd() even if we no longer care about these checks
    * </code></pre>
    *
-   * @param cyclesToDelay The number of cycles to delay the trigger from rising to true.
+   * @param cycles The number of cycles to delay the trigger from rising to true.
    * @return A trigger that is true when the trajectory is finished.
    */
-  public Trigger doneDelay(int cyclesToDelay) {
+  public Trigger doneDelayed(int cycles) {
     BooleanSupplier checker =
         new BooleanSupplier() {
           /** The last used value for trajectory completeness */
@@ -376,7 +377,7 @@ public class AutoTrajectory {
               // if just flipped to completed update last seen value
               // and store the cycleTarget based of the current cycle
               lastCompleteness = true;
-              cycleTarget = routine.pollCount() + cyclesToDelay;
+              cycleTarget = routine.pollCount() + cycles;
             }
             // finally if check the cycle matches the target
             return routine.pollCount() == cycleTarget;
@@ -423,9 +424,15 @@ public class AutoTrajectory {
     return done(0);
   }
 
+  /**
+   * Returns a trigger that stays true for a number of cycles after the trajectory ends.
+   * 
+   * @param cycles The number of cycles to stay true after the trajectory ends.
+   * @return A trigger that stays true for a number of cycles after the trajectory ends.
+   */
   public Trigger doneFor(int cycles) {
-    BooleanSupplier enterPulse = doneDelay(0);
-    BooleanSupplier exitPulse = doneDelay(cycles + 1);
+    BooleanSupplier enterPulse = doneDelayed(0);
+    BooleanSupplier exitPulse = doneDelayed(cycles + 1);
     BooleanSupplier checker =
         new BooleanSupplier() {
           boolean output = false;
@@ -450,7 +457,7 @@ public class AutoTrajectory {
    * @return A trigger that is true when the trajectory was the last one active and is done.
    */
   public Trigger recentlyDone() {
-    BooleanSupplier enterPulse = doneDelay(0);
+    BooleanSupplier enterPulse = doneDelayed(0);
     BooleanSupplier exitPulse = routine.idle().negate();
     BooleanSupplier checker =
         new BooleanSupplier() {

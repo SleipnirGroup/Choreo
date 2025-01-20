@@ -211,13 +211,13 @@ public class AutoRoutine {
    * @param trajectory The first trajectory to watch.
    * @param trajectories The other trajectories to watch
    * @return a trigger that determines if any of the trajectories are finished
-   * @see AutoTrajectory#doneDelay(int)
+   * @see AutoTrajectory#doneDelayed(int)
    */
-  public Trigger anyDoneDelay(
+  public Trigger anyDoneDelayed(
       int cyclesToDelay, AutoTrajectory trajectory, AutoTrajectory... trajectories) {
-    var trigger = trajectory.doneDelay(cyclesToDelay);
+    var trigger = trajectory.doneDelayed(cyclesToDelay);
     for (int i = 0; i < trajectories.length; i++) {
-      trigger = trigger.or(trajectories[i].doneDelay(cyclesToDelay));
+      trigger = trigger.or(trajectories[i].doneDelayed(cyclesToDelay));
     }
     return trigger.and(this.active());
   }
@@ -229,12 +229,14 @@ public class AutoRoutine {
    * @param trajectory The first trajectory to watch.
    * @param trajectories The other trajectories to watch
    * @return a trigger that determines if any of the trajectories are finished
-   * @see AutoTrajectory#doneDelay(int)
-   * @see AutoTrajectory#anyDoneDelay(int)
+   * @see AutoTrajectory#doneDelayed(int)
+   * @see AutoRoutine#anyDoneDelayed(int)
+   * @deprecated This method is deprecated and will be removed in 2025. Use {@link #anyDoneDelayed}
    */
+  @Deprecated(forRemoval = true, since = "2025")
   public Trigger anyDone(
       int cyclesToDelay, AutoTrajectory trajectory, AutoTrajectory... trajectories) {
-    return anyDoneDelay(cyclesToDelay, trajectory, trajectories);
+    return anyDoneDelayed(cyclesToDelay, trajectory, trajectories);
   }
 
   /**

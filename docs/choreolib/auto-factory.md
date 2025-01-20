@@ -125,7 +125,7 @@ AuoTrajectories have a variety of triggers that can be used to attach logic to t
 - `atTime(String)` / `atTime(double)` - Triggered when the trajectory reaches a specific time based on a value or event marker
 - `atPose(String, double, double)` / `atPose(Pose2d, double, double)` - Triggered when the robot reaches a specific pose based on a value or event marker
 - `done()` - Triggered for 1 cycle after the trajectory is finished
-- `doneDelay(int)` - Triggered for 1 cycle `n` cycles after the trajectory is finished
+- `doneDelayed(int)` - Triggered for 1 cycle `n` cycles after the trajectory is finished
 - `doneFor(int)` - Triggered for `n` cycles after the trajectory is finished
 - `recentlyDone()` - Triggered after the trajectory is finished until another trajectory is started
 

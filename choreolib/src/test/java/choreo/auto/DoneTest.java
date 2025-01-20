@@ -40,7 +40,7 @@ public class DoneTest {
     AutoTrajectory traj = factory.trajectory(trajectory, routine);
 
     BooleanSupplier done = traj.done();
-    BooleanSupplier doneDelayed = traj.doneDelay(2);
+    BooleanSupplier doneDelayed = traj.doneDelayed(2);
     BooleanSupplier doneFor = traj.doneFor(2);
     BooleanSupplier recentlyDone = traj.recentlyDone();
 
