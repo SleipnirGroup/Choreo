@@ -225,7 +225,8 @@ public class AutoFactory {
    *
    * @see AutoRoutine#trajectory(String, int)
    */
-  AutoTrajectory trajectory(String trajectoryName, final int splitIndex, AutoRoutine routine, boolean useBindings) {
+  AutoTrajectory trajectory(
+      String trajectoryName, final int splitIndex, AutoRoutine routine, boolean useBindings) {
     Optional<? extends Trajectory<?>> optTrajectory =
         trajectoryCache.loadTrajectory(trajectoryName, splitIndex);
     Trajectory<?> trajectory;
@@ -259,8 +260,7 @@ public class AutoFactory {
         (TrajectoryLogger<ST>) trajectoryLogger,
         driveSubsystem,
         routine,
-        useBindings ? bindings : new AutoBindings()
-    );
+        useBindings ? bindings : new AutoBindings());
   }
 
   /**
