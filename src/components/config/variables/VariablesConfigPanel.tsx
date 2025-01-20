@@ -147,26 +147,30 @@ const VariablesConfigPanel = observer(() => {
   doc.variables.expressions.keys();
   return (
     <>
-      {Array.from(doc.variables.expressions.entries()).map((entry) => (
-        <VariablePanel
-          validateName={(name) => doc.variables.validateName(name, entry[0])}
-          logo={() => (
-            <Tooltip
-              disableInteractive
-              title={DimensionsExt[entry[1].dimension].name}
-            >
-              {DimensionsExt[entry[1].dimension].icon()}
-            </Tooltip>
-          )}
-          entry={entry}
-          setName={(name) => doc.variables.renameExpression(entry[0], name)}
-          actionButton={() => (
-            <Delete
-              onClick={() => doc.variables.deleteExpression(entry[0])}
-            ></Delete>
-          )}
-        ></VariablePanel>
-      ))}
+      {Array.from(doc.variables.expressions.entries())
+        .sort((a, b) =>
+          a[0].toLocaleUpperCase() > b[0].toLocaleUpperCase() ? 1 : -1
+        )
+        .map((entry) => (
+          <VariablePanel
+            validateName={(name) => doc.variables.validateName(name, entry[0])}
+            logo={() => (
+              <Tooltip
+                disableInteractive
+                title={DimensionsExt[entry[1].dimension].name}
+              >
+                {DimensionsExt[entry[1].dimension].icon()}
+              </Tooltip>
+            )}
+            entry={entry}
+            setName={(name) => doc.variables.renameExpression(entry[0], name)}
+            actionButton={() => (
+              <Delete
+                onClick={() => doc.variables.deleteExpression(entry[0])}
+              ></Delete>
+            )}
+          ></VariablePanel>
+        ))}
     </>
   );
 });
