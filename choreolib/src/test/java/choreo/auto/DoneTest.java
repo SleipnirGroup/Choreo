@@ -40,7 +40,9 @@ public class DoneTest {
     AutoTrajectory traj = factory.trajectory(trajectory, routine);
 
     BooleanSupplier done = traj.done();
-    BooleanSupplier doneDelayed = traj.done(2);
+    BooleanSupplier doneDelayed = traj.doneDelay(2);
+    BooleanSupplier doneFor = traj.doneFor(2);
+    BooleanSupplier recentlyDone = traj.recentlyDone();
 
     SimHooks.pauseTiming();
 
@@ -58,6 +60,11 @@ public class DoneTest {
     assertTrue(routine.active().getAsBoolean());
     assertTrue(traj.active());
 
+    assertFalse(done);
+    assertFalse(doneDelayed);
+    assertFalse(doneFor);
+    assertFalse(recentlyDone);
+
     SimHooks.stepTiming(1.0);
     scheduler.run();
     SimHooks.stepTiming(1.0);
@@ -69,13 +76,26 @@ public class DoneTest {
     assertTrue(done);
     assertTrue(done);
     assertFalse(doneDelayed);
+    assertTrue(doneFor);
+    assertTrue(recentlyDone);
+
     scheduler.run();
     assertFalse(done);
     assertFalse(doneDelayed);
+    assertTrue(doneFor);
+    assertTrue(recentlyDone);
+
     scheduler.run();
     assertFalse(done);
     assertTrue(doneDelayed);
     assertTrue(doneDelayed);
+    assertTrue(doneFor);
+    assertTrue(recentlyDone);
+
+    routine.updateIdle(false); // simulating to starting a new trajectory
+    scheduler.run();
+    assertFalse(doneFor);
+    assertFalse(recentlyDone);
 
     SimHooks.resumeTiming();
   }

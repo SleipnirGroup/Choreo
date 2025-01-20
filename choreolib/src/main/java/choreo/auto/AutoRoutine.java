@@ -43,6 +43,9 @@ public class AutoRoutine {
   /** A boolean utilized in {@link #active()} to resolve trueness */
   private boolean isActive = false;
 
+  /** A boolean indicating if a trajectory is running on the routine right now */
+  private boolean isIdle = true;
+
   /** A boolean that is true when the loop is killed */
   boolean isKilled = false;
 
@@ -115,6 +118,15 @@ public class AutoRoutine {
   }
 
   /**
+   * Updates the idle state of the routine.
+   *
+   * @param isIdle The new idle state of the routine.
+   */
+  void updateIdle(boolean isIdle) {
+    this.isIdle = isIdle;
+  }
+
+  /**
    * Resets the routine. This can either be called on auto init or auto end to reset the routine
    * incase you run it again. If this is called on a routine that doesn't need to be reset it will
    * do nothing.
@@ -133,6 +145,17 @@ public class AutoRoutine {
     reset();
     ChoreoAlert.alert("Killed an auto loop", kWarning).set(true);
     isKilled = true;
+  }
+
+  /**
+   * Creates a trigger that is true when the routine is idle.
+   *
+   * <p>Idle is defined as no trajectories made by the routine are running.
+   *
+   * @return A trigger that is true when the routine is idle.
+   */
+  public Trigger idle() {
+    return new Trigger(loop, () -> isIdle);
   }
 
   /**
@@ -188,14 +211,30 @@ public class AutoRoutine {
    * @param trajectory The first trajectory to watch.
    * @param trajectories The other trajectories to watch
    * @return a trigger that determines if any of the trajectories are finished
+   * @see AutoTrajectory#doneDelay(int)
+   */
+  public Trigger anyDoneDelay(
+      int cyclesToDelay, AutoTrajectory trajectory, AutoTrajectory... trajectories) {
+    var trigger = trajectory.doneDelay(cyclesToDelay);
+    for (int i = 0; i < trajectories.length; i++) {
+      trigger = trigger.or(trajectories[i].doneDelay(cyclesToDelay));
+    }
+    return trigger.and(this.active());
+  }
+
+  /**
+   * Creates a trigger that produces a rising edge when any of the trajectories are finished.
+   *
+   * @param cyclesToDelay The number of cycles to delay.
+   * @param trajectory The first trajectory to watch.
+   * @param trajectories The other trajectories to watch
+   * @return a trigger that determines if any of the trajectories are finished
+   * @see AutoTrajectory#doneDelay(int)
+   * @see AutoTrajectory#anyDoneDelay(int)
    */
   public Trigger anyDone(
       int cyclesToDelay, AutoTrajectory trajectory, AutoTrajectory... trajectories) {
-    var trigger = trajectory.done(cyclesToDelay);
-    for (int i = 0; i < trajectories.length; i++) {
-      trigger = trigger.or(trajectories[i].done(cyclesToDelay));
-    }
-    return trigger.and(this.active());
+    return anyDoneDelay(cyclesToDelay, trajectory, trajectories);
   }
 
   /**
@@ -209,6 +248,21 @@ public class AutoRoutine {
     var trigger = trajectory.active();
     for (int i = 0; i < trajectories.length; i++) {
       trigger = trigger.or(trajectories[i].active());
+    }
+    return trigger.and(this.active());
+  }
+
+  /**
+   * Creates a trigger that returns true when any of the trajectories given are inactive.
+   *
+   * @param trajectory The first trajectory to watch.
+   * @param trajectories The other trajectories to watch
+   * @return a trigger that determines if any of the trajectories are inactive
+   */
+  public Trigger anyInactive(AutoTrajectory trajectory, AutoTrajectory... trajectories) {
+    var trigger = trajectory.inactive();
+    for (int i = 0; i < trajectories.length; i++) {
+      trigger = trigger.or(trajectories[i].inactive());
     }
     return trigger.and(this.active());
   }
