@@ -318,7 +318,7 @@ public class AutoTrajectory {
    */
   @Deprecated(forRemoval = true, since = "2025")
   public Trigger done(int cycles) {
-    return done(cycles);
+    return doneDelayed(cycles);
   }
 
   /**
@@ -421,7 +421,7 @@ public class AutoTrajectory {
    * @return A trigger that is true when the trajectory is finished.
    */
   public Trigger done() {
-    return done(0);
+    return doneDelayed(0);
   }
 
   /**
