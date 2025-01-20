@@ -419,19 +419,20 @@ public class AutoTrajectory {
     // Make the trigger only be high for 1 cycle when the time has elapsed,
     // this is needed for better support of multi-time triggers for multi events
     return new Trigger(
-        routine.loop(),
-        new BooleanSupplier() {
-          double lastTimestamp = timer.get();
+            routine.loop(),
+            new BooleanSupplier() {
+              double lastTimestamp = timer.get();
 
-          public boolean getAsBoolean() {
-            double nowTimestamp = timer.get();
-            try {
-              return lastTimestamp < nowTimestamp && nowTimestamp >= timeSinceStart;
-            } finally {
-              lastTimestamp = nowTimestamp;
-            }
-          }
-        }).and(active());
+              public boolean getAsBoolean() {
+                double nowTimestamp = timer.get();
+                try {
+                  return lastTimestamp < nowTimestamp && nowTimestamp >= timeSinceStart;
+                } finally {
+                  lastTimestamp = nowTimestamp;
+                }
+              }
+            })
+        .and(active());
   }
 
   /**
