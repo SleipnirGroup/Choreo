@@ -230,7 +230,7 @@ public class AutoRoutine {
    * @param trajectories The other trajectories to watch
    * @return a trigger that determines if any of the trajectories are finished
    * @see AutoTrajectory#doneDelayed(int)
-   * @see AutoRoutine#anyDoneDelayed(int)
+   * @see AutoRoutine#anyDoneDelayed
    * @deprecated This method is deprecated and will be removed in 2025. Use {@link #anyDoneDelayed}
    */
   @Deprecated(forRemoval = true, since = "2025")
