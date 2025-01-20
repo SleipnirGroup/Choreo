@@ -15,8 +15,10 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.simulation.SimHooks;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SchedulerMaker;
-import java.util.function.BooleanSupplier;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -39,8 +41,12 @@ public class DoneTest {
     AutoRoutine routine = factory.newRoutine("test");
     AutoTrajectory traj = factory.trajectory(trajectory, routine, true);
 
-    BooleanSupplier done = traj.done();
-    BooleanSupplier doneDelayed = traj.done(2);
+    Trigger done = traj.done();
+    Trigger doneDelayed = traj.done(2);
+
+    // makes the scheduler poll the triggers every cycle
+    done.onTrue(Commands.none());
+    doneDelayed.onTrue(Commands.none());
 
     SimHooks.pauseTiming();
 
