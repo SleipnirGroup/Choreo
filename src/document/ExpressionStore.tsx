@@ -589,6 +589,11 @@ export const Variables = types
         vars.set(key, val.asScope);
       }
       return vars;
+    },
+    get sortedPoseKeys() : Array<string> {
+      return Array.from(self.poses.keys()).sort((a, b) =>
+        a.toLocaleUpperCase() > b.toLocaleUpperCase() ? 1 : -1
+      );
     }
   }))
   .actions((self) => ({

@@ -1,8 +1,4 @@
-import {
-  ToggleButton,
-  ToggleButtonGroup,
-  Tooltip
-} from "@mui/material";
+import { ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
 import { Component, ReactElement } from "react";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
@@ -14,6 +10,7 @@ import Input from "../input/Input";
 import InputList from "../input/InputList";
 import styles from "./WaypointConfigPanel.module.css";
 import PoseAssignToWaypointDropdown from "./PoseAssignToWaypointDropdown";
+import { doc } from "../../document/DocumentManager";
 
 type Props = { waypoint: IHolonomicWaypointStore | null; index: number };
 
@@ -59,6 +56,12 @@ class WaypointPanel extends Component<Props, State> {
               setXExpression={(node) => waypoint.x.set(node)}
               setYExpression={(node) => waypoint.y.set(node)}
               setHeadingExpression={(node) => waypoint.heading.set(node)}
+              poses = {doc.variables.sortedPoseKeys.map(k=>({title:k, variableName:k}))}
+              onDefinePose={(variableName)=>{doc.variables.addPose(variableName, {
+                x: waypoint.x.serialize,
+                y: waypoint.y.serialize,
+                heading: waypoint.heading.serialize
+              })}}
             ></PoseAssignToWaypointDropdown>
           </span>
           <span
