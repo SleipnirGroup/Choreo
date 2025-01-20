@@ -150,7 +150,7 @@ public class AutoFactory {
 
           @Override
           public Trigger active() {
-            return new Trigger(this.loop(), () -> false);
+            return new Trigger(this.loop(), () -> true);
           }
         };
   }
@@ -277,10 +277,7 @@ public class AutoFactory {
    * @return A new {@link AutoTrajectory}.
    */
   public Command trajectoryCmd(String trajectoryName) {
-    AutoRoutine routine = newRoutine("Routine");
-    AutoTrajectory trajectory = routine.trajectory(trajectoryName);
-    routine.active().onTrue(trajectory.cmd());
-    return routine.cmd().until(trajectory.done());
+    return trajectory(trajectoryName, voidRoutine).cmd();
   }
 
   /**
@@ -299,10 +296,7 @@ public class AutoFactory {
    * @return A new {@link AutoTrajectory}.
    */
   public Command trajectoryCmd(String trajectoryName, final int splitIndex) {
-    AutoRoutine routine = newRoutine("Routine");
-    AutoTrajectory trajectory = routine.trajectory(trajectoryName, splitIndex);
-    routine.active().onTrue(trajectory.cmd());
-    return routine.cmd().until(trajectory.done());
+    return trajectory(trajectoryName, splitIndex, voidRoutine).cmd();
   }
 
   /**
