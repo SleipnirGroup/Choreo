@@ -37,7 +37,7 @@ public class DoneTest {
     Trajectory<SwerveSample> trajectory =
         TrajectoryTestHelper.linearTrajectory("test", start, end, 3.0, SwerveSample.class);
     AutoRoutine routine = factory.newRoutine("test");
-    AutoTrajectory traj = factory.trajectory(trajectory, routine);
+    AutoTrajectory traj = factory.trajectory(trajectory, routine, true);
 
     BooleanSupplier done = traj.done();
     BooleanSupplier doneDelayed = traj.done(2);

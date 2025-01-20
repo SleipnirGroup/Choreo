@@ -41,7 +41,7 @@ public class AutoRoutine {
   private final AllianceContext allianceCtx;
 
   /** A boolean utilized in {@link #active()} to resolve trueness */
-  private boolean isActive = false;
+  boolean isActive = false;
 
   /** A boolean that is true when the loop is killed */
   boolean isKilled = false;
@@ -142,7 +142,7 @@ public class AutoRoutine {
    * @return A new {@link AutoTrajectory}.
    */
   public AutoTrajectory trajectory(String trajectoryName) {
-    return factory.trajectory(trajectoryName, this);
+    return factory.trajectory(trajectoryName, this, true);
   }
 
   /**
@@ -153,7 +153,7 @@ public class AutoRoutine {
    * @return A new {@link AutoTrajectory}.
    */
   public AutoTrajectory trajectory(String trajectoryName, final int splitIndex) {
-    return factory.trajectory(trajectoryName, splitIndex, this);
+    return factory.trajectory(trajectoryName, splitIndex, this, true);
   }
 
   /**
@@ -165,7 +165,7 @@ public class AutoRoutine {
    */
   public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory trajectory(
       Trajectory<SampleType> trajectory) {
-    return factory.trajectory(trajectory, this);
+    return factory.trajectory(trajectory, this, true);
   }
 
   /**
