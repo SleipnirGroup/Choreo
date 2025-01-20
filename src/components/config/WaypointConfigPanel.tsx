@@ -1,4 +1,8 @@
-import { ToggleButton, ToggleButtonGroup, Tooltip } from "@mui/material";
+import {
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip
+} from "@mui/material";
 import { observer } from "mobx-react";
 import { Component, ReactElement } from "react";
 import { IHolonomicWaypointStore } from "../../document/HolonomicWaypointStore";
@@ -9,6 +13,7 @@ import ExpressionInputList from "../input/ExpressionInputList";
 import Input from "../input/Input";
 import InputList from "../input/InputList";
 import styles from "./WaypointConfigPanel.module.css";
+import PoseAssignToWaypointDropdown from "./PoseAssignToWaypointDropdown";
 
 type Props = { waypoint: IHolonomicWaypointStore | null; index: number };
 
@@ -28,27 +33,34 @@ class WaypointPanel extends Component<Props, State> {
     if (this.isWaypointNonNull(waypoint)) {
       return (
         <div className={styles.WaypointPanel}>
-          <ExpressionInputList>
-            <ExpressionInput
-              title="x"
-              enabled={true}
-              maxWidthCharacters={8}
-              number={waypoint.x}
-            ></ExpressionInput>
-            <ExpressionInput
-              title="y"
-              enabled={true}
-              maxWidthCharacters={8}
-              number={waypoint.y}
-            ></ExpressionInput>
-            <ExpressionInput
-              title="θ"
-              enabled={waypoint.fixHeading}
-              maxWidthCharacters={8}
-              number={waypoint.heading}
-              //setNumber={(heading) => waypoint!.setHeading(heading)}
-            ></ExpressionInput>
-          </ExpressionInputList>
+          <span>
+            <ExpressionInputList>
+              <ExpressionInput
+                title="x"
+                enabled={true}
+                maxWidthCharacters={8}
+                number={waypoint.x}
+              ></ExpressionInput>
+              <ExpressionInput
+                title="y"
+                enabled={true}
+                maxWidthCharacters={8}
+                number={waypoint.y}
+              ></ExpressionInput>
+              <ExpressionInput
+                title="θ"
+                enabled={waypoint.fixHeading}
+                maxWidthCharacters={8}
+                number={waypoint.heading}
+                //setNumber={(heading) => waypoint!.setHeading(heading)}
+              ></ExpressionInput>
+            </ExpressionInputList>
+            <PoseAssignToWaypointDropdown
+              setXExpression={(node) => waypoint.x.set(node)}
+              setYExpression={(node) => waypoint.y.set(node)}
+              setHeadingExpression={(node) => waypoint.heading.set(node)}
+            ></PoseAssignToWaypointDropdown>
+          </span>
           <span
             style={{
               display: "flex",
