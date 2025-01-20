@@ -338,22 +338,25 @@ public class AutoTrajectory {
 
           @Override
           public boolean getAsBoolean() {
-            if (!isCompleted) {
+            if (!isCompleted || isActive) {
               // update last seen value
               lastCompleteness = false;
+              cycleTarget = -1;
               return false;
             }
-            if (!lastCompleteness && isCompleted) {
+            if (isCompleted) {
               // if just flipped to completed update last seen value
               // and store the cycleTarget based of the current cycle
+              if (!lastCompleteness) {
+                cycleTarget = routine.pollCount() + cyclesToDelay;
+              }
               lastCompleteness = true;
-              cycleTarget = routine.pollCount() + cyclesToDelay;
             }
             // finally if check the cycle matches the target
             return routine.pollCount() == cycleTarget;
           }
         };
-    return inactive().and(new Trigger(routine.loop(), checker));
+    return new Trigger(routine.loop(), checker);
   }
 
   /**
@@ -428,7 +431,7 @@ public class AutoTrajectory {
               lastTimestamp = nowTimestamp;
             }
           }
-        });
+        }).and(active());
   }
 
   /**

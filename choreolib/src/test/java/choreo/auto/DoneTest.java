@@ -55,7 +55,7 @@ public class DoneTest {
     scheduler.schedule(traj.cmd());
     scheduler.run();
 
-    assertTrue(routine.active().getAsBoolean());
+    assertTrue(routine.active());
     assertTrue(traj.active());
 
     SimHooks.stepTiming(1.0);
@@ -76,6 +76,22 @@ public class DoneTest {
     assertFalse(done);
     assertTrue(doneDelayed);
     assertTrue(doneDelayed);
+
+    // test re-running a trajectory
+    scheduler.schedule(traj.cmd());
+    scheduler.run();
+
+    assertTrue(routine.active());
+    assertTrue(traj.active());
+
+    SimHooks.stepTiming(2.0);
+    scheduler.run();
+    scheduler.run();
+    SimHooks.stepTiming(1.05);
+    scheduler.run();
+
+    assertTrue(traj.inactive());
+    assertTrue(done);
 
     SimHooks.resumeTiming();
   }
