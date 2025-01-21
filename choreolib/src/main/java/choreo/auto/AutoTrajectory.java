@@ -206,7 +206,7 @@ public class AutoTrajectory {
    * Creates a command that will schedule <b>another</b> command that will follow the trajectory.
    *
    * <p>This can be useful when putting {@link AutoTrajectory} commands in sequences that require
-   * subsystems that the AutoTrajectory triggers require.
+   * subsystems also required by in AutoTrajectory-bound subsystems.
    *
    * @return The command that will schedule the trajectory following command.
    */
