@@ -1,4 +1,5 @@
 import {
+  Key,
   KeyboardArrowRight,
   KeyboardDoubleArrowRight,
   Numbers,
@@ -589,6 +590,22 @@ export const Variables = types
         vars.set(key, val.asScope);
       }
       return vars;
+    },
+    get sortedExpressions(): Array<[string, IExpressionStore]> {
+      return Array.from(self.expressions.entries()).sort((a, b) =>
+        a[0].toLocaleUpperCase() > b[0].toLocaleUpperCase() ? 1 : -1
+      );
+    },
+    get sortedExpressionKeys(): Array<string> {
+      return this.sortedExpressions.map(([key, _]) => key);
+    },
+    get sortedPoses(): Array<[string, IExprPose]> {
+      return Array.from(self.poses.entries()).sort((a, b) =>
+        a[0].toLocaleUpperCase() > b[0].toLocaleUpperCase() ? 1 : -1
+      );
+    },
+    get sortedPoseKeys(): Array<string> {
+      return this.sortedPoses.map(([key, _]) => key);
     }
   }))
   .actions((self) => ({
