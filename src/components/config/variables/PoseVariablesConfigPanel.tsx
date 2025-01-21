@@ -40,7 +40,7 @@ const PoseVariablePanel = observer(
           style={{
             display: "flex",
             flexDirection: "row",
-            justifyContent: "space-between",
+            justifyContent: "space-between"
           }}
           onClick={() => {
             if (props.setOpen !== undefined) {
