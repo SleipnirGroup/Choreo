@@ -19,13 +19,12 @@ dependencies = [ "wpilib" ]
 requires = [
   "setuptools>=61.0",
   "setuptools-git-versioning",
-  "wpilib"
 ]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools-git-versioning]
 enabled = true
-version_callback = "choreo.version:get_version"
+version_callback = "_choreo_version:get_version"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
