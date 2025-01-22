@@ -1,0 +1,129 @@
+name: Choreo -> ChoreoLib Integration Test
+
+on: [pull_request, push]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    name: "Generate trajectories for integration test"
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          token: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y \
+            build-essential \
+            curl \
+            file \
+            libayatana-appindicator3-dev \
+            libgtk-3-dev \
+            librsvg2-dev \
+            libssl-dev \
+            libwebkit2gtk-4.0-dev \
+            wget
+
+      - name: Set up sccache
+        uses: mozilla-actions/sccache-action@v0.0.5
+      - name: Cargo test Generate latest
+        run: cargo test -- --include-ignored integration_tests::generate::generate::generate_latest
+      - uses: actions/upload-artifact@v4
+        with:
+          name: swerve.traj
+          path: ./src-core/test-tmp-latest/swerve/swerve.traj
+      - uses: actions/upload-artifact@v4
+        with:
+          name: differential.traj
+          path: ./src-core/test-tmp-latest/differential/differential.traj
+
+  test-host:
+    needs: [generate]
+    env:
+      MACOSX_DEPLOYMENT_TARGET: 13.3
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            artifact-name: Windows-x86_64
+            build-options:
+          - os: ubuntu-22.04
+
+          # FIXME: Link failure on commands library
+          # - os: windows-2022
+          #   artifact-name: Windows-aarch64
+          #   build-options: -Pbuildwinarm64 -Ponlywindowsarm64
+
+          - os: macOS-13
+            artifact-name: macOS-x86_64
+            build-options:
+
+          - os: macOS-14
+            artifact-name: macOS-arm64
+            build-options:
+
+    name: "Test C++ and Java / ${{ matrix.artifact-name }}"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          persist-credentials: false
+          token: ${{secrets.GITHUB_TOKEN}}
+
+      - name: Fetch all history and metadata
+        run: git fetch --prune --unshallow
+      
+      - name: Download swerve trajectory
+        uses: actions/download-artifact@v4
+        with:
+          path: ./choreolib/src/test/resources/
+          pattern: "swerve.traj"
+      - name: Download differential trajectory
+        uses: actions/download-artifact@v4
+        with:
+          path: ./choreolib/src/test/resources/
+          pattern: "differential.traj"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: 17
+
+      - name: Test with Gradle
+        working-directory: choreolib
+        run: ./gradlew test -Dprofile=integration ${{ matrix.build-options }}
+
+  test-python:
+    name: "Test Python"
+    needs: [generate]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          token: ${{secrets.GITHUB_TOKEN}}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - run: pip3 install build wheel pytest
+
+      - run: python3 -m build
+        working-directory: ./choreolib/py
+      - run: pip3 install --no-cache-dir dist/*.whl
+        working-directory: ./choreolib/py
+      - run: pytest
+        working-directory: ./choreolib/py
+
+
+    
