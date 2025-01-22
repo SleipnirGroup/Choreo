@@ -137,30 +137,35 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     problem.SubjectTo(dt * path.drivetrain.wheelRadius *
                           path.drivetrain.wheelMaxAngularVelocity <=
                       minWidth);
+    if (N_sgmt == 0) {
+      dt.SetValue(0);
+    } else {
+      // Use initialGuess and Ns to find the dx, dy, dθ between wpts
+      const auto sgmt_start = GetIndex(Ns, sgmtIndex);
+      const auto sgmt_end = GetIndex(Ns, sgmtIndex + 1);
+      const auto dx =
+          initialGuess.x.at(sgmt_end) - initialGuess.x.at(sgmt_start);
+      const auto dy =
+          initialGuess.y.at(sgmt_end) - initialGuess.y.at(sgmt_start);
+      const auto dist = std::hypot(dx, dy);
+      const auto θ_0 = std::atan2(initialGuess.thetasin.at(sgmt_start),
+                                  initialGuess.thetacos.at(sgmt_start));
+      const auto θ_1 = std::atan2(initialGuess.thetasin.at(sgmt_end),
+                                  initialGuess.thetacos.at(sgmt_end));
+      const auto dθ = std::abs(AngleModulus(θ_1 - θ_0));
 
-    // Use initialGuess and Ns to find the dx, dy, dθ between wpts
-    const auto sgmt_start = GetIndex(Ns, sgmtIndex);
-    const auto sgmt_end = GetIndex(Ns, sgmtIndex + 1);
-    const auto dx = initialGuess.x.at(sgmt_end) - initialGuess.x.at(sgmt_start);
-    const auto dy = initialGuess.y.at(sgmt_end) - initialGuess.y.at(sgmt_start);
-    const auto dist = std::hypot(dx, dy);
-    const auto θ_0 = std::atan2(initialGuess.thetasin.at(sgmt_start),
-                                initialGuess.thetacos.at(sgmt_start));
-    const auto θ_1 = std::atan2(initialGuess.thetasin.at(sgmt_end),
-                                initialGuess.thetacos.at(sgmt_end));
-    const auto dθ = std::abs(AngleModulus(θ_1 - θ_0));
+      auto maxLinearVel = maxDrivetrainVelocity;
 
-    auto maxLinearVel = maxDrivetrainVelocity;
+      const auto angularTime =
+          CalculateTrapezoidalTime(dθ, maxAngVel, maxAngAccel);
+      maxLinearVel = std::min(maxLinearVel, dist / angularTime);
 
-    const auto angularTime =
-        CalculateTrapezoidalTime(dθ, maxAngVel, maxAngAccel);
-    maxLinearVel = std::min(maxLinearVel, dist / angularTime);
+      const auto linearTime =
+          CalculateTrapezoidalTime(dist, maxLinearVel, maxAccel);
+      const double sgmtTime = angularTime + linearTime;
 
-    const auto linearTime =
-        CalculateTrapezoidalTime(dist, maxLinearVel, maxAccel);
-    const double sgmtTime = angularTime + linearTime;
-
-    dt.SetValue(sgmtTime / N_sgmt);
+      dt.SetValue(sgmtTime / N_sgmt);
+    }
   }
   problem.Minimize(std::move(T_tot));
 
