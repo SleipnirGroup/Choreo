@@ -406,6 +406,7 @@ dependencies = [
  "dashmap",
  "fastrand",
  "futures-util",
+ "indexmap 2.7.0",
  "ipc-channel",
  "serde",
  "serde_json",

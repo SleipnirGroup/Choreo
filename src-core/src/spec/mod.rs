@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 pub mod project;
 pub mod trajectory;
-pub mod upgraders;
+pub mod version_handlers;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct OpenFilePayload {
@@ -12,8 +12,8 @@ pub struct OpenFilePayload {
     pub name: String,
 }
 
-pub const PROJECT_SCHEMA_VERSION: u32 = 1;
-pub const TRAJ_SCHEMA_VERSION: u32 = 1;
+pub const PROJECT_SCHEMA_VERSION: u64 = 1;
+pub const TRAJ_SCHEMA_VERSION: u64 = 1;
 
 /// A trait for types that can be snapshotted.
 /// This allows for the type to be converted to a f64.

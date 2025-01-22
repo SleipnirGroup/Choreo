@@ -1,20 +1,22 @@
 use trajoptlib::Pose2d;
 
-use crate::{generation::intervals::guess_control_interval_counts, spec::trajectory::Waypoint};
+use crate::{generation::intervals::{guess_control_interval_counts, initial_guess_waypoints}, spec::trajectory::Waypoint};
 
 use super::{DifferentialGenerationTransformer, FeatureLockedTransformer, GenerationContext, SwerveGenerationTransformer};
 
 
 pub struct IntervalCountSetter {
     counts: Vec<usize>,
-    waypoints: Vec<Waypoint<f64>>
+    waypoints: Vec<Waypoint<f64>>,
+    initial_guess_indexes: Vec<bool>
 }
 
 impl SwerveGenerationTransformer for IntervalCountSetter {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
         FeatureLockedTransformer::always(Self {
             counts: guess_control_interval_counts(&context.project.config.snapshot(), &context.params).unwrap_or_default(),
-            waypoints: context.params.waypoints.clone()
+            waypoints: context.params.waypoints.clone(),
+            initial_guess_indexes: initial_guess_waypoints(&context.params)
         })
     }
 
@@ -26,7 +28,7 @@ impl SwerveGenerationTransformer for IntervalCountSetter {
         for i in 0..waypoints.len() {
             let wpt = &waypoints[i];
             // add initial guess points (actually unconstrained empty wpts in Choreo terms)
-            if wpt.is_initial_guess && !wpt.fix_heading && !wpt.fix_translation {
+            if self.initial_guess_indexes[i] && !wpt.fix_heading && !wpt.fix_translation {
                 let guess_point = Pose2d {
                     x: wpt.x,
                     y: wpt.y,
@@ -63,7 +65,8 @@ impl DifferentialGenerationTransformer for IntervalCountSetter {
     fn initialize(context: &GenerationContext) -> FeatureLockedTransformer<Self> {
         FeatureLockedTransformer::always(Self {
             counts: guess_control_interval_counts(&context.project.config.snapshot(), &context.params).unwrap_or_default(),
-            waypoints: context.params.waypoints.clone()
+            waypoints: context.params.waypoints.clone(),
+            initial_guess_indexes: initial_guess_waypoints(&context.params)
         })
     }
 
@@ -75,7 +78,7 @@ impl DifferentialGenerationTransformer for IntervalCountSetter {
         for i in 0..waypoints.len() {
             let wpt = &waypoints[i];
             // add initial guess points (actually unconstrained empty wpts in Choreo terms)
-            if wpt.is_initial_guess && !wpt.fix_heading && !wpt.fix_translation {
+            if self.initial_guess_indexes[i] && !wpt.fix_heading && !wpt.fix_translation {
                 let guess_point = Pose2d {
                     x: wpt.x,
                     y: wpt.y,
