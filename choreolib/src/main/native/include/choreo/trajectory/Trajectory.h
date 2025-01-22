@@ -225,6 +225,12 @@ class Trajectory {
 
     auto sublist =
         std::vector<SampleType>(samples.begin() + start, samples.begin() + end);
+    // Empty section can be achieved by two identical waypoints in sequence
+    if (sublist.size() == 0) {
+      return Trajectory<SampleType>{
+          name + "[" + std::to_string(splitIndex) + "]", {}, {}, {}};
+    }
+    // Now we know sublist.size() >= 1
     units::second_t startTime = sublist.front().GetTimestamp();
     units::second_t endTime = sublist.back().GetTimestamp();
 

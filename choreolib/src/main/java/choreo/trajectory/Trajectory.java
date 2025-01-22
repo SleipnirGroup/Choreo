@@ -245,6 +245,13 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
     int start = splits.get(splitIndex);
     int end = splitIndex + 1 < splits.size() ? splits.get(splitIndex + 1) + 1 : samples.size();
     var sublist = samples.subList(start, end);
+    // Empty section can be achieved by two identical waypoints in sequence
+    if (sublist.size() == 0) {
+      return Optional.of(
+          new Trajectory<SampleType>(
+              this.name + "[" + splitIndex + "]", List.of(), List.of(), List.of()));
+    }
+    // Now we know sublist.size() >= 1
     double startTime = sublist.get(0).getTimestamp();
     double endTime = sublist.get(sublist.size() - 1).getTimestamp();
     return Optional.of(
