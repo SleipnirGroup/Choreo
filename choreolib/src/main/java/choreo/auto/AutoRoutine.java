@@ -257,15 +257,17 @@ public class AutoRoutine {
 
   /**
    * Creates a trigger that returns true when any of the trajectories given are inactive.
+   * 
+   * <p>This trigger will only return true if the routine is active.
    *
    * @param trajectory The first trajectory to watch.
    * @param trajectories The other trajectories to watch
    * @return a trigger that determines if any of the trajectories are inactive
    */
-  public Trigger anyInactive(AutoTrajectory trajectory, AutoTrajectory... trajectories) {
+  public Trigger allInactive(AutoTrajectory trajectory, AutoTrajectory... trajectories) {
     var trigger = trajectory.inactive();
     for (int i = 0; i < trajectories.length; i++) {
-      trigger = trigger.or(trajectories[i].inactive());
+      trigger = trigger.and(trajectories[i].inactive());
     }
     return trigger.and(this.active());
   }
