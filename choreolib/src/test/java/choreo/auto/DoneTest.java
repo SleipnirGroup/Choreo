@@ -41,7 +41,7 @@ public class DoneTest {
     AutoTrajectory traj = factory.trajectory(trajectory, routine, true);
 
     Trigger done = traj.done();
-    Trigger doneDelayed = traj.done(2);
+    Trigger doneDelayed = traj.doneDelayed(2);
     Trigger doneFor = traj.doneFor(2);
     Trigger recentlyDone = traj.recentlyDone();
 
