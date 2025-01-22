@@ -448,10 +448,10 @@ public class AutoTrajectory {
             if (exitPulse.getAsBoolean()) {
               output = false;
             }
-            return output;
+            return output && isCompleted;
           }
         };
-    return inactive().and(new Trigger(routine.loop(), checker));
+    return new Trigger(routine.loop(), checker);
   }
 
   /**
@@ -474,10 +474,10 @@ public class AutoTrajectory {
             if (exitPulse.getAsBoolean()) {
               output = false;
             }
-            return output;
+            return output && isCompleted;
           }
         };
-    return inactive().and(new Trigger(routine.loop(), checker));
+    return new Trigger(routine.loop(), checker);
   }
 
   /**

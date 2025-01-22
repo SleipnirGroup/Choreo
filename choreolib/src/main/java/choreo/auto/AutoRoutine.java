@@ -210,7 +210,8 @@ public class AutoRoutine {
    * @param cyclesToDelay The number of cycles to delay.
    * @param trajectory The first trajectory to watch.
    * @param trajectories The other trajectories to watch
-   * @return a trigger that goes true for one cycle whenever any of the trajectories finishes, delayed by the given number of cycles.
+   * @return a trigger that goes true for one cycle whenever any of the trajectories finishes,
+   *     delayed by the given number of cycles.
    * @see AutoTrajectory#doneDelayed(int)
    */
   public Trigger anyDoneDelayed(
