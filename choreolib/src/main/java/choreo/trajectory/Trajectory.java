@@ -239,13 +239,15 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
    * @return a choreo trajectory that represents the split of the trajectory at the given index.
    */
   public Optional<Trajectory<SampleType>> getSplit(int splitIndex) {
+    // Assumption: splits.get(splitIndex) is a valid index of samples.
     if (splitIndex < 0 || splitIndex >= splits.size()) {
       return Optional.empty();
     }
     int start = splits.get(splitIndex);
     int end = splitIndex + 1 < splits.size() ? splits.get(splitIndex + 1) + 1 : samples.size();
     var sublist = samples.subList(start, end);
-    // Empty section can be achieved by two identical waypoints in sequence
+    // Empty section should not be achievable (would mean malformed splits array), but is handled
+    // for safety
     if (sublist.size() == 0) {
       return Optional.of(
           new Trajectory<SampleType>(
