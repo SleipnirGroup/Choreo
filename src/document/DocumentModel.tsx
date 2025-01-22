@@ -163,6 +163,16 @@ export const DocumentStore = types
         self.history.redo();
       }
     },
+    async generateAllOutdated() {
+      const uuidsToGenerate: string[] = [];
+      self.pathlist.paths.forEach((pathStore) => {
+        if (!pathStore.ui.upToDate) {
+          uuidsToGenerate.push(pathStore.uuid);
+        }
+      });
+      await Promise.allSettled(uuidsToGenerate.map(this.generatePath));
+    },
+
     async generatePath(uuid: string) {
       const pathStore = self.pathlist.paths.get(uuid);
       if (pathStore === undefined) {

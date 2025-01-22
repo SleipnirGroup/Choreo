@@ -124,7 +124,7 @@ export const PathListStore = types
               path.params.addConstraint("StopPoint", true, "last");
               path.params.addConstraint(
                 "KeepInRectangle",
-                true,
+                false,
                 "first",
                 "last",
                 {
