@@ -132,7 +132,7 @@ const PoseVariablesConfigPanel = observer(() => {
   doc.variables.poses.keys();
   return (
     <>
-      {Array.from(doc.variables.poses.entries()).map((entry) => (
+      {doc.variables.sortedPoses.map((entry) => (
         <OpenablePoseVariablePanel
           entry={entry}
           setName={(name) => doc.variables.renamePose(entry[0], name)}
