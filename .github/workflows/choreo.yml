@@ -211,9 +211,9 @@ jobs:
           unzip -o Linux-aarch64.zip
           rm Linux-aarch64.zip
           mv Linux-aarch64-standalone.zip Choreo-${{ github.ref_name }}-Linux-aarch64-standalone.zip
-          mv choreo_*_amd64.AppImage Choreo-${{ github.ref_name }}-Linux-aarch64.AppImage
-          mv choreo_*_amd64.deb Choreo-${{ github.ref_name }}-Linux-aarch64.deb
-          mv choreo-*.x86_64.rpm Choreo-${{ github.ref_name }}-Linux-aarch64.rpm
+          mv choreo_*_aarch64.AppImage Choreo-${{ github.ref_name }}-Linux-aarch64.AppImage
+          mv choreo_*_arm64.deb Choreo-${{ github.ref_name }}-Linux-aarch64.deb
+          mv choreo-*.aarch64.rpm Choreo-${{ github.ref_name }}-Linux-aarch64.rpm
 
       - name: Display structure of renamed files
         run: ls -R
