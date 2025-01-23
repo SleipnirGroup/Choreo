@@ -464,7 +464,7 @@ public class AutoTrajectory {
   /**
    * Returns a trigger that stays true for a number of cycles after the trajectory ends.
    *
-   * @param cycles The number of cycles to stay true after the trajectory ends.
+   * @param seconds Seconds to stay true after the trajectory ends.
    * @return A trigger that stays true for a number of cycles after the trajectory ends.
    */
   public Trigger doneFor(double seconds) {
