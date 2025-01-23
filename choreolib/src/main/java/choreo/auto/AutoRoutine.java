@@ -39,7 +39,7 @@ public class AutoRoutine {
   private final String name;
 
   /** The alliance helper that is used to determine flipping logic */
-  private final AllianceContext allianceCtx;
+  final AllianceContext allianceCtx;
 
   /** A boolean utilized in {@link #active()} to resolve trueness */
   boolean isActive = false;

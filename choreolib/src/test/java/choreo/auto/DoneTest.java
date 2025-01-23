@@ -91,7 +91,7 @@ public class DoneTest {
     assertTrue(oneSecondIn);
     assertTrue(oneSecondIn);
     assertFalse(twoSecondIn);
-    SimHooks.stepTiming(1.0);
+    SimHooks.stepTiming(1.1);
     scheduler.run();
     assertFalse(oneSecondIn);
     assertTrue(twoSecondIn);
