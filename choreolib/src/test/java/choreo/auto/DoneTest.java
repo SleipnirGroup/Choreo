@@ -40,12 +40,17 @@ public class DoneTest {
     AutoRoutine routine = factory.newRoutine("test");
     AutoTrajectory traj = factory.trajectory(trajectory, routine, true);
 
+    Trigger oneSecondIn = traj.atTime(1.0);
+    Trigger twoSecondIn = traj.atTime(2.0);
+
     Trigger done = traj.done();
-    Trigger doneDelayed = traj.doneDelayed(2);
-    Trigger doneFor = traj.doneFor(2);
+    Trigger doneDelayed = traj.doneDelayed(2.0);
+    Trigger doneFor = traj.doneFor(2.5);
     Trigger recentlyDone = traj.recentlyDone();
 
     // makes the scheduler poll the triggers every cycle
+    oneSecondIn.onTrue(Commands.none());
+    twoSecondIn.onTrue(Commands.none());
     done.onTrue(Commands.none());
     doneDelayed.onTrue(Commands.none());
     doneFor.onTrue(Commands.none());
@@ -60,6 +65,13 @@ public class DoneTest {
     DriverStation.refreshData();
     assertTrue(DriverStation.isAutonomousEnabled());
 
+    assertFalse(oneSecondIn);
+    assertFalse(twoSecondIn);
+    assertFalse(done);
+    assertFalse(doneDelayed);
+    assertFalse(doneFor);
+    assertFalse(recentlyDone);
+
     scheduler.schedule(routine.cmd());
     scheduler.schedule(traj.cmd());
     scheduler.run();
@@ -67,6 +79,8 @@ public class DoneTest {
     assertTrue(routine.active());
     assertTrue(traj.active());
 
+    assertFalse(oneSecondIn);
+    assertFalse(twoSecondIn);
     assertFalse(done);
     assertFalse(doneDelayed);
     assertFalse(doneFor);
@@ -74,24 +88,32 @@ public class DoneTest {
 
     SimHooks.stepTiming(1.0);
     scheduler.run();
+    assertTrue(oneSecondIn);
+    assertTrue(oneSecondIn);
+    assertFalse(twoSecondIn);
     SimHooks.stepTiming(1.0);
     scheduler.run();
+    assertFalse(oneSecondIn);
+    assertTrue(twoSecondIn);
     SimHooks.stepTiming(1.05);
     scheduler.run();
     assertTrue(traj.inactive());
 
     assertTrue(done);
-    assertTrue(done);
     assertFalse(doneDelayed);
     assertTrue(doneFor);
     assertTrue(recentlyDone);
+    SimHooks.stepTiming(0.2);
+    assertTrue(done);
 
+    SimHooks.stepTiming(1.0);
     scheduler.run();
     assertFalse(done);
     assertFalse(doneDelayed);
     assertTrue(doneFor);
     assertTrue(recentlyDone);
 
+    SimHooks.stepTiming(1.0);
     scheduler.run();
     assertFalse(done);
     assertTrue(doneDelayed);
@@ -100,6 +122,7 @@ public class DoneTest {
     assertTrue(recentlyDone);
 
     routine.updateIdle(false); // simulating to starting a new trajectory
+    SimHooks.stepTiming(1.0);
     scheduler.run();
     assertFalse(doneFor);
     assertFalse(recentlyDone);
@@ -121,5 +144,11 @@ public class DoneTest {
     assertTrue(done);
 
     SimHooks.resumeTiming();
+
+    DriverStationSim.setDsAttached(false);
+    DriverStationSim.setEnabled(false);
+    DriverStationSim.setAutonomous(false);
+    DriverStationSim.notifyNewData();
+    DriverStation.refreshData();
   }
 }

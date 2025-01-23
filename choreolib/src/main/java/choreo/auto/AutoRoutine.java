@@ -9,6 +9,7 @@ import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
 import choreo.util.ChoreoAlert;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -51,6 +52,8 @@ public class AutoRoutine {
 
   /** The amount of times the routine has been polled */
   private int pollCount = 0;
+  /** The timestamp of the current cycle */
+  private double cycleTimestamp = 0;
 
   /**
    * Creates a new loop with a specific name and a custom alliance supplier.
@@ -85,6 +88,7 @@ public class AutoRoutine {
       return;
     }
     pollCount++;
+    cycleTimestamp = Timer.getFPGATimestamp();
     loop.poll();
     isActive = true;
   }
@@ -108,13 +112,11 @@ public class AutoRoutine {
     return new Trigger(loop, condition);
   }
 
-  /**
-   * Gets the poll count of the routine.
-   *
-   * @return The poll count of the routine.
-   */
   int pollCount() {
     return pollCount;
+  }
+  double cycleTimestamp() {
+    return cycleTimestamp;
   }
 
   /**
@@ -133,6 +135,7 @@ public class AutoRoutine {
    */
   public void reset() {
     pollCount = 0;
+    cycleTimestamp = 0;
     isActive = false;
   }
 

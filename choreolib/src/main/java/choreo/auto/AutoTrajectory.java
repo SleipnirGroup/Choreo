@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -65,7 +66,8 @@ public class AutoTrajectory {
   private final Consumer<Pose2d> resetOdometry;
   private final Consumer<? extends TrajectorySample<?>> controller;
   private final AllianceContext allianceCtx;
-  private final Timer timer = new Timer();
+  private final Timer activeTimer = new Timer();
+  private final Timer inactiveTimer = new Timer();
   private final Subsystem driveSubsystem;
   private final AutoRoutine routine;
 
@@ -142,7 +144,9 @@ public class AutoTrajectory {
   }
 
   private void cmdInitialize() {
-    timer.restart();
+    activeTimer.start();
+    inactiveTimer.stop();
+    inactiveTimer.reset();
     isActive = true;
     isCompleted = false;
     logTrajectory(true);
@@ -155,7 +159,7 @@ public class AutoTrajectory {
       allianceNotReady.set(true);
       return;
     }
-    var sampleOpt = trajectory.sampleAt(timer.get(), allianceCtx.doFlip());
+    var sampleOpt = trajectory.sampleAt(activeTimer.get(), allianceCtx.doFlip());
     if (sampleOpt.isEmpty()) {
       return;
     }
@@ -170,7 +174,9 @@ public class AutoTrajectory {
   }
 
   private void cmdEnd(boolean interrupted) {
-    timer.stop();
+    activeTimer.stop();
+    activeTimer.reset();
+    inactiveTimer.start();
     isActive = false;
     isCompleted = !interrupted;
     cmdExecute(); // will force the controller to be fed the final sample
@@ -179,7 +185,7 @@ public class AutoTrajectory {
   }
 
   private boolean cmdIsFinished() {
-    return timer.get() > trajectory.getTotalTime() || !routine.isActive;
+    return activeTimer.get() > trajectory.getTotalTime() || !routine.isActive;
   }
 
   /**
@@ -307,18 +313,60 @@ public class AutoTrajectory {
     return active().negate();
   }
 
-  /**
-   * Returns a trigger that rises to true a number of cycles after the trajectory ends and falls
-   * after one pulse.
-   *
-   * @param cycles The number of cycles to delay the trigger from rising to true.
-   * @return A trigger that is true when the trajectory is finished.
-   * @see #doneDelayed(int)
-   * @deprecated Use {@link #doneDelayed(int)} instead.
-   */
-  @Deprecated(forRemoval = true, since = "2025")
-  public Trigger done(int cycles) {
-    return doneDelayed(cycles);
+  private Trigger timeTrigger(double targetTime, Timer timer) {
+    // Make the trigger only be high for 1 cycle when the time has elapsed
+    return new Trigger(
+            routine.loop(),
+            new BooleanSupplier() {
+              double lastTimestamp = -1.0;
+              OptionalInt pollTarget = OptionalInt.empty();
+
+              public boolean getAsBoolean() {
+                if (!timer.isRunning()) {
+                  lastTimestamp = -1.0;
+                  pollTarget = OptionalInt.empty();
+                  return false;
+                }
+                double nowTimestamp = timer.get();
+                try {
+                  boolean timeAligns = lastTimestamp < targetTime && nowTimestamp >= targetTime;
+                  if (pollTarget.isEmpty() && timeAligns) {
+                    // if the time aligns for this cycle and it hasn't aligned previously this cycle
+                    pollTarget = OptionalInt.of(routine.pollCount());
+                    return true;
+                  } else if (pollTarget.isPresent() && routine.pollCount() == pollTarget.getAsInt()) {
+                    // if the time aligned previously this cycle
+                    return true;
+                  } else if (pollTarget.isPresent()) {
+                    // if the time aligned last cycle
+                    pollTarget = OptionalInt.empty();
+                    return false;
+                  }
+                  return false;
+                } finally {
+                  lastTimestamp = nowTimestamp;
+                }
+              }
+            });
+  }
+
+  private Trigger enterExitTrigger(Trigger enter, Trigger exit) {
+    return new Trigger(
+        routine.loop(),
+        new BooleanSupplier() {
+          boolean output = false;
+
+          @Override
+          public boolean getAsBoolean() {
+            if (enter.getAsBoolean()) {
+              output = true;
+            }
+            if (exit.getAsBoolean()) {
+              output = false;
+            }
+            return output;
+          }
+        });
   }
 
   /**
@@ -354,39 +402,25 @@ public class AutoTrajectory {
    * // to trigger goShootGamepiece.cmd() even if we no longer care about these checks
    * </code></pre>
    *
-   * @param cycles The number of cycles to delay the trigger from rising to true.
+   * @param seconds The seconds to delay the trigger from rising to true.
    * @return A trigger that is true when the trajectory is finished.
    */
-  public Trigger doneDelayed(int cycles) {
-    BooleanSupplier checker =
-        new BooleanSupplier() {
-          /** The last used value for trajectory completeness */
-          boolean lastCompleteness = false;
+  public Trigger doneDelayed(double seconds) {
+    return timeTrigger(seconds, inactiveTimer).and(new Trigger(routine.loop(), () -> isCompleted));
+  }
 
-          /** The cycle to be true for */
-          int cycleTarget = -1;
-
-          @Override
-          public boolean getAsBoolean() {
-            if (!isCompleted || isActive) {
-              // update last seen value
-              lastCompleteness = false;
-              cycleTarget = -1;
-              return false;
-            }
-            if (isCompleted) {
-              // if just flipped to completed update last seen value
-              // and store the cycleTarget based of the current cycle
-              if (!lastCompleteness) {
-                cycleTarget = routine.pollCount() + cycles;
-              }
-              lastCompleteness = true;
-            }
-            // finally if check the cycle matches the target
-            return routine.pollCount() == cycleTarget;
-          }
-        };
-    return new Trigger(routine.loop(), checker);
+  /**
+   * Returns a trigger that rises to true a number of cycles after the trajectory ends and falls
+   * after one pulse.
+   *
+   * @param cycles The number of cycles to delay the trigger from rising to true.
+   * @return A trigger that is true when the trajectory is finished.
+   * @see #doneDelayed(int)
+   * @deprecated Use {@link #doneDelayed(int)} instead.
+   */
+  @Deprecated(forRemoval = true, since = "2025")
+  public Trigger done(int cycles) {
+    return doneDelayed(0.02 * cycles);
   }
 
   /**
@@ -433,25 +467,8 @@ public class AutoTrajectory {
    * @param cycles The number of cycles to stay true after the trajectory ends.
    * @return A trigger that stays true for a number of cycles after the trajectory ends.
    */
-  public Trigger doneFor(int cycles) {
-    BooleanSupplier enterPulse = doneDelayed(0);
-    BooleanSupplier exitPulse = doneDelayed(cycles + 1);
-    BooleanSupplier checker =
-        new BooleanSupplier() {
-          boolean output = false;
-
-          @Override
-          public boolean getAsBoolean() {
-            if (enterPulse.getAsBoolean()) {
-              output = true;
-            }
-            if (exitPulse.getAsBoolean()) {
-              output = false;
-            }
-            return output && isCompleted;
-          }
-        };
-    return new Trigger(routine.loop(), checker);
+  public Trigger doneFor(double seconds) {
+    return enterExitTrigger(doneDelayed(0), doneDelayed(seconds));
   }
 
   /**
@@ -460,24 +477,7 @@ public class AutoTrajectory {
    * @return A trigger that is true when the trajectory was the last one active and is done.
    */
   public Trigger recentlyDone() {
-    BooleanSupplier enterPulse = doneDelayed(0);
-    BooleanSupplier exitPulse = routine.idle().negate();
-    BooleanSupplier checker =
-        new BooleanSupplier() {
-          boolean output = false;
-
-          @Override
-          public boolean getAsBoolean() {
-            if (enterPulse.getAsBoolean()) {
-              output = true;
-            }
-            if (exitPulse.getAsBoolean()) {
-              output = false;
-            }
-            return output && isCompleted;
-          }
-        };
-    return new Trigger(routine.loop(), checker);
+    return enterExitTrigger(doneDelayed(0), routine.idle().negate());
   }
 
   /**
@@ -508,23 +508,7 @@ public class AutoTrajectory {
       return offTrigger;
     }
 
-    // Make the trigger only be high for 1 cycle when the time has elapsed,
-    // this is needed for better support of multi-time triggers for multi events
-    return new Trigger(
-            routine.loop(),
-            new BooleanSupplier() {
-              double lastTimestamp = timer.get();
-
-              public boolean getAsBoolean() {
-                double nowTimestamp = timer.get();
-                try {
-                  return lastTimestamp < nowTimestamp && nowTimestamp >= timeSinceStart;
-                } finally {
-                  lastTimestamp = nowTimestamp;
-                }
-              }
-            })
-        .and(active());
+    return timeTrigger(timeSinceStart, activeTimer);
   }
 
   /**
