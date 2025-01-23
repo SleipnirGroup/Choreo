@@ -20,7 +20,7 @@
 #include "choreo/trajectory/SwerveSample.h"
 #include "choreo/trajectory/Trajectory.h"
 #include "choreo/trajectory/TrajectorySample.h"
-#include "choreo/util/TrajSpecVersion.h"
+#include "choreo/util/TrajSchemaVersion.h"
 
 namespace choreo {
 
