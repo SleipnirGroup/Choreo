@@ -5,8 +5,8 @@
 #include <cassert>
 #include <utility>
 
-#include <sleipnir/autodiff/Variable.hpp>
-#include <sleipnir/optimization/OptimizationProblem.hpp>
+#include <sleipnir/autodiff/variable.hpp>
+#include <sleipnir/optimization/problem.hpp>
 
 #include "trajopt/geometry/Pose2.hpp"
 #include "trajopt/geometry/Translation2.hpp"
@@ -48,11 +48,11 @@ class TRAJOPT_DLLEXPORT PointAtConstraint {
    * @param linearAcceleration The robot's linear acceleration.
    * @param angularAcceleration The robot's angular acceleration.
    */
-  void Apply(sleipnir::OptimizationProblem& problem, const Pose2v& pose,
+  void Apply(slp::Problem& problem, const Pose2v& pose,
              [[maybe_unused]] const Translation2v& linearVelocity,
-             [[maybe_unused]] const sleipnir::Variable& angularVelocity,
+             [[maybe_unused]] const slp::Variable& angularVelocity,
              [[maybe_unused]] const Translation2v& linearAcceleration,
-             [[maybe_unused]] const sleipnir::Variable& angularAcceleration) {
+             [[maybe_unused]] const slp::Variable& angularAcceleration) {
     // dx,dy = desired heading
     // ux,uy = unit vector of desired heading
     // hx,hy = heading
@@ -65,12 +65,12 @@ class TRAJOPT_DLLEXPORT PointAtConstraint {
     auto dot = pose.Rotation().Cos() * dx + pose.Rotation().Sin() * dy;
     if (!m_flip) {
       // dot close to 1 * hypot (point toward)
-      problem.SubjectTo(dot >=
-                        std::cos(m_headingTolerance) * sleipnir::hypot(dx, dy));
+      problem.subject_to(dot >=
+                         std::cos(m_headingTolerance) * slp::hypot(dx, dy));
     } else {
       // dot close to -1 * hypot (point away)
-      problem.SubjectTo(dot <= -std::cos(m_headingTolerance) *
-                                   sleipnir::hypot(dx, dy));
+      problem.subject_to(dot <=
+                         -std::cos(m_headingTolerance) * slp::hypot(dx, dy));
     }
   }
 
