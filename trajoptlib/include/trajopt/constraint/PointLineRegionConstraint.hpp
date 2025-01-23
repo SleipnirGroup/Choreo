@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include <sleipnir/autodiff/Variable.hpp>
-#include <sleipnir/optimization/OptimizationProblem.hpp>
+#include <sleipnir/autodiff/variable.hpp>
+#include <sleipnir/optimization/problem.hpp>
 
 #include "trajopt/geometry/Pose2.hpp"
 #include "trajopt/geometry/Translation2.hpp"
@@ -61,11 +61,11 @@ class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
    * @param linearAcceleration The robot's linear acceleration.
    * @param angularAcceleration The robot's angular acceleration.
    */
-  void Apply(sleipnir::OptimizationProblem& problem, const Pose2v& pose,
+  void Apply(slp::Problem& problem, const Pose2v& pose,
              [[maybe_unused]] const Translation2v& linearVelocity,
-             [[maybe_unused]] const sleipnir::Variable& angularVelocity,
+             [[maybe_unused]] const slp::Variable& angularVelocity,
              [[maybe_unused]] const Translation2v& linearAcceleration,
-             [[maybe_unused]] const sleipnir::Variable& angularAcceleration) {
+             [[maybe_unused]] const slp::Variable& angularAcceleration) {
     auto point = pose.Translation() + m_robotPoint.RotateBy(pose.Rotation());
 
     // Determine which side of the start-end field line a point is on.
@@ -98,13 +98,13 @@ class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
 
     switch (m_side) {
       case Side::kAbove:
-        problem.SubjectTo(cross > 0);
+        problem.subject_to(cross > 0);
         break;
       case Side::kBelow:
-        problem.SubjectTo(cross < 0);
+        problem.subject_to(cross < 0);
         break;
       case Side::kOn:
-        problem.SubjectTo(cross == 0);
+        problem.subject_to(cross == 0);
         break;
     }
   }

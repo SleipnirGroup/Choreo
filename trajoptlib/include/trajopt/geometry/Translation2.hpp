@@ -7,8 +7,8 @@
 #include <tuple>
 #include <utility>
 
-#include <sleipnir/autodiff/Variable.hpp>
-#include <sleipnir/autodiff/VariableMatrix.hpp>
+#include <sleipnir/autodiff/variable.hpp>
+#include <sleipnir/autodiff/variable_matrix.hpp>
 
 #include "trajopt/geometry/Rotation2.hpp"
 
@@ -218,15 +218,14 @@ constexpr decltype(auto) get(const trajopt::Translation2<T>& translation) {
 }
 
 using Translation2d = Translation2<double>;
-using Translation2v = Translation2<sleipnir::Variable>;
+using Translation2v = Translation2<slp::Variable>;
 
 template <typename T, typename U>
-  requires std::same_as<T, sleipnir::Variable> ||
-           std::same_as<U, sleipnir::Variable>
-sleipnir::EqualityConstraints operator==(const Translation2<T>& lhs,
-                                         const Translation2<U>& rhs) {
-  return sleipnir::VariableMatrix{{lhs.X()}, {lhs.Y()}} ==
-         sleipnir::VariableMatrix{{rhs.X()}, {rhs.Y()}};
+  requires std::same_as<T, slp::Variable> || std::same_as<U, slp::Variable>
+slp::EqualityConstraints operator==(const Translation2<T>& lhs,
+                                    const Translation2<U>& rhs) {
+  return slp::VariableMatrix{{lhs.X()}, {lhs.Y()}} ==
+         slp::VariableMatrix{{rhs.X()}, {rhs.Y()}};
 }
 
 inline bool operator==(const Translation2d& lhs, const Translation2d& rhs) {

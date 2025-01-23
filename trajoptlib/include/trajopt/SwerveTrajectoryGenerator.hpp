@@ -6,9 +6,9 @@
 #include <utility>
 #include <vector>
 
-#include <sleipnir/autodiff/Variable.hpp>
-#include <sleipnir/optimization/OptimizationProblem.hpp>
-#include <sleipnir/optimization/SolverExitCondition.hpp>
+#include <sleipnir/autodiff/variable.hpp>
+#include <sleipnir/optimization/problem.hpp>
+#include <sleipnir/optimization/solver/exit_status.hpp>
 
 #include "trajopt/geometry/Translation2.hpp"
 #include "trajopt/path/PathBuilder.hpp"
@@ -240,7 +240,7 @@ class TRAJOPT_DLLEXPORT SwerveTrajectoryGenerator {
    * @return Returns a holonomic trajectory on success, or a string containing a
    *   failure reason.
    */
-  std::expected<SwerveSolution, sleipnir::SolverExitCondition> Generate(
+  std::expected<SwerveSolution, slp::ExitStatus> Generate(
       bool diagnostics = false);
 
  private:
@@ -248,28 +248,28 @@ class TRAJOPT_DLLEXPORT SwerveTrajectoryGenerator {
   SwervePath path;
 
   /// State Variables
-  std::vector<sleipnir::Variable> x;
-  std::vector<sleipnir::Variable> y;
-  std::vector<sleipnir::Variable> cosθ;
-  std::vector<sleipnir::Variable> sinθ;
-  std::vector<sleipnir::Variable> vx;
-  std::vector<sleipnir::Variable> vy;
-  std::vector<sleipnir::Variable> ω;
-  std::vector<sleipnir::Variable> ax;
-  std::vector<sleipnir::Variable> ay;
-  std::vector<sleipnir::Variable> α;
+  std::vector<slp::Variable> x;
+  std::vector<slp::Variable> y;
+  std::vector<slp::Variable> cosθ;
+  std::vector<slp::Variable> sinθ;
+  std::vector<slp::Variable> vx;
+  std::vector<slp::Variable> vy;
+  std::vector<slp::Variable> ω;
+  std::vector<slp::Variable> ax;
+  std::vector<slp::Variable> ay;
+  std::vector<slp::Variable> α;
 
   /// Input Variables
-  std::vector<std::vector<sleipnir::Variable>> Fx;
-  std::vector<std::vector<sleipnir::Variable>> Fy;
+  std::vector<std::vector<slp::Variable>> Fx;
+  std::vector<std::vector<slp::Variable>> Fy;
 
   /// Time Variables
-  std::vector<sleipnir::Variable> dts;
+  std::vector<slp::Variable> dts;
 
   /// Discretization Constants
   std::vector<size_t> Ns;
 
-  sleipnir::OptimizationProblem problem;
+  slp::Problem problem;
 
   void ApplyInitialGuess(const SwerveSolution& solution);
 
