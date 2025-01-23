@@ -44,7 +44,7 @@ pub fn guess_control_interval_count(
             let dx = next.x - this.x;
             let dy = next.y - this.y;
             let distance = dx.hypot(dy);
-            let dtheta = angle_modulus(next.heading - this.heading).abs();
+            let mut dtheta = angle_modulus(next.heading - this.heading).abs();
             let max_force = config.wheel_max_torque() / config.radius;
 
             // Default to robotConfig's max velocity and acceleration
@@ -77,7 +77,9 @@ pub fn guess_control_interval_count(
                                     }
                                     ConstraintData::MaxAngularVelocity { max } => {
                                         max_ang_vel = max_ang_vel.min(max);
-
+                                        if max_ang_vel == 0.0 {
+                                            dtheta = 0.0;
+                                        }
                                         let time = calculate_trapezoidal_time(
                                             dtheta,
                                             max_ang_vel,
@@ -126,6 +128,9 @@ pub fn guess_control_interval_count(
 
 fn calculate_trapezoidal_time(distance: f64, max_vel: f64, max_accel: f64) -> f64 {
     // accel + deccel distance = (max_linear_vel * max_linear_vel) / max_linear_accel
+    if distance == 0.0 || max_vel == 0.0 {
+        return 0.0;
+    }
     if distance > (max_vel * max_vel) / max_accel {
         // trapezoid
         distance / max_vel + max_vel / max_accel

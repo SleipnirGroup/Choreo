@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <functional>
 #include <utility>
 #include <vector>
 
@@ -271,7 +270,6 @@ class TRAJOPT_DLLEXPORT SwerveTrajectoryGenerator {
   std::vector<size_t> Ns;
 
   sleipnir::OptimizationProblem problem;
-  std::vector<std::function<void()>> callbacks;
 
   void ApplyInitialGuess(const SwerveSolution& solution);
 

@@ -8,14 +8,24 @@ import { IDocumentStore } from "../../../document/DocumentModel";
  * Represents a path gradient.
  */
 export type PathGradientArgs<S extends SwerveSample | DifferentialSample> = {
-  point: S;
-  prev: S;
-  next: S;
-  arr: S[];
-  total: number;
-  count: number;
-  sect: number;
-  idxInSect: number;
+  /**
+   * Array of all trajectory samples.
+   */
+  samples: S[];
+
+  /**
+   * Index of current trajectory sample within sample array.
+   */
+  index: number;
+
+  /**
+   * Section number, where a section is a region between stop points.
+   */
+  section: number;
+
+  /**
+   * Document model.
+   */
   documentModel: IDocumentStore;
 };
 export type PathGradient = {
@@ -26,17 +36,16 @@ export type PathGradient = {
   name: string;
 
   localizedDescription: string;
+
   /**
    * The localized/user-facing description of the path gradient.
    */
   description: string;
+
   /**
-   * A function that calculates the gradient value for a given point in a saved trajectory sample.
+   * A function that calculates the gradient value for a given point based on a
+   * trajectory sample.
    *
-   * @param point - The saved trajectory sample point.
-   * @param i - The index of the point in the array.
-   * @param arr - The array of saved trajectory samples.
-   * @param documentModel - The document model.
    * @returns The gradient value as a string.
    */
   function: (args: PathGradientArgs<any>) => string;
@@ -47,173 +56,144 @@ export type PathGradient = {
  */
 class PathGradientFunctions {
   /**
-   * Returns the "select-yellow" color for the given point in the trajectory.
+   * Returns the "select-yellow" color for the given trajectory sample.
+   *
    * This is the default color used when no gradient is applied.
    * NOTE: This function is not used and is included only for completeness.
    *
-   * @param point - The current point in the trajectory.
-   * @param i - The index of the current point in the trajectory.
-   * @param arr - The array of all points in the trajectory.
-   * @param documentModel - The document model object.
    * @returns The "select-yellow" color.
    */
-  static none(args: PathGradientArgs<any>): string {
+  static none(_args: PathGradientArgs<any>): string {
     return "var(--select-yellow)";
   }
 
   /**
-   * Calculates the color gradient for a given point on a saved trajectory based on its velocity.
-   * Faster robot velocity is shown as green.
+   * Produces a color gradient for linear velocity.
    *
-   * @param point - The point on the saved trajectory.
-   * @param i - The index of the point in the array.
-   * @param arr - The array of saved trajectory samples.
-   * @param documentModel - The document model.
-   * @returns The color gradient in HSL format.
+   * Lower velocities are red and higher velocities are green.
+   *
+   * @returns The color value in HSL format.
    */
-  static velocity({ point, documentModel }: PathGradientArgs<any>): string {
-    // calculates the magnitude of the velocity vector, then divides it by the theoretical floor speed
-    // then it scales the ratio [0, 1]: red to green[0, 100]
+  static linearVelocity({
+    samples,
+    index,
+    documentModel
+  }: PathGradientArgs<any>): string {
+    const sample = samples[index];
+
+    // Linear velocity magnitude
+    let v = 0;
+    if (sample.vl !== undefined) {
+      v = Math.abs(sample.vl + sample.vr) / 2;
+    } else {
+      v = Math.hypot(sample.vx, sample.vy);
+    }
+
     const floorSpeed =
       documentModel.robotConfig.wheelMaxVelocity *
       documentModel.robotConfig.radius.value;
-    const t = Math.hypot(point.vx, point.vy) / floorSpeed;
-    return `hsl(${100 * t}, 100%, 50%)`;
+
+    // Divide by floor speed to scale linear velocity to [0, 1], then scale to
+    // red-green hue [0, 100]
+    return `hsl(${100 * (v / floorSpeed)}, 100%, 50%)`;
   }
 
   /**
-   * Calculates the progress color for a given point in a trajectory.
-   * The color is determined based on the index of the point in the trajectory array.
-   * Faster robot velocity is shown as green.
+   * Produces a color gradient for trajectory progress.
    *
-   * @param point - The current point in the trajectory.
-   * @param i - The index of the current point in the array.
-   * @param arr - The array of trajectory points.
-   * @param documentModel - The document model.
-   * @returns The progress color in HSL format.
-   */
-  static progress({ count, total }: PathGradientArgs<any>): string {
-    // this creates a ratio [0, 1] of the current point against the total points
-    // then scales it from red to greeen, [0, 100]
-    const t = 1 - count / total;
-    return `hsl(${100 * t}, 100%, 50%)`;
-  }
-
-  /**
-   * Calculates the color gradient for the acceleration of a trajectory point.
-   * Faster robot acceleration is shown as green.
+   * 0% progress is green and 100% progress is red.
    *
-   * @param point - The trajectory point.
-   * @param i - The index of the trajectory point in the array.
-   * @param arr - The array of trajectory points.
-   * @param documentModel - The document model.
-   * @returns The color gradient for the acceleration.
-   */
-  static acceleration({
-    point,
-    next,
-    count,
-    total
-  }: PathGradientArgs<any>): string {
-    let t = 0;
-    if (point.vx) {
-      if (count != 0 && count != total - 1) {
-        // first calculates the magnitude of the change in velocity vector over change in time
-        // between the current point and the next point.
-        // then, it is scaled/normalized for the HSL color value.
-        const A = point;
-        const B = next;
-        t = Math.hypot(B.vx - A.vx, B.vy - A.vy);
-        const dt = B.t - A.t;
-        t /= dt * 10;
-      }
-
-      return `hsl(${100 * (1 - t)}, 100%, 50%)`;
-    } else {
-      return "var(--select-yellow)";
-    }
-  }
-
-  /**
-   * Computes the intervalDt value for a given point in a trajectory.
-   * Shorter time difference between intervals is shown as green.
-   *
-   * @param point - The current point in the trajectory.
-   * @param i - The index of the current point in the array.
-   * @param arr - The array of trajectory points.
-   * @param documentModel - The document model.
-   * @returns The computed intervalDt value.
-   */
-  static intervalDt({
-    point,
-    next,
-    count,
-    total
-  }: PathGradientArgs<any>): string {
-    let t = 0;
-    if (count == 0 || count == total - 1) {
-      t = 0;
-    } else {
-      const A = point;
-      const B = next;
-      const dt = B.t - A.t;
-      t = 1.5 - 10 * dt;
-    }
-    return `hsl(${100 * t}, 100%, 50%)`;
-  }
-
-  /**
-   * Calculates the color value for the angular velocity of a trajectory point.
-   * Faster robot angular velocity is shown as green.
-   *
-   * @param point - The trajectory point.
-   * @param i - The index of the trajectory point in the array.
-   * @param arr - The array of trajectory points.
-   * @param documentModel - The document model.
    * @returns The color value in HSL format.
    */
-  static angularVelocity({ point }: PathGradientArgs<any>): string {
-    // the color value is normalized from red (0) to green (100)
-    // based on an artificial angular velocity max of 2 r/s
-    return `hsl(${Math.abs((point.omega ?? 0) * 100) / 2}, 100%, 50%)`;
+  static progress({ samples, index }: PathGradientArgs<any>): string {
+    // Scale progress to [0, 1], invert the range, then scale to red-green hue
+    // [0, 100]
+    return `hsl(${100 * (1 - index / samples.length)}, 100%, 50%)`;
   }
 
   /**
-   * Returns a different HSL color for each split trajectory by stop point
+   * Produces a color gradient for linear acceleration.
    *
-   * @param point - Each point.
-   * @param i - The index of the point in the array.
-   * @param arr - The array of saved trajectory samples.
-   * @param documentModel - The document model.
-   * @returns The color gradient in HSL format.
+   * Lower accelerations are red and higher accelerations are green.
+   *
+   * @returns The color value in HSL format.
    */
-  static splitTrajectories({ arr, sect: i }: PathGradientArgs<any>): string {
-    if (i == 0) {
+  static linearAcceleration({ samples, index }: PathGradientArgs<any>): string {
+    const sample = samples[index];
+
+    // Linear acceleration magnitude
+    let acceleration = 0;
+    if (sample.vl !== undefined) {
+      acceleration = Math.abs(sample.al + sample.ar) / 2;
+    } else {
+      acceleration = Math.hypot(sample.ax, sample.ay);
+    }
+
+    // Divide by 10 to scale linear acceleration to [0, 1], invert range, then
+    // scale to red-green hue [0, 100]
+    return `hsl(${(100 * acceleration) / 10}, 100%, 50%)`;
+  }
+
+  /**
+   * Produces a color gradient for trajectory sample interval time difference
+   * (dt).
+   *
+   * Shorter dts are red and longer dts are green.
+   *
+   * @returns The color value in HSL format.
+   */
+  static intervalDt({ samples, index }: PathGradientArgs<any>): string {
+    const dt = samples[index + 1].t - samples[index].t;
+    return `hsl(${100 * (1.5 - 10 * dt)}, 100%, 50%)`;
+  }
+
+  /**
+   * Produces a color gradient for angular velocity.
+   *
+   * Lower angular velocities are red and higher angular velocities are green.
+   *
+   * @returns The color value in HSL format.
+   */
+  static angularVelocity({ samples, index }: PathGradientArgs<any>): string {
+    // Scale angular velocity magnitude to [0, 1] using artificial 2π rad/s max,
+    // then normalize to red-green hue [0, 100]
+    return `hsl(${100 * (Math.abs(samples[index].omega) / (2 * Math.PI))}, 100%, 50%)`;
+  }
+
+  /**
+   * Produces a different color for each split trajectory delimited by stop
+   * points.
+   *
+   * @returns The color value in HSL format.
+   */
+  static splitTrajectories({ section }: PathGradientArgs<any>): string {
+    if (section == 0) {
       return "var(--select-yellow)";
     }
 
-    // an absolute value sine function is used to generate a distinct color between [0, 1]
-    // then a scalar is used to scale the color between the full color range [0, 360]
-    return `hsl(${Math.abs(Math.sin(i) * 360)}, 100%, 50%)`;
+    // Generate distinct color within [0, 1] with abs(sin(x)), then scale to
+    // full hue range [0, 360]
+    return `hsl(${360 * Math.abs(Math.sin(section))}, 100%, 50%)`;
   }
 }
 
 /**
  * Represents the available path gradients.
+ *
  * This links a gradient's user-facing description to its corresponding function.'
  */
-export const PathGradients: Record<string, PathGradient> = {
+export const PathGradients = {
   None: {
     name: "None",
     localizedDescription: "None",
     description: "No path gradient applied.",
     function: PathGradientFunctions.none
   },
-  Velocity: {
-    name: "Velocity",
-    localizedDescription: "Velocity",
-    description: "Faster robot velocity is shown as green.",
-    function: PathGradientFunctions.velocity
+  LinearVelocity: {
+    name: "LinearVelocity",
+    localizedDescription: "Linear Velocity",
+    description: "Faster robot linear velocity is shown as green.",
+    function: PathGradientFunctions.linearVelocity
   },
   Progress: {
     name: "Progress",
@@ -221,11 +201,11 @@ export const PathGradients: Record<string, PathGradient> = {
     description: "Further progress through the path is shown as red.",
     function: PathGradientFunctions.progress
   },
-  Acceleration: {
-    name: "Acceleration",
-    localizedDescription: "Acceleration",
-    description: "Faster robot acceleration is shown as green.",
-    function: PathGradientFunctions.acceleration
+  LinearAcceleration: {
+    name: "LinearAcceleration",
+    localizedDescription: "Linear Acceleration",
+    description: "Faster robot linear acceleration is shown as green.",
+    function: PathGradientFunctions.linearAcceleration
   },
   IntervalDt: {
     name: "IntervalDt",
@@ -246,4 +226,4 @@ export const PathGradients: Record<string, PathGradient> = {
       "Split trajectories on stop points are shown in different colors.",
     function: PathGradientFunctions.splitTrajectories
   }
-};
+} as const;

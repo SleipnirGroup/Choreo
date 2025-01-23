@@ -49,7 +49,8 @@ fn main() {
     println!("cargo:rustc-link-lib=Sleipnir");
     println!("cargo:rustc-link-lib=fmt");
 
-    println!("cargo:rerun-if-changed=src/RustFFI.hpp");
-    println!("cargo:rerun-if-changed=src/RustFFI.cpp");
-    println!("cargo:rerun-if-changed=src/lib.rs");
+    println!("cargo:rerun-if-changed=CMakeLists.txt");
+    println!("cargo:rerun-if-changed=cmake");
+    println!("cargo:rerun-if-changed=include");
+    println!("cargo:rerun-if-changed=src");
 }

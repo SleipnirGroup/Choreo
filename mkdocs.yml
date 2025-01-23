@@ -90,7 +90,6 @@ nav:
       - Installation: installation.md
       - Document Settings Panel: document-settings.md
       - Robot Configuration: document-settings/robot-configuration.md
-      - File Export Settings: document-settings/file-export-settings.md
   - Usage:
       - Editing Paths: usage/editing-paths.md
       - Controls & Shortcuts: usage/controls-shortcuts.md
@@ -109,6 +108,7 @@ nav:
   - Contributing:
       - Building Choreo: contributing/building-choreo.md
       - Building ChoreoLib: contributing/building-choreolib.md
+      - Building Documentation: contributing/building-docs.md
       - Contributing Guide: contributing/contributing-guide.md
       - Release Process: contributing/release-process.md
       - Upgrading File Schemas: contributing/schema-upgrade.md

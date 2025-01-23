@@ -1,4 +1,5 @@
 import json
+import os
 
 from choreo.trajectory import (
     DifferentialSample,
@@ -8,8 +9,12 @@ from choreo.trajectory import (
     SwerveTrajectory,
     load_event_marker,
 )
+from choreo.util.traj_schema_version import (
+    TRAJ_SCHEMA_VERSION as generated_TRAJ_SCHEMA_VERSION,
+)
+from wpilib import getDeployDirectory
 
-TRAJ_SCHEMA_VERSION = 1
+TRAJ_SCHEMA_VERSION = generated_TRAJ_SCHEMA_VERSION
 
 
 def load_differential_trajectory_string(
@@ -69,7 +74,11 @@ def load_differential_trajectory(trajectory_name: str) -> DifferentialTrajectory
         The path name in Choreo, which matches the file name in the deploy
         directory. Do not include ".traj" here.
     """
-    with open(trajectory_name + ".traj", "r", encoding="utf-8") as trajectory_file:
+    with open(
+        os.path.join(getDeployDirectory(), "choreo", trajectory_name + ".traj"),
+        "r",
+        encoding="utf-8",
+    ) as trajectory_file:
         data = trajectory_file.read()
     return load_differential_trajectory_string(data)
 
@@ -130,6 +139,10 @@ def load_swerve_trajectory(trajectory_name: str) -> SwerveTrajectory:
         The path name in Choreo, which matches the file name in the deploy
         directory. Do not include ".traj" here.
     """
-    with open(trajectory_name + ".traj", "r", encoding="utf-8") as trajectory_file:
+    with open(
+        os.path.join(getDeployDirectory(), "choreo", trajectory_name + ".traj"),
+        "r",
+        encoding="utf-8",
+    ) as trajectory_file:
         data = trajectory_file.read()
     return load_swerve_trajectory_string(data)

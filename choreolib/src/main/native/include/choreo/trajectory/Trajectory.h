@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include <units/time.h>
 #include <wpi/json_fwd.h>
 
 #include "choreo/trajectory/DifferentialSample.h"
@@ -157,7 +158,7 @@ class Trajectory {
     if (samples.size() == 0) {
       return 0_s;
     }
-    return GetFinalSample().GetTimestamp();
+    return GetFinalSample().value().GetTimestamp();
   }
 
   /**
@@ -214,6 +215,7 @@ class Trajectory {
    * the given index.
    */
   std::optional<Trajectory<SampleType>> GetSplit(int splitIndex) const {
+    // Assumption: splits[splitIndex] is a valid index of samples.
     if (splitIndex < 0 || splitIndex >= splits.size()) {
       return std::nullopt;
     }
@@ -224,6 +226,13 @@ class Trajectory {
 
     auto sublist =
         std::vector<SampleType>(samples.begin() + start, samples.begin() + end);
+    // Empty section should not be achievable (would mean malformed splits
+    // array), but is handled for safety
+    if (sublist.size() == 0) {
+      return Trajectory<SampleType>{
+          name + "[" + std::to_string(splitIndex) + "]", {}, {}, {}};
+    }
+    // Now we know sublist.size() >= 1
     units::second_t startTime = sublist.front().GetTimestamp();
     units::second_t endTime = sublist.back().GetTimestamp();
 

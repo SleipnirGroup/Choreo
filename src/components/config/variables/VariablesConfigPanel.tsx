@@ -61,6 +61,7 @@ const AddVariablePanel = observer((props: AddVariablePanelProps) => {
       validateName={(name) => doc.variables.validateName(name, "")}
       actionButton={() => (
         <Add
+          sx={{ color: "var(--accent-purple)" }}
           onClick={(_) => {
             if (doc.variables.validateName(props.name, "")) {
               doc.variables.add(
@@ -115,9 +116,7 @@ export const GeneralVariableAddPanel = observer(() => {
     >
       {DimensionNamesExt.map((entry) => (
         <MenuItem value={entry}>
-          <Tooltip disableInteractive title={DimensionsExt[entry].name}>
-            {DimensionsExt[entry].icon()}
-          </Tooltip>
+          {DimensionsExt[entry].icon()}
           <span style={{ width: "4px" }}></span>
           {DimensionsExt[entry].name}
         </MenuItem>
@@ -148,7 +147,7 @@ const VariablesConfigPanel = observer(() => {
   doc.variables.expressions.keys();
   return (
     <>
-      {Array.from(doc.variables.expressions.entries()).map((entry) => (
+      {doc.variables.sortedExpressions.map((entry) => (
         <VariablePanel
           validateName={(name) => doc.variables.validateName(name, entry[0])}
           logo={() => (

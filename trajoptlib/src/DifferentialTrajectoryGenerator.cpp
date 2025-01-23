@@ -42,8 +42,8 @@ inline Translation2v WheelToChassisSpeeds(sleipnir::Variable vl,
 }
 
 DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
-    DifferentialPathBuilder pathbuilder, int64_t handle)
-    : path(pathbuilder.GetPath()), Ns(pathbuilder.GetControlIntervalCounts()) {
+    DifferentialPathBuilder pathBuilder, int64_t handle)
+    : path(pathBuilder.GetPath()), Ns(pathBuilder.GetControlIntervalCounts()) {
   namespace slp = sleipnir;
 
   // See equations just before (12.35) and (12.36) in
@@ -81,26 +81,29 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     return xdot;
   };
 
-  auto initialGuess = pathbuilder.CalculateInitialGuess();
+  auto initialGuess = pathBuilder.CalculateInitialGuess();
 
-  callbacks.emplace_back([this, handle = handle] {
-    constexpr int fps = 60;
-    constexpr std::chrono::duration<double> timePerFrame{1.0 / fps};
+  problem.Callback(
+      [this, handle = handle](const sleipnir::SolverIterationInfo&) -> bool {
+        constexpr int fps = 60;
+        constexpr std::chrono::duration<double> timePerFrame{1.0 / fps};
 
-    // FPS limit on sending updates
-    static auto lastFrameTime = std::chrono::steady_clock::now();
-    auto now = std::chrono::steady_clock::now();
-    if (now - lastFrameTime < timePerFrame) {
-      return;
-    }
+        // FPS limit on sending updates
+        static auto lastFrameTime = std::chrono::steady_clock::now();
+        auto now = std::chrono::steady_clock::now();
+        if (now - lastFrameTime < timePerFrame) {
+          return trajopt::GetCancellationFlag();
+        }
 
-    lastFrameTime = now;
+        lastFrameTime = now;
 
-    auto soln = ConstructDifferentialSolution();
-    for (auto& callback : this->path.callbacks) {
-      callback(soln, handle);
-    }
-  });
+        auto soln = ConstructDifferentialSolution();
+        for (auto& callback : this->path.callbacks) {
+          callback(soln, handle);
+        }
+
+        return trajopt::GetCancellationFlag();
+      });
 
   size_t wptCnt = path.waypoints.size();
   size_t sgmtCnt = path.waypoints.size() - 1;
@@ -132,15 +135,8 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     Fr.emplace_back(problem.DecisionVariable());
   }
 
-  double minWidth = path.drivetrain.trackwidth;
-
   for (size_t sgmtIndex = 0; sgmtIndex < sgmtCnt; ++sgmtIndex) {
     dts.emplace_back(problem.DecisionVariable());
-
-    // Prevent drivetrain tunneling through keep-out regions
-    problem.SubjectTo(dts.at(sgmtIndex) * path.drivetrain.wheelRadius *
-                          path.drivetrain.wheelMaxAngularVelocity <=
-                      minWidth);
   }
 
   // Minimize total time
@@ -159,27 +155,36 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     T_tot += T_sgmt;
 
     problem.SubjectTo(dt >= 0);
-    // Use initialGuess and Ns to find the dx, dy, dθ between wpts
-    const auto sgmt_start = GetIndex(Ns, sgmtIndex);
-    const auto sgmt_end = GetIndex(Ns, sgmtIndex + 1);
-    const auto dx = initialGuess.x.at(sgmt_end) - initialGuess.x.at(sgmt_start);
-    const auto dy = initialGuess.y.at(sgmt_end) - initialGuess.y.at(sgmt_start);
-    const auto dist = std::hypot(dx, dy);
-    const auto θ_0 = initialGuess.heading.at(sgmt_start);
-    const auto θ_1 = initialGuess.heading.at(sgmt_end);
-    const auto dθ = std::abs(AngleModulus(θ_0 - θ_1));
+    problem.SubjectTo(dt * path.drivetrain.wheelRadius *
+                          path.drivetrain.wheelMaxAngularVelocity <=
+                      path.drivetrain.trackwidth);
+    if (N_sgmt == 0) {
+      dt.SetValue(0);
+    } else {
+      // Use initialGuess and Ns to find the dx, dy, dθ between wpts
+      const auto sgmt_start = GetIndex(Ns, sgmtIndex);
+      const auto sgmt_end = GetIndex(Ns, sgmtIndex + 1);
+      const auto dx =
+          initialGuess.x.at(sgmt_end) - initialGuess.x.at(sgmt_start);
+      const auto dy =
+          initialGuess.y.at(sgmt_end) - initialGuess.y.at(sgmt_start);
+      const auto dist = std::hypot(dx, dy);
+      const auto θ_0 = initialGuess.heading.at(sgmt_start);
+      const auto θ_1 = initialGuess.heading.at(sgmt_end);
+      const auto dθ = std::abs(AngleModulus(θ_1 - θ_0));
 
-    auto maxLinearVel = maxDrivetrainVelocity;
+      auto maxLinearVel = maxDrivetrainVelocity;
 
-    const auto angularTime =
-        CalculateTrapezoidalTime(dθ, maxAngVel, maxAngAccel);
-    maxLinearVel = std::min(maxLinearVel, dist / angularTime);
+      const auto angularTime =
+          CalculateTrapezoidalTime(dθ, maxAngVel, maxAngAccel);
+      maxLinearVel = std::min(maxLinearVel, dist / angularTime);
 
-    const auto linearTime =
-        CalculateTrapezoidalTime(dist, maxLinearVel, maxAccel);
-    const double sgmtTime = angularTime + linearTime;
+      const auto linearTime =
+          CalculateTrapezoidalTime(dist, maxLinearVel, maxAccel);
+      const double sgmtTime = angularTime + linearTime;
 
-    dt.SetValue(sgmtTime / N_sgmt);
+      dt.SetValue(sgmtTime / N_sgmt);
+    }
   }
   problem.Minimize(std::move(T_tot));
 
@@ -203,18 +208,21 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
                                 {θ.at(index + 1)},
                                 {vl.at(index + 1)},
                                 {vr.at(index + 1)}};
+      slp::VariableMatrix u_k_1{{Fl.at(index + 1)}, {Fr.at(index + 1)}};
 
-      // Dynamics constraints - RK4
-      slp::VariableMatrix k1 = f(x_k, u_k);
-      slp::VariableMatrix k2 = f(x_k + dt * 0.5 * k1, u_k);
-      slp::VariableMatrix k3 = f(x_k + dt * 0.5 * k2, u_k);
-      slp::VariableMatrix k4 = f(x_k + dt * k3, u_k);
-      problem.SubjectTo(x_k_1 ==
-                        x_k + dt / 6.0 * (k1 + 2.0 * k2 + 2.0 * k3 + k4));
+      // Dynamics constraints - direct collocation
+      // (https://mec560sbu.github.io/2016/09/30/direct_collocation/)
+      auto xdot_k = f(x_k, u_k);
+      auto xdot_k_1 = f(x_k_1, u_k_1);
+      auto xdot_c = -3 / (2 * dt) * (x_k - x_k_1) - 0.25 * (xdot_k + xdot_k_1);
 
-      auto dx_dt = k1;
-      problem.SubjectTo(al.at(index) == dx_dt(3));
-      problem.SubjectTo(ar.at(index) == dx_dt(4));
+      auto x_c = 0.5 * (x_k + x_k_1) + dt / 8 * (xdot_k - xdot_k_1);
+      auto u_c = 0.5 * (u_k + u_k_1);
+
+      problem.SubjectTo(xdot_c == f(x_c, u_c));
+
+      problem.SubjectTo(al.at(index) == xdot_k(3));
+      problem.SubjectTo(ar.at(index) == xdot_k(4));
     }
   }
 
@@ -252,16 +260,16 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   }
 
   for (size_t wptIndex = 0; wptIndex < wptCnt; ++wptIndex) {
+    // First index of next wpt - 1
+    size_t index = GetIndex(Ns, wptIndex, 0);
+
+    Pose2v pose_k{x.at(index), y.at(index), {θ.at(index)}};
+    Translation2v v_k = WheelToChassisSpeeds(vl.at(index), vr.at(index));
+    auto ω_k = (vr.at(index) - vl.at(index)) / path.drivetrain.trackwidth;
+    Translation2v a_k = WheelToChassisSpeeds(al.at(index), ar.at(index));
+    auto α_k = (ar.at(index) - al.at(index)) / path.drivetrain.trackwidth;
+
     for (auto& constraint : path.waypoints.at(wptIndex).waypointConstraints) {
-      // First index of next wpt - 1
-      size_t index = GetIndex(Ns, wptIndex, 0);
-
-      Pose2v pose_k{x.at(index), y.at(index), {θ.at(index)}};
-      Translation2v v_k = WheelToChassisSpeeds(vl.at(index), vr.at(index));
-      auto ω_k = (vr.at(index) - vl.at(index)) / path.drivetrain.trackwidth;
-      Translation2v a_k = WheelToChassisSpeeds(al.at(index), ar.at(index));
-      auto α_k = (ar.at(index) - al.at(index)) / path.drivetrain.trackwidth;
-
       std::visit(
           [&](auto&& arg) { arg.Apply(problem, pose_k, v_k, ω_k, a_k, α_k); },
           constraint);
@@ -269,18 +277,18 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
   }
 
   for (size_t sgmtIndex = 0; sgmtIndex < sgmtCnt; ++sgmtIndex) {
-    for (auto& constraint :
-         path.waypoints.at(sgmtIndex + 1).segmentConstraints) {
-      size_t startIndex = GetIndex(Ns, sgmtIndex, 0);
-      size_t endIndex = GetIndex(Ns, sgmtIndex + 1, 0);
+    size_t startIndex = GetIndex(Ns, sgmtIndex, 0);
+    size_t endIndex = GetIndex(Ns, sgmtIndex + 1, 0);
 
-      for (size_t index = startIndex; index < endIndex; ++index) {
-        Pose2v pose_k{x.at(index), y.at(index), {θ.at(index)}};
-        Translation2v v_k = WheelToChassisSpeeds(vl.at(index), vr.at(index));
-        auto ω_k = (vr.at(index) - vl.at(index)) / path.drivetrain.trackwidth;
-        Translation2v a_k = WheelToChassisSpeeds(al.at(index), ar.at(index));
-        auto α_k = (ar.at(index) - al.at(index)) / path.drivetrain.trackwidth;
+    for (size_t index = startIndex; index < endIndex; ++index) {
+      Pose2v pose_k{x.at(index), y.at(index), {θ.at(index)}};
+      Translation2v v_k = WheelToChassisSpeeds(vl.at(index), vr.at(index));
+      auto ω_k = (vr.at(index) - vl.at(index)) / path.drivetrain.trackwidth;
+      Translation2v a_k = WheelToChassisSpeeds(al.at(index), ar.at(index));
+      auto α_k = (ar.at(index) - al.at(index)) / path.drivetrain.trackwidth;
 
+      for (auto& constraint :
+           path.waypoints.at(sgmtIndex + 1).segmentConstraints) {
         std::visit(
             [&](auto&& arg) { arg.Apply(problem, pose_k, v_k, ω_k, a_k, α_k); },
             constraint);
@@ -294,12 +302,6 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
 expected<DifferentialSolution, sleipnir::SolverExitCondition>
 DifferentialTrajectoryGenerator::Generate(bool diagnostics) {
   GetCancellationFlag() = 0;
-  problem.Callback([this](const sleipnir::SolverIterationInfo&) -> bool {
-    for (auto& callback : callbacks) {
-      callback();
-    }
-    return trajopt::GetCancellationFlag();
-  });
 
   // tolerance of 1e-4 is 0.1 mm
   auto status = problem.Solve({.tolerance = 1e-4, .diagnostics = diagnostics});

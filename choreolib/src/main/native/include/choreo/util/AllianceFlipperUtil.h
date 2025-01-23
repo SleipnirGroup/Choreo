@@ -9,12 +9,10 @@
 #include <units/angle.h>
 #include <units/length.h>
 
+#include "choreo/util/FieldDimensions.h"
 #include "choreo/util/Map.h"
 
 namespace choreo::util {
-
-static constexpr units::meter_t fieldLength = 16.5811_m;
-static constexpr units::meter_t fieldWidth = 8.19912_m;
 
 enum class FlipperType { Mirrored, RotateAround };
 
@@ -94,13 +92,13 @@ struct RotateAroundFlipper {
   }
 };
 
-inline constexpr Map flipperMap{std::array{
-    std::pair{2022, FlipperType::RotateAround},
-    std::pair{2023, FlipperType::Mirrored},
-    std::pair{2024, FlipperType::Mirrored},
-}};
+inline constexpr Map flipperMap{
+    std::array{std::pair{2022, FlipperType::RotateAround},
+               std::pair{2023, FlipperType::Mirrored},
+               std::pair{2024, FlipperType::Mirrored},
+               std::pair{2025, FlipperType::RotateAround}}};
 
-inline constexpr int kDefaultYear = 2024;
+inline constexpr int kDefaultYear = 2025;
 
 /**
  * A utility to standardize flipping of coordinate data based on the current

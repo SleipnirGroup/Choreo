@@ -11,13 +11,7 @@ To use ChoreoLib in your robot code, it must first be installed as a vendor libr
     === "Release"
 
         ```
-        https://lib.choreo.autos/dep/ChoreoLib.json
-        ```
-
-    === "2025 Beta"
-
-        ```
-        https://lib.choreo.autos/dep/ChoreoLib2025Beta.json
+        https://lib.choreo.autos/dep/ChoreoLib2025.json
         ```
 
 === "Python"
@@ -59,8 +53,8 @@ In general, trajectory followers accept trajectory "samples" that represent the 
                 // Generate the next speeds for the robot
                 ChassisSpeeds speeds = new ChassisSpeeds(
                     sample.vx + xController.calculate(pose.getX(), sample.x),
-                    sample.vy + xController.calculate(pose.getX(), sample.y),
-                    sample.omega + xController.calculate(pose.getRotation().getRadians(), sample.heading)
+                    sample.vy + yController.calculate(pose.getY(), sample.y),
+                    sample.omega + headingController.calculate(pose.getRotation().getRadians(), sample.heading)
                 );
 
                 // Apply the generated speeds
@@ -262,6 +256,11 @@ In general, trajectory followers accept trajectory "samples" that represent the 
         ```
 
         1. For more information about differential drive kinematics, see [WPILib's documentation](https://docs.wpilib.org/en/stable/docs/software/kinematics-and-odometry/differential-drive-kinematics.html). In this example, we assume you have created an instance of `DifferentialDriveKinematics`, named `kinematics`.
+
+## Choreo-Specific Alerts
+Choreo primarily uses the WPILib Alerts API to provide users with internal warnings, errors or information. These alerts can be found under the SmartDashboard/ChoreoAlert section within networktables.
+
+To visualize these alerts in a dashboard such as AdvantageScope simply drag the ChoreoAlert group outwards onto the "discrete fields" section in advantagescope or the main dashboard panel.
 
 ## Next Steps
 

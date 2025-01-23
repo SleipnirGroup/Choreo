@@ -2,10 +2,8 @@ import math
 from enum import Enum
 from typing import *
 
+from choreo.util.field_dimensions import FIELD_LENGTH, FIELD_WIDTH
 from wpimath.geometry import Pose2d
-
-FIELD_LENGTH = 16.5811
-FIELD_WIDTH = 8.19912
 
 
 class FlipperType(Enum):
@@ -97,10 +95,11 @@ FLIPPER_MAP: Dict[int, FlipperType] = {
     2022: FlipperType.ROTATE_AROUND,
     2023: FlipperType.MIRRORED,
     2024: FlipperType.MIRRORED,
+    2025: FlipperType.ROTATE_AROUND,
 }
 
 
-DEFAULT_YEAR = 2024
+DEFAULT_YEAR = 2025
 
 
 def get_flipper_for_year(year: int = DEFAULT_YEAR):

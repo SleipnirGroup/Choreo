@@ -5,7 +5,6 @@
 #include <stdint.h>
 
 #include <cmath>
-#include <functional>
 #include <utility>
 #include <vector>
 
@@ -257,7 +256,6 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectoryGenerator {
   std::vector<size_t> Ns;
 
   sleipnir::OptimizationProblem problem;
-  std::vector<std::function<void()>> callbacks;
 
   void ApplyInitialGuess(const DifferentialSolution& solution);
 

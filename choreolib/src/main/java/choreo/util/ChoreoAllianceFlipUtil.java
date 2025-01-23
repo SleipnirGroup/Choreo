@@ -2,6 +2,9 @@
 
 package choreo.util;
 
+import static choreo.util.FieldDimensions.FIELD_LENGTH;
+import static choreo.util.FieldDimensions.FIELD_WIDTH;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -12,7 +15,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.HashMap;
 import java.util.Optional;
-import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 /**
@@ -25,7 +27,7 @@ import java.util.function.Supplier;
  * <p>This API still allows vendors and users to match case against the flipping variant as a way to
  * specially handle cases or throw errors if a variant is explicitly not supported.
  */
-public class AllianceFlipUtil {
+public class ChoreoAllianceFlipUtil {
   /** The flipper to use for flipping coordinates. */
   public static enum Flipper {
     /**
@@ -96,13 +98,14 @@ public class AllianceFlipUtil {
           put(2022, new YearInfo(Flipper.ROTATE_AROUND, 16.5811, 8.19912));
           put(2023, new YearInfo(Flipper.MIRRORED, 16.5811, 8.19912));
           put(2024, new YearInfo(Flipper.MIRRORED, 16.5811, 8.19912));
+          put(2025, new YearInfo(Flipper.ROTATE_AROUND, FIELD_LENGTH, FIELD_WIDTH));
         }
       };
 
-  private static YearInfo activeYear = flipperMap.get(2024);
+  private static YearInfo activeYear = flipperMap.get(2025);
 
   /** Default constructor. */
-  private AllianceFlipUtil() {}
+  private ChoreoAllianceFlipUtil() {}
 
   /**
    * Get the flipper that is currently active for flipping coordinates. It's recommended not to
@@ -241,9 +244,9 @@ public class AllianceFlipUtil {
    *     doFlip is false; the flipped pose optional if the alliance is red and doFlip is true
    */
   public static Supplier<Optional<Pose2d>> optionalFlippedPose2d(
-      Optional<Pose2d> poseOpt, Supplier<Optional<Alliance>> allianceOpt, BooleanSupplier doFlip) {
+      Optional<Pose2d> poseOpt, Supplier<Optional<Alliance>> allianceOpt, boolean doFlip) {
     return () ->
-        doFlip.getAsBoolean()
+        doFlip
             ? allianceOpt
                 .get()
                 .flatMap(ally -> poseOpt.map(pose -> ally == Alliance.Red ? flip(pose) : pose))
@@ -264,9 +267,9 @@ public class AllianceFlipUtil {
   public static Supplier<Optional<Translation2d>> optionalFlippedTranslation2d(
       Optional<Translation2d> translationOpt,
       Supplier<Optional<Alliance>> allianceOpt,
-      BooleanSupplier doFlip) {
+      boolean doFlip) {
     return () ->
-        doFlip.getAsBoolean()
+        doFlip
             ? allianceOpt
                 .get()
                 .flatMap(

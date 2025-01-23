@@ -1,18 +1,20 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Tyler Veness <calcmogul@gmail.com>
-Date: Thu, 20 Jun 2024 12:30:54 -0700
+Date: Sat, 11 Jan 2025 17:45:42 -0800
 Subject: [PATCH] Downgrade to C++20
 
 ---
- .styleguide                       |  1 +
- CMakeLists.txt                    | 10 ++++++++++
- cmake/modules/CompilerFlags.cmake |  2 +-
- include/.styleguide               |  1 +
- include/sleipnir/util/Print.hpp   | 27 ++++++++++++++-------------
- 5 files changed, 27 insertions(+), 14 deletions(-)
+ .styleguide                            |  1 +
+ CMakeLists.txt                         | 10 ++++++++++
+ cmake/modules/CompilerFlags.cmake      |  2 +-
+ include/.styleguide                    |  1 +
+ include/sleipnir/util/Print.hpp        | 27 +++++++++++++-------------
+ include/sleipnir/util/Spy.hpp          |  8 +++++++-
+ src/util/PrintIterationDiagnostics.hpp |  3 +--
+ 7 files changed, 35 insertions(+), 17 deletions(-)
 
 diff --git a/.styleguide b/.styleguide
-index fc51b044a61dd842dca50d013c52baed00612545..2476200a8763368007c3d4029bf326619a7bf0fa 100644
+index 2cf272a115102886134455a87ea5c7dcf7188283..76e25473e77ab7838509eaeeefa7170a06507f8c 100644
 --- a/.styleguide
 +++ b/.styleguide
 @@ -17,6 +17,7 @@ modifiableFileExclude {
@@ -24,7 +26,7 @@ index fc51b044a61dd842dca50d013c52baed00612545..2476200a8763368007c3d4029bf32661
    ^sleipnir/
  }
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index e9668b53d6a0317cf2367b212f5013cbb2aa7ad5..1db191b6492a5f10b657c42c7959a73ef72724e3 100644
+index 46a2e975b631269b552c3ab5963168a6813a1f5f..fe6158309e606583438d4aa22d00780f817e38f1 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -114,6 +114,16 @@ endif()
@@ -35,7 +37,7 @@ index e9668b53d6a0317cf2367b212f5013cbb2aa7ad5..1db191b6492a5f10b657c42c7959a73e
 +fetchcontent_declare(
 +    fmt
 +    GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-+    GIT_TAG 11.0.2
++    GIT_TAG 11.1.2
 +)
 +fetchcontent_makeavailable(fmt)
 +
@@ -45,11 +47,11 @@ index e9668b53d6a0317cf2367b212f5013cbb2aa7ad5..1db191b6492a5f10b657c42c7959a73e
      # Catch2 dependency
      fetchcontent_declare(
 diff --git a/cmake/modules/CompilerFlags.cmake b/cmake/modules/CompilerFlags.cmake
-index 9f3fad1ce359897d6e87d5c37efae51d55bcf160..4331baf9394a7f27bde51906c9dd14b8543e4af4 100644
+index bab9de4de2c79abb3195cdd8b3a8b56da665e900..8caa4b1d7c7f4be463b2541fba91561428193d51 100644
 --- a/cmake/modules/CompilerFlags.cmake
 +++ b/cmake/modules/CompilerFlags.cmake
-@@ -11,7 +11,7 @@ macro(compiler_flags target)
-         target_compile_options(${target} PRIVATE /wd4244 /wd4251 /WX)
+@@ -22,7 +22,7 @@ macro(compiler_flags target)
+         )
      endif()
  
 -    target_compile_features(${target} PUBLIC cxx_std_23)
@@ -68,11 +70,10 @@ index 8fb61fdf9cc5ceff633d3126f0579eef25a1326f..6a7f8ed28f9cb037c9746a7e0ef5e110
 +  ^fmt/
  }
 diff --git a/include/sleipnir/util/Print.hpp b/include/sleipnir/util/Print.hpp
-index 339320bce6d017ca85025060ba445b2f025bb225..fcf2e69bfb5a081cd915bdded3caa80cd9c38518 100644
+index a746cb77b70f095bb15f4c493295cb925bc74cd3..484d1b2bec7148c5b9affccbf554c7df2b954cc0 100644
 --- a/include/sleipnir/util/Print.hpp
 +++ b/include/sleipnir/util/Print.hpp
-@@ -2,53 +2,54 @@
- 
+@@ -3,52 +3,53 @@
  #pragma once
  
  #include <cstdio>
@@ -139,3 +140,51 @@ index 339320bce6d017ca85025060ba445b2f025bb225..fcf2e69bfb5a081cd915bdded3caa80c
    } catch (const std::system_error&) {
    }
  }
+diff --git a/include/sleipnir/util/Spy.hpp b/include/sleipnir/util/Spy.hpp
+index 1abeb469a43d3d644efc1ad0e06e43928149ed0a..ae112430d7609356748b81d5dc4d0b5a7bac0ca1 100644
+--- a/include/sleipnir/util/Spy.hpp
++++ b/include/sleipnir/util/Spy.hpp
+@@ -4,7 +4,10 @@
+ 
+ #include <stdint.h>
+ 
++#include <algorithm>
++#include <array>
+ #include <bit>
++#include <cstddef>
+ #include <fstream>
+ #include <string>
+ #include <string_view>
+@@ -112,7 +115,10 @@ class SLEIPNIR_DLLEXPORT Spy {
+    */
+   void Write32le(int32_t num) {
+     if constexpr (std::endian::native != std::endian::little) {
+-      num = std::byteswap(num);
++      auto value_representation =
++          std::bit_cast<std::array<std::byte, sizeof(int32_t)>>(num);
++      std::ranges::reverse(value_representation);
++      num = std::bit_cast<int32_t>(value_representation);
+     }
+     m_file.write(reinterpret_cast<char*>(&num), sizeof(num));
+   }
+diff --git a/src/util/PrintIterationDiagnostics.hpp b/src/util/PrintIterationDiagnostics.hpp
+index 7b46202169d3d90eda16e76f3aff7f862e694079..44f5f9a31221397697638dd42b2968dca55c25e9 100644
+--- a/src/util/PrintIterationDiagnostics.hpp
++++ b/src/util/PrintIterationDiagnostics.hpp
+@@ -8,7 +8,6 @@
+ #include <cmath>
+ #include <ranges>
+ #include <string>
+-#include <utility>
+ 
+ #include "sleipnir/util/Print.hpp"
+ #include "sleipnir/util/small_vector.hpp"
+@@ -54,7 +53,7 @@ void PrintIterationDiagnostics(int iterations, IterationMode mode,
+ 
+   constexpr const char* kIterationModes[] = {" ", "s", "r"};
+   sleipnir::print("{:4}{}  {:9.3f}  {:13e}  {:13e}  {:13e}  ", iterations,
+-                  kIterationModes[std::to_underlying(mode)],
++                  kIterationModes[static_cast<uint8_t>(mode)],
+                   ToMilliseconds(time), error, cost, infeasibility);
+ 
+   // Print regularization

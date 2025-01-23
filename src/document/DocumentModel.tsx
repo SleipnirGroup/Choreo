@@ -132,7 +132,6 @@ export const DocumentStore = types
       self.name = ser.name;
       self.variables.deserialize(ser.variables);
       self.robotConfig.deserialize(ser.config);
-      self.pathlist.paths.clear();
       self.type = ser.type;
     },
     setName(name: string) {
@@ -164,6 +163,16 @@ export const DocumentStore = types
         self.history.redo();
       }
     },
+    async generateAllOutdated() {
+      const uuidsToGenerate: string[] = [];
+      self.pathlist.paths.forEach((pathStore) => {
+        if (!pathStore.ui.upToDate) {
+          uuidsToGenerate.push(pathStore.uuid);
+        }
+      });
+      await Promise.allSettled(uuidsToGenerate.map(this.generatePath));
+    },
+
     async generatePath(uuid: string) {
       const pathStore = self.pathlist.paths.get(uuid);
       if (pathStore === undefined) {
@@ -176,7 +185,6 @@ export const DocumentStore = types
 
       console.log(pathStore.serialize);
       const config = self.robotConfig.serialize;
-      const inputDriveType = self.type;
       pathStore.params.constraints
         .filter((constraint) => constraint.enabled)
         .forEach((constraint) => {
@@ -254,30 +262,7 @@ export const DocumentStore = types
             const result: Trajectory = rust_trajectory as Trajectory;
             console.log(result);
             if (result.trajectory.samples.length == 0) throw "No trajectory";
-            self.history.startGroup(() => {
-              const newTrajectory = result.trajectory.samples;
-              if (inputDriveType === "Differential") {
-                pathStore.trajectory.setDifferentialSamples(
-                  newTrajectory as DifferentialSample[]
-                );
-              } else {
-                pathStore.trajectory.setSwerveSamples(
-                  newTrajectory as SwerveSample[]
-                );
-              }
-              pathStore.trajectory.setSplits(result.trajectory.splits);
-              pathStore.trajectory.setWaypoints(result.trajectory.waypoints);
-              pathStore.markers.forEach((m) => {
-                const index = m.from.trajectoryTargetIndex;
-                if (index === undefined) {
-                  m.from.setTargetTimestamp(undefined);
-                } else {
-                  m.from.setTargetTimestamp(result.trajectory.waypoints[index]);
-                }
-              });
-              pathStore.setSnapshot(result.snapshot);
-              self.history.stopGroup();
-            });
+            pathStore.processGenerationResult(result);
           },
           (e) => {
             tracing.error("generatePathPost:", e);

@@ -97,6 +97,9 @@
   height: var(--icon-size);
   width: var(--icon-size);
 }
+.SidebarItem button.SidebarIcon {
+  margin: 0;
+}
 .SidebarItem .SidebarVerticalLine {
   border-left: solid gray 1px;
   height: calc(100% + var(--grid-gap));

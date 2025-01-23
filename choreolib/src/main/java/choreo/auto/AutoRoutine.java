@@ -4,6 +4,7 @@ package choreo.auto;
 
 import static edu.wpi.first.wpilibj.Alert.AlertType.kWarning;
 
+import choreo.auto.AutoFactory.AllianceContext;
 import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
 import choreo.util.ChoreoAlert;
@@ -18,8 +19,8 @@ import java.util.function.BooleanSupplier;
 /**
  * An object that represents an autonomous routine.
  *
- * <p>This loop is used to handle autonomous trigger logic and schedule commands. This loop should
- * **not** be shared across multiple autonomous routines.
+ * <p>This object is used to handle autonomous trigger logic and schedule commands for a single
+ * autonomous routine. This object should **not** be shared across multiple autonomous routines.
  *
  * @see AutoFactory#newRoutine Creating a routine from a AutoFactory
  */
@@ -28,62 +29,38 @@ public class AutoRoutine {
    * The factory that created this loop. This is used to create commands that are associated with
    * this loop.
    */
-  protected final AutoFactory factory;
+  private final AutoFactory factory;
 
   /** The underlying {@link EventLoop} that triggers are bound to and polled */
-  protected final EventLoop loop;
+  private final EventLoop loop = new EventLoop();
 
   /** The name of the auto routine this loop is associated with */
-  protected final String name;
+  private final String name;
+
+  /** The alliance helper that is used to determine flipping logic */
+  private final AllianceContext allianceCtx;
 
   /** A boolean utilized in {@link #active()} to resolve trueness */
-  protected boolean isActive = false;
+  boolean isActive = false;
 
   /** A boolean that is true when the loop is killed */
-  protected boolean isKilled = false;
+  boolean isKilled = false;
 
   /** The amount of times the routine has been polled */
-  protected int pollCount = 0;
-
-  /** Returns true if the alliance is known or is irrelevant (i.e. flipping is not being done) */
-  protected BooleanSupplier allianceKnownOrIgnored = () -> true;
-
-  /**
-   * A constructor to be used when inhereting this class to instantiate a custom inner loop
-   *
-   * @param factory The factory that created this loop
-   * @param name The name of the loop
-   * @param loop The inner {@link EventLoop}
-   */
-  protected AutoRoutine(AutoFactory factory, String name, EventLoop loop) {
-    this.factory = factory;
-    this.loop = loop;
-    this.name = name;
-  }
-
-  /**
-   * Creates a new loop with a specific name
-   *
-   * @param factory The factory that created this loop
-   * @param name The name of the loop
-   * @see AutoFactory#newRoutine Creating a loop from a AutoFactory
-   */
-  protected AutoRoutine(AutoFactory factory, String name) {
-    this(factory, name, new EventLoop());
-  }
+  private int pollCount = 0;
 
   /**
    * Creates a new loop with a specific name and a custom alliance supplier.
    *
    * @param factory The factory that created this loop
    * @param name The name of the loop
-   * @param allianceKnownOrIgnored Returns true if the alliance is known or is irrelevant (i.e.
-   *     flipping is not being done).
+   * @param allianceHelper The alliance helper that is used to determine flipping logic
    * @see AutoFactory#newRoutine Creating a loop from a AutoFactory
    */
-  protected AutoRoutine(AutoFactory factory, String name, BooleanSupplier allianceKnownOrIgnored) {
-    this(factory, name);
-    this.allianceKnownOrIgnored = allianceKnownOrIgnored;
+  AutoRoutine(AutoFactory factory, String name, AllianceContext allianceHelper) {
+    this.factory = factory;
+    this.name = name;
+    this.allianceCtx = allianceHelper;
   }
 
   /**
@@ -100,9 +77,7 @@ public class AutoRoutine {
 
   /** Polls the routine. Should be called in the autonomous periodic method. */
   public void poll() {
-    if (!DriverStation.isAutonomousEnabled()
-        || !allianceKnownOrIgnored.getAsBoolean()
-        || isKilled) {
+    if (!DriverStation.isAutonomousEnabled() || !allianceCtx.allianceKnownOrIgnored() || isKilled) {
       isActive = false;
       return;
     }
@@ -167,7 +142,7 @@ public class AutoRoutine {
    * @return A new {@link AutoTrajectory}.
    */
   public AutoTrajectory trajectory(String trajectoryName) {
-    return factory.trajectory(trajectoryName, this);
+    return factory.trajectory(trajectoryName, this, true);
   }
 
   /**
@@ -178,7 +153,7 @@ public class AutoRoutine {
    * @return A new {@link AutoTrajectory}.
    */
   public AutoTrajectory trajectory(String trajectoryName, final int splitIndex) {
-    return factory.trajectory(trajectoryName, splitIndex, this);
+    return factory.trajectory(trajectoryName, splitIndex, this, true);
   }
 
   /**
@@ -190,17 +165,7 @@ public class AutoRoutine {
    */
   public <SampleType extends TrajectorySample<SampleType>> AutoTrajectory trajectory(
       Trajectory<SampleType> trajectory) {
-    return factory.trajectory(trajectory, this);
-  }
-
-  /**
-   * Creates a command that resets the robot's odometry to the start of a trajectory.
-   *
-   * @param trajectory The trajectory to use.
-   * @return A command that resets the robot's odometry.
-   */
-  public Command resetOdometry(AutoTrajectory trajectory) {
-    return trajectory.resetOdometry();
+    return factory.trajectory(trajectory, this, true);
   }
 
   /**
@@ -283,6 +248,6 @@ public class AutoRoutine {
               ChoreoAlert.alert("Alliance not known when starting routine", kWarning).set(true);
               kill();
             }),
-        allianceKnownOrIgnored);
+        allianceCtx::allianceKnownOrIgnored);
   }
 }

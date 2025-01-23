@@ -10,9 +10,15 @@ export const PathUIStore = types
       Array<SwerveSample> | Array<DifferentialSample>
     >([]),
     generating: false,
-    generationIterationNumber: 0
+    generationIterationNumber: 0,
+    upToDate: false
   })
   .actions((self) => ({
+    setUpToDate(upToDate: boolean) {
+      getEnv<Env>(self).withoutUndo(() => {
+        self.upToDate = upToDate;
+      });
+    },
     setVisibleWaypointsStart(start: number) {
       if (start <= self.visibleWaypointsEnd) {
         self.visibleWaypointsStart = start;

@@ -29,11 +29,13 @@ To begin utilizing trajectories created by Choreo, you must first load a `Trajec
     # Loads from deploy/choreo/myTrajectory.traj
     # ValueError is thrown if the file does not exist or is invalid
     try:
-      trajectory = choreo.load_swerve_trajectory("myTrajectory")
+      trajectory = choreo.load_swerve_trajectory("myTrajectory") # (1)
     except ValueError:
       # If the trajectory is not found, ChoreoLib already prints to DriverStation
       pass
     ```
+
+    1. Use `load_differential_trajectory` instead of `load_swerve_trajectory` if the robot uses a differential (tank) drive
 
 !!! warning
     Trajectories should always be loaded at startup, not when the autonomous period begins. Loading trajectories is a blocking operation, and larger trajectories may take multiple seconds to load on a RoboRIO, cutting into the time a robot has to run its autonomous routine in a match.
@@ -144,7 +146,7 @@ See [Getting Started](./getting-started.md/#setting-up-the-drive-subsystem) for 
         def robotInit(self):
             # Loads a swerve trajectory, alternatively use load_differential_trajectory if the robot is tank drive
             try:
-                self.trajectory = choreo.load_swerve_trajectory("myTrajectory") # (1)
+                self.trajectory = choreo.load_swerve_trajectory("myTrajectory")
             except ValueError:
                 self.trajectory = None
 
