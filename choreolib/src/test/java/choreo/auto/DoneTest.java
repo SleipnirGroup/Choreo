@@ -18,20 +18,15 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SchedulerMaker;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class DoneTest {
   private static final Pose2d start = new Pose2d();
   private static final Pose2d end = new Pose2d(2.0, 2.0, new Rotation2d(Math.PI));
 
-  @BeforeEach
-  void setup() {
-    assert HAL.initialize(500, 0);
-  }
-
   @Test
   public void testExecution() {
+    assert HAL.initialize(500, 0);
     CommandScheduler scheduler = SchedulerMaker.make();
 
     AutoFactory factory = AutoTestHelper.factory();

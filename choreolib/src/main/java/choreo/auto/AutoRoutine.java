@@ -52,6 +52,7 @@ public class AutoRoutine {
 
   /** The amount of times the routine has been polled */
   private int pollCount = 0;
+
   /** The timestamp of the current cycle */
   private double cycleTimestamp = 0;
 
@@ -115,6 +116,7 @@ public class AutoRoutine {
   int pollCount() {
     return pollCount;
   }
+
   double cycleTimestamp() {
     return cycleTimestamp;
   }
@@ -260,7 +262,7 @@ public class AutoRoutine {
 
   /**
    * Creates a trigger that returns true when any of the trajectories given are inactive.
-   * 
+   *
    * <p>This trigger will only return true if the routine is active.
    *
    * @param trajectory The first trajectory to watch.

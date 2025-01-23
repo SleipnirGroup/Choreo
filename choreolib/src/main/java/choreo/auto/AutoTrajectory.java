@@ -316,38 +316,38 @@ public class AutoTrajectory {
   private Trigger timeTrigger(double targetTime, Timer timer) {
     // Make the trigger only be high for 1 cycle when the time has elapsed
     return new Trigger(
-            routine.loop(),
-            new BooleanSupplier() {
-              double lastTimestamp = -1.0;
-              OptionalInt pollTarget = OptionalInt.empty();
+        routine.loop(),
+        new BooleanSupplier() {
+          double lastTimestamp = -1.0;
+          OptionalInt pollTarget = OptionalInt.empty();
 
-              public boolean getAsBoolean() {
-                if (!timer.isRunning()) {
-                  lastTimestamp = -1.0;
-                  pollTarget = OptionalInt.empty();
-                  return false;
-                }
-                double nowTimestamp = timer.get();
-                try {
-                  boolean timeAligns = lastTimestamp < targetTime && nowTimestamp >= targetTime;
-                  if (pollTarget.isEmpty() && timeAligns) {
-                    // if the time aligns for this cycle and it hasn't aligned previously this cycle
-                    pollTarget = OptionalInt.of(routine.pollCount());
-                    return true;
-                  } else if (pollTarget.isPresent() && routine.pollCount() == pollTarget.getAsInt()) {
-                    // if the time aligned previously this cycle
-                    return true;
-                  } else if (pollTarget.isPresent()) {
-                    // if the time aligned last cycle
-                    pollTarget = OptionalInt.empty();
-                    return false;
-                  }
-                  return false;
-                } finally {
-                  lastTimestamp = nowTimestamp;
-                }
+          public boolean getAsBoolean() {
+            if (!timer.isRunning()) {
+              lastTimestamp = -1.0;
+              pollTarget = OptionalInt.empty();
+              return false;
+            }
+            double nowTimestamp = timer.get();
+            try {
+              boolean timeAligns = lastTimestamp < targetTime && nowTimestamp >= targetTime;
+              if (pollTarget.isEmpty() && timeAligns) {
+                // if the time aligns for this cycle and it hasn't aligned previously this cycle
+                pollTarget = OptionalInt.of(routine.pollCount());
+                return true;
+              } else if (pollTarget.isPresent() && routine.pollCount() == pollTarget.getAsInt()) {
+                // if the time aligned previously this cycle
+                return true;
+              } else if (pollTarget.isPresent()) {
+                // if the time aligned last cycle
+                pollTarget = OptionalInt.empty();
+                return false;
               }
-            });
+              return false;
+            } finally {
+              lastTimestamp = nowTimestamp;
+            }
+          }
+        });
   }
 
   private Trigger enterExitTrigger(Trigger enter, Trigger exit) {
