@@ -20,10 +20,9 @@
 #include "choreo/trajectory/SwerveSample.h"
 #include "choreo/trajectory/Trajectory.h"
 #include "choreo/trajectory/TrajectorySample.h"
+#include "choreo/util/TrajSpecVersion.h"
 
 namespace choreo {
-
-inline constexpr uint32_t kTrajSpecVersion = 0;
 
 /**
  * A class that handles loading choreo and caching choreo trajectories.
