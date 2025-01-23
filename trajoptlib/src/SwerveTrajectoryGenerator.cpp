@@ -37,24 +37,27 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     : path(pathBuilder.GetPath()), Ns(pathBuilder.GetControlIntervalCounts()) {
   auto initialGuess = pathBuilder.CalculateInitialGuess();
 
-  callbacks.emplace_back([this, handle = handle] {
-    constexpr int fps = 60;
-    constexpr std::chrono::duration<double> timePerFrame{1.0 / fps};
+  problem.Callback(
+      [this, handle = handle](const sleipnir::SolverIterationInfo&) -> bool {
+        constexpr int fps = 60;
+        constexpr std::chrono::duration<double> timePerFrame{1.0 / fps};
 
-    // FPS limit on sending updates
-    static auto lastFrameTime = std::chrono::steady_clock::now();
-    auto now = std::chrono::steady_clock::now();
-    if (now - lastFrameTime < timePerFrame) {
-      return;
-    }
+        // FPS limit on sending updates
+        static auto lastFrameTime = std::chrono::steady_clock::now();
+        auto now = std::chrono::steady_clock::now();
+        if (now - lastFrameTime < timePerFrame) {
+          return trajopt::GetCancellationFlag();
+        }
 
-    lastFrameTime = now;
+        lastFrameTime = now;
 
-    auto soln = ConstructSwerveSolution();
-    for (auto& callback : this->path.callbacks) {
-      callback(soln, handle);
-    }
-  });
+        auto soln = ConstructSwerveSolution();
+        for (auto& callback : this->path.callbacks) {
+          callback(soln, handle);
+        }
+
+        return trajopt::GetCancellationFlag();
+      });
 
   size_t wptCnt = path.waypoints.size();
   size_t sgmtCnt = path.waypoints.size() - 1;
@@ -315,12 +318,6 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
 expected<SwerveSolution, sleipnir::SolverExitCondition>
 SwerveTrajectoryGenerator::Generate(bool diagnostics) {
   GetCancellationFlag() = 0;
-  problem.Callback([this](const sleipnir::SolverIterationInfo&) -> bool {
-    for (auto& callback : callbacks) {
-      callback();
-    }
-    return trajopt::GetCancellationFlag();
-  });
 
   // tolerance of 1e-4 is 0.1 mm
   auto status = problem.Solve({.tolerance = 1e-4, .diagnostics = diagnostics});
