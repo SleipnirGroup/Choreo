@@ -52,18 +52,8 @@ class WaypointPanel extends Component<Props, State> {
                 //setNumber={(heading) => waypoint!.setHeading(heading)}
               ></ExpressionInput>
             </ExpressionInputList>
-            <PoseAssignToWaypointDropdown
-              setXExpression={(node) => waypoint.x.set(node)}
-              setYExpression={(node) => waypoint.y.set(node)}
-              setHeadingExpression={(node) => waypoint.heading.set(node)}
-              poses = {doc.variables.sortedPoseKeys.map(k=>({title:k, variableName:k}))}
-              onDefinePose={(variableName)=>{doc.variables.addPose(variableName, {
-                x: waypoint.x.serialize,
-                y: waypoint.y.serialize,
-                heading: waypoint.heading.serialize
-              })}}
-            ></PoseAssignToWaypointDropdown>
           </span>
+
           <span
             style={{
               display: "flex",
@@ -73,6 +63,25 @@ class WaypointPanel extends Component<Props, State> {
             }}
           >
             <InputList>
+              <span style={{ gridColumn: "1 / 5" }}>
+                <PoseAssignToWaypointDropdown
+                  setXExpression={(node) => waypoint.x.set(node)}
+                  setYExpression={(node) => waypoint.y.set(node)}
+                  setHeadingExpression={(node) => waypoint.heading.set(node)}
+                  poses={doc.variables.sortedPoseKeys.map((k) => ({
+                    title: k,
+                    variableName: k
+                  }))}
+                  allowDefinePose={true}
+                  onDefinePose={(variableName) => {
+                    doc.variables.addPose(variableName, {
+                      x: waypoint.x.serialize,
+                      y: waypoint.y.serialize,
+                      heading: waypoint.heading.serialize
+                    });
+                  }}
+                ></PoseAssignToWaypointDropdown>
+              </span>
               <Input
                 title="Samples"
                 suffix=""
@@ -100,7 +109,7 @@ class WaypointPanel extends Component<Props, State> {
             </InputList>
             <span style={{ flexGrow: 1 }}></span>
             <ToggleButtonGroup
-              sx={{ marginInline: "auto" }}
+              sx={{ marginInline: "auto", marginBlock: "auto" }}
               size="small"
               exclusive
               value={waypointType}
@@ -139,15 +148,17 @@ class WaypointPanel extends Component<Props, State> {
             </ToggleButtonGroup>
             <div
               style={{
-                width: "min-content",
-                padding: "4px",
+                width: "24px",
+                padding: "7px",
                 background: "var(--darker-purple)",
                 borderRadius: "8px",
                 fontWeight: "bolder",
                 fontSize: "1em",
                 display: "flex",
                 flexDirection: "column",
-                justifyContent: "center"
+                justifyContent: "center",
+                boxSizing: "content-box",
+                textAlign: "center"
               }}
             >
               <div>{this.props.index + 1}</div>
