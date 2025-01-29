@@ -308,9 +308,9 @@ public class AutoRoutine {
    */
   public Command cmd(BooleanSupplier finishCondition) {
     return Commands.either(
-        Commands.run(this::poll)
+        Commands.startRun(this::poll, this::poll)
             .finallyDo(this::reset)
-            .until(() -> !DriverStation.isDisabled() || finishCondition.getAsBoolean())
+            .until(() -> DriverStation.isDisabled() || finishCondition.getAsBoolean())
             .withName(name),
         Commands.runOnce(
             () -> {
