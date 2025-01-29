@@ -9,9 +9,12 @@ from choreo.trajectory import (
     SwerveTrajectory,
     load_event_marker,
 )
+from choreo.util.traj_schema_version import (
+    TRAJ_SCHEMA_VERSION as generated_TRAJ_SCHEMA_VERSION,
+)
 from wpilib import getDeployDirectory
 
-TRAJ_SCHEMA_VERSION = 1
+TRAJ_SCHEMA_VERSION = generated_TRAJ_SCHEMA_VERSION
 
 
 def load_differential_trajectory_string(

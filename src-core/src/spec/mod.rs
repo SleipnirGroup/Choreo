@@ -3,6 +3,8 @@ use std::fmt::Debug;
 use serde::{Deserialize, Serialize};
 
 pub mod project;
+pub mod project_schema_version;
+pub mod traj_schema_version;
 pub mod trajectory;
 pub mod upgraders;
 
@@ -12,8 +14,8 @@ pub struct OpenFilePayload {
     pub name: String,
 }
 
-pub const PROJECT_SCHEMA_VERSION: u32 = 1;
-pub const TRAJ_SCHEMA_VERSION: u32 = 1;
+pub const PROJECT_SCHEMA_VERSION: u32 = project_schema_version::PROJECT_SCHEMA_VERSION;
+pub const TRAJ_SCHEMA_VERSION: u32 = traj_schema_version::TRAJ_SCHEMA_VERSION;
 
 /// A trait for types that can be snapshotted.
 /// This allows for the type to be converted to a f64.

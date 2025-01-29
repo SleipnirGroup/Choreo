@@ -12,6 +12,7 @@ import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
 import choreo.util.ChoreoAlert;
 import choreo.util.ChoreoAlert.*;
+import choreo.util.TrajSchemaVersion;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -39,7 +40,7 @@ public final class Choreo {
           .registerTypeAdapter(EventMarker.class, new EventMarker.Deserializer())
           .create();
   private static final String TRAJECTORY_FILE_EXTENSION = ".traj";
-  private static final int TRAJ_SCHEMA_VERSION = 1;
+  private static final int TRAJ_SCHEMA_VERSION = TrajSchemaVersion.TRAJ_SCHEMA_VERSION;
   private static final MultiAlert cantFindTrajectory =
       ChoreoAlert.multiAlert(causes -> "Could not find trajectory files: " + causes, kError);
   private static final MultiAlert cantParseTrajectory =
