@@ -529,6 +529,17 @@ public class AutoTrajectory {
   }
 
   /**
+   * Returns a trigger that will go true for 1 cycle when the desired before the
+   * end of the trajectory time.
+   * 
+   * @param timeBeforeEnd The time before the end of the trajectory.
+   * @return A trigger that is true when timeBeforeEnd has elapsed.
+   */
+  public Trigger atTimeBeforeEnd(double timeBeforeEnd) {
+    return atTime(trajectory.getTotalTime() - timeBeforeEnd);
+  }
+
+  /**
    * Returns a trigger that is true when the event with the given name has been reached based on
    * time.
    *
