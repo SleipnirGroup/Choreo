@@ -155,8 +155,8 @@ public class Trajectory<SampleType extends TrajectorySample<SampleType>> {
    * @return The SampleType at the given time.
    */
   public Optional<SampleType> sampleAt(double timestamp, boolean mirrorForRedAlliance) {
-    Optional<SampleType> state = sampleInternal(timestamp);
-    return mirrorForRedAlliance ? state.map(SampleType::flipped) : state;
+    Optional<SampleType> sample = sampleInternal(timestamp);
+    return mirrorForRedAlliance ? sample.map(SampleType::flipped) : sample;
   }
 
   /**

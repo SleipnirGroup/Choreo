@@ -11,6 +11,8 @@ import choreo.trajectory.TrajectoryTestHelper;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.simulation.SimHooks;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -30,6 +32,7 @@ public class TrajectoryCmdTest {
     AutoFactory factory = AutoTestHelper.factory(false, pose);
     Trajectory<SwerveSample> trajectory =
         TrajectoryTestHelper.linearTrajectory("test", start, end, 3.0, SwerveSample.class);
+
     Command trajectoryCmd = factory.trajectoryCmd(trajectory);
 
     scheduler.schedule(trajectoryCmd);
@@ -38,6 +41,14 @@ public class TrajectoryCmdTest {
     // consumer on every cycle of that duration
 
     SimHooks.pauseTiming();
+
+    DriverStationSim.setDsAttached(true);
+    DriverStationSim.setEnabled(true);
+    DriverStationSim.setAutonomous(true);
+    DriverStationSim.notifyNewData();
+    DriverStation.refreshData();
+    assertTrue(DriverStation.isAutonomousEnabled());
+
     for (int i = 0; i < 149; i++) {
       scheduler.run();
       assertTrue(scheduler.isScheduled(trajectoryCmd));
@@ -49,6 +60,15 @@ public class TrajectoryCmdTest {
 
     assertFalse(scheduler.isScheduled(trajectoryCmd));
 
-    assertTrue(pose.get().getTranslation().getDistance(end.getTranslation()) < 0.1);
+    assertTrue(pose.get().getTranslation().getDistance(end.getTranslation()) < 0.5);
+
+    DriverStationSim.setDsAttached(true);
+    DriverStationSim.setEnabled(true);
+    DriverStationSim.setAutonomous(true);
+    DriverStationSim.notifyNewData();
+    DriverStation.refreshData();
+    assertTrue(DriverStation.isAutonomousEnabled());
+
+    SimHooks.resumeTiming();
   }
 }

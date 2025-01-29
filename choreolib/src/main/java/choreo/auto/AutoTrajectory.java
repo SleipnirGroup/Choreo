@@ -173,19 +173,36 @@ public class AutoTrajectory {
     }
   }
 
+  @SuppressWarnings("unchecked")
   private void cmdEnd(boolean interrupted) {
     activeTimer.stop();
     activeTimer.reset();
     inactiveTimer.start();
     isActive = false;
     isCompleted = !interrupted;
-    cmdExecute(); // will force the controller to be fed the final sample
+
+    if (!interrupted && allianceCtx.allianceKnownOrIgnored()) {
+      var sampleOpt = trajectory.getFinalSample(allianceCtx.doFlip());
+      if (sampleOpt.isPresent()) {
+        var sample = sampleOpt.get();
+        if (sample instanceof SwerveSample swerveSample) {
+          var swerveController = (Consumer<SwerveSample>) this.controller;
+          swerveController.accept(swerveSample);
+        } else if (sample instanceof DifferentialSample differentialSample) {
+          var differentialController = (Consumer<DifferentialSample>) this.controller;
+          differentialController.accept(differentialSample);
+        }
+      }
+    }
+
     logTrajectory(false);
     routine.updateIdle(true);
   }
 
   private boolean cmdIsFinished() {
-    return activeTimer.get() > trajectory.getTotalTime() || !routine.active().getAsBoolean();
+    return activeTimer.get() > trajectory.getTotalTime()
+        || !routine.active().getAsBoolean()
+        || !allianceCtx.allianceKnownOrIgnored();
   }
 
   /**

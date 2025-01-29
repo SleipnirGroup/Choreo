@@ -140,10 +140,11 @@ public class DoneTest {
 
     SimHooks.resumeTiming();
 
-    DriverStationSim.setDsAttached(false);
-    DriverStationSim.setEnabled(false);
-    DriverStationSim.setAutonomous(false);
+    DriverStationSim.setDsAttached(true);
+    DriverStationSim.setEnabled(true);
+    DriverStationSim.setAutonomous(true);
     DriverStationSim.notifyNewData();
     DriverStation.refreshData();
+    assertTrue(DriverStation.isAutonomousEnabled());
   }
 }
