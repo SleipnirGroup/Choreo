@@ -45,7 +45,7 @@ public class AutoRoutine {
   private boolean isActive = false;
 
   private final Trigger isActiveTrigger =
-      new Trigger(loop, () -> isActive && DriverStation.isAutonomousEnabled());
+      new Trigger(loop, () -> isActive && DriverStation.isEnabled());
 
   /** A boolean indicating if a trajectory is running on the routine right now */
   private boolean isIdle = true;
@@ -89,7 +89,7 @@ public class AutoRoutine {
 
   /** Polls the routine. Should be called in the autonomous periodic method. */
   public void poll() {
-    if (!DriverStation.isAutonomousEnabled() || !allianceCtx.allianceKnownOrIgnored() || isKilled) {
+    if (DriverStation.isDisabled() || !allianceCtx.allianceKnownOrIgnored() || isKilled) {
       isActive = false;
       return;
     }
@@ -310,7 +310,7 @@ public class AutoRoutine {
     return Commands.either(
         Commands.run(this::poll)
             .finallyDo(this::reset)
-            .until(() -> !DriverStation.isAutonomousEnabled() || finishCondition.getAsBoolean())
+            .until(() -> !DriverStation.isDisabled() || finishCondition.getAsBoolean())
             .withName(name),
         Commands.runOnce(
             () -> {
