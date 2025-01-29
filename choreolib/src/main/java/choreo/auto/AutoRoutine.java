@@ -42,10 +42,15 @@ public class AutoRoutine {
   final AllianceContext allianceCtx;
 
   /** A boolean utilized in {@link #active()} to resolve trueness */
-  boolean isActive = false;
+  private boolean isActive = false;
+
+  private final Trigger isActiveTrigger =
+      new Trigger(loop, () -> isActive && DriverStation.isAutonomousEnabled());
 
   /** A boolean indicating if a trajectory is running on the routine right now */
   private boolean isIdle = true;
+
+  private final Trigger isIdleTrigger = new Trigger(loop, () -> isIdle);
 
   /** A boolean that is true when the loop is killed */
   boolean isKilled = false;
@@ -79,7 +84,7 @@ public class AutoRoutine {
    * @return A {@link Trigger} that is true while this autonomous routine is being polled.
    */
   public Trigger active() {
-    return new Trigger(loop, () -> isActive && DriverStation.isAutonomousEnabled());
+    return isActiveTrigger;
   }
 
   /** Polls the routine. Should be called in the autonomous periodic method. */
@@ -160,7 +165,7 @@ public class AutoRoutine {
    * @return A trigger that is true when the routine is idle.
    */
   public Trigger idle() {
-    return new Trigger(loop, () -> isIdle);
+    return isIdleTrigger;
   }
 
   /**
