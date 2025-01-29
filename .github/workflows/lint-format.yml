@@ -56,7 +56,7 @@ jobs:
         with:
           python-version: 3.12
 
-      - run: pip3 install wpiformat==2024.51
+      - run: pip3 install wpiformat==2024.51 mypy
 
       - run: pnpm run fmt
 
