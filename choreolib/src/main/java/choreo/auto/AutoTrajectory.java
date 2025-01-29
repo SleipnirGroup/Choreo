@@ -529,9 +529,9 @@ public class AutoTrajectory {
   }
 
   /**
-   * Returns a trigger that will go true for 1 cycle when the desired before the
-   * end of the trajectory time.
-   * 
+   * Returns a trigger that will go true for 1 cycle when the desired before the end of the
+   * trajectory time.
+   *
    * @param timeBeforeEnd The time before the end of the trajectory.
    * @return A trigger that is true when timeBeforeEnd has elapsed.
    */
