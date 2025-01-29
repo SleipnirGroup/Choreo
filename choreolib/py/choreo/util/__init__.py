@@ -115,7 +115,7 @@ def get_flipper_for_year(year: int = DEFAULT_YEAR):
     try:
         flipper_type = FLIPPER_MAP[year]
     except KeyError:
-        flipper_type = DEFAULT_YEAR
+        flipper_type = FLIPPER_MAP[DEFAULT_YEAR]
 
     if flipper_type == FlipperType.ROTATE_AROUND:
         return RotateAroundFlipper()

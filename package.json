@@ -1,6 +1,6 @@
 {
   "name": "choreo",
-  "version": "2025.0.1",
+  "version": "2025.0.2",
   "description": "A graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics Competition.",
   "homepage": "https://github.com/SleipnirGroup/Choreo",
   "bugs": {
@@ -19,6 +19,7 @@
     "fmtJs": "prettier --write .",
     "fmtRs": "cargo fmt",
     "lintJs": "eslint --fix src",
+    "lintPy": "mypy --pretty --show-column-numbers choreolib/py",
     "fmt": "pnpm run fmtCpp && pnpm run fmtJava && pnpm run fmtJs && pnpm run fmtRs && pnpm run lintJs",
     "clean": "cargo clean && rm -rf dist && rm -rf node_modules",
     "dev": "tauri dev",

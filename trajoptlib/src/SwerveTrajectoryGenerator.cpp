@@ -37,24 +37,27 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     : path(pathBuilder.GetPath()), Ns(pathBuilder.GetControlIntervalCounts()) {
   auto initialGuess = pathBuilder.CalculateInitialGuess();
 
-  callbacks.emplace_back([this, handle = handle] {
-    constexpr int fps = 60;
-    constexpr std::chrono::duration<double> timePerFrame{1.0 / fps};
+  problem.Callback(
+      [this, handle = handle](const sleipnir::SolverIterationInfo&) -> bool {
+        constexpr int fps = 60;
+        constexpr std::chrono::duration<double> timePerFrame{1.0 / fps};
 
-    // FPS limit on sending updates
-    static auto lastFrameTime = std::chrono::steady_clock::now();
-    auto now = std::chrono::steady_clock::now();
-    if (now - lastFrameTime < timePerFrame) {
-      return;
-    }
+        // FPS limit on sending updates
+        static auto lastFrameTime = std::chrono::steady_clock::now();
+        auto now = std::chrono::steady_clock::now();
+        if (now - lastFrameTime < timePerFrame) {
+          return trajopt::GetCancellationFlag();
+        }
 
-    lastFrameTime = now;
+        lastFrameTime = now;
 
-    auto soln = ConstructSwerveSolution();
-    for (auto& callback : this->path.callbacks) {
-      callback(soln, handle);
-    }
-  });
+        auto soln = ConstructSwerveSolution();
+        for (auto& callback : this->path.callbacks) {
+          callback(soln, handle);
+        }
+
+        return trajopt::GetCancellationFlag();
+      });
 
   size_t wptCnt = path.waypoints.size();
   size_t sgmtCnt = path.waypoints.size() - 1;
@@ -137,30 +140,35 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     problem.SubjectTo(dt * path.drivetrain.wheelRadius *
                           path.drivetrain.wheelMaxAngularVelocity <=
                       minWidth);
+    if (N_sgmt == 0) {
+      dt.SetValue(0);
+    } else {
+      // Use initialGuess and Ns to find the dx, dy, dθ between wpts
+      const auto sgmt_start = GetIndex(Ns, sgmtIndex);
+      const auto sgmt_end = GetIndex(Ns, sgmtIndex + 1);
+      const auto dx =
+          initialGuess.x.at(sgmt_end) - initialGuess.x.at(sgmt_start);
+      const auto dy =
+          initialGuess.y.at(sgmt_end) - initialGuess.y.at(sgmt_start);
+      const auto dist = std::hypot(dx, dy);
+      const auto θ_0 = std::atan2(initialGuess.thetasin.at(sgmt_start),
+                                  initialGuess.thetacos.at(sgmt_start));
+      const auto θ_1 = std::atan2(initialGuess.thetasin.at(sgmt_end),
+                                  initialGuess.thetacos.at(sgmt_end));
+      const auto dθ = std::abs(AngleModulus(θ_1 - θ_0));
 
-    // Use initialGuess and Ns to find the dx, dy, dθ between wpts
-    const auto sgmt_start = GetIndex(Ns, sgmtIndex);
-    const auto sgmt_end = GetIndex(Ns, sgmtIndex + 1);
-    const auto dx = initialGuess.x.at(sgmt_end) - initialGuess.x.at(sgmt_start);
-    const auto dy = initialGuess.y.at(sgmt_end) - initialGuess.y.at(sgmt_start);
-    const auto dist = std::hypot(dx, dy);
-    const auto θ_0 = std::atan2(initialGuess.thetasin.at(sgmt_start),
-                                initialGuess.thetacos.at(sgmt_start));
-    const auto θ_1 = std::atan2(initialGuess.thetasin.at(sgmt_end),
-                                initialGuess.thetacos.at(sgmt_end));
-    const auto dθ = std::abs(AngleModulus(θ_1 - θ_0));
+      auto maxLinearVel = maxDrivetrainVelocity;
 
-    auto maxLinearVel = maxDrivetrainVelocity;
+      const auto angularTime =
+          CalculateTrapezoidalTime(dθ, maxAngVel, maxAngAccel);
+      maxLinearVel = std::min(maxLinearVel, dist / angularTime);
 
-    const auto angularTime =
-        CalculateTrapezoidalTime(dθ, maxAngVel, maxAngAccel);
-    maxLinearVel = std::min(maxLinearVel, dist / angularTime);
+      const auto linearTime =
+          CalculateTrapezoidalTime(dist, maxLinearVel, maxAccel);
+      const double sgmtTime = angularTime + linearTime;
 
-    const auto linearTime =
-        CalculateTrapezoidalTime(dist, maxLinearVel, maxAccel);
-    const double sgmtTime = angularTime + linearTime;
-
-    dt.SetValue(sgmtTime / N_sgmt);
+      dt.SetValue(sgmtTime / N_sgmt);
+    }
   }
   problem.Minimize(std::move(T_tot));
 
@@ -310,12 +318,6 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
 expected<SwerveSolution, sleipnir::SolverExitCondition>
 SwerveTrajectoryGenerator::Generate(bool diagnostics) {
   GetCancellationFlag() = 0;
-  problem.Callback([this](const sleipnir::SolverIterationInfo&) -> bool {
-    for (auto& callback : callbacks) {
-      callback();
-    }
-    return trajopt::GetCancellationFlag();
-  });
 
   // tolerance of 1e-4 is 0.1 mm
   auto status = problem.Solve({.tolerance = 1e-4, .diagnostics = diagnostics});
