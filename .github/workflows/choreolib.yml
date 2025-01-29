@@ -241,6 +241,23 @@ jobs:
         with:
           name: Python
           path: ./choreolib/py/dist
+  lint-python:
+    name: "Lint Python"
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          token: ${{secrets.GITHUB_TOKEN}}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - run: pip3 install mypy wpilib
+
+      - run: mypy --pretty --show-column-numbers choreolib/py
 
   pypi-publish:
     name: Upload release to PyPI

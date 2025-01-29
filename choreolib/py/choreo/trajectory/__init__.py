@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import math
 import os
+from dataclasses import dataclass
+from typing import TypeGuard
 
 from choreo.util import DEFAULT_YEAR, get_flipper_for_year
 from wpimath.geometry import Pose2d, Rotation2d
@@ -13,23 +15,14 @@ def lerp(a, b, t) -> float:
     return a + (b - a) * t
 
 
+@dataclass
 class EventMarker:
     """
     A marker for an event in a trajectory.
     """
 
-    def __init__(self, timestamp: float, event: str):
-        """
-        Constructs an EventMarker.
-
-        Parameter ``timestamp``:
-            The timestamp of the event.
-
-        Parameter ``event``:
-            The event.
-        """
-        self.timestamp = timestamp
-        self.event = event
+    timestamp: float
+    event: str
 
     def offset_by(self, timestamp_offset: float):
         """
@@ -44,8 +37,9 @@ class EventMarker:
         """
         return EventMarker(self.timestamp + timestamp_offset, self.event)
 
-    def __eq__(self, other: EventMarker) -> bool:
-        return self.timestamp == other.timestamp and self.event == other.event
+
+def marker_is_not_none(marker: EventMarker | None) -> TypeGuard[EventMarker]:
+    return marker is not None
 
 
 def load_event_marker(event) -> EventMarker | None:
@@ -60,70 +54,59 @@ def load_event_marker(event) -> EventMarker | None:
         return None
 
 
+@dataclass
 class DifferentialSample:
-    def __init__(
-        self,
-        timestamp: float,
-        x: float,
-        y: float,
-        heading: float,
-        vl: float,
-        vr: float,
-        omega: float,
-        al: float,
-        ar: float,
-        fl: list[float],
-        fr: list[float],
-    ):
-        """
-        Constructs a DifferentialSample with the specified parameters.
+    """
+    Constructs a DifferentialSample with the specified parameters.
 
-        Parameter ``timestamp``:
-            The timestamp of this state, relative to the beginning of the
-            trajectory.
+    Parameter ``timestamp``:
+        The timestamp of this state, relative to the beginning of the
+        trajectory.
 
-        Parameter ``x``:
-            The X position of the state in meters.
+    Parameter ``x``:
+        The X position of the state in meters.
 
-        Parameter ``y``:
-            The Y position of the state in meters.
+    Parameter ``y``:
+        The Y position of the state in meters.
 
-        Parameter ``heading``:
-            The heading of the state in radians, with 0 being in the +X
-            direction.
+    Parameter ``heading``:
+        The heading of the state in radians, with 0 being in the +X
+        direction.
 
-        Parameter ``vl``:
-            The left linear velocity of the state in m/s.
+    Parameter ``vl``:
+        The left linear velocity of the state in m/s.
 
-        Parameter ``vr``:
-            The right linear velocity of the state in m/s.
+    Parameter ``vr``:
+        The right linear velocity of the state in m/s.
 
-        Parameter ``omega``:
-            The chassis angular velocity of the state in rad/s.
+    Parameter ``omega``:
+        The chassis angular velocity of the state in rad/s.
 
-        Parameter ``al``:
-            The left linear acceleration of the state in m/s².
+    Parameter ``al``:
+        The left linear acceleration of the state in m/s².
 
-        Parameter ``ar``:
-            The right linear acceleration of the state in m/s².
+    Parameter ``ar``:
+        The right linear acceleration of the state in m/s².
 
-        Parameter ``fl``:
-            The left force on the swerve modules in Newtons.
+    Parameter ``fl``:
+        The left force on the swerve modules in Newtons.
 
-        Parameter ``fr``:
-            The right force on the swerve modules in Newtons.
-        """
-        self.timestamp = timestamp
-        self.x = x
-        self.y = y
-        self.heading = heading
-        self.vl = vl
-        self.vr = vr
-        self.omega = omega
-        self.al = al
-        self.ar = ar
-        self.fl = fl
-        self.fr = fr
+    Parameter ``fr``:
+        The right force on the swerve modules in Newtons.
+    """
+
+    # The timestamp of this state, relative to the beginning of the trajectory.
+    timestamp: float
+    x: float
+    y: float
+    heading: float
+    vl: float
+    vr: float
+    omega: float
+    al: float
+    ar: float
+    fl: float
+    fr: float
 
     def get_pose(self) -> Pose2d:
         """
@@ -154,7 +137,7 @@ class DifferentialSample:
         Returns:
             The interpolated state.
         """
-        scale = (t - self.timestamp) / (end_value.t - self.timestamp)
+        scale = (t - self.timestamp) / (end_value.timestamp - self.timestamp)
 
         return DifferentialSample(
             t,
@@ -163,10 +146,11 @@ class DifferentialSample:
             lerp(self.heading, end_value.heading, scale),
             lerp(self.vl, end_value.vl, scale),
             lerp(self.vr, end_value.vr, scale),
+            lerp(self.omega, end_value.omega, scale),
             lerp(self.al, end_value.al, scale),
             lerp(self.ar, end_value.ar, scale),
-            [lerp(self.fl[i], end_value.fl[i], scale) for i in range(len(self.fl))],
-            [lerp(self.fr[i], end_value.fr[i], scale) for i in range(len(self.fr))],
+            lerp(self.fl, end_value.fl, scale),
+            lerp(self.fr, end_value.fr, scale),
         )
 
     def flipped(self, year: int = DEFAULT_YEAR) -> DifferentialSample:
@@ -206,49 +190,29 @@ class DifferentialSample:
                 self.fr,
             )
 
-    def __eq__(self, other: DifferentialSample) -> bool:
-        return (
-            self.timestamp == other.timestamp
-            and self.x == other.x
-            and self.y == other.y
-            and self.heading == other.heading
-            and self.vl == other.vl
-            and self.vr == other.vr
-            and self.omega == other.omega
-            and self.al == other.al
-            and self.ar == other.ar
-            and self.fl == other.fl
-            and self.fr == other.fr
-        )
 
-
+@dataclass
 class DifferentialTrajectory:
-    def __init__(
-        self,
-        name: str,
-        samples: list[DifferentialSample],
-        splits: list[int],
-        events: list[EventMarker],
-    ):
-        """
-        Constructs a Trajectory with the specified parameters.
+    """
+    Constructs a Trajectory with the specified parameters.
 
-        Parameter ``name``:
-            The name of the trajectory.
+    Parameter ``name``:
+        The name of the trajectory.
 
-        Parameter ``samples``:
-            A vector containing a list of Samples.
+    Parameter ``samples``:
+        A vector containing a list of Samples.
 
-        Parameter ``splits``:
-            The indices of the splits in the trajectory.
+    Parameter ``splits``:
+        The indices of the splits in the trajectory.
 
-        Parameter ``events``:
-            The events in the trajectory.
-        """
-        self.name = name
-        self.samples = samples
-        self.splits = splits
-        self.events = events
+    Parameter ``events``:
+        The events in the trajectory.
+    """
+
+    name: str
+    samples: list[DifferentialSample]
+    splits: list[int]
+    events: list[EventMarker]
 
     def __sample_internal(self, timestamp: float) -> DifferentialSample | None:
         if len(self.samples) == 0:
@@ -370,84 +334,63 @@ class DifferentialTrajectory:
             self.name, [x.flipped() for x in self.samples], self.splits, self.events
         )
 
-    def __eq__(self, other: DifferentialTrajectory) -> bool:
-        return (
-            self.name == other.name
-            and self.samples == other.samples
-            and self.splits == other.splits
-            and self.events == other.events
-        )
 
-
+@dataclass
 class SwerveSample:
-    def __init__(
-        self,
-        timestamp: float,
-        x: float,
-        y: float,
-        heading: float,
-        vx: float,
-        vy: float,
-        omega: float,
-        ax: float,
-        ay: float,
-        alpha: float,
-        fx: list[float],
-        fy: list[float],
-    ):
-        """
-        Constructs a SwerveSample with the specified parameters.
+    """
+    Constructs a SwerveSample with the specified parameters.
 
-        Parameter ``timestamp``:
-            The timestamp of this state, relative to the beginning of the
-            trajectory.
+    Parameter ``timestamp``:
+        The timestamp of this state, relative to the beginning of the
+        trajectory.
 
-        Parameter ``x``:
-            The X position of the state in meters.
+    Parameter ``x``:
+        The X position of the state in meters.
 
-        Parameter ``y``:
-            The Y position of the state in meters.
+    Parameter ``y``:
+        The Y position of the state in meters.
 
-        Parameter ``heading``:
-            The heading of the state in radians, with 0 being in the +X
-            direction.
+    Parameter ``heading``:
+        The heading of the state in radians, with 0 being in the +X
+        direction.
 
-        Parameter ``vx``:
-            The linear velocity of the state in the X direction in m/s.
+    Parameter ``vx``:
+        The linear velocity of the state in the X direction in m/s.
 
-        Parameter ``vy``:
-            The linear velocity of the state in the Y direction in m/s.
+    Parameter ``vy``:
+        The linear velocity of the state in the Y direction in m/s.
 
-        Parameter ``omega``:
-            The angular velocity of the state in rad/s.
+    Parameter ``omega``:
+        The angular velocity of the state in rad/s.
 
-        Parameter ``ax``:
-            The linear acceleration of the state in the X direction in m/s².
+    Parameter ``ax``:
+        The linear acceleration of the state in the X direction in m/s².
 
-        Parameter ``ay``:
-            The linear acceleration of the state in the Y direction in m/s².
+    Parameter ``ay``:
+        The linear acceleration of the state in the Y direction in m/s².
 
-        Parameter ``alpha``:
-            The angular acceleration of the state in rad/s².
+    Parameter ``alpha``:
+        The angular acceleration of the state in rad/s².
 
-        Parameter ``fx``:
-            The force on the swerve modules in the X direction in Newtons.
+    Parameter ``fx``:
+        The force on the swerve modules in the X direction in Newtons.
 
-        Parameter ``fy``:
-            The force on the swerve modules in the Y direction in Newtons.
-        """
-        self.timestamp = timestamp
-        self.x = x
-        self.y = y
-        self.heading = heading
-        self.vx = vx
-        self.vy = vy
-        self.omega = omega
-        self.ax = ax
-        self.ay = ay
-        self.alpha = alpha
-        self.fx = fx
-        self.fy = fy
+    Parameter ``fy``:
+        The force on the swerve modules in the Y direction in Newtons.
+    """
+
+    timestamp: float
+    x: float
+    y: float
+    heading: float
+    vx: float
+    vy: float
+    omega: float
+    ax: float
+    ay: float
+    alpha: float
+    fx: list[float]
+    fy: list[float]
 
     def get_pose(self) -> Pose2d:
         """
@@ -531,50 +474,29 @@ class SwerveSample:
                 [-y for y in self.fy],
             )
 
-    def __eq__(self, other: SwerveSample) -> bool:
-        return (
-            self.timestamp == other.timestamp
-            and self.x == other.x
-            and self.y == other.y
-            and self.heading == other.heading
-            and self.vx == other.vx
-            and self.vy == other.vy
-            and self.omega == other.omega
-            and self.ax == other.ax
-            and self.ay == other.ay
-            and self.alpha == other.alpha
-            and self.fx == other.fx
-            and self.fy == other.fy
-        )
 
-
+@dataclass
 class SwerveTrajectory:
-    def __init__(
-        self,
-        name: str,
-        samples: list[SwerveSample],
-        splits: list[int],
-        events: list[EventMarker],
-    ):
-        """
-        Constructs a SwerveTrajectory with the specified parameters.
+    """
+    Constructs a SwerveTrajectory with the specified parameters.
 
-        Parameter ``name``:
-            The name of the trajectory.
+    Parameter ``name``:
+        The name of the trajectory.
 
-        Parameter ``samples``:
-            A vector containing a list of Samples.
+    Parameter ``samples``:
+        A vector containing a list of Samples.
 
-        Parameter ``splits``:
-            The indices of the splits in the trajectory.
+    Parameter ``splits``:
+        The indices of the splits in the trajectory.
 
-        Parameter ``events``:
-            The events in the trajectory.
-        """
-        self.name = name
-        self.samples = samples
-        self.splits = splits
-        self.events = events
+    Parameter ``events``:
+        The events in the trajectory.
+    """
+
+    name: str
+    samples: list[SwerveSample]
+    splits: list[int]
+    events: list[EventMarker]
 
     def __sample_internal(self, timestamp: float) -> SwerveSample | None:
         if len(self.samples) == 0:
@@ -696,12 +618,4 @@ class SwerveTrajectory:
         """
         return SwerveTrajectory(
             self.name, [x.flipped() for x in self.samples], self.splits, self.events
-        )
-
-    def __eq__(self, other: SwerveTrajectory) -> bool:
-        return (
-            self.name == other.name
-            and self.samples == other.samples
-            and self.splits == other.splits
-            and self.events == other.events
         )
