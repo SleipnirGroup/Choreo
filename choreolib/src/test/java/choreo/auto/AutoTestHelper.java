@@ -12,15 +12,21 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class AutoTestHelper {
-  public static AutoFactory factory(boolean useAllianceFlipping) {
-    AtomicReference<Pose2d> pose = new AtomicReference<>(new Pose2d());
+  public static AutoFactory factory(
+      boolean useAllianceFlipping, AtomicReference<Pose2d> robotPose) {
+    // AtomicReference<Pose2d> pose = new AtomicReference<>(new Pose2d());
     return new AutoFactory(
-        () -> pose.get(),
-        newPose -> pose.set(newPose),
-        sample -> pose.set(sample.getPose()),
+        () -> robotPose.get(),
+        newPose -> robotPose.set(newPose),
+        sample -> robotPose.set(sample.getPose()),
         useAllianceFlipping,
         new Subsystem() {},
         (sample, isStart) -> {});
+  }
+
+  public static AutoFactory factory(boolean useAllianceFlipping) {
+    AtomicReference<Pose2d> pose = new AtomicReference<>(new Pose2d());
+    return factory(useAllianceFlipping, pose);
   }
 
   public static AutoFactory factory() {

@@ -9,6 +9,7 @@ import choreo.trajectory.Trajectory;
 import choreo.trajectory.TrajectorySample;
 import choreo.util.ChoreoAlert;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -38,16 +39,27 @@ public class AutoRoutine {
   private final String name;
 
   /** The alliance helper that is used to determine flipping logic */
-  private final AllianceContext allianceCtx;
+  final AllianceContext allianceCtx;
 
   /** A boolean utilized in {@link #active()} to resolve trueness */
-  boolean isActive = false;
+  private boolean isActive = false;
+
+  private final Trigger isActiveTrigger =
+      new Trigger(loop, () -> isActive && DriverStation.isAutonomousEnabled());
+
+  /** A boolean indicating if a trajectory is running on the routine right now */
+  private boolean isIdle = true;
+
+  private final Trigger isIdleTrigger = new Trigger(loop, () -> isIdle);
 
   /** A boolean that is true when the loop is killed */
   boolean isKilled = false;
 
   /** The amount of times the routine has been polled */
   private int pollCount = 0;
+
+  /** The timestamp of the current cycle */
+  private double cycleTimestamp = 0;
 
   /**
    * Creates a new loop with a specific name and a custom alliance supplier.
@@ -72,7 +84,7 @@ public class AutoRoutine {
    * @return A {@link Trigger} that is true while this autonomous routine is being polled.
    */
   public Trigger active() {
-    return new Trigger(loop, () -> isActive && DriverStation.isAutonomousEnabled());
+    return isActiveTrigger;
   }
 
   /** Polls the routine. Should be called in the autonomous periodic method. */
@@ -82,6 +94,7 @@ public class AutoRoutine {
       return;
     }
     pollCount++;
+    cycleTimestamp = Timer.getFPGATimestamp();
     loop.poll();
     isActive = true;
   }
@@ -105,13 +118,21 @@ public class AutoRoutine {
     return new Trigger(loop, condition);
   }
 
-  /**
-   * Gets the poll count of the routine.
-   *
-   * @return The poll count of the routine.
-   */
   int pollCount() {
     return pollCount;
+  }
+
+  double cycleTimestamp() {
+    return cycleTimestamp;
+  }
+
+  /**
+   * Updates the idle state of the routine.
+   *
+   * @param isIdle The new idle state of the routine.
+   */
+  void updateIdle(boolean isIdle) {
+    this.isIdle = isIdle;
   }
 
   /**
@@ -121,6 +142,7 @@ public class AutoRoutine {
    */
   public void reset() {
     pollCount = 0;
+    cycleTimestamp = 0;
     isActive = false;
   }
 
@@ -133,6 +155,17 @@ public class AutoRoutine {
     reset();
     ChoreoAlert.alert("Killed an auto loop", kWarning).set(true);
     isKilled = true;
+  }
+
+  /**
+   * Creates a trigger that is true when the routine is idle.
+   *
+   * <p>Idle is defined as no trajectories made by the routine are running.
+   *
+   * @return A trigger that is true when the routine is idle.
+   */
+  public Trigger idle() {
+    return isIdleTrigger;
   }
 
   /**
@@ -187,15 +220,34 @@ public class AutoRoutine {
    * @param cyclesToDelay The number of cycles to delay.
    * @param trajectory The first trajectory to watch.
    * @param trajectories The other trajectories to watch
-   * @return a trigger that determines if any of the trajectories are finished
+   * @return a trigger that goes true for one cycle whenever any of the trajectories finishes,
+   *     delayed by the given number of cycles.
+   * @see AutoTrajectory#doneDelayed(int)
    */
-  public Trigger anyDone(
+  public Trigger anyDoneDelayed(
       int cyclesToDelay, AutoTrajectory trajectory, AutoTrajectory... trajectories) {
-    var trigger = trajectory.done(cyclesToDelay);
+    var trigger = trajectory.doneDelayed(cyclesToDelay);
     for (int i = 0; i < trajectories.length; i++) {
-      trigger = trigger.or(trajectories[i].done(cyclesToDelay));
+      trigger = trigger.or(trajectories[i].doneDelayed(cyclesToDelay));
     }
     return trigger.and(this.active());
+  }
+
+  /**
+   * Creates a trigger that produces a rising edge when any of the trajectories are finished.
+   *
+   * @param cyclesToDelay The number of cycles to delay.
+   * @param trajectory The first trajectory to watch.
+   * @param trajectories The other trajectories to watch
+   * @return a trigger that determines if any of the trajectories are finished
+   * @see AutoTrajectory#doneDelayed(int)
+   * @see AutoRoutine#anyDoneDelayed
+   * @deprecated This method is deprecated and will be removed in 2025. Use {@link #anyDoneDelayed}
+   */
+  @Deprecated(forRemoval = true, since = "2025")
+  public Trigger anyDone(
+      int cyclesToDelay, AutoTrajectory trajectory, AutoTrajectory... trajectories) {
+    return anyDoneDelayed(cyclesToDelay, trajectory, trajectories);
   }
 
   /**
@@ -209,6 +261,23 @@ public class AutoRoutine {
     var trigger = trajectory.active();
     for (int i = 0; i < trajectories.length; i++) {
       trigger = trigger.or(trajectories[i].active());
+    }
+    return trigger.and(this.active());
+  }
+
+  /**
+   * Creates a trigger that returns true when any of the trajectories given are inactive.
+   *
+   * <p>This trigger will only return true if the routine is active.
+   *
+   * @param trajectory The first trajectory to watch.
+   * @param trajectories The other trajectories to watch
+   * @return a trigger that determines if any of the trajectories are inactive
+   */
+  public Trigger allInactive(AutoTrajectory trajectory, AutoTrajectory... trajectories) {
+    var trigger = trajectory.inactive();
+    for (int i = 0; i < trajectories.length; i++) {
+      trigger = trigger.and(trajectories[i].inactive());
     }
     return trigger.and(this.active());
   }
