@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 use trajoptlib::Translation2d;
@@ -32,8 +32,8 @@ pub struct PoseVariable {
 }
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Variables {
-    pub expressions: HashMap<String, Variable>,
-    pub poses: HashMap<String, PoseVariable>,
+    pub expressions: BTreeMap<String, Variable>,
+    pub poses: BTreeMap<String, PoseVariable>,
 }
 #[derive(Debug, Serialize, Deserialize, Clone, Copy)]
 pub struct Bumper<T: SnapshottableType> {
@@ -173,8 +173,8 @@ impl Default for ProjectFile {
             version: super::PROJECT_SCHEMA_VERSION,
             r#type: DriveType::Swerve,
             variables: Variables {
-                expressions: HashMap::new(),
-                poses: HashMap::new(),
+                expressions: BTreeMap::new(),
+                poses: BTreeMap::new(),
             },
             config: RobotConfig {
                 gearing: Expr::new("6.5", 6.5),
