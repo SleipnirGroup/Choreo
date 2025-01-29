@@ -72,7 +72,7 @@ const PoseVariablePanel = observer(
               enabled
               maxWidthCharacters={6}
               key={entry[0] + ".x"}
-              title={"x"}
+              title={".x"}
               number={entry[1].x}
             ></ExpressionInput>
 
@@ -82,7 +82,7 @@ const PoseVariablePanel = observer(
               enabled
               maxWidthCharacters={6}
               key={entry[0] + ".y"}
-              title={"y"}
+              title={".y"}
               number={entry[1].y}
             ></ExpressionInput>
             <span></span>
@@ -92,7 +92,7 @@ const PoseVariablePanel = observer(
               key={entry[0] + ".heading"}
               enabled
               maxWidthCharacters={6}
-              title={"θ"}
+              title={".heading"}
               number={entry[1].heading}
             ></ExpressionInput>
             <span></span>
