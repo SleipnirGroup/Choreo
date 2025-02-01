@@ -8,14 +8,9 @@ import {
 } from "../../../../document/ConstraintDefinitions";
 import { doc } from "../../../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
+import { OverlayElementProps } from "./FieldConstraintDisplayLayer";
 
-type Props<K extends ConstraintKey> = {
-  data: IConstraintDataStore<K>;
-  start?: IHolonomicWaypointStore;
-  end?: IHolonomicWaypointStore;
-  lineColor: string;
-};
-class PointAtOverlay extends Component<Props<"PointAt">, object> {
+class PointAtOverlay extends Component<OverlayElementProps<"PointAt"> & {lineColor: string}, object> {
   rootRef: React.RefObject<SVGGElement> = React.createRef<SVGGElement>();
   componentDidMount() {
     if (this.rootRef.current) {
@@ -24,6 +19,7 @@ class PointAtOverlay extends Component<Props<"PointAt">, object> {
         .on("drag", (event) => this.dragPointTranslate(event))
         .on("start", () => {
           doc.history.startGroup(() => {});
+          this.props.select();
         })
         .on("end", (_event) => doc.history.stopGroup())
         .container(this.rootRef.current);
@@ -33,21 +29,25 @@ class PointAtOverlay extends Component<Props<"PointAt">, object> {
     }
   }
   dragPointTranslate(event: any) {
-    this.props.data.x.set(event.x);
-    this.props.data.y.set(event.y);
+      this.props.data.x.set(event.x);
+      this.props.data.y.set(event.y);
   }
   render() {
     if (this.props.start === undefined) {
       return <></>;
     }
     const data = this.props.data.serialize as DataMap["PointAt"];
+    const lineColor = this.props.selected ? "var(--select-yellow)" : "white"
     return (
-      <g ref={this.rootRef}>
+      <g ref={this.rootRef} onClick={
+        () => {
+          if (this.props.clickable) this.props.select();
+        }}>
         <circle
           cx={data.props.x.val}
           cy={data.props.y.val}
           r={0.1}
-          stroke={this.props.lineColor}
+          stroke={lineColor}
           strokeWidth={0.02}
           fill="transparent"
         ></circle>
@@ -56,9 +56,10 @@ class PointAtOverlay extends Component<Props<"PointAt">, object> {
           cx={data.props.x.val}
           cy={data.props.y.val}
           r={0.2}
-          stroke={this.props.lineColor}
+          stroke={lineColor}
           strokeWidth={0.02}
           fill="transparent"
+          pointerEvents={"visible"}
         ></circle>
       </g>
     );
