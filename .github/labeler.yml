@@ -1,0 +1,35 @@
+'type: build':
+- changed-files:
+  - any-glob-to-any-file: ['.github']
+
+'component: choreolib-java':
+- changed-files:
+  - any-glob-to-any-file: ['choreolib/src/main/java', 'choreolib/src/test/java']
+
+'component: choreolib-cpp':
+- changed-files:
+  - any-glob-to-any-file: ['choreolib/src/main/native', 'choreolib/src/test/java']
+
+'component: choreolib-py':
+- changed-files:
+  - any-glob-to-any-file: ['choreolib/py']
+
+'component: documentation':
+- changed-files:
+  - any-glob-to-any-file: ['docs']
+
+'component: ui':
+- changed-files:
+  - any-glob-to-any-file: ['src']
+
+'component: cli':
+- changed-files:
+  - any-glob-to-any-file: ['src-cli']
+
+'component: backend':
+- changed-files:
+  - any-glob-to-any-file: ['src-core', 'src-tauri']
+
+'component: trajoptlib':
+- changed-files:
+  - any-glob-to-any-file: ['trajoptlib']
