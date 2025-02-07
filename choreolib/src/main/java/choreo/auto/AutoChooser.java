@@ -192,9 +192,9 @@ public class AutoChooser implements Sendable {
       select(selected, true);
     }
     return generatedCommand
-      .unless(DriverStation::isAutonomousEnabled)
-      .until(() -> !DriverStation.isAutonomousEnabled())
-      .withName(generatedCommand.getName());
+        .unless(DriverStation::isAutonomousEnabled)
+        .until(() -> !DriverStation.isAutonomousEnabled())
+        .withName(generatedCommand.getName());
   }
 
   @Override
