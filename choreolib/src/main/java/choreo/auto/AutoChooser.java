@@ -191,7 +191,10 @@ public class AutoChooser implements Sendable {
     if (RobotBase.isSimulation() && nameAtGeneration == NONE_NAME) {
       select(selected, true);
     }
-    return generatedCommand;
+    return generatedCommand
+      .unless(DriverStation::isAutonomousEnabled)
+      .until(() -> !DriverStation.isAutonomousEnabled())
+      .withName(generatedCommand.getName());
   }
 
   @Override
