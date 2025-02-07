@@ -101,10 +101,10 @@ public class AutoFactory {
    *     robot's odometry to.
    * @param controller A function that receives the current {@link SampleType} and controls the
    *     robot.
-   * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
-   *     Command}s.
    * @param useAllianceFlipping If this is true, when on the red alliance, the path will be mirrored
    *     to the opposite side, while keeping the same coordinate system origin.
+   * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
+   *     Command}s.
    * @param trajectoryLogger A {@link TrajectoryLogger} to log {@link Trajectory} as they start and
    *     finish.
    * @see AutoChooser using this factory with AutoChooser to generate auto routines.
@@ -165,10 +165,10 @@ public class AutoFactory {
    * @param resetOdometry A function that receives a field-relative {@link Pose2d} to reset the
    *     robot's odometry to.
    * @param controller A function that receives the current {@link ST} and controls the robot.
-   * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
-   *     Command}s.
    * @param useAllianceFlipping If this returns true, when on the red alliance, the path will be
    *     mirrored to the opposite side, while keeping the same coordinate system origin.
+   * @param driveSubsystem The drive {@link Subsystem} to require for {@link AutoTrajectory} {@link
+   *     Command}s.
    * @see AutoChooser using this factory with AutoChooser to generate auto routines.
    */
   public <ST extends TrajectorySample<ST>> AutoFactory(
