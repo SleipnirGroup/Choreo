@@ -135,7 +135,7 @@ Below the scope slider are various inputs specific to each constraint. Read the 
 
 ## Keep Out Regions
 
-Keep out regions force the robot to avoid a certain area of the field throughout the path. For example, in the 2024 Charged Up game, you might want to avoid crashing into the stage pillars. Keep out constraints define a region instead of a path, and let the optimizer find the best path around the region.
+Keep out regions force the robot to avoid a certain area of the field throughout the path. For example, in the 2024 Crescendo game, you might want to avoid crashing into the stage pillars. Keep out constraints define a region instead of a path, and let the optimizer find the best path around the region.
 
 !!! warning
     Keep Out Regions can cause weird behaviours when generating paths due to known issues with the numerical solver used for Choreo. See the tips below for best results.
