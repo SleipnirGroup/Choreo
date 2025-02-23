@@ -1,0 +1,1570 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics Competition.">
+      
+      
+      
+        <link rel="canonical" href="https://choreo.autos/usage/editing-paths/">
+      
+      
+        <link rel="prev" href="../../document-settings/robot-configuration/">
+      
+      
+        <link rel="next" href="../controls-shortcuts/">
+      
+      
+      <link rel="icon" href="../../media/icon1024x1024.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.5">
+    
+    
+      
+        <title>Editing Paths - Choreo Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8608ea7d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#waypoints" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Choreo Documentation" class="md-header__button md-logo" aria-label="Choreo Documentation" data-md-component="logo">
+      
+  <img src="../../media/icon1024x1024.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Choreo Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Editing Paths
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1M8 13h8v-2H8zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4a5 5 0 0 0 5-5 5 5 0 0 0-5-5"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5M7 15a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/SleipnirGroup/Choreo/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    SleipnirGroup/Choreo
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../.." class="md-tabs__link">
+          
+  
+  Home
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
+          
+  
+  Usage
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../choreolib/getting-started/" class="md-tabs__link">
+          
+  
+  ChoreoLib
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/trajoptlib/cpp/index.html" class="md-tabs__link">
+          
+  
+  TrajoptLib (Internal API)
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../contributing/building-choreo/" class="md-tabs__link">
+          
+  
+  Contributing
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Choreo Documentation" class="md-nav__button md-logo" aria-label="Choreo Documentation" data-md-component="logo">
+      
+  <img src="../../media/icon1024x1024.png" alt="logo">
+
+    </a>
+    Choreo Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/SleipnirGroup/Choreo/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    SleipnirGroup/Choreo
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            Home
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../document-settings/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Document Settings Panel
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../document-settings/robot-configuration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Robot Configuration
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Usage
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Usage
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Editing Paths
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Editing Paths
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#waypoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      Waypoints
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Waypoints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pose-waypoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pose Waypoints
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#translation-waypoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      Translation Waypoints
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#empty-waypoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      Empty Waypoint
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#waypoint-configuration-panel" class="md-nav__link">
+    <span class="md-ellipsis">
+      Waypoint Configuration Panel
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      Constraints
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Constraints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scopes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scopes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Scopes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#waypoint-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      Waypoint Scope
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#segment-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      Segment Scope
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#waypoint-segment-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      Waypoint + Segment Scope
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#targets" class="md-nav__link">
+    <span class="md-ellipsis">
+      Targets
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#list-of-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      List of Constraints
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      Adding Constraints
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#constraint-display" class="md-nav__link">
+    <span class="md-ellipsis">
+      Constraint Display
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#constraint-configuration-panel" class="md-nav__link">
+    <span class="md-ellipsis">
+      Constraint Configuration Panel
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keep-out-regions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keep Out Regions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#event-markers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Event Markers
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Event Markers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pathplanner-interop" class="md-nav__link">
+    <span class="md-ellipsis">
+      PathPlanner Interop
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generating" class="md-nav__link">
+    <span class="md-ellipsis">
+      Generating
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../controls-shortcuts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Controls & Shortcuts
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../saving/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Saving
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../view-options-panel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    View Options Panel
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../estimating-moi/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Estimating Moment of Inertia
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    ChoreoLib
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            ChoreoLib
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../choreolib/getting-started/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Getting Started
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../choreolib/auto-factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Auto Factory
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../choreolib/trajectory-api/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Trajectory API
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/choreolib/java/index.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Java API
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/choreolib/cpp/index.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    C++ API
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    TrajoptLib (Internal API)
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            TrajoptLib (Internal API)
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/trajoptlib/cpp/index.html" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    C++ API
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Contributing
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Contributing
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/building-choreo/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Building Choreo
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/building-choreolib/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Building ChoreoLib
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/building-docs/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Building Documentation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/contributing-guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Contributing Guide
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/release-process/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Release Process
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/schema-upgrade/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Upgrading File Schemas
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/sample-flipping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Sample Flipping Logic
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Editing Paths</h1>
+
+<p>Choreo finds the <a href="https://en.wikipedia.org/wiki/Mathematical_optimization">mathematically optimal</a> trajectory that passes through your waypoints, subject to your drivetrain's constraints. It also allows fine-grained customization while still maintaining concrete stability. This allows for smoother paths and better odometry.</p>
+<h2 id="waypoints">Waypoints</h2>
+<p><img alt="pose, translation, and empty waypoints" src="../../media/waypoint-types.png" /></p>
+<p>Waypoints are an ordered position that you'd like to hit on your path. There are multiple types of waypoints based on what you'd like to constrain in your path.</p>
+<p>To add a waypoint, select the type of waypoint from the waypoints navbar on the top to get started, then click on the field where you want it. Your waypoints will show up on the sidebar. A yellow dot represents the currently selected waypoint, green for the starting waypoint, and red for the ending waypoint.</p>
+<p>To change the type of an existing waypoint, use the options on the waypoint configuration panel, under the X, Y, and θ</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Use the keys <code>1</code>, <code>2</code>, and <code>3</code> to select the pose, translation, and empty waypoints for adding.</p>
+</div>
+<p><img alt="waypoints navbar" src="../../media/waypoints%2Bnavbar.png" /></p>
+<h3 id="pose-waypoints">Pose Waypoints</h3>
+<p>Pose Waypoint is the first button on the waypoints navbar and consists of a translation <strong>and</strong> a rotation. This signifies that at this waypoint, the robot's translation and heading exactly match the waypoint.</p>
+<p>Drag the little triangle to change the heading. The robot faces in the direction the triangle is pointing.</p>
+<ul>
+<li><strong>X and Y</strong>: position from the bottom left corner of the field (origin)</li>
+<li><strong>θ</strong>: Robot heading, with 0 to the right (towards the positive field X)</li>
+</ul>
+<h3 id="translation-waypoints">Translation Waypoints</h3>
+<p>Translation Waypoint is the second button on the waypoints navbar and consists of a translation but not a rotation. Use this waypoint if the robot's heading is driven by a different constraint, or if it should be left up to the optimizer.</p>
+<ul>
+<li><strong>X and Y</strong>: position from the origin</li>
+<li><strong>θ</strong>: Not used, but shows the heading as if the waypoint was a Pose Waypoint.</li>
+</ul>
+<h3 id="empty-waypoint">Empty Waypoint</h3>
+<p>Empty Waypoint is the third button on the waypoints navbar. It does not directly constrain translation or rotation. However, other constraints such as Keep-In or Point-At can apply to it. It is also used to form the initial shape of the path around obstacles.</p>
+<ul>
+<li><strong>X and Y</strong>: position from the origin</li>
+<li><strong>θ</strong>: Not used, but shows the heading as if the waypoint was a Pose Waypoint.</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Empty waypoints cannot be the endpoint of a path.</p>
+</div>
+<h3 id="waypoint-configuration-panel">Waypoint Configuration Panel</h3>
+<p><img alt="Waypoint Configuration Panel" src="../../media/waypoint_config_panel.png" /></p>
+<p>This panel appears in the top left corner of the field when a waypoint is selected.</p>
+<p>The checkbox next to the "Samples" input enables an override for the number of samples between this waypoint and the next.</p>
+<p>The "Split" checkbox splits the path at this waypoint. Split sections can be accessed individually in ChoreoLib.</p>
+<p>The waypoint type selector changes the type of this waypoint.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Use <code>Shift+1</code>, <code>Shift+2</code>, <code>Shift+3</code> to change the type of the currently selected waypoint.</p>
+</div>
+<h2 id="constraints">Constraints</h2>
+<p>Constraints are limitations that the optimizer needs to respect while generating a path.</p>
+<p>These are applied in addition to the waypoints, and can sometimes conflict with the waypoints or each other. In some cases, Choreo will detect conflicts and fail generation early with a warning.</p>
+<h3 id="scopes">Scopes</h3>
+<p>Different constraints can be applied in different scopes or ranges of the trajectory.</p>
+<h4 id="waypoint-scope">Waypoint Scope</h4>
+<p>Applies this constraint at the selected waypoint.</p>
+<h4 id="segment-scope">Segment Scope</h4>
+<p>Applies this constraint to the range of the trajectory between two waypoints, including the end waypoints.</p>
+<h4 id="waypoint-segment-scope">Waypoint + Segment Scope</h4>
+<p>Some constraints can be applied to both individual waypoints and segments.</p>
+<h4 id="targets">Targets</h4>
+<p>The endpoints of any given scope can be tied to a particular waypoint (and follow that waypoint as it's reordered), the first waypoint in the path, or the last waypoint in the path.</p>
+<h3 id="list-of-constraints">List of Constraints</h3>
+<p><img alt="Constraint navbar" src="../../media/constraint_navbar.png" />
+From left to right:</p>
+<ol>
+<li><strong>Stop Point</strong> (Waypoint): Constrains linear and angular velocity to 0 at the waypoint.</li>
+<li><strong>Max Velocity</strong> (Both): Limits the maximum chassis velocity throughout the scope.<ul>
+<li>Max Velocity equal to 0 on a segment will cause a generation failure.</li>
+</ul>
+</li>
+<li><strong>Max Acceleration</strong> (Both): Limits the maximum chassis acceleration throughout the scope.</li>
+<li><strong>Max Angular Velocity</strong> (Both): Limits the maximum chassis angular velocity throughout the scope.<ul>
+<li>Max Angular Velocity equal to 0 with multiple Pose waypoints in the scope will fail with a warning, even if the Pose headings are identical</li>
+<li>Max Angular Velocity equal to 0 with one Pose waypoint and some Translation or Empty waypoints can be used instead.</li>
+</ul>
+</li>
+</ol>
+<p>The following 5 constraints all have draggable shapes on the field tied to their configuration, which are visible when the constraint is selected in the sidebar. These shapes generally appear in the lower left corner of the field when the constraint is added.</p>
+<ol>
+<li><strong>Point At</strong> (Both): Forces the the robot to face its front or back to a given point, within a given tolerance.<ul>
+<li>When added, a target shape appears at (0,0) and can be moved to the desired facing point.</li>
+<li>Any Pose waypoint within the scope of this constraint will fail with a warning.</li>
+</ul>
+</li>
+<li><strong>Keep In Circle</strong> (Both): Keeps all corners of the bumpers inside the circle.<ul>
+<li>Be mindful of small regions or waypoints close to the edge of the region, as they can easily cause constraint conflicts.</li>
+</ul>
+</li>
+<li><strong>Keep In Rectangle</strong> (Both): Keeps all corners of the bumpers inside the rectangle.<ul>
+<li>A Keep In Rectangle matching the field wall dimensions is added by default on every new path.</li>
+</ul>
+</li>
+<li><strong>Keep In Lane</strong> (Segment): Keeps the <strong>center</strong> of the robot within a given distance of the line between the two end waypoints.<ul>
+<li>This is used primarily to make the robot go in a mostly straight line.</li>
+<li>If there are intermediate waypoints, the lane still goes straight between the start and end of the constraint range.</li>
+</ul>
+</li>
+<li><strong>Keep Out Circle</strong> (Both): Keep all portions of the bumper outside of the circle.<ul>
+<li>See "Keep Out Regions" below.</li>
+</ul>
+</li>
+</ol>
+<h3 id="adding-constraints">Adding Constraints</h3>
+<p>To add a constraint, select it from the top navbar. Click the waypoint at one end of the constraint's range. For Segment scope constraints, a dashed line will follow your cursor. If you hover over another waypoint, the line will go through all the waypoints in the range. Click the second waypoint to add the constraint.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If adding a Waypoint + Segment scope constraint to a single waypoint, you will have to click the same waypoint twice.</p>
+</div>
+<h3 id="constraint-display">Constraint Display</h3>
+<p>When a constraint is selected in the sidebar, circles and dashed lines will show the range of waypoints under the constraint.</p>
+<p><img alt="Display of the scope of a constraint" src="../../media/constraint-scope-line.png" /></p>
+<p>Some constraints have field points or regions associated with them. When these constraints are selected, the field will display movable points and shapes to define these regions.</p>
+<h3 id="constraint-configuration-panel">Constraint Configuration Panel</h3>
+<p>The constraint configuration panel appears in the top left of the field when a constraint is selected.</p>
+<p><img alt="Constraint config panel" src="../../media/constraint_config_panel.png" /></p>
+<p>All constraints will have a scope slider at the top. Use this to change the scope of the constraint.</p>
+<p>Below the scope slider are various inputs specific to each constraint. Read the tooltips by hovering over the title of each input to learn more.</p>
+<h2 id="keep-out-regions">Keep Out Regions</h2>
+<p>Keep out regions force the robot to avoid a certain area of the field throughout the path. For example, in the 2024 Crescendo game, you might want to avoid crashing into the stage pillars. Keep out constraints define a region instead of a path, and let the optimizer find the best path around the region.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Keep Out Regions can cause weird behaviours when generating paths due to known issues with the numerical solver used for Choreo. See the tips below for best results.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<ol>
+<li>Use empty waypoints to make the initial shape of the path avoid the keep-out-region.</li>
+<li>Drag the empty waypoints farther away from the region. This gives the path more detail and an initial shape that has room to shrink towards the boundary.</li>
+<li>Minimize use of the keep-out region. Don't add every obstacle on the field to every path. If possible, restrict the constraint to only the portion of the trajectory that might collide.</li>
+</ol>
+</div>
+<p><img alt="Keep out constraints" src="../../media/keep_out_circle.png" /></p>
+<h2 id="event-markers">Event Markers</h2>
+<p>Event Markers are a way to mark timestamps during a path for use in ChoreoLib or PathplannerLib.</p>
+<p><img alt="Event Markers and Command Bindings" src="../../media/event-markers.png" /></p>
+<p>In ChoreoLib, markers can be used with the Java AutoTrajectory API in <code>AutoTrajectory.atTime(String)</code> (<a href="/api/choreolib/java/choreo/auto/AutoTrajectory.html#atTime(java.lang.String)">Javadoc</a>) and similar.</p>
+<p>For teams that use the PathPlannerLib interoperability to follow Choreo paths, Choreo offers event marker support to trigger commands during the path. Though Choreo's process for positioning markers is different than PathPlanner, the process for attaching a command to a marker is very similar.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Choreo does not support PathPlanner zoned events.</p>
+</div>
+<p>Event markers in Choreo are placed based on time offset before/after a specified waypoint. Add a marker by selecting the event marker on the navbar and clicking on the targeted waypoint. The target can be changed similarly to a constraint.</p>
+<p>When the trajectory is (re)generated, the marker will appear at the proper timestamp and be saved to the .traj file.</p>
+<p>Changes to the time offset will reflect in the .traj file immediately, relative to the timestamp of the targeted waypoint as of the last generation.
+!!! tip You can see the waypoints as they were in the last generation by turning on the "Samples" view layer. You can then turn off "Waypoints" if the current waypoints obstruct the small waypoints from the "Samples" layer.
+<img alt="Samples view layer" src="../../media/samples-layer-wpts.png" /></p>
+<p>Changes to the targeted waypoint will not reflect until trajectory regeneration.</p>
+<h3 id="pathplanner-interop">PathPlanner Interop</h3>
+<p>The options for binding commands to markers mirror PathPlanner's functionality. Named commands use the same registry of names that PathPlanner markers use. However, there is currently no autofill menu with the existing command names. Changes to the command reflect immediately in the .traj.</p>
+<h2 id="generating">Generating</h2>
+<p>You can create paths by chaining waypoints together. Check out <a href="../controls-shortcuts/">Controls &amp; Shortcuts</a> for advanced controls. Once you have at least two waypoints, then you can generate a path.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>You can cancel the path generation by pressing control and clicking the red "X" once it has started.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>If there is an error generating a path, check to make sure your waypoints can physically work.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>If there is an error generating a path, check to make sure your config units are correct.</p>
+</div>
+<p><img alt="Generating Path Gif" src="../../media/generating_path.gif" /></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.copy", "content.code.select", "content.code.annotate", "content.code.select.title", "toc.follow", "toc.integrate", "content.tabs.link", "search.share", "search.highlight", "search.suggest", "announce.dismiss", "navigation.tabs", "navigation.tabs.sticky", "navigation.top", "navigation.instant"], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.f1b6f286.min.js"></script>
+      
+        <script src="../../js/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
