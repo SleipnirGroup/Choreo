@@ -15,8 +15,7 @@ struct DifferentialSolution;
 
 // TODO: Replace with std::vector.append_range() from C++23
 template <typename T>
-inline void append_vector(std::vector<T>& base,
-                          const std::vector<T>& newItems) {
+inline void append_range(std::vector<T>& base, const std::vector<T>& newItems) {
   base.insert(base.end(), newItems.begin(), newItems.end());
 }
 
@@ -60,11 +59,11 @@ inline Solution GenerateLinearInitialGuess(
     size_t N_sgmt = controlIntervalCounts.at(wptIndex - 1);
     size_t guessPointCount = initialGuessPoints.at(wptIndex).size();
     size_t N_guessSgmt = N_sgmt / guessPointCount;
-    append_vector(
+    append_range(
         initialGuess.x,
         Linspace(initialGuessPoints.at(wptIndex - 1).back().X(),
                  initialGuessPoints.at(wptIndex).front().X(), N_guessSgmt));
-    append_vector(
+    append_range(
         initialGuess.y,
         Linspace(initialGuessPoints.at(wptIndex - 1).back().Y(),
                  initialGuessPoints.at(wptIndex).front().Y(), N_guessSgmt));
@@ -82,12 +81,12 @@ inline Solution GenerateLinearInitialGuess(
     }
     for (size_t guessPointIndex = 1; guessPointIndex < guessPointCount - 1;
          ++guessPointIndex) {  // if three or more guess points
-      append_vector(
+      append_range(
           initialGuess.x,
           Linspace(initialGuessPoints.at(wptIndex).at(guessPointIndex - 1).X(),
                    initialGuessPoints.at(wptIndex).at(guessPointIndex).X(),
                    N_guessSgmt));
-      append_vector(
+      append_range(
           initialGuess.y,
           Linspace(initialGuessPoints.at(wptIndex).at(guessPointIndex - 1).Y(),
                    initialGuessPoints.at(wptIndex).at(guessPointIndex).Y(),
@@ -112,12 +111,12 @@ inline Solution GenerateLinearInitialGuess(
     }
     if (guessPointCount > 1) {  // if two or more guess points
       size_t N_lastGuessSgmt = N_sgmt - (guessPointCount - 1) * N_guessSgmt;
-      append_vector(
+      append_range(
           initialGuess.x,
           Linspace(initialGuessPoints.at(wptIndex).at(guessPointCount - 2).X(),
                    initialGuessPoints.at(wptIndex).back().X(),
                    N_lastGuessSgmt));
-      append_vector(
+      append_range(
           initialGuess.y,
           Linspace(initialGuessPoints.at(wptIndex).at(guessPointCount - 2).Y(),
                    initialGuessPoints.at(wptIndex).back().Y(),

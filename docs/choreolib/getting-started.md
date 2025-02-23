@@ -87,7 +87,7 @@ In general, trajectory followers accept trajectory "samples" that represent the 
                 frc::ChassisSpeeds speeds{
                     sample.vx + xFeedback,
                     sample.vy + yFeedback,
-                    sample.heading + headingFeedback
+                    sample.omega + headingFeedback
                 };
 
                 // Apply the generated speeds
