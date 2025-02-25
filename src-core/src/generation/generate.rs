@@ -115,9 +115,6 @@ pub fn generate(
     mut trajectory_file: TrajectoryFile,
     handle: i64,
 ) -> ChoreoResult<TrajectoryFile> {
-    let mut original = trajectory_file.clone();
-
-    // these two functions can make changes to the trajectory file
     set_initial_guess(&mut trajectory_file);
     adjust_headings(&mut trajectory_file)?;
 
@@ -128,11 +125,5 @@ pub fn generate(
     gen.add_omni_transformer::<ConstraintSetter>();
     gen.add_omni_transformer::<CallbackSetter>();
 
-    let new_traj = gen.generate();
-    if new_traj.is_ok() {
-        original.trajectory = new_traj?.trajectory;
-        Ok(original)
-    } else {
-        new_traj
-    }
+    gen.generate()
 }

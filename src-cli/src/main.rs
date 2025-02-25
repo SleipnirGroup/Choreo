@@ -5,6 +5,7 @@ use std::{
     thread::{self, JoinHandle},
 };
 
+use choreo_core::spec::trajectory::TrajectoryFile;
 use choreo_core::{
     file_management::{self, WritingResources},
     generation::generate::generate,
@@ -192,48 +193,87 @@ impl Cli {
             let cln_project = project.clone();
             let cln_resources = resources.clone();
             let cln_trajectory_name = trajectory_name.clone();
-            let handle =
-                thread::spawn(
-                    move || match generate(cln_project.clone(), trajectory, i as i64) {
-                        Ok(new_trajectory) => {
-                            let runtime =
-                                choreo_core::tokio::runtime::Builder::new_current_thread()
-                                    .enable_all()
-                                    .build()
-                                    .expect("Failed to build tokio runtime");
-                            let write_result = runtime.block_on(
-                                file_management::write_trajectory_file_immediately(
-                                    &cln_resources,
-                                    new_trajectory,
-                                ),
+            let handle = thread::spawn(move || {
+                match generate(cln_project.clone(), trajectory.clone(), i as i64) {
+                    Ok(regenerated_trajectory) => {
+                        // The raw generation has the opportunity to change waypoints to help massage the trajoptlib generation. We only care about adopting the generated trajectory
+                        let mut sanitized_regenerated_trajectory = TrajectoryFile {
+                            trajectory: regenerated_trajectory.trajectory,
+                            ..trajectory
+                        };
+
+                        // The initial generation does not update the control intervals. This runs an initial guess pass for each waypoint on the sanitized version of the file in-place.
+                        let control_intervals =
+                            choreo_core::generation::intervals::guess_control_interval_counts(
+                                &cln_project.config.snapshot(),
+                                &sanitized_regenerated_trajectory.params.snapshot(),
                             );
-                            match write_result {
-                                Ok(_) => {
-                                    tracing::info!(
-                                        "Successfully generated trajectory {:} for {:}",
-                                        cln_trajectory_name,
-                                        cln_project.name
-                                    );
-                                }
-                                Err(e) => {
-                                    tracing::error!(
-                                        "Failed to write trajectory {:} for {:}: {:}",
-                                        cln_trajectory_name,
-                                        cln_project.name,
-                                        e
-                                    );
+                        match control_intervals {
+                            Ok(control_intervals) => {
+                                for (i, count) in control_intervals.iter().enumerate() {
+                                    let waypoint =
+                                        &mut sanitized_regenerated_trajectory.params.waypoints[i];
+                                    if waypoint.override_intervals && *count != waypoint.intervals {
+                                        tracing::warn!("Control interval guessing did not ignore override intervals!");
+                                    } else {
+                                        waypoint.intervals = *count;
+                                    }
                                 }
                             }
+                            Err(e) => {
+                                tracing::error!(
+                                    "Guess intervals failed {:} for {:}: {:}",
+                                    cln_trajectory_name,
+                                    cln_project.name,
+                                    e
+                                );
+                            }
                         }
-                        Err(e) => {
-                            tracing::error!(
-                                "Failed to generate trajectory {:}: {:}",
-                                cln_trajectory_name,
-                                e
-                            );
+
+                        let runtime = choreo_core::tokio::runtime::Builder::new_current_thread()
+                            .enable_all()
+                            .build()
+                            .expect("Failed to build tokio runtime");
+
+                        // Finally, we write the fully generated file to disk
+                        let write_result =
+                            runtime.block_on(file_management::write_trajectory_file_immediately(
+                                &cln_resources,
+                                TrajectoryFile {
+                                    trajectory: sanitized_regenerated_trajectory.trajectory,
+                                    snapshot: Some(
+                                        sanitized_regenerated_trajectory.params.snapshot(),
+                                    ),
+                                    ..sanitized_regenerated_trajectory
+                                },
+                            ));
+                        match write_result {
+                            Ok(_) => {
+                                tracing::info!(
+                                    "Successfully generated trajectory {:} for {:}",
+                                    cln_trajectory_name,
+                                    cln_project.name
+                                );
+                            }
+                            Err(e) => {
+                                tracing::error!(
+                                    "Failed to write trajectory {:} for {:}: {:}",
+                                    cln_trajectory_name,
+                                    cln_project.name,
+                                    e
+                                );
+                            }
                         }
-                    },
-                );
+                    }
+                    Err(e) => {
+                        tracing::error!(
+                            "Failed to generate trajectory {:}: {:}",
+                            cln_trajectory_name,
+                            e
+                        );
+                    }
+                }
+            });
 
             thread_handles.push(handle);
         }
