@@ -11,7 +11,7 @@ import {
   TextField,
   Tooltip
 } from "@mui/material";
-import { dialog } from "@tauri-apps/api";
+import { confirm } from "@tauri-apps/plugin-dialog";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
 import { toast } from "react-toastify";
@@ -240,13 +240,11 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
               className={styles.SidebarRightIcon}
               onClick={(e) => {
                 e.stopPropagation();
-                dialog
-                  .confirm(`Delete "${this.getPath().name}"?`)
-                  .then((result) => {
-                    if (result) {
-                      deletePath(this.props.uuid);
-                    }
-                  });
+                confirm(`Delete "${this.getPath().name}"?`).then((result) => {
+                  if (result) {
+                    deletePath(this.props.uuid);
+                  }
+                });
               }}
             >
               <DeleteIcon></DeleteIcon>
