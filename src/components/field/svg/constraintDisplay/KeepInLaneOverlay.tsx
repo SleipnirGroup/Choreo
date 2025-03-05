@@ -7,17 +7,18 @@ import {
 import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
 import * as d3 from "d3";
 import { observer } from "mobx-react";
-import { doc } from "../../../../document/DocumentManager";
+import { doc, uiState } from "../../../../document/DocumentManager";
+import { ViewLayers } from "../../../../document/UIData";
+import { OverlayElementProps } from "./FieldConstraintDisplayLayer";
 
 const STROKE = 0.02;
 const DOT = 0.1;
+const SELECT_COLOR = "var(--select-yellow)";
+const MOVABLE_COLOR = "green";
+const IMMOVABLE_COLOR = "darkseagreen";
 
-type Props<K extends ConstraintKey> = {
-  data: IConstraintDataStore<K>;
-  start?: IHolonomicWaypointStore;
-  end?: IHolonomicWaypointStore;
-};
-class KeepInLaneOverlay extends Component<Props<"KeepInLane">, object> {
+class KeepInLaneOverlay extends Component<OverlayElementProps<"KeepInLane">, object> {
+  id = crypto.randomUUID();
   rootRef: React.RefObject<SVGGElement> = React.createRef<SVGGElement>();
   componentDidMount() {
     if (this.rootRef.current) {
@@ -26,16 +27,17 @@ class KeepInLaneOverlay extends Component<Props<"KeepInLane">, object> {
         .on("drag", (event) => this.dragPointTolerance(event))
         .on("start", () => {
           doc.history.startGroup(() => {});
+          this.props.select();
         })
         .on("end", (_event) => {
           doc.history.stopGroup();
         })
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
-        `#dragTarget-keepInLaneAbove`
+        `#dragTarget-keepInLaneAbove` + this.id
       ).call(dragHandleDrag);
       d3.select<SVGCircleElement, undefined>(
-        `#dragTarget-keepInLaneBelow`
+        `#dragTarget-keepInLaneBelow` + this.id
       ).call(dragHandleDrag);
     }
   }
@@ -59,6 +61,13 @@ class KeepInLaneOverlay extends Component<Props<"KeepInLane">, object> {
       Math.hypot(dx, dy);
     data.tolerance.set(dist);
   }
+
+  getColor() : string {
+    if (this.props.selected) return SELECT_COLOR;
+    if (this.props.clickable) return MOVABLE_COLOR;
+    return IMMOVABLE_COLOR;
+  }
+
   render() {
     const data = this.props.data.serialize as DataMap["KeepInLane"];
     const tolerance = data.props.tolerance.val + STROKE / 2;
@@ -94,8 +103,12 @@ class KeepInLaneOverlay extends Component<Props<"KeepInLane">, object> {
       (endBelowX + startBelowX) / 2,
       (endBelowY + startBelowY) / 2
     ];
+    const color = this.getColor();
     return (
-      <g ref={this.rootRef}>
+      <g ref={this.rootRef} onClick={
+        () => {
+          if (this.props.clickable) this.props.select();
+        }}>
         {/* Lines */}
 
         <line
@@ -103,38 +116,40 @@ class KeepInLaneOverlay extends Component<Props<"KeepInLane">, object> {
           x2={endAboveX}
           y1={startAboveY}
           y2={endAboveY}
-          stroke="green"
+          stroke={color}
           strokeWidth={STROKE}
           strokeOpacity={1.0}
           id="line-keepInLaneAbove"
+          pointerEvents={"none"}
         ></line>
         <line
           x1={startBelowX}
           x2={endBelowX}
           y1={startBelowY}
           y2={endBelowY}
-          stroke="green"
+          stroke={color}
           strokeWidth={STROKE}
           strokeOpacity={1.0}
           id="line-keepInLaneBelow"
+          pointerEvents={"none"}
         ></line>
         <circle
           cx={midAboveX}
           cy={midAboveY}
           r={DOT}
-          fill={"green"}
+          fill={color}
           fillOpacity={1.0}
           pointerEvents={"visible"}
-          id="dragTarget-keepInLaneAbove"
+          id={"dragTarget-keepInLaneAbove" + this.id}
         ></circle>
         <circle
           cx={midBelowX}
           cy={midBelowY}
           r={DOT}
-          fill={"green"}
+          fill={color}
           fillOpacity={1.0}
           pointerEvents={"visible"}
-          id="dragTarget-keepInLaneBelow"
+          id={"dragTarget-keepInLaneBelow" + this.id}
         ></circle>
       </g>
     );
