@@ -409,6 +409,9 @@ export async function setupEventListeners() {
       if (uiState.hasSaveLocation) {
         saveProject();
       }
+    },
+    {
+      delay:1
     }
   );
   const updateTitleUnlisten = reaction(
@@ -777,7 +780,16 @@ export async function writeAllTrajectories() {
 
 export async function saveProject() {
   if (await canSave()) {
-    await Commands.writeProject(doc.serializeChor());
+    toast.promise(Commands.writeProject(doc.serializeChor()),
+    {
+      error: {
+        render(toastProps) {
+          console.log(toastProps.data);
+          // .type and .content exist for any ChoreoError
+          return `Project save fail. Alert developers: (${toastProps.data!.type}) ${toastProps.data!.content}`;
+        }
+      }
+    });
   } else {
     tracing.warn("Can't save project, skipping");
   }
