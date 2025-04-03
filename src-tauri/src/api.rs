@@ -11,7 +11,7 @@ use choreo_core::{
         trajectory::TrajectoryFile,
         Expr, OpenFilePayload,
     },
-    ChoreoError,
+    ChoreoError, ChoreoResult,
 };
 use tauri::{api::dialog::blocking::FileDialogBuilder, Manager};
 
@@ -91,9 +91,9 @@ pub async fn read_project(app_handle: tauri::AppHandle, name: String) -> TauriRe
 }
 
 #[tauri::command]
-pub async fn write_project(app_handle: tauri::AppHandle, project: ProjectFile) {
+pub async fn write_project(app_handle: tauri::AppHandle, project: ProjectFile) -> ChoreoResult<()> {
     let resources = app_handle.state::<WritingResources>();
-    file_management::write_projectfile(&resources, project).await;
+    file_management::write_projectfile(&resources, project).await
 }
 
 #[tauri::command]

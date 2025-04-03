@@ -132,7 +132,7 @@ impl WritingResources {
                             let proj = project_updater.wait_for().await;
                             let root = root.lock().await;
                             let path = root.join(&proj.name).with_extension("chor");
-                            write_serializable(proj, &path).await.trace_err();
+                            let _ = write_serializable(proj, &path).await.trace_err();
                             tracing::debug!("Wrote project to {:?}", path);
                         }
                     });
@@ -176,7 +176,7 @@ pub async fn write_trajectory_file(resources: &WritingResources, trajectory_file
         file.display()
     );
 
-    resources
+    let _ = resources
         .trajectory_file_pool
         .entry(trajectory_file.name.clone())
         .or_insert_with(|| {
@@ -205,6 +205,17 @@ pub async fn write_trajectory_file_immediately(
     );
 
     write_serializable(trajectory_file, &file).await
+}
+
+pub async fn write_project_immediately(
+    resources: &WritingResources,
+    project: ProjectFile,
+) -> ChoreoResult<()> {
+    let root = {resources.root.lock().await.clone()};
+    let path = root.join(&project.name).with_extension("chor");
+    let result = write_serializable(project, &path).await.trace_err();
+    if result.is_ok() {tracing::debug!("Wrote project immediately to {:?}", path);}
+    result
 }
 
 /// Read a trajectory from a file.
@@ -286,7 +297,7 @@ pub async fn rename_trajectory_file(
     Ok(old_trajectory_file)
 }
 
-pub async fn write_projectfile(resources: &WritingResources, project: ProjectFile) {
+pub async fn write_projectfile(resources: &WritingResources, project: ProjectFile) -> Result<(), ChoreoError> {
     tracing::debug!(
         "Writing project {:} to {:}",
         project.name,
@@ -298,7 +309,7 @@ pub async fn write_projectfile(resources: &WritingResources, project: ProjectFil
             .with_extension("chor")
             .display()
     );
-    resources.project.update(project).await;
+    write_project_immediately(resources, project).await
 }
 
 pub async fn read_projectfile(

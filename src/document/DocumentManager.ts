@@ -409,9 +409,6 @@ export async function setupEventListeners() {
       if (uiState.hasSaveLocation) {
         saveProject();
       }
-    },
-    {
-      delay:1
     }
   );
   const updateTitleUnlisten = reaction(
