@@ -19,6 +19,7 @@ import { deletePath, doc, renamePath } from "../../document/DocumentManager";
 import styles from "./Sidebar.module.css";
 import ExpressionInput from "../input/ExpressionInput";
 import ExpressionInputList from "../input/ExpressionInputList";
+import GenerateInProgress from "../../assets/GenerateInProgress";
 
 type Props = object;
 
@@ -43,16 +44,14 @@ class PathSelectorIcon extends Component<
 > {
   render() {
     return this.props.generating ? (
-      <CircularProgress
-        size={20}
+      <GenerateInProgress
         sx={{
           color: this.props.selected
             ? "var(--select-yellow)"
             : "var(--accent-purple)",
-          marginInline: "2px"
+          // marginInline: "2px"
         }}
-        variant="indeterminate"
-      ></CircularProgress>
+      ></GenerateInProgress>
     ) : this.props.upToDate ? (
       <Route
         className={styles.SidebarIcon}

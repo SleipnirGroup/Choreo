@@ -19,6 +19,12 @@ import {
 } from "./UIData";
 import { tracing } from "./tauriTracing";
 
+export enum ProjectSavingState {
+  SAVED = "saved",
+  SAVING = "saving",
+  ERROR = "error",
+  NO_LOCATION = "noLocation"
+}
 export const UIStateStore = types
   .model("UIStateStore", {
     //The transform matrix between mouse event clientX/Y and field coordinates
@@ -31,6 +37,7 @@ export const UIStateStore = types
     fieldScalingFactor: 0.02,
     projectName: types.maybe(types.string),
     projectDir: types.maybe(types.string),
+    projectSavingState: types.enumeration<ProjectSavingState>(Object.values(ProjectSavingState)),
     waypointPanelOpen: false,
     isViewOptionsPanelOpen: false,
     robotConfigOpen: false,
@@ -125,6 +132,9 @@ export const UIStateStore = types
     },
     toggleMainMenu() {
       self.mainMenuOpen = !self.mainMenuOpen;
+    },
+    setProjectSavingState(state: ProjectSavingState) {
+      self.projectSavingState = state;
     },
     setFieldScalingFactor(metersPerPixel: number) {
       self.fieldScalingFactor = metersPerPixel;

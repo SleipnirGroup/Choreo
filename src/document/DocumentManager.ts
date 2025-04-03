@@ -60,7 +60,7 @@ import {
   RobotConfigStore
 } from "./RobotConfigStore";
 import { ViewLayerDefaults } from "./UIData";
-import { UIStateStore } from "./UIStateStore";
+import { ProjectSavingState, UIStateStore } from "./UIStateStore";
 import { findUUIDIndex } from "./path/utils";
 import { Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
@@ -72,7 +72,7 @@ export type OpenFilePayload = {
 
 export const uiState = UIStateStore.create({
   settingsTab: 0,
-
+  projectSavingState: ProjectSavingState.NO_LOCATION,
   layers: ViewLayerDefaults
 });
 type ConstraintDataConstructor<K extends ConstraintKey> = (
@@ -407,7 +407,13 @@ export async function setupEventListeners() {
     () => doc.serializeChor(),
     () => {
       if (uiState.hasSaveLocation) {
-        saveProject();
+        uiState.setProjectSavingState(ProjectSavingState.SAVING);
+        try {
+          saveProject();
+        } catch (e) {
+          throw e;
+        }
+        
       }
     }
   );
@@ -642,6 +648,7 @@ export async function openProject(projectPath: OpenFilePayload) {
       JSON.stringify({ dir, name })
     );
     doc.history.clear();
+    uiState.setProjectSavingState(ProjectSavingState.SAVED);
   } catch (e) {
     await Commands.setDeployRoot(originalRoot);
     if (originalLastOpenedItem != null) {
@@ -695,7 +702,8 @@ function getSelectedConstraint() {
 export async function newProject() {
   applySnapshot(uiState, {
     settingsTab: 0,
-    layers: ViewLayerDefaults
+    layers: ViewLayerDefaults,
+    projectSavingState: ProjectSavingState.NO_LOCATION
   });
   await Commands.setDeployRoot("");
   const newChor = await Commands.defaultProject();
@@ -703,6 +711,7 @@ export async function newProject() {
   uiState.loadPathGradientFromLocalStorage();
   doc.pathlist.deleteAll();
   doc.pathlist.addPath("New Path");
+  uiState.setProjectSavingState(ProjectSavingState.NO_LOCATION);
   doc.history.clear();
 }
 export function select(item: SelectableItemTypes) {
@@ -777,7 +786,8 @@ export async function writeAllTrajectories() {
 
 export async function saveProject() {
   if (await canSave()) {
-    toast.promise(Commands.writeProject(doc.serializeChor()),
+    try {
+    await toast.promise(Commands.writeProject(doc.serializeChor()),
     {
       error: {
         render(toastProps) {
@@ -787,8 +797,13 @@ export async function saveProject() {
         }
       }
     });
+    uiState.setProjectSavingState(ProjectSavingState.SAVED);
+  } catch (e) {
+    uiState.setProjectSavingState(ProjectSavingState.ERROR);
+  }
   } else {
     tracing.warn("Can't save project, skipping");
+    uiState.setProjectSavingState(ProjectSavingState.NO_LOCATION);
   }
 }
 
