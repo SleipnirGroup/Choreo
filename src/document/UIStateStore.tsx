@@ -37,6 +37,7 @@ export const UIStateStore = types
     fieldScalingFactor: 0.02,
     projectName: types.maybe(types.string),
     projectDir: types.maybe(types.string),
+    projectSaveTime: types.maybe(types.Date),
     projectSavingState: types.enumeration<ProjectSavingState>(Object.values(ProjectSavingState)),
     waypointPanelOpen: false,
     isViewOptionsPanelOpen: false,
@@ -135,6 +136,9 @@ export const UIStateStore = types
     },
     setProjectSavingState(state: ProjectSavingState) {
       self.projectSavingState = state;
+    },
+    setProjectSavingTime(time: Date | undefined) {
+      self.projectSaveTime = time;
     },
     setFieldScalingFactor(metersPerPixel: number) {
       self.fieldScalingFactor = metersPerPixel;

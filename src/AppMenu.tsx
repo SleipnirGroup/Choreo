@@ -217,10 +217,12 @@ class AppMenu extends Component<Props, State> {
                           dir={this.projectLocation(false)}
                         ></this.OpenInFilesApp>
                       </span>
+                      
                     </div>
                     <div style={{ fontSize: "0.9em", color: "#D3D3D3" }}>
                       {this.projectLocation(true)}
                     </div>
+                    <div>at {uiState.projectSaveTime?.toLocaleDateString()} {uiState.projectSaveTime?.toLocaleTimeString()}.</div>
                   </>
                 ) : (
                   <>

@@ -73,6 +73,7 @@ export type OpenFilePayload = {
 export const uiState = UIStateStore.create({
   settingsTab: 0,
   projectSavingState: ProjectSavingState.NO_LOCATION,
+  projectSaveTime: new Date(),
   layers: ViewLayerDefaults
 });
 type ConstraintDataConstructor<K extends ConstraintKey> = (
@@ -649,6 +650,7 @@ export async function openProject(projectPath: OpenFilePayload) {
     );
     doc.history.clear();
     uiState.setProjectSavingState(ProjectSavingState.SAVED);
+    uiState.setProjectSavingTime(new Date());
   } catch (e) {
     await Commands.setDeployRoot(originalRoot);
     if (originalLastOpenedItem != null) {
@@ -712,6 +714,7 @@ export async function newProject() {
   doc.pathlist.deleteAll();
   doc.pathlist.addPath("New Path");
   uiState.setProjectSavingState(ProjectSavingState.NO_LOCATION);
+  uiState.setProjectSavingTime(new Date());
   doc.history.clear();
 }
 export function select(item: SelectableItemTypes) {
@@ -798,6 +801,7 @@ export async function saveProject() {
       }
     });
     uiState.setProjectSavingState(ProjectSavingState.SAVED);
+    uiState.setProjectSavingTime(new Date());
   } catch (e) {
     uiState.setProjectSavingState(ProjectSavingState.ERROR);
   }
