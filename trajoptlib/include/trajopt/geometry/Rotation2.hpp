@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include <sleipnir/autodiff/Variable.hpp>
+#include <sleipnir/autodiff/variable.hpp>
 
 namespace trajopt {
 
@@ -152,14 +152,14 @@ class Rotation2 {
 };
 
 using Rotation2d = Rotation2<double>;
-using Rotation2v = Rotation2<sleipnir::Variable>;
+using Rotation2v = Rotation2<slp::Variable>;
 
 template <typename T, typename U>
-  requires std::same_as<T, sleipnir::Variable> ||
-           std::same_as<U, sleipnir::Variable>
-sleipnir::EqualityConstraints operator==(const Rotation2<T>& lhs,
+  requires std::same_as<T, slp::Variable> ||
+           std::same_as<U, slp::Variable>
+slp::EqualityConstraints operator==(const Rotation2<T>& lhs,
                                          const Rotation2<U>& rhs) {
-  std::vector<sleipnir::EqualityConstraints> constraints;
+  std::vector<slp::EqualityConstraints> constraints;
 
   // Constrain angle equality on manifold.
   //
@@ -179,16 +179,16 @@ sleipnir::EqualityConstraints operator==(const Rotation2<T>& lhs,
 
   // Require that lhs and rhs are unit vectors if they contain autodiff
   // variables, since their values can change.
-  if constexpr (std::same_as<T, sleipnir::Variable>) {
+  if constexpr (std::same_as<T, slp::Variable>) {
     constraints.emplace_back(lhs.Cos() * lhs.Cos() + lhs.Sin() * lhs.Sin() ==
                              1.0);
   }
-  if constexpr (std::same_as<U, sleipnir::Variable>) {
+  if constexpr (std::same_as<U, slp::Variable>) {
     constraints.emplace_back(rhs.Cos() * rhs.Cos() + rhs.Sin() * rhs.Sin() ==
                              1.0);
   }
 
-  return sleipnir::EqualityConstraints{constraints};
+  return slp::EqualityConstraints{constraints};
 }
 
 inline bool operator==(const Rotation2d& lhs, const Rotation2d& rhs) {

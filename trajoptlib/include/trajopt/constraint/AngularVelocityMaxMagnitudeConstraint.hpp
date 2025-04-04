@@ -4,8 +4,8 @@
 
 #include <cassert>
 
-#include <sleipnir/autodiff/Variable.hpp>
-#include <sleipnir/optimization/OptimizationProblem.hpp>
+#include <sleipnir/autodiff/variable.hpp>
+#include <sleipnir/optimization/problem.hpp>
 
 #include "trajopt/geometry/Pose2.hpp"
 #include "trajopt/geometry/Translation2.hpp"
@@ -39,17 +39,17 @@ class TRAJOPT_DLLEXPORT AngularVelocityMaxMagnitudeConstraint {
    * @param linearAcceleration The robot's linear acceleration.
    * @param angularAcceleration The robot's angular acceleration.
    */
-  void Apply(sleipnir::OptimizationProblem& problem,
+  void Apply(slp::Problem& problem,
              [[maybe_unused]] const Pose2v& pose,
              [[maybe_unused]] const Translation2v& linearVelocity,
-             const sleipnir::Variable& angularVelocity,
+             const slp::Variable& angularVelocity,
              [[maybe_unused]] const Translation2v& linearAcceleration,
-             [[maybe_unused]] const sleipnir::Variable& angularAcceleration) {
+             [[maybe_unused]] const slp::Variable& angularAcceleration) {
     if (m_maxMagnitude == 0.0) {
-      problem.SubjectTo(angularVelocity == 0.0);
+      problem.subject_to(angularVelocity == 0.0);
     } else {
-      problem.SubjectTo(angularVelocity >= -m_maxMagnitude);
-      problem.SubjectTo(angularVelocity <= m_maxMagnitude);
+      problem.subject_to(angularVelocity >= -m_maxMagnitude);
+      problem.subject_to(angularVelocity <= m_maxMagnitude);
     }
   }
 

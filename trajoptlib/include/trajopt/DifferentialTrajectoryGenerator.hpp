@@ -8,9 +8,9 @@
 #include <utility>
 #include <vector>
 
-#include <sleipnir/autodiff/Variable.hpp>
-#include <sleipnir/optimization/OptimizationProblem.hpp>
-#include <sleipnir/optimization/SolverExitCondition.hpp>
+#include <sleipnir/autodiff/variable.hpp>
+#include <sleipnir/optimization/problem.hpp>
+#include <sleipnir/optimization/solver/exit_status.hpp>
 
 #include "trajopt/path/PathBuilder.hpp"
 #include "trajopt/util/SymbolExports.hpp"
@@ -229,7 +229,7 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectoryGenerator {
    * @return Returns a holonomic trajectory on success, or a string containing a
    *   failure reason.
    */
-  expected<DifferentialSolution, sleipnir::SolverExitCondition> Generate(
+  expected<DifferentialSolution, slp::ExitStatus> Generate(
       bool diagnostics = false);
 
  private:
@@ -237,25 +237,25 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectoryGenerator {
   DifferentialPath path;
 
   /// State Variables
-  std::vector<sleipnir::Variable> x;
-  std::vector<sleipnir::Variable> y;
-  std::vector<sleipnir::Variable> θ;
-  std::vector<sleipnir::Variable> vl;
-  std::vector<sleipnir::Variable> vr;
-  std::vector<sleipnir::Variable> al;
-  std::vector<sleipnir::Variable> ar;
+  std::vector<slp::Variable> x;
+  std::vector<slp::Variable> y;
+  std::vector<slp::Variable> θ;
+  std::vector<slp::Variable> vl;
+  std::vector<slp::Variable> vr;
+  std::vector<slp::Variable> al;
+  std::vector<slp::Variable> ar;
 
   /// Input Variables
-  std::vector<sleipnir::Variable> Fl;
-  std::vector<sleipnir::Variable> Fr;
+  std::vector<slp::Variable> Fl;
+  std::vector<slp::Variable> Fr;
 
   /// Time Variables
-  std::vector<sleipnir::Variable> dts;
+  std::vector<slp::Variable> dts;
 
   /// Discretization Constants
   std::vector<size_t> Ns;
 
-  sleipnir::OptimizationProblem problem;
+  slp::Problem problem;
 
   void ApplyInitialGuess(const DifferentialSolution& solution);
 

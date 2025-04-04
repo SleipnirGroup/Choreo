@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include <sleipnir/autodiff/Variable.hpp>
-#include <sleipnir/optimization/OptimizationProblem.hpp>
+#include <sleipnir/autodiff/variable.hpp>
+#include <sleipnir/optimization/problem.hpp>
 
 #include "trajopt/geometry/Pose2.hpp"
 #include "trajopt/geometry/Translation2.hpp"
@@ -34,12 +34,12 @@ class TRAJOPT_DLLEXPORT TranslationEqualityConstraint {
    * @param linearAcceleration The robot's linear acceleration.
    * @param angularAcceleration The robot's angular acceleration.
    */
-  void Apply(sleipnir::OptimizationProblem& problem, const Pose2v& pose,
+  void Apply(slp::Problem& problem, const Pose2v& pose,
              [[maybe_unused]] const Translation2v& linearVelocity,
-             [[maybe_unused]] const sleipnir::Variable& angularVelocity,
+             [[maybe_unused]] const slp::Variable& angularVelocity,
              [[maybe_unused]] const Translation2v& linearAcceleration,
-             [[maybe_unused]] const sleipnir::Variable& angularAcceleration) {
-    problem.SubjectTo(pose.Translation() == m_translation);
+             [[maybe_unused]] const slp::Variable& angularAcceleration) {
+    problem.subject_to(pose.Translation() == m_translation);
   }
 
  private:

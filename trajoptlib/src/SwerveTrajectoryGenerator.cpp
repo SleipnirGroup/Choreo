@@ -10,8 +10,8 @@
 #include <utility>
 #include <vector>
 
-#include <sleipnir/optimization/OptimizationProblem.hpp>
-#include <sleipnir/optimization/SolverExitCondition.hpp>
+#include <sleipnir/optimization/problem.hpp>
+#include <sleipnir/optimization/solver/exit_status.hpp>
 
 #include "trajopt/util/Cancellation.hpp"
 #include "trajopt/util/TrajoptUtil.hpp"
@@ -37,8 +37,8 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     : path(pathBuilder.GetPath()), Ns(pathBuilder.GetControlIntervalCounts()) {
   auto initialGuess = pathBuilder.CalculateInitialGuess();
 
-  problem.Callback(
-      [this, handle = handle](const sleipnir::SolverIterationInfo&) -> bool {
+  problem.add_callback(
+      [this, handle = handle](const slp::IterationInfo&) -> bool {
         constexpr int fps = 60;
         constexpr std::chrono::duration<double> timePerFrame{1.0 / fps};
 
@@ -87,25 +87,25 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   dts.reserve(sgmtCnt);
 
   for (size_t index = 0; index < sampTot; ++index) {
-    x.emplace_back(problem.DecisionVariable());
-    y.emplace_back(problem.DecisionVariable());
-    cosθ.emplace_back(problem.DecisionVariable());
-    sinθ.emplace_back(problem.DecisionVariable());
-    vx.emplace_back(problem.DecisionVariable());
-    vy.emplace_back(problem.DecisionVariable());
-    ω.emplace_back(problem.DecisionVariable());
-    ax.emplace_back(problem.DecisionVariable());
-    ay.emplace_back(problem.DecisionVariable());
-    α.emplace_back(problem.DecisionVariable());
+    x.emplace_back(problem.decision_variable());
+    y.emplace_back(problem.decision_variable());
+    cosθ.emplace_back(problem.decision_variable());
+    sinθ.emplace_back(problem.decision_variable());
+    vx.emplace_back(problem.decision_variable());
+    vy.emplace_back(problem.decision_variable());
+    ω.emplace_back(problem.decision_variable());
+    ax.emplace_back(problem.decision_variable());
+    ay.emplace_back(problem.decision_variable());
+    α.emplace_back(problem.decision_variable());
 
     for (size_t moduleIndex = 0; moduleIndex < moduleCnt; ++moduleIndex) {
-      Fx.at(index).emplace_back(problem.DecisionVariable());
-      Fy.at(index).emplace_back(problem.DecisionVariable());
+      Fx.at(index).emplace_back(problem.decision_variable());
+      Fy.at(index).emplace_back(problem.decision_variable());
     }
   }
 
   for (size_t sgmtIndex = 0; sgmtIndex < sgmtCnt; ++sgmtIndex) {
-    dts.emplace_back(problem.DecisionVariable());
+    dts.emplace_back(problem.decision_variable());
   }
 
   double minWidth = INFINITY;
@@ -118,7 +118,7 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   }
 
   // Minimize total time
-  sleipnir::Variable T_tot = 0;
+  slp::Variable T_tot = 0;
   const double maxForce =
       path.drivetrain.wheelMaxTorque * 4 / path.drivetrain.wheelRadius;
   const auto maxAccel = maxForce / path.drivetrain.mass;
@@ -136,12 +136,12 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     auto T_sgmt = dt * static_cast<int>(N_sgmt);
     T_tot += T_sgmt;
 
-    problem.SubjectTo(dt >= 0);
-    problem.SubjectTo(dt * path.drivetrain.wheelRadius *
+    problem.subject_to(dt >= 0);
+    problem.subject_to(dt * path.drivetrain.wheelRadius *
                           path.drivetrain.wheelMaxAngularVelocity <=
                       minWidth);
     if (N_sgmt == 0) {
-      dt.SetValue(0);
+      dt.set_value(0);
     } else {
       // Use initialGuess and Ns to find the dx, dy, dθ between wpts
       const auto sgmt_start = GetIndex(Ns, sgmtIndex);
@@ -167,10 +167,10 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
           CalculateTrapezoidalTime(dist, maxLinearVel, maxAccel);
       const double sgmtTime = angularTime + linearTime;
 
-      dt.SetValue(sgmtTime / N_sgmt);
+      dt.set_value(sgmtTime / N_sgmt);
     }
   }
-  problem.Minimize(std::move(T_tot));
+  problem.minimize(std::move(T_tot));
 
   // Apply kinematics constraints
   for (size_t wptIndex = 0; wptIndex < wptCnt - 1; ++wptIndex) {
@@ -202,10 +202,10 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       // θₖ₊₁ = θₖ + ωₖt
       // vₖ₊₁ = vₖ + aₖt
       // ωₖ₊₁ = ωₖ + αₖt
-      problem.SubjectTo(x_k_1 == x_k + v_k * dt + a_k * 0.5 * dt * dt);
-      problem.SubjectTo((θ_k_1 - θ_k) == Rotation2v{ω_k * dt});
-      problem.SubjectTo(v_k_1 == v_k + a_k * dt);
-      problem.SubjectTo(ω_k_1 == ω_k + α_k * dt);
+      problem.subject_to(x_k_1 == x_k + v_k * dt + a_k * 0.5 * dt * dt);
+      problem.subject_to((θ_k_1 - θ_k) == Rotation2v{ω_k * dt});
+      problem.subject_to(v_k_1 == v_k + a_k * dt);
+      problem.subject_to(ω_k_1 == ω_k + α_k * dt);
     }
   }
 
@@ -215,12 +215,12 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
 
     // Solve for net force
     auto Fx_net = std::accumulate(Fx.at(index).begin(), Fx.at(index).end(),
-                                  sleipnir::Variable{0.0});
+                                  slp::Variable{0.0});
     auto Fy_net = std::accumulate(Fy.at(index).begin(), Fy.at(index).end(),
-                                  sleipnir::Variable{0.0});
+                                  slp::Variable{0.0});
 
     // Solve for net torque
-    sleipnir::Variable τ_net = 0.0;
+    slp::Variable τ_net = 0.0;
     for (size_t moduleIndex = 0; moduleIndex < path.drivetrain.modules.size();
          ++moduleIndex) {
       const auto& translation = path.drivetrain.modules.at(moduleIndex);
@@ -244,7 +244,7 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
           path.drivetrain.wheelRadius * path.drivetrain.wheelMaxAngularVelocity;
 
       // |v|₂² ≤ vₘₐₓ²
-      problem.SubjectTo(vWheelWrtRobot.SquaredNorm() <=
+      problem.subject_to(vWheelWrtRobot.SquaredNorm() <=
                         maxWheelVelocity * maxWheelVelocity);
 
       Translation2v moduleF{Fx.at(index).at(moduleIndex),
@@ -262,7 +262,7 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
       double maxForce = std::min(maxWheelForce, maxFrictionForce);
 
       // |F|₂² ≤ Fₘₐₓ²
-      problem.SubjectTo(moduleF.SquaredNorm() <= maxForce * maxForce);
+      problem.subject_to(moduleF.SquaredNorm() <= maxForce * maxForce);
     }
 
     // Apply dynamics constraints
@@ -270,9 +270,9 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     //   ΣF_xₖ = ma_xₖ
     //   ΣF_yₖ = ma_yₖ
     //   Στₖ = Jαₖ
-    problem.SubjectTo(Fx_net == path.drivetrain.mass * ax.at(index));
-    problem.SubjectTo(Fy_net == path.drivetrain.mass * ay.at(index));
-    problem.SubjectTo(τ_net == path.drivetrain.moi * α.at(index));
+    problem.subject_to(Fx_net == path.drivetrain.mass * ax.at(index));
+    problem.subject_to(Fy_net == path.drivetrain.mass * ay.at(index));
+    problem.subject_to(τ_net == path.drivetrain.moi * α.at(index));
   }
 
   for (size_t wptIndex = 0; wptIndex < wptCnt; ++wptIndex) {
@@ -315,17 +315,17 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   ApplyInitialGuess(initialGuess);
 }
 
-expected<SwerveSolution, sleipnir::SolverExitCondition>
+expected<SwerveSolution, slp::ExitStatus>
 SwerveTrajectoryGenerator::Generate(bool diagnostics) {
   GetCancellationFlag() = 0;
 
   // tolerance of 1e-4 is 0.1 mm
-  auto status = problem.Solve({.tolerance = 1e-4, .diagnostics = diagnostics});
+  auto status = problem.solve({.tolerance = 1e-4, .diagnostics = diagnostics});
 
-  if (static_cast<int>(status.exitCondition) < 0 ||
-      status.exitCondition ==
-          sleipnir::SolverExitCondition::kCallbackRequestedStop) {
-    return unexpected{status.exitCondition};
+  if (static_cast<int>(status) < 0 ||
+      status ==
+          slp::ExitStatus::CALLBACK_REQUESTED_STOP) {
+    return unexpected{status};
   } else {
     return ConstructSwerveSolution();
   }
@@ -335,24 +335,24 @@ void SwerveTrajectoryGenerator::ApplyInitialGuess(
     const SwerveSolution& solution) {
   size_t sampleTotal = x.size();
   for (size_t sampleIndex = 0; sampleIndex < sampleTotal; ++sampleIndex) {
-    x[sampleIndex].SetValue(solution.x[sampleIndex]);
-    y[sampleIndex].SetValue(solution.y[sampleIndex]);
-    cosθ[sampleIndex].SetValue(solution.thetacos[sampleIndex]);
-    sinθ[sampleIndex].SetValue(solution.thetasin[sampleIndex]);
+    x[sampleIndex].set_value(solution.x[sampleIndex]);
+    y[sampleIndex].set_value(solution.y[sampleIndex]);
+    cosθ[sampleIndex].set_value(solution.thetacos[sampleIndex]);
+    sinθ[sampleIndex].set_value(solution.thetasin[sampleIndex]);
   }
 
-  vx[0].SetValue(0.0);
-  vy[0].SetValue(0.0);
-  ω[0].SetValue(0.0);
-  ax[0].SetValue(0.0);
-  ay[0].SetValue(0.0);
-  α[0].SetValue(0.0);
+  vx[0].set_value(0.0);
+  vy[0].set_value(0.0);
+  ω[0].set_value(0.0);
+  ax[0].set_value(0.0);
+  ay[0].set_value(0.0);
+  α[0].set_value(0.0);
 
   for (size_t sampleIndex = 1; sampleIndex < sampleTotal; ++sampleIndex) {
-    vx[sampleIndex].SetValue(
+    vx[sampleIndex].set_value(
         (solution.x[sampleIndex] - solution.x[sampleIndex - 1]) /
         solution.dt[sampleIndex]);
-    vy[sampleIndex].SetValue(
+    vy[sampleIndex].set_value(
         (solution.y[sampleIndex] - solution.y[sampleIndex - 1]) /
         solution.dt[sampleIndex]);
 
@@ -361,19 +361,19 @@ void SwerveTrajectoryGenerator::ApplyInitialGuess(
     double last_cosθ = solution.thetacos[sampleIndex - 1];
     double last_sinθ = solution.thetasin[sampleIndex - 1];
 
-    ω[sampleIndex].SetValue(Rotation2d{cosθ, sinθ}
+    ω[sampleIndex].set_value(Rotation2d{cosθ, sinθ}
                                 .RotateBy(-Rotation2d{last_cosθ, last_sinθ})
                                 .Radians() /
                             solution.dt[sampleIndex]);
 
-    ax[sampleIndex].SetValue(
-        (vx[sampleIndex].Value() - vx[sampleIndex - 1].Value()) /
+    ax[sampleIndex].set_value(
+        (vx[sampleIndex].value() - vx[sampleIndex - 1].value()) /
         solution.dt[sampleIndex]);
-    ay[sampleIndex].SetValue(
-        (vy[sampleIndex].Value() - vy[sampleIndex - 1].Value()) /
+    ay[sampleIndex].set_value(
+        (vy[sampleIndex].value() - vy[sampleIndex - 1].value()) /
         solution.dt[sampleIndex]);
-    α[sampleIndex].SetValue(
-        (ω[sampleIndex].Value() - ω[sampleIndex - 1].Value()) /
+    α[sampleIndex].set_value(
+        (ω[sampleIndex].value() - ω[sampleIndex - 1].value()) /
         solution.dt[sampleIndex]);
   }
 }
@@ -384,22 +384,22 @@ SwerveSolution SwerveTrajectoryGenerator::ConstructSwerveSolution() {
     auto N = Ns.at(sgmtIndex);
     auto dt = dts.at(sgmtIndex);
 
-    double dt_value = dt.Value();
+    double dt_value = dt.value();
     for (size_t i = 0; i < N; ++i) {
       dtPerSample.push_back(dt_value);
     }
   }
 
-  auto getValue = [](auto& var) { return var.Value(); };
+  auto getValue = [](auto& var) { return var.value(); };
 
   // TODO: Use std::ranges::to() from C++23
-  auto vectorValue = [&](std::vector<sleipnir::Variable>& row) {
+  auto vectorValue = [&](std::vector<slp::Variable>& row) {
     auto view = row | std::views::transform(getValue);
     return std::vector<double>{std::begin(view), std::end(view)};
   };
 
   // TODO: Use std::ranges::to() from C++23
-  auto matrixValue = [&](std::vector<std::vector<sleipnir::Variable>>& mat) {
+  auto matrixValue = [&](std::vector<std::vector<slp::Variable>>& mat) {
     auto view =
         mat | std::views::transform([&](auto& v) {
           auto view2 = v | std::views::transform(getValue);
