@@ -10,7 +10,7 @@ import {
   getSnapshot,
   walk
 } from "mobx-state-tree";
-import { toast } from "react-toastify";
+import { toast, ToastContentProps } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import LocalStorageKeys from "../util/LocalStorageKeys";
 import { safeGetIdentifier } from "../util/mobxutils";
@@ -62,7 +62,7 @@ import {
 import { ViewLayerDefaults } from "./UIData";
 import { SavingState, UIStateStore } from "./UIStateStore";
 import { findUUIDIndex } from "./path/utils";
-import { Commands } from "./tauriCommands";
+import { ChoreoError, Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
 
 export type OpenFilePayload = {
@@ -786,9 +786,7 @@ export async function saveProject() {
     try {
       await toast.promise(Commands.writeProject(doc.serializeChor()), {
         error: {
-          render(toastProps) {
-            console.log(toastProps.data);
-            // .type and .content exist for any ChoreoError
+          render(toastProps: ToastContentProps<ChoreoError>) {
             return `Project save fail. Alert developers: (${toastProps.data!.type}) ${toastProps.data!.content}`;
           }
         }

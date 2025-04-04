@@ -26,9 +26,9 @@ import { ChoreoPathStore } from "./ChoreoPathStore";
 import { ChoreoTrajectoryStore } from "./ChoreoTrajectoryStore";
 import { PathUIStore } from "./PathUIStore";
 import { findUUIDIndex } from "./utils";
-import { Commands } from "../tauriCommands";
+import { ChoreoError, Commands } from "../tauriCommands";
 import { SavingState } from "../UIStateStore";
-import { toast } from "react-toastify";
+import { toast, ToastContentProps } from "react-toastify";
 export function waypointIDToText(
   id: WaypointUUID | undefined,
   points: IHolonomicWaypointStore[]
@@ -201,10 +201,7 @@ export const HolonomicPathStore = types
             }),
           {
             error: {
-              render(toastProps) {
-                console.log(toastProps.data);
-                // .type and .content exist for any ChoreoError
-
+              render(toastProps: ToastContentProps<ChoreoError>) {
                 return `"${self.name}" save fail. Alert developers: (${toastProps.data!.type}) ${toastProps.data!.content}`;
               }
             }
