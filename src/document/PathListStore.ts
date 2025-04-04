@@ -6,6 +6,7 @@ import {
   IHolonomicPathStore
 } from "./path/HolonomicPathStore";
 import * as FieldDimensions from "../components/field/svg/fields/FieldDimensions";
+import { SavingState } from "./UIStateStore";
 
 export const PathListStore = types
   .model("PathListStore", {
@@ -63,7 +64,8 @@ export const PathListStore = types
           },
           ui: {
             visibleWaypointsEnd: 0,
-            visibleWaypointsStart: 0
+            visibleWaypointsStart: 0,
+            savingState: SavingState.SAVED
           },
           snapshot: {
             waypoints: [],
@@ -101,7 +103,8 @@ export const PathListStore = types
               },
               ui: {
                 visibleWaypointsEnd: 0,
-                visibleWaypointsStart: 0
+                visibleWaypointsStart: 0,
+                savingState: SavingState.SAVED
               },
               snapshot: {
                 waypoints: [],

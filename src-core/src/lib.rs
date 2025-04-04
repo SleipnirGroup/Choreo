@@ -42,10 +42,10 @@ pub type ChoreoResult<T> = std::result::Result<T, error::ChoreoError>;
 pub trait ResultExt<T, E: Error> {
     /// Trace an error if the result is an error.
     #[track_caller]
-    fn trace_err(self);
+    fn trace_err(self) -> Self;
     /// Trace a warning if the result is an error.
     #[track_caller]
-    fn trace_warn(self);
+    fn trace_warn(self) -> Self;
     /// Trace an error if the result is an error, then execute a closure.
     #[allow(clippy::missing_errors_doc)]
     #[track_caller]
@@ -58,17 +58,19 @@ pub trait ResultExt<T, E: Error> {
 
 impl<T, E: Error> ResultExt<T, E> for Result<T, E> {
     #[track_caller]
-    fn trace_err(self) {
-        if let Err(e) = self {
+    fn trace_err(self) -> Self {
+        if let Err(e) = &self {
             tracing::error!("{}", e);
         }
+        self
     }
 
     #[track_caller]
-    fn trace_warn(self) {
-        if let Err(e) = self {
+    fn trace_warn(self) -> Self {
+        if let Err(e) = &self {
             tracing::warn!("{}", e);
         }
+        self
     }
 
     #[track_caller]

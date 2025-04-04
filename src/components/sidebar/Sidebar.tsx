@@ -12,6 +12,8 @@ import SidebarConstraint from "./SidebarConstraint";
 import SidebarEventMarker from "./SidebarEventMarker";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
 
+import ProjectSaveStatusIndicator from "./ProjectSaveStatusIndicator";
+
 type Props = object;
 
 type State = object;
@@ -51,7 +53,11 @@ class Sidebar extends Component<Props, State> {
             </Tooltip>
             Choreo
           </span>
+
           <span>
+            <ProjectSaveStatusIndicator
+              savingState={uiState.projectSavingState}
+            ></ProjectSaveStatusIndicator>
             <Tooltip disableInteractive title="Undo">
               <span>
                 <IconButton

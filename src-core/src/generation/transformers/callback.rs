@@ -10,7 +10,7 @@ pub struct CallbackSetter;
 fn swerve_status_callback(trajectory: SwerveTrajectory, handle: i64) {
     let tx_opt = PROGRESS_SENDER_LOCK.get();
     if let Some(tx) = tx_opt {
-        tx.send(LocalProgressUpdate::from(trajectory).handled(handle))
+        let _  = tx.send(LocalProgressUpdate::from(trajectory).handled(handle))
         .trace_warn();
     };
 }
@@ -18,7 +18,7 @@ fn swerve_status_callback(trajectory: SwerveTrajectory, handle: i64) {
 fn differential_status_callback(trajectory: DifferentialTrajectory, handle: i64) {
     let tx_opt = PROGRESS_SENDER_LOCK.get();
     if let Some(tx) = tx_opt {
-        tx.send(LocalProgressUpdate::from(trajectory).handled(handle))
+        let _ = tx.send(LocalProgressUpdate::from(trajectory).handled(handle))
         .trace_warn();
     };
 }

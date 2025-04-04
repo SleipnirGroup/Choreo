@@ -68,7 +68,7 @@ impl RemoteGenerationResources {
 
     pub fn emit_progress(&self, update: HandledLocalProgressUpdate) {
         if let Some(emitter) = &self.frontend_emitter {
-            emitter.send(update).trace_warn();
+            let _ = emitter.send(update).trace_warn();
         }
     }
 }
