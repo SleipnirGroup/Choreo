@@ -1,16 +1,12 @@
 import {
   KeyboardArrowDown,
+  PriorityHigh,
   Route,
   Settings,
   ShapeLine
 } from "@mui/icons-material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import {
-  CircularProgress,
-  IconButton,
-  TextField,
-  Tooltip
-} from "@mui/material";
+import { IconButton, TextField, Tooltip } from "@mui/material";
 import { dialog } from "@tauri-apps/api";
 import { observer } from "mobx-react";
 import React, { Component } from "react";
@@ -20,6 +16,8 @@ import styles from "./Sidebar.module.css";
 import ExpressionInput from "../input/ExpressionInput";
 import ExpressionInputList from "../input/ExpressionInputList";
 import GenerateInProgress from "../../assets/GenerateInProgress";
+import { SavingState } from "../../document/UIStateStore";
+import SaveInProgress from "../../assets/SaveInProgress";
 
 type Props = object;
 
@@ -36,6 +34,7 @@ type OptionState = {
 class PathSelectorIcon extends Component<
   {
     generating: boolean;
+    saveState: SavingState;
     selected: boolean;
     upToDate: boolean;
     onGenerate: () => void;
@@ -43,23 +42,55 @@ class PathSelectorIcon extends Component<
   object
 > {
   render() {
-    return this.props.generating ? (
-      <GenerateInProgress
-        sx={{
-          color: this.props.selected
-            ? "var(--select-yellow)"
-            : "var(--accent-purple)",
-          // marginInline: "2px"
-        }}
-      ></GenerateInProgress>
-    ) : this.props.upToDate ? (
-      <Route
-        className={styles.SidebarIcon}
-        htmlColor={
-          this.props.selected ? "var(--select-yellow)" : "var(--accent-purple)"
-        }
-      />
-    ) : (
+    if (this.props.generating) {
+      return (
+        <GenerateInProgress
+          sx={{
+            color: this.props.selected
+              ? "var(--select-yellow)"
+              : "var(--accent-purple)"
+            // marginInline: "2px"
+          }}
+        ></GenerateInProgress>
+      );
+    }
+    if (this.props.saveState == SavingState.SAVING) {
+      return (
+        <SaveInProgress
+          sx={{
+            color: this.props.selected
+              ? "var(--select-yellow)"
+              : "var(--accent-purple)"
+            // marginInline: "2px"
+          }}
+        ></SaveInProgress>
+      );
+    }
+    if (this.props.saveState == SavingState.ERROR) {
+      return (
+        <PriorityHigh
+          className={styles.SidebarIcon}
+          htmlColor={
+            this.props.selected
+              ? "var(--select-yellow)"
+              : "var(--accent-purple)"
+          }
+        ></PriorityHigh>
+      );
+    }
+    if (this.props.upToDate) {
+      return (
+        <Route
+          className={styles.SidebarIcon}
+          htmlColor={
+            this.props.selected
+              ? "var(--select-yellow)"
+              : "var(--accent-purple)"
+          }
+        />
+      );
+    }
+    return (
       <IconButton
         className={styles.SidebarIcon}
         onClick={(e) => {
@@ -156,11 +187,11 @@ class PathSelectorOption extends Component<OptionProps, OptionState> {
             doesn't have to re-render after generation */}
         <PathSelectorIcon
           selected={this.getSelected()}
+          saveState={this.getPath().ui.savingState}
           upToDate={this.getPath().ui.upToDate}
           onGenerate={() => doc.generatePath(this.props.uuid)}
           generating={this.getPath().ui.generating}
         ></PathSelectorIcon>
-
         <TextField
           className={styles.SidebarLabel}
           variant={this.state.renaming ? "outlined" : "standard"}

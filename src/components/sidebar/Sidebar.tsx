@@ -6,12 +6,12 @@ import { Divider, IconButton, Tooltip } from "@mui/material";
 import WaypointList from "./WaypointList";
 import PathSelector from "./PathSelector";
 import MenuIcon from "@mui/icons-material/Menu";
-import { Check, ContentCopy, PriorityHigh, Redo, ShapeLine, Undo, Warning } from "@mui/icons-material";
+import { ContentCopy, Redo, ShapeLine, Undo } from "@mui/icons-material";
 import Add from "@mui/icons-material/Add";
 import SidebarConstraint from "./SidebarConstraint";
 import SidebarEventMarker from "./SidebarEventMarker";
 import { IEventMarkerStore } from "../../document/EventMarkerStore";
-import SaveStatusIndicator from "./SaveStatusIndicator";
+
 import ProjectSaveStatusIndicator from "./ProjectSaveStatusIndicator";
 
 type Props = object;
@@ -53,9 +53,11 @@ class Sidebar extends Component<Props, State> {
             </Tooltip>
             Choreo
           </span>
-          
+
           <span>
-            <ProjectSaveStatusIndicator></ProjectSaveStatusIndicator>
+            <ProjectSaveStatusIndicator
+              savingState={uiState.projectSavingState}
+            ></ProjectSaveStatusIndicator>
             <Tooltip disableInteractive title="Undo">
               <span>
                 <IconButton

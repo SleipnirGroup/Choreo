@@ -122,9 +122,12 @@ pub async fn read_all_trajectory(app_handle: tauri::AppHandle) -> Vec<Trajectory
 }
 
 #[tauri::command]
-pub async fn write_trajectory(app_handle: tauri::AppHandle, trajectory: TrajectoryFile) {
+pub async fn write_trajectory(
+    app_handle: tauri::AppHandle,
+    trajectory: TrajectoryFile,
+) -> ChoreoResult<()> {
     let resources = app_handle.state::<WritingResources>();
-    file_management::write_trajectory_file(&resources, trajectory).await;
+    file_management::write_trajectory_file(&resources, trajectory).await
 }
 
 #[tauri::command]

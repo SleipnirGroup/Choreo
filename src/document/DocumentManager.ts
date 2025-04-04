@@ -60,7 +60,7 @@ import {
   RobotConfigStore
 } from "./RobotConfigStore";
 import { ViewLayerDefaults } from "./UIData";
-import { ProjectSavingState, UIStateStore } from "./UIStateStore";
+import { SavingState, UIStateStore } from "./UIStateStore";
 import { findUUIDIndex } from "./path/utils";
 import { Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
@@ -72,7 +72,7 @@ export type OpenFilePayload = {
 
 export const uiState = UIStateStore.create({
   settingsTab: 0,
-  projectSavingState: ProjectSavingState.NO_LOCATION,
+  projectSavingState: SavingState.NO_LOCATION,
   projectSaveTime: new Date(),
   layers: ViewLayerDefaults
 });
@@ -236,13 +236,7 @@ const env = {
   history: () => doc.history,
   vars: () => doc.variables,
   renameVariable: renameVariable,
-  exporter: (uuid: string) => {
-    try {
-      writeTrajectory(uuid);
-    } catch (e) {
-      tracing.error(e);
-    }
-  },
+  exporter: async (uuid: string) => writeTrajectory(uuid).catch(tracing.error),
   create: getConstructors(() => doc.variables)
 };
 export type Env = typeof env;
@@ -404,18 +398,18 @@ export async function setupEventListeners() {
         unlisten();
       });
     });
+  let autoSaveDebounce: NodeJS.Timeout | undefined = undefined;
+  const performAutoSave = () => {
+    if (uiState.hasSaveLocation) {
+      uiState.setProjectSavingState(SavingState.SAVING);
+      saveProject();
+    }
+  };
   const autoSaveUnlisten = reaction(
     () => doc.serializeChor(),
     () => {
-      if (uiState.hasSaveLocation) {
-        uiState.setProjectSavingState(ProjectSavingState.SAVING);
-        try {
-          saveProject();
-        } catch (e) {
-          throw e;
-        }
-        
-      }
+      clearTimeout(autoSaveDebounce);
+      autoSaveDebounce = setTimeout(performAutoSave, 50);
     }
   );
   const updateTitleUnlisten = reaction(
@@ -649,7 +643,7 @@ export async function openProject(projectPath: OpenFilePayload) {
       JSON.stringify({ dir, name })
     );
     doc.history.clear();
-    uiState.setProjectSavingState(ProjectSavingState.SAVED);
+    uiState.setProjectSavingState(SavingState.SAVED);
     uiState.setProjectSavingTime(new Date());
   } catch (e) {
     await Commands.setDeployRoot(originalRoot);
@@ -705,7 +699,7 @@ export async function newProject() {
   applySnapshot(uiState, {
     settingsTab: 0,
     layers: ViewLayerDefaults,
-    projectSavingState: ProjectSavingState.NO_LOCATION
+    projectSavingState: SavingState.NO_LOCATION
   });
   await Commands.setDeployRoot("");
   const newChor = await Commands.defaultProject();
@@ -713,7 +707,7 @@ export async function newProject() {
   uiState.loadPathGradientFromLocalStorage();
   doc.pathlist.deleteAll();
   doc.pathlist.addPath("New Path");
-  uiState.setProjectSavingState(ProjectSavingState.NO_LOCATION);
+  uiState.setProjectSavingState(SavingState.NO_LOCATION);
   uiState.setProjectSavingTime(new Date());
   doc.history.clear();
 }
@@ -790,24 +784,23 @@ export async function writeAllTrajectories() {
 export async function saveProject() {
   if (await canSave()) {
     try {
-    await toast.promise(Commands.writeProject(doc.serializeChor()),
-    {
-      error: {
-        render(toastProps) {
-          console.log(toastProps.data);
-          // .type and .content exist for any ChoreoError
-          return `Project save fail. Alert developers: (${toastProps.data!.type}) ${toastProps.data!.content}`;
+      await toast.promise(Commands.writeProject(doc.serializeChor()), {
+        error: {
+          render(toastProps) {
+            console.log(toastProps.data);
+            // .type and .content exist for any ChoreoError
+            return `Project save fail. Alert developers: (${toastProps.data!.type}) ${toastProps.data!.content}`;
+          }
         }
-      }
-    });
-    uiState.setProjectSavingState(ProjectSavingState.SAVED);
-    uiState.setProjectSavingTime(new Date());
-  } catch (e) {
-    uiState.setProjectSavingState(ProjectSavingState.ERROR);
-  }
+      });
+      uiState.setProjectSavingState(SavingState.SAVED);
+      uiState.setProjectSavingTime(new Date());
+    } catch {
+      uiState.setProjectSavingState(SavingState.ERROR);
+    }
   } else {
     tracing.warn("Can't save project, skipping");
-    uiState.setProjectSavingState(ProjectSavingState.NO_LOCATION);
+    uiState.setProjectSavingState(SavingState.NO_LOCATION);
   }
 }
 

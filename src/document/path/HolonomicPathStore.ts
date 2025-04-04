@@ -16,7 +16,7 @@ import {
   type ChoreoPath,
   type Trajectory
 } from "../2025/DocumentTypes";
-import { Env } from "../DocumentManager";
+import { Env, uiState } from "../DocumentManager";
 import { EventMarkerStore, IEventMarkerStore } from "../EventMarkerStore";
 import {
   DEFAULT_WAYPOINT,
@@ -27,6 +27,8 @@ import { ChoreoTrajectoryStore } from "./ChoreoTrajectoryStore";
 import { PathUIStore } from "./PathUIStore";
 import { findUUIDIndex } from "./utils";
 import { Commands } from "../tauriCommands";
+import { SavingState } from "../UIStateStore";
+import { toast } from "react-toastify";
 export function waypointIDToText(
   id: WaypointUUID | undefined,
   points: IHolonomicWaypointStore[]
@@ -181,13 +183,38 @@ export const HolonomicPathStore = types
   })
   .actions((self) => {
     let autosaveDisposer: IReactionDisposer;
-    let exporter: (uuid: string) => void = (uuid) =>
-      getEnv(self)?.exporter(uuid);
+    let exporter: Env["exporter"] = (uuid) => getEnv(self)?.exporter(uuid);
+    let debounceId: NodeJS.Timeout | undefined = undefined;
     const afterCreate = () => {
-      // Anything accessed in here will cause the trajectory to be marked stale
+      const performSave = () => {
+        if (!uiState.hasSaveLocation) {
+          return;
+        }
+        self.ui.setSavingState(SavingState.SAVING);
+        toast.promise(
+          exporter(self.uuid)
+            .then(() => {
+              self.ui.setSavingState(SavingState.SAVED);
+            })
+            .catch((e) => {
+              self.ui.setSavingState(SavingState.ERROR);
+            }),
+          {
+            error: {
+              render(toastProps) {
+                console.log(toastProps.data);
+                // .type and .content exist for any ChoreoError
+
+                return `"${self.name}" save fail. Alert developers: (${toastProps.data!.type}) ${toastProps.data!.content}`;
+              }
+            }
+          }
+        );
+      };
+
+      // Anything accessed in self.serialize will cause the trajectory to be marked stale
       // this is a reaction, not an autorun so that the effect does not happen
       // when mobx first runs it to determine dependencies.
-
       autosaveDisposer = reaction(
         () => {
           return self.serialize;
@@ -196,16 +223,18 @@ export const HolonomicPathStore = types
           Commands.trajectoryUpToDate(ser).then((upToDate) =>
             self.ui.setUpToDate(upToDate)
           );
-          exporter(self.uuid);
+          clearTimeout(debounceId);
+          debounceId = setTimeout(performSave, 50);
         }
       );
     };
     /**Only to be used on the default path*/
     const disableExport = () => {
-      exporter = () => {};
+      exporter = (uuid) => Promise.resolve();
     };
     const beforeDestroy = () => {
       autosaveDisposer();
+      clearTimeout(debounceId);
     };
     return {
       afterCreate,

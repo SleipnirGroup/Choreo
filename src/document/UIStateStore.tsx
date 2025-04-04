@@ -19,7 +19,7 @@ import {
 } from "./UIData";
 import { tracing } from "./tauriTracing";
 
-export enum ProjectSavingState {
+export enum SavingState {
   SAVED = "saved",
   SAVING = "saving",
   ERROR = "error",
@@ -38,7 +38,9 @@ export const UIStateStore = types
     projectName: types.maybe(types.string),
     projectDir: types.maybe(types.string),
     projectSaveTime: types.maybe(types.Date),
-    projectSavingState: types.enumeration<ProjectSavingState>(Object.values(ProjectSavingState)),
+    projectSavingState: types.enumeration<SavingState>(
+      Object.values(SavingState)
+    ),
     waypointPanelOpen: false,
     isViewOptionsPanelOpen: false,
     robotConfigOpen: false,
@@ -134,7 +136,7 @@ export const UIStateStore = types
     toggleMainMenu() {
       self.mainMenuOpen = !self.mainMenuOpen;
     },
-    setProjectSavingState(state: ProjectSavingState) {
+    setProjectSavingState(state: SavingState) {
       self.projectSavingState = state;
     },
     setProjectSavingTime(time: Date | undefined) {
