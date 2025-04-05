@@ -76,13 +76,12 @@ impl ProjectUpdater {
         self.notifier.notify_one();
     }
 
-    pub async fn wait_for(&self) -> ProjectFile {
+    pub async fn wait_for(&self) -> Option<ProjectFile> {
         self.notifier.notified().await;
         self.project
             .lock()
             .await
             .take()
-            .expect("Project should be updated before waiting for it")
     }
 }
 
@@ -130,10 +129,15 @@ impl WritingResources {
                     .block_on(async move {
                         loop {
                             let proj = project_updater.wait_for().await;
-                            let root = root.lock().await;
-                            let path = root.join(&proj.name).with_extension("chor");
-                            write_serializable(proj, &path).await.trace_err();
-                            tracing::debug!("Wrote project to {:?}", path);
+                            if proj.is_some() {
+                                let proj = proj.unwrap();
+                                let root = root.lock().await;
+                                let path = root.join(&proj.name).with_extension("chor");
+                                write_serializable(proj, &path).await.trace_err();
+                                tracing::debug!("Wrote project to {:?}", path);
+                            } else {
+                                panic!("Project was consumed before notifier woke up.");
+                            }
                         }
                     });
             })
