@@ -22,42 +22,42 @@ class TRAJOPT_DLLEXPORT LaneConstraint {
   /**
    * Constructs a LaneConstraint.
    *
-   * @param centerLineStart Start point of the center line.
-   * @param centerLineEnd End point of the center line.
+   * @param center_line_start Start point of the center line.
+   * @param center_line_end End point of the center line.
    * @param tolerance Distance from center line to lane edge. Passing zero
    *   creates a line constraint.
    */
-  LaneConstraint(Translation2d centerLineStart, Translation2d centerLineEnd,
+  LaneConstraint(Translation2d center_line_start, Translation2d center_line_end,
                  double tolerance)
-      : m_topLine{[&] {
+      : m_top_line{[&] {
           if (tolerance != 0.0) {
-            double dx = centerLineEnd.X() - centerLineStart.X();
-            double dy = centerLineEnd.Y() - centerLineStart.Y();
+            double dx = center_line_end.x() - center_line_start.x();
+            double dy = center_line_end.y() - center_line_start.y();
             double dist = std::hypot(dx, dy);
-            auto offset = Translation2d{0.0, tolerance}.RotateBy(
+            auto offset = Translation2d{0.0, tolerance}.rotate_by(
                 Rotation2d{dx / dist, dy / dist});
 
             return PointLineRegionConstraint{{0.0, 0.0},
-                                             centerLineStart + offset,
-                                             centerLineEnd + offset,
-                                             Side::kBelow};
+                                             center_line_start + offset,
+                                             center_line_end + offset,
+                                             Side::BELOW};
           } else {
             return PointLineRegionConstraint{
-                {0.0, 0.0}, centerLineStart, centerLineEnd, Side::kOn};
+                {0.0, 0.0}, center_line_start, center_line_end, Side::ON};
           }
         }()},
-        m_bottomLine{[&]() -> std::optional<PointLineRegionConstraint> {
+        m_bottom_line{[&]() -> std::optional<PointLineRegionConstraint> {
           if (tolerance != 0.0) {
-            double dx = centerLineEnd.X() - centerLineStart.X();
-            double dy = centerLineEnd.Y() - centerLineStart.Y();
+            double dx = center_line_end.x() - center_line_start.x();
+            double dy = center_line_end.y() - center_line_start.y();
             double dist = std::hypot(dx, dy);
-            auto offset = Translation2d{0.0, tolerance}.RotateBy(
+            auto offset = Translation2d{0.0, tolerance}.rotate_by(
                 Rotation2d{dx / dist, dy / dist});
 
             return PointLineRegionConstraint{{0.0, 0.0},
-                                             centerLineStart - offset,
-                                             centerLineEnd - offset,
-                                             Side::kAbove};
+                                             center_line_start - offset,
+                                             center_line_end - offset,
+                                             Side::ABOVE};
           } else {
             return std::nullopt;
           }
@@ -68,27 +68,28 @@ class TRAJOPT_DLLEXPORT LaneConstraint {
    *
    * @param problem The optimization problem.
    * @param pose The robot's pose.
-   * @param linearVelocity The robot's linear velocity.
-   * @param angularVelocity The robot's angular velocity.
-   * @param linearAcceleration The robot's linear acceleration.
-   * @param angularAcceleration The robot's angular acceleration.
+   * @param linear_velocity The robot's linear velocity.
+   * @param angular_velocity The robot's angular velocity.
+   * @param linear_acceleration The robot's linear acceleration.
+   * @param angular_acceleration The robot's angular acceleration.
    */
-  void Apply(slp::Problem& problem, const Pose2v& pose,
-             const Translation2v& linearVelocity,
-             const slp::Variable& angularVelocity,
-             const Translation2v& linearAcceleration,
-             const slp::Variable& angularAcceleration) {
-    m_topLine.Apply(problem, pose, linearVelocity, angularVelocity,
-                    linearAcceleration, angularAcceleration);
-    if (m_bottomLine.has_value()) {
-      m_bottomLine.value().Apply(problem, pose, linearVelocity, angularVelocity,
-                                 linearAcceleration, angularAcceleration);
+  void apply(slp::Problem& problem, const Pose2v& pose,
+             const Translation2v& linear_velocity,
+             const slp::Variable& angular_velocity,
+             const Translation2v& linear_acceleration,
+             const slp::Variable& angular_acceleration) {
+    m_top_line.apply(problem, pose, linear_velocity, angular_velocity,
+                     linear_acceleration, angular_acceleration);
+    if (m_bottom_line.has_value()) {
+      m_bottom_line.value().apply(problem, pose, linear_velocity,
+                                  angular_velocity, linear_acceleration,
+                                  angular_acceleration);
     }
   }
 
  private:
-  PointLineRegionConstraint m_topLine;
-  std::optional<PointLineRegionConstraint> m_bottomLine;
+  PointLineRegionConstraint m_top_line;
+  std::optional<PointLineRegionConstraint> m_bottom_line;
 };
 
 }  // namespace trajopt

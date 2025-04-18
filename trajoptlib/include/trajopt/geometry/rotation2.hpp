@@ -29,8 +29,13 @@ class Rotation2 {
    *
    * @param angle The angle in radians.
    */
-  constexpr Rotation2(const T& angle)            // NOLINT
-      : m_cos{cos(angle)}, m_sin{sin(angle)} {}  // NOLINT
+  constexpr Rotation2(const T& angle) {  // NOLINT
+    using std::cos;
+    using std::sin;
+
+    m_cos = cos(angle);  // NOLINT
+    m_sin = sin(angle);  // NOLINT
+  }
 
   /**
    * Constructs a rotation with the given cosine and sine components.
@@ -69,7 +74,7 @@ class Rotation2 {
    */
   template <typename U>
   constexpr explicit Rotation2(const Rotation2<U>& other)
-      : m_cos{other.Cos()}, m_sin{other.Sin()} {}
+      : m_cos{other.cos()}, m_sin{other.sin()} {}
 
   /**
    * Adds two rotations together, with the result being bounded between -pi and
@@ -79,7 +84,7 @@ class Rotation2 {
    * @return The sum of the two rotations.
    */
   constexpr Rotation2<T> operator+(const Rotation2<T>& other) const {
-    return RotateBy(other);
+    return rotate_by(other);
   }
 
   /**
@@ -110,10 +115,10 @@ class Rotation2 {
    * @return The new rotated rotation.
    */
   template <typename U>
-  constexpr Rotation2<U> RotateBy(const Rotation2<U>& other) const {
+  constexpr Rotation2<U> rotate_by(const Rotation2<U>& other) const {
     using R = decltype(std::declval<T>() + std::declval<U>());
-    return Rotation2<R>{Cos() * other.Cos() - Sin() * other.Sin(),
-                        Cos() * other.Sin() + Sin() * other.Cos()};
+    return Rotation2<R>{cos() * other.cos() - sin() * other.sin(),   // NOLINT
+                        cos() * other.sin() + sin() * other.cos()};  // NOLINT
   }
 
   /**
@@ -121,14 +126,14 @@ class Rotation2 {
    *
    * @return The Euler angle in radians.
    */
-  constexpr T Radians() const { return atan2(m_sin, m_cos); }  // NOLINT
+  constexpr T radians() const { return atan2(m_sin, m_cos); }  // NOLINT
 
   /**
    * Returns the rotation as an Euler angle in degrees.
    *
    * @return The Euler angle in degrees.
    */
-  constexpr T Degrees() const {
+  constexpr T degrees() const {
     return atan2(m_sin, m_cos) / std::numbers::pi * 180.0;  // NOLINT
   }
 
@@ -137,14 +142,14 @@ class Rotation2 {
    *
    * @return The cosine of the rotation.
    */
-  constexpr const T& Cos() const { return m_cos; }
+  constexpr const T& cos() const { return m_cos; }  // NOLINT
 
   /**
    * Returns the sine of the rotation.
    *
    * @return The sine of the rotation.
    */
-  constexpr const T& Sin() const { return m_sin; }
+  constexpr const T& sin() const { return m_sin; }  // NOLINT
 
  private:
   T m_cos = 1.0;
@@ -173,17 +178,17 @@ slp::EqualityConstraints operator==(const Rotation2<T>& lhs,
   //         = 0
   //
   // NOTE: angleBetween = π rad would be another solution
-  constraints.emplace_back(lhs.Cos() * rhs.Sin() - lhs.Sin() * rhs.Cos() ==
+  constraints.emplace_back(lhs.cos() * rhs.sin() - lhs.sin() * rhs.cos() ==
                            0.0);
 
   // Require that lhs and rhs are unit vectors if they contain autodiff
   // variables, since their values can change.
   if constexpr (std::same_as<T, slp::Variable>) {
-    constraints.emplace_back(lhs.Cos() * lhs.Cos() + lhs.Sin() * lhs.Sin() ==
+    constraints.emplace_back(lhs.cos() * lhs.cos() + lhs.sin() * lhs.sin() ==
                              1.0);
   }
   if constexpr (std::same_as<U, slp::Variable>) {
-    constraints.emplace_back(rhs.Cos() * rhs.Cos() + rhs.Sin() * rhs.Sin() ==
+    constraints.emplace_back(rhs.cos() * rhs.cos() + rhs.sin() * rhs.sin() ==
                              1.0);
   }
 
@@ -191,7 +196,7 @@ slp::EqualityConstraints operator==(const Rotation2<T>& lhs,
 }
 
 inline bool operator==(const Rotation2d& lhs, const Rotation2d& rhs) {
-  return lhs.Cos() == rhs.Cos() && lhs.Sin() == rhs.Sin();
+  return lhs.cos() == rhs.cos() && lhs.sin() == rhs.sin();
 }
 
 }  // namespace trajopt
