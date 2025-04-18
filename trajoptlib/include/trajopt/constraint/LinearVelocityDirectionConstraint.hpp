@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include <sleipnir/autodiff/Variable.hpp>
-#include <sleipnir/optimization/OptimizationProblem.hpp>
+#include <sleipnir/autodiff/variable.hpp>
+#include <sleipnir/optimization/problem.hpp>
 
 #include "trajopt/geometry/Pose2.hpp"
 #include "trajopt/geometry/Translation2.hpp"
@@ -33,19 +33,19 @@ class TRAJOPT_DLLEXPORT LinearVelocityDirectionConstraint {
    * @param linearAcceleration The robot's linear acceleration.
    * @param angularAcceleration The robot's angular acceleration.
    */
-  void Apply([[maybe_unused]] sleipnir::OptimizationProblem& problem,
+  void Apply([[maybe_unused]] slp::Problem& problem,
              [[maybe_unused]] const Pose2v& pose,
              const Translation2v& linearVelocity,
-             [[maybe_unused]] const sleipnir::Variable& angularVelocity,
+             [[maybe_unused]] const slp::Variable& angularVelocity,
              [[maybe_unused]] const Translation2v& linearAcceleration,
-             [[maybe_unused]] const sleipnir::Variable& angularAcceleration) {
+             [[maybe_unused]] const slp::Variable& angularAcceleration) {
     // <v_x, v_y> and <u_x, u_y> must be parallel
     //
     //   (v ⋅ u)/‖v‖ = 1
     //   v ⋅ u = ‖v‖
     //   (v ⋅ u)² = ‖v‖²
     auto dot = linearVelocity.Dot(Translation2d{m_angle.Cos(), m_angle.Sin()});
-    problem.SubjectTo(dot * dot == linearVelocity.SquaredNorm());
+    problem.subject_to(dot * dot == linearVelocity.SquaredNorm());
   }
 
  private:

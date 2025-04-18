@@ -3,8 +3,8 @@ const { exit } = require("process");
 
 const [name, newPathRoot] = process.argv.slice(2);
 
-const extension = process.env.TAURI_FAMILY === "windows" ? ".exe" : "";
-const targetTriple = process.env.TAURI_TARGET_TRIPLE;
+const extension = process.env.TAURI_ENV_FAMILY === "windows" ? ".exe" : "";
+const targetTriple = process.env.TAURI_ENV_TARGET_TRIPLE;
 
 const oldPathNative = `./target/release/${name}${extension}`;
 const oldPath = `./target/${targetTriple}/release/${name}${extension}`;
