@@ -77,7 +77,7 @@ mod ffi {
     }
 
     unsafe extern "C++" {
-        include!("RustFFI.hpp");
+        include!("rust_ffi.hpp");
 
         type SwerveTrajectoryGenerator;
 

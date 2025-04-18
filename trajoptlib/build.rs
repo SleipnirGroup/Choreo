@@ -20,7 +20,7 @@ fn main() {
     let mut bridge_build = cxx_build::bridge("src/lib.rs");
 
     bridge_build
-        .file("src/RustFFI.cpp")
+        .file("src/rust_ffi.cpp")
         .include("src")
         .include(format!("{}/include", cmake_dest.display()))
         .include(format!("{}/include/eigen3", cmake_dest.display()))
