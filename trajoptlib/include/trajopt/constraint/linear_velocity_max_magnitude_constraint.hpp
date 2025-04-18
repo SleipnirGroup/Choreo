@@ -21,12 +21,12 @@ class TRAJOPT_DLLEXPORT LinearVelocityMaxMagnitudeConstraint {
   /**
    * Constructs a LinearVelocityMaxMagnitudeConstraint.
    *
-   * @param maxMagnitude The maximum linear velocity magnitude. Must be
+   * @param max_magnitude The maximum linear velocity magnitude. Must be
    *     nonnegative.
    */
-  explicit LinearVelocityMaxMagnitudeConstraint(double maxMagnitude)
-      : m_maxMagnitude{maxMagnitude} {
-    assert(maxMagnitude >= 0.0);
+  explicit LinearVelocityMaxMagnitudeConstraint(double max_magnitude)
+      : m_max_magnitude{max_magnitude} {
+    assert(max_magnitude >= 0.0);
   }
 
   /**
@@ -34,27 +34,27 @@ class TRAJOPT_DLLEXPORT LinearVelocityMaxMagnitudeConstraint {
    *
    * @param problem The optimization problem.
    * @param pose The robot's pose.
-   * @param linearVelocity The robot's linear velocity.
-   * @param angularVelocity The robot's angular velocity.
-   * @param linearAcceleration The robot's linear acceleration.
-   * @param angularAcceleration The robot's angular acceleration.
+   * @param linear_velocity The robot's linear velocity.
+   * @param angular_velocity The robot's angular velocity.
+   * @param linear_acceleration The robot's linear acceleration.
+   * @param angular_acceleration The robot's angular acceleration.
    */
-  void Apply(slp::Problem& problem, [[maybe_unused]] const Pose2v& pose,
-             const Translation2v& linearVelocity,
-             [[maybe_unused]] const slp::Variable& angularVelocity,
-             [[maybe_unused]] const Translation2v& linearAcceleration,
-             [[maybe_unused]] const slp::Variable& angularAcceleration) {
-    if (m_maxMagnitude == 0.0) {
-      problem.subject_to(linearVelocity.X() == 0.0);
-      problem.subject_to(linearVelocity.Y() == 0.0);
+  void apply(slp::Problem& problem, [[maybe_unused]] const Pose2v& pose,
+             const Translation2v& linear_velocity,
+             [[maybe_unused]] const slp::Variable& angular_velocity,
+             [[maybe_unused]] const Translation2v& linear_acceleration,
+             [[maybe_unused]] const slp::Variable& angular_acceleration) {
+    if (m_max_magnitude == 0.0) {
+      problem.subject_to(linear_velocity.x() == 0.0);
+      problem.subject_to(linear_velocity.y() == 0.0);
     } else {
-      problem.subject_to(linearVelocity.SquaredNorm() <=
-                         m_maxMagnitude * m_maxMagnitude);
+      problem.subject_to(linear_velocity.squared_norm() <=
+                         m_max_magnitude * m_max_magnitude);
     }
   }
 
  private:
-  double m_maxMagnitude;
+  double m_max_magnitude;
 };
 
 }  // namespace trajopt

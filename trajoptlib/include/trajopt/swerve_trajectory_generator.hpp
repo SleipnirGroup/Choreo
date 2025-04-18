@@ -27,16 +27,16 @@ struct TRAJOPT_DLLEXPORT SwerveDrivetrain {
   double moi;
 
   /// Radius of wheel (m).
-  double wheelRadius;
+  double wheel_radius;
 
   /// Maximum angular velocity of wheel (rad/s).
-  double wheelMaxAngularVelocity;
+  double wheel_max_angular_velocity;
 
   /// Maximum torque applied to wheel (N−m).
-  double wheelMaxTorque;
+  double wheel_max_torque;
 
   /// The Coefficient of Friction (CoF) of the wheels.
-  double wheelCoF;
+  double wheel_cof;
 
   /// Translation of each swerve module from the origin of the robot coordinate
   /// system to the center of the module (m). There's usually one in each
@@ -82,10 +82,10 @@ struct TRAJOPT_DLLEXPORT SwerveSolution {
   std::vector<double> alpha;
 
   /// The x forces for each module.
-  std::vector<std::vector<double>> moduleFx;
+  std::vector<std::vector<double>> module_fx;
 
   /// The y forces for each module.
-  std::vector<std::vector<double>> moduleFy;
+  std::vector<std::vector<double>> module_fy;
 };
 
 /**
@@ -106,28 +106,28 @@ class TRAJOPT_DLLEXPORT SwerveTrajectorySample {
   double heading = 0.0;
 
   /// The velocity's x component.
-  double velocityX = 0.0;
+  double velocity_x = 0.0;
 
   /// The velocity's y component.
-  double velocityY = 0.0;
+  double velocity_y = 0.0;
 
   /// The angular velocity.
-  double angularVelocity = 0.0;
+  double angular_velocity = 0.0;
 
   /// The acceleration's x component.
-  double accelerationX = 0.0;
+  double acceleration_x = 0.0;
 
   /// The acceleration's y component.
-  double accelerationY = 0.0;
+  double acceleration_y = 0.0;
 
   /// The angular acceleration.
-  double angularAcceleration = 0.0;
+  double angular_acceleration = 0.0;
 
   /// The force on each module in the X direction.
-  std::vector<double> moduleForcesX;
+  std::vector<double> module_forces_x;
 
   /// The force on each module in the Y direction.
-  std::vector<double> moduleForcesY;
+  std::vector<double> module_forces_y;
 
   SwerveTrajectorySample() = default;
 
@@ -138,33 +138,33 @@ class TRAJOPT_DLLEXPORT SwerveTrajectorySample {
    * @param x The x coordinate.
    * @param y The y coordinate.
    * @param heading The heading.
-   * @param velocityX The velocity's x component.
-   * @param velocityY The velocity's y component.
-   * @param angularVelocity The angular velocity.
-   * @param accelerationX The acceleration's x component.
-   * @param accelerationY The acceleration's y component.
-   * @param angularAcceleration The angular acceleration.
-   * @param moduleForcesX Forces acting on the modules in the X direction.
-   * @param moduleForcesY Forces acting on the modules in the Y direction.
+   * @param velocity_x The velocity's x component.
+   * @param velocity_y The velocity's y component.
+   * @param angular_velocity The angular velocity.
+   * @param acceleration_x The acceleration's x component.
+   * @param acceleration_y The acceleration's y component.
+   * @param angular_acceleration The angular acceleration.
+   * @param module_forces_x Forces acting on the modules in the X direction.
+   * @param module_forces_y Forces acting on the modules in the Y direction.
    */
   SwerveTrajectorySample(double timestamp, double x, double y, double heading,
-                         double velocityX, double velocityY,
-                         double angularVelocity, double accelerationX,
-                         double accelerationY, double angularAcceleration,
-                         std::vector<double> moduleForcesX,
-                         std::vector<double> moduleForcesY)
+                         double velocity_x, double velocity_y,
+                         double angular_velocity, double acceleration_x,
+                         double acceleration_y, double angular_acceleration,
+                         std::vector<double> module_forces_x,
+                         std::vector<double> module_forces_y)
       : timestamp{timestamp},
         x{x},
         y{y},
         heading{heading},
-        velocityX{velocityX},
-        velocityY{velocityY},
-        angularVelocity{angularVelocity},
-        accelerationX{accelerationX},
-        accelerationY{accelerationY},
-        angularAcceleration{angularAcceleration},
-        moduleForcesX{std::move(moduleForcesX)},
-        moduleForcesY{std::move(moduleForcesY)} {}
+        velocity_x{velocity_x},
+        velocity_y{velocity_y},
+        angular_velocity{angular_velocity},
+        acceleration_x{acceleration_x},
+        acceleration_y{acceleration_y},
+        angular_acceleration{angular_acceleration},
+        module_forces_x{std::move(module_forces_x)},
+        module_forces_y{std::move(module_forces_y)} {}
 };
 
 /**
@@ -198,7 +198,7 @@ class TRAJOPT_DLLEXPORT SwerveTrajectory {
           std::atan2(solution.thetasin[sample], solution.thetacos[sample]),
           solution.vx[sample], solution.vy[sample], solution.omega[sample],
           solution.ax[sample], solution.ay[sample], solution.alpha[sample],
-          solution.moduleFx[sample], solution.moduleFy[sample]);
+          solution.module_fx[sample], solution.module_fy[sample]);
       ts += solution.dt[sample];
     }
   }
@@ -225,10 +225,10 @@ class TRAJOPT_DLLEXPORT SwerveTrajectoryGenerator {
   /**
    * Construct a new swerve trajectory optimization problem.
    *
-   * @param pathBuilder The path builder.
+   * @param path_builder The path builder.
    * @param handle An identifier for state callbacks.
    */
-  explicit SwerveTrajectoryGenerator(SwervePathBuilder pathBuilder,
+  explicit SwerveTrajectoryGenerator(SwervePathBuilder path_builder,
                                      int64_t handle = 0);
 
   /**
@@ -240,7 +240,7 @@ class TRAJOPT_DLLEXPORT SwerveTrajectoryGenerator {
    * @return Returns a holonomic trajectory on success, or a string containing a
    *   failure reason.
    */
-  std::expected<SwerveSolution, slp::ExitStatus> Generate(
+  std::expected<SwerveSolution, slp::ExitStatus> generate(
       bool diagnostics = false);
 
  private:
@@ -271,9 +271,9 @@ class TRAJOPT_DLLEXPORT SwerveTrajectoryGenerator {
 
   slp::Problem problem;
 
-  void ApplyInitialGuess(const SwerveSolution& solution);
+  void apply_initial_guess(const SwerveSolution& solution);
 
-  SwerveSolution ConstructSwerveSolution();
+  SwerveSolution construct_swerve_solution();
 };
 
 }  // namespace trajopt

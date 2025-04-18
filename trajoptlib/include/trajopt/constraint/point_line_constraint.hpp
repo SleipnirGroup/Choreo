@@ -26,20 +26,21 @@ class TRAJOPT_DLLEXPORT PointLineConstraint {
   /**
    * Constructs a PointLineConstraint.
    *
-   * @param robotPoint Robot point.
-   * @param fieldLineStart Field line start.
-   * @param fieldLineEnd Field line end.
-   * @param minDistance Minimum distance between robot point and field line.
+   * @param robot_point Robot point.
+   * @param field_line_start Field line start.
+   * @param field_line_end Field line end.
+   * @param min_distance Minimum distance between robot point and field line.
    *     Must be nonnegative.
    */
-  explicit PointLineConstraint(Translation2d robotPoint,
-                               Translation2d fieldLineStart,
-                               Translation2d fieldLineEnd, double minDistance)
-      : m_robotPoint{std::move(robotPoint)},
-        m_fieldLineStart{std::move(fieldLineStart)},
-        m_fieldLineEnd{std::move(fieldLineEnd)},
-        m_minDistance{minDistance} {
-    assert(minDistance >= 0.0);
+  explicit PointLineConstraint(Translation2d robot_point,
+                               Translation2d field_line_start,
+                               Translation2d field_line_end,
+                               double min_distance)
+      : m_robot_point{std::move(robot_point)},
+        m_field_line_start{std::move(field_line_start)},
+        m_field_line_end{std::move(field_line_end)},
+        m_min_distance{min_distance} {
+    assert(min_distance >= 0.0);
   }
 
   /**
@@ -47,27 +48,27 @@ class TRAJOPT_DLLEXPORT PointLineConstraint {
    *
    * @param problem The optimization problem.
    * @param pose The robot's pose.
-   * @param linearVelocity The robot's linear velocity.
-   * @param angularVelocity The robot's angular velocity.
-   * @param linearAcceleration The robot's linear acceleration.
-   * @param angularAcceleration The robot's angular acceleration.
+   * @param linear_velocity The robot's linear velocity.
+   * @param angular_velocity The robot's angular velocity.
+   * @param linear_acceleration The robot's linear acceleration.
+   * @param angular_acceleration The robot's angular acceleration.
    */
-  void Apply(slp::Problem& problem, const Pose2v& pose,
-             [[maybe_unused]] const Translation2v& linearVelocity,
-             [[maybe_unused]] const slp::Variable& angularVelocity,
-             [[maybe_unused]] const Translation2v& linearAcceleration,
-             [[maybe_unused]] const slp::Variable& angularAcceleration) {
-    auto point = pose.Translation() + m_robotPoint.RotateBy(pose.Rotation());
-    auto squaredDistance = detail::LinePointSquaredDistance(
-        m_fieldLineStart, m_fieldLineEnd, point);
-    problem.subject_to(squaredDistance >= m_minDistance * m_minDistance);
+  void apply(slp::Problem& problem, const Pose2v& pose,
+             [[maybe_unused]] const Translation2v& linear_velocity,
+             [[maybe_unused]] const slp::Variable& angular_velocity,
+             [[maybe_unused]] const Translation2v& linear_acceleration,
+             [[maybe_unused]] const slp::Variable& angular_acceleration) {
+    auto point = pose.translation() + m_robot_point.rotate_by(pose.rotation());
+    auto squared_distance = detail::line_point_squared_distance(
+        m_field_line_start, m_field_line_end, point);
+    problem.subject_to(squared_distance >= m_min_distance * m_min_distance);
   }
 
  private:
-  Translation2d m_robotPoint;
-  Translation2d m_fieldLineStart;
-  Translation2d m_fieldLineEnd;
-  double m_minDistance;
+  Translation2d m_robot_point;
+  Translation2d m_field_line_start;
+  Translation2d m_field_line_end;
+  double m_min_distance;
 };
 
 }  // namespace trajopt

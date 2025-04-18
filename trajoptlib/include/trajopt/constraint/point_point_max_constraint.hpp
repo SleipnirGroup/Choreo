@@ -25,17 +25,18 @@ class TRAJOPT_DLLEXPORT PointPointMaxConstraint {
   /**
    * Constructs a LinePointConstraint.
    *
-   * @param robotPoint Robot point.
-   * @param fieldPoint Field point.
-   * @param maxDistance Maximum distance between robot line and field point.
+   * @param robot_point Robot point.
+   * @param field_point Field point.
+   * @param max_distance Maximum distance between robot line and field point.
    *     Must be nonnegative.
    */
-  explicit PointPointMaxConstraint(Translation2d robotPoint,
-                                   Translation2d fieldPoint, double maxDistance)
-      : m_robotPoint{std::move(robotPoint)},
-        m_fieldPoint{std::move(fieldPoint)},
-        m_maxDistance{maxDistance} {
-    assert(maxDistance >= 0.0);
+  explicit PointPointMaxConstraint(Translation2d robot_point,
+                                   Translation2d field_point,
+                                   double max_distance)
+      : m_robot_point{std::move(robot_point)},
+        m_field_point{std::move(field_point)},
+        m_max_distance{max_distance} {
+    assert(max_distance >= 0.0);
   }
 
   /**
@@ -43,27 +44,27 @@ class TRAJOPT_DLLEXPORT PointPointMaxConstraint {
    *
    * @param problem The optimization problem.
    * @param pose The robot's pose.
-   * @param linearVelocity The robot's linear velocity.
-   * @param angularVelocity The robot's angular velocity.
-   * @param linearAcceleration The robot's linear acceleration.
-   * @param angularAcceleration The robot's angular acceleration.
+   * @param linear_velocity The robot's linear velocity.
+   * @param angular_velocity The robot's angular velocity.
+   * @param linear_acceleration The robot's linear acceleration.
+   * @param angular_acceleration The robot's angular acceleration.
    */
-  void Apply(slp::Problem& problem, const Pose2v& pose,
-             [[maybe_unused]] const Translation2v& linearVelocity,
-             [[maybe_unused]] const slp::Variable& angularVelocity,
-             [[maybe_unused]] const Translation2v& linearAcceleration,
-             [[maybe_unused]] const slp::Variable& angularAcceleration) {
-    auto bumperCorner =
-        pose.Translation() + m_robotPoint.RotateBy(pose.Rotation());
-    auto dx = m_fieldPoint.X() - bumperCorner.X();
-    auto dy = m_fieldPoint.Y() - bumperCorner.Y();
-    problem.subject_to(dx * dx + dy * dy <= m_maxDistance * m_maxDistance);
+  void apply(slp::Problem& problem, const Pose2v& pose,
+             [[maybe_unused]] const Translation2v& linear_velocity,
+             [[maybe_unused]] const slp::Variable& angular_velocity,
+             [[maybe_unused]] const Translation2v& linear_acceleration,
+             [[maybe_unused]] const slp::Variable& angular_acceleration) {
+    auto bumper_corner =
+        pose.translation() + m_robot_point.rotate_by(pose.rotation());
+    auto dx = m_field_point.x() - bumper_corner.x();
+    auto dy = m_field_point.y() - bumper_corner.y();
+    problem.subject_to(dx * dx + dy * dy <= m_max_distance * m_max_distance);
   }
 
  private:
-  Translation2d m_robotPoint;
-  Translation2d m_fieldPoint;
-  double m_maxDistance;
+  Translation2d m_robot_point;
+  Translation2d m_field_point;
+  double m_max_distance;
 };
 
 }  // namespace trajopt

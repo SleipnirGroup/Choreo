@@ -29,16 +29,16 @@ struct TRAJOPT_DLLEXPORT DifferentialDrivetrain {
   double moi;
 
   /// Radius of wheel (m).
-  double wheelRadius;
+  double wheel_radius;
 
   /// Maximum angular velocity of wheel (rad/s).
-  double wheelMaxAngularVelocity;
+  double wheel_max_angular_velocity;
 
   /// Maximum torque applied to wheel (N−m).
-  double wheelMaxTorque;
+  double wheel_max_torque;
 
   /// The Coefficient of Friction (CoF) of the wheels.
-  double wheelCoF;
+  double wheel_cof;
 
   /// Distance between the two driverails (m).
   double trackwidth;
@@ -68,7 +68,7 @@ struct TRAJOPT_DLLEXPORT DifferentialSolution {
 
   /// The chassis angular velocity, which can be derived as ω = (vᵣ −
   /// vₗ)/trackwidth
-  std::vector<double> angularVelocity;
+  std::vector<double> angular_velocity;
 
   /// The left accelerations.
   std::vector<double> al;
@@ -101,25 +101,25 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
   double heading = 0.0;
 
   /// The left wheel velocity.
-  double velocityL = 0.0;
+  double velocity_l = 0.0;
 
   /// The right wheel velocity.
-  double velocityR = 0.0;
+  double velocity_r = 0.0;
 
   /// The chassis angular velocity.
-  double angularVelocity = 0.0;
+  double angular_velocity = 0.0;
 
   /// The left wheel acceleration.
-  double accelerationL = 0.0;
+  double acceleration_l = 0.0;
 
   /// The right wheel acceleration.
-  double accelerationR = 0.0;
+  double acceleration_r = 0.0;
 
   /// The left wheel force.
-  double forceL = 0.0;
+  double force_l = 0.0;
 
   /// The right wheel force.
-  double forceR = 0.0;
+  double force_r = 0.0;
 
   DifferentialTrajectorySample() = default;
 
@@ -129,30 +129,30 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectorySample {
    * @param timestamp The timestamp.
    * @param x The x coordinate. @param y The y coordinate.
    * @param heading The heading.
-   * @param velocityL The left wheel velocity.
-   * @param velocityR The right wheel velocity.
-   * @param angularVelocity The chassis angular velocity.
-   * @param accelerationL The left wheel acceleration.
-   * @param accelerationR The right wheel acceleration.
-   * @param forceL The left wheel force.
-   * @param forceR The right wheel force.
+   * @param velocity_l The left wheel velocity.
+   * @param velocity_r The right wheel velocity.
+   * @param angular_velocity The chassis angular velocity.
+   * @param acceleration_l The left wheel acceleration.
+   * @param acceleration_r The right wheel acceleration.
+   * @param force_l The left wheel force.
+   * @param force_r The right wheel force.
    */
   DifferentialTrajectorySample(double timestamp, double x, double y,
-                               double heading, double velocityL,
-                               double velocityR, double angularVelocity,
-                               double accelerationL, double accelerationR,
-                               double forceL, double forceR)
+                               double heading, double velocity_l,
+                               double velocity_r, double angular_velocity,
+                               double acceleration_l, double acceleration_r,
+                               double force_l, double force_r)
       : timestamp{timestamp},
         x{x},
         y{y},
         heading{heading},
-        velocityL{velocityL},
-        velocityR{velocityR},
-        angularVelocity{angularVelocity},
-        accelerationL{accelerationL},
-        accelerationR{accelerationR},
-        forceL{forceL},
-        forceR{forceR} {}
+        velocity_l{velocity_l},
+        velocity_r{velocity_r},
+        angular_velocity{angular_velocity},
+        acceleration_l{acceleration_l},
+        acceleration_r{acceleration_r},
+        force_l{force_l},
+        force_r{force_r} {}
 };
 
 /**
@@ -185,7 +185,7 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectory {
       samples.emplace_back(
           ts, solution.x[sample], solution.y[sample], solution.heading[sample],
           solution.vl[sample], solution.vr[sample],
-          solution.angularVelocity[sample], solution.al[sample],
+          solution.angular_velocity[sample], solution.al[sample],
           solution.ar[sample], solution.Fl[sample], solution.Fr[sample]);
       ts += solution.dt[sample];
     }
@@ -214,10 +214,10 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectoryGenerator {
   /**
    * Construct a new swerve trajectory optimization problem.
    *
-   * @param pathBuilder The path builder.
+   * @param path_builder The path builder.
    * @param handle An identifier for state callbacks.
    */
-  explicit DifferentialTrajectoryGenerator(DifferentialPathBuilder pathBuilder,
+  explicit DifferentialTrajectoryGenerator(DifferentialPathBuilder path_builder,
                                            int64_t handle = 0);
 
   /**
@@ -229,7 +229,7 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectoryGenerator {
    * @return Returns a holonomic trajectory on success, or a string containing a
    *   failure reason.
    */
-  std::expected<DifferentialSolution, slp::ExitStatus> Generate(
+  std::expected<DifferentialSolution, slp::ExitStatus> generate(
       bool diagnostics = false);
 
  private:
@@ -257,9 +257,9 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectoryGenerator {
 
   slp::Problem problem;
 
-  void ApplyInitialGuess(const DifferentialSolution& solution);
+  void apply_initial_guess(const DifferentialSolution& solution);
 
-  DifferentialSolution ConstructDifferentialSolution();
+  DifferentialSolution construct_differential_solution();
 };
 
 }  // namespace trajopt

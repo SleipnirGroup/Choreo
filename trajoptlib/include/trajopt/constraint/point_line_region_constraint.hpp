@@ -20,11 +20,11 @@ namespace trajopt {
  */
 enum class Side : uint8_t {
   /// Stay above the line.
-  kAbove,
+  ABOVE,
   /// Stay below the line.
-  kBelow,
+  BELOW,
   /// Stay on the line.
-  kOn,
+  ON,
 };
 
 /**
@@ -38,17 +38,17 @@ class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
   /**
    * Constructs a PointLineRegionConstraint.
    *
-   * @param robotPoint Robot point.
-   * @param fieldLineStart Field line start.
-   * @param fieldLineEnd Field line end.
+   * @param robot_point Robot point.
+   * @param field_line_start Field line start.
+   * @param field_line_end Field line end.
    * @param side The side to constrain the robot to.
    */
-  explicit PointLineRegionConstraint(Translation2d robotPoint,
-                                     Translation2d fieldLineStart,
-                                     Translation2d fieldLineEnd, Side side)
-      : m_robotPoint{std::move(robotPoint)},
-        m_fieldLineStart{std::move(fieldLineStart)},
-        m_fieldLineEnd{std::move(fieldLineEnd)},
+  explicit PointLineRegionConstraint(Translation2d robot_point,
+                                     Translation2d field_line_start,
+                                     Translation2d field_line_end, Side side)
+      : m_robot_point{std::move(robot_point)},
+        m_field_line_start{std::move(field_line_start)},
+        m_field_line_end{std::move(field_line_end)},
         m_side{side} {}
 
   /**
@@ -56,17 +56,17 @@ class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
    *
    * @param problem The optimization problem.
    * @param pose The robot's pose.
-   * @param linearVelocity The robot's linear velocity.
-   * @param angularVelocity The robot's angular velocity.
-   * @param linearAcceleration The robot's linear acceleration.
-   * @param angularAcceleration The robot's angular acceleration.
+   * @param linear_velocity The robot's linear velocity.
+   * @param angular_velocity The robot's angular velocity.
+   * @param linear_acceleration The robot's linear acceleration.
+   * @param angular_acceleration The robot's angular acceleration.
    */
-  void Apply(slp::Problem& problem, const Pose2v& pose,
-             [[maybe_unused]] const Translation2v& linearVelocity,
-             [[maybe_unused]] const slp::Variable& angularVelocity,
-             [[maybe_unused]] const Translation2v& linearAcceleration,
-             [[maybe_unused]] const slp::Variable& angularAcceleration) {
-    auto point = pose.Translation() + m_robotPoint.RotateBy(pose.Rotation());
+  void apply(slp::Problem& problem, const Pose2v& pose,
+             [[maybe_unused]] const Translation2v& linear_velocity,
+             [[maybe_unused]] const slp::Variable& angular_velocity,
+             [[maybe_unused]] const Translation2v& linear_acceleration,
+             [[maybe_unused]] const slp::Variable& angular_acceleration) {
+    auto point = pose.translation() + m_robot_point.rotate_by(pose.rotation());
 
     // Determine which side of the start-end field line a point is on.
     //
@@ -92,27 +92,27 @@ class TRAJOPT_DLLEXPORT PointLineRegionConstraint {
     //   cross > 0 means point is left of line (above)
     //   cross = 0 means point is on line
     //   cross < 0 means point is right of line (below)
-    auto line = m_fieldLineEnd - m_fieldLineStart;
-    auto startToPoint = point - m_fieldLineStart;
-    auto cross = line.Cross(startToPoint);
+    auto line = m_field_line_end - m_field_line_start;
+    auto start_to_point = point - m_field_line_start;
+    auto cross = line.cross(start_to_point);
 
     switch (m_side) {
-      case Side::kAbove:
+      case Side::ABOVE:
         problem.subject_to(cross > 0);
         break;
-      case Side::kBelow:
+      case Side::BELOW:
         problem.subject_to(cross < 0);
         break;
-      case Side::kOn:
+      case Side::ON:
         problem.subject_to(cross == 0);
         break;
     }
   }
 
  private:
-  Translation2d m_robotPoint;
-  Translation2d m_fieldLineStart;
-  Translation2d m_fieldLineEnd;
+  Translation2d m_robot_point;
+  Translation2d m_field_line_start;
+  Translation2d m_field_line_end;
   Side m_side;
 };
 

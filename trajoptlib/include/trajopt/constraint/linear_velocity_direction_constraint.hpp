@@ -28,24 +28,24 @@ class TRAJOPT_DLLEXPORT LinearVelocityDirectionConstraint {
    *
    * @param problem The optimization problem.
    * @param pose The robot's pose.
-   * @param linearVelocity The robot's linear velocity.
-   * @param angularVelocity The robot's angular velocity.
-   * @param linearAcceleration The robot's linear acceleration.
-   * @param angularAcceleration The robot's angular acceleration.
+   * @param linear_velocity The robot's linear velocity.
+   * @param angular_velocity The robot's angular velocity.
+   * @param linear_acceleration The robot's linear acceleration.
+   * @param angular_acceleration The robot's angular acceleration.
    */
-  void Apply([[maybe_unused]] slp::Problem& problem,
+  void apply([[maybe_unused]] slp::Problem& problem,
              [[maybe_unused]] const Pose2v& pose,
-             const Translation2v& linearVelocity,
-             [[maybe_unused]] const slp::Variable& angularVelocity,
-             [[maybe_unused]] const Translation2v& linearAcceleration,
-             [[maybe_unused]] const slp::Variable& angularAcceleration) {
+             const Translation2v& linear_velocity,
+             [[maybe_unused]] const slp::Variable& angular_velocity,
+             [[maybe_unused]] const Translation2v& linear_acceleration,
+             [[maybe_unused]] const slp::Variable& angular_acceleration) {
     // <v_x, v_y> and <u_x, u_y> must be parallel
     //
     //   (v ⋅ u)/‖v‖ = 1
     //   v ⋅ u = ‖v‖
     //   (v ⋅ u)² = ‖v‖²
-    auto dot = linearVelocity.Dot(Translation2d{m_angle.Cos(), m_angle.Sin()});
-    problem.subject_to(dot * dot == linearVelocity.SquaredNorm());
+    auto dot = linear_velocity.dot(Translation2d{m_angle.cos(), m_angle.sin()});
+    problem.subject_to(dot * dot == linear_velocity.squared_norm());
   }
 
  private:

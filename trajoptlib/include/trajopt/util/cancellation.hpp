@@ -8,6 +8,6 @@
 
 namespace trajopt {
 
-TRAJOPT_DLLEXPORT std::atomic<int>& GetCancellationFlag();
+TRAJOPT_DLLEXPORT std::atomic<int>& get_cancellation_flag();
 
 }  // namespace trajopt
