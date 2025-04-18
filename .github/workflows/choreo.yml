@@ -82,14 +82,14 @@ jobs:
         if: startsWith(matrix.os, 'macOS')
 
       - name: Set up sccache
-        uses: mozilla-actions/sccache-action@v0.0.5
-        if: false
+        uses: mozilla-actions/sccache-action@v0.0.8
       - name: Cargo test
         run: cargo test
       - name: Build package
         run: pnpm run tauri build ${{ matrix.tauri-build-flags }}
         env:
-          SCCACHE_GHA_ENABLED: "false"
+          RUSTC_WRAPPER: sccache
+          SCCACHE_GHA_ENABLED: true
 
       - name: Package artifacts (Windows x86_64)
         if: matrix.artifact-name == 'Windows-x86_64'
@@ -150,7 +150,7 @@ jobs:
     needs: [build]
     runs-on: ubuntu-24.04
     if: |
-      github.repository_owner == 'shueja' &&
+      github.repository_owner == 'SleipnirGroup' &&
       startsWith(github.ref, 'refs/tags/v')
 
     steps:
