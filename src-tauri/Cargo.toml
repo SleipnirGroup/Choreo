@@ -14,7 +14,7 @@ license = "BSD-3-Clause"
 
 [build-dependencies]
 built = { version = "0.7.5", features = ["chrono", "git2"] }
-tauri-build = { version = "1.5.5", features = [] }
+tauri-build = { version = "2.0.6", features = [] }
 
 [dependencies]
 choreo-core = { path = "../src-core" }
@@ -22,8 +22,13 @@ current_platform = "0.2.0"
 dirs = "5.0.1"
 nu-ansi-term = "0.50.1"
 open = "5.3.2"
+regex = "1.11.1"
 serde = "1.0"
-tauri = { version = "1.8.1", features = ["devtools", "dialog", "dialog-ask", "dialog-confirm", "dialog-open", "dialog-save", "fs-all", "os-all", "path-all", "shell-open", "window-close", "window-set-title"] }
+serde_json = "1.0"
+tauri = { version = "2.3.1", features = [ "devtools"] }
+tauri-plugin-dialog = "2.2.0"
+tauri-plugin-fs = "2.2.0"
+tauri-plugin-os = "2.2.0"
 tracing = "0.1.41"
 tracing-appender = "0.2.3"
 tracing-subscriber = { version = "0.3.19", features = ["ansi", "fmt", "std"] }
