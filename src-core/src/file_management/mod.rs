@@ -39,19 +39,6 @@ async fn write_serializable<T: Serialize + Send>(contents: T, file: &Path) -> Ch
     Ok(())
 }
 
-// #[allow(unused_results)]
-// fn spawn_writer_task<T: Serialize + Send + Sync + 'static>(
-//     file: PathBuf,
-//     mut receiver: UnboundedReceiver<T>,
-// ) {
-//     tokio::spawn(async move {
-//         while let Some(mut contents) = receiver.recv().await {
-//             write_serializable(&mut contents, &file).await?;
-//         }
-//         Ok::<(), ChoreoError>(())
-//     });
-// }
-
 #[allow(missing_debug_implementations)]
 pub struct ProjectUpdater {
     project: Mutex<Option<ProjectFile>>,
