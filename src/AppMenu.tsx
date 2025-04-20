@@ -222,6 +222,10 @@ class AppMenu extends Component<Props, State> {
                     <div style={{ fontSize: "0.9em", color: "#D3D3D3" }}>
                       {this.projectLocation(true)}
                     </div>
+                    <div>
+                      at {uiState.projectSaveTime?.toLocaleDateString()}{" "}
+                      {uiState.projectSaveTime?.toLocaleTimeString()}.
+                    </div>
                   </>
                 ) : (
                   <>

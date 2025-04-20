@@ -1,7 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 import { Expr, Project, RobotConfig, Trajectory } from "./2025/DocumentTypes";
 import { OpenFilePayload } from "./DocumentManager";
-
+export type ChoreoError = { type: string; content: string };
+export type ChoreoResult<T> = T | ChoreoError;
 export const Commands = {
   guessIntervals: (config: RobotConfig<Expr>, trajectory: Trajectory) =>
     invoke<number[]>("guess_control_interval_counts", { config, trajectory }),
@@ -77,10 +78,10 @@ export const Commands = {
    * Writes the specified `Project` to the deploy root directory.
    *
    * @param project The `Project` to write.
-   * @returns `void`
+   * @returns a `ChoreoResult<void>`
    */
   writeProject: (project: Project) =>
-    invoke<void>("write_project", { project }),
+    invoke<ChoreoResult<void>>("write_project", { project }),
 
   /**
    * Reads the `Trajectory` with the specified name from the deploy root directory.
@@ -100,10 +101,10 @@ export const Commands = {
    * Writes the specified `Trajectory` to the deploy root directory.
    *
    * @param trajectory The `Trajectory` to write.
-   * @returns `void`
+   * @returns a `ChoreoResult<void>`
    */
   writeTrajectory: (trajectory: Trajectory) =>
-    invoke("write_trajectory", { trajectory }),
+    invoke<ChoreoResult<void>>("write_trajectory", { trajectory }),
   /**
    * Renames the specified `Trajectory` to the specified name.
    *
