@@ -57,7 +57,7 @@ jobs:
         if: startsWith(matrix.os, 'macOS')
 
       - name: Set up sccache
-        uses: mozilla-actions/sccache-action@v0.0.8
+        uses: mozilla-actions/sccache-action@v0.0.9
         # sccache doesn't work with MSBuild
         if: "false" # ${{ !startsWith(matrix.os, 'windows') }}
 
