@@ -67,7 +67,7 @@ option(BUILD_EXAMPLES "Build examples" OFF)
 include(CompilerFlags)
 
 file(GLOB_RECURSE TrajoptLib_src src/*.cpp)
-list(FILTER TrajoptLib_src EXCLUDE REGEX RustFFI.cpp)
+list(FILTER TrajoptLib_src EXCLUDE REGEX rust_ffi.cpp)
 
 add_library(TrajoptLib ${TrajoptLib_src})
 compiler_flags(TrajoptLib)
@@ -103,11 +103,8 @@ set(BUILD_EXAMPLES OFF)
 fetchcontent_declare(
     Sleipnir
     GIT_REPOSITORY https://github.com/SleipnirGroup/Sleipnir
-    # main on 2025-01-14
-    GIT_TAG 742092895f076733f5f9c584e4aae71d86ec5ea1
-    PATCH_COMMAND
-        git apply ${CMAKE_CURRENT_SOURCE_DIR}/cmake/0001-Downgrade-to-C-20.patch
-    UPDATE_DISCONNECTED 1
+    # main on 2025-04-16
+    GIT_TAG 294722035a920ae8c44bb8f562959e892d7861b7
 )
 fetchcontent_makeavailable(Sleipnir)
 

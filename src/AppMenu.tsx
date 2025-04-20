@@ -18,7 +18,8 @@ import {
 } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
-import { dialog, path } from "@tauri-apps/api";
+import { path } from "@tauri-apps/api";
+import { confirm } from "@tauri-apps/plugin-dialog";
 import { observer } from "mobx-react";
 import { Component } from "react";
 import { toast } from "react-toastify";
@@ -42,9 +43,9 @@ class AppMenu extends Component<Props, State> {
   private convertToRelative(filePath: string): string {
     return filePath.replace(
       RegExp(
-        `^(?:C:)?\\${path.sep}(Users|home)\\${path.sep}[a-zA-Z]+\\${path.sep}`
+        `^(?:C:)?\\${path.sep()}(Users|home)\\${path.sep()}[a-zA-Z]+\\${path.sep()}`
       ),
-      "~" + path.sep
+      "~" + path.sep()
     );
   }
 
@@ -163,10 +164,10 @@ class AppMenu extends Component<Props, State> {
             <ListItemButton
               onClick={async () => {
                 if (
-                  await dialog.confirm(
-                    "You may lose unsaved changes. Continue?",
-                    { title: "Choreo", type: "warning" }
-                  )
+                  await confirm("You may lose unsaved changes. Continue?", {
+                    title: "Choreo",
+                    kind: "warning"
+                  })
                 ) {
                   newProject();
                 }
@@ -246,7 +247,7 @@ class AppMenu extends Component<Props, State> {
     return (
       (relativeFormat
         ? this.convertToRelative(uiState.projectDir as string)
-        : uiState.projectDir) + path.sep
+        : uiState.projectDir) + path.sep()
     );
   }
 }

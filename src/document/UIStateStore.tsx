@@ -110,7 +110,7 @@ export const UIStateStore = types
       },
       async updateWindowTitle() {
         await tauriWindow
-          .getCurrent()
+          .getCurrentWindow()
           .setTitle(
             `Choreo ${await getVersion()} - ${self.projectName ?? "Untitled"}`
           )

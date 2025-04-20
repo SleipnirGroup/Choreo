@@ -44,7 +44,7 @@ jobs:
           echo "CXXFLAGS=-stdlib=libc++" >> $GITHUB_ENV
 
       - name: Set up sccache
-        uses: mozilla-actions/sccache-action@v0.0.5
+        uses: mozilla-actions/sccache-action@v0.0.9
 
       - run: cmake --preset with-examples-and-sccache ${{ matrix.cmake-args }}
         working-directory: trajoptlib

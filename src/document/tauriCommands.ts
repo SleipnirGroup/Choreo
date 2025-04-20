@@ -1,4 +1,4 @@
-import { invoke } from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api/core";
 import { Expr, Project, RobotConfig, Trajectory } from "./2025/DocumentTypes";
 import { OpenFilePayload } from "./DocumentManager";
 export type ChoreoError = { type: string; content: string };
