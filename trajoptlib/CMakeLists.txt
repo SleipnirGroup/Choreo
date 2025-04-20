@@ -103,8 +103,8 @@ set(BUILD_EXAMPLES OFF)
 fetchcontent_declare(
     Sleipnir
     GIT_REPOSITORY https://github.com/SleipnirGroup/Sleipnir
-    # main on 2025-01-14
-    GIT_TAG 742092895f076733f5f9c584e4aae71d86ec5ea1
+    # main on 2025-04-16
+    GIT_TAG 294722035a920ae8c44bb8f562959e892d7861b7
 )
 fetchcontent_makeavailable(Sleipnir)
 

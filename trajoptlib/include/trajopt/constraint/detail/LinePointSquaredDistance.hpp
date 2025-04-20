@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <sleipnir/autodiff/Variable.hpp>
+#include <sleipnir/autodiff/variable.hpp>
 
 #include "trajopt/geometry/Translation2.hpp"
 
@@ -16,10 +16,10 @@ decltype(auto) LinePointSquaredDistance(const Translation2<T>& lineStart,
   using R = decltype(std::declval<T>() + std::declval<U>());
 
   auto max = [](R a, R b) {
-    return +0.5 * (1 + sleipnir::sign(b - a)) * (b - a) + a;
+    return +0.5 * (1 + slp::sign(b - a)) * (b - a) + a;
   };
   auto min = [](R a, R b) {
-    return -0.5 * (1 + sleipnir::sign(b - a)) * (b - a) + b;
+    return -0.5 * (1 + slp::sign(b - a)) * (b - a) + b;
   };
   auto Lerp = [](R a, R b, R t) { return a + t * (b - a); };
 

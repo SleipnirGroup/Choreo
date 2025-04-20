@@ -5,8 +5,8 @@
 #include <cassert>
 #include <utility>
 
-#include <sleipnir/autodiff/Variable.hpp>
-#include <sleipnir/optimization/OptimizationProblem.hpp>
+#include <sleipnir/autodiff/variable.hpp>
+#include <sleipnir/optimization/problem.hpp>
 
 #include "trajopt/constraint/detail/LinePointSquaredDistance.hpp"
 #include "trajopt/geometry/Pose2.hpp"
@@ -52,18 +52,18 @@ class TRAJOPT_DLLEXPORT LinePointConstraint {
    * @param linearAcceleration The robot's linear acceleration.
    * @param angularAcceleration The robot's angular acceleration.
    */
-  void Apply(sleipnir::OptimizationProblem& problem, const Pose2v& pose,
+  void Apply(slp::Problem& problem, const Pose2v& pose,
              [[maybe_unused]] const Translation2v& linearVelocity,
-             [[maybe_unused]] const sleipnir::Variable& angularVelocity,
+             [[maybe_unused]] const slp::Variable& angularVelocity,
              [[maybe_unused]] const Translation2v& linearAcceleration,
-             [[maybe_unused]] const sleipnir::Variable& angularAcceleration) {
+             [[maybe_unused]] const slp::Variable& angularAcceleration) {
     auto lineStart =
         pose.Translation() + m_robotLineStart.RotateBy(pose.Rotation());
     auto lineEnd =
         pose.Translation() + m_robotLineEnd.RotateBy(pose.Rotation());
     auto squaredDistance =
         detail::LinePointSquaredDistance(lineStart, lineEnd, m_fieldPoint);
-    problem.SubjectTo(squaredDistance >= m_minDistance * m_minDistance);
+    problem.subject_to(squaredDistance >= m_minDistance * m_minDistance);
   }
 
  private:

@@ -5,8 +5,8 @@
 #include <concepts>
 #include <variant>
 
-#include <sleipnir/autodiff/Variable.hpp>
-#include <sleipnir/optimization/OptimizationProblem.hpp>
+#include <sleipnir/autodiff/variable.hpp>
+#include <sleipnir/optimization/problem.hpp>
 
 #include "trajopt/constraint/AngularVelocityMaxMagnitudeConstraint.hpp"
 #include "trajopt/constraint/LaneConstraint.hpp"
@@ -37,17 +37,16 @@ namespace trajopt {
  * 3. Add the type to Constraint's std::variant type list
  */
 template <typename T>
-concept ConstraintType =
-    requires(T self, sleipnir::OptimizationProblem& problem, const Pose2v& pose,
-             const Translation2v& linearVelocity,
-             const sleipnir::Variable& angularVelocity,
-             const Translation2v& linearAcceleration,
-             const sleipnir::Variable& angularAcceleration) {
-      {
-        self.Apply(problem, pose, linearVelocity, angularVelocity,
-                   linearAcceleration, angularAcceleration)
-      } -> std::same_as<void>;
-    };
+concept ConstraintType = requires(
+    T self, slp::Problem& problem, const Pose2v& pose,
+    const Translation2v& linearVelocity, const slp::Variable& angularVelocity,
+    const Translation2v& linearAcceleration,
+    const slp::Variable& angularAcceleration) {
+  {
+    self.Apply(problem, pose, linearVelocity, angularVelocity,
+               linearAcceleration, angularAcceleration)
+  } -> std::same_as<void>;
+};
 
 static_assert(ConstraintType<AngularVelocityMaxMagnitudeConstraint>);
 static_assert(ConstraintType<LaneConstraint>);
