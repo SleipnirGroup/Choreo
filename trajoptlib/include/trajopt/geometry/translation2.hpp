@@ -45,7 +45,7 @@ class Translation2 {
    */
   template <typename U>
   constexpr Translation2(T distance, const Rotation2<U>& angle)
-      : m_x{distance * angle.Cos()}, m_y{distance * angle.Sin()} {}
+      : m_x{distance * angle.cos()}, m_y{distance * angle.sin()} {}
 
   /**
    * Coerces one translation type into another.
@@ -61,14 +61,14 @@ class Translation2 {
    *
    * @return The x component of the translation.
    */
-  constexpr const T& X() const { return m_x; }
+  constexpr const T& x() const { return m_x; }
 
   /**
    * Returns the y component of the translation.
    *
    * @return The y component of the translation.
    */
-  constexpr const T& Y() const { return m_y; }
+  constexpr const T& y() const { return m_y; }
 
   /**
    * Returns the sum of two translations in 2D space.
@@ -80,7 +80,7 @@ class Translation2 {
   template <typename U>
   constexpr auto operator+(const Translation2<U>& other) const {
     using R = decltype(std::declval<T>() + std::declval<U>());
-    return Translation2<R>{X() + other.X(), Y() + other.Y()};
+    return Translation2<R>{x() + other.x(), y() + other.y()};
   }
 
   /**
@@ -137,10 +137,10 @@ class Translation2 {
    * @return The new rotated translation.
    */
   template <typename U>
-  constexpr auto RotateBy(const Rotation2<U>& other) const {
+  constexpr auto rotate_by(const Rotation2<U>& other) const {
     using R = decltype(std::declval<T>() + std::declval<U>());
-    return Translation2<R>{m_x * other.Cos() - m_y * other.Sin(),
-                           m_x * other.Sin() + m_y * other.Cos()};
+    return Translation2<R>{m_x * other.cos() - m_y * other.sin(),
+                           m_x * other.sin() + m_y * other.cos()};
   }
 
   /**
@@ -148,7 +148,7 @@ class Translation2 {
    *
    * @return The angle of the translation.
    */
-  constexpr Rotation2<T> Angle() const { return Rotation2<T>{m_x, m_y}; }
+  constexpr Rotation2<T> angle() const { return Rotation2<T>{m_x, m_y}; }
 
   /**
    * Returns the dot product between two translations.
@@ -157,9 +157,9 @@ class Translation2 {
    * @return The dot product.
    */
   template <typename U>
-  constexpr auto Dot(const Translation2<U>& other) const {
+  constexpr auto dot(const Translation2<U>& other) const {
     using R = decltype(std::declval<T>() + std::declval<U>());
-    return R{m_x * other.X() + m_y * other.Y()};
+    return R{m_x * other.x() + m_y * other.y()};
   }
 
   /**
@@ -169,9 +169,9 @@ class Translation2 {
    * @return The cross product.
    */
   template <typename U>
-  constexpr auto Cross(const Translation2<U>& other) const {
+  constexpr auto cross(const Translation2<U>& other) const {
     using R = decltype(std::declval<T>() + std::declval<U>());
-    return R{m_x * other.Y() - m_y * other.X()};
+    return R{m_x * other.y() - m_y * other.x()};
   }
 
   /**
@@ -180,7 +180,7 @@ class Translation2 {
    *
    * @return The norm of the translation.
    */
-  constexpr auto Norm() const { return hypot(m_x, m_y); }  // NOLINT
+  constexpr auto norm() const { return hypot(m_x, m_y); }  // NOLINT
 
   /**
    * Returns the squared norm of the translation. This is the sum of squares of
@@ -188,7 +188,7 @@ class Translation2 {
    *
    * @return The squared norm of the translation.
    */
-  constexpr auto SquaredNorm() const { return m_x * m_x + m_y * m_y; }
+  constexpr auto squared_norm() const { return m_x * m_x + m_y * m_y; }
 
   /**
    * Returns the distance between two translations in 2D space.
@@ -199,8 +199,8 @@ class Translation2 {
    * @return The distance between the two translations.
    */
   template <typename U>
-  constexpr auto Distance(const Translation2<U>& other) const {
-    return hypot(other.X() - m_x, other.Y() - m_y);  // NOLINT
+  constexpr auto distance(const Translation2<U>& other) const {
+    return hypot(other.x() - m_x, other.y() - m_y);  // NOLINT
   }
 
  private:
@@ -211,9 +211,9 @@ class Translation2 {
 template <size_t I, typename T>
 constexpr decltype(auto) get(const trajopt::Translation2<T>& translation) {
   if constexpr (I == 0) {
-    return translation.X();
+    return translation.x();
   } else {
-    return translation.Y();
+    return translation.y();
   }
 }
 
@@ -224,12 +224,12 @@ template <typename T, typename U>
   requires std::same_as<T, slp::Variable> || std::same_as<U, slp::Variable>
 slp::EqualityConstraints operator==(const Translation2<T>& lhs,
                                     const Translation2<U>& rhs) {
-  return slp::VariableMatrix{{lhs.X()}, {lhs.Y()}} ==
-         slp::VariableMatrix{{rhs.X()}, {rhs.Y()}};
+  return slp::VariableMatrix{{lhs.x()}, {lhs.y()}} ==
+         slp::VariableMatrix{{rhs.x()}, {rhs.y()}};
 }
 
 inline bool operator==(const Translation2d& lhs, const Translation2d& rhs) {
-  return lhs.X() == rhs.X() && lhs.Y() == rhs.Y();
+  return lhs.x() == rhs.x() && lhs.y() == rhs.y();
 }
 
 }  // namespace trajopt

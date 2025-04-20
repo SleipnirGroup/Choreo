@@ -26,7 +26,7 @@ namespace trajopt {
  */
 struct TRAJOPT_DLLEXPORT KeepOutRegion {
   /// Minimum distance from the keep-out region the robot must maintain.
-  double safetyDistance;
+  double safety_distance;
 
   /// The list of points that make up this keep-out region.
   std::vector<Translation2d> points;
@@ -46,7 +46,7 @@ class TRAJOPT_DLLEXPORT PathBuilder {
    *
    * @param drivetrain the new drivetrain
    */
-  void SetDrivetrain(Drivetrain drivetrain) {
+  void set_drivetrain(Drivetrain drivetrain) {
     path.drivetrain = std::move(drivetrain);
   }
 
@@ -59,8 +59,8 @@ class TRAJOPT_DLLEXPORT PathBuilder {
    * @param right Distance in meters from center to right bumper edge
    * @param back Distance in meters from center to back bumper edge
    */
-  void SetBumpers(double front, double left, double right, double back) {
-    bumpers.emplace_back(trajopt::KeepOutRegion{.safetyDistance = 0.01,
+  void set_bumpers(double front, double left, double right, double back) {
+    bumpers.emplace_back(trajopt::KeepOutRegion{.safety_distance = 0.01,
                                                 .points = {{+front, +left},
                                                            {-back, +left},
                                                            {-back, -right},
@@ -72,7 +72,7 @@ class TRAJOPT_DLLEXPORT PathBuilder {
    *
    * @return a list of bumpers applied to the builder.
    */
-  std::vector<KeepOutRegion>& GetBumpers() { return bumpers; }
+  std::vector<KeepOutRegion>& get_bumpers() { return bumpers; }
 
   /**
    * If using a discrete algorithm, specify the number of discrete
@@ -81,8 +81,8 @@ class TRAJOPT_DLLEXPORT PathBuilder {
    * @param counts the sequence of control interval counts per segment, length
    * is number of waypoints - 1
    */
-  void SetControlIntervalCounts(std::vector<size_t>&& counts) {
-    controlIntervalCounts = std::move(counts);
+  void set_control_interval_counts(std::vector<size_t>&& counts) {
+    control_interval_counts = std::move(counts);
   }
 
   /**
@@ -90,19 +90,19 @@ class TRAJOPT_DLLEXPORT PathBuilder {
    *
    * @return const std::vector<size_t>&
    */
-  const std::vector<size_t>& GetControlIntervalCounts() const {
-    return controlIntervalCounts;
+  const std::vector<size_t>& get_control_interval_counts() const {
+    return control_interval_counts;
   }
 
   /**
    * Provide a guess of the instantaneous pose of the robot at a waypoint.
    *
-   * @param wptIndex the waypoint to apply the guess to
-   * @param poseGuess the guess of the robot's pose
+   * @param wpt_index the waypoint to apply the guess to
+   * @param pose_guess the guess of the robot's pose
    */
-  void WptInitialGuessPoint(size_t wptIndex, const Pose2d& poseGuess) {
-    NewWpts(wptIndex);
-    initialGuessPoints.at(wptIndex).back() = poseGuess;
+  void wpt_initial_guess_point(size_t wpt_index, const Pose2d& pose_guess) {
+    new_wpts(wpt_index);
+    initial_guess_points.at(wpt_index).back() = pose_guess;
   }
 
   /**
@@ -112,17 +112,18 @@ class TRAJOPT_DLLEXPORT PathBuilder {
    * initial guess points is used as the initial guess of the robot's pose over
    * the trajectory.
    *
-   * @param fromIndex index of the waypoint the initial guess point
-   *                 comes immediately after
-   * @param sgmtPoseGuess the sequence of initial guess points
+   * @param from_index index of the waypoint the initial guess point
+   *                   comes immediately after
+   * @param sgmt_pose_guess the sequence of initial guess points
    */
-  void SgmtInitialGuessPoints(size_t fromIndex,
-                              const std::vector<Pose2d>& sgmtPoseGuess) {
-    NewWpts(fromIndex + 1);
-    std::vector<Pose2d>& toInitialGuessPoints =
-        initialGuessPoints.at(fromIndex + 1);
-    toInitialGuessPoints.insert(toInitialGuessPoints.begin(),
-                                sgmtPoseGuess.begin(), sgmtPoseGuess.end());
+  void sgmt_initial_guess_points(size_t from_index,
+                                 const std::vector<Pose2d>& sgmt_pose_guess) {
+    new_wpts(from_index + 1);
+    std::vector<Pose2d>& to_initial_guess_points =
+        initial_guess_points.at(from_index + 1);
+    to_initial_guess_points.insert(to_initial_guess_points.begin(),
+                                   sgmt_pose_guess.begin(),
+                                   sgmt_pose_guess.end());
   }
 
   /**
@@ -136,9 +137,9 @@ class TRAJOPT_DLLEXPORT PathBuilder {
    * @param y the y
    * @param heading the heading
    */
-  void PoseWpt(size_t index, double x, double y, double heading) {
-    WptConstraint(index, PoseEqualityConstraint{x, y, heading});
-    WptInitialGuessPoint(index, {x, y, {heading}});
+  void pose_wpt(size_t index, double x, double y, double heading) {
+    wpt_constraint(index, PoseEqualityConstraint{x, y, heading});
+    wpt_initial_guess_point(index, {x, y, {heading}});
   }
 
   /**
@@ -150,12 +151,12 @@ class TRAJOPT_DLLEXPORT PathBuilder {
    * @param index index of the pose waypoint
    * @param x the x
    * @param y the y
-   * @param headingGuess optionally, an initial guess of the heading
+   * @param heading_guess optionally, an initial guess of the heading
    */
-  void TranslationWpt(size_t index, double x, double y,
-                      double headingGuess = 0.0) {
-    WptConstraint(index, TranslationEqualityConstraint{x, y});
-    WptInitialGuessPoint(index, {x, y, {headingGuess}});
+  void translation_wpt(size_t index, double x, double y,
+                       double heading_guess = 0.0) {
+    wpt_constraint(index, TranslationEqualityConstraint{x, y});
+    wpt_initial_guess_point(index, {x, y, {heading_guess}});
   }
 
   /**
@@ -164,27 +165,27 @@ class TRAJOPT_DLLEXPORT PathBuilder {
    * @param index Index of the waypoint.
    * @param constraint The constraint.
    */
-  void WptConstraint(size_t index, const Constraint& constraint) {
-    NewWpts(index);
-    path.waypoints.at(index).waypointConstraints.push_back(constraint);
+  void wpt_constraint(size_t index, const Constraint& constraint) {
+    new_wpts(index);
+    path.waypoints.at(index).waypoint_constraints.push_back(constraint);
   }
 
   /**
    * Apply a custom constraint to the continuum of state between two waypoints.
    *
-   * @param fromIndex Index of the waypoint at the beginning of the continuum.
-   * @param toIndex Index of the waypoint at the end of the continuum.
+   * @param from_index Index of the waypoint at the beginning of the continuum.
+   * @param to_index Index of the waypoint at the end of the continuum.
    * @param constraint The constraint.
    */
-  void SgmtConstraint(size_t fromIndex, size_t toIndex,
-                      const Constraint& constraint) {
-    assert(fromIndex < toIndex);
+  void sgmt_constraint(size_t from_index, size_t to_index,
+                       const Constraint& constraint) {
+    assert(from_index < to_index);
 
-    NewWpts(toIndex);
-    path.waypoints.at(fromIndex).waypointConstraints.push_back(constraint);
-    for (size_t index = fromIndex + 1; index <= toIndex; ++index) {
-      path.waypoints.at(index).waypointConstraints.push_back(constraint);
-      path.waypoints.at(index).segmentConstraints.push_back(constraint);
+    new_wpts(to_index);
+    path.waypoints.at(from_index).waypoint_constraints.push_back(constraint);
+    for (size_t index = from_index + 1; index <= to_index; ++index) {
+      path.waypoints.at(index).waypoint_constraints.push_back(constraint);
+      path.waypoints.at(index).segment_constraints.push_back(constraint);
     }
   }
 
@@ -198,7 +199,7 @@ class TRAJOPT_DLLEXPORT PathBuilder {
    *     handle passed into Generate().
    *
    */
-  void AddCallback(
+  void add_callback(
       const std::function<void(const Solution& solution, int64_t handle)>
           callback) {
     path.callbacks.push_back(callback);
@@ -209,7 +210,7 @@ class TRAJOPT_DLLEXPORT PathBuilder {
    *
    * @return the path
    */
-  Path<Drivetrain, Solution>& GetPath() { return path; }
+  Path<Drivetrain, Solution>& get_path() { return path; }
 
   /**
    * Calculate a discrete, linear initial guess of the x, y, and heading
@@ -217,9 +218,9 @@ class TRAJOPT_DLLEXPORT PathBuilder {
    *
    * @return the initial guess, as a solution
    */
-  Solution CalculateInitialGuess() const {
-    return GenerateLinearInitialGuess<Solution>(initialGuessPoints,
-                                                controlIntervalCounts);
+  Solution calculate_initial_guess() const {
+    return generate_linear_initial_guess<Solution>(initial_guess_points,
+                                                   control_interval_counts);
   }
 
  protected:
@@ -230,26 +231,26 @@ class TRAJOPT_DLLEXPORT PathBuilder {
   std::vector<KeepOutRegion> bumpers;
 
   /// The initial guess points.
-  std::vector<std::vector<Pose2d>> initialGuessPoints;
+  std::vector<std::vector<Pose2d>> initial_guess_points;
 
   /// The control interval counts.
-  std::vector<size_t> controlIntervalCounts;
+  std::vector<size_t> control_interval_counts;
 
   /**
    * Add new waypoints up to and including the given index.
    *
-   * @param finalIndex The final index.
+   * @param final_index The final index.
    */
-  void NewWpts(size_t finalIndex) {
-    if (finalIndex < path.waypoints.size()) {
+  void new_wpts(size_t final_index) {
+    if (final_index < path.waypoints.size()) {
       return;
     }
 
-    for (size_t i = path.waypoints.size(); i <= finalIndex; ++i) {
+    for (size_t i = path.waypoints.size(); i <= final_index; ++i) {
       path.waypoints.emplace_back();
-      initialGuessPoints.emplace_back(std::vector<Pose2d>{{0.0, 0.0, {0.0}}});
+      initial_guess_points.emplace_back(std::vector<Pose2d>{{0.0, 0.0, {0.0}}});
       if (i != 0) {
-        controlIntervalCounts.push_back(40);
+        control_interval_counts.push_back(40);
       }
     }
   }
