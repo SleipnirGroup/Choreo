@@ -73,11 +73,11 @@ class TRAJOPT_DLLEXPORT LaneConstraint {
    * @param linearAcceleration The robot's linear acceleration.
    * @param angularAcceleration The robot's angular acceleration.
    */
-  void Apply(sleipnir::OptimizationProblem& problem, const Pose2v& pose,
+  void Apply(slp::Problem& problem, const Pose2v& pose,
              const Translation2v& linearVelocity,
-             const sleipnir::Variable& angularVelocity,
+             const slp::Variable& angularVelocity,
              const Translation2v& linearAcceleration,
-             const sleipnir::Variable& angularAcceleration) {
+             const slp::Variable& angularAcceleration) {
     m_topLine.Apply(problem, pose, linearVelocity, angularVelocity,
                     linearAcceleration, angularAcceleration);
     if (m_bottomLine.has_value()) {

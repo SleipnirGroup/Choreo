@@ -8,7 +8,7 @@
 #include <utility>
 
 #include <rust/cxx.h>
-#include <sleipnir/optimization/SolverExitCondition.hpp>
+#include <sleipnir/optimization/solver/exit_status.hpp>
 
 #include "trajopt/DifferentialTrajectoryGenerator.hpp"
 #include "trajopt/SwerveTrajectoryGenerator.hpp"
@@ -20,7 +20,7 @@ static void trycatch(Try&& func, Fail&& fail) noexcept try {
   func();
 } catch (const std::exception& e) {
   fail(e.what());
-} catch (const sleipnir::SolverExitCondition& e) {
+} catch (const slp::ExitStatus& e) {
   fail(std::to_string(std::to_underlying(e)));
 }
 }  // namespace rust::behavior
@@ -100,7 +100,7 @@ class SwerveTrajectoryGenerator {
    */
   void add_callback(rust::Fn<void(SwerveTrajectory, int64_t)> callback);
 
-  // TODO: Return std::expected<SwerveTrajectory, sleipnir::SolverExitCondition>
+  // TODO: Return std::expected<SwerveTrajectory, slp::SolverExitCondition>
   // instead of throwing exception, once cxx supports it
   //
   // https://github.com/dtolnay/cxx/issues/1052
@@ -178,8 +178,8 @@ class DifferentialTrajectoryGenerator {
   void add_callback(rust::Fn<void(DifferentialTrajectory, int64_t)> callback);
 
   // TODO: Return std::expected<DifferentialTrajectory,
-  // sleipnir::SolverExitCondition> instead of throwing exception, once cxx
-  // supports it
+  // slp::SolverExitCondition> instead of throwing exception, once cxx supports
+  // it
   //
   // https://github.com/dtolnay/cxx/issues/1052
   DifferentialTrajectory generate(bool diagnostics = false,

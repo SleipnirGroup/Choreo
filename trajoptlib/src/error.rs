@@ -1,25 +1,25 @@
 use thiserror::Error;
 
 #[derive(Debug, Error)]
-// messages taken from https://github.com/SleipnirGroup/Sleipnir/blob/main/include/sleipnir/optimization/SolverExitCondition.hpp#L47-L78
+// messages taken from https://github.com/SleipnirGroup/Sleipnir/blob/main/include/sleipnir/optimization/solver/exit_status.hpp#L52-L71
 pub enum TrajoptError {
-    #[error("The solver determined the problem to be overconstrained and gave up")]
-    TooFewDOF,
-    #[error("The solver determined the problem to be locally infeasible and gave up")]
+    #[error("Too few degrees of freedom")]
+    TooFewDOFs,
+    #[error("Locally infeasible")]
     LocallyInfeasible,
-    #[error("The solver failed to reach the desired tolerance, and feasibility restoration failed to converge")]
-    FeasibilityRestorationFailed,
-    #[error("The solver encountered nonfinite initial cost or constraints and gave up")]
+    #[error("Factorization failed")]
+    FactorizationFailed,
+    #[error("Line search failed")]
+    LineSearchFailed,
+    #[error("Nonfinite initial cost or constraints")]
     NonfiniteInitialCostOrConstraints,
-    #[error("The solver encountered diverging primal iterates xₖ and/or sₖ and gave up")]
+    #[error("Diverging iterates")]
     DivergingIterates,
-    #[error(
-        "The solver returned its solution so far after exceeding the maximum number of iterations"
-    )]
+    #[error("Max iterations exceeded")]
     MaxIterationsExceeded,
-    #[error("The solver returned its solution so far after exceeding the maximum elapsed wall clock time")]
+    #[error("Timeout")]
     Timeout,
-    #[error("The solver returned an unparsable error code: {0}")]
+    #[error("Unparsable error code: {0}")]
     Unparsable(Box<str>),
     #[error("Unknown error: {0:?}")]
     Unknown(i8),
@@ -28,13 +28,14 @@ pub enum TrajoptError {
 impl From<i8> for TrajoptError {
     fn from(value: i8) -> Self {
         match value {
-            -1 => Self::TooFewDOF,
+            -1 => Self::TooFewDOFs,
             -2 => Self::LocallyInfeasible,
-            -3 => Self::FeasibilityRestorationFailed,
-            -4 => Self::NonfiniteInitialCostOrConstraints,
-            -5 => Self::DivergingIterates,
-            -6 => Self::MaxIterationsExceeded,
-            -7 => Self::Timeout,
+            -3 => Self::FactorizationFailed,
+            -4 => Self::LineSearchFailed,
+            -5 => Self::NonfiniteInitialCostOrConstraints,
+            -6 => Self::DivergingIterates,
+            -7 => Self::MaxIterationsExceeded,
+            -8 => Self::Timeout,
             _ => Self::Unknown(value),
         }
     }
