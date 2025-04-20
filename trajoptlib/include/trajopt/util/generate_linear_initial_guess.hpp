@@ -15,131 +15,138 @@ struct DifferentialSolution;
 
 // TODO: Replace with std::vector.append_range() from C++23
 template <typename T>
-inline void append_range(std::vector<T>& base, const std::vector<T>& newItems) {
-  base.insert(base.end(), newItems.begin(), newItems.end());
+inline void append_range(std::vector<T>& base,
+                         const std::vector<T>& new_items) {
+  base.insert(base.end(), new_items.begin(), new_items.end());
 }
 
 template <typename Solution>
-inline Solution GenerateLinearInitialGuess(
-    const std::vector<std::vector<Pose2d>>& initialGuessPoints,
-    const std::vector<size_t> controlIntervalCounts) {
-  size_t wptCnt = controlIntervalCounts.size() + 1;
-  size_t sampTot = GetIndex(controlIntervalCounts, wptCnt - 1, 0) + 1;
+inline Solution generate_linear_initial_guess(
+    const std::vector<std::vector<Pose2d>>& initial_guess_points,
+    const std::vector<size_t> control_interval_counts) {
+  size_t wpt_cnt = control_interval_counts.size() + 1;
+  size_t samp_tot = get_index(control_interval_counts, wpt_cnt - 1, 0) + 1;
 
-  Solution initialGuess;
+  Solution initial_guess;
 
-  initialGuess.x.reserve(sampTot);
-  initialGuess.y.reserve(sampTot);
+  initial_guess.x.reserve(samp_tot);
+  initial_guess.y.reserve(samp_tot);
   if constexpr (std::same_as<Solution, DifferentialSolution>) {
-    initialGuess.heading.reserve(sampTot);
+    initial_guess.heading.reserve(samp_tot);
   } else {
-    initialGuess.thetacos.reserve(sampTot);
-    initialGuess.thetasin.reserve(sampTot);
+    initial_guess.thetacos.reserve(samp_tot);
+    initial_guess.thetasin.reserve(samp_tot);
   }
 
-  initialGuess.dt.reserve(sampTot);
+  initial_guess.dt.reserve(samp_tot);
 
-  initialGuess.x.push_back(initialGuessPoints.front().front().X());
-  initialGuess.y.push_back(initialGuessPoints.front().front().Y());
+  initial_guess.x.push_back(initial_guess_points.front().front().x());
+  initial_guess.y.push_back(initial_guess_points.front().front().y());
   if constexpr (std::same_as<Solution, DifferentialSolution>) {
-    initialGuess.heading.push_back(
-        initialGuessPoints.front().front().Rotation().Radians());
+    initial_guess.heading.push_back(
+        initial_guess_points.front().front().rotation().radians());
   } else {
-    initialGuess.thetacos.push_back(
-        initialGuessPoints.front().front().Rotation().Cos());
-    initialGuess.thetasin.push_back(
-        initialGuessPoints.front().front().Rotation().Sin());
+    initial_guess.thetacos.push_back(
+        initial_guess_points.front().front().rotation().cos());
+    initial_guess.thetasin.push_back(
+        initial_guess_points.front().front().rotation().sin());
   }
 
-  for (size_t i = 0; i < sampTot; ++i) {
-    initialGuess.dt.push_back((wptCnt * 5.0) / sampTot);
+  for (size_t i = 0; i < samp_tot; ++i) {
+    initial_guess.dt.push_back((wpt_cnt * 5.0) / samp_tot);
   }
 
-  for (size_t wptIndex = 1; wptIndex < wptCnt; ++wptIndex) {
-    size_t N_sgmt = controlIntervalCounts.at(wptIndex - 1);
-    size_t guessPointCount = initialGuessPoints.at(wptIndex).size();
-    size_t N_guessSgmt = N_sgmt / guessPointCount;
+  for (size_t wpt_index = 1; wpt_index < wpt_cnt; ++wpt_index) {
+    size_t N_sgmt = control_interval_counts.at(wpt_index - 1);
+    size_t guess_point_count = initial_guess_points.at(wpt_index).size();
+    size_t N_guess_sgmt = N_sgmt / guess_point_count;
     append_range(
-        initialGuess.x,
-        Linspace(initialGuessPoints.at(wptIndex - 1).back().X(),
-                 initialGuessPoints.at(wptIndex).front().X(), N_guessSgmt));
+        initial_guess.x,
+        linspace(initial_guess_points.at(wpt_index - 1).back().x(),
+                 initial_guess_points.at(wpt_index).front().x(), N_guess_sgmt));
     append_range(
-        initialGuess.y,
-        Linspace(initialGuessPoints.at(wptIndex - 1).back().Y(),
-                 initialGuessPoints.at(wptIndex).front().Y(), N_guessSgmt));
-    auto wptThetas = AngleLinspace(
-        initialGuessPoints.at(wptIndex - 1).back().Rotation().Radians(),
-        initialGuessPoints.at(wptIndex).front().Rotation().Radians(),
-        N_guessSgmt);
-    for (auto theta : wptThetas) {
+        initial_guess.y,
+        linspace(initial_guess_points.at(wpt_index - 1).back().y(),
+                 initial_guess_points.at(wpt_index).front().y(), N_guess_sgmt));
+    auto wpt_thetas = angle_linspace(
+        initial_guess_points.at(wpt_index - 1).back().rotation().radians(),
+        initial_guess_points.at(wpt_index).front().rotation().radians(),
+        N_guess_sgmt);
+    for (auto theta : wpt_thetas) {
       if constexpr (std::same_as<Solution, DifferentialSolution>) {
-        initialGuess.heading.push_back(theta);
+        initial_guess.heading.push_back(theta);
       } else {
-        initialGuess.thetacos.push_back(std::cos(theta));
-        initialGuess.thetasin.push_back(std::sin(theta));
+        initial_guess.thetacos.push_back(std::cos(theta));
+        initial_guess.thetasin.push_back(std::sin(theta));
       }
     }
-    for (size_t guessPointIndex = 1; guessPointIndex < guessPointCount - 1;
-         ++guessPointIndex) {  // if three or more guess points
+    for (size_t guess_point_index = 1;
+         guess_point_index < guess_point_count - 1;
+         ++guess_point_index) {  // if three or more guess points
       append_range(
-          initialGuess.x,
-          Linspace(initialGuessPoints.at(wptIndex).at(guessPointIndex - 1).X(),
-                   initialGuessPoints.at(wptIndex).at(guessPointIndex).X(),
-                   N_guessSgmt));
+          initial_guess.x,
+          linspace(
+              initial_guess_points.at(wpt_index).at(guess_point_index - 1).x(),
+              initial_guess_points.at(wpt_index).at(guess_point_index).x(),
+              N_guess_sgmt));
       append_range(
-          initialGuess.y,
-          Linspace(initialGuessPoints.at(wptIndex).at(guessPointIndex - 1).Y(),
-                   initialGuessPoints.at(wptIndex).at(guessPointIndex).Y(),
-                   N_guessSgmt));
-      auto guessThetas = AngleLinspace(initialGuessPoints.at(wptIndex)
-                                           .at(guessPointIndex - 1)
-                                           .Rotation()
-                                           .Radians(),
-                                       initialGuessPoints.at(wptIndex)
-                                           .at(guessPointIndex)
-                                           .Rotation()
-                                           .Radians(),
-                                       N_guessSgmt);
-      for (auto theta : guessThetas) {
+          initial_guess.y,
+          linspace(
+              initial_guess_points.at(wpt_index).at(guess_point_index - 1).y(),
+              initial_guess_points.at(wpt_index).at(guess_point_index).y(),
+              N_guess_sgmt));
+      auto guess_thetas = angle_linspace(initial_guess_points.at(wpt_index)
+                                             .at(guess_point_index - 1)
+                                             .rotation()
+                                             .radians(),
+                                         initial_guess_points.at(wpt_index)
+                                             .at(guess_point_index)
+                                             .rotation()
+                                             .radians(),
+                                         N_guess_sgmt);
+      for (auto theta : guess_thetas) {
         if constexpr (std::same_as<Solution, DifferentialSolution>) {
-          initialGuess.heading.push_back(theta);
+          initial_guess.heading.push_back(theta);
         } else {
-          initialGuess.thetacos.push_back(std::cos(theta));
-          initialGuess.thetasin.push_back(std::sin(theta));
+          initial_guess.thetacos.push_back(std::cos(theta));
+          initial_guess.thetasin.push_back(std::sin(theta));
         }
       }
     }
-    if (guessPointCount > 1) {  // if two or more guess points
-      size_t N_lastGuessSgmt = N_sgmt - (guessPointCount - 1) * N_guessSgmt;
+    if (guess_point_count > 1) {  // if two or more guess points
+      size_t N_last_guess_sgmt =
+          N_sgmt - (guess_point_count - 1) * N_guess_sgmt;
       append_range(
-          initialGuess.x,
-          Linspace(initialGuessPoints.at(wptIndex).at(guessPointCount - 2).X(),
-                   initialGuessPoints.at(wptIndex).back().X(),
-                   N_lastGuessSgmt));
+          initial_guess.x,
+          linspace(
+              initial_guess_points.at(wpt_index).at(guess_point_count - 2).x(),
+              initial_guess_points.at(wpt_index).back().x(),
+              N_last_guess_sgmt));
       append_range(
-          initialGuess.y,
-          Linspace(initialGuessPoints.at(wptIndex).at(guessPointCount - 2).Y(),
-                   initialGuessPoints.at(wptIndex).back().Y(),
-                   N_lastGuessSgmt));
-      auto lastThetas = AngleLinspace(
-          initialGuessPoints.at(wptIndex)
-              .at(guessPointCount - 2)
-              .Rotation()
-              .Radians(),
-          initialGuessPoints.at(wptIndex).back().Rotation().Radians(),
-          N_lastGuessSgmt);
-      for (auto theta : lastThetas) {
+          initial_guess.y,
+          linspace(
+              initial_guess_points.at(wpt_index).at(guess_point_count - 2).y(),
+              initial_guess_points.at(wpt_index).back().y(),
+              N_last_guess_sgmt));
+      auto last_thetas = angle_linspace(
+          initial_guess_points.at(wpt_index)
+              .at(guess_point_count - 2)
+              .rotation()
+              .radians(),
+          initial_guess_points.at(wpt_index).back().rotation().radians(),
+          N_last_guess_sgmt);
+      for (auto theta : last_thetas) {
         if constexpr (std::same_as<Solution, DifferentialSolution>) {
-          initialGuess.heading.push_back(theta);
+          initial_guess.heading.push_back(theta);
         } else {
-          initialGuess.thetacos.push_back(std::cos(theta));
-          initialGuess.thetasin.push_back(std::sin(theta));
+          initial_guess.thetacos.push_back(std::cos(theta));
+          initial_guess.thetasin.push_back(std::sin(theta));
         }
       }
     }
   }
 
-  return initialGuess;
+  return initial_guess;
 }
 
 }  // namespace trajopt

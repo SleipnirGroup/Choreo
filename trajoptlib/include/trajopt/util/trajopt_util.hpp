@@ -15,14 +15,14 @@ namespace trajopt {
  * sample point ("dt" does not, "x" does).
  *
  * @param N The control interval counts of each segment, in order.
- * @param wptIndex The waypoint index, 0 indexed.
- * @param sampleIndex The sample index within the segment, 0 indexed.
+ * @param wpt_index The waypoint index, 0 indexed.
+ * @param sample_index The sample index within the segment, 0 indexed.
  * @return The index in the array.
  */
-inline size_t GetIndex(const std::vector<size_t>& N, size_t wptIndex,
-                       size_t sampleIndex = 0) {
-  return std::accumulate(N.begin(), N.begin() + wptIndex, size_t{0}) +
-         sampleIndex;
+inline size_t get_index(const std::vector<size_t>& N, size_t wpt_index,
+                        size_t sample_index = 0) {
+  return std::accumulate(N.begin(), N.begin() + wpt_index, size_t{0}) +
+         sample_index;
 }
 
 /**
@@ -31,15 +31,15 @@ inline size_t GetIndex(const std::vector<size_t>& N, size_t wptIndex,
  *
  * @param start The initial value exclusive.
  * @param end The final value exclusive.
- * @param numSamples The number of samples in the vector.
+ * @param num_samples The number of samples in the vector.
  * @return A vector of linearly spaced elements between start exclusive and end
  *     inclusive.
  */
-inline std::vector<double> Linspace(double start, double end,
-                                    size_t numSamples) {
+inline std::vector<double> linspace(double start, double end,
+                                    size_t num_samples) {
   std::vector<double> result;
-  double delta = (end - start) / numSamples;
-  for (size_t i = 1; i <= numSamples; ++i) {
+  double delta = (end - start) / num_samples;
+  for (size_t i = 1; i <= num_samples; ++i) {
     result.push_back(start + i * delta);
   }
   return result;
@@ -48,20 +48,20 @@ inline std::vector<double> Linspace(double start, double end,
 /**
  * Returns modulus of input.
  *
- * @param input        Input value to wrap.
- * @param minimumInput The minimum value expected from the input.
- * @param maximumInput The maximum value expected from the input.
+ * @param input         Input value to wrap.
+ * @param minimum_input The minimum value expected from the input.
+ * @param maximum_input The maximum value expected from the input.
  */
-constexpr double InputModulus(double input, double minimumInput,
-                              double maximumInput) {
-  double modulus = maximumInput - minimumInput;
+constexpr double input_modulus(double input, double minimum_input,
+                               double maximum_input) {
+  double modulus = maximum_input - minimum_input;
 
   // Wrap input if it's above the maximum input
-  int numMax = (input - minimumInput) / modulus;
+  int numMax = (input - minimum_input) / modulus;
   input -= numMax * modulus;
 
   // Wrap input if it's below the minimum input
-  int numMin = (input - maximumInput) / modulus;
+  int numMin = (input - maximum_input) / modulus;
   input -= numMin * modulus;
 
   return input;
@@ -72,8 +72,8 @@ constexpr double InputModulus(double input, double minimumInput,
  *
  * @param angle Angle to wrap in radians.
  */
-constexpr double AngleModulus(double angle) {
-  return InputModulus(angle, -std::numbers::pi, std::numbers::pi);
+constexpr double angle_modulus(double angle) {
+  return input_modulus(angle, -std::numbers::pi, std::numbers::pi);
 }
 
 /**
@@ -82,13 +82,13 @@ constexpr double AngleModulus(double angle) {
  *
  * @param start The initial value exclusive.
  * @param end The final value exclusive.
- * @param numSamples The number of samples in the vector.
+ * @param num_samples The number of samples in the vector.
  * @return A vector of linearly spaced elements between start exclusive and end
  *     inclusive.
  */
-inline std::vector<double> AngleLinspace(double start, double end,
-                                         size_t numSamples) {
-  return Linspace(start, start + AngleModulus(end - start), numSamples);
+inline std::vector<double> angle_linspace(double start, double end,
+                                          size_t num_samples) {
+  return linspace(start, start + angle_modulus(end - start), num_samples);
 }
 
 /**
@@ -99,8 +99,8 @@ inline std::vector<double> AngleLinspace(double start, double end,
  * @param velocity The profile's maximum velocity.
  * @param acceleration The profile's maximum acceleration.
  */
-inline double CalculateTrapezoidalTime(double distance, double velocity,
-                                       double acceleration) {
+inline double calculate_trapezoidal_time(double distance, double velocity,
+                                         double acceleration) {
   if (distance > ((velocity * velocity) / acceleration)) {
     // Velocity profile is shaped like a trapezoid
     return distance / velocity + velocity / acceleration;

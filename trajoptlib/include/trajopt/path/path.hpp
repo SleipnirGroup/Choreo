@@ -17,10 +17,10 @@ namespace trajopt {
  */
 struct TRAJOPT_DLLEXPORT Waypoint {
   /// Instantaneous constraints at the waypoint.
-  std::vector<Constraint> waypointConstraints;
+  std::vector<Constraint> waypoint_constraints;
 
   /// Continuous constraints along the segment.
-  std::vector<Constraint> segmentConstraints;
+  std::vector<Constraint> segment_constraints;
 };
 
 /**

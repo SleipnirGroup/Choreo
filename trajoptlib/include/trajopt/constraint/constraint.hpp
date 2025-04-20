@@ -39,12 +39,12 @@ namespace trajopt {
 template <typename T>
 concept ConstraintType = requires(
     T self, slp::Problem& problem, const Pose2v& pose,
-    const Translation2v& linearVelocity, const slp::Variable& angularVelocity,
-    const Translation2v& linearAcceleration,
-    const slp::Variable& angularAcceleration) {
+    const Translation2v& linear_velocity, const slp::Variable& angular_velocity,
+    const Translation2v& linear_acceleration,
+    const slp::Variable& angular_acceleration) {
   {
-    self.Apply(problem, pose, linearVelocity, angularVelocity,
-               linearAcceleration, angularAcceleration)
+    self.apply(problem, pose, linear_velocity, angular_velocity,
+               linear_acceleration, angular_acceleration)
   } -> std::same_as<void>;
 };
 
