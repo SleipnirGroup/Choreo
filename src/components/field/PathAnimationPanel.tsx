@@ -29,7 +29,7 @@ class PathAnimationPanel extends Component<Props, State> {
   onStart() {
     this.then = Date.now();
     this.setState({ running: true });
-    if (Math.abs(this.totalTime - uiState.pathAnimationTimestamp) < 0.1) {
+    if (Math.abs(this.totalTime - uiState.pathAnimationTimestamp) < 0.05) {
       uiState.setPathAnimationTimestamp(0);
     }
     window.cancelAnimationFrame(this.timerId);

@@ -4,68 +4,7 @@
 
 #include <algorithm>
 
-#include <wpi/MathExtras.h>
 #include <wpi/json.h>
-
-#include "choreo/trajectory/TrajectorySample.h"
-
-using namespace choreo;
-
-units::second_t SwerveSample::GetTimestamp() const {
-  return timestamp;
-}
-
-frc::Pose2d SwerveSample::GetPose() const {
-  return frc::Pose2d{x, y, frc::Rotation2d{heading}};
-}
-
-frc::ChassisSpeeds SwerveSample::GetChassisSpeeds() const {
-  return frc::ChassisSpeeds{vx, vy, omega};
-}
-
-SwerveSample SwerveSample::OffsetBy(units::second_t timeStampOffset) const {
-  return SwerveSample{timestamp + timeStampOffset,
-                      x,
-                      y,
-                      heading,
-                      vx,
-                      vy,
-                      omega,
-                      ax,
-                      ay,
-                      alpha,
-                      moduleForcesX,
-                      moduleForcesY};
-}
-
-SwerveSample SwerveSample::Interpolate(const SwerveSample& endValue,
-                                       units::second_t t) const {
-  units::scalar_t scale = (t - timestamp) / (endValue.timestamp - timestamp);
-  frc::Pose2d interpolatedPose =
-      frc::Interpolate(GetPose(), endValue.GetPose(), scale.value());
-
-  std::array<units::newton_t, 4> interpolatedForcesX;
-  std::array<units::newton_t, 4> interpolatedForcesY;
-  for (int i = 0; i < 4; i++) {
-    interpolatedForcesX[i] =
-        wpi::Lerp(moduleForcesX[i], endValue.moduleForcesX[i], scale.value());
-    interpolatedForcesY[i] =
-        wpi::Lerp(moduleForcesY[i], endValue.moduleForcesY[i], scale.value());
-  }
-
-  return SwerveSample{wpi::Lerp(timestamp, endValue.timestamp, scale),
-                      interpolatedPose.X(),
-                      interpolatedPose.Y(),
-                      interpolatedPose.Rotation().Radians(),
-                      wpi::Lerp(vx, endValue.vx, scale),
-                      wpi::Lerp(vy, endValue.vy, scale),
-                      wpi::Lerp(omega, endValue.omega, scale),
-                      wpi::Lerp(ax, endValue.ax, scale),
-                      wpi::Lerp(ay, endValue.ay, scale),
-                      wpi::Lerp(alpha, endValue.alpha, scale),
-                      interpolatedForcesX,
-                      interpolatedForcesY};
-}
 
 void choreo::to_json(wpi::json& json, const SwerveSample& trajectorySample) {
   std::array<double, 4> fx;

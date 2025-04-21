@@ -28,10 +28,10 @@ class FieldConstraintsAddLayer extends Component<Props, State> {
               stroke="white"
               strokeWidth={0.05}
               onClick={() => {
-                const newMarker = activePath.trajectory.addEventMarker();
+                const newMarker = activePath.addEventMarker();
 
-                newMarker.setTarget({ uuid: point.uuid });
-                // TODO Directly set target index if trajectory not stale
+                newMarker.from.setTarget({ uuid: point.uuid });
+                // TODO set direct timestamp if trajectory not stale
                 doc.setSelectedSidebarItem(newMarker);
               }}
             ></circle>

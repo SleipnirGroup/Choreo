@@ -9,7 +9,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 use std::{fs, thread};
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 use tracing_appender::non_blocking::WorkerGuard;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -181,14 +181,17 @@ pub fn run_tauri(project: Option<PathBuf>) {
     let writing_resources = WritingResources::new();
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_os::init())
         .setup(move |app| {
             app.app_handle().manage(writing_resources);
             app.app_handle().manage(remote_resources);
 
-            let progress_emitter = app.handle();
+            let progress_emitter = app.handle().clone();
             let _ = thread::spawn(move || {
                 for received in rx {
-                    let _ = progress_emitter.emit_all(
+                    let _ = progress_emitter.emit(
                         &format!("solver-status-{}", received.handle),
                         received.update,
                     );
@@ -207,6 +210,7 @@ pub fn run_tauri(project: Option<PathBuf>) {
             open_project_dialog,
             read_trajectory,
             rename_trajectory,
+            trajectory_up_to_date,
             set_deploy_root,
             get_deploy_root,
             requested_file,

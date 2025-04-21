@@ -25,6 +25,7 @@ dist-ssr
 *.sw?
 
 # Choreo
+src-tauri/gen
 src-tauri/target
 target
 
@@ -52,3 +53,4 @@ CMakeUserPresets.json
 
 build/
 cli/
+test-tmp*/

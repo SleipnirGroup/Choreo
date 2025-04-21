@@ -6,19 +6,14 @@ import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer/TableContainer";
 import TableRow from "@mui/material/TableRow/TableRow";
-import { type } from "@tauri-apps/api/os";
+import { type } from "@tauri-apps/plugin-os";
 import { Component } from "react";
 
 type Props = object;
 
 type State = object;
 
-let isMac = false;
-// We don't want to block during the imports stage, especially
-// if type() somehow fails.
-type().then((type) => {
-  isMac = type == "Darwin";
-});
+const isMac = type() == "macos";
 // These default to the Mac ⌘ key because it's easier to replace with Ctrl than vice versa
 // All descriptions should be like "Rotate" or "Select", not "Selects"
 const shortcuts = {

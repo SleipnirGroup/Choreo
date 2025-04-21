@@ -19,6 +19,12 @@ import {
 } from "./UIData";
 import { tracing } from "./tauriTracing";
 
+export enum SavingState {
+  SAVED = "saved",
+  SAVING = "saving",
+  ERROR = "error",
+  NO_LOCATION = "noLocation"
+}
 export const UIStateStore = types
   .model("UIStateStore", {
     //The transform matrix between mouse event clientX/Y and field coordinates
@@ -31,6 +37,10 @@ export const UIStateStore = types
     fieldScalingFactor: 0.02,
     projectName: types.maybe(types.string),
     projectDir: types.maybe(types.string),
+    projectSaveTime: types.maybe(types.Date),
+    projectSavingState: types.enumeration<SavingState>(
+      Object.values(SavingState)
+    ),
     waypointPanelOpen: false,
     isViewOptionsPanelOpen: false,
     robotConfigOpen: false,
@@ -100,7 +110,7 @@ export const UIStateStore = types
       },
       async updateWindowTitle() {
         await tauriWindow
-          .getCurrent()
+          .getCurrentWindow()
           .setTitle(
             `Choreo ${await getVersion()} - ${self.projectName ?? "Untitled"}`
           )
@@ -125,6 +135,12 @@ export const UIStateStore = types
     },
     toggleMainMenu() {
       self.mainMenuOpen = !self.mainMenuOpen;
+    },
+    setProjectSavingState(state: SavingState) {
+      self.projectSavingState = state;
+    },
+    setProjectSavingTime(time: Date | undefined) {
+      self.projectSaveTime = time;
     },
     setFieldScalingFactor(metersPerPixel: number) {
       self.fieldScalingFactor = metersPerPixel;
@@ -176,7 +192,7 @@ export const UIStateStore = types
     loadPathGradientFromLocalStorage() {
       self.selectedPathGradient =
         localStorage.getItem(LocalStorageKeys.PATH_GRADIENT) ??
-        PathGradients.Velocity.name;
+        PathGradients.LinearVelocity.name;
     },
     setContextMenuSelectedWaypoint(waypointIndex: number | undefined) {
       self.contextMenuSelectedWaypoint = waypointIndex;

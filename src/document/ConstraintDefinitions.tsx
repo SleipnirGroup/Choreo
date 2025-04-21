@@ -9,6 +9,7 @@ import {
 import { JSXElementConstructor, ReactElement } from "react";
 import { Expr } from "./2025/DocumentTypes";
 import { Dimension, DimensionName, Dimensions } from "./ExpressionStore";
+import KeepInLane from "../assets/KeepInLane";
 
 export type ConstraintPropertyType = Expr | boolean;
 
@@ -35,8 +36,6 @@ export type ConstraintDefinition<
   sgmtScope: boolean;
   properties: PropertyDefinitionList<D["props"]>;
 };
-
-export type WaypointID = "first" | "last" | { uuid: string };
 
 // Constraints
 interface IConstraintData<name, Props extends DataPropsList> {
@@ -67,6 +66,9 @@ export type ConstraintDataTypeMap = {
     y: Expr;
     w: Expr;
     h: Expr;
+  };
+  KeepInLane: {
+    tolerance: Expr;
   };
   KeepOutCircle: {
     x: Expr;
@@ -190,19 +192,19 @@ export const ConstraintDefinitions: defs = {
     properties: {
       x: {
         name: "X",
-        description: "The x coordinate of the center of the keep in zone",
+        description: "The x coordinate of the center of the keep-in region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "0 m", val: 0 }
       },
       y: {
         name: "Y",
-        description: "The y coordinate of the center of the keep in zone",
+        description: "The y coordinate of the center of the keep-in region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "0 m", val: 0 }
       },
       r: {
         name: "R",
-        description: "The radius of the keep in zone",
+        description: "The radius of the keep-in region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "1 m", val: 1 }
       }
@@ -219,25 +221,27 @@ export const ConstraintDefinitions: defs = {
     properties: {
       x: {
         name: "X",
-        description: "The x coordinate of the bottom left of the keep in zone",
+        description:
+          "The x coordinate of the bottom left of the keep-in region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "0 m", val: 0 }
       },
       y: {
         name: "Y",
-        description: "The y coordinate of the bottom left of the keep in zone",
+        description:
+          "The y coordinate of the bottom left of the keep-in region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "0 m", val: 0 }
       },
       w: {
         name: "W",
-        description: "The width of the keep in zone",
+        description: "The width of the keep-in region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "1 m", val: 1 }
       },
       h: {
         name: "H",
-        description: "The height of the keep in zone",
+        description: "The height of the keep-in region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "1 m", val: 1 }
       }
@@ -245,6 +249,23 @@ export const ConstraintDefinitions: defs = {
     wptScope: true,
     sgmtScope: true
   } satisfies ConstraintDefinition<"KeepInRectangle">,
+  KeepInLane: {
+    type: "KeepInLane" as const,
+    name: "Keep In Lane",
+    shortName: "Keep In Lane",
+    description: "Keep the robot's center within a lane",
+    icon: <KeepInLane />,
+    properties: {
+      tolerance: {
+        name: "Tolerance",
+        description: "Robot center max distance from line between waypoints",
+        dimension: Dimensions.Length,
+        defaultVal: { exp: "0.01 m", val: 0.01 }
+      }
+    },
+    wptScope: false,
+    sgmtScope: true
+  } satisfies ConstraintDefinition<"KeepInLane">,
   KeepOutCircle: {
     type: "KeepOutCircle" as const,
     name: "Keep Out Circle",
@@ -254,19 +275,19 @@ export const ConstraintDefinitions: defs = {
     properties: {
       x: {
         name: "X",
-        description: "The x coordinate of the center of the keep out zone",
+        description: "The x coordinate of the center of the keep-out region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "0 m", val: 0 }
       },
       y: {
         name: "Y",
-        description: "The y coordinate of the center of the keep out zone",
+        description: "The y coordinate of the center of the keep-out region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "0 m", val: 0 }
       },
       r: {
         name: "R",
-        description: "The radius of the keep out zone",
+        description: "The radius of the keep-out region",
         dimension: Dimensions.Length,
         defaultVal: { exp: "1 m", val: 1 }
       }

@@ -2,21 +2,26 @@
 
 #pragma once
 
+#include <array>
 #include <numbers>
+#include <utility>
 
-#include <frc/geometry/Pose2d.h>
-#include <units/base.h>
+#include <units/angle.h>
+#include <units/length.h>
 
+#include "choreo/util/FieldDimensions.h"
 #include "choreo/util/Map.h"
 
 namespace choreo::util {
 
-static constexpr units::meter_t fieldLength = 16.5811_m;
-static constexpr units::meter_t fieldWidth = 8.19912_m;
-
 enum class FlipperType { Mirrored, RotateAround };
 
+/**
+ * X becomes fieldLength - x, leaves the y coordinate unchanged, and heading
+ * becomes pi - heading.
+ */
 struct MirroredFlipper {
+  /// Whether pose should be mirrored.
   static constexpr bool isMirrored = true;
 
   /**
@@ -48,7 +53,12 @@ struct MirroredFlipper {
   }
 };
 
+/**
+ * X becomes fieldLength - x, Y becomes fieldWidth - y, and heading becomes pi -
+ * heading.
+ */
 struct RotateAroundFlipper {
+  /// Whether pose should be mirrored.
   static constexpr bool isMirrored = false;
 
   /**
@@ -78,17 +88,17 @@ struct RotateAroundFlipper {
    * @return The flipped heading.
    */
   static constexpr units::radian_t FlipHeading(units::radian_t heading) {
-    return units::radian_t{std::numbers::pi} - heading;
+    return units::radian_t{std::numbers::pi} + heading;
   }
 };
 
-inline constexpr Map flipperMap{std::array{
-    std::pair{2022, FlipperType::RotateAround},
-    std::pair{2023, FlipperType::Mirrored},
-    std::pair{2024, FlipperType::Mirrored},
-}};
+inline constexpr Map flipperMap{
+    std::array{std::pair{2022, FlipperType::RotateAround},
+               std::pair{2023, FlipperType::Mirrored},
+               std::pair{2024, FlipperType::Mirrored},
+               std::pair{2025, FlipperType::RotateAround}}};
 
-inline constexpr int kDefaultYear = 2024;
+inline constexpr int kDefaultYear = 2025;
 
 /**
  * A utility to standardize flipping of coordinate data based on the current
@@ -97,7 +107,7 @@ inline constexpr int kDefaultYear = 2024;
  * Grabs the instance of the flipper for the supplied template parameter. Will
  * not compile if an invalid year is supplied.
  *
- * @tparam Year The field year (default: the current year).
+ * @tparam Year The field year. Defaults to the current year.
  */
 template <int Year = kDefaultYear>
 constexpr auto GetFlipperForYear() {

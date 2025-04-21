@@ -1,3 +1,5 @@
+# Building Choreo
+
 ## Dependencies
 
 ### Requirements for Windows
@@ -8,12 +10,12 @@
 ### Requirements for macOS
 
 - [node](https://nodejs.org/en/download/), [pnpm](https://pnpm.io/installation), [Rust](https://www.rust-lang.org/tools/install) ≥ 1.70.0, [CMake](https://cmake.org/download) ≥ 3.21, [Git](https://git-scm.com/)
-- Xcode ≥ 15.0.1 command-line tools via `xcode-select --install`
+- Xcode ≥ 15.3 command-line tools via `xcode-select --install`
 
 ### Requirements for Linux
 
 - [node](https://nodejs.org/en/download/), [pnpm](https://pnpm.io/installation), [Rust](https://www.rust-lang.org/tools/install) ≥ 1.70.0, [CMake](https://cmake.org/download) ≥ 3.21, [Git](https://git-scm.com/)
-- GCC ≥ 11 via `sudo apt install gcc`
+- GCC ≥ 14 via `sudo apt install gcc`
 - Tauri dependencies (see [here](https://tauri.app/v1/guides/getting-started/prerequisites/#setting-up-linux)).
 
 ## Recommended IDE for Tauri
@@ -79,7 +81,7 @@ target = "<target>"
 - ⚛️ [React](https://react.dev/): Frontend UI framework (TypeScript)
 - ⚡️ [Vite](https://vitejs.dev/): Frontend build system (TypeScript)
 - 🖥️ [Tauri](https://tauri.app/): Desktop application framework and backend (Rust)
-- 🚗 [TrajoptLib](trajoptlib): Generates trajectories with Sleipnir (C++, Rust)
+- 🚗 [TrajoptLib](https://github.com/SleipnirGroup/Choreo/tree/main/trajoptlib): Generates trajectories with Sleipnir (C++, Rust)
 - 📈 [Sleipnir](https://github.com/SleipnirGroup/Sleipnir): Numerical optimizer (C++)
 
 ### Formatters/linters

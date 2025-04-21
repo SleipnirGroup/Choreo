@@ -16,33 +16,49 @@ jobs:
         include:
           - artifact-name: Windows-x86_64
             os: windows-2022
-            tauri-build-flags: --target x86_64-pc-windows-msvc -v -- --workspace
+            tauri-build-flags: --target x86_64-pc-windows-msvc -v -- --workspace --timings
 
           - artifact-name: Windows-aarch64
             os: windows-2022
-            tauri-build-flags: --target aarch64-pc-windows-msvc -v -- --workspace
+            tauri-build-flags: --target aarch64-pc-windows-msvc -v -- --workspace --timings
 
           - artifact-name: macOS-x86_64
             os: macOS-14
-            tauri-build-flags: --target x86_64-apple-darwin -v -- --workspace
+            tauri-build-flags: --target x86_64-apple-darwin -v -- --workspace --timings
 
           - artifact-name: macOS-aarch64
             os: macOS-14
-            tauri-build-flags: --target aarch64-apple-darwin -v -- --workspace
+            tauri-build-flags: --target aarch64-apple-darwin -v -- --workspace --timings
 
           - artifact-name: Linux-x86_64
-            os: ubuntu-22.04
-            tauri-build-flags: --target x86_64-unknown-linux-gnu -v -- --workspace
+            os: ubuntu-24.04
+            tauri-build-flags: --target x86_64-unknown-linux-gnu -v -- --workspace --timings
+
+          - artifact-name: Linux-aarch64
+            os: ubuntu-24.04-arm
+            tauri-build-flags: --target aarch64-unknown-linux-gnu -v -- --workspace --timings
 
     name: "${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          token: ${{secrets.GITHUB_TOKEN}}
 
       - uses: pnpm/action-setup@v4
         with:
           version: 9
+
+      - name: Make GCC 14 the default toolchain (Linux)
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
+
+      - run: sudo xcode-select -switch /Applications/Xcode_15.3.app
+        if: startsWith(matrix.os, 'macOS')
 
       - name: Install Linux dependencies
         if: startsWith(matrix.os, 'ubuntu')
@@ -53,10 +69,10 @@ jobs:
             curl \
             file \
             libayatana-appindicator3-dev \
-            libgtk-3-dev \
             librsvg2-dev \
             libssl-dev \
-            libwebkit2gtk-4.0-dev \
+            libwebkit2gtk-4.1-dev \
+            libxdo-dev \
             wget
 
       - name: Install Node.js dependencies
@@ -75,8 +91,12 @@ jobs:
         if: startsWith(matrix.os, 'macOS')
 
       - name: Set up sccache
-        uses: mozilla-actions/sccache-action@v0.0.5
-
+        uses: mozilla-actions/sccache-action@v0.0.9
+      - name: Cargo test
+        run: cargo test
+        env:
+          RUSTC_WRAPPER: sccache
+          SCCACHE_GHA_ENABLED: true
       - name: Build package
         run: pnpm run tauri build ${{ matrix.tauri-build-flags }}
         env:
@@ -85,25 +105,50 @@ jobs:
 
       - name: Package artifacts (Windows x86_64)
         if: matrix.artifact-name == 'Windows-x86_64'
-        run: Compress-Archive -DestinationPath ${{ matrix.artifact-name }}.zip -Path target/x86_64-pc-windows-msvc/release/choreo.exe,target/x86_64-pc-windows-msvc/release/choreo-cli.exe,target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
+        run: |
+          Compress-Archive -DestinationPath ${{ matrix.artifact-name }}-standalone.zip -Path target/x86_64-pc-windows-msvc/release/choreo.exe,target/x86_64-pc-windows-msvc/release/choreo-cli.exe
+          Compress-Archive -DestinationPath ${{ matrix.artifact-name }}.zip -Path ${{ matrix.artifact-name }}-standalone.zip,target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
 
       - name: Package artifacts (Windows aarch64)
         if: matrix.artifact-name == 'Windows-aarch64'
-        run: Compress-Archive -DestinationPath ${{ matrix.artifact-name }}.zip -Path target/aarch64-pc-windows-msvc/release/choreo.exe,target/aarch64-pc-windows-msvc/release/choreo-cli.exe,target/aarch64-pc-windows-msvc/release/bundle/nsis/*.exe
+        run: |
+          Compress-Archive -DestinationPath ${{ matrix.artifact-name }}-standalone.zip -Path target/aarch64-pc-windows-msvc/release/choreo.exe,target/aarch64-pc-windows-msvc/release/choreo-cli.exe
+          Compress-Archive -DestinationPath ${{ matrix.artifact-name }}.zip -Path ${{ matrix.artifact-name }}-standalone.zip,target/aarch64-pc-windows-msvc/release/bundle/nsis/*.exe
 
       - name: Package artifacts (macOS x86_64)
         if: matrix.artifact-name == 'macOS-x86_64'
+        # Tauri incorrectly capitalizes the executable name on macOS, so we
+        # manually rename it
         run: |
-          zip -j ${{ matrix.artifact-name }}.zip target/x86_64-apple-darwin/release/Choreo target/x86_64-apple-darwin/release/choreo-cli target/x86_64-apple-darwin/release/bundle/dmg/*.dmg
+          cp target/x86_64-apple-darwin/release/Choreo choreo
+          zip -j ${{ matrix.artifact-name }}-standalone.zip choreo target/x86_64-apple-darwin/release/choreo-cli
+          zip -j ${{ matrix.artifact-name }}.zip ${{ matrix.artifact-name }}-standalone.zip target/x86_64-apple-darwin/release/bundle/dmg/*.dmg
 
       - name: Package artifacts (macOS aarch64)
         if: matrix.artifact-name == 'macOS-aarch64'
+        # Tauri incorrectly capitalizes the executable name on macOS, so we
+        # manually rename it
         run: |
-          zip -j ${{ matrix.artifact-name }}.zip target/aarch64-apple-darwin/release/Choreo target/aarch64-apple-darwin/release/choreo-cli target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
+          cp target/aarch64-apple-darwin/release/Choreo choreo
+          zip -j ${{ matrix.artifact-name }}-standalone.zip choreo target/aarch64-apple-darwin/release/choreo-cli
+          zip -j ${{ matrix.artifact-name }}.zip ${{ matrix.artifact-name }}-standalone.zip target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
 
       - name: Package artifacts (Linux x86_64)
         if: matrix.artifact-name == 'Linux-x86_64'
-        run: zip -j ${{ matrix.artifact-name }}.zip target/x86_64-unknown-linux-gnu/release/choreo target/x86_64-unknown-linux-gnu/release/choreo-cli target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.AppImage target/x86_64-unknown-linux-gnu/release/bundle/deb/*.deb target/x86_64-unknown-linux-gnu/release/bundle/rpm/*.rpm
+        run: |
+          zip -j ${{ matrix.artifact-name }}-standalone.zip target/x86_64-unknown-linux-gnu/release/choreo target/x86_64-unknown-linux-gnu/release/choreo-cli
+          zip -j ${{ matrix.artifact-name }}.zip ${{ matrix.artifact-name }}-standalone.zip target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.AppImage target/x86_64-unknown-linux-gnu/release/bundle/deb/*.deb target/x86_64-unknown-linux-gnu/release/bundle/rpm/*.rpm
+
+      - name: Package artifacts (Linux aarch64)
+        if: matrix.artifact-name == 'Linux-aarch64'
+        run: |
+          zip -j ${{ matrix.artifact-name }}-standalone.zip target/aarch64-unknown-linux-gnu/release/choreo target/aarch64-unknown-linux-gnu/release/choreo-cli
+          zip -j ${{ matrix.artifact-name }}.zip ${{ matrix.artifact-name }}-standalone.zip target/aarch64-unknown-linux-gnu/release/bundle/appimage/*.AppImage target/aarch64-unknown-linux-gnu/release/bundle/deb/*.deb target/aarch64-unknown-linux-gnu/release/bundle/rpm/*.rpm
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}-cargo-timing.html
+          path: target/cargo-timings/cargo-timing.html
 
       # Zipping manually works around upload-artifact stripping execute
       # permissions from files
@@ -125,6 +170,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: pkg
+          pattern: "!*-cargo-timing.html"
 
       - name: Display structure of downloaded files
         run: ls -R
@@ -134,8 +180,7 @@ jobs:
         run: |
           unzip -o Windows-x86_64.zip
           rm Windows-x86_64.zip
-          mv choreo.exe Choreo-${{ github.ref_name }}-Windows-x86_64.exe
-          mv choreo-cli.exe Choreo-CLI-${{ github.ref_name }}-Windows-x86_64.exe
+          mv Windows-x86_64-standalone.zip Choreo-${{ github.ref_name }}-Windows-x86_64-standalone.zip
           mv Choreo_*_x64-setup.exe Choreo-${{ github.ref_name }}-Windows-x86_64-setup.exe
 
       - name: Rename Windows aarch64 artifacts
@@ -143,8 +188,7 @@ jobs:
         run: |
           unzip -o Windows-aarch64.zip
           rm Windows-aarch64.zip
-          mv choreo.exe Choreo-${{ github.ref_name }}-Windows-aarch64.exe
-          mv choreo-cli.exe Choreo-CLI-${{ github.ref_name }}-Windows-aarch64.exe
+          mv Windows-aarch64-standalone.zip Choreo-${{ github.ref_name }}-Windows-aarch64-standalone.zip
           mv Choreo_*_arm64-setup.exe Choreo-${{ github.ref_name }}-Windows-aarch64-setup.exe
 
       - name: Rename macOS x86_64 artifacts
@@ -152,8 +196,7 @@ jobs:
         run: |
           unzip -o macOS-x86_64.zip
           rm macOS-x86_64.zip
-          mv Choreo Choreo-${{ github.ref_name }}-macOS-x86_64
-          mv choreo-cli Choreo-CLI-${{ github.ref_name }}-macOS-x86_64
+          mv macOS-x86_64-standalone.zip Choreo-${{ github.ref_name }}-macOS-x86_64-standalone.zip
           mv Choreo_*_x64.dmg Choreo-${{ github.ref_name }}-macOS-x86_64.dmg
 
       - name: Rename macOS aarch64 artifacts
@@ -161,8 +204,7 @@ jobs:
         run: |
           unzip -o macOS-aarch64.zip
           rm macOS-aarch64.zip
-          mv Choreo Choreo-${{ github.ref_name }}-macOS-aarch64
-          mv choreo-cli Choreo-CLI-${{ github.ref_name }}-macOS-aarch64
+          mv macOS-aarch64-standalone.zip Choreo-${{ github.ref_name }}-macOS-aarch64-standalone.zip
           mv Choreo_*_aarch64.dmg Choreo-${{ github.ref_name }}-macOS-aarch64.dmg
 
       - name: Rename Linux x86_64 artifacts
@@ -170,11 +212,20 @@ jobs:
         run: |
           unzip -o Linux-x86_64.zip
           rm Linux-x86_64.zip
-          mv choreo Choreo-${{ github.ref_name }}-Linux-x86_64
-          mv choreo-cli Choreo-CLI-${{ github.ref_name }}-Linux-x86_64
+          mv Linux-x86_64-standalone.zip Choreo-${{ github.ref_name }}-Linux-x86_64-standalone.zip
           mv choreo_*_amd64.AppImage Choreo-${{ github.ref_name }}-Linux-x86_64.AppImage
           mv choreo_*_amd64.deb Choreo-${{ github.ref_name }}-Linux-x86_64.deb
           mv choreo-*.x86_64.rpm Choreo-${{ github.ref_name }}-Linux-x86_64.rpm
+
+      - name: Rename Linux aarch64 artifacts
+        working-directory: pkg/Linux-aarch64
+        run: |
+          unzip -o Linux-aarch64.zip
+          rm Linux-aarch64.zip
+          mv Linux-aarch64-standalone.zip Choreo-${{ github.ref_name }}-Linux-aarch64-standalone.zip
+          mv choreo_*_aarch64.AppImage Choreo-${{ github.ref_name }}-Linux-aarch64.AppImage
+          mv choreo_*_arm64.deb Choreo-${{ github.ref_name }}-Linux-aarch64.deb
+          mv choreo-*.aarch64.rpm Choreo-${{ github.ref_name }}-Linux-aarch64.rpm
 
       - name: Display structure of renamed files
         run: ls -R

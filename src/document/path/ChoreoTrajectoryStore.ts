@@ -1,28 +1,30 @@
-import { Instance, destroy, getEnv, types } from "mobx-state-tree";
+import { Instance, types } from "mobx-state-tree";
 import {
   DifferentialSample,
-  Output,
-  type SwerveSample
+  SampleType,
+  type SwerveSample,
+  Output
 } from "../2025/DocumentTypes";
-import { Env } from "../DocumentManager";
-import { EventMarkerStore, IEventMarkerStore } from "../EventMarkerStore";
 
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
 export const ChoreoTrajectoryStore = types
   .model("ChoreoTrajectoryStore", {
+    sampleType: types.maybe(types.frozen<SampleType>()),
     waypoints: types.frozen<number[]>(),
     samples: types.frozen<SwerveSample[] | DifferentialSample[]>(),
-    splits: types.frozen<number[]>(),
-    markers: types.array(EventMarkerStore)
+    splits: types.frozen<number[]>()
   })
   .views((self) => ({
     get fullTrajectory(): SwerveSample[] | DifferentialSample[] {
       return self.samples;
     },
     get isSwerve(): boolean {
-      return self.samples.length === 0 || Object.hasOwn(self.samples[0], "vx");
+      return self.sampleType === "Swerve";
     },
     get isDifferential(): boolean {
-      return self.samples.length === 0 || Object.hasOwn(self.samples[0], "vl");
+      return self.sampleType === "Differential";
     },
     // 01234567
     // ...
@@ -68,6 +70,7 @@ export const ChoreoTrajectoryStore = types
     },
     get serialize(): Output {
       return {
+        sampleType: self.sampleType,
         waypoints: self.waypoints,
         samples: self.samples,
         splits: self.splits
@@ -76,43 +79,17 @@ export const ChoreoTrajectoryStore = types
   }))
   .actions((self) => ({
     deserialize(ser: Output) {
+      self.sampleType = ser.sampleType;
       self.waypoints = ser.waypoints;
       self.splits = ser.splits;
       self.samples = ser.samples;
     },
-    deleteMarkerUUID(uuid: string) {
-      const index = self.markers.findIndex((m) => m.uuid === uuid);
-      if (index >= 0 && index < self.markers.length) {
-        destroy(self.markers[index]);
-        if (self.markers.length === 0) {
-          return;
-        } else if (self.markers[index - 1]) {
-          self.markers[index - 1].setSelected(true);
-        } else if (self.markers[index + 1]) {
-          self.markers[index + 1].setSelected(true);
-        }
-      }
+    setSwerveSamples(samples: SwerveSample[]) {
+      self.sampleType = "Swerve";
+      self.samples = samples;
     },
-    addEventMarker(marker?: IEventMarkerStore): IEventMarkerStore {
-      if (marker === undefined) {
-        marker = getEnv<Env>(self).create.EventMarkerStore({
-          name: "Marker",
-          target: "first",
-          trajectoryTargetIndex: undefined,
-          targetTimestamp: undefined,
-          offset: { exp: "0 s", val: 0 },
-          command: {
-            type: "named",
-            data: {
-              name: ""
-            }
-          }
-        });
-      }
-      self.markers.push(marker as IEventMarkerStore);
-      return marker;
-    },
-    setSamples(samples: SwerveSample[] | DifferentialSample[]) {
+    setDifferentialSamples(samples: DifferentialSample[]) {
+      self.sampleType = "Differential";
       self.samples = samples;
     },
     setSplits(splits: number[]) {

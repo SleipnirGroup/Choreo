@@ -29,7 +29,7 @@ pub fn calculate_adjusted_headings(trajectory: &TrajectoryFile) -> ChoreoResult<
     let mut sgmt_has_0_ang_vel = vec![0u8; num_wpts];
     let mut headings_from_constraints = vec![None; num_wpts];
 
-    let (guess_point_idxs, constraints_idx) = fix_constraint_indices(trajectory);
+    let (_, constraints_idx) = fix_constraint_indices(trajectory);
 
     // find pose waypoints
     for (w, maybe_h) in waypoints.iter().zip(headings_from_constraints.iter_mut()) {
@@ -38,22 +38,12 @@ pub fn calculate_adjusted_headings(trajectory: &TrajectoryFile) -> ChoreoResult<
         }
     }
 
-    let constraints_fixed_scope: Vec<_> = constraints_idx
-        .iter()
-        .map(|c| {
-            let mut cc = c.to_owned();
-            cc.from = fix_scope(c.from, &guess_point_idxs);
-            cc.to = c.to.map(|idx| fix_scope(idx, &guess_point_idxs));
-            cc
-        })
-        .collect();
-
     // count constraint references
-    for constraint in &constraints_fixed_scope {
+    for constraint in &constraints_idx {
         let from = constraint.from;
         let to_opt = constraint.to;
         match constraint.data {
-            MaxAngularVelocity { max } if max == 0.0 => {
+            MaxAngularVelocity { max: 0.0 } => {
                 if let Some(to) = to_opt {
                     wpt_has_0_ang_vel[from..=to]
                         .iter_mut()
@@ -195,10 +185,10 @@ pub fn calculate_adjusted_headings(trajectory: &TrajectoryFile) -> ChoreoResult<
     // adjust target headings for 0 angular velocity segments
     let mut last_fixed: Option<f64> = None;
     let mut start = None;
-    for (idx, (&heading, is_zero_velocity)) in headings_from_constraints
+    for (wpt_idx, (&heading, is_zero_velocity)) in headings_from_constraints
         .clone()
         .iter()
-        .zip(sgmt_has_0_ang_vel.iter().map(|&c| c > 0))
+        .zip(sgmt_has_0_ang_vel.iter().map(|&count| count > 0))
         .enumerate()
     {
         if is_zero_velocity {
@@ -206,13 +196,34 @@ pub fn calculate_adjusted_headings(trajectory: &TrajectoryFile) -> ChoreoResult<
                 last_fixed = Some(h);
             }
             if start.is_none() {
-                start = Some(idx);
+                start = Some(wpt_idx);
             }
         } else if start.is_some() {
-            if last_fixed.is_none() && heading.is_some() {
-                last_fixed = heading;
+            if last_fixed.is_none() {
+                // check last waypoint
+                match heading {
+                    Some(h) => last_fixed = Some(h),
+                    None => {
+                        // all points in constraint were translation,
+                        // so pick the pose before or after
+                        let start = start.unwrap();
+                        let heading_from_surrounding = headings_from_constraints[0..=start]
+                            .iter()
+                            .rev()
+                            .chain(
+                                headings_from_constraints[start..headings_from_constraints.len()]
+                                    .iter(),
+                            )
+                            .find(|&&h| h.is_some());
+                        if let Some(h) = heading_from_surrounding {
+                            last_fixed = *h;
+                        } else {
+                            last_fixed = Some(0.0);
+                        }
+                    }
+                }
             }
-            headings_from_constraints[start.unwrap()..=idx]
+            headings_from_constraints[start.unwrap()..=wpt_idx]
                 .iter_mut()
                 .for_each(|x| *x = last_fixed);
             start = None;
@@ -222,24 +233,24 @@ pub fn calculate_adjusted_headings(trajectory: &TrajectoryFile) -> ChoreoResult<
 
     // interpolate non fixed headings between fixed ones.
     let mut last_fixed_heading = (0, waypoints[0].heading.val);
-    for (idx, &maybe_fixed_heading) in headings_from_constraints.iter().enumerate() {
+    for (wpt_idx, &maybe_fixed_heading) in headings_from_constraints.iter().enumerate() {
         if let Some(target_heading) = maybe_fixed_heading {
             // set heading for fixed heading wpt
-            new_headings[idx] = target_heading;
+            new_headings[wpt_idx] = target_heading;
 
             // interpolate headings from last fixed idx
             let start = last_fixed_heading.1;
             let dtheta = angle_modulus(target_heading - start);
             new_headings
                 .iter_mut()
-                .take(idx) // up to not including current fixed heading wpt
+                .take(wpt_idx) // up to not including current fixed heading wpt
                 .skip(last_fixed_heading.0 + 1) // skip last fixed heading wpt
                 .enumerate()
                 .for_each(|(i, heading)| {
-                    let scalar = (i + 1) as f64 / (idx - last_fixed_heading.0) as f64;
+                    let scalar = (i + 1) as f64 / (wpt_idx - last_fixed_heading.0) as f64;
                     *heading = angle_modulus(start + scalar * dtheta);
                 });
-            last_fixed_heading = (idx, target_heading);
+            last_fixed_heading = (wpt_idx, target_heading);
         }
     }
 

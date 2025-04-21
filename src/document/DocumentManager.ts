@@ -1,4 +1,5 @@
-import { dialog, path, window as tauriWindow } from "@tauri-apps/api";
+import { path, window as tauriWindow } from "@tauri-apps/api";
+import { ask, confirm, save } from "@tauri-apps/plugin-dialog";
 import { TauriEvent } from "@tauri-apps/api/event";
 import { DocumentStore, SelectableItemTypes } from "./DocumentModel";
 
@@ -10,14 +11,13 @@ import {
   getSnapshot,
   walk
 } from "mobx-state-tree";
-import { toast } from "react-toastify";
+import { toast, ToastContentProps } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import LocalStorageKeys from "../util/LocalStorageKeys";
-import { ObjectTyped } from "../util/ObjectTyped";
 import { safeGetIdentifier } from "../util/mobxutils";
 import {
-  PplibCommand,
-  PplibCommandMarker,
+  Command,
+  EventMarker,
   GroupCommand,
   NamedCommand,
   Project,
@@ -27,6 +27,13 @@ import {
   type RobotConfig,
   type Waypoint
 } from "./2025/DocumentTypes";
+import {
+  CommandStore,
+  ICommandStore,
+  commandIsGroup,
+  commandIsNamed,
+  commandIsWait
+} from "./CommandStore";
 import {
   ConstraintDataObjects,
   IConstraintDataStore,
@@ -42,13 +49,8 @@ import {
   IConstraintStore,
   IWaypointScope
 } from "./ConstraintStore";
-import {
-  CommandStore,
-  EventMarkerStore,
-  ICommandStore,
-  IEventMarkerStore
-} from "./EventMarkerStore";
-import { IExpressionStore, IVariables, Variables } from "./ExpressionStore";
+import { EventMarkerStore, IEventMarkerStore } from "./EventMarkerStore";
+import { IExpressionStore, IVariables, variables } from "./ExpressionStore";
 import {
   IHolonomicWaypointStore,
   HolonomicWaypointStore as WaypointStore
@@ -59,8 +61,9 @@ import {
   RobotConfigStore
 } from "./RobotConfigStore";
 import { ViewLayerDefaults } from "./UIData";
-import { UIStateStore } from "./UIStateStore";
-import { Commands } from "./tauriCommands";
+import { SavingState, UIStateStore } from "./UIStateStore";
+import { findUUIDIndex } from "./path/utils";
+import { ChoreoError, Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
 
 export type OpenFilePayload = {
@@ -70,7 +73,8 @@ export type OpenFilePayload = {
 
 export const uiState = UIStateStore.create({
   settingsTab: 0,
-
+  projectSavingState: SavingState.NO_LOCATION,
+  projectSaveTime: new Date(),
   layers: ViewLayerDefaults
 });
 type ConstraintDataConstructor<K extends ConstraintKey> = (
@@ -84,17 +88,17 @@ export type EnvConstructors = {
   RobotConfigStore: (config: RobotConfig<Expr>) => IRobotConfigStore;
   WaypointStore: (config: Waypoint<Expr>) => IHolonomicWaypointStore;
   CommandStore: (
-    command: PplibCommand<Expr> &
+    command: Command &
       (
         | {
-            data: WaitCommand<Expr>["data"] &
-              GroupCommand<Expr>["data"] &
+            data: WaitCommand["data"] &
+              GroupCommand["data"] &
               NamedCommand["data"];
           }
         | object
       )
   ) => ICommandStore;
-  EventMarkerStore: (marker: PplibCommandMarker<Expr>) => IEventMarkerStore;
+  EventMarkerStore: (marker: EventMarker) => IEventMarkerStore;
   ConstraintData: ConstraintDataConstructors;
   ConstraintStore: <K extends ConstraintKey>(
     type: K,
@@ -105,37 +109,22 @@ export type EnvConstructors = {
   ) => IConstraintStore;
 };
 function getConstructors(vars: () => IVariables): EnvConstructors {
-  function commandIsNamed(
-    command: PplibCommand<Expr>
-  ): command is NamedCommand {
-    return Object.hasOwn(command.data, "name");
-  }
-  function commandIsGroup(
-    command: PplibCommand<Expr>
-  ): command is GroupCommand<Expr> {
-    return Object.hasOwn(command.data, "commands");
-  }
-  function commandIsTime(
-    command: PplibCommand<Expr>
-  ): command is WaitCommand<Expr> {
-    return Object.hasOwn(command.data, "time");
-  }
-  function createCommandStore(command: PplibCommand<Expr>): ICommandStore {
+  function createCommandStore(command: Command): ICommandStore {
     return CommandStore.create({
-      type: command.type,
+      type: command?.type ?? "none",
       name: commandIsNamed(command) ? command.data.name : "",
       commands: commandIsGroup(command)
         ? command.data.commands.map((c) => createCommandStore(c))
         : [],
       time: vars().createExpression(
-        commandIsTime(command) ? command.data.waitTime : 0,
+        commandIsWait(command) ? command.data.waitTime : 0,
         "Time"
       ),
       uuid: crypto.randomUUID()
     });
   }
 
-  const keys = ObjectTyped.keys(ConstraintDefinitions);
+  const keys = Object.keys(ConstraintDefinitions) as ConstraintKey[];
   const constraintDataConstructors = Object.fromEntries(
     keys.map(
       <K extends ConstraintKey>(key: K) =>
@@ -157,6 +146,7 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
         mass: vars().createExpression(config.mass, "Mass"),
         inertia: vars().createExpression(config.inertia, "MoI"),
         tmax: vars().createExpression(config.tmax, "Torque"),
+        cof: vars().createExpression(config.cof, "Number"),
         vmax: vars().createExpression(config.vmax, "AngVel"),
         gearing: vars().createExpression(config.gearing, "Number"),
         radius: vars().createExpression(config.radius, "Length"),
@@ -181,24 +171,30 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
       });
     },
     WaypointStore: (waypoint: Waypoint<Expr>) => {
-      return WaypointStore.create({
+      const w = WaypointStore.create({
         ...waypoint,
         x: vars().createExpression(waypoint.x, "Length"),
         y: vars().createExpression(waypoint.y, "Length"),
         heading: vars().createExpression(waypoint.heading, "Angle"),
         uuid: crypto.randomUUID()
       });
+      return w;
     },
     CommandStore: createCommandStore,
-    EventMarkerStore: (marker: PplibCommandMarker<Expr>): IEventMarkerStore => {
-      return EventMarkerStore.create({
+    EventMarkerStore: (marker: EventMarker): IEventMarkerStore => {
+      const m = EventMarkerStore.create({
         name: marker.name,
-        target: undefined,
-        trajectoryTargetIndex: marker.trajectoryTargetIndex,
-        offset: vars().createExpression(marker.offset, "Time"),
-        command: createCommandStore(marker.command),
+        from: {
+          uuid: crypto.randomUUID(),
+
+          target: undefined,
+          targetTimestamp: marker.from.targetTimestamp ?? undefined,
+          offset: vars().createExpression(marker.from.offset, "Time")
+        },
+        event: createCommandStore(marker.event),
         uuid: crypto.randomUUID()
       });
+      return m;
     },
     ConstraintData: constraintDataConstructors,
     ConstraintStore: <K extends ConstraintKey>(
@@ -221,11 +217,14 @@ function getConstructors(vars: () => IVariables): EnvConstructors {
     }
   };
 }
-const variables = Variables.create({ expressions: {}, poses: {} });
 
 const env = {
   selectedSidebar: () => safeGetIdentifier(doc.selectedSidebarItem),
+  hoveredItem: () => safeGetIdentifier(doc.hoveredSidebarItem),
   select: (item: SelectableItemTypes) => select(item),
+  selected: (item: SelectableItemTypes) => doc.selected(item),
+  hover: (item: SelectableItemTypes) => hover(item),
+  hovered: (item: SelectableItemTypes) => doc.hovered(item),
   withoutUndo: (callback: any) => {
     withoutUndo(callback);
   },
@@ -235,8 +234,10 @@ const env = {
   stopGroup: () => {
     stopGroup();
   },
+  history: () => doc.history,
   vars: () => doc.variables,
   renameVariable: renameVariable,
+  exporter: async (uuid: string) => writeTrajectory(uuid).catch(tracing.error),
   create: getConstructors(() => doc.variables)
 };
 export type Env = typeof env;
@@ -274,18 +275,11 @@ function renameVariable(find: string, replace: string) {
   });
 }
 export function setup() {
-  doc.pathlist.setExporter((uuid) => {
-    try {
-      writeTrajectory(uuid);
-    } catch (e) {
-      tracing.error(e);
-    }
-  });
   doc.history.clear();
   setupEventListeners()
     .then(() => newProject())
-    .then(() => uiState.updateWindowTitle());
-  // .then(() => openProjectFile())
+    .then(() => uiState.updateWindowTitle())
+    .then(() => openProjectFile());
 }
 setup();
 
@@ -298,7 +292,7 @@ export async function openProjectFile() {
 
   if (cliRequestedProject) {
     const fileDirectory: OpenFilePayload = cliRequestedProject;
-    const filePath = fileDirectory.dir + path.sep + fileDirectory.name;
+    const filePath = fileDirectory.dir + path.sep() + fileDirectory.name;
     tracing.info(`Attempting to open: ${filePath}`);
     return openProject(fileDirectory).catch((err) => {
       tracing.error(
@@ -312,7 +306,7 @@ export async function openProjectFile() {
     const fileDirectory: OpenFilePayload = JSON.parse(
       lastOpenedFileEventPayload
     );
-    const filePath = fileDirectory.dir + path.sep + fileDirectory.name;
+    const filePath = fileDirectory.dir + path.sep() + fileDirectory.name;
     tracing.info(`Attempting to open: ${filePath}`);
     return openProject(fileDirectory).catch((err) => {
       tracing.error(
@@ -353,8 +347,9 @@ export async function setupEventListeners() {
       if (savedObject.dataType === "choreo/waypoint") {
         let currentSelectedWaypointIdx = -1;
         if (doc.isSidebarWaypointSelected) {
-          const idx = activePath.params.findUUIDIndex(
-            (doc.selectedSidebarItem as IHolonomicWaypointStore).uuid
+          const idx = findUUIDIndex(
+            (doc.selectedSidebarItem as IHolonomicWaypointStore).uuid,
+            activePath.params.waypoints
           );
           if (idx != -1) {
             currentSelectedWaypointIdx = idx;
@@ -383,13 +378,13 @@ export async function setupEventListeners() {
 
   // Save files on closing
   tauriWindow
-    .getCurrent()
+    .getCurrentWindow()
     .listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
       if (!(await canSave())) {
         if (
-          await dialog.ask("Save project?", {
+          await ask("Save project?", {
             title: "Choreo",
-            type: "warning"
+            kind: "warning"
           })
         ) {
           if (!(await saveProjectDialog())) {
@@ -397,19 +392,25 @@ export async function setupEventListeners() {
           }
         }
       }
-      await tauriWindow.getCurrent().close();
+      await tauriWindow.getCurrentWindow().destroy();
     })
     .then((unlisten) => {
       window.addEventListener("unload", () => {
         unlisten();
       });
     });
+  let autoSaveDebounce: NodeJS.Timeout | undefined = undefined;
+  const performAutoSave = () => {
+    if (uiState.hasSaveLocation) {
+      uiState.setProjectSavingState(SavingState.SAVING);
+      saveProject();
+    }
+  };
   const autoSaveUnlisten = reaction(
-    () => doc.history.undoIdx,
+    () => doc.serializeChor(),
     () => {
-      if (uiState.hasSaveLocation) {
-        saveProject();
-      }
+      clearTimeout(autoSaveDebounce);
+      autoSaveDebounce = setTimeout(performAutoSave, 50);
     }
   );
   const updateTitleUnlisten = reaction(
@@ -431,18 +432,7 @@ export async function setupEventListeners() {
     uiState.setSelectedNavbarItem(-1);
   });
   hotkeys("ctrl+o,command+o", () => {
-    dialog
-      .confirm("You may lose unsaved or not generated changes. Continue?", {
-        title: "Choreo",
-        type: "warning"
-      })
-      .then((proceed) => {
-        if (proceed) {
-          Commands.openProjectDialog().then((filepath) =>
-            openProject(filepath)
-          );
-        }
-      });
+    openProjectSelectFeedback();
   });
   hotkeys("f5,ctrl+shift+r,ctrl+r", function (event, _handler) {
     event.preventDefault();
@@ -588,7 +578,33 @@ export async function setupEventListeners() {
   });
 }
 
+export async function openProjectSelectFeedback() {
+  confirm("You may lose unsaved or not generated changes. Continue?", {
+    title: "Choreo",
+    kind: "warning"
+  }).then((proceed) => {
+    if (proceed) {
+      Commands.openProjectDialog().then((filepath) =>
+        openProject(filepath).catch((err) => {
+          tracing.error(
+            `Failed to open Choreo file '${filepath.name}': ${err}`
+          );
+          toast.error(`Failed to open Choreo file '${filepath.name}': ${err}`);
+        })
+      );
+    }
+  });
+}
+
 export async function openProject(projectPath: OpenFilePayload) {
+  // Capture the state prior to the deserialization
+  const originalRoot = await Commands.getDeployRoot();
+  const originalSnapshot = getSnapshot(doc);
+  const originalUiState = getSnapshot(uiState);
+  const originalHistory = getSnapshot(doc.history);
+  const originalLastOpenedItem = localStorage.getItem(
+    LocalStorageKeys.LAST_OPENED_FILE_LOCATION
+  );
   try {
     const dir = projectPath.dir;
     const name = projectPath.name.split(".")[0];
@@ -613,7 +629,7 @@ export async function openProject(projectPath: OpenFilePayload) {
       throw "Internal error. Check console logs.";
     }
     doc.deserializeChor(project);
-    doc.pathlist.paths.clear();
+    doc.pathlist.deleteAll();
     trajectories.forEach((trajectory) => {
       doc.pathlist.addPath(trajectory.name, true, trajectory);
     });
@@ -623,8 +639,20 @@ export async function openProject(projectPath: OpenFilePayload) {
       LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
       JSON.stringify({ dir, name })
     );
+    doc.history.clear();
+    uiState.setProjectSavingState(SavingState.SAVED);
+    uiState.setProjectSavingTime(new Date());
   } catch (e) {
-    await Commands.setDeployRoot("");
+    await Commands.setDeployRoot(originalRoot);
+    if (originalLastOpenedItem != null) {
+      localStorage.setItem(
+        LocalStorageKeys.LAST_OPENED_FILE_LOCATION,
+        originalLastOpenedItem
+      );
+    }
+    applySnapshot(doc, originalSnapshot);
+    applySnapshot(uiState, originalUiState);
+    applySnapshot(doc.history, originalHistory);
     throw e;
   }
 }
@@ -667,17 +695,24 @@ function getSelectedConstraint() {
 export async function newProject() {
   applySnapshot(uiState, {
     settingsTab: 0,
-    layers: ViewLayerDefaults
+    layers: ViewLayerDefaults,
+    projectSavingState: SavingState.NO_LOCATION
   });
   await Commands.setDeployRoot("");
   const newChor = await Commands.defaultProject();
   doc.deserializeChor(newChor);
   uiState.loadPathGradientFromLocalStorage();
+  doc.pathlist.deleteAll();
   doc.pathlist.addPath("New Path");
+  uiState.setProjectSavingState(SavingState.NO_LOCATION);
+  uiState.setProjectSavingTime(new Date());
   doc.history.clear();
 }
 export function select(item: SelectableItemTypes) {
   doc.setSelectedSidebarItem(item);
+}
+export function hover(item: SelectableItemTypes) {
+  doc.setHoveredSidebarItem(item);
 }
 
 export async function canSave(): Promise<boolean> {
@@ -745,14 +780,27 @@ export async function writeAllTrajectories() {
 
 export async function saveProject() {
   if (await canSave()) {
-    await Commands.writeProject(doc.serializeChor());
+    try {
+      await toast.promise(Commands.writeProject(doc.serializeChor()), {
+        error: {
+          render(toastProps: ToastContentProps<ChoreoError>) {
+            return `Project save fail. Alert developers: (${toastProps.data!.type}) ${toastProps.data!.content}`;
+          }
+        }
+      });
+      uiState.setProjectSavingState(SavingState.SAVED);
+      uiState.setProjectSavingTime(new Date());
+    } catch {
+      uiState.setProjectSavingState(SavingState.ERROR);
+    }
   } else {
     tracing.warn("Can't save project, skipping");
+    uiState.setProjectSavingState(SavingState.NO_LOCATION);
   }
 }
 
 export async function saveProjectDialog() {
-  const filePath = await dialog.save({
+  const filePath = await save({
     title: "Save Document",
     filters: [
       {

@@ -30,7 +30,8 @@ import InterpolatedRobot from "./InterpolatedRobot";
 import OverlayWaypoint from "./OverlayWaypoint";
 import FieldConstraintAddLayer from "./constraintDisplay/FieldConstraintAddLayer";
 import FieldConstraintDisplayLayer from "./constraintDisplay/FieldConstraintDisplayLayer";
-import FieldImage2024 from "./fields/FieldImage2024";
+import FieldImage2025 from "./fields/FieldImage2025";
+import * as FieldDimensions from "./fields/FieldDimensions";
 
 type Props = object;
 
@@ -203,8 +204,8 @@ class FieldOverlayRoot extends Component<Props, State> {
     });
   }
   render() {
-    this.canvasHeightMeters = FieldImage2024.WIDTH_M + 1;
-    this.canvasWidthMeters = FieldImage2024.LENGTH_M + 1;
+    this.canvasHeightMeters = FieldDimensions.FIELD_WIDTH + 1;
+    this.canvasWidthMeters = FieldDimensions.FIELD_LENGTH + 1;
     const layers = uiState.layers;
     const constraintSelected = uiState.isConstraintSelected();
     const eventMarkerSelected = uiState.isEventMarkerSelected();
@@ -239,7 +240,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             {/* Background */}
             {layers[ViewLayers.Field] && (
               <>
-                <FieldImage2024 />
+                <FieldImage2025 />
               </>
             )}
             {layers[ViewLayers.Grid] && <FieldGrid></FieldGrid>}
@@ -366,6 +367,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             )}
             {doc.isSidebarConstraintSelected && (
               <FieldConstraintDisplayLayer
+                points={doc.pathlist.activePath.params.waypoints}
                 constraint={
                   doc.selectedSidebarItem as IConstraintStoreKeyed<ConstraintKey>
                 }
@@ -376,6 +378,7 @@ class FieldOverlayRoot extends Component<Props, State> {
             {!doc.isSidebarConstraintSelected &&
               doc.isSidebarConstraintHovered && (
                 <FieldConstraintDisplayLayer
+                  points={doc.pathlist.activePath.params.waypoints}
                   constraint={
                     doc.hoveredSidebarItem as IConstraintStoreKeyed<ConstraintKey>
                   }

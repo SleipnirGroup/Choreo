@@ -24,6 +24,7 @@ export const EXPR_DEFAULTS: RobotConfig<Expr> = {
     exp: `${maxTorqueCurrentLimited(MotorCurves.KrakenX60.kt, 60)} N*m`,
     val: maxTorqueCurrentLimited(MotorCurves.KrakenX60.kt, 60)
   },
+  cof: { exp: "1.5", val: 1.5 },
   gearing: { exp: "6.75", val: 6.75 }, // SDS L2 mk4/mk4i
   radius: { exp: "2 in", val: InToM(2) },
   bumper: {
@@ -45,6 +46,9 @@ export const EXPR_DEFAULTS: RobotConfig<Expr> = {
   }
 };
 
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
 export const BumperStore = types
   .model("BumperStore", {
     front: ExpressionStore,
@@ -81,6 +85,9 @@ export const BumperStore = types
     }
   }));
 
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
 export const ModuleStore = types
   .model("ModuleStore", {
     x: ExpressionStore,
@@ -106,12 +113,17 @@ export const ModuleStore = types
       self.y.deserialize(ser.y);
     }
   }));
+
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
 export const RobotConfigStore = types
   .model("RobotConfigStore", {
     mass: ExpressionStore,
     inertia: ExpressionStore,
     vmax: ExpressionStore,
     tmax: ExpressionStore,
+    cof: ExpressionStore,
     gearing: ExpressionStore,
     radius: ExpressionStore,
     bumper: BumperStore,
@@ -133,6 +145,7 @@ export const RobotConfigStore = types
           mass: self.mass.serialize,
           inertia: self.inertia.serialize,
           tmax: self.tmax.serialize,
+          cof: self.cof.serialize,
           vmax: self.vmax.serialize,
           gearing: self.gearing.serialize,
           radius: self.radius.serialize,
@@ -165,6 +178,7 @@ export const RobotConfigStore = types
           mass: self.mass.value,
           inertia: self.inertia.value,
           tmax: self.tmax.value,
+          cof: self.cof.value,
           vmax: self.vmax.value,
           gearing: self.gearing.value,
           radius: self.radius.value,
@@ -183,6 +197,7 @@ export const RobotConfigStore = types
         self.inertia.deserialize(config.inertia);
         self.vmax.deserialize(config.vmax);
         self.tmax.deserialize(config.tmax);
+        self.cof.deserialize(config.cof);
         self.gearing.deserialize(config.gearing);
         self.radius.deserialize(config.radius);
         self.bumper.deserialize(config.bumper);

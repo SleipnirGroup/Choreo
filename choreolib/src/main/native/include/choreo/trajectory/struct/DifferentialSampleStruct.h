@@ -9,7 +9,7 @@
 
 template <>
 struct wpi::Struct<choreo::DifferentialSample> {
-  static constexpr std::string_view GetTypeString() {
+  static constexpr std::string_view GetTypeName() {
     return "DifferentialSample";
   }
   static constexpr size_t GetSize() { return 80; }

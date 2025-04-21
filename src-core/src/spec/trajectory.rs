@@ -1,9 +1,9 @@
 use serde::{Deserialize, Serialize};
 use trajoptlib::{DifferentialTrajectorySample, SwerveTrajectorySample};
 
-use super::{Expr, SnapshottableType};
+use super::{upgraders::upgrade_traj_file, Expr, SnapshottableType};
 
-#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 /// A waypoint parameter.
 pub struct Waypoint<T: SnapshottableType> {
@@ -53,7 +53,7 @@ impl<T: SnapshottableType> Waypoint<T> {
 }
 
 /// A waypoint identifier.
-#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum WaypointID {
     /// The first waypoint.
@@ -106,7 +106,7 @@ pub enum ConstraintScope {
 }
 
 /// A constraint on the robot's motion.
-#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 #[serde(tag = "type", content = "props")]
 pub enum ConstraintData<T: SnapshottableType> {
     /// A constraint on the maximum velocity.
@@ -147,6 +147,8 @@ pub enum ConstraintData<T: SnapshottableType> {
     KeepInCircle { x: T, y: T, r: T },
     /// A constraint to contain the bumpers within a rectangular region of the field
     KeepInRectangle { x: T, y: T, w: T, h: T },
+    /// A constraint to contain the bumpers within two line
+    KeepInLane { tolerance: T },
     /// A constraint to contain the bumpers outside a circlular region of the field
     KeepOutCircle { x: T, y: T, r: T },
 }
@@ -156,6 +158,7 @@ impl<T: SnapshottableType> ConstraintData<T> {
     pub fn scope(&self) -> ConstraintScope {
         match self {
             ConstraintData::StopPoint {} => ConstraintScope::Waypoint,
+            ConstraintData::KeepInLane { tolerance: _ } => ConstraintScope::Segment,
             _ => ConstraintScope::Both,
         }
     }
@@ -195,6 +198,9 @@ impl<T: SnapshottableType> ConstraintData<T> {
                 w: w.snapshot(),
                 h: h.snapshot(),
             },
+            ConstraintData::KeepInLane { tolerance } => ConstraintData::KeepInLane {
+                tolerance: tolerance.snapshot(),
+            },
             ConstraintData::KeepOutCircle { x, y, r } => ConstraintData::KeepOutCircle {
                 x: x.snapshot(),
                 y: y.snapshot(),
@@ -205,7 +211,7 @@ impl<T: SnapshottableType> ConstraintData<T> {
 }
 
 /// A constraint on the robot's motion and where it applies.
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 pub struct Constraint<T: SnapshottableType> {
     /// The waypoint the constraint starts at.
     pub from: WaypointID,
@@ -231,7 +237,7 @@ impl<T: SnapshottableType> Constraint<T> {
 }
 
 /// A constraint on the robot's motion and where it applies.
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 pub struct ConstraintIDX<T: SnapshottableType> {
     /// The index of the waypoint the constraint starts at.
     pub from: usize,
@@ -246,7 +252,7 @@ pub struct ConstraintIDX<T: SnapshottableType> {
 
 /// A sample of the robot's state at a point in time during the trajectory.
 #[allow(missing_docs)]
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
 pub enum Sample {
     /// A sample for a swerve drive.
@@ -272,44 +278,47 @@ pub enum Sample {
         heading: f64,
         vl: f64,
         vr: f64,
+        omega: f64,
         al: f64,
         ar: f64,
         fl: f64,
         fr: f64,
     },
 }
-fn nudge_zero(f: f64) -> f64 {
-    if f.abs() < 1e-12 {
+fn round(input: f64) -> f64 {
+    let factor = 100_000.0;
+    let result = (input * factor).round() / factor;
+    if result == -0.0 {
         0.0
     } else {
-        f
+        result
     }
 }
 
 impl From<&SwerveTrajectorySample> for Sample {
     fn from(swerve_sample: &SwerveTrajectorySample) -> Self {
         Sample::Swerve {
-            t: nudge_zero(swerve_sample.timestamp),
-            x: nudge_zero(swerve_sample.x),
-            y: nudge_zero(swerve_sample.y),
-            vx: nudge_zero(swerve_sample.velocity_x),
-            vy: nudge_zero(swerve_sample.velocity_y),
-            heading: nudge_zero(swerve_sample.heading),
-            omega: nudge_zero(swerve_sample.angular_velocity),
-            ax: nudge_zero(swerve_sample.acceleration_x),
-            ay: nudge_zero(swerve_sample.acceleration_y),
-            alpha: nudge_zero(swerve_sample.angular_acceleration),
+            t: round(swerve_sample.timestamp),
+            x: round(swerve_sample.x),
+            y: round(swerve_sample.y),
+            vx: round(swerve_sample.velocity_x),
+            vy: round(swerve_sample.velocity_y),
+            heading: round(swerve_sample.heading),
+            omega: round(swerve_sample.angular_velocity),
+            ax: round(swerve_sample.acceleration_x),
+            ay: round(swerve_sample.acceleration_y),
+            alpha: round(swerve_sample.angular_acceleration),
             fx: [
-                nudge_zero(swerve_sample.module_forces_x[0]),
-                nudge_zero(swerve_sample.module_forces_x[1]),
-                nudge_zero(swerve_sample.module_forces_x[2]),
-                nudge_zero(swerve_sample.module_forces_x[3]),
+                round(swerve_sample.module_forces_x[0]),
+                round(swerve_sample.module_forces_x[1]),
+                round(swerve_sample.module_forces_x[2]),
+                round(swerve_sample.module_forces_x[3]),
             ],
             fy: [
-                nudge_zero(swerve_sample.module_forces_y[0]),
-                nudge_zero(swerve_sample.module_forces_y[1]),
-                nudge_zero(swerve_sample.module_forces_y[2]),
-                nudge_zero(swerve_sample.module_forces_y[3]),
+                round(swerve_sample.module_forces_y[0]),
+                round(swerve_sample.module_forces_y[1]),
+                round(swerve_sample.module_forces_y[2]),
+                round(swerve_sample.module_forces_y[3]),
             ],
         }
     }
@@ -323,16 +332,17 @@ impl From<SwerveTrajectorySample> for Sample {
 impl From<&DifferentialTrajectorySample> for Sample {
     fn from(differential_sample: &DifferentialTrajectorySample) -> Self {
         Sample::DifferentialDrive {
-            t: nudge_zero(differential_sample.timestamp),
-            x: nudge_zero(differential_sample.x),
-            y: nudge_zero(differential_sample.y),
-            heading: nudge_zero(differential_sample.heading),
-            vl: nudge_zero(differential_sample.velocity_l),
-            vr: nudge_zero(differential_sample.velocity_r),
-            al: nudge_zero(differential_sample.acceleration_l),
-            ar: nudge_zero(differential_sample.acceleration_r),
-            fl: nudge_zero(differential_sample.force_l),
-            fr: nudge_zero(differential_sample.force_r),
+            t: round(differential_sample.timestamp),
+            x: round(differential_sample.x),
+            y: round(differential_sample.y),
+            heading: round(differential_sample.heading),
+            vl: round(differential_sample.velocity_l),
+            vr: round(differential_sample.velocity_r),
+            omega: round(differential_sample.angular_velocity),
+            al: round(differential_sample.acceleration_l),
+            ar: round(differential_sample.acceleration_r),
+            fl: round(differential_sample.force_l),
+            fr: round(differential_sample.force_r),
         }
     }
 }
@@ -353,7 +363,7 @@ pub enum DriveType {
 }
 
 /// The parameters used for generating a trajectory.
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Parameters<T: SnapshottableType> {
     /// The waypoints the robot will pass through or use for initial guess.
@@ -385,24 +395,29 @@ impl<T: SnapshottableType> Parameters<T> {
 #[serde(rename_all = "camelCase")]
 /// The trajectory the robot will follow.
 pub struct Trajectory {
+    /// The sample type of this trajectory.
+    /// Must match the type in samples if that list is non-empty
+    /// Only None if trajectory was never generated.
+    pub sample_type: Option<DriveType>,
     /// The times at which the robot will reach each waypoint.
     pub waypoints: Vec<f64>,
     /// The samples of the trajectory.
     pub samples: Vec<Sample>,
     /// The indices of samples which are associated with split waypoints.
-    /// First and last samples are never in this list even if the split toggle is set
-    /// for first or last waypoints
+    /// This includes 0, but the index of the last sample is never in this list even if the split toggle is set
+    /// for the last waypoint
     pub splits: Vec<usize>,
 }
 
 /// A structure representing a `.traj` file.
 #[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct TrajectoryFile {
     /// The name of the `.traj` file.
     /// Will always be in sync with the file name on disk.
     pub name: String,
     /// The version of the `.traj` file spec.
-    pub version: String,
+    pub version: u32,
     /// The snapshot of the parameters at the time of the last generation.
     pub snapshot: Option<Parameters<f64>>,
     /// The parameters used for generating the trajectory.
@@ -412,11 +427,6 @@ pub struct TrajectoryFile {
     /// The choreo events.
     #[serde(default)]
     pub events: Vec<EventMarker>,
-    /// The pplib commands to execute.
-    /// This is a compatibility layer for working with
-    /// the path planner library.
-    #[serde(default)]
-    pub pplib_commands: Vec<PplibCommandMarker>,
 }
 
 impl TrajectoryFile {
@@ -428,37 +438,107 @@ impl TrajectoryFile {
     /// # Errors
     /// - [`crate::ChoreoError::Json`] if the json string is invalid.
     pub fn from_content(content: &str) -> crate::ChoreoResult<TrajectoryFile> {
-        serde_json::from_str(content).map_err(Into::into)
+        let val = upgrade_traj_file(serde_json::from_str(content)?)?;
+        serde_json::from_value(val).map_err(Into::into)
+    }
+
+    pub fn up_to_date(&self) -> bool {
+        // Can't use is_some_and due to its move semantics.
+        if let Some(snap) = &self.snapshot {
+            snap == &self.params.snapshot()
+        } else {
+            false
+        }
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct PplibCommandMarker {
-    pub name: String,
+pub struct EventMarkerData {
     pub target: Option<usize>,
-    pub trajectory_target_index: Option<usize>,
     pub target_timestamp: Option<f64>,
-    pub offset: f64,
-    pub command: PplibCommand,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", tag = "type", content = "data")]
-pub enum PplibCommand {
-    Named { name: String },
-    Wait { wait_time: f64 },
-    Sequential { commands: Vec<PplibCommand> },
-    Parallel { commands: Vec<PplibCommand> },
-    Race { commands: Vec<PplibCommand> },
-    Deadline { commands: Vec<PplibCommand> },
+    pub offset: Expr,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EventMarker {
-    /// The name of the event.
-    pub event: String,
-    /// The offset from the beginning of the trajectory.
-    pub timestamp: f64,
+    pub name: String,
+    pub from: EventMarkerData,
+    pub event: Option<PplibCommand>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", tag = "type", content = "data")]
+pub enum PplibCommand {
+    Named {
+        name: String,
+    },
+    #[serde(rename_all = "camelCase")]
+    Wait {
+        wait_time: Expr,
+    },
+    Sequential {
+        commands: Vec<PplibCommand>,
+    },
+    Parallel {
+        commands: Vec<PplibCommand>,
+    },
+    Race {
+        commands: Vec<PplibCommand>,
+    },
+    Deadline {
+        commands: Vec<PplibCommand>,
+    },
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::spec::TRAJ_SCHEMA_VERSION;
+
+    use super::*;
+    fn test_trajectory() -> TrajectoryFile {
+        let parameters = Parameters::<Expr> {
+            waypoints: vec![Waypoint::<Expr> {
+                x: Expr::fill_in_value(0.0, "m"),
+                y: Expr::fill_in_value(0.0, "m"),
+                heading: Expr::fill_in_value(0.0, "rad"),
+                intervals: 20,
+                split: false,
+                fix_translation: false,
+                fix_heading: false,
+                override_intervals: false,
+                is_initial_guess: false,
+            }],
+            constraints: vec![],
+            target_dt: Expr::fill_in_value(0.05, "s"),
+        };
+        TrajectoryFile {
+            name: "Test".to_string(),
+            version: TRAJ_SCHEMA_VERSION,
+            snapshot: Some(parameters.snapshot()),
+            params: parameters,
+            trajectory: Trajectory {
+                sample_type: Some(DriveType::Swerve),
+                waypoints: Vec::new(),
+                samples: Vec::new(),
+                splits: Vec::new(),
+            },
+            events: Vec::new(),
+        }
+    }
+    #[test]
+    fn snapshot_equality() {
+        assert!(test_trajectory().up_to_date());
+    }
+
+    #[test]
+    fn snapshot_equality_through_serde() -> serde_json::Result<()> {
+        use crate::file_management::formatter;
+        let trajectory = test_trajectory();
+        let serde_trajectory = formatter::to_string_pretty(&trajectory)?;
+        let deser_trajectory = TrajectoryFile::from_content(serde_trajectory.as_str());
+        assert!(deser_trajectory.is_ok_and(|t| t.up_to_date()));
+        Ok(())
+    }
 }

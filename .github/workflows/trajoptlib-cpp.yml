@@ -31,6 +31,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          token: ${{secrets.GITHUB_TOKEN}}
 
       - name: Install dependencies (Windows)
         uses: lukka/get-cmake@v3.29.3
@@ -54,11 +57,11 @@ jobs:
         if: startsWith(matrix.os, 'macOS')
 
       - name: Set up sccache
-        uses: mozilla-actions/sccache-action@v0.0.5
+        uses: mozilla-actions/sccache-action@v0.0.9
         # sccache doesn't work with MSBuild
         if: ${{ !startsWith(matrix.os, 'windows') }}
 
-      - run: cmake --preset with-examples-sccache ${{ matrix.cmake-args }}
+      - run: cmake --preset with-examples-and-sccache ${{ matrix.cmake-args }}
         if: ${{ !startsWith(matrix.os, 'windows') }}
         working-directory: trajoptlib
       - run: cmake -B build -S . -DBUILD_EXAMPLES=ON ${{ matrix.cmake-args }}
@@ -72,9 +75,9 @@ jobs:
         working-directory: trajoptlib
       - run: cmake --install build --config RelWithDebInfo --prefix pkg
         working-directory: trajoptlib
-      - run: ./build/Swerve
+      - run: ./build/swerve
         working-directory: trajoptlib
-      - run: ./build/Differential
+      - run: ./build/differential
         working-directory: trajoptlib
 
       - uses: actions/upload-artifact@v4

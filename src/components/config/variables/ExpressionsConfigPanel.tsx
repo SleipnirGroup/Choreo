@@ -30,13 +30,15 @@ class ExpressionsConfigPanel extends Component<Props, State> {
         }}
       >
         <VariablesConfigPanel></VariablesConfigPanel>
-        {doc.variables.expressions.size > 0 && (
-          <Divider sx={{ gridColumn: "1 / -1" }}></Divider>
+        {doc.variables.poses.size > 0 && (
+          <Divider sx={{ color: "gray", gridColumn: "1 / -1" }}>
+            POSE VARIABLES
+          </Divider>
         )}
         <PoseVariablesConfigPanel></PoseVariablesConfigPanel>
-        {doc.variables.poses.size > 0 && (
-          <Divider sx={{ gridColumn: "1 / -1" }}></Divider>
-        )}
+        <Divider sx={{ color: "gray", gridColumn: "1 / -1" }}>
+          ADD NEW VARIABLE
+        </Divider>
         <GeneralVariableAddPanel></GeneralVariableAddPanel>
       </div>
     );

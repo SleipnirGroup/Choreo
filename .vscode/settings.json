@@ -1,6 +1,10 @@
 {
     "rust-analyzer.check.overrideCommand": [
-        "cargo", "clippy", "--target-dir", "./target/clippy"
+        "cargo", "clippy", "--target-dir", "./target/clippy", "--message-format=json"
     ],
-    "cmake.sourceDirectory": "/home/lseiden/Documents/frc/Choreo/trajoptlib",
+    "files.associations": {
+        "*.py": "python",
+        "*.traj": "json"
+    },
+    "java.configuration.updateBuildConfiguration": "interactive"
 }

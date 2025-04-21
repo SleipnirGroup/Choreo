@@ -7,7 +7,7 @@ import {
   DifferentialSample,
   ProgressUpdate,
   Project,
-  SAVE_FILE_VERSION,
+  PROJECT_SCHEMA_VERSION,
   SampleType,
   SwerveSample,
   Trajectory
@@ -25,9 +25,9 @@ import { Commands } from "./tauriCommands";
 import { tracing } from "./tauriTracing";
 
 export type SelectableItemTypes =
-  | IHolonomicWaypointStore
-  | IConstraintStore
-  | IEventMarkerStore
+  | ((IHolonomicWaypointStore | IConstraintStore | IEventMarkerStore) & {
+      uuid: string;
+    })
   | undefined;
 export const SelectableItem = types.union(
   {
@@ -44,10 +44,31 @@ export const SelectableItem = types.union(
   EventMarkerStore,
   ConstraintStore
 );
+function itemType(
+  item: SelectableItemTypes
+): "marker" | "constraint" | "waypoint" | undefined {
+  if (item === undefined) {
+    return undefined;
+  }
+  if (Object.hasOwn(item, "name")) {
+    return "marker";
+  }
+  if (Object.hasOwn(item, "from")) {
+    return "constraint";
+  }
+  if (Object.hasOwn(item, "fixTranslation")) {
+    return "waypoint";
+  }
+  return undefined;
+}
 export const ISampleType = types.enumeration<SampleType>([
   "Swerve",
   "Differential"
 ]);
+
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
 export const DocumentStore = types
   .model("DocumentStore", {
     name: types.string,
@@ -59,38 +80,38 @@ export const DocumentStore = types
     hoveredSidebarItem: types.maybe(types.safeReference(SelectableItem))
   })
   .views((self) => ({
+    selected(item: SelectableItemTypes) {
+      return self.selectedSidebarItem?.uuid === item?.uuid;
+    },
+    hovered(item: SelectableItemTypes) {
+      return self.hoveredSidebarItem?.uuid === item?.uuid;
+    },
     serializeChor(): Project {
       return {
         name: self.name,
-        version: SAVE_FILE_VERSION,
+        version: PROJECT_SCHEMA_VERSION,
         type: self.type,
         variables: self.variables.serialize,
         config: self.robotConfig.serialize
       };
     },
+    get isSidebarMarkerSelected() {
+      return itemType(self.selectedSidebarItem) === "marker";
+    },
     get isSidebarConstraintSelected() {
-      return (
-        self.selectedSidebarItem !== undefined &&
-        Object.hasOwn(self.selectedSidebarItem, "from")
-      );
+      return itemType(self.selectedSidebarItem) === "constraint";
     },
     get isSidebarWaypointSelected() {
-      return (
-        self.selectedSidebarItem !== undefined &&
-        !this.isSidebarConstraintSelected
-      );
+      return itemType(self.selectedSidebarItem) === "waypoint";
+    },
+    get isSidebarMarkerHovered() {
+      return itemType(self.hoveredSidebarItem) === "marker";
     },
     get isSidebarConstraintHovered() {
-      return (
-        self.hoveredSidebarItem !== undefined &&
-        Object.hasOwn(self.hoveredSidebarItem, "from")
-      );
+      return itemType(self.hoveredSidebarItem) === "constraint";
     },
     get isSidebarWaypointHovered() {
-      return (
-        self.hoveredSidebarItem !== undefined &&
-        !this.isSidebarConstraintHovered
-      );
+      return itemType(self.hoveredSidebarItem) === "waypoint";
     },
     get hoveredWaypointIndex() {
       if (this.isSidebarWaypointHovered) {
@@ -111,7 +132,6 @@ export const DocumentStore = types
       self.name = ser.name;
       self.variables.deserialize(ser.variables);
       self.robotConfig.deserialize(ser.config);
-      self.pathlist.paths.clear();
       self.type = ser.type;
     },
     setName(name: string) {
@@ -143,23 +163,39 @@ export const DocumentStore = types
         self.history.redo();
       }
     },
+    async generateAllOutdated() {
+      const uuidsToGenerate: string[] = [];
+      self.pathlist.paths.forEach((pathStore) => {
+        if (!pathStore.ui.upToDate) {
+          uuidsToGenerate.push(pathStore.uuid);
+        }
+      });
+      await Promise.allSettled(uuidsToGenerate.map(this.generatePath));
+    },
+
     async generatePath(uuid: string) {
       const pathStore = self.pathlist.paths.get(uuid);
       if (pathStore === undefined) {
         throw "Path store is undefined";
       }
-      if (pathStore.params.waypoints.length < 2) {
+      const points = pathStore.params.waypoints;
+      if (points.length < 2) {
         return;
       }
+
       console.log(pathStore.serialize);
       const config = self.robotConfig.serialize;
       pathStore.params.constraints
         .filter((constraint) => constraint.enabled)
         .forEach((constraint) => {
-          if (constraint.issues.length > 0) {
-            throw constraint.issues.join(", ");
+          if (constraint.issues(points).length > 0) {
+            throw constraint.issues(points).join(", ");
           }
         });
+
+      pathStore.markers.forEach((m) => {
+        m.from.setTrajectoryTargetIndex(m.from.getTargetIndex());
+      });
       pathStore.ui.setGenerating(true);
       const handle = pathStore.uuid
         .split("")
@@ -226,15 +262,7 @@ export const DocumentStore = types
             const result: Trajectory = rust_trajectory as Trajectory;
             console.log(result);
             if (result.trajectory.samples.length == 0) throw "No trajectory";
-            self.history.startGroup(() => {
-              const newTrajectory = result.trajectory.samples;
-              pathStore.trajectory.setSamples(newTrajectory);
-              pathStore.trajectory.setSplits(result.trajectory.splits);
-              pathStore.trajectory.setWaypoints(result.trajectory.waypoints);
-
-              pathStore.setSnapshot(result.snapshot);
-              self.history.stopGroup();
-            });
+            pathStore.processGenerationResult(result);
           },
           (e) => {
             tracing.error("generatePathPost:", e);

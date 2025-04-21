@@ -15,6 +15,9 @@ export const DEFAULT_WAYPOINT: Waypoint<number> = {
   split: false,
   overrideIntervals: false
 };
+// When adding new fields, consult
+// https://choreo.autos/contributing/schema-upgrade/
+// to see all the places that change with every schema upgrade.
 export const HolonomicWaypointStore = types
   .model("WaypointStore", {
     x: ExpressionStore,

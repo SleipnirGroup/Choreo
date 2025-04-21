@@ -10,13 +10,13 @@
 #include <utility>
 #include <vector>
 
+#include <units/time.h>
 #include <wpi/json_fwd.h>
 
 #include "choreo/trajectory/DifferentialSample.h"
 #include "choreo/trajectory/EventMarker.h"
 #include "choreo/trajectory/SwerveSample.h"
 #include "choreo/trajectory/TrajectorySample.h"
-#include "choreo/util/AllianceFlipperUtil.h"
 
 namespace choreo {
 
@@ -53,13 +53,16 @@ class Trajectory {
    *
    * Will return an empty optional if the trajectory is empty
    *
+   * @param mirrorForRedAlliance whether or not to return the sample as mirrored
+   *   across the field
    * @return The first sample in the trajectory.
    */
-  std::optional<SampleType> GetInitialState() {
+  std::optional<SampleType> GetInitialSample(
+      bool mirrorForRedAlliance = false) const {
     if (samples.size() == 0) {
       return {};
     }
-    return samples[0];
+    return mirrorForRedAlliance ? samples.front().Flipped() : samples.front();
   }
 
   /**
@@ -67,13 +70,16 @@ class Trajectory {
    *
    * Will return an empty optional if the trajectory is empty
    *
+   * @param mirrorForRedAlliance whether or not to return the sample as mirrored
+   *   across the field
    * @return The last sample in the trajectory.
    */
-  std::optional<SampleType> GetFinalSample() {
+  std::optional<SampleType> GetFinalSample(
+      bool mirrorForRedAlliance = false) const {
     if (samples.size() == 0) {
       return {};
     }
-    return samples[samples.size() - 1];
+    return mirrorForRedAlliance ? samples.back().Flipped() : samples.back();
   }
 
   /**
@@ -81,7 +87,7 @@ class Trajectory {
    *
    * This function will return an empty optional if the trajectory is empty.
    *
-   * @tparam Year The field year (default: the current year).
+   * @tparam Year The field year. Defaults to the current year.
    * @param timestamp The timestamp of this sample relative to the beginning of
    * the trajectory.
    * @param mirrorForRedAlliance whether or not to return the sample mirrored.
@@ -89,16 +95,8 @@ class Trajectory {
    */
   template <int Year = util::kDefaultYear>
   std::optional<SampleType> SampleAt(units::second_t timestamp,
-                                     bool mirrorForRedAlliance = false) {
-    std::optional<SampleType> state{};
-    if (samples.size() == 0) {
-      return {};
-    } else if (samples.size() == 1) {
-      return samples[0];
-    } else {
-      state = SampleInternal(timestamp);
-    }
-    if (state.has_value()) {
+                                     bool mirrorForRedAlliance = false) const {
+    if (auto state = SampleInternal(timestamp)) {
       return mirrorForRedAlliance ? state.value().template Flipped<Year>()
                                   : state;
     } else {
@@ -111,19 +109,21 @@ class Trajectory {
    *
    * Will return an empty optional if the trajectory is empty
    *
-   * @tparam Year The field year (default: the current year).
+   * @tparam Year The field year. Defaults to the current year.
    * @param mirrorForRedAlliance whether or not to return the Pose mirrored.
    * @return The first Pose in the trajectory.
    */
   template <int Year = util::kDefaultYear>
-  std::optional<frc::Pose2d> GetInitialPose(bool mirrorForRedAlliance) {
+  std::optional<frc::Pose2d> GetInitialPose(
+      bool mirrorForRedAlliance = false) const {
     if (samples.size() == 0) {
       return {};
     }
     if (mirrorForRedAlliance) {
-      return samples[0].template Flipped<Year>().GetPose();
+      return samples.front().template Flipped<Year>().GetPose();
+    } else {
+      return samples.front().GetPose();
     }
-    return samples[0].GetPose();
   }
 
   /**
@@ -131,19 +131,21 @@ class Trajectory {
    *
    * Will return an empty optional if the trajectory is empty
    *
-   * @tparam Year The field year (default: the current year).
+   * @tparam Year The field year. Defaults to the current year.
    * @param mirrorForRedAlliance whether or not to return the Pose mirrored.
    * @return The last Pose in the trajectory.
    */
   template <int Year = util::kDefaultYear>
-  std::optional<frc::Pose2d> GetFinalPose(bool mirrorForRedAlliance) {
+  std::optional<frc::Pose2d> GetFinalPose(
+      bool mirrorForRedAlliance = false) const {
     if (samples.size() == 0) {
       return {};
     }
     if (mirrorForRedAlliance) {
-      return samples[samples.size() - 1].template Flipped<Year>().GetPose();
+      return samples.back().template Flipped<Year>().GetPose();
+    } else {
+      return samples.back().GetPose();
     }
-    return samples[samples.size() - 1].GetPose();
   }
 
   /**
@@ -152,11 +154,11 @@ class Trajectory {
    * @return The total time the trajectory will take to follow, if empty will
    * return 0 seconds.
    */
-  units::second_t GetTotalTime() {
+  units::second_t GetTotalTime() const {
     if (samples.size() == 0) {
       return 0_s;
     }
-    return samples[samples.size() - 1].GetTimestamp();
+    return GetFinalSample().value().GetTimestamp();
   }
 
   /**
@@ -164,7 +166,7 @@ class Trajectory {
    *
    * @return the vector of poses corresponding to the trajectory.
    */
-  std::vector<frc::Pose2d> GetPoses() {
+  std::vector<frc::Pose2d> GetPoses() const {
     std::vector<frc::Pose2d> poses;
     for (const auto& sample : samples) {
       poses.push_back(sample.GetPose());
@@ -175,11 +177,11 @@ class Trajectory {
   /**
    * Returns this trajectory, mirrored across the field midline.
    *
-   * @tparam Year The field year (default: the current year).
+   * @tparam Year The field year. Defaults to the current year.
    * @return this trajectory, mirrored across the field midline.
    */
   template <int Year = util::kDefaultYear>
-  Trajectory<SampleType> Flipped() {
+  Trajectory<SampleType> Flipped() const {
     std::vector<SampleType> flippedStates;
     for (const auto& state : samples) {
       flippedStates.push_back(state.template Flipped<Year>());
@@ -194,7 +196,7 @@ class Trajectory {
    * @return A vector of all events with the given name in the trajectory, if no
    * events are found, an empty vector is returned.
    */
-  std::vector<EventMarker> GetEvents(std::string_view eventName) {
+  std::vector<EventMarker> GetEvents(std::string_view eventName) const {
     std::vector<EventMarker> matchingEvents;
     for (const auto& event : events) {
       if (event.event == eventName) {
@@ -213,6 +215,7 @@ class Trajectory {
    * the given index.
    */
   std::optional<Trajectory<SampleType>> GetSplit(int splitIndex) const {
+    // Assumption: splits[splitIndex] is a valid index of samples.
     if (splitIndex < 0 || splitIndex >= splits.size()) {
       return std::nullopt;
     }
@@ -223,12 +226,19 @@ class Trajectory {
 
     auto sublist =
         std::vector<SampleType>(samples.begin() + start, samples.begin() + end);
-    double startTime = sublist.front().GetTimestamp();
-    double endTime = sublist.back().GetTimestamp();
+    // Empty section should not be achievable (would mean malformed splits
+    // array), but is handled for safety
+    if (sublist.size() == 0) {
+      return Trajectory<SampleType>{
+          name + "[" + std::to_string(splitIndex) + "]", {}, {}, {}};
+    }
+    // Now we know sublist.size() >= 1
+    units::second_t startTime = sublist.front().GetTimestamp();
+    units::second_t endTime = sublist.back().GetTimestamp();
 
     auto offsetSamples =
-        sublist | std::views::transform([startTime](const auto& s) {
-          return s.offsetBy(-startTime);
+        sublist | std::views::transform([startTime](const SampleType& s) {
+          return s.OffsetBy(-startTime);
         });
 
     auto filteredEvents =
@@ -236,7 +246,7 @@ class Trajectory {
           return e.timestamp >= startTime && e.timestamp <= endTime;
         }) |
         std::views::transform(
-            [startTime](const auto& e) { return e.offsetBy(-startTime); });
+            [startTime](const auto& e) { return e.OffsetBy(-startTime); });
 
     return Trajectory<SampleType>{
         name + "[" + std::to_string(splitIndex) + "]",
@@ -245,7 +255,12 @@ class Trajectory {
         std::vector<EventMarker>(filteredEvents.begin(), filteredEvents.end())};
   }
 
-  // Equality operators for trajectories
+  /**
+   * Trajectory equality operator.
+   *
+   * @param other The other trajectory.
+   * @return True for equality.
+   */
   bool operator==(const Trajectory<SampleType>& other) const {
     if (name != other.name) {
       return false;
@@ -272,10 +287,6 @@ class Trajectory {
     return true;
   }
 
-  bool operator!=(const Trajectory<SampleType>& other) const {
-    return !(*this == other);
-  }
-
   /// The name of the trajectory
   std::string name;
 
@@ -289,9 +300,15 @@ class Trajectory {
   std::vector<EventMarker> events;
 
  private:
-  std::optional<SampleType> SampleInternal(units::second_t timestamp) {
+  std::optional<SampleType> SampleInternal(units::second_t timestamp) const {
+    if (samples.size() == 0) {
+      return {};
+    }
+    if (samples.size() == 1) {
+      return samples[0];
+    }
     if (timestamp < samples[0].GetTimestamp()) {
-      return GetInitialState();
+      return GetInitialSample();
     }
     if (timestamp >= GetTotalTime()) {
       return GetFinalSample();

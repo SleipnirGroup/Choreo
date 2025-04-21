@@ -1,0 +1,23 @@
+{
+  "$schema": "./schemas/desktop-schema.json",
+  "identifier": "main-capability",
+  "description": "Capability for the main window",
+  "windows": ["main"],
+  "permissions": [
+    "core:app:allow-version",
+    "core:event:allow-emit",
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "core:path:allow-basename",
+    "core:path:allow-dirname",
+    "core:webview:allow-internal-toggle-devtools",
+    "core:window:allow-close",
+    "core:window:allow-destroy",
+    "core:window:allow-set-title",
+    "dialog:allow-ask",
+    "dialog:allow-confirm",
+    "dialog:allow-open",
+    "dialog:allow-save",
+    "os:allow-os-type"
+  ]
+}

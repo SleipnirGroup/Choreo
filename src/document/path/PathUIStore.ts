@@ -1,6 +1,7 @@
 import { types, getEnv, Instance } from "mobx-state-tree";
 import { DifferentialSample, type SwerveSample } from "../2025/DocumentTypes";
 import { Env } from "../DocumentManager";
+import { SavingState } from "../UIStateStore";
 
 export const PathUIStore = types
   .model("PathUIStore", {
@@ -10,9 +11,19 @@ export const PathUIStore = types
       Array<SwerveSample> | Array<DifferentialSample>
     >([]),
     generating: false,
-    generationIterationNumber: 0
+    generationIterationNumber: 0,
+    upToDate: false,
+    savingState: types.enumeration<SavingState>(Object.values(SavingState))
   })
   .actions((self) => ({
+    setSavingState(state: SavingState) {
+      self.savingState = state;
+    },
+    setUpToDate(upToDate: boolean) {
+      getEnv<Env>(self).withoutUndo(() => {
+        self.upToDate = upToDate;
+      });
+    },
     setVisibleWaypointsStart(start: number) {
       if (start <= self.visibleWaypointsEnd) {
         self.visibleWaypointsStart = start;

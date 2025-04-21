@@ -7,10 +7,7 @@ use std::{
 use serde::Serialize;
 use tokio::{
     fs,
-    sync::{
-        mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender},
-        Mutex, Notify,
-    },
+    sync::{mpsc::UnboundedSender, Mutex, Notify},
 };
 
 use crate::{ChoreoError, ChoreoResult, ResultExt};
@@ -26,7 +23,9 @@ type DeployPath = Arc<Mutex<PathBuf>>;
 type TrajectoryFileName = String;
 
 mod diagnostics;
-mod formatter;
+
+pub mod formatter;
+pub mod upgrader;
 
 pub use diagnostics::{create_diagnostic_file, get_log_lines};
 
@@ -38,19 +37,6 @@ async fn write_serializable<T: Serialize + Send>(contents: T, file: &Path) -> Ch
     fs::create_dir_all(parent).await?;
     fs::write(file, json).await?;
     Ok(())
-}
-
-#[allow(unused_results)]
-fn spawn_writer_task<T: Serialize + Send + Sync + 'static>(
-    file: PathBuf,
-    mut receiver: UnboundedReceiver<T>,
-) {
-    tokio::spawn(async move {
-        while let Some(mut contents) = receiver.recv().await {
-            write_serializable(&mut contents, &file).await?;
-        }
-        Ok::<(), ChoreoError>(())
-    });
 }
 
 #[allow(missing_debug_implementations)]
@@ -130,7 +116,7 @@ impl WritingResources {
                             let proj = project_updater.wait_for().await;
                             let root = root.lock().await;
                             let path = root.join(&proj.name).with_extension("chor");
-                            write_serializable(proj, &path).await.trace_err();
+                            let _ = write_serializable(proj, &path).await.trace_err();
                             tracing::debug!("Wrote project to {:?}", path);
                         }
                     });
@@ -160,30 +146,11 @@ pub async fn set_deploy_path(resources: &WritingResources, path: PathBuf) {
     resources.trajectory_file_pool.clear();
 }
 
-pub async fn write_trajectory_file(resources: &WritingResources, trajectory_file: TrajectoryFile) {
-    let file = resources
-        .root
-        .lock()
-        .await
-        .join(&trajectory_file.name)
-        .with_extension(TrajectoryFile::EXTENSION);
-
-    tracing::debug!(
-        "Writing path {:} to {:}",
-        trajectory_file.name,
-        file.display()
-    );
-
-    resources
-        .trajectory_file_pool
-        .entry(trajectory_file.name.clone())
-        .or_insert_with(|| {
-            let (sender, receiver) = unbounded_channel();
-            spawn_writer_task(PathBuf::from(&file), receiver);
-            sender
-        })
-        .send(trajectory_file)
-        .trace_err();
+pub async fn write_trajectory_file(
+    resources: &WritingResources,
+    trajectory_file: TrajectoryFile,
+) -> ChoreoResult<()> {
+    write_trajectory_file_immediately(resources, trajectory_file).await
 }
 
 pub async fn write_trajectory_file_immediately(
@@ -203,6 +170,19 @@ pub async fn write_trajectory_file_immediately(
     );
 
     write_serializable(trajectory_file, &file).await
+}
+
+pub async fn write_project_immediately(
+    resources: &WritingResources,
+    project: ProjectFile,
+) -> ChoreoResult<()> {
+    let root = { resources.root.lock().await.clone() };
+    let path = root.join(&project.name).with_extension("chor");
+    let result = write_serializable(project, &path).await.trace_err();
+    if result.is_ok() {
+        tracing::debug!("Wrote project immediately to {:?}", path);
+    }
+    result
 }
 
 /// Read a trajectory from a file.
@@ -274,7 +254,7 @@ pub async fn rename_trajectory_file(
     let old_name = old_trajectory_file.name.clone();
     old_trajectory_file.name.clone_from(&new_name);
 
-    write_trajectory_file(resources, old_trajectory_file.clone()).await;
+    write_trajectory_file(resources, old_trajectory_file.clone()).await?;
 
     tracing::info!(
         "Renamed trajectory {old_name}.traj to {new_name}.traj at {:}",
@@ -284,7 +264,10 @@ pub async fn rename_trajectory_file(
     Ok(old_trajectory_file)
 }
 
-pub async fn write_projectfile(resources: &WritingResources, project: ProjectFile) {
+pub async fn write_projectfile(
+    resources: &WritingResources,
+    project: ProjectFile,
+) -> Result<(), ChoreoError> {
     tracing::debug!(
         "Writing project {:} to {:}",
         project.name,
@@ -296,7 +279,7 @@ pub async fn write_projectfile(resources: &WritingResources, project: ProjectFil
             .with_extension("chor")
             .display()
     );
-    resources.project.update(project).await;
+    write_project_immediately(resources, project).await
 }
 
 pub async fn read_projectfile(

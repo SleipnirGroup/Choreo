@@ -16,7 +16,12 @@ type PoseVariablePanelProps = {
 };
 
 const PoseVariablePanel = observer(
-  (props: PoseVariablePanelProps & { open: boolean }) => {
+  (
+    props: PoseVariablePanelProps & {
+      open: boolean;
+      setOpen: undefined | ((open: boolean) => void);
+    }
+  ) => {
     const entry = props.entry;
 
     return (
@@ -30,7 +35,35 @@ const PoseVariablePanel = observer(
           setName={(name) => props.setName(name)}
           validateName={(name) => props.validateName(name)}
         ></VariableRenamingInput>
-        {`(${entry[1].x.defaultUnitMagnitude?.toFixed(2)} m, ${entry[1].y.defaultUnitMagnitude?.toFixed(2)} m, ${entry[1].heading.defaultUnitMagnitude?.toFixed(2)} rad)`}
+        {/* The part that stays visible when closed. Clicking it opens/closes the panel if setOpen is defined*/}
+        <span
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between"
+          }}
+          onClick={() => {
+            if (props.setOpen !== undefined) {
+              props.setOpen(!props.open);
+            }
+          }}
+        >
+          <span>
+            {`(${entry[1].x.value.toFixed(2)} m, ${entry[1].y.value.toFixed(2)} m, ${entry[1].heading.value.toFixed(2)} rad)`}
+          </span>
+          <Tooltip
+            disableInteractive
+            title={!props.open ? "Edit Pose" : "Close Panel"}
+          >
+            <span>
+              {props.open && props.setOpen !== undefined ? (
+                <ArrowDropUp></ArrowDropUp>
+              ) : (
+                <ArrowDropDown></ArrowDropDown>
+              )}
+            </span>
+          </Tooltip>
+        </span>
         {props.actionButton()}
         {props.open && (
           <>
@@ -39,7 +72,7 @@ const PoseVariablePanel = observer(
               enabled
               maxWidthCharacters={6}
               key={entry[0] + ".x"}
-              title={"x"}
+              title={".x"}
               number={entry[1].x}
             ></ExpressionInput>
 
@@ -49,7 +82,7 @@ const PoseVariablePanel = observer(
               enabled
               maxWidthCharacters={6}
               key={entry[0] + ".y"}
-              title={"y"}
+              title={".y"}
               number={entry[1].y}
             ></ExpressionInput>
             <span></span>
@@ -59,7 +92,7 @@ const PoseVariablePanel = observer(
               key={entry[0] + ".heading"}
               enabled
               maxWidthCharacters={6}
-              title={"θ"}
+              title={".heading"}
               number={entry[1].heading}
             ></ExpressionInput>
             <span></span>
@@ -75,17 +108,13 @@ const OpenablePoseVariablePanel = observer(
     return (
       <PoseVariablePanel
         open={open}
+        setOpen={setOpen}
         {...props}
         logo={() => (
           <span>
             <Tooltip disableInteractive title={DimensionsExt["Pose"].name}>
               {DimensionsExt["Pose"].icon()}
-            </Tooltip>{" "}
-            {open ? (
-              <ArrowDropUp onClick={() => setOpen(false)}></ArrowDropUp>
-            ) : (
-              <ArrowDropDown onClick={() => setOpen(true)}></ArrowDropDown>
-            )}
+            </Tooltip>
           </span>
         )}
       ></PoseVariablePanel>
@@ -105,10 +134,12 @@ export const AddPoseVariablePanel = observer(
         validateName={(name) => doc.variables.validateName(name, "")}
         logo={props.logo}
         open={true}
+        setOpen={undefined}
         entry={[props.name, props.pose]}
         setName={(name) => props.setName(name)}
         actionButton={() => (
           <Add
+            sx={{ color: "var(--accent-purple)" }}
             onClick={(_) => {
               if (doc.variables.validateName(props.name, "")) {
                 const pose = {
@@ -131,7 +162,7 @@ const PoseVariablesConfigPanel = observer(() => {
   doc.variables.poses.keys();
   return (
     <>
-      {Array.from(doc.variables.poses.entries()).map((entry) => (
+      {doc.variables.sortedPoses.map((entry) => (
         <OpenablePoseVariablePanel
           entry={entry}
           setName={(name) => doc.variables.renamePose(entry[0], name)}

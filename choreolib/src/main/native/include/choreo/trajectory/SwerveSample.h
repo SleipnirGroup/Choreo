@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <array>
+#include <type_traits>
 
 #include <frc/kinematics/ChassisSpeeds.h>
 #include <units/acceleration.h>
@@ -12,7 +13,9 @@
 #include <units/angular_velocity.h>
 #include <units/force.h>
 #include <units/length.h>
+#include <units/time.h>
 #include <units/velocity.h>
+#include <wpi/MathExtras.h>
 #include <wpi/json_fwd.h>
 
 #include "choreo/util/AllianceFlipperUtil.h"
@@ -27,7 +30,7 @@ class SwerveSample {
   /**
    * Constructs a SwerveSample that is defaulted.
    */
-  SwerveSample() = default;
+  constexpr SwerveSample() = default;
 
   /**
    * Constructs a SwerveSample with the specified parameters.
@@ -44,16 +47,20 @@ class SwerveSample {
    * @param ay The acceleration of the sample in the Y direction.
    * @param alpha The angular acceleration of the sample.
    * @param moduleForcesX The force on each swerve module in the X direction.
+   *   Module forces appear in the following order: [FL, FR, BL, BR].
    * @param moduleForcesY The force on each swerve module in the Y direction.
+   *   Module forces appear in the following order: [FL, FR, BL, BR].
    */
-  SwerveSample(units::second_t timestamp, units::meter_t x, units::meter_t y,
-               units::radian_t heading, units::meters_per_second_t vx,
-               units::meters_per_second_t vy, units::radians_per_second_t omega,
-               units::meters_per_second_squared_t ax,
-               units::meters_per_second_squared_t ay,
-               units::radians_per_second_squared_t alpha,
-               std::array<units::newton_t, 4> moduleForcesX,
-               std::array<units::newton_t, 4> moduleForcesY)
+  constexpr SwerveSample(units::second_t timestamp, units::meter_t x,
+                         units::meter_t y, units::radian_t heading,
+                         units::meters_per_second_t vx,
+                         units::meters_per_second_t vy,
+                         units::radians_per_second_t omega,
+                         units::meters_per_second_squared_t ax,
+                         units::meters_per_second_squared_t ay,
+                         units::radians_per_second_squared_t alpha,
+                         std::array<units::newton_t, 4> moduleForcesX,
+                         std::array<units::newton_t, 4> moduleForcesY)
       : timestamp{timestamp},
         x{x},
         y{y},
@@ -69,32 +76,42 @@ class SwerveSample {
 
   /**
    * Gets the timestamp of the SwerveSample.
+   *
+   * @return The timestamp.
    */
-  units::second_t GetTimestamp() const;
+  constexpr units::second_t GetTimestamp() const { return timestamp; }
 
   /**
    * Gets the Pose2d of the SwerveSample.
+   *
+   * @return The pose.
    */
-  frc::Pose2d GetPose() const;
+  constexpr frc::Pose2d GetPose() const {
+    return frc::Pose2d{x, y, frc::Rotation2d{heading}};
+  }
 
   /**
-   * Gets the field relative chassis speeds of the SwerveSample.
+   * Gets the field-relative chassis speeds of the SwerveSample.
+   *
+   * @return The field-relative chassis speeds.
    */
-  frc::ChassisSpeeds GetChassisSpeeds() const;
+  constexpr frc::ChassisSpeeds GetChassisSpeeds() const {
+    return frc::ChassisSpeeds{vx, vy, omega};
+  }
 
   /**
    * Returns the current sample flipped based on the field year.
    *
    * @tparam Year The field year.
-   * @returns SwerveSample that is flipped based on the field layout.
+   * @return SwerveSample that is flipped based on the field layout.
    */
-  template <int Year>
-  SwerveSample Flipped() const {
-    static constexpr auto flipper = choreo::util::GetFlipperForYear<Year>();
+  template <int Year = util::kDefaultYear>
+  constexpr SwerveSample Flipped() const {
+    constexpr auto flipper = choreo::util::GetFlipperForYear<Year>();
     if constexpr (flipper.isMirrored) {
       return SwerveSample{timestamp,
                           flipper.FlipX(x),
-                          y,
+                          flipper.FlipY(y),
                           flipper.FlipHeading(heading),
                           -vx,
                           vy,
@@ -102,10 +119,16 @@ class SwerveSample {
                           -ax,
                           ay,
                           -alpha,
-                          {-moduleForcesX[3], -moduleForcesX[2],
-                           -moduleForcesX[1], -moduleForcesX[0]},
-                          {moduleForcesY[3], moduleForcesY[2], moduleForcesY[1],
-                           moduleForcesY[0]}};
+                          // FL, FR, BL, BR
+                          // Mirrored
+                          // -FR, -FL, -BR, -BL
+                          {-moduleForcesX[1], -moduleForcesX[0],
+                           -moduleForcesX[3], -moduleForcesX[2]},
+                          // FL, FR, BL, BR
+                          // Mirrored
+                          // -FR, -FL, -BR, -BL
+                          {moduleForcesY[1], moduleForcesY[0], moduleForcesY[3],
+                           moduleForcesY[2]}};
     } else {
       return SwerveSample{timestamp,
                           flipper.FlipX(x),
@@ -113,10 +136,10 @@ class SwerveSample {
                           flipper.FlipHeading(heading),
                           -vx,
                           -vy,
-                          -omega,
+                          omega,
                           -ax,
                           -ay,
-                          -alpha,
+                          alpha,
                           {-moduleForcesX[0], -moduleForcesX[1],
                            -moduleForcesX[2], -moduleForcesX[3]},
                           {-moduleForcesY[0], -moduleForcesY[1],
@@ -128,24 +151,66 @@ class SwerveSample {
    * Returns the current sample offset by a the time offset passed in.
    *
    * @param timeStampOffset time to move sample by
-   * @returns SwerveSample that is moved forward by the offset
+   * @return SwerveSample that is moved forward by the offset
    */
-  SwerveSample OffsetBy(units::second_t timeStampOffset) const;
+  constexpr SwerveSample OffsetBy(units::second_t timeStampOffset) const {
+    return SwerveSample{timestamp + timeStampOffset,
+                        x,
+                        y,
+                        heading,
+                        vx,
+                        vy,
+                        omega,
+                        ax,
+                        ay,
+                        alpha,
+                        moduleForcesX,
+                        moduleForcesY};
+  }
 
   /**
    * Interpolates between endValue and this by t
    *
    * @param endValue the end interpolated value
    * @param t time to move sample by
-   * @returns the interpolated sample
+   * @return the interpolated sample
    */
-  SwerveSample Interpolate(const SwerveSample& endValue,
-                           units::second_t t) const;
+  constexpr SwerveSample Interpolate(const SwerveSample& endValue,
+                                     units::second_t t) const {
+    units::scalar_t scale = (t - timestamp) / (endValue.timestamp - timestamp);
+    frc::Pose2d interpolatedPose =
+        GetPose().Exp(GetPose().Log(endValue.GetPose()) * scale.value());
+
+    std::array<units::newton_t, 4> interpolatedForcesX;
+    std::array<units::newton_t, 4> interpolatedForcesY;
+    for (int i = 0; i < 4; i++) {
+      interpolatedForcesX[i] =
+          wpi::Lerp(moduleForcesX[i], endValue.moduleForcesX[i], scale.value());
+      interpolatedForcesY[i] =
+          wpi::Lerp(moduleForcesY[i], endValue.moduleForcesY[i], scale.value());
+    }
+
+    return SwerveSample{wpi::Lerp(timestamp, endValue.timestamp, scale),
+                        interpolatedPose.X(),
+                        interpolatedPose.Y(),
+                        interpolatedPose.Rotation().Radians(),
+                        wpi::Lerp(vx, endValue.vx, scale),
+                        wpi::Lerp(vy, endValue.vy, scale),
+                        wpi::Lerp(omega, endValue.omega, scale),
+                        wpi::Lerp(ax, endValue.ax, scale),
+                        wpi::Lerp(ay, endValue.ay, scale),
+                        wpi::Lerp(alpha, endValue.alpha, scale),
+                        interpolatedForcesX,
+                        interpolatedForcesY};
+  }
 
   /**
-   * Comparison operators for swerve samples.
+   * SwerveSample equality operator.
+   *
+   * @param other The other SwerveSample.
+   * @return True for equality.
    */
-  bool operator==(const SwerveSample& other) const {
+  constexpr bool operator==(const SwerveSample& other) const {
     constexpr double epsilon = 1e-6;
 
     auto compare_units = [epsilon](const auto& a, const auto& b) {
@@ -168,49 +233,47 @@ class SwerveSample {
            compare_arrays(moduleForcesY, other.moduleForcesY);
   }
 
-  bool operator!=(const SwerveSample& other) const { return !(*this == other); }
-
-  /// The timestamp of this sample, relative to the beginning of the trajectory.
+  /// The timestamp of this sample relative to the beginning of the trajectory.
   units::second_t timestamp = 0_s;
 
-  /// The X position of the sample
+  /// The X position of the sample relative to the blue alliance wall origin.
   units::meter_t x = 0_m;
 
-  /// The Y position of the sample
+  /// The Y position of the sample relative to the blue alliance wall origin.
   units::meter_t y = 0_m;
 
-  /// The heading of the sample, with 0 being in the +X direction
+  /// The heading of the sample, with 0 being in the +X direction.
   units::radian_t heading = 0_rad;
 
-  /// The velocity of the sample in the X direction
+  /// The velocity of the sample in the X direction.
   units::meters_per_second_t vx = 0_mps;
 
-  /// The velocity of the sample in the Y direction
+  /// The velocity of the sample in the Y direction.
   units::meters_per_second_t vy = 0_mps;
 
-  /// The angular velocity of the sample
+  /// The angular velocity of the sample.
   units::radians_per_second_t omega = 0_rad_per_s;
 
-  /// The acceleration of the in the X direction
+  /// The acceleration of the in the X direction.
   units::meters_per_second_squared_t ax = 0_mps_sq;
 
-  /// The acceleration of the in the Y direction
+  /// The acceleration of the in the Y direction.
   units::meters_per_second_squared_t ay = 0_mps_sq;
 
-  /// The angular acceleration of the sample
+  /// The angular acceleration of the sample.
   units::radians_per_second_squared_t alpha = 0_rad_per_s_sq;
 
-  /// The force on each swerve module in the X direction Module forces appear in
-  /// the following order: [FL, FR, BL, BR]
+  /// The force on each swerve module in the X direction. Module forces appear
+  /// in the following order: [FL, FR, BL, BR].
   std::array<units::newton_t, 4> moduleForcesX{0_N, 0_N, 0_N, 0_N};
 
-  /// The force on each swerve module in the Y direction Module forces appear in
-  /// the following order: [FL, FR, BL, BR]
+  /// The force on each swerve module in the Y direction. Module forces appear
+  /// in the following order: [FL, FR, BL, BR].
   std::array<units::newton_t, 4> moduleForcesY{0_N, 0_N, 0_N, 0_N};
 };
 
-void to_json(wpi::json& json, const SwerveSample& TrajectorySample);
-void from_json(const wpi::json& json, SwerveSample& TrajectorySample);
+void to_json(wpi::json& json, const SwerveSample& trajectorySample);
+void from_json(const wpi::json& json, SwerveSample& trajectorySample);
 
 }  // namespace choreo
 

@@ -20,11 +20,13 @@ fn main() {
     let mut bridge_build = cxx_build::bridge("src/lib.rs");
 
     bridge_build
-        .file("src/RustFFI.cpp")
+        .file("src/rust_ffi.cpp")
         .include("src")
         .include(format!("{}/include", cmake_dest.display()))
         .include(format!("{}/include/eigen3", cmake_dest.display()))
-        .std("c++20");
+        .flag_if_supported("-std=c++23")
+        .flag_if_supported("-std=c++2b")
+        .flag_if_supported("/std:c++23preview");
 
     if cfg!(target_os = "windows") {
         bridge_build.flag("/EHsc").flag("/utf-8");
@@ -47,9 +49,9 @@ fn main() {
     println!("cargo:rustc-link-lib=TrajoptLibRust");
     println!("cargo:rustc-link-lib=TrajoptLib");
     println!("cargo:rustc-link-lib=Sleipnir");
-    println!("cargo:rustc-link-lib=fmt");
 
-    println!("cargo:rerun-if-changed=src/RustFFI.hpp");
-    println!("cargo:rerun-if-changed=src/RustFFI.cpp");
-    println!("cargo:rerun-if-changed=src/lib.rs");
+    println!("cargo:rerun-if-changed=CMakeLists.txt");
+    println!("cargo:rerun-if-changed=cmake");
+    println!("cargo:rerun-if-changed=include");
+    println!("cargo:rerun-if-changed=src");
 }

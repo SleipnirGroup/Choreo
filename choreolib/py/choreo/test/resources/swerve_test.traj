@@ -1,6 +1,6 @@
 {
  "name":"test",
- "version":"v2025.0.0",
+ "version":1,
  "snapshot":{
   "waypoints":[
     {"x":2.6185336112976074, "y":6.034867286682129, "heading":0.0, "intervals":16, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
@@ -9,7 +9,7 @@
     {"from":"first", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":"first", "to":"last", "data":{"type":"KeepInRectangle", "props":{"x":0.0, "y":0.0, "w":16.54, "h":8.21}}, "enabled":true}],
-  "targetDt":0.1
+  "targetDt":0.05
  },
  "params":{
   "waypoints":[
@@ -20,11 +20,12 @@
     {"from":"last", "to":null, "data":{"type":"StopPoint", "props":{}}, "enabled":true},
     {"from":"first", "to":"last", "data":{"type":"KeepInRectangle", "props":{"x":{"exp":"0 m", "val":0.0}, "y":{"exp":"0 m", "val":0.0}, "w":{"exp":"16.54 m", "val":16.54}, "h":{"exp":"8.21 m", "val":8.21}}}, "enabled":true}],
   "targetDt":{
-   "exp":"0.1 s",
-   "val":0.1
+   "exp":"0.05 s",
+   "val":0.05
   }
  },
  "trajectory":{
+  "sampleType":"Swerve",
   "waypoints":[0.0,1.3926677138988457],
   "samples":[
     {"t":0.0, "x":2.618533611297608, "y":6.034867286682128, "heading":0.0, "vx":0.0, "vy":0.0, "omega":0.0, "ax":0.0, "ay":0.0, "alpha":0.0, "fx":[0.0,0.0,0.0,0.0], "fy":[0.0,0.0,0.0,0.0]},
@@ -47,6 +48,6 @@
   "splits":[],
   "forcesAvailable":false
  },
- "events":[],
+ "events":[{"name":"testEvent", "from":{"target":1, "targetTimestamp":1.3926677138988457, "offset":{"exp":"-1 s", "val":-1.0}}, "event":null}],
  "pplib_commands":[]
 }

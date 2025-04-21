@@ -1,17 +1,23 @@
+#!/usr/bin/env python3
+
 """
 A utility script to update the version in multiple files.
 
 simply run `python update_version.py <version>` to update the version in the files.
 """
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
-import re
-from typing import Literal, Callable
+from typing import Callable, Literal
 
 
 def default_version_string(v: str, count: str, hash: str, mod: str, num: str):
-    return f"{v}-{mod}-{num}" if len(mod) > 0 else f"{v}-{count}-{hash}"
+    mod = f"-{mod}" if len(mod) > 0 else ""
+    num = f"-{num}" if len(num) > 0 else ""
+    count = f"-{count}" if len(count) > 0 else ""
+    hash = f"-{hash}" if len(hash) > 0 else ""
+    return f"{v}{mod}{num}" if len(mod) > 0 else f"{v}{count}{hash}"
 
 
 def cargo_version_string(v: str, count: str, hash: str, mod: str, num: str):
@@ -32,6 +38,21 @@ LOCATIONS: list[VersionLocation] = [
     VersionLocation(
         relative_path=Path("package.json"),
         version_path=["version"],
+        file_format="json2",
+    ),
+    VersionLocation(
+        relative_path=Path("choreolib/ChoreoLib2025.json"),
+        version_path=["version"],
+        file_format="json2",
+    ),
+    VersionLocation(
+        relative_path=Path("choreolib/ChoreoLib2025.json"),
+        version_path=["javaDependencies", 0, "version"],
+        file_format="json2",
+    ),
+    VersionLocation(
+        relative_path=Path("choreolib/ChoreoLib2025.json"),
+        version_path=["cppDependencies", 0, "version"],
         file_format="json2",
     ),
     VersionLocation(
@@ -114,6 +135,7 @@ def update_version(version: str) -> None:
                 raise e
             with open(file_path, "w") as f:
                 json.dump(og, f, indent=int(location.file_format[-1]))
+                f.write("\n")
         elif location.file_format == "toml":
             import tomlkit
 

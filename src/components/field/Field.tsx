@@ -64,16 +64,18 @@ export class Field extends Component<Props, State> {
               constraint.uuid == (selectedSidebar as IConstraintStore)!.uuid
           ) && (
             <ConstraintsConfigPanel
+              points={activePath.params.waypoints}
               constraint={selectedSidebar as IConstraintStore}
             ></ConstraintsConfigPanel>
           )}
         {selectedSidebar !== undefined &&
-          "offset" in selectedSidebar &&
-          activePath.trajectory.markers.find(
+          "event" in selectedSidebar &&
+          activePath.markers.find(
             (marker) =>
               marker.uuid == (selectedSidebar as IEventMarkerStore)!.uuid
           ) && (
             <EventMarkerConfigPanel
+              points={activePath.params.waypoints}
               marker={selectedSidebar as IEventMarkerStore}
             ></EventMarkerConfigPanel>
           )}

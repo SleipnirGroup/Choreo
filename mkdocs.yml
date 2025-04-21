@@ -1,6 +1,6 @@
 # Project information
 site_name: Choreo Documentation
-site_url: https://sleipnirgroup.github.io/Choreo/
+site_url: https://choreo.autos/
 site_description: A graphical tool for planning time-optimized trajectories for autonomous mobile robots in the FIRST Robotics Competition.
 
 # Repository
@@ -32,7 +32,7 @@ theme:
   font:
     text: Roboto
     code: Roboto Mono
-  icon: media/icon1024x1024.png
+  logo: media/icon1024x1024.png
   favicon: media/icon1024x1024.png
   features:
     - content.code.copy
@@ -73,6 +73,11 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
 
 extra_javascript:
   - js/mathjax.js
@@ -85,7 +90,6 @@ nav:
       - Installation: installation.md
       - Document Settings Panel: document-settings.md
       - Robot Configuration: document-settings/robot-configuration.md
-      - File Export Settings: document-settings/file-export-settings.md
   - Usage:
       - Editing Paths: usage/editing-paths.md
       - Controls & Shortcuts: usage/controls-shortcuts.md
@@ -93,14 +97,18 @@ nav:
       - View Options Panel: usage/view-options-panel.md
       - Estimating Moment of Inertia: usage/estimating-moi.md
   - ChoreoLib:
-      - Installation: choreolib/installation.md
-      - Basic Usage: choreolib/basic-usage.md
-      - Samples: choreolib/samples.md
-      - Auto Routines: choreolib/auto-routines.md
+      - Getting Started: choreolib/getting-started.md
+      - Auto Factory: choreolib/auto-factory.md
+      - Trajectory API: choreolib/trajectory-api.md
       - Java API: api/choreolib/java/index.html
       - C++ API: api/choreolib/cpp/index.html
-  - TrajoptLib:
+  - TrajoptLib (Internal API):
       - C++ API: api/trajoptlib/cpp/index.html
   - Contributing:
-      - Building: contributing/building-choreo.md
+      - Building Choreo: contributing/building-choreo.md
+      - Building ChoreoLib: contributing/building-choreolib.md
+      - Building Documentation: contributing/building-docs.md
       - Contributing Guide: contributing/contributing-guide.md
+      - Release Process: contributing/release-process.md
+      - Upgrading File Schemas: contributing/schema-upgrade.md
+      - Sample Flipping Logic: contributing/sample-flipping.md

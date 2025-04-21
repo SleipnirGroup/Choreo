@@ -67,7 +67,7 @@ option(BUILD_EXAMPLES "Build examples" OFF)
 include(CompilerFlags)
 
 file(GLOB_RECURSE TrajoptLib_src src/*.cpp)
-list(FILTER TrajoptLib_src EXCLUDE REGEX RustFFI.cpp)
+list(FILTER TrajoptLib_src EXCLUDE REGEX rust_ffi.cpp)
 
 add_library(TrajoptLib ${TrajoptLib_src})
 compiler_flags(TrajoptLib)
@@ -88,7 +88,7 @@ if(BUILD_TESTING)
     fetchcontent_declare(
         Catch2
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG v3.7.0
+        GIT_TAG v3.8.0
         CMAKE_ARGS
     )
     fetchcontent_makeavailable(Catch2)
@@ -102,12 +102,9 @@ set(BUILD_EXAMPLES OFF)
 
 fetchcontent_declare(
     Sleipnir
-    GIT_REPOSITORY https://github.com/SleipnirGroup/Sleipnir.git
-    # main on 2024-09-18
-    GIT_TAG 8bbce85252bc351c5aacb0de9f50fa31b8b9e1ae
-    PATCH_COMMAND
-        git apply ${CMAKE_CURRENT_SOURCE_DIR}/cmake/0001-Downgrade-to-C-20.patch
-    UPDATE_DISCONNECTED 1
+    GIT_REPOSITORY https://github.com/SleipnirGroup/Sleipnir
+    # main on 2025-04-16
+    GIT_TAG 294722035a920ae8c44bb8f562959e892d7861b7
 )
 fetchcontent_makeavailable(Sleipnir)
 
@@ -182,14 +179,10 @@ if(BUILD_TESTING)
         TrajoptLibTest
         PRIVATE TrajoptLib Catch2::Catch2WithMain
     )
-    if(NOT CMAKE_TOOLCHAIN_FILE)
-        # https://github.com/catchorg/Catch2/issues/2873
-        catch_discover_tests(
-            TrajoptLibTest
-            PROPERTIES SKIP_RETURN_CODE 4
-            DL_PATHS ${Sleipnir_BINARY_DIR}/$<${IS_MULTI_CONFIG}:$<CONFIG>>
-        )
-    endif()
+    catch_discover_tests(
+        TrajoptLibTest
+        DL_PATHS ${Sleipnir_BINARY_DIR}/$<${IS_MULTI_CONFIG}:$<CONFIG>>
+    )
 endif()
 
 # Build examples and example tests
@@ -231,10 +224,8 @@ if(BUILD_EXAMPLES)
                 PRIVATE TrajoptLib Catch2::Catch2WithMain
             )
             if(NOT CMAKE_TOOLCHAIN_FILE)
-                # https://github.com/catchorg/Catch2/issues/2873
                 catch_discover_tests(
                     ${example}Test
-                    PROPERTIES SKIP_RETURN_CODE 4
                     DL_PATHS
                         ${Sleipnir_BINARY_DIR}/$<${IS_MULTI_CONFIG}:$<CONFIG>>
                 )
