@@ -93,7 +93,7 @@ jobs:
       - name: Set up sccache
         uses: mozilla-actions/sccache-action@v0.0.9
       - name: Cargo test
-        run: cargo test
+        run: cargo test --release
         env:
           RUSTC_WRAPPER: sccache
           SCCACHE_GHA_ENABLED: true
