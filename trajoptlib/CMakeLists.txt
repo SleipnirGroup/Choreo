@@ -166,21 +166,21 @@ endif()
 get_cmake_property(IS_MULTI_CONFIG GENERATOR_IS_MULTI_CONFIG)
 # Build TrajoptLib tests
 if(BUILD_TESTING)
-    file(GLOB_RECURSE TrajoptLib_test_src test/src/*.cpp)
-    add_executable(TrajoptLibTest ${TrajoptLib_test_src})
-    compiler_flags(TrajoptLibTest)
+    file(GLOB_RECURSE trajoptlib_test_src test/src/*.cpp)
+    add_executable(trajoptlib_test ${trajoptlib_test_src})
+    compiler_flags(trajoptlib_test)
     target_include_directories(
-        TrajoptLibTest
+        trajoptlib_test
         PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/src
             ${CMAKE_CURRENT_SOURCE_DIR}/test/include
     )
     target_link_libraries(
-        TrajoptLibTest
+        trajoptlib_test
         PRIVATE TrajoptLib Catch2::Catch2WithMain
     )
     catch_discover_tests(
-        TrajoptLibTest
+        trajoptlib_test
         DL_PATHS ${Sleipnir_BINARY_DIR}/$<${IS_MULTI_CONFIG}:$<CONFIG>>
     )
 endif()
@@ -206,26 +206,26 @@ if(BUILD_EXAMPLES)
             AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/examples/${example}/test
         )
             file(GLOB_RECURSE test_sources examples/${example}/test/*.cpp)
-            add_executable(${example}Test ${sources} ${test_sources})
+            add_executable(${example}_test ${sources} ${test_sources})
             target_include_directories(
-                ${example}Test
+                ${example}_test
                 PRIVATE
                     ${CMAKE_CURRENT_SOURCE_DIR}/examples/${example}/src
                     ${CMAKE_CURRENT_SOURCE_DIR}/examples/${example}/test
             )
-            compiler_flags(${example}Test)
-            target_compile_definitions(${example}Test PUBLIC RUNNING_TESTS)
+            compiler_flags(${example}_test)
+            target_compile_definitions(${example}_test PUBLIC RUNNING_TESTS)
             target_include_directories(
-                ${example}Test
+                ${example}_test
                 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/examples/${example}/include
             )
             target_link_libraries(
-                ${example}Test
+                ${example}_test
                 PRIVATE TrajoptLib Catch2::Catch2WithMain
             )
             if(NOT CMAKE_TOOLCHAIN_FILE)
                 catch_discover_tests(
-                    ${example}Test
+                    ${example}_test
                     DL_PATHS
                         ${Sleipnir_BINARY_DIR}/$<${IS_MULTI_CONFIG}:$<CONFIG>>
                 )
