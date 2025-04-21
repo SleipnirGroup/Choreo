@@ -38,7 +38,7 @@ impl Display for BuildInfo {
         writeln!(f, "  in profile {}", self.profile)?;
         writeln!(
             f,
-            "  {}in ci",
+            "  {}in CI",
             if self.ci_platform.is_some() {
                 ""
             } else {
