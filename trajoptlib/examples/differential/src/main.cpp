@@ -46,8 +46,7 @@ int main() {
     path.set_control_interval_counts({40});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
-    auto solution = generator.generate(true);
-    if (!solution) {
+    if (auto solution = generator.generate(true); !solution) {
       std::println("Error in example 1: {}", slp::to_message(solution.error()));
       return std::to_underlying(solution.error());
     }
@@ -64,8 +63,7 @@ int main() {
     path.set_control_interval_counts({40});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
-    auto solution = generator.generate(true);
-    if (!solution) {
+    if (auto solution = generator.generate(true); !solution) {
       std::println("Error in example 2: {}", slp::to_message(solution.error()));
       return std::to_underlying(solution.error());
     }
@@ -83,8 +81,7 @@ int main() {
     path.set_control_interval_counts({50, 50});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
-    auto solution = generator.generate(true);
-    if (!solution) {
+    if (auto solution = generator.generate(true); !solution) {
       std::println("Error in example 2: {}", slp::to_message(solution.error()));
       return std::to_underlying(solution.error());
     }
@@ -100,8 +97,7 @@ int main() {
     path.set_control_interval_counts({40});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
-    auto solution = generator.generate(true);
-    if (!solution) {
+    if (auto solution = generator.generate(true); !solution) {
       std::println("Error in example 4: {}", slp::to_message(solution.error()));
       return std::to_underlying(solution.error());
     }
@@ -135,8 +131,7 @@ int main() {
     path.set_control_interval_counts({40});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
-    auto solution = generator.generate(true);
-    if (!solution) {
+    if (auto solution = generator.generate(true); !solution) {
       std::println("Error in example 5: {}", slp::to_message(solution.error()));
       return std::to_underlying(solution.error());
     }
@@ -174,8 +169,7 @@ int main() {
     path.set_control_interval_counts({40, 30, 30, 40});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
-    auto solution = generator.generate(true);
-    if (!solution) {
+    if (auto solution = generator.generate(true); !solution) {
       std::println("Error in example 6: {}", slp::to_message(solution.error()));
       return std::to_underlying(solution.error());
     }
@@ -208,8 +202,7 @@ int main() {
     path.set_control_interval_counts({50});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
-    auto solution = generator.generate(true);
-    if (!solution) {
+    if (auto solution = generator.generate(true); !solution) {
       std::println("Error in example 7: {}", slp::to_message(solution.error()));
       return std::to_underlying(solution.error());
     }
