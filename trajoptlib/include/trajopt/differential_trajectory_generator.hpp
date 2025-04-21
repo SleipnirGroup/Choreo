@@ -226,8 +226,8 @@ class TRAJOPT_DLLEXPORT DifferentialTrajectoryGenerator {
    * This function may take a long time to complete.
    *
    * @param diagnostics Enables diagnostic prints.
-   * @return Returns a holonomic trajectory on success, or a string containing a
-   *   failure reason.
+   * @return Returns a differential trajectory on success, or the solver's exit
+   *     status on failure.
    */
   std::expected<DifferentialSolution, slp::ExitStatus> generate(
       bool diagnostics = false);
