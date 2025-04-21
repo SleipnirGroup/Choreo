@@ -107,6 +107,7 @@ int main() {
   {
     trajopt::DifferentialPathBuilder path;
     path.set_drivetrain(differential_drivetrain);
+    path.set_bumpers(0.65, 0.65, 0.65, 0.65);
     path.pose_wpt(0, 0.0, 0.0, 0.0);
     trajopt::KeepOutRegion keep_out{// Radius of 0.1
                                     .safety_distance = 0.1,
