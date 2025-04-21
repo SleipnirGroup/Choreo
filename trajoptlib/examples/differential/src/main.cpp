@@ -200,7 +200,7 @@ int main() {
 
     path.wpt_constraint(0, zero_linear_velocity);
     path.wpt_constraint(1, zero_linear_velocity);
-    path.set_control_interval_counts({50});
+    path.set_control_interval_counts({40});
 
     trajopt::DifferentialTrajectoryGenerator generator{path};
     if (auto solution = generator.generate(true); !solution) {
