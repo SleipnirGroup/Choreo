@@ -35,11 +35,11 @@ inline std::vector<CubicHermitePoseSplineHolonomic> splines_from_waypoints(
 
   // populate translation and heading vectors
   for (const auto& guess_points : initial_guess_points) {
-    for (const auto& guessPoint : guess_points) {
-      flat_translation_points.emplace_back(guessPoint.translation().x(),
-                                           guessPoint.translation().y());
-      flat_headings.emplace_back(guessPoint.rotation().cos(),
-                                 guessPoint.rotation().sin());
+    for (const auto& guess_point : guess_points) {
+      flat_translation_points.emplace_back(guess_point.translation().x(),
+                                           guess_point.translation().y());
+      flat_headings.emplace_back(guess_point.rotation().cos(),
+                                 guess_point.rotation().sin());
     }
   }
 
@@ -123,11 +123,11 @@ inline Solution generate_spline_initial_guess(
   for (size_t sgmt_idx = 1; sgmt_idx < initial_guess_points.size();
        ++sgmt_idx) {
     auto guess_points_size = initial_guess_points.at(sgmt_idx).size();
-    auto samplesForSgmt = control_interval_counts.at(sgmt_idx - 1);
-    size_t samples = samplesForSgmt / guess_points_size;
+    auto samples_for_sgmt = control_interval_counts.at(sgmt_idx - 1);
+    size_t samples = samples_for_sgmt / guess_points_size;
     for (size_t guessIdx = 0; guessIdx < guess_points_size; ++guessIdx) {
       if (guessIdx == (guess_points_size - 1)) {
-        samples += (samplesForSgmt % guess_points_size);
+        samples += (samples_for_sgmt % guess_points_size);
       }
       for (size_t sample_idx = 1; sample_idx < samples + 1; ++sample_idx) {
         auto t = static_cast<double>(sample_idx) / samples;
