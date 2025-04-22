@@ -231,8 +231,8 @@ class TRAJOPT_DLLEXPORT PathBuilder {
    * @return the initial guess, as a solution
    */
   Solution calculate_spline_initial_guess() const {
-    return GenerateSplineInitialGuess<Solution>(initial_guess_points,
-                                                control_interval_counts);
+    return generate_spline_initial_guess<Solution>(initial_guess_points,
+                                                   control_interval_counts);
   }
 
  protected:

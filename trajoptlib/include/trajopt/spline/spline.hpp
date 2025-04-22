@@ -47,35 +47,35 @@ class Spline {
    * @param t The point t
    * @return The pose and curvature at that point.
    */
-  std::optional<PoseWithCurvature> GetPoint(double t) const {
-    Eigen::Vector<double, Degree + 1> polynomialBases;
+  std::optional<PoseWithCurvature> get_point(double t) const {
+    Eigen::Vector<double, Degree + 1> polynomial_bases;
 
     // Populate the polynomial bases
     for (int i = 0; i <= Degree; i++) {
-      polynomialBases(i) = std::pow(t, Degree - i);
+      polynomial_bases(i) = std::pow(t, Degree - i);
     }
 
     // This simply multiplies by the coefficients. We need to divide out t some
     // n number of times where n is the derivative we want to take.
-    Eigen::Vector<double, 6> combined = Coefficients() * polynomialBases;
+    Eigen::Vector<double, 6> combined = coefficients() * polynomial_bases;
 
     double dx, dy, ddx, ddy;
 
     // If t = 0, all other terms in the equation cancel out to zero. We can use
     // the last x⁰ term in the equation.
     if (t == 0.0) {
-      dx = Coefficients()(2, Degree - 1);
-      dy = Coefficients()(3, Degree - 1);
-      ddx = Coefficients()(4, Degree - 2);
-      ddy = Coefficients()(5, Degree - 2);
+      dx = coefficients()(2, Degree - 1);
+      dy = coefficients()(3, Degree - 1);
+      ddx = coefficients()(4, Degree - 2);
+      ddy = coefficients()(5, Degree - 2);
     } else {
       // Divide out t for first derivative.
-      dx = combined(2) / t;
-      dy = combined(3) / t;
+      dx = combined[2] / t;
+      dy = combined[3] / t;
 
       // Divide out t for second derivative.
-      ddx = combined(4) / t / t;
-      ddy = combined(5) / t / t;
+      ddx = combined[4] / t / t;
+      ddy = combined[5] / t / t;
     }
 
     if (std::hypot(dx, dy) < 1e-6) {
@@ -87,7 +87,7 @@ class Spline {
         (dx * ddy - ddx * dy) / ((dx * dx + dy * dy) * std::hypot(dx, dy));
 
     return PoseWithCurvature{
-        {Translation2d{combined(0), combined(1)}, Rotation2d{dx, dy}},
+        {Translation2d{combined[0], combined[1]}, Rotation2d{dx, dy}},
         curvature};
   }
 
@@ -96,21 +96,21 @@ class Spline {
    *
    * @return The coefficients of the spline.
    */
-  virtual const Eigen::Matrix<double, 6, Degree + 1>& Coefficients() const = 0;
+  virtual const Eigen::Matrix<double, 6, Degree + 1>& coefficients() const = 0;
 
   /**
    * Returns the initial control vector that created this spline.
    *
    * @return The initial control vector that created this spline.
    */
-  virtual const ControlVector& GetInitialControlVector() const = 0;
+  virtual const ControlVector& get_initial_control_vector() const = 0;
 
   /**
    * Returns the final control vector that created this spline.
    *
    * @return The final control vector that created this spline.
    */
-  virtual const ControlVector& GetFinalControlVector() const = 0;
+  virtual const ControlVector& get_final_control_vector() const = 0;
 };
 
 }  // namespace trajopt

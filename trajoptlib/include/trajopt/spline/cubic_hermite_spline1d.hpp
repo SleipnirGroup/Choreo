@@ -31,7 +31,7 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline1d {
    * @param t The point t
    * @return The position at point t.
    */
-  constexpr double GetPosition(double t) const {
+  constexpr double get_position(double t) const {
     double t2 = t * t;
     double t3 = t2 * t;
     return a * t3 + b * t2 + c * t + d;
@@ -43,7 +43,7 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline1d {
    * @param t The point t
    * @return The velocity at point t.
    */
-  constexpr double GetVelocity(double t) const {
+  constexpr double get_velocity(double t) const {
     return 3 * a * t * t + 2 * b * t + c;
   }
 
@@ -53,7 +53,9 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline1d {
    * @param t The point t
    * @return The acceleration at point t.
    */
-  constexpr double GetAcceleration(double t) const { return 6 * a * t + 2 * b; }
+  constexpr double get_acceleration(double t) const {
+    return 6 * a * t + 2 * b;
+  }
 
   /**
    * Return the jerk at point t.
@@ -61,7 +63,7 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline1d {
    * @param t The point t
    * @return The jerk at point t.
    */
-  constexpr double GetJerk([[maybe_unused]] double t) const { return 6 * a; }
+  constexpr double get_jerk([[maybe_unused]] double t) const { return 6 * a; }
 
  private:
   // Coefficients of the cubic polynomial

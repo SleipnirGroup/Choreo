@@ -21,21 +21,22 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline : public Spline<3> {
    * control vector contains info about the location of the point and its first
    * derivative.
    *
-   * @param xInitialControlVector The control vector for the initial point in
+   * @param x_initial_control_vector The control vector for the initial point in
    * the x dimension.
-   * @param xFinalControlVector The control vector for the final point in
+   * @param x_final_control_vector The control vector for the final point in
    * the x dimension.
-   * @param yInitialControlVector The control vector for the initial point in
+   * @param y_initial_control_vector The control vector for the initial point in
    * the y dimension.
-   * @param yFinalControlVector The control vector for the final point in
+   * @param y_final_control_vector The control vector for the final point in
    * the y dimension.
    */
-  CubicHermiteSpline(std::array<double, 2> xInitialControlVector,
-                     std::array<double, 2> xFinalControlVector,
-                     std::array<double, 2> yInitialControlVector,
-                     std::array<double, 2> yFinalControlVector)
-      : m_initialControlVector{xInitialControlVector, yInitialControlVector},
-        m_finalControlVector{xFinalControlVector, yFinalControlVector} {
+  CubicHermiteSpline(std::array<double, 2> x_initial_control_vector,
+                     std::array<double, 2> x_final_control_vector,
+                     std::array<double, 2> y_initial_control_vector,
+                     std::array<double, 2> y_final_control_vector)
+      : m_initial_control_vector{x_initial_control_vector,
+                                 y_initial_control_vector},
+        m_final_control_vector{x_final_control_vector, y_final_control_vector} {
     // Calculate the basis matrix for cubic Hermite spline interpolation.
     //
     // Given P(i), P'(i), P(i+1), P'(i+1), the control vectors, we want to find
@@ -63,10 +64,12 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline : public Spline<3> {
                                     {+0.0, +1.0, +0.0, +0.0},
                                     {+1.0, +0.0, +0.0, +0.0}};
 
-    Eigen::Vector4d x{m_initialControlVector.x[0], m_initialControlVector.x[1],
-                      m_finalControlVector.x[0], m_finalControlVector.x[1]};
-    Eigen::Vector4d y{m_initialControlVector.y[0], m_initialControlVector.y[1],
-                      m_finalControlVector.y[0], m_finalControlVector.y[1]};
+    Eigen::Vector4d x{m_initial_control_vector.x[0],
+                      m_initial_control_vector.x[1],
+                      m_final_control_vector.x[0], m_final_control_vector.x[1]};
+    Eigen::Vector4d y{m_initial_control_vector.y[0],
+                      m_initial_control_vector.y[1],
+                      m_final_control_vector.y[0], m_final_control_vector.y[1]};
 
     // Populate rows 0 and 1 with coefficients
     m_coefficients.template block<1, 4>(0, 0) = basis * x;
@@ -98,7 +101,7 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline : public Spline<3> {
    *
    * @return The coefficients matrix.
    */
-  const Eigen::Matrix<double, 6, 3 + 1>& Coefficients() const override {
+  const Eigen::Matrix<double, 6, 3 + 1>& coefficients() const override {
     return m_coefficients;
   }
 
@@ -107,8 +110,8 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline : public Spline<3> {
    *
    * @return The initial control vector that created this spline.
    */
-  const ControlVector& GetInitialControlVector() const override {
-    return m_initialControlVector;
+  const ControlVector& get_initial_control_vector() const override {
+    return m_initial_control_vector;
   }
 
   /**
@@ -116,15 +119,15 @@ class TRAJOPT_DLLEXPORT CubicHermiteSpline : public Spline<3> {
    *
    * @return The final control vector that created this spline.
    */
-  const ControlVector& GetFinalControlVector() const override {
-    return m_finalControlVector;
+  const ControlVector& get_final_control_vector() const override {
+    return m_final_control_vector;
   }
 
  private:
   Eigen::Matrix<double, 6, 4> m_coefficients;
 
-  ControlVector m_initialControlVector;
-  ControlVector m_finalControlVector;
+  ControlVector m_initial_control_vector;
+  ControlVector m_final_control_vector;
 };
 
 }  // namespace trajopt
