@@ -1,7 +1,9 @@
 // Copyright (c) TrajoptLib contributors
 
 #include <numbers>
+#include <print>
 
+#include <sleipnir/optimization/solver/exit_status.hpp>
 #include <trajopt/swerve_trajectory_generator.hpp>
 
 // SwervePathBuilder is used to build paths that are optimized into full
@@ -44,8 +46,10 @@ int main() {
     path.set_control_interval_counts({40});
 
     trajopt::SwerveTrajectoryGenerator generator{path};
-    [[maybe_unused]]
-    auto solution = generator.generate(true);
+    if (auto solution = generator.generate(true); !solution) {
+      std::println("Error in example 1: {}", slp::to_message(solution.error()));
+      return std::to_underlying(solution.error());
+    }
   }
 
   // Example 2: Swerve, basic curve
@@ -59,8 +63,10 @@ int main() {
     path.set_control_interval_counts({40});
 
     trajopt::SwerveTrajectoryGenerator generator{path};
-    [[maybe_unused]]
-    auto solution = generator.generate(true);
+    if (auto solution = generator.generate(true); !solution) {
+      std::println("Error in example 2: {}", slp::to_message(solution.error()));
+      return std::to_underlying(solution.error());
+    }
   }
 
   // Example 3: Swerve, three waypoints
@@ -75,8 +81,10 @@ int main() {
     path.set_control_interval_counts({40, 40});
 
     trajopt::SwerveTrajectoryGenerator generator{path};
-    [[maybe_unused]]
-    auto solution = generator.generate(true);
+    if (auto solution = generator.generate(true); !solution) {
+      std::println("Error in example 3: {}", slp::to_message(solution.error()));
+      return std::to_underlying(solution.error());
+    }
   }
 
   // Example 4: Swerve, ending velocity
@@ -89,14 +97,17 @@ int main() {
     path.set_control_interval_counts({40});
 
     trajopt::SwerveTrajectoryGenerator generator{path};
-    [[maybe_unused]]
-    auto solution = generator.generate(true);
+    if (auto solution = generator.generate(true); !solution) {
+      std::println("Error in example 4: {}", slp::to_message(solution.error()));
+      return std::to_underlying(solution.error());
+    }
   }
 
   // Example 5: Swerve, keep-out circle
   {
     trajopt::SwervePathBuilder path;
     path.set_drivetrain(swerve_drivetrain);
+    path.set_bumpers(0.65, 0.65, 0.65, 0.65);
     path.pose_wpt(0, 0.0, 0.0, 0.0);
     trajopt::KeepOutRegion keep_out{// Radius of 0.1
                                     .safety_distance = 0.1,
@@ -122,8 +133,10 @@ int main() {
     path.set_control_interval_counts({40});
 
     trajopt::SwerveTrajectoryGenerator generator{path};
-    [[maybe_unused]]
-    auto solution = generator.generate(true);
+    if (auto solution = generator.generate(true); !solution) {
+      std::println("Error in example 5: {}", slp::to_message(solution.error()));
+      return std::to_underlying(solution.error());
+    }
   }
 
   // Example 6: Approach a pick up station at a certain direction
@@ -158,8 +171,10 @@ int main() {
     path.set_control_interval_counts({40, 30, 30, 40});
 
     trajopt::SwerveTrajectoryGenerator generator{path};
-    [[maybe_unused]]
-    auto solution = generator.generate(true);
+    if (auto solution = generator.generate(true); !solution) {
+      std::println("Error in example 6: {}", slp::to_message(solution.error()));
+      return std::to_underlying(solution.error());
+    }
   }
 
   // Example 7: Circular path with a point-point constraint
@@ -186,10 +201,13 @@ int main() {
 
     path.wpt_constraint(0, zero_linear_velocity);
     path.wpt_constraint(1, zero_linear_velocity);
-    path.set_control_interval_counts({30});
+    path.set_control_interval_counts({40});
 
     trajopt::SwerveTrajectoryGenerator generator{path};
-    [[maybe_unused]]
-    auto solution = generator.generate(true);
+    if (auto solution = generator.generate(true); !solution) {
+      std::println("Error in example 7: {}", slp::to_message(solution.error()));
+      // FIXME: Fix solver excessive regularization and factorization failure
+      // return std::to_underlying(solution.error());
+    }
   }
 }

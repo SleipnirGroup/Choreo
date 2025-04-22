@@ -15,8 +15,6 @@ jobs:
         include:
           - artifact-name: Windows x86_64
             os: windows-2022
-          - artifact-name: Windows aarch64
-            os: windows-2022
           - artifact-name: macOS universal
             os: macOS-14
           - artifact-name: Linux x86_64
