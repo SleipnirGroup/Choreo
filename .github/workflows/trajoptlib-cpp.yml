@@ -16,9 +16,6 @@ jobs:
           - artifact-name: Windows x86_64
             cmake-args: "-DCMAKE_GENERATOR_PLATFORM=x64"
             os: windows-2022
-          - artifact-name: Windows aarch64
-            cmake-args: "-DCMAKE_GENERATOR_PLATFORM=ARM64 -DBUILD_TESTING=OFF"
-            os: windows-2022
           - artifact-name: macOS universal
             cmake-args: -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
             os: macOS-14
