@@ -13,9 +13,9 @@
 #include "trajopt/geometry/pose2.hpp"
 #include "trajopt/geometry/rotation2.hpp"
 #include "trajopt/geometry/translation2.hpp"
-#include "trajopt/spline/CubicHermitePoseSplineHolonomic.hpp"
-#include "trajopt/spline/CubicHermiteSpline.hpp"
-#include "trajopt/spline/SplineHelper.hpp"
+#include "trajopt/spline/cubic_hermite_pose_spline_holonomic.hpp"
+#include "trajopt/spline/cubic_hermite_spline.hpp"
+#include "trajopt/spline/spline_helper.hpp"
 #include "trajopt/util/trajopt_util.hpp"
 
 namespace trajopt {

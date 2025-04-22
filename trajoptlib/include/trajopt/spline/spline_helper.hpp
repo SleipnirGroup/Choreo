@@ -8,7 +8,7 @@
 
 #include "trajopt/geometry/pose2.hpp"
 #include "trajopt/geometry/translation2.hpp"
-#include "trajopt/spline/CubicHermiteSpline.hpp"
+#include "trajopt/spline/cubic_hermite_spline.hpp"
 #include "trajopt/util/symbol_exports.hpp"
 
 namespace trajopt {

@@ -8,8 +8,8 @@
 #include "trajopt/geometry/pose2.hpp"
 #include "trajopt/geometry/rotation2.hpp"
 #include "trajopt/geometry/translation2.hpp"
-#include "trajopt/spline/CubicHermiteSpline.hpp"
-#include "trajopt/spline/CubicHermiteSpline1d.hpp"
+#include "trajopt/spline/cubic_hermite_spline.hpp"
+#include "trajopt/spline/cubic_hermite_spline1d.hpp"
 #include "trajopt/util/symbol_exports.hpp"
 
 namespace trajopt {
