@@ -219,7 +219,7 @@ class TRAJOPT_DLLEXPORT PathBuilder {
    *
    * @return the initial guess, as a solution
    */
-  Solution calculate_initial_guess() const {
+  Solution calculate_linear_initial_guess() const {
     return generate_linear_initial_guess<Solution>(initial_guess_points,
                                                    control_interval_counts);
   }
