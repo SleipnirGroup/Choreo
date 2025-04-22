@@ -14,7 +14,7 @@ jobs:
       matrix:
         include:
           - artifact-name: Windows x86_64
-            cmake-args: "-DCMAKE_GENERATOR_PLATFORM=x64"
+            cmake-args:
             os: windows-2022
           - artifact-name: macOS universal
             cmake-args: -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
