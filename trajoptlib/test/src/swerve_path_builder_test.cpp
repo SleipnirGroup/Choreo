@@ -44,8 +44,5 @@ TEST_CASE("SwervePathBuilder - Spline initial guess", "[SwervePathBuilder]") {
   std::vector<double> result = path.calculate_spline_initial_guess().x;
   std::vector<double> expected = {0.0, 1.0, 2.0, 1.0, 3.0, 5.0};
 
-  REQUIRE(result.size() == expected.size());
-  for (size_t i = 0; i < expected.size(); ++i) {
-    CHECK(result[i] == Catch::Approx(expected[i]).margin(1e-15));
-  }
+  CHECK(result == expected);
 }
