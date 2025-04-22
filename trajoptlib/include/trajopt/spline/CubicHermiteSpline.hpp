@@ -7,7 +7,7 @@
 #include <Eigen/Core>
 
 #include "trajopt/spline/Spline.hpp"
-#include "trajopt/util/SymbolExports.hpp"
+#include "trajopt/util/symbol_exports.hpp"
 
 namespace trajopt {
 

@@ -43,4 +43,7 @@ public class ChoreoArrayUtil {
     }
     return true;
   }
+
+  /** Factory class. */
+  private ChoreoArrayUtil() {}
 }

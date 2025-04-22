@@ -31,8 +31,12 @@ jobs:
             tauri-build-flags: --target aarch64-apple-darwin -v -- --workspace --timings
 
           - artifact-name: Linux-x86_64
-            os: ubuntu-22.04
+            os: ubuntu-24.04
             tauri-build-flags: --target x86_64-unknown-linux-gnu -v -- --workspace --timings
+
+          - artifact-name: Linux-aarch64
+            os: ubuntu-24.04-arm
+            tauri-build-flags: --target aarch64-unknown-linux-gnu -v -- --workspace --timings
 
     name: "${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
@@ -47,6 +51,15 @@ jobs:
         with:
           version: 9
 
+      - name: Make GCC 14 the default toolchain (Linux)
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
+
+      - run: sudo xcode-select -switch /Applications/Xcode_15.3.app
+        if: startsWith(matrix.os, 'macOS')
+
       - name: Install Linux dependencies
         if: startsWith(matrix.os, 'ubuntu')
         run: |
@@ -56,10 +69,10 @@ jobs:
             curl \
             file \
             libayatana-appindicator3-dev \
-            libgtk-3-dev \
             librsvg2-dev \
             libssl-dev \
-            libwebkit2gtk-4.0-dev \
+            libwebkit2gtk-4.1-dev \
+            libxdo-dev \
             wget
 
       - name: Install Node.js dependencies
@@ -78,9 +91,12 @@ jobs:
         if: startsWith(matrix.os, 'macOS')
 
       - name: Set up sccache
-        uses: mozilla-actions/sccache-action@v0.0.5
+        uses: mozilla-actions/sccache-action@v0.0.9
       - name: Cargo test
-        run: cargo test
+        run: cargo test --release
+        env:
+          RUSTC_WRAPPER: sccache
+          SCCACHE_GHA_ENABLED: true
       - name: Build package
         run: pnpm run tauri build ${{ matrix.tauri-build-flags }}
         env:
@@ -122,6 +138,12 @@ jobs:
         run: |
           zip -j ${{ matrix.artifact-name }}-standalone.zip target/x86_64-unknown-linux-gnu/release/choreo target/x86_64-unknown-linux-gnu/release/choreo-cli
           zip -j ${{ matrix.artifact-name }}.zip ${{ matrix.artifact-name }}-standalone.zip target/x86_64-unknown-linux-gnu/release/bundle/appimage/*.AppImage target/x86_64-unknown-linux-gnu/release/bundle/deb/*.deb target/x86_64-unknown-linux-gnu/release/bundle/rpm/*.rpm
+
+      - name: Package artifacts (Linux aarch64)
+        if: matrix.artifact-name == 'Linux-aarch64'
+        run: |
+          zip -j ${{ matrix.artifact-name }}-standalone.zip target/aarch64-unknown-linux-gnu/release/choreo target/aarch64-unknown-linux-gnu/release/choreo-cli
+          zip -j ${{ matrix.artifact-name }}.zip ${{ matrix.artifact-name }}-standalone.zip target/aarch64-unknown-linux-gnu/release/bundle/appimage/*.AppImage target/aarch64-unknown-linux-gnu/release/bundle/deb/*.deb target/aarch64-unknown-linux-gnu/release/bundle/rpm/*.rpm
 
       - uses: actions/upload-artifact@v4
         with:
@@ -194,6 +216,16 @@ jobs:
           mv choreo_*_amd64.AppImage Choreo-${{ github.ref_name }}-Linux-x86_64.AppImage
           mv choreo_*_amd64.deb Choreo-${{ github.ref_name }}-Linux-x86_64.deb
           mv choreo-*.x86_64.rpm Choreo-${{ github.ref_name }}-Linux-x86_64.rpm
+
+      - name: Rename Linux aarch64 artifacts
+        working-directory: pkg/Linux-aarch64
+        run: |
+          unzip -o Linux-aarch64.zip
+          rm Linux-aarch64.zip
+          mv Linux-aarch64-standalone.zip Choreo-${{ github.ref_name }}-Linux-aarch64-standalone.zip
+          mv choreo_*_aarch64.AppImage Choreo-${{ github.ref_name }}-Linux-aarch64.AppImage
+          mv choreo_*_arm64.deb Choreo-${{ github.ref_name }}-Linux-aarch64.deb
+          mv choreo-*.aarch64.rpm Choreo-${{ github.ref_name }}-Linux-aarch64.rpm
 
       - name: Display structure of renamed files
         run: ls -R

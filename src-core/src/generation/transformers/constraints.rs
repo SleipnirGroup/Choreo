@@ -143,19 +143,19 @@ impl SwerveGenerationTransformer for ConstraintSetter {
                     tolerance
                 } => {
                     if let Some(idx_to) = to_opt {
-                      if let Some(wpt_to) = self.waypoint_idx.get(idx_to) {
-                      if let Some(wpt_from) = self.waypoint_idx.get(from) {
-                        generator.sgmt_keep_in_lane(
-                            from,
-                            idx_to,
-                            wpt_from.x,
-                            wpt_from.y,
-                            wpt_to.x,
-                            wpt_to.y,
-                            tolerance,
-                        );
-                    }
-                }
+                        if let Some(wpt_from) = self.waypoint_idx.get(from) {
+                            if let Some(wpt_to) = self.waypoint_idx.get(idx_to) {
+                                generator.sgmt_keep_in_lane(
+                                    from,
+                                    idx_to,
+                                    wpt_from.x,
+                                    wpt_from.y,
+                                    wpt_to.x,
+                                    wpt_to.y,
+                                    tolerance,
+                                );
+                            }
+                        }
                     }
                 },
                 ConstraintData::KeepOutCircle { x, y, r } => match to_opt {
@@ -221,19 +221,19 @@ impl DifferentialGenerationTransformer for ConstraintSetter {
                     tolerance
                 } => {
                     if let Some(idx_to) = to_opt {
-                      if let Some(wpt_to) = self.waypoint_idx.get(idx_to) {
-                      if let Some(wpt_from) = self.waypoint_idx.get(from) {
-                        generator.sgmt_keep_in_lane(
-                            from,
-                            idx_to,
-                            wpt_from.x,
-                            wpt_from.y,
-                            wpt_to.x,
-                            wpt_to.y,
-                            tolerance,
-                        );
-                      }
-                    }
+                        if let Some(wpt_from) = self.waypoint_idx.get(from) {
+                            if let Some(wpt_to) = self.waypoint_idx.get(idx_to) {
+                                generator.sgmt_keep_in_lane(
+                                    from,
+                                    idx_to,
+                                    wpt_from.x,
+                                    wpt_from.y,
+                                    wpt_to.x,
+                                    wpt_to.y,
+                                    tolerance,
+                                );
+                            }
+                        }
                     }
                 },
                 ConstraintData::KeepOutCircle { x, y, r } => match to_opt {

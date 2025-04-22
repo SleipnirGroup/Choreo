@@ -6,24 +6,13 @@ import {
   IHolonomicPathStore
 } from "./path/HolonomicPathStore";
 import * as FieldDimensions from "../components/field/svg/fields/FieldDimensions";
+import { SavingState } from "./UIStateStore";
 
 export const PathListStore = types
   .model("PathListStore", {
     paths: types.map(HolonomicPathStore),
     activePathUUID: "",
     defaultPath: types.maybe(HolonomicPathStore)
-  })
-  .actions((self) => {
-    let pathExporter: (uuid: string) => void = (_uuid) => {};
-    return {
-      setExporter(exportFunction: (uuid: string) => void) {
-        pathExporter = exportFunction;
-        self.paths.forEach((p) => p.setExporter(pathExporter));
-      },
-      getExporter(): (uuid: string) => void {
-        return pathExporter;
-      }
-    };
   })
   .views((self) => {
     return {
@@ -75,7 +64,8 @@ export const PathListStore = types
           },
           ui: {
             visibleWaypointsEnd: 0,
-            visibleWaypointsStart: 0
+            visibleWaypointsStart: 0,
+            savingState: SavingState.SAVED
           },
           snapshot: {
             waypoints: [],
@@ -89,7 +79,7 @@ export const PathListStore = types
           },
           markers: []
         });
-        path.setExporter((uuid) => {});
+        path.disableExport();
         self.defaultPath = path;
         self.activePathUUID = path.uuid;
       },
@@ -113,7 +103,8 @@ export const PathListStore = types
               },
               ui: {
                 visibleWaypointsEnd: 0,
-                visibleWaypointsStart: 0
+                visibleWaypointsStart: 0,
+                savingState: SavingState.SAVED
               },
               snapshot: {
                 waypoints: [],
@@ -128,7 +119,6 @@ export const PathListStore = types
               markers: []
             });
             self.paths.put(path); //It's not ready yet but it needs to get the env injected
-            path.setExporter(self.getExporter());
             if (contents !== undefined) {
               path.deserialize(contents);
             } else {
@@ -137,7 +127,7 @@ export const PathListStore = types
               path.params.addConstraint("StopPoint", true, "last");
               path.params.addConstraint(
                 "KeepInRectangle",
-                true,
+                false,
                 "first",
                 "last",
                 {

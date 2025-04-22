@@ -32,13 +32,19 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y ninja-build
 
-      - name: Make GCC 14 the default toolchain (Linux)
+      - name: Install LLVM 19
         run: |
-          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
-          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 19 all
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-19 200
+          sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-19 200
+          echo "CC=clang" >> $GITHUB_ENV
+          echo "CXX=clang++" >> $GITHUB_ENV
+          echo "CXXFLAGS=-stdlib=libc++" >> $GITHUB_ENV
 
       - name: Set up sccache
-        uses: mozilla-actions/sccache-action@v0.0.5
+        uses: mozilla-actions/sccache-action@v0.0.9
 
       - run: cmake --preset with-examples-and-sccache ${{ matrix.cmake-args }}
         working-directory: trajoptlib

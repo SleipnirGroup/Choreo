@@ -5,12 +5,12 @@
 #include <array>
 #include <utility>
 
-#include "trajopt/geometry/Pose2.hpp"
-#include "trajopt/geometry/Rotation2.hpp"
-#include "trajopt/geometry/Translation2.hpp"
+#include "trajopt/geometry/pose2.hpp"
+#include "trajopt/geometry/rotation2.hpp"
+#include "trajopt/geometry/translation2.hpp"
 #include "trajopt/spline/CubicHermiteSpline.hpp"
 #include "trajopt/spline/CubicHermiteSpline1d.hpp"
-#include "trajopt/util/SymbolExports.hpp"
+#include "trajopt/util/symbol_exports.hpp"
 
 namespace trajopt {
 
@@ -45,7 +45,7 @@ class TRAJOPT_DLLEXPORT CubicHermitePoseSplineHolonomic : CubicHermiteSpline {
       : CubicHermiteSpline(xInitialControlVector, xFinalControlVector,
                            yInitialControlVector, yFinalControlVector),
         r0(r0),
-        theta(0.0, (-r0).RotateBy(r1).Radians(), 0, 0) {}
+        theta(0.0, (-r0).rotate_by(r1).radians(), 0, 0) {}
 
   /**
    * Return course at point t.
@@ -56,7 +56,7 @@ class TRAJOPT_DLLEXPORT CubicHermitePoseSplineHolonomic : CubicHermiteSpline {
   Rotation2d GetCourse(double t) const {
     const PoseWithCurvature splinePoint =
         CubicHermiteSpline::GetPoint(t).value();
-    return splinePoint.first.Rotation();
+    return splinePoint.first.rotation();
   }
 
   /**
@@ -66,7 +66,7 @@ class TRAJOPT_DLLEXPORT CubicHermitePoseSplineHolonomic : CubicHermiteSpline {
    * @return The heading at point t.
    */
   Rotation2d GetHeading(double t) const {
-    return r0.RotateBy(Rotation2d{theta.GetPosition(t)});
+    return r0.rotate_by(Rotation2d{theta.GetPosition(t)});
   }
 
   /**
@@ -90,7 +90,7 @@ class TRAJOPT_DLLEXPORT CubicHermitePoseSplineHolonomic : CubicHermiteSpline {
       return CubicHermiteSpline::GetPoint(t);
     } else {
       const auto splinePoint = CubicHermiteSpline::GetPoint(t).value();
-      return PoseWithCurvature{{splinePoint.first.Translation(), GetHeading(t)},
+      return PoseWithCurvature{{splinePoint.first.translation(), GetHeading(t)},
                                splinePoint.second};
     }
   }

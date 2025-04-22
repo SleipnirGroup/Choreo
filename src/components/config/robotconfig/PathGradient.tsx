@@ -131,7 +131,7 @@ class PathGradientFunctions {
 
     // Divide by 10 to scale linear acceleration to [0, 1], invert range, then
     // scale to red-green hue [0, 100]
-    return `hsl(${100 * (1 - acceleration / 10)}, 100%, 50%)`;
+    return `hsl(${(100 * acceleration) / 10}, 100%, 50%)`;
   }
 
   /**
@@ -182,7 +182,7 @@ class PathGradientFunctions {
  *
  * This links a gradient's user-facing description to its corresponding function.'
  */
-export const PathGradients: Record<string, PathGradient> = {
+export const PathGradients = {
   None: {
     name: "None",
     localizedDescription: "None",
@@ -226,4 +226,4 @@ export const PathGradients: Record<string, PathGradient> = {
       "Split trajectories on stop points are shown in different colors.",
     function: PathGradientFunctions.splitTrajectories
   }
-};
+} as const;

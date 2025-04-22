@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-/** A utility class for creating alerts under the "ChoreoAlert" group. */
+/** A utility class for creating alerts under the "Choreo Alerts" group. */
 public class ChoreoAlert {
   /**
    * Creates an alert under the "Choreo" group.
@@ -18,7 +18,7 @@ public class ChoreoAlert {
    * @return an Alert published under the "Choreo" group
    */
   public static Alert alert(String name, AlertType type) {
-    return new Alert("ChoreoAlert", name, type);
+    return new Alert("Choreo Alerts", name, type);
   }
 
   /**
@@ -42,7 +42,7 @@ public class ChoreoAlert {
     private final List<String> causes = new ArrayList<>();
 
     MultiAlert(Function<List<String>, String> textGenerator, AlertType type) {
-      super("ChoreoAlert", textGenerator.apply(List.of()), type);
+      super("Choreo Alerts", textGenerator.apply(List.of()), type);
       this.textGenerator = textGenerator;
     }
 
@@ -58,4 +58,7 @@ public class ChoreoAlert {
       set(true);
     }
   }
+
+  /** Factory class. */
+  private ChoreoAlert() {}
 }

@@ -139,7 +139,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: ChoreoLib-json
-          path: choreolib/ChoreoLib2025Beta.json
+          path: choreolib/ChoreoLib2025.json
 
   combine:
     name: Combine
@@ -177,10 +177,10 @@ jobs:
       - name: Copy ChoreoLib JSON
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          cp combiner/products/build/allOutputs/ChoreoLib-json/ChoreoLib2025Beta.json ChoreoLib/dep/ChoreoLib2025Beta.json
+          cp combiner/products/build/allOutputs/ChoreoLib-json/ChoreoLib2025.json ChoreoLib/dep/ChoreoLib2025.json
 
       - name: Remove JSON Artifact From Download
-        run: rm combiner/products/build/allOutputs/ChoreoLib-json/ChoreoLib2025Beta.json
+        run: rm combiner/products/build/allOutputs/ChoreoLib-json/ChoreoLib2025.json
 
       - name: Flatten Artifacts
         run: rsync -a --delete combiner/products/build/allOutputs/*/* combiner/products/build/allOutputs
@@ -241,6 +241,23 @@ jobs:
         with:
           name: Python
           path: ./choreolib/py/dist
+  lint-python:
+    name: "Lint Python"
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          token: ${{secrets.GITHUB_TOKEN}}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - run: pip3 install mypy wpilib
+
+      - run: mypy --pretty --show-column-numbers choreolib/py
 
   pypi-publish:
     name: Upload release to PyPI

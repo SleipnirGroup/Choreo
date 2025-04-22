@@ -8,7 +8,7 @@
 
 #include <Eigen/Core>
 
-#include "trajopt/geometry/Pose2.hpp"
+#include "trajopt/geometry/pose2.hpp"
 
 namespace trajopt {
 

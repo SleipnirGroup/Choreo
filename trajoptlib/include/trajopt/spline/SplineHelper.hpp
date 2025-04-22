@@ -6,10 +6,10 @@
 #include <cstddef>
 #include <vector>
 
-#include "trajopt/geometry/Pose2.hpp"
-#include "trajopt/geometry/Translation2.hpp"
+#include "trajopt/geometry/pose2.hpp"
+#include "trajopt/geometry/translation2.hpp"
 #include "trajopt/spline/CubicHermiteSpline.hpp"
-#include "trajopt/util/SymbolExports.hpp"
+#include "trajopt/util/symbol_exports.hpp"
 
 namespace trajopt {
 
@@ -34,13 +34,13 @@ class TRAJOPT_DLLEXPORT SplineHelper {
       const Pose2d& end) {
     double scalar;
     if (interiorWaypoints.empty()) {
-      scalar = 1.2 * start.Translation().Distance(end.Translation());
+      scalar = 1.2 * start.translation().distance(end.translation());
     } else {
-      scalar = 1.2 * start.Translation().Distance(interiorWaypoints.front());
+      scalar = 1.2 * start.translation().distance(interiorWaypoints.front());
     }
     const auto initialCV = CubicControlVector(scalar, start);
     if (!interiorWaypoints.empty()) {
-      scalar = 1.2 * end.Translation().Distance(interiorWaypoints.back());
+      scalar = 1.2 * end.translation().distance(interiorWaypoints.back());
     }
     const auto finalCV = CubicControlVector(scalar, end);
     return {initialCV, finalCV};
@@ -106,23 +106,23 @@ class TRAJOPT_DLLEXPORT SplineHelper {
       c.emplace_back(0);
 
       // populate rhs vectors
-      dx.emplace_back(3 * (waypoints[2].X() - waypoints[0].X()) - xInitial[1]);
-      dy.emplace_back(3 * (waypoints[2].Y() - waypoints[0].Y()) - yInitial[1]);
+      dx.emplace_back(3 * (waypoints[2].x() - waypoints[0].x()) - xInitial[1]);
+      dy.emplace_back(3 * (waypoints[2].y() - waypoints[0].y()) - yInitial[1]);
       if (waypoints.size() > 4) {
         for (size_t i = 1; i <= waypoints.size() - 4; ++i) {
           // dx and dy represent the derivatives of the internal waypoints. The
           // derivative of the second internal waypoint should involve the third
           // and first internal waypoint, which have indices of 1 and 3 in the
           // waypoints list (which contains ALL waypoints).
-          dx.emplace_back(3 * (waypoints[i + 2].X() - waypoints[i].X()));
-          dy.emplace_back(3 * (waypoints[i + 2].Y() - waypoints[i].Y()));
+          dx.emplace_back(3 * (waypoints[i + 2].x() - waypoints[i].x()));
+          dy.emplace_back(3 * (waypoints[i + 2].y() - waypoints[i].y()));
         }
       }
-      dx.emplace_back(3 * (waypoints[waypoints.size() - 1].X() -
-                           waypoints[waypoints.size() - 3].X()) -
+      dx.emplace_back(3 * (waypoints[waypoints.size() - 1].x() -
+                           waypoints[waypoints.size() - 3].x()) -
                       xFinal[1]);
-      dy.emplace_back(3 * (waypoints[waypoints.size() - 1].Y() -
-                           waypoints[waypoints.size() - 3].Y()) -
+      dy.emplace_back(3 * (waypoints[waypoints.size() - 1].y() -
+                           waypoints[waypoints.size() - 3].y()) -
                       yFinal[1]);
 
       // Compute solution to tridiagonal system
@@ -136,10 +136,10 @@ class TRAJOPT_DLLEXPORT SplineHelper {
 
       for (size_t i = 0; i < fx.size() - 1; ++i) {
         // Create the spline.
-        const CubicHermiteSpline spline{{waypoints[i].X(), fx[i]},
-                                        {waypoints[i + 1].X(), fx[i + 1]},
-                                        {waypoints[i].Y(), fy[i]},
-                                        {waypoints[i + 1].Y(), fy[i + 1]}};
+        const CubicHermiteSpline spline{{waypoints[i].x(), fx[i]},
+                                        {waypoints[i + 1].x(), fx[i + 1]},
+                                        {waypoints[i].y(), fy[i]},
+                                        {waypoints[i + 1].y(), fy[i + 1]}};
 
         splines.push_back(spline);
       }
@@ -149,8 +149,8 @@ class TRAJOPT_DLLEXPORT SplineHelper {
       const double yDeriv =
           (3 * (yFinal[0] - yInitial[0]) - yFinal[1] - yInitial[1]) / 4.0;
 
-      std::array<double, 2> midXControlVector{waypoints[0].X(), xDeriv};
-      std::array<double, 2> midYControlVector{waypoints[0].Y(), yDeriv};
+      std::array<double, 2> midXControlVector{waypoints[0].x(), xDeriv};
+      std::array<double, 2> midYControlVector{waypoints[0].y(), yDeriv};
 
       splines.emplace_back(xInitial, midXControlVector, yInitial,
                            midYControlVector);
@@ -169,8 +169,8 @@ class TRAJOPT_DLLEXPORT SplineHelper {
  private:
   static Spline<3>::ControlVector CubicControlVector(double scalar,
                                                      const Pose2d& point) {
-    return {{point.X(), scalar * point.Rotation().Cos()},
-            {point.Y(), scalar * point.Rotation().Sin()}};
+    return {{point.x(), scalar * point.rotation().cos()},
+            {point.y(), scalar * point.rotation().sin()}};
   }
 
   /**

@@ -260,48 +260,99 @@ export const ExpressionStore = types
     }
   }))
   .views((self) => ({
-    evaluator(node: MathNode): MathType {
-      // TODO investigate whether this should be untracked
-      const scope: Map<string, any> =
-        self.getScope() ??
-        ((() => {
-          tracing.error("Evaluating without variables!");
-          return undefined;
-        }) as Evaluator);
-      scope.keys();
-      // turn symbol variables into function variables if they're found in scope
-      const transformed = node.transform((innerNode, path, parent) => {
-        if (
-          isSymbolNode(innerNode) &&
-          typeof scope.get(innerNode.name) === "function" &&
-          (parent === null || !isFunctionNode(parent) || path !== "fn")
-        ) {
-          return new math.FunctionNode(innerNode, []);
-        }
-        if (isAccessorNode(innerNode)) {
-          if (!isFunctionNode(parent) || path !== "fn") {
-            const accessorNode = innerNode;
-            const { object, index } = accessorNode;
-            if (isSymbolNode(object) && index.isIndexNode) {
-              const symbol = object as SymbolNode;
-              const idx = index as IndexNode;
-              if (isConstantNode(idx.dimensions[0])) {
-                const constant = idx.dimensions[0];
+    evaluator(node: MathNode): MathType | undefined {
+      try {
+        // TODO investigate whether this should be untracked
+        const scope: Map<string, any> =
+          self.getScope() ??
+          ((() => {
+            tracing.error("Evaluating without variables!");
+            return undefined;
+          }) as Evaluator);
+        // Depend on the keys list of the scope, to re-evaluate when the variables list changes
+        scope.keys();
+        // turn symbol variables into function variables if they're found in scope
+        const transformed = node.transform((innerNode, path, parent) => {
+          // Match standalone symbols, turn them into FunctionNode(symbol)
+          if (
+            isSymbolNode(innerNode) && // Match symbols (string literals in the expression),
+            //that are names of functions in our scope (just the standalone variables)
+            typeof scope.get(innerNode.name) === "function" &&
+            // The below avoids transforming `variable()` to `variable()()`
+            !(
+              // ...and ignoring those symbol nodes
+              (
+                parent !== null && // with a non-null parent
+                isFunctionNode(parent) && // that is a function node
+                path == "fn"
+              ) // where the symbol is already the name of the function
+            )
+          ) {
+            return new math.FunctionNode(innerNode, []);
+          }
+
+          // Replace [pose].x (and .y, .heading) with [pose].x(), etc
+          // This works for other objects in scope with children that are functions
+
+          /*
+          Replace [pose].x (and .y, .heading) with [pose].x(), etc
+          This works for other objects in scope with children that are functions
+          "[objectName].[childName]" parses to
+           AccessorNode {
+            object: SymbolNode {
+              name: objectName
+            },
+            index: IndexNode {
+              dimensions : [
+                ConstantNode {
+                  value: childName
+                }
+              ]
+            }
+          }
+
+            "[objectName].[childName]()" parses to
+            FunctionNode {
+              args: []
+              fn: ...the parse of [objectName].[childName] above
+            }
+            So if we match [objectName].[childName], but it's already within a function node, don't transform it
+          */
+
+          if (isAccessorNode(innerNode)) {
+            // filter out accessors within function nodes.
+            if (!(parent !== null && isFunctionNode(parent) && path == "fn")) {
+              const accessorNode = innerNode;
+              const { object, index } = accessorNode;
+              if (isSymbolNode(object) && index.isIndexNode) {
+                const symbol = object as SymbolNode;
+                const idx = index as IndexNode;
                 if (
-                  typeof scope.get(symbol.name) === "object" &&
-                  typeof scope.get(symbol.name)?.[constant.value] === "function"
+                  idx.dimensions[0] !== undefined &&
+                  isConstantNode(idx.dimensions[0])
                 ) {
-                  return new FunctionNode(innerNode, []);
+                  const constant = idx.dimensions[0];
+                  // We now know that innerNode was [symbol.name].[constant.value]
+                  if (
+                    typeof scope.get(symbol.name) === "object" &&
+                    typeof scope.get(symbol.name)?.[constant.value] ===
+                      "function"
+                  ) {
+                    // if the symbols are in fact things in our scope, replace `innerNode` with `innerNode()`
+                    return new FunctionNode(innerNode, []);
+                  }
                 }
               }
             }
           }
-        }
-        return innerNode;
-      });
-      const result = transformed.evaluate(scope) ?? undefined;
+          return innerNode;
+        });
+        const result = transformed.evaluate(scope) ?? undefined;
 
-      return result;
+        return result;
+      } catch {
+        return undefined;
+      }
     },
     get serialize(): Expr {
       return {
@@ -311,21 +362,24 @@ export const ExpressionStore = types
     }
   }))
   .views((self) => ({
-    get evaluate(): MathType {
+    get evaluate(): MathType | undefined {
       const result = self.evaluator(self.expr);
       return result;
     }
   }))
   .views((self) => ({
-    get asScope() {
+    get asScope(): () => MathType | undefined {
       return () => {
         // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         self.value;
-
-        const expr = untracked(() => {
-          return self.evaluate;
-        });
-        return expr;
+        try {
+          const expr = untracked(() => {
+            return self.evaluate;
+          });
+          return expr;
+        } catch {
+          return undefined;
+        }
       };
     },
     get toDefaultUnit(): Unit | number | undefined {
@@ -369,7 +423,7 @@ export const ExpressionStore = types
     },
     validate(newNode: MathNode): MathNode | undefined {
       // number | BigNumber | bigint | Fraction | Complex | Unit
-      let newNumber: MathType;
+      let newNumber: MathType | undefined | null;
       try {
         newNumber = self.evaluator(newNode);
       } catch (e) {
@@ -543,6 +597,22 @@ export const Variables = types
         vars.set(key, val.asScope);
       }
       return vars;
+    },
+    get sortedExpressions(): Array<[string, IExpressionStore]> {
+      return Array.from(self.expressions.entries()).sort((a, b) =>
+        a[0].toLocaleUpperCase() > b[0].toLocaleUpperCase() ? 1 : -1
+      );
+    },
+    get sortedExpressionKeys(): Array<string> {
+      return this.sortedExpressions.map(([key, _]) => key);
+    },
+    get sortedPoses(): Array<[string, IExprPose]> {
+      return Array.from(self.poses.entries()).sort((a, b) =>
+        a[0].toLocaleUpperCase() > b[0].toLocaleUpperCase() ? 1 : -1
+      );
+    },
+    get sortedPoseKeys(): Array<string> {
+      return this.sortedPoses.map(([key, _]) => key);
     }
   }))
   .actions((self) => ({

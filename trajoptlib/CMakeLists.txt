@@ -67,7 +67,7 @@ option(BUILD_EXAMPLES "Build examples" OFF)
 include(CompilerFlags)
 
 file(GLOB_RECURSE TrajoptLib_src src/*.cpp)
-list(FILTER TrajoptLib_src EXCLUDE REGEX RustFFI.cpp)
+list(FILTER TrajoptLib_src EXCLUDE REGEX rust_ffi.cpp)
 
 add_library(TrajoptLib ${TrajoptLib_src})
 compiler_flags(TrajoptLib)
@@ -88,7 +88,7 @@ if(BUILD_TESTING)
     fetchcontent_declare(
         Catch2
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG v3.7.1
+        GIT_TAG v3.8.0
         CMAKE_ARGS
     )
     fetchcontent_makeavailable(Catch2)
@@ -103,11 +103,8 @@ set(BUILD_EXAMPLES OFF)
 fetchcontent_declare(
     Sleipnir
     GIT_REPOSITORY https://github.com/SleipnirGroup/Sleipnir
-    # main on 2025-01-02
-    GIT_TAG 5af8519f268a8075e245bb7cd411a81e1598f521
-    PATCH_COMMAND
-        git apply ${CMAKE_CURRENT_SOURCE_DIR}/cmake/0001-Downgrade-to-C-20.patch
-    UPDATE_DISCONNECTED 1
+    # main on 2025-04-16
+    GIT_TAG 294722035a920ae8c44bb8f562959e892d7861b7
 )
 fetchcontent_makeavailable(Sleipnir)
 
@@ -169,21 +166,21 @@ endif()
 get_cmake_property(IS_MULTI_CONFIG GENERATOR_IS_MULTI_CONFIG)
 # Build TrajoptLib tests
 if(BUILD_TESTING)
-    file(GLOB_RECURSE TrajoptLib_test_src test/src/*.cpp)
-    add_executable(TrajoptLibTest ${TrajoptLib_test_src})
-    compiler_flags(TrajoptLibTest)
+    file(GLOB_RECURSE trajoptlib_test_src test/src/*.cpp)
+    add_executable(trajoptlib_test ${trajoptlib_test_src})
+    compiler_flags(trajoptlib_test)
     target_include_directories(
-        TrajoptLibTest
+        trajoptlib_test
         PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/src
             ${CMAKE_CURRENT_SOURCE_DIR}/test/include
     )
     target_link_libraries(
-        TrajoptLibTest
+        trajoptlib_test
         PRIVATE TrajoptLib Catch2::Catch2WithMain
     )
     catch_discover_tests(
-        TrajoptLibTest
+        trajoptlib_test
         DL_PATHS ${Sleipnir_BINARY_DIR}/$<${IS_MULTI_CONFIG}:$<CONFIG>>
     )
 endif()
@@ -209,26 +206,26 @@ if(BUILD_EXAMPLES)
             AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/examples/${example}/test
         )
             file(GLOB_RECURSE test_sources examples/${example}/test/*.cpp)
-            add_executable(${example}Test ${sources} ${test_sources})
+            add_executable(${example}_test ${sources} ${test_sources})
             target_include_directories(
-                ${example}Test
+                ${example}_test
                 PRIVATE
                     ${CMAKE_CURRENT_SOURCE_DIR}/examples/${example}/src
                     ${CMAKE_CURRENT_SOURCE_DIR}/examples/${example}/test
             )
-            compiler_flags(${example}Test)
-            target_compile_definitions(${example}Test PUBLIC RUNNING_TESTS)
+            compiler_flags(${example}_test)
+            target_compile_definitions(${example}_test PUBLIC RUNNING_TESTS)
             target_include_directories(
-                ${example}Test
+                ${example}_test
                 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/examples/${example}/include
             )
             target_link_libraries(
-                ${example}Test
+                ${example}_test
                 PRIVATE TrajoptLib Catch2::Catch2WithMain
             )
             if(NOT CMAKE_TOOLCHAIN_FILE)
                 catch_discover_tests(
-                    ${example}Test
+                    ${example}_test
                     DL_PATHS
                         ${Sleipnir_BINARY_DIR}/$<${IS_MULTI_CONFIG}:$<CONFIG>>
                 )
