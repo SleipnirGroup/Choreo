@@ -51,6 +51,6 @@ jobs:
       - run: cmake --build build --config RelWithDebInfo --parallel $(nproc)
         working-directory: trajoptlib
         env:
-          SCCACHE_GHA_ENABLED: "true"
+          SCCACHE_GHA_ENABLED: true
       - run: ctest --test-dir build -C RelWithDebInfo --output-on-failure
         working-directory: trajoptlib
