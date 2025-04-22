@@ -13,7 +13,7 @@ authors = ["Sleipnir Group"]
 license = "BSD-3-Clause"
 
 [build-dependencies]
-built = { version = "0.7.5", features = ["chrono", "git2"] }
+built = { version = "0.7.5", features = ["chrono"] }
 tauri-build = { version = "2.0.6", features = [] }
 
 [dependencies]
