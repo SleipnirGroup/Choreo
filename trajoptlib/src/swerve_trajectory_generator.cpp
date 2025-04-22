@@ -40,16 +40,16 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
   problem.add_callback(
       [this, handle = handle](const slp::IterationInfo&) -> bool {
         constexpr int fps = 60;
-        constexpr std::chrono::duration<double> timePerFrame{1.0 / fps};
+        constexpr std::chrono::duration<double> time_per_frame{1.0 / fps};
 
         // FPS limit on sending updates
-        static auto lastFrameTime = std::chrono::steady_clock::now();
+        static auto last_frame_time = std::chrono::steady_clock::now();
         auto now = std::chrono::steady_clock::now();
-        if (now - lastFrameTime < timePerFrame) {
+        if (now - last_frame_time < time_per_frame) {
           return trajopt::get_cancellation_flag();
         }
 
-        lastFrameTime = now;
+        last_frame_time = now;
 
         auto soln = construct_swerve_solution();
         for (auto& callback : this->path.callbacks) {
