@@ -420,17 +420,37 @@ class SwerveSample:
         """
         scale = (t - self.timestamp) / (end_value.timestamp - self.timestamp)
 
+        # Integrate the acceleration to get the rest of the state, since linearly
+        # interpolating the state gives an inaccurate result if the accelerations
+        # are changing between states
+        #
+        #   Δt = tₖ₊₁ − tₖ
+        #   τ = timestamp − tₖ
+        #
+        #   x(τ) = xₖ + vₖτ + 1/2 aₖτ² + 1/6 jₖτ³
+        #   v(τ) = vₖ + aₖτ + 1/2 jₖτ²
+        #   a(τ) = aₖ + jₖτ
+        #
+        # where jₖ = (aₖ₊₁ − aₖ)/Δt
+        dt = endValue.timestamp - timestamp
+        τ = t - timestamp
+        τ2 = τ * τ
+        τ3 = τ * τ * τ
+        jx = (endValue.ax - ax) / dt
+        jy = (endValue.ay - ay) / dt
+        η = (endValue.alpha - alpha) / dt
+
         return SwerveSample(
             t,
-            lerp(self.x, end_value.x, scale),
-            lerp(self.y, end_value.y, scale),
-            lerp(self.heading, end_value.heading, scale),
-            lerp(self.vx, end_value.vx, scale),
-            lerp(self.vy, end_value.vy, scale),
-            lerp(self.omega, end_value.omega, scale),
-            lerp(self.ax, end_value.ax, scale),
-            lerp(self.ay, end_value.ay, scale),
-            lerp(self.alpha, end_value.alpha, scale),
+            x + vx * τ + 0.5 * ax * τ2 + 1.0 / 6.0 * jx * τ3,
+            y + vy * τ + 0.5 * ay * τ2 + 1.0 / 6.0 * jy * τ3,
+            heading + omega * τ + 0.5 * alpha * τ2 + 1.0 / 6.0 * η * τ3,
+            vx + ax * τ + 0.5 * jx * τ2,
+            vy + ay * τ + 0.5 * jy * τ2,
+            omega + alpha * τ + 0.5 * η * τ2,
+            ax + jx * τ,
+            ay + jy * τ,
+            alpha + η * τ,
             [lerp(self.fx[i], end_value.fx[i], scale) for i in range(len(self.fx))],
             [lerp(self.fy[i], end_value.fy[i], scale) for i in range(len(self.fy))],
         )
