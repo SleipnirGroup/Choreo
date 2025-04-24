@@ -4,11 +4,18 @@ package choreo.trajectory;
 
 import choreo.util.ChoreoAllianceFlipUtil;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N2;
+import edu.wpi.first.math.numbers.N6;
+import edu.wpi.first.math.system.NumericalIntegration;
 import edu.wpi.first.util.struct.Struct;
 import java.nio.ByteBuffer;
+import java.util.function.BiFunction;
 
 /** A single differential drive robot sample in a Trajectory. */
 public class DifferentialSample implements TrajectorySample<DifferentialSample> {
@@ -109,36 +116,52 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
   @Override
   public DifferentialSample interpolate(DifferentialSample endValue, double timestamp) {
     double scale = (timestamp - this.t) / (endValue.t - this.t);
-    var interp_pose = getPose().interpolate(endValue.getPose(), scale);
 
     // Integrate the acceleration to get the speeds, since linearly
     // interpolating the speed gives an inaccurate result if the accelerations are changing between
     // states
-    //
-    //   Δt = tₖ₊₁ − tₖ
-    //   τ = timestamp − tₖ
-    //
-    //   v(τ) = vₖ + aₖτ + 1/2 jₖτ²
-    //   a(τ) = aₖ + jₖτ
-    //
-    // where jₖ = (aₖ₊₁ − aₖ)/Δt
-    double dt = endValue.t - this.t;
+    Matrix<N6, N1> initialState = VecBuilder.fill(x, y, heading, omega, vl, vr);
+
+    double width = (vr - vl) / omega;
+    BiFunction<Matrix<N6, N1>, Matrix<N2, N1>, Matrix<N6, N1>> f =
+        (state, input) -> {
+          //  state =  [x, y, θ, ω, vₗ, vᵣ]
+          //  input =  [aₗ, aᵣ]
+          //
+          //  v = (vₗ + vᵣ)/2
+          //  ω = (vᵣ − vₗ)/width
+          //  α = (aᵣ − aₗ)/width
+          //
+          //  ẋ = v cosθ
+          //  ẏ = v sinθ
+          //  θ̇ = ω
+          //  v̇ₗ = aₗ
+          //  v̇ᵣ = aᵣ
+          //  ω̇ = α
+          var heading = state.get(2, 0);
+          var vl = state.get(4, 0);
+          var vr = state.get(5, 0);
+          var ar = state.get(0, 1);
+          var al = state.get(0, 0);
+          var v = (vl + vr) / 2;
+          var ω = (vl - vr) / width;
+          var α = (ar - al) / width;
+          return VecBuilder.fill(v * Math.cos(heading), v * Math.sin(heading), ω, al, ar, α);
+        };
+
     double τ = timestamp - this.t;
-    double τ2 = τ * τ;
-    double jl = (endValue.al - this.al) / dt;
-    double jr = (endValue.ar - this.ar) / dt;
-    var al_k = al + jl * τ;
-    var ar_k = ar + jr * τ;
+    var sample = NumericalIntegration.rkdp(f, initialState, VecBuilder.fill(al, ar), τ);
+
     return new DifferentialSample(
         MathUtil.interpolate(this.t, endValue.t, scale),
-        interp_pose.getX(),
-        interp_pose.getY(),
-        interp_pose.getRotation().getRadians(),
-        vl + al * τ + 0.5 * jl * τ2,
-        vr + ar * τ + 0.5 * jr * τ2,
-        MathUtil.interpolate(this.omega, endValue.omega, scale),
-        al_k,
-        ar_k,
+        sample.get(0, 0),
+        sample.get(1, 0),
+        sample.get(2, 0),
+        sample.get(4, 0),
+        sample.get(5, 0),
+        sample.get(3, 0),
+        sample.get(4, 0) / τ,
+        sample.get(5, 0) / τ,
         MathUtil.interpolate(this.fl, endValue.fl, scale),
         MathUtil.interpolate(this.fr, endValue.fr, scale));
   }
