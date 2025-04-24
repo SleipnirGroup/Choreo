@@ -120,7 +120,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
     // Integrate the acceleration to get the rest of the state, since linearly
     // interpolating the state gives an inaccurate result if the accelerations are changing between
     // states
-    Matrix<N6, N1> initialState = VecBuilder.fill(x, y, heading, omega, vl, vr);
+    Matrix<N6, N1> initialState = VecBuilder.fill(x, y, heading, vl, vr, omega);
 
     double width = (vr - vl) / omega;
     BiFunction<Matrix<N6, N1>, Matrix<N2, N1>, Matrix<N6, N1>> f =
