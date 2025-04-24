@@ -117,8 +117,8 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
   public DifferentialSample interpolate(DifferentialSample endValue, double timestamp) {
     double scale = (timestamp - this.t) / (endValue.t - this.t);
 
-    // Integrate the acceleration to get the speeds, since linearly
-    // interpolating the speed gives an inaccurate result if the accelerations are changing between
+    // Integrate the acceleration to get the rest of the state, since linearly
+    // interpolating the state gives an inaccurate result if the accelerations are changing between
     // states
     Matrix<N6, N1> initialState = VecBuilder.fill(x, y, heading, omega, vl, vr);
 
