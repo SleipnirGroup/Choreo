@@ -160,7 +160,7 @@ class DifferentialSample {
           auto al = input(0, 0);
           auto ar = input(1, 0);
           auto v = (vl + vr) / 2;
-          auto α = (ar - al) / width;
+          auto α = (ar - al) / width.value();
           return Eigen::Matrix<double, 6, 1>{
               v * std::cos(θ), v * std::sin(θ), ω, al, ar, α};
         };
