@@ -125,7 +125,7 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
     double width = (vr - vl) / omega;
     BiFunction<Matrix<N6, N1>, Matrix<N2, N1>, Matrix<N6, N1>> f =
         (state, input) -> {
-          //  state =  [x, y, θ, ω, vₗ, vᵣ]
+          //  state =  [x, y, θ, vₗ, vᵣ, ω]
           //  input =  [aₗ, aᵣ]
           //
           //  v = (vₗ + vᵣ)/2
