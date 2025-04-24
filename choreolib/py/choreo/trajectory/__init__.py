@@ -432,8 +432,8 @@ class SwerveSample:
         #   a(τ) = aₖ + jₖτ
         #
         # where jₖ = (aₖ₊₁ − aₖ)/Δt
-        dt = endValue.timestamp - timestamp
-        τ = t - timestamp
+        dt = endValue.timestamp - t
+        τ = t - self.timestamp
         τ2 = τ * τ
         τ3 = τ * τ * τ
         jx = (endValue.ax - ax) / dt
@@ -442,15 +442,15 @@ class SwerveSample:
 
         return SwerveSample(
             t,
-            x + vx * τ + 0.5 * ax * τ2 + 1.0 / 6.0 * jx * τ3,
-            y + vy * τ + 0.5 * ay * τ2 + 1.0 / 6.0 * jy * τ3,
-            heading + omega * τ + 0.5 * alpha * τ2 + 1.0 / 6.0 * η * τ3,
-            vx + ax * τ + 0.5 * jx * τ2,
-            vy + ay * τ + 0.5 * jy * τ2,
-            omega + alpha * τ + 0.5 * η * τ2,
-            ax + jx * τ,
-            ay + jy * τ,
-            alpha + η * τ,
+            self.x + self.vx * τ + 0.5 * self.ax * τ2 + 1.0 / 6.0 * jx * τ3,
+            self.y + self.vy * τ + 0.5 * self.ay * τ2 + 1.0 / 6.0 * jy * τ3,
+            self.heading + self.omega * τ + 0.5 * self.alpha * τ2 + 1.0 / 6.0 * η * τ3,
+            self.vx + self.ax * τ + 0.5 * jx * τ2,
+            self.y + self.ay * τ + 0.5 * jy * τ2,
+            self.mega + self.alpha * τ + 0.5 * η * τ2,
+            self.x + jx * τ,
+            self.y + jy * τ,
+            self.alpha + η * τ,
             [lerp(self.fx[i], end_value.fx[i], scale) for i in range(len(self.fx))],
             [lerp(self.fy[i], end_value.fy[i], scale) for i in range(len(self.fy))],
         )

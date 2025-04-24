@@ -136,10 +136,10 @@ class DifferentialSample {
     auto width = (vr - vl) / omega;
 
     // FIXME: this means the function cant be constexpr without c++23
-    std::function<Eigen::Matrix<double, 6, 1>(Eigen::Matrix<double, 6, 1>,
-                                              Eigen::Matrix<double, 2, 1>)>
-        f = [width](Eigen::Matrix<double, 6, 1> state,
-                    Eigen::Matrix<double, 2, 1> input) {
+    std::function<Eigen::Vector<double, 6>(Eigen::Vector<double, 6>,
+                                              Eigen::Vector<double, 2>)>
+        f = [width](Eigen::Vector<double, 6> state,
+                    Eigen::Vector<double, 2> input) {
           //  state =  [x, y, θ, vₗ, vᵣ, ω]
           //  input =  [aₗ, aᵣ]
           //
@@ -161,7 +161,7 @@ class DifferentialSample {
           auto ar = input(1, 0);
           auto v = (vl + vr) / 2;
           auto α = (ar - al) / width.value();
-          return Eigen::Matrix<double, 6, 1>{
+          return Eigen::Vector<double, 6>{
               v * std::cos(θ), v * std::sin(θ), ω, al, ar, α};
         };
 
