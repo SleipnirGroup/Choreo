@@ -1,4 +1,5 @@
 use std::fmt::{self, Display, Formatter};
+use std::process::Command;
 
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -24,7 +25,7 @@ pub struct BuildInfo {
     pub os_family: &'static str,
     pub os: &'static str,
     pub build_time: &'static str,
-    pub git_hash: Option<&'static str>,
+    pub git_hash: Option<String>,
     pub git_branch: Option<String>,
 }
 
@@ -38,14 +39,14 @@ impl Display for BuildInfo {
         writeln!(f, "  in profile {}", self.profile)?;
         writeln!(
             f,
-            "  {}in ci",
+            "  {}in CI",
             if self.ci_platform.is_some() {
                 ""
             } else {
                 "not "
             }
         )?;
-        if let Some(git_hash) = self.git_hash {
+        if let Some(git_hash) = &self.git_hash {
             writeln!(
                 f,
                 "  from commit {} on branch {}",
@@ -86,9 +87,33 @@ impl BuildInfo {
             os_family: built_info::CFG_FAMILY,
             os: built_info::CFG_OS,
             build_time: built_info::BUILT_TIME_UTC,
-            git_hash: built_info::GIT_COMMIT_HASH_SHORT,
-            git_branch: built_info::GIT_HEAD_REF
-                .map(|s| s.trim_start_matches("refs/heads/").to_string()),
+            // Retrieve git info manually because built's git2 feature uses
+            // libgit2-sys, which takes up to 2 minutes to compile in Windows CI
+            git_hash: Command::new("git")
+                .arg("rev-parse")
+                .arg("--short")
+                .arg("HEAD")
+                .output()
+                .map(|output| {
+                    String::from_utf8(output.stdout)
+                        .expect("invalid UTF-8 sequence in git rev-parse output")
+                        .trim_end()
+                        .to_string()
+                })
+                .ok(),
+            git_branch: Command::new("git")
+                .arg("branch")
+                .arg("--contains")
+                .arg("HEAD")
+                .output()
+                .map(|output| {
+                    String::from_utf8(output.stdout)
+                        .expect("invalid UTF-8 sequence in git branch output")
+                        .trim_end()
+                        .trim_start_matches("* ")
+                        .to_string()
+                })
+                .ok(),
         }
     }
 }
