@@ -112,7 +112,8 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
     var interp_pose = getPose().interpolate(endValue.getPose(), scale);
 
     // Integrate the acceleration to get the speeds, since linearly
-    // interpolating the speed gives an inaccurate result if the accelerations are changing between states
+    // interpolating the speed gives an inaccurate result if the accelerations are changing between
+    // states
     //
     //   Δt = tₖ₊₁ − tₖ
     //   τ = timestamp − tₖ
@@ -121,16 +122,23 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
     //   a(τ) = aₖ + jₖτ
     //
     // where jₖ = (aₖ₊₁ − aₖ)/Δt
+    double dt = endValue.t - this.t;
+    double τ = timestamp - this.t;
+    double τ2 = τ * τ;
+    double jl = (endValue.al - this.al) / dt;
+    double jr = (endValue.ar - this.ar) / dt;
+    var al_k = al + jl * τ;
+    var ar_k = ar + jr * τ;
     return new DifferentialSample(
         MathUtil.interpolate(this.t, endValue.t, scale),
         interp_pose.getX(),
         interp_pose.getY(),
         interp_pose.getRotation().getRadians(),
-        MathUtil.interpolate(this.vl, endValue.vl, scale),
-        MathUtil.interpolate(this.vr, endValue.vr, scale),
+        vl + al * τ + 0.5 * jl * τ2,
+        vr + ar * τ + 0.5 * jr * τ2,
         MathUtil.interpolate(this.omega, endValue.omega, scale),
-        MathUtil.interpolate(this.al, endValue.al, scale),
-        MathUtil.interpolate(this.ar, endValue.ar, scale),
+        al_k,
+        ar_k,
         MathUtil.interpolate(this.fl, endValue.fl, scale),
         MathUtil.interpolate(this.fr, endValue.fr, scale));
   }

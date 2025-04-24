@@ -156,7 +156,8 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
     }
 
     // Integrate the acceleration to get the rest of the state, since linearly
-    // interpolating the state gives an inaccurate result if the accelerations are changing between states
+    // interpolating the state gives an inaccurate result if the accelerations are changing between
+    // states
     //
     //   Δt = tₖ₊₁ − tₖ
     //   τ = timestamp − tₖ
@@ -208,48 +209,50 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
   @Override
   public SwerveSample flipped() {
     return switch (ChoreoAllianceFlipUtil.getFlipper()) {
-      case MIRRORED -> new SwerveSample(
-          this.t,
-          ChoreoAllianceFlipUtil.flipX(this.x),
-          ChoreoAllianceFlipUtil.flipY(this.y),
-          ChoreoAllianceFlipUtil.flipHeading(this.heading),
-          -this.vx,
-          this.vy,
-          -this.omega,
-          -this.ax,
-          this.ay,
-          -this.alpha,
-          // FL, FR, BL, BR
-          // Mirrored
-          // -FR, -FL, -BR, -BL
-          new double[] {
-            -this.moduleForcesX()[1],
-            -this.moduleForcesX()[0],
-            -this.moduleForcesX()[3],
-            -this.moduleForcesX()[2]
-          },
-          // FL, FR, BL, BR
-          // Mirrored
-          // FR, FL, BR, BL
-          new double[] {
-            this.moduleForcesY()[1],
-            this.moduleForcesY()[0],
-            this.moduleForcesY()[3],
-            this.moduleForcesY()[2]
-          });
-      case ROTATE_AROUND -> new SwerveSample(
-          this.t,
-          ChoreoAllianceFlipUtil.flipX(this.x),
-          ChoreoAllianceFlipUtil.flipY(this.y),
-          ChoreoAllianceFlipUtil.flipHeading(this.heading),
-          -this.vx,
-          -this.vy,
-          this.omega,
-          -this.ax,
-          -this.ay,
-          this.alpha,
-          Arrays.stream(this.moduleForcesX()).map(x -> -x).toArray(),
-          Arrays.stream(this.moduleForcesY()).map(y -> -y).toArray());
+      case MIRRORED ->
+          new SwerveSample(
+              this.t,
+              ChoreoAllianceFlipUtil.flipX(this.x),
+              ChoreoAllianceFlipUtil.flipY(this.y),
+              ChoreoAllianceFlipUtil.flipHeading(this.heading),
+              -this.vx,
+              this.vy,
+              -this.omega,
+              -this.ax,
+              this.ay,
+              -this.alpha,
+              // FL, FR, BL, BR
+              // Mirrored
+              // -FR, -FL, -BR, -BL
+              new double[] {
+                -this.moduleForcesX()[1],
+                -this.moduleForcesX()[0],
+                -this.moduleForcesX()[3],
+                -this.moduleForcesX()[2]
+              },
+              // FL, FR, BL, BR
+              // Mirrored
+              // FR, FL, BR, BL
+              new double[] {
+                this.moduleForcesY()[1],
+                this.moduleForcesY()[0],
+                this.moduleForcesY()[3],
+                this.moduleForcesY()[2]
+              });
+      case ROTATE_AROUND ->
+          new SwerveSample(
+              this.t,
+              ChoreoAllianceFlipUtil.flipX(this.x),
+              ChoreoAllianceFlipUtil.flipY(this.y),
+              ChoreoAllianceFlipUtil.flipHeading(this.heading),
+              -this.vx,
+              -this.vy,
+              this.omega,
+              -this.ax,
+              -this.ay,
+              this.alpha,
+              Arrays.stream(this.moduleForcesX()).map(x -> -x).toArray(),
+              Arrays.stream(this.moduleForcesY()).map(y -> -y).toArray());
     };
   }
 
