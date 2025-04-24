@@ -157,44 +157,40 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
 
     // Integrate the field speeds to get the pose for this interpolated state, since linearly
     // interpolating the pose gives an inaccurate result if the speeds are changing between states
-    double lerpedTimestamp = timestamp;
-    double lerpedVXPos = vx;
-    double lerpedVYPos = vy;
-    double lerpedXPos = x;
-    double lerpedYPos = y;
-    double intTime = t + 0.01;
-
-    while (true) {
-      double intT = (intTime - getTimestamp()) / (lerpedTimestamp - getTimestamp());
-      double intAX = MathUtil.interpolate(ax, endValue.ax, intT);
-      double intAY = MathUtil.interpolate(ay, endValue.ax, intT);
-
-      if (intTime >= lerpedTimestamp - 0.01) {
-        double dt = lerpedTimestamp - intTime;
-        lerpedVXPos += intAX * dt;
-        lerpedVYPos += intAY * dt;
-        lerpedXPos += lerpedVXPos * dt;
-        lerpedYPos += lerpedVYPos * dt;
-        break;
-      }
-
-      lerpedVXPos += intAX * 0.01;
-      lerpedVYPos += intAY * 0.01;
-
-      intTime += 0.01;
-    }
-
+    //
+    //   Δt = tₖ₊₁ − tₖ
+    //   τ = timestamp − tₖ
+    //
+    //   x(τ) = xₖ + vₖτ + 1/2 aₖτ² + 1/6 jₖτ³
+    //   v(τ) = vₖ + aₖτ + 1/2 jₖτ²
+    //   a(τ) = aₖ + jₖτ
+    //
+    // where jₖ = (aₖ₊₁ − aₖ)/Δt
+    double dt = endValue.t - this.t;
+    double τ = timestamp - this.t;
+    double τ2 = τ * τ;
+    double τ3 = τ * τ * τ;
+    double jx = (endValue.ax - this.ax) / dt;
+    double jy = (endValue.ay - this.ay) / dt;
+    double η = (endValue.alpha - this.alpha) / dt;
+    System.out.println("dt: " + dt);
+    System.out.println("η: " + η);
+    System.out.println("jy: " + jy);
+    System.out.println("jx: " + jx);
+    System.out.println("τ: " + τ);
+    System.out.println("τ2: " + τ2);
+    System.out.println("τ3: " + τ3);
     return new SwerveSample(
-        MathUtil.interpolate(this.t, endValue.t, scale),
-        lerpedXPos,
-        lerpedYPos,
-        MathUtil.interpolate(heading, endValue.heading, t),
-        MathUtil.interpolate(this.vx, endValue.vx, scale),
-        MathUtil.interpolate(this.vy, endValue.vy, scale),
-        MathUtil.interpolate(this.omega, endValue.omega, scale),
-        MathUtil.interpolate(this.ax, endValue.ax, scale),
-        MathUtil.interpolate(this.ay, endValue.ay, scale),
-        MathUtil.interpolate(this.alpha, endValue.alpha, scale),
+        timestamp,
+        this.x + this.vx * τ + 0.5 * this.ax * τ2 + 1.0 / 6.0 * jx * τ3,
+        this.y + this.vy * τ + 0.5 * this.ay * τ2 + 1.0 / 6.0 * jy * τ3,
+        this.heading + this.omega * τ + 0.5 * this.alpha * τ2 + 1.0 / 6.0 * η * τ3,
+        this.vx + this.ax * τ + 0.5 * jx * τ2,
+        this.vy + this.ay * τ + 0.5 * jy * τ2,
+        this.omega + this.alpha * τ + 0.5 * η * τ2,
+        this.ax + jx * τ,
+        this.ay + jy * τ,
+        this.alpha + η * τ,
         interp_fx,
         interp_fy);
   }
@@ -219,50 +215,48 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
   @Override
   public SwerveSample flipped() {
     return switch (ChoreoAllianceFlipUtil.getFlipper()) {
-      case MIRRORED ->
-          new SwerveSample(
-              this.t,
-              ChoreoAllianceFlipUtil.flipX(this.x),
-              ChoreoAllianceFlipUtil.flipY(this.y),
-              ChoreoAllianceFlipUtil.flipHeading(this.heading),
-              -this.vx,
-              this.vy,
-              -this.omega,
-              -this.ax,
-              this.ay,
-              -this.alpha,
-              // FL, FR, BL, BR
-              // Mirrored
-              // -FR, -FL, -BR, -BL
-              new double[] {
-                -this.moduleForcesX()[1],
-                -this.moduleForcesX()[0],
-                -this.moduleForcesX()[3],
-                -this.moduleForcesX()[2]
-              },
-              // FL, FR, BL, BR
-              // Mirrored
-              // FR, FL, BR, BL
-              new double[] {
-                this.moduleForcesY()[1],
-                this.moduleForcesY()[0],
-                this.moduleForcesY()[3],
-                this.moduleForcesY()[2]
-              });
-      case ROTATE_AROUND ->
-          new SwerveSample(
-              this.t,
-              ChoreoAllianceFlipUtil.flipX(this.x),
-              ChoreoAllianceFlipUtil.flipY(this.y),
-              ChoreoAllianceFlipUtil.flipHeading(this.heading),
-              -this.vx,
-              -this.vy,
-              this.omega,
-              -this.ax,
-              -this.ay,
-              this.alpha,
-              Arrays.stream(this.moduleForcesX()).map(x -> -x).toArray(),
-              Arrays.stream(this.moduleForcesY()).map(y -> -y).toArray());
+      case MIRRORED -> new SwerveSample(
+          this.t,
+          ChoreoAllianceFlipUtil.flipX(this.x),
+          ChoreoAllianceFlipUtil.flipY(this.y),
+          ChoreoAllianceFlipUtil.flipHeading(this.heading),
+          -this.vx,
+          this.vy,
+          -this.omega,
+          -this.ax,
+          this.ay,
+          -this.alpha,
+          // FL, FR, BL, BR
+          // Mirrored
+          // -FR, -FL, -BR, -BL
+          new double[] {
+            -this.moduleForcesX()[1],
+            -this.moduleForcesX()[0],
+            -this.moduleForcesX()[3],
+            -this.moduleForcesX()[2]
+          },
+          // FL, FR, BL, BR
+          // Mirrored
+          // FR, FL, BR, BL
+          new double[] {
+            this.moduleForcesY()[1],
+            this.moduleForcesY()[0],
+            this.moduleForcesY()[3],
+            this.moduleForcesY()[2]
+          });
+      case ROTATE_AROUND -> new SwerveSample(
+          this.t,
+          ChoreoAllianceFlipUtil.flipX(this.x),
+          ChoreoAllianceFlipUtil.flipY(this.y),
+          ChoreoAllianceFlipUtil.flipHeading(this.heading),
+          -this.vx,
+          -this.vy,
+          this.omega,
+          -this.ax,
+          -this.ay,
+          this.alpha,
+          Arrays.stream(this.moduleForcesX()).map(x -> -x).toArray(),
+          Arrays.stream(this.moduleForcesY()).map(y -> -y).toArray());
     };
   }
 
