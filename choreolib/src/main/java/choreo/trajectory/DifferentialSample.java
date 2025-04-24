@@ -138,15 +138,15 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
           //  v̇ₗ = aₗ
           //  v̇ᵣ = aᵣ
           //  ω̇ = α
-          var heading = state.get(2, 0);
-          var vl = state.get(4, 0);
-          var vr = state.get(5, 0);
-          var ar = state.get(0, 1);
-          var al = state.get(0, 0);
+          var θ = state.get(2, 0);
+          var vl = state.get(3, 0);
+          var vr = state.get(4, 0);
+          var ω = state.get(5, 0);
+          var al = input.get(0, 0);
+          var ar = input.get(1, 0);
           var v = (vl + vr) / 2;
-          var ω = (vl - vr) / width;
           var α = (ar - al) / width;
-          return VecBuilder.fill(v * Math.cos(heading), v * Math.sin(heading), ω, al, ar, α);
+          return VecBuilder.fill(v * Math.cos(θ), v * Math.sin(θ), ω, al, ar, α);
         };
 
     double τ = timestamp - this.t;
