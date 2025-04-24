@@ -2,10 +2,13 @@
 
 #pragma once
 
+#include <functional>
 #include <type_traits>
 
+#include <Eigen/Core>
 #include <frc/geometry/Pose2d.h>
 #include <frc/kinematics/ChassisSpeeds.h>
+#include <frc/system/NumericalIntegration.h>
 #include <units/acceleration.h>
 #include <units/angle.h>
 #include <units/angular_acceleration.h>
@@ -119,22 +122,67 @@ class DifferentialSample {
    * @param t time to move sample by
    * @return the interpolated sample
    */
-  constexpr DifferentialSample Interpolate(const DifferentialSample& endValue,
-                                           units::second_t t) const {
+  DifferentialSample Interpolate(const DifferentialSample& endValue,
+                                 units::second_t t) const {
     units::scalar_t scale = (t - timestamp) / (endValue.timestamp - timestamp);
-    frc::Pose2d interpolatedPose =
-        GetPose().Exp(GetPose().Log(endValue.GetPose()) * scale.value());
+
+    // Integrate the acceleration to get the rest of the state, since linearly
+    // interpolating the state gives an inaccurate result if the accelerations
+    // are changing between states
+    Eigen::Matrix<double, 6, 1> initialState{x.value(),       y.value(),
+                                             heading.value(), vl.value(),
+                                             vr.value(),      omega.value()};
+
+    double width = (vr.value() - vl.value()) / omega.value();
+
+    // FIXME: this means the function cant be constexpr without c++23
+    std::function<Eigen::Matrix<double, 6, 1>(Eigen::Matrix<double, 6, 1>,
+                                              Eigen::Matrix<double, 2, 1>)>
+        f = [width](Eigen::Matrix<double, 6, 1> state,
+                    Eigen::Matrix<double, 2, 1> input) {
+          //  state =  [x, y, θ, vₗ, vᵣ, ω]
+          //  input =  [aₗ, aᵣ]
+          //
+          //  v = (vₗ + vᵣ)/2
+          //  ω = (vᵣ − vₗ)/width
+          //  α = (aᵣ − aₗ)/width
+          //
+          //  ẋ = v cosθ
+          //  ẏ = v sinθ
+          //  θ̇ = ω
+          //  v̇ₗ = aₗ
+          //  v̇ᵣ = aᵣ
+          //  ω̇ = α
+          auto θ = state(2, 0);
+          auto vl = state(3, 0);
+          auto vr = state(4, 0);
+          auto ω = state(5, 0);
+          auto al = input(0, 0);
+          auto ar = input(1, 0);
+          auto v = (vl + vr) / 2;
+          auto α = (ar - al) / width;
+          return Eigen::Matrix<double, 6, 1>{
+              v * std::cos(θ), v * std::sin(θ), ω, al, ar, α};
+        };
+
+    units::second_t τ = t - timestamp;
+    auto sample =
+        frc::RKDP(f, initialState, Eigen::Matrix<double, 2, 1>(al, ar), τ);
+
+    auto dt = endValue.timestamp - timestamp;
+    auto jl = (endValue.al - al) / dt;
+    auto jr = (endValue.ar - ar) / dt;
 
     return DifferentialSample{
         wpi::Lerp(timestamp, endValue.timestamp, scale),
-        interpolatedPose.X(),
-        interpolatedPose.Y(),
-        interpolatedPose.Rotation().Radians(),
-        wpi::Lerp(vl, endValue.vl, scale),
-        wpi::Lerp(vr, endValue.vr, scale),
-        wpi::Lerp(omega, endValue.omega, scale),
-        wpi::Lerp(al, endValue.al, scale),
-        wpi::Lerp(ar, endValue.ar, scale),
+        units::meter_t{sample(0, 0)},
+        units::meter_t{sample(1, 0)},
+        units::radian_t{sample(2, 0)},
+        units::meters_per_second_t{sample(3, 0)},
+        units::meters_per_second_t{sample(4, 0)},
+        units::radians_per_second_t{sample(5, 0)},
+        al + jl * τ,
+        ar + jr * τ,
         wpi::Lerp(fl, endValue.fl, scale),
         wpi::Lerp(fr, endValue.fr, scale),
     };
