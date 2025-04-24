@@ -133,7 +133,7 @@ class DifferentialSample {
                                              heading.value(), vl.value(),
                                              vr.value(),      omega.value()};
 
-    double width = (vr.value() - vl.value()) / omega.value();
+    auto width = (vr - vl) / omega;
 
     // FIXME: this means the function cant be constexpr without c++23
     std::function<Eigen::Matrix<double, 6, 1>(Eigen::Matrix<double, 6, 1>,
