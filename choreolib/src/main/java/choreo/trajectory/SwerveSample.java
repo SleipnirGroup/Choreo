@@ -155,8 +155,8 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
           MathUtil.interpolate(this.moduleForcesY()[i], endValue.moduleForcesY()[i], scale);
     }
 
-    // Integrate the field speeds to get the pose for this interpolated state, since linearly
-    // interpolating the pose gives an inaccurate result if the speeds are changing between states
+    // Integrate the acceleration to get the rest of the state, since linearly
+    // interpolating the state gives an inaccurate result if the accelerations are changing between states
     //
     //   Δt = tₖ₊₁ − tₖ
     //   τ = timestamp − tₖ
