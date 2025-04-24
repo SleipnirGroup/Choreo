@@ -173,13 +173,6 @@ public class SwerveSample implements TrajectorySample<SwerveSample> {
     double jx = (endValue.ax - this.ax) / dt;
     double jy = (endValue.ay - this.ay) / dt;
     double η = (endValue.alpha - this.alpha) / dt;
-    System.out.println("dt: " + dt);
-    System.out.println("η: " + η);
-    System.out.println("jy: " + jy);
-    System.out.println("jx: " + jx);
-    System.out.println("τ: " + τ);
-    System.out.println("τ2: " + τ2);
-    System.out.println("τ3: " + τ3);
     return new SwerveSample(
         timestamp,
         this.x + this.vx * τ + 0.5 * this.ax * τ2 + 1.0 / 6.0 * jx * τ3,

@@ -111,6 +111,16 @@ public class DifferentialSample implements TrajectorySample<DifferentialSample> 
     double scale = (timestamp - this.t) / (endValue.t - this.t);
     var interp_pose = getPose().interpolate(endValue.getPose(), scale);
 
+    // Integrate the acceleration to get the speeds, since linearly
+    // interpolating the speed gives an inaccurate result if the accelerations are changing between states
+    //
+    //   Δt = tₖ₊₁ − tₖ
+    //   τ = timestamp − tₖ
+    //
+    //   v(τ) = vₖ + aₖτ + 1/2 jₖτ²
+    //   a(τ) = aₖ + jₖτ
+    //
+    // where jₖ = (aₖ₊₁ − aₖ)/Δt
     return new DifferentialSample(
         MathUtil.interpolate(this.t, endValue.t, scale),
         interp_pose.getX(),
