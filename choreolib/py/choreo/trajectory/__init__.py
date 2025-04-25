@@ -167,7 +167,7 @@ class DifferentialSample:
             return [v * cos(θ), v * sin(θ), ω, al, ar, α]
 
         τ = t - self.timestamp
-        RK45(f, self.timestamp, np.array(initialState), t)
+        sample = RK45(f, self.timestamp, np.array(initialState), t)
 
         dt = end_value.timestamp - self.timestamp
         jl = (end_value.al - self.al) / dt
