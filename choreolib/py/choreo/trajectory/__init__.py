@@ -6,9 +6,9 @@ import os
 from dataclasses import dataclass
 from typing import TypeGuard
 
+import numpy as np
 from choreo.util import DEFAULT_YEAR, get_flipper_for_year
 from scipy.integrate import RK45
-import numpy as np
 from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.kinematics import ChassisSpeeds
 
@@ -175,12 +175,12 @@ class DifferentialSample:
 
         return DifferentialSample(
             t,
-            lerp(self.x, end_value.x, scale),
-            lerp(self.y, end_value.y, scale),
-            lerp(self.heading, end_value.heading, scale),
-            lerp(self.vl, end_value.vl, scale),
-            lerp(self.vr, end_value.vr, scale),
-            lerp(self.omega, end_value.omega, scale),
+            sample[0, 0],
+            sample[1, 0],
+            sample[2, 0],
+            sample[3, 0],
+            sample[4, 0],
+            sample[5, 0],
             self.al + jl * τ,
             self.ar + jr * τ,
             lerp(self.fl, end_value.fl, scale),
