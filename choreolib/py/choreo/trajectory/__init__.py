@@ -6,7 +6,9 @@ import os
 from dataclasses import dataclass
 from typing import TypeGuard
 
+import numpy as np
 from choreo.util import DEFAULT_YEAR, get_flipper_for_year
+from scipy.integrate import solve_ivp
 from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.kinematics import ChassisSpeeds
 
@@ -138,17 +140,51 @@ class DifferentialSample:
             The interpolated state.
         """
         scale = (t - self.timestamp) / (end_value.timestamp - self.timestamp)
+        initial_state = np.array(
+            [[self.x], [self.y], [self.heading], [self.vl], [self.vr], [self.omega]]
+        )
+
+        def f(state, input):
+            #  state =  [x, y, θ, vₗ, vᵣ, ω]
+            #  input =  [aₗ, aᵣ]
+            #
+            #  v = (vₗ + vᵣ)/2
+            #  ω = (vᵣ − vₗ)/width
+            #  α = (aᵣ − aₗ)/width
+            #
+            #  ẋ = v cosθ
+            #  ẏ = v sinθ
+            #  θ̇ = ω
+            #  v̇ₗ = aₗ
+            #  v̇ᵣ = aᵣ
+            #  ω̇ = α
+            θ = state[2, 0]
+            vl = state[3, 0]
+            vr = state[4, 0]
+            ω = state[5, 0]
+            al = input[0, 0]
+            ar = input[1, 0]
+            v = (vl + vr) / 2
+            α = (ar - al) / width
+            return [v * cos(θ), v * sin(θ), ω, al, ar, α]
+
+        τ = t - self.timestamp
+        sample = solve_ivp(f, (self.timestamp, t), initial_state).y
+
+        dt = end_value.timestamp - self.timestamp
+        jl = (end_value.al - self.al) / dt
+        jr = (end_value.ar - self.ar) / dt
 
         return DifferentialSample(
             t,
-            lerp(self.x, end_value.x, scale),
-            lerp(self.y, end_value.y, scale),
-            lerp(self.heading, end_value.heading, scale),
-            lerp(self.vl, end_value.vl, scale),
-            lerp(self.vr, end_value.vr, scale),
-            lerp(self.omega, end_value.omega, scale),
-            lerp(self.al, end_value.al, scale),
-            lerp(self.ar, end_value.ar, scale),
+            sample[0, 0],
+            sample[1, 0],
+            sample[2, 0],
+            sample[3, 0],
+            sample[4, 0],
+            sample[5, 0],
+            self.al + jl * τ,
+            self.ar + jr * τ,
             lerp(self.fl, end_value.fl, scale),
             lerp(self.fr, end_value.fr, scale),
         )
@@ -420,17 +456,37 @@ class SwerveSample:
         """
         scale = (t - self.timestamp) / (end_value.timestamp - self.timestamp)
 
+        # Integrate the acceleration to get the rest of the state, since linearly
+        # interpolating the state gives an inaccurate result if the accelerations
+        # are changing between states
+        #
+        #   Δt = tₖ₊₁ − tₖ
+        #   τ = timestamp − tₖ
+        #
+        #   x(τ) = xₖ + vₖτ + 1/2 aₖτ² + 1/6 jₖτ³
+        #   v(τ) = vₖ + aₖτ + 1/2 jₖτ²
+        #   a(τ) = aₖ + jₖτ
+        #
+        # where jₖ = (aₖ₊₁ − aₖ)/Δt
+        dt = end_value.timestamp - t
+        τ = t - self.timestamp
+        τ2 = τ * τ
+        τ3 = τ * τ * τ
+        jx = (end_value.ax - self.ax) / dt
+        jy = (end_value.ay - self.ay) / dt
+        η = (end_value.alpha - self.alpha) / dt
+
         return SwerveSample(
             t,
-            lerp(self.x, end_value.x, scale),
-            lerp(self.y, end_value.y, scale),
-            lerp(self.heading, end_value.heading, scale),
-            lerp(self.vx, end_value.vx, scale),
-            lerp(self.vy, end_value.vy, scale),
-            lerp(self.omega, end_value.omega, scale),
-            lerp(self.ax, end_value.ax, scale),
-            lerp(self.ay, end_value.ay, scale),
-            lerp(self.alpha, end_value.alpha, scale),
+            self.x + self.vx * τ + 0.5 * self.ax * τ2 + 1.0 / 6.0 * jx * τ3,
+            self.y + self.vy * τ + 0.5 * self.ay * τ2 + 1.0 / 6.0 * jy * τ3,
+            self.heading + self.omega * τ + 0.5 * self.alpha * τ2 + 1.0 / 6.0 * η * τ3,
+            self.vx + self.ax * τ + 0.5 * jx * τ2,
+            self.vy + self.ay * τ + 0.5 * jy * τ2,
+            self.omega + self.alpha * τ + 0.5 * η * τ2,
+            self.ax + jx * τ,
+            self.ay + jy * τ,
+            self.alpha + η * τ,
             [lerp(self.fx[i], end_value.fx[i], scale) for i in range(len(self.fx))],
             [lerp(self.fy[i], end_value.fy[i], scale) for i in range(len(self.fy))],
         )
