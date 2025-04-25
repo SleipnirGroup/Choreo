@@ -436,9 +436,9 @@ class SwerveSample:
         τ = t - self.timestamp
         τ2 = τ * τ
         τ3 = τ * τ * τ
-        jx = (end_value.ax - ax) / dt
-        jy = (end_value.ay - ay) / dt
-        η = (end_value.alpha - alpha) / dt
+        jx = (end_value.ax - self.ax) / dt
+        jy = (end_value.ay - self.ay) / dt
+        η = (end_value.alpha - self.alpha) / dt
 
         return SwerveSample(
             t,
