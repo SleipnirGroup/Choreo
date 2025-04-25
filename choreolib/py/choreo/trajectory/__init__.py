@@ -8,7 +8,7 @@ from typing import TypeGuard
 
 import numpy as np
 from choreo.util import DEFAULT_YEAR, get_flipper_for_year
-from scipy.integrate import RK45
+from scipy.integrate import solve_ivp
 from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.kinematics import ChassisSpeeds
 
@@ -167,7 +167,7 @@ class DifferentialSample:
             return [v * cos(θ), v * sin(θ), ω, al, ar, α]
 
         τ = t - self.timestamp
-        sample = RK45(f, self.timestamp, np.array(initialState), t)
+        sample = solve_ivp(f, (self.timestamp, t), np.array(initialState))
 
         dt = end_value.timestamp - self.timestamp
         jl = (end_value.al - self.al) / dt
