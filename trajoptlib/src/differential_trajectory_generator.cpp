@@ -79,7 +79,7 @@ DifferentialTrajectoryGenerator::DifferentialTrajectoryGenerator(
     return xdot;
   };
 
-  auto initial_guess = path_builder.calculate_initial_guess();
+  auto initial_guess = path_builder.calculate_spline_initial_guess();
 
   problem.add_callback(
       [this, handle = handle](const slp::IterationInfo&) -> bool {

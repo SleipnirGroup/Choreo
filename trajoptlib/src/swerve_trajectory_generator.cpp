@@ -35,7 +35,7 @@ SwerveTrajectoryGenerator::SwerveTrajectoryGenerator(
     SwervePathBuilder path_builder, int64_t handle)
     : path(path_builder.get_path()),
       Ns(path_builder.get_control_interval_counts()) {
-  auto initial_guess = path_builder.calculate_initial_guess();
+  auto initial_guess = path_builder.calculate_linear_initial_guess();
 
   problem.add_callback(
       [this, handle = handle](const slp::IterationInfo&) -> bool {
