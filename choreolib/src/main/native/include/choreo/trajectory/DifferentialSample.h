@@ -129,7 +129,7 @@ class DifferentialSample {
     // Integrate the acceleration to get the rest of the state, since linearly
     // interpolating the state gives an inaccurate result if the accelerations
     // are changing between states
-    Eigen::Matrix<double, 6, 1> initialState{x.value(),       y.value(),
+    Eigen::Vector<double, 6> initialState{x.value(),       y.value(),
                                              heading.value(), vl.value(),
                                              vr.value(),      omega.value()};
 
@@ -167,7 +167,7 @@ class DifferentialSample {
 
     units::second_t τ = t - timestamp;
     auto sample =
-        frc::RKDP(f, initialState, Eigen::Matrix<double, 2, 1>(al, ar), τ);
+        frc::RKDP(f, initialState, Eigen::Vector<double, 2>(al, ar), τ);
 
     auto dt = endValue.timestamp - timestamp;
     auto jl = (endValue.al - al) / dt;
