@@ -167,7 +167,7 @@ class DifferentialSample:
             return [v * cos(θ), v * sin(θ), ω, al, ar, α]
 
         τ = t - self.timestamp
-        sample = solve_ivp(f, (self.timestamp, t), np.array(initialState)).y
+        sample = solve_ivp(f, (self.timestamp, t), initial_state).y
 
         dt = end_value.timestamp - self.timestamp
         jl = (end_value.al - self.al) / dt
