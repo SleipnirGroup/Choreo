@@ -9,7 +9,7 @@ concurrency:
 jobs:
   build:
     env:
-      MACOSX_DEPLOYMENT_TARGET: 13.3
+      MACOSX_DEPLOYMENT_TARGET: 14.5
     strategy:
       fail-fast: false
       matrix:
@@ -57,6 +57,9 @@ jobs:
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 200
           sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 200
 
+      - run: sudo xcode-select -switch /Applications/Xcode_16.2.app
+        if: startsWith(matrix.os, 'macOS')
+
       - name: Install Linux dependencies
         if: startsWith(matrix.os, 'ubuntu')
         run: |
@@ -83,6 +86,9 @@ jobs:
       - name: Set up macOS x86_64 Rust compiler
         if: matrix.artifact-name == 'macOS-x86_64'
         run: rustup target add x86_64-apple-darwin
+
+      - run: sudo xcode-select -switch /Applications/Xcode_16.2.app
+        if: startsWith(matrix.os, 'macOS')
 
       - name: Set up sccache
         uses: mozilla-actions/sccache-action@v0.0.9
