@@ -18,7 +18,7 @@ type Props = { marker: IEventMarkerStore; points: IHolonomicWaypointStore[] };
 type State = object;
 
 class EventMarkerConfigPanel extends Component<Props, State> {
-  nameInputRef: React.RefObject<HTMLInputElement> =
+  nameInputRef: React.RefObject<HTMLInputElement | null> =
     React.createRef<HTMLInputElement>();
   state = {};
 

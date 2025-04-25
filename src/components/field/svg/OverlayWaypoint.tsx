@@ -37,7 +37,7 @@ const outlineWidth = 0.03;
 class OverlayWaypoint extends Component<Props, State> {
   state = {};
   bumperRef: any;
-  rootRef: React.RefObject<SVGGElement> = React.createRef<SVGGElement>();
+  rootRef: React.RefObject<SVGGElement | null> = React.createRef<SVGGElement>();
 
   BumperBox = observer(
     ({
