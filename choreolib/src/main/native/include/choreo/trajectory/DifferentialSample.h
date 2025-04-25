@@ -130,14 +130,14 @@ class DifferentialSample {
     // interpolating the state gives an inaccurate result if the accelerations
     // are changing between states
     Eigen::Vector<double, 6> initialState{x.value(),       y.value(),
-                                             heading.value(), vl.value(),
-                                             vr.value(),      omega.value()};
+                                          heading.value(), vl.value(),
+                                          vr.value(),      omega.value()};
 
     auto width = (vr - vl) / omega;
 
     // FIXME: this means the function cant be constexpr without c++23
     std::function<Eigen::Vector<double, 6>(Eigen::Vector<double, 6>,
-                                              Eigen::Vector<double, 2>)>
+                                           Eigen::Vector<double, 2>)>
         f = [width](Eigen::Vector<double, 6> state,
                     Eigen::Vector<double, 2> input) {
           //  state =  [x, y, θ, vₗ, vᵣ, ω]
