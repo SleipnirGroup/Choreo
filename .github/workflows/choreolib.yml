@@ -255,7 +255,7 @@ jobs:
         with:
           python-version: 3.12
 
-      - run: pip3 install mypy wpilib
+      - run: pip3 install mypy wpilib scipy scipy-stubs numpy
 
       - run: mypy --pretty --show-column-numbers choreolib/py
 
