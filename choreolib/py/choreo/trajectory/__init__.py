@@ -140,7 +140,9 @@ class DifferentialSample:
             The interpolated state.
         """
         scale = (t - self.timestamp) / (end_value.timestamp - self.timestamp)
-        initial_state = np.array([[self.x], [self.y], [self.heading], [self.vl], [self.vr], [self.omega]])
+        initial_state = np.array(
+            [[self.x], [self.y], [self.heading], [self.vl], [self.vr], [self.omega]]
+        )
 
         def f(state, input):
             #  state =  [x, y, θ, vₗ, vᵣ, ω]
