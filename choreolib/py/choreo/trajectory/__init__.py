@@ -432,13 +432,13 @@ class SwerveSample:
         #   a(τ) = aₖ + jₖτ
         #
         # where jₖ = (aₖ₊₁ − aₖ)/Δt
-        dt = endValue.timestamp - t
+        dt = end_value.timestamp - t
         τ = t - self.timestamp
         τ2 = τ * τ
         τ3 = τ * τ * τ
-        jx = (endValue.ax - ax) / dt
-        jy = (endValue.ay - ay) / dt
-        η = (endValue.alpha - alpha) / dt
+        jx = (end_value.ax - ax) / dt
+        jy = (end_value.ay - ay) / dt
+        η = (end_value.alpha - alpha) / dt
 
         return SwerveSample(
             t,
