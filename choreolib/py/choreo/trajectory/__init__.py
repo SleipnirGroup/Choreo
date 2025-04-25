@@ -155,22 +155,22 @@ class DifferentialSample:
             #  v̇ₗ = aₗ
             #  v̇ᵣ = aᵣ
             #  ω̇ = α
-            θ =  state[2, 0];
-            vl = state[3, 0];
-            vr = state[4, 0];
-            ω =  state[5, 0];
-            al = input[0, 0];
-            ar = input[1, 0];
-            v = (vl + vr) / 2;
+            θ =  state[2, 0]
+            vl = state[3, 0]
+            vr = state[4, 0]
+            ω =  state[5, 0]
+            al = input[0, 0]
+            ar = input[1, 0]
+            v = (vl + vr) / 2
             α = (ar - al) / width
             return [v * cos(θ), v * sin(θ), ω, al, ar, α]
 
-        τ = t - self.timestamp;
-        sample = RK45(f, self.timestamp, initialState, t);
+        τ = t - self.timestamp
+        sample = RK45(f, self.timestamp, initialState, t)
 
-        dt = end_value.timestamp - self.timestamp;
-        jl = (end_value.al - self.al) / dt;
-        jr = (end_value.ar - self.ar) / dt;
+        dt = end_value.timestamp - self.timestamp
+        jl = (end_value.al - self.al) / dt
+        jr = (end_value.ar - self.ar) / dt
 
         return DifferentialSample(
             t,
