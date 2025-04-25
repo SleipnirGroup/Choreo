@@ -9,6 +9,7 @@ from typing import TypeGuard
 from choreo.util import DEFAULT_YEAR, get_flipper_for_year
 from wpimath.geometry import Pose2d, Rotation2d
 from wpimath.kinematics import ChassisSpeeds
+from scipy.integrate import RK45
 
 
 def lerp(a, b, t) -> float:
@@ -138,6 +139,38 @@ class DifferentialSample:
             The interpolated state.
         """
         scale = (t - self.timestamp) / (end_value.timestamp - self.timestamp)
+        initialState = [self.x, self.y, self.heading, self.vl, self.vr, self.omega]
+
+        def f(state, input):
+            #  state =  [x, y, θ, vₗ, vᵣ, ω]
+            #  input =  [aₗ, aᵣ]
+            #
+            #  v = (vₗ + vᵣ)/2
+            #  ω = (vᵣ − vₗ)/width
+            #  α = (aᵣ − aₗ)/width
+            #
+            #  ẋ = v cosθ
+            #  ẏ = v sinθ
+            #  θ̇ = ω
+            #  v̇ₗ = aₗ
+            #  v̇ᵣ = aᵣ
+            #  ω̇ = α
+            θ =  state[2, 0];
+            vl = state[3, 0];
+            vr = state[4, 0];
+            ω =  state[5, 0];
+            al = input[0, 0];
+            ar = input[1, 0];
+            v = (vl + vr) / 2;
+            α = (ar - al) / width
+            return [v * cos(θ), v * sin(θ), ω, al, ar, α]
+
+        τ = t - self.timestamp;
+        sample = RK45(f, self.timestamp, initialState, t);
+
+        dt = endValue.timestamp - self.timestamp;
+        jl = (endValue.al - al) / dt;
+        jr = (endValue.ar - ar) / dt;
 
         return DifferentialSample(
             t,
@@ -147,8 +180,8 @@ class DifferentialSample:
             lerp(self.vl, end_value.vl, scale),
             lerp(self.vr, end_value.vr, scale),
             lerp(self.omega, end_value.omega, scale),
-            lerp(self.al, end_value.al, scale),
-            lerp(self.ar, end_value.ar, scale),
+            self.al + jl * τ,
+            self.ar + jr * τ,
             lerp(self.fl, end_value.fl, scale),
             lerp(self.fr, end_value.fr, scale),
         )
