@@ -169,8 +169,8 @@ class DifferentialSample:
         sample = RK45(f, self.timestamp, initialState, t);
 
         dt = end_value.timestamp - self.timestamp;
-        jl = (end_value.al - al) / dt;
-        jr = (end_value.ar - ar) / dt;
+        jl = (end_value.al - self.al) / dt;
+        jr = (end_value.ar - self.ar) / dt;
 
         return DifferentialSample(
             t,
