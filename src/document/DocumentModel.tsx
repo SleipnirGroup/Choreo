@@ -2,7 +2,6 @@ import { Event, UnlistenFn, listen } from "@tauri-apps/api/event";
 import { Instance, getParent, types } from "mobx-state-tree";
 import { UndoManager } from "mst-middlewares";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.min.css";
 import {
   DifferentialSample,
   ProgressUpdate,
@@ -32,11 +31,9 @@ export type SelectableItemTypes =
 export const SelectableItem = types.union(
   {
     dispatcher: (snapshot) => {
-      if (snapshot.mass) return RobotConfigStore;
-      if (snapshot.target) return EventMarkerStore;
-      if (snapshot.from) {
-        return ConstraintStore;
-      }
+      if (Object.hasOwn(snapshot, "mass")) return RobotConfigStore;
+      if (Object.hasOwn(snapshot, "target")) return EventMarkerStore;
+      if (Object.hasOwn(snapshot, "from")) return ConstraintStore;
       return HolonomicWaypointStore;
     }
   },

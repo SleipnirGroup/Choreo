@@ -19,7 +19,7 @@ type Props<K extends ConstraintKey> = {
   lineColor: string;
 };
 class KeepInCircleOverlay extends Component<Props<"KeepInCircle">, object> {
-  rootRef: React.RefObject<SVGGElement> = React.createRef<SVGGElement>();
+  rootRef: React.RefObject<SVGGElement | null> = React.createRef<SVGGElement>();
   componentDidMount() {
     if (this.rootRef.current) {
       const dragHandleDrag = d3

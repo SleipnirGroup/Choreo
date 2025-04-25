@@ -30,9 +30,9 @@ type State = { selected: boolean };
 class CommandDraggable extends Component<Props, State> {
   id: number = 0;
   state = { selected: false };
-  nameInputRef: React.RefObject<HTMLInputElement> =
+  nameInputRef: React.RefObject<HTMLInputElement | null> =
     React.createRef<HTMLInputElement>();
-  eventInputRef: React.RefObject<HTMLInputElement> =
+  eventInputRef: React.RefObject<HTMLInputElement | null> =
     React.createRef<HTMLInputElement>();
   getItemStyle(
     _isDragging: boolean,
