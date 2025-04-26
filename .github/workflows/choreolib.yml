@@ -52,7 +52,7 @@ jobs:
       - name: Build with Gradle (release)
         if: startsWith(github.ref, 'refs/tags/v')
         working-directory: choreolib
-        run: ./gradlew build ${{ matrix.build-options }} -PreleaseMode
+        run: ./gradlew publish ${{ matrix.build-options }} -PreleaseMode
 
       - uses: actions/upload-artifact@v4
         with:
@@ -120,7 +120,7 @@ jobs:
       - name: Build with Gradle (release)
         if: startsWith(github.ref, 'refs/tags/v')
         working-directory: choreolib
-        run: ./gradlew build ${{ matrix.build-options }} -PreleaseMode
+        run: ./gradlew publish ${{ matrix.build-options }} -PreleaseMode
 
       - uses: actions/upload-artifact@v4
         with:
@@ -149,66 +149,18 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: wpilibsuite/build-tools
-          persist-credentials: false
-          token: ${{secrets.GITHUB_TOKEN}}
-
       - uses: actions/download-artifact@v4
         with:
           path: combiner/products/build/allOutputs
-
-      - name: Generate a token
-        if: startsWith(github.ref, 'refs/tags/v')
-        id: generate-token
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: ${{ secrets.CHOREOLIB_RELEASE_APP_ID }}
-          private-key: ${{ secrets.CHOREOLIB_RELEASE_APP_PRIVATE_KEY }}
-          owner: ${{ github.repository_owner }}
-
-      - name: Checkout ChoreoLib repository
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: actions/checkout@v4
-        with:
-          repository: SleipnirGroup/ChoreoLib
-          path: ChoreoLib
-          token: ${{ steps.generate-token.outputs.token }}
-          persist-credentials: false
-
-      - name: Copy ChoreoLib JSON
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: |
-          cp combiner/products/build/allOutputs/ChoreoLib-json/ChoreoLib2025.json ChoreoLib/dep/ChoreoLib2025.json
-
-      - name: Remove JSON Artifact From Download
-        run: rm combiner/products/build/allOutputs/ChoreoLib-json/ChoreoLib2025.json
-
       - name: Flatten Artifacts
-        run: rsync -a --delete combiner/products/build/allOutputs/*/* combiner/products/build/allOutputs
-
+        run: rsync -a --delete combiner/products/build/allOutputs/*/* combiner/products/build/allOutputs/
       - uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: 17
-
       - name: Combine
         run: ./gradlew publish -Pthirdparty
         working-directory: combiner
-
-      - name: Transfer ChoreoLib Artifacts
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: cp -r ~/releases/maven/development/choreo/* ChoreoLib/dep/choreo
-
-      - name: Create Pull Request
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ steps.generate-token.outputs.token }}
-          path: ./ChoreoLib
-          title: Add ChoreoLib ${{github.ref_name}}
-          commit-message: Add ChoreoLib ${{github.ref_name}}
-          body:
-          branch: publish-${{github.ref_name}}
-
       - uses: actions/upload-artifact@v4
         with:
           name: ChoreoLib-Maven
