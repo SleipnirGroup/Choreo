@@ -1,4 +1,5 @@
 import {
+  BorderOuter,
   Circle,
   CircleOutlined,
   CropFree,
@@ -148,6 +149,12 @@ export const ViewData = {
     name: "Focus",
     icon: <CropFree />,
     default: false
+  },
+  Zones: {
+    index: 6,
+    name: "Zones",
+    icon: <BorderOuter />,
+    default: true
   }
 };
 

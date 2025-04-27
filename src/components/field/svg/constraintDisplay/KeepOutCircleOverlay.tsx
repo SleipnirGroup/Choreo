@@ -6,19 +6,19 @@ import {
   ConstraintKey,
   DataMap
 } from "../../../../document/ConstraintDefinitions";
-import { doc } from "../../../../document/DocumentManager";
+import { doc, uiState } from "../../../../document/DocumentManager";
 import { IHolonomicWaypointStore } from "../../../../document/HolonomicWaypointStore";
+import { ViewLayers } from "../../../../document/UIData";
+import { OverlayElementProps } from "./FieldConstraintDisplayLayer";
 
 const STROKE = 0.1;
 const DOT = 0.1;
+const SELECT_COLOR = "var(--select-yellow)";
+const MOVABLE_COLOR = "red";
+const IMMOVABLE_COLOR = "rosybrown";
 
-type Props<K extends ConstraintKey> = {
-  data: IConstraintDataStore<K>;
-  start?: IHolonomicWaypointStore;
-  end?: IHolonomicWaypointStore;
-  lineColor: string;
-};
-class KeepOutCircleOverlay extends Component<Props<"KeepOutCircle">, object> {
+class KeepOutCircleOverlay extends Component<OverlayElementProps<"KeepOutCircle">, object> {
+  id = crypto.randomUUID();
   rootRef: React.RefObject<SVGGElement> = React.createRef<SVGGElement>();
   componentDidMount() {
     if (this.rootRef.current) {
@@ -26,26 +26,28 @@ class KeepOutCircleOverlay extends Component<Props<"KeepOutCircle">, object> {
         .drag<SVGCircleElement, undefined>()
         .on("drag", (event) => this.dragPointTranslate(event))
         .on("start", () => {
-          doc.history.startGroup(() => {});
+          doc.history.startGroup(() => { });
+          this.props.select();
         })
         .on("end", (_event) => doc.history.stopGroup())
         .container(this.rootRef.current);
-      d3.select<SVGCircleElement, undefined>(`#dragTarget-keepOutCircle`).call(
-        dragHandleDrag
-      );
       d3.select<SVGCircleElement, undefined>(
-        `#dragTarget-keepOutCircleDot`
+        `#dragTarget-keepOutCircle` + this.id
+      ).call(dragHandleDrag);
+      d3.select<SVGCircleElement, undefined>(
+        `#dragTarget-keepOutCircleDot` + this.id
       ).call(dragHandleDrag);
       const radiusHandleDrag = d3
         .drag<SVGCircleElement, undefined>()
         .on("drag", (event) => this.dragPointRadius(event))
         .on("start", () => {
-          doc.history.startGroup(() => {});
+          doc.history.startGroup(() => { });
+          this.props.select();
         })
         .on("end", (_event) => doc.history.stopGroup())
         .container(this.rootRef.current);
       d3.select<SVGCircleElement, undefined>(
-        `#dragRadiusTarget-keepOutCircle`
+        `#dragRadiusTarget-keepOutCircle` + this.id
       ).call(radiusHandleDrag);
     }
   }
@@ -63,30 +65,42 @@ class KeepOutCircleOverlay extends Component<Props<"KeepOutCircle">, object> {
     this.props.data.r.set(r);
   }
 
+  getColor(): string {
+    if (this.props.selected) return SELECT_COLOR;
+    if (this.props.clickable) return MOVABLE_COLOR;
+    return IMMOVABLE_COLOR;
+  }
+
   render() {
     const data = this.props.data.serialize as DataMap["KeepOutCircle"];
     const x = data.props.x.val;
     const y = data.props.y.val;
     const r = data.props.r.val;
+    let color = this.getColor();
     return (
-      <g ref={this.rootRef}>
+      <g ref={this.rootRef} onClick={
+        () => {
+          if (this.props.clickable) this.props.select();
+        }}>
         {/* Main Circle */}
         <circle
           cx={x}
           cy={y}
           r={r - STROKE / 2}
-          fill={"red"}
+          fill={color}
           fillOpacity={0.1}
-          id="dragTarget-keepOutCircle"
+          id={"dragTarget-keepOutCircle" + this.id}
+          pointerEvents={"none"}
         ></circle>
         {/* Center Dot */}
         <circle
           cx={x}
           cy={y}
           r={r < DOT * 2 ? 0.0 : DOT}
-          fill={"red"}
+          fill={color}
           fillOpacity={1.0}
-          id="dragTarget-keepOutCircleDot"
+          id={"dragTarget-keepOutCircleDot" + this.id}
+          pointerEvents={"visible"}
         ></circle>
         {/* Radius Handle */}
         <circle
@@ -95,10 +109,10 @@ class KeepOutCircleOverlay extends Component<Props<"KeepOutCircle">, object> {
           r={r - STROKE / 2}
           fill={"transparent"}
           pointerEvents={"visibleStroke"}
-          stroke={"red"}
+          stroke={color}
           strokeWidth={STROKE}
           strokeOpacity={1.0}
-          id="dragRadiusTarget-keepOutCircle"
+          id={"dragRadiusTarget-keepOutCircle" + this.id}
         ></circle>
       </g>
     );
