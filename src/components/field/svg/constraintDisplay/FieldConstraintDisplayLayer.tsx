@@ -1,4 +1,5 @@
 import { observer } from "mobx-react";
+import React from "react";
 import {
   ConstraintDataTypeMap,
   ConstraintKey
@@ -64,7 +65,7 @@ const overlays = {
   MaxVelocity: () => <></>,
   MaxAngularVelocity: () => <></>
 } satisfies {
-  [K in ConstraintKey]: (props: OverlayProps<K>) => JSX.Element;
+  [K in ConstraintKey]: (props: OverlayProps<K>) => React.JSX.Element;
 };
 type Props = {
   constraint?: IConstraintStoreKeyed<ConstraintKey>;

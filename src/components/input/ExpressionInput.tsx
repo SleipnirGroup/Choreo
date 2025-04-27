@@ -29,7 +29,7 @@ type State = {
   resetCounter: number;
 };
 class Input extends Component<ExpressionInputProps, State> {
-  inputElemRef: React.RefObject<HTMLInputElement>;
+  inputElemRef: React.RefObject<HTMLInputElement | null>;
   unsubscriber: IReactionDisposer | undefined;
   number: IExpressionStore;
   constructor(props: ExpressionInputProps) {

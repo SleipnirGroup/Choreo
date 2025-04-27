@@ -1,7 +1,7 @@
 import { Add, Delete } from "@mui/icons-material";
 import { MenuItem, Select, SelectChangeEvent, Tooltip } from "@mui/material";
 import { observer } from "mobx-react";
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { doc } from "../../../document/DocumentManager";
 import {
   DimensionName,
@@ -18,8 +18,8 @@ const VariablePanel = observer(
   (props: {
     entry: [string, IExpressionStore];
     setName: (name: string) => void;
-    actionButton: () => JSX.Element;
-    logo: () => JSX.Element;
+    actionButton: () => React.JSX.Element;
+    logo: () => React.JSX.Element;
     validateName: (name: string) => boolean;
   }) => {
     const entry = props.entry;
@@ -46,7 +46,7 @@ const VariablePanel = observer(
 );
 
 type AddVariablePanelProps = {
-  logo: () => JSX.Element;
+  logo: () => React.JSX.Element;
   name: string;
   setName: (name: string) => void;
   expr: IExpressionStore;

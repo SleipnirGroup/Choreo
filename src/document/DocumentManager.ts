@@ -7,12 +7,11 @@ import hotkeys from "hotkeys-js";
 import { reaction } from "mobx";
 import {
   applySnapshot,
-  castToReferenceSnapshot,
+  castToSnapshot,
   getSnapshot,
   walk
 } from "mobx-state-tree";
 import { toast, ToastContentProps } from "react-toastify";
-import "react-toastify/dist/ReactToastify.min.css";
 import LocalStorageKeys from "../util/LocalStorageKeys";
 import { safeGetIdentifier } from "../util/mobxutils";
 import {
@@ -251,8 +250,7 @@ export const doc = DocumentStore.create(
       defaultPath: undefined
     },
     name: "Untitled",
-    //@ts-expect-error this is recommended, not sure why it doesn't work
-    variables: castToReferenceSnapshot(variables),
+    variables: castToSnapshot(variables),
     selectedSidebarItem: undefined
   },
   env

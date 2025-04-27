@@ -19,7 +19,7 @@ type Props = {
 type State = object;
 
 class Input extends Component<Props, State> {
-  inputElemRef: React.RefObject<HTMLInputElement>;
+  inputElemRef: React.RefObject<HTMLInputElement | null>;
   constructor(props: Props) {
     super(props);
     this.inputElemRef = React.createRef<HTMLInputElement>();

@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import { Component } from "react";
+import React, { Component } from "react";
 import { saveProject, saveProjectDialog } from "../../document/DocumentManager";
 import { SavingState as SavingState } from "../../document/UIStateStore";
 import { Check, FolderOff, PriorityHigh } from "@mui/icons-material";
@@ -19,7 +19,7 @@ const icons = {
   [SavingState.NO_LOCATION]: () => <FolderOff></FolderOff>,
   [SavingState.SAVED]: () => <Check></Check>
 } satisfies {
-  [K in SavingState]: () => JSX.Element;
+  [K in SavingState]: () => React.JSX.Element;
 };
 const tooltips = {
   [SavingState.ERROR]: "Error while Saving. Click to retry.",
