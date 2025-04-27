@@ -41,7 +41,7 @@
     "hotkeys-js": "^3.13.9",
     "mathjs": "^13.2.3",
     "mobx": "^6.13.5",
-    "mobx-react": "^7.6.0",
+    "mobx-react": "^9.2.0",
     "mobx-state-tree": "^6.0.1",
     "mobx-utils": "^6.1.0",
     "mst-middlewares": "^6.1.0",
