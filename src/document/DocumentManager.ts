@@ -7,7 +7,7 @@ import hotkeys from "hotkeys-js";
 import { reaction } from "mobx";
 import {
   applySnapshot,
-  castToReferenceSnapshot,
+  castToSnapshot,
   getSnapshot,
   walk
 } from "mobx-state-tree";
@@ -250,7 +250,7 @@ export const doc = DocumentStore.create(
       defaultPath: undefined
     },
     name: "Untitled",
-    variables: castToReferenceSnapshot(variables),
+    variables: castToSnapshot(variables),
     selectedSidebarItem: undefined
   },
   env

@@ -30,7 +30,7 @@ export type SelectableItemTypes =
   | undefined;
 export const SelectableItem = types.union(
   {
-    dispatcher: (snapshot) => {
+    dispatcher: (snapshot): any => {
       if (Object.hasOwn(snapshot, "mass")) return RobotConfigStore;
       if (Object.hasOwn(snapshot, "target")) return EventMarkerStore;
       if (Object.hasOwn(snapshot, "from")) return ConstraintStore;
