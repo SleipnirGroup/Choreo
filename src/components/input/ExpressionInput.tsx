@@ -35,7 +35,6 @@ class Input extends Component<ExpressionInputProps, State> {
   constructor(props: ExpressionInputProps) {
     super(props);
     this.number = this.props.number;
-    console.log("Creating new input for ", this.number.uuid);
     this.state = {
       matchesProp: true,
       editedValue: this.number.expr.toString(),
@@ -104,7 +103,6 @@ class Input extends Component<ExpressionInputProps, State> {
     this.unsubscriber?.();
   }
   render() {
-    console.log(this.number.expr.toString(), this.getExprStr());
     if (!isAlive(this.number)) {
       return <></>;
     }
